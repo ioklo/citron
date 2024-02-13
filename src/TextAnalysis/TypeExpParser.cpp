@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-#include <Syntax/TypeExpSyntaxes.h>
+#include <Syntax/Syntax.h>
 #include <Syntax/Tokens.h>
 
 #include <TextAnalysis/Lexer.h>
@@ -51,7 +51,7 @@ optional<IdTypeExpSyntax> ParseIdTypeExp(Lexer* lexer)
     if (auto oTypeArgs = ParseTypeArgs(&curLexer))
     {
         *lexer = std::move(curLexer);
-        return IdTypeExpSyntax(oIdToken->text, *oTypeArgs);
+        return IdTypeExpSyntax(oIdToken->text, std::move(*oTypeArgs));
     }
     else
     {
@@ -76,7 +76,7 @@ optional<NullableTypeExpSyntax> ParseNullableTypeExp(Lexer* lexer)
 
     *lexer = std::move(curLexer);
 
-    return NullableTypeExpSyntax(*oTypeExp);
+    return NullableTypeExpSyntax(std::move(*oTypeExp));
 }
 
 // box T*
@@ -95,7 +95,7 @@ optional<BoxPtrTypeExpSyntax> ParseBoxPtrTypeExp(Lexer* lexer)
         return nullopt;
 
     *lexer = std::move(curLexer);
-    return BoxPtrTypeExpSyntax(*oTypeExp);
+    return BoxPtrTypeExpSyntax(std::move(*oTypeExp));
 }
 
 // T*
@@ -113,7 +113,7 @@ optional<TypeExpSyntax> ParseLocalPtrTypeExp(Lexer* lexer)
     if (!Accept<StarToken>(&curLexer))
         return nullopt;
     
-    TypeExpSyntax curTypeExp = LocalPtrTypeExpSyntax(*oInnerTypeExp);
+    TypeExpSyntax curTypeExp = LocalPtrTypeExpSyntax(std::move(*oInnerTypeExp));
 
     while (Accept<StarToken>(&curLexer))
     {
@@ -155,7 +155,7 @@ optional<TypeExpSyntax> ParseIdChainTypeExp(Lexer* lexer)
     if (!oIdTypeExp)
         return nullopt;
 
-    TypeExpSyntax curTypeExp = *oIdTypeExp;
+    TypeExpSyntax curTypeExp = std::move(*oIdTypeExp);
 
     // .
     while (Accept<DotToken>(&curLexer))
@@ -167,9 +167,9 @@ optional<TypeExpSyntax> ParseIdChainTypeExp(Lexer* lexer)
 
         auto oTypeArgs = ParseTypeArgs(&curLexer);
         if (oTypeArgs)
-            curTypeExp = MemberTypeExpSyntax(std::move(curTypeExp), oIdToken->text, *oTypeArgs);
+            curTypeExp = MemberTypeExpSyntax(std::move(curTypeExp), std::move(oIdToken->text), std::move(*oTypeArgs));
         else 
-            curTypeExp = MemberTypeExpSyntax(std::move(curTypeExp), oIdToken->text, {});
+            curTypeExp = MemberTypeExpSyntax(std::move(curTypeExp), std::move(oIdToken->text), {});
     }
 
     *lexer = std::move(curLexer);
@@ -195,7 +195,7 @@ optional<LocalTypeExpSyntax> ParseLocalTypeExp(Lexer* lexer)
     if (!oInnerTypeExp) return nullopt;
 
     *lexer = std::move(curLexer);
-    return LocalTypeExpSyntax(*oInnerTypeExp);
+    return LocalTypeExpSyntax(std::move(*oInnerTypeExp));
 }
 
 // 

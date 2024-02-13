@@ -129,8 +129,6 @@ void GenerateScriptParserTests(path inputPath, path srcPath)
 #include <Syntax/Syntax.h>
 #include <TextAnalysis/ScriptParser.h>
 
-#include <Syntax/ExpSyntaxes.h>
-
 #include "TestMisc.h"
 
 using namespace std;
@@ -188,8 +186,6 @@ void GenerateStmtParserTests(path inputPath, path srcPath)
 #include <Syntax/Syntax.h>
 #include <TextAnalysis/StmtParser.h>
 
-#include <Syntax/ExpSyntaxes.h>
-
 #include "TestMisc.h"
 
 using namespace std;
@@ -246,8 +242,6 @@ void GenerateTypeExpParserTests(path inputPath, path srcPath)
 
 #include <Syntax/Syntax.h>
 #include <TextAnalysis/TypeExpParser.h>
-
-#include <Syntax/ExpSyntaxes.h>
 
 #include "TestMisc.h"
 

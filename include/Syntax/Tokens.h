@@ -100,15 +100,15 @@ struct BoolToken
 
 struct TextToken
 {
-    std::u32string text;
-    TextToken(std::u32string text) : text(std::move(text)) { }
+    std::string text;
+    TextToken(std::string text) : text(std::move(text)) { }
     bool operator==(const TextToken& other) const { return text == other.text; }
 };
 
 struct IdentifierToken
 {
-    std::u32string text;
-    IdentifierToken(std::u32string text) : text(std::move(text)) { }
+    std::string text;
+    IdentifierToken(std::string text) : text(std::move(text)) { }
     bool operator==(const IdentifierToken& other) const { return text == other.text; }
 };
 

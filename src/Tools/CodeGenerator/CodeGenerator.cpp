@@ -550,6 +550,7 @@ void GenerateSyntax(path srcPath)
 #include <string>
 #include <vector>
 #include <optional>
+#include <memory>
 #include <variant>
 
 #include <Infra/Json.h>
@@ -645,6 +646,9 @@ namespace Citron {
                 { "std::vector<TypeExpSyntax>", "typeArgs", "GetTypeArgs", /* bUsePimpl */ false, /* bUseMove*/ true },
             },
             /* bDefaultsInline */ true,
+            {
+                "IdTypeExpSyntax(std::string name) : IdTypeExpSyntax(std::move(name), {}) { }"
+            }
         },
 
         // MemberTypeExpSyntax(TypeExpSyntax typeExp, std::string name, std::vector<TypeExpSyntax> typeArgs);
@@ -749,6 +753,9 @@ namespace Citron {
                 { "std::vector<TypeExpSyntax>", "typeArgs", "GetTypeArgs", false, true },
             },
             /* bDefaultsInline */ true,
+            {
+                "IdentifierExpSyntax(std::string value) : IdentifierExpSyntax(std::move(value), {}) { }"
+            }
         },
 
         // StringExpSyntaxElement
@@ -872,7 +879,7 @@ namespace Citron {
         ClassInfo {
             "ListExpSyntax",
             {
-                { "std::vector<ExpSyntax>", "elems", "GetElems", /* bUsePimpl */ false, /* bUseMove*/ true },
+                { "std::vector<ExpSyntax>", "elements", "GetElements", /* bUsePimpl */ false, /* bUseMove*/ true },
             },
             /* bDefaultsInline */ false
         },
@@ -954,7 +961,7 @@ namespace Citron {
             "VarDeclSyntax",
             {
                 { "TypeExpSyntax", "type", "GetType", /* bUsePimpl */ false, /* bUseMove */ true },
-                { "std::vector<VarDeclSyntaxElement>", "elems", "GetElems", /* bUsePimpl */ false, /* bUseMove */ true}
+                { "std::vector<VarDeclSyntaxElement>", "elements", "GetElements", /* bUsePimpl */ false, /* bUseMove */ true}
             },
             /* bDefaultsInline */ true
         },
@@ -1208,7 +1215,7 @@ namespace Citron {
                 { "std::optional<AccessModifierSyntax>", "accessModifier", "GetAccessModifier", /* bUsePimpl */ false, /* bUseMove */ false },
                 { "std::string", "name", "GetName", /* bUsePimpl */ false, /* bUseMove */ true },
                 { "std::vector<FuncParamSyntax>", "parameters", "GetParameters", /* bUsePimpl */ false, /* bUseMove */ true },
-                { "std::optional<std::vector<ArgumentSyntax>>", "baseArgs", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::optional<std::vector<ArgumentSyntax>>", "baseArgs", "GetBaseArgs", /* bUsePimpl */ false, /* bUseMove */ true},
                 { "std::vector<StmtSyntax>", "body", "GetBody", /* bUsePimpl */ false, /* bUseMove */ true },
             },
             /* bDefaultsInline */ true
@@ -1246,7 +1253,7 @@ namespace Citron {
                 { "std::optional<AccessModifierSyntax>", "accessModifier", "GetAccessModifier", /* bUsePimpl */ false, /* bUseMove */ false },
                 { "std::string", "name", "GetName", /* bUsePimpl */ false, /* bUseMove */ true },
                 { "std::vector<TypeParamSyntax>", "typeParams", "GetTypeParams", /* bUsePimpl */ false, /* bUseMove */ true},
-                { "std::vector<TypeExpSyntax>" "baseTypes", "GetBaseTypes", /* bUsePimpl */ false, /* bUseMove */ true},
+                { "std::vector<TypeExpSyntax>", "baseTypes", "GetBaseTypes", /* bUsePimpl */ false, /* bUseMove */ true},
                 { "std::vector<ClassMemberDeclSyntax>", "memberDecls", "GetMemberDecls", /* bUsePimpl */ false, /* bUseMove */ true },
             },
             /* bDefaultsInline */ true
@@ -1278,7 +1285,7 @@ namespace Citron {
                 { "std::vector<StmtSyntax>", "body", "GetBody", /* bUsePimpl */ false, /* bUseMove */ true },
             },
             /* bDefaultsInline */ true
-        }
+        },
 
         // StructMemberVarDeclSyntax
         ClassInfo {
@@ -1289,7 +1296,7 @@ namespace Citron {
                 { "std::vector<std::string>", "varNames", "GetVarNames", /* bUsePimpl */ false, /* bUseMove */ true },
             },
             /* bDefaultsInline */ true
-        }
+        },
 
         // StructMemberDeclSyntax
         VariantInfo {
@@ -1345,7 +1352,7 @@ namespace Citron {
                 { "std::optional<AccessModifierSyntax>", "accessModifier", "GetAccessModifier", /* bUsePimpl */ false, /* bUseMove */ false },
                 { "std::string", "name", "GetName", /* bUsePimpl */ false, /* bUseMove */ true },
                 { "std::vector<TypeParamSyntax>", "typeParams", "GetTypeParams", /* bUsePimpl */ false, /* bUseMove */ true },
-                { "std::vector<EnumElemDeclSyntax>", "elems", "GetElems", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<EnumElemDeclSyntax>", "elements", "GetElements", /* bUsePimpl */ false, /* bUseMove */ true },
             },
             /* bDefaultsInline */ true
         },
@@ -1368,7 +1375,7 @@ namespace Citron {
             "NamespaceDeclSyntax",
             {
                 { "std::vector<std::string>", "names", "GetNames", false, true },
-                { "std::vector<NamespaceDeclSyntaxElement>", "elems", "GetElems", false, true }
+                { "std::vector<NamespaceDeclSyntaxElement>", "elements", "GetElements", false, true}
             },
             /* bDefaultsInline */ false
         },
@@ -1380,7 +1387,9 @@ namespace Citron {
             {
                 "NamespaceDeclSyntax",
                 "GlobalFuncDeclSyntax",
-                "TypeDeclSyntax"
+                "ClassDeclSyntax",
+                "StructDeclSyntax",
+                "EnumDeclSyntax",
             }
         },
 
@@ -1388,7 +1397,7 @@ namespace Citron {
         ClassInfo {
             "ScriptSyntax",
             {
-                { "std::vector<ScriptSyntaxElement>", "elems", "GetElems", false, true },
+                { "std::vector<ScriptSyntaxElement>", "elements", "GetElements", false, true },
             },
             /* bDefaultsInline */ false
         },

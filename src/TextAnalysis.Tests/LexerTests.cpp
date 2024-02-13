@@ -160,7 +160,7 @@ TEST(Lexer, LexSimpleIdentifier)
 
     EXPECT_TRUE(oTokenResult);
     // EXPECT_EQ(oTokenResult->token, IdentifierToken(U"x"));
-    EXPECT_EQ(IdentifierToken(U"x"), oTokenResult->token);
+    EXPECT_EQ(IdentifierToken("x"), oTokenResult->token);
 }
 
 TEST(Lexer, LexNormalString)
@@ -177,7 +177,7 @@ TEST(Lexer, LexNormalString)
     ASSERT_TRUE(oResult2);
 
     EXPECT_EQ(oResult0->token, DoubleQuoteToken());
-    EXPECT_EQ(oResult1->token, TextToken(U"aaa bbb "));
+    EXPECT_EQ(oResult1->token, TextToken("aaa bbb "));
     EXPECT_EQ(oResult2->token, DoubleQuoteToken());
 }
 
@@ -187,7 +187,7 @@ TEST(Lexer, LexDoubleQuoteString)
     auto [buffer, lexer] = Prepare(U"\"\"");
     auto oTokenResult = lexer.LexStringMode();
 
-    auto expectedToken = TextToken(U"\"");
+    auto expectedToken = TextToken("\"");
 
     EXPECT_EQ(oTokenResult->token, expectedToken);
 }
@@ -199,7 +199,7 @@ TEST(Lexer, LexDollarString)
     auto oResult = lexer.LexStringMode();
     ASSERT_TRUE(oResult);
 
-    auto expectedToken = TextToken(U"$");
+    auto expectedToken = TextToken("$");
 
     EXPECT_EQ(oResult->token, expectedToken);
 }
@@ -209,7 +209,7 @@ TEST(Lexer, LexSimpleEscapedString2)
     auto [buffer, lexer] = Prepare(U"$ccc");
 
     auto oResult = lexer.LexStringMode();
-    auto expectedToken = IdentifierToken(U"ccc");
+    auto expectedToken = IdentifierToken("ccc");
 
     EXPECT_EQ(oResult->token, expectedToken);
 }
@@ -221,9 +221,9 @@ TEST(Lexer, LexSimpleEscapedString)
     auto tokens = ProcessString(&lexer);
 
     auto expectedTokens = vector<Token>{
-        TextToken(U"aaa bbb "),
-        IdentifierToken(U"ccc"),
-        TextToken(U" ddd"),
+        TextToken("aaa bbb "),
+        IdentifierToken("ccc"),
+        TextToken(" ddd"),
     };
 
     EXPECT_EQ(tokens, expectedTokens);
@@ -251,11 +251,11 @@ TEST(Lexer, LexEscapedString)
     tokens.push_back(std::move(oResult->token));
 
     vector<Token> expectedTokens {
-        TextToken(U"aaa bbb "),
+        TextToken("aaa bbb "),
         DollarLBraceToken(),
-        IdentifierToken(U"ccc"),
+        IdentifierToken("ccc"),
         RBraceToken(),
-        TextToken(U" ddd"),
+        TextToken(" ddd"),
     };
 
     EXPECT_EQ(tokens, expectedTokens);
@@ -305,18 +305,18 @@ TEST(Lexer, LexComplexString)
 
     vector<Token> expectedTokens {
         DoubleQuoteToken(),
-        TextToken(U"aaa bbb "),
+        TextToken("aaa bbb "),
         DollarLBraceToken(),
 
         DoubleQuoteToken(),
 
-        TextToken(U"xxx "),
+        TextToken("xxx "),
         DollarLBraceToken(),
-        IdentifierToken(U"ddd"),
+        IdentifierToken("ddd"),
         RBraceToken(),
         DoubleQuoteToken(),
         RBraceToken(),
-        TextToken(U" ddd"),
+        TextToken(" ddd"),
         DoubleQuoteToken(),
     };
 

@@ -7,8 +7,10 @@
 
 #include <Syntax/Tokens.h>
 #include <cassert>
+#include <utf8.h>
 
 using namespace std;
+using namespace utf8;
 
 namespace {
 
@@ -288,7 +290,8 @@ optional<LexResult> Lexer::LexStringModeText()
     if (codePoints.empty())
         return nullopt; // invalid
 
-    return LexResult{ TextToken(u32string(codePoints.begin(), codePoints.end())), i.MakeLexer() };
+    std::string u8token = utf8::utf32to8(codePoints);
+    return LexResult { TextToken(std::move(u8token)), i.MakeLexer() };
 }
 
 optional<LexResult> Lexer::LexNormalMode(bool bSkipNewLine)
@@ -405,7 +408,7 @@ optional<LexResult> Lexer::LexCommandMode()
     }
 
     if (!codePoints.empty())
-        return Result(TextToken(std::move(codePoints)), i.MakeLexer());
+        return Result(TextToken(utf32to8(codePoints)), i.MakeLexer());
     else
         return nullopt;
 }
@@ -446,7 +449,7 @@ optional<LexResult> Lexer::LexIdentifier(bool bAllowRawMark)
     }
 
     if (codePoints.empty()) return nullopt;
-    return Result(IdentifierToken(std::move(codePoints)), i.MakeLexer());
+    return Result(IdentifierToken(utf32to8(codePoints)), i.MakeLexer());
 }
 
 optional<LexResult> Lexer::LexKeyword()

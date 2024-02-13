@@ -3,8 +3,6 @@
 #include <Syntax/Syntax.h>
 #include <TextAnalysis/StmtParser.h>
 
-#include <Syntax/ExpSyntaxes.h>
-
 #include "TestMisc.h"
 
 using namespace std;
@@ -113,7 +111,7 @@ TEST(StmtParser, ParseBoxPtrVarDeclStmt)
         "$type": "VarDeclSyntax",
         "type": {
             "$type": "BoxPtrTypeExpSyntax",
-            "innerTypeExp": {
+            "innerType": {
                 "$type": "IdTypeExpSyntax",
                 "name": "int",
                 "typeArgs": []
@@ -249,12 +247,12 @@ TEST(StmtParser, ParseForStmt)
             "args": []
         }
     },
-    "condExp": {
+    "cond": {
         "$type": "IdentifierExpSyntax",
         "value": "g",
         "typeArgs": []
     },
-    "continueExp": {
+    "cont": {
         "$type": "BinaryOpExpSyntax",
         "kind": "Add",
         "operand0": {
@@ -405,7 +403,7 @@ TEST(StmtParser, ParseIfTestStmtWithVarName)
 
     auto expected = R"---({
     "$type": "IfTestStmtSyntax",
-    "testTypeExp": {
+    "testType": {
         "$type": "IdTypeExpSyntax",
         "name": "T",
         "typeArgs": []
@@ -492,7 +490,7 @@ TEST(StmtParser, ParseLocalPtrVarDeclStmt)
         "$type": "VarDeclSyntax",
         "type": {
             "$type": "LocalPtrTypeExpSyntax",
-            "innerTypeExp": {
+            "innerType": {
                 "$type": "IdTypeExpSyntax",
                 "name": "int",
                 "typeArgs": []
@@ -523,7 +521,7 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
         "$type": "VarDeclSyntax",
         "type": {
             "$type": "NullableTypeExpSyntax",
-            "innerTypeExp": {
+            "innerType": {
                 "$type": "IdTypeExpSyntax",
                 "name": "int",
                 "typeArgs": []

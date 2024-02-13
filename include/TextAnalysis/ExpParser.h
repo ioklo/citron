@@ -1,8 +1,7 @@
 #pragma once
 #include "TextAnalysisConfig.h"
 
-#include <Syntax/ExpSyntaxes.h>
-#include <Syntax/ArgumentSyntax.h>
+#include <Syntax/Syntax.h>
 
 #include <optional>
 #include <vector>

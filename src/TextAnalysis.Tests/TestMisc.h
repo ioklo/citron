@@ -5,11 +5,9 @@
 #include <string>
 
 #include <Infra/StringWriter.h>
+#include <Infra/make_vector.h>
 #include <TextAnalysis/Lexer.h>
-#include <Syntax/ScriptSyntax.h>
-#include <Syntax/ScriptSyntaxElements.h>
-#include <Syntax/GlobalFuncDeclSyntax.h>
-
+#include <Syntax/Syntax.h>
 
 namespace Citron {
 class Buffer;
@@ -20,26 +18,24 @@ std::tuple<std::shared_ptr<Buffer>, Lexer> Prepare(std::u32string str);
 inline ScriptSyntax SScript(std::vector<StmtSyntax> stmts)
 {
     // void Main() { stmts }
-    return ScriptSyntax({
-        GlobalFuncDeclScriptSyntaxElement(
-            GlobalFuncDeclSyntax(
-                std::nullopt, false, IdTypeExpSyntax(U"void"), U"Main", {}, {}, std::move(stmts)
-            )
+    return ScriptSyntax(tcb::make_vector<ScriptSyntaxElement>(
+        GlobalFuncDeclSyntax(
+            std::nullopt, false, IdTypeExpSyntax("void"), "Main", {}, {}, std::move(stmts)
         )
-    });
+    ));
 }
 
 inline IdTypeExpSyntax SVoidTypeExp()
 {
-    return IdTypeExpSyntax(U"void");
+    return IdTypeExpSyntax("void");
 }
 
 inline IdTypeExpSyntax SIntTypeExp()
 {
-    return IdTypeExpSyntax(U"int");
+    return IdTypeExpSyntax("int");
 }
 
-inline IdTypeExpSyntax SIdTypeExp(std::u32string name)
+inline IdTypeExpSyntax SIdTypeExp(std::string name)
 {
     return IdTypeExpSyntax(std::move(name));
 }
@@ -50,17 +46,17 @@ inline ScriptSyntax SScript(std::vector<ScriptSyntaxElement> elems)
     return Citron::ScriptSyntax(std::move(elems));
 }
 
-inline VarDeclSyntax SVarDecl(TypeExpSyntax typeExp, std::u32string name, std::optional<ExpSyntax> initExp = std::nullopt)
+inline VarDeclSyntax SVarDecl(TypeExpSyntax typeExp, std::string name, std::optional<ExpSyntax> initExp = std::nullopt)
 {
-    return VarDeclSyntax{ std::move(typeExp), {VarDeclSyntaxElement{std::move(name), std::move(initExp)}}};
+    return VarDeclSyntax{ std::move(typeExp), tcb::make_vector(VarDeclSyntaxElement(std::move(name), std::move(initExp))) };
 }
 
-inline VarDeclStmtSyntax SVarDeclStmt(TypeExpSyntax typeExp, std::u32string name, std::optional<ExpSyntax> initExp = std::nullopt)
+inline VarDeclStmtSyntax SVarDeclStmt(TypeExpSyntax typeExp, std::string name, std::optional<ExpSyntax> initExp = std::nullopt)
 {
-    return VarDeclStmtSyntax(SVarDecl(typeExp, name, initExp));
+    return VarDeclStmtSyntax(SVarDecl(std::move(typeExp), std::move(name), std::move(initExp)));
 }
 
-inline IdentifierExpSyntax SId(std::u32string name)
+inline IdentifierExpSyntax SId(std::string name)
 {
     return IdentifierExpSyntax(std::move(name));
 }

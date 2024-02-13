@@ -1,10 +1,7 @@
 #include "pch.h"
 
-#include <Syntax/ExpSyntaxes.h>
-#include <Syntax/StmtSyntaxes.h>
+#include <Syntax/Syntax.h>
 #include <Syntax/Tokens.h>
-#include <Syntax/ArgumentSyntax.h>
-#include <Syntax/StringExpSyntaxElements.h>
 
 #include <TextAnalysis/Lexer.h>
 #include <TextAnalysis/ExpParser.h>
@@ -32,7 +29,7 @@ optional<ExpSyntax> ParseLeftAssocBinaryOpExp(Lexer* lexer, BinaryOpInfo (&infos
     if (!oOperand0)
         return nullopt;
 
-    ExpSyntax curExp = *oOperand0;
+    ExpSyntax curExp = std::move(*oOperand0);
 
     while (true)
     {
@@ -118,7 +115,7 @@ optional<vector<ArgumentSyntax>> ParseCallArgs(Lexer* lexer)
         if (!oArg)
             return nullopt;
 
-        arguments.push_back(*oArg);
+        arguments.push_back(std::move(*oArg));
     }
 
     *lexer = std::move(curLexer);
@@ -180,7 +177,7 @@ optional<ExpSyntax> ParseTestAndTypeTestExp(Lexer* lexer)
     if (!oOperand0)
         return nullopt;
 
-    ExpSyntax curExp = *oOperand0;
+    ExpSyntax curExp = std::move(*oOperand0);
     
     while (true)
     {
@@ -370,7 +367,7 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             if (!Accept<RBraceToken>(&curLexer))
                 return nullopt;
 
-            curExp = IndexerExpSyntax(curExp, std::move(*oIndex));
+            curExp = IndexerExpSyntax(std::move(curExp), std::move(*oIndex));
             continue;
         }
 
@@ -386,7 +383,7 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             auto oTypeArgs = ParseTypeArgs(&curLexer);
 
             if (oTypeArgs)
-                curExp = MemberExpSyntax(std::move(curExp), std::move(oIdToken->text), *oTypeArgs);
+                curExp = MemberExpSyntax(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
             else
                 curExp = MemberExpSyntax(std::move(curExp), std::move(oIdToken->text), {});
 
@@ -405,7 +402,7 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             auto oTypeArgs = ParseTypeArgs(&curLexer);
             if (oTypeArgs)
             {   
-                curExp = MemberExpSyntax(UnaryOpExpSyntax(UnaryOpSyntaxKind::Deref, std::move(curExp)), std::move(oIdToken->text), *oTypeArgs);
+                curExp = MemberExpSyntax(UnaryOpExpSyntax(UnaryOpSyntaxKind::Deref, std::move(curExp)), std::move(oIdToken->text), std::move(*oTypeArgs));
             }
             else
             {   
@@ -577,7 +574,10 @@ optional<LambdaExpSyntax> ParseLambdaExp(Lexer* lexer)
         if (!oExpBody)
             return nullopt;
 
-        body = { ReturnStmtSyntax(ReturnValueSyntaxInfo { std::move(*oExpBody) }) };
+        vector<StmtSyntax> stmts;
+        stmts.push_back(ReturnStmtSyntax(std::move(*oExpBody)));
+
+        body = std::move(stmts);
     }
 
     *lexer = std::move(curLexer);

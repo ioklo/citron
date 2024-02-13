@@ -3,8 +3,6 @@
 #include <Syntax/Syntax.h>
 #include <TextAnalysis/TypeExpParser.h>
 
-#include <Syntax/ExpSyntaxes.h>
-
 #include "TestMisc.h"
 
 using namespace std;

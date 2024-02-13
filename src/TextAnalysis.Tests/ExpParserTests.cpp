@@ -2,14 +2,14 @@
 
 #include <string>
 #include <Infra/StringWriter.h>
+#include <Infra/make_vector.h>
 #include <TextAnalysis/ExpParser.h>
-#include <Syntax/StringExpSyntaxElements.h>
-#include <Syntax/StmtSyntaxes.h>
-#include <Syntax/ExpSyntaxes.h>
+#include <Syntax/Syntax.h>
 
 #include "TestMisc.h"
 
 using namespace std;
+using namespace tcb;
 using namespace Citron;
 
 optional<ExpSyntax> RunCode(u32string code)
@@ -21,7 +21,7 @@ optional<ExpSyntax> RunCode(u32string code)
 TEST(ExpParser, ParseIdentifier)
 {
     auto oExp = RunCode(U"x");
-    auto expect = IdentifierExpSyntax(U"x");
+    auto expect = IdentifierExpSyntax("x");
 
     EXPECT_EQ(ToJson(oExp), ToJson(expect));
 }
@@ -30,21 +30,21 @@ TEST(ExpParser, ParseIdentifierExpWithTypeArgs)
 {
     // x<T> vs (x < T) > 
     auto oExp = RunCode(U"x<T>");
-    auto expect = IdentifierExpSyntax(U"x", { IdTypeExpSyntax(U"T") });
+    auto expect = IdentifierExpSyntax("x", make_vector<TypeExpSyntax>( IdTypeExpSyntax("T") ));
     EXPECT_EQ(ToJson(oExp), ToJson(expect));
 }
 
 TEST(ExpParser, ParseStringExp)
 {
     auto oExp = RunCode(U"\"aaa bbb ${\"xxx ${ddd}\"} ddd\"");
-    auto expect = StringExpSyntax({
-        TextStringExpSyntaxElement{U"aaa bbb "},
-        ExpStringExpSyntaxElement{StringExpSyntax({
-            TextStringExpSyntaxElement{U"xxx "},
-            ExpStringExpSyntaxElement{IdentifierExpSyntax(U"ddd")}
-        })},
-        TextStringExpSyntaxElement{U" ddd"}
-    });
+    auto expect = StringExpSyntax(make_vector<StringExpSyntaxElement>(
+        TextStringExpSyntaxElement{"aaa bbb "},
+        ExpStringExpSyntaxElement(StringExpSyntax(make_vector<StringExpSyntaxElement>(
+            TextStringExpSyntaxElement{"xxx "},
+            ExpStringExpSyntaxElement{IdentifierExpSyntax("ddd")}
+        ))),
+        TextStringExpSyntaxElement{" ddd"}
+    ));
 
     EXPECT_EQ(ToJson(oExp), ToJson(expect));
 }
@@ -83,18 +83,18 @@ TEST(ExpParser, ParseTestAndTypeTestExp) // left associative
             IsExpSyntax(
                 BinaryOpExpSyntax(
                     BinaryOpSyntaxKind::Add,
-                    IdentifierExpSyntax(U"e"),
+                    IdentifierExpSyntax("e"),
                     IntLiteralExpSyntax(1)
                 ),
-                IdTypeExpSyntax(U"X", { IdTypeExpSyntax(U"int") })
+                IdTypeExpSyntax("X", make_vector<TypeExpSyntax>(IdTypeExpSyntax("int")))
             ),
             BinaryOpExpSyntax(
                 BinaryOpSyntaxKind::Add,
-                IdentifierExpSyntax(U"d"),
+                IdentifierExpSyntax("d"),
                 IntLiteralExpSyntax(1)
             )
         ),
-        IdTypeExpSyntax(U"T")
+        IdTypeExpSyntax("T")
     );
 
     // EXPECT_SYNTAX_EQ(oExp, expected);
@@ -109,12 +109,13 @@ TEST(ExpParser, ParsePrimaryExp)
         BinaryOpExpSyntax(
             BinaryOpSyntaxKind::Modulo,
             CallExpSyntax(
-                UnaryOpExpSyntax(UnaryOpSyntaxKind::PostfixInc, IdentifierExpSyntax(U"c")), {
-                    ArgumentSyntax(IdentifierExpSyntax(U"e")),
-                    ArgumentSyntax(IdentifierExpSyntax(U"f")),
-                }
+                UnaryOpExpSyntax(UnaryOpSyntaxKind::PostfixInc, IdentifierExpSyntax("c")), 
+                make_vector(
+                    ArgumentSyntax(IdentifierExpSyntax("e")),
+                    ArgumentSyntax(IdentifierExpSyntax("f"))
+                )
             ),
-            IdentifierExpSyntax(U"d")
+            IdentifierExpSyntax("d")
         )
     );
 
@@ -126,22 +127,20 @@ TEST(ExpParser, ParseLambdaExp)
     auto oExp = RunCode(U"a = b => (c, int d) => e");
 
     auto expected = BinaryOpExpSyntax(BinaryOpSyntaxKind::Assign,
-        IdentifierExpSyntax(U"a"),
+        IdentifierExpSyntax("a"),
         LambdaExpSyntax(
-            { LambdaExpParamSyntax{ nullopt, U"b", false, false} },
-            {
+            make_vector( LambdaExpParamSyntax{ nullopt, "b", false, false} ),
+            make_vector<StmtSyntax>(
                 ReturnStmtSyntax(
-                    ReturnValueSyntaxInfo{
-                        LambdaExpSyntax(
-                            {
-                                LambdaExpParamSyntax{ nullopt, U"c", false, false },
-                                LambdaExpParamSyntax{ IdTypeExpSyntax(U"int"), U"d", false, false }
-                            },
-                            {ReturnStmtSyntax(ReturnValueSyntaxInfo{IdentifierExpSyntax(U"e")})}
-                        )
-                    }
+                    LambdaExpSyntax(
+                        make_vector(
+                            LambdaExpParamSyntax{ nullopt, "c", false, false },
+                            LambdaExpParamSyntax{ IdTypeExpSyntax("int"), "d", false, false }
+                        ),
+                        make_vector<StmtSyntax>(ReturnStmtSyntax(IdentifierExpSyntax("e")))
+                    )
                 )
-            }
+            )
         )
     );
 
@@ -155,9 +154,9 @@ TEST(ExpParser, ParseIndirectMemberExp)
     
     // (*a).b<int>
     auto expected = MemberExpSyntax(
-        UnaryOpExpSyntax(UnaryOpSyntaxKind::Deref, IdentifierExpSyntax(U"a")), 
-        U"b", 
-        { IdTypeExpSyntax(U"int") }
+        UnaryOpExpSyntax(UnaryOpSyntaxKind::Deref, IdentifierExpSyntax("a")), 
+        "b", 
+        make_vector<TypeExpSyntax>( IdTypeExpSyntax("int") )
     );
 
     // EXPECT_SYNTAX_EQ(oExp, expected);
@@ -172,21 +171,21 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
             CallExpSyntax(
                 MemberExpSyntax(
                     MemberExpSyntax(
-                        IdentifierExpSyntax(U"a"), 
-                        U"b"
+                        IdentifierExpSyntax("a"), 
+                        "b"
                     ),
-                    U"c",
-                    {
-                        IdTypeExpSyntax(U"int"),
-                        IdTypeExpSyntax(U"list", {IdTypeExpSyntax(U"int")})
-                    }
+                    "c",
+                    make_vector<TypeExpSyntax>(
+                        IdTypeExpSyntax("int"),
+                        IdTypeExpSyntax("list", make_vector<TypeExpSyntax>(IdTypeExpSyntax("int")))
+                    )
                 ),
-                {
+                make_vector(
                     ArgumentSyntax(IntLiteralExpSyntax(1)),
-                    ArgumentSyntax(StringExpSyntax(U"str"))
-                }
+                    ArgumentSyntax(StringExpSyntax("str"))
+                )
             ),
-            U"d"
+            "d"
         );
 
     EXPECT_EQ(ToJson(oExp), ToJson(expected));
@@ -196,11 +195,11 @@ TEST(ExpParser, ParseListExp)
 {
     auto oExp = RunCode(U"[ 1, 2, 3 ]");
 
-    auto expected = ListExpSyntax({
+    auto expected = ListExpSyntax(make_vector<ExpSyntax>(
         IntLiteralExpSyntax(1),
         IntLiteralExpSyntax(2),
         IntLiteralExpSyntax(3)
-    });
+    ));
 
     EXPECT_EQ(ToJson(oExp), ToJson(expected));
 }
@@ -209,12 +208,12 @@ TEST(ExpParser, ParseNewExp)
 {
     auto oExp = RunCode(U"new MyType<X>(2, false, \"string\")");
     auto expected = NewExpSyntax(
-        IdTypeExpSyntax(U"MyType", { IdTypeExpSyntax(U"X") }),
-        {
+        IdTypeExpSyntax("MyType", make_vector<TypeExpSyntax>( IdTypeExpSyntax("X") )),
+        make_vector(
             ArgumentSyntax(IntLiteralExpSyntax(2)),
             ArgumentSyntax(BoolLiteralExpSyntax(false)),
-            ArgumentSyntax(StringExpSyntax(U"string"))
-        }
+            ArgumentSyntax(StringExpSyntax("string"))
+        )
     );
 
     // EXPECT_SYNTAX_EQ(oExp, expected);
@@ -225,9 +224,9 @@ TEST(ExpParser, ParseComplexExp)
     auto oExp = RunCode(U"a = b = !!(c % d)++ * e + f - g / h % i == 3 != false");
 
     auto expected = BinaryOpExpSyntax(BinaryOpSyntaxKind::Assign,
-        IdentifierExpSyntax(U"a"),
+        IdentifierExpSyntax("a"),
         BinaryOpExpSyntax(BinaryOpSyntaxKind::Assign,
-            IdentifierExpSyntax(U"b"),
+            IdentifierExpSyntax("b"),
             BinaryOpExpSyntax(BinaryOpSyntaxKind::NotEqual,
                 BinaryOpExpSyntax(BinaryOpSyntaxKind::Equal,
                     BinaryOpExpSyntax(BinaryOpSyntaxKind::Subtract,
@@ -237,15 +236,15 @@ TEST(ExpParser, ParseComplexExp)
                                     UnaryOpExpSyntax(UnaryOpSyntaxKind::LogicalNot,
                                         UnaryOpExpSyntax(UnaryOpSyntaxKind::PostfixInc,
                                             BinaryOpExpSyntax(BinaryOpSyntaxKind::Modulo,
-                                                IdentifierExpSyntax(U"c"),
-                                                IdentifierExpSyntax(U"d"))))),
-                                IdentifierExpSyntax(U"e")),
-                            IdentifierExpSyntax(U"f")),
+                                                IdentifierExpSyntax("c"),
+                                                IdentifierExpSyntax("d"))))),
+                                IdentifierExpSyntax("e")),
+                            IdentifierExpSyntax("f")),
                         BinaryOpExpSyntax(BinaryOpSyntaxKind::Modulo,
                             BinaryOpExpSyntax(BinaryOpSyntaxKind::Divide,
-                                IdentifierExpSyntax(U"g"),
-                                IdentifierExpSyntax(U"h")),
-                            IdentifierExpSyntax(U"i"))),
+                                IdentifierExpSyntax("g"),
+                                IdentifierExpSyntax("h")),
+                            IdentifierExpSyntax("i"))),
                     IntLiteralExpSyntax(3)),
                 BoolLiteralExpSyntax(false))));
 

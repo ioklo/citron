@@ -60,15 +60,15 @@ TEST(CommandLexer, ProcessStringExpInCommandMode)
     RepeatLexCommand(&tokens, &lexer, 6);
 
     vector<Token> expectedTokens = {
-        TextToken(U"  p$s"),
+        TextToken("  p$s"),
         DollarLBraceToken(),
-        IdentifierToken(U"ccc"),
+        IdentifierToken("ccc"),
         RBraceToken(),
-        TextToken(U" \"ddd "),
-        IdentifierToken(U"e"),
-        TextToken(U"  "),
+        TextToken(" \"ddd "),
+        IdentifierToken("e"),
+        TextToken("  "),
         NewLineToken(),
-        TextToken(U" "),
+        TextToken(" "),
         RBraceToken(),
     };
 
@@ -81,7 +81,7 @@ TEST(CommandLexer, LexCommands)
     auto tokens = Process(lexer);
 
     vector<Token> expectedTokens = {
-        TextToken(U"ls -al")
+        TextToken("ls -al")
     };
 
     EXPECT_EQ(tokens, expectedTokens);
@@ -101,8 +101,8 @@ hello world \n
 
     vector<Token> expected = {
         NewLineToken(),
-        TextToken(U"hello world \\n"), NewLineToken(), // skip multi newlines
-        TextToken(U"    hello    "), NewLineToken(),
+        TextToken("hello world \\n"), NewLineToken(), // skip multi newlines
+        TextToken("    hello    "), NewLineToken(),
         RBraceToken()
     };
 
@@ -115,9 +115,9 @@ TEST(CommandLexer, LexCommandsWithLineSeparator)
     auto tokens = Process(lexer);
 
     vector<Token> expected = {
-        TextToken(U"ls -al"),
+        TextToken("ls -al"),
         NewLineToken(),
-        TextToken(U"bb"),
+        TextToken("bb"),
     };
 
     EXPECT_EQ(tokens, expected);

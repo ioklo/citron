@@ -3,8 +3,6 @@
 #include <Syntax/Syntax.h>
 #include <TextAnalysis/ScriptParser.h>
 
-#include <Syntax/ExpSyntaxes.h>
-
 #include "TestMisc.h"
 
 using namespace std;
@@ -32,24 +30,45 @@ TEST(ScriptParser, ParseComplexScript)
 
     auto expected = R"---({
     "$type": "ScriptSyntax",
-    "elems": [
+    "elements": [
         {
-            "$type": "GlobalFuncDeclScriptSyntaxElement",
-            "funcDecl": {
-                "$type": "GlobalFuncDeclSyntax",
-                "accessModifier": null,
-                "bSequence": false,
-                "retType": {
-                    "$type": "IdTypeExpSyntax",
-                    "name": "void",
-                    "typeArgs": []
+            "$type": "GlobalFuncDeclSyntax",
+            "accessModifier": null,
+            "bSequence": false,
+            "retType": {
+                "$type": "IdTypeExpSyntax",
+                "name": "void",
+                "typeArgs": []
+            },
+            "name": "Main",
+            "typeParams": [],
+            "parameters": [],
+            "body": [
+                {
+                    "$type": "VarDeclStmtSyntax",
+                    "varDecl": {
+                        "$type": "VarDeclSyntax",
+                        "type": {
+                            "$type": "IdTypeExpSyntax",
+                            "name": "int",
+                            "typeArgs": []
+                        },
+                        "elements": [
+                            {
+                                "$type": "VarDeclSyntaxElement",
+                                "varName": "sum",
+                                "initExp": {
+                                    "$type": "IntLiteralExpSyntax",
+                                    "value": 0
+                                }
+                            }
+                        ]
+                    }
                 },
-                "name": "Main",
-                "typeParams": [],
-                "parameters": [],
-                "body": [
-                    {
-                        "$type": "VarDeclStmtSyntax",
+                {
+                    "$type": "ForStmtSyntax",
+                    "initializer": {
+                        "$type": "VarDeclForStmtInitializerSyntax",
                         "varDecl": {
                             "$type": "VarDeclSyntax",
                             "type": {
@@ -57,10 +76,10 @@ TEST(ScriptParser, ParseComplexScript)
                                 "name": "int",
                                 "typeArgs": []
                             },
-                            "elems": [
+                            "elements": [
                                 {
                                     "$type": "VarDeclSyntaxElement",
-                                    "varName": "sum",
+                                    "varName": "i",
                                     "initExp": {
                                         "$type": "IntLiteralExpSyntax",
                                         "value": 0
@@ -69,155 +88,131 @@ TEST(ScriptParser, ParseComplexScript)
                             ]
                         }
                     },
-                    {
-                        "$type": "ForStmtSyntax",
-                        "initializer": {
-                            "$type": "VarDeclForStmtInitializerSyntax",
-                            "varDecl": {
-                                "$type": "VarDeclSyntax",
-                                "type": {
-                                    "$type": "IdTypeExpSyntax",
-                                    "name": "int",
-                                    "typeArgs": []
-                                },
-                                "elems": [
-                                    {
-                                        "$type": "VarDeclSyntaxElement",
-                                        "varName": "i",
-                                        "initExp": {
-                                            "$type": "IntLiteralExpSyntax",
-                                            "value": 0
-                                        }
-                                    }
-                                ]
-                            }
+                    "cond": {
+                        "$type": "BinaryOpExpSyntax",
+                        "kind": "LessThan",
+                        "operand0": {
+                            "$type": "IdentifierExpSyntax",
+                            "value": "i",
+                            "typeArgs": []
                         },
-                        "condExp": {
-                            "$type": "BinaryOpExpSyntax",
-                            "kind": "LessThan",
-                            "operand0": {
-                                "$type": "IdentifierExpSyntax",
-                                "value": "i",
-                                "typeArgs": []
-                            },
-                            "operand1": {
-                                "$type": "IntLiteralExpSyntax",
-                                "value": 5
-                            }
-                        },
-                        "continueExp": {
-                            "$type": "UnaryOpExpSyntax",
-                            "kind": "PostfixInc",
-                            "operand": {
-                                "$type": "IdentifierExpSyntax",
-                                "value": "i",
-                                "typeArgs": []
-                            }
-                        },
-                        "body": {
-                            "$type": "BlockEmbeddableStmtSyntax",
-                            "stmts": [
-                                {
-                                    "$type": "IfStmtSyntax",
-                                    "cond": {
+                        "operand1": {
+                            "$type": "IntLiteralExpSyntax",
+                            "value": 5
+                        }
+                    },
+                    "cont": {
+                        "$type": "UnaryOpExpSyntax",
+                        "kind": "PostfixInc",
+                        "operand": {
+                            "$type": "IdentifierExpSyntax",
+                            "value": "i",
+                            "typeArgs": []
+                        }
+                    },
+                    "body": {
+                        "$type": "BlockEmbeddableStmtSyntax",
+                        "stmts": [
+                            {
+                                "$type": "IfStmtSyntax",
+                                "cond": {
+                                    "$type": "BinaryOpExpSyntax",
+                                    "kind": "Equal",
+                                    "operand0": {
                                         "$type": "BinaryOpExpSyntax",
-                                        "kind": "Equal",
+                                        "kind": "Modulo",
                                         "operand0": {
-                                            "$type": "BinaryOpExpSyntax",
-                                            "kind": "Modulo",
-                                            "operand0": {
-                                                "$type": "IdentifierExpSyntax",
-                                                "value": "i",
-                                                "typeArgs": []
-                                            },
-                                            "operand1": {
-                                                "$type": "IntLiteralExpSyntax",
-                                                "value": 2
-                                            }
+                                            "$type": "IdentifierExpSyntax",
+                                            "value": "i",
+                                            "typeArgs": []
                                         },
                                         "operand1": {
                                             "$type": "IntLiteralExpSyntax",
-                                            "value": 0
+                                            "value": 2
                                         }
                                     },
-                                    "body": {
-                                        "$type": "SingleEmbeddableStmtSyntax",
-                                        "stmt": {
-                                            "$type": "ExpStmtSyntax",
-                                            "exp": {
+                                    "operand1": {
+                                        "$type": "IntLiteralExpSyntax",
+                                        "value": 0
+                                    }
+                                },
+                                "body": {
+                                    "$type": "SingleEmbeddableStmtSyntax",
+                                    "stmt": {
+                                        "$type": "ExpStmtSyntax",
+                                        "exp": {
+                                            "$type": "BinaryOpExpSyntax",
+                                            "kind": "Assign",
+                                            "operand0": {
+                                                "$type": "IdentifierExpSyntax",
+                                                "value": "sum",
+                                                "typeArgs": []
+                                            },
+                                            "operand1": {
                                                 "$type": "BinaryOpExpSyntax",
-                                                "kind": "Assign",
+                                                "kind": "Add",
                                                 "operand0": {
                                                     "$type": "IdentifierExpSyntax",
                                                     "value": "sum",
                                                     "typeArgs": []
                                                 },
                                                 "operand1": {
-                                                    "$type": "BinaryOpExpSyntax",
-                                                    "kind": "Add",
-                                                    "operand0": {
-                                                        "$type": "IdentifierExpSyntax",
-                                                        "value": "sum",
-                                                        "typeArgs": []
-                                                    },
-                                                    "operand1": {
-                                                        "$type": "IdentifierExpSyntax",
-                                                        "value": "i",
-                                                        "typeArgs": []
-                                                    }
+                                                    "$type": "IdentifierExpSyntax",
+                                                    "value": "i",
+                                                    "typeArgs": []
                                                 }
                                             }
                                         }
-                                    },
-                                    "elseBody": {
-                                        "$type": "SingleEmbeddableStmtSyntax",
-                                        "stmt": {
-                                            "$type": "CommandStmtSyntax",
-                                            "commands": [
-                                                {
-                                                    "$type": "StringExpSyntax",
-                                                    "elements": [
-                                                        {
-                                                            "$type": "TextStringExpSyntaxElement",
-                                                            "text": "            echo hi "
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
+                                    }
+                                },
+                                "elseBody": {
+                                    "$type": "SingleEmbeddableStmtSyntax",
+                                    "stmt": {
+                                        "$type": "CommandStmtSyntax",
+                                        "commands": [
+                                            {
+                                                "$type": "StringExpSyntax",
+                                                "elements": [
+                                                    {
+                                                        "$type": "TextStringExpSyntaxElement",
+                                                        "text": "            echo hi "
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     }
                                 }
-                            ]
-                        }
-                    },
-                    {
-                        "$type": "CommandStmtSyntax",
-                        "commands": [
-                            {
-                                "$type": "StringExpSyntax",
-                                "elements": [
-                                    {
-                                        "$type": "TextStringExpSyntaxElement",
-                                        "text": "echo "
-                                    },
-                                    {
-                                        "$type": "ExpStringExpSyntaxElement",
-                                        "exp": {
-                                            "$type": "IdentifierExpSyntax",
-                                            "value": "sum",
-                                            "typeArgs": []
-                                        }
-                                    },
-                                    {
-                                        "$type": "TextStringExpSyntaxElement",
-                                        "text": " Completed!"
-                                    }
-                                ]
                             }
                         ]
                     }
-                ]
-            }
+                },
+                {
+                    "$type": "CommandStmtSyntax",
+                    "commands": [
+                        {
+                            "$type": "StringExpSyntax",
+                            "elements": [
+                                {
+                                    "$type": "TextStringExpSyntaxElement",
+                                    "text": "echo "
+                                },
+                                {
+                                    "$type": "ExpStringExpSyntaxElement",
+                                    "exp": {
+                                        "$type": "IdentifierExpSyntax",
+                                        "value": "sum",
+                                        "typeArgs": []
+                                    }
+                                },
+                                {
+                                    "$type": "TextStringExpSyntaxElement",
+                                    "text": " Completed!"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ]
 })---";
@@ -238,7 +233,7 @@ TEST(ScriptParser, ParseEnumDecl)
 
     auto expected = R"---({
     "$type": "ScriptSyntax",
-    "elems": [
+    "elements": [
         {
             "$type": "TypeDeclScriptSyntaxElement",
             "typeDecl": {
@@ -246,7 +241,7 @@ TEST(ScriptParser, ParseEnumDecl)
                 "accessModifier": null,
                 "name": "X",
                 "typeParams": [],
-                "elems": [
+                "elements": [
                     {
                         "$type": "EnumElemDeclSyntax",
                         "name": "First",
@@ -289,79 +284,76 @@ TEST(ScriptParser, ParseFuncDecl)
 
     auto expected = R"---({
     "$type": "ScriptSyntax",
-    "elems": [
+    "elements": [
         {
-            "$type": "GlobalFuncDeclScriptSyntaxElement",
-            "funcDecl": {
-                "$type": "GlobalFuncDeclSyntax",
-                "accessModifier": null,
-                "bSequence": false,
-                "retType": {
-                    "$type": "IdTypeExpSyntax",
-                    "name": "void",
-                    "typeArgs": []
+            "$type": "GlobalFuncDeclSyntax",
+            "accessModifier": null,
+            "bSequence": false,
+            "retType": {
+                "$type": "IdTypeExpSyntax",
+                "name": "void",
+                "typeArgs": []
+            },
+            "name": "Func",
+            "typeParams": [],
+            "parameters": [
+                {
+                    "$type": "FuncParamSyntax",
+                    "hasOut": false,
+                    "hasParams": false,
+                    "type": {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "int",
+                        "typeArgs": []
+                    },
+                    "name": "x"
                 },
-                "name": "Func",
-                "typeParams": [],
-                "parameters": [
-                    {
-                        "$type": "FuncParamSyntax",
-                        "hasOut": false,
-                        "hasParams": false,
+                {
+                    "$type": "FuncParamSyntax",
+                    "hasOut": false,
+                    "hasParams": false,
+                    "type": {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "string",
+                        "typeArgs": []
+                    },
+                    "name": "y"
+                },
+                {
+                    "$type": "FuncParamSyntax",
+                    "hasOut": false,
+                    "hasParams": true,
+                    "type": {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "int",
+                        "typeArgs": []
+                    },
+                    "name": "z"
+                }
+            ],
+            "body": [
+                {
+                    "$type": "VarDeclStmtSyntax",
+                    "varDecl": {
+                        "$type": "VarDeclSyntax",
                         "type": {
                             "$type": "IdTypeExpSyntax",
                             "name": "int",
                             "typeArgs": []
                         },
-                        "name": "x"
-                    },
-                    {
-                        "$type": "FuncParamSyntax",
-                        "hasOut": false,
-                        "hasParams": false,
-                        "type": {
-                            "$type": "IdTypeExpSyntax",
-                            "name": "string",
-                            "typeArgs": []
-                        },
-                        "name": "y"
-                    },
-                    {
-                        "$type": "FuncParamSyntax",
-                        "hasOut": false,
-                        "hasParams": true,
-                        "type": {
-                            "$type": "IdTypeExpSyntax",
-                            "name": "int",
-                            "typeArgs": []
-                        },
-                        "name": "z"
-                    }
-                ],
-                "body": [
-                    {
-                        "$type": "VarDeclStmtSyntax",
-                        "varDecl": {
-                            "$type": "VarDeclSyntax",
-                            "type": {
-                                "$type": "IdTypeExpSyntax",
-                                "name": "int",
-                                "typeArgs": []
-                            },
-                            "elems": [
-                                {
-                                    "$type": "VarDeclSyntaxElement",
-                                    "varName": "a",
-                                    "initExp": {
-                                        "$type": "IntLiteralExpSyntax",
-                                        "value": 0
-                                    }
+                        "elements": [
+                            {
+                                "$type": "VarDeclSyntaxElement",
+                                "varName": "a",
+                                "initExp": {
+                                    "$type": "IntLiteralExpSyntax",
+                                    "value": 0
                                 }
-                            ]
-                        }
+                            }
+                        ]
                     }
-                ]
-            }
+                }
+            ]
         }
     ]
 })---";
@@ -386,46 +378,37 @@ TEST(ScriptParser, ParseNamespaceDecl)
 
     auto expected = R"---({
     "$type": "ScriptSyntax",
-    "elems": [
+    "elements": [
         {
-            "$type": "NamespaceDeclScriptSyntaxElement",
-            "namespaceDecl": {
-                "$type": "NamespaceDeclSyntax",
-                "names": [
-                    "NS1"
-                ],
-                "elements": [
-                    {
-                        "$type": "NamespaceDeclNamespaceDeclSyntaxElement",
-                        "namespaceDecl": {
-                            "$type": "NamespaceDeclSyntax",
-                            "names": [
-                                "NS2",
-                                "NS3"
-                            ],
-                            "elements": [
-                                {
-                                    "$type": "GlobalFuncDeclNamespaceDeclSyntaxElement",
-                                    "funcDecl": {
-                                        "$type": "GlobalFuncDeclSyntax",
-                                        "accessModifier": null,
-                                        "bSequence": false,
-                                        "retType": {
-                                            "$type": "IdTypeExpSyntax",
-                                            "name": "void",
-                                            "typeArgs": []
-                                        },
-                                        "name": "F",
-                                        "typeParams": [],
-                                        "parameters": [],
-                                        "body": []
-                                    }
-                                }
-                            ]
+            "$type": "NamespaceDeclSyntax",
+            "names": [
+                "NS1"
+            ],
+            "elements": [
+                {
+                    "$type": "NamespaceDeclSyntax",
+                    "names": [
+                        "NS2",
+                        "NS3"
+                    ],
+                    "elements": [
+                        {   
+                            "$type": "GlobalFuncDeclSyntax",
+                            "accessModifier": null,
+                            "bSequence": false,
+                            "retType": {
+                                "$type": "IdTypeExpSyntax",
+                                "name": "void",
+                                "typeArgs": []
+                            },
+                            "name": "F",
+                            "typeParams": [],
+                            "parameters": [],
+                            "body": []
                         }
-                    }
-                ]
-            }
+                    ]
+                }
+            ]
         }
     ]
 })---";
@@ -444,38 +427,35 @@ TEST(ScriptParser, ParseSimpleScript)
 
     auto expected = R"---({
     "$type": "ScriptSyntax",
-    "elems": [
-        {
-            "$type": "GlobalFuncDeclScriptSyntaxElement",
-            "funcDecl": {
-                "$type": "GlobalFuncDeclSyntax",
-                "accessModifier": null,
-                "bSequence": false,
-                "retType": {
-                    "$type": "IdTypeExpSyntax",
-                    "name": "void",
-                    "typeArgs": []
-                },
-                "name": "Main",
-                "typeParams": [],
-                "parameters": [],
-                "body": [
-                    {
-                        "$type": "CommandStmtSyntax",
-                        "commands": [
-                            {
-                                "$type": "StringExpSyntax",
-                                "elements": [
-                                    {
-                                        "$type": "TextStringExpSyntaxElement",
-                                        "text": "ls -al"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
+    "elements": [
+        {   
+            "$type": "GlobalFuncDeclSyntax",
+            "accessModifier": null,
+            "bSequence": false,
+            "retType": {
+                "$type": "IdTypeExpSyntax",
+                "name": "void",
+                "typeArgs": []
+            },
+            "name": "Main",
+            "typeParams": [],
+            "parameters": [],
+            "body": [
+                {
+                    "$type": "CommandStmtSyntax",
+                    "commands": [
+                        {
+                            "$type": "StringExpSyntax",
+                            "elements": [
+                                {
+                                    "$type": "TextStringExpSyntaxElement",
+                                    "text": "ls -al"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ]
 })---";
@@ -502,182 +482,179 @@ TEST(ScriptParser, ParseStructDecl)
 
     auto expected = R"---({
     "$type": "ScriptSyntax",
-    "elems": [
+    "elements": [
         {
-            "$type": "TypeDeclScriptSyntaxElement",
-            "typeDecl": {
-                "$type": "StructDeclSyntax",
-                "accessModifier": "Public",
-                "name": "S",
-                "typeParams": [
-                    {
-                        "$type": "TypeParamSyntax",
-                        "Name": "T"
-                    }
-                ],
-                "baseTypes": [
-                    {
+            "$type": "StructDeclSyntax",
+            "accessModifier": "Public",
+            "name": "S",
+            "typeParams": [
+                {
+                    "$type": "TypeParamSyntax",
+                    "name": "T"
+                }
+            ],
+            "baseTypes": [
+                {
+                    "$type": "IdTypeExpSyntax",
+                    "name": "B",
+                    "typeArgs": []
+                },
+                {
+                    "$type": "IdTypeExpSyntax",
+                    "name": "I",
+                    "typeArgs": []
+                }
+            ],
+            "memberDecls": [
+                {
+                    "$type": "StructMemberVarDeclSyntax",
+                    "accessModifier": null,
+                    "varType": {
                         "$type": "IdTypeExpSyntax",
-                        "name": "B",
+                        "name": "int",
                         "typeArgs": []
                     },
-                    {
+                    "varNames": [
+                        "x1"
+                    ]
+                },
+                {
+                    "$type": "StructMemberVarDeclSyntax",
+                    "accessModifier": "Public",
+                    "varType": {
                         "$type": "IdTypeExpSyntax",
-                        "name": "I",
+                        "name": "int",
                         "typeArgs": []
-                    }
-                ],
-                "memberDecls": [
-                    {
-                        "$type": "StructMemberVarDeclSyntax",
-                        "accessModifier": null,
-                        "varType": {
-                            "$type": "IdTypeExpSyntax",
-                            "name": "int",
-                            "typeArgs": []
-                        },
-                        "varNames": [
-                            "x1"
-                        ]
                     },
-                    {
-                        "$type": "StructMemberVarDeclSyntax",
+                    "varNames": [
+                        "x2"
+                    ]
+                },
+                {
+                    "$type": "StructMemberVarDeclSyntax",
+                    "accessModifier": "Protected",
+                    "varType": {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "string",
+                        "typeArgs": []
+                    },
+                    "varNames": [
+                        "y"
+                    ]
+                },
+                {
+                    "$type": "StructMemberVarDeclSyntax",
+                    "accessModifier": "Private",
+                    "varType": {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "int",
+                        "typeArgs": []
+                    },
+                    "varNames": [
+                        "z"
+                    ]
+                },
+                {
+                    "$type": "StructMemberTypeDeclSyntax",
+                    "typeDecl": {
+                        "$type": "StructDeclSyntax",
                         "accessModifier": "Public",
-                        "varType": {
-                            "$type": "IdTypeExpSyntax",
-                            "name": "int",
-                            "typeArgs": []
-                        },
-                        "varNames": [
-                            "x2"
-                        ]
-                    },
-                    {
-                        "$type": "StructMemberVarDeclSyntax",
-                        "accessModifier": "Protected",
-                        "varType": {
-                            "$type": "IdTypeExpSyntax",
-                            "name": "string",
-                            "typeArgs": []
-                        },
-                        "varNames": [
-                            "y"
-                        ]
-                    },
-                    {
-                        "$type": "StructMemberVarDeclSyntax",
-                        "accessModifier": "Private",
-                        "varType": {
-                            "$type": "IdTypeExpSyntax",
-                            "name": "int",
-                            "typeArgs": []
-                        },
-                        "varNames": [
-                            "z"
-                        ]
-                    },
-                    {
-                        "$type": "StructMemberTypeDeclSyntax",
-                        "typeDecl": {
-                            "$type": "StructDeclSyntax",
-                            "accessModifier": "Public",
-                            "name": "Nested",
-                            "typeParams": [
-                                {
-                                    "$type": "TypeParamSyntax",
-                                    "Name": "U"
-                                }
-                            ],
-                            "baseTypes": [
-                                {
-                                    "$type": "IdTypeExpSyntax",
-                                    "name": "B",
-                                    "typeArgs": []
-                                },
-                                {
-                                    "$type": "IdTypeExpSyntax",
-                                    "name": "I",
-                                    "typeArgs": []
-                                }
-                            ],
-                            "memberDecls": [
-                                {
-                                    "$type": "StructMemberVarDeclSyntax",
-                                    "accessModifier": null,
-                                    "varType": {
-                                        "$type": "IdTypeExpSyntax",
-                                        "name": "int",
-                                        "typeArgs": []
-                                    },
-                                    "varNames": [
-                                        "x"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "$type": "StructMemberFuncDeclSyntax",
-                        "accessModifier": null,
-                        "bStatic": true,
-                        "bSequence": false,
-                        "retType": {
-                            "$type": "IdTypeExpSyntax",
-                            "name": "void",
-                            "typeArgs": []
-                        },
-                        "name": "Func",
+                        "name": "Nested",
                         "typeParams": [
                             {
                                 "$type": "TypeParamSyntax",
-                                "Name": "X"
+                                "name": "U"
                             }
                         ],
-                        "parameters": [
+                        "baseTypes": [
                             {
-                                "$type": "FuncParamSyntax",
-                                "hasOut": false,
-                                "hasParams": false,
-                                "type": {
+                                "$type": "IdTypeExpSyntax",
+                                "name": "B",
+                                "typeArgs": []
+                            },
+                            {
+                                "$type": "IdTypeExpSyntax",
+                                "name": "I",
+                                "typeArgs": []
+                            }
+                        ],
+                        "memberDecls": [
+                            {
+                                "$type": "StructMemberVarDeclSyntax",
+                                "accessModifier": null,
+                                "varType": {
                                     "$type": "IdTypeExpSyntax",
-                                    "name": "string",
+                                    "name": "int",
                                     "typeArgs": []
                                 },
-                                "name": "s"
-                            }
-                        ],
-                        "body": []
-                    },
-                    {
-                        "$type": "StructMemberFuncDeclSyntax",
-                        "accessModifier": "Private",
-                        "bStatic": false,
-                        "bSequence": true,
-                        "retType": {
-                            "$type": "IdTypeExpSyntax",
-                            "name": "int",
-                            "typeArgs": []
-                        },
-                        "name": "F2",
-                        "typeParams": [
-                            {
-                                "$type": "TypeParamSyntax",
-                                "Name": "T"
-                            }
-                        ],
-                        "parameters": [],
-                        "body": [
-                            {
-                                "$type": "YieldStmtSyntax",
-                                "value": {
-                                    "$type": "IntLiteralExpSyntax",
-                                    "value": 4
-                                }
+                                "varNames": [
+                                    "x"
+                                ]
                             }
                         ]
                     }
-                ]
-            }
+                },
+                {
+                    "$type": "StructMemberFuncDeclSyntax",
+                    "accessModifier": null,
+                    "bStatic": true,
+                    "bSequence": false,
+                    "retType": {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "void",
+                        "typeArgs": []
+                    },
+                    "name": "Func",
+                    "typeParams": [
+                        {
+                            "$type": "TypeParamSyntax",
+                            "name": "X"
+                        }
+                    ],
+                    "parameters": [
+                        {
+                            "$type": "FuncParamSyntax",
+                            "hasOut": false,
+                            "hasParams": false,
+                            "type": {
+                                "$type": "IdTypeExpSyntax",
+                                "name": "string",
+                                "typeArgs": []
+                            },
+                            "name": "s"
+                        }
+                    ],
+                    "body": []
+                },
+                {
+                    "$type": "StructMemberFuncDeclSyntax",
+                    "accessModifier": "Private",
+                    "bStatic": false,
+                    "bSequence": true,
+                    "retType": {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "int",
+                        "typeArgs": []
+                    },
+                    "name": "F2",
+                    "typeParams": [
+                        {
+                            "$type": "TypeParamSyntax",
+                            "name": "T"
+                        }
+                    ],
+                    "parameters": [],
+                    "body": [
+                        {
+                            "$type": "YieldStmtSyntax",
+                            "value": {
+                                "$type": "IntLiteralExpSyntax",
+                                "value": 4
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 })---";

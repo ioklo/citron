@@ -5,9 +5,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include <Syntax/StmtSyntaxes.h>
-#include <Syntax/StringExpSyntaxElements.h>
-#include <Syntax/ExpSyntaxes.h>
+#include <Syntax/Syntax.h>
 #include <TextAnalysis/ExpParser.h>
 #include <TextAnalysis/TypeExpParser.h>
 
@@ -141,7 +139,7 @@ optional<VarDeclSyntax> ParseVarDecl(Lexer* lexer)
     } while (Accept<CommaToken>(&curLexer)); // ,가 나오면 계속한다
 
     *lexer = std::move(curLexer);
-    return VarDeclSyntax{ *oVarType, std::move(elems) };
+    return VarDeclSyntax(std::move(*oVarType), std::move(elems));
 }
 
 // int x = 0;
@@ -242,10 +240,10 @@ optional<ReturnStmtSyntax> ParseReturnStmt(Lexer* lexer)
     if (!Accept<ReturnToken>(&curLexer))
         return nullopt;
 
-    optional<ReturnValueSyntaxInfo> oReturnValue;
+    optional<ExpSyntax> oReturnValue;
 
     if (auto oReturnExp = ParseExp(&curLexer))
-        oReturnValue = ReturnValueSyntaxInfo{ std::move(*oReturnExp) };
+        oReturnValue = std::move(*oReturnExp);
 
     if (!Accept<SemiColonToken>(&curLexer))
         return nullopt;
@@ -495,7 +493,7 @@ optional<CommandStmtSyntax> ParseCommandStmt(Lexer* lexer)
                 {
                     if (auto* textElem = get_if<TextStringExpSyntaxElement>(&oSingleCommand->GetElements()[0]))
                     {
-                        if (all_of(textElem->text.begin(), textElem->text.end(), [](char32_t c) { return u_isWhitespace(c); }))
+                        if (all_of(textElem->GetText().begin(), textElem->GetText().end(), [](char32_t c) { return u_isWhitespace(c); }))
                             continue;
                     }
                 }
@@ -521,7 +519,11 @@ optional<CommandStmtSyntax> ParseCommandStmt(Lexer* lexer)
             return nullopt;
         
         *lexer = std::move(curLexer);
-        return CommandStmtSyntax({ std::move(*oSingleCommand) });
+
+        vector<StringExpSyntax> strs;
+        strs.push_back(std::move(*oSingleCommand));
+
+        return CommandStmtSyntax(std::move(strs));
     }
 }
 

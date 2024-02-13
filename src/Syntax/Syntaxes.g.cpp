@@ -469,8 +469,8 @@ JsonItem MemberExpSyntax::ToJson()
     };
 }
 
-ListExpSyntax::ListExpSyntax(std::vector<ExpSyntax> elems)
-    : elems(std::move(elems)) { }
+ListExpSyntax::ListExpSyntax(std::vector<ExpSyntax> elements)
+    : elements(std::move(elements)) { }
 
 ListExpSyntax::ListExpSyntax(ListExpSyntax&& other) noexcept = default;
 
@@ -482,7 +482,7 @@ JsonItem ListExpSyntax::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("ListExpSyntax") },
-        { "elems", Citron::ToJson(elems) },
+        { "elements", Citron::ToJson(elements) },
     };
 }
 
@@ -669,7 +669,7 @@ JsonItem VarDeclSyntax::ToJson()
     return JsonObject {
         { "$type", JsonString("VarDeclSyntax") },
         { "type", Citron::ToJson(type) },
-        { "elems", Citron::ToJson(elems) },
+        { "elements", Citron::ToJson(elements) },
     };
 }
 
@@ -1110,6 +1110,229 @@ JsonItem DirectiveStmtSyntax::ToJson()
         { "$type", JsonString("DirectiveStmtSyntax") },
         { "name", Citron::ToJson(name) },
         { "args", Citron::ToJson(args) },
+    };
+}
+
+JsonItem TypeParamSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("TypeParamSyntax") },
+        { "name", Citron::ToJson(name) },
+    };
+}
+
+FuncParamSyntax::FuncParamSyntax(bool hasOut, bool hasParams, TypeExpSyntax type, std::string name)
+    : hasOut(hasOut), hasParams(hasParams), type(std::move(type)), name(std::move(name)) { }
+
+FuncParamSyntax::FuncParamSyntax(FuncParamSyntax&& other) noexcept = default;
+
+FuncParamSyntax::~FuncParamSyntax() = default;
+
+FuncParamSyntax& FuncParamSyntax::operator=(FuncParamSyntax&& other) noexcept = default;
+
+JsonItem FuncParamSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("FuncParamSyntax") },
+        { "hasOut", Citron::ToJson(hasOut) },
+        { "hasParams", Citron::ToJson(hasParams) },
+        { "type", Citron::ToJson(type) },
+        { "name", Citron::ToJson(name) },
+    };
+}
+
+JsonItem GlobalFuncDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("GlobalFuncDeclSyntax") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "bSequence", Citron::ToJson(bSequence) },
+        { "retType", Citron::ToJson(retType) },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "parameters", Citron::ToJson(parameters) },
+        { "body", Citron::ToJson(body) },
+    };
+}
+
+JsonItem ClassMemberFuncDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("ClassMemberFuncDeclSyntax") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "bStatic", Citron::ToJson(bStatic) },
+        { "bSequence", Citron::ToJson(bSequence) },
+        { "retType", Citron::ToJson(retType) },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "parameters", Citron::ToJson(parameters) },
+        { "body", Citron::ToJson(body) },
+    };
+}
+
+JsonItem ClassConstructorDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("ClassConstructorDeclSyntax") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "name", Citron::ToJson(name) },
+        { "parameters", Citron::ToJson(parameters) },
+        { "baseArgs", Citron::ToJson(baseArgs) },
+        { "body", Citron::ToJson(body) },
+    };
+}
+
+JsonItem ClassMemberVarDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("ClassMemberVarDeclSyntax") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "varType", Citron::ToJson(varType) },
+        { "varNames", Citron::ToJson(varNames) },
+    };
+}
+
+JsonItem ToJson(ClassMemberDeclSyntax& decl)
+{
+    return std::visit([](auto&& decl) { return decl.ToJson(); }, decl);
+}
+
+JsonItem ClassDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("ClassDeclSyntax") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "baseTypes", Citron::ToJson(baseTypes) },
+        { "memberDecls", Citron::ToJson(memberDecls) },
+    };
+}
+
+JsonItem StructMemberFuncDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("StructMemberFuncDeclSyntax") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "bStatic", Citron::ToJson(bStatic) },
+        { "bSequence", Citron::ToJson(bSequence) },
+        { "retType", Citron::ToJson(retType) },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "parameters", Citron::ToJson(parameters) },
+        { "body", Citron::ToJson(body) },
+    };
+}
+
+JsonItem StructConstructorDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("StructConstructorDeclSyntax") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "name", Citron::ToJson(name) },
+        { "parameters", Citron::ToJson(parameters) },
+        { "body", Citron::ToJson(body) },
+    };
+}
+
+JsonItem StructMemberVarDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("StructMemberVarDeclSyntax") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "varType", Citron::ToJson(varType) },
+        { "varNames", Citron::ToJson(varNames) },
+    };
+}
+
+JsonItem ToJson(StructMemberDeclSyntax& decl)
+{
+    return std::visit([](auto&& decl) { return decl.ToJson(); }, decl);
+}
+
+JsonItem StructDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("StructDeclSyntax") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "baseTypes", Citron::ToJson(baseTypes) },
+        { "memberDecls", Citron::ToJson(memberDecls) },
+    };
+}
+
+JsonItem EnumElemMemberVarDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("EnumElemMemberVarDeclSyntax") },
+        { "type", Citron::ToJson(type) },
+        { "name", Citron::ToJson(name) },
+    };
+}
+
+JsonItem EnumElemDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("EnumElemDeclSyntax") },
+        { "name", Citron::ToJson(name) },
+        { "memberVars", Citron::ToJson(memberVars) },
+    };
+}
+
+JsonItem EnumDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("EnumDeclSyntax") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "elements", Citron::ToJson(elements) },
+    };
+}
+
+JsonItem ToJson(NamespaceDeclSyntaxElement& elem)
+{
+    return std::visit([](auto&& elem) { return elem.ToJson(); }, elem);
+}
+
+NamespaceDeclSyntax::NamespaceDeclSyntax(std::vector<std::string> names, std::vector<NamespaceDeclSyntaxElement> elements)
+    : names(std::move(names)), elements(std::move(elements)) { }
+
+NamespaceDeclSyntax::NamespaceDeclSyntax(NamespaceDeclSyntax&& other) noexcept = default;
+
+NamespaceDeclSyntax::~NamespaceDeclSyntax() = default;
+
+NamespaceDeclSyntax& NamespaceDeclSyntax::operator=(NamespaceDeclSyntax&& other) noexcept = default;
+
+JsonItem NamespaceDeclSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("NamespaceDeclSyntax") },
+        { "names", Citron::ToJson(names) },
+        { "elements", Citron::ToJson(elements) },
+    };
+}
+
+JsonItem ToJson(ScriptSyntaxElement& elem)
+{
+    return std::visit([](auto&& elem) { return elem.ToJson(); }, elem);
+}
+
+ScriptSyntax::ScriptSyntax(std::vector<ScriptSyntaxElement> elements)
+    : elements(std::move(elements)) { }
+
+ScriptSyntax::ScriptSyntax(ScriptSyntax&& other) noexcept = default;
+
+ScriptSyntax::~ScriptSyntax() = default;
+
+ScriptSyntax& ScriptSyntax::operator=(ScriptSyntax&& other) noexcept = default;
+
+JsonItem ScriptSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("ScriptSyntax") },
+        { "elements", Citron::ToJson(elements) },
     };
 }
 

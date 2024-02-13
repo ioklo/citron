@@ -110,7 +110,7 @@ JsonItem ToJson(T& t)
     return t.ToJson();
 }
 
-JsonItem ToJson(std::string& s)
+inline JsonItem ToJson(std::string& s)
 {
     return JsonString(s);
 }

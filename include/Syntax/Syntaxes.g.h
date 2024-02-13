@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <memory>
 #include <variant>
 
 #include <Infra/Json.h>
@@ -69,6 +70,7 @@ class IdTypeExpSyntax
 public:
     IdTypeExpSyntax(std::string name, std::vector<TypeExpSyntax> typeArgs)
         : name(std::move(name)), typeArgs(std::move(typeArgs)) { }
+    IdTypeExpSyntax(std::string name) : IdTypeExpSyntax(std::move(name), {}) { }
     IdTypeExpSyntax(const IdTypeExpSyntax&) = delete;
     IdTypeExpSyntax(IdTypeExpSyntax&&) = default;
 
@@ -320,6 +322,7 @@ class IdentifierExpSyntax
 public:
     IdentifierExpSyntax(std::string value, std::vector<TypeExpSyntax> typeArgs)
         : value(std::move(value)), typeArgs(std::move(typeArgs)) { }
+    IdentifierExpSyntax(std::string value) : IdentifierExpSyntax(std::move(value), {}) { }
     IdentifierExpSyntax(const IdentifierExpSyntax&) = delete;
     IdentifierExpSyntax(IdentifierExpSyntax&&) = default;
 
@@ -577,10 +580,10 @@ public:
 
 class ListExpSyntax
 {
-    std::vector<ExpSyntax> elems;
+    std::vector<ExpSyntax> elements;
 
 public:
-    SYNTAX_API ListExpSyntax(std::vector<ExpSyntax> elems);
+    SYNTAX_API ListExpSyntax(std::vector<ExpSyntax> elements);
     ListExpSyntax(const ListExpSyntax&) = delete;
     SYNTAX_API ListExpSyntax(ListExpSyntax&&) noexcept;
     SYNTAX_API ~ListExpSyntax();
@@ -588,7 +591,7 @@ public:
     ListExpSyntax& operator=(const ListExpSyntax& other) = delete;
     SYNTAX_API ListExpSyntax& operator=(ListExpSyntax&& other) noexcept;
 
-    std::vector<ExpSyntax>& GetElems() { return elems; }
+    std::vector<ExpSyntax>& GetElements() { return elements; }
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -744,11 +747,11 @@ public:
 class VarDeclSyntax
 {
     TypeExpSyntax type;
-    std::vector<VarDeclSyntaxElement> elems;
+    std::vector<VarDeclSyntaxElement> elements;
 
 public:
-    VarDeclSyntax(TypeExpSyntax type, std::vector<VarDeclSyntaxElement> elems)
-        : type(std::move(type)), elems(std::move(elems)) { }
+    VarDeclSyntax(TypeExpSyntax type, std::vector<VarDeclSyntaxElement> elements)
+        : type(std::move(type)), elements(std::move(elements)) { }
     VarDeclSyntax(const VarDeclSyntax&) = delete;
     VarDeclSyntax(VarDeclSyntax&&) = default;
 
@@ -756,7 +759,7 @@ public:
     VarDeclSyntax& operator=(VarDeclSyntax&& other) = default;
 
     TypeExpSyntax& GetType() { return type; }
-    std::vector<VarDeclSyntaxElement>& GetElems() { return elems; }
+    std::vector<VarDeclSyntaxElement>& GetElements() { return elements; }
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -1119,6 +1122,428 @@ public:
 
     std::string& GetName() { return name; }
     std::vector<ExpSyntax>& GetArgs() { return args; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class TypeParamSyntax
+{
+    std::string name;
+
+public:
+    TypeParamSyntax(std::string name)
+        : name(std::move(name)) { }
+    TypeParamSyntax(const TypeParamSyntax&) = delete;
+    TypeParamSyntax(TypeParamSyntax&&) = default;
+
+    TypeParamSyntax& operator=(const TypeParamSyntax& other) = delete;
+    TypeParamSyntax& operator=(TypeParamSyntax&& other) = default;
+
+    std::string& GetName() { return name; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class FuncParamSyntax
+{
+    bool hasOut;
+    bool hasParams;
+    TypeExpSyntax type;
+    std::string name;
+
+public:
+    SYNTAX_API FuncParamSyntax(bool hasOut, bool hasParams, TypeExpSyntax type, std::string name);
+    FuncParamSyntax(const FuncParamSyntax&) = delete;
+    SYNTAX_API FuncParamSyntax(FuncParamSyntax&&) noexcept;
+    SYNTAX_API ~FuncParamSyntax();
+
+    FuncParamSyntax& operator=(const FuncParamSyntax& other) = delete;
+    SYNTAX_API FuncParamSyntax& operator=(FuncParamSyntax&& other) noexcept;
+
+    bool& HasOut() { return hasOut; }
+    bool& HasParams() { return hasParams; }
+    TypeExpSyntax& GetType() { return type; }
+    std::string& GetName() { return name; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class GlobalFuncDeclSyntax
+{
+    std::optional<AccessModifierSyntax> accessModifier;
+    bool bSequence;
+    TypeExpSyntax retType;
+    std::string name;
+    std::vector<TypeParamSyntax> typeParams;
+    std::vector<FuncParamSyntax> parameters;
+    std::vector<StmtSyntax> body;
+
+public:
+    GlobalFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
+        : accessModifier(accessModifier), bSequence(bSequence), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+    GlobalFuncDeclSyntax(const GlobalFuncDeclSyntax&) = delete;
+    GlobalFuncDeclSyntax(GlobalFuncDeclSyntax&&) = default;
+
+    GlobalFuncDeclSyntax& operator=(const GlobalFuncDeclSyntax& other) = delete;
+    GlobalFuncDeclSyntax& operator=(GlobalFuncDeclSyntax&& other) = default;
+
+    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    bool& IsSequence() { return bSequence; }
+    TypeExpSyntax& GetRetType() { return retType; }
+    std::string& GetName() { return name; }
+    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
+    std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
+    std::vector<StmtSyntax>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ClassMemberFuncDeclSyntax
+{
+    std::optional<AccessModifierSyntax> accessModifier;
+    bool bStatic;
+    bool bSequence;
+    TypeExpSyntax retType;
+    std::string name;
+    std::vector<TypeParamSyntax> typeParams;
+    std::vector<FuncParamSyntax> parameters;
+    std::vector<StmtSyntax> body;
+
+public:
+    ClassMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
+        : accessModifier(accessModifier), bStatic(bStatic), bSequence(bSequence), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+    ClassMemberFuncDeclSyntax(const ClassMemberFuncDeclSyntax&) = delete;
+    ClassMemberFuncDeclSyntax(ClassMemberFuncDeclSyntax&&) = default;
+
+    ClassMemberFuncDeclSyntax& operator=(const ClassMemberFuncDeclSyntax& other) = delete;
+    ClassMemberFuncDeclSyntax& operator=(ClassMemberFuncDeclSyntax&& other) = default;
+
+    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    bool& IsStatic() { return bStatic; }
+    bool& IsSequence() { return bSequence; }
+    TypeExpSyntax& GetRetType() { return retType; }
+    std::string& GetName() { return name; }
+    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
+    std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
+    std::vector<StmtSyntax>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ClassConstructorDeclSyntax
+{
+    std::optional<AccessModifierSyntax> accessModifier;
+    std::string name;
+    std::vector<FuncParamSyntax> parameters;
+    std::optional<std::vector<ArgumentSyntax>> baseArgs;
+    std::vector<StmtSyntax> body;
+
+public:
+    ClassConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::optional<std::vector<ArgumentSyntax>> baseArgs, std::vector<StmtSyntax> body)
+        : accessModifier(accessModifier), name(std::move(name)), parameters(std::move(parameters)), baseArgs(std::move(baseArgs)), body(std::move(body)) { }
+    ClassConstructorDeclSyntax(const ClassConstructorDeclSyntax&) = delete;
+    ClassConstructorDeclSyntax(ClassConstructorDeclSyntax&&) = default;
+
+    ClassConstructorDeclSyntax& operator=(const ClassConstructorDeclSyntax& other) = delete;
+    ClassConstructorDeclSyntax& operator=(ClassConstructorDeclSyntax&& other) = default;
+
+    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::string& GetName() { return name; }
+    std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
+    std::optional<std::vector<ArgumentSyntax>>& GetBaseArgs() { return baseArgs; }
+    std::vector<StmtSyntax>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ClassMemberVarDeclSyntax
+{
+    std::optional<AccessModifierSyntax> accessModifier;
+    TypeExpSyntax varType;
+    std::vector<std::string> varNames;
+
+public:
+    ClassMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames)
+        : accessModifier(accessModifier), varType(std::move(varType)), varNames(std::move(varNames)) { }
+    ClassMemberVarDeclSyntax(const ClassMemberVarDeclSyntax&) = delete;
+    ClassMemberVarDeclSyntax(ClassMemberVarDeclSyntax&&) = default;
+
+    ClassMemberVarDeclSyntax& operator=(const ClassMemberVarDeclSyntax& other) = delete;
+    ClassMemberVarDeclSyntax& operator=(ClassMemberVarDeclSyntax&& other) = default;
+
+    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    TypeExpSyntax& GetVarType() { return varType; }
+    std::vector<std::string>& GetVarNames() { return varNames; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+using ClassMemberDeclSyntax = std::variant<
+    class ClassDeclSyntax,
+    class StructDeclSyntax,
+    class EnumDeclSyntax,
+    ClassMemberFuncDeclSyntax,
+    ClassConstructorDeclSyntax,
+    ClassMemberVarDeclSyntax>;
+
+SYNTAX_API JsonItem ToJson(ClassMemberDeclSyntax& decl);
+
+class ClassDeclSyntax
+{
+    std::optional<AccessModifierSyntax> accessModifier;
+    std::string name;
+    std::vector<TypeParamSyntax> typeParams;
+    std::vector<TypeExpSyntax> baseTypes;
+    std::vector<ClassMemberDeclSyntax> memberDecls;
+
+public:
+    ClassDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<TypeExpSyntax> baseTypes, std::vector<ClassMemberDeclSyntax> memberDecls)
+        : accessModifier(accessModifier), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
+    ClassDeclSyntax(const ClassDeclSyntax&) = delete;
+    ClassDeclSyntax(ClassDeclSyntax&&) = default;
+
+    ClassDeclSyntax& operator=(const ClassDeclSyntax& other) = delete;
+    ClassDeclSyntax& operator=(ClassDeclSyntax&& other) = default;
+
+    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::string& GetName() { return name; }
+    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
+    std::vector<TypeExpSyntax>& GetBaseTypes() { return baseTypes; }
+    std::vector<ClassMemberDeclSyntax>& GetMemberDecls() { return memberDecls; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class StructMemberFuncDeclSyntax
+{
+    std::optional<AccessModifierSyntax> accessModifier;
+    bool bStatic;
+    bool bSequence;
+    TypeExpSyntax retType;
+    std::string name;
+    std::vector<TypeParamSyntax> typeParams;
+    std::vector<FuncParamSyntax> parameters;
+    std::vector<StmtSyntax> body;
+
+public:
+    StructMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
+        : accessModifier(accessModifier), bStatic(bStatic), bSequence(bSequence), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+    StructMemberFuncDeclSyntax(const StructMemberFuncDeclSyntax&) = delete;
+    StructMemberFuncDeclSyntax(StructMemberFuncDeclSyntax&&) = default;
+
+    StructMemberFuncDeclSyntax& operator=(const StructMemberFuncDeclSyntax& other) = delete;
+    StructMemberFuncDeclSyntax& operator=(StructMemberFuncDeclSyntax&& other) = default;
+
+    std::optional<AccessModifierSyntax>& GetAcessModifier() { return accessModifier; }
+    bool& IsStatic() { return bStatic; }
+    bool& IsSequence() { return bSequence; }
+    TypeExpSyntax& GetRetType() { return retType; }
+    std::string& GetName() { return name; }
+    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
+    std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
+    std::vector<StmtSyntax>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class StructConstructorDeclSyntax
+{
+    std::optional<AccessModifierSyntax> accessModifier;
+    std::string name;
+    std::vector<FuncParamSyntax> parameters;
+    std::vector<StmtSyntax> body;
+
+public:
+    StructConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
+        : accessModifier(accessModifier), name(std::move(name)), parameters(std::move(parameters)), body(std::move(body)) { }
+    StructConstructorDeclSyntax(const StructConstructorDeclSyntax&) = delete;
+    StructConstructorDeclSyntax(StructConstructorDeclSyntax&&) = default;
+
+    StructConstructorDeclSyntax& operator=(const StructConstructorDeclSyntax& other) = delete;
+    StructConstructorDeclSyntax& operator=(StructConstructorDeclSyntax&& other) = default;
+
+    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::string& GetName() { return name; }
+    std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
+    std::vector<StmtSyntax>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class StructMemberVarDeclSyntax
+{
+    std::optional<AccessModifierSyntax> accessModifier;
+    TypeExpSyntax varType;
+    std::vector<std::string> varNames;
+
+public:
+    StructMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames)
+        : accessModifier(accessModifier), varType(std::move(varType)), varNames(std::move(varNames)) { }
+    StructMemberVarDeclSyntax(const StructMemberVarDeclSyntax&) = delete;
+    StructMemberVarDeclSyntax(StructMemberVarDeclSyntax&&) = default;
+
+    StructMemberVarDeclSyntax& operator=(const StructMemberVarDeclSyntax& other) = delete;
+    StructMemberVarDeclSyntax& operator=(StructMemberVarDeclSyntax&& other) = default;
+
+    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    TypeExpSyntax& GetVarType() { return varType; }
+    std::vector<std::string>& GetVarNames() { return varNames; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+using StructMemberDeclSyntax = std::variant<
+    class ClassDeclSyntax,
+    class StructDeclSyntax,
+    class EnumDeclSyntax,
+    StructMemberFuncDeclSyntax,
+    StructConstructorDeclSyntax,
+    StructMemberVarDeclSyntax>;
+
+SYNTAX_API JsonItem ToJson(StructMemberDeclSyntax& decl);
+
+class StructDeclSyntax
+{
+    std::optional<AccessModifierSyntax> accessModifier;
+    std::string name;
+    std::vector<TypeParamSyntax> typeParams;
+    std::vector<TypeExpSyntax> baseTypes;
+    std::vector<StructMemberDeclSyntax> memberDecls;
+
+public:
+    StructDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<TypeExpSyntax> baseTypes, std::vector<StructMemberDeclSyntax> memberDecls)
+        : accessModifier(accessModifier), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
+    StructDeclSyntax(const StructDeclSyntax&) = delete;
+    StructDeclSyntax(StructDeclSyntax&&) = default;
+
+    StructDeclSyntax& operator=(const StructDeclSyntax& other) = delete;
+    StructDeclSyntax& operator=(StructDeclSyntax&& other) = default;
+
+    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::string& GetName() { return name; }
+    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
+    std::vector<TypeExpSyntax>& GetBaseTypes() { return baseTypes; }
+    std::vector<StructMemberDeclSyntax>& GetMemberDecls() { return memberDecls; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class EnumElemMemberVarDeclSyntax
+{
+    TypeExpSyntax type;
+    std::string name;
+
+public:
+    EnumElemMemberVarDeclSyntax(TypeExpSyntax type, std::string name)
+        : type(std::move(type)), name(std::move(name)) { }
+    EnumElemMemberVarDeclSyntax(const EnumElemMemberVarDeclSyntax&) = delete;
+    EnumElemMemberVarDeclSyntax(EnumElemMemberVarDeclSyntax&&) = default;
+
+    EnumElemMemberVarDeclSyntax& operator=(const EnumElemMemberVarDeclSyntax& other) = delete;
+    EnumElemMemberVarDeclSyntax& operator=(EnumElemMemberVarDeclSyntax&& other) = default;
+
+    TypeExpSyntax& GetType() { return type; }
+    std::string& GetName() { return name; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class EnumElemDeclSyntax
+{
+    std::string name;
+    std::vector<EnumElemMemberVarDeclSyntax> memberVars;
+
+public:
+    EnumElemDeclSyntax(std::string name, std::vector<EnumElemMemberVarDeclSyntax> memberVars)
+        : name(std::move(name)), memberVars(std::move(memberVars)) { }
+    EnumElemDeclSyntax(const EnumElemDeclSyntax&) = delete;
+    EnumElemDeclSyntax(EnumElemDeclSyntax&&) = default;
+
+    EnumElemDeclSyntax& operator=(const EnumElemDeclSyntax& other) = delete;
+    EnumElemDeclSyntax& operator=(EnumElemDeclSyntax&& other) = default;
+
+    std::string& GetName() { return name; }
+    std::vector<EnumElemMemberVarDeclSyntax>& GetMemberVars() { return memberVars; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class EnumDeclSyntax
+{
+    std::optional<AccessModifierSyntax> accessModifier;
+    std::string name;
+    std::vector<TypeParamSyntax> typeParams;
+    std::vector<EnumElemDeclSyntax> elements;
+
+public:
+    EnumDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<EnumElemDeclSyntax> elements)
+        : accessModifier(accessModifier), name(std::move(name)), typeParams(std::move(typeParams)), elements(std::move(elements)) { }
+    EnumDeclSyntax(const EnumDeclSyntax&) = delete;
+    EnumDeclSyntax(EnumDeclSyntax&&) = default;
+
+    EnumDeclSyntax& operator=(const EnumDeclSyntax& other) = delete;
+    EnumDeclSyntax& operator=(EnumDeclSyntax&& other) = default;
+
+    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::string& GetName() { return name; }
+    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
+    std::vector<EnumElemDeclSyntax>& GetElements() { return elements; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+using NamespaceDeclSyntaxElement = std::variant<
+    GlobalFuncDeclSyntax,
+    class NamespaceDeclSyntax,
+    ClassDeclSyntax,
+    StructDeclSyntax,
+    EnumDeclSyntax>;
+
+SYNTAX_API JsonItem ToJson(NamespaceDeclSyntaxElement& elem);
+
+class NamespaceDeclSyntax
+{
+    std::vector<std::string> names;
+    std::vector<NamespaceDeclSyntaxElement> elements;
+
+public:
+    SYNTAX_API NamespaceDeclSyntax(std::vector<std::string> names, std::vector<NamespaceDeclSyntaxElement> elements);
+    NamespaceDeclSyntax(const NamespaceDeclSyntax&) = delete;
+    SYNTAX_API NamespaceDeclSyntax(NamespaceDeclSyntax&&) noexcept;
+    SYNTAX_API ~NamespaceDeclSyntax();
+
+    NamespaceDeclSyntax& operator=(const NamespaceDeclSyntax& other) = delete;
+    SYNTAX_API NamespaceDeclSyntax& operator=(NamespaceDeclSyntax&& other) noexcept;
+
+    std::vector<std::string>& GetNames() { return names; }
+    std::vector<NamespaceDeclSyntaxElement>& GetElements() { return elements; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+using ScriptSyntaxElement = std::variant<
+    NamespaceDeclSyntax,
+    GlobalFuncDeclSyntax,
+    ClassDeclSyntax,
+    StructDeclSyntax,
+    EnumDeclSyntax>;
+
+SYNTAX_API JsonItem ToJson(ScriptSyntaxElement& elem);
+
+class ScriptSyntax
+{
+    std::vector<ScriptSyntaxElement> elements;
+
+public:
+    SYNTAX_API ScriptSyntax(std::vector<ScriptSyntaxElement> elements);
+    ScriptSyntax(const ScriptSyntax&) = delete;
+    SYNTAX_API ScriptSyntax(ScriptSyntax&&) noexcept;
+    SYNTAX_API ~ScriptSyntax();
+
+    ScriptSyntax& operator=(const ScriptSyntax& other) = delete;
+    SYNTAX_API ScriptSyntax& operator=(ScriptSyntax&& other) noexcept;
+
+    std::vector<ScriptSyntaxElement>& GetElements() { return elements; }
 
     SYNTAX_API JsonItem ToJson();
 };
