@@ -1210,14 +1210,19 @@ namespace Citron {
                 { "std::vector<FuncParamSyntax>", "parameters", "GetParameters", /* bUsePimpl */ false, /* bUseMove */ true },
                 { "std::optional<std::vector<ArgumentSyntax>>", "baseArgs", /* bUsePimpl */ false, /* bUseMove */ true },
                 { "std::vector<StmtSyntax>", "body", "GetBody", /* bUsePimpl */ false, /* bUseMove */ true },
-            }
+            },
+            /* bDefaultsInline */ true
         },
 
+        // ClassMemberVarDeclSyntax
         ClassInfo { 
             "ClassMemberVarDeclSyntax",
             {
-                
-            }
+                { "std::optional<AccessModifierSyntax>", "accessModifier", "GetAccessModifier", /* bUsePimpl */ false, /* bUseMove */ false },
+                { "TypeExpSyntax", "varType", "GetVarType", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<std::string>", "varNames", "GetVarNames", /* bUsePimpl */ false, /* bUseMove */ true },
+            },
+            /* bDefaultsInline */ true
         },
 
         // ClassMemberDeclSyntax
@@ -1247,6 +1252,104 @@ namespace Citron {
             /* bDefaultsInline */ true
         },
 
+        // StructMemberFuncDeclSyntax
+        ClassInfo {
+            "StructMemberFuncDeclSyntax",
+            {
+                { "std::optional<AccessModifierSyntax>", "accessModifier", "GetAcessModifier", /* bUsePimpl */ false, /* bUseMove */ false },
+                { "bool", "bStatic", "IsStatic", /* bUsePimpl */ false, /* bUseMove */ false },
+                { "bool", "bSequence", "IsSequence", /* bUsePimpl */ false, /* bUseMove */ false }, // seq 함수인가  
+                { "TypeExpSyntax", "retType", "GetRetType", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::string", "name", "GetName", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<TypeParamSyntax>", "typeParams", "GetTypeParams", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<FuncParamSyntax>", "parameters", "GetParameters", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<StmtSyntax>", "body", "GetBody", /* bUsePimpl */ false, /* bUseMove */ true },
+            },
+            /* bDefaultsInline */ true
+        },
+
+        // StructConstructorDeclSyntax
+        ClassInfo {
+            "StructConstructorDeclSyntax",
+            {
+                { "std::optional<AccessModifierSyntax>", "accessModifier", "GetAccessModifier", /* bUsePimpl */ false, /* bUseMove */ false },
+                { "std::string", "name", "GetName", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<FuncParamSyntax>", "parameters", "GetParameters", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<StmtSyntax>", "body", "GetBody", /* bUsePimpl */ false, /* bUseMove */ true },
+            },
+            /* bDefaultsInline */ true
+        }
+
+        // StructMemberVarDeclSyntax
+        ClassInfo {
+            "StructMemberVarDeclSyntax",
+            {
+                { "std::optional<AccessModifierSyntax>", "accessModifier", "GetAccessModifier", /* bUsePimpl */ false, /* bUseMove */ false },
+                { "TypeExpSyntax", "varType", "GetVarType", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<std::string>", "varNames", "GetVarNames", /* bUsePimpl */ false, /* bUseMove */ true },
+            },
+            /* bDefaultsInline */ true
+        }
+
+        // StructMemberDeclSyntax
+        VariantInfo {
+            "StructMemberDeclSyntax",
+            "decl",
+            { 
+                "class ClassDeclSyntax",
+                "class StructDeclSyntax",
+                "class EnumDeclSyntax",
+                "StructMemberFuncDeclSyntax",
+                "StructConstructorDeclSyntax",
+                "StructMemberVarDeclSyntax",
+            }
+        },
+
+        // StructDeclSyntax
+        ClassInfo {
+            "StructDeclSyntax",
+            {
+                { "std::optional<AccessModifierSyntax>", "accessModifier", "GetAccessModifier", /* bUsePimpl */ false, /* bUseMove */ false },
+                { "std::string", "name", "GetName", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<TypeParamSyntax>", "typeParams", "GetTypeParams", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<TypeExpSyntax>", "baseTypes", "GetBaseTypes", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<StructMemberDeclSyntax>", "memberDecls", "GetMemberDecls", /* bUsePimpl */ false, /* bUseMove */ true },
+            },
+            /* bDefaultsInline */ true
+        },
+
+        // EnumElemMemberVarDeclSyntax
+        ClassInfo {
+            "EnumElemMemberVarDeclSyntax",
+            {
+                { "TypeExpSyntax", "type", "GetType", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::string", "name", "GetName", /* bUsePimpl */ false, /* bUseMove */ true },
+            },
+            /* bDefaultsInline */ true
+        },
+
+        // EnumElemDeclSyntax
+        ClassInfo {
+            "EnumElemDeclSyntax",
+            {
+                { "std::string", "name", "GetName", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<EnumElemMemberVarDeclSyntax>", "memberVars", "GetMemberVars", /* bUsePimpl */ false, /* bUseMove */ true },
+            },
+            /* bDefaultsInline */ true
+        },
+
+        // EnumDeclSyntax
+        ClassInfo {
+            "EnumDeclSyntax",
+            {
+                { "std::optional<AccessModifierSyntax>", "accessModifier", "GetAccessModifier", /* bUsePimpl */ false, /* bUseMove */ false },
+                { "std::string", "name", "GetName", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<TypeParamSyntax>", "typeParams", "GetTypeParams", /* bUsePimpl */ false, /* bUseMove */ true },
+                { "std::vector<EnumElemDeclSyntax>", "elems", "GetElems", /* bUsePimpl */ false, /* bUseMove */ true },
+            },
+            /* bDefaultsInline */ true
+        },
+
         // NamespaceDeclSyntaxElement
         VariantInfo {
             "NamespaceDeclSyntaxElement",
@@ -1254,7 +1357,9 @@ namespace Citron {
             {
                 "GlobalFuncDeclSyntax",
                 "class NamespaceDeclSyntax", // forward declaration
-                "TypeDeclSyntax",
+                "ClassDeclSyntax",
+                "StructDeclSyntax",
+                "EnumDeclSyntax",
             }
         },
 
