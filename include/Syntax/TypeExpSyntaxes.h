@@ -112,10 +112,8 @@ public:
     DECLARE_DEFAULTS(LocalTypeExpSyntax)
 
     SYNTAX_API TypeExpSyntax& GetInnerTypeExp();
-
     SYNTAX_API JsonItem ToJson();
 };
-
 
 SYNTAX_API JsonItem ToJson(TypeExpSyntax& typeExp);
 

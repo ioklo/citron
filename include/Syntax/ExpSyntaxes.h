@@ -63,8 +63,6 @@ using ExpSyntax = std::variant<
     class AsExpSyntax
 >;
 
-class StringWriter;
-
 class IdentifierExpSyntax
 {
     std::u32string value;
@@ -72,7 +70,7 @@ class IdentifierExpSyntax
 
 public:
     IdentifierExpSyntax(std::u32string value, std::vector<TypeExpSyntax> typeArgs = {})
-        : value(value), typeArgs(std::move(typeArgs)) { }
+        : value(std::move(value)), typeArgs(std::move(typeArgs)) { }
 
     std::u32string& GetValue() { return value; }
     std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }

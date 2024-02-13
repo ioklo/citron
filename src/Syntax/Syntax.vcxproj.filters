@@ -91,6 +91,9 @@
     <ClInclude Include="..\..\include\Syntax\Syntax.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\Syntax\Syntaxes.g.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -109,5 +112,7 @@
     <ClCompile Include="ScriptSyntaxElements.cpp" />
     <ClCompile Include="GlobalFuncDeclSyntax.cpp" />
     <ClCompile Include="NamespaceDeclSyntaxElements.cpp" />
+    <ClCompile Include="Syntaxes.g.cpp" />
+    <ClCompile Include="Syntaxes.cpp" />
   </ItemGroup>
 </Project>

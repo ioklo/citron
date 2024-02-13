@@ -110,6 +110,11 @@ JsonItem ToJson(T& t)
     return t.ToJson();
 }
 
+JsonItem ToJson(std::string& s)
+{
+    return JsonString(s);
+}
+
 template<typename T>
 JsonItem ToJson(T&& t)
 {

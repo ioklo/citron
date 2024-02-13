@@ -25,6 +25,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SyntaxPrinter", "Tools\Synt
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestGenerator", "Tools\TestGenerator\TestGenerator.vcxproj", "{4D11EE86-4C63-437F-BF7E-737F1B4F1B67}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CodeGenerator", "Tools\CodeGenerator\CodeGenerator.vcxproj", "{DBEB8BDB-E917-41E0-B2E5-0587D45B633E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -89,6 +91,14 @@ Global
 		{4D11EE86-4C63-437F-BF7E-737F1B4F1B67}.Release|x64.Build.0 = Release|x64
 		{4D11EE86-4C63-437F-BF7E-737F1B4F1B67}.Release|x86.ActiveCfg = Release|Win32
 		{4D11EE86-4C63-437F-BF7E-737F1B4F1B67}.Release|x86.Build.0 = Release|Win32
+		{DBEB8BDB-E917-41E0-B2E5-0587D45B633E}.Debug|x64.ActiveCfg = Debug|x64
+		{DBEB8BDB-E917-41E0-B2E5-0587D45B633E}.Debug|x64.Build.0 = Debug|x64
+		{DBEB8BDB-E917-41E0-B2E5-0587D45B633E}.Debug|x86.ActiveCfg = Debug|Win32
+		{DBEB8BDB-E917-41E0-B2E5-0587D45B633E}.Debug|x86.Build.0 = Debug|Win32
+		{DBEB8BDB-E917-41E0-B2E5-0587D45B633E}.Release|x64.ActiveCfg = Release|x64
+		{DBEB8BDB-E917-41E0-B2E5-0587D45B633E}.Release|x64.Build.0 = Release|x64
+		{DBEB8BDB-E917-41E0-B2E5-0587D45B633E}.Release|x86.ActiveCfg = Release|Win32
+		{DBEB8BDB-E917-41E0-B2E5-0587D45B633E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -96,6 +106,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{798D24AB-A89E-4805-9326-6BF4EBE905B2} = {5B09B4B4-57E7-4C71-8D99-E5FD08E47E9F}
 		{4D11EE86-4C63-437F-BF7E-737F1B4F1B67} = {5B09B4B4-57E7-4C71-8D99-E5FD08E47E9F}
+		{DBEB8BDB-E917-41E0-B2E5-0587D45B633E} = {5B09B4B4-57E7-4C71-8D99-E5FD08E47E9F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F083F54C-B466-40AB-8B84-BB7A6C1C040D}
