@@ -1,0 +1,55 @@
+{
+    "$type": "BinaryOpExpSyntax",
+    "kind": "Assign",
+    "operand0": {
+        "$type": "IdentifierExpSyntax",
+        "value": "a",
+        "typeArgs": []
+    },
+    "operand1": {
+        "$type": "LambdaExpSyntax",
+        "params": [
+            {
+                "$type": "LambdaExpParamSyntax",
+                "type": null,
+                "name": "b",
+                "hasOut": false,
+                "hasParams": false
+            }
+        ],
+        "body": {
+            "$type": "ExpLambdaExpBodySyntax",
+            "exp": {
+                "$type": "LambdaExpSyntax",
+                "params": [
+                    {
+                        "$type": "LambdaExpParamSyntax",
+                        "type": null,
+                        "name": "c",
+                        "hasOut": false,
+                        "hasParams": false
+                    },
+                    {
+                        "$type": "LambdaExpParamSyntax",
+                        "type": {
+                            "$type": "IdTypeExpSyntax",
+                            "name": "int",
+                            "typeArgs": []
+                        },
+                        "name": "d",
+                        "hasOut": false,
+                        "hasParams": false
+                    }
+                ],
+                "body": {
+                    "$type": "ExpLambdaExpBodySyntax",
+                    "exp": {
+                        "$type": "IdentifierExpSyntax",
+                        "value": "e",
+                        "typeArgs": []
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,105 @@
+{
+    "$type": "BinaryOpExpSyntax",
+    "kind": "Assign",
+    "operand0": {
+        "$type": "IdentifierExpSyntax",
+        "value": "a",
+        "typeArgs": []
+    },
+    "operand1": {
+        "$type": "BinaryOpExpSyntax",
+        "kind": "Assign",
+        "operand0": {
+            "$type": "IdentifierExpSyntax",
+            "value": "b",
+            "typeArgs": []
+        },
+        "operand1": {
+            "$type": "BinaryOpExpSyntax",
+            "kind": "NotEqual",
+            "operand0": {
+                "$type": "BinaryOpExpSyntax",
+                "kind": "Equal",
+                "operand0": {
+                    "$type": "BinaryOpExpSyntax",
+                    "kind": "Subtract",
+                    "operand0": {
+                        "$type": "BinaryOpExpSyntax",
+                        "kind": "Add",
+                        "operand0": {
+                            "$type": "BinaryOpExpSyntax",
+                            "kind": "Multiply",
+                            "operand0": {
+                                "$type": "UnaryOpExpSyntax",
+                                "kind": "LogicalNot",
+                                "operand": {
+                                    "$type": "UnaryOpExpSyntax",
+                                    "kind": "LogicalNot",
+                                    "operand": {
+                                        "$type": "UnaryOpExpSyntax",
+                                        "kind": "PostfixInc",
+                                        "operand": {
+                                            "$type": "BinaryOpExpSyntax",
+                                            "kind": "Modulo",
+                                            "operand0": {
+                                                "$type": "IdentifierExpSyntax",
+                                                "value": "c",
+                                                "typeArgs": []
+                                            },
+                                            "operand1": {
+                                                "$type": "IdentifierExpSyntax",
+                                                "value": "d",
+                                                "typeArgs": []
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "operand1": {
+                                "$type": "IdentifierExpSyntax",
+                                "value": "e",
+                                "typeArgs": []
+                            }
+                        },
+                        "operand1": {
+                            "$type": "IdentifierExpSyntax",
+                            "value": "f",
+                            "typeArgs": []
+                        }
+                    },
+                    "operand1": {
+                        "$type": "BinaryOpExpSyntax",
+                        "kind": "Modulo",
+                        "operand0": {
+                            "$type": "BinaryOpExpSyntax",
+                            "kind": "Divide",
+                            "operand0": {
+                                "$type": "IdentifierExpSyntax",
+                                "value": "g",
+                                "typeArgs": []
+                            },
+                            "operand1": {
+                                "$type": "IdentifierExpSyntax",
+                                "value": "h",
+                                "typeArgs": []
+                            }
+                        },
+                        "operand1": {
+                            "$type": "IdentifierExpSyntax",
+                            "value": "i",
+                            "typeArgs": []
+                        }
+                    }
+                },
+                "operand1": {
+                    "$type": "IntLiteralExpSyntax",
+                    "value": 3
+                }
+            },
+            "operand1": {
+                "$type": "BoolLiteralExpSyntax",
+                "value": false
+            }
+        }
+    }
+}

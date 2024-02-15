@@ -1,0 +1,11 @@
+{
+    "$type": "IdentifierExpSyntax",
+    "value": "x",
+    "typeArgs": [
+        {
+            "$type": "IdTypeExpSyntax",
+            "name": "T",
+            "typeArgs": []
+        }
+    ]
+}

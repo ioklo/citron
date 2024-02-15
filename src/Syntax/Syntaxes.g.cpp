@@ -388,7 +388,56 @@ JsonItem CallExpSyntax::ToJson()
     };
 }
 
-LambdaExpSyntax::LambdaExpSyntax(std::vector<LambdaExpParamSyntax> params, std::vector<StmtSyntax> body)
+JsonItem ToJson(LambdaExpBodySyntax& body)
+{
+    return std::visit([](auto&& body) { return body.ToJson(); }, body);
+}
+
+StmtsLambdaExpBodySyntax::StmtsLambdaExpBodySyntax(std::vector<StmtSyntax> stmts)
+    : stmts(std::move(stmts)) { }
+
+StmtsLambdaExpBodySyntax::StmtsLambdaExpBodySyntax(StmtsLambdaExpBodySyntax&& other) noexcept = default;
+
+StmtsLambdaExpBodySyntax::~StmtsLambdaExpBodySyntax() = default;
+
+StmtsLambdaExpBodySyntax& StmtsLambdaExpBodySyntax::operator=(StmtsLambdaExpBodySyntax&& other) noexcept = default;
+
+JsonItem StmtsLambdaExpBodySyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("StmtsLambdaExpBodySyntax") },
+        { "stmts", Citron::ToJson(stmts) },
+    };
+}
+
+struct ExpLambdaExpBodySyntax::Impl 
+{
+    ExpSyntax exp;
+};
+
+ExpLambdaExpBodySyntax::ExpLambdaExpBodySyntax(ExpSyntax exp)
+    : impl(new Impl{ std::move(exp) }) { }
+
+ExpLambdaExpBodySyntax::ExpLambdaExpBodySyntax(ExpLambdaExpBodySyntax&& other) noexcept = default;
+
+ExpLambdaExpBodySyntax::~ExpLambdaExpBodySyntax() = default;
+
+ExpLambdaExpBodySyntax& ExpLambdaExpBodySyntax::operator=(ExpLambdaExpBodySyntax&& other) noexcept = default;
+
+ExpSyntax& ExpLambdaExpBodySyntax::GetExp()
+{
+    return impl->exp;
+}
+
+JsonItem ExpLambdaExpBodySyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("ExpLambdaExpBodySyntax") },
+        { "exp", Citron::ToJson(impl->exp) },
+    };
+}
+
+LambdaExpSyntax::LambdaExpSyntax(std::vector<LambdaExpParamSyntax> params, LambdaExpBodySyntax body)
     : params(std::move(params)), body(std::move(body)) { }
 
 LambdaExpSyntax::LambdaExpSyntax(LambdaExpSyntax&& other) noexcept = default;
@@ -463,6 +512,35 @@ JsonItem MemberExpSyntax::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("MemberExpSyntax") },
+        { "parent", Citron::ToJson(impl->parent) },
+        { "memberName", Citron::ToJson(memberName) },
+        { "memberTypeArgs", Citron::ToJson(memberTypeArgs) },
+    };
+}
+
+struct IndirectMemberExpSyntax::Impl 
+{
+    ExpSyntax parent;
+};
+
+IndirectMemberExpSyntax::IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName, std::vector<TypeExpSyntax> memberTypeArgs)
+    : memberName(std::move(memberName)), memberTypeArgs(std::move(memberTypeArgs)), impl(new Impl{ std::move(parent) }) { }
+
+IndirectMemberExpSyntax::IndirectMemberExpSyntax(IndirectMemberExpSyntax&& other) noexcept = default;
+
+IndirectMemberExpSyntax::~IndirectMemberExpSyntax() = default;
+
+IndirectMemberExpSyntax& IndirectMemberExpSyntax::operator=(IndirectMemberExpSyntax&& other) noexcept = default;
+
+ExpSyntax& IndirectMemberExpSyntax::GetParent()
+{
+    return impl->parent;
+}
+
+JsonItem IndirectMemberExpSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("IndirectMemberExpSyntax") },
         { "parent", Citron::ToJson(impl->parent) },
         { "memberName", Citron::ToJson(memberName) },
         { "memberTypeArgs", Citron::ToJson(memberTypeArgs) },

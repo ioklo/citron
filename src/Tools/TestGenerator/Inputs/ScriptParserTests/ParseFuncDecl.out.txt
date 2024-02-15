@@ -1,78 +1,75 @@
 {
     "$type": "ScriptSyntax",
-    "elems": [
+    "elements": [
         {
-            "$type": "GlobalFuncDeclScriptSyntaxElement",
-            "funcDecl": {
-                "$type": "GlobalFuncDeclSyntax",
-                "accessModifier": null,
-                "bSequence": false,
-                "retType": {
-                    "$type": "IdTypeExpSyntax",
-                    "name": "void",
-                    "typeArgs": []
+            "$type": "GlobalFuncDeclSyntax",
+            "accessModifier": null,
+            "bSequence": false,
+            "retType": {
+                "$type": "IdTypeExpSyntax",
+                "name": "void",
+                "typeArgs": []
+            },
+            "name": "Func",
+            "typeParams": [],
+            "parameters": [
+                {
+                    "$type": "FuncParamSyntax",
+                    "hasOut": false,
+                    "hasParams": false,
+                    "type": {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "int",
+                        "typeArgs": []
+                    },
+                    "name": "x"
                 },
-                "name": "Func",
-                "typeParams": [],
-                "parameters": [
-                    {
-                        "$type": "FuncParamSyntax",
-                        "hasOut": false,
-                        "hasParams": false,
+                {
+                    "$type": "FuncParamSyntax",
+                    "hasOut": false,
+                    "hasParams": false,
+                    "type": {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "string",
+                        "typeArgs": []
+                    },
+                    "name": "y"
+                },
+                {
+                    "$type": "FuncParamSyntax",
+                    "hasOut": false,
+                    "hasParams": true,
+                    "type": {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "int",
+                        "typeArgs": []
+                    },
+                    "name": "z"
+                }
+            ],
+            "body": [
+                {
+                    "$type": "VarDeclStmtSyntax",
+                    "varDecl": {
+                        "$type": "VarDeclSyntax",
                         "type": {
                             "$type": "IdTypeExpSyntax",
                             "name": "int",
                             "typeArgs": []
                         },
-                        "name": "x"
-                    },
-                    {
-                        "$type": "FuncParamSyntax",
-                        "hasOut": false,
-                        "hasParams": false,
-                        "type": {
-                            "$type": "IdTypeExpSyntax",
-                            "name": "string",
-                            "typeArgs": []
-                        },
-                        "name": "y"
-                    },
-                    {
-                        "$type": "FuncParamSyntax",
-                        "hasOut": false,
-                        "hasParams": true,
-                        "type": {
-                            "$type": "IdTypeExpSyntax",
-                            "name": "int",
-                            "typeArgs": []
-                        },
-                        "name": "z"
-                    }
-                ],
-                "body": [
-                    {
-                        "$type": "VarDeclStmtSyntax",
-                        "varDecl": {
-                            "$type": "VarDeclSyntax",
-                            "type": {
-                                "$type": "IdTypeExpSyntax",
-                                "name": "int",
-                                "typeArgs": []
-                            },
-                            "elems": [
-                                {
-                                    "$type": "VarDeclSyntaxElement",
-                                    "varName": "a",
-                                    "initExp": {
-                                        "$type": "IntLiteralExpSyntax",
-                                        "value": 0
-                                    }
+                        "elements": [
+                            {
+                                "$type": "VarDeclSyntaxElement",
+                                "varName": "a",
+                                "initExp": {
+                                    "$type": "IntLiteralExpSyntax",
+                                    "value": 0
                                 }
-                            ]
-                        }
+                            }
+                        ]
                     }
-                ]
-            }
+                }
+            ]
         }
     ]
 }

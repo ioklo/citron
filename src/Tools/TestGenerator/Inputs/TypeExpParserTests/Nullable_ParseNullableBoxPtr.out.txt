@@ -1,8 +1,8 @@
 {
     "$type": "NullableTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "BoxPtrTypeExpSyntax",
-        "innerTypeExp": {
+        "innerType": {
             "$type": "IdTypeExpSyntax",
             "name": "T",
             "typeArgs": []

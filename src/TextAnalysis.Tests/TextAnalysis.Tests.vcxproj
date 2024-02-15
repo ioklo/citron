@@ -112,7 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommandLexerTests.cpp" />
-    <ClCompile Include="ExpParserTests.cpp" />
+    <ClCompile Include="ExpParserTests.g.cpp" />
     <ClCompile Include="LexerTests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

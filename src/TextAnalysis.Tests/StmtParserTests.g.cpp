@@ -117,7 +117,7 @@ TEST(StmtParser, ParseBoxPtrVarDeclStmt)
                 "typeArgs": []
             }
         },
-        "elems": [
+        "elements": [
             {
                 "$type": "VarDeclSyntaxElement",
                 "varName": "p",
@@ -496,7 +496,7 @@ TEST(StmtParser, ParseLocalPtrVarDeclStmt)
                 "typeArgs": []
             }
         },
-        "elems": [
+        "elements": [
             {
                 "$type": "VarDeclSyntaxElement",
                 "varName": "p",
@@ -527,7 +527,7 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
                 "typeArgs": []
             }
         },
-        "elems": [
+        "elements": [
             {
                 "$type": "VarDeclSyntaxElement",
                 "varName": "p",
@@ -555,7 +555,7 @@ TEST(StmtParser, ParseVarDeclStmt)
             "name": "string",
             "typeArgs": []
         },
-        "elems": [
+        "elements": [
             {
                 "$type": "VarDeclSyntaxElement",
                 "varName": "a",

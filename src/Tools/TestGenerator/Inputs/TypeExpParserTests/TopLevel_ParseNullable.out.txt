@@ -1,6 +1,6 @@
 {
     "$type": "NullableTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "IdTypeExpSyntax",
         "name": "T",
         "typeArgs": []

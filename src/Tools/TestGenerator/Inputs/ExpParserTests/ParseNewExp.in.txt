@@ -1,0 +1,1 @@
+new MyType<X>(2, false, "string")

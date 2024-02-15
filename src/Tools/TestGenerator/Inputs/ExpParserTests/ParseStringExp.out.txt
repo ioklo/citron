@@ -1,0 +1,33 @@
+{
+    "$type": "StringExpSyntax",
+    "elements": [
+        {
+            "$type": "TextStringExpSyntaxElement",
+            "text": "aaa bbb "
+        },
+        {
+            "$type": "ExpStringExpSyntaxElement",
+            "exp": {
+                "$type": "StringExpSyntax",
+                "elements": [
+                    {
+                        "$type": "TextStringExpSyntaxElement",
+                        "text": "xxx "
+                    },
+                    {
+                        "$type": "ExpStringExpSyntaxElement",
+                        "exp": {
+                            "$type": "IdentifierExpSyntax",
+                            "value": "ddd",
+                            "typeArgs": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "TextStringExpSyntaxElement",
+            "text": " ddd"
+        }
+    ]
+}

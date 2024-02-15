@@ -22,4 +22,9 @@ MemberExpSyntax::MemberExpSyntax(ExpSyntax parent, std::string memberName)
 {
 }
 
+IndirectMemberExpSyntax::IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName)
+    : IndirectMemberExpSyntax(std::move(parent), std::move(memberName), {})
+{
+}
+
 }

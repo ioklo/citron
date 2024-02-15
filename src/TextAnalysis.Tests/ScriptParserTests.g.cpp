@@ -235,40 +235,37 @@ TEST(ScriptParser, ParseEnumDecl)
     "$type": "ScriptSyntax",
     "elements": [
         {
-            "$type": "TypeDeclScriptSyntaxElement",
-            "typeDecl": {
-                "$type": "EnumDeclSyntax",
-                "accessModifier": null,
-                "name": "X",
-                "typeParams": [],
-                "elements": [
-                    {
-                        "$type": "EnumElemDeclSyntax",
-                        "name": "First",
-                        "memberVars": []
-                    },
-                    {
-                        "$type": "EnumElemDeclSyntax",
-                        "name": "Second",
-                        "memberVars": [
-                            {
-                                "$type": "EnumElemMemberVarDeclSyntax",
-                                "type": {
-                                    "$type": "IdTypeExpSyntax",
-                                    "name": "int",
-                                    "typeArgs": []
-                                },
-                                "name": "i"
-                            }
-                        ]
-                    },
-                    {
-                        "$type": "EnumElemDeclSyntax",
-                        "name": "Third",
-                        "memberVars": []
-                    }
-                ]
-            }
+            "$type": "EnumDeclSyntax",
+            "accessModifier": null,
+            "name": "X",
+            "typeParams": [],
+            "elements": [
+                {
+                    "$type": "EnumElemDeclSyntax",
+                    "name": "First",
+                    "memberVars": []
+                },
+                {
+                    "$type": "EnumElemDeclSyntax",
+                    "name": "Second",
+                    "memberVars": [
+                        {
+                            "$type": "EnumElemMemberVarDeclSyntax",
+                            "type": {
+                                "$type": "IdTypeExpSyntax",
+                                "name": "int",
+                                "typeArgs": []
+                            },
+                            "name": "i"
+                        }
+                    ]
+                },
+                {
+                    "$type": "EnumElemDeclSyntax",
+                    "name": "Third",
+                    "memberVars": []
+                }
+            ]
         }
     ]
 })---";
@@ -392,7 +389,7 @@ TEST(ScriptParser, ParseNamespaceDecl)
                         "NS3"
                     ],
                     "elements": [
-                        {   
+                        {
                             "$type": "GlobalFuncDeclSyntax",
                             "accessModifier": null,
                             "bSequence": false,
@@ -428,7 +425,7 @@ TEST(ScriptParser, ParseSimpleScript)
     auto expected = R"---({
     "$type": "ScriptSyntax",
     "elements": [
-        {   
+        {
             "$type": "GlobalFuncDeclSyntax",
             "accessModifier": null,
             "bSequence": false,
@@ -555,44 +552,41 @@ TEST(ScriptParser, ParseStructDecl)
                     ]
                 },
                 {
-                    "$type": "StructMemberTypeDeclSyntax",
-                    "typeDecl": {
-                        "$type": "StructDeclSyntax",
-                        "accessModifier": "Public",
-                        "name": "Nested",
-                        "typeParams": [
-                            {
-                                "$type": "TypeParamSyntax",
-                                "name": "U"
-                            }
-                        ],
-                        "baseTypes": [
-                            {
+                    "$type": "StructDeclSyntax",
+                    "accessModifier": "Public",
+                    "name": "Nested",
+                    "typeParams": [
+                        {
+                            "$type": "TypeParamSyntax",
+                            "name": "U"
+                        }
+                    ],
+                    "baseTypes": [
+                        {
+                            "$type": "IdTypeExpSyntax",
+                            "name": "B",
+                            "typeArgs": []
+                        },
+                        {
+                            "$type": "IdTypeExpSyntax",
+                            "name": "I",
+                            "typeArgs": []
+                        }
+                    ],
+                    "memberDecls": [
+                        {
+                            "$type": "StructMemberVarDeclSyntax",
+                            "accessModifier": null,
+                            "varType": {
                                 "$type": "IdTypeExpSyntax",
-                                "name": "B",
+                                "name": "int",
                                 "typeArgs": []
                             },
-                            {
-                                "$type": "IdTypeExpSyntax",
-                                "name": "I",
-                                "typeArgs": []
-                            }
-                        ],
-                        "memberDecls": [
-                            {
-                                "$type": "StructMemberVarDeclSyntax",
-                                "accessModifier": null,
-                                "varType": {
-                                    "$type": "IdTypeExpSyntax",
-                                    "name": "int",
-                                    "typeArgs": []
-                                },
-                                "varNames": [
-                                    "x"
-                                ]
-                            }
-                        ]
-                    }
+                            "varNames": [
+                                "x"
+                            ]
+                        }
+                    ]
                 },
                 {
                     "$type": "StructMemberFuncDeclSyntax",

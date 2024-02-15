@@ -219,6 +219,63 @@ using namespace Citron;
     writeAll(resultPath, oss.str());
 }
 
+void GenerateExpParserTests(path inputPath, path srcPath)
+{
+    // input/ExpParserTests
+    path testsPath = inputPath;
+    testsPath.append("ExpParserTests");
+
+    // src/TestAnalysis.Tests/ExpParserTests.g.cpp
+    path resultPath = srcPath;
+
+    resultPath
+        .append("TextAnalysis.Tests")
+        .append("ExpParserTests.g.cpp");
+
+    if (!exists(testsPath))
+        return;
+
+    ostringstream oss;
+
+    // insert header
+    oss << R"---(#include "pch.h"
+
+#include <Syntax/Syntax.h>
+#include <TextAnalysis/ExpParser.h>
+
+#include "TestMisc.h"
+
+using namespace std;
+using namespace Citron;
+
+)---";
+
+    auto templ = R"----(TEST({}, {})
+{{
+    auto [buffer, lexer] = Prepare(UR"---({})---");
+
+    auto oExp = ParseExp(&lexer);
+
+    auto expected = R"---({})---";
+
+    EXPECT_SYNTAX_EQ(oExp, expected);
+}})----";
+
+    for (auto& [name, inFilePath, bFail, outFilePath] : GetFiles(testsPath))
+    {
+        if (bFail)
+            wcout << inFilePath << L": fail case not supported" << endl;
+
+        auto inContents = readAll(inFilePath);
+        auto outContents = readAll(outFilePath);
+
+        auto testContents = fmt::format(templ, "ExpParser", name.c_str(), inContents, outContents);
+        oss << testContents << endl << endl;
+    }
+
+    writeAll(resultPath, oss.str());
+}
+
 void GenerateTypeExpParserTests(path inputPath, path srcPath)
 {
     // input/TypeExpParserTests
@@ -315,6 +372,7 @@ int wmain(int argc, wchar_t* argv[])
         
     GenerateScriptParserTests(inputsPath, srcPath);
     GenerateStmtParserTests(inputsPath, srcPath);
+    GenerateExpParserTests(inputsPath, srcPath);
     GenerateTypeExpParserTests(inputsPath, srcPath);
 
     return 0;

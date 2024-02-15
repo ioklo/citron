@@ -1,0 +1,17 @@
+{
+    "$type": "ListExpSyntax",
+    "elements": [
+        {
+            "$type": "IntLiteralExpSyntax",
+            "value": 1
+        },
+        {
+            "$type": "IntLiteralExpSyntax",
+            "value": 2
+        },
+        {
+            "$type": "IntLiteralExpSyntax",
+            "value": 3
+        }
+    ]
+}

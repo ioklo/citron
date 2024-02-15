@@ -1,0 +1,16 @@
+{
+    "$type": "IndirectMemberExpSyntax",
+    "parent": {
+        "$type": "IdentifierExpSyntax",
+        "value": "a",
+        "typeArgs": []
+    },
+    "memberName": "b",
+    "memberTypeArgs": [
+        {
+            "$type": "IdTypeExpSyntax",
+            "name": "int",
+            "typeArgs": []
+        }
+    ]
+}

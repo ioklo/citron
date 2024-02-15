@@ -1,0 +1,65 @@
+{
+    "$type": "MemberExpSyntax",
+    "parent": {
+        "$type": "CallExpSyntax",
+        "callable": {
+            "$type": "MemberExpSyntax",
+            "parent": {
+                "$type": "MemberExpSyntax",
+                "parent": {
+                    "$type": "IdentifierExpSyntax",
+                    "value": "a",
+                    "typeArgs": []
+                },
+                "memberName": "b",
+                "memberTypeArgs": []
+            },
+            "memberName": "c",
+            "memberTypeArgs": [
+                {
+                    "$type": "IdTypeExpSyntax",
+                    "name": "int",
+                    "typeArgs": []
+                },
+                {
+                    "$type": "IdTypeExpSyntax",
+                    "name": "list",
+                    "typeArgs": [
+                        {
+                            "$type": "IdTypeExpSyntax",
+                            "name": "int",
+                            "typeArgs": []
+                        }
+                    ]
+                }
+            ]
+        },
+        "args": [
+            {
+                "$type": "ArgumentSyntax",
+                "bOut": false,
+                "bParams": false,
+                "exp": {
+                    "$type": "IntLiteralExpSyntax",
+                    "value": 1
+                }
+            },
+            {
+                "$type": "ArgumentSyntax",
+                "bOut": false,
+                "bParams": false,
+                "exp": {
+                    "$type": "StringExpSyntax",
+                    "elements": [
+                        {
+                            "$type": "TextStringExpSyntaxElement",
+                            "text": "str"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "memberName": "d",
+    "memberTypeArgs": []
+}

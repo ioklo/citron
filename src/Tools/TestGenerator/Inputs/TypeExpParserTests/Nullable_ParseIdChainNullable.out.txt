@@ -1,10 +1,10 @@
 {
     "$type": "NullableTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "MemberTypeExpSyntax",
-        "typeExp": {
+        "parentType": {
             "$type": "MemberTypeExpSyntax",
-            "typeExp": {
+            "parentType": {
                 "$type": "IdTypeExpSyntax",
                 "name": "A",
                 "typeArgs": []

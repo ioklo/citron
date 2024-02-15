@@ -12,12 +12,12 @@
             "args": []
         }
     },
-    "condExp": {
+    "cond": {
         "$type": "IdentifierExpSyntax",
         "value": "g",
         "typeArgs": []
     },
-    "continueExp": {
+    "cont": {
         "$type": "BinaryOpExpSyntax",
         "kind": "Add",
         "operand0": {

@@ -4,13 +4,13 @@
         "$type": "VarDeclSyntax",
         "type": {
             "$type": "BoxPtrTypeExpSyntax",
-            "innerTypeExp": {
+            "innerType": {
                 "$type": "IdTypeExpSyntax",
                 "name": "int",
                 "typeArgs": []
             }
         },
-        "elems": [
+        "elements": [
             {
                 "$type": "VarDeclSyntaxElement",
                 "varName": "p",

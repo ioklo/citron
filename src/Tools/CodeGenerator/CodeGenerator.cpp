@@ -618,6 +618,7 @@ namespace Citron {
                 "class LambdaExpSyntax",
                 "class IndexerExpSyntax",
                 "class MemberExpSyntax",
+                "class IndirectMemberExpSyntax",
                 "class ListExpSyntax",
                 "class NewExpSyntax",
                 "class BoxExpSyntax",
@@ -845,11 +846,36 @@ namespace Citron {
             /* bDefaultsInline */ false
         },
 
+        VariantInfo {
+            "LambdaExpBodySyntax",
+            "body",
+            {
+                "class StmtsLambdaExpBodySyntax",
+                "class ExpLambdaExpBodySyntax"
+            }
+        },
+
+        ClassInfo {
+            "StmtsLambdaExpBodySyntax",
+            {
+                { "std::vector<StmtSyntax>", "stmts", "GetStmts", /* bUsePimpl */ false, /* bUseMove */ true }
+            },
+            /* bDefaultsInline */ false
+        },
+
+        ClassInfo {
+            "ExpLambdaExpBodySyntax",
+            {
+                { "ExpSyntax", "exp", "GetExp", /* bUsePimpl */ true, /* bUseMove */ true }
+            },
+            /* bDefaultsInline */ false
+        },
+
         ClassInfo {
             "LambdaExpSyntax",
             {
                 { "std::vector<LambdaExpParamSyntax>", "params", "GetParams", /* bUsePimpl */ false, /* bUseMove*/ true },
-                { "std::vector<StmtSyntax>", "body", "GetBody", /* bUsePimpl */ false, /* bUseMove*/ true },
+                { "LambdaExpBodySyntax", "body", "GetBody", /* bUsePimpl */ false, /* bUseMove*/ true },
             },
             /* bDefaultsInline */ false
         },
@@ -873,6 +899,19 @@ namespace Citron {
             /* bDefaultsInline */ false,
             /* extraConstructors */ {
                 "SYNTAX_API MemberExpSyntax(ExpSyntax parent, std::string memberName);"
+            }
+        },
+
+        ClassInfo {
+            "IndirectMemberExpSyntax",
+            {
+                { "ExpSyntax", "parent", "GetParent", /* bUsePimpl */ true, /* bUseMove*/ true },
+                { "std::string", "memberName", "GetMemberName", /* bUsePimpl */ false, /* bUseMove*/ true },
+                { "std::vector<TypeExpSyntax>", "memberTypeArgs", "GetMemberTypeArgs", /* bUsePimpl */ false, /* bUseMove*/ true },
+            },
+            /* bDefaultsInline */ false,
+            /* extraConstructors */ {
+                "SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName);"
             }
         },
 

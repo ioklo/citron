@@ -1,45 +1,36 @@
 {
     "$type": "ScriptSyntax",
-    "elems": [
+    "elements": [
         {
-            "$type": "NamespaceDeclScriptSyntaxElement",
-            "namespaceDecl": {
-                "$type": "NamespaceDeclSyntax",
-                "names": [
-                    "NS1"
-                ],
-                "elements": [
-                    {
-                        "$type": "NamespaceDeclNamespaceDeclSyntaxElement",
-                        "namespaceDecl": {
-                            "$type": "NamespaceDeclSyntax",
-                            "names": [
-                                "NS2",
-                                "NS3"
-                            ],
-                            "elements": [
-                                {
-                                    "$type": "GlobalFuncDeclNamespaceDeclSyntaxElement",
-                                    "funcDecl": {
-                                        "$type": "GlobalFuncDeclSyntax",
-                                        "accessModifier": null,
-                                        "bSequence": false,
-                                        "retType": {
-                                            "$type": "IdTypeExpSyntax",
-                                            "name": "void",
-                                            "typeArgs": []
-                                        },
-                                        "name": "F",
-                                        "typeParams": [],
-                                        "parameters": [],
-                                        "body": []
-                                    }
-                                }
-                            ]
+            "$type": "NamespaceDeclSyntax",
+            "names": [
+                "NS1"
+            ],
+            "elements": [
+                {
+                    "$type": "NamespaceDeclSyntax",
+                    "names": [
+                        "NS2",
+                        "NS3"
+                    ],
+                    "elements": [
+                        {
+                            "$type": "GlobalFuncDeclSyntax",
+                            "accessModifier": null,
+                            "bSequence": false,
+                            "retType": {
+                                "$type": "IdTypeExpSyntax",
+                                "name": "void",
+                                "typeArgs": []
+                            },
+                            "name": "F",
+                            "typeParams": [],
+                            "parameters": [],
+                            "body": []
                         }
-                    }
-                ]
-            }
+                    ]
+                }
+            ]
         }
     ]
 }

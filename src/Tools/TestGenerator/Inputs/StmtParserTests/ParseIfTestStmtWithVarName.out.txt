@@ -1,6 +1,6 @@
 {
     "$type": "IfTestStmtSyntax",
-    "testTypeExp": {
+    "testType": {
         "$type": "IdTypeExpSyntax",
         "name": "T",
         "typeArgs": []

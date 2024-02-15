@@ -1,0 +1,48 @@
+{
+    "$type": "NewExpSyntax",
+    "type": {
+        "$type": "IdTypeExpSyntax",
+        "name": "MyType",
+        "typeArgs": [
+            {
+                "$type": "IdTypeExpSyntax",
+                "name": "X",
+                "typeArgs": []
+            }
+        ]
+    },
+    "args": [
+        {
+            "$type": "ArgumentSyntax",
+            "bOut": false,
+            "bParams": false,
+            "exp": {
+                "$type": "IntLiteralExpSyntax",
+                "value": 2
+            }
+        },
+        {
+            "$type": "ArgumentSyntax",
+            "bOut": false,
+            "bParams": false,
+            "exp": {
+                "$type": "BoolLiteralExpSyntax",
+                "value": false
+            }
+        },
+        {
+            "$type": "ArgumentSyntax",
+            "bOut": false,
+            "bParams": false,
+            "exp": {
+                "$type": "StringExpSyntax",
+                "elements": [
+                    {
+                        "$type": "TextStringExpSyntaxElement",
+                        "text": "string"
+                    }
+                ]
+            }
+        }
+    ]
+}

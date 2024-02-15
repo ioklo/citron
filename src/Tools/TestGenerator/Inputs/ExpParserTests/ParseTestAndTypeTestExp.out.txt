@@ -1,0 +1,52 @@
+{
+    "$type": "IsExpSyntax",
+    "exp": {
+        "$type": "BinaryOpExpSyntax",
+        "kind": "LessThan",
+        "operand0": {
+            "$type": "IsExpSyntax",
+            "exp": {
+                "$type": "BinaryOpExpSyntax",
+                "kind": "Add",
+                "operand0": {
+                    "$type": "IdentifierExpSyntax",
+                    "value": "e",
+                    "typeArgs": []
+                },
+                "operand1": {
+                    "$type": "IntLiteralExpSyntax",
+                    "value": 1
+                }
+            },
+            "type": {
+                "$type": "IdTypeExpSyntax",
+                "name": "X",
+                "typeArgs": [
+                    {
+                        "$type": "IdTypeExpSyntax",
+                        "name": "int",
+                        "typeArgs": []
+                    }
+                ]
+            }
+        },
+        "operand1": {
+            "$type": "BinaryOpExpSyntax",
+            "kind": "Add",
+            "operand0": {
+                "$type": "IdentifierExpSyntax",
+                "value": "d",
+                "typeArgs": []
+            },
+            "operand1": {
+                "$type": "IntLiteralExpSyntax",
+                "value": 1
+            }
+        }
+    },
+    "type": {
+        "$type": "IdTypeExpSyntax",
+        "name": "T",
+        "typeArgs": []
+    }
+}

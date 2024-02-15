@@ -1,0 +1,47 @@
+{
+    "$type": "UnaryOpExpSyntax",
+    "kind": "PostfixInc",
+    "operand": {
+        "$type": "BinaryOpExpSyntax",
+        "kind": "Modulo",
+        "operand0": {
+            "$type": "CallExpSyntax",
+            "callable": {
+                "$type": "UnaryOpExpSyntax",
+                "kind": "PostfixInc",
+                "operand": {
+                    "$type": "IdentifierExpSyntax",
+                    "value": "c",
+                    "typeArgs": []
+                }
+            },
+            "args": [
+                {
+                    "$type": "ArgumentSyntax",
+                    "bOut": false,
+                    "bParams": false,
+                    "exp": {
+                        "$type": "IdentifierExpSyntax",
+                        "value": "e",
+                        "typeArgs": []
+                    }
+                },
+                {
+                    "$type": "ArgumentSyntax",
+                    "bOut": false,
+                    "bParams": false,
+                    "exp": {
+                        "$type": "IdentifierExpSyntax",
+                        "value": "f",
+                        "typeArgs": []
+                    }
+                }
+            ]
+        },
+        "operand1": {
+            "$type": "IdentifierExpSyntax",
+            "value": "d",
+            "typeArgs": []
+        }
+    }
+}

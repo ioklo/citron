@@ -44,6 +44,7 @@ using ExpSyntax = std::variant<
     class LambdaExpSyntax,
     class IndexerExpSyntax,
     class MemberExpSyntax,
+    class IndirectMemberExpSyntax,
     class ListExpSyntax,
     class NewExpSyntax,
     class BoxExpSyntax,
@@ -513,13 +514,56 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
+using LambdaExpBodySyntax = std::variant<
+    class StmtsLambdaExpBodySyntax,
+    class ExpLambdaExpBodySyntax>;
+
+SYNTAX_API JsonItem ToJson(LambdaExpBodySyntax& body);
+
+class StmtsLambdaExpBodySyntax
+{
+    std::vector<StmtSyntax> stmts;
+
+public:
+    SYNTAX_API StmtsLambdaExpBodySyntax(std::vector<StmtSyntax> stmts);
+    StmtsLambdaExpBodySyntax(const StmtsLambdaExpBodySyntax&) = delete;
+    SYNTAX_API StmtsLambdaExpBodySyntax(StmtsLambdaExpBodySyntax&&) noexcept;
+    SYNTAX_API ~StmtsLambdaExpBodySyntax();
+
+    StmtsLambdaExpBodySyntax& operator=(const StmtsLambdaExpBodySyntax& other) = delete;
+    SYNTAX_API StmtsLambdaExpBodySyntax& operator=(StmtsLambdaExpBodySyntax&& other) noexcept;
+
+    std::vector<StmtSyntax>& GetStmts() { return stmts; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ExpLambdaExpBodySyntax
+{
+    struct Impl;
+    std::unique_ptr<Impl> impl;
+
+public:
+    SYNTAX_API ExpLambdaExpBodySyntax(ExpSyntax exp);
+    ExpLambdaExpBodySyntax(const ExpLambdaExpBodySyntax&) = delete;
+    SYNTAX_API ExpLambdaExpBodySyntax(ExpLambdaExpBodySyntax&&) noexcept;
+    SYNTAX_API ~ExpLambdaExpBodySyntax();
+
+    ExpLambdaExpBodySyntax& operator=(const ExpLambdaExpBodySyntax& other) = delete;
+    SYNTAX_API ExpLambdaExpBodySyntax& operator=(ExpLambdaExpBodySyntax&& other) noexcept;
+
+    SYNTAX_API ExpSyntax& GetExp();
+
+    SYNTAX_API JsonItem ToJson();
+};
+
 class LambdaExpSyntax
 {
     std::vector<LambdaExpParamSyntax> params;
-    std::vector<StmtSyntax> body;
+    LambdaExpBodySyntax body;
 
 public:
-    SYNTAX_API LambdaExpSyntax(std::vector<LambdaExpParamSyntax> params, std::vector<StmtSyntax> body);
+    SYNTAX_API LambdaExpSyntax(std::vector<LambdaExpParamSyntax> params, LambdaExpBodySyntax body);
     LambdaExpSyntax(const LambdaExpSyntax&) = delete;
     SYNTAX_API LambdaExpSyntax(LambdaExpSyntax&&) noexcept;
     SYNTAX_API ~LambdaExpSyntax();
@@ -528,7 +572,7 @@ public:
     SYNTAX_API LambdaExpSyntax& operator=(LambdaExpSyntax&& other) noexcept;
 
     std::vector<LambdaExpParamSyntax>& GetParams() { return params; }
-    std::vector<StmtSyntax>& GetBody() { return body; }
+    LambdaExpBodySyntax& GetBody() { return body; }
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -570,6 +614,31 @@ public:
 
     MemberExpSyntax& operator=(const MemberExpSyntax& other) = delete;
     SYNTAX_API MemberExpSyntax& operator=(MemberExpSyntax&& other) noexcept;
+
+    SYNTAX_API ExpSyntax& GetParent();
+    std::string& GetMemberName() { return memberName; }
+    std::vector<TypeExpSyntax>& GetMemberTypeArgs() { return memberTypeArgs; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class IndirectMemberExpSyntax
+{
+    std::string memberName;
+    std::vector<TypeExpSyntax> memberTypeArgs;
+
+    struct Impl;
+    std::unique_ptr<Impl> impl;
+
+public:
+    SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName, std::vector<TypeExpSyntax> memberTypeArgs);
+    SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName);
+    IndirectMemberExpSyntax(const IndirectMemberExpSyntax&) = delete;
+    SYNTAX_API IndirectMemberExpSyntax(IndirectMemberExpSyntax&&) noexcept;
+    SYNTAX_API ~IndirectMemberExpSyntax();
+
+    IndirectMemberExpSyntax& operator=(const IndirectMemberExpSyntax& other) = delete;
+    SYNTAX_API IndirectMemberExpSyntax& operator=(IndirectMemberExpSyntax&& other) noexcept;
 
     SYNTAX_API ExpSyntax& GetParent();
     std::string& GetMemberName() { return memberName; }

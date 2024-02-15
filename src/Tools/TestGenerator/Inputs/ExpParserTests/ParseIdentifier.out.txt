@@ -1,0 +1,5 @@
+{
+    "$type": "IdentifierExpSyntax",
+    "value": "s",
+    "typeArgs": []
+}

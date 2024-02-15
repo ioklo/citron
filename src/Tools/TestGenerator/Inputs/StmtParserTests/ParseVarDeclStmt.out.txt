@@ -7,7 +7,7 @@
             "name": "string",
             "typeArgs": []
         },
-        "elems": [
+        "elements": [
             {
                 "$type": "VarDeclSyntaxElement",
                 "varName": "a",

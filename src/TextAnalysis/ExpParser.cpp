@@ -402,11 +402,11 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             auto oTypeArgs = ParseTypeArgs(&curLexer);
             if (oTypeArgs)
             {   
-                curExp = MemberExpSyntax(UnaryOpExpSyntax(UnaryOpSyntaxKind::Deref, std::move(curExp)), std::move(oIdToken->text), std::move(*oTypeArgs));
+                curExp = IndirectMemberExpSyntax(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
             }
             else
             {   
-                curExp = MemberExpSyntax(UnaryOpExpSyntax(UnaryOpSyntaxKind::Deref, std::move(curExp)), std::move(oIdToken->text), { });
+                curExp = IndirectMemberExpSyntax(std::move(curExp), std::move(oIdToken->text), { });
             }
 
             continue;
@@ -557,7 +557,7 @@ optional<LambdaExpSyntax> ParseLambdaExp(Lexer* lexer)
 
     // exp => return exp;
     // { ... }
-    vector<StmtSyntax> body;
+    optional<LambdaExpBodySyntax> oBody;
     if (Peek<LBraceToken>(curLexer))
     {
         // Body 파싱을 그대로 쓴다
@@ -565,7 +565,7 @@ optional<LambdaExpSyntax> ParseLambdaExp(Lexer* lexer)
         if (!oStmtBody)
             return nullopt;
 
-        body = std::move(*oStmtBody);
+        oBody = StmtsLambdaExpBodySyntax(std::move(*oStmtBody));
     }
     else
     {
@@ -574,14 +574,11 @@ optional<LambdaExpSyntax> ParseLambdaExp(Lexer* lexer)
         if (!oExpBody)
             return nullopt;
 
-        vector<StmtSyntax> stmts;
-        stmts.push_back(ReturnStmtSyntax(std::move(*oExpBody)));
-
-        body = std::move(stmts);
+        oBody = ExpLambdaExpBodySyntax(std::move(*oExpBody));
     }
 
     *lexer = std::move(curLexer);
-    return LambdaExpSyntax(std::move(params), std::move(body));
+    return LambdaExpSyntax(std::move(params), std::move(*oBody));
 }
 
 optional<ExpSyntax> ParseParenExp(Lexer* lexer)

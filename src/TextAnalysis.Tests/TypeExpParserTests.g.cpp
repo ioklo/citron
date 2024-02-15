@@ -25,11 +25,11 @@ TEST(TypeExpParser, BoxPtr_ParseBoxPtrOfIdChain)
 
     auto expected = R"---({
     "$type": "BoxPtrTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "MemberTypeExpSyntax",
-        "typeExp": {
+        "parentType": {
             "$type": "MemberTypeExpSyntax",
-            "typeExp": {
+            "parentType": {
                 "$type": "IdTypeExpSyntax",
                 "name": "A",
                 "typeArgs": []
@@ -69,9 +69,9 @@ TEST(TypeExpParser, BoxPtr_ParseBoxPtrOfParen)
 
     auto expected = R"---({
     "$type": "BoxPtrTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "NullableTypeExpSyntax",
-        "innerTypeExp": {
+        "innerType": {
             "$type": "IdTypeExpSyntax",
             "name": "T",
             "typeArgs": []
@@ -100,11 +100,11 @@ TEST(TypeExpParser, LocalPtr_ParseLocalPtrOfIdChain)
 
     auto expected = R"---({
     "$type": "LocalPtrTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "MemberTypeExpSyntax",
-        "typeExp": {
+        "parentType": {
             "$type": "MemberTypeExpSyntax",
-            "typeExp": {
+            "parentType": {
                 "$type": "IdTypeExpSyntax",
                 "name": "A",
                 "typeArgs": []
@@ -144,9 +144,9 @@ TEST(TypeExpParser, LocalPtr_ParseLocalPtrOfParen)
 
     auto expected = R"---({
     "$type": "LocalPtrTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "NullableTypeExpSyntax",
-        "innerTypeExp": {
+        "innerType": {
             "$type": "IdTypeExpSyntax",
             "name": "T",
             "typeArgs": []
@@ -166,9 +166,9 @@ TEST(TypeExpParser, LocalPtr_ParseNestedLocalPtrs)
 
     auto expected = R"---({
     "$type": "LocalPtrTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "LocalPtrTypeExpSyntax",
-        "innerTypeExp": {
+        "innerType": {
             "$type": "IdTypeExpSyntax",
             "name": "T",
             "typeArgs": []
@@ -197,11 +197,11 @@ TEST(TypeExpParser, Nullable_ParseIdChainNullable)
 
     auto expected = R"---({
     "$type": "NullableTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "MemberTypeExpSyntax",
-        "typeExp": {
+        "parentType": {
             "$type": "MemberTypeExpSyntax",
-            "typeExp": {
+            "parentType": {
                 "$type": "IdTypeExpSyntax",
                 "name": "A",
                 "typeArgs": []
@@ -232,9 +232,9 @@ TEST(TypeExpParser, Nullable_ParseNullableBoxPtr)
 
     auto expected = R"---({
     "$type": "NullableTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "BoxPtrTypeExpSyntax",
-        "innerTypeExp": {
+        "innerType": {
             "$type": "IdTypeExpSyntax",
             "name": "T",
             "typeArgs": []
@@ -254,9 +254,9 @@ TEST(TypeExpParser, Nullable_ParseNullableLocalPtr)
 
     auto expected = R"---({
     "$type": "NullableTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "LocalPtrTypeExpSyntax",
-        "innerTypeExp": {
+        "innerType": {
             "$type": "IdTypeExpSyntax",
             "name": "T",
             "typeArgs": []
@@ -276,9 +276,9 @@ TEST(TypeExpParser, Nullable_ParseNullableParen)
 
     auto expected = R"---({
     "$type": "NullableTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "LocalPtrTypeExpSyntax",
-        "innerTypeExp": {
+        "innerType": {
             "$type": "IdTypeExpSyntax",
             "name": "T",
             "typeArgs": []
@@ -298,9 +298,9 @@ TEST(TypeExpParser, Paren_ParseWrappedBoxPtr)
 
     auto expected = R"---({
     "$type": "NullableTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "BoxPtrTypeExpSyntax",
-        "innerTypeExp": {
+        "innerType": {
             "$type": "IdTypeExpSyntax",
             "name": "T",
             "typeArgs": []
@@ -329,9 +329,9 @@ TEST(TypeExpParser, Paren_ParseWrappedLocalPtr)
 
     auto expected = R"---({
     "$type": "LocalPtrTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "LocalPtrTypeExpSyntax",
-        "innerTypeExp": {
+        "innerType": {
             "$type": "IdTypeExpSyntax",
             "name": "T",
             "typeArgs": []
@@ -360,9 +360,9 @@ TEST(TypeExpParser, Paren_ParseWrappedNullable)
 
     auto expected = R"---({
     "$type": "NullableTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "NullableTypeExpSyntax",
-        "innerTypeExp": {
+        "innerType": {
             "$type": "IdTypeExpSyntax",
             "name": "T",
             "typeArgs": []
@@ -382,7 +382,7 @@ TEST(TypeExpParser, TopLevel_ParseBoxPtr)
 
     auto expected = R"---({
     "$type": "BoxPtrTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "IdTypeExpSyntax",
         "name": "T",
         "typeArgs": []
@@ -401,9 +401,9 @@ TEST(TypeExpParser, TopLevel_ParseIdChain)
 
     auto expected = R"---({
     "$type": "MemberTypeExpSyntax",
-    "typeExp": {
+    "parentType": {
         "$type": "MemberTypeExpSyntax",
-        "typeExp": {
+        "parentType": {
             "$type": "IdTypeExpSyntax",
             "name": "A",
             "typeArgs": []
@@ -433,7 +433,7 @@ TEST(TypeExpParser, TopLevel_ParseLocalPtr)
 
     auto expected = R"---({
     "$type": "LocalPtrTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "IdTypeExpSyntax",
         "name": "int",
         "typeArgs": []
@@ -452,7 +452,7 @@ TEST(TypeExpParser, TopLevel_ParseNullable)
 
     auto expected = R"---({
     "$type": "NullableTypeExpSyntax",
-    "innerTypeExp": {
+    "innerType": {
         "$type": "IdTypeExpSyntax",
         "name": "T",
         "typeArgs": []
