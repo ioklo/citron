@@ -20,7 +20,9 @@
     <ClInclude Include="..\..\include\Infra\StringWriter.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Infra\make_vector.h" />
+    <ClInclude Include="..\..\include\Infra\make_vector.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
