@@ -52,7 +52,6 @@ struct JsonString
 {
     std::string value;
     JsonString(std::string value) : value(std::move(value)) { }
-    INFRA_API JsonString(std::u32string value); // utility
 
     bool operator==(const JsonString& other) const
     {
@@ -88,19 +87,14 @@ struct JsonObject
     INFRA_API void ToString(IWriter& writer);
 };
 
-inline JsonBool ToJson(bool value)
+inline JsonItem ToJson(bool value)
 {
     return JsonBool(value);
 }
 
-inline JsonInt ToJson(int value)
+inline JsonItem ToJson(int value)
 {
     return JsonInt(value);
-}
-
-inline JsonString ToJson(std::u32string& value)
-{
-    return JsonString(value);
 }
 
 // default

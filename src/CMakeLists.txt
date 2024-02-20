@@ -1,2 +1,4 @@
-cmake_minimum_required(3.20)
-
+add_subdirectory(Infra)
+add_subdirectory(Syntax)
+add_subdirectory(TextAnalysis)
+#add_subdirectory(TextAnalysis.Tests)

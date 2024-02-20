@@ -2,10 +2,8 @@
 #include <Infra/Json.h>
 #include <Infra/IWriter.h>
 #include <sstream>
-#include <Unicode/unistr.h>
 
 using namespace std;
-using namespace icu;
 
 namespace {
 string QuoteString(const string& str)
@@ -57,12 +55,6 @@ void JsonInt::ToString(IWriter& writer)
     oss << value;
 
     writer.Write(oss.str());
-}
-
-INFRA_API JsonString::JsonString(std::u32string value)
-{
-    auto str = UnicodeString::fromUTF32((UChar32*)value.c_str(), (int32_t)value.size());
-    str.toUTF8String(this->value);
 }
 
 void JsonString::ToString(IWriter& writer)
