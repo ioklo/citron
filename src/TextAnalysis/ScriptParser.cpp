@@ -479,7 +479,7 @@ optional<ClassConstructorDeclSyntax> ParseClassConstructorDecl(Lexer* lexer)
             return nullopt;
 
         // base가 아닌 identifier는 오면 안된다. 다음은 '{' 토큰이다
-        if (oExpectedToBeBase->text != u8"base")
+        if (oExpectedToBeBase->text != "base")
             return nullopt;
             
         auto oArgs = ParseCallArgs(&curLexer);

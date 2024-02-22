@@ -136,7 +136,7 @@ using namespace Citron;
 
 )---";
 
-    auto templ = R"----(TEST({}, {})
+    constexpr auto templ = R"----(TEST({}, {})
 {{
     auto [buffer, lexer] = Prepare(UR"---({})---");
 
@@ -193,7 +193,7 @@ using namespace Citron;
 
 )---";
 
-    auto templ = R"----(TEST({}, {})
+    constexpr auto templ = R"----(TEST({}, {})
 {{
     auto [buffer, lexer] = Prepare(UR"---({})---");
 
@@ -250,7 +250,7 @@ using namespace Citron;
 
 )---";
 
-    auto templ = R"----(TEST({}, {})
+    constexpr auto templ = R"----(TEST({}, {})
 {{
     auto [buffer, lexer] = Prepare(UR"---({})---");
 
@@ -307,7 +307,7 @@ using namespace Citron;
 
 )---";
 
-    auto succTempl = R"----(TEST({}, {})
+    constexpr auto succTempl = R"----(TEST({}, {})
 {{
     auto [buffer, lexer] = Prepare(UR"---({})---");
 
@@ -319,7 +319,7 @@ using namespace Citron;
     EXPECT_SYNTAX_EQ(oTypeExp, expected);
 }})----";
 
-    auto failTempl = R"----(TEST({}, {})
+    constexpr auto failTempl = R"----(TEST({}, {})
 {{
     auto [buffer, lexer] = Prepare(UR"---({})---");
 

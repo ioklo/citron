@@ -2,6 +2,7 @@
 
 #include <TextAnalysis/BufferPosition.h>
 #include <TextAnalysis/Buffer.h>
+#include <unicode/uchar.h>
 
 using namespace std;
 

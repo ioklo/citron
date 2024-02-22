@@ -5,7 +5,8 @@
 #include <optional>
 #include <unordered_map>
 #include <variant>
-#include <unicode/brkiter.h>
+#include <memory>
+#include <string>
 
 namespace Citron {
 

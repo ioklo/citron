@@ -185,7 +185,7 @@ struct ArgumentSyntax::Impl
 };
 
 ArgumentSyntax::ArgumentSyntax(bool bOut, bool bParams, ExpSyntax exp)
-    : bOut(bOut), bParams(bParams), impl(new Impl{ std::move(exp) }) { }
+    : bOut(std::move(bOut)), bParams(std::move(bParams)), impl(new Impl{ std::move(exp) }) { }
 
 ArgumentSyntax::ArgumentSyntax(ArgumentSyntax&& other) noexcept = default;
 
@@ -304,7 +304,7 @@ struct BinaryOpExpSyntax::Impl
 };
 
 BinaryOpExpSyntax::BinaryOpExpSyntax(BinaryOpSyntaxKind kind, ExpSyntax operand0, ExpSyntax operand1)
-    : kind(kind), impl(new Impl{ std::move(operand0), std::move(operand1) }) { }
+    : kind(std::move(kind)), impl(new Impl{ std::move(operand0), std::move(operand1) }) { }
 
 BinaryOpExpSyntax::BinaryOpExpSyntax(BinaryOpExpSyntax&& other) noexcept = default;
 
@@ -338,7 +338,7 @@ struct UnaryOpExpSyntax::Impl
 };
 
 UnaryOpExpSyntax::UnaryOpExpSyntax(UnaryOpSyntaxKind kind, ExpSyntax operand)
-    : kind(kind), impl(new Impl{ std::move(operand) }) { }
+    : kind(std::move(kind)), impl(new Impl{ std::move(operand) }) { }
 
 UnaryOpExpSyntax::UnaryOpExpSyntax(UnaryOpExpSyntax&& other) noexcept = default;
 
@@ -1200,7 +1200,7 @@ JsonItem TypeParamSyntax::ToJson()
 }
 
 FuncParamSyntax::FuncParamSyntax(bool hasOut, bool hasParams, TypeExpSyntax type, std::string name)
-    : hasOut(hasOut), hasParams(hasParams), type(std::move(type)), name(std::move(name)) { }
+    : hasOut(std::move(hasOut)), hasParams(std::move(hasParams)), type(std::move(type)), name(std::move(name)) { }
 
 FuncParamSyntax::FuncParamSyntax(FuncParamSyntax&& other) noexcept = default;
 

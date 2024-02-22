@@ -193,7 +193,7 @@ class LambdaExpParamSyntax
 
 public:
     LambdaExpParamSyntax(std::optional<TypeExpSyntax> type, std::string name, bool hasOut, bool hasParams)
-        : type(std::move(type)), name(std::move(name)), hasOut(hasOut), hasParams(hasParams) { }
+        : type(std::move(type)), name(std::move(name)), hasOut(std::move(hasOut)), hasParams(std::move(hasParams)) { }
     LambdaExpParamSyntax(const LambdaExpParamSyntax&) = delete;
     LambdaExpParamSyntax(LambdaExpParamSyntax&&) = default;
 
@@ -404,7 +404,7 @@ class IntLiteralExpSyntax
 
 public:
     IntLiteralExpSyntax(int value)
-        : value(value) { }
+        : value(std::move(value)) { }
     IntLiteralExpSyntax(const IntLiteralExpSyntax&) = delete;
     IntLiteralExpSyntax(IntLiteralExpSyntax&&) = default;
 
@@ -422,7 +422,7 @@ class BoolLiteralExpSyntax
 
 public:
     BoolLiteralExpSyntax(bool value)
-        : value(value) { }
+        : value(std::move(value)) { }
     BoolLiteralExpSyntax(const BoolLiteralExpSyntax&) = delete;
     BoolLiteralExpSyntax(BoolLiteralExpSyntax&&) = default;
 
@@ -1249,7 +1249,7 @@ class GlobalFuncDeclSyntax
 
 public:
     GlobalFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
-        : accessModifier(accessModifier), bSequence(bSequence), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+        : accessModifier(std::move(accessModifier)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
     GlobalFuncDeclSyntax(const GlobalFuncDeclSyntax&) = delete;
     GlobalFuncDeclSyntax(GlobalFuncDeclSyntax&&) = default;
 
@@ -1280,7 +1280,7 @@ class ClassMemberFuncDeclSyntax
 
 public:
     ClassMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
-        : accessModifier(accessModifier), bStatic(bStatic), bSequence(bSequence), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+        : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
     ClassMemberFuncDeclSyntax(const ClassMemberFuncDeclSyntax&) = delete;
     ClassMemberFuncDeclSyntax(ClassMemberFuncDeclSyntax&&) = default;
 
@@ -1309,7 +1309,7 @@ class ClassConstructorDeclSyntax
 
 public:
     ClassConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::optional<std::vector<ArgumentSyntax>> baseArgs, std::vector<StmtSyntax> body)
-        : accessModifier(accessModifier), name(std::move(name)), parameters(std::move(parameters)), baseArgs(std::move(baseArgs)), body(std::move(body)) { }
+        : accessModifier(std::move(accessModifier)), name(std::move(name)), parameters(std::move(parameters)), baseArgs(std::move(baseArgs)), body(std::move(body)) { }
     ClassConstructorDeclSyntax(const ClassConstructorDeclSyntax&) = delete;
     ClassConstructorDeclSyntax(ClassConstructorDeclSyntax&&) = default;
 
@@ -1333,7 +1333,7 @@ class ClassMemberVarDeclSyntax
 
 public:
     ClassMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames)
-        : accessModifier(accessModifier), varType(std::move(varType)), varNames(std::move(varNames)) { }
+        : accessModifier(std::move(accessModifier)), varType(std::move(varType)), varNames(std::move(varNames)) { }
     ClassMemberVarDeclSyntax(const ClassMemberVarDeclSyntax&) = delete;
     ClassMemberVarDeclSyntax(ClassMemberVarDeclSyntax&&) = default;
 
@@ -1367,7 +1367,7 @@ class ClassDeclSyntax
 
 public:
     ClassDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<TypeExpSyntax> baseTypes, std::vector<ClassMemberDeclSyntax> memberDecls)
-        : accessModifier(accessModifier), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
+        : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
     ClassDeclSyntax(const ClassDeclSyntax&) = delete;
     ClassDeclSyntax(ClassDeclSyntax&&) = default;
 
@@ -1396,7 +1396,7 @@ class StructMemberFuncDeclSyntax
 
 public:
     StructMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
-        : accessModifier(accessModifier), bStatic(bStatic), bSequence(bSequence), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+        : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
     StructMemberFuncDeclSyntax(const StructMemberFuncDeclSyntax&) = delete;
     StructMemberFuncDeclSyntax(StructMemberFuncDeclSyntax&&) = default;
 
@@ -1424,7 +1424,7 @@ class StructConstructorDeclSyntax
 
 public:
     StructConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
-        : accessModifier(accessModifier), name(std::move(name)), parameters(std::move(parameters)), body(std::move(body)) { }
+        : accessModifier(std::move(accessModifier)), name(std::move(name)), parameters(std::move(parameters)), body(std::move(body)) { }
     StructConstructorDeclSyntax(const StructConstructorDeclSyntax&) = delete;
     StructConstructorDeclSyntax(StructConstructorDeclSyntax&&) = default;
 
@@ -1447,7 +1447,7 @@ class StructMemberVarDeclSyntax
 
 public:
     StructMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames)
-        : accessModifier(accessModifier), varType(std::move(varType)), varNames(std::move(varNames)) { }
+        : accessModifier(std::move(accessModifier)), varType(std::move(varType)), varNames(std::move(varNames)) { }
     StructMemberVarDeclSyntax(const StructMemberVarDeclSyntax&) = delete;
     StructMemberVarDeclSyntax(StructMemberVarDeclSyntax&&) = default;
 
@@ -1481,7 +1481,7 @@ class StructDeclSyntax
 
 public:
     StructDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<TypeExpSyntax> baseTypes, std::vector<StructMemberDeclSyntax> memberDecls)
-        : accessModifier(accessModifier), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
+        : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
     StructDeclSyntax(const StructDeclSyntax&) = delete;
     StructDeclSyntax(StructDeclSyntax&&) = default;
 
@@ -1546,7 +1546,7 @@ class EnumDeclSyntax
 
 public:
     EnumDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<EnumElemDeclSyntax> elements)
-        : accessModifier(accessModifier), name(std::move(name)), typeParams(std::move(typeParams)), elements(std::move(elements)) { }
+        : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), elements(std::move(elements)) { }
     EnumDeclSyntax(const EnumDeclSyntax&) = delete;
     EnumDeclSyntax(EnumDeclSyntax&&) = default;
 

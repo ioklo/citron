@@ -8,8 +8,10 @@
 #include <Syntax/Syntax.h>
 #include <TextAnalysis/ExpParser.h>
 #include <TextAnalysis/TypeExpParser.h>
+#include <unicode/uchar.h>
 
 #include "ParserMisc.h"
+
 
 
 using namespace std;

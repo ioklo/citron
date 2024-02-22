@@ -6,7 +6,6 @@
 #include <optional>
 #include <vector>
 #include <string>
-#include <unicode/uchar.h>
 
 namespace Citron {
 
