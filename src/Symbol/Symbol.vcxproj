@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</ProjectGuid>
-    <RootNamespace>Infra</RootNamespace>
+    <ProjectGuid>{b424f6ab-85bc-4fe0-af89-ec60b1a13fa7}</ProjectGuid>
+    <RootNamespace>Symbol</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -74,16 +74,13 @@
     <Import Project="..\Common.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Label="Vcpkg">
-    <VcpkgEnableManifest>true</VcpkgEnableManifest>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>INFRA_EXPORT;WIN32;_DEBUG;INFRA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SYMBOL_EXPORT;WIN32;_DEBUG;SYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -98,9 +95,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>INFRA_EXPORT;WIN32;NDEBUG;INFRA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SYMBOL_EXPORT;WIN32;NDEBUG;SYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -115,9 +112,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>INFRA_EXPORT;_DEBUG;INFRA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SYMBOL_EXPORT;_DEBUG;SYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -132,9 +129,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>INFRA_EXPORT;NDEBUG;INFRA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SYMBOL_EXPORT;NDEBUG;SYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -146,29 +143,34 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\Infra\Indirect.h" />
-    <ClInclude Include="..\..\include\Infra\InfraConfig.h" />
-    <ClInclude Include="..\..\include\Infra\IWriter.h" />
-    <ClInclude Include="..\..\include\Infra\Json.h" />
-    <ClInclude Include="..\..\include\Infra\make_vector.h" />
-    <ClInclude Include="..\..\include\Infra\StringWriter.h" />
-    <ClInclude Include="..\..\include\Infra\Unreachable.h" />
-    <ClInclude Include="pch.h" />
+    <ClInclude Include="..\..\include\Symbol\SymbolConfig.h" />
+    <ClInclude Include="..\..\include\Symbol\Symbols.g.h" />
+    <ClInclude Include="Macros.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="exports.cpp" />
-    <ClCompile Include="Json.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="StringWriter.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vcpkg-configuration.json" />
-    <None Include="vcpkg.json" />
+    <ClCompile Include="Accessor.ixx" />
+    <ClCompile Include="Copy.ixx" />
+    <ClCompile Include="DeclSymbols.ixx" />
+    <ClCompile Include="FuncDeclSymbolComponent.ixx" />
+    <ClCompile Include="FuncParameter.ixx" />
+    <ClCompile Include="FuncReturn.ixx" />
+    <ClCompile Include="GlobalFuncDeclSymbol.ixx" />
+    <ClCompile Include="Identifier.ixx" />
+    <ClCompile Include="Identifiers.ixx" />
+    <ClCompile Include="ModuleDeclSymbol.cpp" />
+    <ClCompile Include="ModuleDeclSymbol.ixx" />
+    <ClCompile Include="Names.ixx" />
+    <ClCompile Include="SymbolId.cpp" />
+    <ClCompile Include="SymbolId.ixx" />
+    <ClCompile Include="TopLevelOuterDeclSymbol.ixx" />
+    <ClCompile Include="TopLevelDeclSymbolComponent.cpp" />
+    <ClCompile Include="TopLevelDeclSymbolComponent.ixx" />
+    <ClCompile Include="TypeDeclSymbol.ixx" />
+    <ClCompile Include="TypeDeclSymbolComponent.cpp" />
+    <ClCompile Include="TypeDeclSymbolComponent.ixx" />
+    <ClCompile Include="TypeId.ixx" />
+    <ClCompile Include="TypeIds.cpp" />
+    <ClCompile Include="TypeIds.ixx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

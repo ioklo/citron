@@ -5,6 +5,7 @@
 #include <locale>
 #include <filesystem>
 #include "SyntaxCodeGenerator.h"
+#include "SymbolCodeGenerator.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -26,4 +27,5 @@ int wmain(int argc, wchar_t* argv[])
     // Syntax Generation
     // variant 만들기
     GenerateSyntax(srcPath);
+    // GenerateSymbol(srcPath);
 }

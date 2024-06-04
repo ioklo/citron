@@ -4,14 +4,10 @@
 // However, files listed here are ALL re-compiled if any one of them is updated between builds.
 // Do not add files here that you will be updating frequently as this negates the performance advantage.
 
-#pragma once
+#ifndef PCH_H
+#define PCH_H
 
-#include <Syntax/SyntaxConfig.h>
+// add headers that you want to pre-compile here
+#include "framework.h"
 
-#include <string>
-#include <variant>
-#include <optional>
-#include <vector>
-#include <memory>
-
-// #pragma warning(disable : 4251)
+#endif //PCH_H
