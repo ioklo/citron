@@ -1,7 +1,7 @@
-export module Citron.DeclSymbols:FuncDeclSymbolComponent;
+export module Citron.Symbols:MFuncDeclComponent;
 
-import Citron.Identifiers;
-import Citron.Names;
+import :MIdentifier;
+import :MNames;
 
 import <vector>;
 import <unordered_map>;
@@ -9,35 +9,35 @@ import <unordered_map>;
 namespace Citron {
 
 template<typename T>
-concept FuncDeclSymbol = requires(T t) {
+concept MFuncDecl = requires(T t) {
     t.GetTypeParamCount();
 };
 
-export template<typename TFuncDeclSymbol>
-class FuncDeclSymbolComponent
+export template<typename TMFuncDecl>
+class MFuncDeclComponent
 {
-    std::vector<TFuncDeclSymbol> funcs;
-    std::unordered_map<Identifier, size_t> idMap;
-    std::unordered_map<Name, std::vector<size_t>> nameMap;
+    std::vector<TMFuncDecl> funcs;
+    std::unordered_map<MIdentifier, size_t> idMap;
+    std::unordered_map<MName, std::vector<size_t>> nameMap;
 
 public:
-    void AddFunc(TFuncDeclSymbol&& declSymbol) // consume declSymbol
+    void AddFunc(TMFuncDecl&& func) // consume func
     {
         size_t index = funcs.size();
-        funcs.push_back(std::move(declSymbol));
+        funcs.push_back(std::move(func));
 
-        auto identifier = declSymbol.GetIdentifier();
+        auto identifier = func.GetIdentifier();
         idMap.insert_or_assign(identifier, index);
 
-        nameMap[identifier.Name].push_back(index);
+        nameMap[identifier.MName].push_back(index);
     }
 
-    TFuncDeclSymbol* GetFunc(int index)
+    TMFuncDecl* GetFunc(int index)
     {
         return &funcs[index];
     }
 
-    std::vector<int> GetFuncs(Name& name, int minTypeParamCount)
+    std::vector<int> GetFuncs(MName& name, int minTypeParamCount)
     {
         std::vector<int> result;
 
@@ -54,7 +54,7 @@ public:
         return result;
     }
 
-    std::ptrdiff_t GetFunc(Identifier& identifier)
+    std::ptrdiff_t GetFunc(MIdentifier& identifier)
     {
         auto i = idMap.find(identifier);
         if (i != idMap.end()) return -1;

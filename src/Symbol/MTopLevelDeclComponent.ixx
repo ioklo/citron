@@ -1,28 +1,28 @@
-export module Citron.DeclSymbols:TopLevelDeclSymbolComponent;
+export module Citron.Symbols:MTopLevelDeclComponent;
 
 import <string>;
 import <vector>;
 import <unordered_map>;
 
-import :TypeDeclSymbolComponent;
-import :FuncDeclSymbolComponent;
-import :GlobalFuncDeclSymbol;
+import :MTypeDeclComponent;
+import :MFuncDeclComponent;
+import :MGlobalFuncDecl;
 
 namespace Citron {
 
-class NamespaceDeclSymbol;
+class MNamespaceDecl;
 
-class TopLevelDeclSymbolComponent
+class MTopLevelDeclComponent
 {
-    std::vector<NamespaceDeclSymbol> namespaceDecls;    // storage
+    std::vector<MNamespaceDecl> namespaceDecls;    // storage
     std::unordered_map<std::string, int> namespaceDict; // indirect
 
-    TypeDeclSymbolComponent typeComp;
-    FuncDeclSymbolComponent<GlobalFuncDeclSymbol> funcComp;
+    MTypeDeclComponent typeComp;
+    MFuncDeclComponent<MGlobalFuncDecl> funcComp;
 
 public:
-    TopLevelDeclSymbolComponent();
-    TypeDeclSymbol* GetType(const Name& name);
+    MTopLevelDeclComponent();
+    MTypeDecl* GetType(const MName& name);
 
 //    public ITypeDeclSymbol ? GetType(Name name, int typeParamCount)
 //        = > typeComp.GetType(name, typeParamCount);

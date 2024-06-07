@@ -27,7 +27,7 @@ class RTempLoc
 
 class RLocalVarLoc
 {
-    Name Name;
+    MName Name;
 };
 
 // only this member allowed, so no need this

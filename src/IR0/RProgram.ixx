@@ -5,16 +5,16 @@ import <vector>;
 namespace Citron {
 
 // DeclSymbol -> Stmt
-struct StmtBody
+struct RStmtBody
 {
-    MDecl decl;
-    std::vector<Stmt> stmts;
+    MFuncDecl decl;
+    std::vector<RStmt> stmts;
 };
 
 class RProgram
 {
     MModuleDecl moduleDecl;
-    std::vector<StmtBody> bodies;
+    std::vector<RStmtBody> bodies;
 }
 
 }

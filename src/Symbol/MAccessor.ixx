@@ -1,8 +1,8 @@
-export module Citron.Accessor;
+export module Citron.Symbols:MAccessor;
 
 namespace Citron {
 
-export enum class Accessor
+export enum class MAccessor
 {
     Public,
     Protected,

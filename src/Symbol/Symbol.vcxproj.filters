@@ -13,11 +13,8 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Identifiers">
-      <UniqueIdentifier>{b98840d9-8f6a-4a16-916f-1810a715da29}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\DeclSymbols">
-      <UniqueIdentifier>{7ec54f47-c274-46b0-a1df-a2fca234952c}</UniqueIdentifier>
+    <Filter Include="Source Files\Symbols">
+      <UniqueIdentifier>{e36ff321-bf97-47c8-b005-3c324845d545}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -28,78 +25,90 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Macros.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Symbols</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TypeId.ixx">
-      <Filter>Source Files\Identifiers</Filter>
-    </ClCompile>
-    <ClCompile Include="Identifier.ixx">
-      <Filter>Source Files\Identifiers</Filter>
-    </ClCompile>
-    <ClCompile Include="Identifiers.ixx">
-      <Filter>Source Files\Identifiers</Filter>
-    </ClCompile>
-    <ClCompile Include="Names.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DeclSymbols.ixx">
-      <Filter>Source Files\DeclSymbols</Filter>
-    </ClCompile>
-    <ClCompile Include="FuncDeclSymbolComponent.ixx">
-      <Filter>Source Files\DeclSymbols</Filter>
-    </ClCompile>
-    <ClCompile Include="ModuleDeclSymbol.cpp">
-      <Filter>Source Files\DeclSymbols</Filter>
-    </ClCompile>
-    <ClCompile Include="TopLevelDeclSymbolComponent.cpp">
-      <Filter>Source Files\DeclSymbols</Filter>
-    </ClCompile>
-    <ClCompile Include="TopLevelDeclSymbolComponent.ixx">
-      <Filter>Source Files\DeclSymbols</Filter>
-    </ClCompile>
-    <ClCompile Include="TypeDeclSymbolComponent.cpp">
-      <Filter>Source Files\DeclSymbols</Filter>
-    </ClCompile>
-    <ClCompile Include="TypeDeclSymbolComponent.ixx">
-      <Filter>Source Files\DeclSymbols</Filter>
-    </ClCompile>
-    <ClCompile Include="TypeDeclSymbol.ixx">
-      <Filter>Source Files\DeclSymbols</Filter>
-    </ClCompile>
-    <ClCompile Include="TopLevelOuterDeclSymbol.ixx">
-      <Filter>Source Files\DeclSymbols</Filter>
-    </ClCompile>
-    <ClCompile Include="ModuleDeclSymbol.ixx">
-      <Filter>Source Files\DeclSymbols</Filter>
-    </ClCompile>
-    <ClCompile Include="TypeIds.ixx">
-      <Filter>Source Files\Identifiers</Filter>
-    </ClCompile>
-    <ClCompile Include="SymbolId.ixx">
-      <Filter>Source Files\Identifiers</Filter>
-    </ClCompile>
     <ClCompile Include="Copy.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SymbolId.cpp">
-      <Filter>Source Files\Identifiers</Filter>
+    <ClCompile Include="MGlobalFunc.ixx">
+      <Filter>Source Files\Symbols</Filter>
     </ClCompile>
-    <ClCompile Include="TypeIds.cpp">
-      <Filter>Source Files\Identifiers</Filter>
+    <ClCompile Include="MTopLevelOuter.ixx">
+      <Filter>Source Files\Symbols</Filter>
     </ClCompile>
-    <ClCompile Include="GlobalFuncDeclSymbol.ixx">
-      <Filter>Source Files\DeclSymbols</Filter>
+    <ClCompile Include="Symbols.ixx">
+      <Filter>Source Files\Symbols</Filter>
     </ClCompile>
-    <ClCompile Include="Accessor.ixx">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="MAccessor.ixx">
+      <Filter>Source Files\Symbols</Filter>
     </ClCompile>
-    <ClCompile Include="FuncReturn.ixx">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="MFunc.ixx">
+      <Filter>Source Files\Symbols</Filter>
     </ClCompile>
-    <ClCompile Include="FuncParameter.ixx">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="MFuncParameter.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MFuncReturn.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MNames.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MFuncDeclComponent.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MGlobalFuncDecl.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MModuleDecl.cpp">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MModuleDecl.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MTopLevelDeclComponent.cpp">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MTopLevelDeclComponent.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MTopLevelOuterDecl.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MTypeDecl.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MTypeDeclComponent.cpp">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MTypeDeclComponent.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MIdentifier.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MSymbolId.cpp">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MSymbolId.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MTypeId.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MTypeIds.cpp">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MTypeIds.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MTypes.ixx">
+      <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MType.ixx">
+      <Filter>Source Files\Symbols</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

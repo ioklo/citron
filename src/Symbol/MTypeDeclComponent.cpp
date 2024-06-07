@@ -1,4 +1,4 @@
-module Citron.DeclSymbols:TypeDeclSymbolComponent;
+module Citron.Symbols:MTypeDeclComponent;
 import <optional>;
 
 using namespace std;
@@ -23,7 +23,7 @@ namespace Citron {
 //    return &types[i->second];
 //}
 
-void TypeDeclSymbolComponent::AddType(TypeDeclSymbol&& typeDecl)
+void MTypeDeclComponent::AddType(MTypeDecl&& typeDecl)
 {
     /*size_t index = types.size();
 

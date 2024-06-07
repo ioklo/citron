@@ -1,27 +1,26 @@
-export module Citron.DeclSymbols:GlobalFuncDeclSymbol;
+export module Citron.Symbols:MGlobalFuncDecl;
 
 import <vector>;
 import <optional>;
 import <memory>;
 
-import Citron.Accessor;
-import Citron.Names;
-import Citron.FuncReturn;
-import Citron.FuncParameter;
-
-import :TopLevelOuterDeclSymbol;
+import :MAccessor;
+import :MNames;
+import :MFuncReturn;
+import :MFuncParameter;
+import :MTopLevelOuterDecl;
 
 namespace Citron {
 
-export class GlobalFuncDeclSymbol
+export class MGlobalFuncDecl
 {
-    TopLevelOuterDeclSymbol outer;
+    MTopLevelOuterDecl outer;
 
-    Accessor accessor;
-    FuncReturn funcReturn;
-    Name name;
-    std::vector<Name> typeParams;
-    std::vector<FuncParameter> parameters;
+    MAccessor accessor;
+    MFuncReturn funcReturn;
+    MName name;
+    std::vector<MName> typeParams;
+    std::vector<MFuncParameter> parameters;
 };
 
 

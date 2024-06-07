@@ -1,11 +1,11 @@
-module Citron.Identifiers:TypeIds;
+module Citron.Symbols:MTypeIds;
 
 namespace Citron {
 
-VoidTypeId voidTypeId;
-TypeId boolTypeId = SymbolTypeId(false, boolSymbolId.Copy());
-TypeId intTypeId = SymbolTypeId(false, intSymbolId.Copy());
-TypeId stringTypeId = SymbolTypeId(false, stringSymbolId.Copy());
+MVoidTypeId voidTypeId;
+MTypeId boolTypeId = MSymbolTypeId(false, boolSymbolId.Copy());
+MTypeId intTypeId = MSymbolTypeId(false, intSymbolId.Copy());
+MTypeId stringTypeId = MSymbolTypeId(false, stringSymbolId.Copy());
 
 //public static class TypeIdExtensions
 //{
