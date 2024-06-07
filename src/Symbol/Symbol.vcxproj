@@ -150,6 +150,15 @@
   <ItemGroup>
     <ClCompile Include="MAccessor.ixx" />
     <ClCompile Include="Copy.ixx" />
+    <ClCompile Include="MClass.ixx" />
+    <ClCompile Include="MClassConstructor.ixx" />
+    <ClCompile Include="MClassConstructorDecl.ixx" />
+    <ClCompile Include="MClassDecl.ixx" />
+    <ClCompile Include="MClassMemberFunc.ixx" />
+    <ClCompile Include="MClassMemberFuncDecl.ixx" />
+    <ClCompile Include="MClassMemberVar.ixx" />
+    <ClCompile Include="MClassMemberVarDecl.ixx" />
+    <ClCompile Include="MCommonFuncDeclComponent.ixx" />
     <ClCompile Include="MFunc.ixx" />
     <ClCompile Include="MFuncDeclComponent.ixx" />
     <ClCompile Include="MFuncParameter.ixx" />
@@ -160,6 +169,16 @@
     <ClCompile Include="MModuleDecl.cpp" />
     <ClCompile Include="MModuleDecl.ixx" />
     <ClCompile Include="MNames.ixx" />
+    <ClCompile Include="MNamespaceDecl.ixx" />
+    <ClCompile Include="MStruct.ixx" />
+    <ClCompile Include="MStructConstructor.ixx" />
+    <ClCompile Include="MStructConstructorDecl.ixx" />
+    <ClCompile Include="MStructDecl.ixx" />
+    <ClCompile Include="MStructMemberFunc.ixx" />
+    <ClCompile Include="MStructMemberFuncDecl.ixx" />
+    <ClCompile Include="MStructMemberVar.ixx" />
+    <ClCompile Include="MStructMemberVarDecl.ixx" />
+    <ClCompile Include="MSymbolComponent.ixx" />
     <ClCompile Include="MSymbolId.cpp" />
     <ClCompile Include="MSymbolId.ixx" />
     <ClCompile Include="MType.ixx" />

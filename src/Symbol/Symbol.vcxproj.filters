@@ -16,6 +16,21 @@
     <Filter Include="Source Files\Symbols">
       <UniqueIdentifier>{e36ff321-bf97-47c8-b005-3c324845d545}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Symbols\0_TopLevel">
+      <UniqueIdentifier>{06ae4868-ffcd-4079-8204-9e9a8fa9df98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Symbols\3_Struct">
+      <UniqueIdentifier>{99743b72-bc9b-46ba-9824-37f9440a3238}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Symbols\1_Func">
+      <UniqueIdentifier>{ab7853e9-353b-4fe4-9b80-f937356fe686}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Symbols\2_Class">
+      <UniqueIdentifier>{9c59a940-a80b-4e30-b3e6-34f2fe156676}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Symbols\4_Misc">
+      <UniqueIdentifier>{3f75412b-c1e5-4130-a081-507d1db31370}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\Symbol\SymbolConfig.h">
@@ -32,49 +47,16 @@
     <ClCompile Include="Copy.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MGlobalFunc.ixx">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MTopLevelOuter.ixx">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
     <ClCompile Include="Symbols.ixx">
       <Filter>Source Files\Symbols</Filter>
     </ClCompile>
     <ClCompile Include="MAccessor.ixx">
       <Filter>Source Files\Symbols</Filter>
     </ClCompile>
-    <ClCompile Include="MFunc.ixx">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MFuncParameter.ixx">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MFuncReturn.ixx">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
     <ClCompile Include="MNames.ixx">
       <Filter>Source Files\Symbols</Filter>
     </ClCompile>
     <ClCompile Include="MFuncDeclComponent.ixx">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MGlobalFuncDecl.ixx">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MModuleDecl.cpp">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MModuleDecl.ixx">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MTopLevelDeclComponent.cpp">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MTopLevelDeclComponent.ixx">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MTopLevelOuterDecl.ixx">
       <Filter>Source Files\Symbols</Filter>
     </ClCompile>
     <ClCompile Include="MTypeDecl.ixx">
@@ -109,6 +91,96 @@
     </ClCompile>
     <ClCompile Include="MType.ixx">
       <Filter>Source Files\Symbols</Filter>
+    </ClCompile>
+    <ClCompile Include="MGlobalFunc.ixx">
+      <Filter>Source Files\Symbols\0_TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="MGlobalFuncDecl.ixx">
+      <Filter>Source Files\Symbols\0_TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="MModuleDecl.cpp">
+      <Filter>Source Files\Symbols\0_TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="MModuleDecl.ixx">
+      <Filter>Source Files\Symbols\0_TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="MNamespaceDecl.ixx">
+      <Filter>Source Files\Symbols\0_TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="MTopLevelOuterDecl.ixx">
+      <Filter>Source Files\Symbols\0_TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="MTopLevelDeclComponent.cpp">
+      <Filter>Source Files\Symbols\0_TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="MTopLevelDeclComponent.ixx">
+      <Filter>Source Files\Symbols\0_TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="MTopLevelOuter.ixx">
+      <Filter>Source Files\Symbols\0_TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="MClassConstructorDecl.ixx">
+      <Filter>Source Files\Symbols\2_Class</Filter>
+    </ClCompile>
+    <ClCompile Include="MClassConstructor.ixx">
+      <Filter>Source Files\Symbols\2_Class</Filter>
+    </ClCompile>
+    <ClCompile Include="MClassMemberFuncDecl.ixx">
+      <Filter>Source Files\Symbols\2_Class</Filter>
+    </ClCompile>
+    <ClCompile Include="MClassMemberFunc.ixx">
+      <Filter>Source Files\Symbols\2_Class</Filter>
+    </ClCompile>
+    <ClCompile Include="MClassMemberVar.ixx">
+      <Filter>Source Files\Symbols\2_Class</Filter>
+    </ClCompile>
+    <ClCompile Include="MClassMemberVarDecl.ixx">
+      <Filter>Source Files\Symbols\2_Class</Filter>
+    </ClCompile>
+    <ClCompile Include="MClassDecl.ixx">
+      <Filter>Source Files\Symbols\2_Class</Filter>
+    </ClCompile>
+    <ClCompile Include="MClass.ixx">
+      <Filter>Source Files\Symbols\2_Class</Filter>
+    </ClCompile>
+    <ClCompile Include="MSymbolComponent.ixx">
+      <Filter>Source Files\Symbols\4_Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="MCommonFuncDeclComponent.ixx">
+      <Filter>Source Files\Symbols\1_Func</Filter>
+    </ClCompile>
+    <ClCompile Include="MFunc.ixx">
+      <Filter>Source Files\Symbols\1_Func</Filter>
+    </ClCompile>
+    <ClCompile Include="MFuncParameter.ixx">
+      <Filter>Source Files\Symbols\1_Func</Filter>
+    </ClCompile>
+    <ClCompile Include="MFuncReturn.ixx">
+      <Filter>Source Files\Symbols\1_Func</Filter>
+    </ClCompile>
+    <ClCompile Include="MStruct.ixx">
+      <Filter>Source Files\Symbols\3_Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="MStructConstructor.ixx">
+      <Filter>Source Files\Symbols\3_Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="MStructConstructorDecl.ixx">
+      <Filter>Source Files\Symbols\3_Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="MStructDecl.ixx">
+      <Filter>Source Files\Symbols\3_Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="MStructMemberFunc.ixx">
+      <Filter>Source Files\Symbols\3_Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="MStructMemberFuncDecl.ixx">
+      <Filter>Source Files\Symbols\3_Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="MStructMemberVar.ixx">
+      <Filter>Source Files\Symbols\3_Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="MStructMemberVarDecl.ixx">
+      <Filter>Source Files\Symbols\3_Struct</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
