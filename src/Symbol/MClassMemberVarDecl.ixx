@@ -10,7 +10,7 @@ namespace Citron
 
 class MClassDecl;
 
-class MClassMemberVarDecl
+export class MClassMemberVarDecl
 {
     std::weak_ptr<MClassDecl> _class;
 

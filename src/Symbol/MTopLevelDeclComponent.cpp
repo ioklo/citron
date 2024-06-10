@@ -1,4 +1,4 @@
-module Citron.Symbols:MTopLevelDeclComponent;
+module Citron.Symbols:MNamespaceDeclContainerComponent;
 
 namespace Citron {
 

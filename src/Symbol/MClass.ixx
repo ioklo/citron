@@ -3,18 +3,12 @@ export module Citron.Symbols:MClass;
 import <vector>;
 import :MClassDecl;
 import :MSymbolComponent;
+import :MTypeOuter;
 
 namespace Citron
 {
 
-using MClassOuter = std::variant<
-    std::weak_ptr<class MModuleDecl>,
-    std::weak_ptr<class MNamespaceDecl>,
-    std::weak_ptr<class MClass>,
-    std::weak_ptr<class MStruct>
->;
-
-class MClass : private TMSymbolComponent<MClassOuter, MClassDecl>
+export class MClass : private MSymbolComponent<MTypeOuter, MClassDecl>
 {   
 };
 

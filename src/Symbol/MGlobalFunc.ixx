@@ -7,7 +7,7 @@ import :MTopLevelOuter;
 
 namespace Citron {
 
-class MGlobalFunc
+export class MGlobalFunc
 {
     MTopLevelOuter outer;
     MGlobalFuncDecl decl;

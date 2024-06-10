@@ -13,7 +13,7 @@ namespace Citron
 class MStructDecl;
 class MFuncParameter;
 
-class MStructConstructorDecl : private MCommonFuncDeclComponent
+export class MStructConstructorDecl : private MCommonFuncDeclComponent
 {
     std::weak_ptr<MStructDecl> _struct;
     MAccessor accessor;

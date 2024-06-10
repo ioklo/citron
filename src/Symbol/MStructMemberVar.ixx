@@ -7,7 +7,7 @@ import :MSymbolComponent;
 namespace Citron
 {
 
-class MStructMemberVar : private TMSymbolComponent<MStruct, MStructMemberVarDecl>
+export class MStructMemberVar : private MSymbolComponent<MStruct, MStructMemberVarDecl>
 {
 
 };

@@ -1,17 +1,22 @@
 export module Citron.Symbols:MNamespaceDecl;
 
 import :MTopLevelOuter;
-import :MTopLevelDeclComponent;
+import :MNamespaceDeclContainerComponent;
+import :MTypeDeclContainerComponent;
+import :MFuncDeclContainerComponent;
 
 namespace Citron
 {
 
-class MNamespaceDecl
+export class MNamespaceDecl 
+    : private MNamespaceDeclContainerComponent
+    , private MTypeDeclContainerComponent
+    , private MFuncDeclContainerComponent<std::shared_ptr<MGlobalFuncDecl>>
 {
     MTopLevelOuter outer;
     std::string name;
 
-    MTopLevelDeclComponent topLevelComp;
+    MNamespaceDeclContainerComponent topLevelComp;
 };
 
 }

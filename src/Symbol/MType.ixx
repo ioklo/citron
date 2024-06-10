@@ -30,7 +30,6 @@ export class MVoidType
 
 export class MSymbolType
 {
-
 };
 
 

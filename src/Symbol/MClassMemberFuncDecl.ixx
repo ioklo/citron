@@ -12,7 +12,7 @@ namespace Citron
 
 class MClassDecl;
 
-class MClassMemberFuncDecl : private MCommonFuncDeclComponent
+export class MClassMemberFuncDecl : private MCommonFuncDeclComponent
 {
     std::weak_ptr<MClassDecl> _class;
     MAccessor accessor;

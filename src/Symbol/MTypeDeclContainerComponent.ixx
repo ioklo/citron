@@ -1,4 +1,4 @@
-export module Citron.Symbols:MTypeDeclComponent;
+export module Citron.Symbols:MTypeDeclContainerComponent;
 
 import :MNames;
 
@@ -10,13 +10,13 @@ import :MTypeDecl;
 
 namespace Citron {
 
-class MTypeDeclComponent
+class MTypeDeclContainerComponent
 {
     std::vector<MTypeDecl> types;
     std::unordered_map<MName, size_t> typeDict;
 
 public:
-    MTypeDeclComponent();
+    MTypeDeclContainerComponent();
 
     // public IEnumerable<ITypeDeclSymbol> GetEnumerable()
     MTypeDecl* GetType(const MName& name); // MTypeDecl* for std::optional<TypeDeclSymbol&>

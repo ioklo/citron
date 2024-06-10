@@ -1,4 +1,4 @@
-export module Citron.Symbols:MFuncDeclComponent;
+export module Citron.Symbols:MFuncDeclContainerComponent;
 
 import :MIdentifier;
 import :MNames;
@@ -14,7 +14,7 @@ concept MFuncDecl = requires(T t) {
 };
 
 export template<typename TMFuncDecl>
-class MFuncDeclComponent
+class MFuncDeclContainerComponent
 {
     std::vector<TMFuncDecl> funcs;
     std::unordered_map<MIdentifier, size_t> idMap;

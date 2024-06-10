@@ -10,7 +10,7 @@ namespace Citron
 
 class MStructDecl;
 
-class MStructMemberVarDecl
+export class MStructMemberVarDecl
 {
     std::weak_ptr<MStructDecl> _struct;
 

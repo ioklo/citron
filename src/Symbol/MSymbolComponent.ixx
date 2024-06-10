@@ -7,8 +7,9 @@ import :MType;
 namespace Citron
 {
 
+// TOuter는 shared, weak or variant
 template<typename TOuter, typename TDecl>
-class TMSymbolComponent
+class MSymbolComponent
 {
     TOuter outer;
     std::shared_ptr<TDecl> decl;

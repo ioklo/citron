@@ -4,8 +4,8 @@ import <memory>;
 import <ranges>;
 import <optional>;
 
-import Citron.MNames;
 import Citron.Copy;
+import :MNames;
 import :MTypeIds;
 
 using namespace std;

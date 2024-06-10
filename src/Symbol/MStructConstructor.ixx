@@ -8,7 +8,7 @@ import :MStruct;
 namespace Citron
 {
 
-class MStructConstructor : private TMSymbolComponent<MStruct, MStructConstructorDecl>
+export class MStructConstructor : private MSymbolComponent<MStruct, MStructConstructorDecl>
 {
 };
 

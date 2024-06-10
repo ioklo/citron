@@ -8,7 +8,7 @@ import :MClass;
 namespace Citron
 {
 
-class MClassConstructor : private TMSymbolComponent<MClass, MClassConstructorDecl>
+export class MClassConstructor : private MSymbolComponent<MClass, MClassConstructorDecl>
 {   
 };
 

@@ -5,23 +5,19 @@ import :MNames;
 import :MStructConstructorDecl;
 import :MStructMemberFuncDecl;
 import :MStructMemberVarDecl;
-import :MTypeDeclComponent;
-import :MFuncDeclComponent;
+import :MTypeDeclContainerComponent;
+import :MFuncDeclContainerComponent;
+import :MTypeDeclOuter;
 
 namespace Citron
 {
 
-using MStructDeclOuter = std::variant<
-    std::weak_ptr<class MModuleDecl>,
-    std::weak_ptr<class MNamespaceDecl>,
-    std::weak_ptr<class MClassDecl>,
-    std::weak_ptr<class MStructDecl>
->;
-
 class MStruct;
 class MInterface;
 
-class MStructDecl
+export class MStructDecl 
+    : private MTypeDeclContainerComponent
+    , private MFuncDeclContainerComponent<std::shared_ptr<MStructMemberFuncDecl>>
 {
     struct BaseTypes
     {
@@ -29,7 +25,7 @@ class MStructDecl
         std::vector<std::shared_ptr<MInterface>> interfaces;
     };
 
-    MStructDeclOuter outer;
+    MTypeDeclOuter outer;
     MAccessor accessor;
 
     MName name;
@@ -39,8 +35,6 @@ class MStructDecl
     int trivialConstructorIndex; // can be -1
 
     std::vector<std::shared_ptr<MStructMemberVarDecl>> memberVars;
-    MTypeDeclComponent typeComp;
-    MFuncDeclComponent<std::shared_ptr<MStructMemberFuncDecl>> funcComp;
 
     std::optional<BaseTypes> oBaseTypes;
 };

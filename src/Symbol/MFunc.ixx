@@ -15,15 +15,15 @@ namespace Citron
 {
 
 export using MFunc = std::variant<
-    MGlobalFunc,
+    MGlobalFunc,        // top-level decl space
 
-    MClassConstructor,
-    MClassMemberFunc,
+    MClassConstructor,  // construct decl space
+    MClassMemberFunc,   // construct decl space
 
-    MStructConstructor,
-    MStructMemberFunc,
+    MStructConstructor, // struct decl space
+    MStructMemberFunc,  // struct decl space
     
-    MLambda
+    MLambda             // body space
 >;
 
 

@@ -1,27 +1,23 @@
-export module Citron.Symbols:MTopLevelDeclComponent;
+export module Citron.Symbols:MNamespaceDeclContainerComponent;
 
 import <string>;
 import <vector>;
 import <unordered_map>;
 
-import :MTypeDeclComponent;
-import :MFuncDeclComponent;
 import :MGlobalFuncDecl;
+import :MTypeDecl;
 
 namespace Citron {
 
 class MNamespaceDecl;
 
-class MTopLevelDeclComponent
+class MNamespaceDeclContainerComponent
 {
     std::vector<MNamespaceDecl> namespaceDecls;    // storage
     std::unordered_map<std::string, int> namespaceDict; // indirect
 
-    MTypeDeclComponent typeComp;
-    MFuncDeclComponent<MGlobalFuncDecl> funcComp;
-
 public:
-    MTopLevelDeclComponent();
+    MNamespaceDeclContainerComponent();
     MTypeDecl* GetType(const MName& name);
 
 //    public ITypeDeclSymbol ? GetType(Name name, int typeParamCount)
