@@ -19,9 +19,6 @@ export class MClassConstructorDecl : private MCommonFuncDeclComponent
     MAccessor accessor;
     std::vector<MFuncParameter> parameters;
     bool bTrivial;
-
-public:
-    DECLARE_DEFAULTS(MClassConstructorDecl)
 };
 
 

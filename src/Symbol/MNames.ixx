@@ -7,11 +7,11 @@ import <variant>;
 import <string>;
 import <vector>;
 
-namespace Citron {
+namespace Citron 
+{
 
 // 통합 Identifier 세 부분으로 구성된다
 // 이름 name, 타입 파라미터 개수 type parameter count, func parameterIds
-
 export class MNormalName
 {
     std::string text;
@@ -19,6 +19,8 @@ export class MNormalName
 public:
     MNormalName(std::string&& text);
     DECLARE_DEFAULTS(MNormalName)
+
+    MNormalName(std::string&& text);
 };
 
 export class MReservedName
@@ -55,9 +57,6 @@ export using MName = std::variant<
     MConstructorParamName
 >;
 
-export MName Copy(const MName& name)
-{
-    return std::visit([](auto&& name) { return MName(name.Copy()); }, name);
-}
+export MName Copy(const MName& name);
 
 }

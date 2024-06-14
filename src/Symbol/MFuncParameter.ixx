@@ -12,9 +12,6 @@ export class MFuncParameter
     bool bOut;
     MType type;
     std::string name;
-
-public:
-    DECLARE_DEFAULTS(MFuncParameter)
 };
 
 

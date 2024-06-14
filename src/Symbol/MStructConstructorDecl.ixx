@@ -21,7 +21,7 @@ export class MStructConstructorDecl : private MCommonFuncDeclComponent
     bool bTrivial;
 
 public:
-    DECLARE_DEFAULTS(MStructConstructorDecl)
+    // DECLARE_DEFAULTS(MStructConstructorDecl)
 };
 
 

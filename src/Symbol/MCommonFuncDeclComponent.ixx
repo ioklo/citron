@@ -25,8 +25,6 @@ class MCommonFuncDeclComponent
     std::optional<bool> bLastParameterVariadic;             // need initialization
     std::vector<MLambdaDecl> lambdaDecls;
 
-public:
-    DECLARE_DEFAULTS(MCommonFuncDeclComponent)
 };
 
 }

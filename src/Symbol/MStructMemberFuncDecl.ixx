@@ -23,7 +23,7 @@ export class MStructMemberFuncDecl : private MCommonFuncDeclComponent
     bool bStatic;
     
 public:
-    DECLARE_DEFAULTS(MStructMemberFuncDecl)
+    // DECLARE_DEFAULTS(MStructMemberFuncDecl)
 };
 
 }

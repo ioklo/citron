@@ -182,6 +182,7 @@
     <ClCompile Include="MLambdaMemberVarDecl.ixx" />
     <ClCompile Include="MModuleDecl.cpp" />
     <ClCompile Include="MModuleDecl.ixx" />
+    <ClCompile Include="MNames.cpp" />
     <ClCompile Include="MNames.ixx" />
     <ClCompile Include="MNamespaceDecl.ixx" />
     <ClCompile Include="MStruct.ixx" />

@@ -23,6 +23,13 @@ MSymbolPath::MSymbolPath(std::shared_ptr<MSymbolPath>&& pOuter, MName&& name, st
 {
 }
 
+IMPLEMENT_DEFAULTS(MSymbolPath)
+
+std::shared_ptr<MSymbolPath> MSymbolPath::Copy() const
+{
+
+}
+
 std::shared_ptr<MSymbolPath> MSymbolPath::Child(std::shared_ptr<MSymbolPath>&& sharedThis, MName&& name, std::vector<MTypeId>&& typeArgs, std::vector<MTypeId>&& paramIds)
 {   
     return make_shared<MSymbolPath>(std::move(sharedThis), std::move(name), std::move(typeArgs), std::move(paramIds));

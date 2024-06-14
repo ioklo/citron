@@ -17,8 +17,8 @@ export class MIdentifier
     std::vector<MTypeId> paramIds;
 
 public:
-    MIdentifier(MName&& name, int typeParamCount, std::vector<MTypeId>&& paramIds);
-    DECLARE_DEFAULTS(MIdentifier)
+    // MIdentifier(MName&& name, int typeParamCount, std::vector<MTypeId>&& paramIds);
+    // DECLARE_DEFAULTS(MIdentifier)
 };
 
 }

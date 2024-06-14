@@ -36,8 +36,8 @@ export class MTypeVarTypeId
     std::string name;
 
 public:
-    MTypeVarTypeId(int index, std::string name);
-    DECLARE_DEFAULTS(MTypeVarTypeId)
+    // MTypeVarTypeId(int index, std::string name);
+    // DECLARE_DEFAULTS(MTypeVarTypeId)
 
     int GetIndex() { return index; }
     const std::string& GetName() { return name; }
