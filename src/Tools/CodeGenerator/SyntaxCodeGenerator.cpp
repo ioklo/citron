@@ -110,6 +110,7 @@ namespace Citron {
             }
         },
 
+
         ClassInfo {
             .name = "IdTypeExpSyntax",
             .memberInfos {
