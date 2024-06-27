@@ -2,6 +2,7 @@
 #include <TextAnalysis/Lexer.h>
 
 #include <sstream>
+#include <string_view>
 #include <vector>
 #include <unordered_map>
 

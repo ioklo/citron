@@ -48,3 +48,4 @@ target_link_libraries(TextAnalysis PUBLIC Infra Syntax ICU::uc ICU::in ICU::dt I
 
 target_compile_options(TextAnalysis PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 target_compile_options(TextAnalysis PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+target_compile_options(TextAnalysis PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>")

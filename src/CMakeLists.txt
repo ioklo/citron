@@ -15,7 +15,13 @@ endif()
 project("Citron")
 
 # Include sub-projects.
+add_subdirectory("Tools")
+
 add_subdirectory("Infra")
 add_subdirectory("Syntax")
 add_subdirectory("TextAnalysis")
-add_subdirectory("Tools")
+
+enable_testing()
+add_subdirectory("TextAnalysis.Tests")
+
+

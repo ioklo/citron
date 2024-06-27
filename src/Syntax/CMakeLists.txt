@@ -14,6 +14,9 @@ add_library(Syntax SHARED
   ../../include/Syntax/Syntax.h
 )
 
+# CodeGeneration <- Syntax
+add_dependencies(Syntax CodeGeneration)
+
 # TODO: Add tests and install targets if needed.
 target_include_directories (Syntax PUBLIC ../../include)
 target_compile_definitions(Syntax PRIVATE SYNTAX_EXPORT)
@@ -23,5 +26,3 @@ target_compile_features(Syntax PRIVATE cxx_std_20)
 
 target_compile_options(Syntax PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 target_compile_options(Syntax PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-
-add_dependencies(Syntax CodeGenerator)
