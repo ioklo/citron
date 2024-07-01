@@ -60,7 +60,7 @@ optional<ExpSyntax> ParseLeftAssocBinaryOpExp(Lexer* lexer, BinaryOpInfo (&infos
             return nullopt;
         
         // Fold
-        curExp = BinaryOpExpSyntax(*oOpKind, std::move(curExp), std::move(*oOperand1));
+        curExp = make_unique<BinaryOpExpSyntax>(*oOpKind, std::move(curExp), std::move(*oOperand1));
     }
 }
 
@@ -147,7 +147,7 @@ optional<ExpSyntax> ParseAssignExp(Lexer* lexer)
         return nullopt;
 
     *lexer = std::move(curLexer);
-    return BinaryOpExpSyntax(BinaryOpSyntaxKind::Assign, std::move(*oExp0), std::move(*oExp1));
+    return make_unique<BinaryOpExpSyntax>(BinaryOpSyntaxKind::Assign, std::move(*oExp0), std::move(*oExp1));
 }
 
 optional<ExpSyntax> ParseEqualityExp(Lexer* lexer)
@@ -200,7 +200,7 @@ optional<ExpSyntax> ParseTestAndTypeTestExp(Lexer* lexer)
                     return nullopt;
 
                 // Fold
-                curExp = BinaryOpExpSyntax(info.kind, std::move(curExp), std::move(*oOperand1));
+                curExp = make_unique<BinaryOpExpSyntax>(info.kind, std::move(curExp), std::move(*oOperand1));
                 bHandled = true;
                 break;
             }
@@ -217,7 +217,7 @@ optional<ExpSyntax> ParseTestAndTypeTestExp(Lexer* lexer)
             if (!oTypeExp)
                 return nullopt;
 
-            curExp = IsExpSyntax(std::move(curExp), std::move(*oTypeExp));
+            curExp = make_unique<IsExpSyntax>(std::move(curExp), std::move(*oTypeExp));
             continue;
         }
 
@@ -229,7 +229,7 @@ optional<ExpSyntax> ParseTestAndTypeTestExp(Lexer* lexer)
             if (!oTypeExp) 
                 return nullopt;
 
-            curExp = AsExpSyntax(std::move(curExp), std::move(*oTypeExp));
+            curExp = make_unique<AsExpSyntax>(std::move(curExp), std::move(*oTypeExp));
             continue;
         }
 
@@ -304,7 +304,7 @@ std::optional<Citron::ExpSyntax> ParseUnaryExp(Lexer* lexer)
         }
 
         *lexer = std::move(curLexer);
-        return UnaryOpExpSyntax(*oOpKind, std::move(*oExp));
+        return make_unique<UnaryOpExpSyntax>(*oOpKind, std::move(*oExp));
     }
     else
     {
@@ -353,7 +353,7 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             curLexer = oLexResult->lexer;
 
             // Fold
-            curExp = UnaryOpExpSyntax(primaryInfo->kind, std::move(curExp));
+            curExp = make_unique<UnaryOpExpSyntax>(primaryInfo->kind, std::move(curExp));
             continue;
         }
 
@@ -367,7 +367,7 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             if (!Accept<RBraceToken>(&curLexer))
                 return nullopt;
 
-            curExp = IndexerExpSyntax(std::move(curExp), std::move(*oIndex));
+            curExp = make_unique<IndexerExpSyntax>(std::move(curExp), std::move(*oIndex));
             continue;
         }
 
@@ -383,9 +383,9 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             auto oTypeArgs = ParseTypeArgs(&curLexer);
 
             if (oTypeArgs)
-                curExp = MemberExpSyntax(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
+                curExp = make_unique<MemberExpSyntax>(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
             else
-                curExp = MemberExpSyntax(std::move(curExp), std::move(oIdToken->text), {});
+                curExp = make_unique<MemberExpSyntax>(std::move(curExp), std::move(oIdToken->text), std::vector<TypeExpSyntax>());
 
             continue;
         }
@@ -402,11 +402,11 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             auto oTypeArgs = ParseTypeArgs(&curLexer);
             if (oTypeArgs)
             {   
-                curExp = IndirectMemberExpSyntax(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
+                curExp = make_unique<IndirectMemberExpSyntax>(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
             }
             else
             {   
-                curExp = IndirectMemberExpSyntax(std::move(curExp), std::move(oIdToken->text), { });
+                curExp = make_unique<IndirectMemberExpSyntax>(std::move(curExp), std::move(oIdToken->text), vector<TypeExpSyntax>());
             }
 
             continue;
@@ -416,7 +416,7 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
         auto oArguments = ParseCallArgs(&curLexer);
         if (oArguments)
         {
-            curExp = CallExpSyntax(std::move(curExp), std::move(*oArguments));
+            curExp = make_unique<CallExpSyntax>(std::move(curExp), std::move(*oArguments));
             continue;
         }
 
@@ -430,13 +430,13 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
 optional<ExpSyntax> ParseSingleExp(Lexer* lexer)
 {
     if (auto oExp = ParseBoxExp(lexer))
-        return oExp;
+        return make_unique<BoxExpSyntax>(std::move(*oExp));
         
     if (auto oExp = ParseNewExp(lexer))
         return oExp;
         
     if (auto oExp = ParseLambdaExp(lexer))
-        return oExp;
+        return make_unique<LambdaExpSyntax>(std::move(*oExp));
         
     if (auto oExp = ParseParenExp(lexer))
         return oExp;
@@ -574,7 +574,7 @@ optional<LambdaExpSyntax> ParseLambdaExp(Lexer* lexer)
         if (!oExpBody)
             return nullopt;
 
-        oBody = ExpLambdaExpBodySyntax(std::move(*oExpBody));
+        oBody = make_unique<ExpLambdaExpBodySyntax>(std::move(*oExpBody));
     }
 
     *lexer = std::move(curLexer);
@@ -651,7 +651,7 @@ optional<StringExpSyntax> ParseStringExp(Lexer* lexer)
         
         if (auto oIdToken = Accept<IdentifierToken>(&curLexer, oLexResult))
         {
-            elems.push_back(ExpStringExpSyntaxElement{ IdentifierExpSyntax(std::move(oIdToken->text), {}) });
+            elems.push_back(make_unique<ExpStringExpSyntaxElement>(IdentifierExpSyntax(std::move(oIdToken->text), {})));
             continue;
         }
 
@@ -666,7 +666,7 @@ optional<StringExpSyntax> ParseStringExp(Lexer* lexer)
             if (!Accept<RBraceToken>(&curLexer))
                 return nullopt;
 
-            elems.push_back(ExpStringExpSyntaxElement{ std::move(*oExp) });
+            elems.push_back(make_unique<ExpStringExpSyntaxElement>(std::move(*oExp)));
             continue;
         }
 

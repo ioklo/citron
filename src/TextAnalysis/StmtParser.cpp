@@ -81,7 +81,7 @@ optional<StmtSyntax> ParseIfStmt(Lexer* lexer)
     if (auto oIfTestStmtSyntax = ParseIfTestFragment(&curLexer))
     {
         *lexer = std::move(curLexer);
-        return oIfTestStmtSyntax;
+        return make_unique<IfTestStmtSyntax>(std::move(*oIfTestStmtSyntax));
     }
 
     // 아니라면
@@ -107,7 +107,7 @@ optional<StmtSyntax> ParseIfStmt(Lexer* lexer)
     }
 
     *lexer = std::move(curLexer);
-    return IfStmtSyntax(std::move(*oCond), std::move(*oBody), std::move(oElseBody));
+    return make_unique<IfStmtSyntax>(std::move(*oCond), std::move(*oBody), std::move(oElseBody));
 }
 
 optional<VarDeclSyntax> ParseVarDecl(Lexer* lexer)
@@ -163,10 +163,10 @@ optional<VarDeclStmtSyntax> ParseVarDeclStmt(Lexer* lexer)
 optional<ForStmtInitializerSyntax> ParseForStmtInitializer(Lexer* lexer)
 {
     if (auto oVarDecl = ParseVarDecl(lexer))
-        return VarDeclForStmtInitializerSyntax{ std::move(*oVarDecl) };
+        return make_unique<VarDeclForStmtInitializerSyntax>(std::move(*oVarDecl));
 
     if (auto oExp = ParseExp(lexer))
-        return ExpForStmtInitializerSyntax{ std::move(*oExp) };    
+        return make_unique<ExpForStmtInitializerSyntax>(std::move(*oExp));
 
     return nullopt;
 }
@@ -390,14 +390,14 @@ optional<StringExpSyntax> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
             if (!Accept<RBraceToken>(&curLexer))
                 return nullopt;
 
-            elems.push_back(ExpStringExpSyntaxElement{ std::move(*oExp) });
+            elems.push_back(make_unique<ExpStringExpSyntaxElement>(std::move(*oExp)));
             continue;
         }
 
         // aa$b => $b 이야기
         if (auto oIdToken = Accept<IdentifierToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(ExpStringExpSyntaxElement{ IdentifierExpSyntax(std::move(oIdToken->text), {}) });
+            elems.push_back(make_unique<ExpStringExpSyntaxElement>(IdentifierExpSyntax(std::move(oIdToken->text), {})));
             continue;
         }
 
@@ -582,7 +582,7 @@ optional<EmbeddableStmtSyntax> ParseEmbeddableStmt(Lexer* lexer)
         assert(!holds_alternative<BlockStmtSyntax>(*oStmt));
 
         *lexer = std::move(curLexer);
-        return SingleEmbeddableStmtSyntax(std::move(*oStmt));
+        return make_unique<SingleEmbeddableStmtSyntax>(std::move(*oStmt));
     }
     else // 있다면 Embeddable.Multiple
     {
@@ -629,7 +629,6 @@ optional<StmtSyntax> ParseStmt(Lexer* lexer)
 {
     if (auto oStmt = ParseDirectiveStmt(lexer))
         return oStmt;
-    
 
     if (auto oStmt = ParseBlankStmt(lexer))
         return oStmt;
@@ -644,7 +643,7 @@ optional<StmtSyntax> ParseStmt(Lexer* lexer)
         return oStmt;
 
     if (auto oStmt = ParseReturnStmt(lexer))
-        return oStmt;
+        return make_unique<ReturnStmtSyntax>(std::move(*oStmt));
 
     if (auto oStmt = ParseVarDeclStmt(lexer))
         return oStmt;
@@ -653,10 +652,10 @@ optional<StmtSyntax> ParseStmt(Lexer* lexer)
         return oStmt;
 
     if (auto oStmt = ParseForStmt(lexer))
-        return oStmt;
+        return make_unique<ForStmtSyntax>(std::move(*oStmt));
 
     if (auto oStmt = ParseExpStmt(lexer))
-        return oStmt;
+        return make_unique<ExpStmtSyntax>(std::move(*oStmt));
 
     if (auto oStmt = ParseTaskStmt(lexer))
         return oStmt;
@@ -668,10 +667,10 @@ optional<StmtSyntax> ParseStmt(Lexer* lexer)
         return oStmt;
 
     if (auto oStmt = ParseForeachStmt(lexer))
-        return oStmt;
+        return make_unique<ForeachStmtSyntax>(std::move(*oStmt));
 
     if (auto oStmt = ParseYieldStmt(lexer))
-        return oStmt;
+        return make_unique<YieldStmtSyntax>(std::move(*oStmt));
 
     if (auto oStmt = ParseCommandStmt(lexer))
         return oStmt;

@@ -23,11 +23,11 @@ target_compile_features(TextAnalysis.Tests PRIVATE cxx_std_20)
 target_compile_options(TextAnalysis.Tests PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 target_compile_options(TextAnalysis.Tests PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
-# include(GoogleTest)
-#gtest_discover_tests(TextAnalysis.Tests)
+include(GoogleTest)
+gtest_discover_tests(TextAnalysis.Tests)
     # set a working directory so your project root so that you can find test data via paths relative to the project root
     # WORKING_DIRECTORY ${PROJECT_DIR}
     # PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_DIR}"
 
 
-add_test(TextAnalysis.Tests.All TextAnalysis.Tests)
+# add_test(TextAnalysis.Tests.All TextAnalysis.Tests)

@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <vector>
+#include <memory>
 
 #include <Syntax/Syntax.h>
 #include <Syntax/Tokens.h>
@@ -13,6 +14,15 @@
 using namespace std;
 
 namespace Citron {
+
+namespace {
+    template<typename T>
+    std::optional<TypeExpSyntax> Wrap(std::optional<T>&& ot)
+    {
+        if (!ot) return nullopt;
+        return make_unique<T>(std::move(*ot));
+    }
+}
 
 optional<vector<TypeExpSyntax>> ParseTypeArgs(Lexer* lexer)
 {
@@ -65,7 +75,7 @@ optional<NullableTypeExpSyntax> ParseNullableTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
-    optional<TypeExpSyntax> oTypeExp = ParseBoxPtrTypeExp(&curLexer);
+    optional<TypeExpSyntax> oTypeExp = Wrap(ParseBoxPtrTypeExp(&curLexer));
     if (!oTypeExp) oTypeExp = ParseLocalPtrTypeExp(&curLexer);
     if (!oTypeExp) oTypeExp = ParseParenTypeExp(&curLexer);
     if (!oTypeExp) oTypeExp = ParseIdChainTypeExp(&curLexer);
@@ -113,12 +123,12 @@ optional<TypeExpSyntax> ParseLocalPtrTypeExp(Lexer* lexer)
     if (!Accept<StarToken>(&curLexer))
         return nullopt;
     
-    TypeExpSyntax curTypeExp = LocalPtrTypeExpSyntax(std::move(*oInnerTypeExp));
+    TypeExpSyntax curTypeExp = make_unique<LocalPtrTypeExpSyntax>(std::move(*oInnerTypeExp));
 
     while (Accept<StarToken>(&curLexer))
     {
         // NOTICE: LocalPtrTypeExpSyntax(std::move(curTypeExp)); curTypeExp가 LocalPtrTypeExpSyntax라면 감싸는게 아니라 이동생성자가 호출된다
-        curTypeExp = LocalPtrTypeExpSyntax(TypeExpSyntax(std::move(curTypeExp)));
+        curTypeExp = make_unique<LocalPtrTypeExpSyntax>(std::move(curTypeExp));
     }
 
     *lexer = std::move(curLexer);
@@ -133,10 +143,10 @@ optional<TypeExpSyntax> ParseParenTypeExp(Lexer* lexer)
     if (!Accept<LParenToken>(&curLexer))
         return nullopt;
 
-    optional<TypeExpSyntax> oInnerTypeExp = ParseNullableTypeExp(&curLexer);
-    if (!oInnerTypeExp) oInnerTypeExp = ParseBoxPtrTypeExp(&curLexer);
+    optional<TypeExpSyntax> oInnerTypeExp = Wrap(ParseNullableTypeExp(&curLexer));
+    if (!oInnerTypeExp) oInnerTypeExp = Wrap(ParseBoxPtrTypeExp(&curLexer));
     if (!oInnerTypeExp) oInnerTypeExp = ParseLocalPtrTypeExp(&curLexer);
-    if (!oInnerTypeExp) oInnerTypeExp = ParseLocalTypeExp(&curLexer);
+    if (!oInnerTypeExp) oInnerTypeExp = Wrap(ParseLocalTypeExp(&curLexer));
     if (!oInnerTypeExp) return nullopt;
     
     if (!Accept<RParenToken>(&curLexer))
@@ -167,9 +177,9 @@ optional<TypeExpSyntax> ParseIdChainTypeExp(Lexer* lexer)
 
         auto oTypeArgs = ParseTypeArgs(&curLexer);
         if (oTypeArgs)
-            curTypeExp = MemberTypeExpSyntax(std::move(curTypeExp), std::move(oIdToken->text), std::move(*oTypeArgs));
+            curTypeExp = make_unique<MemberTypeExpSyntax>(std::move(curTypeExp), std::move(oIdToken->text), std::move(*oTypeArgs));
         else 
-            curTypeExp = MemberTypeExpSyntax(std::move(curTypeExp), std::move(oIdToken->text), {});
+            curTypeExp = make_unique<MemberTypeExpSyntax>(std::move(curTypeExp), std::move(oIdToken->text), std::vector<TypeExpSyntax>{});
     }
 
     *lexer = std::move(curLexer);
@@ -202,10 +212,10 @@ optional<LocalTypeExpSyntax> ParseLocalTypeExp(Lexer* lexer)
 optional<TypeExpSyntax> ParseTypeExp(Lexer* lexer)
 {
     if (auto oNullableTypeExp = ParseNullableTypeExp(lexer))
-        return oNullableTypeExp;
+        return Wrap(std::move(oNullableTypeExp));
 
     if (auto oBoxPtrTypeExp = ParseBoxPtrTypeExp(lexer))
-        return oBoxPtrTypeExp;
+        return Wrap(std::move(oBoxPtrTypeExp));
 
     if (auto oLocalPtrTypeExp = ParseLocalPtrTypeExp(lexer))
         return oLocalPtrTypeExp;
@@ -214,7 +224,7 @@ optional<TypeExpSyntax> ParseTypeExp(Lexer* lexer)
         return oIdChainTypeExp;
 
     if (auto oLocalTypeExp = ParseLocalTypeExp(lexer))
-        return oLocalTypeExp;
+        return Wrap(std::move(oLocalTypeExp));
 
     return nullopt;
 }
