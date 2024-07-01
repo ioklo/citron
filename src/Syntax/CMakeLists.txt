@@ -14,11 +14,12 @@ add_library(Syntax SHARED
   ../../include/Syntax/Syntax.h
 )
 
+
 # CodeGeneration <- Syntax
 add_dependencies(Syntax CodeGeneration)
 
 # TODO: Add tests and install targets if needed.
-target_include_directories (Syntax PUBLIC ../../include)
+target_include_directories (Syntax PUBLIC ../../include PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_definitions(Syntax PRIVATE SYNTAX_EXPORT)
 target_link_libraries(Syntax PUBLIC Infra)
 

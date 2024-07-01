@@ -32,7 +32,5 @@ export class MSymbolType
 {
 };
 
-
-
 }
 

@@ -12,6 +12,10 @@ ArgumentSyntax::ArgumentSyntax(ExpSyntax exp)
 {
 }
 
+IdTypeExpSyntax::IdTypeExpSyntax(std::string name)
+    : IdTypeExpSyntax(std::move(name), {})
+{ }
+
 StringExpSyntax::StringExpSyntax(std::string str)
     : StringExpSyntax(make_vector<StringExpSyntaxElement>(TextStringExpSyntaxElement(str))) 
 { 

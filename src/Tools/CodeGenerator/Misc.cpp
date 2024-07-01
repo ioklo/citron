@@ -437,7 +437,7 @@ void GenerateEnum(CommonInfo& commonInfo, EnumInfo enumInfo, ostringstream& hStr
     hStream << "}" << endl << endl;
 }
 
-void GenerateVariant(CommonInfo& commonInfo, VariantInfo info, ostringstream& hStream, ostringstream& cppStream)
+void GenerateVariant(CommonInfo& commonInfo, VariantInfo& info, ostringstream& hStream, ostringstream& cppStream)
 {
     // using ExpSyntax = std::variant<
     // >;
@@ -454,14 +454,9 @@ void GenerateVariant(CommonInfo& commonInfo, VariantInfo info, ostringstream& hS
     // SYNTAX_API JsonItem ToJson(ExpSyntax& exp);
     hStream << commonInfo.linkage << " JsonItem ToJson(" << info.name << "& " << info.argName << ");" << endl << endl;
 
-    /*JsonItem ToJson(ExpSyntax & exp)
-    {
-        return std::visit([](auto&& exp) { return exp.ToJson(); }, exp);
-    }*/
-
     cppStream << "JsonItem ToJson(" << info.name << "& " << info.argName << ")" << endl;
     cppStream << "{" << endl;
-    cppStream << "    return std::visit([](auto&& " << info.argName << ") { return " << info.argName << ".ToJson(); }, " << info.argName << ");" << endl;
+    cppStream << "    return std::visit(ToJsonVisitor(), " << info.argName << ");" << endl;
     cppStream << "}" << endl;
     cppStream << endl;
 }

@@ -24,8 +24,8 @@ target_compile_options(CodeGenerator PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>"
 # Syntaxes.g.h Syntaxes.g.cpp 를 만드는 방법
 add_custom_command(
   OUTPUT
-    ${CMAKE_CURRENT_BINARY_DIR}/../../../include/Syntax/Syntaxes.g.h
-    ${CMAKE_CURRENT_BINARY_DIR}/../../Syntax/Syntaxes.g.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../include/Syntax/Syntaxes.g.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Syntax/Syntaxes.g.cpp
   COMMAND CodeGenerator ${CMAKE_CURRENT_SOURCE_DIR}/../..
   COMMAND ${CMAKE_COMMAND} -E touch CodeGeneration.lastest
   DEPENDS CodeGenerator

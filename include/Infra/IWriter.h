@@ -6,7 +6,7 @@ namespace Citron {
 class IWriter
 {
 public:
-    virtual ~IWriter() = 0 { };
+    virtual ~IWriter() = default; // default implementation
 
     virtual void AddIndent() = 0;
     virtual void RemoveIndent() = 0;

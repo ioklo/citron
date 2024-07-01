@@ -2,14 +2,13 @@
 #include <iostream>
 #include <fmt/core.h>
 
-
 using namespace std;
 using namespace std::filesystem;
 
 void GenerateSyntax(path srcPath)
 {
-    // src/Syntax/Syntaxes.g.h
-    // src/Syntax/Syntaxes.g.cpp
+    // [src]/../include/Syntax/Syntaxes.g.h
+    // [src]/Syntax/Syntaxes.g.cpp
     path hPath = [srcPath]() mutable { return absolute(srcPath.append("..").append("include").append("Syntax").append("Syntaxes.g.h")); }();
     path cppPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Syntaxes.g.cpp"); }();
 
@@ -40,6 +39,16 @@ using namespace std;
 
 namespace Citron {
 
+namespace {
+struct ToJsonVisitor {
+    template<typename T>
+    JsonItem operator()(std::unique_ptr<T>& t) { return t->ToJson(); }
+
+    template<typename T>
+    JsonItem operator()(T& t) { return t.ToJson(); }
+};
+}
+
 )---";
 
     CommonInfo commonInfo = { .linkage = "SYNTAX_API" };
@@ -52,22 +61,22 @@ namespace Citron {
             .memberNames {
                 "class CommandStmtSyntax",
                 "class VarDeclStmtSyntax",
-                "class IfStmtSyntax",
-                "class IfTestStmtSyntax",
-                "class ForStmtSyntax",
+                "std::unique_ptr<class IfStmtSyntax>",
+                "std::unique_ptr<class IfTestStmtSyntax>",
+                "std::unique_ptr<class ForStmtSyntax>",
 
                 "class ContinueStmtSyntax",
                 "class BreakStmtSyntax",
-                "class ReturnStmtSyntax",
+                "std::unique_ptr<class ReturnStmtSyntax>",
                 "class BlockStmtSyntax",
                 "class BlankStmtSyntax",
-                "class ExpStmtSyntax",
+                "std::unique_ptr<class ExpStmtSyntax>",
 
                 "class TaskStmtSyntax",
                 "class AwaitStmtSyntax",
                 "class AsyncStmtSyntax",
-                "class ForeachStmtSyntax",
-                "class YieldStmtSyntax",
+                "std::unique_ptr<class ForeachStmtSyntax>",
+                "std::unique_ptr<class YieldStmtSyntax>",
 
                 "class DirectiveStmtSyntax"
             }
@@ -82,18 +91,18 @@ namespace Citron {
                 "class IntLiteralExpSyntax",
                 "class BoolLiteralExpSyntax",
                 "class NullLiteralExpSyntax",
-                "class BinaryOpExpSyntax",
-                "class UnaryOpExpSyntax",
-                "class CallExpSyntax",
-                "class LambdaExpSyntax",
-                "class IndexerExpSyntax",
-                "class MemberExpSyntax",
-                "class IndirectMemberExpSyntax",
+                "std::unique_ptr<class BinaryOpExpSyntax>",
+                "std::unique_ptr<class UnaryOpExpSyntax>",
+                "std::unique_ptr<class CallExpSyntax>",
+                "std::unique_ptr<class LambdaExpSyntax>",
+                "std::unique_ptr<class IndexerExpSyntax>",
+                "std::unique_ptr<class MemberExpSyntax>",
+                "std::unique_ptr<class IndirectMemberExpSyntax>",
                 "class ListExpSyntax",
                 "class NewExpSyntax",
-                "class BoxExpSyntax",
-                "class IsExpSyntax",
-                "class AsExpSyntax"
+                "std::unique_ptr<class BoxExpSyntax>",
+                "std::unique_ptr<class IsExpSyntax>",
+                "std::unique_ptr<class AsExpSyntax>"
             }
         },
 
@@ -102,11 +111,11 @@ namespace Citron {
             .argName = "typeExp",
             .memberNames {
                 "class IdTypeExpSyntax",
-                "class MemberTypeExpSyntax",
-                "class NullableTypeExpSyntax",
-                "class LocalPtrTypeExpSyntax",
-                "class BoxPtrTypeExpSyntax",
-                "class LocalTypeExpSyntax"
+                "std::unique_ptr<class MemberTypeExpSyntax>",
+                "std::unique_ptr<class NullableTypeExpSyntax>",
+                "std::unique_ptr<class LocalPtrTypeExpSyntax>",
+                "std::unique_ptr<class BoxPtrTypeExpSyntax>",
+                "std::unique_ptr<class LocalTypeExpSyntax>"
             }
         },
 
@@ -117,9 +126,9 @@ namespace Citron {
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
                 { .type = "std::vector<TypeExpSyntax>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs", .bUsePimpl = false },
             },
-            .bDefaultsInline = true,
+            .bDefaultsInline = false,
             .extraConstructors {
-                "IdTypeExpSyntax(std::string name) : IdTypeExpSyntax(std::move(name), {}) { }"
+                "SYNTAX_API IdTypeExpSyntax(std::string name);"
             }
         },
 
@@ -237,7 +246,7 @@ namespace Citron {
             .argName = "elem",
             .memberNames {
                 "class TextStringExpSyntaxElement",
-                "class ExpStringExpSyntaxElement"
+                "std::unique_ptr<class ExpStringExpSyntaxElement>"
             }
         },
 
@@ -323,7 +332,7 @@ namespace Citron {
             .argName = "body",
             .memberNames {
                 "class StmtsLambdaExpBodySyntax",
-                "class ExpLambdaExpBodySyntax"
+                "std::unique_ptr<class ExpLambdaExpBodySyntax>"
             }
         },
 
@@ -435,7 +444,7 @@ namespace Citron {
             .name = "EmbeddableStmtSyntax",
             .argName = "embeddableStmt",
             .memberNames {
-                "class SingleEmbeddableStmtSyntax",
+                "std::unique_ptr<class SingleEmbeddableStmtSyntax>",
                 "class BlockEmbeddableStmtSyntax",
             }
         },
@@ -526,8 +535,8 @@ namespace Citron {
             .name = "ForStmtInitializerSyntax",
             .argName = "forInit",
             .memberNames {
-                "class ExpForStmtInitializerSyntax",
-                "class VarDeclForStmtInitializerSyntax"
+                "std::unique_ptr<class ExpForStmtInitializerSyntax>",
+                "std::unique_ptr<class VarDeclForStmtInitializerSyntax>"
             }
         },
 
@@ -767,7 +776,7 @@ namespace Citron {
                 { .type = "std::vector<TypeExpSyntax>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes", .bUsePimpl = false },
                 { .type = "std::vector<ClassMemberDeclSyntax>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls", .bUsePimpl = false },
             },
-            .bDefaultsInline = true
+            .bDefaultsInline = false
         },
 
         // StructMemberFuncDeclSyntax
@@ -833,7 +842,7 @@ namespace Citron {
                 { .type = "std::vector<TypeExpSyntax>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes", .bUsePimpl = false },
                 { .type = "std::vector<StructMemberDeclSyntax>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls", .bUsePimpl = false },
             },
-            .bDefaultsInline = true
+            .bDefaultsInline = false
         },
 
         // EnumElemMemberVarDeclSyntax
@@ -865,7 +874,7 @@ namespace Citron {
                 { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams", .bUsePimpl = false },
                 { .type = "std::vector<EnumElemDeclSyntax>", .memberVarName = "elements", .getterName = "GetElements", .bUsePimpl = false },
             },
-            .bDefaultsInline = true
+            .bDefaultsInline = false
         },
 
         // NamespaceDeclSyntaxElement
