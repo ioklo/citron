@@ -10,6 +10,7 @@
 #include <Infra/Unreachable.h>
 
 namespace Citron {
+class ArgumentSyntax;
 
 using StmtSyntax = std::variant<
     class CommandStmtSyntax,
@@ -86,11 +87,9 @@ public:
 
 class MemberTypeExpSyntax
 {
+    TypeExpSyntax parentType;
     std::string name;
     std::vector<TypeExpSyntax> typeArgs;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
 
 public:
     SYNTAX_API MemberTypeExpSyntax(TypeExpSyntax parentType, std::string name, std::vector<TypeExpSyntax> typeArgs);
@@ -101,7 +100,7 @@ public:
     MemberTypeExpSyntax& operator=(const MemberTypeExpSyntax& other) = delete;
     SYNTAX_API MemberTypeExpSyntax& operator=(MemberTypeExpSyntax&& other) noexcept;
 
-    SYNTAX_API TypeExpSyntax& GetParentType();
+    TypeExpSyntax& GetParentType() { return parentType; }
     std::string& GetName() { return name; }
     std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }
 
@@ -110,8 +109,7 @@ public:
 
 class NullableTypeExpSyntax
 {
-    struct Impl;
-    std::unique_ptr<Impl> impl;
+    TypeExpSyntax innerType;
 
 public:
     SYNTAX_API NullableTypeExpSyntax(TypeExpSyntax innerType);
@@ -122,15 +120,14 @@ public:
     NullableTypeExpSyntax& operator=(const NullableTypeExpSyntax& other) = delete;
     SYNTAX_API NullableTypeExpSyntax& operator=(NullableTypeExpSyntax&& other) noexcept;
 
-    SYNTAX_API TypeExpSyntax& GetInnerType();
+    TypeExpSyntax& GetInnerType() { return innerType; }
 
     SYNTAX_API JsonItem ToJson();
 };
 
 class LocalPtrTypeExpSyntax
 {
-    struct Impl;
-    std::unique_ptr<Impl> impl;
+    TypeExpSyntax innerType;
 
 public:
     SYNTAX_API LocalPtrTypeExpSyntax(TypeExpSyntax innerType);
@@ -141,15 +138,14 @@ public:
     LocalPtrTypeExpSyntax& operator=(const LocalPtrTypeExpSyntax& other) = delete;
     SYNTAX_API LocalPtrTypeExpSyntax& operator=(LocalPtrTypeExpSyntax&& other) noexcept;
 
-    SYNTAX_API TypeExpSyntax& GetInnerType();
+    TypeExpSyntax& GetInnerType() { return innerType; }
 
     SYNTAX_API JsonItem ToJson();
 };
 
 class BoxPtrTypeExpSyntax
 {
-    struct Impl;
-    std::unique_ptr<Impl> impl;
+    TypeExpSyntax innerType;
 
 public:
     SYNTAX_API BoxPtrTypeExpSyntax(TypeExpSyntax innerType);
@@ -160,15 +156,14 @@ public:
     BoxPtrTypeExpSyntax& operator=(const BoxPtrTypeExpSyntax& other) = delete;
     SYNTAX_API BoxPtrTypeExpSyntax& operator=(BoxPtrTypeExpSyntax&& other) noexcept;
 
-    SYNTAX_API TypeExpSyntax& GetInnerType();
+    TypeExpSyntax& GetInnerType() { return innerType; }
 
     SYNTAX_API JsonItem ToJson();
 };
 
 class LocalTypeExpSyntax
 {
-    struct Impl;
-    std::unique_ptr<Impl> impl;
+    TypeExpSyntax innerType;
 
 public:
     SYNTAX_API LocalTypeExpSyntax(TypeExpSyntax innerType);
@@ -179,7 +174,7 @@ public:
     LocalTypeExpSyntax& operator=(const LocalTypeExpSyntax& other) = delete;
     SYNTAX_API LocalTypeExpSyntax& operator=(LocalTypeExpSyntax&& other) noexcept;
 
-    SYNTAX_API TypeExpSyntax& GetInnerType();
+    TypeExpSyntax& GetInnerType() { return innerType; }
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -192,13 +187,13 @@ class LambdaExpParamSyntax
     bool hasParams;
 
 public:
-    LambdaExpParamSyntax(std::optional<TypeExpSyntax> type, std::string name, bool hasOut, bool hasParams)
-        : type(std::move(type)), name(std::move(name)), hasOut(std::move(hasOut)), hasParams(std::move(hasParams)) { }
+    SYNTAX_API LambdaExpParamSyntax(std::optional<TypeExpSyntax> type, std::string name, bool hasOut, bool hasParams);
     LambdaExpParamSyntax(const LambdaExpParamSyntax&) = delete;
-    LambdaExpParamSyntax(LambdaExpParamSyntax&&) = default;
+    SYNTAX_API LambdaExpParamSyntax(LambdaExpParamSyntax&&) noexcept;
+    SYNTAX_API ~LambdaExpParamSyntax();
 
     LambdaExpParamSyntax& operator=(const LambdaExpParamSyntax& other) = delete;
-    LambdaExpParamSyntax& operator=(LambdaExpParamSyntax&& other) = default;
+    SYNTAX_API LambdaExpParamSyntax& operator=(LambdaExpParamSyntax&& other) noexcept;
 
     std::optional<TypeExpSyntax>& GetType() { return type; }
     std::string& GetName() { return name; }
@@ -290,45 +285,20 @@ inline JsonItem ToJson(UnaryOpSyntaxKind& arg)
     unreachable();
 }
 
-class ArgumentSyntax
-{
-    bool bOut;
-    bool bParams;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API ArgumentSyntax(bool bOut, bool bParams, ExpSyntax exp);
-    SYNTAX_API ArgumentSyntax(ExpSyntax exp);
-    ArgumentSyntax(const ArgumentSyntax&) = delete;
-    SYNTAX_API ArgumentSyntax(ArgumentSyntax&&) noexcept;
-    SYNTAX_API ~ArgumentSyntax();
-
-    ArgumentSyntax& operator=(const ArgumentSyntax& other) = delete;
-    SYNTAX_API ArgumentSyntax& operator=(ArgumentSyntax&& other) noexcept;
-
-    bool& HasOut() { return bOut; }
-    bool& GetParams() { return bParams; }
-    SYNTAX_API ExpSyntax& GetExp();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
 class IdentifierExpSyntax
 {
     std::string value;
     std::vector<TypeExpSyntax> typeArgs;
 
 public:
-    IdentifierExpSyntax(std::string value, std::vector<TypeExpSyntax> typeArgs)
-        : value(std::move(value)), typeArgs(std::move(typeArgs)) { }
+    SYNTAX_API IdentifierExpSyntax(std::string value, std::vector<TypeExpSyntax> typeArgs);
     IdentifierExpSyntax(std::string value) : IdentifierExpSyntax(std::move(value), {}) { }
     IdentifierExpSyntax(const IdentifierExpSyntax&) = delete;
-    IdentifierExpSyntax(IdentifierExpSyntax&&) = default;
+    SYNTAX_API IdentifierExpSyntax(IdentifierExpSyntax&&) noexcept;
+    SYNTAX_API ~IdentifierExpSyntax();
 
     IdentifierExpSyntax& operator=(const IdentifierExpSyntax& other) = delete;
-    IdentifierExpSyntax& operator=(IdentifierExpSyntax&& other) = default;
+    SYNTAX_API IdentifierExpSyntax& operator=(IdentifierExpSyntax&& other) noexcept;
 
     std::string& GetValue() { return value; }
     std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }
@@ -347,34 +317,15 @@ class TextStringExpSyntaxElement
     std::string text;
 
 public:
-    TextStringExpSyntaxElement(std::string text)
-        : text(std::move(text)) { }
+    SYNTAX_API TextStringExpSyntaxElement(std::string text);
     TextStringExpSyntaxElement(const TextStringExpSyntaxElement&) = delete;
-    TextStringExpSyntaxElement(TextStringExpSyntaxElement&&) = default;
+    SYNTAX_API TextStringExpSyntaxElement(TextStringExpSyntaxElement&&) noexcept;
+    SYNTAX_API ~TextStringExpSyntaxElement();
 
     TextStringExpSyntaxElement& operator=(const TextStringExpSyntaxElement& other) = delete;
-    TextStringExpSyntaxElement& operator=(TextStringExpSyntaxElement&& other) = default;
+    SYNTAX_API TextStringExpSyntaxElement& operator=(TextStringExpSyntaxElement&& other) noexcept;
 
     std::string& GetText() { return text; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class ExpStringExpSyntaxElement
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API ExpStringExpSyntaxElement(ExpSyntax exp);
-    ExpStringExpSyntaxElement(const ExpStringExpSyntaxElement&) = delete;
-    SYNTAX_API ExpStringExpSyntaxElement(ExpStringExpSyntaxElement&&) noexcept;
-    SYNTAX_API ~ExpStringExpSyntaxElement();
-
-    ExpStringExpSyntaxElement& operator=(const ExpStringExpSyntaxElement& other) = delete;
-    SYNTAX_API ExpStringExpSyntaxElement& operator=(ExpStringExpSyntaxElement&& other) noexcept;
-
-    SYNTAX_API ExpSyntax& GetExp();
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -403,13 +354,13 @@ class IntLiteralExpSyntax
     int value;
 
 public:
-    IntLiteralExpSyntax(int value)
-        : value(std::move(value)) { }
+    SYNTAX_API IntLiteralExpSyntax(int value);
     IntLiteralExpSyntax(const IntLiteralExpSyntax&) = delete;
-    IntLiteralExpSyntax(IntLiteralExpSyntax&&) = default;
+    SYNTAX_API IntLiteralExpSyntax(IntLiteralExpSyntax&&) noexcept;
+    SYNTAX_API ~IntLiteralExpSyntax();
 
     IntLiteralExpSyntax& operator=(const IntLiteralExpSyntax& other) = delete;
-    IntLiteralExpSyntax& operator=(IntLiteralExpSyntax&& other) = default;
+    SYNTAX_API IntLiteralExpSyntax& operator=(IntLiteralExpSyntax&& other) noexcept;
 
     int& GetValue() { return value; }
 
@@ -421,13 +372,13 @@ class BoolLiteralExpSyntax
     bool value;
 
 public:
-    BoolLiteralExpSyntax(bool value)
-        : value(std::move(value)) { }
+    SYNTAX_API BoolLiteralExpSyntax(bool value);
     BoolLiteralExpSyntax(const BoolLiteralExpSyntax&) = delete;
-    BoolLiteralExpSyntax(BoolLiteralExpSyntax&&) = default;
+    SYNTAX_API BoolLiteralExpSyntax(BoolLiteralExpSyntax&&) noexcept;
+    SYNTAX_API ~BoolLiteralExpSyntax();
 
     BoolLiteralExpSyntax& operator=(const BoolLiteralExpSyntax& other) = delete;
-    BoolLiteralExpSyntax& operator=(BoolLiteralExpSyntax&& other) = default;
+    SYNTAX_API BoolLiteralExpSyntax& operator=(BoolLiteralExpSyntax&& other) noexcept;
 
     bool& GetValue() { return value; }
 
@@ -437,212 +388,13 @@ public:
 class NullLiteralExpSyntax
 {
 public:
-    NullLiteralExpSyntax() { }
+    SYNTAX_API NullLiteralExpSyntax();
     NullLiteralExpSyntax(const NullLiteralExpSyntax&) = delete;
-    NullLiteralExpSyntax(NullLiteralExpSyntax&&) = default;
+    SYNTAX_API NullLiteralExpSyntax(NullLiteralExpSyntax&&) noexcept;
+    SYNTAX_API ~NullLiteralExpSyntax();
 
     NullLiteralExpSyntax& operator=(const NullLiteralExpSyntax& other) = delete;
-    NullLiteralExpSyntax& operator=(NullLiteralExpSyntax&& other) = default;
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class BinaryOpExpSyntax
-{
-    BinaryOpSyntaxKind kind;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API BinaryOpExpSyntax(BinaryOpSyntaxKind kind, ExpSyntax operand0, ExpSyntax operand1);
-    BinaryOpExpSyntax(const BinaryOpExpSyntax&) = delete;
-    SYNTAX_API BinaryOpExpSyntax(BinaryOpExpSyntax&&) noexcept;
-    SYNTAX_API ~BinaryOpExpSyntax();
-
-    BinaryOpExpSyntax& operator=(const BinaryOpExpSyntax& other) = delete;
-    SYNTAX_API BinaryOpExpSyntax& operator=(BinaryOpExpSyntax&& other) noexcept;
-
-    BinaryOpSyntaxKind& GetKind() { return kind; }
-    SYNTAX_API ExpSyntax& GetOperand0();
-    SYNTAX_API ExpSyntax& GetOperand1();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class UnaryOpExpSyntax
-{
-    UnaryOpSyntaxKind kind;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API UnaryOpExpSyntax(UnaryOpSyntaxKind kind, ExpSyntax operand);
-    UnaryOpExpSyntax(const UnaryOpExpSyntax&) = delete;
-    SYNTAX_API UnaryOpExpSyntax(UnaryOpExpSyntax&&) noexcept;
-    SYNTAX_API ~UnaryOpExpSyntax();
-
-    UnaryOpExpSyntax& operator=(const UnaryOpExpSyntax& other) = delete;
-    SYNTAX_API UnaryOpExpSyntax& operator=(UnaryOpExpSyntax&& other) noexcept;
-
-    UnaryOpSyntaxKind& GetKind() { return kind; }
-    SYNTAX_API ExpSyntax& GetOperand();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class CallExpSyntax
-{
-    std::vector<ArgumentSyntax> args;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API CallExpSyntax(ExpSyntax callable, std::vector<ArgumentSyntax> args);
-    CallExpSyntax(const CallExpSyntax&) = delete;
-    SYNTAX_API CallExpSyntax(CallExpSyntax&&) noexcept;
-    SYNTAX_API ~CallExpSyntax();
-
-    CallExpSyntax& operator=(const CallExpSyntax& other) = delete;
-    SYNTAX_API CallExpSyntax& operator=(CallExpSyntax&& other) noexcept;
-
-    SYNTAX_API ExpSyntax& GetCallable();
-    std::vector<ArgumentSyntax>& GetArgs() { return args; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-using LambdaExpBodySyntax = std::variant<
-    class StmtsLambdaExpBodySyntax,
-    std::unique_ptr<class ExpLambdaExpBodySyntax>>;
-
-SYNTAX_API JsonItem ToJson(LambdaExpBodySyntax& body);
-
-class StmtsLambdaExpBodySyntax
-{
-    std::vector<StmtSyntax> stmts;
-
-public:
-    SYNTAX_API StmtsLambdaExpBodySyntax(std::vector<StmtSyntax> stmts);
-    StmtsLambdaExpBodySyntax(const StmtsLambdaExpBodySyntax&) = delete;
-    SYNTAX_API StmtsLambdaExpBodySyntax(StmtsLambdaExpBodySyntax&&) noexcept;
-    SYNTAX_API ~StmtsLambdaExpBodySyntax();
-
-    StmtsLambdaExpBodySyntax& operator=(const StmtsLambdaExpBodySyntax& other) = delete;
-    SYNTAX_API StmtsLambdaExpBodySyntax& operator=(StmtsLambdaExpBodySyntax&& other) noexcept;
-
-    std::vector<StmtSyntax>& GetStmts() { return stmts; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class ExpLambdaExpBodySyntax
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API ExpLambdaExpBodySyntax(ExpSyntax exp);
-    ExpLambdaExpBodySyntax(const ExpLambdaExpBodySyntax&) = delete;
-    SYNTAX_API ExpLambdaExpBodySyntax(ExpLambdaExpBodySyntax&&) noexcept;
-    SYNTAX_API ~ExpLambdaExpBodySyntax();
-
-    ExpLambdaExpBodySyntax& operator=(const ExpLambdaExpBodySyntax& other) = delete;
-    SYNTAX_API ExpLambdaExpBodySyntax& operator=(ExpLambdaExpBodySyntax&& other) noexcept;
-
-    SYNTAX_API ExpSyntax& GetExp();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class LambdaExpSyntax
-{
-    std::vector<LambdaExpParamSyntax> params;
-    LambdaExpBodySyntax body;
-
-public:
-    SYNTAX_API LambdaExpSyntax(std::vector<LambdaExpParamSyntax> params, LambdaExpBodySyntax body);
-    LambdaExpSyntax(const LambdaExpSyntax&) = delete;
-    SYNTAX_API LambdaExpSyntax(LambdaExpSyntax&&) noexcept;
-    SYNTAX_API ~LambdaExpSyntax();
-
-    LambdaExpSyntax& operator=(const LambdaExpSyntax& other) = delete;
-    SYNTAX_API LambdaExpSyntax& operator=(LambdaExpSyntax&& other) noexcept;
-
-    std::vector<LambdaExpParamSyntax>& GetParams() { return params; }
-    LambdaExpBodySyntax& GetBody() { return body; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class IndexerExpSyntax
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API IndexerExpSyntax(ExpSyntax obj, ExpSyntax index);
-    IndexerExpSyntax(const IndexerExpSyntax&) = delete;
-    SYNTAX_API IndexerExpSyntax(IndexerExpSyntax&&) noexcept;
-    SYNTAX_API ~IndexerExpSyntax();
-
-    IndexerExpSyntax& operator=(const IndexerExpSyntax& other) = delete;
-    SYNTAX_API IndexerExpSyntax& operator=(IndexerExpSyntax&& other) noexcept;
-
-    SYNTAX_API ExpSyntax& GetObject();
-    SYNTAX_API ExpSyntax& GetIndex();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class MemberExpSyntax
-{
-    std::string memberName;
-    std::vector<TypeExpSyntax> memberTypeArgs;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API MemberExpSyntax(ExpSyntax parent, std::string memberName, std::vector<TypeExpSyntax> memberTypeArgs);
-    SYNTAX_API MemberExpSyntax(ExpSyntax parent, std::string memberName);
-    MemberExpSyntax(const MemberExpSyntax&) = delete;
-    SYNTAX_API MemberExpSyntax(MemberExpSyntax&&) noexcept;
-    SYNTAX_API ~MemberExpSyntax();
-
-    MemberExpSyntax& operator=(const MemberExpSyntax& other) = delete;
-    SYNTAX_API MemberExpSyntax& operator=(MemberExpSyntax&& other) noexcept;
-
-    SYNTAX_API ExpSyntax& GetParent();
-    std::string& GetMemberName() { return memberName; }
-    std::vector<TypeExpSyntax>& GetMemberTypeArgs() { return memberTypeArgs; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class IndirectMemberExpSyntax
-{
-    std::string memberName;
-    std::vector<TypeExpSyntax> memberTypeArgs;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName, std::vector<TypeExpSyntax> memberTypeArgs);
-    SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName);
-    IndirectMemberExpSyntax(const IndirectMemberExpSyntax&) = delete;
-    SYNTAX_API IndirectMemberExpSyntax(IndirectMemberExpSyntax&&) noexcept;
-    SYNTAX_API ~IndirectMemberExpSyntax();
-
-    IndirectMemberExpSyntax& operator=(const IndirectMemberExpSyntax& other) = delete;
-    SYNTAX_API IndirectMemberExpSyntax& operator=(IndirectMemberExpSyntax&& other) noexcept;
-
-    SYNTAX_API ExpSyntax& GetParent();
-    std::string& GetMemberName() { return memberName; }
-    std::vector<TypeExpSyntax>& GetMemberTypeArgs() { return memberTypeArgs; }
+    SYNTAX_API NullLiteralExpSyntax& operator=(NullLiteralExpSyntax&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -685,10 +437,199 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
+class BinaryOpExpSyntax
+{
+    BinaryOpSyntaxKind kind;
+    ExpSyntax operand0;
+    ExpSyntax operand1;
+
+public:
+    SYNTAX_API BinaryOpExpSyntax(BinaryOpSyntaxKind kind, ExpSyntax operand0, ExpSyntax operand1);
+    BinaryOpExpSyntax(const BinaryOpExpSyntax&) = delete;
+    SYNTAX_API BinaryOpExpSyntax(BinaryOpExpSyntax&&) noexcept;
+    SYNTAX_API ~BinaryOpExpSyntax();
+
+    BinaryOpExpSyntax& operator=(const BinaryOpExpSyntax& other) = delete;
+    SYNTAX_API BinaryOpExpSyntax& operator=(BinaryOpExpSyntax&& other) noexcept;
+
+    BinaryOpSyntaxKind& GetKind() { return kind; }
+    ExpSyntax& GetOperand0() { return operand0; }
+    ExpSyntax& GetOperand1() { return operand1; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class UnaryOpExpSyntax
+{
+    UnaryOpSyntaxKind kind;
+    ExpSyntax operand;
+
+public:
+    SYNTAX_API UnaryOpExpSyntax(UnaryOpSyntaxKind kind, ExpSyntax operand);
+    UnaryOpExpSyntax(const UnaryOpExpSyntax&) = delete;
+    SYNTAX_API UnaryOpExpSyntax(UnaryOpExpSyntax&&) noexcept;
+    SYNTAX_API ~UnaryOpExpSyntax();
+
+    UnaryOpExpSyntax& operator=(const UnaryOpExpSyntax& other) = delete;
+    SYNTAX_API UnaryOpExpSyntax& operator=(UnaryOpExpSyntax&& other) noexcept;
+
+    UnaryOpSyntaxKind& GetKind() { return kind; }
+    ExpSyntax& GetOperand() { return operand; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class CallExpSyntax
+{
+    ExpSyntax callable;
+    std::vector<ArgumentSyntax> args;
+
+public:
+    SYNTAX_API CallExpSyntax(ExpSyntax callable, std::vector<ArgumentSyntax> args);
+    CallExpSyntax(const CallExpSyntax&) = delete;
+    SYNTAX_API CallExpSyntax(CallExpSyntax&&) noexcept;
+    SYNTAX_API ~CallExpSyntax();
+
+    CallExpSyntax& operator=(const CallExpSyntax& other) = delete;
+    SYNTAX_API CallExpSyntax& operator=(CallExpSyntax&& other) noexcept;
+
+    ExpSyntax& GetCallable() { return callable; }
+    std::vector<ArgumentSyntax>& GetArgs() { return args; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+using LambdaExpBodySyntax = std::variant<
+    class StmtsLambdaExpBodySyntax,
+    std::unique_ptr<class ExpLambdaExpBodySyntax>>;
+
+SYNTAX_API JsonItem ToJson(LambdaExpBodySyntax& body);
+
+class StmtsLambdaExpBodySyntax
+{
+    std::vector<StmtSyntax> stmts;
+
+public:
+    SYNTAX_API StmtsLambdaExpBodySyntax(std::vector<StmtSyntax> stmts);
+    StmtsLambdaExpBodySyntax(const StmtsLambdaExpBodySyntax&) = delete;
+    SYNTAX_API StmtsLambdaExpBodySyntax(StmtsLambdaExpBodySyntax&&) noexcept;
+    SYNTAX_API ~StmtsLambdaExpBodySyntax();
+
+    StmtsLambdaExpBodySyntax& operator=(const StmtsLambdaExpBodySyntax& other) = delete;
+    SYNTAX_API StmtsLambdaExpBodySyntax& operator=(StmtsLambdaExpBodySyntax&& other) noexcept;
+
+    std::vector<StmtSyntax>& GetStmts() { return stmts; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ExpLambdaExpBodySyntax
+{
+    ExpSyntax exp;
+
+public:
+    SYNTAX_API ExpLambdaExpBodySyntax(ExpSyntax exp);
+    ExpLambdaExpBodySyntax(const ExpLambdaExpBodySyntax&) = delete;
+    SYNTAX_API ExpLambdaExpBodySyntax(ExpLambdaExpBodySyntax&&) noexcept;
+    SYNTAX_API ~ExpLambdaExpBodySyntax();
+
+    ExpLambdaExpBodySyntax& operator=(const ExpLambdaExpBodySyntax& other) = delete;
+    SYNTAX_API ExpLambdaExpBodySyntax& operator=(ExpLambdaExpBodySyntax&& other) noexcept;
+
+    ExpSyntax& GetExp() { return exp; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class LambdaExpSyntax
+{
+    std::vector<LambdaExpParamSyntax> params;
+    LambdaExpBodySyntax body;
+
+public:
+    SYNTAX_API LambdaExpSyntax(std::vector<LambdaExpParamSyntax> params, LambdaExpBodySyntax body);
+    LambdaExpSyntax(const LambdaExpSyntax&) = delete;
+    SYNTAX_API LambdaExpSyntax(LambdaExpSyntax&&) noexcept;
+    SYNTAX_API ~LambdaExpSyntax();
+
+    LambdaExpSyntax& operator=(const LambdaExpSyntax& other) = delete;
+    SYNTAX_API LambdaExpSyntax& operator=(LambdaExpSyntax&& other) noexcept;
+
+    std::vector<LambdaExpParamSyntax>& GetParams() { return params; }
+    LambdaExpBodySyntax& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class IndexerExpSyntax
+{
+    ExpSyntax obj;
+    ExpSyntax index;
+
+public:
+    SYNTAX_API IndexerExpSyntax(ExpSyntax obj, ExpSyntax index);
+    IndexerExpSyntax(const IndexerExpSyntax&) = delete;
+    SYNTAX_API IndexerExpSyntax(IndexerExpSyntax&&) noexcept;
+    SYNTAX_API ~IndexerExpSyntax();
+
+    IndexerExpSyntax& operator=(const IndexerExpSyntax& other) = delete;
+    SYNTAX_API IndexerExpSyntax& operator=(IndexerExpSyntax&& other) noexcept;
+
+    ExpSyntax& GetObject() { return obj; }
+    ExpSyntax& GetIndex() { return index; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class MemberExpSyntax
+{
+    ExpSyntax parent;
+    std::string memberName;
+    std::vector<TypeExpSyntax> memberTypeArgs;
+
+public:
+    SYNTAX_API MemberExpSyntax(ExpSyntax parent, std::string memberName, std::vector<TypeExpSyntax> memberTypeArgs);
+    SYNTAX_API MemberExpSyntax(ExpSyntax parent, std::string memberName);
+    MemberExpSyntax(const MemberExpSyntax&) = delete;
+    SYNTAX_API MemberExpSyntax(MemberExpSyntax&&) noexcept;
+    SYNTAX_API ~MemberExpSyntax();
+
+    MemberExpSyntax& operator=(const MemberExpSyntax& other) = delete;
+    SYNTAX_API MemberExpSyntax& operator=(MemberExpSyntax&& other) noexcept;
+
+    ExpSyntax& GetParent() { return parent; }
+    std::string& GetMemberName() { return memberName; }
+    std::vector<TypeExpSyntax>& GetMemberTypeArgs() { return memberTypeArgs; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class IndirectMemberExpSyntax
+{
+    ExpSyntax parent;
+    std::string memberName;
+    std::vector<TypeExpSyntax> memberTypeArgs;
+
+public:
+    SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName, std::vector<TypeExpSyntax> memberTypeArgs);
+    SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName);
+    IndirectMemberExpSyntax(const IndirectMemberExpSyntax&) = delete;
+    SYNTAX_API IndirectMemberExpSyntax(IndirectMemberExpSyntax&&) noexcept;
+    SYNTAX_API ~IndirectMemberExpSyntax();
+
+    IndirectMemberExpSyntax& operator=(const IndirectMemberExpSyntax& other) = delete;
+    SYNTAX_API IndirectMemberExpSyntax& operator=(IndirectMemberExpSyntax&& other) noexcept;
+
+    ExpSyntax& GetParent() { return parent; }
+    std::string& GetMemberName() { return memberName; }
+    std::vector<TypeExpSyntax>& GetMemberTypeArgs() { return memberTypeArgs; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
 class BoxExpSyntax
 {
-    struct Impl;
-    std::unique_ptr<Impl> impl;
+    ExpSyntax innerExp;
 
 public:
     SYNTAX_API BoxExpSyntax(ExpSyntax innerExp);
@@ -699,17 +640,15 @@ public:
     BoxExpSyntax& operator=(const BoxExpSyntax& other) = delete;
     SYNTAX_API BoxExpSyntax& operator=(BoxExpSyntax&& other) noexcept;
 
-    SYNTAX_API ExpSyntax& GetInnerExp();
+    ExpSyntax& GetInnerExp() { return innerExp; }
 
     SYNTAX_API JsonItem ToJson();
 };
 
 class IsExpSyntax
 {
+    ExpSyntax exp;
     TypeExpSyntax type;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
 
 public:
     SYNTAX_API IsExpSyntax(ExpSyntax exp, TypeExpSyntax type);
@@ -720,7 +659,7 @@ public:
     IsExpSyntax& operator=(const IsExpSyntax& other) = delete;
     SYNTAX_API IsExpSyntax& operator=(IsExpSyntax&& other) noexcept;
 
-    SYNTAX_API ExpSyntax& GetExp();
+    ExpSyntax& GetExp() { return exp; }
     TypeExpSyntax& GetType() { return type; }
 
     SYNTAX_API JsonItem ToJson();
@@ -728,10 +667,8 @@ public:
 
 class AsExpSyntax
 {
+    ExpSyntax exp;
     TypeExpSyntax type;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
 
 public:
     SYNTAX_API AsExpSyntax(ExpSyntax exp, TypeExpSyntax type);
@@ -742,8 +679,49 @@ public:
     AsExpSyntax& operator=(const AsExpSyntax& other) = delete;
     SYNTAX_API AsExpSyntax& operator=(AsExpSyntax&& other) noexcept;
 
-    SYNTAX_API ExpSyntax& GetExp();
+    ExpSyntax& GetExp() { return exp; }
     TypeExpSyntax& GetType() { return type; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ArgumentSyntax
+{
+    bool bOut;
+    bool bParams;
+    ExpSyntax exp;
+
+public:
+    SYNTAX_API ArgumentSyntax(bool bOut, bool bParams, ExpSyntax exp);
+    SYNTAX_API ArgumentSyntax(ExpSyntax exp);
+    ArgumentSyntax(const ArgumentSyntax&) = delete;
+    SYNTAX_API ArgumentSyntax(ArgumentSyntax&&) noexcept;
+    SYNTAX_API ~ArgumentSyntax();
+
+    ArgumentSyntax& operator=(const ArgumentSyntax& other) = delete;
+    SYNTAX_API ArgumentSyntax& operator=(ArgumentSyntax&& other) noexcept;
+
+    bool& HasOut() { return bOut; }
+    bool& GetParams() { return bParams; }
+    ExpSyntax& GetExp() { return exp; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ExpStringExpSyntaxElement
+{
+    ExpSyntax exp;
+
+public:
+    SYNTAX_API ExpStringExpSyntaxElement(ExpSyntax exp);
+    ExpStringExpSyntaxElement(const ExpStringExpSyntaxElement&) = delete;
+    SYNTAX_API ExpStringExpSyntaxElement(ExpStringExpSyntaxElement&&) noexcept;
+    SYNTAX_API ~ExpStringExpSyntaxElement();
+
+    ExpStringExpSyntaxElement& operator=(const ExpStringExpSyntaxElement& other) = delete;
+    SYNTAX_API ExpStringExpSyntaxElement& operator=(ExpStringExpSyntaxElement&& other) noexcept;
+
+    ExpSyntax& GetExp() { return exp; }
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -753,25 +731,6 @@ using EmbeddableStmtSyntax = std::variant<
     class BlockEmbeddableStmtSyntax>;
 
 SYNTAX_API JsonItem ToJson(EmbeddableStmtSyntax& embeddableStmt);
-
-class SingleEmbeddableStmtSyntax
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API SingleEmbeddableStmtSyntax(StmtSyntax stmt);
-    SingleEmbeddableStmtSyntax(const SingleEmbeddableStmtSyntax&) = delete;
-    SYNTAX_API SingleEmbeddableStmtSyntax(SingleEmbeddableStmtSyntax&&) noexcept;
-    SYNTAX_API ~SingleEmbeddableStmtSyntax();
-
-    SingleEmbeddableStmtSyntax& operator=(const SingleEmbeddableStmtSyntax& other) = delete;
-    SYNTAX_API SingleEmbeddableStmtSyntax& operator=(SingleEmbeddableStmtSyntax&& other) noexcept;
-
-    SYNTAX_API StmtSyntax& GetStmt();
-
-    SYNTAX_API JsonItem ToJson();
-};
 
 class BlockEmbeddableStmtSyntax
 {
@@ -794,9 +753,7 @@ public:
 class VarDeclSyntaxElement
 {
     std::string varName;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
+    std::optional<ExpSyntax> initExp;
 
 public:
     SYNTAX_API VarDeclSyntaxElement(std::string varName, std::optional<ExpSyntax> initExp);
@@ -808,7 +765,7 @@ public:
     SYNTAX_API VarDeclSyntaxElement& operator=(VarDeclSyntaxElement&& other) noexcept;
 
     std::string& GetVarName() { return varName; }
-    SYNTAX_API std::optional<ExpSyntax>& GetInitExp();
+    std::optional<ExpSyntax>& GetInitExp() { return initExp; }
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -819,13 +776,13 @@ class VarDeclSyntax
     std::vector<VarDeclSyntaxElement> elements;
 
 public:
-    VarDeclSyntax(TypeExpSyntax type, std::vector<VarDeclSyntaxElement> elements)
-        : type(std::move(type)), elements(std::move(elements)) { }
+    SYNTAX_API VarDeclSyntax(TypeExpSyntax type, std::vector<VarDeclSyntaxElement> elements);
     VarDeclSyntax(const VarDeclSyntax&) = delete;
-    VarDeclSyntax(VarDeclSyntax&&) = default;
+    SYNTAX_API VarDeclSyntax(VarDeclSyntax&&) noexcept;
+    SYNTAX_API ~VarDeclSyntax();
 
     VarDeclSyntax& operator=(const VarDeclSyntax& other) = delete;
-    VarDeclSyntax& operator=(VarDeclSyntax&& other) = default;
+    SYNTAX_API VarDeclSyntax& operator=(VarDeclSyntax&& other) noexcept;
 
     TypeExpSyntax& GetType() { return type; }
     std::vector<VarDeclSyntaxElement>& GetElements() { return elements; }
@@ -856,128 +813,15 @@ class VarDeclStmtSyntax
     VarDeclSyntax varDecl;
 
 public:
-    VarDeclStmtSyntax(VarDeclSyntax varDecl)
-        : varDecl(std::move(varDecl)) { }
+    SYNTAX_API VarDeclStmtSyntax(VarDeclSyntax varDecl);
     VarDeclStmtSyntax(const VarDeclStmtSyntax&) = delete;
-    VarDeclStmtSyntax(VarDeclStmtSyntax&&) = default;
+    SYNTAX_API VarDeclStmtSyntax(VarDeclStmtSyntax&&) noexcept;
+    SYNTAX_API ~VarDeclStmtSyntax();
 
     VarDeclStmtSyntax& operator=(const VarDeclStmtSyntax& other) = delete;
-    VarDeclStmtSyntax& operator=(VarDeclStmtSyntax&& other) = default;
+    SYNTAX_API VarDeclStmtSyntax& operator=(VarDeclStmtSyntax&& other) noexcept;
 
     VarDeclSyntax& GetVarDecl() { return varDecl; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class IfStmtSyntax
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API IfStmtSyntax(ExpSyntax cond, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody);
-    IfStmtSyntax(const IfStmtSyntax&) = delete;
-    SYNTAX_API IfStmtSyntax(IfStmtSyntax&&) noexcept;
-    SYNTAX_API ~IfStmtSyntax();
-
-    IfStmtSyntax& operator=(const IfStmtSyntax& other) = delete;
-    SYNTAX_API IfStmtSyntax& operator=(IfStmtSyntax&& other) noexcept;
-
-    SYNTAX_API ExpSyntax& GetCond();
-    SYNTAX_API EmbeddableStmtSyntax& GetBody();
-    SYNTAX_API std::optional<EmbeddableStmtSyntax>& GetElseBody();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class IfTestStmtSyntax
-{
-    TypeExpSyntax testType;
-    std::string varName;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API IfTestStmtSyntax(TypeExpSyntax testType, std::string varName, ExpSyntax exp, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody);
-    IfTestStmtSyntax(const IfTestStmtSyntax&) = delete;
-    SYNTAX_API IfTestStmtSyntax(IfTestStmtSyntax&&) noexcept;
-    SYNTAX_API ~IfTestStmtSyntax();
-
-    IfTestStmtSyntax& operator=(const IfTestStmtSyntax& other) = delete;
-    SYNTAX_API IfTestStmtSyntax& operator=(IfTestStmtSyntax&& other) noexcept;
-
-    TypeExpSyntax& GetTestType() { return testType; }
-    std::string& GetVarName() { return varName; }
-    SYNTAX_API ExpSyntax& GetExp();
-    SYNTAX_API EmbeddableStmtSyntax& GetBody();
-    SYNTAX_API std::optional<EmbeddableStmtSyntax>& GetElseBody();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-using ForStmtInitializerSyntax = std::variant<
-    std::unique_ptr<class ExpForStmtInitializerSyntax>,
-    std::unique_ptr<class VarDeclForStmtInitializerSyntax>>;
-
-SYNTAX_API JsonItem ToJson(ForStmtInitializerSyntax& forInit);
-
-class ExpForStmtInitializerSyntax
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API ExpForStmtInitializerSyntax(ExpSyntax exp);
-    ExpForStmtInitializerSyntax(const ExpForStmtInitializerSyntax&) = delete;
-    SYNTAX_API ExpForStmtInitializerSyntax(ExpForStmtInitializerSyntax&&) noexcept;
-    SYNTAX_API ~ExpForStmtInitializerSyntax();
-
-    ExpForStmtInitializerSyntax& operator=(const ExpForStmtInitializerSyntax& other) = delete;
-    SYNTAX_API ExpForStmtInitializerSyntax& operator=(ExpForStmtInitializerSyntax&& other) noexcept;
-
-    SYNTAX_API ExpSyntax& GetExp();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class VarDeclForStmtInitializerSyntax
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API VarDeclForStmtInitializerSyntax(VarDeclSyntax varDecl);
-    VarDeclForStmtInitializerSyntax(const VarDeclForStmtInitializerSyntax&) = delete;
-    SYNTAX_API VarDeclForStmtInitializerSyntax(VarDeclForStmtInitializerSyntax&&) noexcept;
-    SYNTAX_API ~VarDeclForStmtInitializerSyntax();
-
-    VarDeclForStmtInitializerSyntax& operator=(const VarDeclForStmtInitializerSyntax& other) = delete;
-    SYNTAX_API VarDeclForStmtInitializerSyntax& operator=(VarDeclForStmtInitializerSyntax&& other) noexcept;
-
-    SYNTAX_API VarDeclSyntax& GetVarDecl();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class ForStmtSyntax
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API ForStmtSyntax(std::optional<ForStmtInitializerSyntax> initializer, std::optional<ExpSyntax> cond, std::optional<ExpSyntax> cont, EmbeddableStmtSyntax body);
-    ForStmtSyntax(const ForStmtSyntax&) = delete;
-    SYNTAX_API ForStmtSyntax(ForStmtSyntax&&) noexcept;
-    SYNTAX_API ~ForStmtSyntax();
-
-    ForStmtSyntax& operator=(const ForStmtSyntax& other) = delete;
-    SYNTAX_API ForStmtSyntax& operator=(ForStmtSyntax&& other) noexcept;
-
-    SYNTAX_API std::optional<ForStmtInitializerSyntax>& GetInitializer();
-    SYNTAX_API std::optional<ExpSyntax>& GetCond();
-    SYNTAX_API std::optional<ExpSyntax>& GetCont();
-    SYNTAX_API EmbeddableStmtSyntax& GetBody();
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -985,12 +829,13 @@ public:
 class ContinueStmtSyntax
 {
 public:
-    ContinueStmtSyntax() { }
+    SYNTAX_API ContinueStmtSyntax();
     ContinueStmtSyntax(const ContinueStmtSyntax&) = delete;
-    ContinueStmtSyntax(ContinueStmtSyntax&&) = default;
+    SYNTAX_API ContinueStmtSyntax(ContinueStmtSyntax&&) noexcept;
+    SYNTAX_API ~ContinueStmtSyntax();
 
     ContinueStmtSyntax& operator=(const ContinueStmtSyntax& other) = delete;
-    ContinueStmtSyntax& operator=(ContinueStmtSyntax&& other) = default;
+    SYNTAX_API ContinueStmtSyntax& operator=(ContinueStmtSyntax&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -998,31 +843,13 @@ public:
 class BreakStmtSyntax
 {
 public:
-    BreakStmtSyntax() { }
+    SYNTAX_API BreakStmtSyntax();
     BreakStmtSyntax(const BreakStmtSyntax&) = delete;
-    BreakStmtSyntax(BreakStmtSyntax&&) = default;
+    SYNTAX_API BreakStmtSyntax(BreakStmtSyntax&&) noexcept;
+    SYNTAX_API ~BreakStmtSyntax();
 
     BreakStmtSyntax& operator=(const BreakStmtSyntax& other) = delete;
-    BreakStmtSyntax& operator=(BreakStmtSyntax&& other) = default;
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class ReturnStmtSyntax
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API ReturnStmtSyntax(std::optional<ExpSyntax> value);
-    ReturnStmtSyntax(const ReturnStmtSyntax&) = delete;
-    SYNTAX_API ReturnStmtSyntax(ReturnStmtSyntax&&) noexcept;
-    SYNTAX_API ~ReturnStmtSyntax();
-
-    ReturnStmtSyntax& operator=(const ReturnStmtSyntax& other) = delete;
-    SYNTAX_API ReturnStmtSyntax& operator=(ReturnStmtSyntax&& other) noexcept;
-
-    SYNTAX_API std::optional<ExpSyntax>& GetValue();
+    SYNTAX_API BreakStmtSyntax& operator=(BreakStmtSyntax&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -1048,31 +875,13 @@ public:
 class BlankStmtSyntax
 {
 public:
-    BlankStmtSyntax() { }
+    SYNTAX_API BlankStmtSyntax();
     BlankStmtSyntax(const BlankStmtSyntax&) = delete;
-    BlankStmtSyntax(BlankStmtSyntax&&) = default;
+    SYNTAX_API BlankStmtSyntax(BlankStmtSyntax&&) noexcept;
+    SYNTAX_API ~BlankStmtSyntax();
 
     BlankStmtSyntax& operator=(const BlankStmtSyntax& other) = delete;
-    BlankStmtSyntax& operator=(BlankStmtSyntax&& other) = default;
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class ExpStmtSyntax
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API ExpStmtSyntax(ExpSyntax exp);
-    ExpStmtSyntax(const ExpStmtSyntax&) = delete;
-    SYNTAX_API ExpStmtSyntax(ExpStmtSyntax&&) noexcept;
-    SYNTAX_API ~ExpStmtSyntax();
-
-    ExpStmtSyntax& operator=(const ExpStmtSyntax& other) = delete;
-    SYNTAX_API ExpStmtSyntax& operator=(ExpStmtSyntax&& other) noexcept;
-
-    SYNTAX_API ExpSyntax& GetExp();
+    SYNTAX_API BlankStmtSyntax& operator=(BlankStmtSyntax&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -1131,50 +940,6 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class ForeachStmtSyntax
-{
-    TypeExpSyntax type;
-    std::string varName;
-
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API ForeachStmtSyntax(TypeExpSyntax type, std::string varName, ExpSyntax enumerable, EmbeddableStmtSyntax body);
-    ForeachStmtSyntax(const ForeachStmtSyntax&) = delete;
-    SYNTAX_API ForeachStmtSyntax(ForeachStmtSyntax&&) noexcept;
-    SYNTAX_API ~ForeachStmtSyntax();
-
-    ForeachStmtSyntax& operator=(const ForeachStmtSyntax& other) = delete;
-    SYNTAX_API ForeachStmtSyntax& operator=(ForeachStmtSyntax&& other) noexcept;
-
-    TypeExpSyntax& GetType() { return type; }
-    std::string& GetVarName() { return varName; }
-    SYNTAX_API ExpSyntax& GetEnumerable();
-    SYNTAX_API EmbeddableStmtSyntax& GetBody();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class YieldStmtSyntax
-{
-    struct Impl;
-    std::unique_ptr<Impl> impl;
-
-public:
-    SYNTAX_API YieldStmtSyntax(ExpSyntax value);
-    YieldStmtSyntax(const YieldStmtSyntax&) = delete;
-    SYNTAX_API YieldStmtSyntax(YieldStmtSyntax&&) noexcept;
-    SYNTAX_API ~YieldStmtSyntax();
-
-    YieldStmtSyntax& operator=(const YieldStmtSyntax& other) = delete;
-    SYNTAX_API YieldStmtSyntax& operator=(YieldStmtSyntax&& other) noexcept;
-
-    SYNTAX_API ExpSyntax& GetValue();
-
-    SYNTAX_API JsonItem ToJson();
-};
-
 class DirectiveStmtSyntax
 {
     std::string name;
@@ -1195,18 +960,228 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
+class SingleEmbeddableStmtSyntax
+{
+    StmtSyntax stmt;
+
+public:
+    SYNTAX_API SingleEmbeddableStmtSyntax(StmtSyntax stmt);
+    SingleEmbeddableStmtSyntax(const SingleEmbeddableStmtSyntax&) = delete;
+    SYNTAX_API SingleEmbeddableStmtSyntax(SingleEmbeddableStmtSyntax&&) noexcept;
+    SYNTAX_API ~SingleEmbeddableStmtSyntax();
+
+    SingleEmbeddableStmtSyntax& operator=(const SingleEmbeddableStmtSyntax& other) = delete;
+    SYNTAX_API SingleEmbeddableStmtSyntax& operator=(SingleEmbeddableStmtSyntax&& other) noexcept;
+
+    StmtSyntax& GetStmt() { return stmt; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class IfStmtSyntax
+{
+    ExpSyntax cond;
+    EmbeddableStmtSyntax body;
+    std::optional<EmbeddableStmtSyntax> elseBody;
+
+public:
+    SYNTAX_API IfStmtSyntax(ExpSyntax cond, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody);
+    IfStmtSyntax(const IfStmtSyntax&) = delete;
+    SYNTAX_API IfStmtSyntax(IfStmtSyntax&&) noexcept;
+    SYNTAX_API ~IfStmtSyntax();
+
+    IfStmtSyntax& operator=(const IfStmtSyntax& other) = delete;
+    SYNTAX_API IfStmtSyntax& operator=(IfStmtSyntax&& other) noexcept;
+
+    ExpSyntax& GetCond() { return cond; }
+    EmbeddableStmtSyntax& GetBody() { return body; }
+    std::optional<EmbeddableStmtSyntax>& GetElseBody() { return elseBody; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class IfTestStmtSyntax
+{
+    TypeExpSyntax testType;
+    std::string varName;
+    ExpSyntax exp;
+    EmbeddableStmtSyntax body;
+    std::optional<EmbeddableStmtSyntax> elseBody;
+
+public:
+    SYNTAX_API IfTestStmtSyntax(TypeExpSyntax testType, std::string varName, ExpSyntax exp, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody);
+    IfTestStmtSyntax(const IfTestStmtSyntax&) = delete;
+    SYNTAX_API IfTestStmtSyntax(IfTestStmtSyntax&&) noexcept;
+    SYNTAX_API ~IfTestStmtSyntax();
+
+    IfTestStmtSyntax& operator=(const IfTestStmtSyntax& other) = delete;
+    SYNTAX_API IfTestStmtSyntax& operator=(IfTestStmtSyntax&& other) noexcept;
+
+    TypeExpSyntax& GetTestType() { return testType; }
+    std::string& GetVarName() { return varName; }
+    ExpSyntax& GetExp() { return exp; }
+    EmbeddableStmtSyntax& GetBody() { return body; }
+    std::optional<EmbeddableStmtSyntax>& GetElseBody() { return elseBody; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+using ForStmtInitializerSyntax = std::variant<
+    std::unique_ptr<class ExpForStmtInitializerSyntax>,
+    std::unique_ptr<class VarDeclForStmtInitializerSyntax>>;
+
+SYNTAX_API JsonItem ToJson(ForStmtInitializerSyntax& forInit);
+
+class ExpForStmtInitializerSyntax
+{
+    ExpSyntax exp;
+
+public:
+    SYNTAX_API ExpForStmtInitializerSyntax(ExpSyntax exp);
+    ExpForStmtInitializerSyntax(const ExpForStmtInitializerSyntax&) = delete;
+    SYNTAX_API ExpForStmtInitializerSyntax(ExpForStmtInitializerSyntax&&) noexcept;
+    SYNTAX_API ~ExpForStmtInitializerSyntax();
+
+    ExpForStmtInitializerSyntax& operator=(const ExpForStmtInitializerSyntax& other) = delete;
+    SYNTAX_API ExpForStmtInitializerSyntax& operator=(ExpForStmtInitializerSyntax&& other) noexcept;
+
+    ExpSyntax& GetExp() { return exp; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class VarDeclForStmtInitializerSyntax
+{
+    VarDeclSyntax varDecl;
+
+public:
+    SYNTAX_API VarDeclForStmtInitializerSyntax(VarDeclSyntax varDecl);
+    VarDeclForStmtInitializerSyntax(const VarDeclForStmtInitializerSyntax&) = delete;
+    SYNTAX_API VarDeclForStmtInitializerSyntax(VarDeclForStmtInitializerSyntax&&) noexcept;
+    SYNTAX_API ~VarDeclForStmtInitializerSyntax();
+
+    VarDeclForStmtInitializerSyntax& operator=(const VarDeclForStmtInitializerSyntax& other) = delete;
+    SYNTAX_API VarDeclForStmtInitializerSyntax& operator=(VarDeclForStmtInitializerSyntax&& other) noexcept;
+
+    VarDeclSyntax& GetVarDecl() { return varDecl; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ForStmtSyntax
+{
+    std::optional<ForStmtInitializerSyntax> initializer;
+    std::optional<ExpSyntax> cond;
+    std::optional<ExpSyntax> cont;
+    EmbeddableStmtSyntax body;
+
+public:
+    SYNTAX_API ForStmtSyntax(std::optional<ForStmtInitializerSyntax> initializer, std::optional<ExpSyntax> cond, std::optional<ExpSyntax> cont, EmbeddableStmtSyntax body);
+    ForStmtSyntax(const ForStmtSyntax&) = delete;
+    SYNTAX_API ForStmtSyntax(ForStmtSyntax&&) noexcept;
+    SYNTAX_API ~ForStmtSyntax();
+
+    ForStmtSyntax& operator=(const ForStmtSyntax& other) = delete;
+    SYNTAX_API ForStmtSyntax& operator=(ForStmtSyntax&& other) noexcept;
+
+    std::optional<ForStmtInitializerSyntax>& GetInitializer() { return initializer; }
+    std::optional<ExpSyntax>& GetCond() { return cond; }
+    std::optional<ExpSyntax>& GetCont() { return cont; }
+    EmbeddableStmtSyntax& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ReturnStmtSyntax
+{
+    std::optional<ExpSyntax> value;
+
+public:
+    SYNTAX_API ReturnStmtSyntax(std::optional<ExpSyntax> value);
+    ReturnStmtSyntax(const ReturnStmtSyntax&) = delete;
+    SYNTAX_API ReturnStmtSyntax(ReturnStmtSyntax&&) noexcept;
+    SYNTAX_API ~ReturnStmtSyntax();
+
+    ReturnStmtSyntax& operator=(const ReturnStmtSyntax& other) = delete;
+    SYNTAX_API ReturnStmtSyntax& operator=(ReturnStmtSyntax&& other) noexcept;
+
+    std::optional<ExpSyntax>& GetValue() { return value; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ExpStmtSyntax
+{
+    ExpSyntax exp;
+
+public:
+    SYNTAX_API ExpStmtSyntax(ExpSyntax exp);
+    ExpStmtSyntax(const ExpStmtSyntax&) = delete;
+    SYNTAX_API ExpStmtSyntax(ExpStmtSyntax&&) noexcept;
+    SYNTAX_API ~ExpStmtSyntax();
+
+    ExpStmtSyntax& operator=(const ExpStmtSyntax& other) = delete;
+    SYNTAX_API ExpStmtSyntax& operator=(ExpStmtSyntax&& other) noexcept;
+
+    ExpSyntax& GetExp() { return exp; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class ForeachStmtSyntax
+{
+    TypeExpSyntax type;
+    std::string varName;
+    ExpSyntax enumerable;
+    EmbeddableStmtSyntax body;
+
+public:
+    SYNTAX_API ForeachStmtSyntax(TypeExpSyntax type, std::string varName, ExpSyntax enumerable, EmbeddableStmtSyntax body);
+    ForeachStmtSyntax(const ForeachStmtSyntax&) = delete;
+    SYNTAX_API ForeachStmtSyntax(ForeachStmtSyntax&&) noexcept;
+    SYNTAX_API ~ForeachStmtSyntax();
+
+    ForeachStmtSyntax& operator=(const ForeachStmtSyntax& other) = delete;
+    SYNTAX_API ForeachStmtSyntax& operator=(ForeachStmtSyntax&& other) noexcept;
+
+    TypeExpSyntax& GetType() { return type; }
+    std::string& GetVarName() { return varName; }
+    ExpSyntax& GetEnumerable() { return enumerable; }
+    EmbeddableStmtSyntax& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class YieldStmtSyntax
+{
+    ExpSyntax value;
+
+public:
+    SYNTAX_API YieldStmtSyntax(ExpSyntax value);
+    YieldStmtSyntax(const YieldStmtSyntax&) = delete;
+    SYNTAX_API YieldStmtSyntax(YieldStmtSyntax&&) noexcept;
+    SYNTAX_API ~YieldStmtSyntax();
+
+    YieldStmtSyntax& operator=(const YieldStmtSyntax& other) = delete;
+    SYNTAX_API YieldStmtSyntax& operator=(YieldStmtSyntax&& other) noexcept;
+
+    ExpSyntax& GetValue() { return value; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
 class TypeParamSyntax
 {
     std::string name;
 
 public:
-    TypeParamSyntax(std::string name)
-        : name(std::move(name)) { }
+    SYNTAX_API TypeParamSyntax(std::string name);
     TypeParamSyntax(const TypeParamSyntax&) = delete;
-    TypeParamSyntax(TypeParamSyntax&&) = default;
+    SYNTAX_API TypeParamSyntax(TypeParamSyntax&&) noexcept;
+    SYNTAX_API ~TypeParamSyntax();
 
     TypeParamSyntax& operator=(const TypeParamSyntax& other) = delete;
-    TypeParamSyntax& operator=(TypeParamSyntax&& other) = default;
+    SYNTAX_API TypeParamSyntax& operator=(TypeParamSyntax&& other) noexcept;
 
     std::string& GetName() { return name; }
 
@@ -1248,13 +1223,13 @@ class GlobalFuncDeclSyntax
     std::vector<StmtSyntax> body;
 
 public:
-    GlobalFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
-        : accessModifier(std::move(accessModifier)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+    SYNTAX_API GlobalFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body);
     GlobalFuncDeclSyntax(const GlobalFuncDeclSyntax&) = delete;
-    GlobalFuncDeclSyntax(GlobalFuncDeclSyntax&&) = default;
+    SYNTAX_API GlobalFuncDeclSyntax(GlobalFuncDeclSyntax&&) noexcept;
+    SYNTAX_API ~GlobalFuncDeclSyntax();
 
     GlobalFuncDeclSyntax& operator=(const GlobalFuncDeclSyntax& other) = delete;
-    GlobalFuncDeclSyntax& operator=(GlobalFuncDeclSyntax&& other) = default;
+    SYNTAX_API GlobalFuncDeclSyntax& operator=(GlobalFuncDeclSyntax&& other) noexcept;
 
     std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
     bool& IsSequence() { return bSequence; }
@@ -1279,13 +1254,13 @@ class ClassMemberFuncDeclSyntax
     std::vector<StmtSyntax> body;
 
 public:
-    ClassMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
-        : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+    SYNTAX_API ClassMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body);
     ClassMemberFuncDeclSyntax(const ClassMemberFuncDeclSyntax&) = delete;
-    ClassMemberFuncDeclSyntax(ClassMemberFuncDeclSyntax&&) = default;
+    SYNTAX_API ClassMemberFuncDeclSyntax(ClassMemberFuncDeclSyntax&&) noexcept;
+    SYNTAX_API ~ClassMemberFuncDeclSyntax();
 
     ClassMemberFuncDeclSyntax& operator=(const ClassMemberFuncDeclSyntax& other) = delete;
-    ClassMemberFuncDeclSyntax& operator=(ClassMemberFuncDeclSyntax&& other) = default;
+    SYNTAX_API ClassMemberFuncDeclSyntax& operator=(ClassMemberFuncDeclSyntax&& other) noexcept;
 
     std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
     bool& IsStatic() { return bStatic; }
@@ -1308,13 +1283,13 @@ class ClassConstructorDeclSyntax
     std::vector<StmtSyntax> body;
 
 public:
-    ClassConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::optional<std::vector<ArgumentSyntax>> baseArgs, std::vector<StmtSyntax> body)
-        : accessModifier(std::move(accessModifier)), name(std::move(name)), parameters(std::move(parameters)), baseArgs(std::move(baseArgs)), body(std::move(body)) { }
+    SYNTAX_API ClassConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::optional<std::vector<ArgumentSyntax>> baseArgs, std::vector<StmtSyntax> body);
     ClassConstructorDeclSyntax(const ClassConstructorDeclSyntax&) = delete;
-    ClassConstructorDeclSyntax(ClassConstructorDeclSyntax&&) = default;
+    SYNTAX_API ClassConstructorDeclSyntax(ClassConstructorDeclSyntax&&) noexcept;
+    SYNTAX_API ~ClassConstructorDeclSyntax();
 
     ClassConstructorDeclSyntax& operator=(const ClassConstructorDeclSyntax& other) = delete;
-    ClassConstructorDeclSyntax& operator=(ClassConstructorDeclSyntax&& other) = default;
+    SYNTAX_API ClassConstructorDeclSyntax& operator=(ClassConstructorDeclSyntax&& other) noexcept;
 
     std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
     std::string& GetName() { return name; }
@@ -1332,13 +1307,13 @@ class ClassMemberVarDeclSyntax
     std::vector<std::string> varNames;
 
 public:
-    ClassMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames)
-        : accessModifier(std::move(accessModifier)), varType(std::move(varType)), varNames(std::move(varNames)) { }
+    SYNTAX_API ClassMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames);
     ClassMemberVarDeclSyntax(const ClassMemberVarDeclSyntax&) = delete;
-    ClassMemberVarDeclSyntax(ClassMemberVarDeclSyntax&&) = default;
+    SYNTAX_API ClassMemberVarDeclSyntax(ClassMemberVarDeclSyntax&&) noexcept;
+    SYNTAX_API ~ClassMemberVarDeclSyntax();
 
     ClassMemberVarDeclSyntax& operator=(const ClassMemberVarDeclSyntax& other) = delete;
-    ClassMemberVarDeclSyntax& operator=(ClassMemberVarDeclSyntax&& other) = default;
+    SYNTAX_API ClassMemberVarDeclSyntax& operator=(ClassMemberVarDeclSyntax&& other) noexcept;
 
     std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
     TypeExpSyntax& GetVarType() { return varType; }
@@ -1395,13 +1370,13 @@ class StructMemberFuncDeclSyntax
     std::vector<StmtSyntax> body;
 
 public:
-    StructMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
-        : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+    SYNTAX_API StructMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body);
     StructMemberFuncDeclSyntax(const StructMemberFuncDeclSyntax&) = delete;
-    StructMemberFuncDeclSyntax(StructMemberFuncDeclSyntax&&) = default;
+    SYNTAX_API StructMemberFuncDeclSyntax(StructMemberFuncDeclSyntax&&) noexcept;
+    SYNTAX_API ~StructMemberFuncDeclSyntax();
 
     StructMemberFuncDeclSyntax& operator=(const StructMemberFuncDeclSyntax& other) = delete;
-    StructMemberFuncDeclSyntax& operator=(StructMemberFuncDeclSyntax&& other) = default;
+    SYNTAX_API StructMemberFuncDeclSyntax& operator=(StructMemberFuncDeclSyntax&& other) noexcept;
 
     std::optional<AccessModifierSyntax>& GetAcessModifier() { return accessModifier; }
     bool& IsStatic() { return bStatic; }
@@ -1423,13 +1398,13 @@ class StructConstructorDeclSyntax
     std::vector<StmtSyntax> body;
 
 public:
-    StructConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
-        : accessModifier(std::move(accessModifier)), name(std::move(name)), parameters(std::move(parameters)), body(std::move(body)) { }
+    SYNTAX_API StructConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body);
     StructConstructorDeclSyntax(const StructConstructorDeclSyntax&) = delete;
-    StructConstructorDeclSyntax(StructConstructorDeclSyntax&&) = default;
+    SYNTAX_API StructConstructorDeclSyntax(StructConstructorDeclSyntax&&) noexcept;
+    SYNTAX_API ~StructConstructorDeclSyntax();
 
     StructConstructorDeclSyntax& operator=(const StructConstructorDeclSyntax& other) = delete;
-    StructConstructorDeclSyntax& operator=(StructConstructorDeclSyntax&& other) = default;
+    SYNTAX_API StructConstructorDeclSyntax& operator=(StructConstructorDeclSyntax&& other) noexcept;
 
     std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
     std::string& GetName() { return name; }
@@ -1446,13 +1421,13 @@ class StructMemberVarDeclSyntax
     std::vector<std::string> varNames;
 
 public:
-    StructMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames)
-        : accessModifier(std::move(accessModifier)), varType(std::move(varType)), varNames(std::move(varNames)) { }
+    SYNTAX_API StructMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames);
     StructMemberVarDeclSyntax(const StructMemberVarDeclSyntax&) = delete;
-    StructMemberVarDeclSyntax(StructMemberVarDeclSyntax&&) = default;
+    SYNTAX_API StructMemberVarDeclSyntax(StructMemberVarDeclSyntax&&) noexcept;
+    SYNTAX_API ~StructMemberVarDeclSyntax();
 
     StructMemberVarDeclSyntax& operator=(const StructMemberVarDeclSyntax& other) = delete;
-    StructMemberVarDeclSyntax& operator=(StructMemberVarDeclSyntax&& other) = default;
+    SYNTAX_API StructMemberVarDeclSyntax& operator=(StructMemberVarDeclSyntax&& other) noexcept;
 
     std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
     TypeExpSyntax& GetVarType() { return varType; }
@@ -1503,13 +1478,13 @@ class EnumElemMemberVarDeclSyntax
     std::string name;
 
 public:
-    EnumElemMemberVarDeclSyntax(TypeExpSyntax type, std::string name)
-        : type(std::move(type)), name(std::move(name)) { }
+    SYNTAX_API EnumElemMemberVarDeclSyntax(TypeExpSyntax type, std::string name);
     EnumElemMemberVarDeclSyntax(const EnumElemMemberVarDeclSyntax&) = delete;
-    EnumElemMemberVarDeclSyntax(EnumElemMemberVarDeclSyntax&&) = default;
+    SYNTAX_API EnumElemMemberVarDeclSyntax(EnumElemMemberVarDeclSyntax&&) noexcept;
+    SYNTAX_API ~EnumElemMemberVarDeclSyntax();
 
     EnumElemMemberVarDeclSyntax& operator=(const EnumElemMemberVarDeclSyntax& other) = delete;
-    EnumElemMemberVarDeclSyntax& operator=(EnumElemMemberVarDeclSyntax&& other) = default;
+    SYNTAX_API EnumElemMemberVarDeclSyntax& operator=(EnumElemMemberVarDeclSyntax&& other) noexcept;
 
     TypeExpSyntax& GetType() { return type; }
     std::string& GetName() { return name; }
@@ -1523,13 +1498,13 @@ class EnumElemDeclSyntax
     std::vector<EnumElemMemberVarDeclSyntax> memberVars;
 
 public:
-    EnumElemDeclSyntax(std::string name, std::vector<EnumElemMemberVarDeclSyntax> memberVars)
-        : name(std::move(name)), memberVars(std::move(memberVars)) { }
+    SYNTAX_API EnumElemDeclSyntax(std::string name, std::vector<EnumElemMemberVarDeclSyntax> memberVars);
     EnumElemDeclSyntax(const EnumElemDeclSyntax&) = delete;
-    EnumElemDeclSyntax(EnumElemDeclSyntax&&) = default;
+    SYNTAX_API EnumElemDeclSyntax(EnumElemDeclSyntax&&) noexcept;
+    SYNTAX_API ~EnumElemDeclSyntax();
 
     EnumElemDeclSyntax& operator=(const EnumElemDeclSyntax& other) = delete;
-    EnumElemDeclSyntax& operator=(EnumElemDeclSyntax&& other) = default;
+    SYNTAX_API EnumElemDeclSyntax& operator=(EnumElemDeclSyntax&& other) noexcept;
 
     std::string& GetName() { return name; }
     std::vector<EnumElemMemberVarDeclSyntax>& GetMemberVars() { return memberVars; }

@@ -16,14 +16,12 @@ struct ClassMemberInfo
     std::string type;
     std::string memberVarName;
     std::string getterName;
-    bool bUsePimpl;
 };
 
 struct ClassInfo
 {
     std::string name;
     std::vector<ClassMemberInfo> memberInfos;
-    bool bDefaultsInline;
     std::vector<std::string> extraConstructors;
 };
 

@@ -27,6 +27,7 @@ void GenerateSyntax(path srcPath)
 #include <Infra/Unreachable.h>
 
 namespace Citron {
+class ArgumentSyntax;
 
 )---";
 
@@ -123,10 +124,9 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "IdTypeExpSyntax",
             .memberInfos {
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs", .bUsePimpl = false },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
             },
-            .bDefaultsInline = false,
             .extraConstructors {
                 "SYNTAX_API IdTypeExpSyntax(std::string name);"
             }
@@ -136,58 +136,52 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "MemberTypeExpSyntax",
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "parentType", .getterName = "GetParentType", .bUsePimpl = true },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs", .bUsePimpl = false },
+                { .type = "TypeExpSyntax", .memberVarName = "parentType", .getterName = "GetParentType" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
             },
-            .bDefaultsInline = false,
         },
 
         // NullableTypeExpSyntax(TypeExpSyntax typeExp)
         ClassInfo {
             .name = "NullableTypeExpSyntax",
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType", .bUsePimpl = true },
+                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType" },
             },
-            .bDefaultsInline = false,
         },
 
         // LocalPtrTypeExpSyntax(TypeExpSyntax typeExp)
         ClassInfo {
             .name = "LocalPtrTypeExpSyntax",
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType", .bUsePimpl = true },
+                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType" },
             },
-            .bDefaultsInline = false,
         },
 
         // BoxPtrTypeExpSyntax(TypeExpSyntax typeExp)
         ClassInfo {
             .name = "BoxPtrTypeExpSyntax",
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType", .bUsePimpl = true },
+                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType" },
             },
-            .bDefaultsInline = false,
         },
 
         // LocalTypeExpSyntax(TypeExpSyntax typeExp)
         ClassInfo {
             .name = "LocalTypeExpSyntax",
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType", .bUsePimpl = true },
+                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType" },
             },
-            .bDefaultsInline = false,
         },
 
         ClassInfo {
             .name = "LambdaExpParamSyntax",
             .memberInfos {
-                { .type = "std::optional<TypeExpSyntax>", .memberVarName = "type", .getterName = "GetType", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "bool", .memberVarName = "hasOut", .getterName = "HasOut", .bUsePimpl = false },
-                { .type = "bool", .memberVarName = "hasParams", .getterName = "HasParams", .bUsePimpl = false },
+                { .type = "std::optional<TypeExpSyntax>", .memberVarName = "type", .getterName = "GetType" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "bool", .memberVarName = "hasOut", .getterName = "HasOut" },
+                { .type = "bool", .memberVarName = "hasParams", .getterName = "HasParams" },
             },
-            .bDefaultsInline = true
         },
 
         EnumInfo {
@@ -216,25 +210,11 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "ArgumentSyntax",
-            .memberInfos {
-                { .type = "bool", .memberVarName = "bOut", .getterName = "HasOut", .bUsePimpl = false },
-                { .type = "bool", .memberVarName = "bParams", .getterName = "GetParams", .bUsePimpl = false },
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp", .bUsePimpl = true },
-            },
-            .bDefaultsInline = false,
-            .extraConstructors {
-                "SYNTAX_API ArgumentSyntax(ExpSyntax exp);"
-            }
-        },
-
-        ClassInfo {
             .name = "IdentifierExpSyntax",
             .memberInfos {
-                { .type = "std::string", .memberVarName = "value", .getterName = "GetValue", .bUsePimpl = false },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs", .bUsePimpl = false },
+                { .type = "std::string", .memberVarName = "value", .getterName = "GetValue" },
+                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
             },
-            .bDefaultsInline = true,
             .extraConstructors {
                 "IdentifierExpSyntax(std::string value) : IdentifierExpSyntax(std::move(value), {}) { }"
             }
@@ -253,25 +233,15 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "TextStringExpSyntaxElement",
             .memberInfos {
-                { .type = "std::string", .memberVarName = "text", .getterName = "GetText", .bUsePimpl = false },
+                { .type = "std::string", .memberVarName = "text", .getterName = "GetText" },
             },
-            .bDefaultsInline = true,
-        },
-
-        ClassInfo {
-            .name = "ExpStringExpSyntaxElement",
-            .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp", .bUsePimpl = true },
-            },
-            .bDefaultsInline = false,
         },
 
         ClassInfo {
             .name = "StringExpSyntax",
             .memberInfos {
-                { .type = "std::vector<StringExpSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements", .bUsePimpl = false },
+                { .type = "std::vector<StringExpSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements" },
             },
-            .bDefaultsInline = false,
             .extraConstructors {
                 "SYNTAX_API StringExpSyntax(std::string str);"
             }
@@ -280,51 +250,62 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "IntLiteralExpSyntax",
             .memberInfos {
-                { .type = "int", .memberVarName = "value", .getterName = "GetValue", .bUsePimpl = false },
+                { .type = "int", .memberVarName = "value", .getterName = "GetValue" },
             },
-            .bDefaultsInline = true
         },
 
         ClassInfo {
             .name = "BoolLiteralExpSyntax",
             .memberInfos {
-                { .type = "bool", .memberVarName = "value", .getterName = "GetValue", .bUsePimpl = false },
+                { .type = "bool", .memberVarName = "value", .getterName = "GetValue" },
             },
-            .bDefaultsInline = true
         },
 
         ClassInfo {
             .name = "NullLiteralExpSyntax",
             .memberInfos { },
-            .bDefaultsInline = true
         },
+
+        ClassInfo {
+            .name = "ListExpSyntax",
+            .memberInfos {
+                    { .type = "std::vector<ExpSyntax>", .memberVarName = "elements", .getterName = "GetElements" },
+                },
+            },
+
+        ClassInfo {
+            .name = "NewExpSyntax",
+            .memberInfos {
+                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
+                { .type = "std::vector<ArgumentSyntax>", .memberVarName = "args", .getterName = "GetArgs" },
+            },
+        },
+
+        // 여기서부터 ExpSyntax가 complete
 
         ClassInfo {
             .name = "BinaryOpExpSyntax",
             .memberInfos {
-                { .type = "BinaryOpSyntaxKind", .memberVarName = "kind", .getterName = "GetKind", .bUsePimpl = false },
-                { .type = "ExpSyntax", .memberVarName = "operand0", .getterName = "GetOperand0", .bUsePimpl = true },
-                { .type = "ExpSyntax", .memberVarName = "operand1", .getterName = "GetOperand1", .bUsePimpl = true },
+                { .type = "BinaryOpSyntaxKind", .memberVarName = "kind", .getterName = "GetKind" },
+                { .type = "ExpSyntax", .memberVarName = "operand0", .getterName = "GetOperand0" },
+                { .type = "ExpSyntax", .memberVarName = "operand1", .getterName = "GetOperand1" },
             },
-            .bDefaultsInline = false
         },
 
         ClassInfo {
             .name = "UnaryOpExpSyntax",
             .memberInfos {
-                { .type = "UnaryOpSyntaxKind", .memberVarName = "kind", .getterName = "GetKind", .bUsePimpl = false },
-                { .type = "ExpSyntax", .memberVarName = "operand", .getterName = "GetOperand", .bUsePimpl = true },
+                { .type = "UnaryOpSyntaxKind", .memberVarName = "kind", .getterName = "GetKind" },
+                { .type = "ExpSyntax", .memberVarName = "operand", .getterName = "GetOperand" },
             },
-            .bDefaultsInline = false
         },
 
         ClassInfo {
             .name = "CallExpSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "callable", .getterName = "GetCallable", .bUsePimpl = true },
-                { .type = "std::vector<ArgumentSyntax>", .memberVarName = "args", .getterName = "GetArgs", .bUsePimpl = false },
+                { .type = "ExpSyntax", .memberVarName = "callable", .getterName = "GetCallable" },
+                { .type = "std::vector<ArgumentSyntax>", .memberVarName = "args", .getterName = "GetArgs" },
             },
-            .bDefaultsInline = false
         },
 
         VariantInfo {
@@ -339,45 +320,40 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "StmtsLambdaExpBodySyntax",
             .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "stmts", .getterName = "GetStmts", .bUsePimpl = false }
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "stmts", .getterName = "GetStmts" }
             },
-            .bDefaultsInline = false
         },
 
         ClassInfo {
             .name = "ExpLambdaExpBodySyntax",
             .memberInfos = {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp", .bUsePimpl = true }
+                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" }
             },
-            .bDefaultsInline = false
         },
 
         ClassInfo {
             .name = "LambdaExpSyntax",
             .memberInfos {
-                { .type = "std::vector<LambdaExpParamSyntax>", .memberVarName = "params", .getterName = "GetParams", .bUsePimpl = false },
-                { .type = "LambdaExpBodySyntax", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = false },
+                { .type = "std::vector<LambdaExpParamSyntax>", .memberVarName = "params", .getterName = "GetParams" },
+                { .type = "LambdaExpBodySyntax", .memberVarName = "body", .getterName = "GetBody" },
             },
-            .bDefaultsInline = false
         },
 
         ClassInfo {
             .name = "IndexerExpSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "obj", .getterName = "GetObject", .bUsePimpl = true },
-                { .type = "ExpSyntax", .memberVarName = "index", .getterName = "GetIndex", .bUsePimpl = true },
+                { .type = "ExpSyntax", .memberVarName = "obj", .getterName = "GetObject" },
+                { .type = "ExpSyntax", .memberVarName = "index", .getterName = "GetIndex" },
             },
-            .bDefaultsInline = false
         },
 
         ClassInfo {
             .name = "MemberExpSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "parent", .getterName = "GetParent", .bUsePimpl = true },
-                { .type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName", .bUsePimpl = false },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs", .bUsePimpl = false },
+                { .type = "ExpSyntax", .memberVarName = "parent", .getterName = "GetParent" },
+                { .type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName" },
+                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
             },
-            .bDefaultsInline = false,
             .extraConstructors {
                 "SYNTAX_API MemberExpSyntax(ExpSyntax parent, std::string memberName);"
             }
@@ -386,58 +362,59 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "IndirectMemberExpSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "parent", .getterName = "GetParent", .bUsePimpl = true },
-                { .type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName", .bUsePimpl = false },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs", .bUsePimpl = false },
+                { .type = "ExpSyntax", .memberVarName = "parent", .getterName = "GetParent" },
+                { .type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName" },
+                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
             },
-            .bDefaultsInline = false,
             .extraConstructors {
                 "SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName);"
             }
         },
 
-        ClassInfo {
-            .name = "ListExpSyntax",
-            .memberInfos {
-                { .type = "std::vector<ExpSyntax>", .memberVarName = "elements", .getterName = "GetElements", .bUsePimpl = false },
-            },
-            .bDefaultsInline = false
-        },
-
-        ClassInfo {
-            .name = "NewExpSyntax",
-            .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType", .bUsePimpl = false },
-                { .type = "std::vector<ArgumentSyntax>", .memberVarName = "args", .getterName = "GetArgs", .bUsePimpl = false },
-            },
-            .bDefaultsInline = false
-        },
 
         ClassInfo {
             .name = "BoxExpSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "innerExp", .getterName = "GetInnerExp", .bUsePimpl = true },
+                { .type = "ExpSyntax", .memberVarName = "innerExp", .getterName = "GetInnerExp" },
             },
-            .bDefaultsInline = false
         },
 
         ClassInfo{
             .name = "IsExpSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp", .bUsePimpl = true },
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType", .bUsePimpl = false },
+                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
+                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
             },
-            .bDefaultsInline = false
         },
 
         ClassInfo {
             .name = "AsExpSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp", .bUsePimpl = true },
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType", .bUsePimpl = false },
+                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
+                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
             },
-            .bDefaultsInline = false
         },
+
+        // ExpSyntax가 complete type일때까지 선언을 하면 안된다
+        ClassInfo {
+            .name = "ArgumentSyntax",
+            .memberInfos {
+                    { .type = "bool", .memberVarName = "bOut", .getterName = "HasOut" },
+                    { .type = "bool", .memberVarName = "bParams", .getterName = "GetParams" },
+                    { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
+                },
+                .extraConstructors {
+                    "SYNTAX_API ArgumentSyntax(ExpSyntax exp);"
+                }
+        },
+
+        // ExpSyntax가 complete type일때까지 선언을 하면 안된다
+        ClassInfo {
+            .name = "ExpStringExpSyntaxElement",
+            .memberInfos {
+                    { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
+                },
+            },
 
         // Embeddable 
         VariantInfo {
@@ -449,41 +426,29 @@ struct ToJsonVisitor {
             }
         },
 
-        // SingleEmbeddableStmtSyntax(StmtSyntax stmt)
-        ClassInfo {
-            .name = "SingleEmbeddableStmtSyntax",
-            .memberInfos {
-                { .type = "StmtSyntax", .memberVarName = "stmt", .getterName = "GetStmt", .bUsePimpl = true },
-            },
-            .bDefaultsInline = false
-        },
-
         // BlockEmbeddableStmtSyntax(std::vector<StmtSyntax> stmts)
         ClassInfo {
             .name = "BlockEmbeddableStmtSyntax",
             .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "stmts", .getterName = "GetStmts", .bUsePimpl = false },
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "stmts", .getterName = "GetStmts" },
             },
-            .bDefaultsInline = false
         },
 
         // VarDeclSyntax
         ClassInfo {
             .name = "VarDeclSyntaxElement",
             .memberInfos {
-                { .type = "std::string", .memberVarName = "varName", .getterName = "GetVarName", .bUsePimpl = false },
-                { .type = "std::optional<ExpSyntax>", .memberVarName = "initExp", .getterName = "GetInitExp", .bUsePimpl = true }
+                { .type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
+                { .type = "std::optional<ExpSyntax>", .memberVarName = "initExp", .getterName = "GetInitExp" }
             },
-            .bDefaultsInline = false
         },
 
         ClassInfo {
             .name = "VarDeclSyntax",
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType", .bUsePimpl = false },
-                { .type = "std::vector<VarDeclSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements", .bUsePimpl = false }
+                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
+                { .type = "std::vector<VarDeclSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements" }
             },
-            .bDefaultsInline = true
         },
 
         // Stmt
@@ -492,42 +457,107 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "CommandStmtSyntax",
             .memberInfos {
-                { .type = "std::vector<StringExpSyntax>", .memberVarName = "commands", .getterName = "GetCommands", .bUsePimpl = false },
+                { .type = "std::vector<StringExpSyntax>", .memberVarName = "commands", .getterName = "GetCommands" },
             },
-            .bDefaultsInline = false
         },
 
         // VarDeclStmtSyntax(VarDeclSyntax varDecl)
         ClassInfo {
             .name = "VarDeclStmtSyntax",
             .memberInfos {
-                { .type = "VarDeclSyntax", .memberVarName = "varDecl", .getterName = "GetVarDecl", .bUsePimpl = false },
+                { .type = "VarDeclSyntax", .memberVarName = "varDecl", .getterName = "GetVarDecl" },
             },
-            .bDefaultsInline = true
+        },
+
+        // ContinueStmtSyntax
+        ClassInfo {
+           .name = "ContinueStmtSyntax",
+           .memberInfos {},
+        },
+
+        // BreakStmtSyntax
+        ClassInfo {
+           .name = "BreakStmtSyntax",
+           .memberInfos {},
+        },
+
+        // BlockStmtSyntax(std::vector<StmtSyntax> stmts)
+        ClassInfo {
+            .name = "BlockStmtSyntax",
+            .memberInfos {
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "stmts", .getterName = "GetStmts" },
+            },
+        },
+
+        // BlankStmtSyntax
+        ClassInfo {
+            .name = "BlankStmtSyntax",
+            .memberInfos {},
+        },
+
+        // TaskStmtSyntax(std::vector<StmtSyntax> body)
+        ClassInfo {
+            .name = "TaskStmtSyntax",
+            .memberInfos {
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+            },
+        },
+
+        // AwaitStmtSyntax(std::vector<StmtSyntax> body);
+        ClassInfo {
+            .name = "AwaitStmtSyntax",
+            .memberInfos {
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+            },
+        },
+
+        // AsyncStmtSyntax(std::vector<StmtSyntax> body);
+        ClassInfo {
+            .name = "AsyncStmtSyntax",
+            .memberInfos {
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+            },
+        },
+
+        // DirectiveStmtSyntax(std::u32string name, std::vector<ExpSyntax> args)
+        ClassInfo {
+            .name = "DirectiveStmtSyntax",
+            .memberInfos {
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<ExpSyntax>", .memberVarName = "args", .getterName = "GetArgs" },
+            },
+        },
+
+        // 여기부터 StmtSyntax가 complete
+
+        // SingleEmbeddableStmtSyntax(StmtSyntax stmt), StmtSyntax에 depends
+        ClassInfo {
+            .name = "SingleEmbeddableStmtSyntax",
+            .memberInfos {
+                { .type = "StmtSyntax", .memberVarName = "stmt", .getterName = "GetStmt" },
+            },
         },
 
         // IfStmtSyntax(ExpSyntax cond, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody)
         ClassInfo {
             .name = "IfStmtSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "cond", .getterName = "GetCond", .bUsePimpl = true },
-                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = true },
-                { .type = "std::optional<EmbeddableStmtSyntax>", .memberVarName = "elseBody", .getterName = "GetElseBody", .bUsePimpl = true },
+                { .type = "ExpSyntax", .memberVarName = "cond", .getterName = "GetCond" },
+                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody" },
+                { .type = "std::optional<EmbeddableStmtSyntax>", .memberVarName = "elseBody", .getterName = "GetElseBody" },
             },
-            .bDefaultsInline = false
         },
 
         // IfTestStmtSyntax(TypeExpSyntax testTypeExp, std::string varName, ExpSyntax exp, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody);
         ClassInfo {
             .name = "IfTestStmtSyntax",
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "testType", .getterName = "GetTestType", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "varName", .getterName = "GetVarName", .bUsePimpl = false },
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp", .bUsePimpl = true },
-                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = true },
-                { .type = "std::optional<EmbeddableStmtSyntax>", .memberVarName = "elseBody", .getterName = "GetElseBody", .bUsePimpl = true },
+                { .type = "TypeExpSyntax", .memberVarName = "testType", .getterName = "GetTestType" },
+                { .type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
+                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
+                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody" },
+                { .type = "std::optional<EmbeddableStmtSyntax>", .memberVarName = "elseBody", .getterName = "GetElseBody" },
             },
-            .bDefaultsInline = false
         },
 
         // 
@@ -543,17 +573,15 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "ExpForStmtInitializerSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp", .bUsePimpl = true }
+                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" }
             },
-            .bDefaultsInline = false
         },
 
         ClassInfo {
             .name = "VarDeclForStmtInitializerSyntax",
             .memberInfos {
-                { .type = "VarDeclSyntax", .memberVarName = "varDecl", .getterName = "GetVarDecl", .bUsePimpl = true }
+                { .type = "VarDeclSyntax", .memberVarName = "varDecl", .getterName = "GetVarDecl" }
             },
-            .bDefaultsInline = false
         },
 
         // ForStmtSyntax(std::optional<ForStmtInitializerSyntax> initializer, 
@@ -563,137 +591,64 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "ForStmtSyntax",
             .memberInfos {
-                { .type = "std::optional<ForStmtInitializerSyntax>", .memberVarName = "initializer", .getterName = "GetInitializer", .bUsePimpl = true },
-                { .type = "std::optional<ExpSyntax>", .memberVarName = "cond", .getterName = "GetCond", .bUsePimpl = true },
-                { .type = "std::optional<ExpSyntax>", .memberVarName = "cont", .getterName = "GetCont", .bUsePimpl = true },
-                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = true },
+                { .type = "std::optional<ForStmtInitializerSyntax>", .memberVarName = "initializer", .getterName = "GetInitializer" },
+                { .type = "std::optional<ExpSyntax>", .memberVarName = "cond", .getterName = "GetCond" },
+                { .type = "std::optional<ExpSyntax>", .memberVarName = "cont", .getterName = "GetCont" },
+                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody" },
             },
-            .bDefaultsInline = false
         },
 
-        // ContinueStmtSyntax
-        ClassInfo {
-            .name = "ContinueStmtSyntax",
-            .memberInfos {},
-            .bDefaultsInline = true
-        },
-
-        // BreakStmtSyntax
-        ClassInfo {
-            .name = "BreakStmtSyntax",
-            .memberInfos {},
-            .bDefaultsInline = true
-        },
 
         ClassInfo {
             .name = "ReturnStmtSyntax",
             .memberInfos {
-                { .type = "std::optional<ExpSyntax>", .memberVarName = "value", .getterName = "GetValue", .bUsePimpl = true },
+                { .type = "std::optional<ExpSyntax>", .memberVarName = "value", .getterName = "GetValue" },
             },
-            .bDefaultsInline = false
-        },
-
-        // BlockStmtSyntax(std::vector<StmtSyntax> stmts)
-        ClassInfo {
-            .name = "BlockStmtSyntax",
-            .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "stmts", .getterName = "GetStmts", .bUsePimpl = false },
-            },
-            .bDefaultsInline = false
-        },
-
-        // BlankStmtSyntax
-        ClassInfo {
-            .name = "BlankStmtSyntax",
-            .memberInfos {},
-            .bDefaultsInline = true
         },
 
         // ExpStmtSyntax(ExpSyntax exp)
         ClassInfo {
             .name = "ExpStmtSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp", .bUsePimpl = true },
+                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
             },
-            .bDefaultsInline = false
-        },
-
-        // TaskStmtSyntax(std::vector<StmtSyntax> body)
-        ClassInfo {
-            .name = "TaskStmtSyntax",
-            .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = false },
-            },
-            .bDefaultsInline = false
-        },
-
-        // AwaitStmtSyntax(std::vector<StmtSyntax> body);
-        ClassInfo {
-            .name = "AwaitStmtSyntax",
-            .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = false },
-            },
-            .bDefaultsInline = false
-        },
-
-        // AsyncStmtSyntax(std::vector<StmtSyntax> body);
-        ClassInfo {
-            .name = "AsyncStmtSyntax",
-            .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = false },
-            },
-            .bDefaultsInline = false
         },
 
         // ForeachStmtSyntax(TypeExpSyntax type, std::u32string varName, ExpSyntax enumerable, EmbeddableStmtSyntax body);
         ClassInfo {
             .name = "ForeachStmtSyntax",
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "varName", .getterName = "GetVarName", .bUsePimpl = false },
-                { .type = "ExpSyntax", .memberVarName = "enumerable", .getterName = "GetEnumerable", .bUsePimpl = true },
-                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = true },
+                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
+                { .type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
+                { .type = "ExpSyntax", .memberVarName = "enumerable", .getterName = "GetEnumerable" },
+                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody" },
             },
-            .bDefaultsInline = false
         },
 
         // YieldStmtSyntax(ExpSyntax value)
         ClassInfo {
             .name = "YieldStmtSyntax",
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "value", .getterName = "GetValue", .bUsePimpl = true },
+                { .type = "ExpSyntax", .memberVarName = "value", .getterName = "GetValue" },
             },
-            .bDefaultsInline = false
-        },
-
-        // DirectiveStmtSyntax(std::u32string name, std::vector<ExpSyntax> args)
-        ClassInfo {
-            .name = "DirectiveStmtSyntax",
-            .memberInfos {
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<ExpSyntax>", .memberVarName = "args", .getterName = "GetArgs", .bUsePimpl = false },
-            },
-
-            .bDefaultsInline = false
         },
 
         // TypeParamSyntax
         ClassInfo {
             .name = "TypeParamSyntax",
             .memberInfos {
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
             },
-            .bDefaultsInline = true
         },
 
         // FuncParamSyntax
         ClassInfo {
             .name = "FuncParamSyntax",
             .memberInfos {
-                { .type = "bool", .memberVarName = "hasOut", .getterName = "HasOut", .bUsePimpl = false },
-                { .type = "bool", .memberVarName = "hasParams", .getterName = "HasParams", .bUsePimpl = false },
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false }
+                { .type = "bool", .memberVarName = "hasOut", .getterName = "HasOut" },
+                { .type = "bool", .memberVarName = "hasParams", .getterName = "HasParams" },
+                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" }
             },
         },
 
@@ -701,55 +656,51 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "GlobalFuncDeclSyntax",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier", .bUsePimpl = false },
-                { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence", .bUsePimpl = false }, // seq 함수인가        
-                { .type = "TypeExpSyntax", .memberVarName = "retType", .getterName = "GetRetType", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams", .bUsePimpl = false },
-                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters", .bUsePimpl = false },
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = false },
+                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" }, // seq 함수인가        
+                { .type = "TypeExpSyntax", .memberVarName = "retType", .getterName = "GetRetType" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
             },
-            .bDefaultsInline = true
         },
 
         // ClassMemberFuncDeclSyntax
         ClassInfo {
             .name = "ClassMemberFuncDeclSyntax",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier", .bUsePimpl = false },
-                { .type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic", .bUsePimpl = false },
-                { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence", .bUsePimpl = false },
-                { .type = "TypeExpSyntax", .memberVarName = "retType", .getterName = "GetRetType", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams", .bUsePimpl = false },
-                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters", .bUsePimpl = false },
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = false },
+                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
+                { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" },
+                { .type = "TypeExpSyntax", .memberVarName = "retType", .getterName = "GetRetType" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
             },
-            .bDefaultsInline = true
         },
 
         // ClassConstructorDeclSyntax
         ClassInfo {
             .name = "ClassConstructorDeclSyntax",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters", .bUsePimpl = false },
-                { .type = "std::optional<std::vector<ArgumentSyntax>>", .memberVarName = "baseArgs", .getterName = "GetBaseArgs", .bUsePimpl = false },
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = false },
+                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                { .type = "std::optional<std::vector<ArgumentSyntax>>", .memberVarName = "baseArgs", .getterName = "GetBaseArgs" },
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
             },
-            .bDefaultsInline = true
         },
 
         // ClassMemberVarDeclSyntax
         ClassInfo {
             .name = "ClassMemberVarDeclSyntax",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier", .bUsePimpl = false },
-                { .type = "TypeExpSyntax", .memberVarName = "varType", .getterName = "GetVarType", .bUsePimpl = false },
-                { .type = "std::vector<std::string>", .memberVarName = "varNames", .getterName = "GetVarNames", .bUsePimpl = false },
+                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "TypeExpSyntax", .memberVarName = "varType", .getterName = "GetVarType" },
+                { .type = "std::vector<std::string>", .memberVarName = "varNames", .getterName = "GetVarNames" },
             },
-            .bDefaultsInline = true
         },
 
         // ClassMemberDeclSyntax
@@ -770,52 +721,48 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "ClassDeclSyntax",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams", .bUsePimpl = false },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes", .bUsePimpl = false },
-                { .type = "std::vector<ClassMemberDeclSyntax>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls", .bUsePimpl = false },
+                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes" },
+                { .type = "std::vector<ClassMemberDeclSyntax>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
             },
-            .bDefaultsInline = false
         },
 
         // StructMemberFuncDeclSyntax
         ClassInfo {
             .name = "StructMemberFuncDeclSyntax",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAcessModifier", .bUsePimpl = false },
-                { .type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic", .bUsePimpl = false },
-                { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence", .bUsePimpl = false }, // seq 함수인가  
-                { .type = "TypeExpSyntax", .memberVarName = "retType", .getterName = "GetRetType", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams", .bUsePimpl = false },
-                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters", .bUsePimpl = false },
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = false },
+                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAcessModifier" },
+                { .type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
+                { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" }, // seq 함수인가  
+                { .type = "TypeExpSyntax", .memberVarName = "retType", .getterName = "GetRetType" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
             },
-            .bDefaultsInline = true
         },
 
         // StructConstructorDeclSyntax
         ClassInfo {
             .name = "StructConstructorDeclSyntax",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters", .bUsePimpl = false },
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody", .bUsePimpl = false },
+                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
             },
-            .bDefaultsInline = true
         },
 
         // StructMemberVarDeclSyntax
         ClassInfo {
             .name = "StructMemberVarDeclSyntax",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier", .bUsePimpl = false },
-                { .type = "TypeExpSyntax", .memberVarName = "varType", .getterName = "GetVarType", .bUsePimpl = false },
-                { .type = "std::vector<std::string>", .memberVarName = "varNames", .getterName = "GetVarNames", .bUsePimpl = false },
+                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "TypeExpSyntax", .memberVarName = "varType", .getterName = "GetVarType" },
+                { .type = "std::vector<std::string>", .memberVarName = "varNames", .getterName = "GetVarNames" },
             },
-            .bDefaultsInline = true
         },
 
         // StructMemberDeclSyntax
@@ -836,45 +783,41 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "StructDeclSyntax",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams", .bUsePimpl = false },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes", .bUsePimpl = false },
-                { .type = "std::vector<StructMemberDeclSyntax>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls", .bUsePimpl = false },
+                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes" },
+                { .type = "std::vector<StructMemberDeclSyntax>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
             },
-            .bDefaultsInline = false
         },
 
         // EnumElemMemberVarDeclSyntax
         ClassInfo {
             .name = "EnumElemMemberVarDeclSyntax",
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
+                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
             },
-            .bDefaultsInline = true
         },
 
         // EnumElemDeclSyntax
         ClassInfo {
             .name = "EnumElemDeclSyntax",
             .memberInfos {
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<EnumElemMemberVarDeclSyntax>", .memberVarName = "memberVars", .getterName = "GetMemberVars", .bUsePimpl = false },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<EnumElemMemberVarDeclSyntax>", .memberVarName = "memberVars", .getterName = "GetMemberVars" },
             },
-            .bDefaultsInline = true
         },
 
         // EnumDeclSyntax
         ClassInfo {
             .name = "EnumDeclSyntax",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier", .bUsePimpl = false },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName", .bUsePimpl = false },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams", .bUsePimpl = false },
-                { .type = "std::vector<EnumElemDeclSyntax>", .memberVarName = "elements", .getterName = "GetElements", .bUsePimpl = false },
+                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<EnumElemDeclSyntax>", .memberVarName = "elements", .getterName = "GetElements" },
             },
-            .bDefaultsInline = false
         },
 
         // NamespaceDeclSyntaxElement
@@ -894,10 +837,9 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "NamespaceDeclSyntax",
             .memberInfos {
-                { .type = "std::vector<std::string>", .memberVarName = "names", .getterName = "GetNames", .bUsePimpl = false },
-                { .type = "std::vector<NamespaceDeclSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements", .bUsePimpl = false }
+                { .type = "std::vector<std::string>", .memberVarName = "names", .getterName = "GetNames" },
+                { .type = "std::vector<NamespaceDeclSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements" }
             },
-            .bDefaultsInline = false
         },
 
         // ScriptSyntaxElement
@@ -917,9 +859,8 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "ScriptSyntax",
             .memberInfos {
-                { .type = "std::vector<ScriptSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements", .bUsePimpl = false },
+                { .type = "std::vector<ScriptSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements" },
             },
-            .bDefaultsInline = false
         },
     };
 

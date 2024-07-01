@@ -108,118 +108,50 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     hStream << "{" << endl;
 
     bool bHModified = false, bCppModified = false;
-    bool bUsePimpl = false;
     for (auto& memberInfo : classInfo.memberInfos)
     {
-        if (!memberInfo.bUsePimpl)
-        {
-            hStream << fmt::format(R"---(    {} {};)---", memberInfo.type, memberInfo.memberVarName) << endl;
-            bHModified = true;
-        }
-        else
-            bUsePimpl = true;
-    }
-
-    if (bUsePimpl)
-    {
-        AddNewLineIfNeeded(bHModified, hStream);
-
-        hStream << "    struct Impl;" << endl;
-        hStream << "    std::unique_ptr<Impl> impl;" << endl;
+        hStream << fmt::format(R"---(    {} {};)---", memberInfo.type, memberInfo.memberVarName) << endl;
         bHModified = true;
-
-        cppStream << fmt::format(R"---(struct {}::Impl 
-{{
-)---", classInfo.name);
-
-        for (auto& memberInfo : classInfo.memberInfos)
-        {
-            if (!memberInfo.bUsePimpl) continue;
-            cppStream << fmt::format("    {} {};", memberInfo.type, memberInfo.memberVarName) << endl;
-        }
-
-        cppStream << "};" << endl;
-        bCppModified = true;
     }
 
     AddNewLineIfNeeded(bHModified, hStream);
     hStream << "public:" << endl;
 
-    // bDefaultsInline이 true인데 bUsePimpl이면 워닝
-    if (bUsePimpl && classInfo.bDefaultsInline)
-        cout << classInfo.name << ": bDefaultsInline 인데 멤버함수 중에 bUsePimpl인 것이 있습니다" << endl;
 
-
-    bool bDefaultsInline = !bUsePimpl && classInfo.bDefaultsInline;
-
-    // 생성자
-    if (bDefaultsInline) // inline mode
+    AddNewLineIfNeeded(bHModified, hStream);
+    // SYNTAX_API IdentifierExpSyntax(std::string value);
+    hStream << "    " << commonInfo.linkage << ' ' << classInfo.name << "(";
+    bool bFirst = true;
+    for (auto& memberInfo : classInfo.memberInfos)
     {
-        // IdentifierExpSyntax(std::string value) : value(std::move(value)) {{ }}
-        hStream << "    " << classInfo.name << "(";
-        bool bFirst = true;
-        for (auto& memberInfo : classInfo.memberInfos)
-        {
-            if (bFirst) bFirst = false;
-            else hStream << ", ";
-            hStream << memberInfo.type << ' ' << memberInfo.memberVarName;
-        }
-        hStream << ")";
-
-        bFirst = true;
-        for (auto& memberInfo : classInfo.memberInfos)
-        {
-            if (bFirst)
-            {
-                hStream << endl << "        : ";
-                bFirst = false;
-            }
-            else
-                hStream << ", ";
-
-            hStream << memberInfo.memberVarName << '(';
-            hStream << "std::move(" << memberInfo.memberVarName << "))";
-            
-        }
-
-        hStream << " { }" << endl;
-        bHModified = true;
+        if (bFirst) bFirst = false;
+        else hStream << ", ";
+        hStream << memberInfo.type << ' ' << memberInfo.memberVarName;
     }
-    else
+    hStream << ");" << endl;
+    bHModified = true;
+
+    // IdentifierExpSyntax::IdentifierExpSyntax(std::string value) : value(std::move(value)) { }
+
+    AddNewLineIfNeeded(bCppModified, cppStream);
+    cppStream << classInfo.name << "::" << classInfo.name << "(";
+    bFirst = true;
+    for (auto& memberInfo : classInfo.memberInfos)
     {
-        AddNewLineIfNeeded(bHModified, hStream);
-        // SYNTAX_API IdentifierExpSyntax(std::string value);
-        hStream << "    " << commonInfo.linkage << ' ' << classInfo.name << "(";
-        bool bFirst = true;
-        for (auto& memberInfo : classInfo.memberInfos)
-        {
-            if (bFirst) bFirst = false;
-            else hStream << ", ";
-            hStream << memberInfo.type << ' ' << memberInfo.memberVarName;
-        }
-        hStream << ");" << endl;
-        bHModified = true;
+        if (bFirst) bFirst = false;
+        else cppStream << ", ";
+        cppStream << memberInfo.type << ' ' << memberInfo.memberVarName;
+    }
+    cppStream << ")" << endl;
 
-        // IdentifierExpSyntax::IdentifierExpSyntax(std::string value) : value(std::move(value)) { }
-
-        AddNewLineIfNeeded(bCppModified, cppStream);
-        cppStream << classInfo.name << "::" << classInfo.name << "(";
-        bFirst = true;
-        for (auto& memberInfo : classInfo.memberInfos)
-        {
-            if (bFirst) bFirst = false;
-            else cppStream << ", ";
-            cppStream << memberInfo.type << ' ' << memberInfo.memberVarName;
-        }
-        cppStream << ")" << endl;
+    if (!classInfo.memberInfos.empty())
+    {
         cppStream << "    : ";
 
         // non pimpl
         bFirst = true;
         for (auto& memberInfo : classInfo.memberInfos)
         {
-            if (memberInfo.bUsePimpl) continue;
-
             if (bFirst)
             {
                 bFirst = false;
@@ -230,35 +162,18 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
             cppStream << memberInfo.memberVarName << '(';
 
             cppStream << "std::move(" << memberInfo.memberVarName << "))";
-            
+
         }
-
-        if (bUsePimpl)
-        {
-            // pimpl
-            // impl(new Impl{ std::move(value) })
-            if (!bFirst) cppStream << ", ";
-
-            cppStream << "impl(new Impl{ ";
-            bFirst = true;
-            for (auto& memberInfo : classInfo.memberInfos)
-            {
-                if (!memberInfo.bUsePimpl) continue;
-
-                if (bFirst) bFirst = false;
-                else cppStream << ", ";
-
-                
-                cppStream << "std::move(" << memberInfo.memberVarName << ")";
-                
-            }
-
-            cppStream << " })";
-        }
-
         cppStream << " { }" << endl;
         bCppModified = true;
     }
+    else
+    {
+        cppStream << "{ }" << endl;
+    }
+
+
+
 
     // 추가 생성자
     for (auto& extraConstructor : classInfo.extraConstructors)
@@ -269,44 +184,32 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     bHModified |= !classInfo.extraConstructors.empty();
 
     // copy constructor, move constructor
-    if (!bDefaultsInline)
-    {
-        // IdentifierExpSyntax(const IdentifierExpSyntax&) = delete;
-        // SYNTAX_API IdentifierExpSyntax(IdentifierExpSyntax&& other);
-        hStream << "    " << classInfo.name << "(const " << classInfo.name << "&) = delete;" << endl;
-        hStream << "    " << commonInfo.linkage << " " << classInfo.name << "(" << classInfo.name << "&&) noexcept;" << endl;
-        bHModified = true;
 
-        // IdentifierExpSyntax::IdentifierExpSyntax(IdentifierExpSyntax&& other)
-        AddNewLineIfNeeded(bCppModified, cppStream);
-        cppStream << classInfo.name << "::" << classInfo.name << "(" << classInfo.name << "&& other) noexcept = default;" << endl;
-        bCppModified = true;
-    }
-    else
-    {
-        // copy는 delete로 막아야 한다
-        hStream << "    " << classInfo.name << "(const " << classInfo.name << "&) = delete;" << endl;
-        hStream << "    " << classInfo.name << "(" << classInfo.name << "&&) = default;" << endl;
-        bHModified = true;
-    }
+    // IdentifierExpSyntax(const IdentifierExpSyntax&) = delete;
+    // SYNTAX_API IdentifierExpSyntax(IdentifierExpSyntax&& other);
+    hStream << "    " << classInfo.name << "(const " << classInfo.name << "&) = delete;" << endl;
+    hStream << "    " << commonInfo.linkage << " " << classInfo.name << "(" << classInfo.name << "&&) noexcept;" << endl;
+    bHModified = true;
+
+    // IdentifierExpSyntax::IdentifierExpSyntax(IdentifierExpSyntax&& other)
+    AddNewLineIfNeeded(bCppModified, cppStream);
+    cppStream << classInfo.name << "::" << classInfo.name << "(" << classInfo.name << "&& other) noexcept = default;" << endl;
+    bCppModified = true;
+
+
 
     // 소멸자, inline이 아닐때만 생성한다
-    if (!bDefaultsInline)
-    {
-        // SYNTAX_API ~IdentifierExpSyntax();
-        hStream << "    " << commonInfo.linkage << " ~" << classInfo.name << "();" << endl;
-        bHModified = true;
+    // SYNTAX_API ~IdentifierExpSyntax();
+    hStream << "    " << commonInfo.linkage << " ~" << classInfo.name << "();" << endl;
+    bHModified = true;
 
-        // IdentifierExpSyntax::~IdentifierExpSyntax() = default;
-        AddNewLineIfNeeded(bCppModified, cppStream);
-        cppStream << classInfo.name << "::~" << classInfo.name << "() = default;" << endl;
-        bCppModified = true;
-    }
-
+    // IdentifierExpSyntax::~IdentifierExpSyntax() = default;
+    AddNewLineIfNeeded(bCppModified, cppStream);
+    cppStream << classInfo.name << "::~" << classInfo.name << "() = default;" << endl;
+    bCppModified = true;
 
     // copy assignment, move assignment
-    if (!bDefaultsInline)
-    {
+
         // IdentifierExpSyntax& operator=(const IdentifierExpSyntax& other) = delete;
         // SYNTAX_API IdentifierExpSyntax& operator=(IdentifierExpSyntax&& other) noexcept;
         AddNewLineIfNeeded(bHModified, hStream);
@@ -318,16 +221,6 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
         AddNewLineIfNeeded(bCppModified, cppStream);
         cppStream << classInfo.name << "& " << classInfo.name << "::operator=(" << classInfo.name << "&& other) noexcept = default;" << endl;
         bCppModified = true;
-    }
-    else
-    {
-        // IdentifierExpSyntax& operator=(const IdentifierExpSyntax& other) = delete;
-        AddNewLineIfNeeded(bHModified, hStream);
-        hStream << "    " << classInfo.name << "& operator=(const " << classInfo.name << "& other) = delete;" << endl;
-        hStream << "    " << classInfo.name << "& operator=(" << classInfo.name << "&& other) = default;" << endl;
-        bHModified = true;
-    }
-
 
     AddNewLineIfNeeded(bHModified, hStream);
     AddNewLineIfNeeded(bCppModified, cppStream);
@@ -335,30 +228,9 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     // Getter
     for (auto& memberInfo : classInfo.memberInfos)
     {
-        if (!memberInfo.bUsePimpl)
-        {
-            //    std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }
-            hStream << "    " << memberInfo.type << "& " << memberInfo.getterName << "() { return " << memberInfo.memberVarName << "; }" << endl;
-            bHModified = true;
-        }
-        else
-        {
-            //     SYNTAX_API std::vector<TypeExpSyntax>& GetTypeArgs();
-            hStream << "    " << commonInfo.linkage << ' ' << memberInfo.type << "& " << memberInfo.getterName << "();" << endl;
-            bHModified = true;
-
-            // std::vector<TypeExpSyntax>& IdentifierExpSyntax::GetTypeArgs()
-            // {
-            //     return impl->typeArgs;
-            // }
-            AddNewLineIfNeeded(bCppModified, cppStream);
-
-            cppStream << memberInfo.type << "& " << classInfo.name << "::" << memberInfo.getterName << "()" << endl;
-            cppStream << '{' << endl;
-            cppStream << "    return impl->" << memberInfo.memberVarName << ';' << endl;
-            cppStream << '}' << endl;
-            bCppModified = true;
-        }
+        //    std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }
+        hStream << "    " << memberInfo.type << "& " << memberInfo.getterName << "() { return " << memberInfo.memberVarName << "; }" << endl;
+        bHModified = true;
     }
 
     // Json
@@ -377,10 +249,7 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
 
     for (auto& memberInfo : classInfo.memberInfos)
     {
-        if (!memberInfo.bUsePimpl)
-            cppStream << "        { \"" << memberInfo.memberVarName << "\", Citron::ToJson(" << memberInfo.memberVarName << ") }," << endl;
-        else
-            cppStream << "        { \"" << memberInfo.memberVarName << "\", Citron::ToJson(impl->" << memberInfo.memberVarName << ") }," << endl;
+        cppStream << "        { \"" << memberInfo.memberVarName << "\", Citron::ToJson(" << memberInfo.memberVarName << ") }," << endl;
     }
 
     cppStream << "    };" << endl;
