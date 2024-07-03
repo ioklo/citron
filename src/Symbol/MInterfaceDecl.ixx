@@ -1,6 +1,7 @@
 export module Citron.Symbols:MInterfaceDecl;
 
-import <variant>;
+import "std.h";
+
 import :MTypeDeclOuter;
 import :MAccessor;
 import :MNames;

@@ -1,10 +1,15 @@
 export module Citron.Symbols:MTypeOuter;
 
-import <variant>;
-import <memory>;
+import "std.h";
 
 namespace Citron
 {
+
+export class MModuleDecl;
+export class MNamespaceDecl;
+export class MClass;
+export class MStruct;
+
 
 using MTypeOuter = std::variant<
     std::shared_ptr<class MModuleDecl>,

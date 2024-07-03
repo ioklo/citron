@@ -1,15 +1,14 @@
 export module Citron.Symbols:MNamespaceDeclContainerComponent;
 
-import <string>;
-import <vector>;
-import <unordered_map>;
+import "std.h";
 
+import :MNames;
 import :MGlobalFuncDecl;
 import :MTypeDecl;
 
 namespace Citron {
 
-class MNamespaceDecl;
+export class MNamespaceDecl;
 
 class MNamespaceDeclContainerComponent
 {

@@ -1,10 +1,7 @@
 // internal, TypeId 선언만을 위해서 만든 헤더
 export module Citron.Symbols:MTypeId;
 
-import <variant>;
-import <string>;
-import <vector>;
-import <memory>;
+import "std.h";
 import Citron.Copy;
 
 namespace Citron {

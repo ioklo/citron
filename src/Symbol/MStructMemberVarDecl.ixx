@@ -1,6 +1,7 @@
 export module Citron.Symbols:MStructMemberVarDecl;
 
-import <memory>;
+import "std.h";
+
 import :MAccessor;
 import :MType;
 import :MNames;
@@ -8,7 +9,7 @@ import :MNames;
 namespace Citron
 {
 
-class MStructDecl;
+export class MStructDecl;
 
 export class MStructMemberVarDecl
 {

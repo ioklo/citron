@@ -1,6 +1,7 @@
 export module Citron.Symbols:MFunc;
 
-import <variant>;
+import "std.h";
+
 import :MGlobalFunc;
 
 import :MClassConstructor;

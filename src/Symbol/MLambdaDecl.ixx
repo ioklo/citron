@@ -1,8 +1,11 @@
 export module Citron.Symbols:MLambdaDecl;
+
+import "std.h";
 import :MBodyDeclOuter;
 import :MNames;
 import :MCommonFuncDeclComponent;
 import :MLambdaMemberVarDecl;
+import :MFuncReturn;
 
 namespace Citron
 {

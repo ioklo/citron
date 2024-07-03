@@ -1,13 +1,14 @@
 export module Citron.Symbols:MLambdaMemberVarDecl;
 
-import <memory>;
+import "std.h";
+
 import :MNames;
 import :MType;
 
 namespace Citron
 {
 
-class MLambdaDecl;
+export class MLambdaDecl;
 
 export class MLambdaMemberVarDecl
 {

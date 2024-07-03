@@ -1,6 +1,7 @@
 export module Citron.Symbols:MFuncReturn;
 
-import <variant>;
+import "std.h";
+
 import :MType;
 
 namespace Citron {

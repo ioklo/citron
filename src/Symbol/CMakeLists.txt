@@ -4,8 +4,38 @@
 
 # Add source to this project's executable.
 add_library(Symbol SHARED
+        std.h
 
+        #MLabmdaDecl.cpp
+  #MModuleDecl.cpp
+  #MNames.cpp
+  #MSymbolId.cpp
+  #MTopLevelDeclComponent.cpp
+  #MTypeDeclContainerComponent.cpp
+  #MTypeIds.cpp
 )
+
+MESSAGE(STATUS "hi2")
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  MESSAGE(STATUS "hi")
+add_custom_command(
+  OUTPUT
+    std.pcm
+  COMMAND
+    ${CMAKE_CXX_COMPILER} -std=c++20 -xc++-user-header --precompile ${CMAKE_CURRENT_SOURCE_DIR}/std.h -o std.pcm
+  DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/std.h
+)
+endif()
+
+add_custom_target(StdHeaderUnit
+  DEPENDS
+    std.pcm
+)
+
+add_dependencies(Symbol StdHeaderUnit)
+
+# -
 
 target_sources(Symbol PRIVATE
   FILE_SET CXX_MODULES
@@ -87,5 +117,14 @@ target_compile_features(Symbol PRIVATE cxx_std_20)
 
 target_compile_options(Symbol PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 target_compile_options(Symbol PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+target_compile_options(Symbol PRIVATE "$<$<CXX_COMPILER_ID:Clang>:-fmodule-file=${CMAKE_CURRENT_BINARY_DIR}/std.pcm>")
+target_compile_options(Symbol PRIVATE "$<$<CXX_COMPILER_ID:Clang>:-Wno-experimental-header-units>")
+
+
+#get_property(IS_IN_TRY_COMPILE GLOBAL PROPERTY IN_TRY_COMPILE)
+#if(NOT IS_IN_TRY_COMPILE)
+#  target_compile_options(Symbol PRIVATE "$<$<CXX_COMPILER_ID:Clang>:-fmodule-file=std.pcm>")
+#endif()
+
 
 

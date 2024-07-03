@@ -3,7 +3,7 @@ module;
 
 export module Citron.Symbols:MIdentifier;
 
-import <vector>;
+import "std.h";
 
 import :MNames;
 import :MTypeId;

@@ -3,9 +3,7 @@ module;
 
 export module Citron.Symbols:MNames;
 
-import <variant>;
-import <string>;
-import <vector>;
+import "std.h";
 
 namespace Citron 
 {
@@ -19,8 +17,6 @@ export class MNormalName
 public:
     MNormalName(std::string&& text);
     DECLARE_DEFAULTS(MNormalName)
-
-    MNormalName(std::string&& text);
 };
 
 export class MReservedName

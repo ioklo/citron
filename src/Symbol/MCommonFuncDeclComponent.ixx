@@ -3,16 +3,16 @@ module;
 
 export module Citron.Symbols:MCommonFuncDeclComponent;
 
-import <optional>;
-import <vector>;
+import "std.h";
+
 import :MFuncReturn;
 import :MFuncParameter;
 
 namespace Citron
 {
-class MLambdaDecl;
+export class MLambdaDecl;
 
-class MCommonFuncDeclComponent
+export class MCommonFuncDeclComponent
 {
     // lambda의 경우, funcReturn이 NeedInduction으로 주어진다.
     struct FuncReturnAndParams

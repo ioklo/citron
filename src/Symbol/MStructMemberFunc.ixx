@@ -1,6 +1,7 @@
 export module Citron.Symbols:MStructMemberFunc;
 
-import <memory>;
+import "std.h";
+
 import :MSymbolComponent;
 import :MStruct;
 import :MStructMemberFuncDecl;

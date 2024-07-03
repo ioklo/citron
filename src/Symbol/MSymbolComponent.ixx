@@ -1,7 +1,7 @@
 export module Citron.Symbols:MSymbolComponent;
 
-import <memory>;
-import <vector>;
+import "std.h";
+
 import :MType;
 
 namespace Citron

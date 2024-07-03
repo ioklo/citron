@@ -4,10 +4,8 @@ module;
 // TypeId의 실제 implementation, TypeId를 complete type으로 쓰고 싶으면 이 모듈을 import해야 한다
 export module Citron.Symbols:MTypeIds;
 
-import <string>;
-import <memory>;
-import <vector>;
-import <ranges>;
+import "std.h";
+
 import :MTypeId;
 import :MIdentifier;
 import :MSymbolId;
@@ -16,11 +14,11 @@ import :MSymbolId;
 
 namespace Citron {
 
-class MNullableTypeId;
-class MTupleMemberVarId;
-class MFuncTypeId;
-class MLocalPtrTypeId;
-class MBoxPtrTypeId;
+export class MNullableTypeId;
+export class MTupleMemberVarId;
+export class MFuncTypeId;
+export class MLocalPtrTypeId;
+export class MBoxPtrTypeId;
 
 // MyModule.MyClass<X, Y>.MyStruct<T, U, X>.T => 2 (Index는 누적)
 // declId를 참조하게 만들지 않는 이유, FuncParamId 등을 만들기가 어렵다 (순환참조가 발생하기 쉽다)    

@@ -1,6 +1,7 @@
 export module Citron.Symbols:MGlobalFunc;
 
-import <vector>;
+import "std.h";
+
 import :MGlobalFuncDecl;
 import :MTypes;
 import :MTopLevelOuter;

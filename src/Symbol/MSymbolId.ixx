@@ -3,11 +3,8 @@ module;
 
 export module Citron.Symbols:MSymbolId;
 
-import <optional>;
-import <vector>;
-import <memory>;
-import <ranges>;
-import <variant>;
+import "std.h";
+
 import :MNames;
 import :MTypeId;
 

@@ -1,10 +1,8 @@
 export module Citron.Symbols:MTypes;
 
-import <memory>;
-import <string>;
-import <vector>;
+import "std.h";
 
-import :MType;
+export import :MType;
 import :MFuncReturn;
 import :MFuncParameter;
 

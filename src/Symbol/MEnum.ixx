@@ -1,7 +1,7 @@
 export module Citron.Symbols:MEnum;
 
-import <variant>;
-import <memory>;
+import "std.h";
+
 import :MEnumDecl;
 import :MSymbolComponent;
 import :MTypeOuter;

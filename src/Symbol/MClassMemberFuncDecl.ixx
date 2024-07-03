@@ -1,7 +1,6 @@
 export module Citron.Symbols:MClassMemberFuncDecl;
 
-import <memory>;
-import <vector>;
+import "std.h";
 
 import :MAccessor;
 import :MNames;
@@ -10,7 +9,7 @@ import :MCommonFuncDeclComponent;
 namespace Citron
 {
 
-class MClassDecl;
+export class MClassDecl;
 
 export class MClassMemberFuncDecl : private MCommonFuncDeclComponent
 {

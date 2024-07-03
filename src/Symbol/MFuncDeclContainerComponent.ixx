@@ -3,8 +3,7 @@ export module Citron.Symbols:MFuncDeclContainerComponent;
 import :MIdentifier;
 import :MNames;
 
-import <vector>;
-import <unordered_map>;
+import "std.h";
 
 namespace Citron {
 

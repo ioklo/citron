@@ -1,15 +1,15 @@
 export module Citron.Symbols:MTypeDecl;
 
-import <variant>;
+import "std.h";
 
 namespace Citron {
 
-class MClassDecl;
-class MStructDecl;
-class MEnumDecl;
-class MEnumElemDecl;
-class MInterfaceDecl;
-class MLambdaDecl;
+export class MClassDecl;
+export class MStructDecl;
+export class MEnumDecl;
+export class MEnumElemDecl;
+export class MInterfaceDecl;
+export class MLambdaDecl;
 
 export using MTypeDecl = std::variant<
     MClassDecl,

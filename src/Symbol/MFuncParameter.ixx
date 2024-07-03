@@ -2,7 +2,7 @@ module;
 #include "Macros.h"
 export module Citron.Symbols:MFuncParameter;
 
-import <string>;
+import "std.h";
 import :MType;
 
 namespace Citron {

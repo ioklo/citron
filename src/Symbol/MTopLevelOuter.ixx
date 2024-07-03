@@ -1,10 +1,9 @@
 export module Citron.Symbols:MTopLevelOuter;
 
-import <variant>;
-import <memory>;
+import "std.h";
 
-class MModuleDecl;
-class MNamespaceDecl;
+export class MModuleDecl;
+export class MNamespaceDecl;
 
 namespace Citron
 {

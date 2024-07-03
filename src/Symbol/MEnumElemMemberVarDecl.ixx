@@ -1,14 +1,14 @@
 export module Citron.Symbols:MEnumElemMemberVarDecl;
 
-import <memory>;
-import <optional>;
+import "std.h";
+
 import :MNames;
 import :MType;
 
 namespace Citron
 {
 
-class MEnumElemDecl;
+export class MEnumElemDecl;
 
 export class MEnumElemMemberVarDecl
 {   

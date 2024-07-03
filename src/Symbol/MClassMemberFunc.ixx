@@ -1,6 +1,7 @@
 export module Citron.Symbols:MClassMemberFunc;
 
-import <memory>;
+import "std.h";
+
 import :MSymbolComponent;
 import :MClass;
 import :MClassMemberFuncDecl;

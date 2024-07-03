@@ -1,9 +1,6 @@
 export module Citron.Symbols:MEnumDecl;
 
-import <vector>;
-import <optional>;
-import <memory>;
-import <variant>;
+import "std.h";
 
 import :MAccessor;
 import :MNames;

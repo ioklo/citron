@@ -3,15 +3,16 @@ module;
 
 export module Citron.Symbols:MClassConstructorDecl;
 
-import <memory>;
+import "std.h";
+
 import :MAccessor;
 import :MCommonFuncDeclComponent;
 
 namespace Citron
 {
 
-class MClassDecl;
-class MFuncParameter;
+export class MClassDecl;
+export class MFuncParameter;
 
 export class MClassConstructorDecl : private MCommonFuncDeclComponent
 {

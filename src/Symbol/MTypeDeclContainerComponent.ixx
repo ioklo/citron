@@ -2,9 +2,7 @@ export module Citron.Symbols:MTypeDeclContainerComponent;
 
 import :MNames;
 
-import <vector>;
-import <unordered_map>;
-import <optional>;
+import "std.h";
 
 import :MTypeDecl;
 

@@ -1,15 +1,14 @@
 export module Citron.Symbols:MTypeDeclOuter;
 
-import <variant>;
-import <memory>;
+import "std.h";
 
 namespace Citron
 {
 
-class MModuleDecl;
-class MNamespaceDecl;
-class MClassDecl;
-class MStructDecl;
+export class MModuleDecl;
+export class MNamespaceDecl;
+export class MClassDecl;
+export class MStructDecl;
 
 // 보통 타입의 Outer
 using MTypeDeclOuter = std::variant<

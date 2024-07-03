@@ -1,7 +1,6 @@
 export module Citron.Copy;
 
-import <optional>;
-import <vector>;
+import "std.h";
 
 namespace Citron {
 

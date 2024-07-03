@@ -1,9 +1,7 @@
 // forward declaration for MType
 export module Citron.Symbols:MType;
 
-import <variant>;
-import <memory>;
-import <string>;
+import "std.h";
 
 namespace Citron 
 {

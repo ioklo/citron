@@ -1,7 +1,6 @@
 export module Citron.Symbols:MBodyDeclOuter;
 
-import <variant>;
-import <memory>;
+import "std.h";
 
 namespace Citron
 {

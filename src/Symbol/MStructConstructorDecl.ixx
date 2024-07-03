@@ -3,15 +3,16 @@ module;
 
 export module Citron.Symbols:MStructConstructorDecl;
 
-import <memory>;
+import "std.h";
+
 import :MAccessor;
 import :MCommonFuncDeclComponent;
 
 namespace Citron
 {
 
-class MStructDecl;
-class MFuncParameter;
+export class MStructDecl;
+export class MFuncParameter;
 
 export class MStructConstructorDecl : private MCommonFuncDeclComponent
 {

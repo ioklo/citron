@@ -3,13 +3,12 @@ export module Citron.Symbols:MTopLevelOuterDecl;
 // circular dependency 때문에, import 하지는 못한다
 // import :ModuleDeclSymbol;
 
-import <variant>;
-import <memory>;
+import "std.h";
 
 namespace Citron {
 
-class MModuleDecl;
-class MNamespaceDecl;
+export class MModuleDecl;
+export class MNamespaceDecl;
 
 export using MTopLevelOuterDecl = std::variant<
     std::weak_ptr<MModuleDecl>,

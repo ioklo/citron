@@ -1,9 +1,11 @@
 export module Citron.Symbols:MModuleDecl;
 
-import <string>;
+import "std.h";
+
 import :MNamespaceDeclContainerComponent;
 import :MTypeDeclContainerComponent;
 import :MFuncDeclContainerComponent;
+import :MGlobalFuncDecl;
 
 namespace Citron {
 

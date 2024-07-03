@@ -3,7 +3,7 @@ module;
 
 export module Citron.Symbols:MStructMemberFuncDecl;
 
-import <memory>;
+import "std.h";
 
 import :MAccessor;
 import :MNames;
@@ -12,7 +12,7 @@ import :MCommonFuncDeclComponent;
 namespace Citron
 {
 
-class MStructDecl;
+export class MStructDecl;
 
 export class MStructMemberFuncDecl : private MCommonFuncDeclComponent
 {
