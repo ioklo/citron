@@ -6,18 +6,31 @@
 add_library(Symbol SHARED
         std.h
 
-        #MLabmdaDecl.cpp
-  #MModuleDecl.cpp
-  #MNames.cpp
-  #MSymbolId.cpp
-  #MTopLevelDeclComponent.cpp
-  #MTypeDeclContainerComponent.cpp
-  #MTypeIds.cpp
+  MLabmdaDecl.cpp
+  MModuleDecl.cpp
+  MNames.cpp
+  MSymbolId.cpp
+  MTopLevelDeclComponent.cpp
+  MTypeDeclContainerComponent.cpp
+  MTypeIds.cpp
 )
 
-MESSAGE(STATUS "hi2")
+
+# TODO: Add tests and install targets if needed.
+target_include_directories (Symbol PUBLIC ../../include)
+target_compile_definitions(Symbol PRIVATE SYMBOL_EXPORT)
+target_link_libraries(Symbol PUBLIC Infra)
+
+target_compile_features(Symbol PRIVATE cxx_std_20)
+
+# set_target_properties(Symbol PROPERTIES CXX_SCAN_FOR_MODULES OFF)
+
+target_compile_options(Symbol PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+target_compile_options(Symbol PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
+
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-  MESSAGE(STATUS "hi")
+
 add_custom_command(
   OUTPUT
     std.pcm
@@ -26,16 +39,54 @@ add_custom_command(
   DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/std.h
 )
-endif()
 
 add_custom_target(StdHeaderUnit
   DEPENDS
     std.pcm
 )
-
 add_dependencies(Symbol StdHeaderUnit)
 
-# -
+target_compile_options(Symbol PRIVATE "-fmodule-file=${CMAKE_CURRENT_BINARY_DIR}/std.pcm")
+target_compile_options(Symbol PRIVATE "-Wno-experimental-header-units")
+
+endif()
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+
+# debug, dll, utf-8
+string(REPLACE " " ";" cxx_flags_list ${CMAKE_CXX_FLAGS})
+
+string(REPLACE " " ";" cxx_flags_debug_list ${CMAKE_CXX_FLAGS_DEBUG})
+string(REPLACE " " ";" cxx_flags_release_list ${CMAKE_CXX_FLAGS_RELEASE})
+string(REPLACE " " ";" cxx_flags_relwithdebinfo_list ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+string(REPLACE " " ";" cxx_flags_minsizerel_list ${CMAKE_CXX_FLAGS_MINSIZEREL})
+
+set(cxx_flags_config_list $<IF:$<CONFIG:Debug>,${cxx_flags_debug_list},$<IF:$<CONFIG:Release>,${cxx_flags_release_list},$<IF:$<CONFIG:RelWithDebInfo>,${cxx_flags_relwithdebinfo_list},$<IF:$<CONFIG:MinSizeRel>,${cxx_flags_minsizerel_list},>>>>)
+
+
+
+add_custom_command(
+  OUTPUT
+    std.h.ifc
+  COMMAND
+    ${CMAKE_CXX_COMPILER} /std:c++20 /exportHeader "${CMAKE_CURRENT_SOURCE_DIR}/std.h" /nologo /utf-8 ${cxx_flags_list} "${cxx_flags_config_list}"
+
+  DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/std.h
+
+  COMMAND_EXPAND_LISTS
+  VERBATIM
+)
+
+add_custom_target(StdHeaderUnit
+  DEPENDS
+    std.h.ifc
+)
+add_dependencies(Symbol StdHeaderUnit)
+
+target_compile_options(Symbol PRIVATE /headerUnit "${CMAKE_CURRENT_SOURCE_DIR}/std.h=${CMAKE_CURRENT_BINARY_DIR}/std.h.ifc")
+
+endif()
 
 target_sources(Symbol PRIVATE
   FILE_SET CXX_MODULES
@@ -108,17 +159,6 @@ target_sources(Symbol PRIVATE
     MTypes.ixx
 )
 
-# TODO: Add tests and install targets if needed.
-target_include_directories (Symbol PUBLIC ../../include)
-target_compile_definitions(Symbol PRIVATE SYMBOL_EXPORT)
-target_link_libraries(Symbol PUBLIC Infra)
-
-target_compile_features(Symbol PRIVATE cxx_std_20)
-
-target_compile_options(Symbol PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-target_compile_options(Symbol PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-target_compile_options(Symbol PRIVATE "$<$<CXX_COMPILER_ID:Clang>:-fmodule-file=${CMAKE_CURRENT_BINARY_DIR}/std.pcm>")
-target_compile_options(Symbol PRIVATE "$<$<CXX_COMPILER_ID:Clang>:-Wno-experimental-header-units>")
 
 
 #get_property(IS_IN_TRY_COMPILE GLOBAL PROPERTY IN_TRY_COMPILE)
