@@ -24,6 +24,7 @@ add_subdirectory("Tools")
 add_subdirectory("Infra")
 add_subdirectory("Syntax")
 add_subdirectory("Symbol")
+add_subdirectory("IR0")
 add_subdirectory("TextAnalysis")
 
 enable_testing()

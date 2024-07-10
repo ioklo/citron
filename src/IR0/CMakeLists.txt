@@ -9,6 +9,8 @@ add_library(IR0
   RLoc.h
   RProgram.h
   RStmt.h
+
+  main.cpp
 )
 
 # TODO: Add tests and install targets if needed.
