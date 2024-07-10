@@ -1,12 +1,11 @@
-module Citron.Symbols:MSymbolId;
+#include <memory>
+#include <ranges>
+#include <optional>
 
-import <memory>;
-import <ranges>;
-import <optional>;
+#include "Copy.h"
 
-import Citron.Copy;
-import :MNames;
-import :MTypeIds;
+#include "MNames.h"
+#include "MTypeIds.h"
 
 using namespace std;
 
@@ -25,11 +24,6 @@ MSymbolPath::MSymbolPath(std::shared_ptr<MSymbolPath>&& pOuter, MName&& name, st
 
 IMPLEMENT_DEFAULTS(MSymbolPath)
 
-std::shared_ptr<MSymbolPath> MSymbolPath::Copy() const
-{
-
-}
-
 std::shared_ptr<MSymbolPath> MSymbolPath::Child(std::shared_ptr<MSymbolPath>&& sharedThis, MName&& name, std::vector<MTypeId>&& typeArgs, std::vector<MTypeId>&& paramIds)
 {   
     return make_shared<MSymbolPath>(std::move(sharedThis), std::move(name), std::move(typeArgs), std::move(paramIds));
@@ -39,6 +33,8 @@ MSymbolId::MSymbolId(std::string&& moduleName, std::shared_ptr<MSymbolPath>&& pP
     : moduleName(std::move(moduleName)), pPath(std::move(pPath))
 {
 }
+
+IMPLEMENT_DEFAULTS(MSymbolId)
 
 MSymbolId MSymbolId::Copy() const
 {

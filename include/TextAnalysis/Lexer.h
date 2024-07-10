@@ -15,31 +15,31 @@ class Lexer
     BufferPosition pos;
 
 public:
-    TEXT_ANALYSIS_API Lexer(BufferPosition pos);
+    TEXTANALYSIS_API Lexer(BufferPosition pos);
 
 public: // LexStringMode
-    TEXT_ANALYSIS_API std::optional<LexResult> LexStringMode();
+    TEXTANALYSIS_API std::optional<LexResult> LexStringMode();
 private:
     std::optional<LexResult> LexStringModeText();
 
 public: // LexNormalMode
-    TEXT_ANALYSIS_API std::optional<LexResult> LexNormalMode(bool bSkipNewLine);
+    TEXTANALYSIS_API std::optional<LexResult> LexNormalMode(bool bSkipNewLine);
 
 private:
     std::optional<LexResult> LexNormalModeAfterSkipWhitespace();
 
 public: // LexCommandMode
-    TEXT_ANALYSIS_API std::optional<LexResult> LexCommandMode();
+    TEXTANALYSIS_API std::optional<LexResult> LexCommandMode();
 
-    TEXT_ANALYSIS_API bool IsReachedEnd();
+    TEXTANALYSIS_API bool IsReachedEnd();
 
 public:
     std::optional<LexResult> LexIdentifier(bool bAllowRawMark);
     std::optional<LexResult> LexKeyword();
     std::optional<LexResult> LexBool();
-    TEXT_ANALYSIS_API std::optional<LexResult> LexInt();
-    TEXT_ANALYSIS_API std::optional<LexResult> LexWhitespace(bool bIncludeNewLine);
-    TEXT_ANALYSIS_API std::optional<LexResult> LexNewLine();
+    TEXTANALYSIS_API std::optional<LexResult> LexInt();
+    TEXTANALYSIS_API std::optional<LexResult> LexWhitespace(bool bIncludeNewLine);
+    TEXTANALYSIS_API std::optional<LexResult> LexNewLine();
 };
 
 struct LexResult

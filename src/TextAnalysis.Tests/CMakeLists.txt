@@ -16,12 +16,14 @@ add_executable(TextAnalysis.Tests
     ScriptParserTests.g.cpp
 )
 
+target_compile_definitions(TextAnalysis.Tests 
+  PUBLIC 
+    $<$<STREQUAL:$<TARGET_PROPERTY:Infra,TYPE>,SHARED_LIBRARY>:INFRA_IMPORT>
+    $<$<STREQUAL:$<TARGET_PROPERTY:Syntax,TYPE>,SHARED_LIBRARY>:SYNTAX_IMPORT>
+    $<$<STREQUAL:$<TARGET_PROPERTY:TextAnalysis,TYPE>,SHARED_LIBRARY>:TEXTANALYSIS_IMPORT>
+)
+
 target_link_libraries(TextAnalysis.Tests PRIVATE Infra Syntax TextAnalysis GTest::gtest GTest::gtest_main)
-
-target_compile_features(TextAnalysis.Tests PRIVATE cxx_std_20)
-
-target_compile_options(TextAnalysis.Tests PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-target_compile_options(TextAnalysis.Tests PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 include(GoogleTest)
 gtest_discover_tests(TextAnalysis.Tests)

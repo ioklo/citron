@@ -3,7 +3,7 @@
 #
 
 # Add source to this project's executable.
-add_library(TextAnalysis SHARED
+add_library(TextAnalysis
   ../../include/TextAnalysis/TextAnalysisConfig.h
 
   ../../include/TextAnalysis/Buffer.h
@@ -34,8 +34,6 @@ add_library(TextAnalysis SHARED
   StmtParser.cpp
 )
 
-target_compile_features(TextAnalysis PRIVATE cxx_std_20)
-
 # TODO: Add tests and install targets if needed.
 find_package(ICU REQUIRED COMPONENTS uc dt in io) # uc dt in io
 
@@ -43,9 +41,12 @@ target_include_directories(TextAnalysis
   PUBLIC 
     ../../include
     ../../externals/utfcpp/source)
-target_compile_definitions(TextAnalysis PRIVATE TEXT_ANALYSIS_EXPORT)
-target_link_libraries(TextAnalysis PUBLIC Infra Syntax ICU::uc ICU::in ICU::dt ICU::io) 
+target_compile_definitions(TextAnalysis 
+  PRIVATE 
+    TEXTANALYSIS_EXPORT
+  PUBLIC
+    $<$<STREQUAL:$<TARGET_PROPERTY:Infra,TYPE>,SHARED_LIBRARY>:INFRA_IMPORT>
+    $<$<STREQUAL:$<TARGET_PROPERTY:Syntax,TYPE>,SHARED_LIBRARY>:SYNTAX_IMPORT>
+)
 
-target_compile_options(TextAnalysis PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-target_compile_options(TextAnalysis PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-target_compile_options(TextAnalysis PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>")
+target_link_libraries(TextAnalysis PUBLIC Infra Syntax ICU::uc ICU::in ICU::dt ICU::io) 

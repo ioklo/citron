@@ -3,163 +3,98 @@
 #
 
 # Add source to this project's executable.
-add_library(Symbol SHARED
-        std.h
+add_library(Symbol
 
+  Copy.h
+  Symbols.h
+  
+  MAccessor.h
+  MBodyDeclOuter.h
+  MBodyOuter.h
+  MClass.h
+  MClassConstructor.h
+  MClassConstructorDecl.h
+  MClassDecl.h
+  MClassMemberFunc.h
+  MClassMemberFuncDecl.h
+  MClassMemberVar.h
+  MClassMemberVarDecl.h
+  MCommonFuncDeclComponent.h
+  MDecl.h
+  MEnum.h
+  MEnumDecl.h
+  MEnumElem.h
+  MEnumElemDecl.h
+  MEnumElemMemberVar.h
+  MEnumElemMemberVarDecl.h
+  MFunc.h
+  MFuncDeclContainerComponent.h
+  MFuncParameter.h
+  MFuncReturn.h
+  MGlobalFunc.h
+  MGlobalFuncDecl.h
+  MIdentifier.h
+  MInterfaceDecl.h
+  
+  MLambda.h
+
+  MLambdaDecl.h
   MLabmdaDecl.cpp
+
+  MLambdaMemberVar.h
+  MLambdaMemberVarDecl.h
+  
+  MModuleDecl.h
   MModuleDecl.cpp
+  
+  MNames.h
   MNames.cpp
+
+  MNamespaceDecl.h
+  MNamespaceDeclContainerComponent.h
+  MStruct.h
+  MStructConstructor.h
+  MStructConstructorDecl.h
+  MStructDecl.h
+  MStructMemberFunc.h
+  MStructMemberFuncDecl.h
+  MStructMemberVar.h
+  MStructMemberVarDecl.h
+  MSymbol.h
+  MSymbolComponent.h
+  
+  MSymbolId.h
   MSymbolId.cpp
-  MTopLevelDeclComponent.cpp
+  
+  MTopLevelOuter.h
+  MTopLevelOuterDecl.h
+
+  MType.h
+  MTypeDecl.h
+  
+  MTypeDeclContainerComponent.h
   MTypeDeclContainerComponent.cpp
+
+  MTypeDeclOuter.h
+  MTypeId.h
+  MTypeIds.h
   MTypeIds.cpp
+  
+  MTypeOuter.h
+  MTypes.h
 )
 
 
 # TODO: Add tests and install targets if needed.
 target_include_directories (Symbol PUBLIC ../../include)
-target_compile_definitions(Symbol PRIVATE SYMBOL_EXPORT)
+target_compile_definitions(
+  Symbol 
+  PRIVATE 
+    SYMBOL_EXPORT
+  PUBLIC
+    $<$<STREQUAL:$<TARGET_PROPERTY:Infra,TYPE>,SHARED_LIBRARY>:INFRA_IMPORT>
+)
 target_link_libraries(Symbol PUBLIC Infra)
-
-target_compile_features(Symbol PRIVATE cxx_std_20)
-
-# set_target_properties(Symbol PROPERTIES CXX_SCAN_FOR_MODULES OFF)
-
-target_compile_options(Symbol PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-target_compile_options(Symbol PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-
-
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-
-add_custom_command(
-  OUTPUT
-    std.pcm
-  COMMAND
-    ${CMAKE_CXX_COMPILER} -std=c++20 -xc++-user-header --precompile ${CMAKE_CURRENT_SOURCE_DIR}/std.h -o std.pcm
-  DEPENDS
-    ${CMAKE_CURRENT_SOURCE_DIR}/std.h
-)
-
-add_custom_target(StdHeaderUnit
-  DEPENDS
-    std.pcm
-)
-add_dependencies(Symbol StdHeaderUnit)
-
-target_compile_options(Symbol PRIVATE "-fmodule-file=${CMAKE_CURRENT_BINARY_DIR}/std.pcm")
-target_compile_options(Symbol PRIVATE "-Wno-experimental-header-units")
-
-endif()
-
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
-
-# debug, dll, utf-8
-string(REPLACE " " ";" cxx_flags_list ${CMAKE_CXX_FLAGS})
-
-string(REPLACE " " ";" cxx_flags_debug_list ${CMAKE_CXX_FLAGS_DEBUG})
-string(REPLACE " " ";" cxx_flags_release_list ${CMAKE_CXX_FLAGS_RELEASE})
-string(REPLACE " " ";" cxx_flags_relwithdebinfo_list ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
-string(REPLACE " " ";" cxx_flags_minsizerel_list ${CMAKE_CXX_FLAGS_MINSIZEREL})
-
-set(cxx_flags_config_list $<IF:$<CONFIG:Debug>,${cxx_flags_debug_list},$<IF:$<CONFIG:Release>,${cxx_flags_release_list},$<IF:$<CONFIG:RelWithDebInfo>,${cxx_flags_relwithdebinfo_list},$<IF:$<CONFIG:MinSizeRel>,${cxx_flags_minsizerel_list},>>>>)
-
-
-
-add_custom_command(
-  OUTPUT
-    std.h.ifc
-  COMMAND
-    ${CMAKE_CXX_COMPILER} /std:c++20 /exportHeader "${CMAKE_CURRENT_SOURCE_DIR}/std.h" /nologo /utf-8 ${cxx_flags_list} "${cxx_flags_config_list}"
-
-  DEPENDS
-    ${CMAKE_CURRENT_SOURCE_DIR}/std.h
-
-  COMMAND_EXPAND_LISTS
-  VERBATIM
-)
-
-add_custom_target(StdHeaderUnit
-  DEPENDS
-    std.h.ifc
-)
-add_dependencies(Symbol StdHeaderUnit)
-
-target_compile_options(Symbol PRIVATE /headerUnit "${CMAKE_CURRENT_SOURCE_DIR}/std.h=${CMAKE_CURRENT_BINARY_DIR}/std.h.ifc")
-
-endif()
-
-target_sources(Symbol PRIVATE
-  FILE_SET CXX_MODULES
-  FILES
-    Copy.ixx
-    Symbols.ixx
-
-    MAccessor.ixx
-    MBodyDeclOuter.ixx
-    MBodyOuter.ixx
-    MClass.ixx
-    MClassConstructor.ixx
-    MClassConstructorDecl.ixx
-    MClassDecl.ixx
-    MClassMemberFunc.ixx
-    MClassMemberFuncDecl.ixx
-    MClassMemberVar.ixx
-    MClassMemberVarDecl.ixx
-    MCommonFuncDeclComponent.ixx
-    MDecl.ixx
-    MEnum.ixx
-    MEnumDecl.ixx
-    MEnumElem.ixx
-    MEnumElemDecl.ixx
-    MEnumElemMemberVar.ixx
-    MEnumElemMemberVarDecl.ixx
-    MFunc.ixx
-    MFuncDeclContainerComponent.ixx
-    MFuncParameter.ixx
-    MFuncReturn.ixx
-    MGlobalFunc.ixx
-    MGlobalFuncDecl.ixx
-    MIdentifier.ixx
-    MInterfaceDecl.ixx
-
-    MLambda.ixx
-    MLambdaDecl.ixx
-    MLambdaMemberVar.ixx
-    MLambdaMemberVarDecl.ixx
-
-    MModuleDecl.ixx
-
-    MNames.ixx
-    MNamespaceDecl.ixx
-    MNamespaceDeclContainerComponent.ixx
-    MStruct.ixx
-    MStructConstructor.ixx
-    MStructConstructorDecl.ixx
-    MStructDecl.ixx
-    MStructMemberFunc.ixx
-    MStructMemberFuncDecl.ixx
-    MStructMemberVar.ixx
-    MStructMemberVarDecl.ixx
-    MSymbol.ixx
-    MSymbolComponent.ixx
-
-    MSymbolId.ixx
-
-    MTopLevelOuter.ixx
-    MTopLevelOuterDecl.ixx
-    MType.ixx
-    MTypeDecl.ixx
-
-    MTypeDeclContainerComponent.ixx
-    MTypeDeclOuter.ixx
-    MTypeId.ixx
-    MTypeIds.ixx
-
-    MTypeOuter.ixx
-    MTypes.ixx
-)
-
-
 
 #get_property(IS_IN_TRY_COMPILE GLOBAL PROPERTY IN_TRY_COMPILE)
 #if(NOT IS_IN_TRY_COMPILE)

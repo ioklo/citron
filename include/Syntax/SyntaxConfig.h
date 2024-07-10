@@ -4,7 +4,7 @@
     #if defined(SYNTAX_EXPORT)
         #define SYNTAX_API __declspec(dllexport)
     #else
-        #if defined(_DLL)
+        #if defined(SYNTAX_IMPORT)
             #define SYNTAX_API __declspec(dllimport)
         #else
             #define SYNTAX_API

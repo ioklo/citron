@@ -1,4 +1,4 @@
-module Citron.Symbols:MTypeIds;
+#include "MTypeIds.h"
 
 namespace Citron {
 
@@ -6,6 +6,21 @@ MVoidTypeId voidTypeId;
 MTypeId boolTypeId = MSymbolTypeId(false, boolSymbolId.Copy());
 MTypeId intTypeId = MSymbolTypeId(false, intSymbolId.Copy());
 MTypeId stringTypeId = MSymbolTypeId(false, stringSymbolId.Copy());
+
+IMPLEMENT_DEFAULTS(MVoidTypeId)
+IMPLEMENT_DEFAULTS(MTupleTypeId)
+IMPLEMENT_DEFAULTS(MLambdaTypeId)
+IMPLEMENT_DEFAULTS(MSymbolTypeId)
+MSymbolTypeId::MSymbolTypeId(bool bLocal, MSymbolId&& symbolId)
+    : bLocal(bLocal), symbolId(std::move(symbolId))
+{
+}
+
+IMPLEMENT_DEFAULTS(MNullableTypeId)
+IMPLEMENT_DEFAULTS(MFuncTypeId)
+IMPLEMENT_DEFAULTS(MLocalPtrTypeId)
+IMPLEMENT_DEFAULTS(MBoxPtrTypeId)
+
 
 //public static class TypeIdExtensions
 //{

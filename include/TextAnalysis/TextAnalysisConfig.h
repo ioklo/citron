@@ -1,19 +1,19 @@
 #pragma once
 
 #if defined(_MSC_VER)
-    #if defined(TEXT_ANALYSIS_EXPORT)
-        #define TEXT_ANALYSIS_API __declspec(dllexport)
+    #if defined(TEXTANALYSIS_EXPORT)
+        #define TEXTANALYSIS_API __declspec(dllexport)
     #else
-        #if defined(_DLL)
-            #define TEXT_ANALYSIS_API __declspec(dllimport)
+        #if defined(TEXTANALYSIS_IMPORT)
+            #define TEXTANALYSIS_API __declspec(dllimport)
         #else
-            #define TEXT_ANALYSIS_API
+            #define TEXTANALYSIS_API
         #endif
     #endif
 #elif defined(__GNUC__) || defined(__clang__)
-    #if defined(TEXT_ANALYSIS_EXPORT)
-        #define TEXT_ANALYSIS_API __attribute__((visibility ("default")))
+    #if defined(TEXTANALYSIS_EXPORT)
+        #define TEXTANALYSIS_API __attribute__((visibility ("default")))
     #else
-        #define TEXT_ANALYSIS_API
+        #define TEXTANALYSIS_API
     #endif
 #endif

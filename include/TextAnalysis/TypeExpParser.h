@@ -21,5 +21,5 @@ std::optional<TypeExpSyntax> ParseIdChainTypeExp(Lexer* lexer);
 // std::optional<TupleTypeExpSyntax> ParseTupleTypeExp(Lexer* lexer);
 
 std::optional<LocalTypeExpSyntax> ParseLocalTypeExp(Lexer* lexer);
-TEXT_ANALYSIS_API std::optional<TypeExpSyntax> ParseTypeExp(Lexer* lexer);
+TEXTANALYSIS_API std::optional<TypeExpSyntax> ParseTypeExp(Lexer* lexer);
 }

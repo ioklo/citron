@@ -3,7 +3,7 @@
 #
 
 # Add source to this project's executable.
-add_library(Syntax SHARED
+add_library(Syntax
   pch.cpp pch.h
   Syntaxes.cpp
   Syntaxes.g.cpp
@@ -20,10 +20,12 @@ add_dependencies(Syntax CodeGeneration)
 
 # TODO: Add tests and install targets if needed.
 target_include_directories (Syntax PUBLIC ../../include PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_compile_definitions(Syntax PRIVATE SYNTAX_EXPORT)
+
+target_compile_definitions(Syntax 
+  PRIVATE 
+    SYNTAX_EXPORT
+  PUBLIC 
+    $<$<STREQUAL:$<TARGET_PROPERTY:Infra,TYPE>,SHARED_LIBRARY>:INFRA_IMPORT>
+)
 target_link_libraries(Syntax PUBLIC Infra)
 
-target_compile_features(Syntax PRIVATE cxx_std_20)
-
-target_compile_options(Syntax PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-target_compile_options(Syntax PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")

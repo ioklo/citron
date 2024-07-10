@@ -1,7 +1,6 @@
-module;
-#include "Macros.h"
+#include "MNames.h"
 
-module Citron.Symbols:MNames;
+#include "SymbolMacros.h"
 
 namespace Citron 
 {

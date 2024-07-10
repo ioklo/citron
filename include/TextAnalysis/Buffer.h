@@ -21,9 +21,9 @@ class Buffer : public std::enable_shared_from_this<Buffer>
     std::u32string string;
 
 public:
-    TEXT_ANALYSIS_API Buffer(std::string string);
-    TEXT_ANALYSIS_API Buffer(std::u32string string);
-    TEXT_ANALYSIS_API BufferPosition MakeStartPosition();
+    TEXTANALYSIS_API Buffer(std::string string);
+    TEXTANALYSIS_API Buffer(std::u32string string);
+    TEXTANALYSIS_API BufferPosition MakeStartPosition();
 
 private:
     friend ValidBufferPosition;

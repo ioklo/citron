@@ -1,5 +1,5 @@
-module Citron.Symbols:MTypeDeclContainerComponent;
-import <optional>;
+#include <optional>
+#include "MTypeDeclContainerComponent.h"
 
 using namespace std;
 

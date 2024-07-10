@@ -1,9 +1,8 @@
 # CMakeList.txt : CMake project for Infra, include source and define
 # project specific logic here.
-#
 
 # Add source to this project's executable.
-add_library (Infra SHARED
+add_library (Infra
   StringWriter.cpp
   pch.cpp pch.h
   json.cpp
@@ -22,7 +21,3 @@ add_library (Infra SHARED
 target_include_directories (Infra PUBLIC ../../include)
 target_compile_definitions(Infra PRIVATE INFRA_EXPORT)
 
-target_compile_features(Infra PRIVATE cxx_std_20)
-
-target_compile_options(Infra PRIVATE "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-target_compile_options(Infra PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")

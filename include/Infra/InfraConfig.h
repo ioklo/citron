@@ -4,7 +4,7 @@
     #if defined(INFRA_EXPORT)
         #define INFRA_API __declspec(dllexport)
     #else
-        #if defined(_DLL)
+        #if defined(INFRA_IMPORT)
             #define INFRA_API __declspec(dllimport)
         #else
             #define INFRA_API

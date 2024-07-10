@@ -9,7 +9,7 @@ namespace Citron {
 
 class Lexer;
 
-TEXT_ANALYSIS_API std::optional<StmtSyntax> ParseStmt(Lexer* lexer);
+TEXTANALYSIS_API std::optional<StmtSyntax> ParseStmt(Lexer* lexer);
 std::optional<std::vector<StmtSyntax>> ParseBody(Lexer* lexer);
 
 }

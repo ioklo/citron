@@ -28,7 +28,7 @@ class ValidBufferPosition
     int curIndex;
 
 public:    
-    TEXT_ANALYSIS_API ValidBufferPosition(std::weak_ptr<Buffer> weakBuffer, char32_t codePoint, int curIndex);
+    TEXTANALYSIS_API ValidBufferPosition(std::weak_ptr<Buffer> weakBuffer, char32_t codePoint, int curIndex);
     
     bool Equals(char32_t codePoint)
     {

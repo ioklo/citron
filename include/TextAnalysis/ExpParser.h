@@ -10,7 +10,7 @@ namespace Citron {
 
 class Lexer;
 
-TEXT_ANALYSIS_API std::optional<ExpSyntax> ParseExp(Lexer* lexer);
+TEXTANALYSIS_API std::optional<ExpSyntax> ParseExp(Lexer* lexer);
 
 // 1. Assignment, Right Assoc
 std::optional<ExpSyntax> ParseAssignExp(Lexer* lexer);
