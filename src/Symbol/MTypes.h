@@ -9,7 +9,22 @@
 namespace Citron
 {
 
-// define incomplete types
+// trivial types
+class MTypeVarType
+{
+    int index;
+    std::string name;
+};
+
+class MVoidType
+{
+};
+
+class MSymbolType
+{
+};
+
+// recursive types
 class MNullableType
 {
     MType innerType;

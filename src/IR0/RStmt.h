@@ -1,7 +1,6 @@
-export module Citron.RStmt;
-
-import <variant>;
-import <vector>;
+#pragma once
+#include <variant>
+#include <vector>
 
 namespace Citron {
 

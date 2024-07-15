@@ -11,10 +11,15 @@ add_library(IR0
   RStmt.h
 
   main.cpp
+        RExps.h
 )
 
 # TODO: Add tests and install targets if needed.
-target_include_directories(IR0 PUBLIC ../../include)
+target_include_directories(IR0
+  PUBLIC ../../include
+  PRIVATE .. # using like "Symbol/MExp.h"
+)
+
 
 target_compile_definitions(IR0 
   PRIVATE 

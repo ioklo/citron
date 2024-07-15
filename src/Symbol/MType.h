@@ -14,19 +14,5 @@ using MType = std::variant<
     class MSymbolType
 >;
 
-class MTypeVarType
-{
-    int index;
-    std::string name;
-};
-
-class MVoidType
-{
-};
-
-class MSymbolType
-{
-};
-
 }
 
