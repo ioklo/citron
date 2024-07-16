@@ -9,9 +9,9 @@ namespace Citron
 template<typename TOuter, typename TDecl>
 class MSymbolComponent
 {
-    TOuter outer;
+    std::weak_ptr<TOuter> outer;
     std::shared_ptr<TDecl> decl;
-    std::vector<MType> typeArgs;
+    std::vector<MTypePtr> typeArgs;
 };
 
 }

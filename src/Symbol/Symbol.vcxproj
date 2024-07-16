@@ -144,15 +144,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\Symbol\SymbolConfig.h" />
-    <ClInclude Include="..\..\include\Symbol\Symbols.g.h" />
-    <ClInclude Include="Macros.h" />
-    <ClInclude Include="MDecl.h" />
-    <ClInclude Include="MSymbol.h" />
-    <ClInclude Include="MType.h" />
-    <ClInclude Include="MTypeDecl.h" />
-    <ClInclude Include="MTypes.h" />
-    <ClInclude Include="MAccessor.h" />
     <ClInclude Include="Copy.h" />
+    <ClInclude Include="MAccessor.h" />
     <ClInclude Include="MBodyDeclOuter.h" />
     <ClInclude Include="MBodyOuter.h" />
     <ClInclude Include="MClass.h" />
@@ -164,6 +157,7 @@
     <ClInclude Include="MClassMemberVar.h" />
     <ClInclude Include="MClassMemberVarDecl.h" />
     <ClInclude Include="MCommonFuncDeclComponent.h" />
+    <ClInclude Include="MDecl.h" />
     <ClInclude Include="MEnum.h" />
     <ClInclude Include="MEnumDecl.h" />
     <ClInclude Include="MEnumElem.h" />
@@ -171,6 +165,7 @@
     <ClInclude Include="MEnumElemMemberVar.h" />
     <ClInclude Include="MEnumElemMemberVarDecl.h" />
     <ClInclude Include="MFunc.h" />
+    <ClInclude Include="MFuncDecl.h" />
     <ClInclude Include="MFuncDeclContainerComponent.h" />
     <ClInclude Include="MFuncParameter.h" />
     <ClInclude Include="MFuncReturn.h" />
@@ -185,6 +180,7 @@
     <ClInclude Include="MModuleDecl.h" />
     <ClInclude Include="MNames.h" />
     <ClInclude Include="MNamespaceDecl.h" />
+    <ClInclude Include="MNamespaceDeclContainerComponent.h" />
     <ClInclude Include="MStruct.h" />
     <ClInclude Include="MStructConstructor.h" />
     <ClInclude Include="MStructConstructorDecl.h" />
@@ -193,24 +189,28 @@
     <ClInclude Include="MStructMemberFuncDecl.h" />
     <ClInclude Include="MStructMemberVar.h" />
     <ClInclude Include="MStructMemberVarDecl.h" />
+    <ClInclude Include="MSymbol.h" />
     <ClInclude Include="MSymbolComponent.h" />
     <ClInclude Include="MSymbolId.h" />
-    <ClInclude Include="MTypeDeclOuter.h" />
-    <ClInclude Include="MTypeOuter.h" />
-    <ClInclude Include="Symbols.h" />
+    <ClInclude Include="MTopLevelDeclOuter.h" />
     <ClInclude Include="MTopLevelOuter.h" />
-    <ClInclude Include="MTopLevelOuterDecl.h" />
-    <ClInclude Include="MNamespaceDeclContainerComponent.h" />
+    <ClInclude Include="MType.h" />
+    <ClInclude Include="MTypeDecl.h" />
     <ClInclude Include="MTypeDeclContainerComponent.h" />
+    <ClInclude Include="MTypeDeclOuter.h" />
     <ClInclude Include="MTypeId.h" />
-    <ClInclude Include="MTypeIds.h" />
+    <ClInclude Include="MTypeOuter.h" />
+    <ClInclude Include="SymbolMacros.h" />
+    <ClInclude Include="Symbols.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MGlobalFunc.cpp" />
+    <ClCompile Include="MLabmdaDecl.cpp" />
     <ClCompile Include="MModuleDecl.cpp" />
     <ClCompile Include="MNames.cpp" />
     <ClCompile Include="MSymbolId.cpp" />
     <ClCompile Include="MTypeDeclContainerComponent.cpp" />
-    <ClCompile Include="MTypeIds.cpp" />
+    <ClCompile Include="MTypeId.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

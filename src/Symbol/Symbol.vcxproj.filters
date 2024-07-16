@@ -1,252 +1,235 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Source Files\Symbols">
+    <Filter Include="Symbols">
       <UniqueIdentifier>{e36ff321-bf97-47c8-b005-3c324845d545}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Symbols\0_Abstraction">
+    <Filter Include="Symbols\00 Abstraction">
       <UniqueIdentifier>{fb7f440a-4d5b-4b25-9424-2806b6ce35f6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Symbols\1_TopLevel">
-      <UniqueIdentifier>{06ae4868-ffcd-4079-8204-9e9a8fa9df98}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Symbols\2_Func">
-      <UniqueIdentifier>{ab7853e9-353b-4fe4-9b80-f937356fe686}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Symbols\3_Class">
-      <UniqueIdentifier>{9c59a940-a80b-4e30-b3e6-34f2fe156676}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Symbols\4_Struct">
-      <UniqueIdentifier>{99743b72-bc9b-46ba-9824-37f9440a3238}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Symbols\5_Enum">
-      <UniqueIdentifier>{3ff6ecda-08b7-45cd-bf77-4206c3aee9bf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Symbols\6_Interface">
-      <UniqueIdentifier>{5a838a2f-b50c-4e17-b969-4d72e070a5c8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Symbols\7_Misc">
-      <UniqueIdentifier>{3f75412b-c1e5-4130-a081-507d1db31370}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Symbols\Outer">
-      <UniqueIdentifier>{c6f231d0-e430-4925-aed7-64330da896d4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Symbols\Id">
+    <Filter Include="Symbols\01 Identifier">
       <UniqueIdentifier>{0b5987d9-faff-4707-8a0d-8cc8ed16d8a0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Symbols\02 Properties">
+      <UniqueIdentifier>{69f14fa3-f5c3-48ae-b94f-4eaa4fd28664}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\05 TopLevel">
+      <UniqueIdentifier>{06ae4868-ffcd-4079-8204-9e9a8fa9df98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\04 Components">
+      <UniqueIdentifier>{3f75412b-c1e5-4130-a081-507d1db31370}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\03 Func">
+      <UniqueIdentifier>{ab7853e9-353b-4fe4-9b80-f937356fe686}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\06 Class">
+      <UniqueIdentifier>{9c59a940-a80b-4e30-b3e6-34f2fe156676}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\07 Struct">
+      <UniqueIdentifier>{99743b72-bc9b-46ba-9824-37f9440a3238}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\08 Enum">
+      <UniqueIdentifier>{3ff6ecda-08b7-45cd-bf77-4206c3aee9bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\09 Interface">
+      <UniqueIdentifier>{5a838a2f-b50c-4e17-b969-4d72e070a5c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\10 Lambda">
+      <UniqueIdentifier>{3446bc86-4857-4e51-ab25-0d27f8880510}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\Symbol\SymbolConfig.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\Symbol\Symbols.g.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Macros.h">
-      <Filter>Source Files\Symbols</Filter>
-    </ClInclude>
     <ClInclude Include="MDecl.h">
-      <Filter>Source Files\Symbols\0_Abstraction</Filter>
+      <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="MSymbol.h">
-      <Filter>Source Files\Symbols\0_Abstraction</Filter>
+      <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="MType.h">
-      <Filter>Source Files\Symbols\0_Abstraction</Filter>
+      <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="MTypeDecl.h">
-      <Filter>Source Files\Symbols\0_Abstraction</Filter>
+      <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="MTypes.h">
-      <Filter>Source Files\Symbols\0_Abstraction</Filter>
+    <ClInclude Include="..\..\include\Symbol\SymbolConfig.h" />
+    <ClInclude Include="Copy.h" />
+    <ClInclude Include="SymbolMacros.h" />
+    <ClInclude Include="Symbols.h" />
+    <ClInclude Include="MEnum.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="MEnumDecl.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="MEnumElem.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="MEnumElemDecl.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="MEnumElemMemberVar.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="MEnumElemMemberVarDecl.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="MStruct.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="MStructConstructor.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="MStructConstructorDecl.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="MStructDecl.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="MStructMemberFunc.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="MStructMemberFuncDecl.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="MStructMemberVar.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="MStructMemberVarDecl.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="MClass.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="MClassConstructor.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="MClassConstructorDecl.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="MClassDecl.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="MClassMemberFunc.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="MClassMemberFuncDecl.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="MClassMemberVar.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="MClassMemberVarDecl.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="MFunc.h">
+      <Filter>Symbols\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="MFuncParameter.h">
+      <Filter>Symbols\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="MFuncReturn.h">
+      <Filter>Symbols\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="MGlobalFunc.h">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="MGlobalFuncDecl.h">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="MNamespaceDecl.h">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="MNamespaceDeclContainerComponent.h">
+      <Filter>Symbols\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MCommonFuncDeclComponent.h">
+      <Filter>Symbols\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MFuncDeclContainerComponent.h">
+      <Filter>Symbols\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MModuleDecl.h">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="MLambda.h">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="MLambdaDecl.h">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="MLambdaMemberVar.h">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="MLambdaMemberVarDecl.h">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="MSymbolComponent.h">
+      <Filter>Symbols\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MTypeDeclContainerComponent.h">
+      <Filter>Symbols\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MSymbolId.h">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="MNames.h">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="MIdentifier.h">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="MInterfaceDecl.h">
+      <Filter>Symbols\09 Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="MTypeId.h">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="MTypeOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="MBodyDeclOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="MBodyOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="MTopLevelDeclOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="MTopLevelOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="MTypeDeclOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="MAccessor.h">
+      <Filter>Symbols\02 Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="MFuncDecl.h">
+      <Filter>Symbols\03 Func</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Copy.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Symbols.h">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MAccessor.h">
-      <Filter>Source Files\Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="MGlobalFunc.h">
-      <Filter>Source Files\Symbols\1_TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="MGlobalFuncDecl.h">
-      <Filter>Source Files\Symbols\1_TopLevel</Filter>
-    </ClCompile>
     <ClCompile Include="MModuleDecl.cpp">
-      <Filter>Source Files\Symbols\1_TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="MModuleDecl.h">
-      <Filter>Source Files\Symbols\1_TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="MNamespaceDecl.h">
-      <Filter>Source Files\Symbols\1_TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="MClassConstructorDecl.h">
-      <Filter>Source Files\Symbols\3_Class</Filter>
-    </ClCompile>
-    <ClCompile Include="MClassConstructor.h">
-      <Filter>Source Files\Symbols\3_Class</Filter>
-    </ClCompile>
-    <ClCompile Include="MClassMemberFuncDecl.h">
-      <Filter>Source Files\Symbols\3_Class</Filter>
-    </ClCompile>
-    <ClCompile Include="MClassMemberFunc.h">
-      <Filter>Source Files\Symbols\3_Class</Filter>
-    </ClCompile>
-    <ClCompile Include="MClassMemberVar.h">
-      <Filter>Source Files\Symbols\3_Class</Filter>
-    </ClCompile>
-    <ClCompile Include="MClassMemberVarDecl.h">
-      <Filter>Source Files\Symbols\3_Class</Filter>
-    </ClCompile>
-    <ClCompile Include="MClassDecl.h">
-      <Filter>Source Files\Symbols\3_Class</Filter>
-    </ClCompile>
-    <ClCompile Include="MClass.h">
-      <Filter>Source Files\Symbols\3_Class</Filter>
-    </ClCompile>
-    <ClCompile Include="MSymbolComponent.h">
-      <Filter>Source Files\Symbols\7_Misc</Filter>
-    </ClCompile>
-    <ClCompile Include="MCommonFuncDeclComponent.h">
-      <Filter>Source Files\Symbols\2_Func</Filter>
-    </ClCompile>
-    <ClCompile Include="MFunc.h">
-      <Filter>Source Files\Symbols\2_Func</Filter>
-    </ClCompile>
-    <ClCompile Include="MFuncParameter.h">
-      <Filter>Source Files\Symbols\2_Func</Filter>
-    </ClCompile>
-    <ClCompile Include="MFuncReturn.h">
-      <Filter>Source Files\Symbols\2_Func</Filter>
-    </ClCompile>
-    <ClCompile Include="MStruct.h">
-      <Filter>Source Files\Symbols\4_Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="MStructConstructor.h">
-      <Filter>Source Files\Symbols\4_Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="MStructConstructorDecl.h">
-      <Filter>Source Files\Symbols\4_Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="MStructDecl.h">
-      <Filter>Source Files\Symbols\4_Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="MStructMemberFunc.h">
-      <Filter>Source Files\Symbols\4_Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="MStructMemberFuncDecl.h">
-      <Filter>Source Files\Symbols\4_Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="MStructMemberVar.h">
-      <Filter>Source Files\Symbols\4_Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="MStructMemberVarDecl.h">
-      <Filter>Source Files\Symbols\4_Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="MLambdaDecl.h">
-      <Filter>Source Files\Symbols\2_Func</Filter>
-    </ClCompile>
-    <ClCompile Include="MLambda.h">
-      <Filter>Source Files\Symbols\2_Func</Filter>
-    </ClCompile>
-    <ClCompile Include="MLambdaMemberVarDecl.h">
-      <Filter>Source Files\Symbols\2_Func</Filter>
-    </ClCompile>
-    <ClCompile Include="MLambdaMemberVar.h">
-      <Filter>Source Files\Symbols\2_Func</Filter>
-    </ClCompile>
-    <ClCompile Include="MEnumDecl.h">
-      <Filter>Source Files\Symbols\5_Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="MEnumElemDecl.h">
-      <Filter>Source Files\Symbols\5_Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="MEnumElemMemberVarDecl.h">
-      <Filter>Source Files\Symbols\5_Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="MEnumElemMemberVar.h">
-      <Filter>Source Files\Symbols\5_Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="MEnum.h">
-      <Filter>Source Files\Symbols\5_Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="MEnumElem.h">
-      <Filter>Source Files\Symbols\5_Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="MInterfaceDecl.h">
-      <Filter>Source Files\Symbols\6_Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="MNamespaceDeclContainerComponent.h">
-      <Filter>Source Files\Symbols\7_Misc</Filter>
+      <Filter>Symbols\05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="MTypeDeclContainerComponent.cpp">
-      <Filter>Source Files\Symbols\7_Misc</Filter>
-    </ClCompile>
-    <ClCompile Include="MTypeDeclContainerComponent.h">
-      <Filter>Source Files\Symbols\7_Misc</Filter>
-    </ClCompile>
-    <ClCompile Include="MFuncDeclContainerComponent.h">
-      <Filter>Source Files\Symbols\7_Misc</Filter>
-    </ClCompile>
-    <ClCompile Include="MTypeDeclOuter.h">
-      <Filter>Source Files\Symbols\Outer</Filter>
-    </ClCompile>
-    <ClCompile Include="MTypeOuter.h">
-      <Filter>Source Files\Symbols\Outer</Filter>
-    </ClCompile>
-    <ClCompile Include="MTopLevelOuterDecl.h">
-      <Filter>Source Files\Symbols\Outer</Filter>
-    </ClCompile>
-    <ClCompile Include="MTopLevelOuter.h">
-      <Filter>Source Files\Symbols\Outer</Filter>
-    </ClCompile>
-    <ClCompile Include="MBodyOuter.h">
-      <Filter>Source Files\Symbols\Outer</Filter>
-    </ClCompile>
-    <ClCompile Include="MBodyDeclOuter.h">
-      <Filter>Source Files\Symbols\Outer</Filter>
+      <Filter>Symbols\04 Components</Filter>
     </ClCompile>
     <ClCompile Include="MSymbolId.cpp">
-      <Filter>Source Files\Symbols\Id</Filter>
-    </ClCompile>
-    <ClCompile Include="MSymbolId.h">
-      <Filter>Source Files\Symbols\Id</Filter>
-    </ClCompile>
-    <ClCompile Include="MTypeId.h">
-      <Filter>Source Files\Symbols\Id</Filter>
-    </ClCompile>
-    <ClCompile Include="MTypeIds.cpp">
-      <Filter>Source Files\Symbols\Id</Filter>
-    </ClCompile>
-    <ClCompile Include="MTypeIds.h">
-      <Filter>Source Files\Symbols\Id</Filter>
-    </ClCompile>
-    <ClCompile Include="MNames.h">
-      <Filter>Source Files\Symbols\Id</Filter>
-    </ClCompile>
-    <ClCompile Include="MIdentifier.h">
-      <Filter>Source Files\Symbols\Id</Filter>
+      <Filter>Symbols\01 Identifier</Filter>
     </ClCompile>
     <ClCompile Include="MNames.cpp">
-      <Filter>Source Files\Symbols\Id</Filter>
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClCompile>
+    <ClCompile Include="MGlobalFunc.cpp">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="MLabmdaDecl.cpp">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClCompile>
+    <ClCompile Include="MTypeId.cpp">
+      <Filter>Symbols\01 Identifier</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

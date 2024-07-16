@@ -8,11 +8,19 @@ class MNamespaceDecl;
 class MClass;
 class MStruct;
 
-using MTypeOuter = std::variant<
-    std::shared_ptr<class MModuleDecl>,
-    std::shared_ptr<class MNamespaceDecl>,
-    std::shared_ptr<class MClass>,
-    std::shared_ptr<class MStruct>
->;
+class MTypeOuterVisitor
+{
+public:
+    virtual void Visit(MModuleDecl& outer) = 0;
+    virtual void Visit(MNamespaceDecl& outer) = 0;
+    virtual void Visit(MClass& outer) = 0;
+    virtual void Visit(MStruct& outer) = 0;
+};
+
+class MTypeOuter
+{
+public:
+    virtual void Accept(MTypeOuterVisitor& visitor) = 0;
+};
 
 }

@@ -6,9 +6,17 @@ class MNamespaceDecl;
 namespace Citron
 {
 
-using MTopLevelOuter = std::variant<
-    std::weak_ptr<MModuleDecl>,
-    std::weak_ptr<MNamespaceDecl>
->;
+class MTopLevelOuterVisitor
+{
+public:
+    virtual void Visit(MModuleDecl& outer) = 0;
+    virtual void Visit(MNamespaceDecl& outer) = 0;
+};
+
+class MTopLevelOuter
+{
+public:
+    virtual void Accept(MTopLevelOuterVisitor& visitor) = 0;
+};
 
 }

@@ -2,15 +2,16 @@
 #include "SymbolMacros.h"
 
 #include "MNames.h"
-#include "MTypeId.h"
 
 namespace Citron {
+
+class MTypeId;
 
 class MIdentifier
 {
     MName name;
     int typeParamCount;
-    std::vector<MTypeId> paramIds;
+    std::vector<std::shared_ptr<MTypeId>> paramIds;
 
 public:
     // MIdentifier(MName&& name, int typeParamCount, std::vector<MTypeId>&& paramIds);

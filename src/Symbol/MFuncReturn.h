@@ -1,13 +1,13 @@
 #pragma once
 
-#include "MType.h"
-
 namespace Citron {
+
+using MTypePtr = std::shared_ptr<class MType>;
 
 struct MNoneFuncReturn {}; // for constructor
 struct MConfirmedFuncReturn
 {
-    MType type;
+    MTypePtr type;
 };
 struct MNeedInferenceFuncReturn {};
 using MFuncReturn = std::variant<MNoneFuncReturn, MConfirmedFuncReturn, MNeedInferenceFuncReturn>;

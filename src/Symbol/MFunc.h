@@ -1,29 +1,30 @@
 #pragma once
 
-#include "MGlobalFunc.h"
-
-#include "MClassConstructor.h"
-#include "MClassMemberFunc.h"
-
-#include "MStructConstructor.h"
-#include "MStructMemberFunc.h"
-
-#include "MLambda.h"
-
 namespace Citron
 {
 
-using MFunc = std::variant<
-    MGlobalFunc,        // top-level decl space
+class MGlobalFunc;        // top-level decl space
+class MClassConstructor;  // construct decl space
+class MClassMemberFunc;   // construct decl space
+class MStructConstructor; // struct decl space
+class MStructMemberFunc;  // struct decl space
+class MLambda;            // body space
 
-    MClassConstructor,  // construct decl space
-    MClassMemberFunc,   // construct decl space
+class MFuncVisitor
+{
+public:
+    virtual void Visit(MGlobalFunc& func) = 0;
+    virtual void Visit(MClassConstructor& func) = 0;
+    virtual void Visit(MClassMemberFunc& func) = 0;
+    virtual void Visit(MStructConstructor& func) = 0;
+    virtual void Visit(MStructMemberFunc& func) = 0;
+    virtual void Visit(MLambda& func) = 0;
+};
 
-    MStructConstructor, // struct decl space
-    MStructMemberFunc,  // struct decl space
-    
-    MLambda             // body space
->;
-
+class MFunc
+{
+public:
+    virtual void Accept(MFuncVisitor& visitor) = 0;
+};
 
 }

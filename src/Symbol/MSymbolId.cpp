@@ -5,7 +5,7 @@
 #include "Copy.h"
 
 #include "MNames.h"
-#include "MTypeIds.h"
+#include "MTypeId.h"
 
 using namespace std;
 
@@ -17,14 +17,18 @@ shared_ptr<MSymbolPath> nullPath;
 
 }
 
-MSymbolPath::MSymbolPath(std::shared_ptr<MSymbolPath>&& pOuter, MName&& name, std::vector<MTypeId>&& typeArgs, std::vector<MTypeId>&& paramIds)
+MSymbolPath::MSymbolPath(
+    std::shared_ptr<MSymbolPath>&& pOuter, 
+    MName&& name, 
+    std::vector<std::shared_ptr<MTypeId>>&& typeArgs, 
+    std::vector<std::shared_ptr<MTypeId>>&& paramIds)
     : pOuter(std::move(pOuter)), name(std::move(name)), typeArgs(std::move(typeArgs)), paramIds(std::move(paramIds))
 {
 }
 
 IMPLEMENT_DEFAULTS(MSymbolPath)
 
-std::shared_ptr<MSymbolPath> MSymbolPath::Child(std::shared_ptr<MSymbolPath>&& sharedThis, MName&& name, std::vector<MTypeId>&& typeArgs, std::vector<MTypeId>&& paramIds)
+std::shared_ptr<MSymbolPath> MSymbolPath::Child(std::shared_ptr<MSymbolPath>&& sharedThis, MName&& name, std::vector<std::shared_ptr<MTypeId>>&& typeArgs, std::vector<std::shared_ptr<MTypeId>>&& paramIds)
 {   
     return make_shared<MSymbolPath>(std::move(sharedThis), std::move(name), std::move(typeArgs), std::move(paramIds));
 }
@@ -41,7 +45,7 @@ MSymbolId MSymbolId::Copy() const
     return MSymbolId(std::string(moduleName), std::shared_ptr<MSymbolPath>(pPath));
 }
 
-MSymbolId MSymbolId::Child(MName name, std::vector<MTypeId>&& typeArgs, std::vector<MTypeId>&& paramIds)
+MSymbolId MSymbolId::Child(MName name, std::vector<std::shared_ptr<MTypeId>>&& typeArgs, std::vector<std::shared_ptr<MTypeId>>&& paramIds)
 {
     using Citron::Copy;
 

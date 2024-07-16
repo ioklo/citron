@@ -1,17 +1,19 @@
 #pragma once
 #include <variant>
-#include "RExp.h"
+#include <memory>
 
 namespace Citron {
 
+using RExpPtr = std::unique_ptr<class RExp>;
+
 class RNormalArgument
 {
-    RExp exp;
+    RExpPtr exp;
 };
 
 class RParamsArgument
 {
-    RExp exp;
+    RExpPtr exp;
     int elemCount;
 };
 

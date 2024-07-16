@@ -3,27 +3,46 @@
 namespace Citron
 {
 
-using MSymbol = std::variant<
-    std::shared_ptr<class MGlobalFunc>,
+class MGlobalFunc;
+class MClass;
+class MClassConstructor;
+class MClassMemberFunc;
+class MClassMemberVar;
+class MStruct;
+class MStructConstructor;
+class MStructMemberFunc;
+class MStructMemberVar;
+class MEnum;
+class MEnumElem;
+class MEnumElemMemberVar;
+class MLambda;
+class MLambdaMemberVar;
+class MInterface;
 
-    std::shared_ptr<class MClass>,
-    std::shared_ptr<class MClassConstructor>,
-    std::shared_ptr<class MClassMemberFunc>,
-    std::shared_ptr<class MClassMemberVar>,
+class MSymbolVisitor
+{
+public:
+    virtual void Visit(MGlobalFunc& symbol) = 0;
+    virtual void Visit(MClass& symbol) = 0;
+    virtual void Visit(MClassConstructor& symbol) = 0;
+    virtual void Visit(MClassMemberFunc& symbol) = 0;
+    virtual void Visit(MClassMemberVar& symbol) = 0;
+    virtual void Visit(MStruct& symbol) = 0;
+    virtual void Visit(MStructConstructor& symbol) = 0;
+    virtual void Visit(MStructMemberFunc& symbol) = 0;
+    virtual void Visit(MStructMemberVar& symbol) = 0;
+    virtual void Visit(MEnum& symbol) = 0;
+    virtual void Visit(MEnumElem& symbol) = 0;
+    virtual void Visit(MEnumElemMemberVar& symbol) = 0;
+    virtual void Visit(MLambda& symbol) = 0;
+    virtual void Visit(MLambdaMemberVar& symbol) = 0;
+    // virtual void Visit(MInterface& symbol) = 0;
+};
 
-    std::shared_ptr<class MStruct>,
-    std::shared_ptr<class MStructConstructor>,
-    std::shared_ptr<class MStructMemberFunc>,
-    std::shared_ptr<class MStructMemberVar>,
-
-    std::shared_ptr<class MEnum>,
-    std::shared_ptr<class MEnumElem>,
-    std::shared_ptr<class MEnumElemMemberVar>,
-
-    std::shared_ptr<class MLambda>,
-    std::shared_ptr<class MLambdaMemberVar>,
-
-    std::shared_ptr<class MInterface>
->;
+class MSymbol
+{
+public:
+    virtual void Accept(MSymbolVisitor& visitor) = 0;
+};
 
 }

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "MDecl.h"
+#include "MTypeDecl.h"
+#include "MTypeDeclOuter.h"
 #include "MNames.h"
 #include "MStructConstructorDecl.h"
 #include "MStructMemberFuncDecl.h"
@@ -16,7 +19,10 @@ class MStruct;
 class MInterface;
 
 class MStructDecl 
-    : private MTypeDeclContainerComponent
+    : public MDecl
+    , public MTypeDecl
+    , public MTypeDeclOuter
+    , private MTypeDeclContainerComponent
     , private MFuncDeclContainerComponent<std::shared_ptr<MStructMemberFuncDecl>>
 {
     struct BaseTypes
@@ -25,7 +31,7 @@ class MStructDecl
         std::vector<std::shared_ptr<MInterface>> interfaces;
     };
 
-    MTypeDeclOuter outer;
+    MTypeDeclOuterPtr outer;
     MAccessor accessor;
 
     MName name;
@@ -37,6 +43,11 @@ class MStructDecl
     std::vector<std::shared_ptr<MStructMemberVarDecl>> memberVars;
 
     std::optional<BaseTypes> oBaseTypes;
+
+public:
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }

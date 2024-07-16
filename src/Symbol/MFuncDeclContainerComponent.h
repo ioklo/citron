@@ -4,11 +4,6 @@
 
 namespace Citron {
 
-template<typename T>
-concept MFuncDecl = requires(T t) {
-    t.GetTypeParamCount();
-};
-
 template<typename TMFuncDecl>
 class MFuncDeclContainerComponent
 {

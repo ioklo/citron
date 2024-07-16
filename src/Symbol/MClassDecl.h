@@ -1,5 +1,8 @@
 #pragma once
 
+#include "MDecl.h"
+#include "MTypeDecl.h"
+#include "MTypeDeclOuter.h"
 #include "MClassConstructorDecl.h"
 #include "MClassMemberFuncDecl.h"
 #include "MClassMemberVarDecl.h"
@@ -15,8 +18,11 @@ namespace Citron
 class MClass;
 class MInterface;
 
-class MClassDecl 
-    : private MTypeDeclContainerComponent
+class MClassDecl
+    : public MDecl
+    , public MTypeDecl
+    , public MTypeDeclOuter
+    , private MTypeDeclContainerComponent
     , private MFuncDeclContainerComponent<std::shared_ptr<MClassMemberFuncDecl>>
 {
     struct BaseTypes
@@ -25,7 +31,7 @@ class MClassDecl
         std::vector<std::shared_ptr<MInterface>> interfaces;
     };
 
-    MTypeDeclOuter outer;
+    MTypeDeclOuterPtr outer;
     MAccessor accessor;
 
     MName name;
@@ -37,6 +43,11 @@ class MClassDecl
     std::vector<std::shared_ptr<MClassMemberVarDecl>> memberVars;
 
     std::optional<BaseTypes> oBaseTypes;
+
+public:
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this);  }
+    void Accept(MTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }

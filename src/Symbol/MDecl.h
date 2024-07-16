@@ -1,32 +1,52 @@
 #pragma once
-#include <variant>
-#include <memory>
 
 namespace Citron
 {
 
-using MDecl = std::variant<
-    std::shared_ptr<class MModuleDecl>,
-    std::shared_ptr<class MNamespaceDecl>,
+class MModuleDecl;
+class MNamespaceDecl;
+class MGlobalFuncDecl;
+class MStructDecl;
+class MStructConstructorDecl;
+class MStructMemberFuncDecl;
+class MStructMemberVarDecl;
+class MClassDecl;
+class MClassConstructorDecl;
+class MClassMemberFuncDecl;
+class MClassMemberVarDecl;
+class MEnumDecl;
+class MEnumElemDecl;
+class MEnumElemMemberVarDecl;
+class MLambdaDecl;
+class MLambdaMemberVarDecl;
+class MInterfaceDecl;
 
-    std::shared_ptr<class MGlobalFuncDecl>,
+class MDeclVisitor
+{
+public:
+    virtual void Visit(MModuleDecl& decl) = 0;
+    virtual void Visit(MNamespaceDecl& decl) = 0;
+    virtual void Visit(MGlobalFuncDecl& decl) = 0;
+    virtual void Visit(MStructDecl& decl) = 0;
+    virtual void Visit(MStructConstructorDecl& decl) = 0;
+    virtual void Visit(MStructMemberFuncDecl& decl) = 0;
+    virtual void Visit(MStructMemberVarDecl& decl) = 0;
+    virtual void Visit(MClassDecl& decl) = 0;
+    virtual void Visit(MClassConstructorDecl& decl) = 0;
+    virtual void Visit(MClassMemberFuncDecl& decl) = 0;
+    virtual void Visit(MClassMemberVarDecl& decl) = 0;
+    virtual void Visit(MEnumDecl& decl) = 0;
+    virtual void Visit(MEnumElemDecl& decl) = 0;
+    virtual void Visit(MEnumElemMemberVarDecl& decl) = 0;
+    virtual void Visit(MLambdaDecl& decl) = 0;
+    virtual void Visit(MLambdaMemberVarDecl& decl) = 0;
+    virtual void Visit(MInterfaceDecl& decl) = 0;
+};
 
-    std::shared_ptr<class MStructDecl>,
-    std::shared_ptr<class MStructConstructorDecl>,
-    std::shared_ptr<class MStructMemberFuncDecl>,
-    std::shared_ptr<class MStructMemberVarDecl>,
-    std::shared_ptr<class MClassDecl>,
-    std::shared_ptr<class MClassConstructorDecl>,
-    std::shared_ptr<class MClassMemberFuncDecl>,
-    std::shared_ptr<class MClassMemberVarDecl>,
+class MDecl
+{
+public:
+    virtual void Accept(MDeclVisitor& visitor) = 0;
+};
 
-    std::shared_ptr<class MEnumDecl>,
-    std::shared_ptr<class MEnumElemDecl>,
-    std::shared_ptr<class MEnumElemMemberVarDecl>,
-
-    std::shared_ptr<class MLambdaDecl>,
-    std::shared_ptr<class MLambdaMemberVarDecl>,
-
-    std::shared_ptr<class MInterfaceDecl>
->;
 }

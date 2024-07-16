@@ -1,15 +1,21 @@
 #pragma once
+
+#include "MSymbol.h"
 #include "MSymbolComponent.h"
 #include "MEnumElemDecl.h"
 
 namespace Citron
 {
-
 class MEnum;
 
-class MEnumElem : private MSymbolComponent<std::shared_ptr<MEnum>, MEnumElemDecl>
+class MEnumElem 
+    : public MSymbol
+    , private MSymbolComponent<MEnum, MEnumElemDecl>
 {
-
+public:
+    void Accept(MSymbolVisitor& visitor) override { visitor.Visit(*this); }
 };
+
+using MEnumElemPtr = std::shared_ptr<MEnumElem>;
 
 }

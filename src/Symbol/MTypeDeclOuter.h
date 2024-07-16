@@ -8,12 +8,23 @@ class MNamespaceDecl;
 class MClassDecl;
 class MStructDecl;
 
+class MTypeDeclOuterVisitor
+{
+public:
+    virtual void Visit(MModuleDecl& outer) = 0;
+    virtual void Visit(MNamespaceDecl& outer) = 0;
+    virtual void Visit(MClassDecl& outer) = 0;
+    virtual void Visit(MStructDecl& outer) = 0;
+};
+
 // 보통 타입의 Outer
-using MTypeDeclOuter = std::variant<
-    std::weak_ptr<MModuleDecl>,
-    std::weak_ptr<MNamespaceDecl>,
-    std::weak_ptr<MClassDecl>,
-    std::weak_ptr<MStructDecl>
->;
+class MTypeDeclOuter
+{
+public:
+    virtual void Accept(MTypeDeclOuterVisitor& visitor) = 0;
+};
+
+// 역링크이기 때문에 weak로 설정한다
+using MTypeDeclOuterPtr = std::weak_ptr<MTypeDeclOuter>;
 
 }

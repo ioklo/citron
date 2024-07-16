@@ -8,10 +8,8 @@
 
 #include "MSymbolId.h"
 #include "MTypeId.h"
-#include "MTypeIds.h"
 
 #include "MType.h"
-#include "MTypes.h"
 
 #include "MModuleDecl.h"
 
@@ -20,5 +18,5 @@
 
 #include "MIdentifier.h"
 
-#include "MTopLevelOuterDecl.h"
+#include "MTopLevelDeclOuter.h"
 #include "MTopLevelOuter.h"

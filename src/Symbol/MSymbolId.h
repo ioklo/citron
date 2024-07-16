@@ -2,22 +2,27 @@
 #include "SymbolMacros.h"
 
 #include "MNames.h"
-#include "MTypeId.h"
 
 namespace Citron {
+
+class MTypeId;
 
 class MSymbolPath
 {
     std::shared_ptr<MSymbolPath> pOuter;
     MName name;
-    std::vector<MTypeId> typeArgs;
-    std::vector<MTypeId> paramIds;
+    std::vector<std::shared_ptr<MTypeId>> typeArgs;
+    std::vector<std::shared_ptr<MTypeId>> paramIds;
 
 public:
-    MSymbolPath(std::shared_ptr<MSymbolPath>&& pOuter, MName&& name, std::vector<MTypeId>&& typeArgs, std::vector<MTypeId>&& paramIds);
+    MSymbolPath(
+        std::shared_ptr<MSymbolPath>&& pOuter,
+        MName&& name, 
+        std::vector<std::shared_ptr<MTypeId>>&& typeArgs, 
+        std::vector<std::shared_ptr<MTypeId>>&& paramIds);
     DECLARE_DEFAULTS(MSymbolPath)
     
-    std::shared_ptr<MSymbolPath> Child(std::shared_ptr<MSymbolPath>&& sharedThis, MName&& name, std::vector<MTypeId>&& typeArgs, std::vector<MTypeId>&& paramIds);
+    std::shared_ptr<MSymbolPath> Child(std::shared_ptr<MSymbolPath>&& sharedThis, MName&& name, std::vector<std::shared_ptr<MTypeId>>&& typeArgs, std::vector<std::shared_ptr<MTypeId>>&& paramIds);
 };
 
 class MSymbolId
@@ -29,7 +34,7 @@ public:
     MSymbolId(std::string&& moduleName, std::shared_ptr<MSymbolPath>&& pPath);
     DECLARE_DEFAULTS(MSymbolId)
     
-    MSymbolId Child(MName name, std::vector<MTypeId>&& typeArgs, std::vector<MTypeId>&& paramIds);
+    MSymbolId Child(MName name, std::vector<std::shared_ptr<MTypeId>>&& typeArgs, std::vector<std::shared_ptr<MTypeId>>&& paramIds);
 };
 
 extern MSymbolId boolSymbolId;

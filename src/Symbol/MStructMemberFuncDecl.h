@@ -1,6 +1,13 @@
 #pragma once
-#include "SymbolMacros.h"
 
+#include <memory>
+#include <vector>
+
+
+#include "SymbolMacros.h"
+#include "MDecl.h"
+#include "MBodyDeclOuter.h"
+#include "MFuncDecl.h"
 #include "MAccessor.h"
 #include "MNames.h"
 #include "MCommonFuncDeclComponent.h"
@@ -10,7 +17,11 @@ namespace Citron
 
 class MStructDecl;
 
-class MStructMemberFuncDecl : private MCommonFuncDeclComponent
+class MStructMemberFuncDecl 
+    : public MDecl
+    , public MBodyDeclOuter
+    , public MFuncDecl
+    , private MCommonFuncDeclComponent
 {
     std::weak_ptr<MStructDecl> _struct;
     MAccessor accessor;
@@ -20,6 +31,9 @@ class MStructMemberFuncDecl : private MCommonFuncDeclComponent
     
 public:
     // DECLARE_DEFAULTS(MStructMemberFuncDecl)
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }

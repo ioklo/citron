@@ -4,188 +4,272 @@
 
 namespace Citron {
 
-using RStmt = std::variant<
-    class RCommandStmt,
-    class RLocalVarDeclStmt,
-    class RIfStmt,
-    class RIfNullableRefTestStmt,
-    class RIfNullableValueTestStmt,
-    class RForStmt,
-    class RContinueStmt,
-    class RBreakStmt,
-    class RReturnStmt,
-    class RBlockStmt,
-    class RBlankStmt,
-    class RExpStmt,
-    class RTaskStmt,
-    class RAwaitStmt,
-    class RAsyncStmt,
-    class RForeachStmt,
-    class RForeachCastStmt,
-    class RYieldStmt,
-    class RCallClassConstructorStmt,
-    class RCallStructConstructorStmt,
+class RCommandStmt;
+class RLocalVarDeclStmt;
+class RIfStmt;
+class RIfNullableRefTestStmt;
+class RIfNullableValueTestStmt;
+class RForStmt;
+class RContinueStmt;
+class RBreakStmt;
+class RReturnStmt;
+class RBlockStmt;
+class RBlankStmt;
+class RExpStmt;
+class RTaskStmt;
+class RAwaitStmt;
+class RAsyncStmt;
+class RForeachStmt;
+class RForeachCastStmt;
+class RYieldStmt;
+class RCallClassConstructorStmt;
+class RCallStructConstructorStmt;
+class RNullDirectiveStmt;
+class RNotNullDirectiveStmt;
+class RStaticNullDirectiveStmt;
+class RStaticNotNullDirectiveStmt;
+class RStaticUnknownNullDirectiveStmt;
 
-    class RNullDirectiveStmt,
-    class RNotNullDirectiveStmt,
-    class RStaticNullDirectiveStmt,
-    class RStaticNotNullDirectiveStmt,
-    class RStaticUnknownNullDirectiveStmt
->;
 
-class RCommandStmt
+class RStmtVisitor
+{
+public:
+    virtual void Visit(RCommandStmt& stmt) = 0;
+    virtual void Visit(RLocalVarDeclStmt& stmt) = 0;
+    virtual void Visit(RIfStmt& stmt) = 0;
+    virtual void Visit(RIfNullableRefTestStmt& stmt) = 0;
+    virtual void Visit(RIfNullableValueTestStmt& stmt) = 0;
+    virtual void Visit(RForStmt& stmt) = 0;
+    virtual void Visit(RContinueStmt& stmt) = 0;
+    virtual void Visit(RBreakStmt& stmt) = 0;
+    virtual void Visit(RReturnStmt& stmt) = 0;
+    virtual void Visit(RBlockStmt& stmt) = 0;
+    virtual void Visit(RBlankStmt& stmt) = 0;
+    virtual void Visit(RExpStmt& stmt) = 0;
+    virtual void Visit(RTaskStmt& stmt) = 0;
+    virtual void Visit(RAwaitStmt& stmt) = 0;
+    virtual void Visit(RAsyncStmt& stmt) = 0;
+    virtual void Visit(RForeachStmt& stmt) = 0;
+    virtual void Visit(RForeachCastStmt& stmt) = 0;
+    virtual void Visit(RYieldStmt& stmt) = 0;
+    virtual void Visit(RCallClassConstructorStmt& stmt) = 0;
+    virtual void Visit(RCallStructConstructorStmt& stmt) = 0;
+    virtual void Visit(RNullDirectiveStmt& stmt) = 0;
+    virtual void Visit(RNotNullDirectiveStmt& stmt) = 0;
+    virtual void Visit(RStaticNullDirectiveStmt& stmt) = 0;
+    virtual void Visit(RStaticNotNullDirectiveStmt& stmt) = 0;
+    virtual void Visit(RStaticUnknownNullDirectiveStmt& stmt) = 0;
+};
+
+class RStmt
+{
+public:
+    virtual void Accept(RStmtVisitor& visitor) = 0;
+};
+
+class RCommandStmt : public RStmt
 {
     std::vector<RStringExp> commands;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this);  }
 };
 
 // 로컬 변수는 
-class RLocalVarDeclStmt
+class RLocalVarDeclStmt : public RStmt
 {
-    MIType type;
-    string name;
-    std::optional<RExp> initExp;
+    MTypePtr type;
+    std::string name;
+    RExpPtr initExp;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RIfStmt
+class RIfStmt : public RStmt
 {
-    RExp cond;
-    std::vector<RStmt> body;
-    std::vector<RStmt> elseBody;
+    RExpPtr cond;
+    std::vector<RStmtPtr> body;
+    std::vector<RStmtPtr> elseBody;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RIfNullableRefTestStmt
+class RIfNullableRefTestStmt : public RStmt
 {
-    MType refType;
+    MTypePtr refType;
     MName varName;
-    RExp asExp;
-    std::vector<RStmt> body;
-    std::vector<RStmt> elseBody;
+    RExpPtr asExp;
+    std::vector<RStmtPtr> body;
+    std::vector<RStmtPtr> elseBody;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RIfNullableValueTestStmt
+class RIfNullableValueTestStmt : public RStmt
 {
-    MType type;
+    MTypePtr type;
     MName varName;
-    RExp asExp;
-    std::vector<RStmt> body;
-    std::vector<RStmt> elseBody;
+    RExpPtr asExp;
+    std::vector<RStmtPtr> body;
+    std::vector<RStmtPtr> elseBody;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RForStmt
+class RForStmt : public RStmt
 {
-    std::vector<RStmt> initStmts;
-    std::optional<RExp> condExp;
-    std::optional<RExp> continueExp;
-    std::vector<RStmt> body;
+    std::vector<RStmtPtr> initStmts;
+    RExpPtr condExp;
+    RExpPtr continueExp;
+    std::vector<RStmtPtr> body;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RContinueStmt
+class RContinueStmt : public RStmt
 {
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RBreakStmt
+class RBreakStmt : public RStmt
 {
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RReturnStmt
+class RReturnStmt : public RStmt
 {
-    std::optional<RExp> exp;
-}
+    RExpPtr exp;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
+};
 
-class RBlockStmt
+class RBlockStmt : public RStmt
 {
     std::vector<RStmt> stmts;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RBlankStmt
+class RBlankStmt : public RStmt
 {
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RExpStmt
+class RExpStmt : public RStmt
 {
-    RExp exp;
+    RExpPtr exp;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RTaskStmt
+class RTaskStmt : public RStmt
 {
-    MLambda lambda;
+    MLambdaPtr lambda;
     std::vector<RArgument> captureArgs;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RAwaitStmt
+class RAwaitStmt : public RStmt
 {
-    std::vector<RStmt> body;
+    std::vector<RStmtPtr> body;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RAsyncStmt
+class RAsyncStmt : public RStmt
 {
-    MLambda lambda;
-    std::vector<Argument> captureArgs;
+    MLambdaPtr lambda;
+    std::vector<RArgument> captureArgs;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RForeachStmt
+class RForeachStmt : public RStmt
 {
-    MType enumeratorType;
-    RExp enumeratorExp;
-    MType itemType;
+    MTypePtr enumeratorType;
+    RExpPtr enumeratorExp;
+    MTypePtr itemType;
     MName varName;
-    RExp nextExp;
-    std::vector<RStmt> body;
+    RExpPtr nextExp;
+    std::vector<RStmtPtr> body;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RForeachCastStmt
+class RForeachCastStmt : public RStmt
 {
-    MType enumeratorType;
-    RExp enumeratorExp;
-    MType itemType;
+    MTypePtr enumeratorType;
+    RExpPtr enumeratorExp;
+    MTypePtr itemType;
     MName varName;
-    MType rawItemType;
-    RExp nextExp;
-    RExp castExp;
-    std::vector<RStmt> body;
+    MTypePtr rawItemType;
+    RExpPtr nextExp;
+    RExpPtr castExp;
+    std::vector<RStmtPtr> body;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RYieldStmt
+class RYieldStmt : public RStmt
 {
-    RExp value;
+    RExpPtr value;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // Constructor 내에서 상위 Constructor 호출시 사용
-class RCallClassConstructorStmt
+class RCallClassConstructorStmt : public RStmt
 {
-    MClassConstructor constructor;
-    std::vector<Argument> args;
+    MClassConstructorPtr constructor;
+    std::vector<RArgument> args;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RCallStructConstructorStmt
+class RCallStructConstructorStmt : public RStmt
 {
-    MStructConstructor constructor;
-    std::vector<Argument> args;
+    MStructConstructorPtr constructor;
+    std::vector<RArgument> args;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RNullDirectiveStmt
+class RNullDirectiveStmt : public RStmt
 {
-    RLoc loc;
+    RLocPtr loc;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RNotNullDirectiveStmt
+class RNotNullDirectiveStmt : public RStmt
 {
-    RLoc loc;
+    RLocPtr loc;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RStaticNullDirectiveStmt
+class RStaticNullDirectiveStmt : public RStmt
 {
-    RLoc loc;
+    RLocPtr loc;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RStaticNotNullDirectiveStmt
+class RStaticNotNullDirectiveStmt : public RStmt
 {
-    RLoc loc;
+    RLocPtr loc;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RStaticUnknownNullDirectiveStmt
+class RStaticUnknownNullDirectiveStmt : public RStmt
 {
-    RLoc loc;
+    RLocPtr loc;
+public:
+    void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }

@@ -143,16 +143,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="RProgram.ixx" />
-    <ClCompile Include="RArgument.ixx" />
-    <ClCompile Include="RExp.ixx" />
-    <ClCompile Include="RLoc.ixx" />
-    <ClCompile Include="RStmt.ixx" />
+    <ClInclude Include="RProgram.h">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
+    <ClInclude Include="RArgument.h" />
+    <ClInclude Include="RExp.h">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
+    <ClInclude Include="RLoc.h">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
+    <ClInclude Include="RStmt.h">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Symbol\Symbol.vcxproj">
       <Project>{b424f6ab-85bc-4fe0-af89-ec60b1a13fa7}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

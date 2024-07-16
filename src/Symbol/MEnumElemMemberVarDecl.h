@@ -1,5 +1,9 @@
 #pragma once
 
+#include <memory>
+#include <optional>
+
+#include "MDecl.h"
 #include "MNames.h"
 #include "MType.h"
 
@@ -9,11 +13,15 @@ namespace Citron
 class MEnumElemDecl;
 
 class MEnumElemMemberVarDecl
+    : public MDecl
 {   
     std::weak_ptr<MEnumElemDecl> outer;
     MName name;
 
-    std::optional<MType> declType; // lazy-init
+    MTypePtr declType; // lazy-init
+
+public:
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 

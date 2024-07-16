@@ -3,18 +3,21 @@
 
 namespace Citron {
 
+using MModuleDeclPtr = std::shared_ptr<class MModuleDecl>;
+using MFuncDeclPtr = std::shared_ptr<class MFuncDecl>;
+
 // DeclSymbol -> Stmt
 struct RStmtBody
 {
-    MFuncDecl decl;
+    MFuncDeclPtr decl;
     std::vector<RStmt> stmts;
 };
 
 class RProgram
 {
-    MModuleDecl moduleDecl;
+    MModuleDeclPtr moduleDecl;
     std::vector<RStmtBody> bodies;
-}
+};
 
 }
 

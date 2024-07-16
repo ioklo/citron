@@ -1,11 +1,11 @@
-#include "MTypeIds.h"
+#include "MTypeId.h"
 
 namespace Citron {
 
 MVoidTypeId voidTypeId;
-MTypeId boolTypeId = MSymbolTypeId(false, boolSymbolId.Copy());
-MTypeId intTypeId = MSymbolTypeId(false, intSymbolId.Copy());
-MTypeId stringTypeId = MSymbolTypeId(false, stringSymbolId.Copy());
+std::shared_ptr<MTypeId> boolTypeId = std::make_shared<MSymbolTypeId>(false, boolSymbolId.Copy());
+std::shared_ptr<MTypeId> intTypeId = std::make_shared<MSymbolTypeId>(false, intSymbolId.Copy());
+std::shared_ptr<MTypeId> stringTypeId = std::make_shared<MSymbolTypeId>(false, stringSymbolId.Copy());
 
 IMPLEMENT_DEFAULTS(MVoidTypeId)
 IMPLEMENT_DEFAULTS(MTupleTypeId)

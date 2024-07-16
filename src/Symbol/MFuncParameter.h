@@ -1,14 +1,14 @@
 #pragma once
 #include "SymbolMacros.h"
 
-#include "MType.h"
-
 namespace Citron {
+
+using MTypePtr = std::shared_ptr<class MType>;
 
 class MFuncParameter
 {
     bool bOut;
-    MType type;
+    MTypePtr type;
     std::string name;
 };
 

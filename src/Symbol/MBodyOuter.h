@@ -4,14 +4,28 @@
 
 namespace Citron
 {
+class MGlobalFunc;
+class MClassConstructor;
+class MClassMemberFunc;
+class MStructConstructor;
+class MStructMemberFunc;
+class MLambda;
 
-using MBodyOuter = std::variant<
-    std::weak_ptr<class MGlobalFunc>,
-    std::weak_ptr<class MClassConstructor>,
-    std::weak_ptr<class MClassMemberFunc>,
-    std::weak_ptr<class MStructConstructor>,
-    std::weak_ptr<class MStructMemberFunc>,
-    std::weak_ptr<class MLambda>
->;
+class MBodyOuterVisitor
+{
+public:
+    virtual void Visit(MGlobalFunc& outer) = 0;
+    virtual void Visit(MClassConstructor& outer) = 0;
+    virtual void Visit(MClassMemberFunc& outer) = 0;
+    virtual void Visit(MStructConstructor& outer) = 0;
+    virtual void Visit(MStructMemberFunc& outer) = 0;
+    virtual void Visit(MLambda& outer) = 0;
+};
+
+class MBodyOuter
+{
+public:
+    virtual void Accept(MBodyOuterVisitor& visitor) = 0;
+};
 
 }
