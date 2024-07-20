@@ -7,27 +7,27 @@ using namespace tcb;
 
 namespace Citron {
 
-ArgumentSyntax::ArgumentSyntax(ExpSyntax exp)
-    : ArgumentSyntax(false, false, std::move(exp))
+SArgument::SArgument(SExpPtr exp)
+    : SArgument(false, false, std::move(exp))
 {
 }
 
-IdTypeExpSyntax::IdTypeExpSyntax(std::string name)
-    : IdTypeExpSyntax(std::move(name), {})
+SIdTypeExp::SIdTypeExp(std::string name)
+    : SIdTypeExp(std::move(name), {})
 { }
 
-StringExpSyntax::StringExpSyntax(std::string str)
-    : StringExpSyntax(make_vector<StringExpSyntaxElement>(TextStringExpSyntaxElement(str))) 
+SStringExp::SStringExp(std::string str)
+    : SStringExp(make_vector<SStringExpElementPtr>(make_unique<STextStringExpElement>(std::move(str))))
 { 
 }
 
-MemberExpSyntax::MemberExpSyntax(ExpSyntax parent, std::string memberName)
-    : MemberExpSyntax(std::move(parent), std::move(memberName), {})
+SMemberExp::SMemberExp(SExpPtr parent, std::string memberName)
+    : SMemberExp(std::move(parent), std::move(memberName), {})
 {
 }
 
-IndirectMemberExpSyntax::IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName)
-    : IndirectMemberExpSyntax(std::move(parent), std::move(memberName), {})
+SIndirectMemberExp::SIndirectMemberExp(SExpPtr parent, std::string memberName)
+    : SIndirectMemberExp(std::move(parent), std::move(memberName), {})
 {
 }
 

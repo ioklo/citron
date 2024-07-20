@@ -5,9 +5,9 @@
 
 namespace Citron {
 
-class ScriptSyntax;
+class SScript;
 class Lexer;
 
-TEXTANALYSIS_API std::optional<ScriptSyntax> ParseScript(Lexer* lexer);
+TEXTANALYSIS_API std::optional<SScript> ParseScript(Lexer* lexer);
 
 }

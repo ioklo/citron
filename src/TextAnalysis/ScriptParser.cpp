@@ -12,22 +12,20 @@
 
 #include "ParserMisc.h"
 
-
-
 using namespace std;
 
 namespace Citron {
 
-optional<EnumDeclSyntax> ParseEnumDecl(Lexer* lexer);
-optional<StructDeclSyntax> ParseStructDecl(Lexer* lexer);
-optional<ClassDeclSyntax> ParseClassDecl(Lexer* lexer);
-optional<AccessModifierSyntax> ParseAccessModifier(Lexer* lexer);
-optional<NamespaceDeclSyntax> ParseNamespaceDecl(Lexer* lexer);
+unique_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer);
+unique_ptr<SStructDecl> ParseStructDecl(Lexer* lexer);
+unique_ptr<SClassDecl> ParseClassDecl(Lexer* lexer);
+optional<SAccessModifier> ParseAccessModifier(Lexer* lexer);
+unique_ptr<SNamespaceDecl> ParseNamespaceDecl(Lexer* lexer);
 
 // int t
 // ref int t
 // params T t
-optional<FuncParamSyntax> ParseFuncDeclParam(Lexer* lexer)
+optional<SFuncParam> ParseFuncDeclParam(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -35,8 +33,8 @@ optional<FuncParamSyntax> ParseFuncDeclParam(Lexer* lexer)
     if (!oOutAndParams)
         return nullopt;
 
-    auto oTypeExp = ParseTypeExp(&curLexer);
-    if (!oTypeExp)
+    auto typeExp = ParseTypeExp(&curLexer);
+    if (!typeExp)
         return nullopt;
 
     auto oName = Accept<IdentifierToken>(&curLexer);
@@ -44,17 +42,17 @@ optional<FuncParamSyntax> ParseFuncDeclParam(Lexer* lexer)
         return nullopt;
 
     *lexer = std::move(curLexer);
-    return FuncParamSyntax(oOutAndParams->bOut, oOutAndParams->bParams, std::move(*oTypeExp), std::move(oName->text));
+    return SFuncParam(oOutAndParams->bOut, oOutAndParams->bParams, std::move(typeExp), std::move(oName->text));
 }
 
-optional<vector<FuncParamSyntax>> ParseFuncDeclParams(Lexer* lexer)
+optional<vector<SFuncParam>> ParseFuncDeclParams(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LParenToken>(&curLexer))
         return nullopt;
 
-    vector<FuncParamSyntax> params;
+    vector<SFuncParam> params;
     while (!Accept<RParenToken>(&curLexer))
     {
         if (!params.empty())
@@ -72,7 +70,7 @@ optional<vector<FuncParamSyntax>> ParseFuncDeclParams(Lexer* lexer)
     return params;
 }
 
-optional<GlobalFuncDeclSyntax> ParseGlobalFuncDecl(Lexer* lexer)
+unique_ptr<SGlobalFuncDecl> ParseGlobalFuncDecl(Lexer* lexer)
 {
     // <SEQ> <RetTypeName> <FuncName> <LPAREN> <ARGS> <RPAREN>
     // LBRACE>
@@ -84,42 +82,42 @@ optional<GlobalFuncDeclSyntax> ParseGlobalFuncDecl(Lexer* lexer)
     // seq
     auto bSequence = Accept<SeqToken>(&curLexer).has_value();
 
-    auto oRetType = ParseTypeExp(&curLexer);
-    if (!oRetType)
-        return nullopt;
+    auto retType = ParseTypeExp(&curLexer);
+    if (!retType)
+        return nullptr;
 
     auto oFuncName = Accept<IdentifierToken>(&curLexer);
     if (!oFuncName)
-        return nullopt;
+        return nullptr;
 
     auto oParameters = ParseFuncDeclParams(&curLexer);
     if (!oParameters)
-        return nullopt;
+        return nullptr;
 
     auto oBody = ParseBody(&curLexer);
     if (!oBody)
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
 
-    return GlobalFuncDeclSyntax(
+    return make_unique<SGlobalFuncDecl>(
         nullopt, // TODO: [7] 일단 null
         bSequence,
-        std::move(*oRetType),
+        std::move(retType),
         std::move(oFuncName->text),
-        {},
+        std::vector<STypeParam>{},
         std::move(*oParameters),
         std::move(*oBody)
     );
 }
 
 // <T1, T2, ...>
-optional<vector<TypeParamSyntax>> ParseTypeParams(Lexer* lexer)
+optional<vector<STypeParam>> ParseTypeParams(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     // typeParams
-    vector<TypeParamSyntax> typeParams;
+    vector<STypeParam> typeParams;
     if (Accept<LessThanToken>(&curLexer))
     {
         while (!Accept<GreaterThanToken>(&curLexer))
@@ -133,7 +131,7 @@ optional<vector<TypeParamSyntax>> ParseTypeParams(Lexer* lexer)
             if (!oTypeParam)
                 return nullopt;
 
-            typeParams.push_back(TypeParamSyntax{ oTypeParam->text });
+            typeParams.push_back(STypeParam{ oTypeParam->text });
         }
     }
 
@@ -142,21 +140,21 @@ optional<vector<TypeParamSyntax>> ParseTypeParams(Lexer* lexer)
 }
 
 template<typename TMemberDeclSyntax>
-optional<TMemberDeclSyntax> ParseTypeDecl(Lexer* lexer)
+unique_ptr<TMemberDeclSyntax> ParseTypeDecl(Lexer* lexer)
 {
-    if (auto oEnumDecl = ParseEnumDecl(lexer))
-        return oEnumDecl;
+    if (auto enumDecl = ParseEnumDecl(lexer))
+        return enumDecl;
 
-    if (auto oStructDecl = ParseStructDecl(lexer))
-        return oStructDecl;
+    if (auto structDecl = ParseStructDecl(lexer))
+        return structDecl;
 
-    if (auto oClassDecl = ParseClassDecl(lexer))
-        return oClassDecl;
+    if (auto classDecl = ParseClassDecl(lexer))
+        return classDecl;
 
-    return nullopt;
+    return nullptr;
 }
 
-optional<EnumDeclSyntax> ParseEnumDecl(Lexer* lexer)
+unique_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -164,31 +162,31 @@ optional<EnumDeclSyntax> ParseEnumDecl(Lexer* lexer)
     auto oAccessModifier = ParseAccessModifier(&curLexer);
 
     if (!Accept<EnumToken>(&curLexer))
-        return nullopt;
+        return nullptr;
     
     auto oEnumName = Accept<IdentifierToken>(&curLexer);
     if (!oEnumName)
-        return nullopt;
+        return nullptr;
 
     auto oTypeParams = ParseTypeParams(&curLexer);
     if (!oTypeParams)
-        return nullopt;
+        return nullptr;
 
     if (!Accept<LBraceToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    vector<EnumElemDeclSyntax> elems;
+    vector<SEnumElemDecl> elems;
     while (!Accept<RBraceToken>(&curLexer))
     {
         if (!elems.empty())
             if (!Accept<CommaToken>(&curLexer))
-                return nullopt;
+                return nullptr;
 
         auto oElemName = Accept<IdentifierToken>(&curLexer);
         if (!oElemName)
-            return nullopt;
+            return nullptr;
 
-        vector<EnumElemMemberVarDeclSyntax> params;
+        vector<SEnumElemMemberVarDecl> params;
         
         if (Accept<LParenToken>(&curLexer))
         {
@@ -196,58 +194,58 @@ optional<EnumDeclSyntax> ParseEnumDecl(Lexer* lexer)
             {
                 if (!params.empty())
                     if (!Accept<CommaToken>(&curLexer))
-                        return nullopt;
+                        return nullptr;
                 
-                auto oTypeExp = ParseTypeExp(&curLexer);
-                if (!oTypeExp)
-                    return nullopt;
+                auto typeExp = ParseTypeExp(&curLexer);
+                if (!typeExp)
+                    return nullptr;
 
                 auto oParamName = Accept<IdentifierToken>(&curLexer);
                 if (!oParamName)
-                    return nullopt;
+                    return nullptr;
 
-                params.push_back(EnumElemMemberVarDeclSyntax(std::move(*oTypeExp), std::move(oParamName->text)));
+                params.push_back(SEnumElemMemberVarDecl(std::move(typeExp), std::move(oParamName->text)));
             }
         }
 
-        elems.push_back(EnumElemDeclSyntax(std::move(oElemName->text), std::move(params)));
+        elems.push_back(SEnumElemDecl(std::move(oElemName->text), std::move(params)));
     }
 
     *lexer = std::move(curLexer);
-    return EnumDeclSyntax(oAccessModifier, std::move(oEnumName->text), std::move(*oTypeParams), std::move(elems));    
+    return make_unique<SEnumDecl>(oAccessModifier, std::move(oEnumName->text), std::move(*oTypeParams), std::move(elems));    
 }
 
-optional<AccessModifierSyntax> ParseAccessModifier(Lexer* lexer)
+optional<SAccessModifier> ParseAccessModifier(Lexer* lexer)
 {
     if (Accept<ProtectedToken>(lexer))
-        return AccessModifierSyntax::Protected;
+        return SAccessModifier::Protected;
 
     if (Accept<PrivateToken>(lexer))
-        return AccessModifierSyntax::Private;
+        return SAccessModifier::Private;
 
     if (Accept<PublicToken>(lexer))
-        return AccessModifierSyntax::Public;
+        return SAccessModifier::Public;
 
     return nullopt;
 }
 
-optional<StructMemberVarDeclSyntax> ParseStructMemberVarDecl(Lexer* lexer)
+unique_ptr<SStructMemberVarDecl> ParseStructMemberVarDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     auto oAccessModifier = ParseAccessModifier(&curLexer);
 
     // ex) int
-    auto oVarType = ParseTypeExp(&curLexer);
-    if (!oVarType)
-        return nullopt;
+    auto varType = ParseTypeExp(&curLexer);
+    if (!varType)
+        return nullptr;
 
     // ex) x, y, z
     vector<string> varNames;
 
     auto oVarNameToken0 = Accept<IdentifierToken>(&curLexer);
     if (!oVarNameToken0)
-        return nullopt;
+        return nullptr;
 
     varNames.push_back(std::move(oVarNameToken0->text));
 
@@ -255,21 +253,21 @@ optional<StructMemberVarDeclSyntax> ParseStructMemberVarDecl(Lexer* lexer)
     {
         auto oVarNameToken = Accept<IdentifierToken>(&curLexer);
         if (!oVarNameToken)
-            return nullopt;
+            return nullptr;
 
         varNames.push_back(std::move(oVarNameToken->text));
     }
 
     // ;
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
 
-    return StructMemberVarDeclSyntax(oAccessModifier, std::move(*oVarType), std::move(varNames));
+    return make_unique<SStructMemberVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
 }
 
-optional<StructMemberFuncDeclSyntax> ParseStructMemberFuncDecl(Lexer* lexer)
+unique_ptr<SStructMemberFuncDecl> ParseStructMemberFuncDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -279,37 +277,37 @@ optional<StructMemberFuncDeclSyntax> ParseStructMemberFuncDecl(Lexer* lexer)
     bool bSequence = Accept<SeqToken>(&curLexer).has_value();
 
     // ex) void
-    auto oRetType = ParseTypeExp(&curLexer);
-    if (!oRetType)
-        return nullopt;
+    auto retType = ParseTypeExp(&curLexer);
+    if (!retType)
+        return nullptr;
 
     // ex) F
     auto oFuncName = Accept<IdentifierToken>(&curLexer);
     if (!oFuncName)
-        return nullopt;
+        return nullptr;
 
     // ex) <T1, T2>
     auto oTypeParams = ParseTypeParams(&curLexer);
     if (!oTypeParams)
-        return nullopt;
+        return nullptr;
 
     // ex) (int i, int a)
     auto oParameters = ParseFuncDeclParams(&curLexer);
     if (!oParameters)
-        return nullopt;
+        return nullptr;
 
     // ex) { ... }
     auto oBody = ParseBody(&curLexer);
     if (!oBody)
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return StructMemberFuncDeclSyntax(
-        oAccessModifier, bStatic, bSequence, std::move(*oRetType), std::move(oFuncName->text), std::move(*oTypeParams), std::move(*oParameters), std::move(*oBody)
+    return make_unique<SStructMemberFuncDecl>(
+        oAccessModifier, bStatic, bSequence, std::move(retType), std::move(oFuncName->text), std::move(*oTypeParams), std::move(*oParameters), std::move(*oBody)
     );
 }
 
-optional<StructConstructorDeclSyntax> ParseStructConstructorDecl(Lexer* lexer)
+unique_ptr<SStructConstructorDecl> ParseStructConstructorDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -318,40 +316,40 @@ optional<StructConstructorDeclSyntax> ParseStructConstructorDecl(Lexer* lexer)
     // ex) F
     auto oName = Accept<IdentifierToken>(&curLexer);
     if (!oName)
-        return nullopt;
+        return nullptr;
 
     // ex) (int i, int a)
     auto oParameters = ParseFuncDeclParams(&curLexer);
     if (!oParameters)
-        return nullopt;
+        return nullptr;
 
     // ex) { ... }
     auto oBody = ParseBody(&curLexer);
     if (!oBody)
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return StructConstructorDeclSyntax(oAccessModifier, std::move(oName->text), std::move(*oParameters), std::move(*oBody));
+    return make_unique<SStructConstructorDecl>(oAccessModifier, std::move(oName->text), std::move(*oParameters), std::move(*oBody));
 }
 
-optional<StructMemberDeclSyntax> ParseStructMemberDecl(Lexer* lexer)
+unique_ptr<SStructMemberDecl> ParseStructMemberDecl(Lexer* lexer)
 {
-    if (auto oMemberDecl = ParseTypeDecl<StructMemberDeclSyntax>(lexer))
-        return oMemberDecl;
+    if (auto memberDecl = ParseTypeDecl<SStructMemberDecl>(lexer))
+        return memberDecl;
 
-    if (auto oMemberDecl = ParseStructMemberFuncDecl(lexer))
-        return oMemberDecl;
+    if (auto memberDecl = ParseStructMemberFuncDecl(lexer))
+        return memberDecl;
 
-    if (auto oMemberDecl = ParseStructConstructorDecl(lexer))
-        return oMemberDecl;
+    if (auto memberDecl = ParseStructConstructorDecl(lexer))
+        return memberDecl;
 
-    if (auto oMemberDecl = ParseStructMemberVarDecl(lexer))
-        return oMemberDecl;
+    if (auto memberDecl = ParseStructMemberVarDecl(lexer))
+        return memberDecl;
 
-    return nullopt;
+    return nullptr;
 }
 
-optional<StructDeclSyntax> ParseStructDecl(Lexer* lexer)
+unique_ptr<SStructDecl> ParseStructDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -359,57 +357,57 @@ optional<StructDeclSyntax> ParseStructDecl(Lexer* lexer)
     auto oAccessModifier = ParseAccessModifier(&curLexer);
 
     if (!Accept<StructToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     auto oStructName = Accept<IdentifierToken>(&curLexer);
     if (!oStructName)
-        return nullopt;
+        return nullptr;
 
     auto oTypeParams = ParseTypeParams(&curLexer);
     if (!oTypeParams)
-        return nullopt;
+        return nullptr;
 
     // 상속 부분 : B, I, ...
-    vector<TypeExpSyntax> baseTypes;    
+    vector<STypeExpPtr> baseTypes;
     if (Accept<ColonToken>(&curLexer))
     {
-        auto oBaseType0 = ParseTypeExp(&curLexer);
-        if (!oBaseType0)
-            return nullopt;
+        auto typeExp = ParseTypeExp(&curLexer);
+        if (!typeExp)
+            return nullptr;
 
-        baseTypes.push_back(std::move(*oBaseType0));
+        baseTypes.push_back(std::move(typeExp));
 
         while (Accept<CommaToken>(&curLexer))
         {
-            auto oBaseType = ParseTypeExp(&curLexer);
-            if (!oBaseType)
-                return nullopt;
+            auto baseType = ParseTypeExp(&curLexer);
+            if (!baseType)
+                return nullptr;
 
-            baseTypes.push_back(std::move(*oBaseType));
+            baseTypes.push_back(std::move(baseType));
         }
     }
 
-    vector<StructMemberDeclSyntax> elems;
+    vector<SStructMemberDeclPtr> elems;
 
     // {
     if (!Accept<LBraceToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // } 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto oElem = ParseStructMemberDecl(&curLexer);
-        if (!oElem)
-            return nullopt;
+        auto elem = ParseStructMemberDecl(&curLexer);
+        if (!elem)
+            return nullptr;
 
-        elems.push_back(std::move(*oElem));
+        elems.push_back(std::move(elem));
     }
     
     *lexer = std::move(curLexer);
-    return StructDeclSyntax(oAccessModifier, std::move(oStructName->text), std::move(*oTypeParams), std::move(baseTypes), std::move(elems));
+    return make_unique<SStructDecl>(oAccessModifier, std::move(oStructName->text), std::move(*oTypeParams), std::move(baseTypes), std::move(elems));
 }
 
-optional<ClassMemberFuncDeclSyntax> ParseClassMemberFuncDecl(Lexer* lexer)
+unique_ptr<SClassMemberFuncDecl> ParseClassMemberFuncDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -419,42 +417,42 @@ optional<ClassMemberFuncDeclSyntax> ParseClassMemberFuncDecl(Lexer* lexer)
     bool bSequence = Accept<SeqToken>(&curLexer).has_value();
 
     // ex) void
-    auto oRetType = ParseTypeExp(&curLexer);
-    if (!oRetType)
-        return nullopt;
+    auto retType = ParseTypeExp(&curLexer);
+    if (!retType)
+        return nullptr;
 
     // ex) F
     auto oFuncName = Accept<IdentifierToken>(&curLexer);
     if (!oFuncName)
-        return nullopt;
+        return nullptr;
 
     // ex) <T1, T2>
     auto oTypeParams = ParseTypeParams(&curLexer);
     if (!oTypeParams)
-        return nullopt;
+        return nullptr;
 
     // ex) (int i, int a)
     auto oParameters = ParseFuncDeclParams(&curLexer);
     if (!oParameters)
-        return nullopt;
+        return nullptr;
 
     // ex) { ... }
     auto oBody = ParseBody(&curLexer);
     if (!oBody)
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return ClassMemberFuncDeclSyntax(
+    return make_unique<SClassMemberFuncDecl>(
         oAccessModifier,
         bStatic, bSequence,
-        std::move(*oRetType),
+        std::move(retType),
         std::move(oFuncName->text),
         std::move(*oTypeParams),
         std::move(*oParameters),
         std::move(*oBody));
 }
 
-optional<ClassConstructorDeclSyntax> ParseClassConstructorDecl(Lexer* lexer)
+unique_ptr<SClassConstructorDecl> ParseClassConstructorDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -463,28 +461,28 @@ optional<ClassConstructorDeclSyntax> ParseClassConstructorDecl(Lexer* lexer)
     // ex) F
     auto oName = Accept<IdentifierToken>(&curLexer);
     if (!oName)
-        return nullopt;
+        return nullptr;
 
     // ex) (int i, int a)
     auto oParameters = ParseFuncDeclParams(&curLexer);
     if (!oParameters)
-        return nullopt;
+        return nullptr;
 
     // : base()
-    optional<vector<ArgumentSyntax>> oBaseArgs;
+    optional<vector<SArgument>> oBaseArgs;
     if (Accept<ColonToken>(&curLexer))
     {
         auto oExpectedToBeBase = Accept<IdentifierToken>(&curLexer);
         if (!oExpectedToBeBase)
-            return nullopt;
+            return nullptr;
 
         // base가 아닌 identifier는 오면 안된다. 다음은 '{' 토큰이다
         if (oExpectedToBeBase->text != "base")
-            return nullopt;
+            return nullptr;
             
         auto oArgs = ParseCallArgs(&curLexer);
         if (!oArgs)
-            return nullopt;
+            return nullptr;
 
         oBaseArgs = std::move(oArgs);
     }
@@ -492,28 +490,28 @@ optional<ClassConstructorDeclSyntax> ParseClassConstructorDecl(Lexer* lexer)
     // ex) { ... }
     auto oBody = ParseBody(&curLexer);
     if (!oBody)
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return ClassConstructorDeclSyntax(oAccessModifier, std::move(oName->text), std::move(*oParameters), std::move(oBaseArgs), std::move(*oBody));    
+    return make_unique<SClassConstructorDecl>(oAccessModifier, std::move(oName->text), std::move(*oParameters), std::move(oBaseArgs), std::move(*oBody));    
 }
 
-optional<ClassMemberVarDeclSyntax> ParseClassMemberVarDecl(Lexer* lexer)
+unique_ptr<SClassMemberVarDecl> ParseClassMemberVarDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
     auto oAccessModifier = ParseAccessModifier(&curLexer);
 
     // ex) int
-    auto oVarType = ParseTypeExp(&curLexer);
-    if (!oVarType)
-        return nullopt;
+    auto varType = ParseTypeExp(&curLexer);
+    if (!varType)
+        return nullptr;
 
     // ex) x, y, z
     vector<string> varNames;  
 
     auto oVarNameToken0 = Accept<IdentifierToken>(&curLexer);
     if (!oVarNameToken0)
-        return nullopt;
+        return nullptr;
 
     varNames.push_back(std::move(oVarNameToken0->text));
 
@@ -521,37 +519,37 @@ optional<ClassMemberVarDeclSyntax> ParseClassMemberVarDecl(Lexer* lexer)
     {
         auto oVarNameToken = Accept<IdentifierToken>(&curLexer);
         if (!oVarNameToken)
-            return nullopt;
+            return nullptr;
 
         varNames.push_back(std::move(oVarNameToken->text));
     }
 
     // ;
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;    
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return ClassMemberVarDeclSyntax(oAccessModifier, std::move(*oVarType), std::move(varNames));
+    return make_unique<SClassMemberVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
 }
 
-optional<ClassMemberDeclSyntax> ParseClassMemberDecl(Lexer* lexer)
+unique_ptr<SClassMemberDecl> ParseClassMemberDecl(Lexer* lexer)
 {
-    if (auto oMemberDecl = ParseTypeDecl<ClassMemberDeclSyntax>(lexer))
-        return oMemberDecl;
+    if (auto memberDecl = ParseTypeDecl<SClassMemberDecl>(lexer))
+        return memberDecl;
 
-    if (auto oMemberDecl = ParseClassMemberFuncDecl(lexer))
-        return oMemberDecl;
+    if (auto memberDecl = ParseClassMemberFuncDecl(lexer))
+        return memberDecl;
 
-    if (auto oMemberDecl = ParseClassConstructorDecl(lexer))
-        return oMemberDecl;
+    if (auto memberDecl = ParseClassConstructorDecl(lexer))
+        return memberDecl;
 
-    if (auto oMemberDecl = ParseClassMemberVarDecl(lexer))
-        return oMemberDecl;
+    if (auto memberDecl = ParseClassMemberVarDecl(lexer))
+        return memberDecl;
 
-    return nullopt;
+    return nullptr;
 }
 
-optional<ClassDeclSyntax> ParseClassDecl(Lexer* lexer)
+unique_ptr<SClassDecl> ParseClassDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -560,56 +558,56 @@ optional<ClassDeclSyntax> ParseClassDecl(Lexer* lexer)
 
     // class
     if (!Accept<ClassToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // C
     auto oClassName = Accept<IdentifierToken>(&curLexer);
     if (!oClassName)
-        return nullopt;
+        return nullptr;
 
     // <T1, T2>
     auto oTypeParams = ParseTypeParams(&curLexer);
     if (!oTypeParams)
-        return nullopt;
+        return nullptr;
 
     // 상속 부분 : B, I, ...
-    vector<TypeExpSyntax> baseTypes;
+    vector<STypeExpPtr> baseTypes;
     if (Accept<ColonToken>(&curLexer))
     {
-        auto oBaseType0 = ParseTypeExp(&curLexer);
-        if (!oBaseType0)
-            return nullopt;
+        auto baseType0 = ParseTypeExp(&curLexer);
+        if (!baseType0)
+            return nullptr;
 
-        baseTypes.push_back(std::move(*oBaseType0));
+        baseTypes.push_back(std::move(baseType0));
 
         while (Accept<CommaToken>(&curLexer))
         {
-            auto oBaseType = ParseTypeExp(&curLexer);
-            if (!oBaseType)
-                return nullopt;
+            auto baseType = ParseTypeExp(&curLexer);
+            if (!baseType)
+                return nullptr;
 
-            baseTypes.push_back(std::move(*oBaseType));
+            baseTypes.push_back(std::move(baseType));
         }
     }
 
-    vector<ClassMemberDeclSyntax> members;
+    vector<SClassMemberDeclPtr> members;
 
     // {
     if (!Accept<LBraceToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // } 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto oElem = ParseClassMemberDecl(&curLexer);
-        if (!oElem)
-            return nullopt;
+        auto elem = ParseClassMemberDecl(&curLexer);
+        if (!elem)
+            return nullptr;
 
-        members.push_back(std::move(*oElem));
+        members.push_back(std::move(elem));
     }
 
     *lexer = std::move(curLexer);
-    return ClassDeclSyntax(
+    return make_unique<SClassDecl>(
         oAccessModifier, 
         std::move(oClassName->text), 
         std::move(*oTypeParams), 
@@ -618,21 +616,21 @@ optional<ClassDeclSyntax> ParseClassDecl(Lexer* lexer)
     );
 }
 
-optional<NamespaceDeclSyntaxElement> ParseNamespaceElement(Lexer* lexer)
+SNamespaceDeclElementPtr ParseNamespaceElement(Lexer* lexer)
 {
-    if (auto oDecl = ParseNamespaceDecl(lexer))
-        return oDecl;
+    if (auto decl = ParseNamespaceDecl(lexer))
+        return decl;
     
-    if (auto oDecl = ParseTypeDecl<NamespaceDeclSyntaxElement>(lexer))
-        return oDecl;
+    if (auto decl = ParseTypeDecl<SNamespaceDeclElement>(lexer))
+        return decl;
 
-    if (auto oDecl = ParseGlobalFuncDecl(lexer))
-        return oDecl;
+    if (auto decl = ParseGlobalFuncDecl(lexer))
+        return decl;
 
-    return nullopt;
+    return nullptr;
 }
 
-optional<NamespaceDeclSyntax> ParseNamespaceDecl(Lexer* lexer)
+unique_ptr<SNamespaceDecl> ParseNamespaceDecl(Lexer* lexer)
 {
     // <NAMESPACE> <NAME>(.<NAME> ...) <LBRACE>  ... <RBRACE>
 
@@ -640,14 +638,14 @@ optional<NamespaceDeclSyntax> ParseNamespaceDecl(Lexer* lexer)
 
     // namespace
     if (!Accept<NamespaceToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     vector<string> nsNames;
 
     // ex) NS
     auto oNSName = Accept<IdentifierToken>(&curLexer);
     if (!oNSName)
-        return nullopt;
+        return nullptr;
 
     nsNames.push_back(std::move(oNSName->text));
 
@@ -657,60 +655,60 @@ optional<NamespaceDeclSyntax> ParseNamespaceDecl(Lexer* lexer)
         // ex) NS
         oNSName = Accept<IdentifierToken>(&curLexer);
         if (!oNSName)
-            return nullopt;
+            return nullptr;
 
         nsNames.push_back(std::move(oNSName->text));
     }
 
     // {
     if (!Accept<LBraceToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    vector<NamespaceDeclSyntaxElement> elems;
+    vector<SNamespaceDeclElementPtr> elems;
     // } 가 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto oElem = ParseNamespaceElement(&curLexer);
-        if (!oElem)
-            return nullopt;
+        auto elem = ParseNamespaceElement(&curLexer);
+        if (!elem)
+            return nullptr;
 
-        elems.push_back(std::move(*oElem));
+        elems.push_back(std::move(elem));
     }
 
     *lexer = std::move(curLexer);
-    return NamespaceDeclSyntax(std::move(nsNames), std::move(elems));
+    return make_unique<SNamespaceDecl>(std::move(nsNames), std::move(elems));
 }
 
-optional<ScriptSyntaxElement> ParseScriptElement(Lexer* lexer)
+SScriptElementPtr ParseScriptElement(Lexer* lexer)
 {
-    if (auto oDecl = ParseNamespaceDecl(lexer))
-        return oDecl;
+    if (auto decl = ParseNamespaceDecl(lexer))
+        return decl;
 
-    if (auto oDecl = ParseTypeDecl<ScriptSyntaxElement>(lexer))
-        return oDecl;
+    if (auto decl = ParseTypeDecl<SScriptElement>(lexer))
+        return decl;
 
-    if (auto oDecl = ParseGlobalFuncDecl(lexer))
-        return oDecl;
+    if (auto decl = ParseGlobalFuncDecl(lexer))
+        return decl;
 
-    return nullopt;
+    return nullptr;
 }
 
-optional<ScriptSyntax> ParseScript(Lexer* lexer)
+optional<SScript> ParseScript(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
-    vector<ScriptSyntaxElement> elems;
+    vector<SScriptElementPtr> elems;
     while (!Accept<EndOfFileToken>(&curLexer))
     {
-        auto oScriptElem = ParseScriptElement(&curLexer);
+        auto scriptElem = ParseScriptElement(&curLexer);
 
-        if (!oScriptElem)
+        if (!scriptElem)
             return nullopt;
 
-        elems.push_back(std::move(*oScriptElem));
+        elems.push_back(std::move(scriptElem));
     }
 
-    return ScriptSyntax(std::move(elems));
+    return SScript(std::move(elems));
 }
 
 }

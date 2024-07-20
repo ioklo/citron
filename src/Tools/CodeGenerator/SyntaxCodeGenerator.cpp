@@ -56,141 +56,159 @@ struct ToJsonVisitor {
 
     vector<ItemInfo> itemInfos {
 
-        VariantInfo {
-            .name = "StmtSyntax",
-            .argName = "stmt",
-            .memberNames {
-                "class CommandStmtSyntax",
-                "class VarDeclStmtSyntax",
-                "std::unique_ptr<class IfStmtSyntax>",
-                "std::unique_ptr<class IfTestStmtSyntax>",
-                "std::unique_ptr<class ForStmtSyntax>",
-
-                "class ContinueStmtSyntax",
-                "class BreakStmtSyntax",
-                "std::unique_ptr<class ReturnStmtSyntax>",
-                "class BlockStmtSyntax",
-                "class BlankStmtSyntax",
-                "std::unique_ptr<class ExpStmtSyntax>",
-
-                "class TaskStmtSyntax",
-                "class AwaitStmtSyntax",
-                "class AsyncStmtSyntax",
-                "std::unique_ptr<class ForeachStmtSyntax>",
-                "std::unique_ptr<class YieldStmtSyntax>",
-
-                "class DirectiveStmtSyntax"
+        // Stmt
+        ForwardClassDeclsInfo {
+            .names {
+                "SStmt",
+                "SCommandStmt",
+                "SVarDeclStmt",
+                "SIfStmt",
+                "SIfTestStmt",
+                "SForStmt",
+                "SContinueStmt",
+                "SBreakStmt",
+                "SReturnStmt",
+                "SBlockStmt",
+                "SBlankStmt",
+                "SExpStmt",
+                "STaskStmt",
+                "SAwaitStmt",
+                "SAsyncStmt",
+                "SForeachStmt",
+                "SYieldStmt",
+                "SDirectiveStmt"
             }
         },
 
-        VariantInfo {
-            .name = "ExpSyntax", 
-            .argName = "exp",
-            .memberNames {
-                "class IdentifierExpSyntax",
-                "class StringExpSyntax",
-                "class IntLiteralExpSyntax",
-                "class BoolLiteralExpSyntax",
-                "class NullLiteralExpSyntax",
-                "std::unique_ptr<class BinaryOpExpSyntax>",
-                "std::unique_ptr<class UnaryOpExpSyntax>",
-                "std::unique_ptr<class CallExpSyntax>",
-                "std::unique_ptr<class LambdaExpSyntax>",
-                "std::unique_ptr<class IndexerExpSyntax>",
-                "std::unique_ptr<class MemberExpSyntax>",
-                "std::unique_ptr<class IndirectMemberExpSyntax>",
-                "class ListExpSyntax",
-                "class NewExpSyntax",
-                "std::unique_ptr<class BoxExpSyntax>",
-                "std::unique_ptr<class IsExpSyntax>",
-                "std::unique_ptr<class AsExpSyntax>"
+        // SExp
+        ForwardClassDeclsInfo {
+            .names {
+                "SExp",
+                "SIdentifierExp",
+                "SStringExp",
+                "SIntLiteralExp",
+                "SBoolLiteralExp",
+                "SNullLiteralExp",
+                "SBinaryOpExp",
+                "SUnaryOpExp",
+                "SCallExp",
+                "SLambdaExp",
+                "SIndexerExp",
+                "SMemberExp",
+                "SIndirectMemberExp",
+                "SListExp",
+                "SNewExp",
+                "SBoxExp",
+                "SIsExp",
+                "SAsExp"
             }
         },
 
-        VariantInfo {
-            .name = "TypeExpSyntax",
-            .argName = "typeExp",
-            .memberNames {
-                "class IdTypeExpSyntax",
-                "std::unique_ptr<class MemberTypeExpSyntax>",
-                "std::unique_ptr<class NullableTypeExpSyntax>",
-                "std::unique_ptr<class LocalPtrTypeExpSyntax>",
-                "std::unique_ptr<class BoxPtrTypeExpSyntax>",
-                "std::unique_ptr<class LocalTypeExpSyntax>"
+        // TypeExp
+        ForwardClassDeclsInfo {
+            .names {
+                "STypeExp",
+                "SIdTypeExp",
+                "SMemberTypeExp",
+                "SNullableTypeExp",
+                "SLocalPtrTypeExp",
+                "SBoxPtrTypeExp",
+                "SLocalTypeExp"
             }
         },
 
-
-        ClassInfo {
-            .name = "IdTypeExpSyntax",
-            .memberInfos {
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
-            },
-            .extraConstructors {
-                "SYNTAX_API IdTypeExpSyntax(std::string name);"
+        ForwardClassDeclsInfo {
+            .names {
+                "SStringExpElement",
+                "STextStringExpElement",
+                "SExpStringExpElement"
             }
         },
 
-        // MemberTypeExpSyntax(TypeExpSyntax typeExp, std::string name, std::vector<TypeExpSyntax> typeArgs);
-        ClassInfo {
-            .name = "MemberTypeExpSyntax",
-            .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "parentType", .getterName = "GetParentType" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
-            },
+        ForwardClassDeclsInfo {
+            .names {
+                "SLambdaExpBody",
+                "SStmtsLambdaExpBody",
+                "SExpLambdaExpBody"
+            }
         },
 
-        // NullableTypeExpSyntax(TypeExpSyntax typeExp)
-        ClassInfo {
-            .name = "NullableTypeExpSyntax",
-            .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType" },
-            },
+        ForwardClassDeclsInfo {
+            .names {
+                "SEmbeddableStmt",
+                "SSingleEmbeddableStmt",
+                "SBlockEmbeddableStmt"
+            }
         },
 
-        // LocalPtrTypeExpSyntax(TypeExpSyntax typeExp)
-        ClassInfo {
-            .name = "LocalPtrTypeExpSyntax",
-            .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType" },
-            },
+        ForwardClassDeclsInfo {
+            .names {
+                "SForStmtInitializer",
+                "SExpForStmtInitializer",
+                "SVarDeclForStmtInitializer"
+            }
         },
 
-        // BoxPtrTypeExpSyntax(TypeExpSyntax typeExp)
-        ClassInfo {
-            .name = "BoxPtrTypeExpSyntax",
-            .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType" },
-            },
+        ForwardClassDeclsInfo {
+            .names {
+                "SClassMemberDecl",
+                "SClassMemberFuncDecl",
+                "SClassConstructorDecl",
+                "SClassMemberVarDecl",
+            }
         },
 
-        // LocalTypeExpSyntax(TypeExpSyntax typeExp)
-        ClassInfo {
-            .name = "LocalTypeExpSyntax",
-            .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "innerType", .getterName = "GetInnerType" },
-            },
+        ForwardClassDeclsInfo {
+            .names {
+                "SStructMemberDecl",
+                "SStructMemberFuncDecl",
+                "SStructConstructorDecl",
+                "SStructMemberVarDecl",
+            }
         },
 
-        ClassInfo {
-            .name = "LambdaExpParamSyntax",
-            .memberInfos {
-                { .type = "std::optional<TypeExpSyntax>", .memberVarName = "type", .getterName = "GetType" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "bool", .memberVarName = "hasOut", .getterName = "HasOut" },
-                { .type = "bool", .memberVarName = "hasParams", .getterName = "HasParams" },
-            },
+        ForwardClassDeclsInfo {
+            .names {
+                "SNamespaceDeclElement",
+                "SScriptElement",
+            }
         },
 
+        ForwardClassDeclsInfo {
+            .names {
+                "SClassDecl",
+                "SStructDecl",
+                "SEnumDecl",
+                "SGlobalFuncDecl",
+                "SNamespaceDecl",
+                "SScript"
+            }
+        },
+
+        PtrDeclsInfo {
+            .names {
+                "SStmt",
+                "SExp",
+                "STypeExp",
+                "SStringExpElement",
+                "SLambdaExpBody",
+                "SEmbeddableStmt",
+                "SForStmtInitializer",
+                "SClassMemberDecl",
+                "SStructMemberDecl",
+                "SNamespaceDeclElement",
+                "SScriptElement"
+            }
+        },
+
+        // 여기에 신규 ForwardClassDeclInfo 추가
         EnumInfo {
-            .name = "AccessModifierSyntax",
+            .name = "SAccessModifier",
             .cases = { "Public", "Protected", "Private"}
         },
 
         EnumInfo {
-            .name = "BinaryOpSyntaxKind",
+            .name = "SBinaryOpKind",
             .cases {
                 "Multiply", "Divide", "Modulo",
                 "Add", "Subtract",
@@ -200,8 +218,8 @@ struct ToJsonVisitor {
             }
         },
 
-        EnumInfo { 
-            .name = "UnaryOpSyntaxKind",
+        EnumInfo {
+            .name = "SUnaryOpKind",
             .cases {
                 "PostfixInc", "PostfixDec",
                 "Minus", "LogicalNot", "PrefixInc", "PrefixDec",
@@ -210,656 +228,871 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "IdentifierExpSyntax",
+            .name = "SArgument",
             .memberInfos {
-                { .type = "std::string", .memberVarName = "value", .getterName = "GetValue" },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
+                    {.type = "bool", .memberVarName = "bOut", .getterName = "HasOut" },
+                    {.type = "bool", .memberVarName = "bParams", .getterName = "GetParams" },
+                    {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
+                },
+                .extraConstructors {
+                    "SYNTAX_API SArgument(SExpPtr exp);"
+                }
+        },
+
+        ClassInfo {
+            .name = "SLambdaExpParam",
+            .memberInfos {
+                {.type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                {.type = "bool", .memberVarName = "hasOut", .getterName = "HasOut" },
+                {.type = "bool", .memberVarName = "hasParams", .getterName = "HasParams" },
             },
-            .extraConstructors {
-                "IdentifierExpSyntax(std::string value) : IdentifierExpSyntax(std::move(value), {}) { }"
+        },
+
+        // SVarDecl
+            ClassInfo {
+                .name = "SVarDeclElement",
+                .memberInfos {
+                    {.type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
+                    {.type = "SExpPtr", .memberVarName = "initExp", .getterName = "GetInitExp" }
+                },
+        },
+
+            ClassInfo {
+                .name = "SVarDecl",
+                .memberInfos {
+                    {.type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
+                    {.type = "std::vector<SVarDeclElement>", .memberVarName = "elements", .getterName = "GetElements" }
+                },
+        },
+
+        // STypeParam
+        ClassInfo {
+            .name = "STypeParam",
+            .memberInfos {
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+            },
+        },
+
+        // SFuncParam
+        ClassInfo {
+            .name = "SFuncParam",
+            .memberInfos {
+                {.type = "bool", .memberVarName = "hasOut", .getterName = "HasOut" },
+                {.type = "bool", .memberVarName = "hasParams", .getterName = "HasParams" },
+                {.type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName" }
+            },
+        },
+
+
+        // Variants 
+        #pragma region VariantInterfaceInfo
+        VariantInterfaceInfo {
+            .name = "SStmt",
+            .argName = "stmt",
+            .members {
+                "SCommandStmt",
+                "SVarDeclStmt",
+                "SIfStmt",
+                "SIfTestStmt",
+                "SForStmt",
+                "SContinueStmt",
+                "SBreakStmt",
+                "SReturnStmt",
+                "SBlockStmt",
+                "SBlankStmt",
+                "SExpStmt",
+                "STaskStmt",
+                "SAwaitStmt",
+                "SAsyncStmt",
+                "SForeachStmt",
+                "SYieldStmt",
+                "SDirectiveStmt"
             }
         },
 
-        // StringExpSyntaxElement
-        VariantInfo {
-            .name = "StringExpSyntaxElement",
+        VariantInterfaceInfo {
+            .name = "SExp",
+            .argName = "exp",
+            .members {
+                "SIdentifierExp",
+                "SStringExp",
+                "SIntLiteralExp",
+                "SBoolLiteralExp",
+                "SNullLiteralExp",
+                "SBinaryOpExp",
+                "SUnaryOpExp",
+                "SCallExp",
+                "SLambdaExp",
+                "SIndexerExp",
+                "SMemberExp",
+                "SIndirectMemberExp",
+                "SListExp",
+                "SNewExp",
+                "SBoxExp",
+                "SIsExp",
+                "SAsExp"
+            }
+        },
+
+        VariantInterfaceInfo {
+            .name = "STypeExp",
+            .argName = "typeExp",
+            .members {
+                "SIdTypeExp",
+                "SMemberTypeExp",
+                "SNullableTypeExp",
+                "SLocalPtrTypeExp",
+                "SBoxPtrTypeExp",
+                "SLocalTypeExp"
+            }
+        },
+
+        VariantInterfaceInfo {
+            .name = "SStringExpElement",
             .argName = "elem",
-            .memberNames {
-                "class TextStringExpSyntaxElement",
-                "std::unique_ptr<class ExpStringExpSyntaxElement>"
+            .members {
+                "STextStringExpElement",
+                "SExpStringExpElement"
             }
         },
 
-        ClassInfo {
-            .name = "TextStringExpSyntaxElement",
-            .memberInfos {
-                { .type = "std::string", .memberVarName = "text", .getterName = "GetText" },
-            },
+        VariantInterfaceInfo {
+            .name = "SLambdaExpBody",
+            .argName = "body",
+            .members {
+                "SStmtsLambdaExpBody",
+                "SExpLambdaExpBody"
+            }
         },
 
+        VariantInterfaceInfo {
+            .name = "SEmbeddableStmt",
+            .argName = "stmt",
+            .members {
+                "SSingleEmbeddableStmt",
+                "SBlockEmbeddableStmt"
+            }
+        },
+
+        VariantInterfaceInfo {
+            .name = "SForStmtInitializer",
+            .argName = "initializer",
+            .members {
+                "SExpForStmtInitializer",
+                "SVarDeclForStmtInitializer"
+            }
+        },
+
+        // SClassMemberDecl
+        VariantInterfaceInfo {
+            .name = "SClassMemberDecl",
+            .argName = "decl",
+            .members {
+                "SClassDecl",
+                "SStructDecl",
+                "SEnumDecl",
+                "SClassMemberFuncDecl",
+                "SClassConstructorDecl",
+                "SClassMemberVarDecl",
+            }
+        },
+
+        // SStructMemberDecl
+        VariantInterfaceInfo {
+            .name = "SStructMemberDecl",
+            .argName = "decl",
+            .members {
+                "SClassDecl",
+                "SStructDecl",
+                "SEnumDecl",
+                "SStructMemberFuncDecl",
+                "SStructConstructorDecl",
+                "SStructMemberVarDecl",
+            }
+        },
+
+        // SNamespaceDeclElement
+        VariantInterfaceInfo {
+            .name = "SNamespaceDeclElement",
+            .argName = "elem",
+            .members {
+                "SGlobalFuncDecl",
+                "SNamespaceDecl",
+                "SClassDecl",
+                "SStructDecl",
+                "SEnumDecl",
+            }
+        },
+
+        // SScriptElement
+        VariantInterfaceInfo {
+            .name = "SScriptElement",
+            .argName = "elem",
+            .members {
+                "SNamespaceDecl",
+                "SGlobalFuncDecl",
+                "SClassDecl",
+                "SStructDecl",
+                "SEnumDecl",
+            }
+        },
+
+        // 여기에 신규 VariantInterfaceInfo 추가
+        #pragma endregion VariantInterfaceInfo
+
+        #pragma region SExps
         ClassInfo {
-            .name = "StringExpSyntax",
+            .name = "SIdentifierExp",
+            .variantInterfaces { "SExp" },
             .memberInfos {
-                { .type = "std::vector<StringExpSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements" },
+                {.type = "std::string", .memberVarName = "value", .getterName = "GetValue" },
+                {.type = "std::vector<STypeExpPtr>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
             },
             .extraConstructors {
-                "SYNTAX_API StringExpSyntax(std::string str);"
+                "SIdentifierExp(std::string value) : SIdentifierExp(std::move(value), {}) { }"
             }
         },
 
         ClassInfo {
-            .name = "IntLiteralExpSyntax",
+            .name = "SStringExp",
+            .variantInterfaces { "SExp" },
+            .memberInfos {
+                {.type = "std::vector<SStringExpElementPtr>", .memberVarName = "elements", .getterName = "GetElements" },
+            },
+            .extraConstructors {
+                "SYNTAX_API SStringExp(std::string str);"
+            }
+        },
+
+        ClassInfo {
+            .name = "SIntLiteralExp",
+            .variantInterfaces { "SExp" },
             .memberInfos {
                 { .type = "int", .memberVarName = "value", .getterName = "GetValue" },
             },
         },
 
         ClassInfo {
-            .name = "BoolLiteralExpSyntax",
+            .name = "SBoolLiteralExp",
+            .variantInterfaces { "SExp" },
             .memberInfos {
                 { .type = "bool", .memberVarName = "value", .getterName = "GetValue" },
             },
         },
 
         ClassInfo {
-            .name = "NullLiteralExpSyntax",
+            .name = "SNullLiteralExp",
+            .variantInterfaces { "SExp" },
             .memberInfos { },
         },
 
         ClassInfo {
-            .name = "ListExpSyntax",
+            .name = "SListExp",
+            .variantInterfaces { "SExp" },
             .memberInfos {
-                    { .type = "std::vector<ExpSyntax>", .memberVarName = "elements", .getterName = "GetElements" },
-                },
-            },
-
-        ClassInfo {
-            .name = "NewExpSyntax",
-            .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
-                { .type = "std::vector<ArgumentSyntax>", .memberVarName = "args", .getterName = "GetArgs" },
-            },
-        },
-
-        // 여기서부터 ExpSyntax가 complete
-
-        ClassInfo {
-            .name = "BinaryOpExpSyntax",
-            .memberInfos {
-                { .type = "BinaryOpSyntaxKind", .memberVarName = "kind", .getterName = "GetKind" },
-                { .type = "ExpSyntax", .memberVarName = "operand0", .getterName = "GetOperand0" },
-                { .type = "ExpSyntax", .memberVarName = "operand1", .getterName = "GetOperand1" },
+                { .type = "std::vector<SExpPtr>", .memberVarName = "elements", .getterName = "GetElements" },
             },
         },
 
         ClassInfo {
-            .name = "UnaryOpExpSyntax",
+            .name = "SNewExp",
+            .variantInterfaces { "SExp" },
             .memberInfos {
-                { .type = "UnaryOpSyntaxKind", .memberVarName = "kind", .getterName = "GetKind" },
-                { .type = "ExpSyntax", .memberVarName = "operand", .getterName = "GetOperand" },
+                {.type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
+                {.type = "std::vector<SArgument>", .memberVarName = "args", .getterName = "GetArgs" },
             },
         },
 
         ClassInfo {
-            .name = "CallExpSyntax",
+            .name = "SBinaryOpExp",
+            .variantInterfaces { "SExp" },
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "callable", .getterName = "GetCallable" },
-                { .type = "std::vector<ArgumentSyntax>", .memberVarName = "args", .getterName = "GetArgs" },
+                {.type = "SBinaryOpKind", .memberVarName = "kind", .getterName = "GetKind" },
+                {.type = "SExpPtr", .memberVarName = "operand0", .getterName = "GetOperand0" },
+                {.type = "SExpPtr", .memberVarName = "operand1", .getterName = "GetOperand1" },
             },
         },
 
-        VariantInfo {
-            .name = "LambdaExpBodySyntax",
-            .argName = "body",
-            .memberNames {
-                "class StmtsLambdaExpBodySyntax",
-                "std::unique_ptr<class ExpLambdaExpBodySyntax>"
+        ClassInfo {
+            .name = "SUnaryOpExp",
+            .variantInterfaces { "SExp" },
+            .memberInfos {
+                {.type = "SUnaryOpKind", .memberVarName = "kind", .getterName = "GetKind" },
+                {.type = "SExpPtr", .memberVarName = "operand", .getterName = "GetOperand" },
+            },
+        },
+
+        ClassInfo {
+            .name = "SCallExp",
+            .variantInterfaces { "SExp" },
+            .memberInfos {
+                {.type = "SExpPtr", .memberVarName = "callable", .getterName = "GetCallable" },
+                {.type = "std::vector<SArgument>", .memberVarName = "args", .getterName = "GetArgs" },
+            },
+        },
+
+
+
+        ClassInfo {
+            .name = "SLambdaExp",
+            .variantInterfaces { "SExp" },
+            .memberInfos {
+                { .type = "std::vector<SLambdaExpParam>", .memberVarName = "params", .getterName = "GetParams" },
+                { .type = "SLambdaExpBodyPtr", .memberVarName = "body", .getterName = "GetBody" },
+            },
+        },
+
+        ClassInfo {
+            .name = "SIndexerExp",
+            .variantInterfaces { "SExp" },
+            .memberInfos {
+                {.type = "SExpPtr", .memberVarName = "obj", .getterName = "GetObject" },
+                {.type = "SExpPtr", .memberVarName = "index", .getterName = "GetIndex" },
+            },
+        },
+
+        ClassInfo {
+            .name = "SMemberExp",
+            .variantInterfaces { "SExp" },
+            .memberInfos {
+                {.type = "SExpPtr", .memberVarName = "parent", .getterName = "GetParent" },
+                {.type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName" },
+                {.type = "std::vector<STypeExpPtr>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
+            },
+            .extraConstructors {
+                "SYNTAX_API SMemberExp(SExpPtr parent, std::string memberName);"
             }
         },
 
         ClassInfo {
-            .name = "StmtsLambdaExpBodySyntax",
+            .name = "SIndirectMemberExp",
+            .variantInterfaces { "SExp" },
             .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "stmts", .getterName = "GetStmts" }
+                {.type = "SExpPtr", .memberVarName = "parent", .getterName = "GetParent" },
+                {.type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName" },
+                {.type = "std::vector<STypeExpPtr>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
+            },
+            .extraConstructors {
+                "SYNTAX_API SIndirectMemberExp(SExpPtr parent, std::string memberName);"
+            }
+        },
+
+        ClassInfo {
+            .name = "SBoxExp",
+            .variantInterfaces { "SExp" },
+            .memberInfos {
+                {.type = "SExpPtr", .memberVarName = "innerExp", .getterName = "GetInnerExp" },
             },
         },
 
         ClassInfo {
-            .name = "ExpLambdaExpBodySyntax",
+            .name = "SIsExp",
+            .variantInterfaces { "SExp" },
+            .memberInfos {
+                {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
+                {.type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
+            },
+        },
+
+        ClassInfo {
+            .name = "SAsExp",
+            .variantInterfaces { "SExp" },
+            .memberInfos {
+                {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
+                {.type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
+            },
+        },
+
+        #pragma endregion SExps
+
+        #pragma region TypeExps
+
+        
+        ClassInfo {
+            .name = "SIdTypeExp",
+            .variantInterfaces { "STypeExp" },
+            .memberInfos {
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                {.type = "std::vector<STypeExpPtr>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
+            },
+            .extraConstructors {
+                "SYNTAX_API SIdTypeExp(std::string name);"
+            }
+        },
+
+        // SMemberTypeExp(STypeExp typeExp, std::string name, std::vector<STypeExpPtr> typeArgs);
+        ClassInfo {
+            .name = "SMemberTypeExp",
+            .variantInterfaces { "STypeExp" },
+            .memberInfos {
+                {.type = "STypeExpPtr", .memberVarName = "parentType", .getterName = "GetParentType" },
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                {.type = "std::vector<STypeExpPtr>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
+            },
+        },
+
+        // SNullableTypeExp(STypeExp typeExp)
+        ClassInfo {
+            .name = "SNullableTypeExp",
+            .variantInterfaces { "STypeExp" },
+            .memberInfos {
+                {.type = "STypeExpPtr", .memberVarName = "innerType", .getterName = "GetInnerType" },
+            },
+        },
+
+        // SLocalPtrTypeExp(STypeExp typeExp)
+        ClassInfo {
+            .name = "SLocalPtrTypeExp",
+            .variantInterfaces { "STypeExp" },
+            .memberInfos {
+                {.type = "STypeExpPtr", .memberVarName = "innerType", .getterName = "GetInnerType" },
+            },
+        },
+
+        // SBoxPtrTypeExp(STypeExp typeExp)
+        ClassInfo {
+            .name = "SBoxPtrTypeExp",
+            .variantInterfaces { "STypeExp" },
+            .memberInfos {
+                {.type = "STypeExpPtr", .memberVarName = "innerType", .getterName = "GetInnerType" },
+            },
+        },
+
+        // SLocalTypeExp(STypeExp typeExp)
+        ClassInfo {
+            .name = "SLocalTypeExp",
+            .variantInterfaces { "STypeExp" },
+            .memberInfos {
+                {.type = "STypeExpPtr", .memberVarName = "innerType", .getterName = "GetInnerType" },
+            },
+        },
+
+        #pragma endregion STypeExps
+
+        #pragma region SStringExpElements
+
+        ClassInfo {
+            .name = "STextStringExpElement",
+            .variantInterfaces { "SStringExpElement" },
+            .memberInfos {
+                {.type = "std::string", .memberVarName = "text", .getterName = "GetText" },
+            },
+        },
+
+        ClassInfo {
+            .name = "SExpStringExpElement",
+            .variantInterfaces { "SStringExpElement" },
+            .memberInfos {
+                {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
+            },
+        },
+        #pragma endregion SStringExpElements
+
+        #pragma region SLambdaExpBodys
+        
+        ClassInfo {
+            .name = "SStmtsLambdaExpBody",
+            .variantInterfaces { "SLambdaExpBody" },
+            .memberInfos {
+                { .type = "std::vector<SStmtPtr>", .memberVarName = "stmts", .getterName = "GetStmts" }
+            },
+        },
+
+        ClassInfo {
+            .name = "SExpLambdaExpBody",
+            .variantInterfaces { "SLambdaExpBody" },
             .memberInfos = {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" }
+                { .type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" }
+            },
+        },
+        #pragma endregion SLambdaExpBodys
+
+        #pragma region SEmbeddableStmts
+
+        // SSingleEmbeddableStmt(SStmtPtr stmt), SStmt에 depends
+        ClassInfo {
+            .name = "SSingleEmbeddableStmt",
+            .variantInterfaces { "SEmbeddableStmt" },
+            .memberInfos {
+                { .type = "SStmtPtr", .memberVarName = "stmt", .getterName = "GetStmt" },
+            },
+        },
+
+        // SBlockEmbeddableStmt(std::vector<SStmtPtr> stmts)
+        ClassInfo {
+            .name = "SBlockEmbeddableStmt",
+            .variantInterfaces { "SEmbeddableStmt" },
+            .memberInfos {
+                {.type = "std::vector<SStmtPtr>", .memberVarName = "stmts", .getterName = "GetStmts" },
+            },
+        },
+
+        #pragma endregion SEmbeddableStmts
+
+        #pragma region SForStmtInitializer
+        
+        ClassInfo {
+            .name = "SExpForStmtInitializer",
+            .variantInterfaces { "SForStmtInitializer" },
+            .memberInfos {
+                {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" }
             },
         },
 
         ClassInfo {
-            .name = "LambdaExpSyntax",
+            .name = "SVarDeclForStmtInitializer",
+            .variantInterfaces { "SForStmtInitializer" },
             .memberInfos {
-                { .type = "std::vector<LambdaExpParamSyntax>", .memberVarName = "params", .getterName = "GetParams" },
-                { .type = "LambdaExpBodySyntax", .memberVarName = "body", .getterName = "GetBody" },
+                {.type = "SVarDecl", .memberVarName = "varDecl", .getterName = "GetVarDecl" }
             },
         },
 
+        #pragma endregion SForStmtInitializer
+
+        #pragma region SStmts
+
+        // SCommandStmt(std::vector<SStringExp> commands)
         ClassInfo {
-            .name = "IndexerExpSyntax",
+            .name = "SCommandStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "obj", .getterName = "GetObject" },
-                { .type = "ExpSyntax", .memberVarName = "index", .getterName = "GetIndex" },
+                {.type = "std::vector<SStringExp>", .memberVarName = "commands", .getterName = "GetCommands" },
             },
         },
 
+        // SVarDeclStmt(SVarDecl varDecl)
         ClassInfo {
-            .name = "MemberExpSyntax",
+            .name = "SVarDeclStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "parent", .getterName = "GetParent" },
-                { .type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName" },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
-            },
-            .extraConstructors {
-                "SYNTAX_API MemberExpSyntax(ExpSyntax parent, std::string memberName);"
-            }
-        },
-
-        ClassInfo {
-            .name = "IndirectMemberExpSyntax",
-            .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "parent", .getterName = "GetParent" },
-                { .type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName" },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
-            },
-            .extraConstructors {
-                "SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName);"
-            }
-        },
-
-
-        ClassInfo {
-            .name = "BoxExpSyntax",
-            .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "innerExp", .getterName = "GetInnerExp" },
+                {.type = "SVarDecl", .memberVarName = "varDecl", .getterName = "GetVarDecl" },
             },
         },
 
-        ClassInfo{
-            .name = "IsExpSyntax",
-            .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
-            },
-        },
-
+        // SContinueStmt
         ClassInfo {
-            .name = "AsExpSyntax",
-            .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
-            },
-        },
-
-        // ExpSyntax가 complete type일때까지 선언을 하면 안된다
-        ClassInfo {
-            .name = "ArgumentSyntax",
-            .memberInfos {
-                    { .type = "bool", .memberVarName = "bOut", .getterName = "HasOut" },
-                    { .type = "bool", .memberVarName = "bParams", .getterName = "GetParams" },
-                    { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
-                },
-                .extraConstructors {
-                    "SYNTAX_API ArgumentSyntax(ExpSyntax exp);"
-                }
-        },
-
-        // ExpSyntax가 complete type일때까지 선언을 하면 안된다
-        ClassInfo {
-            .name = "ExpStringExpSyntaxElement",
-            .memberInfos {
-                    { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
-                },
-            },
-
-        // Embeddable 
-        VariantInfo {
-            .name = "EmbeddableStmtSyntax",
-            .argName = "embeddableStmt",
-            .memberNames {
-                "std::unique_ptr<class SingleEmbeddableStmtSyntax>",
-                "class BlockEmbeddableStmtSyntax",
-            }
-        },
-
-        // BlockEmbeddableStmtSyntax(std::vector<StmtSyntax> stmts)
-        ClassInfo {
-            .name = "BlockEmbeddableStmtSyntax",
-            .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "stmts", .getterName = "GetStmts" },
-            },
-        },
-
-        // VarDeclSyntax
-        ClassInfo {
-            .name = "VarDeclSyntaxElement",
-            .memberInfos {
-                { .type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
-                { .type = "std::optional<ExpSyntax>", .memberVarName = "initExp", .getterName = "GetInitExp" }
-            },
-        },
-
-        ClassInfo {
-            .name = "VarDeclSyntax",
-            .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
-                { .type = "std::vector<VarDeclSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements" }
-            },
-        },
-
-        // Stmt
-
-        // CommandStmtSyntax(std::vector<StringExpSyntax> commands)
-        ClassInfo {
-            .name = "CommandStmtSyntax",
-            .memberInfos {
-                { .type = "std::vector<StringExpSyntax>", .memberVarName = "commands", .getterName = "GetCommands" },
-            },
-        },
-
-        // VarDeclStmtSyntax(VarDeclSyntax varDecl)
-        ClassInfo {
-            .name = "VarDeclStmtSyntax",
-            .memberInfos {
-                { .type = "VarDeclSyntax", .memberVarName = "varDecl", .getterName = "GetVarDecl" },
-            },
-        },
-
-        // ContinueStmtSyntax
-        ClassInfo {
-           .name = "ContinueStmtSyntax",
-           .memberInfos {},
-        },
-
-        // BreakStmtSyntax
-        ClassInfo {
-           .name = "BreakStmtSyntax",
-           .memberInfos {},
-        },
-
-        // BlockStmtSyntax(std::vector<StmtSyntax> stmts)
-        ClassInfo {
-            .name = "BlockStmtSyntax",
-            .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "stmts", .getterName = "GetStmts" },
-            },
-        },
-
-        // BlankStmtSyntax
-        ClassInfo {
-            .name = "BlankStmtSyntax",
+            .name = "SContinueStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {},
         },
 
-        // TaskStmtSyntax(std::vector<StmtSyntax> body)
+        // SBreakStmt
         ClassInfo {
-            .name = "TaskStmtSyntax",
+            .name = "SBreakStmt",
+            .variantInterfaces { "SStmt" },
+            .memberInfos {},
+        },
+
+        // SBlockStmt(std::vector<SStmtPtr> stmts)
+        ClassInfo {
+            .name = "SBlockStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+                {.type = "std::vector<SStmtPtr>", .memberVarName = "stmts", .getterName = "GetStmts" },
             },
         },
 
-        // AwaitStmtSyntax(std::vector<StmtSyntax> body);
+        // SBlankStmt
+            ClassInfo {
+                .name = "SBlankStmt",
+                .variantInterfaces { "SStmt" },
+                .memberInfos {},
+        },
+
+        // STaskStmt(std::vector<SStmtPtr> body)
         ClassInfo {
-            .name = "AwaitStmtSyntax",
+            .name = "STaskStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+                {.type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
-        // AsyncStmtSyntax(std::vector<StmtSyntax> body);
+        // SAwaitStmt(std::vector<SStmtPtr> body);
         ClassInfo {
-            .name = "AsyncStmtSyntax",
+            .name = "SAwaitStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+                {.type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
-        // DirectiveStmtSyntax(std::u32string name, std::vector<ExpSyntax> args)
+        // SAsyncStmt(std::vector<SStmtPtr> body);
+            ClassInfo {
+                .name = "SAsyncStmt",
+                .variantInterfaces { "SStmt" },
+                .memberInfos {
+                    {.type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
+                },
+        },
+
+        // SDirectiveStmt(std::u32string name, std::vector<SExpPtr> args)
         ClassInfo {
-            .name = "DirectiveStmtSyntax",
+            .name = "SDirectiveStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<ExpSyntax>", .memberVarName = "args", .getterName = "GetArgs" },
+                { .type = "std::vector<SExpPtr>", .memberVarName = "args", .getterName = "GetArgs" },
             },
         },
 
-        // 여기부터 StmtSyntax가 complete
-
-        // SingleEmbeddableStmtSyntax(StmtSyntax stmt), StmtSyntax에 depends
+        // SIfStmt(SExp cond, SEmbeddableStmt body, SEmbeddableStmtPtr elseBody)
         ClassInfo {
-            .name = "SingleEmbeddableStmtSyntax",
+            .name = "SIfStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "StmtSyntax", .memberVarName = "stmt", .getterName = "GetStmt" },
+                { .type = "SExpPtr", .memberVarName = "cond", .getterName = "GetCond" },
+                { .type = "SEmbeddableStmtPtr", .memberVarName = "body", .getterName = "GetBody" },
+                { .type = "SEmbeddableStmtPtr", .memberVarName = "elseBody", .getterName = "GetElseBody" },
             },
         },
 
-        // IfStmtSyntax(ExpSyntax cond, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody)
-        ClassInfo {
-            .name = "IfStmtSyntax",
-            .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "cond", .getterName = "GetCond" },
-                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody" },
-                { .type = "std::optional<EmbeddableStmtSyntax>", .memberVarName = "elseBody", .getterName = "GetElseBody" },
-            },
+        // SIfTestStmt(STypeExp testTypeExp, std::string varName, SExp exp, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody);
+                ClassInfo {
+                    .name = "SIfTestStmt",
+                    .variantInterfaces { "SStmt" },
+                    .memberInfos {
+                        {.type = "STypeExpPtr", .memberVarName = "testType", .getterName = "GetTestType" },
+                        {.type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
+                        {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
+                        {.type = "SEmbeddableStmtPtr", .memberVarName = "body", .getterName = "GetBody" },
+                        {.type = "SEmbeddableStmtPtr", .memberVarName = "elseBody", .getterName = "GetElseBody" },
+                    },
         },
 
-        // IfTestStmtSyntax(TypeExpSyntax testTypeExp, std::string varName, ExpSyntax exp, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody);
+        // SForStmt(SForStmtInitializerPtr initializer, 
+        //      SExpPtr condExp, 
+        //      SExpPtr continueExp, 
+        //      SEmbeddableStmt body);
         ClassInfo {
-            .name = "IfTestStmtSyntax",
+            .name = "SForStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "testType", .getterName = "GetTestType" },
-                { .type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
-                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody" },
-                { .type = "std::optional<EmbeddableStmtSyntax>", .memberVarName = "elseBody", .getterName = "GetElseBody" },
-            },
-        },
-
-        // 
-        VariantInfo {
-            .name = "ForStmtInitializerSyntax",
-            .argName = "forInit",
-            .memberNames {
-                "std::unique_ptr<class ExpForStmtInitializerSyntax>",
-                "std::unique_ptr<class VarDeclForStmtInitializerSyntax>"
-            }
-        },
-
-        ClassInfo {
-            .name = "ExpForStmtInitializerSyntax",
-            .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" }
+                {.type = "SForStmtInitializerPtr", .memberVarName = "initializer", .getterName = "GetInitializer" },
+                {.type = "SExpPtr", .memberVarName = "cond", .getterName = "GetCond" },
+                {.type = "SExpPtr", .memberVarName = "cont", .getterName = "GetCont" },
+                {.type = "SEmbeddableStmtPtr", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
         ClassInfo {
-            .name = "VarDeclForStmtInitializerSyntax",
+            .name = "SReturnStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "VarDeclSyntax", .memberVarName = "varDecl", .getterName = "GetVarDecl" }
+                {.type = "SExpPtr", .memberVarName = "value", .getterName = "GetValue" },
             },
         },
 
-        // ForStmtSyntax(std::optional<ForStmtInitializerSyntax> initializer, 
-        //      std::optional<ExpSyntax> condExp, 
-        //      std::optional<ExpSyntax> continueExp, 
-        //      EmbeddableStmtSyntax body);
+        // SExpStmt(SExp exp)
         ClassInfo {
-            .name = "ForStmtSyntax",
+            .name = "SExpStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "std::optional<ForStmtInitializerSyntax>", .memberVarName = "initializer", .getterName = "GetInitializer" },
-                { .type = "std::optional<ExpSyntax>", .memberVarName = "cond", .getterName = "GetCond" },
-                { .type = "std::optional<ExpSyntax>", .memberVarName = "cont", .getterName = "GetCont" },
-                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody" },
+                {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
             },
         },
 
-
+        // SForeachStmt(STypeExp type, std::u32string varName, SExp enumerable, SEmbeddableStmt body);
         ClassInfo {
-            .name = "ReturnStmtSyntax",
+            .name = "SForeachStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "std::optional<ExpSyntax>", .memberVarName = "value", .getterName = "GetValue" },
+                {.type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
+                {.type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
+                {.type = "SExpPtr", .memberVarName = "enumerable", .getterName = "GetEnumerable" },
+                {.type = "SEmbeddableStmtPtr", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
-        // ExpStmtSyntax(ExpSyntax exp)
+        // SYieldStmt(SExp value)
         ClassInfo {
-            .name = "ExpStmtSyntax",
+            .name = "SYieldStmt",
+            .variantInterfaces { "SStmt" },
             .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "exp", .getterName = "GetExp" },
+                {.type = "SExpPtr", .memberVarName = "value", .getterName = "GetValue" },
             },
         },
 
-        // ForeachStmtSyntax(TypeExpSyntax type, std::u32string varName, ExpSyntax enumerable, EmbeddableStmtSyntax body);
+        #pragma endregion SStmts
+        
+        // SGlobalFuncDecl
         ClassInfo {
-            .name = "ForeachStmtSyntax",
+            .name = "SGlobalFuncDecl",
+            .variantInterfaces { "SNamespaceDeclElement", "SScriptElement" },
             .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
-                { .type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
-                { .type = "ExpSyntax", .memberVarName = "enumerable", .getterName = "GetEnumerable" },
-                { .type = "EmbeddableStmtSyntax", .memberVarName = "body", .getterName = "GetBody" },
-            },
-        },
-
-        // YieldStmtSyntax(ExpSyntax value)
-        ClassInfo {
-            .name = "YieldStmtSyntax",
-            .memberInfos {
-                { .type = "ExpSyntax", .memberVarName = "value", .getterName = "GetValue" },
-            },
-        },
-
-        // TypeParamSyntax
-        ClassInfo {
-            .name = "TypeParamSyntax",
-            .memberInfos {
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-            },
-        },
-
-        // FuncParamSyntax
-        ClassInfo {
-            .name = "FuncParamSyntax",
-            .memberInfos {
-                { .type = "bool", .memberVarName = "hasOut", .getterName = "HasOut" },
-                { .type = "bool", .memberVarName = "hasParams", .getterName = "HasParams" },
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" }
-            },
-        },
-
-        // GlobalFuncDeclSyntax
-        ClassInfo {
-            .name = "GlobalFuncDeclSyntax",
-            .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" }, // seq 함수인가        
-                { .type = "TypeExpSyntax", .memberVarName = "retType", .getterName = "GetRetType" },
+                { .type = "STypeExpPtr", .memberVarName = "retType", .getterName = "GetRetType" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters" },
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+                { .type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                { .type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
-        // ClassMemberFuncDeclSyntax
+        #pragma region SClassDecls
+        // SClassDecl
         ClassInfo {
-            .name = "ClassMemberFuncDeclSyntax",
+            .name = "SClassDecl",
+            .variantInterfaces { "SClassMemberDecl", "SStructMemberDecl", "SNamespaceDeclElement", "SScriptElement" },
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                {.type = "std::vector<STypeExpPtr>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes" },
+                {.type = "std::vector<SClassMemberDeclPtr>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
+            },
+        },
+
+        // SClassMemberFuncDecl
+        ClassInfo {
+            .name = "SClassMemberFuncDecl",
+            .variantInterfaces { "SClassMemberDecl" },
+            .memberInfos {
+                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
                 { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" },
-                { .type = "TypeExpSyntax", .memberVarName = "retType", .getterName = "GetRetType" },
+                { .type = "STypeExpPtr", .memberVarName = "retType", .getterName = "GetRetType" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters" },
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+                { .type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                { .type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
-        // ClassConstructorDeclSyntax
+        // SClassConstructorDecl
         ClassInfo {
-            .name = "ClassConstructorDeclSyntax",
+            .name = "SClassConstructorDecl",
+            .variantInterfaces { "SClassMemberDecl" },
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters" },
-                { .type = "std::optional<std::vector<ArgumentSyntax>>", .memberVarName = "baseArgs", .getterName = "GetBaseArgs" },
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+                { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                { .type = "std::optional<std::vector<SArgument>>", .memberVarName = "baseArgs", .getterName = "GetBaseArgs" },
+                { .type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
-        // ClassMemberVarDeclSyntax
+        // SClassMemberVarDecl
         ClassInfo {
-            .name = "ClassMemberVarDeclSyntax",
+            .name = "SClassMemberVarDecl",
+            .variantInterfaces { "SClassMemberDecl" },
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
-                { .type = "TypeExpSyntax", .memberVarName = "varType", .getterName = "GetVarType" },
+                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "STypeExpPtr", .memberVarName = "varType", .getterName = "GetVarType" },
                 { .type = "std::vector<std::string>", .memberVarName = "varNames", .getterName = "GetVarNames" },
             },
         },
 
-        // ClassMemberDeclSyntax
-        VariantInfo {
-            .name = "ClassMemberDeclSyntax",
-            .argName = "decl",
-            .memberNames {
-                "class ClassDeclSyntax",
-                "class StructDeclSyntax",
-                "class EnumDeclSyntax",
-                "ClassMemberFuncDeclSyntax",
-                "ClassConstructorDeclSyntax",
-                "ClassMemberVarDeclSyntax",
-            }
-        },
+        #pragma endregion ClassDecls
 
-        // ClassDeclSyntax
+        #pragma region StructDecls
+
+        // SStructDecl
         ClassInfo {
-            .name = "ClassDeclSyntax",
+            .name = "SStructDecl",
+            .variantInterfaces { "SClassMemberDecl", "SStructMemberDecl", "SNamespaceDeclElement", "SScriptElement" },
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes" },
-                { .type = "std::vector<ClassMemberDeclSyntax>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
+                {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                {.type = "std::vector<STypeExpPtr>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes" },
+                {.type = "std::vector<SStructMemberDeclPtr>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
             },
         },
 
-        // StructMemberFuncDeclSyntax
+        // SStructMemberFuncDecl
         ClassInfo {
-            .name = "StructMemberFuncDeclSyntax",
+            .name = "SStructMemberFuncDecl",
+            .variantInterfaces { "SStructMemberDecl" },
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAcessModifier" },
+                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAcessModifier" },
                 { .type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
                 { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" }, // seq 함수인가  
-                { .type = "TypeExpSyntax", .memberVarName = "retType", .getterName = "GetRetType" },
+                { .type = "STypeExpPtr", .memberVarName = "retType", .getterName = "GetRetType" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters" },
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+                { .type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                { .type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
-        // StructConstructorDeclSyntax
+        // SStructConstructorDecl
         ClassInfo {
-            .name = "StructConstructorDeclSyntax",
+            .name = "SStructConstructorDecl",
+            .variantInterfaces { "SStructMemberDecl" },
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<FuncParamSyntax>", .memberVarName = "parameters", .getterName = "GetParameters" },
-                { .type = "std::vector<StmtSyntax>", .memberVarName = "body", .getterName = "GetBody" },
+                { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                { .type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
-        // StructMemberVarDeclSyntax
+        // SStructMemberVarDecl
         ClassInfo {
-            .name = "StructMemberVarDeclSyntax",
+            .name = "SStructMemberVarDecl",
+            .variantInterfaces { "SStructMemberDecl" },
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
-                { .type = "TypeExpSyntax", .memberVarName = "varType", .getterName = "GetVarType" },
+                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "STypeExpPtr", .memberVarName = "varType", .getterName = "GetVarType" },
                 { .type = "std::vector<std::string>", .memberVarName = "varNames", .getterName = "GetVarNames" },
             },
         },
+        
+        #pragma endregion SStructDecls
 
-        // StructMemberDeclSyntax
-        VariantInfo {
-            .name = "StructMemberDeclSyntax",
-            .argName = "decl",
-            .memberNames {
-                "class ClassDeclSyntax",
-                "class StructDeclSyntax",
-                "class EnumDeclSyntax",
-                "StructMemberFuncDeclSyntax",
-                "StructConstructorDeclSyntax",
-                "StructMemberVarDeclSyntax",
-            }
-        },
+        #pragma region SEnumDecl
 
-        // StructDeclSyntax
+        // SEnumElemMemberVarDecl
         ClassInfo {
-            .name = "StructDeclSyntax",
+            .name = "SEnumElemMemberVarDecl",
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<TypeExpSyntax>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes" },
-                { .type = "std::vector<StructMemberDeclSyntax>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
-            },
-        },
-
-        // EnumElemMemberVarDeclSyntax
-        ClassInfo {
-            .name = "EnumElemMemberVarDeclSyntax",
-            .memberInfos {
-                { .type = "TypeExpSyntax", .memberVarName = "type", .getterName = "GetType" },
+                { .type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
             },
         },
 
-        // EnumElemDeclSyntax
+        // SEnumElemDecl
         ClassInfo {
-            .name = "EnumElemDeclSyntax",
+            .name = "SEnumElemDecl",
             .memberInfos {
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<EnumElemMemberVarDeclSyntax>", .memberVarName = "memberVars", .getterName = "GetMemberVars" },
+                { .type = "std::vector<SEnumElemMemberVarDecl>", .memberVarName = "memberVars", .getterName = "GetMemberVars" },
             },
         },
 
-        // EnumDeclSyntax
+        // SEnumDecl
         ClassInfo {
-            .name = "EnumDeclSyntax",
+            .name = "SEnumDecl",
+            .variantInterfaces { "SClassMemberDecl", "SStructMemberDecl", "SNamespaceDeclElement", "SScriptElement" },
             .memberInfos {
-                { .type = "std::optional<AccessModifierSyntax>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<TypeParamSyntax>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<EnumElemDeclSyntax>", .memberVarName = "elements", .getterName = "GetElements" },
+                { .type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<SEnumElemDecl>", .memberVarName = "elements", .getterName = "GetElements" },
             },
         },
 
-        // NamespaceDeclSyntaxElement
-        VariantInfo {
-            .name = "NamespaceDeclSyntaxElement",
-            .argName = "elem",
-            .memberNames {
-                "GlobalFuncDeclSyntax",
-                "class NamespaceDeclSyntax", // forward declaration
-                "ClassDeclSyntax",
-                "StructDeclSyntax",
-                "EnumDeclSyntax",
-            }
-        },
-
-        // NamespaceDeclSyntax
+        #pragma endregion SEnumDecl
+        
+        // SNamespaceDecl
         ClassInfo {
-            .name = "NamespaceDeclSyntax",
+            .name = "SNamespaceDecl",
+            .variantInterfaces { "SNamespaceDeclElement", "SScriptElement" },
             .memberInfos {
                 { .type = "std::vector<std::string>", .memberVarName = "names", .getterName = "GetNames" },
-                { .type = "std::vector<NamespaceDeclSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements" }
+                { .type = "std::vector<SNamespaceDeclElementPtr>", .memberVarName = "elements", .getterName = "GetElements" }
             },
         },
-
-        // ScriptSyntaxElement
-        VariantInfo {
-            .name = "ScriptSyntaxElement",
-            .argName = "elem",
-            .memberNames {
-                "NamespaceDeclSyntax",
-                "GlobalFuncDeclSyntax",
-                "ClassDeclSyntax",
-                "StructDeclSyntax",
-                "EnumDeclSyntax",
-            }
-        },
-
+        
         // Script
         ClassInfo {
-            .name = "ScriptSyntax",
+            .name = "SScript",
             .memberInfos {
-                { .type = "std::vector<ScriptSyntaxElement>", .memberVarName = "elements", .getterName = "GetElements" },
+                { .type = "std::vector<SScriptElementPtr>", .memberVarName = "elements", .getterName = "GetElements" },
             },
         },
     };

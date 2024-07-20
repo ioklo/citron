@@ -10,218 +10,120 @@
 #include <Infra/Unreachable.h>
 
 namespace Citron {
-class ArgumentSyntax;
+class SArgument;
 
-using StmtSyntax = std::variant<
-    class CommandStmtSyntax,
-    class VarDeclStmtSyntax,
-    std::unique_ptr<class IfStmtSyntax>,
-    std::unique_ptr<class IfTestStmtSyntax>,
-    std::unique_ptr<class ForStmtSyntax>,
-    class ContinueStmtSyntax,
-    class BreakStmtSyntax,
-    std::unique_ptr<class ReturnStmtSyntax>,
-    class BlockStmtSyntax,
-    class BlankStmtSyntax,
-    std::unique_ptr<class ExpStmtSyntax>,
-    class TaskStmtSyntax,
-    class AwaitStmtSyntax,
-    class AsyncStmtSyntax,
-    std::unique_ptr<class ForeachStmtSyntax>,
-    std::unique_ptr<class YieldStmtSyntax>,
-    class DirectiveStmtSyntax>;
+class SStmt;
+class SCommandStmt;
+class SVarDeclStmt;
+class SIfStmt;
+class SIfTestStmt;
+class SForStmt;
+class SContinueStmt;
+class SBreakStmt;
+class SReturnStmt;
+class SBlockStmt;
+class SBlankStmt;
+class SExpStmt;
+class STaskStmt;
+class SAwaitStmt;
+class SAsyncStmt;
+class SForeachStmt;
+class SYieldStmt;
+class SDirectiveStmt;
 
-SYNTAX_API JsonItem ToJson(StmtSyntax& stmt);
+class SExp;
+class SIdentifierExp;
+class SStringExp;
+class SIntLiteralExp;
+class SBoolLiteralExp;
+class SNullLiteralExp;
+class SBinaryOpExp;
+class SUnaryOpExp;
+class SCallExp;
+class SLambdaExp;
+class SIndexerExp;
+class SMemberExp;
+class SIndirectMemberExp;
+class SListExp;
+class SNewExp;
+class SBoxExp;
+class SIsExp;
+class SAsExp;
 
-using ExpSyntax = std::variant<
-    class IdentifierExpSyntax,
-    class StringExpSyntax,
-    class IntLiteralExpSyntax,
-    class BoolLiteralExpSyntax,
-    class NullLiteralExpSyntax,
-    std::unique_ptr<class BinaryOpExpSyntax>,
-    std::unique_ptr<class UnaryOpExpSyntax>,
-    std::unique_ptr<class CallExpSyntax>,
-    std::unique_ptr<class LambdaExpSyntax>,
-    std::unique_ptr<class IndexerExpSyntax>,
-    std::unique_ptr<class MemberExpSyntax>,
-    std::unique_ptr<class IndirectMemberExpSyntax>,
-    class ListExpSyntax,
-    class NewExpSyntax,
-    std::unique_ptr<class BoxExpSyntax>,
-    std::unique_ptr<class IsExpSyntax>,
-    std::unique_ptr<class AsExpSyntax>>;
+class STypeExp;
+class SIdTypeExp;
+class SMemberTypeExp;
+class SNullableTypeExp;
+class SLocalPtrTypeExp;
+class SBoxPtrTypeExp;
+class SLocalTypeExp;
 
-SYNTAX_API JsonItem ToJson(ExpSyntax& exp);
+class SStringExpElement;
+class STextStringExpElement;
+class SExpStringExpElement;
 
-using TypeExpSyntax = std::variant<
-    class IdTypeExpSyntax,
-    std::unique_ptr<class MemberTypeExpSyntax>,
-    std::unique_ptr<class NullableTypeExpSyntax>,
-    std::unique_ptr<class LocalPtrTypeExpSyntax>,
-    std::unique_ptr<class BoxPtrTypeExpSyntax>,
-    std::unique_ptr<class LocalTypeExpSyntax>>;
+class SLambdaExpBody;
+class SStmtsLambdaExpBody;
+class SExpLambdaExpBody;
 
-SYNTAX_API JsonItem ToJson(TypeExpSyntax& typeExp);
+class SEmbeddableStmt;
+class SSingleEmbeddableStmt;
+class SBlockEmbeddableStmt;
 
-class IdTypeExpSyntax
-{
-    std::string name;
-    std::vector<TypeExpSyntax> typeArgs;
+class SForStmtInitializer;
+class SExpForStmtInitializer;
+class SVarDeclForStmtInitializer;
 
-public:
-    SYNTAX_API IdTypeExpSyntax(std::string name, std::vector<TypeExpSyntax> typeArgs);
-    SYNTAX_API IdTypeExpSyntax(std::string name);
-    IdTypeExpSyntax(const IdTypeExpSyntax&) = delete;
-    SYNTAX_API IdTypeExpSyntax(IdTypeExpSyntax&&) noexcept;
-    SYNTAX_API ~IdTypeExpSyntax();
+class SClassMemberDecl;
+class SClassMemberFuncDecl;
+class SClassConstructorDecl;
+class SClassMemberVarDecl;
 
-    IdTypeExpSyntax& operator=(const IdTypeExpSyntax& other) = delete;
-    SYNTAX_API IdTypeExpSyntax& operator=(IdTypeExpSyntax&& other) noexcept;
+class SStructMemberDecl;
+class SStructMemberFuncDecl;
+class SStructConstructorDecl;
+class SStructMemberVarDecl;
 
-    std::string& GetName() { return name; }
-    std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }
+class SNamespaceDeclElement;
+class SScriptElement;
 
-    SYNTAX_API JsonItem ToJson();
-};
+class SClassDecl;
+class SStructDecl;
+class SEnumDecl;
+class SGlobalFuncDecl;
+class SNamespaceDecl;
+class SScript;
 
-class MemberTypeExpSyntax
-{
-    TypeExpSyntax parentType;
-    std::string name;
-    std::vector<TypeExpSyntax> typeArgs;
-
-public:
-    SYNTAX_API MemberTypeExpSyntax(TypeExpSyntax parentType, std::string name, std::vector<TypeExpSyntax> typeArgs);
-    MemberTypeExpSyntax(const MemberTypeExpSyntax&) = delete;
-    SYNTAX_API MemberTypeExpSyntax(MemberTypeExpSyntax&&) noexcept;
-    SYNTAX_API ~MemberTypeExpSyntax();
-
-    MemberTypeExpSyntax& operator=(const MemberTypeExpSyntax& other) = delete;
-    SYNTAX_API MemberTypeExpSyntax& operator=(MemberTypeExpSyntax&& other) noexcept;
-
-    TypeExpSyntax& GetParentType() { return parentType; }
-    std::string& GetName() { return name; }
-    std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class NullableTypeExpSyntax
-{
-    TypeExpSyntax innerType;
-
-public:
-    SYNTAX_API NullableTypeExpSyntax(TypeExpSyntax innerType);
-    NullableTypeExpSyntax(const NullableTypeExpSyntax&) = delete;
-    SYNTAX_API NullableTypeExpSyntax(NullableTypeExpSyntax&&) noexcept;
-    SYNTAX_API ~NullableTypeExpSyntax();
-
-    NullableTypeExpSyntax& operator=(const NullableTypeExpSyntax& other) = delete;
-    SYNTAX_API NullableTypeExpSyntax& operator=(NullableTypeExpSyntax&& other) noexcept;
-
-    TypeExpSyntax& GetInnerType() { return innerType; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class LocalPtrTypeExpSyntax
-{
-    TypeExpSyntax innerType;
-
-public:
-    SYNTAX_API LocalPtrTypeExpSyntax(TypeExpSyntax innerType);
-    LocalPtrTypeExpSyntax(const LocalPtrTypeExpSyntax&) = delete;
-    SYNTAX_API LocalPtrTypeExpSyntax(LocalPtrTypeExpSyntax&&) noexcept;
-    SYNTAX_API ~LocalPtrTypeExpSyntax();
-
-    LocalPtrTypeExpSyntax& operator=(const LocalPtrTypeExpSyntax& other) = delete;
-    SYNTAX_API LocalPtrTypeExpSyntax& operator=(LocalPtrTypeExpSyntax&& other) noexcept;
-
-    TypeExpSyntax& GetInnerType() { return innerType; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class BoxPtrTypeExpSyntax
-{
-    TypeExpSyntax innerType;
-
-public:
-    SYNTAX_API BoxPtrTypeExpSyntax(TypeExpSyntax innerType);
-    BoxPtrTypeExpSyntax(const BoxPtrTypeExpSyntax&) = delete;
-    SYNTAX_API BoxPtrTypeExpSyntax(BoxPtrTypeExpSyntax&&) noexcept;
-    SYNTAX_API ~BoxPtrTypeExpSyntax();
-
-    BoxPtrTypeExpSyntax& operator=(const BoxPtrTypeExpSyntax& other) = delete;
-    SYNTAX_API BoxPtrTypeExpSyntax& operator=(BoxPtrTypeExpSyntax&& other) noexcept;
-
-    TypeExpSyntax& GetInnerType() { return innerType; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class LocalTypeExpSyntax
-{
-    TypeExpSyntax innerType;
-
-public:
-    SYNTAX_API LocalTypeExpSyntax(TypeExpSyntax innerType);
-    LocalTypeExpSyntax(const LocalTypeExpSyntax&) = delete;
-    SYNTAX_API LocalTypeExpSyntax(LocalTypeExpSyntax&&) noexcept;
-    SYNTAX_API ~LocalTypeExpSyntax();
-
-    LocalTypeExpSyntax& operator=(const LocalTypeExpSyntax& other) = delete;
-    SYNTAX_API LocalTypeExpSyntax& operator=(LocalTypeExpSyntax&& other) noexcept;
-
-    TypeExpSyntax& GetInnerType() { return innerType; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class LambdaExpParamSyntax
-{
-    std::optional<TypeExpSyntax> type;
-    std::string name;
-    bool hasOut;
-    bool hasParams;
-
-public:
-    SYNTAX_API LambdaExpParamSyntax(std::optional<TypeExpSyntax> type, std::string name, bool hasOut, bool hasParams);
-    LambdaExpParamSyntax(const LambdaExpParamSyntax&) = delete;
-    SYNTAX_API LambdaExpParamSyntax(LambdaExpParamSyntax&&) noexcept;
-    SYNTAX_API ~LambdaExpParamSyntax();
-
-    LambdaExpParamSyntax& operator=(const LambdaExpParamSyntax& other) = delete;
-    SYNTAX_API LambdaExpParamSyntax& operator=(LambdaExpParamSyntax&& other) noexcept;
-
-    std::optional<TypeExpSyntax>& GetType() { return type; }
-    std::string& GetName() { return name; }
-    bool& HasOut() { return hasOut; }
-    bool& HasParams() { return hasParams; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-enum class AccessModifierSyntax
+using SStmtPtr = std::unique_ptr<SStmt>;
+using SExpPtr = std::unique_ptr<SExp>;
+using STypeExpPtr = std::unique_ptr<STypeExp>;
+using SStringExpElementPtr = std::unique_ptr<SStringExpElement>;
+using SLambdaExpBodyPtr = std::unique_ptr<SLambdaExpBody>;
+using SEmbeddableStmtPtr = std::unique_ptr<SEmbeddableStmt>;
+using SForStmtInitializerPtr = std::unique_ptr<SForStmtInitializer>;
+using SClassMemberDeclPtr = std::unique_ptr<SClassMemberDecl>;
+using SStructMemberDeclPtr = std::unique_ptr<SStructMemberDecl>;
+using SNamespaceDeclElementPtr = std::unique_ptr<SNamespaceDeclElement>;
+using SScriptElementPtr = std::unique_ptr<SScriptElement>;
+enum class SAccessModifier
 {
     Public,
     Protected,
     Private,
 };
 
-inline JsonItem ToJson(AccessModifierSyntax& arg)
+inline JsonItem ToJson(SAccessModifier& arg)
 {
     switch(arg)
     {
-    case AccessModifierSyntax::Public: return JsonString("Public");
-    case AccessModifierSyntax::Protected: return JsonString("Protected");
-    case AccessModifierSyntax::Private: return JsonString("Private");
+    case SAccessModifier::Public: return JsonString("Public");
+    case SAccessModifier::Protected: return JsonString("Protected");
+    case SAccessModifier::Private: return JsonString("Private");
     }
     unreachable();
 }
 
-enum class BinaryOpSyntaxKind
+enum class SBinaryOpKind
 {
     Multiply,
     Divide,
@@ -237,27 +139,27 @@ enum class BinaryOpSyntaxKind
     Assign,
 };
 
-inline JsonItem ToJson(BinaryOpSyntaxKind& arg)
+inline JsonItem ToJson(SBinaryOpKind& arg)
 {
     switch(arg)
     {
-    case BinaryOpSyntaxKind::Multiply: return JsonString("Multiply");
-    case BinaryOpSyntaxKind::Divide: return JsonString("Divide");
-    case BinaryOpSyntaxKind::Modulo: return JsonString("Modulo");
-    case BinaryOpSyntaxKind::Add: return JsonString("Add");
-    case BinaryOpSyntaxKind::Subtract: return JsonString("Subtract");
-    case BinaryOpSyntaxKind::LessThan: return JsonString("LessThan");
-    case BinaryOpSyntaxKind::GreaterThan: return JsonString("GreaterThan");
-    case BinaryOpSyntaxKind::LessThanOrEqual: return JsonString("LessThanOrEqual");
-    case BinaryOpSyntaxKind::GreaterThanOrEqual: return JsonString("GreaterThanOrEqual");
-    case BinaryOpSyntaxKind::Equal: return JsonString("Equal");
-    case BinaryOpSyntaxKind::NotEqual: return JsonString("NotEqual");
-    case BinaryOpSyntaxKind::Assign: return JsonString("Assign");
+    case SBinaryOpKind::Multiply: return JsonString("Multiply");
+    case SBinaryOpKind::Divide: return JsonString("Divide");
+    case SBinaryOpKind::Modulo: return JsonString("Modulo");
+    case SBinaryOpKind::Add: return JsonString("Add");
+    case SBinaryOpKind::Subtract: return JsonString("Subtract");
+    case SBinaryOpKind::LessThan: return JsonString("LessThan");
+    case SBinaryOpKind::GreaterThan: return JsonString("GreaterThan");
+    case SBinaryOpKind::LessThanOrEqual: return JsonString("LessThanOrEqual");
+    case SBinaryOpKind::GreaterThanOrEqual: return JsonString("GreaterThanOrEqual");
+    case SBinaryOpKind::Equal: return JsonString("Equal");
+    case SBinaryOpKind::NotEqual: return JsonString("NotEqual");
+    case SBinaryOpKind::Assign: return JsonString("Assign");
     }
     unreachable();
 }
 
-enum class UnaryOpSyntaxKind
+enum class SUnaryOpKind
 {
     PostfixInc,
     PostfixDec,
@@ -269,1325 +171,1814 @@ enum class UnaryOpSyntaxKind
     Deref,
 };
 
-inline JsonItem ToJson(UnaryOpSyntaxKind& arg)
+inline JsonItem ToJson(SUnaryOpKind& arg)
 {
     switch(arg)
     {
-    case UnaryOpSyntaxKind::PostfixInc: return JsonString("PostfixInc");
-    case UnaryOpSyntaxKind::PostfixDec: return JsonString("PostfixDec");
-    case UnaryOpSyntaxKind::Minus: return JsonString("Minus");
-    case UnaryOpSyntaxKind::LogicalNot: return JsonString("LogicalNot");
-    case UnaryOpSyntaxKind::PrefixInc: return JsonString("PrefixInc");
-    case UnaryOpSyntaxKind::PrefixDec: return JsonString("PrefixDec");
-    case UnaryOpSyntaxKind::Ref: return JsonString("Ref");
-    case UnaryOpSyntaxKind::Deref: return JsonString("Deref");
+    case SUnaryOpKind::PostfixInc: return JsonString("PostfixInc");
+    case SUnaryOpKind::PostfixDec: return JsonString("PostfixDec");
+    case SUnaryOpKind::Minus: return JsonString("Minus");
+    case SUnaryOpKind::LogicalNot: return JsonString("LogicalNot");
+    case SUnaryOpKind::PrefixInc: return JsonString("PrefixInc");
+    case SUnaryOpKind::PrefixDec: return JsonString("PrefixDec");
+    case SUnaryOpKind::Ref: return JsonString("Ref");
+    case SUnaryOpKind::Deref: return JsonString("Deref");
     }
     unreachable();
 }
 
-class IdentifierExpSyntax
+class SArgument
+{
+    bool bOut;
+    bool bParams;
+    SExpPtr exp;
+
+public:
+    SYNTAX_API SArgument(bool bOut, bool bParams, SExpPtr exp);
+    SYNTAX_API SArgument(SExpPtr exp);
+    SArgument(const SArgument&) = delete;
+    SYNTAX_API SArgument(SArgument&&) noexcept;
+    SYNTAX_API ~SArgument();
+
+    SArgument& operator=(const SArgument& other) = delete;
+    SYNTAX_API SArgument& operator=(SArgument&& other) noexcept;
+
+    bool& HasOut() { return bOut; }
+    bool& GetParams() { return bParams; }
+    SExpPtr& GetExp() { return exp; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class SLambdaExpParam
+{
+    STypeExpPtr type;
+    std::string name;
+    bool hasOut;
+    bool hasParams;
+
+public:
+    SYNTAX_API SLambdaExpParam(STypeExpPtr type, std::string name, bool hasOut, bool hasParams);
+    SLambdaExpParam(const SLambdaExpParam&) = delete;
+    SYNTAX_API SLambdaExpParam(SLambdaExpParam&&) noexcept;
+    SYNTAX_API ~SLambdaExpParam();
+
+    SLambdaExpParam& operator=(const SLambdaExpParam& other) = delete;
+    SYNTAX_API SLambdaExpParam& operator=(SLambdaExpParam&& other) noexcept;
+
+    STypeExpPtr& GetType() { return type; }
+    std::string& GetName() { return name; }
+    bool& HasOut() { return hasOut; }
+    bool& HasParams() { return hasParams; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class SVarDeclElement
+{
+    std::string varName;
+    SExpPtr initExp;
+
+public:
+    SYNTAX_API SVarDeclElement(std::string varName, SExpPtr initExp);
+    SVarDeclElement(const SVarDeclElement&) = delete;
+    SYNTAX_API SVarDeclElement(SVarDeclElement&&) noexcept;
+    SYNTAX_API ~SVarDeclElement();
+
+    SVarDeclElement& operator=(const SVarDeclElement& other) = delete;
+    SYNTAX_API SVarDeclElement& operator=(SVarDeclElement&& other) noexcept;
+
+    std::string& GetVarName() { return varName; }
+    SExpPtr& GetInitExp() { return initExp; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class SVarDecl
+{
+    STypeExpPtr type;
+    std::vector<SVarDeclElement> elements;
+
+public:
+    SYNTAX_API SVarDecl(STypeExpPtr type, std::vector<SVarDeclElement> elements);
+    SVarDecl(const SVarDecl&) = delete;
+    SYNTAX_API SVarDecl(SVarDecl&&) noexcept;
+    SYNTAX_API ~SVarDecl();
+
+    SVarDecl& operator=(const SVarDecl& other) = delete;
+    SYNTAX_API SVarDecl& operator=(SVarDecl&& other) noexcept;
+
+    STypeExpPtr& GetType() { return type; }
+    std::vector<SVarDeclElement>& GetElements() { return elements; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class STypeParam
+{
+    std::string name;
+
+public:
+    SYNTAX_API STypeParam(std::string name);
+    STypeParam(const STypeParam&) = delete;
+    SYNTAX_API STypeParam(STypeParam&&) noexcept;
+    SYNTAX_API ~STypeParam();
+
+    STypeParam& operator=(const STypeParam& other) = delete;
+    SYNTAX_API STypeParam& operator=(STypeParam&& other) noexcept;
+
+    std::string& GetName() { return name; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class SFuncParam
+{
+    bool hasOut;
+    bool hasParams;
+    STypeExpPtr type;
+    std::string name;
+
+public:
+    SYNTAX_API SFuncParam(bool hasOut, bool hasParams, STypeExpPtr type, std::string name);
+    SFuncParam(const SFuncParam&) = delete;
+    SYNTAX_API SFuncParam(SFuncParam&&) noexcept;
+    SYNTAX_API ~SFuncParam();
+
+    SFuncParam& operator=(const SFuncParam& other) = delete;
+    SYNTAX_API SFuncParam& operator=(SFuncParam&& other) noexcept;
+
+    bool& HasOut() { return hasOut; }
+    bool& HasParams() { return hasParams; }
+    STypeExpPtr& GetType() { return type; }
+    std::string& GetName() { return name; }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class SStmtVisitor
+{
+public:
+    virtual void Visit(SCommandStmt& stmt) = 0;
+    virtual void Visit(SVarDeclStmt& stmt) = 0;
+    virtual void Visit(SIfStmt& stmt) = 0;
+    virtual void Visit(SIfTestStmt& stmt) = 0;
+    virtual void Visit(SForStmt& stmt) = 0;
+    virtual void Visit(SContinueStmt& stmt) = 0;
+    virtual void Visit(SBreakStmt& stmt) = 0;
+    virtual void Visit(SReturnStmt& stmt) = 0;
+    virtual void Visit(SBlockStmt& stmt) = 0;
+    virtual void Visit(SBlankStmt& stmt) = 0;
+    virtual void Visit(SExpStmt& stmt) = 0;
+    virtual void Visit(STaskStmt& stmt) = 0;
+    virtual void Visit(SAwaitStmt& stmt) = 0;
+    virtual void Visit(SAsyncStmt& stmt) = 0;
+    virtual void Visit(SForeachStmt& stmt) = 0;
+    virtual void Visit(SYieldStmt& stmt) = 0;
+    virtual void Visit(SDirectiveStmt& stmt) = 0;
+};
+
+class SStmt
+{
+public:
+    virtual void Accept(SStmtVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(SStmtPtr& stmt);
+
+class SExpVisitor
+{
+public:
+    virtual void Visit(SIdentifierExp& exp) = 0;
+    virtual void Visit(SStringExp& exp) = 0;
+    virtual void Visit(SIntLiteralExp& exp) = 0;
+    virtual void Visit(SBoolLiteralExp& exp) = 0;
+    virtual void Visit(SNullLiteralExp& exp) = 0;
+    virtual void Visit(SBinaryOpExp& exp) = 0;
+    virtual void Visit(SUnaryOpExp& exp) = 0;
+    virtual void Visit(SCallExp& exp) = 0;
+    virtual void Visit(SLambdaExp& exp) = 0;
+    virtual void Visit(SIndexerExp& exp) = 0;
+    virtual void Visit(SMemberExp& exp) = 0;
+    virtual void Visit(SIndirectMemberExp& exp) = 0;
+    virtual void Visit(SListExp& exp) = 0;
+    virtual void Visit(SNewExp& exp) = 0;
+    virtual void Visit(SBoxExp& exp) = 0;
+    virtual void Visit(SIsExp& exp) = 0;
+    virtual void Visit(SAsExp& exp) = 0;
+};
+
+class SExp
+{
+public:
+    virtual void Accept(SExpVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(SExpPtr& exp);
+
+class STypeExpVisitor
+{
+public:
+    virtual void Visit(SIdTypeExp& typeExp) = 0;
+    virtual void Visit(SMemberTypeExp& typeExp) = 0;
+    virtual void Visit(SNullableTypeExp& typeExp) = 0;
+    virtual void Visit(SLocalPtrTypeExp& typeExp) = 0;
+    virtual void Visit(SBoxPtrTypeExp& typeExp) = 0;
+    virtual void Visit(SLocalTypeExp& typeExp) = 0;
+};
+
+class STypeExp
+{
+public:
+    virtual void Accept(STypeExpVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(STypeExpPtr& typeExp);
+
+class SStringExpElementVisitor
+{
+public:
+    virtual void Visit(STextStringExpElement& elem) = 0;
+    virtual void Visit(SExpStringExpElement& elem) = 0;
+};
+
+class SStringExpElement
+{
+public:
+    virtual void Accept(SStringExpElementVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(SStringExpElementPtr& elem);
+
+class SLambdaExpBodyVisitor
+{
+public:
+    virtual void Visit(SStmtsLambdaExpBody& body) = 0;
+    virtual void Visit(SExpLambdaExpBody& body) = 0;
+};
+
+class SLambdaExpBody
+{
+public:
+    virtual void Accept(SLambdaExpBodyVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(SLambdaExpBodyPtr& body);
+
+class SEmbeddableStmtVisitor
+{
+public:
+    virtual void Visit(SSingleEmbeddableStmt& stmt) = 0;
+    virtual void Visit(SBlockEmbeddableStmt& stmt) = 0;
+};
+
+class SEmbeddableStmt
+{
+public:
+    virtual void Accept(SEmbeddableStmtVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(SEmbeddableStmtPtr& stmt);
+
+class SForStmtInitializerVisitor
+{
+public:
+    virtual void Visit(SExpForStmtInitializer& initializer) = 0;
+    virtual void Visit(SVarDeclForStmtInitializer& initializer) = 0;
+};
+
+class SForStmtInitializer
+{
+public:
+    virtual void Accept(SForStmtInitializerVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(SForStmtInitializerPtr& initializer);
+
+class SClassMemberDeclVisitor
+{
+public:
+    virtual void Visit(SClassDecl& decl) = 0;
+    virtual void Visit(SStructDecl& decl) = 0;
+    virtual void Visit(SEnumDecl& decl) = 0;
+    virtual void Visit(SClassMemberFuncDecl& decl) = 0;
+    virtual void Visit(SClassConstructorDecl& decl) = 0;
+    virtual void Visit(SClassMemberVarDecl& decl) = 0;
+};
+
+class SClassMemberDecl
+{
+public:
+    virtual void Accept(SClassMemberDeclVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(SClassMemberDeclPtr& decl);
+
+class SStructMemberDeclVisitor
+{
+public:
+    virtual void Visit(SClassDecl& decl) = 0;
+    virtual void Visit(SStructDecl& decl) = 0;
+    virtual void Visit(SEnumDecl& decl) = 0;
+    virtual void Visit(SStructMemberFuncDecl& decl) = 0;
+    virtual void Visit(SStructConstructorDecl& decl) = 0;
+    virtual void Visit(SStructMemberVarDecl& decl) = 0;
+};
+
+class SStructMemberDecl
+{
+public:
+    virtual void Accept(SStructMemberDeclVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(SStructMemberDeclPtr& decl);
+
+class SNamespaceDeclElementVisitor
+{
+public:
+    virtual void Visit(SGlobalFuncDecl& elem) = 0;
+    virtual void Visit(SNamespaceDecl& elem) = 0;
+    virtual void Visit(SClassDecl& elem) = 0;
+    virtual void Visit(SStructDecl& elem) = 0;
+    virtual void Visit(SEnumDecl& elem) = 0;
+};
+
+class SNamespaceDeclElement
+{
+public:
+    virtual void Accept(SNamespaceDeclElementVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(SNamespaceDeclElementPtr& elem);
+
+class SScriptElementVisitor
+{
+public:
+    virtual void Visit(SNamespaceDecl& elem) = 0;
+    virtual void Visit(SGlobalFuncDecl& elem) = 0;
+    virtual void Visit(SClassDecl& elem) = 0;
+    virtual void Visit(SStructDecl& elem) = 0;
+    virtual void Visit(SEnumDecl& elem) = 0;
+};
+
+class SScriptElement
+{
+public:
+    virtual void Accept(SScriptElementVisitor& visitor) = 0;
+};
+
+SYNTAX_API JsonItem ToJson(SScriptElementPtr& elem);
+
+class SIdentifierExp
+    : public SExp
 {
     std::string value;
-    std::vector<TypeExpSyntax> typeArgs;
+    std::vector<STypeExpPtr> typeArgs;
 
 public:
-    SYNTAX_API IdentifierExpSyntax(std::string value, std::vector<TypeExpSyntax> typeArgs);
-    IdentifierExpSyntax(std::string value) : IdentifierExpSyntax(std::move(value), {}) { }
-    IdentifierExpSyntax(const IdentifierExpSyntax&) = delete;
-    SYNTAX_API IdentifierExpSyntax(IdentifierExpSyntax&&) noexcept;
-    SYNTAX_API ~IdentifierExpSyntax();
+    SYNTAX_API SIdentifierExp(std::string value, std::vector<STypeExpPtr> typeArgs);
+    SIdentifierExp(std::string value) : SIdentifierExp(std::move(value), {}) { }
+    SIdentifierExp(const SIdentifierExp&) = delete;
+    SYNTAX_API SIdentifierExp(SIdentifierExp&&) noexcept;
+    SYNTAX_API ~SIdentifierExp();
 
-    IdentifierExpSyntax& operator=(const IdentifierExpSyntax& other) = delete;
-    SYNTAX_API IdentifierExpSyntax& operator=(IdentifierExpSyntax&& other) noexcept;
+    SIdentifierExp& operator=(const SIdentifierExp& other) = delete;
+    SYNTAX_API SIdentifierExp& operator=(SIdentifierExp&& other) noexcept;
 
     std::string& GetValue() { return value; }
-    std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }
+    std::vector<STypeExpPtr>& GetTypeArgs() { return typeArgs; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-using StringExpSyntaxElement = std::variant<
-    class TextStringExpSyntaxElement,
-    std::unique_ptr<class ExpStringExpSyntaxElement>>;
-
-SYNTAX_API JsonItem ToJson(StringExpSyntaxElement& elem);
-
-class TextStringExpSyntaxElement
+class SStringExp
+    : public SExp
 {
-    std::string text;
+    std::vector<SStringExpElementPtr> elements;
 
 public:
-    SYNTAX_API TextStringExpSyntaxElement(std::string text);
-    TextStringExpSyntaxElement(const TextStringExpSyntaxElement&) = delete;
-    SYNTAX_API TextStringExpSyntaxElement(TextStringExpSyntaxElement&&) noexcept;
-    SYNTAX_API ~TextStringExpSyntaxElement();
+    SYNTAX_API SStringExp(std::vector<SStringExpElementPtr> elements);
+    SYNTAX_API SStringExp(std::string str);
+    SStringExp(const SStringExp&) = delete;
+    SYNTAX_API SStringExp(SStringExp&&) noexcept;
+    SYNTAX_API ~SStringExp();
 
-    TextStringExpSyntaxElement& operator=(const TextStringExpSyntaxElement& other) = delete;
-    SYNTAX_API TextStringExpSyntaxElement& operator=(TextStringExpSyntaxElement&& other) noexcept;
+    SStringExp& operator=(const SStringExp& other) = delete;
+    SYNTAX_API SStringExp& operator=(SStringExp&& other) noexcept;
 
-    std::string& GetText() { return text; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class StringExpSyntax
-{
-    std::vector<StringExpSyntaxElement> elements;
-
-public:
-    SYNTAX_API StringExpSyntax(std::vector<StringExpSyntaxElement> elements);
-    SYNTAX_API StringExpSyntax(std::string str);
-    StringExpSyntax(const StringExpSyntax&) = delete;
-    SYNTAX_API StringExpSyntax(StringExpSyntax&&) noexcept;
-    SYNTAX_API ~StringExpSyntax();
-
-    StringExpSyntax& operator=(const StringExpSyntax& other) = delete;
-    SYNTAX_API StringExpSyntax& operator=(StringExpSyntax&& other) noexcept;
-
-    std::vector<StringExpSyntaxElement>& GetElements() { return elements; }
+    std::vector<SStringExpElementPtr>& GetElements() { return elements; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class IntLiteralExpSyntax
+class SIntLiteralExp
+    : public SExp
 {
     int value;
 
 public:
-    SYNTAX_API IntLiteralExpSyntax(int value);
-    IntLiteralExpSyntax(const IntLiteralExpSyntax&) = delete;
-    SYNTAX_API IntLiteralExpSyntax(IntLiteralExpSyntax&&) noexcept;
-    SYNTAX_API ~IntLiteralExpSyntax();
+    SYNTAX_API SIntLiteralExp(int value);
+    SIntLiteralExp(const SIntLiteralExp&) = delete;
+    SYNTAX_API SIntLiteralExp(SIntLiteralExp&&) noexcept;
+    SYNTAX_API ~SIntLiteralExp();
 
-    IntLiteralExpSyntax& operator=(const IntLiteralExpSyntax& other) = delete;
-    SYNTAX_API IntLiteralExpSyntax& operator=(IntLiteralExpSyntax&& other) noexcept;
+    SIntLiteralExp& operator=(const SIntLiteralExp& other) = delete;
+    SYNTAX_API SIntLiteralExp& operator=(SIntLiteralExp&& other) noexcept;
 
     int& GetValue() { return value; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class BoolLiteralExpSyntax
+class SBoolLiteralExp
+    : public SExp
 {
     bool value;
 
 public:
-    SYNTAX_API BoolLiteralExpSyntax(bool value);
-    BoolLiteralExpSyntax(const BoolLiteralExpSyntax&) = delete;
-    SYNTAX_API BoolLiteralExpSyntax(BoolLiteralExpSyntax&&) noexcept;
-    SYNTAX_API ~BoolLiteralExpSyntax();
+    SYNTAX_API SBoolLiteralExp(bool value);
+    SBoolLiteralExp(const SBoolLiteralExp&) = delete;
+    SYNTAX_API SBoolLiteralExp(SBoolLiteralExp&&) noexcept;
+    SYNTAX_API ~SBoolLiteralExp();
 
-    BoolLiteralExpSyntax& operator=(const BoolLiteralExpSyntax& other) = delete;
-    SYNTAX_API BoolLiteralExpSyntax& operator=(BoolLiteralExpSyntax&& other) noexcept;
+    SBoolLiteralExp& operator=(const SBoolLiteralExp& other) = delete;
+    SYNTAX_API SBoolLiteralExp& operator=(SBoolLiteralExp&& other) noexcept;
 
     bool& GetValue() { return value; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class NullLiteralExpSyntax
+class SNullLiteralExp
+    : public SExp
 {
 public:
-    SYNTAX_API NullLiteralExpSyntax();
-    NullLiteralExpSyntax(const NullLiteralExpSyntax&) = delete;
-    SYNTAX_API NullLiteralExpSyntax(NullLiteralExpSyntax&&) noexcept;
-    SYNTAX_API ~NullLiteralExpSyntax();
+    SYNTAX_API SNullLiteralExp();
+    SNullLiteralExp(const SNullLiteralExp&) = delete;
+    SYNTAX_API SNullLiteralExp(SNullLiteralExp&&) noexcept;
+    SYNTAX_API ~SNullLiteralExp();
 
-    NullLiteralExpSyntax& operator=(const NullLiteralExpSyntax& other) = delete;
-    SYNTAX_API NullLiteralExpSyntax& operator=(NullLiteralExpSyntax&& other) noexcept;
+    SNullLiteralExp& operator=(const SNullLiteralExp& other) = delete;
+    SYNTAX_API SNullLiteralExp& operator=(SNullLiteralExp&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class ListExpSyntax
+class SListExp
+    : public SExp
 {
-    std::vector<ExpSyntax> elements;
+    std::vector<SExpPtr> elements;
 
 public:
-    SYNTAX_API ListExpSyntax(std::vector<ExpSyntax> elements);
-    ListExpSyntax(const ListExpSyntax&) = delete;
-    SYNTAX_API ListExpSyntax(ListExpSyntax&&) noexcept;
-    SYNTAX_API ~ListExpSyntax();
+    SYNTAX_API SListExp(std::vector<SExpPtr> elements);
+    SListExp(const SListExp&) = delete;
+    SYNTAX_API SListExp(SListExp&&) noexcept;
+    SYNTAX_API ~SListExp();
 
-    ListExpSyntax& operator=(const ListExpSyntax& other) = delete;
-    SYNTAX_API ListExpSyntax& operator=(ListExpSyntax&& other) noexcept;
+    SListExp& operator=(const SListExp& other) = delete;
+    SYNTAX_API SListExp& operator=(SListExp&& other) noexcept;
 
-    std::vector<ExpSyntax>& GetElements() { return elements; }
+    std::vector<SExpPtr>& GetElements() { return elements; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class NewExpSyntax
+class SNewExp
+    : public SExp
 {
-    TypeExpSyntax type;
-    std::vector<ArgumentSyntax> args;
+    STypeExpPtr type;
+    std::vector<SArgument> args;
 
 public:
-    SYNTAX_API NewExpSyntax(TypeExpSyntax type, std::vector<ArgumentSyntax> args);
-    NewExpSyntax(const NewExpSyntax&) = delete;
-    SYNTAX_API NewExpSyntax(NewExpSyntax&&) noexcept;
-    SYNTAX_API ~NewExpSyntax();
+    SYNTAX_API SNewExp(STypeExpPtr type, std::vector<SArgument> args);
+    SNewExp(const SNewExp&) = delete;
+    SYNTAX_API SNewExp(SNewExp&&) noexcept;
+    SYNTAX_API ~SNewExp();
 
-    NewExpSyntax& operator=(const NewExpSyntax& other) = delete;
-    SYNTAX_API NewExpSyntax& operator=(NewExpSyntax&& other) noexcept;
+    SNewExp& operator=(const SNewExp& other) = delete;
+    SYNTAX_API SNewExp& operator=(SNewExp&& other) noexcept;
 
-    TypeExpSyntax& GetType() { return type; }
-    std::vector<ArgumentSyntax>& GetArgs() { return args; }
+    STypeExpPtr& GetType() { return type; }
+    std::vector<SArgument>& GetArgs() { return args; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class BinaryOpExpSyntax
+class SBinaryOpExp
+    : public SExp
 {
-    BinaryOpSyntaxKind kind;
-    ExpSyntax operand0;
-    ExpSyntax operand1;
+    SBinaryOpKind kind;
+    SExpPtr operand0;
+    SExpPtr operand1;
 
 public:
-    SYNTAX_API BinaryOpExpSyntax(BinaryOpSyntaxKind kind, ExpSyntax operand0, ExpSyntax operand1);
-    BinaryOpExpSyntax(const BinaryOpExpSyntax&) = delete;
-    SYNTAX_API BinaryOpExpSyntax(BinaryOpExpSyntax&&) noexcept;
-    SYNTAX_API ~BinaryOpExpSyntax();
+    SYNTAX_API SBinaryOpExp(SBinaryOpKind kind, SExpPtr operand0, SExpPtr operand1);
+    SBinaryOpExp(const SBinaryOpExp&) = delete;
+    SYNTAX_API SBinaryOpExp(SBinaryOpExp&&) noexcept;
+    SYNTAX_API ~SBinaryOpExp();
 
-    BinaryOpExpSyntax& operator=(const BinaryOpExpSyntax& other) = delete;
-    SYNTAX_API BinaryOpExpSyntax& operator=(BinaryOpExpSyntax&& other) noexcept;
+    SBinaryOpExp& operator=(const SBinaryOpExp& other) = delete;
+    SYNTAX_API SBinaryOpExp& operator=(SBinaryOpExp&& other) noexcept;
 
-    BinaryOpSyntaxKind& GetKind() { return kind; }
-    ExpSyntax& GetOperand0() { return operand0; }
-    ExpSyntax& GetOperand1() { return operand1; }
+    SBinaryOpKind& GetKind() { return kind; }
+    SExpPtr& GetOperand0() { return operand0; }
+    SExpPtr& GetOperand1() { return operand1; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class UnaryOpExpSyntax
+class SUnaryOpExp
+    : public SExp
 {
-    UnaryOpSyntaxKind kind;
-    ExpSyntax operand;
+    SUnaryOpKind kind;
+    SExpPtr operand;
 
 public:
-    SYNTAX_API UnaryOpExpSyntax(UnaryOpSyntaxKind kind, ExpSyntax operand);
-    UnaryOpExpSyntax(const UnaryOpExpSyntax&) = delete;
-    SYNTAX_API UnaryOpExpSyntax(UnaryOpExpSyntax&&) noexcept;
-    SYNTAX_API ~UnaryOpExpSyntax();
+    SYNTAX_API SUnaryOpExp(SUnaryOpKind kind, SExpPtr operand);
+    SUnaryOpExp(const SUnaryOpExp&) = delete;
+    SYNTAX_API SUnaryOpExp(SUnaryOpExp&&) noexcept;
+    SYNTAX_API ~SUnaryOpExp();
 
-    UnaryOpExpSyntax& operator=(const UnaryOpExpSyntax& other) = delete;
-    SYNTAX_API UnaryOpExpSyntax& operator=(UnaryOpExpSyntax&& other) noexcept;
+    SUnaryOpExp& operator=(const SUnaryOpExp& other) = delete;
+    SYNTAX_API SUnaryOpExp& operator=(SUnaryOpExp&& other) noexcept;
 
-    UnaryOpSyntaxKind& GetKind() { return kind; }
-    ExpSyntax& GetOperand() { return operand; }
+    SUnaryOpKind& GetKind() { return kind; }
+    SExpPtr& GetOperand() { return operand; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class CallExpSyntax
+class SCallExp
+    : public SExp
 {
-    ExpSyntax callable;
-    std::vector<ArgumentSyntax> args;
+    SExpPtr callable;
+    std::vector<SArgument> args;
 
 public:
-    SYNTAX_API CallExpSyntax(ExpSyntax callable, std::vector<ArgumentSyntax> args);
-    CallExpSyntax(const CallExpSyntax&) = delete;
-    SYNTAX_API CallExpSyntax(CallExpSyntax&&) noexcept;
-    SYNTAX_API ~CallExpSyntax();
+    SYNTAX_API SCallExp(SExpPtr callable, std::vector<SArgument> args);
+    SCallExp(const SCallExp&) = delete;
+    SYNTAX_API SCallExp(SCallExp&&) noexcept;
+    SYNTAX_API ~SCallExp();
 
-    CallExpSyntax& operator=(const CallExpSyntax& other) = delete;
-    SYNTAX_API CallExpSyntax& operator=(CallExpSyntax&& other) noexcept;
+    SCallExp& operator=(const SCallExp& other) = delete;
+    SYNTAX_API SCallExp& operator=(SCallExp&& other) noexcept;
 
-    ExpSyntax& GetCallable() { return callable; }
-    std::vector<ArgumentSyntax>& GetArgs() { return args; }
+    SExpPtr& GetCallable() { return callable; }
+    std::vector<SArgument>& GetArgs() { return args; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-using LambdaExpBodySyntax = std::variant<
-    class StmtsLambdaExpBodySyntax,
-    std::unique_ptr<class ExpLambdaExpBodySyntax>>;
-
-SYNTAX_API JsonItem ToJson(LambdaExpBodySyntax& body);
-
-class StmtsLambdaExpBodySyntax
+class SLambdaExp
+    : public SExp
 {
-    std::vector<StmtSyntax> stmts;
+    std::vector<SLambdaExpParam> params;
+    SLambdaExpBodyPtr body;
 
 public:
-    SYNTAX_API StmtsLambdaExpBodySyntax(std::vector<StmtSyntax> stmts);
-    StmtsLambdaExpBodySyntax(const StmtsLambdaExpBodySyntax&) = delete;
-    SYNTAX_API StmtsLambdaExpBodySyntax(StmtsLambdaExpBodySyntax&&) noexcept;
-    SYNTAX_API ~StmtsLambdaExpBodySyntax();
+    SYNTAX_API SLambdaExp(std::vector<SLambdaExpParam> params, SLambdaExpBodyPtr body);
+    SLambdaExp(const SLambdaExp&) = delete;
+    SYNTAX_API SLambdaExp(SLambdaExp&&) noexcept;
+    SYNTAX_API ~SLambdaExp();
 
-    StmtsLambdaExpBodySyntax& operator=(const StmtsLambdaExpBodySyntax& other) = delete;
-    SYNTAX_API StmtsLambdaExpBodySyntax& operator=(StmtsLambdaExpBodySyntax&& other) noexcept;
+    SLambdaExp& operator=(const SLambdaExp& other) = delete;
+    SYNTAX_API SLambdaExp& operator=(SLambdaExp&& other) noexcept;
 
-    std::vector<StmtSyntax>& GetStmts() { return stmts; }
+    std::vector<SLambdaExpParam>& GetParams() { return params; }
+    SLambdaExpBodyPtr& GetBody() { return body; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class ExpLambdaExpBodySyntax
+class SIndexerExp
+    : public SExp
 {
-    ExpSyntax exp;
+    SExpPtr obj;
+    SExpPtr index;
 
 public:
-    SYNTAX_API ExpLambdaExpBodySyntax(ExpSyntax exp);
-    ExpLambdaExpBodySyntax(const ExpLambdaExpBodySyntax&) = delete;
-    SYNTAX_API ExpLambdaExpBodySyntax(ExpLambdaExpBodySyntax&&) noexcept;
-    SYNTAX_API ~ExpLambdaExpBodySyntax();
+    SYNTAX_API SIndexerExp(SExpPtr obj, SExpPtr index);
+    SIndexerExp(const SIndexerExp&) = delete;
+    SYNTAX_API SIndexerExp(SIndexerExp&&) noexcept;
+    SYNTAX_API ~SIndexerExp();
 
-    ExpLambdaExpBodySyntax& operator=(const ExpLambdaExpBodySyntax& other) = delete;
-    SYNTAX_API ExpLambdaExpBodySyntax& operator=(ExpLambdaExpBodySyntax&& other) noexcept;
+    SIndexerExp& operator=(const SIndexerExp& other) = delete;
+    SYNTAX_API SIndexerExp& operator=(SIndexerExp&& other) noexcept;
 
-    ExpSyntax& GetExp() { return exp; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class LambdaExpSyntax
-{
-    std::vector<LambdaExpParamSyntax> params;
-    LambdaExpBodySyntax body;
-
-public:
-    SYNTAX_API LambdaExpSyntax(std::vector<LambdaExpParamSyntax> params, LambdaExpBodySyntax body);
-    LambdaExpSyntax(const LambdaExpSyntax&) = delete;
-    SYNTAX_API LambdaExpSyntax(LambdaExpSyntax&&) noexcept;
-    SYNTAX_API ~LambdaExpSyntax();
-
-    LambdaExpSyntax& operator=(const LambdaExpSyntax& other) = delete;
-    SYNTAX_API LambdaExpSyntax& operator=(LambdaExpSyntax&& other) noexcept;
-
-    std::vector<LambdaExpParamSyntax>& GetParams() { return params; }
-    LambdaExpBodySyntax& GetBody() { return body; }
+    SExpPtr& GetObject() { return obj; }
+    SExpPtr& GetIndex() { return index; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class IndexerExpSyntax
+class SMemberExp
+    : public SExp
 {
-    ExpSyntax obj;
-    ExpSyntax index;
-
-public:
-    SYNTAX_API IndexerExpSyntax(ExpSyntax obj, ExpSyntax index);
-    IndexerExpSyntax(const IndexerExpSyntax&) = delete;
-    SYNTAX_API IndexerExpSyntax(IndexerExpSyntax&&) noexcept;
-    SYNTAX_API ~IndexerExpSyntax();
-
-    IndexerExpSyntax& operator=(const IndexerExpSyntax& other) = delete;
-    SYNTAX_API IndexerExpSyntax& operator=(IndexerExpSyntax&& other) noexcept;
-
-    ExpSyntax& GetObject() { return obj; }
-    ExpSyntax& GetIndex() { return index; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class MemberExpSyntax
-{
-    ExpSyntax parent;
+    SExpPtr parent;
     std::string memberName;
-    std::vector<TypeExpSyntax> memberTypeArgs;
+    std::vector<STypeExpPtr> memberTypeArgs;
 
 public:
-    SYNTAX_API MemberExpSyntax(ExpSyntax parent, std::string memberName, std::vector<TypeExpSyntax> memberTypeArgs);
-    SYNTAX_API MemberExpSyntax(ExpSyntax parent, std::string memberName);
-    MemberExpSyntax(const MemberExpSyntax&) = delete;
-    SYNTAX_API MemberExpSyntax(MemberExpSyntax&&) noexcept;
-    SYNTAX_API ~MemberExpSyntax();
+    SYNTAX_API SMemberExp(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs);
+    SYNTAX_API SMemberExp(SExpPtr parent, std::string memberName);
+    SMemberExp(const SMemberExp&) = delete;
+    SYNTAX_API SMemberExp(SMemberExp&&) noexcept;
+    SYNTAX_API ~SMemberExp();
 
-    MemberExpSyntax& operator=(const MemberExpSyntax& other) = delete;
-    SYNTAX_API MemberExpSyntax& operator=(MemberExpSyntax&& other) noexcept;
+    SMemberExp& operator=(const SMemberExp& other) = delete;
+    SYNTAX_API SMemberExp& operator=(SMemberExp&& other) noexcept;
 
-    ExpSyntax& GetParent() { return parent; }
+    SExpPtr& GetParent() { return parent; }
     std::string& GetMemberName() { return memberName; }
-    std::vector<TypeExpSyntax>& GetMemberTypeArgs() { return memberTypeArgs; }
+    std::vector<STypeExpPtr>& GetMemberTypeArgs() { return memberTypeArgs; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class IndirectMemberExpSyntax
+class SIndirectMemberExp
+    : public SExp
 {
-    ExpSyntax parent;
+    SExpPtr parent;
     std::string memberName;
-    std::vector<TypeExpSyntax> memberTypeArgs;
+    std::vector<STypeExpPtr> memberTypeArgs;
 
 public:
-    SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName, std::vector<TypeExpSyntax> memberTypeArgs);
-    SYNTAX_API IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName);
-    IndirectMemberExpSyntax(const IndirectMemberExpSyntax&) = delete;
-    SYNTAX_API IndirectMemberExpSyntax(IndirectMemberExpSyntax&&) noexcept;
-    SYNTAX_API ~IndirectMemberExpSyntax();
+    SYNTAX_API SIndirectMemberExp(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs);
+    SYNTAX_API SIndirectMemberExp(SExpPtr parent, std::string memberName);
+    SIndirectMemberExp(const SIndirectMemberExp&) = delete;
+    SYNTAX_API SIndirectMemberExp(SIndirectMemberExp&&) noexcept;
+    SYNTAX_API ~SIndirectMemberExp();
 
-    IndirectMemberExpSyntax& operator=(const IndirectMemberExpSyntax& other) = delete;
-    SYNTAX_API IndirectMemberExpSyntax& operator=(IndirectMemberExpSyntax&& other) noexcept;
+    SIndirectMemberExp& operator=(const SIndirectMemberExp& other) = delete;
+    SYNTAX_API SIndirectMemberExp& operator=(SIndirectMemberExp&& other) noexcept;
 
-    ExpSyntax& GetParent() { return parent; }
+    SExpPtr& GetParent() { return parent; }
     std::string& GetMemberName() { return memberName; }
-    std::vector<TypeExpSyntax>& GetMemberTypeArgs() { return memberTypeArgs; }
+    std::vector<STypeExpPtr>& GetMemberTypeArgs() { return memberTypeArgs; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class BoxExpSyntax
+class SBoxExp
+    : public SExp
 {
-    ExpSyntax innerExp;
+    SExpPtr innerExp;
 
 public:
-    SYNTAX_API BoxExpSyntax(ExpSyntax innerExp);
-    BoxExpSyntax(const BoxExpSyntax&) = delete;
-    SYNTAX_API BoxExpSyntax(BoxExpSyntax&&) noexcept;
-    SYNTAX_API ~BoxExpSyntax();
+    SYNTAX_API SBoxExp(SExpPtr innerExp);
+    SBoxExp(const SBoxExp&) = delete;
+    SYNTAX_API SBoxExp(SBoxExp&&) noexcept;
+    SYNTAX_API ~SBoxExp();
 
-    BoxExpSyntax& operator=(const BoxExpSyntax& other) = delete;
-    SYNTAX_API BoxExpSyntax& operator=(BoxExpSyntax&& other) noexcept;
+    SBoxExp& operator=(const SBoxExp& other) = delete;
+    SYNTAX_API SBoxExp& operator=(SBoxExp&& other) noexcept;
 
-    ExpSyntax& GetInnerExp() { return innerExp; }
+    SExpPtr& GetInnerExp() { return innerExp; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class IsExpSyntax
+class SIsExp
+    : public SExp
 {
-    ExpSyntax exp;
-    TypeExpSyntax type;
+    SExpPtr exp;
+    STypeExpPtr type;
 
 public:
-    SYNTAX_API IsExpSyntax(ExpSyntax exp, TypeExpSyntax type);
-    IsExpSyntax(const IsExpSyntax&) = delete;
-    SYNTAX_API IsExpSyntax(IsExpSyntax&&) noexcept;
-    SYNTAX_API ~IsExpSyntax();
+    SYNTAX_API SIsExp(SExpPtr exp, STypeExpPtr type);
+    SIsExp(const SIsExp&) = delete;
+    SYNTAX_API SIsExp(SIsExp&&) noexcept;
+    SYNTAX_API ~SIsExp();
 
-    IsExpSyntax& operator=(const IsExpSyntax& other) = delete;
-    SYNTAX_API IsExpSyntax& operator=(IsExpSyntax&& other) noexcept;
+    SIsExp& operator=(const SIsExp& other) = delete;
+    SYNTAX_API SIsExp& operator=(SIsExp&& other) noexcept;
 
-    ExpSyntax& GetExp() { return exp; }
-    TypeExpSyntax& GetType() { return type; }
+    SExpPtr& GetExp() { return exp; }
+    STypeExpPtr& GetType() { return type; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class AsExpSyntax
+class SAsExp
+    : public SExp
 {
-    ExpSyntax exp;
-    TypeExpSyntax type;
+    SExpPtr exp;
+    STypeExpPtr type;
 
 public:
-    SYNTAX_API AsExpSyntax(ExpSyntax exp, TypeExpSyntax type);
-    AsExpSyntax(const AsExpSyntax&) = delete;
-    SYNTAX_API AsExpSyntax(AsExpSyntax&&) noexcept;
-    SYNTAX_API ~AsExpSyntax();
+    SYNTAX_API SAsExp(SExpPtr exp, STypeExpPtr type);
+    SAsExp(const SAsExp&) = delete;
+    SYNTAX_API SAsExp(SAsExp&&) noexcept;
+    SYNTAX_API ~SAsExp();
 
-    AsExpSyntax& operator=(const AsExpSyntax& other) = delete;
-    SYNTAX_API AsExpSyntax& operator=(AsExpSyntax&& other) noexcept;
+    SAsExp& operator=(const SAsExp& other) = delete;
+    SYNTAX_API SAsExp& operator=(SAsExp&& other) noexcept;
 
-    ExpSyntax& GetExp() { return exp; }
-    TypeExpSyntax& GetType() { return type; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class ArgumentSyntax
-{
-    bool bOut;
-    bool bParams;
-    ExpSyntax exp;
-
-public:
-    SYNTAX_API ArgumentSyntax(bool bOut, bool bParams, ExpSyntax exp);
-    SYNTAX_API ArgumentSyntax(ExpSyntax exp);
-    ArgumentSyntax(const ArgumentSyntax&) = delete;
-    SYNTAX_API ArgumentSyntax(ArgumentSyntax&&) noexcept;
-    SYNTAX_API ~ArgumentSyntax();
-
-    ArgumentSyntax& operator=(const ArgumentSyntax& other) = delete;
-    SYNTAX_API ArgumentSyntax& operator=(ArgumentSyntax&& other) noexcept;
-
-    bool& HasOut() { return bOut; }
-    bool& GetParams() { return bParams; }
-    ExpSyntax& GetExp() { return exp; }
+    SExpPtr& GetExp() { return exp; }
+    STypeExpPtr& GetType() { return type; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class ExpStringExpSyntaxElement
-{
-    ExpSyntax exp;
-
-public:
-    SYNTAX_API ExpStringExpSyntaxElement(ExpSyntax exp);
-    ExpStringExpSyntaxElement(const ExpStringExpSyntaxElement&) = delete;
-    SYNTAX_API ExpStringExpSyntaxElement(ExpStringExpSyntaxElement&&) noexcept;
-    SYNTAX_API ~ExpStringExpSyntaxElement();
-
-    ExpStringExpSyntaxElement& operator=(const ExpStringExpSyntaxElement& other) = delete;
-    SYNTAX_API ExpStringExpSyntaxElement& operator=(ExpStringExpSyntaxElement&& other) noexcept;
-
-    ExpSyntax& GetExp() { return exp; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-using EmbeddableStmtSyntax = std::variant<
-    std::unique_ptr<class SingleEmbeddableStmtSyntax>,
-    class BlockEmbeddableStmtSyntax>;
-
-SYNTAX_API JsonItem ToJson(EmbeddableStmtSyntax& embeddableStmt);
-
-class BlockEmbeddableStmtSyntax
-{
-    std::vector<StmtSyntax> stmts;
-
-public:
-    SYNTAX_API BlockEmbeddableStmtSyntax(std::vector<StmtSyntax> stmts);
-    BlockEmbeddableStmtSyntax(const BlockEmbeddableStmtSyntax&) = delete;
-    SYNTAX_API BlockEmbeddableStmtSyntax(BlockEmbeddableStmtSyntax&&) noexcept;
-    SYNTAX_API ~BlockEmbeddableStmtSyntax();
-
-    BlockEmbeddableStmtSyntax& operator=(const BlockEmbeddableStmtSyntax& other) = delete;
-    SYNTAX_API BlockEmbeddableStmtSyntax& operator=(BlockEmbeddableStmtSyntax&& other) noexcept;
-
-    std::vector<StmtSyntax>& GetStmts() { return stmts; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class VarDeclSyntaxElement
-{
-    std::string varName;
-    std::optional<ExpSyntax> initExp;
-
-public:
-    SYNTAX_API VarDeclSyntaxElement(std::string varName, std::optional<ExpSyntax> initExp);
-    VarDeclSyntaxElement(const VarDeclSyntaxElement&) = delete;
-    SYNTAX_API VarDeclSyntaxElement(VarDeclSyntaxElement&&) noexcept;
-    SYNTAX_API ~VarDeclSyntaxElement();
-
-    VarDeclSyntaxElement& operator=(const VarDeclSyntaxElement& other) = delete;
-    SYNTAX_API VarDeclSyntaxElement& operator=(VarDeclSyntaxElement&& other) noexcept;
-
-    std::string& GetVarName() { return varName; }
-    std::optional<ExpSyntax>& GetInitExp() { return initExp; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class VarDeclSyntax
-{
-    TypeExpSyntax type;
-    std::vector<VarDeclSyntaxElement> elements;
-
-public:
-    SYNTAX_API VarDeclSyntax(TypeExpSyntax type, std::vector<VarDeclSyntaxElement> elements);
-    VarDeclSyntax(const VarDeclSyntax&) = delete;
-    SYNTAX_API VarDeclSyntax(VarDeclSyntax&&) noexcept;
-    SYNTAX_API ~VarDeclSyntax();
-
-    VarDeclSyntax& operator=(const VarDeclSyntax& other) = delete;
-    SYNTAX_API VarDeclSyntax& operator=(VarDeclSyntax&& other) noexcept;
-
-    TypeExpSyntax& GetType() { return type; }
-    std::vector<VarDeclSyntaxElement>& GetElements() { return elements; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class CommandStmtSyntax
-{
-    std::vector<StringExpSyntax> commands;
-
-public:
-    SYNTAX_API CommandStmtSyntax(std::vector<StringExpSyntax> commands);
-    CommandStmtSyntax(const CommandStmtSyntax&) = delete;
-    SYNTAX_API CommandStmtSyntax(CommandStmtSyntax&&) noexcept;
-    SYNTAX_API ~CommandStmtSyntax();
-
-    CommandStmtSyntax& operator=(const CommandStmtSyntax& other) = delete;
-    SYNTAX_API CommandStmtSyntax& operator=(CommandStmtSyntax&& other) noexcept;
-
-    std::vector<StringExpSyntax>& GetCommands() { return commands; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class VarDeclStmtSyntax
-{
-    VarDeclSyntax varDecl;
-
-public:
-    SYNTAX_API VarDeclStmtSyntax(VarDeclSyntax varDecl);
-    VarDeclStmtSyntax(const VarDeclStmtSyntax&) = delete;
-    SYNTAX_API VarDeclStmtSyntax(VarDeclStmtSyntax&&) noexcept;
-    SYNTAX_API ~VarDeclStmtSyntax();
-
-    VarDeclStmtSyntax& operator=(const VarDeclStmtSyntax& other) = delete;
-    SYNTAX_API VarDeclStmtSyntax& operator=(VarDeclStmtSyntax&& other) noexcept;
-
-    VarDeclSyntax& GetVarDecl() { return varDecl; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class ContinueStmtSyntax
-{
-public:
-    SYNTAX_API ContinueStmtSyntax();
-    ContinueStmtSyntax(const ContinueStmtSyntax&) = delete;
-    SYNTAX_API ContinueStmtSyntax(ContinueStmtSyntax&&) noexcept;
-    SYNTAX_API ~ContinueStmtSyntax();
-
-    ContinueStmtSyntax& operator=(const ContinueStmtSyntax& other) = delete;
-    SYNTAX_API ContinueStmtSyntax& operator=(ContinueStmtSyntax&& other) noexcept;
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class BreakStmtSyntax
-{
-public:
-    SYNTAX_API BreakStmtSyntax();
-    BreakStmtSyntax(const BreakStmtSyntax&) = delete;
-    SYNTAX_API BreakStmtSyntax(BreakStmtSyntax&&) noexcept;
-    SYNTAX_API ~BreakStmtSyntax();
-
-    BreakStmtSyntax& operator=(const BreakStmtSyntax& other) = delete;
-    SYNTAX_API BreakStmtSyntax& operator=(BreakStmtSyntax&& other) noexcept;
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class BlockStmtSyntax
-{
-    std::vector<StmtSyntax> stmts;
-
-public:
-    SYNTAX_API BlockStmtSyntax(std::vector<StmtSyntax> stmts);
-    BlockStmtSyntax(const BlockStmtSyntax&) = delete;
-    SYNTAX_API BlockStmtSyntax(BlockStmtSyntax&&) noexcept;
-    SYNTAX_API ~BlockStmtSyntax();
-
-    BlockStmtSyntax& operator=(const BlockStmtSyntax& other) = delete;
-    SYNTAX_API BlockStmtSyntax& operator=(BlockStmtSyntax&& other) noexcept;
-
-    std::vector<StmtSyntax>& GetStmts() { return stmts; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class BlankStmtSyntax
-{
-public:
-    SYNTAX_API BlankStmtSyntax();
-    BlankStmtSyntax(const BlankStmtSyntax&) = delete;
-    SYNTAX_API BlankStmtSyntax(BlankStmtSyntax&&) noexcept;
-    SYNTAX_API ~BlankStmtSyntax();
-
-    BlankStmtSyntax& operator=(const BlankStmtSyntax& other) = delete;
-    SYNTAX_API BlankStmtSyntax& operator=(BlankStmtSyntax&& other) noexcept;
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class TaskStmtSyntax
-{
-    std::vector<StmtSyntax> body;
-
-public:
-    SYNTAX_API TaskStmtSyntax(std::vector<StmtSyntax> body);
-    TaskStmtSyntax(const TaskStmtSyntax&) = delete;
-    SYNTAX_API TaskStmtSyntax(TaskStmtSyntax&&) noexcept;
-    SYNTAX_API ~TaskStmtSyntax();
-
-    TaskStmtSyntax& operator=(const TaskStmtSyntax& other) = delete;
-    SYNTAX_API TaskStmtSyntax& operator=(TaskStmtSyntax&& other) noexcept;
-
-    std::vector<StmtSyntax>& GetBody() { return body; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class AwaitStmtSyntax
-{
-    std::vector<StmtSyntax> body;
-
-public:
-    SYNTAX_API AwaitStmtSyntax(std::vector<StmtSyntax> body);
-    AwaitStmtSyntax(const AwaitStmtSyntax&) = delete;
-    SYNTAX_API AwaitStmtSyntax(AwaitStmtSyntax&&) noexcept;
-    SYNTAX_API ~AwaitStmtSyntax();
-
-    AwaitStmtSyntax& operator=(const AwaitStmtSyntax& other) = delete;
-    SYNTAX_API AwaitStmtSyntax& operator=(AwaitStmtSyntax&& other) noexcept;
-
-    std::vector<StmtSyntax>& GetBody() { return body; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class AsyncStmtSyntax
-{
-    std::vector<StmtSyntax> body;
-
-public:
-    SYNTAX_API AsyncStmtSyntax(std::vector<StmtSyntax> body);
-    AsyncStmtSyntax(const AsyncStmtSyntax&) = delete;
-    SYNTAX_API AsyncStmtSyntax(AsyncStmtSyntax&&) noexcept;
-    SYNTAX_API ~AsyncStmtSyntax();
-
-    AsyncStmtSyntax& operator=(const AsyncStmtSyntax& other) = delete;
-    SYNTAX_API AsyncStmtSyntax& operator=(AsyncStmtSyntax&& other) noexcept;
-
-    std::vector<StmtSyntax>& GetBody() { return body; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class DirectiveStmtSyntax
+class SIdTypeExp
+    : public STypeExp
 {
     std::string name;
-    std::vector<ExpSyntax> args;
+    std::vector<STypeExpPtr> typeArgs;
 
 public:
-    SYNTAX_API DirectiveStmtSyntax(std::string name, std::vector<ExpSyntax> args);
-    DirectiveStmtSyntax(const DirectiveStmtSyntax&) = delete;
-    SYNTAX_API DirectiveStmtSyntax(DirectiveStmtSyntax&&) noexcept;
-    SYNTAX_API ~DirectiveStmtSyntax();
+    SYNTAX_API SIdTypeExp(std::string name, std::vector<STypeExpPtr> typeArgs);
+    SYNTAX_API SIdTypeExp(std::string name);
+    SIdTypeExp(const SIdTypeExp&) = delete;
+    SYNTAX_API SIdTypeExp(SIdTypeExp&&) noexcept;
+    SYNTAX_API ~SIdTypeExp();
 
-    DirectiveStmtSyntax& operator=(const DirectiveStmtSyntax& other) = delete;
-    SYNTAX_API DirectiveStmtSyntax& operator=(DirectiveStmtSyntax&& other) noexcept;
+    SIdTypeExp& operator=(const SIdTypeExp& other) = delete;
+    SYNTAX_API SIdTypeExp& operator=(SIdTypeExp&& other) noexcept;
 
     std::string& GetName() { return name; }
-    std::vector<ExpSyntax>& GetArgs() { return args; }
+    std::vector<STypeExpPtr>& GetTypeArgs() { return typeArgs; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class SingleEmbeddableStmtSyntax
+class SMemberTypeExp
+    : public STypeExp
 {
-    StmtSyntax stmt;
+    STypeExpPtr parentType;
+    std::string name;
+    std::vector<STypeExpPtr> typeArgs;
 
 public:
-    SYNTAX_API SingleEmbeddableStmtSyntax(StmtSyntax stmt);
-    SingleEmbeddableStmtSyntax(const SingleEmbeddableStmtSyntax&) = delete;
-    SYNTAX_API SingleEmbeddableStmtSyntax(SingleEmbeddableStmtSyntax&&) noexcept;
-    SYNTAX_API ~SingleEmbeddableStmtSyntax();
+    SYNTAX_API SMemberTypeExp(STypeExpPtr parentType, std::string name, std::vector<STypeExpPtr> typeArgs);
+    SMemberTypeExp(const SMemberTypeExp&) = delete;
+    SYNTAX_API SMemberTypeExp(SMemberTypeExp&&) noexcept;
+    SYNTAX_API ~SMemberTypeExp();
 
-    SingleEmbeddableStmtSyntax& operator=(const SingleEmbeddableStmtSyntax& other) = delete;
-    SYNTAX_API SingleEmbeddableStmtSyntax& operator=(SingleEmbeddableStmtSyntax&& other) noexcept;
+    SMemberTypeExp& operator=(const SMemberTypeExp& other) = delete;
+    SYNTAX_API SMemberTypeExp& operator=(SMemberTypeExp&& other) noexcept;
 
-    StmtSyntax& GetStmt() { return stmt; }
+    STypeExpPtr& GetParentType() { return parentType; }
+    std::string& GetName() { return name; }
+    std::vector<STypeExpPtr>& GetTypeArgs() { return typeArgs; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class IfStmtSyntax
+class SNullableTypeExp
+    : public STypeExp
 {
-    ExpSyntax cond;
-    EmbeddableStmtSyntax body;
-    std::optional<EmbeddableStmtSyntax> elseBody;
+    STypeExpPtr innerType;
 
 public:
-    SYNTAX_API IfStmtSyntax(ExpSyntax cond, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody);
-    IfStmtSyntax(const IfStmtSyntax&) = delete;
-    SYNTAX_API IfStmtSyntax(IfStmtSyntax&&) noexcept;
-    SYNTAX_API ~IfStmtSyntax();
+    SYNTAX_API SNullableTypeExp(STypeExpPtr innerType);
+    SNullableTypeExp(const SNullableTypeExp&) = delete;
+    SYNTAX_API SNullableTypeExp(SNullableTypeExp&&) noexcept;
+    SYNTAX_API ~SNullableTypeExp();
 
-    IfStmtSyntax& operator=(const IfStmtSyntax& other) = delete;
-    SYNTAX_API IfStmtSyntax& operator=(IfStmtSyntax&& other) noexcept;
+    SNullableTypeExp& operator=(const SNullableTypeExp& other) = delete;
+    SYNTAX_API SNullableTypeExp& operator=(SNullableTypeExp&& other) noexcept;
 
-    ExpSyntax& GetCond() { return cond; }
-    EmbeddableStmtSyntax& GetBody() { return body; }
-    std::optional<EmbeddableStmtSyntax>& GetElseBody() { return elseBody; }
+    STypeExpPtr& GetInnerType() { return innerType; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class IfTestStmtSyntax
+class SLocalPtrTypeExp
+    : public STypeExp
 {
-    TypeExpSyntax testType;
-    std::string varName;
-    ExpSyntax exp;
-    EmbeddableStmtSyntax body;
-    std::optional<EmbeddableStmtSyntax> elseBody;
+    STypeExpPtr innerType;
 
 public:
-    SYNTAX_API IfTestStmtSyntax(TypeExpSyntax testType, std::string varName, ExpSyntax exp, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody);
-    IfTestStmtSyntax(const IfTestStmtSyntax&) = delete;
-    SYNTAX_API IfTestStmtSyntax(IfTestStmtSyntax&&) noexcept;
-    SYNTAX_API ~IfTestStmtSyntax();
+    SYNTAX_API SLocalPtrTypeExp(STypeExpPtr innerType);
+    SLocalPtrTypeExp(const SLocalPtrTypeExp&) = delete;
+    SYNTAX_API SLocalPtrTypeExp(SLocalPtrTypeExp&&) noexcept;
+    SYNTAX_API ~SLocalPtrTypeExp();
 
-    IfTestStmtSyntax& operator=(const IfTestStmtSyntax& other) = delete;
-    SYNTAX_API IfTestStmtSyntax& operator=(IfTestStmtSyntax&& other) noexcept;
+    SLocalPtrTypeExp& operator=(const SLocalPtrTypeExp& other) = delete;
+    SYNTAX_API SLocalPtrTypeExp& operator=(SLocalPtrTypeExp&& other) noexcept;
 
-    TypeExpSyntax& GetTestType() { return testType; }
-    std::string& GetVarName() { return varName; }
-    ExpSyntax& GetExp() { return exp; }
-    EmbeddableStmtSyntax& GetBody() { return body; }
-    std::optional<EmbeddableStmtSyntax>& GetElseBody() { return elseBody; }
+    STypeExpPtr& GetInnerType() { return innerType; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-using ForStmtInitializerSyntax = std::variant<
-    std::unique_ptr<class ExpForStmtInitializerSyntax>,
-    std::unique_ptr<class VarDeclForStmtInitializerSyntax>>;
-
-SYNTAX_API JsonItem ToJson(ForStmtInitializerSyntax& forInit);
-
-class ExpForStmtInitializerSyntax
+class SBoxPtrTypeExp
+    : public STypeExp
 {
-    ExpSyntax exp;
+    STypeExpPtr innerType;
 
 public:
-    SYNTAX_API ExpForStmtInitializerSyntax(ExpSyntax exp);
-    ExpForStmtInitializerSyntax(const ExpForStmtInitializerSyntax&) = delete;
-    SYNTAX_API ExpForStmtInitializerSyntax(ExpForStmtInitializerSyntax&&) noexcept;
-    SYNTAX_API ~ExpForStmtInitializerSyntax();
+    SYNTAX_API SBoxPtrTypeExp(STypeExpPtr innerType);
+    SBoxPtrTypeExp(const SBoxPtrTypeExp&) = delete;
+    SYNTAX_API SBoxPtrTypeExp(SBoxPtrTypeExp&&) noexcept;
+    SYNTAX_API ~SBoxPtrTypeExp();
 
-    ExpForStmtInitializerSyntax& operator=(const ExpForStmtInitializerSyntax& other) = delete;
-    SYNTAX_API ExpForStmtInitializerSyntax& operator=(ExpForStmtInitializerSyntax&& other) noexcept;
+    SBoxPtrTypeExp& operator=(const SBoxPtrTypeExp& other) = delete;
+    SYNTAX_API SBoxPtrTypeExp& operator=(SBoxPtrTypeExp&& other) noexcept;
 
-    ExpSyntax& GetExp() { return exp; }
+    STypeExpPtr& GetInnerType() { return innerType; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class VarDeclForStmtInitializerSyntax
+class SLocalTypeExp
+    : public STypeExp
 {
-    VarDeclSyntax varDecl;
+    STypeExpPtr innerType;
 
 public:
-    SYNTAX_API VarDeclForStmtInitializerSyntax(VarDeclSyntax varDecl);
-    VarDeclForStmtInitializerSyntax(const VarDeclForStmtInitializerSyntax&) = delete;
-    SYNTAX_API VarDeclForStmtInitializerSyntax(VarDeclForStmtInitializerSyntax&&) noexcept;
-    SYNTAX_API ~VarDeclForStmtInitializerSyntax();
+    SYNTAX_API SLocalTypeExp(STypeExpPtr innerType);
+    SLocalTypeExp(const SLocalTypeExp&) = delete;
+    SYNTAX_API SLocalTypeExp(SLocalTypeExp&&) noexcept;
+    SYNTAX_API ~SLocalTypeExp();
 
-    VarDeclForStmtInitializerSyntax& operator=(const VarDeclForStmtInitializerSyntax& other) = delete;
-    SYNTAX_API VarDeclForStmtInitializerSyntax& operator=(VarDeclForStmtInitializerSyntax&& other) noexcept;
+    SLocalTypeExp& operator=(const SLocalTypeExp& other) = delete;
+    SYNTAX_API SLocalTypeExp& operator=(SLocalTypeExp&& other) noexcept;
 
-    VarDeclSyntax& GetVarDecl() { return varDecl; }
+    STypeExpPtr& GetInnerType() { return innerType; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class ForStmtSyntax
+class STextStringExpElement
+    : public SStringExpElement
 {
-    std::optional<ForStmtInitializerSyntax> initializer;
-    std::optional<ExpSyntax> cond;
-    std::optional<ExpSyntax> cont;
-    EmbeddableStmtSyntax body;
+    std::string text;
 
 public:
-    SYNTAX_API ForStmtSyntax(std::optional<ForStmtInitializerSyntax> initializer, std::optional<ExpSyntax> cond, std::optional<ExpSyntax> cont, EmbeddableStmtSyntax body);
-    ForStmtSyntax(const ForStmtSyntax&) = delete;
-    SYNTAX_API ForStmtSyntax(ForStmtSyntax&&) noexcept;
-    SYNTAX_API ~ForStmtSyntax();
+    SYNTAX_API STextStringExpElement(std::string text);
+    STextStringExpElement(const STextStringExpElement&) = delete;
+    SYNTAX_API STextStringExpElement(STextStringExpElement&&) noexcept;
+    SYNTAX_API ~STextStringExpElement();
 
-    ForStmtSyntax& operator=(const ForStmtSyntax& other) = delete;
-    SYNTAX_API ForStmtSyntax& operator=(ForStmtSyntax&& other) noexcept;
+    STextStringExpElement& operator=(const STextStringExpElement& other) = delete;
+    SYNTAX_API STextStringExpElement& operator=(STextStringExpElement&& other) noexcept;
 
-    std::optional<ForStmtInitializerSyntax>& GetInitializer() { return initializer; }
-    std::optional<ExpSyntax>& GetCond() { return cond; }
-    std::optional<ExpSyntax>& GetCont() { return cont; }
-    EmbeddableStmtSyntax& GetBody() { return body; }
+    std::string& GetText() { return text; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SStringExpElementVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class ReturnStmtSyntax
+class SExpStringExpElement
+    : public SStringExpElement
 {
-    std::optional<ExpSyntax> value;
+    SExpPtr exp;
 
 public:
-    SYNTAX_API ReturnStmtSyntax(std::optional<ExpSyntax> value);
-    ReturnStmtSyntax(const ReturnStmtSyntax&) = delete;
-    SYNTAX_API ReturnStmtSyntax(ReturnStmtSyntax&&) noexcept;
-    SYNTAX_API ~ReturnStmtSyntax();
+    SYNTAX_API SExpStringExpElement(SExpPtr exp);
+    SExpStringExpElement(const SExpStringExpElement&) = delete;
+    SYNTAX_API SExpStringExpElement(SExpStringExpElement&&) noexcept;
+    SYNTAX_API ~SExpStringExpElement();
 
-    ReturnStmtSyntax& operator=(const ReturnStmtSyntax& other) = delete;
-    SYNTAX_API ReturnStmtSyntax& operator=(ReturnStmtSyntax&& other) noexcept;
+    SExpStringExpElement& operator=(const SExpStringExpElement& other) = delete;
+    SYNTAX_API SExpStringExpElement& operator=(SExpStringExpElement&& other) noexcept;
 
-    std::optional<ExpSyntax>& GetValue() { return value; }
+    SExpPtr& GetExp() { return exp; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SStringExpElementVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class ExpStmtSyntax
+class SStmtsLambdaExpBody
+    : public SLambdaExpBody
 {
-    ExpSyntax exp;
+    std::vector<SStmtPtr> stmts;
 
 public:
-    SYNTAX_API ExpStmtSyntax(ExpSyntax exp);
-    ExpStmtSyntax(const ExpStmtSyntax&) = delete;
-    SYNTAX_API ExpStmtSyntax(ExpStmtSyntax&&) noexcept;
-    SYNTAX_API ~ExpStmtSyntax();
+    SYNTAX_API SStmtsLambdaExpBody(std::vector<SStmtPtr> stmts);
+    SStmtsLambdaExpBody(const SStmtsLambdaExpBody&) = delete;
+    SYNTAX_API SStmtsLambdaExpBody(SStmtsLambdaExpBody&&) noexcept;
+    SYNTAX_API ~SStmtsLambdaExpBody();
 
-    ExpStmtSyntax& operator=(const ExpStmtSyntax& other) = delete;
-    SYNTAX_API ExpStmtSyntax& operator=(ExpStmtSyntax&& other) noexcept;
+    SStmtsLambdaExpBody& operator=(const SStmtsLambdaExpBody& other) = delete;
+    SYNTAX_API SStmtsLambdaExpBody& operator=(SStmtsLambdaExpBody&& other) noexcept;
 
-    ExpSyntax& GetExp() { return exp; }
+    std::vector<SStmtPtr>& GetStmts() { return stmts; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SLambdaExpBodyVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class ForeachStmtSyntax
+class SExpLambdaExpBody
+    : public SLambdaExpBody
 {
-    TypeExpSyntax type;
-    std::string varName;
-    ExpSyntax enumerable;
-    EmbeddableStmtSyntax body;
+    SExpPtr exp;
 
 public:
-    SYNTAX_API ForeachStmtSyntax(TypeExpSyntax type, std::string varName, ExpSyntax enumerable, EmbeddableStmtSyntax body);
-    ForeachStmtSyntax(const ForeachStmtSyntax&) = delete;
-    SYNTAX_API ForeachStmtSyntax(ForeachStmtSyntax&&) noexcept;
-    SYNTAX_API ~ForeachStmtSyntax();
+    SYNTAX_API SExpLambdaExpBody(SExpPtr exp);
+    SExpLambdaExpBody(const SExpLambdaExpBody&) = delete;
+    SYNTAX_API SExpLambdaExpBody(SExpLambdaExpBody&&) noexcept;
+    SYNTAX_API ~SExpLambdaExpBody();
 
-    ForeachStmtSyntax& operator=(const ForeachStmtSyntax& other) = delete;
-    SYNTAX_API ForeachStmtSyntax& operator=(ForeachStmtSyntax&& other) noexcept;
+    SExpLambdaExpBody& operator=(const SExpLambdaExpBody& other) = delete;
+    SYNTAX_API SExpLambdaExpBody& operator=(SExpLambdaExpBody&& other) noexcept;
 
-    TypeExpSyntax& GetType() { return type; }
-    std::string& GetVarName() { return varName; }
-    ExpSyntax& GetEnumerable() { return enumerable; }
-    EmbeddableStmtSyntax& GetBody() { return body; }
+    SExpPtr& GetExp() { return exp; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SLambdaExpBodyVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class YieldStmtSyntax
+class SSingleEmbeddableStmt
+    : public SEmbeddableStmt
 {
-    ExpSyntax value;
+    SStmtPtr stmt;
 
 public:
-    SYNTAX_API YieldStmtSyntax(ExpSyntax value);
-    YieldStmtSyntax(const YieldStmtSyntax&) = delete;
-    SYNTAX_API YieldStmtSyntax(YieldStmtSyntax&&) noexcept;
-    SYNTAX_API ~YieldStmtSyntax();
+    SYNTAX_API SSingleEmbeddableStmt(SStmtPtr stmt);
+    SSingleEmbeddableStmt(const SSingleEmbeddableStmt&) = delete;
+    SYNTAX_API SSingleEmbeddableStmt(SSingleEmbeddableStmt&&) noexcept;
+    SYNTAX_API ~SSingleEmbeddableStmt();
 
-    YieldStmtSyntax& operator=(const YieldStmtSyntax& other) = delete;
-    SYNTAX_API YieldStmtSyntax& operator=(YieldStmtSyntax&& other) noexcept;
+    SSingleEmbeddableStmt& operator=(const SSingleEmbeddableStmt& other) = delete;
+    SYNTAX_API SSingleEmbeddableStmt& operator=(SSingleEmbeddableStmt&& other) noexcept;
 
-    ExpSyntax& GetValue() { return value; }
+    SStmtPtr& GetStmt() { return stmt; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SEmbeddableStmtVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class TypeParamSyntax
+class SBlockEmbeddableStmt
+    : public SEmbeddableStmt
+{
+    std::vector<SStmtPtr> stmts;
+
+public:
+    SYNTAX_API SBlockEmbeddableStmt(std::vector<SStmtPtr> stmts);
+    SBlockEmbeddableStmt(const SBlockEmbeddableStmt&) = delete;
+    SYNTAX_API SBlockEmbeddableStmt(SBlockEmbeddableStmt&&) noexcept;
+    SYNTAX_API ~SBlockEmbeddableStmt();
+
+    SBlockEmbeddableStmt& operator=(const SBlockEmbeddableStmt& other) = delete;
+    SYNTAX_API SBlockEmbeddableStmt& operator=(SBlockEmbeddableStmt&& other) noexcept;
+
+    std::vector<SStmtPtr>& GetStmts() { return stmts; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SEmbeddableStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SExpForStmtInitializer
+    : public SForStmtInitializer
+{
+    SExpPtr exp;
+
+public:
+    SYNTAX_API SExpForStmtInitializer(SExpPtr exp);
+    SExpForStmtInitializer(const SExpForStmtInitializer&) = delete;
+    SYNTAX_API SExpForStmtInitializer(SExpForStmtInitializer&&) noexcept;
+    SYNTAX_API ~SExpForStmtInitializer();
+
+    SExpForStmtInitializer& operator=(const SExpForStmtInitializer& other) = delete;
+    SYNTAX_API SExpForStmtInitializer& operator=(SExpForStmtInitializer&& other) noexcept;
+
+    SExpPtr& GetExp() { return exp; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SForStmtInitializerVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SVarDeclForStmtInitializer
+    : public SForStmtInitializer
+{
+    SVarDecl varDecl;
+
+public:
+    SYNTAX_API SVarDeclForStmtInitializer(SVarDecl varDecl);
+    SVarDeclForStmtInitializer(const SVarDeclForStmtInitializer&) = delete;
+    SYNTAX_API SVarDeclForStmtInitializer(SVarDeclForStmtInitializer&&) noexcept;
+    SYNTAX_API ~SVarDeclForStmtInitializer();
+
+    SVarDeclForStmtInitializer& operator=(const SVarDeclForStmtInitializer& other) = delete;
+    SYNTAX_API SVarDeclForStmtInitializer& operator=(SVarDeclForStmtInitializer&& other) noexcept;
+
+    SVarDecl& GetVarDecl() { return varDecl; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SForStmtInitializerVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SCommandStmt
+    : public SStmt
+{
+    std::vector<SStringExp> commands;
+
+public:
+    SYNTAX_API SCommandStmt(std::vector<SStringExp> commands);
+    SCommandStmt(const SCommandStmt&) = delete;
+    SYNTAX_API SCommandStmt(SCommandStmt&&) noexcept;
+    SYNTAX_API ~SCommandStmt();
+
+    SCommandStmt& operator=(const SCommandStmt& other) = delete;
+    SYNTAX_API SCommandStmt& operator=(SCommandStmt&& other) noexcept;
+
+    std::vector<SStringExp>& GetCommands() { return commands; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SVarDeclStmt
+    : public SStmt
+{
+    SVarDecl varDecl;
+
+public:
+    SYNTAX_API SVarDeclStmt(SVarDecl varDecl);
+    SVarDeclStmt(const SVarDeclStmt&) = delete;
+    SYNTAX_API SVarDeclStmt(SVarDeclStmt&&) noexcept;
+    SYNTAX_API ~SVarDeclStmt();
+
+    SVarDeclStmt& operator=(const SVarDeclStmt& other) = delete;
+    SYNTAX_API SVarDeclStmt& operator=(SVarDeclStmt&& other) noexcept;
+
+    SVarDecl& GetVarDecl() { return varDecl; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SContinueStmt
+    : public SStmt
+{
+public:
+    SYNTAX_API SContinueStmt();
+    SContinueStmt(const SContinueStmt&) = delete;
+    SYNTAX_API SContinueStmt(SContinueStmt&&) noexcept;
+    SYNTAX_API ~SContinueStmt();
+
+    SContinueStmt& operator=(const SContinueStmt& other) = delete;
+    SYNTAX_API SContinueStmt& operator=(SContinueStmt&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SBreakStmt
+    : public SStmt
+{
+public:
+    SYNTAX_API SBreakStmt();
+    SBreakStmt(const SBreakStmt&) = delete;
+    SYNTAX_API SBreakStmt(SBreakStmt&&) noexcept;
+    SYNTAX_API ~SBreakStmt();
+
+    SBreakStmt& operator=(const SBreakStmt& other) = delete;
+    SYNTAX_API SBreakStmt& operator=(SBreakStmt&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SBlockStmt
+    : public SStmt
+{
+    std::vector<SStmtPtr> stmts;
+
+public:
+    SYNTAX_API SBlockStmt(std::vector<SStmtPtr> stmts);
+    SBlockStmt(const SBlockStmt&) = delete;
+    SYNTAX_API SBlockStmt(SBlockStmt&&) noexcept;
+    SYNTAX_API ~SBlockStmt();
+
+    SBlockStmt& operator=(const SBlockStmt& other) = delete;
+    SYNTAX_API SBlockStmt& operator=(SBlockStmt&& other) noexcept;
+
+    std::vector<SStmtPtr>& GetStmts() { return stmts; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SBlankStmt
+    : public SStmt
+{
+public:
+    SYNTAX_API SBlankStmt();
+    SBlankStmt(const SBlankStmt&) = delete;
+    SYNTAX_API SBlankStmt(SBlankStmt&&) noexcept;
+    SYNTAX_API ~SBlankStmt();
+
+    SBlankStmt& operator=(const SBlankStmt& other) = delete;
+    SYNTAX_API SBlankStmt& operator=(SBlankStmt&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class STaskStmt
+    : public SStmt
+{
+    std::vector<SStmtPtr> body;
+
+public:
+    SYNTAX_API STaskStmt(std::vector<SStmtPtr> body);
+    STaskStmt(const STaskStmt&) = delete;
+    SYNTAX_API STaskStmt(STaskStmt&&) noexcept;
+    SYNTAX_API ~STaskStmt();
+
+    STaskStmt& operator=(const STaskStmt& other) = delete;
+    SYNTAX_API STaskStmt& operator=(STaskStmt&& other) noexcept;
+
+    std::vector<SStmtPtr>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SAwaitStmt
+    : public SStmt
+{
+    std::vector<SStmtPtr> body;
+
+public:
+    SYNTAX_API SAwaitStmt(std::vector<SStmtPtr> body);
+    SAwaitStmt(const SAwaitStmt&) = delete;
+    SYNTAX_API SAwaitStmt(SAwaitStmt&&) noexcept;
+    SYNTAX_API ~SAwaitStmt();
+
+    SAwaitStmt& operator=(const SAwaitStmt& other) = delete;
+    SYNTAX_API SAwaitStmt& operator=(SAwaitStmt&& other) noexcept;
+
+    std::vector<SStmtPtr>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SAsyncStmt
+    : public SStmt
+{
+    std::vector<SStmtPtr> body;
+
+public:
+    SYNTAX_API SAsyncStmt(std::vector<SStmtPtr> body);
+    SAsyncStmt(const SAsyncStmt&) = delete;
+    SYNTAX_API SAsyncStmt(SAsyncStmt&&) noexcept;
+    SYNTAX_API ~SAsyncStmt();
+
+    SAsyncStmt& operator=(const SAsyncStmt& other) = delete;
+    SYNTAX_API SAsyncStmt& operator=(SAsyncStmt&& other) noexcept;
+
+    std::vector<SStmtPtr>& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SDirectiveStmt
+    : public SStmt
 {
     std::string name;
+    std::vector<SExpPtr> args;
 
 public:
-    SYNTAX_API TypeParamSyntax(std::string name);
-    TypeParamSyntax(const TypeParamSyntax&) = delete;
-    SYNTAX_API TypeParamSyntax(TypeParamSyntax&&) noexcept;
-    SYNTAX_API ~TypeParamSyntax();
+    SYNTAX_API SDirectiveStmt(std::string name, std::vector<SExpPtr> args);
+    SDirectiveStmt(const SDirectiveStmt&) = delete;
+    SYNTAX_API SDirectiveStmt(SDirectiveStmt&&) noexcept;
+    SYNTAX_API ~SDirectiveStmt();
 
-    TypeParamSyntax& operator=(const TypeParamSyntax& other) = delete;
-    SYNTAX_API TypeParamSyntax& operator=(TypeParamSyntax&& other) noexcept;
+    SDirectiveStmt& operator=(const SDirectiveStmt& other) = delete;
+    SYNTAX_API SDirectiveStmt& operator=(SDirectiveStmt&& other) noexcept;
 
     std::string& GetName() { return name; }
+    std::vector<SExpPtr>& GetArgs() { return args; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class FuncParamSyntax
+class SIfStmt
+    : public SStmt
 {
-    bool hasOut;
-    bool hasParams;
-    TypeExpSyntax type;
-    std::string name;
+    SExpPtr cond;
+    SEmbeddableStmtPtr body;
+    SEmbeddableStmtPtr elseBody;
 
 public:
-    SYNTAX_API FuncParamSyntax(bool hasOut, bool hasParams, TypeExpSyntax type, std::string name);
-    FuncParamSyntax(const FuncParamSyntax&) = delete;
-    SYNTAX_API FuncParamSyntax(FuncParamSyntax&&) noexcept;
-    SYNTAX_API ~FuncParamSyntax();
+    SYNTAX_API SIfStmt(SExpPtr cond, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody);
+    SIfStmt(const SIfStmt&) = delete;
+    SYNTAX_API SIfStmt(SIfStmt&&) noexcept;
+    SYNTAX_API ~SIfStmt();
 
-    FuncParamSyntax& operator=(const FuncParamSyntax& other) = delete;
-    SYNTAX_API FuncParamSyntax& operator=(FuncParamSyntax&& other) noexcept;
+    SIfStmt& operator=(const SIfStmt& other) = delete;
+    SYNTAX_API SIfStmt& operator=(SIfStmt&& other) noexcept;
 
-    bool& HasOut() { return hasOut; }
-    bool& HasParams() { return hasParams; }
-    TypeExpSyntax& GetType() { return type; }
-    std::string& GetName() { return name; }
+    SExpPtr& GetCond() { return cond; }
+    SEmbeddableStmtPtr& GetBody() { return body; }
+    SEmbeddableStmtPtr& GetElseBody() { return elseBody; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class GlobalFuncDeclSyntax
+class SIfTestStmt
+    : public SStmt
 {
-    std::optional<AccessModifierSyntax> accessModifier;
+    STypeExpPtr testType;
+    std::string varName;
+    SExpPtr exp;
+    SEmbeddableStmtPtr body;
+    SEmbeddableStmtPtr elseBody;
+
+public:
+    SYNTAX_API SIfTestStmt(STypeExpPtr testType, std::string varName, SExpPtr exp, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody);
+    SIfTestStmt(const SIfTestStmt&) = delete;
+    SYNTAX_API SIfTestStmt(SIfTestStmt&&) noexcept;
+    SYNTAX_API ~SIfTestStmt();
+
+    SIfTestStmt& operator=(const SIfTestStmt& other) = delete;
+    SYNTAX_API SIfTestStmt& operator=(SIfTestStmt&& other) noexcept;
+
+    STypeExpPtr& GetTestType() { return testType; }
+    std::string& GetVarName() { return varName; }
+    SExpPtr& GetExp() { return exp; }
+    SEmbeddableStmtPtr& GetBody() { return body; }
+    SEmbeddableStmtPtr& GetElseBody() { return elseBody; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SForStmt
+    : public SStmt
+{
+    SForStmtInitializerPtr initializer;
+    SExpPtr cond;
+    SExpPtr cont;
+    SEmbeddableStmtPtr body;
+
+public:
+    SYNTAX_API SForStmt(SForStmtInitializerPtr initializer, SExpPtr cond, SExpPtr cont, SEmbeddableStmtPtr body);
+    SForStmt(const SForStmt&) = delete;
+    SYNTAX_API SForStmt(SForStmt&&) noexcept;
+    SYNTAX_API ~SForStmt();
+
+    SForStmt& operator=(const SForStmt& other) = delete;
+    SYNTAX_API SForStmt& operator=(SForStmt&& other) noexcept;
+
+    SForStmtInitializerPtr& GetInitializer() { return initializer; }
+    SExpPtr& GetCond() { return cond; }
+    SExpPtr& GetCont() { return cont; }
+    SEmbeddableStmtPtr& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SReturnStmt
+    : public SStmt
+{
+    SExpPtr value;
+
+public:
+    SYNTAX_API SReturnStmt(SExpPtr value);
+    SReturnStmt(const SReturnStmt&) = delete;
+    SYNTAX_API SReturnStmt(SReturnStmt&&) noexcept;
+    SYNTAX_API ~SReturnStmt();
+
+    SReturnStmt& operator=(const SReturnStmt& other) = delete;
+    SYNTAX_API SReturnStmt& operator=(SReturnStmt&& other) noexcept;
+
+    SExpPtr& GetValue() { return value; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SExpStmt
+    : public SStmt
+{
+    SExpPtr exp;
+
+public:
+    SYNTAX_API SExpStmt(SExpPtr exp);
+    SExpStmt(const SExpStmt&) = delete;
+    SYNTAX_API SExpStmt(SExpStmt&&) noexcept;
+    SYNTAX_API ~SExpStmt();
+
+    SExpStmt& operator=(const SExpStmt& other) = delete;
+    SYNTAX_API SExpStmt& operator=(SExpStmt&& other) noexcept;
+
+    SExpPtr& GetExp() { return exp; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SForeachStmt
+    : public SStmt
+{
+    STypeExpPtr type;
+    std::string varName;
+    SExpPtr enumerable;
+    SEmbeddableStmtPtr body;
+
+public:
+    SYNTAX_API SForeachStmt(STypeExpPtr type, std::string varName, SExpPtr enumerable, SEmbeddableStmtPtr body);
+    SForeachStmt(const SForeachStmt&) = delete;
+    SYNTAX_API SForeachStmt(SForeachStmt&&) noexcept;
+    SYNTAX_API ~SForeachStmt();
+
+    SForeachStmt& operator=(const SForeachStmt& other) = delete;
+    SYNTAX_API SForeachStmt& operator=(SForeachStmt&& other) noexcept;
+
+    STypeExpPtr& GetType() { return type; }
+    std::string& GetVarName() { return varName; }
+    SExpPtr& GetEnumerable() { return enumerable; }
+    SEmbeddableStmtPtr& GetBody() { return body; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SYieldStmt
+    : public SStmt
+{
+    SExpPtr value;
+
+public:
+    SYNTAX_API SYieldStmt(SExpPtr value);
+    SYieldStmt(const SYieldStmt&) = delete;
+    SYNTAX_API SYieldStmt(SYieldStmt&&) noexcept;
+    SYNTAX_API ~SYieldStmt();
+
+    SYieldStmt& operator=(const SYieldStmt& other) = delete;
+    SYNTAX_API SYieldStmt& operator=(SYieldStmt&& other) noexcept;
+
+    SExpPtr& GetValue() { return value; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SGlobalFuncDecl
+    : public SNamespaceDeclElement
+    , public SScriptElement
+{
+    std::optional<SAccessModifier> accessModifier;
     bool bSequence;
-    TypeExpSyntax retType;
+    STypeExpPtr retType;
     std::string name;
-    std::vector<TypeParamSyntax> typeParams;
-    std::vector<FuncParamSyntax> parameters;
-    std::vector<StmtSyntax> body;
+    std::vector<STypeParam> typeParams;
+    std::vector<SFuncParam> parameters;
+    std::vector<SStmtPtr> body;
 
 public:
-    SYNTAX_API GlobalFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body);
-    GlobalFuncDeclSyntax(const GlobalFuncDeclSyntax&) = delete;
-    SYNTAX_API GlobalFuncDeclSyntax(GlobalFuncDeclSyntax&&) noexcept;
-    SYNTAX_API ~GlobalFuncDeclSyntax();
+    SYNTAX_API SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SGlobalFuncDecl(const SGlobalFuncDecl&) = delete;
+    SYNTAX_API SGlobalFuncDecl(SGlobalFuncDecl&&) noexcept;
+    SYNTAX_API ~SGlobalFuncDecl();
 
-    GlobalFuncDeclSyntax& operator=(const GlobalFuncDeclSyntax& other) = delete;
-    SYNTAX_API GlobalFuncDeclSyntax& operator=(GlobalFuncDeclSyntax&& other) noexcept;
+    SGlobalFuncDecl& operator=(const SGlobalFuncDecl& other) = delete;
+    SYNTAX_API SGlobalFuncDecl& operator=(SGlobalFuncDecl&& other) noexcept;
 
-    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::optional<SAccessModifier>& GetAccessModifier() { return accessModifier; }
     bool& IsSequence() { return bSequence; }
-    TypeExpSyntax& GetRetType() { return retType; }
+    STypeExpPtr& GetRetType() { return retType; }
     std::string& GetName() { return name; }
-    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
-    std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
-    std::vector<StmtSyntax>& GetBody() { return body; }
+    std::vector<STypeParam>& GetTypeParams() { return typeParams; }
+    std::vector<SFuncParam>& GetParameters() { return parameters; }
+    std::vector<SStmtPtr>& GetBody() { return body; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class ClassMemberFuncDeclSyntax
+class SClassDecl
+    : public SClassMemberDecl
+    , public SStructMemberDecl
+    , public SNamespaceDeclElement
+    , public SScriptElement
 {
-    std::optional<AccessModifierSyntax> accessModifier;
+    std::optional<SAccessModifier> accessModifier;
+    std::string name;
+    std::vector<STypeParam> typeParams;
+    std::vector<STypeExpPtr> baseTypes;
+    std::vector<SClassMemberDeclPtr> memberDecls;
+
+public:
+    SYNTAX_API SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExpPtr> baseTypes, std::vector<SClassMemberDeclPtr> memberDecls);
+    SClassDecl(const SClassDecl&) = delete;
+    SYNTAX_API SClassDecl(SClassDecl&&) noexcept;
+    SYNTAX_API ~SClassDecl();
+
+    SClassDecl& operator=(const SClassDecl& other) = delete;
+    SYNTAX_API SClassDecl& operator=(SClassDecl&& other) noexcept;
+
+    std::optional<SAccessModifier>& GetAccessModifier() { return accessModifier; }
+    std::string& GetName() { return name; }
+    std::vector<STypeParam>& GetTypeParams() { return typeParams; }
+    std::vector<STypeExpPtr>& GetBaseTypes() { return baseTypes; }
+    std::vector<SClassMemberDeclPtr>& GetMemberDecls() { return memberDecls; }
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(*this); }
+
+};
+
+class SClassMemberFuncDecl
+    : public SClassMemberDecl
+{
+    std::optional<SAccessModifier> accessModifier;
     bool bStatic;
     bool bSequence;
-    TypeExpSyntax retType;
+    STypeExpPtr retType;
     std::string name;
-    std::vector<TypeParamSyntax> typeParams;
-    std::vector<FuncParamSyntax> parameters;
-    std::vector<StmtSyntax> body;
+    std::vector<STypeParam> typeParams;
+    std::vector<SFuncParam> parameters;
+    std::vector<SStmtPtr> body;
 
 public:
-    SYNTAX_API ClassMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body);
-    ClassMemberFuncDeclSyntax(const ClassMemberFuncDeclSyntax&) = delete;
-    SYNTAX_API ClassMemberFuncDeclSyntax(ClassMemberFuncDeclSyntax&&) noexcept;
-    SYNTAX_API ~ClassMemberFuncDeclSyntax();
+    SYNTAX_API SClassMemberFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SClassMemberFuncDecl(const SClassMemberFuncDecl&) = delete;
+    SYNTAX_API SClassMemberFuncDecl(SClassMemberFuncDecl&&) noexcept;
+    SYNTAX_API ~SClassMemberFuncDecl();
 
-    ClassMemberFuncDeclSyntax& operator=(const ClassMemberFuncDeclSyntax& other) = delete;
-    SYNTAX_API ClassMemberFuncDeclSyntax& operator=(ClassMemberFuncDeclSyntax&& other) noexcept;
+    SClassMemberFuncDecl& operator=(const SClassMemberFuncDecl& other) = delete;
+    SYNTAX_API SClassMemberFuncDecl& operator=(SClassMemberFuncDecl&& other) noexcept;
 
-    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::optional<SAccessModifier>& GetAccessModifier() { return accessModifier; }
     bool& IsStatic() { return bStatic; }
     bool& IsSequence() { return bSequence; }
-    TypeExpSyntax& GetRetType() { return retType; }
+    STypeExpPtr& GetRetType() { return retType; }
     std::string& GetName() { return name; }
-    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
-    std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
-    std::vector<StmtSyntax>& GetBody() { return body; }
+    std::vector<STypeParam>& GetTypeParams() { return typeParams; }
+    std::vector<SFuncParam>& GetParameters() { return parameters; }
+    std::vector<SStmtPtr>& GetBody() { return body; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class ClassConstructorDeclSyntax
+class SClassConstructorDecl
+    : public SClassMemberDecl
 {
-    std::optional<AccessModifierSyntax> accessModifier;
+    std::optional<SAccessModifier> accessModifier;
     std::string name;
-    std::vector<FuncParamSyntax> parameters;
-    std::optional<std::vector<ArgumentSyntax>> baseArgs;
-    std::vector<StmtSyntax> body;
+    std::vector<SFuncParam> parameters;
+    std::optional<std::vector<SArgument>> baseArgs;
+    std::vector<SStmtPtr> body;
 
 public:
-    SYNTAX_API ClassConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::optional<std::vector<ArgumentSyntax>> baseArgs, std::vector<StmtSyntax> body);
-    ClassConstructorDeclSyntax(const ClassConstructorDeclSyntax&) = delete;
-    SYNTAX_API ClassConstructorDeclSyntax(ClassConstructorDeclSyntax&&) noexcept;
-    SYNTAX_API ~ClassConstructorDeclSyntax();
+    SYNTAX_API SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<SFuncParam> parameters, std::optional<std::vector<SArgument>> baseArgs, std::vector<SStmtPtr> body);
+    SClassConstructorDecl(const SClassConstructorDecl&) = delete;
+    SYNTAX_API SClassConstructorDecl(SClassConstructorDecl&&) noexcept;
+    SYNTAX_API ~SClassConstructorDecl();
 
-    ClassConstructorDeclSyntax& operator=(const ClassConstructorDeclSyntax& other) = delete;
-    SYNTAX_API ClassConstructorDeclSyntax& operator=(ClassConstructorDeclSyntax&& other) noexcept;
+    SClassConstructorDecl& operator=(const SClassConstructorDecl& other) = delete;
+    SYNTAX_API SClassConstructorDecl& operator=(SClassConstructorDecl&& other) noexcept;
 
-    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::optional<SAccessModifier>& GetAccessModifier() { return accessModifier; }
     std::string& GetName() { return name; }
-    std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
-    std::optional<std::vector<ArgumentSyntax>>& GetBaseArgs() { return baseArgs; }
-    std::vector<StmtSyntax>& GetBody() { return body; }
+    std::vector<SFuncParam>& GetParameters() { return parameters; }
+    std::optional<std::vector<SArgument>>& GetBaseArgs() { return baseArgs; }
+    std::vector<SStmtPtr>& GetBody() { return body; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class ClassMemberVarDeclSyntax
+class SClassMemberVarDecl
+    : public SClassMemberDecl
 {
-    std::optional<AccessModifierSyntax> accessModifier;
-    TypeExpSyntax varType;
+    std::optional<SAccessModifier> accessModifier;
+    STypeExpPtr varType;
     std::vector<std::string> varNames;
 
 public:
-    SYNTAX_API ClassMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames);
-    ClassMemberVarDeclSyntax(const ClassMemberVarDeclSyntax&) = delete;
-    SYNTAX_API ClassMemberVarDeclSyntax(ClassMemberVarDeclSyntax&&) noexcept;
-    SYNTAX_API ~ClassMemberVarDeclSyntax();
+    SYNTAX_API SClassMemberVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames);
+    SClassMemberVarDecl(const SClassMemberVarDecl&) = delete;
+    SYNTAX_API SClassMemberVarDecl(SClassMemberVarDecl&&) noexcept;
+    SYNTAX_API ~SClassMemberVarDecl();
 
-    ClassMemberVarDeclSyntax& operator=(const ClassMemberVarDeclSyntax& other) = delete;
-    SYNTAX_API ClassMemberVarDeclSyntax& operator=(ClassMemberVarDeclSyntax&& other) noexcept;
+    SClassMemberVarDecl& operator=(const SClassMemberVarDecl& other) = delete;
+    SYNTAX_API SClassMemberVarDecl& operator=(SClassMemberVarDecl&& other) noexcept;
 
-    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
-    TypeExpSyntax& GetVarType() { return varType; }
+    std::optional<SAccessModifier>& GetAccessModifier() { return accessModifier; }
+    STypeExpPtr& GetVarType() { return varType; }
     std::vector<std::string>& GetVarNames() { return varNames; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-using ClassMemberDeclSyntax = std::variant<
-    class ClassDeclSyntax,
-    class StructDeclSyntax,
-    class EnumDeclSyntax,
-    ClassMemberFuncDeclSyntax,
-    ClassConstructorDeclSyntax,
-    ClassMemberVarDeclSyntax>;
-
-SYNTAX_API JsonItem ToJson(ClassMemberDeclSyntax& decl);
-
-class ClassDeclSyntax
+class SStructDecl
+    : public SClassMemberDecl
+    , public SStructMemberDecl
+    , public SNamespaceDeclElement
+    , public SScriptElement
 {
-    std::optional<AccessModifierSyntax> accessModifier;
+    std::optional<SAccessModifier> accessModifier;
     std::string name;
-    std::vector<TypeParamSyntax> typeParams;
-    std::vector<TypeExpSyntax> baseTypes;
-    std::vector<ClassMemberDeclSyntax> memberDecls;
+    std::vector<STypeParam> typeParams;
+    std::vector<STypeExpPtr> baseTypes;
+    std::vector<SStructMemberDeclPtr> memberDecls;
 
 public:
-    SYNTAX_API ClassDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<TypeExpSyntax> baseTypes, std::vector<ClassMemberDeclSyntax> memberDecls);
-    ClassDeclSyntax(const ClassDeclSyntax&) = delete;
-    SYNTAX_API ClassDeclSyntax(ClassDeclSyntax&&) noexcept;
-    SYNTAX_API ~ClassDeclSyntax();
+    SYNTAX_API SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExpPtr> baseTypes, std::vector<SStructMemberDeclPtr> memberDecls);
+    SStructDecl(const SStructDecl&) = delete;
+    SYNTAX_API SStructDecl(SStructDecl&&) noexcept;
+    SYNTAX_API ~SStructDecl();
 
-    ClassDeclSyntax& operator=(const ClassDeclSyntax& other) = delete;
-    SYNTAX_API ClassDeclSyntax& operator=(ClassDeclSyntax&& other) noexcept;
+    SStructDecl& operator=(const SStructDecl& other) = delete;
+    SYNTAX_API SStructDecl& operator=(SStructDecl&& other) noexcept;
 
-    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::optional<SAccessModifier>& GetAccessModifier() { return accessModifier; }
     std::string& GetName() { return name; }
-    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
-    std::vector<TypeExpSyntax>& GetBaseTypes() { return baseTypes; }
-    std::vector<ClassMemberDeclSyntax>& GetMemberDecls() { return memberDecls; }
+    std::vector<STypeParam>& GetTypeParams() { return typeParams; }
+    std::vector<STypeExpPtr>& GetBaseTypes() { return baseTypes; }
+    std::vector<SStructMemberDeclPtr>& GetMemberDecls() { return memberDecls; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class StructMemberFuncDeclSyntax
+class SStructMemberFuncDecl
+    : public SStructMemberDecl
 {
-    std::optional<AccessModifierSyntax> accessModifier;
+    std::optional<SAccessModifier> accessModifier;
     bool bStatic;
     bool bSequence;
-    TypeExpSyntax retType;
+    STypeExpPtr retType;
     std::string name;
-    std::vector<TypeParamSyntax> typeParams;
-    std::vector<FuncParamSyntax> parameters;
-    std::vector<StmtSyntax> body;
+    std::vector<STypeParam> typeParams;
+    std::vector<SFuncParam> parameters;
+    std::vector<SStmtPtr> body;
 
 public:
-    SYNTAX_API StructMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body);
-    StructMemberFuncDeclSyntax(const StructMemberFuncDeclSyntax&) = delete;
-    SYNTAX_API StructMemberFuncDeclSyntax(StructMemberFuncDeclSyntax&&) noexcept;
-    SYNTAX_API ~StructMemberFuncDeclSyntax();
+    SYNTAX_API SStructMemberFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SStructMemberFuncDecl(const SStructMemberFuncDecl&) = delete;
+    SYNTAX_API SStructMemberFuncDecl(SStructMemberFuncDecl&&) noexcept;
+    SYNTAX_API ~SStructMemberFuncDecl();
 
-    StructMemberFuncDeclSyntax& operator=(const StructMemberFuncDeclSyntax& other) = delete;
-    SYNTAX_API StructMemberFuncDeclSyntax& operator=(StructMemberFuncDeclSyntax&& other) noexcept;
+    SStructMemberFuncDecl& operator=(const SStructMemberFuncDecl& other) = delete;
+    SYNTAX_API SStructMemberFuncDecl& operator=(SStructMemberFuncDecl&& other) noexcept;
 
-    std::optional<AccessModifierSyntax>& GetAcessModifier() { return accessModifier; }
+    std::optional<SAccessModifier>& GetAcessModifier() { return accessModifier; }
     bool& IsStatic() { return bStatic; }
     bool& IsSequence() { return bSequence; }
-    TypeExpSyntax& GetRetType() { return retType; }
+    STypeExpPtr& GetRetType() { return retType; }
     std::string& GetName() { return name; }
-    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
-    std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
-    std::vector<StmtSyntax>& GetBody() { return body; }
+    std::vector<STypeParam>& GetTypeParams() { return typeParams; }
+    std::vector<SFuncParam>& GetParameters() { return parameters; }
+    std::vector<SStmtPtr>& GetBody() { return body; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class StructConstructorDeclSyntax
+class SStructConstructorDecl
+    : public SStructMemberDecl
 {
-    std::optional<AccessModifierSyntax> accessModifier;
+    std::optional<SAccessModifier> accessModifier;
     std::string name;
-    std::vector<FuncParamSyntax> parameters;
-    std::vector<StmtSyntax> body;
+    std::vector<SFuncParam> parameters;
+    std::vector<SStmtPtr> body;
 
 public:
-    SYNTAX_API StructConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body);
-    StructConstructorDeclSyntax(const StructConstructorDeclSyntax&) = delete;
-    SYNTAX_API StructConstructorDeclSyntax(StructConstructorDeclSyntax&&) noexcept;
-    SYNTAX_API ~StructConstructorDeclSyntax();
+    SYNTAX_API SStructConstructorDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SStructConstructorDecl(const SStructConstructorDecl&) = delete;
+    SYNTAX_API SStructConstructorDecl(SStructConstructorDecl&&) noexcept;
+    SYNTAX_API ~SStructConstructorDecl();
 
-    StructConstructorDeclSyntax& operator=(const StructConstructorDeclSyntax& other) = delete;
-    SYNTAX_API StructConstructorDeclSyntax& operator=(StructConstructorDeclSyntax&& other) noexcept;
+    SStructConstructorDecl& operator=(const SStructConstructorDecl& other) = delete;
+    SYNTAX_API SStructConstructorDecl& operator=(SStructConstructorDecl&& other) noexcept;
 
-    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::optional<SAccessModifier>& GetAccessModifier() { return accessModifier; }
     std::string& GetName() { return name; }
-    std::vector<FuncParamSyntax>& GetParameters() { return parameters; }
-    std::vector<StmtSyntax>& GetBody() { return body; }
+    std::vector<SFuncParam>& GetParameters() { return parameters; }
+    std::vector<SStmtPtr>& GetBody() { return body; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-class StructMemberVarDeclSyntax
+class SStructMemberVarDecl
+    : public SStructMemberDecl
 {
-    std::optional<AccessModifierSyntax> accessModifier;
-    TypeExpSyntax varType;
+    std::optional<SAccessModifier> accessModifier;
+    STypeExpPtr varType;
     std::vector<std::string> varNames;
 
 public:
-    SYNTAX_API StructMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames);
-    StructMemberVarDeclSyntax(const StructMemberVarDeclSyntax&) = delete;
-    SYNTAX_API StructMemberVarDeclSyntax(StructMemberVarDeclSyntax&&) noexcept;
-    SYNTAX_API ~StructMemberVarDeclSyntax();
+    SYNTAX_API SStructMemberVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames);
+    SStructMemberVarDecl(const SStructMemberVarDecl&) = delete;
+    SYNTAX_API SStructMemberVarDecl(SStructMemberVarDecl&&) noexcept;
+    SYNTAX_API ~SStructMemberVarDecl();
 
-    StructMemberVarDeclSyntax& operator=(const StructMemberVarDeclSyntax& other) = delete;
-    SYNTAX_API StructMemberVarDeclSyntax& operator=(StructMemberVarDeclSyntax&& other) noexcept;
+    SStructMemberVarDecl& operator=(const SStructMemberVarDecl& other) = delete;
+    SYNTAX_API SStructMemberVarDecl& operator=(SStructMemberVarDecl&& other) noexcept;
 
-    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
-    TypeExpSyntax& GetVarType() { return varType; }
+    std::optional<SAccessModifier>& GetAccessModifier() { return accessModifier; }
+    STypeExpPtr& GetVarType() { return varType; }
     std::vector<std::string>& GetVarNames() { return varNames; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-using StructMemberDeclSyntax = std::variant<
-    class ClassDeclSyntax,
-    class StructDeclSyntax,
-    class EnumDeclSyntax,
-    StructMemberFuncDeclSyntax,
-    StructConstructorDeclSyntax,
-    StructMemberVarDeclSyntax>;
-
-SYNTAX_API JsonItem ToJson(StructMemberDeclSyntax& decl);
-
-class StructDeclSyntax
+class SEnumElemMemberVarDecl
 {
-    std::optional<AccessModifierSyntax> accessModifier;
-    std::string name;
-    std::vector<TypeParamSyntax> typeParams;
-    std::vector<TypeExpSyntax> baseTypes;
-    std::vector<StructMemberDeclSyntax> memberDecls;
-
-public:
-    SYNTAX_API StructDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<TypeExpSyntax> baseTypes, std::vector<StructMemberDeclSyntax> memberDecls);
-    StructDeclSyntax(const StructDeclSyntax&) = delete;
-    SYNTAX_API StructDeclSyntax(StructDeclSyntax&&) noexcept;
-    SYNTAX_API ~StructDeclSyntax();
-
-    StructDeclSyntax& operator=(const StructDeclSyntax& other) = delete;
-    SYNTAX_API StructDeclSyntax& operator=(StructDeclSyntax&& other) noexcept;
-
-    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
-    std::string& GetName() { return name; }
-    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
-    std::vector<TypeExpSyntax>& GetBaseTypes() { return baseTypes; }
-    std::vector<StructMemberDeclSyntax>& GetMemberDecls() { return memberDecls; }
-
-    SYNTAX_API JsonItem ToJson();
-};
-
-class EnumElemMemberVarDeclSyntax
-{
-    TypeExpSyntax type;
+    STypeExpPtr type;
     std::string name;
 
 public:
-    SYNTAX_API EnumElemMemberVarDeclSyntax(TypeExpSyntax type, std::string name);
-    EnumElemMemberVarDeclSyntax(const EnumElemMemberVarDeclSyntax&) = delete;
-    SYNTAX_API EnumElemMemberVarDeclSyntax(EnumElemMemberVarDeclSyntax&&) noexcept;
-    SYNTAX_API ~EnumElemMemberVarDeclSyntax();
+    SYNTAX_API SEnumElemMemberVarDecl(STypeExpPtr type, std::string name);
+    SEnumElemMemberVarDecl(const SEnumElemMemberVarDecl&) = delete;
+    SYNTAX_API SEnumElemMemberVarDecl(SEnumElemMemberVarDecl&&) noexcept;
+    SYNTAX_API ~SEnumElemMemberVarDecl();
 
-    EnumElemMemberVarDeclSyntax& operator=(const EnumElemMemberVarDeclSyntax& other) = delete;
-    SYNTAX_API EnumElemMemberVarDeclSyntax& operator=(EnumElemMemberVarDeclSyntax&& other) noexcept;
+    SEnumElemMemberVarDecl& operator=(const SEnumElemMemberVarDecl& other) = delete;
+    SYNTAX_API SEnumElemMemberVarDecl& operator=(SEnumElemMemberVarDecl&& other) noexcept;
 
-    TypeExpSyntax& GetType() { return type; }
+    STypeExpPtr& GetType() { return type; }
     std::string& GetName() { return name; }
 
     SYNTAX_API JsonItem ToJson();
 };
 
-class EnumElemDeclSyntax
+class SEnumElemDecl
 {
     std::string name;
-    std::vector<EnumElemMemberVarDeclSyntax> memberVars;
+    std::vector<SEnumElemMemberVarDecl> memberVars;
 
 public:
-    SYNTAX_API EnumElemDeclSyntax(std::string name, std::vector<EnumElemMemberVarDeclSyntax> memberVars);
-    EnumElemDeclSyntax(const EnumElemDeclSyntax&) = delete;
-    SYNTAX_API EnumElemDeclSyntax(EnumElemDeclSyntax&&) noexcept;
-    SYNTAX_API ~EnumElemDeclSyntax();
+    SYNTAX_API SEnumElemDecl(std::string name, std::vector<SEnumElemMemberVarDecl> memberVars);
+    SEnumElemDecl(const SEnumElemDecl&) = delete;
+    SYNTAX_API SEnumElemDecl(SEnumElemDecl&&) noexcept;
+    SYNTAX_API ~SEnumElemDecl();
 
-    EnumElemDeclSyntax& operator=(const EnumElemDeclSyntax& other) = delete;
-    SYNTAX_API EnumElemDeclSyntax& operator=(EnumElemDeclSyntax&& other) noexcept;
+    SEnumElemDecl& operator=(const SEnumElemDecl& other) = delete;
+    SYNTAX_API SEnumElemDecl& operator=(SEnumElemDecl&& other) noexcept;
 
     std::string& GetName() { return name; }
-    std::vector<EnumElemMemberVarDeclSyntax>& GetMemberVars() { return memberVars; }
+    std::vector<SEnumElemMemberVarDecl>& GetMemberVars() { return memberVars; }
 
     SYNTAX_API JsonItem ToJson();
 };
 
-class EnumDeclSyntax
+class SEnumDecl
+    : public SClassMemberDecl
+    , public SStructMemberDecl
+    , public SNamespaceDeclElement
+    , public SScriptElement
 {
-    std::optional<AccessModifierSyntax> accessModifier;
+    std::optional<SAccessModifier> accessModifier;
     std::string name;
-    std::vector<TypeParamSyntax> typeParams;
-    std::vector<EnumElemDeclSyntax> elements;
+    std::vector<STypeParam> typeParams;
+    std::vector<SEnumElemDecl> elements;
 
 public:
-    SYNTAX_API EnumDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<EnumElemDeclSyntax> elements);
-    EnumDeclSyntax(const EnumDeclSyntax&) = delete;
-    SYNTAX_API EnumDeclSyntax(EnumDeclSyntax&&) noexcept;
-    SYNTAX_API ~EnumDeclSyntax();
+    SYNTAX_API SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl> elements);
+    SEnumDecl(const SEnumDecl&) = delete;
+    SYNTAX_API SEnumDecl(SEnumDecl&&) noexcept;
+    SYNTAX_API ~SEnumDecl();
 
-    EnumDeclSyntax& operator=(const EnumDeclSyntax& other) = delete;
-    SYNTAX_API EnumDeclSyntax& operator=(EnumDeclSyntax&& other) noexcept;
+    SEnumDecl& operator=(const SEnumDecl& other) = delete;
+    SYNTAX_API SEnumDecl& operator=(SEnumDecl&& other) noexcept;
 
-    std::optional<AccessModifierSyntax>& GetAccessModifier() { return accessModifier; }
+    std::optional<SAccessModifier>& GetAccessModifier() { return accessModifier; }
     std::string& GetName() { return name; }
-    std::vector<TypeParamSyntax>& GetTypeParams() { return typeParams; }
-    std::vector<EnumElemDeclSyntax>& GetElements() { return elements; }
+    std::vector<STypeParam>& GetTypeParams() { return typeParams; }
+    std::vector<SEnumElemDecl>& GetElements() { return elements; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-using NamespaceDeclSyntaxElement = std::variant<
-    GlobalFuncDeclSyntax,
-    class NamespaceDeclSyntax,
-    ClassDeclSyntax,
-    StructDeclSyntax,
-    EnumDeclSyntax>;
-
-SYNTAX_API JsonItem ToJson(NamespaceDeclSyntaxElement& elem);
-
-class NamespaceDeclSyntax
+class SNamespaceDecl
+    : public SNamespaceDeclElement
+    , public SScriptElement
 {
     std::vector<std::string> names;
-    std::vector<NamespaceDeclSyntaxElement> elements;
+    std::vector<SNamespaceDeclElementPtr> elements;
 
 public:
-    SYNTAX_API NamespaceDeclSyntax(std::vector<std::string> names, std::vector<NamespaceDeclSyntaxElement> elements);
-    NamespaceDeclSyntax(const NamespaceDeclSyntax&) = delete;
-    SYNTAX_API NamespaceDeclSyntax(NamespaceDeclSyntax&&) noexcept;
-    SYNTAX_API ~NamespaceDeclSyntax();
+    SYNTAX_API SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElementPtr> elements);
+    SNamespaceDecl(const SNamespaceDecl&) = delete;
+    SYNTAX_API SNamespaceDecl(SNamespaceDecl&&) noexcept;
+    SYNTAX_API ~SNamespaceDecl();
 
-    NamespaceDeclSyntax& operator=(const NamespaceDeclSyntax& other) = delete;
-    SYNTAX_API NamespaceDeclSyntax& operator=(NamespaceDeclSyntax&& other) noexcept;
+    SNamespaceDecl& operator=(const SNamespaceDecl& other) = delete;
+    SYNTAX_API SNamespaceDecl& operator=(SNamespaceDecl&& other) noexcept;
 
     std::vector<std::string>& GetNames() { return names; }
-    std::vector<NamespaceDeclSyntaxElement>& GetElements() { return elements; }
+    std::vector<SNamespaceDeclElementPtr>& GetElements() { return elements; }
 
     SYNTAX_API JsonItem ToJson();
+    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(*this); }
+
 };
 
-using ScriptSyntaxElement = std::variant<
-    NamespaceDeclSyntax,
-    GlobalFuncDeclSyntax,
-    ClassDeclSyntax,
-    StructDeclSyntax,
-    EnumDeclSyntax>;
-
-SYNTAX_API JsonItem ToJson(ScriptSyntaxElement& elem);
-
-class ScriptSyntax
+class SScript
 {
-    std::vector<ScriptSyntaxElement> elements;
+    std::vector<SScriptElementPtr> elements;
 
 public:
-    SYNTAX_API ScriptSyntax(std::vector<ScriptSyntaxElement> elements);
-    ScriptSyntax(const ScriptSyntax&) = delete;
-    SYNTAX_API ScriptSyntax(ScriptSyntax&&) noexcept;
-    SYNTAX_API ~ScriptSyntax();
+    SYNTAX_API SScript(std::vector<SScriptElementPtr> elements);
+    SScript(const SScript&) = delete;
+    SYNTAX_API SScript(SScript&&) noexcept;
+    SYNTAX_API ~SScript();
 
-    ScriptSyntax& operator=(const ScriptSyntax& other) = delete;
-    SYNTAX_API ScriptSyntax& operator=(ScriptSyntax&& other) noexcept;
+    SScript& operator=(const SScript& other) = delete;
+    SYNTAX_API SScript& operator=(SScript&& other) noexcept;
 
-    std::vector<ScriptSyntaxElement>& GetElements() { return elements; }
+    std::vector<SScriptElementPtr>& GetElements() { return elements; }
 
     SYNTAX_API JsonItem ToJson();
 };

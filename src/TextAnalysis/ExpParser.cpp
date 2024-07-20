@@ -16,24 +16,24 @@ using namespace std;
 namespace {
 
 using namespace Citron;
-struct BinaryOpInfo { Token token; BinaryOpSyntaxKind kind; };
-struct UnaryOpInfo { Token token; UnaryOpSyntaxKind kind; };
+struct BinaryOpInfo { Token token; SBinaryOpKind kind; };
+struct UnaryOpInfo { Token token; SUnaryOpKind kind; };
 
 // utility
-template<optional<ExpSyntax> (*ParseBaseExp)(Lexer* lexer), int N>
-optional<ExpSyntax> ParseLeftAssocBinaryOpExp(Lexer* lexer, BinaryOpInfo (&infos)[N])
+template<SExpPtr (*ParseBaseExp)(Lexer* lexer), int N>
+SExpPtr ParseLeftAssocBinaryOpExp(Lexer* lexer, BinaryOpInfo (&infos)[N])
 {
     Lexer curLexer = *lexer;
-    auto oOperand0 = ParseBaseExp(&curLexer);
+    auto operand0 = ParseBaseExp(&curLexer);
 
-    if (!oOperand0)
-        return nullopt;
+    if (!operand0)
+        return nullptr;
 
-    ExpSyntax curExp = std::move(*oOperand0);
+    SExpPtr curExp = std::move(operand0);
 
     while (true)
     {
-        optional<BinaryOpSyntaxKind> oOpKind;
+        optional<SBinaryOpKind> oOpKind;
 
         if (auto oLexResult = curLexer.LexNormalMode(true))
         {
@@ -55,56 +55,56 @@ optional<ExpSyntax> ParseLeftAssocBinaryOpExp(Lexer* lexer, BinaryOpInfo (&infos
             return curExp;
         }
 
-        auto oOperand1 = ParseBaseExp(&curLexer);
-        if (!oOperand1)
-            return nullopt;
+        auto operand1 = ParseBaseExp(&curLexer);
+        if (!operand1)
+            return nullptr;
         
         // Fold
-        curExp = make_unique<BinaryOpExpSyntax>(*oOpKind, std::move(curExp), std::move(*oOperand1));
+        curExp = make_unique<SBinaryOpExp>(*oOpKind, std::move(curExp), std::move(operand1));
     }
 }
 
  // unary -가 int literal과 있을 때는 int literal로 합친다
-optional<ExpSyntax> HandleUnaryMinusWithIntLiteral(UnaryOpSyntaxKind kind, ExpSyntax& exp)
+SExpPtr HandleUnaryMinusWithIntLiteral(SUnaryOpKind kind, SExp* exp)
 {
-    if (kind == UnaryOpSyntaxKind::Minus)
-        if (auto* intLiteralExp = get_if<IntLiteralExpSyntax>(&exp))
-            return IntLiteralExpSyntax(-intLiteralExp->GetValue());
+    if (kind == SUnaryOpKind::Minus)
+        if (auto* intLiteralExp = dynamic_cast<SIntLiteralExp*>(exp))
+            return make_unique<SIntLiteralExp>(-intLiteralExp->GetValue());
 
-    return nullopt;
+    return nullptr;
 }
 
-optional<ArgumentSyntax> ParseArgument(Lexer* lexer)
+optional<SArgument> ParseArgument(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
     auto oOutAndParams = AcceptParseOutAndParams(&curLexer);
     if (!oOutAndParams)
         return nullopt;
 
-    auto oExp = ParseExp(&curLexer);
+    auto exp = ParseExp(&curLexer);
 
-    if (!oExp)
+    if (!exp)
         return nullopt;
 
     *lexer = std::move(curLexer);
-    return ArgumentSyntax{ oOutAndParams->bOut, oOutAndParams->bParams, std::move(*oExp) };
+    return SArgument{ oOutAndParams->bOut, oOutAndParams->bParams, std::move(exp) };
 }
 
 }
 
 namespace Citron {
 
-optional<vector<TypeExpSyntax>> ParseTypeArgs(Lexer* lexer);
+optional<vector<STypeExpPtr>> ParseTypeArgs(Lexer* lexer);
 
 
-optional<vector<ArgumentSyntax>> ParseCallArgs(Lexer* lexer)
+optional<vector<SArgument>> ParseCallArgs(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LParenToken>(&curLexer))
         return nullopt;
 
-    vector<ArgumentSyntax> arguments;
+    vector<SArgument> arguments;
     while (!Accept<RParenToken>(&curLexer))
     {
         if (!arguments.empty())
@@ -122,62 +122,62 @@ optional<vector<ArgumentSyntax>> ParseCallArgs(Lexer* lexer)
     return arguments; // 이건 move가 되는데..
 }
 
-optional<ExpSyntax> ParseExp(Lexer* lexer)
+SExpPtr ParseExp(Lexer* lexer)
 {
     return ParseAssignExp(lexer);
 }
 
-optional<ExpSyntax> ParseAssignExp(Lexer* lexer)
+SExpPtr ParseAssignExp(Lexer* lexer)
 {   
     Lexer curLexer = *lexer;
 
     // base
-    auto oExp0 = ParseEqualityExp(&curLexer);
-    if (!oExp0) 
-        return nullopt;
+    auto exp0 = ParseEqualityExp(&curLexer);
+    if (!exp0) 
+        return nullptr;
 
     if (!Accept<EqualToken>(&curLexer))
     {
         *lexer = std::move(curLexer);
-        return oExp0;
+        return exp0;
     }
 
-    auto oExp1 = ParseAssignExp(&curLexer);
-    if (!oExp1)
-        return nullopt;
+    auto exp1 = ParseAssignExp(&curLexer);
+    if (!exp1)
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<BinaryOpExpSyntax>(BinaryOpSyntaxKind::Assign, std::move(*oExp0), std::move(*oExp1));
+    return make_unique<SBinaryOpExp>(SBinaryOpKind::Assign, std::move(exp0), std::move(exp1));
 }
 
-optional<ExpSyntax> ParseEqualityExp(Lexer* lexer)
+SExpPtr ParseEqualityExp(Lexer* lexer)
 {
     static BinaryOpInfo equalityInfos[] = {
-        { EqualEqualToken(), BinaryOpSyntaxKind::Equal },
-        { ExclEqualToken(), BinaryOpSyntaxKind::NotEqual }
+        { EqualEqualToken(), SBinaryOpKind::Equal },
+        { ExclEqualToken(), SBinaryOpKind::NotEqual }
     };
 
     return ParseLeftAssocBinaryOpExp<&ParseTestAndTypeTestExp>(lexer, equalityInfos);
 }
 
-optional<ExpSyntax> ParseTestAndTypeTestExp(Lexer* lexer)
+SExpPtr ParseTestAndTypeTestExp(Lexer* lexer)
 {
     static BinaryOpInfo testInfos[] = {
-        { GreaterThanEqualToken(), BinaryOpSyntaxKind::GreaterThanOrEqual },
-        { LessThanEqualToken(), BinaryOpSyntaxKind::LessThanOrEqual },
-        { LessThanToken(), BinaryOpSyntaxKind::LessThan },
-        { GreaterThanToken(), BinaryOpSyntaxKind::GreaterThan }
+        { GreaterThanEqualToken(), SBinaryOpKind::GreaterThanOrEqual },
+        { LessThanEqualToken(), SBinaryOpKind::LessThanOrEqual },
+        { LessThanToken(), SBinaryOpKind::LessThan },
+        { GreaterThanToken(), SBinaryOpKind::GreaterThan }
     };
 
     Lexer curLexer = *lexer;
 
     // base
-    auto oOperand0 = ParseAdditiveExp(&curLexer);
+    auto operand0 = ParseAdditiveExp(&curLexer);
 
-    if (!oOperand0)
-        return nullopt;
+    if (!operand0)
+        return nullptr;
 
-    ExpSyntax curExp = std::move(*oOperand0);
+    SExpPtr curExp = std::move(operand0);
     
     while (true)
     {
@@ -194,13 +194,13 @@ optional<ExpSyntax> ParseTestAndTypeTestExp(Lexer* lexer)
                 curLexer = std::move(oLexResult->lexer);
 
                 // base
-                auto oOperand1 = ParseAdditiveExp(&curLexer);
+                auto operand1 = ParseAdditiveExp(&curLexer);
 
-                if (!oOperand1)
-                    return nullopt;
+                if (!operand1)
+                    return nullptr;
 
                 // Fold
-                curExp = make_unique<BinaryOpExpSyntax>(info.kind, std::move(curExp), std::move(*oOperand1));
+                curExp = make_unique<SBinaryOpExp>(info.kind, std::move(curExp), std::move(operand1));
                 bHandled = true;
                 break;
             }
@@ -212,12 +212,12 @@ optional<ExpSyntax> ParseTestAndTypeTestExp(Lexer* lexer)
         {
             curLexer = oLexResult->lexer;
 
-            auto oTypeExp = ParseTypeExp(&curLexer);
+            auto typeExp = ParseTypeExp(&curLexer);
 
-            if (!oTypeExp)
-                return nullopt;
+            if (!typeExp)
+                return nullptr;
 
-            curExp = make_unique<IsExpSyntax>(std::move(curExp), std::move(*oTypeExp));
+            curExp = make_unique<SIsExp>(std::move(curExp), std::move(typeExp));
             continue;
         }
 
@@ -225,11 +225,11 @@ optional<ExpSyntax> ParseTestAndTypeTestExp(Lexer* lexer)
         {
             curLexer = oLexResult->lexer;
 
-            auto oTypeExp = ParseTypeExp(&curLexer);
-            if (!oTypeExp) 
-                return nullopt;
+            auto typeExp = ParseTypeExp(&curLexer);
+            if (!typeExp) 
+                return nullptr;
 
-            curExp = make_unique<AsExpSyntax>(std::move(curExp), std::move(*oTypeExp));
+            curExp = make_unique<SAsExp>(std::move(curExp), std::move(typeExp));
             continue;
         }
 
@@ -241,40 +241,40 @@ optional<ExpSyntax> ParseTestAndTypeTestExp(Lexer* lexer)
 }
 
 
-std::optional<Citron::ExpSyntax> ParseAdditiveExp(Lexer* lexer)
+Citron::SExpPtr ParseAdditiveExp(Lexer* lexer)
 {
     static BinaryOpInfo additiveInfos[] = {
-        { PlusToken(), BinaryOpSyntaxKind::Add },
-        { MinusToken(), BinaryOpSyntaxKind::Subtract },
+        { PlusToken(), SBinaryOpKind::Add },
+        { MinusToken(), SBinaryOpKind::Subtract },
     };
 
     return ParseLeftAssocBinaryOpExp<&ParseMultiplicativeExp>(lexer, additiveInfos);
 }
 
-std::optional<Citron::ExpSyntax> ParseMultiplicativeExp(Lexer* lexer)
+Citron::SExpPtr ParseMultiplicativeExp(Lexer* lexer)
 {   
     static BinaryOpInfo multiplicativeInfos[] = {
-        { StarToken(), BinaryOpSyntaxKind::Multiply },
-        { SlashToken(), BinaryOpSyntaxKind::Divide },
-        { PercentToken(), BinaryOpSyntaxKind::Modulo },
+        { StarToken(), SBinaryOpKind::Multiply },
+        { SlashToken(), SBinaryOpKind::Divide },
+        { PercentToken(), SBinaryOpKind::Modulo },
     };
 
     return ParseLeftAssocBinaryOpExp<&ParseUnaryExp>(lexer, multiplicativeInfos);
 }
 
 // base는 PrimaryExp
-std::optional<Citron::ExpSyntax> ParseUnaryExp(Lexer* lexer)
+Citron::SExpPtr ParseUnaryExp(Lexer* lexer)
 {
     static UnaryOpInfo unaryInfos[] = {
-        { MinusToken(), UnaryOpSyntaxKind::Minus},
-        { ExclToken(), UnaryOpSyntaxKind::LogicalNot },
-        { PlusPlusToken(), UnaryOpSyntaxKind::PrefixInc },
-        { MinusMinusToken(), UnaryOpSyntaxKind::PrefixDec },
-        { StarToken(), UnaryOpSyntaxKind::Deref }
+        { MinusToken(), SUnaryOpKind::Minus},
+        { ExclToken(), SUnaryOpKind::LogicalNot },
+        { PlusPlusToken(), SUnaryOpKind::PrefixInc },
+        { MinusMinusToken(), SUnaryOpKind::PrefixDec },
+        { StarToken(), SUnaryOpKind::Deref }
     };
 
     Lexer curLexer = *lexer;
-    optional<UnaryOpSyntaxKind> oOpKind;
+    optional<SUnaryOpKind> oOpKind;
 
     auto oLexResult = curLexer.LexNormalMode(true);
     if (oLexResult)
@@ -292,19 +292,19 @@ std::optional<Citron::ExpSyntax> ParseUnaryExp(Lexer* lexer)
 
     if (oOpKind)
     {
-        auto oExp = ParseUnaryExp(&curLexer);
-        if (!oExp)
-            return nullopt;
+        auto exp = ParseUnaryExp(&curLexer);
+        if (!exp)
+            return nullptr;
 
         // '-' '3'은 '-3'
-        if (auto oHandledExp = HandleUnaryMinusWithIntLiteral(*oOpKind, *oExp))
+        if (auto handledExp = HandleUnaryMinusWithIntLiteral(*oOpKind, exp.get()))
         {
             *lexer = std::move(curLexer);
-            return oHandledExp;
+            return handledExp;
         }
 
         *lexer = std::move(curLexer);
-        return make_unique<UnaryOpExpSyntax>(*oOpKind, std::move(*oExp));
+        return make_unique<SUnaryOpExp>(*oOpKind, std::move(exp));
     }
     else
     {
@@ -314,21 +314,21 @@ std::optional<Citron::ExpSyntax> ParseUnaryExp(Lexer* lexer)
 }
 
 // base ParseSingleExp
-std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
+Citron::SExpPtr ParsePrimaryExp(Lexer* lexer)
 {
     static UnaryOpInfo primaryInfos[] = {
-        { PlusPlusToken(), UnaryOpSyntaxKind::PostfixInc },
-        { MinusMinusToken(), UnaryOpSyntaxKind::PostfixDec },
+        { PlusPlusToken(), SUnaryOpKind::PostfixInc },
+        { MinusMinusToken(), SUnaryOpKind::PostfixDec },
     };
 
     Lexer curLexer = *lexer;
 
-    auto oOperand = ParseSingleExp(&curLexer);
+    auto operand = ParseSingleExp(&curLexer);
 
-    if (!oOperand)
-        return nullopt;
+    if (!operand)
+        return nullptr;
 
-    auto curExp = std::move(*oOperand);
+    auto curExp = std::move(operand);
 
     while (true)
     {
@@ -353,21 +353,21 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             curLexer = oLexResult->lexer;
 
             // Fold
-            curExp = make_unique<UnaryOpExpSyntax>(primaryInfo->kind, std::move(curExp));
+            curExp = make_unique<SUnaryOpExp>(primaryInfo->kind, std::move(curExp));
             continue;
         }
 
         // [ ... ]
         if (Accept<LBracketToken>(&curLexer))
         {
-            auto oIndex = ParseExp(&curLexer);
-            if (!oIndex)
-                return nullopt;
+            auto index = ParseExp(&curLexer);
+            if (!index)
+                return nullptr;
 
             if (!Accept<RBraceToken>(&curLexer))
-                return nullopt;
+                return nullptr;
 
-            curExp = make_unique<IndexerExpSyntax>(std::move(curExp), std::move(*oIndex));
+            curExp = make_unique<SIndexerExp>(std::move(curExp), std::move(index));
             continue;
         }
 
@@ -377,15 +377,15 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             auto oIdToken = Accept<IdentifierToken>(&curLexer);
 
             if (!oIdToken)
-                return nullopt;
+                return nullptr;
 
             // <
             auto oTypeArgs = ParseTypeArgs(&curLexer);
 
             if (oTypeArgs)
-                curExp = make_unique<MemberExpSyntax>(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
+                curExp = make_unique<SMemberExp>(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
             else
-                curExp = make_unique<MemberExpSyntax>(std::move(curExp), std::move(oIdToken->text), std::vector<TypeExpSyntax>());
+                curExp = make_unique<SMemberExp>(std::move(curExp), std::move(oIdToken->text), std::vector<STypeExpPtr>());
 
             continue;
         }
@@ -396,17 +396,17 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
             auto oIdToken = Accept<IdentifierToken>(&curLexer);
 
             if (!oIdToken)
-                return nullopt;
+                return nullptr;
 
             // <
             auto oTypeArgs = ParseTypeArgs(&curLexer);
             if (oTypeArgs)
             {   
-                curExp = make_unique<IndirectMemberExpSyntax>(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
+                curExp = make_unique<SIndirectMemberExp>(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
             }
             else
             {   
-                curExp = make_unique<IndirectMemberExpSyntax>(std::move(curExp), std::move(oIdToken->text), vector<TypeExpSyntax>());
+                curExp = make_unique<SIndirectMemberExp>(std::move(curExp), std::move(oIdToken->text), vector<STypeExpPtr>());
             }
 
             continue;
@@ -416,7 +416,7 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
         auto oArguments = ParseCallArgs(&curLexer);
         if (oArguments)
         {
-            curExp = make_unique<CallExpSyntax>(std::move(curExp), std::move(*oArguments));
+            curExp = make_unique<SCallExp>(std::move(curExp), std::move(*oArguments));
             continue;
         }
 
@@ -427,84 +427,84 @@ std::optional<Citron::ExpSyntax> ParsePrimaryExp(Lexer* lexer)
     return curExp;
 }
 
-optional<ExpSyntax> ParseSingleExp(Lexer* lexer)
+SExpPtr ParseSingleExp(Lexer* lexer)
 {
-    if (auto oExp = ParseBoxExp(lexer))
-        return make_unique<BoxExpSyntax>(std::move(*oExp));
+    if (auto exp = ParseBoxExp(lexer))
+        return exp;
         
-    if (auto oExp = ParseNewExp(lexer))
-        return oExp;
+    if (auto exp = ParseNewExp(lexer))
+        return exp;
         
-    if (auto oExp = ParseLambdaExp(lexer))
-        return make_unique<LambdaExpSyntax>(std::move(*oExp));
+    if (auto exp = ParseLambdaExp(lexer))
+        return exp;
         
-    if (auto oExp = ParseParenExp(lexer))
-        return oExp;
+    if (auto exp = ParseParenExp(lexer))
+        return exp;
         
-    if (auto oExp = ParseNullLiteralExp(lexer))
-        return oExp;
+    if (auto exp = ParseNullLiteralExp(lexer))
+        return exp;
         
-    if (auto oExp = ParseBoolLiteralExp(lexer))
-        return oExp;
+    if (auto exp = ParseBoolLiteralExp(lexer))
+        return exp;
         
-    if (auto oExp = ParseIntLiteralExp(lexer))
-        return oExp;
+    if (auto exp = ParseIntLiteralExp(lexer))
+        return exp;
         
-    if (auto oExp = ParseStringExp(lexer))
-        return oExp;
+    if (auto exp = ParseStringExp(lexer))
+        return exp;
         
-    if (auto oExp = ParseListExp(lexer))
-        return oExp;
+    if (auto exp = ParseListExp(lexer))
+        return exp;
         
-    if (auto oExp = ParseIdentifierExp(lexer))
-        return oExp;
+    if (auto exp = ParseIdentifierExp(lexer))
+        return exp;
         
-    return nullopt;
+    return nullptr;
 }
 
 
-optional<BoxExpSyntax> ParseBoxExp(Lexer* lexer)
+unique_ptr<SBoxExp> ParseBoxExp(Lexer* lexer)
 {
     // <BOX> <EXP>
     Lexer curLexer = *lexer;
 
     if (!Accept<BoxToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    auto oInnerExp = ParseExp(&curLexer);
-    if (!oInnerExp)
-        return nullopt;
+    auto innerExp = ParseExp(&curLexer);
+    if (!innerExp)
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return BoxExpSyntax(std::move(*oInnerExp));
+    return make_unique<SBoxExp>(std::move(innerExp));
 }
 
-optional<NewExpSyntax> ParseNewExp(Lexer* lexer)
+unique_ptr<SNewExp> ParseNewExp(Lexer* lexer)
 {
     // <NEW> <TYPEEXP> <LPAREN> CallArgs <RPAREN>
     Lexer curLexer = *lexer;
     
     if (!Accept<NewToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    auto oType = ParseTypeExp(&curLexer);
-    if (!oType)
-        return nullopt;
+    auto type = ParseTypeExp(&curLexer);
+    if (!type)
+        return nullptr;
 
     auto oArgs = ParseCallArgs(&curLexer);
     
     if (!oArgs)
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return NewExpSyntax(std::move(*oType), std::move(*oArgs));
+    return make_unique<SNewExp>(std::move(type), std::move(*oArgs));
 }
 
 // LambdaExpression, Right Assoc
-optional<LambdaExpSyntax> ParseLambdaExp(Lexer* lexer)
+unique_ptr<SLambdaExp> ParseLambdaExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
-    vector<LambdaExpParamSyntax> params;
+    vector<SLambdaExpParam> params;
 
     // (), (a, b)            
     // (int a)
@@ -518,22 +518,22 @@ optional<LambdaExpSyntax> ParseLambdaExp(Lexer* lexer)
         {
             if (!params.empty())
                 if (!Accept<CommaToken>(&curLexer))
-                    return nullopt;
+                    return nullptr;
 
             auto oOutAndParams = AcceptParseOutAndParams(&curLexer);
             if (!oOutAndParams)
-                return nullopt;
+                return nullptr;
 
             // id id or id
             auto oFirstIdToken = Accept<IdentifierToken>(&curLexer);
             if (!oFirstIdToken)
-                return nullopt;
+                return nullptr;
 
             auto oSecondIdToken = Accept<IdentifierToken>(&curLexer);
             if (!oSecondIdToken)
-                params.emplace_back(LambdaExpParamSyntax{ nullopt, std::move(oFirstIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams });
+                params.emplace_back(nullptr, std::move(oFirstIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
             else
-                params.emplace_back(LambdaExpParamSyntax{ IdTypeExpSyntax(std::move(oFirstIdToken->text), {}), std::move(oSecondIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams });
+                params.emplace_back(make_unique<SIdTypeExp>(std::move(oFirstIdToken->text), vector<STypeExpPtr>{}), std::move(oSecondIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
         }
     }
     else
@@ -541,101 +541,101 @@ optional<LambdaExpSyntax> ParseLambdaExp(Lexer* lexer)
         // out과 params는 동시에 쓸 수 없다
         auto oOutAndParams = AcceptParseOutAndParams(&curLexer);
         if (!oOutAndParams)
-            return nullopt;
+            return nullptr;
         
         auto oIdToken = Accept<IdentifierToken>(&curLexer);
         if (!oIdToken)
-            return nullopt;
+            return nullptr;
 
-        params.emplace_back(LambdaExpParamSyntax{ nullopt, std::move(oIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams });
+        params.emplace_back(nullptr, std::move(oIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
     }
 
     // =>
     if (!Accept<EqualGreaterThanToken>(&curLexer))
-        return nullopt;
+        return nullptr;
     
 
     // exp => return exp;
     // { ... }
-    optional<LambdaExpBodySyntax> oBody;
+    SLambdaExpBodyPtr body;
     if (Peek<LBraceToken>(curLexer))
     {
         // Body 파싱을 그대로 쓴다
         auto oStmtBody = ParseBody(&curLexer);
         if (!oStmtBody)
-            return nullopt;
+            return nullptr;
 
-        oBody = StmtsLambdaExpBodySyntax(std::move(*oStmtBody));
+        body = make_unique<SStmtsLambdaExpBody>(std::move(*oStmtBody));
     }
     else
     {
         // exp
-        auto oExpBody = ParseExp(&curLexer);
-        if (!oExpBody)
-            return nullopt;
+        auto exp = ParseExp(&curLexer);
+        if (!exp)
+            return nullptr;
 
-        oBody = make_unique<ExpLambdaExpBodySyntax>(std::move(*oExpBody));
+        body = make_unique<SExpLambdaExpBody>(std::move(exp));
     }
 
     *lexer = std::move(curLexer);
-    return LambdaExpSyntax(std::move(params), std::move(*oBody));
+    return make_unique<SLambdaExp>(std::move(params), std::move(body));
 }
 
-optional<ExpSyntax> ParseParenExp(Lexer* lexer)
+SExpPtr ParseParenExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
     
-    auto oExp = ParseExp(&curLexer);
-    if (!oExp)
-        return nullopt;
+    auto oxp = ParseExp(&curLexer);
+    if (!oxp)
+        return nullptr;
     
     if (!Accept<RParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return oExp;
+    return oxp;
 }
 
-optional<NullLiteralExpSyntax> ParseNullLiteralExp(Lexer* lexer)
+unique_ptr<SNullLiteralExp> ParseNullLiteralExp(Lexer* lexer)
 {
     if (!Accept<NullToken>(lexer))
-        return nullopt;
+        return nullptr;
 
-    return NullLiteralExpSyntax();
+    return make_unique<SNullLiteralExp>();
 }
 
-optional<BoolLiteralExpSyntax> ParseBoolLiteralExp(Lexer* lexer)
+unique_ptr<SBoolLiteralExp> ParseBoolLiteralExp(Lexer* lexer)
 {
     auto oBoolToken = Accept<BoolToken>(lexer);
 
     if (!oBoolToken)
-        return nullopt;
+        return nullptr;
 
-    return BoolLiteralExpSyntax(oBoolToken->value);
+    return make_unique<SBoolLiteralExp>(oBoolToken->value);
 }
 
-optional<IntLiteralExpSyntax> ParseIntLiteralExp(Lexer* lexer)
+unique_ptr<SIntLiteralExp> ParseIntLiteralExp(Lexer* lexer)
 {
     auto oIntToken = Accept<IntToken>(lexer);
 
     if (!oIntToken)
-        return nullopt;
+        return nullptr;
 
-    return IntLiteralExpSyntax(oIntToken->value);
+    return make_unique<SIntLiteralExp>(oIntToken->value);
 }
 
 // 스트링 파싱
-optional<StringExpSyntax> ParseStringExp(Lexer* lexer)
+unique_ptr<SStringExp> ParseStringExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<DoubleQuoteToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    vector<StringExpSyntaxElement> elems;
+    vector<SStringExpElementPtr> elems;
     
     while (true)
     {
@@ -645,13 +645,13 @@ optional<StringExpSyntax> ParseStringExp(Lexer* lexer)
 
         if (auto oTextToken = Accept<TextToken>(&curLexer, oLexResult))
         {
-            elems.push_back(TextStringExpSyntaxElement{ std::move(oTextToken->text) });
+            elems.push_back(make_unique<STextStringExpElement>(std::move(oTextToken->text)));
             continue;
         }
         
         if (auto oIdToken = Accept<IdentifierToken>(&curLexer, oLexResult))
         {
-            elems.push_back(make_unique<ExpStringExpSyntaxElement>(IdentifierExpSyntax(std::move(oIdToken->text), {})));
+            elems.push_back(make_unique<SExpStringExpElement>(make_unique<SIdentifierExp>(std::move(oIdToken->text), std::vector<STypeExpPtr>{})));
             continue;
         }
 
@@ -659,57 +659,57 @@ optional<StringExpSyntax> ParseStringExp(Lexer* lexer)
         if (Accept<DollarLBraceToken>(&curLexer, oLexResult))
         {
             // TODO: EndInnerExpToken 일때 빠져나와야 한다는 표시를 해줘야 한다
-            auto oExp = ParseExp(&curLexer);
-            if (!oExp)
-                return nullopt;
+            auto exp = ParseExp(&curLexer);
+            if (!exp)
+                return nullptr;
             
             if (!Accept<RBraceToken>(&curLexer))
-                return nullopt;
+                return nullptr;
 
-            elems.push_back(make_unique<ExpStringExpSyntaxElement>(std::move(*oExp)));
+            elems.push_back(make_unique<SExpStringExpElement>(std::move(exp)));
             continue;
         }
 
-        return nullopt;
+        return nullptr;
     }
 
     *lexer = std::move(curLexer);
-    return StringExpSyntax(std::move(elems));    
+    return make_unique<SStringExp>(std::move(elems));    
 }
 
-optional<ListExpSyntax> ParseListExp(Lexer* lexer)
+unique_ptr<SListExp> ParseListExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LBracketToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    vector<ExpSyntax> elems;    
+    vector<SExpPtr> elems;    
     
     while (!Accept<RBracketToken>(&curLexer))
     {
         if (!elems.empty())
             if (!Accept<CommaToken>(&curLexer))
-                return nullopt;
+                return nullptr;
 
-        auto oElem = ParseExp(&curLexer);
-        if (!oElem)
-            return nullopt;
+        auto elem = ParseExp(&curLexer);
+        if (!elem)
+            return nullptr;
 
-        elems.push_back(std::move(*oElem));
+        elems.push_back(std::move(elem));
     }
 
     *lexer = curLexer;
-    return ListExpSyntax(std::move(elems));
+    return make_unique<SListExp>(std::move(elems));
 }
 
 // lexer를 실패했을때 되돌리는 것은 Parser책임
-optional<IdentifierExpSyntax> ParseIdentifierExp(Lexer* lexer)
+unique_ptr<SIdentifierExp> ParseIdentifierExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     auto oIdToken = Accept<IdentifierToken>(&curLexer);
-    if (!oIdToken) return nullopt;
+    if (!oIdToken) return nullptr;
 
     // 실패해도 괜찮다
     auto oTypeArgs = ParseTypeArgs(&curLexer);
@@ -717,12 +717,12 @@ optional<IdentifierExpSyntax> ParseIdentifierExp(Lexer* lexer)
     if (oTypeArgs)
     {
         *lexer = std::move(curLexer);
-        return IdentifierExpSyntax(std::move(oIdToken->text), std::move(*oTypeArgs));
+        return make_unique<SIdentifierExp>(std::move(oIdToken->text), std::move(*oTypeArgs));
     }
     else
     {
         *lexer = std::move(curLexer);
-        return IdentifierExpSyntax(std::move(oIdToken->text), { });
+        return make_unique<SIdentifierExp>(std::move(oIdToken->text), std::vector<STypeExpPtr>{});
     }
 }
 

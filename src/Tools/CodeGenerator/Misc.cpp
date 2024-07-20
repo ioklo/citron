@@ -105,6 +105,19 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
 {
     // class begin
     hStream << "class " << classInfo.name << endl;
+    bool bFirst = true;
+    for(auto& variantInterface : classInfo.variantInterfaces)
+    {
+        if (bFirst)
+        {
+            hStream << "    : public " << variantInterface << endl;
+            bFirst = false;
+        }
+        else
+        {
+            hStream << "    , public " << variantInterface << endl;
+        }
+    }
     hStream << "{" << endl;
 
     bool bHModified = false, bCppModified = false;
@@ -121,7 +134,8 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     AddNewLineIfNeeded(bHModified, hStream);
     // SYNTAX_API IdentifierExpSyntax(std::string value);
     hStream << "    " << commonInfo.linkage << ' ' << classInfo.name << "(";
-    bool bFirst = true;
+
+    bFirst = true;
     for (auto& memberInfo : classInfo.memberInfos)
     {
         if (bFirst) bFirst = false;
@@ -172,9 +186,6 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
         cppStream << "{ }" << endl;
     }
 
-
-
-
     // 추가 생성자
     for (auto& extraConstructor : classInfo.extraConstructors)
     {
@@ -196,8 +207,6 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     cppStream << classInfo.name << "::" << classInfo.name << "(" << classInfo.name << "&& other) noexcept = default;" << endl;
     bCppModified = true;
 
-
-
     // 소멸자, inline이 아닐때만 생성한다
     // SYNTAX_API ~IdentifierExpSyntax();
     hStream << "    " << commonInfo.linkage << " ~" << classInfo.name << "();" << endl;
@@ -210,17 +219,17 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
 
     // copy assignment, move assignment
 
-        // IdentifierExpSyntax& operator=(const IdentifierExpSyntax& other) = delete;
-        // SYNTAX_API IdentifierExpSyntax& operator=(IdentifierExpSyntax&& other) noexcept;
-        AddNewLineIfNeeded(bHModified, hStream);
-        hStream << "    " << classInfo.name << "& operator=(const " << classInfo.name << "& other) = delete;" << endl;
-        hStream << "    " << commonInfo.linkage << " " << classInfo.name << "& operator=(" << classInfo.name << "&& other) noexcept;" << endl;
-        bHModified = true;
+    // IdentifierExpSyntax& operator=(const IdentifierExpSyntax& other) = delete;
+    // SYNTAX_API IdentifierExpSyntax& operator=(IdentifierExpSyntax&& other) noexcept;
+    AddNewLineIfNeeded(bHModified, hStream);
+    hStream << "    " << classInfo.name << "& operator=(const " << classInfo.name << "& other) = delete;" << endl;
+    hStream << "    " << commonInfo.linkage << " " << classInfo.name << "& operator=(" << classInfo.name << "&& other) noexcept;" << endl;
+    bHModified = true;
 
-        // IdentifierExpSyntax& IdentifierExpSyntax::operator=(IdentifierExpSyntax&& other) noexcept = default;
-        AddNewLineIfNeeded(bCppModified, cppStream);
-        cppStream << classInfo.name << "& " << classInfo.name << "::operator=(" << classInfo.name << "&& other) noexcept = default;" << endl;
-        bCppModified = true;
+    // IdentifierExpSyntax& IdentifierExpSyntax::operator=(IdentifierExpSyntax&& other) noexcept = default;
+    AddNewLineIfNeeded(bCppModified, cppStream);
+    cppStream << classInfo.name << "& " << classInfo.name << "::operator=(" << classInfo.name << "&& other) noexcept = default;" << endl;
+    bCppModified = true;
 
     AddNewLineIfNeeded(bHModified, hStream);
     AddNewLineIfNeeded(bCppModified, cppStream);
@@ -257,6 +266,14 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     bCppModified = true;
 
     AddNewLineIfNeeded(bHModified, hStream);
+
+    for (auto& variantInterface : classInfo.variantInterfaces)
+    {
+        hStream << "    void Accept(" << variantInterface << "Visitor& visitor) override { visitor.Visit(*this); }" << endl;
+        bHModified = true;
+    }
+    AddNewLineIfNeeded(bHModified, hStream);
+
     hStream << "};" << endl << endl;
 
 
@@ -330,6 +347,84 @@ void GenerateVariant(CommonInfo& commonInfo, VariantInfo& info, ostringstream& h
     cppStream << endl;
 }
 
+void GenerateForwardClassDecls(CommonInfo& commonInfo, ForwardClassDeclsInfo& info, ostringstream& hStream)
+{
+    for(auto& name : info.names)
+    {
+        hStream << "class " << name << ";" << endl;
+    }
+
+    if (!info.names.empty())
+        hStream << endl;
+}
+
+void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info, ostringstream& hStream, ostringstream& cppStream)
+{
+    // class 'name'Visitor
+    // {
+    // public:
+    //     virtual void Visit(A& a) = 0;
+    //     virtual void Visit(B& b) = 0;
+    //     virtual void Visit(C& c) = 0;
+    // };
+    // 
+    // class 'name'
+    // {
+    // public:
+    //     virtual void Visit('name'Visitor& visitor) = 0;
+    // };
+
+    hStream << "class " << info.name << "Visitor" << endl;
+    hStream << "{" << endl;
+    hStream << "public:" << endl;
+    for(auto& member : info.members)
+        hStream << "    virtual void Visit(" << member << "& " << info.argName << ") = 0;" << endl;
+    hStream << "};" << endl << endl;
+
+    hStream << "class " << info.name << endl;
+    hStream << "{" << endl;
+    hStream << "public:" << endl;
+    hStream << "    virtual void Accept(" << info.name << "Visitor& visitor) = 0;" << endl;
+    hStream << "};" << endl << endl;
+
+    // SYNTAX_API JsonItem ToJson('name'Ptr& 'argName');
+    hStream << commonInfo.linkage << " JsonItem ToJson(" << info.name << "Ptr& " << info.argName << ");" << endl << endl;
+
+    // struct 'name'ToJsonVisitor
+    // {
+    //     JsonItem result;
+    //     void Visit(A& a) override { result = a.ToJson(); }
+    //     void Visit(B& a) override { result = a.ToJson(); }
+    // }
+    // 
+    // JsonItem ToJson('name'Ptr& 'argName')
+    // {
+    //     'name'ToJsonVisitor visitor;
+    //     'argName'->Accept(visitor);
+    //     return visitor.result;
+    // }
+    cppStream << "struct " << info.name << "ToJsonVisitor : " << "public " << info.name << "Visitor" << endl;
+    cppStream << "{" << endl;
+    cppStream << "    JsonItem result;" << endl;
+    for (auto& member : info.members)
+        cppStream << "    void Visit(" << member << "& " << info.argName << ") override { result = " << info.argName << ".ToJson(); }" << endl;
+    cppStream << "};" << endl << endl;
+
+    cppStream << "JsonItem ToJson(" << info.name << "Ptr& " << info.argName << ")" << endl;
+    cppStream << "{" << endl;
+    cppStream << "    " << info.name << "ToJsonVisitor visitor;" << endl;
+    cppStream << "    " << info.argName << "->Accept(visitor);" << endl;
+    cppStream << "    return visitor.result;" << endl;
+    cppStream << "}" << endl;
+}
+
+void GeneratePtrDecls(CommonInfo& commonInfo, PtrDeclsInfo& info, ostringstream& hStream)
+{
+    // using 'name'Ptr = std::unique_ptr<'name'>;
+    for (auto& name : info.names)
+        hStream << "using " << name << "Ptr = std::unique_ptr<" << name << ">;" << endl;
+}
+
 void GenerateItems(CommonInfo& commonInfo, ostringstream& hStream, ostringstream& cppStream, vector<ItemInfo>& itemInfos)
 {
     struct
@@ -342,6 +437,9 @@ void GenerateItems(CommonInfo& commonInfo, ostringstream& hStream, ostringstream
         void operator()(StructInfo& structInfo) { GenerateStruct(commonInfo, structInfo, hStream); }
         void operator()(ClassInfo& classInfo) { GenerateClass(commonInfo, classInfo, hStream, cppStream); }
         void operator()(VariantInfo& info) { GenerateVariant(commonInfo, info, hStream, cppStream); }
+        void operator()(ForwardClassDeclsInfo& info) { GenerateForwardClassDecls(commonInfo, info, hStream); }
+        void operator()(VariantInterfaceInfo& info) { GenerateVariantInterface(commonInfo, info, hStream, cppStream); }
+        void operator()(PtrDeclsInfo& info) { GeneratePtrDecls(commonInfo, info, hStream); }
 
     } visitor { commonInfo, hStream, cppStream };
 

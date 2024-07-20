@@ -21,6 +21,8 @@ struct ClassMemberInfo
 struct ClassInfo
 {
     std::string name;
+    std::vector<std::string> variantInterfaces; // public SStmt
+                                                // void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
     std::vector<ClassMemberInfo> memberInfos;
     std::vector<std::string> extraConstructors;
 };
@@ -45,6 +47,18 @@ struct StructInfo
     std::vector<std::string> extraConstructors;
 };
 
+struct ForwardClassDeclsInfo
+{
+    std::vector<std::string> names;
+};
+
+struct VariantInterfaceInfo
+{
+    std::string name;
+    std::string argName;
+    std::vector<std::string> members;
+};
+
 struct VariantInfo
 {
     std::string name;
@@ -53,7 +67,12 @@ struct VariantInfo
     std::vector<std::string> memberNames; // with 'class ' 'struct ', ex) class IdentifierExpSyntax
 };
 
-using ItemInfo = std::variant<StructInfo, EnumInfo, ClassInfo, VariantInfo>;
+struct PtrDeclsInfo
+{
+    std::vector<std::string> names;
+};
+
+using ItemInfo = std::variant<StructInfo, EnumInfo, ClassInfo, VariantInfo, ForwardClassDeclsInfo, VariantInterfaceInfo, PtrDeclsInfo>;
 void GenerateItems(CommonInfo& commonInfo, std::ostringstream& hStream, std::ostringstream& cppStream, std::vector<ItemInfo>& itemInfos);
 
 void AddNewLineIfNeeded(bool& bModified, std::ostringstream& oss);

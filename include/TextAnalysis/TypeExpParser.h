@@ -9,17 +9,17 @@ namespace Citron {
 
 class Lexer;
 
-std::optional<std::vector<TypeExpSyntax>> ParseTypeArgs(Lexer* lexer);
-std::optional<IdTypeExpSyntax> ParseIdTypeExp(Lexer* lexer);
-std::optional<NullableTypeExpSyntax> ParseNullableTypeExp(Lexer * lexer);
-std::optional<BoxPtrTypeExpSyntax> ParseBoxPtrTypeExp(Lexer* lexer);
-std::optional<TypeExpSyntax> ParseLocalPtrTypeExp(Lexer* lexer);
-std::optional<TypeExpSyntax> ParseParenTypeExp(Lexer* lexer);
-std::optional<TypeExpSyntax> ParseIdChainTypeExp(Lexer* lexer);
+std::optional<std::vector<STypeExpPtr>> ParseTypeArgs(Lexer* lexer);
+std::unique_ptr<SIdTypeExp> ParseIdTypeExp(Lexer* lexer);
+std::unique_ptr<SNullableTypeExp> ParseNullableTypeExp(Lexer * lexer);
+std::unique_ptr<SBoxPtrTypeExp> ParseBoxPtrTypeExp(Lexer* lexer);
+STypeExpPtr ParseLocalPtrTypeExp(Lexer* lexer);
+STypeExpPtr ParseParenTypeExp(Lexer* lexer);
+STypeExpPtr ParseIdChainTypeExp(Lexer* lexer);
 
-// std::optional<FuncTypeExpSyntax> ParseFuncTypeExp(Lexer* lexer);
-// std::optional<TupleTypeExpSyntax> ParseTupleTypeExp(Lexer* lexer);
+// std::unique_ptr<SFuncTypeExp> ParseFuncTypeExp(Lexer* lexer);
+// std::unique_ptr<STupleTypeExp> ParseTupleTypeExp(Lexer* lexer);
 
-std::optional<LocalTypeExpSyntax> ParseLocalTypeExp(Lexer* lexer);
-TEXTANALYSIS_API std::optional<TypeExpSyntax> ParseTypeExp(Lexer* lexer);
+std::unique_ptr<SLocalTypeExp> ParseLocalTypeExp(Lexer* lexer);
+TEXTANALYSIS_API STypeExpPtr ParseTypeExp(Lexer* lexer);
 }

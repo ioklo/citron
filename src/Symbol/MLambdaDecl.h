@@ -23,7 +23,7 @@ class MLambdaDecl
     , public MFuncDecl
     , private MCommonFuncDeclComponent
 {
-    std::weak_ptr<MBodyDeclOuter> outer;
+    MBodyDeclOuterPtr outer;
     MName name;
 
     // 가지고 있어야 할 멤버 변수들, type, name, ref 여부

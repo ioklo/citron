@@ -10,46 +10,46 @@ namespace Citron {
 
 class Lexer;
 
-TEXTANALYSIS_API std::optional<ExpSyntax> ParseExp(Lexer* lexer);
+TEXTANALYSIS_API SExpPtr ParseExp(Lexer* lexer);
 
 // 1. Assignment, Right Assoc
-std::optional<ExpSyntax> ParseAssignExp(Lexer* lexer);
+SExpPtr ParseAssignExp(Lexer* lexer);
 
 // 2. Equality, Left Assoc
-std::optional<ExpSyntax> ParseEqualityExp(Lexer* lexer);    
+SExpPtr ParseEqualityExp(Lexer* lexer);    
 
 // 3. TestAndTypeTest, LeftAssoc
-std::optional<ExpSyntax> ParseTestAndTypeTestExp(Lexer* lexer);
+SExpPtr ParseTestAndTypeTestExp(Lexer* lexer);
 
 // 4. Additive, LeftAssoc
-std::optional<ExpSyntax> ParseAdditiveExp(Lexer* lexer);
+SExpPtr ParseAdditiveExp(Lexer* lexer);
 
 // 5. Multiplicative, LeftAssoc
-std::optional<ExpSyntax> ParseMultiplicativeExp(Lexer* lexer);
+SExpPtr ParseMultiplicativeExp(Lexer* lexer);
 
 // 6. Unary, Prefix Inc / Dec
-std::optional<ExpSyntax> ParseUnaryExp(Lexer* lexer);
+SExpPtr ParseUnaryExp(Lexer* lexer);
 
 // 7. Primary, Postfix Inc / Dec
-std::optional<ExpSyntax> ParsePrimaryExp(Lexer* lexer);
+SExpPtr ParsePrimaryExp(Lexer* lexer);
 
 // 8. Single
-std::optional<ExpSyntax> ParseSingleExp(Lexer* lexer);
+SExpPtr ParseSingleExp(Lexer* lexer);
 
 // 기타
-std::optional<BoxExpSyntax> ParseBoxExp(Lexer* lexer);
-std::optional<NewExpSyntax> ParseNewExp(Lexer* lexer);
+std::unique_ptr<SBoxExp> ParseBoxExp(Lexer* lexer);
+std::unique_ptr<SNewExp> ParseNewExp(Lexer* lexer);
 
 // LambdaExpression, Right Assoc
-std::optional<LambdaExpSyntax> ParseLambdaExp(Lexer* lexer);
-std::optional<ExpSyntax> ParseParenExp(Lexer* lexer);
-std::optional<NullLiteralExpSyntax> ParseNullLiteralExp(Lexer* lexer);
-std::optional<BoolLiteralExpSyntax> ParseBoolLiteralExp(Lexer* lexer);
-std::optional<IntLiteralExpSyntax> ParseIntLiteralExp(Lexer* lexer);
-std::optional<StringExpSyntax> ParseStringExp(Lexer* lexer);
-std::optional<ListExpSyntax> ParseListExp(Lexer* lexer);
-std::optional<IdentifierExpSyntax> ParseIdentifierExp(Lexer* lexer);
+std::unique_ptr<SLambdaExp> ParseLambdaExp(Lexer* lexer);
+SExpPtr ParseParenExp(Lexer* lexer);
+std::unique_ptr<SNullLiteralExp> ParseNullLiteralExp(Lexer* lexer);
+std::unique_ptr<SBoolLiteralExp> ParseBoolLiteralExp(Lexer* lexer);
+std::unique_ptr<SIntLiteralExp> ParseIntLiteralExp(Lexer* lexer);
+std::unique_ptr<SStringExp> ParseStringExp(Lexer* lexer);
+std::unique_ptr<SListExp> ParseListExp(Lexer* lexer);
+std::unique_ptr<SIdentifierExp> ParseIdentifierExp(Lexer* lexer);
 
-std::optional<std::vector<ArgumentSyntax>> ParseCallArgs(Lexer* lexer);
+std::optional<std::vector<SArgument>> ParseCallArgs(Lexer* lexer);
 
 }

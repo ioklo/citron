@@ -18,51 +18,51 @@ using namespace std;
 
 namespace Citron {
 
-optional<EmbeddableStmtSyntax> ParseEmbeddableStmt(Lexer* lexer);
+unique_ptr<SEmbeddableStmt> ParseEmbeddableStmt(Lexer* lexer);
 
 // typeExp id = exp)
-optional<IfTestStmtSyntax> ParseIfTestFragment(Lexer* lexer)
+unique_ptr<SIfTestStmt> ParseIfTestFragment(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
-    auto oTestTypeExp = ParseTypeExp(&curLexer);
-    if (!oTestTypeExp)
-        return nullopt;
+    auto testTypeExp = ParseTypeExp(&curLexer);
+    if (!testTypeExp)
+        return nullptr;
 
     auto oVarNameToken = Accept<IdentifierToken>(&curLexer);
     if (!oVarNameToken)
-        return nullopt;
+        return nullptr;
 
     if (!Accept<EqualToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    auto oExp = ParseExp(&curLexer);
-    if (!oExp)
-        return nullopt;
+    auto exp = ParseExp(&curLexer);
+    if (!exp)
+        return nullptr;
 
     if (!Accept<RParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
     
     // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
-    auto oBody = ParseEmbeddableStmt(&curLexer);
-    if (!oBody)
-        return nullopt;
+    auto body = ParseEmbeddableStmt(&curLexer);
+    if (!body)
+        return nullptr;
 
-    optional<EmbeddableStmtSyntax> oElseBody;
+    unique_ptr<SEmbeddableStmt> elseBody;
 
     if (Accept<ElseToken>(&curLexer))
     {
-        oElseBody = ParseEmbeddableStmt(&curLexer);
-        if (!oElseBody)
-            return nullopt;
+        elseBody = ParseEmbeddableStmt(&curLexer);
+        if (!elseBody)
+            return nullptr;
     }
 
     *lexer = std::move(curLexer);
-    return IfTestStmtSyntax(std::move(*oTestTypeExp), oVarNameToken->text, std::move(*oExp), std::move(*oBody), std::move(oElseBody));
+    return make_unique<SIfTestStmt>(std::move(testTypeExp), std::move(oVarNameToken->text), std::move(exp), std::move(body), std::move(elseBody));
 }
 
-// 리턴은 IfStmtSyntax와 IfTestStmtSyntax
-optional<StmtSyntax> ParseIfStmt(Lexer* lexer)
+// 리턴은 SIfStmt와 SIfTestStmt
+SStmtPtr ParseIfStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -72,53 +72,53 @@ optional<StmtSyntax> ParseIfStmt(Lexer* lexer)
     // if (typeExp name = exp) => IfTestStmt(TypeExp, name, exp)
 
     if (!Accept<IfToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     if (!Accept<LParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // typeExp varName = exp꼴인지 먼저 확인
-    if (auto oIfTestStmtSyntax = ParseIfTestFragment(&curLexer))
+    if (auto ifTestStmt = ParseIfTestFragment(&curLexer))
     {
         *lexer = std::move(curLexer);
-        return make_unique<IfTestStmtSyntax>(std::move(*oIfTestStmtSyntax));
+        return ifTestStmt;
     }
 
     // 아니라면
-    auto oCond = ParseExp(&curLexer);
-    if (!oCond)
-        return nullopt;
+    auto cond = ParseExp(&curLexer);
+    if (!cond)
+        return nullptr;
 
     if (!Accept<RParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
-    auto oBody = ParseEmbeddableStmt(&curLexer);
-    if (!oBody)
-        return nullopt;
+    auto body = ParseEmbeddableStmt(&curLexer);
+    if (!body)
+        return nullptr;
 
-    optional<EmbeddableStmtSyntax> oElseBody;
+    SEmbeddableStmtPtr elseBody;
     
     if (Accept<ElseToken>(&curLexer))
     {
-        oElseBody = ParseEmbeddableStmt(&curLexer);
-        if (!oElseBody)
-            return nullopt;
+        elseBody = ParseEmbeddableStmt(&curLexer);
+        if (!elseBody)
+            return nullptr;
     }
 
     *lexer = std::move(curLexer);
-    return make_unique<IfStmtSyntax>(std::move(*oCond), std::move(*oBody), std::move(oElseBody));
+    return make_unique<SIfStmt>(std::move(cond), std::move(body), std::move(elseBody));
 }
 
-optional<VarDeclSyntax> ParseVarDecl(Lexer* lexer)
+optional<SVarDecl> ParseVarDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
-    auto oVarType = ParseTypeExp(&curLexer);
-    if (!oVarType)
+    auto varType = ParseTypeExp(&curLexer);
+    if (!varType)
         return nullopt;
 
-    vector<VarDeclSyntaxElement> elems;
+    vector<SVarDeclElement> elems;
         
     do
     {
@@ -126,249 +126,249 @@ optional<VarDeclSyntax> ParseVarDecl(Lexer* lexer)
         if (!oVarIdToken)
             return nullopt;
 
-        optional<ExpSyntax> oInitExp;
+        SExpPtr initExp;
 
         if (Accept<EqualToken>(&curLexer))
         {
             // TODO: ;나 ,가 나올때까지라는걸 명시해주면 좋겠다
-            oInitExp = ParseExp(&curLexer);
-            if (!oInitExp)
+            initExp = ParseExp(&curLexer);
+            if (!initExp)
                 return nullopt;
         }
 
-        elems.push_back(VarDeclSyntaxElement{ std::move(oVarIdToken->text), std::move(oInitExp) });
+        elems.push_back(SVarDeclElement{ std::move(oVarIdToken->text), std::move(initExp) });
 
     } while (Accept<CommaToken>(&curLexer)); // ,가 나오면 계속한다
 
     *lexer = std::move(curLexer);
-    return VarDeclSyntax(std::move(*oVarType), std::move(elems));
+    return SVarDecl(std::move(varType), std::move(elems));
 }
 
 // int x = 0;
-optional<VarDeclStmtSyntax> ParseVarDeclStmt(Lexer* lexer)
+unique_ptr<SVarDeclStmt> ParseVarDeclStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     auto oVarDecl = ParseVarDecl(&curLexer);
     if (!oVarDecl)
-        return nullopt;
+        return nullptr;
 
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return VarDeclStmtSyntax(std::move(*oVarDecl));
+    return make_unique<SVarDeclStmt>(std::move(*oVarDecl));
 }
 
-optional<ForStmtInitializerSyntax> ParseForStmtInitializer(Lexer* lexer)
+SForStmtInitializerPtr ParseForStmtInitializer(Lexer* lexer)
 {
     if (auto oVarDecl = ParseVarDecl(lexer))
-        return make_unique<VarDeclForStmtInitializerSyntax>(std::move(*oVarDecl));
+        return make_unique<SVarDeclForStmtInitializer>(std::move(*oVarDecl));
 
-    if (auto oExp = ParseExp(lexer))
-        return make_unique<ExpForStmtInitializerSyntax>(std::move(*oExp));
+    if (auto exp = ParseExp(lexer))
+        return make_unique<SExpForStmtInitializer>(std::move(exp));
 
-    return nullopt;
+    return nullptr;
 }
 
-optional<ForStmtSyntax> ParseForStmt(Lexer* lexer)
+unique_ptr<SForStmt> ParseForStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<ForToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     if (!Accept<LParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // TODO: 이 Initializer의 끝은 ';' 이다
-    auto oInitializer = ParseForStmtInitializer(&curLexer);
+    auto initializer = ParseForStmtInitializer(&curLexer);
 
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // TODO: 이 CondExp의 끝은 ';' 이다
-    auto oCond = ParseExp(&curLexer);
+    auto cond = ParseExp(&curLexer);
 
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // TODO: 이 CondExp의 끝은 ')' 이다            
-    auto oCont = ParseExp(&curLexer);
+    auto cont = ParseExp(&curLexer);
 
     if (!Accept<RParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    auto oBodyStmt = ParseEmbeddableStmt(&curLexer);
-    if (!oBodyStmt)
-        return nullopt;
+    auto bodyStmt = ParseEmbeddableStmt(&curLexer);
+    if (!bodyStmt)
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return ForStmtSyntax(std::move(oInitializer), std::move(oCond), std::move(oCont), std::move(*oBodyStmt));
+    return make_unique<SForStmt>(std::move(initializer), std::move(cond), std::move(cont), std::move(bodyStmt));
 }
 
-optional<ContinueStmtSyntax> ParseContinueStmt(Lexer* lexer)
+unique_ptr<SContinueStmt> ParseContinueStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<ContinueToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return ContinueStmtSyntax();
+    return make_unique<SContinueStmt>();
 }
 
-optional<BreakStmtSyntax> ParseBreakStmt(Lexer* lexer)
+unique_ptr<SBreakStmt> ParseBreakStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<BreakToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return BreakStmtSyntax();
+    return make_unique<SBreakStmt>();
 }
 
-optional<ReturnStmtSyntax> ParseReturnStmt(Lexer* lexer)
+unique_ptr<SReturnStmt> ParseReturnStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<ReturnToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    optional<ExpSyntax> oReturnValue;
+    SExpPtr returnValue;
 
-    if (auto oReturnExp = ParseExp(&curLexer))
-        oReturnValue = std::move(*oReturnExp);
+    if (auto returnExp = ParseExp(&curLexer))
+        returnValue = std::move(returnExp);
 
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return ReturnStmtSyntax(std::move(oReturnValue));
+    return make_unique<SReturnStmt>(std::move(returnValue));
 }
 
-optional<BlockStmtSyntax> ParseBlockStmt(Lexer* lexer)
+unique_ptr<SBlockStmt> ParseBlockStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LBraceToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    vector<StmtSyntax> stmts;
+    vector<SStmtPtr> stmts;
     
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto oStmt = ParseStmt(&curLexer);
-        if (!oStmt) return nullopt;
+        auto stmt = ParseStmt(&curLexer);
+        if (!stmt) return nullptr;
 
-        stmts.push_back(std::move(*oStmt));
+        stmts.push_back(std::move(stmt));
     }
 
     *lexer = std::move(curLexer);
-    return BlockStmtSyntax(std::move(stmts));
+    return make_unique<SBlockStmt>(std::move(stmts));
 }
 
-optional<BlankStmtSyntax> ParseBlankStmt(Lexer* lexer)
+unique_ptr<SBlankStmt> ParseBlankStmt(Lexer* lexer)
 {
     if (!Accept<SemiColonToken>(lexer))
-        return nullopt;
+        return nullptr;
 
-    return BlankStmtSyntax();
+    return make_unique<SBlankStmt>();
 }
 
 // TODO: Assign, Call만 가능하게 해야 한다
-optional<ExpStmtSyntax> ParseExpStmt(Lexer* lexer)
+unique_ptr<SExpStmt> ParseExpStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
-    auto oExp = ParseExp(&curLexer);
-    if (!oExp)
-        return nullopt;
+    auto exp = ParseExp(&curLexer);
+    if (!exp)
+        return nullptr;
     
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return ExpStmtSyntax(std::move(*oExp));
+    return make_unique<SExpStmt>(std::move(exp));
 }
 
-optional<TaskStmtSyntax> ParseTaskStmt(Lexer* lexer)
+unique_ptr<STaskStmt> ParseTaskStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<TaskToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     auto oBody = ParseBody(&curLexer);
     
     if (!oBody)
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return TaskStmtSyntax(std::move(*oBody));
+    return make_unique<STaskStmt>(std::move(*oBody));
 }
 
-optional<AwaitStmtSyntax> ParseAwaitStmt(Lexer* lexer)
+unique_ptr<SAwaitStmt> ParseAwaitStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<AwaitToken>(&curLexer))
-        return nullopt;
+        return nullptr;
     
     auto oBody = ParseBody(&curLexer);
     if (!oBody)
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return AwaitStmtSyntax(std::move(*oBody));
+    return make_unique<SAwaitStmt>(std::move(*oBody));
 }
 
-optional<AsyncStmtSyntax> ParseAsyncStmt(Lexer* lexer)
+unique_ptr<SAsyncStmt> ParseAsyncStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<AsyncToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     auto oBody = ParseBody(&curLexer);
     if (!oBody)
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return AsyncStmtSyntax(std::move(*oBody));
+    return make_unique<SAsyncStmt>(std::move(*oBody));
 }
 
-optional<YieldStmtSyntax> ParseYieldStmt(Lexer* lexer)
+unique_ptr<SYieldStmt> ParseYieldStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<YieldToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    auto oYieldValue = ParseExp(&curLexer);
+    auto yieldValue = ParseExp(&curLexer);
 
-    if (!oYieldValue)
-        return nullopt;
+    if (!yieldValue)
+        return nullptr;
 
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return YieldStmtSyntax(std::move(*oYieldValue));
+    return make_unique<SYieldStmt>(std::move(yieldValue));
 }
 
-optional<StringExpSyntax> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
+optional<SStringExp> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
-    vector<StringExpSyntaxElement> elems;
+    vector<SStringExpElementPtr> elems;
 
     // 새 줄이거나 끝에 다다르면 종료
     while (!curLexer.IsReachedEnd())
@@ -383,28 +383,28 @@ optional<StringExpSyntax> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
         if (Accept<DollarLBraceToken>(&curLexer, curLexer.LexCommandMode()))
         {
             // TODO: EndInnerExpToken 일때 빠져나와야 한다는 표시를 해줘야 한다
-            auto oExp = ParseExp(&curLexer);
-            if (!oExp)
+            auto exp = ParseExp(&curLexer);
+            if (!exp)
                 return nullopt;
 
             if (!Accept<RBraceToken>(&curLexer))
                 return nullopt;
 
-            elems.push_back(make_unique<ExpStringExpSyntaxElement>(std::move(*oExp)));
+            elems.push_back(make_unique<SExpStringExpElement>(std::move(exp)));
             continue;
         }
 
         // aa$b => $b 이야기
         if (auto oIdToken = Accept<IdentifierToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(make_unique<ExpStringExpSyntaxElement>(IdentifierExpSyntax(std::move(oIdToken->text), {})));
+            elems.push_back(make_unique<SExpStringExpElement>(make_unique<SIdentifierExp>(std::move(oIdToken->text), std::vector<STypeExpPtr>{})));
             continue;
         }
 
         
         if (auto oTextToken = Accept<TextToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(TextStringExpSyntaxElement{ std::move(oTextToken->text) });
+            elems.push_back(make_unique<STextStringExpElement>(std::move(oTextToken->text)));
             continue;
         }
 
@@ -412,62 +412,62 @@ optional<StringExpSyntax> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
     }
 
     *lexer = std::move(curLexer);
-    return StringExpSyntax(std::move(elems));
+    return SStringExp(std::move(elems));
 }
 
-optional<ForeachStmtSyntax> ParseForeachStmt(Lexer* lexer)
+unique_ptr<SForeachStmt> ParseForeachStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     // foreach
     if (!Accept<ForeachToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // (
     if (!Accept<LParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
     
 
     // var 
-    auto oTypeExp = ParseTypeExp(&curLexer);
-    if (!oTypeExp)
-        return nullopt;
+    auto typeExp = ParseTypeExp(&curLexer);
+    if (!typeExp)
+        return nullptr;
 
     // x
     auto oVarNameToken = Accept<IdentifierToken>(&curLexer);
     if (!oVarNameToken)
-        return nullopt;
+        return nullptr;
 
     // in
     if (!Accept<InToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // obj
-    auto oObj = ParseExp(&curLexer);
-    if (!oObj)
-        return nullopt;
+    auto obj = ParseExp(&curLexer);
+    if (!obj)
+        return nullptr;
 
     // )
     if (!Accept<RParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // stmt
-    auto oStmt = ParseEmbeddableStmt(&curLexer);
-    if (!oStmt)
-        return nullopt;
+    auto stmt = ParseEmbeddableStmt(&curLexer);
+    if (!stmt)
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return ForeachStmtSyntax(std::move(*oTypeExp), std::move(oVarNameToken->text), std::move(*oObj), std::move(*oStmt));
+    return make_unique<SForeachStmt>(std::move(typeExp), std::move(oVarNameToken->text), std::move(obj), std::move(stmt));
 }
 
 // 
-optional<CommandStmtSyntax> ParseCommandStmt(Lexer* lexer)
+unique_ptr<SCommandStmt> ParseCommandStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     // @로 시작한다
     if (!Accept<AtToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     // TODO: optional ()
 
@@ -475,7 +475,7 @@ optional<CommandStmtSyntax> ParseCommandStmt(Lexer* lexer)
     if (Accept<LBraceToken>(&curLexer))
     {
         // 새줄이거나 끝에 다다르거나 }가 나오면 종료,
-        vector<StringExpSyntax> cmds;
+        vector<SStringExp> cmds;
         while (true)
         {
             if (Accept<RBraceToken>(&curLexer, curLexer.LexCommandMode()))
@@ -493,7 +493,8 @@ optional<CommandStmtSyntax> ParseCommandStmt(Lexer* lexer)
 
                 if (elemCount == 1)
                 {
-                    if (auto* textElem = get_if<TextStringExpSyntaxElement>(&oSingleCommand->GetElements()[0]))
+                    auto* elem = oSingleCommand->GetElements()[0].get();
+                    if (STextStringExpElement* textElem = dynamic_cast<STextStringExpElement*>(elem))
                     {
                         if (all_of(textElem->GetText().begin(), textElem->GetText().end(), [](char32_t c) { return u_isWhitespace(c); }))
                             continue;
@@ -504,178 +505,178 @@ optional<CommandStmtSyntax> ParseCommandStmt(Lexer* lexer)
                 continue;
             }
 
-            return nullopt;
+            return nullptr;
         }
 
         *lexer = std::move(curLexer);
-        return CommandStmtSyntax(std::move(cmds));
+        return make_unique<SCommandStmt>(std::move(cmds));
     }
     else // 싱글 커맨드, 엔터가 나오면 끝난다
     {
         auto oSingleCommand = ParseSingleCommand(false, &curLexer);
 
         if (!oSingleCommand)
-            return nullopt;
+            return nullptr;
 
         if (oSingleCommand->GetElements().empty())
-            return nullopt;
+            return nullptr;
         
         *lexer = std::move(curLexer);
 
-        vector<StringExpSyntax> strs;
+        vector<SStringExp> strs;
         strs.push_back(std::move(*oSingleCommand));
 
-        return CommandStmtSyntax(std::move(strs));
+        return make_unique<SCommandStmt>(std::move(strs));
     }
 }
 
-optional<DirectiveStmtSyntax> ParseDirectiveStmt(Lexer* lexer)
+unique_ptr<SDirectiveStmt> ParseDirectiveStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     // ` <id> ( exp... );
     if (!Accept<BacktickToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     auto oIdToken = Accept<IdentifierToken>(&curLexer);
     if (!oIdToken)
-        return nullopt;
+        return nullptr;
 
     if (!Accept<LParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    vector<ExpSyntax> args;    
+    vector<SExpPtr> args;    
     while (!Accept<RParenToken>(&curLexer))
     {
         if (!args.empty())
             if (!Accept<CommaToken>(&curLexer))
-                return nullopt;
+                return nullptr;
 
-        auto oArg = ParseExp(&curLexer);
-        if (!oArg)
-            return nullopt;
+        auto arg = ParseExp(&curLexer);
+        if (!arg)
+            return nullptr;
 
-        args.push_back(std::move(*oArg));
+        args.push_back(std::move(arg));
     }
 
     if (!Accept<SemiColonToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return DirectiveStmtSyntax(std::move(oIdToken->text), std::move(args));
+    return make_unique<SDirectiveStmt>(std::move(oIdToken->text), std::move(args));
 }
 
 // if (...) 'x;' // 단일이냐
 // if (...) '{ }' // 묶음이냐
-optional<EmbeddableStmtSyntax> ParseEmbeddableStmt(Lexer* lexer)
+SEmbeddableStmtPtr ParseEmbeddableStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     // { 가 없다면, Embeddable.Single
     if (!Accept<LBraceToken>(&curLexer))
     {
-        auto oStmt = ParseStmt(&curLexer);
-        if (!oStmt)
-            return nullopt;
+        auto stmt = ParseStmt(&curLexer);
+        if (!stmt)
+            return nullptr;
         
         // block stmt는 제외되서 들어올 것이다
-        assert(!holds_alternative<BlockStmtSyntax>(*oStmt));
+        assert(dynamic_cast<SBlockStmt*>(stmt.get()) == nullptr);
 
         *lexer = std::move(curLexer);
-        return make_unique<SingleEmbeddableStmtSyntax>(std::move(*oStmt));
+        return make_unique<SSingleEmbeddableStmt>(std::move(stmt));
     }
     else // 있다면 Embeddable.Multiple
     {
-        vector<StmtSyntax> stmts;
+        vector<SStmtPtr> stmts;
 
         // } 가 나올때까지
         while (!Accept<RBraceToken>(&curLexer))
         {
-            auto oStmt = ParseStmt(&curLexer);
+            auto stmt = ParseStmt(&curLexer);
 
-            if (!oStmt)
-                return nullopt;
+            if (!stmt)
+                return nullptr;
 
-            stmts.push_back(std::move(*oStmt));
+            stmts.push_back(std::move(stmt));
         }
 
         *lexer = std::move(curLexer);
-        return BlockEmbeddableStmtSyntax(std::move(stmts));
+        return make_unique<SBlockEmbeddableStmt>(std::move(stmts));
     }
 }
 
-optional<vector<StmtSyntax>> ParseBody(Lexer* lexer)
+optional<vector<SStmtPtr>> ParseBody(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LBraceToken>(&curLexer))
         return nullopt;
 
-    vector<StmtSyntax> stmts;
+    vector<SStmtPtr> stmts;
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto oStmt = ParseStmt(&curLexer);
-        if (!oStmt)
+        auto stmt = ParseStmt(&curLexer);
+        if (!stmt)
             return nullopt;
 
-        stmts.push_back(std::move(*oStmt));
+        stmts.push_back(std::move(stmt));
     }
 
     *lexer = std::move(curLexer);
     return stmts;
 }
 
-optional<StmtSyntax> ParseStmt(Lexer* lexer)
+SStmtPtr ParseStmt(Lexer* lexer)
 {
-    if (auto oStmt = ParseDirectiveStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseDirectiveStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseBlankStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseBlankStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseBlockStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseBlockStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseContinueStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseContinueStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseBreakStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseBreakStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseReturnStmt(lexer))
-        return make_unique<ReturnStmtSyntax>(std::move(*oStmt));
+    if (auto stmt = ParseReturnStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseVarDeclStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseVarDeclStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseIfStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseIfStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseForStmt(lexer))
-        return make_unique<ForStmtSyntax>(std::move(*oStmt));
+    if (auto stmt = ParseForStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseExpStmt(lexer))
-        return make_unique<ExpStmtSyntax>(std::move(*oStmt));
+    if (auto stmt = ParseExpStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseTaskStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseTaskStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseAwaitStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseAwaitStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseAsyncStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseAsyncStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseForeachStmt(lexer))
-        return make_unique<ForeachStmtSyntax>(std::move(*oStmt));
+    if (auto stmt = ParseForeachStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseYieldStmt(lexer))
-        return make_unique<YieldStmtSyntax>(std::move(*oStmt));
+    if (auto stmt = ParseYieldStmt(lexer))
+        return stmt;
 
-    if (auto oStmt = ParseCommandStmt(lexer))
-        return oStmt;
+    if (auto stmt = ParseCommandStmt(lexer))
+        return stmt;
 
-    return nullopt;
+    return nullptr;
 }
 
 

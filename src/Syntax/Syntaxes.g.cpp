@@ -17,139 +17,38 @@ struct ToJsonVisitor {
 };
 }
 
-JsonItem ToJson(StmtSyntax& stmt)
-{
-    return std::visit(ToJsonVisitor(), stmt);
-}
+SArgument::SArgument(bool bOut, bool bParams, SExpPtr exp)
+    : bOut(std::move(bOut)), bParams(std::move(bParams)), exp(std::move(exp)) { }
 
-JsonItem ToJson(ExpSyntax& exp)
-{
-    return std::visit(ToJsonVisitor(), exp);
-}
+SArgument::SArgument(SArgument&& other) noexcept = default;
 
-JsonItem ToJson(TypeExpSyntax& typeExp)
-{
-    return std::visit(ToJsonVisitor(), typeExp);
-}
+SArgument::~SArgument() = default;
 
-IdTypeExpSyntax::IdTypeExpSyntax(std::string name, std::vector<TypeExpSyntax> typeArgs)
-    : name(std::move(name)), typeArgs(std::move(typeArgs)) { }
+SArgument& SArgument::operator=(SArgument&& other) noexcept = default;
 
-IdTypeExpSyntax::IdTypeExpSyntax(IdTypeExpSyntax&& other) noexcept = default;
-
-IdTypeExpSyntax::~IdTypeExpSyntax() = default;
-
-IdTypeExpSyntax& IdTypeExpSyntax::operator=(IdTypeExpSyntax&& other) noexcept = default;
-
-JsonItem IdTypeExpSyntax::ToJson()
+JsonItem SArgument::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("IdTypeExpSyntax") },
-        { "name", Citron::ToJson(name) },
-        { "typeArgs", Citron::ToJson(typeArgs) },
+        { "$type", JsonString("SArgument") },
+        { "bOut", Citron::ToJson(bOut) },
+        { "bParams", Citron::ToJson(bParams) },
+        { "exp", Citron::ToJson(exp) },
     };
 }
 
-MemberTypeExpSyntax::MemberTypeExpSyntax(TypeExpSyntax parentType, std::string name, std::vector<TypeExpSyntax> typeArgs)
-    : parentType(std::move(parentType)), name(std::move(name)), typeArgs(std::move(typeArgs)) { }
-
-MemberTypeExpSyntax::MemberTypeExpSyntax(MemberTypeExpSyntax&& other) noexcept = default;
-
-MemberTypeExpSyntax::~MemberTypeExpSyntax() = default;
-
-MemberTypeExpSyntax& MemberTypeExpSyntax::operator=(MemberTypeExpSyntax&& other) noexcept = default;
-
-JsonItem MemberTypeExpSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("MemberTypeExpSyntax") },
-        { "parentType", Citron::ToJson(parentType) },
-        { "name", Citron::ToJson(name) },
-        { "typeArgs", Citron::ToJson(typeArgs) },
-    };
-}
-
-NullableTypeExpSyntax::NullableTypeExpSyntax(TypeExpSyntax innerType)
-    : innerType(std::move(innerType)) { }
-
-NullableTypeExpSyntax::NullableTypeExpSyntax(NullableTypeExpSyntax&& other) noexcept = default;
-
-NullableTypeExpSyntax::~NullableTypeExpSyntax() = default;
-
-NullableTypeExpSyntax& NullableTypeExpSyntax::operator=(NullableTypeExpSyntax&& other) noexcept = default;
-
-JsonItem NullableTypeExpSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("NullableTypeExpSyntax") },
-        { "innerType", Citron::ToJson(innerType) },
-    };
-}
-
-LocalPtrTypeExpSyntax::LocalPtrTypeExpSyntax(TypeExpSyntax innerType)
-    : innerType(std::move(innerType)) { }
-
-LocalPtrTypeExpSyntax::LocalPtrTypeExpSyntax(LocalPtrTypeExpSyntax&& other) noexcept = default;
-
-LocalPtrTypeExpSyntax::~LocalPtrTypeExpSyntax() = default;
-
-LocalPtrTypeExpSyntax& LocalPtrTypeExpSyntax::operator=(LocalPtrTypeExpSyntax&& other) noexcept = default;
-
-JsonItem LocalPtrTypeExpSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("LocalPtrTypeExpSyntax") },
-        { "innerType", Citron::ToJson(innerType) },
-    };
-}
-
-BoxPtrTypeExpSyntax::BoxPtrTypeExpSyntax(TypeExpSyntax innerType)
-    : innerType(std::move(innerType)) { }
-
-BoxPtrTypeExpSyntax::BoxPtrTypeExpSyntax(BoxPtrTypeExpSyntax&& other) noexcept = default;
-
-BoxPtrTypeExpSyntax::~BoxPtrTypeExpSyntax() = default;
-
-BoxPtrTypeExpSyntax& BoxPtrTypeExpSyntax::operator=(BoxPtrTypeExpSyntax&& other) noexcept = default;
-
-JsonItem BoxPtrTypeExpSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("BoxPtrTypeExpSyntax") },
-        { "innerType", Citron::ToJson(innerType) },
-    };
-}
-
-LocalTypeExpSyntax::LocalTypeExpSyntax(TypeExpSyntax innerType)
-    : innerType(std::move(innerType)) { }
-
-LocalTypeExpSyntax::LocalTypeExpSyntax(LocalTypeExpSyntax&& other) noexcept = default;
-
-LocalTypeExpSyntax::~LocalTypeExpSyntax() = default;
-
-LocalTypeExpSyntax& LocalTypeExpSyntax::operator=(LocalTypeExpSyntax&& other) noexcept = default;
-
-JsonItem LocalTypeExpSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("LocalTypeExpSyntax") },
-        { "innerType", Citron::ToJson(innerType) },
-    };
-}
-
-LambdaExpParamSyntax::LambdaExpParamSyntax(std::optional<TypeExpSyntax> type, std::string name, bool hasOut, bool hasParams)
+SLambdaExpParam::SLambdaExpParam(STypeExpPtr type, std::string name, bool hasOut, bool hasParams)
     : type(std::move(type)), name(std::move(name)), hasOut(std::move(hasOut)), hasParams(std::move(hasParams)) { }
 
-LambdaExpParamSyntax::LambdaExpParamSyntax(LambdaExpParamSyntax&& other) noexcept = default;
+SLambdaExpParam::SLambdaExpParam(SLambdaExpParam&& other) noexcept = default;
 
-LambdaExpParamSyntax::~LambdaExpParamSyntax() = default;
+SLambdaExpParam::~SLambdaExpParam() = default;
 
-LambdaExpParamSyntax& LambdaExpParamSyntax::operator=(LambdaExpParamSyntax&& other) noexcept = default;
+SLambdaExpParam& SLambdaExpParam::operator=(SLambdaExpParam&& other) noexcept = default;
 
-JsonItem LambdaExpParamSyntax::ToJson()
+JsonItem SLambdaExpParam::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("LambdaExpParamSyntax") },
+        { "$type", JsonString("SLambdaExpParam") },
         { "type", Citron::ToJson(type) },
         { "name", Citron::ToJson(name) },
         { "hasOut", Citron::ToJson(hasOut) },
@@ -157,676 +56,1009 @@ JsonItem LambdaExpParamSyntax::ToJson()
     };
 }
 
-IdentifierExpSyntax::IdentifierExpSyntax(std::string value, std::vector<TypeExpSyntax> typeArgs)
-    : value(std::move(value)), typeArgs(std::move(typeArgs)) { }
+SVarDeclElement::SVarDeclElement(std::string varName, SExpPtr initExp)
+    : varName(std::move(varName)), initExp(std::move(initExp)) { }
 
-IdentifierExpSyntax::IdentifierExpSyntax(IdentifierExpSyntax&& other) noexcept = default;
+SVarDeclElement::SVarDeclElement(SVarDeclElement&& other) noexcept = default;
 
-IdentifierExpSyntax::~IdentifierExpSyntax() = default;
+SVarDeclElement::~SVarDeclElement() = default;
 
-IdentifierExpSyntax& IdentifierExpSyntax::operator=(IdentifierExpSyntax&& other) noexcept = default;
+SVarDeclElement& SVarDeclElement::operator=(SVarDeclElement&& other) noexcept = default;
 
-JsonItem IdentifierExpSyntax::ToJson()
+JsonItem SVarDeclElement::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("IdentifierExpSyntax") },
+        { "$type", JsonString("SVarDeclElement") },
+        { "varName", Citron::ToJson(varName) },
+        { "initExp", Citron::ToJson(initExp) },
+    };
+}
+
+SVarDecl::SVarDecl(STypeExpPtr type, std::vector<SVarDeclElement> elements)
+    : type(std::move(type)), elements(std::move(elements)) { }
+
+SVarDecl::SVarDecl(SVarDecl&& other) noexcept = default;
+
+SVarDecl::~SVarDecl() = default;
+
+SVarDecl& SVarDecl::operator=(SVarDecl&& other) noexcept = default;
+
+JsonItem SVarDecl::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SVarDecl") },
+        { "type", Citron::ToJson(type) },
+        { "elements", Citron::ToJson(elements) },
+    };
+}
+
+STypeParam::STypeParam(std::string name)
+    : name(std::move(name)) { }
+
+STypeParam::STypeParam(STypeParam&& other) noexcept = default;
+
+STypeParam::~STypeParam() = default;
+
+STypeParam& STypeParam::operator=(STypeParam&& other) noexcept = default;
+
+JsonItem STypeParam::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("STypeParam") },
+        { "name", Citron::ToJson(name) },
+    };
+}
+
+SFuncParam::SFuncParam(bool hasOut, bool hasParams, STypeExpPtr type, std::string name)
+    : hasOut(std::move(hasOut)), hasParams(std::move(hasParams)), type(std::move(type)), name(std::move(name)) { }
+
+SFuncParam::SFuncParam(SFuncParam&& other) noexcept = default;
+
+SFuncParam::~SFuncParam() = default;
+
+SFuncParam& SFuncParam::operator=(SFuncParam&& other) noexcept = default;
+
+JsonItem SFuncParam::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SFuncParam") },
+        { "hasOut", Citron::ToJson(hasOut) },
+        { "hasParams", Citron::ToJson(hasParams) },
+        { "type", Citron::ToJson(type) },
+        { "name", Citron::ToJson(name) },
+    };
+}
+
+struct SStmtToJsonVisitor : public SStmtVisitor
+{
+    JsonItem result;
+    void Visit(SCommandStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SVarDeclStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SIfStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SIfTestStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SForStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SContinueStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SBreakStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SReturnStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SBlockStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SBlankStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SExpStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(STaskStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SAwaitStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SAsyncStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SForeachStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SYieldStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SDirectiveStmt& stmt) override { result = stmt.ToJson(); }
+};
+
+JsonItem ToJson(SStmtPtr& stmt)
+{
+    SStmtToJsonVisitor visitor;
+    stmt->Accept(visitor);
+    return visitor.result;
+}
+struct SExpToJsonVisitor : public SExpVisitor
+{
+    JsonItem result;
+    void Visit(SIdentifierExp& exp) override { result = exp.ToJson(); }
+    void Visit(SStringExp& exp) override { result = exp.ToJson(); }
+    void Visit(SIntLiteralExp& exp) override { result = exp.ToJson(); }
+    void Visit(SBoolLiteralExp& exp) override { result = exp.ToJson(); }
+    void Visit(SNullLiteralExp& exp) override { result = exp.ToJson(); }
+    void Visit(SBinaryOpExp& exp) override { result = exp.ToJson(); }
+    void Visit(SUnaryOpExp& exp) override { result = exp.ToJson(); }
+    void Visit(SCallExp& exp) override { result = exp.ToJson(); }
+    void Visit(SLambdaExp& exp) override { result = exp.ToJson(); }
+    void Visit(SIndexerExp& exp) override { result = exp.ToJson(); }
+    void Visit(SMemberExp& exp) override { result = exp.ToJson(); }
+    void Visit(SIndirectMemberExp& exp) override { result = exp.ToJson(); }
+    void Visit(SListExp& exp) override { result = exp.ToJson(); }
+    void Visit(SNewExp& exp) override { result = exp.ToJson(); }
+    void Visit(SBoxExp& exp) override { result = exp.ToJson(); }
+    void Visit(SIsExp& exp) override { result = exp.ToJson(); }
+    void Visit(SAsExp& exp) override { result = exp.ToJson(); }
+};
+
+JsonItem ToJson(SExpPtr& exp)
+{
+    SExpToJsonVisitor visitor;
+    exp->Accept(visitor);
+    return visitor.result;
+}
+struct STypeExpToJsonVisitor : public STypeExpVisitor
+{
+    JsonItem result;
+    void Visit(SIdTypeExp& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(SMemberTypeExp& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(SNullableTypeExp& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(SLocalPtrTypeExp& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(SBoxPtrTypeExp& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(SLocalTypeExp& typeExp) override { result = typeExp.ToJson(); }
+};
+
+JsonItem ToJson(STypeExpPtr& typeExp)
+{
+    STypeExpToJsonVisitor visitor;
+    typeExp->Accept(visitor);
+    return visitor.result;
+}
+struct SStringExpElementToJsonVisitor : public SStringExpElementVisitor
+{
+    JsonItem result;
+    void Visit(STextStringExpElement& elem) override { result = elem.ToJson(); }
+    void Visit(SExpStringExpElement& elem) override { result = elem.ToJson(); }
+};
+
+JsonItem ToJson(SStringExpElementPtr& elem)
+{
+    SStringExpElementToJsonVisitor visitor;
+    elem->Accept(visitor);
+    return visitor.result;
+}
+struct SLambdaExpBodyToJsonVisitor : public SLambdaExpBodyVisitor
+{
+    JsonItem result;
+    void Visit(SStmtsLambdaExpBody& body) override { result = body.ToJson(); }
+    void Visit(SExpLambdaExpBody& body) override { result = body.ToJson(); }
+};
+
+JsonItem ToJson(SLambdaExpBodyPtr& body)
+{
+    SLambdaExpBodyToJsonVisitor visitor;
+    body->Accept(visitor);
+    return visitor.result;
+}
+struct SEmbeddableStmtToJsonVisitor : public SEmbeddableStmtVisitor
+{
+    JsonItem result;
+    void Visit(SSingleEmbeddableStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SBlockEmbeddableStmt& stmt) override { result = stmt.ToJson(); }
+};
+
+JsonItem ToJson(SEmbeddableStmtPtr& stmt)
+{
+    SEmbeddableStmtToJsonVisitor visitor;
+    stmt->Accept(visitor);
+    return visitor.result;
+}
+struct SForStmtInitializerToJsonVisitor : public SForStmtInitializerVisitor
+{
+    JsonItem result;
+    void Visit(SExpForStmtInitializer& initializer) override { result = initializer.ToJson(); }
+    void Visit(SVarDeclForStmtInitializer& initializer) override { result = initializer.ToJson(); }
+};
+
+JsonItem ToJson(SForStmtInitializerPtr& initializer)
+{
+    SForStmtInitializerToJsonVisitor visitor;
+    initializer->Accept(visitor);
+    return visitor.result;
+}
+struct SClassMemberDeclToJsonVisitor : public SClassMemberDeclVisitor
+{
+    JsonItem result;
+    void Visit(SClassDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SStructDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SEnumDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SClassMemberFuncDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SClassConstructorDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SClassMemberVarDecl& decl) override { result = decl.ToJson(); }
+};
+
+JsonItem ToJson(SClassMemberDeclPtr& decl)
+{
+    SClassMemberDeclToJsonVisitor visitor;
+    decl->Accept(visitor);
+    return visitor.result;
+}
+struct SStructMemberDeclToJsonVisitor : public SStructMemberDeclVisitor
+{
+    JsonItem result;
+    void Visit(SClassDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SStructDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SEnumDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SStructMemberFuncDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SStructConstructorDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SStructMemberVarDecl& decl) override { result = decl.ToJson(); }
+};
+
+JsonItem ToJson(SStructMemberDeclPtr& decl)
+{
+    SStructMemberDeclToJsonVisitor visitor;
+    decl->Accept(visitor);
+    return visitor.result;
+}
+struct SNamespaceDeclElementToJsonVisitor : public SNamespaceDeclElementVisitor
+{
+    JsonItem result;
+    void Visit(SGlobalFuncDecl& elem) override { result = elem.ToJson(); }
+    void Visit(SNamespaceDecl& elem) override { result = elem.ToJson(); }
+    void Visit(SClassDecl& elem) override { result = elem.ToJson(); }
+    void Visit(SStructDecl& elem) override { result = elem.ToJson(); }
+    void Visit(SEnumDecl& elem) override { result = elem.ToJson(); }
+};
+
+JsonItem ToJson(SNamespaceDeclElementPtr& elem)
+{
+    SNamespaceDeclElementToJsonVisitor visitor;
+    elem->Accept(visitor);
+    return visitor.result;
+}
+struct SScriptElementToJsonVisitor : public SScriptElementVisitor
+{
+    JsonItem result;
+    void Visit(SNamespaceDecl& elem) override { result = elem.ToJson(); }
+    void Visit(SGlobalFuncDecl& elem) override { result = elem.ToJson(); }
+    void Visit(SClassDecl& elem) override { result = elem.ToJson(); }
+    void Visit(SStructDecl& elem) override { result = elem.ToJson(); }
+    void Visit(SEnumDecl& elem) override { result = elem.ToJson(); }
+};
+
+JsonItem ToJson(SScriptElementPtr& elem)
+{
+    SScriptElementToJsonVisitor visitor;
+    elem->Accept(visitor);
+    return visitor.result;
+}
+SIdentifierExp::SIdentifierExp(std::string value, std::vector<STypeExpPtr> typeArgs)
+    : value(std::move(value)), typeArgs(std::move(typeArgs)) { }
+
+SIdentifierExp::SIdentifierExp(SIdentifierExp&& other) noexcept = default;
+
+SIdentifierExp::~SIdentifierExp() = default;
+
+SIdentifierExp& SIdentifierExp::operator=(SIdentifierExp&& other) noexcept = default;
+
+JsonItem SIdentifierExp::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SIdentifierExp") },
         { "value", Citron::ToJson(value) },
         { "typeArgs", Citron::ToJson(typeArgs) },
     };
 }
 
-JsonItem ToJson(StringExpSyntaxElement& elem)
-{
-    return std::visit(ToJsonVisitor(), elem);
-}
-
-TextStringExpSyntaxElement::TextStringExpSyntaxElement(std::string text)
-    : text(std::move(text)) { }
-
-TextStringExpSyntaxElement::TextStringExpSyntaxElement(TextStringExpSyntaxElement&& other) noexcept = default;
-
-TextStringExpSyntaxElement::~TextStringExpSyntaxElement() = default;
-
-TextStringExpSyntaxElement& TextStringExpSyntaxElement::operator=(TextStringExpSyntaxElement&& other) noexcept = default;
-
-JsonItem TextStringExpSyntaxElement::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("TextStringExpSyntaxElement") },
-        { "text", Citron::ToJson(text) },
-    };
-}
-
-StringExpSyntax::StringExpSyntax(std::vector<StringExpSyntaxElement> elements)
+SStringExp::SStringExp(std::vector<SStringExpElementPtr> elements)
     : elements(std::move(elements)) { }
 
-StringExpSyntax::StringExpSyntax(StringExpSyntax&& other) noexcept = default;
+SStringExp::SStringExp(SStringExp&& other) noexcept = default;
 
-StringExpSyntax::~StringExpSyntax() = default;
+SStringExp::~SStringExp() = default;
 
-StringExpSyntax& StringExpSyntax::operator=(StringExpSyntax&& other) noexcept = default;
+SStringExp& SStringExp::operator=(SStringExp&& other) noexcept = default;
 
-JsonItem StringExpSyntax::ToJson()
+JsonItem SStringExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("StringExpSyntax") },
+        { "$type", JsonString("SStringExp") },
         { "elements", Citron::ToJson(elements) },
     };
 }
 
-IntLiteralExpSyntax::IntLiteralExpSyntax(int value)
+SIntLiteralExp::SIntLiteralExp(int value)
     : value(std::move(value)) { }
 
-IntLiteralExpSyntax::IntLiteralExpSyntax(IntLiteralExpSyntax&& other) noexcept = default;
+SIntLiteralExp::SIntLiteralExp(SIntLiteralExp&& other) noexcept = default;
 
-IntLiteralExpSyntax::~IntLiteralExpSyntax() = default;
+SIntLiteralExp::~SIntLiteralExp() = default;
 
-IntLiteralExpSyntax& IntLiteralExpSyntax::operator=(IntLiteralExpSyntax&& other) noexcept = default;
+SIntLiteralExp& SIntLiteralExp::operator=(SIntLiteralExp&& other) noexcept = default;
 
-JsonItem IntLiteralExpSyntax::ToJson()
+JsonItem SIntLiteralExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("IntLiteralExpSyntax") },
+        { "$type", JsonString("SIntLiteralExp") },
         { "value", Citron::ToJson(value) },
     };
 }
 
-BoolLiteralExpSyntax::BoolLiteralExpSyntax(bool value)
+SBoolLiteralExp::SBoolLiteralExp(bool value)
     : value(std::move(value)) { }
 
-BoolLiteralExpSyntax::BoolLiteralExpSyntax(BoolLiteralExpSyntax&& other) noexcept = default;
+SBoolLiteralExp::SBoolLiteralExp(SBoolLiteralExp&& other) noexcept = default;
 
-BoolLiteralExpSyntax::~BoolLiteralExpSyntax() = default;
+SBoolLiteralExp::~SBoolLiteralExp() = default;
 
-BoolLiteralExpSyntax& BoolLiteralExpSyntax::operator=(BoolLiteralExpSyntax&& other) noexcept = default;
+SBoolLiteralExp& SBoolLiteralExp::operator=(SBoolLiteralExp&& other) noexcept = default;
 
-JsonItem BoolLiteralExpSyntax::ToJson()
+JsonItem SBoolLiteralExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("BoolLiteralExpSyntax") },
+        { "$type", JsonString("SBoolLiteralExp") },
         { "value", Citron::ToJson(value) },
     };
 }
 
-NullLiteralExpSyntax::NullLiteralExpSyntax()
+SNullLiteralExp::SNullLiteralExp()
 { }
-NullLiteralExpSyntax::NullLiteralExpSyntax(NullLiteralExpSyntax&& other) noexcept = default;
+SNullLiteralExp::SNullLiteralExp(SNullLiteralExp&& other) noexcept = default;
 
-NullLiteralExpSyntax::~NullLiteralExpSyntax() = default;
+SNullLiteralExp::~SNullLiteralExp() = default;
 
-NullLiteralExpSyntax& NullLiteralExpSyntax::operator=(NullLiteralExpSyntax&& other) noexcept = default;
+SNullLiteralExp& SNullLiteralExp::operator=(SNullLiteralExp&& other) noexcept = default;
 
-JsonItem NullLiteralExpSyntax::ToJson()
+JsonItem SNullLiteralExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("NullLiteralExpSyntax") },
+        { "$type", JsonString("SNullLiteralExp") },
     };
 }
 
-ListExpSyntax::ListExpSyntax(std::vector<ExpSyntax> elements)
+SListExp::SListExp(std::vector<SExpPtr> elements)
     : elements(std::move(elements)) { }
 
-ListExpSyntax::ListExpSyntax(ListExpSyntax&& other) noexcept = default;
+SListExp::SListExp(SListExp&& other) noexcept = default;
 
-ListExpSyntax::~ListExpSyntax() = default;
+SListExp::~SListExp() = default;
 
-ListExpSyntax& ListExpSyntax::operator=(ListExpSyntax&& other) noexcept = default;
+SListExp& SListExp::operator=(SListExp&& other) noexcept = default;
 
-JsonItem ListExpSyntax::ToJson()
+JsonItem SListExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ListExpSyntax") },
+        { "$type", JsonString("SListExp") },
         { "elements", Citron::ToJson(elements) },
     };
 }
 
-NewExpSyntax::NewExpSyntax(TypeExpSyntax type, std::vector<ArgumentSyntax> args)
+SNewExp::SNewExp(STypeExpPtr type, std::vector<SArgument> args)
     : type(std::move(type)), args(std::move(args)) { }
 
-NewExpSyntax::NewExpSyntax(NewExpSyntax&& other) noexcept = default;
+SNewExp::SNewExp(SNewExp&& other) noexcept = default;
 
-NewExpSyntax::~NewExpSyntax() = default;
+SNewExp::~SNewExp() = default;
 
-NewExpSyntax& NewExpSyntax::operator=(NewExpSyntax&& other) noexcept = default;
+SNewExp& SNewExp::operator=(SNewExp&& other) noexcept = default;
 
-JsonItem NewExpSyntax::ToJson()
+JsonItem SNewExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("NewExpSyntax") },
+        { "$type", JsonString("SNewExp") },
         { "type", Citron::ToJson(type) },
         { "args", Citron::ToJson(args) },
     };
 }
 
-BinaryOpExpSyntax::BinaryOpExpSyntax(BinaryOpSyntaxKind kind, ExpSyntax operand0, ExpSyntax operand1)
+SBinaryOpExp::SBinaryOpExp(SBinaryOpKind kind, SExpPtr operand0, SExpPtr operand1)
     : kind(std::move(kind)), operand0(std::move(operand0)), operand1(std::move(operand1)) { }
 
-BinaryOpExpSyntax::BinaryOpExpSyntax(BinaryOpExpSyntax&& other) noexcept = default;
+SBinaryOpExp::SBinaryOpExp(SBinaryOpExp&& other) noexcept = default;
 
-BinaryOpExpSyntax::~BinaryOpExpSyntax() = default;
+SBinaryOpExp::~SBinaryOpExp() = default;
 
-BinaryOpExpSyntax& BinaryOpExpSyntax::operator=(BinaryOpExpSyntax&& other) noexcept = default;
+SBinaryOpExp& SBinaryOpExp::operator=(SBinaryOpExp&& other) noexcept = default;
 
-JsonItem BinaryOpExpSyntax::ToJson()
+JsonItem SBinaryOpExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("BinaryOpExpSyntax") },
+        { "$type", JsonString("SBinaryOpExp") },
         { "kind", Citron::ToJson(kind) },
         { "operand0", Citron::ToJson(operand0) },
         { "operand1", Citron::ToJson(operand1) },
     };
 }
 
-UnaryOpExpSyntax::UnaryOpExpSyntax(UnaryOpSyntaxKind kind, ExpSyntax operand)
+SUnaryOpExp::SUnaryOpExp(SUnaryOpKind kind, SExpPtr operand)
     : kind(std::move(kind)), operand(std::move(operand)) { }
 
-UnaryOpExpSyntax::UnaryOpExpSyntax(UnaryOpExpSyntax&& other) noexcept = default;
+SUnaryOpExp::SUnaryOpExp(SUnaryOpExp&& other) noexcept = default;
 
-UnaryOpExpSyntax::~UnaryOpExpSyntax() = default;
+SUnaryOpExp::~SUnaryOpExp() = default;
 
-UnaryOpExpSyntax& UnaryOpExpSyntax::operator=(UnaryOpExpSyntax&& other) noexcept = default;
+SUnaryOpExp& SUnaryOpExp::operator=(SUnaryOpExp&& other) noexcept = default;
 
-JsonItem UnaryOpExpSyntax::ToJson()
+JsonItem SUnaryOpExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("UnaryOpExpSyntax") },
+        { "$type", JsonString("SUnaryOpExp") },
         { "kind", Citron::ToJson(kind) },
         { "operand", Citron::ToJson(operand) },
     };
 }
 
-CallExpSyntax::CallExpSyntax(ExpSyntax callable, std::vector<ArgumentSyntax> args)
+SCallExp::SCallExp(SExpPtr callable, std::vector<SArgument> args)
     : callable(std::move(callable)), args(std::move(args)) { }
 
-CallExpSyntax::CallExpSyntax(CallExpSyntax&& other) noexcept = default;
+SCallExp::SCallExp(SCallExp&& other) noexcept = default;
 
-CallExpSyntax::~CallExpSyntax() = default;
+SCallExp::~SCallExp() = default;
 
-CallExpSyntax& CallExpSyntax::operator=(CallExpSyntax&& other) noexcept = default;
+SCallExp& SCallExp::operator=(SCallExp&& other) noexcept = default;
 
-JsonItem CallExpSyntax::ToJson()
+JsonItem SCallExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("CallExpSyntax") },
+        { "$type", JsonString("SCallExp") },
         { "callable", Citron::ToJson(callable) },
         { "args", Citron::ToJson(args) },
     };
 }
 
-JsonItem ToJson(LambdaExpBodySyntax& body)
-{
-    return std::visit(ToJsonVisitor(), body);
-}
-
-StmtsLambdaExpBodySyntax::StmtsLambdaExpBodySyntax(std::vector<StmtSyntax> stmts)
-    : stmts(std::move(stmts)) { }
-
-StmtsLambdaExpBodySyntax::StmtsLambdaExpBodySyntax(StmtsLambdaExpBodySyntax&& other) noexcept = default;
-
-StmtsLambdaExpBodySyntax::~StmtsLambdaExpBodySyntax() = default;
-
-StmtsLambdaExpBodySyntax& StmtsLambdaExpBodySyntax::operator=(StmtsLambdaExpBodySyntax&& other) noexcept = default;
-
-JsonItem StmtsLambdaExpBodySyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("StmtsLambdaExpBodySyntax") },
-        { "stmts", Citron::ToJson(stmts) },
-    };
-}
-
-ExpLambdaExpBodySyntax::ExpLambdaExpBodySyntax(ExpSyntax exp)
-    : exp(std::move(exp)) { }
-
-ExpLambdaExpBodySyntax::ExpLambdaExpBodySyntax(ExpLambdaExpBodySyntax&& other) noexcept = default;
-
-ExpLambdaExpBodySyntax::~ExpLambdaExpBodySyntax() = default;
-
-ExpLambdaExpBodySyntax& ExpLambdaExpBodySyntax::operator=(ExpLambdaExpBodySyntax&& other) noexcept = default;
-
-JsonItem ExpLambdaExpBodySyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("ExpLambdaExpBodySyntax") },
-        { "exp", Citron::ToJson(exp) },
-    };
-}
-
-LambdaExpSyntax::LambdaExpSyntax(std::vector<LambdaExpParamSyntax> params, LambdaExpBodySyntax body)
+SLambdaExp::SLambdaExp(std::vector<SLambdaExpParam> params, SLambdaExpBodyPtr body)
     : params(std::move(params)), body(std::move(body)) { }
 
-LambdaExpSyntax::LambdaExpSyntax(LambdaExpSyntax&& other) noexcept = default;
+SLambdaExp::SLambdaExp(SLambdaExp&& other) noexcept = default;
 
-LambdaExpSyntax::~LambdaExpSyntax() = default;
+SLambdaExp::~SLambdaExp() = default;
 
-LambdaExpSyntax& LambdaExpSyntax::operator=(LambdaExpSyntax&& other) noexcept = default;
+SLambdaExp& SLambdaExp::operator=(SLambdaExp&& other) noexcept = default;
 
-JsonItem LambdaExpSyntax::ToJson()
+JsonItem SLambdaExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("LambdaExpSyntax") },
+        { "$type", JsonString("SLambdaExp") },
         { "params", Citron::ToJson(params) },
         { "body", Citron::ToJson(body) },
     };
 }
 
-IndexerExpSyntax::IndexerExpSyntax(ExpSyntax obj, ExpSyntax index)
+SIndexerExp::SIndexerExp(SExpPtr obj, SExpPtr index)
     : obj(std::move(obj)), index(std::move(index)) { }
 
-IndexerExpSyntax::IndexerExpSyntax(IndexerExpSyntax&& other) noexcept = default;
+SIndexerExp::SIndexerExp(SIndexerExp&& other) noexcept = default;
 
-IndexerExpSyntax::~IndexerExpSyntax() = default;
+SIndexerExp::~SIndexerExp() = default;
 
-IndexerExpSyntax& IndexerExpSyntax::operator=(IndexerExpSyntax&& other) noexcept = default;
+SIndexerExp& SIndexerExp::operator=(SIndexerExp&& other) noexcept = default;
 
-JsonItem IndexerExpSyntax::ToJson()
+JsonItem SIndexerExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("IndexerExpSyntax") },
+        { "$type", JsonString("SIndexerExp") },
         { "obj", Citron::ToJson(obj) },
         { "index", Citron::ToJson(index) },
     };
 }
 
-MemberExpSyntax::MemberExpSyntax(ExpSyntax parent, std::string memberName, std::vector<TypeExpSyntax> memberTypeArgs)
+SMemberExp::SMemberExp(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs)
     : parent(std::move(parent)), memberName(std::move(memberName)), memberTypeArgs(std::move(memberTypeArgs)) { }
 
-MemberExpSyntax::MemberExpSyntax(MemberExpSyntax&& other) noexcept = default;
+SMemberExp::SMemberExp(SMemberExp&& other) noexcept = default;
 
-MemberExpSyntax::~MemberExpSyntax() = default;
+SMemberExp::~SMemberExp() = default;
 
-MemberExpSyntax& MemberExpSyntax::operator=(MemberExpSyntax&& other) noexcept = default;
+SMemberExp& SMemberExp::operator=(SMemberExp&& other) noexcept = default;
 
-JsonItem MemberExpSyntax::ToJson()
+JsonItem SMemberExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("MemberExpSyntax") },
+        { "$type", JsonString("SMemberExp") },
         { "parent", Citron::ToJson(parent) },
         { "memberName", Citron::ToJson(memberName) },
         { "memberTypeArgs", Citron::ToJson(memberTypeArgs) },
     };
 }
 
-IndirectMemberExpSyntax::IndirectMemberExpSyntax(ExpSyntax parent, std::string memberName, std::vector<TypeExpSyntax> memberTypeArgs)
+SIndirectMemberExp::SIndirectMemberExp(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs)
     : parent(std::move(parent)), memberName(std::move(memberName)), memberTypeArgs(std::move(memberTypeArgs)) { }
 
-IndirectMemberExpSyntax::IndirectMemberExpSyntax(IndirectMemberExpSyntax&& other) noexcept = default;
+SIndirectMemberExp::SIndirectMemberExp(SIndirectMemberExp&& other) noexcept = default;
 
-IndirectMemberExpSyntax::~IndirectMemberExpSyntax() = default;
+SIndirectMemberExp::~SIndirectMemberExp() = default;
 
-IndirectMemberExpSyntax& IndirectMemberExpSyntax::operator=(IndirectMemberExpSyntax&& other) noexcept = default;
+SIndirectMemberExp& SIndirectMemberExp::operator=(SIndirectMemberExp&& other) noexcept = default;
 
-JsonItem IndirectMemberExpSyntax::ToJson()
+JsonItem SIndirectMemberExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("IndirectMemberExpSyntax") },
+        { "$type", JsonString("SIndirectMemberExp") },
         { "parent", Citron::ToJson(parent) },
         { "memberName", Citron::ToJson(memberName) },
         { "memberTypeArgs", Citron::ToJson(memberTypeArgs) },
     };
 }
 
-BoxExpSyntax::BoxExpSyntax(ExpSyntax innerExp)
+SBoxExp::SBoxExp(SExpPtr innerExp)
     : innerExp(std::move(innerExp)) { }
 
-BoxExpSyntax::BoxExpSyntax(BoxExpSyntax&& other) noexcept = default;
+SBoxExp::SBoxExp(SBoxExp&& other) noexcept = default;
 
-BoxExpSyntax::~BoxExpSyntax() = default;
+SBoxExp::~SBoxExp() = default;
 
-BoxExpSyntax& BoxExpSyntax::operator=(BoxExpSyntax&& other) noexcept = default;
+SBoxExp& SBoxExp::operator=(SBoxExp&& other) noexcept = default;
 
-JsonItem BoxExpSyntax::ToJson()
+JsonItem SBoxExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("BoxExpSyntax") },
+        { "$type", JsonString("SBoxExp") },
         { "innerExp", Citron::ToJson(innerExp) },
     };
 }
 
-IsExpSyntax::IsExpSyntax(ExpSyntax exp, TypeExpSyntax type)
+SIsExp::SIsExp(SExpPtr exp, STypeExpPtr type)
     : exp(std::move(exp)), type(std::move(type)) { }
 
-IsExpSyntax::IsExpSyntax(IsExpSyntax&& other) noexcept = default;
+SIsExp::SIsExp(SIsExp&& other) noexcept = default;
 
-IsExpSyntax::~IsExpSyntax() = default;
+SIsExp::~SIsExp() = default;
 
-IsExpSyntax& IsExpSyntax::operator=(IsExpSyntax&& other) noexcept = default;
+SIsExp& SIsExp::operator=(SIsExp&& other) noexcept = default;
 
-JsonItem IsExpSyntax::ToJson()
+JsonItem SIsExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("IsExpSyntax") },
+        { "$type", JsonString("SIsExp") },
         { "exp", Citron::ToJson(exp) },
         { "type", Citron::ToJson(type) },
     };
 }
 
-AsExpSyntax::AsExpSyntax(ExpSyntax exp, TypeExpSyntax type)
+SAsExp::SAsExp(SExpPtr exp, STypeExpPtr type)
     : exp(std::move(exp)), type(std::move(type)) { }
 
-AsExpSyntax::AsExpSyntax(AsExpSyntax&& other) noexcept = default;
+SAsExp::SAsExp(SAsExp&& other) noexcept = default;
 
-AsExpSyntax::~AsExpSyntax() = default;
+SAsExp::~SAsExp() = default;
 
-AsExpSyntax& AsExpSyntax::operator=(AsExpSyntax&& other) noexcept = default;
+SAsExp& SAsExp::operator=(SAsExp&& other) noexcept = default;
 
-JsonItem AsExpSyntax::ToJson()
+JsonItem SAsExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("AsExpSyntax") },
+        { "$type", JsonString("SAsExp") },
         { "exp", Citron::ToJson(exp) },
         { "type", Citron::ToJson(type) },
     };
 }
 
-ArgumentSyntax::ArgumentSyntax(bool bOut, bool bParams, ExpSyntax exp)
-    : bOut(std::move(bOut)), bParams(std::move(bParams)), exp(std::move(exp)) { }
+SIdTypeExp::SIdTypeExp(std::string name, std::vector<STypeExpPtr> typeArgs)
+    : name(std::move(name)), typeArgs(std::move(typeArgs)) { }
 
-ArgumentSyntax::ArgumentSyntax(ArgumentSyntax&& other) noexcept = default;
+SIdTypeExp::SIdTypeExp(SIdTypeExp&& other) noexcept = default;
 
-ArgumentSyntax::~ArgumentSyntax() = default;
+SIdTypeExp::~SIdTypeExp() = default;
 
-ArgumentSyntax& ArgumentSyntax::operator=(ArgumentSyntax&& other) noexcept = default;
+SIdTypeExp& SIdTypeExp::operator=(SIdTypeExp&& other) noexcept = default;
 
-JsonItem ArgumentSyntax::ToJson()
+JsonItem SIdTypeExp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ArgumentSyntax") },
-        { "bOut", Citron::ToJson(bOut) },
-        { "bParams", Citron::ToJson(bParams) },
-        { "exp", Citron::ToJson(exp) },
+        { "$type", JsonString("SIdTypeExp") },
+        { "name", Citron::ToJson(name) },
+        { "typeArgs", Citron::ToJson(typeArgs) },
     };
 }
 
-ExpStringExpSyntaxElement::ExpStringExpSyntaxElement(ExpSyntax exp)
+SMemberTypeExp::SMemberTypeExp(STypeExpPtr parentType, std::string name, std::vector<STypeExpPtr> typeArgs)
+    : parentType(std::move(parentType)), name(std::move(name)), typeArgs(std::move(typeArgs)) { }
+
+SMemberTypeExp::SMemberTypeExp(SMemberTypeExp&& other) noexcept = default;
+
+SMemberTypeExp::~SMemberTypeExp() = default;
+
+SMemberTypeExp& SMemberTypeExp::operator=(SMemberTypeExp&& other) noexcept = default;
+
+JsonItem SMemberTypeExp::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SMemberTypeExp") },
+        { "parentType", Citron::ToJson(parentType) },
+        { "name", Citron::ToJson(name) },
+        { "typeArgs", Citron::ToJson(typeArgs) },
+    };
+}
+
+SNullableTypeExp::SNullableTypeExp(STypeExpPtr innerType)
+    : innerType(std::move(innerType)) { }
+
+SNullableTypeExp::SNullableTypeExp(SNullableTypeExp&& other) noexcept = default;
+
+SNullableTypeExp::~SNullableTypeExp() = default;
+
+SNullableTypeExp& SNullableTypeExp::operator=(SNullableTypeExp&& other) noexcept = default;
+
+JsonItem SNullableTypeExp::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SNullableTypeExp") },
+        { "innerType", Citron::ToJson(innerType) },
+    };
+}
+
+SLocalPtrTypeExp::SLocalPtrTypeExp(STypeExpPtr innerType)
+    : innerType(std::move(innerType)) { }
+
+SLocalPtrTypeExp::SLocalPtrTypeExp(SLocalPtrTypeExp&& other) noexcept = default;
+
+SLocalPtrTypeExp::~SLocalPtrTypeExp() = default;
+
+SLocalPtrTypeExp& SLocalPtrTypeExp::operator=(SLocalPtrTypeExp&& other) noexcept = default;
+
+JsonItem SLocalPtrTypeExp::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SLocalPtrTypeExp") },
+        { "innerType", Citron::ToJson(innerType) },
+    };
+}
+
+SBoxPtrTypeExp::SBoxPtrTypeExp(STypeExpPtr innerType)
+    : innerType(std::move(innerType)) { }
+
+SBoxPtrTypeExp::SBoxPtrTypeExp(SBoxPtrTypeExp&& other) noexcept = default;
+
+SBoxPtrTypeExp::~SBoxPtrTypeExp() = default;
+
+SBoxPtrTypeExp& SBoxPtrTypeExp::operator=(SBoxPtrTypeExp&& other) noexcept = default;
+
+JsonItem SBoxPtrTypeExp::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SBoxPtrTypeExp") },
+        { "innerType", Citron::ToJson(innerType) },
+    };
+}
+
+SLocalTypeExp::SLocalTypeExp(STypeExpPtr innerType)
+    : innerType(std::move(innerType)) { }
+
+SLocalTypeExp::SLocalTypeExp(SLocalTypeExp&& other) noexcept = default;
+
+SLocalTypeExp::~SLocalTypeExp() = default;
+
+SLocalTypeExp& SLocalTypeExp::operator=(SLocalTypeExp&& other) noexcept = default;
+
+JsonItem SLocalTypeExp::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SLocalTypeExp") },
+        { "innerType", Citron::ToJson(innerType) },
+    };
+}
+
+STextStringExpElement::STextStringExpElement(std::string text)
+    : text(std::move(text)) { }
+
+STextStringExpElement::STextStringExpElement(STextStringExpElement&& other) noexcept = default;
+
+STextStringExpElement::~STextStringExpElement() = default;
+
+STextStringExpElement& STextStringExpElement::operator=(STextStringExpElement&& other) noexcept = default;
+
+JsonItem STextStringExpElement::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("STextStringExpElement") },
+        { "text", Citron::ToJson(text) },
+    };
+}
+
+SExpStringExpElement::SExpStringExpElement(SExpPtr exp)
     : exp(std::move(exp)) { }
 
-ExpStringExpSyntaxElement::ExpStringExpSyntaxElement(ExpStringExpSyntaxElement&& other) noexcept = default;
+SExpStringExpElement::SExpStringExpElement(SExpStringExpElement&& other) noexcept = default;
 
-ExpStringExpSyntaxElement::~ExpStringExpSyntaxElement() = default;
+SExpStringExpElement::~SExpStringExpElement() = default;
 
-ExpStringExpSyntaxElement& ExpStringExpSyntaxElement::operator=(ExpStringExpSyntaxElement&& other) noexcept = default;
+SExpStringExpElement& SExpStringExpElement::operator=(SExpStringExpElement&& other) noexcept = default;
 
-JsonItem ExpStringExpSyntaxElement::ToJson()
+JsonItem SExpStringExpElement::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ExpStringExpSyntaxElement") },
+        { "$type", JsonString("SExpStringExpElement") },
         { "exp", Citron::ToJson(exp) },
     };
 }
 
-JsonItem ToJson(EmbeddableStmtSyntax& embeddableStmt)
-{
-    return std::visit(ToJsonVisitor(), embeddableStmt);
-}
-
-BlockEmbeddableStmtSyntax::BlockEmbeddableStmtSyntax(std::vector<StmtSyntax> stmts)
+SStmtsLambdaExpBody::SStmtsLambdaExpBody(std::vector<SStmtPtr> stmts)
     : stmts(std::move(stmts)) { }
 
-BlockEmbeddableStmtSyntax::BlockEmbeddableStmtSyntax(BlockEmbeddableStmtSyntax&& other) noexcept = default;
+SStmtsLambdaExpBody::SStmtsLambdaExpBody(SStmtsLambdaExpBody&& other) noexcept = default;
 
-BlockEmbeddableStmtSyntax::~BlockEmbeddableStmtSyntax() = default;
+SStmtsLambdaExpBody::~SStmtsLambdaExpBody() = default;
 
-BlockEmbeddableStmtSyntax& BlockEmbeddableStmtSyntax::operator=(BlockEmbeddableStmtSyntax&& other) noexcept = default;
+SStmtsLambdaExpBody& SStmtsLambdaExpBody::operator=(SStmtsLambdaExpBody&& other) noexcept = default;
 
-JsonItem BlockEmbeddableStmtSyntax::ToJson()
+JsonItem SStmtsLambdaExpBody::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("BlockEmbeddableStmtSyntax") },
+        { "$type", JsonString("SStmtsLambdaExpBody") },
         { "stmts", Citron::ToJson(stmts) },
     };
 }
 
-VarDeclSyntaxElement::VarDeclSyntaxElement(std::string varName, std::optional<ExpSyntax> initExp)
-    : varName(std::move(varName)), initExp(std::move(initExp)) { }
+SExpLambdaExpBody::SExpLambdaExpBody(SExpPtr exp)
+    : exp(std::move(exp)) { }
 
-VarDeclSyntaxElement::VarDeclSyntaxElement(VarDeclSyntaxElement&& other) noexcept = default;
+SExpLambdaExpBody::SExpLambdaExpBody(SExpLambdaExpBody&& other) noexcept = default;
 
-VarDeclSyntaxElement::~VarDeclSyntaxElement() = default;
+SExpLambdaExpBody::~SExpLambdaExpBody() = default;
 
-VarDeclSyntaxElement& VarDeclSyntaxElement::operator=(VarDeclSyntaxElement&& other) noexcept = default;
+SExpLambdaExpBody& SExpLambdaExpBody::operator=(SExpLambdaExpBody&& other) noexcept = default;
 
-JsonItem VarDeclSyntaxElement::ToJson()
+JsonItem SExpLambdaExpBody::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("VarDeclSyntaxElement") },
-        { "varName", Citron::ToJson(varName) },
-        { "initExp", Citron::ToJson(initExp) },
+        { "$type", JsonString("SExpLambdaExpBody") },
+        { "exp", Citron::ToJson(exp) },
     };
 }
 
-VarDeclSyntax::VarDeclSyntax(TypeExpSyntax type, std::vector<VarDeclSyntaxElement> elements)
-    : type(std::move(type)), elements(std::move(elements)) { }
+SSingleEmbeddableStmt::SSingleEmbeddableStmt(SStmtPtr stmt)
+    : stmt(std::move(stmt)) { }
 
-VarDeclSyntax::VarDeclSyntax(VarDeclSyntax&& other) noexcept = default;
+SSingleEmbeddableStmt::SSingleEmbeddableStmt(SSingleEmbeddableStmt&& other) noexcept = default;
 
-VarDeclSyntax::~VarDeclSyntax() = default;
+SSingleEmbeddableStmt::~SSingleEmbeddableStmt() = default;
 
-VarDeclSyntax& VarDeclSyntax::operator=(VarDeclSyntax&& other) noexcept = default;
+SSingleEmbeddableStmt& SSingleEmbeddableStmt::operator=(SSingleEmbeddableStmt&& other) noexcept = default;
 
-JsonItem VarDeclSyntax::ToJson()
+JsonItem SSingleEmbeddableStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("VarDeclSyntax") },
-        { "type", Citron::ToJson(type) },
-        { "elements", Citron::ToJson(elements) },
+        { "$type", JsonString("SSingleEmbeddableStmt") },
+        { "stmt", Citron::ToJson(stmt) },
     };
 }
 
-CommandStmtSyntax::CommandStmtSyntax(std::vector<StringExpSyntax> commands)
-    : commands(std::move(commands)) { }
+SBlockEmbeddableStmt::SBlockEmbeddableStmt(std::vector<SStmtPtr> stmts)
+    : stmts(std::move(stmts)) { }
 
-CommandStmtSyntax::CommandStmtSyntax(CommandStmtSyntax&& other) noexcept = default;
+SBlockEmbeddableStmt::SBlockEmbeddableStmt(SBlockEmbeddableStmt&& other) noexcept = default;
 
-CommandStmtSyntax::~CommandStmtSyntax() = default;
+SBlockEmbeddableStmt::~SBlockEmbeddableStmt() = default;
 
-CommandStmtSyntax& CommandStmtSyntax::operator=(CommandStmtSyntax&& other) noexcept = default;
+SBlockEmbeddableStmt& SBlockEmbeddableStmt::operator=(SBlockEmbeddableStmt&& other) noexcept = default;
 
-JsonItem CommandStmtSyntax::ToJson()
+JsonItem SBlockEmbeddableStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("CommandStmtSyntax") },
-        { "commands", Citron::ToJson(commands) },
+        { "$type", JsonString("SBlockEmbeddableStmt") },
+        { "stmts", Citron::ToJson(stmts) },
     };
 }
 
-VarDeclStmtSyntax::VarDeclStmtSyntax(VarDeclSyntax varDecl)
+SExpForStmtInitializer::SExpForStmtInitializer(SExpPtr exp)
+    : exp(std::move(exp)) { }
+
+SExpForStmtInitializer::SExpForStmtInitializer(SExpForStmtInitializer&& other) noexcept = default;
+
+SExpForStmtInitializer::~SExpForStmtInitializer() = default;
+
+SExpForStmtInitializer& SExpForStmtInitializer::operator=(SExpForStmtInitializer&& other) noexcept = default;
+
+JsonItem SExpForStmtInitializer::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SExpForStmtInitializer") },
+        { "exp", Citron::ToJson(exp) },
+    };
+}
+
+SVarDeclForStmtInitializer::SVarDeclForStmtInitializer(SVarDecl varDecl)
     : varDecl(std::move(varDecl)) { }
 
-VarDeclStmtSyntax::VarDeclStmtSyntax(VarDeclStmtSyntax&& other) noexcept = default;
+SVarDeclForStmtInitializer::SVarDeclForStmtInitializer(SVarDeclForStmtInitializer&& other) noexcept = default;
 
-VarDeclStmtSyntax::~VarDeclStmtSyntax() = default;
+SVarDeclForStmtInitializer::~SVarDeclForStmtInitializer() = default;
 
-VarDeclStmtSyntax& VarDeclStmtSyntax::operator=(VarDeclStmtSyntax&& other) noexcept = default;
+SVarDeclForStmtInitializer& SVarDeclForStmtInitializer::operator=(SVarDeclForStmtInitializer&& other) noexcept = default;
 
-JsonItem VarDeclStmtSyntax::ToJson()
+JsonItem SVarDeclForStmtInitializer::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("VarDeclStmtSyntax") },
+        { "$type", JsonString("SVarDeclForStmtInitializer") },
         { "varDecl", Citron::ToJson(varDecl) },
     };
 }
 
-ContinueStmtSyntax::ContinueStmtSyntax()
-{ }
-ContinueStmtSyntax::ContinueStmtSyntax(ContinueStmtSyntax&& other) noexcept = default;
+SCommandStmt::SCommandStmt(std::vector<SStringExp> commands)
+    : commands(std::move(commands)) { }
 
-ContinueStmtSyntax::~ContinueStmtSyntax() = default;
+SCommandStmt::SCommandStmt(SCommandStmt&& other) noexcept = default;
 
-ContinueStmtSyntax& ContinueStmtSyntax::operator=(ContinueStmtSyntax&& other) noexcept = default;
+SCommandStmt::~SCommandStmt() = default;
 
-JsonItem ContinueStmtSyntax::ToJson()
+SCommandStmt& SCommandStmt::operator=(SCommandStmt&& other) noexcept = default;
+
+JsonItem SCommandStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ContinueStmtSyntax") },
+        { "$type", JsonString("SCommandStmt") },
+        { "commands", Citron::ToJson(commands) },
     };
 }
 
-BreakStmtSyntax::BreakStmtSyntax()
-{ }
-BreakStmtSyntax::BreakStmtSyntax(BreakStmtSyntax&& other) noexcept = default;
+SVarDeclStmt::SVarDeclStmt(SVarDecl varDecl)
+    : varDecl(std::move(varDecl)) { }
 
-BreakStmtSyntax::~BreakStmtSyntax() = default;
+SVarDeclStmt::SVarDeclStmt(SVarDeclStmt&& other) noexcept = default;
 
-BreakStmtSyntax& BreakStmtSyntax::operator=(BreakStmtSyntax&& other) noexcept = default;
+SVarDeclStmt::~SVarDeclStmt() = default;
 
-JsonItem BreakStmtSyntax::ToJson()
+SVarDeclStmt& SVarDeclStmt::operator=(SVarDeclStmt&& other) noexcept = default;
+
+JsonItem SVarDeclStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("BreakStmtSyntax") },
+        { "$type", JsonString("SVarDeclStmt") },
+        { "varDecl", Citron::ToJson(varDecl) },
     };
 }
 
-BlockStmtSyntax::BlockStmtSyntax(std::vector<StmtSyntax> stmts)
+SContinueStmt::SContinueStmt()
+{ }
+SContinueStmt::SContinueStmt(SContinueStmt&& other) noexcept = default;
+
+SContinueStmt::~SContinueStmt() = default;
+
+SContinueStmt& SContinueStmt::operator=(SContinueStmt&& other) noexcept = default;
+
+JsonItem SContinueStmt::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SContinueStmt") },
+    };
+}
+
+SBreakStmt::SBreakStmt()
+{ }
+SBreakStmt::SBreakStmt(SBreakStmt&& other) noexcept = default;
+
+SBreakStmt::~SBreakStmt() = default;
+
+SBreakStmt& SBreakStmt::operator=(SBreakStmt&& other) noexcept = default;
+
+JsonItem SBreakStmt::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SBreakStmt") },
+    };
+}
+
+SBlockStmt::SBlockStmt(std::vector<SStmtPtr> stmts)
     : stmts(std::move(stmts)) { }
 
-BlockStmtSyntax::BlockStmtSyntax(BlockStmtSyntax&& other) noexcept = default;
+SBlockStmt::SBlockStmt(SBlockStmt&& other) noexcept = default;
 
-BlockStmtSyntax::~BlockStmtSyntax() = default;
+SBlockStmt::~SBlockStmt() = default;
 
-BlockStmtSyntax& BlockStmtSyntax::operator=(BlockStmtSyntax&& other) noexcept = default;
+SBlockStmt& SBlockStmt::operator=(SBlockStmt&& other) noexcept = default;
 
-JsonItem BlockStmtSyntax::ToJson()
+JsonItem SBlockStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("BlockStmtSyntax") },
+        { "$type", JsonString("SBlockStmt") },
         { "stmts", Citron::ToJson(stmts) },
     };
 }
 
-BlankStmtSyntax::BlankStmtSyntax()
+SBlankStmt::SBlankStmt()
 { }
-BlankStmtSyntax::BlankStmtSyntax(BlankStmtSyntax&& other) noexcept = default;
+SBlankStmt::SBlankStmt(SBlankStmt&& other) noexcept = default;
 
-BlankStmtSyntax::~BlankStmtSyntax() = default;
+SBlankStmt::~SBlankStmt() = default;
 
-BlankStmtSyntax& BlankStmtSyntax::operator=(BlankStmtSyntax&& other) noexcept = default;
+SBlankStmt& SBlankStmt::operator=(SBlankStmt&& other) noexcept = default;
 
-JsonItem BlankStmtSyntax::ToJson()
+JsonItem SBlankStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("BlankStmtSyntax") },
+        { "$type", JsonString("SBlankStmt") },
     };
 }
 
-TaskStmtSyntax::TaskStmtSyntax(std::vector<StmtSyntax> body)
+STaskStmt::STaskStmt(std::vector<SStmtPtr> body)
     : body(std::move(body)) { }
 
-TaskStmtSyntax::TaskStmtSyntax(TaskStmtSyntax&& other) noexcept = default;
+STaskStmt::STaskStmt(STaskStmt&& other) noexcept = default;
 
-TaskStmtSyntax::~TaskStmtSyntax() = default;
+STaskStmt::~STaskStmt() = default;
 
-TaskStmtSyntax& TaskStmtSyntax::operator=(TaskStmtSyntax&& other) noexcept = default;
+STaskStmt& STaskStmt::operator=(STaskStmt&& other) noexcept = default;
 
-JsonItem TaskStmtSyntax::ToJson()
+JsonItem STaskStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("TaskStmtSyntax") },
+        { "$type", JsonString("STaskStmt") },
         { "body", Citron::ToJson(body) },
     };
 }
 
-AwaitStmtSyntax::AwaitStmtSyntax(std::vector<StmtSyntax> body)
+SAwaitStmt::SAwaitStmt(std::vector<SStmtPtr> body)
     : body(std::move(body)) { }
 
-AwaitStmtSyntax::AwaitStmtSyntax(AwaitStmtSyntax&& other) noexcept = default;
+SAwaitStmt::SAwaitStmt(SAwaitStmt&& other) noexcept = default;
 
-AwaitStmtSyntax::~AwaitStmtSyntax() = default;
+SAwaitStmt::~SAwaitStmt() = default;
 
-AwaitStmtSyntax& AwaitStmtSyntax::operator=(AwaitStmtSyntax&& other) noexcept = default;
+SAwaitStmt& SAwaitStmt::operator=(SAwaitStmt&& other) noexcept = default;
 
-JsonItem AwaitStmtSyntax::ToJson()
+JsonItem SAwaitStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("AwaitStmtSyntax") },
+        { "$type", JsonString("SAwaitStmt") },
         { "body", Citron::ToJson(body) },
     };
 }
 
-AsyncStmtSyntax::AsyncStmtSyntax(std::vector<StmtSyntax> body)
+SAsyncStmt::SAsyncStmt(std::vector<SStmtPtr> body)
     : body(std::move(body)) { }
 
-AsyncStmtSyntax::AsyncStmtSyntax(AsyncStmtSyntax&& other) noexcept = default;
+SAsyncStmt::SAsyncStmt(SAsyncStmt&& other) noexcept = default;
 
-AsyncStmtSyntax::~AsyncStmtSyntax() = default;
+SAsyncStmt::~SAsyncStmt() = default;
 
-AsyncStmtSyntax& AsyncStmtSyntax::operator=(AsyncStmtSyntax&& other) noexcept = default;
+SAsyncStmt& SAsyncStmt::operator=(SAsyncStmt&& other) noexcept = default;
 
-JsonItem AsyncStmtSyntax::ToJson()
+JsonItem SAsyncStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("AsyncStmtSyntax") },
+        { "$type", JsonString("SAsyncStmt") },
         { "body", Citron::ToJson(body) },
     };
 }
 
-DirectiveStmtSyntax::DirectiveStmtSyntax(std::string name, std::vector<ExpSyntax> args)
+SDirectiveStmt::SDirectiveStmt(std::string name, std::vector<SExpPtr> args)
     : name(std::move(name)), args(std::move(args)) { }
 
-DirectiveStmtSyntax::DirectiveStmtSyntax(DirectiveStmtSyntax&& other) noexcept = default;
+SDirectiveStmt::SDirectiveStmt(SDirectiveStmt&& other) noexcept = default;
 
-DirectiveStmtSyntax::~DirectiveStmtSyntax() = default;
+SDirectiveStmt::~SDirectiveStmt() = default;
 
-DirectiveStmtSyntax& DirectiveStmtSyntax::operator=(DirectiveStmtSyntax&& other) noexcept = default;
+SDirectiveStmt& SDirectiveStmt::operator=(SDirectiveStmt&& other) noexcept = default;
 
-JsonItem DirectiveStmtSyntax::ToJson()
+JsonItem SDirectiveStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("DirectiveStmtSyntax") },
+        { "$type", JsonString("SDirectiveStmt") },
         { "name", Citron::ToJson(name) },
         { "args", Citron::ToJson(args) },
     };
 }
 
-SingleEmbeddableStmtSyntax::SingleEmbeddableStmtSyntax(StmtSyntax stmt)
-    : stmt(std::move(stmt)) { }
-
-SingleEmbeddableStmtSyntax::SingleEmbeddableStmtSyntax(SingleEmbeddableStmtSyntax&& other) noexcept = default;
-
-SingleEmbeddableStmtSyntax::~SingleEmbeddableStmtSyntax() = default;
-
-SingleEmbeddableStmtSyntax& SingleEmbeddableStmtSyntax::operator=(SingleEmbeddableStmtSyntax&& other) noexcept = default;
-
-JsonItem SingleEmbeddableStmtSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("SingleEmbeddableStmtSyntax") },
-        { "stmt", Citron::ToJson(stmt) },
-    };
-}
-
-IfStmtSyntax::IfStmtSyntax(ExpSyntax cond, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody)
+SIfStmt::SIfStmt(SExpPtr cond, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody)
     : cond(std::move(cond)), body(std::move(body)), elseBody(std::move(elseBody)) { }
 
-IfStmtSyntax::IfStmtSyntax(IfStmtSyntax&& other) noexcept = default;
+SIfStmt::SIfStmt(SIfStmt&& other) noexcept = default;
 
-IfStmtSyntax::~IfStmtSyntax() = default;
+SIfStmt::~SIfStmt() = default;
 
-IfStmtSyntax& IfStmtSyntax::operator=(IfStmtSyntax&& other) noexcept = default;
+SIfStmt& SIfStmt::operator=(SIfStmt&& other) noexcept = default;
 
-JsonItem IfStmtSyntax::ToJson()
+JsonItem SIfStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("IfStmtSyntax") },
+        { "$type", JsonString("SIfStmt") },
         { "cond", Citron::ToJson(cond) },
         { "body", Citron::ToJson(body) },
         { "elseBody", Citron::ToJson(elseBody) },
     };
 }
 
-IfTestStmtSyntax::IfTestStmtSyntax(TypeExpSyntax testType, std::string varName, ExpSyntax exp, EmbeddableStmtSyntax body, std::optional<EmbeddableStmtSyntax> elseBody)
+SIfTestStmt::SIfTestStmt(STypeExpPtr testType, std::string varName, SExpPtr exp, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody)
     : testType(std::move(testType)), varName(std::move(varName)), exp(std::move(exp)), body(std::move(body)), elseBody(std::move(elseBody)) { }
 
-IfTestStmtSyntax::IfTestStmtSyntax(IfTestStmtSyntax&& other) noexcept = default;
+SIfTestStmt::SIfTestStmt(SIfTestStmt&& other) noexcept = default;
 
-IfTestStmtSyntax::~IfTestStmtSyntax() = default;
+SIfTestStmt::~SIfTestStmt() = default;
 
-IfTestStmtSyntax& IfTestStmtSyntax::operator=(IfTestStmtSyntax&& other) noexcept = default;
+SIfTestStmt& SIfTestStmt::operator=(SIfTestStmt&& other) noexcept = default;
 
-JsonItem IfTestStmtSyntax::ToJson()
+JsonItem SIfTestStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("IfTestStmtSyntax") },
+        { "$type", JsonString("SIfTestStmt") },
         { "testType", Citron::ToJson(testType) },
         { "varName", Citron::ToJson(varName) },
         { "exp", Citron::ToJson(exp) },
@@ -835,58 +1067,19 @@ JsonItem IfTestStmtSyntax::ToJson()
     };
 }
 
-JsonItem ToJson(ForStmtInitializerSyntax& forInit)
-{
-    return std::visit(ToJsonVisitor(), forInit);
-}
-
-ExpForStmtInitializerSyntax::ExpForStmtInitializerSyntax(ExpSyntax exp)
-    : exp(std::move(exp)) { }
-
-ExpForStmtInitializerSyntax::ExpForStmtInitializerSyntax(ExpForStmtInitializerSyntax&& other) noexcept = default;
-
-ExpForStmtInitializerSyntax::~ExpForStmtInitializerSyntax() = default;
-
-ExpForStmtInitializerSyntax& ExpForStmtInitializerSyntax::operator=(ExpForStmtInitializerSyntax&& other) noexcept = default;
-
-JsonItem ExpForStmtInitializerSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("ExpForStmtInitializerSyntax") },
-        { "exp", Citron::ToJson(exp) },
-    };
-}
-
-VarDeclForStmtInitializerSyntax::VarDeclForStmtInitializerSyntax(VarDeclSyntax varDecl)
-    : varDecl(std::move(varDecl)) { }
-
-VarDeclForStmtInitializerSyntax::VarDeclForStmtInitializerSyntax(VarDeclForStmtInitializerSyntax&& other) noexcept = default;
-
-VarDeclForStmtInitializerSyntax::~VarDeclForStmtInitializerSyntax() = default;
-
-VarDeclForStmtInitializerSyntax& VarDeclForStmtInitializerSyntax::operator=(VarDeclForStmtInitializerSyntax&& other) noexcept = default;
-
-JsonItem VarDeclForStmtInitializerSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("VarDeclForStmtInitializerSyntax") },
-        { "varDecl", Citron::ToJson(varDecl) },
-    };
-}
-
-ForStmtSyntax::ForStmtSyntax(std::optional<ForStmtInitializerSyntax> initializer, std::optional<ExpSyntax> cond, std::optional<ExpSyntax> cont, EmbeddableStmtSyntax body)
+SForStmt::SForStmt(SForStmtInitializerPtr initializer, SExpPtr cond, SExpPtr cont, SEmbeddableStmtPtr body)
     : initializer(std::move(initializer)), cond(std::move(cond)), cont(std::move(cont)), body(std::move(body)) { }
 
-ForStmtSyntax::ForStmtSyntax(ForStmtSyntax&& other) noexcept = default;
+SForStmt::SForStmt(SForStmt&& other) noexcept = default;
 
-ForStmtSyntax::~ForStmtSyntax() = default;
+SForStmt::~SForStmt() = default;
 
-ForStmtSyntax& ForStmtSyntax::operator=(ForStmtSyntax&& other) noexcept = default;
+SForStmt& SForStmt::operator=(SForStmt&& other) noexcept = default;
 
-JsonItem ForStmtSyntax::ToJson()
+JsonItem SForStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ForStmtSyntax") },
+        { "$type", JsonString("SForStmt") },
         { "initializer", Citron::ToJson(initializer) },
         { "cond", Citron::ToJson(cond) },
         { "cont", Citron::ToJson(cont) },
@@ -894,53 +1087,53 @@ JsonItem ForStmtSyntax::ToJson()
     };
 }
 
-ReturnStmtSyntax::ReturnStmtSyntax(std::optional<ExpSyntax> value)
+SReturnStmt::SReturnStmt(SExpPtr value)
     : value(std::move(value)) { }
 
-ReturnStmtSyntax::ReturnStmtSyntax(ReturnStmtSyntax&& other) noexcept = default;
+SReturnStmt::SReturnStmt(SReturnStmt&& other) noexcept = default;
 
-ReturnStmtSyntax::~ReturnStmtSyntax() = default;
+SReturnStmt::~SReturnStmt() = default;
 
-ReturnStmtSyntax& ReturnStmtSyntax::operator=(ReturnStmtSyntax&& other) noexcept = default;
+SReturnStmt& SReturnStmt::operator=(SReturnStmt&& other) noexcept = default;
 
-JsonItem ReturnStmtSyntax::ToJson()
+JsonItem SReturnStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ReturnStmtSyntax") },
+        { "$type", JsonString("SReturnStmt") },
         { "value", Citron::ToJson(value) },
     };
 }
 
-ExpStmtSyntax::ExpStmtSyntax(ExpSyntax exp)
+SExpStmt::SExpStmt(SExpPtr exp)
     : exp(std::move(exp)) { }
 
-ExpStmtSyntax::ExpStmtSyntax(ExpStmtSyntax&& other) noexcept = default;
+SExpStmt::SExpStmt(SExpStmt&& other) noexcept = default;
 
-ExpStmtSyntax::~ExpStmtSyntax() = default;
+SExpStmt::~SExpStmt() = default;
 
-ExpStmtSyntax& ExpStmtSyntax::operator=(ExpStmtSyntax&& other) noexcept = default;
+SExpStmt& SExpStmt::operator=(SExpStmt&& other) noexcept = default;
 
-JsonItem ExpStmtSyntax::ToJson()
+JsonItem SExpStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ExpStmtSyntax") },
+        { "$type", JsonString("SExpStmt") },
         { "exp", Citron::ToJson(exp) },
     };
 }
 
-ForeachStmtSyntax::ForeachStmtSyntax(TypeExpSyntax type, std::string varName, ExpSyntax enumerable, EmbeddableStmtSyntax body)
+SForeachStmt::SForeachStmt(STypeExpPtr type, std::string varName, SExpPtr enumerable, SEmbeddableStmtPtr body)
     : type(std::move(type)), varName(std::move(varName)), enumerable(std::move(enumerable)), body(std::move(body)) { }
 
-ForeachStmtSyntax::ForeachStmtSyntax(ForeachStmtSyntax&& other) noexcept = default;
+SForeachStmt::SForeachStmt(SForeachStmt&& other) noexcept = default;
 
-ForeachStmtSyntax::~ForeachStmtSyntax() = default;
+SForeachStmt::~SForeachStmt() = default;
 
-ForeachStmtSyntax& ForeachStmtSyntax::operator=(ForeachStmtSyntax&& other) noexcept = default;
+SForeachStmt& SForeachStmt::operator=(SForeachStmt&& other) noexcept = default;
 
-JsonItem ForeachStmtSyntax::ToJson()
+JsonItem SForeachStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ForeachStmtSyntax") },
+        { "$type", JsonString("SForeachStmt") },
         { "type", Citron::ToJson(type) },
         { "varName", Citron::ToJson(varName) },
         { "enumerable", Citron::ToJson(enumerable) },
@@ -948,73 +1141,36 @@ JsonItem ForeachStmtSyntax::ToJson()
     };
 }
 
-YieldStmtSyntax::YieldStmtSyntax(ExpSyntax value)
+SYieldStmt::SYieldStmt(SExpPtr value)
     : value(std::move(value)) { }
 
-YieldStmtSyntax::YieldStmtSyntax(YieldStmtSyntax&& other) noexcept = default;
+SYieldStmt::SYieldStmt(SYieldStmt&& other) noexcept = default;
 
-YieldStmtSyntax::~YieldStmtSyntax() = default;
+SYieldStmt::~SYieldStmt() = default;
 
-YieldStmtSyntax& YieldStmtSyntax::operator=(YieldStmtSyntax&& other) noexcept = default;
+SYieldStmt& SYieldStmt::operator=(SYieldStmt&& other) noexcept = default;
 
-JsonItem YieldStmtSyntax::ToJson()
+JsonItem SYieldStmt::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("YieldStmtSyntax") },
+        { "$type", JsonString("SYieldStmt") },
         { "value", Citron::ToJson(value) },
     };
 }
 
-TypeParamSyntax::TypeParamSyntax(std::string name)
-    : name(std::move(name)) { }
-
-TypeParamSyntax::TypeParamSyntax(TypeParamSyntax&& other) noexcept = default;
-
-TypeParamSyntax::~TypeParamSyntax() = default;
-
-TypeParamSyntax& TypeParamSyntax::operator=(TypeParamSyntax&& other) noexcept = default;
-
-JsonItem TypeParamSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("TypeParamSyntax") },
-        { "name", Citron::ToJson(name) },
-    };
-}
-
-FuncParamSyntax::FuncParamSyntax(bool hasOut, bool hasParams, TypeExpSyntax type, std::string name)
-    : hasOut(std::move(hasOut)), hasParams(std::move(hasParams)), type(std::move(type)), name(std::move(name)) { }
-
-FuncParamSyntax::FuncParamSyntax(FuncParamSyntax&& other) noexcept = default;
-
-FuncParamSyntax::~FuncParamSyntax() = default;
-
-FuncParamSyntax& FuncParamSyntax::operator=(FuncParamSyntax&& other) noexcept = default;
-
-JsonItem FuncParamSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("FuncParamSyntax") },
-        { "hasOut", Citron::ToJson(hasOut) },
-        { "hasParams", Citron::ToJson(hasParams) },
-        { "type", Citron::ToJson(type) },
-        { "name", Citron::ToJson(name) },
-    };
-}
-
-GlobalFuncDeclSyntax::GlobalFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
+SGlobalFuncDecl::SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
     : accessModifier(std::move(accessModifier)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
 
-GlobalFuncDeclSyntax::GlobalFuncDeclSyntax(GlobalFuncDeclSyntax&& other) noexcept = default;
+SGlobalFuncDecl::SGlobalFuncDecl(SGlobalFuncDecl&& other) noexcept = default;
 
-GlobalFuncDeclSyntax::~GlobalFuncDeclSyntax() = default;
+SGlobalFuncDecl::~SGlobalFuncDecl() = default;
 
-GlobalFuncDeclSyntax& GlobalFuncDeclSyntax::operator=(GlobalFuncDeclSyntax&& other) noexcept = default;
+SGlobalFuncDecl& SGlobalFuncDecl::operator=(SGlobalFuncDecl&& other) noexcept = default;
 
-JsonItem GlobalFuncDeclSyntax::ToJson()
+JsonItem SGlobalFuncDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("GlobalFuncDeclSyntax") },
+        { "$type", JsonString("SGlobalFuncDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "bSequence", Citron::ToJson(bSequence) },
         { "retType", Citron::ToJson(retType) },
@@ -1025,19 +1181,40 @@ JsonItem GlobalFuncDeclSyntax::ToJson()
     };
 }
 
-ClassMemberFuncDeclSyntax::ClassMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
-    : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+SClassDecl::SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExpPtr> baseTypes, std::vector<SClassMemberDeclPtr> memberDecls)
+    : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
 
-ClassMemberFuncDeclSyntax::ClassMemberFuncDeclSyntax(ClassMemberFuncDeclSyntax&& other) noexcept = default;
+SClassDecl::SClassDecl(SClassDecl&& other) noexcept = default;
 
-ClassMemberFuncDeclSyntax::~ClassMemberFuncDeclSyntax() = default;
+SClassDecl::~SClassDecl() = default;
 
-ClassMemberFuncDeclSyntax& ClassMemberFuncDeclSyntax::operator=(ClassMemberFuncDeclSyntax&& other) noexcept = default;
+SClassDecl& SClassDecl::operator=(SClassDecl&& other) noexcept = default;
 
-JsonItem ClassMemberFuncDeclSyntax::ToJson()
+JsonItem SClassDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ClassMemberFuncDeclSyntax") },
+        { "$type", JsonString("SClassDecl") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "baseTypes", Citron::ToJson(baseTypes) },
+        { "memberDecls", Citron::ToJson(memberDecls) },
+    };
+}
+
+SClassMemberFuncDecl::SClassMemberFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
+    : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+
+SClassMemberFuncDecl::SClassMemberFuncDecl(SClassMemberFuncDecl&& other) noexcept = default;
+
+SClassMemberFuncDecl::~SClassMemberFuncDecl() = default;
+
+SClassMemberFuncDecl& SClassMemberFuncDecl::operator=(SClassMemberFuncDecl&& other) noexcept = default;
+
+JsonItem SClassMemberFuncDecl::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SClassMemberFuncDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "bStatic", Citron::ToJson(bStatic) },
         { "bSequence", Citron::ToJson(bSequence) },
@@ -1049,19 +1226,19 @@ JsonItem ClassMemberFuncDeclSyntax::ToJson()
     };
 }
 
-ClassConstructorDeclSyntax::ClassConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::optional<std::vector<ArgumentSyntax>> baseArgs, std::vector<StmtSyntax> body)
+SClassConstructorDecl::SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<SFuncParam> parameters, std::optional<std::vector<SArgument>> baseArgs, std::vector<SStmtPtr> body)
     : accessModifier(std::move(accessModifier)), name(std::move(name)), parameters(std::move(parameters)), baseArgs(std::move(baseArgs)), body(std::move(body)) { }
 
-ClassConstructorDeclSyntax::ClassConstructorDeclSyntax(ClassConstructorDeclSyntax&& other) noexcept = default;
+SClassConstructorDecl::SClassConstructorDecl(SClassConstructorDecl&& other) noexcept = default;
 
-ClassConstructorDeclSyntax::~ClassConstructorDeclSyntax() = default;
+SClassConstructorDecl::~SClassConstructorDecl() = default;
 
-ClassConstructorDeclSyntax& ClassConstructorDeclSyntax::operator=(ClassConstructorDeclSyntax&& other) noexcept = default;
+SClassConstructorDecl& SClassConstructorDecl::operator=(SClassConstructorDecl&& other) noexcept = default;
 
-JsonItem ClassConstructorDeclSyntax::ToJson()
+JsonItem SClassConstructorDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ClassConstructorDeclSyntax") },
+        { "$type", JsonString("SClassConstructorDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "name", Citron::ToJson(name) },
         { "parameters", Citron::ToJson(parameters) },
@@ -1070,43 +1247,38 @@ JsonItem ClassConstructorDeclSyntax::ToJson()
     };
 }
 
-ClassMemberVarDeclSyntax::ClassMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames)
+SClassMemberVarDecl::SClassMemberVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames)
     : accessModifier(std::move(accessModifier)), varType(std::move(varType)), varNames(std::move(varNames)) { }
 
-ClassMemberVarDeclSyntax::ClassMemberVarDeclSyntax(ClassMemberVarDeclSyntax&& other) noexcept = default;
+SClassMemberVarDecl::SClassMemberVarDecl(SClassMemberVarDecl&& other) noexcept = default;
 
-ClassMemberVarDeclSyntax::~ClassMemberVarDeclSyntax() = default;
+SClassMemberVarDecl::~SClassMemberVarDecl() = default;
 
-ClassMemberVarDeclSyntax& ClassMemberVarDeclSyntax::operator=(ClassMemberVarDeclSyntax&& other) noexcept = default;
+SClassMemberVarDecl& SClassMemberVarDecl::operator=(SClassMemberVarDecl&& other) noexcept = default;
 
-JsonItem ClassMemberVarDeclSyntax::ToJson()
+JsonItem SClassMemberVarDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ClassMemberVarDeclSyntax") },
+        { "$type", JsonString("SClassMemberVarDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "varType", Citron::ToJson(varType) },
         { "varNames", Citron::ToJson(varNames) },
     };
 }
 
-JsonItem ToJson(ClassMemberDeclSyntax& decl)
-{
-    return std::visit(ToJsonVisitor(), decl);
-}
-
-ClassDeclSyntax::ClassDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<TypeExpSyntax> baseTypes, std::vector<ClassMemberDeclSyntax> memberDecls)
+SStructDecl::SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExpPtr> baseTypes, std::vector<SStructMemberDeclPtr> memberDecls)
     : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
 
-ClassDeclSyntax::ClassDeclSyntax(ClassDeclSyntax&& other) noexcept = default;
+SStructDecl::SStructDecl(SStructDecl&& other) noexcept = default;
 
-ClassDeclSyntax::~ClassDeclSyntax() = default;
+SStructDecl::~SStructDecl() = default;
 
-ClassDeclSyntax& ClassDeclSyntax::operator=(ClassDeclSyntax&& other) noexcept = default;
+SStructDecl& SStructDecl::operator=(SStructDecl&& other) noexcept = default;
 
-JsonItem ClassDeclSyntax::ToJson()
+JsonItem SStructDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ClassDeclSyntax") },
+        { "$type", JsonString("SStructDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "name", Citron::ToJson(name) },
         { "typeParams", Citron::ToJson(typeParams) },
@@ -1115,19 +1287,19 @@ JsonItem ClassDeclSyntax::ToJson()
     };
 }
 
-StructMemberFuncDeclSyntax::StructMemberFuncDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, bool bStatic, bool bSequence, TypeExpSyntax retType, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
+SStructMemberFuncDecl::SStructMemberFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
     : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
 
-StructMemberFuncDeclSyntax::StructMemberFuncDeclSyntax(StructMemberFuncDeclSyntax&& other) noexcept = default;
+SStructMemberFuncDecl::SStructMemberFuncDecl(SStructMemberFuncDecl&& other) noexcept = default;
 
-StructMemberFuncDeclSyntax::~StructMemberFuncDeclSyntax() = default;
+SStructMemberFuncDecl::~SStructMemberFuncDecl() = default;
 
-StructMemberFuncDeclSyntax& StructMemberFuncDeclSyntax::operator=(StructMemberFuncDeclSyntax&& other) noexcept = default;
+SStructMemberFuncDecl& SStructMemberFuncDecl::operator=(SStructMemberFuncDecl&& other) noexcept = default;
 
-JsonItem StructMemberFuncDeclSyntax::ToJson()
+JsonItem SStructMemberFuncDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("StructMemberFuncDeclSyntax") },
+        { "$type", JsonString("SStructMemberFuncDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "bStatic", Citron::ToJson(bStatic) },
         { "bSequence", Citron::ToJson(bSequence) },
@@ -1139,19 +1311,19 @@ JsonItem StructMemberFuncDeclSyntax::ToJson()
     };
 }
 
-StructConstructorDeclSyntax::StructConstructorDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<FuncParamSyntax> parameters, std::vector<StmtSyntax> body)
+SStructConstructorDecl::SStructConstructorDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
     : accessModifier(std::move(accessModifier)), name(std::move(name)), parameters(std::move(parameters)), body(std::move(body)) { }
 
-StructConstructorDeclSyntax::StructConstructorDeclSyntax(StructConstructorDeclSyntax&& other) noexcept = default;
+SStructConstructorDecl::SStructConstructorDecl(SStructConstructorDecl&& other) noexcept = default;
 
-StructConstructorDeclSyntax::~StructConstructorDeclSyntax() = default;
+SStructConstructorDecl::~SStructConstructorDecl() = default;
 
-StructConstructorDeclSyntax& StructConstructorDeclSyntax::operator=(StructConstructorDeclSyntax&& other) noexcept = default;
+SStructConstructorDecl& SStructConstructorDecl::operator=(SStructConstructorDecl&& other) noexcept = default;
 
-JsonItem StructConstructorDeclSyntax::ToJson()
+JsonItem SStructConstructorDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("StructConstructorDeclSyntax") },
+        { "$type", JsonString("SStructConstructorDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "name", Citron::ToJson(name) },
         { "parameters", Citron::ToJson(parameters) },
@@ -1159,100 +1331,74 @@ JsonItem StructConstructorDeclSyntax::ToJson()
     };
 }
 
-StructMemberVarDeclSyntax::StructMemberVarDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, TypeExpSyntax varType, std::vector<std::string> varNames)
+SStructMemberVarDecl::SStructMemberVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames)
     : accessModifier(std::move(accessModifier)), varType(std::move(varType)), varNames(std::move(varNames)) { }
 
-StructMemberVarDeclSyntax::StructMemberVarDeclSyntax(StructMemberVarDeclSyntax&& other) noexcept = default;
+SStructMemberVarDecl::SStructMemberVarDecl(SStructMemberVarDecl&& other) noexcept = default;
 
-StructMemberVarDeclSyntax::~StructMemberVarDeclSyntax() = default;
+SStructMemberVarDecl::~SStructMemberVarDecl() = default;
 
-StructMemberVarDeclSyntax& StructMemberVarDeclSyntax::operator=(StructMemberVarDeclSyntax&& other) noexcept = default;
+SStructMemberVarDecl& SStructMemberVarDecl::operator=(SStructMemberVarDecl&& other) noexcept = default;
 
-JsonItem StructMemberVarDeclSyntax::ToJson()
+JsonItem SStructMemberVarDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("StructMemberVarDeclSyntax") },
+        { "$type", JsonString("SStructMemberVarDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "varType", Citron::ToJson(varType) },
         { "varNames", Citron::ToJson(varNames) },
     };
 }
 
-JsonItem ToJson(StructMemberDeclSyntax& decl)
-{
-    return std::visit(ToJsonVisitor(), decl);
-}
-
-StructDeclSyntax::StructDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<TypeExpSyntax> baseTypes, std::vector<StructMemberDeclSyntax> memberDecls)
-    : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
-
-StructDeclSyntax::StructDeclSyntax(StructDeclSyntax&& other) noexcept = default;
-
-StructDeclSyntax::~StructDeclSyntax() = default;
-
-StructDeclSyntax& StructDeclSyntax::operator=(StructDeclSyntax&& other) noexcept = default;
-
-JsonItem StructDeclSyntax::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("StructDeclSyntax") },
-        { "accessModifier", Citron::ToJson(accessModifier) },
-        { "name", Citron::ToJson(name) },
-        { "typeParams", Citron::ToJson(typeParams) },
-        { "baseTypes", Citron::ToJson(baseTypes) },
-        { "memberDecls", Citron::ToJson(memberDecls) },
-    };
-}
-
-EnumElemMemberVarDeclSyntax::EnumElemMemberVarDeclSyntax(TypeExpSyntax type, std::string name)
+SEnumElemMemberVarDecl::SEnumElemMemberVarDecl(STypeExpPtr type, std::string name)
     : type(std::move(type)), name(std::move(name)) { }
 
-EnumElemMemberVarDeclSyntax::EnumElemMemberVarDeclSyntax(EnumElemMemberVarDeclSyntax&& other) noexcept = default;
+SEnumElemMemberVarDecl::SEnumElemMemberVarDecl(SEnumElemMemberVarDecl&& other) noexcept = default;
 
-EnumElemMemberVarDeclSyntax::~EnumElemMemberVarDeclSyntax() = default;
+SEnumElemMemberVarDecl::~SEnumElemMemberVarDecl() = default;
 
-EnumElemMemberVarDeclSyntax& EnumElemMemberVarDeclSyntax::operator=(EnumElemMemberVarDeclSyntax&& other) noexcept = default;
+SEnumElemMemberVarDecl& SEnumElemMemberVarDecl::operator=(SEnumElemMemberVarDecl&& other) noexcept = default;
 
-JsonItem EnumElemMemberVarDeclSyntax::ToJson()
+JsonItem SEnumElemMemberVarDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("EnumElemMemberVarDeclSyntax") },
+        { "$type", JsonString("SEnumElemMemberVarDecl") },
         { "type", Citron::ToJson(type) },
         { "name", Citron::ToJson(name) },
     };
 }
 
-EnumElemDeclSyntax::EnumElemDeclSyntax(std::string name, std::vector<EnumElemMemberVarDeclSyntax> memberVars)
+SEnumElemDecl::SEnumElemDecl(std::string name, std::vector<SEnumElemMemberVarDecl> memberVars)
     : name(std::move(name)), memberVars(std::move(memberVars)) { }
 
-EnumElemDeclSyntax::EnumElemDeclSyntax(EnumElemDeclSyntax&& other) noexcept = default;
+SEnumElemDecl::SEnumElemDecl(SEnumElemDecl&& other) noexcept = default;
 
-EnumElemDeclSyntax::~EnumElemDeclSyntax() = default;
+SEnumElemDecl::~SEnumElemDecl() = default;
 
-EnumElemDeclSyntax& EnumElemDeclSyntax::operator=(EnumElemDeclSyntax&& other) noexcept = default;
+SEnumElemDecl& SEnumElemDecl::operator=(SEnumElemDecl&& other) noexcept = default;
 
-JsonItem EnumElemDeclSyntax::ToJson()
+JsonItem SEnumElemDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("EnumElemDeclSyntax") },
+        { "$type", JsonString("SEnumElemDecl") },
         { "name", Citron::ToJson(name) },
         { "memberVars", Citron::ToJson(memberVars) },
     };
 }
 
-EnumDeclSyntax::EnumDeclSyntax(std::optional<AccessModifierSyntax> accessModifier, std::string name, std::vector<TypeParamSyntax> typeParams, std::vector<EnumElemDeclSyntax> elements)
+SEnumDecl::SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl> elements)
     : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), elements(std::move(elements)) { }
 
-EnumDeclSyntax::EnumDeclSyntax(EnumDeclSyntax&& other) noexcept = default;
+SEnumDecl::SEnumDecl(SEnumDecl&& other) noexcept = default;
 
-EnumDeclSyntax::~EnumDeclSyntax() = default;
+SEnumDecl::~SEnumDecl() = default;
 
-EnumDeclSyntax& EnumDeclSyntax::operator=(EnumDeclSyntax&& other) noexcept = default;
+SEnumDecl& SEnumDecl::operator=(SEnumDecl&& other) noexcept = default;
 
-JsonItem EnumDeclSyntax::ToJson()
+JsonItem SEnumDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("EnumDeclSyntax") },
+        { "$type", JsonString("SEnumDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "name", Citron::ToJson(name) },
         { "typeParams", Citron::ToJson(typeParams) },
@@ -1260,47 +1406,37 @@ JsonItem EnumDeclSyntax::ToJson()
     };
 }
 
-JsonItem ToJson(NamespaceDeclSyntaxElement& elem)
-{
-    return std::visit(ToJsonVisitor(), elem);
-}
-
-NamespaceDeclSyntax::NamespaceDeclSyntax(std::vector<std::string> names, std::vector<NamespaceDeclSyntaxElement> elements)
+SNamespaceDecl::SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElementPtr> elements)
     : names(std::move(names)), elements(std::move(elements)) { }
 
-NamespaceDeclSyntax::NamespaceDeclSyntax(NamespaceDeclSyntax&& other) noexcept = default;
+SNamespaceDecl::SNamespaceDecl(SNamespaceDecl&& other) noexcept = default;
 
-NamespaceDeclSyntax::~NamespaceDeclSyntax() = default;
+SNamespaceDecl::~SNamespaceDecl() = default;
 
-NamespaceDeclSyntax& NamespaceDeclSyntax::operator=(NamespaceDeclSyntax&& other) noexcept = default;
+SNamespaceDecl& SNamespaceDecl::operator=(SNamespaceDecl&& other) noexcept = default;
 
-JsonItem NamespaceDeclSyntax::ToJson()
+JsonItem SNamespaceDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("NamespaceDeclSyntax") },
+        { "$type", JsonString("SNamespaceDecl") },
         { "names", Citron::ToJson(names) },
         { "elements", Citron::ToJson(elements) },
     };
 }
 
-JsonItem ToJson(ScriptSyntaxElement& elem)
-{
-    return std::visit(ToJsonVisitor(), elem);
-}
-
-ScriptSyntax::ScriptSyntax(std::vector<ScriptSyntaxElement> elements)
+SScript::SScript(std::vector<SScriptElementPtr> elements)
     : elements(std::move(elements)) { }
 
-ScriptSyntax::ScriptSyntax(ScriptSyntax&& other) noexcept = default;
+SScript::SScript(SScript&& other) noexcept = default;
 
-ScriptSyntax::~ScriptSyntax() = default;
+SScript::~SScript() = default;
 
-ScriptSyntax& ScriptSyntax::operator=(ScriptSyntax&& other) noexcept = default;
+SScript& SScript::operator=(SScript&& other) noexcept = default;
 
-JsonItem ScriptSyntax::ToJson()
+JsonItem SScript::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("ScriptSyntax") },
+        { "$type", JsonString("SScript") },
         { "elements", Citron::ToJson(elements) },
     };
 }

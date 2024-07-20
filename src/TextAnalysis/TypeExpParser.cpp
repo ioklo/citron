@@ -15,18 +15,9 @@ using namespace std;
 
 namespace Citron {
 
-namespace {
-    template<typename T>
-    std::optional<TypeExpSyntax> Wrap(std::optional<T>&& ot)
-    {
-        if (!ot) return nullopt;
-        return make_unique<T>(std::move(*ot));
-    }
-}
-
-optional<vector<TypeExpSyntax>> ParseTypeArgs(Lexer* lexer)
+optional<vector<STypeExpPtr>> ParseTypeArgs(Lexer* lexer)
 {
-    vector<TypeExpSyntax> typeArgs;
+    vector<STypeExpPtr> typeArgs;
 
     Lexer curLexer = *lexer;
 
@@ -43,92 +34,91 @@ optional<vector<TypeExpSyntax>> ParseTypeArgs(Lexer* lexer)
         if (!oTypeArg)
             return nullopt;
 
-        typeArgs.push_back(std::move(*oTypeArg));
+        typeArgs.push_back(std::move(oTypeArg));
     }
 
     *lexer = std::move(curLexer);
     return typeArgs;
 }
 
-optional<IdTypeExpSyntax> ParseIdTypeExp(Lexer* lexer)
+unique_ptr<SIdTypeExp> ParseIdTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     auto oIdToken = Accept<IdentifierToken>(&curLexer);
     if (!oIdToken)
-        return nullopt;
+        return nullptr;
 
     if (auto oTypeArgs = ParseTypeArgs(&curLexer))
     {
         *lexer = std::move(curLexer);
-        return IdTypeExpSyntax(oIdToken->text, std::move(*oTypeArgs));
+        return make_unique<SIdTypeExp>(oIdToken->text, std::move(*oTypeArgs));
     }
     else
     {
         *lexer = std::move(curLexer);
-        return IdTypeExpSyntax(oIdToken->text, {});
+        return make_unique<SIdTypeExp>(oIdToken->text, vector<STypeExpPtr>());
     }
 }
 
 // T?
-optional<NullableTypeExpSyntax> ParseNullableTypeExp(Lexer* lexer)
+unique_ptr<SNullableTypeExp> ParseNullableTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
-    optional<TypeExpSyntax> oTypeExp = Wrap(ParseBoxPtrTypeExp(&curLexer));
-    if (!oTypeExp) oTypeExp = ParseLocalPtrTypeExp(&curLexer);
-    if (!oTypeExp) oTypeExp = ParseParenTypeExp(&curLexer);
-    if (!oTypeExp) oTypeExp = ParseIdChainTypeExp(&curLexer);
-    if (!oTypeExp) return nullopt;
+    STypeExpPtr typeExp = ParseBoxPtrTypeExp(&curLexer);
+    if (!typeExp) typeExp = ParseLocalPtrTypeExp(&curLexer);
+    if (!typeExp) typeExp = ParseParenTypeExp(&curLexer);
+    if (!typeExp) typeExp = ParseIdChainTypeExp(&curLexer);
+    if (!typeExp) return nullptr;
 
     if (!Accept<QuestionToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-
-    return NullableTypeExpSyntax(std::move(*oTypeExp));
+    return make_unique<SNullableTypeExp>(std::move(typeExp));
 }
 
 // box T*
-optional<BoxPtrTypeExpSyntax> ParseBoxPtrTypeExp(Lexer* lexer)
+unique_ptr<SBoxPtrTypeExp> ParseBoxPtrTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<BoxToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    optional<TypeExpSyntax> oTypeExp = ParseParenTypeExp(&curLexer);
-    if (!oTypeExp) oTypeExp = ParseIdChainTypeExp(&curLexer);
-    if (!oTypeExp) return nullopt;
+    STypeExpPtr typeExp = ParseParenTypeExp(&curLexer);
+    if (!typeExp) typeExp = ParseIdChainTypeExp(&curLexer);
+    if (!typeExp) return nullptr;
 
     if (!Accept<StarToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return BoxPtrTypeExpSyntax(std::move(*oTypeExp));
+    return make_unique<SBoxPtrTypeExp>(std::move(typeExp));
 }
 
 // T*
-optional<TypeExpSyntax> ParseLocalPtrTypeExp(Lexer* lexer)
+STypeExpPtr ParseLocalPtrTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     // avoid left recursion
 
-    optional<TypeExpSyntax> oInnerTypeExp = ParseParenTypeExp(&curLexer);
-    if (!oInnerTypeExp) oInnerTypeExp = ParseIdChainTypeExp(&curLexer);
-    if (!oInnerTypeExp) return nullopt;
+    STypeExpPtr innerTypeExp = ParseParenTypeExp(&curLexer);
+    if (!innerTypeExp) innerTypeExp = ParseIdChainTypeExp(&curLexer);
+    if (!innerTypeExp) return nullptr;
     
     // 적어도 한개는 있어야 한다
     if (!Accept<StarToken>(&curLexer))
-        return nullopt;
+        return nullptr;
     
-    TypeExpSyntax curTypeExp = make_unique<LocalPtrTypeExpSyntax>(std::move(*oInnerTypeExp));
+    STypeExpPtr curTypeExp = make_unique<SLocalPtrTypeExp>(std::move(innerTypeExp));
 
     while (Accept<StarToken>(&curLexer))
     {
-        // NOTICE: LocalPtrTypeExpSyntax(std::move(curTypeExp)); curTypeExp가 LocalPtrTypeExpSyntax라면 감싸는게 아니라 이동생성자가 호출된다
-        curTypeExp = make_unique<LocalPtrTypeExpSyntax>(std::move(curTypeExp));
+        // NOTICE: SLocalPtrTypeExp(std::move(curTypeExp)); curTypeExp가 SLocalPtrTypeExp라면 감싸는게 아니라 이동생성자가 호출된다
+        curTypeExp = make_unique<SLocalPtrTypeExp>(std::move(curTypeExp));
     }
 
     *lexer = std::move(curLexer);
@@ -136,36 +126,36 @@ optional<TypeExpSyntax> ParseLocalPtrTypeExp(Lexer* lexer)
 }
 
 // (T)
-optional<TypeExpSyntax> ParseParenTypeExp(Lexer* lexer)
+STypeExpPtr ParseParenTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    optional<TypeExpSyntax> oInnerTypeExp = Wrap(ParseNullableTypeExp(&curLexer));
-    if (!oInnerTypeExp) oInnerTypeExp = Wrap(ParseBoxPtrTypeExp(&curLexer));
-    if (!oInnerTypeExp) oInnerTypeExp = ParseLocalPtrTypeExp(&curLexer);
-    if (!oInnerTypeExp) oInnerTypeExp = Wrap(ParseLocalTypeExp(&curLexer));
-    if (!oInnerTypeExp) return nullopt;
+    STypeExpPtr innerTypeExp = ParseNullableTypeExp(&curLexer);
+    if (!innerTypeExp) innerTypeExp = ParseBoxPtrTypeExp(&curLexer);
+    if (!innerTypeExp) innerTypeExp = ParseLocalPtrTypeExp(&curLexer);
+    if (!innerTypeExp) innerTypeExp = ParseLocalTypeExp(&curLexer);
+    if (!innerTypeExp) return nullptr;
     
     if (!Accept<RParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return oInnerTypeExp;
+    return innerTypeExp;
 }
 
 // ID...
-optional<TypeExpSyntax> ParseIdChainTypeExp(Lexer* lexer)
+STypeExpPtr ParseIdChainTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
-    auto oIdTypeExp = ParseIdTypeExp(&curLexer);
-    if (!oIdTypeExp)
-        return nullopt;
+    auto idTypeExp = ParseIdTypeExp(&curLexer);
+    if (!idTypeExp)
+        return nullptr;
 
-    TypeExpSyntax curTypeExp = std::move(*oIdTypeExp);
+    STypeExpPtr curTypeExp = std::move(idTypeExp);
 
     // .
     while (Accept<DotToken>(&curLexer))
@@ -173,13 +163,13 @@ optional<TypeExpSyntax> ParseIdChainTypeExp(Lexer* lexer)
         // ID
         auto oIdToken = Accept<IdentifierToken>(&curLexer);
         if (!oIdToken)
-            return nullopt;
+            return nullptr;
 
         auto oTypeArgs = ParseTypeArgs(&curLexer);
         if (oTypeArgs)
-            curTypeExp = make_unique<MemberTypeExpSyntax>(std::move(curTypeExp), std::move(oIdToken->text), std::move(*oTypeArgs));
+            curTypeExp = make_unique<SMemberTypeExp>(std::move(curTypeExp), std::move(oIdToken->text), std::move(*oTypeArgs));
         else 
-            curTypeExp = make_unique<MemberTypeExpSyntax>(std::move(curTypeExp), std::move(oIdToken->text), std::vector<TypeExpSyntax>{});
+            curTypeExp = make_unique<SMemberTypeExp>(std::move(curTypeExp), std::move(oIdToken->text), std::vector<STypeExpPtr>{});
     }
 
     *lexer = std::move(curLexer);
@@ -187,46 +177,46 @@ optional<TypeExpSyntax> ParseIdChainTypeExp(Lexer* lexer)
 }
 
 // func<>
-// std::optional<FuncTypeExpSyntax> ParseFuncTypeExp(Lexer* lexer);
+// std::optional<SFuncTypeExp> ParseFuncTypeExp(Lexer* lexer);
 
 // tuple
-// std::optional<TupleTypeExpSyntax> ParseTupleTypeExp(Lexer* lexer);
+// std::optional<STupleTypeExp> ParseTupleTypeExp(Lexer* lexer);
 
 // local I i;
-optional<LocalTypeExpSyntax> ParseLocalTypeExp(Lexer* lexer)
+unique_ptr<SLocalTypeExp> ParseLocalTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LocalToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    optional<TypeExpSyntax> oInnerTypeExp = ParseIdChainTypeExp(&curLexer);
+    STypeExpPtr innerTypeExp = ParseIdChainTypeExp(&curLexer);
     // if (!oInnerTypeExp) oInnerTypeExp = ParseFuncTypeExp(&curLexer);
-    if (!oInnerTypeExp) return nullopt;
+    if (!innerTypeExp) return nullptr;
 
     *lexer = std::move(curLexer);
-    return LocalTypeExpSyntax(std::move(*oInnerTypeExp));
+    return make_unique<SLocalTypeExp>(std::move(innerTypeExp));
 }
 
 // 
-optional<TypeExpSyntax> ParseTypeExp(Lexer* lexer)
+STypeExpPtr ParseTypeExp(Lexer* lexer)
 {
-    if (auto oNullableTypeExp = ParseNullableTypeExp(lexer))
-        return Wrap(std::move(oNullableTypeExp));
+    if (auto nullableTypeExp = ParseNullableTypeExp(lexer))
+        return nullableTypeExp;
 
-    if (auto oBoxPtrTypeExp = ParseBoxPtrTypeExp(lexer))
-        return Wrap(std::move(oBoxPtrTypeExp));
+    if (auto boxPtrTypeExp = ParseBoxPtrTypeExp(lexer))
+        return boxPtrTypeExp;
 
-    if (auto oLocalPtrTypeExp = ParseLocalPtrTypeExp(lexer))
-        return oLocalPtrTypeExp;
+    if (auto localPtrTypeExp = ParseLocalPtrTypeExp(lexer))
+        return localPtrTypeExp;
 
-    if (auto oIdChainTypeExp = ParseIdChainTypeExp(lexer))
-        return oIdChainTypeExp;
+    if (auto idChainTypeExp = ParseIdChainTypeExp(lexer))
+        return idChainTypeExp;
 
-    if (auto oLocalTypeExp = ParseLocalTypeExp(lexer))
-        return Wrap(std::move(oLocalTypeExp));
+    if (auto localTypeExp = ParseLocalTypeExp(lexer))
+        return localTypeExp;
 
-    return nullopt;
+    return nullptr;
 }
 
 }

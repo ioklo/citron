@@ -25,7 +25,7 @@ class MNamespaceDecl
     , private MTypeDeclContainerComponent
     , private MFuncDeclContainerComponent<std::shared_ptr<MGlobalFuncDecl>>
 {
-    std::weak_ptr<MTopLevelOuter> outer;
+    MTopLevelOuterPtr outer;
     std::string name;
 
     MNamespaceDeclContainerComponent topLevelComp;

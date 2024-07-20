@@ -25,7 +25,7 @@ class MGlobalFuncDecl
         std::vector<MFuncParameter> parameters;
     };
 
-    std::weak_ptr<MTopLevelDeclOuter> outer;
+    MTopLevelDeclOuterPtr outer;
     MAccessor accessor;    
     MName name;
     std::vector<MName> typeParams;
