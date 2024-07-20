@@ -1,14 +1,14 @@
 {
-    "$type": "IndirectMemberExpSyntax",
+    "$type": "SIndirectMemberExp",
     "parent": {
-        "$type": "IdentifierExpSyntax",
+        "$type": "SIdentifierExp",
         "value": "a",
         "typeArgs": []
     },
     "memberName": "b",
     "memberTypeArgs": [
         {
-            "$type": "IdTypeExpSyntax",
+            "$type": "SIdTypeExp",
             "name": "int",
             "typeArgs": []
         }

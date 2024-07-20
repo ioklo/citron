@@ -1,12 +1,12 @@
 {
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "GlobalFuncDeclSyntax",
+            "$type": "SGlobalFuncDecl",
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "IdTypeExpSyntax",
+                "$type": "SIdTypeExp",
                 "name": "void",
                 "typeArgs": []
             },
@@ -14,33 +14,33 @@
             "typeParams": [],
             "parameters": [
                 {
-                    "$type": "FuncParamSyntax",
+                    "$type": "SFuncParam",
                     "hasOut": false,
                     "hasParams": false,
                     "type": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
                     "name": "x"
                 },
                 {
-                    "$type": "FuncParamSyntax",
+                    "$type": "SFuncParam",
                     "hasOut": false,
                     "hasParams": false,
                     "type": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "string",
                         "typeArgs": []
                     },
                     "name": "y"
                 },
                 {
-                    "$type": "FuncParamSyntax",
+                    "$type": "SFuncParam",
                     "hasOut": false,
                     "hasParams": true,
                     "type": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -49,20 +49,20 @@
             ],
             "body": [
                 {
-                    "$type": "VarDeclStmtSyntax",
+                    "$type": "SVarDeclStmt",
                     "varDecl": {
-                        "$type": "VarDeclSyntax",
+                        "$type": "SVarDecl",
                         "type": {
-                            "$type": "IdTypeExpSyntax",
+                            "$type": "SIdTypeExp",
                             "name": "int",
                             "typeArgs": []
                         },
                         "elements": [
                             {
-                                "$type": "VarDeclSyntaxElement",
+                                "$type": "SVarDeclElement",
                                 "varName": "a",
                                 "initExp": {
-                                    "$type": "IntLiteralExpSyntax",
+                                    "$type": "SIntLiteralExp",
                                     "value": 0
                                 }
                             }

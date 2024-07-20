@@ -1,23 +1,23 @@
 {
-    "$type": "StringExpSyntax",
+    "$type": "SStringExp",
     "elements": [
         {
-            "$type": "TextStringExpSyntaxElement",
+            "$type": "STextStringExpElement",
             "text": "aaa bbb "
         },
         {
-            "$type": "ExpStringExpSyntaxElement",
+            "$type": "SExpStringExpElement",
             "exp": {
-                "$type": "StringExpSyntax",
+                "$type": "SStringExp",
                 "elements": [
                     {
-                        "$type": "TextStringExpSyntaxElement",
+                        "$type": "STextStringExpElement",
                         "text": "xxx "
                     },
                     {
-                        "$type": "ExpStringExpSyntaxElement",
+                        "$type": "SExpStringExpElement",
                         "exp": {
-                            "$type": "IdentifierExpSyntax",
+                            "$type": "SIdentifierExp",
                             "value": "ddd",
                             "typeArgs": []
                         }
@@ -26,7 +26,7 @@
             }
         },
         {
-            "$type": "TextStringExpSyntaxElement",
+            "$type": "STextStringExpElement",
             "text": " ddd"
         }
     ]

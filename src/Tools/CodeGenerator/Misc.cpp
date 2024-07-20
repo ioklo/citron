@@ -209,7 +209,11 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
 
     // 소멸자, inline이 아닐때만 생성한다
     // SYNTAX_API ~IdentifierExpSyntax();
-    hStream << "    " << commonInfo.linkage << " ~" << classInfo.name << "();" << endl;
+    // SYNTAX_API ~IdentifierExpSyntax();
+    if (classInfo.variantInterfaces.empty())
+        hStream << "    " << commonInfo.linkage << " ~" << classInfo.name << "();" << endl;
+    else
+        hStream << "    " << commonInfo.linkage << " virtual ~" << classInfo.name << "();" << endl;
     bHModified = true;
 
     // IdentifierExpSyntax::~IdentifierExpSyntax() = default;
@@ -371,12 +375,14 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     // class 'name'
     // {
     // public:
-    //     virtual void Visit('name'Visitor& visitor) = 0;
+    //     virtual ~'name'() { }
+    //     virtual void Accept('name'Visitor& visitor) = 0;
     // };
 
     hStream << "class " << info.name << "Visitor" << endl;
     hStream << "{" << endl;
     hStream << "public:" << endl;
+    hStream << "    virtual ~" << info.name << "Visitor() { }" << endl;
     for(auto& member : info.members)
         hStream << "    virtual void Visit(" << member << "& " << info.argName << ") = 0;" << endl;
     hStream << "};" << endl << endl;
@@ -384,6 +390,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     hStream << "class " << info.name << endl;
     hStream << "{" << endl;
     hStream << "public:" << endl;
+    hStream << "    virtual ~" << info.name << "() { }" << endl;
     hStream << "    virtual void Accept(" << info.name << "Visitor& visitor) = 0;" << endl;
     hStream << "};" << endl << endl;
 
@@ -412,6 +419,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
 
     cppStream << "JsonItem ToJson(" << info.name << "Ptr& " << info.argName << ")" << endl;
     cppStream << "{" << endl;
+    cppStream << "    if (!" << info.argName << ") return JsonNull();" << endl << endl;
     cppStream << "    " << info.name << "ToJsonVisitor visitor;" << endl;
     cppStream << "    " << info.argName << "->Accept(visitor);" << endl;
     cppStream << "    return visitor.result;" << endl;

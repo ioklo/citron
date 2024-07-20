@@ -1,35 +1,35 @@
 {
-    "$type": "ExpStmtSyntax",
+    "$type": "SExpStmt",
     "exp": {
-        "$type": "BinaryOpExpSyntax",
+        "$type": "SBinaryOpExp",
         "kind": "Assign",
         "operand0": {
-            "$type": "IdentifierExpSyntax",
+            "$type": "SIdentifierExp",
             "value": "a",
             "typeArgs": []
         },
         "operand1": {
-            "$type": "BinaryOpExpSyntax",
+            "$type": "SBinaryOpExp",
             "kind": "Multiply",
             "operand0": {
-                "$type": "IdentifierExpSyntax",
+                "$type": "SIdentifierExp",
                 "value": "b",
                 "typeArgs": []
             },
             "operand1": {
-                "$type": "CallExpSyntax",
+                "$type": "SCallExp",
                 "callable": {
-                    "$type": "IdentifierExpSyntax",
+                    "$type": "SIdentifierExp",
                     "value": "c",
                     "typeArgs": []
                 },
                 "args": [
                     {
-                        "$type": "ArgumentSyntax",
+                        "$type": "SArgument",
                         "bOut": false,
                         "bParams": false,
                         "exp": {
-                            "$type": "IntLiteralExpSyntax",
+                            "$type": "SIntLiteralExp",
                             "value": 1
                         }
                     }

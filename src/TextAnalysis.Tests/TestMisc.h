@@ -15,52 +15,6 @@ class Lexer;
 
 std::tuple<std::shared_ptr<Buffer>, Lexer> Prepare(std::u32string str);
 
-inline ScriptSyntax SScript(std::vector<StmtSyntax> stmts)
-{
-    // void Main() { stmts }
-    return ScriptSyntax(tcb::make_vector<ScriptSyntaxElement>(
-        GlobalFuncDeclSyntax(
-            std::nullopt, false, IdTypeExpSyntax("void"), "Main", {}, {}, std::move(stmts)
-        )
-    ));
-}
-
-inline IdTypeExpSyntax SVoidTypeExp()
-{
-    return IdTypeExpSyntax("void");
-}
-
-inline IdTypeExpSyntax SIntTypeExp()
-{
-    return IdTypeExpSyntax("int");
-}
-
-inline IdTypeExpSyntax SIdTypeExp(std::string name)
-{
-    return IdTypeExpSyntax(std::move(name));
-}
-
-inline ScriptSyntax SScript(std::vector<ScriptSyntaxElement> elems)
-{
-    // void Main() { stmts }
-    return Citron::ScriptSyntax(std::move(elems));
-}
-
-inline VarDeclSyntax SVarDecl(TypeExpSyntax typeExp, std::string name, std::optional<SExpPtr> initExp = std::nullopt)
-{
-    return VarDeclSyntax{ std::move(typeExp), tcb::make_vector(VarDeclSyntaxElement(std::move(name), std::move(initExp))) };
-}
-
-inline VarDeclStmtSyntax SVarDeclStmt(TypeExpSyntax typeExp, std::string name, std::optional<SExpPtr> initExp = std::nullopt)
-{
-    return VarDeclStmtSyntax(SVarDecl(std::move(typeExp), std::move(name), std::move(initExp)));
-}
-
-inline IdentifierExpSyntax SId(std::string name)
-{
-    return IdentifierExpSyntax(std::move(name));
-}
-
 template<typename TSyntax>
 std::string ToJsonString(TSyntax& syntax)
 {

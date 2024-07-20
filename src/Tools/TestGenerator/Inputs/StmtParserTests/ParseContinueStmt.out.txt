@@ -1,3 +1,3 @@
 {
-    "$type": "ContinueStmtSyntax"
+    "$type": "SContinueStmt"
 }

@@ -1,53 +1,53 @@
 {
-    "$type": "BinaryOpExpSyntax",
+    "$type": "SBinaryOpExp",
     "kind": "Assign",
     "operand0": {
-        "$type": "IdentifierExpSyntax",
+        "$type": "SIdentifierExp",
         "value": "a",
         "typeArgs": []
     },
     "operand1": {
-        "$type": "BinaryOpExpSyntax",
+        "$type": "SBinaryOpExp",
         "kind": "Assign",
         "operand0": {
-            "$type": "IdentifierExpSyntax",
+            "$type": "SIdentifierExp",
             "value": "b",
             "typeArgs": []
         },
         "operand1": {
-            "$type": "BinaryOpExpSyntax",
+            "$type": "SBinaryOpExp",
             "kind": "NotEqual",
             "operand0": {
-                "$type": "BinaryOpExpSyntax",
+                "$type": "SBinaryOpExp",
                 "kind": "Equal",
                 "operand0": {
-                    "$type": "BinaryOpExpSyntax",
+                    "$type": "SBinaryOpExp",
                     "kind": "Subtract",
                     "operand0": {
-                        "$type": "BinaryOpExpSyntax",
+                        "$type": "SBinaryOpExp",
                         "kind": "Add",
                         "operand0": {
-                            "$type": "BinaryOpExpSyntax",
+                            "$type": "SBinaryOpExp",
                             "kind": "Multiply",
                             "operand0": {
-                                "$type": "UnaryOpExpSyntax",
+                                "$type": "SUnaryOpExp",
                                 "kind": "LogicalNot",
                                 "operand": {
-                                    "$type": "UnaryOpExpSyntax",
+                                    "$type": "SUnaryOpExp",
                                     "kind": "LogicalNot",
                                     "operand": {
-                                        "$type": "UnaryOpExpSyntax",
+                                        "$type": "SUnaryOpExp",
                                         "kind": "PostfixInc",
                                         "operand": {
-                                            "$type": "BinaryOpExpSyntax",
+                                            "$type": "SBinaryOpExp",
                                             "kind": "Modulo",
                                             "operand0": {
-                                                "$type": "IdentifierExpSyntax",
+                                                "$type": "SIdentifierExp",
                                                 "value": "c",
                                                 "typeArgs": []
                                             },
                                             "operand1": {
-                                                "$type": "IdentifierExpSyntax",
+                                                "$type": "SIdentifierExp",
                                                 "value": "d",
                                                 "typeArgs": []
                                             }
@@ -56,48 +56,48 @@
                                 }
                             },
                             "operand1": {
-                                "$type": "IdentifierExpSyntax",
+                                "$type": "SIdentifierExp",
                                 "value": "e",
                                 "typeArgs": []
                             }
                         },
                         "operand1": {
-                            "$type": "IdentifierExpSyntax",
+                            "$type": "SIdentifierExp",
                             "value": "f",
                             "typeArgs": []
                         }
                     },
                     "operand1": {
-                        "$type": "BinaryOpExpSyntax",
+                        "$type": "SBinaryOpExp",
                         "kind": "Modulo",
                         "operand0": {
-                            "$type": "BinaryOpExpSyntax",
+                            "$type": "SBinaryOpExp",
                             "kind": "Divide",
                             "operand0": {
-                                "$type": "IdentifierExpSyntax",
+                                "$type": "SIdentifierExp",
                                 "value": "g",
                                 "typeArgs": []
                             },
                             "operand1": {
-                                "$type": "IdentifierExpSyntax",
+                                "$type": "SIdentifierExp",
                                 "value": "h",
                                 "typeArgs": []
                             }
                         },
                         "operand1": {
-                            "$type": "IdentifierExpSyntax",
+                            "$type": "SIdentifierExp",
                             "value": "i",
                             "typeArgs": []
                         }
                     }
                 },
                 "operand1": {
-                    "$type": "IntLiteralExpSyntax",
+                    "$type": "SIntLiteralExp",
                     "value": 3
                 }
             },
             "operand1": {
-                "$type": "BoolLiteralExpSyntax",
+                "$type": "SBoolLiteralExp",
                 "value": false
             }
         }

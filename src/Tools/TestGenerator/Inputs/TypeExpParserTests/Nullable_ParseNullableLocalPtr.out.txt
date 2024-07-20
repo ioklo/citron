@@ -1,9 +1,9 @@
 {
-    "$type": "NullableTypeExpSyntax",
+    "$type": "SNullableTypeExp",
     "innerType": {
-        "$type": "LocalPtrTypeExpSyntax",
+        "$type": "SLocalPtrTypeExp",
         "innerType": {
-            "$type": "IdTypeExpSyntax",
+            "$type": "SIdTypeExp",
             "name": "T",
             "typeArgs": []
         }

@@ -1,20 +1,20 @@
 {
-    "$type": "BlockStmtSyntax",
+    "$type": "SBlockStmt",
     "stmts": [
         {
-            "$type": "BlockStmtSyntax",
+            "$type": "SBlockStmt",
             "stmts": []
         },
         {
-            "$type": "BlockStmtSyntax",
+            "$type": "SBlockStmt",
             "stmts": [
                 {
-                    "$type": "BlankStmtSyntax"
+                    "$type": "SBlankStmt"
                 }
             ]
         },
         {
-            "$type": "BlankStmtSyntax"
+            "$type": "SBlankStmt"
         }
     ]
 }

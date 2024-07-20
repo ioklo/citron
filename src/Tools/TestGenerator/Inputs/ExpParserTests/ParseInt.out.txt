@@ -1,4 +1,4 @@
 {
-    "$type": "IntLiteralExpSyntax",
+    "$type": "SIntLiteralExp",
     "value": 1234
 }

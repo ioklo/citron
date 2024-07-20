@@ -153,6 +153,8 @@ struct SStmtToJsonVisitor : public SStmtVisitor
 
 JsonItem ToJson(SStmtPtr& stmt)
 {
+    if (!stmt) return JsonNull();
+
     SStmtToJsonVisitor visitor;
     stmt->Accept(visitor);
     return visitor.result;
@@ -181,6 +183,8 @@ struct SExpToJsonVisitor : public SExpVisitor
 
 JsonItem ToJson(SExpPtr& exp)
 {
+    if (!exp) return JsonNull();
+
     SExpToJsonVisitor visitor;
     exp->Accept(visitor);
     return visitor.result;
@@ -198,6 +202,8 @@ struct STypeExpToJsonVisitor : public STypeExpVisitor
 
 JsonItem ToJson(STypeExpPtr& typeExp)
 {
+    if (!typeExp) return JsonNull();
+
     STypeExpToJsonVisitor visitor;
     typeExp->Accept(visitor);
     return visitor.result;
@@ -211,6 +217,8 @@ struct SStringExpElementToJsonVisitor : public SStringExpElementVisitor
 
 JsonItem ToJson(SStringExpElementPtr& elem)
 {
+    if (!elem) return JsonNull();
+
     SStringExpElementToJsonVisitor visitor;
     elem->Accept(visitor);
     return visitor.result;
@@ -224,6 +232,8 @@ struct SLambdaExpBodyToJsonVisitor : public SLambdaExpBodyVisitor
 
 JsonItem ToJson(SLambdaExpBodyPtr& body)
 {
+    if (!body) return JsonNull();
+
     SLambdaExpBodyToJsonVisitor visitor;
     body->Accept(visitor);
     return visitor.result;
@@ -237,6 +247,8 @@ struct SEmbeddableStmtToJsonVisitor : public SEmbeddableStmtVisitor
 
 JsonItem ToJson(SEmbeddableStmtPtr& stmt)
 {
+    if (!stmt) return JsonNull();
+
     SEmbeddableStmtToJsonVisitor visitor;
     stmt->Accept(visitor);
     return visitor.result;
@@ -250,6 +262,8 @@ struct SForStmtInitializerToJsonVisitor : public SForStmtInitializerVisitor
 
 JsonItem ToJson(SForStmtInitializerPtr& initializer)
 {
+    if (!initializer) return JsonNull();
+
     SForStmtInitializerToJsonVisitor visitor;
     initializer->Accept(visitor);
     return visitor.result;
@@ -267,6 +281,8 @@ struct SClassMemberDeclToJsonVisitor : public SClassMemberDeclVisitor
 
 JsonItem ToJson(SClassMemberDeclPtr& decl)
 {
+    if (!decl) return JsonNull();
+
     SClassMemberDeclToJsonVisitor visitor;
     decl->Accept(visitor);
     return visitor.result;
@@ -284,6 +300,8 @@ struct SStructMemberDeclToJsonVisitor : public SStructMemberDeclVisitor
 
 JsonItem ToJson(SStructMemberDeclPtr& decl)
 {
+    if (!decl) return JsonNull();
+
     SStructMemberDeclToJsonVisitor visitor;
     decl->Accept(visitor);
     return visitor.result;
@@ -300,6 +318,8 @@ struct SNamespaceDeclElementToJsonVisitor : public SNamespaceDeclElementVisitor
 
 JsonItem ToJson(SNamespaceDeclElementPtr& elem)
 {
+    if (!elem) return JsonNull();
+
     SNamespaceDeclElementToJsonVisitor visitor;
     elem->Accept(visitor);
     return visitor.result;
@@ -316,6 +336,8 @@ struct SScriptElementToJsonVisitor : public SScriptElementVisitor
 
 JsonItem ToJson(SScriptElementPtr& elem)
 {
+    if (!elem) return JsonNull();
+
     SScriptElementToJsonVisitor visitor;
     elem->Accept(visitor);
     return visitor.result;

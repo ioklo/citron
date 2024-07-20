@@ -1,34 +1,34 @@
 {
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "StructDeclSyntax",
+            "$type": "SStructDecl",
             "accessModifier": "Public",
             "name": "S",
             "typeParams": [
                 {
-                    "$type": "TypeParamSyntax",
+                    "$type": "STypeParam",
                     "name": "T"
                 }
             ],
             "baseTypes": [
                 {
-                    "$type": "IdTypeExpSyntax",
+                    "$type": "SIdTypeExp",
                     "name": "B",
                     "typeArgs": []
                 },
                 {
-                    "$type": "IdTypeExpSyntax",
+                    "$type": "SIdTypeExp",
                     "name": "I",
                     "typeArgs": []
                 }
             ],
             "memberDecls": [
                 {
-                    "$type": "StructMemberVarDeclSyntax",
+                    "$type": "SStructMemberVarDecl",
                     "accessModifier": null,
                     "varType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -37,10 +37,10 @@
                     ]
                 },
                 {
-                    "$type": "StructMemberVarDeclSyntax",
+                    "$type": "SStructMemberVarDecl",
                     "accessModifier": "Public",
                     "varType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -49,10 +49,10 @@
                     ]
                 },
                 {
-                    "$type": "StructMemberVarDeclSyntax",
+                    "$type": "SStructMemberVarDecl",
                     "accessModifier": "Protected",
                     "varType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "string",
                         "typeArgs": []
                     },
@@ -61,10 +61,10 @@
                     ]
                 },
                 {
-                    "$type": "StructMemberVarDeclSyntax",
+                    "$type": "SStructMemberVarDecl",
                     "accessModifier": "Private",
                     "varType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -73,33 +73,33 @@
                     ]
                 },
                 {
-                    "$type": "StructDeclSyntax",
+                    "$type": "SStructDecl",
                     "accessModifier": "Public",
                     "name": "Nested",
                     "typeParams": [
                         {
-                            "$type": "TypeParamSyntax",
+                            "$type": "STypeParam",
                             "name": "U"
                         }
                     ],
                     "baseTypes": [
                         {
-                            "$type": "IdTypeExpSyntax",
+                            "$type": "SIdTypeExp",
                             "name": "B",
                             "typeArgs": []
                         },
                         {
-                            "$type": "IdTypeExpSyntax",
+                            "$type": "SIdTypeExp",
                             "name": "I",
                             "typeArgs": []
                         }
                     ],
                     "memberDecls": [
                         {
-                            "$type": "StructMemberVarDeclSyntax",
+                            "$type": "SStructMemberVarDecl",
                             "accessModifier": null,
                             "varType": {
-                                "$type": "IdTypeExpSyntax",
+                                "$type": "SIdTypeExp",
                                 "name": "int",
                                 "typeArgs": []
                             },
@@ -110,29 +110,29 @@
                     ]
                 },
                 {
-                    "$type": "StructMemberFuncDeclSyntax",
+                    "$type": "SStructMemberFuncDecl",
                     "accessModifier": null,
                     "bStatic": true,
                     "bSequence": false,
                     "retType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "void",
                         "typeArgs": []
                     },
                     "name": "Func",
                     "typeParams": [
                         {
-                            "$type": "TypeParamSyntax",
+                            "$type": "STypeParam",
                             "name": "X"
                         }
                     ],
                     "parameters": [
                         {
-                            "$type": "FuncParamSyntax",
+                            "$type": "SFuncParam",
                             "hasOut": false,
                             "hasParams": false,
                             "type": {
-                                "$type": "IdTypeExpSyntax",
+                                "$type": "SIdTypeExp",
                                 "name": "string",
                                 "typeArgs": []
                             },
@@ -142,28 +142,28 @@
                     "body": []
                 },
                 {
-                    "$type": "StructMemberFuncDeclSyntax",
+                    "$type": "SStructMemberFuncDecl",
                     "accessModifier": "Private",
                     "bStatic": false,
                     "bSequence": true,
                     "retType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
                     "name": "F2",
                     "typeParams": [
                         {
-                            "$type": "TypeParamSyntax",
+                            "$type": "STypeParam",
                             "name": "T"
                         }
                     ],
                     "parameters": [],
                     "body": [
                         {
-                            "$type": "YieldStmtSyntax",
+                            "$type": "SYieldStmt",
                             "value": {
-                                "$type": "IntLiteralExpSyntax",
+                                "$type": "SIntLiteralExp",
                                 "value": 4
                             }
                         }

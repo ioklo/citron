@@ -1,25 +1,25 @@
 {
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "EnumDeclSyntax",
+            "$type": "SEnumDecl",
             "accessModifier": null,
             "name": "X",
             "typeParams": [],
             "elements": [
                 {
-                    "$type": "EnumElemDeclSyntax",
+                    "$type": "SEnumElemDecl",
                     "name": "First",
                     "memberVars": []
                 },
                 {
-                    "$type": "EnumElemDeclSyntax",
+                    "$type": "SEnumElemDecl",
                     "name": "Second",
                     "memberVars": [
                         {
-                            "$type": "EnumElemMemberVarDeclSyntax",
+                            "$type": "SEnumElemMemberVarDecl",
                             "type": {
-                                "$type": "IdTypeExpSyntax",
+                                "$type": "SIdTypeExp",
                                 "name": "int",
                                 "typeArgs": []
                             },
@@ -28,7 +28,7 @@
                     ]
                 },
                 {
-                    "$type": "EnumElemDeclSyntax",
+                    "$type": "SEnumElemDecl",
                     "name": "Third",
                     "memberVars": []
                 }

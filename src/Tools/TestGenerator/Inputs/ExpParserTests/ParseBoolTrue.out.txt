@@ -1,4 +1,4 @@
 {
-    "$type": "BoolLiteralExpSyntax",
+    "$type": "SBoolLiteralExp",
     "value": true
 }

@@ -1,12 +1,12 @@
 {
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "GlobalFuncDeclSyntax",
+            "$type": "SGlobalFuncDecl",
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "IdTypeExpSyntax",
+                "$type": "SIdTypeExp",
                 "name": "void",
                 "typeArgs": []
             },
@@ -15,13 +15,13 @@
             "parameters": [],
             "body": [
                 {
-                    "$type": "CommandStmtSyntax",
+                    "$type": "SCommandStmt",
                     "commands": [
                         {
-                            "$type": "StringExpSyntax",
+                            "$type": "SStringExp",
                             "elements": [
                                 {
-                                    "$type": "TextStringExpSyntaxElement",
+                                    "$type": "STextStringExpElement",
                                     "text": "ls -al"
                                 }
                             ]

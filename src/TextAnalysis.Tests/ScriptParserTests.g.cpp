@@ -29,14 +29,14 @@ TEST(ScriptParser, ParseComplexScript)
     auto oScript = ParseScript(&lexer);
 
     auto expected = R"---({
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "GlobalFuncDeclSyntax",
+            "$type": "SGlobalFuncDecl",
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "IdTypeExpSyntax",
+                "$type": "SIdTypeExp",
                 "name": "void",
                 "typeArgs": []
             },
@@ -45,20 +45,20 @@ TEST(ScriptParser, ParseComplexScript)
             "parameters": [],
             "body": [
                 {
-                    "$type": "VarDeclStmtSyntax",
+                    "$type": "SVarDeclStmt",
                     "varDecl": {
-                        "$type": "VarDeclSyntax",
+                        "$type": "SVarDecl",
                         "type": {
-                            "$type": "IdTypeExpSyntax",
+                            "$type": "SIdTypeExp",
                             "name": "int",
                             "typeArgs": []
                         },
                         "elements": [
                             {
-                                "$type": "VarDeclSyntaxElement",
+                                "$type": "SVarDeclElement",
                                 "varName": "sum",
                                 "initExp": {
-                                    "$type": "IntLiteralExpSyntax",
+                                    "$type": "SIntLiteralExp",
                                     "value": 0
                                 }
                             }
@@ -66,22 +66,22 @@ TEST(ScriptParser, ParseComplexScript)
                     }
                 },
                 {
-                    "$type": "ForStmtSyntax",
+                    "$type": "SForStmt",
                     "initializer": {
-                        "$type": "VarDeclForStmtInitializerSyntax",
+                        "$type": "SVarDeclForStmtInitializer",
                         "varDecl": {
-                            "$type": "VarDeclSyntax",
+                            "$type": "SVarDecl",
                             "type": {
-                                "$type": "IdTypeExpSyntax",
+                                "$type": "SIdTypeExp",
                                 "name": "int",
                                 "typeArgs": []
                             },
                             "elements": [
                                 {
-                                    "$type": "VarDeclSyntaxElement",
+                                    "$type": "SVarDeclElement",
                                     "varName": "i",
                                     "initExp": {
-                                        "$type": "IntLiteralExpSyntax",
+                                        "$type": "SIntLiteralExp",
                                         "value": 0
                                     }
                                 }
@@ -89,75 +89,75 @@ TEST(ScriptParser, ParseComplexScript)
                         }
                     },
                     "cond": {
-                        "$type": "BinaryOpExpSyntax",
+                        "$type": "SBinaryOpExp",
                         "kind": "LessThan",
                         "operand0": {
-                            "$type": "IdentifierExpSyntax",
+                            "$type": "SIdentifierExp",
                             "value": "i",
                             "typeArgs": []
                         },
                         "operand1": {
-                            "$type": "IntLiteralExpSyntax",
+                            "$type": "SIntLiteralExp",
                             "value": 5
                         }
                     },
                     "cont": {
-                        "$type": "UnaryOpExpSyntax",
+                        "$type": "SUnaryOpExp",
                         "kind": "PostfixInc",
                         "operand": {
-                            "$type": "IdentifierExpSyntax",
+                            "$type": "SIdentifierExp",
                             "value": "i",
                             "typeArgs": []
                         }
                     },
                     "body": {
-                        "$type": "BlockEmbeddableStmtSyntax",
+                        "$type": "SBlockEmbeddableStmt",
                         "stmts": [
                             {
-                                "$type": "IfStmtSyntax",
+                                "$type": "SIfStmt",
                                 "cond": {
-                                    "$type": "BinaryOpExpSyntax",
+                                    "$type": "SBinaryOpExp",
                                     "kind": "Equal",
                                     "operand0": {
-                                        "$type": "BinaryOpExpSyntax",
+                                        "$type": "SBinaryOpExp",
                                         "kind": "Modulo",
                                         "operand0": {
-                                            "$type": "IdentifierExpSyntax",
+                                            "$type": "SIdentifierExp",
                                             "value": "i",
                                             "typeArgs": []
                                         },
                                         "operand1": {
-                                            "$type": "IntLiteralExpSyntax",
+                                            "$type": "SIntLiteralExp",
                                             "value": 2
                                         }
                                     },
                                     "operand1": {
-                                        "$type": "IntLiteralExpSyntax",
+                                        "$type": "SIntLiteralExp",
                                         "value": 0
                                     }
                                 },
                                 "body": {
-                                    "$type": "SingleEmbeddableStmtSyntax",
+                                    "$type": "SSingleEmbeddableStmt",
                                     "stmt": {
-                                        "$type": "ExpStmtSyntax",
+                                        "$type": "SExpStmt",
                                         "exp": {
-                                            "$type": "BinaryOpExpSyntax",
+                                            "$type": "SBinaryOpExp",
                                             "kind": "Assign",
                                             "operand0": {
-                                                "$type": "IdentifierExpSyntax",
+                                                "$type": "SIdentifierExp",
                                                 "value": "sum",
                                                 "typeArgs": []
                                             },
                                             "operand1": {
-                                                "$type": "BinaryOpExpSyntax",
+                                                "$type": "SBinaryOpExp",
                                                 "kind": "Add",
                                                 "operand0": {
-                                                    "$type": "IdentifierExpSyntax",
+                                                    "$type": "SIdentifierExp",
                                                     "value": "sum",
                                                     "typeArgs": []
                                                 },
                                                 "operand1": {
-                                                    "$type": "IdentifierExpSyntax",
+                                                    "$type": "SIdentifierExp",
                                                     "value": "i",
                                                     "typeArgs": []
                                                 }
@@ -166,15 +166,15 @@ TEST(ScriptParser, ParseComplexScript)
                                     }
                                 },
                                 "elseBody": {
-                                    "$type": "SingleEmbeddableStmtSyntax",
+                                    "$type": "SSingleEmbeddableStmt",
                                     "stmt": {
-                                        "$type": "CommandStmtSyntax",
+                                        "$type": "SCommandStmt",
                                         "commands": [
                                             {
-                                                "$type": "StringExpSyntax",
+                                                "$type": "SStringExp",
                                                 "elements": [
                                                     {
-                                                        "$type": "TextStringExpSyntaxElement",
+                                                        "$type": "STextStringExpElement",
                                                         "text": "            echo hi "
                                                     }
                                                 ]
@@ -187,25 +187,25 @@ TEST(ScriptParser, ParseComplexScript)
                     }
                 },
                 {
-                    "$type": "CommandStmtSyntax",
+                    "$type": "SCommandStmt",
                     "commands": [
                         {
-                            "$type": "StringExpSyntax",
+                            "$type": "SStringExp",
                             "elements": [
                                 {
-                                    "$type": "TextStringExpSyntaxElement",
+                                    "$type": "STextStringExpElement",
                                     "text": "echo "
                                 },
                                 {
-                                    "$type": "ExpStringExpSyntaxElement",
+                                    "$type": "SExpStringExpElement",
                                     "exp": {
-                                        "$type": "IdentifierExpSyntax",
+                                        "$type": "SIdentifierExp",
                                         "value": "sum",
                                         "typeArgs": []
                                     }
                                 },
                                 {
-                                    "$type": "TextStringExpSyntaxElement",
+                                    "$type": "STextStringExpElement",
                                     "text": " Completed!"
                                 }
                             ]
@@ -232,27 +232,27 @@ TEST(ScriptParser, ParseEnumDecl)
     auto oScript = ParseScript(&lexer);
 
     auto expected = R"---({
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "EnumDeclSyntax",
+            "$type": "SEnumDecl",
             "accessModifier": null,
             "name": "X",
             "typeParams": [],
             "elements": [
                 {
-                    "$type": "EnumElemDeclSyntax",
+                    "$type": "SEnumElemDecl",
                     "name": "First",
                     "memberVars": []
                 },
                 {
-                    "$type": "EnumElemDeclSyntax",
+                    "$type": "SEnumElemDecl",
                     "name": "Second",
                     "memberVars": [
                         {
-                            "$type": "EnumElemMemberVarDeclSyntax",
+                            "$type": "SEnumElemMemberVarDecl",
                             "type": {
-                                "$type": "IdTypeExpSyntax",
+                                "$type": "SIdTypeExp",
                                 "name": "int",
                                 "typeArgs": []
                             },
@@ -261,7 +261,7 @@ TEST(ScriptParser, ParseEnumDecl)
                     ]
                 },
                 {
-                    "$type": "EnumElemDeclSyntax",
+                    "$type": "SEnumElemDecl",
                     "name": "Third",
                     "memberVars": []
                 }
@@ -280,14 +280,14 @@ TEST(ScriptParser, ParseFuncDecl)
     auto oScript = ParseScript(&lexer);
 
     auto expected = R"---({
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "GlobalFuncDeclSyntax",
+            "$type": "SGlobalFuncDecl",
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "IdTypeExpSyntax",
+                "$type": "SIdTypeExp",
                 "name": "void",
                 "typeArgs": []
             },
@@ -295,33 +295,33 @@ TEST(ScriptParser, ParseFuncDecl)
             "typeParams": [],
             "parameters": [
                 {
-                    "$type": "FuncParamSyntax",
+                    "$type": "SFuncParam",
                     "hasOut": false,
                     "hasParams": false,
                     "type": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
                     "name": "x"
                 },
                 {
-                    "$type": "FuncParamSyntax",
+                    "$type": "SFuncParam",
                     "hasOut": false,
                     "hasParams": false,
                     "type": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "string",
                         "typeArgs": []
                     },
                     "name": "y"
                 },
                 {
-                    "$type": "FuncParamSyntax",
+                    "$type": "SFuncParam",
                     "hasOut": false,
                     "hasParams": true,
                     "type": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -330,20 +330,20 @@ TEST(ScriptParser, ParseFuncDecl)
             ],
             "body": [
                 {
-                    "$type": "VarDeclStmtSyntax",
+                    "$type": "SVarDeclStmt",
                     "varDecl": {
-                        "$type": "VarDeclSyntax",
+                        "$type": "SVarDecl",
                         "type": {
-                            "$type": "IdTypeExpSyntax",
+                            "$type": "SIdTypeExp",
                             "name": "int",
                             "typeArgs": []
                         },
                         "elements": [
                             {
-                                "$type": "VarDeclSyntaxElement",
+                                "$type": "SVarDeclElement",
                                 "varName": "a",
                                 "initExp": {
-                                    "$type": "IntLiteralExpSyntax",
+                                    "$type": "SIntLiteralExp",
                                     "value": 0
                                 }
                             }
@@ -374,27 +374,27 @@ TEST(ScriptParser, ParseNamespaceDecl)
     auto oScript = ParseScript(&lexer);
 
     auto expected = R"---({
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "NamespaceDeclSyntax",
+            "$type": "SNamespaceDecl",
             "names": [
                 "NS1"
             ],
             "elements": [
                 {
-                    "$type": "NamespaceDeclSyntax",
+                    "$type": "SNamespaceDecl",
                     "names": [
                         "NS2",
                         "NS3"
                     ],
                     "elements": [
                         {
-                            "$type": "GlobalFuncDeclSyntax",
+                            "$type": "SGlobalFuncDecl",
                             "accessModifier": null,
                             "bSequence": false,
                             "retType": {
-                                "$type": "IdTypeExpSyntax",
+                                "$type": "SIdTypeExp",
                                 "name": "void",
                                 "typeArgs": []
                             },
@@ -423,14 +423,14 @@ TEST(ScriptParser, ParseSimpleScript)
     auto oScript = ParseScript(&lexer);
 
     auto expected = R"---({
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "GlobalFuncDeclSyntax",
+            "$type": "SGlobalFuncDecl",
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "IdTypeExpSyntax",
+                "$type": "SIdTypeExp",
                 "name": "void",
                 "typeArgs": []
             },
@@ -439,13 +439,13 @@ TEST(ScriptParser, ParseSimpleScript)
             "parameters": [],
             "body": [
                 {
-                    "$type": "CommandStmtSyntax",
+                    "$type": "SCommandStmt",
                     "commands": [
                         {
-                            "$type": "StringExpSyntax",
+                            "$type": "SStringExp",
                             "elements": [
                                 {
-                                    "$type": "TextStringExpSyntaxElement",
+                                    "$type": "STextStringExpElement",
                                     "text": "ls -al"
                                 }
                             ]
@@ -478,36 +478,36 @@ TEST(ScriptParser, ParseStructDecl)
     auto oScript = ParseScript(&lexer);
 
     auto expected = R"---({
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "StructDeclSyntax",
+            "$type": "SStructDecl",
             "accessModifier": "Public",
             "name": "S",
             "typeParams": [
                 {
-                    "$type": "TypeParamSyntax",
+                    "$type": "STypeParam",
                     "name": "T"
                 }
             ],
             "baseTypes": [
                 {
-                    "$type": "IdTypeExpSyntax",
+                    "$type": "SIdTypeExp",
                     "name": "B",
                     "typeArgs": []
                 },
                 {
-                    "$type": "IdTypeExpSyntax",
+                    "$type": "SIdTypeExp",
                     "name": "I",
                     "typeArgs": []
                 }
             ],
             "memberDecls": [
                 {
-                    "$type": "StructMemberVarDeclSyntax",
+                    "$type": "SStructMemberVarDecl",
                     "accessModifier": null,
                     "varType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -516,10 +516,10 @@ TEST(ScriptParser, ParseStructDecl)
                     ]
                 },
                 {
-                    "$type": "StructMemberVarDeclSyntax",
+                    "$type": "SStructMemberVarDecl",
                     "accessModifier": "Public",
                     "varType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -528,10 +528,10 @@ TEST(ScriptParser, ParseStructDecl)
                     ]
                 },
                 {
-                    "$type": "StructMemberVarDeclSyntax",
+                    "$type": "SStructMemberVarDecl",
                     "accessModifier": "Protected",
                     "varType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "string",
                         "typeArgs": []
                     },
@@ -540,10 +540,10 @@ TEST(ScriptParser, ParseStructDecl)
                     ]
                 },
                 {
-                    "$type": "StructMemberVarDeclSyntax",
+                    "$type": "SStructMemberVarDecl",
                     "accessModifier": "Private",
                     "varType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -552,33 +552,33 @@ TEST(ScriptParser, ParseStructDecl)
                     ]
                 },
                 {
-                    "$type": "StructDeclSyntax",
+                    "$type": "SStructDecl",
                     "accessModifier": "Public",
                     "name": "Nested",
                     "typeParams": [
                         {
-                            "$type": "TypeParamSyntax",
+                            "$type": "STypeParam",
                             "name": "U"
                         }
                     ],
                     "baseTypes": [
                         {
-                            "$type": "IdTypeExpSyntax",
+                            "$type": "SIdTypeExp",
                             "name": "B",
                             "typeArgs": []
                         },
                         {
-                            "$type": "IdTypeExpSyntax",
+                            "$type": "SIdTypeExp",
                             "name": "I",
                             "typeArgs": []
                         }
                     ],
                     "memberDecls": [
                         {
-                            "$type": "StructMemberVarDeclSyntax",
+                            "$type": "SStructMemberVarDecl",
                             "accessModifier": null,
                             "varType": {
-                                "$type": "IdTypeExpSyntax",
+                                "$type": "SIdTypeExp",
                                 "name": "int",
                                 "typeArgs": []
                             },
@@ -589,29 +589,29 @@ TEST(ScriptParser, ParseStructDecl)
                     ]
                 },
                 {
-                    "$type": "StructMemberFuncDeclSyntax",
+                    "$type": "SStructMemberFuncDecl",
                     "accessModifier": null,
                     "bStatic": true,
                     "bSequence": false,
                     "retType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "void",
                         "typeArgs": []
                     },
                     "name": "Func",
                     "typeParams": [
                         {
-                            "$type": "TypeParamSyntax",
+                            "$type": "STypeParam",
                             "name": "X"
                         }
                     ],
                     "parameters": [
                         {
-                            "$type": "FuncParamSyntax",
+                            "$type": "SFuncParam",
                             "hasOut": false,
                             "hasParams": false,
                             "type": {
-                                "$type": "IdTypeExpSyntax",
+                                "$type": "SIdTypeExp",
                                 "name": "string",
                                 "typeArgs": []
                             },
@@ -621,28 +621,28 @@ TEST(ScriptParser, ParseStructDecl)
                     "body": []
                 },
                 {
-                    "$type": "StructMemberFuncDeclSyntax",
+                    "$type": "SStructMemberFuncDecl",
                     "accessModifier": "Private",
                     "bStatic": false,
                     "bSequence": true,
                     "retType": {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     },
                     "name": "F2",
                     "typeParams": [
                         {
-                            "$type": "TypeParamSyntax",
+                            "$type": "STypeParam",
                             "name": "T"
                         }
                     ],
                     "parameters": [],
                     "body": [
                         {
-                            "$type": "YieldStmtSyntax",
+                            "$type": "SYieldStmt",
                             "value": {
-                                "$type": "IntLiteralExpSyntax",
+                                "$type": "SIntLiteralExp",
                                 "value": 4
                             }
                         }

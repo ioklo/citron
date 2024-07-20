@@ -1,25 +1,25 @@
 {
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "NamespaceDeclSyntax",
+            "$type": "SNamespaceDecl",
             "names": [
                 "NS1"
             ],
             "elements": [
                 {
-                    "$type": "NamespaceDeclSyntax",
+                    "$type": "SNamespaceDecl",
                     "names": [
                         "NS2",
                         "NS3"
                     ],
                     "elements": [
                         {
-                            "$type": "GlobalFuncDeclSyntax",
+                            "$type": "SGlobalFuncDecl",
                             "accessModifier": null,
                             "bSequence": false,
                             "retType": {
-                                "$type": "IdTypeExpSyntax",
+                                "$type": "SIdTypeExp",
                                 "name": "void",
                                 "typeArgs": []
                             },

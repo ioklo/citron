@@ -72,6 +72,9 @@ struct JsonArray
 
     INFRA_API ~JsonArray();
 
+    INFRA_API JsonArray& operator=(const JsonArray&);
+    INFRA_API JsonArray& operator=(JsonArray&&) noexcept;
+
     INFRA_API bool operator==(const JsonArray& other) const;
     INFRA_API void ToString(IWriter& writer);
 };
@@ -83,6 +86,9 @@ struct JsonObject
     INFRA_API JsonObject(std::initializer_list<std::pair<std::string, JsonItem>> list);
     INFRA_API JsonObject(const JsonObject& other);
     INFRA_API JsonObject(JsonObject&& other);
+    INFRA_API JsonObject& operator=(const JsonObject&);
+    INFRA_API JsonObject& operator=(JsonObject&&) noexcept;
+
     INFRA_API bool operator==(const JsonObject& other) const;
     INFRA_API void ToString(IWriter& writer);
 };

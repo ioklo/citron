@@ -1,21 +1,21 @@
 {
-    "$type": "VarDeclStmtSyntax",
+    "$type": "SVarDeclStmt",
     "varDecl": {
-        "$type": "VarDeclSyntax",
+        "$type": "SVarDecl",
         "type": {
-            "$type": "IdTypeExpSyntax",
+            "$type": "SIdTypeExp",
             "name": "string",
             "typeArgs": []
         },
         "elements": [
             {
-                "$type": "VarDeclSyntaxElement",
+                "$type": "SVarDeclElement",
                 "varName": "a",
                 "initExp": {
-                    "$type": "StringExpSyntax",
+                    "$type": "SStringExp",
                     "elements": [
                         {
-                            "$type": "TextStringExpSyntaxElement",
+                            "$type": "STextStringExpElement",
                             "text": "hello"
                         }
                     ]

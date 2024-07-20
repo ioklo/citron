@@ -1,16 +1,16 @@
 {
-    "$type": "ListExpSyntax",
+    "$type": "SListExp",
     "elements": [
         {
-            "$type": "IntLiteralExpSyntax",
+            "$type": "SIntLiteralExp",
             "value": 1
         },
         {
-            "$type": "IntLiteralExpSyntax",
+            "$type": "SIntLiteralExp",
             "value": 2
         },
         {
-            "$type": "IntLiteralExpSyntax",
+            "$type": "SIntLiteralExp",
             "value": 3
         }
     ]

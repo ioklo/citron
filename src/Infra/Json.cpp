@@ -71,6 +71,17 @@ JsonArray::JsonArray(std::initializer_list<JsonItem> items)
 JsonArray::JsonArray(const JsonArray&) = default;
 JsonArray::JsonArray(JsonArray&&) = default;
 
+JsonArray& JsonArray::operator=(const JsonArray& other)
+{
+    items = other.items;
+    return *this;
+}
+
+JsonArray& JsonArray::operator=(JsonArray&& other) noexcept
+{
+    items = std::move(other.items);
+    return *this;
+}
 
 JsonArray::~JsonArray()
 {
@@ -119,6 +130,9 @@ JsonObject::JsonObject(std::initializer_list<std::pair<std::string, JsonItem>> l
 
 JsonObject::JsonObject(const JsonObject& other) = default;
 JsonObject::JsonObject(JsonObject&& other) = default;
+
+JsonObject& JsonObject::operator=(const JsonObject&) = default;
+JsonObject& JsonObject::operator=(JsonObject&&) noexcept = default;
 
 INFRA_API void JsonObject::ToString(IWriter& writer)
 {

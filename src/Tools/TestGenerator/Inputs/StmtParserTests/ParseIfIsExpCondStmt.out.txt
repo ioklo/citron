@@ -1,37 +1,37 @@
 {
-    "$type": "IfStmtSyntax",
+    "$type": "SIfStmt",
     "cond": {
-        "$type": "IsExpSyntax",
+        "$type": "SIsExp",
         "exp": {
-            "$type": "IdentifierExpSyntax",
+            "$type": "SIdentifierExp",
             "value": "b",
             "typeArgs": []
         },
         "type": {
-            "$type": "IdTypeExpSyntax",
+            "$type": "SIdTypeExp",
             "name": "T",
             "typeArgs": []
         }
     },
     "body": {
-        "$type": "BlockEmbeddableStmtSyntax",
+        "$type": "SBlockEmbeddableStmt",
         "stmts": []
     },
     "elseBody": {
-        "$type": "SingleEmbeddableStmtSyntax",
+        "$type": "SSingleEmbeddableStmt",
         "stmt": {
-            "$type": "IfStmtSyntax",
+            "$type": "SIfStmt",
             "cond": {
-                "$type": "IdentifierExpSyntax",
+                "$type": "SIdentifierExp",
                 "value": "c",
                 "typeArgs": []
             },
             "body": {
-                "$type": "BlockEmbeddableStmtSyntax",
+                "$type": "SBlockEmbeddableStmt",
                 "stmts": []
             },
             "elseBody": {
-                "$type": "BlockEmbeddableStmtSyntax",
+                "$type": "SBlockEmbeddableStmt",
                 "stmts": []
             }
         }

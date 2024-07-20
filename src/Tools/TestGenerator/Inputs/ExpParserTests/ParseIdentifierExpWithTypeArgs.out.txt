@@ -1,9 +1,9 @@
 {
-    "$type": "IdentifierExpSyntax",
+    "$type": "SIdentifierExp",
     "value": "x",
     "typeArgs": [
         {
-            "$type": "IdTypeExpSyntax",
+            "$type": "SIdTypeExp",
             "name": "T",
             "typeArgs": []
         }

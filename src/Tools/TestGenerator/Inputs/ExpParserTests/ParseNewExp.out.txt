@@ -1,11 +1,11 @@
 {
-    "$type": "NewExpSyntax",
+    "$type": "SNewExp",
     "type": {
-        "$type": "IdTypeExpSyntax",
+        "$type": "SIdTypeExp",
         "name": "MyType",
         "typeArgs": [
             {
-                "$type": "IdTypeExpSyntax",
+                "$type": "SIdTypeExp",
                 "name": "X",
                 "typeArgs": []
             }
@@ -13,32 +13,32 @@
     },
     "args": [
         {
-            "$type": "ArgumentSyntax",
+            "$type": "SArgument",
             "bOut": false,
             "bParams": false,
             "exp": {
-                "$type": "IntLiteralExpSyntax",
+                "$type": "SIntLiteralExp",
                 "value": 2
             }
         },
         {
-            "$type": "ArgumentSyntax",
+            "$type": "SArgument",
             "bOut": false,
             "bParams": false,
             "exp": {
-                "$type": "BoolLiteralExpSyntax",
+                "$type": "SBoolLiteralExp",
                 "value": false
             }
         },
         {
-            "$type": "ArgumentSyntax",
+            "$type": "SArgument",
             "bOut": false,
             "bParams": false,
             "exp": {
-                "$type": "StringExpSyntax",
+                "$type": "SStringExp",
                 "elements": [
                     {
-                        "$type": "TextStringExpSyntaxElement",
+                        "$type": "STextStringExpElement",
                         "text": "string"
                     }
                 ]

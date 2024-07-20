@@ -1,29 +1,29 @@
 {
-    "$type": "IsExpSyntax",
+    "$type": "SIsExp",
     "exp": {
-        "$type": "BinaryOpExpSyntax",
+        "$type": "SBinaryOpExp",
         "kind": "LessThan",
         "operand0": {
-            "$type": "IsExpSyntax",
+            "$type": "SIsExp",
             "exp": {
-                "$type": "BinaryOpExpSyntax",
+                "$type": "SBinaryOpExp",
                 "kind": "Add",
                 "operand0": {
-                    "$type": "IdentifierExpSyntax",
+                    "$type": "SIdentifierExp",
                     "value": "e",
                     "typeArgs": []
                 },
                 "operand1": {
-                    "$type": "IntLiteralExpSyntax",
+                    "$type": "SIntLiteralExp",
                     "value": 1
                 }
             },
             "type": {
-                "$type": "IdTypeExpSyntax",
+                "$type": "SIdTypeExp",
                 "name": "X",
                 "typeArgs": [
                     {
-                        "$type": "IdTypeExpSyntax",
+                        "$type": "SIdTypeExp",
                         "name": "int",
                         "typeArgs": []
                     }
@@ -31,21 +31,21 @@
             }
         },
         "operand1": {
-            "$type": "BinaryOpExpSyntax",
+            "$type": "SBinaryOpExp",
             "kind": "Add",
             "operand0": {
-                "$type": "IdentifierExpSyntax",
+                "$type": "SIdentifierExp",
                 "value": "d",
                 "typeArgs": []
             },
             "operand1": {
-                "$type": "IntLiteralExpSyntax",
+                "$type": "SIntLiteralExp",
                 "value": 1
             }
         }
     },
     "type": {
-        "$type": "IdTypeExpSyntax",
+        "$type": "SIdTypeExp",
         "name": "T",
         "typeArgs": []
     }

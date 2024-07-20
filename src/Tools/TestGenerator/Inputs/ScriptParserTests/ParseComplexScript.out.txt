@@ -1,12 +1,12 @@
 {
-    "$type": "ScriptSyntax",
+    "$type": "SScript",
     "elements": [
         {
-            "$type": "GlobalFuncDeclSyntax",
+            "$type": "SGlobalFuncDecl",
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "IdTypeExpSyntax",
+                "$type": "SIdTypeExp",
                 "name": "void",
                 "typeArgs": []
             },
@@ -15,20 +15,20 @@
             "parameters": [],
             "body": [
                 {
-                    "$type": "VarDeclStmtSyntax",
+                    "$type": "SVarDeclStmt",
                     "varDecl": {
-                        "$type": "VarDeclSyntax",
+                        "$type": "SVarDecl",
                         "type": {
-                            "$type": "IdTypeExpSyntax",
+                            "$type": "SIdTypeExp",
                             "name": "int",
                             "typeArgs": []
                         },
                         "elements": [
                             {
-                                "$type": "VarDeclSyntaxElement",
+                                "$type": "SVarDeclElement",
                                 "varName": "sum",
                                 "initExp": {
-                                    "$type": "IntLiteralExpSyntax",
+                                    "$type": "SIntLiteralExp",
                                     "value": 0
                                 }
                             }
@@ -36,22 +36,22 @@
                     }
                 },
                 {
-                    "$type": "ForStmtSyntax",
+                    "$type": "SForStmt",
                     "initializer": {
-                        "$type": "VarDeclForStmtInitializerSyntax",
+                        "$type": "SVarDeclForStmtInitializer",
                         "varDecl": {
-                            "$type": "VarDeclSyntax",
+                            "$type": "SVarDecl",
                             "type": {
-                                "$type": "IdTypeExpSyntax",
+                                "$type": "SIdTypeExp",
                                 "name": "int",
                                 "typeArgs": []
                             },
                             "elements": [
                                 {
-                                    "$type": "VarDeclSyntaxElement",
+                                    "$type": "SVarDeclElement",
                                     "varName": "i",
                                     "initExp": {
-                                        "$type": "IntLiteralExpSyntax",
+                                        "$type": "SIntLiteralExp",
                                         "value": 0
                                     }
                                 }
@@ -59,75 +59,75 @@
                         }
                     },
                     "cond": {
-                        "$type": "BinaryOpExpSyntax",
+                        "$type": "SBinaryOpExp",
                         "kind": "LessThan",
                         "operand0": {
-                            "$type": "IdentifierExpSyntax",
+                            "$type": "SIdentifierExp",
                             "value": "i",
                             "typeArgs": []
                         },
                         "operand1": {
-                            "$type": "IntLiteralExpSyntax",
+                            "$type": "SIntLiteralExp",
                             "value": 5
                         }
                     },
                     "cont": {
-                        "$type": "UnaryOpExpSyntax",
+                        "$type": "SUnaryOpExp",
                         "kind": "PostfixInc",
                         "operand": {
-                            "$type": "IdentifierExpSyntax",
+                            "$type": "SIdentifierExp",
                             "value": "i",
                             "typeArgs": []
                         }
                     },
                     "body": {
-                        "$type": "BlockEmbeddableStmtSyntax",
+                        "$type": "SBlockEmbeddableStmt",
                         "stmts": [
                             {
-                                "$type": "IfStmtSyntax",
+                                "$type": "SIfStmt",
                                 "cond": {
-                                    "$type": "BinaryOpExpSyntax",
+                                    "$type": "SBinaryOpExp",
                                     "kind": "Equal",
                                     "operand0": {
-                                        "$type": "BinaryOpExpSyntax",
+                                        "$type": "SBinaryOpExp",
                                         "kind": "Modulo",
                                         "operand0": {
-                                            "$type": "IdentifierExpSyntax",
+                                            "$type": "SIdentifierExp",
                                             "value": "i",
                                             "typeArgs": []
                                         },
                                         "operand1": {
-                                            "$type": "IntLiteralExpSyntax",
+                                            "$type": "SIntLiteralExp",
                                             "value": 2
                                         }
                                     },
                                     "operand1": {
-                                        "$type": "IntLiteralExpSyntax",
+                                        "$type": "SIntLiteralExp",
                                         "value": 0
                                     }
                                 },
                                 "body": {
-                                    "$type": "SingleEmbeddableStmtSyntax",
+                                    "$type": "SSingleEmbeddableStmt",
                                     "stmt": {
-                                        "$type": "ExpStmtSyntax",
+                                        "$type": "SExpStmt",
                                         "exp": {
-                                            "$type": "BinaryOpExpSyntax",
+                                            "$type": "SBinaryOpExp",
                                             "kind": "Assign",
                                             "operand0": {
-                                                "$type": "IdentifierExpSyntax",
+                                                "$type": "SIdentifierExp",
                                                 "value": "sum",
                                                 "typeArgs": []
                                             },
                                             "operand1": {
-                                                "$type": "BinaryOpExpSyntax",
+                                                "$type": "SBinaryOpExp",
                                                 "kind": "Add",
                                                 "operand0": {
-                                                    "$type": "IdentifierExpSyntax",
+                                                    "$type": "SIdentifierExp",
                                                     "value": "sum",
                                                     "typeArgs": []
                                                 },
                                                 "operand1": {
-                                                    "$type": "IdentifierExpSyntax",
+                                                    "$type": "SIdentifierExp",
                                                     "value": "i",
                                                     "typeArgs": []
                                                 }
@@ -136,15 +136,15 @@
                                     }
                                 },
                                 "elseBody": {
-                                    "$type": "SingleEmbeddableStmtSyntax",
+                                    "$type": "SSingleEmbeddableStmt",
                                     "stmt": {
-                                        "$type": "CommandStmtSyntax",
+                                        "$type": "SCommandStmt",
                                         "commands": [
                                             {
-                                                "$type": "StringExpSyntax",
+                                                "$type": "SStringExp",
                                                 "elements": [
                                                     {
-                                                        "$type": "TextStringExpSyntaxElement",
+                                                        "$type": "STextStringExpElement",
                                                         "text": "            echo hi "
                                                     }
                                                 ]
@@ -157,25 +157,25 @@
                     }
                 },
                 {
-                    "$type": "CommandStmtSyntax",
+                    "$type": "SCommandStmt",
                     "commands": [
                         {
-                            "$type": "StringExpSyntax",
+                            "$type": "SStringExp",
                             "elements": [
                                 {
-                                    "$type": "TextStringExpSyntaxElement",
+                                    "$type": "STextStringExpElement",
                                     "text": "echo "
                                 },
                                 {
-                                    "$type": "ExpStringExpSyntaxElement",
+                                    "$type": "SExpStringExpElement",
                                     "exp": {
-                                        "$type": "IdentifierExpSyntax",
+                                        "$type": "SIdentifierExp",
                                         "value": "sum",
                                         "typeArgs": []
                                     }
                                 },
                                 {
-                                    "$type": "TextStringExpSyntaxElement",
+                                    "$type": "STextStringExpElement",
                                     "text": " Completed!"
                                 }
                             ]

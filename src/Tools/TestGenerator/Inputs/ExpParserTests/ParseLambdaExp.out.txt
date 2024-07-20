@@ -1,16 +1,16 @@
 {
-    "$type": "BinaryOpExpSyntax",
+    "$type": "SBinaryOpExp",
     "kind": "Assign",
     "operand0": {
-        "$type": "IdentifierExpSyntax",
+        "$type": "SIdentifierExp",
         "value": "a",
         "typeArgs": []
     },
     "operand1": {
-        "$type": "LambdaExpSyntax",
+        "$type": "SLambdaExp",
         "params": [
             {
-                "$type": "LambdaExpParamSyntax",
+                "$type": "SLambdaExpParam",
                 "type": null,
                 "name": "b",
                 "hasOut": false,
@@ -18,21 +18,21 @@
             }
         ],
         "body": {
-            "$type": "ExpLambdaExpBodySyntax",
+            "$type": "SExpLambdaExpBody",
             "exp": {
-                "$type": "LambdaExpSyntax",
+                "$type": "SLambdaExp",
                 "params": [
                     {
-                        "$type": "LambdaExpParamSyntax",
+                        "$type": "SLambdaExpParam",
                         "type": null,
                         "name": "c",
                         "hasOut": false,
                         "hasParams": false
                     },
                     {
-                        "$type": "LambdaExpParamSyntax",
+                        "$type": "SLambdaExpParam",
                         "type": {
-                            "$type": "IdTypeExpSyntax",
+                            "$type": "SIdTypeExp",
                             "name": "int",
                             "typeArgs": []
                         },
@@ -42,9 +42,9 @@
                     }
                 ],
                 "body": {
-                    "$type": "ExpLambdaExpBodySyntax",
+                    "$type": "SExpLambdaExpBody",
                     "exp": {
-                        "$type": "IdentifierExpSyntax",
+                        "$type": "SIdentifierExp",
                         "value": "e",
                         "typeArgs": []
                     }

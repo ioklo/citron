@@ -1,11 +1,11 @@
 {
-    "$type": "ForStmtSyntax",
+    "$type": "SForStmt",
     "initializer": {
-        "$type": "ExpForStmtInitializerSyntax",
+        "$type": "SExpForStmtInitializer",
         "exp": {
-            "$type": "CallExpSyntax",
+            "$type": "SCallExp",
             "callable": {
-                "$type": "IdentifierExpSyntax",
+                "$type": "SIdentifierExp",
                 "value": "f",
                 "typeArgs": []
             },
@@ -13,28 +13,28 @@
         }
     },
     "cond": {
-        "$type": "IdentifierExpSyntax",
+        "$type": "SIdentifierExp",
         "value": "g",
         "typeArgs": []
     },
     "cont": {
-        "$type": "BinaryOpExpSyntax",
+        "$type": "SBinaryOpExp",
         "kind": "Add",
         "operand0": {
-            "$type": "IdentifierExpSyntax",
+            "$type": "SIdentifierExp",
             "value": "h",
             "typeArgs": []
         },
         "operand1": {
-            "$type": "IdentifierExpSyntax",
+            "$type": "SIdentifierExp",
             "value": "g",
             "typeArgs": []
         }
     },
     "body": {
-        "$type": "SingleEmbeddableStmtSyntax",
+        "$type": "SSingleEmbeddableStmt",
         "stmt": {
-            "$type": "BlankStmtSyntax"
+            "$type": "SBlankStmt"
         }
     }
 }

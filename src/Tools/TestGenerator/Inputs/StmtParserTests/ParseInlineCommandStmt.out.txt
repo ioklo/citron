@@ -1,23 +1,23 @@
 {
-    "$type": "CommandStmtSyntax",
+    "$type": "SCommandStmt",
     "commands": [
         {
-            "$type": "StringExpSyntax",
+            "$type": "SStringExp",
             "elements": [
                 {
-                    "$type": "TextStringExpSyntaxElement",
+                    "$type": "STextStringExpElement",
                     "text": "echo "
                 },
                 {
-                    "$type": "ExpStringExpSyntaxElement",
+                    "$type": "SExpStringExpElement",
                     "exp": {
-                        "$type": "IdentifierExpSyntax",
+                        "$type": "SIdentifierExp",
                         "value": "a",
                         "typeArgs": []
                     }
                 },
                 {
-                    "$type": "TextStringExpSyntaxElement",
+                    "$type": "STextStringExpElement",
                     "text": "bbb  "
                 }
             ]

@@ -1,18 +1,18 @@
 {
-    "$type": "ForeachStmtSyntax",
+    "$type": "SForeachStmt",
     "type": {
-        "$type": "IdTypeExpSyntax",
+        "$type": "SIdTypeExp",
         "name": "var",
         "typeArgs": []
     },
     "varName": "x",
     "enumerable": {
-        "$type": "IdentifierExpSyntax",
+        "$type": "SIdentifierExp",
         "value": "l",
         "typeArgs": []
     },
     "body": {
-        "$type": "BlockEmbeddableStmtSyntax",
+        "$type": "SBlockEmbeddableStmt",
         "stmts": []
     }
 }

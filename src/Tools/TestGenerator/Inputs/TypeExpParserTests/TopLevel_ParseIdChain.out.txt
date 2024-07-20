@@ -1,16 +1,16 @@
 {
-    "$type": "MemberTypeExpSyntax",
+    "$type": "SMemberTypeExp",
     "parentType": {
-        "$type": "MemberTypeExpSyntax",
+        "$type": "SMemberTypeExp",
         "parentType": {
-            "$type": "IdTypeExpSyntax",
+            "$type": "SIdTypeExp",
             "name": "A",
             "typeArgs": []
         },
         "name": "B",
         "typeArgs": [
             {
-                "$type": "IdTypeExpSyntax",
+                "$type": "SIdTypeExp",
                 "name": "int",
                 "typeArgs": []
             }

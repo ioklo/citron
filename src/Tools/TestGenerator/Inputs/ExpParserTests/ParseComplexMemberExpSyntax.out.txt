@@ -1,13 +1,13 @@
 {
-    "$type": "MemberExpSyntax",
+    "$type": "SMemberExp",
     "parent": {
-        "$type": "CallExpSyntax",
+        "$type": "SCallExp",
         "callable": {
-            "$type": "MemberExpSyntax",
+            "$type": "SMemberExp",
             "parent": {
-                "$type": "MemberExpSyntax",
+                "$type": "SMemberExp",
                 "parent": {
-                    "$type": "IdentifierExpSyntax",
+                    "$type": "SIdentifierExp",
                     "value": "a",
                     "typeArgs": []
                 },
@@ -17,16 +17,16 @@
             "memberName": "c",
             "memberTypeArgs": [
                 {
-                    "$type": "IdTypeExpSyntax",
+                    "$type": "SIdTypeExp",
                     "name": "int",
                     "typeArgs": []
                 },
                 {
-                    "$type": "IdTypeExpSyntax",
+                    "$type": "SIdTypeExp",
                     "name": "list",
                     "typeArgs": [
                         {
-                            "$type": "IdTypeExpSyntax",
+                            "$type": "SIdTypeExp",
                             "name": "int",
                             "typeArgs": []
                         }
@@ -36,23 +36,23 @@
         },
         "args": [
             {
-                "$type": "ArgumentSyntax",
+                "$type": "SArgument",
                 "bOut": false,
                 "bParams": false,
                 "exp": {
-                    "$type": "IntLiteralExpSyntax",
+                    "$type": "SIntLiteralExp",
                     "value": 1
                 }
             },
             {
-                "$type": "ArgumentSyntax",
+                "$type": "SArgument",
                 "bOut": false,
                 "bParams": false,
                 "exp": {
-                    "$type": "StringExpSyntax",
+                    "$type": "SStringExp",
                     "elements": [
                         {
-                            "$type": "TextStringExpSyntaxElement",
+                            "$type": "STextStringExpElement",
                             "text": "str"
                         }
                     ]
