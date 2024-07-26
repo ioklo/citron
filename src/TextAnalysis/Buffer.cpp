@@ -1,10 +1,10 @@
 #include "pch.h"
-#include <TextAnalysis/Buffer.h>
+#include "Buffer.h"
 
 #include <cassert>
 #include <Unicode/unistr.h>
 
-#include <TextAnalysis/BufferPosition.h>
+#include "BufferPosition.h"
 
 using namespace std;
 using namespace icu;

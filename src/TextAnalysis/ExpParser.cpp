@@ -3,10 +3,10 @@
 #include <Syntax/Syntax.h>
 #include <Syntax/Tokens.h>
 
-#include <TextAnalysis/Lexer.h>
-#include <TextAnalysis/ExpParser.h>
-#include <TextAnalysis/StmtParser.h>
-#include <TextAnalysis/TypeExpParser.h>
+#include "Lexer.h"
+#include "ExpParser.h"
+#include "StmtParser.h"
+#include "TypeExpParser.h"
 
 #include "ParserMisc.h"
 
@@ -69,7 +69,7 @@ SExpPtr HandleUnaryMinusWithIntLiteral(SUnaryOpKind kind, SExp* exp)
 {
     if (kind == SUnaryOpKind::Minus)
         if (auto* intLiteralExp = dynamic_cast<SIntLiteralExp*>(exp))
-            return make_unique<SIntLiteralExp>(-intLiteralExp->GetValue());
+            return make_unique<SIntLiteralExp>(-intLiteralExp->value);
 
     return nullptr;
 }

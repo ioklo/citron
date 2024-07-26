@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Syntax/SyntaxConfig.h>
+#include "SyntaxConfig.h"
 
 #include <string>
 #include <variant>

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include <TextAnalysis/TypeExpParser.h>
+#include "TypeExpParser.h"
 
 #include <optional>
 #include <vector>
@@ -8,7 +8,7 @@
 #include <Syntax/Syntax.h>
 #include <Syntax/Tokens.h>
 
-#include <TextAnalysis/Lexer.h>
+#include "Lexer.h"
 #include "ParserMisc.h"
 
 using namespace std;

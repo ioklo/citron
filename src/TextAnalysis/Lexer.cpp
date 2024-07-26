@@ -1,5 +1,5 @@
 #include "pch.h"
-#include <TextAnalysis/Lexer.h>
+#include "Lexer.h"
 
 #include <sstream>
 #include <string_view>

@@ -146,13 +146,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\Infra\Indirect.h" />
-    <ClInclude Include="..\..\include\Infra\InfraConfig.h" />
-    <ClInclude Include="..\..\include\Infra\IWriter.h" />
-    <ClInclude Include="..\..\include\Infra\Json.h" />
-    <ClInclude Include="..\..\include\Infra\make_vector.h" />
-    <ClInclude Include="..\..\include\Infra\StringWriter.h" />
-    <ClInclude Include="..\..\include\Infra\Unreachable.h" />
+    <ClInclude Include="Public\Infra\Indirect.h" />
+    <ClInclude Include="Public\Infra\InfraConfig.h" />
+    <ClInclude Include="Public\Infra\IWriter.h" />
+    <ClInclude Include="Public\Infra\Json.h" />
+    <ClInclude Include="Public\Infra\make_vector.h" />
+    <ClInclude Include="Public\Infra\StringWriter.h" />
+    <ClInclude Include="Public\Infra\Unreachable.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>

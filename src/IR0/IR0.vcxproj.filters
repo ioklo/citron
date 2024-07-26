@@ -1,13 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="RArgument.h" />
-    <ClInclude Include="RExp.h" />
-    <ClInclude Include="RLoc.h" />
-    <ClInclude Include="RProgram.h" />
-    <ClInclude Include="RStmt.h" />
+    <ClInclude Include="Public\IR0\RArgument.h" />
+    <ClInclude Include="Public\IR0\RExp.h" />
+    <ClInclude Include="Public\IR0\RLoc.h" />
+    <ClInclude Include="Public\IR0\RProgram.h" />
+    <ClInclude Include="Public\IR0\RStmt.h" />
+    <ClInclude Include="Public\IR0\IR0Config.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Body">
+      <UniqueIdentifier>{6918c332-7bb2-410a-b87b-0fa1df9176c1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

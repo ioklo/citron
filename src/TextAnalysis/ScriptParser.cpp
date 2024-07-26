@@ -1,14 +1,14 @@
 #include "pch.h"
-#include <TextAnalysis/ScriptParser.h>
+#include "ScriptParser.h"
 
 #include <optional>
 
 #include <Syntax/Syntax.h>
 
-#include <TextAnalysis/Lexer.h>
-#include <TextAnalysis/ExpParser.h>
-#include <TextAnalysis/StmtParser.h>
-#include <TextAnalysis/TypeExpParser.h>
+#include "Lexer.h"
+#include "ExpParser.h"
+#include "StmtParser.h"
+#include "TypeExpParser.h"
 
 #include "ParserMisc.h"
 

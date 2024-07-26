@@ -26,28 +26,28 @@
       <Filter>Misc</Filter>
     </ClInclude>
     <ClInclude Include="ParserMisc.h" />
-    <ClInclude Include="..\..\include\TextAnalysis\TextAnalysisConfig.h">
+    <ClInclude Include="Public\TextAnalysis\TextAnalysisConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\TextAnalysis\ScriptParser.h">
+    <ClInclude Include="Public\TextAnalysis\ScriptParser.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\TextAnalysis\BufferPosition.h">
+    <ClInclude Include="Public\TextAnalysis\BufferPosition.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\TextAnalysis\Lexer.h">
+    <ClInclude Include="Public\TextAnalysis\Lexer.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\TextAnalysis\Buffer.h">
+    <ClInclude Include="Public\TextAnalysis\Buffer.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\TextAnalysis\ExpParser.h">
+    <ClInclude Include="Public\TextAnalysis\ExpParser.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\TextAnalysis\StmtParser.h">
+    <ClInclude Include="Public\TextAnalysis\StmtParser.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\TextAnalysis\TypeExpParser.h">
+    <ClInclude Include="Public\TextAnalysis\TypeExpParser.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
   </ItemGroup>

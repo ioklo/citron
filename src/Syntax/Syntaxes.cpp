@@ -1,5 +1,5 @@
 #include "pch.h"
-#include <Syntax/Syntaxes.g.h>
+#include "Syntaxes.g.h"
 
 #include <Infra/make_vector.h>
 

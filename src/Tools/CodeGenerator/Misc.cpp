@@ -120,16 +120,14 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     }
     hStream << "{" << endl;
 
+    hStream << "public:" << endl;
+
     bool bHModified = false, bCppModified = false;
     for (auto& memberInfo : classInfo.memberInfos)
     {
         hStream << fmt::format(R"---(    {} {};)---", memberInfo.type, memberInfo.memberVarName) << endl;
         bHModified = true;
     }
-
-    AddNewLineIfNeeded(bHModified, hStream);
-    hStream << "public:" << endl;
-
 
     AddNewLineIfNeeded(bHModified, hStream);
     // SYNTAX_API IdentifierExpSyntax(std::string value);
@@ -238,13 +236,13 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     AddNewLineIfNeeded(bHModified, hStream);
     AddNewLineIfNeeded(bCppModified, cppStream);
 
-    // Getter
-    for (auto& memberInfo : classInfo.memberInfos)
-    {
-        //    std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }
-        hStream << "    " << memberInfo.type << "& " << memberInfo.getterName << "() { return " << memberInfo.memberVarName << "; }" << endl;
-        bHModified = true;
-    }
+    //// Getter
+    //for (auto& memberInfo : classInfo.memberInfos)
+    //{
+    //    //    std::vector<TypeExpSyntax>& GetTypeArgs() { return typeArgs; }
+    //    hStream << "    " << memberInfo.type << "& " << memberInfo.getterName << "() { return " << memberInfo.memberVarName << "; }" << endl;
+    //    bHModified = true;
+    //}
 
     // Json
 

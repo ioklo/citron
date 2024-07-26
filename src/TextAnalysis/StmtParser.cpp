@@ -1,13 +1,13 @@
 #include "pch.h"
-#include <TextAnalysis/StmtParser.h>
+#include "StmtParser.h"
 
 #include <optional>
 #include <algorithm>
 #include <cassert>
 
 #include <Syntax/Syntax.h>
-#include <TextAnalysis/ExpParser.h>
-#include <TextAnalysis/TypeExpParser.h>
+#include "ExpParser.h"
+#include "TypeExpParser.h"
 #include <unicode/uchar.h>
 
 #include "ParserMisc.h"
@@ -486,17 +486,17 @@ unique_ptr<SCommandStmt> ParseCommandStmt(Lexer* lexer)
             if (oSingleCommand)
             {
                 // singleCommand Skip 조건
-                size_t elemCount = oSingleCommand->GetElements().size();
+                size_t elemCount = oSingleCommand->elements.size();
 
                 if (elemCount == 0)
                     continue;
 
                 if (elemCount == 1)
                 {
-                    auto* elem = oSingleCommand->GetElements()[0].get();
+                    auto* elem = oSingleCommand->elements[0].get();
                     if (STextStringExpElement* textElem = dynamic_cast<STextStringExpElement*>(elem))
                     {
-                        if (all_of(textElem->GetText().begin(), textElem->GetText().end(), [](char32_t c) { return u_isWhitespace(c); }))
+                        if (all_of(textElem->text.begin(), textElem->text.end(), [](char32_t c) { return u_isWhitespace(c); }))
                             continue;
                     }
                 }
@@ -518,7 +518,7 @@ unique_ptr<SCommandStmt> ParseCommandStmt(Lexer* lexer)
         if (!oSingleCommand)
             return nullptr;
 
-        if (oSingleCommand->GetElements().empty())
+        if (oSingleCommand->elements.empty())
             return nullptr;
         
         *lexer = std::move(curLexer);

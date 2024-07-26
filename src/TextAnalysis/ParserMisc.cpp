@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ParserMisc.h"
-#include <TextAnalysis/Lexer.h>
+#include "Lexer.h"
 
 using namespace std;
 

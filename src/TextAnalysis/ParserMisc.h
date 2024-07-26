@@ -1,7 +1,7 @@
 #pragma once
 
 #include <optional>
-#include <TextAnalysis/Lexer.h>
+#include "Lexer.h"
 #include <Syntax/Tokens.h>
 
 namespace Citron {

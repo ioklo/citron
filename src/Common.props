@@ -3,7 +3,8 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(SolutionDir)..\include;$(IncludePath)</IncludePath>
+    <PublicIncludeDirectories>$(ProjectDir)Public;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <IncludePath>$(ProjectDir)Public\$(ProjectName);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

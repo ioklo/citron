@@ -19,10 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\Syntax\Syntax.h" />
-    <ClInclude Include="..\..\include\Syntax\SyntaxConfig.h" />
-    <ClInclude Include="..\..\include\Syntax\Syntaxes.g.h" />
-    <ClInclude Include="..\..\include\Syntax\Tokens.h" />
+    <ClInclude Include="Public\Syntax\Syntax.h" />
+    <ClInclude Include="Public\Syntax\SyntaxConfig.h" />
+    <ClInclude Include="Public\Syntax\Syntaxes.g.h" />
+    <ClInclude Include="Public\Syntax\Tokens.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>

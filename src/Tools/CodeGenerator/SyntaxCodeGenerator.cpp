@@ -6,10 +6,10 @@ using namespace std;
 using namespace std::filesystem;
 
 void GenerateSyntax(path srcPath)
-{
-    // [src]/../include/Syntax/Syntaxes.g.h
+{   
+    // [src]/Syntax/Public/Syntax/Syntaxes.g.h
     // [src]/Syntax/Syntaxes.g.cpp
-    path hPath = [srcPath]() mutable { return absolute(srcPath.append("..").append("include").append("Syntax").append("Syntaxes.g.h")); }();
+    path hPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Public").append("Syntax").append("Syntaxes.g.h"); }();
     path cppPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Syntaxes.g.cpp"); }();
 
     ostringstream hStream, cppStream;
@@ -33,7 +33,7 @@ class ArgumentSyntax;
 
     cppStream << R"---(#include "pch.h"
 
-#include <Syntax/Syntaxes.g.h>
+#include "Syntaxes.g.h"
 #include <Infra/Json.h>
 
 using namespace std;
