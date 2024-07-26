@@ -146,6 +146,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\Infra\Defaults.h" />
+    <ClInclude Include="Public\Infra\Copy.h" />
     <ClInclude Include="Public\Infra\Indirect.h" />
     <ClInclude Include="Public\Infra\InfraConfig.h" />
     <ClInclude Include="Public\Infra\IWriter.h" />

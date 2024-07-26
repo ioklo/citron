@@ -1,5 +1,4 @@
 #pragma once
-#include "SymbolMacros.h"
 #include <string>
 
 namespace Citron {

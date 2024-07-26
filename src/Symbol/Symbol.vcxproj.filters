@@ -52,8 +52,6 @@
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\SymbolConfig.h" />
-    <ClInclude Include="Public\Symbol\Copy.h" />
-    <ClInclude Include="Public\Symbol\SymbolMacros.h" />
     <ClInclude Include="Public\Symbol\Symbols.h" />
     <ClInclude Include="Public\Symbol\MEnum.h">
       <Filter>Symbols\08 Enum</Filter>

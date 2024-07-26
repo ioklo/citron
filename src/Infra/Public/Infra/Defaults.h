@@ -1,12 +1,12 @@
 #pragma once
 
-#define DECLARE_DEFAULTS(className) \
+#define DECLARE_DEFAULTS(linkage, className) \
     className(const className&) = delete; \
-    SYMBOL_API className(className&&); \
+    linkage className(className&&); \
     className& operator=(const className&) = delete; \
-    SYMBOL_API className& operator=(className&&); \
-    SYMBOL_API ~className(); \
-    SYMBOL_API className Copy() const;
+    linkage className& operator=(className&&); \
+    linkage ~className(); \
+    linkage className Copy() const;
 
 #define IMPLEMENT_DEFAULTS(className) \
     className::className(className&&) = default; \

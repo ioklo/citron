@@ -2,18 +2,249 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="Public\IR0\RArgument.h" />
-    <ClInclude Include="Public\IR0\RExp.h" />
-    <ClInclude Include="Public\IR0\RLoc.h" />
     <ClInclude Include="Public\IR0\RProgram.h" />
-    <ClInclude Include="Public\IR0\RStmt.h" />
     <ClInclude Include="Public\IR0\IR0Config.h" />
+    <ClInclude Include="Public\IR0\RExp.h">
+      <Filter>Body</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RLoc.h">
+      <Filter>Body</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStmt.h">
+      <Filter>Body</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RBodyDeclOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RBodyOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RDecl.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RSymbol.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTopLevelDeclOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTopLevelOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RType.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeDecl.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeDeclOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeOuter.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RIdentifier.h">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RNames.h">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RSymbolId.h">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeId.h">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RAccessor.h">
+      <Filter>Symbols\02 Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RGlobalFunc.h">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RGlobalFuncDecl.h">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RModuleDecl.h">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RNamespaceDecl.h">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RCommonFuncDeclComponent.h">
+      <Filter>Symbols\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RFuncDeclContainerComponent.h">
+      <Filter>Symbols\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RNamespaceDeclContainerComponent.h">
+      <Filter>Symbols\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RSymbolComponent.h">
+      <Filter>Symbols\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeDeclContainerComponent.h">
+      <Filter>Symbols\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RFunc.h">
+      <Filter>Symbols\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RFuncDecl.h">
+      <Filter>Symbols\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RFuncParameter.h">
+      <Filter>Symbols\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RFuncReturn.h">
+      <Filter>Symbols\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClass.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassConstructor.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassConstructorDecl.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassDecl.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassMemberFunc.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassMemberFuncDecl.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassMemberVar.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassMemberVarDecl.h">
+      <Filter>Symbols\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStruct.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructConstructor.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructConstructorDecl.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructDecl.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructMemberFunc.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructMemberFuncDecl.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructMemberVar.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructMemberVarDecl.h">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\REnum.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\REnumDecl.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\REnumElem.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\REnumElemDecl.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\REnumElemMemberVar.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\REnumElemMemberVarDecl.h">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RInterfaceDecl.h">
+      <Filter>Symbols\09 Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RLambda.h">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RLambdaDecl.h">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RLambdaMemberVar.h">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RLambdaMemberVarDecl.h">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RNames.cpp">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClCompile>
+    <ClCompile Include="RSymbolId.cpp">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypeId.cpp">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClCompile>
+    <ClCompile Include="RGlobalFunc.cpp">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="RModuleDecl.cpp">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypeDeclContainerComponent.cpp">
+      <Filter>Symbols\04 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RNamespaceDeclContainerComponent.cpp">
+      <Filter>Symbols\04 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RLabmdaDecl.cpp">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Body">
       <UniqueIdentifier>{6918c332-7bb2-410a-b87b-0fa1df9176c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols">
+      <UniqueIdentifier>{79bfaaee-d711-471b-9e36-ee64a4146827}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\00 Abstraction">
+      <UniqueIdentifier>{7e475546-1097-4f54-bb20-987fdeba0fee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\01 Identifier">
+      <UniqueIdentifier>{f77c8575-8fc4-4574-b569-0bd03a49b4a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\02 Properties">
+      <UniqueIdentifier>{98de02f0-a378-469b-9646-d8e9dc9a40ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\05 TopLevel">
+      <UniqueIdentifier>{b8adde77-8924-4bce-8572-8c2f2fdbec76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\04 Components">
+      <UniqueIdentifier>{e1cfcd2a-5564-4415-91d1-8d4600f239ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\03 Func">
+      <UniqueIdentifier>{906700e6-5141-4694-ad30-4fb746cae7fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\06 Class">
+      <UniqueIdentifier>{9f02b77a-231d-428e-9730-04159d41212b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\07 Struct">
+      <UniqueIdentifier>{9aead0a6-abe6-4d6e-ba03-66421ba9ff64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\08 Enum">
+      <UniqueIdentifier>{227b194f-1e89-4d6a-bcab-d8389cc5e689}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\09 Interface">
+      <UniqueIdentifier>{06652d5f-6259-4a50-b56b-92c34abacf34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Symbols\10 Lambda">
+      <UniqueIdentifier>{84dd7ced-7d09-472b-a69d-7d8d1a06e843}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

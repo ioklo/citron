@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "RArgument.h"
-#include <Symbol/MType.h>
-#include <Symbol/MClassMemberVar.h>
+#include "RType.h"
+#include "RClassMemberVar.h"
 
 namespace Citron {
 
@@ -142,7 +142,7 @@ using RExpPtr = std::unique_ptr<RExp>;
 class RLoadExp : public RExp
 {
     RLocPtr loc;
-    MTypePtr type;
+    RTypePtr type;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -160,7 +160,7 @@ public:
 class RBoxExp : public RExp
 {
     RExpPtr innerExp;
-    MTypePtr innerType;
+    RTypePtr innerType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -168,7 +168,7 @@ public:
 class RStaticBoxRefExp : public RExp
 {
     RLocPtr loc;
-    MTypePtr locType;
+    RTypePtr locType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -177,7 +177,7 @@ public:
 class RClassMemberBoxRefExp : public RExp
 {
     RLocPtr holder;
-    std::shared_ptr<MClassMemberVar> memberVar;
+    std::shared_ptr<RClassMemberVar> memberVar;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -187,7 +187,7 @@ public:
 class RStructIndirectMemberBoxRefExp : public RExp
 {
     RLocPtr holder;
-    std::shared_ptr<MStructMemberVar> memberVar;
+    std::shared_ptr<RStructMemberVar> memberVar;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -197,7 +197,7 @@ public:
 class RStructMemberBoxRefExp : public RExp
 {
     RLocPtr parent;
-    std::shared_ptr<MStructMemberVar> memberVar;
+    std::shared_ptr<RStructMemberVar> memberVar;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -217,7 +217,7 @@ public:
 class RCastBoxedLambdaToFuncExp : public RExp
 {
     RExpPtr exp;
-    std::shared_ptr<MFuncType> funcType;
+    std::shared_ptr<RFuncType> funcType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -270,7 +270,7 @@ public:
 class RListExp : public RExp
 {
     std::vector<RExpPtr> elems;
-    MTypePtr itemType;
+    RTypePtr itemType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -278,7 +278,7 @@ public:
 class RListIteratorExp : public RExp
 {
     RLocPtr listLoc;
-    MTypePtr iteratorType;
+    RTypePtr iteratorType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -357,7 +357,7 @@ public:
 // F();
 class RCallGlobalFuncExp : public RExp
 {
-    std::shared_ptr<MGlobalFunc> func;
+    std::shared_ptr<RGlobalFunc> func;
     std::vector<RArgument> args;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -369,7 +369,7 @@ public:
 // new C(2, 3, 4);
 class RNewClassExp : public RExp
 {
-    std::shared_ptr<MClassConstructor> constructor;
+    std::shared_ptr<RClassConstructor> constructor;
     std::vector<RArgument> args;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -378,7 +378,7 @@ public:
 // c.F();
 class RCallClassMemberFuncExp : public RExp
 {
-    std::shared_ptr<MClassMemberFunc> classMemberFunc;
+    std::shared_ptr<RClassMemberFunc> classMemberFunc;
     RLocPtr instance;
     std::vector<RArgument> args;
 public:
@@ -389,7 +389,7 @@ public:
 class RCastClassExp : public RExp
 {
     RExpPtr src;
-    std::shared_ptr<MClass> _class; // MType이 아니라도 괜찮은가
+    std::shared_ptr<RClass> _class; // RType이 아니라도 괜찮은가
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -401,7 +401,7 @@ public:
 // S(2, 3, 4);
 class RNewStructExp : public RExp
 {
-    std::shared_ptr<MStructConstructor> constructor;
+    std::shared_ptr<RStructConstructor> constructor;
     std::vector<RArgument> args;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -410,7 +410,7 @@ public:
 // s.F();
 class RCallStructMemberFuncExp : public RExp
 {
-    std::shared_ptr<MStructMemberFunc> structMemberFunc;
+    std::shared_ptr<RStructMemberFunc> structMemberFunc;
     RLocPtr instance;
     std::vector<RArgument> args;
 public:
@@ -424,7 +424,7 @@ public:
 // enum construction, E.First or E.Second(2, 3)
 class RNewEnumElemExp : public RExp
 {
-    std::shared_ptr<MEnumElem> enumElem;
+    std::shared_ptr<REnumElem> enumElem;
     std::vector<RArgument> args;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -434,7 +434,7 @@ public:
 class RCastEnumElemToEnumExp : public RExp
 {
     RExpPtr src;
-    std::shared_ptr<MEnum> _enum;
+    std::shared_ptr<REnum> _enum;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -445,7 +445,7 @@ public:
 
 class RNullableNullLiteralExp : public RExp
 {
-    MTypePtr innerType;
+    RTypePtr innerType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -467,7 +467,7 @@ public:
 // Lambda(lambda_type_0, x); // with captured variable
 class RLambdaExp : public RExp
 {
-    std::shared_ptr<MLambda> lambda;
+    std::shared_ptr<RLambda> lambda;
     std::vector<RArgument> args;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -477,7 +477,7 @@ public:
 // Callable은 (() => {}) ()때문에 Loc이어야 한다
 class RCallLambdaExp : public RExp
 {
-    std::shared_ptr<MLambda> lambda;
+    std::shared_ptr<RLambda> lambda;
     RLocPtr callable;
     std::vector<RArgument> args;
 public:
@@ -491,7 +491,7 @@ public:
 class RInlineBlockExp : public RExp
 {
     std::vector<RStmtPtr> stmts;
-    MTypePtr returnType;
+    RTypePtr returnType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -503,7 +503,7 @@ public:
 class RClassIsClassExp : public RExp
 {
     RExpPtr exp;
-    MTypePtr classType;
+    RTypePtr classType;
 
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -512,7 +512,7 @@ public:
 class RClassAsClassExp : public RExp
 {
     RExpPtr exp;
-    MTypePtr classType;
+    RTypePtr classType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -520,7 +520,7 @@ public:
 class RClassIsInterfaceExp : public RExp
 {
     RExpPtr exp;
-    MTypePtr interfaceType;
+    RTypePtr interfaceType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -528,7 +528,7 @@ public:
 class RClassAsInterfaceExp : public RExp
 {
     RExpPtr exp;
-    MTypePtr interfaceType;
+    RTypePtr interfaceType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -536,7 +536,7 @@ public:
 class RInterfaceIsClassExp : public RExp
 {
     RExpPtr exp;
-    MTypePtr classType;
+    RTypePtr classType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -544,7 +544,7 @@ public:
 class RInterfaceAsClassExp : public RExp
 {
     RExpPtr exp;
-    MTypePtr classType;
+    RTypePtr classType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -552,7 +552,7 @@ public:
 class RInterfaceIsInterfaceExp : public RExp
 {
     RExpPtr exp;
-    MTypePtr interfaceType;
+    RTypePtr interfaceType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -560,7 +560,7 @@ public:
 class RInterfaceAsInterfaceExp : public RExp
 {
     RExpPtr exp;
-    MTypePtr interfaceType;
+    RTypePtr interfaceType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -568,7 +568,7 @@ public:
 class REnumIsEnumElemExp : public RExp
 {
     RExpPtr exp;
-    MTypePtr enumElemType;
+    RTypePtr enumElemType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -576,7 +576,7 @@ public:
 class REnumAsEnumElemExp : public RExp
 {
     RExpPtr exp;
-    MTypePtr enumElemType;
+    RTypePtr enumElemType;
 public:
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };

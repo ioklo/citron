@@ -1,8 +1,10 @@
 #pragma once
 #include "SymbolConfig.h"
-#include "SymbolMacros.h"
+
 #include <string>
 #include <variant>
+
+#include <Infra/Defaults.h>
 
 namespace Citron 
 {
@@ -15,7 +17,7 @@ class MNormalName
 
 public:
     SYMBOL_API MNormalName(std::string&& text);
-    DECLARE_DEFAULTS(MNormalName)
+    DECLARE_DEFAULTS(SYMBOL_API, MNormalName)
 };
 
 class MReservedName
@@ -24,7 +26,7 @@ class MReservedName
 
 public:
     SYMBOL_API MReservedName(std::string&& text);
-    DECLARE_DEFAULTS(MReservedName)
+    DECLARE_DEFAULTS(SYMBOL_API, MReservedName)
 };
 
 class MLambdaName
@@ -33,7 +35,7 @@ class MLambdaName
 
 public:
     SYMBOL_API MLambdaName(int index);
-    DECLARE_DEFAULTS(MLambdaName)
+    DECLARE_DEFAULTS(SYMBOL_API, MLambdaName)
 };
 
 class MConstructorParamName
@@ -42,7 +44,7 @@ class MConstructorParamName
     std::string paramText;
 public:
     SYMBOL_API MConstructorParamName(int index, std::string&& paramText);
-    DECLARE_DEFAULTS(MConstructorParamName)
+    DECLARE_DEFAULTS(SYMBOL_API, MConstructorParamName)
 };
 
 using MName = std::variant<

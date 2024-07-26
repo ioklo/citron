@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "SyntaxIR0Translator.h"
-#include <Symbol/MModuleDecl.h>
-#include <Symbol/MNamespaceDecl.h>
+#include <IR0/RModuleDecl.h>
+#include <IR0/RNamespaceDecl.h>
 
 using namespace std;
 
@@ -12,30 +12,30 @@ namespace {
 class NamespaceElemVisitor : public SNamespaceDeclElementVisitor
 {
 public:
-    std::shared_ptr<MNamespaceDecl> curDecl;
+    std::shared_ptr<RNamespaceDecl> curDecl;
 
-    NamespaceElemVisitor(std::shared_ptr<MNamespaceDecl> curDecl)
+    NamespaceElemVisitor(std::shared_ptr<RNamespaceDecl> curDecl)
         : curDecl{std::move(curDecl)} {}
 
     // Inherited via SNamespaceDeclElementVisitor
     void Visit(SGlobalFuncDecl& elem) override
     {
-        curDecl->AddFunc()
+        
     }
 
     void Visit(SNamespaceDecl& elem) override
     {
-        std::shared_ptr<MNamespaceDecl> curNamespace = curDecl;
+        std::shared_ptr<RNamespaceDecl> curNamespace = curDecl;
 
         for (size_t i = 0, size = elem.names.size(); i < size; i++)
         {
             auto& name = elem.names[i];
 
-            std::shared_ptr<MNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
+            std::shared_ptr<RNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
             if (!childNamespace)
             {
-                childNamespace = make_shared<MNamespaceDecl>(moduleDecl, name);
-                moduleDecl->AddNamespace(childNamespace);
+                childNamespace = make_shared<RNamespaceDecl>(curNamespace, name);
+                curNamespace->AddNamespace(childNamespace);
             }
 
             curNamespace = childNamespace;
@@ -63,7 +63,7 @@ public:
 
 class ScriptElemVisitor : public SScriptElementVisitor
 {
-    std::shared_ptr<MModuleDecl> moduleDecl;
+    std::shared_ptr<RModuleDecl> moduleDecl;
 
 public:
     void Visit(SNamespaceDecl& elem) override
@@ -73,10 +73,10 @@ public:
         // 첫번째는 모듈에서 찾는다
         assert(1 <= elem.names.size());
 
-        std::shared_ptr<MNamespaceDecl> curNamespace = moduleDecl->GetNamespace(elem.names[0]);
+        std::shared_ptr<RNamespaceDecl> curNamespace = moduleDecl->GetNamespace(elem.names[0]);
         if (!curNamespace)
         {
-            curNamespace = make_shared<MNamespaceDecl>(moduleDecl, elem.names[0]);
+            curNamespace = make_shared<RNamespaceDecl>(moduleDecl, elem.names[0]);
             moduleDecl->AddNamespace(curNamespace);
         }
 
@@ -84,10 +84,10 @@ public:
         {
             auto& name = elem.names[i];
 
-            std::shared_ptr<MNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
+            std::shared_ptr<RNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
             if (!childNamespace)
             {
-                childNamespace = make_shared<MNamespaceDecl>(moduleDecl, name);
+                childNamespace = make_shared<RNamespaceDecl>(moduleDecl, name);
                 moduleDecl->AddNamespace(childNamespace);
             }
 

@@ -3,8 +3,6 @@
 #include <memory>
 #include <vector>
 
-
-#include "SymbolMacros.h"
 #include "MDecl.h"
 #include "MBodyDeclOuter.h"
 #include "MFuncDecl.h"
@@ -30,7 +28,6 @@ class MStructMemberFuncDecl
     bool bStatic;
     
 public:
-    // DECLARE_DEFAULTS(MStructMemberFuncDecl)
     void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(MBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(MFuncDeclVisitor& visitor) override { visitor.Visit(*this); }

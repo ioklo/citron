@@ -23,6 +23,12 @@
     <ClInclude Include="Public\Infra\make_vector.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\Infra\Copy.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Infra\Defaults.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

@@ -3,7 +3,9 @@
 #include <memory>
 #include <variant>
 
-#include "Copy.h"
+#include <Infra/Defaults.h>
+
+#include <Infra/Copy.h>
 #include "MIdentifier.h"
 #include "MSymbolId.h"
 
@@ -49,7 +51,7 @@ class MNullableTypeId : public MTypeId
 
 public:
     MNullableTypeId(std::shared_ptr<MTypeId> innerTypeId);
-    DECLARE_DEFAULTS(MNullableTypeId)
+    DECLARE_DEFAULTS(SYMBOL_API, MNullableTypeId)
 
     const MTypeId& GetInnerTypeId();
     void Accept(MTypeIdVisitor& visitor) override { visitor.Visit(*this); }
@@ -82,7 +84,7 @@ class MVoidTypeId : public MTypeId
 {
 public:
     MVoidTypeId() { }
-    DECLARE_DEFAULTS(MVoidTypeId)
+    DECLARE_DEFAULTS(SYMBOL_API, MVoidTypeId)
     void Accept(MTypeIdVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -100,7 +102,7 @@ class MTupleTypeId : public MTypeId
     std::vector<MTupleMemberVarId> memberVarIds;
 
 public:
-    DECLARE_DEFAULTS(MTupleTypeId)
+    DECLARE_DEFAULTS(SYMBOL_API, MTupleTypeId)
     auto GetMemberVarIds();
     void Accept(MTypeIdVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -112,7 +114,7 @@ class MFuncTypeId : public MTypeId
     std::vector<std::shared_ptr<MTypeId>> paramIds;
 
 public:
-    DECLARE_DEFAULTS(MFuncTypeId)
+    DECLARE_DEFAULTS(SYMBOL_API, MFuncTypeId)
 
     bool IsLocal();
     const MTypeId& GetReturn();
@@ -122,7 +124,7 @@ public:
 class MLambdaTypeId : public MTypeId
 {
 public:
-    DECLARE_DEFAULTS(MLambdaTypeId)
+    DECLARE_DEFAULTS(SYMBOL_API, MLambdaTypeId)
     void Accept(MTypeIdVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -131,7 +133,7 @@ class MLocalPtrTypeId : public MTypeId
     std::shared_ptr<MTypeId> innerType;
 
 public:
-    DECLARE_DEFAULTS(MLocalPtrTypeId)
+    DECLARE_DEFAULTS(SYMBOL_API, MLocalPtrTypeId)
     void Accept(MTypeIdVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -140,7 +142,7 @@ class MBoxPtrTypeId : public MTypeId
     std::shared_ptr<MTypeId> innerType;
 
 public:
-    DECLARE_DEFAULTS(MBoxPtrTypeId)
+    DECLARE_DEFAULTS(SYMBOL_API, MBoxPtrTypeId)
     void Accept(MTypeIdVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -151,7 +153,7 @@ class MSymbolTypeId : public MTypeId
 
 public:
     SYMBOL_API MSymbolTypeId(bool bLocal, MSymbolId&& symbolId);
-    DECLARE_DEFAULTS(MSymbolTypeId)
+    DECLARE_DEFAULTS(SYMBOL_API, MSymbolTypeId)
     void Accept(MTypeIdVisitor& visitor) override { visitor.Visit(*this); }
 };
 

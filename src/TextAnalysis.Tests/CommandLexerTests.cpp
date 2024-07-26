@@ -1,9 +1,9 @@
 #include "pch.h"
 #include <vector>
 
-#include <Buffer.h>
-#include <BufferPosition.h>
-#include <Lexer.h>
+#include <TextAnalysis/Buffer.h>
+#include <TextAnalysis/BufferPosition.h>
+#include <TextAnalysis/Lexer.h>
 
 #include "TestMisc.h"
 

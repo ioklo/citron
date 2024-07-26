@@ -2,12 +2,12 @@
 #include <variant>
 #include <memory>
 
-#include <Symbol/MNames.h>
-#include <Symbol/MType.h>
-#include <Symbol/MLambdaMemberVar.h>
-#include <Symbol/MStructMemberVar.h>
-#include <Symbol/MClassMemberVar.h>
-#include <Symbol/MEnumElemMemberVar.h>
+#include "RType.h"
+#include "RNames.h"
+#include "RLambdaMemberVar.h"
+#include "RStructMemberVar.h"
+#include "RClassMemberVar.h"
+#include "REnumElemMemberVar.h"
 
 namespace Citron {
 
@@ -50,7 +50,7 @@ using RLocPtr = std::unique_ptr<RLoc>;
 class RTempLoc : public RLoc
 {
     RExpPtr exp;
-    MTypePtr type;
+    RTypePtr type;
 
 public:
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
@@ -58,7 +58,7 @@ public:
 
 class RLocalVarLoc : public RLoc
 {
-    MName Name;
+    RName Name;
 
 public:
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
@@ -67,7 +67,7 @@ public:
 // only this member allowed, so no need this
 class RLambdaMemberVarLoc : public RLoc
 {
-    std::shared_ptr<MLambdaMemberVar> memberVar;
+    std::shared_ptr<RLambdaMemberVar> memberVar;
 
 public:
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
@@ -88,7 +88,7 @@ public:
 class RStructMemberLoc : public RLoc
 {
     RLocPtr instance;
-    std::shared_ptr<MStructMemberVar> memberVar;
+    std::shared_ptr<RStructMemberVar> memberVar;
 
 public:
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
@@ -97,7 +97,7 @@ public:
 class RClassMemberLoc : public RLoc
 {
     RLocPtr instance;
-    std::shared_ptr<MClassMemberVar> memberVar;
+    std::shared_ptr<RClassMemberVar> memberVar;
 public:
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -105,7 +105,7 @@ public:
 class REnumElemMemberLoc : public RLoc
 {
     RLocPtr instance;
-    std::shared_ptr<MEnumElemMemberVar> memberVar;
+    std::shared_ptr<REnumElemMemberVar> memberVar;
 public:
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
 };

@@ -7,6 +7,7 @@
 #include <IR0/RProgram.h>
 #include <IR0/RStmt.h>
 #include <Symbol/MNames.h>
+#include <Symbol/MModuleDecl.h>
 #include <Syntax/Syntax.h>
 
 namespace Citron {

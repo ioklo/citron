@@ -1,6 +1,6 @@
 #include "MNames.h"
 
-#include "SymbolMacros.h"
+#include <Infra/Defaults.h>
 
 namespace Citron 
 {

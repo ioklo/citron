@@ -1,9 +1,9 @@
 #pragma once
 #include <variant>
 #include <vector>
-#include <Symbol/MType.h>
-#include <Symbol/MNames.h>
-#include <Symbol/MLambda.h>
+#include "RType.h"
+#include "RNames.h"
+#include "RLambda.h"
 #include "RArgument.h"
 
 namespace Citron {
@@ -41,7 +41,7 @@ using RExpPtr = std::unique_ptr<RExp>;
 using RStmtPtr = std::unique_ptr<RStmt>;
 using RLocPtr = std::unique_ptr<RLoc>;
 
-class MClassConstructor;
+class RClassConstructor;
 
 class RStmtVisitor
 {
@@ -89,7 +89,7 @@ public:
 // 로컬 변수는 
 class RLocalVarDeclStmt : public RStmt
 {
-    MTypePtr type;
+    RTypePtr type;
     std::string name;
     RExpPtr initExp;
 public:
@@ -107,8 +107,8 @@ public:
 
 class RIfNullableRefTestStmt : public RStmt
 {
-    MTypePtr refType;
-    MName varName;
+    RTypePtr refType;
+    RName varName;
     RExpPtr asExp;
     std::vector<RStmtPtr> body;
     std::vector<RStmtPtr> elseBody;
@@ -118,8 +118,8 @@ public:
 
 class RIfNullableValueTestStmt : public RStmt
 {
-    MTypePtr type;
-    MName varName;
+    RTypePtr type;
+    RName varName;
     RExpPtr asExp;
     std::vector<RStmtPtr> body;
     std::vector<RStmtPtr> elseBody;
@@ -178,7 +178,7 @@ public:
 
 class RTaskStmt : public RStmt
 {
-    std::shared_ptr<MLambda> lambda;
+    std::shared_ptr<RLambda> lambda;
     std::vector<RArgument> captureArgs;
 public:
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
@@ -193,7 +193,7 @@ public:
 
 class RAsyncStmt : public RStmt
 {
-    std::shared_ptr<MLambda> lambda;
+    std::shared_ptr<RLambda> lambda;
     std::vector<RArgument> captureArgs;
 public:
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
@@ -201,10 +201,10 @@ public:
 
 class RForeachStmt : public RStmt
 {
-    MTypePtr enumeratorType;
+    RTypePtr enumeratorType;
     RExpPtr enumeratorExp;
-    MTypePtr itemType;
-    MName varName;
+    RTypePtr itemType;
+    RName varName;
     RExpPtr nextExp;
     std::vector<RStmtPtr> body;
 public:
@@ -213,11 +213,11 @@ public:
 
 class RForeachCastStmt : public RStmt
 {
-    MTypePtr enumeratorType;
+    RTypePtr enumeratorType;
     RExpPtr enumeratorExp;
-    MTypePtr itemType;
-    MName varName;
-    MTypePtr rawItemType;
+    RTypePtr itemType;
+    RName varName;
+    RTypePtr rawItemType;
     RExpPtr nextExp;
     RExpPtr castExp;
     std::vector<RStmtPtr> body;
@@ -235,7 +235,7 @@ public:
 // Constructor 내에서 상위 Constructor 호출시 사용
 class RCallClassConstructorStmt : public RStmt
 {
-    std::shared_ptr<MClassConstructor> constructor;
+    std::shared_ptr<RClassConstructor> constructor;
     std::vector<RArgument> args;
 public:
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
@@ -243,7 +243,7 @@ public:
 
 class RCallStructConstructorStmt : public RStmt
 {
-    std::shared_ptr<MStructConstructor> constructor;
+    std::shared_ptr<RStructConstructor> constructor;
     std::vector<RArgument> args;
 public:
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }

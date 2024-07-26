@@ -1,6 +1,5 @@
 #pragma once
 #include <optional>
-#include "SymbolMacros.h"
 
 #include "MFuncReturn.h"
 #include "MFuncParameter.h"

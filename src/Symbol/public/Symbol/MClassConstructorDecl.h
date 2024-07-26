@@ -2,7 +2,6 @@
 #include <vector>
 #include <memory>
 
-#include "SymbolMacros.h"
 #include "MDecl.h"
 #include "MBodyDeclOuter.h"
 #include "MFuncDecl.h"

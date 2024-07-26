@@ -1,5 +1,8 @@
 #pragma once
-#include "SymbolMacros.h"
+#include <memory>
+#include <vector>
+
+#include <Infra/Defaults.h>
 
 #include "MNames.h"
 
@@ -20,7 +23,7 @@ public:
         MName&& name, 
         std::vector<std::shared_ptr<MTypeId>>&& typeArgs, 
         std::vector<std::shared_ptr<MTypeId>>&& paramIds);
-    DECLARE_DEFAULTS(MSymbolPath)
+    DECLARE_DEFAULTS(SYMBOL_API, MSymbolPath)
     
     std::shared_ptr<MSymbolPath> Child(std::shared_ptr<MSymbolPath>&& sharedThis, MName&& name, std::vector<std::shared_ptr<MTypeId>>&& typeArgs, std::vector<std::shared_ptr<MTypeId>>&& paramIds);
 };
@@ -32,7 +35,7 @@ class MSymbolId
 
 public:
     MSymbolId(std::string&& moduleName, std::shared_ptr<MSymbolPath>&& pPath);
-    DECLARE_DEFAULTS(MSymbolId)
+    DECLARE_DEFAULTS(SYMBOL_API, MSymbolId)
     
     MSymbolId Child(MName name, std::vector<std::shared_ptr<MTypeId>>&& typeArgs, std::vector<std::shared_ptr<MTypeId>>&& paramIds);
 };
