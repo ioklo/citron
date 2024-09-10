@@ -34,9 +34,6 @@
     <Filter Include="Symbols\09 Interface">
       <UniqueIdentifier>{5a838a2f-b50c-4e17-b969-4d72e070a5c8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Symbols\10 Lambda">
-      <UniqueIdentifier>{3446bc86-4857-4e51-ab25-0d27f8880510}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\Symbol\MDecl.h">
@@ -149,18 +146,6 @@
     <ClInclude Include="Public\Symbol\MModuleDecl.h">
       <Filter>Symbols\05 TopLevel</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MLambda.h">
-      <Filter>Symbols\10 Lambda</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MLambdaDecl.h">
-      <Filter>Symbols\10 Lambda</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MLambdaMemberVar.h">
-      <Filter>Symbols\10 Lambda</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MLambdaMemberVarDecl.h">
-      <Filter>Symbols\10 Lambda</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MSymbolComponent.h">
       <Filter>Symbols\04 Components</Filter>
     </ClInclude>
@@ -222,9 +207,6 @@
     </ClCompile>
     <ClCompile Include="MGlobalFunc.cpp">
       <Filter>Symbols\05 TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="MLabmdaDecl.cpp">
-      <Filter>Symbols\10 Lambda</Filter>
     </ClCompile>
     <ClCompile Include="MTypeId.cpp">
       <Filter>Symbols\01 Identifier</Filter>

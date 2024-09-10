@@ -9,7 +9,6 @@ std::shared_ptr<MTypeId> stringTypeId = std::make_shared<MSymbolTypeId>(false, s
 
 IMPLEMENT_DEFAULTS(MVoidTypeId)
 IMPLEMENT_DEFAULTS(MTupleTypeId)
-IMPLEMENT_DEFAULTS(MLambdaTypeId)
 IMPLEMENT_DEFAULTS(MSymbolTypeId)
 MSymbolTypeId::MSymbolTypeId(bool bLocal, MSymbolId&& symbolId)
     : bLocal(bLocal), symbolId(std::move(symbolId))

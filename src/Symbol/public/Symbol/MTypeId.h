@@ -16,7 +16,6 @@ class MTypeVarTypeId;
 class MVoidTypeId;
 class MTupleTypeId;
 class MFuncTypeId;
-class MLambdaTypeId;
 class MLocalPtrTypeId;
 class MBoxPtrTypeId;
 class MSymbolTypeId;
@@ -30,7 +29,6 @@ public:
     virtual void Visit(MVoidTypeId& typeId) = 0;
     virtual void Visit(MTupleTypeId& typeId) = 0;
     virtual void Visit(MFuncTypeId& typeId) = 0;
-    virtual void Visit(MLambdaTypeId& typeId) = 0;
     virtual void Visit(MLocalPtrTypeId& typeId) = 0;
     virtual void Visit(MBoxPtrTypeId& typeId) = 0;
     virtual void Visit(MSymbolTypeId& typeId) = 0;
@@ -118,13 +116,6 @@ public:
 
     bool IsLocal();
     const MTypeId& GetReturn();
-    void Accept(MTypeIdVisitor& visitor) override { visitor.Visit(*this); }
-};
-
-class MLambdaTypeId : public MTypeId
-{
-public:
-    DECLARE_DEFAULTS(SYMBOL_API, MLambdaTypeId)
     void Accept(MTypeIdVisitor& visitor) override { visitor.Visit(*this); }
 };
 

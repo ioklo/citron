@@ -8,7 +8,6 @@ class MClassConstructor;  // construct decl space
 class MClassMemberFunc;   // construct decl space
 class MStructConstructor; // struct decl space
 class MStructMemberFunc;  // struct decl space
-class MLambda;            // body space
 
 class MFuncVisitor
 {
@@ -19,7 +18,6 @@ public:
     virtual void Visit(MClassMemberFunc& func) = 0;
     virtual void Visit(MStructConstructor& func) = 0;
     virtual void Visit(MStructMemberFunc& func) = 0;
-    virtual void Visit(MLambda& func) = 0;
 };
 
 class MFunc

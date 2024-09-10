@@ -17,8 +17,6 @@ class MClassMemberVarDecl;
 class MEnumDecl;
 class MEnumElemDecl;
 class MEnumElemMemberVarDecl;
-class MLambdaDecl;
-class MLambdaMemberVarDecl;
 class MInterfaceDecl;
 
 class MDeclVisitor
@@ -39,8 +37,6 @@ public:
     virtual void Visit(MEnumDecl& decl) = 0;
     virtual void Visit(MEnumElemDecl& decl) = 0;
     virtual void Visit(MEnumElemMemberVarDecl& decl) = 0;
-    virtual void Visit(MLambdaDecl& decl) = 0;
-    virtual void Visit(MLambdaMemberVarDecl& decl) = 0;
     virtual void Visit(MInterfaceDecl& decl) = 0;
 };
 

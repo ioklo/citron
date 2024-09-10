@@ -6,7 +6,6 @@
 
 namespace Citron
 {
-class MLambdaDecl;
 
 class MCommonFuncDeclComponent
 {
@@ -19,8 +18,6 @@ class MCommonFuncDeclComponent
 
     std::optional<FuncReturnAndParams> funcReturnAndParams; // need initialization
     std::optional<bool> bLastParameterVariadic;             // need initialization
-    std::vector<MLambdaDecl> lambdaDecls;
-
 };
 
 }

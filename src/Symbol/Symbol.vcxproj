@@ -172,10 +172,6 @@
     <ClInclude Include="Public\Symbol\MGlobalFuncDecl.h" />
     <ClInclude Include="Public\Symbol\MIdentifier.h" />
     <ClInclude Include="Public\Symbol\MInterfaceDecl.h" />
-    <ClInclude Include="Public\Symbol\MLambda.h" />
-    <ClInclude Include="Public\Symbol\MLambdaDecl.h" />
-    <ClInclude Include="Public\Symbol\MLambdaMemberVar.h" />
-    <ClInclude Include="Public\Symbol\MLambdaMemberVarDecl.h" />
     <ClInclude Include="Public\Symbol\MModuleDecl.h" />
     <ClInclude Include="Public\Symbol\MNames.h" />
     <ClInclude Include="Public\Symbol\MNamespaceDecl.h" />
@@ -203,7 +199,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MGlobalFunc.cpp" />
-    <ClCompile Include="MLabmdaDecl.cpp" />
     <ClCompile Include="MModuleDecl.cpp" />
     <ClCompile Include="MNames.cpp" />
     <ClCompile Include="MNamespaceDeclContainerComponent.cpp" />

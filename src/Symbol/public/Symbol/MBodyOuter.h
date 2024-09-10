@@ -9,7 +9,6 @@ class MClassConstructor;
 class MClassMemberFunc;
 class MStructConstructor;
 class MStructMemberFunc;
-class MLambda;
 
 class MBodyOuterVisitor
 {
@@ -20,7 +19,6 @@ public:
     virtual void Visit(MClassMemberFunc& outer) = 0;
     virtual void Visit(MStructConstructor& outer) = 0;
     virtual void Visit(MStructMemberFunc& outer) = 0;
-    virtual void Visit(MLambda& outer) = 0;
 };
 
 class MBodyOuter

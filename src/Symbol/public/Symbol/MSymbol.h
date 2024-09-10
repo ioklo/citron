@@ -15,8 +15,6 @@ class MStructMemberVar;
 class MEnum;
 class MEnumElem;
 class MEnumElemMemberVar;
-class MLambda;
-class MLambdaMemberVar;
 class MInterface;
 
 class MSymbolVisitor
@@ -35,8 +33,6 @@ public:
     virtual void Visit(MEnum& symbol) = 0;
     virtual void Visit(MEnumElem& symbol) = 0;
     virtual void Visit(MEnumElemMemberVar& symbol) = 0;
-    virtual void Visit(MLambda& symbol) = 0;
-    virtual void Visit(MLambdaMemberVar& symbol) = 0;
     // virtual void Visit(MInterface& symbol) = 0;
 };
 
