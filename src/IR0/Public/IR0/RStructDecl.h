@@ -1,8 +1,11 @@
 #pragma once
 
+#include "IR0Config.h"
+
 #include <vector>
 #include <optional>
 #include <memory>
+#include <ranges>
 
 #include "RDecl.h"
 #include "RTypeDecl.h"
@@ -27,12 +30,12 @@ class RStructDecl
     , public RTypeDecl
     , public RTypeDeclOuter
     , private RTypeDeclContainerComponent
-    , private RFuncDeclContainerComponent<std::shared_ptr<RStructMemberFuncDecl>>
+    , private RFuncDeclContainerComponent<RStructMemberFuncDecl>
 {
     struct BaseTypes
     {
-        std::shared_ptr<RStruct> baseStruct;
-        std::vector<std::shared_ptr<RInterface>> interfaces;
+        RTypePtr baseStruct;
+        std::vector<RTypePtr> interfaces;
     };
 
     RTypeDeclOuterPtr outer;
@@ -49,6 +52,24 @@ class RStructDecl
     std::optional<BaseTypes> oBaseTypes;
 
 public:
+    IR0_API RStructDecl(RTypeDeclOuterPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams);
+    IR0_API void InitBaseTypes(RTypePtr baseStruct, std::vector<RTypePtr> interfaces);
+
+public:
+    using RTypeDeclContainerComponent::AddType;
+    IR0_API void AddConstructor(std::shared_ptr<RStructConstructorDecl> decl);
+    void AddMemberFunc(std::shared_ptr<RStructMemberFuncDecl> decl) { RFuncDeclContainerComponent<RStructMemberFuncDecl>::AddFunc(std::move(decl)); }
+    IR0_API void AddMemberVar(std::shared_ptr<RStructMemberVarDecl> decl);
+
+    auto GetConstructors() { return std::views::all(constructors); }
+    auto GetMemberVars() { return std::views::all(memberVars); }
+
+    /*size_t GetMemberVarCount() { return memberVars.size(); }
+    const std::shared_ptr<RStructMemberVarDecl>& GetMemberVar(size_t index) { return memberVars[index]; }*/
+
+
+public:
+    RIdentifier GetIdentifier() override { return RIdentifier { name, (int)typeParams.size(), {} }; }
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }

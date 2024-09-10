@@ -148,11 +148,13 @@
   <ItemGroup>
     <ClInclude Include="Public\Infra\Defaults.h" />
     <ClInclude Include="Public\Infra\Copy.h" />
+    <ClInclude Include="Public\Infra\Hash.h" />
     <ClInclude Include="Public\Infra\Indirect.h" />
     <ClInclude Include="Public\Infra\InfraConfig.h" />
     <ClInclude Include="Public\Infra\IWriter.h" />
     <ClInclude Include="Public\Infra\Json.h" />
     <ClInclude Include="Public\Infra\make_vector.h" />
+    <ClInclude Include="Public\Infra\NotImplementedException.h" />
     <ClInclude Include="Public\Infra\StringWriter.h" />
     <ClInclude Include="Public\Infra\Unreachable.h" />
     <ClInclude Include="pch.h" />
@@ -167,10 +169,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="StringWriter.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vcpkg-configuration.json" />
-    <None Include="vcpkg.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

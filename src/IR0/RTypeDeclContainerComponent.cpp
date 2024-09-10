@@ -1,5 +1,6 @@
 #include <optional>
 #include "RTypeDeclContainerComponent.h"
+#include "RNames.h"
 
 using namespace std;
 
@@ -15,23 +16,32 @@ namespace Citron {
     return typeDict.Values;
 }*/
 
-//TypeDeclSymbol* TypeDeclSymbolComponent::GetType(const Name& name)
-//{
-//    auto i = typeDict.find(name);
-//    if (i == typeDict.end()) return nullptr;
-//
-//    return &types[i->second];
-//}
+RTypeDeclContainerComponent::RTypeDeclContainerComponent() = default;
 
-void RTypeDeclContainerComponent::AddType(RTypeDecl&& typeDecl)
+size_t RTypeDeclContainerComponent::GetTypeCount()
 {
-    /*size_t index = types.size();
-
-    auto& name = GetName(typeDecl);
-    typeDict.insert(name, index);
-    types.push_back(std::move(typeDecl));*/
+    return types.size();
 }
-//
+
+RTypeDeclPtr RTypeDeclContainerComponent::GetType(int index)
+{
+    return types[index];
+}
+
+RTypeDeclPtr RTypeDeclContainerComponent::GetType(const RIdentifier& identifier)
+{
+    auto i = typeDict.find(identifier);
+    if (i == typeDict.end()) return nullptr;
+
+    return i->second;
+}
+
+void RTypeDeclContainerComponent::AddType(RTypeDeclPtr typeDecl)
+{
+    types.push_back(typeDecl);
+    typeDict.insert_or_assign(typeDecl->GetIdentifier(), std::move(typeDecl));
+}
+
 //bool ICyclicEqualityComparableStruct<TypeDeclSymbolComponent>.CyclicEquals(ref TypeDeclSymbolComponent other, ref CyclicEqualityCompareContext context)
 //{
 //    if (!typeDict.CyclicEqualsClassValue(other.typeDict, ref context))
@@ -44,7 +54,6 @@ void RTypeDeclContainerComponent::AddType(RTypeDecl&& typeDecl)
 //{
 //    context.SerializeDictRefKeyRefValue(nameof(typeDict), typeDict);
 //}
-
 
 
 }

@@ -12,7 +12,6 @@
 
 namespace Citron
 {
-
 class RStructDecl;
 
 class RStructMemberFuncDecl 
@@ -23,9 +22,14 @@ class RStructMemberFuncDecl
 {
     std::weak_ptr<RStructDecl> _struct;
     RAccessor accessor;
-    RName name;
+    std::string name;
     std::vector<std::string> typeParams;
     bool bStatic;
+
+public:
+    IR0_API RStructMemberFuncDecl(std::weak_ptr<RStructDecl> _struct, RAccessor accessor, std::string name, std::vector<std::string> typeParams, bool bStatic);
+    IR0_API void InitFuncReturnAndParams(RTypePtr funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic);
+    using RCommonFuncDeclComponent::InitBody;
     
 public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }

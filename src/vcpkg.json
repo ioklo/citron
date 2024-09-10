@@ -1,8 +1,9 @@
 {
-  "dependencies": [
-    "icu",
-    "fmt",
-    "boost-algorithm",
-    "gtest"
-  ]
+    "dependencies": [
+        "icu",
+        "fmt",
+        "boost-algorithm",
+        "boost-container-hash",
+        "gtest"
+    ]
 }

@@ -4,10 +4,25 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="SyntaxIR0Translator.cpp" />
+    <ClCompile Include="EnumTranslation.cpp" />
+    <ClCompile Include="StructTranslation.cpp" />
+    <ClCompile Include="CommonTranslation.cpp" />
+    <ClCompile Include="MemberDeclPhaseContext.cpp" />
+    <ClCompile Include="BodyPhaseContext.cpp" />
+    <ClCompile Include="StmtTranslation.cpp" />
+    <ClCompile Include="ScopeContext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="SyntaxIR0Translator.h" />
     <ClInclude Include="SyntaxIR0TranslatorConfig.h" />
+    <ClInclude Include="EnumTranslation.h" />
+    <ClInclude Include="SkeletonPhaseContext.h" />
+    <ClInclude Include="MemberDeclPhaseContext.h" />
+    <ClInclude Include="StructTranslation.h" />
+    <ClInclude Include="CommonTranslation.h" />
+    <ClInclude Include="BodyPhaseContext.h" />
+    <ClInclude Include="StmtTranslation.h" />
+    <ClInclude Include="ScopeContext.h" />
   </ItemGroup>
 </Project>

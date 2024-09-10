@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "RDecl.h"
 #include "RTopLevelOuter.h"
 #include "RTopLevelDeclOuter.h"
@@ -20,13 +22,14 @@ class RModuleDecl
     , public RTypeOuter
     , private RNamespaceDeclContainerComponent
     , private RTypeDeclContainerComponent
-    , private RFuncDeclContainerComponent<std::shared_ptr<RGlobalFuncDecl>>
+    , private RFuncDeclContainerComponent<RGlobalFuncDecl>
 
 {
-    std::string moduleName;
-    bool bReference; // 지금 만들고 있는 모듈인지, 아닌지 여부를 판별할때 쓴다
+    std::string name;
 
 public:
+    IR0_API RModuleDecl(std::string name);
+
     using RNamespaceDeclContainerComponent::AddNamespace;
     using RNamespaceDeclContainerComponent::GetNamespace;
     using RTypeDeclContainerComponent::AddType;

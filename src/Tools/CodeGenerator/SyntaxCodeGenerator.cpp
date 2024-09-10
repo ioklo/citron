@@ -43,7 +43,7 @@ namespace Citron {
 namespace {
 struct ToJsonVisitor {
     template<typename T>
-    JsonItem operator()(std::unique_ptr<T>& t) { return t->ToJson(); }
+    JsonItem operator()(std::shared_ptr<T>& t) { return t->ToJson(); }
 
     template<typename T>
     JsonItem operator()(T& t) { return t.ToJson(); }
@@ -185,7 +185,7 @@ struct ToJsonVisitor {
             }
         },
 
-        PtrDeclsInfo {
+        SharedPtrDeclsInfo {
             .names {
                 "SStmt",
                 "SExp",
@@ -758,7 +758,7 @@ struct ToJsonVisitor {
             .name = "SCommandStmt",
             .variantInterfaces { "SStmt" },
             .memberInfos {
-                {.type = "std::vector<SStringExp>", .memberVarName = "commands", .getterName = "GetCommands" },
+                {.type = "std::vector<std::shared_ptr<SStringExp>>", .memberVarName = "commands", .getterName = "GetCommands" },
             },
         },
 
@@ -968,7 +968,6 @@ struct ToJsonVisitor {
             .variantInterfaces { "SClassMemberDecl" },
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
                 { .type = "std::optional<std::vector<SArgument>>", .memberVarName = "baseArgs", .getterName = "GetBaseArgs" },
                 { .type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
@@ -1025,7 +1024,6 @@ struct ToJsonVisitor {
             .variantInterfaces { "SStructMemberDecl" },
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
                 { .type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
@@ -1060,7 +1058,7 @@ struct ToJsonVisitor {
             .name = "SEnumElemDecl",
             .memberInfos {
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<SEnumElemMemberVarDecl>", .memberVarName = "memberVars", .getterName = "GetMemberVars" },
+                { .type = "std::vector<std::shared_ptr<SEnumElemMemberVarDecl>>", .memberVarName = "memberVars", .getterName = "GetMemberVars" },
             },
         },
 
@@ -1072,7 +1070,7 @@ struct ToJsonVisitor {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 { .type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<SEnumElemDecl>", .memberVarName = "elements", .getterName = "GetElements" },
+                { .type = "std::vector<std::shared_ptr<SEnumElemDecl>>", .memberVarName = "elements", .getterName = "GetElements" },
             },
         },
 

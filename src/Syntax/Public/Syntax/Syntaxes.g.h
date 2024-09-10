@@ -94,17 +94,17 @@ class SGlobalFuncDecl;
 class SNamespaceDecl;
 class SScript;
 
-using SStmtPtr = std::unique_ptr<SStmt>;
-using SExpPtr = std::unique_ptr<SExp>;
-using STypeExpPtr = std::unique_ptr<STypeExp>;
-using SStringExpElementPtr = std::unique_ptr<SStringExpElement>;
-using SLambdaExpBodyPtr = std::unique_ptr<SLambdaExpBody>;
-using SEmbeddableStmtPtr = std::unique_ptr<SEmbeddableStmt>;
-using SForStmtInitializerPtr = std::unique_ptr<SForStmtInitializer>;
-using SClassMemberDeclPtr = std::unique_ptr<SClassMemberDecl>;
-using SStructMemberDeclPtr = std::unique_ptr<SStructMemberDecl>;
-using SNamespaceDeclElementPtr = std::unique_ptr<SNamespaceDeclElement>;
-using SScriptElementPtr = std::unique_ptr<SScriptElement>;
+using SStmtPtr = std::shared_ptr<SStmt>;
+using SExpPtr = std::shared_ptr<SExp>;
+using STypeExpPtr = std::shared_ptr<STypeExp>;
+using SStringExpElementPtr = std::shared_ptr<SStringExpElement>;
+using SLambdaExpBodyPtr = std::shared_ptr<SLambdaExpBody>;
+using SEmbeddableStmtPtr = std::shared_ptr<SEmbeddableStmt>;
+using SForStmtInitializerPtr = std::shared_ptr<SForStmtInitializer>;
+using SClassMemberDeclPtr = std::shared_ptr<SClassMemberDecl>;
+using SStructMemberDeclPtr = std::shared_ptr<SStructMemberDecl>;
+using SNamespaceDeclElementPtr = std::shared_ptr<SNamespaceDeclElement>;
+using SScriptElementPtr = std::shared_ptr<SScriptElement>;
 enum class SAccessModifier
 {
     Public,
@@ -1142,9 +1142,9 @@ class SCommandStmt
     : public SStmt
 {
 public:
-    std::vector<SStringExp> commands;
+    std::vector<std::shared_ptr<SStringExp>> commands;
 
-    SYNTAX_API SCommandStmt(std::vector<SStringExp> commands);
+    SYNTAX_API SCommandStmt(std::vector<std::shared_ptr<SStringExp>> commands);
     SCommandStmt(const SCommandStmt&) = delete;
     SYNTAX_API SCommandStmt(SCommandStmt&&) noexcept;
     SYNTAX_API virtual ~SCommandStmt();
@@ -1555,12 +1555,11 @@ class SClassConstructorDecl
 {
 public:
     std::optional<SAccessModifier> accessModifier;
-    std::string name;
     std::vector<SFuncParam> parameters;
     std::optional<std::vector<SArgument>> baseArgs;
     std::vector<SStmtPtr> body;
 
-    SYNTAX_API SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<SFuncParam> parameters, std::optional<std::vector<SArgument>> baseArgs, std::vector<SStmtPtr> body);
+    SYNTAX_API SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::optional<std::vector<SArgument>> baseArgs, std::vector<SStmtPtr> body);
     SClassConstructorDecl(const SClassConstructorDecl&) = delete;
     SYNTAX_API SClassConstructorDecl(SClassConstructorDecl&&) noexcept;
     SYNTAX_API virtual ~SClassConstructorDecl();
@@ -1654,11 +1653,10 @@ class SStructConstructorDecl
 {
 public:
     std::optional<SAccessModifier> accessModifier;
-    std::string name;
     std::vector<SFuncParam> parameters;
     std::vector<SStmtPtr> body;
 
-    SYNTAX_API SStructConstructorDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SYNTAX_API SStructConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
     SStructConstructorDecl(const SStructConstructorDecl&) = delete;
     SYNTAX_API SStructConstructorDecl(SStructConstructorDecl&&) noexcept;
     SYNTAX_API virtual ~SStructConstructorDecl();
@@ -1713,9 +1711,9 @@ class SEnumElemDecl
 {
 public:
     std::string name;
-    std::vector<SEnumElemMemberVarDecl> memberVars;
+    std::vector<std::shared_ptr<SEnumElemMemberVarDecl>> memberVars;
 
-    SYNTAX_API SEnumElemDecl(std::string name, std::vector<SEnumElemMemberVarDecl> memberVars);
+    SYNTAX_API SEnumElemDecl(std::string name, std::vector<std::shared_ptr<SEnumElemMemberVarDecl>> memberVars);
     SEnumElemDecl(const SEnumElemDecl&) = delete;
     SYNTAX_API SEnumElemDecl(SEnumElemDecl&&) noexcept;
     SYNTAX_API ~SEnumElemDecl();
@@ -1736,9 +1734,9 @@ public:
     std::optional<SAccessModifier> accessModifier;
     std::string name;
     std::vector<STypeParam> typeParams;
-    std::vector<SEnumElemDecl> elements;
+    std::vector<std::shared_ptr<SEnumElemDecl>> elements;
 
-    SYNTAX_API SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl> elements);
+    SYNTAX_API SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<std::shared_ptr<SEnumElemDecl>> elements);
     SEnumDecl(const SEnumDecl&) = delete;
     SYNTAX_API SEnumDecl(SEnumDecl&&) noexcept;
     SYNTAX_API virtual ~SEnumDecl();

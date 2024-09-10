@@ -12,7 +12,7 @@ namespace Citron
 {
 
 class RClassDecl;
-class RFuncParameter;
+struct RFuncParameter;
 
 class RClassConstructorDecl 
     : public RDecl

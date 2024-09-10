@@ -33,6 +33,8 @@ class RLambdaDecl
     std::optional<RFuncReturn> oReturn;
 
 public:
+    RIdentifier GetIdentifier() override { return RIdentifier { name, 0, {} }; }
+
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }

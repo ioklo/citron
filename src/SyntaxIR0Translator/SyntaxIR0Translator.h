@@ -13,7 +13,7 @@
 namespace Citron {
 
 SYNTAXIR0TRANSLATOR_API
-std::optional<RProgram> Translate(
+std::shared_ptr<RModuleDecl> Translate(
     MName moduleName,
     std::vector<SScript> scripts,
     std::vector<std::shared_ptr<MModuleDecl>> referenceModules);

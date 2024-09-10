@@ -1,6 +1,7 @@
 #pragma once
 #include "IR0Config.h"
 #include <Infra/Defaults.h>
+#include <Infra/Hash.h>
 #include <string>
 #include <variant>
 
@@ -9,40 +10,29 @@ namespace Citron
 
 // 통합 Identifier 세 부분으로 구성된다
 // 이름 name, 타입 파라미터 개수 type parameter count, func parameterIds
-class RNormalName
+struct RNormalName
 {
     std::string text;
-
-public:
-    IR0_API RNormalName(std::string&& text);
-    DECLARE_DEFAULTS(IR0_API, RNormalName)
+    bool operator==(const RNormalName& other) const noexcept = default;
 };
 
-class RReservedName
+struct RReservedName
 {
     std::string text;
-
-public:
-    IR0_API RReservedName(std::string&& text);
-    DECLARE_DEFAULTS(IR0_API, RReservedName)
+    bool operator==(const RReservedName& other) const noexcept = default;
 };
 
-class RLambdaName
+struct RLambdaName
 {
     int index;
-
-public:
-    IR0_API RLambdaName(int index);
-    DECLARE_DEFAULTS(IR0_API, RLambdaName)
+    bool operator==(const RLambdaName& other) const noexcept = default;
 };
 
-class RConstructorParamName
+struct RConstructorParamName
 {
     int index;
     std::string paramText;
-public:
-    IR0_API RConstructorParamName(int index, std::string&& paramText);
-    DECLARE_DEFAULTS(IR0_API, RConstructorParamName)
+    bool operator==(const RConstructorParamName& other) const noexcept = default;
 };
 
 using RName = std::variant<
@@ -53,5 +43,54 @@ using RName = std::variant<
 >;
 
 IR0_API RName Copy(const RName& name);
+
+}
+
+namespace std {
+
+template<>
+struct hash<Citron::RNormalName>
+{
+    std::size_t operator()(const Citron::RNormalName& name) const noexcept
+    {
+        size_t s = 0;
+        Citron::hash_combine(s, name.text);
+        return s;
+    }
+};
+
+template<>
+struct hash<Citron::RReservedName>
+{
+    std::size_t operator()(const Citron::RReservedName& name) const noexcept
+    {
+        size_t s = 0;
+        Citron::hash_combine(s, name.text);
+        return s;
+    }
+};
+
+template<>
+struct hash<Citron::RLambdaName>
+{
+    std::size_t operator()(const Citron::RLambdaName& name) const noexcept
+    {
+        size_t s = 0;
+        Citron::hash_combine(s, name.index);
+        return s;
+    }
+};
+
+template<>
+struct hash<Citron::RConstructorParamName>
+{
+    std::size_t operator()(const Citron::RConstructorParamName& name) const noexcept
+    {
+        size_t s = 0;
+        Citron::hash_combine(s, name.index);
+        Citron::hash_combine(s, name.paramText);
+        return s;
+    }
+};
 
 }

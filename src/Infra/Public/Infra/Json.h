@@ -110,6 +110,12 @@ JsonItem ToJson(T& t)
     return t.ToJson();
 }
 
+template<typename T>
+JsonItem ToJson(std::shared_ptr<T>& t)
+{
+    return t->ToJson();
+}
+
 inline JsonItem ToJson(std::string& s)
 {
     return JsonString(s);

@@ -17,7 +17,8 @@ class MLambda
     , private MSymbolComponent<MBodyOuter, MLambdaDecl>
 {
 public:
-    void Accept(MSymbolVisitor& visitor) override { visitor.Visit(*this); }
+    template<typename TResult>
+    TResult Accept(MSymbolVisitor<TResult>& visitor) override { return visitor.Visit(*this); }
     void Accept(MBodyOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(MFuncVisitor& visitor) override { visitor.Visit(*this); }
 };

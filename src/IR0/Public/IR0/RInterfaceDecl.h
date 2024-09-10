@@ -21,6 +21,8 @@ class RInterfaceDecl
     std::vector<std::string> typeParams;
 
 public:
+    RIdentifier GetIdentifier() override { return RIdentifier { name, (int)typeParams.size(), {} }; }
+
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
 };

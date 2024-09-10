@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -74,6 +74,9 @@
     <Import Project="..\Common.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -199,7 +202,6 @@
     <ClInclude Include="Public\IR0\RTypeId.h" />
     <ClInclude Include="Public\IR0\RTypeOuter.h" />
     <ClInclude Include="Public\IR0\IR0Config.h" />
-    <ClInclude Include="Public\IR0\RProgram.h" />
     <ClInclude Include="Public\IR0\RArgument.h" />
     <ClInclude Include="Public\IR0\RExp.h" />
     <ClInclude Include="Public\IR0\RLoc.h" />
@@ -214,11 +216,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="RCommonFuncDeclComponent.cpp" />
+    <ClCompile Include="RStructConstructorDecl.cpp" />
+    <ClCompile Include="REnumDecl.cpp" />
+    <ClCompile Include="REnumElemDecl.cpp" />
+    <ClCompile Include="REnumElemMemberVarDecl.cpp" />
     <ClCompile Include="RGlobalFunc.cpp" />
     <ClCompile Include="RLabmdaDecl.cpp" />
     <ClCompile Include="RModuleDecl.cpp" />
     <ClCompile Include="RNames.cpp" />
     <ClCompile Include="RNamespaceDeclContainerComponent.cpp" />
+    <ClCompile Include="RStructMemberFuncDecl.cpp" />
+    <ClCompile Include="RStructMemberVarDecl.cpp" />
     <ClCompile Include="RSymbolId.cpp" />
     <ClCompile Include="RTypeDeclContainerComponent.cpp" />
     <ClCompile Include="RTypeId.cpp" />

@@ -10,7 +10,7 @@ namespace Citron {
 namespace {
 struct ToJsonVisitor {
     template<typename T>
-    JsonItem operator()(std::unique_ptr<T>& t) { return t->ToJson(); }
+    JsonItem operator()(std::shared_ptr<T>& t) { return t->ToJson(); }
 
     template<typename T>
     JsonItem operator()(T& t) { return t.ToJson(); }
@@ -884,7 +884,7 @@ JsonItem SVarDeclForStmtInitializer::ToJson()
     };
 }
 
-SCommandStmt::SCommandStmt(std::vector<SStringExp> commands)
+SCommandStmt::SCommandStmt(std::vector<std::shared_ptr<SStringExp>> commands)
     : commands(std::move(commands)) { }
 
 SCommandStmt::SCommandStmt(SCommandStmt&& other) noexcept = default;
@@ -1248,8 +1248,8 @@ JsonItem SClassMemberFuncDecl::ToJson()
     };
 }
 
-SClassConstructorDecl::SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<SFuncParam> parameters, std::optional<std::vector<SArgument>> baseArgs, std::vector<SStmtPtr> body)
-    : accessModifier(std::move(accessModifier)), name(std::move(name)), parameters(std::move(parameters)), baseArgs(std::move(baseArgs)), body(std::move(body)) { }
+SClassConstructorDecl::SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::optional<std::vector<SArgument>> baseArgs, std::vector<SStmtPtr> body)
+    : accessModifier(std::move(accessModifier)), parameters(std::move(parameters)), baseArgs(std::move(baseArgs)), body(std::move(body)) { }
 
 SClassConstructorDecl::SClassConstructorDecl(SClassConstructorDecl&& other) noexcept = default;
 
@@ -1262,7 +1262,6 @@ JsonItem SClassConstructorDecl::ToJson()
     return JsonObject {
         { "$type", JsonString("SClassConstructorDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
-        { "name", Citron::ToJson(name) },
         { "parameters", Citron::ToJson(parameters) },
         { "baseArgs", Citron::ToJson(baseArgs) },
         { "body", Citron::ToJson(body) },
@@ -1333,8 +1332,8 @@ JsonItem SStructMemberFuncDecl::ToJson()
     };
 }
 
-SStructConstructorDecl::SStructConstructorDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
-    : accessModifier(std::move(accessModifier)), name(std::move(name)), parameters(std::move(parameters)), body(std::move(body)) { }
+SStructConstructorDecl::SStructConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
+    : accessModifier(std::move(accessModifier)), parameters(std::move(parameters)), body(std::move(body)) { }
 
 SStructConstructorDecl::SStructConstructorDecl(SStructConstructorDecl&& other) noexcept = default;
 
@@ -1347,7 +1346,6 @@ JsonItem SStructConstructorDecl::ToJson()
     return JsonObject {
         { "$type", JsonString("SStructConstructorDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
-        { "name", Citron::ToJson(name) },
         { "parameters", Citron::ToJson(parameters) },
         { "body", Citron::ToJson(body) },
     };
@@ -1390,7 +1388,7 @@ JsonItem SEnumElemMemberVarDecl::ToJson()
     };
 }
 
-SEnumElemDecl::SEnumElemDecl(std::string name, std::vector<SEnumElemMemberVarDecl> memberVars)
+SEnumElemDecl::SEnumElemDecl(std::string name, std::vector<std::shared_ptr<SEnumElemMemberVarDecl>> memberVars)
     : name(std::move(name)), memberVars(std::move(memberVars)) { }
 
 SEnumElemDecl::SEnumElemDecl(SEnumElemDecl&& other) noexcept = default;
@@ -1408,7 +1406,7 @@ JsonItem SEnumElemDecl::ToJson()
     };
 }
 
-SEnumDecl::SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl> elements)
+SEnumDecl::SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<std::shared_ptr<SEnumElemDecl>> elements)
     : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), elements(std::move(elements)) { }
 
 SEnumDecl::SEnumDecl(SEnumDecl&& other) noexcept = default;

@@ -18,10 +18,10 @@ using namespace std;
 
 namespace Citron {
 
-unique_ptr<SEmbeddableStmt> ParseEmbeddableStmt(Lexer* lexer);
+shared_ptr<SEmbeddableStmt> ParseEmbeddableStmt(Lexer* lexer);
 
 // typeExp id = exp)
-unique_ptr<SIfTestStmt> ParseIfTestFragment(Lexer* lexer)
+shared_ptr<SIfTestStmt> ParseIfTestFragment(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -48,7 +48,7 @@ unique_ptr<SIfTestStmt> ParseIfTestFragment(Lexer* lexer)
     if (!body)
         return nullptr;
 
-    unique_ptr<SEmbeddableStmt> elseBody;
+    shared_ptr<SEmbeddableStmt> elseBody;
 
     if (Accept<ElseToken>(&curLexer))
     {
@@ -58,7 +58,7 @@ unique_ptr<SIfTestStmt> ParseIfTestFragment(Lexer* lexer)
     }
 
     *lexer = std::move(curLexer);
-    return make_unique<SIfTestStmt>(std::move(testTypeExp), std::move(oVarNameToken->text), std::move(exp), std::move(body), std::move(elseBody));
+    return make_shared<SIfTestStmt>(std::move(testTypeExp), std::move(oVarNameToken->text), std::move(exp), std::move(body), std::move(elseBody));
 }
 
 // 리턴은 SIfStmt와 SIfTestStmt
@@ -107,7 +107,7 @@ SStmtPtr ParseIfStmt(Lexer* lexer)
     }
 
     *lexer = std::move(curLexer);
-    return make_unique<SIfStmt>(std::move(cond), std::move(body), std::move(elseBody));
+    return make_shared<SIfStmt>(std::move(cond), std::move(body), std::move(elseBody));
 }
 
 optional<SVarDecl> ParseVarDecl(Lexer* lexer)
@@ -145,7 +145,7 @@ optional<SVarDecl> ParseVarDecl(Lexer* lexer)
 }
 
 // int x = 0;
-unique_ptr<SVarDeclStmt> ParseVarDeclStmt(Lexer* lexer)
+shared_ptr<SVarDeclStmt> ParseVarDeclStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -157,21 +157,21 @@ unique_ptr<SVarDeclStmt> ParseVarDeclStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SVarDeclStmt>(std::move(*oVarDecl));
+    return make_shared<SVarDeclStmt>(std::move(*oVarDecl));
 }
 
 SForStmtInitializerPtr ParseForStmtInitializer(Lexer* lexer)
 {
     if (auto oVarDecl = ParseVarDecl(lexer))
-        return make_unique<SVarDeclForStmtInitializer>(std::move(*oVarDecl));
+        return make_shared<SVarDeclForStmtInitializer>(std::move(*oVarDecl));
 
     if (auto exp = ParseExp(lexer))
-        return make_unique<SExpForStmtInitializer>(std::move(exp));
+        return make_shared<SExpForStmtInitializer>(std::move(exp));
 
     return nullptr;
 }
 
-unique_ptr<SForStmt> ParseForStmt(Lexer* lexer)
+shared_ptr<SForStmt> ParseForStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -204,10 +204,10 @@ unique_ptr<SForStmt> ParseForStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SForStmt>(std::move(initializer), std::move(cond), std::move(cont), std::move(bodyStmt));
+    return make_shared<SForStmt>(std::move(initializer), std::move(cond), std::move(cont), std::move(bodyStmt));
 }
 
-unique_ptr<SContinueStmt> ParseContinueStmt(Lexer* lexer)
+shared_ptr<SContinueStmt> ParseContinueStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -218,10 +218,10 @@ unique_ptr<SContinueStmt> ParseContinueStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SContinueStmt>();
+    return make_shared<SContinueStmt>();
 }
 
-unique_ptr<SBreakStmt> ParseBreakStmt(Lexer* lexer)
+shared_ptr<SBreakStmt> ParseBreakStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -232,10 +232,10 @@ unique_ptr<SBreakStmt> ParseBreakStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SBreakStmt>();
+    return make_shared<SBreakStmt>();
 }
 
-unique_ptr<SReturnStmt> ParseReturnStmt(Lexer* lexer)
+shared_ptr<SReturnStmt> ParseReturnStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -251,10 +251,10 @@ unique_ptr<SReturnStmt> ParseReturnStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SReturnStmt>(std::move(returnValue));
+    return make_shared<SReturnStmt>(std::move(returnValue));
 }
 
-unique_ptr<SBlockStmt> ParseBlockStmt(Lexer* lexer)
+shared_ptr<SBlockStmt> ParseBlockStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -272,19 +272,19 @@ unique_ptr<SBlockStmt> ParseBlockStmt(Lexer* lexer)
     }
 
     *lexer = std::move(curLexer);
-    return make_unique<SBlockStmt>(std::move(stmts));
+    return make_shared<SBlockStmt>(std::move(stmts));
 }
 
-unique_ptr<SBlankStmt> ParseBlankStmt(Lexer* lexer)
+shared_ptr<SBlankStmt> ParseBlankStmt(Lexer* lexer)
 {
     if (!Accept<SemiColonToken>(lexer))
         return nullptr;
 
-    return make_unique<SBlankStmt>();
+    return make_shared<SBlankStmt>();
 }
 
 // TODO: Assign, Call만 가능하게 해야 한다
-unique_ptr<SExpStmt> ParseExpStmt(Lexer* lexer)
+shared_ptr<SExpStmt> ParseExpStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -296,10 +296,10 @@ unique_ptr<SExpStmt> ParseExpStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SExpStmt>(std::move(exp));
+    return make_shared<SExpStmt>(std::move(exp));
 }
 
-unique_ptr<STaskStmt> ParseTaskStmt(Lexer* lexer)
+shared_ptr<STaskStmt> ParseTaskStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -312,10 +312,10 @@ unique_ptr<STaskStmt> ParseTaskStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<STaskStmt>(std::move(*oBody));
+    return make_shared<STaskStmt>(std::move(*oBody));
 }
 
-unique_ptr<SAwaitStmt> ParseAwaitStmt(Lexer* lexer)
+shared_ptr<SAwaitStmt> ParseAwaitStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -327,10 +327,10 @@ unique_ptr<SAwaitStmt> ParseAwaitStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SAwaitStmt>(std::move(*oBody));
+    return make_shared<SAwaitStmt>(std::move(*oBody));
 }
 
-unique_ptr<SAsyncStmt> ParseAsyncStmt(Lexer* lexer)
+shared_ptr<SAsyncStmt> ParseAsyncStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -342,10 +342,10 @@ unique_ptr<SAsyncStmt> ParseAsyncStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SAsyncStmt>(std::move(*oBody));
+    return make_shared<SAsyncStmt>(std::move(*oBody));
 }
 
-unique_ptr<SYieldStmt> ParseYieldStmt(Lexer* lexer)
+shared_ptr<SYieldStmt> ParseYieldStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -361,10 +361,10 @@ unique_ptr<SYieldStmt> ParseYieldStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SYieldStmt>(std::move(yieldValue));
+    return make_shared<SYieldStmt>(std::move(yieldValue));
 }
 
-optional<SStringExp> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
+shared_ptr<SStringExp> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -385,37 +385,37 @@ optional<SStringExp> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
             // TODO: EndInnerExpToken 일때 빠져나와야 한다는 표시를 해줘야 한다
             auto exp = ParseExp(&curLexer);
             if (!exp)
-                return nullopt;
+                return nullptr;
 
             if (!Accept<RBraceToken>(&curLexer))
-                return nullopt;
+                return nullptr;
 
-            elems.push_back(make_unique<SExpStringExpElement>(std::move(exp)));
+            elems.push_back(make_shared<SExpStringExpElement>(std::move(exp)));
             continue;
         }
 
         // aa$b => $b 이야기
         if (auto oIdToken = Accept<IdentifierToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(make_unique<SExpStringExpElement>(make_unique<SIdentifierExp>(std::move(oIdToken->text), std::vector<STypeExpPtr>{})));
+            elems.push_back(make_shared<SExpStringExpElement>(make_shared<SIdentifierExp>(std::move(oIdToken->text), std::vector<STypeExpPtr>{})));
             continue;
         }
 
         
         if (auto oTextToken = Accept<TextToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(make_unique<STextStringExpElement>(std::move(oTextToken->text)));
+            elems.push_back(make_shared<STextStringExpElement>(std::move(oTextToken->text)));
             continue;
         }
 
-        return nullopt;
+        return nullptr;
     }
 
     *lexer = std::move(curLexer);
-    return SStringExp(std::move(elems));
+    return make_shared<SStringExp>(std::move(elems));
 }
 
-unique_ptr<SForeachStmt> ParseForeachStmt(Lexer* lexer)
+shared_ptr<SForeachStmt> ParseForeachStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -457,11 +457,11 @@ unique_ptr<SForeachStmt> ParseForeachStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SForeachStmt>(std::move(typeExp), std::move(oVarNameToken->text), std::move(obj), std::move(stmt));
+    return make_shared<SForeachStmt>(std::move(typeExp), std::move(oVarNameToken->text), std::move(obj), std::move(stmt));
 }
 
 // 
-unique_ptr<SCommandStmt> ParseCommandStmt(Lexer* lexer)
+shared_ptr<SCommandStmt> ParseCommandStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -475,25 +475,25 @@ unique_ptr<SCommandStmt> ParseCommandStmt(Lexer* lexer)
     if (Accept<LBraceToken>(&curLexer))
     {
         // 새줄이거나 끝에 다다르거나 }가 나오면 종료,
-        vector<SStringExp> cmds;
+        vector<shared_ptr<SStringExp>> cmds;
         while (true)
         {
             if (Accept<RBraceToken>(&curLexer, curLexer.LexCommandMode()))
                 break;
 
-            auto oSingleCommand = ParseSingleCommand(true, &curLexer);
+            auto singleCommand = ParseSingleCommand(true, &curLexer);
 
-            if (oSingleCommand)
+            if (singleCommand)
             {
                 // singleCommand Skip 조건
-                size_t elemCount = oSingleCommand->elements.size();
+                size_t elemCount = singleCommand->elements.size();
 
                 if (elemCount == 0)
                     continue;
 
                 if (elemCount == 1)
                 {
-                    auto* elem = oSingleCommand->elements[0].get();
+                    auto* elem = singleCommand->elements[0].get();
                     if (STextStringExpElement* textElem = dynamic_cast<STextStringExpElement*>(elem))
                     {
                         if (all_of(textElem->text.begin(), textElem->text.end(), [](char32_t c) { return u_isWhitespace(c); }))
@@ -501,7 +501,7 @@ unique_ptr<SCommandStmt> ParseCommandStmt(Lexer* lexer)
                     }
                 }
 
-                cmds.push_back(std::move(*oSingleCommand));
+                cmds.push_back(std::move(singleCommand));
                 continue;
             }
 
@@ -509,28 +509,28 @@ unique_ptr<SCommandStmt> ParseCommandStmt(Lexer* lexer)
         }
 
         *lexer = std::move(curLexer);
-        return make_unique<SCommandStmt>(std::move(cmds));
+        return make_shared<SCommandStmt>(std::move(cmds));
     }
     else // 싱글 커맨드, 엔터가 나오면 끝난다
     {
-        auto oSingleCommand = ParseSingleCommand(false, &curLexer);
+        auto singleCommand = ParseSingleCommand(false, &curLexer);
 
-        if (!oSingleCommand)
+        if (!singleCommand)
             return nullptr;
 
-        if (oSingleCommand->elements.empty())
+        if (singleCommand->elements.empty())
             return nullptr;
         
         *lexer = std::move(curLexer);
 
-        vector<SStringExp> strs;
-        strs.push_back(std::move(*oSingleCommand));
+        vector<shared_ptr<SStringExp>> strs;
+        strs.push_back(std::move(singleCommand));
 
-        return make_unique<SCommandStmt>(std::move(strs));
+        return make_shared<SCommandStmt>(std::move(strs));
     }
 }
 
-unique_ptr<SDirectiveStmt> ParseDirectiveStmt(Lexer* lexer)
+shared_ptr<SDirectiveStmt> ParseDirectiveStmt(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -563,7 +563,7 @@ unique_ptr<SDirectiveStmt> ParseDirectiveStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SDirectiveStmt>(std::move(oIdToken->text), std::move(args));
+    return make_shared<SDirectiveStmt>(std::move(oIdToken->text), std::move(args));
 }
 
 // if (...) 'x;' // 단일이냐
@@ -583,7 +583,7 @@ SEmbeddableStmtPtr ParseEmbeddableStmt(Lexer* lexer)
         assert(dynamic_cast<SBlockStmt*>(stmt.get()) == nullptr);
 
         *lexer = std::move(curLexer);
-        return make_unique<SSingleEmbeddableStmt>(std::move(stmt));
+        return make_shared<SSingleEmbeddableStmt>(std::move(stmt));
     }
     else // 있다면 Embeddable.Multiple
     {
@@ -601,7 +601,7 @@ SEmbeddableStmtPtr ParseEmbeddableStmt(Lexer* lexer)
         }
 
         *lexer = std::move(curLexer);
-        return make_unique<SBlockEmbeddableStmt>(std::move(stmts));
+        return make_shared<SBlockEmbeddableStmt>(std::move(stmts));
     }
 }
 

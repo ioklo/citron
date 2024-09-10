@@ -2,7 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="Public\IR0\RArgument.h" />
-    <ClInclude Include="Public\IR0\RProgram.h" />
     <ClInclude Include="Public\IR0\IR0Config.h" />
     <ClInclude Include="Public\IR0\RExp.h">
       <Filter>Body</Filter>
@@ -204,6 +203,24 @@
     </ClCompile>
     <ClCompile Include="RLabmdaDecl.cpp">
       <Filter>Symbols\10 Lambda</Filter>
+    </ClCompile>
+    <ClCompile Include="REnumDecl.cpp">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClCompile>
+    <ClCompile Include="REnumElemMemberVarDecl.cpp">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClCompile>
+    <ClCompile Include="REnumElemDecl.cpp">
+      <Filter>Symbols\08 Enum</Filter>
+    </ClCompile>
+    <ClCompile Include="RStructConstructorDecl.cpp">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="RCommonFuncDeclComponent.cpp">
+      <Filter>Symbols\04 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RStructMemberVarDecl.cpp">
+      <Filter>Symbols\07 Struct</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

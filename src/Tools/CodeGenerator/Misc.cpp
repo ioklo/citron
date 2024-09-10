@@ -424,11 +424,11 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     cppStream << "}" << endl;
 }
 
-void GeneratePtrDecls(CommonInfo& commonInfo, PtrDeclsInfo& info, ostringstream& hStream)
+void GenerateSharedPtrDecls(CommonInfo& commonInfo, SharedPtrDeclsInfo& info, ostringstream& hStream)
 {
     // using 'name'Ptr = std::unique_ptr<'name'>;
     for (auto& name : info.names)
-        hStream << "using " << name << "Ptr = std::unique_ptr<" << name << ">;" << endl;
+        hStream << "using " << name << "Ptr = std::shared_ptr<" << name << ">;" << endl;
 }
 
 void GenerateItems(CommonInfo& commonInfo, ostringstream& hStream, ostringstream& cppStream, vector<ItemInfo>& itemInfos)
@@ -445,7 +445,7 @@ void GenerateItems(CommonInfo& commonInfo, ostringstream& hStream, ostringstream
         void operator()(VariantInfo& info) { GenerateVariant(commonInfo, info, hStream, cppStream); }
         void operator()(ForwardClassDeclsInfo& info) { GenerateForwardClassDecls(commonInfo, info, hStream); }
         void operator()(VariantInterfaceInfo& info) { GenerateVariantInterface(commonInfo, info, hStream, cppStream); }
-        void operator()(PtrDeclsInfo& info) { GeneratePtrDecls(commonInfo, info, hStream); }
+        void operator()(SharedPtrDeclsInfo& info) { GenerateSharedPtrDecls(commonInfo, info, hStream); }
 
     } visitor { commonInfo, hStream, cppStream };
 

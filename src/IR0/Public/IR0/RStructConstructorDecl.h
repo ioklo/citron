@@ -1,4 +1,5 @@
 #pragma once
+#include "IR0Config.h"
 
 #include <memory>
 #include <vector>
@@ -13,7 +14,7 @@ namespace Citron
 {
 
 class RStructDecl;
-class RFuncParameter;
+struct RFuncParameter;
 
 class RStructConstructorDecl 
     : public RDecl
@@ -23,8 +24,13 @@ class RStructConstructorDecl
 {
     std::weak_ptr<RStructDecl> _struct;
     RAccessor accessor;
-    std::vector<RFuncParameter> parameters;
     bool bTrivial;
+
+public:
+    IR0_API RStructConstructorDecl(std::weak_ptr<RStructDecl> _struct, RAccessor accessor, bool bTrivial);
+    IR0_API void InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic);
+    using RCommonFuncDeclComponent::InitBody;
+    IR0_API ~RStructConstructorDecl();
 
 public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }

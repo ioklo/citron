@@ -175,7 +175,7 @@ unique_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer)
     if (!Accept<LBraceToken>(&curLexer))
         return nullptr;
 
-    vector<SEnumElemDecl> elems;
+    vector<shared_ptr<SEnumElemDecl>> elems;
     while (!Accept<RBraceToken>(&curLexer))
     {
         if (!elems.empty())
@@ -186,7 +186,7 @@ unique_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer)
         if (!oElemName)
             return nullptr;
 
-        vector<SEnumElemMemberVarDecl> params;
+        vector<shared_ptr<SEnumElemMemberVarDecl>> params;
         
         if (Accept<LParenToken>(&curLexer))
         {
@@ -204,11 +204,11 @@ unique_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer)
                 if (!oParamName)
                     return nullptr;
 
-                params.push_back(SEnumElemMemberVarDecl(std::move(typeExp), std::move(oParamName->text)));
+                params.push_back(make_shared<SEnumElemMemberVarDecl>(std::move(typeExp), std::move(oParamName->text)));
             }
         }
 
-        elems.push_back(SEnumElemDecl(std::move(oElemName->text), std::move(params)));
+        elems.push_back(make_shared<SEnumElemDecl>(std::move(oElemName->text), std::move(params)));
     }
 
     *lexer = std::move(curLexer);

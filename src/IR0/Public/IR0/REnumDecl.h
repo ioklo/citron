@@ -1,4 +1,5 @@
 #pragma once
+#include "IR0Config.h"
 
 #include <vector>
 #include <optional>
@@ -23,12 +24,16 @@ class REnumDecl
 
     RName name;
     std::vector<std::string> typeParams;
-
-    std::optional<std::vector<std::shared_ptr<REnumElemDecl>>> elems; // lazy initialization
+    std::vector<std::shared_ptr<REnumElemDecl>> elems;
 
     // std::unordered_map<std::string, int> elemsByName;
 
 public:
+    IR0_API REnumDecl(RTypeDeclOuterPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams, size_t elemCount);
+    IR0_API void AddElem(std::shared_ptr<REnumElemDecl> elem);
+    
+    RIdentifier GetIdentifier() override { return RIdentifier { name, (int)typeParams.size(), {} }; }
+
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
 };

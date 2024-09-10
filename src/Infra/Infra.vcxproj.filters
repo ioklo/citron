@@ -29,6 +29,12 @@
     <ClInclude Include="Public\Infra\Defaults.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\Infra\NotImplementedException.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Infra\Hash.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -40,9 +46,5 @@
     <Filter Include="Public Headers">
       <UniqueIdentifier>{fc7ce5fa-e9a1-42fe-a3b0-c034267085ed}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vcpkg.json" />
-    <None Include="vcpkg-configuration.json" />
   </ItemGroup>
 </Project>

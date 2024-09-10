@@ -5,6 +5,8 @@ using namespace std;
 
 namespace Citron {
 
+RNamespaceDeclContainerComponent::RNamespaceDeclContainerComponent() = default;
+
 void RNamespaceDeclContainerComponent::AddNamespace(shared_ptr<RNamespaceDecl> _namespace)
 {
     namespaceDecls.push_back(_namespace);

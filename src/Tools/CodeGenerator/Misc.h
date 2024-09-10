@@ -67,12 +67,12 @@ struct VariantInfo
     std::vector<std::string> memberNames; // with 'class ' 'struct ', ex) class IdentifierExpSyntax
 };
 
-struct PtrDeclsInfo
+struct SharedPtrDeclsInfo
 {
     std::vector<std::string> names;
 };
 
-using ItemInfo = std::variant<StructInfo, EnumInfo, ClassInfo, VariantInfo, ForwardClassDeclsInfo, VariantInterfaceInfo, PtrDeclsInfo>;
+using ItemInfo = std::variant<StructInfo, EnumInfo, ClassInfo, VariantInfo, ForwardClassDeclsInfo, VariantInterfaceInfo, SharedPtrDeclsInfo>;
 void GenerateItems(CommonInfo& commonInfo, std::ostringstream& hStream, std::ostringstream& cppStream, std::vector<ItemInfo>& itemInfos);
 
 void AddNewLineIfNeeded(bool& bModified, std::ostringstream& oss);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "RIdentifier.h"
 
 namespace Citron {
 
@@ -27,6 +28,7 @@ class RTypeDecl
 {
 public:
     virtual ~RTypeDecl() { }
+    virtual RIdentifier GetIdentifier() = 0;
     virtual void Accept(RTypeDeclVisitor& visitor) = 0;
 };
 

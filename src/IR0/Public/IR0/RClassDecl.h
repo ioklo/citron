@@ -23,7 +23,7 @@ class RClassDecl
     , public RTypeDecl
     , public RTypeDeclOuter
     , private RTypeDeclContainerComponent
-    , private RFuncDeclContainerComponent<std::shared_ptr<RClassMemberFuncDecl>>
+    , private RFuncDeclContainerComponent<RClassMemberFuncDecl>
 {
     struct BaseTypes
     {
@@ -45,6 +45,8 @@ class RClassDecl
     std::optional<BaseTypes> oBaseTypes;
 
 public:
+    RIdentifier GetIdentifier() override { return RIdentifier { name, (int)typeParams.size(), {} }; }
+
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this);  }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }

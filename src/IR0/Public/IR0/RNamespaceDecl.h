@@ -24,7 +24,7 @@ class RNamespaceDecl
     , public RTypeOuter
     , private RNamespaceDeclContainerComponent
     , private RTypeDeclContainerComponent
-    , private RFuncDeclContainerComponent<std::shared_ptr<RGlobalFuncDecl>>
+    , private RFuncDeclContainerComponent<RGlobalFuncDecl>
 {
     RTopLevelOuterPtr outer;
     std::string name;

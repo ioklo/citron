@@ -1,9 +1,11 @@
 #pragma once
 
+#include "IR0Config.h"
+
 #include <vector>
 #include <unordered_map>
 
-#include "RNames.h"
+#include "RIdentifier.h"
 #include "RTypeDecl.h"
 
 
@@ -11,15 +13,16 @@ namespace Citron {
 
 class RTypeDeclContainerComponent
 {
-    std::vector<RTypeDecl> types;
-    std::unordered_map<RName, size_t> typeDict;
+    std::vector<RTypeDeclPtr> types;
+    std::unordered_map<RIdentifier, RTypeDeclPtr> typeDict;
 
 public:
-    RTypeDeclContainerComponent();
+    IR0_API RTypeDeclContainerComponent();
 
-    // public IEnumerable<ITypeDeclSymbol> GetEnumerable()
-    RTypeDecl* GetType(const RName& name); // RTypeDecl* for std::optional<TypeDeclSymbol&>
-    void AddType(RTypeDecl&& typeDecl);
+    IR0_API size_t GetTypeCount();
+    IR0_API RTypeDeclPtr GetType(int index);
+    IR0_API RTypeDeclPtr GetType(const RIdentifier& identifier);
+    IR0_API void AddType(RTypeDeclPtr typeDecl);
 };
 
 }

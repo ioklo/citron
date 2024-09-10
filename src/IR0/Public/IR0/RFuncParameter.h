@@ -7,7 +7,7 @@ namespace Citron {
 
 using RTypePtr = std::shared_ptr<class RType>;
 
-class RFuncParameter
+struct RFuncParameter
 {
     bool bOut;
     RTypePtr type;
