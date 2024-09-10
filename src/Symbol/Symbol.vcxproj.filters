@@ -92,9 +92,6 @@
     <ClInclude Include="Public\Symbol\MStructMemberVarDecl.h">
       <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MClass.h">
-      <Filter>Symbols\06 Class</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MClassConstructor.h">
       <Filter>Symbols\06 Class</Filter>
     </ClInclude>
@@ -152,9 +149,6 @@
     <ClInclude Include="Public\Symbol\MTypeDeclContainerComponent.h">
       <Filter>Symbols\04 Components</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MSymbolId.h">
-      <Filter>Symbols\01 Identifier</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MNames.h">
       <Filter>Symbols\01 Identifier</Filter>
     </ClInclude>
@@ -163,9 +157,6 @@
     </ClInclude>
     <ClInclude Include="Public\Symbol\MInterfaceDecl.h">
       <Filter>Symbols\09 Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MTypeId.h">
-      <Filter>Symbols\01 Identifier</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MTypeOuter.h">
       <Filter>Symbols\00 Abstraction</Filter>
@@ -191,6 +182,7 @@
     <ClInclude Include="Public\Symbol\MFuncDecl.h">
       <Filter>Symbols\03 Func</Filter>
     </ClInclude>
+    <ClInclude Include="MDeclId.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MModuleDecl.cpp">
@@ -199,20 +191,17 @@
     <ClCompile Include="MTypeDeclContainerComponent.cpp">
       <Filter>Symbols\04 Components</Filter>
     </ClCompile>
-    <ClCompile Include="MSymbolId.cpp">
-      <Filter>Symbols\01 Identifier</Filter>
-    </ClCompile>
     <ClCompile Include="MNames.cpp">
       <Filter>Symbols\01 Identifier</Filter>
     </ClCompile>
     <ClCompile Include="MGlobalFunc.cpp">
       <Filter>Symbols\05 TopLevel</Filter>
     </ClCompile>
-    <ClCompile Include="MTypeId.cpp">
-      <Filter>Symbols\01 Identifier</Filter>
-    </ClCompile>
     <ClCompile Include="MNamespaceDeclContainerComponent.cpp">
       <Filter>Symbols\04 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="MDeclId.cpp">
+      <Filter>Symbols\01 Identifier</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -143,11 +143,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="MDeclId.h" />
     <ClInclude Include="Public\Symbol\SymbolConfig.h" />
     <ClInclude Include="Public\Symbol\MAccessor.h" />
     <ClInclude Include="Public\Symbol\MBodyDeclOuter.h" />
     <ClInclude Include="Public\Symbol\MBodyOuter.h" />
-    <ClInclude Include="Public\Symbol\MClass.h" />
     <ClInclude Include="Public\Symbol\MClassConstructor.h" />
     <ClInclude Include="Public\Symbol\MClassConstructorDecl.h" />
     <ClInclude Include="Public\Symbol\MClassDecl.h" />
@@ -186,25 +186,22 @@
     <ClInclude Include="Public\Symbol\MStructMemberVarDecl.h" />
     <ClInclude Include="Public\Symbol\MSymbol.h" />
     <ClInclude Include="Public\Symbol\MSymbolComponent.h" />
-    <ClInclude Include="Public\Symbol\MSymbolId.h" />
     <ClInclude Include="Public\Symbol\MTopLevelDeclOuter.h" />
     <ClInclude Include="Public\Symbol\MTopLevelOuter.h" />
     <ClInclude Include="Public\Symbol\MType.h" />
     <ClInclude Include="Public\Symbol\MTypeDecl.h" />
     <ClInclude Include="Public\Symbol\MTypeDeclContainerComponent.h" />
     <ClInclude Include="Public\Symbol\MTypeDeclOuter.h" />
-    <ClInclude Include="Public\Symbol\MTypeId.h" />
     <ClInclude Include="Public\Symbol\MTypeOuter.h" />
     <ClInclude Include="Public\Symbol\Symbols.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MDeclId.cpp" />
     <ClCompile Include="MGlobalFunc.cpp" />
     <ClCompile Include="MModuleDecl.cpp" />
     <ClCompile Include="MNames.cpp" />
     <ClCompile Include="MNamespaceDeclContainerComponent.cpp" />
-    <ClCompile Include="MSymbolId.cpp" />
     <ClCompile Include="MTypeDeclContainerComponent.cpp" />
-    <ClCompile Include="MTypeId.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">

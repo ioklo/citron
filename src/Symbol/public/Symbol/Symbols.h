@@ -6,9 +6,6 @@
 #include "MFuncParameter.h"
 #include "MFuncReturn.h"
 
-#include "MSymbolId.h"
-#include "MTypeId.h"
-
 #include "MType.h"
 
 #include "MModuleDecl.h"

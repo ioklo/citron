@@ -1,17 +1,18 @@
 #pragma once
 
+#include <vector>
 #include "MNames.h"
 
 namespace Citron {
 
-class MTypeId;
-using MTypeIdPtr = std::shared_ptr<MTypeId>;
+class MType;
+using MTypePtr = std::shared_ptr<MType>;
 
 struct MIdentifier
 {
     MName name;
     int typeParamCount;
-    std::vector<MTypeIdPtr> paramIds;
+    std::vector<MTypePtr> paramIds;
 };
 
 }

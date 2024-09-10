@@ -4,7 +4,6 @@ namespace Citron
 {
 
 class MGlobalFunc;
-class MClass;
 class MClassConstructor;
 class MClassMemberFunc;
 class MClassMemberVar;
@@ -22,7 +21,6 @@ class MSymbolVisitor
 public:
     virtual ~MSymbolVisitor() { }
     virtual void Visit(MGlobalFunc& symbol) = 0;
-    virtual void Visit(MClass& symbol) = 0;
     virtual void Visit(MClassConstructor& symbol) = 0;
     virtual void Visit(MClassMemberFunc& symbol) = 0;
     virtual void Visit(MClassMemberVar& symbol) = 0;
