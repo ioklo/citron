@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <memory>
+
 #include "MFuncReturn.h"
 #include "MFuncParameter.h"
 
@@ -13,7 +16,12 @@ class MTupleType;    // inline type
 class MFuncType;     // inline type, circular
 class MLocalPtrType; // inline type
 class MBoxPtrType;   // inline type
-class MSymbolType;
+class MInstanceType;
+class MDeclId;
+using MDeclIdPtr = std::shared_ptr<MDeclId>;
+
+class MTypeArguments;
+using MTypeArgumentsPtr = std::shared_ptr<MTypeArguments>;
 
 class MTypeVisitor
 {
@@ -26,7 +34,7 @@ public:
     virtual void Visit(MFuncType& type) = 0;
     virtual void Visit(MLocalPtrType& type) = 0;
     virtual void Visit(MBoxPtrType& type) = 0;
-    virtual void Visit(MSymbolType& type) = 0;
+    virtual void Visit(MInstanceType& type) = 0;
 };
 
 class MType
@@ -110,8 +118,11 @@ public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class MSymbolType : public MType
+class MInstanceType : public MType
 {
+    MDeclIdPtr declId;
+    MTypeArgumentsPtr typeArgs;
+
 public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
 };

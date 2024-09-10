@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 namespace Citron {
 
 using MTypePtr = std::shared_ptr<class MType>;

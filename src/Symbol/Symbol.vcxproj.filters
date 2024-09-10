@@ -39,9 +39,6 @@
     <ClInclude Include="Public\Symbol\MDecl.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MSymbol.h">
-      <Filter>Symbols\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MType.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
@@ -50,29 +47,14 @@
     </ClInclude>
     <ClInclude Include="Public\Symbol\SymbolConfig.h" />
     <ClInclude Include="Public\Symbol\Symbols.h" />
-    <ClInclude Include="Public\Symbol\MEnum.h">
-      <Filter>Symbols\08 Enum</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MEnumDecl.h">
-      <Filter>Symbols\08 Enum</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MEnumElem.h">
       <Filter>Symbols\08 Enum</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MEnumElemDecl.h">
       <Filter>Symbols\08 Enum</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MEnumElemMemberVar.h">
-      <Filter>Symbols\08 Enum</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MEnumElemMemberVarDecl.h">
       <Filter>Symbols\08 Enum</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MStruct.h">
-      <Filter>Symbols\07 Struct</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MStructConstructor.h">
-      <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MStructConstructorDecl.h">
       <Filter>Symbols\07 Struct</Filter>
@@ -80,20 +62,11 @@
     <ClInclude Include="Public\Symbol\MStructDecl.h">
       <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MStructMemberFunc.h">
-      <Filter>Symbols\07 Struct</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MStructMemberFuncDecl.h">
-      <Filter>Symbols\07 Struct</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MStructMemberVar.h">
       <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MStructMemberVarDecl.h">
       <Filter>Symbols\07 Struct</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MClassConstructor.h">
-      <Filter>Symbols\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MClassConstructorDecl.h">
       <Filter>Symbols\06 Class</Filter>
@@ -101,29 +74,17 @@
     <ClInclude Include="Public\Symbol\MClassDecl.h">
       <Filter>Symbols\06 Class</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MClassMemberFunc.h">
-      <Filter>Symbols\06 Class</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MClassMemberFuncDecl.h">
-      <Filter>Symbols\06 Class</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MClassMemberVar.h">
       <Filter>Symbols\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MClassMemberVarDecl.h">
       <Filter>Symbols\06 Class</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MFunc.h">
-      <Filter>Symbols\03 Func</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MFuncParameter.h">
       <Filter>Symbols\03 Func</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MFuncReturn.h">
       <Filter>Symbols\03 Func</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MGlobalFunc.h">
-      <Filter>Symbols\05 TopLevel</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MGlobalFuncDecl.h">
       <Filter>Symbols\05 TopLevel</Filter>
@@ -143,9 +104,6 @@
     <ClInclude Include="Public\Symbol\MModuleDecl.h">
       <Filter>Symbols\05 TopLevel</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MSymbolComponent.h">
-      <Filter>Symbols\04 Components</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MTypeDeclContainerComponent.h">
       <Filter>Symbols\04 Components</Filter>
     </ClInclude>
@@ -158,19 +116,10 @@
     <ClInclude Include="Public\Symbol\MInterfaceDecl.h">
       <Filter>Symbols\09 Interface</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MTypeOuter.h">
-      <Filter>Symbols\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MBodyDeclOuter.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MBodyOuter.h">
-      <Filter>Symbols\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Symbol\MTopLevelDeclOuter.h">
-      <Filter>Symbols\00 Abstraction</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MTopLevelOuter.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MTypeDeclOuter.h">
@@ -182,7 +131,15 @@
     <ClInclude Include="Public\Symbol\MFuncDecl.h">
       <Filter>Symbols\03 Func</Filter>
     </ClInclude>
-    <ClInclude Include="MDeclId.h" />
+    <ClInclude Include="public\Symbol\MFunc.h">
+      <Filter>Symbols\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="public\Symbol\MDeclId.h">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Symbol\MTypeArguments.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MModuleDecl.cpp">
@@ -202,6 +159,12 @@
     </ClCompile>
     <ClCompile Include="MDeclId.cpp">
       <Filter>Symbols\01 Identifier</Filter>
+    </ClCompile>
+    <ClCompile Include="MTypeArguments.cpp">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="MType.cpp">
+      <Filter>Symbols\00 Abstraction</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

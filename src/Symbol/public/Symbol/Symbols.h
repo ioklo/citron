@@ -11,9 +11,7 @@
 #include "MModuleDecl.h"
 
 #include "MGlobalFuncDecl.h"
-#include "MGlobalFunc.h"
 
 #include "MIdentifier.h"
 
 #include "MTopLevelDeclOuter.h"
-#include "MTopLevelOuter.h"

@@ -15,9 +15,6 @@
 namespace Citron
 {
 
-class MStruct;
-class MInterface;
-
 class MStructDecl 
     : public MDecl
     , public MTypeDecl
@@ -27,8 +24,8 @@ class MStructDecl
 {
     struct BaseTypes
     {
-        std::shared_ptr<MStruct> baseStruct;
-        std::vector<std::shared_ptr<MInterface>> interfaces;
+        MTypePtr baseStruct;
+        std::vector<MTypePtr> interfaces;
     };
 
     MTypeDeclOuterPtr outer;
