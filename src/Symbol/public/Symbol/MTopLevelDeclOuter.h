@@ -1,6 +1,7 @@
 #pragma once
 // circular dependency 때문에, import 하지는 못한다
 // #include "ModuleDeclSymbol.h"
+#include <memory>
 
 namespace Citron {
 
