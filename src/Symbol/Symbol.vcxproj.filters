@@ -151,9 +151,6 @@
     <ClCompile Include="MNames.cpp">
       <Filter>Symbols\01 Identifier</Filter>
     </ClCompile>
-    <ClCompile Include="MGlobalFunc.cpp">
-      <Filter>Symbols\05 TopLevel</Filter>
-    </ClCompile>
     <ClCompile Include="MNamespaceDeclContainerComponent.cpp">
       <Filter>Symbols\04 Components</Filter>
     </ClCompile>

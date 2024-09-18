@@ -3,7 +3,6 @@
 #include <vector>
 #include "RType.h"
 #include "RNames.h"
-#include "RLambda.h"
 #include "RArgument.h"
 
 namespace Citron {
@@ -33,6 +32,9 @@ class RNotNullDirectiveStmt;
 class RStaticNullDirectiveStmt;
 class RStaticNotNullDirectiveStmt;
 class RStaticUnknownNullDirectiveStmt;
+
+class RLambdaDecl;
+class RStructConstructorDecl;
 
 class RStringExp;
 class RExp;
@@ -178,7 +180,9 @@ public:
 
 class RTaskStmt : public RStmt
 {
-    std::shared_ptr<RLambda> lambda;
+    std::shared_ptr<RLambdaDecl> lambdaDecl;
+    RTypeArgumentsPtr lambdaTypeArgs;
+
     std::vector<RArgument> captureArgs;
 public:
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
@@ -193,7 +197,8 @@ public:
 
 class RAsyncStmt : public RStmt
 {
-    std::shared_ptr<RLambda> lambda;
+    std::shared_ptr<RLambdaDecl> lambdaDecl;
+    RTypeArgumentsPtr lambdaTypeArgs;
     std::vector<RArgument> captureArgs;
 public:
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
@@ -243,7 +248,8 @@ public:
 
 class RCallStructConstructorStmt : public RStmt
 {
-    std::shared_ptr<RStructConstructor> constructor;
+    std::shared_ptr<RStructConstructorDecl> constructor;
+    RTypeArgumentsPtr typeArgs;
     std::vector<RArgument> args;
 public:
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }

@@ -15,19 +15,10 @@
     <ClInclude Include="Public\IR0\RBodyDeclOuter.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RBodyOuter.h">
-      <Filter>Symbols\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RDecl.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RSymbol.h">
-      <Filter>Symbols\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RTopLevelDeclOuter.h">
-      <Filter>Symbols\00 Abstraction</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IR0\RTopLevelOuter.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RType.h">
@@ -39,26 +30,14 @@
     <ClInclude Include="Public\IR0\RTypeDeclOuter.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RTypeOuter.h">
-      <Filter>Symbols\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RIdentifier.h">
       <Filter>Symbols\01 Identifier</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RNames.h">
       <Filter>Symbols\01 Identifier</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RSymbolId.h">
-      <Filter>Symbols\01 Identifier</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IR0\RTypeId.h">
-      <Filter>Symbols\01 Identifier</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RAccessor.h">
       <Filter>Symbols\02 Properties</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IR0\RGlobalFunc.h">
-      <Filter>Symbols\05 TopLevel</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RGlobalFuncDecl.h">
       <Filter>Symbols\05 TopLevel</Filter>
@@ -78,9 +57,6 @@
     <ClInclude Include="Public\IR0\RNamespaceDeclContainerComponent.h">
       <Filter>Symbols\04 Components</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RSymbolComponent.h">
-      <Filter>Symbols\04 Components</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RTypeDeclContainerComponent.h">
       <Filter>Symbols\04 Components</Filter>
     </ClInclude>
@@ -96,35 +72,17 @@
     <ClInclude Include="Public\IR0\RFuncReturn.h">
       <Filter>Symbols\03 Func</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RClass.h">
-      <Filter>Symbols\06 Class</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IR0\RClassConstructor.h">
-      <Filter>Symbols\06 Class</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RClassConstructorDecl.h">
       <Filter>Symbols\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RClassDecl.h">
       <Filter>Symbols\06 Class</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RClassMemberFunc.h">
-      <Filter>Symbols\06 Class</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RClassMemberFuncDecl.h">
-      <Filter>Symbols\06 Class</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IR0\RClassMemberVar.h">
       <Filter>Symbols\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RClassMemberVarDecl.h">
       <Filter>Symbols\06 Class</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IR0\RStruct.h">
-      <Filter>Symbols\07 Struct</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IR0\RStructConstructor.h">
-      <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RStructConstructorDecl.h">
       <Filter>Symbols\07 Struct</Filter>
@@ -132,31 +90,16 @@
     <ClInclude Include="Public\IR0\RStructDecl.h">
       <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RStructMemberFunc.h">
-      <Filter>Symbols\07 Struct</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RStructMemberFuncDecl.h">
-      <Filter>Symbols\07 Struct</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IR0\RStructMemberVar.h">
       <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RStructMemberVarDecl.h">
       <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\REnum.h">
-      <Filter>Symbols\08 Enum</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\REnumDecl.h">
       <Filter>Symbols\08 Enum</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\REnumElem.h">
-      <Filter>Symbols\08 Enum</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\REnumElemDecl.h">
-      <Filter>Symbols\08 Enum</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IR0\REnumElemMemberVar.h">
       <Filter>Symbols\08 Enum</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\REnumElemMemberVarDecl.h">
@@ -165,32 +108,23 @@
     <ClInclude Include="Public\IR0\RInterfaceDecl.h">
       <Filter>Symbols\09 Interface</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RLambda.h">
-      <Filter>Symbols\10 Lambda</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RLambdaDecl.h">
-      <Filter>Symbols\10 Lambda</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\IR0\RLambdaMemberVar.h">
       <Filter>Symbols\10 Lambda</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RLambdaMemberVarDecl.h">
       <Filter>Symbols\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeArguments.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RDeclId.h">
+      <Filter>Symbols\01 Identifier</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RNames.cpp">
       <Filter>Symbols\01 Identifier</Filter>
-    </ClCompile>
-    <ClCompile Include="RSymbolId.cpp">
-      <Filter>Symbols\01 Identifier</Filter>
-    </ClCompile>
-    <ClCompile Include="RTypeId.cpp">
-      <Filter>Symbols\01 Identifier</Filter>
-    </ClCompile>
-    <ClCompile Include="RGlobalFunc.cpp">
-      <Filter>Symbols\05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="RModuleDecl.cpp">
       <Filter>Symbols\05 TopLevel</Filter>
@@ -221,6 +155,22 @@
     </ClCompile>
     <ClCompile Include="RStructMemberVarDecl.cpp">
       <Filter>Symbols\07 Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="RStructMemberFuncDecl.cpp" />
+    <ClCompile Include="RType.cpp">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypeArguments.cpp">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RDeclId.cpp">
+      <Filter>Symbols\01 Identifier</Filter>
+    </ClCompile>
+    <ClCompile Include="RExp.cpp">
+      <Filter>Body</Filter>
+    </ClCompile>
+    <ClCompile Include="RLoc.cpp">
+      <Filter>Body</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

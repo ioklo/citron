@@ -182,7 +182,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MDeclId.cpp" />
-    <ClCompile Include="MGlobalFunc.cpp" />
     <ClCompile Include="MModuleDecl.cpp" />
     <ClCompile Include="MNames.cpp" />
     <ClCompile Include="MNamespaceDeclContainerComponent.cpp" />

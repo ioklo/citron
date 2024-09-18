@@ -4,10 +4,6 @@
 
 #include "RType.h"
 #include "RNames.h"
-#include "RLambdaMemberVar.h"
-#include "RStructMemberVar.h"
-#include "RClassMemberVar.h"
-#include "REnumElemMemberVar.h"
 
 namespace Citron {
 
@@ -22,6 +18,14 @@ class RThisLoc;
 class RLocalDerefLoc;
 class RBoxDerefLoc;
 class RNullableValueLoc;
+
+class RLambdaMemberVarDecl;
+class RStructMemberVarDecl;
+class RClassMemberVarDecl;
+class REnumElemMemberVarDecl;
+
+class RExp;
+using RExpPtr = std::unique_ptr<RExp>;
 
 class RLocVisitor
 {
@@ -67,7 +71,8 @@ public:
 // only this member allowed, so no need this
 class RLambdaMemberVarLoc : public RLoc
 {
-    std::shared_ptr<RLambdaMemberVar> memberVar;
+    std::shared_ptr<RLambdaMemberVarDecl> memberVarDecl;
+    RTypeArgumentsPtr typeArgs;
 
 public:
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
@@ -88,7 +93,8 @@ public:
 class RStructMemberLoc : public RLoc
 {
     RLocPtr instance;
-    std::shared_ptr<RStructMemberVar> memberVar;
+    std::shared_ptr<RStructMemberVarDecl> memberVarDecl;
+    RTypeArgumentsPtr typeArgs;
 
 public:
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
@@ -97,7 +103,9 @@ public:
 class RClassMemberLoc : public RLoc
 {
     RLocPtr instance;
-    std::shared_ptr<RClassMemberVar> memberVar;
+    std::shared_ptr<RClassMemberVarDecl> memberVarDecl;
+    RTypeArgumentsPtr typeArgs;
+
 public:
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -105,7 +113,9 @@ public:
 class REnumElemMemberLoc : public RLoc
 {
     RLocPtr instance;
-    std::shared_ptr<REnumElemMemberVar> memberVar;
+    std::shared_ptr<REnumElemMemberVarDecl> memberVarDecl;
+    RTypeArgumentsPtr typeArgs;
+
 public:
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
 };
