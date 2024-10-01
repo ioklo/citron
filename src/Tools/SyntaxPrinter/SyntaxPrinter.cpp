@@ -4,6 +4,7 @@
 
 #include <Infra/Json.h>
 #include <Infra/StringWriter.h>
+#include <Infra/Ptr.h>
 
 #include <Syntax/Syntax.h>
 #include <TextAnalysis/Lexer.h>
@@ -54,7 +55,7 @@ int main(int argc, char* argv[])
     ostringstream oss;
     oss << cin.rdbuf();
 
-    auto buffer = make_shared<Buffer>(oss.str());
+    auto buffer = MakePtr<Buffer>(oss.str());
     Lexer lexer(buffer->MakeStartPosition());
 
     switch (mode)

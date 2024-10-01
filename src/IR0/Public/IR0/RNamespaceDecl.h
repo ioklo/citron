@@ -33,6 +33,8 @@ public:
     using RNamespaceDeclContainerComponent::AddNamespace;
     using RNamespaceDeclContainerComponent::GetNamespace;
 
+    using RTypeDeclContainerComponent::AddType;
+
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTopLevelDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }

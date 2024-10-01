@@ -36,7 +36,7 @@ RTypeDeclPtr RTypeDeclContainerComponent::GetType(const RIdentifier& identifier)
     return i->second;
 }
 
-void RTypeDeclContainerComponent::AddType(RTypeDeclPtr typeDecl)
+void RTypeDeclContainerComponent::AddType(RTypeDeclPtr&& typeDecl)
 {
     types.push_back(typeDecl);
     typeDict.insert_or_assign(typeDecl->GetIdentifier(), std::move(typeDecl));

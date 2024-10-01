@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <memory>
 
+#include <Infra/Ptr.h>
 #include <Infra/NotImplementedException.h>
 
 #include <IR0/RModuleDecl.h>
@@ -15,7 +16,7 @@
 
 using namespace std;
 
-namespace Citron {
+namespace Citron::SyntaxIR0Translator {
 
 namespace {
 
@@ -61,7 +62,7 @@ public:
             shared_ptr<RNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
             if (!childNamespace)
             {
-                childNamespace = make_shared<RNamespaceDecl>(curNamespace, name);
+                childNamespace = MakePtr<RNamespaceDecl>(curNamespace, name);
                 curNamespace->AddNamespace(childNamespace);
             }
 
@@ -88,8 +89,8 @@ public:
         auto sharedEnumElem = dynamic_pointer_cast<SEnumDecl>(sharedElem);
         assert(sharedEnumElem);
 
-        auto rEnum = MakeEnum(std::move(sharedEnumElem), curDecl, MakeGlobalMemberAccessor, context);
-        // curDecl->AddEnum(rEnum);
+        auto rEnum = MakeEnum(curDecl, *sharedEnumElem, MakeGlobalMemberAccessor, context);
+        curDecl->AddType(std::move(rEnum));
     }
 };
 
@@ -115,7 +116,7 @@ public:
         shared_ptr<RNamespaceDecl> curNamespace = moduleDecl->GetNamespace(elem.names[0]);
         if (!curNamespace)
         {
-            curNamespace = make_shared<RNamespaceDecl>(moduleDecl, elem.names[0]);
+            curNamespace = MakePtr<RNamespaceDecl>(moduleDecl, elem.names[0]);
             moduleDecl->AddNamespace(curNamespace);
         }
 
@@ -126,7 +127,7 @@ public:
             shared_ptr<RNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
             if (!childNamespace)
             {
-                childNamespace = make_shared<RNamespaceDecl>(moduleDecl, name);
+                childNamespace = MakePtr<RNamespaceDecl>(moduleDecl, name);
                 moduleDecl->AddNamespace(childNamespace);
             }
 
@@ -160,8 +161,8 @@ public:
         auto sharedEnumElem = dynamic_pointer_cast<SEnumDecl>(sharedElem);
         assert(sharedEnumElem);
 
-        auto rEnum = MakeEnum(std::move(sharedEnumElem), moduleDecl, MakeGlobalMemberAccessor, context);
-        moduleDecl->AddType(rEnum);
+        auto rEnum = MakeEnum(moduleDecl, *sharedEnumElem, MakeGlobalMemberAccessor, context);
+        moduleDecl->AddType(std::move(rEnum));
     }
 };
 
@@ -172,7 +173,7 @@ std::shared_ptr<RModuleDecl> Translate(
     vector<SScript> scripts,
     vector<shared_ptr<MModuleDecl>> referenceModules)
 {
-    auto rModuleDecl = make_shared<RModuleDecl>(moduleName);
+    auto rModuleDecl = MakePtr<RModuleDecl>(moduleName);
 
     SkeletonPhaseContext context;
     for (auto& script : scripts)
@@ -182,7 +183,7 @@ std::shared_ptr<RModuleDecl> Translate(
             elem->Accept(visitor);
         }
 
-    return nullopt;
+    return nullptr;
 
     //    var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
     //
@@ -237,4 +238,4 @@ std::shared_ptr<RModuleDecl> Translate(
     //}
 }
 
-} // namespace Citron
+} // namespace Citron::SyntaxIR0Translator

@@ -22,7 +22,7 @@ public:
     IR0_API size_t GetTypeCount();
     IR0_API RTypeDeclPtr GetType(int index);
     IR0_API RTypeDeclPtr GetType(const RIdentifier& identifier);
-    IR0_API void AddType(RTypeDeclPtr typeDecl);
+    IR0_API void AddType(RTypeDeclPtr&& typeDecl);
 };
 
 }

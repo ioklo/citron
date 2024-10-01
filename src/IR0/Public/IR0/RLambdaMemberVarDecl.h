@@ -20,6 +20,7 @@ class RLambdaMemberVarDecl
 
 public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
+    RTypePtr GetDeclType(RTypeArgumentsPtr typeArgs);
 };
 
 }

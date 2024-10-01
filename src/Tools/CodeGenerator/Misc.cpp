@@ -426,7 +426,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
 
 void GenerateSharedPtrDecls(CommonInfo& commonInfo, SharedPtrDeclsInfo& info, ostringstream& hStream)
 {
-    // using 'name'Ptr = std::unique_ptr<'name'>;
+    // using 'name'Ptr = std::shared_ptr<'name'>;
     for (auto& name : info.names)
         hStream << "using " << name << "Ptr = std::shared_ptr<" << name << ">;" << endl;
 }

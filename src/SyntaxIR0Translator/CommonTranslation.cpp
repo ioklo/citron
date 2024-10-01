@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace Citron {
+namespace Citron::SyntaxIR0Translator {
 
 vector<string> MakeTypeParams(const vector<STypeParam>& sTypeParams)
 {
@@ -16,8 +16,5 @@ vector<string> MakeTypeParams(const vector<STypeParam>& sTypeParams)
 
     return result;
 }
-
-
-
 
 }

@@ -1,12 +1,15 @@
 #pragma once
 
+#include "IR0Config.h"
+
 #include <memory>
 #include <vector>
+#include <Infra/Hash.h>
 
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
 
-namespace Citron 
+namespace Citron
 {
 
 class RNullableType;
@@ -22,6 +25,8 @@ using RDeclIdPtr = std::shared_ptr<RDeclId>;
 
 class RTypeArguments;
 using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
+
+class RTypeFactory;
 
 class RTypeVisitor
 {
@@ -51,6 +56,7 @@ class RType
 public:
     virtual ~RType() { }
     virtual void Accept(RTypeVisitor& visitor) = 0;
+    virtual RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
     virtual RCustomTypeKind GetCustomTypeKind() { return RCustomTypeKind::None; }
 };
 
@@ -59,76 +65,167 @@ using RTypePtr = std::shared_ptr<RType>;
 // recursive types
 class RNullableType : public RType
 {
+public:
     RTypePtr innerType;
+
+private:
+    friend RTypeFactory;
+    RNullableType(RTypePtr&& innerType);
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
 // trivial types
 class RTypeVarType : public RType
 {
+public:
     int index;
-    std::string name;
+    // std::string name;  다른 클래스에서도 공유할 것이므로 이름을 넣지 않는다
+
+private:
+    friend RTypeFactory;
+    RTypeVarType(int index);
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
 class RVoidType : public RType
 {
+private:
+    friend RTypeFactory;
+    RVoidType();
+
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
-class MTupleMemberVar
+struct RTupleMemberVar
 {
     RTypePtr declType;
     std::string name;
+
+    bool operator==(const RTupleMemberVar& other) const noexcept
+    {
+        return declType == other.declType && name == other.name;
+    }
 };
 
 class RTupleType : public RType
 {
-    std::vector<MTupleMemberVar> memberVars;
+public:
+    std::vector<RTupleMemberVar> memberVars;
+
+private:
+    friend RTypeFactory;
+    RTupleType(std::vector<RTupleMemberVar>&& memberVars);
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
 class RFuncType : public RType
 {
-    bool bLocal;
-    RFuncReturn funcRet;
-    std::vector<RFuncParameter> parameters;
+public:
+    struct Parameter
+    {
+        bool bOut;
+        RTypePtr type;
+
+        Parameter(bool bOut, RTypePtr&& type);
+        bool operator==(const Parameter& other) const noexcept
+        {
+            return bOut == other.bOut && type == other.type;
+        }
+    };
+
+    bool bLocal; 
+    RTypePtr retType;
+    std::vector<Parameter> params;
+
+private:
+    friend RTypeFactory;
+    RFuncType(bool bLocal, RTypePtr&& retType, std::vector<Parameter>&& params);    
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
 class RLocalPtrType : public RType
 {
+public:
     RTypePtr innerType;
+
+private:
+    friend RTypeFactory;
+    RLocalPtrType(RTypePtr&& innerType);
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
 class RBoxPtrType : public RType
 {
+public:
     RTypePtr innerType;
+
+private:
+    friend RTypeFactory;
+    RBoxPtrType(RTypePtr&& innerType);
+
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
 class RInstanceType : public RType
 {
+public:
     RDeclIdPtr declId;
     RTypeArgumentsPtr typeArgs;
 
+private:
+    friend RTypeFactory;
+    RInstanceType(const RDeclIdPtr& declId, RTypeArgumentsPtr&& typeArgs);
+
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
-
 
 }
 
+namespace std {
+
+template<>
+struct hash<Citron::RTupleMemberVar>
+{
+    size_t operator()(const Citron::RTupleMemberVar& tupleMemberVar) const noexcept
+    {
+        size_t s = 0;
+        Citron::hash_combine(s, tupleMemberVar.declType);
+        Citron::hash_combine(s, tupleMemberVar.name);
+        return s;
+    }
+};
+
+template<>
+struct hash<Citron::RFuncType::Parameter>
+{
+    size_t operator()(const Citron::RFuncType::Parameter& parameter) const noexcept
+    {
+        size_t s = 0;
+        Citron::hash_combine(s, parameter.bOut);
+        Citron::hash_combine(s, parameter.type);
+        return s;
+    }
+};
+
+} // namespace std

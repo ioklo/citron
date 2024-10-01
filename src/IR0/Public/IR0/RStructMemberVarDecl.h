@@ -26,6 +26,8 @@ public:
     IR0_API RStructMemberVarDecl(std::weak_ptr<RStructDecl> _struct, RAccessor accessor, bool bStatic, std::string name);
     IR0_API void InitDeclType(RTypePtr declType);
 
+    IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory);
+
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
 };
 

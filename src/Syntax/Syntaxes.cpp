@@ -2,8 +2,10 @@
 #include "Syntaxes.g.h"
 
 #include <Infra/make_vector.h>
+#include <Infra/Ptr.h>
 
 using namespace tcb;
+using namespace std;
 
 namespace Citron {
 
@@ -17,7 +19,7 @@ SIdTypeExp::SIdTypeExp(std::string name)
 { }
 
 SStringExp::SStringExp(std::string str)
-    : SStringExp(make_vector<SStringExpElementPtr>(make_unique<STextStringExpElement>(std::move(str))))
+    : SStringExp(make_vector<SStringExpElementPtr>(MakePtr<STextStringExpElement>(std::move(str))))
 { 
 }
 

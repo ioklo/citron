@@ -3,6 +3,7 @@
 
 #include <optional>
 
+#include <Infra/Ptr.h>
 #include <Syntax/Syntax.h>
 
 #include "Lexer.h"
@@ -16,11 +17,11 @@ using namespace std;
 
 namespace Citron {
 
-unique_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer);
-unique_ptr<SStructDecl> ParseStructDecl(Lexer* lexer);
-unique_ptr<SClassDecl> ParseClassDecl(Lexer* lexer);
+shared_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer);
+shared_ptr<SStructDecl> ParseStructDecl(Lexer* lexer);
+shared_ptr<SClassDecl> ParseClassDecl(Lexer* lexer);
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer);
-unique_ptr<SNamespaceDecl> ParseNamespaceDecl(Lexer* lexer);
+shared_ptr<SNamespaceDecl> ParseNamespaceDecl(Lexer* lexer);
 
 // int t
 // ref int t
@@ -70,7 +71,7 @@ optional<vector<SFuncParam>> ParseFuncDeclParams(Lexer* lexer)
     return params;
 }
 
-unique_ptr<SGlobalFuncDecl> ParseGlobalFuncDecl(Lexer* lexer)
+shared_ptr<SGlobalFuncDecl> ParseGlobalFuncDecl(Lexer* lexer)
 {
     // <SEQ> <RetTypeName> <FuncName> <LPAREN> <ARGS> <RPAREN>
     // LBRACE>
@@ -100,7 +101,7 @@ unique_ptr<SGlobalFuncDecl> ParseGlobalFuncDecl(Lexer* lexer)
 
     *lexer = std::move(curLexer);
 
-    return make_unique<SGlobalFuncDecl>(
+    return MakePtr<SGlobalFuncDecl>(
         nullopt, // TODO: [7] 일단 null
         bSequence,
         std::move(retType),
@@ -140,7 +141,7 @@ optional<vector<STypeParam>> ParseTypeParams(Lexer* lexer)
 }
 
 template<typename TMemberDeclSyntax>
-unique_ptr<TMemberDeclSyntax> ParseTypeDecl(Lexer* lexer)
+shared_ptr<TMemberDeclSyntax> ParseTypeDecl(Lexer* lexer)
 {
     if (auto enumDecl = ParseEnumDecl(lexer))
         return enumDecl;
@@ -154,7 +155,7 @@ unique_ptr<TMemberDeclSyntax> ParseTypeDecl(Lexer* lexer)
     return nullptr;
 }
 
-unique_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer)
+shared_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -204,15 +205,15 @@ unique_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer)
                 if (!oParamName)
                     return nullptr;
 
-                params.push_back(make_shared<SEnumElemMemberVarDecl>(std::move(typeExp), std::move(oParamName->text)));
+                params.push_back(MakePtr<SEnumElemMemberVarDecl>(std::move(typeExp), std::move(oParamName->text)));
             }
         }
 
-        elems.push_back(make_shared<SEnumElemDecl>(std::move(oElemName->text), std::move(params)));
+        elems.push_back(MakePtr<SEnumElemDecl>(std::move(oElemName->text), std::move(params)));
     }
 
     *lexer = std::move(curLexer);
-    return make_unique<SEnumDecl>(oAccessModifier, std::move(oEnumName->text), std::move(*oTypeParams), std::move(elems));    
+    return MakePtr<SEnumDecl>(oAccessModifier, std::move(oEnumName->text), std::move(*oTypeParams), std::move(elems));
 }
 
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer)
@@ -229,7 +230,7 @@ optional<SAccessModifier> ParseAccessModifier(Lexer* lexer)
     return nullopt;
 }
 
-unique_ptr<SStructMemberVarDecl> ParseStructMemberVarDecl(Lexer* lexer)
+shared_ptr<SStructMemberVarDecl> ParseStructMemberVarDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -264,10 +265,10 @@ unique_ptr<SStructMemberVarDecl> ParseStructMemberVarDecl(Lexer* lexer)
 
     *lexer = std::move(curLexer);
 
-    return make_unique<SStructMemberVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
+    return MakePtr<SStructMemberVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
 }
 
-unique_ptr<SStructMemberFuncDecl> ParseStructMemberFuncDecl(Lexer* lexer)
+shared_ptr<SStructMemberFuncDecl> ParseStructMemberFuncDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -302,12 +303,12 @@ unique_ptr<SStructMemberFuncDecl> ParseStructMemberFuncDecl(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SStructMemberFuncDecl>(
+    return MakePtr<SStructMemberFuncDecl>(
         oAccessModifier, bStatic, bSequence, std::move(retType), std::move(oFuncName->text), std::move(*oTypeParams), std::move(*oParameters), std::move(*oBody)
     );
 }
 
-unique_ptr<SStructConstructorDecl> ParseStructConstructorDecl(Lexer* lexer)
+shared_ptr<SStructConstructorDecl> ParseStructConstructorDecl(const string& structName, Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -316,6 +317,10 @@ unique_ptr<SStructConstructorDecl> ParseStructConstructorDecl(Lexer* lexer)
     // ex) F
     auto oName = Accept<IdentifierToken>(&curLexer);
     if (!oName)
+        return nullptr;
+
+    // 이름이 같아야 constructor이다
+    if (oName->text != structName)
         return nullptr;
 
     // ex) (int i, int a)
@@ -329,10 +334,10 @@ unique_ptr<SStructConstructorDecl> ParseStructConstructorDecl(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SStructConstructorDecl>(oAccessModifier, std::move(oName->text), std::move(*oParameters), std::move(*oBody));
+    return MakePtr<SStructConstructorDecl>(oAccessModifier, std::move(*oParameters), std::move(*oBody));
 }
 
-unique_ptr<SStructMemberDecl> ParseStructMemberDecl(Lexer* lexer)
+shared_ptr<SStructMemberDecl> ParseStructMemberDecl(const string& structName, Lexer* lexer)
 {
     if (auto memberDecl = ParseTypeDecl<SStructMemberDecl>(lexer))
         return memberDecl;
@@ -340,7 +345,7 @@ unique_ptr<SStructMemberDecl> ParseStructMemberDecl(Lexer* lexer)
     if (auto memberDecl = ParseStructMemberFuncDecl(lexer))
         return memberDecl;
 
-    if (auto memberDecl = ParseStructConstructorDecl(lexer))
+    if (auto memberDecl = ParseStructConstructorDecl(structName, lexer))
         return memberDecl;
 
     if (auto memberDecl = ParseStructMemberVarDecl(lexer))
@@ -349,7 +354,7 @@ unique_ptr<SStructMemberDecl> ParseStructMemberDecl(Lexer* lexer)
     return nullptr;
 }
 
-unique_ptr<SStructDecl> ParseStructDecl(Lexer* lexer)
+shared_ptr<SStructDecl> ParseStructDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -396,7 +401,7 @@ unique_ptr<SStructDecl> ParseStructDecl(Lexer* lexer)
     // } 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto elem = ParseStructMemberDecl(&curLexer);
+        auto elem = ParseStructMemberDecl(oStructName->text, &curLexer);
         if (!elem)
             return nullptr;
 
@@ -404,10 +409,10 @@ unique_ptr<SStructDecl> ParseStructDecl(Lexer* lexer)
     }
     
     *lexer = std::move(curLexer);
-    return make_unique<SStructDecl>(oAccessModifier, std::move(oStructName->text), std::move(*oTypeParams), std::move(baseTypes), std::move(elems));
+    return MakePtr<SStructDecl>(oAccessModifier, std::move(oStructName->text), std::move(*oTypeParams), std::move(baseTypes), std::move(elems));
 }
 
-unique_ptr<SClassMemberFuncDecl> ParseClassMemberFuncDecl(Lexer* lexer)
+shared_ptr<SClassMemberFuncDecl> ParseClassMemberFuncDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -442,7 +447,7 @@ unique_ptr<SClassMemberFuncDecl> ParseClassMemberFuncDecl(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SClassMemberFuncDecl>(
+    return MakePtr<SClassMemberFuncDecl>(
         oAccessModifier,
         bStatic, bSequence,
         std::move(retType),
@@ -452,7 +457,7 @@ unique_ptr<SClassMemberFuncDecl> ParseClassMemberFuncDecl(Lexer* lexer)
         std::move(*oBody));
 }
 
-unique_ptr<SClassConstructorDecl> ParseClassConstructorDecl(Lexer* lexer)
+shared_ptr<SClassConstructorDecl> ParseClassConstructorDecl(const string& className, Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -461,6 +466,10 @@ unique_ptr<SClassConstructorDecl> ParseClassConstructorDecl(Lexer* lexer)
     // ex) F
     auto oName = Accept<IdentifierToken>(&curLexer);
     if (!oName)
+        return nullptr;
+
+    // 이름이 같아야 constructor다
+    if (oName->text != className)
         return nullptr;
 
     // ex) (int i, int a)
@@ -493,10 +502,10 @@ unique_ptr<SClassConstructorDecl> ParseClassConstructorDecl(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SClassConstructorDecl>(oAccessModifier, std::move(oName->text), std::move(*oParameters), std::move(oBaseArgs), std::move(*oBody));    
+    return MakePtr<SClassConstructorDecl>(oAccessModifier, std::move(*oParameters), std::move(oBaseArgs), std::move(*oBody));
 }
 
-unique_ptr<SClassMemberVarDecl> ParseClassMemberVarDecl(Lexer* lexer)
+shared_ptr<SClassMemberVarDecl> ParseClassMemberVarDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
     auto oAccessModifier = ParseAccessModifier(&curLexer);
@@ -529,10 +538,10 @@ unique_ptr<SClassMemberVarDecl> ParseClassMemberVarDecl(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return make_unique<SClassMemberVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
+    return MakePtr<SClassMemberVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
 }
 
-unique_ptr<SClassMemberDecl> ParseClassMemberDecl(Lexer* lexer)
+shared_ptr<SClassMemberDecl> ParseClassMemberDecl(string& className, Lexer* lexer)
 {
     if (auto memberDecl = ParseTypeDecl<SClassMemberDecl>(lexer))
         return memberDecl;
@@ -540,7 +549,7 @@ unique_ptr<SClassMemberDecl> ParseClassMemberDecl(Lexer* lexer)
     if (auto memberDecl = ParseClassMemberFuncDecl(lexer))
         return memberDecl;
 
-    if (auto memberDecl = ParseClassConstructorDecl(lexer))
+    if (auto memberDecl = ParseClassConstructorDecl(className, lexer))
         return memberDecl;
 
     if (auto memberDecl = ParseClassMemberVarDecl(lexer))
@@ -549,7 +558,7 @@ unique_ptr<SClassMemberDecl> ParseClassMemberDecl(Lexer* lexer)
     return nullptr;
 }
 
-unique_ptr<SClassDecl> ParseClassDecl(Lexer* lexer)
+shared_ptr<SClassDecl> ParseClassDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -599,7 +608,7 @@ unique_ptr<SClassDecl> ParseClassDecl(Lexer* lexer)
     // } 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto elem = ParseClassMemberDecl(&curLexer);
+        auto elem = ParseClassMemberDecl(oClassName->text, &curLexer);
         if (!elem)
             return nullptr;
 
@@ -607,7 +616,7 @@ unique_ptr<SClassDecl> ParseClassDecl(Lexer* lexer)
     }
 
     *lexer = std::move(curLexer);
-    return make_unique<SClassDecl>(
+    return MakePtr<SClassDecl>(
         oAccessModifier, 
         std::move(oClassName->text), 
         std::move(*oTypeParams), 
@@ -630,7 +639,7 @@ SNamespaceDeclElementPtr ParseNamespaceElement(Lexer* lexer)
     return nullptr;
 }
 
-unique_ptr<SNamespaceDecl> ParseNamespaceDecl(Lexer* lexer)
+shared_ptr<SNamespaceDecl> ParseNamespaceDecl(Lexer* lexer)
 {
     // <NAMESPACE> <NAME>(.<NAME> ...) <LBRACE>  ... <RBRACE>
 
@@ -676,7 +685,7 @@ unique_ptr<SNamespaceDecl> ParseNamespaceDecl(Lexer* lexer)
     }
 
     *lexer = std::move(curLexer);
-    return make_unique<SNamespaceDecl>(std::move(nsNames), std::move(elems));
+    return MakePtr<SNamespaceDecl>(std::move(nsNames), std::move(elems));
 }
 
 SScriptElementPtr ParseScriptElement(Lexer* lexer)

@@ -11,13 +11,32 @@
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
 #include "RTopLevelDeclOuter.h"
+#include "RCommonFuncDeclComponent.h"
 
 namespace Citron {
 
+class MGlobalFuncDecl;
+
+// abstract
 class RGlobalFuncDecl
     : public RDecl
     , public RBodyDeclOuter
     , public RFuncDecl
+{
+public:
+    void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
+};
+
+class RExternalGlobalFuncDecl : public RGlobalFuncDecl
+{
+    std::shared_ptr<MGlobalFuncDecl> externalFuncDecl;
+};
+
+class RInternalGlobalFuncDecl 
+    : public RGlobalFuncDecl
+    , private RCommonFuncDeclComponent
 {   
     struct FuncReturnAndParams
     {
@@ -31,11 +50,6 @@ class RGlobalFuncDecl
     std::vector<RName> typeParams;
 
     std::optional<FuncReturnAndParams> funcReturnAndParams;
-
-public:
-    void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(RBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(RFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }

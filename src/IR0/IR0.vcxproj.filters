@@ -120,6 +120,9 @@
     <ClInclude Include="Public\IR0\RDeclId.h">
       <Filter>Symbols\01 Identifier</Filter>
     </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeFactory.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -171,6 +174,12 @@
     </ClCompile>
     <ClCompile Include="RLoc.cpp">
       <Filter>Body</Filter>
+    </ClCompile>
+    <ClCompile Include="RClassMemberVarDecl.cpp">
+      <Filter>Symbols\06 Class</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypeFactory.cpp">
+      <Filter>Symbols\00 Abstraction</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

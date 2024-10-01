@@ -37,18 +37,18 @@ SExpPtr ParsePrimaryExp(Lexer* lexer);
 SExpPtr ParseSingleExp(Lexer* lexer);
 
 // 기타
-std::unique_ptr<SBoxExp> ParseBoxExp(Lexer* lexer);
-std::unique_ptr<SNewExp> ParseNewExp(Lexer* lexer);
+std::shared_ptr<SBoxExp> ParseBoxExp(Lexer* lexer);
+std::shared_ptr<SNewExp> ParseNewExp(Lexer* lexer);
 
 // LambdaExpression, Right Assoc
-std::unique_ptr<SLambdaExp> ParseLambdaExp(Lexer* lexer);
+std::shared_ptr<SLambdaExp> ParseLambdaExp(Lexer* lexer);
 SExpPtr ParseParenExp(Lexer* lexer);
-std::unique_ptr<SNullLiteralExp> ParseNullLiteralExp(Lexer* lexer);
-std::unique_ptr<SBoolLiteralExp> ParseBoolLiteralExp(Lexer* lexer);
-std::unique_ptr<SIntLiteralExp> ParseIntLiteralExp(Lexer* lexer);
-std::unique_ptr<SStringExp> ParseStringExp(Lexer* lexer);
-std::unique_ptr<SListExp> ParseListExp(Lexer* lexer);
-std::unique_ptr<SIdentifierExp> ParseIdentifierExp(Lexer* lexer);
+std::shared_ptr<SNullLiteralExp> ParseNullLiteralExp(Lexer* lexer);
+std::shared_ptr<SBoolLiteralExp> ParseBoolLiteralExp(Lexer* lexer);
+std::shared_ptr<SIntLiteralExp> ParseIntLiteralExp(Lexer* lexer);
+std::shared_ptr<SStringExp> ParseStringExp(Lexer* lexer);
+std::shared_ptr<SListExp> ParseListExp(Lexer* lexer);
+std::shared_ptr<SIdentifierExp> ParseIdentifierExp(Lexer* lexer);
 
 std::optional<std::vector<SArgument>> ParseCallArgs(Lexer* lexer);
 

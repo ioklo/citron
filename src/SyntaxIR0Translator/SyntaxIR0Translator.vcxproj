@@ -25,6 +25,9 @@
     <ProjectReference Include="..\IR0\IR0.vcxproj">
       <Project>{66da32eb-365d-4f0e-bc00-3faba2f51f39}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Logging\Logging.vcxproj">
+      <Project>{3bb70f45-01b2-474d-aa79-c1b78d3c37e4}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Symbol\Symbol.vcxproj">
       <Project>{b424f6ab-85bc-4fe0-af89-ec60b1a13fa7}</Project>
     </ProjectReference>
@@ -34,6 +37,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BodyPhaseContext.cpp" />
+    <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
+    <ClCompile Include="ImExp.cpp" />
+    <ClCompile Include="IrExp.cpp" />
+    <ClCompile Include="IrExpToRExpTranslation.cpp" />
     <ClCompile Include="MemberDeclPhaseContext.cpp" />
     <ClCompile Include="EnumTranslation.cpp" />
     <ClCompile Include="main.cpp" />
@@ -43,6 +50,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ReExp.cpp" />
     <ClCompile Include="ScopeContext.cpp" />
     <ClCompile Include="StmtTranslation.cpp" />
     <ClCompile Include="StructTranslation.cpp" />
@@ -51,9 +59,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BodyPhaseContext.h" />
+    <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
+    <ClInclude Include="ImExp.h" />
+    <ClInclude Include="IrExp.h" />
+    <ClInclude Include="IrExpToRExpTranslation.h" />
     <ClInclude Include="MemberDeclPhaseContext.h" />
     <ClInclude Include="EnumTranslation.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ReExp.h" />
     <ClInclude Include="ScopeContext.h" />
     <ClInclude Include="SkeletonPhaseContext.h" />
     <ClInclude Include="StmtTranslation.h" />

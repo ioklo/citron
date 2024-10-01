@@ -67,7 +67,7 @@ public:
 class MTypeVarType : public MType
 {
     int index;
-    std::string name;
+    // std::string name;
 
 public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }

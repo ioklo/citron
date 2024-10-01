@@ -25,7 +25,7 @@ class RClassMemberVarDecl;
 class REnumElemMemberVarDecl;
 
 class RExp;
-using RExpPtr = std::unique_ptr<RExp>;
+using RExpPtr = std::shared_ptr<RExp>;
 
 class RLocVisitor
 {
@@ -47,17 +47,20 @@ class RLoc
 {
 public:
     virtual void Accept(RLocVisitor& visitor) = 0;
+    virtual RTypePtr GetType(RTypeFactory& factory) = 0;
 };
 
-using RLocPtr = std::unique_ptr<RLoc>;
+using RLocPtr = std::shared_ptr<RLoc>;
 
 class RTempLoc : public RLoc
 {
-    RExpPtr exp;
-    RTypePtr type;
-
 public:
+    RExpPtr exp;
+    
+public:
+    IR0_API RTempLoc(const RExpPtr& exp);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 class RLocalVarLoc : public RLoc

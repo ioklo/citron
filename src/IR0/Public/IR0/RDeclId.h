@@ -16,7 +16,7 @@ class RDeclPath
 
 private:
     RDeclPath(std::shared_ptr<RDeclPath>&& outer, RIdentifier&& identifier);
-    friend class MDeclIdFactory;
+    friend class RDeclIdFactory;
 };
 
 using RDeclPathPtr = std::shared_ptr<RDeclPath>;
@@ -28,7 +28,7 @@ class RDeclId
 
 private:
     RDeclId(std::string&& moduleName, RDeclPathPtr&& path);
-    friend class MDeclIdFactory;
+    friend class RDeclIdFactory;
 };
 
 using RDeclIdPtr = std::shared_ptr<RDeclId>;

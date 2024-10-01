@@ -39,9 +39,9 @@ class RStructConstructorDecl;
 class RStringExp;
 class RExp;
 class RLoc;
-using RExpPtr = std::unique_ptr<RExp>;
-using RStmtPtr = std::unique_ptr<RStmt>;
-using RLocPtr = std::unique_ptr<RLoc>;
+using RExpPtr = std::shared_ptr<RExp>;
+using RStmtPtr = std::shared_ptr<RStmt>;
+using RLocPtr = std::shared_ptr<RLoc>;
 
 class RClassConstructor;
 

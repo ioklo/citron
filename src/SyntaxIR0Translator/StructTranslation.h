@@ -7,17 +7,19 @@
 
 namespace Citron {
 
+namespace SyntaxIR0Translator {
+
 class SkeletonPhaseContext;
 
-std::shared_ptr<RStructDecl> MakeStruct(std::shared_ptr<SStructDecl> sDecl, RTypeDeclOuterPtr rOuter, RAccessor accessor, SkeletonPhaseContext& context);
+std::shared_ptr<RStructDecl> InnerMakeStruct(std::shared_ptr<SStructDecl> sDecl, RTypeDeclOuterPtr rOuter, RAccessor accessor, SkeletonPhaseContext& context);
 
-template<typename ROuter, typename MakeAccessor>
-void AddStruct(const std::shared_ptr<ROuter>& rOuter, std::shared_ptr<SStructDecl> sStruct, MakeAccessor makeAccessor, SkeletonPhaseContext& context)
+template<typename TROuter, typename TMakeAccessor>
+std::shared_ptr<RStructDecl> MakeStruct(const std::shared_ptr<TROuter>& rOuter, std::shared_ptr<SStructDecl> sStruct, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)
 {
     auto accessor = makeAccessor(sStruct->accessModifier);
-    auto rStruct = MakeStruct(sStruct, rOuter, accessor, context);
-    rOuter->AddType(rStruct);
+    return InnerMakeStruct(sStruct, rOuter, accessor, context);
 }
 
+} // namespace SyntaxIR0Translator
 
-}
+} // namespace Citron

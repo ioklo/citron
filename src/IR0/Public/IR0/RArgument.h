@@ -4,7 +4,7 @@
 
 namespace Citron {
 
-using RExpPtr = std::unique_ptr<class RExp>;
+using RExpPtr = std::shared_ptr<class RExp>;
 
 class RNormalArgument
 {

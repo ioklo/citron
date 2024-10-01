@@ -11,6 +11,19 @@
     <ClCompile Include="BodyPhaseContext.cpp" />
     <ClCompile Include="StmtTranslation.cpp" />
     <ClCompile Include="ScopeContext.cpp" />
+    <ClCompile Include="ImExp.cpp">
+      <Filter>ExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="ReExp.cpp">
+      <Filter>ExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="IrExp.cpp">
+      <Filter>ExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
+    <ClCompile Include="IrExpToRExpTranslation.cpp">
+      <Filter>ExpTranslation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -24,5 +37,23 @@
     <ClInclude Include="BodyPhaseContext.h" />
     <ClInclude Include="StmtTranslation.h" />
     <ClInclude Include="ScopeContext.h" />
+    <ClInclude Include="ImExp.h">
+      <Filter>ExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="ReExp.h">
+      <Filter>ExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="IrExp.h">
+      <Filter>ExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
+    <ClInclude Include="IrExpToRExpTranslation.h">
+      <Filter>ExpTranslation</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ExpTranslation">
+      <UniqueIdentifier>{03c3728c-c718-44e1-8592-694e97217657}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

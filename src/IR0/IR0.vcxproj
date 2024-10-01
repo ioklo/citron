@@ -187,6 +187,7 @@
     <ClInclude Include="Public\IR0\RExp.h" />
     <ClInclude Include="Public\IR0\RLoc.h" />
     <ClInclude Include="Public\IR0\RStmt.h" />
+    <ClInclude Include="Public\IR0\RTypeFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">
@@ -197,6 +198,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="RClassMemberVarDecl.cpp" />
     <ClCompile Include="RCommonFuncDeclComponent.cpp" />
     <ClCompile Include="RDeclId.cpp" />
     <ClCompile Include="RExp.cpp" />
@@ -215,6 +217,7 @@
     <ClCompile Include="RTypeArguments.cpp" />
     <ClCompile Include="RTypeDeclContainerComponent.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RTypeFactory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

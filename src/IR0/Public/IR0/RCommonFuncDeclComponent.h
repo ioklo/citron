@@ -12,7 +12,7 @@ namespace Citron
 {
 class RLambdaDecl;
 class RStmt;
-using RStmtPtr = std::unique_ptr<RStmt>;
+using RStmtPtr = std::shared_ptr<RStmt>;
 
 class RCommonFuncDeclComponent
 {

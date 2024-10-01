@@ -1,4 +1,6 @@
 #pragma once
+#include "IR0Config.h"
+
 #include <variant>
 #include <memory>
 #include <string>
@@ -9,8 +11,8 @@
 
 namespace Citron {
 
-using RStmtPtr = std::unique_ptr<class RStmt>;
-using RLocPtr = std::unique_ptr<class RLoc>;
+using RStmtPtr = std::shared_ptr<class RStmt>;
+using RLocPtr = std::shared_ptr<class RLoc>;
 
 // Storage
 class RLoadExp;
@@ -143,9 +145,10 @@ class RExp
 {
 public:
     virtual void Accept(RExpVisitor& visitor) = 0;
+    virtual RTypePtr GetType(RTypeFactory& factory) = 0;
 };
 
-using RExpPtr = std::unique_ptr<RExp>;
+using RExpPtr = std::shared_ptr<RExp>;
 
 #pragma region Storage
 
@@ -187,42 +190,57 @@ public:
 // &c.x => RClassMemberBoxRefExp(RLocalVar("c"), C::x)
 class RClassMemberBoxRefExp : public RExp
 {
+public:
     RLocPtr holder;
     std::shared_ptr<RClassMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
+    IR0_API RClassMemberBoxRefExp(const RLocPtr& holder, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 // box S* pS;
 // &ps->x => RStructIndirectMemberBoxRefExp(RLocalVar("pS"), S::x)
 class RStructIndirectMemberBoxRefExp : public RExp
 {
+public:
     RLocPtr holder;
     std::shared_ptr<RStructMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
+
 public:
+    IR0_API RStructIndirectMemberBoxRefExp(const RLocPtr& holder, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 // C c;
 // box A* a = &c.s.a; => RStructMemberBoxRefExp(RClassMemberBoxRefExp(RLocalVar("c"), C::s), A::a)
 class RStructMemberBoxRefExp : public RExp
 {
+public:
     RLocPtr parent;
     std::shared_ptr<RStructMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
+
 public:
+    IR0_API RStructMemberBoxRefExp(const RLocPtr& parent, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 // &i
 class RLocalRefExp : public RExp
 {
-    RLocPtr innerLoc;
 public:
+    RLocPtr innerLoc;
+
+public:
+    IR0_API RLocalRefExp(const RLocPtr& innerLoc);
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+    RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 #pragma endregion Storage

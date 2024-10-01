@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace Citron {
+namespace Citron::SyntaxIR0Translator {
 
 tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(RDeclPtr decl, vector<SFuncParam>& sParams)
 {

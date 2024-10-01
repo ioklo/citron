@@ -21,6 +21,7 @@ class RClassMemberVarDecl
     RName name;
 
 public:
+    IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory);
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
 };
 
