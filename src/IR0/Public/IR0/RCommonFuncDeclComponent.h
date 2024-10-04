@@ -14,6 +14,9 @@ class RLambdaDecl;
 class RStmt;
 using RStmtPtr = std::shared_ptr<RStmt>;
 
+class RTypeArguments;
+class RTypeFactory;
+
 class RCommonFuncDeclComponent
 {
     // lambda의 경우, funcReturn이 NeedInduction으로 주어진다.
@@ -35,6 +38,8 @@ public:
     IR0_API void InitBody(std::vector<RStmtPtr> body);
 
     IR0_API ~RCommonFuncDeclComponent();
+
+    IR0_API RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory);
 };
 
 }

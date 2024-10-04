@@ -6,8 +6,11 @@ namespace Citron {
 
 class Logger
 {
-
 public:
+    
+    LOGGING_API void Fatal_CantUseTypeAsExpression();      // A2008_ResolveIdentifier_CantUseTypeAsExpression);
+    LOGGING_API void Fatal_CantUseNamespaceAsExpression(); // A2013_ResolveIdentifier_CantUseNamespaceAsExpression
+    
 
     // IrExp -> RExp Translation
     LOGGING_API void Fatal_CantMakeReference();

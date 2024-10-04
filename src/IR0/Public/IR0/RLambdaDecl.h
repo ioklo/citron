@@ -17,8 +17,7 @@ namespace Citron
 {
 
 class RLambdaDecl 
-    : public RDecl
-    , public RTypeDecl
+    : public RTypeDecl
     , public RBodyDeclOuter
     , public RFuncDecl
     , private RCommonFuncDeclComponent
@@ -39,6 +38,8 @@ public:
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
+
+    using RCommonFuncDeclComponent::GetReturnType;
 };
 
 }

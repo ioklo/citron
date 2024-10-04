@@ -12,7 +12,8 @@
 namespace Citron
 {
 
-class RNullableType;
+class RNullableValueType; // struct, enum 타입 등에서 쓰일 nullable
+class RNullableRefType;   // class 타입 등에서 쓰일 nullable
 class RTypeVarType;  // 이것은 Symbol인가?
 class RVoidType;     // builtin type
 class RTupleType;    // inline type
@@ -32,7 +33,8 @@ class RTypeVisitor
 {
 public:
     virtual ~RTypeVisitor() { }
-    virtual void Visit(RNullableType& type) = 0;
+    virtual void Visit(RNullableValueType& type) = 0;
+    virtual void Visit(RNullableRefType& type) = 0;
     virtual void Visit(RTypeVarType& type) = 0;
     virtual void Visit(RVoidType& type) = 0;
     virtual void Visit(RTupleType& type) = 0;
@@ -63,18 +65,32 @@ public:
 using RTypePtr = std::shared_ptr<RType>;
 
 // recursive types
-class RNullableType : public RType
+class RNullableValueType : public RType
 {
 public:
     RTypePtr innerType;
 
 private:
     friend RTypeFactory;
-    RNullableType(RTypePtr&& innerType);
+    RNullableValueType(RTypePtr&& innerType);
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+};
+
+class RNullableRefType : public RType
+{
+public:
+    RTypePtr innerType;
+
+private:
+    friend RTypeFactory;
+    RNullableRefType(RTypePtr&& innerType);
+
+public:
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
 // trivial types
@@ -90,7 +106,7 @@ private:
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
 class RVoidType : public RType
@@ -126,7 +142,7 @@ private:
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
 class RFuncType : public RType
@@ -178,7 +194,7 @@ public:
 
 private:
     friend RTypeFactory;
-    RBoxPtrType(RTypePtr&& innerType);
+    RBoxPtrType(const RTypePtr& innerType);
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
@@ -193,7 +209,7 @@ public:
 
 private:
     friend RTypeFactory;
-    RInstanceType(const RDeclIdPtr& declId, RTypeArgumentsPtr&& typeArgs);
+    RInstanceType(const RDeclIdPtr& declId, const RTypeArgumentsPtr& typeArgs);
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }

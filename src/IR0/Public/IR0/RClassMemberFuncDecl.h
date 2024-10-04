@@ -28,6 +28,8 @@ public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
+
+    using RCommonFuncDeclComponent::GetReturnType;
 };
 
 }

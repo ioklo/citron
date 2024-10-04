@@ -17,7 +17,7 @@ void AddEnumElemMemberVar(const shared_ptr<REnumElemDecl>& rEnumElem, SEnumElemM
 
     context.AddMemberDeclPhaseTask([type = sEnumElemMemberVar.type, rMemberVar, rEnumElem](MemberDeclPhaseContext& context) {
         auto declType = context.MakeType(type, rEnumElem);
-        rMemberVar->InitDeclType(declType);
+        rMemberVar->InitDeclType(std::move(declType));
     });
 }
 

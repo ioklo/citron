@@ -19,8 +19,7 @@ class RClass;
 class RInterface;
 
 class RClassDecl
-    : public RDecl
-    , public RTypeDecl
+    : public RTypeDecl
     , public RTypeDeclOuter
     , private RTypeDeclContainerComponent
     , private RFuncDeclContainerComponent<RClassMemberFuncDecl>

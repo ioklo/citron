@@ -12,18 +12,32 @@ RTypeFactory::RTypeFactory()
 {
 }
 
-shared_ptr<RNullableType> RTypeFactory::MakeNullableType(RTypePtr&& innerType)
-{
-    auto key = innerType;
-    auto i = nullableTypes.find(key);
+shared_ptr<RNullableValueType> RTypeFactory::MakeNullableValueType(RTypePtr innerType)
+{   
+    auto i = nullableValueTypes.find(innerType);
 
-    if (i != nullableTypes.end())
+    if (i != nullableValueTypes.end())
         return i->second;
 
-    shared_ptr<RNullableType> newNullableType { new RNullableType(std::move(innerType)) };
-    nullableTypes.emplace(key, newNullableType);
+    auto key = innerType;
+    shared_ptr<RNullableValueType> newType { new RNullableValueType(std::move(innerType)) };
+    nullableValueTypes.emplace(key, newType);
 
-    return newNullableType;
+    return newType;
+}
+
+shared_ptr<RNullableRefType> RTypeFactory::MakeNullableRefType(RTypePtr innerType)
+{
+    auto i = nullableRefTypes.find(innerType);
+
+    if (i != nullableRefTypes.end())
+        return i->second;
+
+    auto key = innerType;
+    shared_ptr<RNullableRefType> newType { new RNullableRefType(std::move(innerType)) };
+    nullableRefTypes.emplace(key, newType);
+
+    return newType;
 }
 
 shared_ptr<RTypeVarType> RTypeFactory::MakeTypeVarType(int index)
@@ -87,19 +101,19 @@ shared_ptr<RBoxPtrType> RTypeFactory::MakeBoxPtrType(RTypePtr&& innerType)
     if (i != boxPtrTypes.end())
         return i->second;
 
-    shared_ptr<RBoxPtrType> newType { new RBoxPtrType(std::move(innerType)) };
+    shared_ptr<RBoxPtrType> newType { new RBoxPtrType(innerType) };
     boxPtrTypes.emplace(innerType, newType);
     return newType;
 }
 
-shared_ptr<RInstanceType> RTypeFactory::MakeInstanceType(const RDeclIdPtr& declId, RTypeArgumentsPtr&& typeArgs)
+shared_ptr<RInstanceType> RTypeFactory::MakeInstanceType(const RDeclIdPtr& declId, const RTypeArgumentsPtr& typeArgs)
 {
     auto key = IR0::InstanceTypeKey { declId, typeArgs };
     auto i = instanceTypes.find(key);
     if (i != instanceTypes.end())
         return i->second;
 
-    shared_ptr<RInstanceType> newType { new RInstanceType(declId, std::move(typeArgs)) };
+    shared_ptr<RInstanceType> newType { new RInstanceType(declId, typeArgs) };
     instanceTypes.emplace(key, newType);
     return newType;
 }

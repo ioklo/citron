@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "RIdentifier.h"
 
 namespace Citron
 {
@@ -50,6 +51,8 @@ class RDecl
 {
 public:
     virtual ~RDecl() { }
+    virtual RIdentifier GetIdentifier() = 0;
+    virtual std::weak_ptr<RDecl> GetOuter() = 0;
     virtual void Accept(RDeclVisitor& visitor) = 0;
 };
 

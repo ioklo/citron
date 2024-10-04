@@ -181,6 +181,9 @@
     <ClCompile Include="RTypeFactory.cpp">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClCompile>
+    <ClCompile Include="RLambdaMemberVarDecl.cpp">
+      <Filter>Symbols\10 Lambda</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Body">

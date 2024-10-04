@@ -8,17 +8,26 @@ using namespace std;
 
 namespace Citron {
 
-RNullableType::RNullableType(RTypePtr&& innerType)
+RNullableValueType::RNullableValueType(RTypePtr&& innerType)
     : innerType(std::move(innerType))
 {
 }
 
-RTypePtr RNullableType::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
+RTypePtr RNullableValueType::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedInnerType = innerType->Apply(typeArgs, factory);
-    return factory.MakeNullableType(std::move(appliedInnerType));
+    return factory.MakeNullableValueType(std::move(appliedInnerType));
 }
 
+RNullableRefType::RNullableRefType(RTypePtr&& innerType)
+    : innerType(std::move(innerType))
+{
+}
+
+RTypePtr RNullableRefType::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
+{   
+    return factory.MakeNullableRefType(innerType->Apply(typeArgs, factory));
+}
 
 RTypeVarType::RTypeVarType(int index)
     : index(index)
@@ -95,8 +104,8 @@ RTypePtr RLocalPtrType::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 }
 
 
-RBoxPtrType::RBoxPtrType(RTypePtr&& innerType)
-    : innerType(std::move(innerType))
+RBoxPtrType::RBoxPtrType(const RTypePtr& innerType)
+    : innerType(innerType)
 {
 
 }
@@ -107,8 +116,8 @@ RTypePtr RBoxPtrType::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     return factory.MakeBoxPtrType(std::move(appliedInnerType));
 }
 
-RInstanceType::RInstanceType(const RDeclIdPtr& declId, RTypeArgumentsPtr&& typeArgs)
-    : declId(declId), typeArgs(std::move(typeArgs))
+RInstanceType::RInstanceType(const RDeclIdPtr& declId, const RTypeArgumentsPtr& typeArgs)
+    : declId(declId), typeArgs(typeArgs)
 {
 }
 

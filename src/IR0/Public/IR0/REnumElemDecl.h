@@ -15,9 +15,9 @@ namespace Citron
 class REnumDecl;
 
 class REnumElemDecl
-    : public RDecl
-    , public RTypeDecl
+    : public RTypeDecl
 {
+public:
     std::weak_ptr<REnumDecl> _enum;
     std::string name;
     std::vector<std::shared_ptr<REnumElemMemberVarDecl>> memberVars; // lazy

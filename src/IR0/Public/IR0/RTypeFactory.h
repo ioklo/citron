@@ -84,7 +84,8 @@ struct TypeArgumentsKeyHasher
 class RTypeFactory
 {
     // inner type -> nullable type
-    std::unordered_map<RTypePtr, std::shared_ptr<RNullableType>> nullableTypes; 
+    std::unordered_map<RTypePtr, std::shared_ptr<RNullableValueType>> nullableValueTypes;
+    std::unordered_map<RTypePtr, std::shared_ptr<RNullableRefType>> nullableRefTypes;
     std::unordered_map<int, std::shared_ptr<RTypeVarType>> typeVarTypes;
     std::shared_ptr<RVoidType> voidType;
     std::unordered_map<std::vector<RTupleMemberVar>, std::shared_ptr<RTupleType>> tupleTypes;
@@ -96,16 +97,23 @@ class RTypeFactory
 
 public:
     IR0_API RTypeFactory();
-
-    IR0_API std::shared_ptr<RNullableType> MakeNullableType(RTypePtr&& innerType);
+    
+    IR0_API std::shared_ptr<RNullableValueType> MakeNullableValueType(RTypePtr innerType);
+    IR0_API std::shared_ptr<RNullableRefType> MakeNullableRefType(RTypePtr innerType);
     IR0_API std::shared_ptr<RTypeVarType> MakeTypeVarType(int index);
     IR0_API std::shared_ptr<RVoidType> MakeVoidType();
     IR0_API std::shared_ptr<RTupleType> MakeTupleType(std::vector<RTupleMemberVar>&& memberVar);
     IR0_API std::shared_ptr<RFuncType> MakeFuncType(bool bLocal, RTypePtr&& retType, std::vector<RFuncType::Parameter>&& params);
     IR0_API std::shared_ptr<RLocalPtrType> MakeLocalPtrType(RTypePtr&& innerType);
     IR0_API std::shared_ptr<RBoxPtrType> MakeBoxPtrType(RTypePtr&& innerType);
-    IR0_API std::shared_ptr<RInstanceType> MakeInstanceType(const RDeclIdPtr& declId, RTypeArgumentsPtr&& typeArgs);
+    IR0_API std::shared_ptr<RInstanceType> MakeInstanceType(const RDeclIdPtr& declId, const RTypeArgumentsPtr& typeArgs);
     IR0_API RTypeArgumentsPtr MakeTypeArguments(const std::vector<RTypePtr>& items);
+
+    // utilities
+    IR0_API RTypePtr MakeBoolType();
+    IR0_API RTypePtr MakeIntType();
+    IR0_API RTypePtr MakeStringType();
+    IR0_API RTypePtr MakeListType(const RTypePtr& itemType);
 };
 
 } // namespace Citron

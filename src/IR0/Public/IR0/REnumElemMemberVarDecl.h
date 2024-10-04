@@ -23,8 +23,9 @@ class REnumElemMemberVarDecl
 
 public:
     IR0_API REnumElemMemberVarDecl(std::weak_ptr<REnumElemDecl> outer, RName name);
-    IR0_API void InitDeclType(RTypePtr declType);
+    IR0_API void InitDeclType(RTypePtr&& declType);
 
+    IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory);
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
 };
 

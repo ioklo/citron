@@ -16,6 +16,8 @@ class RTypeVarType;
 namespace SyntaxIR0Translator {
 
 class ReExp;
+using ReExpPtr = std::shared_ptr<ReExp>;
+
 class ImNamespaceExp;
 class ImGlobalFuncsExp;
 class ImTypeVarExp;
@@ -39,6 +41,7 @@ class ImExpVisitor;
 
 class ImExp
 {
+public:
     virtual void Accept(ImExpVisitor& visitor) = 0;
 };
 
@@ -68,6 +71,7 @@ public:
 
 class ImNamespaceExp : public ImExp
 {
+public:
     std::shared_ptr<RNamespaceDecl> _namespace; // namespace를 뭘로 저장하고 있어야 하나
 
 public:
@@ -92,14 +96,17 @@ public:
 
 class ImTypeVarExp : public ImExp
 {
+public:
     std::shared_ptr<RTypeVarType> type;
 
 public:
+    ImTypeVarExp(const std::shared_ptr<RTypeVarType>& type);
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class ImClassExp : public ImExp
 {
+public:
     std::shared_ptr<RClassDecl> classDecl;
     RTypeArgumentsPtr typeArgs;
 
@@ -111,6 +118,7 @@ class ImClassMemberFuncsExp
     : public ImExp
     , private FuncsWithPartialTypeArgsComponent<RClassMemberFuncDecl>
 {
+public:
     // HasExplicitInstance: x.F 처럼 x가 명시적으로 있는 경우 true, F 처럼 this.F 나 C.F 를 암시적으로 나타낸 경우라면 false, C.F는 명시적이지만 인스턴스가 아니므로 false
     // ExplicitInstance: HasExplicitInstance가 true일때만 의미가 있다
 
@@ -118,7 +126,7 @@ class ImClassMemberFuncsExp
     // x.F => HasExplicitInstance: true, "x"
     // F   => HasExplicitInstance: false, null
     bool hasExplicitInstance;
-    std::shared_ptr<ReExp> explicitInstance;
+    ReExpPtr explicitInstance;
 
     using FuncComp = FuncsWithPartialTypeArgsComponent<RClassMemberFuncDecl>;
 
@@ -131,6 +139,7 @@ public:
 
 class ImStructExp : public ImExp
 {
+public:
     std::shared_ptr<RStructDecl> structDecl;
     RTypeArgumentsPtr typeArgs;
 
@@ -155,6 +164,7 @@ public:
 
 class ImEnumExp : public ImExp
 {
+public:
     std::shared_ptr<REnumDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
@@ -164,6 +174,7 @@ public:
 
 class ImEnumElemExp : public ImExp
 {
+public:
     std::shared_ptr<REnumElemDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
@@ -174,6 +185,7 @@ public:
 // exp로 사용할 수 있는
 class ImThisVarExp : public ImExp
 {
+public:
     RTypePtr type;
 
 public:
@@ -182,6 +194,7 @@ public:
 
 class ImLocalVarExp : public ImExp
 {
+public:
     RTypePtr type;
     std::string name;
 
@@ -191,6 +204,7 @@ public:
 
 class ImLambdaMemberVarExp : public ImExp
 {
+public:
     std::shared_ptr<RLambdaMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     
@@ -200,11 +214,12 @@ public:
 
 class ImClassMemberVarExp : public ImExp
 {
+public:
     std::shared_ptr<RClassMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     
     bool hasExplicitInstance;
-    std::shared_ptr<ReExp> explicitInstance;
+    ReExpPtr explicitInstance;
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -212,11 +227,12 @@ public:
 
 class ImStructMemberVarExp : public ImExp
 {
+public:
     std::shared_ptr<RStructMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     
     bool hasExplicitInstance;
-    std::shared_ptr<ReExp> explicitInstance;
+    ReExpPtr explicitInstance;
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -224,9 +240,10 @@ public:
 
 class ImEnumElemMemberVarExp : public ImExp
 {
+public:
     std::shared_ptr<REnumElemMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
-    std::shared_ptr<ReExp> instance;
+    ReExpPtr instance;
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -234,7 +251,8 @@ public:
 
 class ImListIndexerExp : public ImExp
 {
-    std::shared_ptr<ReExp> instance;
+public:
+    ReExpPtr instance;
     RLocPtr index;
     RTypePtr itemType;
 
@@ -244,7 +262,8 @@ public:
 
 class ImLocalDerefExp : public ImExp
 {
-    std::shared_ptr<ReExp> target;
+public:
+    ReExpPtr target;
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -252,7 +271,8 @@ public:
 
 class ImBoxDerefExp : public ImExp
 {
-    std::shared_ptr<ReExp> target;
+public:
+    ReExpPtr target;
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -261,6 +281,7 @@ public:
 // 기타의 경우
 class ImElseExp : public ImExp
 {
+public:
     RExpPtr exp;
 
 public:

@@ -10,7 +10,6 @@ RStructConstructorDecl::RStructConstructorDecl(weak_ptr<RStructDecl> _struct, RA
     , accessor(accessor)
     , bTrivial(bTrivial)
 {
-
 }
 
 void RStructConstructorDecl::InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic)

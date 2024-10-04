@@ -27,6 +27,8 @@ public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
+
+    virtual RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
 };
 
 class RExternalGlobalFuncDecl : public RGlobalFuncDecl

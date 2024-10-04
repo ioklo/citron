@@ -16,9 +16,9 @@ class ReLambdaMemberVarExp;
 class ReClassMemberVarExp;
 class ReStructMemberVarExp;
 class ReEnumElemMemberVarExp;
-class ReListIndexerExp;
 class ReLocalDerefExp;
 class ReBoxDerefExp;
+class ReListIndexerExp;
 class ReElseExp;
 
 class ReExpVisitor;
@@ -42,9 +42,9 @@ public:
     virtual void Visit(ReClassMemberVarExp& exp) = 0;
     virtual void Visit(ReStructMemberVarExp& exp) = 0;
     virtual void Visit(ReEnumElemMemberVarExp& exp) = 0;
-    virtual void Visit(ReListIndexerExp& exp) = 0;
     virtual void Visit(ReLocalDerefExp& exp) = 0;
     virtual void Visit(ReBoxDerefExp& exp) = 0;
+    virtual void Visit(ReListIndexerExp& exp) = 0;
     virtual void Visit(ReElseExp& exp) = 0;
 };
 
@@ -53,6 +53,7 @@ class ReThisVarExp : public ReExp
     RTypePtr type;
 
 public:
+    ReThisVarExp(const RTypePtr& type);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType() override { return type; }
 };
@@ -63,6 +64,7 @@ class ReLocalVarExp : public ReExp
     std::string name;
     
 public:
+    ReLocalVarExp(const RTypePtr& type, const std::string& name);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType() override { return type; }
 };
@@ -73,18 +75,21 @@ class ReLambdaMemberVarExp : public ReExp
     RTypeArgumentsPtr typeArgs;
     
 public:
+    ReLambdaMemberVarExp(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType() override;
 };
 
 class ReClassMemberVarExp : public ReExp
 {
+public:
     std::shared_ptr<RClassMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
     
 public:
+    ReClassMemberVarExp(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType() override;
 };
@@ -97,6 +102,7 @@ class ReStructMemberVarExp : public ReExp
     ReExpPtr explicitInstance;
     
 public:
+    ReStructMemberVarExp(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType() override;
 };
@@ -105,10 +111,10 @@ class ReEnumElemMemberVarExp : public ReExp
 {
     std::shared_ptr<REnumElemMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
-
     ReExpPtr instance;
 
 public:
+    ReEnumElemMemberVarExp(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType() override;
 };
@@ -118,6 +124,7 @@ class ReLocalDerefExp : public ReExp
     ReExpPtr target;
     
 public:
+    ReLocalDerefExp(const ReExpPtr& target);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType() override;
 };
@@ -127,6 +134,7 @@ class ReBoxDerefExp : public ReExp
     ReExpPtr target;
 
 public:
+    ReBoxDerefExp(const ReExpPtr& target);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType() override;
 };
@@ -138,6 +146,7 @@ class ReListIndexerExp : public ReExp
     RTypePtr itemType;
     
 public:
+    ReListIndexerExp(const ReExpPtr& instance, const RLocPtr& index, const RTypePtr& itemType);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType() override { return itemType; }
 };
@@ -148,6 +157,8 @@ class ReElseExp : public ReExp
     RExpPtr rExp;
     
 public:
+    ReElseExp(const RExpPtr& ptr);
+
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType() override;
 };

@@ -202,6 +202,7 @@
     <ClCompile Include="RCommonFuncDeclComponent.cpp" />
     <ClCompile Include="RDeclId.cpp" />
     <ClCompile Include="RExp.cpp" />
+    <ClCompile Include="RLambdaMemberVarDecl.cpp" />
     <ClCompile Include="RLoc.cpp" />
     <ClCompile Include="RStructConstructorDecl.cpp" />
     <ClCompile Include="REnumDecl.cpp" />

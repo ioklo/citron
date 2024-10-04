@@ -13,6 +13,7 @@ class RClassDecl;
 class RClassMemberVarDecl
     : public RDecl
 {
+public:
     std::weak_ptr<RClassDecl> _class;
 
     RAccessor accessor;

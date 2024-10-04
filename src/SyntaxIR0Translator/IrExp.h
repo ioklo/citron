@@ -60,53 +60,65 @@ public:
 
 class IrNamespaceExp : public IrExp
 {
+public:
     std::shared_ptr<RNamespaceDecl> decl;
 
 public:
+    IrNamespaceExp(const std::shared_ptr<RNamespaceDecl>& decl);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrTypeVarExp : public IrExp
 {
+public:
     std::shared_ptr<RTypeVarType> type;
 
 public:
+    IrTypeVarExp(const std::shared_ptr<RTypeVarType>& type);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrClassExp : public IrExp
 {
+public:
     std::shared_ptr<RClassDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
+    IrClassExp(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrStructExp : public IrExp
 {
+public:
     std::shared_ptr<RStructDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
+    IrStructExp(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrEnumExp : public IrExp
 {
+public:
     std::shared_ptr<REnumDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
+    IrEnumExp(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // 자체로는 invalid하지만 memberExp랑 결합되면 의미가 생기기때문에 정보를 갖고 있는다
 class IrThisVarExp : public IrExp
 {
+public:
     RTypePtr type;
 
 public:
+    IrThisVarExp(const RTypePtr& type);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -154,10 +166,11 @@ public:
 // &C.x, holder없이 주소가 살아있는
 class IrStaticRefExp : public IrExp
 {
+public:
     RLocPtr loc;
-    RTypePtr locType;
 
 public:
+    IrStaticRefExp(const RLocPtr& loc);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -188,6 +201,7 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
+    IrClassMemberBoxRefExp(const RLocPtr& loc, const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
 
     RTypePtr GetTargetType(RTypeFactory& factory) override;
@@ -204,8 +218,8 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
+    IrStructIndirectMemberBoxRefExp(const RLocPtr& loc, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
-
     RTypePtr GetTargetType(RTypeFactory& factory) override;
     RLocPtr MakeLoc() override;
 };
@@ -218,6 +232,7 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
+    IrStructMemberBoxRefExp(const std::shared_ptr<IrBoxRefExp>& parent, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor & visitor) override { visitor.Visit(*this); }
     RTypePtr GetTargetType(RTypeFactory& factory) override;
     RLocPtr MakeLoc() override;
@@ -227,20 +242,20 @@ class IrLocalRefExp : public IrExp
 {
 public:
     RLocPtr loc;
-    RTypePtr locType;
-
-    IrLocalRefExp(const RLocPtr& loc, const RTypePtr& locType);
 
 public:
+    IrLocalRefExp(const RLocPtr& loc);
     void Accept(IrExpVisitor & visitor) override { visitor.Visit(*this); }
 };
 
 // Value로 나오는 경우
 class IrLocalValueExp : public IrExp
 {
+public:
     RExpPtr exp;
 
 public:
+    IrLocalValueExp(const RExpPtr& exp);
     void Accept(IrExpVisitor & visitor) override { visitor.Visit(*this); }
 };
 
@@ -251,10 +266,12 @@ public:
 // *pS <- BoxValue, box S
 class IrDerefedBoxValueExp : public IrExp
 {   
+public:
     RLocPtr innerLoc;
     RTypePtr innerType;
 
 public:
+    IrDerefedBoxValueExp(const RLocPtr& innerLoc, const RTypePtr& innerType);
     void Accept(IrExpVisitor & visitor) override { visitor.Visit(*this); }
 };
 

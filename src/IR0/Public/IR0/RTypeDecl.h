@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "RIdentifier.h"
+#include "RDecl.h"
 
 namespace Citron {
 
@@ -24,11 +24,10 @@ public:
     virtual void Visit(RLambdaDecl& typeDecl) = 0;
 };
 
-class RTypeDecl
+class RTypeDecl : public RDecl
 {
 public:
     virtual ~RTypeDecl() { }
-    virtual RIdentifier GetIdentifier() = 0;
     virtual void Accept(RTypeDeclVisitor& visitor) = 0;
 };
 

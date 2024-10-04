@@ -8,9 +8,15 @@ REnumElemMemberVarDecl::REnumElemMemberVarDecl(std::weak_ptr<REnumElemDecl> oute
 {
 }
 
-void Citron::REnumElemMemberVarDecl::InitDeclType(RTypePtr declType)
+void Citron::REnumElemMemberVarDecl::InitDeclType(RTypePtr&& declType)
 {
     this->declType = std::move(declType);
 }
+
+RTypePtr REnumElemMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+{
+    return declType->Apply(typeArgs, factory);
+}
+
 
 }

@@ -65,92 +65,126 @@ public:
 
 class RLocalVarLoc : public RLoc
 {
-    RName Name;
+public:
+    RName name;
+    RTypePtr declType;
 
 public:
+    IR0_API RLocalVarLoc(const RName& name, const RTypePtr& declType);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 // only this member allowed, so no need this
 class RLambdaMemberVarLoc : public RLoc
 {
+public:
     std::shared_ptr<RLambdaMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
+    IR0_API RLambdaMemberVarLoc(const std::shared_ptr<RLambdaMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
-
 
 // l[b], l is list
 class RListIndexerLoc : public RLoc
 {
+public:
     RLocPtr list;
     RLocPtr index;
+    RTypePtr itemType;
 
 public:
+    IR0_API RListIndexerLoc(const RLocPtr& list, const RLocPtr& index, const RTypePtr& itemType);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 // Instance가 null이면 static
 class RStructMemberLoc : public RLoc
 {
+public:
     RLocPtr instance;
     std::shared_ptr<RStructMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
+    IR0_API RStructMemberLoc(const RLocPtr& instance, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 class RClassMemberLoc : public RLoc
 {
+public:
     RLocPtr instance;
     std::shared_ptr<RClassMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
+    RClassMemberLoc(const RLocPtr& instance, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 class REnumElemMemberLoc : public RLoc
 {
+public:
     RLocPtr instance;
     std::shared_ptr<REnumElemMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
+    IR0_API REnumElemMemberLoc(const RLocPtr& instance, std::shared_ptr<REnumElemMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 class RThisLoc : public RLoc
 {
 public:
+    RTypePtr type;
+
+public:
+    IR0_API RThisLoc(const RTypePtr& type);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 // dereference pointer, *
 class RLocalDerefLoc : public RLoc
 {
+public:
     RLocPtr innerLoc;
 public:
+    IR0_API RLocalDerefLoc(const RLocPtr& innerLoc);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 // dereference box pointer, *
 class RBoxDerefLoc : public RLoc
 {
-    RLocPtr innerLoc;
 public:
+    RLocPtr innerLoc;
+
+public:
+    IR0_API RBoxDerefLoc(const RLocPtr& innerLoc);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 // nullable value에서 value를 가져온다
 class RNullableValueLoc : public RLoc
 {
+public:
     RLocPtr loc;
 public:
+    IR0_API RNullableValueLoc(const RLocPtr& loc);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 }

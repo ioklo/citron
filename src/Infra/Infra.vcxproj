@@ -159,6 +159,7 @@
     <ClInclude Include="Public\Infra\StringWriter.h" />
     <ClInclude Include="Public\Infra\Unreachable.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Public\Infra\URef.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="exports.cpp" />

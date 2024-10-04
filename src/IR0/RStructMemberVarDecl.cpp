@@ -11,9 +11,9 @@ RStructMemberVarDecl::RStructMemberVarDecl(std::weak_ptr<RStructDecl> _struct, R
 {
 }
 
-void RStructMemberVarDecl::InitDeclType(RTypePtr declType)
+void RStructMemberVarDecl::InitDeclType(const RTypePtr& declType)
 {
-    this->declType = std::move(declType);
+    this->declType = declType;
 }
 
 RTypePtr RStructMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)

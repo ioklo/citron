@@ -26,8 +26,7 @@ class RStruct;
 class RInterface;
 
 class RStructDecl 
-    : public RDecl
-    , public RTypeDecl
+    : public RTypeDecl
     , public RTypeDeclOuter
     , private RTypeDeclContainerComponent
     , private RFuncDeclContainerComponent<RStructMemberFuncDecl>
