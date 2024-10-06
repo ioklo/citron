@@ -18,6 +18,7 @@ class RTopLevelDeclOuter
 {
 public:
     virtual ~RTopLevelDeclOuter() { }
+    virtual RDecl* GetDecl() = 0;
     virtual void Accept(RTopLevelDeclOuterVisitor& visitor) = 0;
 };
 

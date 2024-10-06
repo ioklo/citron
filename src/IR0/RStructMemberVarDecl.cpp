@@ -1,5 +1,6 @@
 #include "RStructMemberVarDecl.h"
 #include <cassert>
+#include "RStructDecl.h"
 
 namespace Citron {
 
@@ -22,4 +23,14 @@ RTypePtr RStructMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactor
     return declType->Apply(typeArgs, factory);
 }
 
+RDecl* RStructMemberVarDecl::GetOuter()
+{
+    return _struct.lock().get();
 }
+
+RIdentifier RStructMemberVarDecl::GetIdentifier()
+{
+    return RIdentifier { RNormalName(name), 0, {} };
+}
+
+} // namespace Citron

@@ -24,7 +24,7 @@ public:
     virtual void Visit(RLambdaDecl& typeDecl) = 0;
 };
 
-class RTypeDecl : public RDecl
+class RTypeDecl : public virtual RDecl
 {
 public:
     virtual ~RTypeDecl() { }

@@ -198,20 +198,27 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="RClassConstructorDecl.cpp" />
+    <ClCompile Include="RClassDecl.cpp" />
+    <ClCompile Include="RClassMemberFuncDecl.cpp" />
     <ClCompile Include="RClassMemberVarDecl.cpp" />
     <ClCompile Include="RCommonFuncDeclComponent.cpp" />
+    <ClCompile Include="RDecl.cpp" />
     <ClCompile Include="RDeclId.cpp" />
     <ClCompile Include="RExp.cpp" />
+    <ClCompile Include="RInterfaceDecl.cpp" />
     <ClCompile Include="RLambdaMemberVarDecl.cpp" />
     <ClCompile Include="RLoc.cpp" />
+    <ClCompile Include="RNamespaceDecl.cpp" />
     <ClCompile Include="RStructConstructorDecl.cpp" />
     <ClCompile Include="REnumDecl.cpp" />
     <ClCompile Include="REnumElemDecl.cpp" />
     <ClCompile Include="REnumElemMemberVarDecl.cpp" />
-    <ClCompile Include="RLabmdaDecl.cpp" />
+    <ClCompile Include="RLambdaDecl.cpp" />
     <ClCompile Include="RModuleDecl.cpp" />
     <ClCompile Include="RNames.cpp" />
     <ClCompile Include="RNamespaceDeclContainerComponent.cpp" />
+    <ClCompile Include="RStructDecl.cpp" />
     <ClCompile Include="RStructMemberFuncDecl.cpp" />
     <ClCompile Include="RStructMemberVarDecl.cpp" />
     <ClCompile Include="RType.cpp" />

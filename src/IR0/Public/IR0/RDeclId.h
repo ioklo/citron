@@ -16,7 +16,7 @@ class RDeclPath
 
 private:
     RDeclPath(std::shared_ptr<RDeclPath>&& outer, RIdentifier&& identifier);
-    friend class RDeclIdFactory;
+    friend class RTypeFactory;
 };
 
 using RDeclPathPtr = std::shared_ptr<RDeclPath>;
@@ -28,21 +28,9 @@ class RDeclId
 
 private:
     RDeclId(std::string&& moduleName, RDeclPathPtr&& path);
-    friend class RDeclIdFactory;
+    friend class RTypeFactory;
 };
 
 using RDeclIdPtr = std::shared_ptr<RDeclId>;
-
-// flyweight
-class RDeclIdFactory
-{
-public:
-    IR0_API RDeclIdPtr GetBool();
-    IR0_API RDeclIdPtr GetInt();
-    IR0_API RDeclIdPtr GetString();
-
-    IR0_API RDeclIdPtr Get(std::string&& moduleName, RIdentifier&& identifier);
-    IR0_API RDeclIdPtr GetChild(RDeclIdPtr&& id, RIdentifier&& identifier);
-};
 
 } // namespace Citron

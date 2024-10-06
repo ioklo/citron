@@ -19,9 +19,15 @@ public:
     RTypePtr type;
     RName name;
 
+    IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory);
+
+public:
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
+
 public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
-    IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory);
+    
 };
 
 }

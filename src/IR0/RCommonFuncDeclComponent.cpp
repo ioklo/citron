@@ -6,20 +6,21 @@
 #include "RLambdaDecl.h"
 #include "RStmt.h"
 
+using namespace std;
 
 namespace Citron
 {
 
 RCommonFuncDeclComponent::RCommonFuncDeclComponent() = default;
 
-void RCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
+void RCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn funcReturn, vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
 {
-    funcReturnAndParams = FuncReturnAndParams{std::move(funcReturn), std::move(funcParameters), bLastParameterVariadic};
+    funcReturnAndParams = FuncReturnAndParams{move(funcReturn), move(funcParameters), bLastParameterVariadic};
 }
 
-void RCommonFuncDeclComponent::InitBody(std::vector<RStmtPtr> body)
+void RCommonFuncDeclComponent::InitBody(vector<RStmtPtr> body)
 {
-    this->body = std::move(body);
+    this->body = move(body);
 }
 
 RCommonFuncDeclComponent::~RCommonFuncDeclComponent() = default;
@@ -32,6 +33,17 @@ RTypePtr RCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RType
         return confirmedReturn->type->Apply(typeArgs, factory);
 
     return nullptr;
+}
+
+vector<RTypePtr> RCommonFuncDeclComponent::GetParamIds()
+{
+    assert(funcReturnAndParams);
+
+    vector<RTypePtr> result;
+    for (auto& param : funcReturnAndParams->funcParameters)
+        result.push_back(param.type);
+
+    return result;
 }
 
 }

@@ -67,7 +67,13 @@ public:
     const std::shared_ptr<RStructMemberVarDecl>& GetMemberVar(size_t index) { return memberVars[index]; }*/
 
 public:
-    RIdentifier GetIdentifier() override { return RIdentifier { name, (int)typeParams.size(), {} }; }
+    // from RDecl
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
+
+    // from RTypeDeclOuter
+    IR0_API RDecl* GetDecl() override;
+
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }

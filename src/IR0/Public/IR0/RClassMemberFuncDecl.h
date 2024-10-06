@@ -13,9 +13,8 @@ namespace Citron
 class RClassDecl;
 
 class RClassMemberFuncDecl 
-    : public RDecl
+    : public RFuncDecl
     , public RBodyDeclOuter
-    , public RFuncDecl
     , private RCommonFuncDeclComponent
 {
     std::weak_ptr<RClassDecl> _class;
@@ -23,6 +22,14 @@ class RClassMemberFuncDecl
     RName name;
     std::vector<std::string> typeParams;
     bool bStatic;
+
+public:
+    // from RDecl
+    IR0_API RIdentifier GetIdentifier() override;
+    IR0_API RDecl* GetOuter() override;
+
+    // from RBodyDeclOuter
+    IR0_API RDecl* GetDecl() override;
 
 public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }

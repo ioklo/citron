@@ -17,4 +17,14 @@ void REnumDecl::AddElem(std::shared_ptr<REnumElemDecl> elem)
     elems.push_back(std::move(elem));
 }
 
+RDecl* REnumDecl::GetOuter()
+{
+    return outer.lock()->GetDecl();
 }
+
+RIdentifier REnumDecl::GetIdentifier()
+{
+    return RIdentifier { name, typeParams.size(), {} };
+}
+
+} // namespace Citron

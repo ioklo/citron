@@ -43,8 +43,13 @@ class RClassDecl
 
     std::optional<BaseTypes> oBaseTypes;
 
-public:
-    RIdentifier GetIdentifier() override { return RIdentifier { name, (int)typeParams.size(), {} }; }
+public:    
+    // from RDecl
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
+
+    // from RTypeDeclOuter
+    IR0_API RDecl* GetDecl() override;
 
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this);  }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }

@@ -35,6 +35,14 @@ public:
 
     using RTypeDeclContainerComponent::AddType;
 
+public:
+    // from RDecl
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
+    
+    // from RTypeDeclOuter, RTopLevelDeclOuter
+    IR0_API RDecl* GetDecl() override;
+
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTopLevelDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }

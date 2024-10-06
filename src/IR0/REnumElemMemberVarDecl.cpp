@@ -1,4 +1,5 @@
 #include "REnumElemMemberVarDecl.h"
+#include "REnumDecl.h"
 
 namespace Citron {
 
@@ -18,5 +19,14 @@ RTypePtr REnumElemMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFact
     return declType->Apply(typeArgs, factory);
 }
 
+RDecl* REnumElemMemberVarDecl::GetOuter()
+{
+    return outer.lock().get();
+}
+
+RIdentifier REnumElemMemberVarDecl::GetIdentifier()
+{
+    return RIdentifier { name, 0, {} };
+}
 
 }

@@ -138,7 +138,7 @@
     <ClCompile Include="RNamespaceDeclContainerComponent.cpp">
       <Filter>Symbols\04 Components</Filter>
     </ClCompile>
-    <ClCompile Include="RLabmdaDecl.cpp">
+    <ClCompile Include="RLambdaDecl.cpp">
       <Filter>Symbols\10 Lambda</Filter>
     </ClCompile>
     <ClCompile Include="REnumDecl.cpp">
@@ -159,7 +159,6 @@
     <ClCompile Include="RStructMemberVarDecl.cpp">
       <Filter>Symbols\07 Struct</Filter>
     </ClCompile>
-    <ClCompile Include="RStructMemberFuncDecl.cpp" />
     <ClCompile Include="RType.cpp">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClCompile>
@@ -183,6 +182,30 @@
     </ClCompile>
     <ClCompile Include="RLambdaMemberVarDecl.cpp">
       <Filter>Symbols\10 Lambda</Filter>
+    </ClCompile>
+    <ClCompile Include="RDecl.cpp">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RClassConstructorDecl.cpp">
+      <Filter>Symbols\06 Class</Filter>
+    </ClCompile>
+    <ClCompile Include="RClassMemberFuncDecl.cpp">
+      <Filter>Symbols\06 Class</Filter>
+    </ClCompile>
+    <ClCompile Include="RStructMemberFuncDecl.cpp">
+      <Filter>Symbols\07 Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="RInterfaceDecl.cpp">
+      <Filter>Symbols\09 Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="RClassDecl.cpp">
+      <Filter>Symbols\06 Class</Filter>
+    </ClCompile>
+    <ClCompile Include="RNamespaceDecl.cpp">
+      <Filter>Symbols\05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="RStructDecl.cpp">
+      <Filter>Symbols\07 Struct</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

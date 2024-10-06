@@ -114,6 +114,10 @@ public:
     IR0_API RTypePtr MakeIntType();
     IR0_API RTypePtr MakeStringType();
     IR0_API RTypePtr MakeListType(const RTypePtr& itemType);
+
+    // declIds
+    IR0_API RDeclIdPtr MakeDeclId(std::string&& moduleName, RIdentifier&& identifier);
+    IR0_API RDeclIdPtr MakeChildDeclId(RDeclIdPtr&& id, RIdentifier&& identifier);
 };
 
 } // namespace Citron

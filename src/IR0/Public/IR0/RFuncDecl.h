@@ -24,7 +24,7 @@ public:
     virtual void Visit(RLambdaDecl& func) = 0;
 };
 
-class RFuncDecl
+class RFuncDecl : public virtual RDecl
 {
 public:
     virtual ~RFuncDecl() { }

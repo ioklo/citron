@@ -17,9 +17,8 @@ class RStructDecl;
 struct RFuncParameter;
 
 class RStructConstructorDecl 
-    : public RDecl
+    : public RFuncDecl
     , public RBodyDeclOuter
-    , public RFuncDecl
     , private RCommonFuncDeclComponent
 {
     std::weak_ptr<RStructDecl> _struct;
@@ -31,6 +30,14 @@ public:
     IR0_API void InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic);
     using RCommonFuncDeclComponent::InitBody;
     IR0_API ~RStructConstructorDecl();
+
+public:
+    // from RDecl
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
+
+    // from RBodyDeclOuter
+    IR0_API RDecl* GetDecl() override;
 
 public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }

@@ -1,5 +1,7 @@
 #include "RStructConstructorDecl.h"
 
+#include "RStructDecl.h"
+
 using namespace std;
 
 namespace Citron
@@ -18,6 +20,21 @@ void RStructConstructorDecl::InitFuncParameters(std::vector<RFuncParameter> para
 }
 
 RStructConstructorDecl::~RStructConstructorDecl() = default;
+
+RDecl* RStructConstructorDecl::GetOuter()
+{
+    return _struct.lock().get();
+}
+
+RIdentifier RStructConstructorDecl::GetIdentifier()
+{
+    return RIdentifier { RReservedName("Constructor"), 0, RCommonFuncDeclComponent::GetParamIds() };
+}
+
+RDecl* RStructConstructorDecl::GetDecl()
+{
+    return this;
+}
 
 }
 

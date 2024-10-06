@@ -15,7 +15,7 @@ using RTypePtr = std::shared_ptr<RType>;
 struct RIdentifier
 {
     RName name;
-    int typeParamCount;
+    size_t typeParamCount;
     std::vector<RTypePtr> paramIds;
 
     bool operator==(const RIdentifier& other) const = default;

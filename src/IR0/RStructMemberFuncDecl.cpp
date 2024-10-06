@@ -1,4 +1,5 @@
 #include "RStructMemberFuncDecl.h"
+#include "RStructDecl.h"
 
 namespace Citron
 {
@@ -15,6 +16,21 @@ RStructMemberFuncDecl::RStructMemberFuncDecl(std::weak_ptr<RStructDecl> _struct,
 void RStructMemberFuncDecl::InitFuncReturnAndParams(RTypePtr funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
 {
     RCommonFuncDeclComponent::InitFuncReturnAndParams(RConfirmedFuncReturn(std::move(funcReturn)), std::move(funcParameters), bLastParameterVariadic);
+}
+
+RDecl* RStructMemberFuncDecl::GetOuter()
+{
+    return _struct.lock().get();
+}
+
+RIdentifier RStructMemberFuncDecl::GetIdentifier()
+{
+    return RIdentifier { RNormalName(name), typeParams.size(), RCommonFuncDeclComponent::GetParamIds() };
+}
+
+RDecl* RStructMemberFuncDecl::GetDecl()
+{
+    return this;
 }
 
 }

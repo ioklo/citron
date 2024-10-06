@@ -9,4 +9,19 @@ RModuleDecl::RModuleDecl(string name)
 {
 }
 
+RDecl* RModuleDecl::GetOuter()
+{
+    return nullptr;
+}
+
+RIdentifier RModuleDecl::GetIdentifier()
+{
+    return RIdentifier { RNormalName(name), 0, {} };
+}
+
+RDecl* RModuleDecl::GetDecl()
+{
+    return this;
+}
+
 }

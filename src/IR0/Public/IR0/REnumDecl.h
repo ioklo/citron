@@ -31,7 +31,9 @@ public:
     IR0_API REnumDecl(RTypeDeclOuterPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams, size_t elemCount);
     IR0_API void AddElem(std::shared_ptr<REnumElemDecl> elem);
     
-    RIdentifier GetIdentifier() override { return RIdentifier { name, (int)typeParams.size(), {} }; }
+public:
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
 
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }

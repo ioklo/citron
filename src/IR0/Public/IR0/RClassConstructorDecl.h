@@ -15,15 +15,22 @@ class RClassDecl;
 struct RFuncParameter;
 
 class RClassConstructorDecl 
-    : public RDecl
+    : public RFuncDecl
     , public RBodyDeclOuter
-    , public RFuncDecl
     , private RCommonFuncDeclComponent
 {
     std::weak_ptr<RClassDecl> _class;
     RAccessor accessor;
     std::vector<RFuncParameter> parameters;
     bool bTrivial;
+
+public: 
+    // from RDecl
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
+
+    // from RBodyDeclOuter
+    IR0_API RDecl* GetDecl() override;
 
 public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }

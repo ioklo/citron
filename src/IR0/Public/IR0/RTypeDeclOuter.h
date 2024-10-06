@@ -25,6 +25,7 @@ class RTypeDeclOuter
 {
 public:
     virtual ~RTypeDeclOuter() { }
+    virtual RDecl* GetDecl() = 0;
     virtual void Accept(RTypeDeclOuterVisitor& visitor) = 0;
 };
 

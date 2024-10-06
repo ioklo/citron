@@ -26,7 +26,9 @@ public:
     IR0_API REnumElemDecl(std::weak_ptr<REnumDecl> _enum, std::string name, size_t memberVarCount);
     IR0_API void AddMemberVar(std::shared_ptr<REnumElemMemberVarDecl> memberVar);
     
-    RIdentifier GetIdentifier() override { return RIdentifier { RNormalName(name), 0, {} }; }
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
+
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
 };

@@ -326,7 +326,7 @@ RNewEnumElemExp::RNewEnumElemExp(const shared_ptr<REnumElemDecl>& enumElemDecl, 
 
 RTypePtr RNewEnumElemExp::GetType(RTypeFactory& factory)
 {
-    return factory.MakeInstanceType(enumElemDecl->GetDeclId(), typeArgs);
+    return factory.MakeInstanceType(enumElemDecl->GetDeclId(factory), typeArgs);
 }
 
 RCastEnumElemToEnumExp::RCastEnumElemToEnumExp(const RExpPtr& src, const RTypePtr& enumType)

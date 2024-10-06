@@ -1,4 +1,5 @@
 #include "REnumElemDecl.h"
+#include "REnumDecl.h"
 
 using namespace std;
 
@@ -15,4 +16,14 @@ void REnumElemDecl::AddMemberVar(std::shared_ptr<REnumElemMemberVarDecl> memberV
     memberVars.push_back(std::move(memberVar));
 }
 
+RDecl* REnumElemDecl::GetOuter()
+{
+    return _enum.lock().get();
 }
+
+RIdentifier REnumElemDecl::GetIdentifier()
+{
+    return RIdentifier { RNormalName(name), 0, {} };
+}
+
+} // namespace Citron

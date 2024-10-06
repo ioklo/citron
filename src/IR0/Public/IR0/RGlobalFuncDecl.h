@@ -19,10 +19,16 @@ class MGlobalFuncDecl;
 
 // abstract
 class RGlobalFuncDecl
-    : public RDecl
+    : public RFuncDecl
     , public RBodyDeclOuter
-    , public RFuncDecl
 {
+public:
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
+
+    // from RBodyDeclOuter
+    IR0_API RDecl* GetDecl() override;
+
 public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }

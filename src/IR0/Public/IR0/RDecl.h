@@ -24,6 +24,11 @@ class RLambdaDecl;
 class RLambdaMemberVarDecl;
 class RInterfaceDecl;
 
+class RDeclId;
+using RDeclIdPtr = std::shared_ptr<RDeclId>;
+
+class RTypeFactory;
+
 class RDeclVisitor
 {
 public:
@@ -52,9 +57,17 @@ class RDecl
 public:
     virtual ~RDecl() { }
     virtual RIdentifier GetIdentifier() = 0;
-    virtual std::weak_ptr<RDecl> GetOuter() = 0;
+    virtual RDecl* GetOuter() = 0;
     virtual void Accept(RDeclVisitor& visitor) = 0;
+
+    // once overridden by RModuleDecl
+    virtual std::string GetModuleName();
+
+private:
+    // non virtual
+    RDeclIdPtr GetDeclId(RTypeFactory& factory);
 };
+
 
 using RDeclPtr = std::shared_ptr<RDecl>;
 

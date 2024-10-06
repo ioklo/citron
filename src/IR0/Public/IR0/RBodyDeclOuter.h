@@ -29,6 +29,7 @@ class RBodyDeclOuter
 {
 public:
     virtual ~RBodyDeclOuter() { }
+    virtual RDecl* GetDecl() = 0;
     virtual void Accept(RBodyDeclOuterVisitor& visitor) = 0;
 };
 

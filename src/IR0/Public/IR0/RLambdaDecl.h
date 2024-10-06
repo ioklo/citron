@@ -32,14 +32,20 @@ class RLambdaDecl
     std::optional<RFuncReturn> oReturn;
 
 public:
-    RIdentifier GetIdentifier() override { return RIdentifier { name, 0, {} }; }
+    using RCommonFuncDeclComponent::GetReturnType;
+
+public:
+    // from RDecl
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
+
+    // from RBodyDeclOuter
+    IR0_API RDecl* GetDecl() override;
 
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
-
-    using RCommonFuncDeclComponent::GetReturnType;
 };
 
 }

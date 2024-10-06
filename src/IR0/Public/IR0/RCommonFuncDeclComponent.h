@@ -40,6 +40,7 @@ public:
     IR0_API ~RCommonFuncDeclComponent();
 
     IR0_API RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory);
+    IR0_API std::vector<RTypePtr> GetParamIds();
 };
 
 }
