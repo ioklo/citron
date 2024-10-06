@@ -6,7 +6,9 @@
 #include <Syntax/Syntax.h>
 #include <IR0/RLoc.h>
 
-#include "INotLocationErrorLogger.h"
+#include "NotLocationErrorLogger.h"
+#include "ReExpToRLocTranslation.h"
+#include "SExpToReExpTranslation.h"
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -19,6 +21,7 @@ class SExpToRLocTranslator : public SExpVisitor
     INotLocationErrorLogger* notLocationErrorLogger;
     RLocPtr* result;
 
+public:
     SExpToRLocTranslator(const ScopeContextPtr& context, const RTypePtr& hintType, bool bWrapExpAsLoc, const LoggerPtr& logger, INotLocationErrorLogger* notLocationErrorLogger, RLocPtr* result)
         : context(context), hintType(hintType), bWrapExpAsLoc(bWrapExpAsLoc), notLocationErrorLogger(notLocationErrorLogger), result(result)
     {
@@ -26,15 +29,10 @@ class SExpToRLocTranslator : public SExpVisitor
 
     void HandleDefault(SExp& sExp)
     {
-        if (auto reExp = TranslateSExpToReExp(exp, context, hintType))
+        if (auto reExp = TranslateSExpToReExp(sExp, hintType, context))
         {
-            struct Logger : public INotLocationErrorLogger
-            {
-                LoggerPtr logger;
-                void Log() override { logger->Fatal_ExpressionIsNotLocation(); }
-            } newNotLocationErrorLogger { logger };
-
-            *result = TranslateReExpToRLoc(reExp, context, bWrapExpAsLoc, sExp, newNotLocationErrorLogger);
+            ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
+            *result = TranslateReExpToRLoc(*reExp, context, bWrapExpAsLoc, logger, &notLocationErrorLogger);
         }
         else // invalid
         {
@@ -165,11 +163,11 @@ class SExpToRLocTranslator : public SExpVisitor
     }    
 };
 
-RLocPtr TranslateSExpToRLoc(SExpPtr sExp, const ScopeContextPtr& context, const RTypePtr& hintType, bool bWrapExpAsLoc, const LoggerPtr& logger, INotLocationErrorLogger* notLocationLogger)
+RLocPtr TranslateSExpToRLoc(SExp& sExp, const RTypePtr& hintType, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationLogger, const ScopeContextPtr& context, const LoggerPtr& logger)
 {
     RLocPtr rLoc;
     SExpToRLocTranslator translator(context, hintType, bWrapExpAsLoc, logger, notLocationLogger, &rLoc);
-    sExp->Accept(translator);
+    sExp.Accept(translator);
 
     return rLoc;
 }

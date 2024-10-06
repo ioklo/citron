@@ -60,7 +60,8 @@ class RCastEnumElemToEnumExp;
 
 // Nullable
 class RNewNullableExp;
-class RNullableNullLiteralExp;
+class RNullableValueNullLiteralExp;
+class RNullableRefNullLiteralExp;
 
 // Lambda
 class RLambdaExp;
@@ -124,7 +125,10 @@ public:
     virtual void Visit(RNewEnumElemExp& exp) = 0;
     virtual void Visit(RCastEnumElemToEnumExp& exp) = 0;
     virtual void Visit(RNewNullableExp& exp) = 0;
-    virtual void Visit(RNullableNullLiteralExp& exp) = 0;
+
+    virtual void Visit(RNullableValueNullLiteralExp& exp) = 0;
+    virtual void Visit(RNullableRefNullLiteralExp& exp) = 0;
+
     virtual void Visit(RLambdaExp& exp) = 0;
     virtual void Visit(RCallLambdaExp& exp) = 0;
     virtual void Visit(RCastBoxedLambdaToFuncExp& exp) = 0;
@@ -172,7 +176,7 @@ public:
     RLocPtr dest;
     RExpPtr src;
 public:
-    IR0_API RAssignExp(const RLocPtr& dest, const RExpPtr& src);
+    IR0_API RAssignExp(RLocPtr&& dest, RExpPtr&& src);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -184,7 +188,7 @@ class RBoxExp : public RExp
 public:
     RExpPtr innerExp;    
 public:
-    IR0_API RBoxExp(const RExpPtr& innerExp);
+    IR0_API RBoxExp(RExpPtr&& innerExp);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -322,7 +326,7 @@ public:
     RLocPtr loc;
 
 public:
-    IR0_API RLocStringExpElement(const RLocPtr& loc);
+    IR0_API RLocStringExpElement(RLocPtr&& loc);
 };
 
 using RStringExpElement = std::variant<RTextStringExpElement, RLocStringExpElement>;
@@ -332,8 +336,9 @@ class RStringExp : public RExp
 {
 public:
     std::vector<RStringExpElement> elements;
+
 public:
-    IR0_API RStringExp(const std::vector<RStringExpElement>& elements);
+    IR0_API RStringExp(std::vector<RStringExpElement>&& elements);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -417,7 +422,7 @@ public:
     RInternalUnaryOperator op;
     RExpPtr operand;
 public:
-    IR0_API RCallInternalUnaryOperatorExp(RInternalUnaryOperator op, const RExpPtr& operand);
+    IR0_API RCallInternalUnaryOperatorExp(RInternalUnaryOperator op, RExpPtr&& operand);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -429,7 +434,7 @@ public:
     RInternalUnaryAssignOperator op;
     RLocPtr operand;
 public:
-    IR0_API RCallInternalUnaryAssignOperatorExp(RInternalUnaryAssignOperator op, const RLocPtr& operand);
+    IR0_API RCallInternalUnaryAssignOperatorExp(RInternalUnaryAssignOperator op, RLocPtr&& operand);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -442,7 +447,7 @@ public:
     RExpPtr operand0;
     RExpPtr operand1;
 public:
-    IR0_API RCallInternalBinaryOperatorExp(RInternalBinaryOperator op, const RExpPtr& operand0, const RExpPtr& operand1);
+    IR0_API RCallInternalBinaryOperatorExp(RInternalBinaryOperator op, RExpPtr&& operand0, RExpPtr&& operand1);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -581,16 +586,27 @@ public:
 
 #pragma region Nullable
 
-class RNullableNullLiteralExp : public RExp
+class RNullableValueNullLiteralExp : public RExp
+{
+public:
+    RTypePtr innerType;
+
+public:
+    IR0_API RNullableValueNullLiteralExp(const RTypePtr& innerType);
+
+    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+};
+
+class RNullableRefNullLiteralExp : public RExp
 {
 public:
     RTypePtr innerType;
 public:
-    IR0_API RNullableNullLiteralExp(const RTypePtr& innerType);
+    IR0_API RNullableRefNullLiteralExp(const RTypePtr& innerType);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
-    
 };
 
 class RNewNullableExp : public RExp

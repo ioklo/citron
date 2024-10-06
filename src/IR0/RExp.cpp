@@ -34,8 +34,8 @@ RTypePtr RLoadExp::GetType(RTypeFactory& factory)
     return loc->GetType(factory);
 }
 
-RAssignExp::RAssignExp(const RLocPtr& dest, const RExpPtr& src)
-    : dest(dest), src(src)
+RAssignExp::RAssignExp(RLocPtr&& dest, RExpPtr&& src)
+    : dest(std::move(dest)), src(std::move(src))
 {
 }
 
@@ -44,8 +44,8 @@ RTypePtr RAssignExp::GetType(RTypeFactory& factory)
     return dest->GetType(factory);
 }
 
-RBoxExp::RBoxExp(const RExpPtr& innerExp)
-    : innerExp(innerExp)
+RBoxExp::RBoxExp(RExpPtr&& innerExp)
+    : innerExp(std::move(innerExp))
 {
 }
 
@@ -145,14 +145,14 @@ RTextStringExpElement::RTextStringExpElement(const string& text)
 {
 }
 
-RLocStringExpElement::RLocStringExpElement(const RLocPtr& loc)
+RLocStringExpElement::RLocStringExpElement(RLocPtr&& loc)
     : loc(loc)
 {
 
 }
 
-RStringExp::RStringExp(const vector<RStringExpElement>& elements)
-    : elements(elements)
+RStringExp::RStringExp(vector<RStringExpElement>&& elements)
+    : elements(std::move(elements))
 {
 }
 
@@ -182,8 +182,8 @@ RTypePtr RListIteratorExp::GetType(RTypeFactory& factory)
     return type;
 }
 
-RCallInternalUnaryOperatorExp::RCallInternalUnaryOperatorExp(RInternalUnaryOperator op, const RExpPtr& operand)
-    : op(op), operand(operand)
+RCallInternalUnaryOperatorExp::RCallInternalUnaryOperatorExp(RInternalUnaryOperator op, RExpPtr&& operand)
+    : op(op), operand(std::move(operand))
 {
 }
 
@@ -200,8 +200,8 @@ RTypePtr RCallInternalUnaryOperatorExp::GetType(RTypeFactory& factory)
     unreachable();
 }
 
-RCallInternalUnaryAssignOperatorExp::RCallInternalUnaryAssignOperatorExp(RInternalUnaryAssignOperator op, const RLocPtr& operand)
-    : op(op), operand(operand)
+RCallInternalUnaryAssignOperatorExp::RCallInternalUnaryAssignOperatorExp(RInternalUnaryAssignOperator op, RLocPtr&& operand)
+    : op(op), operand(std::move(operand))
 {
 }
 
@@ -219,8 +219,8 @@ RTypePtr RCallInternalUnaryAssignOperatorExp::GetType(RTypeFactory& factory)
     unreachable();
 }
 
-RCallInternalBinaryOperatorExp::RCallInternalBinaryOperatorExp(RInternalBinaryOperator op, const RExpPtr& operand0, const RExpPtr& operand1)
-    : op(op), operand0(operand0), operand1(operand1)
+RCallInternalBinaryOperatorExp::RCallInternalBinaryOperatorExp(RInternalBinaryOperator op, RExpPtr&& operand0, RExpPtr&& operand1)
+    : op(op), operand0(std::move(operand0)), operand1(std::move(operand1))
 {
 }
 
@@ -341,15 +341,24 @@ RTypePtr RCastEnumElemToEnumExp::GetType(RTypeFactory& factory)
     return enumType;
 }
 
-RNullableNullLiteralExp::RNullableNullLiteralExp(const RTypePtr& innerType)
+RNullableValueNullLiteralExp::RNullableValueNullLiteralExp(const RTypePtr& innerType)
     : innerType(innerType)
 {
-
 }
 
-RTypePtr RNullableNullLiteralExp::GetType(RTypeFactory& factory)
+RTypePtr RNullableValueNullLiteralExp::GetType(RTypeFactory& factory)
 {
     return factory.MakeNullableValueType(innerType);
+}
+
+RNullableRefNullLiteralExp::RNullableRefNullLiteralExp(const RTypePtr& innerType)
+    : innerType(innerType)
+{
+}
+
+RTypePtr RNullableRefNullLiteralExp::GetType(RTypeFactory& factory)
+{
+    return factory.MakeNullableRefType(innerType);
 }
 
 RNewNullableExp::RNewNullableExp(const RExpPtr& innerExp)

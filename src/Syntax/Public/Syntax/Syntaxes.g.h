@@ -187,6 +187,20 @@ inline JsonItem ToJson(SUnaryOpKind& arg)
     unreachable();
 }
 
+class SSyntax
+{
+public:
+    SYNTAX_API SSyntax();
+    SSyntax(const SSyntax&) = delete;
+    SYNTAX_API SSyntax(SSyntax&&) noexcept;
+    SYNTAX_API ~SSyntax();
+
+    SSyntax& operator=(const SSyntax& other) = delete;
+    SYNTAX_API SSyntax& operator=(SSyntax&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+};
+
 class SArgument
 {
 public:
@@ -317,10 +331,15 @@ public:
     virtual void Visit(SDirectiveStmt& stmt) = 0;
 };
 
-class SStmt
+class SStmt : public SSyntax
 {
 public:
+    SStmt() = default;
+    SStmt(const SStmt&) = delete;
+    SStmt(SStmt&&) = default;
     virtual ~SStmt() { }
+    SStmt& operator=(const SStmt& other) = delete;
+    SStmt& operator=(SStmt&& other) noexcept = default;
     virtual void Accept(SStmtVisitor& visitor) = 0;
 };
 
@@ -349,10 +368,15 @@ public:
     virtual void Visit(SAsExp& exp) = 0;
 };
 
-class SExp
+class SExp : public SSyntax
 {
 public:
+    SExp() = default;
+    SExp(const SExp&) = delete;
+    SExp(SExp&&) = default;
     virtual ~SExp() { }
+    SExp& operator=(const SExp& other) = delete;
+    SExp& operator=(SExp&& other) noexcept = default;
     virtual void Accept(SExpVisitor& visitor) = 0;
 };
 
@@ -370,10 +394,15 @@ public:
     virtual void Visit(SLocalTypeExp& typeExp) = 0;
 };
 
-class STypeExp
+class STypeExp : public SSyntax
 {
 public:
+    STypeExp() = default;
+    STypeExp(const STypeExp&) = delete;
+    STypeExp(STypeExp&&) = default;
     virtual ~STypeExp() { }
+    STypeExp& operator=(const STypeExp& other) = delete;
+    STypeExp& operator=(STypeExp&& other) noexcept = default;
     virtual void Accept(STypeExpVisitor& visitor) = 0;
 };
 
@@ -387,10 +416,15 @@ public:
     virtual void Visit(SExpStringExpElement& elem) = 0;
 };
 
-class SStringExpElement
+class SStringExpElement : public SSyntax
 {
 public:
+    SStringExpElement() = default;
+    SStringExpElement(const SStringExpElement&) = delete;
+    SStringExpElement(SStringExpElement&&) = default;
     virtual ~SStringExpElement() { }
+    SStringExpElement& operator=(const SStringExpElement& other) = delete;
+    SStringExpElement& operator=(SStringExpElement&& other) noexcept = default;
     virtual void Accept(SStringExpElementVisitor& visitor) = 0;
 };
 
@@ -404,10 +438,15 @@ public:
     virtual void Visit(SExpLambdaExpBody& body) = 0;
 };
 
-class SLambdaExpBody
+class SLambdaExpBody : public SSyntax
 {
 public:
+    SLambdaExpBody() = default;
+    SLambdaExpBody(const SLambdaExpBody&) = delete;
+    SLambdaExpBody(SLambdaExpBody&&) = default;
     virtual ~SLambdaExpBody() { }
+    SLambdaExpBody& operator=(const SLambdaExpBody& other) = delete;
+    SLambdaExpBody& operator=(SLambdaExpBody&& other) noexcept = default;
     virtual void Accept(SLambdaExpBodyVisitor& visitor) = 0;
 };
 
@@ -421,10 +460,15 @@ public:
     virtual void Visit(SBlockEmbeddableStmt& stmt) = 0;
 };
 
-class SEmbeddableStmt
+class SEmbeddableStmt : public SSyntax
 {
 public:
+    SEmbeddableStmt() = default;
+    SEmbeddableStmt(const SEmbeddableStmt&) = delete;
+    SEmbeddableStmt(SEmbeddableStmt&&) = default;
     virtual ~SEmbeddableStmt() { }
+    SEmbeddableStmt& operator=(const SEmbeddableStmt& other) = delete;
+    SEmbeddableStmt& operator=(SEmbeddableStmt&& other) noexcept = default;
     virtual void Accept(SEmbeddableStmtVisitor& visitor) = 0;
 };
 
@@ -438,10 +482,15 @@ public:
     virtual void Visit(SVarDeclForStmtInitializer& initializer) = 0;
 };
 
-class SForStmtInitializer
+class SForStmtInitializer : public SSyntax
 {
 public:
+    SForStmtInitializer() = default;
+    SForStmtInitializer(const SForStmtInitializer&) = delete;
+    SForStmtInitializer(SForStmtInitializer&&) = default;
     virtual ~SForStmtInitializer() { }
+    SForStmtInitializer& operator=(const SForStmtInitializer& other) = delete;
+    SForStmtInitializer& operator=(SForStmtInitializer&& other) noexcept = default;
     virtual void Accept(SForStmtInitializerVisitor& visitor) = 0;
 };
 
@@ -459,10 +508,15 @@ public:
     virtual void Visit(SClassMemberVarDecl& decl) = 0;
 };
 
-class SClassMemberDecl
+class SClassMemberDecl : public SSyntax
 {
 public:
+    SClassMemberDecl() = default;
+    SClassMemberDecl(const SClassMemberDecl&) = delete;
+    SClassMemberDecl(SClassMemberDecl&&) = default;
     virtual ~SClassMemberDecl() { }
+    SClassMemberDecl& operator=(const SClassMemberDecl& other) = delete;
+    SClassMemberDecl& operator=(SClassMemberDecl&& other) noexcept = default;
     virtual void Accept(SClassMemberDeclVisitor& visitor) = 0;
 };
 
@@ -480,10 +534,15 @@ public:
     virtual void Visit(SStructMemberVarDecl& decl) = 0;
 };
 
-class SStructMemberDecl
+class SStructMemberDecl : public SSyntax
 {
 public:
+    SStructMemberDecl() = default;
+    SStructMemberDecl(const SStructMemberDecl&) = delete;
+    SStructMemberDecl(SStructMemberDecl&&) = default;
     virtual ~SStructMemberDecl() { }
+    SStructMemberDecl& operator=(const SStructMemberDecl& other) = delete;
+    SStructMemberDecl& operator=(SStructMemberDecl&& other) noexcept = default;
     virtual void Accept(SStructMemberDeclVisitor& visitor) = 0;
 };
 
@@ -500,10 +559,15 @@ public:
     virtual void Visit(SEnumDecl& elem) = 0;
 };
 
-class SNamespaceDeclElement
+class SNamespaceDeclElement : public SSyntax
 {
 public:
+    SNamespaceDeclElement() = default;
+    SNamespaceDeclElement(const SNamespaceDeclElement&) = delete;
+    SNamespaceDeclElement(SNamespaceDeclElement&&) = default;
     virtual ~SNamespaceDeclElement() { }
+    SNamespaceDeclElement& operator=(const SNamespaceDeclElement& other) = delete;
+    SNamespaceDeclElement& operator=(SNamespaceDeclElement&& other) noexcept = default;
     virtual void Accept(SNamespaceDeclElementVisitor& visitor) = 0;
 };
 
@@ -520,10 +584,15 @@ public:
     virtual void Visit(SEnumDecl& elem) = 0;
 };
 
-class SScriptElement
+class SScriptElement : public SSyntax
 {
 public:
+    SScriptElement() = default;
+    SScriptElement(const SScriptElement&) = delete;
+    SScriptElement(SScriptElement&&) = default;
     virtual ~SScriptElement() { }
+    SScriptElement& operator=(const SScriptElement& other) = delete;
+    SScriptElement& operator=(SScriptElement&& other) noexcept = default;
     virtual void Accept(SScriptElementVisitor& visitor) = 0;
 };
 

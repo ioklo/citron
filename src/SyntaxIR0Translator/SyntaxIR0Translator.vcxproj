@@ -39,13 +39,17 @@
     <ClCompile Include="BodyPhaseContext.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
     <ClCompile Include="ImExp.cpp" />
+    <ClCompile Include="ImExpAndSArgsToRExpBinding.cpp" />
     <ClCompile Include="ImExpToIrExpTranslation.cpp" />
     <ClCompile Include="ImExpToReExpTranslation.cpp" />
+    <ClCompile Include="BinOpQueryService.cpp" />
     <ClCompile Include="IrExp.cpp" />
     <ClCompile Include="IrExpToRExpTranslation.cpp" />
     <ClCompile Include="MemberDeclPhaseContext.cpp" />
     <ClCompile Include="EnumTranslation.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Misc.cpp" />
+    <ClCompile Include="NotLocationErrorLogger.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -56,6 +60,10 @@
     <ClCompile Include="ReExpToRExpTranslation.cpp" />
     <ClCompile Include="ReExpToRLocTranslation.cpp" />
     <ClCompile Include="ScopeContext.cpp" />
+    <ClCompile Include="SExpRefToIrExpTranslation.cpp" />
+    <ClCompile Include="SExpRefToRExpTranslation.cpp" />
+    <ClCompile Include="SExpToImExpTranslation.cpp" />
+    <ClCompile Include="SExpToReExpTranslation.cpp" />
     <ClCompile Include="SExpToRExpTranslation.cpp" />
     <ClCompile Include="SExpToRLocTranslation.cpp" />
     <ClCompile Include="StmtTranslation.cpp" />
@@ -67,9 +75,12 @@
     <ClInclude Include="BodyPhaseContext.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
     <ClInclude Include="ImExp.h" />
+    <ClInclude Include="ImExpAndSArgsToRExpBinding.h" />
     <ClInclude Include="ImExpToIrExpTranslation.h" />
     <ClInclude Include="ImExpToReExpTranslation.h" />
-    <ClInclude Include="INotLocationErrorLogger.h" />
+    <ClInclude Include="BinOpQueryService.h" />
+    <ClInclude Include="Misc.h" />
+    <ClInclude Include="NotLocationErrorLogger.h" />
     <ClInclude Include="IrExp.h" />
     <ClInclude Include="IrExpToRExpTranslation.h" />
     <ClInclude Include="MemberDeclPhaseContext.h" />
@@ -79,6 +90,10 @@
     <ClInclude Include="ReExpToRExpTranslation.h" />
     <ClInclude Include="ReExpToRLocTranslation.h" />
     <ClInclude Include="ScopeContext.h" />
+    <ClInclude Include="SExpRefToIrExpTranslation.h" />
+    <ClInclude Include="SExpRefToRExpTranslation.h" />
+    <ClInclude Include="SExpToImExpTranslation.h" />
+    <ClInclude Include="SExpToReExpTranslation.h" />
     <ClInclude Include="SExpToRExpTranslation.h" />
     <ClInclude Include="SExpToRLocTranslation.h" />
     <ClInclude Include="SkeletonPhaseContext.h" />

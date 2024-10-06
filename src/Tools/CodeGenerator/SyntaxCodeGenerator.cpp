@@ -228,6 +228,10 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
+            .name = "SSyntax",
+        },
+
+        ClassInfo {
             .name = "SArgument",
             .memberInfos {
                     {.type = "bool", .memberVarName = "bOut", .getterName = "HasOut" },
@@ -290,6 +294,7 @@ struct ToJsonVisitor {
         #pragma region VariantInterfaceInfo
         VariantInterfaceInfo {
             .name = "SStmt",
+            .bases { "SSyntax" },
             .argName = "stmt",
             .members {
                 "SCommandStmt",
@@ -314,6 +319,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "SExp",
+            .bases { "SSyntax" },
             .argName = "exp",
             .members {
                 "SIdentifierExp",
@@ -338,6 +344,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "STypeExp",
+            .bases { "SSyntax" },
             .argName = "typeExp",
             .members {
                 "SIdTypeExp",
@@ -351,6 +358,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "SStringExpElement",
+            .bases { "SSyntax" },
             .argName = "elem",
             .members {
                 "STextStringExpElement",
@@ -360,6 +368,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "SLambdaExpBody",
+            .bases { "SSyntax" },
             .argName = "body",
             .members {
                 "SStmtsLambdaExpBody",
@@ -369,6 +378,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "SEmbeddableStmt",
+            .bases { "SSyntax" },
             .argName = "stmt",
             .members {
                 "SSingleEmbeddableStmt",
@@ -378,6 +388,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "SForStmtInitializer",
+            .bases { "SSyntax" },
             .argName = "initializer",
             .members {
                 "SExpForStmtInitializer",
@@ -388,6 +399,7 @@ struct ToJsonVisitor {
         // SClassMemberDecl
         VariantInterfaceInfo {
             .name = "SClassMemberDecl",
+            .bases { "SSyntax" },
             .argName = "decl",
             .members {
                 "SClassDecl",
@@ -402,6 +414,7 @@ struct ToJsonVisitor {
         // SStructMemberDecl
         VariantInterfaceInfo {
             .name = "SStructMemberDecl",
+            .bases { "SSyntax" },
             .argName = "decl",
             .members {
                 "SClassDecl",
@@ -416,6 +429,7 @@ struct ToJsonVisitor {
         // SNamespaceDeclElement
         VariantInterfaceInfo {
             .name = "SNamespaceDeclElement",
+            .bases { "SSyntax" },
             .argName = "elem",
             .members {
                 "SGlobalFuncDecl",
@@ -429,6 +443,7 @@ struct ToJsonVisitor {
         // SScriptElement
         VariantInterfaceInfo {
             .name = "SScriptElement",
+            .bases { "SSyntax" },
             .argName = "elem",
             .members {
                 "SNamespaceDecl",

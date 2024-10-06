@@ -9,17 +9,10 @@
 #include <IR0/RTypeFactory.h>
 
 #include "ScopeContext.h"
-#include "INotLocationErrorLogger.h"
+#include "NotLocationErrorLogger.h"
 #include "ReExp.h"
 
 namespace Citron::SyntaxIR0Translator {
-
-struct ExpressionIsNotLocationLogger : public INotLocationErrorLogger
-{
-    LoggerPtr logger;
-    ExpressionIsNotLocationLogger(const LoggerPtr& logger) : logger(logger) { }
-    void Log() override { logger->Fatal_ExpressionIsNotLocation(); }
-};
 
 RLocPtr TranslateReThisVarExpToRLoc(ReThisVarExp& reExp) // nothrow
 {
@@ -34,9 +27,9 @@ RLocPtr TranslateReClassMemberVarExpToRLoc(ReClassMemberVarExp& reExp, const Sco
         
         if (reExp.explicitInstance != nullptr)
         {
-            ExpressionIsNotLocationLogger notLocationErrorLogger(logger);
+            ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
 
-            instance = TranslateReExpToRLoc(*reExp.explicitInstance, context, /* bWrapExpAsLoc */ true, logger, &notLocationErrorLogger, factory);
+            instance = TranslateReExpToRLoc(*reExp.explicitInstance, /* bWrapExpAsLoc */ true, &notLocationErrorLogger, context, logger, factory);
             if (!instance) return nullptr;
         }
 
@@ -68,9 +61,9 @@ RLocPtr TranslateReStructMemberVarExpToRLoc(ReStructMemberVarExp& reExp, const S
 
         if (reExp.explicitInstance != nullptr)
         {
-            ExpressionIsNotLocationLogger notLocationErrorLogger(logger);
+            ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
 
-            instance = TranslateReExpToRLoc(*reExp.explicitInstance, context, /*bWrapExpAsLoc*/ true, logger, &notLocationErrorLogger, factory);
+            instance = TranslateReExpToRLoc(*reExp.explicitInstance, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
             if (!instance)
                 return nullptr;
         }
@@ -89,9 +82,9 @@ RLocPtr TranslateReStructMemberVarExpToRLoc(ReStructMemberVarExp& reExp, const S
 
 RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReEnumElemMemberVarExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
-    ExpressionIsNotLocationLogger notLocationErrorLogger(logger);
+    ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
 
-    auto rInstLoc = TranslateReExpToRLoc(*reExp.instance, context, /*bWrapExpAsLoc*/ true, logger, &notLocationErrorLogger, factory);
+    auto rInstLoc = TranslateReExpToRLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
     if (!rInstLoc) return nullptr;
 
     return MakePtr<REnumElemMemberLoc>(rInstLoc, reExp.decl, reExp.typeArgs);
@@ -99,9 +92,9 @@ RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReEnumElemMemberVarExp& reExp, con
 
 RLocPtr TranslateReListIndexerExpToRLoc(ReListIndexerExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
-    ExpressionIsNotLocationLogger notLocationErrorLogger(logger);
+    ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
 
-    auto rInstLoc = TranslateReExpToRLoc(*reExp.instance, context, /*bWrapExpAsLoc*/ true, logger, &notLocationErrorLogger, factory);
+    auto rInstLoc = TranslateReExpToRLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
     if (!rInstLoc) return nullptr;
 
     return MakePtr<RListIndexerLoc>(std::move(rInstLoc), reExp.index, reExp.itemType);
@@ -110,9 +103,9 @@ RLocPtr TranslateReListIndexerExpToRLoc(ReListIndexerExp& reExp, const ScopeCont
 RLocPtr TranslateReLocalDerefExpToRLoc(ReLocalDerefExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     // *x, *G()
-    ExpressionIsNotLocationLogger notLocationErrorLogger(logger);
+    ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
 
-    auto rTargetLoc = TranslateReExpToRLoc(*reExp.target, context, /*bWrapExpAsLoc*/ true, logger, &notLocationErrorLogger, factory);
+    auto rTargetLoc = TranslateReExpToRLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
     if (!rTargetLoc) return nullptr;
 
     return MakePtr<RLocalDerefLoc>(std::move(rTargetLoc));
@@ -121,9 +114,9 @@ RLocPtr TranslateReLocalDerefExpToRLoc(ReLocalDerefExp& reExp, const ScopeContex
 RLocPtr TranslateReBoxDerefExpToRLoc(ReBoxDerefExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     // *x, *G()
-    ExpressionIsNotLocationLogger notLocationErrorLogger(logger);
+    ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
 
-    auto rTargetLoc = TranslateReExpToRLoc(*reExp.target, context, /*bWrapExpAsLoc*/ true, logger, &notLocationErrorLogger, factory);
+    auto rTargetLoc = TranslateReExpToRLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
     if (!rTargetLoc) return nullptr;
 
     return MakePtr<RBoxDerefLoc>(std::move(rTargetLoc));
@@ -203,7 +196,7 @@ public:
     }
 };
 
-RLocPtr TranslateReExpToRLoc(ReExp& reExp, const ScopeContextPtr& context, bool bWrapExpAsLoc, const LoggerPtr& logger, INotLocationErrorLogger* notLocationErrorLogger, RTypeFactory& factory)
+RLocPtr TranslateReExpToRLoc(ReExp& reExp, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationErrorLogger, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     RLocPtr rLoc;
     ReExpToRLocTranslator translator(context, bWrapExpAsLoc, logger, notLocationErrorLogger, &rLoc, factory);

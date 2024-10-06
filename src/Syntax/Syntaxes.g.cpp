@@ -17,6 +17,21 @@ struct ToJsonVisitor {
 };
 }
 
+SSyntax::SSyntax()
+{ }
+SSyntax::SSyntax(SSyntax&& other) noexcept = default;
+
+SSyntax::~SSyntax() = default;
+
+SSyntax& SSyntax::operator=(SSyntax&& other) noexcept = default;
+
+JsonItem SSyntax::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SSyntax") },
+    };
+}
+
 SArgument::SArgument(bool bOut, bool bParams, SExpPtr exp)
     : bOut(std::move(bOut)), bParams(std::move(bParams)), exp(std::move(exp)) { }
 

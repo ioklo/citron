@@ -40,7 +40,7 @@ RLocPtr TranslateReListIndexerExpToRLoc(ReListIndexerExp& reExp, const ScopeCont
 RLocPtr TranslateReLocalDerefExpToRLoc(ReLocalDerefExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RLocPtr TranslateReBoxDerefExpToRLoc(ReBoxDerefExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 
-RLocPtr TranslateReExpToRLoc(ReExp& reExp, const ScopeContextPtr& context, bool bWrapExpAsLoc, const LoggerPtr& logger, INotLocationErrorLogger* notLocationErrorLogger, RTypeFactory& factory);
+RLocPtr TranslateReExpToRLoc(ReExp& reExp, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationErrorLogger, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 
 
 } // namespace SyntaxIR0Translator

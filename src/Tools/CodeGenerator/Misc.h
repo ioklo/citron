@@ -55,6 +55,7 @@ struct ForwardClassDeclsInfo
 struct VariantInterfaceInfo
 {
     std::string name;
+    std::vector<std::string> bases;
     std::string argName;
     std::vector<std::string> members;
 };

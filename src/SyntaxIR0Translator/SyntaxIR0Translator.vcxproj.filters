@@ -21,25 +21,47 @@
     <ClCompile Include="ReExp.cpp">
       <Filter>ExpTranslation\Structure</Filter>
     </ClCompile>
-    <ClCompile Include="ImExpToIrExpTranslation.cpp">
-      <Filter>ExpTranslation\ToIrExp</Filter>
-    </ClCompile>
-    <ClCompile Include="IrExpToRExpTranslation.cpp">
-      <Filter>ExpTranslation\ToRExp</Filter>
-    </ClCompile>
-    <ClCompile Include="ImExpToReExpTranslation.cpp">
-      <Filter>ExpTranslation\ToReExp</Filter>
+    <ClCompile Include="NotLocationErrorLogger.cpp" />
+    <ClCompile Include="Misc.cpp" />
+    <ClCompile Include="SExpToImExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="SExpToRLocTranslation.cpp">
-      <Filter>ExpTranslation\ToRLoc</Filter>
+      <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ReExpToRExpTranslation.cpp">
-      <Filter>ExpTranslation\ToRExp</Filter>
+    <ClCompile Include="SExpToRExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToReExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpRefToRExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpRefTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpRefToIrExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClCompile>
     <ClCompile Include="ReExpToRLocTranslation.cpp">
-      <Filter>ExpTranslation\ToRLoc</Filter>
+      <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SExpToRExpTranslation.cpp" />
+    <ClCompile Include="ReExpToRExpTranslation.cpp">
+      <Filter>ExpTranslation\ReExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="IrExpToRExpTranslation.cpp">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="ImExpToReExpTranslation.cpp">
+      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="ImExpToIrExpTranslation.cpp">
+      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="ImExpAndSArgsToRExpBinding.cpp">
+      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="BinOpQueryService.cpp">
+      <Filter>ExpTranslation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -63,26 +85,47 @@
     <ClInclude Include="ReExp.h">
       <Filter>ExpTranslation\Structure</Filter>
     </ClInclude>
-    <ClInclude Include="ImExpToIrExpTranslation.h">
-      <Filter>ExpTranslation\ToIrExp</Filter>
-    </ClInclude>
-    <ClInclude Include="IrExpToRExpTranslation.h">
-      <Filter>ExpTranslation\ToRExp</Filter>
-    </ClInclude>
-    <ClInclude Include="ImExpToReExpTranslation.h">
-      <Filter>ExpTranslation\ToReExp</Filter>
+    <ClInclude Include="NotLocationErrorLogger.h" />
+    <ClInclude Include="Misc.h" />
+    <ClInclude Include="SExpToImExpTranslation.h">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="SExpToRLocTranslation.h">
-      <Filter>ExpTranslation\ToRLoc</Filter>
+      <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ReExpToRExpTranslation.h">
-      <Filter>ExpTranslation\ToRExp</Filter>
+    <ClInclude Include="SExpToRExpTranslation.h">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToReExpTranslation.h">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpRefToRExpTranslation.h">
+      <Filter>ExpTranslation\SExpRefTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpRefToIrExpTranslation.h">
+      <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClInclude>
     <ClInclude Include="ReExpToRLocTranslation.h">
-      <Filter>ExpTranslation\ToRLoc</Filter>
+      <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="INotLocationErrorLogger.h" />
-    <ClInclude Include="SExpToRExpTranslation.h" />
+    <ClInclude Include="ReExpToRExpTranslation.h">
+      <Filter>ExpTranslation\ReExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="IrExpToRExpTranslation.h">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="ImExpToReExpTranslation.h">
+      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="ImExpToIrExpTranslation.h">
+      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="ImExpAndSArgsToRExpBinding.h">
+      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="BinOpQueryService.h">
+      <Filter>ExpTranslation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">
@@ -91,17 +134,20 @@
     <Filter Include="ExpTranslation\Structure">
       <UniqueIdentifier>{338c8a7c-395b-4c1f-9cb8-b4bd409a7dca}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ExpTranslation\ToIrExp">
-      <UniqueIdentifier>{bcd6d60a-5f8e-4a12-8692-ac6441d050f0}</UniqueIdentifier>
+    <Filter Include="ExpTranslation\SExpTranslation">
+      <UniqueIdentifier>{889fe72a-ee0f-4131-bd85-73b0af2e49aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ExpTranslation\ToReExp">
-      <UniqueIdentifier>{98c1dc64-773c-48f3-a068-53f45798c5b7}</UniqueIdentifier>
+    <Filter Include="ExpTranslation\SExpRefTranslation">
+      <UniqueIdentifier>{b1483fff-8170-47c5-b0b8-fd47414f150c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ExpTranslation\ToRExp">
-      <UniqueIdentifier>{7586d80f-738d-4730-bd96-6dfbc34865f3}</UniqueIdentifier>
+    <Filter Include="ExpTranslation\ReExpTranslation">
+      <UniqueIdentifier>{c05d8b10-e97b-4c71-ae3a-93f1a4f9c97b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ExpTranslation\ToRLoc">
-      <UniqueIdentifier>{04760e11-d779-44a1-9cb6-e211eca36830}</UniqueIdentifier>
+    <Filter Include="ExpTranslation\IrExpTranslation">
+      <UniqueIdentifier>{24884e89-104d-4052-a062-7fb006e06a31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExpTranslation\ImExpTranslation">
+      <UniqueIdentifier>{b36f1fb1-f92b-4a42-9d35-8c5b7a81b468}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

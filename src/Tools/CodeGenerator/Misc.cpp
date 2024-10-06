@@ -362,7 +362,7 @@ void GenerateForwardClassDecls(CommonInfo& commonInfo, ForwardClassDeclsInfo& in
 
 void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info, ostringstream& hStream, ostringstream& cppStream)
 {
-    // class 'name'Visitor
+    // class 'name'Visitor 
     // {
     // public:
     //     virtual void Visit(A& a) = 0;
@@ -370,7 +370,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     //     virtual void Visit(C& c) = 0;
     // };
     // 
-    // class 'name'
+    // class 'name' : 'bases...'
     // {
     // public:
     //     virtual ~'name'() { }
@@ -385,10 +385,30 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
         hStream << "    virtual void Visit(" << member << "& " << info.argName << ") = 0;" << endl;
     hStream << "};" << endl << endl;
 
-    hStream << "class " << info.name << endl;
+    hStream << "class " << info.name;
+
+    if (!info.bases.empty())
+    {
+        bool bFirst = true;
+        for (auto& base : info.bases)
+        {
+            if (bFirst)
+                hStream << " : public " << base;
+            else
+                hStream << ", public " << base;
+        }
+    }
+
+    hStream << endl;
+
     hStream << "{" << endl;
     hStream << "public:" << endl;
+    hStream << "    " << info.name << "() = default;" << endl;
+    hStream << "    " << info.name << "(const " << info.name << "&) = delete;" << endl;
+    hStream << "    " << info.name << "(" << info.name << "&&) = default;" << endl;
     hStream << "    virtual ~" << info.name << "() { }" << endl;
+    hStream << "    " << info.name << "& operator=(const " << info.name << "& other) = delete;" << endl;
+    hStream << "    " << info.name << "& operator=(" << info.name << "&& other) noexcept = default;" << endl;
     hStream << "    virtual void Accept(" << info.name << "Visitor& visitor) = 0;" << endl;
     hStream << "};" << endl << endl;
 

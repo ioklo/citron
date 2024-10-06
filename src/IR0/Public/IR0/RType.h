@@ -50,6 +50,7 @@ enum class RCustomTypeKind
     Struct,
     Class,
     Enum,
+    EnumElem,
     Interface,
 };
 
@@ -57,9 +58,10 @@ class RType
 {
 public:
     virtual ~RType() { }
-    virtual void Accept(RTypeVisitor& visitor) = 0;
     virtual RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
     virtual RCustomTypeKind GetCustomTypeKind() { return RCustomTypeKind::None; }
+
+    virtual void Accept(RTypeVisitor& visitor) = 0;
 };
 
 using RTypePtr = std::shared_ptr<RType>;
@@ -160,13 +162,13 @@ public:
         }
     };
 
-    bool bLocal; 
+    bool bLocal;
     RTypePtr retType;
     std::vector<Parameter> params;
 
 private:
     friend RTypeFactory;
-    RFuncType(bool bLocal, RTypePtr&& retType, std::vector<Parameter>&& params);    
+    RFuncType(bool bLocal, RTypePtr&& retType, std::vector<Parameter>&& params);
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
@@ -212,8 +214,9 @@ private:
     RInstanceType(const RDeclPtr& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    RCustomTypeKind GetCustomTypeKind() override;
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }
