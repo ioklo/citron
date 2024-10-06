@@ -19,6 +19,7 @@ class RClassConstructorDecl
     , public RBodyDeclOuter
     , private RCommonFuncDeclComponent
 {
+public:
     std::weak_ptr<RClassDecl> _class;
     RAccessor accessor;
     std::vector<RFuncParameter> parameters;

@@ -1,6 +1,7 @@
 #include "RStructMemberVarDecl.h"
 #include <cassert>
 #include "RStructDecl.h"
+#include "RTypeFactory.h"
 
 namespace Citron {
 
@@ -21,6 +22,11 @@ RTypePtr RStructMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactor
 {
     assert(declType != nullptr);
     return declType->Apply(typeArgs, factory);
+}
+
+RTypePtr RStructMemberVarDecl::GetStructType(const RTypeArgumentsPtr& typeArgs, RTypeFactory& factory)
+{   
+    return factory.MakeInstanceType(_struct.lock(), typeArgs);
 }
 
 RDecl* RStructMemberVarDecl::GetOuter()

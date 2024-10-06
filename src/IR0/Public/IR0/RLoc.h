@@ -1,6 +1,7 @@
 #pragma once
 #include <variant>
 #include <memory>
+#include <string>
 
 #include "RType.h"
 #include "RNames.h"
@@ -66,11 +67,11 @@ public:
 class RLocalVarLoc : public RLoc
 {
 public:
-    RName name;
+    std::string name;
     RTypePtr declType;
 
 public:
-    IR0_API RLocalVarLoc(const RName& name, const RTypePtr& declType);
+    IR0_API RLocalVarLoc(const std::string& name, const RTypePtr& declType);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -97,7 +98,7 @@ public:
     RTypePtr itemType;
 
 public:
-    IR0_API RListIndexerLoc(const RLocPtr& list, const RLocPtr& index, const RTypePtr& itemType);
+    IR0_API RListIndexerLoc(RLocPtr&& list, const RLocPtr& index, const RTypePtr& itemType);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -124,7 +125,7 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
-    RClassMemberLoc(const RLocPtr& instance, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    RClassMemberLoc(RLocPtr&& instance, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -148,7 +149,7 @@ public:
     RTypePtr type;
 
 public:
-    IR0_API RThisLoc(const RTypePtr& type);
+    IR0_API RThisLoc(RTypePtr type);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -159,7 +160,7 @@ class RLocalDerefLoc : public RLoc
 public:
     RLocPtr innerLoc;
 public:
-    IR0_API RLocalDerefLoc(const RLocPtr& innerLoc);
+    IR0_API RLocalDerefLoc(RLocPtr&& innerLoc);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -171,7 +172,7 @@ public:
     RLocPtr innerLoc;
 
 public:
-    IR0_API RBoxDerefLoc(const RLocPtr& innerLoc);
+    IR0_API RBoxDerefLoc(RLocPtr&& innerLoc);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };

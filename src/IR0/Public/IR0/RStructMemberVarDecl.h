@@ -28,6 +28,7 @@ public:
     IR0_API void InitDeclType(const RTypePtr& declType);
 
     IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory);
+    IR0_API RTypePtr GetStructType(const RTypeArgumentsPtr& typeArgs, RTypeFactory& factory);
 
 public:
     IR0_API RDecl* GetOuter() override;

@@ -12,12 +12,6 @@
     <ClCompile Include="StmtTranslation.cpp" />
     <ClCompile Include="ScopeContext.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
-    <ClCompile Include="IrExpToRExpTranslation.cpp">
-      <Filter>ExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="ImExpToReExpTranslation.cpp">
-      <Filter>ExpTranslation</Filter>
-    </ClCompile>
     <ClCompile Include="ImExp.cpp">
       <Filter>ExpTranslation\Structure</Filter>
     </ClCompile>
@@ -28,8 +22,24 @@
       <Filter>ExpTranslation\Structure</Filter>
     </ClCompile>
     <ClCompile Include="ImExpToIrExpTranslation.cpp">
-      <Filter>ExpTranslation</Filter>
+      <Filter>ExpTranslation\ToIrExp</Filter>
     </ClCompile>
+    <ClCompile Include="IrExpToRExpTranslation.cpp">
+      <Filter>ExpTranslation\ToRExp</Filter>
+    </ClCompile>
+    <ClCompile Include="ImExpToReExpTranslation.cpp">
+      <Filter>ExpTranslation\ToReExp</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToRLocTranslation.cpp">
+      <Filter>ExpTranslation\ToRLoc</Filter>
+    </ClCompile>
+    <ClCompile Include="ReExpToRExpTranslation.cpp">
+      <Filter>ExpTranslation\ToRExp</Filter>
+    </ClCompile>
+    <ClCompile Include="ReExpToRLocTranslation.cpp">
+      <Filter>ExpTranslation\ToRLoc</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToRExpTranslation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -44,12 +54,6 @@
     <ClInclude Include="StmtTranslation.h" />
     <ClInclude Include="ScopeContext.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
-    <ClInclude Include="IrExpToRExpTranslation.h">
-      <Filter>ExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="ImExpToReExpTranslation.h">
-      <Filter>ExpTranslation</Filter>
-    </ClInclude>
     <ClInclude Include="ImExp.h">
       <Filter>ExpTranslation\Structure</Filter>
     </ClInclude>
@@ -60,8 +64,25 @@
       <Filter>ExpTranslation\Structure</Filter>
     </ClInclude>
     <ClInclude Include="ImExpToIrExpTranslation.h">
-      <Filter>ExpTranslation</Filter>
+      <Filter>ExpTranslation\ToIrExp</Filter>
     </ClInclude>
+    <ClInclude Include="IrExpToRExpTranslation.h">
+      <Filter>ExpTranslation\ToRExp</Filter>
+    </ClInclude>
+    <ClInclude Include="ImExpToReExpTranslation.h">
+      <Filter>ExpTranslation\ToReExp</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToRLocTranslation.h">
+      <Filter>ExpTranslation\ToRLoc</Filter>
+    </ClInclude>
+    <ClInclude Include="ReExpToRExpTranslation.h">
+      <Filter>ExpTranslation\ToRExp</Filter>
+    </ClInclude>
+    <ClInclude Include="ReExpToRLocTranslation.h">
+      <Filter>ExpTranslation\ToRLoc</Filter>
+    </ClInclude>
+    <ClInclude Include="INotLocationErrorLogger.h" />
+    <ClInclude Include="SExpToRExpTranslation.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">
@@ -69,6 +90,18 @@
     </Filter>
     <Filter Include="ExpTranslation\Structure">
       <UniqueIdentifier>{338c8a7c-395b-4c1f-9cb8-b4bd409a7dca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExpTranslation\ToIrExp">
+      <UniqueIdentifier>{bcd6d60a-5f8e-4a12-8692-ac6441d050f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExpTranslation\ToReExp">
+      <UniqueIdentifier>{98c1dc64-773c-48f3-a068-53f45798c5b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExpTranslation\ToRExp">
+      <UniqueIdentifier>{7586d80f-738d-4730-bd96-6dfbc34865f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExpTranslation\ToRLoc">
+      <UniqueIdentifier>{04760e11-d779-44a1-9cb6-e211eca36830}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

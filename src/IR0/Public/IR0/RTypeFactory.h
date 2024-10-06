@@ -37,12 +37,12 @@ struct FuncTypeKeyHasher
 
 struct InstanceTypeKey
 {
-    RDeclIdPtr declId;
+    RDeclPtr decl;
     RTypeArgumentsPtr typeArgs;
 
     bool operator==(const InstanceTypeKey& other) const noexcept
     {
-        return declId == other.declId && typeArgs == other.typeArgs;
+        return decl == other.decl && typeArgs == other.typeArgs;
     }
 };
 
@@ -51,7 +51,7 @@ struct InstanceTypeKeyHasher
     size_t operator()(const InstanceTypeKey& key) const noexcept
     {
         size_t s = 0;
-        Citron::hash_combine(s, key.declId);
+        Citron::hash_combine(s, key.decl);
         Citron::hash_combine(s, key.typeArgs);
         return s;
     }
@@ -106,7 +106,7 @@ public:
     IR0_API std::shared_ptr<RFuncType> MakeFuncType(bool bLocal, RTypePtr&& retType, std::vector<RFuncType::Parameter>&& params);
     IR0_API std::shared_ptr<RLocalPtrType> MakeLocalPtrType(RTypePtr&& innerType);
     IR0_API std::shared_ptr<RBoxPtrType> MakeBoxPtrType(RTypePtr&& innerType);
-    IR0_API std::shared_ptr<RInstanceType> MakeInstanceType(const RDeclIdPtr& declId, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RInstanceType> MakeInstanceType(const RDeclPtr& decl, const RTypeArgumentsPtr& typeArgs);
     IR0_API RTypeArgumentsPtr MakeTypeArguments(const std::vector<RTypePtr>& items);
 
     // utilities

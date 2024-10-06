@@ -116,15 +116,15 @@ RTypePtr RBoxPtrType::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     return factory.MakeBoxPtrType(std::move(appliedInnerType));
 }
 
-RInstanceType::RInstanceType(const RDeclIdPtr& declId, const RTypeArgumentsPtr& typeArgs)
-    : declId(declId), typeArgs(typeArgs)
+RInstanceType::RInstanceType(const RDeclPtr& decl, const RTypeArgumentsPtr& typeArgs)
+    : decl(decl), typeArgs(typeArgs)
 {
 }
 
 RTypePtr RInstanceType::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
-    return factory.MakeInstanceType(declId, std::move(appliedTypeArgs));
+    return factory.MakeInstanceType(decl, std::move(appliedTypeArgs));
 }
 
 } // Citron

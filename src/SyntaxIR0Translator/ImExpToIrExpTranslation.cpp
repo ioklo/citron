@@ -121,31 +121,31 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     void Visit(ImEnumElemMemberVarExp& imExp) override 
     { 
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
-        // throw RuntimeFatalException();
+        throw RuntimeFatalException();
     }
 
     void Visit(ImListIndexerExp& imExp) override 
     { 
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
-        // throw RuntimeFatalException();
+        throw RuntimeFatalException();
     }
 
     void Visit(ImLocalDerefExp& imExp) override
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
-        // throw RuntimeFatalException();
+        throw RuntimeFatalException();
     }
 
     void Visit(ImBoxDerefExp& imExp) override 
     { 
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
-        // throw RuntimeFatalException();
+        throw RuntimeFatalException();
     }
 
     void Visit(ImElseExp& imExp) override 
     { 
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
-        // throw RuntimeFatalException();
+        throw RuntimeFatalException();
     }
 };
 

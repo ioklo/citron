@@ -50,6 +50,7 @@ public:
 
 class ReThisVarExp : public ReExp
 {
+public:
     RTypePtr type;
 
 public:
@@ -60,6 +61,7 @@ public:
 
 class ReLocalVarExp : public ReExp
 {
+public:
     RTypePtr type;
     std::string name;
     
@@ -71,6 +73,7 @@ public:
 
 class ReLambdaMemberVarExp : public ReExp
 {
+public:
     std::shared_ptr<RLambdaMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     
@@ -96,6 +99,7 @@ public:
 
 class ReStructMemberVarExp : public ReExp
 {
+public:
     std::shared_ptr<RStructMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     bool hasExplicitInstance;
@@ -109,6 +113,7 @@ public:
 
 class ReEnumElemMemberVarExp : public ReExp
 {
+public:
     std::shared_ptr<REnumElemMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     ReExpPtr instance;
@@ -121,6 +126,7 @@ public:
 
 class ReLocalDerefExp : public ReExp
 {
+public:
     ReExpPtr target;
     
 public:
@@ -131,6 +137,7 @@ public:
 
 class ReBoxDerefExp : public ReExp
 {
+public:
     ReExpPtr target;
 
 public:
@@ -141,6 +148,7 @@ public:
 
 class ReListIndexerExp : public ReExp
 {   
+public:
     ReExpPtr instance;
     RLocPtr index;
     RTypePtr itemType;
@@ -154,6 +162,7 @@ public:
 // 기타의 경우, Value
 class ReElseExp : public ReExp
 {
+public:
     RExpPtr rExp;
     
 public:

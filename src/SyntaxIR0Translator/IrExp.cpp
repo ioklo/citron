@@ -91,8 +91,8 @@ RTypePtr IrStructMemberBoxRefExp::GetTargetType(RTypeFactory& factory)
 //    return MakePtr<RStructMemberLoc>(parent->MakeLoc(), decl, typeArgs);
 //}
 
-IrLocalRefExp::IrLocalRefExp(const RLocPtr& loc, const RTypePtr& locType)
-    : loc(loc), locType(locType)
+IrLocalRefExp::IrLocalRefExp(const RLocPtr& loc)
+    : loc(loc)
 {
 }
 

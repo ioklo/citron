@@ -21,7 +21,7 @@ RTypePtr RTempLoc::GetType(RTypeFactory& factory)
     return exp->GetType(factory);
 }
 
-RLocalVarLoc::RLocalVarLoc(const RName& name, const RTypePtr& declType)
+RLocalVarLoc::RLocalVarLoc(const std::string& name, const RTypePtr& declType)
     : name(name), declType(declType)
 {
 
@@ -42,8 +42,8 @@ RTypePtr RLambdaMemberVarLoc::GetType(RTypeFactory& factory)
     return memberVarDecl->GetDeclType(*typeArgs, factory);
 }
 
-RListIndexerLoc::RListIndexerLoc(const RLocPtr& list, const RLocPtr& index, const RTypePtr& itemType)
-    : list(list), index(index), itemType(itemType)
+RListIndexerLoc::RListIndexerLoc(RLocPtr&& list, const RLocPtr& index, const RTypePtr& itemType)
+    : list(std::move(list)), index(index), itemType(itemType)
 {
 }
 
@@ -63,8 +63,8 @@ RTypePtr RStructMemberLoc::GetType(RTypeFactory& factory)
 
 }
 
-RClassMemberLoc::RClassMemberLoc(const RLocPtr& instance, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
-    : instance(instance), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
+RClassMemberLoc::RClassMemberLoc(RLocPtr&& instance, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
+    : instance(std::move(instance)), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
 {
 }
 
@@ -84,8 +84,8 @@ RTypePtr REnumElemMemberLoc::GetType(RTypeFactory& factory)
     return memberVarDecl->GetDeclType(*typeArgs, factory);
 }
 
-RThisLoc::RThisLoc(const RTypePtr& type)
-    : type(type)
+RThisLoc::RThisLoc(RTypePtr type)
+    : type(std::move(type))
 {
 }
 
@@ -94,8 +94,8 @@ RTypePtr RThisLoc::GetType(RTypeFactory& factory)
     return type;
 }
 
-RLocalDerefLoc::RLocalDerefLoc(const RLocPtr& innerLoc)
-    : innerLoc(innerLoc)
+RLocalDerefLoc::RLocalDerefLoc(RLocPtr&& innerLoc)
+    : innerLoc(std::move(innerLoc))
 {
 }
 
@@ -110,8 +110,8 @@ RTypePtr RLocalDerefLoc::GetType(RTypeFactory& factory)
     throw NotImplementedException();
 }
 
-RBoxDerefLoc::RBoxDerefLoc(const RLocPtr& innerLoc)
-    : innerLoc(innerLoc)
+RBoxDerefLoc::RBoxDerefLoc(RLocPtr&& innerLoc)
+    : innerLoc(std::move(innerLoc))
 {
 }
 

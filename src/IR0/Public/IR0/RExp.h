@@ -144,8 +144,8 @@ public:
 class RExp
 {
 public:
-    virtual void Accept(RExpVisitor& visitor) = 0;
     virtual RTypePtr GetType(RTypeFactory& factory) = 0;
+    virtual void Accept(RExpVisitor& visitor) = 0;
 };
 
 using RExpPtr = std::shared_ptr<RExp>;
@@ -159,9 +159,10 @@ public:
     RLocPtr loc;
     
 public:
-    IR0_API RLoadExp(const RLocPtr& loc);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RLoadExp(RLocPtr&& loc);
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // a = b
@@ -172,8 +173,9 @@ public:
     RExpPtr src;
 public:
     IR0_API RAssignExp(const RLocPtr& dest, const RExpPtr& src);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // box 3
@@ -183,8 +185,9 @@ public:
     RExpPtr innerExp;    
 public:
     IR0_API RBoxExp(const RExpPtr& innerExp);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // &C.x
@@ -194,8 +197,9 @@ public:
     RLocPtr loc;    
 public:
     IR0_API RStaticBoxRefExp(const RLocPtr& loc);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // &c.x => RClassMemberBoxRefExp(RLocalVar("c"), C::x)
@@ -208,8 +212,9 @@ public:
 
 public:
     IR0_API RClassMemberBoxRefExp(const RLocPtr& holder, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // box S* pS;
@@ -223,8 +228,9 @@ public:
 
 public:
     IR0_API RStructIndirectMemberBoxRefExp(const RLocPtr& holder, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // C c;
@@ -238,8 +244,9 @@ public:
 
 public:
     IR0_API RStructMemberBoxRefExp(const RLocPtr& parent, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // &i
@@ -250,8 +257,9 @@ public:
 
 public:
     IR0_API RLocalRefExp(const RLocPtr& innerLoc);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion Storage
@@ -266,8 +274,9 @@ public:
     std::shared_ptr<RFuncType> funcType;
 public:
     IR0_API RCastBoxedLambdaToFuncExp(const RExpPtr& exp, const std::shared_ptr<RFuncType>& funcType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion Interface
@@ -281,8 +290,9 @@ public:
     bool value;
 public:
     IR0_API RBoolLiteralExp(bool value);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // 1
@@ -292,8 +302,9 @@ public:
     int value;
 public:
     IR0_API RIntLiteralExp(int value);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RTextStringExpElement
@@ -323,8 +334,10 @@ public:
     std::vector<RStringExpElement> elements;
 public:
     IR0_API RStringExp(const std::vector<RStringExpElement>& elements);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+    
 };
 
 #pragma endregion Literal
@@ -339,8 +352,9 @@ public:
     RTypePtr itemType;
 public:
     IR0_API RListExp(std::vector<RExpPtr>&& elems, const RTypePtr& itemType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RListIteratorExp : public RExp
@@ -350,8 +364,9 @@ public:
     RTypePtr type;
 public:
     IR0_API RListIteratorExp(const RLocPtr& listLoc, const RTypePtr& type);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion List
@@ -403,8 +418,9 @@ public:
     RExpPtr operand;
 public:
     IR0_API RCallInternalUnaryOperatorExp(RInternalUnaryOperator op, const RExpPtr& operand);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RCallInternalUnaryAssignOperatorExp : public RExp
@@ -414,8 +430,9 @@ public:
     RLocPtr operand;
 public:
     IR0_API RCallInternalUnaryAssignOperatorExp(RInternalUnaryAssignOperator op, const RLocPtr& operand);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RCallInternalBinaryOperatorExp : public RExp
@@ -426,8 +443,9 @@ public:
     RExpPtr operand1;
 public:
     IR0_API RCallInternalBinaryOperatorExp(RInternalBinaryOperator op, const RExpPtr& operand0, const RExpPtr& operand1);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion Call Internal
@@ -443,8 +461,10 @@ public:
     std::vector<RArgument> args;
 public:
     IR0_API RCallGlobalFuncExp(const std::shared_ptr<RGlobalFuncDecl>& funcDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<RArgument>& args);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+    
 };
 #pragma endregion Global
 
@@ -459,8 +479,9 @@ public:
     std::vector<RArgument> args;
 public:
     IR0_API RNewClassExp(const std::shared_ptr<RClassConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<RArgument>& args);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // c.F();
@@ -473,8 +494,9 @@ public:
     std::vector<RArgument> args;
 public:
     IR0_API RCallClassMemberFuncExp(const std::shared_ptr<RClassMemberFuncDecl>& classMemberFunc, const RTypeArgumentsPtr& typeArgs, const RLocPtr& instance, const std::vector<RArgument>& args);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // ClassStaticCast
@@ -485,8 +507,9 @@ public:
     RTypePtr classType;
 public:
     IR0_API RCastClassExp(const RExpPtr& src, const RTypePtr& classType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion Class
@@ -502,8 +525,9 @@ public:
     std::vector<RArgument> args;
 public:
     IR0_API RNewStructExp(const std::shared_ptr<RStructConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<RArgument>& args);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // s.F();
@@ -516,8 +540,9 @@ public:
     std::vector<RArgument> args;
 public:
     IR0_API RCallStructMemberFuncExp(const std::shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, const RLocPtr& instance, const std::vector<RArgument>& args);    
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion Struct
@@ -534,8 +559,9 @@ public:
 
 public:
     IR0_API RNewEnumElemExp(const std::shared_ptr<REnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, std::vector<RArgument>&& args);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // 컨테이너를 enumElem -> enum으로
@@ -546,8 +572,9 @@ public:
     RTypePtr enumType;
 public:
     IR0_API RCastEnumElemToEnumExp(const RExpPtr& src, const RTypePtr& enumType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion Enum
@@ -560,8 +587,10 @@ public:
     RTypePtr innerType;
 public:
     IR0_API RNullableNullLiteralExp(const RTypePtr& innerType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+    
 };
 
 class RNewNullableExp : public RExp
@@ -570,8 +599,9 @@ public:
     RExpPtr innerExp;
 public:
     IR0_API RNewNullableExp(const RExpPtr& innerExp);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion Nullable
@@ -591,8 +621,9 @@ public:
 
 public:
     IR0_API RLambdaExp(const std::shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<RArgument>& args);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // f(2, 3)
@@ -607,8 +638,9 @@ public:
 
 public:
     IR0_API RCallLambdaExp(const std::shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const RLocPtr& callable, const std::vector<RArgument>& args);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion Lambda
@@ -622,8 +654,9 @@ public:
     RTypePtr returnType;
 public:
     IR0_API RInlineBlockExp(const std::vector<RStmtPtr>& stmts, const RTypePtr& returnType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion Inline
@@ -638,8 +671,9 @@ public:
 
 public:
     IR0_API RClassIsClassExp(const RExpPtr& exp, const RTypePtr& classType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RClassAsClassExp : public RExp
@@ -649,8 +683,10 @@ public:
     RTypePtr classType;
 public:
     IR0_API RClassAsClassExp(const RExpPtr& exp, const RTypePtr& classType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+    
 };
 
 class RClassIsInterfaceExp : public RExp
@@ -660,8 +696,9 @@ public:
     RTypePtr interfaceType;
 public:
     IR0_API RClassIsInterfaceExp(const RExpPtr& exp, const RTypePtr& interfaceType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RClassAsInterfaceExp : public RExp
@@ -671,8 +708,9 @@ public:
     RTypePtr interfaceType;
 public:
     IR0_API RClassAsInterfaceExp(const RExpPtr& exp, const RTypePtr& interfaceType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RInterfaceIsClassExp : public RExp
@@ -682,8 +720,9 @@ public:
     RTypePtr classType;
 public:
     IR0_API RInterfaceIsClassExp(const RExpPtr& exp, const RTypePtr& classType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RInterfaceAsClassExp : public RExp
@@ -693,8 +732,9 @@ public:
     RTypePtr classType;
 public:
     IR0_API RInterfaceAsClassExp(const RExpPtr& exp, const RTypePtr& classType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RInterfaceIsInterfaceExp : public RExp
@@ -704,8 +744,9 @@ public:
     RTypePtr interfaceType;
 public:
     IR0_API RInterfaceIsInterfaceExp(const RExpPtr& exp, const RTypePtr& interfaceType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RInterfaceAsInterfaceExp : public RExp
@@ -715,8 +756,9 @@ public:
     RTypePtr interfaceType;
 public:
     IR0_API RInterfaceAsInterfaceExp(const RExpPtr& exp, const RTypePtr& interfaceType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class REnumIsEnumElemExp : public RExp
@@ -726,8 +768,9 @@ public:
     RTypePtr enumElemType;
 public:
     IR0_API REnumIsEnumElemExp(const RExpPtr& exp, const RTypePtr& enumElemType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class REnumAsEnumElemExp : public RExp
@@ -737,8 +780,9 @@ public:
     RTypePtr enumElemType;
 public:
     IR0_API REnumAsEnumElemExp(const RExpPtr& exp, const RTypePtr& enumElemType);
-    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
+
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 #pragma endregion TypeTest

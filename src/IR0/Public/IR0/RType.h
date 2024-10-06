@@ -21,8 +21,8 @@ class RFuncType;     // inline type, circular
 class RLocalPtrType; // inline type
 class RBoxPtrType;   // inline type
 class RInstanceType; // indirect
-class RDeclId;
-using RDeclIdPtr = std::shared_ptr<RDeclId>;
+class RDecl;
+using RDeclPtr = std::shared_ptr<RDecl>;
 
 class RTypeArguments;
 using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
@@ -204,12 +204,12 @@ public:
 class RInstanceType : public RType
 {
 public:
-    RDeclIdPtr declId;
+    RDeclPtr decl;
     RTypeArgumentsPtr typeArgs;
 
 private:
     friend RTypeFactory;
-    RInstanceType(const RDeclIdPtr& declId, const RTypeArgumentsPtr& typeArgs);
+    RInstanceType(const RDeclPtr& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }

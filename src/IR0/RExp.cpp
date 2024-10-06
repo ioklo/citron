@@ -8,10 +8,14 @@
 #include "RGlobalFuncDecl.h"
 #include "RLambdaDecl.h"
 
+#include "REnumElemDecl.h"
+
+#include "RStructDecl.h"
 #include "RStructMemberVarDecl.h"
 #include "RStructMemberFuncDecl.h"
 #include "RStructConstructorDecl.h"
 
+#include "RClassDecl.h"
 #include "RClassConstructorDecl.h"
 #include "RClassMemberFuncDecl.h"
 #include "RClassMemberVarDecl.h"
@@ -20,8 +24,8 @@ using namespace std;
 
 namespace Citron {
 
-RLoadExp::RLoadExp(const RLocPtr& loc)
-    : loc(loc)
+RLoadExp::RLoadExp(RLocPtr&& loc)
+    : loc(std::move(loc))
 {
 }
 
@@ -268,12 +272,10 @@ RNewClassExp::RNewClassExp(const shared_ptr<RClassConstructorDecl>& constructorD
 
 RTypePtr RNewClassExp::GetType(RTypeFactory& factory)
 {
-    return constructorDecl->GetClassType(typeArgs, factory);
-
-    /*auto classDecl = constructorDecl->_class.lock();
+    auto classDecl = constructorDecl->_class.lock();
     assert(classDecl);
 
-    return factory.MakeInstanceType(classDecl->GetDeclId(), typeArgs);*/
+    return factory.MakeInstanceType(classDecl, typeArgs);
 }
 
 /////////////////////////////////////
@@ -306,7 +308,7 @@ RNewStructExp::RNewStructExp(const shared_ptr<RStructConstructorDecl>& construct
 RTypePtr RNewStructExp::GetType(RTypeFactory& factory)
 {
     auto structDecl = constructorDecl->_struct.lock();
-    return factory.MakeInstanceType(structDecl->GetDeclId(), typeArgs);
+    return factory.MakeInstanceType(structDecl, typeArgs);
 }
 
 RCallStructMemberFuncExp::RCallStructMemberFuncExp(const shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, const RLocPtr& instance, const vector<RArgument>& args)
@@ -326,7 +328,7 @@ RNewEnumElemExp::RNewEnumElemExp(const shared_ptr<REnumElemDecl>& enumElemDecl, 
 
 RTypePtr RNewEnumElemExp::GetType(RTypeFactory& factory)
 {
-    return factory.MakeInstanceType(enumElemDecl->GetDeclId(factory), typeArgs);
+    return factory.MakeInstanceType(enumElemDecl, typeArgs);
 }
 
 RCastEnumElemToEnumExp::RCastEnumElemToEnumExp(const RExpPtr& src, const RTypePtr& enumType)

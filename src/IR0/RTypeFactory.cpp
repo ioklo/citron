@@ -106,14 +106,14 @@ shared_ptr<RBoxPtrType> RTypeFactory::MakeBoxPtrType(RTypePtr&& innerType)
     return newType;
 }
 
-shared_ptr<RInstanceType> RTypeFactory::MakeInstanceType(const RDeclIdPtr& declId, const RTypeArgumentsPtr& typeArgs)
+shared_ptr<RInstanceType> RTypeFactory::MakeInstanceType(const RDeclPtr& decl, const RTypeArgumentsPtr& typeArgs)
 {
-    auto key = IR0::InstanceTypeKey { declId, typeArgs };
+    auto key = IR0::InstanceTypeKey { decl, typeArgs };
     auto i = instanceTypes.find(key);
     if (i != instanceTypes.end())
         return i->second;
 
-    shared_ptr<RInstanceType> newType { new RInstanceType(declId, typeArgs) };
+    shared_ptr<RInstanceType> newType { new RInstanceType(decl, typeArgs) };
     instanceTypes.emplace(key, newType);
     return newType;
 }

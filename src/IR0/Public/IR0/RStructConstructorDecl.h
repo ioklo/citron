@@ -21,6 +21,7 @@ class RStructConstructorDecl
     , public RBodyDeclOuter
     , private RCommonFuncDeclComponent
 {
+public:
     std::weak_ptr<RStructDecl> _struct;
     RAccessor accessor;
     bool bTrivial;

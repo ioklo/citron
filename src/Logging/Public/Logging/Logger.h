@@ -10,7 +10,8 @@ public:
     
     LOGGING_API void Fatal_CantUseTypeAsExpression();      // A2008_ResolveIdentifier_CantUseTypeAsExpression);
     LOGGING_API void Fatal_CantUseNamespaceAsExpression(); // A2013_ResolveIdentifier_CantUseNamespaceAsExpression
-    
+
+    LOGGING_API void Fatal_ExpressionIsNotLocation();      // A2015_ResolveIdentifier_ExpressionIsNotLocation    
 
     // IrExp -> RExp Translation
     LOGGING_API void Fatal_CantMakeReference();
