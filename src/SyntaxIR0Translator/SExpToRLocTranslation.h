@@ -13,6 +13,8 @@ using RLocPtr = std::shared_ptr<RLoc>;
 class RType;
 using RTypePtr = std::shared_ptr<RType>;
 
+class RTypeFactory;
+
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
 
@@ -23,7 +25,7 @@ using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 
 class INotLocationErrorLogger;
 
-RLocPtr TranslateSExpToRLoc(SExp& sExp, const RTypePtr& hintType, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationLogger, const ScopeContextPtr& context, const LoggerPtr& logger);
+RLocPtr TranslateSExpToRLoc(SExp& sExp, const RTypePtr& hintType, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationLogger, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 
 } // namespace SyntaxIR0Translator 
 

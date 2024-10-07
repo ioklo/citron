@@ -29,7 +29,7 @@
     <ClInclude Include="Public\Infra\Defaults.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Infra\NotImplementedException.h">
+    <ClInclude Include="Public\Infra\Exceptions.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="Public\Infra\Hash.h">

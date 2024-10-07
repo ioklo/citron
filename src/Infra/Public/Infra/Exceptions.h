@@ -3,5 +3,6 @@
 namespace Citron {
 
 class NotImplementedException {};
+class RuntimeFatalException {};
 
 }

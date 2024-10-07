@@ -2,16 +2,36 @@
 #include "Misc.h"
 
 #include <Infra/Ptr.h>
-#include <Infra/NotImplementedException.h>
+#include <Infra/Exceptions.h>
 #include <Logging/Logger.h>
+
+#include <IR0/RTypeFactory.h>
 #include <IR0/RType.h>
 #include <IR0/RExp.h>
 
 #include "ScopeContext.h"
 
+
 namespace Citron::SyntaxIR0Translator {
 
-RExpPtr TryCastRExp(const RExpPtr& exp, const RTypePtr& expectedType, const ScopeContextPtr& context) // nothrow
+RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, ScopeContext& context, RTypeFactory& factory)
+{
+    std::vector<RTypePtr> items;
+    items.reserve(typeArgs.size());
+
+    for (auto& typeArg : typeArgs)
+    {
+        auto type = context.MakeType(*typeArg, factory);
+        if (!type) return nullptr;
+
+        items.push_back(std::move(type));
+    }
+
+    return factory.MakeTypeArguments(items);
+}
+
+
+RExpPtr TryCastRExp(const RExpPtr& exp, const RTypePtr& expectedType, ScopeContext& context) // nothrow
 {
     static_assert(false);
 
@@ -74,7 +94,7 @@ RExpPtr TryCastRExp(const RExpPtr& exp, const RTypePtr& expectedType, const Scop
 
 
 // 값의 겉보기 타입을 변경한다
-RExpPtr CastRExp(const RExpPtr& exp, const RTypePtr& expectedType, const ScopeContextPtr& context, const LoggerPtr& logger)
+RExpPtr CastRExp(const RExpPtr& exp, const RTypePtr& expectedType, ScopeContext& context, const LoggerPtr& logger)
 {
     auto result = TryCastRExp(exp, expectedType, context);
     if (result != nullptr) return result;
@@ -118,5 +138,6 @@ RExpPtr MakeRAsExp(const RTypePtr& targetType, const RTypePtr& testType, RExpPtr
     else
         throw NotImplementedException(); // 에러 처리
 }
+
 
 } // namespace Citron::SyntaxIR0Translator

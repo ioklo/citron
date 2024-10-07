@@ -19,9 +19,9 @@ ReLambdaMemberVarExp::ReLambdaMemberVarExp(const std::shared_ptr<RLambdaMemberVa
 {
 }
 
-RTypePtr ReLambdaMemberVarExp::GetType()
+RTypePtr ReLambdaMemberVarExp::GetType(RTypeFactory& factory)
 {
-    return decl->GetDeclType(typeArgs);
+    return decl->GetDeclType(*typeArgs, factory);
 }
 
 ReClassMemberVarExp::ReClassMemberVarExp(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
@@ -29,7 +29,7 @@ ReClassMemberVarExp::ReClassMemberVarExp(const std::shared_ptr<RClassMemberVarDe
 {
 }
 
-//RTypePtr ReClassMemberVarExp::GetType()
+//RTypePtr ReClassMemberVarExp::GetType(RTypeFactory& factory)
 //{
 //    return decl->GetDeclType(typeArgs);
 //}
@@ -39,7 +39,7 @@ ReStructMemberVarExp::ReStructMemberVarExp(const std::shared_ptr<RStructMemberVa
 {
 }
 
-//RTypePtr ReStructMemberVarExp::GetType()
+//RTypePtr ReStructMemberVarExp::GetType(RTypeFactory& factory)
 //{
 //    return decl->GetDeclType(typeArgs);
 //}
@@ -50,7 +50,7 @@ ReEnumElemMemberVarExp::ReEnumElemMemberVarExp(const std::shared_ptr<REnumElemMe
 {
 }
 
-//RTypePtr ReEnumElemMemberVarExp::GetType()
+//RTypePtr ReEnumElemMemberVarExp::GetType(RTypeFactory& factory)
 //{
 //    return decl->GetDeclType(typeArgs);
 //}
@@ -61,7 +61,7 @@ ReLocalDerefExp::ReLocalDerefExp(const ReExpPtr& target)
 
 }
 
-//RTypePtr ReLocalDerefExp::GetType()
+//RTypePtr ReLocalDerefExp::GetType(RTypeFactory& factory)
 //{
 //    return ((RLocalPtrType*)target->GetType().get())->GetInnerType(); // TODO: remove reinterpret cast
 //}
@@ -72,7 +72,7 @@ ReBoxDerefExp::ReBoxDerefExp(const ReExpPtr& target)
 
 }
 
-//RTypePtr ReBoxDerefExp::GetType()
+//RTypePtr ReBoxDerefExp::GetType(RTypeFactory& factory)
 //{
 //    return ((RBoxPtrType*)target->GetType().get())->GetInnerType(); // TODO: remove reinterpret cast
 //}
@@ -90,7 +90,7 @@ ReElseExp::ReElseExp(const RExpPtr& rExp)
 {
 }
 
-//RTypePtr ReElseExp::GetType()
+//RTypePtr ReElseExp::GetType(RTypeFactory& factory)
 //{
 //    return rExp->GetType();
 //}

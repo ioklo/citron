@@ -62,6 +62,9 @@
     <ClCompile Include="BinOpQueryService.cpp">
       <Filter>ExpTranslation</Filter>
     </ClCompile>
+    <ClCompile Include="IrExpAndMemberNameToIrExpBinding.cpp">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -125,6 +128,9 @@
     </ClInclude>
     <ClInclude Include="BinOpQueryService.h">
       <Filter>ExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="IrExpAndMemberNameToIrExpBinding.h">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

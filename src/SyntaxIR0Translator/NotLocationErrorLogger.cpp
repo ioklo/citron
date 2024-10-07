@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "NotLocationErrorLogger.h"
 #include <Logging/Logger.h>
 

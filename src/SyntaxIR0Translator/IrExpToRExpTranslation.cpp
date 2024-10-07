@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "IrExpToRExpTranslation.h"
 
-#include <Infra/NotImplementedException.h>
+#include <Infra/Exceptions.h>
 #include <Infra/Ptr.h>
 #include <Logging/Logger.h>
 #include <IR0/RExp.h>
@@ -46,12 +46,12 @@ struct IrBoxRefExpToRExpTranslator : public IrBoxRefExpVisitor
 
 struct IrExpToRExpTranslator : public IrExpVisitor
 {
-    ScopeContextPtr scopeContext;
+    ScopeContextPtr context;
     LoggerPtr logger;
     RExpPtr* result;
 
-    IrExpToRExpTranslator(const ScopeContextPtr& scopeContext, const LoggerPtr& logger, RExpPtr* result)
-        : scopeContext(scopeContext), logger(logger), result(result) { }
+    IrExpToRExpTranslator(const ScopeContextPtr& context, const LoggerPtr& logger, RExpPtr* result)
+        : context(context), logger(logger), result(result) { }
 
     // &NS
     void Visit(IrNamespaceExp& irExp) override
@@ -125,11 +125,11 @@ struct IrExpToRExpTranslator : public IrExpVisitor
 
 } // namespace 
 
-RExpPtr TranslateIrExpToRExp(IrExpPtr irExp, const ScopeContextPtr& scopeContext, const LoggerPtr& logger)
+RExpPtr TranslateIrExpToRExp(IrExp& irExp, const ScopeContextPtr& context, const LoggerPtr& logger)
 {
     RExpPtr result;
-    IrExpToRExpTranslator translator(scopeContext, logger, &result);
-    irExp->Accept(translator);
+    IrExpToRExpTranslator translator(context, logger, &result);
+    irExp.Accept(translator);
     return result;
 }
 

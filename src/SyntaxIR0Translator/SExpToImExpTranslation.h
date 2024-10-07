@@ -5,6 +5,8 @@
 namespace Citron {
 
 class SExp;
+class RType;
+using RTypePtr = std::shared_ptr<RType>;
 
 namespace SyntaxIR0Translator {
 

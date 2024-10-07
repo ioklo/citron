@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ImExpToReExpTranslation.h"
 
-#include <Infra/NotImplementedException.h>
+#include <Infra/Exceptions.h>
 #include <Infra/Ptr.h>
 #include <Logging/Logger.h>
 #include <IR0/REnumDecl.h>

@@ -6,6 +6,8 @@ namespace Citron {
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
 
+class RTypeFactory;
+
 namespace SyntaxIR0Translator {
 
 class ImExp;
@@ -15,7 +17,7 @@ class IrExp;
 using IrExpPtr = std::shared_ptr<IrExp>;
 
 
-IrExpPtr TranslateImExpToIrExp(const ImExpPtr& imExp);
+IrExpPtr TranslateImExpToIrExp(const ImExpPtr& imExp, RTypeFactory& factory);
 
 } // namespace SyntaxIR0Translator
 

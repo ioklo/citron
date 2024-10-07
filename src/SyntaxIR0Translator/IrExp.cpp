@@ -96,14 +96,14 @@ IrLocalRefExp::IrLocalRefExp(const RLocPtr& loc)
 {
 }
 
-IrLocalValueExp::IrLocalValueExp(const RExpPtr& exp)
-    : exp(exp)
+IrLocalValueExp::IrLocalValueExp(RExpPtr&& exp)
+    : exp(std::move(exp))
 {
 
 }
 
-IrDerefedBoxValueExp::IrDerefedBoxValueExp(const RLocPtr& innerLoc, const RTypePtr& innerType)
-    : innerLoc(innerLoc), innerType(innerType)
+IrDerefedBoxValueExp::IrDerefedBoxValueExp(RLocPtr&& innerLoc)
+    : innerLoc(std::move(innerLoc))
 {
 }
 

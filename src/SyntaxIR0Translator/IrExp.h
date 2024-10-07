@@ -255,7 +255,7 @@ public:
     RExpPtr exp;
 
 public:
-    IrLocalValueExp(const RExpPtr& exp);
+    IrLocalValueExp(RExpPtr&& exp);
     void Accept(IrExpVisitor & visitor) override { visitor.Visit(*this); }
 };
 
@@ -268,10 +268,9 @@ class IrDerefedBoxValueExp : public IrExp
 {   
 public:
     RLocPtr innerLoc;
-    RTypePtr innerType;
 
 public:
-    IrDerefedBoxValueExp(const RLocPtr& innerLoc, const RTypePtr& innerType);
+    IrDerefedBoxValueExp(RLocPtr&& innerLoc);
     void Accept(IrExpVisitor & visitor) override { visitor.Visit(*this); }
 };
 

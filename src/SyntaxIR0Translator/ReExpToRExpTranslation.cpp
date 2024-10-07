@@ -67,26 +67,26 @@ public:
 
     void Visit(ReEnumElemMemberVarExp& exp) override
     {
-        auto rLoc = TranslateReEnumElemMemberVarExpToRLoc(exp, context, logger);
+        auto rLoc = TranslateReEnumElemMemberVarExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
     }
 
     void Visit(ReLocalDerefExp& exp) override
     {
-        auto rLoc = TranslateReLocalDerefExpToRLoc(exp, context, logger);
+        auto rLoc = TranslateReLocalDerefExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
     }
 
     // *x
     void Visit(ReBoxDerefExp& exp) override 
     {
-        auto rLoc = TranslateReBoxDerefExpToRLoc(exp, context, logger);
+        auto rLoc = TranslateReBoxDerefExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
     }
 
     void Visit(ReListIndexerExp& exp) override
     {
-        auto rLoc = TranslateReListIndexerExpToRLoc(exp, context, logger);
+        auto rLoc = TranslateReListIndexerExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
     }
 

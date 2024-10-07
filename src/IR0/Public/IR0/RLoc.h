@@ -60,6 +60,7 @@ public:
     
 public:
     IR0_API RTempLoc(const RExpPtr& exp);
+    IR0_API RTempLoc(RExpPtr&& exp);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };

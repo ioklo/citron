@@ -8,6 +8,8 @@
 
 namespace Citron {
 
+class RTypeFactory;
+
 namespace SyntaxIR0Translator {
 
 class ReThisVarExp;
@@ -28,7 +30,7 @@ class ReExp
 {
 public:
     virtual void Accept(ReExpVisitor& visitor) = 0;
-    virtual RTypePtr GetType() = 0;
+    virtual RTypePtr GetType(RTypeFactory& factory) = 0;
 };
 
 using ReExpPtr = std::shared_ptr<ReExp>;
@@ -56,7 +58,7 @@ public:
 public:
     ReThisVarExp(const RTypePtr& type);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType() override { return type; }
+    RTypePtr GetType(RTypeFactory& factory) override { return type; }
 };
 
 class ReLocalVarExp : public ReExp
@@ -68,7 +70,7 @@ public:
 public:
     ReLocalVarExp(const RTypePtr& type, const std::string& name);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType() override { return type; }
+    RTypePtr GetType(RTypeFactory& factory) override { return type; }
 };
 
 class ReLambdaMemberVarExp : public ReExp
@@ -80,7 +82,7 @@ public:
 public:
     ReLambdaMemberVarExp(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType() override;
+    RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 class ReClassMemberVarExp : public ReExp
@@ -94,7 +96,7 @@ public:
 public:
     ReClassMemberVarExp(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType() override;
+    RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 class ReStructMemberVarExp : public ReExp
@@ -108,7 +110,7 @@ public:
 public:
     ReStructMemberVarExp(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType() override;
+    RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 class ReEnumElemMemberVarExp : public ReExp
@@ -121,7 +123,7 @@ public:
 public:
     ReEnumElemMemberVarExp(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType() override;
+    RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 class ReLocalDerefExp : public ReExp
@@ -132,7 +134,7 @@ public:
 public:
     ReLocalDerefExp(const ReExpPtr& target);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType() override;
+    RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 class ReBoxDerefExp : public ReExp
@@ -143,7 +145,7 @@ public:
 public:
     ReBoxDerefExp(const ReExpPtr& target);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType() override;
+    RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 class ReListIndexerExp : public ReExp
@@ -156,7 +158,7 @@ public:
 public:
     ReListIndexerExp(const ReExpPtr& instance, const RLocPtr& index, const RTypePtr& itemType);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType() override { return itemType; }
+    RTypePtr GetType(RTypeFactory& factory) override { return itemType; }
 };
 
 // 기타의 경우, Value
@@ -169,7 +171,7 @@ public:
     ReElseExp(const RExpPtr& ptr);
 
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType() override;
+    RTypePtr GetType(RTypeFactory& factory) override;
 };
 
 

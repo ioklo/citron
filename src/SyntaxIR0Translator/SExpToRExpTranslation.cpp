@@ -4,7 +4,7 @@
 #include <variant>
 
 #include <Infra/Ptr.h>
-#include <Infra/NotImplementedException.h>
+#include <Infra/Exceptions.h>
 #include <Infra/Unreachable.h>
 #include <Logging/Logger.h>
 #include <Syntax/Syntax.h>
@@ -76,10 +76,10 @@ optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const 
 
     if (auto* expElem = dynamic_cast<SExpStringExpElement*>(elem.get()))
     {
-        auto reExp = TranslateSExpToReExp(*expElem->exp, /* hintType */ nullptr, context);
+        auto reExp = TranslateSExpToReExp(*expElem->exp, /* hintType */ nullptr, context, logger, factory);
         if (!reExp) return nullopt;
 
-        auto reExpType = reExp->GetType();
+        auto reExpType = reExp->GetType(factory);
 
         // 캐스팅이 필요하다면 
         if (reExpType == factory.MakeIntType())
@@ -157,7 +157,7 @@ RExpPtr TranslateSIntUnaryAssignExpToRExp(SExp& operand, RInternalUnaryAssignOpe
     // throws NotLocationException
     
     NotLocationErrorLogger notLocationErrorLogger(logger, &Logger::Fatal_AssignableExpressionIsAllowedOnly);
-    auto rOperand = TranslateSExpToRLoc(operand, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &notLocationErrorLogger, context, logger);
+    auto rOperand = TranslateSExpToRLoc(operand, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &notLocationErrorLogger, context, logger, factory);
     if (!rOperand) return nullptr;
 
     // int type 검사, exact match
@@ -177,7 +177,7 @@ RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SUnaryOpExp& sExp, const ScopeCont
     // ref 처리
     if (sExp.kind == SUnaryOpKind::Ref)
     {
-        return TranslateSExpRefToRExp(*sExp.operand, context);
+        return TranslateSExpRefToRExp(*sExp.operand, context, logger);
     }
 
     logger->SetSyntax(sExp.operand);
@@ -233,7 +233,7 @@ RExpPtr TranslateSAssignBinaryOpExpToRExp(SBinaryOpExp& exp, const ScopeContextP
 
     logger->SetSyntax(exp.operand0);
     NotLocationErrorLogger notLocationErrorLogger(logger, &Logger::Fatal_LeftOperandIsNotAssignable);
-    auto rDestLoc = TranslateSExpToRLoc(*exp.operand0, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &notLocationErrorLogger, context, logger);
+    auto rDestLoc = TranslateSExpToRLoc(*exp.operand0, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &notLocationErrorLogger, context, logger, factory);
     if (!rDestLoc) return nullptr;
 
     // 안되는거 체크
@@ -260,7 +260,7 @@ RExpPtr TranslateSAssignBinaryOpExpToRExp(SBinaryOpExp& exp, const ScopeContextP
     auto rSrcExp = TranslateSExpToRExp(*exp.operand1, /*hintType*/ rDestLocType, context, logger, factory);
     if (!rSrcExp) return nullptr;
 
-    auto rWrappedSrcExp = CastRExp(rSrcExp, rDestLocType, context, logger);
+    auto rWrappedSrcExp = CastRExp(rSrcExp, rDestLocType, *context, logger);
     if (!rWrappedSrcExp) return nullptr;
 
     return MakePtr<RAssignExp>(std::move(rDestLoc), std::move(rWrappedSrcExp));
@@ -287,10 +287,10 @@ RExpPtr TranslateSBinaryOpExpToRExp(SBinaryOpExp& exp, const ScopeContextPtr& co
         
         for(auto& info : equalInfos)
         {
-            auto castExp0 = TryCastRExp(operand0, info.operandType0, context);
+            auto castExp0 = TryCastRExp(operand0, info.operandType0, *context);
             if (!castExp0) continue;
 
-            auto castExp1 = TryCastRExp(operand1, info.operandType1, context);
+            auto castExp1 = TryCastRExp(operand1, info.operandType1, *context);
             if (!castExp1) continue;
 
             // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
@@ -303,10 +303,10 @@ RExpPtr TranslateSBinaryOpExpToRExp(SBinaryOpExp& exp, const ScopeContextPtr& co
     auto matchedInfos = context->GetBinOpInfos(exp.kind);
     for(auto& info : matchedInfos)
     {
-        auto castExp0 = TryCastRExp(operand0, info.operandType0, context);
+        auto castExp0 = TryCastRExp(operand0, info.operandType0, *context);
         if (!castExp0) continue;
 
-        auto castExp1 = TryCastRExp(operand1, info.operandType1, context);
+        auto castExp1 = TryCastRExp(operand1, info.operandType1, *context);
         if (!castExp1) continue;
 
         // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
@@ -373,7 +373,7 @@ RExpPtr TranslateSListExpToRExp(SListExp& exp, const ScopeContextPtr& context, c
 
 RExpPtr TranslateSNewExpToRExp(SNewExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory) // throws ErrorCodeException
 {
-    auto rType = context->MakeType(*exp.type);
+    auto rType = context->MakeType(*exp.type, factory);
     if (rType->GetCustomTypeKind() == RCustomTypeKind::Class)
     {
         logger->Fatal_TypeIsNotClass();
@@ -423,7 +423,7 @@ RExpPtr TranslateSIsExpToRExp(SIsExp& exp, const ScopeContextPtr& context, const
     auto targetType = target->GetType(factory);
     auto targetTypeKind = targetType->GetCustomTypeKind();
 
-    auto testType = context->MakeType(*exp.type);
+    auto testType = context->MakeType(*exp.type, factory);
     auto testTypeKind = testType->GetCustomTypeKind();
 
     // 5가지 케이스로 나뉜다
@@ -461,7 +461,7 @@ RExpPtr TranslateSAsExpToRExp(SAsExp& exp, const ScopeContextPtr& context, const
     auto rTarget = TranslateSExpToRExp(*exp.exp, /* hintType */ nullptr, context, logger, factory);
     if (!rTarget) return nullptr;    
 
-    auto rTestType = context->MakeType(*exp.type);
+    auto rTestType = context->MakeType(*exp.type, factory);
 
     return MakeRAsExp(rTarget->GetType(factory), rTestType, std::move(rTarget));
 }
@@ -485,7 +485,7 @@ public:
     // S.Exp -> IntermediateExp -> ResolvedExp -> R.Exp
     void HandleDefault(SExp& exp)
     {
-        auto reExp = TranslateSExpToReExp(exp, hintType, context);
+        auto reExp = TranslateSExpToReExp(exp, hintType, context, logger, factory);
 
         if (reExp)
             *result = TranslateReExpToRExp(*reExp, context, logger, factory);

@@ -2,6 +2,7 @@
 #include "ImExpToIrExpTranslation.h"
 
 #include <Infra/Ptr.h>
+#include <Infra/Exceptions.h>
 #include <IR0/RClassMemberVarDecl.h>
 #include <IR0/RStructMemberVarDecl.h>
 
@@ -13,9 +14,10 @@ namespace Citron::SyntaxIR0Translator {
 struct ImExpToIrExpTranslator : public ImExpVisitor
 {
     IrExpPtr* result;
+    RTypeFactory& factory;
 
-    ImExpToIrExpTranslator(IrExpPtr* result)
-        : result(result)
+    ImExpToIrExpTranslator(IrExpPtr* result, RTypeFactory& factory)
+        : result(result), factory(factory)
     {
     }
 
@@ -78,7 +80,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     // &id
     void Visit(ImLocalVarExp& imExp) override 
     { 
-        *result = MakePtr<IrLocalRefExp>(MakePtr<RLocalVarLoc>(imExp.name), imExp.type);
+        *result = MakePtr<IrLocalRefExp>(MakePtr<RLocalVarLoc>(imExp.name, imExp.type));
     }
 
     // &x
@@ -97,7 +99,8 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         }
         else // &this.x
         {
-            *result = MakePtr<IrClassMemberBoxRefExp>(MakePtr<RThisLoc>(), imExp.decl, imExp.typeArgs);
+            auto classType = imExp.decl->GetClassType(imExp.typeArgs, factory);
+            *result = MakePtr<IrClassMemberBoxRefExp>(MakePtr<RThisLoc>(classType), imExp.decl, imExp.typeArgs);
         }
     }
 
@@ -112,7 +115,8 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            auto rDerefThisLoc = MakePtr<RLocalDerefLoc>(MakePtr<RThisLoc>());
+            auto structType = imExp.decl->GetStructType(imExp.typeArgs, factory);
+            auto rDerefThisLoc = MakePtr<RLocalDerefLoc>(MakePtr<RThisLoc>(structType));
             *result = MakePtr<IrLocalRefExp>(MakePtr<RStructMemberLoc>(rDerefThisLoc, imExp.decl, imExp.typeArgs));
         }
     }
@@ -149,10 +153,10 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     }
 };
 
-IrExpPtr TranslateImExpToIrExp(const ImExpPtr& imExp)
+IrExpPtr TranslateImExpToIrExp(const ImExpPtr& imExp, RTypeFactory& factory)
 {
     IrExpPtr result;
-    ImExpToIrExpTranslator translator(&result);
+    ImExpToIrExpTranslator translator(&result, factory);
     imExp->Accept(translator);
 
     return result;

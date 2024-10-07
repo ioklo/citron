@@ -154,7 +154,7 @@
     <ClInclude Include="Public\Infra\IWriter.h" />
     <ClInclude Include="Public\Infra\Json.h" />
     <ClInclude Include="Public\Infra\make_vector.h" />
-    <ClInclude Include="Public\Infra\NotImplementedException.h" />
+    <ClInclude Include="Public\Infra\Exceptions.h" />
     <ClInclude Include="Public\Infra\Ptr.h" />
     <ClInclude Include="Public\Infra\StringWriter.h" />
     <ClInclude Include="Public\Infra\Unreachable.h" />

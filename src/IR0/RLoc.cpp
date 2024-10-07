@@ -1,6 +1,6 @@
 #include "RLoc.h"
 
-#include <Infra/NotImplementedException.h>
+#include <Infra/Exceptions.h>
 
 #include "RExp.h"
 #include "RLambdaMemberVarDecl.h"
@@ -13,6 +13,11 @@ namespace Citron {
 
 RTempLoc::RTempLoc(const RExpPtr& exp)
     : exp(exp)
+{
+}
+
+RTempLoc::RTempLoc(RExpPtr&& exp)
+    : exp(std::move(exp))
 {
 }
 

@@ -5,7 +5,7 @@
 #include <memory>
 
 #include <Infra/Ptr.h>
-#include <Infra/NotImplementedException.h>
+#include <Infra/Exceptions.h>
 
 #include <IR0/RModuleDecl.h>
 #include <IR0/RNamespaceDecl.h>

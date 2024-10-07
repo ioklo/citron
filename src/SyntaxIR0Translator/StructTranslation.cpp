@@ -3,7 +3,7 @@
 
 #include <Infra/Unreachable.h>
 #include <Infra/Ptr.h>
-#include <Infra/NotImplementedException.h>
+#include <Infra/Exceptions.h>
 
 #include "SkeletonPhaseContext.h"
 #include "MemberDeclPhaseContext.h"
