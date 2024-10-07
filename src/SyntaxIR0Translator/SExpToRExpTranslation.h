@@ -41,22 +41,18 @@ using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 RExpPtr TranslateSNullLiteralExpToRExp(SNullLiteralExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger);
 RExpPtr TranslateSBoolLiteralExpToRExp(SBoolLiteralExp& exp);
 RExpPtr TranslateSIntLiteralExpToRExp(SIntLiteralExp& exp);
-
-std::optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const SStringExpElementPtr& elem, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 std::shared_ptr<RStringExp> TranslateSStringExpToRStringExp(SStringExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-
 RExpPtr TranslateSIntUnaryAssignExpToRExp(SExp& operand, RInternalUnaryAssignOperator op, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SUnaryOpExp& sExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RExpPtr TranslateSAssignBinaryOpExpToRExp(SBinaryOpExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RExpPtr TranslateBinaryOp(SBinaryOpExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RExpPtr TranslateSLambdaExpToRExp(const std::shared_ptr<SLambdaExp>& sExp, const LoggerPtr& logger);
+RExpPtr TranslateSBinaryOpExpToRExp(SBinaryOpExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RExpPtr TranslateSLambdaExpToRExp(SLambdaExp& sExp, const LoggerPtr& logger);
 RExpPtr TranslateSListExpToRExp(SListExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RExpPtr TranslateSNewExpToRExp(SNewExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory); // throws ErrorCodeException
 RExpPtr TranslateSCallExpToRExp(SCallExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger);
 RExpPtr TranslateSBoxExpToRExp(SBoxExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RExpPtr TranslateSIsExpToRExp(SIsExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RExpPtr TranslateSAsExpToRExp(SAsExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-
 
 RExpPtr TranslateSExpToRExp(SExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 
