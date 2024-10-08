@@ -65,6 +65,9 @@
     <ClCompile Include="IrExpAndMemberNameToIrExpBinding.cpp">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClCompile>
+    <ClCompile Include="ImExpAndMemberNameToImExpBinding.cpp">
+      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -131,6 +134,9 @@
     </ClInclude>
     <ClInclude Include="IrExpAndMemberNameToIrExpBinding.h">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="ImExpAndMemberNameToImExpBinding.h">
+      <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

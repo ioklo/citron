@@ -12,6 +12,11 @@ RTypeArguments::RTypeArguments(const std::vector<RTypePtr>& items)
 {
 }
 
+size_t RTypeArguments::GetCount()
+{
+    return items.size();
+}
+
 const RTypePtr& RTypeArguments::Get(int i)
 {
     return items[i];

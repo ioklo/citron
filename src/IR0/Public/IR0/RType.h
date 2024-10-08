@@ -8,6 +8,7 @@
 
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
+#include "RNames.h"
 
 namespace Citron
 {
@@ -23,6 +24,8 @@ class RBoxPtrType;   // inline type
 class RInstanceType; // indirect
 class RDecl;
 using RDeclPtr = std::shared_ptr<RDecl>;
+class RMember;
+using RMemberPtr = std::shared_ptr<RMember>;
 
 class RTypeArguments;
 using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
@@ -60,6 +63,7 @@ public:
     virtual ~RType() { }
     virtual RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
     virtual RCustomTypeKind GetCustomTypeKind() { return RCustomTypeKind::None; }
+    virtual RMemberPtr GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount);
 
     virtual void Accept(RTypeVisitor& visitor) = 0;
 };

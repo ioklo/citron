@@ -126,12 +126,11 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 // outermost로 변경
 // IntermediateExp -> TranslationResult<ResolvedExp>
 
-ReExpPtr TranslateImExpToReExp(const ImExpPtr& imExp, const ScopeContextPtr& context, const LoggerPtr& logger)
+ReExpPtr TranslateImExpToReExp(ImExp& imExp, const ScopeContextPtr& context, const LoggerPtr& logger)
 {
     ReExpPtr result;
     ImExpToReExpTranslator translator(context, logger, &result);
-
-    imExp->Accept(translator);
+    imExp.Accept(translator);
 
     return result;
 }

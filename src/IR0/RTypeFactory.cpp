@@ -131,4 +131,21 @@ shared_ptr<RTypeArguments> RTypeFactory::MakeTypeArguments(const vector<RTypePtr
     return v;
 }
 
+RTypeArgumentsPtr RTypeFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1)
+{
+    auto items = typeArgs0.items;
+    items.insert(items.end(), typeArgs1.items.begin(), typeArgs1.items.end());
+
+    auto key = IR0::TypeArgumentsKey { items };
+    auto i = map.find(key);
+    if (i != map.end())
+        return i->second;
+
+    shared_ptr<RTypeArguments> v { new RTypeArguments(std::move(items)) };
+    map.emplace(key, v);
+    return v;
+}
+
+
+
 } // Citron

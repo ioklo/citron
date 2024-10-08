@@ -210,7 +210,7 @@ std::shared_ptr<RModuleDecl> Translate(
     //                            break;
     //
     //                        default:
-    //                            throw new UnreachableException();
+    //                            throw UnreachableException();
     //            }
     //        }
     //    }

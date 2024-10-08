@@ -4,37 +4,28 @@
 #include <vector>
 
 #include <IR0/RTypeArguments.h>
+#include <IR0/RDeclWIthOuterTypeArgs.h>
 
 namespace Citron {
-
 namespace SyntaxIR0Translator {
-
-template<typename TFuncDecl>
-struct DeclWithOuterTypeArgs
-{
-    std::shared_ptr<TFuncDecl> decl;
-    RTypeArgumentsPtr outerTypeArgs;
-};
 
 template<typename TFuncDecl>
 class FuncsWithPartialTypeArgsComponent
 {
-    std::vector<DeclWithOuterTypeArgs<TFuncDecl>> data;
-    std::shared_ptr<RTypeArguments> partialTypeArgs; // outer부분을 포함한 partial
+    std::vector<RDeclWithOuterTypeArgs<TFuncDecl>> items;
+    std::shared_ptr<RTypeArguments> partialTypeArgsExceptOuter; // outer부분을 제외한 typeArgs면서 완전하지 않을수도 있는 typeArgs
 
 public:
-    FuncsWithPartialTypeArgsComponent(std::vector<DeclWithOuterTypeArgs<TFuncDecl>>&& data, const std::shared_ptr<RTypeArguments>& partialTypeArgs)
-        : data(std::move(data)), partialTypeArgs(partialTypeArgs)
+    FuncsWithPartialTypeArgsComponent(const std::vector<RDeclWithOuterTypeArgs<TFuncDecl>> items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter)
+        : items(items), partialTypeArgsExceptOuter(partialTypeArgsExceptOuter)
     {
-
     }
 
-    size_t GetCount() { return data.size(); }
-    const std::shared_ptr<TFuncDecl>& GetDecl(size_t i) { return data[i].decl; }
-    RTypeArgumentsPtr GetOuterTypeArgs(int i) { return data[i].outerTypeArgs; }
-    RTypeArgumentsPtr GetPartialTypeArgs() { return partialTypeArgs; }
+    size_t GetCount() { return items.size(); }
+    const std::shared_ptr<TFuncDecl>& GetDecl(size_t i) { return items[i].decl; }
+    RTypeArgumentsPtr GetOuterTypeArgs(int i) { return items[i].outerTypeArgs; }
+    RTypeArgumentsPtr GetPartialTypeArgsExceptOuter() { return partialTypeArgsExceptOuter; }
 };
 
 } // namespace SyntaxIR0Translator
-
 } // namespace Citron

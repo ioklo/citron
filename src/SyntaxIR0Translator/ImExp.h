@@ -75,7 +75,7 @@ public:
     std::shared_ptr<RNamespaceDecl> _namespace; // namespace를 뭘로 저장하고 있어야 하나
 
 public:
-    ImNamespaceExp(std::shared_ptr<RNamespaceDecl> _namespace);
+    ImNamespaceExp(const std::shared_ptr<RNamespaceDecl>& _namespace);
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -87,13 +87,13 @@ class ImGlobalFuncsExp
     using FuncComp = FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>;
 
 public:
-    ImGlobalFuncsExp(std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>&& data, const std::shared_ptr<RTypeArguments>& partialTypeArgs);
+    ImGlobalFuncsExp(const std::vector<RDeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter);
 
 public:
     using FuncComp::GetCount;
     using FuncComp::GetDecl;
     using FuncComp::GetOuterTypeArgs;
-    using FuncComp::GetPartialTypeArgs;
+    using FuncComp::GetPartialTypeArgsExceptOuter;
 
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -117,7 +117,7 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
-    ImClassExp(const std::shared_ptr<RClassDecl>& classDecl, const RTypeArgumentsPtr& typeArgs);
+    ImClassExp(const std::shared_ptr<RClassDecl>& classDecl, RTypeArgumentsPtr&& typeArgs);
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -139,13 +139,15 @@ private:
     using FuncComp = FuncsWithPartialTypeArgsComponent<RClassMemberFuncDecl>;
 
 public:
-    ImClassMemberFuncsExp(std::vector<DeclWithOuterTypeArgs<RClassMemberFuncDecl>>&& data, const std::shared_ptr<RTypeArguments>& partialTypeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImClassMemberFuncsExp(const std::vector<RDeclWithOuterTypeArgs<RClassMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     using FuncComp::GetCount;
     using FuncComp::GetDecl;
     using FuncComp::GetOuterTypeArgs;
-    using FuncComp::GetPartialTypeArgs;
+    using FuncComp::GetPartialTypeArgsExceptOuter;
+
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class ImStructExp : public ImExp
@@ -155,7 +157,9 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
-    ImStructExp(const std::shared_ptr<RStructDecl>& structDecl, const RTypeArgumentsPtr& typeArgs);
+    ImStructExp(const std::shared_ptr<RStructDecl>& structDecl, RTypeArgumentsPtr&& typeArgs);
+
+public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -164,15 +168,18 @@ class ImStructMemberFuncsExp
     , private FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>
 {
     using FuncComp = FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>;
+public:
+    bool hasExplicitInstance;
+    ReExpPtr explicitInstance;
 
 public:
-    ImStructMemberFuncsExp(std::vector<DeclWithOuterTypeArgs<RStructMemberFuncDecl>>&& data, const std::shared_ptr<RTypeArguments>& partialTypeArgs);
+    ImStructMemberFuncsExp(const std::vector<RDeclWithOuterTypeArgs<RStructMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     using FuncComp::GetCount;
     using FuncComp::GetDecl;
     using FuncComp::GetOuterTypeArgs;
-    using FuncComp::GetPartialTypeArgs;
+    using FuncComp::GetPartialTypeArgsExceptOuter;
 
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };

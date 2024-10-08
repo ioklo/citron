@@ -3,13 +3,13 @@
 
 namespace Citron::SyntaxIR0Translator {
 
-ImNamespaceExp::ImNamespaceExp(std::shared_ptr<RNamespaceDecl> _namespace)
+ImNamespaceExp::ImNamespaceExp(const std::shared_ptr<RNamespaceDecl>& _namespace)
     : _namespace(_namespace)
 {
 }
 
-ImGlobalFuncsExp::ImGlobalFuncsExp(std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>&& data, const std::shared_ptr<RTypeArguments>& partialTypeArgs)
-    : FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>(std::move(data), partialTypeArgs)
+ImGlobalFuncsExp::ImGlobalFuncsExp(const std::vector<RDeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgs)
+    : FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>(items, partialTypeArgs)
 {
 }
 
@@ -18,24 +18,25 @@ ImTypeVarExp::ImTypeVarExp(const std::shared_ptr<RTypeVarType>& type)
 {
 }
 
-ImClassExp::ImClassExp(const std::shared_ptr<RClassDecl>& classDecl, const RTypeArgumentsPtr& typeArgs)
-    : classDecl(classDecl), typeArgs(typeArgs)
+ImClassExp::ImClassExp(const std::shared_ptr<RClassDecl>& classDecl, RTypeArgumentsPtr&& typeArgs)
+    : classDecl(classDecl), typeArgs(std::move(typeArgs))
 {
 }
 
-ImClassMemberFuncsExp::ImClassMemberFuncsExp(std::vector<DeclWithOuterTypeArgs<RClassMemberFuncDecl>>&& data, const std::shared_ptr<RTypeArguments>& partialTypeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
-    : FuncsWithPartialTypeArgsComponent<RClassMemberFuncDecl>(std::move(data), partialTypeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
+ImClassMemberFuncsExp::ImClassMemberFuncsExp(const std::vector<RDeclWithOuterTypeArgs<RClassMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+    : FuncsWithPartialTypeArgsComponent<RClassMemberFuncDecl>(items, partialTypeArgsExceptOuter), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
-ImStructExp::ImStructExp(const std::shared_ptr<RStructDecl>& structDecl, const RTypeArgumentsPtr& typeArgs)
-    : structDecl(structDecl), typeArgs(typeArgs)
+ImStructExp::ImStructExp(const std::shared_ptr<RStructDecl>& structDecl, RTypeArgumentsPtr&& typeArgs)
+    : structDecl(structDecl), typeArgs(std::move(typeArgs))
 {
 }
 
-ImStructMemberFuncsExp::ImStructMemberFuncsExp(std::vector<DeclWithOuterTypeArgs<RStructMemberFuncDecl>>&& data, const std::shared_ptr<RTypeArguments>& partialTypeArgs)
-    : FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>(std::move(data), partialTypeArgs)
+ImStructMemberFuncsExp::ImStructMemberFuncsExp(const std::vector<RDeclWithOuterTypeArgs<RStructMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+    : FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>(items, partialTypeArgsExceptOuter), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
+
 }
 
 ImEnumExp::ImEnumExp(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs)

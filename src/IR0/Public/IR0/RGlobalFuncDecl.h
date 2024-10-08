@@ -41,7 +41,7 @@ class RExternalGlobalFuncDecl : public RGlobalFuncDecl
 {
     std::shared_ptr<MGlobalFuncDecl> externalFuncDecl;
 };
-
+ 
 class RInternalGlobalFuncDecl 
     : public RGlobalFuncDecl
     , private RCommonFuncDeclComponent

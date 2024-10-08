@@ -108,6 +108,8 @@ public:
     IR0_API std::shared_ptr<RBoxPtrType> MakeBoxPtrType(RTypePtr&& innerType);
     IR0_API std::shared_ptr<RInstanceType> MakeInstanceType(const RDeclPtr& decl, const RTypeArgumentsPtr& typeArgs);
     IR0_API RTypeArgumentsPtr MakeTypeArguments(const std::vector<RTypePtr>& items);
+    IR0_API RTypeArgumentsPtr MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1);
+
 
     // utilities
     IR0_API RTypePtr MakeBoolType();

@@ -16,10 +16,8 @@ class ReExp;
 using ReExpPtr = std::shared_ptr<ReExp>;
 
 class ImExp;
-using ImExpPtr = std::shared_ptr<ImExp>;
 
-
-ReExpPtr TranslateImExpToReExp(const ImExpPtr& imExp, const ScopeContextPtr& context, const LoggerPtr& logger);
+ReExpPtr TranslateImExpToReExp(ImExp& imExp, const ScopeContextPtr& context, const LoggerPtr& logger);
 
 } // namespace SyntaxIR0Translator
 

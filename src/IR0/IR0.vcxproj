@@ -146,6 +146,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\IR0\RDeclWIthOuterTypeArgs.h" />
+    <ClInclude Include="Public\IR0\RMember.h" />
     <ClInclude Include="Public\IR0\RAccessor.h" />
     <ClInclude Include="Public\IR0\RBodyDeclOuter.h" />
     <ClInclude Include="Public\IR0\RClassConstructorDecl.h" />
@@ -198,6 +200,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="RMember.cpp" />
     <ClCompile Include="RClassConstructorDecl.cpp" />
     <ClCompile Include="RClassDecl.cpp" />
     <ClCompile Include="RClassMemberFuncDecl.cpp" />

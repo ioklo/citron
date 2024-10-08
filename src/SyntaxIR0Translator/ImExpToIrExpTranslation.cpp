@@ -28,7 +28,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
 
     void Visit(ImGlobalFuncsExp& imExp) override 
     { 
-        // static_assert(false); 
+        static_assert(false); 
         *result = nullptr;
     }
 
@@ -44,7 +44,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
 
     void Visit(ImClassMemberFuncsExp& imExp) override 
     { 
-        // static_assert(false);
+        static_assert(false);
         *result = nullptr;
     }
 
@@ -55,7 +55,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
 
     void Visit(ImStructMemberFuncsExp& imExp) override
     {
-        // static_assert(false);
+        static_assert(false);
         *result = nullptr;
     }
 
@@ -66,7 +66,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
 
     void Visit(ImEnumElemExp& imExp) override 
     { 
-        // static_assert(false); 
+        static_assert(false); 
         *result = nullptr;
     }
 

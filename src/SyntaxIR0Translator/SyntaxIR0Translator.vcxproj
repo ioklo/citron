@@ -39,6 +39,7 @@
     <ClCompile Include="BodyPhaseContext.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
     <ClCompile Include="ImExp.cpp" />
+    <ClCompile Include="ImExpAndMemberNameToImExpBinding.cpp" />
     <ClCompile Include="ImExpAndSArgsToRExpBinding.cpp" />
     <ClCompile Include="ImExpToIrExpTranslation.cpp" />
     <ClCompile Include="ImExpToReExpTranslation.cpp" />
@@ -76,6 +77,7 @@
     <ClInclude Include="BodyPhaseContext.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
     <ClInclude Include="ImExp.h" />
+    <ClInclude Include="ImExpAndMemberNameToImExpBinding.h" />
     <ClInclude Include="ImExpAndSArgsToRExpBinding.h" />
     <ClInclude Include="ImExpToIrExpTranslation.h" />
     <ClInclude Include="ImExpToReExpTranslation.h" />

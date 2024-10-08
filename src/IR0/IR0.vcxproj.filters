@@ -123,6 +123,12 @@
     <ClInclude Include="Public\IR0\RTypeFactory.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
+    <ClInclude Include="Public\IR0\RMember.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RDeclWIthOuterTypeArgs.h">
+      <Filter>Symbols\00 Abstraction</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -206,6 +212,9 @@
     </ClCompile>
     <ClCompile Include="RStructDecl.cpp">
       <Filter>Symbols\07 Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="RMember.cpp">
+      <Filter>Symbols\00 Abstraction</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

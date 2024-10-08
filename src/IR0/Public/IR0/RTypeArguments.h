@@ -22,6 +22,7 @@ private:
     RTypeArguments(const std::vector<RTypePtr>& items);
 
 public:
+    IR0_API size_t GetCount();
     IR0_API const RTypePtr& Get(int i);
     IR0_API std::shared_ptr<RTypeArguments> Apply(RTypeArguments& typeArgs, RTypeFactory& typeFactory);
 };

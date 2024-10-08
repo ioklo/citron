@@ -11,6 +11,8 @@ class RType;
 using RTypePtr = std::shared_ptr<RType>;
 class RTypeFactory;
 
+class RDecl;
+
 enum class SBinaryOpKind;
 
 namespace SyntaxIR0Translator {
@@ -30,6 +32,7 @@ public:
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);
 
     bool IsListType(const RTypePtr& type, RTypePtr* itemType);
+    bool CanAccess(RDecl& decl);
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;
