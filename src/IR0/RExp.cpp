@@ -110,7 +110,7 @@ RTypePtr RLocalRefExp::GetType(RTypeFactory& factory)
     return factory.MakeLocalPtrType(move(innerLocType));
 }
 
-RCastBoxedLambdaToFuncExp::RCastBoxedLambdaToFuncExp(const RExpPtr& exp, const shared_ptr<RFuncType>& funcType)
+RCastBoxedLambdaToFuncExp::RCastBoxedLambdaToFuncExp(const RExpPtr& exp, const shared_ptr<RType_Func>& funcType)
     : exp(exp), funcType(funcType)
 {
 }
@@ -275,7 +275,7 @@ RTypePtr RNewClassExp::GetType(RTypeFactory& factory)
     auto classDecl = constructorDecl->_class.lock();
     assert(classDecl);
 
-    return factory.MakeInstanceType(classDecl, typeArgs);
+    return factory.MakeClassType(classDecl, typeArgs);
 }
 
 /////////////////////////////////////
@@ -308,7 +308,7 @@ RNewStructExp::RNewStructExp(const shared_ptr<RStructConstructorDecl>& construct
 RTypePtr RNewStructExp::GetType(RTypeFactory& factory)
 {
     auto structDecl = constructorDecl->_struct.lock();
-    return factory.MakeInstanceType(structDecl, typeArgs);
+    return factory.MakeStructType(structDecl, typeArgs);
 }
 
 RCallStructMemberFuncExp::RCallStructMemberFuncExp(const shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, const RLocPtr& instance, const vector<RArgument>& args)
@@ -328,7 +328,7 @@ RNewEnumElemExp::RNewEnumElemExp(const shared_ptr<REnumElemDecl>& enumElemDecl, 
 
 RTypePtr RNewEnumElemExp::GetType(RTypeFactory& factory)
 {
-    return factory.MakeInstanceType(enumElemDecl, typeArgs);
+    return factory.MakeEnumElemType(enumElemDecl, typeArgs);
 }
 
 RCastEnumElemToEnumExp::RCastEnumElemToEnumExp(const RExpPtr& src, const RTypePtr& enumType)

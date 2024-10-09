@@ -9,13 +9,20 @@
 
 namespace Citron {
 
+class RClassDecl;
+class RStructDecl;
+class REnumDecl;
+class REnumElemDecl;
+class RInterfaceDecl;
+class RLambdaDecl;
+
 namespace IR0 {
 
 struct FuncTypeKey
 {
     bool bLocal;
     RTypePtr retType;
-    std::vector<RFuncType::Parameter> params;
+    std::vector<RType_Func::Parameter> params;
 
     bool operator==(const FuncTypeKey& other) const noexcept
     {
@@ -35,9 +42,10 @@ struct FuncTypeKeyHasher
     }
 };
 
+template<typename TDecl>
 struct InstanceTypeKey
 {
-    RDeclPtr decl;
+    std::shared_ptr<TDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
     bool operator==(const InstanceTypeKey& other) const noexcept
@@ -46,9 +54,10 @@ struct InstanceTypeKey
     }
 };
 
+template<typename TDecl>
 struct InstanceTypeKeyHasher
 {
-    size_t operator()(const InstanceTypeKey& key) const noexcept
+    size_t operator()(const InstanceTypeKey<TDecl>& key) const noexcept
     {
         size_t s = 0;
         Citron::hash_combine(s, key.decl);
@@ -84,32 +93,49 @@ struct TypeArgumentsKeyHasher
 class RTypeFactory
 {
     // inner type -> nullable type
-    std::unordered_map<RTypePtr, std::shared_ptr<RNullableValueType>> nullableValueTypes;
-    std::unordered_map<RTypePtr, std::shared_ptr<RNullableRefType>> nullableRefTypes;
-    std::unordered_map<int, std::shared_ptr<RTypeVarType>> typeVarTypes;
-    std::shared_ptr<RVoidType> voidType;
-    std::unordered_map<std::vector<RTupleMemberVar>, std::shared_ptr<RTupleType>> tupleTypes;
-    std::unordered_map<IR0::FuncTypeKey, std::shared_ptr<RFuncType>, IR0::FuncTypeKeyHasher> funcTypes;
-    std::unordered_map<RTypePtr, std::shared_ptr<RLocalPtrType>> localPtrTypes;
-    std::unordered_map<RTypePtr, std::shared_ptr<RBoxPtrType>> boxPtrTypes;
-    std::unordered_map<IR0::InstanceTypeKey, std::shared_ptr<RInstanceType>, IR0::InstanceTypeKeyHasher> instanceTypes;
+    std::unordered_map<RTypePtr, std::shared_ptr<RType_NullableValue>> nullableValueTypes;
+    std::unordered_map<RTypePtr, std::shared_ptr<RType_NullableRef>> nullableRefTypes;
+    std::unordered_map<int, std::shared_ptr<RType_TypeVar>> typeVarTypes;
+    std::shared_ptr<RType_Void> voidType;
+    std::unordered_map<std::vector<RTupleMemberVar>, std::shared_ptr<RType_Tuple>> tupleTypes;
+    std::unordered_map<IR0::FuncTypeKey, std::shared_ptr<RType_Func>, IR0::FuncTypeKeyHasher> funcTypes;
+    std::unordered_map<RTypePtr, std::shared_ptr<RType_LocalPtr>> localPtrTypes;
+    std::unordered_map<RTypePtr, std::shared_ptr<RType_BoxPtr>> boxPtrTypes;
+
+    template<typename TDecl, typename TType>
+    using InstanceTypeKeyUnorderedMap = std::unordered_map<IR0::InstanceTypeKey<TDecl>, std::shared_ptr<TType>, IR0::InstanceTypeKeyHasher<TDecl>>;
+
+    InstanceTypeKeyUnorderedMap<RClassDecl, RType_Class> classTypes;
+    InstanceTypeKeyUnorderedMap<RStructDecl, RType_Struct> structTypes;
+    InstanceTypeKeyUnorderedMap<REnumDecl, RType_Enum> enumTypes;
+    InstanceTypeKeyUnorderedMap<REnumElemDecl, RType_EnumElem> enumElemTypes;
+    InstanceTypeKeyUnorderedMap<RInterfaceDecl, RType_Interface> interfaceTypes;
+    InstanceTypeKeyUnorderedMap<RLambdaDecl, RType_Lambda> lambdaTypes;
+
     std::unordered_map<IR0::TypeArgumentsKey, RTypeArgumentsPtr, IR0::TypeArgumentsKeyHasher> map;
 
 public:
     IR0_API RTypeFactory();
     
-    IR0_API std::shared_ptr<RNullableValueType> MakeNullableValueType(RTypePtr innerType);
-    IR0_API std::shared_ptr<RNullableRefType> MakeNullableRefType(RTypePtr innerType);
-    IR0_API std::shared_ptr<RTypeVarType> MakeTypeVarType(int index);
-    IR0_API std::shared_ptr<RVoidType> MakeVoidType();
-    IR0_API std::shared_ptr<RTupleType> MakeTupleType(std::vector<RTupleMemberVar>&& memberVar);
-    IR0_API std::shared_ptr<RFuncType> MakeFuncType(bool bLocal, RTypePtr&& retType, std::vector<RFuncType::Parameter>&& params);
-    IR0_API std::shared_ptr<RLocalPtrType> MakeLocalPtrType(RTypePtr&& innerType);
-    IR0_API std::shared_ptr<RBoxPtrType> MakeBoxPtrType(RTypePtr&& innerType);
-    IR0_API std::shared_ptr<RInstanceType> MakeInstanceType(const RDeclPtr& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_NullableValue> MakeNullableValueType(RTypePtr innerType);
+    IR0_API std::shared_ptr<RType_NullableRef> MakeNullableRefType(RTypePtr innerType);
+    IR0_API std::shared_ptr<RType_TypeVar> MakeTypeVarType(int index);
+    IR0_API std::shared_ptr<RType_Void> MakeVoidType();
+    IR0_API std::shared_ptr<RType_Tuple> MakeTupleType(std::vector<RTupleMemberVar>&& memberVar);
+    IR0_API std::shared_ptr<RType_Func> MakeFuncType(bool bLocal, RTypePtr&& retType, std::vector<RType_Func::Parameter>&& params);
+    IR0_API std::shared_ptr<RType_LocalPtr> MakeLocalPtrType(RTypePtr&& innerType);
+    IR0_API std::shared_ptr<RType_BoxPtr> MakeBoxPtrType(RTypePtr&& innerType);
+
+    IR0_API std::shared_ptr<RType_Class> MakeClassType(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_Struct> MakeStructType(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_Enum> MakeEnumType(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_EnumElem> MakeEnumElemType(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_Interface> MakeInterfaceType(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_Lambda> MakeLambdaType(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+
+
     IR0_API RTypeArgumentsPtr MakeTypeArguments(const std::vector<RTypePtr>& items);
     IR0_API RTypeArgumentsPtr MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1);
-
 
     // utilities
     IR0_API RTypePtr MakeBoolType();
@@ -120,6 +146,11 @@ public:
     // declIds
     IR0_API RDeclIdPtr MakeDeclId(std::string&& moduleName, RIdentifier&& identifier);
     IR0_API RDeclIdPtr MakeChildDeclId(RDeclIdPtr&& id, RIdentifier&& identifier);
+
+private:
+    template<typename TDecl, typename TType>
+    std::shared_ptr<TType> MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, const std::shared_ptr<TDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+
 };
 
 } // namespace Citron

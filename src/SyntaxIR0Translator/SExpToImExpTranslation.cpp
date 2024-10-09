@@ -112,13 +112,13 @@ public:
 
             auto targetType = target->GetType(factory);
 
-            if (dynamic_cast<RBoxPtrType*>(targetType.get()))
+            if (dynamic_cast<RType_BoxPtr*>(targetType.get()))
             {
                 *result = MakePtr<ImBoxDerefExp>(std::move(target));
                 return;
             }   
 
-            if (dynamic_cast<RLocalPtrType*>(targetType.get()))
+            if (dynamic_cast<RType_LocalPtr*>(targetType.get()))
             {
                 *result = MakePtr<ImLocalDerefExp>(std::move(target));
                 return;

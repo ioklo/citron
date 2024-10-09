@@ -42,11 +42,11 @@ RExpPtr TranslateSNullLiteralExpToRExp(SNullLiteralExp& exp, const RTypePtr& hin
     if (hintType != nullptr)
     {
         // int? i = null;
-        if (dynamic_cast<RNullableValueType*>(hintType.get()))
+        if (dynamic_cast<RType_NullableValue*>(hintType.get()))
             return MakePtr<RNullableValueNullLiteralExp>(hintType);
 
         // C? c = null;
-        if (dynamic_cast<RNullableRefType*>(hintType.get()))
+        if (dynamic_cast<RType_NullableRef*>(hintType.get()))
             return MakePtr<RNullableRefNullLiteralExp>(hintType);
     }
 
@@ -405,7 +405,7 @@ RExpPtr TranslateSCallExpToRExp(SCallExp& exp, const RTypePtr& hintType, const S
 
 RExpPtr TranslateSBoxExpToRExp(SBoxExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
-    auto* hintBoxPtrType = dynamic_cast<RBoxPtrType*>(hintType.get());
+    auto* hintBoxPtrType = dynamic_cast<RType_BoxPtr*>(hintType.get());
     auto innerHintType = hintBoxPtrType ? hintBoxPtrType->innerType : nullptr;
 
     // hintType전수

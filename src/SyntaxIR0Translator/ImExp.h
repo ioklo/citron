@@ -11,7 +11,7 @@
 namespace Citron {
 
 class RNamespaceDecl;
-class RTypeVarType;
+class RType_TypeVar;
 
 namespace SyntaxIR0Translator {
 
@@ -101,10 +101,10 @@ public:
 class ImTypeVarExp : public ImExp
 {
 public:
-    std::shared_ptr<RTypeVarType> type;
+    std::shared_ptr<RType_TypeVar> type;
 
 public:
-    ImTypeVarExp(const std::shared_ptr<RTypeVarType>& type);
+    ImTypeVarExp(const std::shared_ptr<RType_TypeVar>& type);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }

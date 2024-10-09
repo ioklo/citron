@@ -275,9 +275,9 @@ class RCastBoxedLambdaToFuncExp : public RExp
 {
 public:
     RExpPtr exp;
-    std::shared_ptr<RFuncType> funcType;
+    std::shared_ptr<RType_Func> funcType;
 public:
-    IR0_API RCastBoxedLambdaToFuncExp(const RExpPtr& exp, const std::shared_ptr<RFuncType>& funcType);
+    IR0_API RCastBoxedLambdaToFuncExp(const RExpPtr& exp, const std::shared_ptr<RType_Func>& funcType);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -709,7 +709,7 @@ class RClassIsInterfaceExp : public RExp
 {
 public:
     RExpPtr exp;
-    RTypePtr interfaceType;
+    RTypePtr interfaceType; // func도 interface type이다
 public:
     IR0_API RClassIsInterfaceExp(const RExpPtr& exp, const RTypePtr& interfaceType);
 

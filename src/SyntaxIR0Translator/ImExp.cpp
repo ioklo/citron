@@ -13,7 +13,7 @@ ImGlobalFuncsExp::ImGlobalFuncsExp(const std::vector<RDeclWithOuterTypeArgs<RGlo
 {
 }
 
-ImTypeVarExp::ImTypeVarExp(const std::shared_ptr<RTypeVarType>& type)
+ImTypeVarExp::ImTypeVarExp(const std::shared_ptr<RType_TypeVar>& type)
     : type(type)
 {
 }

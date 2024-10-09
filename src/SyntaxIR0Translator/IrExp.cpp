@@ -13,24 +13,24 @@ IrNamespaceExp::IrNamespaceExp(const shared_ptr<RNamespaceDecl>& decl)
 {
 }
 
-IrTypeVarExp::IrTypeVarExp(const shared_ptr<RTypeVarType>& type)
+IrTypeVarExp::IrTypeVarExp(const shared_ptr<RType_TypeVar>& type)
     : type(type)
 {
 
 }
 
-IrClassExp::IrClassExp(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs)
-    : decl(decl), typeArgs(typeArgs)
+IrClassExp::IrClassExp(const std::shared_ptr<RClassDecl>& decl, RTypeArgumentsPtr&& typeArgs)
+    : decl(decl), typeArgs(std::move(typeArgs))
 {
 }
 
-IrStructExp::IrStructExp(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs)
-    : decl(decl), typeArgs(typeArgs)
+IrStructExp::IrStructExp(const std::shared_ptr<RStructDecl>& decl, RTypeArgumentsPtr&& typeArgs)
+    : decl(decl), typeArgs(std::move(typeArgs))
 {
 }
 
-IrEnumExp::IrEnumExp(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs)
-    : decl(decl), typeArgs(typeArgs)
+IrEnumExp::IrEnumExp(const std::shared_ptr<REnumDecl>& decl, RTypeArgumentsPtr&& typeArgs)
+    : decl(decl), typeArgs(std::move(typeArgs))
 {
 }
 

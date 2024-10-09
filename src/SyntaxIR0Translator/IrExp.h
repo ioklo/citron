@@ -8,7 +8,7 @@
 namespace Citron {
 
 class RNamespaceDecl;
-class RTypeVarType;
+class RType_TypeVar;
 class RClassDecl;
 class RStructDecl;
 class REnumDecl;
@@ -71,10 +71,10 @@ public:
 class IrTypeVarExp : public IrExp
 {
 public:
-    std::shared_ptr<RTypeVarType> type;
+    std::shared_ptr<RType_TypeVar> type;
 
 public:
-    IrTypeVarExp(const std::shared_ptr<RTypeVarType>& type);
+    IrTypeVarExp(const std::shared_ptr<RType_TypeVar>& type);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -85,7 +85,7 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrClassExp(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrClassExp(const std::shared_ptr<RClassDecl>& decl, RTypeArgumentsPtr&& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -96,7 +96,7 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrStructExp(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrStructExp(const std::shared_ptr<RStructDecl>& decl, RTypeArgumentsPtr&& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -107,7 +107,7 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrEnumExp(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrEnumExp(const std::shared_ptr<REnumDecl>& decl, RTypeArgumentsPtr&& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 

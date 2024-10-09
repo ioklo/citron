@@ -108,7 +108,7 @@ RTypePtr RLocalDerefLoc::GetType(RTypeFactory& factory)
 {
     auto type = innerLoc->GetType(factory);
     
-    if (auto* localPtrType = dynamic_cast<RLocalPtrType*>(type.get()))
+    if (auto* localPtrType = dynamic_cast<RType_LocalPtr*>(type.get()))
         return localPtrType->innerType;
 
     // 에러, 어떻게 해야할지 생각해본다
@@ -124,7 +124,7 @@ RTypePtr RBoxDerefLoc::GetType(RTypeFactory& factory)
 {
     auto type = innerLoc->GetType(factory);
 
-    if (auto* boxPtrType = dynamic_cast<RBoxPtrType*>(type.get()))
+    if (auto* boxPtrType = dynamic_cast<RType_BoxPtr*>(type.get()))
         return boxPtrType->innerType;
 
     // 에러, 어떻게 해야할지 생각해본다
@@ -141,7 +141,7 @@ RTypePtr RNullableValueLoc::GetType(RTypeFactory& factory)
 {
     auto type = loc->GetType(factory);
 
-    if (auto* nullableType = dynamic_cast<RNullableValueType*>(type.get()))
+    if (auto* nullableType = dynamic_cast<RType_NullableValue*>(type.get()))
         return nullableType->innerType;
 
     // 에러, 어떻게 해야할지 생각해본다

@@ -24,10 +24,12 @@ public:
 
     LOGGING_API void Fatal_TryAccessingPrivateMember(); // A2011_ResolveIdentifier_TryAccessingPrivateMember
 
+    
     LOGGING_API void Fatal_CantInferElementTypeWithEmptyElement(); // A1701_ListExp_CantInferElementTypeWithEmptyElement
     LOGGING_API void Fatal_MismatchBetweenElementTypes();          // A1702_ListExp_MismatchBetweenElementTypes
 
     LOGGING_API void Fatal_ExpElementShouldBeBoolOrIntOrString(); // A1901_StringExp_ExpElementShouldBeBoolOrIntOrString
+    
 
     LOGGING_API void Fatal_CantGetStaticMemberThroughInstance(); // A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance
     LOGGING_API void Fatal_CantGetTypeMemberThroughInstance();   // A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance
@@ -38,6 +40,10 @@ public:
     LOGGING_API void Fatal_EnumElemCantHaveMember();             // A2009_ResolveIdentifier_EnumElemCantHaveMember
     LOGGING_API void Fatal_CantUseNamespaceAsExpression();       // A2013_ResolveIdentifier_CantUseNamespaceAsExpression
     LOGGING_API void Fatal_ExpressionIsNotLocation();            // A2015_ResolveIdentifier_ExpressionIsNotLocation    
+    LOGGING_API void Fatal_LocalPtrCantHaveMember();             // A2017_ResolveIdentifier_LocalPtrCantHaveMember
+    LOGGING_API void Fatal_LambdaInstanceCantHaveMember();       // A2016_ResolveIdentifier_LambdaInstanceCantHaveMember
+    LOGGING_API void Fatal_FuncInstanceCantHaveMember();         // A2019_ResolveIdentifier_FuncInstanceCantHaveMember
+    LOGGING_API void Fatal_VarWithTypeArg();                     // A2002_ResolveIdentifier_VarWithTypeArg
 
     LOGGING_API void Fatal_CastFailed();                   // A2201_Cast_Failed
 

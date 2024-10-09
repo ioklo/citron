@@ -26,7 +26,7 @@ RTypePtr RStructMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactor
 
 RTypePtr RStructMemberVarDecl::GetStructType(const RTypeArgumentsPtr& typeArgs, RTypeFactory& factory)
 {   
-    return factory.MakeInstanceType(_struct.lock(), typeArgs);
+    return factory.MakeStructType(_struct.lock(), typeArgs);
 }
 
 RDecl* RStructMemberVarDecl::GetOuter()
