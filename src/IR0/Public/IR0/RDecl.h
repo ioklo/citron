@@ -71,10 +71,8 @@ public:
     // 함수는 모든 typeArgs를 나열하지 않아도 type inference로 채울 수 있기 때문에,
     // explicitTypeParamsExceptOuterCount보다 더 많은 typeParams을 갖고 있어도 결과에 반영된다
     virtual RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
+    virtual std::string GetModuleName(); // once overridden by RModuleDecl
     virtual void Accept(RDeclVisitor& visitor) = 0;
-
-    // once overridden by RModuleDecl
-    virtual std::string GetModuleName();
 
 private:
     // non virtual

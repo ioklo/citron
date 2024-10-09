@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 
+#include <IR0/RNames.h>
+
 namespace Citron {
 
 class Logger;
@@ -10,6 +12,8 @@ using LoggerPtr = std::shared_ptr<Logger>;
 
 class RTypeArguments;
 using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
+
+class RTypeFactory;
 
 namespace SyntaxIR0Translator {
 
@@ -19,7 +23,8 @@ using IrExpPtr = std::shared_ptr<IrExp>;
 class ScopeContext;
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 
-IrExpPtr BindIrExpAndMemberNameToIrExp(IrExp& irExp, const std::string& name, RTypeArgumentsPtr&& typeArgs, const ScopeContextPtr& context, const LoggerPtr& logger);
+IrExpPtr BindIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+
 
 } // SyntaxIR0Translator 
 

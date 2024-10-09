@@ -31,6 +31,7 @@ public:
     LOGGING_API void Fatal_ExpElementShouldBeBoolOrIntOrString(); // A1901_StringExp_ExpElementShouldBeBoolOrIntOrString
     
 
+    LOGGING_API void Fatal_VarWithTypeArg();                     // A2002_ResolveIdentifier_VarWithTypeArg
     LOGGING_API void Fatal_CantGetStaticMemberThroughInstance(); // A2003_ResolveIdentifier_CantGetStaticMemberThroughInstance
     LOGGING_API void Fatal_CantGetTypeMemberThroughInstance();   // A2004_ResolveIdentifier_CantGetTypeMemberThroughInstance
     LOGGING_API void Fatal_CantGetInstanceMemberThroughType();   // A2005_ResolveIdentifier_CantGetInstanceMemberThroughType
@@ -38,12 +39,14 @@ public:
     LOGGING_API void Fatal_FuncCantHaveMember();                 // A2006_ResolveIdentifier_FuncCantHaveMember
     LOGGING_API void Fatal_CantUseTypeAsExpression();            // A2008_ResolveIdentifier_CantUseTypeAsExpression
     LOGGING_API void Fatal_EnumElemCantHaveMember();             // A2009_ResolveIdentifier_EnumElemCantHaveMember
+    LOGGING_API void Fatal_EnumInstanceCantHaveMember();         // A2013_ResolveIdentifier_EnumInstanceCantHaveMember // 2013겹침
     LOGGING_API void Fatal_CantUseNamespaceAsExpression();       // A2013_ResolveIdentifier_CantUseNamespaceAsExpression
     LOGGING_API void Fatal_ExpressionIsNotLocation();            // A2015_ResolveIdentifier_ExpressionIsNotLocation    
-    LOGGING_API void Fatal_LocalPtrCantHaveMember();             // A2017_ResolveIdentifier_LocalPtrCantHaveMember
     LOGGING_API void Fatal_LambdaInstanceCantHaveMember();       // A2016_ResolveIdentifier_LambdaInstanceCantHaveMember
+    LOGGING_API void Fatal_LocalPtrCantHaveMember();             // A2017_ResolveIdentifier_LocalPtrCantHaveMember
+    LOGGING_API void Fatal_BoxPtrCantHaveMember();               // A2018_ResolveIdentifier_BoxPtrCantHaveMember
     LOGGING_API void Fatal_FuncInstanceCantHaveMember();         // A2019_ResolveIdentifier_FuncInstanceCantHaveMember
-    LOGGING_API void Fatal_VarWithTypeArg();                     // A2002_ResolveIdentifier_VarWithTypeArg
+    
 
     LOGGING_API void Fatal_CastFailed();                   // A2201_Cast_Failed
 

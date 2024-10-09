@@ -56,9 +56,6 @@
     <ClCompile Include="ImExpToIrExpTranslation.cpp">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ImExpAndSArgsToRExpBinding.cpp">
-      <Filter>ExpTranslation\ImExpTranslation</Filter>
-    </ClCompile>
     <ClCompile Include="BinOpQueryService.cpp">
       <Filter>ExpTranslation</Filter>
     </ClCompile>
@@ -68,6 +65,10 @@
     <ClCompile Include="ImExpAndMemberNameToImExpBinding.cpp">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClCompile>
+    <ClCompile Include="ImCallableAndSArgsToRExpBinding.cpp">
+      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="RFuncAndRArgsToRExpBinding.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -126,9 +127,6 @@
     <ClInclude Include="ImExpToIrExpTranslation.h">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ImExpAndSArgsToRExpBinding.h">
-      <Filter>ExpTranslation\ImExpTranslation</Filter>
-    </ClInclude>
     <ClInclude Include="BinOpQueryService.h">
       <Filter>ExpTranslation</Filter>
     </ClInclude>
@@ -138,6 +136,10 @@
     <ClInclude Include="ImExpAndMemberNameToImExpBinding.h">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClInclude>
+    <ClInclude Include="ImCallableAndSArgsToRExpBinding.h">
+      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="RFuncAndRArgsToRExpBinding.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

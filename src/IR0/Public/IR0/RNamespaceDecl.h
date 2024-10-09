@@ -37,8 +37,9 @@ public:
 
 public:
     // from RDecl
-    IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
+    IR0_API RDecl* GetOuter() override;
+    IR0_API RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     
     // from RTypeDeclOuter, RTopLevelDeclOuter
     IR0_API RDecl* GetDecl() override;

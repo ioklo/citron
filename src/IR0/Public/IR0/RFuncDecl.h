@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "RDecl.h"
+
 namespace Citron
 {
 

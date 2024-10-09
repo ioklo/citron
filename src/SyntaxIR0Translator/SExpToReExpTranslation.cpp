@@ -33,7 +33,7 @@ public:
             return;
         }
 
-        *result = TranslateImExpToReExp(imExp, context, logger);
+        *result = TranslateImExpToReExp(*imExp, context, logger);
     }
 
     void HandleExp(RExpPtr&& exp)

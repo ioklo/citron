@@ -9,8 +9,12 @@
 #include <IR0/RNames.h>
 #include <IR0/RMember.h>
 #include <IR0/RTypeFactory.h>
+#include <IR0/RClassDecl.h>
 #include <IR0/RClassMemberVarDecl.h>
+#include <IR0/RStructDecl.h>
 #include <IR0/RStructMemberVarDecl.h>
+#include <IR0/REnumDecl.h>
+#include <IR0/RNamespaceDecl.h>
 
 #include "IrExp.h"
 #include "ScopeContext.h"
@@ -231,9 +235,9 @@ public:
 
     void Visit(RType_Class& type) override 
     {
-        auto memberVar = type->GetMemberVar(name);
+        auto memberVar = type.GetMemberVar(name);
 
-        if (memberVar == nullptr)
+        if (!memberVar)
         {
             logger->Fatal_NotFound();
             *result = nullptr;
@@ -256,7 +260,7 @@ public:
     {   
         auto memberVar = type.GetMemberVar(name);
 
-        if (memberVar == nullptr)
+        if (!memberVar)
         {
             logger->Fatal_NotFound();
             *result = nullptr;
@@ -284,7 +288,7 @@ public:
     void Visit(RType_EnumElem& type) override 
     {   
         auto memberVar = type.GetMemberVar(name);
-        if (memberVar == nullptr)
+        if (!memberVar)
         {
             logger->Fatal_NotFound();
             *result = nullptr;
@@ -364,51 +368,71 @@ public:
     void Visit(RType_Func& type) override 
     {
         // &c.f.x
-        return Fatal(A2019_ResolveIdentifier_FuncInstanceCantHaveMember);
+        logger->Fatal_FuncInstanceCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_LocalPtr& type) override 
     {
         // &c.p.x
-        return Fatal(A2017_ResolveIdentifier_LocalPtrCantHaveMember);
+        logger->Fatal_LocalPtrCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_BoxPtr& type) override 
     {
-        // &c.p.x, 문법에러
-        return Fatal(A2018_ResolveIdentifier_BoxPtrCantHaveMember);
+        // &c.p.x, 문법에러        
+        logger->Fatal_BoxPtrCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_Class& type) override 
     {
         // &c.c.x
-        var memberVar = type.GetMemberVar(name);
-        if (memberVar == null)
-            return Fatal(A2007_ResolveIdentifier_NotFound);
+        auto memberVar = type.GetMemberVar(name);
+        if (!memberVar)
+        {
+            logger->Fatal_NotFound();
+            *result = nullptr;
+            return;
+        }
 
-        if (typeArgs.Length != 0)
-            return Fatal(A2002_ResolveIdentifier_VarWithTypeArg);
+        if (typeArgsExceptOuter->GetCount() != 0)
+        {
+            logger->Fatal_VarWithTypeArg();
+            *result = nullptr;
+            return;
+        }
 
-        return Valid(new IntermediateRefExp.BoxRef.ClassMember(parent.MakeLoc(), memberVar));
+        *result = MakePtr<IrClassMemberBoxRefExp>(parent->MakeLoc(), memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 
     {
         // &c.s.x
-        var memberVar = type.GetMemberVar(name);
-        if (memberVar == null)
-            return Fatal(A2007_ResolveIdentifier_NotFound);
+        auto memberVar = type.GetMemberVar(name);
+        if (!memberVar)
+        {
+            logger->Fatal_NotFound();
+            *result = nullptr;
+            return;
+        }
 
-        if (typeArgs.Length != 0)
-            return Fatal(A2002_ResolveIdentifier_VarWithTypeArg);
+        if (typeArgsExceptOuter->GetCount() != 0)
+        {
+            logger->Fatal_VarWithTypeArg();
+            *result = nullptr;
+            return;
+        }
 
-        return Valid(new IntermediateRefExp.BoxRef.StructMember(parent, memberVar));
+        *result = MakePtr<IrStructMemberBoxRefExp>(parent, memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Enum& type) override 
     {
         // &c.e.x
-        return Fatal(A2013_ResolveIdentifier_EnumInstanceCantHaveMember);
+        logger->Fatal_EnumInstanceCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_EnumElem& type) override 
@@ -426,11 +450,12 @@ public:
     void Visit(RType_Lambda& type) override 
     {
         // &c.l.x
-        return Fatal(A2016_ResolveIdentifier_LambdaInstanceCantHaveMember);
+        logger->Fatal_LambdaInstanceCantHaveMember();
+        *result = nullptr;
     }
 };
 
-struct LocalRefTypeVisitor : public RTypeVisitor
+struct LocalRefTypeBinder : public RTypeVisitor
 {
     std::shared_ptr<IrLocalRefExp> parent;
     RName name;
@@ -441,7 +466,7 @@ struct LocalRefTypeVisitor : public RTypeVisitor
     LoggerPtr logger;
 
 public:
-    LocalRefTypeVisitor(const std::shared_ptr<IrLocalRefExp>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    LocalRefTypeBinder(const std::shared_ptr<IrLocalRefExp>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -479,64 +504,91 @@ public:
     void Visit(RType_Func& type) override 
     {
         // &s.f.x
-        return Fatal(A2019_ResolveIdentifier_FuncInstanceCantHaveMember);
+        logger->Fatal_FuncInstanceCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_LocalPtr& type) override 
     {
         // &s.p.x
-        return Fatal(A2017_ResolveIdentifier_LocalPtrCantHaveMember);
+        logger->Fatal_LocalPtrCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_BoxPtr& type) override 
     {
         // &s.p.x
-        return Fatal(A2018_ResolveIdentifier_BoxPtrCantHaveMember);
+        logger->Fatal_BoxPtrCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_Class& type) override 
     {
         // &s.c.x
-        var memberVar = type.GetMemberVar(name);
-        if (memberVar == null)
-            return Fatal(A2007_ResolveIdentifier_NotFound);
+        auto memberVar = type.GetMemberVar(name);
+        if (!memberVar)
+        {
+            logger->Fatal_NotFound();
+            *result = nullptr;
+            return;
+        }
 
-        if (typeArgs.Length != 0)
-            return Fatal(A2002_ResolveIdentifier_VarWithTypeArg);
+        if (typeArgsExceptOuter->GetCount() != 0)
+        {
+            logger->Fatal_VarWithTypeArg();
+            *result = nullptr;
+            return;
+        }
 
-        return Valid(new IntermediateRefExp.BoxRef.ClassMember(parent.Loc, memberVar));
+        *result = MakePtr<IrClassMemberBoxRefExp>(parent->loc, memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 
     {
         // &s.s.x
-        var memberVar = type.GetMemberVar(name);
-        if (memberVar == null)
-            return Fatal(A2007_ResolveIdentifier_NotFound);
+        auto memberVar = type.GetMemberVar(name);
+        if (!memberVar)
+        {
+            logger->Fatal_NotFound();
+            *result = nullptr;
+            return;
+        }
 
-        if (typeArgs.Length != 0)
-            return Fatal(A2002_ResolveIdentifier_VarWithTypeArg);
+        if (typeArgsExceptOuter->GetCount() != 0)
+        {
+            logger->Fatal_VarWithTypeArg();
+            *result = nullptr;
+            return;
+        }
 
-        return Valid(new IntermediateRefExp.LocalRef(new StructMemberLoc(parent.Loc, memberVar), memberVar.GetDeclType()));
+        *result = MakePtr<IrLocalRefExp>(MakePtr<RStructMemberLoc>(parent->loc, memberVar->decl, memberVar->typeArgs));
     }
 
     void Visit(RType_Enum& type) override 
     {
         // &s.e.x
-        return Fatal(A2013_ResolveIdentifier_EnumInstanceCantHaveMember);
+        logger->Fatal_EnumInstanceCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_EnumElem& type) override 
     {
         // &s.e.x
-        var memberVar = type.GetMemberVar(name);
-        if (memberVar == null)
-            return Fatal(A2007_ResolveIdentifier_NotFound);
+        auto memberVar = type.GetMemberVar(name);
+        if (!memberVar)
+        {
+            logger->Fatal_NotFound();
+            *result = nullptr;
+            return;
+        }
 
-        if (typeArgs.Length != 0)
-            return Fatal(A2002_ResolveIdentifier_VarWithTypeArg);
+        if (typeArgsExceptOuter->GetCount() != 0)
+        {
+            logger->Fatal_VarWithTypeArg();
+            *result = nullptr;
+        }
 
-        return Valid(new IntermediateRefExp.LocalRef(new EnumElemMemberLoc(parent.Loc, memberVar), memberVar.GetDeclType()));
+        *result = MakePtr<IrLocalRefExp>(MakePtr<REnumElemMemberLoc>(parent->loc, memberVar->decl, memberVar->typeArgs));
     }
 
     void Visit(RType_Interface& type) override 
@@ -548,12 +600,13 @@ public:
     void Visit(RType_Lambda& type) override 
     {
         // &s.l.x
-        return Fatal(A2016_ResolveIdentifier_LambdaInstanceCantHaveMember);
+        logger->Fatal_LambdaInstanceCantHaveMember();
+        *result = nullptr;
     }
 };
 
 // *pS, valueType일때만 여기를 거치도록 나머지는 value로 가게
-struct BoxValueTypeVisitor : public RTypeVisitor
+struct BoxValueTypeBinder : public RTypeVisitor
 {
     std::shared_ptr<IrDerefedBoxValueExp> parent;
     RName name;
@@ -564,7 +617,7 @@ struct BoxValueTypeVisitor : public RTypeVisitor
     LoggerPtr logger;
 
 public:
-    BoxValueTypeVisitor(const std::shared_ptr<IrDerefedBoxValueExp>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    BoxValueTypeBinder(const std::shared_ptr<IrDerefedBoxValueExp>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -611,7 +664,8 @@ public:
 
     void Visit(RType_BoxPtr& type) override 
     {
-        return Fatal(A2018_ResolveIdentifier_BoxPtrCantHaveMember);
+        logger->Fatal_BoxPtrCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_Class& type) override 
@@ -623,14 +677,22 @@ public:
     void Visit(RType_Struct& type) override 
     {
         // &(*pS).x
-        var memberVar = type.GetMemberVar(name);
-        if (memberVar == null)
-            return Fatal(A2007_ResolveIdentifier_NotFound);
+        auto memberVar = type.GetMemberVar(name);
+        if (!memberVar)
+        {
+            logger->Fatal_NotFound();
+            *result = nullptr;
+            return;
+        }
 
-        if (typeArgs.Length != 0)
-            return Fatal(A2002_ResolveIdentifier_VarWithTypeArg);
+        if (typeArgsExceptOuter->GetCount() != 0)
+        {
+            logger->Fatal_VarWithTypeArg();
+            *result = nullptr;
+            return;
+        }
 
-        return Valid(new IntermediateRefExp.BoxRef.StructIndirectMember(parent.InnerLoc, memberVar));
+        *result = MakePtr<IrStructIndirectMemberBoxRefExp>(parent->innerLoc, memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Enum& type) override 
@@ -661,12 +723,14 @@ public:
     void Visit(RType_Lambda& type) override 
     {
         // doesn't have member variable
-        return Fatal(A2016_ResolveIdentifier_LambdaInstanceCantHaveMember);
+        logger->Fatal_LambdaInstanceCantHaveMember();
+        *result = nullptr;
     }
 };
 
-struct ThisTypeVisitor : public RTypeVisitor
+struct ThisTypeBinder : public RTypeVisitor
 {
+    RTypePtr thisType;
     RName name;
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
@@ -675,14 +739,14 @@ struct ThisTypeVisitor : public RTypeVisitor
     LoggerPtr logger;
 
 public:
-    ThisTypeVisitor(const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
-        : name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
+    ThisTypeBinder(const RTypePtr& thisType, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+        : thisType(thisType), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
 
     void Visit(RType_NullableValue& type) override 
     {
-        // Nullable은 멤버함수를 가질 수 없다
+        // NullableValue는 멤버함수를 가질 수 없다
         throw RuntimeFatalException();
     }
 
@@ -719,32 +783,43 @@ public:
 
     void Visit(RType_LocalPtr& type) override 
     {
-        return Fatal(A2017_ResolveIdentifier_LocalPtrCantHaveMember);
+        logger->Fatal_LocalPtrCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_BoxPtr& type) override 
     {
-        return Fatal(A2018_ResolveIdentifier_BoxPtrCantHaveMember);
+        logger->Fatal_BoxPtrCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_Class& type) override 
     {
         // &this.x
-        if (typeArgs.Length != 0)
-            return Fatal(A2002_ResolveIdentifier_VarWithTypeArg);
+        auto memberVar = type.GetMemberVar(name);
+        if (!memberVar)
+        {
+            logger->Fatal_NotFound();
+            *result = nullptr;
+            return;
+        }
 
-        var memberVar = type.GetMemberVar(name);
-        if (memberVar == null)
-            return Fatal(A2007_ResolveIdentifier_NotFound);
-
-        return Valid(new IntermediateRefExp.BoxRef.ClassMember(new ThisLoc(), memberVar));
+        if (typeArgsExceptOuter->GetCount() != 0)
+        {
+            logger->Fatal_VarWithTypeArg();
+            *result = nullptr;
+            return;
+        }
+        
+        *result = MakePtr<IrClassMemberBoxRefExp>(MakePtr<RThisLoc>(thisType), memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 
     {
         // &this.x
         // TODO: [10] box함수인 경우 에러 메시지를 다르게 해야 한다
-        return Fatal(A2017_ResolveIdentifier_LocalPtrCantHaveMember);
+        logger->Fatal_LocalPtrCantHaveMember();
+        *result = nullptr;
     }
 
     void Visit(RType_Enum& type) override 
@@ -772,105 +847,131 @@ public:
     }
 };
 
-class IrExpAndMemberNameToRExpBinder : public IrExpVisitor
+class IrExpAndMemberNameToIrExpBinder : public IrExpVisitor
 {
+    IrExpPtr irThis;
     RName name;
     RTypeArgumentsPtr typeArgsExceptOuter;
-    RExpPtr* result;
+    IrExpPtr* result;
 
     ScopeContextPtr context;
     LoggerPtr logger;
+    RTypeFactory& factory;
 
 public:
-    IrExpAndMemberNameToRExpBinder(const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, RExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
-        : name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
+    IrExpAndMemberNameToIrExpBinder(const IrExpPtr& irThis, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+        : irThis(irThis), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
 
-    void HandleStaticParent(ISymbolNode symbol)
+    void HandleStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
     {
-        var result = symbol.QueryMember(name, typeArgs.Length);
-        if (result == null)
-            return Fatal(A2007_ResolveIdentifier_NotFound);
+        auto member = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
+        if (!member)
+        {
+            logger->Fatal_NotFound();
+            *result = nullptr;
+            return;
+        }
 
-        var binder = new StaticParentBinder();
-        return result.Accept<StaticParentBinder, TranslationResult<IntermediateRefExp>>(ref binder);
+        StaticParentBinder binder(typeArgsExceptOuter, result, context, logger, factory);
+        member->Accept(binder);
     }
 
     void Visit(IrNamespaceExp& irExp) override 
     {
-        return HandleStaticParent(imRefExp.Symbol);
+        return HandleStaticParent(*irExp.decl, factory.MakeTypeArguments({}));
     }
 
     void Visit(IrTypeVarExp& irExp) override 
     {
         // 이건 진짜
-        throw System.NotImplementedException();
+        throw NotImplementedException();
     }
 
     void Visit(IrClassExp& irExp) override 
     {
-        return HandleStaticParent(imRefExp.Symbol);
+        return HandleStaticParent(*irExp.decl, irExp.typeArgs);
     }
 
     void Visit(IrStructExp& irExp) override 
     {
-        return HandleStaticParent(imRefExp.Symbol);
+        return HandleStaticParent(*irExp.decl, irExp.typeArgs);
     }
 
     void Visit(IrEnumExp& irExp) override 
     {
-        return HandleStaticParent(imRefExp.Symbol);
+        return HandleStaticParent(*irExp.decl, irExp.typeArgs);
     }
 
     void Visit(IrThisVarExp& irExp) override 
     {
-        // this.id
-        var visitor = new ThisTypeVisitor(name, typeArgs, context, nodeForErrorReport);
-        return imRefExp.Type.Accept<ThisTypeVisitor, TranslationResult<IntermediateRefExp>>(ref visitor);
+        // this.id        
+        ThisTypeBinder binder(irExp.type, name, typeArgsExceptOuter, result, context, logger);
+        irExp.type->Accept(binder);
     }
 
     void Visit(IrStaticRefExp& irExp) override 
     {
+        auto irStaticRefThis = dynamic_pointer_cast<IrStaticRefExp>(irThis);
+        assert(irStaticRefThis);
+
+        auto locType = irExp.loc->GetType(factory);
+
         // static ref가 부모이면
-        var visitor = new StaticRefTypeBinder(imRefExp, name, typeArgs, context, nodeForErrorReport);
-        return imRefExp.LocType.Accept<StaticRefTypeBinder, TranslationResult<IntermediateRefExp>>(ref visitor);
+        StaticRefTypeBinder binder(irStaticRefThis, name, typeArgsExceptOuter, result, context, logger);
+        locType->Accept(binder);
     }
 
     void Visit(IrBoxRefExp& irExp) override 
     {
-        var visitor = new BoxRefTypeBinder(imRefExp, name, typeArgs, context, nodeForErrorReport);
-        return imRefExp.GetTargetType().Accept<BoxRefTypeBinder, TranslationResult<IntermediateRefExp>>(ref visitor);
+        auto irBoxRefThis = dynamic_pointer_cast<IrBoxRefExp>(irThis);
+        assert(irBoxRefThis);
+
+        auto targetType = irExp.GetTargetType(factory);
+        BoxRefTypeBinder binder(irBoxRefThis, name, typeArgsExceptOuter, result, context, logger);
+        targetType->Accept(binder);
     }
 
     void Visit(IrLocalRefExp& irExp) override 
     {
-        var visitor = new LocalRefTypeVisitor();
-        return imRefExp.LocType.Accept<LocalRefTypeVisitor, TranslationResult<IntermediateRefExp>>(ref visitor);
+        auto irLocalRefThis = dynamic_pointer_cast<IrLocalRefExp>(irThis);
+        assert(irLocalRefThis);
+
+        auto locType = irExp.loc->GetType(factory);
+
+        LocalRefTypeBinder binder(irLocalRefThis, name, typeArgsExceptOuter, result, context, logger);
+        locType->Accept(binder);
     }
 
+    // *pS, 오직 value type에만 작동을 하도록 보장해야 한다
     void Visit(IrDerefedBoxValueExp& irExp) override 
     {
-        // *pS, 오직 value type에만 작동을 하도록 보장해야 한다
-        var visitor = new BoxValueTypeVisitor(imRefExp, name, typeArgs, context, nodeForErrorReport);
-        return imRefExp.InnerType.Accept<BoxValueTypeVisitor, TranslationResult<IntermediateRefExp>>(ref visitor);
+        auto irDerefedBoxThis = dynamic_pointer_cast<IrDerefedBoxValueExp>(irThis);
+        assert(irDerefedBoxThis);
+
+        auto innerType = irExp.innerLoc->GetType(factory);
+
+        BoxValueTypeBinder binder(irDerefedBoxThis, name, typeArgsExceptOuter, result, context, logger);
+        innerType->Accept(binder);
     }
 
     void Visit(IrLocalValueExp& irExp) override 
     {
         // exp.id
         // 함수 호출 인자 제외 temp 참조 불가
-        return Fatal(A3002_Reference_CantReferenceTempValue);
+        logger->Fatal_CantReferenceTempValue();
+        *result = nullptr;
     }
 };
 
 } // namespace 
 
-IrExpPtr BindIrExpAndMemberNameToIrExp(IrExp& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, const ScopeContextPtr& context, const LoggerPtr& logger)
+IrExpPtr BindIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     IrExpPtr irBoundExp;
-    IrExpAndMemberNameToRExpBinder binder(name, typeArgsExceptOuter, &irBoundExp, context, logger);
-    irExp.Accept(binder);
+    IrExpAndMemberNameToIrExpBinder binder(irExp, name, typeArgsExceptOuter, &irBoundExp, context, logger, factory);
+    irExp->Accept(binder);
     return irBoundExp;
 }
 

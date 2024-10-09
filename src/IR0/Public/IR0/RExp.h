@@ -498,7 +498,7 @@ public:
     RLocPtr instance;
     std::vector<RArgument> args;
 public:
-    IR0_API RCallClassMemberFuncExp(const std::shared_ptr<RClassMemberFuncDecl>& classMemberFunc, const RTypeArgumentsPtr& typeArgs, const RLocPtr& instance, const std::vector<RArgument>& args);
+    IR0_API RCallClassMemberFuncExp(const std::shared_ptr<RClassMemberFuncDecl>& classMemberFunc, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, std::vector<RArgument>&& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -544,7 +544,7 @@ public:
     RLocPtr instance;
     std::vector<RArgument> args;
 public:
-    IR0_API RCallStructMemberFuncExp(const std::shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, const RLocPtr& instance, const std::vector<RArgument>& args);    
+    IR0_API RCallStructMemberFuncExp(const std::shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, std::vector<RArgument>&& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }

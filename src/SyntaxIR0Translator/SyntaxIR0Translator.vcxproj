@@ -38,9 +38,9 @@
   <ItemGroup>
     <ClCompile Include="BodyPhaseContext.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
+    <ClCompile Include="ImCallableAndSArgsToRExpBinding.cpp" />
     <ClCompile Include="ImExp.cpp" />
     <ClCompile Include="ImExpAndMemberNameToImExpBinding.cpp" />
-    <ClCompile Include="ImExpAndSArgsToRExpBinding.cpp" />
     <ClCompile Include="ImExpToIrExpTranslation.cpp" />
     <ClCompile Include="ImExpToReExpTranslation.cpp" />
     <ClCompile Include="BinOpQueryService.cpp" />
@@ -61,6 +61,7 @@
     <ClCompile Include="ReExp.cpp" />
     <ClCompile Include="ReExpToRExpTranslation.cpp" />
     <ClCompile Include="ReExpToRLocTranslation.cpp" />
+    <ClCompile Include="RFuncAndRArgsToRExpBinding.cpp" />
     <ClCompile Include="ScopeContext.cpp" />
     <ClCompile Include="SExpRefToIrExpTranslation.cpp" />
     <ClCompile Include="SExpRefToRExpTranslation.cpp" />
@@ -76,9 +77,9 @@
   <ItemGroup>
     <ClInclude Include="BodyPhaseContext.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
+    <ClInclude Include="ImCallableAndSArgsToRExpBinding.h" />
     <ClInclude Include="ImExp.h" />
     <ClInclude Include="ImExpAndMemberNameToImExpBinding.h" />
-    <ClInclude Include="ImExpAndSArgsToRExpBinding.h" />
     <ClInclude Include="ImExpToIrExpTranslation.h" />
     <ClInclude Include="ImExpToReExpTranslation.h" />
     <ClInclude Include="BinOpQueryService.h" />
@@ -93,6 +94,7 @@
     <ClInclude Include="ReExp.h" />
     <ClInclude Include="ReExpToRExpTranslation.h" />
     <ClInclude Include="ReExpToRLocTranslation.h" />
+    <ClInclude Include="RFuncAndRArgsToRExpBinding.h" />
     <ClInclude Include="ScopeContext.h" />
     <ClInclude Include="SExpRefToIrExpTranslation.h" />
     <ClInclude Include="SExpRefToRExpTranslation.h" />

@@ -280,8 +280,8 @@ RTypePtr RNewClassExp::GetType(RTypeFactory& factory)
 
 /////////////////////////////////////
 
-RCallClassMemberFuncExp::RCallClassMemberFuncExp(const shared_ptr<RClassMemberFuncDecl>& classMemberFunc, const RTypeArgumentsPtr& typeArgs, const RLocPtr& instance, const vector<RArgument>& args)
-    : classMemberFunc(classMemberFunc), typeArgs(typeArgs), instance(instance), args(args)
+RCallClassMemberFuncExp::RCallClassMemberFuncExp(const shared_ptr<RClassMemberFuncDecl>& classMemberFunc, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
+    : classMemberFunc(classMemberFunc), typeArgs(typeArgs), instance(std::move(instance)), args(std::move(args))
 {
 }
 
@@ -311,8 +311,8 @@ RTypePtr RNewStructExp::GetType(RTypeFactory& factory)
     return factory.MakeStructType(structDecl, typeArgs);
 }
 
-RCallStructMemberFuncExp::RCallStructMemberFuncExp(const shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, const RLocPtr& instance, const vector<RArgument>& args)
-    : structMemberFuncDecl(structMemberFuncDecl), typeArgs(typeArgs), instance(instance), args(args)
+RCallStructMemberFuncExp::RCallStructMemberFuncExp(const shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
+    : structMemberFuncDecl(structMemberFuncDecl), typeArgs(typeArgs), instance(std::move(instance)), args(std::move(args))
 {
 }
 

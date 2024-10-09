@@ -158,10 +158,10 @@ public:
             return;
         }
 
-        auto typeArgs = MakeTypeArgs(exp.memberTypeArgs, *context, factory);
+        auto typeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, *context, factory);
 
         logger->SetSyntax(exp.parent);
-        *result = BindIrExpAndMemberNameToIrExp(*parent, exp.memberName, std::move(typeArgs), context);
+        *result = BindIrExpAndMemberNameToIrExp(parent, RNormalName(exp.memberName), std::move(typeArgsExceptOuter), context, logger, factory);
     }
 
     void Visit(SIndirectMemberExp& exp) override 

@@ -4,11 +4,13 @@
 
 #include <memory>
 #include <vector>
+#include <optional>
 #include <Infra/Hash.h>
 
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
 #include "RNames.h"
+#include "RMember.h"
 
 namespace Citron
 {
@@ -238,6 +240,8 @@ private:
     RType_Class(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
+    std::optional<RMember_ClassMemberVar> GetMemberVar(const RName& name);
+
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Class; }
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
@@ -254,6 +258,7 @@ private:
     RType_Struct(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
+    std::optional<RMember_StructMemberVar> GetMemberVar(const RName& name);
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Struct; }
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
@@ -286,6 +291,8 @@ private:
     RType_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
+    std::optional<RMember_EnumElemMemberVar> GetMemberVar(const RName& name);
+
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::EnumElem; }
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }

@@ -16,11 +16,13 @@
 #include "SExpToReExpTranslation.h"
 #include "ReExpToRExpTranslation.h"
 #include "ReExpToRLocTranslation.h"
+#include "ImExpAndMemberNameToImExpBinding.h"
 
 #include "ScopeContext.h"
 
 #include "NotLocationErrorLogger.h"
 #include "Misc.h"
+
 
 
 namespace Citron::SyntaxIR0Translator {
@@ -251,7 +253,7 @@ public:
         auto typeArgs = MakeTypeArgs(exp.memberTypeArgs, *context, factory);
 
         // logger->SetSyntax(exp);
-        *result = BindImExpAndMemberNameToImExp(imParent, RNormalName(exp.memberName), typeArgs, context);
+        *result = BindImExpAndMemberNameToImExp(*imParent, exp.memberName, typeArgs, context, logger);
     }
 
     void Visit(SIndirectMemberExp& exp) override 
