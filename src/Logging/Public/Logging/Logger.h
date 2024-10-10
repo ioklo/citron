@@ -4,8 +4,7 @@
 
 namespace Citron {
 
-class SSyntax;
-using SSyntaxPtr = std::shared_ptr<SSyntax>;
+using SSyntaxPtr = std::shared_ptr<class SSyntax>;
 
 class Logger
 {

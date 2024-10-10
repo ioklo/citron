@@ -15,8 +15,7 @@ class RType_TypeVar;
 
 namespace SyntaxIR0Translator {
 
-class ReExp;
-using ReExpPtr = std::shared_ptr<ReExp>;
+using ReExpPtr = std::shared_ptr<class ReExp>;
 
 class ImExp_Namespace;
 class ImExp_GlobalFuncs;

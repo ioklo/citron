@@ -5,22 +5,14 @@
 namespace Citron {
 
 class SExp;
-
-class RType;
-using RTypePtr = std::shared_ptr<RType>;
-
 class RTypeFactory;
-
-class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
+using RTypePtr = std::shared_ptr<class RType>;
+using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
-
-class ReExp;
-using ReExpPtr = std::shared_ptr<ReExp>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+using ReExpPtr = std::shared_ptr<class ReExp>;
 
 ReExpPtr TranslateSExpToReExp(SExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 

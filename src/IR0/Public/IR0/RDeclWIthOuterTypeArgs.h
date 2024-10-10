@@ -4,8 +4,7 @@
 
 namespace Citron {
 
-class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
+using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
 template<typename TDecl>
 struct RDeclWithOuterTypeArgs

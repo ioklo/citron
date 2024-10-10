@@ -5,17 +5,13 @@
 
 namespace Citron {
 
-class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
-class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
+using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
+using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
-class ImExp;
-using ImExpPtr = std::shared_ptr<ImExp>;
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
+using ImExpPtr = std::shared_ptr<class ImExp>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 ImExpPtr BindImExpAndMemberNameToImExp(ImExp& imExp, const std::string& name, const RTypeArgumentsPtr& typeArgs, const ScopeContextPtr& context, const LoggerPtr& logger);
 

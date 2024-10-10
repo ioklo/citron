@@ -17,11 +17,9 @@ class MType_Func;     // inline type, circular
 class MType_LocalPtr; // inline type
 class MType_BoxPtr;   // inline type
 class MType_Instance;
-class MDeclId;
-using MDeclIdPtr = std::shared_ptr<MDeclId>;
 
-class MTypeArguments;
-using MTypeArgumentsPtr = std::shared_ptr<MTypeArguments>;
+using MDeclIdPtr = std::shared_ptr<class MDeclId>;
+using MTypeArgumentsPtr = std::shared_ptr<class MTypeArguments>;
 
 class MTypeVisitor
 {

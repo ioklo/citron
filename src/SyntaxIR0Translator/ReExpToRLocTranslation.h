@@ -4,13 +4,11 @@
 
 namespace Citron {
 
-class RLoc;
-using RLocPtr = std::shared_ptr<RLoc>;
+using RLocPtr = std::shared_ptr<class RLoc>;
 
 class RTypeFactory;
 
-class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
+using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
@@ -27,8 +25,7 @@ class ReExp_ListIndexer;
 class ReExp_LocalDeref;
 class ReExp_BoxDeref;
 
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp); // nothrow
 RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);

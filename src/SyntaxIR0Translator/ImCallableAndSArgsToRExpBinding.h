@@ -5,20 +5,14 @@
 
 namespace Citron {
 
-class RExp;
-using RExpPtr = std::shared_ptr<RExp>;
 class SArgument;
-
-class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
+using LoggerPtr = std::shared_ptr<class Logger>;
+using RExpPtr = std::shared_ptr<class RExp>;
 
 namespace SyntaxIR0Translator {
 
-class ImExp;
-using ImExpPtr = std::shared_ptr<ImExp>;
-
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
+using ImExpPtr = std::shared_ptr<class ImExp>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 RExpPtr BindImCallableAndSArgsToRExp(ImExpPtr&& imExp, const std::vector<SArgument>& args, const ScopeContextPtr& context, const LoggerPtr& logger);
 

@@ -25,8 +25,7 @@ class RStructMemberVarDecl;
 class RClassMemberVarDecl;
 class REnumElemMemberVarDecl;
 
-class RExp;
-using RExpPtr = std::shared_ptr<RExp>;
+using RExpPtr = std::shared_ptr<class RExp>;
 
 class RLocVisitor
 {

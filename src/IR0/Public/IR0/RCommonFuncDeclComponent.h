@@ -11,8 +11,7 @@
 namespace Citron
 {
 class RLambdaDecl;
-class RStmt;
-using RStmtPtr = std::shared_ptr<RStmt>;
+using RStmtPtr = std::shared_ptr<class RStmt>;
 
 class RTypeArguments;
 class RTypeFactory;

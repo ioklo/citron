@@ -5,8 +5,7 @@
 
 namespace Citron {
 
-class MType;
-using MTypePtr = std::shared_ptr<MType>;
+using MTypePtr = std::shared_ptr<class MType>;
 
 struct MIdentifier
 {

@@ -4,24 +4,16 @@
 
 namespace Citron {
 
-class SExp;
-using SExpPtr = std::shared_ptr<SExp>;
-
-class RLoc;
-using RLocPtr = std::shared_ptr<RLoc>;
-
-class RType;
-using RTypePtr = std::shared_ptr<RType>;
-
 class RTypeFactory;
 
-class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
+using SExpPtr = std::shared_ptr<class SExp>;
+using RLocPtr = std::shared_ptr<class RLoc>;
+using RTypePtr = std::shared_ptr<class RType>;
+using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 class INotLocationErrorLogger;
 

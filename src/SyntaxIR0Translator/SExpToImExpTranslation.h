@@ -5,16 +5,13 @@
 namespace Citron {
 
 class SExp;
-class RType;
-using RTypePtr = std::shared_ptr<RType>;
+using RTypePtr = std::shared_ptr<class RType>;
 
 namespace SyntaxIR0Translator {
 
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
-class ImExp;
-using ImExpPtr = std::shared_ptr<ImExp>;
+using ImExpPtr = std::shared_ptr<class ImExp>;
 
 ImExpPtr TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context);
 

@@ -6,14 +6,9 @@
 
 namespace Citron {
 
-class RStmt;
-using RStmtPtr = std::shared_ptr<RStmt>;
-
-class SStmt;
-using SStmtPtr = std::shared_ptr<SStmt>;
-
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
+using RStmtPtr = std::shared_ptr<class RStmt>;
+using SStmtPtr = std::shared_ptr<class SStmt>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 namespace SyntaxIR0Translator {
 

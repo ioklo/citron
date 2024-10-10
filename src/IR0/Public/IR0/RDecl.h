@@ -25,15 +25,11 @@ class RLambdaDecl;
 class RLambdaMemberVarDecl;
 class RInterfaceDecl;
 
-class RMember;
-using RMemberPtr = std::shared_ptr<RMember>;
-
-class RDeclId;
-using RDeclIdPtr = std::shared_ptr<RDeclId>;
-
 class RTypeFactory;
-class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
+
+using RMemberPtr = std::shared_ptr<class RMember>;
+using RDeclIdPtr = std::shared_ptr<class RDeclId>;
+using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
 class RDeclVisitor
 {

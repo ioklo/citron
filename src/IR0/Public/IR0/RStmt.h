@@ -37,11 +37,9 @@ class RLambdaDecl;
 class RStructConstructorDecl;
 
 class RExp_String;
-class RExp;
-class RLoc;
-using RExpPtr = std::shared_ptr<RExp>;
-using RStmtPtr = std::shared_ptr<RStmt>;
-using RLocPtr = std::shared_ptr<RLoc>;
+using RExpPtr = std::shared_ptr<class RExp>;
+using RStmtPtr = std::shared_ptr<class RStmt>;
+using RLocPtr = std::shared_ptr<class RLoc>;
 
 class RClassConstructor;
 

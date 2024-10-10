@@ -9,8 +9,7 @@
 
 namespace Citron {
 
-class RType;
-using RTypePtr = std::shared_ptr<RType>;
+using RTypePtr = std::shared_ptr<class RType>;
 
 struct RIdentifier
 {

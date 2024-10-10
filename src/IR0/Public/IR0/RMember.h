@@ -20,8 +20,7 @@ class REnumElemDecl;
 class REnumElemMemberVarDecl;
 class RLambdaMemberVarDecl;
 
-class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
+using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
 class RMember;
 class RMember_Namespace;

@@ -7,8 +7,7 @@ namespace Citron {
 
 class STypeExp;
 
-class RType;
-using RTypePtr = std::shared_ptr<RType>;
+using RTypePtr = std::shared_ptr<class RType>;
 class RTypeFactory;
 
 class RDecl;

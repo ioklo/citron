@@ -3,20 +3,17 @@
 #include <memory>
 
 namespace Citron {
-class RExp;
-using RExpPtr = std::shared_ptr<RExp>;
+using RExpPtr = std::shared_ptr<class RExp>;
 
 class RTypeFactory;
 
-class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
+using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
 class ReExp;
 
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 RExpPtr TranslateReExpToRExp(ReExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 

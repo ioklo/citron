@@ -8,12 +8,9 @@
 namespace Citron {
 
 class RFuncDecl;
-class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
-class RExp;
-using RExpPtr = std::shared_ptr<RExp>;
-class RLoc;
-using RLocPtr = std::shared_ptr<RLoc>;
+using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
+using RExpPtr = std::shared_ptr<class RExp>;
+using RLocPtr = std::shared_ptr<class RLoc>;
 
 namespace SyntaxIR0Translator {
 

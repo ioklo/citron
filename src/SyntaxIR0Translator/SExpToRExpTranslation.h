@@ -11,8 +11,7 @@ class SExp;
 class SExp_NullLiteral;
 class SExp_BoolLiteral;
 class SExp_IntLiteral;
-class SStringExpElement;
-using SStringExpElementPtr = std::shared_ptr<SStringExpElement>;
+using SStringExpElementPtr = std::shared_ptr<class SStringExpElement>;
 class SExp_String;
 class SExp_UnaryOp;
 class SExp_BinaryOp;
@@ -25,18 +24,14 @@ class SExp_Box;
 class SExp_Is;
 class SExp_As;
 
-class RType;
-using RTypePtr = std::shared_ptr<RType>;
-
 class RTypeFactory;
-
 class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
+using RTypePtr = std::shared_ptr<class RType>;
+using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 RExpPtr TranslateSNullLiteralExpToRExp(SExp_NullLiteral& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger);
 RExpPtr TranslateSBoolLiteralExpToRExp(SExp_BoolLiteral& exp);

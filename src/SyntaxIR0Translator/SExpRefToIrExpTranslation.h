@@ -8,11 +8,8 @@ class SExp;
 
 namespace SyntaxIR0Translator {
 
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
-
-class IrExp;
-using IrExpPtr = std::shared_ptr<IrExp>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+using IrExpPtr = std::shared_ptr<class IrExp>;
 
 IrExpPtr TranslateSExpRefToIrExp(SExp& exp, const ScopeContextPtr& context);
 

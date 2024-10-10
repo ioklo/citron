@@ -4,8 +4,7 @@
 
 namespace Citron {
 
-class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
+using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 

@@ -318,7 +318,7 @@ public:
     }
 };
 
-struct BoxRefTypeBinder : public RTypeVisitor
+class BoxRefTypeBinder : public RTypeVisitor
 {
     std::shared_ptr<IrExp_BoxRef> parent;
     RName name;
@@ -455,7 +455,7 @@ public:
     }
 };
 
-struct LocalRefTypeBinder : public RTypeVisitor
+class LocalRefTypeBinder : public RTypeVisitor
 {
     std::shared_ptr<IrExp_LocalRef> parent;
     RName name;
@@ -606,7 +606,7 @@ public:
 };
 
 // *pS, valueType일때만 여기를 거치도록 나머지는 value로 가게
-struct BoxValueTypeBinder : public RTypeVisitor
+class BoxValueTypeBinder : public RTypeVisitor
 {
     std::shared_ptr<IrExp_DerefedBoxValue> parent;
     RName name;
@@ -728,7 +728,7 @@ public:
     }
 };
 
-struct ThisTypeBinder : public RTypeVisitor
+class ThisTypeBinder : public RTypeVisitor
 {
     RTypePtr thisType;
     RName name;

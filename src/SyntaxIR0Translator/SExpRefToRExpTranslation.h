@@ -6,16 +6,12 @@ namespace Citron {
 
 class SExp;
 
-class RExp;
-using RExpPtr = std::shared_ptr<RExp>;
-
-class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
+using RExpPtr = std::shared_ptr<class RExp>;
+using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 RExpPtr TranslateSExpRefToRExp(SExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger);
 

@@ -38,13 +38,9 @@ class REnumElemDecl;
 class RInterfaceDecl;
 class RLambdaDecl;
 
-class RDecl;
-using RDeclPtr = std::shared_ptr<RDecl>;
-class RMember;
-using RMemberPtr = std::shared_ptr<RMember>;
-
-class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
+using RDeclPtr = std::shared_ptr<class RDecl>;
+using RMemberPtr = std::shared_ptr<class RMember>;
+using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
 class RTypeFactory;
 
