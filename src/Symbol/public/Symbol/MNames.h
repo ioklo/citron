@@ -11,47 +11,47 @@ namespace Citron
 
 // 통합 Identifier 세 부분으로 구성된다
 // 이름 name, 타입 파라미터 개수 type parameter count, func parameterIds
-class MNormalName
+class MName_Normal
 {
     std::string text;
 
 public:
-    SYMBOL_API MNormalName(std::string&& text);
-    DECLARE_DEFAULTS(SYMBOL_API, MNormalName)
+    SYMBOL_API MName_Normal(std::string&& text);
+    DECLARE_DEFAULTS(SYMBOL_API, MName_Normal)
 };
 
-class MReservedName
+class MName_Reserved
 {
     std::string text;
 
 public:
-    SYMBOL_API MReservedName(std::string&& text);
-    DECLARE_DEFAULTS(SYMBOL_API, MReservedName)
+    SYMBOL_API MName_Reserved(std::string&& text);
+    DECLARE_DEFAULTS(SYMBOL_API, MName_Reserved)
 };
 
-class MLambdaName
+class MName_Lambda
 {
     int index;
 
 public:
-    SYMBOL_API MLambdaName(int index);
-    DECLARE_DEFAULTS(SYMBOL_API, MLambdaName)
+    SYMBOL_API MName_Lambda(int index);
+    DECLARE_DEFAULTS(SYMBOL_API, MName_Lambda)
 };
 
-class MConstructorParamName
+class MName_ConstructorParam
 {
     int index;
     std::string paramText;
 public:
-    SYMBOL_API MConstructorParamName(int index, std::string&& paramText);
-    DECLARE_DEFAULTS(SYMBOL_API, MConstructorParamName)
+    SYMBOL_API MName_ConstructorParam(int index, std::string&& paramText);
+    DECLARE_DEFAULTS(SYMBOL_API, MName_ConstructorParam)
 };
 
 using MName = std::variant<
-    MNormalName,
-    MReservedName,
-    MLambdaName,
-    MConstructorParamName
+    MName_Normal,
+    MName_Reserved,
+    MName_Lambda,
+    MName_ConstructorParam
 >;
 
 SYMBOL_API MName Copy(const MName& name);

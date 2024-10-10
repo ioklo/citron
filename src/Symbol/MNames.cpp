@@ -5,52 +5,52 @@
 namespace Citron 
 {
 
-MNormalName::MNormalName(std::string&& text)
+MName_Normal::MName_Normal(std::string&& text)
     : text(std::move(text))
 {
 }
 
-IMPLEMENT_DEFAULTS(MNormalName)
+IMPLEMENT_DEFAULTS(MName_Normal)
 
-MNormalName MNormalName::Copy() const
+MName_Normal MName_Normal::Copy() const
 {
-    return MNormalName(std::string(text));
+    return MName_Normal(std::string(text));
 }
 
-MReservedName::MReservedName(std::string&& text)
+MName_Reserved::MName_Reserved(std::string&& text)
     : text(std::move(text))
 {
 }
 
-IMPLEMENT_DEFAULTS(MReservedName)
+IMPLEMENT_DEFAULTS(MName_Reserved)
 
-MReservedName MReservedName::Copy() const
+MName_Reserved MName_Reserved::Copy() const
 {
-    return MReservedName(std::string(text));
+    return MName_Reserved(std::string(text));
 }
 
-MLambdaName::MLambdaName(int index)
+MName_Lambda::MName_Lambda(int index)
     : index(index)
 {
 }
 
-IMPLEMENT_DEFAULTS(MLambdaName)
+IMPLEMENT_DEFAULTS(MName_Lambda)
 
-MLambdaName MLambdaName::Copy() const
+MName_Lambda MName_Lambda::Copy() const
 {
-    return MLambdaName(index);
+    return MName_Lambda(index);
 }
 
-MConstructorParamName::MConstructorParamName(int index, std::string&& paramText)
+MName_ConstructorParam::MName_ConstructorParam(int index, std::string&& paramText)
     : index(index), paramText(std::move(paramText))
 {
 }
 
-IMPLEMENT_DEFAULTS(MConstructorParamName)
+IMPLEMENT_DEFAULTS(MName_ConstructorParam)
 
-MConstructorParamName MConstructorParamName::Copy() const
+MName_ConstructorParam MName_ConstructorParam::Copy() const
 {
-    return MConstructorParamName(index, std::string(paramText));
+    return MName_ConstructorParam(index, std::string(paramText));
 }
 
 MName Copy(const MName& name)
