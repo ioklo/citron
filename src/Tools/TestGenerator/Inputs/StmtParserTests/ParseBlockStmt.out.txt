@@ -1,20 +1,20 @@
 {
-    "$type": "SBlockStmt",
+    "$type": "SStmt_Block",
     "stmts": [
         {
-            "$type": "SBlockStmt",
+            "$type": "SStmt_Block",
             "stmts": []
         },
         {
-            "$type": "SBlockStmt",
+            "$type": "SStmt_Block",
             "stmts": [
                 {
-                    "$type": "SBlankStmt"
+                    "$type": "SStmt_Blank"
                 }
             ]
         },
         {
-            "$type": "SBlankStmt"
+            "$type": "SStmt_Blank"
         }
     ]
 }

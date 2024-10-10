@@ -224,7 +224,7 @@ void AddStruct_TrivialConstructorPhase(shared_ptr<RStructDecl> rStruct);
 shared_ptr<RStructDecl> InnerMakeStruct(shared_ptr<SStructDecl> sStruct, RTypeDeclOuterPtr rOuter, RAccessor accessor, SkeletonPhaseContext& context)
 {
     auto typeParams = MakeTypeParams(sStruct->typeParams);
-    auto rStruct = MakePtr<RStructDecl>(rOuter, accessor, RNormalName(sStruct->name), typeParams);
+    auto rStruct = MakePtr<RStructDecl>(rOuter, accessor, RName_Normal(sStruct->name), typeParams);
 
     for (auto& memberDecl : sStruct->memberDecls)
     {

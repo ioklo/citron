@@ -19,7 +19,7 @@
                             "accessModifier": null,
                             "bSequence": false,
                             "retType": {
-                                "$type": "SIdTypeExp",
+                                "$type": "STypeExp_Id",
                                 "name": "void",
                                 "typeArgs": []
                             },

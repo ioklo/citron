@@ -10,36 +10,36 @@ namespace Citron
 
 // 통합 Identifier 세 부분으로 구성된다
 // 이름 name, 타입 파라미터 개수 type parameter count, func parameterIds
-struct RNormalName
+struct RName_Normal
 {
     std::string text;
-    bool operator==(const RNormalName& other) const noexcept = default;
+    bool operator==(const RName_Normal& other) const noexcept = default;
 };
 
-struct RReservedName
+struct RName_Reserved
 {
     std::string text;
-    bool operator==(const RReservedName& other) const noexcept = default;
+    bool operator==(const RName_Reserved& other) const noexcept = default;
 };
 
-struct RLambdaName
+struct RName_Lambda
 {
     int index;
-    bool operator==(const RLambdaName& other) const noexcept = default;
+    bool operator==(const RName_Lambda& other) const noexcept = default;
 };
 
-struct RConstructorParamName
+struct RName_ConstructorParam
 {
     int index;
     std::string paramText;
-    bool operator==(const RConstructorParamName& other) const noexcept = default;
+    bool operator==(const RName_ConstructorParam& other) const noexcept = default;
 };
 
 using RName = std::variant<
-    RNormalName,
-    RReservedName,
-    RLambdaName,
-    RConstructorParamName
+    RName_Normal,
+    RName_Reserved,
+    RName_Lambda,
+    RName_ConstructorParam
 >;
 
 IR0_API RName Copy(const RName& name);
@@ -49,9 +49,9 @@ IR0_API RName Copy(const RName& name);
 namespace std {
 
 template<>
-struct hash<Citron::RNormalName>
+struct hash<Citron::RName_Normal>
 {
-    std::size_t operator()(const Citron::RNormalName& name) const noexcept
+    std::size_t operator()(const Citron::RName_Normal& name) const noexcept
     {
         size_t s = 0;
         Citron::hash_combine(s, name.text);
@@ -60,9 +60,9 @@ struct hash<Citron::RNormalName>
 };
 
 template<>
-struct hash<Citron::RReservedName>
+struct hash<Citron::RName_Reserved>
 {
-    std::size_t operator()(const Citron::RReservedName& name) const noexcept
+    std::size_t operator()(const Citron::RName_Reserved& name) const noexcept
     {
         size_t s = 0;
         Citron::hash_combine(s, name.text);
@@ -71,9 +71,9 @@ struct hash<Citron::RReservedName>
 };
 
 template<>
-struct hash<Citron::RLambdaName>
+struct hash<Citron::RName_Lambda>
 {
-    std::size_t operator()(const Citron::RLambdaName& name) const noexcept
+    std::size_t operator()(const Citron::RName_Lambda& name) const noexcept
     {
         size_t s = 0;
         Citron::hash_combine(s, name.index);
@@ -82,9 +82,9 @@ struct hash<Citron::RLambdaName>
 };
 
 template<>
-struct hash<Citron::RConstructorParamName>
+struct hash<Citron::RName_ConstructorParam>
 {
-    std::size_t operator()(const Citron::RConstructorParamName& name) const noexcept
+    std::size_t operator()(const Citron::RName_ConstructorParam& name) const noexcept
     {
         size_t s = 0;
         Citron::hash_combine(s, name.index);

@@ -1,9 +1,9 @@
 {
-    "$type": "SLocalPtrTypeExp",
+    "$type": "STypeExp_LocalPtr",
     "innerType": {
-        "$type": "SNullableTypeExp",
+        "$type": "STypeExp_Nullable",
         "innerType": {
-            "$type": "SIdTypeExp",
+            "$type": "STypeExp_Id",
             "name": "T",
             "typeArgs": []
         }

@@ -16,7 +16,7 @@ RDecl* RModuleDecl::GetOuter()
 
 RIdentifier RModuleDecl::GetIdentifier()
 {
-    return RIdentifier { RNormalName(name), 0, {} };
+    return RIdentifier { RName_Normal(name), 0, {} };
 }
 
 RDecl* RModuleDecl::GetDecl()

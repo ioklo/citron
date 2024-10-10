@@ -21,26 +21,26 @@ struct IrBoxRefExpToRExpTranslator : public IrBoxRefExpVisitor
         : result(result) { }
 
     // &c.x
-    void Visit(IrClassMemberBoxRefExp& boxRef)
+    void Visit(IrExp_BoxRef_ClassMember& boxRef)
     {
-        *result = MakePtr<RClassMemberBoxRefExp>(boxRef.loc, boxRef.decl, boxRef.typeArgs);
+        *result = MakePtr<RExp_ClassMemberBoxRef>(boxRef.loc, boxRef.decl, boxRef.typeArgs);
     }
 
     // &(*pS).x
-    void Visit(IrStructIndirectMemberBoxRefExp& boxRef)
+    void Visit(IrExp_BoxRef_StructIndirectMember& boxRef)
     {
-        *result = MakePtr<RStructIndirectMemberBoxRefExp>(boxRef.loc, boxRef.decl, boxRef.typeArgs);
+        *result = MakePtr<RExp_StructIndirectMemberBoxRef>(boxRef.loc, boxRef.decl, boxRef.typeArgs);
     }
 
     // &c.x.a
     // &(box S()).x.y
-    void Visit(IrStructMemberBoxRefExp& boxRef) override
+    void Visit(IrExp_BoxRef_StructMember& boxRef) override
     {
         RExpPtr parentExp;
         IrBoxRefExpToRExpTranslator parentTranslator(&parentExp);
         boxRef.parent->Accept(parentTranslator);
 
-        *result = MakePtr<RStructMemberBoxRefExp>(MakePtr<RTempLoc>(parentExp), boxRef.decl, boxRef.typeArgs);
+        *result = MakePtr<RExp_StructMemberBoxRef>(MakePtr<RLoc_Temp>(parentExp), boxRef.decl, boxRef.typeArgs);
     }
 };
 
@@ -54,69 +54,69 @@ struct IrExpToRExpTranslator : public IrExpVisitor
         : context(context), logger(logger), result(result) { }
 
     // &NS
-    void Visit(IrNamespaceExp& irExp) override
+    void Visit(IrExp_Namespace& irExp) override
     {
         logger->Fatal_CantMakeReference();
     }
 
     // &T
-    void Visit(IrTypeVarExp& irExp) override
+    void Visit(IrExp_TypeVar& irExp) override
     {
         logger->Fatal_CantMakeReference();
     }
 
     // &C
-    void Visit(IrClassExp& irExp) override
+    void Visit(IrExp_Class& irExp) override
     {
         logger->Fatal_CantMakeReference();
     }
 
     // &S
-    void Visit(IrStructExp& irExp) override
+    void Visit(IrExp_Struct& irExp) override
     {
         logger->Fatal_CantMakeReference();
     }
 
     // &E
-    void Visit(IrEnumExp& irExp) override
+    void Visit(IrExp_Enum& irExp) override
     {
         logger->Fatal_CantMakeReference();
     }
 
     // &this, this는 특수 키워드이고, local storage에 속하지 않는다. 에러를 내도록 한다
-    void Visit(IrThisVarExp& irExp) override
+    void Visit(IrExp_ThisVar& irExp) override
     {   
         logger->Fatal_CantReferenceThis();
     }
 
     // &C.x
-    void Visit(IrStaticRefExp& irExp) override
+    void Visit(IrExp_StaticRef& irExp) override
     {   
         throw NotImplementedException();
     }
 
     // &c.x
-    void Visit(IrBoxRefExp& irExp) override
+    void Visit(IrExp_BoxRef& irExp) override
     {
         IrBoxRefExpToRExpTranslator translator(result);
         irExp.Accept(translator);
     }
 
     // 가장 쉬운 &s.x
-    void Visit(IrLocalRefExp& irExp) override
+    void Visit(IrExp_LocalRef& irExp) override
     {
-        *result = MakePtr<RLocalRefExp>(irExp.loc);
+        *result = MakePtr<RExp_LocalRef>(irExp.loc);
     }
 
     // box S* pS = ...
     // &(*pS)
-    void Visit(IrDerefedBoxValueExp& irExp) override
+    void Visit(IrExp_DerefedBoxValue& irExp) override
     {
         logger->Fatal_UselessDereferenceReferencedValue();
     }
 
     // &G()
-    void Visit(IrLocalValueExp& irExp) override
+    void Visit(IrExp_LocalValue& irExp) override
     {
         logger->Fatal_CantReferenceTempValue();
     }

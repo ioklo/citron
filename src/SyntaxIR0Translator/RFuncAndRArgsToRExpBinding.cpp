@@ -50,7 +50,7 @@ public:
         auto sharedClassMemberFuncDecl = dynamic_pointer_cast<RClassMemberFuncDecl>(sharedFuncDecl);
         assert(sharedClassMemberFuncDecl);
 
-        *result = MakePtr<RCallClassMemberFuncExp>(sharedClassMemberFuncDecl, typeArgs, std::move(instance), std::move(args));
+        *result = MakePtr<RExp_CallClassMemberFunc>(sharedClassMemberFuncDecl, typeArgs, std::move(instance), std::move(args));
     }
 
     void Visit(RStructConstructorDecl& func) override 
@@ -63,7 +63,7 @@ public:
         auto sharedStructMemberFuncDecl = dynamic_pointer_cast<RStructMemberFuncDecl>(sharedFuncDecl);
         assert(sharedStructMemberFuncDecl);
 
-        *result = MakePtr<RCallStructMemberFuncExp>(sharedStructMemberFuncDecl, typeArgs, std::move(instance), std::move(args));
+        *result = MakePtr<RExp_CallStructMemberFunc>(sharedStructMemberFuncDecl, typeArgs, std::move(instance), std::move(args));
     }
 
     void Visit(RLambdaDecl& func) override 

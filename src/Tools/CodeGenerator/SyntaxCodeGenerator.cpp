@@ -60,23 +60,23 @@ struct ToJsonVisitor {
         ForwardClassDeclsInfo {
             .names {
                 "SStmt",
-                "SCommandStmt",
-                "SVarDeclStmt",
-                "SIfStmt",
-                "SIfTestStmt",
-                "SForStmt",
-                "SContinueStmt",
-                "SBreakStmt",
-                "SReturnStmt",
-                "SBlockStmt",
-                "SBlankStmt",
-                "SExpStmt",
-                "STaskStmt",
-                "SAwaitStmt",
-                "SAsyncStmt",
-                "SForeachStmt",
-                "SYieldStmt",
-                "SDirectiveStmt"
+                "SStmt_Command",
+                "SStmt_VarDecl",
+                "SStmt_If",
+                "SStmt_IfTest",
+                "SStmt_For",
+                "SStmt_Continue",
+                "SStmt_Break",
+                "SStmt_Return",
+                "SStmt_Block",
+                "SStmt_Blank",
+                "SStmt_Exp",
+                "SStmt_Task",
+                "SStmt_Await",
+                "SStmt_Async",
+                "SStmt_Foreach",
+                "SStmt_Yield",
+                "SStmt_Directive",
             }
         },
 
@@ -84,23 +84,23 @@ struct ToJsonVisitor {
         ForwardClassDeclsInfo {
             .names {
                 "SExp",
-                "SIdentifierExp",
-                "SStringExp",
-                "SIntLiteralExp",
-                "SBoolLiteralExp",
-                "SNullLiteralExp",
-                "SBinaryOpExp",
-                "SUnaryOpExp",
-                "SCallExp",
-                "SLambdaExp",
-                "SIndexerExp",
-                "SMemberExp",
-                "SIndirectMemberExp",
-                "SListExp",
-                "SNewExp",
-                "SBoxExp",
-                "SIsExp",
-                "SAsExp"
+                "SExp_Identifier",
+                "SExp_String",
+                "SExp_IntLiteral",
+                "SExp_BoolLiteral",
+                "SExp_NullLiteral",
+                "SExp_BinaryOp",
+                "SExp_UnaryOp",
+                "SExp_Call",
+                "SExp_Lambda",
+                "SExp_Indexer",
+                "SExp_Member",
+                "SExp_IndirectMember",
+                "SExp_List",
+                "SExp_New",
+                "SExp_Box",
+                "SExp_Is",
+                "SExp_As",
             }
         },
 
@@ -108,44 +108,44 @@ struct ToJsonVisitor {
         ForwardClassDeclsInfo {
             .names {
                 "STypeExp",
-                "SIdTypeExp",
-                "SMemberTypeExp",
-                "SNullableTypeExp",
-                "SLocalPtrTypeExp",
-                "SBoxPtrTypeExp",
-                "SLocalTypeExp"
+                "STypeExp_Id",
+                "STypeExp_Member",
+                "STypeExp_Nullable",
+                "STypeExp_LocalPtr",
+                "STypeExp_BoxPtr",
+                "STypeExp_Local"
             }
         },
 
         ForwardClassDeclsInfo {
             .names {
                 "SStringExpElement",
-                "STextStringExpElement",
-                "SExpStringExpElement"
+                "SStringExpElement_Text",
+                "SStringExpElement_Exp"
             }
         },
 
         ForwardClassDeclsInfo {
             .names {
                 "SLambdaExpBody",
-                "SStmtsLambdaExpBody",
-                "SExpLambdaExpBody"
+                "SLambdaExpBody_Stmts",
+                "SLambdaExpBody_Exp"
             }
         },
 
         ForwardClassDeclsInfo {
             .names {
                 "SEmbeddableStmt",
-                "SSingleEmbeddableStmt",
-                "SBlockEmbeddableStmt"
+                "SEmbeddableStmt_Single",
+                "SEmbeddableStmt_Block"
             }
         },
 
         ForwardClassDeclsInfo {
             .names {
                 "SForStmtInitializer",
-                "SExpForStmtInitializer",
-                "SVarDeclForStmtInitializer"
+                "SForStmtInitializer_Exp",
+                "SForStmtInitializer_VarDecl"
             }
         },
 
@@ -297,23 +297,23 @@ struct ToJsonVisitor {
             .bases { "SSyntax" },
             .argName = "stmt",
             .members {
-                "SCommandStmt",
-                "SVarDeclStmt",
-                "SIfStmt",
-                "SIfTestStmt",
-                "SForStmt",
-                "SContinueStmt",
-                "SBreakStmt",
-                "SReturnStmt",
-                "SBlockStmt",
-                "SBlankStmt",
-                "SExpStmt",
-                "STaskStmt",
-                "SAwaitStmt",
-                "SAsyncStmt",
-                "SForeachStmt",
-                "SYieldStmt",
-                "SDirectiveStmt"
+                "SStmt_Command",
+                "SStmt_VarDecl",
+                "SStmt_If",
+                "SStmt_IfTest",
+                "SStmt_For",
+                "SStmt_Continue",
+                "SStmt_Break",
+                "SStmt_Return",
+                "SStmt_Block",
+                "SStmt_Blank",
+                "SStmt_Exp",
+                "SStmt_Task",
+                "SStmt_Await",
+                "SStmt_Async",
+                "SStmt_Foreach",
+                "SStmt_Yield",
+                "SStmt_Directive"
             }
         },
 
@@ -322,23 +322,23 @@ struct ToJsonVisitor {
             .bases { "SSyntax" },
             .argName = "exp",
             .members {
-                "SIdentifierExp",
-                "SStringExp",
-                "SIntLiteralExp",
-                "SBoolLiteralExp",
-                "SNullLiteralExp",
-                "SBinaryOpExp",
-                "SUnaryOpExp",
-                "SCallExp",
-                "SLambdaExp",
-                "SIndexerExp",
-                "SMemberExp",
-                "SIndirectMemberExp",
-                "SListExp",
-                "SNewExp",
-                "SBoxExp",
-                "SIsExp",
-                "SAsExp"
+                "SExp_Identifier",
+                "SExp_String",
+                "SExp_IntLiteral",
+                "SExp_BoolLiteral",
+                "SExp_NullLiteral",
+                "SExp_BinaryOp",
+                "SExp_UnaryOp",
+                "SExp_Call",
+                "SExp_Lambda",
+                "SExp_Indexer",
+                "SExp_Member",
+                "SExp_IndirectMember",
+                "SExp_List",
+                "SExp_New",
+                "SExp_Box",
+                "SExp_Is",
+                "SExp_As",
             }
         },
 
@@ -347,12 +347,12 @@ struct ToJsonVisitor {
             .bases { "SSyntax" },
             .argName = "typeExp",
             .members {
-                "SIdTypeExp",
-                "SMemberTypeExp",
-                "SNullableTypeExp",
-                "SLocalPtrTypeExp",
-                "SBoxPtrTypeExp",
-                "SLocalTypeExp"
+                "STypeExp_Id",
+                "STypeExp_Member",
+                "STypeExp_Nullable",
+                "STypeExp_LocalPtr",
+                "STypeExp_BoxPtr",
+                "STypeExp_Local"
             }
         },
 
@@ -361,8 +361,8 @@ struct ToJsonVisitor {
             .bases { "SSyntax" },
             .argName = "elem",
             .members {
-                "STextStringExpElement",
-                "SExpStringExpElement"
+                "SStringExpElement_Text",
+                "SStringExpElement_Exp"
             }
         },
 
@@ -371,8 +371,8 @@ struct ToJsonVisitor {
             .bases { "SSyntax" },
             .argName = "body",
             .members {
-                "SStmtsLambdaExpBody",
-                "SExpLambdaExpBody"
+                "SLambdaExpBody_Stmts",
+                "SLambdaExpBody_Exp"
             }
         },
 
@@ -381,8 +381,8 @@ struct ToJsonVisitor {
             .bases { "SSyntax" },
             .argName = "stmt",
             .members {
-                "SSingleEmbeddableStmt",
-                "SBlockEmbeddableStmt"
+                "SEmbeddableStmt_Single",
+                "SEmbeddableStmt_Block"
             }
         },
 
@@ -391,8 +391,8 @@ struct ToJsonVisitor {
             .bases { "SSyntax" },
             .argName = "initializer",
             .members {
-                "SExpForStmtInitializer",
-                "SVarDeclForStmtInitializer"
+                "SForStmtInitializer_Exp",
+                "SForStmtInitializer_VarDecl"
             }
         },
 
@@ -459,30 +459,30 @@ struct ToJsonVisitor {
 
         #pragma region SExps
         ClassInfo {
-            .name = "SIdentifierExp",
+            .name = "SExp_Identifier",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "std::string", .memberVarName = "value", .getterName = "GetValue" },
                 {.type = "std::vector<STypeExpPtr>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
             },
             .extraConstructors {
-                "SIdentifierExp(std::string value) : SIdentifierExp(std::move(value), {}) { }"
+                "SExp_Identifier(std::string value) : SExp_Identifier(std::move(value), {}) { }"
             }
         },
 
         ClassInfo {
-            .name = "SStringExp",
+            .name = "SExp_String",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "std::vector<SStringExpElementPtr>", .memberVarName = "elements", .getterName = "GetElements" },
             },
             .extraConstructors {
-                "SYNTAX_API SStringExp(std::string str);"
+                "SYNTAX_API SExp_String(std::string str);"
             }
         },
 
         ClassInfo {
-            .name = "SIntLiteralExp",
+            .name = "SExp_IntLiteral",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 { .type = "int", .memberVarName = "value", .getterName = "GetValue" },
@@ -490,7 +490,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SBoolLiteralExp",
+            .name = "SExp_BoolLiteral",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 { .type = "bool", .memberVarName = "value", .getterName = "GetValue" },
@@ -498,13 +498,13 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SNullLiteralExp",
+            .name = "SExp_NullLiteral",
             .variantInterfaces { "SExp" },
             .memberInfos { },
         },
 
         ClassInfo {
-            .name = "SListExp",
+            .name = "SExp_List",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 { .type = "std::vector<SExpPtr>", .memberVarName = "elements", .getterName = "GetElements" },
@@ -512,7 +512,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SNewExp",
+            .name = "SExp_New",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
@@ -521,7 +521,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SBinaryOpExp",
+            .name = "SExp_BinaryOp",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SBinaryOpKind", .memberVarName = "kind", .getterName = "GetKind" },
@@ -531,7 +531,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SUnaryOpExp",
+            .name = "SExp_UnaryOp",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SUnaryOpKind", .memberVarName = "kind", .getterName = "GetKind" },
@@ -540,7 +540,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SCallExp",
+            .name = "SExp_Call",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "callable", .getterName = "GetCallable" },
@@ -548,10 +548,8 @@ struct ToJsonVisitor {
             },
         },
 
-
-
         ClassInfo {
-            .name = "SLambdaExp",
+            .name = "SExp_Lambda",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 { .type = "std::vector<SLambdaExpParam>", .memberVarName = "params", .getterName = "GetParams" },
@@ -560,7 +558,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SIndexerExp",
+            .name = "SExp_Indexer",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "obj", .getterName = "GetObject" },
@@ -569,7 +567,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SMemberExp",
+            .name = "SExp_Member",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "parent", .getterName = "GetParent" },
@@ -577,12 +575,12 @@ struct ToJsonVisitor {
                 {.type = "std::vector<STypeExpPtr>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
             },
             .extraConstructors {
-                "SYNTAX_API SMemberExp(SExpPtr parent, std::string memberName);"
+                "SYNTAX_API SExp_Member(SExpPtr parent, std::string memberName);"
             }
         },
 
         ClassInfo {
-            .name = "SIndirectMemberExp",
+            .name = "SExp_IndirectMember",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "parent", .getterName = "GetParent" },
@@ -590,12 +588,12 @@ struct ToJsonVisitor {
                 {.type = "std::vector<STypeExpPtr>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
             },
             .extraConstructors {
-                "SYNTAX_API SIndirectMemberExp(SExpPtr parent, std::string memberName);"
+                "SYNTAX_API SExp_IndirectMember(SExpPtr parent, std::string memberName);"
             }
         },
 
         ClassInfo {
-            .name = "SBoxExp",
+            .name = "SExp_Box",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "innerExp", .getterName = "GetInnerExp" },
@@ -603,7 +601,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SIsExp",
+            .name = "SExp_Is",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
@@ -612,7 +610,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SAsExp",
+            .name = "SExp_As",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
@@ -626,20 +624,20 @@ struct ToJsonVisitor {
 
         
         ClassInfo {
-            .name = "SIdTypeExp",
+            .name = "STypeExp_Id",
             .variantInterfaces { "STypeExp" },
             .memberInfos {
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 {.type = "std::vector<STypeExpPtr>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
             },
             .extraConstructors {
-                "SYNTAX_API SIdTypeExp(std::string name);"
+                "SYNTAX_API STypeExp_Id(std::string name);"
             }
         },
 
-        // SMemberTypeExp(STypeExp typeExp, std::string name, std::vector<STypeExpPtr> typeArgs);
+        // STypeExp_Member(STypeExp typeExp, std::string name, std::vector<STypeExpPtr> typeArgs);
         ClassInfo {
-            .name = "SMemberTypeExp",
+            .name = "STypeExp_Member",
             .variantInterfaces { "STypeExp" },
             .memberInfos {
                 {.type = "STypeExpPtr", .memberVarName = "parentType", .getterName = "GetParentType" },
@@ -648,36 +646,36 @@ struct ToJsonVisitor {
             },
         },
 
-        // SNullableTypeExp(STypeExp typeExp)
+        // STypeExp_Nullable(STypeExp typeExp)
         ClassInfo {
-            .name = "SNullableTypeExp",
+            .name = "STypeExp_Nullable",
             .variantInterfaces { "STypeExp" },
             .memberInfos {
                 {.type = "STypeExpPtr", .memberVarName = "innerType", .getterName = "GetInnerType" },
             },
         },
 
-        // SLocalPtrTypeExp(STypeExp typeExp)
+        // STypeExp_LocalPtr(STypeExp typeExp)
         ClassInfo {
-            .name = "SLocalPtrTypeExp",
+            .name = "STypeExp_LocalPtr",
             .variantInterfaces { "STypeExp" },
             .memberInfos {
                 {.type = "STypeExpPtr", .memberVarName = "innerType", .getterName = "GetInnerType" },
             },
         },
 
-        // SBoxPtrTypeExp(STypeExp typeExp)
+        // STypeExp_BoxPtr(STypeExp typeExp)
         ClassInfo {
-            .name = "SBoxPtrTypeExp",
+            .name = "STypeExp_BoxPtr",
             .variantInterfaces { "STypeExp" },
             .memberInfos {
                 {.type = "STypeExpPtr", .memberVarName = "innerType", .getterName = "GetInnerType" },
             },
         },
 
-        // SLocalTypeExp(STypeExp typeExp)
+        // STypeExp_Local(STypeExp typeExp)
         ClassInfo {
-            .name = "SLocalTypeExp",
+            .name = "STypeExp_Local",
             .variantInterfaces { "STypeExp" },
             .memberInfos {
                 {.type = "STypeExpPtr", .memberVarName = "innerType", .getterName = "GetInnerType" },
@@ -689,7 +687,7 @@ struct ToJsonVisitor {
         #pragma region SStringExpElements
 
         ClassInfo {
-            .name = "STextStringExpElement",
+            .name = "SStringExpElement_Text",
             .variantInterfaces { "SStringExpElement" },
             .memberInfos {
                 {.type = "std::string", .memberVarName = "text", .getterName = "GetText" },
@@ -697,7 +695,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SExpStringExpElement",
+            .name = "SStringExpElement_Exp",
             .variantInterfaces { "SStringExpElement" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
@@ -708,7 +706,7 @@ struct ToJsonVisitor {
         #pragma region SLambdaExpBodys
         
         ClassInfo {
-            .name = "SStmtsLambdaExpBody",
+            .name = "SLambdaExpBody_Stmts",
             .variantInterfaces { "SLambdaExpBody" },
             .memberInfos {
                 { .type = "std::vector<SStmtPtr>", .memberVarName = "stmts", .getterName = "GetStmts" }
@@ -716,7 +714,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SExpLambdaExpBody",
+            .name = "SLambdaExpBody_Exp",
             .variantInterfaces { "SLambdaExpBody" },
             .memberInfos = {
                 { .type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" }
@@ -726,18 +724,18 @@ struct ToJsonVisitor {
 
         #pragma region SEmbeddableStmts
 
-        // SSingleEmbeddableStmt(SStmtPtr stmt), SStmt에 depends
+        // SEmbeddableStmt_Single(SStmtPtr stmt), SStmt에 depends
         ClassInfo {
-            .name = "SSingleEmbeddableStmt",
+            .name = "SEmbeddableStmt_Single",
             .variantInterfaces { "SEmbeddableStmt" },
             .memberInfos {
                 { .type = "SStmtPtr", .memberVarName = "stmt", .getterName = "GetStmt" },
             },
         },
 
-        // SBlockEmbeddableStmt(std::vector<SStmtPtr> stmts)
+        // SEmbeddableStmt_Block(std::vector<SStmtPtr> stmts)
         ClassInfo {
-            .name = "SBlockEmbeddableStmt",
+            .name = "SEmbeddableStmt_Block",
             .variantInterfaces { "SEmbeddableStmt" },
             .memberInfos {
                 {.type = "std::vector<SStmtPtr>", .memberVarName = "stmts", .getterName = "GetStmts" },
@@ -749,7 +747,7 @@ struct ToJsonVisitor {
         #pragma region SForStmtInitializer
         
         ClassInfo {
-            .name = "SExpForStmtInitializer",
+            .name = "SForStmtInitializer_Exp",
             .variantInterfaces { "SForStmtInitializer" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" }
@@ -757,7 +755,7 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SVarDeclForStmtInitializer",
+            .name = "SForStmtInitializer_VarDecl",
             .variantInterfaces { "SForStmtInitializer" },
             .memberInfos {
                 {.type = "SVarDecl", .memberVarName = "varDecl", .getterName = "GetVarDecl" }
@@ -768,84 +766,84 @@ struct ToJsonVisitor {
 
         #pragma region SStmts
 
-        // SCommandStmt(std::vector<SStringExp> commands)
+        // SStmt_Command(std::vector<SExp_String> commands)
         ClassInfo {
-            .name = "SCommandStmt",
+            .name = "SStmt_Command",
             .variantInterfaces { "SStmt" },
             .memberInfos {
-                {.type = "std::vector<std::shared_ptr<SStringExp>>", .memberVarName = "commands", .getterName = "GetCommands" },
+                {.type = "std::vector<std::shared_ptr<SExp_String>>", .memberVarName = "commands", .getterName = "GetCommands" },
             },
         },
 
-        // SVarDeclStmt(SVarDecl varDecl)
+        // SStmt_VarDecl(SVarDecl varDecl)
         ClassInfo {
-            .name = "SVarDeclStmt",
+            .name = "SStmt_VarDecl",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 {.type = "SVarDecl", .memberVarName = "varDecl", .getterName = "GetVarDecl" },
             },
         },
 
-        // SContinueStmt
+        // SStmt_Continue
         ClassInfo {
-            .name = "SContinueStmt",
+            .name = "SStmt_Continue",
             .variantInterfaces { "SStmt" },
             .memberInfos {},
         },
 
-        // SBreakStmt
+        // SStmt_Break
         ClassInfo {
-            .name = "SBreakStmt",
+            .name = "SStmt_Break",
             .variantInterfaces { "SStmt" },
             .memberInfos {},
         },
 
-        // SBlockStmt(std::vector<SStmtPtr> stmts)
+        // SStmt_Block(std::vector<SStmtPtr> stmts)
         ClassInfo {
-            .name = "SBlockStmt",
+            .name = "SStmt_Block",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 {.type = "std::vector<SStmtPtr>", .memberVarName = "stmts", .getterName = "GetStmts" },
             },
         },
 
-        // SBlankStmt
+        // SStmt_Blank
             ClassInfo {
-                .name = "SBlankStmt",
+                .name = "SStmt_Blank",
                 .variantInterfaces { "SStmt" },
                 .memberInfos {},
         },
 
-        // STaskStmt(std::vector<SStmtPtr> body)
+        // SStmt_Task(std::vector<SStmtPtr> body)
         ClassInfo {
-            .name = "STaskStmt",
+            .name = "SStmt_Task",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 {.type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
-        // SAwaitStmt(std::vector<SStmtPtr> body);
+        // SStmt_Await(std::vector<SStmtPtr> body);
         ClassInfo {
-            .name = "SAwaitStmt",
+            .name = "SStmt_Await",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 {.type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 
-        // SAsyncStmt(std::vector<SStmtPtr> body);
+        // SStmt_Async(std::vector<SStmtPtr> body);
             ClassInfo {
-                .name = "SAsyncStmt",
+                .name = "SStmt_Async",
                 .variantInterfaces { "SStmt" },
                 .memberInfos {
                     {.type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
                 },
         },
 
-        // SDirectiveStmt(std::u32string name, std::vector<SExpPtr> args)
+        // SStmt_Directive(std::u32string name, std::vector<SExpPtr> args)
         ClassInfo {
-            .name = "SDirectiveStmt",
+            .name = "SStmt_Directive",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -853,9 +851,9 @@ struct ToJsonVisitor {
             },
         },
 
-        // SIfStmt(SExp cond, SEmbeddableStmt body, SEmbeddableStmtPtr elseBody)
+        // SStmt_If(SExp cond, SEmbeddableStmt body, SEmbeddableStmtPtr elseBody)
         ClassInfo {
-            .name = "SIfStmt",
+            .name = "SStmt_If",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 { .type = "SExpPtr", .memberVarName = "cond", .getterName = "GetCond" },
@@ -864,25 +862,25 @@ struct ToJsonVisitor {
             },
         },
 
-        // SIfTestStmt(STypeExp testTypeExp, std::string varName, SExp exp, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody);
-                ClassInfo {
-                    .name = "SIfTestStmt",
-                    .variantInterfaces { "SStmt" },
-                    .memberInfos {
-                        {.type = "STypeExpPtr", .memberVarName = "testType", .getterName = "GetTestType" },
-                        {.type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
-                        {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
-                        {.type = "SEmbeddableStmtPtr", .memberVarName = "body", .getterName = "GetBody" },
-                        {.type = "SEmbeddableStmtPtr", .memberVarName = "elseBody", .getterName = "GetElseBody" },
-                    },
+        // SStmt_IfTest(STypeExp testTypeExp, std::string varName, SExp exp, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody);
+            ClassInfo {
+                .name = "SStmt_IfTest",
+                .variantInterfaces { "SStmt" },
+                .memberInfos {
+                    {.type = "STypeExpPtr", .memberVarName = "testType", .getterName = "GetTestType" },
+                    {.type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
+                    {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
+                    {.type = "SEmbeddableStmtPtr", .memberVarName = "body", .getterName = "GetBody" },
+                    {.type = "SEmbeddableStmtPtr", .memberVarName = "elseBody", .getterName = "GetElseBody" },
+                },
         },
 
-        // SForStmt(SForStmtInitializerPtr initializer, 
+        // SStmt_For(SForStmtInitializerPtr initializer, 
         //      SExpPtr condExp, 
         //      SExpPtr continueExp, 
         //      SEmbeddableStmt body);
         ClassInfo {
-            .name = "SForStmt",
+            .name = "SStmt_For",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 {.type = "SForStmtInitializerPtr", .memberVarName = "initializer", .getterName = "GetInitializer" },
@@ -893,25 +891,25 @@ struct ToJsonVisitor {
         },
 
         ClassInfo {
-            .name = "SReturnStmt",
+            .name = "SStmt_Return",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "value", .getterName = "GetValue" },
             },
         },
 
-        // SExpStmt(SExp exp)
+        // SStmt_Exp(SExp exp)
         ClassInfo {
-            .name = "SExpStmt",
+            .name = "SStmt_Exp",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
             },
         },
 
-        // SForeachStmt(STypeExp type, std::u32string varName, SExp enumerable, SEmbeddableStmt body);
+        // SStmt_Foreach(STypeExp type, std::u32string varName, SExp enumerable, SEmbeddableStmt body);
         ClassInfo {
-            .name = "SForeachStmt",
+            .name = "SStmt_Foreach",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 {.type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
@@ -921,9 +919,9 @@ struct ToJsonVisitor {
             },
         },
 
-        // SYieldStmt(SExp value)
+        // SStmt_Yield(SExp value)
         ClassInfo {
-            .name = "SYieldStmt",
+            .name = "SStmt_Yield",
             .variantInterfaces { "SStmt" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "value", .getterName = "GetValue" },

@@ -28,6 +28,7 @@ public:
     
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
+    IR0_API RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }

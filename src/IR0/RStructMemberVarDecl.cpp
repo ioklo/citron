@@ -36,7 +36,7 @@ RDecl* RStructMemberVarDecl::GetOuter()
 
 RIdentifier RStructMemberVarDecl::GetIdentifier()
 {
-    return RIdentifier { RNormalName(name), 0, {} };
+    return RIdentifier { RName_Normal(name), 0, {} };
 }
 
 } // namespace Citron

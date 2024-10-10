@@ -5,6 +5,7 @@
 namespace Citron
 {
 
+class RDecl;
 class RGlobalFuncDecl;
 class RClassConstructorDecl;
 class RClassMemberFuncDecl;

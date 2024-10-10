@@ -1,9 +1,9 @@
 {
-    "$type": "SDirectiveStmt",
+    "$type": "SStmt_Directive",
     "name": "notnull",
     "args": [
         {
-            "$type": "SIdentifierExp",
+            "$type": "SExp_Identifier",
             "value": "a",
             "typeArgs": []
         }

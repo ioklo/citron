@@ -32,65 +32,65 @@ public:
         if (!loc)
             *result = nullptr;
         else
-            *result = MakePtr<RLoadExp>(std::move(loc));
+            *result = MakePtr<RExp_Load>(std::move(loc));
     }
 
-    void Visit(ReThisVarExp& exp) override
+    void Visit(ReExp_ThisVar& exp) override
     {
         auto rLoc = TranslateReThisVarExpToRLoc(exp);
         HandleLoc(std::move(rLoc));
     }
 
-    void Visit(ReLocalVarExp& exp) override
+    void Visit(ReExp_LocalVar& exp) override
     {
         auto rLoc = TranslateReLocalVarExpToRLoc(exp);
         HandleLoc(std::move(rLoc));
     }
 
-    void Visit(ReLambdaMemberVarExp& exp) override
+    void Visit(ReExp_LambdaMemberVar& exp) override
     {
         auto rLoc = TranslateReLambdaMemberVarExpToRLoc(exp);
         HandleLoc(std::move(rLoc));
     }
 
-    void Visit(ReClassMemberVarExp& exp) override
+    void Visit(ReExp_ClassMemberVar& exp) override
     {
         auto rLoc = TranslateReClassMemberVarExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
     }
 
-    void Visit(ReStructMemberVarExp& exp) override
+    void Visit(ReExp_StructMemberVar& exp) override
     {
         auto rLoc = TranslateReStructMemberVarExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
     }
 
-    void Visit(ReEnumElemMemberVarExp& exp) override
+    void Visit(ReExp_EnumElemMemberVar& exp) override
     {
         auto rLoc = TranslateReEnumElemMemberVarExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
     }
 
-    void Visit(ReLocalDerefExp& exp) override
+    void Visit(ReExp_LocalDeref& exp) override
     {
         auto rLoc = TranslateReLocalDerefExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
     }
 
     // *x
-    void Visit(ReBoxDerefExp& exp) override 
+    void Visit(ReExp_BoxDeref& exp) override 
     {
         auto rLoc = TranslateReBoxDerefExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
     }
 
-    void Visit(ReListIndexerExp& exp) override
+    void Visit(ReExp_ListIndexer& exp) override
     {
         auto rLoc = TranslateReListIndexerExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
     }
 
-    void Visit(ReElseExp& exp) override
+    void Visit(ReExp_Else& exp) override
     {   
         *result = exp.rExp;
     }

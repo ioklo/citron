@@ -8,48 +8,48 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-IrNamespaceExp::IrNamespaceExp(const shared_ptr<RNamespaceDecl>& decl)
+IrExp_Namespace::IrExp_Namespace(const shared_ptr<RNamespaceDecl>& decl)
     : decl(decl)
 {
 }
 
-IrTypeVarExp::IrTypeVarExp(const shared_ptr<RType_TypeVar>& type)
+IrExp_TypeVar::IrExp_TypeVar(const shared_ptr<RType_TypeVar>& type)
     : type(type)
 {
 
 }
 
-IrClassExp::IrClassExp(const std::shared_ptr<RClassDecl>& decl, RTypeArgumentsPtr&& typeArgs)
+IrExp_Class::IrExp_Class(const std::shared_ptr<RClassDecl>& decl, RTypeArgumentsPtr&& typeArgs)
     : decl(decl), typeArgs(std::move(typeArgs))
 {
 }
 
-IrStructExp::IrStructExp(const std::shared_ptr<RStructDecl>& decl, RTypeArgumentsPtr&& typeArgs)
+IrExp_Struct::IrExp_Struct(const std::shared_ptr<RStructDecl>& decl, RTypeArgumentsPtr&& typeArgs)
     : decl(decl), typeArgs(std::move(typeArgs))
 {
 }
 
-IrEnumExp::IrEnumExp(const std::shared_ptr<REnumDecl>& decl, RTypeArgumentsPtr&& typeArgs)
+IrExp_Enum::IrExp_Enum(const std::shared_ptr<REnumDecl>& decl, RTypeArgumentsPtr&& typeArgs)
     : decl(decl), typeArgs(std::move(typeArgs))
 {
 }
 
-IrThisVarExp::IrThisVarExp(const RTypePtr& type)
+IrExp_ThisVar::IrExp_ThisVar(const RTypePtr& type)
     : type(type)
 {
 }
 
-IrStaticRefExp::IrStaticRefExp(const RLocPtr& loc)
+IrExp_StaticRef::IrExp_StaticRef(const RLocPtr& loc)
     : loc(loc)
 {
 }
 
-IrClassMemberBoxRefExp::IrClassMemberBoxRefExp(const RLocPtr& loc, const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(const RLocPtr& loc, const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : loc(loc), decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr IrClassMemberBoxRefExp::GetTargetType(RTypeFactory& factory)
+RTypePtr IrExp_BoxRef_ClassMember::GetTargetType(RTypeFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -59,12 +59,12 @@ RTypePtr IrClassMemberBoxRefExp::GetTargetType(RTypeFactory& factory)
 //    return MakePtr<RClassMemberLoc>(loc, decl, typeArgs);
 //}
 
-IrStructIndirectMemberBoxRefExp::IrStructIndirectMemberBoxRefExp(const RLocPtr& loc, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(const RLocPtr& loc, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : loc(loc), decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr IrStructIndirectMemberBoxRefExp::GetTargetType(RTypeFactory& factory)
+RTypePtr IrExp_BoxRef_StructIndirectMember::GetTargetType(RTypeFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -75,12 +75,12 @@ RTypePtr IrStructIndirectMemberBoxRefExp::GetTargetType(RTypeFactory& factory)
 //    return MakePtr<RStructMemberLoc>(MakePtr<RBoxDerefLoc>(loc, decl, typeArgs));
 //}
 
-IrStructMemberBoxRefExp::IrStructMemberBoxRefExp(const std::shared_ptr<IrBoxRefExp>& parent, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : parent(parent), decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr IrStructMemberBoxRefExp::GetTargetType(RTypeFactory& factory)
+RTypePtr IrExp_BoxRef_StructMember::GetTargetType(RTypeFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -91,18 +91,18 @@ RTypePtr IrStructMemberBoxRefExp::GetTargetType(RTypeFactory& factory)
 //    return MakePtr<RStructMemberLoc>(parent->MakeLoc(), decl, typeArgs);
 //}
 
-IrLocalRefExp::IrLocalRefExp(const RLocPtr& loc)
+IrExp_LocalRef::IrExp_LocalRef(const RLocPtr& loc)
     : loc(loc)
 {
 }
 
-IrLocalValueExp::IrLocalValueExp(RExpPtr&& exp)
+IrExp_LocalValue::IrExp_LocalValue(RExpPtr&& exp)
     : exp(std::move(exp))
 {
 
 }
 
-IrDerefedBoxValueExp::IrDerefedBoxValueExp(RLocPtr&& innerLoc)
+IrExp_DerefedBoxValue::IrExp_DerefedBoxValue(RLocPtr&& innerLoc)
     : innerLoc(std::move(innerLoc))
 {
 }

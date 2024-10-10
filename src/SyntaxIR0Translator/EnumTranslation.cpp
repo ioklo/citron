@@ -2,9 +2,11 @@
 #include "EnumTranslation.h"
 
 #include <Infra/Ptr.h>
+#include <IR0/REnumElemMemberVarDecl.h>
 
 #include "SkeletonPhaseContext.h"
 #include "MemberDeclPhaseContext.h"
+
 
 using namespace std;
 
@@ -12,7 +14,7 @@ namespace Citron::SyntaxIR0Translator {
 
 void AddEnumElemMemberVar(const shared_ptr<REnumElemDecl>& rEnumElem, SEnumElemMemberVarDecl& sEnumElemMemberVar, SkeletonPhaseContext& context)
 {
-    auto rMemberVar = MakePtr<REnumElemMemberVarDecl>(rEnumElem, RNormalName(sEnumElemMemberVar.name));
+    auto rMemberVar = MakePtr<REnumElemMemberVarDecl>(rEnumElem, RName_Normal(sEnumElemMemberVar.name));
     rEnumElem->AddMemberVar(rMemberVar);
 
     context.AddMemberDeclPhaseTask([type = sEnumElemMemberVar.type, rMemberVar, rEnumElem](MemberDeclPhaseContext& context) {
@@ -34,7 +36,7 @@ void AddEnumElem(const shared_ptr<REnumDecl>& rEnum, SEnumElemDecl& sEnumElem, S
 std::shared_ptr<REnumDecl> InnerMakeEnum(RTypeDeclOuterPtr rOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context)
 {
     auto typeParams = MakeTypeParams(sDecl.typeParams);
-    auto rDecl = MakePtr<REnumDecl>(std::move(rOuter), accessor, RNormalName(sDecl.name), typeParams, sDecl.elements.size());
+    auto rDecl = MakePtr<REnumDecl>(std::move(rOuter), accessor, RName_Normal(sDecl.name), typeParams, sDecl.elements.size());
     
     for (auto& sElemDecl : sDecl.elements)
         AddEnumElem(rDecl, *sElemDecl, context);

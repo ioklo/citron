@@ -41,42 +41,42 @@ public:
         if (!exp)
             *result = nullptr;
         else 
-            *result = MakePtr<ReElseExp>(std::move(exp));
+            *result = MakePtr<ReExp_Else>(std::move(exp));
     }
 
 
-    void Visit(SIdentifierExp& exp) override 
+    void Visit(SExp_Identifier& exp) override 
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SStringExp& exp) override 
+    void Visit(SExp_String& exp) override 
     {
         HandleExp(TranslateSStringExpToRStringExp(exp, context, logger, factory));
     }
 
-    void Visit(SIntLiteralExp& exp) override 
+    void Visit(SExp_IntLiteral& exp) override 
     {
         HandleExp(TranslateSIntLiteralExpToRExp(exp));
     }
 
-    void Visit(SBoolLiteralExp& exp) override 
+    void Visit(SExp_BoolLiteral& exp) override 
     {
         HandleExp(TranslateSBoolLiteralExpToRExp(exp));
     }
 
-    void Visit(SNullLiteralExp& exp) override 
+    void Visit(SExp_NullLiteral& exp) override 
     {
         HandleExp(TranslateSNullLiteralExpToRExp(exp, hintType, context, logger));
     }
 
-    void Visit(SBinaryOpExp& exp) override 
+    void Visit(SExp_BinaryOp& exp) override 
     {
         HandleExp(TranslateSBinaryOpExpToRExp(exp, context, logger, factory));
     }
 
     // int만 지원한다
-    void Visit(SUnaryOpExp& exp) override 
+    void Visit(SExp_UnaryOp& exp) override 
     {
         if (exp.kind == SUnaryOpKind::Deref)
         {
@@ -88,55 +88,55 @@ public:
         }
     }
 
-    void Visit(SCallExp& exp) override 
+    void Visit(SExp_Call& exp) override 
     {
         return HandleExp(TranslateSCallExpToRExp(exp, hintType, context, logger));
     }
 
-    void Visit(SLambdaExp& exp) override 
+    void Visit(SExp_Lambda& exp) override 
     {
         return HandleExp(TranslateSLambdaExpToRExp(exp, logger));
     }
 
-    void Visit(SIndexerExp& exp) override 
+    void Visit(SExp_Indexer& exp) override 
     {
         return HandleDefault(exp);
     }
 
     // exp를 돌려주는 버전
     // parent."x"<>
-    void Visit(SMemberExp& exp) override 
+    void Visit(SExp_Member& exp) override 
     {   
         return HandleDefault(exp);
     }
 
-    void Visit(SIndirectMemberExp& exp) override 
+    void Visit(SExp_IndirectMember& exp) override 
     {
         static_assert(false);
     }
 
-    void Visit(SListExp& exp) override 
+    void Visit(SExp_List& exp) override 
     {
         HandleExp(TranslateSListExpToRExp(exp, context, logger, factory));
     }
 
     // 'new C(...)'
-    void Visit(SNewExp& exp) override 
+    void Visit(SExp_New& exp) override 
     {
         HandleExp(TranslateSNewExpToRExp(exp, context, logger, factory));
     }
 
-    void Visit(SBoxExp& exp) override 
+    void Visit(SExp_Box& exp) override 
     {
         HandleExp(TranslateSBoxExpToRExp(exp, hintType, context, logger, factory));
     }
 
-    void Visit(SIsExp& exp) override 
+    void Visit(SExp_Is& exp) override 
     {
         HandleExp(TranslateSIsExpToRExp(exp, context, logger, factory));
     }
 
-    void Visit(SAsExp& exp) override 
+    void Visit(SExp_As& exp) override 
     {
         HandleExp(TranslateSAsExpToRExp(exp, context, logger, factory));
     }

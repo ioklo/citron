@@ -28,7 +28,7 @@ RDecl* RStructConstructorDecl::GetOuter()
 
 RIdentifier RStructConstructorDecl::GetIdentifier()
 {
-    return RIdentifier { RReservedName("Constructor"), 0, RCommonFuncDeclComponent::GetParamIds() };
+    return RIdentifier { RName_Reserved("Constructor"), 0, RCommonFuncDeclComponent::GetParamIds() };
 }
 
 RDecl* RStructConstructorDecl::GetDecl()

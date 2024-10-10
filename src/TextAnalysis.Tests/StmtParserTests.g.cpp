@@ -15,7 +15,7 @@ TEST(StmtParser, ParseBlankStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SBlankStmt"
+    "$type": "SStmt_Blank"
 })---";
 
     EXPECT_SYNTAX_EQ(oStmt, expected);
@@ -31,34 +31,34 @@ xxx
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SCommandStmt",
+    "$type": "SStmt_Command",
     "commands": [
         {
-            "$type": "SStringExp",
+            "$type": "SExp_String",
             "elements": [
                 {
-                    "$type": "STextStringExpElement",
+                    "$type": "SStringExpElement_Text",
                     "text": "    echo "
                 },
                 {
-                    "$type": "SExpStringExpElement",
+                    "$type": "SStringExpElement_Exp",
                     "exp": {
-                        "$type": "SIdentifierExp",
+                        "$type": "SExp_Identifier",
                         "value": "a",
                         "typeArgs": []
                     }
                 },
                 {
-                    "$type": "STextStringExpElement",
+                    "$type": "SStringExpElement_Text",
                     "text": " bbb   "
                 }
             ]
         },
         {
-            "$type": "SStringExp",
+            "$type": "SExp_String",
             "elements": [
                 {
-                    "$type": "STextStringExpElement",
+                    "$type": "SStringExpElement_Text",
                     "text": "xxx"
                 }
             ]
@@ -76,22 +76,22 @@ TEST(StmtParser, ParseBlockStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SBlockStmt",
+    "$type": "SStmt_Block",
     "stmts": [
         {
-            "$type": "SBlockStmt",
+            "$type": "SStmt_Block",
             "stmts": []
         },
         {
-            "$type": "SBlockStmt",
+            "$type": "SStmt_Block",
             "stmts": [
                 {
-                    "$type": "SBlankStmt"
+                    "$type": "SStmt_Blank"
                 }
             ]
         },
         {
-            "$type": "SBlankStmt"
+            "$type": "SStmt_Blank"
         }
     ]
 })---";
@@ -106,13 +106,13 @@ TEST(StmtParser, ParseBoxPtrVarDeclStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SVarDeclStmt",
+    "$type": "SStmt_VarDecl",
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "SBoxPtrTypeExp",
+            "$type": "STypeExp_BoxPtr",
             "innerType": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "int",
                 "typeArgs": []
             }
@@ -137,7 +137,7 @@ TEST(StmtParser, ParseBreakStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SBreakStmt"
+    "$type": "SStmt_Break"
 })---";
 
     EXPECT_SYNTAX_EQ(oStmt, expected);
@@ -150,7 +150,7 @@ TEST(StmtParser, ParseContinueStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SContinueStmt"
+    "$type": "SStmt_Continue"
 })---";
 
     EXPECT_SYNTAX_EQ(oStmt, expected);
@@ -163,11 +163,11 @@ TEST(StmtParser, ParseDirectiveStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SDirectiveStmt",
+    "$type": "SStmt_Directive",
     "name": "notnull",
     "args": [
         {
-            "$type": "SIdentifierExp",
+            "$type": "SExp_Identifier",
             "value": "a",
             "typeArgs": []
         }
@@ -184,27 +184,27 @@ TEST(StmtParser, ParseExpStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SExpStmt",
+    "$type": "SStmt_Exp",
     "exp": {
-        "$type": "SBinaryOpExp",
+        "$type": "SExp_BinaryOp",
         "kind": "Assign",
         "operand0": {
-            "$type": "SIdentifierExp",
+            "$type": "SExp_Identifier",
             "value": "a",
             "typeArgs": []
         },
         "operand1": {
-            "$type": "SBinaryOpExp",
+            "$type": "SExp_BinaryOp",
             "kind": "Multiply",
             "operand0": {
-                "$type": "SIdentifierExp",
+                "$type": "SExp_Identifier",
                 "value": "b",
                 "typeArgs": []
             },
             "operand1": {
-                "$type": "SCallExp",
+                "$type": "SExp_Call",
                 "callable": {
-                    "$type": "SIdentifierExp",
+                    "$type": "SExp_Identifier",
                     "value": "c",
                     "typeArgs": []
                 },
@@ -214,7 +214,7 @@ TEST(StmtParser, ParseExpStmt)
                         "bOut": false,
                         "bParams": false,
                         "exp": {
-                            "$type": "SIntLiteralExp",
+                            "$type": "SExp_IntLiteral",
                             "value": 1
                         }
                     }
@@ -234,13 +234,13 @@ TEST(StmtParser, ParseForStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SForStmt",
+    "$type": "SStmt_For",
     "initializer": {
-        "$type": "SExpForStmtInitializer",
+        "$type": "SForStmtInitializer_Exp",
         "exp": {
-            "$type": "SCallExp",
+            "$type": "SExp_Call",
             "callable": {
-                "$type": "SIdentifierExp",
+                "$type": "SExp_Identifier",
                 "value": "f",
                 "typeArgs": []
             },
@@ -248,28 +248,28 @@ TEST(StmtParser, ParseForStmt)
         }
     },
     "cond": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "g",
         "typeArgs": []
     },
     "cont": {
-        "$type": "SBinaryOpExp",
+        "$type": "SExp_BinaryOp",
         "kind": "Add",
         "operand0": {
-            "$type": "SIdentifierExp",
+            "$type": "SExp_Identifier",
             "value": "h",
             "typeArgs": []
         },
         "operand1": {
-            "$type": "SIdentifierExp",
+            "$type": "SExp_Identifier",
             "value": "g",
             "typeArgs": []
         }
     },
     "body": {
-        "$type": "SSingleEmbeddableStmt",
+        "$type": "SEmbeddableStmt_Single",
         "stmt": {
-            "$type": "SBlankStmt"
+            "$type": "SStmt_Blank"
         }
     }
 })---";
@@ -284,20 +284,20 @@ TEST(StmtParser, ParseForeachStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SForeachStmt",
+    "$type": "SStmt_Foreach",
     "type": {
-        "$type": "SIdTypeExp",
+        "$type": "STypeExp_Id",
         "name": "var",
         "typeArgs": []
     },
     "varName": "x",
     "enumerable": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "l",
         "typeArgs": []
     },
     "body": {
-        "$type": "SBlockEmbeddableStmt",
+        "$type": "SEmbeddableStmt_Block",
         "stmts": []
     }
 })---";
@@ -312,39 +312,39 @@ TEST(StmtParser, ParseIfIsExpCondStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SIfStmt",
+    "$type": "SStmt_If",
     "cond": {
-        "$type": "SIsExp",
+        "$type": "SExp_Is",
         "exp": {
-            "$type": "SIdentifierExp",
+            "$type": "SExp_Identifier",
             "value": "b",
             "typeArgs": []
         },
         "type": {
-            "$type": "SIdTypeExp",
+            "$type": "STypeExp_Id",
             "name": "T",
             "typeArgs": []
         }
     },
     "body": {
-        "$type": "SBlockEmbeddableStmt",
+        "$type": "SEmbeddableStmt_Block",
         "stmts": []
     },
     "elseBody": {
-        "$type": "SSingleEmbeddableStmt",
+        "$type": "SEmbeddableStmt_Single",
         "stmt": {
-            "$type": "SIfStmt",
+            "$type": "SStmt_If",
             "cond": {
-                "$type": "SIdentifierExp",
+                "$type": "SExp_Identifier",
                 "value": "c",
                 "typeArgs": []
             },
             "body": {
-                "$type": "SBlockEmbeddableStmt",
+                "$type": "SEmbeddableStmt_Block",
                 "stmts": []
             },
             "elseBody": {
-                "$type": "SBlockEmbeddableStmt",
+                "$type": "SEmbeddableStmt_Block",
                 "stmts": []
             }
         }
@@ -361,31 +361,31 @@ TEST(StmtParser, ParseIfStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SIfStmt",
+    "$type": "SStmt_If",
     "cond": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "b",
         "typeArgs": []
     },
     "body": {
-        "$type": "SBlockEmbeddableStmt",
+        "$type": "SEmbeddableStmt_Block",
         "stmts": []
     },
     "elseBody": {
-        "$type": "SSingleEmbeddableStmt",
+        "$type": "SEmbeddableStmt_Single",
         "stmt": {
-            "$type": "SIfStmt",
+            "$type": "SStmt_If",
             "cond": {
-                "$type": "SIdentifierExp",
+                "$type": "SExp_Identifier",
                 "value": "c",
                 "typeArgs": []
             },
             "body": {
-                "$type": "SBlockEmbeddableStmt",
+                "$type": "SEmbeddableStmt_Block",
                 "stmts": []
             },
             "elseBody": {
-                "$type": "SBlockEmbeddableStmt",
+                "$type": "SEmbeddableStmt_Block",
                 "stmts": []
             }
         }
@@ -402,37 +402,37 @@ TEST(StmtParser, ParseIfTestStmtWithVarName)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SIfTestStmt",
+    "$type": "SStmt_IfTest",
     "testType": {
-        "$type": "SIdTypeExp",
+        "$type": "STypeExp_Id",
         "name": "T",
         "typeArgs": []
     },
     "varName": "t",
     "exp": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "b",
         "typeArgs": []
     },
     "body": {
-        "$type": "SBlockEmbeddableStmt",
+        "$type": "SEmbeddableStmt_Block",
         "stmts": []
     },
     "elseBody": {
-        "$type": "SSingleEmbeddableStmt",
+        "$type": "SEmbeddableStmt_Single",
         "stmt": {
-            "$type": "SIfStmt",
+            "$type": "SStmt_If",
             "cond": {
-                "$type": "SIdentifierExp",
+                "$type": "SExp_Identifier",
                 "value": "c",
                 "typeArgs": []
             },
             "body": {
-                "$type": "SBlockEmbeddableStmt",
+                "$type": "SEmbeddableStmt_Block",
                 "stmts": []
             },
             "elseBody": {
-                "$type": "SBlockEmbeddableStmt",
+                "$type": "SEmbeddableStmt_Block",
                 "stmts": []
             }
         }
@@ -449,25 +449,25 @@ TEST(StmtParser, ParseInlineCommandStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SCommandStmt",
+    "$type": "SStmt_Command",
     "commands": [
         {
-            "$type": "SStringExp",
+            "$type": "SExp_String",
             "elements": [
                 {
-                    "$type": "STextStringExpElement",
+                    "$type": "SStringExpElement_Text",
                     "text": "echo "
                 },
                 {
-                    "$type": "SExpStringExpElement",
+                    "$type": "SStringExpElement_Exp",
                     "exp": {
-                        "$type": "SIdentifierExp",
+                        "$type": "SExp_Identifier",
                         "value": "a",
                         "typeArgs": []
                     }
                 },
                 {
-                    "$type": "STextStringExpElement",
+                    "$type": "SStringExpElement_Text",
                     "text": "bbb  "
                 }
             ]
@@ -485,13 +485,13 @@ TEST(StmtParser, ParseLocalPtrVarDeclStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SVarDeclStmt",
+    "$type": "SStmt_VarDecl",
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "SLocalPtrTypeExp",
+            "$type": "STypeExp_LocalPtr",
             "innerType": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "int",
                 "typeArgs": []
             }
@@ -516,13 +516,13 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SVarDeclStmt",
+    "$type": "SStmt_VarDecl",
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "SNullableTypeExp",
+            "$type": "STypeExp_Nullable",
             "innerType": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "int",
                 "typeArgs": []
             }
@@ -547,11 +547,11 @@ TEST(StmtParser, ParseVarDeclStmt)
     auto oStmt = ParseStmt(&lexer);
 
     auto expected = R"---({
-    "$type": "SVarDeclStmt",
+    "$type": "SStmt_VarDecl",
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "SIdTypeExp",
+            "$type": "STypeExp_Id",
             "name": "string",
             "typeArgs": []
         },
@@ -560,10 +560,10 @@ TEST(StmtParser, ParseVarDeclStmt)
                 "$type": "SVarDeclElement",
                 "varName": "a",
                 "initExp": {
-                    "$type": "SStringExp",
+                    "$type": "SExp_String",
                     "elements": [
                         {
-                            "$type": "STextStringExpElement",
+                            "$type": "SStringExpElement_Text",
                             "text": "hello"
                         }
                     ]

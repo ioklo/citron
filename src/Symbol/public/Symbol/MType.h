@@ -9,14 +9,14 @@
 namespace Citron 
 {
 
-class MNullableType;
-class MTypeVarType;  // 이것은 Symbol인가?
-class MVoidType;     // builtin type
-class MTupleType;    // inline type
-class MFuncType;     // inline type, circular
-class MLocalPtrType; // inline type
-class MBoxPtrType;   // inline type
-class MInstanceType;
+class MType_Nullable;
+class MType_TypeVar;  // 이것은 Symbol인가?
+class MType_Void;     // builtin type
+class MType_Tuple;    // inline type
+class MType_Func;     // inline type, circular
+class MType_LocalPtr; // inline type
+class MType_BoxPtr;   // inline type
+class MType_Instance;
 class MDeclId;
 using MDeclIdPtr = std::shared_ptr<MDeclId>;
 
@@ -27,14 +27,14 @@ class MTypeVisitor
 {
 public:
     virtual ~MTypeVisitor() { }
-    virtual void Visit(MNullableType& type) = 0;
-    virtual void Visit(MTypeVarType& type) = 0;
-    virtual void Visit(MVoidType& type) = 0;
-    virtual void Visit(MTupleType& type) = 0;
-    virtual void Visit(MFuncType& type) = 0;
-    virtual void Visit(MLocalPtrType& type) = 0;
-    virtual void Visit(MBoxPtrType& type) = 0;
-    virtual void Visit(MInstanceType& type) = 0;
+    virtual void Visit(MType_Nullable& type) = 0;
+    virtual void Visit(MType_TypeVar& type) = 0;
+    virtual void Visit(MType_Void& type) = 0;
+    virtual void Visit(MType_Tuple& type) = 0;
+    virtual void Visit(MType_Func& type) = 0;
+    virtual void Visit(MType_LocalPtr& type) = 0;
+    virtual void Visit(MType_BoxPtr& type) = 0;
+    virtual void Visit(MType_Instance& type) = 0;
 };
 
 class MType
@@ -47,7 +47,7 @@ public:
 using MTypePtr = std::shared_ptr<MType>;
 
 // recursive types
-class MNullableType : public MType
+class MType_Nullable : public MType
 {
     MTypePtr innerType;
 
@@ -64,7 +64,7 @@ public:
 // => 순환참조때문에 누적 Index를 사용하는 TypeVarSymbolId로 다시 롤백한다
 // 'MyModule.MyClass<X, Y>.MyStruct<T, U, X>.Func<T>(T, int).T' path에 Func<T>와 T가 순환 참조된다
 // => TypeVarSymbolId(5)로 참조하게 한다
-class MTypeVarType : public MType
+class MType_TypeVar : public MType
 {
     int index;
     // std::string name;
@@ -73,7 +73,7 @@ public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class MVoidType : public MType
+class MType_Void : public MType
 {
 public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
@@ -85,7 +85,7 @@ class MTupleMemberVar
     std::string name;
 };
 
-class MTupleType : public MType
+class MType_Tuple : public MType
 {
     std::vector<MTupleMemberVar> memberVars;
 
@@ -93,7 +93,7 @@ public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class MFuncType : public MType
+class MType_Func : public MType
 {
     bool bLocal;
     MFuncReturn funcRet;
@@ -103,7 +103,7 @@ public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class MLocalPtrType : public MType
+class MType_LocalPtr : public MType
 {
     MTypePtr innerType;
 
@@ -111,14 +111,14 @@ public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class MBoxPtrType : public MType
+class MType_BoxPtr : public MType
 {
     MTypePtr innerType;
 public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class MInstanceType : public MType
+class MType_Instance : public MType
 {
     MDeclIdPtr declId;
     MTypeArgumentsPtr typeArgs;

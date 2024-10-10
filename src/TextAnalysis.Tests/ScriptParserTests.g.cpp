@@ -36,7 +36,7 @@ TEST(ScriptParser, ParseComplexScript)
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "void",
                 "typeArgs": []
             },
@@ -45,11 +45,11 @@ TEST(ScriptParser, ParseComplexScript)
             "parameters": [],
             "body": [
                 {
-                    "$type": "SVarDeclStmt",
+                    "$type": "SStmt_VarDecl",
                     "varDecl": {
                         "$type": "SVarDecl",
                         "type": {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "int",
                             "typeArgs": []
                         },
@@ -58,7 +58,7 @@ TEST(ScriptParser, ParseComplexScript)
                                 "$type": "SVarDeclElement",
                                 "varName": "sum",
                                 "initExp": {
-                                    "$type": "SIntLiteralExp",
+                                    "$type": "SExp_IntLiteral",
                                     "value": 0
                                 }
                             }
@@ -66,13 +66,13 @@ TEST(ScriptParser, ParseComplexScript)
                     }
                 },
                 {
-                    "$type": "SForStmt",
+                    "$type": "SStmt_For",
                     "initializer": {
-                        "$type": "SVarDeclForStmtInitializer",
+                        "$type": "SForStmtInitializer_VarDecl",
                         "varDecl": {
                             "$type": "SVarDecl",
                             "type": {
-                                "$type": "SIdTypeExp",
+                                "$type": "STypeExp_Id",
                                 "name": "int",
                                 "typeArgs": []
                             },
@@ -81,7 +81,7 @@ TEST(ScriptParser, ParseComplexScript)
                                     "$type": "SVarDeclElement",
                                     "varName": "i",
                                     "initExp": {
-                                        "$type": "SIntLiteralExp",
+                                        "$type": "SExp_IntLiteral",
                                         "value": 0
                                     }
                                 }
@@ -89,75 +89,75 @@ TEST(ScriptParser, ParseComplexScript)
                         }
                     },
                     "cond": {
-                        "$type": "SBinaryOpExp",
+                        "$type": "SExp_BinaryOp",
                         "kind": "LessThan",
                         "operand0": {
-                            "$type": "SIdentifierExp",
+                            "$type": "SExp_Identifier",
                             "value": "i",
                             "typeArgs": []
                         },
                         "operand1": {
-                            "$type": "SIntLiteralExp",
+                            "$type": "SExp_IntLiteral",
                             "value": 5
                         }
                     },
                     "cont": {
-                        "$type": "SUnaryOpExp",
+                        "$type": "SExp_UnaryOp",
                         "kind": "PostfixInc",
                         "operand": {
-                            "$type": "SIdentifierExp",
+                            "$type": "SExp_Identifier",
                             "value": "i",
                             "typeArgs": []
                         }
                     },
                     "body": {
-                        "$type": "SBlockEmbeddableStmt",
+                        "$type": "SEmbeddableStmt_Block",
                         "stmts": [
                             {
-                                "$type": "SIfStmt",
+                                "$type": "SStmt_If",
                                 "cond": {
-                                    "$type": "SBinaryOpExp",
+                                    "$type": "SExp_BinaryOp",
                                     "kind": "Equal",
                                     "operand0": {
-                                        "$type": "SBinaryOpExp",
+                                        "$type": "SExp_BinaryOp",
                                         "kind": "Modulo",
                                         "operand0": {
-                                            "$type": "SIdentifierExp",
+                                            "$type": "SExp_Identifier",
                                             "value": "i",
                                             "typeArgs": []
                                         },
                                         "operand1": {
-                                            "$type": "SIntLiteralExp",
+                                            "$type": "SExp_IntLiteral",
                                             "value": 2
                                         }
                                     },
                                     "operand1": {
-                                        "$type": "SIntLiteralExp",
+                                        "$type": "SExp_IntLiteral",
                                         "value": 0
                                     }
                                 },
                                 "body": {
-                                    "$type": "SSingleEmbeddableStmt",
+                                    "$type": "SEmbeddableStmt_Single",
                                     "stmt": {
-                                        "$type": "SExpStmt",
+                                        "$type": "SStmt_Exp",
                                         "exp": {
-                                            "$type": "SBinaryOpExp",
+                                            "$type": "SExp_BinaryOp",
                                             "kind": "Assign",
                                             "operand0": {
-                                                "$type": "SIdentifierExp",
+                                                "$type": "SExp_Identifier",
                                                 "value": "sum",
                                                 "typeArgs": []
                                             },
                                             "operand1": {
-                                                "$type": "SBinaryOpExp",
+                                                "$type": "SExp_BinaryOp",
                                                 "kind": "Add",
                                                 "operand0": {
-                                                    "$type": "SIdentifierExp",
+                                                    "$type": "SExp_Identifier",
                                                     "value": "sum",
                                                     "typeArgs": []
                                                 },
                                                 "operand1": {
-                                                    "$type": "SIdentifierExp",
+                                                    "$type": "SExp_Identifier",
                                                     "value": "i",
                                                     "typeArgs": []
                                                 }
@@ -166,15 +166,15 @@ TEST(ScriptParser, ParseComplexScript)
                                     }
                                 },
                                 "elseBody": {
-                                    "$type": "SSingleEmbeddableStmt",
+                                    "$type": "SEmbeddableStmt_Single",
                                     "stmt": {
-                                        "$type": "SCommandStmt",
+                                        "$type": "SStmt_Command",
                                         "commands": [
                                             {
-                                                "$type": "SStringExp",
+                                                "$type": "SExp_String",
                                                 "elements": [
                                                     {
-                                                        "$type": "STextStringExpElement",
+                                                        "$type": "SStringExpElement_Text",
                                                         "text": "            echo hi "
                                                     }
                                                 ]
@@ -187,25 +187,25 @@ TEST(ScriptParser, ParseComplexScript)
                     }
                 },
                 {
-                    "$type": "SCommandStmt",
+                    "$type": "SStmt_Command",
                     "commands": [
                         {
-                            "$type": "SStringExp",
+                            "$type": "SExp_String",
                             "elements": [
                                 {
-                                    "$type": "STextStringExpElement",
+                                    "$type": "SStringExpElement_Text",
                                     "text": "echo "
                                 },
                                 {
-                                    "$type": "SExpStringExpElement",
+                                    "$type": "SStringExpElement_Exp",
                                     "exp": {
-                                        "$type": "SIdentifierExp",
+                                        "$type": "SExp_Identifier",
                                         "value": "sum",
                                         "typeArgs": []
                                     }
                                 },
                                 {
-                                    "$type": "STextStringExpElement",
+                                    "$type": "SStringExpElement_Text",
                                     "text": " Completed!"
                                 }
                             ]
@@ -252,7 +252,7 @@ TEST(ScriptParser, ParseEnumDecl)
                         {
                             "$type": "SEnumElemMemberVarDecl",
                             "type": {
-                                "$type": "SIdTypeExp",
+                                "$type": "STypeExp_Id",
                                 "name": "int",
                                 "typeArgs": []
                             },
@@ -287,7 +287,7 @@ TEST(ScriptParser, ParseFuncDecl)
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "void",
                 "typeArgs": []
             },
@@ -299,7 +299,7 @@ TEST(ScriptParser, ParseFuncDecl)
                     "hasOut": false,
                     "hasParams": false,
                     "type": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -310,7 +310,7 @@ TEST(ScriptParser, ParseFuncDecl)
                     "hasOut": false,
                     "hasParams": false,
                     "type": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "string",
                         "typeArgs": []
                     },
@@ -321,7 +321,7 @@ TEST(ScriptParser, ParseFuncDecl)
                     "hasOut": false,
                     "hasParams": true,
                     "type": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -330,11 +330,11 @@ TEST(ScriptParser, ParseFuncDecl)
             ],
             "body": [
                 {
-                    "$type": "SVarDeclStmt",
+                    "$type": "SStmt_VarDecl",
                     "varDecl": {
                         "$type": "SVarDecl",
                         "type": {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "int",
                             "typeArgs": []
                         },
@@ -343,7 +343,7 @@ TEST(ScriptParser, ParseFuncDecl)
                                 "$type": "SVarDeclElement",
                                 "varName": "a",
                                 "initExp": {
-                                    "$type": "SIntLiteralExp",
+                                    "$type": "SExp_IntLiteral",
                                     "value": 0
                                 }
                             }
@@ -394,7 +394,7 @@ TEST(ScriptParser, ParseNamespaceDecl)
                             "accessModifier": null,
                             "bSequence": false,
                             "retType": {
-                                "$type": "SIdTypeExp",
+                                "$type": "STypeExp_Id",
                                 "name": "void",
                                 "typeArgs": []
                             },
@@ -430,7 +430,7 @@ TEST(ScriptParser, ParseSimpleScript)
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "void",
                 "typeArgs": []
             },
@@ -439,13 +439,13 @@ TEST(ScriptParser, ParseSimpleScript)
             "parameters": [],
             "body": [
                 {
-                    "$type": "SCommandStmt",
+                    "$type": "SStmt_Command",
                     "commands": [
                         {
-                            "$type": "SStringExp",
+                            "$type": "SExp_String",
                             "elements": [
                                 {
-                                    "$type": "STextStringExpElement",
+                                    "$type": "SStringExpElement_Text",
                                     "text": "ls -al"
                                 }
                             ]
@@ -492,12 +492,12 @@ TEST(ScriptParser, ParseStructDecl)
             ],
             "baseTypes": [
                 {
-                    "$type": "SIdTypeExp",
+                    "$type": "STypeExp_Id",
                     "name": "B",
                     "typeArgs": []
                 },
                 {
-                    "$type": "SIdTypeExp",
+                    "$type": "STypeExp_Id",
                     "name": "I",
                     "typeArgs": []
                 }
@@ -507,7 +507,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "$type": "SStructMemberVarDecl",
                     "accessModifier": null,
                     "varType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -519,7 +519,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "$type": "SStructMemberVarDecl",
                     "accessModifier": "Public",
                     "varType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -531,7 +531,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "$type": "SStructMemberVarDecl",
                     "accessModifier": "Protected",
                     "varType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "string",
                         "typeArgs": []
                     },
@@ -543,7 +543,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "$type": "SStructMemberVarDecl",
                     "accessModifier": "Private",
                     "varType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -563,12 +563,12 @@ TEST(ScriptParser, ParseStructDecl)
                     ],
                     "baseTypes": [
                         {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "B",
                             "typeArgs": []
                         },
                         {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "I",
                             "typeArgs": []
                         }
@@ -578,7 +578,7 @@ TEST(ScriptParser, ParseStructDecl)
                             "$type": "SStructMemberVarDecl",
                             "accessModifier": null,
                             "varType": {
-                                "$type": "SIdTypeExp",
+                                "$type": "STypeExp_Id",
                                 "name": "int",
                                 "typeArgs": []
                             },
@@ -594,7 +594,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "bStatic": true,
                     "bSequence": false,
                     "retType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "void",
                         "typeArgs": []
                     },
@@ -611,7 +611,7 @@ TEST(ScriptParser, ParseStructDecl)
                             "hasOut": false,
                             "hasParams": false,
                             "type": {
-                                "$type": "SIdTypeExp",
+                                "$type": "STypeExp_Id",
                                 "name": "string",
                                 "typeArgs": []
                             },
@@ -626,7 +626,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "bStatic": false,
                     "bSequence": true,
                     "retType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -640,9 +640,9 @@ TEST(ScriptParser, ParseStructDecl)
                     "parameters": [],
                     "body": [
                         {
-                            "$type": "SYieldStmt",
+                            "$type": "SStmt_Yield",
                             "value": {
-                                "$type": "SIntLiteralExp",
+                                "$type": "SExp_IntLiteral",
                                 "value": 4
                             }
                         }

@@ -14,22 +14,22 @@ SArgument::SArgument(SExpPtr exp)
 {
 }
 
-SIdTypeExp::SIdTypeExp(std::string name)
-    : SIdTypeExp(std::move(name), {})
+STypeExp_Id::STypeExp_Id(std::string name)
+    : STypeExp_Id(std::move(name), {})
 { }
 
-SStringExp::SStringExp(std::string str)
-    : SStringExp(make_vector<SStringExpElementPtr>(MakePtr<STextStringExpElement>(std::move(str))))
+SExp_String::SExp_String(std::string str)
+    : SExp_String(make_vector<SStringExpElementPtr>(MakePtr<SStringExpElement_Text>(std::move(str))))
 { 
 }
 
-SMemberExp::SMemberExp(SExpPtr parent, std::string memberName)
-    : SMemberExp(std::move(parent), std::move(memberName), {})
+SExp_Member::SExp_Member(SExpPtr parent, std::string memberName)
+    : SExp_Member(std::move(parent), std::move(memberName), {})
 {
 }
 
-SIndirectMemberExp::SIndirectMemberExp(SExpPtr parent, std::string memberName)
-    : SIndirectMemberExp(std::move(parent), std::move(memberName), {})
+SExp_IndirectMember::SExp_IndirectMember(SExpPtr parent, std::string memberName)
+    : SExp_IndirectMember(std::move(parent), std::move(memberName), {})
 {
 }
 

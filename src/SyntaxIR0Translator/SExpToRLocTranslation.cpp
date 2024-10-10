@@ -60,7 +60,7 @@ public:
         }
         else if (bWrapExpAsLoc)
         {
-            *result = MakePtr<RTempLoc>(std::move(rExp));
+            *result = MakePtr<RLoc_Temp>(std::move(rExp));
         }
         else
         {
@@ -69,42 +69,42 @@ public:
         }
     }
    
-    void Visit(SIdentifierExp& exp) override 
+    void Visit(SExp_Identifier& exp) override 
     { 
         HandleDefault(exp);
     }
 
-    void Visit(SStringExp& exp) override 
+    void Visit(SExp_String& exp) override 
     { 
         auto rExp = TranslateSStringExpToRStringExp(exp, context, logger, factory);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SIntLiteralExp& exp) override 
+    void Visit(SExp_IntLiteral& exp) override 
     { 
         auto rExp = TranslateSIntLiteralExpToRExp(exp);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SBoolLiteralExp& exp) override 
+    void Visit(SExp_BoolLiteral& exp) override 
     { 
         auto rExp = TranslateSBoolLiteralExpToRExp(exp);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SNullLiteralExp& exp) override 
+    void Visit(SExp_NullLiteral& exp) override 
     { 
         auto rExp = TranslateSNullLiteralExpToRExp(exp, hintType, context, logger);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SBinaryOpExp& exp) override 
+    void Visit(SExp_BinaryOp& exp) override 
     {   
         RExpPtr rExp = TranslateSBinaryOpExpToRExp(exp, context, logger, factory);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SUnaryOpExp& exp) override 
+    void Visit(SExp_UnaryOp& exp) override 
     { 
         // Deref는 loc으로 변경되어야 한다
         if (exp.kind ==  SUnaryOpKind::Deref)
@@ -118,56 +118,56 @@ public:
         }
     }
 
-    void Visit(SCallExp& exp) override 
+    void Visit(SExp_Call& exp) override 
     { 
         RExpPtr rExp = TranslateSCallExpToRExp(exp, hintType, context, logger);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SLambdaExp& exp) override 
+    void Visit(SExp_Lambda& exp) override 
     { 
         auto rExp = TranslateSLambdaExpToRExp(exp, logger);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SIndexerExp& exp) override 
+    void Visit(SExp_Indexer& exp) override 
     { 
         HandleDefault(exp);
     }
 
-    void Visit(SMemberExp& exp) override 
+    void Visit(SExp_Member& exp) override 
     { 
         HandleDefault(exp);
     }
 
     // s->x
-    void Visit(SIndirectMemberExp& exp) override { static_assert(false); }
+    void Visit(SExp_IndirectMember& exp) override { static_assert(false); }
 
-    void Visit(SListExp& exp) override 
+    void Visit(SExp_List& exp) override 
     { 
         auto rExp = TranslateSListExpToRExp(exp, context, logger, factory);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SNewExp& exp) override 
+    void Visit(SExp_New& exp) override 
     { 
         auto rExp = TranslateSNewExpToRExp(exp, context, logger, factory);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SBoxExp& exp) override 
+    void Visit(SExp_Box& exp) override 
     { 
         auto rExp = TranslateSBoxExpToRExp(exp, hintType, context, logger, factory);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SIsExp& exp) override 
+    void Visit(SExp_Is& exp) override 
     { 
         auto rExp = TranslateSIsExpToRExp(exp, context, logger, factory);
         HandleExp(std::move(rExp));
     }
 
-    void Visit(SAsExp& exp) override 
+    void Visit(SExp_As& exp) override 
     {
         auto rExp = TranslateSAsExpToRExp(exp, context, logger, factory);
         HandleExp(std::move(rExp));

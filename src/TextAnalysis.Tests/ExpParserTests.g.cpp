@@ -15,7 +15,7 @@ TEST(ExpParser, ParseBoolFalse)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SBoolLiteralExp",
+    "$type": "SExp_BoolLiteral",
     "value": false
 })---";
 
@@ -29,7 +29,7 @@ TEST(ExpParser, ParseBoolTrue)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SBoolLiteralExp",
+    "$type": "SExp_BoolLiteral",
     "value": true
 })---";
 
@@ -43,55 +43,55 @@ TEST(ExpParser, ParseComplexExp)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SBinaryOpExp",
+    "$type": "SExp_BinaryOp",
     "kind": "Assign",
     "operand0": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "a",
         "typeArgs": []
     },
     "operand1": {
-        "$type": "SBinaryOpExp",
+        "$type": "SExp_BinaryOp",
         "kind": "Assign",
         "operand0": {
-            "$type": "SIdentifierExp",
+            "$type": "SExp_Identifier",
             "value": "b",
             "typeArgs": []
         },
         "operand1": {
-            "$type": "SBinaryOpExp",
+            "$type": "SExp_BinaryOp",
             "kind": "NotEqual",
             "operand0": {
-                "$type": "SBinaryOpExp",
+                "$type": "SExp_BinaryOp",
                 "kind": "Equal",
                 "operand0": {
-                    "$type": "SBinaryOpExp",
+                    "$type": "SExp_BinaryOp",
                     "kind": "Subtract",
                     "operand0": {
-                        "$type": "SBinaryOpExp",
+                        "$type": "SExp_BinaryOp",
                         "kind": "Add",
                         "operand0": {
-                            "$type": "SBinaryOpExp",
+                            "$type": "SExp_BinaryOp",
                             "kind": "Multiply",
                             "operand0": {
-                                "$type": "SUnaryOpExp",
+                                "$type": "SExp_UnaryOp",
                                 "kind": "LogicalNot",
                                 "operand": {
-                                    "$type": "SUnaryOpExp",
+                                    "$type": "SExp_UnaryOp",
                                     "kind": "LogicalNot",
                                     "operand": {
-                                        "$type": "SUnaryOpExp",
+                                        "$type": "SExp_UnaryOp",
                                         "kind": "PostfixInc",
                                         "operand": {
-                                            "$type": "SBinaryOpExp",
+                                            "$type": "SExp_BinaryOp",
                                             "kind": "Modulo",
                                             "operand0": {
-                                                "$type": "SIdentifierExp",
+                                                "$type": "SExp_Identifier",
                                                 "value": "c",
                                                 "typeArgs": []
                                             },
                                             "operand1": {
-                                                "$type": "SIdentifierExp",
+                                                "$type": "SExp_Identifier",
                                                 "value": "d",
                                                 "typeArgs": []
                                             }
@@ -100,48 +100,48 @@ TEST(ExpParser, ParseComplexExp)
                                 }
                             },
                             "operand1": {
-                                "$type": "SIdentifierExp",
+                                "$type": "SExp_Identifier",
                                 "value": "e",
                                 "typeArgs": []
                             }
                         },
                         "operand1": {
-                            "$type": "SIdentifierExp",
+                            "$type": "SExp_Identifier",
                             "value": "f",
                             "typeArgs": []
                         }
                     },
                     "operand1": {
-                        "$type": "SBinaryOpExp",
+                        "$type": "SExp_BinaryOp",
                         "kind": "Modulo",
                         "operand0": {
-                            "$type": "SBinaryOpExp",
+                            "$type": "SExp_BinaryOp",
                             "kind": "Divide",
                             "operand0": {
-                                "$type": "SIdentifierExp",
+                                "$type": "SExp_Identifier",
                                 "value": "g",
                                 "typeArgs": []
                             },
                             "operand1": {
-                                "$type": "SIdentifierExp",
+                                "$type": "SExp_Identifier",
                                 "value": "h",
                                 "typeArgs": []
                             }
                         },
                         "operand1": {
-                            "$type": "SIdentifierExp",
+                            "$type": "SExp_Identifier",
                             "value": "i",
                             "typeArgs": []
                         }
                     }
                 },
                 "operand1": {
-                    "$type": "SIntLiteralExp",
+                    "$type": "SExp_IntLiteral",
                     "value": 3
                 }
             },
             "operand1": {
-                "$type": "SBoolLiteralExp",
+                "$type": "SExp_BoolLiteral",
                 "value": false
             }
         }
@@ -158,15 +158,15 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SMemberExp",
+    "$type": "SExp_Member",
     "parent": {
-        "$type": "SCallExp",
+        "$type": "SExp_Call",
         "callable": {
-            "$type": "SMemberExp",
+            "$type": "SExp_Member",
             "parent": {
-                "$type": "SMemberExp",
+                "$type": "SExp_Member",
                 "parent": {
-                    "$type": "SIdentifierExp",
+                    "$type": "SExp_Identifier",
                     "value": "a",
                     "typeArgs": []
                 },
@@ -176,16 +176,16 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
             "memberName": "c",
             "memberTypeArgs": [
                 {
-                    "$type": "SIdTypeExp",
+                    "$type": "STypeExp_Id",
                     "name": "int",
                     "typeArgs": []
                 },
                 {
-                    "$type": "SIdTypeExp",
+                    "$type": "STypeExp_Id",
                     "name": "list",
                     "typeArgs": [
                         {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "int",
                             "typeArgs": []
                         }
@@ -199,7 +199,7 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
                 "bOut": false,
                 "bParams": false,
                 "exp": {
-                    "$type": "SIntLiteralExp",
+                    "$type": "SExp_IntLiteral",
                     "value": 1
                 }
             },
@@ -208,10 +208,10 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
                 "bOut": false,
                 "bParams": false,
                 "exp": {
-                    "$type": "SStringExp",
+                    "$type": "SExp_String",
                     "elements": [
                         {
-                            "$type": "STextStringExpElement",
+                            "$type": "SStringExpElement_Text",
                             "text": "str"
                         }
                     ]
@@ -233,7 +233,7 @@ TEST(ExpParser, ParseIdentifier)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SIdentifierExp",
+    "$type": "SExp_Identifier",
     "value": "s",
     "typeArgs": []
 })---";
@@ -248,11 +248,11 @@ TEST(ExpParser, ParseIdentifierExpWithTypeArgs)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SIdentifierExp",
+    "$type": "SExp_Identifier",
     "value": "x",
     "typeArgs": [
         {
-            "$type": "SIdTypeExp",
+            "$type": "STypeExp_Id",
             "name": "T",
             "typeArgs": []
         }
@@ -269,16 +269,16 @@ TEST(ExpParser, ParseIndirectMemberExp)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SIndirectMemberExp",
+    "$type": "SExp_IndirectMember",
     "parent": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "a",
         "typeArgs": []
     },
     "memberName": "b",
     "memberTypeArgs": [
         {
-            "$type": "SIdTypeExp",
+            "$type": "STypeExp_Id",
             "name": "int",
             "typeArgs": []
         }
@@ -295,7 +295,7 @@ TEST(ExpParser, ParseInt)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SIntLiteralExp",
+    "$type": "SExp_IntLiteral",
     "value": 1234
 })---";
 
@@ -309,15 +309,15 @@ TEST(ExpParser, ParseLambdaExp)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SBinaryOpExp",
+    "$type": "SExp_BinaryOp",
     "kind": "Assign",
     "operand0": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "a",
         "typeArgs": []
     },
     "operand1": {
-        "$type": "SLambdaExp",
+        "$type": "SExp_Lambda",
         "params": [
             {
                 "$type": "SLambdaExpParam",
@@ -328,9 +328,9 @@ TEST(ExpParser, ParseLambdaExp)
             }
         ],
         "body": {
-            "$type": "SExpLambdaExpBody",
+            "$type": "SLambdaExpBody_Exp",
             "exp": {
-                "$type": "SLambdaExp",
+                "$type": "SExp_Lambda",
                 "params": [
                     {
                         "$type": "SLambdaExpParam",
@@ -342,7 +342,7 @@ TEST(ExpParser, ParseLambdaExp)
                     {
                         "$type": "SLambdaExpParam",
                         "type": {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "int",
                             "typeArgs": []
                         },
@@ -352,9 +352,9 @@ TEST(ExpParser, ParseLambdaExp)
                     }
                 ],
                 "body": {
-                    "$type": "SExpLambdaExpBody",
+                    "$type": "SLambdaExpBody_Exp",
                     "exp": {
-                        "$type": "SIdentifierExp",
+                        "$type": "SExp_Identifier",
                         "value": "e",
                         "typeArgs": []
                     }
@@ -374,18 +374,18 @@ TEST(ExpParser, ParseListExp)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SListExp",
+    "$type": "SExp_List",
     "elements": [
         {
-            "$type": "SIntLiteralExp",
+            "$type": "SExp_IntLiteral",
             "value": 1
         },
         {
-            "$type": "SIntLiteralExp",
+            "$type": "SExp_IntLiteral",
             "value": 2
         },
         {
-            "$type": "SIntLiteralExp",
+            "$type": "SExp_IntLiteral",
             "value": 3
         }
     ]
@@ -401,13 +401,13 @@ TEST(ExpParser, ParseNewExp)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SNewExp",
+    "$type": "SExp_New",
     "type": {
-        "$type": "SIdTypeExp",
+        "$type": "STypeExp_Id",
         "name": "MyType",
         "typeArgs": [
             {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "X",
                 "typeArgs": []
             }
@@ -419,7 +419,7 @@ TEST(ExpParser, ParseNewExp)
             "bOut": false,
             "bParams": false,
             "exp": {
-                "$type": "SIntLiteralExp",
+                "$type": "SExp_IntLiteral",
                 "value": 2
             }
         },
@@ -428,7 +428,7 @@ TEST(ExpParser, ParseNewExp)
             "bOut": false,
             "bParams": false,
             "exp": {
-                "$type": "SBoolLiteralExp",
+                "$type": "SExp_BoolLiteral",
                 "value": false
             }
         },
@@ -437,10 +437,10 @@ TEST(ExpParser, ParseNewExp)
             "bOut": false,
             "bParams": false,
             "exp": {
-                "$type": "SStringExp",
+                "$type": "SExp_String",
                 "elements": [
                     {
-                        "$type": "STextStringExpElement",
+                        "$type": "SStringExpElement_Text",
                         "text": "string"
                     }
                 ]
@@ -459,18 +459,18 @@ TEST(ExpParser, ParsePrimaryExp)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SUnaryOpExp",
+    "$type": "SExp_UnaryOp",
     "kind": "PostfixInc",
     "operand": {
-        "$type": "SBinaryOpExp",
+        "$type": "SExp_BinaryOp",
         "kind": "Modulo",
         "operand0": {
-            "$type": "SCallExp",
+            "$type": "SExp_Call",
             "callable": {
-                "$type": "SUnaryOpExp",
+                "$type": "SExp_UnaryOp",
                 "kind": "PostfixInc",
                 "operand": {
-                    "$type": "SIdentifierExp",
+                    "$type": "SExp_Identifier",
                     "value": "c",
                     "typeArgs": []
                 }
@@ -481,7 +481,7 @@ TEST(ExpParser, ParsePrimaryExp)
                     "bOut": false,
                     "bParams": false,
                     "exp": {
-                        "$type": "SIdentifierExp",
+                        "$type": "SExp_Identifier",
                         "value": "e",
                         "typeArgs": []
                     }
@@ -491,7 +491,7 @@ TEST(ExpParser, ParsePrimaryExp)
                     "bOut": false,
                     "bParams": false,
                     "exp": {
-                        "$type": "SIdentifierExp",
+                        "$type": "SExp_Identifier",
                         "value": "f",
                         "typeArgs": []
                     }
@@ -499,7 +499,7 @@ TEST(ExpParser, ParsePrimaryExp)
             ]
         },
         "operand1": {
-            "$type": "SIdentifierExp",
+            "$type": "SExp_Identifier",
             "value": "d",
             "typeArgs": []
         }
@@ -516,25 +516,25 @@ TEST(ExpParser, ParseStringExp)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SStringExp",
+    "$type": "SExp_String",
     "elements": [
         {
-            "$type": "STextStringExpElement",
+            "$type": "SStringExpElement_Text",
             "text": "aaa bbb "
         },
         {
-            "$type": "SExpStringExpElement",
+            "$type": "SStringExpElement_Exp",
             "exp": {
-                "$type": "SStringExp",
+                "$type": "SExp_String",
                 "elements": [
                     {
-                        "$type": "STextStringExpElement",
+                        "$type": "SStringExpElement_Text",
                         "text": "xxx "
                     },
                     {
-                        "$type": "SExpStringExpElement",
+                        "$type": "SStringExpElement_Exp",
                         "exp": {
-                            "$type": "SIdentifierExp",
+                            "$type": "SExp_Identifier",
                             "value": "ddd",
                             "typeArgs": []
                         }
@@ -543,7 +543,7 @@ TEST(ExpParser, ParseStringExp)
             }
         },
         {
-            "$type": "STextStringExpElement",
+            "$type": "SStringExpElement_Text",
             "text": " ddd"
         }
     ]
@@ -559,31 +559,31 @@ TEST(ExpParser, ParseTestAndTypeTestExp)
     auto oExp = ParseExp(&lexer);
 
     auto expected = R"---({
-    "$type": "SIsExp",
+    "$type": "SExp_Is",
     "exp": {
-        "$type": "SBinaryOpExp",
+        "$type": "SExp_BinaryOp",
         "kind": "LessThan",
         "operand0": {
-            "$type": "SIsExp",
+            "$type": "SExp_Is",
             "exp": {
-                "$type": "SBinaryOpExp",
+                "$type": "SExp_BinaryOp",
                 "kind": "Add",
                 "operand0": {
-                    "$type": "SIdentifierExp",
+                    "$type": "SExp_Identifier",
                     "value": "e",
                     "typeArgs": []
                 },
                 "operand1": {
-                    "$type": "SIntLiteralExp",
+                    "$type": "SExp_IntLiteral",
                     "value": 1
                 }
             },
             "type": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "X",
                 "typeArgs": [
                     {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     }
@@ -591,21 +591,21 @@ TEST(ExpParser, ParseTestAndTypeTestExp)
             }
         },
         "operand1": {
-            "$type": "SBinaryOpExp",
+            "$type": "SExp_BinaryOp",
             "kind": "Add",
             "operand0": {
-                "$type": "SIdentifierExp",
+                "$type": "SExp_Identifier",
                 "value": "d",
                 "typeArgs": []
             },
             "operand1": {
-                "$type": "SIntLiteralExp",
+                "$type": "SExp_IntLiteral",
                 "value": 1
             }
         }
     },
     "type": {
-        "$type": "SIdTypeExp",
+        "$type": "STypeExp_Id",
         "name": "T",
         "typeArgs": []
     }

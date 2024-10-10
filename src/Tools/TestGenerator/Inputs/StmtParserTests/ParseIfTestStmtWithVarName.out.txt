@@ -1,35 +1,35 @@
 {
-    "$type": "SIfTestStmt",
+    "$type": "SStmt_IfTest",
     "testType": {
-        "$type": "SIdTypeExp",
+        "$type": "STypeExp_Id",
         "name": "T",
         "typeArgs": []
     },
     "varName": "t",
     "exp": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "b",
         "typeArgs": []
     },
     "body": {
-        "$type": "SBlockEmbeddableStmt",
+        "$type": "SEmbeddableStmt_Block",
         "stmts": []
     },
     "elseBody": {
-        "$type": "SSingleEmbeddableStmt",
+        "$type": "SEmbeddableStmt_Single",
         "stmt": {
-            "$type": "SIfStmt",
+            "$type": "SStmt_If",
             "cond": {
-                "$type": "SIdentifierExp",
+                "$type": "SExp_Identifier",
                 "value": "c",
                 "typeArgs": []
             },
             "body": {
-                "$type": "SBlockEmbeddableStmt",
+                "$type": "SEmbeddableStmt_Block",
                 "stmts": []
             },
             "elseBody": {
-                "$type": "SBlockEmbeddableStmt",
+                "$type": "SEmbeddableStmt_Block",
                 "stmts": []
             }
         }

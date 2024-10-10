@@ -24,118 +24,118 @@ using namespace std;
 
 namespace Citron {
 
-RLoadExp::RLoadExp(RLocPtr&& loc)
+RExp_Load::RExp_Load(RLocPtr&& loc)
     : loc(std::move(loc))
 {
 }
 
-RTypePtr RLoadExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_Load::GetType(RTypeFactory& factory)
 {
     return loc->GetType(factory);
 }
 
-RAssignExp::RAssignExp(RLocPtr&& dest, RExpPtr&& src)
+RExp_Assign::RExp_Assign(RLocPtr&& dest, RExpPtr&& src)
     : dest(std::move(dest)), src(std::move(src))
 {
 }
 
-RTypePtr RAssignExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_Assign::GetType(RTypeFactory& factory)
 {
     return dest->GetType(factory);
 }
 
-RBoxExp::RBoxExp(RExpPtr&& innerExp)
+RExp_Box::RExp_Box(RExpPtr&& innerExp)
     : innerExp(std::move(innerExp))
 {
 }
 
-RTypePtr RBoxExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_Box::GetType(RTypeFactory& factory)
 {
     auto innerType = innerExp->GetType(factory);
     return factory.MakeBoxPtrType(move(innerType));
 }
 
-RStaticBoxRefExp::RStaticBoxRefExp(const RLocPtr& loc)
+RExp_StaticBoxRef::RExp_StaticBoxRef(const RLocPtr& loc)
     : loc(loc)
 {
 }
 
-RTypePtr RStaticBoxRefExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_StaticBoxRef::GetType(RTypeFactory& factory)
 {
     return factory.MakeBoxPtrType(loc->GetType(factory));
 }
 
-RClassMemberBoxRefExp::RClassMemberBoxRefExp(const RLocPtr& holder, const shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
+RExp_ClassMemberBoxRef::RExp_ClassMemberBoxRef(const RLocPtr& holder, const shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
     : holder(holder), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr RClassMemberBoxRefExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_ClassMemberBoxRef::GetType(RTypeFactory& factory)
 {
     auto declType = memberVarDecl->GetDeclType(*typeArgs, factory);
     return factory.MakeBoxPtrType(move(declType));
 }
 
-RStructIndirectMemberBoxRefExp::RStructIndirectMemberBoxRefExp(const RLocPtr& holder, const shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
+RExp_StructIndirectMemberBoxRef::RExp_StructIndirectMemberBoxRef(const RLocPtr& holder, const shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
     : holder(holder), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr RStructIndirectMemberBoxRefExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_StructIndirectMemberBoxRef::GetType(RTypeFactory& factory)
 {
     auto declType = memberVarDecl->GetDeclType(*typeArgs, factory);
     return factory.MakeBoxPtrType(move(declType));
 }
 
-RStructMemberBoxRefExp::RStructMemberBoxRefExp(const RLocPtr& parent, const shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
+RExp_StructMemberBoxRef::RExp_StructMemberBoxRef(const RLocPtr& parent, const shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
     : parent(parent), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr RStructMemberBoxRefExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_StructMemberBoxRef::GetType(RTypeFactory& factory)
 {
     auto declType = memberVarDecl->GetDeclType(*typeArgs, factory);
 
     return factory.MakeBoxPtrType(move(declType));
 }
 
-RLocalRefExp::RLocalRefExp(const RLocPtr& innerLoc)
+RExp_LocalRef::RExp_LocalRef(const RLocPtr& innerLoc)
     : innerLoc(innerLoc)
 {
 }
 
-RTypePtr RLocalRefExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_LocalRef::GetType(RTypeFactory& factory)
 {
     auto innerLocType = innerLoc->GetType(factory);
     return factory.MakeLocalPtrType(move(innerLocType));
 }
 
-RCastBoxedLambdaToFuncExp::RCastBoxedLambdaToFuncExp(const RExpPtr& exp, const shared_ptr<RType_Func>& funcType)
+RExp_CastBoxedLambdaToFunc::RExp_CastBoxedLambdaToFunc(const RExpPtr& exp, const shared_ptr<RType_Func>& funcType)
     : exp(exp), funcType(funcType)
 {
 }
 
-RTypePtr RCastBoxedLambdaToFuncExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_CastBoxedLambdaToFunc::GetType(RTypeFactory& factory)
 {
     return funcType;
 }
 
-RBoolLiteralExp::RBoolLiteralExp(bool value)
+RExp_BoolLiteral::RExp_BoolLiteral(bool value)
     : value(value)
 {
 }
 
-RTypePtr RBoolLiteralExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_BoolLiteral::GetType(RTypeFactory& factory)
 {
     return factory.MakeBoolType();
 }
 
-RIntLiteralExp::RIntLiteralExp(int value)
+RExp_IntLiteral::RExp_IntLiteral(int value)
     : value(value)
 {
 }
 
-RTypePtr RIntLiteralExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_IntLiteral::GetType(RTypeFactory& factory)
 {
     return factory.MakeIntType();
 }
@@ -151,43 +151,43 @@ RLocStringExpElement::RLocStringExpElement(RLocPtr&& loc)
 
 }
 
-RStringExp::RStringExp(vector<RStringExpElement>&& elements)
+RExp_String::RExp_String(vector<RStringExpElement>&& elements)
     : elements(std::move(elements))
 {
 }
 
-RTypePtr RStringExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_String::GetType(RTypeFactory& factory)
 {
     return factory.MakeStringType();
 }
 
-RListExp::RListExp(vector<RExpPtr>&& elems, const RTypePtr& itemType)
+RExp_List::RExp_List(vector<RExpPtr>&& elems, const RTypePtr& itemType)
     : elems(move(elems)), itemType(itemType)
 {
 }
 
-RTypePtr RListExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_List::GetType(RTypeFactory& factory)
 {
     return factory.MakeListType(itemType);
 }
 
-RListIteratorExp::RListIteratorExp(const RLocPtr& listLoc, const RTypePtr& iteratorType)
+RExp_ListIterator::RExp_ListIterator(const RLocPtr& listLoc, const RTypePtr& iteratorType)
     : listLoc(listLoc), type(type)
 {
 }
 
 
-RTypePtr RListIteratorExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_ListIterator::GetType(RTypeFactory& factory)
 {
     return type;
 }
 
-RCallInternalUnaryOperatorExp::RCallInternalUnaryOperatorExp(RInternalUnaryOperator op, RExpPtr&& operand)
+RExp_CallInternalUnaryOperator::RExp_CallInternalUnaryOperator(RInternalUnaryOperator op, RExpPtr&& operand)
     : op(op), operand(std::move(operand))
 {
 }
 
-RTypePtr RCallInternalUnaryOperatorExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_CallInternalUnaryOperator::GetType(RTypeFactory& factory)
 {
     switch (op)
     {
@@ -200,12 +200,12 @@ RTypePtr RCallInternalUnaryOperatorExp::GetType(RTypeFactory& factory)
     unreachable();
 }
 
-RCallInternalUnaryAssignOperatorExp::RCallInternalUnaryAssignOperatorExp(RInternalUnaryAssignOperator op, RLocPtr&& operand)
+RExp_CallInternalUnaryAssignOperator::RExp_CallInternalUnaryAssignOperator(RInternalUnaryAssignOperator op, RLocPtr&& operand)
     : op(op), operand(std::move(operand))
 {
 }
 
-RTypePtr RCallInternalUnaryAssignOperatorExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_CallInternalUnaryAssignOperator::GetType(RTypeFactory& factory)
 {
     switch(op)
     {
@@ -219,12 +219,12 @@ RTypePtr RCallInternalUnaryAssignOperatorExp::GetType(RTypeFactory& factory)
     unreachable();
 }
 
-RCallInternalBinaryOperatorExp::RCallInternalBinaryOperatorExp(RInternalBinaryOperator op, RExpPtr&& operand0, RExpPtr&& operand1)
+RExp_CallInternalBinaryOperator::RExp_CallInternalBinaryOperator(RInternalBinaryOperator op, RExpPtr&& operand0, RExpPtr&& operand1)
     : op(op), operand0(std::move(operand0)), operand1(std::move(operand1))
 {
 }
 
-RTypePtr RCallInternalBinaryOperatorExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_CallInternalBinaryOperator::GetType(RTypeFactory& factory)
 {
     switch(op)
     {
@@ -255,22 +255,22 @@ RTypePtr RCallInternalBinaryOperatorExp::GetType(RTypeFactory& factory)
     }
 }
 
-RCallGlobalFuncExp::RCallGlobalFuncExp(const shared_ptr<RGlobalFuncDecl>& funcDecl, const RTypeArgumentsPtr& typeArgs, const vector<RArgument>& args)
+RExp_CallGlobalFunc::RExp_CallGlobalFunc(const shared_ptr<RGlobalFuncDecl>& funcDecl, const RTypeArgumentsPtr& typeArgs, const vector<RArgument>& args)
     : funcDecl(funcDecl), typeArgs(typeArgs), args(args)
 {
 }
 
-RTypePtr RCallGlobalFuncExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_CallGlobalFunc::GetType(RTypeFactory& factory)
 {
     return funcDecl->GetReturnType(*typeArgs, factory);
 }
 
-RNewClassExp::RNewClassExp(const shared_ptr<RClassConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const vector<RArgument>& args)
+RExp_NewClass::RExp_NewClass(const shared_ptr<RClassConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const vector<RArgument>& args)
     : constructorDecl(constructorDecl), typeArgs(typeArgs), args(args)
 {
 }
 
-RTypePtr RNewClassExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_NewClass::GetType(RTypeFactory& factory)
 {
     auto classDecl = constructorDecl->_class.lock();
     assert(classDecl);
@@ -280,223 +280,223 @@ RTypePtr RNewClassExp::GetType(RTypeFactory& factory)
 
 /////////////////////////////////////
 
-RCallClassMemberFuncExp::RCallClassMemberFuncExp(const shared_ptr<RClassMemberFuncDecl>& classMemberFunc, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
+RExp_CallClassMemberFunc::RExp_CallClassMemberFunc(const shared_ptr<RClassMemberFuncDecl>& classMemberFunc, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
     : classMemberFunc(classMemberFunc), typeArgs(typeArgs), instance(std::move(instance)), args(std::move(args))
 {
 }
 
-RTypePtr RCallClassMemberFuncExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_CallClassMemberFunc::GetType(RTypeFactory& factory)
 {
     return classMemberFunc->GetReturnType(*typeArgs, factory);
 }
 
-RCastClassExp::RCastClassExp(const RExpPtr& src, const RTypePtr& classType)
+RExp_CastClass::RExp_CastClass(const RExpPtr& src, const RTypePtr& classType)
     : src(src), classType(classType)
 {
 }
 
-RTypePtr RCastClassExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_CastClass::GetType(RTypeFactory& factory)
 {
     return classType;
 }
 
-RNewStructExp::RNewStructExp(const shared_ptr<RStructConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const vector<RArgument>& args)
+RExp_NewStruct::RExp_NewStruct(const shared_ptr<RStructConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const vector<RArgument>& args)
     : constructorDecl(constructorDecl), typeArgs(typeArgs), args(args)
 {
 }
 
-RTypePtr RNewStructExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_NewStruct::GetType(RTypeFactory& factory)
 {
     auto structDecl = constructorDecl->_struct.lock();
     return factory.MakeStructType(structDecl, typeArgs);
 }
 
-RCallStructMemberFuncExp::RCallStructMemberFuncExp(const shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
+RExp_CallStructMemberFunc::RExp_CallStructMemberFunc(const shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
     : structMemberFuncDecl(structMemberFuncDecl), typeArgs(typeArgs), instance(std::move(instance)), args(std::move(args))
 {
 }
 
-RTypePtr RCallStructMemberFuncExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_CallStructMemberFunc::GetType(RTypeFactory& factory)
 {
     return structMemberFuncDecl->GetReturnType(*typeArgs, factory);
 }
 
-RNewEnumElemExp::RNewEnumElemExp(const shared_ptr<REnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, vector<RArgument>&& args)
+RExp_NewEnumElem::RExp_NewEnumElem(const shared_ptr<REnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, vector<RArgument>&& args)
     : enumElemDecl(enumElemDecl), typeArgs(typeArgs), args(args)
 {
 }
 
-RTypePtr RNewEnumElemExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_NewEnumElem::GetType(RTypeFactory& factory)
 {
     return factory.MakeEnumElemType(enumElemDecl, typeArgs);
 }
 
-RCastEnumElemToEnumExp::RCastEnumElemToEnumExp(const RExpPtr& src, const RTypePtr& enumType)
+RExp_CastEnumElemToEnum::RExp_CastEnumElemToEnum(const RExpPtr& src, const RTypePtr& enumType)
     : src(src), enumType(enumType)
 {
 }
 
-RTypePtr RCastEnumElemToEnumExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_CastEnumElemToEnum::GetType(RTypeFactory& factory)
 {
     return enumType;
 }
 
-RNullableValueNullLiteralExp::RNullableValueNullLiteralExp(const RTypePtr& innerType)
+RExp_NullableValueNullLiteral::RExp_NullableValueNullLiteral(const RTypePtr& innerType)
     : innerType(innerType)
 {
 }
 
-RTypePtr RNullableValueNullLiteralExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_NullableValueNullLiteral::GetType(RTypeFactory& factory)
 {
     return factory.MakeNullableValueType(innerType);
 }
 
-RNullableRefNullLiteralExp::RNullableRefNullLiteralExp(const RTypePtr& innerType)
+RExp_NullableRefNullLiteral::RExp_NullableRefNullLiteral(const RTypePtr& innerType)
     : innerType(innerType)
 {
 }
 
-RTypePtr RNullableRefNullLiteralExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_NullableRefNullLiteral::GetType(RTypeFactory& factory)
 {
     return factory.MakeNullableRefType(innerType);
 }
 
-RNewNullableExp::RNewNullableExp(const RExpPtr& innerExp)
+RExp_NewNullable::RExp_NewNullable(const RExpPtr& innerExp)
     : innerExp(innerExp)
 {
 }
 
-RTypePtr RNewNullableExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_NewNullable::GetType(RTypeFactory& factory)
 {
     return factory.MakeNullableValueType(innerExp->GetType(factory));
 }
 
-RLambdaExp::RLambdaExp(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const vector<RArgument>& args)
+RExp_Lambda::RExp_Lambda(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const vector<RArgument>& args)
     : lambdaDecl(lambdaDecl), typeArgs(typeArgs), args(args)
 {
 }
 
-RTypePtr RLambdaExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_Lambda::GetType(RTypeFactory& factory)
 {
     static_assert(false); // 람다는 struct로 인코딩 되어야 한다 (module private 공간에 만들어진다)
 }
 
-RCallLambdaExp::RCallLambdaExp(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const RLocPtr& callable, const vector<RArgument>& args)
+RExp_CallLambda::RExp_CallLambda(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const RLocPtr& callable, const vector<RArgument>& args)
     : lambdaDecl(lambdaDecl), typeArgs(typeArgs), callable(callable), args(args)
 {
 }
 
-RTypePtr RCallLambdaExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_CallLambda::GetType(RTypeFactory& factory)
 {
     return lambdaDecl->GetReturnType(*typeArgs, factory);
 }
 
-RInlineBlockExp::RInlineBlockExp(const vector<RStmtPtr>& stmts, const RTypePtr& returnType)
+RExp_InlineBlock::RExp_InlineBlock(const vector<RStmtPtr>& stmts, const RTypePtr& returnType)
     : stmts(stmts), returnType(returnType)
 {
 }
 
-RTypePtr RInlineBlockExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_InlineBlock::GetType(RTypeFactory& factory)
 {
     return returnType;
 }
 
-RClassIsClassExp::RClassIsClassExp(const RExpPtr& exp, const RTypePtr& classType)
+RExp_ClassIsClass::RExp_ClassIsClass(const RExpPtr& exp, const RTypePtr& classType)
     : exp(exp), classType(classType)
 {
 }
 
-RTypePtr RClassIsClassExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_ClassIsClass::GetType(RTypeFactory& factory)
 {
     return factory.MakeBoolType();
 }
 
-RClassAsClassExp::RClassAsClassExp(const RExpPtr& exp, const RTypePtr& classType)
+RExp_ClassAsClass::RExp_ClassAsClass(const RExpPtr& exp, const RTypePtr& classType)
     : exp(exp), classType(classType)
 {
 }
 
-RTypePtr RClassAsClassExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_ClassAsClass::GetType(RTypeFactory& factory)
 {    
     return factory.MakeNullableRefType(classType);
 }
 
-RClassIsInterfaceExp::RClassIsInterfaceExp(const RExpPtr& exp, const RTypePtr& interfaceType)
+RExp_ClassIsInterface::RExp_ClassIsInterface(const RExpPtr& exp, const RTypePtr& interfaceType)
     : exp(exp), interfaceType(interfaceType)
 {
 }
 
-RTypePtr RClassIsInterfaceExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_ClassIsInterface::GetType(RTypeFactory& factory)
 {
     return factory.MakeBoolType();
 }
 
-RClassAsInterfaceExp::RClassAsInterfaceExp(const RExpPtr& exp, const RTypePtr& interfaceType)
+RExp_ClassAsInterface::RExp_ClassAsInterface(const RExpPtr& exp, const RTypePtr& interfaceType)
     : exp(exp), interfaceType(interfaceType)
 {
 }
 
-RTypePtr RClassAsInterfaceExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_ClassAsInterface::GetType(RTypeFactory& factory)
 {
     return factory.MakeNullableRefType(interfaceType);
 }
 
-RInterfaceIsClassExp::RInterfaceIsClassExp(const RExpPtr& exp, const RTypePtr& classType)
+RExp_InterfaceIsClass::RExp_InterfaceIsClass(const RExpPtr& exp, const RTypePtr& classType)
     : exp(exp), classType(classType)
 {
 }
 
-RTypePtr RInterfaceIsClassExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_InterfaceIsClass::GetType(RTypeFactory& factory)
 {
     return factory.MakeBoolType();
 }
 
-RInterfaceAsClassExp::RInterfaceAsClassExp(const RExpPtr& exp, const RTypePtr& classType)
+RExp_InterfaceAsClass::RExp_InterfaceAsClass(const RExpPtr& exp, const RTypePtr& classType)
     : exp(exp), classType(classType)
 {
 }
 
-RTypePtr RInterfaceAsClassExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_InterfaceAsClass::GetType(RTypeFactory& factory)
 {
     return factory.MakeNullableRefType(classType);
 }
 
-RInterfaceIsInterfaceExp::RInterfaceIsInterfaceExp(const RExpPtr& exp, const RTypePtr& interfaceType)
+RExp_InterfaceIsInterface::RExp_InterfaceIsInterface(const RExpPtr& exp, const RTypePtr& interfaceType)
     : exp(exp), interfaceType(interfaceType)
 {
 }
 
-RTypePtr RInterfaceIsInterfaceExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_InterfaceIsInterface::GetType(RTypeFactory& factory)
 {
     return factory.MakeBoolType();
 }
 
-RInterfaceAsInterfaceExp::RInterfaceAsInterfaceExp(const RExpPtr& exp, const RTypePtr& interfaceType)
+RExp_InterfaceAsInterface::RExp_InterfaceAsInterface(const RExpPtr& exp, const RTypePtr& interfaceType)
     : exp(exp), interfaceType(interfaceType)
 {
 }
 
-RTypePtr RInterfaceAsInterfaceExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_InterfaceAsInterface::GetType(RTypeFactory& factory)
 {
     return factory.MakeNullableRefType(interfaceType);
 }
 
-REnumIsEnumElemExp::REnumIsEnumElemExp(const RExpPtr& exp, const RTypePtr& enumElemType)
+RExp_EnumIsEnumElem::RExp_EnumIsEnumElem(const RExpPtr& exp, const RTypePtr& enumElemType)
     : exp(exp), enumElemType(enumElemType)
 {
 }
 
-RTypePtr REnumIsEnumElemExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_EnumIsEnumElem::GetType(RTypeFactory& factory)
 {
     return factory.MakeBoolType();
 }
 
-REnumAsEnumElemExp::REnumAsEnumElemExp(const RExpPtr& exp, const RTypePtr& enumElemType)
+RExp_EnumAsEnumElem::RExp_EnumAsEnumElem(const RExpPtr& exp, const RTypePtr& enumElemType)
     : exp(exp), enumElemType(enumElemType)
 {
 }
 
-RTypePtr REnumAsEnumElemExp::GetType(RTypeFactory& factory)
+RTypePtr RExp_EnumAsEnumElem::GetType(RTypeFactory& factory)
 {
     return factory.MakeNullableValueType(enumElemType);
 }

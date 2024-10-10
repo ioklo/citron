@@ -1,18 +1,18 @@
 {
-    "$type": "SBoxPtrTypeExp",
+    "$type": "STypeExp_BoxPtr",
     "innerType": {
-        "$type": "SMemberTypeExp",
+        "$type": "STypeExp_Member",
         "parentType": {
-            "$type": "SMemberTypeExp",
+            "$type": "STypeExp_Member",
             "parentType": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "A",
                 "typeArgs": []
             },
             "name": "B",
             "typeArgs": [
                 {
-                    "$type": "SIdTypeExp",
+                    "$type": "STypeExp_Id",
                     "name": "int",
                     "typeArgs": []
                 }

@@ -1,7 +1,7 @@
 {
-    "$type": "SLocalPtrTypeExp",
+    "$type": "STypeExp_LocalPtr",
     "innerType": {
-        "$type": "SIdTypeExp",
+        "$type": "STypeExp_Id",
         "name": "int",
         "typeArgs": []
     }

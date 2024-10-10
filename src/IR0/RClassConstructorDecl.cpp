@@ -10,7 +10,7 @@ RDecl* RClassConstructorDecl::GetOuter()
 
 RIdentifier RClassConstructorDecl::GetIdentifier()
 {
-    return RIdentifier { RReservedName("Constructor"), 0, RCommonFuncDeclComponent::GetParamIds() };
+    return RIdentifier { RName_Reserved("Constructor"), 0, RCommonFuncDeclComponent::GetParamIds() };
 }
 
 RDecl* RClassConstructorDecl::GetDecl()

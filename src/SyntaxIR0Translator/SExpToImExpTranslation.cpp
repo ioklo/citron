@@ -47,11 +47,11 @@ public:
         if (!exp)
             *result = nullptr;
         else 
-            *result = MakePtr<ImElseExp>(std::move(exp));
+            *result = MakePtr<ImExp_Else>(std::move(exp));
     }
 
     // x
-    void Visit(SIdentifierExp& exp) override 
+    void Visit(SExp_Identifier& exp) override 
     {
         static_assert(false);
         /*try
@@ -74,33 +74,33 @@ public:
         }*/
     }
 
-    void Visit(SStringExp& exp) override 
+    void Visit(SExp_String& exp) override 
     {
         HandleExp(TranslateSStringExpToRStringExp(exp, context, logger, factory));
     }
 
-    void Visit(SIntLiteralExp& exp) override 
+    void Visit(SExp_IntLiteral& exp) override 
     {
         HandleExp(TranslateSIntLiteralExpToRExp(exp));
     }
 
-    void Visit(SBoolLiteralExp& exp) override 
+    void Visit(SExp_BoolLiteral& exp) override 
     {
         HandleExp(TranslateSBoolLiteralExpToRExp(exp));
     }
 
     // 'null'
-    void Visit(SNullLiteralExp& exp) override 
+    void Visit(SExp_NullLiteral& exp) override 
     {
         HandleExp(TranslateSNullLiteralExpToRExp(exp, hintType, context, logger));
     }
 
-    void Visit(SBinaryOpExp& exp) override 
+    void Visit(SExp_BinaryOp& exp) override 
     {
         HandleExp(TranslateSBinaryOpExpToRExp(exp, context, logger, factory));
     }
 
-    void Visit(SUnaryOpExp& exp) override 
+    void Visit(SExp_UnaryOp& exp) override 
     {
         // *d
         if (exp.kind == SUnaryOpKind::Deref)
@@ -116,13 +116,13 @@ public:
 
             if (dynamic_cast<RType_BoxPtr*>(targetType.get()))
             {
-                *result = MakePtr<ImBoxDerefExp>(std::move(target));
+                *result = MakePtr<ImExp_BoxDeref>(std::move(target));
                 return;
             }   
 
             if (dynamic_cast<RType_LocalPtr*>(targetType.get()))
             {
-                *result = MakePtr<ImLocalDerefExp>(std::move(target));
+                *result = MakePtr<ImExp_LocalDeref>(std::move(target));
                 return;
             }   
 
@@ -135,17 +135,17 @@ public:
         }
     }
 
-    void Visit(SCallExp& exp) override 
+    void Visit(SExp_Call& exp) override 
     {
         HandleExp(TranslateSCallExpToRExp(exp, hintType, context, logger));
     }
 
-    void Visit(SLambdaExp& exp) override 
+    void Visit(SExp_Lambda& exp) override 
     {
         HandleExp(TranslateSLambdaExpToRExp(exp, logger));
     }
 
-    void Visit(SIndexerExp& exp) override 
+    void Visit(SExp_Indexer& exp) override 
     {
         auto reObj = TranslateSExpToReExp(*exp.obj, /*hintType*/ nullptr, context, logger, factory);
         if (!reObj)
@@ -181,7 +181,7 @@ public:
                 return;
             }
 
-            rIndexLoc = MakePtr<RTempLoc>(std::move(rCastIndex));
+            rIndexLoc = MakePtr<RLoc_Temp>(std::move(rCastIndex));
         }
         else
         {
@@ -202,7 +202,7 @@ public:
         RTypePtr itemType;
         if (context->IsListType(reObj->GetType(factory), &itemType))
         {
-            *result = MakePtr<ImListIndexerExp>(std::move(reObj), std::move(reIndex), std::move(itemType));
+            *result = MakePtr<ImExp_ListIndexer>(std::move(reObj), std::move(reIndex), std::move(itemType));
             return;
         }
 
@@ -241,7 +241,7 @@ public:
     }
 
     // parent."x"<>
-    void Visit(SMemberExp& exp) override 
+    void Visit(SExp_Member& exp) override 
     {
         auto imParent = TranslateSExpToImExp(*exp.parent, hintType, context);
         if (!imParent)
@@ -256,33 +256,33 @@ public:
         *result = BindImExpAndMemberNameToImExp(*imParent, exp.memberName, typeArgs, context, logger);
     }
 
-    void Visit(SIndirectMemberExp& exp) override 
+    void Visit(SExp_IndirectMember& exp) override 
     {
         static_assert(false);
     }
 
-    void Visit(SListExp& exp) override 
+    void Visit(SExp_List& exp) override 
     {
         HandleExp(TranslateSListExpToRExp(exp, context, logger, factory));
     }
 
     // 'new C(...)'
-    void Visit(SNewExp& exp) override 
+    void Visit(SExp_New& exp) override 
     {   
         HandleExp(TranslateSNewExpToRExp(exp, context, logger, factory));
     }
 
-    void Visit(SBoxExp& exp) override 
+    void Visit(SExp_Box& exp) override 
     {
         HandleExp(TranslateSBoxExpToRExp(exp, hintType, context, logger, factory));
     }
 
-    void Visit(SIsExp& exp) override 
+    void Visit(SExp_Is& exp) override 
     {
         HandleExp(TranslateSIsExpToRExp(exp, context, logger, factory));
     }
 
-    void Visit(SAsExp& exp) override 
+    void Visit(SExp_As& exp) override 
     {
         HandleExp(TranslateSAsExpToRExp(exp, context, logger, factory));
     }

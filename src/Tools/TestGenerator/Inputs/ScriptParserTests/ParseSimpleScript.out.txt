@@ -6,7 +6,7 @@
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "void",
                 "typeArgs": []
             },
@@ -15,13 +15,13 @@
             "parameters": [],
             "body": [
                 {
-                    "$type": "SCommandStmt",
+                    "$type": "SStmt_Command",
                     "commands": [
                         {
-                            "$type": "SStringExp",
+                            "$type": "SExp_String",
                             "elements": [
                                 {
-                                    "$type": "STextStringExpElement",
+                                    "$type": "SStringExpElement_Text",
                                     "text": "ls -al"
                                 }
                             ]

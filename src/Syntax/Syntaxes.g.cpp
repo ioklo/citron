@@ -147,23 +147,23 @@ JsonItem SFuncParam::ToJson()
 struct SStmtToJsonVisitor : public SStmtVisitor
 {
     JsonItem result;
-    void Visit(SCommandStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SVarDeclStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SIfStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SIfTestStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SForStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SContinueStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SBreakStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SReturnStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SBlockStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SBlankStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SExpStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(STaskStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SAwaitStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SAsyncStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SForeachStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SYieldStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SDirectiveStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Command& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_VarDecl& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_If& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_IfTest& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_For& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Continue& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Break& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Return& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Block& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Blank& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Exp& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Task& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Await& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Async& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Foreach& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Yield& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Directive& stmt) override { result = stmt.ToJson(); }
 };
 
 JsonItem ToJson(SStmtPtr& stmt)
@@ -177,23 +177,23 @@ JsonItem ToJson(SStmtPtr& stmt)
 struct SExpToJsonVisitor : public SExpVisitor
 {
     JsonItem result;
-    void Visit(SIdentifierExp& exp) override { result = exp.ToJson(); }
-    void Visit(SStringExp& exp) override { result = exp.ToJson(); }
-    void Visit(SIntLiteralExp& exp) override { result = exp.ToJson(); }
-    void Visit(SBoolLiteralExp& exp) override { result = exp.ToJson(); }
-    void Visit(SNullLiteralExp& exp) override { result = exp.ToJson(); }
-    void Visit(SBinaryOpExp& exp) override { result = exp.ToJson(); }
-    void Visit(SUnaryOpExp& exp) override { result = exp.ToJson(); }
-    void Visit(SCallExp& exp) override { result = exp.ToJson(); }
-    void Visit(SLambdaExp& exp) override { result = exp.ToJson(); }
-    void Visit(SIndexerExp& exp) override { result = exp.ToJson(); }
-    void Visit(SMemberExp& exp) override { result = exp.ToJson(); }
-    void Visit(SIndirectMemberExp& exp) override { result = exp.ToJson(); }
-    void Visit(SListExp& exp) override { result = exp.ToJson(); }
-    void Visit(SNewExp& exp) override { result = exp.ToJson(); }
-    void Visit(SBoxExp& exp) override { result = exp.ToJson(); }
-    void Visit(SIsExp& exp) override { result = exp.ToJson(); }
-    void Visit(SAsExp& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_Identifier& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_String& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_IntLiteral& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_BoolLiteral& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_NullLiteral& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_BinaryOp& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_UnaryOp& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_Call& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_Lambda& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_Indexer& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_Member& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_IndirectMember& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_List& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_New& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_Box& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_Is& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_As& exp) override { result = exp.ToJson(); }
 };
 
 JsonItem ToJson(SExpPtr& exp)
@@ -207,12 +207,12 @@ JsonItem ToJson(SExpPtr& exp)
 struct STypeExpToJsonVisitor : public STypeExpVisitor
 {
     JsonItem result;
-    void Visit(SIdTypeExp& typeExp) override { result = typeExp.ToJson(); }
-    void Visit(SMemberTypeExp& typeExp) override { result = typeExp.ToJson(); }
-    void Visit(SNullableTypeExp& typeExp) override { result = typeExp.ToJson(); }
-    void Visit(SLocalPtrTypeExp& typeExp) override { result = typeExp.ToJson(); }
-    void Visit(SBoxPtrTypeExp& typeExp) override { result = typeExp.ToJson(); }
-    void Visit(SLocalTypeExp& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(STypeExp_Id& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(STypeExp_Member& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(STypeExp_Nullable& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(STypeExp_LocalPtr& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(STypeExp_BoxPtr& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(STypeExp_Local& typeExp) override { result = typeExp.ToJson(); }
 };
 
 JsonItem ToJson(STypeExpPtr& typeExp)
@@ -226,8 +226,8 @@ JsonItem ToJson(STypeExpPtr& typeExp)
 struct SStringExpElementToJsonVisitor : public SStringExpElementVisitor
 {
     JsonItem result;
-    void Visit(STextStringExpElement& elem) override { result = elem.ToJson(); }
-    void Visit(SExpStringExpElement& elem) override { result = elem.ToJson(); }
+    void Visit(SStringExpElement_Text& elem) override { result = elem.ToJson(); }
+    void Visit(SStringExpElement_Exp& elem) override { result = elem.ToJson(); }
 };
 
 JsonItem ToJson(SStringExpElementPtr& elem)
@@ -241,8 +241,8 @@ JsonItem ToJson(SStringExpElementPtr& elem)
 struct SLambdaExpBodyToJsonVisitor : public SLambdaExpBodyVisitor
 {
     JsonItem result;
-    void Visit(SStmtsLambdaExpBody& body) override { result = body.ToJson(); }
-    void Visit(SExpLambdaExpBody& body) override { result = body.ToJson(); }
+    void Visit(SLambdaExpBody_Stmts& body) override { result = body.ToJson(); }
+    void Visit(SLambdaExpBody_Exp& body) override { result = body.ToJson(); }
 };
 
 JsonItem ToJson(SLambdaExpBodyPtr& body)
@@ -256,8 +256,8 @@ JsonItem ToJson(SLambdaExpBodyPtr& body)
 struct SEmbeddableStmtToJsonVisitor : public SEmbeddableStmtVisitor
 {
     JsonItem result;
-    void Visit(SSingleEmbeddableStmt& stmt) override { result = stmt.ToJson(); }
-    void Visit(SBlockEmbeddableStmt& stmt) override { result = stmt.ToJson(); }
+    void Visit(SEmbeddableStmt_Single& stmt) override { result = stmt.ToJson(); }
+    void Visit(SEmbeddableStmt_Block& stmt) override { result = stmt.ToJson(); }
 };
 
 JsonItem ToJson(SEmbeddableStmtPtr& stmt)
@@ -271,8 +271,8 @@ JsonItem ToJson(SEmbeddableStmtPtr& stmt)
 struct SForStmtInitializerToJsonVisitor : public SForStmtInitializerVisitor
 {
     JsonItem result;
-    void Visit(SExpForStmtInitializer& initializer) override { result = initializer.ToJson(); }
-    void Visit(SVarDeclForStmtInitializer& initializer) override { result = initializer.ToJson(); }
+    void Visit(SForStmtInitializer_Exp& initializer) override { result = initializer.ToJson(); }
+    void Visit(SForStmtInitializer_VarDecl& initializer) override { result = initializer.ToJson(); }
 };
 
 JsonItem ToJson(SForStmtInitializerPtr& initializer)
@@ -357,745 +357,745 @@ JsonItem ToJson(SScriptElementPtr& elem)
     elem->Accept(visitor);
     return visitor.result;
 }
-SIdentifierExp::SIdentifierExp(std::string value, std::vector<STypeExpPtr> typeArgs)
+SExp_Identifier::SExp_Identifier(std::string value, std::vector<STypeExpPtr> typeArgs)
     : value(std::move(value)), typeArgs(std::move(typeArgs)) { }
 
-SIdentifierExp::SIdentifierExp(SIdentifierExp&& other) noexcept = default;
+SExp_Identifier::SExp_Identifier(SExp_Identifier&& other) noexcept = default;
 
-SIdentifierExp::~SIdentifierExp() = default;
+SExp_Identifier::~SExp_Identifier() = default;
 
-SIdentifierExp& SIdentifierExp::operator=(SIdentifierExp&& other) noexcept = default;
+SExp_Identifier& SExp_Identifier::operator=(SExp_Identifier&& other) noexcept = default;
 
-JsonItem SIdentifierExp::ToJson()
+JsonItem SExp_Identifier::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SIdentifierExp") },
+        { "$type", JsonString("SExp_Identifier") },
         { "value", Citron::ToJson(value) },
         { "typeArgs", Citron::ToJson(typeArgs) },
     };
 }
 
-SStringExp::SStringExp(std::vector<SStringExpElementPtr> elements)
+SExp_String::SExp_String(std::vector<SStringExpElementPtr> elements)
     : elements(std::move(elements)) { }
 
-SStringExp::SStringExp(SStringExp&& other) noexcept = default;
+SExp_String::SExp_String(SExp_String&& other) noexcept = default;
 
-SStringExp::~SStringExp() = default;
+SExp_String::~SExp_String() = default;
 
-SStringExp& SStringExp::operator=(SStringExp&& other) noexcept = default;
+SExp_String& SExp_String::operator=(SExp_String&& other) noexcept = default;
 
-JsonItem SStringExp::ToJson()
+JsonItem SExp_String::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SStringExp") },
+        { "$type", JsonString("SExp_String") },
         { "elements", Citron::ToJson(elements) },
     };
 }
 
-SIntLiteralExp::SIntLiteralExp(int value)
+SExp_IntLiteral::SExp_IntLiteral(int value)
     : value(std::move(value)) { }
 
-SIntLiteralExp::SIntLiteralExp(SIntLiteralExp&& other) noexcept = default;
+SExp_IntLiteral::SExp_IntLiteral(SExp_IntLiteral&& other) noexcept = default;
 
-SIntLiteralExp::~SIntLiteralExp() = default;
+SExp_IntLiteral::~SExp_IntLiteral() = default;
 
-SIntLiteralExp& SIntLiteralExp::operator=(SIntLiteralExp&& other) noexcept = default;
+SExp_IntLiteral& SExp_IntLiteral::operator=(SExp_IntLiteral&& other) noexcept = default;
 
-JsonItem SIntLiteralExp::ToJson()
+JsonItem SExp_IntLiteral::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SIntLiteralExp") },
+        { "$type", JsonString("SExp_IntLiteral") },
         { "value", Citron::ToJson(value) },
     };
 }
 
-SBoolLiteralExp::SBoolLiteralExp(bool value)
+SExp_BoolLiteral::SExp_BoolLiteral(bool value)
     : value(std::move(value)) { }
 
-SBoolLiteralExp::SBoolLiteralExp(SBoolLiteralExp&& other) noexcept = default;
+SExp_BoolLiteral::SExp_BoolLiteral(SExp_BoolLiteral&& other) noexcept = default;
 
-SBoolLiteralExp::~SBoolLiteralExp() = default;
+SExp_BoolLiteral::~SExp_BoolLiteral() = default;
 
-SBoolLiteralExp& SBoolLiteralExp::operator=(SBoolLiteralExp&& other) noexcept = default;
+SExp_BoolLiteral& SExp_BoolLiteral::operator=(SExp_BoolLiteral&& other) noexcept = default;
 
-JsonItem SBoolLiteralExp::ToJson()
+JsonItem SExp_BoolLiteral::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SBoolLiteralExp") },
+        { "$type", JsonString("SExp_BoolLiteral") },
         { "value", Citron::ToJson(value) },
     };
 }
 
-SNullLiteralExp::SNullLiteralExp()
+SExp_NullLiteral::SExp_NullLiteral()
 { }
-SNullLiteralExp::SNullLiteralExp(SNullLiteralExp&& other) noexcept = default;
+SExp_NullLiteral::SExp_NullLiteral(SExp_NullLiteral&& other) noexcept = default;
 
-SNullLiteralExp::~SNullLiteralExp() = default;
+SExp_NullLiteral::~SExp_NullLiteral() = default;
 
-SNullLiteralExp& SNullLiteralExp::operator=(SNullLiteralExp&& other) noexcept = default;
+SExp_NullLiteral& SExp_NullLiteral::operator=(SExp_NullLiteral&& other) noexcept = default;
 
-JsonItem SNullLiteralExp::ToJson()
+JsonItem SExp_NullLiteral::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SNullLiteralExp") },
+        { "$type", JsonString("SExp_NullLiteral") },
     };
 }
 
-SListExp::SListExp(std::vector<SExpPtr> elements)
+SExp_List::SExp_List(std::vector<SExpPtr> elements)
     : elements(std::move(elements)) { }
 
-SListExp::SListExp(SListExp&& other) noexcept = default;
+SExp_List::SExp_List(SExp_List&& other) noexcept = default;
 
-SListExp::~SListExp() = default;
+SExp_List::~SExp_List() = default;
 
-SListExp& SListExp::operator=(SListExp&& other) noexcept = default;
+SExp_List& SExp_List::operator=(SExp_List&& other) noexcept = default;
 
-JsonItem SListExp::ToJson()
+JsonItem SExp_List::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SListExp") },
+        { "$type", JsonString("SExp_List") },
         { "elements", Citron::ToJson(elements) },
     };
 }
 
-SNewExp::SNewExp(STypeExpPtr type, std::vector<SArgument> args)
+SExp_New::SExp_New(STypeExpPtr type, std::vector<SArgument> args)
     : type(std::move(type)), args(std::move(args)) { }
 
-SNewExp::SNewExp(SNewExp&& other) noexcept = default;
+SExp_New::SExp_New(SExp_New&& other) noexcept = default;
 
-SNewExp::~SNewExp() = default;
+SExp_New::~SExp_New() = default;
 
-SNewExp& SNewExp::operator=(SNewExp&& other) noexcept = default;
+SExp_New& SExp_New::operator=(SExp_New&& other) noexcept = default;
 
-JsonItem SNewExp::ToJson()
+JsonItem SExp_New::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SNewExp") },
+        { "$type", JsonString("SExp_New") },
         { "type", Citron::ToJson(type) },
         { "args", Citron::ToJson(args) },
     };
 }
 
-SBinaryOpExp::SBinaryOpExp(SBinaryOpKind kind, SExpPtr operand0, SExpPtr operand1)
+SExp_BinaryOp::SExp_BinaryOp(SBinaryOpKind kind, SExpPtr operand0, SExpPtr operand1)
     : kind(std::move(kind)), operand0(std::move(operand0)), operand1(std::move(operand1)) { }
 
-SBinaryOpExp::SBinaryOpExp(SBinaryOpExp&& other) noexcept = default;
+SExp_BinaryOp::SExp_BinaryOp(SExp_BinaryOp&& other) noexcept = default;
 
-SBinaryOpExp::~SBinaryOpExp() = default;
+SExp_BinaryOp::~SExp_BinaryOp() = default;
 
-SBinaryOpExp& SBinaryOpExp::operator=(SBinaryOpExp&& other) noexcept = default;
+SExp_BinaryOp& SExp_BinaryOp::operator=(SExp_BinaryOp&& other) noexcept = default;
 
-JsonItem SBinaryOpExp::ToJson()
+JsonItem SExp_BinaryOp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SBinaryOpExp") },
+        { "$type", JsonString("SExp_BinaryOp") },
         { "kind", Citron::ToJson(kind) },
         { "operand0", Citron::ToJson(operand0) },
         { "operand1", Citron::ToJson(operand1) },
     };
 }
 
-SUnaryOpExp::SUnaryOpExp(SUnaryOpKind kind, SExpPtr operand)
+SExp_UnaryOp::SExp_UnaryOp(SUnaryOpKind kind, SExpPtr operand)
     : kind(std::move(kind)), operand(std::move(operand)) { }
 
-SUnaryOpExp::SUnaryOpExp(SUnaryOpExp&& other) noexcept = default;
+SExp_UnaryOp::SExp_UnaryOp(SExp_UnaryOp&& other) noexcept = default;
 
-SUnaryOpExp::~SUnaryOpExp() = default;
+SExp_UnaryOp::~SExp_UnaryOp() = default;
 
-SUnaryOpExp& SUnaryOpExp::operator=(SUnaryOpExp&& other) noexcept = default;
+SExp_UnaryOp& SExp_UnaryOp::operator=(SExp_UnaryOp&& other) noexcept = default;
 
-JsonItem SUnaryOpExp::ToJson()
+JsonItem SExp_UnaryOp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SUnaryOpExp") },
+        { "$type", JsonString("SExp_UnaryOp") },
         { "kind", Citron::ToJson(kind) },
         { "operand", Citron::ToJson(operand) },
     };
 }
 
-SCallExp::SCallExp(SExpPtr callable, std::vector<SArgument> args)
+SExp_Call::SExp_Call(SExpPtr callable, std::vector<SArgument> args)
     : callable(std::move(callable)), args(std::move(args)) { }
 
-SCallExp::SCallExp(SCallExp&& other) noexcept = default;
+SExp_Call::SExp_Call(SExp_Call&& other) noexcept = default;
 
-SCallExp::~SCallExp() = default;
+SExp_Call::~SExp_Call() = default;
 
-SCallExp& SCallExp::operator=(SCallExp&& other) noexcept = default;
+SExp_Call& SExp_Call::operator=(SExp_Call&& other) noexcept = default;
 
-JsonItem SCallExp::ToJson()
+JsonItem SExp_Call::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SCallExp") },
+        { "$type", JsonString("SExp_Call") },
         { "callable", Citron::ToJson(callable) },
         { "args", Citron::ToJson(args) },
     };
 }
 
-SLambdaExp::SLambdaExp(std::vector<SLambdaExpParam> params, SLambdaExpBodyPtr body)
+SExp_Lambda::SExp_Lambda(std::vector<SLambdaExpParam> params, SLambdaExpBodyPtr body)
     : params(std::move(params)), body(std::move(body)) { }
 
-SLambdaExp::SLambdaExp(SLambdaExp&& other) noexcept = default;
+SExp_Lambda::SExp_Lambda(SExp_Lambda&& other) noexcept = default;
 
-SLambdaExp::~SLambdaExp() = default;
+SExp_Lambda::~SExp_Lambda() = default;
 
-SLambdaExp& SLambdaExp::operator=(SLambdaExp&& other) noexcept = default;
+SExp_Lambda& SExp_Lambda::operator=(SExp_Lambda&& other) noexcept = default;
 
-JsonItem SLambdaExp::ToJson()
+JsonItem SExp_Lambda::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SLambdaExp") },
+        { "$type", JsonString("SExp_Lambda") },
         { "params", Citron::ToJson(params) },
         { "body", Citron::ToJson(body) },
     };
 }
 
-SIndexerExp::SIndexerExp(SExpPtr obj, SExpPtr index)
+SExp_Indexer::SExp_Indexer(SExpPtr obj, SExpPtr index)
     : obj(std::move(obj)), index(std::move(index)) { }
 
-SIndexerExp::SIndexerExp(SIndexerExp&& other) noexcept = default;
+SExp_Indexer::SExp_Indexer(SExp_Indexer&& other) noexcept = default;
 
-SIndexerExp::~SIndexerExp() = default;
+SExp_Indexer::~SExp_Indexer() = default;
 
-SIndexerExp& SIndexerExp::operator=(SIndexerExp&& other) noexcept = default;
+SExp_Indexer& SExp_Indexer::operator=(SExp_Indexer&& other) noexcept = default;
 
-JsonItem SIndexerExp::ToJson()
+JsonItem SExp_Indexer::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SIndexerExp") },
+        { "$type", JsonString("SExp_Indexer") },
         { "obj", Citron::ToJson(obj) },
         { "index", Citron::ToJson(index) },
     };
 }
 
-SMemberExp::SMemberExp(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs)
+SExp_Member::SExp_Member(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs)
     : parent(std::move(parent)), memberName(std::move(memberName)), memberTypeArgs(std::move(memberTypeArgs)) { }
 
-SMemberExp::SMemberExp(SMemberExp&& other) noexcept = default;
+SExp_Member::SExp_Member(SExp_Member&& other) noexcept = default;
 
-SMemberExp::~SMemberExp() = default;
+SExp_Member::~SExp_Member() = default;
 
-SMemberExp& SMemberExp::operator=(SMemberExp&& other) noexcept = default;
+SExp_Member& SExp_Member::operator=(SExp_Member&& other) noexcept = default;
 
-JsonItem SMemberExp::ToJson()
+JsonItem SExp_Member::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SMemberExp") },
+        { "$type", JsonString("SExp_Member") },
         { "parent", Citron::ToJson(parent) },
         { "memberName", Citron::ToJson(memberName) },
         { "memberTypeArgs", Citron::ToJson(memberTypeArgs) },
     };
 }
 
-SIndirectMemberExp::SIndirectMemberExp(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs)
+SExp_IndirectMember::SExp_IndirectMember(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs)
     : parent(std::move(parent)), memberName(std::move(memberName)), memberTypeArgs(std::move(memberTypeArgs)) { }
 
-SIndirectMemberExp::SIndirectMemberExp(SIndirectMemberExp&& other) noexcept = default;
+SExp_IndirectMember::SExp_IndirectMember(SExp_IndirectMember&& other) noexcept = default;
 
-SIndirectMemberExp::~SIndirectMemberExp() = default;
+SExp_IndirectMember::~SExp_IndirectMember() = default;
 
-SIndirectMemberExp& SIndirectMemberExp::operator=(SIndirectMemberExp&& other) noexcept = default;
+SExp_IndirectMember& SExp_IndirectMember::operator=(SExp_IndirectMember&& other) noexcept = default;
 
-JsonItem SIndirectMemberExp::ToJson()
+JsonItem SExp_IndirectMember::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SIndirectMemberExp") },
+        { "$type", JsonString("SExp_IndirectMember") },
         { "parent", Citron::ToJson(parent) },
         { "memberName", Citron::ToJson(memberName) },
         { "memberTypeArgs", Citron::ToJson(memberTypeArgs) },
     };
 }
 
-SBoxExp::SBoxExp(SExpPtr innerExp)
+SExp_Box::SExp_Box(SExpPtr innerExp)
     : innerExp(std::move(innerExp)) { }
 
-SBoxExp::SBoxExp(SBoxExp&& other) noexcept = default;
+SExp_Box::SExp_Box(SExp_Box&& other) noexcept = default;
 
-SBoxExp::~SBoxExp() = default;
+SExp_Box::~SExp_Box() = default;
 
-SBoxExp& SBoxExp::operator=(SBoxExp&& other) noexcept = default;
+SExp_Box& SExp_Box::operator=(SExp_Box&& other) noexcept = default;
 
-JsonItem SBoxExp::ToJson()
+JsonItem SExp_Box::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SBoxExp") },
+        { "$type", JsonString("SExp_Box") },
         { "innerExp", Citron::ToJson(innerExp) },
     };
 }
 
-SIsExp::SIsExp(SExpPtr exp, STypeExpPtr type)
+SExp_Is::SExp_Is(SExpPtr exp, STypeExpPtr type)
     : exp(std::move(exp)), type(std::move(type)) { }
 
-SIsExp::SIsExp(SIsExp&& other) noexcept = default;
+SExp_Is::SExp_Is(SExp_Is&& other) noexcept = default;
 
-SIsExp::~SIsExp() = default;
+SExp_Is::~SExp_Is() = default;
 
-SIsExp& SIsExp::operator=(SIsExp&& other) noexcept = default;
+SExp_Is& SExp_Is::operator=(SExp_Is&& other) noexcept = default;
 
-JsonItem SIsExp::ToJson()
+JsonItem SExp_Is::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SIsExp") },
+        { "$type", JsonString("SExp_Is") },
         { "exp", Citron::ToJson(exp) },
         { "type", Citron::ToJson(type) },
     };
 }
 
-SAsExp::SAsExp(SExpPtr exp, STypeExpPtr type)
+SExp_As::SExp_As(SExpPtr exp, STypeExpPtr type)
     : exp(std::move(exp)), type(std::move(type)) { }
 
-SAsExp::SAsExp(SAsExp&& other) noexcept = default;
+SExp_As::SExp_As(SExp_As&& other) noexcept = default;
 
-SAsExp::~SAsExp() = default;
+SExp_As::~SExp_As() = default;
 
-SAsExp& SAsExp::operator=(SAsExp&& other) noexcept = default;
+SExp_As& SExp_As::operator=(SExp_As&& other) noexcept = default;
 
-JsonItem SAsExp::ToJson()
+JsonItem SExp_As::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SAsExp") },
+        { "$type", JsonString("SExp_As") },
         { "exp", Citron::ToJson(exp) },
         { "type", Citron::ToJson(type) },
     };
 }
 
-SIdTypeExp::SIdTypeExp(std::string name, std::vector<STypeExpPtr> typeArgs)
+STypeExp_Id::STypeExp_Id(std::string name, std::vector<STypeExpPtr> typeArgs)
     : name(std::move(name)), typeArgs(std::move(typeArgs)) { }
 
-SIdTypeExp::SIdTypeExp(SIdTypeExp&& other) noexcept = default;
+STypeExp_Id::STypeExp_Id(STypeExp_Id&& other) noexcept = default;
 
-SIdTypeExp::~SIdTypeExp() = default;
+STypeExp_Id::~STypeExp_Id() = default;
 
-SIdTypeExp& SIdTypeExp::operator=(SIdTypeExp&& other) noexcept = default;
+STypeExp_Id& STypeExp_Id::operator=(STypeExp_Id&& other) noexcept = default;
 
-JsonItem SIdTypeExp::ToJson()
+JsonItem STypeExp_Id::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SIdTypeExp") },
+        { "$type", JsonString("STypeExp_Id") },
         { "name", Citron::ToJson(name) },
         { "typeArgs", Citron::ToJson(typeArgs) },
     };
 }
 
-SMemberTypeExp::SMemberTypeExp(STypeExpPtr parentType, std::string name, std::vector<STypeExpPtr> typeArgs)
+STypeExp_Member::STypeExp_Member(STypeExpPtr parentType, std::string name, std::vector<STypeExpPtr> typeArgs)
     : parentType(std::move(parentType)), name(std::move(name)), typeArgs(std::move(typeArgs)) { }
 
-SMemberTypeExp::SMemberTypeExp(SMemberTypeExp&& other) noexcept = default;
+STypeExp_Member::STypeExp_Member(STypeExp_Member&& other) noexcept = default;
 
-SMemberTypeExp::~SMemberTypeExp() = default;
+STypeExp_Member::~STypeExp_Member() = default;
 
-SMemberTypeExp& SMemberTypeExp::operator=(SMemberTypeExp&& other) noexcept = default;
+STypeExp_Member& STypeExp_Member::operator=(STypeExp_Member&& other) noexcept = default;
 
-JsonItem SMemberTypeExp::ToJson()
+JsonItem STypeExp_Member::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SMemberTypeExp") },
+        { "$type", JsonString("STypeExp_Member") },
         { "parentType", Citron::ToJson(parentType) },
         { "name", Citron::ToJson(name) },
         { "typeArgs", Citron::ToJson(typeArgs) },
     };
 }
 
-SNullableTypeExp::SNullableTypeExp(STypeExpPtr innerType)
+STypeExp_Nullable::STypeExp_Nullable(STypeExpPtr innerType)
     : innerType(std::move(innerType)) { }
 
-SNullableTypeExp::SNullableTypeExp(SNullableTypeExp&& other) noexcept = default;
+STypeExp_Nullable::STypeExp_Nullable(STypeExp_Nullable&& other) noexcept = default;
 
-SNullableTypeExp::~SNullableTypeExp() = default;
+STypeExp_Nullable::~STypeExp_Nullable() = default;
 
-SNullableTypeExp& SNullableTypeExp::operator=(SNullableTypeExp&& other) noexcept = default;
+STypeExp_Nullable& STypeExp_Nullable::operator=(STypeExp_Nullable&& other) noexcept = default;
 
-JsonItem SNullableTypeExp::ToJson()
+JsonItem STypeExp_Nullable::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SNullableTypeExp") },
+        { "$type", JsonString("STypeExp_Nullable") },
         { "innerType", Citron::ToJson(innerType) },
     };
 }
 
-SLocalPtrTypeExp::SLocalPtrTypeExp(STypeExpPtr innerType)
+STypeExp_LocalPtr::STypeExp_LocalPtr(STypeExpPtr innerType)
     : innerType(std::move(innerType)) { }
 
-SLocalPtrTypeExp::SLocalPtrTypeExp(SLocalPtrTypeExp&& other) noexcept = default;
+STypeExp_LocalPtr::STypeExp_LocalPtr(STypeExp_LocalPtr&& other) noexcept = default;
 
-SLocalPtrTypeExp::~SLocalPtrTypeExp() = default;
+STypeExp_LocalPtr::~STypeExp_LocalPtr() = default;
 
-SLocalPtrTypeExp& SLocalPtrTypeExp::operator=(SLocalPtrTypeExp&& other) noexcept = default;
+STypeExp_LocalPtr& STypeExp_LocalPtr::operator=(STypeExp_LocalPtr&& other) noexcept = default;
 
-JsonItem SLocalPtrTypeExp::ToJson()
+JsonItem STypeExp_LocalPtr::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SLocalPtrTypeExp") },
+        { "$type", JsonString("STypeExp_LocalPtr") },
         { "innerType", Citron::ToJson(innerType) },
     };
 }
 
-SBoxPtrTypeExp::SBoxPtrTypeExp(STypeExpPtr innerType)
+STypeExp_BoxPtr::STypeExp_BoxPtr(STypeExpPtr innerType)
     : innerType(std::move(innerType)) { }
 
-SBoxPtrTypeExp::SBoxPtrTypeExp(SBoxPtrTypeExp&& other) noexcept = default;
+STypeExp_BoxPtr::STypeExp_BoxPtr(STypeExp_BoxPtr&& other) noexcept = default;
 
-SBoxPtrTypeExp::~SBoxPtrTypeExp() = default;
+STypeExp_BoxPtr::~STypeExp_BoxPtr() = default;
 
-SBoxPtrTypeExp& SBoxPtrTypeExp::operator=(SBoxPtrTypeExp&& other) noexcept = default;
+STypeExp_BoxPtr& STypeExp_BoxPtr::operator=(STypeExp_BoxPtr&& other) noexcept = default;
 
-JsonItem SBoxPtrTypeExp::ToJson()
+JsonItem STypeExp_BoxPtr::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SBoxPtrTypeExp") },
+        { "$type", JsonString("STypeExp_BoxPtr") },
         { "innerType", Citron::ToJson(innerType) },
     };
 }
 
-SLocalTypeExp::SLocalTypeExp(STypeExpPtr innerType)
+STypeExp_Local::STypeExp_Local(STypeExpPtr innerType)
     : innerType(std::move(innerType)) { }
 
-SLocalTypeExp::SLocalTypeExp(SLocalTypeExp&& other) noexcept = default;
+STypeExp_Local::STypeExp_Local(STypeExp_Local&& other) noexcept = default;
 
-SLocalTypeExp::~SLocalTypeExp() = default;
+STypeExp_Local::~STypeExp_Local() = default;
 
-SLocalTypeExp& SLocalTypeExp::operator=(SLocalTypeExp&& other) noexcept = default;
+STypeExp_Local& STypeExp_Local::operator=(STypeExp_Local&& other) noexcept = default;
 
-JsonItem SLocalTypeExp::ToJson()
+JsonItem STypeExp_Local::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SLocalTypeExp") },
+        { "$type", JsonString("STypeExp_Local") },
         { "innerType", Citron::ToJson(innerType) },
     };
 }
 
-STextStringExpElement::STextStringExpElement(std::string text)
+SStringExpElement_Text::SStringExpElement_Text(std::string text)
     : text(std::move(text)) { }
 
-STextStringExpElement::STextStringExpElement(STextStringExpElement&& other) noexcept = default;
+SStringExpElement_Text::SStringExpElement_Text(SStringExpElement_Text&& other) noexcept = default;
 
-STextStringExpElement::~STextStringExpElement() = default;
+SStringExpElement_Text::~SStringExpElement_Text() = default;
 
-STextStringExpElement& STextStringExpElement::operator=(STextStringExpElement&& other) noexcept = default;
+SStringExpElement_Text& SStringExpElement_Text::operator=(SStringExpElement_Text&& other) noexcept = default;
 
-JsonItem STextStringExpElement::ToJson()
+JsonItem SStringExpElement_Text::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("STextStringExpElement") },
+        { "$type", JsonString("SStringExpElement_Text") },
         { "text", Citron::ToJson(text) },
     };
 }
 
-SExpStringExpElement::SExpStringExpElement(SExpPtr exp)
+SStringExpElement_Exp::SStringExpElement_Exp(SExpPtr exp)
     : exp(std::move(exp)) { }
 
-SExpStringExpElement::SExpStringExpElement(SExpStringExpElement&& other) noexcept = default;
+SStringExpElement_Exp::SStringExpElement_Exp(SStringExpElement_Exp&& other) noexcept = default;
 
-SExpStringExpElement::~SExpStringExpElement() = default;
+SStringExpElement_Exp::~SStringExpElement_Exp() = default;
 
-SExpStringExpElement& SExpStringExpElement::operator=(SExpStringExpElement&& other) noexcept = default;
+SStringExpElement_Exp& SStringExpElement_Exp::operator=(SStringExpElement_Exp&& other) noexcept = default;
 
-JsonItem SExpStringExpElement::ToJson()
+JsonItem SStringExpElement_Exp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SExpStringExpElement") },
+        { "$type", JsonString("SStringExpElement_Exp") },
         { "exp", Citron::ToJson(exp) },
     };
 }
 
-SStmtsLambdaExpBody::SStmtsLambdaExpBody(std::vector<SStmtPtr> stmts)
+SLambdaExpBody_Stmts::SLambdaExpBody_Stmts(std::vector<SStmtPtr> stmts)
     : stmts(std::move(stmts)) { }
 
-SStmtsLambdaExpBody::SStmtsLambdaExpBody(SStmtsLambdaExpBody&& other) noexcept = default;
+SLambdaExpBody_Stmts::SLambdaExpBody_Stmts(SLambdaExpBody_Stmts&& other) noexcept = default;
 
-SStmtsLambdaExpBody::~SStmtsLambdaExpBody() = default;
+SLambdaExpBody_Stmts::~SLambdaExpBody_Stmts() = default;
 
-SStmtsLambdaExpBody& SStmtsLambdaExpBody::operator=(SStmtsLambdaExpBody&& other) noexcept = default;
+SLambdaExpBody_Stmts& SLambdaExpBody_Stmts::operator=(SLambdaExpBody_Stmts&& other) noexcept = default;
 
-JsonItem SStmtsLambdaExpBody::ToJson()
+JsonItem SLambdaExpBody_Stmts::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SStmtsLambdaExpBody") },
+        { "$type", JsonString("SLambdaExpBody_Stmts") },
         { "stmts", Citron::ToJson(stmts) },
     };
 }
 
-SExpLambdaExpBody::SExpLambdaExpBody(SExpPtr exp)
+SLambdaExpBody_Exp::SLambdaExpBody_Exp(SExpPtr exp)
     : exp(std::move(exp)) { }
 
-SExpLambdaExpBody::SExpLambdaExpBody(SExpLambdaExpBody&& other) noexcept = default;
+SLambdaExpBody_Exp::SLambdaExpBody_Exp(SLambdaExpBody_Exp&& other) noexcept = default;
 
-SExpLambdaExpBody::~SExpLambdaExpBody() = default;
+SLambdaExpBody_Exp::~SLambdaExpBody_Exp() = default;
 
-SExpLambdaExpBody& SExpLambdaExpBody::operator=(SExpLambdaExpBody&& other) noexcept = default;
+SLambdaExpBody_Exp& SLambdaExpBody_Exp::operator=(SLambdaExpBody_Exp&& other) noexcept = default;
 
-JsonItem SExpLambdaExpBody::ToJson()
+JsonItem SLambdaExpBody_Exp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SExpLambdaExpBody") },
+        { "$type", JsonString("SLambdaExpBody_Exp") },
         { "exp", Citron::ToJson(exp) },
     };
 }
 
-SSingleEmbeddableStmt::SSingleEmbeddableStmt(SStmtPtr stmt)
+SEmbeddableStmt_Single::SEmbeddableStmt_Single(SStmtPtr stmt)
     : stmt(std::move(stmt)) { }
 
-SSingleEmbeddableStmt::SSingleEmbeddableStmt(SSingleEmbeddableStmt&& other) noexcept = default;
+SEmbeddableStmt_Single::SEmbeddableStmt_Single(SEmbeddableStmt_Single&& other) noexcept = default;
 
-SSingleEmbeddableStmt::~SSingleEmbeddableStmt() = default;
+SEmbeddableStmt_Single::~SEmbeddableStmt_Single() = default;
 
-SSingleEmbeddableStmt& SSingleEmbeddableStmt::operator=(SSingleEmbeddableStmt&& other) noexcept = default;
+SEmbeddableStmt_Single& SEmbeddableStmt_Single::operator=(SEmbeddableStmt_Single&& other) noexcept = default;
 
-JsonItem SSingleEmbeddableStmt::ToJson()
+JsonItem SEmbeddableStmt_Single::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SSingleEmbeddableStmt") },
+        { "$type", JsonString("SEmbeddableStmt_Single") },
         { "stmt", Citron::ToJson(stmt) },
     };
 }
 
-SBlockEmbeddableStmt::SBlockEmbeddableStmt(std::vector<SStmtPtr> stmts)
+SEmbeddableStmt_Block::SEmbeddableStmt_Block(std::vector<SStmtPtr> stmts)
     : stmts(std::move(stmts)) { }
 
-SBlockEmbeddableStmt::SBlockEmbeddableStmt(SBlockEmbeddableStmt&& other) noexcept = default;
+SEmbeddableStmt_Block::SEmbeddableStmt_Block(SEmbeddableStmt_Block&& other) noexcept = default;
 
-SBlockEmbeddableStmt::~SBlockEmbeddableStmt() = default;
+SEmbeddableStmt_Block::~SEmbeddableStmt_Block() = default;
 
-SBlockEmbeddableStmt& SBlockEmbeddableStmt::operator=(SBlockEmbeddableStmt&& other) noexcept = default;
+SEmbeddableStmt_Block& SEmbeddableStmt_Block::operator=(SEmbeddableStmt_Block&& other) noexcept = default;
 
-JsonItem SBlockEmbeddableStmt::ToJson()
+JsonItem SEmbeddableStmt_Block::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SBlockEmbeddableStmt") },
+        { "$type", JsonString("SEmbeddableStmt_Block") },
         { "stmts", Citron::ToJson(stmts) },
     };
 }
 
-SExpForStmtInitializer::SExpForStmtInitializer(SExpPtr exp)
+SForStmtInitializer_Exp::SForStmtInitializer_Exp(SExpPtr exp)
     : exp(std::move(exp)) { }
 
-SExpForStmtInitializer::SExpForStmtInitializer(SExpForStmtInitializer&& other) noexcept = default;
+SForStmtInitializer_Exp::SForStmtInitializer_Exp(SForStmtInitializer_Exp&& other) noexcept = default;
 
-SExpForStmtInitializer::~SExpForStmtInitializer() = default;
+SForStmtInitializer_Exp::~SForStmtInitializer_Exp() = default;
 
-SExpForStmtInitializer& SExpForStmtInitializer::operator=(SExpForStmtInitializer&& other) noexcept = default;
+SForStmtInitializer_Exp& SForStmtInitializer_Exp::operator=(SForStmtInitializer_Exp&& other) noexcept = default;
 
-JsonItem SExpForStmtInitializer::ToJson()
+JsonItem SForStmtInitializer_Exp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SExpForStmtInitializer") },
+        { "$type", JsonString("SForStmtInitializer_Exp") },
         { "exp", Citron::ToJson(exp) },
     };
 }
 
-SVarDeclForStmtInitializer::SVarDeclForStmtInitializer(SVarDecl varDecl)
+SForStmtInitializer_VarDecl::SForStmtInitializer_VarDecl(SVarDecl varDecl)
     : varDecl(std::move(varDecl)) { }
 
-SVarDeclForStmtInitializer::SVarDeclForStmtInitializer(SVarDeclForStmtInitializer&& other) noexcept = default;
+SForStmtInitializer_VarDecl::SForStmtInitializer_VarDecl(SForStmtInitializer_VarDecl&& other) noexcept = default;
 
-SVarDeclForStmtInitializer::~SVarDeclForStmtInitializer() = default;
+SForStmtInitializer_VarDecl::~SForStmtInitializer_VarDecl() = default;
 
-SVarDeclForStmtInitializer& SVarDeclForStmtInitializer::operator=(SVarDeclForStmtInitializer&& other) noexcept = default;
+SForStmtInitializer_VarDecl& SForStmtInitializer_VarDecl::operator=(SForStmtInitializer_VarDecl&& other) noexcept = default;
 
-JsonItem SVarDeclForStmtInitializer::ToJson()
+JsonItem SForStmtInitializer_VarDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SVarDeclForStmtInitializer") },
+        { "$type", JsonString("SForStmtInitializer_VarDecl") },
         { "varDecl", Citron::ToJson(varDecl) },
     };
 }
 
-SCommandStmt::SCommandStmt(std::vector<std::shared_ptr<SStringExp>> commands)
+SStmt_Command::SStmt_Command(std::vector<std::shared_ptr<SExp_String>> commands)
     : commands(std::move(commands)) { }
 
-SCommandStmt::SCommandStmt(SCommandStmt&& other) noexcept = default;
+SStmt_Command::SStmt_Command(SStmt_Command&& other) noexcept = default;
 
-SCommandStmt::~SCommandStmt() = default;
+SStmt_Command::~SStmt_Command() = default;
 
-SCommandStmt& SCommandStmt::operator=(SCommandStmt&& other) noexcept = default;
+SStmt_Command& SStmt_Command::operator=(SStmt_Command&& other) noexcept = default;
 
-JsonItem SCommandStmt::ToJson()
+JsonItem SStmt_Command::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SCommandStmt") },
+        { "$type", JsonString("SStmt_Command") },
         { "commands", Citron::ToJson(commands) },
     };
 }
 
-SVarDeclStmt::SVarDeclStmt(SVarDecl varDecl)
+SStmt_VarDecl::SStmt_VarDecl(SVarDecl varDecl)
     : varDecl(std::move(varDecl)) { }
 
-SVarDeclStmt::SVarDeclStmt(SVarDeclStmt&& other) noexcept = default;
+SStmt_VarDecl::SStmt_VarDecl(SStmt_VarDecl&& other) noexcept = default;
 
-SVarDeclStmt::~SVarDeclStmt() = default;
+SStmt_VarDecl::~SStmt_VarDecl() = default;
 
-SVarDeclStmt& SVarDeclStmt::operator=(SVarDeclStmt&& other) noexcept = default;
+SStmt_VarDecl& SStmt_VarDecl::operator=(SStmt_VarDecl&& other) noexcept = default;
 
-JsonItem SVarDeclStmt::ToJson()
+JsonItem SStmt_VarDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SVarDeclStmt") },
+        { "$type", JsonString("SStmt_VarDecl") },
         { "varDecl", Citron::ToJson(varDecl) },
     };
 }
 
-SContinueStmt::SContinueStmt()
+SStmt_Continue::SStmt_Continue()
 { }
-SContinueStmt::SContinueStmt(SContinueStmt&& other) noexcept = default;
+SStmt_Continue::SStmt_Continue(SStmt_Continue&& other) noexcept = default;
 
-SContinueStmt::~SContinueStmt() = default;
+SStmt_Continue::~SStmt_Continue() = default;
 
-SContinueStmt& SContinueStmt::operator=(SContinueStmt&& other) noexcept = default;
+SStmt_Continue& SStmt_Continue::operator=(SStmt_Continue&& other) noexcept = default;
 
-JsonItem SContinueStmt::ToJson()
+JsonItem SStmt_Continue::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SContinueStmt") },
+        { "$type", JsonString("SStmt_Continue") },
     };
 }
 
-SBreakStmt::SBreakStmt()
+SStmt_Break::SStmt_Break()
 { }
-SBreakStmt::SBreakStmt(SBreakStmt&& other) noexcept = default;
+SStmt_Break::SStmt_Break(SStmt_Break&& other) noexcept = default;
 
-SBreakStmt::~SBreakStmt() = default;
+SStmt_Break::~SStmt_Break() = default;
 
-SBreakStmt& SBreakStmt::operator=(SBreakStmt&& other) noexcept = default;
+SStmt_Break& SStmt_Break::operator=(SStmt_Break&& other) noexcept = default;
 
-JsonItem SBreakStmt::ToJson()
+JsonItem SStmt_Break::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SBreakStmt") },
+        { "$type", JsonString("SStmt_Break") },
     };
 }
 
-SBlockStmt::SBlockStmt(std::vector<SStmtPtr> stmts)
+SStmt_Block::SStmt_Block(std::vector<SStmtPtr> stmts)
     : stmts(std::move(stmts)) { }
 
-SBlockStmt::SBlockStmt(SBlockStmt&& other) noexcept = default;
+SStmt_Block::SStmt_Block(SStmt_Block&& other) noexcept = default;
 
-SBlockStmt::~SBlockStmt() = default;
+SStmt_Block::~SStmt_Block() = default;
 
-SBlockStmt& SBlockStmt::operator=(SBlockStmt&& other) noexcept = default;
+SStmt_Block& SStmt_Block::operator=(SStmt_Block&& other) noexcept = default;
 
-JsonItem SBlockStmt::ToJson()
+JsonItem SStmt_Block::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SBlockStmt") },
+        { "$type", JsonString("SStmt_Block") },
         { "stmts", Citron::ToJson(stmts) },
     };
 }
 
-SBlankStmt::SBlankStmt()
+SStmt_Blank::SStmt_Blank()
 { }
-SBlankStmt::SBlankStmt(SBlankStmt&& other) noexcept = default;
+SStmt_Blank::SStmt_Blank(SStmt_Blank&& other) noexcept = default;
 
-SBlankStmt::~SBlankStmt() = default;
+SStmt_Blank::~SStmt_Blank() = default;
 
-SBlankStmt& SBlankStmt::operator=(SBlankStmt&& other) noexcept = default;
+SStmt_Blank& SStmt_Blank::operator=(SStmt_Blank&& other) noexcept = default;
 
-JsonItem SBlankStmt::ToJson()
+JsonItem SStmt_Blank::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SBlankStmt") },
+        { "$type", JsonString("SStmt_Blank") },
     };
 }
 
-STaskStmt::STaskStmt(std::vector<SStmtPtr> body)
+SStmt_Task::SStmt_Task(std::vector<SStmtPtr> body)
     : body(std::move(body)) { }
 
-STaskStmt::STaskStmt(STaskStmt&& other) noexcept = default;
+SStmt_Task::SStmt_Task(SStmt_Task&& other) noexcept = default;
 
-STaskStmt::~STaskStmt() = default;
+SStmt_Task::~SStmt_Task() = default;
 
-STaskStmt& STaskStmt::operator=(STaskStmt&& other) noexcept = default;
+SStmt_Task& SStmt_Task::operator=(SStmt_Task&& other) noexcept = default;
 
-JsonItem STaskStmt::ToJson()
+JsonItem SStmt_Task::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("STaskStmt") },
+        { "$type", JsonString("SStmt_Task") },
         { "body", Citron::ToJson(body) },
     };
 }
 
-SAwaitStmt::SAwaitStmt(std::vector<SStmtPtr> body)
+SStmt_Await::SStmt_Await(std::vector<SStmtPtr> body)
     : body(std::move(body)) { }
 
-SAwaitStmt::SAwaitStmt(SAwaitStmt&& other) noexcept = default;
+SStmt_Await::SStmt_Await(SStmt_Await&& other) noexcept = default;
 
-SAwaitStmt::~SAwaitStmt() = default;
+SStmt_Await::~SStmt_Await() = default;
 
-SAwaitStmt& SAwaitStmt::operator=(SAwaitStmt&& other) noexcept = default;
+SStmt_Await& SStmt_Await::operator=(SStmt_Await&& other) noexcept = default;
 
-JsonItem SAwaitStmt::ToJson()
+JsonItem SStmt_Await::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SAwaitStmt") },
+        { "$type", JsonString("SStmt_Await") },
         { "body", Citron::ToJson(body) },
     };
 }
 
-SAsyncStmt::SAsyncStmt(std::vector<SStmtPtr> body)
+SStmt_Async::SStmt_Async(std::vector<SStmtPtr> body)
     : body(std::move(body)) { }
 
-SAsyncStmt::SAsyncStmt(SAsyncStmt&& other) noexcept = default;
+SStmt_Async::SStmt_Async(SStmt_Async&& other) noexcept = default;
 
-SAsyncStmt::~SAsyncStmt() = default;
+SStmt_Async::~SStmt_Async() = default;
 
-SAsyncStmt& SAsyncStmt::operator=(SAsyncStmt&& other) noexcept = default;
+SStmt_Async& SStmt_Async::operator=(SStmt_Async&& other) noexcept = default;
 
-JsonItem SAsyncStmt::ToJson()
+JsonItem SStmt_Async::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SAsyncStmt") },
+        { "$type", JsonString("SStmt_Async") },
         { "body", Citron::ToJson(body) },
     };
 }
 
-SDirectiveStmt::SDirectiveStmt(std::string name, std::vector<SExpPtr> args)
+SStmt_Directive::SStmt_Directive(std::string name, std::vector<SExpPtr> args)
     : name(std::move(name)), args(std::move(args)) { }
 
-SDirectiveStmt::SDirectiveStmt(SDirectiveStmt&& other) noexcept = default;
+SStmt_Directive::SStmt_Directive(SStmt_Directive&& other) noexcept = default;
 
-SDirectiveStmt::~SDirectiveStmt() = default;
+SStmt_Directive::~SStmt_Directive() = default;
 
-SDirectiveStmt& SDirectiveStmt::operator=(SDirectiveStmt&& other) noexcept = default;
+SStmt_Directive& SStmt_Directive::operator=(SStmt_Directive&& other) noexcept = default;
 
-JsonItem SDirectiveStmt::ToJson()
+JsonItem SStmt_Directive::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SDirectiveStmt") },
+        { "$type", JsonString("SStmt_Directive") },
         { "name", Citron::ToJson(name) },
         { "args", Citron::ToJson(args) },
     };
 }
 
-SIfStmt::SIfStmt(SExpPtr cond, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody)
+SStmt_If::SStmt_If(SExpPtr cond, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody)
     : cond(std::move(cond)), body(std::move(body)), elseBody(std::move(elseBody)) { }
 
-SIfStmt::SIfStmt(SIfStmt&& other) noexcept = default;
+SStmt_If::SStmt_If(SStmt_If&& other) noexcept = default;
 
-SIfStmt::~SIfStmt() = default;
+SStmt_If::~SStmt_If() = default;
 
-SIfStmt& SIfStmt::operator=(SIfStmt&& other) noexcept = default;
+SStmt_If& SStmt_If::operator=(SStmt_If&& other) noexcept = default;
 
-JsonItem SIfStmt::ToJson()
+JsonItem SStmt_If::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SIfStmt") },
+        { "$type", JsonString("SStmt_If") },
         { "cond", Citron::ToJson(cond) },
         { "body", Citron::ToJson(body) },
         { "elseBody", Citron::ToJson(elseBody) },
     };
 }
 
-SIfTestStmt::SIfTestStmt(STypeExpPtr testType, std::string varName, SExpPtr exp, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody)
+SStmt_IfTest::SStmt_IfTest(STypeExpPtr testType, std::string varName, SExpPtr exp, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody)
     : testType(std::move(testType)), varName(std::move(varName)), exp(std::move(exp)), body(std::move(body)), elseBody(std::move(elseBody)) { }
 
-SIfTestStmt::SIfTestStmt(SIfTestStmt&& other) noexcept = default;
+SStmt_IfTest::SStmt_IfTest(SStmt_IfTest&& other) noexcept = default;
 
-SIfTestStmt::~SIfTestStmt() = default;
+SStmt_IfTest::~SStmt_IfTest() = default;
 
-SIfTestStmt& SIfTestStmt::operator=(SIfTestStmt&& other) noexcept = default;
+SStmt_IfTest& SStmt_IfTest::operator=(SStmt_IfTest&& other) noexcept = default;
 
-JsonItem SIfTestStmt::ToJson()
+JsonItem SStmt_IfTest::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SIfTestStmt") },
+        { "$type", JsonString("SStmt_IfTest") },
         { "testType", Citron::ToJson(testType) },
         { "varName", Citron::ToJson(varName) },
         { "exp", Citron::ToJson(exp) },
@@ -1104,19 +1104,19 @@ JsonItem SIfTestStmt::ToJson()
     };
 }
 
-SForStmt::SForStmt(SForStmtInitializerPtr initializer, SExpPtr cond, SExpPtr cont, SEmbeddableStmtPtr body)
+SStmt_For::SStmt_For(SForStmtInitializerPtr initializer, SExpPtr cond, SExpPtr cont, SEmbeddableStmtPtr body)
     : initializer(std::move(initializer)), cond(std::move(cond)), cont(std::move(cont)), body(std::move(body)) { }
 
-SForStmt::SForStmt(SForStmt&& other) noexcept = default;
+SStmt_For::SStmt_For(SStmt_For&& other) noexcept = default;
 
-SForStmt::~SForStmt() = default;
+SStmt_For::~SStmt_For() = default;
 
-SForStmt& SForStmt::operator=(SForStmt&& other) noexcept = default;
+SStmt_For& SStmt_For::operator=(SStmt_For&& other) noexcept = default;
 
-JsonItem SForStmt::ToJson()
+JsonItem SStmt_For::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SForStmt") },
+        { "$type", JsonString("SStmt_For") },
         { "initializer", Citron::ToJson(initializer) },
         { "cond", Citron::ToJson(cond) },
         { "cont", Citron::ToJson(cont) },
@@ -1124,53 +1124,53 @@ JsonItem SForStmt::ToJson()
     };
 }
 
-SReturnStmt::SReturnStmt(SExpPtr value)
+SStmt_Return::SStmt_Return(SExpPtr value)
     : value(std::move(value)) { }
 
-SReturnStmt::SReturnStmt(SReturnStmt&& other) noexcept = default;
+SStmt_Return::SStmt_Return(SStmt_Return&& other) noexcept = default;
 
-SReturnStmt::~SReturnStmt() = default;
+SStmt_Return::~SStmt_Return() = default;
 
-SReturnStmt& SReturnStmt::operator=(SReturnStmt&& other) noexcept = default;
+SStmt_Return& SStmt_Return::operator=(SStmt_Return&& other) noexcept = default;
 
-JsonItem SReturnStmt::ToJson()
+JsonItem SStmt_Return::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SReturnStmt") },
+        { "$type", JsonString("SStmt_Return") },
         { "value", Citron::ToJson(value) },
     };
 }
 
-SExpStmt::SExpStmt(SExpPtr exp)
+SStmt_Exp::SStmt_Exp(SExpPtr exp)
     : exp(std::move(exp)) { }
 
-SExpStmt::SExpStmt(SExpStmt&& other) noexcept = default;
+SStmt_Exp::SStmt_Exp(SStmt_Exp&& other) noexcept = default;
 
-SExpStmt::~SExpStmt() = default;
+SStmt_Exp::~SStmt_Exp() = default;
 
-SExpStmt& SExpStmt::operator=(SExpStmt&& other) noexcept = default;
+SStmt_Exp& SStmt_Exp::operator=(SStmt_Exp&& other) noexcept = default;
 
-JsonItem SExpStmt::ToJson()
+JsonItem SStmt_Exp::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SExpStmt") },
+        { "$type", JsonString("SStmt_Exp") },
         { "exp", Citron::ToJson(exp) },
     };
 }
 
-SForeachStmt::SForeachStmt(STypeExpPtr type, std::string varName, SExpPtr enumerable, SEmbeddableStmtPtr body)
+SStmt_Foreach::SStmt_Foreach(STypeExpPtr type, std::string varName, SExpPtr enumerable, SEmbeddableStmtPtr body)
     : type(std::move(type)), varName(std::move(varName)), enumerable(std::move(enumerable)), body(std::move(body)) { }
 
-SForeachStmt::SForeachStmt(SForeachStmt&& other) noexcept = default;
+SStmt_Foreach::SStmt_Foreach(SStmt_Foreach&& other) noexcept = default;
 
-SForeachStmt::~SForeachStmt() = default;
+SStmt_Foreach::~SStmt_Foreach() = default;
 
-SForeachStmt& SForeachStmt::operator=(SForeachStmt&& other) noexcept = default;
+SStmt_Foreach& SStmt_Foreach::operator=(SStmt_Foreach&& other) noexcept = default;
 
-JsonItem SForeachStmt::ToJson()
+JsonItem SStmt_Foreach::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SForeachStmt") },
+        { "$type", JsonString("SStmt_Foreach") },
         { "type", Citron::ToJson(type) },
         { "varName", Citron::ToJson(varName) },
         { "enumerable", Citron::ToJson(enumerable) },
@@ -1178,19 +1178,19 @@ JsonItem SForeachStmt::ToJson()
     };
 }
 
-SYieldStmt::SYieldStmt(SExpPtr value)
+SStmt_Yield::SStmt_Yield(SExpPtr value)
     : value(std::move(value)) { }
 
-SYieldStmt::SYieldStmt(SYieldStmt&& other) noexcept = default;
+SStmt_Yield::SStmt_Yield(SStmt_Yield&& other) noexcept = default;
 
-SYieldStmt::~SYieldStmt() = default;
+SStmt_Yield::~SStmt_Yield() = default;
 
-SYieldStmt& SYieldStmt::operator=(SYieldStmt&& other) noexcept = default;
+SStmt_Yield& SStmt_Yield::operator=(SStmt_Yield&& other) noexcept = default;
 
-JsonItem SYieldStmt::ToJson()
+JsonItem SStmt_Yield::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SYieldStmt") },
+        { "$type", JsonString("SStmt_Yield") },
         { "value", Citron::ToJson(value) },
     };
 }

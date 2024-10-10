@@ -6,7 +6,7 @@
             "accessModifier": null,
             "bSequence": false,
             "retType": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "void",
                 "typeArgs": []
             },
@@ -18,7 +18,7 @@
                     "hasOut": false,
                     "hasParams": false,
                     "type": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -29,7 +29,7 @@
                     "hasOut": false,
                     "hasParams": false,
                     "type": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "string",
                         "typeArgs": []
                     },
@@ -40,7 +40,7 @@
                     "hasOut": false,
                     "hasParams": true,
                     "type": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -49,11 +49,11 @@
             ],
             "body": [
                 {
-                    "$type": "SVarDeclStmt",
+                    "$type": "SStmt_VarDecl",
                     "varDecl": {
                         "$type": "SVarDecl",
                         "type": {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "int",
                             "typeArgs": []
                         },
@@ -62,7 +62,7 @@
                                 "$type": "SVarDeclElement",
                                 "varName": "a",
                                 "initExp": {
-                                    "$type": "SIntLiteralExp",
+                                    "$type": "SExp_IntLiteral",
                                     "value": 0
                                 }
                             }

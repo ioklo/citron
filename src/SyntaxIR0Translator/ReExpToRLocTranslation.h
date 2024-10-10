@@ -17,28 +17,28 @@ namespace SyntaxIR0Translator {
 class INotLocationErrorLogger;
 
 class ReExp;
-class ReThisVarExp;
-class ReClassMemberVarExp;
-class ReLocalVarExp;
-class ReLambdaMemberVarExp;
-class ReStructMemberVarExp;
-class ReEnumElemMemberVarExp;
-class ReListIndexerExp;
-class ReLocalDerefExp;
-class ReBoxDerefExp;
+class ReExp_ThisVar;
+class ReExp_ClassMemberVar;
+class ReExp_LocalVar;
+class ReExp_LambdaMemberVar;
+class ReExp_StructMemberVar;
+class ReExp_EnumElemMemberVar;
+class ReExp_ListIndexer;
+class ReExp_LocalDeref;
+class ReExp_BoxDeref;
 
 class ScopeContext;
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 
-RLocPtr TranslateReThisVarExpToRLoc(ReThisVarExp& reExp); // nothrow
-RLocPtr TranslateReClassMemberVarExpToRLoc(ReClassMemberVarExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RLocPtr TranslateReLocalVarExpToRLoc(ReLocalVarExp& reExp);
-RLocPtr TranslateReLambdaMemberVarExpToRLoc(ReLambdaMemberVarExp& reExp);
-RLocPtr TranslateReStructMemberVarExpToRLoc(ReStructMemberVarExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReEnumElemMemberVarExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RLocPtr TranslateReListIndexerExpToRLoc(ReListIndexerExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RLocPtr TranslateReLocalDerefExpToRLoc(ReLocalDerefExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RLocPtr TranslateReBoxDerefExpToRLoc(ReBoxDerefExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp); // nothrow
+RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RLocPtr TranslateReLocalVarExpToRLoc(ReExp_LocalVar& reExp);
+RLocPtr TranslateReLambdaMemberVarExpToRLoc(ReExp_LambdaMemberVar& reExp);
+RLocPtr TranslateReStructMemberVarExpToRLoc(ReExp_StructMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReExp_EnumElemMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RLocPtr TranslateReListIndexerExpToRLoc(ReExp_ListIndexer& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RLocPtr TranslateReLocalDerefExpToRLoc(ReExp_LocalDeref& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RLocPtr TranslateReBoxDerefExpToRLoc(ReExp_BoxDeref& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 
 RLocPtr TranslateReExpToRLoc(ReExp& reExp, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationErrorLogger, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 

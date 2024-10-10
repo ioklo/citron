@@ -43,7 +43,7 @@ optional<vector<STypeExpPtr>> ParseTypeArgs(Lexer* lexer)
     return typeArgs;
 }
 
-shared_ptr<SIdTypeExp> ParseIdTypeExp(Lexer* lexer)
+shared_ptr<STypeExp_Id> ParseIdTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -54,17 +54,17 @@ shared_ptr<SIdTypeExp> ParseIdTypeExp(Lexer* lexer)
     if (auto oTypeArgs = ParseTypeArgs(&curLexer))
     {
         *lexer = std::move(curLexer);
-        return MakePtr<SIdTypeExp>(oIdToken->text, std::move(*oTypeArgs));
+        return MakePtr<STypeExp_Id>(oIdToken->text, std::move(*oTypeArgs));
     }
     else
     {
         *lexer = std::move(curLexer);
-        return MakePtr<SIdTypeExp>(oIdToken->text, vector<STypeExpPtr>());
+        return MakePtr<STypeExp_Id>(oIdToken->text, vector<STypeExpPtr>());
     }
 }
 
 // T?
-shared_ptr<SNullableTypeExp> ParseNullableTypeExp(Lexer* lexer)
+shared_ptr<STypeExp_Nullable> ParseNullableTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -78,11 +78,11 @@ shared_ptr<SNullableTypeExp> ParseNullableTypeExp(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return MakePtr<SNullableTypeExp>(std::move(typeExp));
+    return MakePtr<STypeExp_Nullable>(std::move(typeExp));
 }
 
 // box T*
-shared_ptr<SBoxPtrTypeExp> ParseBoxPtrTypeExp(Lexer* lexer)
+shared_ptr<STypeExp_BoxPtr> ParseBoxPtrTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -97,7 +97,7 @@ shared_ptr<SBoxPtrTypeExp> ParseBoxPtrTypeExp(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return MakePtr<SBoxPtrTypeExp>(std::move(typeExp));
+    return MakePtr<STypeExp_BoxPtr>(std::move(typeExp));
 }
 
 // T*
@@ -115,12 +115,12 @@ STypeExpPtr ParseLocalPtrTypeExp(Lexer* lexer)
     if (!Accept<StarToken>(&curLexer))
         return nullptr;
     
-    STypeExpPtr curTypeExp = MakePtr<SLocalPtrTypeExp>(std::move(innerTypeExp));
+    STypeExpPtr curTypeExp = MakePtr<STypeExp_LocalPtr>(std::move(innerTypeExp));
 
     while (Accept<StarToken>(&curLexer))
     {
-        // NOTICE: SLocalPtrTypeExp(std::move(curTypeExp)); curTypeExp가 SLocalPtrTypeExp라면 감싸는게 아니라 이동생성자가 호출된다
-        curTypeExp = MakePtr<SLocalPtrTypeExp>(std::move(curTypeExp));
+        // NOTICE: STypeExp_LocalPtr(std::move(curTypeExp)); curTypeExp가 STypeExp_LocalPtr라면 감싸는게 아니라 이동생성자가 호출된다
+        curTypeExp = MakePtr<STypeExp_LocalPtr>(std::move(curTypeExp));
     }
 
     *lexer = std::move(curLexer);
@@ -169,9 +169,9 @@ STypeExpPtr ParseIdChainTypeExp(Lexer* lexer)
 
         auto oTypeArgs = ParseTypeArgs(&curLexer);
         if (oTypeArgs)
-            curTypeExp = MakePtr<SMemberTypeExp>(std::move(curTypeExp), std::move(oIdToken->text), std::move(*oTypeArgs));
+            curTypeExp = MakePtr<STypeExp_Member>(std::move(curTypeExp), std::move(oIdToken->text), std::move(*oTypeArgs));
         else 
-            curTypeExp = MakePtr<SMemberTypeExp>(std::move(curTypeExp), std::move(oIdToken->text), std::vector<STypeExpPtr>{});
+            curTypeExp = MakePtr<STypeExp_Member>(std::move(curTypeExp), std::move(oIdToken->text), std::vector<STypeExpPtr>{});
     }
 
     *lexer = std::move(curLexer);
@@ -185,7 +185,7 @@ STypeExpPtr ParseIdChainTypeExp(Lexer* lexer)
 // std::optional<STupleTypeExp> ParseTupleTypeExp(Lexer* lexer);
 
 // local I i;
-shared_ptr<SLocalTypeExp> ParseLocalTypeExp(Lexer* lexer)
+shared_ptr<STypeExp_Local> ParseLocalTypeExp(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -197,7 +197,7 @@ shared_ptr<SLocalTypeExp> ParseLocalTypeExp(Lexer* lexer)
     if (!innerTypeExp) return nullptr;
 
     *lexer = std::move(curLexer);
-    return MakePtr<SLocalTypeExp>(std::move(innerTypeExp));
+    return MakePtr<STypeExp_Local>(std::move(innerTypeExp));
 }
 
 // 

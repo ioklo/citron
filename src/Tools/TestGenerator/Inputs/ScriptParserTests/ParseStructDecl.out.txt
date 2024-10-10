@@ -13,12 +13,12 @@
             ],
             "baseTypes": [
                 {
-                    "$type": "SIdTypeExp",
+                    "$type": "STypeExp_Id",
                     "name": "B",
                     "typeArgs": []
                 },
                 {
-                    "$type": "SIdTypeExp",
+                    "$type": "STypeExp_Id",
                     "name": "I",
                     "typeArgs": []
                 }
@@ -28,7 +28,7 @@
                     "$type": "SStructMemberVarDecl",
                     "accessModifier": null,
                     "varType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -40,7 +40,7 @@
                     "$type": "SStructMemberVarDecl",
                     "accessModifier": "Public",
                     "varType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -52,7 +52,7 @@
                     "$type": "SStructMemberVarDecl",
                     "accessModifier": "Protected",
                     "varType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "string",
                         "typeArgs": []
                     },
@@ -64,7 +64,7 @@
                     "$type": "SStructMemberVarDecl",
                     "accessModifier": "Private",
                     "varType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -84,12 +84,12 @@
                     ],
                     "baseTypes": [
                         {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "B",
                             "typeArgs": []
                         },
                         {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "I",
                             "typeArgs": []
                         }
@@ -99,7 +99,7 @@
                             "$type": "SStructMemberVarDecl",
                             "accessModifier": null,
                             "varType": {
-                                "$type": "SIdTypeExp",
+                                "$type": "STypeExp_Id",
                                 "name": "int",
                                 "typeArgs": []
                             },
@@ -115,7 +115,7 @@
                     "bStatic": true,
                     "bSequence": false,
                     "retType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "void",
                         "typeArgs": []
                     },
@@ -132,7 +132,7 @@
                             "hasOut": false,
                             "hasParams": false,
                             "type": {
-                                "$type": "SIdTypeExp",
+                                "$type": "STypeExp_Id",
                                 "name": "string",
                                 "typeArgs": []
                             },
@@ -147,7 +147,7 @@
                     "bStatic": false,
                     "bSequence": true,
                     "retType": {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     },
@@ -161,9 +161,9 @@
                     "parameters": [],
                     "body": [
                         {
-                            "$type": "SYieldStmt",
+                            "$type": "SStmt_Yield",
                             "value": {
-                                "$type": "SIntLiteralExp",
+                                "$type": "SExp_IntLiteral",
                                 "value": 4
                             }
                         }

@@ -25,7 +25,7 @@ RDecl* RStructMemberFuncDecl::GetOuter()
 
 RIdentifier RStructMemberFuncDecl::GetIdentifier()
 {
-    return RIdentifier { RNormalName(name), typeParams.size(), RCommonFuncDeclComponent::GetParamIds() };
+    return RIdentifier { RName_Normal(name), typeParams.size(), RCommonFuncDeclComponent::GetParamIds() };
 }
 
 RDecl* RStructMemberFuncDecl::GetDecl()

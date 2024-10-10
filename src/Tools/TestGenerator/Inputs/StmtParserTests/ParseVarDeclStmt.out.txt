@@ -1,9 +1,9 @@
 {
-    "$type": "SVarDeclStmt",
+    "$type": "SStmt_VarDecl",
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "SIdTypeExp",
+            "$type": "STypeExp_Id",
             "name": "string",
             "typeArgs": []
         },
@@ -12,10 +12,10 @@
                 "$type": "SVarDeclElement",
                 "varName": "a",
                 "initExp": {
-                    "$type": "SStringExp",
+                    "$type": "SExp_String",
                     "elements": [
                         {
-                            "$type": "STextStringExpElement",
+                            "$type": "SStringExpElement_Text",
                             "text": "hello"
                         }
                     ]

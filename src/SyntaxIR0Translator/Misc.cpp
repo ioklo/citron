@@ -112,26 +112,26 @@ RExpPtr MakeRAsExp(const RTypePtr& targetType, const RTypePtr& testType, RExpPtr
     if (testTypeKind == RCustomTypeKind::Class)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<RClassAsClassExp>(std::move(targetExp), testType);
+            return MakePtr<RExp_ClassAsClass>(std::move(targetExp), testType);
 
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<RInterfaceAsClassExp>(std::move(targetExp), testType);
+            return MakePtr<RExp_InterfaceAsClass>(std::move(targetExp), testType);
         else
             throw NotImplementedException(); // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::Interface)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<RClassAsInterfaceExp>(std::move(targetExp), testType);
+            return MakePtr<RExp_ClassAsInterface>(std::move(targetExp), testType);
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<RInterfaceAsInterfaceExp>(std::move(targetExp), testType);
+            return MakePtr<RExp_InterfaceAsInterface>(std::move(targetExp), testType);
         else
             throw NotImplementedException(); // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::EnumElem)
     {
         if (targetTypeKind == RCustomTypeKind::Enum)
-            return MakePtr<REnumAsEnumElemExp>(std::move(targetExp), testType);
+            return MakePtr<RExp_EnumAsEnumElem>(std::move(targetExp), testType);
         else
             throw NotImplementedException(); // 에러 처리
     }

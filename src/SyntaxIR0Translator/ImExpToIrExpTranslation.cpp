@@ -21,50 +21,50 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     {
     }
 
-    void Visit(ImNamespaceExp& imExp) override 
+    void Visit(ImExp_Namespace& imExp) override 
     { 
-        *result = MakePtr<IrNamespaceExp>(imExp._namespace);
+        *result = MakePtr<IrExp_Namespace>(imExp._namespace);
     }
 
-    void Visit(ImGlobalFuncsExp& imExp) override 
+    void Visit(ImExp_GlobalFuncs& imExp) override 
     { 
         static_assert(false); 
         *result = nullptr;
     }
 
-    void Visit(ImTypeVarExp& imExp) override 
+    void Visit(ImExp_TypeVar& imExp) override 
     { 
-        *result = MakePtr<IrTypeVarExp>(imExp.type);
+        *result = MakePtr<IrExp_TypeVar>(imExp.type);
     }
 
-    void Visit(ImClassExp& imExp) override
+    void Visit(ImExp_Class& imExp) override
     {
-        *result = MakePtr<IrClassExp>(imExp.classDecl, imExp.typeArgs);
+        *result = MakePtr<IrExp_Class>(imExp.classDecl, imExp.typeArgs);
     }
 
-    void Visit(ImClassMemberFuncsExp& imExp) override 
+    void Visit(ImExp_ClassMemberFuncs& imExp) override 
     { 
         static_assert(false);
         *result = nullptr;
     }
 
-    void Visit(ImStructExp& imExp) override
+    void Visit(ImExp_Struct& imExp) override
     {
-        *result = MakePtr<IrStructExp>(imExp.structDecl, imExp.typeArgs);
+        *result = MakePtr<IrExp_Struct>(imExp.structDecl, imExp.typeArgs);
     }
 
-    void Visit(ImStructMemberFuncsExp& imExp) override
+    void Visit(ImExp_StructMemberFuncs& imExp) override
     {
         static_assert(false);
         *result = nullptr;
     }
 
-    void Visit(ImEnumExp& imExp) override
+    void Visit(ImExp_Enum& imExp) override
     {
-        *result = MakePtr<IrEnumExp>(imExp.decl, imExp.typeArgs);
+        *result = MakePtr<IrExp_Enum>(imExp.decl, imExp.typeArgs);
     }
 
-    void Visit(ImEnumElemExp& imExp) override 
+    void Visit(ImExp_EnumElem& imExp) override 
     { 
         static_assert(false); 
         *result = nullptr;
@@ -72,81 +72,81 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
 
     // &this   -> invalid
     // &this.a -> valid, box ptr
-    void Visit(ImThisVarExp& imExp) override 
+    void Visit(ImExp_ThisVar& imExp) override 
     { 
-        *result = MakePtr<IrThisVarExp>(imExp.type);
+        *result = MakePtr<IrExp_ThisVar>(imExp.type);
     }
 
     // &id
-    void Visit(ImLocalVarExp& imExp) override 
+    void Visit(ImExp_LocalVar& imExp) override 
     { 
-        *result = MakePtr<IrLocalRefExp>(MakePtr<RLocalVarLoc>(imExp.name, imExp.type));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_LocalVar>(imExp.name, imExp.type));
     }
 
     // &x
-    void Visit(ImLambdaMemberVarExp& imExp) override 
+    void Visit(ImExp_LambdaMemberVar& imExp) override 
     { 
         // TODO: [10] box lambda이면 box로 판단해야 한다
-        *result = MakePtr<IrLocalRefExp>(MakePtr<RLambdaMemberVarLoc>(imExp.decl, imExp.typeArgs));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_LambdaMemberVar>(imExp.decl, imExp.typeArgs));
     }
 
     // x (C.x, this.x)
-    void Visit(ImClassMemberVarExp& imExp) override 
+    void Visit(ImExp_ClassMemberVar& imExp) override 
     { 
         if (imExp.decl->bStatic) // &C.x
         {
-            *result = MakePtr<IrStaticRefExp>(MakePtr<RClassMemberLoc>(nullptr, imExp.decl, imExp.typeArgs));
+            *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_ClassMember>(nullptr, imExp.decl, imExp.typeArgs));
         }
         else // &this.x
         {
             auto classType = imExp.decl->GetClassType(imExp.typeArgs, factory);
-            *result = MakePtr<IrClassMemberBoxRefExp>(MakePtr<RThisLoc>(classType), imExp.decl, imExp.typeArgs);
+            *result = MakePtr<IrExp_BoxRef_ClassMember>(MakePtr<RLoc_This>(classType), imExp.decl, imExp.typeArgs);
         }
     }
 
     // x (S.x, this->x)
-    void Visit(ImStructMemberVarExp& imExp) override 
+    void Visit(ImExp_StructMemberVar& imExp) override 
     {
         if (imExp.decl->bStatic)
         {
-            *result = MakePtr<IrStaticRefExp>(MakePtr<RStructMemberLoc>(nullptr, imExp.decl, imExp.typeArgs));
+            *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_StructMember>(nullptr, imExp.decl, imExp.typeArgs));
         }
         else
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
             auto structType = imExp.decl->GetStructType(imExp.typeArgs, factory);
-            auto rDerefThisLoc = MakePtr<RLocalDerefLoc>(MakePtr<RThisLoc>(structType));
-            *result = MakePtr<IrLocalRefExp>(MakePtr<RStructMemberLoc>(rDerefThisLoc, imExp.decl, imExp.typeArgs));
+            auto rDerefThisLoc = MakePtr<RLoc_LocalDeref>(MakePtr<RLoc_This>(structType));
+            *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_StructMember>(rDerefThisLoc, imExp.decl, imExp.typeArgs));
         }
     }
 
     // &x (E.First.x)    
-    void Visit(ImEnumElemMemberVarExp& imExp) override 
+    void Visit(ImExp_EnumElemMemberVar& imExp) override 
     { 
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException();
     }
 
-    void Visit(ImListIndexerExp& imExp) override 
+    void Visit(ImExp_ListIndexer& imExp) override 
     { 
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException();
     }
 
-    void Visit(ImLocalDerefExp& imExp) override
+    void Visit(ImExp_LocalDeref& imExp) override
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException();
     }
 
-    void Visit(ImBoxDerefExp& imExp) override 
+    void Visit(ImExp_BoxDeref& imExp) override 
     { 
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException();
     }
 
-    void Visit(ImElseExp& imExp) override 
+    void Visit(ImExp_Else& imExp) override 
     { 
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException();

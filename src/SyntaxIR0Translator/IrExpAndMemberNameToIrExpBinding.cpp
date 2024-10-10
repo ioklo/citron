@@ -40,7 +40,7 @@ public:
 
     void Visit(RMember_Namespace& member) override 
     {
-        *result = MakePtr<IrNamespaceExp>(member.decl);
+        *result = MakePtr<IrExp_Namespace>(member.decl);
     }
 
     // S.F
@@ -53,7 +53,7 @@ public:
     void Visit(RMember_Class& member) override 
     {
         auto typeArgs = factory.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        *result = MakePtr<IrClassExp>(member.decl, std::move(typeArgs));
+        *result = MakePtr<IrExp_Class>(member.decl, std::move(typeArgs));
     }
 
     // 에러,
@@ -81,13 +81,13 @@ public:
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        *result = MakePtr<IrStaticRefExp>(MakePtr<RClassMemberLoc>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_ClassMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     void Visit(RMember_Struct& member) override 
     {
         auto typeArgs = factory.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        *result = MakePtr<IrStructExp>(member.decl, std::move(typeArgs));
+        *result = MakePtr<IrExp_Struct>(member.decl, std::move(typeArgs));
     }
 
     void Visit(RMember_StructMemberFuncs& member) override 
@@ -113,14 +113,14 @@ public:
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        *result = MakePtr<IrStaticRefExp>(MakePtr<RStructMemberLoc>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_StructMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     // E
     void Visit(RMember_Enum& member) override 
     {   
         auto typeArgs = factory.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        *result = MakePtr<IrEnumExp>(member.decl, std::move(typeArgs));
+        *result = MakePtr<IrExp_Enum>(member.decl, std::move(typeArgs));
     }
 
     // &E.First.x
@@ -155,7 +155,7 @@ public:
 
 class StaticRefTypeBinder : public RTypeVisitor
 {
-    std::shared_ptr<IrStaticRefExp> parent;
+    std::shared_ptr<IrExp_StaticRef> parent;
     RName name;
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
@@ -164,7 +164,7 @@ class StaticRefTypeBinder : public RTypeVisitor
     LoggerPtr logger;
 
 public:
-    StaticRefTypeBinder(const std::shared_ptr<IrStaticRefExp>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, 
+    StaticRefTypeBinder(const std::shared_ptr<IrExp_StaticRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, 
         const ScopeContextPtr& context,
         const LoggerPtr& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result)
@@ -252,7 +252,7 @@ public:
         }
 
         // 이제 BoxRef로 변경
-        *result = MakePtr<IrClassMemberBoxRefExp>(parent->loc, memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_ClassMember>(parent->loc, memberVar->decl, memberVar->typeArgs);
     }
 
     // &C.s.id
@@ -274,7 +274,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrStaticRefExp>(MakePtr<RStructMemberLoc>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_StructMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
     }
 
     // Enum자체는 member를 가져올 수 없다
@@ -301,7 +301,7 @@ public:
             *result = nullptr;
         }
 
-        *result = MakePtr<IrStaticRefExp>(MakePtr<REnumElemMemberLoc>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
     }
 
     // &C.i.id
@@ -320,7 +320,7 @@ public:
 
 struct BoxRefTypeBinder : public RTypeVisitor
 {
-    std::shared_ptr<IrBoxRefExp> parent;
+    std::shared_ptr<IrExp_BoxRef> parent;
     RName name;
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
@@ -329,7 +329,7 @@ struct BoxRefTypeBinder : public RTypeVisitor
     LoggerPtr logger;
 
 public: 
-    BoxRefTypeBinder(const std::shared_ptr<IrBoxRefExp>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    BoxRefTypeBinder(const std::shared_ptr<IrExp_BoxRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -404,7 +404,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrClassMemberBoxRefExp>(parent->MakeLoc(), memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_ClassMember>(parent->MakeLoc(), memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 
@@ -425,7 +425,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrStructMemberBoxRefExp>(parent, memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_StructMember>(parent, memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Enum& type) override 
@@ -457,7 +457,7 @@ public:
 
 struct LocalRefTypeBinder : public RTypeVisitor
 {
-    std::shared_ptr<IrLocalRefExp> parent;
+    std::shared_ptr<IrExp_LocalRef> parent;
     RName name;
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
@@ -466,7 +466,7 @@ struct LocalRefTypeBinder : public RTypeVisitor
     LoggerPtr logger;
 
 public:
-    LocalRefTypeBinder(const std::shared_ptr<IrLocalRefExp>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    LocalRefTypeBinder(const std::shared_ptr<IrExp_LocalRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -540,7 +540,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrClassMemberBoxRefExp>(parent->loc, memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_ClassMember>(parent->loc, memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 
@@ -561,7 +561,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrLocalRefExp>(MakePtr<RStructMemberLoc>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_StructMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
     }
 
     void Visit(RType_Enum& type) override 
@@ -588,7 +588,7 @@ public:
             *result = nullptr;
         }
 
-        *result = MakePtr<IrLocalRefExp>(MakePtr<REnumElemMemberLoc>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
     }
 
     void Visit(RType_Interface& type) override 
@@ -608,7 +608,7 @@ public:
 // *pS, valueType일때만 여기를 거치도록 나머지는 value로 가게
 struct BoxValueTypeBinder : public RTypeVisitor
 {
-    std::shared_ptr<IrDerefedBoxValueExp> parent;
+    std::shared_ptr<IrExp_DerefedBoxValue> parent;
     RName name;
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
@@ -617,7 +617,7 @@ struct BoxValueTypeBinder : public RTypeVisitor
     LoggerPtr logger;
 
 public:
-    BoxValueTypeBinder(const std::shared_ptr<IrDerefedBoxValueExp>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    BoxValueTypeBinder(const std::shared_ptr<IrExp_DerefedBoxValue>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -692,7 +692,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrStructIndirectMemberBoxRefExp>(parent->innerLoc, memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_StructIndirectMember>(parent->innerLoc, memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Enum& type) override 
@@ -811,7 +811,7 @@ public:
             return;
         }
         
-        *result = MakePtr<IrClassMemberBoxRefExp>(MakePtr<RThisLoc>(thisType), memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_ClassMember>(MakePtr<RLoc_This>(thisType), memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 
@@ -878,42 +878,42 @@ public:
         member->Accept(binder);
     }
 
-    void Visit(IrNamespaceExp& irExp) override 
+    void Visit(IrExp_Namespace& irExp) override 
     {
         return HandleStaticParent(*irExp.decl, factory.MakeTypeArguments({}));
     }
 
-    void Visit(IrTypeVarExp& irExp) override 
+    void Visit(IrExp_TypeVar& irExp) override 
     {
         // 이건 진짜
         throw NotImplementedException();
     }
 
-    void Visit(IrClassExp& irExp) override 
+    void Visit(IrExp_Class& irExp) override 
     {
         return HandleStaticParent(*irExp.decl, irExp.typeArgs);
     }
 
-    void Visit(IrStructExp& irExp) override 
+    void Visit(IrExp_Struct& irExp) override 
     {
         return HandleStaticParent(*irExp.decl, irExp.typeArgs);
     }
 
-    void Visit(IrEnumExp& irExp) override 
+    void Visit(IrExp_Enum& irExp) override 
     {
         return HandleStaticParent(*irExp.decl, irExp.typeArgs);
     }
 
-    void Visit(IrThisVarExp& irExp) override 
+    void Visit(IrExp_ThisVar& irExp) override 
     {
         // this.id        
         ThisTypeBinder binder(irExp.type, name, typeArgsExceptOuter, result, context, logger);
         irExp.type->Accept(binder);
     }
 
-    void Visit(IrStaticRefExp& irExp) override 
+    void Visit(IrExp_StaticRef& irExp) override 
     {
-        auto irStaticRefThis = dynamic_pointer_cast<IrStaticRefExp>(irThis);
+        auto irStaticRefThis = dynamic_pointer_cast<IrExp_StaticRef>(irThis);
         assert(irStaticRefThis);
 
         auto locType = irExp.loc->GetType(factory);
@@ -923,9 +923,9 @@ public:
         locType->Accept(binder);
     }
 
-    void Visit(IrBoxRefExp& irExp) override 
+    void Visit(IrExp_BoxRef& irExp) override 
     {
-        auto irBoxRefThis = dynamic_pointer_cast<IrBoxRefExp>(irThis);
+        auto irBoxRefThis = dynamic_pointer_cast<IrExp_BoxRef>(irThis);
         assert(irBoxRefThis);
 
         auto targetType = irExp.GetTargetType(factory);
@@ -933,9 +933,9 @@ public:
         targetType->Accept(binder);
     }
 
-    void Visit(IrLocalRefExp& irExp) override 
+    void Visit(IrExp_LocalRef& irExp) override 
     {
-        auto irLocalRefThis = dynamic_pointer_cast<IrLocalRefExp>(irThis);
+        auto irLocalRefThis = dynamic_pointer_cast<IrExp_LocalRef>(irThis);
         assert(irLocalRefThis);
 
         auto locType = irExp.loc->GetType(factory);
@@ -945,9 +945,9 @@ public:
     }
 
     // *pS, 오직 value type에만 작동을 하도록 보장해야 한다
-    void Visit(IrDerefedBoxValueExp& irExp) override 
+    void Visit(IrExp_DerefedBoxValue& irExp) override 
     {
-        auto irDerefedBoxThis = dynamic_pointer_cast<IrDerefedBoxValueExp>(irThis);
+        auto irDerefedBoxThis = dynamic_pointer_cast<IrExp_DerefedBoxValue>(irThis);
         assert(irDerefedBoxThis);
 
         auto innerType = irExp.innerLoc->GetType(factory);
@@ -956,7 +956,7 @@ public:
         innerType->Accept(binder);
     }
 
-    void Visit(IrLocalValueExp& irExp) override 
+    void Visit(IrExp_LocalValue& irExp) override 
     {
         // exp.id
         // 함수 호출 인자 제외 temp 참조 불가

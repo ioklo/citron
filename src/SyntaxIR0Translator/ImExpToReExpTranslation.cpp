@@ -25,55 +25,55 @@ struct ImExpToReExpTranslator : public ImExpVisitor
     {
     }
 
-    void Visit(ImNamespaceExp& imExp) override 
+    void Visit(ImExp_Namespace& imExp) override 
     {
         logger->Fatal_CantUseNamespaceAsExpression();
     }
 
     // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
-    void Visit(ImGlobalFuncsExp& imExp) override 
+    void Visit(ImExp_GlobalFuncs& imExp) override 
     {
         throw NotImplementedException();
     }
 
-    void Visit(ImTypeVarExp& imExp) override 
+    void Visit(ImExp_TypeVar& imExp) override 
     {
         logger->Fatal_CantUseTypeAsExpression();
     }
 
-    void Visit(ImClassExp& imExp) override 
+    void Visit(ImExp_Class& imExp) override 
     {
         logger->Fatal_CantUseTypeAsExpression();
     }
 
-    void Visit(ImClassMemberFuncsExp& imExp) override 
+    void Visit(ImExp_ClassMemberFuncs& imExp) override 
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
         throw NotImplementedException();
     }
 
-    void Visit(ImStructExp& imExp) override 
+    void Visit(ImExp_Struct& imExp) override 
     {   
         logger->Fatal_CantUseTypeAsExpression();
     }
 
-    void Visit(ImStructMemberFuncsExp& imExp) override 
+    void Visit(ImExp_StructMemberFuncs& imExp) override 
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
         throw NotImplementedException();
     }
 
-    void Visit(ImEnumExp& imExp) override 
+    void Visit(ImExp_Enum& imExp) override 
     {
         logger->Fatal_CantUseTypeAsExpression();
     }
 
-    void Visit(ImEnumElemExp& imExp) override 
+    void Visit(ImExp_EnumElem& imExp) override 
     {
         // if standalone, 값으로 처리한다
         if (imExp.decl->memberVars.size() == 0)
         {
-            *result = MakePtr<ReElseExp>(MakePtr<RNewEnumElemExp>(imExp.decl, imExp.typeArgs, vector<RArgument>()));
+            *result = MakePtr<ReExp_Else>(MakePtr<RExp_NewEnumElem>(imExp.decl, imExp.typeArgs, vector<RArgument>()));
             return;
         }
         
@@ -81,45 +81,45 @@ struct ImExpToReExpTranslator : public ImExpVisitor
         throw NotImplementedException();
 
     }
-    void Visit(ImThisVarExp& imExp) override 
+    void Visit(ImExp_ThisVar& imExp) override 
     {
-        *result = MakePtr<ReThisVarExp>(imExp.type);
+        *result = MakePtr<ReExp_ThisVar>(imExp.type);
     }
-    void Visit(ImLocalVarExp& imExp) override 
+    void Visit(ImExp_LocalVar& imExp) override 
     {
-        *result = MakePtr<ReLocalVarExp>(imExp.type, imExp.name);
+        *result = MakePtr<ReExp_LocalVar>(imExp.type, imExp.name);
     }
-    void Visit(ImLambdaMemberVarExp& imExp) override 
+    void Visit(ImExp_LambdaMemberVar& imExp) override 
     {
-        *result = MakePtr<ReLambdaMemberVarExp>(imExp.decl, imExp.typeArgs);
+        *result = MakePtr<ReExp_LambdaMemberVar>(imExp.decl, imExp.typeArgs);
     }
-    void Visit(ImClassMemberVarExp& imExp) override 
+    void Visit(ImExp_ClassMemberVar& imExp) override 
     {
-        *result = MakePtr<ReClassMemberVarExp>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance);
+        *result = MakePtr<ReExp_ClassMemberVar>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance);
     }
-    void Visit(ImStructMemberVarExp& imExp) override 
+    void Visit(ImExp_StructMemberVar& imExp) override 
     {
-        *result = MakePtr<ReStructMemberVarExp>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance);
+        *result = MakePtr<ReExp_StructMemberVar>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance);
     }
-    void Visit(ImEnumElemMemberVarExp& imExp) override 
+    void Visit(ImExp_EnumElemMemberVar& imExp) override 
     {
-        *result = MakePtr<ReEnumElemMemberVarExp>(imExp.decl, imExp.typeArgs, imExp.instance);
+        *result = MakePtr<ReExp_EnumElemMemberVar>(imExp.decl, imExp.typeArgs, imExp.instance);
     }
-    void Visit(ImListIndexerExp& imExp) override 
+    void Visit(ImExp_ListIndexer& imExp) override 
     {   
-        *result = MakePtr<ReListIndexerExp>(imExp.instance, imExp.index, imExp.itemType);
+        *result = MakePtr<ReExp_ListIndexer>(imExp.instance, imExp.index, imExp.itemType);
     }
-    void Visit(ImLocalDerefExp& imExp) override 
+    void Visit(ImExp_LocalDeref& imExp) override 
     {   
-        *result = MakePtr<ReLocalDerefExp>(imExp.target);
+        *result = MakePtr<ReExp_LocalDeref>(imExp.target);
     }
-    void Visit(ImBoxDerefExp& imExp) override
+    void Visit(ImExp_BoxDeref& imExp) override
     {
-        *result = MakePtr<ReBoxDerefExp>(imExp.target);
+        *result = MakePtr<ReExp_BoxDeref>(imExp.target);
     }
-    void Visit(ImElseExp& imExp) override 
+    void Visit(ImExp_Else& imExp) override 
     {
-        *result = MakePtr<ReElseExp>(imExp.exp);
+        *result = MakePtr<ReExp_Else>(imExp.exp);
     }
 };
 

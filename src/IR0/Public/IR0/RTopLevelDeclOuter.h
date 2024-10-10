@@ -3,6 +3,7 @@
 
 namespace Citron {
 
+class RDecl;
 class RModuleDecl;
 class RNamespaceDecl;
 

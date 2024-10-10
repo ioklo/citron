@@ -46,13 +46,13 @@ public:
     // NS.'NS'
     void Visit(RMember_Namespace& member) override
     {
-        *result = MakePtr<ImNamespaceExp>(member.decl);
+        *result = MakePtr<ImExp_Namespace>(member.decl);
     }
 
     // NS.F
     void Visit(RMember_GlobalFuncs& member) override
     {
-        *result = MakePtr<ImGlobalFuncsExp>(member.items, typeArgsExceptOuter);
+        *result = MakePtr<ImExp_GlobalFuncs>(member.items, typeArgsExceptOuter);
     }
 
     // T.C
@@ -68,13 +68,13 @@ public:
 
         auto typeArgs = factory.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
 
-        *result = MakePtr<ImClassExp>(member.decl, std::move(typeArgs));
+        *result = MakePtr<ImExp_Class>(member.decl, std::move(typeArgs));
     }
 
     // C.F
     void Visit(RMember_ClassMemberFuncs& member) override
     {
-        *result = MakePtr<ImClassMemberFuncsExp>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        *result = MakePtr<ImExp_ClassMemberFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // C.x
@@ -97,7 +97,7 @@ public:
         // variable은 typeArgs가 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
 
-        *result = MakePtr<ImClassMemberVarExp>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        *result = MakePtr<ImExp_ClassMemberVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // T.S
@@ -113,13 +113,13 @@ public:
 
         auto typeArgs = factory.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
 
-        *result = MakePtr<ImStructExp>(member.decl, std::move(typeArgs));
+        *result = MakePtr<ImExp_Struct>(member.decl, std::move(typeArgs));
     }
 
     // S.F
     void Visit(RMember_StructMemberFuncs& member) override
     {
-        *result = MakePtr<ImStructMemberFuncsExp>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        *result = MakePtr<ImExp_StructMemberFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // S.x
@@ -141,7 +141,7 @@ public:
 
         // variable은 typeArgs가 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
-        *result = MakePtr<ImStructMemberVarExp>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        *result = MakePtr<ImExp_StructMemberVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // T.E
@@ -156,7 +156,7 @@ public:
         }
 
         auto typeArgs = factory.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        *result = MakePtr<ImEnumExp>(member.decl, std::move(typeArgs));
+        *result = MakePtr<ImExp_Enum>(member.decl, std::move(typeArgs));
     }
 
     // E.First
@@ -164,7 +164,7 @@ public:
     {
         // EnumElem은 TypeArgs를 가질 수 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
-        *result = MakePtr<ImEnumElemExp>(member.decl, member.typeArgs);
+        *result = MakePtr<ImExp_EnumElem>(member.decl, member.typeArgs);
     }
 
     // 표현 불가능
@@ -228,7 +228,7 @@ public:
     // exp.F
     void Visit(RMember_ClassMemberFuncs& member) override 
     {   
-        *result = MakePtr<ImClassMemberFuncsExp>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
+        *result = MakePtr<ImExp_ClassMemberFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.x
@@ -250,7 +250,7 @@ public:
             return;
         }
 
-        *result = MakePtr<ImClassMemberVarExp>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
+        *result = MakePtr<ImExp_ClassMemberVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.S
@@ -263,7 +263,7 @@ public:
     // exp.F
     void Visit(RMember_StructMemberFuncs& member) override 
     {   
-        *result = MakePtr<ImStructMemberFuncsExp>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
+        *result = MakePtr<ImExp_StructMemberFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.x
@@ -285,7 +285,7 @@ public:
             return;
         }
 
-        *result = MakePtr<ImStructMemberVarExp>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
+        *result = MakePtr<ImExp_StructMemberVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.E
@@ -305,7 +305,7 @@ public:
     // exp.firstX
     void Visit(RMember_EnumElemMemberVar& member) override 
     {   
-        *result = MakePtr<ImEnumElemMemberVarExp>(member.decl, member.typeArgs, reInstExp);
+        *result = MakePtr<ImExp_EnumElemMemberVar>(member.decl, member.typeArgs, reInstExp);
     }
 
     // 표현 불가
@@ -337,7 +337,7 @@ class ImExpAndMemberNameToImExpBinder : public ImExpVisitor
 
     void BindStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
     {
-        auto member = decl.GetMember(typeArgs, RNormalName(name), typeArgsExceptOuter->GetCount());
+        auto member = decl.GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
         StaticParentBinder binder(typeArgsExceptOuter, result, context, logger, factory);
         member->Accept(binder);
     }
@@ -352,7 +352,7 @@ class ImExpAndMemberNameToImExpBinder : public ImExpVisitor
         }
 
         auto type = reInstExp->GetType(factory);
-        auto member = type->GetMember(RNormalName(name), typeArgsExceptOuter->GetCount());
+        auto member = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
         if (!member)
         {
             logger->Fatal_NotFound();
@@ -370,102 +370,102 @@ public:
     {
     }
 
-    void Visit(ImNamespaceExp& imExp) override 
+    void Visit(ImExp_Namespace& imExp) override 
     {
         return BindStaticParent(*imExp._namespace, factory.MakeTypeArguments(vector<RTypePtr>()));
     }
 
-    void Visit(ImGlobalFuncsExp& imExp) override 
+    void Visit(ImExp_GlobalFuncs& imExp) override 
     {
         logger->Fatal_FuncCantHaveMember();
         *result = nullptr;
     }
 
-    void Visit(ImTypeVarExp& imExp) override 
+    void Visit(ImExp_TypeVar& imExp) override 
     {
         throw NotImplementedException();
     }
 
-    void Visit(ImClassExp& imExp) override 
+    void Visit(ImExp_Class& imExp) override 
     {
         BindStaticParent(*imExp.classDecl, imExp.typeArgs);
     }
 
-    void Visit(ImClassMemberFuncsExp& imExp) override 
+    void Visit(ImExp_ClassMemberFuncs& imExp) override 
     {
         logger->Fatal_FuncCantHaveMember();
         *result = nullptr;
     }
 
-    void Visit(ImStructExp& imExp) override 
+    void Visit(ImExp_Struct& imExp) override 
     {
         BindStaticParent(*imExp.structDecl, imExp.typeArgs);
     }
 
-    void Visit(ImStructMemberFuncsExp& imExp) override 
+    void Visit(ImExp_StructMemberFuncs& imExp) override 
     {
         logger->Fatal_FuncCantHaveMember();
         *result = nullptr;
     }
 
     // (E).F
-    void Visit(ImEnumExp& imExp) override 
+    void Visit(ImExp_Enum& imExp) override 
     {
         BindStaticParent(*imExp.decl, imExp.typeArgs);
     }
 
-    void Visit(ImEnumElemExp& imExp) override 
+    void Visit(ImExp_EnumElem& imExp) override 
     {
         logger->Fatal_EnumElemCantHaveMember();
         *result = nullptr;
     }
 
-    void Visit(ImThisVarExp& imExp) override 
+    void Visit(ImExp_ThisVar& imExp) override 
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImLocalVarExp& imExp) override 
+    void Visit(ImExp_LocalVar& imExp) override 
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImLambdaMemberVarExp& imExp) override 
+    void Visit(ImExp_LambdaMemberVar& imExp) override 
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImClassMemberVarExp& imExp) override 
+    void Visit(ImExp_ClassMemberVar& imExp) override 
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImStructMemberVarExp& imExp) override 
+    void Visit(ImExp_StructMemberVar& imExp) override 
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImEnumElemMemberVarExp& imExp) override 
+    void Visit(ImExp_EnumElemMemberVar& imExp) override 
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImListIndexerExp& imExp) override 
+    void Visit(ImExp_ListIndexer& imExp) override 
     {
         throw NotImplementedException();
     }
 
-    void Visit(ImLocalDerefExp& imExp) override 
+    void Visit(ImExp_LocalDeref& imExp) override 
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImBoxDerefExp& imExp) override 
+    void Visit(ImExp_BoxDeref& imExp) override 
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImElseExp& imExp) override 
+    void Visit(ImExp_Else& imExp) override 
     {
         BindInstanceParent(imExp);
     }

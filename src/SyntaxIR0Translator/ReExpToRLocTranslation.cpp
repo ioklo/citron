@@ -14,12 +14,12 @@
 
 namespace Citron::SyntaxIR0Translator {
 
-RLocPtr TranslateReThisVarExpToRLoc(ReThisVarExp& reExp) // nothrow
+RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp) // nothrow
 {
-    return MakePtr<RThisLoc>(reExp.type);
+    return MakePtr<RLoc_This>(reExp.type);
 }
 
-RLocPtr TranslateReClassMemberVarExpToRLoc(ReClassMemberVarExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     if (reExp.hasExplicitInstance) // c.x, C.x 둘다 해당
     {
@@ -33,27 +33,27 @@ RLocPtr TranslateReClassMemberVarExpToRLoc(ReClassMemberVarExp& reExp, const Sco
             if (!instance) return nullptr;
         }
 
-        return MakePtr<RClassMemberLoc>(std::move(instance), reExp.decl, reExp.typeArgs);
+        return MakePtr<RLoc_ClassMember>(std::move(instance), reExp.decl, reExp.typeArgs);
     }
     else // x, x (static) 둘다 해당
     {
         auto type = reExp.decl->GetClassType(reExp.typeArgs, factory);
-        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : MakePtr<RThisLoc>(std::move(type));
-        return MakePtr<RClassMemberLoc>(std::move(rInstanceLoc), reExp.decl, reExp.typeArgs);
+        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : MakePtr<RLoc_This>(std::move(type));
+        return MakePtr<RLoc_ClassMember>(std::move(rInstanceLoc), reExp.decl, reExp.typeArgs);
     }
 }
 
-RLocPtr TranslateReLocalVarExpToRLoc(ReLocalVarExp& reExp)
+RLocPtr TranslateReLocalVarExpToRLoc(ReExp_LocalVar& reExp)
 {
-    return MakePtr<RLocalVarLoc>(reExp.name, reExp.type);
+    return MakePtr<RLoc_LocalVar>(reExp.name, reExp.type);
 }
 
-RLocPtr TranslateReLambdaMemberVarExpToRLoc(ReLambdaMemberVarExp& reExp)
+RLocPtr TranslateReLambdaMemberVarExpToRLoc(ReExp_LambdaMemberVar& reExp)
 {
-    return MakePtr<RLambdaMemberVarLoc>(reExp.decl, reExp.typeArgs);
+    return MakePtr<RLoc_LambdaMemberVar>(reExp.decl, reExp.typeArgs);
 }
 
-RLocPtr TranslateReStructMemberVarExpToRLoc(ReStructMemberVarExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RLocPtr TranslateReStructMemberVarExpToRLoc(ReExp_StructMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     if (reExp.hasExplicitInstance) // c.x, C.x 둘다 해당
     {
@@ -68,39 +68,39 @@ RLocPtr TranslateReStructMemberVarExpToRLoc(ReStructMemberVarExp& reExp, const S
                 return nullptr;
         }
 
-        return MakePtr<RStructMemberLoc>(instance, reExp.decl, reExp.typeArgs);
+        return MakePtr<RLoc_StructMember>(instance, reExp.decl, reExp.typeArgs);
     }
     else // x, x (static) 둘다 해당
     {   
         auto type = reExp.decl->GetStructType(reExp.typeArgs, factory);
 
         // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
-        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : MakePtr<RLocalDerefLoc>(MakePtr<RThisLoc>(std::move(type)));
-        return MakePtr<RStructMemberLoc>(rInstanceLoc, reExp.decl, reExp.typeArgs);
+        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : MakePtr<RLoc_LocalDeref>(MakePtr<RLoc_This>(std::move(type)));
+        return MakePtr<RLoc_StructMember>(rInstanceLoc, reExp.decl, reExp.typeArgs);
     }
 }
 
-RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReEnumElemMemberVarExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReExp_EnumElemMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
 
     auto rInstLoc = TranslateReExpToRLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
     if (!rInstLoc) return nullptr;
 
-    return MakePtr<REnumElemMemberLoc>(rInstLoc, reExp.decl, reExp.typeArgs);
+    return MakePtr<RLoc_EnumElemMember>(rInstLoc, reExp.decl, reExp.typeArgs);
 }
 
-RLocPtr TranslateReListIndexerExpToRLoc(ReListIndexerExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RLocPtr TranslateReListIndexerExpToRLoc(ReExp_ListIndexer& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
 
     auto rInstLoc = TranslateReExpToRLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
     if (!rInstLoc) return nullptr;
 
-    return MakePtr<RListIndexerLoc>(std::move(rInstLoc), reExp.index, reExp.itemType);
+    return MakePtr<RLoc_ListIndexer>(std::move(rInstLoc), reExp.index, reExp.itemType);
 }
 
-RLocPtr TranslateReLocalDerefExpToRLoc(ReLocalDerefExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RLocPtr TranslateReLocalDerefExpToRLoc(ReExp_LocalDeref& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     // *x, *G()
     ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
@@ -108,10 +108,10 @@ RLocPtr TranslateReLocalDerefExpToRLoc(ReLocalDerefExp& reExp, const ScopeContex
     auto rTargetLoc = TranslateReExpToRLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
     if (!rTargetLoc) return nullptr;
 
-    return MakePtr<RLocalDerefLoc>(std::move(rTargetLoc));
+    return MakePtr<RLoc_LocalDeref>(std::move(rTargetLoc));
 }
 
-RLocPtr TranslateReBoxDerefExpToRLoc(ReBoxDerefExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RLocPtr TranslateReBoxDerefExpToRLoc(ReExp_BoxDeref& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     // *x, *G()
     ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
@@ -119,7 +119,7 @@ RLocPtr TranslateReBoxDerefExpToRLoc(ReBoxDerefExp& reExp, const ScopeContextPtr
     auto rTargetLoc = TranslateReExpToRLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
     if (!rTargetLoc) return nullptr;
 
-    return MakePtr<RBoxDerefLoc>(std::move(rTargetLoc));
+    return MakePtr<RLoc_BoxDeref>(std::move(rTargetLoc));
 }
 
 class ReExpToRLocTranslator : public ReExpVisitor
@@ -137,56 +137,56 @@ public:
     {
     }
     
-    void Visit(ReThisVarExp& exp) override 
+    void Visit(ReExp_ThisVar& exp) override 
     {
         *result = TranslateReThisVarExpToRLoc(exp);
     }
 
-    void Visit(ReLocalVarExp& exp) override 
+    void Visit(ReExp_LocalVar& exp) override 
     { 
         *result = TranslateReLocalVarExpToRLoc(exp);
     }
 
-    void Visit(ReLambdaMemberVarExp& exp) override 
+    void Visit(ReExp_LambdaMemberVar& exp) override 
     { 
         *result = TranslateReLambdaMemberVarExpToRLoc(exp);
     }
 
-    void Visit(ReClassMemberVarExp& exp) override 
+    void Visit(ReExp_ClassMemberVar& exp) override 
     { 
         *result = TranslateReClassMemberVarExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReStructMemberVarExp& exp) override 
+    void Visit(ReExp_StructMemberVar& exp) override 
     { 
         *result = TranslateReStructMemberVarExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReEnumElemMemberVarExp& exp) override 
+    void Visit(ReExp_EnumElemMemberVar& exp) override 
     { 
         *result = TranslateReEnumElemMemberVarExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReLocalDerefExp& exp) override 
+    void Visit(ReExp_LocalDeref& exp) override 
     { 
         *result = TranslateReLocalDerefExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReBoxDerefExp& exp) override 
+    void Visit(ReExp_BoxDeref& exp) override 
     { 
         *result = TranslateReBoxDerefExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReListIndexerExp& exp) override 
+    void Visit(ReExp_ListIndexer& exp) override 
     { 
         *result = TranslateReListIndexerExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReElseExp& exp) override 
+    void Visit(ReExp_Else& exp) override 
     { 
         if (bWrapExpAsLoc)
         {   
-            *result = MakePtr<RTempLoc>(exp.rExp);
+            *result = MakePtr<RLoc_Temp>(exp.rExp);
         }
         else
         {

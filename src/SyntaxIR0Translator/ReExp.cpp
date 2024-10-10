@@ -4,27 +4,27 @@
 
 namespace Citron::SyntaxIR0Translator {
 
-ReThisVarExp::ReThisVarExp(const RTypePtr& type)
+ReExp_ThisVar::ReExp_ThisVar(const RTypePtr& type)
     : type(type)
 {
 }
 
-ReLocalVarExp::ReLocalVarExp(const RTypePtr& type, const std::string& name)
+ReExp_LocalVar::ReExp_LocalVar(const RTypePtr& type, const std::string& name)
     : type(type), name(name)
 {
 }
 
-ReLambdaMemberVarExp::ReLambdaMemberVarExp(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+ReExp_LambdaMemberVar::ReExp_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr ReLambdaMemberVarExp::GetType(RTypeFactory& factory)
+RTypePtr ReExp_LambdaMemberVar::GetType(RTypeFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReClassMemberVarExp::ReClassMemberVarExp(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ReExp_ClassMemberVar::ReExp_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
@@ -34,7 +34,7 @@ ReClassMemberVarExp::ReClassMemberVarExp(const std::shared_ptr<RClassMemberVarDe
 //    return decl->GetDeclType(typeArgs);
 //}
 
-ReStructMemberVarExp::ReStructMemberVarExp(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ReExp_StructMemberVar::ReExp_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
@@ -45,7 +45,7 @@ ReStructMemberVarExp::ReStructMemberVarExp(const std::shared_ptr<RStructMemberVa
 //}
 //
 
-ReEnumElemMemberVarExp::ReEnumElemMemberVarExp(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance)
+ReExp_EnumElemMemberVar::ReExp_EnumElemMemberVar(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance)
     : decl(decl), typeArgs(typeArgs), instance(instance)
 {
 }
@@ -55,7 +55,7 @@ ReEnumElemMemberVarExp::ReEnumElemMemberVarExp(const std::shared_ptr<REnumElemMe
 //    return decl->GetDeclType(typeArgs);
 //}
 
-ReLocalDerefExp::ReLocalDerefExp(const ReExpPtr& target)
+ReExp_LocalDeref::ReExp_LocalDeref(const ReExpPtr& target)
     : target(target)
 {
 
@@ -66,7 +66,7 @@ ReLocalDerefExp::ReLocalDerefExp(const ReExpPtr& target)
 //    return ((RLocalPtrType*)target->GetType().get())->GetInnerType(); // TODO: remove reinterpret cast
 //}
 
-ReBoxDerefExp::ReBoxDerefExp(const ReExpPtr& target)
+ReExp_BoxDeref::ReExp_BoxDeref(const ReExpPtr& target)
     : target(target)
 {
 
@@ -78,14 +78,14 @@ ReBoxDerefExp::ReBoxDerefExp(const ReExpPtr& target)
 //}
 
 
-ReListIndexerExp::ReListIndexerExp(const ReExpPtr& instance, const RLocPtr& index, const RTypePtr& itemType)
+ReExp_ListIndexer::ReExp_ListIndexer(const ReExpPtr& instance, const RLocPtr& index, const RTypePtr& itemType)
     : instance(instance), index(index), itemType(itemType)
 {
 
 }
 
 
-ReElseExp::ReElseExp(const RExpPtr& rExp)
+ReExp_Else::ReExp_Else(const RExpPtr& rExp)
     : rExp(rExp)
 {
 }

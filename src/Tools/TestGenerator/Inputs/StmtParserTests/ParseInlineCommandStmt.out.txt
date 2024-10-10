@@ -1,23 +1,23 @@
 {
-    "$type": "SCommandStmt",
+    "$type": "SStmt_Command",
     "commands": [
         {
-            "$type": "SStringExp",
+            "$type": "SExp_String",
             "elements": [
                 {
-                    "$type": "STextStringExpElement",
+                    "$type": "SStringExpElement_Text",
                     "text": "echo "
                 },
                 {
-                    "$type": "SExpStringExpElement",
+                    "$type": "SStringExpElement_Exp",
                     "exp": {
-                        "$type": "SIdentifierExp",
+                        "$type": "SExp_Identifier",
                         "value": "a",
                         "typeArgs": []
                     }
                 },
                 {
-                    "$type": "STextStringExpElement",
+                    "$type": "SStringExpElement_Text",
                     "text": "bbb  "
                 }
             ]
