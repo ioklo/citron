@@ -37,7 +37,7 @@ public:
 
     void Visit(ReExp_ThisVar& exp) override
     {
-        auto rLoc = TranslateReThisVarExpToRLoc(exp);
+        auto rLoc = TranslateReThisVarExpToRLoc(exp, *context, factory);
         HandleLoc(std::move(rLoc));
     }
 

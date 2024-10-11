@@ -25,6 +25,8 @@ public:
 public:
     IR0_API REnumElemDecl(std::weak_ptr<REnumDecl> _enum, std::string name, size_t memberVarCount);
     IR0_API void AddMemberVar(std::shared_ptr<REnumElemMemberVarDecl> memberVar);
+    bool IsStandalone() { return memberVars.empty(); }
+    IR0_API std::vector<RFuncParameter> GetUnboundConstructorParams();
     
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;

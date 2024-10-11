@@ -120,7 +120,7 @@ public:
 
     void Visit(SExp_Call& exp) override 
     { 
-        RExpPtr rExp = TranslateSCallExpToRExp(exp, hintType, context, logger);
+        RExpPtr rExp = TranslateSCallExpToRExp(exp, hintType, context, logger, factory);
         HandleExp(std::move(rExp));
     }
 

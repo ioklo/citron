@@ -14,6 +14,7 @@
 #include <IR0/RTypeFactory.h>
 
 #include "ReExp.h"
+#include "ImExp.h"
 
 #include "SExpToRLocTranslation.h"
 #include "SExpToReExpTranslation.h"
@@ -394,12 +395,12 @@ RExpPtr TranslateSNewExpToRExp(SExp_New& exp, const ScopeContextPtr& context, co
     //return Valid(new IR0ExpResult(new R.NewClassExp(constructor, args), new ClassType(classSymbol)));
 }
 
-RExpPtr TranslateSCallExpToRExp(SExp_Call& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger)
+RExpPtr TranslateSCallExpToRExp(SExp_Call& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     auto imCallable = TranslateSExpToImExp(*exp.callable, hintType, context);
     if (!imCallable) return nullptr;
 
-    return BindImCallableAndSArgsToRExp(std::move(imCallable), exp.args, context, logger); // 로깅할때 exp, exp.Callable두개가 다 필요할 수 있다
+    return BindImCallableAndSArgsToRExp(*imCallable, exp.callable, exp.args, context, logger, factory); // 로깅할때 exp, exp.Callable두개가 다 필요할 수 있다
 }
 
 RExpPtr TranslateSBoxExpToRExp(SExp_Box& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
@@ -532,7 +533,7 @@ public:
 
     void Visit(SExp_Call& exp) override 
     {
-        *result = TranslateSCallExpToRExp(exp, hintType, context, logger);
+        *result = TranslateSCallExpToRExp(exp, hintType, context, logger, factory);
     }
 
     void Visit(SExp_Lambda& exp) override 

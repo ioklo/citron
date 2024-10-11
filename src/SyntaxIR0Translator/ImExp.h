@@ -41,12 +41,14 @@ class ImExpVisitor;
 class ImExp
 {
 public:
+    virtual ~ImExp() { }
     virtual void Accept(ImExpVisitor& visitor) = 0;
 };
 
 class ImExpVisitor
 {
 public:
+    virtual ~ImExpVisitor() {}
     virtual void Visit(ImExp_Namespace& imExp) = 0;
     virtual void Visit(ImExp_GlobalFuncs& imExp) = 0;
     virtual void Visit(ImExp_TypeVar& imExp) = 0;
@@ -84,6 +86,9 @@ class ImExp_GlobalFuncs
     , private FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>
 {
     using FuncComp = FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>;
+
+public:
+    using FuncComp::items;
 
 public:
     ImExp_GlobalFuncs(const std::vector<RDeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter);
@@ -131,6 +136,7 @@ public:
     // C.F => HasExplicitInstance: true, null
     // x.F => HasExplicitInstance: true, "x"
     // F   => HasExplicitInstance: false, null
+    using FuncsWithPartialTypeArgsComponent::items;
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
 
@@ -167,7 +173,9 @@ class ImExp_StructMemberFuncs
     , private FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>
 {
     using FuncComp = FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>;
+
 public:
+    using FuncComp::items;
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
 

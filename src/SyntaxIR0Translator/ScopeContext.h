@@ -6,11 +6,12 @@
 namespace Citron {
 
 class STypeExp;
+class RTypeFactory;
+class RDecl;
+class RLoc_This;
 
 using RTypePtr = std::shared_ptr<class RType>;
-class RTypeFactory;
 
-class RDecl;
 
 enum class SBinaryOpKind;
 
@@ -32,6 +33,8 @@ public:
 
     bool IsListType(const RTypePtr& type, RTypePtr* itemType);
     bool CanAccess(RDecl& decl);
+
+    std::shared_ptr<RLoc_This> MakeThisLoc(RTypeFactory& factory);
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;

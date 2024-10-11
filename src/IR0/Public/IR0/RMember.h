@@ -40,6 +40,7 @@ class RMember_TupleMemberVar;
 class RMemberVisitor
 {
 public:
+    virtual ~RMemberVisitor() { }
     virtual void Visit(RMember_Namespace& member) = 0;
     virtual void Visit(RMember_GlobalFuncs& member) = 0;
     virtual void Visit(RMember_Class& member) = 0;
@@ -58,6 +59,7 @@ public:
 class RMember
 {
 public:
+    virtual ~RMember() { }
     virtual void Accept(RMemberVisitor& visitor) = 0;
 };
 

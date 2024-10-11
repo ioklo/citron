@@ -50,6 +50,6 @@ std::shared_ptr<SExp_String> ParseStringExp(Lexer* lexer);
 std::shared_ptr<SExp_List> ParseListExp(Lexer* lexer);
 std::shared_ptr<SExp_Identifier> ParseIdentifierExp(Lexer* lexer);
 
-std::optional<std::vector<SArgument>> ParseCallArgs(Lexer* lexer);
+SArgumentsPtr ParseCallArgs(Lexer* lexer);
 
 }

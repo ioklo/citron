@@ -27,7 +27,7 @@ class ReExp_BoxDeref;
 
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
-RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp); // nothrow
+RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp, ScopeContext& context, RTypeFactory& factory); // nothrow
 RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RLocPtr TranslateReLocalVarExpToRLoc(ReExp_LocalVar& reExp);
 RLocPtr TranslateReLambdaMemberVarExpToRLoc(ReExp_LambdaMemberVar& reExp);

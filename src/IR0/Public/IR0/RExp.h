@@ -100,6 +100,7 @@ class REnumElemDecl;
 class RExpVisitor
 {
 public:
+    virtual ~RExpVisitor() { }
     virtual void Visit(RExp_Load& exp) = 0;
     virtual void Visit(RExp_Assign& exp) = 0;
     virtual void Visit(RExp_Box& exp) = 0;
@@ -148,6 +149,7 @@ public:
 class RExp
 {
 public:
+    virtual ~RExp() { }
     virtual RTypePtr GetType(RTypeFactory& factory) = 0;
     virtual void Accept(RExpVisitor& visitor) = 0;
 };
@@ -498,7 +500,7 @@ public:
     RLocPtr instance;
     std::vector<RArgument> args;
 public:
-    IR0_API RExp_CallClassMemberFunc(const std::shared_ptr<RClassMemberFuncDecl>& classMemberFunc, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, std::vector<RArgument>&& args);
+    IR0_API RExp_CallClassMemberFunc(std::shared_ptr<RClassMemberFuncDecl>&& classMemberFunc, RTypeArgumentsPtr&& typeArgs, RLocPtr&& instance, std::vector<RArgument>&& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -529,7 +531,7 @@ public:
     RTypeArgumentsPtr typeArgs;
     std::vector<RArgument> args;
 public:
-    IR0_API RExp_NewStruct(const std::shared_ptr<RStructConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<RArgument>& args);
+    IR0_API RExp_NewStruct(const std::shared_ptr<RStructConstructorDecl>& constructorDecl, RTypeArgumentsPtr&& typeArgs, std::vector<RArgument>&& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -544,7 +546,7 @@ public:
     RLocPtr instance;
     std::vector<RArgument> args;
 public:
-    IR0_API RExp_CallStructMemberFunc(const std::shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, std::vector<RArgument>&& args);
+    IR0_API RExp_CallStructMemberFunc(std::shared_ptr<RStructMemberFuncDecl>&& structMemberFuncDecl, RTypeArgumentsPtr&& typeArgs, RLocPtr&& instance, std::vector<RArgument>&& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -564,6 +566,7 @@ public:
 
 public:
     IR0_API RExp_NewEnumElem(const std::shared_ptr<REnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, std::vector<RArgument>&& args);
+    IR0_API RExp_NewEnumElem(const std::shared_ptr<REnumElemDecl>& enumElemDecl, RTypeArgumentsPtr&& typeArgs, std::vector<RArgument>&& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(RExpVisitor& visitor) override { visitor.Visit(*this); }

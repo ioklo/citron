@@ -12,6 +12,8 @@ public:
     // 호출자에서 Set하는 것으로 한다. 함수가 끝나도 Syntax가 지속될 수 있기 때문이다
     LOGGING_API void SetSyntax(SSyntaxPtr syntax);
 
+    LOGGING_API void Fatal_MismatchBetweenParamCountAndArgCount(); // A0401_Parameter_MismatchBetweenParamCountAndArgCount
+
     LOGGING_API void Fatal_IntTypeIsAllowedOnly(); // A0601_UnaryAssignOp_IntTypeIsAllowedOnly
     LOGGING_API void Fatal_AssignableExpressionIsAllowedOnly(); // A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly
 
@@ -20,6 +22,8 @@ public:
 
     LOGGING_API void Fatal_OperatorNotFound(); // A0802_BinaryOp_OperatorNotFound
     LOGGING_API void Fatal_LeftOperandIsNotAssignable(); // A0803_BinaryOp_LeftOperandIsNotAssignable
+
+    LOGGING_API void Fatal_CallableExpressionIsNotCallable(); // A0902_CallExp_CallableExpressionIsNotCallable
 
     LOGGING_API void Fatal_TryAccessingPrivateMember(); // A2011_ResolveIdentifier_TryAccessingPrivateMember
 

@@ -76,20 +76,20 @@ SExpPtr HandleUnaryMinusWithIntLiteral(SUnaryOpKind kind, SExp* exp)
     return nullptr;
 }
 
-optional<SArgument> ParseArgument(Lexer* lexer)
+SArgumentPtr ParseArgument(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
     auto oOutAndParams = AcceptParseOutAndParams(&curLexer);
     if (!oOutAndParams)
-        return nullopt;
+        return nullptr;
 
     auto exp = ParseExp(&curLexer);
 
     if (!exp)
-        return nullopt;
+        return nullptr;
 
     *lexer = std::move(curLexer);
-    return SArgument{ oOutAndParams->bOut, oOutAndParams->bParams, std::move(exp) };
+    return MakePtr<SArgument>(oOutAndParams->bOut, oOutAndParams->bParams, std::move(exp));
 }
 
 }
@@ -99,29 +99,29 @@ namespace Citron {
 optional<vector<STypeExpPtr>> ParseTypeArgs(Lexer* lexer);
 
 
-optional<vector<SArgument>> ParseCallArgs(Lexer* lexer)
+SArgumentsPtr ParseCallArgs(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LParenToken>(&curLexer))
-        return nullopt;
+        return nullptr;
 
-    vector<SArgument> arguments;
+    vector<SArgumentPtr> arguments;
     while (!Accept<RParenToken>(&curLexer))
     {
         if (!arguments.empty())
             if (!Accept<CommaToken>(&curLexer))
-                return nullopt;
+                return nullptr;
 
-        auto oArg = ParseArgument(&curLexer);
-        if (!oArg)
-            return nullopt;
+        auto arg = ParseArgument(&curLexer);
+        if (!arg)
+            return nullptr;
 
-        arguments.push_back(std::move(*oArg));
+        arguments.push_back(std::move(arg));
     }
 
     *lexer = std::move(curLexer);
-    return arguments; // 이건 move가 되는데..
+    return MakePtr<SArguments>(std::move(arguments)); // 이건 move가 되는데..
 }
 
 SExpPtr ParseExp(Lexer* lexer)
@@ -415,10 +415,10 @@ Citron::SExpPtr ParsePrimaryExp(Lexer* lexer)
         }
 
         // (..., ... )             
-        auto oArguments = ParseCallArgs(&curLexer);
-        if (oArguments)
+        auto arguments = ParseCallArgs(&curLexer);
+        if (arguments)
         {
-            curExp = MakePtr<SExp_Call>(std::move(curExp), std::move(*oArguments));
+            curExp = MakePtr<SExp_Call>(std::move(curExp), std::move(arguments));
             continue;
         }
 
@@ -493,13 +493,13 @@ shared_ptr<SExp_New> ParseNewExp(Lexer* lexer)
     if (!type)
         return nullptr;
 
-    auto oArgs = ParseCallArgs(&curLexer);
+    auto args = ParseCallArgs(&curLexer);
     
-    if (!oArgs)
+    if (!args)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return MakePtr<SExp_New>(std::move(type), std::move(*oArgs));
+    return MakePtr<SExp_New>(std::move(type), std::move(args));
 }
 
 // LambdaExpression, Right Assoc

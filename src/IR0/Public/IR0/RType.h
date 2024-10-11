@@ -314,11 +314,14 @@ class RType_Lambda : public RType
 {
 public:
     std::shared_ptr<RLambdaDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    RTypeArgumentsPtr outerTypeArgs; // 함수 자체의 typeArgs는 호출할때 binding하게 된다
 
 private:
     friend RTypeFactory;
-    RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs);
+
+public:
+    std::vector<RFuncParameter> GetPartiallyBoundParameters(); // outerTypeArgs까지만 bound되어 있는 상태
 
 public:
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Struct; }

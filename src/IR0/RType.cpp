@@ -171,15 +171,15 @@ RTypePtr RType_Interface::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     return factory.MakeInterfaceType(decl, std::move(appliedTypeArgs));
 }
 
-RType_Lambda::RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs)
-    : decl(decl), typeArgs(typeArgs)
+RType_Lambda::RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs)
+    : decl(decl), outerTypeArgs(outerTypeArgs)
 {
 }
 
 RTypePtr RType_Lambda::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
-    auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
-    return factory.MakeLambdaType(decl, std::move(appliedTypeArgs));
+    auto appliedOuterTypeArgs = outerTypeArgs->Apply(typeArgs, factory);
+    return factory.MakeLambdaType(decl, std::move(appliedOuterTypeArgs));
 }
 
 } // Citron

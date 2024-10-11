@@ -9,11 +9,6 @@ RTypePtr RClassMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory
     return declType->Apply(typeArgs, factory);
 }
 
-RTypePtr RClassMemberVarDecl::GetClassType(const RTypeArgumentsPtr& typeArgs, RTypeFactory& factory)
-{   
-    return factory.MakeClassType(_class.lock(), typeArgs);
-}
-
 RDecl* RClassMemberVarDecl::GetOuter()
 {
     return _class.lock().get();

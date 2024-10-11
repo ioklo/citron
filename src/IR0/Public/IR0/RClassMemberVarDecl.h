@@ -23,7 +23,6 @@ public:
 
 public:
     IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory);
-    IR0_API RTypePtr GetClassType(const RTypeArgumentsPtr& typeArgs, RTypeFactory& factory);
 
 public:
     IR0_API RDecl* GetOuter() override;

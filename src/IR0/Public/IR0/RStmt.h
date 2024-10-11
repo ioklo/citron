@@ -46,6 +46,7 @@ class RClassConstructor;
 class RStmtVisitor
 {
 public:
+    virtual ~RStmtVisitor() { }
     virtual void Visit(RStmt_Command& stmt) = 0;
     virtual void Visit(RStmt_LocalVarDecl& stmt) = 0;
     virtual void Visit(RStmt_If& stmt) = 0;
@@ -76,6 +77,7 @@ public:
 class RStmt
 {
 public:
+    virtual ~RStmt() { }
     virtual void Accept(RStmtVisitor& visitor) = 0;
 };
 

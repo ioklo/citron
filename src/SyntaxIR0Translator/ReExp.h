@@ -29,6 +29,7 @@ class ReExpVisitor;
 class ReExp
 {
 public:
+    virtual ~ReExp() { }
     virtual void Accept(ReExpVisitor& visitor) = 0;
     virtual RTypePtr GetType(RTypeFactory& factory) = 0;
 };
@@ -38,6 +39,7 @@ using ReExpPtr = std::shared_ptr<ReExp>;
 class ReExpVisitor
 {
 public:    
+    virtual ~ReExpVisitor() { }
     virtual void Visit(ReExp_ThisVar& exp) = 0;
     virtual void Visit(ReExp_LocalVar& exp) = 0;
     virtual void Visit(ReExp_LambdaMemberVar& exp) = 0;
@@ -51,7 +53,7 @@ public:
 };
 
 class ReExp_ThisVar : public ReExp
-{
+{ 
 public:
     RTypePtr type;
 

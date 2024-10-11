@@ -478,7 +478,7 @@ shared_ptr<SClassConstructorDecl> ParseClassConstructorDecl(const string& classN
         return nullptr;
 
     // : base()
-    optional<vector<SArgument>> oBaseArgs;
+    SArgumentsPtr baseArgs;
     if (Accept<ColonToken>(&curLexer))
     {
         auto oExpectedToBeBase = Accept<IdentifierToken>(&curLexer);
@@ -489,11 +489,9 @@ shared_ptr<SClassConstructorDecl> ParseClassConstructorDecl(const string& classN
         if (oExpectedToBeBase->text != "base")
             return nullptr;
             
-        auto oArgs = ParseCallArgs(&curLexer);
-        if (!oArgs)
+        baseArgs = ParseCallArgs(&curLexer);
+        if (!baseArgs)
             return nullptr;
-
-        oBaseArgs = std::move(oArgs);
     }
 
     // ex) { ... }
@@ -502,7 +500,7 @@ shared_ptr<SClassConstructorDecl> ParseClassConstructorDecl(const string& classN
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return MakePtr<SClassConstructorDecl>(oAccessModifier, std::move(*oParameters), std::move(oBaseArgs), std::move(*oBody));
+    return MakePtr<SClassConstructorDecl>(oAccessModifier, std::move(*oParameters), std::move(baseArgs), std::move(*oBody));
 }
 
 shared_ptr<SClassMemberVarDecl> ParseClassMemberVarDecl(Lexer* lexer)

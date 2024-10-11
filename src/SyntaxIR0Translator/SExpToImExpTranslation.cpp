@@ -137,7 +137,7 @@ public:
 
     void Visit(SExp_Call& exp) override 
     {
-        HandleExp(TranslateSCallExpToRExp(exp, hintType, context, logger));
+        HandleExp(TranslateSCallExpToRExp(exp, hintType, context, logger, factory));
     }
 
     void Visit(SExp_Lambda& exp) override 

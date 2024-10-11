@@ -69,6 +69,9 @@
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="RFuncAndRArgsToRExpBinding.cpp" />
+    <ClCompile Include="FuncMatching.cpp">
+      <Filter>ExpTranslation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -140,6 +143,9 @@
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="RFuncAndRArgsToRExpBinding.h" />
+    <ClInclude Include="FuncMatching.h">
+      <Filter>ExpTranslation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

@@ -51,6 +51,23 @@ JsonItem SArgument::ToJson()
     };
 }
 
+SArguments::SArguments(std::vector<SArgumentPtr> items)
+    : items(std::move(items)) { }
+
+SArguments::SArguments(SArguments&& other) noexcept = default;
+
+SArguments::~SArguments() = default;
+
+SArguments& SArguments::operator=(SArguments&& other) noexcept = default;
+
+JsonItem SArguments::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SArguments") },
+        { "items", Citron::ToJson(items) },
+    };
+}
+
 SLambdaExpParam::SLambdaExpParam(STypeExpPtr type, std::string name, bool hasOut, bool hasParams)
     : type(std::move(type)), name(std::move(name)), hasOut(std::move(hasOut)), hasParams(std::move(hasParams)) { }
 
@@ -458,7 +475,7 @@ JsonItem SExp_List::ToJson()
     };
 }
 
-SExp_New::SExp_New(STypeExpPtr type, std::vector<SArgument> args)
+SExp_New::SExp_New(STypeExpPtr type, SArgumentsPtr args)
     : type(std::move(type)), args(std::move(args)) { }
 
 SExp_New::SExp_New(SExp_New&& other) noexcept = default;
@@ -513,7 +530,7 @@ JsonItem SExp_UnaryOp::ToJson()
     };
 }
 
-SExp_Call::SExp_Call(SExpPtr callable, std::vector<SArgument> args)
+SExp_Call::SExp_Call(SExpPtr callable, SArgumentsPtr args)
     : callable(std::move(callable)), args(std::move(args)) { }
 
 SExp_Call::SExp_Call(SExp_Call&& other) noexcept = default;
@@ -1263,7 +1280,7 @@ JsonItem SClassMemberFuncDecl::ToJson()
     };
 }
 
-SClassConstructorDecl::SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::optional<std::vector<SArgument>> baseArgs, std::vector<SStmtPtr> body)
+SClassConstructorDecl::SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArgumentsPtr baseArgs, std::vector<SStmtPtr> body)
     : accessModifier(std::move(accessModifier)), parameters(std::move(parameters)), baseArgs(std::move(baseArgs)), body(std::move(body)) { }
 
 SClassConstructorDecl::SClassConstructorDecl(SClassConstructorDecl&& other) noexcept = default;

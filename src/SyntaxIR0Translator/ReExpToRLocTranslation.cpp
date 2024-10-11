@@ -14,9 +14,9 @@
 
 namespace Citron::SyntaxIR0Translator {
 
-RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp) // nothrow
+RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp, ScopeContext& context, RTypeFactory& factory) // nothrow
 {
-    return MakePtr<RLoc_This>(reExp.type);
+    return context.MakeThisLoc(factory);
 }
 
 RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
@@ -36,9 +36,8 @@ RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, const Sc
         return MakePtr<RLoc_ClassMember>(std::move(instance), reExp.decl, reExp.typeArgs);
     }
     else // x, x (static) 둘다 해당
-    {
-        auto type = reExp.decl->GetClassType(reExp.typeArgs, factory);
-        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : MakePtr<RLoc_This>(std::move(type));
+    {   
+        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : context->MakeThisLoc(factory);
         return MakePtr<RLoc_ClassMember>(std::move(rInstanceLoc), reExp.decl, reExp.typeArgs);
     }
 }
@@ -72,10 +71,8 @@ RLocPtr TranslateReStructMemberVarExpToRLoc(ReExp_StructMemberVar& reExp, const 
     }
     else // x, x (static) 둘다 해당
     {   
-        auto type = reExp.decl->GetStructType(reExp.typeArgs, factory);
-
         // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
-        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : MakePtr<RLoc_LocalDeref>(MakePtr<RLoc_This>(std::move(type)));
+        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : MakePtr<RLoc_LocalDeref>(context->MakeThisLoc(factory));
         return MakePtr<RLoc_StructMember>(rInstanceLoc, reExp.decl, reExp.typeArgs);
     }
 }
@@ -123,23 +120,24 @@ RLocPtr TranslateReBoxDerefExpToRLoc(ReExp_BoxDeref& reExp, const ScopeContextPt
 }
 
 class ReExpToRLocTranslator : public ReExpVisitor
-{
-    ScopeContextPtr context;
-    bool bWrapExpAsLoc;
-    LoggerPtr logger;
+{   
+    bool bWrapExpAsLoc;    
     INotLocationErrorLogger* notLocationErrorLogger;
     RLocPtr* result;
+
+    ScopeContextPtr context;
+    LoggerPtr logger;
     RTypeFactory& factory;
 
 public:
-    ReExpToRLocTranslator(const ScopeContextPtr& context, bool bWrapExpAsLoc, const LoggerPtr& logger, INotLocationErrorLogger* notLocationErrorLogger, RLocPtr* result, RTypeFactory& factory)
-        : context(context), bWrapExpAsLoc(bWrapExpAsLoc), logger(logger), notLocationErrorLogger(notLocationErrorLogger), result(result), factory(factory)
+    ReExpToRLocTranslator(bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationErrorLogger, RLocPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+        : bWrapExpAsLoc(bWrapExpAsLoc), notLocationErrorLogger(notLocationErrorLogger), result(result), context(context), logger(logger), factory(factory)
     {
     }
     
     void Visit(ReExp_ThisVar& exp) override 
     {
-        *result = TranslateReThisVarExpToRLoc(exp);
+        *result = TranslateReThisVarExpToRLoc(exp, *context, factory);
     }
 
     void Visit(ReExp_LocalVar& exp) override 
@@ -199,7 +197,7 @@ public:
 RLocPtr TranslateReExpToRLoc(ReExp& reExp, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationErrorLogger, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     RLocPtr rLoc;
-    ReExpToRLocTranslator translator(context, bWrapExpAsLoc, logger, notLocationErrorLogger, &rLoc, factory);
+    ReExpToRLocTranslator translator(bWrapExpAsLoc, notLocationErrorLogger, &rLoc, context, logger, factory);
     reExp.Accept(translator);
     return rLoc;
 }

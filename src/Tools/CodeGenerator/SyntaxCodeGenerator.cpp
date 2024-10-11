@@ -181,7 +181,9 @@ struct ToJsonVisitor {
                 "SEnumDecl",
                 "SGlobalFuncDecl",
                 "SNamespaceDecl",
-                "SScript"
+                "SScript",
+                "SArgument",
+                "SArguments"
             }
         },
 
@@ -197,7 +199,9 @@ struct ToJsonVisitor {
                 "SClassMemberDecl",
                 "SStructMemberDecl",
                 "SNamespaceDeclElement",
-                "SScriptElement"
+                "SScriptElement",
+                "SArgument",
+                "SArguments",
             }
         },
 
@@ -234,13 +238,20 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "SArgument",
             .memberInfos {
-                    {.type = "bool", .memberVarName = "bOut", .getterName = "HasOut" },
-                    {.type = "bool", .memberVarName = "bParams", .getterName = "GetParams" },
-                    {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
-                },
-                .extraConstructors {
-                    "SYNTAX_API SArgument(SExpPtr exp);"
-                }
+                {.type = "bool", .memberVarName = "bOut", .getterName = "HasOut" },
+                {.type = "bool", .memberVarName = "bParams", .getterName = "GetParams" },
+                {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
+            },
+            .extraConstructors {
+                "SYNTAX_API SArgument(SExpPtr exp);"
+            }
+        },
+
+        ClassInfo {
+            .name = "SArguments",
+            .memberInfos {
+                { .type = "std::vector<SArgumentPtr>", .memberVarName = "items", .getterName = "GetItems" },
+            }
         },
 
         ClassInfo {
@@ -516,7 +527,7 @@ struct ToJsonVisitor {
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
-                {.type = "std::vector<SArgument>", .memberVarName = "args", .getterName = "GetArgs" },
+                {.type = "SArgumentsPtr", .memberVarName = "args", .getterName = "GetArgs" },
             },
         },
 
@@ -544,7 +555,7 @@ struct ToJsonVisitor {
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SExpPtr", .memberVarName = "callable", .getterName = "GetCallable" },
-                {.type = "std::vector<SArgument>", .memberVarName = "args", .getterName = "GetArgs" },
+                {.type = "SArgumentsPtr", .memberVarName = "args", .getterName = "GetArgs" },
             },
         },
 
@@ -982,7 +993,7 @@ struct ToJsonVisitor {
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
-                { .type = "std::optional<std::vector<SArgument>>", .memberVarName = "baseArgs", .getterName = "GetBaseArgs" },
+                { .type = "SArgumentsPtr", .memberVarName = "baseArgs", .getterName = "GetBaseArgs" },
                 { .type = "std::vector<SStmtPtr>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },

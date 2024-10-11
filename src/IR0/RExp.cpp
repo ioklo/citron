@@ -280,8 +280,8 @@ RTypePtr RExp_NewClass::GetType(RTypeFactory& factory)
 
 /////////////////////////////////////
 
-RExp_CallClassMemberFunc::RExp_CallClassMemberFunc(const shared_ptr<RClassMemberFuncDecl>& classMemberFunc, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
-    : classMemberFunc(classMemberFunc), typeArgs(typeArgs), instance(std::move(instance)), args(std::move(args))
+RExp_CallClassMemberFunc::RExp_CallClassMemberFunc(shared_ptr<RClassMemberFuncDecl>&& classMemberFunc, RTypeArgumentsPtr&& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
+    : classMemberFunc(std::move(classMemberFunc)), typeArgs(std::move(typeArgs)), instance(std::move(instance)), args(std::move(args))
 {
 }
 
@@ -300,8 +300,8 @@ RTypePtr RExp_CastClass::GetType(RTypeFactory& factory)
     return classType;
 }
 
-RExp_NewStruct::RExp_NewStruct(const shared_ptr<RStructConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const vector<RArgument>& args)
-    : constructorDecl(constructorDecl), typeArgs(typeArgs), args(args)
+RExp_NewStruct::RExp_NewStruct(const shared_ptr<RStructConstructorDecl>& constructorDecl, RTypeArgumentsPtr&& typeArgs, vector<RArgument>&& args)
+    : constructorDecl(constructorDecl), typeArgs(std::move(typeArgs)), args(std::move(args))
 {
 }
 
@@ -311,8 +311,8 @@ RTypePtr RExp_NewStruct::GetType(RTypeFactory& factory)
     return factory.MakeStructType(structDecl, typeArgs);
 }
 
-RExp_CallStructMemberFunc::RExp_CallStructMemberFunc(const shared_ptr<RStructMemberFuncDecl>& structMemberFuncDecl, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
-    : structMemberFuncDecl(structMemberFuncDecl), typeArgs(typeArgs), instance(std::move(instance)), args(std::move(args))
+RExp_CallStructMemberFunc::RExp_CallStructMemberFunc(shared_ptr<RStructMemberFuncDecl>&& structMemberFuncDecl, RTypeArgumentsPtr&& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
+    : structMemberFuncDecl(std::move(structMemberFuncDecl)), typeArgs(std::move(typeArgs)), instance(std::move(instance)), args(std::move(args))
 {
 }
 
@@ -323,6 +323,11 @@ RTypePtr RExp_CallStructMemberFunc::GetType(RTypeFactory& factory)
 
 RExp_NewEnumElem::RExp_NewEnumElem(const shared_ptr<REnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, vector<RArgument>&& args)
     : enumElemDecl(enumElemDecl), typeArgs(typeArgs), args(args)
+{
+}
+
+RExp_NewEnumElem::RExp_NewEnumElem(const std::shared_ptr<REnumElemDecl>& enumElemDecl, RTypeArgumentsPtr&& typeArgs, std::vector<RArgument>&& args)
+    : enumElemDecl(enumElemDecl), typeArgs(std::move(typeArgs)), args(std::move(args))
 {
 }
 

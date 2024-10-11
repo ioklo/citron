@@ -729,18 +729,18 @@ public:
 };
 
 class ThisTypeBinder : public RTypeVisitor
-{
-    RTypePtr thisType;
+{   
     RName name;
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
 
     ScopeContextPtr context;
     LoggerPtr logger;
+    RTypeFactory& factory;
 
 public:
-    ThisTypeBinder(const RTypePtr& thisType, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
-        : thisType(thisType), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
+    ThisTypeBinder(const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+        : name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
 
@@ -752,7 +752,7 @@ public:
 
     void Visit(RType_NullableRef& type) override 
     {
-        // Nullable은 멤버함수를 가질 수 없다
+        // Nullable은 멤버함수를 가질 수 없다?
         throw RuntimeFatalException();
         static_assert(false);
     }
@@ -811,7 +811,7 @@ public:
             return;
         }
         
-        *result = MakePtr<IrExp_BoxRef_ClassMember>(MakePtr<RLoc_This>(thisType), memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_ClassMember>(context->MakeThisLoc(factory), memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 
@@ -907,7 +907,7 @@ public:
     void Visit(IrExp_ThisVar& irExp) override 
     {
         // this.id        
-        ThisTypeBinder binder(irExp.type, name, typeArgsExceptOuter, result, context, logger);
+        ThisTypeBinder binder(name, typeArgsExceptOuter, result, context, logger, factory);
         irExp.type->Accept(binder);
     }
 

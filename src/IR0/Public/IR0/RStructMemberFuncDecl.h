@@ -19,6 +19,7 @@ class RStructMemberFuncDecl
     , public RBodyDeclOuter
     , private RCommonFuncDeclComponent
 {
+public:
     std::weak_ptr<RStructDecl> _struct;
     RAccessor accessor;
     std::string name;

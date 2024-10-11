@@ -90,7 +90,7 @@ public:
 
     void Visit(SExp_Call& exp) override 
     {
-        return HandleExp(TranslateSCallExpToRExp(exp, hintType, context, logger));
+        return HandleExp(TranslateSCallExpToRExp(exp, hintType, context, logger, factory));
     }
 
     void Visit(SExp_Lambda& exp) override 

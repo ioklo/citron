@@ -44,7 +44,7 @@ RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, const ScopeContextPtr& c
 RExpPtr TranslateSLambdaExpToRExp(SExp_Lambda& sExp, const LoggerPtr& logger);
 RExpPtr TranslateSListExpToRExp(SExp_List& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RExpPtr TranslateSNewExpToRExp(SExp_New& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory); // throws ErrorCodeException
-RExpPtr TranslateSCallExpToRExp(SExp_Call& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger);
+RExpPtr TranslateSCallExpToRExp(SExp_Call& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RExpPtr TranslateSBoxExpToRExp(SExp_Box& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RExpPtr TranslateSIsExpToRExp(SExp_Is& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 RExpPtr TranslateSAsExpToRExp(SExp_As& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);

@@ -93,6 +93,8 @@ class SEnumDecl;
 class SGlobalFuncDecl;
 class SNamespaceDecl;
 class SScript;
+class SArgument;
+class SArguments;
 
 using SStmtPtr = std::shared_ptr<SStmt>;
 using SExpPtr = std::shared_ptr<SExp>;
@@ -105,6 +107,8 @@ using SClassMemberDeclPtr = std::shared_ptr<SClassMemberDecl>;
 using SStructMemberDeclPtr = std::shared_ptr<SStructMemberDecl>;
 using SNamespaceDeclElementPtr = std::shared_ptr<SNamespaceDeclElement>;
 using SScriptElementPtr = std::shared_ptr<SScriptElement>;
+using SArgumentPtr = std::shared_ptr<SArgument>;
+using SArgumentsPtr = std::shared_ptr<SArguments>;
 enum class SAccessModifier
 {
     Public,
@@ -216,6 +220,22 @@ public:
 
     SArgument& operator=(const SArgument& other) = delete;
     SYNTAX_API SArgument& operator=(SArgument&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class SArguments
+{
+public:
+    std::vector<SArgumentPtr> items;
+
+    SYNTAX_API SArguments(std::vector<SArgumentPtr> items);
+    SArguments(const SArguments&) = delete;
+    SYNTAX_API SArguments(SArguments&&) noexcept;
+    SYNTAX_API ~SArguments();
+
+    SArguments& operator=(const SArguments& other) = delete;
+    SYNTAX_API SArguments& operator=(SArguments&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -718,9 +738,9 @@ class SExp_New
 {
 public:
     STypeExpPtr type;
-    std::vector<SArgument> args;
+    SArgumentsPtr args;
 
-    SYNTAX_API SExp_New(STypeExpPtr type, std::vector<SArgument> args);
+    SYNTAX_API SExp_New(STypeExpPtr type, SArgumentsPtr args);
     SExp_New(const SExp_New&) = delete;
     SYNTAX_API SExp_New(SExp_New&&) noexcept;
     SYNTAX_API virtual ~SExp_New();
@@ -779,9 +799,9 @@ class SExp_Call
 {
 public:
     SExpPtr callable;
-    std::vector<SArgument> args;
+    SArgumentsPtr args;
 
-    SYNTAX_API SExp_Call(SExpPtr callable, std::vector<SArgument> args);
+    SYNTAX_API SExp_Call(SExpPtr callable, SArgumentsPtr args);
     SExp_Call(const SExp_Call&) = delete;
     SYNTAX_API SExp_Call(SExp_Call&&) noexcept;
     SYNTAX_API virtual ~SExp_Call();
@@ -1625,10 +1645,10 @@ class SClassConstructorDecl
 public:
     std::optional<SAccessModifier> accessModifier;
     std::vector<SFuncParam> parameters;
-    std::optional<std::vector<SArgument>> baseArgs;
+    SArgumentsPtr baseArgs;
     std::vector<SStmtPtr> body;
 
-    SYNTAX_API SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::optional<std::vector<SArgument>> baseArgs, std::vector<SStmtPtr> body);
+    SYNTAX_API SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArgumentsPtr baseArgs, std::vector<SStmtPtr> body);
     SClassConstructorDecl(const SClassConstructorDecl&) = delete;
     SYNTAX_API SClassConstructorDecl(SClassConstructorDecl&&) noexcept;
     SYNTAX_API virtual ~SClassConstructorDecl();

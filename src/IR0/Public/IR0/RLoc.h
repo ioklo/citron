@@ -30,6 +30,7 @@ using RExpPtr = std::shared_ptr<class RExp>;
 class RLocVisitor
 {
 public:
+    virtual ~RLocVisitor() { }
     virtual void Visit(RLoc_Temp& loc) = 0;
     virtual void Visit(RLoc_LocalVar& loc) = 0;
     virtual void Visit(RLoc_LambdaMemberVar& loc) = 0;
@@ -46,6 +47,7 @@ public:
 class RLoc
 {
 public:
+    virtual ~RLoc() { }
     virtual void Accept(RLocVisitor& visitor) = 0;
     virtual RTypePtr GetType(RTypeFactory& factory) = 0;
 };

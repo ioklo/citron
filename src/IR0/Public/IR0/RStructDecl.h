@@ -43,10 +43,10 @@ class RStructDecl
     RName name;
     std::vector<std::string> typeParams;
 
-    std::vector<std::shared_ptr<RStructConstructorDecl>> constructors;
+    std::vector<std::shared_ptr<RStructConstructorDecl>> constructorDecls;
     int trivialConstructorIndex; // can be -1
 
-    std::vector<std::shared_ptr<RStructMemberVarDecl>> memberVars;
+    std::vector<std::shared_ptr<RStructMemberVarDecl>> memberVarDecls;
 
     std::optional<BaseTypes> oBaseTypes;
 
@@ -60,8 +60,8 @@ public:
     void AddMemberFunc(std::shared_ptr<RStructMemberFuncDecl> decl) { RFuncDeclContainerComponent<RStructMemberFuncDecl>::AddFunc(std::move(decl)); }
     IR0_API void AddMemberVar(std::shared_ptr<RStructMemberVarDecl> decl);
 
-    auto GetConstructors() { return std::views::all(constructors); }
-    auto GetMemberVars() { return std::views::all(memberVars); }
+    auto GetConstructorDecls() { return std::views::all(constructorDecls); }
+    auto GetMemberVarDecls() { return std::views::all(memberVarDecls); }
 
     /*size_t GetMemberVarCount() { return memberVars.size(); }
     const std::shared_ptr<RStructMemberVarDecl>& GetMemberVar(size_t index) { return memberVars[index]; }*/

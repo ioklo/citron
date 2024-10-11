@@ -17,6 +17,7 @@ class RClassMemberFuncDecl
     , public RBodyDeclOuter
     , private RCommonFuncDeclComponent
 {
+public:
     std::weak_ptr<RClassDecl> _class;
     RAccessor accessor;
     RName name;

@@ -37,6 +37,7 @@ class IrExpVisitor;
 class IrExp
 {
 public:
+    virtual ~IrExp() { }
     virtual void Accept(IrExpVisitor& visitor) = 0;
 };
 
@@ -45,6 +46,7 @@ using IrExpPtr = std::shared_ptr<IrExp>;
 class IrExpVisitor
 {
 public:
+    virtual ~IrExpVisitor() { }
     virtual void Visit(IrExp_Namespace& irExp) = 0;
     virtual void Visit(IrExp_TypeVar& irExp) = 0;
     virtual void Visit(IrExp_Class& irExp) = 0;
@@ -116,7 +118,6 @@ class IrExp_ThisVar : public IrExp
 {
 public:
     RTypePtr type;
-
 public:
     IrExp_ThisVar(const RTypePtr& type);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -177,6 +178,7 @@ public:
 class IrBoxRefExpVisitor
 {
 public:
+    virtual ~IrBoxRefExpVisitor() { }
     virtual void Visit(IrExp_BoxRef_ClassMember& irBoxRefExp) = 0;
     virtual void Visit(IrExp_BoxRef_StructIndirectMember& irBoxRefExp) = 0;
     virtual void Visit(IrExp_BoxRef_StructMember& irBoxRefExp) = 0;
@@ -185,6 +187,7 @@ public:
 class IrExp_BoxRef : public IrExp
 {
 public:
+    virtual ~IrExp_BoxRef() { }
     void Accept(IrExpVisitor& visitor) final { visitor.Visit(*this); }
 
     virtual void Accept(IrBoxRefExpVisitor& visitor) = 0;
