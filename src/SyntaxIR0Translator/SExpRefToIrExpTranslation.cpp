@@ -10,7 +10,7 @@
 #include "SExpToRExpTranslation.h"
 #include "SExpToRLocTranslation.h"
 #include "SExpRefToRExpTranslation.h"
-#include "IrExpAndMemberNameToIrExpBinding.h"
+#include "IrExpAndMemberNameToIrExpTranslation.h"
 
 #include "NotLocationErrorLogger.h"
 #include "Misc.h"
@@ -18,8 +18,10 @@
 
 namespace Citron::SyntaxIR0Translator {
 
+namespace {
+
 // & exp syntax를 중간과정으로 번역해주는 역할
-// SyntaxExp -> IntermediateRefExp
+// SExp -> IrExp
 struct SExpRefToIrExpTranslator : public SExpVisitor
 {
     IrExpPtr* result;
@@ -45,7 +47,7 @@ public:
         *result = MakePtr<IrExp_LocalValue>(std::move(rExp));
     }
 
-    void Visit(SExp_Identifier& exp) override 
+    void Visit(SExp_Identifier& exp) override
     {
         static_assert(false);
         /*try
@@ -72,33 +74,33 @@ public:
     }
 
     // string은 중간과정에서는 value로 평가하면 될 것 같다
-    void Visit(SExp_String& exp) override 
+    void Visit(SExp_String& exp) override
     {
         HandleValue(exp);
     }
 
-    void Visit(SExp_IntLiteral& exp) override 
+    void Visit(SExp_IntLiteral& exp) override
     {
         HandleValue(exp);
     }
 
-    void Visit(SExp_BoolLiteral& exp) override 
+    void Visit(SExp_BoolLiteral& exp) override
     {
         HandleValue(exp);
     }
 
-    void Visit(SExp_NullLiteral& exp) override 
+    void Visit(SExp_NullLiteral& exp) override
     {
         HandleValue(exp);
     }
 
-    void Visit(SExp_BinaryOp& exp) override 
+    void Visit(SExp_BinaryOp& exp) override
     {
         // assign 제외
         HandleValue(exp);
     }
 
-    void Visit(SExp_UnaryOp& exp) override 
+    void Visit(SExp_UnaryOp& exp) override
     {
         if (exp.kind == SUnaryOpKind::Ref) // & &는 불가능
         {
@@ -132,24 +134,24 @@ public:
         }
     }
 
-    void Visit(SExp_Call& exp) override 
+    void Visit(SExp_Call& exp) override
     {
         HandleValue(exp);
     }
 
-    void Visit(SExp_Lambda& exp) override 
+    void Visit(SExp_Lambda& exp) override
     {
         HandleValue(exp);
     }
 
     // e[e] 꼴
-    void Visit(SExp_Indexer& exp) override 
+    void Visit(SExp_Indexer& exp) override
     {
         // location으로 쓰지 않고 value로 쓴다
         HandleValue(exp);
     }
 
-    void Visit(SExp_Member& exp) override 
+    void Visit(SExp_Member& exp) override
     {
         auto parent = TranslateSExpRefToIrExp(*exp.parent, context);
         if (!parent)
@@ -161,40 +163,41 @@ public:
         auto typeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, *context, factory);
 
         logger->SetSyntax(exp.parent);
-        *result = BindIrExpAndMemberNameToIrExp(parent, RName_Normal(exp.memberName), std::move(typeArgsExceptOuter), context, logger, factory);
+        *result = TranslateIrExpAndMemberNameToIrExp(parent, RName_Normal(exp.memberName), std::move(typeArgsExceptOuter), context, logger, factory);
     }
 
-    void Visit(SExp_IndirectMember& exp) override 
+    void Visit(SExp_IndirectMember& exp) override
     {
         static_assert(false);
     }
 
-    void Visit(SExp_List& exp) override 
+    void Visit(SExp_List& exp) override
     {
         HandleValue(exp);
     }
 
-    void Visit(SExp_New& exp) override 
+    void Visit(SExp_New& exp) override
     {
         HandleValue(exp);
     }
 
-    void Visit(SExp_Box& exp) override 
+    void Visit(SExp_Box& exp) override
     {
         HandleValue(exp);
     }
 
-    void Visit(SExp_Is& exp) override 
+    void Visit(SExp_Is& exp) override
     {
         HandleValue(exp);
     }
 
-    void Visit(SExp_As& exp) override 
+    void Visit(SExp_As& exp) override
     {
         HandleValue(exp);
     }
 };
 
+} // namespace 
 
 IrExpPtr TranslateSExpRefToIrExp(SExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "ImExpAndMemberNameToImExpBinding.h"
+#include "ImExpAndMemberNameToImExpTranslation.h"
 
 #include <cassert>
 
@@ -28,7 +28,7 @@ namespace Citron::SyntaxIR0Translator {
 
 namespace {
 
-class StaticParentBinder : public RMemberVisitor
+class StaticParentTranslator : public RMemberVisitor
 {
     RTypeArgumentsPtr typeArgsExceptOuter; // outer 제외
     ImExpPtr* result;
@@ -38,7 +38,7 @@ class StaticParentBinder : public RMemberVisitor
     RTypeFactory& factory;
 
 public:
-    StaticParentBinder(const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
         : typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -186,7 +186,7 @@ public:
     }
 };
 
-class InstanceParentBinder : public RMemberVisitor
+class InstanceParentTranslator : public RMemberVisitor
 {
     ReExpPtr reInstExp;
     RTypeArgumentsPtr typeArgsExceptOuter;
@@ -201,7 +201,7 @@ class InstanceParentBinder : public RMemberVisitor
     }*/
 
 public:
-    InstanceParentBinder(ReExpPtr&& reInstExp, const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    InstanceParentTranslator(ReExpPtr&& reInstExp, const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
         : reInstExp(std::move(reInstExp)), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -320,12 +320,9 @@ public:
     }
 };
 
-
-} // namespace
-
 // MemberParent And Id Binder
 // (IntermediateExp, name, typeArgs) -> IntermediateExp
-class ImExpAndMemberNameToImExpBinder : public ImExpVisitor
+class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
 {
     std::string name;
     RTypeArgumentsPtr typeArgsExceptOuter;
@@ -338,7 +335,7 @@ class ImExpAndMemberNameToImExpBinder : public ImExpVisitor
     void BindStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
     {
         auto member = decl.GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
-        StaticParentBinder binder(typeArgsExceptOuter, result, context, logger, factory);
+        StaticParentTranslator binder(typeArgsExceptOuter, result, context, logger, factory);
         member->Accept(binder);
     }
 
@@ -360,121 +357,123 @@ class ImExpAndMemberNameToImExpBinder : public ImExpVisitor
             return;
         }
 
-        InstanceParentBinder binder(std::move(reInstExp), typeArgsExceptOuter, result, context, logger);
+        InstanceParentTranslator binder(std::move(reInstExp), typeArgsExceptOuter, result, context, logger);
         member->Accept(binder);
     }
 
 public:
-    ImExpAndMemberNameToImExpBinder(const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    ImExpAndMemberNameToImExpTranslator(const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
         : name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
 
-    void Visit(ImExp_Namespace& imExp) override 
+    void Visit(ImExp_Namespace& imExp) override
     {
         return BindStaticParent(*imExp._namespace, factory.MakeTypeArguments(vector<RTypePtr>()));
     }
 
-    void Visit(ImExp_GlobalFuncs& imExp) override 
+    void Visit(ImExp_GlobalFuncs& imExp) override
     {
         logger->Fatal_FuncCantHaveMember();
         *result = nullptr;
     }
 
-    void Visit(ImExp_TypeVar& imExp) override 
+    void Visit(ImExp_TypeVar& imExp) override
     {
         throw NotImplementedException();
     }
 
-    void Visit(ImExp_Class& imExp) override 
+    void Visit(ImExp_Class& imExp) override
     {
         BindStaticParent(*imExp.classDecl, imExp.typeArgs);
     }
 
-    void Visit(ImExp_ClassMemberFuncs& imExp) override 
+    void Visit(ImExp_ClassMemberFuncs& imExp) override
     {
         logger->Fatal_FuncCantHaveMember();
         *result = nullptr;
     }
 
-    void Visit(ImExp_Struct& imExp) override 
+    void Visit(ImExp_Struct& imExp) override
     {
         BindStaticParent(*imExp.structDecl, imExp.typeArgs);
     }
 
-    void Visit(ImExp_StructMemberFuncs& imExp) override 
+    void Visit(ImExp_StructMemberFuncs& imExp) override
     {
         logger->Fatal_FuncCantHaveMember();
         *result = nullptr;
     }
 
     // (E).F
-    void Visit(ImExp_Enum& imExp) override 
+    void Visit(ImExp_Enum& imExp) override
     {
         BindStaticParent(*imExp.decl, imExp.typeArgs);
     }
 
-    void Visit(ImExp_EnumElem& imExp) override 
+    void Visit(ImExp_EnumElem& imExp) override
     {
         logger->Fatal_EnumElemCantHaveMember();
         *result = nullptr;
     }
 
-    void Visit(ImExp_ThisVar& imExp) override 
+    void Visit(ImExp_ThisVar& imExp) override
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImExp_LocalVar& imExp) override 
+    void Visit(ImExp_LocalVar& imExp) override
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImExp_LambdaMemberVar& imExp) override 
+    void Visit(ImExp_LambdaMemberVar& imExp) override
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImExp_ClassMemberVar& imExp) override 
+    void Visit(ImExp_ClassMemberVar& imExp) override
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImExp_StructMemberVar& imExp) override 
+    void Visit(ImExp_StructMemberVar& imExp) override
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImExp_EnumElemMemberVar& imExp) override 
+    void Visit(ImExp_EnumElemMemberVar& imExp) override
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImExp_ListIndexer& imExp) override 
+    void Visit(ImExp_ListIndexer& imExp) override
     {
         throw NotImplementedException();
     }
 
-    void Visit(ImExp_LocalDeref& imExp) override 
+    void Visit(ImExp_LocalDeref& imExp) override
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImExp_BoxDeref& imExp) override 
+    void Visit(ImExp_BoxDeref& imExp) override
     {
         BindInstanceParent(imExp);
     }
 
-    void Visit(ImExp_Else& imExp) override 
+    void Visit(ImExp_Else& imExp) override
     {
         BindInstanceParent(imExp);
     }
 };
 
-ImExpPtr BindImExpAndMemberNameToImExp(ImExp& imExp, const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+} // namespace
+
+ImExpPtr TranslateImExpAndMemberNameToImExp(ImExp& imExp, const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     ImExpPtr boundImExp;
-    ImExpAndMemberNameToImExpBinder binder(name, typeArgsExceptOuter, &boundImExp, context, logger, factory);
+    ImExpAndMemberNameToImExpTranslator binder(name, typeArgsExceptOuter, &boundImExp, context, logger, factory);
     imExp.Accept(binder);
     return boundImExp;
 }

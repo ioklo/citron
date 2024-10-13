@@ -13,6 +13,8 @@
 
 namespace Citron::SyntaxIR0Translator {
 
+namespace {
+
 struct ImExpToIrExpTranslator : public ImExpVisitor
 {
     IrExpPtr* result;
@@ -24,19 +26,19 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     {
     }
 
-    void Visit(ImExp_Namespace& imExp) override 
-    { 
+    void Visit(ImExp_Namespace& imExp) override
+    {
         *result = MakePtr<IrExp_Namespace>(imExp._namespace);
     }
 
-    void Visit(ImExp_GlobalFuncs& imExp) override 
-    { 
-        static_assert(false); 
+    void Visit(ImExp_GlobalFuncs& imExp) override
+    {
+        static_assert(false);
         *result = nullptr;
     }
 
-    void Visit(ImExp_TypeVar& imExp) override 
-    { 
+    void Visit(ImExp_TypeVar& imExp) override
+    {
         *result = MakePtr<IrExp_TypeVar>(imExp.type);
     }
 
@@ -45,8 +47,8 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         *result = MakePtr<IrExp_Class>(imExp.classDecl, imExp.typeArgs);
     }
 
-    void Visit(ImExp_ClassMemberFuncs& imExp) override 
-    { 
+    void Visit(ImExp_ClassMemberFuncs& imExp) override
+    {
         static_assert(false);
         *result = nullptr;
     }
@@ -67,35 +69,35 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         *result = MakePtr<IrExp_Enum>(imExp.decl, imExp.typeArgs);
     }
 
-    void Visit(ImExp_EnumElem& imExp) override 
-    { 
-        static_assert(false); 
+    void Visit(ImExp_EnumElem& imExp) override
+    {
+        static_assert(false);
         *result = nullptr;
     }
 
     // &this   -> invalid
     // &this.a -> valid, box ptr
-    void Visit(ImExp_ThisVar& imExp) override 
-    { 
+    void Visit(ImExp_ThisVar& imExp) override
+    {
         *result = MakePtr<IrExp_ThisVar>();
     }
 
     // &id
-    void Visit(ImExp_LocalVar& imExp) override 
-    { 
+    void Visit(ImExp_LocalVar& imExp) override
+    {
         *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_LocalVar>(imExp.name, imExp.type));
     }
 
     // &x
-    void Visit(ImExp_LambdaMemberVar& imExp) override 
-    { 
+    void Visit(ImExp_LambdaMemberVar& imExp) override
+    {
         // TODO: [10] box lambda이면 box로 판단해야 한다
         *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_LambdaMemberVar>(imExp.decl, imExp.typeArgs));
     }
 
     // x (C.x, this.x)
-    void Visit(ImExp_ClassMemberVar& imExp) override 
-    { 
+    void Visit(ImExp_ClassMemberVar& imExp) override
+    {
         if (imExp.decl->bStatic) // &C.x
         {
             *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_ClassMember>(nullptr, imExp.decl, imExp.typeArgs));
@@ -108,7 +110,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     }
 
     // x (S.x, this->x)
-    void Visit(ImExp_StructMemberVar& imExp) override 
+    void Visit(ImExp_StructMemberVar& imExp) override
     {
         if (imExp.decl->bStatic)
         {
@@ -124,14 +126,14 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     }
 
     // &x (E.First.x)    
-    void Visit(ImExp_EnumElemMemberVar& imExp) override 
-    { 
+    void Visit(ImExp_EnumElemMemberVar& imExp) override
+    {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException();
     }
 
-    void Visit(ImExp_ListIndexer& imExp) override 
-    { 
+    void Visit(ImExp_ListIndexer& imExp) override
+    {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException();
     }
@@ -142,18 +144,20 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         throw RuntimeFatalException();
     }
 
-    void Visit(ImExp_BoxDeref& imExp) override 
-    { 
+    void Visit(ImExp_BoxDeref& imExp) override
+    {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException();
     }
 
-    void Visit(ImExp_Else& imExp) override 
-    { 
+    void Visit(ImExp_Else& imExp) override
+    {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException();
     }
 };
+
+} // namespace 
 
 IrExpPtr TranslateImExpToIrExp(const ImExpPtr& imExp, ScopeContext& context, RTypeFactory& factory)
 {

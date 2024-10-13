@@ -10,6 +10,8 @@
 
 namespace Citron::SyntaxIR0Translator {
 
+namespace {
+
 class SExpToReExpTranslator : public SExpVisitor
 {
     RTypePtr hintType;
@@ -40,43 +42,43 @@ public:
     {
         if (!exp)
             *result = nullptr;
-        else 
+        else
             *result = MakePtr<ReExp_Else>(std::move(exp));
     }
 
 
-    void Visit(SExp_Identifier& exp) override 
+    void Visit(SExp_Identifier& exp) override
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_String& exp) override 
+    void Visit(SExp_String& exp) override
     {
         HandleExp(TranslateSStringExpToRStringExp(exp, context, logger, factory));
     }
 
-    void Visit(SExp_IntLiteral& exp) override 
+    void Visit(SExp_IntLiteral& exp) override
     {
         HandleExp(TranslateSIntLiteralExpToRExp(exp));
     }
 
-    void Visit(SExp_BoolLiteral& exp) override 
+    void Visit(SExp_BoolLiteral& exp) override
     {
         HandleExp(TranslateSBoolLiteralExpToRExp(exp));
     }
 
-    void Visit(SExp_NullLiteral& exp) override 
+    void Visit(SExp_NullLiteral& exp) override
     {
         HandleExp(TranslateSNullLiteralExpToRExp(exp, hintType, context, logger));
     }
 
-    void Visit(SExp_BinaryOp& exp) override 
+    void Visit(SExp_BinaryOp& exp) override
     {
         HandleExp(TranslateSBinaryOpExpToRExp(exp, context, logger, factory));
     }
 
     // int만 지원한다
-    void Visit(SExp_UnaryOp& exp) override 
+    void Visit(SExp_UnaryOp& exp) override
     {
         if (exp.kind == SUnaryOpKind::Deref)
         {
@@ -88,59 +90,61 @@ public:
         }
     }
 
-    void Visit(SExp_Call& exp) override 
+    void Visit(SExp_Call& exp) override
     {
         return HandleExp(TranslateSCallExpToRExp(exp, hintType, context, logger, factory));
     }
 
-    void Visit(SExp_Lambda& exp) override 
+    void Visit(SExp_Lambda& exp) override
     {
         return HandleExp(TranslateSLambdaExpToRExp(exp, logger));
     }
 
-    void Visit(SExp_Indexer& exp) override 
+    void Visit(SExp_Indexer& exp) override
     {
         return HandleDefault(exp);
     }
 
     // exp를 돌려주는 버전
     // parent."x"<>
-    void Visit(SExp_Member& exp) override 
-    {   
+    void Visit(SExp_Member& exp) override
+    {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_IndirectMember& exp) override 
+    void Visit(SExp_IndirectMember& exp) override
     {
         static_assert(false);
     }
 
-    void Visit(SExp_List& exp) override 
+    void Visit(SExp_List& exp) override
     {
         HandleExp(TranslateSListExpToRExp(exp, context, logger, factory));
     }
 
     // 'new C(...)'
-    void Visit(SExp_New& exp) override 
+    void Visit(SExp_New& exp) override
     {
         HandleExp(TranslateSNewExpToRExp(exp, context, logger, factory));
     }
 
-    void Visit(SExp_Box& exp) override 
+    void Visit(SExp_Box& exp) override
     {
         HandleExp(TranslateSBoxExpToRExp(exp, hintType, context, logger, factory));
     }
 
-    void Visit(SExp_Is& exp) override 
+    void Visit(SExp_Is& exp) override
     {
         HandleExp(TranslateSIsExpToRExp(exp, context, logger, factory));
     }
 
-    void Visit(SExp_As& exp) override 
+    void Visit(SExp_As& exp) override
     {
         HandleExp(TranslateSAsExpToRExp(exp, context, logger, factory));
     }
 };
+
+} // namespace
 
 ReExpPtr TranslateSExpToReExp(SExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "ImCallableAndSArgsToRExpBinding.h"
+#include "ImCallableAndSArgsToRExpTranslation.h"
 
 #include <Infra/Ptr.h>
 #include <Infra/Exceptions.h>
@@ -27,20 +27,9 @@
 
 namespace Citron::SyntaxIR0Translator {
 
-//interface IFuncs<TFuncDeclSymbol, TFuncSymbol>
-//where TFuncDeclSymbol : IFuncDeclSymbol
-//where TFuncSymbol : IFuncSymbol
-//{
-//    int GetCount();
-//    TFuncDeclSymbol GetDecl(int i);
-//
-//    TypeEnv GetOuterTypeEnv(int i);
-//    ImmutableArray<IType> GetPartialTypeArgs();
-//    TFuncSymbol MakeSymbol(int i, ImmutableArray<IType> typeArgs, ScopeContext context);
-//};
-
+namespace {
 // (IntermediateExp, Args) -> TranslationResult<IR0ExpResult>
-class ImCallableAndSArgsToRExpBinder : public ImExpVisitor
+class ImCallableAndSArgsToRExpTranslator : public ImExpVisitor
 {
     SExpPtr sCallable;
     SArgumentsPtr sArgs;
@@ -54,7 +43,7 @@ class ImCallableAndSArgsToRExpBinder : public ImExpVisitor
     // S.ISyntaxNode nodeForCallableErrorReport;
 
 public:
-    ImCallableAndSArgsToRExpBinder(const SExpPtr& sCallable, const SArgumentsPtr& sArgs, RExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    ImCallableAndSArgsToRExpTranslator(const SExpPtr& sCallable, const SArgumentsPtr& sArgs, RExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
         : sCallable(sCallable), sArgs(sArgs), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -112,36 +101,36 @@ private:
     }
 
 public:
-    void Visit(ImExp_Namespace& imExp) override 
+    void Visit(ImExp_Namespace& imExp) override
     {
         logger->Fatal_CallableExpressionIsNotCallable();
         *result = nullptr;
     }
 
-    void Visit(ImExp_GlobalFuncs& imExp) override 
+    void Visit(ImExp_GlobalFuncs& imExp) override
     {
         auto match = MatchFunc(imExp.items, sArgs, context);
         if (!match)
-        {   
+        {
             throw NotImplementedException();
         }
 
         *result = MakePtr<RExp_CallGlobalFunc>(match->funcDecl, match->typeArgs, match->args);
     }
 
-    void Visit(ImExp_TypeVar& imExp) override 
+    void Visit(ImExp_TypeVar& imExp) override
     {
         logger->Fatal_CallableExpressionIsNotCallable();
         *result = nullptr;
     }
 
-    void Visit(ImExp_Class& imExp) override 
+    void Visit(ImExp_Class& imExp) override
     {
         logger->Fatal_CallableExpressionIsNotCallable();
         *result = nullptr;
     }
 
-    void Visit(ImExp_ClassMemberFuncs& imExp) override 
+    void Visit(ImExp_ClassMemberFuncs& imExp) override
     {
         auto match = MatchFunc(imExp.items, sArgs, context);
         if (!match)
@@ -208,12 +197,12 @@ public:
         //}
     }
 
-    void Visit(ImExp_Struct& imExp) override 
+    void Visit(ImExp_Struct& imExp) override
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
         std::vector<RDeclWithOuterTypeArgs<RStructConstructorDecl>> items;
-        for(auto& constructorDecl : imExp.structDecl->GetConstructorDecls())
+        for (auto& constructorDecl : imExp.structDecl->GetConstructorDecls())
         {
             items.emplace_back(constructorDecl, imExp.typeArgs);
         }
@@ -222,7 +211,7 @@ public:
         if (!match)
         {
             // 매치에 실패했습니다. 에러
-            throw NotImplementedException(); 
+            throw NotImplementedException();
             *result = nullptr;
             return;
         }
@@ -230,7 +219,7 @@ public:
         *result = MakePtr<RExp_NewStruct>(match->funcDecl, std::move(match->typeArgs), std::move(match->args));
     }
 
-    void Visit(ImExp_StructMemberFuncs& imExp) override 
+    void Visit(ImExp_StructMemberFuncs& imExp) override
     {
         auto match = MatchFunc(imExp.items, sArgs, context);
         if (!match)
@@ -298,7 +287,7 @@ public:
         //}
     }
 
-    void Visit(ImExp_Enum& imExp) override 
+    void Visit(ImExp_Enum& imExp) override
     {
         logger->Fatal_CallableExpressionIsNotCallable();
         *result = nullptr;
@@ -332,58 +321,58 @@ public:
         *result = MakePtr<RExp_NewEnumElem>(imExp.decl, std::move(match->typeArgs), std::move(match->args));
     }
 
-    void Visit(ImExp_ThisVar& imExp) override 
+    void Visit(ImExp_ThisVar& imExp) override
     {
         logger->Fatal_CallableExpressionIsNotCallable();
         *result = nullptr;
     }
 
-    void Visit(ImExp_LocalVar& imExp) override 
+    void Visit(ImExp_LocalVar& imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_LambdaMemberVar& imExp) override 
+    void Visit(ImExp_LambdaMemberVar& imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_ClassMemberVar& imExp) override 
+    void Visit(ImExp_ClassMemberVar& imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_StructMemberVar& imExp) override 
+    void Visit(ImExp_StructMemberVar& imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_EnumElemMemberVar& imExp) override 
+    void Visit(ImExp_EnumElemMemberVar& imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_ListIndexer& imExp) override 
+    void Visit(ImExp_ListIndexer& imExp) override
     {
         // l[0]
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_LocalDeref& imExp) override 
+    void Visit(ImExp_LocalDeref& imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_BoxDeref& imExp) override 
+    void Visit(ImExp_BoxDeref& imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_Else& imExp) override 
+    void Visit(ImExp_Else& imExp) override
     {
         return HandleLoc(imExp);
     }
-    
+
     /*TranslationResult<IR0ExpResult> FatalCallable(SyntaxAnalysisErrorCode code)
     {
         context.AddFatalError(code, nodeForCallableErrorReport);
@@ -397,7 +386,9 @@ public:
     }*/
 };
 
-RExpPtr BindImCallableAndSArgsToRExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+} // namespace
+
+RExpPtr TranslateImCallableAndSArgsToRExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     // 여기서 분석해야 할 것은 
     // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -410,7 +401,7 @@ RExpPtr BindImCallableAndSArgsToRExp(ImExp& imCallable, const SExpPtr& sCallable
     // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
 
     RExpPtr rExp;
-    ImCallableAndSArgsToRExpBinder binder(sCallable, sArgs, &rExp, context, logger, factory);
+    ImCallableAndSArgsToRExpTranslator binder(sCallable, sArgs, &rExp, context, logger, factory);
     imCallable.Accept(binder);
     return rExp;
 }

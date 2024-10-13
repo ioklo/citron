@@ -17,7 +17,7 @@ namespace SyntaxIR0Translator {
 class ImExp;
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
-RExpPtr BindImCallableAndSArgsToRExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RExpPtr TranslateImCallableAndSArgsToRExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

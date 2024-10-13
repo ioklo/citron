@@ -13,7 +13,9 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-    // 기본적으로 load를 한다
+namespace {
+
+// 기본적으로 load를 한다
 class ReExpToRExpTranslator : public ReExpVisitor
 {
     ScopeContextPtr context;
@@ -78,7 +80,7 @@ public:
     }
 
     // *x
-    void Visit(ReExp_BoxDeref& exp) override 
+    void Visit(ReExp_BoxDeref& exp) override
     {
         auto rLoc = TranslateReBoxDerefExpToRLoc(exp, context, logger, factory);
         HandleLoc(std::move(rLoc));
@@ -91,10 +93,12 @@ public:
     }
 
     void Visit(ReExp_Else& exp) override
-    {   
+    {
         *result = exp.rExp;
     }
 };
+
+} // namespace 
 
 RExpPtr TranslateReExpToRExp(ReExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {

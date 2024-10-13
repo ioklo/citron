@@ -119,9 +119,11 @@ RLocPtr TranslateReBoxDerefExpToRLoc(ReExp_BoxDeref& reExp, const ScopeContextPt
     return MakePtr<RLoc_BoxDeref>(std::move(rTargetLoc));
 }
 
+namespace {
+
 class ReExpToRLocTranslator : public ReExpVisitor
-{   
-    bool bWrapExpAsLoc;    
+{
+    bool bWrapExpAsLoc;
     INotLocationErrorLogger* notLocationErrorLogger;
     RLocPtr* result;
 
@@ -134,56 +136,56 @@ public:
         : bWrapExpAsLoc(bWrapExpAsLoc), notLocationErrorLogger(notLocationErrorLogger), result(result), context(context), logger(logger), factory(factory)
     {
     }
-    
-    void Visit(ReExp_ThisVar& exp) override 
+
+    void Visit(ReExp_ThisVar& exp) override
     {
         *result = TranslateReThisVarExpToRLoc(exp, *context, factory);
     }
 
-    void Visit(ReExp_LocalVar& exp) override 
-    { 
+    void Visit(ReExp_LocalVar& exp) override
+    {
         *result = TranslateReLocalVarExpToRLoc(exp);
     }
 
-    void Visit(ReExp_LambdaMemberVar& exp) override 
-    { 
+    void Visit(ReExp_LambdaMemberVar& exp) override
+    {
         *result = TranslateReLambdaMemberVarExpToRLoc(exp);
     }
 
-    void Visit(ReExp_ClassMemberVar& exp) override 
-    { 
+    void Visit(ReExp_ClassMemberVar& exp) override
+    {
         *result = TranslateReClassMemberVarExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReExp_StructMemberVar& exp) override 
-    { 
+    void Visit(ReExp_StructMemberVar& exp) override
+    {
         *result = TranslateReStructMemberVarExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReExp_EnumElemMemberVar& exp) override 
-    { 
+    void Visit(ReExp_EnumElemMemberVar& exp) override
+    {
         *result = TranslateReEnumElemMemberVarExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReExp_LocalDeref& exp) override 
-    { 
+    void Visit(ReExp_LocalDeref& exp) override
+    {
         *result = TranslateReLocalDerefExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReExp_BoxDeref& exp) override 
-    { 
+    void Visit(ReExp_BoxDeref& exp) override
+    {
         *result = TranslateReBoxDerefExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReExp_ListIndexer& exp) override 
-    { 
+    void Visit(ReExp_ListIndexer& exp) override
+    {
         *result = TranslateReListIndexerExpToRLoc(exp, context, logger, factory);
     }
 
-    void Visit(ReExp_Else& exp) override 
-    { 
+    void Visit(ReExp_Else& exp) override
+    {
         if (bWrapExpAsLoc)
-        {   
+        {
             *result = MakePtr<RLoc_Temp>(exp.rExp);
         }
         else
@@ -193,6 +195,8 @@ public:
         }
     }
 };
+
+}
 
 RLocPtr TranslateReExpToRLoc(ReExp& reExp, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationErrorLogger, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {

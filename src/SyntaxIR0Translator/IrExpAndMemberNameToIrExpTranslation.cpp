@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "IrExpAndMemberNameToIrExpBinding.h"
+#include "IrExpAndMemberNameToIrExpTranslation.h"
 
 #include <cassert>
 
@@ -23,7 +23,7 @@ namespace Citron::SyntaxIR0Translator {
 
 namespace {
 
-class StaticParentBinder : public RMemberVisitor
+class StaticParentTranslator : public RMemberVisitor
 {
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr *result;
@@ -33,7 +33,7 @@ class StaticParentBinder : public RMemberVisitor
     RTypeFactory& factory;
 
 public:
-    StaticParentBinder(const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
         : typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -153,7 +153,7 @@ public:
     }*/
 };
 
-class StaticRefTypeBinder : public RTypeVisitor
+class StaticRefTypeTranslator : public RTypeVisitor
 {
     std::shared_ptr<IrExp_StaticRef> parent;
     RName name;
@@ -164,7 +164,7 @@ class StaticRefTypeBinder : public RTypeVisitor
     LoggerPtr logger;
 
 public:
-    StaticRefTypeBinder(const std::shared_ptr<IrExp_StaticRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, 
+    StaticRefTypeTranslator(const std::shared_ptr<IrExp_StaticRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, 
         const ScopeContextPtr& context,
         const LoggerPtr& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result)
@@ -318,7 +318,7 @@ public:
     }
 };
 
-class BoxRefTypeBinder : public RTypeVisitor
+class BoxRefTypeTranslator : public RTypeVisitor
 {
     std::shared_ptr<IrExp_BoxRef> parent;
     RName name;
@@ -329,7 +329,7 @@ class BoxRefTypeBinder : public RTypeVisitor
     LoggerPtr logger;
 
 public: 
-    BoxRefTypeBinder(const std::shared_ptr<IrExp_BoxRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    BoxRefTypeTranslator(const std::shared_ptr<IrExp_BoxRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -455,7 +455,7 @@ public:
     }
 };
 
-class LocalRefTypeBinder : public RTypeVisitor
+class LocalRefTypeTranslator : public RTypeVisitor
 {
     std::shared_ptr<IrExp_LocalRef> parent;
     RName name;
@@ -466,7 +466,7 @@ class LocalRefTypeBinder : public RTypeVisitor
     LoggerPtr logger;
 
 public:
-    LocalRefTypeBinder(const std::shared_ptr<IrExp_LocalRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    LocalRefTypeTranslator(const std::shared_ptr<IrExp_LocalRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -606,7 +606,7 @@ public:
 };
 
 // *pS, valueType일때만 여기를 거치도록 나머지는 value로 가게
-class BoxValueTypeBinder : public RTypeVisitor
+class BoxValueTypeTranslator : public RTypeVisitor
 {
     std::shared_ptr<IrExp_DerefedBoxValue> parent;
     RName name;
@@ -617,7 +617,7 @@ class BoxValueTypeBinder : public RTypeVisitor
     LoggerPtr logger;
 
 public:
-    BoxValueTypeBinder(const std::shared_ptr<IrExp_DerefedBoxValue>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    BoxValueTypeTranslator(const std::shared_ptr<IrExp_DerefedBoxValue>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -728,7 +728,7 @@ public:
     }
 };
 
-class ThisTypeBinder : public RTypeVisitor
+class ThisTypeTranslator : public RTypeVisitor
 {   
     RName name;
     RTypeArgumentsPtr typeArgsExceptOuter;
@@ -739,7 +739,7 @@ class ThisTypeBinder : public RTypeVisitor
     RTypeFactory& factory;
 
 public:
-    ThisTypeBinder(const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    ThisTypeTranslator(const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
         : name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -847,7 +847,7 @@ public:
     }
 };
 
-class IrExpAndMemberNameToIrExpBinder : public IrExpVisitor
+class IrExpAndMemberNameToIrExpTranslator : public IrExpVisitor
 {
     IrExpPtr irThis;
     RName name;
@@ -859,7 +859,7 @@ class IrExpAndMemberNameToIrExpBinder : public IrExpVisitor
     RTypeFactory& factory;
 
 public:
-    IrExpAndMemberNameToIrExpBinder(const IrExpPtr& irThis, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    IrExpAndMemberNameToIrExpTranslator(const IrExpPtr& irThis, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
         : irThis(irThis), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -874,7 +874,7 @@ public:
             return;
         }
 
-        StaticParentBinder binder(typeArgsExceptOuter, result, context, logger, factory);
+        StaticParentTranslator binder(typeArgsExceptOuter, result, context, logger, factory);
         member->Accept(binder);
     }
 
@@ -907,7 +907,7 @@ public:
     void Visit(IrExp_ThisVar& irExp) override 
     {
         // this.id        
-        ThisTypeBinder binder(name, typeArgsExceptOuter, result, context, logger, factory);
+        ThisTypeTranslator binder(name, typeArgsExceptOuter, result, context, logger, factory);
         irExp.type->Accept(binder);
     }
 
@@ -919,7 +919,7 @@ public:
         auto locType = irExp.loc->GetType(factory);
 
         // static ref가 부모이면
-        StaticRefTypeBinder binder(irStaticRefThis, name, typeArgsExceptOuter, result, context, logger);
+        StaticRefTypeTranslator binder(irStaticRefThis, name, typeArgsExceptOuter, result, context, logger);
         locType->Accept(binder);
     }
 
@@ -929,7 +929,7 @@ public:
         assert(irBoxRefThis);
 
         auto targetType = irExp.GetTargetType(factory);
-        BoxRefTypeBinder binder(irBoxRefThis, name, typeArgsExceptOuter, result, context, logger);
+        BoxRefTypeTranslator binder(irBoxRefThis, name, typeArgsExceptOuter, result, context, logger);
         targetType->Accept(binder);
     }
 
@@ -940,7 +940,7 @@ public:
 
         auto locType = irExp.loc->GetType(factory);
 
-        LocalRefTypeBinder binder(irLocalRefThis, name, typeArgsExceptOuter, result, context, logger);
+        LocalRefTypeTranslator binder(irLocalRefThis, name, typeArgsExceptOuter, result, context, logger);
         locType->Accept(binder);
     }
 
@@ -952,7 +952,7 @@ public:
 
         auto innerType = irExp.innerLoc->GetType(factory);
 
-        BoxValueTypeBinder binder(irDerefedBoxThis, name, typeArgsExceptOuter, result, context, logger);
+        BoxValueTypeTranslator binder(irDerefedBoxThis, name, typeArgsExceptOuter, result, context, logger);
         innerType->Accept(binder);
     }
 
@@ -967,10 +967,10 @@ public:
 
 } // namespace 
 
-IrExpPtr BindIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+IrExpPtr TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {
     IrExpPtr irBoundExp;
-    IrExpAndMemberNameToIrExpBinder binder(irExp, name, typeArgsExceptOuter, &irBoundExp, context, logger, factory);
+    IrExpAndMemberNameToIrExpTranslator binder(irExp, name, typeArgsExceptOuter, &irBoundExp, context, logger, factory);
     irExp->Accept(binder);
     return irBoundExp;
 }

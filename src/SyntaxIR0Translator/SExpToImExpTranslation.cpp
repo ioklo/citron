@@ -16,16 +16,16 @@
 #include "SExpToReExpTranslation.h"
 #include "ReExpToRExpTranslation.h"
 #include "ReExpToRLocTranslation.h"
-#include "ImExpAndMemberNameToImExpBinding.h"
+#include "ImExpAndMemberNameToImExpTranslation.h"
 
 #include "ScopeContext.h"
 
 #include "NotLocationErrorLogger.h"
 #include "Misc.h"
 
-
-
 namespace Citron::SyntaxIR0Translator {
+
+namespace {
 
 class SExpToImExpTranslator : public SExpVisitor
 {
@@ -46,12 +46,12 @@ public:
     {
         if (!exp)
             *result = nullptr;
-        else 
+        else
             *result = MakePtr<ImExp_Else>(std::move(exp));
     }
 
     // x
-    void Visit(SExp_Identifier& exp) override 
+    void Visit(SExp_Identifier& exp) override
     {
         static_assert(false);
         /*try
@@ -74,33 +74,33 @@ public:
         }*/
     }
 
-    void Visit(SExp_String& exp) override 
+    void Visit(SExp_String& exp) override
     {
         HandleExp(TranslateSStringExpToRStringExp(exp, context, logger, factory));
     }
 
-    void Visit(SExp_IntLiteral& exp) override 
+    void Visit(SExp_IntLiteral& exp) override
     {
         HandleExp(TranslateSIntLiteralExpToRExp(exp));
     }
 
-    void Visit(SExp_BoolLiteral& exp) override 
+    void Visit(SExp_BoolLiteral& exp) override
     {
         HandleExp(TranslateSBoolLiteralExpToRExp(exp));
     }
 
     // 'null'
-    void Visit(SExp_NullLiteral& exp) override 
+    void Visit(SExp_NullLiteral& exp) override
     {
         HandleExp(TranslateSNullLiteralExpToRExp(exp, hintType, context, logger));
     }
 
-    void Visit(SExp_BinaryOp& exp) override 
+    void Visit(SExp_BinaryOp& exp) override
     {
         HandleExp(TranslateSBinaryOpExpToRExp(exp, context, logger, factory));
     }
 
-    void Visit(SExp_UnaryOp& exp) override 
+    void Visit(SExp_UnaryOp& exp) override
     {
         // *d
         if (exp.kind == SUnaryOpKind::Deref)
@@ -118,13 +118,13 @@ public:
             {
                 *result = MakePtr<ImExp_BoxDeref>(std::move(target));
                 return;
-            }   
+            }
 
             if (dynamic_cast<RType_LocalPtr*>(targetType.get()))
             {
                 *result = MakePtr<ImExp_LocalDeref>(std::move(target));
                 return;
-            }   
+            }
 
             // 에러를 내야 할 것 같다
             throw NotImplementedException();
@@ -135,17 +135,17 @@ public:
         }
     }
 
-    void Visit(SExp_Call& exp) override 
+    void Visit(SExp_Call& exp) override
     {
         HandleExp(TranslateSCallExpToRExp(exp, hintType, context, logger, factory));
     }
 
-    void Visit(SExp_Lambda& exp) override 
+    void Visit(SExp_Lambda& exp) override
     {
         HandleExp(TranslateSLambdaExpToRExp(exp, logger));
     }
 
-    void Visit(SExp_Indexer& exp) override 
+    void Visit(SExp_Indexer& exp) override
     {
         auto reObj = TranslateSExpToReExp(*exp.obj, /*hintType*/ nullptr, context, logger, factory);
         if (!reObj)
@@ -241,7 +241,7 @@ public:
     }
 
     // parent."x"<>
-    void Visit(SExp_Member& exp) override 
+    void Visit(SExp_Member& exp) override
     {
         auto imParent = TranslateSExpToImExp(*exp.parent, hintType, context);
         if (!imParent)
@@ -253,40 +253,42 @@ public:
         auto typeArgs = MakeTypeArgs(exp.memberTypeArgs, *context, factory);
 
         // logger->SetSyntax(exp);
-        *result = BindImExpAndMemberNameToImExp(*imParent, exp.memberName, typeArgs, context, logger);
+        *result = TranslateImExpAndMemberNameToImExp(*imParent, exp.memberName, typeArgs, context, logger);
     }
 
-    void Visit(SExp_IndirectMember& exp) override 
+    void Visit(SExp_IndirectMember& exp) override
     {
         static_assert(false);
     }
 
-    void Visit(SExp_List& exp) override 
+    void Visit(SExp_List& exp) override
     {
         HandleExp(TranslateSListExpToRExp(exp, context, logger, factory));
     }
 
     // 'new C(...)'
-    void Visit(SExp_New& exp) override 
-    {   
+    void Visit(SExp_New& exp) override
+    {
         HandleExp(TranslateSNewExpToRExp(exp, context, logger, factory));
     }
 
-    void Visit(SExp_Box& exp) override 
+    void Visit(SExp_Box& exp) override
     {
         HandleExp(TranslateSBoxExpToRExp(exp, hintType, context, logger, factory));
     }
 
-    void Visit(SExp_Is& exp) override 
+    void Visit(SExp_Is& exp) override
     {
         HandleExp(TranslateSIsExpToRExp(exp, context, logger, factory));
     }
 
-    void Visit(SExp_As& exp) override 
+    void Visit(SExp_As& exp) override
     {
         HandleExp(TranslateSAsExpToRExp(exp, context, logger, factory));
     }
 };
+
+}
 
 ImExpPtr TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {   

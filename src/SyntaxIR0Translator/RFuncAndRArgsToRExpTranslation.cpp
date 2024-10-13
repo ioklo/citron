@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "RFuncAndRArgsToRExpBinding.h"
+#include "RFuncAndRArgsToRExpTranslation.h"
 
 #include <vector>
 #include <cassert>
@@ -19,7 +19,7 @@ using namespace std;
 namespace Citron::SyntaxIR0Translator {
 namespace {
 
-class RFuncAndRArgsToRExpBinder : public RFuncDeclVisitor
+class RFuncAndRArgsToRExpTranslator : public RFuncDeclVisitor
 {
     shared_ptr<RFuncDecl> sharedFuncDecl;
 
@@ -30,7 +30,7 @@ class RFuncAndRArgsToRExpBinder : public RFuncDeclVisitor
     RExpPtr* result;
 
 public:
-    RFuncAndRArgsToRExpBinder(const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args, RExpPtr* result)
+    RFuncAndRArgsToRExpTranslator(const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args, RExpPtr* result)
         : typeArgs(typeArgs), instance(std::move(instance)), args(std::move(args)), result(result)
     {
     }
@@ -59,7 +59,7 @@ public:
     }
 
     void Visit(RStructMemberFuncDecl& func) override 
-    {
+    {   
         auto sharedStructMemberFuncDecl = dynamic_pointer_cast<RStructMemberFuncDecl>(sharedFuncDecl);
         assert(sharedStructMemberFuncDecl);
 
@@ -74,10 +74,10 @@ public:
 
 } // namespace Citron::SyntaxIR0Translator
 
-RExpPtr BindRFuncAndRArgsToRExp(const shared_ptr<RFuncDecl>& decl, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
+RExpPtr TranslateRFuncAndRArgsToRExp(const shared_ptr<RFuncDecl>& decl, const RTypeArgumentsPtr& typeArgs, RLocPtr&& instance, vector<RArgument>&& args)
 {
     RExpPtr exp;
-    RFuncAndRArgsToRExpBinder binder(typeArgs, std::move(instance), std::move(args), &exp);
+    RFuncAndRArgsToRExpTranslator binder(typeArgs, std::move(instance), std::move(args), &exp);
     decl->Accept(binder);
     return exp;
 }

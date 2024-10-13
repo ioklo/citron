@@ -24,7 +24,7 @@
 #include "ReExpToRExpTranslation.h"
 #include "ReExpToRLocTranslation.h"
 
-#include "ImCallableAndSArgsToRExpBinding.h"
+#include "ImCallableAndSArgsToRExpTranslation.h"
 
 #include "ScopeContext.h"
 #include "NotLocationErrorLogger.h"
@@ -400,7 +400,7 @@ RExpPtr TranslateSCallExpToRExp(SExp_Call& exp, const RTypePtr& hintType, const 
     auto imCallable = TranslateSExpToImExp(*exp.callable, hintType, context);
     if (!imCallable) return nullptr;
 
-    return BindImCallableAndSArgsToRExp(*imCallable, exp.callable, exp.args, context, logger, factory); // 로깅할때 exp, exp.Callable두개가 다 필요할 수 있다
+    return TranslateImCallableAndSArgsToRExp(*imCallable, exp.callable, exp.args, context, logger, factory); // 로깅할때 exp, exp.Callable두개가 다 필요할 수 있다
 }
 
 RExpPtr TranslateSBoxExpToRExp(SExp_Box& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
@@ -466,6 +466,8 @@ RExpPtr TranslateSAsExpToRExp(SExp_As& exp, const ScopeContextPtr& context, cons
     return MakeRAsExp(rTarget->GetType(factory), rTestType, std::move(rTarget));
 }
 
+namespace {
+
 // S.Exp -> R.Exp
 class SExpToRExpTranslator : public SExpVisitor
 {
@@ -493,37 +495,37 @@ public:
             *result = nullptr;
     }
 
-    void Visit(SExp_Identifier& exp) override 
+    void Visit(SExp_Identifier& exp) override
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_String& exp) override 
+    void Visit(SExp_String& exp) override
     {
         *result = TranslateSStringExpToRStringExp(exp, context, logger, factory);
     }
 
-    void Visit(SExp_IntLiteral& exp) override 
+    void Visit(SExp_IntLiteral& exp) override
     {
         *result = TranslateSIntLiteralExpToRExp(exp);
     }
 
-    void Visit(SExp_BoolLiteral& exp) override 
+    void Visit(SExp_BoolLiteral& exp) override
     {
         *result = TranslateSBoolLiteralExpToRExp(exp);
     }
 
-    void Visit(SExp_NullLiteral& exp) override 
+    void Visit(SExp_NullLiteral& exp) override
     {
         *result = TranslateSNullLiteralExpToRExp(exp, hintType, context, logger);
     }
 
-    void Visit(SExp_BinaryOp& exp) override 
+    void Visit(SExp_BinaryOp& exp) override
     {
         *result = TranslateSBinaryOpExpToRExp(exp, context, logger, factory);
     }
 
-    void Visit(SExp_UnaryOp& exp) override 
+    void Visit(SExp_UnaryOp& exp) override
     {
         if (exp.kind == SUnaryOpKind::Deref)
             return HandleDefault(exp);
@@ -531,57 +533,59 @@ public:
         *result = TranslateSUnaryOpExpToRExpExceptDeref(exp, context, logger, factory);
     }
 
-    void Visit(SExp_Call& exp) override 
+    void Visit(SExp_Call& exp) override
     {
         *result = TranslateSCallExpToRExp(exp, hintType, context, logger, factory);
     }
 
-    void Visit(SExp_Lambda& exp) override 
+    void Visit(SExp_Lambda& exp) override
     {
         // logger->SetSyntax(syntax);
         *result = TranslateSLambdaExpToRExp(exp, logger);
     }
 
-    void Visit(SExp_Indexer& exp) override 
+    void Visit(SExp_Indexer& exp) override
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_Member& exp) override 
+    void Visit(SExp_Member& exp) override
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_IndirectMember& exp) override 
+    void Visit(SExp_IndirectMember& exp) override
     {
         static_assert(false);
     }
 
-    void Visit(SExp_List& exp) override 
+    void Visit(SExp_List& exp) override
     {
         *result = TranslateSListExpToRExp(exp, context, logger, factory);
     }
 
-    void Visit(SExp_New& exp) override 
+    void Visit(SExp_New& exp) override
     {
         *result = TranslateSNewExpToRExp(exp, context, logger, factory);
     }
 
-    void Visit(SExp_Box& exp) override 
+    void Visit(SExp_Box& exp) override
     {
         *result = TranslateSBoxExpToRExp(exp, hintType, context, logger, factory);
     }
 
-    void Visit(SExp_Is& exp) override 
+    void Visit(SExp_Is& exp) override
     {
         *result = TranslateSIsExpToRExp(exp, context, logger, factory);
     }
 
-    void Visit(SExp_As& exp) override 
+    void Visit(SExp_As& exp) override
     {
         *result = TranslateSAsExpToRExp(exp, context, logger, factory);
     }
 };
+
+} // namespace 
 
 RExpPtr TranslateSExpToRExp(SExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
 {

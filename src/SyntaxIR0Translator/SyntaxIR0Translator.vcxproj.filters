@@ -59,16 +59,16 @@
     <ClCompile Include="BinOpQueryService.cpp">
       <Filter>ExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="IrExpAndMemberNameToIrExpBinding.cpp">
+    <ClCompile Include="IrExpAndMemberNameToIrExpTranslation.cpp">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ImExpAndMemberNameToImExpBinding.cpp">
+    <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ImCallableAndSArgsToRExpBinding.cpp">
+    <ClCompile Include="ImCallableAndSArgsToRExpTranslation.cpp">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="RFuncAndRArgsToRExpBinding.cpp" />
+    <ClCompile Include="RFuncAndRArgsToRExpTranslation.cpp" />
     <ClCompile Include="FuncMatching.cpp">
       <Filter>ExpTranslation</Filter>
     </ClCompile>
@@ -133,16 +133,16 @@
     <ClInclude Include="BinOpQueryService.h">
       <Filter>ExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="IrExpAndMemberNameToIrExpBinding.h">
+    <ClInclude Include="IrExpAndMemberNameToIrExpTranslation.h">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ImExpAndMemberNameToImExpBinding.h">
+    <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ImCallableAndSArgsToRExpBinding.h">
+    <ClInclude Include="ImCallableAndSArgsToRExpTranslation.h">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="RFuncAndRArgsToRExpBinding.h" />
+    <ClInclude Include="RFuncAndRArgsToRExpTranslation.h" />
     <ClInclude Include="FuncMatching.h">
       <Filter>ExpTranslation</Filter>
     </ClInclude>
