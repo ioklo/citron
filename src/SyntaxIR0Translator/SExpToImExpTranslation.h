@@ -13,7 +13,7 @@ using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 using ImExpPtr = std::shared_ptr<class ImExp>;
 
-ImExpPtr TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context);
+ImExpPtr TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, ScopeContext& context);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

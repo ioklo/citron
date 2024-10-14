@@ -12,7 +12,7 @@ using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
-class INotLocationErrorLogger;
+class IDesignatedErrorLogger;
 
 class ReExp;
 class ReExp_ThisVar;
@@ -28,16 +28,16 @@ class ReExp_BoxDeref;
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp, ScopeContext& context, RTypeFactory& factory); // nothrow
-RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
 RLocPtr TranslateReLocalVarExpToRLoc(ReExp_LocalVar& reExp);
 RLocPtr TranslateReLambdaMemberVarExpToRLoc(ReExp_LambdaMemberVar& reExp);
-RLocPtr TranslateReStructMemberVarExpToRLoc(ReExp_StructMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReExp_EnumElemMemberVar& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RLocPtr TranslateReListIndexerExpToRLoc(ReExp_ListIndexer& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RLocPtr TranslateReLocalDerefExpToRLoc(ReExp_LocalDeref& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
-RLocPtr TranslateReBoxDerefExpToRLoc(ReExp_BoxDeref& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RLocPtr TranslateReStructMemberVarExpToRLoc(ReExp_StructMemberVar& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReExp_EnumElemMemberVar& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+RLocPtr TranslateReListIndexerExpToRLoc(ReExp_ListIndexer& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+RLocPtr TranslateReLocalDerefExpToRLoc(ReExp_LocalDeref& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+RLocPtr TranslateReBoxDerefExpToRLoc(ReExp_BoxDeref& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
 
-RLocPtr TranslateReExpToRLoc(ReExp& reExp, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationErrorLogger, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RLocPtr TranslateReExpToRLoc(ReExp& reExp, bool bWrapExpAsLoc, IDesignatedErrorLogger* notLocationErrorLogger, ScopeContext& context, Logger& logger, RTypeFactory& factory);
 
 
 } // namespace SyntaxIR0Translator

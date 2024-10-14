@@ -13,7 +13,7 @@ class IrExp;
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 
-RExpPtr TranslateIrExpToRExp(IrExp& irExp, const ScopeContextPtr& context, const LoggerPtr& logger);
+RExpPtr TranslateIrExpToRExp(IrExp& irExp, ScopeContext& context, Logger& logger);
 
 } // SyntaxIR0Translator 
 

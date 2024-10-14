@@ -15,9 +15,9 @@ namespace SyntaxIR0Translator {
 
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
-class INotLocationErrorLogger;
+class IDesignatedErrorLogger;
 
-RLocPtr TranslateSExpToRLoc(SExp& sExp, const RTypePtr& hintType, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationLogger, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RLocPtr TranslateSExpToRLoc(SExp& sExp, const RTypePtr& hintType, bool bWrapExpAsLoc, IDesignatedErrorLogger* notLocationLogger, ScopeContext& context, Logger& logger, RTypeFactory& factory);
 
 } // namespace SyntaxIR0Translator 
 

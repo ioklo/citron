@@ -498,8 +498,8 @@ class SForStmtInitializerVisitor
 {
 public:
     virtual ~SForStmtInitializerVisitor() { }
-    virtual void Visit(SForStmtInitializer_Exp& initializer) = 0;
-    virtual void Visit(SForStmtInitializer_VarDecl& initializer) = 0;
+    virtual void Visit(SForStmtInitializer_Exp& forInit) = 0;
+    virtual void Visit(SForStmtInitializer_VarDecl& forInit) = 0;
 };
 
 class SForStmtInitializer : public SSyntax

@@ -6,7 +6,7 @@
 #include <Syntax/Syntax.h>
 #include <IR0/RLoc.h>
 
-#include "NotLocationErrorLogger.h"
+#include "DesignatedErrorLogger.h"
 #include "ReExpToRLocTranslation.h"
 #include "SExpToReExpTranslation.h"
 #include "SExpToRExpTranslation.h"
@@ -20,21 +20,21 @@ class SExpToRLocTranslator : public SExpVisitor
     RTypePtr hintType;
     bool bWrapExpAsLoc;
 
-    INotLocationErrorLogger* notLocationErrorLogger;
+    IDesignatedErrorLogger* notLocationErrorLogger;
     RLocPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
 
 public:
     SExpToRLocTranslator(
         const RTypePtr& hintType,
         bool bWrapExpAsLoc,
-        INotLocationErrorLogger* notLocationErrorLogger,
+        IDesignatedErrorLogger* notLocationErrorLogger,
         RLocPtr* result,
-        const ScopeContextPtr& context,
-        const LoggerPtr& logger,
+        ScopeContext& context,
+        Logger& logger,
         RTypeFactory& factory)
         : hintType(hintType), bWrapExpAsLoc(bWrapExpAsLoc), notLocationErrorLogger(notLocationErrorLogger), result(result), context(context), logger(logger), factory(factory)
     {
@@ -44,8 +44,8 @@ public:
     {
         if (auto reExp = TranslateSExpToReExp(sExp, hintType, context, logger, factory))
         {
-            ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
-            *result = TranslateReExpToRLoc(*reExp, bWrapExpAsLoc, &notLocationErrorLogger, context, logger, factory);
+            DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            *result = TranslateReExpToRLoc(*reExp, bWrapExpAsLoc, &designatedErrorLogger, context, logger, factory);
         }
         else // invalid
         {
@@ -178,7 +178,7 @@ public:
 
 } // namespace 
 
-RLocPtr TranslateSExpToRLoc(SExp& sExp, const RTypePtr& hintType, bool bWrapExpAsLoc, INotLocationErrorLogger* notLocationLogger, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RLocPtr TranslateSExpToRLoc(SExp& sExp, const RTypePtr& hintType, bool bWrapExpAsLoc, IDesignatedErrorLogger* notLocationLogger, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     RLocPtr rLoc;
     SExpToRLocTranslator translator(hintType, bWrapExpAsLoc, notLocationLogger, &rLoc, context, logger, factory);

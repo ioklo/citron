@@ -38,7 +38,7 @@ struct ArgumentsMatch
 
 
 template<typename TFuncDecl>
-std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<RDeclWithOuterTypeArgs<TFuncDecl>>& items, const SArgumentsPtr& sArgs, const ScopeContextPtr& context);
+std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<RDeclWithOuterTypeArgs<TFuncDecl>>& items, const SArgumentsPtr& sArgs, ScopeContext& context);
 
 std::optional<ArgumentsMatch> MatchArguments(const RTypeArgumentsPtr& outerTypeArgs, const RTypeArgumentsPtr& partialTypeArgsExceptOuter, std::vector<RFuncParameter>&& funcParams, bool bVariadic, const SArgumentsPtr& sArgs);
 

@@ -33,12 +33,12 @@ class StaticParentTranslator : public RMemberVisitor
     RTypeArgumentsPtr typeArgsExceptOuter; // outer 제외
     ImExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
 
 public:
-    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
         : typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -59,9 +59,9 @@ public:
     void Visit(RMember_Class& member) override
     {
         // check access, TODO: ? 여기서 Access체크를 왜 하나? 이미 decl찾을때 access 체크를 했을텐데
-        if (!context->CanAccess(*member.decl))
+        if (!context.CanAccess(*member.decl))
         {
-            logger->Fatal_TryAccessingPrivateMember();
+            logger.Fatal_ResolveIdentifier_TryAccessingPrivateMember();
             *result = nullptr;
             return;
         }
@@ -82,14 +82,14 @@ public:
     {
         if (!member.decl->bStatic)
         {
-            logger->Fatal_CantGetInstanceMemberThroughType();
+            logger.Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType();
             *result = nullptr;
             return;
         }
 
-        if (!context->CanAccess(*member.decl))
+        if (!context.CanAccess(*member.decl))
         {
-            logger->Fatal_TryAccessingPrivateMember();
+            logger.Fatal_ResolveIdentifier_TryAccessingPrivateMember();
             *result = nullptr;
             return;
         }
@@ -104,9 +104,9 @@ public:
     void Visit(RMember_Struct& member) override
     {
         // check access, TODO: ? 여기서 Access체크를 왜 하나? 이미 decl찾을때 access 체크를 했을텐데
-        if (!context->CanAccess(*member.decl))
+        if (!context.CanAccess(*member.decl))
         {
-            logger->Fatal_TryAccessingPrivateMember();
+            logger.Fatal_ResolveIdentifier_TryAccessingPrivateMember();
             *result = nullptr;
             return;
         }
@@ -127,14 +127,14 @@ public:
     {
         if (!member.decl->bStatic)
         {
-            logger->Fatal_CantGetInstanceMemberThroughType();
+            logger.Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType();
             *result = nullptr;
             return;
         }
 
-        if (!context->CanAccess(*member.decl))
+        if (!context.CanAccess(*member.decl))
         {
-            logger->Fatal_TryAccessingPrivateMember();
+            logger.Fatal_ResolveIdentifier_TryAccessingPrivateMember();
             *result = nullptr;
             return;
         }
@@ -148,9 +148,9 @@ public:
     void Visit(RMember_Enum& member) override
     {
         // check access
-        if (!context->CanAccess(*member.decl))
+        if (!context.CanAccess(*member.decl))
         {
-            logger->Fatal_TryAccessingPrivateMember();
+            logger.Fatal_ResolveIdentifier_TryAccessingPrivateMember();
             *result = nullptr;
             return;
         }
@@ -192,8 +192,8 @@ class InstanceParentTranslator : public RMemberVisitor
     RTypeArgumentsPtr typeArgsExceptOuter;
     ImExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     
     /*TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
     {
@@ -201,7 +201,7 @@ class InstanceParentTranslator : public RMemberVisitor
     }*/
 
 public:
-    InstanceParentTranslator(ReExpPtr&& reInstExp, const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    InstanceParentTranslator(ReExpPtr&& reInstExp, const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, ScopeContext& context, Logger& logger)
         : reInstExp(std::move(reInstExp)), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -221,7 +221,7 @@ public:
     // exp.C
     void Visit(RMember_Class& member) override 
     {
-        logger->Fatal_CantGetTypeMemberThroughInstance();
+        logger.Fatal_ResolveIdentifier_CantGetTypeMemberThroughInstance();
         *result = nullptr;
     }
 
@@ -237,15 +237,15 @@ public:
         // static인지 검사
         if (member.decl->bStatic)
         {
-            logger->Fatal_CantGetStaticMemberThroughInstance();
+            logger.Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance();
             *result = nullptr;
             return;
         }
 
         // access modifier 검사?
-        if (!context->CanAccess(*member.decl))
+        if (!context.CanAccess(*member.decl))
         {
-            logger->Fatal_TryAccessingPrivateMember();
+            logger.Fatal_ResolveIdentifier_TryAccessingPrivateMember();
             *result = nullptr;
             return;
         }
@@ -256,7 +256,7 @@ public:
     // exp.S
     void Visit(RMember_Struct& member) override 
     {   
-        logger->Fatal_CantGetTypeMemberThroughInstance();
+        logger.Fatal_ResolveIdentifier_CantGetTypeMemberThroughInstance();
         *result = nullptr;
     }
 
@@ -272,15 +272,15 @@ public:
         // static인지 검사
         if (member.decl->bStatic)
         {
-            logger->Fatal_CantGetStaticMemberThroughInstance();
+            logger.Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance();
             *result = nullptr;
             return;
         }
 
         // access modifier 검사                            
-        if (!context->CanAccess(*member.decl))
+        if (!context.CanAccess(*member.decl))
         {
-            logger->Fatal_TryAccessingPrivateMember();
+            logger.Fatal_ResolveIdentifier_TryAccessingPrivateMember();
             *result = nullptr;
             return;
         }
@@ -291,14 +291,14 @@ public:
     // exp.E
     void Visit(RMember_Enum& member) override 
     {
-        logger->Fatal_CantGetTypeMemberThroughInstance();
+        logger.Fatal_ResolveIdentifier_CantGetTypeMemberThroughInstance();
         *result = nullptr;
     }
 
     // exp.First
     void Visit(RMember_EnumElem& member) override 
     {   
-        logger->Fatal_CantGetTypeMemberThroughInstance();
+        logger.Fatal_ResolveIdentifier_CantGetTypeMemberThroughInstance();
         *result = nullptr;
     }
 
@@ -328,8 +328,8 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
     RTypeArgumentsPtr typeArgsExceptOuter;
     ImExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
 
     void BindStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
@@ -352,7 +352,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
         auto member = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
         if (!member)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
@@ -362,7 +362,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
     }
 
 public:
-    ImExpAndMemberNameToImExpTranslator(const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    ImExpAndMemberNameToImExpTranslator(const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, ImExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
         : name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -374,7 +374,7 @@ public:
 
     void Visit(ImExp_GlobalFuncs& imExp) override
     {
-        logger->Fatal_FuncCantHaveMember();
+        logger.Fatal_ResolveIdentifier_FuncCantHaveMember();
         *result = nullptr;
     }
 
@@ -390,7 +390,7 @@ public:
 
     void Visit(ImExp_ClassMemberFuncs& imExp) override
     {
-        logger->Fatal_FuncCantHaveMember();
+        logger.Fatal_ResolveIdentifier_FuncCantHaveMember();
         *result = nullptr;
     }
 
@@ -401,7 +401,7 @@ public:
 
     void Visit(ImExp_StructMemberFuncs& imExp) override
     {
-        logger->Fatal_FuncCantHaveMember();
+        logger.Fatal_ResolveIdentifier_FuncCantHaveMember();
         *result = nullptr;
     }
 
@@ -413,7 +413,7 @@ public:
 
     void Visit(ImExp_EnumElem& imExp) override
     {
-        logger->Fatal_EnumElemCantHaveMember();
+        logger.Fatal_ResolveIdentifier_EnumElemCantHaveMember();
         *result = nullptr;
     }
 
@@ -470,7 +470,7 @@ public:
 
 } // namespace
 
-ImExpPtr TranslateImExpAndMemberNameToImExp(ImExp& imExp, const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+ImExpPtr TranslateImExpAndMemberNameToImExp(ImExp& imExp, const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     ImExpPtr boundImExp;
     ImExpAndMemberNameToImExpTranslator binder(name, typeArgsExceptOuter, &boundImExp, context, logger, factory);

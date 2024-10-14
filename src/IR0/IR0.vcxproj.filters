@@ -12,7 +12,7 @@
     <ClInclude Include="Public\IR0\RStmt.h">
       <Filter>Body</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RBodyDeclOuter.h">
+    <ClInclude Include="Public\IR0\RFuncDeclOuter.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RDecl.h">
@@ -131,7 +131,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="RNames.cpp">
       <Filter>Symbols\01 Identifier</Filter>
     </ClCompile>
@@ -216,6 +215,7 @@
     <ClCompile Include="RMember.cpp">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClCompile>
+    <ClCompile Include="RStmt.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Body">

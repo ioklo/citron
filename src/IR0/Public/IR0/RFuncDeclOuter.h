@@ -13,27 +13,31 @@ class RStructConstructorDecl;
 class RStructMemberFuncDecl;
 class RLambdaDecl;
 
-class RBodyDeclOuterVisitor
+class RFuncDeclOuterVisitor
 {
 public:
-    virtual ~RBodyDeclOuterVisitor() { }
+    virtual ~RFuncDeclOuterVisitor() { }
+    virtual void Visit(RModuleDecl& outer) = 0;
+    virtual void Visit(RNamespaceDecl& outer) = 0;
     virtual void Visit(RGlobalFuncDecl& outer) = 0;
+    virtual void Visit(RClassDecl& outer) = 0;
     virtual void Visit(RClassConstructorDecl& outer) = 0;
     virtual void Visit(RClassMemberFuncDecl& outer) = 0;
+    virtual void Visit(RStructDecl& outer) = 0;
     virtual void Visit(RStructConstructorDecl& outer) = 0;
     virtual void Visit(RStructMemberFuncDecl& outer) = 0;
     virtual void Visit(RLambdaDecl& outer) = 0;
 };
 
 // 이것은 weak_ptr로 선언하도록 한다
-class RBodyDeclOuter
+class RFuncDeclOuter
 {
 public:
-    virtual ~RBodyDeclOuter() { }
+    virtual ~RFuncDeclOuter() { }
     virtual RDecl* GetDecl() = 0;
-    virtual void Accept(RBodyDeclOuterVisitor& visitor) = 0;
+    virtual void Accept(RFuncDeclOuterVisitor& visitor) = 0;
 };
 
-using RBodyDeclOuterPtr = std::weak_ptr<RBodyDeclOuter>;
+using RFuncDeclOuterPtr = std::weak_ptr<RFuncDeclOuter>;
 
 }

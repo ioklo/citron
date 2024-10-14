@@ -1,4 +1,6 @@
 #pragma once
+#include "IR0Config.h"
+
 #include <variant>
 #include <vector>
 #include "RType.h"
@@ -35,13 +37,14 @@ class RStmt_StaticUnknownNullDirective;
 
 class RLambdaDecl;
 class RStructConstructorDecl;
+class RClassConstructorDecl;
 
 class RExp_String;
 using RExpPtr = std::shared_ptr<class RExp>;
 using RStmtPtr = std::shared_ptr<class RStmt>;
 using RLocPtr = std::shared_ptr<class RLoc>;
 
-class RClassConstructor;
+
 
 class RStmtVisitor
 {
@@ -83,129 +86,155 @@ public:
 
 class RStmt_Command : public RStmt
 {
+public:
     std::vector<RExp_String> commands;
 public:
+    IR0_API RStmt_Command(std::vector<RExp_String>&& commands);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this);  }
 };
 
 // 로컬 변수는 
 class RStmt_LocalVarDecl : public RStmt
 {
+public:
     RTypePtr type;
     std::string name;
     RExpPtr initExp;
 public:
+    IR0_API RStmt_LocalVarDecl();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_If : public RStmt
 {
+public:
     RExpPtr cond;
     std::vector<RStmtPtr> body;
     std::vector<RStmtPtr> elseBody;
 public:
+    IR0_API RStmt_If();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_IfNullableRefTest : public RStmt
 {
+public:
     RTypePtr refType;
     RName varName;
     RExpPtr asExp;
     std::vector<RStmtPtr> body;
     std::vector<RStmtPtr> elseBody;
 public:
+    IR0_API RStmt_IfNullableRefTest(RTypePtr&& refType, RName&& varName, RExpPtr&& asExp, std::vector<RStmtPtr>&& body, std::vector<RStmtPtr>&& elseBody);
+
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_IfNullableValueTest : public RStmt
 {
+public:
     RTypePtr type;
     RName varName;
     RExpPtr asExp;
     std::vector<RStmtPtr> body;
     std::vector<RStmtPtr> elseBody;
 public:
+    IR0_API RStmt_IfNullableValueTest();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_For : public RStmt
 {
+public:
     std::vector<RStmtPtr> initStmts;
     RExpPtr condExp;
     RExpPtr continueExp;
     std::vector<RStmtPtr> body;
 public:
+    IR0_API RStmt_For(std::vector<RStmtPtr>&& initStmts, RExpPtr&& condExp, RExpPtr&& continueExp, std::vector<RStmtPtr>&& body);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Continue : public RStmt
 {
 public:
+    IR0_API RStmt_Continue();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Break : public RStmt
 {
 public:
+    IR0_API RStmt_Break();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Return : public RStmt
 {
+public:
     RExpPtr exp;
 public:
+    IR0_API RStmt_Return(RExpPtr&& exp);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Block : public RStmt
 {
-    std::vector<RStmt> stmts;
 public:
+    std::vector<RStmtPtr> stmts;
+public:
+    IR0_API RStmt_Block(std::vector<RStmtPtr>&& stmts);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Blank : public RStmt
 {
 public:
+    IR0_API RStmt_Blank();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Exp : public RStmt
 {
+public:
     RExpPtr exp;
 public:
+    IR0_API RStmt_Exp(RExpPtr&& exp);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Task : public RStmt
 {
+public:
     std::shared_ptr<RLambdaDecl> lambdaDecl;
-    RTypeArgumentsPtr lambdaTypeArgs;
-
     std::vector<RArgument> captureArgs;
 public:
+    IR0_API RStmt_Task(std::shared_ptr<RLambdaDecl>&& lambdaDecl, std::vector<RArgument>&& captureArgs);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Await : public RStmt
 {
+public:
     std::vector<RStmtPtr> body;
 public:
+    IR0_API RStmt_Await(std::vector<RStmtPtr>&& body);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Async : public RStmt
 {
+public:
     std::shared_ptr<RLambdaDecl> lambdaDecl;
-    RTypeArgumentsPtr lambdaTypeArgs;
     std::vector<RArgument> captureArgs;
 public:
+    IR0_API RStmt_Async(std::shared_ptr<RLambdaDecl>&& lambdaDecl, std::vector<RArgument>&& captureArgs);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Foreach : public RStmt
 {
+public:
     RTypePtr enumeratorType;
     RExpPtr enumeratorExp;
     RTypePtr itemType;
@@ -213,11 +242,13 @@ class RStmt_Foreach : public RStmt
     RExpPtr nextExp;
     std::vector<RStmtPtr> body;
 public:
+    IR0_API RStmt_Foreach();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_ForeachCast : public RStmt
 {
+public:
     RTypePtr enumeratorType;
     RExpPtr enumeratorExp;
     RTypePtr itemType;
@@ -227,66 +258,83 @@ class RStmt_ForeachCast : public RStmt
     RExpPtr castExp;
     std::vector<RStmtPtr> body;
 public:
+    IR0_API RStmt_ForeachCast();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_Yield : public RStmt
 {
+public:
     RExpPtr value;
 public:
+    IR0_API RStmt_Yield();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // Constructor 내에서 상위 Constructor 호출시 사용
 class RStmt_CallClassConstructor : public RStmt
 {
-    std::shared_ptr<RClassConstructor> constructor;
+public:
+    std::shared_ptr<RClassConstructorDecl> constructor;
     std::vector<RArgument> args;
 public:
+    IR0_API RStmt_CallClassConstructor();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_CallStructConstructor : public RStmt
 {
+public:
     std::shared_ptr<RStructConstructorDecl> constructor;
     RTypeArgumentsPtr typeArgs;
     std::vector<RArgument> args;
 public:
+    IR0_API RStmt_CallStructConstructor();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_NullDirective : public RStmt
 {
+public:
     RLocPtr loc;
 public:
+    IR0_API RStmt_NullDirective();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_NotNullDirective : public RStmt
 {
+public:
     RLocPtr loc;
 public:
+    IR0_API RStmt_NotNullDirective();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_StaticNullDirective : public RStmt
 {
+public:
     RLocPtr loc;
 public:
+    IR0_API RStmt_StaticNullDirective();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_StaticNotNullDirective : public RStmt
 {
+public:
     RLocPtr loc;
 public:
+    IR0_API RStmt_StaticNotNullDirective();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_StaticUnknownNullDirective : public RStmt
 {
+public:
     RLocPtr loc;
 public:
+    IR0_API RStmt_StaticUnknownNullDirective();
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 

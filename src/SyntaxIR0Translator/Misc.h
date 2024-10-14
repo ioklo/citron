@@ -18,9 +18,9 @@ class ScopeContext;
 
 RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, ScopeContext& context, RTypeFactory& factory);
 
-RExpPtr TryCastRExp(const RExpPtr& exp, const RTypePtr& expectedType, ScopeContext& context); // nothrow
-RExpPtr CastRExp(const RExpPtr& exp, const RTypePtr& expectedType, ScopeContext& context, const LoggerPtr& logger);
-RExpPtr MakeRAsExp(const RTypePtr& targetType, const RTypePtr& testType, RExpPtr&& targetExp);
+RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, ScopeContext& context); // nothrow
+RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, ScopeContext& context, Logger& logger);
+RExpPtr MakeRExp_As(RExpPtr&& targetExp, const RTypePtr& testType, RTypeFactory& factory);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

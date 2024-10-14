@@ -7,13 +7,13 @@ namespace Citron {
 
 using RTypePtr = std::shared_ptr<class RType>;
 
-struct RNoneFuncReturn {}; // for constructor
-struct RConfirmedFuncReturn
+struct RFuncReturn_ForConstructor {}; // for constructor
+struct RFuncReturn_Set
 {
     RTypePtr type;
 };
-struct RNeedInferenceFuncReturn {};
-using RFuncReturn = std::variant<RNoneFuncReturn, RConfirmedFuncReturn, RNeedInferenceFuncReturn>;
+struct RFuncReturn_NotSet {}; // need inference
+using RFuncReturn = std::variant<RFuncReturn_ForConstructor, RFuncReturn_Set, RFuncReturn_NotSet>;
 
 }
 

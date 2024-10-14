@@ -149,7 +149,7 @@
     <ClInclude Include="Public\IR0\RDeclWIthOuterTypeArgs.h" />
     <ClInclude Include="Public\IR0\RMember.h" />
     <ClInclude Include="Public\IR0\RAccessor.h" />
-    <ClInclude Include="Public\IR0\RBodyDeclOuter.h" />
+    <ClInclude Include="Public\IR0\RFuncDeclOuter.h" />
     <ClInclude Include="Public\IR0\RClassConstructorDecl.h" />
     <ClInclude Include="Public\IR0\RClassDecl.h" />
     <ClInclude Include="Public\IR0\RClassMemberFuncDecl.h" />
@@ -213,6 +213,7 @@
     <ClCompile Include="RLambdaMemberVarDecl.cpp" />
     <ClCompile Include="RLoc.cpp" />
     <ClCompile Include="RNamespaceDecl.cpp" />
+    <ClCompile Include="RStmt.cpp" />
     <ClCompile Include="RStructConstructorDecl.cpp" />
     <ClCompile Include="REnumDecl.cpp" />
     <ClCompile Include="REnumElemDecl.cpp" />
@@ -227,7 +228,6 @@
     <ClCompile Include="RType.cpp" />
     <ClCompile Include="RTypeArguments.cpp" />
     <ClCompile Include="RTypeDeclContainerComponent.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="RTypeFactory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

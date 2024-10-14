@@ -20,7 +20,7 @@
 
 #include "ScopeContext.h"
 
-#include "NotLocationErrorLogger.h"
+#include "DesignatedErrorLogger.h"
 #include "Misc.h"
 
 namespace Citron::SyntaxIR0Translator {
@@ -32,12 +32,12 @@ class SExpToImExpTranslator : public SExpVisitor
     RTypePtr hintType;
     ImExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
 
 public:
-    SExpToImExpTranslator(const RTypePtr& hintType, ImExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    SExpToImExpTranslator(const RTypePtr& hintType, ImExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
         : hintType(hintType), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -56,7 +56,7 @@ public:
         static_assert(false);
         /*try
         {
-            auto typeArgs = MakeTypeArgs(exp.typeArgs, *context, factory);
+            auto typeArgs = MakeTypeArgs(exp.typeArgs, context, factory);
 
             var imExp = context.ResolveIdentifier(new Name.Normal(exp.Value), typeArgs);
             if (imExp == null)
@@ -166,7 +166,7 @@ public:
         RLocPtr rIndexLoc;
         if (reIndex->GetType(factory) != intType)
         {
-            logger->SetSyntax(exp.index);
+            logger.SetSyntax(exp.index);
             auto rIndexExp = TranslateReExpToRExp(*reIndex, context, logger, factory);
             if (!rIndexExp)
             {
@@ -174,7 +174,7 @@ public:
                 return;
             }
 
-            auto rCastIndex = CastRExp(rIndexExp, intType, *context, logger);
+            auto rCastIndex = CastRExp(std::move(rIndexExp), intType, context, logger);
             if (!rCastIndex)
             {
                 *result = nullptr;
@@ -185,9 +185,9 @@ public:
         }
         else
         {
-            NotLocationErrorLogger notLocationErrorLogger(logger, &Logger::Fatal_ExpressionIsNotLocation);
+            DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
-            rIndexLoc = TranslateReExpToRLoc(*reIndex, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
+            rIndexLoc = TranslateReExpToRLoc(*reIndex, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context, logger, factory);
             if (!rIndexLoc)
             {
                 *result = nullptr;
@@ -200,7 +200,7 @@ public:
 
         // 리스트 타입의 경우,
         RTypePtr itemType;
-        if (context->IsListType(reObj->GetType(factory), &itemType))
+        if (context.IsListType(reObj->GetType(factory), &itemType))
         {
             *result = MakePtr<ImExp_ListIndexer>(std::move(reObj), std::move(reIndex), std::move(itemType));
             return;
@@ -250,9 +250,9 @@ public:
             return;
         }
 
-        auto typeArgs = MakeTypeArgs(exp.memberTypeArgs, *context, factory);
+        auto typeArgs = MakeTypeArgs(exp.memberTypeArgs, context, factory);
 
-        // logger->SetSyntax(exp);
+        // logger.SetSyntax(exp);
         *result = TranslateImExpAndMemberNameToImExp(*imParent, exp.memberName, typeArgs, context, logger);
     }
 
@@ -290,7 +290,7 @@ public:
 
 }
 
-ImExpPtr TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+ImExpPtr TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {   
     ImExpPtr imExp;
     SExpToImExpTranslator translator(hintType, &imExp, context, logger, factory);

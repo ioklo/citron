@@ -18,13 +18,13 @@ namespace {
 // 기본적으로 load를 한다
 class ReExpToRExpTranslator : public ReExpVisitor
 {
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
     RExpPtr* result;
 
 public:
-    ReExpToRExpTranslator(const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory, RExpPtr* result)
+    ReExpToRExpTranslator(ScopeContext& context, Logger& logger, RTypeFactory& factory, RExpPtr* result)
         : context(context), logger(logger), factory(factory), result(result)
     {
     }
@@ -39,7 +39,7 @@ public:
 
     void Visit(ReExp_ThisVar& exp) override
     {
-        auto rLoc = TranslateReThisVarExpToRLoc(exp, *context, factory);
+        auto rLoc = TranslateReThisVarExpToRLoc(exp, context, factory);
         HandleLoc(std::move(rLoc));
     }
 
@@ -100,7 +100,7 @@ public:
 
 } // namespace 
 
-RExpPtr TranslateReExpToRExp(ReExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateReExpToRExp(ReExp& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     RExpPtr rExp;
     ReExpToRExpTranslator translator(context, logger, factory, &rExp);

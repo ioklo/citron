@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "RDecl.h"
-#include "RBodyDeclOuter.h"
+#include "RFuncDeclOuter.h"
 #include "RFuncDecl.h"
 #include "RAccessor.h"
 #include "RNames.h"
@@ -16,7 +16,7 @@ class RStructDecl;
 
 class RStructMemberFuncDecl 
     : public RFuncDecl
-    , public RBodyDeclOuter
+    , public RFuncDeclOuter
     , private RCommonFuncDeclComponent
 {
 public:
@@ -36,12 +36,12 @@ public:
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 
-    // from RBodyDeclOuter
+    // from RFuncDeclOuter
     IR0_API RDecl* GetDecl() override;
     
 public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(RBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     using RCommonFuncDeclComponent::GetReturnType;

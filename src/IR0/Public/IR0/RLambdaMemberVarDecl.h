@@ -19,6 +19,7 @@ public:
     RTypePtr type;
     RName name;
 
+    IR0_API RLambdaMemberVarDecl(std::weak_ptr<RLambdaDecl>&& lambda, const RTypePtr& type, RName name);
     IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory);
 
 public:

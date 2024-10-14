@@ -9,8 +9,6 @@
     <ClCompile Include="CommonTranslation.cpp" />
     <ClCompile Include="MemberDeclPhaseContext.cpp" />
     <ClCompile Include="BodyPhaseContext.cpp" />
-    <ClCompile Include="StmtTranslation.cpp" />
-    <ClCompile Include="ScopeContext.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
     <ClCompile Include="ImExp.cpp">
       <Filter>ExpTranslation\Structure</Filter>
@@ -21,7 +19,7 @@
     <ClCompile Include="ReExp.cpp">
       <Filter>ExpTranslation\Structure</Filter>
     </ClCompile>
-    <ClCompile Include="NotLocationErrorLogger.cpp" />
+    <ClCompile Include="DesignatedErrorLogger.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="SExpToImExpTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
@@ -72,6 +70,18 @@
     <ClCompile Include="FuncMatching.cpp">
       <Filter>ExpTranslation</Filter>
     </ClCompile>
+    <ClCompile Include="SStmtToRStmtTranslation.cpp">
+      <Filter>StmtTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SVarDeclToRStmtsTranslation.cpp">
+      <Filter>StmtTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="BodyContext.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
+    <ClCompile Include="ScopeContext.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -83,8 +93,6 @@
     <ClInclude Include="StructTranslation.h" />
     <ClInclude Include="CommonTranslation.h" />
     <ClInclude Include="BodyPhaseContext.h" />
-    <ClInclude Include="StmtTranslation.h" />
-    <ClInclude Include="ScopeContext.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
     <ClInclude Include="ImExp.h">
       <Filter>ExpTranslation\Structure</Filter>
@@ -95,7 +103,7 @@
     <ClInclude Include="ReExp.h">
       <Filter>ExpTranslation\Structure</Filter>
     </ClInclude>
-    <ClInclude Include="NotLocationErrorLogger.h" />
+    <ClInclude Include="DesignatedErrorLogger.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="SExpToImExpTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
@@ -146,6 +154,18 @@
     <ClInclude Include="FuncMatching.h">
       <Filter>ExpTranslation</Filter>
     </ClInclude>
+    <ClInclude Include="SStmtToRStmtTranslation.h">
+      <Filter>StmtTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SVarDeclToRStmtsTranslation.h">
+      <Filter>StmtTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="BodyContext.h">
+      <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="ScopeContext.h">
+      <Filter>Context</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">
@@ -168,6 +188,12 @@
     </Filter>
     <Filter Include="ExpTranslation\ImExpTranslation">
       <UniqueIdentifier>{b36f1fb1-f92b-4a42-9d35-8c5b7a81b468}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StmtTranslation">
+      <UniqueIdentifier>{1e07f995-fee8-46af-aca6-65775f5d7413}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Context">
+      <UniqueIdentifier>{71f12024-77ba-4bd3-8447-8685b9e9d2c1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

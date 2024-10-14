@@ -16,12 +16,12 @@ class SExpToReExpTranslator : public SExpVisitor
 {
     RTypePtr hintType;
     ReExpPtr* result;
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
 
 public:
-    SExpToReExpTranslator(const RTypePtr& hintType, ReExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    SExpToReExpTranslator(const RTypePtr& hintType, ReExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
         : hintType(hintType), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -146,7 +146,7 @@ public:
 
 } // namespace
 
-ReExpPtr TranslateSExpToReExp(SExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+ReExpPtr TranslateSExpToReExp(SExp& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     ReExpPtr reExp;
     SExpToReExpTranslator translator(hintType, &reExp, context, logger, factory);

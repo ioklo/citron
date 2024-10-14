@@ -29,7 +29,7 @@ RTypePtr RCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RType
 {
     assert(funcReturnAndParams);
 
-    if (auto* confirmedReturn = get_if<RConfirmedFuncReturn>(&funcReturnAndParams->funcReturn))
+    if (auto* confirmedReturn = get_if<RFuncReturn_Set>(&funcReturnAndParams->funcReturn))
         return confirmedReturn->type->Apply(typeArgs, factory);
 
     return nullptr;

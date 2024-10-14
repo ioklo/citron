@@ -13,7 +13,7 @@ namespace SyntaxIR0Translator {
 
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
-RExpPtr TranslateSExpRefToRExp(SExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger);
+RExpPtr TranslateSExpRefToRExp(SExp& exp, ScopeContext& context, Logger& logger);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

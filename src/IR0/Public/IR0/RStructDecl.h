@@ -28,6 +28,7 @@ class RInterface;
 class RStructDecl 
     : public RTypeDecl
     , public RTypeDeclOuter
+    , public RFuncDeclOuter
     , private RTypeDeclContainerComponent
     , private RFuncDeclContainerComponent<RStructMemberFuncDecl>
 {
@@ -71,12 +72,13 @@ public:
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 
-    // from RTypeDeclOuter
+    // from RTypeDeclOuter, RFuncDeclOuter
     IR0_API RDecl* GetDecl() override;
 
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }

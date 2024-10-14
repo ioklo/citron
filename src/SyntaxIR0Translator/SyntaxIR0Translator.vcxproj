@@ -36,6 +36,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BodyContext.cpp" />
     <ClCompile Include="BodyPhaseContext.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
@@ -52,7 +53,7 @@
     <ClCompile Include="EnumTranslation.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Misc.cpp" />
-    <ClCompile Include="NotLocationErrorLogger.cpp" />
+    <ClCompile Include="DesignatedErrorLogger.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -70,12 +71,14 @@
     <ClCompile Include="SExpToReExpTranslation.cpp" />
     <ClCompile Include="SExpToRExpTranslation.cpp" />
     <ClCompile Include="SExpToRLocTranslation.cpp" />
-    <ClCompile Include="StmtTranslation.cpp" />
+    <ClCompile Include="SStmtToRStmtTranslation.cpp" />
     <ClCompile Include="StructTranslation.cpp" />
+    <ClCompile Include="SVarDeclToRStmtsTranslation.cpp" />
     <ClCompile Include="SyntaxIR0Translator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BodyContext.h" />
     <ClInclude Include="BodyPhaseContext.h" />
     <ClInclude Include="FuncMatching.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
@@ -87,7 +90,7 @@
     <ClInclude Include="BinOpQueryService.h" />
     <ClInclude Include="IrExpAndMemberNameToIrExpTranslation.h" />
     <ClInclude Include="Misc.h" />
-    <ClInclude Include="NotLocationErrorLogger.h" />
+    <ClInclude Include="DesignatedErrorLogger.h" />
     <ClInclude Include="IrExp.h" />
     <ClInclude Include="IrExpToRExpTranslation.h" />
     <ClInclude Include="MemberDeclPhaseContext.h" />
@@ -105,8 +108,9 @@
     <ClInclude Include="SExpToRExpTranslation.h" />
     <ClInclude Include="SExpToRLocTranslation.h" />
     <ClInclude Include="SkeletonPhaseContext.h" />
-    <ClInclude Include="StmtTranslation.h" />
+    <ClInclude Include="SStmtToRStmtTranslation.h" />
     <ClInclude Include="StructTranslation.h" />
+    <ClInclude Include="SVarDeclToRStmtsTranslation.h" />
     <ClInclude Include="SyntaxIR0Translator.h" />
     <ClInclude Include="SyntaxIR0TranslatorConfig.h" />
     <ClInclude Include="CommonTranslation.h" />

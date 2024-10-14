@@ -15,7 +15,7 @@ RStructMemberFuncDecl::RStructMemberFuncDecl(std::weak_ptr<RStructDecl> _struct,
 
 void RStructMemberFuncDecl::InitFuncReturnAndParams(RTypePtr funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
 {
-    RCommonFuncDeclComponent::InitFuncReturnAndParams(RConfirmedFuncReturn(std::move(funcReturn)), std::move(funcParameters), bLastParameterVariadic);
+    RCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(std::move(funcReturn)), std::move(funcParameters), bLastParameterVariadic);
 }
 
 RDecl* RStructMemberFuncDecl::GetOuter()

@@ -27,7 +27,7 @@
 #include "ImCallableAndSArgsToRExpTranslation.h"
 
 #include "ScopeContext.h"
-#include "NotLocationErrorLogger.h"
+#include "DesignatedErrorLogger.h"
 #include "Misc.h"
 #include "BinOpQueryService.h"
 
@@ -38,7 +38,7 @@ namespace Citron::SyntaxIR0Translator {
 // Syntax Exp -> IR0 Exp로 바꿔주는 기본적인 코드
 // Deref를 적용하지 않는다. 따로 해주어야 한다
 
-RExpPtr TranslateSNullLiteralExpToRExp(SExp_NullLiteral& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger)
+RExpPtr TranslateSNullLiteralExpToRExp(SExp_NullLiteral& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger)
 {
     if (hintType != nullptr)
     {
@@ -53,7 +53,7 @@ RExpPtr TranslateSNullLiteralExpToRExp(SExp_NullLiteral& exp, const RTypePtr& hi
 
     // TODO: if (a == nullptr)도 반영해야 한다
     throw NotImplementedException();
-    logger->Fatal_CantMakeReference();
+    logger.Fatal_Reference_CantMakeReference();
     return nullptr;
 }
 
@@ -67,13 +67,13 @@ RExpPtr TranslateSIntLiteralExpToRExp(SExp_IntLiteral& exp)
     return MakePtr<RExp_IntLiteral>(exp.value);
 }
 
-optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const SStringExpElementPtr& elem, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const SStringExpElementPtr& elem, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     // TranslationResult<R.StringExpElement> Valid(R.StringExpElement elem) = > TranslationResult.Valid(elem);
     // TranslationResult<R.StringExpElement> Error() = > TranslationResult.Error<R.StringExpElement>();
     // var stringType = context.GetStringType();
 
-    logger->SetSyntax(elem);
+    logger.SetSyntax(elem);
 
     if (auto* expElem = dynamic_cast<SStringExpElement_Exp*>(elem.get()))
     {
@@ -103,9 +103,9 @@ optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const 
         }
         else if (reExpType == factory.MakeStringType())
         {
-            ExpressionIsNotLocationErrorLogger notLocationErrorLogger(logger);
+            DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
-            auto rLoc = TranslateReExpToRLoc(*reExp, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
+            auto rLoc = TranslateReExpToRLoc(*reExp, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context, logger, factory);
             if (!rLoc) return nullopt;
 
             return RLocStringExpElement(std::move(rLoc));
@@ -113,7 +113,7 @@ optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const 
         else
         {
             // TODO: ToString
-            logger->Fatal_ExpElementShouldBeBoolOrIntOrString();
+            logger.Fatal_StringExp_ExpElementShouldBeBoolOrIntOrString();
             return nullopt;
         }
     }
@@ -125,7 +125,7 @@ optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const 
     unreachable();
 }
 
-std::shared_ptr<RExp_String> TranslateSStringExpToRStringExp(SExp_String& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+std::shared_ptr<RExp_String> TranslateSStringExpToRStringExp(SExp_String& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     bool bFatal = false;
 
@@ -150,28 +150,28 @@ std::shared_ptr<RExp_String> TranslateSStringExpToRStringExp(SExp_String& exp, c
 }
 
 // int만 지원한다
-RExpPtr TranslateSIntUnaryAssignExpToRExp(SExp& operand, RInternalUnaryAssignOperator op, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateSIntUnaryAssignExpToRExp(SExp& operand, RInternalUnaryAssignOperator op, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     // exp를 loc으로 변환하는 일을 하면 안되지만, ref는 풀어야 한다
     // F()++; (x)
     // var& x = i; x++; (o)
     // throws NotLocationException
     
-    NotLocationErrorLogger notLocationErrorLogger(logger, &Logger::Fatal_AssignableExpressionIsAllowedOnly);
-    auto rOperand = TranslateSExpToRLoc(operand, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &notLocationErrorLogger, context, logger, factory);
+    DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_UnaryAssignOp_AssignableExpressionIsAllowedOnly);
+    auto rOperand = TranslateSExpToRLoc(operand, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedErrorLogger, context, logger, factory);
     if (!rOperand) return nullptr;
 
     // int type 검사, exact match
     if (rOperand->GetType(factory) != factory.MakeIntType())
     {
-        logger->Fatal_AssignableExpressionIsAllowedOnly();
+        logger.Fatal_UnaryAssignOp_AssignableExpressionIsAllowedOnly();
         return nullptr;
     }
 
     return MakePtr<RExp_CallInternalUnaryAssignOperator>(op, std::move(rOperand));
 }
 
-RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     assert(sExp.kind != SUnaryOpKind::Deref);
 
@@ -181,7 +181,7 @@ RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, const ScopeCon
         return TranslateSExpRefToRExp(*sExp.operand, context, logger);
     }
 
-    logger->SetSyntax(sExp.operand);
+    logger.SetSyntax(sExp.operand);
     auto rOperand = TranslateSExpToRExp(*sExp.operand, /*hintType*/ nullptr, context, logger, factory);
     if (!rOperand) return nullptr;
 
@@ -193,7 +193,7 @@ RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, const ScopeCon
         // exact match
         if (rOperand->GetType(factory) != factory.MakeBoolType())
         {   
-            logger->Fatal_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly();
+            logger.Fatal_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly();
             return nullptr;
         }
 
@@ -204,7 +204,7 @@ RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, const ScopeCon
     {
         if (rOperand->GetType(factory) != factory.MakeIntType())
         {
-            logger->Fatal_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly();
+            logger.Fatal_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly();
             return nullptr;
         }
 
@@ -228,13 +228,13 @@ RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, const ScopeCon
     }
 }
 
-RExpPtr TranslateSAssignBinaryOpExpToRExp(SExp_BinaryOp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateSAssignBinaryOpExpToRExp(SExp_BinaryOp& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
 
-    logger->SetSyntax(exp.operand0);
-    NotLocationErrorLogger notLocationErrorLogger(logger, &Logger::Fatal_LeftOperandIsNotAssignable);
-    auto rDestLoc = TranslateSExpToRLoc(*exp.operand0, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &notLocationErrorLogger, context, logger, factory);
+    logger.SetSyntax(exp.operand0);
+    DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_BinaryOp_LeftOperandIsNotAssignable);
+    auto rDestLoc = TranslateSExpToRLoc(*exp.operand0, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedErrorLogger, context, logger, factory);
     if (!rDestLoc) return nullptr;
 
     // 안되는거 체크
@@ -242,32 +242,32 @@ RExpPtr TranslateSAssignBinaryOpExpToRExp(SExp_BinaryOp& exp, const ScopeContext
     if (dynamic_cast<RLoc_LambdaMemberVar*>(pRDestLoc))
     {
         // int x = 0; var l = () { x = 3; }, TODO: 이거 가능하도록
-        logger->Fatal_LeftOperandIsNotAssignable();
+        logger.Fatal_BinaryOp_LeftOperandIsNotAssignable();
         return nullptr;
     }
     else if (dynamic_cast<RLoc_This*>(pRDestLoc))
     {
-        logger->Fatal_LeftOperandIsNotAssignable();
+        logger.Fatal_BinaryOp_LeftOperandIsNotAssignable();
         return nullptr;
     }
     else if (dynamic_cast<RLoc_Temp*>(pRDestLoc))
     {
-        logger->Fatal_LeftOperandIsNotAssignable();
+        logger.Fatal_BinaryOp_LeftOperandIsNotAssignable();
         return nullptr;
     }
 
     auto rDestLocType = rDestLoc->GetType(factory);
-    logger->SetSyntax(exp.operand1);
+    logger.SetSyntax(exp.operand1);
     auto rSrcExp = TranslateSExpToRExp(*exp.operand1, /*hintType*/ rDestLocType, context, logger, factory);
     if (!rSrcExp) return nullptr;
 
-    auto rWrappedSrcExp = CastRExp(rSrcExp, rDestLocType, *context, logger);
+    auto rWrappedSrcExp = CastRExp(std::move(rSrcExp), rDestLocType, context, logger);
     if (!rWrappedSrcExp) return nullptr;
 
     return MakePtr<RExp_Assign>(std::move(rDestLoc), std::move(rWrappedSrcExp));
 }
 
-RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     // 1. Assign 먼저 처리
     if (exp.kind == SBinaryOpKind::Assign)
@@ -284,14 +284,14 @@ RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, const ScopeContextPtr& c
     // 2. NotEqual 처리
     if (exp.kind == SBinaryOpKind::NotEqual)
     {
-        const auto& equalInfos = context->GetBinOpInfos(SBinaryOpKind::Equal);
+        const auto& equalInfos = context.GetBinOpInfos(SBinaryOpKind::Equal);
         
         for(auto& info : equalInfos)
         {
-            auto castExp0 = TryCastRExp(operand0, info.operandType0, *context);
+            auto castExp0 = TryCastRExp(RExpPtr(operand0), info.operandType0, context);
             if (!castExp0) continue;
 
-            auto castExp1 = TryCastRExp(operand1, info.operandType1, *context);
+            auto castExp1 = TryCastRExp(RExpPtr(operand1), info.operandType1, context);
             if (!castExp1) continue;
 
             // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
@@ -301,13 +301,13 @@ RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, const ScopeContextPtr& c
     }
 
     // 3. InternalOperator에서 검색            
-    auto matchedInfos = context->GetBinOpInfos(exp.kind);
+    auto matchedInfos = context.GetBinOpInfos(exp.kind);
     for(auto& info : matchedInfos)
     {
-        auto castExp0 = TryCastRExp(operand0, info.operandType0, *context);
+        auto castExp0 = TryCastRExp(RExpPtr(operand0), info.operandType0, context);
         if (!castExp0) continue;
 
-        auto castExp1 = TryCastRExp(operand1, info.operandType1, *context);
+        auto castExp1 = TryCastRExp(RExpPtr(operand1), info.operandType1, context);
         if (!castExp1) continue;
 
         // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
@@ -316,11 +316,11 @@ RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, const ScopeContextPtr& c
     }
 
     // Operator를 찾을 수 없습니다
-    logger->Fatal_OperatorNotFound();
+    logger.Fatal_BinaryOp_OperatorNotFound();
     return nullptr;
 }
 
-RExpPtr TranslateSLambdaExpToRExp(SExp_Lambda& sExp, const LoggerPtr& logger)
+RExpPtr TranslateSLambdaExpToRExp(SExp_Lambda& sExp, Logger& logger)
 {
     // TODO: 리턴 타입과 인자타입은 타입 힌트를 반영해야 한다
     //RTypePtr retType = nullptr;
@@ -334,7 +334,7 @@ RExpPtr TranslateSLambdaExpToRExp(SExp_Lambda& sExp, const LoggerPtr& logger)
     static_assert(false);
 }
 
-RExpPtr TranslateSListExpToRExp(SExp_List& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateSListExpToRExp(SExp_List& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     vector<RExpPtr> elems;
     elems.reserve(exp.elements.size());
@@ -358,26 +358,26 @@ RExpPtr TranslateSListExpToRExp(SExp_List& exp, const ScopeContextPtr& context, 
 
         if (curElemType != rElemType)
         {
-            logger->Fatal_MismatchBetweenElementTypes();
+            logger.Fatal_ListExp_MismatchBetweenElementTypes();
             return nullptr;
         }
     }
 
     if (curElemType == nullptr)
     {
-        logger->Fatal_CantInferElementTypeWithEmptyElement();
+        logger.Fatal_ListExp_CantInferElementTypeWithEmptyElement();
         return nullptr;
     }
 
     return MakePtr<RExp_List>(std::move(elems), std::move(curElemType));
 }
 
-RExpPtr TranslateSNewExpToRExp(SExp_New& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory) // throws ErrorCodeException
+RExpPtr TranslateSNewExpToRExp(SExp_New& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory) // throws ErrorCodeException
 {
-    auto rType = context->MakeType(*exp.type, factory);
+    auto rType = context.MakeType(*exp.type, factory);
     if (rType->GetCustomTypeKind() == RCustomTypeKind::Class)
     {
-        logger->Fatal_TypeIsNotClass();
+        logger.Fatal_NewExp_TypeIsNotClass();
         return nullptr;
     }
 
@@ -395,7 +395,7 @@ RExpPtr TranslateSNewExpToRExp(SExp_New& exp, const ScopeContextPtr& context, co
     //return Valid(new IR0ExpResult(new R.NewClassExp(constructor, args), new ClassType(classSymbol)));
 }
 
-RExpPtr TranslateSCallExpToRExp(SExp_Call& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateSCallExpToRExp(SExp_Call& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     auto imCallable = TranslateSExpToImExp(*exp.callable, hintType, context);
     if (!imCallable) return nullptr;
@@ -403,7 +403,7 @@ RExpPtr TranslateSCallExpToRExp(SExp_Call& exp, const RTypePtr& hintType, const 
     return TranslateImCallableAndSArgsToRExp(*imCallable, exp.callable, exp.args, context, logger, factory); // 로깅할때 exp, exp.Callable두개가 다 필요할 수 있다
 }
 
-RExpPtr TranslateSBoxExpToRExp(SExp_Box& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateSBoxExpToRExp(SExp_Box& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     auto* hintBoxPtrType = dynamic_cast<RType_BoxPtr*>(hintType.get());
     auto innerHintType = hintBoxPtrType ? hintBoxPtrType->innerType : nullptr;
@@ -415,7 +415,7 @@ RExpPtr TranslateSBoxExpToRExp(SExp_Box& exp, const RTypePtr& hintType, const Sc
     return MakePtr<RExp_Box>(std::move(rInnerExp));
 }
 
-RExpPtr TranslateSIsExpToRExp(SExp_Is& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateSIsExpToRExp(SExp_Is& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     auto target = TranslateSExpToRExp(*exp.exp, /*hintType*/ nullptr, context, logger, factory);
     if (!target) return nullptr;
@@ -423,7 +423,7 @@ RExpPtr TranslateSIsExpToRExp(SExp_Is& exp, const ScopeContextPtr& context, cons
     auto targetType = target->GetType(factory);
     auto targetTypeKind = targetType->GetCustomTypeKind();
 
-    auto testType = context->MakeType(*exp.type, factory);
+    auto testType = context.MakeType(*exp.type, factory);
     auto testTypeKind = testType->GetCustomTypeKind();
 
     // 5가지 케이스로 나뉜다
@@ -456,14 +456,14 @@ RExpPtr TranslateSIsExpToRExp(SExp_Is& exp, const ScopeContextPtr& context, cons
         throw NotImplementedException(); // 에러 처리
 }
 
-RExpPtr TranslateSAsExpToRExp(SExp_As& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateSAsExpToRExp(SExp_As& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     auto rTarget = TranslateSExpToRExp(*exp.exp, /* hintType */ nullptr, context, logger, factory);
     if (!rTarget) return nullptr;    
 
-    auto rTestType = context->MakeType(*exp.type, factory);
+    auto rTestType = context.MakeType(*exp.type, factory);
 
-    return MakeRAsExp(rTarget->GetType(factory), rTestType, std::move(rTarget));
+    return MakeRExp_As(std::move(rTarget), rTestType, factory);
 }
 
 namespace {
@@ -474,12 +474,12 @@ class SExpToRExpTranslator : public SExpVisitor
     RTypePtr hintType;
     RExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
 
 public:
-    SExpToRExpTranslator(const RTypePtr& hintType, RExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    SExpToRExpTranslator(const RTypePtr& hintType, RExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
         : hintType(hintType), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -540,7 +540,7 @@ public:
 
     void Visit(SExp_Lambda& exp) override
     {
-        // logger->SetSyntax(syntax);
+        // logger.SetSyntax(syntax);
         *result = TranslateSLambdaExpToRExp(exp, logger);
     }
 
@@ -587,7 +587,7 @@ public:
 
 } // namespace 
 
-RExpPtr TranslateSExpToRExp(SExp& exp, const RTypePtr& hintType, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+RExpPtr TranslateSExpToRExp(SExp& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     RExpPtr rExp;
     SExpToRExpTranslator translator(hintType, &rExp, context, logger, factory);

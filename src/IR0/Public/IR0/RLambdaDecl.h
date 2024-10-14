@@ -4,9 +4,9 @@
 #include <optional>
 
 #include "RDecl.h"
-#include "RBodyDeclOuter.h"
+#include "RFuncDeclOuter.h"
 #include "RTypeDecl.h"
-#include "RBodyDeclOuter.h"
+#include "RFuncDeclOuter.h"
 #include "RFuncDecl.h"
 #include "RNames.h"
 #include "RCommonFuncDeclComponent.h"
@@ -18,20 +18,20 @@ namespace Citron
 
 class RLambdaDecl 
     : public RTypeDecl
-    , public RBodyDeclOuter
+    , public RFuncDeclOuter
     , public RFuncDecl
     , private RCommonFuncDeclComponent
 {
-    RBodyDeclOuterPtr outer;
+    RFuncDeclOuterPtr outer;
     RName name;
 
     // 가지고 있어야 할 멤버 변수들, type, name, ref 여부
-    std::vector<RLambdaMemberVarDecl> memberVars;
-
-    // return은 확정이 안되었을 수 있다
-    std::optional<RFuncReturn> oReturn;
+    std::optional<std::vector<RLambdaMemberVarDecl>> memberVars;
 
 public:
+    RLambdaDecl(RFuncDeclOuterPtr&& outer, RName name);
+    void Init(std::vector<RLambdaMemberVarDecl>&& memberVars, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic, std::vector<RStmtPtr>&& body);
+
     using RCommonFuncDeclComponent::GetReturnType;
 
 public:
@@ -39,12 +39,12 @@ public:
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 
-    // from RBodyDeclOuter
+    // from RFuncDeclOuter
     IR0_API RDecl* GetDecl() override;
 
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(RBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 };
 

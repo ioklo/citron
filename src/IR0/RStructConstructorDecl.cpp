@@ -16,7 +16,7 @@ RStructConstructorDecl::RStructConstructorDecl(weak_ptr<RStructDecl> _struct, RA
 
 void RStructConstructorDecl::InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic)
 {
-    RCommonFuncDeclComponent::InitFuncReturnAndParams(RNoneFuncReturn(), std::move(parameters), bLastParameterVariadic);
+    RCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForConstructor(), std::move(parameters), bLastParameterVariadic);
 }
 
 RStructConstructorDecl::~RStructConstructorDecl() = default;

@@ -31,7 +31,7 @@ RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, ScopeContext&
 }
 
 
-RExpPtr TryCastRExp(const RExpPtr& exp, const RTypePtr& expectedType, ScopeContext& context) // nothrow
+RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, ScopeContext& context) // nothrow
 {
     static_assert(false);
 
@@ -94,17 +94,18 @@ RExpPtr TryCastRExp(const RExpPtr& exp, const RTypePtr& expectedType, ScopeConte
 
 
 // 값의 겉보기 타입을 변경한다
-RExpPtr CastRExp(const RExpPtr& exp, const RTypePtr& expectedType, ScopeContext& context, const LoggerPtr& logger)
+RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, ScopeContext& context, Logger& logger)
 {
-    auto result = TryCastRExp(exp, expectedType, context);
+    auto result = TryCastRExp(std::move(exp), expectedType, context);
     if (result != nullptr) return result;
 
-    logger->Fatal_CastFailed();
+    logger.Fatal_Cast_Failed();
     return nullptr;
 }
 
-RExpPtr MakeRAsExp(const RTypePtr& targetType, const RTypePtr& testType, RExpPtr&& targetExp)
+RExpPtr MakeRExp_As(RExpPtr&& targetExp, const RTypePtr& testType, RTypeFactory& factory)
 {
+    auto targetType = targetExp->GetType(factory);
     auto targetTypeKind = targetType->GetCustomTypeKind();
     auto testTypeKind = testType->GetCustomTypeKind();
 

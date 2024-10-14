@@ -28,12 +28,12 @@ class StaticParentTranslator : public RMemberVisitor
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr *result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
 
 public:
-    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
         : typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -46,7 +46,7 @@ public:
     // S.F
     void Visit(RMember_GlobalFuncs& member) override 
     {   
-        logger->Fatal_CantMakeReference();
+        logger.Fatal_Reference_CantMakeReference();
         *result = nullptr;
     }
 
@@ -59,7 +59,7 @@ public:
     // 에러,
     void Visit(RMember_ClassMemberFuncs& member) override 
     {
-        logger->Fatal_CantMakeReference();
+        logger.Fatal_Reference_CantMakeReference();
         *result = nullptr;
     }
 
@@ -68,14 +68,14 @@ public:
     {
         if (!member.decl->bStatic)
         {
-            logger->Fatal_CantGetInstanceMemberThroughType();
+            logger.Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType();
             *result = nullptr;
             return;
         }
 
-        if (!context->CanAccess(*member.decl))
+        if (!context.CanAccess(*member.decl))
         {
-            logger->Fatal_TryAccessingPrivateMember();
+            logger.Fatal_ResolveIdentifier_TryAccessingPrivateMember();
             *result = nullptr;
             return;
         }
@@ -92,7 +92,7 @@ public:
 
     void Visit(RMember_StructMemberFuncs& member) override 
     {
-        logger->Fatal_CantMakeReference();
+        logger.Fatal_Reference_CantMakeReference();
         *result = nullptr;
     }
 
@@ -100,14 +100,14 @@ public:
     {
         if (!member.decl->bStatic)
         {
-            logger->Fatal_CantGetInstanceMemberThroughType();
+            logger.Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType();
             *result = nullptr;
             return;
         }
 
-        if (!context->CanAccess(*member.decl))
+        if (!context.CanAccess(*member.decl))
         {
-            logger->Fatal_TryAccessingPrivateMember();
+            logger.Fatal_ResolveIdentifier_TryAccessingPrivateMember();
             *result = nullptr;
             return;
         }
@@ -126,7 +126,7 @@ public:
     // &E.First.x
     void Visit(RMember_EnumElem& member) override 
     {   
-        logger->Fatal_CantMakeReference();
+        logger.Fatal_Reference_CantMakeReference();
         *result = nullptr;
     }
 
@@ -160,13 +160,13 @@ class StaticRefTypeTranslator : public RTypeVisitor
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
 
 public:
     StaticRefTypeTranslator(const std::shared_ptr<IrExp_StaticRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, 
-        const ScopeContextPtr& context,
-        const LoggerPtr& logger)
+        ScopeContext& context,
+        Logger& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result)
         , context(context), logger(logger)
     {
@@ -215,21 +215,21 @@ public:
     // &C.f.id
     void Visit(RType_Func& type) override
     {
-        logger->Fatal_FuncInstanceCantHaveMember();
+        logger.Fatal_ResolveIdentifier_FuncInstanceCantHaveMember();
         *result = nullptr;        
     }
 
     // &C.pS.id;
     void Visit(RType_LocalPtr& type) override 
     {   
-        logger->Fatal_LocalPtrCantHaveMember();
+        logger.Fatal_ResolveIdentifier_LocalPtrCantHaveMember();
         *result = nullptr;
     }
 
     void Visit(RType_BoxPtr& type) override 
     {
         // &(C.x).a
-        logger->Fatal_CantMakeReference();
+        logger.Fatal_Reference_CantMakeReference();
         *result = nullptr;
     }
 
@@ -239,14 +239,14 @@ public:
 
         if (!memberVar)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
 
         if (typeArgsExceptOuter->GetCount() == 0)
         {
-            logger->Fatal_VarWithTypeArg();
+            logger.Fatal_ResolveIdentifier_VarWithTypeArg();
             *result = nullptr;
             return;
         }
@@ -262,14 +262,14 @@ public:
 
         if (!memberVar)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
 
         if (typeArgsExceptOuter->GetCount() != 0)
         {
-            logger->Fatal_VarWithTypeArg();
+            logger.Fatal_ResolveIdentifier_VarWithTypeArg();
             *result = nullptr;
             return;
         }
@@ -280,7 +280,7 @@ public:
     // Enum자체는 member를 가져올 수 없다
     void Visit(RType_Enum& type) override 
     {
-        logger->Fatal_NotFound();
+        logger.Fatal_ResolveIdentifier_NotFound();
         *result = nullptr;
     }
 
@@ -290,14 +290,14 @@ public:
         auto memberVar = type.GetMemberVar(name);
         if (!memberVar)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
 
         if (typeArgsExceptOuter->GetCount() != 0)
         {
-            logger->Fatal_VarWithTypeArg();
+            logger.Fatal_ResolveIdentifier_VarWithTypeArg();
             *result = nullptr;
         }
 
@@ -313,7 +313,7 @@ public:
     // &C.l.id
     void Visit(RType_Lambda& type) override 
     {   
-        logger->Fatal_LambdaInstanceCantHaveMember();
+        logger.Fatal_ResolveIdentifier_LambdaInstanceCantHaveMember();
         *result = nullptr;
     }
 };
@@ -325,11 +325,11 @@ class BoxRefTypeTranslator : public RTypeVisitor
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
 
 public: 
-    BoxRefTypeTranslator(const std::shared_ptr<IrExp_BoxRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    BoxRefTypeTranslator(const std::shared_ptr<IrExp_BoxRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, ScopeContext& context, Logger& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -368,21 +368,21 @@ public:
     void Visit(RType_Func& type) override 
     {
         // &c.f.x
-        logger->Fatal_FuncInstanceCantHaveMember();
+        logger.Fatal_ResolveIdentifier_FuncInstanceCantHaveMember();
         *result = nullptr;
     }
 
     void Visit(RType_LocalPtr& type) override 
     {
         // &c.p.x
-        logger->Fatal_LocalPtrCantHaveMember();
+        logger.Fatal_ResolveIdentifier_LocalPtrCantHaveMember();
         *result = nullptr;
     }
 
     void Visit(RType_BoxPtr& type) override 
     {
         // &c.p.x, 문법에러        
-        logger->Fatal_BoxPtrCantHaveMember();
+        logger.Fatal_ResolveIdentifier_BoxPtrCantHaveMember();
         *result = nullptr;
     }
 
@@ -392,14 +392,14 @@ public:
         auto memberVar = type.GetMemberVar(name);
         if (!memberVar)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
 
         if (typeArgsExceptOuter->GetCount() != 0)
         {
-            logger->Fatal_VarWithTypeArg();
+            logger.Fatal_ResolveIdentifier_VarWithTypeArg();
             *result = nullptr;
             return;
         }
@@ -413,14 +413,14 @@ public:
         auto memberVar = type.GetMemberVar(name);
         if (!memberVar)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
 
         if (typeArgsExceptOuter->GetCount() != 0)
         {
-            logger->Fatal_VarWithTypeArg();
+            logger.Fatal_ResolveIdentifier_VarWithTypeArg();
             *result = nullptr;
             return;
         }
@@ -431,7 +431,7 @@ public:
     void Visit(RType_Enum& type) override 
     {
         // &c.e.x
-        logger->Fatal_EnumInstanceCantHaveMember();
+        logger.Fatal_ResolveIdentifier_EnumInstanceCantHaveMember();
         *result = nullptr;
     }
 
@@ -450,7 +450,7 @@ public:
     void Visit(RType_Lambda& type) override 
     {
         // &c.l.x
-        logger->Fatal_LambdaInstanceCantHaveMember();
+        logger.Fatal_ResolveIdentifier_LambdaInstanceCantHaveMember();
         *result = nullptr;
     }
 };
@@ -462,11 +462,11 @@ class LocalRefTypeTranslator : public RTypeVisitor
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
 
 public:
-    LocalRefTypeTranslator(const std::shared_ptr<IrExp_LocalRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    LocalRefTypeTranslator(const std::shared_ptr<IrExp_LocalRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, ScopeContext& context, Logger& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -504,21 +504,21 @@ public:
     void Visit(RType_Func& type) override 
     {
         // &s.f.x
-        logger->Fatal_FuncInstanceCantHaveMember();
+        logger.Fatal_ResolveIdentifier_FuncInstanceCantHaveMember();
         *result = nullptr;
     }
 
     void Visit(RType_LocalPtr& type) override 
     {
         // &s.p.x
-        logger->Fatal_LocalPtrCantHaveMember();
+        logger.Fatal_ResolveIdentifier_LocalPtrCantHaveMember();
         *result = nullptr;
     }
 
     void Visit(RType_BoxPtr& type) override 
     {
         // &s.p.x
-        logger->Fatal_BoxPtrCantHaveMember();
+        logger.Fatal_ResolveIdentifier_BoxPtrCantHaveMember();
         *result = nullptr;
     }
 
@@ -528,14 +528,14 @@ public:
         auto memberVar = type.GetMemberVar(name);
         if (!memberVar)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
 
         if (typeArgsExceptOuter->GetCount() != 0)
         {
-            logger->Fatal_VarWithTypeArg();
+            logger.Fatal_ResolveIdentifier_VarWithTypeArg();
             *result = nullptr;
             return;
         }
@@ -549,14 +549,14 @@ public:
         auto memberVar = type.GetMemberVar(name);
         if (!memberVar)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
 
         if (typeArgsExceptOuter->GetCount() != 0)
         {
-            logger->Fatal_VarWithTypeArg();
+            logger.Fatal_ResolveIdentifier_VarWithTypeArg();
             *result = nullptr;
             return;
         }
@@ -567,7 +567,7 @@ public:
     void Visit(RType_Enum& type) override 
     {
         // &s.e.x
-        logger->Fatal_EnumInstanceCantHaveMember();
+        logger.Fatal_ResolveIdentifier_EnumInstanceCantHaveMember();
         *result = nullptr;
     }
 
@@ -577,14 +577,14 @@ public:
         auto memberVar = type.GetMemberVar(name);
         if (!memberVar)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
 
         if (typeArgsExceptOuter->GetCount() != 0)
         {
-            logger->Fatal_VarWithTypeArg();
+            logger.Fatal_ResolveIdentifier_VarWithTypeArg();
             *result = nullptr;
         }
 
@@ -600,7 +600,7 @@ public:
     void Visit(RType_Lambda& type) override 
     {
         // &s.l.x
-        logger->Fatal_LambdaInstanceCantHaveMember();
+        logger.Fatal_ResolveIdentifier_LambdaInstanceCantHaveMember();
         *result = nullptr;
     }
 };
@@ -613,11 +613,11 @@ class BoxValueTypeTranslator : public RTypeVisitor
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
 
 public:
-    BoxValueTypeTranslator(const std::shared_ptr<IrExp_DerefedBoxValue>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger)
+    BoxValueTypeTranslator(const std::shared_ptr<IrExp_DerefedBoxValue>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, ScopeContext& context, Logger& logger)
         : parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger)
     {
     }
@@ -664,7 +664,7 @@ public:
 
     void Visit(RType_BoxPtr& type) override 
     {
-        logger->Fatal_BoxPtrCantHaveMember();
+        logger.Fatal_ResolveIdentifier_BoxPtrCantHaveMember();
         *result = nullptr;
     }
 
@@ -680,14 +680,14 @@ public:
         auto memberVar = type.GetMemberVar(name);
         if (!memberVar)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
 
         if (typeArgsExceptOuter->GetCount() != 0)
         {
-            logger->Fatal_VarWithTypeArg();
+            logger.Fatal_ResolveIdentifier_VarWithTypeArg();
             *result = nullptr;
             return;
         }
@@ -723,7 +723,7 @@ public:
     void Visit(RType_Lambda& type) override 
     {
         // doesn't have member variable
-        logger->Fatal_LambdaInstanceCantHaveMember();
+        logger.Fatal_ResolveIdentifier_LambdaInstanceCantHaveMember();
         *result = nullptr;
     }
 };
@@ -734,12 +734,12 @@ class ThisTypeTranslator : public RTypeVisitor
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
 
 public:
-    ThisTypeTranslator(const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    ThisTypeTranslator(const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
         : name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -783,13 +783,13 @@ public:
 
     void Visit(RType_LocalPtr& type) override 
     {
-        logger->Fatal_LocalPtrCantHaveMember();
+        logger.Fatal_ResolveIdentifier_LocalPtrCantHaveMember();
         *result = nullptr;
     }
 
     void Visit(RType_BoxPtr& type) override 
     {
-        logger->Fatal_BoxPtrCantHaveMember();
+        logger.Fatal_ResolveIdentifier_BoxPtrCantHaveMember();
         *result = nullptr;
     }
 
@@ -799,26 +799,26 @@ public:
         auto memberVar = type.GetMemberVar(name);
         if (!memberVar)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
 
         if (typeArgsExceptOuter->GetCount() != 0)
         {
-            logger->Fatal_VarWithTypeArg();
+            logger.Fatal_ResolveIdentifier_VarWithTypeArg();
             *result = nullptr;
             return;
         }
         
-        *result = MakePtr<IrExp_BoxRef_ClassMember>(context->MakeThisLoc(factory), memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_ClassMember>(context.MakeThisLoc(factory), memberVar->decl, memberVar->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 
     {
         // &this.x
         // TODO: [10] box함수인 경우 에러 메시지를 다르게 해야 한다
-        logger->Fatal_LocalPtrCantHaveMember();
+        logger.Fatal_ResolveIdentifier_LocalPtrCantHaveMember();
         *result = nullptr;
     }
 
@@ -854,12 +854,12 @@ class IrExpAndMemberNameToIrExpTranslator : public IrExpVisitor
     RTypeArgumentsPtr typeArgsExceptOuter;
     IrExpPtr* result;
 
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
 
 public:
-    IrExpAndMemberNameToIrExpTranslator(const IrExpPtr& irThis, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    IrExpAndMemberNameToIrExpTranslator(const IrExpPtr& irThis, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
         : irThis(irThis), name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -869,7 +869,7 @@ public:
         auto member = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
         if (!member)
         {
-            logger->Fatal_NotFound();
+            logger.Fatal_ResolveIdentifier_NotFound();
             *result = nullptr;
             return;
         }
@@ -960,14 +960,14 @@ public:
     {
         // exp.id
         // 함수 호출 인자 제외 temp 참조 불가
-        logger->Fatal_CantReferenceTempValue();
+        logger.Fatal_Reference_CantReferenceTempValue();
         *result = nullptr;
     }
 };
 
 } // namespace 
 
-IrExpPtr TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+IrExpPtr TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     IrExpPtr irBoundExp;
     IrExpAndMemberNameToIrExpTranslator binder(irExp, name, typeArgsExceptOuter, &irBoundExp, context, logger, factory);

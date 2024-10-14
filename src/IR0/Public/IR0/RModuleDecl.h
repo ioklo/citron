@@ -16,6 +16,7 @@ class RModuleDecl
     : public RDecl
     , public RTopLevelDeclOuter
     , public RTypeDeclOuter
+    , public RFuncDeclOuter
     , private RNamespaceDeclContainerComponent
     , private RTypeDeclContainerComponent
     , private RFuncDeclContainerComponent<RGlobalFuncDecl>
@@ -39,13 +40,14 @@ public:
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
-    // from RTypeDeclOuter, RTopLevelDeclOuter
+    // from RTypeDeclOuter, RTopLevelDeclOuter, public RFuncDeclOuter
     IR0_API RDecl* GetDecl() override;
 
 public:
     void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTopLevelDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }

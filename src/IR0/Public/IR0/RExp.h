@@ -650,8 +650,10 @@ public:
 class RExp_CallLambda : public RExp
 {
 public:
+    // TODO: RType_Lambda에 있는 정보들, callable->GetType()하면 얻을수 있는 것들이다. 삭제해야 하지 않을까
     std::shared_ptr<RLambdaDecl> lambdaDecl;
     RTypeArgumentsPtr typeArgs;
+
     RLocPtr callable;
     std::vector<RArgument> args;
 

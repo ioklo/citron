@@ -12,7 +12,7 @@
 #include "SExpRefToRExpTranslation.h"
 #include "IrExpAndMemberNameToIrExpTranslation.h"
 
-#include "NotLocationErrorLogger.h"
+#include "DesignatedErrorLogger.h"
 #include "Misc.h"
 
 
@@ -25,12 +25,12 @@ namespace {
 struct SExpRefToIrExpTranslator : public SExpVisitor
 {
     IrExpPtr* result;
-    ScopeContextPtr context;
-    LoggerPtr logger;
+    ScopeContext& context;
+    Logger& logger;
     RTypeFactory& factory;
 
 public:
-    SExpRefToIrExpTranslator(IrExpPtr* result, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+    SExpRefToIrExpTranslator(IrExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
         : result(result), context(context), logger(logger), factory(factory)
     {
     }
@@ -116,9 +116,9 @@ public:
         }
         else if (exp.kind == SUnaryOpKind::Deref) // *pS
         {
-            NotLocationErrorLogger notLocationErrorLogger(logger, &Logger::Fatal_ExpressionIsNotLocation);
+            DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
-            auto rOperandLoc = TranslateSExpToRLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &notLocationErrorLogger, context, logger, factory);
+            auto rOperandLoc = TranslateSExpToRLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context, logger, factory);
             if (!rOperandLoc)
             {
                 *result = nullptr;
@@ -160,9 +160,9 @@ public:
             return;
         }
 
-        auto typeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, *context, factory);
+        auto typeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, context, factory);
 
-        logger->SetSyntax(exp.parent);
+        logger.SetSyntax(exp.parent);
         *result = TranslateIrExpAndMemberNameToIrExp(parent, RName_Normal(exp.memberName), std::move(typeArgsExceptOuter), context, logger, factory);
     }
 
@@ -199,7 +199,7 @@ public:
 
 } // namespace 
 
-IrExpPtr TranslateSExpRefToIrExp(SExp& exp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory)
+IrExpPtr TranslateSExpRefToIrExp(SExp& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
 {
     IrExpPtr irExp;
     SExpRefToIrExpTranslator translator(&irExp, context, logger, factory);

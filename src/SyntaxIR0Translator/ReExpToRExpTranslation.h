@@ -15,7 +15,7 @@ class ReExp;
 
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
-RExpPtr TranslateReExpToRExp(ReExp& reExp, const ScopeContextPtr& context, const LoggerPtr& logger, RTypeFactory& factory);
+RExpPtr TranslateReExpToRExp(ReExp& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
 
 } // namespace Citron
 } // namespace SyntaxIR0Translator

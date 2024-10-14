@@ -12,7 +12,7 @@ namespace SyntaxIR0Translator {
 using ReExpPtr = std::shared_ptr<class ReExp>;
 class ImExp;
 
-ReExpPtr TranslateImExpToReExp(ImExp& imExp, const ScopeContextPtr& context, const LoggerPtr& logger);
+ReExpPtr TranslateImExpToReExp(ImExp& imExp, ScopeContext& context, Logger& logger);
 
 } // namespace SyntaxIR0Translator
 
