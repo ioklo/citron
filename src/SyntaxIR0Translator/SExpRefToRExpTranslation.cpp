@@ -8,12 +8,12 @@
 
 namespace Citron::SyntaxIR0Translator {
 
-RExpPtr TranslateSExpRefToRExp(SExp& exp, ScopeContext& context, Logger& logger)
+RExpPtr TranslateSExpRefToRExp(SExp& exp, TranslationContext& context)
 {
     auto irExp = TranslateSExpRefToIrExp(exp, context);
     if (!irExp) return nullptr;
 
-    return TranslateIrExpToRExp(*irExp, context, logger);
+    return TranslateIrExpToRExp(*irExp, context);
 }
 
 }

@@ -10,10 +10,9 @@ using LoggerPtr = std::shared_ptr<class Logger>;
 namespace SyntaxIR0Translator {
 
 class IrExp;
-using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+class TranslationContext;
 
-
-RExpPtr TranslateIrExpToRExp(IrExp& irExp, ScopeContext& context, Logger& logger);
+RExpPtr TranslateIrExpToRExp(IrExp& irExp, TranslationContext& context);
 
 } // SyntaxIR0Translator 
 

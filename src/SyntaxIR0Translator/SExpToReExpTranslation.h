@@ -11,10 +11,10 @@ using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
-using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+class TranslationContext;
 using ReExpPtr = std::shared_ptr<class ReExp>;
 
-ReExpPtr TranslateSExpToReExp(SExp& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+ReExpPtr TranslateSExpToReExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

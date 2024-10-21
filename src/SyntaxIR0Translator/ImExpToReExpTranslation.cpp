@@ -8,7 +8,7 @@
 
 #include "ImExp.h"
 #include "ReExp.h"
-#include "ScopeContext.h"
+#include "TranslationContext.h"
 
 using namespace std;
 
@@ -17,19 +17,18 @@ namespace Citron::SyntaxIR0Translator {
 namespace {
 
 struct ImExpToReExpTranslator : public ImExpVisitor
-{
-    ScopeContext& context;
-    Logger& logger;
+{   
     ReExpPtr* result;
+    TranslationContext& context;
 
-    ImExpToReExpTranslator(ScopeContext& context, Logger& logger, ReExpPtr* result)
-        : result(result), context(context), logger(logger)
+    ImExpToReExpTranslator(ReExpPtr* result, TranslationContext& context)
+        : result(result), context(context)
     {
     }
 
     void Visit(ImExp_Namespace& imExp) override
     {
-        logger.Fatal_ResolveIdentifier_CantUseNamespaceAsExpression();
+        context.logger->Fatal_ResolveIdentifier_CantUseNamespaceAsExpression();
     }
 
     // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
@@ -40,12 +39,12 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Visit(ImExp_TypeVar& imExp) override
     {
-        logger.Fatal_ResolveIdentifier_CantUseTypeAsExpression();
+        context.logger->Fatal_ResolveIdentifier_CantUseTypeAsExpression();
     }
 
     void Visit(ImExp_Class& imExp) override
     {
-        logger.Fatal_ResolveIdentifier_CantUseTypeAsExpression();
+        context.logger->Fatal_ResolveIdentifier_CantUseTypeAsExpression();
     }
 
     void Visit(ImExp_ClassMemberFuncs& imExp) override
@@ -56,7 +55,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Visit(ImExp_Struct& imExp) override
     {
-        logger.Fatal_ResolveIdentifier_CantUseTypeAsExpression();
+        context.logger->Fatal_ResolveIdentifier_CantUseTypeAsExpression();
     }
 
     void Visit(ImExp_StructMemberFuncs& imExp) override
@@ -67,7 +66,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Visit(ImExp_Enum& imExp) override
     {
-        logger.Fatal_ResolveIdentifier_CantUseTypeAsExpression();
+        context.logger->Fatal_ResolveIdentifier_CantUseTypeAsExpression();
     }
 
     void Visit(ImExp_EnumElem& imExp) override
@@ -128,10 +127,10 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 }
 
 // outermost로 변경
-ReExpPtr TranslateImExpToReExp(ImExp& imExp, ScopeContext& context, Logger& logger)
+ReExpPtr TranslateImExpToReExp(ImExp& imExp, TranslationContext& context)
 {
     ReExpPtr result;
-    ImExpToReExpTranslator translator(context, logger, &result);
+    ImExpToReExpTranslator translator(&result, context);
     imExp.Accept(translator);
 
     return result;

@@ -3,6 +3,7 @@
 #include <memory>
 #include "RIdentifier.h"
 #include "RNames.h"
+#include "RAccessor.h"
 
 namespace Citron
 {
@@ -58,6 +59,7 @@ class RDecl
 {
 public:
     virtual ~RDecl() { }
+    virtual RAccessor GetAccessor() = 0;
     virtual RIdentifier GetIdentifier() = 0;
     virtual RDecl* GetOuter() = 0;
 
@@ -67,8 +69,12 @@ public:
     // 함수는 모든 typeArgs를 나열하지 않아도 type inference로 채울 수 있기 때문에,
     // explicitTypeParamsExceptOuterCount보다 더 많은 typeParams을 갖고 있어도 결과에 반영된다
     virtual RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
-    virtual std::string GetModuleName(); // once overridden by RModuleDecl
+    virtual std::string GetModuleName(); // once overridden by RModuleDecl    
     virtual void Accept(RDeclVisitor& visitor) = 0;
+
+public:
+    bool IsDescendantOf(RDecl* container);
+    bool CanAccess(RDecl* target);
 
 private:
     // non virtual

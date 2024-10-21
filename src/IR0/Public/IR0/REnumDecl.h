@@ -32,6 +32,7 @@ public:
     IR0_API void AddElem(std::shared_ptr<REnumElemDecl> elem);
     
 public:
+    RAccessor GetAccessor() override { return accessor; }
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

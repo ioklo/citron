@@ -7,7 +7,7 @@
 #include <IR0/RExp.h>
 
 #include "IrExp.h"
-#include "ScopeContext.h"
+#include "TranslationContext.h"
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -46,47 +46,46 @@ struct IrBoxRefExpToRExpTranslator : public IrBoxRefExpVisitor
 
 struct IrExpToRExpTranslator : public IrExpVisitor
 {
-    ScopeContext& context;
-    Logger& logger;
+    TranslationContext& context;
     RExpPtr* result;
 
-    IrExpToRExpTranslator(ScopeContext& context, Logger& logger, RExpPtr* result)
-        : context(context), logger(logger), result(result) { }
+    IrExpToRExpTranslator(RExpPtr* result, TranslationContext& context)
+        : result(result), context(context) { }
 
     // &NS
     void Visit(IrExp_Namespace& irExp) override
     {
-        logger.Fatal_Reference_CantMakeReference();
+        context.logger->Fatal_Reference_CantMakeReference();
     }
 
     // &T
     void Visit(IrExp_TypeVar& irExp) override
     {
-        logger.Fatal_Reference_CantMakeReference();
+        context.logger->Fatal_Reference_CantMakeReference();
     }
 
     // &C
     void Visit(IrExp_Class& irExp) override
     {
-        logger.Fatal_Reference_CantMakeReference();
+        context.logger->Fatal_Reference_CantMakeReference();
     }
 
     // &S
     void Visit(IrExp_Struct& irExp) override
     {
-        logger.Fatal_Reference_CantMakeReference();
+        context.logger->Fatal_Reference_CantMakeReference();
     }
 
     // &E
     void Visit(IrExp_Enum& irExp) override
     {
-        logger.Fatal_Reference_CantMakeReference();
+        context.logger->Fatal_Reference_CantMakeReference();
     }
 
     // &this, this는 특수 키워드이고, local storage에 속하지 않는다. 에러를 내도록 한다
     void Visit(IrExp_ThisVar& irExp) override
     {   
-        logger.Fatal_Reference_CantReferenceThis();
+        context.logger->Fatal_Reference_CantReferenceThis();
     }
 
     // &C.x
@@ -112,23 +111,23 @@ struct IrExpToRExpTranslator : public IrExpVisitor
     // &(*pS)
     void Visit(IrExp_DerefedBoxValue& irExp) override
     {
-        logger.Fatal_Reference_UselessDereferenceReferencedValue();
+        context.logger->Fatal_Reference_UselessDereferenceReferencedValue();
     }
 
     // &G()
     void Visit(IrExp_LocalValue& irExp) override
     {
-        logger.Fatal_Reference_CantReferenceTempValue();
+        context.logger->Fatal_Reference_CantReferenceTempValue();
     }
 };
 
 
 } // namespace 
 
-RExpPtr TranslateIrExpToRExp(IrExp& irExp, ScopeContext& context, Logger& logger)
+RExpPtr TranslateIrExpToRExp(IrExp& irExp, TranslationContext& context)
 {
     RExpPtr result;
-    IrExpToRExpTranslator translator(context, logger, &result);
+    IrExpToRExpTranslator translator(&result, context);
     irExp.Accept(translator);
     return result;
 }

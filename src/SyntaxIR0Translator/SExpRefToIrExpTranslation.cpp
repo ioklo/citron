@@ -12,9 +12,10 @@
 #include "SExpRefToRExpTranslation.h"
 #include "IrExpAndMemberNameToIrExpTranslation.h"
 
+#include "TranslationContext.h"
+
 #include "DesignatedErrorLogger.h"
 #include "Misc.h"
-
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -25,19 +26,17 @@ namespace {
 struct SExpRefToIrExpTranslator : public SExpVisitor
 {
     IrExpPtr* result;
-    ScopeContext& context;
-    Logger& logger;
-    RTypeFactory& factory;
+    TranslationContext& context;
 
 public:
-    SExpRefToIrExpTranslator(IrExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
-        : result(result), context(context), logger(logger), factory(factory)
+    SExpRefToIrExpTranslator(IrExpPtr* result, TranslationContext& context)
+        : result(result), context(context)
     {
     }
 
     void HandleValue(SExp& exp)
     {
-        auto rExp = TranslateSExpToRExp(exp, /*hintType*/ nullptr, context, logger, factory);
+        auto rExp = TranslateSExpToRExp(exp, /*hintType*/ nullptr, context);
         if (!rExp)
         {
             *result = nullptr;
@@ -104,7 +103,7 @@ public:
     {
         if (exp.kind == SUnaryOpKind::Ref) // & &는 불가능
         {
-            auto rExp = TranslateSExpRefToRExp(*exp.operand, context, logger);
+            auto rExp = TranslateSExpRefToRExp(*exp.operand, context);
             if (!rExp)
             {
                 *result = nullptr;
@@ -116,9 +115,9 @@ public:
         }
         else if (exp.kind == SUnaryOpKind::Deref) // *pS
         {
-            DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
-            auto rOperandLoc = TranslateSExpToRLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context, logger, factory);
+            auto rOperandLoc = TranslateSExpToRLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
             if (!rOperandLoc)
             {
                 *result = nullptr;
@@ -160,10 +159,10 @@ public:
             return;
         }
 
-        auto typeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, context, factory);
+        auto typeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, context);
 
-        logger.SetSyntax(exp.parent);
-        *result = TranslateIrExpAndMemberNameToIrExp(parent, RName_Normal(exp.memberName), std::move(typeArgsExceptOuter), context, logger, factory);
+        context.logger->SetSyntax(exp.parent);
+        *result = TranslateIrExpAndMemberNameToIrExp(parent, RName_Normal(exp.memberName), std::move(typeArgsExceptOuter), context);
     }
 
     void Visit(SExp_IndirectMember& exp) override
@@ -199,10 +198,10 @@ public:
 
 } // namespace 
 
-IrExpPtr TranslateSExpRefToIrExp(SExp& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
+IrExpPtr TranslateSExpRefToIrExp(SExp& exp, TranslationContext& context)
 {
     IrExpPtr irExp;
-    SExpRefToIrExpTranslator translator(&irExp, context, logger, factory);
+    SExpRefToIrExpTranslator translator(&irExp, context);
     exp.Accept(translator);
 
     return irExp;

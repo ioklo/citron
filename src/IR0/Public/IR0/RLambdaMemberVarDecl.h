@@ -23,6 +23,7 @@ public:
     IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory);
 
 public:
+    RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 

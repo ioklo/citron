@@ -11,6 +11,8 @@
 #include "SExpToReExpTranslation.h"
 #include "SExpToRExpTranslation.h"
 
+#include "TranslationContext.h"
+
 namespace Citron::SyntaxIR0Translator {
 
 namespace {
@@ -23,9 +25,7 @@ class SExpToRLocTranslator : public SExpVisitor
     IDesignatedErrorLogger* notLocationErrorLogger;
     RLocPtr* result;
 
-    ScopeContext& context;
-    Logger& logger;
-    RTypeFactory& factory;
+    TranslationContext& context;
 
 public:
     SExpToRLocTranslator(
@@ -33,19 +33,17 @@ public:
         bool bWrapExpAsLoc,
         IDesignatedErrorLogger* notLocationErrorLogger,
         RLocPtr* result,
-        ScopeContext& context,
-        Logger& logger,
-        RTypeFactory& factory)
-        : hintType(hintType), bWrapExpAsLoc(bWrapExpAsLoc), notLocationErrorLogger(notLocationErrorLogger), result(result), context(context), logger(logger), factory(factory)
+        TranslationContext& context)
+        : hintType(hintType), bWrapExpAsLoc(bWrapExpAsLoc), notLocationErrorLogger(notLocationErrorLogger), result(result), context(context)
     {
     }
 
     void HandleDefault(SExp& sExp)
     {
-        if (auto reExp = TranslateSExpToReExp(sExp, hintType, context, logger, factory))
+        if (auto reExp = TranslateSExpToReExp(sExp, hintType, context))
         {
-            DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
-            *result = TranslateReExpToRLoc(*reExp, bWrapExpAsLoc, &designatedErrorLogger, context, logger, factory);
+            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            *result = TranslateReExpToRLoc(*reExp, bWrapExpAsLoc, &designatedErrorLogger, context);
         }
         else // invalid
         {
@@ -78,7 +76,7 @@ public:
 
     void Visit(SExp_String& exp) override
     {
-        auto rExp = TranslateSStringExpToRStringExp(exp, context, logger, factory);
+        auto rExp = TranslateSStringExpToRStringExp(exp, context);
         HandleExp(std::move(rExp));
     }
 
@@ -96,13 +94,13 @@ public:
 
     void Visit(SExp_NullLiteral& exp) override
     {
-        auto rExp = TranslateSNullLiteralExpToRExp(exp, hintType, context, logger);
+        auto rExp = TranslateSNullLiteralExpToRExp(exp, hintType, context);
         HandleExp(std::move(rExp));
     }
 
     void Visit(SExp_BinaryOp& exp) override
     {
-        RExpPtr rExp = TranslateSBinaryOpExpToRExp(exp, context, logger, factory);
+        RExpPtr rExp = TranslateSBinaryOpExpToRExp(exp, context);
         HandleExp(std::move(rExp));
     }
 
@@ -115,20 +113,20 @@ public:
         }
         else
         {
-            auto rExp = TranslateSUnaryOpExpToRExpExceptDeref(exp, context, logger, factory);
+            auto rExp = TranslateSUnaryOpExpToRExpExceptDeref(exp, context);
             HandleExp(std::move(rExp));
         }
     }
 
     void Visit(SExp_Call& exp) override
     {
-        RExpPtr rExp = TranslateSCallExpToRExp(exp, hintType, context, logger, factory);
+        RExpPtr rExp = TranslateSCallExpToRExp(exp, hintType, context);
         HandleExp(std::move(rExp));
     }
 
     void Visit(SExp_Lambda& exp) override
     {
-        auto rExp = TranslateSLambdaExpToRExp(exp, logger);
+        auto rExp = TranslateSLambdaExpToRExp(exp, context);
         HandleExp(std::move(rExp));
     }
 
@@ -147,41 +145,41 @@ public:
 
     void Visit(SExp_List& exp) override
     {
-        auto rExp = TranslateSListExpToRExp(exp, context, logger, factory);
+        auto rExp = TranslateSListExpToRExp(exp, context);
         HandleExp(std::move(rExp));
     }
 
     void Visit(SExp_New& exp) override
     {
-        auto rExp = TranslateSNewExpToRExp(exp, context, logger, factory);
+        auto rExp = TranslateSNewExpToRExp(exp, context);
         HandleExp(std::move(rExp));
     }
 
     void Visit(SExp_Box& exp) override
     {
-        auto rExp = TranslateSBoxExpToRExp(exp, hintType, context, logger, factory);
+        auto rExp = TranslateSBoxExpToRExp(exp, hintType, context);
         HandleExp(std::move(rExp));
     }
 
     void Visit(SExp_Is& exp) override
     {
-        auto rExp = TranslateSIsExpToRExp(exp, context, logger, factory);
+        auto rExp = TranslateSIsExpToRExp(exp, context);
         HandleExp(std::move(rExp));
     }
 
     void Visit(SExp_As& exp) override
     {
-        auto rExp = TranslateSAsExpToRExp(exp, context, logger, factory);
+        auto rExp = TranslateSAsExpToRExp(exp, context);
         HandleExp(std::move(rExp));
     }
 };
 
 } // namespace 
 
-RLocPtr TranslateSExpToRLoc(SExp& sExp, const RTypePtr& hintType, bool bWrapExpAsLoc, IDesignatedErrorLogger* notLocationLogger, ScopeContext& context, Logger& logger, RTypeFactory& factory)
+RLocPtr TranslateSExpToRLoc(SExp& sExp, const RTypePtr& hintType, bool bWrapExpAsLoc, IDesignatedErrorLogger* notLocationLogger, TranslationContext& context)
 {
     RLocPtr rLoc;
-    SExpToRLocTranslator translator(hintType, bWrapExpAsLoc, notLocationLogger, &rLoc, context, logger, factory);
+    SExpToRLocTranslator translator(hintType, bWrapExpAsLoc, notLocationLogger, &rLoc, context);
     sExp.Accept(translator);
 
     return rLoc;

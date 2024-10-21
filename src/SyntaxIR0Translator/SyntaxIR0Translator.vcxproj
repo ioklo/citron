@@ -40,6 +40,7 @@
     <ClCompile Include="BodyPhaseContext.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
+    <ClCompile Include="GlobalContext.cpp" />
     <ClCompile Include="ImCallableAndSArgsToRExpTranslation.cpp" />
     <ClCompile Include="ImExp.cpp" />
     <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp" />
@@ -54,6 +55,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="DesignatedErrorLogger.cpp" />
+    <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -76,12 +78,14 @@
     <ClCompile Include="SVarDeclToRStmtsTranslation.cpp" />
     <ClCompile Include="SyntaxIR0Translator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
+    <ClCompile Include="TranslationContext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BodyContext.h" />
     <ClInclude Include="BodyPhaseContext.h" />
     <ClInclude Include="FuncMatching.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
+    <ClInclude Include="GlobalContext.h" />
     <ClInclude Include="ImCallableAndSArgsToRExpTranslation.h" />
     <ClInclude Include="ImExp.h" />
     <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h" />
@@ -95,6 +99,7 @@
     <ClInclude Include="IrExpToRExpTranslation.h" />
     <ClInclude Include="MemberDeclPhaseContext.h" />
     <ClInclude Include="EnumTranslation.h" />
+    <ClInclude Include="ModuleDecls.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ReExp.h" />
     <ClInclude Include="ReExpToRExpTranslation.h" />
@@ -114,6 +119,7 @@
     <ClInclude Include="SyntaxIR0Translator.h" />
     <ClInclude Include="SyntaxIR0TranslatorConfig.h" />
     <ClInclude Include="CommonTranslation.h" />
+    <ClInclude Include="TranslationContext.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

@@ -82,6 +82,13 @@
     <ClCompile Include="ScopeContext.cpp">
       <Filter>Context</Filter>
     </ClCompile>
+    <ClCompile Include="GlobalContext.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
+    <ClCompile Include="TranslationContext.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleDecls.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -166,6 +173,13 @@
     <ClInclude Include="ScopeContext.h">
       <Filter>Context</Filter>
     </ClInclude>
+    <ClInclude Include="GlobalContext.h">
+      <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="TranslationContext.h">
+      <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleDecls.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

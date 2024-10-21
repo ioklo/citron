@@ -31,25 +31,25 @@ using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
-using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+class TranslationContext;
 
-RExpPtr TranslateSNullLiteralExpToRExp(SExp_NullLiteral& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger);
+RExpPtr TranslateSNullLiteralExpToRExp(SExp_NullLiteral& exp, const RTypePtr& hintType, TranslationContext& context);
 RExpPtr TranslateSBoolLiteralExpToRExp(SExp_BoolLiteral& exp);
 RExpPtr TranslateSIntLiteralExpToRExp(SExp_IntLiteral& exp);
-std::shared_ptr<RExp_String> TranslateSStringExpToRStringExp(SExp_String& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RExpPtr TranslateSIntUnaryAssignExpToRExp(SExp& operand, RInternalUnaryAssignOperator op, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RExpPtr TranslateSAssignBinaryOpExpToRExp(SExp_BinaryOp& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RExpPtr TranslateSLambdaExpToRExp(SExp_Lambda& sExp, Logger& logger);
-RExpPtr TranslateSListExpToRExp(SExp_List& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RExpPtr TranslateSNewExpToRExp(SExp_New& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory); // throws ErrorCodeException
-RExpPtr TranslateSCallExpToRExp(SExp_Call& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RExpPtr TranslateSBoxExpToRExp(SExp_Box& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RExpPtr TranslateSIsExpToRExp(SExp_Is& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RExpPtr TranslateSAsExpToRExp(SExp_As& exp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+std::shared_ptr<RExp_String> TranslateSStringExpToRStringExp(SExp_String& exp, TranslationContext& context);
+RExpPtr TranslateSIntUnaryAssignExpToRExp(SExp& operand, RInternalUnaryAssignOperator op, TranslationContext& context);
+RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, TranslationContext& context);
+RExpPtr TranslateSAssignBinaryOpExpToRExp(SExp_BinaryOp& exp, TranslationContext& context);
+RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, TranslationContext& context);
+RExpPtr TranslateSLambdaExpToRExp(SExp_Lambda& sExp, TranslationContext& context);
+RExpPtr TranslateSListExpToRExp(SExp_List& exp, TranslationContext& context);
+RExpPtr TranslateSNewExpToRExp(SExp_New& exp, TranslationContext& context); // throws ErrorCodeException
+RExpPtr TranslateSCallExpToRExp(SExp_Call& exp, const RTypePtr& hintType, TranslationContext& context);
+RExpPtr TranslateSBoxExpToRExp(SExp_Box& exp, const RTypePtr& hintType, TranslationContext& context);
+RExpPtr TranslateSIsExpToRExp(SExp_Is& exp, TranslationContext& context);
+RExpPtr TranslateSAsExpToRExp(SExp_As& exp, TranslationContext& context);
 
-RExpPtr TranslateSExpToRExp(SExp& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+RExpPtr TranslateSExpToRExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context);
 
 
 } // namespace SyntaxIR0Translator

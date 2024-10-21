@@ -25,19 +25,19 @@ class ReExp_ListIndexer;
 class ReExp_LocalDeref;
 class ReExp_BoxDeref;
 
-using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+class TranslationContext;
 
-RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp, ScopeContext& context, RTypeFactory& factory); // nothrow
-RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp, TranslationContext& context); // nothrow
+RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, TranslationContext& context);
 RLocPtr TranslateReLocalVarExpToRLoc(ReExp_LocalVar& reExp);
 RLocPtr TranslateReLambdaMemberVarExpToRLoc(ReExp_LambdaMemberVar& reExp);
-RLocPtr TranslateReStructMemberVarExpToRLoc(ReExp_StructMemberVar& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReExp_EnumElemMemberVar& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RLocPtr TranslateReListIndexerExpToRLoc(ReExp_ListIndexer& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RLocPtr TranslateReLocalDerefExpToRLoc(ReExp_LocalDeref& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RLocPtr TranslateReBoxDerefExpToRLoc(ReExp_BoxDeref& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+RLocPtr TranslateReStructMemberVarExpToRLoc(ReExp_StructMemberVar& reExp, TranslationContext& context);
+RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReExp_EnumElemMemberVar& reExp, TranslationContext& context);
+RLocPtr TranslateReListIndexerExpToRLoc(ReExp_ListIndexer& reExp, TranslationContext& context);
+RLocPtr TranslateReLocalDerefExpToRLoc(ReExp_LocalDeref& reExp, TranslationContext& context);
+RLocPtr TranslateReBoxDerefExpToRLoc(ReExp_BoxDeref& reExp, TranslationContext& context);
 
-RLocPtr TranslateReExpToRLoc(ReExp& reExp, bool bWrapExpAsLoc, IDesignatedErrorLogger* notLocationErrorLogger, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+RLocPtr TranslateReExpToRLoc(ReExp& reExp, bool bWrapExpAsLoc, IDesignatedErrorLogger* notLocationErrorLogger, TranslationContext& context);
 
 
 } // namespace SyntaxIR0Translator

@@ -18,10 +18,10 @@ namespace {
 struct ImExpToIrExpTranslator : public ImExpVisitor
 {
     IrExpPtr* result;
-    ScopeContext& context;
+    TranslationContext& context;
     RTypeFactory& factory;
 
-    ImExpToIrExpTranslator(IrExpPtr* result, ScopeContext& context, RTypeFactory& factory)
+    ImExpToIrExpTranslator(IrExpPtr* result, TranslationContext& context, RTypeFactory& factory)
         : result(result), context(context), factory(factory)
     {
     }
@@ -105,7 +105,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         else // &this.x
         {
             // auto classType = imExp.decl->GetClassType(imExp.typeArgs, factory);
-            *result = MakePtr<IrExp_BoxRef_ClassMember>(context.MakeThisLoc(factory), imExp.decl, imExp.typeArgs);
+            *result = MakePtr<IrExp_BoxRef_ClassMember>(context.scopeContext->MakeThisLoc(*context.factory), imExp.decl, imExp.typeArgs);
         }
     }
 
@@ -120,7 +120,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            auto rDerefThisLoc = MakePtr<RLoc_LocalDeref>(context.MakeThisLoc(factory));
+            auto rDerefThisLoc = MakePtr<RLoc_LocalDeref>(context.scopeContext->MakeThisLoc(*context.factory));
             *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_StructMember>(rDerefThisLoc, imExp.decl, imExp.typeArgs));
         }
     }
@@ -159,7 +159,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
 
 } // namespace 
 
-IrExpPtr TranslateImExpToIrExp(const ImExpPtr& imExp, ScopeContext& context, RTypeFactory& factory)
+IrExpPtr TranslateImExpToIrExp(const ImExpPtr& imExp, TranslationContext& context, RTypeFactory& factory)
 {
     IrExpPtr result;
     ImExpToIrExpTranslator translator(&result, context, factory);

@@ -36,6 +36,7 @@ public:
 
 public:
     // from RDecl
+    RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 

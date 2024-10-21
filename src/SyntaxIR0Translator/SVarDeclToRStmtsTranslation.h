@@ -12,7 +12,7 @@ namespace SyntaxIR0Translator {
 
 class ScopeContext;
 
-std::optional<std::vector<RStmtPtr>> TranslateSVarDeclToRStmt(SVarDecl& varDecl, ScopeContext& context);
+std::optional<std::vector<RStmtPtr>> TranslateSVarDeclToRStmts(SVarDecl& varDecl, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 

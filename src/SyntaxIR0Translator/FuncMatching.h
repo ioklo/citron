@@ -8,7 +8,6 @@
 
 namespace Citron {
 
-
 using SArgumentsPtr = std::shared_ptr<class SArguments>;
 
 template<typename TDecl>
@@ -20,7 +19,7 @@ struct RFuncParameter;
 
 namespace SyntaxIR0Translator {
 
-using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+class TranslationContext;
 
 template<typename TFuncDecl>
 struct FuncMatch 
@@ -38,7 +37,7 @@ struct ArgumentsMatch
 
 
 template<typename TFuncDecl>
-std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<RDeclWithOuterTypeArgs<TFuncDecl>>& items, const SArgumentsPtr& sArgs, ScopeContext& context);
+std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<RDeclWithOuterTypeArgs<TFuncDecl>>& items, const SArgumentsPtr& sArgs, TranslationContext& context);
 
 std::optional<ArgumentsMatch> MatchArguments(const RTypeArgumentsPtr& outerTypeArgs, const RTypeArgumentsPtr& partialTypeArgsExceptOuter, std::vector<RFuncParameter>&& funcParams, bool bVariadic, const SArgumentsPtr& sArgs);
 

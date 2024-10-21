@@ -14,6 +14,7 @@
 
 #include <IR0/REnumElemDecl.h>
 
+#include "TranslationContext.h"
 #include "ScopeContext.h"
 
 #include "ImExp.h"
@@ -35,16 +36,14 @@ class ImCallableAndSArgsToRExpTranslator : public ImExpVisitor
     SArgumentsPtr sArgs;
     RExpPtr* result;
 
-    ScopeContext& context;
-    Logger& logger;
-    RTypeFactory& factory;
+    TranslationContext& context;
 
     // S.ISyntaxNode nodeForCallExpErrorReport;
     // S.ISyntaxNode nodeForCallableErrorReport;
 
 public:
-    ImCallableAndSArgsToRExpTranslator(const SExpPtr& sCallable, const SArgumentsPtr& sArgs, RExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
-        : sCallable(sCallable), sArgs(sArgs), result(result), context(context), logger(logger), factory(factory)
+    ImCallableAndSArgsToRExpTranslator(const SExpPtr& sCallable, const SArgumentsPtr& sArgs, RExpPtr* result, TranslationContext& context)
+        : sCallable(sCallable), sArgs(sArgs), result(result), context(context)
     {
     }
 
@@ -52,15 +51,15 @@ private:
     // CallExp 분석에서 Callable이 Lambda, func<>로 계산되는 경우
     void HandleLoc(ImExp& imExp)
     {
-        auto reExp = TranslateImExpToReExp(imExp, context, logger);
+        auto reExp = TranslateImExpToReExp(imExp, context);
         if (!reExp)
         {
             *result = nullptr;
             return;
         }
 
-        DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_CallExp_CallableExpressionIsNotCallable);
-        auto callableLoc = TranslateReExpToRLoc(*reExp, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context, logger, factory);
+        DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_CallExp_CallableExpressionIsNotCallable);
+        auto callableLoc = TranslateReExpToRLoc(*reExp, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
 
         if (!callableLoc)
         {
@@ -69,13 +68,13 @@ private:
         }
 
         // TODO: Lambda말고 func<>도 있다
-        auto callableType = callableLoc->GetType(factory);
+        auto callableType = callableLoc->GetType(*context.factory);
         auto lambdaType = dynamic_cast<RType_Lambda*>(callableType.get());
 
         if (!lambdaType)
         {
             // FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable); 
-            logger.Fatal_CallExp_CallableExpressionIsNotCallable(); // sCallable
+            context.logger->Fatal_CallExp_CallableExpressionIsNotCallable(); // sCallable
             *result = nullptr;
             return;
         }
@@ -95,7 +94,7 @@ private:
         }
         else
         {
-            logger.Fatal_Parameter_MismatchBetweenParamCountAndArgCount();
+            context.logger->Fatal_Parameter_MismatchBetweenParamCountAndArgCount();
             *result = nullptr;
         }
     }
@@ -103,7 +102,7 @@ private:
 public:
     void Visit(ImExp_Namespace& imExp) override
     {
-        logger.Fatal_CallExp_CallableExpressionIsNotCallable();
+        context.logger->Fatal_CallExp_CallableExpressionIsNotCallable();
         *result = nullptr;
     }
 
@@ -120,13 +119,13 @@ public:
 
     void Visit(ImExp_TypeVar& imExp) override
     {
-        logger.Fatal_CallExp_CallableExpressionIsNotCallable();
+        context.logger->Fatal_CallExp_CallableExpressionIsNotCallable();
         *result = nullptr;
     }
 
     void Visit(ImExp_Class& imExp) override
     {
-        logger.Fatal_CallExp_CallableExpressionIsNotCallable();
+        context.logger->Fatal_CallExp_CallableExpressionIsNotCallable();
         *result = nullptr;
     }
 
@@ -143,7 +142,7 @@ public:
             // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
             if (match->funcDecl->bStatic && imExp.explicitInstance != nullptr)
             {
-                logger.Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance();
+                context.logger->Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance();
                 *result = nullptr;
                 return;
             }
@@ -151,7 +150,7 @@ public:
             // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
             if (!match->funcDecl->bStatic && imExp.explicitInstance == nullptr)
             {
-                logger.Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType();
+                context.logger->Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType();
                 *result = nullptr;
                 return;
             }
@@ -161,9 +160,9 @@ public:
 
             if (imExp.explicitInstance)
             {
-                DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+                DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
-                instance = TranslateReExpToRLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context, logger, factory);
+                instance = TranslateReExpToRLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
                 if (!instance)
                 {
                     *result = nullptr;
@@ -181,7 +180,7 @@ public:
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                *result = MakePtr<RExp_CallClassMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(factory), std::move(match->args));
+                *result = MakePtr<RExp_CallClassMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.scopeContext->MakeThisLoc(*context.factory), std::move(match->args));
             }
         }
 
@@ -236,7 +235,7 @@ public:
             // static this 체크
             if (match->funcDecl->bStatic && imExp.explicitInstance)
             {
-                logger.Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance();
+                context.logger->Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance();
                 *result = nullptr;
                 return;
             }
@@ -244,7 +243,7 @@ public:
             // 반대의 경우도 체크
             if (!match->funcDecl->bStatic && !imExp.explicitInstance)
             {
-                logger.Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType();
+                context.logger->Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType();
                 *result = nullptr;
                 return;
             }
@@ -252,8 +251,8 @@ public:
             RLocPtr instance;
             if (imExp.explicitInstance)
             {
-                DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
-                instance = TranslateReExpToRLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context, logger, factory);
+                DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+                instance = TranslateReExpToRLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
                 if (!instance)
                 {
                     *result = nullptr;
@@ -271,7 +270,7 @@ public:
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                *result = MakePtr<RExp_CallStructMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(factory), std::move(match->args));
+                *result = MakePtr<RExp_CallStructMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.scopeContext->MakeThisLoc(*context.factory), std::move(match->args));
             }
         }
 
@@ -289,7 +288,7 @@ public:
 
     void Visit(ImExp_Enum& imExp) override
     {
-        logger.Fatal_CallExp_CallableExpressionIsNotCallable();
+        context.logger->Fatal_CallExp_CallableExpressionIsNotCallable();
         *result = nullptr;
     }
 
@@ -298,7 +297,7 @@ public:
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         if (imExp.decl->IsStandalone())
         {
-            logger.Fatal_CallExp_CallableExpressionIsNotCallable();
+            context.logger->Fatal_CallExp_CallableExpressionIsNotCallable();
             *result = nullptr;
             return;
         }
@@ -313,7 +312,7 @@ public:
 
         if (!match)
         {
-            logger.Fatal_Parameter_MismatchBetweenParamCountAndArgCount();
+            context.logger->Fatal_Parameter_MismatchBetweenParamCountAndArgCount();
             *result = nullptr;
             return;
         }
@@ -323,7 +322,7 @@ public:
 
     void Visit(ImExp_ThisVar& imExp) override
     {
-        logger.Fatal_CallExp_CallableExpressionIsNotCallable();
+        context.logger->Fatal_CallExp_CallableExpressionIsNotCallable();
         *result = nullptr;
     }
 
@@ -388,7 +387,7 @@ public:
 
 } // namespace
 
-RExpPtr TranslateImCallableAndSArgsToRExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, ScopeContext& context, Logger& logger, RTypeFactory& factory)
+RExpPtr TranslateImCallableAndSArgsToRExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, TranslationContext& context)
 {
     // 여기서 분석해야 할 것은 
     // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -401,7 +400,7 @@ RExpPtr TranslateImCallableAndSArgsToRExp(ImExp& imCallable, const SExpPtr& sCal
     // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
 
     RExpPtr rExp;
-    ImCallableAndSArgsToRExpTranslator binder(sCallable, sArgs, &rExp, context, logger, factory);
+    ImCallableAndSArgsToRExpTranslator binder(sCallable, sArgs, &rExp, context);
     imCallable.Accept(binder);
     return rExp;
 }

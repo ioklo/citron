@@ -143,6 +143,8 @@ public:
     IR0_API RTypePtr MakeStringType();
     IR0_API RTypePtr MakeListType(const RTypePtr& itemType);
 
+    IR0_API bool IsListType(const RTypePtr& type, RTypePtr* outItemType);
+
     // declIds
     IR0_API RDeclIdPtr MakeDeclId(std::string&& moduleName, RIdentifier&& identifier);
     IR0_API RDeclIdPtr MakeChildDeclId(RDeclIdPtr&& id, RIdentifier&& identifier);

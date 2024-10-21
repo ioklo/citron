@@ -33,6 +33,7 @@ public:
 
 public:
     // from RDecl
+    RAccessor GetAccessor() override { return accessor; }
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 

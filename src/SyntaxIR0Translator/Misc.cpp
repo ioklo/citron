@@ -10,28 +10,28 @@
 #include <IR0/RExp.h>
 
 #include "ScopeContext.h"
-
+#include "TranslationContext.h"
 
 namespace Citron::SyntaxIR0Translator {
 
-RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, ScopeContext& context, RTypeFactory& factory)
+RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context)
 {
     std::vector<RTypePtr> items;
     items.reserve(typeArgs.size());
 
     for (auto& typeArg : typeArgs)
     {
-        auto type = context.MakeType(*typeArg, factory);
+        auto type = context.scopeContext->MakeType(*typeArg, *context.factory);
         if (!type) return nullptr;
 
         items.push_back(std::move(type));
     }
 
-    return factory.MakeTypeArguments(items);
+    return context.factory->MakeTypeArguments(items);
 }
 
 
-RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, ScopeContext& context) // nothrow
+RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context) // nothrow
 {
     static_assert(false);
 
@@ -94,7 +94,7 @@ RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, ScopeContext& c
 
 
 // 값의 겉보기 타입을 변경한다
-RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, ScopeContext& context, Logger& logger)
+RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context)
 {
     auto result = TryCastRExp(std::move(exp), expectedType, context);
     if (result != nullptr) return result;

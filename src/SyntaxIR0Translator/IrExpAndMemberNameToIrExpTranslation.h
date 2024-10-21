@@ -14,9 +14,9 @@ class RTypeFactory;
 namespace SyntaxIR0Translator {
 
 using IrExpPtr = std::shared_ptr<class IrExp>;
-using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+class TranslationContext;
 
-IrExpPtr TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+IrExpPtr TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context);
 
 
 } // SyntaxIR0Translator 

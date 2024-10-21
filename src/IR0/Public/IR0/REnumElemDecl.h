@@ -27,7 +27,9 @@ public:
     IR0_API void AddMemberVar(std::shared_ptr<REnumElemMemberVarDecl> memberVar);
     bool IsStandalone() { return memberVars.empty(); }
     IR0_API std::vector<RFuncParameter> GetUnboundConstructorParams();
-    
+
+public:
+    RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

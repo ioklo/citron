@@ -14,12 +14,12 @@ using STypeExpPtr = std::shared_ptr<class STypeExp>;
 
 namespace SyntaxIR0Translator {
 
-class ScopeContext;
+class TranslationContext;
 
-RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, ScopeContext& context, RTypeFactory& factory);
+RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context);
 
-RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, ScopeContext& context); // nothrow
-RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, ScopeContext& context, Logger& logger);
+RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context); // nothrow
+RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context);
 RExpPtr MakeRExp_As(RExpPtr&& targetExp, const RTypePtr& testType, RTypeFactory& factory);
 
 } // namespace SyntaxIR0Translator

@@ -20,6 +20,7 @@ class RInterfaceDecl
     std::vector<std::string> typeParams;
 
 public:
+    RAccessor GetAccessor() override { return accessor; }
     IR0_API RDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 

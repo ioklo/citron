@@ -11,9 +11,9 @@ namespace SyntaxIR0Translator {
 using ImExpPtr = std::shared_ptr<class ImExp>;
 using IrExpPtr = std::shared_ptr<class IrExp>;
 
-class ScopeContext;
+class TranslationContext;
 
-IrExpPtr TranslateImExpToIrExp(const ImExpPtr& imExp, ScopeContext& context, RTypeFactory& factory);
+IrExpPtr TranslateImExpToIrExp(const ImExpPtr& imExp, TranslationContext& context, RTypeFactory& factory);
 
 } // namespace SyntaxIR0Translator
 

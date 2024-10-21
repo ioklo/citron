@@ -17,15 +17,13 @@ namespace {
 
 // 기본적으로 load를 한다
 class ReExpToRExpTranslator : public ReExpVisitor
-{
-    ScopeContext& context;
-    Logger& logger;
-    RTypeFactory& factory;
+{   
     RExpPtr* result;
+    TranslationContext& context;
 
 public:
-    ReExpToRExpTranslator(ScopeContext& context, Logger& logger, RTypeFactory& factory, RExpPtr* result)
-        : context(context), logger(logger), factory(factory), result(result)
+    ReExpToRExpTranslator(RExpPtr* result, TranslationContext& context)
+        : result(result), context(context)
     {
     }
 
@@ -39,7 +37,7 @@ public:
 
     void Visit(ReExp_ThisVar& exp) override
     {
-        auto rLoc = TranslateReThisVarExpToRLoc(exp, context, factory);
+        auto rLoc = TranslateReThisVarExpToRLoc(exp, context);
         HandleLoc(std::move(rLoc));
     }
 
@@ -57,38 +55,38 @@ public:
 
     void Visit(ReExp_ClassMemberVar& exp) override
     {
-        auto rLoc = TranslateReClassMemberVarExpToRLoc(exp, context, logger, factory);
+        auto rLoc = TranslateReClassMemberVarExpToRLoc(exp, context);
         HandleLoc(std::move(rLoc));
     }
 
     void Visit(ReExp_StructMemberVar& exp) override
     {
-        auto rLoc = TranslateReStructMemberVarExpToRLoc(exp, context, logger, factory);
+        auto rLoc = TranslateReStructMemberVarExpToRLoc(exp, context);
         HandleLoc(std::move(rLoc));
     }
 
     void Visit(ReExp_EnumElemMemberVar& exp) override
     {
-        auto rLoc = TranslateReEnumElemMemberVarExpToRLoc(exp, context, logger, factory);
+        auto rLoc = TranslateReEnumElemMemberVarExpToRLoc(exp, context);
         HandleLoc(std::move(rLoc));
     }
 
     void Visit(ReExp_LocalDeref& exp) override
     {
-        auto rLoc = TranslateReLocalDerefExpToRLoc(exp, context, logger, factory);
+        auto rLoc = TranslateReLocalDerefExpToRLoc(exp, context);
         HandleLoc(std::move(rLoc));
     }
 
     // *x
     void Visit(ReExp_BoxDeref& exp) override
     {
-        auto rLoc = TranslateReBoxDerefExpToRLoc(exp, context, logger, factory);
+        auto rLoc = TranslateReBoxDerefExpToRLoc(exp, context);
         HandleLoc(std::move(rLoc));
     }
 
     void Visit(ReExp_ListIndexer& exp) override
     {
-        auto rLoc = TranslateReListIndexerExpToRLoc(exp, context, logger, factory);
+        auto rLoc = TranslateReListIndexerExpToRLoc(exp, context);
         HandleLoc(std::move(rLoc));
     }
 
@@ -100,10 +98,10 @@ public:
 
 } // namespace 
 
-RExpPtr TranslateReExpToRExp(ReExp& reExp, ScopeContext& context, Logger& logger, RTypeFactory& factory)
+RExpPtr TranslateReExpToRExp(ReExp& reExp, TranslationContext& context)
 {
     RExpPtr rExp;
-    ReExpToRExpTranslator translator(context, logger, factory, &rExp);
+    ReExpToRExpTranslator translator(&rExp, context);
     reExp.Accept(translator);
 
     return rExp;

@@ -18,6 +18,7 @@
 #include "ReExpToRLocTranslation.h"
 #include "ImExpAndMemberNameToImExpTranslation.h"
 
+#include "TranslationContext.h"
 #include "ScopeContext.h"
 
 #include "DesignatedErrorLogger.h"
@@ -32,13 +33,11 @@ class SExpToImExpTranslator : public SExpVisitor
     RTypePtr hintType;
     ImExpPtr* result;
 
-    ScopeContext& context;
-    Logger& logger;
-    RTypeFactory& factory;
+    TranslationContext& context;
 
 public:
-    SExpToImExpTranslator(const RTypePtr& hintType, ImExpPtr* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
-        : hintType(hintType), result(result), context(context), logger(logger), factory(factory)
+    SExpToImExpTranslator(const RTypePtr& hintType, ImExpPtr* result, TranslationContext& context)
+        : hintType(hintType), result(result), context(context)
     {
     }
 
@@ -76,7 +75,7 @@ public:
 
     void Visit(SExp_String& exp) override
     {
-        HandleExp(TranslateSStringExpToRStringExp(exp, context, logger, factory));
+        HandleExp(TranslateSStringExpToRStringExp(exp, context));
     }
 
     void Visit(SExp_IntLiteral& exp) override
@@ -92,12 +91,12 @@ public:
     // 'null'
     void Visit(SExp_NullLiteral& exp) override
     {
-        HandleExp(TranslateSNullLiteralExpToRExp(exp, hintType, context, logger));
+        HandleExp(TranslateSNullLiteralExpToRExp(exp, hintType, context));
     }
 
     void Visit(SExp_BinaryOp& exp) override
     {
-        HandleExp(TranslateSBinaryOpExpToRExp(exp, context, logger, factory));
+        HandleExp(TranslateSBinaryOpExpToRExp(exp, context));
     }
 
     void Visit(SExp_UnaryOp& exp) override
@@ -105,14 +104,14 @@ public:
         // *d
         if (exp.kind == SUnaryOpKind::Deref)
         {
-            auto target = TranslateSExpToReExp(*exp.operand, /*hintType*/nullptr, context, logger, factory);
+            auto target = TranslateSExpToReExp(*exp.operand, /*hintType*/nullptr, context);
             if (!target)
             {
                 *result = nullptr;
                 return;
             }
 
-            auto targetType = target->GetType(factory);
+            auto targetType = target->GetType(*context.factory);
 
             if (dynamic_cast<RType_BoxPtr*>(targetType.get()))
             {
@@ -131,50 +130,50 @@ public:
         }
         else
         {
-            return HandleExp(TranslateSUnaryOpExpToRExpExceptDeref(exp, context, logger, factory));
+            return HandleExp(TranslateSUnaryOpExpToRExpExceptDeref(exp, context));
         }
     }
 
     void Visit(SExp_Call& exp) override
     {
-        HandleExp(TranslateSCallExpToRExp(exp, hintType, context, logger, factory));
+        HandleExp(TranslateSCallExpToRExp(exp, hintType, context));
     }
 
     void Visit(SExp_Lambda& exp) override
     {
-        HandleExp(TranslateSLambdaExpToRExp(exp, logger));
+        HandleExp(TranslateSLambdaExpToRExp(exp));
     }
 
     void Visit(SExp_Indexer& exp) override
     {
-        auto reObj = TranslateSExpToReExp(*exp.obj, /*hintType*/ nullptr, context, logger, factory);
+        auto reObj = TranslateSExpToReExp(*exp.obj, /*hintType*/ nullptr, context);
         if (!reObj)
         {
             *result = nullptr;
             return;
         }
 
-        auto reIndex = TranslateSExpToReExp(*exp.index, /*hintType*/ nullptr, context, logger, factory);
+        auto reIndex = TranslateSExpToReExp(*exp.index, /*hintType*/ nullptr, context);
         if (!reIndex)
         {
             *result = nullptr;
             return;
         }
 
-        auto intType = factory.MakeIntType();
+        auto intType = context.factory->MakeIntType();
 
         RLocPtr rIndexLoc;
-        if (reIndex->GetType(factory) != intType)
+        if (reIndex->GetType(*context.factory) != intType)
         {
-            logger.SetSyntax(exp.index);
-            auto rIndexExp = TranslateReExpToRExp(*reIndex, context, logger, factory);
+            context.logger->SetSyntax(exp.index);
+            auto rIndexExp = TranslateReExpToRExp(*reIndex, context);
             if (!rIndexExp)
             {
                 *result = nullptr;
                 return;
             }
 
-            auto rCastIndex = CastRExp(std::move(rIndexExp), intType, context, logger);
+            auto rCastIndex = CastRExp(std::move(rIndexExp), intType, context);
             if (!rCastIndex)
             {
                 *result = nullptr;
@@ -185,9 +184,9 @@ public:
         }
         else
         {
-            DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
-            rIndexLoc = TranslateReExpToRLoc(*reIndex, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context, logger, factory);
+            rIndexLoc = TranslateReExpToRLoc(*reIndex, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
             if (!rIndexLoc)
             {
                 *result = nullptr;
@@ -200,7 +199,7 @@ public:
 
         // 리스트 타입의 경우,
         RTypePtr itemType;
-        if (context.IsListType(reObj->GetType(factory), &itemType))
+        if (context.factory->IsListType(reObj->GetType(*context.factory), &itemType))
         {
             *result = MakePtr<ImExp_ListIndexer>(std::move(reObj), std::move(reIndex), std::move(itemType));
             return;
@@ -250,10 +249,10 @@ public:
             return;
         }
 
-        auto typeArgs = MakeTypeArgs(exp.memberTypeArgs, context, factory);
+        auto typeArgs = MakeTypeArgs(exp.memberTypeArgs, context);
 
         // logger.SetSyntax(exp);
-        *result = TranslateImExpAndMemberNameToImExp(*imParent, exp.memberName, typeArgs, context, logger);
+        *result = TranslateImExpAndMemberNameToImExp(*imParent, exp.memberName, typeArgs, context);
     }
 
     void Visit(SExp_IndirectMember& exp) override
@@ -263,37 +262,37 @@ public:
 
     void Visit(SExp_List& exp) override
     {
-        HandleExp(TranslateSListExpToRExp(exp, context, logger, factory));
+        HandleExp(TranslateSListExpToRExp(exp, context));
     }
 
     // 'new C(...)'
     void Visit(SExp_New& exp) override
     {
-        HandleExp(TranslateSNewExpToRExp(exp, context, logger, factory));
+        HandleExp(TranslateSNewExpToRExp(exp, context));
     }
 
     void Visit(SExp_Box& exp) override
     {
-        HandleExp(TranslateSBoxExpToRExp(exp, hintType, context, logger, factory));
+        HandleExp(TranslateSBoxExpToRExp(exp, hintType, context));
     }
 
     void Visit(SExp_Is& exp) override
     {
-        HandleExp(TranslateSIsExpToRExp(exp, context, logger, factory));
+        HandleExp(TranslateSIsExpToRExp(exp, context));
     }
 
     void Visit(SExp_As& exp) override
     {
-        HandleExp(TranslateSAsExpToRExp(exp, context, logger, factory));
+        HandleExp(TranslateSAsExpToRExp(exp, context));
     }
 };
 
 }
 
-ImExpPtr TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, ScopeContext& context, Logger& logger, RTypeFactory& factory)
+ImExpPtr TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context)
 {   
     ImExpPtr imExp;
-    SExpToImExpTranslator translator(hintType, &imExp, context, logger, factory);
+    SExpToImExpTranslator translator(hintType, &imExp, context);
     exp.Accept(translator);
     return imExp;
 }

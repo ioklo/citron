@@ -12,7 +12,6 @@
 #include <IR0/RExp.h>
 #include <IR0/RTypeFactory.h>
 #include <IR0/RFuncDecl.h>
-#include <IR0/RTypeFactory.h>
 #include <Syntax/Syntax.h>
 #include <Logging/Logger.h>
 
@@ -20,6 +19,7 @@
 #include "SVarDeclToRStmtsTranslation.h"
 #include "SExpToRLocTranslation.h"
 
+#include "TranslationContext.h"
 #include "ScopeContext.h"
 #include "BodyContext.h"
 #include "DesignatedErrorLogger.h"
@@ -37,11 +37,11 @@ struct RLambdaDeclAndArgs
     shared_ptr<RArgument> args;   // constructor args
 };
 
-optional<vector<RStmtPtr>> TranslateSStmtToRStmts(SStmt& sStmt, const ScopeContextPtr& context, Logger& logger, RTypeFactory& factory);
-optional<vector<RStmtPtr>> TranslateSEmbeddableStmtToRStmts(SEmbeddableStmt& embedStmt, ScopeContext& context);
-optional<vector<RStmtPtr>> TranslateSForStmtInitializerToRStmts(SForStmtInitializer& forInit, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-RExpPtr TranslateSExpAsTopLevelExpToRExp(SExp& sExp, const RTypePtr& hintType, IDesignatedErrorLogger* designatedErrorLogger, ScopeContext& context, Logger& logger, RTypeFactory& factory);
-optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, ScopeContext& context, Logger& logger, RTypeFactory& factory);
+optional<vector<RStmtPtr>> TranslateSStmtToRStmts(SStmt& sStmt, TranslationContext& context);
+optional<vector<RStmtPtr>> TranslateSEmbeddableStmtToRStmts(SEmbeddableStmt& embedStmt, TranslationContext& context);
+optional<vector<RStmtPtr>> TranslateSForStmtInitializerToRStmts(SForStmtInitializer& forInit, TranslationContext& context);
+RExpPtr TranslateSExpAsTopLevelExpToRExp(SExp& sExp, const RTypePtr& hintType, IDesignatedErrorLogger* designatedErrorLogger, TranslationContext& context);
+optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context);
 
 bool IsTopLevelRExp(RExp& exp)
 {
@@ -57,9 +57,7 @@ class SStmtToRStmtsTranslator : public SStmtVisitor
 {
     vector<RStmtPtr>* result;
     bool* bFatal;
-    ScopeContextPtr context;
-    Logger& logger;
-    RTypeFactory& factory;
+    TranslationContext& context;
     
     void Fatal()
     {
@@ -77,8 +75,8 @@ class SStmtToRStmtsTranslator : public SStmtVisitor
     }
 
 public:
-    SStmtToRStmtsTranslator(vector<RStmtPtr>* result, bool* bFatal, const ScopeContextPtr& context, Logger& logger, RTypeFactory& factory)
-        : result(result), bFatal(bFatal), context(context), logger(logger), factory(factory)
+    SStmtToRStmtsTranslator(vector<RStmtPtr>* result, bool* bFatal, TranslationContext& context)
+        : result(result), bFatal(bFatal), context(context)
     {
     }
 
@@ -90,7 +88,7 @@ public:
 
         for(auto& cmd : stmt.commands)
         {
-            auto rStringExp = TranslateSStringExpToRStringExp(*cmd, *context, logger, factory);
+            auto rStringExp = TranslateSStringExpToRStringExp(*cmd, context);
             if (!rStringExp) return Fatal();
 
             builder.push_back(rStringExp);
@@ -103,7 +101,7 @@ public:
     {
         // int a;
         // auto x = 
-        auto rStmts = TranslateSVarDeclToRStmt(stmt.varDecl, *context);
+        auto rStmts = TranslateSVarDeclToRStmt(stmt.varDecl, context);
         if (!rStmts) return Fatal();
 
         return Valid(std::move(*rStmts));
@@ -112,26 +110,26 @@ public:
     void Visit(SStmt_If& stmt) override 
     {
         // 순회
-        auto rCond = TranslateSExpToRExp(*stmt.cond, /*hintType*/ factory.MakeBoolType(), *context, logger, factory);
+        auto rCond = TranslateSExpToRExp(*stmt.cond, /*hintType*/ context.factory->MakeBoolType(), context);
         if (!rCond) return Fatal();
 
         // cast
-        rCond = TryCastRExp(std::move(rCond), factory.MakeBoolType(), *context);
+        rCond = TryCastRExp(std::move(rCond), context.factory->MakeBoolType(), context);
         if (!rCond)
         {
-            logger.Fatal_IfStmt_ConditionShouldBeBool();
+            context.logger->Fatal_IfStmt_ConditionShouldBeBool();
             return Fatal();
         }
 
-        auto bodyContext = context->MakeNestedScopeContext(context);
-        auto oBodyStmts = TranslateSEmbeddableStmtToRStmts(*stmt.body, *bodyContext);
+        auto bodyContext = context.MakeNestedScopeContext();
+        auto oBodyStmts = TranslateSEmbeddableStmtToRStmts(*stmt.body, bodyContext);
         if (!oBodyStmts) return Fatal();
 
         optional<vector<RStmtPtr>> oElseStmts;
         if (stmt.elseBody != nullptr)
         {
-            auto elseContext = context->MakeNestedScopeContext(context);
-            oElseStmts = TranslateSEmbeddableStmtToRStmts(*stmt.elseBody, *elseContext);
+            auto elseContext = context.MakeNestedScopeContext();
+            oElseStmts = TranslateSEmbeddableStmtToRStmts(*stmt.elseBody, elseContext);
             if (!oElseStmts) return Fatal();
         }
 
@@ -143,26 +141,26 @@ public:
         auto varName = RName_Normal(stmt.varName);
 
         // if (Type varName = e) body         
-        auto testType = context->MakeType(*stmt.testType, factory);
+        auto testType = context.scopeContext->MakeType(*stmt.testType, *context.factory);
 
-        auto target = TranslateSExpToRExp(*stmt.exp, /*hintType*/ nullptr, *context, logger, factory);
+        auto target = TranslateSExpToRExp(*stmt.exp, /*hintType*/ nullptr, context);
         if (!target) return Fatal();
 
-        auto bodyContext = context->MakeNestedScopeContext(context);
-        bodyContext->AddLocalVarInfo(testType, varName);        
+        auto bodyContext = context.MakeNestedScopeContext();
+        bodyContext.scopeContext->AddLocalVarInfo(testType, varName);        
 
-        auto oBodyStmts = TranslateSEmbeddableStmtToRStmts(*stmt.body, *bodyContext);
+        auto oBodyStmts = TranslateSEmbeddableStmtToRStmts(*stmt.body, bodyContext);
         if (!oBodyStmts) return Fatal();
 
         optional<vector<RStmtPtr>> oElseStmts;
         if (stmt.elseBody)
         {
-            auto elseContext = context->MakeNestedScopeContext(context);
-            oElseStmts = TranslateSEmbeddableStmtToRStmts(*stmt.elseBody, *elseContext);
+            auto elseContext = context.MakeNestedScopeContext();
+            oElseStmts = TranslateSEmbeddableStmtToRStmts(*stmt.elseBody, elseContext);
             if (!oElseStmts) return Fatal();
         }
 
-        auto asExp = MakeRExp_As(std::move(target), testType, factory);
+        auto asExp = MakeRExp_As(std::move(target), testType, *context.factory);
         if (!target) return Fatal();
 
         auto testTypeKind = testType->GetCustomTypeKind();
@@ -183,37 +181,37 @@ public:
         // {
         // 
         // }
-        auto forStmtContext = context->MakeNestedScopeContext(context);
+        auto forStmtContext = context.MakeNestedScopeContext(); // prelude는 loop가 아니다
 
         optional<vector<RStmtPtr>> initStmts;
         if (stmt.initializer)
         {
-            initStmts = TranslateSForStmtInitializerToRStmts(*stmt.initializer, *forStmtContext, logger, factory);
+            initStmts = TranslateSForStmtInitializerToRStmts(*stmt.initializer, forStmtContext);
             if (!initStmts) return Fatal();
         }
 
         RExpPtr condExp;
         if (stmt.cond)
         {
-            auto boolType = factory.MakeBoolType();
-            auto rawCond = TranslateSExpToRExp(*stmt.cond, /*hintType*/ boolType, *forStmtContext, logger, factory);
+            auto boolType = context.factory->MakeBoolType();
+            auto rawCond = TranslateSExpToRExp(*stmt.cond, /*hintType*/ boolType, forStmtContext);
             if (!rawCond) return Fatal();
 
-            condExp = TryCastRExp(std::move(rawCond), boolType, *context);
+            condExp = TryCastRExp(std::move(rawCond), boolType, context);
             if (!condExp) return Fatal();
         }
 
         RExpPtr continueExp;
         if (stmt.cont)
         {
-            DesignatedErrorLogger errorLogger(logger, &Logger::Fatal_ForStmt_ContinueExpShouldBeAssignOrCall);
-            continueExp = TranslateSExpAsTopLevelExpToRExp(*stmt.cont, /*hintType*/ nullptr, &errorLogger, *forStmtContext, logger, factory);
+            DesignatedErrorLogger errorLogger(*context.logger, &Logger::Fatal_ForStmt_ContinueExpShouldBeAssignOrCall);
+            continueExp = TranslateSExpAsTopLevelExpToRExp(*stmt.cont, /*hintType*/ nullptr, &errorLogger, forStmtContext);
             if (!continueExp) return Fatal();
         }
 
-        auto bodyContext = forStmtContext->MakeLoopNestedScopeContext(forStmtContext);
+        auto bodyContext = forStmtContext.MakeNestedLoopScopeContext();
 
-        auto bodyStmts = TranslateSEmbeddableStmtToRStmts(*stmt.body, *bodyContext);
+        auto bodyStmts = TranslateSEmbeddableStmtToRStmts(*stmt.body, bodyContext);
         if (!bodyStmts) return Fatal();
 
         return Valid(MakePtr<RStmt_For>(std::move(initStmts), std::move(condExp), std::move(continueExp), std::move(bodyStmts)));
@@ -221,9 +219,9 @@ public:
 
     void Visit(SStmt_Continue& stmt) override
     {
-        if (!context->IsInLoop())
+        if (!context.scopeContext->IsInLoop())
         {
-            logger.Fatal_ContinueStmt_ShouldUsedInLoop();
+            context.logger->Fatal_ContinueStmt_ShouldUsedInLoop();
             return Fatal();
         }
 
@@ -232,9 +230,9 @@ public:
 
     void Visit(SStmt_Break& stmt) override
     {
-        if (!context->IsInLoop())
+        if (!context.scopeContext->IsInLoop())
         {
-            logger.Fatal_BreakStmt_ShouldUsedInLoop();
+            context.logger->Fatal_BreakStmt_ShouldUsedInLoop();
             return Fatal();
         }
 
@@ -244,11 +242,11 @@ public:
     void Visit(SStmt_Return& stmt) override 
     {
         // seq 함수는 여기서 모두 처리 
-        if (context->bodyContext->curFuncDecl->IsSequence())
+        if (context.bodyContext->bSeqFunc)
         {
             if (stmt.value)
             {
-                logger.Fatal_ReturnStmt_SeqFuncShouldReturnVoid();
+                context.logger->Fatal_ReturnStmt_SeqFuncShouldReturnVoid();
                 return Fatal();
             }
 
@@ -257,7 +255,7 @@ public:
 
         // 리턴 값이 없을 경우
         
-        auto funcRet = context->bodyContext->GetFuncReturn();
+        auto funcRet = context.bodyContext->GetFuncReturn();
 
         return visit(overloaded {
             [this, &stmt](RFuncReturn_Set& set)
@@ -265,9 +263,9 @@ public:
                 if (!stmt.value)
                 {
                     // 생성자거나, void 함수가 아니라면 에러
-                    if (set.type != factory.MakeVoidType())
+                    if (set.type != context.factory->MakeVoidType())
                     {
-                        logger.Fatal_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType();
+                        context.logger->Fatal_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType();
                         return Fatal();
                     }
 
@@ -277,15 +275,15 @@ public:
                 {
                     // 리턴타입을 힌트로 사용한다
                     // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                    auto retValue = TranslateSExpToRExp(*stmt.value, /*hintType*/ set.type, *context, logger, factory);
+                    auto retValue = TranslateSExpToRExp(*stmt.value, /*hintType*/ set.type, context);
                     if (!retValue) return Fatal();
 
-                    auto castRetValue = TryCastRExp(std::move(retValue), set.type, *context);
+                    auto castRetValue = TryCastRExp(std::move(retValue), set.type, context);
 
                     // 캐스트 실패시
                     if (!castRetValue)
                     {
-                        logger.Fatal_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType();
+                        context.logger->Fatal_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType();
                         return Fatal();
                     }
 
@@ -298,17 +296,17 @@ public:
                 if (!stmt.value)
                 {
                     // 이 함수는 void로 리턴을 확정 한다.
-                    context->SetFuncReturn(factory.MakeVoidType());
+                    context.bodyContext->SetFuncReturn(context.factory->MakeVoidType());
                     return Valid(MakePtr<RStmt_Return>(nullptr));
                 }
                 else
                 {
                     // 힌트타입 없이 분석
-                    auto retValue = TranslateSExpToRExp(*stmt.value, /*hintType*/ nullptr, *context, logger, factory);
+                    auto retValue = TranslateSExpToRExp(*stmt.value, /*hintType*/ nullptr, context);
                     if (!retValue) return Fatal();
 
                     // 리턴값이 안 적혀 있었으므로 적는다
-                    context->SetFuncReturn(retValue->GetType(factory));
+                    context.bodyContext->SetFuncReturn(retValue->GetType(*context.factory));
                     return Valid(MakePtr<RStmt_Return>(std::move(retValue)));
                 }
             },
@@ -332,12 +330,12 @@ public:
     {
         // { }
         bool bFatalLocal = false;
-        auto blockContext = context->MakeNestedScopeContext(context);
+        auto blockContext = context.MakeNestedScopeContext();
 
         vector<RStmtPtr> builder;
         for(auto& stmt : stmt.stmts)
         {
-            auto oInnerStmts = TranslateSStmtToRStmts(*stmt, blockContext, logger, factory);
+            auto oInnerStmts = TranslateSStmtToRStmts(*stmt, blockContext);
             if (!oInnerStmts)
             {
                 bFatalLocal = true;
@@ -359,9 +357,9 @@ public:
 
     void Visit(SStmt_Exp& stmt) override
     {
-        DesignatedErrorLogger errorLogger(logger, &Logger::Fatal_ExpStmt_ExpressionShouldBeAssignOrCall);
+        DesignatedErrorLogger errorLogger(*context.logger, &Logger::Fatal_ExpStmt_ExpressionShouldBeAssignOrCall);
 
-        auto exp = TranslateSExpAsTopLevelExpToRExp(*stmt.exp, /*hintType*/ nullptr, &errorLogger, *context, logger, factory);
+        auto exp = TranslateSExpAsTopLevelExpToRExp(*stmt.exp, /*hintType*/ nullptr, &errorLogger, context);
         if (!exp) return Fatal();
 
         return Valid(MakePtr<RStmt_Exp>(exp));
@@ -370,7 +368,7 @@ public:
     void Visit(SStmt_Task& stmt) override 
     {
         vector<SLambdaExpParam> emptyParams;
-        auto oLambdaAndArgs = TranslateSLambdaBodyToRLambdaAndArgs(factory.MakeVoidType(), emptyParams, stmt.body, *context, logger, factory);
+        auto oLambdaAndArgs = TranslateSLambdaBodyToRLambdaAndArgs(context.factory->MakeVoidType(), emptyParams, stmt.body, context);
         if (!oLambdaAndArgs) return Fatal();
 
         return Valid(MakePtr<RStmt_Task>(std::move(oLambdaAndArgs->decl), std::move(oLambdaAndArgs->args)));
@@ -378,8 +376,8 @@ public:
 
     void Visit(SStmt_Await& stmt) override 
     {
-        auto newContext = context->MakeNestedScopeContext(context);
-        auto oBody = TranslateSBodyToRStmts(stmt.body, newContext, logger, factory);
+        auto newContext = context.scopeContext->MakeNestedScopeContext();
+        auto oBody = TranslateSBodyToRStmts(stmt.body, newContext);
         if (!oBody) return Fatal();
 
         return Valid(MakePtr<RStmt_Await>(std::move(oBody)));
@@ -388,7 +386,7 @@ public:
     void Visit(SStmt_Async& stmt) override 
     {
         vector<SLambdaExpParam> emptyParams;
-        auto oLambdaAndArgs = TranslateSLambdaBodyToRLambdaAndArgs(factory.MakeVoidType(), emptyParams, stmt.body, *context, logger, factory);
+        auto oLambdaAndArgs = TranslateSLambdaBodyToRLambdaAndArgs(context.factory->MakeVoidType(), emptyParams, stmt.body, context);
         if (!oLambdaAndArgs) return Fatal();
 
         return Valid(MakePtr<RStmt_Async>(std::move(oLambdaAndArgs->decl), std::move(oLambdaAndArgs->args)));
@@ -402,23 +400,23 @@ public:
     void Visit(SStmt_Yield& stmt) override 
     {
         // TODO: ref 처리?
-        if (!context->bodyContext->curFuncDecl->IsSequence())
+        if (!context.bodyContext->bSeqFunc)
         {
-            logger.Fatal_YieldStmt_YieldShouldBeInSeqFunc();
+            context.logger->Fatal_YieldStmt_YieldShouldBeInSeqFunc();
             return Fatal();
         }
 
         // yield에서는 retType이 명시되는 경우만 있을 것이다
-        auto funcRet= context->bodyContext->GetFuncReturn();
+        auto funcRet= context.bodyContext->GetFuncReturn();
         auto* setFuncRet = get_if<RFuncReturn_Set>(&funcRet);
 
         assert(setFuncRet); // 아닌 경우는 위에서 거른다 (sequence함수는 무조건 ret포함)
 
         // NOTICE: 리턴 타입을 힌트로 넣었다
-        auto retValue = TranslateSExpToRExp(*stmt.value, /*hintType*/ setFuncRet.type, *context, logger, factory);
+        auto retValue = TranslateSExpToRExp(*stmt.value, /*hintType*/ setFuncRet->type, context);
         if (!retValue) return Fatal();
 
-        auto castRetValue = CastRExp(std::move(retValue), setFuncRet.type, *context, logger);
+        auto castRetValue = CastRExp(std::move(retValue), setFuncRet->type, context);
         if (!castRetValue) return Fatal();
 
         return Valid(MakePtr<RStmt_Yield>(castRetValue));
@@ -430,12 +428,12 @@ public:
         {
             if (stmt.args.size() != 1)
             {
-                logger.Fatal_StaticNotNullDirective_ShouldHaveOneArgument();
+                context.logger->Fatal_StaticNotNullDirective_ShouldHaveOneArgument();
                 return Fatal();
             }
 
-            DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_StaticNotNullDirective_ArgumentMustBeLocation);
-            auto arg = TranslateSExpToRLoc(*stmt.args[0], /*hintType*/ nullptr, /*bWrapExpAsLoc*/ false, &designatedErrorLogger, *context, logger, factory);
+            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_StaticNotNullDirective_ArgumentMustBeLocation);
+            auto arg = TranslateSExpToRLoc(*stmt.args[0], /*hintType*/ nullptr, /*bWrapExpAsLoc*/ false, &designatedErrorLogger, context);
             if (!arg) return Fatal();
 
             return Valid(MakePtr<RStmt_NotNullDirective>(std::move(arg)));
@@ -445,33 +443,30 @@ public:
     }
 };
 
-optional<vector<RStmtPtr>> TranslateSStmtToRStmts(SStmt& sStmt, const ScopeContextPtr& context, Logger& logger, RTypeFactory& factory)
+optional<vector<RStmtPtr>> TranslateSStmtToRStmts(SStmt& sStmt, TranslationContext& context)
 {
     vector<RStmtPtr> rStmts;
     bool bFatal;
 
-    SStmtToRStmtsTranslator translator(&rStmts, &bFatal, context, logger, factory);
+    SStmtToRStmtsTranslator translator(&rStmts, &bFatal, context);
     sStmt.Accept(translator);
 
     if (bFatal) return nullopt;
     return rStmts;
 }
 
-optional<vector<RStmtPtr>> TranslateSEmbeddableStmtToRStmts(SEmbeddableStmt& embedStmt, const ScopeContextPtr& context, Logger& logger, RTypeFactory& factory)
+optional<vector<RStmtPtr>> TranslateSEmbeddableStmtToRStmts(SEmbeddableStmt& embedStmt, TranslationContext& context)
 {
     // if (...) 'stmt'
     // if (...) '{ stmt... }' 를 받는다
     class EmbeddableStmtTranslator : public SEmbeddableStmtVisitor
     {
         optional<vector<RStmtPtr>>* result;
-        ScopeContextPtr context;
-        Logger& logger;
-        RTypeFactory& factory;
-        
+        TranslationContext& context;
 
     public:
-        EmbeddableStmtTranslator(optional<vector<RStmtPtr>>* result, const ScopeContextPtr& context, Logger& logger, RTypeFactory& factory)
-            : result(result), context(context), logger(logger), factory(factory)
+        EmbeddableStmtTranslator(optional<vector<RStmtPtr>>* result, TranslationContext& context)
+            : result(result), context(context)
         {
         }
 
@@ -479,40 +474,38 @@ optional<vector<RStmtPtr>> TranslateSEmbeddableStmtToRStmts(SEmbeddableStmt& emb
         {
             // TODO: VarDecl은 등장하면 에러를 내도록 한다
             // 지금은 그냥 패스
-            *result = TranslateSStmtToRStmts(*stmt.stmt, context, logger, factory);
+            *result = TranslateSStmtToRStmts(*stmt.stmt, context);
         }
 
         void Visit(SEmbeddableStmt_Block& stmt) override
         {
-            *result = TranslateSBodyToRStmts(stmt.stmts, context, logger, factory);
+            *result = TranslateSBodyToRStmts(stmt.stmts, context);
         }
     };
 
     optional<vector<RStmtPtr>> result;
-    EmbeddableStmtTranslator translator(&result, context, logger, factory);
+    EmbeddableStmtTranslator translator(&result, context);
     embedStmt.Accept(translator);
     return result;
 }
 
-optional<vector<RStmtPtr>> TranslateSForStmtInitializerToRStmts(SForStmtInitializer& forInit, ScopeContext& context, Logger& logger, RTypeFactory& factory)
+optional<vector<RStmtPtr>> TranslateSForStmtInitializerToRStmts(SForStmtInitializer& forInit, TranslationContext& context)
 {
     class ForInitTranslator : public SForStmtInitializerVisitor
     {
         optional<vector<RStmtPtr>>* result;
-        ScopeContext& context;
-        Logger& logger;
-        RTypeFactory& factory;
+        TranslationContext& context;
 
     public:
-        ForInitTranslator(optional<vector<RStmtPtr>>* result, ScopeContext& context, Logger& logger, RTypeFactory& factory)
-            : result(result), context(context), logger(logger), factory(factory)
+        ForInitTranslator(optional<vector<RStmtPtr>>* result, TranslationContext& context)
+            : result(result), context(context)
         {
         }
 
         void Visit(SForStmtInitializer_Exp& forInit) override
         {
-            DesignatedErrorLogger designatedErrorLogger(logger, &Logger::Fatal_ForStmt_ExpInitializerShouldBeAssignOrCall);
-            auto exp = TranslateSExpAsTopLevelExpToRExp(*forInit.exp, /*hintType*/ nullptr, &designatedErrorLogger, context, logger, factory);
+            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ForStmt_ExpInitializerShouldBeAssignOrCall);
+            auto exp = TranslateSExpAsTopLevelExpToRExp(*forInit.exp, /*hintType*/ nullptr, &designatedErrorLogger, context);
             if (!exp)
             {
                 *result = nullopt;
@@ -529,14 +522,14 @@ optional<vector<RStmtPtr>> TranslateSForStmtInitializerToRStmts(SForStmtInitiali
     };
 
     optional<vector<RStmtPtr>> stmts;
-    ForInitTranslator translator(&stmts, context, logger, factory);
+    ForInitTranslator translator(&stmts, context);
     forInit.Accept(translator);
     return stmts;
 }
 
-RExpPtr TranslateSExpAsTopLevelExpToRExp(SExp& sExp, const RTypePtr& hintType, IDesignatedErrorLogger* designatedErrorLogger, ScopeContext& context, Logger& logger, RTypeFactory& factory)
+RExpPtr TranslateSExpAsTopLevelExpToRExp(SExp& sExp, const RTypePtr& hintType, IDesignatedErrorLogger* designatedErrorLogger, TranslationContext& context)
 {
-    auto rExp = TranslateSExpToRExp(sExp, hintType, context, logger, factory);
+    auto rExp = TranslateSExpToRExp(sExp, hintType, context);
     if (!rExp) return nullptr;
 
     if (!IsTopLevelRExp(*rExp))
@@ -548,7 +541,7 @@ RExpPtr TranslateSExpAsTopLevelExpToRExp(SExp& sExp, const RTypePtr& hintType, I
     return rExp;
 }
 
-tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sParams, ScopeContext& context, RTypeFactory& factory)
+tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sParams, TranslationContext& context)
 {
     bool bLastParamVariadic = false;
     size_t sParamCount = sParams.size();
@@ -563,7 +556,7 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
         if (!sParam.type)
             throw NotImplementedException();
 
-        auto rParamType = context.MakeType(*sParam.type, factory);
+        auto rParamType = context.scopeContext->MakeType(*sParam.type, *context.factory);
         rParams.emplace_back(sParam.hasOut, std::move(rParamType), sParam.name);
 
         if (sParam.hasParams)
@@ -582,7 +575,7 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
     make_tuple(std::move(rParams), bLastParamVariadic);
 }
 
-optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, ScopeContext& context, Logger& logger, RTypeFactory& factory)
+optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context)
 {
     // 람다를 분석합니다
     // [int x = x](int p) => { return 3; }
@@ -593,11 +586,11 @@ optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr
     // 람다 관련 정보는 여기서 수집한다
     RFuncReturn funcRet = retType ? (RFuncReturn)RFuncReturn_Set(std::move(retType)) : RFuncReturn_NotSet();
 
-    auto [funcParams, bLastParamVariadic] = MakeParameters(sParams, context, factory);
+    auto [funcParams, bLastParamVariadic] = MakeParameters(sParams, context);
 
     // Lambda를 만들고 context 인스턴스 안에 저장한다
     // DeclSymbol tree로의 Commit은 함수 백트래킹이 다 끝났을 때 (그냥 Translation이 끝났을때 해도 될거 같다)
-    auto [newContext, lambda] = context.MakeLambdaBodyContext(funcRet, funcParams, bLastParamVariadic); // 중첩된 bodyContext를 만들고, 새 scopeContext도 만든다
+    auto [newContext, lambda] = context.MakeLambdaBodyContext(std::move(funcRet), funcParams, bLastParamVariadic); // 중첩된 bodyContext를 만들고, 새 scopeContext도 만든다
 
     auto lambdaName = context.bodyContext->NewLambdaName();
     auto rLambdaDecl = MakePtr<RLambdaDecl>(context.bodyContext->curFuncDecl, lambdaName);
@@ -609,7 +602,7 @@ optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr
         // TODO: 파라미터 타입은 타입 힌트를 반영해야 한다, ex) func<void, int, int> f = (x, y) => { } 일때, x, y는 int
         if (!sParam.type)
         {
-            logger.Fatal_NotSupported_LambdaParameterInference();
+            context.logger->Fatal_NotSupported_LambdaParameterInference();
             return nullopt;
         }
 
@@ -621,7 +614,7 @@ optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr
         newContext.AddLocalVarInfo(rParamType, name);
     }
 
-    auto oRBodyStmts = TranslateSBodyToRStmts(sBody, *newContext, logger, factory);
+    auto oRBodyStmts = TranslateSBodyToRStmts(sBody, *newContext);
     if (!oRBodyStmts) return nullopt;
 
     auto args = newContext->MakeLambdaArgs();
@@ -633,14 +626,14 @@ optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr
 } // namespace 
 
 
-optional<vector<RStmtPtr>> TranslateSBodyToRStmts(const vector<SStmtPtr>& stmts, ScopeContextPtr& context, Logger& logger, RTypeFactory& factory)
+optional<vector<RStmtPtr>> TranslateSBodyToRStmts(const vector<SStmtPtr>& stmts, TranslationContext& context)
 {
     vector<RStmtPtr> builder; // keep appending
 
     for(auto& stmt : stmts)
     {
         bool bFatal = false;
-        SStmtToRStmtsTranslator translator(&builder, &bFatal, context, logger, factory);
+        SStmtToRStmtsTranslator translator(&builder, &bFatal, context);
         stmt->Accept(translator);
         if (bFatal) return nullopt;
     }
