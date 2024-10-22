@@ -23,11 +23,11 @@ class RNamespaceDecl
     , private RTypeDeclContainerComponent
     , private RFuncDeclContainerComponent<RGlobalFuncDecl>
 {
-    RTopLevelDeclOuterPtr outer;
+    RTopLevelDeclOuterWPtr outer;
     std::string name;
 
 public:
-    IR0_API RNamespaceDecl(RTopLevelDeclOuterPtr outer, std::string name);
+    IR0_API RNamespaceDecl(RTopLevelDeclOuterWPtr outer, std::string name);
 
     const std::string& GetName() { return name; }
 

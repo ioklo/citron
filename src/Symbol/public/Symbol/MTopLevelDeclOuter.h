@@ -23,6 +23,6 @@ public:
     virtual void Accept(MTopLevelDeclOuterVisitor& visitor) = 0;
 };
 
-using MTopLevelDeclOuterPtr = std::weak_ptr<MTopLevelDeclOuter>;
+using MTopLevelDeclOuterWPtr = std::weak_ptr<MTopLevelDeclOuter>;
 
 }

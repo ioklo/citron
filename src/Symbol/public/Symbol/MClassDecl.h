@@ -28,7 +28,7 @@ class MClassDecl
         std::vector<MTypePtr> interfaces;
     };
 
-    MTypeDeclOuterPtr outer;
+    MTypeDeclOuterWPtr outer;
     MAccessor accessor;
 
     MName name;

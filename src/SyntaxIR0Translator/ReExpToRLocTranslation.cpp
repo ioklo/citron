@@ -17,7 +17,7 @@ namespace Citron::SyntaxIR0Translator {
 
 RLocPtr TranslateReThisVarExpToRLoc(ReExp_ThisVar& reExp, TranslationContext& context) // nothrow
 {
-    return context.scopeContext->MakeThisLoc(*context.factory);
+    return context.MakeThisLoc();
 }
 
 RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, TranslationContext& context)
@@ -28,7 +28,7 @@ RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, Translat
         
         if (reExp.explicitInstance != nullptr)
         {   
-            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
             instance = TranslateReExpToRLoc(*reExp.explicitInstance, /* bWrapExpAsLoc */ true, &designatedErrorLogger, context);
             if (!instance) return nullptr;
@@ -38,7 +38,7 @@ RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, Translat
     }
     else // x, x (static) 둘다 해당
     {   
-        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : context.scopeContext->MakeThisLoc(*context.factory);
+        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : context.MakeThisLoc();
         return MakePtr<RLoc_ClassMember>(std::move(rInstanceLoc), reExp.decl, reExp.typeArgs);
     }
 }
@@ -61,7 +61,7 @@ RLocPtr TranslateReStructMemberVarExpToRLoc(ReExp_StructMemberVar& reExp, Transl
 
         if (reExp.explicitInstance != nullptr)
         {
-            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
             instance = TranslateReExpToRLoc(*reExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
             if (!instance)
@@ -73,14 +73,14 @@ RLocPtr TranslateReStructMemberVarExpToRLoc(ReExp_StructMemberVar& reExp, Transl
     else // x, x (static) 둘다 해당
     {   
         // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
-        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : MakePtr<RLoc_LocalDeref>(context.scopeContext->MakeThisLoc(*context.factory));
+        RLocPtr rInstanceLoc = reExp.decl->bStatic ? nullptr : MakePtr<RLoc_LocalDeref>(context.MakeThisLoc());
         return MakePtr<RLoc_StructMember>(rInstanceLoc, reExp.decl, reExp.typeArgs);
     }
 }
 
 RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReExp_EnumElemMemberVar& reExp, TranslationContext& context)
 {   
-    DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+    auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
     auto rInstLoc = TranslateReExpToRLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
     if (!rInstLoc) return nullptr;
@@ -90,7 +90,7 @@ RLocPtr TranslateReEnumElemMemberVarExpToRLoc(ReExp_EnumElemMemberVar& reExp, Tr
 
 RLocPtr TranslateReListIndexerExpToRLoc(ReExp_ListIndexer& reExp, TranslationContext& context)
 {
-    DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+    auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
     auto rInstLoc = TranslateReExpToRLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
     if (!rInstLoc) return nullptr;
@@ -101,7 +101,7 @@ RLocPtr TranslateReListIndexerExpToRLoc(ReExp_ListIndexer& reExp, TranslationCon
 RLocPtr TranslateReLocalDerefExpToRLoc(ReExp_LocalDeref& reExp, TranslationContext& context)
 {
     // *x, *G()
-    DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+    auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
     auto rTargetLoc = TranslateReExpToRLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
     if (!rTargetLoc) return nullptr;
@@ -112,7 +112,7 @@ RLocPtr TranslateReLocalDerefExpToRLoc(ReExp_LocalDeref& reExp, TranslationConte
 RLocPtr TranslateReBoxDerefExpToRLoc(ReExp_BoxDeref& reExp, TranslationContext& context)
 {
     // *x, *G()
-    DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+    auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
     auto rTargetLoc = TranslateReExpToRLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
     if (!rTargetLoc) return nullptr;

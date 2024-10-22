@@ -11,7 +11,7 @@ namespace SyntaxIR0Translator {
 
 class SkeletonPhaseContext;
 
-std::shared_ptr<RStructDecl> InnerMakeStruct(std::shared_ptr<SStructDecl> sDecl, RTypeDeclOuterPtr rOuter, RAccessor accessor, SkeletonPhaseContext& context);
+std::shared_ptr<RStructDecl> InnerMakeStruct(std::shared_ptr<SStructDecl> sDecl, RTypeDeclOuterWPtr rOuter, RAccessor accessor, SkeletonPhaseContext& context);
 
 template<typename TROuter, typename TMakeAccessor>
 std::shared_ptr<RStructDecl> MakeStruct(const std::shared_ptr<TROuter>& rOuter, std::shared_ptr<SStructDecl> sStruct, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)

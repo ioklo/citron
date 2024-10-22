@@ -55,37 +55,37 @@ struct IrExpToRExpTranslator : public IrExpVisitor
     // &NS
     void Visit(IrExp_Namespace& irExp) override
     {
-        context.logger->Fatal_Reference_CantMakeReference();
+        context.Log(&Logger::Fatal_Reference_CantMakeReference);
     }
 
     // &T
     void Visit(IrExp_TypeVar& irExp) override
     {
-        context.logger->Fatal_Reference_CantMakeReference();
+        context.Log(&Logger::Fatal_Reference_CantMakeReference);
     }
 
     // &C
     void Visit(IrExp_Class& irExp) override
     {
-        context.logger->Fatal_Reference_CantMakeReference();
+        context.Log(&Logger::Fatal_Reference_CantMakeReference);
     }
 
     // &S
     void Visit(IrExp_Struct& irExp) override
     {
-        context.logger->Fatal_Reference_CantMakeReference();
+        context.Log(&Logger::Fatal_Reference_CantMakeReference);
     }
 
     // &E
     void Visit(IrExp_Enum& irExp) override
     {
-        context.logger->Fatal_Reference_CantMakeReference();
+        context.Log(&Logger::Fatal_Reference_CantMakeReference);
     }
 
     // &this, this는 특수 키워드이고, local storage에 속하지 않는다. 에러를 내도록 한다
     void Visit(IrExp_ThisVar& irExp) override
     {   
-        context.logger->Fatal_Reference_CantReferenceThis();
+        context.Log(&Logger::Fatal_Reference_CantReferenceThis);
     }
 
     // &C.x
@@ -111,13 +111,13 @@ struct IrExpToRExpTranslator : public IrExpVisitor
     // &(*pS)
     void Visit(IrExp_DerefedBoxValue& irExp) override
     {
-        context.logger->Fatal_Reference_UselessDereferenceReferencedValue();
+        context.Log(&Logger::Fatal_Reference_UselessDereferenceReferencedValue);
     }
 
     // &G()
     void Visit(IrExp_LocalValue& irExp) override
     {
-        context.logger->Fatal_Reference_CantReferenceTempValue();
+        context.Log(&Logger::Fatal_Reference_CantReferenceTempValue);
     }
 };
 

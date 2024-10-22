@@ -110,14 +110,14 @@ public:
     void Visit(SStmt_If& stmt) override 
     {
         // 순회
-        auto rCond = TranslateSExpToRExp(*stmt.cond, /*hintType*/ context.factory->MakeBoolType(), context);
+        auto rCond = TranslateSExpToRExp(*stmt.cond, /*hintType*/ context.MakeBoolType(), context);
         if (!rCond) return Fatal();
 
         // cast
-        rCond = TryCastRExp(std::move(rCond), context.factory->MakeBoolType(), context);
+        rCond = TryCastRExp(std::move(rCond), context.MakeBoolType(), context);
         if (!rCond)
         {
-            context.logger->Fatal_IfStmt_ConditionShouldBeBool();
+            context.Log(&Logger::Fatal_IfStmt_ConditionShouldBeBool);
             return Fatal();
         }
 
@@ -141,7 +141,7 @@ public:
         auto varName = RName_Normal(stmt.varName);
 
         // if (Type varName = e) body         
-        auto testType = context.scopeContext->MakeType(*stmt.testType, *context.factory);
+        auto testType = context.TranslateSTypeExpToRType(*stmt.testType);
 
         auto target = TranslateSExpToRExp(*stmt.exp, /*hintType*/ nullptr, context);
         if (!target) return Fatal();
@@ -160,7 +160,7 @@ public:
             if (!oElseStmts) return Fatal();
         }
 
-        auto asExp = MakeRExp_As(std::move(target), testType, *context.factory);
+        auto asExp = context.MakeRExp_As(std::move(target), testType);
         if (!target) return Fatal();
 
         auto testTypeKind = testType->GetCustomTypeKind();
@@ -193,7 +193,7 @@ public:
         RExpPtr condExp;
         if (stmt.cond)
         {
-            auto boolType = context.factory->MakeBoolType();
+            auto boolType = context.MakeBoolType();
             auto rawCond = TranslateSExpToRExp(*stmt.cond, /*hintType*/ boolType, forStmtContext);
             if (!rawCond) return Fatal();
 
@@ -204,8 +204,8 @@ public:
         RExpPtr continueExp;
         if (stmt.cont)
         {
-            DesignatedErrorLogger errorLogger(*context.logger, &Logger::Fatal_ForStmt_ContinueExpShouldBeAssignOrCall);
-            continueExp = TranslateSExpAsTopLevelExpToRExp(*stmt.cont, /*hintType*/ nullptr, &errorLogger, forStmtContext);
+            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ForStmt_ContinueExpShouldBeAssignOrCall);
+            continueExp = TranslateSExpAsTopLevelExpToRExp(*stmt.cont, /*hintType*/ nullptr, &designatedErrorLogger, forStmtContext);
             if (!continueExp) return Fatal();
         }
 
@@ -219,9 +219,9 @@ public:
 
     void Visit(SStmt_Continue& stmt) override
     {
-        if (!context.scopeContext->IsInLoop())
+        if (!context.IsInLoop())
         {
-            context.logger->Fatal_ContinueStmt_ShouldUsedInLoop();
+            context.Log(&Logger::Fatal_ContinueStmt_ShouldUsedInLoop);
             return Fatal();
         }
 
@@ -230,9 +230,9 @@ public:
 
     void Visit(SStmt_Break& stmt) override
     {
-        if (!context.scopeContext->IsInLoop())
+        if (!context.IsInLoop())
         {
-            context.logger->Fatal_BreakStmt_ShouldUsedInLoop();
+            context.Log(&Logger::Fatal_BreakStmt_ShouldUsedInLoop);
             return Fatal();
         }
 
@@ -242,11 +242,11 @@ public:
     void Visit(SStmt_Return& stmt) override 
     {
         // seq 함수는 여기서 모두 처리 
-        if (context.bodyContext->bSeqFunc)
+        if (context.IsSeqFunc())
         {
             if (stmt.value)
             {
-                context.logger->Fatal_ReturnStmt_SeqFuncShouldReturnVoid();
+                context.Log(&Logger::Fatal_ReturnStmt_SeqFuncShouldReturnVoid);
                 return Fatal();
             }
 
@@ -255,7 +255,7 @@ public:
 
         // 리턴 값이 없을 경우
         
-        auto funcRet = context.bodyContext->GetFuncReturn();
+        auto funcRet = context.GetFuncReturn();
 
         return visit(overloaded {
             [this, &stmt](RFuncReturn_Set& set)
@@ -263,9 +263,9 @@ public:
                 if (!stmt.value)
                 {
                     // 생성자거나, void 함수가 아니라면 에러
-                    if (set.type != context.factory->MakeVoidType())
+                    if (set.type != context.MakeVoidType())
                     {
-                        context.logger->Fatal_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType();
+                        context.Log(&Logger::Fatal_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType);
                         return Fatal();
                     }
 
@@ -283,7 +283,7 @@ public:
                     // 캐스트 실패시
                     if (!castRetValue)
                     {
-                        context.logger->Fatal_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType();
+                        context.Log(&Logger::Fatal_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType);
                         return Fatal();
                     }
 
@@ -296,7 +296,7 @@ public:
                 if (!stmt.value)
                 {
                     // 이 함수는 void로 리턴을 확정 한다.
-                    context.bodyContext->SetFuncReturn(context.factory->MakeVoidType());
+                    context.SetFuncReturn(context.MakeVoidType());
                     return Valid(MakePtr<RStmt_Return>(nullptr));
                 }
                 else
@@ -306,7 +306,7 @@ public:
                     if (!retValue) return Fatal();
 
                     // 리턴값이 안 적혀 있었으므로 적는다
-                    context.bodyContext->SetFuncReturn(retValue->GetType(*context.factory));
+                    context.SetFuncReturn(context.GetType(*retValue));
                     return Valid(MakePtr<RStmt_Return>(std::move(retValue)));
                 }
             },
@@ -357,9 +357,8 @@ public:
 
     void Visit(SStmt_Exp& stmt) override
     {
-        DesignatedErrorLogger errorLogger(*context.logger, &Logger::Fatal_ExpStmt_ExpressionShouldBeAssignOrCall);
-
-        auto exp = TranslateSExpAsTopLevelExpToRExp(*stmt.exp, /*hintType*/ nullptr, &errorLogger, context);
+        auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ExpStmt_ExpressionShouldBeAssignOrCall);
+        auto exp = TranslateSExpAsTopLevelExpToRExp(*stmt.exp, /*hintType*/ nullptr, &designatedErrorLogger, context);
         if (!exp) return Fatal();
 
         return Valid(MakePtr<RStmt_Exp>(exp));
@@ -368,7 +367,7 @@ public:
     void Visit(SStmt_Task& stmt) override 
     {
         vector<SLambdaExpParam> emptyParams;
-        auto oLambdaAndArgs = TranslateSLambdaBodyToRLambdaAndArgs(context.factory->MakeVoidType(), emptyParams, stmt.body, context);
+        auto oLambdaAndArgs = TranslateSLambdaBodyToRLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt.body, context);
         if (!oLambdaAndArgs) return Fatal();
 
         return Valid(MakePtr<RStmt_Task>(std::move(oLambdaAndArgs->decl), std::move(oLambdaAndArgs->args)));
@@ -376,7 +375,7 @@ public:
 
     void Visit(SStmt_Await& stmt) override 
     {
-        auto newContext = context.scopeContext->MakeNestedScopeContext();
+        auto newContext = context.MakeNestedScopeContext();
         auto oBody = TranslateSBodyToRStmts(stmt.body, newContext);
         if (!oBody) return Fatal();
 
@@ -386,7 +385,7 @@ public:
     void Visit(SStmt_Async& stmt) override 
     {
         vector<SLambdaExpParam> emptyParams;
-        auto oLambdaAndArgs = TranslateSLambdaBodyToRLambdaAndArgs(context.factory->MakeVoidType(), emptyParams, stmt.body, context);
+        auto oLambdaAndArgs = TranslateSLambdaBodyToRLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt.body, context);
         if (!oLambdaAndArgs) return Fatal();
 
         return Valid(MakePtr<RStmt_Async>(std::move(oLambdaAndArgs->decl), std::move(oLambdaAndArgs->args)));
@@ -400,14 +399,14 @@ public:
     void Visit(SStmt_Yield& stmt) override 
     {
         // TODO: ref 처리?
-        if (!context.bodyContext->bSeqFunc)
+        if (!context.IsSeqFunc())
         {
-            context.logger->Fatal_YieldStmt_YieldShouldBeInSeqFunc();
+            context.Log(&Logger::Fatal_YieldStmt_YieldShouldBeInSeqFunc);
             return Fatal();
         }
 
         // yield에서는 retType이 명시되는 경우만 있을 것이다
-        auto funcRet= context.bodyContext->GetFuncReturn();
+        auto funcRet= context.GetFuncReturn();
         auto* setFuncRet = get_if<RFuncReturn_Set>(&funcRet);
 
         assert(setFuncRet); // 아닌 경우는 위에서 거른다 (sequence함수는 무조건 ret포함)
@@ -428,11 +427,11 @@ public:
         {
             if (stmt.args.size() != 1)
             {
-                context.logger->Fatal_StaticNotNullDirective_ShouldHaveOneArgument();
+                context.Log(&Logger::Fatal_StaticNotNullDirective_ShouldHaveOneArgument);
                 return Fatal();
             }
 
-            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_StaticNotNullDirective_ArgumentMustBeLocation);
+            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_StaticNotNullDirective_ArgumentMustBeLocation);
             auto arg = TranslateSExpToRLoc(*stmt.args[0], /*hintType*/ nullptr, /*bWrapExpAsLoc*/ false, &designatedErrorLogger, context);
             if (!arg) return Fatal();
 
@@ -504,7 +503,7 @@ optional<vector<RStmtPtr>> TranslateSForStmtInitializerToRStmts(SForStmtInitiali
 
         void Visit(SForStmtInitializer_Exp& forInit) override
         {
-            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ForStmt_ExpInitializerShouldBeAssignOrCall);
+            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ForStmt_ExpInitializerShouldBeAssignOrCall);
             auto exp = TranslateSExpAsTopLevelExpToRExp(*forInit.exp, /*hintType*/ nullptr, &designatedErrorLogger, context);
             if (!exp)
             {
@@ -556,7 +555,7 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
         if (!sParam.type)
             throw NotImplementedException();
 
-        auto rParamType = context.scopeContext->MakeType(*sParam.type, *context.factory);
+        auto rParamType = context.TranslateSTypeExpToRType(*sParam.type);
         rParams.emplace_back(sParam.hasOut, std::move(rParamType), sParam.name);
 
         if (sParam.hasParams)
@@ -602,7 +601,7 @@ optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr
         // TODO: 파라미터 타입은 타입 힌트를 반영해야 한다, ex) func<void, int, int> f = (x, y) => { } 일때, x, y는 int
         if (!sParam.type)
         {
-            context.logger->Fatal_NotSupported_LambdaParameterInference();
+            context.Log(&Logger::Fatal_NotSupported_LambdaParameterInference);
             return nullopt;
         }
 

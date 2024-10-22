@@ -13,7 +13,7 @@ namespace Citron
 class RInterfaceDecl
     : public RTypeDecl
 {
-    RTypeDeclOuterPtr outer;
+    RTypeDeclOuterWPtr outer;
     RAccessor accessor;
 
     RName name;

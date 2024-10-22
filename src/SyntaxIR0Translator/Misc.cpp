@@ -21,13 +21,13 @@ RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationCo
 
     for (auto& typeArg : typeArgs)
     {
-        auto type = context.scopeContext->MakeType(*typeArg, *context.factory);
+        auto type = context.TranslateSTypeExpToRType(*typeArg);
         if (!type) return nullptr;
 
         items.push_back(std::move(type));
     }
 
-    return context.factory->MakeTypeArguments(items);
+    return context.MakeTypeArguments(items);
 }
 
 
@@ -101,43 +101,6 @@ RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext
 
     logger.Fatal_Cast_Failed();
     return nullptr;
-}
-
-RExpPtr MakeRExp_As(RExpPtr&& targetExp, const RTypePtr& testType, RTypeFactory& factory)
-{
-    auto targetType = targetExp->GetType(factory);
-    auto targetTypeKind = targetType->GetCustomTypeKind();
-    auto testTypeKind = testType->GetCustomTypeKind();
-
-    // 5가지 케이스로 나뉜다
-    if (testTypeKind == RCustomTypeKind::Class)
-    {
-        if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<RExp_ClassAsClass>(std::move(targetExp), testType);
-
-        else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<RExp_InterfaceAsClass>(std::move(targetExp), testType);
-        else
-            throw NotImplementedException(); // 에러 처리
-    }
-    else if (testTypeKind == RCustomTypeKind::Interface)
-    {
-        if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<RExp_ClassAsInterface>(std::move(targetExp), testType);
-        else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<RExp_InterfaceAsInterface>(std::move(targetExp), testType);
-        else
-            throw NotImplementedException(); // 에러 처리
-    }
-    else if (testTypeKind == RCustomTypeKind::EnumElem)
-    {
-        if (targetTypeKind == RCustomTypeKind::Enum)
-            return MakePtr<RExp_EnumAsEnumElem>(std::move(targetExp), testType);
-        else
-            throw NotImplementedException(); // 에러 처리
-    }
-    else
-        throw NotImplementedException(); // 에러 처리
 }
 
 

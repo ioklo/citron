@@ -2,15 +2,15 @@
 
 namespace Citron {
 
-RLambdaDecl::RLambdaDecl(RFuncDeclOuterPtr&& outer, RName name)
-    : outer(outer), name(name)
+RLambdaDecl::RLambdaDecl(RFuncDeclOuterWPtr&& outer, RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+    : outer(std::move(outer)), name(std::move(name))
 {
+    RCommonFuncDeclComponent::InitFuncReturnAndParams(std::move(funcReturn), std::move(funcParameters), bLastParameterVariadic);
 }
 
-void RLambdaDecl::Init(std::vector<RLambdaMemberVarDecl>&& memberVars, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic, std::vector<RStmtPtr>&& body)
+void RLambdaDecl::Init(std::vector<RLambdaMemberVarDecl>&& memberVars, std::vector<RStmtPtr>&& body)
 {
     memberVars = std::move(memberVars);
-    RCommonFuncDeclComponent::InitFuncReturnAndParams(std::move(funcReturn), std::move(funcParameters), bLastParameterVariadic);
     RCommonFuncDeclComponent::InitBody(std::move(body));
 }
 

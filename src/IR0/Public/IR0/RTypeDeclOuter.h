@@ -31,6 +31,6 @@ public:
 };
 
 // 역링크이기 때문에 weak로 설정한다
-using RTypeDeclOuterPtr = std::weak_ptr<RTypeDeclOuter>;
+using RTypeDeclOuterWPtr = std::weak_ptr<RTypeDeclOuter>;
 
 }

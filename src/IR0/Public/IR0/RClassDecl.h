@@ -31,7 +31,7 @@ class RClassDecl
         std::vector<std::shared_ptr<RInterface>> interfaces;
     };
 
-    RTypeDeclOuterPtr outer;
+    RTypeDeclOuterWPtr outer;
     RAccessor accessor;
 
     RName name;

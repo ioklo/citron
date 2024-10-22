@@ -24,7 +24,7 @@ struct RName_Reserved
 
 struct RName_Lambda
 {
-    int index;
+    size_t index;
     bool operator==(const RName_Lambda& other) const noexcept = default;
 };
 

@@ -30,6 +30,6 @@ public:
     virtual void Accept(MBodyDeclOuterVisitor& visitor) = 0;
 };
 
-using MBodyDeclOuterPtr = std::weak_ptr<MBodyDeclOuter>;
+using MBodyDeclOuterWPtr = std::weak_ptr<MBodyDeclOuter>;
 
 }

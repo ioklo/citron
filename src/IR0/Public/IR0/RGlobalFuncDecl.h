@@ -52,7 +52,7 @@ class RInternalGlobalFuncDecl
         std::vector<RFuncParameter> parameters;
     };
 
-    RTopLevelDeclOuterPtr outer;
+    RTopLevelDeclOuterWPtr outer;
     RAccessor accessor;    
     RName name;
     std::vector<RName> typeParams;

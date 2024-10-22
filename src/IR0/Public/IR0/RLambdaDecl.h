@@ -22,15 +22,15 @@ class RLambdaDecl
     , public RFuncDecl
     , private RCommonFuncDeclComponent
 {
-    RFuncDeclOuterPtr outer;
+    RFuncDeclOuterWPtr outer;
     RName name;
 
     // 가지고 있어야 할 멤버 변수들, type, name, ref 여부
     std::optional<std::vector<RLambdaMemberVarDecl>> memberVars;
 
 public:
-    RLambdaDecl(RFuncDeclOuterPtr&& outer, RName name);
-    void Init(std::vector<RLambdaMemberVarDecl>&& memberVars, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic, std::vector<RStmtPtr>&& body);
+    RLambdaDecl(RFuncDeclOuterWPtr&& outer, RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    void Init(std::vector<RLambdaMemberVarDecl>&& memberVars, std::vector<RStmtPtr>&& body);
 
     using RCommonFuncDeclComponent::GetReturnType;
 

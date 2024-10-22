@@ -2,7 +2,7 @@
 
 namespace Citron {
 
-RNamespaceDecl::RNamespaceDecl(RTopLevelDeclOuterPtr outer, std::string name)
+RNamespaceDecl::RNamespaceDecl(RTopLevelDeclOuterWPtr outer, std::string name)
     : outer(outer), name(name)
 {
 

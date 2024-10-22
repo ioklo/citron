@@ -12,7 +12,7 @@ namespace SyntaxIR0Translator {
 
 class SkeletonPhaseContext;
 
-std::shared_ptr<REnumDecl> InnerMakeEnum(RTypeDeclOuterPtr rOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context);
+std::shared_ptr<REnumDecl> InnerMakeEnum(RTypeDeclOuterWPtr rOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context);
 
 template<typename TROuter, typename TMakeAccessor>
 std::shared_ptr<REnumDecl> MakeEnum(const std::shared_ptr<TROuter>& rOuter, SEnumDecl& sDecl, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)

@@ -22,11 +22,11 @@ class MNamespaceDecl
     , private MTypeDeclContainerComponent
     , private MFuncDeclContainerComponent<std::shared_ptr<MGlobalFuncDecl>>
 {
-    MTopLevelDeclOuterPtr outer;
+    MTopLevelDeclOuterWPtr outer;
     std::string name;
 
 public:
-    SYMBOL_API MNamespaceDecl(MTopLevelDeclOuterPtr outer, std::string name);
+    SYMBOL_API MNamespaceDecl(MTopLevelDeclOuterWPtr outer, std::string name);
 
     const std::string& GetName() { return name; }
 

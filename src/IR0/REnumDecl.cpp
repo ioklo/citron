@@ -3,7 +3,7 @@
 namespace Citron
 {
 
-REnumDecl::REnumDecl(RTypeDeclOuterPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams, size_t elemCount)
+REnumDecl::REnumDecl(RTypeDeclOuterWPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams, size_t elemCount)
     : outer(std::move(outer))
     , accessor(accessor)
     , name(std::move(name))

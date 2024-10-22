@@ -18,7 +18,7 @@ namespace Citron
 class REnumDecl
     : public RTypeDecl
 {
-    RTypeDeclOuterPtr outer;
+    RTypeDeclOuterWPtr outer;
     RAccessor accessor;
 
     RName name;
@@ -28,7 +28,7 @@ class REnumDecl
     // std::unordered_map<std::string, int> elemsByName;
 
 public:
-    IR0_API REnumDecl(RTypeDeclOuterPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams, size_t elemCount);
+    IR0_API REnumDecl(RTypeDeclOuterWPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams, size_t elemCount);
     IR0_API void AddElem(std::shared_ptr<REnumElemDecl> elem);
     
 public:

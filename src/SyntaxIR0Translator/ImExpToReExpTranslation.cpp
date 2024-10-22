@@ -28,7 +28,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Visit(ImExp_Namespace& imExp) override
     {
-        context.logger->Fatal_ResolveIdentifier_CantUseNamespaceAsExpression();
+        context.Log(&Logger::Fatal_ResolveIdentifier_CantUseNamespaceAsExpression);
     }
 
     // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
@@ -39,12 +39,12 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Visit(ImExp_TypeVar& imExp) override
     {
-        context.logger->Fatal_ResolveIdentifier_CantUseTypeAsExpression();
+        context.Log(&Logger::Fatal_ResolveIdentifier_CantUseTypeAsExpression);
     }
 
     void Visit(ImExp_Class& imExp) override
     {
-        context.logger->Fatal_ResolveIdentifier_CantUseTypeAsExpression();
+        context.Log(&Logger::Fatal_ResolveIdentifier_CantUseTypeAsExpression);
     }
 
     void Visit(ImExp_ClassMemberFuncs& imExp) override
@@ -55,7 +55,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Visit(ImExp_Struct& imExp) override
     {
-        context.logger->Fatal_ResolveIdentifier_CantUseTypeAsExpression();
+        context.Log(&Logger::Fatal_ResolveIdentifier_CantUseTypeAsExpression);
     }
 
     void Visit(ImExp_StructMemberFuncs& imExp) override
@@ -66,7 +66,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Visit(ImExp_Enum& imExp) override
     {
-        context.logger->Fatal_ResolveIdentifier_CantUseTypeAsExpression();
+        context.Log(&Logger::Fatal_ResolveIdentifier_CantUseTypeAsExpression);
     }
 
     void Visit(ImExp_EnumElem& imExp) override

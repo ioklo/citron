@@ -27,6 +27,6 @@ public:
 };
 
 // 역링크이기 때문에 weak로 설정한다
-using MTypeDeclOuterPtr = std::weak_ptr<MTypeDeclOuter>;
+using MTypeDeclOuterWPtr = std::weak_ptr<MTypeDeclOuter>;
 
 }

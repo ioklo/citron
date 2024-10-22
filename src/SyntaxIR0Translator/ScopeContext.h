@@ -31,11 +31,12 @@ class UpdateContext;
 class ScopeContext
 {
 public:
+    BodyContextPtr bodyContext;
     ScopeContextPtr parentContext;
     int nestedLoop;
 
 public:
-    ScopeContext(const ScopeContextPtr& parentContext, int nestedLoop);
+    ScopeContext(const BodyContextPtr& bodyContext, const ScopeContextPtr& parentContext, int nestedLoop);
 
     ScopeContextPtr Clone(CloneContext& context);
     void Update(ScopeContext& src, UpdateContext& context);
@@ -54,7 +55,7 @@ public:
 
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }
-    RTypePtr MakeType(STypeExp& typeExp, RTypeFactory& factory);
+    RTypePtr TranslateSTypeExpToRType(STypeExp& typeExp, RTypeFactory& factory);
 
     std::shared_ptr<RLoc_This> MakeThisLoc(RTypeFactory& factory);
     ImExpPtr ResolveIdentifier(const RName& name, const RTypeArgumentsPtr& typeArgs);

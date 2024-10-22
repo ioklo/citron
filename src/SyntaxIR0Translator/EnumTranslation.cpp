@@ -33,7 +33,7 @@ void AddEnumElem(const shared_ptr<REnumDecl>& rEnum, SEnumElemDecl& sEnumElem, S
     rEnum->AddElem(std::move(rEnumElem));
 }
 
-std::shared_ptr<REnumDecl> InnerMakeEnum(RTypeDeclOuterPtr rOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context)
+std::shared_ptr<REnumDecl> InnerMakeEnum(RTypeDeclOuterWPtr rOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context)
 {
     auto typeParams = MakeTypeParams(sDecl.typeParams);
     auto rDecl = MakePtr<REnumDecl>(std::move(rOuter), accessor, RName_Normal(sDecl.name), typeParams, sDecl.elements.size());

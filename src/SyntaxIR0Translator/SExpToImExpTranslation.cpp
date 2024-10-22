@@ -111,7 +111,7 @@ public:
                 return;
             }
 
-            auto targetType = target->GetType(*context.factory);
+            auto targetType = context.GetType(*target);
 
             if (dynamic_cast<RType_BoxPtr*>(targetType.get()))
             {
@@ -160,12 +160,12 @@ public:
             return;
         }
 
-        auto intType = context.factory->MakeIntType();
+        auto intType = context.MakeIntType();
 
         RLocPtr rIndexLoc;
-        if (reIndex->GetType(*context.factory) != intType)
+        if (context.GetType(*reIndex) != intType)
         {
-            context.logger->SetSyntax(exp.index);
+            context.SetSyntax(exp.index);
             auto rIndexExp = TranslateReExpToRExp(*reIndex, context);
             if (!rIndexExp)
             {
@@ -184,7 +184,7 @@ public:
         }
         else
         {
-            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
             rIndexLoc = TranslateReExpToRLoc(*reIndex, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
             if (!rIndexLoc)
@@ -199,7 +199,7 @@ public:
 
         // 리스트 타입의 경우,
         RTypePtr itemType;
-        if (context.factory->IsListType(reObj->GetType(*context.factory), &itemType))
+        if (context.IsListType(context.GetType(*reObj), &itemType))
         {
             *result = MakePtr<ImExp_ListIndexer>(std::move(reObj), std::move(reIndex), std::move(itemType));
             return;

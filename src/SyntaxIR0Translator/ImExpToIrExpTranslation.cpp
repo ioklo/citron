@@ -9,7 +9,7 @@
 #include "ImExp.h"
 #include "IrExp.h"
 
-#include "ScopeContext.h"
+#include "TranslationContext.h"
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -105,7 +105,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         else // &this.x
         {
             // auto classType = imExp.decl->GetClassType(imExp.typeArgs, factory);
-            *result = MakePtr<IrExp_BoxRef_ClassMember>(context.scopeContext->MakeThisLoc(*context.factory), imExp.decl, imExp.typeArgs);
+            *result = MakePtr<IrExp_BoxRef_ClassMember>(context.MakeThisLoc(), imExp.decl, imExp.typeArgs);
         }
     }
 
@@ -120,7 +120,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            auto rDerefThisLoc = MakePtr<RLoc_LocalDeref>(context.scopeContext->MakeThisLoc(*context.factory));
+            auto rDerefThisLoc = MakePtr<RLoc_LocalDeref>(context.MakeThisLoc());
             *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_StructMember>(rDerefThisLoc, imExp.decl, imExp.typeArgs));
         }
     }

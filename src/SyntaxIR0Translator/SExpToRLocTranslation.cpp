@@ -42,7 +42,7 @@ public:
     {
         if (auto reExp = TranslateSExpToReExp(sExp, hintType, context))
         {
-            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
             *result = TranslateReExpToRLoc(*reExp, bWrapExpAsLoc, &designatedErrorLogger, context);
         }
         else // invalid

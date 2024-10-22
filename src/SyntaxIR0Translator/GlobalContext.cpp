@@ -29,11 +29,6 @@ void GlobalContext::Update(const GlobalContextPtr& src, UpdateContext& updateCon
     assert(binOpQueryService == src->binOpQueryService);
 }
 
-const std::vector<BinOpInfo>& GlobalContext::GetBinOpInfos(SBinaryOpKind kind)
-{
-    return binOpQueryService->GetInfos(kind);
-}
-
 ScopeContextPtr GlobalContext::MakeNewScopeContext(const GlobalContextPtr& sharedThis, const RFuncDeclPtr& funcDecl, const RTypeArgumentsPtr& typeArgs, bool bSeqFunc, const RFuncReturn& funcReturn)
 {
     auto newBodyContext = MakePtr<BodyContext>(moduleDecls, /*outerScopeContext*/ nullptr, funcDecl, typeArgs, bSeqFunc, funcReturn);

@@ -38,6 +38,6 @@ public:
     virtual void Accept(RFuncDeclOuterVisitor& visitor) = 0;
 };
 
-using RFuncDeclOuterPtr = std::weak_ptr<RFuncDeclOuter>;
+using RFuncDeclOuterWPtr = std::weak_ptr<RFuncDeclOuter>;
 
 }

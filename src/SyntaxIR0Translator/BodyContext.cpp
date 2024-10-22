@@ -1,58 +1,82 @@
 #include "pch.h"
 #include "BodyContext.h"
 
+#include <variant>
+
+#include <Infra/Ptr.h>
+#include <Infra/Variants.h>
 #include <IR0/RLambdaMemberVarDecl.h>
 #include <IR0/RArgument.h>
 #include <IR0/RFuncDecl.h>
+#include <IR0/RFuncDeclOuter.h>
+
+#include "ScopeContext.h"
+
+using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
 // static RName thisName = RName_Normal("this");
-
-BodyContext::BodyContext(const ModuleDeclsPtr& moduleDecls, const RFuncDeclPtr& funcDecl, bool bSeqFunc, const RFuncReturn& funcReturn, const ScopeContextPtr& outerScopeContext, const RTypeFactoryPtr& factory)
-    : moduleDecls(moduleDecls), funcDecl(funcDecl), bSeqFunc(bSeqFunc), funcReturn(std::move(funcReturn)), outerScopeContext(outerScopeContext), factory(factory)
+BodyContext::BodyContext(const ModuleDeclsPtr& moduleDecls, BodyContextOuter&& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
+    : moduleDecls(moduleDecls), outer(std::move(outer)), bSeqFunc(bSeqFunc), funcReturn(std::move(funcReturn)), funcParams(std::move(funcParams)), bLastParamVariadic(bLastParamVariadic)
 {
 }
 
-BodyContextPtr BodyContext::Clone(CloneContext& context)
+BodyContextPtr BodyContext::MakeLambdaBodyContext(const ScopeContextPtr& curScopeContext, RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
 {
-    auto newOuterScopeContext = outerScopeContext ? context.GetClone(outerScopeContext) : nullptr;
-    auto newBodyContext = MakePtr<BodyContext>(moduleDecls, funcDecl, bSeqFunc, funcReturn, newOuterScopeContext, factory);
-
-    newBodyContext->lambdaMemberVarAndInitArgs = lambdaMemberVarAndInitArgs;
-    newBodyContext->lambdaDecls = lambdaDecls;
-
-    return newBodyContext;
+    // lambda이므로 outer는 scopeContext이다
+    return MakePtr<BodyContext>(moduleDecls, BodyContextOuter_ScopeContext { curScopeContext }, /*bSeqFunc*/ false, std::move(funcRet), std::move(funcParams), bLastParamVariadic);
 }
 
-void BodyContext::Update(const BodyContextPtr& src, UpdateContext& context)
-{
-    // 안변하는 것들은 assert
-    assert(moduleDecls == src->moduleDecls);
-    assert(funcDecl == src->funcDecl);
-    assert(bSeqFunc == src->bSeqFunc);
-
-    funcReturn = src->funcReturn;
-    context.Update(outerScopeContext, src->outerScopeContext);
-
-    assert(factory == src->factory);
-
-    lambdaMemberVarAndInitArgs = src->lambdaMemberVarAndInitArgs;
-    lambdaDecls = src->lambdaDecls;
-}
+//BodyContextPtr BodyContext::Clone(CloneContext& context)
+//{
+//    auto* scopeContextOuter = get_if<BodyContextOuter_ScopeContext>(&outer);
+//
+//    auto newOuterScopeContext = scopeContextOuter ? context.GetClone(scopeContextOuter->scopeContext) : nullptr;
+//    auto newBodyContext = MakePtr<BodyContext>(moduleDecls, funcDecl, bSeqFunc, funcReturn, newOuterScopeContext, factory);
+//
+//    newBodyContext->lambdaMemberVarAndInitArgs = lambdaMemberVarAndInitArgs;
+//    newBodyContext->lambdaDecls = lambdaDecls;
+//
+//    return newBodyContext;
+//}
+//
+//
+//void BodyContext::Update(const BodyContextPtr& src, UpdateContext& context)
+//{
+//    // 안변하는 것들은 assert
+//    assert(moduleDecls == src->moduleDecls);
+//    assert(funcDecl == src->funcDecl);
+//    assert(bSeqFunc == src->bSeqFunc);
+//
+//    funcReturn = src->funcReturn;
+//    context.Update(outerScopeContext, src->outerScopeContext);
+//
+//    assert(factory == src->factory);
+//
+//    lambdaMemberVarAndInitArgs = src->lambdaMemberVarAndInitArgs;
+//    lambdaDecls = src->lambdaDecls;
+//}
     
 bool BodyContext::CanAccess(RDecl* target)
 {
-    return funcDecl->CanAccess(target);
+    // TODO: 현재 scope에서 access check
+
+    return visit(overloaded {
+        [target](BodyContextOuter_RFuncDeclOuter& outer) { return outer.decl->GetDecl()->CanAccess(target); },
+        [target](BodyContextOuter_ScopeContext& outer) { return outer.scopeContext->bodyContext->CanAccess(target); }
+    }, outer);
 }
 
-RFuncDecl* BodyContext::GetOutermostFuncDecl()
-{
-    if (outerScopeContext)
-        return outerScopeContext->bodyContext->GetOutermostFuncDecl();
+// 아직 FuncDecl이 안 만들어진 시기이기 때문에 이 함수가 만들어 질 수가 없다
+//RFuncDecl* BodyContext::GetOutermostFuncDecl()
+//{
+//    return visit(overloaded {
+//        [](BodyContextOuter_RFuncDeclOuter& outer) { return this; }, // ???
+//        [](BodyContextOuter_ScopeContext& outer) { return outer.scopeContext->bodyContext->GetOutermostFuncDecl(); }
+//    }, outer);
+//}   
 
-    return funcDecl.get();
-}   
 
 struct DeclTypeVisitor : ITypeExpVisitor<DeclTypeInfo>
     {
@@ -362,21 +386,7 @@ struct DeclTypeVisitor : ITypeExpVisitor<DeclTypeInfo>
 
         return (LambdaMemberVarSymbol)memberVarDeclSymbol.MakeOpenSymbol(symbolFactory);
     }
-
-    // 여기서 인자로 들어온 ret는 null이면 아직 모른다는 뜻 (constructor라는 뜻이 아님)
-    public (BodyContext, LambdaSymbol) MakeLambdaBodyContext(ScopeContext outerScopeContext, FuncReturn ? ret, ImmutableArray<FuncParameter> parameters, bool bLastParamVariadic)
-    {
-        var lambdaD = new LambdaDeclSymbol(funcDeclSymbol, new Name.Anonymous(lambdaDs.Length), parameters, bLastParamVariadic);
-        lambdaDs = lambdaDs.Add(lambdaD); // staging
-
-        BodyContext newBodyContext = (ret != null)
-            ? new BodyContext(moduleDeclSymbols, symbolFactory, outerScopeContext, lambdaD, bSeqFunc: false, bSetReturn : true, funcReturn : ret.Value)
-            : new BodyContext(moduleDeclSymbols, symbolFactory, outerScopeContext, lambdaD, bSeqFunc: false, bSetReturn : false, funcReturn : null);
-
-        var lambda = (LambdaSymbol)lambdaD.MakeOpenSymbol(symbolFactory);
-        return (newBodyContext, lambda);
-    }
-
+    
     public void CommitLambdasToDeclSymbolTree()
     {
         foreach(var lambda in lambdaDs)

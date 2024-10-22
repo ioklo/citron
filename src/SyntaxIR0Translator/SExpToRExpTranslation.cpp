@@ -54,7 +54,7 @@ RExpPtr TranslateSNullLiteralExpToRExp(SExp_NullLiteral& exp, const RTypePtr& hi
 
     // TODO: if (a == nullptr)도 반영해야 한다
     throw NotImplementedException();
-    context.logger->Fatal_Reference_CantMakeReference();
+    context.Log(&Logger::Fatal_Reference_CantMakeReference);
     return nullptr;
 }
 
@@ -74,17 +74,17 @@ optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const 
     // TranslationResult<R.StringExpElement> Error() = > TranslationResult.Error<R.StringExpElement>();
     // var stringType = context.GetStringType();
 
-    context.logger->SetSyntax(elem);
+    context.SetSyntax(elem);
 
     if (auto* expElem = dynamic_cast<SStringExpElement_Exp*>(elem.get()))
     {
         auto reExp = TranslateSExpToReExp(*expElem->exp, /* hintType */ nullptr, context);
         if (!reExp) return nullopt;
 
-        auto reExpType = reExp->GetType(*context.factory);
+        auto reExpType = context.GetType(*reExp);
 
         // 캐스팅이 필요하다면 
-        if (reExpType == context.factory->MakeIntType())
+        if (reExpType == context.MakeIntType())
         {   
             auto rExp = TranslateReExpToRExp(*reExp, context);
             if (!rExp) return nullopt;
@@ -93,7 +93,7 @@ optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const 
                 MakePtr<RLoc_Temp>(
                     MakePtr<RExp_CallInternalUnaryOperator>(RInternalUnaryOperator::ToString_Int_String, std::move(rExp))));
         }
-        else if (reExpType == context.factory->MakeBoolType())
+        else if (reExpType == context.MakeBoolType())
         {
             auto rExp = TranslateReExpToRExp(*reExp, context);
             if (!rExp) return nullopt;
@@ -102,9 +102,9 @@ optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const 
                 MakePtr<RLoc_Temp>(
                     MakePtr<RExp_CallInternalUnaryOperator>(RInternalUnaryOperator::ToString_Bool_String, std::move(rExp))));
         }
-        else if (reExpType == context.factory->MakeStringType())
+        else if (reExpType == context.MakeStringType())
         {
-            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
             auto rLoc = TranslateReExpToRLoc(*reExp, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
             if (!rLoc) return nullopt;
@@ -114,7 +114,7 @@ optional<RStringExpElement> TranslateSStringExpElementToRStringExpElement(const 
         else
         {
             // TODO: ToString
-            context.logger->Fatal_StringExp_ExpElementShouldBeBoolOrIntOrString();
+            context.Log(&Logger::Fatal_StringExp_ExpElementShouldBeBoolOrIntOrString);
             return nullopt;
         }
     }
@@ -158,14 +158,14 @@ RExpPtr TranslateSIntUnaryAssignExpToRExp(SExp& operand, RInternalUnaryAssignOpe
     // var& x = i; x++; (o)
     // throws NotLocationException
     
-    DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_UnaryAssignOp_AssignableExpressionIsAllowedOnly);
+    auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_UnaryAssignOp_AssignableExpressionIsAllowedOnly);
     auto rOperand = TranslateSExpToRLoc(operand, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedErrorLogger, context);
     if (!rOperand) return nullptr;
 
     // int type 검사, exact match
-    if (rOperand->GetType(*context.factory) != context.factory->MakeIntType())
+    if (context.GetType(*rOperand) != context.MakeIntType())
     {
-        context.logger->Fatal_UnaryAssignOp_AssignableExpressionIsAllowedOnly();
+        context.Log(&Logger::Fatal_UnaryAssignOp_AssignableExpressionIsAllowedOnly);
         return nullptr;
     }
 
@@ -182,7 +182,7 @@ RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, TranslationCon
         return TranslateSExpRefToRExp(*sExp.operand, context);
     }
 
-    context.logger->SetSyntax(sExp.operand);
+    context.SetSyntax(sExp.operand);
     auto rOperand = TranslateSExpToRExp(*sExp.operand, /*hintType*/ nullptr, context);
     if (!rOperand) return nullptr;
 
@@ -192,9 +192,9 @@ RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, TranslationCon
     case SUnaryOpKind::LogicalNot:
     {
         // exact match
-        if (rOperand->GetType(*context.factory) != context.factory->MakeBoolType())
+        if (context.GetType(*rOperand) != context.MakeBoolType())
         {   
-            context.logger->Fatal_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly();
+            context.Log(&Logger::Fatal_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly);
             return nullptr;
         }
 
@@ -203,9 +203,9 @@ RExpPtr TranslateSUnaryOpExpToRExpExceptDeref(SExp_UnaryOp& sExp, TranslationCon
 
     case SUnaryOpKind::Minus:
     {
-        if (rOperand->GetType(*context.factory) != context.factory->MakeIntType())
+        if (context.GetType(*rOperand) != context.MakeIntType())
         {
-            context.logger->Fatal_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly();
+            context.Log(&Logger::Fatal_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly);
             return nullptr;
         }
 
@@ -233,8 +233,8 @@ RExpPtr TranslateSAssignBinaryOpExpToRExp(SExp_BinaryOp& exp, TranslationContext
 {
     // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
 
-    context.logger->SetSyntax(exp.operand0);
-    DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_BinaryOp_LeftOperandIsNotAssignable);
+    context.SetSyntax(exp.operand0);
+    auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_BinaryOp_LeftOperandIsNotAssignable);
     auto rDestLoc = TranslateSExpToRLoc(*exp.operand0, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedErrorLogger, context);
     if (!rDestLoc) return nullptr;
 
@@ -243,22 +243,22 @@ RExpPtr TranslateSAssignBinaryOpExpToRExp(SExp_BinaryOp& exp, TranslationContext
     if (dynamic_cast<RLoc_LambdaMemberVar*>(pRDestLoc))
     {
         // int x = 0; var l = () { x = 3; }, TODO: 이거 가능하도록
-        context.logger->Fatal_BinaryOp_LeftOperandIsNotAssignable();
+        context.Log(&Logger::Fatal_BinaryOp_LeftOperandIsNotAssignable);
         return nullptr;
     }
     else if (dynamic_cast<RLoc_This*>(pRDestLoc))
     {
-        context.logger->Fatal_BinaryOp_LeftOperandIsNotAssignable();
+        context.Log(&Logger::Fatal_BinaryOp_LeftOperandIsNotAssignable);
         return nullptr;
     }
     else if (dynamic_cast<RLoc_Temp*>(pRDestLoc))
     {
-        context.logger->Fatal_BinaryOp_LeftOperandIsNotAssignable();
+        context.Log(&Logger::Fatal_BinaryOp_LeftOperandIsNotAssignable);
         return nullptr;
     }
 
-    auto rDestLocType = rDestLoc->GetType(*context.factory);
-    context.logger->SetSyntax(exp.operand1);
+    auto rDestLocType = context.GetType(*rDestLoc);
+    context.SetSyntax(exp.operand1);
     auto rSrcExp = TranslateSExpToRExp(*exp.operand1, /*hintType*/ rDestLocType, context);
     if (!rSrcExp) return nullptr;
 
@@ -285,7 +285,7 @@ RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, TranslationContext& cont
     // 2. NotEqual 처리
     if (exp.kind == SBinaryOpKind::NotEqual)
     {
-        const auto& equalInfos = context.binOpQueryService->GetInfos(SBinaryOpKind::Equal);
+        const auto& equalInfos = context.GetBinOpInfos(SBinaryOpKind::Equal);
         
         for(auto& info : equalInfos)
         {
@@ -302,7 +302,7 @@ RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, TranslationContext& cont
     }
 
     // 3. InternalOperator에서 검색            
-    auto matchedInfos = context.binOpQueryService->GetInfos(exp.kind);
+    auto matchedInfos = context.GetBinOpInfos(exp.kind);
     for(auto& info : matchedInfos)
     {
         auto castExp0 = TryCastRExp(RExpPtr(operand0), info.operandType0, context);
@@ -317,7 +317,7 @@ RExpPtr TranslateSBinaryOpExpToRExp(SExp_BinaryOp& exp, TranslationContext& cont
     }
 
     // Operator를 찾을 수 없습니다
-    context.logger->Fatal_BinaryOp_OperatorNotFound();
+    context.Log(&Logger::Fatal_BinaryOp_OperatorNotFound);
     return nullptr;
 }
 
@@ -348,7 +348,7 @@ RExpPtr TranslateSListExpToRExp(SExp_List& exp, TranslationContext& context)
         auto rElem = TranslateSExpToRExp(*elem, /*hintType*/ nullptr, context);
         if (!rElem) return nullptr;
 
-        auto rElemType = rElem->GetType(*context.factory);
+        auto rElemType = context.GetType(*rElem);
         elems.push_back(std::move(rElem));
 
         if (curElemType == nullptr)
@@ -359,14 +359,14 @@ RExpPtr TranslateSListExpToRExp(SExp_List& exp, TranslationContext& context)
 
         if (curElemType != rElemType)
         {
-            context.logger->Fatal_ListExp_MismatchBetweenElementTypes();
+            context.Log(&Logger::Fatal_ListExp_MismatchBetweenElementTypes);
             return nullptr;
         }
     }
 
     if (curElemType == nullptr)
     {
-        context.logger->Fatal_ListExp_CantInferElementTypeWithEmptyElement();
+        context.Log(&Logger::Fatal_ListExp_CantInferElementTypeWithEmptyElement);
         return nullptr;
     }
 
@@ -375,10 +375,10 @@ RExpPtr TranslateSListExpToRExp(SExp_List& exp, TranslationContext& context)
 
 RExpPtr TranslateSNewExpToRExp(SExp_New& exp, TranslationContext& context) // throws ErrorCodeException
 {
-    auto rType = context.scopeContext->MakeType(*exp.type, *context.factory);
+    auto rType = context.TranslateSTypeExpToRType(*exp.type);
     if (rType->GetCustomTypeKind() == RCustomTypeKind::Class)
     {
-        context.logger->Fatal_NewExp_TypeIsNotClass();
+        context.Log(&Logger::Fatal_NewExp_TypeIsNotClass);
         return nullptr;
     }
 
@@ -421,10 +421,10 @@ RExpPtr TranslateSIsExpToRExp(SExp_Is& exp, TranslationContext& context)
     auto target = TranslateSExpToRExp(*exp.exp, /*hintType*/ nullptr, context);
     if (!target) return nullptr;
 
-    auto targetType = target->GetType(*context.factory);
+    auto targetType = context.GetType(*target);
     auto targetTypeKind = targetType->GetCustomTypeKind();
 
-    auto testType = context.scopeContext->MakeType(*exp.type, *context.factory);
+    auto testType = context.TranslateSTypeExpToRType(*exp.type);
     auto testTypeKind = testType->GetCustomTypeKind();
 
     // 5가지 케이스로 나뉜다
@@ -462,9 +462,9 @@ RExpPtr TranslateSAsExpToRExp(SExp_As& exp, TranslationContext& context)
     auto rTarget = TranslateSExpToRExp(*exp.exp, /* hintType */ nullptr, context);
     if (!rTarget) return nullptr;    
 
-    auto rTestType = context.scopeContext->MakeType(*exp.type, *context.factory);
+    auto rTestType = context.TranslateSTypeExpToRType(*exp.type);
 
-    return MakeRExp_As(std::move(rTarget), rTestType, *context.factory);
+    return context.MakeRExp_As(std::move(rTarget), rTestType);
 }
 
 namespace {
@@ -539,7 +539,7 @@ public:
 
     void Visit(SExp_Lambda& exp) override
     {
-        // context.logger->SetSyntax(syntax);
+        // context.SetSyntax(syntax);
         *result = TranslateSLambdaExpToRExp(exp, context);
     }
 

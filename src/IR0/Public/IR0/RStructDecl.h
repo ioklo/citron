@@ -38,7 +38,7 @@ class RStructDecl
         std::vector<RTypePtr> interfaces;
     };
 
-    RTypeDeclOuterPtr outer;
+    RTypeDeclOuterWPtr outer;
     RAccessor accessor;
 
     RName name;
@@ -52,7 +52,7 @@ class RStructDecl
     std::optional<BaseTypes> oBaseTypes;
 
 public:
-    IR0_API RStructDecl(RTypeDeclOuterPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams);
+    IR0_API RStructDecl(RTypeDeclOuterWPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams);
     IR0_API void InitBaseTypes(RTypePtr baseStruct, std::vector<RTypePtr> interfaces);
 
 public:

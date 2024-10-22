@@ -115,7 +115,7 @@ public:
         }
         else if (exp.kind == SUnaryOpKind::Deref) // *pS
         {
-            DesignatedErrorLogger designatedErrorLogger(*context.logger, &Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
             auto rOperandLoc = TranslateSExpToRLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
             if (!rOperandLoc)
@@ -161,7 +161,7 @@ public:
 
         auto typeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, context);
 
-        context.logger->SetSyntax(exp.parent);
+        context.SetSyntax(exp.parent);
         *result = TranslateIrExpAndMemberNameToIrExp(parent, RName_Normal(exp.memberName), std::move(typeArgsExceptOuter), context);
     }
 

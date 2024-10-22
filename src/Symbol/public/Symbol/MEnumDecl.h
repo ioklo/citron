@@ -18,7 +18,7 @@ class MEnumDecl
     : public MDecl
     , public MTypeDecl
 {
-    MTypeDeclOuterPtr outer;
+    MTypeDeclOuterWPtr outer;
     MAccessor accessor;
 
     MName name;
