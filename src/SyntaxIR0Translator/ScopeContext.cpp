@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "ScopeContext.h"
 
-namespace Citron::SyntaxIR0Translator {
+#include <Syntax/Syntax.h>
+#include <IR0/RType.h>
 
+namespace Citron::SyntaxIR0Translator {
 
 
 };

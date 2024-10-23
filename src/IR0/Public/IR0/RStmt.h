@@ -101,7 +101,7 @@ public:
     std::string name;
     RExpPtr initExp;
 public:
-    IR0_API RStmt_LocalVarDecl();
+    IR0_API RStmt_LocalVarDecl(const RTypePtr& type, const std::string& name, RExpPtr&& initExp);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 

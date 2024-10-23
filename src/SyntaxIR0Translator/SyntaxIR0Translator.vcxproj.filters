@@ -89,6 +89,7 @@
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
+    <ClCompile Include="DeclTypeInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -180,6 +181,7 @@
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="ModuleDecls.h" />
+    <ClInclude Include="DeclTypeInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

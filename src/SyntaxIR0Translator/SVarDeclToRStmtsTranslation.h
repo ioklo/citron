@@ -6,13 +6,14 @@
 
 namespace Citron {
 
+class SVarDecl;
 using RStmtPtr = std::shared_ptr<class RStmt>;
 
 namespace SyntaxIR0Translator {
 
-class ScopeContext;
+class TranslationContext;
 
-std::optional<std::vector<RStmtPtr>> TranslateSVarDeclToRStmts(SVarDecl& varDecl, TranslationContext& context);
+bool TranslateSVarDeclToRStmts(SVarDecl& varDecl, std::vector<RStmtPtr>* outResult, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 

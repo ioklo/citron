@@ -38,6 +38,7 @@
   <ItemGroup>
     <ClCompile Include="BodyContext.cpp" />
     <ClCompile Include="BodyPhaseContext.cpp" />
+    <ClCompile Include="DeclTypeInfo.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
     <ClCompile Include="GlobalContext.cpp" />
@@ -83,6 +84,7 @@
   <ItemGroup>
     <ClInclude Include="BodyContext.h" />
     <ClInclude Include="BodyPhaseContext.h" />
+    <ClInclude Include="DeclTypeInfo.h" />
     <ClInclude Include="FuncMatching.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
     <ClInclude Include="GlobalContext.h" />

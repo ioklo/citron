@@ -16,6 +16,8 @@
 #include "BodyContext.h"
 #include "BinOpQueryService.h"
 
+using namespace std;
+
 namespace Citron::SyntaxIR0Translator {
 
 TranslationContext::TranslationContext(const GlobalContextPtr& globalContext, const BodyContextPtr& bodyContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RTypeFactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService)
@@ -25,20 +27,20 @@ TranslationContext::TranslationContext(const GlobalContextPtr& globalContext, co
 
 TranslationContext TranslationContext::MakeNestedScopeContext()
 {
-    auto newScopeContext = MakePtr<ScopeContext>(scopeContext, scopeContext->nestedLoop);
+    auto newScopeContext = MakePtr<ScopeContext>(bodyContext, scopeContext, scopeContext->nestedLoop);
     return { globalContext, bodyContext, newScopeContext, logger, factory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeNestedLoopScopeContext()
 {
-    auto newScopeContext = MakePtr<ScopeContext>(scopeContext, scopeContext->nestedLoop + 1);
+    auto newScopeContext = MakePtr<ScopeContext>(bodyContext, scopeContext, scopeContext->nestedLoop + 1);
     return { globalContext, bodyContext, newScopeContext, logger, factory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
 {   
     auto newBodyContext = bodyContext->MakeLambdaBodyContext(scopeContext, std::move(funcRet), std::move(funcParams), bLastParamVariadic);
-    auto newScopeContext = MakePtr<ScopeContext>(nullptr, 0);
+    auto newScopeContext = MakePtr<ScopeContext>(newBodyContext, nullptr, 0);
 
     return { globalContext, newBodyContext, newScopeContext, logger, factory, binOpQueryService };
 }
@@ -115,6 +117,88 @@ bool TranslationContext::IsInLoop()
 {
     return scopeContext->IsInLoop();
 }
+
+struct DeclTypeVisitor : public STypeExpVisitor
+{
+    DeclTypeInfo* result;
+    TranslationContext& context;
+
+public:
+    DeclTypeVisitor(DeclTypeInfo* result, TranslationContext& context)
+        : result(result), context(context)
+    {
+    }
+
+private:
+    bool IsVarType(STypeExp& typeExp)
+    {
+        auto* idTypeExp = dynamic_cast<STypeExp_Id*>(&typeExp);
+        return idTypeExp && idTypeExp->name == "var" && idTypeExp->typeArgs.size() == 0;
+    }
+
+    void Normal(STypeExp& typeExp)
+    {
+        auto type = context.TranslateSTypeExpToRType(typeExp);
+        *result = DeclTypeInfo(DeclTypeInfoKind::Normal, type);
+    }
+
+    void Visit(STypeExp_Id& typeExp) override
+    {
+        if (!IsVarType(typeExp))
+            return Normal(typeExp);
+
+        *result = DeclTypeInfo { DeclTypeInfoKind::PlainVar, /*type*/ nullptr };
+    }
+
+    void Visit(STypeExp_Member& typeExp) override
+    {
+        return Normal(typeExp);
+    }
+
+    // var?
+    void Visit(STypeExp_Nullable& typeExp) override
+    {
+        if (!IsVarType(*typeExp.innerType))
+            return Normal(typeExp);
+
+        *result = DeclTypeInfo { DeclTypeInfoKind::NullableVar, /*type*/ nullptr };
+    }
+
+    void Visit(STypeExp_LocalPtr& typeExp) override
+    {
+        if (!IsVarType(*typeExp.innerType))
+            return Normal(typeExp);
+
+        *result = DeclTypeInfo { DeclTypeInfoKind::LocalPtrVar, /*type*/ nullptr };
+    }
+
+    void Visit(STypeExp_BoxPtr& typeExp) override
+    {
+        if (!IsVarType(*typeExp.innerType))
+            return Normal(typeExp);
+
+        *result = DeclTypeInfo { DeclTypeInfoKind::BoxPtrVar, /*type*/ nullptr };
+    }
+
+    // local var i = ...
+    void Visit(STypeExp_Local& typeExp) override
+    {
+        if (!IsVarType(*typeExp.innerType))
+            return Normal(typeExp);
+
+        *result = DeclTypeInfo { DeclTypeInfoKind::LocalInterfaceVar, /*type*/ nullptr };
+    }
+};
+
+DeclTypeInfo TranslationContext::GetDeclTypeInfo(STypeExp& typeExp)
+{
+    DeclTypeInfo info;
+    DeclTypeVisitor visitor(&info, *this);
+    typeExp.Accept(visitor);
+    return info;
+}
+
+
 
 
 bool TranslationContext::CanAccess(RDecl* target)

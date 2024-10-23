@@ -4,18 +4,20 @@
 #include <vector>
 #include <IR0/RFuncReturn.h>
 #include "DesignatedErrorLogger.h"
+#include "DeclTypeInfo.h"
 
 using RFuncDeclPtr = std::shared_ptr<class RFuncDecl>;
 
 namespace Citron {
 
 class STypeExp;
-class RExp;
 class RLoc;
 class RLoc_This;
 
 enum class SBinaryOpKind;
 
+using SSyntaxPtr = std::shared_ptr<class SSyntax>;
+using RExpPtr = std::shared_ptr<class RExp>;
 using LoggerPtr = std::shared_ptr<class Logger>;
 using RTypeFactoryPtr = std::shared_ptr<class RTypeFactory>;
 using RTypePtr = std::shared_ptr<class RType>;
@@ -32,7 +34,6 @@ using BodyContextPtr = std::shared_ptr<class BodyContext>;
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 using TranslationContextPtr = std::shared_ptr<class TranslationContext>;
-
 
 class TranslationContext
 {
@@ -60,6 +61,9 @@ public:
 
 public: // for scopeContext
     bool IsInLoop();
+    DeclTypeInfo GetDeclTypeInfo(STypeExp& typeExp);
+    bool DoesLocalVarNameExistInScope(const std::string& name);
+    void AddLocalVarInfo(const RTypePtr& type, RName&& name);
 
 public: // for bodyContext
     bool CanAccess(RDecl* target);
@@ -71,7 +75,7 @@ public: // for logging
     template<typename TFunc>
     void Log(TFunc func)
     {
-        (logger->*func)();
+        (logger.get()->*func)();
     }
 
     void SetSyntax(const SSyntaxPtr& syntax);

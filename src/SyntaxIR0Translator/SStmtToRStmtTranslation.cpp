@@ -101,10 +101,11 @@ public:
     {
         // int a;
         // auto x = 
-        auto rStmts = TranslateSVarDeclToRStmt(stmt.varDecl, context);
-        if (!rStmts) return Fatal();
-
-        return Valid(std::move(*rStmts));
+        if (!TranslateSVarDeclToRStmts(stmt.varDecl, result, context))
+        {
+            *bFatal = true;
+            return;
+        }
     }
 
     void Visit(SStmt_If& stmt) override 
@@ -147,7 +148,7 @@ public:
         if (!target) return Fatal();
 
         auto bodyContext = context.MakeNestedScopeContext();
-        bodyContext.scopeContext->AddLocalVarInfo(testType, varName);        
+        bodyContext.AddLocalVarInfo(testType, varName);        
 
         auto oBodyStmts = TranslateSEmbeddableStmtToRStmts(*stmt.body, bodyContext);
         if (!oBodyStmts) return Fatal();
@@ -516,7 +517,14 @@ optional<vector<RStmtPtr>> TranslateSForStmtInitializerToRStmts(SForStmtInitiali
 
         void Visit(SForStmtInitializer_VarDecl& forInit) override
         {
-            *result = TranslateSVarDeclToRStmts(forInit.varDecl, context);
+            std::vector<RStmtPtr> rStmts;
+            if (!TranslateSVarDeclToRStmts(forInit.varDecl, &rStmts, context))
+            {
+                *result = nullopt;
+                return;
+            }
+
+            *result = std::move(rStmts);
         }
     };
 

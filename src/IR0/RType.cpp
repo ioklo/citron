@@ -160,8 +160,8 @@ RTypePtr RType_EnumElem::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     return factory.MakeEnumElemType(decl, std::move(appliedTypeArgs));
 }
 
-RType_Interface::RType_Interface(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs)
-    : decl(decl), typeArgs(typeArgs)
+RType_Interface::RType_Interface(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal)
+    : decl(decl), typeArgs(typeArgs), bLocal(bLocal)
 {
 }
 

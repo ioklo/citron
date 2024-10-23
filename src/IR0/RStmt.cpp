@@ -10,7 +10,8 @@ RStmt_Command::RStmt_Command(std::vector<RExp_String>&& commands)
 {
 }
 
-RStmt_LocalVarDecl::RStmt_LocalVarDecl()
+RStmt_LocalVarDecl::RStmt_LocalVarDecl(const RTypePtr& type, const std::string& name, RExpPtr&& initExp)
+    : type(type), name(name), initExp(std::move(initExp))
 {
 
 }

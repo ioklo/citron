@@ -299,10 +299,11 @@ class RType_Interface : public RType
 public:
     std::shared_ptr<RInterfaceDecl> decl;
     RTypeArgumentsPtr typeArgs;
+    bool bLocal;
 
 private:
     friend RTypeFactory;
-    RType_Interface(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RType_Interface(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal);
 
 public:
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Interface; }
