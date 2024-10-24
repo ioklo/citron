@@ -2,6 +2,7 @@
 #include "SVarDeclToRStmtsTranslation.h"
 
 #include <Infra/Ptr.h>
+#include <Infra/Unreachable.h>
 #include <Syntax/Syntax.h>
 #include <Logging/Logger.h>
 #include <IR0/RType.h>
@@ -80,21 +81,28 @@ private:
         case DeclTypeInfoKind::LocalInterfaceVar:
             if (!dynamic_cast<RType_Interface*>(initExpType))
                 return Error(&Logger::Fatal_VarDecl_UsingLocalVarAsDeclTypeButInitExpIsNotLocalInterface);
+            return true;
 
         case DeclTypeInfoKind::BoxPtrVar:
             if (!dynamic_cast<RType_BoxPtr*>(initExpType))
                 return Error(&Logger::Fatal_VarDecl_UsingBoxPtrVarAsDeclTypeButInitExpIsNotBoxPtr);
+            return true;
 
         case DeclTypeInfoKind::LocalPtrVar:
             if (!dynamic_cast<RType_LocalPtr*>(initExpType))
                 return Error(&Logger::Fatal_VarDecl_UsingLocalPtrVarAsDeclTypeButInitExpIsNotLocalPtr);
+            return true;
 
         case DeclTypeInfoKind::NullableVar:
             if (!dynamic_cast<RType_NullableRef*>(initExpType) || !dynamic_cast<RType_NullableValue*>(initExpType))
                 return Error(&Logger::Fatal_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable);
+            return true;
+
+        default:
+            return true;
         }
 
-        return true;
+        unreachable();
     }
 
     bool HandleVarDeclType()
@@ -157,8 +165,7 @@ public:
     }
 };
 
-} // namespace 
-
+} // namespace
 
 bool TranslateSVarDeclToRStmts(SVarDecl& varDecl, vector<RStmtPtr>* outResult, TranslationContext& context)
 {

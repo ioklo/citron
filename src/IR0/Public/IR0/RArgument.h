@@ -6,17 +6,17 @@ namespace Citron {
 
 using RExpPtr = std::shared_ptr<class RExp>;
 
-class RNormalArgument
+struct RArgument_Normal
 {
     RExpPtr exp;
 };
 
-class RParamsArgument
+struct RArgument_Params
 {
     RExpPtr exp;
     int elemCount;
 };
 
-using RArgument = std::variant<RNormalArgument, RParamsArgument>;
+using RArgument = std::variant<RArgument_Normal, RArgument_Params>;
 
 }

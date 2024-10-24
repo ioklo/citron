@@ -235,21 +235,19 @@ public:
 class RStmt_Foreach : public RStmt
 {
 public:
-    RTypePtr enumeratorType;
     RExpPtr enumeratorExp;
     RTypePtr itemType;
     RName varName;
     RExpPtr nextExp;
     std::vector<RStmtPtr> body;
 public:
-    IR0_API RStmt_Foreach();
+    IR0_API RStmt_Foreach(RExpPtr&& enumeratorExp, RTypePtr&& itemType, const RName& varName, RExpPtr&& nextExp, std::vector<RStmtPtr>&& body);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RStmt_ForeachCast : public RStmt
 {
-public:
-    RTypePtr enumeratorType;
+public:    
     RExpPtr enumeratorExp;
     RTypePtr itemType;
     RName varName;
@@ -258,7 +256,7 @@ public:
     RExpPtr castExp;
     std::vector<RStmtPtr> body;
 public:
-    IR0_API RStmt_ForeachCast();
+    IR0_API RStmt_ForeachCast(RExpPtr&& enumeratorExp, RTypePtr&& itemType, const RName& varName, RTypePtr&& rawItemType, RExpPtr&& nextExp, RExpPtr&& castExp, std::vector<RStmtPtr> body);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 

@@ -17,7 +17,7 @@ namespace SyntaxIR0Translator {
 
 class TranslationContext;
 
-std::optional<std::vector<RStmtPtr>> TranslateSBodyToRStmts(const std::vector<SStmtPtr>& stmts, TranslationContext& context);
+bool TranslateSBodyToRStmts(const std::vector<SStmtPtr>& stmts, std::vector<RStmtPtr>* outStmts, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 

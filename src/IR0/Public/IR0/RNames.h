@@ -44,6 +44,15 @@ using RName = std::variant<
 
 IR0_API RName Copy(const RName& name);
 
+namespace RNames {
+
+static RName Enumerator;
+static RName GetEnumerator; // = RName_Normal("GetEnumerator");
+static RName Next; // = RName_Normal("Next");
+static RName RawItem; 
+
+} // namespace RNames
+
 }
 
 namespace std {

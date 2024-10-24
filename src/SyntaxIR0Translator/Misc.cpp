@@ -5,6 +5,8 @@
 #include <Infra/Exceptions.h>
 #include <Logging/Logger.h>
 
+#include <Syntax/Syntax.h>
+
 #include <IR0/RTypeFactory.h>
 #include <IR0/RType.h>
 #include <IR0/RExp.h>
@@ -103,5 +105,10 @@ RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext
     return nullptr;
 }
 
+bool IsVarType(STypeExp& typeExp)
+{   
+    auto* idTypeExp = dynamic_cast<STypeExp_Id*>(&typeExp);
+    return idTypeExp && idTypeExp->name == "var" && idTypeExp->typeArgs.size() == 0;
+}
 
 } // namespace Citron::SyntaxIR0Translator

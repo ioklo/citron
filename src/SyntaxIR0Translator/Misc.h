@@ -21,6 +21,8 @@ RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationCo
 RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context); // nothrow
 RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context);
 
+bool IsVarType(STypeExp& typeExp);
+
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

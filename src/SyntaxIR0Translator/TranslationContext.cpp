@@ -16,6 +16,8 @@
 #include "BodyContext.h"
 #include "BinOpQueryService.h"
 
+#include "Misc.h"
+
 using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
@@ -130,12 +132,6 @@ public:
     }
 
 private:
-    bool IsVarType(STypeExp& typeExp)
-    {
-        auto* idTypeExp = dynamic_cast<STypeExp_Id*>(&typeExp);
-        return idTypeExp && idTypeExp->name == "var" && idTypeExp->typeArgs.size() == 0;
-    }
-
     void Normal(STypeExp& typeExp)
     {
         auto type = context.TranslateSTypeExpToRType(typeExp);

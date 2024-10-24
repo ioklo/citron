@@ -60,6 +60,7 @@ class RMember
 {
 public:
     virtual ~RMember() { }
+    virtual std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() = 0;
     virtual void Accept(RMemberVisitor& visitor) = 0;
 };
 
@@ -73,6 +74,7 @@ public:
     RMember_Namespace(const std::shared_ptr<RNamespaceDecl>& decl);
 
 public:
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -85,6 +87,7 @@ public:
     RMember_GlobalFuncs(std::vector<RDeclWithOuterTypeArgs<RGlobalFuncDecl>>&& items);
 
 public:
+    IR0_API std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -96,6 +99,7 @@ public:
 public:
     RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RClassDecl>& decl);
 public:
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -106,6 +110,7 @@ public:
 public:
     RMember_ClassMemberFuncs(std::vector<RDeclWithOuterTypeArgs<RClassMemberFuncDecl>>&& items);
 public:
+    IR0_API std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -119,6 +124,7 @@ public:
     RMember_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -132,6 +138,7 @@ public:
     RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RStructDecl>& decl);
 
 public:
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -144,6 +151,7 @@ public:
     RMember_StructMemberFuncs(std::vector<RDeclWithOuterTypeArgs<RStructMemberFuncDecl>>&& items);
 
 public:
+    IR0_API std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -157,6 +165,7 @@ public:
     RMember_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -170,6 +179,7 @@ public:
     RMember_Enum(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumDecl>& decl);
 
 public:
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -183,6 +193,7 @@ public:
     RMember_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -196,6 +207,7 @@ public:
     RMember_EnumElemMemberVar(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -209,6 +221,7 @@ public:
     RMember_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
+    IR0_API std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -219,6 +232,7 @@ public:
     RMember_TupleMemberVar();
 
 public:
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
