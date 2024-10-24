@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "RFuncDecl.h"
 #include "RDeclWithOuterTypeArgs.h"
 
 namespace Citron {

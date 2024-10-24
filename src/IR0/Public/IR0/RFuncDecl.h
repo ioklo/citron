@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "RDecl.h"
+#include "RFuncReturn.h"
 
 namespace Citron
 {

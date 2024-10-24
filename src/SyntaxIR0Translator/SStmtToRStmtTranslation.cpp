@@ -33,12 +33,6 @@ namespace Citron::SyntaxIR0Translator {
 
 namespace {
 
-struct RLambdaDeclAndArgs
-{
-    shared_ptr<RLambdaDecl> decl;
-    shared_ptr<RArgument> args;   // constructor args
-};
-
 bool TranslateSStmtToRStmts(SStmt& sStmt, std::vector<RStmtPtr>* outStmts, TranslationContext& context);
 bool TranslateSEmbeddableStmtToRStmts(SEmbeddableStmt& embedStmt, std::vector<RStmtPtr>* outStmts, TranslationContext& context);
 bool TranslateSForStmtInitializerToRStmts(SForStmtInitializer& forInit, std::vector<RStmtPtr>* outStmts, TranslationContext& context);
@@ -196,14 +190,11 @@ public:
         // }
         auto forStmtContext = context.MakeNestedScopeContext(); // prelude는 loop가 아니다
 
-        optional<vector<RStmtPtr>> oInitStmts;
+        vector<RStmtPtr> initStmts;
         if (stmt.initializer)
-        {
-            vector<RStmtPtr> initStmts;
+        {   
             if (!TranslateSForStmtInitializerToRStmts(*stmt.initializer, &initStmts, forStmtContext))
                 return Fatal();
-
-            oInitStmts = std::move(initStmts);
         }
 
         RExpPtr condExp;
@@ -231,7 +222,7 @@ public:
         if (!TranslateSEmbeddableStmtToRStmts(*stmt.body, &bodyStmts, bodyContext))
             return Fatal();
 
-        return Valid(MakePtr<RStmt_For>(std::move(oInitStmts), std::move(condExp), std::move(continueExp), std::move(bodyStmts)));
+        return Valid(MakePtr<RStmt_For>(std::move(initStmts), std::move(condExp), std::move(continueExp), std::move(bodyStmts)));
     }
 
     void Visit(SStmt_Continue& stmt) override
@@ -374,7 +365,7 @@ public:
         auto exp = TranslateSExpAsTopLevelExpToRExp(*stmt.exp, /*hintType*/ nullptr, &designatedErrorLogger, context);
         if (!exp) return Fatal();
 
-        return Valid(MakePtr<RStmt_Exp>(exp));
+        return Valid(MakePtr<RStmt_Exp>(std::move(exp)));
     }
 
     void Visit(SStmt_Task& stmt) override 
@@ -404,276 +395,277 @@ public:
 
         return Valid(MakePtr<RStmt_Async>(std::move(oLambdaAndArgs->decl), std::move(oLambdaAndArgs->args)));
     }
-
-    struct ForeachStmtTranslator
+    
+    void Visit(SStmt_Foreach& stmt) override
     {
-        SStmt_Foreach& stmt;
-        vector<RStmtPtr>* outStmts;
-        TranslationContext& context;
-
-        RName itemVarName;
-
-    public:
-        ForeachStmtTranslator(SStmt_Foreach& stmt, vector<RStmtPtr>* outStmts, TranslationContext& context)
-            : stmt(stmt), outStmts(outStmts), context(context)
+        struct ForeachStmtTranslator
         {
-            itemVarName = RName_Normal(stmt.varName);
-        }
-        
-        // syntax의 enumerableExp를 사용해서 enumerator를 가져오는 Exp를 생성한다
-        RExpPtr MakeEnumeratorExp()
-        {
-            // TranslationResult<(Exp, IType)> Error() = > TranslationResult.Error<(Exp, IType)>();
-            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            SStmt_Foreach& stmt;
+            vector<RStmtPtr>* outStmts;
+            TranslationContext& context;
 
-            auto rEnumerable = TranslateSExpToRLoc(*stmt.enumerable, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-            if (!rEnumerable) return nullptr;
+            RName itemVarName;
 
-            // GetEnumerator함수를 손으로 찾는다
-            auto rEnumerableType = context.GetType(*rEnumerable);
-            auto rMember = rEnumerableType->GetMember(RNames::GetEnumerator, /*explicitTypeArgsExceptOuterCount*/ 0);
-            if (!rMember)
+        public:
+            ForeachStmtTranslator(SStmt_Foreach& stmt, vector<RStmtPtr>* outStmts, TranslationContext& context)
+                : stmt(stmt), outStmts(outStmts), context(context)
             {
-                // TODO: [15] foreach 에러 처리
-                throw NotImplementedException();
-                return nullptr;
+                itemVarName = RName_Normal(stmt.varName);
             }
 
-            vector<RDeclWithOuterTypeArgs<RFuncDecl>> candidates;
-
-            for(auto& funcDeclWithOuter : rMember->GetFuncDeclWithOuterTypeArgs())
+            // syntax의 enumerableExp를 사용해서 enumerator를 가져오는 Exp를 생성한다
+            RExpPtr MakeEnumeratorExp()
             {
-                auto* funcDecl = funcDeclWithOuter.decl.get();
+                // TranslationResult<(Exp, IType)> Error() => TranslationResult.Error<(Exp, IType)>();
+                auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
-                // 파라미터가 없어야 한다
-                if (funcDecl->GetParamCount() != 0) continue;
+                auto rEnumerable = TranslateSExpToRLoc(*stmt.enumerable, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
+                if (!rEnumerable) return nullptr;
 
-                // 따라서 Type Parameter도 없어야 한다
-                if (funcDecl->GetTypeParamCount() != 0) continue;
-
-                // instance함수여야 한다
-                if (funcDecl->IsStatic()) continue;
-
-                candidates.push_back(funcDeclWithOuter);
-            }
-
-            if (candidates.empty())
-            {
-                // TODO: [15] foreach 에러 처리
-                throw NotImplementedException();
-                return nullptr;
-            }
-
-            if (candidates.size() != 1)
-            {
-                // TODO: [15] foreach 에러 처리
-                throw NotImplementedException();
-                return nullptr;
-            }
-
-            auto& result = candidates[0];
-
-            // 아까 갯수가 0인지 체크를 했으니 typeArgs는 default이다
-            return TranslateRFuncAndRArgsToRExp(result.decl, result.outerTypeArgs, std::move(rEnumerable), {});
-        }
-
-        RExpPtr MakeNextExpAndInferItemVarType(RType& enumeratorType)
-        {   
-            auto rMember = enumeratorType.GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
-            if (!rMember) return nullptr;
-
-            vector<RExpPtr> candidates;
-            for (auto& funcDeclWithOuter : rMember->GetFuncDeclWithOuterTypeArgs())
-            {
-                auto* funcDecl = funcDeclWithOuter.decl.get();                
-
-                // TODO: [16] TypeResolver적용
-                if (funcDecl->GetTypeParamCount() != 0) continue;
-
-                // typeParamCount가 0이라고 정했으면, 이 함수의 typeArgs는 outerTypeArgs
-                auto* typeArgs = funcDeclWithOuter.outerTypeArgs.get();
-
-                // 파라미터는 1개
-                if (funcDecl->GetParamCount() != 1) continue;
-
-                // 리턴 타입은 bool
-                auto ret = context.GetFuncReturn(*funcDecl, *typeArgs);
-                auto* setRet = get_if<RFuncReturn_Set>(&ret);
-                assert(setRet);
-
-                if (setRet->type != context.MakeBoolType()) continue;
-
-                // 인자는 out T*꼴이어야 한다
-                auto oParam = context.GetFuncParameter(*funcDecl, *typeArgs, 0);
-                if (!oParam) continue;
-                if (!oParam->bOut) continue;
-                if (!dynamic_cast<RType_LocalPtr*>(oParam->type.get())) continue;
-
-                // $enumerator.GetNext(&i);
-                auto rArg = RArgument_Normal(MakePtr<RExp_LocalRef>(MakePtr<RLoc_LocalVar>(itemVarName)));
-                auto rEnumeratorLoc = MakePtr<RLoc_LocalVar>(RNames::Enumerator);
-                auto nextExp = TranslateRFuncAndRArgsToRExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, std::move(rEnumeratorLoc), { std::move(rArg) });
-
-                candidates.push_back(std::move(nextExp));
-            }
-
-            if (candidates.size() == 1)
-            {
-                return candidates[0];
-            }
-            else
-            {
-                // TODO: [17] NextFunc가 여러개일때 처리
-                return nullptr;
-            }
-        }
-
-        // NextExp를 만드는데, 캐스팅이 필요하면 CastInfo를 같이 돌려준다
-        // (nextExp, (rawItemType, castExp)? castInfo)
-        optional<tuple<RExpPtr, optional<tuple<RTypePtr, RExpPtr>>>> MakeNextExpAndCastExp(RType& enumeratorType, const RTypePtr& itemTypeFromSyntax)
-        {
-            auto rMember = enumeratorType.GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
-            if (!rMember) return nullopt;
-
-            vector<tuple<RExpPtr, optional<tuple<RTypePtr, RExpPtr>>>> candidates;
-            for (auto& funcDeclWithOuter: rMember->GetFuncDeclWithOuterTypeArgs())
-            {
-                auto* funcDecl = funcDeclWithOuter.decl.get();                
-
-                if (funcDecl->GetParamCount() != 1) continue;
-
-                // 리턴 타입은 bool
-                auto ret = funcDecl->GetReturn();
-                auto* setRet = get_if<RFuncReturn_Set>(&ret);
-                assert(setRet);
-
-                if (setRet->type != context.MakeBoolType()) continue;
-
-                // TODO: [16] TypeResolver적용
-                if (funcDecl->GetTypeParamCount() != 0) continue;
-                auto* typeArgs = funcDeclWithOuter.outerTypeArgs.get();
-
-                // var symbol = (IFuncSymbol)context.InstantiateSymbol(outer, declSymbol, typeArgs: default);
-
-                // 인자는 out T*꼴이어야 한다
-                auto oParam = context.GetFuncParameter(*funcDecl, *typeArgs, 0);
-                if (!oParam) continue;
-                if (!oParam->bOut) continue;
-
-                auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(oParam->type.get());
-                if (!localPtrParamType) continue;
-
-                auto itemTypeFromNextParam = localPtrParamType->innerType;
-
-                if (itemTypeFromNextParam == itemTypeFromSyntax)
+                // GetEnumerator함수를 손으로 찾는다
+                auto rEnumerableType = context.GetType(*rEnumerable);
+                auto rMember = rEnumerableType->GetMember(RNames::GetEnumerator, /*explicitTypeArgsExceptOuterCount*/ 0);
+                if (!rMember)
                 {
+                    // TODO: [15] foreach 에러 처리
+                    throw NotImplementedException();
+                    return nullptr;
+                }
+
+                vector<RDeclWithOuterTypeArgs<RFuncDecl>> candidates;
+
+                for (auto& funcDeclWithOuter : rMember->GetFuncDeclWithOuterTypeArgs())
+                {
+                    auto* funcDecl = funcDeclWithOuter.decl.get();
+
+                    // 파라미터가 없어야 한다
+                    if (funcDecl->GetParamCount() != 0) continue;
+
+                    // 따라서 Type Parameter도 없어야 한다
+                    if (funcDecl->GetTypeParamCount() != 0) continue;
+
+                    // instance함수여야 한다
+                    if (funcDecl->IsStatic()) continue;
+
+                    candidates.push_back(funcDeclWithOuter);
+                }
+
+                if (candidates.empty())
+                {
+                    // TODO: [15] foreach 에러 처리
+                    throw NotImplementedException();
+                    return nullptr;
+                }
+
+                if (candidates.size() != 1)
+                {
+                    // TODO: [15] foreach 에러 처리
+                    throw NotImplementedException();
+                    return nullptr;
+                }
+
+                auto& result = candidates[0];
+
+                // 아까 갯수가 0인지 체크를 했으니 typeArgs는 default이다
+                return TranslateRFuncAndRArgsToRExp(result.decl, result.outerTypeArgs, std::move(rEnumerable), {});
+            }
+
+            RExpPtr MakeNextExpAndInferItemVarType(const RTypePtr& enumeratorType)
+            {
+                auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
+                if (!rMember) return nullptr;
+
+                vector<RExpPtr> candidates;
+                for (auto& funcDeclWithOuter : rMember->GetFuncDeclWithOuterTypeArgs())
+                {
+                    auto* funcDecl = funcDeclWithOuter.decl.get();
+
+                    // TODO: [16] TypeResolver적용
+                    if (funcDecl->GetTypeParamCount() != 0) continue;
+
+                    // typeParamCount가 0이라고 정했으면, 이 함수의 typeArgs는 outerTypeArgs
+                    auto* typeArgs = funcDeclWithOuter.outerTypeArgs.get();
+
+                    // 파라미터는 1개
+                    if (funcDecl->GetParamCount() != 1) continue;
+
+                    // 리턴 타입은 bool
+                    auto ret = context.GetFuncReturn(*funcDecl, *typeArgs);
+                    auto* setRet = get_if<RFuncReturn_Set>(&ret);
+                    assert(setRet);
+
+                    if (setRet->type != context.MakeBoolType()) continue;
+
+                    // 인자는 out T*꼴이어야 한다
+                    auto oParam = context.GetFuncParameter(*funcDecl, *typeArgs, 0);
+                    if (!oParam) continue;
+                    if (!oParam->bOut) continue;
+                    auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(oParam->type.get());
+                    if (!localPtrParamType) continue;
+
                     // $enumerator.GetNext(&i);
-                    RArgument_Normal rArg(MakePtr<RExp_LocalRef>(MakePtr<RLoc_LocalVar>(itemVarName)));
-                    auto rEnumerator = MakePtr<RLoc_LocalVar>(RNames::Enumerator);
-                    auto rNext = TranslateRFuncAndRArgsToRExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, std::move(rEnumerator), { std::move(rArg) });
+                    auto rArg = RArgument_Normal(MakePtr<RExp_LocalRef>(MakePtr<RLoc_LocalVar>(itemVarName, localPtrParamType->innerType)));
+                    auto rEnumerator = MakePtr<RLoc_LocalVar>(RNames::Enumerator, enumeratorType);
+                    auto nextExp = TranslateRFuncAndRArgsToRExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, std::move(rEnumerator), { std::move(rArg) });
 
-                    candidates.push_back(make_tuple(std::move(rNext), nullopt));
+                    candidates.push_back(std::move(nextExp));
                 }
-                else // 캐스팅
+
+                if (candidates.size() == 1)
                 {
-                    auto& rawItemType = itemTypeFromNextParam;
-                    RArgument_Normal rArg(MakePtr<RExp_LocalRef>(MakePtr<RLoc_LocalVar>(RNames::RawItem)));
-                    auto rEnumerator = MakePtr<RLoc_LocalVar>(RNames::Enumerator);
-
-                    // $enumerator.GetNext(&$rawItem)
-                    auto rNext = TranslateRFuncAndRArgsToRExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, std::move(rEnumerator), { std::move(rArg) });
-
-                    // $rawItem
-                    auto rawItemExp = MakePtr<RExp_Load>(MakePtr<RLoc_LocalVar>(RNames::RawItem));
-                    auto castExp = CastRExp(std::move(rawItemExp), itemTypeFromSyntax, context);
-                    if (!castExp) // 캐스팅이 성공할때만 candidates에 넣기
-                    {
-                        candidates.push_back(make_tuple(std::move(rNext), make_tuple(rawItemType, castExp)));
-                    }
-                }
-            }
-
-            size_t count = candidates.size();
-
-            if (count == 0)
-            {
-                // TODO: [17] NextFunc가 0개 혹은 여러개일때 처리
-                throw NotImplementedException();
-                return nullopt;
-            }
-            else if (count == 1)
-            {
-                return candidates[0];
-            }
-            else
-            {
-                // TODO: [17] NextFunc가 0개 혹은 여러개일때 처리
-                throw NotImplementedException();
-                return nullopt;
-            }
-        }
-
-        bool MakeBody(const RTypePtr& itemVarType, vector<RStmtPtr>* outBody)
-        {
-            // 루프 컨텍스트를 하나 열고
-            auto bodyContext = context.MakeNestedLoopScopeContext();
-
-            // 루프 컨텍스트에 로컬을 하나 추가하고 (enumerator는 추가해야 할까)
-            bodyContext.AddLocalVarInfo(itemVarType, RName(itemVarName));
-
-            // 본문 분석
-            return TranslateSEmbeddableStmtToRStmts(*stmt.body, outBody, context);
-        }
-
-    public:
-        bool Translate()
-        {
-            auto enumerator = MakeEnumeratorExp();
-            if (!enumerator) return false;
-
-            auto enumeratorType = context.GetType(*enumerator);
-
-            if (!IsVarType(*stmt.type))
-            {
-                auto itemType = context.TranslateSTypeExpToRType(*stmt.type);
-
-                auto oNextExpCastInfo = MakeNextExpAndCastExp(*enumeratorType, itemType);
-                if (!oNextExpCastInfo) return false;
-
-                auto& [nextExp, oCastInfo] = *oNextExpCastInfo;
-
-                vector<RStmtPtr> body;
-                if (!MakeBody(itemType, &body)) return false;
-
-                if (!oCastInfo)
-                {
-                    outStmts->push_back(MakePtr<RStmt_Foreach>(std::move(enumerator), std::move(itemType), itemVarName, std::move(nextExp), std::move(body)));
+                    return candidates[0];
                 }
                 else
                 {
-                    auto& [rawItemType, castExp] = *oCastInfo;
-                    outStmts->push_back(MakePtr<RStmt_ForeachCast>(std::move(enumerator), std::move(itemType), itemVarName, std::move(rawItemType), std::move(nextExp), std::move(castExp), std::move(body)));
+                    // TODO: [17] NextFunc가 여러개일때 처리
+                    return nullptr;
                 }
             }
-            else // var 일 경우
+
+            // NextExp를 만드는데, 캐스팅이 필요하면 CastInfo를 같이 돌려준다
+            // (nextExp, (rawItemType, castExp)? castInfo)
+            optional<tuple<RExpPtr, optional<tuple<RTypePtr, RExpPtr>>>> MakeNextExpAndCastExp(const RTypePtr& enumeratorType, const RTypePtr& itemTypeFromSyntax)
             {
-                auto nextExp = MakeNextExpAndInferItemVarType(*enumeratorType);
-                if (!nextExp) return false;
+                auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
+                if (!rMember) return nullopt;
 
-                auto itemVarType = context.GetType(*nextExp);
+                vector<tuple<RExpPtr, optional<tuple<RTypePtr, RExpPtr>>>> candidates;
+                for (auto& funcDeclWithOuter : rMember->GetFuncDeclWithOuterTypeArgs())
+                {
+                    auto* funcDecl = funcDeclWithOuter.decl.get();
 
-                vector<RStmtPtr> body;
-                if (!MakeBody(itemVarType, &body)) return false;
+                    if (funcDecl->GetParamCount() != 1) continue;
 
-                outStmts->push_back(MakePtr<RStmt_Foreach>(std::move(enumerator), std::move(itemVarType), itemVarName, std::move(nextExp), std::move(body)));
+                    // 리턴 타입은 bool
+                    auto ret = funcDecl->GetReturn();
+                    auto* setRet = get_if<RFuncReturn_Set>(&ret);
+                    assert(setRet);
+
+                    if (setRet->type != context.MakeBoolType()) continue;
+
+                    // TODO: [16] TypeResolver적용
+                    if (funcDecl->GetTypeParamCount() != 0) continue;
+                    auto* typeArgs = funcDeclWithOuter.outerTypeArgs.get();
+
+                    // var symbol = (IFuncSymbol)context.InstantiateSymbol(outer, declSymbol, typeArgs: default);
+
+                    // 인자는 out T*꼴이어야 한다
+                    auto oParam = context.GetFuncParameter(*funcDecl, *typeArgs, 0);
+                    if (!oParam) continue;
+                    if (!oParam->bOut) continue;
+
+                    auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(oParam->type.get());
+                    if (!localPtrParamType) continue;
+
+                    auto itemTypeFromNextParam = localPtrParamType->innerType;
+
+                    if (itemTypeFromNextParam == itemTypeFromSyntax)
+                    {
+                        // $enumerator.GetNext(&i);
+                        RArgument_Normal rArg(MakePtr<RExp_LocalRef>(MakePtr<RLoc_LocalVar>(itemVarName, itemTypeFromNextParam)));
+                        auto rEnumerator = MakePtr<RLoc_LocalVar>(RNames::Enumerator, enumeratorType);
+                        auto rNext = TranslateRFuncAndRArgsToRExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, std::move(rEnumerator), { std::move(rArg) });
+
+                        candidates.push_back(make_tuple(std::move(rNext), nullopt));
+                    }
+                    else // 캐스팅
+                    {
+                        auto& rawItemType = itemTypeFromNextParam;
+                        RArgument_Normal rArg(MakePtr<RExp_LocalRef>(MakePtr<RLoc_LocalVar>(RNames::RawItem, itemTypeFromNextParam)));
+                        auto rEnumerator = MakePtr<RLoc_LocalVar>(RNames::Enumerator, enumeratorType);
+
+                        // $enumerator.GetNext(&$rawItem)
+                        auto rNext = TranslateRFuncAndRArgsToRExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, std::move(rEnumerator), { std::move(rArg) });
+
+                        // $rawItem
+                        auto rawItemExp = MakePtr<RExp_Load>(MakePtr<RLoc_LocalVar>(RNames::RawItem, itemTypeFromNextParam));
+                        auto castExp = CastRExp(std::move(rawItemExp), itemTypeFromSyntax, context);
+                        if (!castExp) // 캐스팅이 성공할때만 candidates에 넣기
+                        {
+                            candidates.push_back(make_tuple(std::move(rNext), make_tuple(rawItemType, castExp)));
+                        }
+                    }
+                }
+
+                size_t count = candidates.size();
+
+                if (count == 0)
+                {
+                    // TODO: [17] NextFunc가 0개 혹은 여러개일때 처리
+                    throw NotImplementedException();
+                    return nullopt;
+                }
+                else if (count == 1)
+                {
+                    return candidates[0];
+                }
+                else
+                {
+                    // TODO: [17] NextFunc가 0개 혹은 여러개일때 처리
+                    throw NotImplementedException();
+                    return nullopt;
+                }
             }
 
-            return true;
-        }
-    };
+            bool MakeBody(const RTypePtr& itemVarType, vector<RStmtPtr>* outBody)
+            {
+                // 루프 컨텍스트를 하나 열고
+                auto bodyContext = context.MakeNestedLoopScopeContext();
 
-    void Visit(SStmt_Foreach& stmt) override
-    {
+                // 루프 컨텍스트에 로컬을 하나 추가하고 (enumerator는 추가해야 할까)
+                bodyContext.AddLocalVarInfo(itemVarType, RName(itemVarName));
+
+                // 본문 분석
+                return TranslateSEmbeddableStmtToRStmts(*stmt.body, outBody, context);
+            }
+
+        public:
+            bool Translate()
+            {
+                auto enumerator = MakeEnumeratorExp();
+                if (!enumerator) return false;
+
+                auto enumeratorType = context.GetType(*enumerator);
+
+                if (!IsVarType(*stmt.type))
+                {
+                    auto itemType = context.TranslateSTypeExpToRType(*stmt.type);
+
+                    auto oNextExpCastInfo = MakeNextExpAndCastExp(enumeratorType, itemType);
+                    if (!oNextExpCastInfo) return false;
+
+                    auto& [nextExp, oCastInfo] = *oNextExpCastInfo;
+
+                    vector<RStmtPtr> body;
+                    if (!MakeBody(itemType, &body)) return false;
+
+                    if (!oCastInfo)
+                    {
+                        outStmts->push_back(MakePtr<RStmt_Foreach>(std::move(enumerator), std::move(itemType), itemVarName, std::move(nextExp), std::move(body)));
+                    }
+                    else
+                    {
+                        auto& [rawItemType, castExp] = *oCastInfo;
+                        outStmts->push_back(MakePtr<RStmt_ForeachCast>(std::move(enumerator), std::move(itemType), itemVarName, std::move(rawItemType), std::move(nextExp), std::move(castExp), std::move(body)));
+                    }
+                }
+                else // var 일 경우
+                {
+                    auto nextExp = MakeNextExpAndInferItemVarType(enumeratorType);
+                    if (!nextExp) return false;
+
+                    auto itemVarType = context.GetType(*nextExp);
+
+                    vector<RStmtPtr> body;
+                    if (!MakeBody(itemVarType, &body)) return false;
+
+                    outStmts->push_back(MakePtr<RStmt_Foreach>(std::move(enumerator), std::move(itemVarType), itemVarName, std::move(nextExp), std::move(body)));
+                }
+
+                return true;
+            }
+        };
+
         ForeachStmtTranslator translator(stmt, outStmts, context);
         *bOutFatal = !translator.Translate();
     }
@@ -700,7 +692,7 @@ public:
         auto castRetValue = CastRExp(std::move(retValue), setFuncRet->type, context);
         if (!castRetValue) return Fatal();
 
-        return Valid(MakePtr<RStmt_Yield>(castRetValue));
+        return Valid(MakePtr<RStmt_Yield>(std::move(castRetValue)));
     }
 
     void Visit(SStmt_Directive& stmt) override 
@@ -794,7 +786,7 @@ bool TranslateSForStmtInitializerToRStmts(SForStmtInitializer& forInit, vector<R
                 return;
             }
 
-            outStmts->push_back(MakePtr<RStmt_Exp>(exp));
+            outStmts->push_back(MakePtr<RStmt_Exp>(std::move(exp)));
         }
 
         void Visit(SForStmtInitializer_VarDecl& forInit) override
@@ -859,7 +851,7 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
         }
     }
 
-    make_tuple(std::move(rParams), bLastParamVariadic);
+    return make_tuple(std::move(rParams), bLastParamVariadic);
 }
 
 optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context)
@@ -877,11 +869,7 @@ optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr
 
     // Lambda를 만들고 context 인스턴스 안에 저장한다
     // DeclSymbol tree로의 Commit은 함수 백트래킹이 다 끝났을 때 (그냥 Translation이 끝났을때 해도 될거 같다)
-    auto [newContext, lambda] = context.MakeLambdaBodyContext(std::move(funcRet), funcParams, bLastParamVariadic); // 중첩된 bodyContext를 만들고, 새 scopeContext도 만든다
-
-    auto lambdaName = context.bodyContext->NewLambdaName();
-    auto rLambdaDecl = MakePtr<RLambdaDecl>(context.bodyContext->curFuncDecl, lambdaName);
-    vector<RLambdaMemberVarDecl> memberVarDecls;
+    auto newContext = context.MakeLambdaBodyContext(std::move(funcRet), std::move(funcParams), bLastParamVariadic); // 중첩된 bodyContext를 만들고, 새 scopeContext도 만든다
 
     // 람다 파라미터(int p)를 지역 변수로 추가한다
     for (auto& sParam : sParams)
@@ -893,21 +881,17 @@ optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr
             return nullopt;
         }
 
-        auto rParamType = context.MakeType(*sParam.type, factory);
+        auto rParamType = context.TranslateSTypeExpToRType(*sParam.type);
 
         auto name = RName_Normal(sParam.name);
-        memberVarDecls.emplace_back(rLambdaDecl, rParamType, name);
-
         newContext.AddLocalVarInfo(rParamType, name);
     }
 
-    auto oRBodyStmts = TranslateSBodyToRStmts(sBody, *newContext);
-    if (!oRBodyStmts) return nullopt;
+    vector<RStmtPtr> rBody;
+    if (!TranslateSBodyToRStmts(sBody, &rBody, newContext)) return nullopt;
 
-    auto args = newContext->MakeLambdaArgs();
-    rLambdaDecl->Init(std::move(memberVarDecls), std::move(funcRet), std::move(funcParams), bLastParamVariadic, std::move(*oRBodyStmts));
-
-    return RLambdaDeclAndArgs { std::move(rLambaDecl), std::move(args) };
+    // body분석을 했던것을 토대로 캡쳐한 변수들을 LambdaMemberVarDecl로 만들고, 현재 context에서 전달할 argument로 만든다
+    return newContext.MakeLambdaDeclAndArgs(std::move(rBody));
 }
 
 } // namespace 
@@ -915,12 +899,10 @@ optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr
 
 bool TranslateSBodyToRStmts(const vector<SStmtPtr>& stmts, vector<RStmtPtr>* outStmts, TranslationContext& context)
 {
-    vector<RStmtPtr> builder; // keep appending
-
     for(auto& stmt : stmts)
     {
         bool bFatal = false;
-        SStmtToRStmtsTranslator translator(&builder, &bFatal, context);
+        SStmtToRStmtsTranslator translator(&bFatal, outStmts, context);
         stmt->Accept(translator);
         if (bFatal) return false;
     }

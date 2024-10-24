@@ -2,7 +2,10 @@
 
 #include <memory>
 #include <vector>
+#include <optional>
+
 #include <IR0/RFuncReturn.h>
+
 #include "DesignatedErrorLogger.h"
 #include "DeclTypeInfo.h"
 
@@ -34,6 +37,12 @@ using BodyContextPtr = std::shared_ptr<class BodyContext>;
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 using TranslationContextPtr = std::shared_ptr<class TranslationContext>;
+
+struct RLambdaDeclAndArgs
+{
+    std::shared_ptr<RLambdaDecl> decl;
+    std::vector<RArgument> args;   // constructor args
+};
 
 class TranslationContext
 {
@@ -70,6 +79,7 @@ public: // for bodyContext
     bool IsSeqFunc();
     RFuncReturn GetFuncReturn();
     void SetFuncReturn(RTypePtr&& retType);
+    RLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<RStmtPtr>&& body);
 
 public: // for logging
     template<typename TFunc>
@@ -101,7 +111,7 @@ public: // for type factory
     bool IsListType(const RTypePtr& type, RTypePtr* outItemType);
 
     RFuncReturn GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
-    optional<RFuncParameter> GetFuncParameter(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
+    std::optional<RFuncParameter> GetFuncParameter(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
 
 public: // for BinOpQueryService
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);

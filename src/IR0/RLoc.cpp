@@ -26,7 +26,7 @@ RTypePtr RLoc_Temp::GetType(RTypeFactory& factory)
     return exp->GetType(factory);
 }
 
-RLoc_LocalVar::RLoc_LocalVar(const std::string& name, const RTypePtr& declType)
+RLoc_LocalVar::RLoc_LocalVar(const RName& name, const RTypePtr& declType)
     : name(name), declType(declType)
 {
 

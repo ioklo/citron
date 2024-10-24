@@ -69,11 +69,11 @@ public:
 class RLoc_LocalVar : public RLoc
 {
 public:
-    std::string name;
+    RName name;
     RTypePtr declType;
 
 public:
-    IR0_API RLoc_LocalVar(const std::string& name, const RTypePtr& declType);
+    IR0_API RLoc_LocalVar(const RName& name, const RTypePtr& declType);
     void Accept(RLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };

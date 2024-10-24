@@ -87,9 +87,9 @@ public:
 class RStmt_Command : public RStmt
 {
 public:
-    std::vector<RExp_String> commands;
+    std::vector<std::shared_ptr<RExp_String>> commands;
 public:
-    IR0_API RStmt_Command(std::vector<RExp_String>&& commands);
+    IR0_API RStmt_Command(std::vector<std::shared_ptr<RExp_String>>&& commands);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this);  }
 };
 
@@ -112,7 +112,7 @@ public:
     std::vector<RStmtPtr> body;
     std::vector<RStmtPtr> elseBody;
 public:
-    IR0_API RStmt_If();
+    IR0_API RStmt_If(RExpPtr&& cond, std::vector<RStmtPtr>&& body, std::vector<RStmtPtr>&& elseBody);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -139,7 +139,7 @@ public:
     std::vector<RStmtPtr> body;
     std::vector<RStmtPtr> elseBody;
 public:
-    IR0_API RStmt_IfNullableValueTest();
+    IR0_API RStmt_IfNullableValueTest(RTypePtr&& type, RName&& varName, RExpPtr&& asExp, std::vector<RStmtPtr>&& body, std::vector<RStmtPtr>&& elseBody);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -256,7 +256,7 @@ public:
     RExpPtr castExp;
     std::vector<RStmtPtr> body;
 public:
-    IR0_API RStmt_ForeachCast(RExpPtr&& enumeratorExp, RTypePtr&& itemType, const RName& varName, RTypePtr&& rawItemType, RExpPtr&& nextExp, RExpPtr&& castExp, std::vector<RStmtPtr> body);
+    IR0_API RStmt_ForeachCast(RExpPtr&& enumeratorExp, RTypePtr&& itemType, const RName& varName, RTypePtr&& rawItemType, RExpPtr&& nextExp, RExpPtr&& castExp, std::vector<RStmtPtr>&& body);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -265,7 +265,7 @@ class RStmt_Yield : public RStmt
 public:
     RExpPtr value;
 public:
-    IR0_API RStmt_Yield();
+    IR0_API RStmt_Yield(RExpPtr&& value);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -296,7 +296,7 @@ class RStmt_NullDirective : public RStmt
 public:
     RLocPtr loc;
 public:
-    IR0_API RStmt_NullDirective();
+    IR0_API RStmt_NullDirective(RLocPtr&& loc);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -305,7 +305,7 @@ class RStmt_NotNullDirective : public RStmt
 public:
     RLocPtr loc;
 public:
-    IR0_API RStmt_NotNullDirective();
+    IR0_API RStmt_NotNullDirective(RLocPtr&& loc);
     void Accept(RStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 

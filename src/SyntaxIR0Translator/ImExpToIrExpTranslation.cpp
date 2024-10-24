@@ -85,7 +85,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     // &id
     void Visit(ImExp_LocalVar& imExp) override
     {
-        *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_LocalVar>(imExp.name, imExp.type));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_LocalVar>(RName_Normal(imExp.name), imExp.type));
     }
 
     // &x

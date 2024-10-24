@@ -45,7 +45,7 @@ RLocPtr TranslateReClassMemberVarExpToRLoc(ReExp_ClassMemberVar& reExp, Translat
 
 RLocPtr TranslateReLocalVarExpToRLoc(ReExp_LocalVar& reExp)
 {
-    return MakePtr<RLoc_LocalVar>(reExp.name, reExp.type);
+    return MakePtr<RLoc_LocalVar>(RName_Normal(reExp.name), reExp.type);
 }
 
 RLocPtr TranslateReLambdaMemberVarExpToRLoc(ReExp_LambdaMemberVar& reExp)
