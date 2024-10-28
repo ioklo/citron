@@ -106,15 +106,15 @@ shared_ptr<RType_BoxPtr> RTypeFactory::MakeBoxPtrType(RTypePtr&& innerType)
     return newType;
 }
 
-template<typename TDecl, typename TType>
-shared_ptr<TType> RTypeFactory::MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, const shared_ptr<TDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+template<typename TDecl, typename TType, typename... TArgs>
+shared_ptr<TType> RTypeFactory::MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, const shared_ptr<TDecl>& decl, const RTypeArgumentsPtr& typeArgs, TArgs&&... args)
 {
     auto key = IR0::InstanceTypeKey<TDecl> { decl, typeArgs };
     auto i = instanceTypes.find(key);
     if (i != instanceTypes.end())
         return i->second;
 
-    shared_ptr<TType> newType { new TType(decl, typeArgs) };
+    shared_ptr<TType> newType { new TType(decl, typeArgs, std::forward<TArgs>(args)...) };
     instanceTypes.emplace(key, newType);
     return newType;
 }
@@ -139,9 +139,9 @@ shared_ptr<RType_EnumElem> RTypeFactory::MakeEnumElemType(const shared_ptr<REnum
     return MakeInstanceType(enumElemTypes, decl, typeArgs);
 }
 
-shared_ptr<RType_Interface> RTypeFactory::MakeInterfaceType(const shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+shared_ptr<RType_Interface> RTypeFactory::MakeInterfaceType(const shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal)
 {
-    return MakeInstanceType(interfaceTypes, decl, typeArgs);
+    return MakeInstanceType(interfaceTypes, decl, typeArgs, bLocal);
 }
 
 shared_ptr<RType_Lambda> RTypeFactory::MakeLambdaType(const shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs)

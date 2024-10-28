@@ -252,6 +252,8 @@ RTypePtr RExp_CallInternalBinaryOperator::GetType(RTypeFactory& factory)
         case RInternalBinaryOperator::Equal_Bool_Bool_Bool:
         case RInternalBinaryOperator::Equal_String_String_Bool:
             return factory.MakeBoolType();
+        default:
+            unreachable();
     }
 }
 
@@ -383,7 +385,7 @@ RExp_Lambda::RExp_Lambda(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeA
 
 RTypePtr RExp_Lambda::GetType(RTypeFactory& factory)
 {
-    static_assert(false); // 람다는 struct로 인코딩 되어야 한다 (module private 공간에 만들어진다)
+    return factory.MakeLambdaType(lambdaDecl, typeArgs);
 }
 
 RExp_CallLambda::RExp_CallLambda(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const RLocPtr& callable, const vector<RArgument>& args)

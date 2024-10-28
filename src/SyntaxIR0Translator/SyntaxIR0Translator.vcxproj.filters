@@ -76,13 +76,10 @@
     <ClCompile Include="SVarDeclToRStmtsTranslation.cpp">
       <Filter>StmtTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="BodyContext.cpp">
+    <ClCompile Include="FuncContext.cpp">
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="ScopeContext.cpp">
-      <Filter>Context</Filter>
-    </ClCompile>
-    <ClCompile Include="GlobalContext.cpp">
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="TranslationContext.cpp">
@@ -90,6 +87,9 @@
     </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="DeclTypeInfo.cpp" />
+    <ClCompile Include="AFuncDecl.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -168,13 +168,10 @@
     <ClInclude Include="SVarDeclToRStmtsTranslation.h">
       <Filter>StmtTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="BodyContext.h">
+    <ClInclude Include="FuncContext.h">
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="ScopeContext.h">
-      <Filter>Context</Filter>
-    </ClInclude>
-    <ClInclude Include="GlobalContext.h">
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="TranslationContext.h">
@@ -182,6 +179,9 @@
     </ClInclude>
     <ClInclude Include="ModuleDecls.h" />
     <ClInclude Include="DeclTypeInfo.h" />
+    <ClInclude Include="AFuncDecl.h">
+      <Filter>Context</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

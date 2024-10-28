@@ -13,7 +13,7 @@
 #include "IrExp.h"
 #include "TranslationContext.h"
 #include "ScopeContext.h"
-#include "BodyContext.h"
+#include "FuncContext.h"
 #include "BinOpQueryService.h"
 
 #include "Misc.h"
@@ -22,26 +22,26 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-TranslationContext::TranslationContext(const GlobalContextPtr& globalContext, const BodyContextPtr& bodyContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RTypeFactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService)
-    : globalContext(globalContext), bodyContext(bodyContext), scopeContext(scopeContext), logger(logger), factory(factory), binOpQueryService(binOpQueryService)
+TranslationContext::TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RTypeFactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService)
+    : globalContext(globalContext), funcContext(funcContext), scopeContext(scopeContext), logger(logger), factory(factory), binOpQueryService(binOpQueryService)
 {
 }
 
 TranslationContext TranslationContext::MakeNestedScopeContext()
 {
-    auto newScopeContext = MakePtr<ScopeContext>(bodyContext, scopeContext, scopeContext->nestedLoop);
-    return { globalContext, bodyContext, newScopeContext, logger, factory, binOpQueryService };
+    auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop);
+    return { globalContext, funcContext, newScopeContext, logger, factory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeNestedLoopScopeContext()
 {
-    auto newScopeContext = MakePtr<ScopeContext>(bodyContext, scopeContext, scopeContext->nestedLoop + 1);
-    return { globalContext, bodyContext, newScopeContext, logger, factory, binOpQueryService };
+    auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop + 1);
+    return { globalContext, funcContext, newScopeContext, logger, factory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
 {   
-    auto newBodyContext = bodyContext->MakeLambdaBodyContext(scopeContext, std::move(funcRet), std::move(funcParams), bLastParamVariadic);
+    auto newBodyContext = funcContext->MakeLambdaBodyContext(scopeContext, std::move(funcRet), std::move(funcParams), bLastParamVariadic);
     auto newScopeContext = MakePtr<ScopeContext>(newBodyContext, nullptr, 0);
 
     return { globalContext, newBodyContext, newScopeContext, logger, factory, binOpQueryService };
@@ -199,22 +199,22 @@ DeclTypeInfo TranslationContext::GetDeclTypeInfo(STypeExp& typeExp)
 
 bool TranslationContext::CanAccess(RDecl* target)
 {
-    return bodyContext->CanAccess(target);
+    return funcContext->CanAccess(target);
 }
 
 bool TranslationContext::IsSeqFunc()
 {
-    return bodyContext->bSeqFunc;
+    return funcContext->bSeqFunc;
 }
 
 RFuncReturn TranslationContext::GetFuncReturn()
 {
-    return bodyContext->GetFuncReturn();
+    return funcContext->GetFuncReturn();
 }
 
 void TranslationContext::SetFuncReturn(RTypePtr&& retType)
 {
-    bodyContext->SetFuncReturn(std::move(retType));
+    funcContext->SetFuncReturn(std::move(retType));
 }
 
 void TranslationContext::SetSyntax(const SSyntaxPtr& syntax)

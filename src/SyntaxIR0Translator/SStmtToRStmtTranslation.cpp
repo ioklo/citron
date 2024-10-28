@@ -22,7 +22,7 @@
 
 #include "TranslationContext.h"
 #include "ScopeContext.h"
-#include "BodyContext.h"
+#include "FuncContext.h"
 #include "DesignatedErrorLogger.h"
 #include "Misc.h"
 #include "RFuncAndRArgsToRExpTranslation.h"
@@ -118,10 +118,10 @@ public:
             return Fatal();
         }
 
-        auto bodyContext = context.MakeNestedScopeContext();
+        auto nestedContext = context.MakeNestedScopeContext();
 
         vector<RStmtPtr> bodyStmts;
-        if (!TranslateSEmbeddableStmtToRStmts(*stmt.body, &bodyStmts, bodyContext))
+        if (!TranslateSEmbeddableStmtToRStmts(*stmt.body, &bodyStmts, nestedContext))
             return Fatal();
 
         optional<vector<RStmtPtr>> oElseStmts;
@@ -860,7 +860,7 @@ optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr
     // [int x = x](int p) => { return 3; }
 
     // 파라미터는 람다 함수의 지역변수로 취급한다
-    // var newLambdaBodyContext = bodyContext.NewLambdaBodyContext(localContext); // new FuncContext(lambdaDeclHolder, bodyContext.GetThisType(), bSeqFunc: false, localContext);
+    // var newLambdaBodyContext = funcContext.NewLambdaBodyContext(localContext); // new FuncContext(lambdaDeclHolder, bodyContext.GetThisType(), bSeqFunc: false, localContext);
 
     // 람다 관련 정보는 여기서 수집한다
     RFuncReturn funcRet = retType ? (RFuncReturn)RFuncReturn_Set(std::move(retType)) : RFuncReturn_NotSet();
@@ -895,7 +895,6 @@ optional<RLambdaDeclAndArgs> TranslateSLambdaBodyToRLambdaAndArgs(const RTypePtr
 }
 
 } // namespace 
-
 
 bool TranslateSBodyToRStmts(const vector<SStmtPtr>& stmts, vector<RStmtPtr>* outStmts, TranslationContext& context)
 {

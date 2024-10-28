@@ -21,7 +21,7 @@ class RLambdaDecl;
 namespace SyntaxIR0Translator {
 
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
-using BodyContextPtr = std::shared_ptr<class BodyContext>;
+using FuncContextPtr = std::shared_ptr<class FuncContext>;
 using ImExpPtr = std::shared_ptr<class ImExp>;
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
@@ -31,12 +31,12 @@ class UpdateContext;
 class ScopeContext
 {
 public:
-    BodyContextPtr bodyContext;
+    FuncContextPtr funcContext;
     ScopeContextPtr parentContext;
     int nestedLoop;
 
 public:
-    ScopeContext(const BodyContextPtr& bodyContext, const ScopeContextPtr& parentContext, int nestedLoop);
+    ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop);
 
     ScopeContextPtr Clone(CloneContext& context);
     void Update(ScopeContext& src, UpdateContext& context);

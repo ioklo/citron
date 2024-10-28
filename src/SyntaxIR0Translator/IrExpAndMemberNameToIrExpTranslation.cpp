@@ -18,7 +18,7 @@
 
 #include "IrExp.h"
 #include "TranslationContext.h"
-#include "BodyContext.h"
+#include "FuncContext.h"
 #include "ScopeContext.h"
 
 namespace Citron::SyntaxIR0Translator {

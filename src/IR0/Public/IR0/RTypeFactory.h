@@ -130,7 +130,7 @@ public:
     IR0_API std::shared_ptr<RType_Struct> MakeStructType(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     IR0_API std::shared_ptr<RType_Enum> MakeEnumType(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     IR0_API std::shared_ptr<RType_EnumElem> MakeEnumElemType(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
-    IR0_API std::shared_ptr<RType_Interface> MakeInterfaceType(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_Interface> MakeInterfaceType(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal);
     IR0_API std::shared_ptr<RType_Lambda> MakeLambdaType(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 
@@ -150,8 +150,8 @@ public:
     IR0_API RDeclIdPtr MakeChildDeclId(RDeclIdPtr&& id, RIdentifier&& identifier);
 
 private:
-    template<typename TDecl, typename TType>
-    std::shared_ptr<TType> MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, const std::shared_ptr<TDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    template<typename TDecl, typename TType, typename... TArgs>
+    std::shared_ptr<TType> MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, const std::shared_ptr<TDecl>& decl, const RTypeArgumentsPtr& typeArgs, TArgs&&... args);
 
 };
 

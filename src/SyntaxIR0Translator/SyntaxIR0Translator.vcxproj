@@ -36,12 +36,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BodyContext.cpp" />
+    <ClCompile Include="AFuncDecl.cpp" />
+    <ClCompile Include="FuncContext.cpp" />
     <ClCompile Include="BodyPhaseContext.cpp" />
     <ClCompile Include="DeclTypeInfo.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
-    <ClCompile Include="GlobalContext.cpp" />
     <ClCompile Include="ImCallableAndSArgsToRExpTranslation.cpp" />
     <ClCompile Include="ImExp.cpp" />
     <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp" />
@@ -82,12 +82,12 @@
     <ClCompile Include="TranslationContext.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BodyContext.h" />
+    <ClInclude Include="AFuncDecl.h" />
+    <ClInclude Include="FuncContext.h" />
     <ClInclude Include="BodyPhaseContext.h" />
     <ClInclude Include="DeclTypeInfo.h" />
     <ClInclude Include="FuncMatching.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
-    <ClInclude Include="GlobalContext.h" />
     <ClInclude Include="ImCallableAndSArgsToRExpTranslation.h" />
     <ClInclude Include="ImExp.h" />
     <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h" />

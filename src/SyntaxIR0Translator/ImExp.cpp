@@ -13,8 +13,8 @@ ImExp_GlobalFuncs::ImExp_GlobalFuncs(const std::vector<RDeclWithOuterTypeArgs<RG
 {
 }
 
-ImExp_TypeVar::ImExp_TypeVar(const std::shared_ptr<RType_TypeVar>& type)
-    : type(type)
+ImExp_TypeVar::ImExp_TypeVar(std::shared_ptr<RType_TypeVar>&& type)
+    : type(std::move(type))
 {
 }
 

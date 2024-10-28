@@ -108,7 +108,7 @@ public:
     std::shared_ptr<RType_TypeVar> type;
 
 public:
-    ImExp_TypeVar(const std::shared_ptr<RType_TypeVar>& type);
+    ImExp_TypeVar(std::shared_ptr<RType_TypeVar>&& type);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }

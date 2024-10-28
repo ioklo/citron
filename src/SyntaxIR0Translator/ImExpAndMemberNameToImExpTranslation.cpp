@@ -16,7 +16,7 @@
 #include <IR0/REnumDecl.h>
 
 #include "TranslationContext.h"
-#include "BodyContext.h"
+#include "FuncContext.h"
 #include "ScopeContext.h"
 
 #include "ImExp.h"

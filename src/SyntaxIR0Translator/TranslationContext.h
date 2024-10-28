@@ -5,6 +5,7 @@
 #include <optional>
 
 #include <IR0/RFuncReturn.h>
+#include <IR0/RArgument.h>
 
 #include "DesignatedErrorLogger.h"
 #include "DeclTypeInfo.h"
@@ -21,6 +22,7 @@ enum class SBinaryOpKind;
 
 using SSyntaxPtr = std::shared_ptr<class SSyntax>;
 using RExpPtr = std::shared_ptr<class RExp>;
+using RStmtPtr = std::shared_ptr<class RStmt>;
 using LoggerPtr = std::shared_ptr<class Logger>;
 using RTypeFactoryPtr = std::shared_ptr<class RTypeFactory>;
 using RTypePtr = std::shared_ptr<class RType>;
@@ -33,7 +35,7 @@ class IrExp_BoxRef;
 struct BinOpInfo;
 
 using GlobalContextPtr = std::shared_ptr<class GlobalContext>;
-using BodyContextPtr = std::shared_ptr<class BodyContext>;
+using FuncContextPtr = std::shared_ptr<class FuncContext>;
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 using TranslationContextPtr = std::shared_ptr<class TranslationContext>;
@@ -47,13 +49,13 @@ struct RLambdaDeclAndArgs
 class TranslationContext
 {
     GlobalContextPtr globalContext;
-    BodyContextPtr bodyContext;
+    FuncContextPtr funcContext;
     ScopeContextPtr scopeContext;
     LoggerPtr logger;
     RTypeFactoryPtr factory;
     BinOpQueryServicePtr binOpQueryService;
 
-    TranslationContext(const GlobalContextPtr& globalContext, const BodyContextPtr& bodyContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RTypeFactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService);
+    TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RTypeFactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService);
 
 public:
     // ScopeContext::MakeNewScopeContext
@@ -74,7 +76,7 @@ public: // for scopeContext
     bool DoesLocalVarNameExistInScope(const std::string& name);
     void AddLocalVarInfo(const RTypePtr& type, RName&& name);
 
-public: // for bodyContext
+public: // for funcContext
     bool CanAccess(RDecl* target);
     bool IsSeqFunc();
     RFuncReturn GetFuncReturn();

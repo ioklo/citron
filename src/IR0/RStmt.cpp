@@ -120,11 +120,6 @@ RStmt_CallStructConstructor::RStmt_CallStructConstructor()
 
 }
 
-RStmt_NullDirective::RStmt_NullDirective()
-{
-
-}
-
 RStmt_NullDirective::RStmt_NullDirective(RLocPtr&& loc)
     : loc(std::move(loc))
 {

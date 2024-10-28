@@ -141,7 +141,7 @@ public:
 
     void Visit(SExp_Lambda& exp) override
     {
-        HandleExp(TranslateSLambdaExpToRExp(exp));
+        HandleExp(TranslateSLambdaExpToRExp(exp, context));
     }
 
     void Visit(SExp_Indexer& exp) override

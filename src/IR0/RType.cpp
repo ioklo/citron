@@ -168,7 +168,7 @@ RType_Interface::RType_Interface(const std::shared_ptr<RInterfaceDecl>& decl, co
 RTypePtr RType_Interface::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
-    return factory.MakeInterfaceType(decl, std::move(appliedTypeArgs));
+    return factory.MakeInterfaceType(decl, std::move(appliedTypeArgs), bLocal);
 }
 
 RType_Lambda::RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs)
