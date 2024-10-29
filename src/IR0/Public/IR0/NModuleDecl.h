@@ -10,6 +10,8 @@
 #include "NFuncDeclContainerComponent.h"
 #include "NGlobalFuncDecl.h"
 
+#include "RModuleDecl.h"
+
 namespace Citron {
 
 class NModuleDecl 
@@ -17,6 +19,7 @@ class NModuleDecl
     , public NTopLevelDeclOuter
     , public NTypeDeclOuter
     , public NFuncDeclOuter
+    , public RModuleDecl
     , private NNamespaceDeclContainerComponent
     , private NTypeDeclContainerComponent
     , private NFuncDeclContainerComponent<NGlobalFuncDecl>

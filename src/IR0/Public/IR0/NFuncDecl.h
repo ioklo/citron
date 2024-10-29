@@ -4,6 +4,7 @@
 
 #include "NDecl.h"
 #include "RFuncReturn.h"
+#include "RFuncDecl.h"
 
 namespace Citron
 {
@@ -27,7 +28,7 @@ public:
     virtual void Visit(NLambdaDecl& func) = 0;
 };
 
-class NFuncDecl : public virtual NDecl
+class NFuncDecl
 {
 public:
     virtual ~NFuncDecl() { }

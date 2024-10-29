@@ -2,13 +2,19 @@
 #include <variant>
 #include <memory>
 
+#include "RFuncDeclOuter.h"
+
 namespace Citron
 {
 
 class NDecl;
+class NModuleDecl;
+class NNamespaceDecl;
 class NGlobalFuncDecl;
+class NClassDecl;
 class NClassConstructorDecl;
 class NClassMemberFuncDecl;
+class NStructDecl;
 class NStructConstructorDecl;
 class NStructMemberFuncDecl;
 class NLambdaDecl;

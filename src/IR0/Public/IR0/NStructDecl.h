@@ -18,6 +18,7 @@
 #include "NFuncDeclContainerComponent.h"
 #include "NTypeDeclOuter.h"
 #include "RAccessor.h"
+#include "RStructDecl.h"
 
 namespace Citron
 {
@@ -26,9 +27,11 @@ class RType_Struct;
 class RType_Interface;
 
 class NStructDecl
-    : public NTypeDecl
+    : public NDecl
+    , public NTypeDecl
     , public NTypeDeclOuter
     , public NFuncDeclOuter
+    , public RStructDecl
     , private NTypeDeclContainerComponent
     , private NFuncDeclContainerComponent<NStructMemberFuncDecl>
 {
@@ -73,7 +76,7 @@ public:
     IR0_API NDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 
-    // from RTypeDeclOuter, RFuncDeclOuter
+    // from RTypeDeclOuter, RFuncDeclOuter, NTypeDecl
     IR0_API NDecl* GetDecl() override;
 
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }

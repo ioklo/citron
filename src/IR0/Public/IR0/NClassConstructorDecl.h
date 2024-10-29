@@ -8,6 +8,8 @@
 #include "RAccessor.h"
 #include "NCommonFuncDeclComponent.h"
 
+#include "RClassConstructorDecl.h"
+
 namespace Citron
 {
 
@@ -15,8 +17,10 @@ class NClassDecl;
 struct RFuncParameter;
 
 class NClassConstructorDecl 
-    : public NFuncDecl
+    : public NDecl
+    , public NFuncDecl
     , public NFuncDeclOuter
+    , public RClassConstructorDecl
     , private NCommonFuncDeclComponent
 {
 public:
@@ -33,6 +37,8 @@ public:
 
     // from NFuncDeclOuter
     IR0_API NDecl* GetDecl() override;
+
+    IR0_API std::shared_ptr<RClassDecl> GetClassDecl() override;
 
 public:
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }

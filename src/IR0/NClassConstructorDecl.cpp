@@ -1,6 +1,8 @@
 #include "NClassConstructorDecl.h"
 #include "NClassDecl.h"
 
+using namespace std;
+
 namespace Citron {
 
 NDecl* NClassConstructorDecl::GetOuter()
@@ -16,6 +18,11 @@ RIdentifier NClassConstructorDecl::GetIdentifier()
 NDecl* NClassConstructorDecl::GetDecl()
 {
     return this;
+}
+
+shared_ptr<RClassDecl> NClassConstructorDecl::GetClassDecl()
+{
+    return _class.lock();
 }
 
 } // namespace Citron

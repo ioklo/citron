@@ -105,12 +105,12 @@ class RTypeFactory
     template<typename TDecl, typename TType>
     using InstanceTypeKeyUnorderedMap = std::unordered_map<IR0::InstanceTypeKey<TDecl>, std::shared_ptr<TType>, IR0::InstanceTypeKeyHasher<TDecl>>;
 
-    InstanceTypeKeyUnorderedMap<NClassDecl, RType_Class> classTypes;
-    InstanceTypeKeyUnorderedMap<NStructDecl, RType_Struct> structTypes;
-    InstanceTypeKeyUnorderedMap<NEnumDecl, RType_Enum> enumTypes;
-    InstanceTypeKeyUnorderedMap<NEnumElemDecl, RType_EnumElem> enumElemTypes;
-    InstanceTypeKeyUnorderedMap<NInterfaceDecl, RType_Interface> interfaceTypes;
-    InstanceTypeKeyUnorderedMap<NLambdaDecl, RType_Lambda> lambdaTypes;
+    InstanceTypeKeyUnorderedMap<RClassDecl, RType_Class> classTypes;
+    InstanceTypeKeyUnorderedMap<RStructDecl, RType_Struct> structTypes;
+    InstanceTypeKeyUnorderedMap<REnumDecl, RType_Enum> enumTypes;
+    InstanceTypeKeyUnorderedMap<REnumElemDecl, RType_EnumElem> enumElemTypes;
+    InstanceTypeKeyUnorderedMap<RInterfaceDecl, RType_Interface> interfaceTypes;
+    InstanceTypeKeyUnorderedMap<RLambdaDecl, RType_Lambda> lambdaTypes;
 
     std::unordered_map<IR0::TypeArgumentsKey, RTypeArgumentsPtr, IR0::TypeArgumentsKeyHasher> typeArgsMap;
 
@@ -126,12 +126,12 @@ public:
     IR0_API std::shared_ptr<RType_LocalPtr> MakeLocalPtrType(RTypePtr&& innerType);
     IR0_API std::shared_ptr<RType_BoxPtr> MakeBoxPtrType(RTypePtr&& innerType);
 
-    IR0_API std::shared_ptr<RType_Class> MakeClassType(const std::shared_ptr<NClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
-    IR0_API std::shared_ptr<RType_Struct> MakeStructType(const std::shared_ptr<NStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
-    IR0_API std::shared_ptr<RType_Enum> MakeEnumType(const std::shared_ptr<NEnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
-    IR0_API std::shared_ptr<RType_EnumElem> MakeEnumElemType(const std::shared_ptr<NEnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
-    IR0_API std::shared_ptr<RType_Interface> MakeInterfaceType(const std::shared_ptr<NInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal);
-    IR0_API std::shared_ptr<RType_Lambda> MakeLambdaType(const std::shared_ptr<NLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_Class> MakeClassType(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_Struct> MakeStructType(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_Enum> MakeEnumType(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_EnumElem> MakeEnumElemType(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_Interface> MakeInterfaceType(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal);
+    IR0_API std::shared_ptr<RType_Lambda> MakeLambdaType(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 
     IR0_API RTypeArgumentsPtr MakeTypeArguments(const std::vector<RTypePtr>& items);

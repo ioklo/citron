@@ -5,6 +5,7 @@
 #include "NDecl.h"
 #include "RNames.h"
 #include "RType.h"
+#include "RLambdaMemberVarDecl.h"
 
 namespace Citron
 {
@@ -13,6 +14,7 @@ class NLambdaDecl;
 
 class NLambdaMemberVarDecl
     : public NDecl
+    , public RLambdaMemberVarDecl
 {
 public:
     std::weak_ptr<NLambdaDecl> lambda;

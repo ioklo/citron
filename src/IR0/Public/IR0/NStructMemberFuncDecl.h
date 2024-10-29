@@ -10,13 +10,19 @@
 #include "RNames.h"
 #include "NCommonFuncDeclComponent.h"
 
+#include "RStructMemberFuncDecl.h"
+
 namespace Citron
 {
 class NStructDecl;
+using RTypePtr = std::shared_ptr<class RType>;
+class RTypeArguments;
 
 class NStructMemberFuncDecl 
-    : public NFuncDecl
+    : public NDecl
+    , public NFuncDecl
     , public NFuncDeclOuter
+    , public RStructMemberFuncDecl
     , private NCommonFuncDeclComponent
 {
 public:
@@ -39,13 +45,15 @@ public:
 
     // from NFuncDeclOuter
     IR0_API NDecl* GetDecl() override;
+
+    // from RStructMemberFuncDecl
+    RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
     
 public:
+
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
-
-    using NCommonFuncDeclComponent::GetReturnType;
 };
 
 }

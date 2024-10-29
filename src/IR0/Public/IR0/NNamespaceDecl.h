@@ -11,6 +11,8 @@
 #include "NFuncDeclContainerComponent.h"
 #include "NGlobalFuncDecl.h"
 
+#include "RNamespaceDecl.h"
+
 namespace Citron
 {
 
@@ -19,6 +21,7 @@ class NNamespaceDecl
     , public NTopLevelDeclOuter
     , public NTypeDeclOuter
     , public NFuncDeclOuter
+    , public RNamespaceDecl
     , private NNamespaceDeclContainerComponent
     , private NTypeDeclContainerComponent
     , private NFuncDeclContainerComponent<NGlobalFuncDecl>

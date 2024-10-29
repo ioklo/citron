@@ -9,13 +9,17 @@
 #include "NTypeDecl.h"
 #include "NEnumElemMemberVarDecl.h"
 
+#include "REnumElemDecl.h"
+
 namespace Citron
 {
 
 class NEnumDecl;
 
 class NEnumElemDecl
-    : public NTypeDecl
+    : public NDecl
+    , public NTypeDecl
+    , public REnumElemDecl
 {
 public:
     std::weak_ptr<NEnumDecl> _enum;

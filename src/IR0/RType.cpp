@@ -116,7 +116,7 @@ RTypePtr RType_BoxPtr::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     return factory.MakeBoxPtrType(std::move(appliedInnerType));
 }
 
-RType_Class::RType_Class(const std::shared_ptr<NClassDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RType_Class::RType_Class(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }
@@ -127,7 +127,7 @@ RTypePtr RType_Class::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     return factory.MakeClassType(decl, std::move(appliedTypeArgs));
 }
 
-RType_Struct::RType_Struct(const std::shared_ptr<NStructDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RType_Struct::RType_Struct(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }
@@ -138,7 +138,7 @@ RTypePtr RType_Struct::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     return factory.MakeStructType(decl, std::move(appliedTypeArgs));
 }
 
-RType_Enum::RType_Enum(const std::shared_ptr<NEnumDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RType_Enum::RType_Enum(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {   
 }
@@ -149,7 +149,7 @@ RTypePtr RType_Enum::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     return factory.MakeEnumType(decl, std::move(appliedTypeArgs));
 }
 
-RType_EnumElem::RType_EnumElem(const std::shared_ptr<NEnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RType_EnumElem::RType_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }
@@ -160,7 +160,7 @@ RTypePtr RType_EnumElem::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     return factory.MakeEnumElemType(decl, std::move(appliedTypeArgs));
 }
 
-RType_Interface::RType_Interface(const std::shared_ptr<NInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal)
+RType_Interface::RType_Interface(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal)
     : decl(decl), typeArgs(typeArgs), bLocal(bLocal)
 {
 }
@@ -171,7 +171,7 @@ RTypePtr RType_Interface::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     return factory.MakeInterfaceType(decl, std::move(appliedTypeArgs), bLocal);
 }
 
-RType_Lambda::RType_Lambda(const std::shared_ptr<NLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs)
+RType_Lambda::RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs)
     : decl(decl), outerTypeArgs(outerTypeArgs)
 {
 }

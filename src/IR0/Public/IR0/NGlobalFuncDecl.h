@@ -4,8 +4,8 @@
 #include <optional>
 
 #include "NDecl.h"
-#include "NFuncDeclOuter.h"
 #include "NFuncDecl.h"
+#include "NFuncDeclOuter.h"
 #include "RAccessor.h"
 #include "RNames.h"
 #include "RFuncReturn.h"
@@ -19,7 +19,10 @@ namespace Citron {
 class MGlobalFuncDecl;
 
 class NGlobalFuncDecl
-    : public RGlobalFuncDecl
+    : public NDecl
+    , public NFuncDecl
+    , public NFuncDeclOuter
+    , public RGlobalFuncDecl
     , private NCommonFuncDeclComponent
 {   
     struct FuncReturnAndParams
@@ -34,6 +37,19 @@ class NGlobalFuncDecl
     std::vector<RName> typeParams;
 
     std::optional<FuncReturnAndParams> funcReturnAndParams;
+
+public:
+    // from NFuncDecl
+    IR0_API NDecl* GetOuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
+
+    // from NFuncDeclOuter
+    IR0_API NDecl* GetDecl() override;
+
+    // accestors
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }

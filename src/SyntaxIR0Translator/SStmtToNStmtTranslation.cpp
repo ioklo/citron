@@ -432,7 +432,7 @@ public:
                     return nullptr;
                 }
 
-                vector<RDeclWithOuterTypeArgs<NFuncDecl>> candidates;
+                vector<DeclWithOuterTypeArgs<NFuncDecl>> candidates;
 
                 for (auto& funcDeclWithOuter : rMember->GetFuncDeclWithOuterTypeArgs())
                 {

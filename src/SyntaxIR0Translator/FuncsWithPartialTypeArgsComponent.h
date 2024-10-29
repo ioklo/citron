@@ -13,11 +13,11 @@ template<typename TFuncDecl>
 class FuncsWithPartialTypeArgsComponent
 {
 public:
-    std::vector<RDeclWithOuterTypeArgs<TFuncDecl>> items;
+    std::vector<DeclWithOuterTypeArgs<TFuncDecl>> items;
     std::shared_ptr<RTypeArguments> partialTypeArgsExceptOuter; // outer부분을 제외한 typeArgs면서 완전하지 않을수도 있는 typeArgs
 
 public:
-    FuncsWithPartialTypeArgsComponent(const std::vector<RDeclWithOuterTypeArgs<TFuncDecl>> items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter)
+    FuncsWithPartialTypeArgsComponent(const std::vector<DeclWithOuterTypeArgs<TFuncDecl>> items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter)
         : items(items), partialTypeArgsExceptOuter(partialTypeArgsExceptOuter)
     {
     }

@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include "RTopLevelDeclOuter.h"
 
 namespace Citron {
 
@@ -15,7 +16,7 @@ public:
     virtual void Visit(NNamespaceDecl& outerDecl) = 0;
 };
 
-class NTopLevelDeclOuter
+class NTopLevelDeclOuter : public RTopLevelDeclOuter
 {
 public:
     virtual ~NTopLevelDeclOuter() { }

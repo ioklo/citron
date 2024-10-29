@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "NDecl.h"
+#include "RTypeDecl.h"
 
 namespace Citron {
 
@@ -24,10 +25,11 @@ public:
     virtual void Visit(NLambdaDecl& typeDecl) = 0;
 };
 
-class NTypeDecl : public virtual NDecl
+class NTypeDecl
 {
 public:
     virtual ~NTypeDecl() { }
+    virtual NDecl* GetDecl() = 0;
     virtual void Accept(NTypeDeclVisitor& visitor) = 0;
 };
 

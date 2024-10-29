@@ -36,5 +36,10 @@ NDecl* NStructConstructorDecl::GetDecl()
     return this;
 }
 
+shared_ptr<RStructDecl> NStructConstructorDecl::GetStructDecl()
+{
+    return _struct.lock();
+}
+
 }
 

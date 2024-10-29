@@ -7,6 +7,7 @@
 #include "NDecl.h"
 #include "RNames.h"
 #include "RType.h"
+#include "REnumElemMemberVarDecl.h"
 
 namespace Citron
 {
@@ -15,6 +16,7 @@ class NEnumElemDecl;
 
 class NEnumElemMemberVarDecl
     : public NDecl
+    , public REnumElemMemberVarDecl
 {   
     std::weak_ptr<NEnumElemDecl> outer;
     RName name;

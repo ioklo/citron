@@ -12,11 +12,15 @@
 #include "NEnumElemDecl.h"
 #include "NTypeDeclOuter.h"
 
+#include "REnumDecl.h"
+
 namespace Citron
 {
 
 class NEnumDecl
-    : public NTypeDecl
+    : public NDecl
+    , public NTypeDecl
+    , public REnumDecl
 {
     NTypeDeclOuterWPtr outer;
     RAccessor accessor;
@@ -36,6 +40,9 @@ public:
     IR0_API NDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+
+    // from NTypeDecl
+    NDecl* GetDecl() override { return this; }
 
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }

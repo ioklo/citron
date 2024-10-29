@@ -257,7 +257,7 @@ RTypePtr NExp_CallInternalBinaryOperator::GetType(RTypeFactory& factory)
     }
 }
 
-NExp_CallGlobalFunc::NExp_CallGlobalFunc(const shared_ptr<NGlobalFuncDecl>& funcDecl, const RTypeArgumentsPtr& typeArgs, const vector<NArgument>& args)
+NExp_CallGlobalFunc::NExp_CallGlobalFunc(const shared_ptr<RGlobalFuncDecl>& funcDecl, const RTypeArgumentsPtr& typeArgs, const vector<NArgument>& args)
     : funcDecl(funcDecl), typeArgs(typeArgs), args(args)
 {
 }
@@ -267,14 +267,14 @@ RTypePtr NExp_CallGlobalFunc::GetType(RTypeFactory& factory)
     return funcDecl->GetReturnType(*typeArgs, factory);
 }
 
-NExp_NewClass::NExp_NewClass(const shared_ptr<NClassConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const vector<NArgument>& args)
+NExp_NewClass::NExp_NewClass(const shared_ptr<RClassConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const vector<NArgument>& args)
     : constructorDecl(constructorDecl), typeArgs(typeArgs), args(args)
 {
 }
 
 RTypePtr NExp_NewClass::GetType(RTypeFactory& factory)
 {
-    auto classDecl = constructorDecl->_class.lock();
+    auto classDecl = constructorDecl->GetClassDecl();
     assert(classDecl);
 
     return factory.MakeClassType(classDecl, typeArgs);
@@ -282,7 +282,7 @@ RTypePtr NExp_NewClass::GetType(RTypeFactory& factory)
 
 /////////////////////////////////////
 
-NExp_CallClassMemberFunc::NExp_CallClassMemberFunc(shared_ptr<NClassMemberFuncDecl>&& classMemberFunc, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
+NExp_CallClassMemberFunc::NExp_CallClassMemberFunc(shared_ptr<RClassMemberFuncDecl>&& classMemberFunc, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
     : classMemberFunc(std::move(classMemberFunc)), typeArgs(std::move(typeArgs)), instance(std::move(instance)), args(std::move(args))
 {
 }
@@ -302,18 +302,18 @@ RTypePtr NExp_CastClass::GetType(RTypeFactory& factory)
     return classType;
 }
 
-NExp_NewStruct::NExp_NewStruct(const shared_ptr<NStructConstructorDecl>& constructorDecl, RTypeArgumentsPtr&& typeArgs, vector<NArgument>&& args)
+NExp_NewStruct::NExp_NewStruct(const shared_ptr<RStructConstructorDecl>& constructorDecl, RTypeArgumentsPtr&& typeArgs, vector<NArgument>&& args)
     : constructorDecl(constructorDecl), typeArgs(std::move(typeArgs)), args(std::move(args))
 {
 }
 
 RTypePtr NExp_NewStruct::GetType(RTypeFactory& factory)
 {
-    auto structDecl = constructorDecl->_struct.lock();
+    auto structDecl = constructorDecl->GetStructDecl();
     return factory.MakeStructType(structDecl, typeArgs);
 }
 
-NExp_CallStructMemberFunc::NExp_CallStructMemberFunc(shared_ptr<NStructMemberFuncDecl>&& structMemberFuncDecl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
+NExp_CallStructMemberFunc::NExp_CallStructMemberFunc(shared_ptr<RStructMemberFuncDecl>&& structMemberFuncDecl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
     : structMemberFuncDecl(std::move(structMemberFuncDecl)), typeArgs(std::move(typeArgs)), instance(std::move(instance)), args(std::move(args))
 {
 }

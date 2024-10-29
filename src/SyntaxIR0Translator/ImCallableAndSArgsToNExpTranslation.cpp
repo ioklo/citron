@@ -200,7 +200,7 @@ public:
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
-        std::vector<RDeclWithOuterTypeArgs<NStructConstructorDecl>> items;
+        std::vector<DeclWithOuterTypeArgs<NStructConstructorDecl>> items;
         for (auto& constructorDecl : imExp.structDecl->GetConstructorDecls())
         {
             items.emplace_back(constructorDecl, imExp.typeArgs);

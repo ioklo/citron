@@ -39,7 +39,7 @@ NTypeDeclPtr NTypeDeclContainerComponent::GetType(const RIdentifier& identifier)
 void NTypeDeclContainerComponent::AddType(NTypeDeclPtr&& typeDecl)
 {
     types.push_back(typeDecl);
-    typeDict.insert_or_assign(typeDecl->GetIdentifier(), std::move(typeDecl));
+    typeDict.insert_or_assign(typeDecl->GetDecl()->GetIdentifier(), std::move(typeDecl));
 }
 
 //bool ICyclicEqualityComparableStruct<TypeDeclSymbolComponent>.CyclicEquals(ref TypeDeclSymbolComponent other, ref CyclicEqualityCompareContext context)

@@ -1,24 +1,16 @@
 #pragma once
 
-#include "IR0Config.h"
-
 #include <memory>
 
+#include "RDecl.h"
 #include "RFuncDecl.h"
 #include "RFuncDeclOuter.h"
 
 namespace Citron {
 
-class MGlobalFuncDecl;
-class NDecl;
-struct RIdentifier;
-class RTypeArguments;
-class RTypeFactory;
+class MStructMemberFuncDecl;
 
-using RTypePtr = std::shared_ptr<class RType>;
-
-// abstract
-class RGlobalFuncDecl
+class RStructMemberFuncDecl
     : public RDecl
     , public RFuncDecl
     , public RFuncDeclOuter
@@ -31,9 +23,10 @@ public:
     void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
 };
 
-class RMGlobalFuncDecl : public RGlobalFuncDecl
+class RMStructMemberFuncDecl : public RStructMemberFuncDecl
 {
-    std::shared_ptr<MGlobalFuncDecl> externalFuncDecl;
+    std::shared_ptr<MStructMemberFuncDecl> decl;
 };
 
-}
+
+} // namespace Citron

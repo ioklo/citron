@@ -8,7 +8,7 @@ ImExp_Namespace::ImExp_Namespace(const std::shared_ptr<NNamespaceDecl>& _namespa
 {
 }
 
-ImExp_GlobalFuncs::ImExp_GlobalFuncs(const std::vector<RDeclWithOuterTypeArgs<NGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgs)
+ImExp_GlobalFuncs::ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<NGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgs)
     : FuncsWithPartialTypeArgsComponent<NGlobalFuncDecl>(items, partialTypeArgs)
 {
 }
@@ -23,7 +23,7 @@ ImExp_Class::ImExp_Class(const std::shared_ptr<NClassDecl>& classDecl, RTypeArgu
 {
 }
 
-ImExp_ClassMemberFuncs::ImExp_ClassMemberFuncs(const std::vector<RDeclWithOuterTypeArgs<NClassMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ImExp_ClassMemberFuncs::ImExp_ClassMemberFuncs(const std::vector<DeclWithOuterTypeArgs<NClassMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : FuncsWithPartialTypeArgsComponent<NClassMemberFuncDecl>(items, partialTypeArgsExceptOuter), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
@@ -33,7 +33,7 @@ ImExp_Struct::ImExp_Struct(const std::shared_ptr<NStructDecl>& structDecl, RType
 {
 }
 
-ImExp_StructMemberFuncs::ImExp_StructMemberFuncs(const std::vector<RDeclWithOuterTypeArgs<NStructMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ImExp_StructMemberFuncs::ImExp_StructMemberFuncs(const std::vector<DeclWithOuterTypeArgs<NStructMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : FuncsWithPartialTypeArgsComponent<NStructMemberFuncDecl>(items, partialTypeArgsExceptOuter), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 

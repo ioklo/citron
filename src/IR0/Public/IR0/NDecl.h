@@ -4,6 +4,7 @@
 #include "RIdentifier.h"
 #include "RNames.h"
 #include "RAccessor.h"
+#include "RDecl.h"
 
 namespace Citron
 {
@@ -80,7 +81,6 @@ private:
     // non virtual
     RDeclIdPtr GetDeclId(RTypeFactory& factory);
 };
-
 
 using NDeclPtr = std::shared_ptr<NDecl>;
 

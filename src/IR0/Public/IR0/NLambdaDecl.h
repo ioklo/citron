@@ -12,14 +12,17 @@
 #include "NCommonFuncDeclComponent.h"
 #include "NLambdaMemberVarDecl.h"
 #include "RFuncReturn.h"
+#include "RLambdaDecl.h"
 
 namespace Citron
 {
 
 class NLambdaDecl 
-    : public NTypeDecl
+    : public NDecl
+    , public NTypeDecl
     , public NFuncDeclOuter
     , public NFuncDecl
+    , public RLambdaDecl
     , private NCommonFuncDeclComponent
 {
     NFuncDeclOuterWPtr outer;
@@ -40,7 +43,7 @@ public:
     IR0_API NDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 
-    // from NFuncDeclOuter
+    // from NFuncDeclOuter, NTypeDecl, NFuncDecl
     IR0_API NDecl* GetDecl() override;
 
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }

@@ -11,7 +11,7 @@ namespace Citron {
 using SArgumentsPtr = std::shared_ptr<class SArguments>;
 
 template<typename TDecl>
-struct RDeclWithOuterTypeArgs;
+struct DeclWithOuterTypeArgs;
 
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
@@ -37,7 +37,7 @@ struct ArgumentsMatch
 
 
 template<typename TFuncDecl>
-std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<RDeclWithOuterTypeArgs<TFuncDecl>>& items, const SArgumentsPtr& sArgs, TranslationContext& context);
+std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<DeclWithOuterTypeArgs<TFuncDecl>>& items, const SArgumentsPtr& sArgs, TranslationContext& context);
 
 std::optional<ArgumentsMatch> MatchArguments(const RTypeArgumentsPtr& outerTypeArgs, const RTypeArgumentsPtr& partialTypeArgsExceptOuter, std::vector<RFuncParameter>&& funcParams, bool bVariadic, const SArgumentsPtr& sArgs);
 

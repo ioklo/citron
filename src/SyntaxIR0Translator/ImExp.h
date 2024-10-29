@@ -91,7 +91,7 @@ public:
     using FuncComp::items;
 
 public:
-    ImExp_GlobalFuncs(const std::vector<RDeclWithOuterTypeArgs<NGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter);
+    ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<NGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter);
 
 public:
     using FuncComp::GetCount;
@@ -144,7 +144,7 @@ private:
     using FuncComp = FuncsWithPartialTypeArgsComponent<NClassMemberFuncDecl>;
 
 public:
-    ImExp_ClassMemberFuncs(const std::vector<RDeclWithOuterTypeArgs<NClassMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_ClassMemberFuncs(const std::vector<DeclWithOuterTypeArgs<NClassMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     using FuncComp::GetCount;
@@ -180,7 +180,7 @@ public:
     ReExpPtr explicitInstance;
 
 public:
-    ImExp_StructMemberFuncs(const std::vector<RDeclWithOuterTypeArgs<NStructMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_StructMemberFuncs(const std::vector<DeclWithOuterTypeArgs<NStructMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     using FuncComp::GetCount;

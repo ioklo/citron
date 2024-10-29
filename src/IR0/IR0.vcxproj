@@ -146,8 +146,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Public\IR0\RDeclWIthOuterTypeArgs.h" />
+    <ClInclude Include="Public\IR0\DeclWithOuterTypeArgs.h" />
+    <ClInclude Include="Public\IR0\RClassConstructorDecl.h" />
+    <ClInclude Include="Public\IR0\RClassDecl.h" />
+    <ClInclude Include="Public\IR0\RClassMemberFuncDecl.h" />
+    <ClInclude Include="Public\IR0\RClassMemberVarDecl.h" />
+    <ClInclude Include="Public\IR0\REnumDecl.h" />
+    <ClInclude Include="Public\IR0\REnumElemDecl.h" />
+    <ClInclude Include="Public\IR0\REnumElemMemberVarDecl.h" />
+    <ClInclude Include="Public\IR0\RFuncDeclOuter.h" />
+    <ClInclude Include="Public\IR0\RDecl.h" />
+    <ClInclude Include="Public\IR0\RFuncDecl.h" />
     <ClInclude Include="Public\IR0\RGlobalFuncDecl.h" />
+    <ClInclude Include="Public\IR0\RInterfaceDecl.h" />
+    <ClInclude Include="Public\IR0\RLambdaDecl.h" />
+    <ClInclude Include="Public\IR0\RLambdaMemberVarDecl.h" />
     <ClInclude Include="Public\IR0\RMember.h" />
     <ClInclude Include="Public\IR0\RAccessor.h" />
     <ClInclude Include="Public\IR0\NFuncDeclOuter.h" />
@@ -161,7 +174,6 @@
     <ClInclude Include="Public\IR0\NEnumDecl.h" />
     <ClInclude Include="Public\IR0\NEnumElemDecl.h" />
     <ClInclude Include="Public\IR0\NEnumElemMemberVarDecl.h" />
-    <ClInclude Include="Public\IR0\RFunc.h" />
     <ClInclude Include="Public\IR0\NFuncDecl.h" />
     <ClInclude Include="Public\IR0\NFuncDeclContainerComponent.h" />
     <ClInclude Include="Public\IR0\RFuncParameter.h" />
@@ -172,6 +184,7 @@
     <ClInclude Include="Public\IR0\NLambdaDecl.h" />
     <ClInclude Include="Public\IR0\NLambdaMemberVarDecl.h" />
     <ClInclude Include="Public\IR0\NModuleDecl.h" />
+    <ClInclude Include="Public\IR0\RModuleDecl.h" />
     <ClInclude Include="Public\IR0\RNames.h" />
     <ClInclude Include="Public\IR0\NNamespaceDecl.h" />
     <ClInclude Include="Public\IR0\NNamespaceDeclContainerComponent.h" />
@@ -180,6 +193,12 @@
     <ClInclude Include="Public\IR0\NStructMemberFuncDecl.h" />
     <ClInclude Include="Public\IR0\NStructMemberVarDecl.h" />
     <ClInclude Include="Public\IR0\NTopLevelDeclOuter.h" />
+    <ClInclude Include="Public\IR0\RNamespaceDecl.h" />
+    <ClInclude Include="Public\IR0\RStructConstructorDecl.h" />
+    <ClInclude Include="Public\IR0\RStructDecl.h" />
+    <ClInclude Include="Public\IR0\RStructMemberFuncDecl.h" />
+    <ClInclude Include="Public\IR0\RStructMemberVarDecl.h" />
+    <ClInclude Include="Public\IR0\RTopLevelDeclOuter.h" />
     <ClInclude Include="Public\IR0\RType.h" />
     <ClInclude Include="Public\IR0\RTypeArguments.h" />
     <ClInclude Include="Public\IR0\NTypeDecl.h" />
@@ -190,6 +209,8 @@
     <ClInclude Include="Public\IR0\NExp.h" />
     <ClInclude Include="Public\IR0\NLoc.h" />
     <ClInclude Include="Public\IR0\NStmt.h" />
+    <ClInclude Include="Public\IR0\RTypeDecl.h" />
+    <ClInclude Include="Public\IR0\RTypeDeclOuter.h" />
     <ClInclude Include="Public\IR0\RTypeFactory.h" />
   </ItemGroup>
   <ItemGroup>
