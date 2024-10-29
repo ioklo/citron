@@ -1,4 +1,9 @@
 #include "RMember.h"
+#include "RGlobalFuncDecl.h"
+#include "RClassMemberFuncDecl.h"
+#include "RStructMemberFuncDecl.h"
+
+using namespace std;
 
 namespace Citron {
 
@@ -12,6 +17,17 @@ RMember_GlobalFuncs::RMember_GlobalFuncs(std::vector<RDeclWithOuterTypeArgs<RGlo
 {
 }
 
+vector<RDeclWithOuterTypeArgs<RFuncDecl>> RMember_GlobalFuncs::GetFuncDeclWithOuterTypeArgs()
+{
+    vector<RDeclWithOuterTypeArgs<RFuncDecl>> result;
+    result.reserve(items.size());
+
+    for(auto& item : items)
+        result.emplace_back(item.decl, item.outerTypeArgs);
+
+    return result;
+}
+
 RMember_Class::RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RClassDecl>& decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
@@ -22,6 +38,17 @@ RMember_ClassMemberFuncs::RMember_ClassMemberFuncs(std::vector<RDeclWithOuterTyp
     : items(std::move(items))
 {
 
+}
+
+vector<RDeclWithOuterTypeArgs<RFuncDecl>> RMember_ClassMemberFuncs::GetFuncDeclWithOuterTypeArgs()
+{
+    vector<RDeclWithOuterTypeArgs<RFuncDecl>> result;
+    result.reserve(items.size());
+
+    for (auto& item : items)
+        result.emplace_back(item.decl, item.outerTypeArgs);
+
+    return result;
 }
 
 RMember_ClassMemberVar::RMember_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
@@ -40,6 +67,17 @@ RMember_StructMemberFuncs::RMember_StructMemberFuncs(std::vector<RDeclWithOuterT
     : items(std::move(items))
 {
 
+}
+
+vector<RDeclWithOuterTypeArgs<RFuncDecl>> RMember_StructMemberFuncs::GetFuncDeclWithOuterTypeArgs()
+{
+    vector<RDeclWithOuterTypeArgs<RFuncDecl>> result;
+    result.reserve(items.size());
+
+    for (auto& item : items)
+        result.emplace_back(item.decl, item.outerTypeArgs);
+
+    return result;
 }
 
 RMember_StructMemberVar::RMember_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)

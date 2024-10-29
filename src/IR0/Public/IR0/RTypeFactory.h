@@ -112,7 +112,7 @@ class RTypeFactory
     InstanceTypeKeyUnorderedMap<RInterfaceDecl, RType_Interface> interfaceTypes;
     InstanceTypeKeyUnorderedMap<RLambdaDecl, RType_Lambda> lambdaTypes;
 
-    std::unordered_map<IR0::TypeArgumentsKey, RTypeArgumentsPtr, IR0::TypeArgumentsKeyHasher> map;
+    std::unordered_map<IR0::TypeArgumentsKey, RTypeArgumentsPtr, IR0::TypeArgumentsKeyHasher> typeArgsMap;
 
 public:
     IR0_API RTypeFactory();

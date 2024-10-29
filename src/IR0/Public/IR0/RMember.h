@@ -222,7 +222,7 @@ public:
     RMember_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
-    IR0_API std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 

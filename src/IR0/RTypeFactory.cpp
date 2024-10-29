@@ -153,12 +153,12 @@ shared_ptr<RTypeArguments> RTypeFactory::MakeTypeArguments(const vector<RTypePtr
 {
     auto key = IR0::TypeArgumentsKey { items };
 
-    auto i = map.find(key);
-    if (i != map.end())
+    auto i = typeArgsMap.find(key);
+    if (i != typeArgsMap.end())
         return i->second;
 
     shared_ptr<RTypeArguments> v { new RTypeArguments(items) };
-    map.emplace(key, v);
+    typeArgsMap.emplace(key, v);
     return v;
 }
 
@@ -168,15 +168,47 @@ RTypeArgumentsPtr RTypeFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RT
     items.insert(items.end(), typeArgs1.items.begin(), typeArgs1.items.end());
 
     auto key = IR0::TypeArgumentsKey { items };
-    auto i = map.find(key);
-    if (i != map.end())
+    auto i = typeArgsMap.find(key);
+    if (i != typeArgsMap.end())
         return i->second;
 
     shared_ptr<RTypeArguments> v { new RTypeArguments(std::move(items)) };
-    map.emplace(key, v);
+    typeArgsMap.emplace(key, v);
     return v;
 }
 
+RTypePtr RTypeFactory::MakeBoolType()
+{   
+}
 
+RTypePtr RTypeFactory::MakeIntType()
+{
+
+}
+
+RTypePtr RTypeFactory::MakeStringType()
+{
+
+}
+
+RTypePtr RTypeFactory::MakeListType(const RTypePtr& itemType)
+{
+
+}
+
+bool RTypeFactory::IsListType(const RTypePtr& type, RTypePtr* outItemType)
+{
+
+}
+
+RDeclIdPtr RTypeFactory::MakeDeclId(std::string&& moduleName, RIdentifier&& identifier)
+{
+
+}
+
+IR0_API RDeclIdPtr RTypeFactory::MakeChildDeclId(RDeclIdPtr&& id, RIdentifier&& identifier)
+{
+
+}
 
 } // Citron
