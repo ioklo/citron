@@ -2,7 +2,7 @@
 #include "EnumTranslation.h"
 
 #include <Infra/Ptr.h>
-#include <IR0/REnumElemMemberVarDecl.h>
+#include <IR0/NEnumElemMemberVarDecl.h>
 
 #include "SkeletonPhaseContext.h"
 #include "MemberDeclPhaseContext.h"
@@ -12,36 +12,36 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-void AddEnumElemMemberVar(const shared_ptr<REnumElemDecl>& rEnumElem, SEnumElemMemberVarDecl& sEnumElemMemberVar, SkeletonPhaseContext& context)
+void AddEnumElemMemberVar(const shared_ptr<NEnumElemDecl>& rEnumElem, SEnumElemMemberVarDecl& sEnumElemMemberVar, SkeletonPhaseContext& context)
 {
-    auto rMemberVar = MakePtr<REnumElemMemberVarDecl>(rEnumElem, RName_Normal(sEnumElemMemberVar.name));
-    rEnumElem->AddMemberVar(rMemberVar);
+    auto nMemberVar = MakePtr<NEnumElemMemberVarDecl>(rEnumElem, RName_Normal(sEnumElemMemberVar.name));
+    rEnumElem->AddMemberVar(nMemberVar);
 
-    context.AddMemberDeclPhaseTask([type = sEnumElemMemberVar.type, rMemberVar, rEnumElem](MemberDeclPhaseContext& context) {
+    context.AddMemberDeclPhaseTask([type = sEnumElemMemberVar.type, nMemberVar, rEnumElem](MemberDeclPhaseContext& context) {
         auto declType = context.MakeType(type, rEnumElem);
-        rMemberVar->InitDeclType(std::move(declType));
+        nMemberVar->InitDeclType(std::move(declType));
     });
 }
 
-void AddEnumElem(const shared_ptr<REnumDecl>& rEnum, SEnumElemDecl& sEnumElem, SkeletonPhaseContext& context)
+void AddEnumElem(const shared_ptr<NEnumDecl>& rEnum, SEnumElemDecl& sEnumElem, SkeletonPhaseContext& context)
 {
-    auto rEnumElem = MakePtr<REnumElemDecl>(rEnum, sEnumElem.name, sEnumElem.memberVars.size());
+    auto nEnumElem = MakePtr<NEnumElemDecl>(rEnum, sEnumElem.name, sEnumElem.memberVars.size());
 
     for (auto& sMemberVar : sEnumElem.memberVars)
-        AddEnumElemMemberVar(rEnumElem, *sMemberVar, context);
+        AddEnumElemMemberVar(nEnumElem, *sMemberVar, context);
 
-    rEnum->AddElem(std::move(rEnumElem));
+    rEnum->AddElem(std::move(nEnumElem));
 }
 
-std::shared_ptr<REnumDecl> InnerMakeEnum(RTypeDeclOuterWPtr rOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context)
+std::shared_ptr<NEnumDecl> InnerMakeEnum(NTypeDeclOuterWPtr nOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context)
 {
     auto typeParams = MakeTypeParams(sDecl.typeParams);
-    auto rDecl = MakePtr<REnumDecl>(std::move(rOuter), accessor, RName_Normal(sDecl.name), typeParams, sDecl.elements.size());
+    auto nDecl = MakePtr<NEnumDecl>(std::move(nOuter), accessor, RName_Normal(sDecl.name), typeParams, sDecl.elements.size());
     
     for (auto& sElemDecl : sDecl.elements)
-        AddEnumElem(rDecl, *sElemDecl, context);
+        AddEnumElem(nDecl, *sElemDecl, context);
 
-    return rDecl;
+    return nDecl;
 }
 
 }

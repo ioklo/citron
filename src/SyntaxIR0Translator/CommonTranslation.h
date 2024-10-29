@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include <IR0/RDecl.h>
+#include <IR0/NDecl.h>
 
 namespace Citron {
 

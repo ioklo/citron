@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <Syntax/Syntax.h>
-#include <IR0/REnumDecl.h>
+#include <IR0/NEnumDecl.h>
 
 #include "CommonTranslation.h"
 
@@ -12,10 +12,10 @@ namespace SyntaxIR0Translator {
 
 class SkeletonPhaseContext;
 
-std::shared_ptr<REnumDecl> InnerMakeEnum(RTypeDeclOuterWPtr rOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context);
+std::shared_ptr<NEnumDecl> InnerMakeEnum(NTypeDeclOuterWPtr nOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context);
 
 template<typename TROuter, typename TMakeAccessor>
-std::shared_ptr<REnumDecl> MakeEnum(const std::shared_ptr<TROuter>& rOuter, SEnumDecl& sDecl, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)
+std::shared_ptr<NEnumDecl> MakeEnum(const std::shared_ptr<TROuter>& rOuter, SEnumDecl& sDecl, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)
 {
     auto accessor = makeAccessor(sDecl.accessModifier);
     return InnerMakeEnum(rOuter, sDecl, accessor, context);

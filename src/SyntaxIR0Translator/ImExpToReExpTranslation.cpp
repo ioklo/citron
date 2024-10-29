@@ -4,7 +4,7 @@
 #include <Infra/Exceptions.h>
 #include <Infra/Ptr.h>
 #include <Logging/Logger.h>
-#include <IR0/REnumDecl.h>
+#include <IR0/NEnumDecl.h>
 
 #include "ImExp.h"
 #include "ReExp.h"
@@ -74,7 +74,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
         // if standalone, 값으로 처리한다
         if (imExp.decl->memberVars.size() == 0)
         {
-            *result = MakePtr<ReExp_Else>(MakePtr<RExp_NewEnumElem>(imExp.decl, imExp.typeArgs, vector<RArgument>()));
+            *result = MakePtr<ReExp_Else>(MakePtr<NExp_NewEnumElem>(imExp.decl, imExp.typeArgs, vector<NArgument>()));
             return;
         }
 

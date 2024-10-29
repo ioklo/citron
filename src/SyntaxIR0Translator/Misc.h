@@ -5,7 +5,7 @@
 
 namespace Citron {
 
-using RExpPtr = std::shared_ptr<class RExp>;
+using NExpPtr = std::shared_ptr<class NExp>;
 using RTypePtr = std::shared_ptr<class RType>;
 using LoggerPtr = std::shared_ptr<class Logger>;
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
@@ -18,8 +18,8 @@ class TranslationContext;
 
 RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context);
 
-RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context); // nothrow
-RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context);
+NExpPtr TryCastRExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context); // nothrow
+NExpPtr CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context);
 
 bool IsVarType(STypeExp& typeExp);
 

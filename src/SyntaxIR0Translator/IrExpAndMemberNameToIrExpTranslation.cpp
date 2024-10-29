@@ -9,12 +9,12 @@
 #include <IR0/RNames.h>
 #include <IR0/RMember.h>
 #include <IR0/RTypeFactory.h>
-#include <IR0/RClassDecl.h>
+#include <IR0/NClassDecl.h>
 #include <IR0/RClassMemberVarDecl.h>
-#include <IR0/RStructDecl.h>
-#include <IR0/RStructMemberVarDecl.h>
-#include <IR0/REnumDecl.h>
-#include <IR0/RNamespaceDecl.h>
+#include <IR0/NStructDecl.h>
+#include <IR0/NStructMemberVarDecl.h>
+#include <IR0/NEnumDecl.h>
+#include <IR0/NNamespaceDecl.h>
 
 #include "IrExp.h"
 #include "TranslationContext.h"
@@ -81,7 +81,7 @@ public:
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_ClassMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     void Visit(RMember_Struct& member) override 
@@ -113,7 +113,7 @@ public:
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_StructMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     // E
@@ -272,7 +272,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_StructMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
     }
 
     // Enum자체는 member를 가져올 수 없다
@@ -299,7 +299,7 @@ public:
             *result = nullptr;
         }
 
-        *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
     }
 
     // &C.i.id
@@ -557,7 +557,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_StructMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_StructMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
     }
 
     void Visit(RType_Enum& type) override 
@@ -584,7 +584,7 @@ public:
             *result = nullptr;
         }
 
-        *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
     }
 
     void Visit(RType_Interface& type) override 
@@ -855,7 +855,7 @@ public:
     {
     }
 
-    void HandleStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
+    void HandleStaticParent(NDecl& decl, const RTypeArgumentsPtr& typeArgs)
     {
         auto member = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
         if (!member)

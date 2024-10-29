@@ -1,0 +1,24 @@
+#pragma once
+
+#include <optional>
+#include <vector>
+#include <memory>
+
+namespace Citron {
+
+class RTypeFactory;
+class Logger;
+
+using SStmtPtr = std::shared_ptr<class SStmt>;
+using NStmtPtr = std::shared_ptr<class NStmt>;
+
+
+namespace SyntaxIR0Translator {
+
+class TranslationContext;
+
+bool TranslateSBodyToNStmts(const std::vector<SStmtPtr>& stmts, std::vector<NStmtPtr>* outStmts, TranslationContext& context);
+
+} // namespace SyntaxIR0Translator
+
+} // namespace Citron

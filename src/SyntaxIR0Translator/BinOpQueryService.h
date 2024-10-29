@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
-#include <IR0/RExp.h>
+#include <IR0/NExp.h>
 #include <Syntax/Syntax.h>
 
 namespace Citron {

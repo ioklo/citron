@@ -8,18 +8,18 @@
 
 namespace Citron {
 
-class RNamespaceDecl;
-class RGlobalFuncDecl;
-class RClassDecl;
-class RClassMemberFuncDecl;
-class RClassMemberVarDecl;
-class RStructDecl;
-class RStructMemberFuncDecl;
-class RStructMemberVarDecl;
-class REnumDecl;
-class REnumElemDecl;
-class REnumElemMemberVarDecl;
-class RLambdaMemberVarDecl;
+class NNamespaceDecl;
+class NGlobalFuncDecl;
+class NClassDecl;
+class NClassMemberFuncDecl;
+class NClassMemberVarDecl;
+class NStructDecl;
+class NStructMemberFuncDecl;
+class NStructMemberVarDecl;
+class NEnumDecl;
+class NEnumElemDecl;
+class NEnumElemMemberVarDecl;
+class NLambdaMemberVarDecl;
 
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
@@ -70,9 +70,9 @@ using RMemberPtr = std::shared_ptr<RMember>;
 class RMember_Namespace : public RMember 
 {
 public:
-    std::shared_ptr<RNamespaceDecl> decl;
+    std::shared_ptr<NNamespaceDecl> decl;
 public:
-    RMember_Namespace(const std::shared_ptr<RNamespaceDecl>& decl);
+    RMember_Namespace(const std::shared_ptr<NNamespaceDecl>& decl);
 
 public:
     std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
@@ -82,13 +82,13 @@ public:
 class RMember_GlobalFuncs : public RMember 
 {
 public:
-    std::vector<RDeclWithOuterTypeArgs<RGlobalFuncDecl>> items;
+    std::vector<RDeclWithOuterTypeArgs<NGlobalFuncDecl>> items;
 
 public:
-    RMember_GlobalFuncs(std::vector<RDeclWithOuterTypeArgs<RGlobalFuncDecl>>&& items);
+    RMember_GlobalFuncs(std::vector<RDeclWithOuterTypeArgs<NGlobalFuncDecl>>&& items);
 
 public:
-    IR0_API std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -96,9 +96,9 @@ class RMember_Class : public RMember
 {
 public:
     RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<RClassDecl> decl;
+    std::shared_ptr<NClassDecl> decl;
 public:
-    RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RClassDecl>& decl);
+    RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NClassDecl>& decl);
 public:
     std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
@@ -107,22 +107,22 @@ public:
 class RMember_ClassMemberFuncs : public RMember 
 {
 public:
-    std::vector<RDeclWithOuterTypeArgs<RClassMemberFuncDecl>> items;
+    std::vector<RDeclWithOuterTypeArgs<NClassMemberFuncDecl>> items;
 public:
-    RMember_ClassMemberFuncs(std::vector<RDeclWithOuterTypeArgs<RClassMemberFuncDecl>>&& items);
+    RMember_ClassMemberFuncs(std::vector<RDeclWithOuterTypeArgs<NClassMemberFuncDecl>>&& items);
 public:
-    IR0_API std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RMember_ClassMemberVar : public RMember 
 {   
 public:
-    std::shared_ptr<RClassMemberVarDecl> decl;
+    std::shared_ptr<NClassMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    RMember_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RMember_ClassMemberVar(const std::shared_ptr<NClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
@@ -133,10 +133,10 @@ class RMember_Struct : public RMember
 {
 public:
     RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<RStructDecl> decl;
+    std::shared_ptr<NStructDecl> decl;
 
 public:
-    RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RStructDecl>& decl);
+    RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NStructDecl>& decl);
 
 public:
     std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
@@ -146,24 +146,24 @@ public:
 class RMember_StructMemberFuncs : public RMember 
 {
 public:
-    std::vector<RDeclWithOuterTypeArgs<RStructMemberFuncDecl>> items;
+    std::vector<RDeclWithOuterTypeArgs<NStructMemberFuncDecl>> items;
 
 public:
-    RMember_StructMemberFuncs(std::vector<RDeclWithOuterTypeArgs<RStructMemberFuncDecl>>&& items);
+    RMember_StructMemberFuncs(std::vector<RDeclWithOuterTypeArgs<NStructMemberFuncDecl>>&& items);
 
 public:
-    IR0_API std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
+    std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override;
     void Accept(RMemberVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class RMember_StructMemberVar : public RMember 
 {
 public:
-    std::shared_ptr<RStructMemberVarDecl> decl;
+    std::shared_ptr<NStructMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    RMember_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RMember_StructMemberVar(const std::shared_ptr<NStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
@@ -174,10 +174,10 @@ class RMember_Enum : public RMember
 {
 public:
     RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<REnumDecl> decl;
+    std::shared_ptr<NEnumDecl> decl;
 
 public:
-    RMember_Enum(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumDecl>& decl);
+    RMember_Enum(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NEnumDecl>& decl);
 
 public:
     std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
@@ -187,11 +187,11 @@ public:
 class RMember_EnumElem : public RMember 
 {
 public:
-    std::shared_ptr<REnumElemDecl> decl;
+    std::shared_ptr<NEnumElemDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    RMember_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RMember_EnumElem(const std::shared_ptr<NEnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
@@ -201,11 +201,11 @@ public:
 class RMember_EnumElemMemberVar : public RMember 
 {
 public:
-    std::shared_ptr<REnumElemMemberVarDecl> decl;
+    std::shared_ptr<NEnumElemMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    RMember_EnumElemMemberVar(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RMember_EnumElemMemberVar(const std::shared_ptr<NEnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }
@@ -215,11 +215,11 @@ public:
 class RMember_LambdaMemberVar : public RMember 
 {
 public:
-    std::shared_ptr<RLambdaMemberVarDecl> decl;
+    std::shared_ptr<NLambdaMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    RMember_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RMember_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     std::vector<RDeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs() override { return {}; }

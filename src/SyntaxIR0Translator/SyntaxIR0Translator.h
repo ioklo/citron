@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "SyntaxIR0TranslatorConfig.h"
-#include <IR0/RModuleDecl.h>
-#include <IR0/RStmt.h>
+#include <IR0/NModuleDecl.h>
+#include <IR0/NStmt.h>
 #include <Symbol/MNames.h>
 #include <Symbol/MModuleDecl.h>
 #include <Syntax/Syntax.h>
@@ -15,7 +15,7 @@ namespace Citron {
 namespace SyntaxIR0Translator {
 
 SYNTAXIR0TRANSLATOR_API
-std::shared_ptr<RModuleDecl> Translate(
+std::shared_ptr<NModuleDecl> Translate(
     MName moduleName,
     std::vector<SScript> scripts,
     std::vector<std::shared_ptr<MModuleDecl>> referenceModules);

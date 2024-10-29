@@ -9,7 +9,7 @@
 #include <Syntax/Syntax.h>
 
 #include <IR0/RLambdaMemberVarDecl.h>
-#include <IR0/RArgument.h>
+#include <IR0/NArgument.h>
 #include <IR0/RFuncDecl.h>
 #include <IR0/RFuncDeclOuter.h>
 
@@ -68,7 +68,7 @@ FuncContextPtr FuncContext::MakeLambdaBodyContext(const ScopeContextPtr& curScop
 //    lambdaDecls = src->lambdaDecls;
 //}
     
-bool FuncContext::CanAccess(RDecl* target)
+bool FuncContext::CanAccess(NDecl* target)
 {
     // TODO: 현재 scope에서 access check
 
@@ -103,7 +103,7 @@ bool FuncContext::CanAccess(RDecl* target)
 
             vector<ImExpPtr> candidates;
             
-            void TryQueryMember(RDecl* curDecl)
+            void TryQueryMember(NDecl* curDecl)
             {
                 // 1. 타입 인자에서 찾기
                 // T => X<>의 TypeVar T
@@ -154,7 +154,7 @@ bool FuncContext::CanAccess(RDecl* target)
             }
 
             // funcDeclSymbol은 람다나 함수.        
-            void TryQueryTypeVar(RDecl* curDecl)
+            void TryQueryTypeVar(NDecl* curDecl)
             {   
                 if (auto typeVar = QueryTypeVar(curDecl))
                     candidates.push_back(typeVar);
@@ -176,7 +176,7 @@ bool FuncContext::CanAccess(RDecl* target)
                 }
             }
 
-            ImExpPtr QueryTypeVar(RDecl* curDecl)
+            ImExpPtr QueryTypeVar(NDecl* curDecl)
             {
                 int typeParamCount = curDecl->GetTypeParamCount();
                 int baseTypeParamCount = curDecl->GetBaseTypeParamCount();
@@ -204,12 +204,12 @@ bool FuncContext::CanAccess(RDecl* target)
                 {
                     auto* funcOuter = funcContext.GetOuterDecl();
 
-                    if (auto* classOuter = dynamic_cast<RClassDecl*>(funcOuter))
+                    if (auto* classOuter = dynamic_cast<NClassDecl*>(funcOuter))
                     {
                         auto classType = context.MakeClassType(classOuter, *funcContext.openTypeArgs);
                         candidates.push_back(MakePtr<ImExp_ThisVar>(classType));
                     }
-                    else if (auto* structOuter = dynamic_cast<RStructDecl*>(funcOuter))
+                    else if (auto* structOuter = dynamic_cast<NStructDecl*>(funcOuter))
                     {
                         auto structType = context.MakeStructType(structOuter, *funcContext.openTypeArgs);
                         candidates.push_back(MakePtr<ImExp_ThisVar>(structType));

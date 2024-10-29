@@ -12,10 +12,10 @@
 #include "ImExp.h"
 #include "ReExp.h"
 
-#include "SExpToRExpTranslation.h"
+#include "SExpToNExpTranslation.h"
 #include "SExpToReExpTranslation.h"
-#include "ReExpToRExpTranslation.h"
-#include "ReExpToRLocTranslation.h"
+#include "ReExpToNExpTranslation.h"
+#include "ReExpToNLocTranslation.h"
 #include "ImExpAndMemberNameToImExpTranslation.h"
 
 #include "TranslationContext.h"
@@ -41,7 +41,7 @@ public:
     {
     }
 
-    void HandleExp(RExpPtr&& exp)
+    void HandleExp(NExpPtr&& exp)
     {
         if (!exp)
             *result = nullptr;
@@ -75,28 +75,28 @@ public:
 
     void Visit(SExp_String& exp) override
     {
-        HandleExp(TranslateSStringExpToRStringExp(exp, context));
+        HandleExp(TranslateSStringExpToNStringExp(exp, context));
     }
 
     void Visit(SExp_IntLiteral& exp) override
     {
-        HandleExp(TranslateSIntLiteralExpToRExp(exp));
+        HandleExp(TranslateSIntLiteralExpToNExp(exp));
     }
 
     void Visit(SExp_BoolLiteral& exp) override
     {
-        HandleExp(TranslateSBoolLiteralExpToRExp(exp));
+        HandleExp(TranslateSBoolLiteralExpToNExp(exp));
     }
 
     // 'null'
     void Visit(SExp_NullLiteral& exp) override
     {
-        HandleExp(TranslateSNullLiteralExpToRExp(exp, hintType, context));
+        HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_BinaryOp& exp) override
     {
-        HandleExp(TranslateSBinaryOpExpToRExp(exp, context));
+        HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
     }
 
     void Visit(SExp_UnaryOp& exp) override
@@ -130,18 +130,18 @@ public:
         }
         else
         {
-            return HandleExp(TranslateSUnaryOpExpToRExpExceptDeref(exp, context));
+            return HandleExp(TranslateSUnaryOpExpToNExpExceptDeref(exp, context));
         }
     }
 
     void Visit(SExp_Call& exp) override
     {
-        HandleExp(TranslateSCallExpToRExp(exp, hintType, context));
+        HandleExp(TranslateSCallExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_Lambda& exp) override
     {
-        HandleExp(TranslateSLambdaExpToRExp(exp, context));
+        HandleExp(TranslateSLambdaExpToNExp(exp, context));
     }
 
     void Visit(SExp_Indexer& exp) override
@@ -162,32 +162,32 @@ public:
 
         auto intType = context.MakeIntType();
 
-        RLocPtr rIndexLoc;
+        NLocPtr nIndexLoc;
         if (context.GetType(*reIndex) != intType)
         {
             context.SetSyntax(exp.index);
-            auto rIndexExp = TranslateReExpToRExp(*reIndex, context);
-            if (!rIndexExp)
+            auto nIndexExp = TranslateReExpToNExp(*reIndex, context);
+            if (!nIndexExp)
             {
                 *result = nullptr;
                 return;
             }
 
-            auto rCastIndex = CastRExp(std::move(rIndexExp), intType, context);
-            if (!rCastIndex)
+            auto nCastIndex = CastNExp(std::move(nIndexExp), intType, context);
+            if (!nCastIndex)
             {
                 *result = nullptr;
                 return;
             }
 
-            rIndexLoc = MakePtr<RLoc_Temp>(std::move(rCastIndex));
+            nIndexLoc = MakePtr<NLoc_Temp>(std::move(nCastIndex));
         }
         else
         {
             auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
-            rIndexLoc = TranslateReExpToRLoc(*reIndex, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-            if (!rIndexLoc)
+            nIndexLoc = TranslateReExpToNLoc(*reIndex, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
+            if (!nIndexLoc)
             {
                 *result = nullptr;
                 return;
@@ -262,28 +262,28 @@ public:
 
     void Visit(SExp_List& exp) override
     {
-        HandleExp(TranslateSListExpToRExp(exp, context));
+        HandleExp(TranslateSListExpToNExp(exp, context));
     }
 
     // 'new C(...)'
     void Visit(SExp_New& exp) override
     {
-        HandleExp(TranslateSNewExpToRExp(exp, context));
+        HandleExp(TranslateSNewExpToNExp(exp, context));
     }
 
     void Visit(SExp_Box& exp) override
     {
-        HandleExp(TranslateSBoxExpToRExp(exp, hintType, context));
+        HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_Is& exp) override
     {
-        HandleExp(TranslateSIsExpToRExp(exp, context));
+        HandleExp(TranslateSIsExpToNExp(exp, context));
     }
 
     void Visit(SExp_As& exp) override
     {
-        HandleExp(TranslateSAsExpToRExp(exp, context));
+        HandleExp(TranslateSAsExpToNExp(exp, context));
     }
 };
 

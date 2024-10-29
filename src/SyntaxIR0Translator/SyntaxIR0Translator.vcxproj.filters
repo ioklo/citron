@@ -24,28 +24,28 @@
     <ClCompile Include="SExpToImExpTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SExpToRLocTranslation.cpp">
+    <ClCompile Include="SExpToNLocTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SExpToRExpTranslation.cpp">
+    <ClCompile Include="SExpToNExpTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="SExpToReExpTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SExpRefToRExpTranslation.cpp">
+    <ClCompile Include="SExpRefToNExpTranslation.cpp">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClCompile>
     <ClCompile Include="SExpRefToIrExpTranslation.cpp">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ReExpToRLocTranslation.cpp">
+    <ClCompile Include="ReExpToNLocTranslation.cpp">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ReExpToRExpTranslation.cpp">
+    <ClCompile Include="ReExpToNExpTranslation.cpp">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="IrExpToRExpTranslation.cpp">
+    <ClCompile Include="IrExpToNExpTranslation.cpp">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="ImExpToReExpTranslation.cpp">
@@ -63,17 +63,17 @@
     <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ImCallableAndSArgsToRExpTranslation.cpp">
+    <ClCompile Include="ImCallableAndSArgsToNExpTranslation.cpp">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="RFuncAndRArgsToRExpTranslation.cpp" />
+    <ClCompile Include="RFuncAndRArgsToNExpTranslation.cpp" />
     <ClCompile Include="FuncMatching.cpp">
       <Filter>ExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SStmtToRStmtTranslation.cpp">
+    <ClCompile Include="SStmtToNStmtTranslation.cpp">
       <Filter>StmtTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SVarDeclToRStmtsTranslation.cpp">
+    <ClCompile Include="SVarDeclToNStmtsTranslation.cpp">
       <Filter>StmtTranslation</Filter>
     </ClCompile>
     <ClCompile Include="FuncContext.cpp">
@@ -116,28 +116,28 @@
     <ClInclude Include="SExpToImExpTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SExpToRLocTranslation.h">
+    <ClInclude Include="SExpToNLocTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SExpToRExpTranslation.h">
+    <ClInclude Include="SExpToNExpTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="SExpToReExpTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SExpRefToRExpTranslation.h">
+    <ClInclude Include="SExpRefToNExpTranslation.h">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClInclude>
     <ClInclude Include="SExpRefToIrExpTranslation.h">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ReExpToRLocTranslation.h">
+    <ClInclude Include="ReExpToNLocTranslation.h">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ReExpToRExpTranslation.h">
+    <ClInclude Include="ReExpToNExpTranslation.h">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="IrExpToRExpTranslation.h">
+    <ClInclude Include="IrExpToNExpTranslation.h">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="ImExpToReExpTranslation.h">
@@ -155,17 +155,17 @@
     <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ImCallableAndSArgsToRExpTranslation.h">
+    <ClInclude Include="ImCallableAndSArgsToNExpTranslation.h">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="RFuncAndRArgsToRExpTranslation.h" />
+    <ClInclude Include="RFuncAndRArgsToNExpTranslation.h" />
     <ClInclude Include="FuncMatching.h">
       <Filter>ExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SStmtToRStmtTranslation.h">
+    <ClInclude Include="SStmtToNStmtTranslation.h">
       <Filter>StmtTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SVarDeclToRStmtsTranslation.h">
+    <ClInclude Include="SVarDeclToNStmtsTranslation.h">
       <Filter>StmtTranslation</Filter>
     </ClInclude>
     <ClInclude Include="FuncContext.h">

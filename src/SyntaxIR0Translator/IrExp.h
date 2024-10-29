@@ -3,15 +3,15 @@
 #include <memory>
 #include <IR0/RTypeArguments.h>
 #include <IR0/RType.h>
-#include <IR0/RLoc.h>
+#include <IR0/NLoc.h>
 
 namespace Citron {
 
-class RNamespaceDecl;
+class NNamespaceDecl;
 class RType_TypeVar;
-class RClassDecl;
-class RStructDecl;
-class REnumDecl;
+class NClassDecl;
+class NStructDecl;
+class NEnumDecl;
 
 namespace SyntaxIR0Translator {
 
@@ -63,10 +63,10 @@ public:
 class IrExp_Namespace : public IrExp
 {
 public:
-    std::shared_ptr<RNamespaceDecl> decl;
+    std::shared_ptr<NNamespaceDecl> decl;
 
 public:
-    IrExp_Namespace(const std::shared_ptr<RNamespaceDecl>& decl);
+    IrExp_Namespace(const std::shared_ptr<NNamespaceDecl>& decl);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -83,33 +83,33 @@ public:
 class IrExp_Class : public IrExp
 {
 public:
-    std::shared_ptr<RClassDecl> decl;
+    std::shared_ptr<NClassDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_Class(const std::shared_ptr<RClassDecl>& decl, RTypeArgumentsPtr&& typeArgs);
+    IrExp_Class(const std::shared_ptr<NClassDecl>& decl, RTypeArgumentsPtr&& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrExp_Struct : public IrExp
 {
 public:
-    std::shared_ptr<RStructDecl> decl;
+    std::shared_ptr<NStructDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_Struct(const std::shared_ptr<RStructDecl>& decl, RTypeArgumentsPtr&& typeArgs);
+    IrExp_Struct(const std::shared_ptr<NStructDecl>& decl, RTypeArgumentsPtr&& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrExp_Enum : public IrExp
 {
 public:
-    std::shared_ptr<REnumDecl> decl;
+    std::shared_ptr<NEnumDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_Enum(const std::shared_ptr<REnumDecl>& decl, RTypeArgumentsPtr&& typeArgs);
+    IrExp_Enum(const std::shared_ptr<NEnumDecl>& decl, RTypeArgumentsPtr&& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -168,10 +168,10 @@ public:
 class IrExp_StaticRef : public IrExp
 {
 public:
-    RLocPtr loc;
+    NLocPtr loc;
 
 public:
-    IrExp_StaticRef(const RLocPtr& loc);
+    IrExp_StaticRef(const NLocPtr& loc);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -192,23 +192,23 @@ public:
 
     virtual void Accept(IrBoxRefExpVisitor& visitor) = 0;
     virtual RTypePtr GetTargetType(RTypeFactory& factory) = 0;
-    virtual RLocPtr MakeLoc() = 0;
+    virtual NLocPtr MakeLoc() = 0;
 };
 
 // 홀더가 C로 시작하는 경우
 class IrExp_BoxRef_ClassMember : public IrExp_BoxRef
 {
 public:
-    RLocPtr loc;
-    std::shared_ptr<RClassMemberVarDecl> decl;
+    NLocPtr loc;
+    std::shared_ptr<NClassMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_BoxRef_ClassMember(const RLocPtr& loc, const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<NClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
 
     RTypePtr GetTargetType(RTypeFactory& factory) override;
-    RLocPtr MakeLoc() override;
+    NLocPtr MakeLoc() override;
 };
 
 // 홀더가 box* T로 시작하는 경우
@@ -216,38 +216,38 @@ public:
 class IrExp_BoxRef_StructIndirectMember : public IrExp_BoxRef
 {
 public:
-    RLocPtr loc;
-    std::shared_ptr<RStructMemberVarDecl> decl;
+    NLocPtr loc;
+    std::shared_ptr<NStructMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_BoxRef_StructIndirectMember(const RLocPtr& loc, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_StructIndirectMember(const NLocPtr& loc, const std::shared_ptr<NStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetTargetType(RTypeFactory& factory) override;
-    RLocPtr MakeLoc() override;
+    NLocPtr MakeLoc() override;
 };
 
 class IrExp_BoxRef_StructMember : public IrExp_BoxRef
 {
 public:
     std::shared_ptr<IrExp_BoxRef> parent;
-    std::shared_ptr<RStructMemberVarDecl> decl;
+    std::shared_ptr<NStructMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<NStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor & visitor) override { visitor.Visit(*this); }
     RTypePtr GetTargetType(RTypeFactory& factory) override;
-    RLocPtr MakeLoc() override;
+    NLocPtr MakeLoc() override;
 };
 
 class IrExp_LocalRef : public IrExp
 {
 public:
-    RLocPtr loc;
+    NLocPtr loc;
 
 public:
-    IrExp_LocalRef(const RLocPtr& loc);
+    IrExp_LocalRef(const NLocPtr& loc);
     void Accept(IrExpVisitor & visitor) override { visitor.Visit(*this); }
 };
 
@@ -255,10 +255,10 @@ public:
 class IrExp_LocalValue : public IrExp
 {
 public:
-    RExpPtr exp;
+    NExpPtr exp;
 
 public:
-    IrExp_LocalValue(RExpPtr&& exp);
+    IrExp_LocalValue(NExpPtr&& exp);
     void Accept(IrExpVisitor & visitor) override { visitor.Visit(*this); }
 };
 
@@ -270,10 +270,10 @@ public:
 class IrExp_DerefedBoxValue : public IrExp
 {   
 public:
-    RLocPtr innerLoc;
+    NLocPtr innerLoc;
 
 public:
-    IrExp_DerefedBoxValue(RLocPtr&& innerLoc);
+    IrExp_DerefedBoxValue(NLocPtr&& innerLoc);
     void Accept(IrExpVisitor & visitor) override { visitor.Visit(*this); }
 };
 

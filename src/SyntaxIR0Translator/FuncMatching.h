@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-#include <IR0/RArgument.h>
+#include <IR0/NArgument.h>
 
 namespace Citron {
 
@@ -26,13 +26,13 @@ struct FuncMatch
 {
     std::shared_ptr<TFuncDecl> funcDecl;
     RTypeArgumentsPtr typeArgs;
-    std::vector<RArgument> args;
+    std::vector<NArgument> args;
 };
 
 struct ArgumentsMatch
 {
     RTypeArgumentsPtr typeArgs;
-    std::vector<RArgument> args;
+    std::vector<NArgument> args;
 };
 
 

@@ -2,15 +2,15 @@
 
 #include <memory>
 #include <IR0/RGlobalFuncDecl.h>
-#include <IR0/RExp.h>
-#include <IR0/RLoc.h>
+#include <IR0/NExp.h>
+#include <IR0/NLoc.h>
 #include <IR0/RType.h>
 
 #include "FuncsWithPartialTypeArgsComponent.h"
 
 namespace Citron {
 
-class RNamespaceDecl;
+class NNamespaceDecl;
 class RType_TypeVar;
 
 namespace SyntaxIR0Translator {
@@ -73,25 +73,25 @@ public:
 class ImExp_Namespace : public ImExp
 {
 public:
-    std::shared_ptr<RNamespaceDecl> _namespace; // namespace를 뭘로 저장하고 있어야 하나
+    std::shared_ptr<NNamespaceDecl> _namespace; // namespace를 뭘로 저장하고 있어야 하나
 
 public:
-    ImExp_Namespace(const std::shared_ptr<RNamespaceDecl>& _namespace);
+    ImExp_Namespace(const std::shared_ptr<NNamespaceDecl>& _namespace);
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 // 
 class ImExp_GlobalFuncs
     : public ImExp
-    , private FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>
+    , private FuncsWithPartialTypeArgsComponent<NGlobalFuncDecl>
 {
-    using FuncComp = FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>;
+    using FuncComp = FuncsWithPartialTypeArgsComponent<NGlobalFuncDecl>;
 
 public:
     using FuncComp::items;
 
 public:
-    ImExp_GlobalFuncs(const std::vector<RDeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter);
+    ImExp_GlobalFuncs(const std::vector<RDeclWithOuterTypeArgs<NGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter);
 
 public:
     using FuncComp::GetCount;
@@ -117,17 +117,17 @@ public:
 class ImExp_Class : public ImExp
 {
 public:
-    std::shared_ptr<RClassDecl> classDecl;
+    std::shared_ptr<NClassDecl> classDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    ImExp_Class(const std::shared_ptr<RClassDecl>& classDecl, RTypeArgumentsPtr&& typeArgs);
+    ImExp_Class(const std::shared_ptr<NClassDecl>& classDecl, RTypeArgumentsPtr&& typeArgs);
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class ImExp_ClassMemberFuncs 
     : public ImExp
-    , private FuncsWithPartialTypeArgsComponent<RClassMemberFuncDecl>
+    , private FuncsWithPartialTypeArgsComponent<NClassMemberFuncDecl>
 {
 public:
     // HasExplicitInstance: x.F 처럼 x가 명시적으로 있는 경우 true, F 처럼 this.F 나 C.F 를 암시적으로 나타낸 경우라면 false, C.F는 명시적이지만 인스턴스가 아니므로 false
@@ -141,10 +141,10 @@ public:
     ReExpPtr explicitInstance;
 
 private:
-    using FuncComp = FuncsWithPartialTypeArgsComponent<RClassMemberFuncDecl>;
+    using FuncComp = FuncsWithPartialTypeArgsComponent<NClassMemberFuncDecl>;
 
 public:
-    ImExp_ClassMemberFuncs(const std::vector<RDeclWithOuterTypeArgs<RClassMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_ClassMemberFuncs(const std::vector<RDeclWithOuterTypeArgs<NClassMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     using FuncComp::GetCount;
@@ -158,11 +158,11 @@ public:
 class ImExp_Struct : public ImExp
 {
 public:
-    std::shared_ptr<RStructDecl> structDecl;
+    std::shared_ptr<NStructDecl> structDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    ImExp_Struct(const std::shared_ptr<RStructDecl>& structDecl, RTypeArgumentsPtr&& typeArgs);
+    ImExp_Struct(const std::shared_ptr<NStructDecl>& structDecl, RTypeArgumentsPtr&& typeArgs);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -170,9 +170,9 @@ public:
 
 class ImExp_StructMemberFuncs 
     : public ImExp
-    , private FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>
+    , private FuncsWithPartialTypeArgsComponent<NStructMemberFuncDecl>
 {
-    using FuncComp = FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>;
+    using FuncComp = FuncsWithPartialTypeArgsComponent<NStructMemberFuncDecl>;
 
 public:
     using FuncComp::items;
@@ -180,7 +180,7 @@ public:
     ReExpPtr explicitInstance;
 
 public:
-    ImExp_StructMemberFuncs(const std::vector<RDeclWithOuterTypeArgs<RStructMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_StructMemberFuncs(const std::vector<RDeclWithOuterTypeArgs<NStructMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     using FuncComp::GetCount;
@@ -194,11 +194,11 @@ public:
 class ImExp_Enum : public ImExp
 {
 public:
-    std::shared_ptr<REnumDecl> decl;
+    std::shared_ptr<NEnumDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    ImExp_Enum(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ImExp_Enum(const std::shared_ptr<NEnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -207,11 +207,11 @@ public:
 class ImExp_EnumElem : public ImExp
 {
 public:
-    std::shared_ptr<REnumElemDecl> decl;
+    std::shared_ptr<NEnumElemDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    ImExp_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ImExp_EnumElem(const std::shared_ptr<NEnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -246,11 +246,11 @@ public:
 class ImExp_LambdaMemberVar : public ImExp
 {
 public:
-    std::shared_ptr<RLambdaMemberVarDecl> decl;
+    std::shared_ptr<NLambdaMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    ImExp_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ImExp_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -259,14 +259,14 @@ public:
 class ImExp_ClassMemberVar : public ImExp
 {
 public:
-    std::shared_ptr<RClassMemberVarDecl> decl;
+    std::shared_ptr<NClassMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
 
 public:
-    ImExp_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_ClassMemberVar(const std::shared_ptr<NClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -275,14 +275,14 @@ public:
 class ImExp_StructMemberVar : public ImExp
 {
 public:
-    std::shared_ptr<RStructMemberVarDecl> decl;
+    std::shared_ptr<NStructMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
 
 public:
-    ImExp_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_StructMemberVar(const std::shared_ptr<NStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -291,12 +291,12 @@ public:
 class ImExp_EnumElemMemberVar : public ImExp
 {
 public:
-    std::shared_ptr<REnumElemMemberVarDecl> decl;
+    std::shared_ptr<NEnumElemMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     ReExpPtr instance;
 
 public:
-    ImExp_EnumElemMemberVar(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance);
+    ImExp_EnumElemMemberVar(const std::shared_ptr<NEnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -306,11 +306,11 @@ class ImExp_ListIndexer : public ImExp
 {
 public:
     ReExpPtr instance;
-    RLocPtr index;
+    NLocPtr index;
     RTypePtr itemType;
 
 public:
-    ImExp_ListIndexer(ReExpPtr&& instance, RLocPtr&& index, RTypePtr&& itemType);
+    ImExp_ListIndexer(ReExpPtr&& instance, NLocPtr&& index, RTypePtr&& itemType);
 
 public:    
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -344,10 +344,10 @@ public:
 class ImExp_Else : public ImExp
 {
 public:
-    RExpPtr exp;
+    NExpPtr exp;
 
 public:
-    ImExp_Else(const RExpPtr& exp);
+    ImExp_Else(const NExpPtr& exp);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }

@@ -11,12 +11,12 @@ namespace Citron {
 
 class STypeExp;
 class RTypeFactory;
-class RDecl;
-class RLoc_This;
+class NDecl;
+class NLoc_This;
 
 using RTypePtr = std::shared_ptr<class RType>;
 enum class SBinaryOpKind;
-class RLambdaDecl;
+class NLambdaDecl;
 
 namespace SyntaxIR0Translator {
 
@@ -46,7 +46,7 @@ public:
 
     std::shared_ptr<ScopeContext> MakeNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
     std::shared_ptr<ScopeContext> MakeLoopNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
-    std::tuple<ScopeContextPtr, RLambdaDecl> MakeLambdaBodyContext(const RFuncReturn& ret, std::vector<RFuncParameter> params, bool bLastParamVariadic);
+    std::tuple<ScopeContextPtr, NLambdaDecl> MakeLambdaBodyContext(const RFuncReturn& ret, std::vector<RFuncParameter> params, bool bLastParamVariadic);
 
     void AddLocalVarInfo(const RTypePtr& type, const RName& name);
     // std::optional<LocalVarInfo> GetLocalVarInfo(const RName& name);
@@ -57,7 +57,7 @@ public:
     bool IsInLoop() { return nestedLoop != 0; }
     RTypePtr TranslateSTypeExpToRType(STypeExp& typeExp, RTypeFactory& factory);
 
-    std::shared_ptr<RLoc_This> MakeThisLoc(RTypeFactory& factory);
+    std::shared_ptr<NLoc_This> MakeThisLoc(RTypeFactory& factory);
     ImExpPtr ResolveIdentifier(const RName& name, const RTypeArgumentsPtr& typeArgs);
 };
 

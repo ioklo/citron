@@ -61,7 +61,7 @@ public:
     //LOGGING_API void Fatal_NewExp_TypeIsNotClass();               // A2601_NewExp_TypeIsNotClass
     //LOGGING_API void Fatal_NullLiteralExp_CantInferNullableType();        // A2701_NullLiteralExp_CantInferNullableType
 
-    //// IrExp -> RExp Translation
+    //// IrExp -> NExp Translation
     //LOGGING_API void Fatal_Reference_CantMakeReference();                 // A3001_Reference_CantMakeReference
     //LOGGING_API void Fatal_Reference_CantReferenceTempValue();            // A3002_Reference_CantReferenceTempValue
     //LOGGING_API void Fatal_Reference_UselessDereferenceReferencedValue(); // A3003_Reference_UselessDereferenceReferencedValue

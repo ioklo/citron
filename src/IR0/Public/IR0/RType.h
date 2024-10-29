@@ -31,14 +31,14 @@ class RType_EnumElem;
 class RType_Interface;
 class RType_Lambda;
 
-class RClassDecl;
-class RStructDecl;
-class REnumDecl;
-class REnumElemDecl;
-class RInterfaceDecl;
-class RLambdaDecl;
+class NClassDecl;
+class NStructDecl;
+class NEnumDecl;
+class NEnumElemDecl;
+class NInterfaceDecl;
+class NLambdaDecl;
 
-using RDeclPtr = std::shared_ptr<class RDecl>;
+using NDeclPtr = std::shared_ptr<class NDecl>;
 using RMemberPtr = std::shared_ptr<class RMember>;
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
@@ -228,12 +228,12 @@ public:
 class RType_Class : public RType
 {
 public:
-    std::shared_ptr<RClassDecl> decl;
+    std::shared_ptr<NClassDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 private:
     friend RTypeFactory;
-    RType_Class(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RType_Class(const std::shared_ptr<NClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     std::optional<RMember_ClassMemberVar> GetMemberVar(const RName& name);
@@ -246,12 +246,12 @@ public:
 class RType_Struct : public RType
 {
 public:
-    std::shared_ptr<RStructDecl> decl;
+    std::shared_ptr<NStructDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 private:
     friend RTypeFactory;
-    RType_Struct(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RType_Struct(const std::shared_ptr<NStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     std::optional<RMember_StructMemberVar> GetMemberVar(const RName& name);
@@ -263,12 +263,12 @@ public:
 class RType_Enum : public RType
 {
 public:
-    std::shared_ptr<REnumDecl> decl;
+    std::shared_ptr<NEnumDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 private:
     friend RTypeFactory;
-    RType_Enum(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RType_Enum(const std::shared_ptr<NEnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Enum; }
@@ -279,12 +279,12 @@ public:
 class RType_EnumElem : public RType
 {
 public:
-    std::shared_ptr<REnumElemDecl> decl;
+    std::shared_ptr<NEnumElemDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 private:
     friend RTypeFactory;
-    RType_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RType_EnumElem(const std::shared_ptr<NEnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     std::optional<RMember_EnumElemMemberVar> GetMemberVar(const RName& name);
@@ -297,13 +297,13 @@ public:
 class RType_Interface : public RType
 {
 public:
-    std::shared_ptr<RInterfaceDecl> decl;
+    std::shared_ptr<NInterfaceDecl> decl;
     RTypeArgumentsPtr typeArgs;
     bool bLocal;
 
 private:
     friend RTypeFactory;
-    RType_Interface(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal);
+    RType_Interface(const std::shared_ptr<NInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal);
 
 public:
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Interface; }
@@ -314,12 +314,12 @@ public:
 class RType_Lambda : public RType
 {
 public:
-    std::shared_ptr<RLambdaDecl> decl;
+    std::shared_ptr<NLambdaDecl> decl;
     RTypeArgumentsPtr outerTypeArgs; // 함수 자체의 typeArgs는 호출할때 binding하게 된다
 
 private:
     friend RTypeFactory;
-    RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs);
+    RType_Lambda(const std::shared_ptr<NLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs);
 
 public:
     std::vector<RFuncParameter> GetPartiallyBoundParameters(); // outerTypeArgs까지만 bound되어 있는 상태

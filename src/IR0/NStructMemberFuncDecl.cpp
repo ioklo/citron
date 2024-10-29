@@ -1,0 +1,36 @@
+#include "NStructMemberFuncDecl.h"
+#include "NStructDecl.h"
+
+namespace Citron
+{
+
+NStructMemberFuncDecl::NStructMemberFuncDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, std::string name, std::vector<std::string> typeParams, bool bStatic)
+    : _struct(std::move(_struct))
+    , accessor(accessor)
+    , name(std::move(name))
+    , typeParams(std::move(typeParams))
+    , bStatic(bStatic)
+{
+}
+
+void NStructMemberFuncDecl::InitFuncReturnAndParams(RTypePtr funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
+{
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(std::move(funcReturn)), std::move(funcParameters), bLastParameterVariadic);
+}
+
+NDecl* NStructMemberFuncDecl::GetOuter()
+{
+    return _struct.lock().get();
+}
+
+RIdentifier NStructMemberFuncDecl::GetIdentifier()
+{
+    return RIdentifier { RName_Normal(name), typeParams.size(), NCommonFuncDeclComponent::GetParamIds() };
+}
+
+NDecl* NStructMemberFuncDecl::GetDecl()
+{
+    return this;
+}
+
+}

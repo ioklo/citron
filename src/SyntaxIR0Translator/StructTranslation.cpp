@@ -34,36 +34,36 @@ RAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessModifier) // 
 
 #pragma region Constructor
 
-void AddStructConstructor_MemberDeclPhase(shared_ptr<RStructConstructorDecl> rConstructor, shared_ptr<SStructConstructorDecl> sConstructor, MemberDeclPhaseContext& context);
-void AddStructConstructor_BodyPhase(shared_ptr<RStructConstructorDecl> rConstructor, shared_ptr<SStructConstructorDecl> sConstructor, BodyPhaseContext& context);
+void AddStructConstructor_MemberDeclPhase(shared_ptr<NStructConstructorDecl> nConstructor, shared_ptr<SStructConstructorDecl> sConstructor, MemberDeclPhaseContext& context);
+void AddStructConstructor_BodyPhase(shared_ptr<NStructConstructorDecl> nConstructor, shared_ptr<SStructConstructorDecl> sConstructor, BodyPhaseContext& context);
 
-void AddStructConstructor(const shared_ptr<RStructDecl>& rStruct, shared_ptr<SStructConstructorDecl> sConstructor, SkeletonPhaseContext& context)
+void AddStructConstructor(const shared_ptr<NStructDecl>& rStruct, shared_ptr<SStructConstructorDecl> sConstructor, SkeletonPhaseContext& context)
 {
     auto accessModifier = MakeStructMemberAccessor(sConstructor->accessModifier);
 
     // TODO: 타이프 쳐서 만들어진 constructor는 'trivial' 표시를 하기 전까지는 trivial로 인식하지 않는다. 지금은 false로 표기
     // 그리고 컴파일러가 trivial 조건을 체크해서 에러를 낼 수도 있다 (하위 타입의 trivial constructor가 이 constructor를 참조하지 않는다)
-    auto rConstructor = MakePtr<RStructConstructorDecl>(rStruct, accessModifier, false);
-    context.AddMemberDeclPhaseTask([rConstructor, sConstructor = move(sConstructor)](MemberDeclPhaseContext& context) {
-        AddStructConstructor_MemberDeclPhase(move(rConstructor), move(sConstructor), context);
+    auto nConstructor = MakePtr<NStructConstructorDecl>(rStruct, accessModifier, false);
+    context.AddMemberDeclPhaseTask([nConstructor, sConstructor = move(sConstructor)](MemberDeclPhaseContext& context) {
+        AddStructConstructor_MemberDeclPhase(move(nConstructor), move(sConstructor), context);
     });
 
-    rStruct->AddConstructor(move(rConstructor));
+    rStruct->AddConstructor(move(nConstructor));
 }
 
-void AddStructConstructor_MemberDeclPhase(shared_ptr<RStructConstructorDecl> rConstructor, shared_ptr<SStructConstructorDecl> sConstructor, MemberDeclPhaseContext& context)
+void AddStructConstructor_MemberDeclPhase(shared_ptr<NStructConstructorDecl> nConstructor, shared_ptr<SStructConstructorDecl> sConstructor, MemberDeclPhaseContext& context)
 {
     // Constructor는 Type Parameter가 없으므로 파라미터를 만들 때, 상위(struct) declSymbol을 넘긴다
-    auto [parameters, bLastParamVariadic] = context.MakeParameters(rConstructor, sConstructor->parameters);
+    auto [parameters, bLastParamVariadic] = context.MakeParameters(nConstructor, sConstructor->parameters);
 
-    rConstructor->InitFuncParameters(move(parameters), bLastParamVariadic);
+    nConstructor->InitFuncParameters(move(parameters), bLastParamVariadic);
 
-    context.AddBodyPhaseTask([rConstructor = move(rConstructor), sConstructor = move(sConstructor)](BodyPhaseContext& context) {
+    context.AddBodyPhaseTask([rConstructor = move(nConstructor), sConstructor = move(sConstructor)](BodyPhaseContext& context) {
         AddStructConstructor_BodyPhase(move(rConstructor), move(sConstructor), context);
     });
 }
 
-void AddStructConstructor_BodyPhase(shared_ptr<RStructConstructorDecl> rConstructor, shared_ptr<SStructConstructorDecl> sConstructor, BodyPhaseContext& context)
+void AddStructConstructor_BodyPhase(shared_ptr<NStructConstructorDecl> nConstructor, shared_ptr<SStructConstructorDecl> sConstructor, BodyPhaseContext& context)
 {
     static_assert(false);
 
@@ -87,37 +87,37 @@ void AddStructConstructor_BodyPhase(shared_ptr<RStructConstructorDecl> rConstruc
 
 #pragma region MemberFunc
 
-void AddStructMemberFunc_MemberDeclPhase(shared_ptr<RStructMemberFuncDecl> rMemberFunc, shared_ptr<SStructMemberFuncDecl> sMemberFunc, MemberDeclPhaseContext& context);
-void AddStructMemberFunc_BodyPhase(shared_ptr<RStructMemberFuncDecl> rMemberFunc, shared_ptr<SStructMemberFuncDecl> sMemberFunc, BodyPhaseContext& context);
+void AddStructMemberFunc_MemberDeclPhase(shared_ptr<NStructMemberFuncDecl> nMemberFunc, shared_ptr<SStructMemberFuncDecl> sMemberFunc, MemberDeclPhaseContext& context);
+void AddStructMemberFunc_BodyPhase(shared_ptr<NStructMemberFuncDecl> nMemberFunc, shared_ptr<SStructMemberFuncDecl> sMemberFunc, BodyPhaseContext& context);
 
-void AddStructMemberFunc(const shared_ptr<RStructDecl>& rStruct, shared_ptr<SStructMemberFuncDecl> sMemberFunc, SkeletonPhaseContext& context)
+void AddStructMemberFunc(const shared_ptr<NStructDecl>& rStruct, shared_ptr<SStructMemberFuncDecl> sMemberFunc, SkeletonPhaseContext& context)
 {
     auto accessor = MakeStructMemberAccessor(sMemberFunc->accessModifier);
     auto typeParams = MakeTypeParams(sMemberFunc->typeParams);
 
     // TODO: bSequence
-    auto rMemberFunc = MakePtr<RStructMemberFuncDecl>(rStruct, accessor, sMemberFunc->name, move(typeParams), sMemberFunc->bStatic);
+    auto nMemberFunc = MakePtr<NStructMemberFuncDecl>(rStruct, accessor, sMemberFunc->name, move(typeParams), sMemberFunc->bStatic);
 
-    context.AddMemberDeclPhaseTask([rMemberFunc, sMemberFunc](MemberDeclPhaseContext& context) {
-        AddStructMemberFunc_MemberDeclPhase(move(rMemberFunc), move(sMemberFunc), context);
+    context.AddMemberDeclPhaseTask([nMemberFunc, sMemberFunc](MemberDeclPhaseContext& context) {
+        AddStructMemberFunc_MemberDeclPhase(move(nMemberFunc), move(sMemberFunc), context);
     });
 
-    rStruct->AddMemberFunc(move(rMemberFunc));
+    rStruct->AddMemberFunc(move(nMemberFunc));
 }
 
-void AddStructMemberFunc_MemberDeclPhase(shared_ptr<RStructMemberFuncDecl> rMemberFunc, shared_ptr<SStructMemberFuncDecl> sMemberFunc, MemberDeclPhaseContext& context)
+void AddStructMemberFunc_MemberDeclPhase(shared_ptr<NStructMemberFuncDecl> nMemberFunc, shared_ptr<SStructMemberFuncDecl> sMemberFunc, MemberDeclPhaseContext& context)
 {
-    auto rRetType = context.MakeType(sMemberFunc->retType, rMemberFunc);
-    auto [rParameters, bLastParamVariadic] = context.MakeParameters(rMemberFunc, sMemberFunc->parameters);
+    auto rRetType = context.MakeType(sMemberFunc->retType, nMemberFunc);
+    auto [rParameters, bLastParamVariadic] = context.MakeParameters(nMemberFunc, sMemberFunc->parameters);
 
-    rMemberFunc->InitFuncReturnAndParams(move(rRetType), move(rParameters), bLastParamVariadic);
+    nMemberFunc->InitFuncReturnAndParams(move(rRetType), move(rParameters), bLastParamVariadic);
 
-    context.AddBodyPhaseTask([rMemberFunc, sMemberFunc](BodyPhaseContext& context) {
-        AddStructMemberFunc_BodyPhase(move(rMemberFunc), move(sMemberFunc), context);
+    context.AddBodyPhaseTask([nMemberFunc, sMemberFunc](BodyPhaseContext& context) {
+        AddStructMemberFunc_BodyPhase(move(nMemberFunc), move(sMemberFunc), context);
     });
 }
 
-void AddStructMemberFunc_BodyPhase(shared_ptr<RStructMemberFuncDecl> rMemberFunc, shared_ptr<SStructMemberFuncDecl> sMemberFunc, BodyPhaseContext& context)
+void AddStructMemberFunc_BodyPhase(shared_ptr<NStructMemberFuncDecl> nMemberFunc, shared_ptr<SStructMemberFuncDecl> sMemberFunc, BodyPhaseContext& context)
 {
     static_assert(false);
 
@@ -141,21 +141,21 @@ void AddStructMemberFunc_BodyPhase(shared_ptr<RStructMemberFuncDecl> rMemberFunc
 
 #pragma region MemberVar
 
-void AddStructMemberVar_MemberDeclPhase(vector<shared_ptr<RStructMemberVarDecl>>& rMemberVars, RDeclPtr rDecl, STypeExpPtr sTypeExp, MemberDeclPhaseContext& context);
+void AddStructMemberVar_MemberDeclPhase(vector<shared_ptr<NStructMemberVarDecl>>& rMemberVars, NDeclPtr nDecl, STypeExpPtr sTypeExp, MemberDeclPhaseContext& context);
 
-void AddStructMemberVar(const shared_ptr<RStructDecl>& rStruct, SStructMemberVarDecl& sMemberVar, SkeletonPhaseContext& context)
+void AddStructMemberVar(const shared_ptr<NStructDecl>& rStruct, SStructMemberVarDecl& sMemberVar, SkeletonPhaseContext& context)
 {
     auto accessor = MakeStructMemberAccessor(sMemberVar.accessModifier);
 
     // TODO: bStatic 지원
-    vector<shared_ptr<RStructMemberVarDecl>> rMemberVars;
+    vector<shared_ptr<NStructMemberVarDecl>> rMemberVars;
     rMemberVars.reserve(sMemberVar.varNames.size());
 
     for (auto& varName : sMemberVar.varNames)
     {
-        auto rMemberVar = MakePtr<RStructMemberVarDecl>(rStruct, accessor, false, varName);
-        rMemberVars.push_back(rMemberVar); // for lazy-init
-        rStruct->AddMemberVar(move(rMemberVar));
+        auto nMemberVar = MakePtr<NStructMemberVarDecl>(rStruct, accessor, false, varName);
+        rMemberVars.push_back(nMemberVar); // for lazy-init
+        rStruct->AddMemberVar(move(nMemberVar));
     }
 
     context.AddMemberDeclPhaseTask([rMemberVars = move(rMemberVars), varType = sMemberVar.varType, rStruct](MemberDeclPhaseContext& context) mutable {
@@ -163,7 +163,7 @@ void AddStructMemberVar(const shared_ptr<RStructDecl>& rStruct, SStructMemberVar
     });
 }
 
-void AddStructMemberVar_MemberDeclPhase(vector<shared_ptr<RStructMemberVarDecl>>& rMemberVars, RDeclPtr rDecl, STypeExpPtr sTypeExp, MemberDeclPhaseContext& context)
+void AddStructMemberVar_MemberDeclPhase(vector<shared_ptr<NStructMemberVarDecl>>& rMemberVars, NDeclPtr rDecl, STypeExpPtr sTypeExp, MemberDeclPhaseContext& context)
 {
     auto declType = context.MakeType(sTypeExp, rDecl);
     for (auto& rMemberVar : rMemberVars)
@@ -174,13 +174,13 @@ void AddStructMemberVar_MemberDeclPhase(vector<shared_ptr<RStructMemberVarDecl>>
  
 class StructMemberDeclVisitor : public SStructMemberDeclVisitor
 {
-    shared_ptr<RStructDecl> rStructDecl; // visit 중 옮겨질 수 있다 (visit이 한번만 불릴 것이므로)
+    shared_ptr<NStructDecl> nStructDecl; // visit 중 옮겨질 수 있다 (visit이 한번만 불릴 것이므로)
     SStructMemberDeclPtr sharedMemberDecl;
     SkeletonPhaseContext& context;
 
 public:
-    StructMemberDeclVisitor(shared_ptr<RStructDecl> rStructDecl, SStructMemberDeclPtr sharedMemberDecl, SkeletonPhaseContext& context)
-        : rStructDecl(move(rStructDecl)), sharedMemberDecl(move(sharedMemberDecl)), context(context)
+    StructMemberDeclVisitor(shared_ptr<NStructDecl> nStructDecl, SStructMemberDeclPtr sharedMemberDecl, SkeletonPhaseContext& context)
+        : nStructDecl(move(nStructDecl)), sharedMemberDecl(move(sharedMemberDecl)), context(context)
     { }
 
     // Inherited via SStructMemberDeclVisitor
@@ -189,20 +189,20 @@ public:
     void Visit(SStructDecl& decl) override
     {
         auto sharedStructDecl = dynamic_pointer_cast<SStructDecl>(sharedMemberDecl);
-        auto rStruct = MakeStruct(rStructDecl, move(sharedStructDecl), MakeStructMemberAccessor, context);
-        rStructDecl->AddType(std::move(rStruct));
+        auto nStruct = MakeStruct(nStructDecl, move(sharedStructDecl), MakeStructMemberAccessor, context);
+        nStructDecl->AddType(std::move(nStruct));
     }
 
     void Visit(SEnumDecl& decl) override
     {
-        auto rEnum = MakeEnum(rStructDecl, decl, MakeStructMemberAccessor, context);
-        rStructDecl->AddType(std::move(rEnum));
+        auto nEnum = MakeEnum(nStructDecl, decl, MakeStructMemberAccessor, context);
+        nStructDecl->AddType(std::move(nEnum));
     }
 
     void Visit(SStructConstructorDecl& decl) override
     {
         auto sharedDecl = dynamic_pointer_cast<SStructConstructorDecl>(sharedMemberDecl);
-        AddStructConstructor(rStructDecl, move(sharedDecl), context);
+        AddStructConstructor(nStructDecl, move(sharedDecl), context);
     }
 
     void Visit(SStructMemberFuncDecl& decl) override
@@ -212,31 +212,31 @@ public:
 
     void Visit(SStructMemberVarDecl& decl) override
     {
-        AddStructMemberVar(rStructDecl, decl, context);
+        AddStructMemberVar(nStructDecl, decl, context);
     }
 };
 
 } // namespace
 
-void AddStruct_MemberDeclPhase(shared_ptr<RStructDecl> rStruct, shared_ptr<SStructDecl> sStruct, MemberDeclPhaseContext& context);
-void AddStruct_TrivialConstructorPhase(shared_ptr<RStructDecl> rStruct);
+void AddStruct_MemberDeclPhase(shared_ptr<NStructDecl> nStruct, shared_ptr<SStructDecl> sStruct, MemberDeclPhaseContext& context);
+void AddStruct_TrivialConstructorPhase(shared_ptr<NStructDecl> nStruct);
 
-shared_ptr<RStructDecl> InnerMakeStruct(shared_ptr<SStructDecl> sStruct, RTypeDeclOuterWPtr rOuter, RAccessor accessor, SkeletonPhaseContext& context)
+shared_ptr<NStructDecl> InnerMakeStruct(shared_ptr<SStructDecl> sStruct, NTypeDeclOuterWPtr nOuter, RAccessor accessor, SkeletonPhaseContext& context)
 {
     auto typeParams = MakeTypeParams(sStruct->typeParams);
-    auto rStruct = MakePtr<RStructDecl>(rOuter, accessor, RName_Normal(sStruct->name), typeParams);
+    auto nStruct = MakePtr<NStructDecl>(nOuter, accessor, RName_Normal(sStruct->name), typeParams);
 
     for (auto& memberDecl : sStruct->memberDecls)
     {
-        StructMemberDeclVisitor visitor(rStruct, memberDecl, context);
+        StructMemberDeclVisitor visitor(nStruct, memberDecl, context);
         memberDecl->Accept(visitor);
     }
 
-    context.AddMemberDeclPhaseTask([rStruct, sStruct](MemberDeclPhaseContext& context) {
-        AddStruct_MemberDeclPhase(std::move(rStruct), std::move(sStruct), context);
+    context.AddMemberDeclPhaseTask([nStruct, sStruct](MemberDeclPhaseContext& context) {
+        AddStruct_MemberDeclPhase(std::move(nStruct), std::move(sStruct), context);
     });
 
-    return rStruct;
+    return nStruct;
 }
 
 // RStructDecl or MStructDecl
@@ -251,7 +251,7 @@ shared_ptr<RStructDecl> InnerMakeStruct(shared_ptr<SStructDecl> sStruct, RTypeDe
 
 
 
-void AddStruct_MemberDeclPhase(shared_ptr<RStructDecl> rStruct, shared_ptr<SStructDecl> sStruct, MemberDeclPhaseContext& context)
+void AddStruct_MemberDeclPhase(shared_ptr<NStructDecl> nStruct, shared_ptr<SStructDecl> sStruct, MemberDeclPhaseContext& context)
 {
     // 유일한 베이스 타입은 struct인데, 외부에서 선언된 struct일수도 있고, 조합 타입일 수도 있다 (사실 조합타입이 될 가능성은 거의 없어보인다)
     RTypePtr rBaseStruct = nullptr; // nullable
@@ -261,7 +261,7 @@ void AddStruct_MemberDeclPhase(shared_ptr<RStructDecl> rStruct, shared_ptr<SStru
 
     for (auto& sType : sStruct->baseTypes)
     {
-        auto rType = context.MakeType(sType, rStruct);
+        auto rType = context.MakeType(sType, nStruct);
         auto rTypeKind = rType->GetCustomTypeKind();
 
         if (rTypeKind == RCustomTypeKind::Struct)
@@ -283,15 +283,15 @@ void AddStruct_MemberDeclPhase(shared_ptr<RStructDecl> rStruct, shared_ptr<SStru
         }
     }
 
-    rStruct->InitBaseTypes(rBaseStruct, std::move(rInterfaces));
+    nStruct->InitBaseTypes(rBaseStruct, std::move(rInterfaces));
 
     // base의 TrivialConstructor가 다 만들어 졌을 때, 수행하는 작업
-    context.AddTrivialConstructorPhaseTask([rStruct = std::move(rStruct)]() {
-        AddStruct_TrivialConstructorPhase(std::move(rStruct));
+    context.AddTrivialConstructorPhaseTask([nStruct = std::move(nStruct)]() {
+        AddStruct_TrivialConstructorPhase(std::move(nStruct));
     });
 }
 
-static bool IsMatchStructTrivialConstructorParameters(RStructConstructorDecl& rConstructor, vector<RFuncParameter>& baseConstructorParameters)
+static bool IsMatchStructTrivialConstructorParameters(NStructConstructorDecl& rConstructor, vector<RFuncParameter>& baseConstructorParameters)
 {
     static_assert(false);
 
@@ -325,7 +325,7 @@ static bool IsMatchStructTrivialConstructorParameters(RStructConstructorDecl& rC
     //return true;
 }
 
-void AddStruct_TrivialConstructorPhase(shared_ptr<RStructDecl> rStruct)
+void AddStruct_TrivialConstructorPhase(shared_ptr<NStructDecl> nStruct)
 {
     static_assert(false);
     // RStructDecl

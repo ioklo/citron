@@ -3,19 +3,19 @@
 #include <memory>
 #include <IR0/RNames.h>
 #include <IR0/RFuncReturn.h>
-#include <IR0/RArgument.h>
+#include <IR0/NArgument.h>
 
 namespace Citron {
 
-class RLambdaDecl;
-class RLambdaMemberVarDecl;
-class RDecl;
+class NLambdaDecl;
+class NLambdaMemberVarDecl;
+class NDecl;
 
 struct RFuncParameter;
-class RFuncDeclOuter;
+class NFuncDeclOuter;
 
 using RTypePtr = std::shared_ptr<class RType>;
-using RFuncDeclPtr = std::shared_ptr<class RFuncDecl>;
+using NFuncDeclPtr = std::shared_ptr<class NFuncDecl>;
 
 namespace SyntaxIR0Translator {
 
@@ -29,12 +29,12 @@ using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
 struct RLambdaDeclMemberVarAndArg
 {
-    std::shared_ptr<RLambdaMemberVarDecl> memberVarDecl;
-    RArgument arg;
+    std::shared_ptr<NLambdaMemberVarDecl> memberVarDecl;
+    NArgument arg;
 };
 
 struct FuncContextOuter_ScopeContext { ScopeContextPtr scopeContext; };
-struct FuncContextOuter_RFuncDeclOuter { std::shared_ptr<RFuncDeclOuter> decl; };
+struct FuncContextOuter_RFuncDeclOuter { std::shared_ptr<NFuncDeclOuter> decl; };
 
 using FuncContextOuter = std::variant<FuncContextOuter_ScopeContext, FuncContextOuter_RFuncDeclOuter>;
 
@@ -58,7 +58,7 @@ public:
     // 이 함수가 람다일때 캡쳐할 멤버 변수에 대한 것
     std::vector<RLambdaDeclMemberVarAndArg> lambdaMemberVarAndInitArgs;
     // 이 함수가 갖고 있는 자식 lambda에 대한 것
-    std::vector<std::shared_ptr<RLambdaDecl>> lambdaDecls;
+    std::vector<std::shared_ptr<NLambdaDecl>> lambdaDecls;
 
 public:
     FuncContext(const ModuleDeclsPtr& moduleDecls, FuncContextOuter&& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
@@ -67,9 +67,9 @@ public:
 
     FuncContextPtr Clone(CloneContext& context);
     void Update(const FuncContextPtr& src, UpdateContext& context);
-    bool CanAccess(RDecl* target);
+    bool CanAccess(NDecl* target);
 
-    RFuncDecl* GetOutermostFuncDecl();
+    NFuncDecl* GetOutermostFuncDecl();
 
     RFuncReturn GetFuncReturn();
     void SetFuncReturn(RTypePtr&& retType);

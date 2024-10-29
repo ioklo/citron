@@ -4,10 +4,10 @@
 
 namespace Citron {
 
-template<typename TMFuncDecl>
+template<typename TNFuncDecl>
 class MFuncDeclContainerComponent
 {
-    using TMFuncDeclPtr = std::shared_ptr<TMFuncDecl>;
+    using TMFuncDeclPtr = std::shared_ptr<TNFuncDecl>;
 
     std::vector<TMFuncDeclPtr> funcs;
     std::unordered_map<MIdentifier, TMFuncDeclPtr> idMap;

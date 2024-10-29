@@ -6,7 +6,7 @@
 #include "SExpToImExpTranslation.h"
 #include "ImExpToReExpTranslation.h"
 #include "ReExp.h"
-#include "SExpToRExpTranslation.h"
+#include "SExpToNExpTranslation.h"
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -36,7 +36,7 @@ public:
         *result = TranslateImExpToReExp(*imExp, context);
     }
 
-    void HandleExp(RExpPtr&& exp)
+    void HandleExp(NExpPtr&& exp)
     {
         if (!exp)
             *result = nullptr;
@@ -52,27 +52,27 @@ public:
 
     void Visit(SExp_String& exp) override
     {
-        HandleExp(TranslateSStringExpToRStringExp(exp, context));
+        HandleExp(TranslateSStringExpToNStringExp(exp, context));
     }
 
     void Visit(SExp_IntLiteral& exp) override
     {
-        HandleExp(TranslateSIntLiteralExpToRExp(exp));
+        HandleExp(TranslateSIntLiteralExpToNExp(exp));
     }
 
     void Visit(SExp_BoolLiteral& exp) override
     {
-        HandleExp(TranslateSBoolLiteralExpToRExp(exp));
+        HandleExp(TranslateSBoolLiteralExpToNExp(exp));
     }
 
     void Visit(SExp_NullLiteral& exp) override
     {
-        HandleExp(TranslateSNullLiteralExpToRExp(exp, hintType, context));
+        HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_BinaryOp& exp) override
     {
-        HandleExp(TranslateSBinaryOpExpToRExp(exp, context));
+        HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
     }
 
     // int만 지원한다
@@ -84,18 +84,18 @@ public:
         }
         else
         {
-            return HandleExp(TranslateSUnaryOpExpToRExpExceptDeref(exp, context));
+            return HandleExp(TranslateSUnaryOpExpToNExpExceptDeref(exp, context));
         }
     }
 
     void Visit(SExp_Call& exp) override
     {
-        return HandleExp(TranslateSCallExpToRExp(exp, hintType, context));
+        return HandleExp(TranslateSCallExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_Lambda& exp) override
     {
-        return HandleExp(TranslateSLambdaExpToRExp(exp, context));
+        return HandleExp(TranslateSLambdaExpToNExp(exp, context));
     }
 
     void Visit(SExp_Indexer& exp) override
@@ -117,28 +117,28 @@ public:
 
     void Visit(SExp_List& exp) override
     {
-        HandleExp(TranslateSListExpToRExp(exp, context));
+        HandleExp(TranslateSListExpToNExp(exp, context));
     }
 
     // 'new C(...)'
     void Visit(SExp_New& exp) override
     {
-        HandleExp(TranslateSNewExpToRExp(exp, context));
+        HandleExp(TranslateSNewExpToNExp(exp, context));
     }
 
     void Visit(SExp_Box& exp) override
     {
-        HandleExp(TranslateSBoxExpToRExp(exp, hintType, context));
+        HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_Is& exp) override
     {
-        HandleExp(TranslateSIsExpToRExp(exp, context));
+        HandleExp(TranslateSIsExpToNExp(exp, context));
     }
 
     void Visit(SExp_As& exp) override
     {
-        HandleExp(TranslateSAsExpToRExp(exp, context));
+        HandleExp(TranslateSAsExpToNExp(exp, context));
     }
 };
 

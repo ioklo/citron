@@ -1,18 +1,18 @@
 #include "RMember.h"
-#include "RGlobalFuncDecl.h"
-#include "RClassMemberFuncDecl.h"
-#include "RStructMemberFuncDecl.h"
+#include "NGlobalFuncDecl.h"
+#include "NClassMemberFuncDecl.h"
+#include "NStructMemberFuncDecl.h"
 
 using namespace std;
 
 namespace Citron {
 
-RMember_Namespace::RMember_Namespace(const std::shared_ptr<RNamespaceDecl>& decl)
+RMember_Namespace::RMember_Namespace(const shared_ptr<NNamespaceDecl>& decl)
     : decl(decl)
 {
 }
 
-RMember_GlobalFuncs::RMember_GlobalFuncs(std::vector<RDeclWithOuterTypeArgs<RGlobalFuncDecl>>&& items)
+RMember_GlobalFuncs::RMember_GlobalFuncs(vector<RDeclWithOuterTypeArgs<NGlobalFuncDecl>>&& items)
     : items(std::move(items))
 {
 }
@@ -28,13 +28,13 @@ vector<RDeclWithOuterTypeArgs<RFuncDecl>> RMember_GlobalFuncs::GetFuncDeclWithOu
     return result;
 }
 
-RMember_Class::RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RClassDecl>& decl)
+RMember_Class::RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<NClassDecl>& decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 
 }
 
-RMember_ClassMemberFuncs::RMember_ClassMemberFuncs(std::vector<RDeclWithOuterTypeArgs<RClassMemberFuncDecl>>&& items)
+RMember_ClassMemberFuncs::RMember_ClassMemberFuncs(vector<RDeclWithOuterTypeArgs<NClassMemberFuncDecl>>&& items)
     : items(std::move(items))
 {
 
@@ -51,19 +51,19 @@ vector<RDeclWithOuterTypeArgs<RFuncDecl>> RMember_ClassMemberFuncs::GetFuncDeclW
     return result;
 }
 
-RMember_ClassMemberVar::RMember_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RMember_ClassMemberVar::RMember_ClassMemberVar(const shared_ptr<NClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 
 }
 
-RMember_Struct::RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RStructDecl>& decl)
+RMember_Struct::RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<NStructDecl>& decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 
 }
 
-RMember_StructMemberFuncs::RMember_StructMemberFuncs(std::vector<RDeclWithOuterTypeArgs<RStructMemberFuncDecl>>&& items)
+RMember_StructMemberFuncs::RMember_StructMemberFuncs(vector<RDeclWithOuterTypeArgs<NStructMemberFuncDecl>>&& items)
     : items(std::move(items))
 {
 
@@ -80,31 +80,31 @@ vector<RDeclWithOuterTypeArgs<RFuncDecl>> RMember_StructMemberFuncs::GetFuncDecl
     return result;
 }
 
-RMember_StructMemberVar::RMember_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RMember_StructMemberVar::RMember_StructMemberVar(const shared_ptr<NStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 
 }
 
-RMember_Enum::RMember_Enum(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumDecl>& decl)
+RMember_Enum::RMember_Enum(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<NEnumDecl>& decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 
 }
 
-RMember_EnumElem::RMember_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RMember_EnumElem::RMember_EnumElem(const shared_ptr<NEnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 
 }
 
-RMember_EnumElemMemberVar::RMember_EnumElemMemberVar(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RMember_EnumElemMemberVar::RMember_EnumElemMemberVar(const shared_ptr<NEnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 
 }
 
-RMember_LambdaMemberVar::RMember_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RMember_LambdaMemberVar::RMember_LambdaMemberVar(const shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 

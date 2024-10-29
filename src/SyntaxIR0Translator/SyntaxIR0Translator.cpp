@@ -7,8 +7,8 @@
 #include <Infra/Ptr.h>
 #include <Infra/Exceptions.h>
 
-#include <IR0/RModuleDecl.h>
-#include <IR0/RNamespaceDecl.h>
+#include <IR0/NModuleDecl.h>
+#include <IR0/NNamespaceDecl.h>
 
 #include "EnumTranslation.h"
 #include "SkeletonPhaseContext.h"
@@ -36,12 +36,12 @@ RAccessor MakeGlobalMemberAccessor(std::optional<SAccessModifier> modifier)
 
 class NamespaceElemVisitor : public SNamespaceDeclElementVisitor
 {   
-    shared_ptr<RNamespaceDecl> curDecl;
+    shared_ptr<NNamespaceDecl> curDecl;
     SNamespaceDeclElementPtr sharedElem;
     SkeletonPhaseContext& context;
 
 public:
-    NamespaceElemVisitor(shared_ptr<RNamespaceDecl> curDecl, SNamespaceDeclElementPtr sharedElem, SkeletonPhaseContext& context)
+    NamespaceElemVisitor(shared_ptr<NNamespaceDecl> curDecl, SNamespaceDeclElementPtr sharedElem, SkeletonPhaseContext& context)
         : curDecl { std::move(curDecl) }, context { context } {}
 
     // Inherited via SNamespaceDeclElementVisitor
@@ -53,16 +53,16 @@ public:
 
     void Visit(SNamespaceDecl& elem) override
     {
-        shared_ptr<RNamespaceDecl> curNamespace = curDecl;
+        shared_ptr<NNamespaceDecl> curNamespace = curDecl;
 
         for (size_t i = 0, size = elem.names.size(); i < size; i++)
         {
             auto& name = elem.names[i];
 
-            shared_ptr<RNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
+            shared_ptr<NNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
             if (!childNamespace)
             {
-                childNamespace = MakePtr<RNamespaceDecl>(curNamespace, name);
+                childNamespace = MakePtr<NNamespaceDecl>(curNamespace, name);
                 curNamespace->AddNamespace(childNamespace);
             }
 
@@ -89,19 +89,19 @@ public:
         auto sharedEnumElem = dynamic_pointer_cast<SEnumDecl>(sharedElem);
         assert(sharedEnumElem);
 
-        auto rEnum = MakeEnum(curDecl, *sharedEnumElem, MakeGlobalMemberAccessor, context);
-        curDecl->AddType(std::move(rEnum));
+        auto nEnum = MakeEnum(curDecl, *sharedEnumElem, MakeGlobalMemberAccessor, context);
+        curDecl->AddType(std::move(nEnum));
     }
 };
 
 class ScriptElemVisitor : public SScriptElementVisitor
 {
-    shared_ptr<RModuleDecl> moduleDecl;
+    shared_ptr<NModuleDecl> moduleDecl;
     SScriptElementPtr sharedElem;
     SkeletonPhaseContext& context;
 
 public:
-    ScriptElemVisitor(shared_ptr<RModuleDecl> moduleDecl, SScriptElementPtr sharedElem, SkeletonPhaseContext& context)
+    ScriptElemVisitor(shared_ptr<NModuleDecl> moduleDecl, SScriptElementPtr sharedElem, SkeletonPhaseContext& context)
         : moduleDecl(std::move(moduleDecl)), sharedElem(std::move(sharedElem)), context(context)
     {
     }
@@ -113,10 +113,10 @@ public:
         // 첫번째는 모듈에서 찾는다
         assert(1 <= elem.names.size());
 
-        shared_ptr<RNamespaceDecl> curNamespace = moduleDecl->GetNamespace(elem.names[0]);
+        shared_ptr<NNamespaceDecl> curNamespace = moduleDecl->GetNamespace(elem.names[0]);
         if (!curNamespace)
         {
-            curNamespace = MakePtr<RNamespaceDecl>(moduleDecl, elem.names[0]);
+            curNamespace = MakePtr<NNamespaceDecl>(moduleDecl, elem.names[0]);
             moduleDecl->AddNamespace(curNamespace);
         }
 
@@ -124,10 +124,10 @@ public:
         {
             auto& name = elem.names[i];
 
-            shared_ptr<RNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
+            shared_ptr<NNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
             if (!childNamespace)
             {
-                childNamespace = MakePtr<RNamespaceDecl>(moduleDecl, name);
+                childNamespace = MakePtr<NNamespaceDecl>(moduleDecl, name);
                 moduleDecl->AddNamespace(childNamespace);
             }
 
@@ -161,25 +161,25 @@ public:
         auto sharedEnumElem = dynamic_pointer_cast<SEnumDecl>(sharedElem);
         assert(sharedEnumElem);
 
-        auto rEnum = MakeEnum(moduleDecl, *sharedEnumElem, MakeGlobalMemberAccessor, context);
-        moduleDecl->AddType(std::move(rEnum));
+        auto nEnum = MakeEnum(moduleDecl, *sharedEnumElem, MakeGlobalMemberAccessor, context);
+        moduleDecl->AddType(std::move(nEnum));
     }
 };
 
 } // unnamed namespace 
 
-std::shared_ptr<RModuleDecl> Translate(
+std::shared_ptr<NModuleDecl> Translate(
     std::string moduleName,
     vector<SScript> scripts,
     vector<shared_ptr<MModuleDecl>> referenceModules)
 {
-    auto rModuleDecl = MakePtr<RModuleDecl>(moduleName);
+    auto nModuleDecl = MakePtr<NModuleDecl>(moduleName);
 
     SkeletonPhaseContext context;
     for (auto& script : scripts)
         for (auto& elem : script.elements)
         {
-            ScriptElemVisitor visitor(rModuleDecl, elem, context);
+            ScriptElemVisitor visitor(nModuleDecl, elem, context);
             elem->Accept(visitor);
         }
 

@@ -5,24 +5,24 @@
 #include <optional>
 
 #include <IR0/RFuncReturn.h>
-#include <IR0/RArgument.h>
+#include <IR0/NArgument.h>
 
 #include "DesignatedErrorLogger.h"
 #include "DeclTypeInfo.h"
 
-using RFuncDeclPtr = std::shared_ptr<class RFuncDecl>;
+using RFuncDeclPtr = std::shared_ptr<class NFuncDecl>;
 
 namespace Citron {
 
 class STypeExp;
-class RLoc;
-class RLoc_This;
+class NLoc;
+class NLoc_This;
 
 enum class SBinaryOpKind;
 
 using SSyntaxPtr = std::shared_ptr<class SSyntax>;
-using RExpPtr = std::shared_ptr<class RExp>;
-using RStmtPtr = std::shared_ptr<class RStmt>;
+using NExpPtr = std::shared_ptr<class NExp>;
+using NStmtPtr = std::shared_ptr<class NStmt>;
 using LoggerPtr = std::shared_ptr<class Logger>;
 using RTypeFactoryPtr = std::shared_ptr<class RTypeFactory>;
 using RTypePtr = std::shared_ptr<class RType>;
@@ -40,10 +40,10 @@ using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 using TranslationContextPtr = std::shared_ptr<class TranslationContext>;
 
-struct RLambdaDeclAndArgs
+struct NLambdaDeclAndArgs
 {
-    std::shared_ptr<RLambdaDecl> decl;
-    std::vector<RArgument> args;   // constructor args
+    std::shared_ptr<NLambdaDecl> decl;
+    std::vector<NArgument> args;   // constructor args
 };
 
 class TranslationContext
@@ -67,8 +67,8 @@ public:
 
     DesignatedErrorLogger MakeDesignatedErrorLogger(void (Logger::* func)());
 
-    std::shared_ptr<RLoc_This> MakeThisLoc();
-    RExpPtr MakeRExp_As(RExpPtr&& targetExp, const RTypePtr& testType);
+    std::shared_ptr<NLoc_This> MakeThisLoc();
+    NExpPtr MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& testType);
 
 public: // for scopeContext
     bool IsInLoop();
@@ -77,11 +77,11 @@ public: // for scopeContext
     void AddLocalVarInfo(const RTypePtr& type, RName&& name);
 
 public: // for funcContext
-    bool CanAccess(RDecl* target);
+    bool CanAccess(NDecl* target);
     bool IsSeqFunc();
     RFuncReturn GetFuncReturn();
     void SetFuncReturn(RTypePtr&& retType);
-    RLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<RStmtPtr>&& body);
+    NLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<NStmtPtr>&& body);
 
 public: // for logging
     template<typename TFunc>
@@ -96,9 +96,9 @@ public:
     RTypePtr TranslateSTypeExpToRType(STypeExp& typeExp);
 
 public: // for type factory
-    RTypePtr GetType(RLoc& loc);
+    RTypePtr GetType(NLoc& loc);
     RTypePtr GetType(ReExp& reExp);
-    RTypePtr GetType(RExp& exp);
+    RTypePtr GetType(NExp& exp);
 
     RTypePtr GetTargetType(IrExp_BoxRef& boxRef);
 
@@ -112,8 +112,8 @@ public: // for type factory
 
     bool IsListType(const RTypePtr& type, RTypePtr* outItemType);
 
-    RFuncReturn GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
-    std::optional<RFuncParameter> GetFuncParameter(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
+    RFuncReturn GetFuncReturn(NFuncDecl& decl, RTypeArguments& typeArgs);
+    std::optional<RFuncParameter> GetFuncParameter(NFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
 
 public: // for BinOpQueryService
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);

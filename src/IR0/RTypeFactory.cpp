@@ -119,32 +119,32 @@ shared_ptr<TType> RTypeFactory::MakeInstanceType(InstanceTypeKeyUnorderedMap<TDe
     return newType;
 }
 
-shared_ptr<RType_Class> RTypeFactory::MakeClassType(const shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+shared_ptr<RType_Class> RTypeFactory::MakeClassType(const shared_ptr<NClassDecl>& decl, const RTypeArgumentsPtr& typeArgs)
 {
     return MakeInstanceType(classTypes, decl, typeArgs);
 }
 
-shared_ptr<RType_Struct> RTypeFactory::MakeStructType(const shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+shared_ptr<RType_Struct> RTypeFactory::MakeStructType(const shared_ptr<NStructDecl>& decl, const RTypeArgumentsPtr& typeArgs)
 {
     return MakeInstanceType(structTypes, decl, typeArgs);
 }
 
-shared_ptr<RType_Enum> RTypeFactory::MakeEnumType(const shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+shared_ptr<RType_Enum> RTypeFactory::MakeEnumType(const shared_ptr<NEnumDecl>& decl, const RTypeArgumentsPtr& typeArgs)
 {
     return MakeInstanceType(enumTypes, decl, typeArgs);
 }
 
-shared_ptr<RType_EnumElem> RTypeFactory::MakeEnumElemType(const shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+shared_ptr<RType_EnumElem> RTypeFactory::MakeEnumElemType(const shared_ptr<NEnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs)
 {
     return MakeInstanceType(enumElemTypes, decl, typeArgs);
 }
 
-shared_ptr<RType_Interface> RTypeFactory::MakeInterfaceType(const shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal)
+shared_ptr<RType_Interface> RTypeFactory::MakeInterfaceType(const shared_ptr<NInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal)
 {
     return MakeInstanceType(interfaceTypes, decl, typeArgs, bLocal);
 }
 
-shared_ptr<RType_Lambda> RTypeFactory::MakeLambdaType(const shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+shared_ptr<RType_Lambda> RTypeFactory::MakeLambdaType(const shared_ptr<NLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs)
 {
     return MakeInstanceType(lambdaTypes, decl, typeArgs);
 }

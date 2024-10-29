@@ -3,7 +3,7 @@
 #include <memory>
 
 #include <Syntax/Syntax.h>
-#include <IR0/RStructDecl.h>
+#include <IR0/NStructDecl.h>
 
 namespace Citron {
 
@@ -11,10 +11,10 @@ namespace SyntaxIR0Translator {
 
 class SkeletonPhaseContext;
 
-std::shared_ptr<RStructDecl> InnerMakeStruct(std::shared_ptr<SStructDecl> sDecl, RTypeDeclOuterWPtr rOuter, RAccessor accessor, SkeletonPhaseContext& context);
+std::shared_ptr<NStructDecl> InnerMakeStruct(std::shared_ptr<SStructDecl> sDecl, NTypeDeclOuterWPtr nOuter, RAccessor accessor, SkeletonPhaseContext& context);
 
 template<typename TROuter, typename TMakeAccessor>
-std::shared_ptr<RStructDecl> MakeStruct(const std::shared_ptr<TROuter>& rOuter, std::shared_ptr<SStructDecl> sStruct, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)
+std::shared_ptr<NStructDecl> MakeStruct(const std::shared_ptr<TROuter>& rOuter, std::shared_ptr<SStructDecl> sStruct, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)
 {
     auto accessor = makeAccessor(sStruct->accessModifier);
     return InnerMakeStruct(sStruct, rOuter, accessor, context);

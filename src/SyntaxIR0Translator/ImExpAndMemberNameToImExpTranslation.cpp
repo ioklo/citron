@@ -8,12 +8,12 @@
 #include <Logging/Logger.h>
 #include <IR0/RTypeFactory.h>
 #include <IR0/RClassMemberVarDecl.h>
-#include <IR0/RStructMemberVarDecl.h>
+#include <IR0/NStructMemberVarDecl.h>
 #include <IR0/RMember.h>
-#include <IR0/RNamespaceDecl.h>
-#include <IR0/RClassDecl.h>
-#include <IR0/RStructDecl.h>
-#include <IR0/REnumDecl.h>
+#include <IR0/NNamespaceDecl.h>
+#include <IR0/NClassDecl.h>
+#include <IR0/NStructDecl.h>
+#include <IR0/NEnumDecl.h>
 
 #include "TranslationContext.h"
 #include "FuncContext.h"
@@ -329,7 +329,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
 
     TranslationContext& context;
 
-    void BindStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
+    void BindStaticParent(NDecl& decl, const RTypeArgumentsPtr& typeArgs)
     {
         auto member = decl.GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
         StaticParentTranslator binder(typeArgsExceptOuter, result, context);

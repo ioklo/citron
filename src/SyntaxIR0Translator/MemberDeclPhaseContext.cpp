@@ -8,7 +8,7 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(RDeclPtr decl, vector<SFuncParam>& sParams)
+tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDeclPtr decl, vector<SFuncParam>& sParams)
 {
     bool bLastParamVariadic = false;
 

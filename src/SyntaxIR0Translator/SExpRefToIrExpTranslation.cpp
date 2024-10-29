@@ -7,9 +7,9 @@
 
 #include "IrExp.h"
 
-#include "SExpToRExpTranslation.h"
-#include "SExpToRLocTranslation.h"
-#include "SExpRefToRExpTranslation.h"
+#include "SExpToNExpTranslation.h"
+#include "SExpToNLocTranslation.h"
+#include "SExpRefToNExpTranslation.h"
 #include "IrExpAndMemberNameToIrExpTranslation.h"
 
 #include "TranslationContext.h"
@@ -36,14 +36,14 @@ public:
 
     void HandleValue(SExp& exp)
     {
-        auto rExp = TranslateSExpToRExp(exp, /*hintType*/ nullptr, context);
-        if (!rExp)
+        auto nExp = TranslateSExpToNExp(exp, /*hintType*/ nullptr, context);
+        if (!nExp)
         {
             *result = nullptr;
             return;
         }
 
-        *result = MakePtr<IrExp_LocalValue>(std::move(rExp));
+        *result = MakePtr<IrExp_LocalValue>(std::move(nExp));
     }
 
     void Visit(SExp_Identifier& exp) override
@@ -103,28 +103,28 @@ public:
     {
         if (exp.kind == SUnaryOpKind::Ref) // & &는 불가능
         {
-            auto rExp = TranslateSExpRefToRExp(*exp.operand, context);
-            if (!rExp)
+            auto nExp = TranslateSExpRefToNExp(*exp.operand, context);
+            if (!nExp)
             {
                 *result = nullptr;
                 return;
             }
 
-            *result = MakePtr<IrExp_LocalValue>(std::move(rExp));
+            *result = MakePtr<IrExp_LocalValue>(std::move(nExp));
             return;
         }
         else if (exp.kind == SUnaryOpKind::Deref) // *pS
         {
             auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
-            auto rOperandLoc = TranslateSExpToRLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-            if (!rOperandLoc)
+            auto nOperandLoc = TranslateSExpToNLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
+            if (!nOperandLoc)
             {
                 *result = nullptr;
                 return;
             }
 
-            *result = MakePtr<IrExp_DerefedBoxValue>(std::move(rOperandLoc));
+            *result = MakePtr<IrExp_DerefedBoxValue>(std::move(nOperandLoc));
             return;
         }
         else

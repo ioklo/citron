@@ -1,21 +1,21 @@
 #pragma once
 
-#include <vector>
-#include <optional>
+#include "IR0Config.h"
 
-#include "RDecl.h"
-#include "RFuncDeclOuter.h"
+#include <memory>
+
 #include "RFuncDecl.h"
-#include "RAccessor.h"
-#include "RNames.h"
-#include "RFuncReturn.h"
-#include "RFuncParameter.h"
-#include "RTopLevelDeclOuter.h"
-#include "RCommonFuncDeclComponent.h"
+#include "RFuncDeclOuter.h"
 
 namespace Citron {
 
 class MGlobalFuncDecl;
+class NDecl;
+class RIdentifier;
+class RTypeArguments;
+class RTypeFactory;
+
+using RTypePtr = std::shared_ptr<class RType>;
 
 // abstract
 class RGlobalFuncDecl
@@ -23,41 +23,26 @@ class RGlobalFuncDecl
     , public RFuncDeclOuter
 {
 public:
-    IR0_API RDecl* GetOuter() override;
+    // from RFuncDecl
+    IR0_API NDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 
-    // from RFuncDeclOuter
-    IR0_API RDecl* GetDecl() override;
+    // from NFuncDeclOuter
+    IR0_API NDecl* GetDecl() override;
 
 public:
-    void Accept(RDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(RFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     virtual RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
 };
 
-class RExternalGlobalFuncDecl : public RGlobalFuncDecl
+class RMGlobalFuncDecl : public RGlobalFuncDecl
 {
     std::shared_ptr<MGlobalFuncDecl> externalFuncDecl;
 };
- 
-class RInternalGlobalFuncDecl 
-    : public RGlobalFuncDecl
-    , private RCommonFuncDeclComponent
-{   
-    struct FuncReturnAndParams
-    {
-        RFuncReturn funcReturn;
-        std::vector<RFuncParameter> parameters;
-    };
 
-    RTopLevelDeclOuterWPtr outer;
-    RAccessor accessor;    
-    RName name;
-    std::vector<RName> typeParams;
 
-    std::optional<FuncReturnAndParams> funcReturnAndParams;
-};
 
 }

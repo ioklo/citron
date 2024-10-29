@@ -9,7 +9,7 @@
 
 #include <IR0/RTypeFactory.h>
 #include <IR0/RType.h>
-#include <IR0/RExp.h>
+#include <IR0/NExp.h>
 
 #include "ScopeContext.h"
 #include "TranslationContext.h"
@@ -33,7 +33,7 @@ RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationCo
 }
 
 
-RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context) // nothrow
+NExpPtr TryCastRExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context) // nothrow
 {
     static_assert(false);
 
@@ -96,7 +96,7 @@ RExpPtr TryCastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationCont
 
 
 // 값의 겉보기 타입을 변경한다
-RExpPtr CastRExp(RExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context)
+NExpPtr CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context)
 {
     auto result = TryCastRExp(std::move(exp), expectedType, context);
     if (result != nullptr) return result;

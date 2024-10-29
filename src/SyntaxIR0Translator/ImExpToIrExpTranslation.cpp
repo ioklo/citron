@@ -4,7 +4,7 @@
 #include <Infra/Ptr.h>
 #include <Infra/Exceptions.h>
 #include <IR0/RClassMemberVarDecl.h>
-#include <IR0/RStructMemberVarDecl.h>
+#include <IR0/NStructMemberVarDecl.h>
 
 #include "ImExp.h"
 #include "IrExp.h"
@@ -85,14 +85,14 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     // &id
     void Visit(ImExp_LocalVar& imExp) override
     {
-        *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_LocalVar>(RName_Normal(imExp.name), imExp.type));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_LocalVar>(RName_Normal(imExp.name), imExp.type));
     }
 
     // &x
     void Visit(ImExp_LambdaMemberVar& imExp) override
     {
         // TODO: [10] box lambda이면 box로 판단해야 한다
-        *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_LambdaMemberVar>(imExp.decl, imExp.typeArgs));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_LambdaMemberVar>(imExp.decl, imExp.typeArgs));
     }
 
     // x (C.x, this.x)
@@ -100,7 +100,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     {
         if (imExp.decl->bStatic) // &C.x
         {
-            *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_ClassMember>(nullptr, imExp.decl, imExp.typeArgs));
+            *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassMember>(nullptr, imExp.decl, imExp.typeArgs));
         }
         else // &this.x
         {
@@ -114,14 +114,14 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     {
         if (imExp.decl->bStatic)
         {
-            *result = MakePtr<IrExp_StaticRef>(MakePtr<RLoc_StructMember>(nullptr, imExp.decl, imExp.typeArgs));
+            *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructMember>(nullptr, imExp.decl, imExp.typeArgs));
         }
         else
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            auto rDerefThisLoc = MakePtr<RLoc_LocalDeref>(context.MakeThisLoc());
-            *result = MakePtr<IrExp_LocalRef>(MakePtr<RLoc_StructMember>(rDerefThisLoc, imExp.decl, imExp.typeArgs));
+            auto nDerefThisLoc = MakePtr<NLoc_LocalDeref>(context.MakeThisLoc());
+            *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_StructMember>(nDerefThisLoc, imExp.decl, imExp.typeArgs));
         }
     }
 

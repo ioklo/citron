@@ -5,7 +5,7 @@
 
 #include <Logging/Logger.h>
 
-#include <IR0/RLoc.h>
+#include <IR0/NLoc.h>
 #include <IR0/RTypeFactory.h>
 #include <IR0/RType.h>
 
@@ -53,7 +53,7 @@ DesignatedErrorLogger TranslationContext::MakeDesignatedErrorLogger(void (Logger
     return { *logger, func }; 
 }
 
-Citron::RTypePtr TranslationContext::GetType(RLoc& loc)
+Citron::RTypePtr TranslationContext::GetType(NLoc& loc)
 {
     return loc.GetType(*factory);
 }
@@ -63,7 +63,7 @@ RTypePtr TranslationContext::GetType(ReExp& reExp)
     return reExp.GetType(*factory);
 }
 
-Citron::RTypePtr TranslationContext::GetType(RExp& exp)
+Citron::RTypePtr TranslationContext::GetType(NExp& exp)
 {
     return exp.GetType(*factory);
 }
@@ -73,12 +73,12 @@ RTypePtr TranslationContext::GetTargetType(IrExp_BoxRef& boxRef)
     return boxRef.GetTargetType(*factory);
 }
 
-std::shared_ptr<Citron::RLoc_This> TranslationContext::MakeThisLoc()
+std::shared_ptr<Citron::NLoc_This> TranslationContext::MakeThisLoc()
 {
     return scopeContext->MakeThisLoc(*factory);
 }
 
-RExpPtr TranslationContext::MakeRExp_As(RExpPtr&& targetExp, const RTypePtr& testType)
+NExpPtr TranslationContext::MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& testType)
 {
     auto targetType = targetExp->GetType(*factory);
     auto targetTypeKind = targetType->GetCustomTypeKind();
@@ -88,26 +88,26 @@ RExpPtr TranslationContext::MakeRExp_As(RExpPtr&& targetExp, const RTypePtr& tes
     if (testTypeKind == RCustomTypeKind::Class)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<RExp_ClassAsClass>(std::move(targetExp), testType);
+            return MakePtr<NExp_ClassAsClass>(std::move(targetExp), testType);
 
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<RExp_InterfaceAsClass>(std::move(targetExp), testType);
+            return MakePtr<NExp_InterfaceAsClass>(std::move(targetExp), testType);
         else
             throw NotImplementedException(); // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::Interface)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<RExp_ClassAsInterface>(std::move(targetExp), testType);
+            return MakePtr<NExp_ClassAsInterface>(std::move(targetExp), testType);
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<RExp_InterfaceAsInterface>(std::move(targetExp), testType);
+            return MakePtr<NExp_InterfaceAsInterface>(std::move(targetExp), testType);
         else
             throw NotImplementedException(); // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::EnumElem)
     {
         if (targetTypeKind == RCustomTypeKind::Enum)
-            return MakePtr<RExp_EnumAsEnumElem>(std::move(targetExp), testType);
+            return MakePtr<NExp_EnumAsEnumElem>(std::move(targetExp), testType);
         else
             throw NotImplementedException(); // 에러 처리
     }
@@ -197,7 +197,7 @@ DeclTypeInfo TranslationContext::GetDeclTypeInfo(STypeExp& typeExp)
 
 
 
-bool TranslationContext::CanAccess(RDecl* target)
+bool TranslationContext::CanAccess(NDecl* target)
 {
     return funcContext->CanAccess(target);
 }
