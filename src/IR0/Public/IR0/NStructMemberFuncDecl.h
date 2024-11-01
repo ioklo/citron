@@ -47,6 +47,9 @@ public:
     IR0_API NDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 
+    // from NFuncDecl
+    using NCommonFuncDeclComponent::GetTypeParamCount;
+
     // from NFuncDeclOuter
     IR0_API NDecl* GetDecl() override;
 

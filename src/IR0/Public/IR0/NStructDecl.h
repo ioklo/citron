@@ -51,8 +51,10 @@ class NStructDecl
     int trivialConstructorIndex; // can be -1
 
     std::vector<std::shared_ptr<NStructMemberVarDecl>> memberVarDecls;
-
     std::optional<BaseTypes> oBaseTypes;
+
+    std::unordered_map<RName, std::shared_ptr<NStructMemberVarDecl>> memberVarDeclsMap;
+
 
 public:
     IR0_API NStructDecl(NTypeDeclOuterWPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams);
@@ -84,6 +86,9 @@ public:
 
     // from RDecl
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+
+    // from RStructDecl
+    IR0_API std::optional<RMember_StructMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
 
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }

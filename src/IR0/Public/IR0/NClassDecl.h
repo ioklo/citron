@@ -50,6 +50,8 @@ class NClassDecl
 
     std::optional<BaseTypes> oBaseTypes;
 
+    std::unordered_map<RName, std::shared_ptr<NClassMemberVarDecl>> memberVarsMap;
+
 public:    
     // from NDecl
     RAccessor GetAccessor() override { return accessor; }
@@ -64,6 +66,9 @@ public:
 
     // from RDecl
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+
+    // from RClassDecl
+    IR0_API std::optional<RMember_ClassMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
 
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this);  }
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }

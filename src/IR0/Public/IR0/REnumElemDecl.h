@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include "RDecl.h"
 #include "RTypeDecl.h"
@@ -13,7 +14,9 @@ class REnumElemDecl
     : public RDecl
     , public RTypeDecl
 {
-public:
+public:    
+    virtual std::optional<RMember_EnumElemMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) = 0;
+
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
     void Accept(RTypeDeclVisitor& visitor) final { visitor.Visit(*this); }
 };

@@ -32,6 +32,11 @@ optional<RMember> NEnumElemDecl::GetMember(const RTypeArgumentsPtr& typeArgs, co
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
+    return GetMemberVar(typeArgs, name);
+}
+
+optional<RMember_EnumElemMemberVar> NEnumElemDecl::GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
+{
     auto* normalName = get_if<RName_Normal>(&name);
     if (!normalName) return nullopt;
 

@@ -2,6 +2,9 @@
 #include <cassert>
 #include <Infra/Exceptions.h>
 
+#include "DeclWithOuterTypeArgs.h"
+#include "RStructMemberFuncDecl.h"
+
 using namespace std;
 
 namespace Citron {
@@ -40,6 +43,10 @@ optional<RMember> NStructDecl::GetMember(const RTypeArgumentsPtr& typeArgs, cons
     if (auto oFunc = NFuncDeclContainerComponent<NStructMemberFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
         candidates.push_back(*oFunc);
 
+    if (explicitTypeParamsExceptOuterCount == 0)
+        if (auto oVar = GetMemberVar(typeArgs, name))
+            candidates.push_back(*oVar);
+
     if (candidates.empty()) return nullopt;
 
     if (1 < candidates.size())
@@ -49,6 +56,14 @@ optional<RMember> NStructDecl::GetMember(const RTypeArgumentsPtr& typeArgs, cons
     }
 
     return candidates[1];
+}
+
+optional<RMember_StructMemberVar> NStructDecl::GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
+{
+    auto i = memberVarDeclsMap.find(name);
+    if (i == memberVarDeclsMap.end()) return nullopt;
+
+    return RMember_StructMemberVar(i->second, typeArgs);
 }
 
 } // namespace Citron
