@@ -15,6 +15,10 @@
 namespace Citron
 {
 
+class RClassDecl;
+class RInterfaceDecl;
+class RLambdaDecl;
+
 class RType_NullableValue; // struct, enum 타입 등에서 쓰일 nullable
 class RType_NullableRef;   // class 타입 등에서 쓰일 nullable
 class RType_TypeVar;  // 이것은 Symbol인가?
@@ -39,7 +43,6 @@ class NInterfaceDecl;
 class NLambdaDecl;
 
 using NDeclPtr = std::shared_ptr<class NDecl>;
-using RMemberPtr = std::shared_ptr<class RMember>;
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
 class RTypeFactory;
@@ -80,7 +83,7 @@ public:
     virtual ~RType() { }
     virtual RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
     virtual RCustomTypeKind GetCustomTypeKind() { return RCustomTypeKind::None; }
-    virtual RMemberPtr GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount);
+    virtual std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount);
 
     virtual void Accept(RTypeVisitor& visitor) = 0;
 };

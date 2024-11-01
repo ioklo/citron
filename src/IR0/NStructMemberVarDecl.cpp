@@ -3,6 +3,8 @@
 #include "NStructDecl.h"
 #include "RTypeFactory.h"
 
+using namespace std;
+
 namespace Citron {
 
 NStructMemberVarDecl::NStructMemberVarDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bStatic, std::string name)
@@ -18,12 +20,6 @@ void NStructMemberVarDecl::InitDeclType(const RTypePtr& declType)
     this->declType = declType;
 }
 
-RTypePtr NStructMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
-{
-    assert(declType != nullptr);
-    return declType->Apply(typeArgs, factory);
-}
-
 NDecl* NStructMemberVarDecl::GetOuter()
 {
     return _struct.lock().get();
@@ -32,6 +28,17 @@ NDecl* NStructMemberVarDecl::GetOuter()
 RIdentifier NStructMemberVarDecl::GetIdentifier()
 {
     return RIdentifier { RName_Normal(name), 0, {} };
+}
+
+RTypePtr NStructMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+{
+    assert(declType != nullptr);
+    return declType->Apply(typeArgs, factory);
+}
+
+optional<RMember> NStructMemberVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    return nullopt;
 }
 
 } // namespace Citron

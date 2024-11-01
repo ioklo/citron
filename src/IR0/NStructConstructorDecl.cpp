@@ -8,9 +8,11 @@ namespace Citron
 {
 
 NStructConstructorDecl::NStructConstructorDecl(weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bTrivial)
-    : _struct(std::move(_struct))
+    : NCommonFuncDeclComponent(/*typeParams*/ {})
+    , _struct(std::move(_struct))
     , accessor(accessor)
     , bTrivial(bTrivial)
+    
 {
 }
 
@@ -39,6 +41,11 @@ NDecl* NStructConstructorDecl::GetDecl()
 shared_ptr<RStructDecl> NStructConstructorDecl::GetStructDecl()
 {
     return _struct.lock();
+}
+
+optional<Citron::RMember> NStructConstructorDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    return nullopt;
 }
 
 }

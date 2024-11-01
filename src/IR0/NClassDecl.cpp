@@ -1,4 +1,8 @@
 #include "NClassDecl.h"
+#include <cassert>
+#include <Infra/Exceptions.h>
+
+using namespace std;
 
 namespace Citron {
 
@@ -15,6 +19,36 @@ RIdentifier NClassDecl::GetIdentifier()
 NDecl* NClassDecl::GetDecl()
 {
     return this;
+}
+
+RMember NClassDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
+{
+    auto sharedClassDecl = dynamic_pointer_cast<NClassDecl>(sharedThis);
+    assert(sharedClassDecl);
+    return RMember_Class(typeArgs, sharedClassDecl);
+}
+
+optional<RMember> NClassDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    vector<RMember> candidates;
+
+    // type
+    if (auto oType = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        candidates.push_back(*oType);
+
+    // struct member func
+    if (auto oFunc = NFuncDeclContainerComponent<NClassMemberFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        candidates.push_back(*oFunc);
+
+    if (candidates.empty()) return nullopt;
+
+    if (1 < candidates.size())
+    {
+        // TODO: 여러 candidate가 있다고 로깅하고 FatalException던지기
+        throw NotImplementedException();
+    }
+
+    return candidates[1];
 }
 
 } // namespace Citron

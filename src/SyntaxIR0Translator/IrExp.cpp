@@ -19,17 +19,17 @@ IrExp_TypeVar::IrExp_TypeVar(const shared_ptr<RType_TypeVar>& type)
 
 }
 
-IrExp_Class::IrExp_Class(const std::shared_ptr<NClassDecl>& decl, RTypeArgumentsPtr&& typeArgs)
+IrExp_Class::IrExp_Class(const std::shared_ptr<RClassDecl>& decl, RTypeArgumentsPtr&& typeArgs)
     : decl(decl), typeArgs(std::move(typeArgs))
 {
 }
 
-IrExp_Struct::IrExp_Struct(const std::shared_ptr<NStructDecl>& decl, RTypeArgumentsPtr&& typeArgs)
+IrExp_Struct::IrExp_Struct(const std::shared_ptr<RStructDecl>& decl, RTypeArgumentsPtr&& typeArgs)
     : decl(decl), typeArgs(std::move(typeArgs))
 {
 }
 
-IrExp_Enum::IrExp_Enum(const std::shared_ptr<NEnumDecl>& decl, RTypeArgumentsPtr&& typeArgs)
+IrExp_Enum::IrExp_Enum(const std::shared_ptr<REnumDecl>& decl, RTypeArgumentsPtr&& typeArgs)
     : decl(decl), typeArgs(std::move(typeArgs))
 {
 }
@@ -44,7 +44,7 @@ IrExp_StaticRef::IrExp_StaticRef(const NLocPtr& loc)
 {
 }
 
-IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<NClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : loc(loc), decl(decl), typeArgs(typeArgs)
 {
 }

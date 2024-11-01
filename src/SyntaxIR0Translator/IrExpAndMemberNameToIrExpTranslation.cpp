@@ -25,124 +25,122 @@ namespace Citron::SyntaxIR0Translator {
 
 namespace {
 
-class StaticParentTranslator : public RMemberVisitor
+class StaticParentTranslator
 {
     RTypeArgumentsPtr typeArgsExceptOuter;
-    IrExpPtr *result;
-
     TranslationContext& context;
 
 public:
-    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, IrExpPtr* result, TranslationContext& context)
-        : typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context)
+    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+        : typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
 
-    void Visit(RMember_Namespace& member) override 
+    IrExpPtr operator()(RMember_Namespace& member) 
     {
-        *result = MakePtr<IrExp_Namespace>(member.decl);
+        return MakePtr<IrExp_Namespace>(member.decl);
     }
 
     // S.F
-    void Visit(RMember_GlobalFuncs& member) override 
+    IrExpPtr operator()(RMember_GlobalFuncs& member) 
     {   
         context.Log(&Logger::Fatal_Reference_CantMakeReference);
-        *result = nullptr;
+        return nullptr;
     }
 
-    void Visit(RMember_Class& member) override 
+    IrExpPtr operator()(RMember_Class& member) 
     {
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        *result = MakePtr<IrExp_Class>(member.decl, std::move(typeArgs));
+        return MakePtr<IrExp_Class>(member.decl, std::move(typeArgs));
     }
 
     // 에러,
-    void Visit(RMember_ClassMemberFuncs& member) override 
+    IrExpPtr operator()(RMember_ClassMemberFuncs& member) 
     {
         context.Log(&Logger::Fatal_Reference_CantMakeReference);
-        *result = nullptr;
+        return nullptr;
     }
 
     // C.x
-    void Visit(RMember_ClassMemberVar& member) override 
+    IrExpPtr operator()(RMember_ClassMemberVar& member) 
     {
         if (!member.decl->bStatic)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType);
-            *result = nullptr;
+            return nullptr;
             return;
         }
 
         if (!context.CanAccess(member.decl.get()))
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_TryAccessingPrivateMember);
-            *result = nullptr;
+            return nullptr;
             return;
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
-    void Visit(RMember_Struct& member) override 
+    IrExpPtr operator()(RMember_Struct& member) 
     {
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        *result = MakePtr<IrExp_Struct>(member.decl, std::move(typeArgs));
+        return MakePtr<IrExp_Struct>(member.decl, std::move(typeArgs));
     }
 
-    void Visit(RMember_StructMemberFuncs& member) override 
+    IrExpPtr operator()(RMember_StructMemberFuncs& member) 
     {
         context.Log(&Logger::Fatal_Reference_CantMakeReference);
-        *result = nullptr;
+        return nullptr;
     }
 
-    void Visit(RMember_StructMemberVar& member) override 
+    IrExpPtr operator()(RMember_StructMemberVar& member) 
     {
         if (!member.decl->bStatic)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType);
-            *result = nullptr;
+            return nullptr;
             return;
         }
 
         if (!context.CanAccess(member.decl.get()))
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_TryAccessingPrivateMember);
-            *result = nullptr;
+            return nullptr;
             return;
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     // E
-    void Visit(RMember_Enum& member) override 
+    IrExpPtr operator()(RMember_Enum& member) 
     {   
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        *result = MakePtr<IrExp_Enum>(member.decl, std::move(typeArgs));
+        return MakePtr<IrExp_Enum>(member.decl, std::move(typeArgs));
     }
 
     // &E.First.x
-    void Visit(RMember_EnumElem& member) override 
+    IrExpPtr operator()(RMember_EnumElem& member) 
     {   
         context.Log(&Logger::Fatal_Reference_CantMakeReference);
-        *result = nullptr;
+        return nullptr;
     }
 
     // &E.x
-    void Visit(RMember_EnumElemMemberVar& member) override 
+    IrExpPtr operator()(RMember_EnumElemMemberVar& member) 
     {
         // 표현 불가능
         throw RuntimeFatalException();
     }
 
-    void Visit(RMember_LambdaMemberVar& member) override 
+    IrExpPtr operator()(RMember_LambdaMemberVar& member) 
     {
         throw RuntimeFatalException();
     }
 
-    void Visit(RMember_TupleMemberVar& member) override 
+    IrExpPtr operator()(RMember_TupleMemberVar& member) 
     {
         throw RuntimeFatalException();
     }
@@ -855,18 +853,18 @@ public:
     {
     }
 
-    void HandleStaticParent(NDecl& decl, const RTypeArgumentsPtr& typeArgs)
+    void HandleStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
     {
-        auto member = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
-        if (!member)
+        auto oMember = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
+        if (!oMember)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
             return;
         }
 
-        StaticParentTranslator binder(typeArgsExceptOuter, result, context);
-        member->Accept(binder);
+        StaticParentTranslator binder(typeArgsExceptOuter, context);
+        visit(binder, *oMember);
     }
 
     void Visit(IrExp_Namespace& irExp) override 
@@ -919,7 +917,7 @@ public:
         auto irBoxRefThis = dynamic_pointer_cast<IrExp_BoxRef>(irThis);
         assert(irBoxRefThis);
 
-        auto targetType = context.GetTargetType(*irExp)
+        auto targetType = context.GetTargetType(irExp);
         BoxRefTypeTranslator binder(irBoxRefThis, name, typeArgsExceptOuter, result, context);
         targetType->Accept(binder);
     }

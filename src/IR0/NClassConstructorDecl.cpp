@@ -25,4 +25,9 @@ shared_ptr<RClassDecl> NClassConstructorDecl::GetClassDecl()
     return _class.lock();
 }
 
+optional<RMember> NClassConstructorDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    return nullopt;
+}
+
 } // namespace Citron

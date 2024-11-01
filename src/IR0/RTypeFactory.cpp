@@ -180,37 +180,35 @@ RTypeArgumentsPtr RTypeFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RT
 
 RTypePtr RTypeFactory::MakeBoolType()
 {   
-    /*std::shared_ptr<RMStructDecl> boolDecl; // boolDecl을 만들어서 넣어야 한다
-    return MakeStructType(boolDecl, MakeTypeArguments({}));*/
+    return boolType;
 }
 
 RTypePtr RTypeFactory::MakeIntType()
 {
+    return intType;
 }
 
 RTypePtr RTypeFactory::MakeStringType()
 {
-
+    return stringType;
 }
 
 RTypePtr RTypeFactory::MakeListType(const RTypePtr& itemType)
 {
-
+    auto typeArgs = MakeTypeArguments({ itemType });
+    return MakeClassType(listDecl, typeArgs);
 }
 
 bool RTypeFactory::IsListType(const RTypePtr& type, RTypePtr* outItemType)
 {
+    auto* classType = dynamic_cast<RType_Class*>(type.get());
+    if (!classType) return false;
 
-}
+    if (classType->decl != listDecl) return false;
+    if (classType->typeArgs->GetCount() != 1) return false;
 
-RDeclIdPtr RTypeFactory::MakeDeclId(std::string&& moduleName, RIdentifier&& identifier)
-{
-
-}
-
-IR0_API RDeclIdPtr RTypeFactory::MakeChildDeclId(RDeclIdPtr&& id, RIdentifier&& identifier)
-{
-
+    *outItemType = classType->typeArgs->Get(0);
+    return true;
 }
 
 } // Citron

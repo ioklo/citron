@@ -27,6 +27,7 @@ public:
 class RMModuleDecl : public RModuleDecl
 {
     std::shared_ptr<MModuleDecl> decl;
+    // std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 };
 
 

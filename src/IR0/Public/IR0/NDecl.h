@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include "RIdentifier.h"
 #include "RNames.h"
 #include "RAccessor.h"
@@ -29,8 +30,6 @@ class NInterfaceDecl;
 
 class RTypeFactory;
 
-using RMemberPtr = std::shared_ptr<class RMember>;
-using RDeclIdPtr = std::shared_ptr<class RDeclId>;
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
 class NDeclVisitor
@@ -63,23 +62,13 @@ public:
     virtual RAccessor GetAccessor() = 0;
     virtual RIdentifier GetIdentifier() = 0;
     virtual NDecl* GetOuter() = 0;
-
-    // typeArgs는 RDecl의 typeArgs이다
-    // explicitTypeParamsExceptOuterCount는 검색할 멤버가 추가로 가지고 있을 typeArgs이다
-    // explicitTypeParamsExceptOuterCount는 확정적으로 알고 있는 typeArgs의 개수이다. 
-    // 함수는 모든 typeArgs를 나열하지 않아도 type inference로 채울 수 있기 때문에,
-    // explicitTypeParamsExceptOuterCount보다 더 많은 typeParams을 갖고 있어도 결과에 반영된다
-    virtual RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
+    
     virtual std::string GetModuleName(); // once overridden by RModuleDecl    
     virtual void Accept(NDeclVisitor& visitor) = 0;
 
 public:
     bool IsDescendantOf(NDecl* container);
     bool CanAccess(NDecl* target);
-
-private:
-    // non virtual
-    RDeclIdPtr GetDeclId(RTypeFactory& factory);
 };
 
 using NDeclPtr = std::shared_ptr<NDecl>;

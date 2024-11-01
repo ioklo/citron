@@ -26,6 +26,10 @@ class NStructMemberFuncDecl
     , private NCommonFuncDeclComponent
 {
 public:
+    using RDeclType = RStructMemberFuncDecl;
+    using RMemberType = RMember_StructMemberFuncs;
+
+public:
     std::weak_ptr<NStructDecl> _struct;
     RAccessor accessor;
     std::string name;
@@ -33,7 +37,7 @@ public:
     bool bStatic;
 
 public:
-    IR0_API NStructMemberFuncDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, std::string name, std::vector<std::string> typeParams, bool bStatic);
+    IR0_API NStructMemberFuncDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, std::string name, std::vector<std::string>&& typeParams, bool bStatic);
     IR0_API void InitFuncReturnAndParams(RTypePtr funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic);
     using NCommonFuncDeclComponent::InitBody;
 
@@ -48,6 +52,9 @@ public:
 
     // from RStructMemberFuncDecl
     RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
+
+    // from RDecl
+    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     
 public:
 

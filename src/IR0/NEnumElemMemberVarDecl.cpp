@@ -1,22 +1,19 @@
 #include "NEnumElemMemberVarDecl.h"
 #include "NEnumDecl.h"
 
+using namespace std;
+
 namespace Citron {
 
-NEnumElemMemberVarDecl::NEnumElemMemberVarDecl(std::weak_ptr<NEnumElemDecl> outer, RName name)
+NEnumElemMemberVarDecl::NEnumElemMemberVarDecl(std::weak_ptr<NEnumElemDecl> outer, const std::string& name)
     : outer(std::move(outer))
-    , name(std::move(name))
+    , name(name)
 {
 }
 
 void Citron::NEnumElemMemberVarDecl::InitDeclType(RTypePtr&& declType)
 {
     this->declType = std::move(declType);
-}
-
-RTypePtr NEnumElemMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
-{
-    return declType->Apply(typeArgs, factory);
 }
 
 NDecl* NEnumElemMemberVarDecl::GetOuter()
@@ -26,7 +23,17 @@ NDecl* NEnumElemMemberVarDecl::GetOuter()
 
 RIdentifier NEnumElemMemberVarDecl::GetIdentifier()
 {
-    return RIdentifier { name, 0, {} };
+    return RIdentifier { RName_Normal(name), 0, {} };
+}
+
+RTypePtr NEnumElemMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+{
+    return declType->Apply(typeArgs, factory);
+}
+
+optional<RMember> NEnumElemMemberVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    return nullopt;
 }
 
 }

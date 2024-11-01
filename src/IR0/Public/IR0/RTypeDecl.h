@@ -14,7 +14,7 @@ class REnumElemDecl;
 class RInterfaceDecl;
 class RLambdaDecl;
 
-class RTypeDecl 
+class RTypeDecl
 {
 public:
     virtual ~RTypeDecl() { }

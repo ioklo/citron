@@ -25,18 +25,14 @@ class NGlobalFuncDecl
     , public RGlobalFuncDecl
     , private NCommonFuncDeclComponent
 {   
-    struct FuncReturnAndParams
-    {
-        RFuncReturn funcReturn;
-        std::vector<RFuncParameter> parameters;
-    };
+public:
+    using RDeclType = RGlobalFuncDecl;
+    using RMemberType = RMember_GlobalFuncs;
 
+public:
     NTopLevelDeclOuterWPtr outer;
     RAccessor accessor;    
     RName name;
-    std::vector<RName> typeParams;
-
-    std::optional<FuncReturnAndParams> funcReturnAndParams;
 
 public:
     // from NFuncDecl
@@ -45,6 +41,11 @@ public:
 
     // from NFuncDeclOuter
     IR0_API NDecl* GetDecl() override;
+
+    // from RDecl
+    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+
+    using NCommonFuncDeclComponent::GetTypeParamCount;
 
     // accestors
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }

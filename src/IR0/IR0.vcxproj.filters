@@ -120,9 +120,6 @@
     <ClInclude Include="Public\IR0\RTypeDeclOuter.h">
       <Filter>Symbols\RDecl\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RDeclId.h">
-      <Filter>Symbols\RDecl\01 Identifier</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RIdentifier.h">
       <Filter>Symbols\RDecl\01 Identifier</Filter>
     </ClInclude>
@@ -278,13 +275,16 @@
     <ClCompile Include="RTypeFactory.cpp">
       <Filter>Symbols\RDecl\00 Abstraction</Filter>
     </ClCompile>
-    <ClCompile Include="RDeclId.cpp">
-      <Filter>Symbols\RDecl\01 Identifier</Filter>
-    </ClCompile>
     <ClCompile Include="RNames.cpp">
       <Filter>Symbols\RDecl\01 Identifier</Filter>
     </ClCompile>
     <ClCompile Include="RGlobalFuncDecl.cpp">
+      <Filter>Symbols\RDecl\05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="NGlobalFuncDecl.cpp">
+      <Filter>Symbols\NDecl\05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="RModuleDecl.cpp">
       <Filter>Symbols\RDecl\05 TopLevel</Filter>
     </ClCompile>
   </ItemGroup>

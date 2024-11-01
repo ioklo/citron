@@ -1,12 +1,9 @@
 #include "NLambdaMemberVarDecl.h"
 #include "NLambdaDecl.h"
 
-namespace Citron {
+using namespace std;
 
-RTypePtr NLambdaMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
-{
-    return type->Apply(typeArgs, factory);
-}
+namespace Citron {
 
 NDecl* NLambdaMemberVarDecl::GetOuter()
 {
@@ -17,5 +14,16 @@ RIdentifier NLambdaMemberVarDecl::GetIdentifier()
 {
     return RIdentifier { name, 0, {} };
 }
+
+RTypePtr NLambdaMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+{
+    return type->Apply(typeArgs, factory);
+}
+
+optional<RMember> NLambdaMemberVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    return nullopt;
+}
+
 
 } // namespace Citron

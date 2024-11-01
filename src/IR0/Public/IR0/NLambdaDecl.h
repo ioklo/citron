@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <optional>
+#include <unordered_map>
+#include <memory>
 
 #include "NDecl.h"
 #include "NFuncDeclOuter.h"
@@ -29,11 +31,14 @@ class NLambdaDecl
     RName name;
 
     // 가지고 있어야 할 멤버 변수들, type, name, ref 여부
-    std::optional<std::vector<NLambdaMemberVarDecl>> memberVars;
+    std::optional<std::vector<std::shared_ptr<NLambdaMemberVarDecl>>> memberVars;
+
+    //
+    std::unordered_map<RName, std::shared_ptr<NLambdaMemberVarDecl>> memberVarsMap;
 
 public:
     NLambdaDecl(NFuncDeclOuterWPtr&& outer, RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
-    void Init(std::vector<NLambdaMemberVarDecl>&& memberVars, std::vector<NStmtPtr>&& body);
+    void Init(std::vector<std::shared_ptr<NLambdaMemberVarDecl>>&& memberVars, std::vector<NStmtPtr>&& body);
 
     using NCommonFuncDeclComponent::GetReturnType;
 
@@ -45,6 +50,10 @@ public:
 
     // from NFuncDeclOuter, NTypeDecl, NFuncDecl
     IR0_API NDecl* GetDecl() override;
+    RMember ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs) override;
+
+    // from RDecl
+    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }

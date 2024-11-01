@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "NDecl.h"
 #include "NTypeDecl.h"
 #include "NTypeDeclOuter.h"
@@ -18,6 +20,7 @@ namespace Citron
 
 class RType_Class;
 class RType_Interface;
+using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
 class NClassDecl
     : public NDecl
@@ -53,8 +56,14 @@ public:
     IR0_API NDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
 
-    // from NTypeDeclOuter, NFuncDeclOuter, NDecl
+    // from NTypeDeclOuter, NFuncDeclOuter, NDecl, NTypeDecl
     IR0_API NDecl* GetDecl() override;
+
+    // from NTypeDecl
+    RMember ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs) override;
+
+    // from RDecl
+    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this);  }
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }

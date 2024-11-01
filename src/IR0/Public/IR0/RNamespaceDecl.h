@@ -26,6 +26,7 @@ public:
 class RMNamespaceDecl : public RNamespaceDecl
 {
     std::shared_ptr<MNamespaceDecl> decl;
+    // std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 };
 
 

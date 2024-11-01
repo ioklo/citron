@@ -1,6 +1,8 @@
 #include "NClassMemberFuncDecl.h"
 #include "NClassDecl.h"
 
+using namespace std;
+
 namespace Citron {
 
 RIdentifier NClassMemberFuncDecl::GetIdentifier()
@@ -16,6 +18,11 @@ NDecl* NClassMemberFuncDecl::GetOuter()
 NDecl* NClassMemberFuncDecl::GetDecl()
 {
     return this;
+}
+
+optional<RMember> NClassMemberFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    return nullopt;
 }
 
 } // namespace Citron

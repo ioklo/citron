@@ -2,12 +2,9 @@
 #include "NClassDecl.h"
 #include "RTypeFactory.h"
 
-namespace Citron {
+using namespace std;
 
-RTypePtr NClassMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
-{
-    return declType->Apply(typeArgs, factory);
-}
+namespace Citron {
 
 NDecl* NClassMemberVarDecl::GetOuter()
 {
@@ -17,6 +14,16 @@ NDecl* NClassMemberVarDecl::GetOuter()
 RIdentifier NClassMemberVarDecl::GetIdentifier()
 {
     return RIdentifier { name, 0, {} };
+}
+
+RTypePtr NClassMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+{
+    return declType->Apply(typeArgs, factory);
+}
+
+optional<RMember> NClassMemberVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    return nullopt;
 }
 
 } // namespace Citron

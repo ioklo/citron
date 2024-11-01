@@ -194,9 +194,6 @@ DeclTypeInfo TranslationContext::GetDeclTypeInfo(STypeExp& typeExp)
     return info;
 }
 
-
-
-
 bool TranslationContext::CanAccess(NDecl* target)
 {
     return funcContext->CanAccess(target);

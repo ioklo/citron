@@ -1,4 +1,5 @@
 #include "NEnumElemDecl.h"
+#include <cassert>
 #include "NEnumDecl.h"
 
 using namespace std;
@@ -11,9 +12,10 @@ NEnumElemDecl::NEnumElemDecl(weak_ptr<NEnumDecl> _enum, string name, size_t memb
     memberVars.reserve(memberVarCount);
 }
 
-void NEnumElemDecl::AddMemberVar(std::shared_ptr<NEnumElemMemberVarDecl> memberVar)
+void NEnumElemDecl::AddMemberVar(const std::shared_ptr<NEnumElemMemberVarDecl>& memberVar)
 {
-    memberVars.push_back(std::move(memberVar));
+    memberVars.push_back(memberVar);
+    memberVarsMap.emplace(memberVar->name, std::move(memberVar));
 }
 
 NDecl* NEnumElemDecl::GetOuter()
@@ -24,6 +26,26 @@ NDecl* NEnumElemDecl::GetOuter()
 RIdentifier NEnumElemDecl::GetIdentifier()
 {
     return RIdentifier { RName_Normal(name), 0, {} };
+}
+
+optional<RMember> NEnumElemDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
+
+    auto* normalName = get_if<RName_Normal>(&name);
+    if (!normalName) return nullopt;
+
+    auto i = memberVarsMap.find(normalName->text);
+    if (i == memberVarsMap.end()) return nullopt;
+
+    return RMember_EnumElemMemberVar(typeArgs, i->second);
+}
+
+RMember NEnumElemDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
+{
+    auto sharedEnumElemDecl = dynamic_pointer_cast<NEnumElemDecl>(sharedThis);
+    assert(sharedEnumElemDecl);
+    return RMember_EnumElem(typeArgs, sharedEnumElemDecl);
 }
 
 } // namespace Citron

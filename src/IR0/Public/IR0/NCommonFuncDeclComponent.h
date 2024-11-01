@@ -7,6 +7,7 @@
 
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
+#include "RNames.h"
 
 namespace Citron
 {
@@ -26,17 +27,22 @@ class NCommonFuncDeclComponent
         bool bLastParameterVariadic;
     };
 
+    std::vector<std::string> typeParams;
+
     std::optional<FuncReturnAndParams> funcReturnAndParams; // need initialization
     std::optional<std::vector<NStmtPtr>> body;
 
     std::vector<NLambdaDecl> lambdaDecls;
 
 public:
-    IR0_API NCommonFuncDeclComponent();
+    IR0_API NCommonFuncDeclComponent(std::vector<std::string>&& typeParams);
     IR0_API void InitFuncReturnAndParams(RFuncReturn funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic);
     IR0_API void InitBody(std::vector<NStmtPtr> body);
 
     IR0_API ~NCommonFuncDeclComponent();
+
+    // internal?
+    size_t GetTypeParamCount();
 
     IR0_API RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory);
     IR0_API std::vector<RTypePtr> GetParamIds();

@@ -1,5 +1,6 @@
-#include <optional>
 #include "NTypeDeclContainerComponent.h"
+
+#include <optional>
 #include "RNames.h"
 
 using namespace std;
@@ -40,6 +41,15 @@ void NTypeDeclContainerComponent::AddType(NTypeDeclPtr&& typeDecl)
 {
     types.push_back(typeDecl);
     typeDict.insert_or_assign(typeDecl->GetDecl()->GetIdentifier(), std::move(typeDecl));
+}
+
+// 첫번째 인자는 부모의 typeArgs
+optional<RMember> NTypeDeclContainerComponent::GetMemberType(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    auto i = typeDict.find({ name, explicitTypeParamsExceptOuterCount, {} });
+    if (i == typeDict.end()) return nullopt;
+
+    return i->second->ToRMember(i->second, typeArgs);
 }
 
 //bool ICyclicEqualityComparableStruct<TypeDeclSymbolComponent>.CyclicEquals(ref TypeDeclSymbolComponent other, ref CyclicEqualityCompareContext context)

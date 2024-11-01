@@ -21,4 +21,17 @@ shared_ptr<NNamespaceDecl> NNamespaceDeclContainerComponent::GetNamespace(const 
     return i->second;
 }
 
+optional<RMember> NNamespaceDeclContainerComponent::GetMemberNamespace(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    auto* normalName = get_if<RName_Normal>(&name);
+
+    if (!normalName) return nullopt;
+    if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
+
+    auto i = namespaceDict.find(normalName->text);
+    if (i == namespaceDict.end()) return nullopt;
+
+    return RMember_Namespace(i->second);
+}
+
 }

@@ -40,6 +40,9 @@ public:
 
     IR0_API std::shared_ptr<RClassDecl> GetClassDecl() override;
 
+    // from RDecl
+    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+
 public:
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }

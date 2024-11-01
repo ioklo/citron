@@ -1,11 +1,13 @@
 #pragma once
 #include "IR0Config.h"
 
+#include <optional>
 #include <unordered_map>
 
 #include "RNames.h"
 #include "NGlobalFuncDecl.h"
 #include "NTypeDecl.h"
+#include "RMember.h"
 
 namespace Citron {
 
@@ -13,19 +15,19 @@ class NNamespaceDecl;
 
 class NNamespaceDeclContainerComponent
 {
+public:
     std::vector<std::shared_ptr<NNamespaceDecl>> namespaceDecls; // preserve order
     std::unordered_map<std::string, std::shared_ptr<NNamespaceDecl>> namespaceDict;
 
 public:
     NNamespaceDeclContainerComponent();
-    NTypeDecl* GetType(const RName& name);
 
     IR0_API void AddNamespace(std::shared_ptr<NNamespaceDecl> _namespace);
     IR0_API std::shared_ptr<NNamespaceDecl> GetNamespace(const std::string& name);
+    
+    // internal
+    std::optional<RMember> GetMemberNamespace(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 
-//    public ITypeDeclSymbol ? GetType(Name name, int typeParamCount)
-//        = > typeComp.GetType(name, typeParamCount);
-//
 //    public void AddType(ITypeDeclSymbol decl)
 //        = > typeComp.AddType(decl);
 //

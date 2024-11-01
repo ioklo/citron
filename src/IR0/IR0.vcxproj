@@ -170,7 +170,6 @@
     <ClInclude Include="Public\IR0\NClassMemberVarDecl.h" />
     <ClInclude Include="Public\IR0\NCommonFuncDeclComponent.h" />
     <ClInclude Include="Public\IR0\NDecl.h" />
-    <ClInclude Include="Public\IR0\RDeclId.h" />
     <ClInclude Include="Public\IR0\NEnumDecl.h" />
     <ClInclude Include="Public\IR0\NEnumElemDecl.h" />
     <ClInclude Include="Public\IR0\NEnumElemMemberVarDecl.h" />
@@ -222,6 +221,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="NGlobalFuncDecl.cpp" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
     <ClCompile Include="RMember.cpp" />
     <ClCompile Include="NClassConstructorDecl.cpp" />
@@ -230,7 +230,6 @@
     <ClCompile Include="NClassMemberVarDecl.cpp" />
     <ClCompile Include="NCommonFuncDeclComponent.cpp" />
     <ClCompile Include="NDecl.cpp" />
-    <ClCompile Include="RDeclId.cpp" />
     <ClCompile Include="NExp.cpp" />
     <ClCompile Include="NInterfaceDecl.cpp" />
     <ClCompile Include="NLambdaMemberVarDecl.cpp" />
@@ -243,6 +242,7 @@
     <ClCompile Include="NEnumElemMemberVarDecl.cpp" />
     <ClCompile Include="NLambdaDecl.cpp" />
     <ClCompile Include="NModuleDecl.cpp" />
+    <ClCompile Include="RModuleDecl.cpp" />
     <ClCompile Include="RNames.cpp" />
     <ClCompile Include="NNamespaceDeclContainerComponent.cpp" />
     <ClCompile Include="NStructDecl.cpp" />

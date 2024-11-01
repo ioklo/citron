@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 #include "NDecl.h"
 #include "NTopLevelDeclOuter.h"
@@ -11,6 +12,7 @@
 #include "NGlobalFuncDecl.h"
 
 #include "RModuleDecl.h"
+#include "RMember.h"
 
 namespace Citron {
 
@@ -42,7 +44,7 @@ public:
     RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API NDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
-    IR0_API RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RTypeDeclOuter, RTopLevelDeclOuter, public RFuncDeclOuter
     IR0_API NDecl* GetDecl() override;

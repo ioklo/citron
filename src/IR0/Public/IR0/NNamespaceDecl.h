@@ -2,6 +2,7 @@
 #include "IR0Config.h"
 
 #include <string>
+#include <optional>
 
 #include "NDecl.h"
 #include "NTopLevelDeclOuter.h"
@@ -12,6 +13,7 @@
 #include "NGlobalFuncDecl.h"
 
 #include "RNamespaceDecl.h"
+#include "RMember.h"
 
 namespace Citron
 {
@@ -26,6 +28,11 @@ class NNamespaceDecl
     , private NTypeDeclContainerComponent
     , private NFuncDeclContainerComponent<NGlobalFuncDecl>
 {
+public:
+    using RDeclType = RNamespaceDecl;
+    using RMemberType = RMember_Namespace;
+
+private:
     NTopLevelDeclOuterWPtr outer;
     std::string name;
 
@@ -44,7 +51,7 @@ public:
     RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API NDecl* GetOuter() override;
-    IR0_API RMemberPtr GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     
     // from RTypeDeclOuter, RTopLevelDeclOuter, RFuncDeclOuter
     IR0_API NDecl* GetDecl() override;

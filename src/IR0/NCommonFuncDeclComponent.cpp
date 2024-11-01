@@ -11,7 +11,10 @@ using namespace std;
 namespace Citron
 {
 
-NCommonFuncDeclComponent::NCommonFuncDeclComponent() = default;
+NCommonFuncDeclComponent::NCommonFuncDeclComponent(std::vector<std::string>&& typeParams)
+    : typeParams(std::move(typeParams))
+{
+}
 
 void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn funcReturn, vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
 {
@@ -24,6 +27,11 @@ void NCommonFuncDeclComponent::InitBody(vector<NStmtPtr> body)
 }
 
 NCommonFuncDeclComponent::~NCommonFuncDeclComponent() = default;
+
+size_t NCommonFuncDeclComponent::GetTypeParamCount()
+{
+    return typeParams.size();
+}
 
 RTypePtr NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory)
 {

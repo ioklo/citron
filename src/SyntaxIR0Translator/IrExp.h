@@ -9,9 +9,9 @@ namespace Citron {
 
 class NNamespaceDecl;
 class RType_TypeVar;
-class NClassDecl;
-class NStructDecl;
-class NEnumDecl;
+class RClassDecl;
+class RStructDecl;
+class REnumDecl;
 
 namespace SyntaxIR0Translator {
 
@@ -83,33 +83,33 @@ public:
 class IrExp_Class : public IrExp
 {
 public:
-    std::shared_ptr<NClassDecl> decl;
+    std::shared_ptr<RClassDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_Class(const std::shared_ptr<NClassDecl>& decl, RTypeArgumentsPtr&& typeArgs);
+    IrExp_Class(const std::shared_ptr<RClassDecl>& decl, RTypeArgumentsPtr&& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrExp_Struct : public IrExp
 {
 public:
-    std::shared_ptr<NStructDecl> decl;
+    std::shared_ptr<RStructDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_Struct(const std::shared_ptr<NStructDecl>& decl, RTypeArgumentsPtr&& typeArgs);
+    IrExp_Struct(const std::shared_ptr<RStructDecl>& decl, RTypeArgumentsPtr&& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrExp_Enum : public IrExp
 {
 public:
-    std::shared_ptr<NEnumDecl> decl;
+    std::shared_ptr<REnumDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_Enum(const std::shared_ptr<NEnumDecl>& decl, RTypeArgumentsPtr&& typeArgs);
+    IrExp_Enum(const std::shared_ptr<REnumDecl>& decl, RTypeArgumentsPtr&& typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -200,11 +200,11 @@ class IrExp_BoxRef_ClassMember : public IrExp_BoxRef
 {
 public:
     NLocPtr loc;
-    std::shared_ptr<NClassMemberVarDecl> decl;
+    std::shared_ptr<RClassMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<NClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
 
     RTypePtr GetTargetType(RTypeFactory& factory) override;
