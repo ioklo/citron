@@ -13,6 +13,7 @@ class RStructMemberVarDecl
 {
 public:
     virtual RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
+    virtual bool IsStatic() = 0;
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
 };
 

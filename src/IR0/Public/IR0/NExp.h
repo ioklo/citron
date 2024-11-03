@@ -85,17 +85,15 @@ class NExp_InterfaceAsInterface;
 class NExp_EnumIsEnumElem;
 class NExp_EnumAsEnumElem;
 
-class NClassMemberVarDecl;
-class NStructMemberVarDecl;
+class RClassMemberVarDecl;
+class RStructMemberVarDecl;
 class RGlobalFuncDecl;
-class NClassDecl;
 class RClassMemberFuncDecl;
 class RClassConstructorDecl;
 class RStructConstructorDecl;
 class RStructMemberFuncDecl;
-class NLambdaDecl;
-class NEnumDecl;
-class NEnumElemDecl;
+class RLambdaDecl;
+class REnumElemDecl;
 
 class NExpVisitor
 {
@@ -213,11 +211,11 @@ class NExp_ClassMemberBoxRef : public NExp
 {
 public:
     NLocPtr holder;
-    std::shared_ptr<NClassMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RClassMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NExp_ClassMemberBoxRef(const NLocPtr& holder, const std::shared_ptr<NClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NExp_ClassMemberBoxRef(const NLocPtr& holder, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -229,11 +227,11 @@ class NExp_StructIndirectMemberBoxRef : public NExp
 {
 public:
     NLocPtr holder;
-    std::shared_ptr<NStructMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RStructMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NExp_StructIndirectMemberBoxRef(const NLocPtr& holder, const std::shared_ptr<NStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NExp_StructIndirectMemberBoxRef(const NLocPtr& holder, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -245,11 +243,11 @@ class NExp_StructMemberBoxRef : public NExp
 {
 public:
     NLocPtr parent;
-    std::shared_ptr<NStructMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RStructMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NExp_StructMemberBoxRef(const NLocPtr& parent, const std::shared_ptr<NStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NExp_StructMemberBoxRef(const NLocPtr& parent, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -560,13 +558,13 @@ public:
 class NExp_NewEnumElem : public NExp
 {
 public:
-    std::shared_ptr<NEnumElemDecl> enumElemDecl;
+    std::shared_ptr<REnumElemDecl> enumElemDecl;
     RTypeArgumentsPtr typeArgs;
     std::vector<NArgument> args;
 
 public:
-    IR0_API NExp_NewEnumElem(const std::shared_ptr<NEnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, std::vector<NArgument>&& args);
-    IR0_API NExp_NewEnumElem(const std::shared_ptr<NEnumElemDecl>& enumElemDecl, RTypeArgumentsPtr&& typeArgs, std::vector<NArgument>&& args);
+    IR0_API NExp_NewEnumElem(const std::shared_ptr<REnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, std::vector<NArgument>&& args);
+    IR0_API NExp_NewEnumElem(const std::shared_ptr<REnumElemDecl>& enumElemDecl, RTypeArgumentsPtr&& typeArgs, std::vector<NArgument>&& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -634,12 +632,12 @@ public:
 class NExp_Lambda : public NExp
 {
 public:
-    std::shared_ptr<NLambdaDecl> lambdaDecl;
+    std::shared_ptr<RLambdaDecl> lambdaDecl;
     RTypeArgumentsPtr typeArgs;
     std::vector<NArgument> args;
 
 public:
-    IR0_API NExp_Lambda(const std::shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<NArgument>& args);
+    IR0_API NExp_Lambda(const std::shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<NArgument>& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -651,14 +649,14 @@ class NExp_CallLambda : public NExp
 {
 public:
     // TODO: RType_Lambda에 있는 정보들, callable->GetType()하면 얻을수 있는 것들이다. 삭제해야 하지 않을까
-    std::shared_ptr<NLambdaDecl> lambdaDecl;
+    std::shared_ptr<RLambdaDecl> lambdaDecl;
     RTypeArgumentsPtr typeArgs;
 
     NLocPtr callable;
     std::vector<NArgument> args;
 
 public:
-    IR0_API NExp_CallLambda(const std::shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const std::vector<NArgument>& args);
+    IR0_API NExp_CallLambda(const std::shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const std::vector<NArgument>& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }

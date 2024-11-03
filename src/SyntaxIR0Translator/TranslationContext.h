@@ -17,6 +17,7 @@ namespace Citron {
 class STypeExp;
 class NLoc;
 class NLoc_This;
+class RDecl;
 
 enum class SBinaryOpKind;
 
@@ -77,7 +78,7 @@ public: // for scopeContext
     void AddLocalVarInfo(const RTypePtr& type, RName&& name);
 
 public: // for funcContext
-    bool CanAccess(NDecl* target);
+    bool CanAccess(RDecl* target);
     bool IsSeqFunc();
     RFuncReturn GetFuncReturn();
     void SetFuncReturn(RTypePtr&& retType);
@@ -112,8 +113,8 @@ public: // for type factory
 
     bool IsListType(const RTypePtr& type, RTypePtr* outItemType);
 
-    RFuncReturn GetFuncReturn(NFuncDecl& decl, RTypeArguments& typeArgs);
-    std::optional<RFuncParameter> GetFuncParameter(NFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
+    RFuncReturn GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
+    std::optional<RFuncParameter> GetFuncParameter(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
 
 public: // for BinOpQueryService
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);

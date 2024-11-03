@@ -32,10 +32,6 @@ class NFuncDecl
 {
 public:
     virtual ~NFuncDecl() { }
-    virtual bool IsStatic() = 0;
-    virtual int GetTypeParamCount() = 0;
-    virtual int GetParamCount() = 0;
-    virtual RFuncReturn GetReturn() = 0;
     virtual void Accept(NFuncDeclVisitor& visitor) = 0;
 };
 

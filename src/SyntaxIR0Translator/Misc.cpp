@@ -101,7 +101,7 @@ NExpPtr CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext
     auto result = TryCastRExp(std::move(exp), expectedType, context);
     if (result != nullptr) return result;
 
-    logger.Fatal_Cast_Failed();
+    context.Log(&Logger::Fatal_Cast_Failed);
     return nullptr;
 }
 

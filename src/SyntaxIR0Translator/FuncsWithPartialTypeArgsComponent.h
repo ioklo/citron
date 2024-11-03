@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <IR0/RTypeArguments.h>
-#include <IR0/RDeclWIthOuterTypeArgs.h>
+#include <IR0/DeclWIthOuterTypeArgs.h>
 
 namespace Citron {
 namespace SyntaxIR0Translator {

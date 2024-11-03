@@ -64,18 +64,16 @@ public:
     // C.x
     IrExpPtr operator()(RMember_ClassMemberVar& member) 
     {
-        if (!member.decl->bStatic)
+        if (!member.decl->IsStatic())
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType);
             return nullptr;
-            return;
         }
 
         if (!context.CanAccess(member.decl.get()))
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_TryAccessingPrivateMember);
             return nullptr;
-            return;
         }
 
         assert(member.typeArgs->GetCount() == 0);
@@ -96,18 +94,16 @@ public:
 
     IrExpPtr operator()(RMember_StructMemberVar& member) 
     {
-        if (!member.decl->bStatic)
+        if (!member.decl->IsStatic())
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType);
             return nullptr;
-            return;
         }
 
         if (!context.CanAccess(member.decl.get()))
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_TryAccessingPrivateMember);
             return nullptr;
-            return;
         }
 
         assert(member.typeArgs->GetCount() == 0);
@@ -297,7 +293,7 @@ public:
             *result = nullptr;
         }
 
-        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->outerTypeArgs));
     }
 
     // &C.i.id
@@ -582,7 +578,7 @@ public:
             *result = nullptr;
         }
 
-        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->outerTypeArgs));
     }
 
     void Visit(RType_Interface& type) override 

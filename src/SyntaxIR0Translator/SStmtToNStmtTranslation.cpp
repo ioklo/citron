@@ -26,6 +26,7 @@
 #include "DesignatedErrorLogger.h"
 #include "Misc.h"
 #include "RFuncAndRArgsToNExpTranslation.h"
+#include <IR0/DeclWithOuterTypeArgs.h>
 
 using namespace std;
 
@@ -424,17 +425,17 @@ public:
 
                 // GetEnumerator함수를 손으로 찾는다
                 auto rEnumerableType = context.GetType(*nEnumerable);
-                auto rMember = rEnumerableType->GetMember(RNames::GetEnumerator, /*explicitTypeArgsExceptOuterCount*/ 0);
-                if (!rMember)
+                auto oRMember = rEnumerableType->GetMember(RNames::GetEnumerator, /*explicitTypeArgsExceptOuterCount*/ 0);
+                if (!oRMember)
                 {
                     // TODO: [15] foreach 에러 처리
                     throw NotImplementedException();
                     return nullptr;
                 }
 
-                vector<DeclWithOuterTypeArgs<NFuncDecl>> candidates;
+                vector<DeclWithOuterTypeArgs<RFuncDecl>> candidates;
 
-                for (auto& funcDeclWithOuter : rMember->GetFuncDeclWithOuterTypeArgs())
+                for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*oRMember))
                 {
                     auto* funcDecl = funcDeclWithOuter.decl.get();
 
@@ -472,11 +473,11 @@ public:
 
             NExpPtr MakeNextExpAndInferItemVarType(const RTypePtr& enumeratorType)
             {
-                auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
-                if (!rMember) return nullptr;
+                auto oRMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
+                if (!oRMember) return nullptr;
 
                 vector<NExpPtr> candidates;
-                for (auto& funcDeclWithOuter : rMember->GetFuncDeclWithOuterTypeArgs())
+                for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*oRMember))
                 {
                     auto* funcDecl = funcDeclWithOuter.decl.get();
 
@@ -526,11 +527,11 @@ public:
             // (nextExp, (rawItemType, castExp)? castInfo)
             optional<tuple<NExpPtr, optional<tuple<RTypePtr, NExpPtr>>>> MakeNextExpAndCastExp(const RTypePtr& enumeratorType, const RTypePtr& itemTypeFromSyntax)
             {
-                auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
-                if (!rMember) return nullopt;
+                auto oRMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
+                if (!oRMember) return nullopt;
 
                 vector<tuple<NExpPtr, optional<tuple<RTypePtr, NExpPtr>>>> candidates;
-                for (auto& funcDeclWithOuter : rMember->GetFuncDeclWithOuterTypeArgs())
+                for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*oRMember))
                 {
                     auto* funcDecl = funcDeclWithOuter.decl.get();
 

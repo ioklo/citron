@@ -9,13 +9,13 @@ namespace Citron {
 
 class NLambdaDecl;
 class NLambdaMemberVarDecl;
-class NDecl;
+class RDecl;
 
 struct RFuncParameter;
-class NFuncDeclOuter;
+class RFuncDeclOuter;
 
 using RTypePtr = std::shared_ptr<class RType>;
-using NFuncDeclPtr = std::shared_ptr<class NFuncDecl>;
+using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
 namespace SyntaxIR0Translator {
 
@@ -27,14 +27,14 @@ using FuncContextPtr = std::shared_ptr<class FuncContext>;
 using ModuleDeclsPtr = std::shared_ptr<class ModuleDecls>;
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 
-struct RLambdaDeclMemberVarAndArg
+struct NLambdaDeclMemberVarAndArg
 {
     std::shared_ptr<NLambdaMemberVarDecl> memberVarDecl;
     NArgument arg;
 };
 
 struct FuncContextOuter_ScopeContext { ScopeContextPtr scopeContext; };
-struct FuncContextOuter_RFuncDeclOuter { std::shared_ptr<NFuncDeclOuter> decl; };
+struct FuncContextOuter_RFuncDeclOuter { std::shared_ptr<RFuncDeclOuter> decl; };
 
 using FuncContextOuter = std::variant<FuncContextOuter_ScopeContext, FuncContextOuter_RFuncDeclOuter>;
 
@@ -56,9 +56,9 @@ public:
 
     // 람다 관련, funcDecl을 clone시키지 않으려고 funcDecl에 넣을 lambdaDecls들을 따로 보관하다가 마지막에 집어넣는다 (검색도 여기를 통해서 하기로 한다)
     // 이 함수가 람다일때 캡쳐할 멤버 변수에 대한 것
-    std::vector<RLambdaDeclMemberVarAndArg> lambdaMemberVarAndInitArgs;
+    std::vector<NLambdaDeclMemberVarAndArg> lambdaMemberVarAndInitArgs;
     // 이 함수가 갖고 있는 자식 lambda에 대한 것
-    std::vector<std::shared_ptr<NLambdaDecl>> lambdaDecls;
+    std::vector<std::shared_ptr<RLambdaDecl>> lambdaDecls;
 
 public:
     FuncContext(const ModuleDeclsPtr& moduleDecls, FuncContextOuter&& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
@@ -67,7 +67,7 @@ public:
 
     FuncContextPtr Clone(CloneContext& context);
     void Update(const FuncContextPtr& src, UpdateContext& context);
-    bool CanAccess(NDecl* target);
+    bool CanAccess(RDecl* target);
 
     NFuncDecl* GetOutermostFuncDecl();
 

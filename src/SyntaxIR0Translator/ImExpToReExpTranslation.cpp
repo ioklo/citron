@@ -72,7 +72,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
     void Visit(ImExp_EnumElem& imExp) override
     {
         // if standalone, 값으로 처리한다
-        if (imExp.decl->memberVars.size() == 0)
+        if (imExp.decl->GetMemberVarCount() == 0)
         {
             *result = MakePtr<ReExp_Else>(MakePtr<NExp_NewEnumElem>(imExp.decl, imExp.typeArgs, vector<NArgument>()));
             return;

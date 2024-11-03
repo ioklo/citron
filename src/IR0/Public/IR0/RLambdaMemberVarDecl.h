@@ -5,6 +5,8 @@
 
 namespace Citron {
 
+class RTypeFactory;
+
 class RLambdaMemberVarDecl
     : public RDecl
 {

@@ -5,20 +5,20 @@
 #include "NLoc.h"
 #include "RTypeFactory.h"
 
-#include "NGlobalFuncDecl.h"
-#include "NLambdaDecl.h"
+#include "RGlobalFuncDecl.h"
+#include "RLambdaDecl.h"
 
-#include "NEnumElemDecl.h"
+#include "REnumElemDecl.h"
 
-#include "NStructDecl.h"
-#include "NStructMemberVarDecl.h"
-#include "NStructMemberFuncDecl.h"
-#include "NStructConstructorDecl.h"
+#include "RStructDecl.h"
+#include "RStructMemberVarDecl.h"
+#include "RStructMemberFuncDecl.h"
+#include "RStructConstructorDecl.h"
 
-#include "NClassDecl.h"
-#include "NClassConstructorDecl.h"
-#include "NClassMemberFuncDecl.h"
-#include "NClassMemberVarDecl.h"
+#include "RClassDecl.h"
+#include "RClassConstructorDecl.h"
+#include "RClassMemberFuncDecl.h"
+#include "RClassMemberVarDecl.h"
 
 using namespace std;
 
@@ -65,7 +65,7 @@ RTypePtr NExp_StaticBoxRef::GetType(RTypeFactory& factory)
     return factory.MakeBoxPtrType(loc->GetType(factory));
 }
 
-NExp_ClassMemberBoxRef::NExp_ClassMemberBoxRef(const NLocPtr& holder, const shared_ptr<NClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
+NExp_ClassMemberBoxRef::NExp_ClassMemberBoxRef(const NLocPtr& holder, const shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
     : holder(holder), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
 {
 }
@@ -76,7 +76,7 @@ RTypePtr NExp_ClassMemberBoxRef::GetType(RTypeFactory& factory)
     return factory.MakeBoxPtrType(move(declType));
 }
 
-NExp_StructIndirectMemberBoxRef::NExp_StructIndirectMemberBoxRef(const NLocPtr& holder, const shared_ptr<NStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
+NExp_StructIndirectMemberBoxRef::NExp_StructIndirectMemberBoxRef(const NLocPtr& holder, const shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
     : holder(holder), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
 {
 }
@@ -87,7 +87,7 @@ RTypePtr NExp_StructIndirectMemberBoxRef::GetType(RTypeFactory& factory)
     return factory.MakeBoxPtrType(move(declType));
 }
 
-NExp_StructMemberBoxRef::NExp_StructMemberBoxRef(const NLocPtr& parent, const shared_ptr<NStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
+NExp_StructMemberBoxRef::NExp_StructMemberBoxRef(const NLocPtr& parent, const shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
     : parent(parent), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
 {
 }
@@ -323,12 +323,12 @@ RTypePtr NExp_CallStructMemberFunc::GetType(RTypeFactory& factory)
     return structMemberFuncDecl->GetReturnType(*typeArgs, factory);
 }
 
-NExp_NewEnumElem::NExp_NewEnumElem(const shared_ptr<NEnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, vector<NArgument>&& args)
+NExp_NewEnumElem::NExp_NewEnumElem(const shared_ptr<REnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, vector<NArgument>&& args)
     : enumElemDecl(enumElemDecl), typeArgs(typeArgs), args(args)
 {
 }
 
-NExp_NewEnumElem::NExp_NewEnumElem(const std::shared_ptr<NEnumElemDecl>& enumElemDecl, RTypeArgumentsPtr&& typeArgs, std::vector<NArgument>&& args)
+NExp_NewEnumElem::NExp_NewEnumElem(const std::shared_ptr<REnumElemDecl>& enumElemDecl, RTypeArgumentsPtr&& typeArgs, std::vector<NArgument>&& args)
     : enumElemDecl(enumElemDecl), typeArgs(std::move(typeArgs)), args(std::move(args))
 {
 }
@@ -378,7 +378,7 @@ RTypePtr NExp_NewNullable::GetType(RTypeFactory& factory)
     return factory.MakeNullableValueType(innerExp->GetType(factory));
 }
 
-NExp_Lambda::NExp_Lambda(const shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const vector<NArgument>& args)
+NExp_Lambda::NExp_Lambda(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const vector<NArgument>& args)
     : lambdaDecl(lambdaDecl), typeArgs(typeArgs), args(args)
 {
 }
@@ -388,7 +388,7 @@ RTypePtr NExp_Lambda::GetType(RTypeFactory& factory)
     return factory.MakeLambdaType(lambdaDecl, typeArgs);
 }
 
-NExp_CallLambda::NExp_CallLambda(const shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const vector<NArgument>& args)
+NExp_CallLambda::NExp_CallLambda(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const vector<NArgument>& args)
     : lambdaDecl(lambdaDecl), typeArgs(typeArgs), callable(callable), args(args)
 {
 }

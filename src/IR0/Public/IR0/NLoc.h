@@ -20,10 +20,10 @@ class NLoc_LocalDeref;
 class NLoc_BoxDeref;
 class NLoc_NullableValue;
 
-class NLambdaMemberVarDecl;
-class NStructMemberVarDecl;
-class NClassMemberVarDecl;
-class NEnumElemMemberVarDecl;
+class RLambdaMemberVarDecl;
+class RStructMemberVarDecl;
+class RClassMemberVarDecl;
+class REnumElemMemberVarDecl;
 
 using NExpPtr = std::shared_ptr<class NExp>;
 
@@ -82,11 +82,11 @@ public:
 class NLoc_LambdaMemberVar : public NLoc
 {
 public:
-    std::shared_ptr<NLambdaMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RLambdaMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NLoc_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NLoc_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -110,11 +110,11 @@ class NLoc_StructMember : public NLoc
 {
 public:
     NLocPtr instance;
-    std::shared_ptr<NStructMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RStructMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NLoc_StructMember(const NLocPtr& instance, const std::shared_ptr<NStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NLoc_StructMember(const NLocPtr& instance, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -123,11 +123,11 @@ class NLoc_ClassMember : public NLoc
 {
 public:
     NLocPtr instance;
-    std::shared_ptr<NClassMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RClassMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    NLoc_ClassMember(NLocPtr&& instance, const std::shared_ptr<NClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    NLoc_ClassMember(NLocPtr&& instance, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -136,11 +136,11 @@ class NLoc_EnumElemMember : public NLoc
 {
 public:
     NLocPtr instance;
-    std::shared_ptr<NEnumElemMemberVarDecl> memberVarDecl;
+    std::shared_ptr<REnumElemMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NLoc_EnumElemMember(const NLocPtr& instance, std::shared_ptr<NEnumElemMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NLoc_EnumElemMember(const NLocPtr& instance, std::shared_ptr<REnumElemMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };

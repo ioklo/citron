@@ -6,12 +6,15 @@
 namespace Citron {
 
 class MClassMemberVarDecl;
+using RTypePtr = std::shared_ptr<class RType>;
 
 class RClassMemberVarDecl
     : public RDecl
 {
 public:
     virtual RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
+    virtual bool IsStatic() = 0;
+
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
 };
 

@@ -9,6 +9,7 @@
 namespace Citron {
 
 class RTypeFactory;
+class REnumElemMemberVarDecl;
 
 namespace SyntaxIR0Translator {
 
@@ -78,11 +79,11 @@ public:
 class ReExp_LambdaMemberVar : public ReExp
 {
 public:
-    std::shared_ptr<NLambdaMemberVarDecl> decl;
+    std::shared_ptr<RLambdaMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     
 public:
-    ReExp_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ReExp_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -90,13 +91,13 @@ public:
 class ReExp_ClassMemberVar : public ReExp
 {
 public:
-    std::shared_ptr<NClassMemberVarDecl> decl;
+    std::shared_ptr<RClassMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
     
 public:
-    ReExp_ClassMemberVar(const std::shared_ptr<NClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ReExp_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -104,13 +105,13 @@ public:
 class ReExp_StructMemberVar : public ReExp
 {
 public:
-    std::shared_ptr<NStructMemberVarDecl> decl;
+    std::shared_ptr<RStructMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
     
 public:
-    ReExp_StructMemberVar(const std::shared_ptr<NStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ReExp_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -118,12 +119,12 @@ public:
 class ReExp_EnumElemMemberVar : public ReExp
 {
 public:
-    std::shared_ptr<NEnumElemMemberVarDecl> decl;
+    std::shared_ptr<REnumElemMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     ReExpPtr instance;
 
 public:
-    ReExp_EnumElemMemberVar(const std::shared_ptr<NEnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance);
+    ReExp_EnumElemMemberVar(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType(RTypeFactory& factory) override;
 };

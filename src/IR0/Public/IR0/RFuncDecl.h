@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "RDecl.h"
+#include "RFuncReturn.h"
 
 namespace Citron {
 
@@ -18,6 +19,12 @@ class RFuncDecl
 {
 public:
     virtual ~RFuncDecl() { }
+
+    virtual bool IsStatic() = 0;
+    virtual int GetTypeParamCount() = 0;
+    virtual int GetParamCount() = 0;
+    virtual RFuncReturn GetReturn() = 0;
+
     virtual void Accept(RFuncDeclVisitor& visitor) = 0;
 };
 

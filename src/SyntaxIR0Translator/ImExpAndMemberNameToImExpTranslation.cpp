@@ -74,7 +74,7 @@ public:
     // C.x
     ImExpPtr operator()(RMember_ClassMemberVar& member)
     {
-        if (!member.decl->bStatic)
+        if (!member.decl->IsStatic())
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType);
             return nullptr;
@@ -116,7 +116,7 @@ public:
     // S.x
     ImExpPtr operator()(RMember_StructMemberVar& member)
     {
-        if (!member.decl->bStatic)
+        if (!member.decl->IsStatic())
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType);
             return nullptr;
@@ -152,7 +152,7 @@ public:
     {
         // EnumElem은 TypeArgs를 가질 수 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
-        return MakePtr<ImExp_EnumElem>(member.decl, member.typeArgs);
+        return MakePtr<ImExp_EnumElem>(member.decl, member.outerTypeArgs);
     }
 
     // 표현 불가능
@@ -221,7 +221,7 @@ public:
     ImExpPtr operator()(RMember_ClassMemberVar& member) 
     {   
         // static인지 검사
-        if (member.decl->bStatic)
+        if (member.decl->IsStatic())
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance);
             return nullptr;
@@ -254,7 +254,7 @@ public:
     ImExpPtr operator()(RMember_StructMemberVar& member) 
     {   
         // static인지 검사
-        if (member.decl->bStatic)
+        if (member.decl->IsStatic())
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance);
             return nullptr;
@@ -287,7 +287,7 @@ public:
     // exp.firstX
     ImExpPtr operator()(RMember_EnumElemMemberVar& member) 
     {   
-        return MakePtr<ImExp_EnumElemMemberVar>(member.decl, member.typeArgs, reInstExp);
+        return MakePtr<ImExp_EnumElemMemberVar>(member.decl, member.outerTypeArgs, reInstExp);
     }
 
     // 표현 불가
@@ -312,7 +312,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
 
     TranslationContext& context;
 
-    void TranslateStaticParent(NDecl& decl, const RTypeArgumentsPtr& typeArgs)
+    void TranslateStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
     {
         auto oMember = decl.GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
         StaticParentTranslator binder(typeArgsExceptOuter, context);

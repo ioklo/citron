@@ -11,7 +11,9 @@
 #include <IR0/RLambdaMemberVarDecl.h>
 #include <IR0/NArgument.h>
 #include <IR0/RFuncDecl.h>
-#include <IR0/RFuncDeclOuter.h>
+#include <IR0/NFuncDeclOuter.h>
+#include <IR0/NDecl.h>
+#include <IR0/RTypeArguments.h>
 
 #include "TranslationContext.h"
 #include "ScopeContext.h"
@@ -68,10 +70,9 @@ FuncContextPtr FuncContext::MakeLambdaBodyContext(const ScopeContextPtr& curScop
 //    lambdaDecls = src->lambdaDecls;
 //}
     
-bool FuncContext::CanAccess(NDecl* target)
+bool FuncContext::CanAccess(RDecl* target)
 {
     // TODO: 현재 scope에서 access check
-
     return visit(overloaded {
         [target](FuncContextOuter_RFuncDeclOuter& outer) { return outer.decl->GetDecl()->CanAccess(target); },
         [target](FuncContextOuter_ScopeContext& outer) { return outer.scopeContext->funcContext->CanAccess(target); }

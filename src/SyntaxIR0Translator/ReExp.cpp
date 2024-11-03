@@ -14,7 +14,7 @@ ReExp_LocalVar::ReExp_LocalVar(const RTypePtr& type, const std::string& name)
 {
 }
 
-ReExp_LambdaMemberVar::ReExp_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+ReExp_LambdaMemberVar::ReExp_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }
@@ -24,7 +24,7 @@ RTypePtr ReExp_LambdaMemberVar::GetType(RTypeFactory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_ClassMemberVar::ReExp_ClassMemberVar(const std::shared_ptr<NClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ReExp_ClassMemberVar::ReExp_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
@@ -34,7 +34,7 @@ ReExp_ClassMemberVar::ReExp_ClassMemberVar(const std::shared_ptr<NClassMemberVar
 //    return decl->GetDeclType(typeArgs);
 //}
 
-ReExp_StructMemberVar::ReExp_StructMemberVar(const std::shared_ptr<NStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ReExp_StructMemberVar::ReExp_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
@@ -45,7 +45,7 @@ ReExp_StructMemberVar::ReExp_StructMemberVar(const std::shared_ptr<NStructMember
 //}
 //
 
-ReExp_EnumElemMemberVar::ReExp_EnumElemMemberVar(const std::shared_ptr<NEnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance)
+ReExp_EnumElemMemberVar::ReExp_EnumElemMemberVar(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance)
     : decl(decl), typeArgs(typeArgs), instance(instance)
 {
 }
@@ -85,8 +85,8 @@ ReExp_ListIndexer::ReExp_ListIndexer(const ReExpPtr& instance, const NLocPtr& in
 }
 
 
-ReExp_Else::ReExp_Else(const NExpPtr& rExp)
-    : rExp(rExp)
+ReExp_Else::ReExp_Else(const NExpPtr& nExp)
+    : nExp(nExp)
 {
 }
 

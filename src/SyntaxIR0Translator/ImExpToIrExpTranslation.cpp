@@ -98,7 +98,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     // x (C.x, this.x)
     void Visit(ImExp_ClassMemberVar& imExp) override
     {
-        if (imExp.decl->bStatic) // &C.x
+        if (imExp.decl->IsStatic()) // &C.x
         {
             *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassMember>(nullptr, imExp.decl, imExp.typeArgs));
         }
@@ -112,7 +112,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     // x (S.x, this->x)
     void Visit(ImExp_StructMemberVar& imExp) override
     {
-        if (imExp.decl->bStatic)
+        if (imExp.decl->IsStatic())
         {
             *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructMember>(nullptr, imExp.decl, imExp.typeArgs));
         }

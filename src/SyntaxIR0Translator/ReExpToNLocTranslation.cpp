@@ -38,7 +38,7 @@ NLocPtr TranslateReClassMemberVarExpToNLoc(ReExp_ClassMemberVar& reExp, Translat
     }
     else // x, x (static) 둘다 해당
     {   
-        NLocPtr nInstanceLoc = reExp.decl->bStatic ? nullptr : context.MakeThisLoc();
+        NLocPtr nInstanceLoc = reExp.decl->IsStatic()? nullptr : context.MakeThisLoc();
         return MakePtr<NLoc_ClassMember>(std::move(nInstanceLoc), reExp.decl, reExp.typeArgs);
     }
 }
@@ -73,7 +73,7 @@ NLocPtr TranslateReStructMemberVarExpToNLoc(ReExp_StructMemberVar& reExp, Transl
     else // x, x (static) 둘다 해당
     {   
         // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
-        NLocPtr nInstanceLoc = reExp.decl->bStatic ? nullptr : MakePtr<NLoc_LocalDeref>(context.MakeThisLoc());
+        NLocPtr nInstanceLoc = reExp.decl->IsStatic() ? nullptr : MakePtr<NLoc_LocalDeref>(context.MakeThisLoc());
         return MakePtr<NLoc_StructMember>(nInstanceLoc, reExp.decl, reExp.typeArgs);
     }
 }

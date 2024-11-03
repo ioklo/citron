@@ -7,11 +7,12 @@
 
 namespace Citron {
 
-class NNamespaceDecl;
+class RNamespaceDecl;
 class RType_TypeVar;
 class RClassDecl;
 class RStructDecl;
 class REnumDecl;
+class RStructMemberVarDecl;
 
 namespace SyntaxIR0Translator {
 
@@ -63,10 +64,10 @@ public:
 class IrExp_Namespace : public IrExp
 {
 public:
-    std::shared_ptr<NNamespaceDecl> decl;
+    std::shared_ptr<RNamespaceDecl> decl;
 
 public:
-    IrExp_Namespace(const std::shared_ptr<NNamespaceDecl>& decl);
+    IrExp_Namespace(const std::shared_ptr<RNamespaceDecl>& decl);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -217,11 +218,11 @@ class IrExp_BoxRef_StructIndirectMember : public IrExp_BoxRef
 {
 public:
     NLocPtr loc;
-    std::shared_ptr<NStructMemberVarDecl> decl;
+    std::shared_ptr<RStructMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_BoxRef_StructIndirectMember(const NLocPtr& loc, const std::shared_ptr<NStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_StructIndirectMember(const NLocPtr& loc, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetTargetType(RTypeFactory& factory) override;
     NLocPtr MakeLoc() override;
@@ -231,11 +232,11 @@ class IrExp_BoxRef_StructMember : public IrExp_BoxRef
 {
 public:
     std::shared_ptr<IrExp_BoxRef> parent;
-    std::shared_ptr<NStructMemberVarDecl> decl;
+    std::shared_ptr<RStructMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<NStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor & visitor) override { visitor.Visit(*this); }
     RTypePtr GetTargetType(RTypeFactory& factory) override;
     NLocPtr MakeLoc() override;

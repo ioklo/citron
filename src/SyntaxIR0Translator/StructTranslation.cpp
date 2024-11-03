@@ -8,7 +8,7 @@
 #include "SkeletonPhaseContext.h"
 #include "MemberDeclPhaseContext.h"
 #include "EnumTranslation.h"
-#include "StmtTranslation.h"
+#include "SStmtToNStmtTranslation.h"
 #include "ScopeContext.h"
 #include "BodyPhaseContext.h"
 

@@ -140,7 +140,7 @@ public:
         if (imExp.hasExplicitInstance) // x.F, C.F 등 인스턴스 부분이 명시적으로 정해졌다면
         {
             // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
-            if (match->funcDecl->bStatic && imExp.explicitInstance != nullptr)
+            if (match->funcDecl->IsStatic() && imExp.explicitInstance != nullptr)
             {
                 context.Log(&Logger::Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance);
                 *result = nullptr;
@@ -148,7 +148,7 @@ public:
             }
 
             // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
-            if (!match->funcDecl->bStatic && imExp.explicitInstance == nullptr)
+            if (!match->funcDecl->IsStatic() && imExp.explicitInstance == nullptr)
             {
                 context.Log(&Logger::Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType);
                 *result = nullptr;
@@ -174,7 +174,7 @@ public:
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
-            if (match->funcDecl->bStatic) // 정적함수이면 인스턴스에 null
+            if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
                 *result = MakePtr<NExp_CallClassMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args));
             }
