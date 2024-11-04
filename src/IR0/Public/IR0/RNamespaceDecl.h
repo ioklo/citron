@@ -13,14 +13,14 @@ class MNamespaceDecl;
 class RNamespaceDecl 
     : public RDecl
     , public RTopLevelDeclOuter
-    , public RFuncDeclOuter
     , public RTypeDeclOuter
+    , public RFuncDeclOuter
 {
 public:
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RTopLevelDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RTypeDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
+    virtual void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
+    virtual void Accept(RTopLevelDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
+    virtual void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
+    virtual void Accept(RTypeDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
 };
 
 class RMNamespaceDecl : public RNamespaceDecl

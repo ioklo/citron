@@ -38,6 +38,8 @@ public:
 public:
     bool IsDescendantOf(RDecl* container);
     bool CanAccess(RDecl* target);
+    size_t GetTypeParamCount();
+    size_t GetBaseTypeParamCount();
 
 public:
     virtual std::string GetModuleName(); // once overridden by NModuleDecl, NMModuleDecl

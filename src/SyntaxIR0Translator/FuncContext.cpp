@@ -104,7 +104,7 @@ bool FuncContext::CanAccess(RDecl* target)
 
             vector<ImExpPtr> candidates;
             
-            void TryQueryMember(NDecl* curDecl)
+            void TryQueryMember(RDecl* curDecl)
             {
                 // 1. 타입 인자에서 찾기
                 // T => X<>의 TypeVar T
@@ -121,7 +121,7 @@ bool FuncContext::CanAccess(RDecl* target)
                 //
                 // F<int> 는 둘다 지칭 가능하므로 
                 // F<int> => (X<T>.Y<U>, [(F, 2, [W]), (F, 1, [])], [int])
-                var outerPath = curDecl.GetDeclSymbolId().Path;
+                auto outerPath = curDecl.GetDeclSymbolId().Path;
                 foreach(var module in funcContext.moduleDeclSymbols)
                 {
                     var outerDeclSymbol = module.GetDeclSymbol(outerPath);
@@ -177,7 +177,7 @@ bool FuncContext::CanAccess(RDecl* target)
                 }
             }
 
-            ImExpPtr QueryTypeVar(NDecl* curDecl)
+            ImExpPtr QueryTypeVar(RDecl* curDecl)
             {
                 int typeParamCount = curDecl->GetTypeParamCount();
                 int baseTypeParamCount = curDecl->GetBaseTypeParamCount();
@@ -244,7 +244,7 @@ bool FuncContext::CanAccess(RDecl* target)
                     // 로컬과 람다 멤버, this만 감싸는 대상이다
                     switch (result)
                     {
-                        case IntermediateExp.LocalVar localResult :
+                        case IntermediateExp.LocalVar localResult:
                         {
                             var initExp = new R.LoadExp(new R.LocalVarLoc(localResult.Name), localResult.Type);
                             Debug.Assert(initExp != null);

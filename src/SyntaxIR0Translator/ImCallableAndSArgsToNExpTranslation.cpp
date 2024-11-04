@@ -200,10 +200,10 @@ public:
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
-        std::vector<DeclWithOuterTypeArgs<NStructConstructorDecl>> items;
-        for (auto& constructorDecl : imExp.structDecl->GetConstructorDecls())
+        std::vector<DeclWithOuterTypeArgs<RStructConstructorDecl>> items;
+        for (auto& constructor : imExp.structDecl->GetUnboundConstructors())
         {
-            items.emplace_back(constructorDecl, imExp.typeArgs);
+            items.emplace_back(constructor, imExp.typeArgs);
         }
 
         auto match = MatchFunc(items, sArgs, context);
@@ -233,7 +233,7 @@ public:
         if (imExp.hasExplicitInstance)
         {
             // static this 체크
-            if (match->funcDecl->bStatic && imExp.explicitInstance)
+            if (match->funcDecl->IsStatic() && imExp.explicitInstance)
             {
                 context.Log(&Logger::Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance);
                 *result = nullptr;
@@ -241,7 +241,7 @@ public:
             }
 
             // 반대의 경우도 체크
-            if (!match->funcDecl->bStatic && !imExp.explicitInstance)
+            if (!match->funcDecl->IsStatic() && !imExp.explicitInstance)
             {
                 context.Log(&Logger::Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType);
                 *result = nullptr;
@@ -264,7 +264,7 @@ public:
         }
         else
         {
-            if (match->funcDecl->bStatic) // 정적함수이면 인스턴스에 null
+            if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
                 *result = MakePtr<NExp_CallStructMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args));
             }
@@ -301,7 +301,6 @@ public:
             *result = nullptr;
             return;
         }
-
 
         auto parameters = imExp.decl->GetUnboundConstructorParams();
 

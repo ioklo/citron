@@ -32,8 +32,6 @@ public:
 public:
     IR0_API NEnumElemDecl(std::weak_ptr<NEnumDecl> _enum, std::string name, size_t memberVarCount);
     IR0_API void AddMemberVar(const std::shared_ptr<NEnumElemMemberVarDecl>& memberVar);
-    bool IsStandalone() { return memberVars.empty(); }
-    IR0_API std::vector<RFuncParameter> GetUnboundConstructorParams();
 
 public:
     // from NDecl
@@ -56,6 +54,9 @@ public:
 
     // from REnumElemDecl    
     IR0_API std::optional<RMember_EnumElemMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
+    IR0_API size_t GetMemberVarCount() override;
+    bool IsStandalone() override { return memberVars.empty(); }
+    IR0_API std::vector<RFuncParameter> GetUnboundConstructorParams() override;
 };
 
 }

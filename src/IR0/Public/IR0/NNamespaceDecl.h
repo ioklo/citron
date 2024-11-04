@@ -73,9 +73,11 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RTypeDeclOuter
+    // using RNamespaceDecl::Accept;
     // RDecl* GetRDecl() override { return this; }
 
     // from RFuncDeclOuter
+    // using RNamespaceDecl::Accept;
     // RDecl* GetRDecl() override { return this; }
 };
 

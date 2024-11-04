@@ -16,7 +16,7 @@ public:
     virtual void Visit(NNamespaceDecl& outerDecl) = 0;
 };
 
-class NTopLevelDeclOuter : public RTopLevelDeclOuter
+class NTopLevelDeclOuter
 {
 public:
     virtual ~NTopLevelDeclOuter() { }

@@ -47,14 +47,13 @@ class NStructDecl
     RName name;
     std::vector<std::string> typeParams;
 
-    std::vector<std::shared_ptr<NStructConstructorDecl>> constructorDecls;
+    std::vector<std::shared_ptr<NStructConstructorDecl>> constructors;
     int trivialConstructorIndex; // can be -1
 
-    std::vector<std::shared_ptr<NStructMemberVarDecl>> memberVarDecls;
+    std::vector<std::shared_ptr<NStructMemberVarDecl>> memberVars;
     std::optional<BaseTypes> oBaseTypes;
 
-    std::unordered_map<RName, std::shared_ptr<NStructMemberVarDecl>> memberVarDeclsMap;
-
+    std::unordered_map<RName, std::shared_ptr<NStructMemberVarDecl>> memberVarsMap;
 
 public:
     IR0_API NStructDecl(NTypeDeclOuterWPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams);
@@ -66,8 +65,8 @@ public:
     void AddMemberFunc(std::shared_ptr<NStructMemberFuncDecl> decl) { NFuncDeclContainerComponent<NStructMemberFuncDecl>::AddFunc(std::move(decl)); }
     IR0_API void AddMemberVar(std::shared_ptr<NStructMemberVarDecl> decl);
 
-    auto GetConstructorDecls() { return std::views::all(constructorDecls); }
-    auto GetMemberVarDecls() { return std::views::all(memberVarDecls); }
+    auto GetConstructorDecls() { return std::views::all(constructors); }
+    auto GetMemberVarDecls() { return std::views::all(memberVars); }
 
     /*size_t GetMemberVarCount() { return memberVars.size(); }
     const std::shared_ptr<NStructMemberVarDecl>& GetMemberVar(size_t index) { return memberVars[index]; }*/
@@ -107,6 +106,8 @@ public:
 
     // from RStructDecl
     IR0_API std::optional<RMember_StructMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
+    IR0_API std::vector<std::shared_ptr<RStructConstructorDecl>> GetUnboundConstructors() override;
+
 };
 
 }

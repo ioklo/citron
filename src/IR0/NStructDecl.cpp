@@ -55,10 +55,21 @@ optional<RMember> NStructDecl::GetMember(const RTypeArgumentsPtr& typeArgs, cons
 
 optional<RMember_StructMemberVar> NStructDecl::GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
 {
-    auto i = memberVarDeclsMap.find(name);
-    if (i == memberVarDeclsMap.end()) return nullopt;
+    auto i = memberVarsMap.find(name);
+    if (i == memberVarsMap.end()) return nullopt;
 
     return RMember_StructMemberVar(i->second, typeArgs);
+}
+
+vector<shared_ptr<RStructConstructorDecl>> NStructDecl::GetUnboundConstructors()
+{
+    vector<shared_ptr<RStructConstructorDecl>> result;
+    result.reserve(constructors.size());
+
+    for(auto& constructor : constructors)
+        result.push_back(constructor);
+
+    return result;
 }
 
 } // namespace Citron

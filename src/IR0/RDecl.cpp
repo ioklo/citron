@@ -39,6 +39,19 @@ bool RDecl::CanAccess(RDecl* target)
     }
 }
 
+size_t RDecl::GetTypeParamCount()
+{
+    return GetIdentifier().typeParamCount;
+}
+
+size_t RDecl::GetBaseTypeParamCount()
+{ 
+    auto* outer = GetROuter();
+    if (!outer) return 0;
+
+    return outer->GetBaseTypeParamCount() + GetTypeParamCount();
+}
+
 std::string RDecl::GetModuleName()
 {
     return GetROuter()->GetModuleName();

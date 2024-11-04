@@ -53,5 +53,20 @@ optional<RMember_EnumElemMemberVar> NEnumElemDecl::GetMemberVar(const RTypeArgum
     return RMember_EnumElemMemberVar(typeArgs, i->second);
 }
 
+size_t NEnumElemDecl::GetMemberVarCount()
+{
+    return memberVars.size();
+}
+
+vector<RFuncParameter> NEnumElemDecl::GetUnboundConstructorParams()
+{
+    vector<RFuncParameter> result;
+
+    result.reserve(memberVars.size());
+    for (auto& memberVar : memberVars)
+        result.emplace_back(/*bOut*/ false, memberVar->declType, memberVar->name);
+
+    return result;
+}
 
 } // namespace Citron
