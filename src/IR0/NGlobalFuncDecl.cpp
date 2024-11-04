@@ -4,6 +4,11 @@ using namespace std;
 
 namespace Citron {
 
+RDecl* NGlobalFuncDecl::GetROuter()
+{
+    return outer.lock()->GetNDecl()->GetRDecl();
+}
+
 optional<RMember> NGlobalFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 람다는 검색시키지 않는다

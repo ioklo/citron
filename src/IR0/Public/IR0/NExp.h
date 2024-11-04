@@ -92,7 +92,7 @@ class RClassMemberFuncDecl;
 class RClassConstructorDecl;
 class RStructConstructorDecl;
 class RStructMemberFuncDecl;
-class RLambdaDecl;
+class NLambdaDecl;
 class REnumElemDecl;
 
 class NExpVisitor
@@ -632,12 +632,12 @@ public:
 class NExp_Lambda : public NExp
 {
 public:
-    std::shared_ptr<RLambdaDecl> lambdaDecl;
+    std::shared_ptr<NLambdaDecl> lambdaDecl;
     RTypeArgumentsPtr typeArgs;
     std::vector<NArgument> args;
 
 public:
-    IR0_API NExp_Lambda(const std::shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<NArgument>& args);
+    IR0_API NExp_Lambda(const std::shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<NArgument>& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -649,14 +649,14 @@ class NExp_CallLambda : public NExp
 {
 public:
     // TODO: RType_Lambda에 있는 정보들, callable->GetType()하면 얻을수 있는 것들이다. 삭제해야 하지 않을까
-    std::shared_ptr<RLambdaDecl> lambdaDecl;
+    std::shared_ptr<NLambdaDecl> lambdaDecl;
     RTypeArgumentsPtr typeArgs;
 
     NLocPtr callable;
     std::vector<NArgument> args;
 
 public:
-    IR0_API NExp_CallLambda(const std::shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const std::vector<NArgument>& args);
+    IR0_API NExp_CallLambda(const std::shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const std::vector<NArgument>& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }

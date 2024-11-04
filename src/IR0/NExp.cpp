@@ -6,7 +6,7 @@
 #include "RTypeFactory.h"
 
 #include "RGlobalFuncDecl.h"
-#include "RLambdaDecl.h"
+#include "NLambdaDecl.h"
 
 #include "REnumElemDecl.h"
 
@@ -378,7 +378,7 @@ RTypePtr NExp_NewNullable::GetType(RTypeFactory& factory)
     return factory.MakeNullableValueType(innerExp->GetType(factory));
 }
 
-NExp_Lambda::NExp_Lambda(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const vector<NArgument>& args)
+NExp_Lambda::NExp_Lambda(const shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const vector<NArgument>& args)
     : lambdaDecl(lambdaDecl), typeArgs(typeArgs), args(args)
 {
 }
@@ -388,7 +388,7 @@ RTypePtr NExp_Lambda::GetType(RTypeFactory& factory)
     return factory.MakeLambdaType(lambdaDecl, typeArgs);
 }
 
-NExp_CallLambda::NExp_CallLambda(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const vector<NArgument>& args)
+NExp_CallLambda::NExp_CallLambda(const shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const vector<NArgument>& args)
     : lambdaDecl(lambdaDecl), typeArgs(typeArgs), callable(callable), args(args)
 {
 }

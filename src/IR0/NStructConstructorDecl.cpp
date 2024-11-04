@@ -23,7 +23,7 @@ void NStructConstructorDecl::InitFuncParameters(std::vector<RFuncParameter> para
 
 NStructConstructorDecl::~NStructConstructorDecl() = default;
 
-NDecl* NStructConstructorDecl::GetOuter()
+RDecl* NStructConstructorDecl::GetROuter()
 {
     return _struct.lock().get();
 }
@@ -31,11 +31,6 @@ NDecl* NStructConstructorDecl::GetOuter()
 RIdentifier NStructConstructorDecl::GetIdentifier()
 {
     return RIdentifier { RName_Reserved("Constructor"), 0, NCommonFuncDeclComponent::GetParamIds() };
-}
-
-NDecl* NStructConstructorDecl::GetDecl()
-{
-    return this;
 }
 
 shared_ptr<RStructDecl> NStructConstructorDecl::GetStructDecl()

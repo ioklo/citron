@@ -22,9 +22,9 @@ void NLambdaDecl::Init(std::vector<std::shared_ptr<NLambdaMemberVarDecl>>&& memb
     NCommonFuncDeclComponent::InitBody(std::move(body));
 }
 
-NDecl* NLambdaDecl::GetOuter()
+RDecl* NLambdaDecl::GetROuter()
 {
-    return outer.lock()->GetDecl();
+    return outer.lock()->GetNDecl()->GetRDecl();
 }
 
 RIdentifier NLambdaDecl::GetIdentifier()
@@ -32,14 +32,9 @@ RIdentifier NLambdaDecl::GetIdentifier()
     return RIdentifier { name, 0, {} };
 }
 
-NDecl* NLambdaDecl::GetDecl()
-{
-    return this;
-}
-
 RMember NLambdaDecl::ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
 {
-    throw RuntimeFatalException(); // 들어올수가 
+    throw RuntimeFatalException(); // 들어올수가 없다
 }
 
 optional<RMember> NLambdaDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

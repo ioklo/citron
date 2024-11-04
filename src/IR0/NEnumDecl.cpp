@@ -21,21 +21,21 @@ void NEnumDecl::AddElem(std::shared_ptr<NEnumElemDecl>&& elem)
     elemsMap.emplace(elem->name, std::move(elem));
 }
 
-NDecl* NEnumDecl::GetOuter()
-{
-    return outer.lock()->GetDecl();
-}
-
-RIdentifier NEnumDecl::GetIdentifier()
-{
-    return RIdentifier { name, typeParams.size(), {} };
-}
-
 RMember NEnumDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
 {
     auto sharedEnumDecl = dynamic_pointer_cast<NEnumDecl>(sharedThis);
     assert(sharedEnumDecl);
     return RMember_Enum(typeArgs, sharedEnumDecl);
+}
+
+RDecl* NEnumDecl::GetROuter()
+{
+    return outer.lock()->GetNDecl()->GetRDecl();
+}
+
+RIdentifier NEnumDecl::GetIdentifier()
+{
+    return RIdentifier { name, typeParams.size(), {} };
 }
 
 optional<RMember> NEnumDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

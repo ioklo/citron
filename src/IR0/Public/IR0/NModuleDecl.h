@@ -37,23 +37,38 @@ public:
     using NNamespaceDeclContainerComponent::GetNamespace;
     using NTypeDeclContainerComponent::AddType;
 
-    std::string GetModuleName() override { return name; }
-
 public:
     // from NDecl
+    RDecl* GetRDecl() override { return this; }
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
+
+    // from NTopLevelDeclOuter
+    NDecl* GetNDecl() override { return this; }
+    void Accept(NTopLevelDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+
+    // from NTypeDeclOuter
+    // NDecl* GetNDecl() override { return this; }
+    void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+
+    // from NFuncDeclOuter
+    // NDecl* GetNDecl() override { return this; }
+    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+
+    // from RDecl
+    std::string GetModuleName() override { return name; }
+    IR0_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
-    IR0_API NDecl* GetOuter() override;
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
-    // from RTypeDeclOuter, RTopLevelDeclOuter, public RFuncDeclOuter
-    IR0_API NDecl* GetDecl() override;
-
-public:
-    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(NTopLevelDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    // from RTopLevelDeclOuter
+    // RDecl* GetRDecl() override { return this; }
+    
+    // from RTypeDeclOuter
+    // RDecl* GetRDecl() override { return this; }
+    
+    // from RFuncDeclOuter
+    // RDecl* GetRDecl() override { return this; }
 };
 
 }

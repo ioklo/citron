@@ -16,7 +16,7 @@ NModuleDecl::NModuleDecl(string name)
 {
 }
 
-NDecl* NModuleDecl::GetOuter()
+RDecl* NModuleDecl::GetROuter()
 {
     return nullptr;
 }
@@ -53,11 +53,6 @@ optional<RMember> NModuleDecl::GetMember(const RTypeArgumentsPtr& typeArgs, cons
     }
 
     return candidates[1];
-}
-
-NDecl* NModuleDecl::GetDecl()
-{
-    return this;
 }
 
 }

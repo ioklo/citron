@@ -27,7 +27,7 @@ class NTypeDeclOuter
 {
 public:
     virtual ~NTypeDeclOuter() { }
-    virtual NDecl* GetDecl() = 0;
+    virtual NDecl* GetNDecl() = 0;
     virtual void Accept(NTypeDeclOuterVisitor& visitor) = 0;
 };
 

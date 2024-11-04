@@ -16,7 +16,7 @@ void Citron::NEnumElemMemberVarDecl::InitDeclType(RTypePtr&& declType)
     this->declType = std::move(declType);
 }
 
-NDecl* NEnumElemMemberVarDecl::GetOuter()
+RDecl* NEnumElemMemberVarDecl::GetROuter()
 {
     return outer.lock().get();
 }
@@ -26,14 +26,14 @@ RIdentifier NEnumElemMemberVarDecl::GetIdentifier()
     return RIdentifier { RName_Normal(name), 0, {} };
 }
 
-RTypePtr NEnumElemMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
-{
-    return declType->Apply(typeArgs, factory);
-}
-
 optional<RMember> NEnumElemMemberVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
+}
+
+RTypePtr NEnumElemMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+{
+    return declType->Apply(typeArgs, factory);
 }
 
 }

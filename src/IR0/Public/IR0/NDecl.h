@@ -59,16 +59,11 @@ class NDecl
 {
 public:
     virtual ~NDecl() { }
-    virtual RAccessor GetAccessor() = 0;
-    virtual RIdentifier GetIdentifier() = 0;
-    virtual NDecl* GetOuter() = 0;
-    
-    virtual std::string GetModuleName(); // once overridden by RModuleDecl    
+
+    virtual RDecl* GetRDecl() = 0;
     virtual void Accept(NDeclVisitor& visitor) = 0;
 
-public:
-    bool IsDescendantOf(NDecl* container);
-    bool CanAccess(NDecl* target);
+
 };
 
 using NDeclPtr = std::shared_ptr<NDecl>;

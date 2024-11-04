@@ -5,6 +5,8 @@
 
 #include "RMember.h"
 #include "RNames.h"
+#include "RAccessor.h"
+#include "RIdentifier.h"
 
 namespace Citron {
 
@@ -32,6 +34,16 @@ class RDecl
 {
 public:
     virtual ~RDecl() { }
+
+public:
+    bool IsDescendantOf(RDecl* container);
+    bool CanAccess(RDecl* target);
+
+public:
+    virtual std::string GetModuleName(); // once overridden by NModuleDecl, NMModuleDecl
+    virtual RDecl* GetROuter() = 0;
+    virtual RAccessor GetAccessor() = 0;
+    virtual RIdentifier GetIdentifier() = 0;
 
     // typeArgs는 RDecl의 typeArgs이다
     // explicitTypeParamsExceptOuterCount는 검색할 멤버가 추가로 가지고 있을 typeArgs이다

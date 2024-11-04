@@ -62,7 +62,7 @@ ImExp_LocalVar::ImExp_LocalVar(const RTypePtr& type, const std::string& name)
 
 }
 
-ImExp_LambdaMemberVar::ImExp_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+ImExp_LambdaMemberVar::ImExp_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 

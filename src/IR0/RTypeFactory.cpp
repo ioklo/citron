@@ -145,7 +145,7 @@ shared_ptr<RType_Interface> RTypeFactory::MakeInterfaceType(const shared_ptr<RIn
     return MakeInstanceType(interfaceTypes, decl, typeArgs, bLocal);
 }
 
-shared_ptr<RType_Lambda> RTypeFactory::MakeLambdaType(const shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+shared_ptr<RType_Lambda> RTypeFactory::MakeLambdaType(const shared_ptr<NLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs)
 {
     return MakeInstanceType(lambdaTypes, decl, typeArgs);
 }

@@ -36,22 +36,26 @@ public:
     IR0_API std::vector<RFuncParameter> GetUnboundConstructorParams();
 
 public:
-    RAccessor GetAccessor() override { return RAccessor::Public; }
-    IR0_API NDecl* GetOuter() override;
-    IR0_API RIdentifier GetIdentifier() override;
+    // from NDecl
+    RDecl* GetRDecl() override { return this; }
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
+
+    // from NTypeDecl
+    NDecl* GetNDecl() override { return this; }
+    RMember ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs) override;
+    void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from RDecl
+    IR0_API RDecl* GetROuter() override;
+    RAccessor GetAccessor() override { return RAccessor::Public; }
+    IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    
+    // from RTypeDecl
+    // RDecl* GetRDecl() override { return this; }
 
     // from REnumElemDecl    
     IR0_API std::optional<RMember_EnumElemMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
-
-    // from NTypeDecl
-    NDecl* GetDecl() override { return this; }
-    RMember ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs) override;
-
-    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }

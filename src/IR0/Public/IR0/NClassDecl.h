@@ -54,26 +54,32 @@ class NClassDecl
 
 public:    
     // from NDecl
-    RAccessor GetAccessor() override { return accessor; }
-    IR0_API NDecl* GetOuter() override;
-    IR0_API RIdentifier GetIdentifier() override;
-
-    // from NTypeDeclOuter, NFuncDeclOuter, NDecl, NTypeDecl
-    IR0_API NDecl* GetDecl() override;
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NTypeDecl
+    NDecl* GetNDecl() override { return this; }
     RMember ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs) override;
+    void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
+
+    // from NTypeDeclOuter
+    // NDecl* GetNDecl() override { return this; }
+    void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+
+    // from NFuncDeclOuter
+    // NDecl* GetNDecl() override { return this; }
+    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 
     // from RDecl
+    RAccessor GetAccessor() override { return accessor; }
+    IR0_API RDecl* GetROuter() override;
+    IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+
+    // from RFuncDeclOuter
+    RDecl* GetRDecl() override { return this; }
 
     // from RClassDecl
     IR0_API std::optional<RMember_ClassMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
-
-    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this);  }
-    void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 }

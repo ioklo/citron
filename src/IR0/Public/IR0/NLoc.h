@@ -20,7 +20,7 @@ class NLoc_LocalDeref;
 class NLoc_BoxDeref;
 class NLoc_NullableValue;
 
-class RLambdaMemberVarDecl;
+class NLambdaMemberVarDecl;
 class RStructMemberVarDecl;
 class RClassMemberVarDecl;
 class REnumElemMemberVarDecl;
@@ -82,11 +82,11 @@ public:
 class NLoc_LambdaMemberVar : public NLoc
 {
 public:
-    std::shared_ptr<RLambdaMemberVarDecl> memberVarDecl;
+    std::shared_ptr<NLambdaMemberVarDecl> memberVarDecl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NLoc_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NLoc_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };

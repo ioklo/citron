@@ -21,7 +21,7 @@ void NStructMemberFuncDecl::InitFuncReturnAndParams(RTypePtr funcReturn, std::ve
     NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(std::move(funcReturn)), std::move(funcParameters), bLastParameterVariadic);
 }
 
-NDecl* NStructMemberFuncDecl::GetOuter()
+RDecl* NStructMemberFuncDecl::GetROuter()
 {
     return _struct.lock().get();
 }
@@ -29,11 +29,6 @@ NDecl* NStructMemberFuncDecl::GetOuter()
 RIdentifier NStructMemberFuncDecl::GetIdentifier()
 {
     return RIdentifier { RName_Normal(name), typeParams.size(), NCommonFuncDeclComponent::GetParamIds() };
-}
-
-NDecl* NStructMemberFuncDecl::GetDecl()
-{
-    return this;
 }
 
 optional<RMember> NStructMemberFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

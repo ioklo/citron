@@ -22,7 +22,7 @@ class RStructMemberVarDecl;
 class REnumDecl;
 class REnumElemDecl;
 class REnumElemMemberVarDecl;
-class RLambdaMemberVarDecl;
+class NLambdaMemberVarDecl;
 
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
@@ -139,10 +139,10 @@ class RMember_LambdaMemberVar
 {
 public:
     RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<RLambdaMemberVarDecl> decl;
+    std::shared_ptr<NLambdaMemberVarDecl> decl;
 
 public:
-    RMember_LambdaMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RLambdaMemberVarDecl>& decl);
+    RMember_LambdaMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NLambdaMemberVarDecl>& decl);
 };
 
 // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다

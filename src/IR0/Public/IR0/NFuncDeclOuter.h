@@ -40,7 +40,7 @@ class NFuncDeclOuter
 {
 public:
     virtual ~NFuncDeclOuter() { }
-    virtual NDecl* GetDecl() = 0;
+    virtual NDecl* GetNDecl() = 0;
     virtual void Accept(NFuncDeclOuterVisitor& visitor) = 0;
 };
 

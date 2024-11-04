@@ -5,7 +5,12 @@ using namespace std;
 
 namespace Citron {
 
-NDecl* NLambdaMemberVarDecl::GetOuter()
+RTypePtr NLambdaMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+{
+    return type->Apply(typeArgs, factory);
+}
+
+RDecl* NLambdaMemberVarDecl::GetROuter()
 {
     return lambda.lock().get();
 }
@@ -13,11 +18,6 @@ NDecl* NLambdaMemberVarDecl::GetOuter()
 RIdentifier NLambdaMemberVarDecl::GetIdentifier()
 {
     return RIdentifier { name, 0, {} };
-}
-
-RTypePtr NLambdaMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
-{
-    return type->Apply(typeArgs, factory);
 }
 
 optional<RMember> NLambdaMemberVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

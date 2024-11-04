@@ -24,9 +24,9 @@ RIdentifier NNamespaceDecl::GetIdentifier()
     return RIdentifier { RName_Normal(name), 0, {} };
 }
 
-NDecl* NNamespaceDecl::GetOuter()
+RDecl* NNamespaceDecl::GetROuter()
 {
-    return outer.lock()->GetDecl();
+    return outer.lock()->GetNDecl()->GetRDecl();
 }
 
 // NotFound, Valid는 리턴으로, Fatal은 exception으로
@@ -58,11 +58,6 @@ optional<RMember> NNamespaceDecl::GetMember(const RTypeArgumentsPtr& typeArgs, c
     }
 
     return candidates[1];
-}
-
-NDecl* NNamespaceDecl::GetDecl()
-{
-    return this;
 }
 
 } // namespace Citron

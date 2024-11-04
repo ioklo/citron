@@ -3,7 +3,7 @@
 #include <Infra/Exceptions.h>
 
 #include "NExp.h"
-#include "RLambdaMemberVarDecl.h"
+#include "NLambdaMemberVarDecl.h"
 #include "RStructMemberVarDecl.h"
 #include "RClassMemberVarDecl.h"
 #include "REnumElemMemberVarDecl.h"
@@ -37,7 +37,7 @@ RTypePtr NLoc_LocalVar::GetType(RTypeFactory& factory)
     return declType;
 }
 
-NLoc_LambdaMemberVar::NLoc_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
+NLoc_LambdaMemberVar::NLoc_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
     : memberVarDecl(memberVarDecl), typeArgs(typeArgs)
 {
 }

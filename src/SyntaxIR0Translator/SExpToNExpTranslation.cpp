@@ -331,7 +331,7 @@ NExpPtr TranslateSLambdaExpToNExp(SExp_Lambda& sExp, TranslationContext& context
     //if (!oLambdaInfo)
     //    return nullptr;
 
-    // return MakePtr<RLambdaExp>(lambdaInfo.lambda, lambdaInfo.args), context.factory->MakeIn);
+    // return MakePtr<NLambdaExp>(lambdaInfo.lambda, lambdaInfo.args), context.factory->MakeIn);
     static_assert(false);
 }
 

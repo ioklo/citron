@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ReExp.h"
-#include <IR0/RLambdaMemberVarDecl.h>
+#include <IR0/NLambdaMemberVarDecl.h>
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -14,7 +14,7 @@ ReExp_LocalVar::ReExp_LocalVar(const RTypePtr& type, const std::string& name)
 {
 }
 
-ReExp_LambdaMemberVar::ReExp_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+ReExp_LambdaMemberVar::ReExp_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }

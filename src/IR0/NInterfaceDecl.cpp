@@ -5,9 +5,9 @@ using namespace std;
 
 namespace Citron {
 
-NDecl* NInterfaceDecl::GetOuter()
+RDecl* NInterfaceDecl::GetROuter()
 {
-    return outer.lock()->GetDecl();
+    return outer.lock()->GetNDecl()->GetRDecl();
 }
 
 RIdentifier NInterfaceDecl::GetIdentifier()

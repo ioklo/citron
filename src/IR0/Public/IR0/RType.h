@@ -17,7 +17,7 @@ namespace Citron
 
 class RClassDecl;
 class RInterfaceDecl;
-class RLambdaDecl;
+class NLambdaDecl;
 
 class RType_NullableValue; // struct, enum 타입 등에서 쓰일 nullable
 class RType_NullableRef;   // class 타입 등에서 쓰일 nullable
@@ -338,12 +338,12 @@ public:
 class RType_Lambda : public RType
 {
 public:
-    std::shared_ptr<RLambdaDecl> decl;
+    std::shared_ptr<NLambdaDecl> decl;
     RTypeArgumentsPtr outerTypeArgs; // 함수 자체의 typeArgs는 호출할때 binding하게 된다
 
 private:
     friend RTypeFactory;
-    RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs);
+    RType_Lambda(const std::shared_ptr<NLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs);
 
 public:
     std::vector<RFuncParameter> GetPartiallyBoundParameters(); // outerTypeArgs까지만 bound되어 있는 상태

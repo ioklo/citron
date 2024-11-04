@@ -6,7 +6,7 @@ using namespace std;
 
 namespace Citron {
 
-NDecl* NClassMemberVarDecl::GetOuter()
+RDecl* NClassMemberVarDecl::GetROuter()
 {
     return _class.lock().get();
 }

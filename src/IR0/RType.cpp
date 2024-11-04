@@ -9,7 +9,7 @@
 #include "RClassDecl.h"
 #include "REnumDecl.h"
 #include "REnumElemDecl.h"
-#include "RLambdaDecl.h"
+#include "NLambdaDecl.h"
 
 using namespace std;
 
@@ -259,7 +259,7 @@ optional<RMember> RType_Interface::GetMember(const RName& name, size_t explicitT
     throw NotImplementedException();
 }
 
-RType_Lambda::RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs)
+RType_Lambda::RType_Lambda(const std::shared_ptr<NLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs)
     : decl(decl), outerTypeArgs(outerTypeArgs)
 {
 }

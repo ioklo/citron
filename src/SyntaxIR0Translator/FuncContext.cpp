@@ -8,7 +8,7 @@
 
 #include <Syntax/Syntax.h>
 
-#include <IR0/RLambdaMemberVarDecl.h>
+#include <IR0/NLambdaMemberVarDecl.h>
 #include <IR0/NArgument.h>
 #include <IR0/RFuncDecl.h>
 #include <IR0/NFuncDeclOuter.h>
@@ -74,7 +74,7 @@ bool FuncContext::CanAccess(RDecl* target)
 {
     // TODO: 현재 scope에서 access check
     return visit(overloaded {
-        [target](FuncContextOuter_RFuncDeclOuter& outer) { return outer.decl->GetDecl()->CanAccess(target); },
+        [target](FuncContextOuter_RFuncDeclOuter& outer) { return outer.decl->GetRDecl()->CanAccess(target); },
         [target](FuncContextOuter_ScopeContext& outer) { return outer.scopeContext->funcContext->CanAccess(target); }
     }, outer);
 }
@@ -236,7 +236,7 @@ bool FuncContext::CanAccess(RDecl* target)
                 assert(count == 0);
 
                 // 2. outerScopeContext가 있으면 거기에서, 아니라면 bodyContext의 outer를 찾아본다
-                if (!funcContext.GetOuter())
+                if (!funcContext.GetROuter())
                 {
                     auto result = funcContext.outerScopeContext.ResolveIdentifier(name, typeArgs);
 

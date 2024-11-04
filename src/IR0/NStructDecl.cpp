@@ -9,19 +9,14 @@ using namespace std;
 
 namespace Citron {
 
-NDecl* NStructDecl::GetOuter()
+RDecl* NStructDecl::GetROuter()
 {
-    return outer.lock()->GetDecl();
+    return outer.lock()->GetNDecl()->GetRDecl();
 }
 
 RIdentifier NStructDecl::GetIdentifier()
 {
     return RIdentifier { name, typeParams.size(), {} };
-}
-
-NDecl* NStructDecl::GetDecl()
-{
-    return this;
 }
 
 RMember NStructDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)

@@ -87,7 +87,7 @@ RMember_EnumElemMemberVar::RMember_EnumElemMemberVar(const RTypeArgumentsPtr& ou
 
 }
 
-RMember_LambdaMemberVar::RMember_LambdaMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<RLambdaMemberVarDecl>& decl)
+RMember_LambdaMemberVar::RMember_LambdaMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<NLambdaMemberVarDecl>& decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 

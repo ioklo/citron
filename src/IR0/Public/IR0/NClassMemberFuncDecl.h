@@ -34,27 +34,30 @@ public:
 
 public:
     // from NDecl
-    RAccessor GetAccessor() override { return accessor; }
-    IR0_API RIdentifier GetIdentifier() override;
-    IR0_API NDecl* GetOuter() override;
+    RDecl* GetRDecl() override { return this; }
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
+
+    // from NFuncDecl
+    void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDeclOuter
-    IR0_API NDecl* GetDecl() override;
+    NDecl* GetNDecl() override { return this; }
+    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+
+    // from RDecl
+    IR0_API RDecl* GetROuter() override;
+    RAccessor GetAccessor() override { return accessor; }
+    IR0_API RIdentifier GetIdentifier() override;
+    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+
+    // from RFuncDecl
+    using NCommonFuncDeclComponent::GetTypeParamCount;
+
+    // from RFuncDeclOuter
+    // RDecl* GetRDecl() override { return this; }
 
     // from RClassMemberFuncDecl
     RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
-
-
-    using NCommonFuncDeclComponent::GetTypeParamCount;
-
-
-    // from RDecl
-    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-
-    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
-    
 };
 
 }

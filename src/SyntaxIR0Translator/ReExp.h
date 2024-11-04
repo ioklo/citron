@@ -79,11 +79,11 @@ public:
 class ReExp_LambdaMemberVar : public ReExp
 {
 public:
-    std::shared_ptr<RLambdaMemberVarDecl> decl;
+    std::shared_ptr<NLambdaMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     
 public:
-    ReExp_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ReExp_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType(RTypeFactory& factory) override;
 };

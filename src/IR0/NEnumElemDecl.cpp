@@ -18,7 +18,14 @@ void NEnumElemDecl::AddMemberVar(const std::shared_ptr<NEnumElemMemberVarDecl>& 
     memberVarsMap.emplace(memberVar->name, std::move(memberVar));
 }
 
-NDecl* NEnumElemDecl::GetOuter()
+RMember NEnumElemDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
+{
+    auto sharedEnumElemDecl = dynamic_pointer_cast<NEnumElemDecl>(sharedThis);
+    assert(sharedEnumElemDecl);
+    return RMember_EnumElem(typeArgs, sharedEnumElemDecl);
+}
+
+RDecl* NEnumElemDecl::GetROuter()
 {
     return _enum.lock().get();
 }
@@ -46,11 +53,5 @@ optional<RMember_EnumElemMemberVar> NEnumElemDecl::GetMemberVar(const RTypeArgum
     return RMember_EnumElemMemberVar(typeArgs, i->second);
 }
 
-RMember NEnumElemDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
-{
-    auto sharedEnumElemDecl = dynamic_pointer_cast<NEnumElemDecl>(sharedThis);
-    assert(sharedEnumElemDecl);
-    return RMember_EnumElem(typeArgs, sharedEnumElemDecl);
-}
 
 } // namespace Citron

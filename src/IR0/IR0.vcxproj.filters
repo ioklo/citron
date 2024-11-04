@@ -287,6 +287,9 @@
     <ClCompile Include="RModuleDecl.cpp">
       <Filter>Symbols\RDecl\05 TopLevel</Filter>
     </ClCompile>
+    <ClCompile Include="RDecl.cpp">
+      <Filter>Symbols\RDecl\00 Abstraction</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Body">

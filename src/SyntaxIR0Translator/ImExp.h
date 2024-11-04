@@ -14,7 +14,7 @@ namespace Citron {
 
 class RNamespaceDecl;
 class RClass;
-class RLambdaMemberVarDecl;
+class NLambdaMemberVarDecl;
 
 class RType_TypeVar;
 
@@ -251,11 +251,11 @@ public:
 class ImExp_LambdaMemberVar : public ImExp
 {
 public:
-    std::shared_ptr<RLambdaMemberVarDecl> decl;
+    std::shared_ptr<NLambdaMemberVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    ImExp_LambdaMemberVar(const std::shared_ptr<RLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ImExp_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }

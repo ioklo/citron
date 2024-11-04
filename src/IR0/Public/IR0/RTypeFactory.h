@@ -109,7 +109,7 @@ class RTypeFactory
     InstanceTypeKeyUnorderedMap<REnumDecl, RType_Enum> enumTypes;
     InstanceTypeKeyUnorderedMap<REnumElemDecl, RType_EnumElem> enumElemTypes;
     InstanceTypeKeyUnorderedMap<RInterfaceDecl, RType_Interface> interfaceTypes;
-    InstanceTypeKeyUnorderedMap<RLambdaDecl, RType_Lambda> lambdaTypes;
+    InstanceTypeKeyUnorderedMap<NLambdaDecl, RType_Lambda> lambdaTypes;
 
     std::unordered_map<IR0::TypeArgumentsKey, RTypeArgumentsPtr, IR0::TypeArgumentsKeyHasher> typeArgsMap;
 
@@ -138,7 +138,7 @@ public:
     IR0_API std::shared_ptr<RType_Enum> MakeEnumType(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     IR0_API std::shared_ptr<RType_EnumElem> MakeEnumElemType(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     IR0_API std::shared_ptr<RType_Interface> MakeInterfaceType(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal);
-    IR0_API std::shared_ptr<RType_Lambda> MakeLambdaType(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API std::shared_ptr<RType_Lambda> MakeLambdaType(const std::shared_ptr<NLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 
     IR0_API RTypeArgumentsPtr MakeTypeArguments(const std::vector<RTypePtr>& items);

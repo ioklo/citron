@@ -222,6 +222,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NGlobalFuncDecl.cpp" />
+    <ClCompile Include="RDecl.cpp" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
     <ClCompile Include="RMember.cpp" />
     <ClCompile Include="NClassConstructorDecl.cpp" />

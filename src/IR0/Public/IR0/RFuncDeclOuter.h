@@ -21,6 +21,8 @@ class RFuncDeclOuter
 {
 public:
     virtual ~RFuncDeclOuter() { }
+
+    virtual RDecl* GetRDecl() = 0;
     virtual void Accept(RFuncDeclOuterVisitor& visitor) = 0;
 };
 

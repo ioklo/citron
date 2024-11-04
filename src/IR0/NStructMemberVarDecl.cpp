@@ -20,7 +20,13 @@ void NStructMemberVarDecl::InitDeclType(const RTypePtr& declType)
     this->declType = declType;
 }
 
-NDecl* NStructMemberVarDecl::GetOuter()
+RTypePtr NStructMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+{
+    assert(declType != nullptr);
+    return declType->Apply(typeArgs, factory);
+}
+
+RDecl* NStructMemberVarDecl::GetROuter()
 {
     return _struct.lock().get();
 }
@@ -28,12 +34,6 @@ NDecl* NStructMemberVarDecl::GetOuter()
 RIdentifier NStructMemberVarDecl::GetIdentifier()
 {
     return RIdentifier { RName_Normal(name), 0, {} };
-}
-
-RTypePtr NStructMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
-{
-    assert(declType != nullptr);
-    return declType->Apply(typeArgs, factory);
 }
 
 optional<RMember> NStructMemberVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

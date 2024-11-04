@@ -20,7 +20,7 @@ class NTopLevelDeclOuter : public RTopLevelDeclOuter
 {
 public:
     virtual ~NTopLevelDeclOuter() { }
-    virtual NDecl* GetDecl() = 0;
+    virtual NDecl* GetNDecl() = 0;
     virtual void Accept(NTopLevelDeclOuterVisitor& visitor) = 0;
 };
 

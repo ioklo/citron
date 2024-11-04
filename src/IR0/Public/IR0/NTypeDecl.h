@@ -30,7 +30,7 @@ class NTypeDecl
 {
 public:
     virtual ~NTypeDecl() { }
-    virtual NDecl* GetDecl() = 0;
+    virtual NDecl* GetNDecl() = 0;
     virtual RMember ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs) = 0;
     virtual void Accept(NTypeDeclVisitor& visitor) = 0;
 };
