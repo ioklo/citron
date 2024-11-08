@@ -4,7 +4,6 @@
 #include <string>
 
 #include "MDecl.h"
-#include "MTopLevelDeclOuter.h"
 #include "MTypeDeclOuter.h"
 #include "MNamespaceDeclContainerComponent.h"
 #include "MTypeDeclContainerComponent.h"
@@ -16,17 +15,16 @@ namespace Citron
 
 class MNamespaceDecl 
     : public MDecl
-    , public MTopLevelDeclOuter
     , public MTypeDeclOuter
     , private MNamespaceDeclContainerComponent
     , private MTypeDeclContainerComponent
     , private MFuncDeclContainerComponent<std::shared_ptr<MGlobalFuncDecl>>
 {
-    MTopLevelDeclOuterWPtr outer;
+    std::weak_ptr<MNamespaceDecl> outer;
     std::string name;
 
 public:
-    SYMBOL_API MNamespaceDecl(MTopLevelDeclOuterWPtr outer, std::string name);
+    SYMBOL_API MNamespaceDecl(std::weak_ptr<MNamespaceDecl> outer, std::string name);
 
     const std::string& GetName() { return name; }
 
@@ -34,7 +32,6 @@ public:
     using MNamespaceDeclContainerComponent::GetNamespace;
 
     void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(MTopLevelDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(MTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 };
 

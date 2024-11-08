@@ -15,6 +15,8 @@ class NEnumElemDecl;
 class NInterfaceDecl;
 class NLambdaDecl;
 
+using RNamespaceDeclGroupPtr = std::shared_ptr<class RNamespaceDeclGroup>;
+
 namespace IR0 {
 
 struct FuncTypeKey
@@ -120,6 +122,8 @@ class RTypeFactory
 
     std::shared_ptr<RClassDecl> listDecl;
 
+    // namespace group
+    std::unordered_map<std::vector<std::string>, RNamespaceDeclGroupPtr> nsGroupsMap;
 
 public:
     IR0_API RTypeFactory();
@@ -151,6 +155,8 @@ public:
     IR0_API RTypePtr MakeListType(const RTypePtr& itemType);
 
     IR0_API bool IsListType(const RTypePtr& type, RTypePtr* outItemType);
+
+    RNamespaceDeclGroupPtr GetNamespaceDeclGroup(const std::vector<std::string>& name);
 
 private:
     template<typename TDecl, typename TType, typename... TArgs>

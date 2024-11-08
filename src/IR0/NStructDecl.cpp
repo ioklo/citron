@@ -9,6 +9,23 @@ using namespace std;
 
 namespace Citron {
 
+NStructDecl::NStructDecl(NTypeDeclOuterWPtr&& outer, RAccessor accessor, RName&& name, vector<string>&& typeParams)
+    : outer(std::move(outer)), accessor(accessor), name(std::move(name)), typeParams(std::move(typeParams))
+{
+}
+
+NDecl* NStructDecl::GetNOuter()
+{
+    return outer.lock()->GetNDecl();
+}
+
+RMember NStructDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
+{
+    auto sharedStructDecl = dynamic_pointer_cast<NStructDecl>(sharedThis);
+    assert(sharedStructDecl);
+    return RMember_Struct(typeArgs, sharedStructDecl);
+}
+
 RDecl* NStructDecl::GetROuter()
 {
     return outer.lock()->GetNDecl()->GetRDecl();
@@ -17,13 +34,6 @@ RDecl* NStructDecl::GetROuter()
 RIdentifier NStructDecl::GetIdentifier()
 {
     return RIdentifier { name, typeParams.size(), {} };
-}
-
-RMember NStructDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
-{
-    auto sharedStructDecl = dynamic_pointer_cast<NStructDecl>(sharedThis);
-    assert(sharedStructDecl);
-    return RMember_Struct(typeArgs, sharedStructDecl);
 }
 
 optional<RMember> NStructDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
@@ -51,6 +61,18 @@ optional<RMember> NStructDecl::GetMember(const RTypeArgumentsPtr& typeArgs, cons
     }
 
     return candidates[1];
+}
+
+optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    auto sharedOuter = outer.lock();
+    assert(sharedOuter);
+
+    auto typeArgs = MakeOpenTypeArgs(factory);
+    if (auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        return oMember;
+
+    return sharedOuter->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
 optional<RMember_StructMemberVar> NStructDecl::GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name)

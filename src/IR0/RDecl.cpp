@@ -3,6 +3,10 @@
 #include <Infra/Exceptions.h>
 #include <Infra/Unreachable.h>
 
+#include "RTypeFactory.h"
+
+using namespace std;
+
 namespace Citron {
 
 bool RDecl::IsDescendantOf(RDecl* container)
@@ -44,12 +48,28 @@ size_t RDecl::GetTypeParamCount()
     return GetIdentifier().typeParamCount;
 }
 
-size_t RDecl::GetBaseTypeParamCount()
-{ 
+size_t RDecl::GetAllTypeParamCount()
+{
     auto* outer = GetROuter();
-    if (!outer) return 0;
+    if (!outer) return GetTypeParamCount();
 
-    return outer->GetBaseTypeParamCount() + GetTypeParamCount();
+    return outer->GetAllTypeParamCount() + GetTypeParamCount();
+}
+
+RTypeArgumentsPtr RDecl::MakeOpenTypeArgs(RTypeFactory& factory)
+{
+    // gather reversely
+    auto allTypeParamCount = GetAllTypeParamCount();    
+    
+    vector<RTypePtr> items;
+    items.reserve(allTypeParamCount);
+    for(int i = 0; i < allTypeParamCount; i++)
+    {
+        auto typeVar = factory.MakeTypeVarType(i);
+        items.push_back(typeVar);
+    }
+
+    return factory.MakeTypeArguments(items);
 }
 
 std::string RDecl::GetModuleName()

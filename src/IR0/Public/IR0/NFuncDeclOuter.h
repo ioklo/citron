@@ -8,7 +8,7 @@ namespace Citron
 {
 
 class NDecl;
-class NModuleDecl;
+class NModule;
 class NNamespaceDecl;
 class NGlobalFuncDecl;
 class NClassDecl;
@@ -23,7 +23,6 @@ class NFuncDeclOuterVisitor
 {
 public:
     virtual ~NFuncDeclOuterVisitor() { }
-    virtual void Visit(NModuleDecl& outer) = 0;
     virtual void Visit(NNamespaceDecl& outer) = 0;
     virtual void Visit(NGlobalFuncDecl& outer) = 0;
     virtual void Visit(NClassDecl& outer) = 0;

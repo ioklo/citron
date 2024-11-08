@@ -1,10 +1,17 @@
 #include "NClassMemberVarDecl.h"
+
+#include <Infra/Exceptions.h>
 #include "NClassDecl.h"
 #include "RTypeFactory.h"
 
 using namespace std;
 
 namespace Citron {
+
+NDecl* NClassMemberVarDecl::GetNOuter()
+{
+    return _class.lock().get();
+}
 
 RDecl* NClassMemberVarDecl::GetROuter()
 {
@@ -24,6 +31,12 @@ RTypePtr NClassMemberVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory
 optional<RMember> NClassMemberVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
+}
+
+std::optional<RMember> NClassMemberVarDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    // MemberVarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
+    throw RuntimeFatalException();
 }
 
 } // namespace Citron

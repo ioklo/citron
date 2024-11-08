@@ -9,6 +9,11 @@ using namespace std;
 
 namespace Citron {
 
+NDecl* NClassDecl::GetNOuter()
+{
+    return outer.lock()->GetNDecl();
+}
+
 RDecl* NClassDecl::GetROuter()
 {
     return outer.lock()->GetNDecl()->GetRDecl();
@@ -51,6 +56,16 @@ optional<RMember> NClassDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const
     }
 
     return candidates[1];
+}
+
+optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    auto typeArgs = MakeOpenTypeArgs(factory);
+
+    auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount);
+    if (oMember) return oMember;
+
+    return outer.lock()->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
 optional<RMember_ClassMemberVar> NClassDecl::GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name)

@@ -8,6 +8,7 @@
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
 #include "RNames.h"
+#include "RMember.h"
 
 namespace Citron
 {
@@ -46,6 +47,7 @@ public:
 
     IR0_API RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory);
     IR0_API std::vector<RTypePtr> GetParamIds();
+    IR0_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
 };
 
 }

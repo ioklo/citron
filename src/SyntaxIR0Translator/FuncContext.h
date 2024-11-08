@@ -10,6 +10,7 @@ namespace Citron {
 class NLambdaDecl;
 class NLambdaMemberVarDecl;
 class NFuncDecl;
+class NFuncDeclOuter;
 
 class RDecl;
 struct RFuncParameter;
@@ -26,6 +27,7 @@ class UpdateContext;
 using FuncContextPtr = std::shared_ptr<class FuncContext>;
 using ModuleDeclsPtr = std::shared_ptr<class ModuleDecls>;
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+using ImExpPtr = std::shared_ptr<class ImExp>;
 
 struct NLambdaDeclMemberVarAndArg
 {
@@ -33,10 +35,23 @@ struct NLambdaDeclMemberVarAndArg
     NArgument arg;
 };
 
-struct FuncContextOuter_ScopeContext { ScopeContextPtr scopeContext; };
-struct FuncContextOuter_RFuncDeclOuter { std::shared_ptr<RFuncDeclOuter> decl; };
+struct FuncContextOuter_ScopeContext 
+{ 
+    ScopeContextPtr scopeContext; 
 
-using FuncContextOuter = std::variant<FuncContextOuter_ScopeContext, FuncContextOuter_RFuncDeclOuter>;
+    bool CanAccess(RDecl* target);
+    NFuncDecl* GetOutermostFuncDecl();
+};
+
+struct FuncContextOuter_NFuncDeclOuter 
+{ 
+    std::shared_ptr<NFuncDeclOuter> decl; 
+
+    bool CanAccess(RDecl* target);
+    NFuncDecl* GetOutermostFuncDecl();
+};
+
+using FuncContextOuter = std::variant<FuncContextOuter_ScopeContext, FuncContextOuter_NFuncDeclOuter>;
 
 class FuncContext
 {
@@ -65,11 +80,12 @@ public:
 
     FuncContextPtr MakeLambdaBodyContext(const ScopeContextPtr& curScopeContext, RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
-    FuncContextPtr Clone(CloneContext& context);
-    void Update(const FuncContextPtr& src, UpdateContext& context);
+    // FuncContextPtr Clone(CloneContext& context);
+    // void Update(const FuncContextPtr& src, UpdateContext& context);
     bool CanAccess(RDecl* target);
 
     NFuncDecl* GetOutermostFuncDecl();
+    ImExpPtr ResolveIdentifier(RName&& name, RTypeArguments& typeArgs);
 
     RFuncReturn GetFuncReturn();
     void SetFuncReturn(RTypePtr&& retType);

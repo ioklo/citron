@@ -1,4 +1,4 @@
-#include "RModuleDecl.h"
+#include "RModule.h"
 
 using namespace std;
 

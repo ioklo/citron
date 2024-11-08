@@ -1,5 +1,7 @@
 #include "NEnumDecl.h"
+
 #include <cassert>
+#include <Infra/Exceptions.h>
 
 using namespace std;
 
@@ -19,6 +21,11 @@ void NEnumDecl::AddElem(std::shared_ptr<NEnumElemDecl>&& elem)
 {
     elems.push_back(elem);
     elemsMap.emplace(elem->name, std::move(elem));
+}
+
+NDecl* NEnumDecl::GetNOuter()
+{
+    return outer.lock()->GetNDecl();
 }
 
 RMember NEnumDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
@@ -52,5 +59,11 @@ optional<RMember> NEnumDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const 
     return RMember_EnumElem(typeArgs, i->second);
 }
 
+
+optional<RMember> NEnumDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    // MemberVarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
+    throw RuntimeFatalException();
+}
 
 } // namespace Citron

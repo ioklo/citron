@@ -20,7 +20,7 @@ class NEnumElemMemberVarDecl
     , public REnumElemMemberVarDecl
 {   
 public:
-    std::weak_ptr<NEnumElemDecl> outer;
+    std::weak_ptr<NEnumElemDecl> enumElem;
     std::string name;
 
     RTypePtr declType; // lazy-init
@@ -32,6 +32,7 @@ public:
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
+    NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from RDecl
@@ -39,6 +40,7 @@ public:
     RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
     // from REnumElemMemberVarDecl
     IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) override;

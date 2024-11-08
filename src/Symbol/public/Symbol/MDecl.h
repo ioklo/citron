@@ -5,7 +5,7 @@
 namespace Citron
 {
 
-class MModuleDecl;
+class MModule;
 class MNamespaceDecl;
 class MGlobalFuncDecl;
 class MStructDecl;
@@ -25,7 +25,6 @@ class MDeclVisitor
 {
 public:
     virtual ~MDeclVisitor() { }
-    virtual void Visit(MModuleDecl& decl) = 0;
     virtual void Visit(MNamespaceDecl& decl) = 0;
     virtual void Visit(MGlobalFuncDecl& decl) = 0;
     virtual void Visit(MStructDecl& decl) = 0;

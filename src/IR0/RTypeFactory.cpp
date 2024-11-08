@@ -3,6 +3,7 @@
 #include <Infra/Ptr.h>
 #include "RType.h"
 #include "RStructDecl.h"
+#include "RNamespaceDeclGroup.h"
 
 using namespace std;
 
@@ -209,6 +210,17 @@ bool RTypeFactory::IsListType(const RTypePtr& type, RTypePtr* outItemType)
 
     *outItemType = classType->typeArgs->Get(0);
     return true;
+}
+
+RNamespaceDeclGroupPtr RTypeFactory::GetNamespaceDeclGroup(const std::vector<std::string>& name)
+{
+    auto i = nsGroupsMap.find(name);
+    if (i != nsGroupsMap.end())
+        return i->second;
+    
+    auto newGroup = MakePtr<RNamespaceDeclGroup>();
+    nsGroupsMap.emplace(name, newGroup);
+    return newGroup;
 }
 
 } // Citron

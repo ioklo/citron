@@ -3,9 +3,9 @@
 
 #include <string>
 #include <optional>
+#include <memory>
 
 #include "NDecl.h"
-#include "NTopLevelDeclOuter.h"
 #include "NTypeDeclOuter.h"
 #include "NNamespaceDeclContainerComponent.h"
 #include "NTypeDeclContainerComponent.h"
@@ -17,10 +17,10 @@
 
 namespace Citron
 {
+using RNamespaceDeclGroupPtr = std::shared_ptr<class RNamespaceDeclGroup>;
 
-class NNamespaceDecl 
+class NNamespaceDecl
     : public NDecl
-    , public NTopLevelDeclOuter
     , public NTypeDeclOuter
     , public NFuncDeclOuter
     , public RNamespaceDecl
@@ -33,12 +33,18 @@ public:
     using RMemberType = RMember_Namespace;
 
 private:
-    NTopLevelDeclOuterWPtr outer;
+    std::weak_ptr<NNamespaceDecl> outer;
     std::string name;
+    RNamespaceDeclGroupPtr group;
 
 public:
-    IR0_API NNamespaceDecl(NTopLevelDeclOuterWPtr outer, std::string name);
+    std::shared_ptr<NNamespaceDecl> MakeRoot(RTypeFactory& factory);
+    std::shared_ptr<NNamespaceDecl> MakeChild(const std::shared_ptr<NNamespaceDecl>& outer, std::string&& name, RTypeFactory& factory);
 
+private:
+    NNamespaceDecl(std::weak_ptr<NNamespaceDecl>&& outer, std::string&& name, const RNamespaceDeclGroupPtr& group);
+
+public:
     const std::string& GetName() { return name; }
 
     using NNamespaceDeclContainerComponent::AddNamespace;
@@ -49,14 +55,11 @@ public:
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
+    NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
     
-    // from NTopLevelDeclOuter
-    NDecl* GetNDecl() override { return this; }
-    void Accept(NTopLevelDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
-
     // from NTypeDeclOuter
-    // NDecl* GetNDecl() override { return this; }
+    NDecl* GetNDecl() override { return this; }
     void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDeclOuter
@@ -68,9 +71,7 @@ public:
     RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-
-    // from RTopLevelDeclOuter
-    // RDecl* GetRDecl() override { return this; }
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
     // from RTypeDeclOuter
     // using RNamespaceDecl::Accept;

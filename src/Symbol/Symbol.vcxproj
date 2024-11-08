@@ -165,7 +165,7 @@
     <ClInclude Include="Public\Symbol\MGlobalFuncDecl.h" />
     <ClInclude Include="Public\Symbol\MIdentifier.h" />
     <ClInclude Include="Public\Symbol\MInterfaceDecl.h" />
-    <ClInclude Include="Public\Symbol\MModuleDecl.h" />
+    <ClInclude Include="Public\Symbol\MModule.h" />
     <ClInclude Include="Public\Symbol\MNames.h" />
     <ClInclude Include="Public\Symbol\MNamespaceDecl.h" />
     <ClInclude Include="Public\Symbol\MNamespaceDeclContainerComponent.h" />
@@ -173,7 +173,6 @@
     <ClInclude Include="Public\Symbol\MStructDecl.h" />
     <ClInclude Include="Public\Symbol\MStructMemberFuncDecl.h" />
     <ClInclude Include="Public\Symbol\MStructMemberVarDecl.h" />
-    <ClInclude Include="Public\Symbol\MTopLevelDeclOuter.h" />
     <ClInclude Include="Public\Symbol\MType.h" />
     <ClInclude Include="Public\Symbol\MTypeDecl.h" />
     <ClInclude Include="Public\Symbol\MTypeDeclContainerComponent.h" />
@@ -182,7 +181,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MDeclId.cpp" />
-    <ClCompile Include="MModuleDecl.cpp" />
+    <ClCompile Include="MModule.cpp" />
     <ClCompile Include="MNames.cpp" />
     <ClCompile Include="MNamespaceDeclContainerComponent.cpp" />
     <ClCompile Include="MType.cpp" />

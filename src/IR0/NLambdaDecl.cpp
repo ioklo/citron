@@ -22,6 +22,11 @@ void NLambdaDecl::Init(std::vector<std::shared_ptr<NLambdaMemberVarDecl>>&& memb
     NCommonFuncDeclComponent::InitBody(std::move(body));
 }
 
+NDecl* NLambdaDecl::GetNOuter()
+{
+    return outer.lock()->GetNDecl();
+}
+
 RDecl* NLambdaDecl::GetROuter()
 {
     return outer.lock()->GetNDecl()->GetRDecl();
@@ -45,6 +50,12 @@ optional<RMember> NLambdaDecl::GetMember(const RTypeArgumentsPtr& typeArgs, cons
     if (i == memberVarsMap.end()) return nullopt;
 
     return RMember_LambdaMemberVar(typeArgs, i->second);
+}
+
+optional<RMember> NLambdaDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    // Lambda에서 검색하지 않고, FuncContext에서 검색한다
+    throw RuntimeFatalException();
 }
 
 } // namespace Citron

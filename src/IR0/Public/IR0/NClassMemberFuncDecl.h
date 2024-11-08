@@ -35,6 +35,7 @@ public:
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
+    NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDecl
@@ -49,6 +50,7 @@ public:
     RAccessor GetAccessor() override { return accessor; }
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
     // from RFuncDecl
     using NCommonFuncDeclComponent::GetTypeParamCount;

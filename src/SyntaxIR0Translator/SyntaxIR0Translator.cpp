@@ -7,7 +7,7 @@
 #include <Infra/Ptr.h>
 #include <Infra/Exceptions.h>
 
-#include <IR0/NModuleDecl.h>
+#include <IR0/NModule.h>
 #include <IR0/NNamespaceDecl.h>
 
 #include "EnumTranslation.h"
@@ -96,12 +96,12 @@ public:
 
 class ScriptElemVisitor : public SScriptElementVisitor
 {
-    shared_ptr<NModuleDecl> moduleDecl;
+    shared_ptr<NModule> moduleDecl;
     SScriptElementPtr sharedElem;
     SkeletonPhaseContext& context;
 
 public:
-    ScriptElemVisitor(shared_ptr<NModuleDecl> moduleDecl, SScriptElementPtr sharedElem, SkeletonPhaseContext& context)
+    ScriptElemVisitor(shared_ptr<NModule> moduleDecl, SScriptElementPtr sharedElem, SkeletonPhaseContext& context)
         : moduleDecl(std::move(moduleDecl)), sharedElem(std::move(sharedElem)), context(context)
     {
     }
@@ -168,12 +168,12 @@ public:
 
 } // unnamed namespace 
 
-std::shared_ptr<NModuleDecl> Translate(
+std::shared_ptr<NModule> Translate(
     std::string moduleName,
     vector<SScript> scripts,
-    vector<shared_ptr<MModuleDecl>> referenceModules)
+    vector<shared_ptr<MModule>> referenceModules)
 {
-    auto nModuleDecl = MakePtr<NModuleDecl>(moduleName);
+    auto nModuleDecl = MakePtr<NModule>(moduleName);
 
     SkeletonPhaseContext context;
     for (auto& script : scripts)

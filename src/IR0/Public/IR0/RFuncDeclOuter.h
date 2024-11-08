@@ -6,7 +6,7 @@ namespace Citron {
 
 class MFuncDeclOuter;
 class RFuncDeclOuterVisitor;
-class RModuleDecl;
+class RModule;
 class RNamespaceDecl;
 class RGlobalFuncDecl;
 class RClassDecl;
@@ -30,7 +30,6 @@ class RFuncDeclOuterVisitor
 {
 public:
     virtual ~RFuncDeclOuterVisitor() { }
-    virtual void Visit(RModuleDecl& outer) = 0;
     virtual void Visit(RNamespaceDecl& outer) = 0;
     virtual void Visit(RGlobalFuncDecl& outer) = 0;
     virtual void Visit(RClassDecl& outer) = 0;

@@ -1,4 +1,5 @@
 #include "NStructMemberFuncDecl.h"
+#include <cassert>
 #include "NStructDecl.h"
 
 using namespace std;
@@ -21,6 +22,11 @@ void NStructMemberFuncDecl::InitFuncReturnAndParams(RTypePtr funcReturn, std::ve
     NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(std::move(funcReturn)), std::move(funcParameters), bLastParameterVariadic);
 }
 
+NDecl* NStructMemberFuncDecl::GetNOuter()
+{
+    return _struct.lock().get();
+}
+
 RDecl* NStructMemberFuncDecl::GetROuter()
 {
     return _struct.lock().get();
@@ -34,6 +40,18 @@ RIdentifier NStructMemberFuncDecl::GetIdentifier()
 optional<RMember> NStructMemberFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
+}
+
+optional<RMember> NStructMemberFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    auto sharedStruct = _struct.lock();
+    assert(sharedStruct);
+
+    size_t baseTypeParamCount = sharedStruct->GetAllTypeParamCount();
+    if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
+        return oMember;
+
+    return sharedStruct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
 }

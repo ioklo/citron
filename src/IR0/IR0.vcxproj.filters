@@ -15,9 +15,6 @@
     <ClInclude Include="Public\IR0\NDecl.h">
       <Filter>Symbols\NDecl\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\NTopLevelDeclOuter.h">
-      <Filter>Symbols\NDecl\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\NTypeDecl.h">
       <Filter>Symbols\NDecl\00 Abstraction</Filter>
     </ClInclude>
@@ -27,7 +24,7 @@
     <ClInclude Include="Public\IR0\NGlobalFuncDecl.h">
       <Filter>Symbols\NDecl\05 TopLevel</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\NModuleDecl.h">
+    <ClInclude Include="Public\IR0\NModule.h">
       <Filter>Symbols\NDecl\05 TopLevel</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\NNamespaceDecl.h">
@@ -111,9 +108,6 @@
     <ClInclude Include="Public\IR0\NFuncDeclOuter.h">
       <Filter>Symbols\NDecl\03 Func</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RTopLevelDeclOuter.h">
-      <Filter>Symbols\RDecl\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\IR0\RTypeDecl.h">
       <Filter>Symbols\RDecl\00 Abstraction</Filter>
     </ClInclude>
@@ -144,7 +138,7 @@
     <ClInclude Include="Public\IR0\RGlobalFuncDecl.h">
       <Filter>Symbols\RDecl\05 TopLevel</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RModuleDecl.h">
+    <ClInclude Include="Public\IR0\RModule.h">
       <Filter>Symbols\RDecl\05 TopLevel</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RNamespaceDecl.h">
@@ -192,9 +186,12 @@
     <ClInclude Include="Public\IR0\RLambdaMemberVarDecl.h">
       <Filter>Symbols\RDecl\10 Lambda</Filter>
     </ClInclude>
+    <ClInclude Include="Public\IR0\RNamespaceDeclGroup.h">
+      <Filter>Symbols\RDecl\05 TopLevel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NModuleDecl.cpp">
+    <ClCompile Include="NModule.cpp">
       <Filter>Symbols\NDecl\05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="NTypeDeclContainerComponent.cpp">
@@ -284,11 +281,14 @@
     <ClCompile Include="NGlobalFuncDecl.cpp">
       <Filter>Symbols\NDecl\05 TopLevel</Filter>
     </ClCompile>
-    <ClCompile Include="RModuleDecl.cpp">
+    <ClCompile Include="RModule.cpp">
       <Filter>Symbols\RDecl\05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="RDecl.cpp">
       <Filter>Symbols\RDecl\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RNamespaceDeclGroup.cpp">
+      <Filter>Symbols\RDecl\05 TopLevel</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -101,7 +101,7 @@
     <ClInclude Include="Public\Symbol\MFuncDeclContainerComponent.h">
       <Filter>Symbols\04 Components</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MModuleDecl.h">
+    <ClInclude Include="Public\Symbol\MModule.h">
       <Filter>Symbols\05 TopLevel</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MTypeDeclContainerComponent.h">
@@ -117,9 +117,6 @@
       <Filter>Symbols\09 Interface</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MBodyDeclOuter.h">
-      <Filter>Symbols\00 Abstraction</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Symbol\MTopLevelDeclOuter.h">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MTypeDeclOuter.h">
@@ -142,7 +139,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MModuleDecl.cpp">
+    <ClCompile Include="MModule.cpp">
       <Filter>Symbols\05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="MTypeDeclContainerComponent.cpp">

@@ -10,7 +10,7 @@
 namespace Citron
 {
 
-class NModuleDecl;
+class NModule;
 class NNamespaceDecl;
 class NGlobalFuncDecl;
 class NStructDecl;
@@ -36,7 +36,6 @@ class NDeclVisitor
 {
 public:
     virtual ~NDeclVisitor() { }
-    virtual void Visit(NModuleDecl& decl) = 0;
     virtual void Visit(NNamespaceDecl& decl) = 0;
     virtual void Visit(NGlobalFuncDecl& decl) = 0;
     virtual void Visit(NStructDecl& decl) = 0;
@@ -59,11 +58,10 @@ class NDecl
 {
 public:
     virtual ~NDecl() { }
-
+    
     virtual RDecl* GetRDecl() = 0;
+    virtual NDecl* GetNOuter() = 0;
     virtual void Accept(NDeclVisitor& visitor) = 0;
-
-
 };
 
 using NDeclPtr = std::shared_ptr<NDecl>;

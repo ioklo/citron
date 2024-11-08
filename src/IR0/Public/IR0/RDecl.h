@@ -12,7 +12,7 @@ namespace Citron {
 
 class MDecl;
 class RDeclVisitor;
-class RModuleDecl;
+class RModule;
 class RNamespaceDecl;
 class RGlobalFuncDecl;
 class RStructDecl;
@@ -29,6 +29,7 @@ class REnumElemMemberVarDecl;
 class RLambdaDecl;
 class RLambdaMemberVarDecl;
 class RInterfaceDecl;
+class RTypeFactory;
 
 class RDecl
 {
@@ -39,7 +40,9 @@ public:
     bool IsDescendantOf(RDecl* container);
     bool CanAccess(RDecl* target);
     size_t GetTypeParamCount();
-    size_t GetBaseTypeParamCount();
+    size_t GetAllTypeParamCount();
+
+    RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory);
 
 public:
     virtual std::string GetModuleName(); // once overridden by NModuleDecl, NMModuleDecl
@@ -54,6 +57,9 @@ public:
     // explicitTypeParamsExceptOuterCount보다 더 많은 typeParams을 갖고 있어도 결과에 반영된다
     virtual std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
 
+    // 현재 관점에서 identifier를 찾는다. 못 찾을 경우 부모를 찾는다. 내부에서 GetMember를 쓸 수 있다
+    virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) = 0;
+
     virtual void Accept(RDeclVisitor& visitor) = 0;
 };
 
@@ -61,7 +67,6 @@ class RDeclVisitor
 {
 public:
     virtual ~RDeclVisitor() { }
-    virtual void Visit(RModuleDecl& decl) = 0;
     virtual void Visit(RNamespaceDecl& decl) = 0;
     virtual void Visit(RGlobalFuncDecl& decl) = 0;
     virtual void Visit(RStructDecl& decl) = 0;

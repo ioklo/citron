@@ -1,9 +1,15 @@
 #include "NClassMemberFuncDecl.h"
+#include <cassert>
 #include "NClassDecl.h"
 
 using namespace std;
 
 namespace Citron {
+
+NDecl* NClassMemberFuncDecl::GetNOuter()
+{
+    return _class.lock().get();
+}
 
 RDecl* NClassMemberFuncDecl::GetROuter()
 {
@@ -18,6 +24,18 @@ RIdentifier NClassMemberFuncDecl::GetIdentifier()
 optional<RMember> NClassMemberFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
+}
+
+std::optional<RMember> NClassMemberFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    auto sharedClass = _class.lock();
+    assert(sharedClass);
+
+    size_t baseTypeParamCount = sharedClass->GetAllTypeParamCount();
+    if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
+        return oMember;
+
+    return _class.lock()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
 } // namespace Citron

@@ -10,7 +10,6 @@
 #include "MNames.h"
 #include "MFuncReturn.h"
 #include "MFuncParameter.h"
-#include "MTopLevelDeclOuter.h"
 
 namespace Citron {
 
@@ -25,7 +24,7 @@ class MGlobalFuncDecl
         std::vector<MFuncParameter> parameters;
     };
 
-    MTopLevelDeclOuterWPtr outer;
+    std::weak_ptr<MNamespaceDecl> outer;
     MAccessor accessor;
     MName name;
     std::vector<MName> typeParams;

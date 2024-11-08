@@ -7,7 +7,7 @@ namespace Citron
 {
 
 class NDecl;
-class NModuleDecl;
+class NModule;
 class NNamespaceDecl;
 class NClassDecl;
 class NStructDecl;
@@ -16,7 +16,6 @@ class NTypeDeclOuterVisitor
 {
 public:
     virtual ~NTypeDeclOuterVisitor() { }
-    virtual void Visit(NModuleDecl& outer) = 0;
     virtual void Visit(NNamespaceDecl& outer) = 0;
     virtual void Visit(NClassDecl& outer) = 0;
     virtual void Visit(NStructDecl& outer) = 0;

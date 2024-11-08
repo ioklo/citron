@@ -34,7 +34,7 @@ public:
     RMember_Namespace(const std::shared_ptr<RNamespaceDecl>& decl);
 };
 
-class RMember_GlobalFuncs 
+class RMember_GlobalFuncs
 {
 public:
     std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>> items;
@@ -45,7 +45,7 @@ public:
     ~RMember_GlobalFuncs();
 };
 
-class RMember_Class 
+class RMember_Class
 {
 public:
     RTypeArgumentsPtr outerTypeArgs;
@@ -152,6 +152,13 @@ public:
     RMember_TupleMemberVar();
 };
 
+class RMember_TypeVar
+{
+public:
+    size_t index;
+    RMember_TypeVar(size_t index);
+};
+
 using RMember = std::variant<
     RMember_Namespace,
     RMember_GlobalFuncs,
@@ -165,7 +172,8 @@ using RMember = std::variant<
     RMember_EnumElem,
     RMember_EnumElemMemberVar,
     RMember_LambdaMemberVar,
-    RMember_TupleMemberVar
+    RMember_TupleMemberVar,
+    RMember_TypeVar
 >;
 
 IR0_API std::vector<DeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs(RMember& member);

@@ -3,7 +3,7 @@
 namespace Citron
 {
 
-class MModuleDecl;
+class MModule;
 class MNamespaceDecl;
 class MClassDecl;
 class MStructDecl;
@@ -12,7 +12,6 @@ class MTypeDeclOuterVisitor
 {
 public:
     virtual ~MTypeDeclOuterVisitor() { }
-    virtual void Visit(MModuleDecl& outer) = 0;
     virtual void Visit(MNamespaceDecl& outer) = 0;
     virtual void Visit(MClassDecl& outer) = 0;
     virtual void Visit(MStructDecl& outer) = 0;

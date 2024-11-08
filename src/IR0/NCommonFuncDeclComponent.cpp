@@ -54,4 +54,17 @@ vector<RTypePtr> NCommonFuncDeclComponent::GetParamIds()
     return result;
 }
 
+optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    auto* normalName = get_if<RName_Normal>(&name);
+    if (!normalName) return nullopt;
+
+    size_t typeParamCount = typeParams.size();
+    for (size_t i = 0; i < typeParamCount; i++)
+        if (typeParams[i] == normalName->text)
+            return RMember_TypeVar(baseTypeParamCount + i);
+
+    return nullopt;
+}
+
 }

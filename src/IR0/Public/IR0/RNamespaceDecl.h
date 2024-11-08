@@ -2,7 +2,6 @@
 
 #include <memory>
 #include "RDecl.h"
-#include "RTopLevelDeclOuter.h"
 #include "RFuncDeclOuter.h"
 #include "RTypeDeclOuter.h"
 
@@ -12,13 +11,11 @@ class MNamespaceDecl;
 
 class RNamespaceDecl 
     : public RDecl
-    , public RTopLevelDeclOuter
     , public RTypeDeclOuter
     , public RFuncDeclOuter
 {
 public:
     virtual void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
-    virtual void Accept(RTopLevelDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
     virtual void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
     virtual void Accept(RTypeDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
 };

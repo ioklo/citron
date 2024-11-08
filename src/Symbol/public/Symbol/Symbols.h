@@ -8,10 +8,9 @@
 
 #include "MType.h"
 
-#include "MModuleDecl.h"
+#include "MModule.h"
 
 #include "MGlobalFuncDecl.h"
 
 #include "MIdentifier.h"
 
-#include "MTopLevelDeclOuter.h"

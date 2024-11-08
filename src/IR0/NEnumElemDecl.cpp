@@ -1,5 +1,7 @@
 #include "NEnumElemDecl.h"
 #include <cassert>
+
+#include <Infra/Exceptions.h>
 #include "NEnumDecl.h"
 
 using namespace std;
@@ -16,6 +18,11 @@ void NEnumElemDecl::AddMemberVar(const std::shared_ptr<NEnumElemMemberVarDecl>& 
 {
     memberVars.push_back(memberVar);
     memberVarsMap.emplace(memberVar->name, std::move(memberVar));
+}
+
+NDecl* NEnumElemDecl::GetNOuter()
+{
+    return _enum.lock().get();
 }
 
 RMember NEnumElemDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
@@ -40,6 +47,12 @@ optional<RMember> NEnumElemDecl::GetMember(const RTypeArgumentsPtr& typeArgs, co
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
     return GetMemberVar(typeArgs, name);
+}
+
+optional<RMember> NEnumElemDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    // MemberVarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
+    throw RuntimeFatalException();
 }
 
 optional<RMember_EnumElemMemberVar> NEnumElemDecl::GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name)

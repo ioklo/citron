@@ -5,28 +5,79 @@
 
 #include <Infra/Variants.h>
 #include <Infra/Exceptions.h>
+#include <Infra/Ptr.h>
 
 #include "RTypeArguments.h"
 #include "DeclWithOuterTypeArgs.h"
 #include "RGlobalFuncDecl.h"
+#include "RTypeFactory.h"
+#include "RNamespaceDeclGroup.h"
 
 using namespace std;
 
 namespace Citron {
 
-NNamespaceDecl::NNamespaceDecl(NTopLevelDeclOuterWPtr outer, std::string name)
-    : outer(outer), name(name)
+shared_ptr<NNamespaceDecl> NNamespaceDecl::MakeRoot(RTypeFactory& factory)
 {
+    // root namespace면 
+    auto group = factory.GetNamespaceDeclGroup({});
+    shared_ptr<NNamespaceDecl> newDecl { new NNamespaceDecl(weak_ptr<NNamespaceDecl>(), "", group) };
+    group->Add(newDecl);
+    return newDecl;
+}
+
+shared_ptr<NNamespaceDecl> NNamespaceDecl::MakeChild(const shared_ptr<NNamespaceDecl>& outer, std::string&& name, RTypeFactory& factory)
+{   
+    assert(outer && !name.empty());
+
+    // root namespace면 
+    std::vector<std::string> id;
+
+    id.push_back(name);
+    auto curNS = outer;
+
+    while (curNS)
+    {
+        auto curOuter = curNS->outer.lock();
+        
+        if (!curOuter) 
+        {              
+            // root 라면 그만둔다
+            assert(curNS->name.empty());
+            break;
+        }
+
+        id.push_back(curNS->name);
+        curNS = curOuter;
+    }
+
+    reverse(id.begin(), id.end());
+
+    auto group = factory.GetNamespaceDeclGroup(id);
+    shared_ptr<NNamespaceDecl> newDecl(new NNamespaceDecl(outer, std::move(name), group));
+    group->Add(newDecl);
+
+    return newDecl;
+}
+
+NNamespaceDecl::NNamespaceDecl(weak_ptr<NNamespaceDecl>&& outer, std::string&& name, const RNamespaceDeclGroupPtr& group)
+    : outer(outer), name(std::move(name)), group(group)
+{
+}
+
+NDecl* NNamespaceDecl::GetNOuter()
+{
+    return outer.lock().get();
+}
+
+RDecl* NNamespaceDecl::GetROuter()
+{
+    return outer.lock().get();
 }
 
 RIdentifier NNamespaceDecl::GetIdentifier()
 {
     return RIdentifier { RName_Normal(name), 0, {} };
-}
-
-RDecl* NNamespaceDecl::GetROuter()
-{
-    return outer.lock()->GetNDecl()->GetRDecl();
 }
 
 // NotFound, Valid는 리턴으로, Fatal은 exception으로
@@ -58,6 +109,18 @@ optional<RMember> NNamespaceDecl::GetMember(const RTypeArgumentsPtr& typeArgs, c
     }
 
     return candidates[1];
+}
+
+optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    auto typeArgs = factory.MakeTypeArguments({});
+    if (auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        return oMember;
+
+    if (auto sharedOuter = outer.lock())
+        return sharedOuter->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+
+    return nullopt;
 }
 
 } // namespace Citron
