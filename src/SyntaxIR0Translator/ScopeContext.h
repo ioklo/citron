@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 #include <optional>
+#include <unordered_map>
+
 #include <IR0/RFuncReturn.h>
 #include <IR0/RFuncParameter.h>
 #include <IR0/RNames.h>
@@ -35,6 +37,9 @@ public:
     ScopeContextPtr parentContext;
     int nestedLoop;
 
+    // 로컬 관리
+    std::unordered_map<std::string, RTypePtr> locals;
+
 public:
     ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop);
 
@@ -58,7 +63,7 @@ public:
     RTypePtr TranslateSTypeExpToRType(STypeExp& typeExp, RTypeFactory& factory);
 
     std::shared_ptr<NLoc_This> MakeThisLoc(RTypeFactory& factory);
-    ImExpPtr ResolveIdentifier(const RName& name, const RTypeArgumentsPtr& typeArgs);
+    ImExpPtr ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;

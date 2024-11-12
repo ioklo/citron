@@ -14,6 +14,7 @@
 #include <IR0/NFuncDeclOuter.h>
 #include <IR0/NDecl.h>
 #include <IR0/RTypeArguments.h>
+#include <IR0/NExp.h>
 
 #include "TranslationContext.h"
 #include "ScopeContext.h"
@@ -27,6 +28,90 @@ struct IdentifierResolverMultipleCandidatesException
 {
     std::vector<ImExpPtr> candidates;
 };
+
+
+bool FuncContextOuter_ScopeContext::CanAccess(RDecl* target)
+{
+    return scopeContext->funcContext->CanAccess(target);
+}
+
+NFuncDecl* FuncContextOuter_ScopeContext::GetOutermostFuncDecl()
+{
+    return scopeContext->funcContext->GetOutermostFuncDecl();
+}
+
+optional<RMember> FuncContextOuter_ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+{
+    auto oMember = scopeContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    if (!oMember) return nullopt;
+
+    
+    // 상위 스코프에서 얻어오는 
+    // 로컬과 람다 멤버, this만 감싸는 대상이다
+    if (auto* localVar = get_if<RMember_>(*oMember))
+    {
+        auto initExp = MakePtr<NExp_Load>(MakePtr<NLoc_LocalVar>(localVar->name, localVar->type));
+        auto initArg = NArgument_Normal(std::move(initExp));
+
+        auto lambdaMemberVar = funcContext.lock()->StageLambdaMemberVar(localVar->type, localVar->name, initArg);
+
+        return MakePtr<ImExp_LambdaMemberVar>(lambdaMemberVar, typeArgs); // ?
+    }
+    else if (auto* lambdaMemberVar = dynamic_cast<ImExp_LambdaMemberVar*>(pImExp))
+    {
+        // class C<T> { void F<S> {
+        //     List<T> x;      // 5) scopeContext.ResolveIdentifier(x, 0) => RMember? ImExp?
+        //     var f = () => { // 4) funcContext.ResolveIdentifier(x, 0)
+        //         // 3) scopeContext.ResolveIdentifier(x, 0)
+        //     
+        //         var g = () => { // 2) funcContext.ResolveIdentifier(x, 0)
+        //
+        //             // 1) 여기에서 scopeContext.ResolveIdentifier(x, 0) 호출
+        //             x; 
+        //     
+        //         }
+        //     }
+        // } }
+
+        auto typeArgs = MakeOpenTypeArgs(factory);
+        auto initArg = NArgument_Normal(MakePtr<NExp_Load>(MakePtr<NLoc_LambdaMemberVar>(lambdaMemberVar, typeArgs)));
+
+        funcContext.lock()->StageLambdaMemberVar(lambdaMemberVar., lambdaMemberResult.Symbol.GetName(), initArg);
+        return new IntermediateExp.LambdaMemberVar(symbol);
+    }
+
+    switch (result)
+    {
+        case IntermediateExp.LocalVar localResult :
+        {
+            
+        }
+
+        case IntermediateExp.LambdaMemberVar lambdaMemberResult :
+        {
+            
+        }
+
+        case IntermediateExp.ThisVar thisResult :
+        {
+            // TODO: 워닝, struct의 this는 복사가 일어납니다. 원본과 다를 수 있습니다. ref this로 명시적으로 지정해주세요(?)
+            if (thisResult.Type is StructType)
+                throw new NotImplementedException();
+
+            var initExp = new R.LoadExp(new R.ThisLoc(), thisResult.Type);
+            Debug.Assert(initExp != null);
+
+            var initArg = new R.Argument.Normal(initExp);
+            var symbol = funcContext.StageLambdaMemberVar(thisResult.Type, thisName, initArg);
+            return new IntermediateExp.LambdaMemberVar(symbol);
+        }
+
+        // 나머지는 그대로 리턴
+        default:
+            return result;
+    }
+
+}
 
 bool FuncContextOuter_NFuncDeclOuter::CanAccess(RDecl* target)
 {
@@ -51,14 +136,9 @@ NFuncDecl* FuncContextOuter_NFuncDeclOuter::GetOutermostFuncDecl()
     return lastFuncDecl;
 }
 
-bool FuncContextOuter_ScopeContext::CanAccess(RDecl* target)
+optional<RMember> FuncContextOuter_NFuncDeclOuter::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
 {
-    return scopeContext->funcContext->CanAccess(target);
-}
 
-NFuncDecl* FuncContextOuter_ScopeContext::GetOutermostFuncDecl()
-{
-    return scopeContext->funcContext->GetOutermostFuncDecl();
 }
 
 // static RName thisName = RName_Normal("this");
@@ -67,10 +147,10 @@ FuncContext::FuncContext(const ModuleDeclsPtr& moduleDecls, FuncContextOuter&& o
 {
 }
 
-FuncContextPtr FuncContext::MakeLambdaBodyContext(const ScopeContextPtr& curScopeContext, RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
+FuncContextPtr FuncContext::MakeLambdaBodyContext(const std::shared_ptr<FuncContext>& sharedThis, const ScopeContextPtr& curScopeContext, RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
 {
     // lambda이므로 outer는 scopeContext이다
-    return MakePtr<FuncContext>(moduleDecls, FuncContextOuter_ScopeContext { curScopeContext }, /*bSeqFunc*/ false, std::move(funcRet), std::move(funcParams), bLastParamVariadic);
+    return MakePtr<FuncContext>(moduleDecls, FuncContextOuter_ScopeContext { curScopeContext, sharedThis }, /*bSeqFunc*/ false, std::move(funcRet), std::move(funcParams), bLastParamVariadic);
 }
 
 //FuncContextPtr FuncContext::Clone(CloneContext& context)
@@ -116,12 +196,19 @@ NFuncDecl* FuncContext::GetOutermostFuncDecl()
 }
 
 // 람다일 수도 있고, 함수일 수도 있다
-ImExpPtr FuncContext::ResolveIdentifier(RName&& name, RTypeArguments& typeArgs)
+std::optional<RMember> FuncContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
 {
+    visit([&name, explicitTypeParamsExceptOuterCount, &factory](auto&& outer) { return outer.ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory); }, outer);
+
+    outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+
+
     // 0. 인자 먼저 (ScopeContext에서 이미 검색했으니 스킵)
+    
     // 1. 함수(람다 등) 멤버변수
     // 1. 함수(글로벌, 클래스 멤버, 구초제 멤버) 타입인자
     // 1. 'this' (클래스, 구조체에만 존재)
+
     class IdentifierResolver
     {
         const RName& name;
@@ -267,46 +354,7 @@ ImExpPtr FuncContext::ResolveIdentifier(RName&& name, RTypeArguments& typeArgs)
 
                 // 람다 멤버에 없었으므로 (TryQueryLambdaMemberVar) 람다에 추가한다
                 // 로컬과 람다 멤버, this만 감싸는 대상이다
-                switch (result)
-                {
-                    case IntermediateExp.LocalVar localResult:
-                    {
-                        var initExp = new R.LoadExp(new R.LocalVarLoc(localResult.Name), localResult.Type);
-                        Debug.Assert(initExp != null);
-
-                        var initArg = new R.Argument.Normal(initExp);
-                        var symbol = funcContext.StageLambdaMemberVar(localResult.Type, localResult.Name, initArg);
-                        return new IntermediateExp.LambdaMemberVar(symbol);
-                    }
-
-                    case IntermediateExp.LambdaMemberVar lambdaMemberResult :
-                    {
-                        var initExp = new R.LoadExp(new R.LambdaMemberVarLoc(lambdaMemberResult.Symbol), lambdaMemberResult.Symbol.GetDeclType());
-                        Debug.Assert(initExp != null);
-
-                        var initArg = new R.Argument.Normal(initExp);
-                        var symbol = funcContext.StageLambdaMemberVar(lambdaMemberResult.Symbol.GetDeclType(), lambdaMemberResult.Symbol.GetName(), initArg);
-                        return new IntermediateExp.LambdaMemberVar(symbol);
-                    }
-
-                    case IntermediateExp.ThisVar thisResult :
-                    {
-                        // TODO: 워닝, struct의 this는 복사가 일어납니다. 원본과 다를 수 있습니다. ref this로 명시적으로 지정해주세요(?)
-                        if (thisResult.Type is StructType)
-                            throw new NotImplementedException();
-
-                        var initExp = new R.LoadExp(new R.ThisLoc(), thisResult.Type);
-                        Debug.Assert(initExp != null);
-
-                        var initArg = new R.Argument.Normal(initExp);
-                        var symbol = funcContext.StageLambdaMemberVar(thisResult.Type, thisName, initArg);
-                        return new IntermediateExp.LambdaMemberVar(symbol);
-                    }
-
-                    // 나머지는 그대로 리턴
-                    default:
-                        return result;
-                }
+                
             }
 
             // 3. 아니라면, funcDecl의 outer에서 찾기 시작한다

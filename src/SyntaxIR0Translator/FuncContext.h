@@ -38,9 +38,11 @@ struct NLambdaDeclMemberVarAndArg
 struct FuncContextOuter_ScopeContext 
 { 
     ScopeContextPtr scopeContext; 
+    std::weak_ptr<FuncContext> funcContext;
 
     bool CanAccess(RDecl* target);
     NFuncDecl* GetOutermostFuncDecl();
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
 };
 
 struct FuncContextOuter_NFuncDeclOuter 
@@ -49,6 +51,7 @@ struct FuncContextOuter_NFuncDeclOuter
 
     bool CanAccess(RDecl* target);
     NFuncDecl* GetOutermostFuncDecl();
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
 };
 
 using FuncContextOuter = std::variant<FuncContextOuter_ScopeContext, FuncContextOuter_NFuncDeclOuter>;
@@ -78,14 +81,14 @@ public:
 public:
     FuncContext(const ModuleDeclsPtr& moduleDecls, FuncContextOuter&& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
-    FuncContextPtr MakeLambdaBodyContext(const ScopeContextPtr& curScopeContext, RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
+    FuncContextPtr MakeLambdaBodyContext(const std::shared_ptr<FuncContext>& sharedThis, const ScopeContextPtr& curScopeContext, RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
     // FuncContextPtr Clone(CloneContext& context);
     // void Update(const FuncContextPtr& src, UpdateContext& context);
     bool CanAccess(RDecl* target);
 
     NFuncDecl* GetOutermostFuncDecl();
-    ImExpPtr ResolveIdentifier(RName&& name, RTypeArguments& typeArgs);
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
 
     RFuncReturn GetFuncReturn();
     void SetFuncReturn(RTypePtr&& retType);

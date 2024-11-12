@@ -34,7 +34,6 @@ RMember_Class::RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const share
 RMember_ClassMemberFuncs::RMember_ClassMemberFuncs(vector<DeclWithOuterTypeArgs<RClassMemberFuncDecl>>&& items)
     : items(std::move(items))
 {
-
 }
 
 RMember_ClassMemberFuncs::RMember_ClassMemberFuncs(const RMember_ClassMemberFuncs&) = default;
