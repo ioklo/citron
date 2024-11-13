@@ -50,6 +50,8 @@ public:
     virtual void Accept(ImExpVisitor& visitor) = 0;
 };
 
+using ImExpPtr = std::shared_ptr<ImExp>;
+
 class ImExpVisitor
 {
 public:
