@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <string>
 
 #include "NDecl.h"
 #include "NFuncDeclOuter.h"
@@ -26,8 +27,10 @@ class NClassConstructorDecl
 public:
     std::weak_ptr<NClassDecl> _class;
     RAccessor accessor;
-    std::vector<RFuncParameter> parameters;
     bool bTrivial;
+
+public:
+    NClassConstructorDecl(const std::shared_ptr<NClassDecl>& _class, RAccessor accessor, bool bTrivial, std::vector<std::string>&& typeParams, std::vector<RFuncParameter> parameters, bool bLastParamVariadic);
 
 public:
     // from NDecl
@@ -36,10 +39,13 @@ public:
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDecl
+    NDecl* GetNDecl() override { return this; }
+    RFuncReturn GetOpenFuncReturn() override { return RFuncReturn_ForConstructor(); }
+    using NCommonFuncDeclComponent::IsSeqFunc;
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDeclOuter
-    NDecl* GetNDecl() override { return this; }
+    // NDecl* GetNDecl() override { return this; }
     void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 
     // from RDecl

@@ -1,5 +1,7 @@
 #include "NClassMemberFuncDecl.h"
+
 #include <cassert>
+#include <Infra/Exceptions.h>
 #include "NClassDecl.h"
 
 using namespace std;

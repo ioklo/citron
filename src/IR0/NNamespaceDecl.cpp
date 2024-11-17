@@ -21,12 +21,12 @@ shared_ptr<NNamespaceDecl> NNamespaceDecl::MakeRoot(RTypeFactory& factory)
 {
     // root namespace면 
     auto group = factory.GetNamespaceDeclGroup({});
-    shared_ptr<NNamespaceDecl> newDecl { new NNamespaceDecl(weak_ptr<NNamespaceDecl>(), "", group) };
+    shared_ptr<NNamespaceDecl> newDecl(new NNamespaceDecl(nullptr, "", group));
     group->Add(newDecl);
     return newDecl;
 }
 
-shared_ptr<NNamespaceDecl> NNamespaceDecl::MakeChild(const shared_ptr<NNamespaceDecl>& outer, std::string&& name, RTypeFactory& factory)
+shared_ptr<NNamespaceDecl> NNamespaceDecl::MakeChild(const shared_ptr<NNamespaceDecl>& outer, const string& name, RTypeFactory& factory)
 {   
     assert(outer && !name.empty());
 
@@ -54,14 +54,14 @@ shared_ptr<NNamespaceDecl> NNamespaceDecl::MakeChild(const shared_ptr<NNamespace
     reverse(id.begin(), id.end());
 
     auto group = factory.GetNamespaceDeclGroup(id);
-    shared_ptr<NNamespaceDecl> newDecl(new NNamespaceDecl(outer, std::move(name), group));
+    shared_ptr<NNamespaceDecl> newDecl(new NNamespaceDecl(outer, name, group));
     group->Add(newDecl);
 
     return newDecl;
 }
 
-NNamespaceDecl::NNamespaceDecl(weak_ptr<NNamespaceDecl>&& outer, std::string&& name, const RNamespaceDeclGroupPtr& group)
-    : outer(outer), name(std::move(name)), group(group)
+NNamespaceDecl::NNamespaceDecl(const shared_ptr<NNamespaceDecl>& outer, const std::string& name, const RNamespaceDeclGroupPtr& group)
+    : outer(outer), name(name), group(group)
 {
 }
 

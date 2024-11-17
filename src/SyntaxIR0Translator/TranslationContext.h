@@ -80,8 +80,8 @@ public: // for scopeContext
 public: // for funcContext
     bool CanAccess(RDecl* target);
     bool IsSeqFunc();
-    RFuncReturn GetFuncReturn();
-    void SetFuncReturn(RTypePtr&& retType);
+    RFuncReturn GetOpenFuncReturn();
+    void SetOpenFuncReturn(RTypePtr&& retType);
     NLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<NStmtPtr>&& body);
 
 public: // for logging
@@ -113,7 +113,7 @@ public: // for type factory
 
     bool IsListType(const RTypePtr& type, RTypePtr* outItemType);
 
-    RFuncReturn GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
+    RFuncReturn GetOpenFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
     std::optional<RFuncParameter> GetFuncParameter(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
 
 public: // for BinOpQueryService

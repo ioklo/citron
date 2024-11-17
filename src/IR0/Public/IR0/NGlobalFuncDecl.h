@@ -41,10 +41,13 @@ public:
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDecl
+    NDecl* GetNDecl() override { return this; }
+    using NCommonFuncDeclComponent::GetOpenFuncReturn;
+    using NCommonFuncDeclComponent::IsSeqFunc;
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDeclOuter
-    NDecl* GetNDecl() override { return this; }
+    // NDecl* GetNDecl() override { return this; }
     void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 
     // from RDecl

@@ -11,8 +11,8 @@ using namespace std;
 namespace Citron
 {
 
-NCommonFuncDeclComponent::NCommonFuncDeclComponent(std::vector<std::string>&& typeParams)
-    : typeParams(std::move(typeParams))
+NCommonFuncDeclComponent::NCommonFuncDeclComponent(std::vector<std::string>&& typeParams, bool bSeqFunc)
+    : typeParams(std::move(typeParams)), bSeqFunc(bSeqFunc)
 {
 }
 
@@ -33,14 +33,20 @@ size_t NCommonFuncDeclComponent::GetTypeParamCount()
     return typeParams.size();
 }
 
+RFuncReturn NCommonFuncDeclComponent::GetOpenFuncReturn()
+{
+    assert(funcReturnAndParams);
+    return funcReturnAndParams->funcReturn;
+}
+
 RTypePtr NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     assert(funcReturnAndParams);
 
-    if (auto* confirmedReturn = get_if<RFuncReturn_Set>(&funcReturnAndParams->funcReturn))
-        return confirmedReturn->type->Apply(typeArgs, factory);
+    auto* setReturn = get_if<RFuncReturn_Set>(&funcReturnAndParams->funcReturn);
+    assert(setReturn);
 
-    return nullptr;
+    return setReturn->type->Apply(typeArgs, factory);
 }
 
 vector<RTypePtr> NCommonFuncDeclComponent::GetParamIds()

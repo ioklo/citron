@@ -8,6 +8,7 @@
 #include <IR0/RFuncReturn.h>
 #include <IR0/RFuncParameter.h>
 #include <IR0/RNames.h>
+#include <IR0/RMember.h>
 
 namespace Citron {
 
@@ -47,6 +48,7 @@ public:
     void Update(ScopeContext& src, UpdateContext& context);
 
 public:
+    RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory);
     void SetFlowEndsCompletely();
 
     std::shared_ptr<ScopeContext> MakeNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
@@ -63,7 +65,7 @@ public:
     RTypePtr TranslateSTypeExpToRType(STypeExp& typeExp, RTypeFactory& factory);
 
     std::shared_ptr<NLoc_This> MakeThisLoc(RTypeFactory& factory);
-    ImExpPtr ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;

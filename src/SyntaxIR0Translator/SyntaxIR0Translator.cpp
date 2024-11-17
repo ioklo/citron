@@ -54,7 +54,6 @@ public:
     void Visit(SNamespaceDecl& elem) override
     {
         shared_ptr<NNamespaceDecl> curNamespace = curDecl;
-
         for (size_t i = 0, size = elem.names.size(); i < size; i++)
         {
             auto& name = elem.names[i];
@@ -62,7 +61,7 @@ public:
             shared_ptr<NNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
             if (!childNamespace)
             {
-                childNamespace = MakePtr<NNamespaceDecl>(curNamespace, name);
+                childNamespace = context.MakeChildNamespace(curNamespace, name);
                 curNamespace->AddNamespace(childNamespace);
             }
 
@@ -96,39 +95,39 @@ public:
 
 class ScriptElemVisitor : public SScriptElementVisitor
 {
-    shared_ptr<NModule> moduleDecl;
+    shared_ptr<NNamespaceDecl> rootNamespace;
     SScriptElementPtr sharedElem;
     SkeletonPhaseContext& context;
 
 public:
-    ScriptElemVisitor(shared_ptr<NModule> moduleDecl, SScriptElementPtr sharedElem, SkeletonPhaseContext& context)
-        : moduleDecl(std::move(moduleDecl)), sharedElem(std::move(sharedElem)), context(context)
+    ScriptElemVisitor(const shared_ptr<NNamespaceDecl>& rootNamespace, const SScriptElementPtr& sharedElem, SkeletonPhaseContext& context)
+        : rootNamespace(rootNamespace), sharedElem(sharedElem), context(context)
     {
     }
 
     void Visit(SNamespaceDecl& elem) override
     {
-        // A.B.C가 있을 경우, 하위 네임스페이를 찾는다. 없으면 만들어 나간다
+        // A.B.C가 있을 경우, 하위 네임스페이스를 찾는다. 없으면 만들어 나간다
 
         // 첫번째는 모듈에서 찾는다
         assert(1 <= elem.names.size());
 
-        shared_ptr<NNamespaceDecl> curNamespace = moduleDecl->GetNamespace(elem.names[0]);
+        auto curNamespace = rootNamespace->GetNamespace(elem.names[0]);
         if (!curNamespace)
         {
-            curNamespace = MakePtr<NNamespaceDecl>(moduleDecl, elem.names[0]);
-            moduleDecl->AddNamespace(curNamespace);
+            curNamespace = context.MakeChildNamespace(rootNamespace, elem.names[0]);
+            rootNamespace->AddNamespace(curNamespace);
         }
 
         for (size_t i = 1, size = elem.names.size(); i < size; i++)
         {
             auto& name = elem.names[i];
 
-            shared_ptr<NNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
+            auto childNamespace = curNamespace->GetNamespace(name);
             if (!childNamespace)
             {
-                childNamespace = MakePtr<NNamespaceDecl>(moduleDecl, name);
-                moduleDecl->AddNamespace(childNamespace);
+                childNamespace = context.MakeChildNamespace(curNamespace, name);
+                curNamespace->AddNamespace(childNamespace);
             }
 
             curNamespace = childNamespace;
@@ -161,8 +160,8 @@ public:
         auto sharedEnumElem = dynamic_pointer_cast<SEnumDecl>(sharedElem);
         assert(sharedEnumElem);
 
-        auto nEnum = MakeEnum(moduleDecl, *sharedEnumElem, MakeGlobalMemberAccessor, context);
-        moduleDecl->AddType(std::move(nEnum));
+        auto nEnum = MakeEnum(rootNamespace, *sharedEnumElem, MakeGlobalMemberAccessor, context);
+        rootNamespace->AddType(std::move(nEnum));
     }
 };
 
@@ -171,15 +170,17 @@ public:
 std::shared_ptr<NModule> Translate(
     std::string moduleName,
     vector<SScript> scripts,
-    vector<shared_ptr<MModule>> referenceModules)
+    vector<shared_ptr<MModule>> referenceModules,
+    RTypeFactory& factory)
 {
-    auto nModuleDecl = MakePtr<NModule>(moduleName);
+    auto rootNamespace = NNamespaceDecl::MakeRoot(factory);
+    auto nModuleDecl = MakePtr<NModule>(std::move(moduleName), std::move(rootNamespace));
 
-    SkeletonPhaseContext context;
+    SkeletonPhaseContext context(factory);
     for (auto& script : scripts)
         for (auto& elem : script.elements)
         {
-            ScriptElemVisitor visitor(nModuleDecl, elem, context);
+            ScriptElemVisitor visitor(nModuleDecl->rootNamespace, elem, context);
             elem->Accept(visitor);
         }
 

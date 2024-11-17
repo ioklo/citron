@@ -7,6 +7,21 @@ using namespace std;
 
 namespace Citron {
 
+NLambdaMemberVarDecl::NLambdaMemberVarDecl(const RTypePtr& type, const RName& name)
+    : type(type), name(name)
+{
+}
+
+void NLambdaMemberVarDecl::InitLambda(const std::shared_ptr<NLambdaDecl>& lambda)
+{
+    this->lambda = lambda;
+}
+
+RTypePtr NLambdaMemberVarDecl::GetOpenDeclType()
+{
+    return type;
+}
+
 NDecl* NLambdaMemberVarDecl::GetNOuter()
 {
     return lambda.lock().get();

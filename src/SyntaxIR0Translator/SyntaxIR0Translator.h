@@ -18,7 +18,8 @@ SYNTAXIR0TRANSLATOR_API
 std::shared_ptr<NModule> Translate(
     MName moduleName,
     std::vector<SScript> scripts,
-    std::vector<std::shared_ptr<MModule>> referenceModules);
+    std::vector<std::shared_ptr<MModule>> referenceModules,
+    RTypeFactory& factory);
 
 } // namespace SyntaxIR0Translator
 

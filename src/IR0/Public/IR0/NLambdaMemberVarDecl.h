@@ -21,8 +21,10 @@ public:
     RTypePtr type;
     RName name;
 
-    IR0_API NLambdaMemberVarDecl(std::weak_ptr<NLambdaDecl>&& lambda, const RTypePtr& type, RName name);
-    
+    IR0_API NLambdaMemberVarDecl(const RTypePtr& type, const RName& name);
+    IR0_API void InitLambda(const std::shared_ptr<NLambdaDecl>& lambda);
+
+    IR0_API RTypePtr GetOpenDeclType();
 
 public:
     // from NDecl

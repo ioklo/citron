@@ -264,7 +264,7 @@ public:
 
         // 리턴 값이 없을 경우
         
-        auto funcRet = context.GetFuncReturn();
+        auto funcRet = context.GetOpenFuncReturn();
 
         return visit(overloaded {
             [this, &stmt](RFuncReturn_Set& set)
@@ -305,7 +305,7 @@ public:
                 if (!stmt.value)
                 {
                     // 이 함수는 void로 리턴을 확정 한다.
-                    context.SetFuncReturn(context.MakeVoidType());
+                    context.SetOpenFuncReturn(context.MakeVoidType());
                     return Valid(MakePtr<NStmt_Return>(nullptr));
                 }
                 else
@@ -315,7 +315,7 @@ public:
                     if (!retValue) return Fatal();
 
                     // 리턴값이 안 적혀 있었으므로 적는다
-                    context.SetFuncReturn(context.GetType(*retValue));
+                    context.SetOpenFuncReturn(context.GetType(*retValue));
                     return Valid(MakePtr<NStmt_Return>(std::move(retValue)));
                 }
             },
@@ -491,7 +491,7 @@ public:
                     if (funcDecl->GetParamCount() != 1) continue;
 
                     // 리턴 타입은 bool
-                    auto ret = context.GetFuncReturn(*funcDecl, *typeArgs);
+                    auto ret = context.GetOpenFuncReturn(*funcDecl, *typeArgs);
                     auto* setRet = get_if<RFuncReturn_Set>(&ret);
                     assert(setRet);
 
@@ -681,7 +681,7 @@ public:
         }
 
         // yield에서는 retType이 명시되는 경우만 있을 것이다
-        auto funcRet= context.GetFuncReturn();
+        auto funcRet= context.GetOpenFuncReturn();
         auto* setFuncRet = get_if<RFuncReturn_Set>(&funcRet);
 
         assert(setFuncRet); // 아닌 경우는 위에서 거른다 (sequence함수는 무조건 ret포함)

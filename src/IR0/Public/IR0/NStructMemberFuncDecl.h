@@ -48,11 +48,13 @@ public:
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDecl
-    using NCommonFuncDeclComponent::GetTypeParamCount;
+    NDecl* GetNDecl() override { return this; }
+    using NCommonFuncDeclComponent::GetOpenFuncReturn;
+    using NCommonFuncDeclComponent::IsSeqFunc;
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDeclOuter
-    NDecl* GetNDecl() override { return this; }
+    // NDecl* GetNDecl() override { return this; }
     void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
 
     // from RDecl
@@ -61,6 +63,9 @@ public:
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
+
+    // from RFuncDecl
+    using NCommonFuncDeclComponent::GetTypeParamCount;
 
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }

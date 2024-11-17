@@ -36,7 +36,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AFuncDecl.cpp" />
     <ClCompile Include="FuncContext.cpp" />
     <ClCompile Include="BodyPhaseContext.cpp" />
     <ClCompile Include="DeclTypeInfo.cpp" />
@@ -82,7 +81,6 @@
     <ClCompile Include="TranslationContext.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AFuncDecl.h" />
     <ClInclude Include="FuncContext.h" />
     <ClInclude Include="BodyPhaseContext.h" />
     <ClInclude Include="DeclTypeInfo.h" />

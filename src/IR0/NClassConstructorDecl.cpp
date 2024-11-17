@@ -6,6 +6,13 @@ using namespace std;
 
 namespace Citron {
 
+NClassConstructorDecl::NClassConstructorDecl(const shared_ptr<NClassDecl>& _class, RAccessor accessor, bool bTrivial, vector<string>&& typeParams, vector<RFuncParameter> parameters, bool bLastParamVariadic)
+    : NCommonFuncDeclComponent(std::move(typeParams), /* bSeqFunc */ false)
+    , _class(_class), accessor(accessor), bTrivial(bTrivial)
+{
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForConstructor(), std::move(parameters), bLastParamVariadic);
+}
+
 NDecl* NClassConstructorDecl::GetNOuter()
 {
     return _class.lock().get();

@@ -32,6 +32,9 @@ class NFuncDecl
 {
 public:
     virtual ~NFuncDecl() { }
+    virtual NDecl* GetNDecl() = 0;
+    virtual RFuncReturn GetOpenFuncReturn() = 0;
+    virtual bool IsSeqFunc() = 0;
     virtual void Accept(NFuncDeclVisitor& visitor) = 0;
 };
 

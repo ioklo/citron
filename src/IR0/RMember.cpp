@@ -86,10 +86,15 @@ RMember_EnumElemMemberVar::RMember_EnumElemMemberVar(const RTypeArgumentsPtr& ou
 
 }
 
-RMember_LambdaMemberVar::RMember_LambdaMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<NLambdaMemberVarDecl>& decl)
-    : outerTypeArgs(outerTypeArgs), decl(decl)
+RMember_LambdaMemberVar::RMember_LambdaMemberVar(RTypeArgumentsPtr&& outerTypeArgs, shared_ptr<NLambdaMemberVarDecl>&& decl)
+    : outerTypeArgs(std::move(outerTypeArgs)), decl(std::move(decl))
 {
 
+}
+
+RMember_LambdaMemberVar::RMember_LambdaMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NLambdaMemberVarDecl>& decl)
+    : outerTypeArgs(outerTypeArgs), decl(decl)
+{
 }
 
 RMember_TupleMemberVar::RMember_TupleMemberVar()
@@ -122,6 +127,17 @@ vector<DeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs(RMember& m
 
 RMember_TypeVar::RMember_TypeVar(size_t index)
     : index(index)
+{
+}
+
+RMember_LocalVar::RMember_LocalVar(const RTypePtr& type, const std::string& name)
+    : type(type), name(name)
+{
+
+}
+
+RMember_ThisVar::RMember_ThisVar(const RTypePtr& type)
+    : type(type)
 {
 }
 

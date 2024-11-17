@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <variant>
+#include <string>
 
 namespace Citron {
 
@@ -25,6 +26,7 @@ class REnumElemMemberVarDecl;
 class NLambdaMemberVarDecl;
 
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
+using RTypePtr = std::shared_ptr<class RType>;
 
 class RMember_Namespace 
 {
@@ -142,6 +144,7 @@ public:
     std::shared_ptr<NLambdaMemberVarDecl> decl;
 
 public:
+    RMember_LambdaMemberVar(RTypeArgumentsPtr&& outerTypeArgs, std::shared_ptr<NLambdaMemberVarDecl>&& decl);
     RMember_LambdaMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NLambdaMemberVarDecl>& decl);
 };
 
@@ -156,7 +159,27 @@ class RMember_TypeVar
 {
 public:
     size_t index;
+
+public:
     RMember_TypeVar(size_t index);
+};
+
+class RMember_LocalVar
+{
+public:
+    RTypePtr type;
+    std::string name;
+public:
+    RMember_LocalVar(const RTypePtr& type, const std::string& name);
+};
+
+class RMember_ThisVar
+{
+public:
+    RTypePtr type;
+
+public:
+    RMember_ThisVar(const RTypePtr& type);
 };
 
 using RMember = std::variant<
@@ -173,7 +196,10 @@ using RMember = std::variant<
     RMember_EnumElemMemberVar,
     RMember_LambdaMemberVar,
     RMember_TupleMemberVar,
-    RMember_TypeVar
+    RMember_TypeVar,
+
+    RMember_LocalVar,
+    RMember_ThisVar
 >;
 
 IR0_API std::vector<DeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs(RMember& member);

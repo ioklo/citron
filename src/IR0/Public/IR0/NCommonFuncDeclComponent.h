@@ -29,6 +29,7 @@ class NCommonFuncDeclComponent
     };
 
     std::vector<std::string> typeParams;
+    bool bSeqFunc;
 
     std::optional<FuncReturnAndParams> funcReturnAndParams; // need initialization
     std::optional<std::vector<NStmtPtr>> body;
@@ -36,7 +37,7 @@ class NCommonFuncDeclComponent
     std::vector<NLambdaDecl> lambdaDecls;
 
 public:
-    IR0_API NCommonFuncDeclComponent(std::vector<std::string>&& typeParams);
+    IR0_API NCommonFuncDeclComponent(std::vector<std::string>&& typeParams, bool bSeqFunc);
     IR0_API void InitFuncReturnAndParams(RFuncReturn funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic);
     IR0_API void InitBody(std::vector<NStmtPtr> body);
 
@@ -44,7 +45,9 @@ public:
 
     // internal?
     size_t GetTypeParamCount();
+    bool IsSeqFunc() { return bSeqFunc; }
 
+    IR0_API RFuncReturn GetOpenFuncReturn();
     IR0_API RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory);
     IR0_API std::vector<RTypePtr> GetParamIds();
     IR0_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);

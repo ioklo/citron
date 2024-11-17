@@ -87,9 +87,6 @@
     </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="DeclTypeInfo.cpp" />
-    <ClCompile Include="AFuncDecl.cpp">
-      <Filter>Context</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -179,9 +176,6 @@
     </ClInclude>
     <ClInclude Include="ModuleDecls.h" />
     <ClInclude Include="DeclTypeInfo.h" />
-    <ClInclude Include="AFuncDecl.h">
-      <Filter>Context</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

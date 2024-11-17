@@ -41,10 +41,10 @@ TranslationContext TranslationContext::MakeNestedLoopScopeContext()
 
 TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
 {   
-    auto newBodyContext = funcContext->MakeLambdaBodyContext(scopeContext, std::move(funcRet), std::move(funcParams), bLastParamVariadic);
-    auto newScopeContext = MakePtr<ScopeContext>(newBodyContext, nullptr, 0);
+    auto newFuncContext = MakePtr<FuncContext_Lambda>(scopeContext, /*bSeqFunc*/ false, std::move(funcRet), std::move(funcParams), bLastParamVariadic);
+    auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, nullptr, 0);
 
-    return { globalContext, newBodyContext, newScopeContext, logger, factory, binOpQueryService };
+    return { globalContext, newFuncContext, newScopeContext, logger, factory, binOpQueryService };
 }
 
 DesignatedErrorLogger TranslationContext::MakeDesignatedErrorLogger(void (Logger::* func)())
@@ -201,17 +201,17 @@ bool TranslationContext::CanAccess(RDecl* target)
 
 bool TranslationContext::IsSeqFunc()
 {
-    return funcContext->bSeqFunc;
+    return funcContext->IsSeqFunc();
 }
 
-RFuncReturn TranslationContext::GetFuncReturn()
+RFuncReturn TranslationContext::GetOpenFuncReturn()
 {
-    return funcContext->GetFuncReturn();
+    return funcContext->GetOpenFuncReturn();
 }
 
-void TranslationContext::SetFuncReturn(RTypePtr&& retType)
+void TranslationContext::SetOpenFuncReturn(RTypePtr&& retType)
 {
-    funcContext->SetFuncReturn(std::move(retType));
+    funcContext->SetOpenFuncReturn(std::move(retType));
 }
 
 void TranslationContext::SetSyntax(const SSyntaxPtr& syntax)

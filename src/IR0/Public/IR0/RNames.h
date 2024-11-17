@@ -50,6 +50,7 @@ static RName Enumerator;
 static RName GetEnumerator; // = RName_Normal("GetEnumerator");
 static RName Next; // = RName_Normal("Next");
 static RName RawItem; 
+static RName _this; // "this"
 
 } // namespace RNames
 

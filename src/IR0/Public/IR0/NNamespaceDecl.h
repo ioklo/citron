@@ -38,11 +38,11 @@ private:
     RNamespaceDeclGroupPtr group;
 
 public:
-    std::shared_ptr<NNamespaceDecl> MakeRoot(RTypeFactory& factory);
-    std::shared_ptr<NNamespaceDecl> MakeChild(const std::shared_ptr<NNamespaceDecl>& outer, std::string&& name, RTypeFactory& factory);
+    static std::shared_ptr<NNamespaceDecl> MakeRoot(RTypeFactory& factory);
+    static std::shared_ptr<NNamespaceDecl> MakeChild(const std::shared_ptr<NNamespaceDecl>& outer, const std::string& name, RTypeFactory& factory);
 
 private:
-    NNamespaceDecl(std::weak_ptr<NNamespaceDecl>&& outer, std::string&& name, const RNamespaceDeclGroupPtr& group);
+    NNamespaceDecl(const std::shared_ptr<NNamespaceDecl>& outer, const std::string& name, const RNamespaceDeclGroupPtr& group);
 
 public:
     const std::string& GetName() { return name; }

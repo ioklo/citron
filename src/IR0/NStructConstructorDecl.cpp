@@ -9,7 +9,7 @@ namespace Citron
 {
 
 NStructConstructorDecl::NStructConstructorDecl(weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bTrivial)
-    : NCommonFuncDeclComponent(/*typeParams*/ {})
+    : NCommonFuncDeclComponent(/*typeParams*/ {}, false)
     , _struct(std::move(_struct))
     , accessor(accessor)
     , bTrivial(bTrivial)
