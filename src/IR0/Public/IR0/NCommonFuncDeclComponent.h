@@ -38,8 +38,8 @@ class NCommonFuncDeclComponent
 
 public:
     IR0_API NCommonFuncDeclComponent(std::vector<std::string>&& typeParams, bool bSeqFunc);
-    IR0_API void InitFuncReturnAndParams(RFuncReturn funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic);
-    IR0_API void InitBody(std::vector<NStmtPtr> body);
+    IR0_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    IR0_API void InitBody(std::vector<NStmtPtr>&& body);
 
     IR0_API ~NCommonFuncDeclComponent();
 
@@ -49,6 +49,7 @@ public:
 
     IR0_API RFuncReturn GetOpenFuncReturn();
     IR0_API RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory);
+    IR0_API RFuncParameter& GetOpenFuncParam(int i);
     IR0_API std::vector<RTypePtr> GetParamIds();
     IR0_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
 };

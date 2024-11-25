@@ -11,13 +11,13 @@ namespace SyntaxIR0Translator {
 
 class SkeletonPhaseContext;
 
-std::shared_ptr<NStructDecl> InnerMakeStruct(std::shared_ptr<SStructDecl> sDecl, NTypeDeclOuterWPtr nOuter, RAccessor accessor, SkeletonPhaseContext& context);
+std::shared_ptr<NStructDecl> InnerMakeStruct(std::shared_ptr<SStructDecl>&& sDecl, const std::shared_ptr<NTypeDeclOuter>& nOuter, RAccessor accessor, SkeletonPhaseContext& context);
 
-template<typename TROuter, typename TMakeAccessor>
-std::shared_ptr<NStructDecl> MakeStruct(const std::shared_ptr<TROuter>& rOuter, std::shared_ptr<SStructDecl> sStruct, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)
+template<typename TNOuter, typename TMakeAccessor>
+std::shared_ptr<NStructDecl> MakeStruct(const std::shared_ptr<TNOuter>& nOuter, std::shared_ptr<SStructDecl>&& sStruct, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)
 {
     auto accessor = makeAccessor(sStruct->accessModifier);
-    return InnerMakeStruct(sStruct, rOuter, accessor, context);
+    return InnerMakeStruct(std::move(sStruct), nOuter, accessor, context);
 }
 
 } // namespace SyntaxIR0Translator

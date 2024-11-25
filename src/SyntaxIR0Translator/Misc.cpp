@@ -111,4 +111,20 @@ bool IsVarType(STypeExp& typeExp)
     return idTypeExp && idTypeExp->name == "var" && idTypeExp->typeArgs.size() == 0;
 }
 
+RName_ConstructorParam MakeBaseConstructorParamName(int index, RName baseParamName)
+{
+    if (auto* specialName = get_if<RName_ConstructorParam>(&baseParamName))
+    {
+        return RName_ConstructorParam(index, specialName->paramText);
+    }
+    else if (auto* normalName = get_if<RName_Normal>(&baseParamName))
+    {
+        return RName_ConstructorParam(index, normalName->text);
+    }
+    else
+    {
+        throw new RuntimeFatalException();
+    }
+}
+
 } // namespace Citron::SyntaxIR0Translator

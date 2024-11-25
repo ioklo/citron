@@ -6,12 +6,8 @@
 
 namespace Citron {
 
-class RTypeFactory;
-class Logger;
-
 using SStmtPtr = std::shared_ptr<class SStmt>;
 using NStmtPtr = std::shared_ptr<class NStmt>;
-
 
 namespace SyntaxIR0Translator {
 

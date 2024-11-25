@@ -36,6 +36,8 @@ public:
     using NCommonFuncDeclComponent::InitBody;
     IR0_API ~NStructConstructorDecl();
 
+    using NCommonFuncDeclComponent::GetOpenFuncParam;
+
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }

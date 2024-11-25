@@ -14,6 +14,12 @@ NStructDecl::NStructDecl(NTypeDeclOuterWPtr&& outer, RAccessor accessor, RName&&
 {
 }
 
+shared_ptr<NStructConstructorDecl> NStructDecl::GetOpenTrivialConstructor()
+{
+    if (trivialConstructorIndex == -1) return nullptr;
+    return constructors[trivialConstructorIndex];
+}
+
 NDecl* NStructDecl::GetNOuter()
 {
     return outer.lock()->GetNDecl();

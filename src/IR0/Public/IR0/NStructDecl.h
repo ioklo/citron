@@ -65,8 +65,9 @@ public:
     void AddMemberFunc(std::shared_ptr<NStructMemberFuncDecl> decl) { NFuncDeclContainerComponent<NStructMemberFuncDecl>::AddFunc(std::move(decl)); }
     IR0_API void AddMemberVar(std::shared_ptr<NStructMemberVarDecl> decl);
 
-    auto GetConstructorDecls() { return std::views::all(constructors); }
-    auto GetMemberVarDecls() { return std::views::all(memberVars); }
+    auto GetOpenConstructors() { return std::views::all(constructors); }
+    auto GetOpenMemberVars() { return std::views::all(memberVars); }
+    IR0_API std::shared_ptr<NStructConstructorDecl> GetOpenTrivialConstructor();
 
     /*size_t GetMemberVarCount() { return memberVars.size(); }
     const std::shared_ptr<NStructMemberVarDecl>& GetMemberVar(size_t index) { return memberVars[index]; }*/

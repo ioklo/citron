@@ -23,6 +23,8 @@ NExpPtr CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext
 
 bool IsVarType(STypeExp& typeExp);
 
+RName_ConstructorParam MakeBaseConstructorParamName(int index, RName baseParamName);
+
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

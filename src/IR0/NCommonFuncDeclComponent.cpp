@@ -16,14 +16,14 @@ NCommonFuncDeclComponent::NCommonFuncDeclComponent(std::vector<std::string>&& ty
 {
 }
 
-void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn funcReturn, vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
+void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
-    funcReturnAndParams = FuncReturnAndParams{move(funcReturn), move(funcParameters), bLastParameterVariadic};
+    funcReturnAndParams = FuncReturnAndParams{std::move(funcReturn), std::move(funcParameters), bLastParameterVariadic};
 }
 
-void NCommonFuncDeclComponent::InitBody(vector<NStmtPtr> body)
+void NCommonFuncDeclComponent::InitBody(vector<NStmtPtr>&& body)
 {
-    this->body = move(body);
+    this->body = std::move(body);
 }
 
 NCommonFuncDeclComponent::~NCommonFuncDeclComponent() = default;
@@ -47,6 +47,12 @@ RTypePtr NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RType
     assert(setReturn);
 
     return setReturn->type->Apply(typeArgs, factory);
+}
+
+RFuncParameter& NCommonFuncDeclComponent::GetOpenFuncParam(int i)
+{
+    assert(funcReturnAndParams);
+    return funcReturnAndParams->funcParameters[i];
 }
 
 vector<RTypePtr> NCommonFuncDeclComponent::GetParamIds()
