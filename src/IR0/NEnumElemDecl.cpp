@@ -8,16 +8,16 @@ using namespace std;
 
 namespace Citron {
 
-NEnumElemDecl::NEnumElemDecl(weak_ptr<NEnumDecl> _enum, string name, size_t memberVarCount)
+NEnumElemDecl::NEnumElemDecl(weak_ptr<NEnumDecl> _enum, string name, size_t varCount)
     : _enum(move(_enum)), name(move(name))
 {
-    memberVars.reserve(memberVarCount);
+    vars.reserve(varCount);
 }
 
-void NEnumElemDecl::AddMemberVar(const std::shared_ptr<NEnumElemMemberVarDecl>& memberVar)
+void NEnumElemDecl::AddVar(const std::shared_ptr<NEnumElemVarDecl>& var)
 {
-    memberVars.push_back(memberVar);
-    memberVarsMap.emplace(memberVar->name, std::move(memberVar));
+    vars.push_back(var);
+    varsMap.emplace(var->name, std::move(var));
 }
 
 NDecl* NEnumElemDecl::GetNOuter()
@@ -46,38 +46,38 @@ optional<RMember> NEnumElemDecl::GetMember(const RTypeArgumentsPtr& typeArgs, co
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
-    return GetMemberVar(typeArgs, name);
+    return GetVar(typeArgs, name);
 }
 
 optional<RMember> NEnumElemDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
 {
-    // MemberVarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
+    // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
     throw RuntimeFatalException();
 }
 
-optional<RMember_EnumElemMemberVar> NEnumElemDecl::GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
+optional<RMember_EnumElemVar> NEnumElemDecl::GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
 {
     auto* normalName = get_if<RName_Normal>(&name);
     if (!normalName) return nullopt;
 
-    auto i = memberVarsMap.find(normalName->text);
-    if (i == memberVarsMap.end()) return nullopt;
+    auto i = varsMap.find(normalName->text);
+    if (i == varsMap.end()) return nullopt;
 
-    return RMember_EnumElemMemberVar(typeArgs, i->second);
+    return RMember_EnumElemVar(typeArgs, i->second);
 }
 
-size_t NEnumElemDecl::GetMemberVarCount()
+size_t NEnumElemDecl::GetVarCount()
 {
-    return memberVars.size();
+    return vars.size();
 }
 
 vector<RFuncParameter> NEnumElemDecl::GetUnboundCtorParams()
 {
     vector<RFuncParameter> result;
 
-    result.reserve(memberVars.size());
-    for (auto& memberVar : memberVars)
-        result.emplace_back(/*bOut*/ false, memberVar->declType, RName_Normal(memberVar->name));
+    result.reserve(vars.size());
+    for (auto& var : vars)
+        result.emplace_back(/*bOut*/ false, var->declType, RName_Normal(var->name));
 
     return result;
 }

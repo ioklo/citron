@@ -891,7 +891,7 @@ optional<NLambdaDeclAndArgs> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr
     vector<NStmtPtr> rBody;
     if (!TranslateSBodyToNStmts(sBody, &rBody, newContext)) return nullopt;
 
-    // body분석을 했던것을 토대로 캡쳐한 변수들을 LambdaMemberVarDecl로 만들고, 현재 context에서 전달할 argument로 만든다
+    // body분석을 했던것을 토대로 캡쳐한 변수들을 LambdaVarDecl로 만들고, 현재 context에서 전달할 argument로 만든다
     return newContext.MakeLambdaDeclAndArgs(std::move(rBody));
 }
 

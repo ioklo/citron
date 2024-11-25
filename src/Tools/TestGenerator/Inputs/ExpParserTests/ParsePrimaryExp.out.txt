@@ -1,45 +1,48 @@
 {
-    "$type": "SUnaryOpExp",
+    "$type": "SExp_UnaryOp",
     "kind": "PostfixInc",
     "operand": {
-        "$type": "SBinaryOpExp",
+        "$type": "SExp_BinaryOp",
         "kind": "Modulo",
         "operand0": {
-            "$type": "SCallExp",
+            "$type": "SExp_Call",
             "callable": {
-                "$type": "SUnaryOpExp",
+                "$type": "SExp_UnaryOp",
                 "kind": "PostfixInc",
                 "operand": {
-                    "$type": "SIdentifierExp",
+                    "$type": "SExp_Identifier",
                     "value": "c",
                     "typeArgs": []
                 }
             },
-            "args": [
-                {
-                    "$type": "SArgument",
-                    "bOut": false,
-                    "bParams": false,
-                    "exp": {
-                        "$type": "SIdentifierExp",
-                        "value": "e",
-                        "typeArgs": []
+            "args": {
+                "$type": "SArguments",
+                "items": [
+                    {
+                        "$type": "SArgument",
+                        "bOut": false,
+                        "bParams": false,
+                        "exp": {
+                            "$type": "SExp_Identifier",
+                            "value": "e",
+                            "typeArgs": []
+                        }
+                    },
+                    {
+                        "$type": "SArgument",
+                        "bOut": false,
+                        "bParams": false,
+                        "exp": {
+                            "$type": "SExp_Identifier",
+                            "value": "f",
+                            "typeArgs": []
+                        }
                     }
-                },
-                {
-                    "$type": "SArgument",
-                    "bOut": false,
-                    "bParams": false,
-                    "exp": {
-                        "$type": "SIdentifierExp",
-                        "value": "f",
-                        "typeArgs": []
-                    }
-                }
-            ]
+                ]
+            }
         },
         "operand1": {
-            "$type": "SIdentifierExp",
+            "$type": "SExp_Identifier",
             "value": "d",
             "typeArgs": []
         }

@@ -1,16 +1,16 @@
 {
-    "$type": "SListExp",
+    "$type": "SExp_List",
     "elements": [
         {
-            "$type": "SIntLiteralExp",
+            "$type": "SExp_IntLiteral",
             "value": 1
         },
         {
-            "$type": "SIntLiteralExp",
+            "$type": "SExp_IntLiteral",
             "value": 2
         },
         {
-            "$type": "SIntLiteralExp",
+            "$type": "SExp_IntLiteral",
             "value": 3
         }
     ]

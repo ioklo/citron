@@ -1,14 +1,14 @@
 {
-    "$type": "SIndirectMemberExp",
+    "$type": "SExp_IndirectMember",
     "parent": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "a",
         "typeArgs": []
     },
     "memberName": "b",
     "memberTypeArgs": [
         {
-            "$type": "SIdTypeExp",
+            "$type": "STypeExp_Id",
             "name": "int",
             "typeArgs": []
         }

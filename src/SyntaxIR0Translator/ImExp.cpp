@@ -62,23 +62,23 @@ ImExp_LocalVar::ImExp_LocalVar(const RTypePtr& type, const std::string& name)
 
 }
 
-ImExp_LambdaMemberVar::ImExp_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+ImExp_LambdaVar::ImExp_LambdaVar(const std::shared_ptr<NLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 
 }
 
-ImExp_ClassMemberVar::ImExp_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ImExp_ClassVar::ImExp_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
-ImExp_StructMemberVar::ImExp_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ImExp_StructVar::ImExp_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
-ImExp_EnumElemMemberVar::ImExp_EnumElemMemberVar(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance)
+ImExp_EnumElemVar::ImExp_EnumElemVar(const std::shared_ptr<REnumElemVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance)
     : decl(decl), typeArgs(typeArgs), instance(instance)
 {
 

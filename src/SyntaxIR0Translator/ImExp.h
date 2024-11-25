@@ -14,7 +14,7 @@ namespace Citron {
 
 class RNamespaceDecl;
 class RClass;
-class NLambdaMemberVarDecl;
+class NLambdaVarDecl;
 
 class RType_TypeVar;
 
@@ -33,10 +33,10 @@ class ImExp_Enum;
 class ImExp_EnumElem;
 class ImExp_ThisVar;
 class ImExp_LocalVar;
-class ImExp_LambdaMemberVar;
-class ImExp_ClassMemberVar;
-class ImExp_StructMemberVar;
-class ImExp_EnumElemMemberVar;
+class ImExp_LambdaVar;
+class ImExp_ClassVar;
+class ImExp_StructVar;
+class ImExp_EnumElemVar;
 class ImExp_ListIndexer;
 class ImExp_LocalDeref;
 class ImExp_BoxDeref;
@@ -67,10 +67,10 @@ public:
     virtual void Visit(ImExp_EnumElem& imExp) = 0;
     virtual void Visit(ImExp_ThisVar& imExp) = 0;
     virtual void Visit(ImExp_LocalVar& imExp) = 0;
-    virtual void Visit(ImExp_LambdaMemberVar& imExp) = 0;
-    virtual void Visit(ImExp_ClassMemberVar& imExp) = 0;
-    virtual void Visit(ImExp_StructMemberVar& imExp) = 0;
-    virtual void Visit(ImExp_EnumElemMemberVar& imExp) = 0;
+    virtual void Visit(ImExp_LambdaVar& imExp) = 0;
+    virtual void Visit(ImExp_ClassVar& imExp) = 0;
+    virtual void Visit(ImExp_StructVar& imExp) = 0;
+    virtual void Visit(ImExp_EnumElemVar& imExp) = 0;
     virtual void Visit(ImExp_ListIndexer& imExp) = 0;
     virtual void Visit(ImExp_LocalDeref& imExp) = 0;
     virtual void Visit(ImExp_BoxDeref& imExp) = 0;
@@ -250,60 +250,60 @@ public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class ImExp_LambdaMemberVar : public ImExp
+class ImExp_LambdaVar : public ImExp
 {
 public:
-    std::shared_ptr<NLambdaMemberVarDecl> decl;
+    std::shared_ptr<NLambdaVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    ImExp_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ImExp_LambdaVar(const std::shared_ptr<NLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class ImExp_ClassMemberVar : public ImExp
+class ImExp_ClassVar : public ImExp
 {
 public:
-    std::shared_ptr<RClassMemberVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
-    
-    bool hasExplicitInstance;
-    ReExpPtr explicitInstance;
-
-public:
-    ImExp_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
-
-public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
-};
-
-class ImExp_StructMemberVar : public ImExp
-{
-public:
-    std::shared_ptr<RStructMemberVarDecl> decl;
+    std::shared_ptr<RClassVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
 
 public:
-    ImExp_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class ImExp_EnumElemMemberVar : public ImExp
+class ImExp_StructVar : public ImExp
 {
 public:
-    std::shared_ptr<REnumElemMemberVarDecl> decl;
+    std::shared_ptr<RStructVarDecl> decl;
+    RTypeArgumentsPtr typeArgs;
+    
+    bool hasExplicitInstance;
+    ReExpPtr explicitInstance;
+
+public:
+    ImExp_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+
+public:
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+};
+
+class ImExp_EnumElemVar : public ImExp
+{
+public:
+    std::shared_ptr<REnumElemVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
     ReExpPtr instance;
 
 public:
-    ImExp_EnumElemMemberVar(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance);
+    ImExp_EnumElemVar(const std::shared_ptr<REnumElemVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }

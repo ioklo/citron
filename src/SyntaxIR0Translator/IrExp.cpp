@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "IrExp.h"
 
-#include <IR0/RClassMemberVarDecl.h>
-#include <IR0/RStructMemberVarDecl.h>
+#include <IR0/RClassVarDecl.h>
+#include <IR0/RStructVarDecl.h>
 
 using namespace std;
 
@@ -44,7 +44,7 @@ IrExp_StaticRef::IrExp_StaticRef(const NLocPtr& loc)
 {
 }
 
-IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : loc(loc), decl(decl), typeArgs(typeArgs)
 {
 }
@@ -59,7 +59,7 @@ RTypePtr IrExp_BoxRef_ClassMember::GetTargetType(RTypeFactory& factory)
 //    return MakePtr<RClassMemberLoc>(loc, decl, typeArgs);
 //}
 
-IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(const NLocPtr& loc, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(const NLocPtr& loc, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : loc(loc), decl(decl), typeArgs(typeArgs)
 {
 }
@@ -75,7 +75,7 @@ RTypePtr IrExp_BoxRef_StructIndirectMember::GetTargetType(RTypeFactory& factory)
 //    return MakePtr<RStructMemberLoc>(MakePtr<RBoxDerefLoc>(loc, decl, typeArgs));
 //}
 
-IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : parent(parent), decl(decl), typeArgs(typeArgs)
 {
 }

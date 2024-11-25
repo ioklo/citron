@@ -330,22 +330,22 @@ public:
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_LambdaMemberVar& imExp) override
+    void Visit(ImExp_LambdaVar& imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_ClassMemberVar& imExp) override
+    void Visit(ImExp_ClassVar& imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_StructMemberVar& imExp) override
+    void Visit(ImExp_StructVar& imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_EnumElemMemberVar& imExp) override
+    void Visit(ImExp_EnumElemVar& imExp) override
     {
         return HandleLoc(imExp);
     }

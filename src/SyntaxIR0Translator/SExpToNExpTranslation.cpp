@@ -240,7 +240,7 @@ NExpPtr TranslateSAssignBinaryOpExpToNExp(SExp_BinaryOp& exp, TranslationContext
 
     // 안되는거 체크
     auto* pRDestLoc = nDestLoc.get();
-    if (dynamic_cast<NLoc_LambdaMemberVar*>(pRDestLoc))
+    if (dynamic_cast<NLoc_LambdaVar*>(pRDestLoc))
     {
         // int x = 0; var l = () { x = 3; }, TODO: 이거 가능하도록
         context.Log(&Logger::Fatal_BinaryOp_LeftOperandIsNotAssignable);

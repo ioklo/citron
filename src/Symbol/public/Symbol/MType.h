@@ -77,7 +77,7 @@ public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class MTupleMemberVar
+class MTupleVar
 {
     MTypePtr declType;
     std::string name;
@@ -85,7 +85,7 @@ class MTupleMemberVar
 
 class MType_Tuple : public MType
 {
-    std::vector<MTupleMemberVar> memberVars;
+    std::vector<MTupleVar> vars;
 
 public:
     void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }

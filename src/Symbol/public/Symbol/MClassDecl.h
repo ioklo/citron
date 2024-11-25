@@ -5,7 +5,7 @@
 #include "MTypeDeclOuter.h"
 #include "MClassCtorDecl.h"
 #include "MClassFuncDecl.h"
-#include "MClassMemberVarDecl.h"
+#include "MClassVarDecl.h"
 #include "MNames.h"
 #include "MTypeDeclContainerComponent.h"
 #include "MFuncDeclContainerComponent.h"
@@ -37,7 +37,7 @@ class MClassDecl
     std::vector<std::shared_ptr<MClassCtorDecl>> ctors;
     int trivialCtorIndex; // can be -1
 
-    std::vector<std::shared_ptr<MClassMemberVarDecl>> memberVars;
+    std::vector<std::shared_ptr<MClassVarDecl>> vars;
 
     std::optional<BaseTypes> oBaseTypes;
 

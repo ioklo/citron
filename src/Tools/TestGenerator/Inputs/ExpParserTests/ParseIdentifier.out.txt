@@ -1,5 +1,5 @@
 {
-    "$type": "SIdentifierExp",
+    "$type": "SExp_Identifier",
     "value": "s",
     "typeArgs": []
 }

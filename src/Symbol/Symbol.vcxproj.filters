@@ -53,7 +53,7 @@
     <ClInclude Include="Public\Symbol\MEnumElemDecl.h">
       <Filter>Symbols\08 Enum</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MEnumElemMemberVarDecl.h">
+    <ClInclude Include="Public\Symbol\MEnumElemVarDecl.h">
       <Filter>Symbols\08 Enum</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MStructCtorDecl.h">
@@ -65,7 +65,7 @@
     <ClInclude Include="Public\Symbol\MStructFuncDecl.h">
       <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MStructMemberVarDecl.h">
+    <ClInclude Include="Public\Symbol\MStructVarDecl.h">
       <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MClassCtorDecl.h">
@@ -77,7 +77,7 @@
     <ClInclude Include="Public\Symbol\MClassFuncDecl.h">
       <Filter>Symbols\06 Class</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MClassMemberVarDecl.h">
+    <ClInclude Include="Public\Symbol\MClassVarDecl.h">
       <Filter>Symbols\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MFuncParameter.h">

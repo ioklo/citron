@@ -76,21 +76,21 @@ optional<RMember> RType_Void::GetMember(const RName& name, size_t explicitTypeAr
     return nullopt;
 }
 
-RType_Tuple::RType_Tuple(std::vector<RTupleMemberVar>&& memberVars)
-    : memberVars(std::move(memberVars))
+RType_Tuple::RType_Tuple(std::vector<RTupleVar>&& vars)
+    : vars(std::move(vars))
 {
 }
 
 RTypePtr RType_Tuple::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
-    vector<RTupleMemberVar> appliedMemberVars;
-    for (auto& memberVar : memberVars)
+    vector<RTupleVar> appliedVars;
+    for (auto& var : vars)
     {
-        auto appliedDeclType = memberVar.declType->Apply(typeArgs, factory);
-        appliedMemberVars.push_back(RTupleMemberVar { appliedDeclType, memberVar.name });
+        auto appliedDeclType = var.declType->Apply(typeArgs, factory);
+        appliedVars.push_back(RTupleVar { appliedDeclType, var.name });
     }
 
-    return factory.MakeTupleType(std::move(appliedMemberVars));
+    return factory.MakeTupleType(std::move(appliedVars));
 }
 
 optional<RMember> RType_Tuple::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -169,9 +169,9 @@ RType_Class::RType_Class(const std::shared_ptr<RClassDecl>& decl, const RTypeArg
 {
 }
 
-std::optional<RMember_ClassMemberVar> RType_Class::GetMemberVar(const RName& name)
+std::optional<RMember_ClassVar> RType_Class::GetVar(const RName& name)
 {
-    return decl->GetMemberVar(typeArgs, name);
+    return decl->GetVar(typeArgs, name);
 }
 
 RTypePtr RType_Class::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
@@ -190,9 +190,9 @@ RType_Struct::RType_Struct(const std::shared_ptr<RStructDecl>& decl, const RType
 {
 }
 
-std::optional<RMember_StructMemberVar> RType_Struct::GetMemberVar(const RName& name)
+std::optional<RMember_StructVar> RType_Struct::GetVar(const RName& name)
 {
-    return decl->GetMemberVar(typeArgs, name);
+    return decl->GetVar(typeArgs, name);
 }
 
 RTypePtr RType_Struct::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
@@ -227,9 +227,9 @@ RType_EnumElem::RType_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const
 {
 }
 
-std::optional<RMember_EnumElemMemberVar> RType_EnumElem::GetMemberVar(const RName& name)
+std::optional<RMember_EnumElemVar> RType_EnumElem::GetVar(const RName& name)
 {
-    return decl->GetMemberVar(typeArgs, name);
+    return decl->GetVar(typeArgs, name);
 }
 
 RTypePtr RType_EnumElem::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)

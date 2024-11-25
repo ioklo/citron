@@ -47,27 +47,27 @@ public:
         HandleLoc(std::move(nLoc));
     }
 
-    void Visit(ReExp_LambdaMemberVar& exp) override
+    void Visit(ReExp_LambdaVar& exp) override
     {
-        auto nLoc = TranslateReLambdaMemberVarExpToNLoc(exp);
+        auto nLoc = TranslateReLambdaVarExpToNLoc(exp);
         HandleLoc(std::move(nLoc));
     }
 
-    void Visit(ReExp_ClassMemberVar& exp) override
+    void Visit(ReExp_ClassVar& exp) override
     {
-        auto nLoc = TranslateReClassMemberVarExpToNLoc(exp, context);
+        auto nLoc = TranslateReClassVarExpToNLoc(exp, context);
         HandleLoc(std::move(nLoc));
     }
 
-    void Visit(ReExp_StructMemberVar& exp) override
+    void Visit(ReExp_StructVar& exp) override
     {
-        auto nLoc = TranslateReStructMemberVarExpToNLoc(exp, context);
+        auto nLoc = TranslateReStructVarExpToNLoc(exp, context);
         HandleLoc(std::move(nLoc));
     }
 
-    void Visit(ReExp_EnumElemMemberVar& exp) override
+    void Visit(ReExp_EnumElemVar& exp) override
     {
-        auto nLoc = TranslateReEnumElemMemberVarExpToNLoc(exp, context);
+        auto nLoc = TranslateReEnumElemVarExpToNLoc(exp, context);
         HandleLoc(std::move(nLoc));
     }
 

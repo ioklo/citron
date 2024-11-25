@@ -1,13 +1,15 @@
 #pragma once
+#include "IR0Config.h"
 
 #include <memory>
+
 #include "RDecl.h"
 
 namespace Citron {
 
-class RTypeFactory;
+class MEnumElemVarDecl;
 
-class RLambdaMemberVarDecl
+class REnumElemVarDecl
     : public RDecl
 {
 public:
@@ -15,7 +17,10 @@ public:
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
 };
 
-// M버전이 없다
+class RMEnumElemVarDecl : public REnumElemVarDecl
+{
+    std::shared_ptr<MEnumElemVarDecl> decl;
+};
 
 
 } // namespace Citron

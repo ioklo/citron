@@ -12,7 +12,7 @@ class RType_TypeVar;
 class RClassDecl;
 class RStructDecl;
 class REnumDecl;
-class RStructMemberVarDecl;
+class RStructVarDecl;
 
 namespace SyntaxIR0Translator {
 
@@ -201,11 +201,11 @@ class IrExp_BoxRef_ClassMember : public IrExp_BoxRef
 {
 public:
     NLocPtr loc;
-    std::shared_ptr<RClassMemberVarDecl> decl;
+    std::shared_ptr<RClassVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
 
     RTypePtr GetTargetType(RTypeFactory& factory) override;
@@ -218,11 +218,11 @@ class IrExp_BoxRef_StructIndirectMember : public IrExp_BoxRef
 {
 public:
     NLocPtr loc;
-    std::shared_ptr<RStructMemberVarDecl> decl;
+    std::shared_ptr<RStructVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_BoxRef_StructIndirectMember(const NLocPtr& loc, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_StructIndirectMember(const NLocPtr& loc, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetTargetType(RTypeFactory& factory) override;
     NLocPtr MakeLoc() override;
@@ -232,11 +232,11 @@ class IrExp_BoxRef_StructMember : public IrExp_BoxRef
 {
 public:
     std::shared_ptr<IrExp_BoxRef> parent;
-    std::shared_ptr<RStructMemberVarDecl> decl;
+    std::shared_ptr<RStructVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(IrBoxRefExpVisitor & visitor) override { visitor.Visit(*this); }
     RTypePtr GetTargetType(RTypeFactory& factory) override;
     NLocPtr MakeLoc() override;

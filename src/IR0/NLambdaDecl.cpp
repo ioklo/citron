@@ -12,12 +12,12 @@ NLambdaDecl::NLambdaDecl(NFuncDeclOuterWPtr&& outer, RName&& name, RFuncReturn&&
     NCommonFuncDeclComponent::InitFuncReturnAndParams(std::move(funcReturn), std::move(funcParameters), bLastParameterVariadic);
 }
 
-void NLambdaDecl::Init(std::vector<std::shared_ptr<NLambdaMemberVarDecl>>&& memberVars, std::vector<NStmtPtr>&& body)
+void NLambdaDecl::Init(std::vector<std::shared_ptr<NLambdaVarDecl>>&& vars, std::vector<NStmtPtr>&& body)
 {
-    for (auto& memberVar : memberVars)
-        memberVarsMap.emplace(memberVar->name, memberVar);
+    for (auto& var : vars)
+        varsMap.emplace(var->name, var);
 
-    this->memberVars = std::move(memberVars);
+    this->vars = std::move(vars);
 
     NCommonFuncDeclComponent::InitBody(std::move(body));
 }
@@ -46,10 +46,10 @@ optional<RMember> NLambdaDecl::GetMember(const RTypeArgumentsPtr& typeArgs, cons
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
-    auto i = memberVarsMap.find(name);
-    if (i == memberVarsMap.end()) return nullopt;
+    auto i = varsMap.find(name);
+    if (i == varsMap.end()) return nullopt;
 
-    return RMember_LambdaMemberVar(typeArgs, i->second);
+    return RMember_LambdaVar(typeArgs, i->second);
 }
 
 optional<RMember> NLambdaDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)

@@ -16,14 +16,14 @@ class RNamespaceDecl;
 class RGlobalFuncDecl;
 class RClassDecl;
 class RClassFuncDecl;
-class RClassMemberVarDecl;
+class RClassVarDecl;
 class RStructDecl;
 class RStructFuncDecl;
-class RStructMemberVarDecl;
+class RStructVarDecl;
 class REnumDecl;
 class REnumElemDecl;
-class REnumElemMemberVarDecl;
-class NLambdaMemberVarDecl;
+class REnumElemVarDecl;
+class NLambdaVarDecl;
 
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 using RTypePtr = std::shared_ptr<class RType>;
@@ -66,14 +66,14 @@ public:
     ~RMember_ClassFuncs();
 };
 
-class RMember_ClassMemberVar 
+class RMember_ClassVar 
 {   
 public:
-    std::shared_ptr<RClassMemberVarDecl> decl;
+    std::shared_ptr<RClassVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    RMember_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RMember_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 };
 
 class RMember_Struct 
@@ -97,14 +97,14 @@ public:
     ~RMember_StructFuncs();
 };
 
-class RMember_StructMemberVar 
+class RMember_StructVar 
 {
 public:
-    std::shared_ptr<RStructMemberVarDecl> decl;
+    std::shared_ptr<RStructVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    RMember_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    RMember_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 };
 
 class RMember_Enum 
@@ -127,32 +127,32 @@ public:
     RMember_EnumElem(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumElemDecl>& decl);
 };
 
-class RMember_EnumElemMemberVar 
+class RMember_EnumElemVar 
 {
 public:
     RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<REnumElemMemberVarDecl> decl;
+    std::shared_ptr<REnumElemVarDecl> decl;
 
 public:
-    RMember_EnumElemMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumElemMemberVarDecl>& decl);
+    RMember_EnumElemVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumElemVarDecl>& decl);
 };
 
-class RMember_LambdaMemberVar 
+class RMember_LambdaVar 
 {
 public:
     RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<NLambdaMemberVarDecl> decl;
+    std::shared_ptr<NLambdaVarDecl> decl;
 
 public:
-    RMember_LambdaMemberVar(RTypeArgumentsPtr&& outerTypeArgs, std::shared_ptr<NLambdaMemberVarDecl>&& decl);
-    RMember_LambdaMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NLambdaMemberVarDecl>& decl);
+    RMember_LambdaVar(RTypeArgumentsPtr&& outerTypeArgs, std::shared_ptr<NLambdaVarDecl>&& decl);
+    RMember_LambdaVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NLambdaVarDecl>& decl);
 };
 
 // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
-class RMember_TupleMemberVar 
+class RMember_TupleVar 
 {
 public:
-    RMember_TupleMemberVar();
+    RMember_TupleVar();
 };
 
 class RMember_TypeVar
@@ -187,15 +187,15 @@ using RMember = std::variant<
     RMember_GlobalFuncs,
     RMember_Class,
     RMember_ClassFuncs,
-    RMember_ClassMemberVar,
+    RMember_ClassVar,
     RMember_Struct,
     RMember_StructFuncs,
-    RMember_StructMemberVar,
+    RMember_StructVar,
     RMember_Enum,
     RMember_EnumElem,
-    RMember_EnumElemMemberVar,
-    RMember_LambdaMemberVar,
-    RMember_TupleMemberVar,
+    RMember_EnumElemVar,
+    RMember_LambdaVar,
+    RMember_TupleVar,
     RMember_TypeVar,
 
     RMember_LocalVar,

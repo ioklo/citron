@@ -72,7 +72,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
     void Visit(ImExp_EnumElem& imExp) override
     {
         // if standalone, 값으로 처리한다
-        if (imExp.decl->GetMemberVarCount() == 0)
+        if (imExp.decl->GetVarCount() == 0)
         {
             *result = MakePtr<ReExp_Else>(MakePtr<NExp_NewEnumElem>(imExp.decl, imExp.typeArgs, vector<NArgument>()));
             return;
@@ -90,21 +90,21 @@ struct ImExpToReExpTranslator : public ImExpVisitor
     {
         *result = MakePtr<ReExp_LocalVar>(imExp.type, imExp.name);
     }
-    void Visit(ImExp_LambdaMemberVar& imExp) override
+    void Visit(ImExp_LambdaVar& imExp) override
     {
-        *result = MakePtr<ReExp_LambdaMemberVar>(imExp.decl, imExp.typeArgs);
+        *result = MakePtr<ReExp_LambdaVar>(imExp.decl, imExp.typeArgs);
     }
-    void Visit(ImExp_ClassMemberVar& imExp) override
+    void Visit(ImExp_ClassVar& imExp) override
     {
-        *result = MakePtr<ReExp_ClassMemberVar>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance);
+        *result = MakePtr<ReExp_ClassVar>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance);
     }
-    void Visit(ImExp_StructMemberVar& imExp) override
+    void Visit(ImExp_StructVar& imExp) override
     {
-        *result = MakePtr<ReExp_StructMemberVar>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance);
+        *result = MakePtr<ReExp_StructVar>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance);
     }
-    void Visit(ImExp_EnumElemMemberVar& imExp) override
+    void Visit(ImExp_EnumElemVar& imExp) override
     {
-        *result = MakePtr<ReExp_EnumElemMemberVar>(imExp.decl, imExp.typeArgs, imExp.instance);
+        *result = MakePtr<ReExp_EnumElemVar>(imExp.decl, imExp.typeArgs, imExp.instance);
     }
     void Visit(ImExp_ListIndexer& imExp) override
     {

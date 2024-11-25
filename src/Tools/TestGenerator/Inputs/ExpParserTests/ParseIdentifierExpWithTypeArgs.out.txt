@@ -1,9 +1,9 @@
 {
-    "$type": "SIdentifierExp",
+    "$type": "SExp_Identifier",
     "value": "x",
     "typeArgs": [
         {
-            "$type": "SIdTypeExp",
+            "$type": "STypeExp_Id",
             "name": "T",
             "typeArgs": []
         }

@@ -5,23 +5,23 @@
 #include "NDecl.h"
 #include "RNames.h"
 #include "RType.h"
-#include "RLambdaMemberVarDecl.h"
+#include "RLambdaVarDecl.h"
 
 namespace Citron
 {
 
 class NLambdaDecl;
 
-class NLambdaMemberVarDecl
+class NLambdaVarDecl
     : public NDecl
-    , public RLambdaMemberVarDecl
+    , public RLambdaVarDecl
 {
 public:
     std::weak_ptr<NLambdaDecl> lambda;
     RTypePtr type;
     RName name;
 
-    IR0_API NLambdaMemberVarDecl(const RTypePtr& type, const RName& name);
+    IR0_API NLambdaVarDecl(const RTypePtr& type, const RName& name);
     IR0_API void InitLambda(const std::shared_ptr<NLambdaDecl>& lambda);
 
     IR0_API RTypePtr GetUnboundDeclType();

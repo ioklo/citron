@@ -243,14 +243,14 @@ TEST(ScriptParser, ParseEnumDecl)
                 {
                     "$type": "SEnumElemDecl",
                     "name": "First",
-                    "memberVars": []
+                    "vars": []
                 },
                 {
                     "$type": "SEnumElemDecl",
                     "name": "Second",
-                    "memberVars": [
+                    "vars": [
                         {
-                            "$type": "SEnumElemMemberVarDecl",
+                            "$type": "SEnumElemVarDecl",
                             "type": {
                                 "$type": "STypeExp_Id",
                                 "name": "int",
@@ -263,7 +263,7 @@ TEST(ScriptParser, ParseEnumDecl)
                 {
                     "$type": "SEnumElemDecl",
                     "name": "Third",
-                    "memberVars": []
+                    "vars": []
                 }
             ]
         }
@@ -504,7 +504,7 @@ TEST(ScriptParser, ParseStructDecl)
             ],
             "memberDecls": [
                 {
-                    "$type": "SStructMemberVarDecl",
+                    "$type": "SStructVarDecl",
                     "accessModifier": null,
                     "varType": {
                         "$type": "STypeExp_Id",
@@ -516,7 +516,7 @@ TEST(ScriptParser, ParseStructDecl)
                     ]
                 },
                 {
-                    "$type": "SStructMemberVarDecl",
+                    "$type": "SStructVarDecl",
                     "accessModifier": "Public",
                     "varType": {
                         "$type": "STypeExp_Id",
@@ -528,7 +528,7 @@ TEST(ScriptParser, ParseStructDecl)
                     ]
                 },
                 {
-                    "$type": "SStructMemberVarDecl",
+                    "$type": "SStructVarDecl",
                     "accessModifier": "Protected",
                     "varType": {
                         "$type": "STypeExp_Id",
@@ -540,7 +540,7 @@ TEST(ScriptParser, ParseStructDecl)
                     ]
                 },
                 {
-                    "$type": "SStructMemberVarDecl",
+                    "$type": "SStructVarDecl",
                     "accessModifier": "Private",
                     "varType": {
                         "$type": "STypeExp_Id",
@@ -575,7 +575,7 @@ TEST(ScriptParser, ParseStructDecl)
                     ],
                     "memberDecls": [
                         {
-                            "$type": "SStructMemberVarDecl",
+                            "$type": "SStructVarDecl",
                             "accessModifier": null,
                             "varType": {
                                 "$type": "STypeExp_Id",

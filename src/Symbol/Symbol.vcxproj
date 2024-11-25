@@ -152,12 +152,12 @@
     <ClInclude Include="Public\Symbol\MClassCtorDecl.h" />
     <ClInclude Include="Public\Symbol\MClassDecl.h" />
     <ClInclude Include="Public\Symbol\MClassFuncDecl.h" />
-    <ClInclude Include="Public\Symbol\MClassMemberVarDecl.h" />
+    <ClInclude Include="Public\Symbol\MClassVarDecl.h" />
     <ClInclude Include="Public\Symbol\MCommonFuncDeclComponent.h" />
     <ClInclude Include="Public\Symbol\MDecl.h" />
     <ClInclude Include="Public\Symbol\MEnumDecl.h" />
     <ClInclude Include="Public\Symbol\MEnumElemDecl.h" />
-    <ClInclude Include="Public\Symbol\MEnumElemMemberVarDecl.h" />
+    <ClInclude Include="Public\Symbol\MEnumElemVarDecl.h" />
     <ClInclude Include="Public\Symbol\MFuncDecl.h" />
     <ClInclude Include="Public\Symbol\MFuncDeclContainerComponent.h" />
     <ClInclude Include="Public\Symbol\MFuncParameter.h" />
@@ -172,7 +172,7 @@
     <ClInclude Include="Public\Symbol\MStructCtorDecl.h" />
     <ClInclude Include="Public\Symbol\MStructDecl.h" />
     <ClInclude Include="Public\Symbol\MStructFuncDecl.h" />
-    <ClInclude Include="Public\Symbol\MStructMemberVarDecl.h" />
+    <ClInclude Include="Public\Symbol\MStructVarDecl.h" />
     <ClInclude Include="Public\Symbol\MType.h" />
     <ClInclude Include="Public\Symbol\MTypeDecl.h" />
     <ClInclude Include="Public\Symbol\MTypeDeclContainerComponent.h" />

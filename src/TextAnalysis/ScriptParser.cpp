@@ -187,7 +187,7 @@ shared_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer)
         if (!oElemName)
             return nullptr;
 
-        vector<shared_ptr<SEnumElemMemberVarDecl>> params;
+        vector<shared_ptr<SEnumElemVarDecl>> params;
         
         if (Accept<LParenToken>(&curLexer))
         {
@@ -205,7 +205,7 @@ shared_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer)
                 if (!oParamName)
                     return nullptr;
 
-                params.push_back(MakePtr<SEnumElemMemberVarDecl>(std::move(typeExp), std::move(oParamName->text)));
+                params.push_back(MakePtr<SEnumElemVarDecl>(std::move(typeExp), std::move(oParamName->text)));
             }
         }
 
@@ -230,7 +230,7 @@ optional<SAccessModifier> ParseAccessModifier(Lexer* lexer)
     return nullopt;
 }
 
-shared_ptr<SStructMemberVarDecl> ParseStructMemberVarDecl(Lexer* lexer)
+shared_ptr<SStructVarDecl> ParseStructVarDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -265,7 +265,7 @@ shared_ptr<SStructMemberVarDecl> ParseStructMemberVarDecl(Lexer* lexer)
 
     *lexer = std::move(curLexer);
 
-    return MakePtr<SStructMemberVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
+    return MakePtr<SStructVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
 }
 
 shared_ptr<SStructFuncDecl> ParseStructFuncDecl(Lexer* lexer)
@@ -348,7 +348,7 @@ shared_ptr<SStructMemberDecl> ParseStructMemberDecl(const string& structName, Le
     if (auto memberDecl = ParseStructCtorDecl(structName, lexer))
         return memberDecl;
 
-    if (auto memberDecl = ParseStructMemberVarDecl(lexer))
+    if (auto memberDecl = ParseStructVarDecl(lexer))
         return memberDecl;
 
     return nullptr;
@@ -503,7 +503,7 @@ shared_ptr<SClassCtorDecl> ParseClassCtorDecl(const string& className, Lexer* le
     return MakePtr<SClassCtorDecl>(oAccessModifier, std::move(*oParameters), std::move(baseArgs), std::move(*oBody));
 }
 
-shared_ptr<SClassMemberVarDecl> ParseClassMemberVarDecl(Lexer* lexer)
+shared_ptr<SClassVarDecl> ParseClassVarDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
     auto oAccessModifier = ParseAccessModifier(&curLexer);
@@ -536,7 +536,7 @@ shared_ptr<SClassMemberVarDecl> ParseClassMemberVarDecl(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return MakePtr<SClassMemberVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
+    return MakePtr<SClassVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
 }
 
 shared_ptr<SClassMemberDecl> ParseClassMemberDecl(string& className, Lexer* lexer)
@@ -550,7 +550,7 @@ shared_ptr<SClassMemberDecl> ParseClassMemberDecl(string& className, Lexer* lexe
     if (auto memberDecl = ParseClassCtorDecl(className, lexer))
         return memberDecl;
 
-    if (auto memberDecl = ParseClassMemberVarDecl(lexer))
+    if (auto memberDecl = ParseClassVarDecl(lexer))
         return memberDecl;
 
     return nullptr;

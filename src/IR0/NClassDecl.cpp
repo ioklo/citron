@@ -44,7 +44,7 @@ optional<RMember> NClassDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const
         candidates.push_back(*oFunc);
 
     if (explicitTypeParamsExceptOuterCount == 0)
-        if (auto oVar = GetMemberVar(typeArgs, name))
+        if (auto oVar = GetVar(typeArgs, name))
             candidates.push_back(*oVar);
 
     if (candidates.empty()) return nullopt;
@@ -68,12 +68,12 @@ optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explic
     return outer.lock()->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
-optional<RMember_ClassMemberVar> NClassDecl::GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
+optional<RMember_ClassVar> NClassDecl::GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
 {
-    auto i = memberVarsMap.find(name);
-    if (i == memberVarsMap.end()) return nullopt;
+    auto i = varsMap.find(name);
+    if (i == varsMap.end()) return nullopt;
 
-    return RMember_ClassMemberVar(i->second, typeArgs);
+    return RMember_ClassVar(i->second, typeArgs);
 }
 
 } // namespace Citron

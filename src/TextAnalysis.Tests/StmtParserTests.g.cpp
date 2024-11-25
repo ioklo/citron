@@ -208,17 +208,20 @@ TEST(StmtParser, ParseExpStmt)
                     "value": "c",
                     "typeArgs": []
                 },
-                "args": [
-                    {
-                        "$type": "SArgument",
-                        "bOut": false,
-                        "bParams": false,
-                        "exp": {
-                            "$type": "SExp_IntLiteral",
-                            "value": 1
+                "args": {
+                    "$type": "SArguments",
+                    "items": [
+                        {
+                            "$type": "SArgument",
+                            "bOut": false,
+                            "bParams": false,
+                            "exp": {
+                                "$type": "SExp_IntLiteral",
+                                "value": 1
+                            }
                         }
-                    }
-                ]
+                    ]
+                }
             }
         }
     }
@@ -244,7 +247,10 @@ TEST(StmtParser, ParseForStmt)
                 "value": "f",
                 "typeArgs": []
             },
-            "args": []
+            "args": {
+                "$type": "SArguments",
+                "items": []
+            }
         }
     },
     "cond": {

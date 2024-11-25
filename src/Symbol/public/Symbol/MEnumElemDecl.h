@@ -6,7 +6,7 @@
 
 #include "MDecl.h"
 #include "MTypeDecl.h"
-#include "MEnumElemMemberVarDecl.h"
+#include "MEnumElemVarDecl.h"
 
 namespace Citron
 {
@@ -19,7 +19,7 @@ class MEnumElemDecl
 {
     std::weak_ptr<MEnumDecl> _enum;
     std::string name;
-    std::optional<std::vector<MEnumElemMemberVarDecl>> memberVarDecls; // lazy-init
+    std::optional<std::vector<MEnumElemVarDecl>> vars; // lazy-init
 
 public:
     void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }

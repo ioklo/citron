@@ -1,13 +1,13 @@
 {
-    "$type": "SMemberExp",
+    "$type": "SExp_Member",
     "parent": {
-        "$type": "SCallExp",
+        "$type": "SExp_Call",
         "callable": {
-            "$type": "SMemberExp",
+            "$type": "SExp_Member",
             "parent": {
-                "$type": "SMemberExp",
+                "$type": "SExp_Member",
                 "parent": {
-                    "$type": "SIdentifierExp",
+                    "$type": "SExp_Identifier",
                     "value": "a",
                     "typeArgs": []
                 },
@@ -17,16 +17,16 @@
             "memberName": "c",
             "memberTypeArgs": [
                 {
-                    "$type": "SIdTypeExp",
+                    "$type": "STypeExp_Id",
                     "name": "int",
                     "typeArgs": []
                 },
                 {
-                    "$type": "SIdTypeExp",
+                    "$type": "STypeExp_Id",
                     "name": "list",
                     "typeArgs": [
                         {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "int",
                             "typeArgs": []
                         }
@@ -34,31 +34,34 @@
                 }
             ]
         },
-        "args": [
-            {
-                "$type": "SArgument",
-                "bOut": false,
-                "bParams": false,
-                "exp": {
-                    "$type": "SIntLiteralExp",
-                    "value": 1
+        "args": {
+            "$type": "SArguments",
+            "items": [
+                {
+                    "$type": "SArgument",
+                    "bOut": false,
+                    "bParams": false,
+                    "exp": {
+                        "$type": "SExp_IntLiteral",
+                        "value": 1
+                    }
+                },
+                {
+                    "$type": "SArgument",
+                    "bOut": false,
+                    "bParams": false,
+                    "exp": {
+                        "$type": "SExp_String",
+                        "elements": [
+                            {
+                                "$type": "SStringExpElement_Text",
+                                "text": "str"
+                            }
+                        ]
+                    }
                 }
-            },
-            {
-                "$type": "SArgument",
-                "bOut": false,
-                "bParams": false,
-                "exp": {
-                    "$type": "SStringExp",
-                    "elements": [
-                        {
-                            "$type": "STextStringExpElement",
-                            "text": "str"
-                        }
-                    ]
-                }
-            }
-        ]
+            ]
+        }
     },
     "memberName": "d",
     "memberTypeArgs": []

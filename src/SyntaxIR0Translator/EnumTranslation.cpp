@@ -2,7 +2,7 @@
 #include "EnumTranslation.h"
 
 #include <Infra/Ptr.h>
-#include <IR0/NEnumElemMemberVarDecl.h>
+#include <IR0/NEnumElemVarDecl.h>
 
 #include "SkeletonPhaseContext.h"
 #include "MemberDeclPhaseContext.h"
@@ -12,23 +12,23 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-void AddEnumElemMemberVar(const shared_ptr<NEnumElemDecl>& rEnumElem, SEnumElemMemberVarDecl& sEnumElemMemberVar, SkeletonPhaseContext& context)
+void AddEnumElemVar(const shared_ptr<NEnumElemDecl>& rEnumElem, SEnumElemVarDecl& sEnumElemVar, SkeletonPhaseContext& context)
 {
-    auto nMemberVar = MakePtr<NEnumElemMemberVarDecl>(rEnumElem, sEnumElemMemberVar.name);
-    rEnumElem->AddMemberVar(nMemberVar);
+    auto nEnumElemVar = MakePtr<NEnumElemVarDecl>(rEnumElem, sEnumElemVar.name);
+    rEnumElem->AddVar(nEnumElemVar);
 
-    context.AddMemberDeclPhaseTask([type = sEnumElemMemberVar.type, nMemberVar, rEnumElem](MemberDeclPhaseContext& context) {
+    context.AddMemberDeclPhaseTask([type = sEnumElemVar.type, nEnumElemVar, rEnumElem](MemberDeclPhaseContext& context) {
         auto declType = context.MakeType(type, rEnumElem);
-        nMemberVar->InitDeclType(std::move(declType));
+        nEnumElemVar->InitDeclType(std::move(declType));
     });
 }
 
 void AddEnumElem(const shared_ptr<NEnumDecl>& nEnum, SEnumElemDecl& sEnumElem, SkeletonPhaseContext& context)
 {
-    auto nEnumElem = MakePtr<NEnumElemDecl>(nEnum, sEnumElem.name, sEnumElem.memberVars.size());
+    auto nEnumElem = MakePtr<NEnumElemDecl>(nEnum, sEnumElem.name, sEnumElem.vars.size());
 
-    for (auto& sMemberVar : sEnumElem.memberVars)
-        AddEnumElemMemberVar(nEnumElem, *sMemberVar, context);
+    for (auto& sEnumElemVar : sEnumElem.vars)
+        AddEnumElemVar(nEnumElem, *sEnumElemVar, context);
 
     nEnum->AddElem(std::move(nEnumElem));
 }

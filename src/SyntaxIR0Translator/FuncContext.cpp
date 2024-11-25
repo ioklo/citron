@@ -9,7 +9,7 @@
 
 #include <Syntax/Syntax.h>
 
-#include <IR0/NLambdaMemberVarDecl.h>
+#include <IR0/NLambdaVarDecl.h>
 #include <IR0/NArgument.h>
 #include <IR0/NFuncDecl.h>
 #include <IR0/NFuncDeclOuter.h>
@@ -27,11 +27,11 @@ namespace Citron::SyntaxIR0Translator {
 
 FuncContext::FuncContext() = default;
 
-shared_ptr<NLambdaMemberVarDecl> FuncContext::StageLambdaMemberVar(const RTypePtr& type, const RName& name, NArgument_Normal&& arg)
+shared_ptr<NLambdaVarDecl> FuncContext::StageLambdaVar(const RTypePtr& type, const RName& name, NArgument_Normal&& arg)
 {
-    auto lambdaMemberVar = MakePtr<NLambdaMemberVarDecl>(type, name);
-    lambdaMemberVarAndInitArgs.emplace_back(lambdaMemberVar, std::move(arg));
-    return lambdaMemberVar;
+    auto lambdaVar = MakePtr<NLambdaVarDecl>(type, name);
+    lambdaVarAndInitArgs.emplace_back(lambdaVar, std::move(arg));
+    return lambdaVar;
 }
 
 FuncContext_Lambda::FuncContext_Lambda(const ScopeContextPtr& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
@@ -58,13 +58,13 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         auto initExp = MakePtr<NExp_Load>(MakePtr<NLoc_LocalVar>(localVarName, localVar->type));
         auto initArg = NArgument_Normal(std::move(initExp));
 
-        auto lambdaMemberVar = StageLambdaMemberVar(localVar->type, localVarName, std::move(initArg));
+        auto lambdaVar = StageLambdaVar(localVar->type, localVarName, std::move(initArg));
 
         auto openTypeArgs = MakeOpenTypeArgs(factory);
-        return RMember_LambdaMemberVar(std::move(openTypeArgs), std::move(lambdaMemberVar));
+        return RMember_LambdaVar(std::move(openTypeArgs), std::move(lambdaVar));
     }
 
-    if (auto* lambdaMemberVar = get_if<RMember_LambdaMemberVar>(&*oMember))
+    if (auto* lambdaVar = get_if<RMember_LambdaVar>(&*oMember))
     {
         // class C<T> { void F<S> {
         //     List<T> x;      // 5) scopeContext.ResolveIdentifier(x, 0) => RMember
@@ -81,10 +81,10 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         // } }
 
         auto openTypeArgs = MakeOpenTypeArgs(factory);
-        auto initArg = NArgument_Normal(MakePtr<NExp_Load>(MakePtr<NLoc_LambdaMemberVar>(lambdaMemberVar->decl, openTypeArgs)));
+        auto initArg = NArgument_Normal(MakePtr<NExp_Load>(MakePtr<NLoc_LambdaVar>(lambdaVar->decl, openTypeArgs)));
 
-        auto newLambdaMemberVar = StageLambdaMemberVar(lambdaMemberVar->decl->GetUnboundDeclType(), lambdaMemberVar->decl->name, std::move(initArg));
-        return RMember_LambdaMemberVar(std::move(openTypeArgs), std::move(newLambdaMemberVar));
+        auto newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->name, std::move(initArg));
+        return RMember_LambdaVar(std::move(openTypeArgs), std::move(newLambdaVar));
     }
 
     if (auto* thisVar = get_if<RMember_ThisVar>(&*oMember))
@@ -96,10 +96,10 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         auto initExp = MakePtr<NExp_Load>(MakePtr<NLoc_This>(thisVar->type));
         auto initArg = NArgument_Normal(std::move(initExp));
 
-        auto lambdaMemberVar = StageLambdaMemberVar(thisVar->type, RNames::_this, std::move(initArg));
+        auto lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, std::move(initArg));
         auto openTypeArgs = MakeOpenTypeArgs(factory);
 
-        return RMember_LambdaMemberVar(std::move(openTypeArgs), std::move(lambdaMemberVar));
+        return RMember_LambdaVar(std::move(openTypeArgs), std::move(lambdaVar));
     }
 
     // 나머지는 그대로 리턴

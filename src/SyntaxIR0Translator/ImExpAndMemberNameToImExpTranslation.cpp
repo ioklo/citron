@@ -7,8 +7,8 @@
 #include <Infra/Exceptions.h>
 #include <Logging/Logger.h>
 #include <IR0/RTypeFactory.h>
-#include <IR0/RClassMemberVarDecl.h>
-#include <IR0/NStructMemberVarDecl.h>
+#include <IR0/RClassVarDecl.h>
+#include <IR0/NStructVarDecl.h>
 #include <IR0/RMember.h>
 #include <IR0/NNamespaceDecl.h>
 #include <IR0/NClassDecl.h>
@@ -72,7 +72,7 @@ public:
     }
 
     // C.x
-    ImExpPtr operator()(RMember_ClassMemberVar& member)
+    ImExpPtr operator()(RMember_ClassVar& member)
     {
         if (!member.decl->IsStatic())
         {
@@ -89,7 +89,7 @@ public:
         // variable은 typeArgs가 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
 
-        return MakePtr<ImExp_ClassMemberVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakePtr<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // T.S
@@ -114,7 +114,7 @@ public:
     }
 
     // S.x
-    ImExpPtr operator()(RMember_StructMemberVar& member)
+    ImExpPtr operator()(RMember_StructVar& member)
     {
         if (!member.decl->IsStatic())
         {
@@ -130,7 +130,7 @@ public:
 
         // variable은 typeArgs가 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
-        return MakePtr<ImExp_StructMemberVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakePtr<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // T.E
@@ -156,19 +156,19 @@ public:
     }
 
     // 표현 불가능
-    ImExpPtr operator()(RMember_EnumElemMemberVar& member)
+    ImExpPtr operator()(RMember_EnumElemVar& member)
     {
         throw RuntimeFatalException();
     }
 
     // 표현 불가능
-    ImExpPtr operator()(RMember_LambdaMemberVar& member)
+    ImExpPtr operator()(RMember_LambdaVar& member)
     {
         throw RuntimeFatalException();
     }
 
     // 표현 불가능
-    ImExpPtr operator()(RMember_TupleMemberVar& member)
+    ImExpPtr operator()(RMember_TupleVar& member)
     {
         throw RuntimeFatalException();
     }
@@ -218,7 +218,7 @@ public:
     }
 
     // exp.x
-    ImExpPtr operator()(RMember_ClassMemberVar& member) 
+    ImExpPtr operator()(RMember_ClassVar& member) 
     {   
         // static인지 검사
         if (member.decl->IsStatic())
@@ -234,7 +234,7 @@ public:
             return nullptr;
         }
 
-        return  MakePtr<ImExp_ClassMemberVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
+        return  MakePtr<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.S
@@ -251,7 +251,7 @@ public:
     }
 
     // exp.x
-    ImExpPtr operator()(RMember_StructMemberVar& member) 
+    ImExpPtr operator()(RMember_StructVar& member) 
     {   
         // static인지 검사
         if (member.decl->IsStatic())
@@ -267,7 +267,7 @@ public:
             return nullptr;
         }
 
-        return MakePtr<ImExp_StructMemberVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
+        return MakePtr<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.E
@@ -285,18 +285,18 @@ public:
     }
 
     // exp.firstX
-    ImExpPtr operator()(RMember_EnumElemMemberVar& member) 
+    ImExpPtr operator()(RMember_EnumElemVar& member) 
     {   
-        return MakePtr<ImExp_EnumElemMemberVar>(member.decl, member.outerTypeArgs, reInstExp);
+        return MakePtr<ImExp_EnumElemVar>(member.decl, member.outerTypeArgs, reInstExp);
     }
 
     // 표현 불가
-    ImExpPtr operator()(RMember_LambdaMemberVar& member) 
+    ImExpPtr operator()(RMember_LambdaVar& member) 
     {   
         throw RuntimeFatalException();
     }
 
-    ImExpPtr operator()(RMember_TupleMemberVar& member) 
+    ImExpPtr operator()(RMember_TupleVar& member) 
     {
         throw NotImplementedException();
     }
@@ -407,22 +407,22 @@ public:
         TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_LambdaMemberVar& imExp) override
+    void Visit(ImExp_LambdaVar& imExp) override
     {
         TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_ClassMemberVar& imExp) override
+    void Visit(ImExp_ClassVar& imExp) override
     {
         TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_StructMemberVar& imExp) override
+    void Visit(ImExp_StructVar& imExp) override
     {
         TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_EnumElemMemberVar& imExp) override
+    void Visit(ImExp_EnumElemVar& imExp) override
     {
         TranslateInstanceParent(imExp);
     }

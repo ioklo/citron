@@ -1,13 +1,13 @@
 {
-    "$type": "SBinaryOpExp",
+    "$type": "SExp_BinaryOp",
     "kind": "Assign",
     "operand0": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "a",
         "typeArgs": []
     },
     "operand1": {
-        "$type": "SLambdaExp",
+        "$type": "SExp_Lambda",
         "params": [
             {
                 "$type": "SLambdaExpParam",
@@ -18,9 +18,9 @@
             }
         ],
         "body": {
-            "$type": "SExpLambdaExpBody",
+            "$type": "SLambdaExpBody_Exp",
             "exp": {
-                "$type": "SLambdaExp",
+                "$type": "SExp_Lambda",
                 "params": [
                     {
                         "$type": "SLambdaExpParam",
@@ -32,7 +32,7 @@
                     {
                         "$type": "SLambdaExpParam",
                         "type": {
-                            "$type": "SIdTypeExp",
+                            "$type": "STypeExp_Id",
                             "name": "int",
                             "typeArgs": []
                         },
@@ -42,9 +42,9 @@
                     }
                 ],
                 "body": {
-                    "$type": "SExpLambdaExpBody",
+                    "$type": "SLambdaExpBody_Exp",
                     "exp": {
-                        "$type": "SIdentifierExp",
+                        "$type": "SExp_Identifier",
                         "value": "e",
                         "typeArgs": []
                     }

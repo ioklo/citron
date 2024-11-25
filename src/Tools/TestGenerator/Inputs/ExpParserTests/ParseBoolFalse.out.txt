@@ -1,4 +1,4 @@
 {
-    "$type": "SBoolLiteralExp",
+    "$type": "SExp_BoolLiteral",
     "value": false
 }

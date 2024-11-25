@@ -1,48 +1,51 @@
 {
-    "$type": "SNewExp",
+    "$type": "SExp_New",
     "type": {
-        "$type": "SIdTypeExp",
+        "$type": "STypeExp_Id",
         "name": "MyType",
         "typeArgs": [
             {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "X",
                 "typeArgs": []
             }
         ]
     },
-    "args": [
-        {
-            "$type": "SArgument",
-            "bOut": false,
-            "bParams": false,
-            "exp": {
-                "$type": "SIntLiteralExp",
-                "value": 2
+    "args": {
+        "$type": "SArguments",
+        "items": [
+            {
+                "$type": "SArgument",
+                "bOut": false,
+                "bParams": false,
+                "exp": {
+                    "$type": "SExp_IntLiteral",
+                    "value": 2
+                }
+            },
+            {
+                "$type": "SArgument",
+                "bOut": false,
+                "bParams": false,
+                "exp": {
+                    "$type": "SExp_BoolLiteral",
+                    "value": false
+                }
+            },
+            {
+                "$type": "SArgument",
+                "bOut": false,
+                "bParams": false,
+                "exp": {
+                    "$type": "SExp_String",
+                    "elements": [
+                        {
+                            "$type": "SStringExpElement_Text",
+                            "text": "string"
+                        }
+                    ]
+                }
             }
-        },
-        {
-            "$type": "SArgument",
-            "bOut": false,
-            "bParams": false,
-            "exp": {
-                "$type": "SBoolLiteralExp",
-                "value": false
-            }
-        },
-        {
-            "$type": "SArgument",
-            "bOut": false,
-            "bParams": false,
-            "exp": {
-                "$type": "SStringExp",
-                "elements": [
-                    {
-                        "$type": "STextStringExpElement",
-                        "text": "string"
-                    }
-                ]
-            }
-        }
-    ]
+        ]
+    }
 }

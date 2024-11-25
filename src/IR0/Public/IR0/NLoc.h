@@ -10,20 +10,20 @@ namespace Citron {
 
 class NLoc_Temp;
 class NLoc_LocalVar;
-class NLoc_LambdaMemberVar;
+class NLoc_LambdaVar;
 class NLoc_ListIndexer;
-class NLoc_StructMember;
-class NLoc_ClassMember;
-class NLoc_EnumElemMember;
+class NLoc_StructVar;
+class NLoc_ClassVar;
+class NLoc_EnumElemVar;
 class NLoc_This;
 class NLoc_LocalDeref;
 class NLoc_BoxDeref;
 class NLoc_NullableValue;
 
-class NLambdaMemberVarDecl;
-class RStructMemberVarDecl;
-class RClassMemberVarDecl;
-class REnumElemMemberVarDecl;
+class NLambdaVarDecl;
+class RStructVarDecl;
+class RClassVarDecl;
+class REnumElemVarDecl;
 
 using NExpPtr = std::shared_ptr<class NExp>;
 
@@ -33,11 +33,11 @@ public:
     virtual ~NLocVisitor() { }
     virtual void Visit(NLoc_Temp& loc) = 0;
     virtual void Visit(NLoc_LocalVar& loc) = 0;
-    virtual void Visit(NLoc_LambdaMemberVar& loc) = 0;
+    virtual void Visit(NLoc_LambdaVar& loc) = 0;
     virtual void Visit(NLoc_ListIndexer& loc) = 0;
-    virtual void Visit(NLoc_StructMember& loc) = 0;
-    virtual void Visit(NLoc_ClassMember& loc) = 0;
-    virtual void Visit(NLoc_EnumElemMember& loc) = 0;
+    virtual void Visit(NLoc_StructVar& loc) = 0;
+    virtual void Visit(NLoc_ClassVar& loc) = 0;
+    virtual void Visit(NLoc_EnumElemVar& loc) = 0;
     virtual void Visit(NLoc_This& loc) = 0;
     virtual void Visit(NLoc_LocalDeref& loc) = 0;
     virtual void Visit(NLoc_BoxDeref& loc) = 0;
@@ -79,14 +79,14 @@ public:
 };
 
 // only this member allowed, so no need this
-class NLoc_LambdaMemberVar : public NLoc
+class NLoc_LambdaVar : public NLoc
 {
 public:
-    std::shared_ptr<NLambdaMemberVarDecl> memberVarDecl;
+    std::shared_ptr<NLambdaVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NLoc_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NLoc_LambdaVar(const std::shared_ptr<NLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
@@ -106,41 +106,41 @@ public:
 };
 
 // Instance가 null이면 static
-class NLoc_StructMember : public NLoc
+class NLoc_StructVar : public NLoc
 {
 public:
     NLocPtr instance;
-    std::shared_ptr<RStructMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RStructVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NLoc_StructMember(const NLocPtr& instance, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NLoc_StructVar(const NLocPtr& instance, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
-class NLoc_ClassMember : public NLoc
+class NLoc_ClassVar : public NLoc
 {
 public:
     NLocPtr instance;
-    std::shared_ptr<RClassMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RClassVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    NLoc_ClassMember(NLocPtr&& instance, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    NLoc_ClassVar(NLocPtr&& instance, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };
 
-class NLoc_EnumElemMember : public NLoc
+class NLoc_EnumElemVar : public NLoc
 {
 public:
     NLocPtr instance;
-    std::shared_ptr<REnumElemMemberVarDecl> memberVarDecl;
+    std::shared_ptr<REnumElemVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NLoc_EnumElemMember(const NLocPtr& instance, std::shared_ptr<REnumElemMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NLoc_EnumElemVar(const NLocPtr& instance, std::shared_ptr<REnumElemVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };

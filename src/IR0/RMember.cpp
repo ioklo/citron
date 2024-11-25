@@ -40,7 +40,7 @@ RMember_ClassFuncs::RMember_ClassFuncs(const RMember_ClassFuncs&) = default;
 
 RMember_ClassFuncs::~RMember_ClassFuncs() = default;
 
-RMember_ClassMemberVar::RMember_ClassMemberVar(const shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RMember_ClassVar::RMember_ClassVar(const shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 
@@ -62,7 +62,7 @@ RMember_StructFuncs::RMember_StructFuncs(const RMember_StructFuncs&) = default;
 
 RMember_StructFuncs::~RMember_StructFuncs() = default;
 
-RMember_StructMemberVar::RMember_StructMemberVar(const shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RMember_StructVar::RMember_StructVar(const shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 
@@ -80,24 +80,24 @@ RMember_EnumElem::RMember_EnumElem(const RTypeArgumentsPtr& outerTypeArgs, const
 
 }
 
-RMember_EnumElemMemberVar::RMember_EnumElemMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<REnumElemMemberVarDecl>& decl)
+RMember_EnumElemVar::RMember_EnumElemVar(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<REnumElemVarDecl>& decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 
 }
 
-RMember_LambdaMemberVar::RMember_LambdaMemberVar(RTypeArgumentsPtr&& outerTypeArgs, shared_ptr<NLambdaMemberVarDecl>&& decl)
+RMember_LambdaVar::RMember_LambdaVar(RTypeArgumentsPtr&& outerTypeArgs, shared_ptr<NLambdaVarDecl>&& decl)
     : outerTypeArgs(std::move(outerTypeArgs)), decl(std::move(decl))
 {
 
 }
 
-RMember_LambdaMemberVar::RMember_LambdaMemberVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NLambdaMemberVarDecl>& decl)
+RMember_LambdaVar::RMember_LambdaVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NLambdaVarDecl>& decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 }
 
-RMember_TupleMemberVar::RMember_TupleMemberVar()
+RMember_TupleVar::RMember_TupleVar()
 {
 
 }

@@ -25,6 +25,9 @@
     <Filter Include="Inputs\TypeExpParserTests">
       <UniqueIdentifier>{edcc2461-f617-4e22-af1f-77b05d7ba930}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Inputs\ExpParserTests">
+      <UniqueIdentifier>{f81464d3-b700-442c-86c5-62c4c9ed459f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TestGenerator.cpp">
@@ -317,6 +320,90 @@
     </Text>
     <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseParenSolo.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseBoolFalse.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseBoolFalse.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseBoolTrue.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseBoolTrue.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseComplexExp.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseComplexExp.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseComplexMemberExpSyntax.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseComplexMemberExpSyntax.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseIdentifier.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseIdentifier.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseIdentifierExpWithTypeArgs.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseIdentifierExpWithTypeArgs.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseIndirectMemberExp.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseIndirectMemberExp.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseInt.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseInt.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseLambdaExp.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseLambdaExp.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseListExp.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseListExp.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseNewExp.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseNewExp.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParsePrimaryExp.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParsePrimaryExp.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseStringExp.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseStringExp.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseTestAndTypeTestExp.in.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="Inputs\ExpParserTests\ParseTestAndTypeTestExp.out.txt">
+      <Filter>Inputs\ExpParserTests</Filter>
     </Text>
   </ItemGroup>
 </Project>

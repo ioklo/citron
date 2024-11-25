@@ -12,7 +12,7 @@ namespace Citron {
 
 class MClassDecl;
 class RTypeArguments;
-class RMember_ClassMemberVar;
+class RMember_ClassVar;
 
 class RClassDecl
     : public RDecl
@@ -21,7 +21,7 @@ class RClassDecl
     , public RTypeDeclOuter
 {
 public:
-    virtual std::optional<RMember_ClassMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) = 0;
+    virtual std::optional<RMember_ClassVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
     void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }

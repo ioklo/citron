@@ -7,16 +7,16 @@
 #include "RAccessor.h"
 #include "RType.h"
 #include "RNames.h"
-#include "RStructMemberVarDecl.h"
+#include "RStructVarDecl.h"
 
 namespace Citron
 {
 
 class NStructDecl;
 
-class NStructMemberVarDecl
+class NStructVarDecl
     : public NDecl
-    , public RStructMemberVarDecl
+    , public RStructVarDecl
 {
 public:
     std::weak_ptr<NStructDecl> _struct;
@@ -27,7 +27,7 @@ public:
     std::string name;
 
 public:
-    IR0_API NStructMemberVarDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bStatic, std::string name);
+    IR0_API NStructVarDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bStatic, std::string name);
     IR0_API void InitDeclType(const RTypePtr& declType);
 
 public:
@@ -43,7 +43,7 @@ public:
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
-    // from RStructMemberVarDecl
+    // from RStructVarDecl
     IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 

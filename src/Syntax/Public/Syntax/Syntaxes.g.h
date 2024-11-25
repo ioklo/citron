@@ -77,12 +77,12 @@ class SForStmtInitializer_VarDecl;
 class SClassMemberDecl;
 class SClassFuncDecl;
 class SClassCtorDecl;
-class SClassMemberVarDecl;
+class SClassVarDecl;
 
 class SStructMemberDecl;
 class SStructFuncDecl;
 class SStructCtorDecl;
-class SStructMemberVarDecl;
+class SStructVarDecl;
 
 class SNamespaceDeclElement;
 class SScriptElement;
@@ -525,7 +525,7 @@ public:
     virtual void Visit(SEnumDecl& decl) = 0;
     virtual void Visit(SClassFuncDecl& decl) = 0;
     virtual void Visit(SClassCtorDecl& decl) = 0;
-    virtual void Visit(SClassMemberVarDecl& decl) = 0;
+    virtual void Visit(SClassVarDecl& decl) = 0;
 };
 
 class SClassMemberDecl : public SSyntax
@@ -551,7 +551,7 @@ public:
     virtual void Visit(SEnumDecl& decl) = 0;
     virtual void Visit(SStructFuncDecl& decl) = 0;
     virtual void Visit(SStructCtorDecl& decl) = 0;
-    virtual void Visit(SStructMemberVarDecl& decl) = 0;
+    virtual void Visit(SStructVarDecl& decl) = 0;
 };
 
 class SStructMemberDecl : public SSyntax
@@ -1661,7 +1661,7 @@ public:
 
 };
 
-class SClassMemberVarDecl
+class SClassVarDecl
     : public SClassMemberDecl
 {
 public:
@@ -1669,13 +1669,13 @@ public:
     STypeExpPtr varType;
     std::vector<std::string> varNames;
 
-    SYNTAX_API SClassMemberVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames);
-    SClassMemberVarDecl(const SClassMemberVarDecl&) = delete;
-    SYNTAX_API SClassMemberVarDecl(SClassMemberVarDecl&&) noexcept;
-    SYNTAX_API virtual ~SClassMemberVarDecl();
+    SYNTAX_API SClassVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames);
+    SClassVarDecl(const SClassVarDecl&) = delete;
+    SYNTAX_API SClassVarDecl(SClassVarDecl&&) noexcept;
+    SYNTAX_API virtual ~SClassVarDecl();
 
-    SClassMemberVarDecl& operator=(const SClassMemberVarDecl& other) = delete;
-    SYNTAX_API SClassMemberVarDecl& operator=(SClassMemberVarDecl&& other) noexcept;
+    SClassVarDecl& operator=(const SClassVarDecl& other) = delete;
+    SYNTAX_API SClassVarDecl& operator=(SClassVarDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
@@ -1758,7 +1758,7 @@ public:
 
 };
 
-class SStructMemberVarDecl
+class SStructVarDecl
     : public SStructMemberDecl
 {
 public:
@@ -1766,32 +1766,32 @@ public:
     STypeExpPtr varType;
     std::vector<std::string> varNames;
 
-    SYNTAX_API SStructMemberVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames);
-    SStructMemberVarDecl(const SStructMemberVarDecl&) = delete;
-    SYNTAX_API SStructMemberVarDecl(SStructMemberVarDecl&&) noexcept;
-    SYNTAX_API virtual ~SStructMemberVarDecl();
+    SYNTAX_API SStructVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames);
+    SStructVarDecl(const SStructVarDecl&) = delete;
+    SYNTAX_API SStructVarDecl(SStructVarDecl&&) noexcept;
+    SYNTAX_API virtual ~SStructVarDecl();
 
-    SStructMemberVarDecl& operator=(const SStructMemberVarDecl& other) = delete;
-    SYNTAX_API SStructMemberVarDecl& operator=(SStructMemberVarDecl&& other) noexcept;
+    SStructVarDecl& operator=(const SStructVarDecl& other) = delete;
+    SYNTAX_API SStructVarDecl& operator=(SStructVarDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
 
 };
 
-class SEnumElemMemberVarDecl
+class SEnumElemVarDecl
 {
 public:
     STypeExpPtr type;
     std::string name;
 
-    SYNTAX_API SEnumElemMemberVarDecl(STypeExpPtr type, std::string name);
-    SEnumElemMemberVarDecl(const SEnumElemMemberVarDecl&) = delete;
-    SYNTAX_API SEnumElemMemberVarDecl(SEnumElemMemberVarDecl&&) noexcept;
-    SYNTAX_API ~SEnumElemMemberVarDecl();
+    SYNTAX_API SEnumElemVarDecl(STypeExpPtr type, std::string name);
+    SEnumElemVarDecl(const SEnumElemVarDecl&) = delete;
+    SYNTAX_API SEnumElemVarDecl(SEnumElemVarDecl&&) noexcept;
+    SYNTAX_API ~SEnumElemVarDecl();
 
-    SEnumElemMemberVarDecl& operator=(const SEnumElemMemberVarDecl& other) = delete;
-    SYNTAX_API SEnumElemMemberVarDecl& operator=(SEnumElemMemberVarDecl&& other) noexcept;
+    SEnumElemVarDecl& operator=(const SEnumElemVarDecl& other) = delete;
+    SYNTAX_API SEnumElemVarDecl& operator=(SEnumElemVarDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };
@@ -1800,9 +1800,9 @@ class SEnumElemDecl
 {
 public:
     std::string name;
-    std::vector<std::shared_ptr<SEnumElemMemberVarDecl>> memberVars;
+    std::vector<std::shared_ptr<SEnumElemVarDecl>> vars;
 
-    SYNTAX_API SEnumElemDecl(std::string name, std::vector<std::shared_ptr<SEnumElemMemberVarDecl>> memberVars);
+    SYNTAX_API SEnumElemDecl(std::string name, std::vector<std::shared_ptr<SEnumElemVarDecl>> vars);
     SEnumElemDecl(const SEnumElemDecl&) = delete;
     SYNTAX_API SEnumElemDecl(SEnumElemDecl&&) noexcept;
     SYNTAX_API ~SEnumElemDecl();

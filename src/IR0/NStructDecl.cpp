@@ -55,7 +55,7 @@ optional<RMember> NStructDecl::GetMember(const RTypeArgumentsPtr& typeArgs, cons
         candidates.push_back(*oFunc);
 
     if (explicitTypeParamsExceptOuterCount == 0)
-        if (auto oVar = GetMemberVar(typeArgs, name))
+        if (auto oVar = GetVar(typeArgs, name))
             candidates.push_back(*oVar);
 
     if (candidates.empty()) return nullopt;
@@ -81,12 +81,12 @@ optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t expli
     return sharedOuter->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
-optional<RMember_StructMemberVar> NStructDecl::GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
+optional<RMember_StructVar> NStructDecl::GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
 {
-    auto i = memberVarsMap.find(name);
-    if (i == memberVarsMap.end()) return nullopt;
+    auto i = varsMap.find(name);
+    if (i == varsMap.end()) return nullopt;
 
-    return RMember_StructMemberVar(i->second, typeArgs);
+    return RMember_StructVar(i->second, typeArgs);
 }
 
 vector<shared_ptr<RStructCtorDecl>> NStructDecl::GetUnboundCtors()

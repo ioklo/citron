@@ -12,7 +12,7 @@
 #include "NFuncDecl.h"
 #include "RNames.h"
 #include "NCommonFuncDeclComponent.h"
-#include "NLambdaMemberVarDecl.h"
+#include "NLambdaVarDecl.h"
 #include "RFuncReturn.h"
 #include "RLambdaDecl.h"
 
@@ -31,14 +31,14 @@ class NLambdaDecl
     RName name;
 
     // 가지고 있어야 할 멤버 변수들, type, name, ref 여부
-    std::optional<std::vector<std::shared_ptr<NLambdaMemberVarDecl>>> memberVars;
+    std::optional<std::vector<std::shared_ptr<NLambdaVarDecl>>> vars;
 
     //
-    std::unordered_map<RName, std::shared_ptr<NLambdaMemberVarDecl>> memberVarsMap;
+    std::unordered_map<RName, std::shared_ptr<NLambdaVarDecl>> varsMap;
 
 public:
     NLambdaDecl(NFuncDeclOuterWPtr&& outer, RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
-    void Init(std::vector<std::shared_ptr<NLambdaMemberVarDecl>>&& memberVars, std::vector<NStmtPtr>&& body);
+    void Init(std::vector<std::shared_ptr<NLambdaVarDecl>>&& vars, std::vector<NStmtPtr>&& body);
 
     using NCommonFuncDeclComponent::GetReturnType;
 

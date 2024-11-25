@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ReExp.h"
-#include <IR0/NLambdaMemberVarDecl.h>
+#include <IR0/NLambdaVarDecl.h>
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -14,38 +14,38 @@ ReExp_LocalVar::ReExp_LocalVar(const RTypePtr& type, const std::string& name)
 {
 }
 
-ReExp_LambdaMemberVar::ReExp_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+ReExp_LambdaVar::ReExp_LambdaVar(const std::shared_ptr<NLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr ReExp_LambdaMemberVar::GetType(RTypeFactory& factory)
+RTypePtr ReExp_LambdaVar::GetType(RTypeFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_ClassMemberVar::ReExp_ClassMemberVar(const std::shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ReExp_ClassVar::ReExp_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
-//RTypePtr ReClassMemberVarExp::GetType(RTypeFactory& factory)
+//RTypePtr ReExp_ClassVar::GetType(RTypeFactory& factory)
 //{
 //    return decl->GetDeclType(typeArgs);
 //}
 
-ReExp_StructMemberVar::ReExp_StructMemberVar(const std::shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ReExp_StructVar::ReExp_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
-//RTypePtr ReStructMemberVarExp::GetType(RTypeFactory& factory)
+//RTypePtr ReExp_StructVar::GetType(RTypeFactory& factory)
 //{
 //    return decl->GetDeclType(typeArgs);
 //}
 //
 
-ReExp_EnumElemMemberVar::ReExp_EnumElemMemberVar(const std::shared_ptr<REnumElemMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance)
+ReExp_EnumElemVar::ReExp_EnumElemVar(const std::shared_ptr<REnumElemVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance)
     : decl(decl), typeArgs(typeArgs), instance(instance)
 {
 }

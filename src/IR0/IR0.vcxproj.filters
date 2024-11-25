@@ -54,7 +54,7 @@
     <ClInclude Include="Public\IR0\NClassFuncDecl.h">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\NClassMemberVarDecl.h">
+    <ClInclude Include="Public\IR0\NClassVarDecl.h">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\NStructCtorDecl.h">
@@ -66,7 +66,7 @@
     <ClInclude Include="Public\IR0\NStructFuncDecl.h">
       <Filter>Symbols\NDecl\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\NStructMemberVarDecl.h">
+    <ClInclude Include="Public\IR0\NStructVarDecl.h">
       <Filter>Symbols\NDecl\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\NEnumDecl.h">
@@ -75,7 +75,7 @@
     <ClInclude Include="Public\IR0\NEnumElemDecl.h">
       <Filter>Symbols\NDecl\08 Enum</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\NEnumElemMemberVarDecl.h">
+    <ClInclude Include="Public\IR0\NEnumElemVarDecl.h">
       <Filter>Symbols\NDecl\08 Enum</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\NInterfaceDecl.h">
@@ -84,7 +84,7 @@
     <ClInclude Include="Public\IR0\NLambdaDecl.h">
       <Filter>Symbols\NDecl\10 Lambda</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\NLambdaMemberVarDecl.h">
+    <ClInclude Include="Public\IR0\NLambdaVarDecl.h">
       <Filter>Symbols\NDecl\10 Lambda</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\DeclWithOuterTypeArgs.h">
@@ -153,7 +153,7 @@
     <ClInclude Include="Public\IR0\RClassFuncDecl.h">
       <Filter>Symbols\RDecl\06 Class</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RClassMemberVarDecl.h">
+    <ClInclude Include="Public\IR0\RClassVarDecl.h">
       <Filter>Symbols\RDecl\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RStructDecl.h">
@@ -165,7 +165,7 @@
     <ClInclude Include="Public\IR0\RStructFuncDecl.h">
       <Filter>Symbols\RDecl\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RStructMemberVarDecl.h">
+    <ClInclude Include="Public\IR0\RStructVarDecl.h">
       <Filter>Symbols\RDecl\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\REnumDecl.h">
@@ -174,7 +174,7 @@
     <ClInclude Include="Public\IR0\REnumElemDecl.h">
       <Filter>Symbols\RDecl\08 Enum</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\REnumElemMemberVarDecl.h">
+    <ClInclude Include="Public\IR0\REnumElemVarDecl.h">
       <Filter>Symbols\RDecl\08 Enum</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RInterfaceDecl.h">
@@ -183,7 +183,7 @@
     <ClInclude Include="Public\IR0\RLambdaDecl.h">
       <Filter>Symbols\RDecl\10 Lambda</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RLambdaMemberVarDecl.h">
+    <ClInclude Include="Public\IR0\RLambdaVarDecl.h">
       <Filter>Symbols\RDecl\10 Lambda</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RNamespaceDeclGroup.h">
@@ -206,7 +206,7 @@
     <ClCompile Include="NEnumDecl.cpp">
       <Filter>Symbols\NDecl\08 Enum</Filter>
     </ClCompile>
-    <ClCompile Include="NEnumElemMemberVarDecl.cpp">
+    <ClCompile Include="NEnumElemVarDecl.cpp">
       <Filter>Symbols\NDecl\08 Enum</Filter>
     </ClCompile>
     <ClCompile Include="NEnumElemDecl.cpp">
@@ -218,7 +218,7 @@
     <ClCompile Include="NCommonFuncDeclComponent.cpp">
       <Filter>Symbols\NDecl\04 Components</Filter>
     </ClCompile>
-    <ClCompile Include="NStructMemberVarDecl.cpp">
+    <ClCompile Include="NStructVarDecl.cpp">
       <Filter>Symbols\NDecl\07 Struct</Filter>
     </ClCompile>
     <ClCompile Include="NExp.cpp">
@@ -227,10 +227,10 @@
     <ClCompile Include="NLoc.cpp">
       <Filter>Body</Filter>
     </ClCompile>
-    <ClCompile Include="NClassMemberVarDecl.cpp">
+    <ClCompile Include="NClassVarDecl.cpp">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClCompile>
-    <ClCompile Include="NLambdaMemberVarDecl.cpp">
+    <ClCompile Include="NLambdaVarDecl.cpp">
       <Filter>Symbols\NDecl\10 Lambda</Filter>
     </ClCompile>
     <ClCompile Include="NDecl.cpp">

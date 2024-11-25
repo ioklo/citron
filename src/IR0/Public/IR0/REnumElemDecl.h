@@ -15,8 +15,8 @@ class REnumElemDecl
     , public RTypeDecl
 {
 public:    
-    virtual std::optional<RMember_EnumElemMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) = 0;
-    virtual size_t GetMemberVarCount() = 0;
+    virtual std::optional<RMember_EnumElemVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) = 0;
+    virtual size_t GetVarCount() = 0;
     virtual bool IsStandalone() = 0;
     virtual std::vector<RFuncParameter> GetUnboundCtorParams() = 0;
 

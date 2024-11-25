@@ -85,8 +85,8 @@ class NExp_InterfaceAsInterface;
 class NExp_EnumIsEnumElem;
 class NExp_EnumAsEnumElem;
 
-class RClassMemberVarDecl;
-class RStructMemberVarDecl;
+class RClassVarDecl;
+class RStructVarDecl;
 class RGlobalFuncDecl;
 class RClassFuncDecl;
 class RClassCtorDecl;
@@ -211,11 +211,11 @@ class NExp_ClassMemberBoxRef : public NExp
 {
 public:
     NLocPtr holder;
-    std::shared_ptr<RClassMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RClassVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NExp_ClassMemberBoxRef(const NLocPtr& holder, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NExp_ClassMemberBoxRef(const NLocPtr& holder, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -227,11 +227,11 @@ class NExp_StructIndirectMemberBoxRef : public NExp
 {
 public:
     NLocPtr holder;
-    std::shared_ptr<RStructMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RStructVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NExp_StructIndirectMemberBoxRef(const NLocPtr& holder, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NExp_StructIndirectMemberBoxRef(const NLocPtr& holder, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -243,11 +243,11 @@ class NExp_StructMemberBoxRef : public NExp
 {
 public:
     NLocPtr parent;
-    std::shared_ptr<RStructMemberVarDecl> memberVarDecl;
+    std::shared_ptr<RStructVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NExp_StructMemberBoxRef(const NLocPtr& parent, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NExp_StructMemberBoxRef(const NLocPtr& parent, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }

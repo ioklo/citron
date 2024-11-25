@@ -7,7 +7,7 @@
 #include "NTypeDeclOuter.h"
 #include "NClassCtorDecl.h"
 #include "NClassFuncDecl.h"
-#include "NClassMemberVarDecl.h"
+#include "NClassVarDecl.h"
 #include "RNames.h"
 #include "NTypeDeclContainerComponent.h"
 #include "NFuncDeclContainerComponent.h"
@@ -46,11 +46,11 @@ class NClassDecl
     std::vector<std::shared_ptr<NClassCtorDecl>> ctors;
     int trivialCtorIndex; // can be -1
 
-    std::vector<std::shared_ptr<NClassMemberVarDecl>> memberVars;
+    std::vector<std::shared_ptr<NClassVarDecl>> vars;
 
     std::optional<BaseTypes> oBaseTypes;
 
-    std::unordered_map<RName, std::shared_ptr<NClassMemberVarDecl>> memberVarsMap;
+    std::unordered_map<RName, std::shared_ptr<NClassVarDecl>> varsMap;
 
 public:    
     // from NDecl
@@ -82,7 +82,7 @@ public:
     //RDecl* GetRDecl() override { return this; }
 
     // from RClassDecl
-    IR0_API std::optional<RMember_ClassMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
+    IR0_API std::optional<RMember_ClassVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
 };
 
 }

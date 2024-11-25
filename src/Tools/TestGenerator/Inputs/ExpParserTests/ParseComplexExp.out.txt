@@ -1,53 +1,53 @@
 {
-    "$type": "SBinaryOpExp",
+    "$type": "SExp_BinaryOp",
     "kind": "Assign",
     "operand0": {
-        "$type": "SIdentifierExp",
+        "$type": "SExp_Identifier",
         "value": "a",
         "typeArgs": []
     },
     "operand1": {
-        "$type": "SBinaryOpExp",
+        "$type": "SExp_BinaryOp",
         "kind": "Assign",
         "operand0": {
-            "$type": "SIdentifierExp",
+            "$type": "SExp_Identifier",
             "value": "b",
             "typeArgs": []
         },
         "operand1": {
-            "$type": "SBinaryOpExp",
+            "$type": "SExp_BinaryOp",
             "kind": "NotEqual",
             "operand0": {
-                "$type": "SBinaryOpExp",
+                "$type": "SExp_BinaryOp",
                 "kind": "Equal",
                 "operand0": {
-                    "$type": "SBinaryOpExp",
+                    "$type": "SExp_BinaryOp",
                     "kind": "Subtract",
                     "operand0": {
-                        "$type": "SBinaryOpExp",
+                        "$type": "SExp_BinaryOp",
                         "kind": "Add",
                         "operand0": {
-                            "$type": "SBinaryOpExp",
+                            "$type": "SExp_BinaryOp",
                             "kind": "Multiply",
                             "operand0": {
-                                "$type": "SUnaryOpExp",
+                                "$type": "SExp_UnaryOp",
                                 "kind": "LogicalNot",
                                 "operand": {
-                                    "$type": "SUnaryOpExp",
+                                    "$type": "SExp_UnaryOp",
                                     "kind": "LogicalNot",
                                     "operand": {
-                                        "$type": "SUnaryOpExp",
+                                        "$type": "SExp_UnaryOp",
                                         "kind": "PostfixInc",
                                         "operand": {
-                                            "$type": "SBinaryOpExp",
+                                            "$type": "SExp_BinaryOp",
                                             "kind": "Modulo",
                                             "operand0": {
-                                                "$type": "SIdentifierExp",
+                                                "$type": "SExp_Identifier",
                                                 "value": "c",
                                                 "typeArgs": []
                                             },
                                             "operand1": {
-                                                "$type": "SIdentifierExp",
+                                                "$type": "SExp_Identifier",
                                                 "value": "d",
                                                 "typeArgs": []
                                             }
@@ -56,48 +56,48 @@
                                 }
                             },
                             "operand1": {
-                                "$type": "SIdentifierExp",
+                                "$type": "SExp_Identifier",
                                 "value": "e",
                                 "typeArgs": []
                             }
                         },
                         "operand1": {
-                            "$type": "SIdentifierExp",
+                            "$type": "SExp_Identifier",
                             "value": "f",
                             "typeArgs": []
                         }
                     },
                     "operand1": {
-                        "$type": "SBinaryOpExp",
+                        "$type": "SExp_BinaryOp",
                         "kind": "Modulo",
                         "operand0": {
-                            "$type": "SBinaryOpExp",
+                            "$type": "SExp_BinaryOp",
                             "kind": "Divide",
                             "operand0": {
-                                "$type": "SIdentifierExp",
+                                "$type": "SExp_Identifier",
                                 "value": "g",
                                 "typeArgs": []
                             },
                             "operand1": {
-                                "$type": "SIdentifierExp",
+                                "$type": "SExp_Identifier",
                                 "value": "h",
                                 "typeArgs": []
                             }
                         },
                         "operand1": {
-                            "$type": "SIdentifierExp",
+                            "$type": "SExp_Identifier",
                             "value": "i",
                             "typeArgs": []
                         }
                     }
                 },
                 "operand1": {
-                    "$type": "SIntLiteralExp",
+                    "$type": "SExp_IntLiteral",
                     "value": 3
                 }
             },
             "operand1": {
-                "$type": "SBoolLiteralExp",
+                "$type": "SExp_BoolLiteral",
                 "value": false
             }
         }

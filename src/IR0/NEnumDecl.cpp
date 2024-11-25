@@ -62,7 +62,7 @@ optional<RMember> NEnumDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const 
 
 optional<RMember> NEnumDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
 {
-    // MemberVarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
+    // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
     throw RuntimeFatalException();
 }
 

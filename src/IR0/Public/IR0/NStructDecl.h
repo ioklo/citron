@@ -13,7 +13,7 @@
 #include "RNames.h"
 #include "NStructCtorDecl.h"
 #include "NStructFuncDecl.h"
-#include "NStructMemberVarDecl.h"
+#include "NStructVarDecl.h"
 #include "NTypeDeclContainerComponent.h"
 #include "NFuncDeclContainerComponent.h"
 #include "NTypeDeclOuter.h"
@@ -50,10 +50,10 @@ class NStructDecl
     std::vector<std::shared_ptr<NStructCtorDecl>> ctors;
     int trivialCtorIndex; // can be -1
 
-    std::vector<std::shared_ptr<NStructMemberVarDecl>> memberVars;
+    std::vector<std::shared_ptr<NStructVarDecl>> vars;
     std::optional<BaseTypes> oBaseTypes;
 
-    std::unordered_map<RName, std::shared_ptr<NStructMemberVarDecl>> memberVarsMap;
+    std::unordered_map<RName, std::shared_ptr<NStructVarDecl>> varsMap;
 
 public:
     IR0_API NStructDecl(NTypeDeclOuterWPtr&& outer, RAccessor accessor, RName&& name, std::vector<std::string>&& typeParams);
@@ -63,14 +63,14 @@ public:
     using NTypeDeclContainerComponent::AddType;
     IR0_API void AddCtor(std::shared_ptr<NStructCtorDecl> decl);
     void AddFunc(std::shared_ptr<NStructFuncDecl>&& decl) { NFuncDeclContainerComponent<NStructFuncDecl>::AddFunc(std::move(decl)); }
-    IR0_API void AddVar(std::shared_ptr<NStructMemberVarDecl> decl);
+    IR0_API void AddVar(std::shared_ptr<NStructVarDecl> decl);
 
     auto EnumerateUnboundCtors() { return std::views::all(ctors); }
-    auto GetUnboundMemberVars() { return std::views::all(memberVars); }
+    auto GetUnboundVars() { return std::views::all(vars); }
     IR0_API std::shared_ptr<NStructCtorDecl> GetUnboundTrivialCtor();
 
-    /*size_t GetMemberVarCount() { return memberVars.size(); }
-    const std::shared_ptr<NStructMemberVarDecl>& GetMemberVar(size_t index) { return memberVars[index]; }*/
+    /*size_t GetVarCount() { return vars.size(); }
+    const std::shared_ptr<NStructVarDecl>& GetVar(size_t index) { return vars[index]; }*/
 
 public:
     // from NDecl
@@ -108,7 +108,7 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RStructDecl
-    IR0_API std::optional<RMember_StructMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
+    IR0_API std::optional<RMember_StructVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
     IR0_API std::vector<std::shared_ptr<RStructCtorDecl>> GetUnboundCtors() override;
 
 };

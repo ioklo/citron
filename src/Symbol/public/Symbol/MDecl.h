@@ -11,14 +11,14 @@ class MGlobalFuncDecl;
 class MStructDecl;
 class MStructCtorDecl;
 class MStructFuncDecl;
-class MStructMemberVarDecl;
+class MStructVarDecl;
 class MClassDecl;
 class MClassCtorDecl;
 class MClassFuncDecl;
-class MClassMemberVarDecl;
+class MClassVarDecl;
 class MEnumDecl;
 class MEnumElemDecl;
-class MEnumElemMemberVarDecl;
+class MEnumElemVarDecl;
 class MInterfaceDecl;
 
 class MDeclVisitor
@@ -30,14 +30,14 @@ public:
     virtual void Visit(MStructDecl& decl) = 0;
     virtual void Visit(MStructCtorDecl& decl) = 0;
     virtual void Visit(MStructFuncDecl& decl) = 0;
-    virtual void Visit(MStructMemberVarDecl& decl) = 0;
+    virtual void Visit(MStructVarDecl& decl) = 0;
     virtual void Visit(MClassDecl& decl) = 0;
     virtual void Visit(MClassCtorDecl& decl) = 0;
     virtual void Visit(MClassFuncDecl& decl) = 0;
-    virtual void Visit(MClassMemberVarDecl& decl) = 0;
+    virtual void Visit(MClassVarDecl& decl) = 0;
     virtual void Visit(MEnumDecl& decl) = 0;
     virtual void Visit(MEnumElemDecl& decl) = 0;
-    virtual void Visit(MEnumElemMemberVarDecl& decl) = 0;
+    virtual void Visit(MEnumElemVarDecl& decl) = 0;
     virtual void Visit(MInterfaceDecl& decl) = 0;
 };
 

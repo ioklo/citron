@@ -1,29 +1,29 @@
 {
-    "$type": "SIsExp",
+    "$type": "SExp_Is",
     "exp": {
-        "$type": "SBinaryOpExp",
+        "$type": "SExp_BinaryOp",
         "kind": "LessThan",
         "operand0": {
-            "$type": "SIsExp",
+            "$type": "SExp_Is",
             "exp": {
-                "$type": "SBinaryOpExp",
+                "$type": "SExp_BinaryOp",
                 "kind": "Add",
                 "operand0": {
-                    "$type": "SIdentifierExp",
+                    "$type": "SExp_Identifier",
                     "value": "e",
                     "typeArgs": []
                 },
                 "operand1": {
-                    "$type": "SIntLiteralExp",
+                    "$type": "SExp_IntLiteral",
                     "value": 1
                 }
             },
             "type": {
-                "$type": "SIdTypeExp",
+                "$type": "STypeExp_Id",
                 "name": "X",
                 "typeArgs": [
                     {
-                        "$type": "SIdTypeExp",
+                        "$type": "STypeExp_Id",
                         "name": "int",
                         "typeArgs": []
                     }
@@ -31,21 +31,21 @@
             }
         },
         "operand1": {
-            "$type": "SBinaryOpExp",
+            "$type": "SExp_BinaryOp",
             "kind": "Add",
             "operand0": {
-                "$type": "SIdentifierExp",
+                "$type": "SExp_Identifier",
                 "value": "d",
                 "typeArgs": []
             },
             "operand1": {
-                "$type": "SIntLiteralExp",
+                "$type": "SExp_IntLiteral",
                 "value": 1
             }
         }
     },
     "type": {
-        "$type": "SIdTypeExp",
+        "$type": "STypeExp_Id",
         "name": "T",
         "typeArgs": []
     }

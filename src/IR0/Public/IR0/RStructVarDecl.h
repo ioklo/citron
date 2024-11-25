@@ -6,9 +6,9 @@
 
 namespace Citron {
 
-class MStructMemberVarDecl;
+class MStructVarDecl;
 
-class RStructMemberVarDecl
+class RStructVarDecl
     : public RDecl
 {
 public:
@@ -17,9 +17,9 @@ public:
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
 };
 
-class RMStructMemberVarDecl : public RStructMemberVarDecl
+class RMStructVarDecl : public RStructVarDecl
 {
-    std::shared_ptr<MStructMemberVarDecl> decl;
+    std::shared_ptr<MStructVarDecl> decl;
 };
 
 

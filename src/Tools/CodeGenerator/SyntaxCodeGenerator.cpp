@@ -154,7 +154,7 @@ struct ToJsonVisitor {
                 "SClassMemberDecl",
                 "SClassFuncDecl",
                 "SClassCtorDecl",
-                "SClassMemberVarDecl",
+                "SClassVarDecl",
             }
         },
 
@@ -163,7 +163,7 @@ struct ToJsonVisitor {
                 "SStructMemberDecl",
                 "SStructFuncDecl",
                 "SStructCtorDecl",
-                "SStructMemberVarDecl",
+                "SStructVarDecl",
             }
         },
 
@@ -418,7 +418,7 @@ struct ToJsonVisitor {
                 "SEnumDecl",
                 "SClassFuncDecl",
                 "SClassCtorDecl",
-                "SClassMemberVarDecl",
+                "SClassVarDecl",
             }
         },
 
@@ -433,7 +433,7 @@ struct ToJsonVisitor {
                 "SEnumDecl",
                 "SStructFuncDecl",
                 "SStructCtorDecl",
-                "SStructMemberVarDecl",
+                "SStructVarDecl",
             }
         },
 
@@ -998,9 +998,9 @@ struct ToJsonVisitor {
             },
         },
 
-        // SClassMemberVarDecl
+        // SClassVarDecl
         ClassInfo {
-            .name = "SClassMemberVarDecl",
+            .name = "SClassVarDecl",
             .variantInterfaces { "SClassMemberDecl" },
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
@@ -1053,9 +1053,9 @@ struct ToJsonVisitor {
             },
         },
 
-        // SStructMemberVarDecl
+        // SStructVarDecl
         ClassInfo {
-            .name = "SStructMemberVarDecl",
+            .name = "SStructVarDecl",
             .variantInterfaces { "SStructMemberDecl" },
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
@@ -1068,9 +1068,9 @@ struct ToJsonVisitor {
 
         #pragma region SEnumDecl
 
-        // SEnumElemMemberVarDecl
+        // SEnumElemVarDecl
         ClassInfo {
-            .name = "SEnumElemMemberVarDecl",
+            .name = "SEnumElemVarDecl",
             .memberInfos {
                 { .type = "STypeExpPtr", .memberVarName = "type", .getterName = "GetType" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -1082,7 +1082,7 @@ struct ToJsonVisitor {
             .name = "SEnumElemDecl",
             .memberInfos {
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<std::shared_ptr<SEnumElemMemberVarDecl>>", .memberVarName = "memberVars", .getterName = "GetMemberVars" },
+                { .type = "std::vector<std::shared_ptr<SEnumElemVarDecl>>", .memberVarName = "vars", .getterName = "GetVars" },
             },
         },
 

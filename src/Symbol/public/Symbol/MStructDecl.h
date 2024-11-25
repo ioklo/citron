@@ -6,7 +6,7 @@
 #include "MNames.h"
 #include "MStructCtorDecl.h"
 #include "MStructFuncDecl.h"
-#include "MStructMemberVarDecl.h"
+#include "MStructVarDecl.h"
 #include "MTypeDeclContainerComponent.h"
 #include "MFuncDeclContainerComponent.h"
 #include "MTypeDeclOuter.h"
@@ -37,7 +37,7 @@ class MStructDecl
     std::vector<std::shared_ptr<MStructCtorDecl>> ctors;
     int trivialCtorIndex; // can be -1
 
-    std::vector<std::shared_ptr<MStructMemberVarDecl>> memberVars;
+    std::vector<std::shared_ptr<MStructVarDecl>> vars;
 
     std::optional<BaseTypes> oBaseTypes;
 

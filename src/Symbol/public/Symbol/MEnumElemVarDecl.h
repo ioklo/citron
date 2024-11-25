@@ -1,27 +1,28 @@
 #pragma once
 
+#include <memory>
+#include <optional>
+
 #include "MDecl.h"
-#include "MAccessor.h"
-#include "MType.h"
 #include "MNames.h"
+#include "MType.h"
 
 namespace Citron
 {
 
-class MClassDecl;
+class MEnumElemDecl;
 
-class MClassMemberVarDecl
+class MEnumElemVarDecl
     : public MDecl
-{
-    std::weak_ptr<MClassDecl> _class;
-
-    MAccessor accessor;
-    bool bStatic;
-    MTypePtr declType;
+{   
+    std::weak_ptr<MEnumElemDecl> outer;
     MName name;
+
+    MTypePtr declType; // lazy-init
 
 public:
     void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
 };
+
 
 }

@@ -193,31 +193,34 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
                 }
             ]
         },
-        "args": [
-            {
-                "$type": "SArgument",
-                "bOut": false,
-                "bParams": false,
-                "exp": {
-                    "$type": "SExp_IntLiteral",
-                    "value": 1
+        "args": {
+            "$type": "SArguments",
+            "items": [
+                {
+                    "$type": "SArgument",
+                    "bOut": false,
+                    "bParams": false,
+                    "exp": {
+                        "$type": "SExp_IntLiteral",
+                        "value": 1
+                    }
+                },
+                {
+                    "$type": "SArgument",
+                    "bOut": false,
+                    "bParams": false,
+                    "exp": {
+                        "$type": "SExp_String",
+                        "elements": [
+                            {
+                                "$type": "SStringExpElement_Text",
+                                "text": "str"
+                            }
+                        ]
+                    }
                 }
-            },
-            {
-                "$type": "SArgument",
-                "bOut": false,
-                "bParams": false,
-                "exp": {
-                    "$type": "SExp_String",
-                    "elements": [
-                        {
-                            "$type": "SStringExpElement_Text",
-                            "text": "str"
-                        }
-                    ]
-                }
-            }
-        ]
+            ]
+        }
     },
     "memberName": "d",
     "memberTypeArgs": []
@@ -413,40 +416,43 @@ TEST(ExpParser, ParseNewExp)
             }
         ]
     },
-    "args": [
-        {
-            "$type": "SArgument",
-            "bOut": false,
-            "bParams": false,
-            "exp": {
-                "$type": "SExp_IntLiteral",
-                "value": 2
+    "args": {
+        "$type": "SArguments",
+        "items": [
+            {
+                "$type": "SArgument",
+                "bOut": false,
+                "bParams": false,
+                "exp": {
+                    "$type": "SExp_IntLiteral",
+                    "value": 2
+                }
+            },
+            {
+                "$type": "SArgument",
+                "bOut": false,
+                "bParams": false,
+                "exp": {
+                    "$type": "SExp_BoolLiteral",
+                    "value": false
+                }
+            },
+            {
+                "$type": "SArgument",
+                "bOut": false,
+                "bParams": false,
+                "exp": {
+                    "$type": "SExp_String",
+                    "elements": [
+                        {
+                            "$type": "SStringExpElement_Text",
+                            "text": "string"
+                        }
+                    ]
+                }
             }
-        },
-        {
-            "$type": "SArgument",
-            "bOut": false,
-            "bParams": false,
-            "exp": {
-                "$type": "SExp_BoolLiteral",
-                "value": false
-            }
-        },
-        {
-            "$type": "SArgument",
-            "bOut": false,
-            "bParams": false,
-            "exp": {
-                "$type": "SExp_String",
-                "elements": [
-                    {
-                        "$type": "SStringExpElement_Text",
-                        "text": "string"
-                    }
-                ]
-            }
-        }
-    ]
+        ]
+    }
 })---";
 
     EXPECT_SYNTAX_EQ(oExp, expected);
@@ -475,28 +481,31 @@ TEST(ExpParser, ParsePrimaryExp)
                     "typeArgs": []
                 }
             },
-            "args": [
-                {
-                    "$type": "SArgument",
-                    "bOut": false,
-                    "bParams": false,
-                    "exp": {
-                        "$type": "SExp_Identifier",
-                        "value": "e",
-                        "typeArgs": []
+            "args": {
+                "$type": "SArguments",
+                "items": [
+                    {
+                        "$type": "SArgument",
+                        "bOut": false,
+                        "bParams": false,
+                        "exp": {
+                            "$type": "SExp_Identifier",
+                            "value": "e",
+                            "typeArgs": []
+                        }
+                    },
+                    {
+                        "$type": "SArgument",
+                        "bOut": false,
+                        "bParams": false,
+                        "exp": {
+                            "$type": "SExp_Identifier",
+                            "value": "f",
+                            "typeArgs": []
+                        }
                     }
-                },
-                {
-                    "$type": "SArgument",
-                    "bOut": false,
-                    "bParams": false,
-                    "exp": {
-                        "$type": "SExp_Identifier",
-                        "value": "f",
-                        "typeArgs": []
-                    }
-                }
-            ]
+                ]
+            }
         },
         "operand1": {
             "$type": "SExp_Identifier",

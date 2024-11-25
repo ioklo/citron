@@ -3,10 +3,10 @@
 #include <Infra/Exceptions.h>
 
 #include "NExp.h"
-#include "NLambdaMemberVarDecl.h"
-#include "RStructMemberVarDecl.h"
-#include "RClassMemberVarDecl.h"
-#include "REnumElemMemberVarDecl.h"
+#include "NLambdaVarDecl.h"
+#include "RStructVarDecl.h"
+#include "RClassVarDecl.h"
+#include "REnumElemVarDecl.h"
 
 
 namespace Citron {
@@ -37,14 +37,14 @@ RTypePtr NLoc_LocalVar::GetType(RTypeFactory& factory)
     return declType;
 }
 
-NLoc_LambdaMemberVar::NLoc_LambdaMemberVar(const std::shared_ptr<NLambdaMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
-    : memberVarDecl(memberVarDecl), typeArgs(typeArgs)
+NLoc_LambdaVar::NLoc_LambdaVar(const std::shared_ptr<NLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+    : decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr NLoc_LambdaMemberVar::GetType(RTypeFactory& factory)
+RTypePtr NLoc_LambdaVar::GetType(RTypeFactory& factory)
 {
-    return memberVarDecl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs, factory);
 }
 
 NLoc_ListIndexer::NLoc_ListIndexer(NLocPtr&& list, const NLocPtr& index, const RTypePtr& itemType)
@@ -57,36 +57,36 @@ RTypePtr NLoc_ListIndexer::GetType(RTypeFactory& factory)
     return itemType;
 }
 
-NLoc_StructMember::NLoc_StructMember(const NLocPtr& instance, const std::shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
-    : instance(instance), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
+NLoc_StructVar::NLoc_StructVar(const NLocPtr& instance, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+    : instance(instance), decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr NLoc_StructMember::GetType(RTypeFactory& factory)
+RTypePtr NLoc_StructVar::GetType(RTypeFactory& factory)
 {
-    return memberVarDecl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs, factory);
 
 }
 
-NLoc_ClassMember::NLoc_ClassMember(NLocPtr&& instance, const std::shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
-    : instance(std::move(instance)), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
+NLoc_ClassVar::NLoc_ClassVar(NLocPtr&& instance, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+    : instance(std::move(instance)), decl(decl), typeArgs(typeArgs)
 {
 }
 
 
-RTypePtr NLoc_ClassMember::GetType(RTypeFactory& factory)
+RTypePtr NLoc_ClassVar::GetType(RTypeFactory& factory)
 {
-    return memberVarDecl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs, factory);
 }
 
-NLoc_EnumElemMember::NLoc_EnumElemMember(const NLocPtr& instance, std::shared_ptr<REnumElemMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
-    : instance(instance), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
+NLoc_EnumElemVar::NLoc_EnumElemVar(const NLocPtr& instance, std::shared_ptr<REnumElemVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+    : instance(instance), decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr NLoc_EnumElemMember::GetType(RTypeFactory& factory)
+RTypePtr NLoc_EnumElemVar::GetType(RTypeFactory& factory)
 {
-    return memberVarDecl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs, factory);
 }
 
 NLoc_This::NLoc_This(RTypePtr type)

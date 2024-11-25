@@ -4,8 +4,8 @@
 #include <Infra/Ptr.h>
 #include <Logging/Logger.h>
 #include <IR0/NLoc.h>
-#include <IR0/RClassMemberVarDecl.h>
-#include <IR0/NStructMemberVarDecl.h>
+#include <IR0/RClassVarDecl.h>
+#include <IR0/NStructVarDecl.h>
 #include <IR0/RTypeFactory.h>
 
 #include "TranslationContext.h"
@@ -20,7 +20,7 @@ NLocPtr TranslateReThisVarExpToNLoc(ReExp_ThisVar& reExp, TranslationContext& co
     return context.MakeThisLoc();
 }
 
-NLocPtr TranslateReClassMemberVarExpToNLoc(ReExp_ClassMemberVar& reExp, TranslationContext& context)
+NLocPtr TranslateReClassVarExpToNLoc(ReExp_ClassVar& reExp, TranslationContext& context)
 {
     if (reExp.hasExplicitInstance) // c.x, C.x 둘다 해당
     {
@@ -34,12 +34,12 @@ NLocPtr TranslateReClassMemberVarExpToNLoc(ReExp_ClassMemberVar& reExp, Translat
             if (!instance) return nullptr;
         }
 
-        return MakePtr<NLoc_ClassMember>(std::move(instance), reExp.decl, reExp.typeArgs);
+        return MakePtr<NLoc_ClassVar>(std::move(instance), reExp.decl, reExp.typeArgs);
     }
     else // x, x (static) 둘다 해당
     {   
         NLocPtr nInstanceLoc = reExp.decl->IsStatic()? nullptr : context.MakeThisLoc();
-        return MakePtr<NLoc_ClassMember>(std::move(nInstanceLoc), reExp.decl, reExp.typeArgs);
+        return MakePtr<NLoc_ClassVar>(std::move(nInstanceLoc), reExp.decl, reExp.typeArgs);
     }
 }
 
@@ -48,12 +48,12 @@ NLocPtr TranslateReLocalVarExpToNLoc(ReExp_LocalVar& reExp)
     return MakePtr<NLoc_LocalVar>(RName_Normal(reExp.name), reExp.type);
 }
 
-NLocPtr TranslateReLambdaMemberVarExpToNLoc(ReExp_LambdaMemberVar& reExp)
+NLocPtr TranslateReLambdaVarExpToNLoc(ReExp_LambdaVar& reExp)
 {
-    return MakePtr<NLoc_LambdaMemberVar>(reExp.decl, reExp.typeArgs);
+    return MakePtr<NLoc_LambdaVar>(reExp.decl, reExp.typeArgs);
 }
 
-NLocPtr TranslateReStructMemberVarExpToNLoc(ReExp_StructMemberVar& reExp, TranslationContext& context)
+NLocPtr TranslateReStructVarExpToNLoc(ReExp_StructVar& reExp, TranslationContext& context)
 {
     if (reExp.hasExplicitInstance) // c.x, C.x 둘다 해당
     {
@@ -68,24 +68,24 @@ NLocPtr TranslateReStructMemberVarExpToNLoc(ReExp_StructMemberVar& reExp, Transl
                 return nullptr;
         }
 
-        return MakePtr<NLoc_StructMember>(instance, reExp.decl, reExp.typeArgs);
+        return MakePtr<NLoc_StructVar>(instance, reExp.decl, reExp.typeArgs);
     }
     else // x, x (static) 둘다 해당
     {   
         // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
         NLocPtr nInstanceLoc = reExp.decl->IsStatic() ? nullptr : MakePtr<NLoc_LocalDeref>(context.MakeThisLoc());
-        return MakePtr<NLoc_StructMember>(nInstanceLoc, reExp.decl, reExp.typeArgs);
+        return MakePtr<NLoc_StructVar>(nInstanceLoc, reExp.decl, reExp.typeArgs);
     }
 }
 
-NLocPtr TranslateReEnumElemMemberVarExpToNLoc(ReExp_EnumElemMemberVar& reExp, TranslationContext& context)
+NLocPtr TranslateReEnumElemVarExpToNLoc(ReExp_EnumElemVar& reExp, TranslationContext& context)
 {   
     auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
 
     auto nInstLoc = TranslateReExpToNLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
     if (!nInstLoc) return nullptr;
 
-    return MakePtr<NLoc_EnumElemMember>(nInstLoc, reExp.decl, reExp.typeArgs);
+    return MakePtr<NLoc_EnumElemVar>(nInstLoc, reExp.decl, reExp.typeArgs);
 }
 
 NLocPtr TranslateReListIndexerExpToNLoc(ReExp_ListIndexer& reExp, TranslationContext& context)
@@ -146,24 +146,24 @@ public:
         *result = TranslateReLocalVarExpToNLoc(exp);
     }
 
-    void Visit(ReExp_LambdaMemberVar& exp) override
+    void Visit(ReExp_LambdaVar& exp) override
     {
-        *result = TranslateReLambdaMemberVarExpToNLoc(exp);
+        *result = TranslateReLambdaVarExpToNLoc(exp);
     }
 
-    void Visit(ReExp_ClassMemberVar& exp) override
+    void Visit(ReExp_ClassVar& exp) override
     {
-        *result = TranslateReClassMemberVarExpToNLoc(exp, context);
+        *result = TranslateReClassVarExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_StructMemberVar& exp) override
+    void Visit(ReExp_StructVar& exp) override
     {
-        *result = TranslateReStructMemberVarExpToNLoc(exp, context);
+        *result = TranslateReStructVarExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_EnumElemMemberVar& exp) override
+    void Visit(ReExp_EnumElemVar& exp) override
     {
-        *result = TranslateReEnumElemMemberVarExpToNLoc(exp, context);
+        *result = TranslateReEnumElemVarExpToNLoc(exp, context);
     }
 
     void Visit(ReExp_LocalDeref& exp) override

@@ -98,7 +98,7 @@ class RTypeFactory
     std::unordered_map<RTypePtr, std::shared_ptr<RType_NullableRef>> nullableRefTypes;
     std::unordered_map<int, std::shared_ptr<RType_TypeVar>> typeVarTypes;
     std::shared_ptr<RType_Void> voidType;
-    std::unordered_map<std::vector<RTupleMemberVar>, std::shared_ptr<RType_Tuple>> tupleTypes;
+    std::unordered_map<std::vector<RTupleVar>, std::shared_ptr<RType_Tuple>> tupleTypes;
     std::unordered_map<IR0::FuncTypeKey, std::shared_ptr<RType_Func>, IR0::FuncTypeKeyHasher> funcTypes;
     std::unordered_map<RTypePtr, std::shared_ptr<RType_LocalPtr>> localPtrTypes;
     std::unordered_map<RTypePtr, std::shared_ptr<RType_BoxPtr>> boxPtrTypes;
@@ -132,7 +132,7 @@ public:
     IR0_API std::shared_ptr<RType_NullableRef> MakeNullableRefType(RTypePtr innerType);
     IR0_API std::shared_ptr<RType_TypeVar> MakeTypeVarType(int index);
     IR0_API std::shared_ptr<RType_Void> MakeVoidType();
-    IR0_API std::shared_ptr<RType_Tuple> MakeTupleType(std::vector<RTupleMemberVar>&& memberVar);
+    IR0_API std::shared_ptr<RType_Tuple> MakeTupleType(std::vector<RTupleVar>&& vars);
     IR0_API std::shared_ptr<RType_Func> MakeFuncType(bool bLocal, RTypePtr&& retType, std::vector<RType_Func::Parameter>&& params);
     IR0_API std::shared_ptr<RType_LocalPtr> MakeLocalPtrType(RTypePtr&& innerType);
     IR0_API std::shared_ptr<RType_BoxPtr> MakeBoxPtrType(RTypePtr&& innerType);

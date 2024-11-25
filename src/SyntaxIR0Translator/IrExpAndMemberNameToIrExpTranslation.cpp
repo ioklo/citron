@@ -10,9 +10,9 @@
 #include <IR0/RMember.h>
 #include <IR0/RTypeFactory.h>
 #include <IR0/NClassDecl.h>
-#include <IR0/RClassMemberVarDecl.h>
+#include <IR0/RClassVarDecl.h>
 #include <IR0/NStructDecl.h>
-#include <IR0/NStructMemberVarDecl.h>
+#include <IR0/NStructVarDecl.h>
 #include <IR0/NEnumDecl.h>
 #include <IR0/NNamespaceDecl.h>
 
@@ -62,7 +62,7 @@ public:
     }
 
     // C.x
-    IrExpPtr operator()(RMember_ClassMemberVar& member) 
+    IrExpPtr operator()(RMember_ClassVar& member) 
     {
         if (!member.decl->IsStatic())
         {
@@ -77,7 +77,7 @@ public:
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     IrExpPtr operator()(RMember_Struct& member) 
@@ -92,7 +92,7 @@ public:
         return nullptr;
     }
 
-    IrExpPtr operator()(RMember_StructMemberVar& member) 
+    IrExpPtr operator()(RMember_StructVar& member) 
     {
         if (!member.decl->IsStatic())
         {
@@ -107,7 +107,7 @@ public:
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructMember>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     // E
@@ -125,18 +125,18 @@ public:
     }
 
     // &E.x
-    IrExpPtr operator()(RMember_EnumElemMemberVar& member) 
+    IrExpPtr operator()(RMember_EnumElemVar& member) 
     {
         // 표현 불가능
         throw RuntimeFatalException();
     }
 
-    IrExpPtr operator()(RMember_LambdaMemberVar& member) 
+    IrExpPtr operator()(RMember_LambdaVar& member) 
     {
         throw RuntimeFatalException();
     }
 
-    IrExpPtr operator()(RMember_TupleMemberVar& member) 
+    IrExpPtr operator()(RMember_TupleVar& member) 
     {
         throw RuntimeFatalException();
     }
@@ -194,8 +194,8 @@ public:
         //int count = type.GetMemberVarCount();
         //for (int i = 0; i < count; i++)
         //{
-        //    var memberVar = type.GetMemberVar(i);
-        //    if (memberVar.GetName().Equals(name))
+        //    var var = type.GetVar(i);
+        //    if (var.GetName().Equals(name))
         //    {
         //        return Valid(new IntermediateRefExp.StaticRef(new TupleMemberLoc parent.Loc)
         //    }
@@ -227,9 +227,9 @@ public:
 
     void Visit(RType_Class& type) override 
     {
-        auto memberVar = type.GetMemberVar(name);
+        auto var = type.GetVar(name);
 
-        if (!memberVar)
+        if (!var)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
@@ -244,15 +244,15 @@ public:
         }
 
         // 이제 BoxRef로 변경
-        *result = MakePtr<IrExp_BoxRef_ClassMember>(parent->loc, memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_ClassMember>(parent->loc, var->decl, var->typeArgs);
     }
 
     // &C.s.id
     void Visit(RType_Struct& type) override 
     {   
-        auto memberVar = type.GetMemberVar(name);
+        auto var = type.GetVar(name);
 
-        if (!memberVar)
+        if (!var)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
@@ -266,7 +266,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
     }
 
     // Enum자체는 member를 가져올 수 없다
@@ -279,8 +279,8 @@ public:
     // e.x (E.Second.x)
     void Visit(RType_EnumElem& type) override 
     {   
-        auto memberVar = type.GetMemberVar(name);
-        if (!memberVar)
+        auto var = type.GetVar(name);
+        if (!var)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
@@ -293,7 +293,7 @@ public:
             *result = nullptr;
         }
 
-        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->outerTypeArgs));
+        *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
     }
 
     // &C.i.id
@@ -380,8 +380,8 @@ public:
     void Visit(RType_Class& type) override 
     {
         // &c.c.x
-        auto memberVar = type.GetMemberVar(name);
-        if (!memberVar)
+        auto var = type.GetVar(name);
+        if (!var)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
@@ -395,14 +395,14 @@ public:
             return;
         }
 
-        *result = MakePtr<IrExp_BoxRef_ClassMember>(parent->MakeLoc(), memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_ClassMember>(parent->MakeLoc(), var->decl, var->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 
     {
         // &c.s.x
-        auto memberVar = type.GetMemberVar(name);
-        if (!memberVar)
+        auto var = type.GetVar(name);
+        if (!var)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
@@ -416,7 +416,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrExp_BoxRef_StructMember>(parent, memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_StructMember>(parent, var->decl, var->typeArgs);
     }
 
     void Visit(RType_Enum& type) override 
@@ -515,8 +515,8 @@ public:
     void Visit(RType_Class& type) override 
     {
         // &s.c.x
-        auto memberVar = type.GetMemberVar(name);
-        if (!memberVar)
+        auto var = type.GetVar(name);
+        if (!var)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
@@ -530,14 +530,14 @@ public:
             return;
         }
 
-        *result = MakePtr<IrExp_BoxRef_ClassMember>(parent->loc, memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_ClassMember>(parent->loc, var->decl, var->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 
     {
         // &s.s.x
-        auto memberVar = type.GetMemberVar(name);
-        if (!memberVar)
+        auto var = type.GetVar(name);
+        if (!var)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
@@ -551,7 +551,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_StructMember>(parent->loc, memberVar->decl, memberVar->typeArgs));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
     }
 
     void Visit(RType_Enum& type) override 
@@ -564,8 +564,8 @@ public:
     void Visit(RType_EnumElem& type) override 
     {
         // &s.e.x
-        auto memberVar = type.GetMemberVar(name);
-        if (!memberVar)
+        auto var = type.GetVar(name);
+        if (!var)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
@@ -578,7 +578,7 @@ public:
             *result = nullptr;
         }
 
-        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_EnumElemMember>(parent->loc, memberVar->decl, memberVar->outerTypeArgs));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
     }
 
     void Visit(RType_Interface& type) override 
@@ -666,8 +666,8 @@ public:
     void Visit(RType_Struct& type) override 
     {
         // &(*pS).x
-        auto memberVar = type.GetMemberVar(name);
-        if (!memberVar)
+        auto var = type.GetVar(name);
+        if (!var)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
@@ -681,7 +681,7 @@ public:
             return;
         }
 
-        *result = MakePtr<IrExp_BoxRef_StructIndirectMember>(parent->innerLoc, memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_StructIndirectMember>(parent->innerLoc, var->decl, var->typeArgs);
     }
 
     void Visit(RType_Enum& type) override 
@@ -696,11 +696,11 @@ public:
         // &(*pE).x
         throw NotImplementedException();
 
-        //var memberVar = type.Symbol.GetMemberVar(name);
-        //if (memberVar == null)
+        //var var = type.Symbol.GetVar(name);
+        //if (var == null)
         //    return Fatal();
 
-        //return Valid(new IntermediateRefExp.BoxRef.EnumMember(parent, memberVar));
+        //return Valid(new IntermediateRefExp.BoxRef.EnumMember(parent, var));
     }
 
     void Visit(RType_Interface& type) override 
@@ -783,8 +783,8 @@ public:
     void Visit(RType_Class& type) override 
     {
         // &this.x
-        auto memberVar = type.GetMemberVar(name);
-        if (!memberVar)
+        auto var = type.GetVar(name);
+        if (!var)
         {
             context.Log(&Logger::Fatal_ResolveIdentifier_NotFound);
             *result = nullptr;
@@ -798,7 +798,7 @@ public:
             return;
         }
         
-        *result = MakePtr<IrExp_BoxRef_ClassMember>(context.MakeThisLoc(), memberVar->decl, memberVar->typeArgs);
+        *result = MakePtr<IrExp_BoxRef_ClassMember>(context.MakeThisLoc(), var->decl, var->typeArgs);
     }
 
     void Visit(RType_Struct& type) override 

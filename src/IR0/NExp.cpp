@@ -11,14 +11,14 @@
 #include "REnumElemDecl.h"
 
 #include "RStructDecl.h"
-#include "RStructMemberVarDecl.h"
+#include "RStructVarDecl.h"
 #include "RStructFuncDecl.h"
 #include "RStructCtorDecl.h"
 
 #include "RClassDecl.h"
 #include "RClassCtorDecl.h"
 #include "RClassFuncDecl.h"
-#include "RClassMemberVarDecl.h"
+#include "RClassVarDecl.h"
 
 using namespace std;
 
@@ -65,36 +65,36 @@ RTypePtr NExp_StaticBoxRef::GetType(RTypeFactory& factory)
     return factory.MakeBoxPtrType(loc->GetType(factory));
 }
 
-NExp_ClassMemberBoxRef::NExp_ClassMemberBoxRef(const NLocPtr& holder, const shared_ptr<RClassMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
-    : holder(holder), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
+NExp_ClassMemberBoxRef::NExp_ClassMemberBoxRef(const NLocPtr& holder, const shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+    : holder(holder), decl(decl), typeArgs(typeArgs)
 {
 }
 
 RTypePtr NExp_ClassMemberBoxRef::GetType(RTypeFactory& factory)
 {
-    auto declType = memberVarDecl->GetDeclType(*typeArgs, factory);
+    auto declType = decl->GetDeclType(*typeArgs, factory);
     return factory.MakeBoxPtrType(move(declType));
 }
 
-NExp_StructIndirectMemberBoxRef::NExp_StructIndirectMemberBoxRef(const NLocPtr& holder, const shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
-    : holder(holder), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
+NExp_StructIndirectMemberBoxRef::NExp_StructIndirectMemberBoxRef(const NLocPtr& holder, const shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+    : holder(holder), decl(decl), typeArgs(typeArgs)
 {
 }
 
 RTypePtr NExp_StructIndirectMemberBoxRef::GetType(RTypeFactory& factory)
 {
-    auto declType = memberVarDecl->GetDeclType(*typeArgs, factory);
+    auto declType = decl->GetDeclType(*typeArgs, factory);
     return factory.MakeBoxPtrType(move(declType));
 }
 
-NExp_StructMemberBoxRef::NExp_StructMemberBoxRef(const NLocPtr& parent, const shared_ptr<RStructMemberVarDecl>& memberVarDecl, const RTypeArgumentsPtr& typeArgs)
-    : parent(parent), memberVarDecl(memberVarDecl), typeArgs(typeArgs)
+NExp_StructMemberBoxRef::NExp_StructMemberBoxRef(const NLocPtr& parent, const shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+    : parent(parent), decl(decl), typeArgs(typeArgs)
 {
 }
 
 RTypePtr NExp_StructMemberBoxRef::GetType(RTypeFactory& factory)
 {
-    auto declType = memberVarDecl->GetDeclType(*typeArgs, factory);
+    auto declType = decl->GetDeclType(*typeArgs, factory);
 
     return factory.MakeBoxPtrType(move(declType));
 }

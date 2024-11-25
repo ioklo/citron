@@ -4,16 +4,16 @@
 #include "RAccessor.h"
 #include "RType.h"
 #include "RNames.h"
-#include "RClassMemberVarDecl.h"
+#include "RClassVarDecl.h"
 
 namespace Citron
 {
 
 class NClassDecl;
 
-class NClassMemberVarDecl
+class NClassVarDecl
     : public NDecl
-    , public RClassMemberVarDecl
+    , public RClassVarDecl
 {
 public:
     std::weak_ptr<NClassDecl> _class;
@@ -36,7 +36,7 @@ public:
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
-    // from RClassMemberVarDecl
+    // from RClassVarDecl
     IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 

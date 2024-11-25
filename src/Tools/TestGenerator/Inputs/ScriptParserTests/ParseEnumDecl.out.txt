@@ -10,14 +10,14 @@
                 {
                     "$type": "SEnumElemDecl",
                     "name": "First",
-                    "memberVars": []
+                    "vars": []
                 },
                 {
                     "$type": "SEnumElemDecl",
                     "name": "Second",
-                    "memberVars": [
+                    "vars": [
                         {
-                            "$type": "SEnumElemMemberVarDecl",
+                            "$type": "SEnumElemVarDecl",
                             "type": {
                                 "$type": "STypeExp_Id",
                                 "name": "int",
@@ -30,7 +30,7 @@
                 {
                     "$type": "SEnumElemDecl",
                     "name": "Third",
-                    "memberVars": []
+                    "vars": []
                 }
             ]
         }

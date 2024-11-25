@@ -308,7 +308,7 @@ struct SClassMemberDeclToJsonVisitor : public SClassMemberDeclVisitor
     void Visit(SEnumDecl& decl) override { result = decl.ToJson(); }
     void Visit(SClassFuncDecl& decl) override { result = decl.ToJson(); }
     void Visit(SClassCtorDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SClassMemberVarDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SClassVarDecl& decl) override { result = decl.ToJson(); }
 };
 
 JsonItem ToJson(SClassMemberDeclPtr& decl)
@@ -327,7 +327,7 @@ struct SStructMemberDeclToJsonVisitor : public SStructMemberDeclVisitor
     void Visit(SEnumDecl& decl) override { result = decl.ToJson(); }
     void Visit(SStructFuncDecl& decl) override { result = decl.ToJson(); }
     void Visit(SStructCtorDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SStructMemberVarDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SStructVarDecl& decl) override { result = decl.ToJson(); }
 };
 
 JsonItem ToJson(SStructMemberDeclPtr& decl)
@@ -1300,19 +1300,19 @@ JsonItem SClassCtorDecl::ToJson()
     };
 }
 
-SClassMemberVarDecl::SClassMemberVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames)
+SClassVarDecl::SClassVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames)
     : accessModifier(std::move(accessModifier)), varType(std::move(varType)), varNames(std::move(varNames)) { }
 
-SClassMemberVarDecl::SClassMemberVarDecl(SClassMemberVarDecl&& other) noexcept = default;
+SClassVarDecl::SClassVarDecl(SClassVarDecl&& other) noexcept = default;
 
-SClassMemberVarDecl::~SClassMemberVarDecl() = default;
+SClassVarDecl::~SClassVarDecl() = default;
 
-SClassMemberVarDecl& SClassMemberVarDecl::operator=(SClassMemberVarDecl&& other) noexcept = default;
+SClassVarDecl& SClassVarDecl::operator=(SClassVarDecl&& other) noexcept = default;
 
-JsonItem SClassMemberVarDecl::ToJson()
+JsonItem SClassVarDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SClassMemberVarDecl") },
+        { "$type", JsonString("SClassVarDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "varType", Citron::ToJson(varType) },
         { "varNames", Citron::ToJson(varNames) },
@@ -1383,45 +1383,45 @@ JsonItem SStructCtorDecl::ToJson()
     };
 }
 
-SStructMemberVarDecl::SStructMemberVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames)
+SStructVarDecl::SStructVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames)
     : accessModifier(std::move(accessModifier)), varType(std::move(varType)), varNames(std::move(varNames)) { }
 
-SStructMemberVarDecl::SStructMemberVarDecl(SStructMemberVarDecl&& other) noexcept = default;
+SStructVarDecl::SStructVarDecl(SStructVarDecl&& other) noexcept = default;
 
-SStructMemberVarDecl::~SStructMemberVarDecl() = default;
+SStructVarDecl::~SStructVarDecl() = default;
 
-SStructMemberVarDecl& SStructMemberVarDecl::operator=(SStructMemberVarDecl&& other) noexcept = default;
+SStructVarDecl& SStructVarDecl::operator=(SStructVarDecl&& other) noexcept = default;
 
-JsonItem SStructMemberVarDecl::ToJson()
+JsonItem SStructVarDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SStructMemberVarDecl") },
+        { "$type", JsonString("SStructVarDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "varType", Citron::ToJson(varType) },
         { "varNames", Citron::ToJson(varNames) },
     };
 }
 
-SEnumElemMemberVarDecl::SEnumElemMemberVarDecl(STypeExpPtr type, std::string name)
+SEnumElemVarDecl::SEnumElemVarDecl(STypeExpPtr type, std::string name)
     : type(std::move(type)), name(std::move(name)) { }
 
-SEnumElemMemberVarDecl::SEnumElemMemberVarDecl(SEnumElemMemberVarDecl&& other) noexcept = default;
+SEnumElemVarDecl::SEnumElemVarDecl(SEnumElemVarDecl&& other) noexcept = default;
 
-SEnumElemMemberVarDecl::~SEnumElemMemberVarDecl() = default;
+SEnumElemVarDecl::~SEnumElemVarDecl() = default;
 
-SEnumElemMemberVarDecl& SEnumElemMemberVarDecl::operator=(SEnumElemMemberVarDecl&& other) noexcept = default;
+SEnumElemVarDecl& SEnumElemVarDecl::operator=(SEnumElemVarDecl&& other) noexcept = default;
 
-JsonItem SEnumElemMemberVarDecl::ToJson()
+JsonItem SEnumElemVarDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SEnumElemMemberVarDecl") },
+        { "$type", JsonString("SEnumElemVarDecl") },
         { "type", Citron::ToJson(type) },
         { "name", Citron::ToJson(name) },
     };
 }
 
-SEnumElemDecl::SEnumElemDecl(std::string name, std::vector<std::shared_ptr<SEnumElemMemberVarDecl>> memberVars)
-    : name(std::move(name)), memberVars(std::move(memberVars)) { }
+SEnumElemDecl::SEnumElemDecl(std::string name, std::vector<std::shared_ptr<SEnumElemVarDecl>> vars)
+    : name(std::move(name)), vars(std::move(vars)) { }
 
 SEnumElemDecl::SEnumElemDecl(SEnumElemDecl&& other) noexcept = default;
 
@@ -1434,7 +1434,7 @@ JsonItem SEnumElemDecl::ToJson()
     return JsonObject {
         { "$type", JsonString("SEnumElemDecl") },
         { "name", Citron::ToJson(name) },
-        { "memberVars", Citron::ToJson(memberVars) },
+        { "vars", Citron::ToJson(vars) },
     };
 }
 

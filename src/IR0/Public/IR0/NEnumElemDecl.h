@@ -8,7 +8,7 @@
 
 #include "NDecl.h"
 #include "NTypeDecl.h"
-#include "NEnumElemMemberVarDecl.h"
+#include "NEnumElemVarDecl.h"
 
 #include "REnumElemDecl.h"
 #include "RMember.h"
@@ -26,12 +26,12 @@ class NEnumElemDecl
 public:
     std::weak_ptr<NEnumDecl> _enum;
     std::string name;
-    std::vector<std::shared_ptr<NEnumElemMemberVarDecl>> memberVars; // lazy
-    std::unordered_map<std::string, std::shared_ptr<NEnumElemMemberVarDecl>> memberVarsMap;
+    std::vector<std::shared_ptr<NEnumElemVarDecl>> vars; // lazy
+    std::unordered_map<std::string, std::shared_ptr<NEnumElemVarDecl>> varsMap;
 
 public:
-    IR0_API NEnumElemDecl(std::weak_ptr<NEnumDecl> _enum, std::string name, size_t memberVarCount);
-    IR0_API void AddMemberVar(const std::shared_ptr<NEnumElemMemberVarDecl>& memberVar);
+    IR0_API NEnumElemDecl(std::weak_ptr<NEnumDecl> _enum, std::string name, size_t varCount);
+    IR0_API void AddVar(const std::shared_ptr<NEnumElemVarDecl>& var);
 
 public:
     // from NDecl
@@ -55,9 +55,9 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from REnumElemDecl    
-    IR0_API std::optional<RMember_EnumElemMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
-    IR0_API size_t GetMemberVarCount() override;
-    bool IsStandalone() override { return memberVars.empty(); }
+    IR0_API std::optional<RMember_EnumElemVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
+    IR0_API size_t GetVarCount() override;
+    bool IsStandalone() override { return vars.empty(); }
     IR0_API std::vector<RFuncParameter> GetUnboundCtorParams() override;
 };
 

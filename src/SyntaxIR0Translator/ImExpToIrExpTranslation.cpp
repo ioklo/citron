@@ -3,8 +3,8 @@
 
 #include <Infra/Ptr.h>
 #include <Infra/Exceptions.h>
-#include <IR0/RClassMemberVarDecl.h>
-#include <IR0/NStructMemberVarDecl.h>
+#include <IR0/RClassVarDecl.h>
+#include <IR0/NStructVarDecl.h>
 
 #include "ImExp.h"
 #include "IrExp.h"
@@ -89,18 +89,18 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     }
 
     // &x
-    void Visit(ImExp_LambdaMemberVar& imExp) override
+    void Visit(ImExp_LambdaVar& imExp) override
     {
         // TODO: [10] box lambda이면 box로 판단해야 한다
-        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_LambdaMemberVar>(imExp.decl, imExp.typeArgs));
+        *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_LambdaVar>(imExp.decl, imExp.typeArgs));
     }
 
     // x (C.x, this.x)
-    void Visit(ImExp_ClassMemberVar& imExp) override
+    void Visit(ImExp_ClassVar& imExp) override
     {
         if (imExp.decl->IsStatic()) // &C.x
         {
-            *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassMember>(nullptr, imExp.decl, imExp.typeArgs));
+            *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassVar>(nullptr, imExp.decl, imExp.typeArgs));
         }
         else // &this.x
         {
@@ -110,23 +110,23 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     }
 
     // x (S.x, this->x)
-    void Visit(ImExp_StructMemberVar& imExp) override
+    void Visit(ImExp_StructVar& imExp) override
     {
         if (imExp.decl->IsStatic())
         {
-            *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructMember>(nullptr, imExp.decl, imExp.typeArgs));
+            *result = MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructVar>(nullptr, imExp.decl, imExp.typeArgs));
         }
         else
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
             auto nDerefThisLoc = MakePtr<NLoc_LocalDeref>(context.MakeThisLoc());
-            *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_StructMember>(nDerefThisLoc, imExp.decl, imExp.typeArgs));
+            *result = MakePtr<IrExp_LocalRef>(MakePtr<NLoc_StructVar>(nDerefThisLoc, imExp.decl, imExp.typeArgs));
         }
     }
 
     // &x (E.First.x)    
-    void Visit(ImExp_EnumElemMemberVar& imExp) override
+    void Visit(ImExp_EnumElemVar& imExp) override
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException();

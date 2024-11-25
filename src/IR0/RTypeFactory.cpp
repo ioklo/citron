@@ -61,14 +61,14 @@ shared_ptr<RType_Void> RTypeFactory::MakeVoidType()
 // (a: int, b: string)과 (c: int, d: string)은 같은 타입처럼 써야 하는데, 멤버 이름이 달라서
 // 같은 타입이라고 하지 않고, 호환되는 타입이라고 하자
 // 대입같은걸 할때 호환타입도 같이 검색해야 한다
-shared_ptr<RType_Tuple> RTypeFactory::MakeTupleType(vector<RTupleMemberVar>&& memberVars)
+shared_ptr<RType_Tuple> RTypeFactory::MakeTupleType(vector<RTupleVar>&& vars)
 {
-    auto i = tupleTypes.find(memberVars);
+    auto i = tupleTypes.find(vars);
     if (i != tupleTypes.end())
         return i->second;
 
-    auto key = memberVars;
-    shared_ptr<RType_Tuple> tupleType { new RType_Tuple(std::move(memberVars)) };
+    auto key = vars;
+    shared_ptr<RType_Tuple> tupleType { new RType_Tuple(std::move(vars)) };
     tupleTypes.emplace(std::move(key), tupleType);
 
     return tupleType;

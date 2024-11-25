@@ -20,7 +20,7 @@ using RTypePtr = std::shared_ptr<class RType>;
 using RTypeArgumentsPtr = std::shared_ptr<class RTypeArguments>;
 
 class NLambdaDecl;
-class NLambdaMemberVarDecl;
+class NLambdaVarDecl;
 class NFuncDeclOuter;
 using NFuncDeclPtr = std::shared_ptr<class NFuncDecl>;
 
@@ -34,9 +34,9 @@ using ModuleDeclsPtr = std::shared_ptr<class ModuleDecls>;
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 using ImExpPtr = std::shared_ptr<class ImExp>;
 
-struct NLambdaDeclMemberVarAndArg
+struct NLambdaVarAndArg
 {
-    std::shared_ptr<NLambdaMemberVarDecl> memberVarDecl;
+    std::shared_ptr<NLambdaVarDecl> var;
     NArgument arg;
 };
 
@@ -55,14 +55,14 @@ class FuncContext
 {
     // 람다 관련, funcDecl을 clone시키지 않으려고 funcDecl에 넣을 lambdaDecls들을 따로 보관하다가 마지막에 집어넣는다 (검색도 여기를 통해서 하기로 한다)
     // 이 함수가 람다일때 캡쳐할 멤버 변수에 대한 것
-    std::vector<NLambdaDeclMemberVarAndArg> lambdaMemberVarAndInitArgs;
+    std::vector<NLambdaVarAndArg> lambdaVarAndInitArgs;
 
     // 이 함수가 갖고 있는 자식 lambda에 대한 것. lambda syntax를 처리한 후에 lambda에 해당하는 FuncContext를 통해 만들어 진다
     std::vector<std::shared_ptr<NLambdaDecl>> lambdaDecls;
 
 public:
     FuncContext();
-    std::shared_ptr<NLambdaMemberVarDecl> StageLambdaMemberVar(const RTypePtr& type, const RName& name, NArgument_Normal&& arg);
+    std::shared_ptr<NLambdaVarDecl> StageLambdaVar(const RTypePtr& type, const RName& name, NArgument_Normal&& arg);
 
     virtual bool CanAccess(RDecl* target) = 0;
     virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) = 0;

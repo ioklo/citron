@@ -9,7 +9,10 @@
                 "value": "f",
                 "typeArgs": []
             },
-            "args": []
+            "args": {
+                "$type": "SArguments",
+                "items": []
+            }
         }
     },
     "cond": {

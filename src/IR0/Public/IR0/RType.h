@@ -150,12 +150,12 @@ public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-struct RTupleMemberVar
+struct RTupleVar
 {
     RTypePtr declType;
     std::string name;
 
-    bool operator==(const RTupleMemberVar& other) const noexcept
+    bool operator==(const RTupleVar& other) const noexcept
     {
         return declType == other.declType && name == other.name;
     }
@@ -164,11 +164,11 @@ struct RTupleMemberVar
 class RType_Tuple : public RType
 {
 public:
-    std::vector<RTupleMemberVar> memberVars;
+    std::vector<RTupleVar> vars;
 
 private:
     friend RTypeFactory;
-    RType_Tuple(std::vector<RTupleMemberVar>&& memberVars);
+    RType_Tuple(std::vector<RTupleVar>&& vars);
 
 public:
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
@@ -247,7 +247,7 @@ private:
     RType_Class(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:    
-    std::optional<RMember_ClassMemberVar> GetMemberVar(const RName& name);
+    std::optional<RMember_ClassVar> GetVar(const RName& name);
 
 public:
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
@@ -268,7 +268,7 @@ private:
     RType_Struct(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
-    std::optional<RMember_StructMemberVar> GetMemberVar(const RName& name);
+    std::optional<RMember_StructVar> GetVar(const RName& name);
 
 public:
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
@@ -307,7 +307,7 @@ private:
     RType_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
-    std::optional<RMember_EnumElemMemberVar> GetMemberVar(const RName& name);
+    std::optional<RMember_EnumElemVar> GetVar(const RName& name);
 
 public:
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
@@ -361,13 +361,13 @@ public:
 namespace std {
 
 template<>
-struct hash<Citron::RTupleMemberVar>
+struct hash<Citron::RTupleVar>
 {
-    size_t operator()(const Citron::RTupleMemberVar& tupleMemberVar) const noexcept
+    size_t operator()(const Citron::RTupleVar& tupleVar) const noexcept
     {
         size_t s = 0;
-        Citron::hash_combine(s, tupleMemberVar.declType);
-        Citron::hash_combine(s, tupleMemberVar.name);
+        Citron::hash_combine(s, tupleVar.declType);
+        Citron::hash_combine(s, tupleVar.name);
         return s;
     }
 };
