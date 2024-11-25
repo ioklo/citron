@@ -204,9 +204,9 @@ bool TranslationContext::IsSeqFunc()
     return funcContext->IsSeqFunc();
 }
 
-RFuncReturn TranslationContext::GetOpenFuncReturn()
+RFuncReturn TranslationContext::GetUnboundFuncReturn()
 {
-    return funcContext->GetOpenFuncReturn();
+    return funcContext->GetUnboundFuncReturn();
 }
 
 void TranslationContext::SetOpenFuncReturn(RTypePtr&& retType)

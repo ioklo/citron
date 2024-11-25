@@ -14,10 +14,10 @@ NStructDecl::NStructDecl(NTypeDeclOuterWPtr&& outer, RAccessor accessor, RName&&
 {
 }
 
-shared_ptr<NStructConstructorDecl> NStructDecl::GetOpenTrivialConstructor()
+shared_ptr<NStructCtorDecl> NStructDecl::GetUnboundTrivialCtor()
 {
-    if (trivialConstructorIndex == -1) return nullptr;
-    return constructors[trivialConstructorIndex];
+    if (trivialCtorIndex == -1) return nullptr;
+    return ctors[trivialCtorIndex];
 }
 
 NDecl* NStructDecl::GetNOuter()
@@ -51,7 +51,7 @@ optional<RMember> NStructDecl::GetMember(const RTypeArgumentsPtr& typeArgs, cons
         candidates.push_back(*oType);
 
     // struct member func
-    if (auto oFunc = NFuncDeclContainerComponent<NStructMemberFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
+    if (auto oFunc = NFuncDeclContainerComponent<NStructFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
         candidates.push_back(*oFunc);
 
     if (explicitTypeParamsExceptOuterCount == 0)
@@ -89,13 +89,13 @@ optional<RMember_StructMemberVar> NStructDecl::GetMemberVar(const RTypeArguments
     return RMember_StructMemberVar(i->second, typeArgs);
 }
 
-vector<shared_ptr<RStructConstructorDecl>> NStructDecl::GetUnboundConstructors()
+vector<shared_ptr<RStructCtorDecl>> NStructDecl::GetUnboundCtors()
 {
-    vector<shared_ptr<RStructConstructorDecl>> result;
-    result.reserve(constructors.size());
+    vector<shared_ptr<RStructCtorDecl>> result;
+    result.reserve(ctors.size());
 
-    for(auto& constructor : constructors)
-        result.push_back(constructor);
+    for(auto& ctor : ctors)
+        result.push_back(ctor);
 
     return result;
 }

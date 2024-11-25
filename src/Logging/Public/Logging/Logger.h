@@ -120,11 +120,11 @@ public:
 
     LOGGING_API void Fatal_CallExp_MultipleCandidates(); // A0901_CallExp_MultipleCandidates
     LOGGING_API void Fatal_CallExp_CallableExpressionIsNotCallable(); // A0902_CallExp_CallableExpressionIsNotCallable
-    LOGGING_API void Fatal_CallExp_MismatchEnumConstructorArgCount(); // A0903_CallExp_MismatchEnumConstructorArgCount
+    LOGGING_API void Fatal_CallExp_MismatchEnumCtorArgCount(); // A0903_CallExp_MismatchEnumCtorArgCount
     LOGGING_API void Fatal_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType(); // A0904_CallExp_MismatchBetweenEnumParamTypeAndEnumArgType
-    LOGGING_API void Fatal_CallExp_NoMatchedStructConstructorFound(); // A0905_CallExp_NoMatchedStructConstructorFound // TODO: A2602_NewExp_NoConstructorFound 랑 겹침
+    LOGGING_API void Fatal_CallExp_NoMatchedStructCtorFound(); // A0905_CallExp_NoMatchedStructCtorFound // TODO: A2602_NewExp_NoCtorFound 랑 겹침
     LOGGING_API void Fatal_CallExp_NotFound(); // A0906_CallExp_NotFound
-    LOGGING_API void Fatal_CallExp_MultipleMatchedStructConstructors(); // A0907_CallExp_MultipleMatchedStructConstructors
+    LOGGING_API void Fatal_CallExp_MultipleMatchedStructCtors(); // A0907_CallExp_MultipleMatchedStructCtors
     LOGGING_API void Fatal_CallExp_InstanceIsNotLocation(); // A0908_CallExp_InstanceIsNotLocation
 
     // LOGGING_API void Fatal_IfStmt_TestTargetShouldBeLocalVariable(); // A1001_IfStmt_TestTargetShouldBeLocalVariable
@@ -195,18 +195,18 @@ public:
 
     LOGGING_API void Fatal_StructDecl_CannotSetMemberPublicAccessExplicitlyBecauseItsDefault(); // A2401_StructDecl_CannotSetMemberPublicAccessExplicitlyBecauseItsDefault
     LOGGING_API void Fatal_StructDecl_CannotSetMemberProtectedAccessBecauseItsNotAllowed(); // A2402_StructDecl_CannotSetMemberProtectedAccessBecauseItsNotAllowed
-    LOGGING_API void Fatal_StructDecl_CannotDeclConstructorDifferentWithTypeName(); // A2403_StructDecl_CannotDeclConstructorDifferentWithTypeName
+    LOGGING_API void Fatal_StructDecl_CannotDeclCtorDifferentWithTypeName(); // A2403_StructDecl_CannotDeclCtorDifferentWithTypeName
 
     LOGGING_API void Fatal_ClassDecl_CannotSetMemberPrivateAccessExplicitlyBecauseItsDefault(); // A2501_ClassDecl_CannotSetMemberPrivateAccessExplicitlyBecauseItsDefault
-    LOGGING_API void Fatal_ClassDecl_CannotDeclConstructorDifferentWithTypeName(); // A2502_ClassDecl_CannotDeclConstructorDifferentWithTypeName
-    LOGGING_API void Fatal_ClassDecl_CannotFindBaseClassConstructor(); // A2503_ClassDecl_CannotFindBaseClassConstructor
-    LOGGING_API void Fatal_ClassDecl_CannotAccessBaseClassConstructor(); // A2504_ClassDecl_CannotAccessBaseClassConstructor
-    LOGGING_API void Fatal_ClassDecl_TryCallBaseConstructorWithoutBaseClass(); // A2505_ClassDecl_TryCallBaseConstructorWithoutBaseClass
-    LOGGING_API void Fatal_ClassDecl_CannotDecideWhichBaseConstructorUse(); // A2506_ClassDecl_CannotDecideWhichBaseConstructorUse
+    LOGGING_API void Fatal_ClassDecl_CannotDeclCtorDifferentWithTypeName(); // A2502_ClassDecl_CannotDeclCtorDifferentWithTypeName
+    LOGGING_API void Fatal_ClassDecl_CannotFindBaseClassCtor(); // A2503_ClassDecl_CannotFindBaseClassCtor
+    LOGGING_API void Fatal_ClassDecl_CannotAccessBaseClassCtor(); // A2504_ClassDecl_CannotAccessBaseClassCtor
+    LOGGING_API void Fatal_ClassDecl_TryCallBaseCtorWithoutBaseClass(); // A2505_ClassDecl_TryCallBaseCtorWithoutBaseClass
+    LOGGING_API void Fatal_ClassDecl_CannotDecideWhichBaseCtorUse(); // A2506_ClassDecl_CannotDecideWhichBaseCtorUse
 
     LOGGING_API void Fatal_NewExp_TypeIsNotClass(); // A2601_NewExp_TypeIsNotClass
-    LOGGING_API void Fatal_NewExp_NoMatchedClassConstructor(); // A2602_NewExp_NoMatchedClassConstructor // TODO: LOGGING_API void Fatal_CallExp_NoConstructorFound(); // A0905_CallExp_NoConstructorFound 랑 겹침
-    LOGGING_API void Fatal_NewExp_MultipleMatchedClassConstructors(); // A2603_NewExp_MultipleMatchedClassConstructors // TODO: LOGGING_API void Fatal_CallExp_NoConstructorFound(); // A0905_CallExp_NoConstructorFound 랑 겹침
+    LOGGING_API void Fatal_NewExp_NoMatchedClassCtor(); // A2602_NewExp_NoMatchedClassCtor // TODO: LOGGING_API void Fatal_CallExp_NoConstructorFound(); // A0905_CallExp_NoConstructorFound 랑 겹침
+    LOGGING_API void Fatal_NewExp_MultipleMatchedClassCtors(); // A2603_NewExp_MultipleMatchedClassCtors // TODO: LOGGING_API void Fatal_CallExp_NoCtorFound(); // A0905_CallExp_NoConstructorFound 랑 겹침
 
     LOGGING_API void Fatal_NullLiteralExp_CantInferNullableType(); // A2701_NullLiteralExp_CantInferNullableType // null은 힌트와 쓰인다
 

@@ -17,7 +17,7 @@ void NLambdaMemberVarDecl::InitLambda(const std::shared_ptr<NLambdaDecl>& lambda
     this->lambda = lambda;
 }
 
-RTypePtr NLambdaMemberVarDecl::GetOpenDeclType()
+RTypePtr NLambdaMemberVarDecl::GetUnboundDeclType()
 {
     return type;
 }

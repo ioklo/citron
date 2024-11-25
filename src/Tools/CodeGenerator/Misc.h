@@ -24,7 +24,7 @@ struct ClassInfo
     std::vector<std::string> variantInterfaces; // public SStmt
                                                 // void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
     std::vector<ClassMemberInfo> memberInfos;
-    std::vector<std::string> extraConstructors;
+    std::vector<std::string> extraCtors;
 };
 
 struct EnumInfo
@@ -44,7 +44,7 @@ struct StructInfo
 {
     std::string name;
     std::vector<StructMemberInfo> memberInfos;
-    std::vector<std::string> extraConstructors;
+    std::vector<std::string> extraCtors;
 };
 
 struct ForwardClassDeclsInfo

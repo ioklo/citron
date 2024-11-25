@@ -8,10 +8,10 @@
 
 namespace Citron {
 
-class MStructConstructorDecl;
+class MStructCtorDecl;
 class RStructDecl;
 
-class RStructConstructorDecl 
+class RStructCtorDecl 
     : public RDecl
     , public RFuncDecl
     , public RFuncDeclOuter
@@ -23,9 +23,9 @@ public:
     void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
 };
 
-class RMStructConstructorDecl : public RStructConstructorDecl
+class RMStructCtorDecl : public RStructCtorDecl
 {
-    std::shared_ptr<MStructConstructorDecl> decl;
+    std::shared_ptr<MStructCtorDecl> decl;
 };
 
 

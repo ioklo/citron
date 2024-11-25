@@ -268,7 +268,7 @@ shared_ptr<SStructMemberVarDecl> ParseStructMemberVarDecl(Lexer* lexer)
     return MakePtr<SStructMemberVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
 }
 
-shared_ptr<SStructMemberFuncDecl> ParseStructMemberFuncDecl(Lexer* lexer)
+shared_ptr<SStructFuncDecl> ParseStructFuncDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -303,12 +303,12 @@ shared_ptr<SStructMemberFuncDecl> ParseStructMemberFuncDecl(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return MakePtr<SStructMemberFuncDecl>(
+    return MakePtr<SStructFuncDecl>(
         oAccessModifier, bStatic, bSequence, std::move(retType), std::move(oFuncName->text), std::move(*oTypeParams), std::move(*oParameters), std::move(*oBody)
     );
 }
 
-shared_ptr<SStructConstructorDecl> ParseStructConstructorDecl(const string& structName, Lexer* lexer)
+shared_ptr<SStructCtorDecl> ParseStructCtorDecl(const string& structName, Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -319,7 +319,7 @@ shared_ptr<SStructConstructorDecl> ParseStructConstructorDecl(const string& stru
     if (!oName)
         return nullptr;
 
-    // 이름이 같아야 constructor이다
+    // 이름이 같아야 ctor이다
     if (oName->text != structName)
         return nullptr;
 
@@ -334,7 +334,7 @@ shared_ptr<SStructConstructorDecl> ParseStructConstructorDecl(const string& stru
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return MakePtr<SStructConstructorDecl>(oAccessModifier, std::move(*oParameters), std::move(*oBody));
+    return MakePtr<SStructCtorDecl>(oAccessModifier, std::move(*oParameters), std::move(*oBody));
 }
 
 shared_ptr<SStructMemberDecl> ParseStructMemberDecl(const string& structName, Lexer* lexer)
@@ -342,10 +342,10 @@ shared_ptr<SStructMemberDecl> ParseStructMemberDecl(const string& structName, Le
     if (auto memberDecl = ParseTypeDecl<SStructMemberDecl>(lexer))
         return memberDecl;
 
-    if (auto memberDecl = ParseStructMemberFuncDecl(lexer))
+    if (auto memberDecl = ParseStructFuncDecl(lexer))
         return memberDecl;
 
-    if (auto memberDecl = ParseStructConstructorDecl(structName, lexer))
+    if (auto memberDecl = ParseStructCtorDecl(structName, lexer))
         return memberDecl;
 
     if (auto memberDecl = ParseStructMemberVarDecl(lexer))
@@ -457,7 +457,7 @@ shared_ptr<SClassMemberFuncDecl> ParseClassMemberFuncDecl(Lexer* lexer)
         std::move(*oBody));
 }
 
-shared_ptr<SClassConstructorDecl> ParseClassConstructorDecl(const string& className, Lexer* lexer)
+shared_ptr<SClassCtorDecl> ParseClassCtorDecl(const string& className, Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -468,7 +468,7 @@ shared_ptr<SClassConstructorDecl> ParseClassConstructorDecl(const string& classN
     if (!oName)
         return nullptr;
 
-    // 이름이 같아야 constructor다
+    // 이름이 같아야 ctor다
     if (oName->text != className)
         return nullptr;
 
@@ -500,7 +500,7 @@ shared_ptr<SClassConstructorDecl> ParseClassConstructorDecl(const string& classN
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return MakePtr<SClassConstructorDecl>(oAccessModifier, std::move(*oParameters), std::move(baseArgs), std::move(*oBody));
+    return MakePtr<SClassCtorDecl>(oAccessModifier, std::move(*oParameters), std::move(baseArgs), std::move(*oBody));
 }
 
 shared_ptr<SClassMemberVarDecl> ParseClassMemberVarDecl(Lexer* lexer)
@@ -547,7 +547,7 @@ shared_ptr<SClassMemberDecl> ParseClassMemberDecl(string& className, Lexer* lexe
     if (auto memberDecl = ParseClassMemberFuncDecl(lexer))
         return memberDecl;
 
-    if (auto memberDecl = ParseClassConstructorDecl(className, lexer))
+    if (auto memberDecl = ParseClassCtorDecl(className, lexer))
         return memberDecl;
 
     if (auto memberDecl = ParseClassMemberVarDecl(lexer))

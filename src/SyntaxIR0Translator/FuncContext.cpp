@@ -83,7 +83,7 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         auto openTypeArgs = MakeOpenTypeArgs(factory);
         auto initArg = NArgument_Normal(MakePtr<NExp_Load>(MakePtr<NLoc_LambdaMemberVar>(lambdaMemberVar->decl, openTypeArgs)));
 
-        auto newLambdaMemberVar = StageLambdaMemberVar(lambdaMemberVar->decl->GetOpenDeclType(), lambdaMemberVar->decl->name, std::move(initArg));
+        auto newLambdaMemberVar = StageLambdaMemberVar(lambdaMemberVar->decl->GetUnboundDeclType(), lambdaMemberVar->decl->name, std::move(initArg));
         return RMember_LambdaMemberVar(std::move(openTypeArgs), std::move(newLambdaMemberVar));
     }
 
@@ -106,7 +106,7 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
     return oMember;
 }
 
-RFuncReturn FuncContext_Lambda::GetOpenFuncReturn()
+RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
 {
     return funcReturn;
 }
@@ -137,9 +137,9 @@ optional<RMember> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, siz
     return funcDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
-RFuncReturn FuncContext_FuncDecl::GetOpenFuncReturn()
+RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()
 {
-    return funcDecl->GetOpenFuncReturn();
+    return funcDecl->GetUnboundFuncReturn();
 }
 
 void FuncContext_FuncDecl::SetOpenFuncReturn(RTypePtr&& retType)

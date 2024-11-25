@@ -6,9 +6,9 @@ namespace Citron
 {
 
 class MGlobalFuncDecl;
-class MClassConstructorDecl;
+class MClassCtorDecl;
 class MClassMemberFuncDecl;
-class MStructConstructorDecl;
+class MStructCtorDecl;
 class MStructMemberFuncDecl;
 
 class MBodyDeclOuterVisitor
@@ -16,9 +16,9 @@ class MBodyDeclOuterVisitor
 public:
     virtual ~MBodyDeclOuterVisitor() { }
     virtual void Visit(MGlobalFuncDecl& outer) = 0;
-    virtual void Visit(MClassConstructorDecl& outer) = 0;
+    virtual void Visit(MClassCtorDecl& outer) = 0;
     virtual void Visit(MClassMemberFuncDecl& outer) = 0;
-    virtual void Visit(MStructConstructorDecl& outer) = 0;
+    virtual void Visit(MStructCtorDecl& outer) = 0;
     virtual void Visit(MStructMemberFuncDecl& outer) = 0;
 };
 

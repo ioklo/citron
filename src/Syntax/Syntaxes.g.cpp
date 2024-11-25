@@ -307,7 +307,7 @@ struct SClassMemberDeclToJsonVisitor : public SClassMemberDeclVisitor
     void Visit(SStructDecl& decl) override { result = decl.ToJson(); }
     void Visit(SEnumDecl& decl) override { result = decl.ToJson(); }
     void Visit(SClassMemberFuncDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SClassConstructorDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SClassCtorDecl& decl) override { result = decl.ToJson(); }
     void Visit(SClassMemberVarDecl& decl) override { result = decl.ToJson(); }
 };
 
@@ -325,8 +325,8 @@ struct SStructMemberDeclToJsonVisitor : public SStructMemberDeclVisitor
     void Visit(SClassDecl& decl) override { result = decl.ToJson(); }
     void Visit(SStructDecl& decl) override { result = decl.ToJson(); }
     void Visit(SEnumDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SStructMemberFuncDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SStructConstructorDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SStructFuncDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SStructCtorDecl& decl) override { result = decl.ToJson(); }
     void Visit(SStructMemberVarDecl& decl) override { result = decl.ToJson(); }
 };
 
@@ -1280,19 +1280,19 @@ JsonItem SClassMemberFuncDecl::ToJson()
     };
 }
 
-SClassConstructorDecl::SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArgumentsPtr baseArgs, std::vector<SStmtPtr> body)
+SClassCtorDecl::SClassCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArgumentsPtr baseArgs, std::vector<SStmtPtr> body)
     : accessModifier(std::move(accessModifier)), parameters(std::move(parameters)), baseArgs(std::move(baseArgs)), body(std::move(body)) { }
 
-SClassConstructorDecl::SClassConstructorDecl(SClassConstructorDecl&& other) noexcept = default;
+SClassCtorDecl::SClassCtorDecl(SClassCtorDecl&& other) noexcept = default;
 
-SClassConstructorDecl::~SClassConstructorDecl() = default;
+SClassCtorDecl::~SClassCtorDecl() = default;
 
-SClassConstructorDecl& SClassConstructorDecl::operator=(SClassConstructorDecl&& other) noexcept = default;
+SClassCtorDecl& SClassCtorDecl::operator=(SClassCtorDecl&& other) noexcept = default;
 
-JsonItem SClassConstructorDecl::ToJson()
+JsonItem SClassCtorDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SClassConstructorDecl") },
+        { "$type", JsonString("SClassCtorDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "parameters", Citron::ToJson(parameters) },
         { "baseArgs", Citron::ToJson(baseArgs) },
@@ -1340,19 +1340,19 @@ JsonItem SStructDecl::ToJson()
     };
 }
 
-SStructMemberFuncDecl::SStructMemberFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
+SStructFuncDecl::SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
     : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
 
-SStructMemberFuncDecl::SStructMemberFuncDecl(SStructMemberFuncDecl&& other) noexcept = default;
+SStructFuncDecl::SStructFuncDecl(SStructFuncDecl&& other) noexcept = default;
 
-SStructMemberFuncDecl::~SStructMemberFuncDecl() = default;
+SStructFuncDecl::~SStructFuncDecl() = default;
 
-SStructMemberFuncDecl& SStructMemberFuncDecl::operator=(SStructMemberFuncDecl&& other) noexcept = default;
+SStructFuncDecl& SStructFuncDecl::operator=(SStructFuncDecl&& other) noexcept = default;
 
-JsonItem SStructMemberFuncDecl::ToJson()
+JsonItem SStructFuncDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SStructMemberFuncDecl") },
+        { "$type", JsonString("SStructFuncDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "bStatic", Citron::ToJson(bStatic) },
         { "bSequence", Citron::ToJson(bSequence) },
@@ -1364,19 +1364,19 @@ JsonItem SStructMemberFuncDecl::ToJson()
     };
 }
 
-SStructConstructorDecl::SStructConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
+SStructCtorDecl::SStructCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
     : accessModifier(std::move(accessModifier)), parameters(std::move(parameters)), body(std::move(body)) { }
 
-SStructConstructorDecl::SStructConstructorDecl(SStructConstructorDecl&& other) noexcept = default;
+SStructCtorDecl::SStructCtorDecl(SStructCtorDecl&& other) noexcept = default;
 
-SStructConstructorDecl::~SStructConstructorDecl() = default;
+SStructCtorDecl::~SStructCtorDecl() = default;
 
-SStructConstructorDecl& SStructConstructorDecl::operator=(SStructConstructorDecl&& other) noexcept = default;
+SStructCtorDecl& SStructCtorDecl::operator=(SStructCtorDecl&& other) noexcept = default;
 
-JsonItem SStructConstructorDecl::ToJson()
+JsonItem SStructCtorDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SStructConstructorDecl") },
+        { "$type", JsonString("SStructCtorDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "parameters", Citron::ToJson(parameters) },
         { "body", Citron::ToJson(body) },

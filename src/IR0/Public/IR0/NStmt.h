@@ -27,8 +27,8 @@ class NStmt_Async;
 class NStmt_Foreach;
 class NStmt_ForeachCast;
 class NStmt_Yield;
-class NStmt_CallClassConstructor;
-class NStmt_CallStructConstructor;
+class NStmt_CallClassCtor;
+class NStmt_CallStructCtor;
 class NStmt_NullDirective;
 class NStmt_NotNullDirective;
 class NStmt_StaticNullDirective;
@@ -36,8 +36,8 @@ class NStmt_StaticNotNullDirective;
 class NStmt_StaticUnknownNullDirective;
 
 class NLambdaDecl;
-class NStructConstructorDecl;
-class RClassConstructorDecl;
+class NStructCtorDecl;
+class RClassCtorDecl;
 
 class NExp_String;
 using NExpPtr = std::shared_ptr<class NExp>;
@@ -66,8 +66,8 @@ public:
     virtual void Visit(NStmt_Foreach& stmt) = 0;
     virtual void Visit(NStmt_ForeachCast& stmt) = 0;
     virtual void Visit(NStmt_Yield& stmt) = 0;
-    virtual void Visit(NStmt_CallClassConstructor& stmt) = 0;
-    virtual void Visit(NStmt_CallStructConstructor& stmt) = 0;
+    virtual void Visit(NStmt_CallClassCtor& stmt) = 0;
+    virtual void Visit(NStmt_CallStructCtor& stmt) = 0;
     virtual void Visit(NStmt_NullDirective& stmt) = 0;
     virtual void Visit(NStmt_NotNullDirective& stmt) = 0;
     virtual void Visit(NStmt_StaticNullDirective& stmt) = 0;
@@ -267,25 +267,25 @@ public:
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-// Constructor 내에서 상위 Constructor 호출시 사용
-class NStmt_CallClassConstructor : public NStmt
+// Ctor 내에서 상위 Ctor 호출시 사용
+class NStmt_CallClassCtor : public NStmt
 {
 public:
-    std::shared_ptr<RClassConstructorDecl> constructor;
+    std::shared_ptr<RClassCtorDecl> ctor;
     std::vector<NArgument> args;
 public:
-    IR0_API NStmt_CallClassConstructor();
+    IR0_API NStmt_CallClassCtor();
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NStmt_CallStructConstructor : public NStmt
+class NStmt_CallStructCtor : public NStmt
 {
 public:
-    std::shared_ptr<NStructConstructorDecl> constructor;
+    std::shared_ptr<NStructCtorDecl> ctor;
     RTypeArgumentsPtr typeArgs;
     std::vector<NArgument> args;
 public:
-    IR0_API NStmt_CallStructConstructor();
+    IR0_API NStmt_CallStructCtor();
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 

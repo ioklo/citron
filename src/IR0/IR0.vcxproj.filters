@@ -45,7 +45,7 @@
     <ClInclude Include="Public\IR0\NFuncDecl.h">
       <Filter>Symbols\NDecl\03 Func</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\NClassConstructorDecl.h">
+    <ClInclude Include="Public\IR0\NClassCtorDecl.h">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\NClassDecl.h">
@@ -57,13 +57,13 @@
     <ClInclude Include="Public\IR0\NClassMemberVarDecl.h">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\NStructConstructorDecl.h">
+    <ClInclude Include="Public\IR0\NStructCtorDecl.h">
       <Filter>Symbols\NDecl\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\NStructDecl.h">
       <Filter>Symbols\NDecl\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\NStructMemberFuncDecl.h">
+    <ClInclude Include="Public\IR0\NStructFuncDecl.h">
       <Filter>Symbols\NDecl\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\NStructMemberVarDecl.h">
@@ -147,7 +147,7 @@
     <ClInclude Include="Public\IR0\RClassDecl.h">
       <Filter>Symbols\RDecl\06 Class</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RClassConstructorDecl.h">
+    <ClInclude Include="Public\IR0\RClassCtorDecl.h">
       <Filter>Symbols\RDecl\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RClassMemberFuncDecl.h">
@@ -159,7 +159,7 @@
     <ClInclude Include="Public\IR0\RStructDecl.h">
       <Filter>Symbols\RDecl\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RStructConstructorDecl.h">
+    <ClInclude Include="Public\IR0\RStructCtorDecl.h">
       <Filter>Symbols\RDecl\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RStructMemberFuncDecl.h">
@@ -212,7 +212,7 @@
     <ClCompile Include="NEnumElemDecl.cpp">
       <Filter>Symbols\NDecl\08 Enum</Filter>
     </ClCompile>
-    <ClCompile Include="NStructConstructorDecl.cpp">
+    <ClCompile Include="NStructCtorDecl.cpp">
       <Filter>Symbols\NDecl\07 Struct</Filter>
     </ClCompile>
     <ClCompile Include="NCommonFuncDeclComponent.cpp">
@@ -236,13 +236,13 @@
     <ClCompile Include="NDecl.cpp">
       <Filter>Symbols\NDecl\00 Abstraction</Filter>
     </ClCompile>
-    <ClCompile Include="NClassConstructorDecl.cpp">
+    <ClCompile Include="NClassCtorDecl.cpp">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClCompile>
     <ClCompile Include="NClassMemberFuncDecl.cpp">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClCompile>
-    <ClCompile Include="NStructMemberFuncDecl.cpp">
+    <ClCompile Include="NStructFuncDecl.cpp">
       <Filter>Symbols\NDecl\07 Struct</Filter>
     </ClCompile>
     <ClCompile Include="NInterfaceDecl.cpp">

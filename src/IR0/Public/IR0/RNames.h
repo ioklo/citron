@@ -28,18 +28,18 @@ struct RName_Lambda
     bool operator==(const RName_Lambda& other) const noexcept = default;
 };
 
-struct RName_ConstructorParam
+struct RName_CtorParam
 {
     int index;
     std::string paramText;
-    bool operator==(const RName_ConstructorParam& other) const noexcept = default;
+    bool operator==(const RName_CtorParam& other) const noexcept = default;
 };
 
 using RName = std::variant<
     RName_Normal,
     RName_Reserved,
     RName_Lambda,
-    RName_ConstructorParam
+    RName_CtorParam
 >;
 
 IR0_API RName Copy(const RName& name);
@@ -92,9 +92,9 @@ struct hash<Citron::RName_Lambda>
 };
 
 template<>
-struct hash<Citron::RName_ConstructorParam>
+struct hash<Citron::RName_CtorParam>
 {
-    std::size_t operator()(const Citron::RName_ConstructorParam& name) const noexcept
+    std::size_t operator()(const Citron::RName_CtorParam& name) const noexcept
     {
         size_t s = 0;
         Citron::hash_combine(s, name.index);

@@ -19,7 +19,7 @@ class RStructDecl
 {
 public:
     virtual std::optional<RMember_StructMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) = 0;
-    virtual std::vector<std::shared_ptr<RStructConstructorDecl>> GetUnboundConstructors() = 0;
+    virtual std::vector<std::shared_ptr<RStructCtorDecl>> GetUnboundCtors() = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
     void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }

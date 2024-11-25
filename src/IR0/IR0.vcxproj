@@ -147,7 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Public\IR0\DeclWithOuterTypeArgs.h" />
-    <ClInclude Include="Public\IR0\RClassConstructorDecl.h" />
+    <ClInclude Include="Public\IR0\RClassCtorDecl.h" />
     <ClInclude Include="Public\IR0\RClassDecl.h" />
     <ClInclude Include="Public\IR0\RClassMemberFuncDecl.h" />
     <ClInclude Include="Public\IR0\RClassMemberVarDecl.h" />
@@ -164,7 +164,7 @@
     <ClInclude Include="Public\IR0\RMember.h" />
     <ClInclude Include="Public\IR0\RAccessor.h" />
     <ClInclude Include="Public\IR0\NFuncDeclOuter.h" />
-    <ClInclude Include="Public\IR0\NClassConstructorDecl.h" />
+    <ClInclude Include="Public\IR0\NClassCtorDecl.h" />
     <ClInclude Include="Public\IR0\NClassDecl.h" />
     <ClInclude Include="Public\IR0\NClassMemberFuncDecl.h" />
     <ClInclude Include="Public\IR0\NClassMemberVarDecl.h" />
@@ -187,13 +187,13 @@
     <ClInclude Include="Public\IR0\RNames.h" />
     <ClInclude Include="Public\IR0\NNamespaceDecl.h" />
     <ClInclude Include="Public\IR0\NNamespaceDeclContainerComponent.h" />
-    <ClInclude Include="Public\IR0\NStructConstructorDecl.h" />
+    <ClInclude Include="Public\IR0\NStructCtorDecl.h" />
     <ClInclude Include="Public\IR0\NStructDecl.h" />
-    <ClInclude Include="Public\IR0\NStructMemberFuncDecl.h" />
+    <ClInclude Include="Public\IR0\NStructFuncDecl.h" />
     <ClInclude Include="Public\IR0\NStructMemberVarDecl.h" />
     <ClInclude Include="Public\IR0\RNamespaceDecl.h" />
     <ClInclude Include="Public\IR0\RNamespaceDeclGroup.h" />
-    <ClInclude Include="Public\IR0\RStructConstructorDecl.h" />
+    <ClInclude Include="Public\IR0\RStructCtorDecl.h" />
     <ClInclude Include="Public\IR0\RStructDecl.h" />
     <ClInclude Include="Public\IR0\RStructMemberFuncDecl.h" />
     <ClInclude Include="Public\IR0\RStructMemberVarDecl.h" />
@@ -224,7 +224,7 @@
     <ClCompile Include="RDecl.cpp" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
     <ClCompile Include="RMember.cpp" />
-    <ClCompile Include="NClassConstructorDecl.cpp" />
+    <ClCompile Include="NClassCtorDecl.cpp" />
     <ClCompile Include="NClassDecl.cpp" />
     <ClCompile Include="NClassMemberFuncDecl.cpp" />
     <ClCompile Include="NClassMemberVarDecl.cpp" />
@@ -236,7 +236,7 @@
     <ClCompile Include="NLoc.cpp" />
     <ClCompile Include="NNamespaceDecl.cpp" />
     <ClCompile Include="NStmt.cpp" />
-    <ClCompile Include="NStructConstructorDecl.cpp" />
+    <ClCompile Include="NStructCtorDecl.cpp" />
     <ClCompile Include="NEnumDecl.cpp" />
     <ClCompile Include="NEnumElemDecl.cpp" />
     <ClCompile Include="NEnumElemMemberVarDecl.cpp" />
@@ -246,7 +246,7 @@
     <ClCompile Include="RNames.cpp" />
     <ClCompile Include="NNamespaceDeclContainerComponent.cpp" />
     <ClCompile Include="NStructDecl.cpp" />
-    <ClCompile Include="NStructMemberFuncDecl.cpp" />
+    <ClCompile Include="NStructFuncDecl.cpp" />
     <ClCompile Include="NStructMemberVarDecl.cpp" />
     <ClCompile Include="RNamespaceDeclGroup.cpp" />
     <ClCompile Include="RType.cpp" />

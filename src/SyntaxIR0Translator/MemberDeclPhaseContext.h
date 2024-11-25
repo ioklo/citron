@@ -23,7 +23,7 @@ public:
     std::tuple<std::vector<RFuncParameter>, bool> MakeParameters(NDeclPtr decl, std::vector<SFuncParam>& sParams);
 
     void AddBodyPhaseTask(std::function<void(BodyPhaseContext&)> task);
-    void AddTrivialConstructorPhaseTask(std::function<void()> task);
+    void AddTrivialCtorPhaseTask(std::function<void()> task);
 };
 
 } // namespace SyntaxIR0Translator

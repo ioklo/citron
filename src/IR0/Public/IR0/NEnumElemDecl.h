@@ -58,7 +58,7 @@ public:
     IR0_API std::optional<RMember_EnumElemMemberVar> GetMemberVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
     IR0_API size_t GetMemberVarCount() override;
     bool IsStandalone() override { return memberVars.empty(); }
-    IR0_API std::vector<RFuncParameter> GetUnboundConstructorParams() override;
+    IR0_API std::vector<RFuncParameter> GetUnboundCtorParams() override;
 };
 
 }

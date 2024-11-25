@@ -12,11 +12,11 @@ class NModule;
 class NNamespaceDecl;
 class NGlobalFuncDecl;
 class NClassDecl;
-class NClassConstructorDecl;
+class NClassCtorDecl;
 class NClassMemberFuncDecl;
 class NStructDecl;
-class NStructConstructorDecl;
-class NStructMemberFuncDecl;
+class NStructCtorDecl;
+class NStructFuncDecl;
 class NLambdaDecl;
 
 class NFuncDeclOuterVisitor
@@ -26,11 +26,11 @@ public:
     virtual void Visit(NNamespaceDecl& outer) = 0;
     virtual void Visit(NGlobalFuncDecl& outer) = 0;
     virtual void Visit(NClassDecl& outer) = 0;
-    virtual void Visit(NClassConstructorDecl& outer) = 0;
+    virtual void Visit(NClassCtorDecl& outer) = 0;
     virtual void Visit(NClassMemberFuncDecl& outer) = 0;
     virtual void Visit(NStructDecl& outer) = 0;
-    virtual void Visit(NStructConstructorDecl& outer) = 0;
-    virtual void Visit(NStructMemberFuncDecl& outer) = 0;
+    virtual void Visit(NStructCtorDecl& outer) = 0;
+    virtual void Visit(NStructFuncDecl& outer) = 0;
     virtual void Visit(NLambdaDecl& outer) = 0;
 };
 

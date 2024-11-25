@@ -149,7 +149,7 @@
     <ClInclude Include="Public\Symbol\SymbolConfig.h" />
     <ClInclude Include="Public\Symbol\MAccessor.h" />
     <ClInclude Include="Public\Symbol\MBodyDeclOuter.h" />
-    <ClInclude Include="Public\Symbol\MClassConstructorDecl.h" />
+    <ClInclude Include="Public\Symbol\MClassCtorDecl.h" />
     <ClInclude Include="Public\Symbol\MClassDecl.h" />
     <ClInclude Include="Public\Symbol\MClassMemberFuncDecl.h" />
     <ClInclude Include="Public\Symbol\MClassMemberVarDecl.h" />
@@ -169,7 +169,7 @@
     <ClInclude Include="Public\Symbol\MNames.h" />
     <ClInclude Include="Public\Symbol\MNamespaceDecl.h" />
     <ClInclude Include="Public\Symbol\MNamespaceDeclContainerComponent.h" />
-    <ClInclude Include="Public\Symbol\MStructConstructorDecl.h" />
+    <ClInclude Include="Public\Symbol\MStructCtorDecl.h" />
     <ClInclude Include="Public\Symbol\MStructDecl.h" />
     <ClInclude Include="Public\Symbol\MStructMemberFuncDecl.h" />
     <ClInclude Include="Public\Symbol\MStructMemberVarDecl.h" />

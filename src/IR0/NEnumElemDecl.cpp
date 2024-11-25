@@ -71,13 +71,13 @@ size_t NEnumElemDecl::GetMemberVarCount()
     return memberVars.size();
 }
 
-vector<RFuncParameter> NEnumElemDecl::GetUnboundConstructorParams()
+vector<RFuncParameter> NEnumElemDecl::GetUnboundCtorParams()
 {
     vector<RFuncParameter> result;
 
     result.reserve(memberVars.size());
     for (auto& memberVar : memberVars)
-        result.emplace_back(/*bOut*/ false, memberVar->declType, memberVar->name);
+        result.emplace_back(/*bOut*/ false, memberVar->declType, RName_Normal(memberVar->name));
 
     return result;
 }

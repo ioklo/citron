@@ -4,7 +4,7 @@
 #include "MTypeDecl.h"
 #include "MTypeDeclOuter.h"
 #include "MNames.h"
-#include "MStructConstructorDecl.h"
+#include "MStructCtorDecl.h"
 #include "MStructMemberFuncDecl.h"
 #include "MStructMemberVarDecl.h"
 #include "MTypeDeclContainerComponent.h"
@@ -34,8 +34,8 @@ class MStructDecl
     MName name;
     std::vector<std::string> typeParams;
 
-    std::vector<std::shared_ptr<MStructConstructorDecl>> constructors;
-    int trivialConstructorIndex; // can be -1
+    std::vector<std::shared_ptr<MStructCtorDecl>> ctors;
+    int trivialCtorIndex; // can be -1
 
     std::vector<std::shared_ptr<MStructMemberVarDecl>> memberVars;
 

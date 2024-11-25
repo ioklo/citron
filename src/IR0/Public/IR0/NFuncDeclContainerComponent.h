@@ -23,7 +23,7 @@ class NFuncDeclContainerComponent
     std::unordered_map<RName, std::vector<TNFuncDeclPtr>> nameMap;
 
 public:
-    void AddFunc(TNFuncDeclPtr func) // consume func
+    void AddFunc(TNFuncDeclPtr&& func) // consume func
     {
         funcs.push_back(func);
 

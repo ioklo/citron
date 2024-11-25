@@ -44,7 +44,7 @@ using TranslationContextPtr = std::shared_ptr<class TranslationContext>;
 struct NLambdaDeclAndArgs
 {
     std::shared_ptr<NLambdaDecl> decl;
-    std::vector<NArgument> args;   // constructor args
+    std::vector<NArgument> args;   // ctor args
 };
 
 class TranslationContext
@@ -80,7 +80,7 @@ public: // for scopeContext
 public: // for funcContext
     bool CanAccess(RDecl* target);
     bool IsSeqFunc();
-    RFuncReturn GetOpenFuncReturn();
+    RFuncReturn GetUnboundFuncReturn();
     void SetOpenFuncReturn(RTypePtr&& retType);
     NLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<NStmtPtr>&& body);
 
@@ -113,7 +113,7 @@ public: // for type factory
 
     bool IsListType(const RTypePtr& type, RTypePtr* outItemType);
 
-    RFuncReturn GetOpenFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
+    RFuncReturn GetUnboundFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
     std::optional<RFuncParameter> GetFuncParameter(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
 
 public: // for BinOpQueryService

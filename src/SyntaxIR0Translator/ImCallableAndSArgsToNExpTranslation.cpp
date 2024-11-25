@@ -10,7 +10,7 @@
 #include <IR0/NClassMemberFuncDecl.h>
 
 #include <IR0/NStructDecl.h>
-#include <IR0/NStructMemberFuncDecl.h>
+#include <IR0/NStructFuncDecl.h>
 
 #include <IR0/NEnumElemDecl.h>
 
@@ -200,10 +200,10 @@ public:
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
-        std::vector<DeclWithOuterTypeArgs<RStructConstructorDecl>> items;
-        for (auto& constructor : imExp.structDecl->GetUnboundConstructors())
+        std::vector<DeclWithOuterTypeArgs<RStructCtorDecl>> items;
+        for (auto& ctor : imExp.structDecl->GetUnboundCtors())
         {
-            items.emplace_back(constructor, imExp.typeArgs);
+            items.emplace_back(ctor, imExp.typeArgs);
         }
 
         auto match = MatchFunc(items, sArgs, context);
@@ -302,7 +302,7 @@ public:
             return;
         }
 
-        auto parameters = imExp.decl->GetUnboundConstructorParams();
+        auto parameters = imExp.decl->GetUnboundCtorParams();
 
         // EnumElem은 variadic도, typeArgs도 지원하지 않는다
         // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지

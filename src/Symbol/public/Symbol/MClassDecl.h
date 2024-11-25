@@ -3,7 +3,7 @@
 #include "MDecl.h"
 #include "MTypeDecl.h"
 #include "MTypeDeclOuter.h"
-#include "MClassConstructorDecl.h"
+#include "MClassCtorDecl.h"
 #include "MClassMemberFuncDecl.h"
 #include "MClassMemberVarDecl.h"
 #include "MNames.h"
@@ -34,8 +34,8 @@ class MClassDecl
     MName name;
     std::vector<std::string> typeParams;
 
-    std::vector<std::shared_ptr<MClassConstructorDecl>> constructors;
-    int trivialConstructorIndex; // can be -1
+    std::vector<std::shared_ptr<MClassCtorDecl>> ctors;
+    int trivialCtorIndex; // can be -1
 
     std::vector<std::shared_ptr<MClassMemberVarDecl>> memberVars;
 

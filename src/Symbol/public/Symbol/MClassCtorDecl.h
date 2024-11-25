@@ -1,7 +1,6 @@
 #pragma once
-
-#include <memory>
 #include <vector>
+#include <memory>
 
 #include "MDecl.h"
 #include "MBodyDeclOuter.h"
@@ -12,16 +11,16 @@
 namespace Citron
 {
 
-class MStructDecl;
+class MClassDecl;
 class MFuncParameter;
 
-class MStructConstructorDecl 
+class MClassCtorDecl 
     : public MDecl
     , public MBodyDeclOuter
     , public MFuncDecl
     , private MCommonFuncDeclComponent
 {
-    std::weak_ptr<MStructDecl> _struct;
+    std::weak_ptr<MClassDecl> _class;
     MAccessor accessor;
     std::vector<MFuncParameter> parameters;
     bool bTrivial;

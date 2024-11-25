@@ -1,4 +1,4 @@
-#include "NStructMemberFuncDecl.h"
+#include "NStructFuncDecl.h"
 #include <cassert>
 #include "NStructDecl.h"
 
@@ -7,7 +7,7 @@ using namespace std;
 namespace Citron
 {
 
-NStructMemberFuncDecl::NStructMemberFuncDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, std::string name, std::vector<std::string>&& typeParams, bool bStatic)
+NStructFuncDecl::NStructFuncDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, std::string name, std::vector<std::string>&& typeParams, bool bStatic)
     : NCommonFuncDeclComponent(std::move(typeParams), false)
     , _struct(std::move(_struct))
     , accessor(accessor)
@@ -17,32 +17,32 @@ NStructMemberFuncDecl::NStructMemberFuncDecl(std::weak_ptr<NStructDecl> _struct,
 {
 }
 
-void NStructMemberFuncDecl::InitFuncReturnAndParams(RTypePtr funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
+void NStructFuncDecl::InitFuncReturnAndParams(RTypePtr funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
 {
     NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(std::move(funcReturn)), std::move(funcParameters), bLastParameterVariadic);
 }
 
-NDecl* NStructMemberFuncDecl::GetNOuter()
+NDecl* NStructFuncDecl::GetNOuter()
 {
     return _struct.lock().get();
 }
 
-RDecl* NStructMemberFuncDecl::GetROuter()
+RDecl* NStructFuncDecl::GetROuter()
 {
     return _struct.lock().get();
 }
 
-RIdentifier NStructMemberFuncDecl::GetIdentifier()
+RIdentifier NStructFuncDecl::GetIdentifier()
 {
     return RIdentifier { RName_Normal(name), typeParams.size(), NCommonFuncDeclComponent::GetParamIds() };
 }
 
-optional<RMember> NStructMemberFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NStructFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
-optional<RMember> NStructMemberFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> NStructFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
 {
     auto sharedStruct = _struct.lock();
     assert(sharedStruct);

@@ -68,7 +68,7 @@ public:
     virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) = 0;
 
     // decl/body space의 return type을 리턴한다
-    virtual RFuncReturn GetOpenFuncReturn() = 0;
+    virtual RFuncReturn GetUnboundFuncReturn() = 0;
     virtual void SetOpenFuncReturn(RTypePtr&& retType) = 0;
     virtual RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory) = 0;
 
@@ -93,7 +93,7 @@ public:
     bool CanAccess(RDecl* target) override;
     std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
-    RFuncReturn GetOpenFuncReturn() override;
+    RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RTypePtr&& retType) override;
 
     RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory) override;
@@ -110,7 +110,7 @@ public:
     bool CanAccess(RDecl* target) override;
     std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
-    RFuncReturn GetOpenFuncReturn() override;
+    RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RTypePtr&& retType) override;
 
     RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory) override;

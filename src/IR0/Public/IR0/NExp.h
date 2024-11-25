@@ -89,8 +89,8 @@ class RClassMemberVarDecl;
 class RStructMemberVarDecl;
 class RGlobalFuncDecl;
 class RClassMemberFuncDecl;
-class RClassConstructorDecl;
-class RStructConstructorDecl;
+class RClassCtorDecl;
+class RStructCtorDecl;
 class RStructMemberFuncDecl;
 class NLambdaDecl;
 class REnumElemDecl;
@@ -479,11 +479,11 @@ public:
 class NExp_NewClass : public NExp
 {
 public:
-    std::shared_ptr<RClassConstructorDecl> constructorDecl;
+    std::shared_ptr<RClassCtorDecl> ctorDecl;
     RTypeArgumentsPtr typeArgs;
     std::vector<NArgument> args;
 public:
-    IR0_API NExp_NewClass(const std::shared_ptr<RClassConstructorDecl>& constructorDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<NArgument>& args);
+    IR0_API NExp_NewClass(const std::shared_ptr<RClassCtorDecl>& ctorDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<NArgument>& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -525,11 +525,11 @@ public:
 class NExp_NewStruct : public NExp
 {
 public:
-    std::shared_ptr<RStructConstructorDecl> constructorDecl;
+    std::shared_ptr<RStructCtorDecl> ctor;
     RTypeArgumentsPtr typeArgs;
     std::vector<NArgument> args;
 public:
-    IR0_API NExp_NewStruct(const std::shared_ptr<RStructConstructorDecl>& constructorDecl, RTypeArgumentsPtr&& typeArgs, std::vector<NArgument>&& args);
+    IR0_API NExp_NewStruct(const std::shared_ptr<RStructCtorDecl>& ctor, RTypeArgumentsPtr&& typeArgs, std::vector<NArgument>&& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }

@@ -5,7 +5,7 @@
 #include "NDecl.h"
 #include "NTypeDecl.h"
 #include "NTypeDeclOuter.h"
-#include "NClassConstructorDecl.h"
+#include "NClassCtorDecl.h"
 #include "NClassMemberFuncDecl.h"
 #include "NClassMemberVarDecl.h"
 #include "RNames.h"
@@ -43,8 +43,8 @@ class NClassDecl
     RName name;
     std::vector<std::string> typeParams;
 
-    std::vector<std::shared_ptr<NClassConstructorDecl>> constructors;
-    int trivialConstructorIndex; // can be -1
+    std::vector<std::shared_ptr<NClassCtorDecl>> ctors;
+    int trivialCtorIndex; // can be -1
 
     std::vector<std::shared_ptr<NClassMemberVarDecl>> memberVars;
 

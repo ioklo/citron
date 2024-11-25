@@ -1,8 +1,7 @@
 #pragma once
-#include "IR0Config.h"
-
-#include <memory>
 #include <vector>
+#include <memory>
+#include <string>
 
 #include "NDecl.h"
 #include "NFuncDeclOuter.h"
@@ -10,33 +9,28 @@
 #include "RAccessor.h"
 #include "NCommonFuncDeclComponent.h"
 
-#include "RStructConstructorDecl.h"
+#include "RClassCtorDecl.h"
 
 namespace Citron
 {
 
-class NStructDecl;
+class NClassDecl;
 struct RFuncParameter;
 
-class NStructConstructorDecl 
+class NClassCtorDecl 
     : public NDecl
     , public NFuncDecl
     , public NFuncDeclOuter
-    , public RStructConstructorDecl
+    , public RClassCtorDecl
     , private NCommonFuncDeclComponent
 {
 public:
-    std::weak_ptr<NStructDecl> _struct;
+    std::weak_ptr<NClassDecl> _class;
     RAccessor accessor;
     bool bTrivial;
 
 public:
-    IR0_API NStructConstructorDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bTrivial);
-    IR0_API void InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic);
-    using NCommonFuncDeclComponent::InitBody;
-    IR0_API ~NStructConstructorDecl();
-
-    using NCommonFuncDeclComponent::GetOpenFuncParam;
+    NClassCtorDecl(const std::shared_ptr<NClassDecl>& _class, RAccessor accessor, bool bTrivial, std::vector<std::string>&& typeParams, std::vector<RFuncParameter> parameters, bool bLastParamVariadic);
 
 public:
     // from NDecl
@@ -46,14 +40,14 @@ public:
 
     // from NFuncDecl
     NDecl* GetNDecl() override { return this; }
-    using NCommonFuncDeclComponent::GetOpenFuncReturn;
+    RFuncReturn GetUnboundFuncReturn() override { return RFuncReturn_ForCtor(); }
     using NCommonFuncDeclComponent::IsSeqFunc;
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDeclOuter
     // NDecl* GetNDecl() override { return this; }
     void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
-    
+
     // from RDecl
     IR0_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
@@ -64,8 +58,8 @@ public:
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }
 
-    // from RStructConstructorDecl
-    IR0_API std::shared_ptr<RStructDecl> GetStructDecl() override;
+    // from RClassCtorDecl
+    IR0_API std::shared_ptr<RClassDecl> GetClassDecl() override;
 };
 
 

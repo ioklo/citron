@@ -24,7 +24,7 @@ public:
     IR0_API NLambdaMemberVarDecl(const RTypePtr& type, const RName& name);
     IR0_API void InitLambda(const std::shared_ptr<NLambdaDecl>& lambda);
 
-    IR0_API RTypePtr GetOpenDeclType();
+    IR0_API RTypePtr GetUnboundDeclType();
 
 public:
     // from NDecl

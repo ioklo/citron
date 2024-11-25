@@ -264,7 +264,7 @@ public:
 
         // 리턴 값이 없을 경우
         
-        auto funcRet = context.GetOpenFuncReturn();
+        auto funcRet = context.GetUnboundFuncReturn();
 
         return visit(overloaded {
             [this, &stmt](RFuncReturn_Set& set)
@@ -320,7 +320,7 @@ public:
                 }
             },
 
-            [this, &stmt](RFuncReturn_ForConstructor& retType)
+            [this, &stmt](RFuncReturn_ForCtor& retType)
             {
                 if (!stmt.value)
                 {
@@ -491,7 +491,7 @@ public:
                     if (funcDecl->GetParamCount() != 1) continue;
 
                     // 리턴 타입은 bool
-                    auto ret = context.GetOpenFuncReturn(*funcDecl, *typeArgs);
+                    auto ret = context.GetUnboundFuncReturn(*funcDecl, *typeArgs);
                     auto* setRet = get_if<RFuncReturn_Set>(&ret);
                     assert(setRet);
 
@@ -681,7 +681,7 @@ public:
         }
 
         // yield에서는 retType이 명시되는 경우만 있을 것이다
-        auto funcRet= context.GetOpenFuncReturn();
+        auto funcRet= context.GetUnboundFuncReturn();
         auto* setFuncRet = get_if<RFuncReturn_Set>(&funcRet);
 
         assert(setFuncRet); // 아닌 경우는 위에서 거른다 (sequence함수는 무조건 ret포함)

@@ -95,8 +95,8 @@ void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream
 
     hStream << " { }" << endl;
 
-    for (auto& extraConstructor : structInfo.extraConstructors)
-        hStream << endl << extraConstructor << endl;
+    for (auto& extraCtor : structInfo.extraCtors)
+        hStream << endl << extraCtor << endl;
 
     hStream << "};" << endl << endl;
 }
@@ -185,12 +185,12 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     }
 
     // 추가 생성자
-    for (auto& extraConstructor : classInfo.extraConstructors)
+    for (auto& extraCtor : classInfo.extraCtors)
     {
-        hStream << "    " << extraConstructor << endl;
+        hStream << "    " << extraCtor << endl;
     }
 
-    bHModified |= !classInfo.extraConstructors.empty();
+    bHModified |= !classInfo.extraCtors.empty();
 
     // copy constructor, move constructor
 

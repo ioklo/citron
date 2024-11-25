@@ -38,20 +38,20 @@ public:
     DECLARE_DEFAULTS(SYMBOL_API, MName_Lambda)
 };
 
-class MName_ConstructorParam
+class MName_CtorParam
 {
     int index;
     std::string paramText;
 public:
-    SYMBOL_API MName_ConstructorParam(int index, std::string&& paramText);
-    DECLARE_DEFAULTS(SYMBOL_API, MName_ConstructorParam)
+    SYMBOL_API MName_CtorParam(int index, std::string&& paramText);
+    DECLARE_DEFAULTS(SYMBOL_API, MName_CtorParam)
 };
 
 using MName = std::variant<
     MName_Normal,
     MName_Reserved,
     MName_Lambda,
-    MName_ConstructorParam
+    MName_CtorParam
 >;
 
 SYMBOL_API MName Copy(const MName& name);

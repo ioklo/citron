@@ -6,13 +6,12 @@ namespace Citron {
 
 using MTypePtr = std::shared_ptr<class MType>;
 
-struct MNoneFuncReturn {}; // for constructor
-struct MConfirmedFuncReturn
+struct MFuncReturn_ForCtor {}; // for ctor
+struct MFuncReturn_Normal
 {
     MTypePtr type;
 };
-struct MNeedInferenceFuncReturn {};
-using MFuncReturn = std::variant<MNoneFuncReturn, MConfirmedFuncReturn, MNeedInferenceFuncReturn>;
+using MFuncReturn = std::variant<MFuncReturn_ForCtor, MFuncReturn_Normal>;
 
 }
 

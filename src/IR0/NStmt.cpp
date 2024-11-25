@@ -110,12 +110,12 @@ NStmt_Yield::NStmt_Yield(NExpPtr&& value)
 
 }
 
-NStmt_CallClassConstructor::NStmt_CallClassConstructor()
+NStmt_CallClassCtor::NStmt_CallClassCtor()
 {
 
 }
 
-NStmt_CallStructConstructor::NStmt_CallStructConstructor()
+NStmt_CallStructCtor::NStmt_CallStructCtor()
 {
 
 }

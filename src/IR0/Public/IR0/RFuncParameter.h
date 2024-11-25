@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include "RNames.h"
 
 namespace Citron {
 

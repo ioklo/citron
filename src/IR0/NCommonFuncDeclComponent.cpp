@@ -33,7 +33,7 @@ size_t NCommonFuncDeclComponent::GetTypeParamCount()
     return typeParams.size();
 }
 
-RFuncReturn NCommonFuncDeclComponent::GetOpenFuncReturn()
+RFuncReturn NCommonFuncDeclComponent::GetUnboundFuncReturn()
 {
     assert(funcReturnAndParams);
     return funcReturnAndParams->funcReturn;
@@ -49,7 +49,7 @@ RTypePtr NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RType
     return setReturn->type->Apply(typeArgs, factory);
 }
 
-RFuncParameter& NCommonFuncDeclComponent::GetOpenFuncParam(int i)
+RFuncParameter& NCommonFuncDeclComponent::GetUnboundFuncParam(int i)
 {
     assert(funcReturnAndParams);
     return funcReturnAndParams->funcParameters[i];

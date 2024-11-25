@@ -153,7 +153,7 @@ struct ToJsonVisitor {
             .names {
                 "SClassMemberDecl",
                 "SClassMemberFuncDecl",
-                "SClassConstructorDecl",
+                "SClassCtorDecl",
                 "SClassMemberVarDecl",
             }
         },
@@ -161,8 +161,8 @@ struct ToJsonVisitor {
         ForwardClassDeclsInfo {
             .names {
                 "SStructMemberDecl",
-                "SStructMemberFuncDecl",
-                "SStructConstructorDecl",
+                "SStructFuncDecl",
+                "SStructCtorDecl",
                 "SStructMemberVarDecl",
             }
         },
@@ -242,7 +242,7 @@ struct ToJsonVisitor {
                 {.type = "bool", .memberVarName = "bParams", .getterName = "GetParams" },
                 {.type = "SExpPtr", .memberVarName = "exp", .getterName = "GetExp" },
             },
-            .extraConstructors {
+            .extraCtors {
                 "SYNTAX_API SArgument(SExpPtr exp);"
             }
         },
@@ -417,7 +417,7 @@ struct ToJsonVisitor {
                 "SStructDecl",
                 "SEnumDecl",
                 "SClassMemberFuncDecl",
-                "SClassConstructorDecl",
+                "SClassCtorDecl",
                 "SClassMemberVarDecl",
             }
         },
@@ -431,8 +431,8 @@ struct ToJsonVisitor {
                 "SClassDecl",
                 "SStructDecl",
                 "SEnumDecl",
-                "SStructMemberFuncDecl",
-                "SStructConstructorDecl",
+                "SStructFuncDecl",
+                "SStructCtorDecl",
                 "SStructMemberVarDecl",
             }
         },
@@ -476,7 +476,7 @@ struct ToJsonVisitor {
                 {.type = "std::string", .memberVarName = "value", .getterName = "GetValue" },
                 {.type = "std::vector<STypeExpPtr>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
             },
-            .extraConstructors {
+            .extraCtors {
                 "SExp_Identifier(std::string value) : SExp_Identifier(std::move(value), {}) { }"
             }
         },
@@ -487,7 +487,7 @@ struct ToJsonVisitor {
             .memberInfos {
                 {.type = "std::vector<SStringExpElementPtr>", .memberVarName = "elements", .getterName = "GetElements" },
             },
-            .extraConstructors {
+            .extraCtors {
                 "SYNTAX_API SExp_String(std::string str);"
             }
         },
@@ -585,7 +585,7 @@ struct ToJsonVisitor {
                 {.type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName" },
                 {.type = "std::vector<STypeExpPtr>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
             },
-            .extraConstructors {
+            .extraCtors {
                 "SYNTAX_API SExp_Member(SExpPtr parent, std::string memberName);"
             }
         },
@@ -598,7 +598,7 @@ struct ToJsonVisitor {
                 {.type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName" },
                 {.type = "std::vector<STypeExpPtr>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
             },
-            .extraConstructors {
+            .extraCtors {
                 "SYNTAX_API SExp_IndirectMember(SExpPtr parent, std::string memberName);"
             }
         },
@@ -641,7 +641,7 @@ struct ToJsonVisitor {
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 {.type = "std::vector<STypeExpPtr>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
             },
-            .extraConstructors {
+            .extraCtors {
                 "SYNTAX_API STypeExp_Id(std::string name);"
             }
         },
@@ -986,9 +986,9 @@ struct ToJsonVisitor {
             },
         },
 
-        // SClassConstructorDecl
+        // SClassCtorDecl
         ClassInfo {
-            .name = "SClassConstructorDecl",
+            .name = "SClassCtorDecl",
             .variantInterfaces { "SClassMemberDecl" },
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
@@ -1026,9 +1026,9 @@ struct ToJsonVisitor {
             },
         },
 
-        // SStructMemberFuncDecl
+        // SStructFuncDecl
         ClassInfo {
-            .name = "SStructMemberFuncDecl",
+            .name = "SStructFuncDecl",
             .variantInterfaces { "SStructMemberDecl" },
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAcessModifier" },
@@ -1042,9 +1042,9 @@ struct ToJsonVisitor {
             },
         },
 
-        // SStructConstructorDecl
+        // SStructCtorDecl
         ClassInfo {
-            .name = "SStructConstructorDecl",
+            .name = "SStructCtorDecl",
             .variantInterfaces { "SStructMemberDecl" },
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },

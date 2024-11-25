@@ -41,16 +41,16 @@ MName_Lambda MName_Lambda::Copy() const
     return MName_Lambda(index);
 }
 
-MName_ConstructorParam::MName_ConstructorParam(int index, std::string&& paramText)
+MName_CtorParam::MName_CtorParam(int index, std::string&& paramText)
     : index(index), paramText(std::move(paramText))
 {
 }
 
-IMPLEMENT_DEFAULTS(MName_ConstructorParam)
+IMPLEMENT_DEFAULTS(MName_CtorParam)
 
-MName_ConstructorParam MName_ConstructorParam::Copy() const
+MName_CtorParam MName_CtorParam::Copy() const
 {
-    return MName_ConstructorParam(index, std::string(paramText));
+    return MName_CtorParam(index, std::string(paramText));
 }
 
 MName Copy(const MName& name)

@@ -76,12 +76,12 @@ class SForStmtInitializer_VarDecl;
 
 class SClassMemberDecl;
 class SClassMemberFuncDecl;
-class SClassConstructorDecl;
+class SClassCtorDecl;
 class SClassMemberVarDecl;
 
 class SStructMemberDecl;
-class SStructMemberFuncDecl;
-class SStructConstructorDecl;
+class SStructFuncDecl;
+class SStructCtorDecl;
 class SStructMemberVarDecl;
 
 class SNamespaceDeclElement;
@@ -498,8 +498,8 @@ class SForStmtInitializerVisitor
 {
 public:
     virtual ~SForStmtInitializerVisitor() { }
-    virtual void Visit(SForStmtInitializer_Exp& forInit) = 0;
-    virtual void Visit(SForStmtInitializer_VarDecl& forInit) = 0;
+    virtual void Visit(SForStmtInitializer_Exp& initializer) = 0;
+    virtual void Visit(SForStmtInitializer_VarDecl& initializer) = 0;
 };
 
 class SForStmtInitializer : public SSyntax
@@ -524,7 +524,7 @@ public:
     virtual void Visit(SStructDecl& decl) = 0;
     virtual void Visit(SEnumDecl& decl) = 0;
     virtual void Visit(SClassMemberFuncDecl& decl) = 0;
-    virtual void Visit(SClassConstructorDecl& decl) = 0;
+    virtual void Visit(SClassCtorDecl& decl) = 0;
     virtual void Visit(SClassMemberVarDecl& decl) = 0;
 };
 
@@ -549,8 +549,8 @@ public:
     virtual void Visit(SClassDecl& decl) = 0;
     virtual void Visit(SStructDecl& decl) = 0;
     virtual void Visit(SEnumDecl& decl) = 0;
-    virtual void Visit(SStructMemberFuncDecl& decl) = 0;
-    virtual void Visit(SStructConstructorDecl& decl) = 0;
+    virtual void Visit(SStructFuncDecl& decl) = 0;
+    virtual void Visit(SStructCtorDecl& decl) = 0;
     virtual void Visit(SStructMemberVarDecl& decl) = 0;
 };
 
@@ -1639,7 +1639,7 @@ public:
 
 };
 
-class SClassConstructorDecl
+class SClassCtorDecl
     : public SClassMemberDecl
 {
 public:
@@ -1648,13 +1648,13 @@ public:
     SArgumentsPtr baseArgs;
     std::vector<SStmtPtr> body;
 
-    SYNTAX_API SClassConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArgumentsPtr baseArgs, std::vector<SStmtPtr> body);
-    SClassConstructorDecl(const SClassConstructorDecl&) = delete;
-    SYNTAX_API SClassConstructorDecl(SClassConstructorDecl&&) noexcept;
-    SYNTAX_API virtual ~SClassConstructorDecl();
+    SYNTAX_API SClassCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArgumentsPtr baseArgs, std::vector<SStmtPtr> body);
+    SClassCtorDecl(const SClassCtorDecl&) = delete;
+    SYNTAX_API SClassCtorDecl(SClassCtorDecl&&) noexcept;
+    SYNTAX_API virtual ~SClassCtorDecl();
 
-    SClassConstructorDecl& operator=(const SClassConstructorDecl& other) = delete;
-    SYNTAX_API SClassConstructorDecl& operator=(SClassConstructorDecl&& other) noexcept;
+    SClassCtorDecl& operator=(const SClassCtorDecl& other) = delete;
+    SYNTAX_API SClassCtorDecl& operator=(SClassCtorDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
@@ -1711,7 +1711,7 @@ public:
 
 };
 
-class SStructMemberFuncDecl
+class SStructFuncDecl
     : public SStructMemberDecl
 {
 public:
@@ -1724,20 +1724,20 @@ public:
     std::vector<SFuncParam> parameters;
     std::vector<SStmtPtr> body;
 
-    SYNTAX_API SStructMemberFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
-    SStructMemberFuncDecl(const SStructMemberFuncDecl&) = delete;
-    SYNTAX_API SStructMemberFuncDecl(SStructMemberFuncDecl&&) noexcept;
-    SYNTAX_API virtual ~SStructMemberFuncDecl();
+    SYNTAX_API SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SStructFuncDecl(const SStructFuncDecl&) = delete;
+    SYNTAX_API SStructFuncDecl(SStructFuncDecl&&) noexcept;
+    SYNTAX_API virtual ~SStructFuncDecl();
 
-    SStructMemberFuncDecl& operator=(const SStructMemberFuncDecl& other) = delete;
-    SYNTAX_API SStructMemberFuncDecl& operator=(SStructMemberFuncDecl&& other) noexcept;
+    SStructFuncDecl& operator=(const SStructFuncDecl& other) = delete;
+    SYNTAX_API SStructFuncDecl& operator=(SStructFuncDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
 
 };
 
-class SStructConstructorDecl
+class SStructCtorDecl
     : public SStructMemberDecl
 {
 public:
@@ -1745,13 +1745,13 @@ public:
     std::vector<SFuncParam> parameters;
     std::vector<SStmtPtr> body;
 
-    SYNTAX_API SStructConstructorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
-    SStructConstructorDecl(const SStructConstructorDecl&) = delete;
-    SYNTAX_API SStructConstructorDecl(SStructConstructorDecl&&) noexcept;
-    SYNTAX_API virtual ~SStructConstructorDecl();
+    SYNTAX_API SStructCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SStructCtorDecl(const SStructCtorDecl&) = delete;
+    SYNTAX_API SStructCtorDecl(SStructCtorDecl&&) noexcept;
+    SYNTAX_API virtual ~SStructCtorDecl();
 
-    SStructConstructorDecl& operator=(const SStructConstructorDecl& other) = delete;
-    SYNTAX_API SStructConstructorDecl& operator=(SStructConstructorDecl&& other) noexcept;
+    SStructCtorDecl& operator=(const SStructCtorDecl& other) = delete;
+    SYNTAX_API SStructCtorDecl& operator=(SStructCtorDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }

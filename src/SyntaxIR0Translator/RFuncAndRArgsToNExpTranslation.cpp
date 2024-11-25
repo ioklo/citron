@@ -12,7 +12,7 @@
 #include <IR0/NExp.h>
 #include <IR0/NArgument.h>
 #include <IR0/NClassMemberFuncDecl.h>
-#include <IR0/NStructMemberFuncDecl.h>
+#include <IR0/NStructFuncDecl.h>
 
 using namespace std;
 
@@ -40,7 +40,7 @@ public:
         throw NotImplementedException();
     }
 
-    void Visit(RClassConstructorDecl& func) override 
+    void Visit(RClassCtorDecl& func) override 
     {
         throw NotImplementedException();
     }
@@ -53,7 +53,7 @@ public:
         *result = MakePtr<NExp_CallClassMemberFunc>(std::move(sharedClassMemberFuncDecl), std::move(typeArgs), std::move(instance), std::move(args));
     }
 
-    void Visit(RStructConstructorDecl& func) override 
+    void Visit(RStructCtorDecl& func) override 
     {
         throw new NotImplementedException();
     }

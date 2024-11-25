@@ -18,7 +18,7 @@ class NStructDecl;
 using RTypePtr = std::shared_ptr<class RType>;
 class RTypeArguments;
 
-class NStructMemberFuncDecl 
+class NStructFuncDecl 
     : public NDecl
     , public NFuncDecl
     , public NFuncDeclOuter
@@ -37,7 +37,7 @@ public:
     bool bStatic;
 
 public:
-    IR0_API NStructMemberFuncDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, std::string name, std::vector<std::string>&& typeParams, bool bStatic);
+    IR0_API NStructFuncDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, std::string name, std::vector<std::string>&& typeParams, bool bStatic);
     IR0_API void InitFuncReturnAndParams(RTypePtr funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic);
     using NCommonFuncDeclComponent::InitBody;
 
@@ -49,7 +49,7 @@ public:
 
     // from NFuncDecl
     NDecl* GetNDecl() override { return this; }
-    using NCommonFuncDeclComponent::GetOpenFuncReturn;
+    using NCommonFuncDeclComponent::GetUnboundFuncReturn;
     using NCommonFuncDeclComponent::IsSeqFunc;
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
