@@ -412,7 +412,7 @@ shared_ptr<SStructDecl> ParseStructDecl(Lexer* lexer)
     return MakePtr<SStructDecl>(oAccessModifier, std::move(oStructName->text), std::move(*oTypeParams), std::move(baseTypes), std::move(elems));
 }
 
-shared_ptr<SClassMemberFuncDecl> ParseClassMemberFuncDecl(Lexer* lexer)
+shared_ptr<SClassFuncDecl> ParseClassFuncDecl(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
 
@@ -447,7 +447,7 @@ shared_ptr<SClassMemberFuncDecl> ParseClassMemberFuncDecl(Lexer* lexer)
         return nullptr;
 
     *lexer = std::move(curLexer);
-    return MakePtr<SClassMemberFuncDecl>(
+    return MakePtr<SClassFuncDecl>(
         oAccessModifier,
         bStatic, bSequence,
         std::move(retType),
@@ -544,7 +544,7 @@ shared_ptr<SClassMemberDecl> ParseClassMemberDecl(string& className, Lexer* lexe
     if (auto memberDecl = ParseTypeDecl<SClassMemberDecl>(lexer))
         return memberDecl;
 
-    if (auto memberDecl = ParseClassMemberFuncDecl(lexer))
+    if (auto memberDecl = ParseClassFuncDecl(lexer))
         return memberDecl;
 
     if (auto memberDecl = ParseClassCtorDecl(className, lexer))

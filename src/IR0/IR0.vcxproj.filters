@@ -51,7 +51,7 @@
     <ClInclude Include="Public\IR0\NClassDecl.h">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\NClassMemberFuncDecl.h">
+    <ClInclude Include="Public\IR0\NClassFuncDecl.h">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\NClassMemberVarDecl.h">
@@ -150,7 +150,7 @@
     <ClInclude Include="Public\IR0\RClassCtorDecl.h">
       <Filter>Symbols\RDecl\06 Class</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RClassMemberFuncDecl.h">
+    <ClInclude Include="Public\IR0\RClassFuncDecl.h">
       <Filter>Symbols\RDecl\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RClassMemberVarDecl.h">
@@ -162,7 +162,7 @@
     <ClInclude Include="Public\IR0\RStructCtorDecl.h">
       <Filter>Symbols\RDecl\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\RStructMemberFuncDecl.h">
+    <ClInclude Include="Public\IR0\RStructFuncDecl.h">
       <Filter>Symbols\RDecl\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RStructMemberVarDecl.h">
@@ -239,7 +239,7 @@
     <ClCompile Include="NClassCtorDecl.cpp">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClCompile>
-    <ClCompile Include="NClassMemberFuncDecl.cpp">
+    <ClCompile Include="NClassFuncDecl.cpp">
       <Filter>Symbols\NDecl\06 Class</Filter>
     </ClCompile>
     <ClCompile Include="NStructFuncDecl.cpp">

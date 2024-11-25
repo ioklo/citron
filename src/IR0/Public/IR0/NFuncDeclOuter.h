@@ -13,7 +13,7 @@ class NNamespaceDecl;
 class NGlobalFuncDecl;
 class NClassDecl;
 class NClassCtorDecl;
-class NClassMemberFuncDecl;
+class NClassFuncDecl;
 class NStructDecl;
 class NStructCtorDecl;
 class NStructFuncDecl;
@@ -27,7 +27,7 @@ public:
     virtual void Visit(NGlobalFuncDecl& outer) = 0;
     virtual void Visit(NClassDecl& outer) = 0;
     virtual void Visit(NClassCtorDecl& outer) = 0;
-    virtual void Visit(NClassMemberFuncDecl& outer) = 0;
+    virtual void Visit(NClassFuncDecl& outer) = 0;
     virtual void Visit(NStructDecl& outer) = 0;
     virtual void Visit(NStructCtorDecl& outer) = 0;
     virtual void Visit(NStructFuncDecl& outer) = 0;

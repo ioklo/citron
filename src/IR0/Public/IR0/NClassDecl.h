@@ -6,7 +6,7 @@
 #include "NTypeDecl.h"
 #include "NTypeDeclOuter.h"
 #include "NClassCtorDecl.h"
-#include "NClassMemberFuncDecl.h"
+#include "NClassFuncDecl.h"
 #include "NClassMemberVarDecl.h"
 #include "RNames.h"
 #include "NTypeDeclContainerComponent.h"
@@ -29,7 +29,7 @@ class NClassDecl
     , public NFuncDeclOuter
     , public RClassDecl
     , private NTypeDeclContainerComponent
-    , private NFuncDeclContainerComponent<NClassMemberFuncDecl>
+    , private NFuncDeclContainerComponent<NClassFuncDecl>
 {
     struct BaseTypes
     {

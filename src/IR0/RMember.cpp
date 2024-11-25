@@ -3,8 +3,8 @@
 #include <Infra/Variants.h>
 
 #include "RGlobalFuncDecl.h"
-#include "RClassMemberFuncDecl.h"
-#include "RStructMemberFuncDecl.h"
+#include "RClassFuncDecl.h"
+#include "RStructFuncDecl.h"
 #include "DeclWithOuterTypeArgs.h"
 
 using namespace std;
@@ -31,14 +31,14 @@ RMember_Class::RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const share
 
 }
 
-RMember_ClassMemberFuncs::RMember_ClassMemberFuncs(vector<DeclWithOuterTypeArgs<RClassMemberFuncDecl>>&& items)
+RMember_ClassFuncs::RMember_ClassFuncs(vector<DeclWithOuterTypeArgs<RClassFuncDecl>>&& items)
     : items(std::move(items))
 {
 }
 
-RMember_ClassMemberFuncs::RMember_ClassMemberFuncs(const RMember_ClassMemberFuncs&) = default;
+RMember_ClassFuncs::RMember_ClassFuncs(const RMember_ClassFuncs&) = default;
 
-RMember_ClassMemberFuncs::~RMember_ClassMemberFuncs() = default;
+RMember_ClassFuncs::~RMember_ClassFuncs() = default;
 
 RMember_ClassMemberVar::RMember_ClassMemberVar(const shared_ptr<RClassMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
@@ -52,15 +52,15 @@ RMember_Struct::RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const sha
 
 }
 
-RMember_StructMemberFuncs::RMember_StructMemberFuncs(vector<DeclWithOuterTypeArgs<RStructMemberFuncDecl>>&& items)
+RMember_StructFuncs::RMember_StructFuncs(vector<DeclWithOuterTypeArgs<RStructFuncDecl>>&& items)
     : items(std::move(items))
 {
 
 }
 
-RMember_StructMemberFuncs::RMember_StructMemberFuncs(const RMember_StructMemberFuncs&) = default;
+RMember_StructFuncs::RMember_StructFuncs(const RMember_StructFuncs&) = default;
 
-RMember_StructMemberFuncs::~RMember_StructMemberFuncs() = default;
+RMember_StructFuncs::~RMember_StructFuncs() = default;
 
 RMember_StructMemberVar::RMember_StructMemberVar(const shared_ptr<RStructMemberVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
@@ -118,8 +118,8 @@ vector<DeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs(RMember& m
 {
     return visit(overloaded {
         [](RMember_GlobalFuncs& member) { return GetItems(member.items); },
-        [](RMember_ClassMemberFuncs& member) { return GetItems(member.items); },
-        [](RMember_StructMemberFuncs& member) { return GetItems(member.items); },
+        [](RMember_ClassFuncs& member) { return GetItems(member.items); },
+        [](RMember_StructFuncs& member) { return GetItems(member.items); },
         [](auto&&) { return vector<DeclWithOuterTypeArgs<RFuncDecl>>{}; },
     }, member);
 }

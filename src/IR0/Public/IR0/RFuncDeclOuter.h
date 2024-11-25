@@ -11,10 +11,10 @@ class RNamespaceDecl;
 class RGlobalFuncDecl;
 class RClassDecl;
 class RClassCtorDecl;
-class RClassMemberFuncDecl;
+class RClassFuncDecl;
 class RStructDecl;
 class RStructCtorDecl;
-class RStructMemberFuncDecl;
+class RStructFuncDecl;
 class RLambdaDecl;
 
 class RFuncDeclOuter
@@ -34,10 +34,10 @@ public:
     virtual void Visit(RGlobalFuncDecl& outer) = 0;
     virtual void Visit(RClassDecl& outer) = 0;
     virtual void Visit(RClassCtorDecl& outer) = 0;
-    virtual void Visit(RClassMemberFuncDecl& outer) = 0;
+    virtual void Visit(RClassFuncDecl& outer) = 0;
     virtual void Visit(RStructDecl& outer) = 0;
     virtual void Visit(RStructCtorDecl& outer) = 0;
-    virtual void Visit(RStructMemberFuncDecl& outer) = 0;
+    virtual void Visit(RStructFuncDecl& outer) = 0;
     virtual void Visit(RLambdaDecl& outer) = 0;
 };
 

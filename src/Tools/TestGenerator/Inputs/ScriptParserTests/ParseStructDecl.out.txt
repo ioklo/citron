@@ -110,7 +110,7 @@
                     ]
                 },
                 {
-                    "$type": "SStructMemberFuncDecl",
+                    "$type": "SStructFuncDecl",
                     "accessModifier": null,
                     "bStatic": true,
                     "bSequence": false,
@@ -142,7 +142,7 @@
                     "body": []
                 },
                 {
-                    "$type": "SStructMemberFuncDecl",
+                    "$type": "SStructFuncDecl",
                     "accessModifier": "Private",
                     "bStatic": false,
                     "bSequence": true,

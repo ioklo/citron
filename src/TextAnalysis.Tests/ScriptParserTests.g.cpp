@@ -589,7 +589,7 @@ TEST(ScriptParser, ParseStructDecl)
                     ]
                 },
                 {
-                    "$type": "SStructMemberFuncDecl",
+                    "$type": "SStructFuncDecl",
                     "accessModifier": null,
                     "bStatic": true,
                     "bSequence": false,
@@ -621,7 +621,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "body": []
                 },
                 {
-                    "$type": "SStructMemberFuncDecl",
+                    "$type": "SStructFuncDecl",
                     "accessModifier": "Private",
                     "bStatic": false,
                     "bSequence": true,

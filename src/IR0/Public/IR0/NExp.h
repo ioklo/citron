@@ -47,12 +47,12 @@ class NExp_CallGlobalFunc;
 
 // Class
 class NExp_NewClass;
-class NExp_CallClassMemberFunc;
+class NExp_CallClassFunc;
 class NExp_CastClass;
 
 // Struct
 class NExp_NewStruct;
-class NExp_CallStructMemberFunc;
+class NExp_CallStructFunc;
 
 // Enum
 class NExp_NewEnumElem;
@@ -88,10 +88,10 @@ class NExp_EnumAsEnumElem;
 class RClassMemberVarDecl;
 class RStructMemberVarDecl;
 class RGlobalFuncDecl;
-class RClassMemberFuncDecl;
+class RClassFuncDecl;
 class RClassCtorDecl;
 class RStructCtorDecl;
-class RStructMemberFuncDecl;
+class RStructFuncDecl;
 class NLambdaDecl;
 class REnumElemDecl;
 
@@ -117,10 +117,10 @@ public:
     virtual void Visit(NExp_CallInternalBinaryOperator& exp) = 0;
     virtual void Visit(NExp_CallGlobalFunc& exp) = 0;
     virtual void Visit(NExp_NewClass& exp) = 0;
-    virtual void Visit(NExp_CallClassMemberFunc& exp) = 0;
+    virtual void Visit(NExp_CallClassFunc& exp) = 0;
     virtual void Visit(NExp_CastClass& exp) = 0;
     virtual void Visit(NExp_NewStruct& exp) = 0;
-    virtual void Visit(NExp_CallStructMemberFunc& exp) = 0;
+    virtual void Visit(NExp_CallStructFunc& exp) = 0;
     virtual void Visit(NExp_NewEnumElem& exp) = 0;
     virtual void Visit(NExp_CastEnumElemToEnum& exp) = 0;
     virtual void Visit(NExp_NewNullable& exp) = 0;
@@ -490,15 +490,15 @@ public:
 };
 
 // c.F();
-class NExp_CallClassMemberFunc : public NExp
+class NExp_CallClassFunc : public NExp
 {
 public:
-    std::shared_ptr<RClassMemberFuncDecl> classMemberFunc;
+    std::shared_ptr<RClassFuncDecl> decl;
     RTypeArgumentsPtr typeArgs;
     NLocPtr instance;
     std::vector<NArgument> args;
 public:
-    IR0_API NExp_CallClassMemberFunc(std::shared_ptr<RClassMemberFuncDecl>&& classMemberFunc, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, std::vector<NArgument>&& args);
+    IR0_API NExp_CallClassFunc(std::shared_ptr<RClassFuncDecl>&& decl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, std::vector<NArgument>&& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -536,15 +536,15 @@ public:
 };
 
 // s.F();
-class NExp_CallStructMemberFunc : public NExp
+class NExp_CallStructFunc : public NExp
 {
 public:
-    std::shared_ptr<RStructMemberFuncDecl> structMemberFuncDecl;
+    std::shared_ptr<RStructFuncDecl> decl;
     RTypeArgumentsPtr typeArgs;
     NLocPtr instance;
     std::vector<NArgument> args;
 public:
-    IR0_API NExp_CallStructMemberFunc(std::shared_ptr<RStructMemberFuncDecl>&& structMemberFuncDecl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, std::vector<NArgument>&& args);
+    IR0_API NExp_CallStructFunc(std::shared_ptr<RStructFuncDecl>&& decl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, std::vector<NArgument>&& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }

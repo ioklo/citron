@@ -15,10 +15,10 @@ class RFuncDecl;
 class RNamespaceDecl;
 class RGlobalFuncDecl;
 class RClassDecl;
-class RClassMemberFuncDecl;
+class RClassFuncDecl;
 class RClassMemberVarDecl;
 class RStructDecl;
-class RStructMemberFuncDecl;
+class RStructFuncDecl;
 class RStructMemberVarDecl;
 class REnumDecl;
 class REnumElemDecl;
@@ -56,14 +56,14 @@ public:
     RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RClassDecl>& decl);
 };
 
-class RMember_ClassMemberFuncs 
+class RMember_ClassFuncs 
 {
 public:
-    std::vector<DeclWithOuterTypeArgs<RClassMemberFuncDecl>> items;
+    std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>> items;
 public:
-    RMember_ClassMemberFuncs(std::vector<DeclWithOuterTypeArgs<RClassMemberFuncDecl>>&& items);
-    RMember_ClassMemberFuncs(const RMember_ClassMemberFuncs&);
-    ~RMember_ClassMemberFuncs();
+    RMember_ClassFuncs(std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>&& items);
+    RMember_ClassFuncs(const RMember_ClassFuncs&);
+    ~RMember_ClassFuncs();
 };
 
 class RMember_ClassMemberVar 
@@ -86,15 +86,15 @@ public:
     RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RStructDecl>& decl);
 };
 
-class RMember_StructMemberFuncs 
+class RMember_StructFuncs 
 {
 public:
-    std::vector<DeclWithOuterTypeArgs<RStructMemberFuncDecl>> items;
+    std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>> items;
 
 public:
-    RMember_StructMemberFuncs(std::vector<DeclWithOuterTypeArgs<RStructMemberFuncDecl>>&& items);
-    RMember_StructMemberFuncs(const RMember_StructMemberFuncs&);
-    ~RMember_StructMemberFuncs();
+    RMember_StructFuncs(std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>&& items);
+    RMember_StructFuncs(const RMember_StructFuncs&);
+    ~RMember_StructFuncs();
 };
 
 class RMember_StructMemberVar 
@@ -186,10 +186,10 @@ using RMember = std::variant<
     RMember_Namespace,
     RMember_GlobalFuncs,
     RMember_Class,
-    RMember_ClassMemberFuncs,
+    RMember_ClassFuncs,
     RMember_ClassMemberVar,
     RMember_Struct,
-    RMember_StructMemberFuncs,
+    RMember_StructFuncs,
     RMember_StructMemberVar,
     RMember_Enum,
     RMember_EnumElem,

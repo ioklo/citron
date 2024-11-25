@@ -7,23 +7,23 @@
 #include "RNames.h"
 #include "NCommonFuncDeclComponent.h"
 
-#include "RClassMemberFuncDecl.h"
+#include "RClassFuncDecl.h"
 
 namespace Citron
 {
 
 class NClassDecl;
 
-class NClassMemberFuncDecl
+class NClassFuncDecl
     : public NDecl
     , public NFuncDecl
     , public NFuncDeclOuter
-    , public RClassMemberFuncDecl
+    , public RClassFuncDecl
     , private NCommonFuncDeclComponent
 {
 public:
-    using RDeclType = RClassMemberFuncDecl;
-    using RMemberType = RMember_ClassMemberFuncs;
+    using RDeclType = RClassFuncDecl;
+    using RMemberType = RMember_ClassFuncs;
 
 public:
     std::weak_ptr<NClassDecl> _class;
@@ -61,7 +61,7 @@ public:
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }
 
-    // from RClassMemberFuncDecl
+    // from RClassFuncDecl
     RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
 };
 

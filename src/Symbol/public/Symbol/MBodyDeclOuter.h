@@ -7,9 +7,9 @@ namespace Citron
 
 class MGlobalFuncDecl;
 class MClassCtorDecl;
-class MClassMemberFuncDecl;
+class MClassFuncDecl;
 class MStructCtorDecl;
-class MStructMemberFuncDecl;
+class MStructFuncDecl;
 
 class MBodyDeclOuterVisitor
 {
@@ -17,9 +17,9 @@ public:
     virtual ~MBodyDeclOuterVisitor() { }
     virtual void Visit(MGlobalFuncDecl& outer) = 0;
     virtual void Visit(MClassCtorDecl& outer) = 0;
-    virtual void Visit(MClassMemberFuncDecl& outer) = 0;
+    virtual void Visit(MClassFuncDecl& outer) = 0;
     virtual void Visit(MStructCtorDecl& outer) = 0;
-    virtual void Visit(MStructMemberFuncDecl& outer) = 0;
+    virtual void Visit(MStructFuncDecl& outer) = 0;
 };
 
 // 이것은 weak_ptr로 선언하도록 한다

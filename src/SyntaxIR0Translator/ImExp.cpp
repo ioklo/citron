@@ -23,8 +23,8 @@ ImExp_Class::ImExp_Class(const std::shared_ptr<RClassDecl>& classDecl, RTypeArgu
 {
 }
 
-ImExp_ClassMemberFuncs::ImExp_ClassMemberFuncs(const std::vector<DeclWithOuterTypeArgs<RClassMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
-    : FuncsWithPartialTypeArgsComponent<RClassMemberFuncDecl>(items, partialTypeArgsExceptOuter), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
+ImExp_ClassFuncs::ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+    : FuncsWithPartialTypeArgsComponent<RClassFuncDecl>(items, partialTypeArgsExceptOuter), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
@@ -33,8 +33,8 @@ ImExp_Struct::ImExp_Struct(const std::shared_ptr<RStructDecl>& structDecl, RType
 {
 }
 
-ImExp_StructMemberFuncs::ImExp_StructMemberFuncs(const std::vector<DeclWithOuterTypeArgs<RStructMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
-    : FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>(items, partialTypeArgsExceptOuter), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
+ImExp_StructFuncs::ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+    : FuncsWithPartialTypeArgsComponent<RStructFuncDecl>(items, partialTypeArgsExceptOuter), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 
 }

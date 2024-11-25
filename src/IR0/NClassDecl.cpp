@@ -3,7 +3,7 @@
 #include <Infra/Exceptions.h>
 
 #include "DeclWithOuterTypeArgs.h"
-#include "NClassMemberFuncDecl.h"
+#include "NClassFuncDecl.h"
 
 using namespace std;
 
@@ -40,7 +40,7 @@ optional<RMember> NClassDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const
         candidates.push_back(*oType);
 
     // class member func
-    if (auto oFunc = NFuncDeclContainerComponent<NClassMemberFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
+    if (auto oFunc = NFuncDeclContainerComponent<NClassFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
         candidates.push_back(*oFunc);
 
     if (explicitTypeParamsExceptOuterCount == 0)

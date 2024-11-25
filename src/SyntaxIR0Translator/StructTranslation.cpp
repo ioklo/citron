@@ -88,7 +88,7 @@ void AddStructCtor_BodyPhase(const shared_ptr<NStructCtorDecl>& nCtor, const sha
 
 #pragma region MemberFunc
 
-void AddStructMemberFunc(const shared_ptr<NStructDecl>& nStruct, shared_ptr<SStructFuncDecl>&& sMemberFunc, SkeletonPhaseContext& context)
+void AddStructFunc(const shared_ptr<NStructDecl>& nStruct, shared_ptr<SStructFuncDecl>&& sMemberFunc, SkeletonPhaseContext& context)
 {
     auto accessor = MakeStructMemberAccessor(sMemberFunc->accessModifier);
     auto typeParams = MakeTypeParams(sMemberFunc->typeParams);
@@ -202,7 +202,7 @@ public:
     void Visit(SStructFuncDecl& decl) override
     {
         auto sharedDecl = dynamic_pointer_cast<SStructFuncDecl>(sharedMemberDecl);
-        AddStructMemberFunc(nStructDecl, move(sharedDecl), context);
+        AddStructFunc(nStructDecl, move(sharedDecl), context);
     }
 
     void Visit(SStructMemberVarDecl& decl) override

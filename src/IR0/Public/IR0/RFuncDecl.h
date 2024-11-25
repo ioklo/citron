@@ -10,9 +10,9 @@ class MFuncDecl;
 class RFuncDeclVisitor;
 class RGlobalFuncDecl;
 class RClassCtorDecl;
-class RClassMemberFuncDecl;
+class RClassFuncDecl;
 class RStructCtorDecl;
-class RStructMemberFuncDecl;
+class RStructFuncDecl;
 class RLambdaDecl;
 
 class RFuncDecl
@@ -36,9 +36,9 @@ public:
     virtual ~RFuncDeclVisitor() { }
     virtual void Visit(RGlobalFuncDecl& func) = 0;
     virtual void Visit(RClassCtorDecl& func) = 0;
-    virtual void Visit(RClassMemberFuncDecl& func) = 0;
+    virtual void Visit(RClassFuncDecl& func) = 0;
     virtual void Visit(RStructCtorDecl& func) = 0;
-    virtual void Visit(RStructMemberFuncDecl& func) = 0;
+    virtual void Visit(RStructFuncDecl& func) = 0;
     virtual void Visit(RLambdaDecl& func) = 0;
 };
 

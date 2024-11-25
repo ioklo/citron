@@ -19,7 +19,7 @@ class NStructFuncDecl;
 class NStructMemberVarDecl;
 class NClassDecl;
 class NClassCtorDecl;
-class NClassMemberFuncDecl;
+class NClassFuncDecl;
 class NClassMemberVarDecl;
 class NEnumDecl;
 class NEnumElemDecl;
@@ -44,7 +44,7 @@ public:
     virtual void Visit(NStructMemberVarDecl& decl) = 0;
     virtual void Visit(NClassDecl& decl) = 0;
     virtual void Visit(NClassCtorDecl& decl) = 0;
-    virtual void Visit(NClassMemberFuncDecl& decl) = 0;
+    virtual void Visit(NClassFuncDecl& decl) = 0;
     virtual void Visit(NClassMemberVarDecl& decl) = 0;
     virtual void Visit(NEnumDecl& decl) = 0;
     virtual void Visit(NEnumElemDecl& decl) = 0;

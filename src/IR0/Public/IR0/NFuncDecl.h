@@ -11,7 +11,7 @@ namespace Citron
 
 class NGlobalFuncDecl;        // top-level decl space
 class NClassCtorDecl;  // construct decl space
-class NClassMemberFuncDecl;   // construct decl space
+class NClassFuncDecl;   // construct decl space
 class NStructCtorDecl; // struct decl space
 class NStructFuncDecl;  // struct decl space
 class NLambdaDecl;            // body space
@@ -22,7 +22,7 @@ public:
     virtual ~NFuncDeclVisitor() { }
     virtual void Visit(NGlobalFuncDecl& func) = 0;
     virtual void Visit(NClassCtorDecl& func) = 0;
-    virtual void Visit(NClassMemberFuncDecl& func) = 0;
+    virtual void Visit(NClassFuncDecl& func) = 0;
     virtual void Visit(NStructCtorDecl& func) = 0;
     virtual void Visit(NStructFuncDecl& func) = 0;
     virtual void Visit(NLambdaDecl& func) = 0;

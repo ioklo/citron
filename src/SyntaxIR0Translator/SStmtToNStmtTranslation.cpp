@@ -45,8 +45,8 @@ bool IsTopLevelRExp(NExp& exp)
     return dynamic_cast<NExp_CallInternalUnaryAssignOperator*>(&exp) != nullptr
         || dynamic_cast<NExp_Assign*>(&exp) != nullptr
         || dynamic_cast<NExp_CallGlobalFunc*>(&exp) != nullptr
-        || dynamic_cast<NExp_CallClassMemberFunc*>(&exp) != nullptr
-        || dynamic_cast<NExp_CallStructMemberFunc*>(&exp) != nullptr
+        || dynamic_cast<NExp_CallClassFunc*>(&exp) != nullptr
+        || dynamic_cast<NExp_CallStructFunc*>(&exp) != nullptr
         || dynamic_cast<NExp_CallLambda*>(&exp) != nullptr;
 }
 

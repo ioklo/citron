@@ -75,7 +75,7 @@ class SForStmtInitializer_Exp;
 class SForStmtInitializer_VarDecl;
 
 class SClassMemberDecl;
-class SClassMemberFuncDecl;
+class SClassFuncDecl;
 class SClassCtorDecl;
 class SClassMemberVarDecl;
 
@@ -523,7 +523,7 @@ public:
     virtual void Visit(SClassDecl& decl) = 0;
     virtual void Visit(SStructDecl& decl) = 0;
     virtual void Visit(SEnumDecl& decl) = 0;
-    virtual void Visit(SClassMemberFuncDecl& decl) = 0;
+    virtual void Visit(SClassFuncDecl& decl) = 0;
     virtual void Visit(SClassCtorDecl& decl) = 0;
     virtual void Visit(SClassMemberVarDecl& decl) = 0;
 };
@@ -1613,7 +1613,7 @@ public:
 
 };
 
-class SClassMemberFuncDecl
+class SClassFuncDecl
     : public SClassMemberDecl
 {
 public:
@@ -1626,13 +1626,13 @@ public:
     std::vector<SFuncParam> parameters;
     std::vector<SStmtPtr> body;
 
-    SYNTAX_API SClassMemberFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
-    SClassMemberFuncDecl(const SClassMemberFuncDecl&) = delete;
-    SYNTAX_API SClassMemberFuncDecl(SClassMemberFuncDecl&&) noexcept;
-    SYNTAX_API virtual ~SClassMemberFuncDecl();
+    SYNTAX_API SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SClassFuncDecl(const SClassFuncDecl&) = delete;
+    SYNTAX_API SClassFuncDecl(SClassFuncDecl&&) noexcept;
+    SYNTAX_API virtual ~SClassFuncDecl();
 
-    SClassMemberFuncDecl& operator=(const SClassMemberFuncDecl& other) = delete;
-    SYNTAX_API SClassMemberFuncDecl& operator=(SClassMemberFuncDecl&& other) noexcept;
+    SClassFuncDecl& operator=(const SClassFuncDecl& other) = delete;
+    SYNTAX_API SClassFuncDecl& operator=(SClassFuncDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }

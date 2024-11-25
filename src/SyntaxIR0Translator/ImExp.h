@@ -2,8 +2,8 @@
 
 #include <memory>
 #include <IR0/RGlobalFuncDecl.h>
-#include <IR0/RClassMemberFuncDecl.h>
-#include <IR0/RStructMemberFuncDecl.h>
+#include <IR0/RClassFuncDecl.h>
+#include <IR0/RStructFuncDecl.h>
 #include <IR0/NExp.h>
 #include <IR0/NLoc.h>
 #include <IR0/RType.h>
@@ -26,9 +26,9 @@ class ImExp_Namespace;
 class ImExp_GlobalFuncs;
 class ImExp_TypeVar;
 class ImExp_Class;
-class ImExp_ClassMemberFuncs;
+class ImExp_ClassFuncs;
 class ImExp_Struct;
-class ImExp_StructMemberFuncs;
+class ImExp_StructFuncs;
 class ImExp_Enum;
 class ImExp_EnumElem;
 class ImExp_ThisVar;
@@ -60,9 +60,9 @@ public:
     virtual void Visit(ImExp_GlobalFuncs& imExp) = 0;
     virtual void Visit(ImExp_TypeVar& imExp) = 0;
     virtual void Visit(ImExp_Class& imExp) = 0;
-    virtual void Visit(ImExp_ClassMemberFuncs& imExp) = 0;
+    virtual void Visit(ImExp_ClassFuncs& imExp) = 0;
     virtual void Visit(ImExp_Struct& imExp) = 0;
-    virtual void Visit(ImExp_StructMemberFuncs& imExp) = 0;
+    virtual void Visit(ImExp_StructFuncs& imExp) = 0;
     virtual void Visit(ImExp_Enum& imExp) = 0;
     virtual void Visit(ImExp_EnumElem& imExp) = 0;
     virtual void Visit(ImExp_ThisVar& imExp) = 0;
@@ -132,9 +132,9 @@ public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class ImExp_ClassMemberFuncs 
+class ImExp_ClassFuncs 
     : public ImExp
-    , private FuncsWithPartialTypeArgsComponent<RClassMemberFuncDecl>
+    , private FuncsWithPartialTypeArgsComponent<RClassFuncDecl>
 {
 public:
     // HasExplicitInstance: x.F 처럼 x가 명시적으로 있는 경우 true, F 처럼 this.F 나 C.F 를 암시적으로 나타낸 경우라면 false, C.F는 명시적이지만 인스턴스가 아니므로 false
@@ -148,10 +148,10 @@ public:
     ReExpPtr explicitInstance;
 
 private:
-    using FuncComp = FuncsWithPartialTypeArgsComponent<RClassMemberFuncDecl>;
+    using FuncComp = FuncsWithPartialTypeArgsComponent<RClassFuncDecl>;
 
 public:
-    ImExp_ClassMemberFuncs(const std::vector<DeclWithOuterTypeArgs<RClassMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     using FuncComp::GetCount;
@@ -175,11 +175,11 @@ public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class ImExp_StructMemberFuncs 
+class ImExp_StructFuncs 
     : public ImExp
-    , private FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>
+    , private FuncsWithPartialTypeArgsComponent<RStructFuncDecl>
 {
-    using FuncComp = FuncsWithPartialTypeArgsComponent<RStructMemberFuncDecl>;
+    using FuncComp = FuncsWithPartialTypeArgsComponent<RStructFuncDecl>;
 
 public:
     using FuncComp::items;
@@ -187,7 +187,7 @@ public:
     ReExpPtr explicitInstance;
 
 public:
-    ImExp_StructMemberFuncs(const std::vector<DeclWithOuterTypeArgs<RStructMemberFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     using FuncComp::GetCount;

@@ -47,7 +47,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         *result = MakePtr<IrExp_Class>(imExp.classDecl, imExp.typeArgs);
     }
 
-    void Visit(ImExp_ClassMemberFuncs& imExp) override
+    void Visit(ImExp_ClassFuncs& imExp) override
     {
         static_assert(false);
         *result = nullptr;
@@ -58,7 +58,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
         *result = MakePtr<IrExp_Struct>(imExp.structDecl, imExp.typeArgs);
     }
 
-    void Visit(ImExp_StructMemberFuncs& imExp) override
+    void Visit(ImExp_StructFuncs& imExp) override
     {
         static_assert(false);
         *result = nullptr;

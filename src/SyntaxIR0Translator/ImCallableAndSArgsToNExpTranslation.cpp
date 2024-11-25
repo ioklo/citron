@@ -7,7 +7,7 @@
 #include <Logging/Logger.h>
 
 #include <IR0/NExp.h>
-#include <IR0/NClassMemberFuncDecl.h>
+#include <IR0/NClassFuncDecl.h>
 
 #include <IR0/NStructDecl.h>
 #include <IR0/NStructFuncDecl.h>
@@ -129,7 +129,7 @@ public:
         *result = nullptr;
     }
 
-    void Visit(ImExp_ClassMemberFuncs& imExp) override
+    void Visit(ImExp_ClassFuncs& imExp) override
     {
         auto match = MatchFunc(imExp.items, sArgs, context);
         if (!match)
@@ -170,17 +170,17 @@ public:
                 }
             }
 
-            *result = MakePtr<NExp_CallClassMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), std::move(instance), std::move(match->args));
+            *result = MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), std::move(instance), std::move(match->args));
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
             if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                *result = MakePtr<NExp_CallClassMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args));
+                *result = MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                *result = MakePtr<NExp_CallClassMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(), std::move(match->args));
+                *result = MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(), std::move(match->args));
             }
         }
 
@@ -218,7 +218,7 @@ public:
         *result = MakePtr<NExp_NewStruct>(match->funcDecl, std::move(match->typeArgs), std::move(match->args));
     }
 
-    void Visit(ImExp_StructMemberFuncs& imExp) override
+    void Visit(ImExp_StructFuncs& imExp) override
     {
         auto match = MatchFunc(imExp.items, sArgs, context);
         if (!match)
@@ -260,17 +260,17 @@ public:
                 }
             }
 
-            *result = MakePtr<NExp_CallStructMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), std::move(instance), std::move(match->args));
+            *result = MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), std::move(instance), std::move(match->args));
         }
         else
         {
             if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                *result = MakePtr<NExp_CallStructMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args));
+                *result = MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                *result = MakePtr<NExp_CallStructMemberFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(), std::move(match->args));
+                *result = MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(), std::move(match->args));
             }
         }
 

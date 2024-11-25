@@ -152,7 +152,7 @@ struct ToJsonVisitor {
         ForwardClassDeclsInfo {
             .names {
                 "SClassMemberDecl",
-                "SClassMemberFuncDecl",
+                "SClassFuncDecl",
                 "SClassCtorDecl",
                 "SClassMemberVarDecl",
             }
@@ -416,7 +416,7 @@ struct ToJsonVisitor {
                 "SClassDecl",
                 "SStructDecl",
                 "SEnumDecl",
-                "SClassMemberFuncDecl",
+                "SClassFuncDecl",
                 "SClassCtorDecl",
                 "SClassMemberVarDecl",
             }
@@ -970,9 +970,9 @@ struct ToJsonVisitor {
             },
         },
 
-        // SClassMemberFuncDecl
+        // SClassFuncDecl
         ClassInfo {
-            .name = "SClassMemberFuncDecl",
+            .name = "SClassFuncDecl",
             .variantInterfaces { "SClassMemberDecl" },
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },

@@ -15,7 +15,7 @@ namespace Citron
 
 class MStructDecl;
 
-class MStructMemberFuncDecl 
+class MStructFuncDecl 
     : public MDecl
     , public MBodyDeclOuter
     , public MFuncDecl

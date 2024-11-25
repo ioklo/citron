@@ -62,7 +62,7 @@
     <ClInclude Include="Public\Symbol\MStructDecl.h">
       <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MStructMemberFuncDecl.h">
+    <ClInclude Include="Public\Symbol\MStructFuncDecl.h">
       <Filter>Symbols\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MStructMemberVarDecl.h">
@@ -74,7 +74,7 @@
     <ClInclude Include="Public\Symbol\MClassDecl.h">
       <Filter>Symbols\06 Class</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Symbol\MClassMemberFuncDecl.h">
+    <ClInclude Include="Public\Symbol\MClassFuncDecl.h">
       <Filter>Symbols\06 Class</Filter>
     </ClInclude>
     <ClInclude Include="Public\Symbol\MClassMemberVarDecl.h">

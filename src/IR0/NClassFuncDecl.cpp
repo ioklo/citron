@@ -1,4 +1,4 @@
-#include "NClassMemberFuncDecl.h"
+#include "NClassFuncDecl.h"
 
 #include <cassert>
 #include <Infra/Exceptions.h>
@@ -8,27 +8,27 @@ using namespace std;
 
 namespace Citron {
 
-NDecl* NClassMemberFuncDecl::GetNOuter()
+NDecl* NClassFuncDecl::GetNOuter()
 {
     return _class.lock().get();
 }
 
-RDecl* NClassMemberFuncDecl::GetROuter()
+RDecl* NClassFuncDecl::GetROuter()
 {
     return _class.lock().get();
 }
 
-RIdentifier NClassMemberFuncDecl::GetIdentifier()
+RIdentifier NClassFuncDecl::GetIdentifier()
 {
     return RIdentifier { name, typeParams.size(), NCommonFuncDeclComponent::GetParamIds() };
 }
 
-optional<RMember> NClassMemberFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NClassFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
-std::optional<RMember> NClassMemberFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+std::optional<RMember> NClassFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
 {
     auto sharedClass = _class.lock();
     assert(sharedClass);

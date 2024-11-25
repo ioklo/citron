@@ -12,12 +12,12 @@
 
 #include "RStructDecl.h"
 #include "RStructMemberVarDecl.h"
-#include "RStructMemberFuncDecl.h"
+#include "RStructFuncDecl.h"
 #include "RStructCtorDecl.h"
 
 #include "RClassDecl.h"
 #include "RClassCtorDecl.h"
-#include "RClassMemberFuncDecl.h"
+#include "RClassFuncDecl.h"
 #include "RClassMemberVarDecl.h"
 
 using namespace std;
@@ -282,14 +282,14 @@ RTypePtr NExp_NewClass::GetType(RTypeFactory& factory)
 
 /////////////////////////////////////
 
-NExp_CallClassMemberFunc::NExp_CallClassMemberFunc(shared_ptr<RClassMemberFuncDecl>&& classMemberFunc, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
-    : classMemberFunc(std::move(classMemberFunc)), typeArgs(std::move(typeArgs)), instance(std::move(instance)), args(std::move(args))
+NExp_CallClassFunc::NExp_CallClassFunc(shared_ptr<RClassFuncDecl>&& decl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
+    : decl(std::move(decl)), typeArgs(std::move(typeArgs)), instance(std::move(instance)), args(std::move(args))
 {
 }
 
-RTypePtr NExp_CallClassMemberFunc::GetType(RTypeFactory& factory)
+RTypePtr NExp_CallClassFunc::GetType(RTypeFactory& factory)
 {
-    return classMemberFunc->GetReturnType(*typeArgs, factory);
+    return decl->GetReturnType(*typeArgs, factory);
 }
 
 NExp_CastClass::NExp_CastClass(const NExpPtr& src, const RTypePtr& classType)
@@ -313,14 +313,14 @@ RTypePtr NExp_NewStruct::GetType(RTypeFactory& factory)
     return factory.MakeStructType(structDecl, typeArgs);
 }
 
-NExp_CallStructMemberFunc::NExp_CallStructMemberFunc(shared_ptr<RStructMemberFuncDecl>&& structMemberFuncDecl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
-    : structMemberFuncDecl(std::move(structMemberFuncDecl)), typeArgs(std::move(typeArgs)), instance(std::move(instance)), args(std::move(args))
+NExp_CallStructFunc::NExp_CallStructFunc(shared_ptr<RStructFuncDecl>&& decl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
+    : decl(std::move(decl)), typeArgs(std::move(typeArgs)), instance(std::move(instance)), args(std::move(args))
 {
 }
 
-RTypePtr NExp_CallStructMemberFunc::GetType(RTypeFactory& factory)
+RTypePtr NExp_CallStructFunc::GetType(RTypeFactory& factory)
 {
-    return structMemberFuncDecl->GetReturnType(*typeArgs, factory);
+    return decl->GetReturnType(*typeArgs, factory);
 }
 
 NExp_NewEnumElem::NExp_NewEnumElem(const shared_ptr<REnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, vector<NArgument>&& args)

@@ -306,7 +306,7 @@ struct SClassMemberDeclToJsonVisitor : public SClassMemberDeclVisitor
     void Visit(SClassDecl& decl) override { result = decl.ToJson(); }
     void Visit(SStructDecl& decl) override { result = decl.ToJson(); }
     void Visit(SEnumDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SClassMemberFuncDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SClassFuncDecl& decl) override { result = decl.ToJson(); }
     void Visit(SClassCtorDecl& decl) override { result = decl.ToJson(); }
     void Visit(SClassMemberVarDecl& decl) override { result = decl.ToJson(); }
 };
@@ -1256,19 +1256,19 @@ JsonItem SClassDecl::ToJson()
     };
 }
 
-SClassMemberFuncDecl::SClassMemberFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
+SClassFuncDecl::SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
     : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
 
-SClassMemberFuncDecl::SClassMemberFuncDecl(SClassMemberFuncDecl&& other) noexcept = default;
+SClassFuncDecl::SClassFuncDecl(SClassFuncDecl&& other) noexcept = default;
 
-SClassMemberFuncDecl::~SClassMemberFuncDecl() = default;
+SClassFuncDecl::~SClassFuncDecl() = default;
 
-SClassMemberFuncDecl& SClassMemberFuncDecl::operator=(SClassMemberFuncDecl&& other) noexcept = default;
+SClassFuncDecl& SClassFuncDecl::operator=(SClassFuncDecl&& other) noexcept = default;
 
-JsonItem SClassMemberFuncDecl::ToJson()
+JsonItem SClassFuncDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SClassMemberFuncDecl") },
+        { "$type", JsonString("SClassFuncDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "bStatic", Citron::ToJson(bStatic) },
         { "bSequence", Citron::ToJson(bSequence) },

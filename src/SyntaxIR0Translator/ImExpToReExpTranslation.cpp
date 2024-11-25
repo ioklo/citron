@@ -47,7 +47,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
         context.Log(&Logger::Fatal_ResolveIdentifier_CantUseTypeAsExpression);
     }
 
-    void Visit(ImExp_ClassMemberFuncs& imExp) override
+    void Visit(ImExp_ClassFuncs& imExp) override
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
         throw NotImplementedException();
@@ -58,7 +58,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
         context.Log(&Logger::Fatal_ResolveIdentifier_CantUseTypeAsExpression);
     }
 
-    void Visit(ImExp_StructMemberFuncs& imExp) override
+    void Visit(ImExp_StructFuncs& imExp) override
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
         throw NotImplementedException();

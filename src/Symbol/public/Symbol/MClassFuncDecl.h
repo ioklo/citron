@@ -12,7 +12,7 @@ namespace Citron
 
 class MClassDecl;
 
-class MClassMemberFuncDecl 
+class MClassFuncDecl 
     : public MDecl
     , public MBodyDeclOuter
     , public MFuncDecl

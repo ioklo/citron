@@ -5,7 +5,7 @@
 #include "MTypeDeclOuter.h"
 #include "MNames.h"
 #include "MStructCtorDecl.h"
-#include "MStructMemberFuncDecl.h"
+#include "MStructFuncDecl.h"
 #include "MStructMemberVarDecl.h"
 #include "MTypeDeclContainerComponent.h"
 #include "MFuncDeclContainerComponent.h"
@@ -20,7 +20,7 @@ class MStructDecl
     , public MTypeDecl
     , public MTypeDeclOuter
     , private MTypeDeclContainerComponent
-    , private MFuncDeclContainerComponent<std::shared_ptr<MStructMemberFuncDecl>>
+    , private MFuncDeclContainerComponent<std::shared_ptr<MStructFuncDecl>>
 {
     struct BaseTypes
     {

@@ -149,7 +149,7 @@
     <ClInclude Include="Public\IR0\DeclWithOuterTypeArgs.h" />
     <ClInclude Include="Public\IR0\RClassCtorDecl.h" />
     <ClInclude Include="Public\IR0\RClassDecl.h" />
-    <ClInclude Include="Public\IR0\RClassMemberFuncDecl.h" />
+    <ClInclude Include="Public\IR0\RClassFuncDecl.h" />
     <ClInclude Include="Public\IR0\RClassMemberVarDecl.h" />
     <ClInclude Include="Public\IR0\REnumDecl.h" />
     <ClInclude Include="Public\IR0\REnumElemDecl.h" />
@@ -166,7 +166,7 @@
     <ClInclude Include="Public\IR0\NFuncDeclOuter.h" />
     <ClInclude Include="Public\IR0\NClassCtorDecl.h" />
     <ClInclude Include="Public\IR0\NClassDecl.h" />
-    <ClInclude Include="Public\IR0\NClassMemberFuncDecl.h" />
+    <ClInclude Include="Public\IR0\NClassFuncDecl.h" />
     <ClInclude Include="Public\IR0\NClassMemberVarDecl.h" />
     <ClInclude Include="Public\IR0\NCommonFuncDeclComponent.h" />
     <ClInclude Include="Public\IR0\NDecl.h" />
@@ -195,7 +195,7 @@
     <ClInclude Include="Public\IR0\RNamespaceDeclGroup.h" />
     <ClInclude Include="Public\IR0\RStructCtorDecl.h" />
     <ClInclude Include="Public\IR0\RStructDecl.h" />
-    <ClInclude Include="Public\IR0\RStructMemberFuncDecl.h" />
+    <ClInclude Include="Public\IR0\RStructFuncDecl.h" />
     <ClInclude Include="Public\IR0\RStructMemberVarDecl.h" />
     <ClInclude Include="Public\IR0\RType.h" />
     <ClInclude Include="Public\IR0\RTypeArguments.h" />
@@ -226,7 +226,7 @@
     <ClCompile Include="RMember.cpp" />
     <ClCompile Include="NClassCtorDecl.cpp" />
     <ClCompile Include="NClassDecl.cpp" />
-    <ClCompile Include="NClassMemberFuncDecl.cpp" />
+    <ClCompile Include="NClassFuncDecl.cpp" />
     <ClCompile Include="NClassMemberVarDecl.cpp" />
     <ClCompile Include="NCommonFuncDeclComponent.cpp" />
     <ClCompile Include="NDecl.cpp" />

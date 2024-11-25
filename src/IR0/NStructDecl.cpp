@@ -3,7 +3,7 @@
 #include <Infra/Exceptions.h>
 
 #include "DeclWithOuterTypeArgs.h"
-#include "RStructMemberFuncDecl.h"
+#include "RStructFuncDecl.h"
 
 using namespace std;
 

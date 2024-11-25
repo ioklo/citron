@@ -11,7 +11,7 @@
 #include <IR0/NLoc.h>
 #include <IR0/NExp.h>
 #include <IR0/NArgument.h>
-#include <IR0/NClassMemberFuncDecl.h>
+#include <IR0/NClassFuncDecl.h>
 #include <IR0/NStructFuncDecl.h>
 
 using namespace std;
@@ -45,12 +45,12 @@ public:
         throw NotImplementedException();
     }
 
-    void Visit(RClassMemberFuncDecl& func) override 
+    void Visit(RClassFuncDecl& func) override 
     {
-        auto sharedClassMemberFuncDecl = dynamic_pointer_cast<RClassMemberFuncDecl>(sharedFuncDecl);
-        assert(sharedClassMemberFuncDecl);
+        auto sharedClassFuncDecl = dynamic_pointer_cast<RClassFuncDecl>(sharedFuncDecl);
+        assert(sharedClassFuncDecl);
 
-        *result = MakePtr<NExp_CallClassMemberFunc>(std::move(sharedClassMemberFuncDecl), std::move(typeArgs), std::move(instance), std::move(args));
+        *result = MakePtr<NExp_CallClassFunc>(std::move(sharedClassFuncDecl), std::move(typeArgs), std::move(instance), std::move(args));
     }
 
     void Visit(RStructCtorDecl& func) override 
@@ -58,12 +58,12 @@ public:
         throw new NotImplementedException();
     }
 
-    void Visit(RStructMemberFuncDecl& func) override 
+    void Visit(RStructFuncDecl& func) override 
     {   
-        auto sharedStructMemberFuncDecl = dynamic_pointer_cast<RStructMemberFuncDecl>(sharedFuncDecl);
-        assert(sharedStructMemberFuncDecl);
+        auto sharedStructFuncDecl = dynamic_pointer_cast<RStructFuncDecl>(sharedFuncDecl);
+        assert(sharedStructFuncDecl);
 
-        *result = MakePtr<NExp_CallStructMemberFunc>(std::move(sharedStructMemberFuncDecl), std::move(typeArgs), std::move(instance), std::move(args));
+        *result = MakePtr<NExp_CallStructFunc>(std::move(sharedStructFuncDecl), std::move(typeArgs), std::move(instance), std::move(args));
     }
 
     void Visit(RLambdaDecl& func) override 

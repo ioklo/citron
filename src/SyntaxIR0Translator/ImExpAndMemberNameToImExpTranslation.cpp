@@ -66,9 +66,9 @@ public:
     }
 
     // C.F
-    ImExpPtr operator()(RMember_ClassMemberFuncs& member)
+    ImExpPtr operator()(RMember_ClassFuncs& member)
     {
-        return MakePtr<ImExp_ClassMemberFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakePtr<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // C.x
@@ -108,9 +108,9 @@ public:
     }
 
     // S.F
-    ImExpPtr operator()(RMember_StructMemberFuncs& member)
+    ImExpPtr operator()(RMember_StructFuncs& member)
     {
-        return MakePtr<ImExp_StructMemberFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakePtr<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // S.x
@@ -212,9 +212,9 @@ public:
     }
 
     // exp.F
-    ImExpPtr operator()(RMember_ClassMemberFuncs& member) 
+    ImExpPtr operator()(RMember_ClassFuncs& member) 
     {   
-        return MakePtr<ImExp_ClassMemberFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
+        return MakePtr<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.x
@@ -245,9 +245,9 @@ public:
     }
 
     // exp.F
-    ImExpPtr operator()(RMember_StructMemberFuncs& member) 
+    ImExpPtr operator()(RMember_StructFuncs& member) 
     {   
-        return MakePtr<ImExp_StructMemberFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
+        return MakePtr<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.x
@@ -368,7 +368,7 @@ public:
         TranslateStaticParent(*imExp.classDecl, imExp.typeArgs);
     }
 
-    void Visit(ImExp_ClassMemberFuncs& imExp) override
+    void Visit(ImExp_ClassFuncs& imExp) override
     {
         context.Log(&Logger::Fatal_ResolveIdentifier_FuncCantHaveMember);
         *result = nullptr;
@@ -379,7 +379,7 @@ public:
         TranslateStaticParent(*imExp.structDecl, imExp.typeArgs);
     }
 
-    void Visit(ImExp_StructMemberFuncs& imExp) override
+    void Visit(ImExp_StructFuncs& imExp) override
     {
         context.Log(&Logger::Fatal_ResolveIdentifier_FuncCantHaveMember);
         *result = nullptr;

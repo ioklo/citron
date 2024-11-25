@@ -55,7 +55,7 @@ public:
     }
 
     // 에러,
-    IrExpPtr operator()(RMember_ClassMemberFuncs& member) 
+    IrExpPtr operator()(RMember_ClassFuncs& member) 
     {
         context.Log(&Logger::Fatal_Reference_CantMakeReference);
         return nullptr;
@@ -86,7 +86,7 @@ public:
         return MakePtr<IrExp_Struct>(member.decl, std::move(typeArgs));
     }
 
-    IrExpPtr operator()(RMember_StructMemberFuncs& member) 
+    IrExpPtr operator()(RMember_StructFuncs& member) 
     {
         context.Log(&Logger::Fatal_Reference_CantMakeReference);
         return nullptr;
