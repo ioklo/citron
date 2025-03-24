@@ -113,8 +113,8 @@ public: // for type factory
 
     bool IsListType(const RTypePtr& type, RTypePtr* outItemType);
 
-    RFuncReturn GetUnboundFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
-    std::optional<RFuncParameter> GetFuncParameter(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
+    RFuncReturn GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
+    RFuncParameter GetFuncParameter(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
 
 public: // for BinOpQueryService
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);

@@ -491,17 +491,17 @@ public:
                     if (funcDecl->GetParamCount() != 1) continue;
 
                     // 리턴 타입은 bool
-                    auto ret = context.GetUnboundFuncReturn(*funcDecl, *typeArgs);
+                    auto ret = context.GetFuncReturn(*funcDecl, *typeArgs);
                     auto* setRet = get_if<RFuncReturn_Set>(&ret);
                     assert(setRet);
 
                     if (setRet->type != context.MakeBoolType()) continue;
 
                     // 인자는 out T*꼴이어야 한다
-                    auto oParam = context.GetFuncParameter(*funcDecl, *typeArgs, 0);
-                    if (!oParam) continue;
-                    if (!oParam->bOut) continue;
-                    auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(oParam->type.get());
+                    auto param = context.GetFuncParameter(*funcDecl, *typeArgs, 0);
+                    if (!param.bOut) continue;
+
+                    auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(param.type.get());
                     if (!localPtrParamType) continue;
 
                     // $enumerator.GetNext(&i);
@@ -534,11 +534,12 @@ public:
                 for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*oRMember))
                 {
                     auto* funcDecl = funcDeclWithOuter.decl.get();
-
                     if (funcDecl->GetParamCount() != 1) continue;
 
+                    auto* typeArgs = funcDeclWithOuter.outerTypeArgs.get();
+
                     // 리턴 타입은 bool
-                    auto ret = funcDecl->GetReturn();
+                    auto ret = context.GetFuncReturn(*funcDecl, *typeArgs);
                     auto* setRet = get_if<RFuncReturn_Set>(&ret);
                     assert(setRet);
 
@@ -546,16 +547,14 @@ public:
 
                     // TODO: [16] TypeResolver적용
                     if (funcDecl->GetTypeParamCount() != 0) continue;
-                    auto* typeArgs = funcDeclWithOuter.outerTypeArgs.get();
 
                     // var symbol = (IFuncSymbol)context.InstantiateSymbol(outer, declSymbol, typeArgs: default);
 
                     // 인자는 out T*꼴이어야 한다
-                    auto oParam = context.GetFuncParameter(*funcDecl, *typeArgs, 0);
-                    if (!oParam) continue;
-                    if (!oParam->bOut) continue;
+                    auto param = context.GetFuncParameter(*funcDecl, *typeArgs, 0);
+                    if (!param.bOut) continue;
 
-                    auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(oParam->type.get());
+                    auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(param.type.get());
                     if (!localPtrParamType) continue;
 
                     auto itemTypeFromNextParam = localPtrParamType->innerType;
@@ -837,7 +836,7 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
             throw NotImplementedException();
 
         auto rParamType = context.TranslateSTypeExpToRType(*sParam.type);
-        rParams.emplace_back(sParam.hasOut, std::move(rParamType), sParam.name);
+        rParams.emplace_back(sParam.hasOut, std::move(rParamType), RName_Normal(sParam.name));
 
         if (sParam.hasParams)
         {

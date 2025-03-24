@@ -111,7 +111,7 @@ bool IsVarType(STypeExp& typeExp)
     return idTypeExp && idTypeExp->name == "var" && idTypeExp->typeArgs.size() == 0;
 }
 
-RName_CtorParam MakeBaseCtorParamName(int index, RName baseParamName)
+RName_CtorParam MakeBaseCtorParamName(size_t index, RName baseParamName)
 {
     if (auto* specialName = get_if<RName_CtorParam>(&baseParamName))
     {

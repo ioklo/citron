@@ -21,6 +21,12 @@ void NStructVarDecl::InitDeclType(const RTypePtr& declType)
     this->declType = declType;
 }
 
+RTypePtr NStructVarDecl::GetUnboundDeclType()
+{
+    assert(declType);
+    return declType;
+}
+
 NDecl* NStructVarDecl::GetNOuter()
 {
     return _struct.lock().get();

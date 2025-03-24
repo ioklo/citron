@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <IR0/RNames.h>
 
 namespace Citron {
 
@@ -23,7 +24,7 @@ NExpPtr CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext
 
 bool IsVarType(STypeExp& typeExp);
 
-RName_CtorParam MakeBaseCtorParamName(int index, RName baseParamName);
+RName_CtorParam MakeBaseCtorParamName(size_t index, RName baseParamName);
 
 
 } // namespace SyntaxIR0Translator

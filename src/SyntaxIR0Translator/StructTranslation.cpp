@@ -81,7 +81,7 @@ void AddStructCtor_BodyPhase(const shared_ptr<NStructCtorDecl>& nCtor, const sha
         return;
     }
 
-    nCtor->InitBody(std::move(nStmts));
+    nCtor->InitBody(move(nStmts));
 }
 
 #pragma endregion Ctor
@@ -126,7 +126,7 @@ void AddStructFunc_BodyPhase(const shared_ptr<NStructFuncDecl>& nMemberFunc, con
         return;
     }
 
-    nMemberFunc->InitBody(std::move(nStmts));
+    nMemberFunc->InitBody(move(nStmts));
 }
 
 #pragma endregion StructFunc
@@ -148,8 +148,8 @@ void AddStructVar(const shared_ptr<NStructDecl>& nStruct, SStructVarDecl& sStruc
         nStruct->AddVar(move(nStructVar));
     }
 
-    context.AddMemberDeclPhaseTask([nStructVars = std::move(nStructVars), varType = sStructVar.varType, nStruct](MemberDeclPhaseContext& context) mutable {
-        AddStructVar_MemberDeclPhase(std::move(nStructVars), std::move(nStruct), varType, context);
+    context.AddMemberDeclPhaseTask([nStructVars = move(nStructVars), varType = sStructVar.varType, nStruct](MemberDeclPhaseContext& context) mutable {
+        AddStructVar_MemberDeclPhase(move(nStructVars), move(nStruct), varType, context);
     });
 }
 
@@ -164,44 +164,47 @@ void AddStructVar_MemberDeclPhase(vector<shared_ptr<NStructVarDecl>>&& nStructVa
  
 class StructMemberDeclVisitor : public SStructMemberDeclVisitor
 {
-    shared_ptr<NStructDecl> nStructDecl; // visit 중 옮겨질 수 있다 (visit이 한번만 불릴 것이므로)
-    SStructMemberDeclPtr sharedMemberDecl;
+    shared_ptr<NStructDecl> nStructDecl;
+    SStructMemberDeclPtr sSharedMemberDecl;
     SkeletonPhaseContext& context;
 
 public:
-    StructMemberDeclVisitor(shared_ptr<NStructDecl> nStructDecl, SStructMemberDeclPtr sharedMemberDecl, SkeletonPhaseContext& context)
-        : nStructDecl(move(nStructDecl)), sharedMemberDecl(move(sharedMemberDecl)), context(context)
+    StructMemberDeclVisitor(const shared_ptr<NStructDecl>& nStructDecl, const SStructMemberDeclPtr& sSharedMemberDecl, SkeletonPhaseContext& context)
+        : nStructDecl(nStructDecl), sSharedMemberDecl(sSharedMemberDecl), context(context)
     { }
 
     // Inherited via SStructMemberDeclVisitor
     void Visit(SClassDecl& decl) override 
     { 
         // ClassTranslation을 만들어야 한다
-        static_assert(false); 
+        throw NotImplementedException();
+        /*auto sSharedClassDecl = dynamic_pointer_cast<SClassDecl>(sSharedMemberDecl);
+        auto nNestedClassDecl= MakeClass(nStructDecl, sSharedClassDecl, MakeStructMemberAccessor, context);
+        nStructDecl->AddType(move(nNestedClassDecl));*/
     }
 
     void Visit(SStructDecl& decl) override
     {
-        auto sharedStructDecl = dynamic_pointer_cast<SStructDecl>(sharedMemberDecl);
-        auto nStruct = MakeStruct(nStructDecl, move(sharedStructDecl), MakeStructMemberAccessor, context);
-        nStructDecl->AddType(std::move(nStruct));
+        auto sSharedStructDecl = dynamic_pointer_cast<SStructDecl>(sSharedMemberDecl);
+        auto nNestedStructDecl = MakeStruct(nStructDecl, sSharedStructDecl, MakeStructMemberAccessor, context);
+        nStructDecl->AddType(move(nNestedStructDecl));
     }
 
     void Visit(SEnumDecl& decl) override
     {
         auto nEnum = MakeEnum(nStructDecl, decl, MakeStructMemberAccessor, context);
-        nStructDecl->AddType(std::move(nEnum));
+        nStructDecl->AddType(move(nEnum));
     }
 
     void Visit(SStructCtorDecl& decl) override
     {
-        auto sharedDecl = dynamic_pointer_cast<SStructCtorDecl>(sharedMemberDecl);
+        auto sharedDecl = dynamic_pointer_cast<SStructCtorDecl>(sSharedMemberDecl);
         AddStructCtor(nStructDecl, move(sharedDecl), context);
     }
 
     void Visit(SStructFuncDecl& decl) override
     {
-        auto sharedDecl = dynamic_pointer_cast<SStructFuncDecl>(sharedMemberDecl);
+        auto sharedDecl = dynamic_pointer_cast<SStructFuncDecl>(sSharedMemberDecl);
         AddStructFunc(nStructDecl, move(sharedDecl), context);
     }
 
@@ -211,23 +214,13 @@ public:
     }
 };
 
-// RStructDecl or MStructDecl
-// std::variant<std::monostate, std::shared_ptr<RStructDecl>, std::shared_ptr<MStructDecl>> 
-// RStructDecl, MStructDecl
-// RStructDecl = RInternalStructDecl, RExternalStructDecl
-
-// MStructDecl이 있고, RStructDecl은 Body가 있는 버전과 없는 버전으로 구성될 수 있다
-
-// 필요한 것만 IRStructDecl
-// RStructDecl, RExStructDecl
-
 void AddStruct_MemberDeclPhase(const shared_ptr<NStructDecl>& nStruct, const shared_ptr<SStructDecl>& sStruct, MemberDeclPhaseContext& context)
 {
     // 유일한 베이스 타입은 struct인데, 외부에서 선언된 struct일수도 있고, 조합 타입일 수도 있다 (사실 조합타입이 될 가능성은 거의 없어보인다)
-    RTypePtr rBaseStruct = nullptr; // nullable
+    shared_ptr<RType_Struct> rBaseStruct = nullptr; // nullable
 
     // 나머지는 interface들이다
-    vector<RTypePtr> rInterfaces;
+    vector<shared_ptr<RType_Interface>> rInterfaces;
 
     for (auto& sType : sStruct->baseTypes)
     {
@@ -240,11 +233,11 @@ void AddStruct_MemberDeclPhase(const shared_ptr<NStructDecl>& nStruct, const sha
             if (rBaseStruct != nullptr)
                 throw NotImplementedException();
 
-            rBaseStruct = std::move(rType);
+            rBaseStruct = move(rType);
         }
         else if (rTypeKind == RCustomTypeKind::Interface)
         {
-            rInterfaces.push_back(std::move(rType));
+            rInterfaces.push_back(move(rType));
         }
         else
         {
@@ -253,7 +246,7 @@ void AddStruct_MemberDeclPhase(const shared_ptr<NStructDecl>& nStruct, const sha
         }
     }
 
-    nStruct->InitBaseTypes(rBaseStruct, std::move(rInterfaces));
+    nStruct->InitBaseTypes(std::move(rBaseStruct), move(rInterfaces));
 
     // base의 TrivialCtor가 다 만들어 졌을 때, 수행하는 작업
     context.AddTrivialCtorPhaseTask([nStruct]() {
@@ -261,128 +254,110 @@ void AddStruct_MemberDeclPhase(const shared_ptr<NStructDecl>& nStruct, const sha
     });
 }
 
-bool IsMatchStructTrivialCtorParameters(NStructCtorDecl& nCtor, vector<RFuncParameter>& baseConstructorParameters)
+// nStruct의 constructor중에 trivial constructor랑 모양이 같은 것이 있다면 만들지 않는다 (모양이 같은 함수가 trivial인지는 체크하지 않는다)
+bool HasConflictTrivialCtor(NStructDecl &nStruct, RStructCtorDecl *rBaseTrivialCtor)
 {
-    static_assert(false);
+    size_t baseParamCount = rBaseTrivialCtor ? rBaseTrivialCtor->GetParamCount() : 0;
+    size_t varCount = nStruct.GetVarCount();
 
-    //int baseParamCount = baseConstructor != null ? baseConstructor->GetParameterCount() : 0;
-    //int paramCount = constructorDecl.GetParameterCount();
-    //int varCount = declSymbol.GetVarCount();
+    for (auto& nCtor : nStruct.EnumerateUnboundCtors())
+    {
+        size_t paramCount = nCtor->GetParamCount();
+        if (varCount != paramCount) continue;
 
-    //if (varCount != paramCount) return false;
+        //// constructorDecl의 앞부분이 baseConstructor와 일치하는지를 봐야 한다
+        bool bMatch = true;
+        for (size_t i = 0; i < baseParamCount; i++)
+        {
+            auto& baseParameter = rBaseTrivialCtor->GetUnboundFuncParam(i);
+            auto& parameter = nCtor->GetUnboundFuncParam(i);
 
-    //// constructorDecl의 앞부분이 baseConstructor와 일치하는지를 봐야 한다
-    //for (int i = 0; i < baseParamCount; i++)
-    //{
-    //    Debug.Assert(baseConstructor != null);
+            bMatch &= (baseParameter.type == parameter.type);
+        }
 
-    //    var baseParameter = baseConstructor.GetParameter(i);
-    //    var parameter = constructorDecl.GetParameter(i);
+        if (!bMatch) continue;
 
-    //    if (!BodyMisc.FuncParameterEquals(baseParameter, parameter)) return false;
-    //}
+        // baseParam을 제외한 뒷부분이 varType과 맞는지 봐야 한다
+        for (size_t i = 0; i < paramCount; i++)
+        {
+            auto* structVar = nStruct.GetUnboundVar(i); // varCount == paramCount체크를 위에서 했다
+            auto& ctorParam = nCtor->GetUnboundFuncParam(i + baseParamCount);
 
-    //// baseParam을 제외한 뒷부분이 varType과 맞는지 봐야 한다
-    //for (int i = 0; i < paramCount; i++)
-    //{
-    //    var memberVarType = declSymbol.GetMemberVar(i).GetDeclType();
-    //    var parameter = constructorDecl.GetParameter(i + baseParamCount);
+            bMatch &= (structVar->GetUnboundDeclType() == ctorParam.type);
+        }
 
-    //    // 타입을 비교해서 같지 않다면 제외
-    //    if (!BodyMisc.TypeEquals(parameter.Type, memberVarType)) return false;
-    //}
+        if (bMatch) return true;
+    }
 
-    //return true;
+    return false;
 }
 
 void AddStruct_TrivialCtorPhase(const shared_ptr<NStructDecl>& nStruct)
-{
-    assert(nStruct->oBaseTypes);
-    auto& baseStruct = nStruct->oBaseTypes->baseStruct;
-    shared_ptr<NStructCtorDecl> baseCtor;
+{   
+    auto rBaseStruct = nStruct->GetUnboundBaseStruct();
+    shared_ptr<RStructCtorDecl> rBaseTrivialCtor;
 
-    if (baseStruct)
+    if (rBaseStruct)
     {
-        baseCtor = baseStruct->GetUnboundTrivialCtor();
+        rBaseTrivialCtor = rBaseStruct->GetUnboundTrivialCtor();
 
         // 베이스가 있는데 Trivial이 없으면 안만든다
-        if (!baseCtor) return;
+        if (!rBaseTrivialCtor) return;
     }
     
-    // 같은 파라미터가 있으면 못 만든다
-    bool bExistCtorConflictTrivial = false;    
-    for(auto& ctor : nStruct->EnumerateUnboundCtors())
-        if (IsMatchStructTrivialCtorParameters(nStruct, *ctor,))
-            return;
+    // 같은 파라미터가 있으면 안 만든다
+    if (HasConflictTrivialCtor(*nStruct, rBaseTrivialCtor.get()))
+        return;
     
     size_t varCount = nStruct->GetVarCount();
-    size_t totalParamCount = baseCtor
-        ? baseCtor->GetParamCount() + varCount
+    size_t totalParamCount = rBaseTrivialCtor
+        ? rBaseTrivialCtor->GetParamCount() + varCount
         : varCount;
 
     vector<RFuncParameter> parameters;
 
-    //// to prevent conflict between parameter names, using special name $'base'_<name>_index
+    //// to prevent conflict between ctorParam names, using special name $'base'_<name>_index
     //// class A { A(int x) {} }
     //// class B : A { B(int $base_x0, int x) : base($base_x0) { } }
     //// class C : B { C(int $base_x0, int $base_x1, int x) : base($base_x0, $base_x1) { } }
-    if (baseCtor)
+    if (rBaseTrivialCtor)
     {
-        size_t baseParamCount = baseCtor->GetParamCount();
+        size_t baseParamCount = rBaseTrivialCtor->GetParamCount();
         parameters.reserve(baseParamCount + varCount);
         for (size_t i = 0; i < baseParamCount; i++)
         {
-            auto& baseParam = baseCtor->GetUnboundFuncParam(i);
+            auto& baseParam = rBaseTrivialCtor->GetUnboundFuncParam(i);
             auto paramName = MakeBaseCtorParamName(i, baseParam.name);
 
             // 이름 보정, base로 가는 파라미터들은 다 이름이 CtorParam이다.
             // ctor에 out은 지원하지 않는다
-            parameters.emplace_back(/*bOut*/ false, baseParam.type, std::move(paramName));
+            parameters.emplace_back(/*bOut*/ false, baseParam.type, move(paramName));
         }
 
-        for (auto& var : nStruct->GetUnboundVars())
-            parameters.emplace_back(/*bOut*/ false, var->type, var->name);
+        for (auto& var : nStruct->EnumerateUnboundVars())
+            parameters.emplace_back(/*bOut*/ false, var->GetUnboundDeclType(), var->name);
     }
     else
     {
         parameters.reserve(varCount);
-        for (auto& var : nStruct->GetUnboundVars())
-            parameters.emplace_back(/*bOut*/ false, var->type, var->name);
+        for (auto& var : nStruct->EnumerateUnboundVars())
+            parameters.emplace_back(/*bOut*/ false, var->GetUnboundDeclType(), var->name);
     }
 
     auto nCtor = MakePtr<NStructCtorDecl>(nStruct, RAccessor::Public, /*bTrivial*/ true);
-    nCtor->InitFuncParameters(parameters);
+    
+    nCtor->InitFuncParameters(parameters, /*bLastParameterVariadic*/ false);
+    nCtor->InitBodyWillBeGenerated();
 
-    //// trivial ctor를 만듭니다
-    //return new StructConstructorDeclSymbol(declSymbol, Accessor.Public, builder.MoveToImmutable(), bTrivial: true, bLastParamVariadic : false);
-
-    //if (!HasStructConstructorHasSameParamWithTrivial(rStruct))
-    //{
-    //    AddTrivialStructConstructor(rStruct);
-    //}
-
-    //var baseTrivialConstructor = uniqueBaseStruct ? .GetTrivialConstructor();
-
-    //// baseStruct가 있고, TrivialConstructor가 없는 경우 => 안 만들고 진행
-    //// baseStruct가 있고, TrivialConstructor가 있는 경우 => 진행
-    //// baseStruct가 없는 경우 => 없이 만들고 진행 
-    //if (baseTrivialConstructor != null || uniqueBaseStruct == null)
-    //{
-    //    // 같은 인자의 생성자가 없으면 Trivial을 만든다
-    //    if (GetStructConstructorHasSameParamWithTrivial(baseTrivialConstructor, structDeclSymbol) == null)
-    //    {
-    //        var trivialConstructor = MakeStructTrivialConstructorDecl(structDeclSymbol, baseTrivialConstructor);
-    //        structDeclSymbol.AddConstructor(trivialConstructor);
-    //    }
-    //}
+    nStruct->AddCtor(move(nCtor));
 }
 
 } // namespace
 
-shared_ptr<NStructDecl> InnerMakeStruct(shared_ptr<SStructDecl>&& sStruct, const std::shared_ptr<NTypeDeclOuter>& nOuter, RAccessor accessor, SkeletonPhaseContext& context)
+shared_ptr<NStructDecl> InnerMakeStruct(const shared_ptr<SStructDecl>& sStruct, const std::shared_ptr<NTypeDeclOuter>& nOuter, RAccessor accessor, SkeletonPhaseContext& context)
 {
     auto typeParams = MakeTypeParams(sStruct->typeParams);
-    auto nStruct = MakePtr<NStructDecl>(nOuter, accessor, RName_Normal(sStruct->name), std::move(typeParams));
+    auto nStruct = MakePtr<NStructDecl>(nOuter, accessor, RName_Normal(sStruct->name), move(typeParams));
 
     for (auto& memberDecl : sStruct->memberDecls)
     {

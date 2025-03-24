@@ -11,6 +11,7 @@
 #include <IR0/NNamespaceDecl.h>
 
 #include "EnumTranslation.h"
+#include "StructTranslation.h"
 #include "SkeletonPhaseContext.h"
 
 
@@ -37,7 +38,7 @@ RAccessor MakeGlobalMemberAccessor(std::optional<SAccessModifier> modifier)
 class NamespaceElemVisitor : public SNamespaceDeclElementVisitor
 {   
     shared_ptr<NNamespaceDecl> curDecl;
-    SNamespaceDeclElementPtr sharedElem;
+    SNamespaceDeclElementPtr sSharedElem;
     SkeletonPhaseContext& context;
 
 public:
@@ -77,18 +78,24 @@ public:
 
     void Visit(SClassDecl& elem) override
     {
+        throw NotImplementedException();
     }
 
     void Visit(SStructDecl& elem) override
     {
+        auto sSharedStructDecl = dynamic_pointer_cast<SStructDecl>(sSharedElem);
+        assert(sSharedStructDecl);
+
+        auto nStructDecl = MakeStruct(curDecl, sSharedStructDecl, MakeGlobalMemberAccessor, context);
+        curDecl->AddType(std::move(nStructDecl));
     }
 
     void Visit(SEnumDecl& elem) override
     {
-        auto sharedEnumElem = dynamic_pointer_cast<SEnumDecl>(sharedElem);
-        assert(sharedEnumElem);
+        auto sSharedEnumDecl = dynamic_pointer_cast<SEnumDecl>(sSharedElem);
+        assert(sSharedEnumDecl);
 
-        auto nEnum = MakeEnum(curDecl, *sharedEnumElem, MakeGlobalMemberAccessor, context);
+        auto nEnum = MakeEnum(curDecl, *sSharedEnumDecl, MakeGlobalMemberAccessor, context);
         curDecl->AddType(std::move(nEnum));
     }
 };

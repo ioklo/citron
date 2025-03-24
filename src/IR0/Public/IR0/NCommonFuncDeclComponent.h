@@ -28,28 +28,37 @@ class NCommonFuncDeclComponent
         bool bLastParameterVariadic;
     };
 
-    std::vector<std::string> typeParams;
+    struct Body_WillBeGenerated {}; // ex) trivial constructors
+    struct Body_Set { std::vector<NStmtPtr> stmts; };
+    using Body = std::variant<Body_WillBeGenerated, Body_Set>;
+
+private:
+    bool bStatic;
     bool bSeqFunc;
+    std::vector<std::string> typeParams;
 
-    std::optional<FuncReturnAndParams> funcReturnAndParams; // need initialization
-    std::optional<std::vector<NStmtPtr>> body;
-
+    // need initializations
+    std::optional<FuncReturnAndParams> funcReturnAndParams; 
+    std::optional<Body> body;
     std::vector<NLambdaDecl> lambdaDecls;
 
 public:
-    IR0_API NCommonFuncDeclComponent(std::vector<std::string>&& typeParams, bool bSeqFunc);
+    IR0_API NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams);
     IR0_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
     IR0_API void InitBody(std::vector<NStmtPtr>&& body);
+    IR0_API void InitBodyWillBeGenerated();
 
     IR0_API ~NCommonFuncDeclComponent();
 
     // internal?
-    size_t GetTypeParamCount();
+    bool IsStatic() { return bStatic; }
     bool IsSeqFunc() { return bSeqFunc; }
+    size_t GetTypeParamCount();
+    size_t GetParamCount();
 
     IR0_API RFuncReturn GetUnboundFuncReturn();
     IR0_API RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory);
-    IR0_API RFuncParameter& GetUnboundFuncParam(int i);
+    IR0_API RFuncParameter& GetUnboundFuncParam(size_t i);
     IR0_API std::vector<RTypePtr> GetParamIds();
     IR0_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
 };

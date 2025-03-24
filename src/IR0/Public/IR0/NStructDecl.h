@@ -57,20 +57,22 @@ class NStructDecl
 
 public:
     IR0_API NStructDecl(NTypeDeclOuterWPtr&& outer, RAccessor accessor, RName&& name, std::vector<std::string>&& typeParams);
-    IR0_API void InitBaseTypes(RTypePtr baseStruct, std::vector<RTypePtr> interfaces);
+    IR0_API void InitBaseTypes(std::shared_ptr<RType_Struct>&& baseStruct, std::vector<std::shared_ptr<RType_Interface>>&& interfaces);
 
 public:
     using NTypeDeclContainerComponent::AddType;
-    IR0_API void AddCtor(std::shared_ptr<NStructCtorDecl> decl);
+    IR0_API void AddCtor(std::shared_ptr<NStructCtorDecl>&& decl);
     void AddFunc(std::shared_ptr<NStructFuncDecl>&& decl) { NFuncDeclContainerComponent<NStructFuncDecl>::AddFunc(std::move(decl)); }
-    IR0_API void AddVar(std::shared_ptr<NStructVarDecl> decl);
+    IR0_API void AddVar(std::shared_ptr<NStructVarDecl>&& decl);
 
     auto EnumerateUnboundCtors() { return std::views::all(ctors); }
-    auto GetUnboundVars() { return std::views::all(vars); }
-    IR0_API std::shared_ptr<NStructCtorDecl> GetUnboundTrivialCtor();
+    auto EnumerateUnboundVars() { return std::views::all(vars); }
+    IR0_API std::shared_ptr<NStructCtorDecl> GetUnboundTrivialCtor_NStructCtorDecl();
 
-    /*size_t GetVarCount() { return vars.size(); }
-    const std::shared_ptr<NStructVarDecl>& GetVar(size_t index) { return vars[index]; }*/
+    size_t GetVarCount() { return vars.size(); }
+    NStructVarDecl* GetUnboundVar(size_t index) { return vars[index].get(); }
+
+    IR0_API std::shared_ptr<RType_Struct> GetUnboundBaseStruct();
 
 public:
     // from NDecl
@@ -110,6 +112,7 @@ public:
     // from RStructDecl
     IR0_API std::optional<RMember_StructVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
     IR0_API std::vector<std::shared_ptr<RStructCtorDecl>> GetUnboundCtors() override;
+    IR0_API std::shared_ptr<RStructCtorDecl> GetUnboundTrivialCtor_RStructCtorDecl() override { return GetUnboundTrivialCtor_NStructCtorDecl(); }
 
 };
 

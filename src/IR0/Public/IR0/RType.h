@@ -35,6 +35,8 @@ class RType_EnumElem;
 class RType_Interface;
 class RType_Lambda;
 
+class RStructCtorDecl;
+
 class NClassDecl;
 class NStructDecl;
 class NEnumDecl;
@@ -268,7 +270,8 @@ private:
     RType_Struct(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
-    std::optional<RMember_StructVar> GetVar(const RName& name);
+    IR0_API std::optional<RMember_StructVar> GetVar(const RName& name);
+    IR0_API std::shared_ptr<RStructCtorDecl> GetUnboundTrivialCtor();
 
 public:
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;

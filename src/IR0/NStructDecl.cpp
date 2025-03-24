@@ -14,10 +14,31 @@ NStructDecl::NStructDecl(NTypeDeclOuterWPtr&& outer, RAccessor accessor, RName&&
 {
 }
 
-shared_ptr<NStructCtorDecl> NStructDecl::GetUnboundTrivialCtor()
+void NStructDecl::InitBaseTypes(shared_ptr<RType_Struct>&& baseStruct, vector<shared_ptr<RType_Interface>>&& interfaces)
+{
+    oBaseTypes = BaseTypes { std::move(baseStruct), std::move(interfaces) };
+}
+
+void NStructDecl::AddCtor(std::shared_ptr<NStructCtorDecl>&& decl)
+{
+    ctors.push_back(std::move(decl));
+}
+
+void NStructDecl::AddVar(std::shared_ptr<NStructVarDecl>&& decl)
+{
+    vars.push_back(std::move(decl));
+}
+
+shared_ptr<NStructCtorDecl> NStructDecl::GetUnboundTrivialCtor_NStructCtorDecl()
 {
     if (trivialCtorIndex == -1) return nullptr;
     return ctors[trivialCtorIndex];
+}
+
+shared_ptr<RType_Struct> NStructDecl::GetUnboundBaseStruct()
+{
+    assert(oBaseTypes);
+    return oBaseTypes->baseStruct;
 }
 
 NDecl* NStructDecl::GetNOuter()

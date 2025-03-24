@@ -30,6 +30,8 @@ public:
     IR0_API NStructVarDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bStatic, std::string name);
     IR0_API void InitDeclType(const RTypePtr& declType);
 
+    IR0_API RTypePtr GetUnboundDeclType();
+
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }

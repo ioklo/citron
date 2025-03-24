@@ -195,6 +195,11 @@ std::optional<RMember_StructVar> RType_Struct::GetVar(const RName& name)
     return decl->GetVar(typeArgs, name);
 }
 
+std::shared_ptr<Citron::RStructCtorDecl> RType_Struct::GetUnboundTrivialCtor()
+{
+    return decl->GetUnboundTrivialCtor();
+}
+
 RTypePtr RType_Struct::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);

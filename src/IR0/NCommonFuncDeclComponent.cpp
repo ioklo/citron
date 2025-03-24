@@ -3,6 +3,8 @@
 #include <variant>
 #include <cassert>
 
+#include <Infra/Variants.h>
+
 #include "NLambdaDecl.h"
 #include "NStmt.h"
 
@@ -11,8 +13,8 @@ using namespace std;
 namespace Citron
 {
 
-NCommonFuncDeclComponent::NCommonFuncDeclComponent(std::vector<std::string>&& typeParams, bool bSeqFunc)
-    : typeParams(std::move(typeParams)), bSeqFunc(bSeqFunc)
+NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams)
+    : bStatic(bStatic), bSeqFunc(bSeqFunc), typeParams(std::move(typeParams))
 {
 }
 
@@ -23,7 +25,12 @@ void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn,
 
 void NCommonFuncDeclComponent::InitBody(vector<NStmtPtr>&& body)
 {
-    this->body = std::move(body);
+    this->body = Body_Set(std::move(body));
+}
+
+void NCommonFuncDeclComponent::InitBodyWillBeGenerated()
+{
+    this->body = Body_WillBeGenerated();
 }
 
 NCommonFuncDeclComponent::~NCommonFuncDeclComponent() = default;
@@ -31,6 +38,12 @@ NCommonFuncDeclComponent::~NCommonFuncDeclComponent() = default;
 size_t NCommonFuncDeclComponent::GetTypeParamCount()
 {
     return typeParams.size();
+}
+
+size_t NCommonFuncDeclComponent::GetParamCount()
+{
+    assert(funcReturnAndParams);
+    return funcReturnAndParams->funcParameters.size();
 }
 
 RFuncReturn NCommonFuncDeclComponent::GetUnboundFuncReturn()
@@ -49,7 +62,7 @@ RTypePtr NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RType
     return setReturn->type->Apply(typeArgs, factory);
 }
 
-RFuncParameter& NCommonFuncDeclComponent::GetUnboundFuncParam(int i)
+RFuncParameter& NCommonFuncDeclComponent::GetUnboundFuncParam(size_t i)
 {
     assert(funcReturnAndParams);
     return funcReturnAndParams->funcParameters[i];
@@ -77,6 +90,6 @@ optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(size_t baseTypePar
             return RMember_TypeVar(baseTypeParamCount + i);
 
     return nullopt;
-}
+} 
 
 }

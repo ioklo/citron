@@ -8,7 +8,7 @@ namespace Citron
 {
 
 NStructFuncDecl::NStructFuncDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, std::string name, std::vector<std::string>&& typeParams, bool bStatic)
-    : NCommonFuncDeclComponent(std::move(typeParams), false)
+    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, std::move(typeParams))
     , _struct(std::move(_struct))
     , accessor(accessor)
     , name(std::move(name))

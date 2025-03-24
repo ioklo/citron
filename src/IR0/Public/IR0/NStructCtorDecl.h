@@ -34,9 +34,8 @@ public:
     IR0_API NStructCtorDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bTrivial);
     IR0_API void InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic);
     using NCommonFuncDeclComponent::InitBody;
+    using NCommonFuncDeclComponent::InitBodyWillBeGenerated;
     IR0_API ~NStructCtorDecl();
-
-    using NCommonFuncDeclComponent::GetUnboundFuncParam;
 
 public:
     // from NDecl
@@ -46,8 +45,8 @@ public:
 
     // from NFuncDecl
     NDecl* GetNDecl() override { return this; }
-    using NCommonFuncDeclComponent::GetUnboundFuncReturn;
-    using NCommonFuncDeclComponent::IsSeqFunc;
+    RFuncReturn GetUnboundFuncReturn() { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
+    bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDeclOuter
@@ -61,11 +60,15 @@ public:
     IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
+    // from RFuncDecl
+    bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
+
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }
 
     // from RStructCtorDecl
     IR0_API std::shared_ptr<RStructDecl> GetStructDecl() override;
+    RFuncParameter& GetUnboundFuncParam(size_t index) override { NCommonFuncDeclComponent::GetUnboundFuncParam(index); }
 };
 
 

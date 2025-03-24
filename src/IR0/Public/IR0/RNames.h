@@ -30,7 +30,7 @@ struct RName_Lambda
 
 struct RName_CtorParam
 {
-    int index;
+    size_t index;
     std::string paramText;
     bool operator==(const RName_CtorParam& other) const noexcept = default;
 };

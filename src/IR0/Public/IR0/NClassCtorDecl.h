@@ -41,7 +41,7 @@ public:
     // from NFuncDecl
     NDecl* GetNDecl() override { return this; }
     RFuncReturn GetUnboundFuncReturn() override { return RFuncReturn_ForCtor(); }
-    using NCommonFuncDeclComponent::IsSeqFunc;
+    bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDeclOuter

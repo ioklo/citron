@@ -265,5 +265,14 @@ const vector<BinOpInfo>& TranslationContext::GetBinOpInfos(SBinaryOpKind kind)
     return binOpQueryService->GetInfos(kind);
 }
 
+RFuncReturn TranslationContext::GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs)
+{
+    return decl.GetReturn(typeArgs, factory);
+}
+
+RFuncParameter TranslationContext::GetFuncParameter(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index)
+{
+    return decl.GetFuncParameter(typeArgs, index);
+}
 
 } // namespace Citron::SyntaxIR0Translator

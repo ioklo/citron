@@ -3,6 +3,7 @@
 #include <memory>
 #include "RDecl.h"
 #include "RFuncReturn.h"
+#include "RFuncParameter.h"
 
 namespace Citron {
 
@@ -15,6 +16,9 @@ class RStructCtorDecl;
 class RStructFuncDecl;
 class RLambdaDecl;
 
+class RTypeArguments;
+class RTypeFactory;
+
 class RFuncDecl
 {
 public:
@@ -25,7 +29,8 @@ public:
     virtual bool IsStatic() = 0;
     virtual size_t GetTypeParamCount() = 0;
     virtual size_t GetParamCount() = 0;
-    virtual RFuncReturn GetReturn() = 0;
+    virtual RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
+    virtual RFuncParameter GetFuncParameter(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory) = 0;
 
     virtual void Accept(RFuncDeclVisitor& visitor) = 0;
 };

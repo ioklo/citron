@@ -40,8 +40,8 @@ public:
 
     // from NFuncDecl
     NDecl* GetNDecl() override { return this; }
-    using NCommonFuncDeclComponent::GetUnboundFuncReturn;
-    using NCommonFuncDeclComponent::IsSeqFunc;
+    RFuncReturn GetUnboundFuncReturn() override { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
+    bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NFuncDeclOuter
@@ -56,7 +56,7 @@ public:
     IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
     // from RFuncDecl
-    using NCommonFuncDeclComponent::GetTypeParamCount;
+    size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
 
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }

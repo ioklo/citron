@@ -7,7 +7,7 @@ using namespace std;
 namespace Citron {
 
 NLambdaDecl::NLambdaDecl(NFuncDeclOuterWPtr&& outer, RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
-    : NCommonFuncDeclComponent(/*typeParams*/ {}, false), outer(std::move(outer)), name(std::move(name))
+    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, /*typeParams*/ {}), outer(std::move(outer)), name(std::move(name))
 {
     NCommonFuncDeclComponent::InitFuncReturnAndParams(std::move(funcReturn), std::move(funcParameters), bLastParameterVariadic);
 }
