@@ -1,55 +1,49 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="Public\Infra\Indirect.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Infra\InfraConfig.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Infra\Json.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Infra\Unreachable.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Infra\IWriter.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Infra\StringWriter.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Infra\make_vector.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Infra\Copy.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="Public\Infra\Defaults.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Infra\Exceptions.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Infra\Hash.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Infra\Ptr.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Infra\URef.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\Infra\Variants.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp" />
-    <ClCompile Include="exports.cpp" />
     <ClCompile Include="Json.cpp" />
     <ClCompile Include="StringWriter.cpp" />
+    <ClCompile Include="Copy.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="Exceptions.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="Hash.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="Indirect.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="IWriter.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="Json.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="make_vector.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="Ptr.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="StringWriter.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="Unreachable.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="Variants.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Headers">

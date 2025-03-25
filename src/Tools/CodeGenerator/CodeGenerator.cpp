@@ -1,16 +1,18 @@
 // CodeGenerator.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include <iostream>
-#include <locale>
-#include <filesystem>
-#include <string>
-#include <vector>
-#include "SyntaxCodeGenerator.h"
-#include "SymbolCodeGenerator.h"
+
+import <iostream>;
+import <locale>;
+import <filesystem>;
+import <string>;
+import <vector>;
+import Citron.SyntaxCodeGenerator;
 
 using namespace std;
 using namespace std::filesystem;
+
+using namespace Citron;
 
 // 윈도우에서 잘 돌아가던 프로그램
 int wmain(int argc, wchar_t* argv[])
@@ -31,7 +33,6 @@ int wmain(int argc, wchar_t* argv[])
     // Syntax Generation
     // variant 만들기
     GenerateSyntax(srcPath);
-    // GenerateSymbol(srcPath);
 
     return 0;
 }

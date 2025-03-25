@@ -1,7 +1,6 @@
-#include "pch.h"
-#include "StringWriter.h"
-#include <cassert>
+module Citron.StringWriter;
 
+import <cassert>;
 
 using namespace std;
 

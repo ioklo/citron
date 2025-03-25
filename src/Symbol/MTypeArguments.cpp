@@ -1,4 +1,4 @@
-#include "MTypeArguments.h"
+module Citron.MSymbol:MTypeArguments;
 
 namespace Citron {
 

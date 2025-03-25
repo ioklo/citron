@@ -1,7 +1,6 @@
-#include "pch.h"
+module Citron.Syntax:Generated;
 
-#include "Syntaxes.g.h"
-#include <Infra/Json.h>
+import Citron.Json;
 
 using namespace std;
 

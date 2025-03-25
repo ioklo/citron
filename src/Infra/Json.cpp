@@ -1,9 +1,7 @@
-#include "pch.h"
+module Citron.Json;
 
-#include <sstream>
-
-#include "Json.h"
-#include "IWriter.h"
+import <sstream>;
+import Citron.IWriter;
 
 using namespace std;
 
@@ -89,7 +87,7 @@ JsonArray::~JsonArray()
 {
 }
 
-INFRA_API void JsonArray::ToString(IWriter& writer)
+void JsonArray::ToString(IWriter& writer)
 {
     if (items.size() == 0)
     {
@@ -136,7 +134,7 @@ JsonObject::JsonObject(JsonObject&& other) = default;
 JsonObject& JsonObject::operator=(const JsonObject&) = default;
 JsonObject& JsonObject::operator=(JsonObject&&) noexcept = default;
 
-INFRA_API void JsonObject::ToString(IWriter& writer)
+void JsonObject::ToString(IWriter& writer)
 {
     if (fields.empty())
     {

@@ -1,2 +1,2 @@
-#include "MType.h"
+module Citron.MSymbol:MType;
 

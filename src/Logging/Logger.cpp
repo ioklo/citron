@@ -1,2 +1,1 @@
-#include "pch.h"
-#include "Logger.h"
+module Citron.Logger;

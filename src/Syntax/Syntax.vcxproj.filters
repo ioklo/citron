@@ -6,7 +6,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h" />
     <ClInclude Include="Public\Syntax\SyntaxConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
@@ -16,13 +15,13 @@
     <ClInclude Include="Public\Syntax\Syntax.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Syntax\Syntaxes.g.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp" />
     <ClCompile Include="Syntaxes.g.cpp" />
     <ClCompile Include="Syntaxes.cpp" />
+    <ClCompile Include="Syntaxes.g.ixx" />
+    <ClCompile Include="Syntaxes.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

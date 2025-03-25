@@ -1,5 +1,7 @@
-#include "MNamespaceDeclContainerComponent.h"
-#include "MNamespaceDecl.h"
+module Citron.MSymbol:MNamespaceDeclContainerComponent;
+
+import :MDecl;
+import :MNamespaceDecl;
 
 using namespace std;
 

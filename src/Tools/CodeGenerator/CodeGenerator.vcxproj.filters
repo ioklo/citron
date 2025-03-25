@@ -24,19 +24,14 @@
     <ClCompile Include="Misc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SymbolCodeGenerator.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Misc.ixx">
+      <Filter>Header Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Misc.h">
+    <ClCompile Include="SyntaxCodeGenerator.ixx">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SyntaxCodeGenerator.h">
+    </ClCompile>
+    <ClCompile Include="HeaderUnits.ixx">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SymbolCodeGenerator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    </ClCompile>
   </ItemGroup>
 </Project>

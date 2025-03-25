@@ -1,4 +1,4 @@
-#pragma once
+export module NInterfaceDecl;
 
 #include <vector>
 #include "NDecl.h"

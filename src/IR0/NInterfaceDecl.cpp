@@ -1,5 +1,6 @@
-#include "NInterfaceDecl.h"
-#include <Infra/Exceptions.h>
+module NInterfaceDecl;
+
+import Citron.Exceptions;
 
 using namespace std;
 

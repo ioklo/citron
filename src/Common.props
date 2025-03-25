@@ -5,11 +5,11 @@
   <PropertyGroup>
     <PublicIncludeDirectories>$(ProjectDir)Public;$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <IncludePath>$(ProjectDir)Public\$(ProjectName);$(IncludePath)</IncludePath>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>

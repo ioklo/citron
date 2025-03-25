@@ -1,40 +1,48 @@
-#include "Misc.h"
-#include <iostream>
+module;
+
 #include <fmt/core.h>
+
+module Citron.SyntaxCodeGenerator;
+
+import <iostream>;
+import Citron.CodeGenerator.Misc;
 
 using namespace std;
 using namespace std::filesystem;
 
+namespace Citron {
+
 void GenerateSyntax(path srcPath)
 {   
     // [src]/Syntax/Public/Syntax/Syntaxes.g.h
+    // [src]/Syntax/Syntaxes.g.ixx
     // [src]/Syntax/Syntaxes.g.cpp
-    path hPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Public").append("Syntax").append("Syntaxes.g.h"); }();
+    // path hPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Public").append("Syntax").append("Syntaxes.g.h"); }();
+    path ixxPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Syntaxes.g.ixx"); }();
     path cppPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Syntaxes.g.cpp"); }();
 
-    ostringstream hStream, cppStream;
+    ostringstream ixxStream, cppStream;
 
     //  
-    hStream << R"---(#pragma once
-#include "SyntaxConfig.h"
-#include <string>
-#include <vector>
-#include <optional>
-#include <memory>
-#include <variant>
+    ixxStream << R"---(export module Citron.Syntax:Generated;
+import "SyntaxConfig.h";
+import <string>;
+import <vector>;
+import <optional>;
+import <memory>;
+import <variant>;
 
-#include <Infra/Json.h>
-#include <Infra/Unreachable.h>
+import Citron.Json;
+import Citron.Unreachable;
 
-namespace Citron {
+export namespace Citron {
 class ArgumentSyntax;
 
 )---";
 
-    cppStream << R"---(#include "pch.h"
+    cppStream << R"---(module Citron.Syntax:Generated;
 
-#include "Syntaxes.g.h"
-#include <Infra/Json.h>
+import Citron.Json;
 
 using namespace std;
 
@@ -1119,12 +1127,14 @@ struct ToJsonVisitor {
         },
     };
 
-    GenerateItems(commonInfo, hStream, cppStream, itemInfos);
+    GenerateItems(commonInfo, ixxStream, cppStream, itemInfos);
 
     // footer(close namespaces)
-    hStream << endl << '}' << endl;
+    ixxStream << endl << '}' << endl;
     cppStream << '}' << endl;
 
-    WriteAll(hPath, hStream.str());
+    WriteAll(ixxPath, ixxStream.str());
     WriteAll(cppPath, cppStream.str());
 }
+
+} // namespace Citron

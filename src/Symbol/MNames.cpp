@@ -1,6 +1,9 @@
-#include "MNames.h"
+module Citron.MSymbol:MNames;
 
-#include <Infra/Defaults.h>
+#define IMPLEMENT_DEFAULTS(className) \
+    className::className(className&&) = default; \
+    className& className::operator=(className&&) = default; \
+    className::~className() = default;
 
 namespace Citron 
 {

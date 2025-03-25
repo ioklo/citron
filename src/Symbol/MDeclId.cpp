@@ -1,4 +1,4 @@
-#include "MDeclId.h"
+module Citron.MSymbol:MDeclId;
 
 namespace Citron {
 

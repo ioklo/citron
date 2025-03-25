@@ -1,10 +1,16 @@
-#include "Misc.h"
-#include <fstream>
-#include <fmt/core.h>
-#include <iostream>
+module;
+
+#include "fmt/core.h"
+
+module Citron.CodeGenerator.Misc;
+
+import <fstream>;
+import <iostream>;
 
 using namespace std;
 using namespace std::filesystem;
+
+namespace Citron {
 
 void AddNewLineIfNeeded(bool& bModified, ostringstream& oss)
 {
@@ -88,7 +94,7 @@ void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream
         {
             if (bFirst) bFirst = false;
             else hStream << ", ";
-            
+
             hStream << memberInfo.name << "(std::move(" << memberInfo.name << "))";
         }
     }
@@ -106,7 +112,7 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     // class begin
     hStream << "class " << classInfo.name << endl;
     bool bFirst = true;
-    for(auto& variantInterface : classInfo.variantInterfaces)
+    for (auto& variantInterface : classInfo.variantInterfaces)
     {
         if (bFirst)
         {
@@ -351,7 +357,7 @@ void GenerateVariant(CommonInfo& commonInfo, VariantInfo& info, ostringstream& h
 
 void GenerateForwardClassDecls(CommonInfo& commonInfo, ForwardClassDeclsInfo& info, ostringstream& hStream)
 {
-    for(auto& name : info.names)
+    for (auto& name : info.names)
     {
         hStream << "class " << name << ";" << endl;
     }
@@ -381,7 +387,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     hStream << "{" << endl;
     hStream << "public:" << endl;
     hStream << "    virtual ~" << info.name << "Visitor() { }" << endl;
-    for(auto& member : info.members)
+    for (auto& member : info.members)
         hStream << "    virtual void Visit(" << member << "& " << info.argName << ") = 0;" << endl;
     hStream << "};" << endl << endl;
 
@@ -451,25 +457,26 @@ void GenerateSharedPtrDecls(CommonInfo& commonInfo, SharedPtrDeclsInfo& info, os
         hStream << "using " << name << "Ptr = std::shared_ptr<" << name << ">;" << endl;
 }
 
-void GenerateItems(CommonInfo& commonInfo, ostringstream& hStream, ostringstream& cppStream, vector<ItemInfo>& itemInfos)
+void GenerateItems(CommonInfo& commonInfo, ostringstream& ixxStream, ostringstream& cppStream, vector<ItemInfo>& itemInfos)
 {
     struct
     {
         CommonInfo& commonInfo;
-        ostringstream& hStream;
+        ostringstream& ixxStream;
         ostringstream& cppStream;
 
-        void operator()(EnumInfo& enumInfo) { GenerateEnum(commonInfo, enumInfo, hStream); }
-        void operator()(StructInfo& structInfo) { GenerateStruct(commonInfo, structInfo, hStream); }
-        void operator()(ClassInfo& classInfo) { GenerateClass(commonInfo, classInfo, hStream, cppStream); }
-        void operator()(VariantInfo& info) { GenerateVariant(commonInfo, info, hStream, cppStream); }
-        void operator()(ForwardClassDeclsInfo& info) { GenerateForwardClassDecls(commonInfo, info, hStream); }
-        void operator()(VariantInterfaceInfo& info) { GenerateVariantInterface(commonInfo, info, hStream, cppStream); }
-        void operator()(SharedPtrDeclsInfo& info) { GenerateSharedPtrDecls(commonInfo, info, hStream); }
+        void operator()(EnumInfo& enumInfo) { GenerateEnum(commonInfo, enumInfo, ixxStream); }
+        void operator()(StructInfo& structInfo) { GenerateStruct(commonInfo, structInfo, ixxStream); }
+        void operator()(ClassInfo& classInfo) { GenerateClass(commonInfo, classInfo, ixxStream, cppStream); }
+        void operator()(VariantInfo& info) { GenerateVariant(commonInfo, info, ixxStream, cppStream); }
+        void operator()(ForwardClassDeclsInfo& info) { GenerateForwardClassDecls(commonInfo, info, ixxStream); }
+        void operator()(VariantInterfaceInfo& info) { GenerateVariantInterface(commonInfo, info, ixxStream, cppStream); }
+        void operator()(SharedPtrDeclsInfo& info) { GenerateSharedPtrDecls(commonInfo, info, ixxStream); }
 
-    } visitor { commonInfo, hStream, cppStream };
+    } visitor { commonInfo, ixxStream, cppStream };
 
     for (auto& itemInfo : itemInfos)
         std::visit(visitor, itemInfo);
 }
 
+} // namespace Citron

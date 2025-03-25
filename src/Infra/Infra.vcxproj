@@ -74,6 +74,7 @@
     <Import Project="..\Common.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
@@ -117,8 +118,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>INFRA_EXPORT;_DEBUG;INFRA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -147,31 +148,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Public\Infra\Defaults.h" />
-    <ClInclude Include="Public\Infra\Copy.h" />
-    <ClInclude Include="Public\Infra\Hash.h" />
-    <ClInclude Include="Public\Infra\Indirect.h" />
     <ClInclude Include="Public\Infra\InfraConfig.h" />
-    <ClInclude Include="Public\Infra\IWriter.h" />
-    <ClInclude Include="Public\Infra\Json.h" />
-    <ClInclude Include="Public\Infra\make_vector.h" />
-    <ClInclude Include="Public\Infra\Exceptions.h" />
-    <ClInclude Include="Public\Infra\Ptr.h" />
-    <ClInclude Include="Public\Infra\StringWriter.h" />
-    <ClInclude Include="Public\Infra\Unreachable.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="Public\Infra\URef.h" />
-    <ClInclude Include="Public\Infra\Variants.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="exports.cpp" />
+    <ClCompile Include="Copy.ixx" />
+    <ClCompile Include="Exceptions.ixx" />
+    <ClCompile Include="Hash.ixx" />
+    <ClCompile Include="Indirect.ixx" />
+    <ClCompile Include="IWriter.ixx" />
     <ClCompile Include="Json.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="Json.ixx" />
+    <ClCompile Include="make_vector.ixx" />
+    <ClCompile Include="Ptr.ixx" />
     <ClCompile Include="StringWriter.cpp" />
+    <ClCompile Include="StringWriter.ixx" />
+    <ClCompile Include="Unreachable.ixx" />
+    <ClCompile Include="Variants.ixx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

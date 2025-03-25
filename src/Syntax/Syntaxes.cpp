@@ -1,8 +1,7 @@
-#include "pch.h"
-#include "Syntaxes.g.h"
+module Citron.Syntax;
 
-#include <Infra/make_vector.h>
-#include <Infra/Ptr.h>
+import Citron.make_vector;
+import Citron.Ptr;
 
 using namespace tcb;
 using namespace std;
