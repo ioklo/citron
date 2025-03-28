@@ -3,10 +3,9 @@ export module Citron.MSymbol:MTypeArguments;
 import <vector>;
 import <memory>;
 
-namespace Citron {
+import :ForwardDecls;
 
-export class MType;
-using MTypePtr = std::shared_ptr<MType>;
+namespace Citron {
 
 export class MTypeArguments
 {
@@ -18,7 +17,6 @@ export using MTypeArgumentsPtr = std::shared_ptr<MTypeArguments>;
 // flyweight
 export class MTypeArgumentsFactory
 {
-
 };
 
 

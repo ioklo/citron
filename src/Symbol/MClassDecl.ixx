@@ -5,14 +5,14 @@ import :MClassFuncDecl;
 import :MClassVarDecl;
 
 import :MDecl;
-import :MDeclVisitor;
 import :MTypeDecl;
 import :MTypeDeclOuter;
-import :MNames;
 import :MTypeDeclContainerComponent;
 import :MFuncDeclContainerComponent;
 import :MTypeDeclOuter;
-import :MAccessor;
+
+import Citron.MAccessor;
+import Citron.MNames;
 
 namespace Citron
 {

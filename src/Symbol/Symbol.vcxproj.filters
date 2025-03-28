@@ -10,9 +10,6 @@
     <Filter Include="Symbols\01 Identifier">
       <UniqueIdentifier>{0b5987d9-faff-4707-8a0d-8cc8ed16d8a0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Symbols\02 Properties">
-      <UniqueIdentifier>{69f14fa3-f5c3-48ae-b94f-4eaa4fd28664}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Symbols\05 TopLevel">
       <UniqueIdentifier>{06ae4868-ffcd-4079-8204-9e9a8fa9df98}</UniqueIdentifier>
     </Filter>
@@ -45,9 +42,6 @@
     </ClCompile>
     <ClCompile Include="MTypeDeclContainerComponent.cpp">
       <Filter>Symbols\04 Components</Filter>
-    </ClCompile>
-    <ClCompile Include="MNames.cpp">
-      <Filter>Symbols\01 Identifier</Filter>
     </ClCompile>
     <ClCompile Include="MNamespaceDeclContainerComponent.cpp">
       <Filter>Symbols\04 Components</Filter>
@@ -84,12 +78,6 @@
     </ClCompile>
     <ClCompile Include="MIdentifier.ixx">
       <Filter>Symbols\01 Identifier</Filter>
-    </ClCompile>
-    <ClCompile Include="MNames.ixx">
-      <Filter>Symbols\01 Identifier</Filter>
-    </ClCompile>
-    <ClCompile Include="MAccessor.ixx">
-      <Filter>Symbols\02 Properties</Filter>
     </ClCompile>
     <ClCompile Include="MFunc.ixx">
       <Filter>Symbols\03 Func</Filter>
@@ -163,8 +151,11 @@
     <ClCompile Include="MSymbol.ixx">
       <Filter>Symbols</Filter>
     </ClCompile>
-    <ClCompile Include="MDeclVisitor.ixx">
+    <ClCompile Include="ForwardDecls.ixx">
       <Filter>Symbols\00 Abstraction</Filter>
     </ClCompile>
+    <ClCompile Include="MAccessor.ixx" />
+    <ClCompile Include="MNames.cpp" />
+    <ClCompile Include="MNames.ixx" />
   </ItemGroup>
 </Project>

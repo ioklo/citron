@@ -1,15 +1,19 @@
 export module Citron.MSymbol:MTypeDecl;
 
+import :ForwardDecls;
 import :MDecl;
 
 namespace Citron {
 
-export class MClassDecl;
-export class MStructDecl;
-export class MEnumDecl;
-export class MEnumElemDecl;
-export class MInterfaceDecl;
+// 같은 unit내에서 forward declaration
+class MTypeDeclVisitor;
 
+export class MTypeDecl
+{
+public:
+    virtual ~MTypeDecl() {}
+    virtual void Accept(MTypeDeclVisitor& visitor) = 0;
+};
 
 export class MTypeDeclVisitor
 {
@@ -20,13 +24,6 @@ public:
     virtual void Visit(MEnumDecl& typeDecl) = 0;
     virtual void Visit(MEnumElemDecl& typeDecl) = 0;
     virtual void Visit(MInterfaceDecl& typeDecl) = 0;
-};
-
-export class MTypeDecl
-{
-public:
-    virtual ~MTypeDecl() {}
-    virtual void Accept(MTypeDeclVisitor& visitor) = 0;
 };
 
 }

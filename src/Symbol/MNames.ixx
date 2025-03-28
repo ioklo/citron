@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MNames;
+export module Citron.MNames;
 
 import "SymbolConfig.h";
 

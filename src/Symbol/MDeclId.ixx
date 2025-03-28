@@ -5,6 +5,7 @@ import "SymbolConfig.h";
 import <string>;
 import <memory>;
 
+import :ForwardDecls;
 import :MIdentifier;
 
 namespace Citron {
@@ -16,7 +17,7 @@ export class MDeclPath
 
 private:
     MDeclPath(std::shared_ptr<MDeclPath>&& outer, MIdentifier&& identifier);
-    friend class MDeclIdFactory;
+    friend MDeclIdFactory;
 };
 
 export using MDeclPathPtr = std::shared_ptr<MDeclPath>;
@@ -28,7 +29,7 @@ export class MDeclId
 
 private:
     MDeclId(std::string&& moduleName, MDeclPathPtr&& path);
-    friend class MDeclIdFactory;
+    friend MDeclIdFactory;
 };
 
 export using MDeclIdPtr = std::shared_ptr<MDeclId>;

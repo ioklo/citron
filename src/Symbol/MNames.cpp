@@ -1,4 +1,4 @@
-module Citron.MSymbol:MNames;
+module Citron.MNames;
 
 #define IMPLEMENT_DEFAULTS(className) \
     className::className(className&&) = default; \

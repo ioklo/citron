@@ -3,8 +3,9 @@ export module Citron.MSymbol:MTypeDeclContainerComponent;
 import <vector>;
 import <unordered_map>;
 
-import :MNames;
 import :MTypeDecl;
+
+import Citron.MNames;
 
 namespace Citron {
 

@@ -3,15 +3,14 @@ export module Citron.MSymbol:MEnumElemVarDecl;
 import <memory>;
 import <optional>;
 
+import :ForwardDecls;
 import :MDecl;
-import :MDeclVisitor;
-import :MNames;
 import :MType;
+
+import Citron.MNames;
 
 namespace Citron
 {
-
-export class MEnumElemDecl;
 
 export class MEnumElemVarDecl
     : public MDecl

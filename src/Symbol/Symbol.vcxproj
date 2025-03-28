@@ -147,6 +147,7 @@
     <ClInclude Include="Public\Symbol\Symbols.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ForwardDecls.ixx" />
     <ClCompile Include="MAccessor.ixx" />
     <ClCompile Include="MBodyDeclOuter.ixx" />
     <ClCompile Include="MClassCtorDecl.ixx" />
@@ -157,7 +158,6 @@
     <ClCompile Include="MDecl.ixx" />
     <ClCompile Include="MDeclId.cpp" />
     <ClCompile Include="MDeclId.ixx" />
-    <ClCompile Include="MDeclVisitor.ixx" />
     <ClCompile Include="MEnumDecl.ixx" />
     <ClCompile Include="MEnumElemDecl.ixx" />
     <ClCompile Include="MEnumElemVarDecl.ixx" />

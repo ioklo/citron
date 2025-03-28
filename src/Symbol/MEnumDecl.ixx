@@ -4,12 +4,13 @@ import <vector>;
 import <optional>;
 import <memory>;
 
+import :ForwardDecls;
 import :MDecl;
 import :MTypeDecl;
-import :MAccessor;
-import :MNames;
-import :MEnumElemDecl;
 import :MTypeDeclOuter;
+
+import Citron.MAccessor;
+import Citron.MNames;
 
 namespace Citron
 {

@@ -3,9 +3,9 @@ export module Citron.MSymbol:MFuncParameter;
 import <string>;
 import <memory>;
 
-namespace Citron {
+import :ForwardDecls;
 
-using MTypePtr = std::shared_ptr<class MType>;
+namespace Citron {
 
 export class MFuncParameter
 {

@@ -5,14 +5,12 @@ import <vector>;
 import <memory>;
 import <string>;
 
+import :ForwardDecls;
 import :MDecl;
 import :MTypeDecl;
-import :MEnumElemVarDecl;
 
 namespace Citron
 {
-
-export class MEnumDecl;
 
 export class MEnumElemDecl
     : public MDecl

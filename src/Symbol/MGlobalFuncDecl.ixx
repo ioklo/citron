@@ -3,18 +3,17 @@ export module Citron.MSymbol:MGlobalFuncDecl;
 import <vector>;
 import <optional>;
 
+import :ForwardDecls;
 import :MDecl;
-import :MDeclVisitor;
 import :MBodyDeclOuter;
 import :MFuncDecl;
-import :MAccessor;
-import :MNames;
 import :MFuncReturn;
 import :MFuncParameter;
 
-namespace Citron {
+import Citron.MAccessor;
+import Citron.MNames;
 
-export class MNamespaceDecl;
+namespace Citron {
 
 export class MGlobalFuncDecl
     : public MDecl

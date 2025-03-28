@@ -10,17 +10,15 @@ import :MFuncParameter;
 namespace Citron
 {
 
-export class MType_Nullable;
-export class MType_TypeVar;  // 이것은 Symbol인가?
-export class MType_Void;     // builtin type
-export class MType_Tuple;    // inline type
-export class MType_Func;     // inline type, circular
-export class MType_LocalPtr; // inline type
-export class MType_BoxPtr;   // inline type
-export class MType_Instance;
-
-using MDeclIdPtr = std::shared_ptr<class MDeclId>;
-using MTypeArgumentsPtr = std::shared_ptr<class MTypeArguments>;
+// 같은 unit내에서의 forward declaration
+class MType_Nullable;
+class MType_TypeVar;  // 이것은 Symbol인가?
+class MType_Void;     // builtin type
+class MType_Tuple;    // inline type
+class MType_Func;     // inline type, circular
+class MType_LocalPtr; // inline type
+class MType_BoxPtr;   // inline type
+class MType_Instance;
 
 export class MTypeVisitor
 {

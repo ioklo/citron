@@ -3,14 +3,10 @@ export module Citron.MSymbol:MBodyDeclOuter;
 import <variant>;
 import <memory>;
 
+import :ForwardDecls;
+
 namespace Citron
 {
-
-export class MGlobalFuncDecl;
-export class MClassCtorDecl;
-export class MClassFuncDecl;
-export class MStructCtorDecl;
-export class MStructFuncDecl;
 
 export class MBodyDeclOuterVisitor
 {

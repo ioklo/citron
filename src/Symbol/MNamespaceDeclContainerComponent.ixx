@@ -6,13 +6,13 @@ import <unordered_map>;
 import <memory>;
 import <string>;
 
+import :ForwardDecls;
 import :MDecl;
-import :MNames;
 import :MTypeDecl;
 
-namespace Citron {
+import Citron.MNames;
 
-export class MNamespaceDecl;
+namespace Citron {
 
 export class MNamespaceDeclContainerComponent
 {

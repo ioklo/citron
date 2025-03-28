@@ -3,11 +3,11 @@ export module Citron.MSymbol:MInterfaceDecl;
 import <vector>;
 
 import :MDecl;
-import :MDeclVisitor;
 import :MTypeDecl;
 import :MTypeDeclOuter;
-import :MAccessor;
-import :MNames;
+
+import Citron.MAccessor;
+import Citron.MNames;
 
 namespace Citron
 {

@@ -2,17 +2,15 @@ export module Citron.MSymbol:MStructVarDecl;
 
 import <memory>;
 
+import :ForwardDecls;
 import :MDecl;
-import :MDeclVisitor;
-import :MAccessor;
 import :MType;
-import :MNames;
+
+import Citron.MAccessor;
+import Citron.MNames;
 
 namespace Citron
 {
-
-export class MStructDecl;
-
 export class MStructVarDecl
     : public MDecl
 {

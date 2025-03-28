@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MAccessor;
+export module Citron.MAccessor;
 
 namespace Citron {
 
