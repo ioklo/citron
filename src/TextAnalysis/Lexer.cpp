@@ -1,14 +1,13 @@
-#include "pch.h"
-#include "Lexer.h"
+module Citron.Lexer;
 
-#include <sstream>
-#include <string_view>
-#include <vector>
-#include <unordered_map>
+import <sstream>;
+import <string_view>;
+import <vector>;
+import <unordered_map>;
+import <cassert>;
+import <utf8.h>;
 
-#include <Syntax/Tokens.h>
-#include <cassert>
-#include <utf8.h>
+import Citron.Tokens;
 
 using namespace std;
 using namespace utf8;

@@ -8,9 +8,9 @@ import <vector>;
 import <optional>;
 import <memory>;
 
-namespace Citron {
+import Citron.IWriter;
 
-class IWriter;
+namespace Citron {
 
 export using JsonItem = std::variant<struct JsonNull, struct JsonBool, struct JsonInt, struct JsonString, struct JsonArray, struct JsonObject>;
 

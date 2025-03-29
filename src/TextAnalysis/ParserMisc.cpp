@@ -1,6 +1,6 @@
-#include "pch.h"
-#include "ParserMisc.h"
-#include "Lexer.h"
+module Citron.ParserMisc;
+
+import Citron.Lexer;
 
 using namespace std;
 

@@ -21,9 +21,9 @@
   <ItemGroup>
     <ClInclude Include="Public\Syntax\Syntax.h" />
     <ClInclude Include="Public\Syntax\SyntaxConfig.h" />
-    <ClInclude Include="Public\Syntax\Tokens.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Tokens.ixx" />
     <ClCompile Include="Syntaxes.cpp" />
     <ClCompile Include="Syntaxes.g.cpp" />
     <ClCompile Include="Syntaxes.g.ixx" />

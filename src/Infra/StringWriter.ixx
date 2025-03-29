@@ -7,7 +7,7 @@ import <sstream>;
 
 namespace Citron {
 
-class StringWriter : public IWriter
+export class StringWriter : public IWriter
 {
     std::ostringstream oss;
     int indent;

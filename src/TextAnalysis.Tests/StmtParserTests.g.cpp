@@ -1,9 +1,10 @@
-#include "pch.h"
+import "gtest/gtest.h";
+import "TestMisc.h";
 
-#include <Syntax/Syntax.h>
-#include <TextAnalysis/StmtParser.h>
+import Citron.Syntax;
+import Citron.StmtParser;
 
-#include "TestMisc.h"
+import Citron.TestMisc;
 
 using namespace std;
 using namespace Citron;

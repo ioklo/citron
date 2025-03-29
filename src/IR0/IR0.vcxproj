@@ -220,8 +220,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="NExp.ixx" />
     <ClCompile Include="NGlobalFuncDecl.cpp" />
     <ClCompile Include="NInterfaceDecl.ixx" />
+    <ClCompile Include="NLoc.ixx" />
+    <ClCompile Include="NStmt.ixx" />
     <ClCompile Include="RDecl.cpp" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
     <ClCompile Include="RMember.cpp" />

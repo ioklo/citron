@@ -9,45 +9,38 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>Misc</Filter>
-    </ClCompile>
     <ClCompile Include="Buffer.cpp" />
-    <ClCompile Include="BufferPosition.cpp" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="ExpParser.cpp" />
     <ClCompile Include="TypeExpParser.cpp" />
     <ClCompile Include="ParserMisc.cpp" />
     <ClCompile Include="StmtParser.cpp" />
     <ClCompile Include="ScriptParser.cpp" />
+    <ClCompile Include="Buffer.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="ExpParser.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="Lexer.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptParser.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="StmtParser.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeExpParser.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
+    <ClCompile Include="ParserMisc.ixx" />
+    <ClCompile Include="HeaderUnits.ixx">
+      <Filter>Public Headers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>Misc</Filter>
-    </ClInclude>
-    <ClInclude Include="ParserMisc.h" />
     <ClInclude Include="Public\TextAnalysis\TextAnalysisConfig.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\TextAnalysis\ScriptParser.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\TextAnalysis\BufferPosition.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\TextAnalysis\Lexer.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\TextAnalysis\Buffer.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\TextAnalysis\ExpParser.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\TextAnalysis\StmtParser.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\TextAnalysis\TypeExpParser.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
   </ItemGroup>

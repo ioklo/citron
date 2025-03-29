@@ -1,8 +1,9 @@
-#pragma once
-#include "TextAnalysisConfig.h"
+export module Citron.Lexer;
 
-#include <Syntax/Tokens.h>
-#include "BufferPosition.h"
+import "TextAnalysisConfig.h";
+
+import Citron.Tokens;
+import Citron.Buffer;
 
 namespace Citron
 {
@@ -10,7 +11,7 @@ namespace Citron
 struct LexResult;
 
 // immutable for backtracking
-class Lexer
+export class Lexer
 {
     BufferPosition pos;
 
@@ -42,7 +43,7 @@ public:
     TEXTANALYSIS_API std::optional<LexResult> LexNewLine();
 };
 
-struct LexResult
+export struct LexResult
 {
     Token token;
     Lexer lexer;

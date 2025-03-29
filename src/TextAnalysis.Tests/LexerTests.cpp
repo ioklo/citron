@@ -1,22 +1,14 @@
-#include "pch.h"
-#include <TextAnalysis/Buffer.h>
-#include <TextAnalysis/BufferPosition.h>
-#include <TextAnalysis/Lexer.h>
 
-#include "TestMisc.h"
+import <gtest/gtest.h>;
 
-//template<typename T, class... Types>
-//inline bool operator==(const std::variant<Types...>& v, const T& t) {
-//    const T* c = std::get_if<T>(&v);
-//
-//    return c && *c == t; // true if v contains a T that compares equal to t    
-//}
-//
-//template<typename T, class... Types>
-//inline bool operator==(const T& t, const std::variant<Types...>& v) {
-//    return v == t;
-//}
+import <variant>;
+import <vector>;
+import <optional>;
 
+import Citron.Buffer;
+import Citron.Lexer;
+import Citron.TestMisc;
+import Citron.Tokens;
 
 using namespace std;
 using namespace Citron;
@@ -159,7 +151,8 @@ TEST(Lexer, LexSimpleIdentifier)
     auto oTokenResult = lexer.LexNormalMode(false);
 
     EXPECT_TRUE(oTokenResult);
-    // EXPECT_EQ(oTokenResult->token, IdentifierToken(U"x"));
+    // EXPECT_EQ(oTokenResult->token, IdentifierToken("x"));
+
     EXPECT_EQ(IdentifierToken("x"), oTokenResult->token);
 }
 

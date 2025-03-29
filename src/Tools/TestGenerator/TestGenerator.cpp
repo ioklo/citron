@@ -123,12 +123,13 @@ void GenerateScriptParserTests(path inputPath, path srcPath)
     ostringstream oss;
 
     // insert header
-    oss << R"---(#include "pch.h"
+    oss << R"---(import <gtest/gtest.h>;
+import "TestMisc.h";
 
-#include <Syntax/Syntax.h>
-#include <TextAnalysis/ScriptParser.h>
+import Citron.Syntax;
+import Citron.ScriptParser;
 
-#include "TestMisc.h"
+import Citron.TestMisc;
 
 using namespace std;
 using namespace Citron;
@@ -180,12 +181,13 @@ void GenerateStmtParserTests(path inputPath, path srcPath)
     ostringstream oss;
 
     // insert header
-    oss << R"---(#include "pch.h"
+    oss << R"---(import <gtest/gtest.h>;
+import "TestMisc.h";
 
-#include <Syntax/Syntax.h>
-#include <TextAnalysis/StmtParser.h>
+import Citron.Syntax;
+import Citron.StmtParser;
 
-#include "TestMisc.h"
+import Citron.TestMisc;
 
 using namespace std;
 using namespace Citron;
@@ -237,12 +239,13 @@ void GenerateExpParserTests(path inputPath, path srcPath)
     ostringstream oss;
 
     // insert header
-    oss << R"---(#include "pch.h"
+    oss << R"---(import <gtest/gtest.h>;
+import "TestMisc.h";
 
-#include <Syntax/Syntax.h>
-#include <TextAnalysis/ExpParser.h>
+import Citron.Syntax;
+import Citron.ExpParser;
 
-#include "TestMisc.h"
+import Citron.TestMisc;
 
 using namespace std;
 using namespace Citron;
@@ -294,12 +297,15 @@ void GenerateTypeExpParserTests(path inputPath, path srcPath)
     ostringstream oss;
 
     // insert header
-    oss << R"---(#include "pch.h"
+    oss << R"---(import <gtest/gtest.h>;
+import "TestMisc.h";
 
-#include <Syntax/Syntax.h>
-#include <TextAnalysis/TypeExpParser.h>
+import Citron.Syntax;
+import Citron.TypeExpParser;
 
-#include "TestMisc.h"
+import Citron.TestMisc;
+
+
 
 using namespace std;
 using namespace Citron;

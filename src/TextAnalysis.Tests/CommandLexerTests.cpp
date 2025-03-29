@@ -1,11 +1,12 @@
-#include "pch.h"
-#include <vector>
+import <vector>;
+import <gtest/gtest.h>;
+import "TestMisc.h";
 
-#include <TextAnalysis/Buffer.h>
-#include <TextAnalysis/BufferPosition.h>
-#include <TextAnalysis/Lexer.h>
+import Citron.Buffer;
+import Citron.Lexer;
+import Citron.Tokens;
 
-#include "TestMisc.h"
+import Citron.TestMisc;
 
 using namespace std;
 using namespace Citron;

@@ -293,6 +293,15 @@
     <ClCompile Include="NInterfaceDecl.ixx">
       <Filter>Symbols\NDecl\09 Interface</Filter>
     </ClCompile>
+    <ClCompile Include="NExp.ixx">
+      <Filter>Body</Filter>
+    </ClCompile>
+    <ClCompile Include="NLoc.ixx">
+      <Filter>Body</Filter>
+    </ClCompile>
+    <ClCompile Include="NStmt.ixx">
+      <Filter>Body</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Body">
