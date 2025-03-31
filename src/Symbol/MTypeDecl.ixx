@@ -1,6 +1,5 @@
-export module Citron.MSymbol:MTypeDecl;
+export module Citron.MDecls:MTypeDecl;
 
-import :ForwardDecls;
 import :MDecl;
 
 namespace Citron {

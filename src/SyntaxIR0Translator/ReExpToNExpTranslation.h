@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+import <memory>;
 
 namespace Citron {
 using NExpPtr = std::shared_ptr<class NExp>;

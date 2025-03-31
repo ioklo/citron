@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MNamespaceDecl;
+export module Citron.MDecls:MNamespaceDecl;
 
 import "SymbolConfig.h";
 import <string>;

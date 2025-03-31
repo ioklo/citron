@@ -1,20 +1,17 @@
-// SyntaxPrinter.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-#include "pch.h"
+import <iostream>;
 
-#include <Infra/Json.h>
-#include <Infra/StringWriter.h>
-#include <Infra/Ptr.h>
+import Citron.Json;
+import Citron.StringWriter;
+import Citron.Ptr;
 
-#include <Syntax/Syntax.h>
-#include <TextAnalysis/Lexer.h>
-#include <TextAnalysis/Buffer.h>
-#include <TextAnalysis/BufferPosition.h>
+import Citron.Syntax;
+import Citron.Lexer;
+import Citron.Buffer;
 
-#include <TextAnalysis/ScriptParser.h>
-#include <TextAnalysis/TypeExpParser.h>
-#include <TextAnalysis/ExpParser.h>
-#include <TextAnalysis/StmtParser.h>
+import Citron.ScriptParser;
+import Citron.TypeExpParser;
+import Citron.ExpParser;
+import Citron.StmtParser;
 
 using namespace std;
 using namespace Citron;

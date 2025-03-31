@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+import <memory>;
 #include <IR0/RGlobalFuncDecl.h>
 #include <IR0/RClassFuncDecl.h>
 #include <IR0/RStructFuncDecl.h>

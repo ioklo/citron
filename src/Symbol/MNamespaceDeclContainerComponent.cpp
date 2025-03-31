@@ -1,4 +1,4 @@
-module Citron.MSymbol:MNamespaceDeclContainerComponent;
+module Citron.MDecls:MNamespaceDeclContainerComponent;
 
 import :MDecl;
 import :MNamespaceDecl;

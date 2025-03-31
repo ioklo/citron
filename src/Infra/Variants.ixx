@@ -1,7 +1,7 @@
 export module Citron.Variants;
 
 // code from https://en.cppreference.com/w/cpp/utility/variant/visit
-template<class... Ts>
+export template<class... Ts>
 struct overloaded : Ts... { using Ts::operator()...; };
 
 // explicit deduction guide (not needed as of C++20)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+import <memory>;
 namespace Citron {
 
 using RTypePtr = std::shared_ptr<class RType>;

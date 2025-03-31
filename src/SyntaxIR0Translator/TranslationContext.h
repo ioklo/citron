@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <optional>
+import <memory>;
+import <vector>;
+import <optional>;
 
 #include <IR0/RFuncReturn.h>
 #include <IR0/NArgument.h>

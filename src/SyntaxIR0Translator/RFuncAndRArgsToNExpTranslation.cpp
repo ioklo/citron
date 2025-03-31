@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "RFuncAndRArgsToNExpTranslation.h"
 
-#include <vector>
-#include <cassert>
+import <vector>;
+import <cassert>;
 
-#include <Infra/Ptr.h>
-#include <Infra/Exceptions.h>
+import Citron.Ptr;
+import Citron.Exceptions;
 #include <IR0/RFuncDecl.h>
 #include <IR0/RTypeArguments.h>
 #include <IR0/NLoc.h>

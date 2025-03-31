@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "EnumTranslation.h"
 
-#include <Infra/Ptr.h>
+import Citron.Ptr;
 #include <IR0/NEnumElemVarDecl.h>
 
 #include "SkeletonPhaseContext.h"

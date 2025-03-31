@@ -5,6 +5,7 @@ module Citron.MNames;
     className& className::operator=(className&&) = default; \
     className::~className() = default;
 
+
 namespace Citron 
 {
 

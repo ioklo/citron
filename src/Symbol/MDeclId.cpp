@@ -1,4 +1,4 @@
-module Citron.MSymbol:MDeclId;
+module Citron.MDecls:MDeclId;
 
 namespace Citron {
 

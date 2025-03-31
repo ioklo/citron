@@ -1,0 +1,38 @@
+export module Citron.RDecls;
+
+// :ForwardDecls는 포함하지 않는다
+
+
+export import :RTypes;
+export import :DeclWithOuterTypeArgs;
+export import :RAccessor;
+export import :RClassCtorDecl;
+export import :RClassDecl;
+export import :RClassFuncDecl;
+export import :RClassVarDecl;
+export import :RDecl;
+export import :REnumDecl;
+export import :REnumElemDecl;
+export import :REnumElemVarDecl;
+export import :RFuncDecl;
+export import :RFuncDeclOuter;
+export import :RFuncParameter;
+export import :RFuncReturn;
+export import :RGlobalFuncDecl;
+export import :RIdentifier;
+export import :RInterfaceDecl;
+export import :RLambdaDecl;
+export import :RLambdaVarDecl;
+export import :RMember;
+export import :RModule;
+export import :RNames;
+export import :RNamespaceDecl;
+export import :RNamespaceDeclGroup;
+export import :RStructCtorDecl;
+export import :RStructDecl;
+export import :RStructFuncDecl;
+export import :RStructVarDecl;
+export import :RTypeDecl;
+export import :RTypeDeclOuter;
+export import :RTypeFactory;
+export import :RTypeArguments;

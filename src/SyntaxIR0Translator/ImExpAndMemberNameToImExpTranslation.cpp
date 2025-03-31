@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "ImExpAndMemberNameToImExpTranslation.h"
 
-#include <cassert>
+import <cassert>;
 
-#include <Infra/Ptr.h>
-#include <Infra/Exceptions.h>
+import Citron.Ptr;
+import Citron.Exceptions;
 #include <Logging/Logger.h>
 #include <IR0/RTypeFactory.h>
 #include <IR0/RClassVarDecl.h>

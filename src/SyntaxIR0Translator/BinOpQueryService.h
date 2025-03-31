@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <unordered_map>
+import <memory>;
+import <vector>;
+import <unordered_map>;
 #include <IR0/NExp.h>
 #include <Syntax/Syntax.h>
 

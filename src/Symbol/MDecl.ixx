@@ -1,11 +1,26 @@
-export module Citron.MSymbol:MDecl;
+export module Citron.MDecls:MDecl;
 
 import <memory>;
 
-import :ForwardDecls;
+namespace Citron {
 
-namespace Citron
-{
+export class MNamespaceDecl;
+export class MGlobalFuncDecl;
+export class MStructDecl;
+export class MStructCtorDecl;
+export class MStructFuncDecl;
+export class MStructVarDecl;
+export class MClassDecl;
+export class MClassCtorDecl;
+export class MClassFuncDecl;
+export class MClassVarDecl;
+export class MEnumDecl;
+export class MEnumElemDecl;
+export class MEnumElemVarDecl;
+export class MInterfaceDecl;
+
+class MDeclVisitor;
+
 export class MDecl
 {
 public:

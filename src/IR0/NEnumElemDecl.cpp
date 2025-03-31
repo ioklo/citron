@@ -1,8 +1,8 @@
-#include "NEnumElemDecl.h"
-#include <cassert>
+module Citron.NDecls:NEnumElemDecl;
+import <cassert>;
 
-#include <Infra/Exceptions.h>
-#include "NEnumDecl.h"
+import Citron.Exceptions;
+import :NEnumDecl;
 
 using namespace std;
 

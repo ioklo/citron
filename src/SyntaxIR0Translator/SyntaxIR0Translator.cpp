@@ -2,10 +2,10 @@
 #include "SyntaxIR0Translator.h"
 
 #include <stdexcept>
-#include <memory>
+import <memory>;
 
-#include <Infra/Ptr.h>
-#include <Infra/Exceptions.h>
+import Citron.Ptr;
+import Citron.Exceptions;
 
 #include <IR0/NModule.h>
 #include <IR0/NNamespaceDecl.h>

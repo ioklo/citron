@@ -1,8 +1,7 @@
-export module Citron.MSymbol:MClassVarDecl;
+export module Citron.MDecls:MClassVarDecl;
 
 import <memory>;
 
-import :ForwardDecls;
 import :MDecl;
 import :MType;
 
@@ -11,6 +10,9 @@ import Citron.MNames;
 
 namespace Citron
 {
+
+export class MType;
+export using MTypePtr = std::shared_ptr<MType>;
 
 export class MClassVarDecl
     : public MDecl

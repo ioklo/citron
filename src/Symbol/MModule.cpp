@@ -1,4 +1,4 @@
-module Citron.MSymbol:MModule;
+module Citron.MDecls:MModule;
 
 using namespace std;
 

@@ -1,18 +1,17 @@
-#include "NCommonFuncDeclComponent.h"
+module Citron.NDecls:NCommonFuncDeclComponent;
 
-#include <variant>
-#include <cassert>
+import <variant>;
+import <cassert>;
 
-#include <Infra/Variants.h>
+import Citron.Variants;
 
-#include "NLambdaDecl.h"
-#include "NStmt.h"
+import :NLambdaDecl;
+import :NStmt;
 
 using namespace std;
 
 namespace Citron
 {
-
 NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams)
     : bStatic(bStatic), bSeqFunc(bSeqFunc), typeParams(std::move(typeParams))
 {

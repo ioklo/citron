@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "MemberDeclPhaseContext.h"
 
-#include <Infra/Exceptions.h>
+import Citron.Exceptions;
 #include <IR0/RNames.h>
 
 using namespace std;

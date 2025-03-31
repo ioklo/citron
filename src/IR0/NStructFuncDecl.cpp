@@ -1,6 +1,6 @@
-#include "NStructFuncDecl.h"
-#include <cassert>
-#include "NStructDecl.h"
+module Citron.NDecls:NStructFuncDecl;
+import <cassert>;
+import :NStructDecl;
 
 using namespace std;
 

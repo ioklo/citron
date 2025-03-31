@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "Misc.h"
 
-#include <Infra/Ptr.h>
-#include <Infra/Exceptions.h>
+import Citron.Ptr;
+import Citron.Exceptions;
 #include <Logging/Logger.h>
 
 #include <Syntax/Syntax.h>

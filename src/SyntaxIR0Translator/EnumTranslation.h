@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+import <memory>;
 #include <Syntax/Syntax.h>
 #include <IR0/NEnumDecl.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+import <vector>;
 #include <tuple>
 #include <functional>
 

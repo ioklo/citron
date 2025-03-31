@@ -1,6 +1,6 @@
 #pragma once
 #include "CommonTranslation.h"
-#include <memory>
+import <memory>;
 
 #include <Syntax/Syntax.h>
 #include <IR0/NStructDecl.h>

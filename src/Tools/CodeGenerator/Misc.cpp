@@ -1,9 +1,6 @@
-module;
-
-#include "fmt/core.h"
-
 module Citron.CodeGenerator.Misc;
 
+import <fmt/core.h>;
 import <fstream>;
 import <iostream>;
 

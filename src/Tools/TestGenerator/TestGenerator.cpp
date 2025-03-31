@@ -6,7 +6,7 @@
 #include <sstream>
 #include <filesystem>
 #include <clocale>
-#include <variant>
+import <variant>;
 #include <Windows.h>
 #include <boost/algorithm/string.hpp>
 #include <fmt/core.h>

@@ -1,11 +1,11 @@
  #include "pch.h"
 #include "FuncContext.h"
 
-#include <variant>
+import <variant>;
 
-#include <Infra/Ptr.h>
-#include <Infra/Variants.h>
-#include <Infra/Exceptions.h>
+import Citron.Ptr;
+import Citron.Variants;
+import Citron.Exceptions;
 
 #include <Syntax/Syntax.h>
 

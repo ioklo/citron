@@ -1,13 +1,15 @@
-export module Citron.MSymbol:MIdentifier;
+export module Citron.MDecls:MIdentifier;
 
 
 import <vector>;
 import <memory>;
 
-import :ForwardDecls;
 import Citron.MNames;
 
 namespace Citron {
+
+export class MType;
+export using MTypePtr = std::shared_ptr<MType>;
 
 export struct MIdentifier
 {

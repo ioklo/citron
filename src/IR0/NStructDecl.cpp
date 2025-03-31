@@ -1,9 +1,9 @@
-#include "NStructDecl.h"
-#include <cassert>
-#include <Infra/Exceptions.h>
+module Citron.NDecls:NStructDecl;
 
-#include "DeclWithOuterTypeArgs.h"
-#include "RStructFuncDecl.h"
+import <cassert>;
+
+import Citron.Exceptions;
+import Citron.RDecls;
 
 using namespace std;
 

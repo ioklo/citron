@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MModule;
+export module Citron.MDecls:MModule;
 
 import <string>;
 

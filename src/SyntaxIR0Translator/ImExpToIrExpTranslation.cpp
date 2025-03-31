@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "ImExpToIrExpTranslation.h"
 
-#include <Infra/Ptr.h>
-#include <Infra/Exceptions.h>
+import Citron.Ptr;
+import Citron.Exceptions;
 #include <IR0/RClassVarDecl.h>
 #include <IR0/NStructVarDecl.h>
 

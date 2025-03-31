@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "IrExpAndMemberNameToIrExpTranslation.h"
 
-#include <cassert>
+import <cassert>;
 
-#include <Infra/Ptr.h>
-#include <Infra/Exceptions.h>
+import Citron.Ptr;
+import Citron.Exceptions;
 #include <Logging/Logger.h>
 #include <IR0/RNames.h>
 #include <IR0/RMember.h>

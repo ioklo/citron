@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MCommonFuncDeclComponent;
+export module Citron.MDecls:MCommonFuncDeclComponent;
 
 import <optional>;
 import <vector>;

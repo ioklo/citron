@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "SExpToReExpTranslation.h"
 
-#include <Infra/Ptr.h>
+import Citron.Ptr;
 #include <Syntax/Syntax.h>
 #include "SExpToImExpTranslation.h"
 #include "ImExpToReExpTranslation.h"

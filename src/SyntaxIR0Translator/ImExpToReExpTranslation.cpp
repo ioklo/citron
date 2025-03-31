@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "ImExpToReExpTranslation.h"
 
-#include <Infra/Exceptions.h>
-#include <Infra/Ptr.h>
+import Citron.Exceptions;
+import Citron.Ptr;
 #include <Logging/Logger.h>
 #include <IR0/NEnumDecl.h>
 

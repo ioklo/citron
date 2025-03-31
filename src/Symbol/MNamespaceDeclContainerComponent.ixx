@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MNamespaceDeclContainerComponent;
+export module Citron.MDecls:MNamespaceDeclContainerComponent;
 
 import "SymbolConfig.h";
 
@@ -6,7 +6,6 @@ import <unordered_map>;
 import <memory>;
 import <string>;
 
-import :ForwardDecls;
 import :MDecl;
 import :MTypeDecl;
 

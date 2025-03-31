@@ -1,11 +1,11 @@
-#include "RMember.h"
+module Citron.RDecls:RMember;
 
-#include <Infra/Variants.h>
+import Citron.Variants;
 
-#include "RGlobalFuncDecl.h"
-#include "RClassFuncDecl.h"
-#include "RStructFuncDecl.h"
-#include "DeclWithOuterTypeArgs.h"
+import :RGlobalFuncDecl;
+import :RClassFuncDecl;
+import :RStructFuncDecl;
+import :DeclWithOuterTypeArgs;
 
 using namespace std;
 
@@ -86,13 +86,13 @@ RMember_EnumElemVar::RMember_EnumElemVar(const RTypeArgumentsPtr& outerTypeArgs,
 
 }
 
-RMember_LambdaVar::RMember_LambdaVar(RTypeArgumentsPtr&& outerTypeArgs, shared_ptr<NLambdaVarDecl>&& decl)
+RMember_LambdaVar::RMember_LambdaVar(RTypeArgumentsPtr&& outerTypeArgs, shared_ptr<RLambdaVarDecl>&& decl)
     : outerTypeArgs(std::move(outerTypeArgs)), decl(std::move(decl))
 {
 
 }
 
-RMember_LambdaVar::RMember_LambdaVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<NLambdaVarDecl>& decl)
+RMember_LambdaVar::RMember_LambdaVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RLambdaVarDecl>& decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 }

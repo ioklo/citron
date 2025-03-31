@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+import <memory>;
 #include <IR0/RTypeArguments.h>
 #include <IR0/RType.h>
 #include <IR0/NLoc.h>

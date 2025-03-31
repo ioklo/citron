@@ -1,6 +1,6 @@
-#include "NLambdaDecl.h"
+module Citron.NDecls:NLambdaDecl;
 
-#include <Infra/Exceptions.h>
+import Citron.Exceptions;
 
 using namespace std;
 

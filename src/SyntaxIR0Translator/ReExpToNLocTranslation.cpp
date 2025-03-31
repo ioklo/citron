@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ReExpToNLocTranslation.h"
 
-#include <Infra/Ptr.h>
+import Citron.Ptr;
 #include <Logging/Logger.h>
 #include <IR0/NLoc.h>
 #include <IR0/RClassVarDecl.h>

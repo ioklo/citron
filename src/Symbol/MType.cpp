@@ -1,2 +1,2 @@
-module Citron.MSymbol:MType;
+module Citron.MDecls:MType;
 

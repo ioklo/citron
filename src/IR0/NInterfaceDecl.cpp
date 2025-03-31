@@ -1,4 +1,4 @@
-module NInterfaceDecl;
+module Citron.NDecls:NInterfaceDecl;
 
 import Citron.Exceptions;
 

@@ -1,10 +1,9 @@
-export module Citron.MSymbol:MEnumDecl;
+export module Citron.MDecls:MEnumDecl;
 
 import <vector>;
 import <optional>;
 import <memory>;
 
-import :ForwardDecls;
 import :MDecl;
 import :MTypeDecl;
 import :MTypeDeclOuter;

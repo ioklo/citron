@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ScopeContext.h"
 
-#include <Infra/Ptr.h>
+import Citron.Ptr;
 #include <Syntax/Syntax.h>
 #include <IR0/RType.h>
 

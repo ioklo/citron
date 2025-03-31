@@ -1,7 +1,9 @@
-#include "RTypeArguments.h"
+module Citron.RDecls:RTypeArguments;
 
-#include "RType.h"
-#include "RTypeFactory.h"
+import <vector>;
+
+import :RTypes;
+import :RTypeFactory;
 
 using namespace std;
 

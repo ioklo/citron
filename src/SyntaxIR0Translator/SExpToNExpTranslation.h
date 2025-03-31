@@ -1,7 +1,7 @@
 #pragma once
-#include <memory>
-#include <optional>
-#include <variant>
+import <memory>;
+import <optional>;
+import <variant>;
 
 #include <IR0/NExp.h>
 

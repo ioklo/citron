@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "StructTranslation.h"
 
-#include <Infra/Unreachable.h>
-#include <Infra/Ptr.h>
-#include <Infra/Exceptions.h>
+import Citron.Unreachable;
+import Citron.Ptr;
+import Citron.Exceptions;
 
 #include "SkeletonPhaseContext.h"
 #include "MemberDeclPhaseContext.h"

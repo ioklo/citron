@@ -1,10 +1,5 @@
 export module Citron.MNames;
 
-import "SymbolConfig.h";
-
-import <string>;
-import <variant>;
-
 #define DECLARE_DEFAULTS(linkage, className) \
     className(const className&) = delete; \
     linkage className(className&&); \
@@ -12,6 +7,10 @@ import <variant>;
     linkage className& operator=(className&&); \
     linkage ~className(); \
     linkage className Copy() const;
+
+import "SymbolConfig.h";
+import <string>;
+import <variant>;
 
 namespace Citron
 {

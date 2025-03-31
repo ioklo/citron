@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MType;
+export module Citron.MDecls:MType;
 
 import <vector>;
 import <memory>;
@@ -9,6 +9,12 @@ import :MFuncParameter;
 
 namespace Citron
 {
+
+export class MDeclId;
+export using MDeclIdPtr = std::shared_ptr<MDeclId>;
+
+export class MTypeArguments;
+export using MTypeArgumentsPtr = std::shared_ptr<MTypeArguments>;
 
 // 같은 unit내에서의 forward declaration
 class MType_Nullable;

@@ -1,9 +1,8 @@
-export module Citron.MSymbol:MStructCtorDecl;
+export module Citron.MDecls:MStructCtorDecl;
 
 import <memory>;
 import <vector>;
 
-import :ForwardDecls;
 import :MDecl;
 import :MBodyDeclOuter;
 import :MFuncDecl;

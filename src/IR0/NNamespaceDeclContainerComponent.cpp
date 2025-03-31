@@ -1,5 +1,6 @@
-#include "NNamespaceDeclContainerComponent.h"
-#include "NNamespaceDecl.h"
+module Citron.NDecls:NNamespaceDeclContainerComponent;
+
+import :NNamespaceDecl;
 
 using namespace std;
 

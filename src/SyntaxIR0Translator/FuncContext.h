@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
-#include <optional>
+import <memory>;
+import <optional>;
 
 #include <IR0/RNames.h>
 #include <IR0/RFuncReturn.h>

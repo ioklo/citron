@@ -1,10 +1,17 @@
-export module Citron.MSymbol:MFuncDecl;
+export module Citron.MDecls:MFuncDecl;
 
 import <memory>;
-import :ForwardDecls;
 
 namespace Citron
 {
+
+export class MGlobalFuncDecl;
+export class MClassCtorDecl;
+export class MClassFuncDecl;
+export class MStructCtorDecl;
+export class MStructFuncDecl;
+
+class MFuncDeclVisitor;
 
 export class MFuncDecl
 {
@@ -24,6 +31,12 @@ public:
     virtual void Visit(MClassFuncDecl& func) = 0;
     virtual void Visit(MStructCtorDecl& func) = 0;
     virtual void Visit(MStructFuncDecl& func) = 0;
+};
+
+export class MFuncDeclOuter
+{
+public:
+    ~MFuncDeclOuter() = default;
 };
 
 }

@@ -1,13 +1,9 @@
-#include "NLoc.h"
+module Citron.NDecls:NLoc;
 
-#include <Infra/Exceptions.h>
-
-#include "NExp.h"
-#include "NLambdaVarDecl.h"
-#include "RStructVarDecl.h"
-#include "RClassVarDecl.h"
-#include "REnumElemVarDecl.h"
-
+import Citron.Exceptions;
+import Citron.RDecls;
+import :NExp;
+import :NLambdaVarDecl;
 
 namespace Citron {
 

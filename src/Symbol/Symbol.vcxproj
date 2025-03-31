@@ -147,7 +147,6 @@
     <ClInclude Include="Public\Symbol\Symbols.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ForwardDecls.ixx" />
     <ClCompile Include="MAccessor.ixx" />
     <ClCompile Include="MBodyDeclOuter.ixx" />
     <ClCompile Include="MClassCtorDecl.ixx" />
@@ -180,7 +179,7 @@
     <ClCompile Include="MStructDecl.ixx" />
     <ClCompile Include="MStructFuncDecl.ixx" />
     <ClCompile Include="MStructVarDecl.ixx" />
-    <ClCompile Include="MSymbol.ixx" />
+    <ClCompile Include="MDecls.ixx" />
     <ClCompile Include="MType.cpp" />
     <ClCompile Include="MType.ixx" />
     <ClCompile Include="MTypeArguments.cpp" />

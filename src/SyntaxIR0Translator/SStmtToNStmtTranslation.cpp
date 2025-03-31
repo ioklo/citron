@@ -1,12 +1,12 @@
 #include "pch.h"
 #include "SStmtToNStmtTranslation.h"
 
-#include <optional>
-#include <variant>
+import <optional>;
+import <variant>;
 
-#include <Infra/Ptr.h>
-#include <Infra/Exceptions.h>
-#include <Infra/Variants.h>
+import Citron.Ptr;
+import Citron.Exceptions;
+import Citron.Variants;
 
 #include <IR0/NStmt.h>
 #include <IR0/NExp.h>

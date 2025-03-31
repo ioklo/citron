@@ -1,7 +1,7 @@
-#include "NLambdaVarDecl.h"
+module Citron.NDecls:NLambdaVarDecl;
 
-#include <Infra/Exceptions.h>
-#include "NLambdaDecl.h"
+import Citron.Exceptions;
+import :NLambdaDecl;
 
 using namespace std;
 

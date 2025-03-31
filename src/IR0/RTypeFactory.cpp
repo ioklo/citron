@@ -1,9 +1,13 @@
-#include "RTypeFactory.h"
-#include <Infra/Hash.h>
-#include <Infra/Ptr.h>
-#include "RType.h"
-#include "RStructDecl.h"
-#include "RNamespaceDeclGroup.h"
+module Citron.RDecls:RTypeFactory;
+
+import Citron.Hash;
+import Citron.Ptr;
+
+import :RTypes;
+import :RStructDecl;
+import :RNamespaceDeclGroup;
+
+import :RTypeArguments;
 
 using namespace std;
 
@@ -146,20 +150,20 @@ shared_ptr<RType_Interface> RTypeFactory::MakeInterfaceType(const shared_ptr<RIn
     return MakeInstanceType(interfaceTypes, decl, typeArgs, bLocal);
 }
 
-shared_ptr<RType_Lambda> RTypeFactory::MakeLambdaType(const shared_ptr<NLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+shared_ptr<RType_Lambda> RTypeFactory::MakeLambdaType(const shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs)
 {
     return MakeInstanceType(lambdaTypes, decl, typeArgs);
 }
 
 shared_ptr<RTypeArguments> RTypeFactory::MakeTypeArguments(const vector<RTypePtr>& items)
 {
-    auto key = IR0::TypeArgumentsKey { items };
+    auto key = IR0::TypeArgumentsKey{ items };
 
     auto i = typeArgsMap.find(key);
     if (i != typeArgsMap.end())
         return i->second;
 
-    shared_ptr<RTypeArguments> v { new RTypeArguments(items) };
+    shared_ptr<RTypeArguments> v{ new RTypeArguments(items) };
     typeArgsMap.emplace(key, v);
     return v;
 }

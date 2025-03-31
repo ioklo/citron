@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "SExpToNExpTranslation.h"
 
-#include <variant>
+import <variant>;
 
-#include <Infra/Ptr.h>
-#include <Infra/Exceptions.h>
-#include <Infra/Unreachable.h>
+import Citron.Ptr;
+import Citron.Exceptions;
+import Citron.Unreachable;
 #include <Logging/Logger.h>
 #include <Syntax/Syntax.h>
 #include <IR0/RType.h>

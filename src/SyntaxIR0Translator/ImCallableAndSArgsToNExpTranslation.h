@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
-#include <vector>
+import <memory>;
+import <vector>;
 
 namespace Citron {
 

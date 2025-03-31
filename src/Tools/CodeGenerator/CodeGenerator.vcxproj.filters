@@ -24,14 +24,14 @@
     <ClCompile Include="Misc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HeaderUnits.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Misc.ixx">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SyntaxCodeGenerator.ixx">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HeaderUnits.ixx">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

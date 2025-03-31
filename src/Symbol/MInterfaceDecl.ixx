@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MInterfaceDecl;
+export module Citron.MDecls:MInterfaceDecl;
 
 import <vector>;
 

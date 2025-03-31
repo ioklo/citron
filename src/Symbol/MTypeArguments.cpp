@@ -1,4 +1,4 @@
-module Citron.MSymbol:MTypeArguments;
+module Citron.MDecls:MTypeArguments;
 
 namespace Citron {
 

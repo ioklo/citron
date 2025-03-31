@@ -1,9 +1,9 @@
-#include "NClassDecl.h"
-#include <cassert>
-#include <Infra/Exceptions.h>
+module Citron.NDecls:NClassDecl;
 
-#include "DeclWithOuterTypeArgs.h"
-#include "NClassFuncDecl.h"
+import <cassert>;
+import Citron.Exceptions;
+
+import :NClassFuncDecl;
 
 using namespace std;
 

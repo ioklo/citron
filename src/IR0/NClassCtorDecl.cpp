@@ -1,7 +1,8 @@
-#include "NClassCtorDecl.h"
+module Citron.NDecls:NClassCtorDecl;
 
-#include <cassert>
-#include "NClassDecl.h"
+import <cassert>;
+import :NClassDecl;
+
 using namespace std;
 
 namespace Citron {

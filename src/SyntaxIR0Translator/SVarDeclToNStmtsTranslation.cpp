@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "SVarDeclToNStmtsTranslation.h"
 
-#include <Infra/Ptr.h>
-#include <Infra/Unreachable.h>
+import Citron.Ptr;
+import Citron.Unreachable;
 #include <Syntax/Syntax.h>
 #include <Logging/Logger.h>
 #include <IR0/RType.h>

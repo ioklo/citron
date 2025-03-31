@@ -1,4 +1,4 @@
-module Citron.MSymbol:MTypeDeclContainerComponent;
+module Citron.MDecls:MTypeDeclContainerComponent;
 
 import <optional>;
 

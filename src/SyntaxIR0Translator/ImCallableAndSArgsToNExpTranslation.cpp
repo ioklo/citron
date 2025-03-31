@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "ImCallableAndSArgsToNExpTranslation.h"
 
-#include <Infra/Ptr.h>
-#include <Infra/Exceptions.h>
+import Citron.Ptr;
+import Citron.Exceptions;
 #include <Syntax/Syntax.h>
 #include <Logging/Logger.h>
 

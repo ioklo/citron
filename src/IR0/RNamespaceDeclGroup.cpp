@@ -1,4 +1,4 @@
-#include "RNamespaceDeclGroup.h"
+module Citron.RDecls:RNamespaceDeclGroup;
 
 namespace Citron {
 

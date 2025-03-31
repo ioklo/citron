@@ -1,7 +1,7 @@
-#include "NGlobalFuncDecl.h"
-#include <cassert>
+module Citron.NDecls:NGlobalFuncDecl;
+import <cassert>;
 
-#include "NNamespaceDecl.h"
+import :NNamespaceDecl;
 
 using namespace std;
 

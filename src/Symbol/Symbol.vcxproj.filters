@@ -148,11 +148,8 @@
     <ClCompile Include="MInterfaceDecl.ixx">
       <Filter>Symbols\09 Interface</Filter>
     </ClCompile>
-    <ClCompile Include="MSymbol.ixx">
+    <ClCompile Include="MDecls.ixx">
       <Filter>Symbols</Filter>
-    </ClCompile>
-    <ClCompile Include="ForwardDecls.ixx">
-      <Filter>Symbols\00 Abstraction</Filter>
     </ClCompile>
     <ClCompile Include="MAccessor.ixx" />
     <ClCompile Include="MNames.cpp" />

@@ -1,11 +1,13 @@
-export module Citron.MSymbol:MTypeDeclOuter;
+export module Citron.MDecls:MTypeDeclOuter;
 
 import <memory>;
 
-import :ForwardDecls;
-
 namespace Citron
 {
+
+export class MNamespaceDecl;
+export class MClassDecl;
+export class MStructDecl;
 
 // 같은 unit내에서의 forward declaration
 class MTypeDeclOuterVisitor;

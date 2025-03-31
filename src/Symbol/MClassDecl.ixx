@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MClassDecl;
+export module Citron.MDecls:MClassDecl;
 
 import :MClassCtorDecl;
 import :MClassFuncDecl;
@@ -16,6 +16,9 @@ import Citron.MNames;
 
 namespace Citron
 {
+
+export class MType;
+export using MTypePtr = std::shared_ptr<MType>;
 
 export class MClassDecl
     : public MDecl

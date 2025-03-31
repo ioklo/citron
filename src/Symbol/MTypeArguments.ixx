@@ -1,11 +1,12 @@
-export module Citron.MSymbol:MTypeArguments;
+export module Citron.MDecls:MTypeArguments;
 
 import <vector>;
 import <memory>;
 
-import :ForwardDecls;
-
 namespace Citron {
+
+export class MType;
+export using MTypePtr = std::shared_ptr<MType>;
 
 export class MTypeArguments
 {

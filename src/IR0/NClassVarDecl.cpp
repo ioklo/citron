@@ -1,8 +1,8 @@
-#include "NClassVarDecl.h"
+module Citron.NDecls:NClassVarDecl;
 
-#include <Infra/Exceptions.h>
-#include "NClassDecl.h"
-#include "RTypeFactory.h"
+import Citron.Exceptions;
+import Citron.RDecls;
+import :NClassDecl;
 
 using namespace std;
 

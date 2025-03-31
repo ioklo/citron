@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MTypeDeclContainerComponent;
+export module Citron.MDecls:MTypeDeclContainerComponent;
 
 import <vector>;
 import <unordered_map>;

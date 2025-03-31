@@ -1,18 +1,17 @@
-export module NInterfaceDecl;
+export module Citron.NDecls:NInterfaceDecl;
 
+import "IR0Config.h";
 import <vector>;
 
-#include "NDecl.h"
-#include "NTypeDecl.h"
-#include "NTypeDeclOuter.h"
-#include "RAccessor.h"
-#include "RNames.h"
-#include "RInterfaceDecl.h"
+import Citron.RDecls;
+import :NDecl;
+import :NTypeDecl;
+import :NTypeDeclOuter;
 
-namespace Citron
-{
 
-class NInterfaceDecl
+namespace Citron {
+
+export class NInterfaceDecl
     : public NDecl
     , public NTypeDecl
     , public RInterfaceDecl

@@ -1,4 +1,4 @@
-export module Citron.NDecl:NExp;
+export module Citron.NDecls:NExp;
 
 import "IR0Config.h";
 
@@ -7,96 +7,67 @@ import <memory>;
 import <string>;
 import <vector>;
 
-import "NArgument.h"
-import "RType.h"
+import Citron.RDecls;
+
+import :NArgument;
 
 namespace Citron {
 
-using NStmtPtr = std::shared_ptr<class NStmt>;
-using NLocPtr = std::shared_ptr<class NLoc>;
+export class NExp_Load;
+export class NExp_Assign;
+export class NExp_Box;
+export class NExp_StaticBoxRef;
+export class NExp_ClassMemberBoxRef;
+export class NExp_StructIndirectMemberBoxRef;
+export class NExp_StructMemberBoxRef;
+export class NExp_LocalRef;
+export class NExp_BoolLiteral;
+export class NExp_IntLiteral;
+export class NExp_String;
+export class NExp_List;
+export class NExp_ListIterator;
+export class NExp_CallInternalUnaryOperator;
+export class NExp_CallInternalUnaryAssignOperator;
+export class NExp_CallInternalBinaryOperator;
+export class NExp_CallGlobalFunc;
+export class NExp_NewClass;
+export class NExp_CallClassFunc;
+export class NExp_CastClass;
+export class NExp_NewStruct;
+export class NExp_CallStructFunc;
+export class NExp_NewEnumElem;
+export class NExp_CastEnumElemToEnum;
+export class NExp_NewNullable;
+export class NExp_NullableValueNullLiteral;
+export class NExp_NullableRefNullLiteral;
+export class NExp_Lambda;
+export class NExp_CallLambda;
+export class NExp_CastBoxedLambdaToFunc;
+export class NExp_InlineBlock;
+export class NExp_ClassIsClass;
+export class NExp_ClassAsClass;
+export class NExp_ClassIsInterface;
+export class NExp_ClassAsInterface;
+export class NExp_InterfaceIsClass;
+export class NExp_InterfaceAsClass;
+export class NExp_InterfaceIsInterface;
+export class NExp_InterfaceAsInterface;
+export class NExp_EnumIsEnumElem;
+export class NExp_EnumAsEnumElem;
 
-// Storage
-class NExp_Load;
-class NExp_Assign;
+export class NLoc;
+export using NLocPtr = std::shared_ptr<NLoc>;
 
-// BoxRef
-class NExp_Box;
-class NExp_StaticBoxRef;
-class NExp_ClassMemberBoxRef;
-class NExp_StructIndirectMemberBoxRef;
-class NExp_StructMemberBoxRef;
+export class RType;
+export using RTypePtr = std::shared_ptr<RType>;
+export class RTypeFactory;
 
-// LocalRef
-class NExp_LocalRef;
+export class NStmt;
+export using NStmtPtr = std::shared_ptr<NStmt>;
 
-// Literal
-class NExp_BoolLiteral;
-class NExp_IntLiteral;
-class NExp_String;
+export class NLambdaDecl;
 
-// List
-class NExp_List;
-class NExp_ListIterator;
-
-// Call Internal
-class NExp_CallInternalUnaryOperator;
-class NExp_CallInternalUnaryAssignOperator;
-class NExp_CallInternalBinaryOperator;
-
-// Global
-class NExp_CallGlobalFunc;
-
-// Class
-class NExp_NewClass;
-class NExp_CallClassFunc;
-class NExp_CastClass;
-
-// Struct
-class NExp_NewStruct;
-class NExp_CallStructFunc;
-
-// Enum
-class NExp_NewEnumElem;
-class NExp_CastEnumElemToEnum;
-
-// Nullable
-class NExp_NewNullable;
-class NExp_NullableValueNullLiteral;
-class NExp_NullableRefNullLiteral;
-
-// Lambda
-class NExp_Lambda;
-class NExp_CallLambda;
-
-// Func
-class NExp_CastBoxedLambdaToFunc;
-
-// InlineBlock
-class NExp_InlineBlock;
-
-// Test
-class NExp_ClassIsClass;
-class NExp_ClassAsClass;
-class NExp_ClassIsInterface;
-class NExp_ClassAsInterface;
-class NExp_InterfaceIsClass;
-class NExp_InterfaceAsClass;
-class NExp_InterfaceIsInterface;
-class NExp_InterfaceAsInterface;
-class NExp_EnumIsEnumElem;
-class NExp_EnumAsEnumElem;
-
-class RClassVarDecl;
-class RStructVarDecl;
-class RGlobalFuncDecl;
-class RClassFuncDecl;
-class RClassCtorDecl;
-class RStructCtorDecl;
-class RStructFuncDecl;
-class NLambdaDecl;
-class REnumElemDecl;
-
-class NExpVisitor
+export class NExpVisitor
 {
 public:
     virtual ~NExpVisitor() {}
@@ -145,7 +116,7 @@ public:
     virtual void Visit(NExp_EnumAsEnumElem& exp) = 0;
 };
 
-class NExp
+export class NExp
 {
 public:
     virtual ~NExp() {}
@@ -153,12 +124,12 @@ public:
     virtual void Accept(NExpVisitor& visitor) = 0;
 };
 
-using NExpPtr = std::shared_ptr<NExp>;
+export using NExpPtr = std::shared_ptr<NExp>;
 
 #pragma region Storage
 
 // Location의 Value를 resultValue에 복사한다
-class NExp_Load : public NExp
+export class NExp_Load : public NExp
 {
 public:
     NLocPtr loc;
@@ -171,7 +142,7 @@ public:
 };
 
 // a = b
-class NExp_Assign : public NExp
+export class NExp_Assign : public NExp
 {
 public:
     NLocPtr dest;
@@ -184,7 +155,7 @@ public:
 };
 
 // box 3
-class NExp_Box : public NExp
+export class NExp_Box : public NExp
 {
 public:
     NExpPtr innerExp;
@@ -196,7 +167,7 @@ public:
 };
 
 // &C.x
-class NExp_StaticBoxRef : public NExp
+export class NExp_StaticBoxRef : public NExp
 {
 public:
     NLocPtr loc;
@@ -208,7 +179,7 @@ public:
 };
 
 // &c.x => RClassMemberBoxRefExp(RLocalVar("c"), C::x)
-class NExp_ClassMemberBoxRef : public NExp
+export class NExp_ClassMemberBoxRef : public NExp
 {
 public:
     NLocPtr holder;
@@ -224,7 +195,7 @@ public:
 
 // box S* pS;
 // &ps->x => RStructIndirectMemberBoxRefExp(RLocalVar("pS"), S::x)
-class NExp_StructIndirectMemberBoxRef : public NExp
+export class NExp_StructIndirectMemberBoxRef : public NExp
 {
 public:
     NLocPtr holder;
@@ -240,7 +211,7 @@ public:
 
 // C c;
 // box A* a = &c.s.a; => RStructMemberBoxRefExp(RClassMemberBoxRefExp(RLocalVar("c"), C::s), A::a)
-class NExp_StructMemberBoxRef : public NExp
+export class NExp_StructMemberBoxRef : public NExp
 {
 public:
     NLocPtr parent;
@@ -255,7 +226,7 @@ public:
 };
 
 // &i
-class NExp_LocalRef : public NExp
+export class NExp_LocalRef : public NExp
 {
 public:
     NLocPtr innerLoc;
@@ -272,7 +243,7 @@ public:
 #pragma region Interface
 
 // func<int, int> f = box (int x) => x + p;
-class NExp_CastBoxedLambdaToFunc : public NExp
+export class NExp_CastBoxedLambdaToFunc : public NExp
 {
 public:
     NExpPtr exp;
@@ -289,7 +260,7 @@ public:
 #pragma region Literal
 
 // false
-class NExp_BoolLiteral : public NExp
+export class NExp_BoolLiteral : public NExp
 {
 public:
     bool value;
@@ -301,7 +272,7 @@ public:
 };
 
 // 1
-class NExp_IntLiteral : public NExp
+export class NExp_IntLiteral : public NExp
 {
 public:
     int value;
@@ -312,7 +283,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RTextStringExpElement
+export class RTextStringExpElement
 {
 public:
     std::string text;
@@ -321,7 +292,7 @@ public:
     IR0_API RTextStringExpElement(const std::string& text);
 };
 
-class RLocStringExpElement
+export class RLocStringExpElement
 {
 public:
     NLocPtr loc;
@@ -330,10 +301,10 @@ public:
     IR0_API RLocStringExpElement(NLocPtr&& loc);
 };
 
-using RStringExpElement = std::variant<RTextStringExpElement, RLocStringExpElement>;
+export using RStringExpElement = std::variant<RTextStringExpElement, RLocStringExpElement>;
 
 // "dskfjslkf $abc "
-class NExp_String : public NExp
+export class NExp_String : public NExp
 {
 public:
     std::vector<RStringExpElement> elements;
@@ -351,7 +322,7 @@ public:
 #pragma region List
 
 // [1, 2, 3]
-class NExp_List : public NExp
+export class NExp_List : public NExp
 {
 public:
     std::vector<NExpPtr> elems;
@@ -363,7 +334,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_ListIterator : public NExp
+export class NExp_ListIterator : public NExp
 {
 public:
     NLocPtr listLoc;
@@ -379,7 +350,7 @@ public:
 
 #pragma region Call Internal
 
-enum class RInternalUnaryOperator
+export enum class RInternalUnaryOperator
 {
     LogicalNot_Bool_Bool,
     UnaryMinus_Int_Int,
@@ -388,7 +359,7 @@ enum class RInternalUnaryOperator
     ToString_Int_String,
 };
 
-enum class RInternalUnaryAssignOperator
+export enum class RInternalUnaryAssignOperator
 {
     PrefixInc_Int_Int,
     PrefixDec_Int_Int,
@@ -396,7 +367,7 @@ enum class RInternalUnaryAssignOperator
     PostfixDec_Int_Int,
 };
 
-enum class RInternalBinaryOperator
+export enum class RInternalBinaryOperator
 {
     Multiply_Int_Int_Int,
     Divide_Int_Int_Int,
@@ -417,7 +388,7 @@ enum class RInternalBinaryOperator
     Equal_String_String_Bool
 };
 
-class NExp_CallInternalUnaryOperator : public NExp
+export class NExp_CallInternalUnaryOperator : public NExp
 {
 public:
     RInternalUnaryOperator op;
@@ -429,7 +400,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_CallInternalUnaryAssignOperator : public NExp
+export class NExp_CallInternalUnaryAssignOperator : public NExp
 {
 public:
     RInternalUnaryAssignOperator op;
@@ -441,7 +412,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_CallInternalBinaryOperator : public NExp
+export class NExp_CallInternalBinaryOperator : public NExp
 {
 public:
     RInternalBinaryOperator op;
@@ -459,7 +430,7 @@ public:
 #pragma region Global
 
 // F();
-class NExp_CallGlobalFunc : public NExp
+export class NExp_CallGlobalFunc : public NExp
 {
 public:
     std::shared_ptr<RGlobalFuncDecl> funcDecl;
@@ -477,7 +448,7 @@ public:
 #pragma region Class
 
 // new C(2, 3, 4);
-class NExp_NewClass : public NExp
+export class NExp_NewClass : public NExp
 {
 public:
     std::shared_ptr<RClassCtorDecl> ctorDecl;
@@ -491,7 +462,7 @@ public:
 };
 
 // c.F();
-class NExp_CallClassFunc : public NExp
+export class NExp_CallClassFunc : public NExp
 {
 public:
     std::shared_ptr<RClassFuncDecl> decl;
@@ -506,7 +477,7 @@ public:
 };
 
 // ClassStaticCast
-class NExp_CastClass : public NExp
+export class NExp_CastClass : public NExp
 {
 public:
     NExpPtr src;
@@ -523,7 +494,7 @@ public:
 #pragma region Struct
 
 // S(2, 3, 4);
-class NExp_NewStruct : public NExp
+export class NExp_NewStruct : public NExp
 {
 public:
     std::shared_ptr<RStructCtorDecl> ctor;
@@ -537,7 +508,7 @@ public:
 };
 
 // s.F();
-class NExp_CallStructFunc : public NExp
+export class NExp_CallStructFunc : public NExp
 {
 public:
     std::shared_ptr<RStructFuncDecl> decl;
@@ -556,7 +527,7 @@ public:
 #pragma region Enum
 
 // enum construction, E.First or E.Second(2, 3)
-class NExp_NewEnumElem : public NExp
+export class NExp_NewEnumElem : public NExp
 {
 public:
     std::shared_ptr<REnumElemDecl> enumElemDecl;
@@ -572,7 +543,7 @@ public:
 };
 
 // 컨테이너를 enumElem -> enum으로
-class NExp_CastEnumElemToEnum : public NExp
+export class NExp_CastEnumElemToEnum : public NExp
 {
 public:
     NExpPtr src;
@@ -588,7 +559,7 @@ public:
 
 #pragma region Nullable
 
-class NExp_NullableValueNullLiteral : public NExp
+export class NExp_NullableValueNullLiteral : public NExp
 {
 public:
     RTypePtr innerType;
@@ -600,7 +571,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_NullableRefNullLiteral : public NExp
+export class NExp_NullableRefNullLiteral : public NExp
 {
 public:
     RTypePtr innerType;
@@ -611,7 +582,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_NewNullable : public NExp
+export class NExp_NewNullable : public NExp
 {
 public:
     NExpPtr innerExp;
@@ -630,7 +601,7 @@ public:
 // var l = () => { return x; }; // lambda type
 //
 // Lambda(lambda_type_0, x); // with captured variable
-class NExp_Lambda : public NExp
+export class NExp_Lambda : public NExp
 {
 public:
     std::shared_ptr<NLambdaDecl> lambdaDecl;
@@ -646,7 +617,7 @@ public:
 
 // f(2, 3)
 // Callable은 (() => {}) ()때문에 Loc이어야 한다
-class NExp_CallLambda : public NExp
+export class NExp_CallLambda : public NExp
 {
 public:
     // TODO: RType_Lambda에 있는 정보들, callable->GetType()하면 얻을수 있는 것들이다. 삭제해야 하지 않을까
@@ -667,7 +638,7 @@ public:
 
 #pragma region Inline
 
-class NExp_InlineBlock : public NExp
+export class NExp_InlineBlock : public NExp
 {
 public:
     std::vector<NStmtPtr> stmts;
@@ -683,7 +654,7 @@ public:
 
 #pragma region TypeTest
 
-class NExp_ClassIsClass : public NExp
+export class NExp_ClassIsClass : public NExp
 {
 public:
     NExpPtr exp;
@@ -696,7 +667,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_ClassAsClass : public NExp
+export class NExp_ClassAsClass: public NExp
 {
 public:
     NExpPtr exp;
@@ -709,7 +680,7 @@ public:
 
 };
 
-class NExp_ClassIsInterface : public NExp
+export class NExp_ClassIsInterface : public NExp
 {
 public:
     NExpPtr exp;
@@ -721,7 +692,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_ClassAsInterface : public NExp
+export class NExp_ClassAsInterface : public NExp
 {
 public:
     NExpPtr exp;
@@ -733,7 +704,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_InterfaceIsClass : public NExp
+export class NExp_InterfaceIsClass : public NExp
 {
 public:
     NExpPtr exp;
@@ -745,7 +716,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_InterfaceAsClass : public NExp
+export class NExp_InterfaceAsClass : public NExp
 {
 public:
     NExpPtr exp;
@@ -757,7 +728,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_InterfaceIsInterface : public NExp
+export class NExp_InterfaceIsInterface : public NExp
 {
 public:
     NExpPtr exp;
@@ -769,7 +740,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_InterfaceAsInterface : public NExp
+export class NExp_InterfaceAsInterface : public NExp
 {
 public:
     NExpPtr exp;
@@ -781,7 +752,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_EnumIsEnumElem : public NExp
+export class NExp_EnumIsEnumElem : public NExp
 {
 public:
     NExpPtr exp;
@@ -793,7 +764,7 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class NExp_EnumAsEnumElem : public NExp
+export class NExp_EnumAsEnumElem : public NExp
 {
 public:
     NExpPtr exp;

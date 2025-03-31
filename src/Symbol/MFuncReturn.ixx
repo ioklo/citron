@@ -1,10 +1,12 @@
-export module Citron.MSymbol:MFuncReturn;
+export module Citron.MDecls:MFuncReturn;
 
-import :ForwardDecls;
 import <variant>;
 import <memory>;
 
 namespace Citron {
+
+export class MType;
+export using MTypePtr = std::shared_ptr<MType>;
 
 export struct MFuncReturn_ForCtor {}; // for ctor
 export struct MFuncReturn_Normal

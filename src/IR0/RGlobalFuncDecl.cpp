@@ -1,4 +1,4 @@
-#include "RGlobalFuncDecl.h"
+module Citron.RDecls:RGlobalFuncDecl;
 
 namespace Citron {
 

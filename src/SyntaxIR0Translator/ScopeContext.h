@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <optional>
-#include <unordered_map>
+import <memory>;
+import <vector>;
+import <optional>;
+import <unordered_map>;
 
 #include <IR0/RFuncReturn.h>
 #include <IR0/RFuncParameter.h>

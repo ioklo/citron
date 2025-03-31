@@ -74,6 +74,7 @@
     <Import Project="..\Common.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
   </PropertyGroup>
@@ -146,70 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Public\IR0\DeclWithOuterTypeArgs.h" />
-    <ClInclude Include="Public\IR0\RClassCtorDecl.h" />
-    <ClInclude Include="Public\IR0\RClassDecl.h" />
-    <ClInclude Include="Public\IR0\RClassFuncDecl.h" />
-    <ClInclude Include="Public\IR0\RClassVarDecl.h" />
-    <ClInclude Include="Public\IR0\REnumDecl.h" />
-    <ClInclude Include="Public\IR0\REnumElemDecl.h" />
-    <ClInclude Include="Public\IR0\REnumElemVarDecl.h" />
-    <ClInclude Include="Public\IR0\RFuncDeclOuter.h" />
-    <ClInclude Include="Public\IR0\RDecl.h" />
-    <ClInclude Include="Public\IR0\RFuncDecl.h" />
-    <ClInclude Include="Public\IR0\RGlobalFuncDecl.h" />
-    <ClInclude Include="Public\IR0\RInterfaceDecl.h" />
-    <ClInclude Include="Public\IR0\RLambdaDecl.h" />
-    <ClInclude Include="Public\IR0\RLambdaVarDecl.h" />
-    <ClInclude Include="Public\IR0\RMember.h" />
-    <ClInclude Include="Public\IR0\RAccessor.h" />
-    <ClInclude Include="Public\IR0\NFuncDeclOuter.h" />
-    <ClInclude Include="Public\IR0\NClassCtorDecl.h" />
-    <ClInclude Include="Public\IR0\NClassDecl.h" />
-    <ClInclude Include="Public\IR0\NClassFuncDecl.h" />
-    <ClInclude Include="Public\IR0\NClassVarDecl.h" />
-    <ClInclude Include="Public\IR0\NCommonFuncDeclComponent.h" />
-    <ClInclude Include="Public\IR0\NDecl.h" />
-    <ClInclude Include="Public\IR0\NEnumDecl.h" />
-    <ClInclude Include="Public\IR0\NEnumElemDecl.h" />
-    <ClInclude Include="Public\IR0\NEnumElemVarDecl.h" />
-    <ClInclude Include="Public\IR0\NFuncDecl.h" />
-    <ClInclude Include="Public\IR0\NFuncDeclContainerComponent.h" />
-    <ClInclude Include="Public\IR0\RFuncParameter.h" />
-    <ClInclude Include="Public\IR0\RFuncReturn.h" />
-    <ClInclude Include="Public\IR0\NGlobalFuncDecl.h" />
-    <ClInclude Include="Public\IR0\RIdentifier.h" />
-    <ClInclude Include="Public\IR0\NInterfaceDecl.h" />
-    <ClInclude Include="Public\IR0\NLambdaDecl.h" />
-    <ClInclude Include="Public\IR0\NLambdaVarDecl.h" />
-    <ClInclude Include="Public\IR0\NModule.h" />
-    <ClInclude Include="Public\IR0\RModule.h" />
-    <ClInclude Include="Public\IR0\RNames.h" />
-    <ClInclude Include="Public\IR0\NNamespaceDecl.h" />
-    <ClInclude Include="Public\IR0\NNamespaceDeclContainerComponent.h" />
-    <ClInclude Include="Public\IR0\NStructCtorDecl.h" />
-    <ClInclude Include="Public\IR0\NStructDecl.h" />
-    <ClInclude Include="Public\IR0\NStructFuncDecl.h" />
-    <ClInclude Include="Public\IR0\NStructVarDecl.h" />
-    <ClInclude Include="Public\IR0\RNamespaceDecl.h" />
-    <ClInclude Include="Public\IR0\RNamespaceDeclGroup.h" />
-    <ClInclude Include="Public\IR0\RStructCtorDecl.h" />
-    <ClInclude Include="Public\IR0\RStructDecl.h" />
-    <ClInclude Include="Public\IR0\RStructFuncDecl.h" />
-    <ClInclude Include="Public\IR0\RStructVarDecl.h" />
-    <ClInclude Include="Public\IR0\RType.h" />
-    <ClInclude Include="Public\IR0\RTypeArguments.h" />
-    <ClInclude Include="Public\IR0\NTypeDecl.h" />
-    <ClInclude Include="Public\IR0\NTypeDeclContainerComponent.h" />
-    <ClInclude Include="Public\IR0\NTypeDeclOuter.h" />
     <ClInclude Include="Public\IR0\IR0Config.h" />
-    <ClInclude Include="Public\IR0\NArgument.h" />
-    <ClInclude Include="Public\IR0\NExp.h" />
-    <ClInclude Include="Public\IR0\NLoc.h" />
-    <ClInclude Include="Public\IR0\NStmt.h" />
-    <ClInclude Include="Public\IR0\RTypeDecl.h" />
-    <ClInclude Include="Public\IR0\RTypeDeclOuter.h" />
-    <ClInclude Include="Public\IR0\RTypeFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">
@@ -220,13 +158,60 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DeclsWithOuterTypeArgs.ixx" />
+    <ClCompile Include="NArgument.ixx" />
+    <ClCompile Include="NClassCtorDecl.ixx" />
+    <ClCompile Include="NClassDecl.ixx" />
+    <ClCompile Include="NClassFuncDecl.ixx" />
+    <ClCompile Include="NClassVarDecl.ixx" />
+    <ClCompile Include="NCommonFuncDeclComponent.ixx" />
+    <ClCompile Include="NDecl.ixx" />
+    <ClCompile Include="NEnumDecl.ixx" />
+    <ClCompile Include="NEnumElemDecl.ixx" />
+    <ClCompile Include="NEnumElemVarDecl.ixx" />
+    <ClCompile Include="NFuncDeclContainerComponent.ixx" />
+    <ClCompile Include="NFuncDecl.ixx" />
+    <ClCompile Include="NFuncDeclOuter.ixx" />
+    <ClCompile Include="NGlobalFuncDecl.ixx" />
+    <ClCompile Include="NLambdaDecl.ixx" />
+    <ClCompile Include="NLambdaVarDecl.ixx" />
+    <ClCompile Include="NModule.ixx" />
+    <ClCompile Include="NNamespaceDecl.ixx" />
+    <ClCompile Include="NNamespaceDeclContainerComponent.ixx" />
+    <ClCompile Include="NStructCtorDecl.ixx" />
+    <ClCompile Include="NStructDecl.ixx" />
+    <ClCompile Include="NStructFuncDecl.ixx" />
+    <ClCompile Include="NStructVarDecl.ixx" />
+    <ClCompile Include="NTypeDecl.ixx" />
+    <ClCompile Include="NTypeDeclContainerComponent.ixx" />
+    <ClCompile Include="NTypeDeclOuter.ixx" />
+    <ClCompile Include="RAccessor.ixx" />
+    <ClCompile Include="RClassCtorDecl.ixx" />
+    <ClCompile Include="RClassDecl.ixx" />
+    <ClCompile Include="RClassFuncDecl.ixx" />
+    <ClCompile Include="RClassVarDecl.ixx" />
+    <ClCompile Include="NDecls.ixx" />
     <ClCompile Include="NExp.ixx" />
     <ClCompile Include="NGlobalFuncDecl.cpp" />
     <ClCompile Include="NInterfaceDecl.ixx" />
     <ClCompile Include="NLoc.ixx" />
     <ClCompile Include="NStmt.ixx" />
     <ClCompile Include="RDecl.cpp" />
+    <ClCompile Include="RDecl.ixx" />
+    <ClCompile Include="RDecls.ixx" />
+    <ClCompile Include="REnumDecl.ixx" />
+    <ClCompile Include="REnumElemDecl.ixx" />
+    <ClCompile Include="REnumElemVarDecl.ixx" />
+    <ClCompile Include="RFuncDecl.ixx" />
+    <ClCompile Include="RFuncDeclOuter.ixx" />
+    <ClCompile Include="RFuncParameter.ixx" />
+    <ClCompile Include="RFuncReturn.ixx" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
+    <ClCompile Include="RGlobalFuncDecl.ixx" />
+    <ClCompile Include="RIdentifier.ixx" />
+    <ClCompile Include="RInterfaceDecl.ixx" />
+    <ClCompile Include="RLambdaDecl.ixx" />
+    <ClCompile Include="RLambdaVarDecl.ixx" />
     <ClCompile Include="RMember.cpp" />
     <ClCompile Include="NClassCtorDecl.cpp" />
     <ClCompile Include="NClassDecl.cpp" />
@@ -246,17 +231,31 @@
     <ClCompile Include="NEnumElemVarDecl.cpp" />
     <ClCompile Include="NLambdaDecl.cpp" />
     <ClCompile Include="NModule.cpp" />
+    <ClCompile Include="RMember.ixx" />
     <ClCompile Include="RModule.cpp" />
+    <ClCompile Include="RModule.ixx" />
     <ClCompile Include="RNames.cpp" />
     <ClCompile Include="NNamespaceDeclContainerComponent.cpp" />
     <ClCompile Include="NStructDecl.cpp" />
     <ClCompile Include="NStructFuncDecl.cpp" />
     <ClCompile Include="NStructVarDecl.cpp" />
+    <ClCompile Include="RNames.ixx" />
+    <ClCompile Include="RNamespaceDecl.ixx" />
     <ClCompile Include="RNamespaceDeclGroup.cpp" />
-    <ClCompile Include="RType.cpp" />
+    <ClCompile Include="RNamespaceDeclGroup.ixx" />
+    <ClCompile Include="RStructCtorDecl.ixx" />
+    <ClCompile Include="RStructDecl.ixx" />
+    <ClCompile Include="RStructFuncDecl.ixx" />
+    <ClCompile Include="RStructVarDecl.ixx" />
+    <ClCompile Include="RTypes.cpp" />
+    <ClCompile Include="RTypes.ixx" />
     <ClCompile Include="RTypeArguments.cpp" />
     <ClCompile Include="NTypeDeclContainerComponent.cpp" />
+    <ClCompile Include="RTypeArguments.ixx" />
+    <ClCompile Include="RTypeDecl.ixx" />
+    <ClCompile Include="RTypeDeclOuter.ixx" />
     <ClCompile Include="RTypeFactory.cpp" />
+    <ClCompile Include="RTypeFactory.ixx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

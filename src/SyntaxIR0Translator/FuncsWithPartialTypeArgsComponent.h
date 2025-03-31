@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
-#include <vector>
+import <memory>;
+import <vector>;
 
 #include <IR0/RTypeArguments.h>
 #include <IR0/DeclWIthOuterTypeArgs.h>

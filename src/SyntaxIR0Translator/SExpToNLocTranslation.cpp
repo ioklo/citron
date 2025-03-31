@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "SExpToNLocTranslation.h"
 
-#include <Infra/Ptr.h>
+import Citron.Ptr;
 #include <Logging/Logger.h>
 #include <Syntax/Syntax.h>
 #include <IR0/NLoc.h>

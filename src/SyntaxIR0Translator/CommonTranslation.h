@@ -1,6 +1,6 @@
 #pragma once
-#include <vector>
-#include <string>
+import <vector>;
+import <string>;
 #include <IR0/NDecl.h>
 
 namespace Citron {

@@ -1,22 +1,15 @@
-#include "NModule.h"
+module Citron.NDecls:NModule;
 
-#include <cassert>
+import <cassert>;
 
-#include <Infra/Exceptions.h>
-#include <Infra/Ptr.h>
-
-#include "RTypeArguments.h"
-#include "DeclWithOuterTypeArgs.h"
-#include "RGlobalFuncDecl.h"
-#include "RTypeFactory.h"
-#include "RNamespaceDeclGroup.h"
+import Citron.RDecls;
 
 using namespace std;
 
 namespace Citron {
 
-NModule::NModule(std::string&& name, std::shared_ptr<NNamespaceDecl>&& rootNamespace)
-    : name(std::move(name)), rootNamespace(std::move(rootNamespace))
+NModule::NModule(string&& name, shared_ptr<NNamespaceDecl>&& rootNamespace)
+    : name(move(name)), rootNamespace(move(rootNamespace))
 {
 }
 

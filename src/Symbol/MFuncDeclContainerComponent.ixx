@@ -1,4 +1,4 @@
-export module Citron.MSymbol:MFuncDeclContainerComponent;
+export module Citron.MDecls:MFuncDeclContainerComponent;
 
 import <vector>;
 import <memory>;
