@@ -1,4 +1,4 @@
-export module Citron.MNames;
+export module Citron.MDecls:MNames;
 
 #define DECLARE_DEFAULTS(linkage, className) \
     className(const className&) = delete; \

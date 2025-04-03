@@ -14,7 +14,7 @@ export using RNamespaceDeclGroupPtr = std::shared_ptr<RNamespaceDeclGroup>;
 export class RTypeArguments;
 export using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 
-export class RTypeFactory;
+class RTypeFactory;
 
 namespace IR0 {
 
@@ -160,7 +160,8 @@ public:
 private:
     template<typename TDecl, typename TType, typename... TArgs>
     std::shared_ptr<TType> MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, const std::shared_ptr<TDecl>& decl, const RTypeArgumentsPtr& typeArgs, TArgs&&... args);
-
 };
+
+export using RTypeFactoryPtr = std::shared_ptr<RTypeFactory>;
 
 } // namespace Citron

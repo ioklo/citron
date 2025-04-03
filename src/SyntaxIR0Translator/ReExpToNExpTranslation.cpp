@@ -1,13 +1,11 @@
-#include "pch.h"
-#include "ReExpToNExpTranslation.h"
+module Citron.SyntaxIR0Translator:ReExpToNExpTranslation;
 
 import Citron.Ptr;
-#include <Logging/Logger.h>
-#include <IR0/NExp.h>
+import Citron.Logger;
 
-#include "ReExp.h"
-#include "ScopeContext.h"
-#include "ReExpToNLocTranslation.h"
+import :ReExp;
+import :ScopeContext;
+import :ReExpToNLocTranslation;
 
 using namespace std;
 

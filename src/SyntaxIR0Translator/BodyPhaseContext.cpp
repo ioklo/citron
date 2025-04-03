@@ -1,2 +1,1 @@
-#include "pch.h"
-#include "BodyPhaseContext.h"
+module Citron.SyntaxIR0Translator:BodyPhaseContext;

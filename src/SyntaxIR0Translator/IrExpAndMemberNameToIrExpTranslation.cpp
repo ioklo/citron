@@ -1,25 +1,17 @@
-#include "pch.h"
-#include "IrExpAndMemberNameToIrExpTranslation.h"
+module Citron.SyntaxIR0Translator:IrExpAndMemberNameToIrExpTranslation;
 
 import <cassert>;
 
 import Citron.Ptr;
 import Citron.Exceptions;
-#include <Logging/Logger.h>
-#include <IR0/RNames.h>
-#include <IR0/RMember.h>
-#include <IR0/RTypeFactory.h>
-#include <IR0/NClassDecl.h>
-#include <IR0/RClassVarDecl.h>
-#include <IR0/NStructDecl.h>
-#include <IR0/NStructVarDecl.h>
-#include <IR0/NEnumDecl.h>
-#include <IR0/NNamespaceDecl.h>
+import Citron.Logger;
+import Citron.RDecls;
+import Citron.NDecls;
 
-#include "IrExp.h"
-#include "TranslationContext.h"
-#include "FuncContext.h"
-#include "ScopeContext.h"
+import :IrExp;
+import :TranslationContext;
+import :FuncContext;
+import :ScopeContext;
 
 namespace Citron::SyntaxIR0Translator {
 

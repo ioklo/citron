@@ -1,23 +1,23 @@
-#include "pch.h"
-#include "SyntaxIR0Translator.h"
+module Citron.SyntaxIR0Translator:SyntaxIR0Translator;
 
-#include <stdexcept>
+import <stdexcept>;
 import <memory>;
+import <cassert>;
 
+import Citron.Unreachable;
 import Citron.Ptr;
 import Citron.Exceptions;
 
-#include <IR0/NModule.h>
-#include <IR0/NNamespaceDecl.h>
+import Citron.NDecls;
 
-#include "EnumTranslation.h"
-#include "StructTranslation.h"
-#include "SkeletonPhaseContext.h"
-
+import :EnumTranslation;
+import :StructTranslation;
+import :SkeletonPhaseContext;
 
 using namespace std;
+using namespace Citron::SyntaxIR0Translator;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 namespace {
 
@@ -246,4 +246,4 @@ std::shared_ptr<NModule> Translate(
     //}
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

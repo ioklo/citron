@@ -1,5 +1,6 @@
 export module Citron.MDecls;
 
+export import :MAccessor;
 export import :MBodyDeclOuter;
 export import :MClassCtorDecl;
 export import :MClassDecl;
@@ -20,6 +21,7 @@ export import :MGlobalFuncDecl;
 export import :MIdentifier;
 export import :MInterfaceDecl;
 export import :MModule;
+export import :MNames;
 export import :MNamespaceDecl;
 export import :MNamespaceDeclContainerComponent;
 export import :MStructCtorDecl;

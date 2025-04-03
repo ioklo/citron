@@ -6,7 +6,7 @@ import <unordered_map>;
 
 import :MIdentifier;
 
-import Citron.MNames;
+import :MNames;
 
 namespace Citron {
 

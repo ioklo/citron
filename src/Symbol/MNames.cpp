@@ -1,10 +1,9 @@
-module Citron.MNames;
+module Citron.MDecls:MNames;
 
 #define IMPLEMENT_DEFAULTS(className) \
     className::className(className&&) = default; \
     className& className::operator=(className&&) = default; \
     className::~className() = default;
-
 
 namespace Citron 
 {

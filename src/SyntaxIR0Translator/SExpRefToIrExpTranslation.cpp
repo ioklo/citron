@@ -1,21 +1,20 @@
-#include "pch.h"
-#include "SExpRefToIrExpTranslation.h"
+module Citron.SyntaxIR0Translator:SExpRefToIrExpTranslation;
 
 import Citron.Ptr;
-#include <Syntax/Syntax.h>
-#include <Logging/Logger.h>
+import Citron.Syntax;
+import Citron.Logger;
 
-#include "IrExp.h"
+import :IrExp;
 
-#include "SExpToNExpTranslation.h"
-#include "SExpToNLocTranslation.h"
-#include "SExpRefToNExpTranslation.h"
-#include "IrExpAndMemberNameToIrExpTranslation.h"
+import :SExpToNExpTranslation;
+import :SExpToNLocTranslation;
+import :SExpRefToNExpTranslation;
+import :IrExpAndMemberNameToIrExpTranslation;
 
-#include "TranslationContext.h"
+import :TranslationContext;
 
-#include "DesignatedErrorLogger.h"
-#include "Misc.h"
+import :DesignatedErrorLogger;
+import :Misc;
 
 namespace Citron::SyntaxIR0Translator {
 

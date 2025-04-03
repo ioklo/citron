@@ -1,2 +1,1 @@
-#include "pch.h"
-#include "FuncMatching.h"
+module Citron.SyntaxIR0Translator:FuncMatching;

@@ -1,17 +1,14 @@
-#include "pch.h"
-#include "ReExpToNLocTranslation.h"
+module Citron.SyntaxIR0Translator:ReExpToNLocTranslation;
 
 import Citron.Ptr;
-#include <Logging/Logger.h>
-#include <IR0/NLoc.h>
-#include <IR0/RClassVarDecl.h>
-#include <IR0/NStructVarDecl.h>
-#include <IR0/RTypeFactory.h>
+import Citron.Logger;
+import Citron.RDecls;
+import Citron.NDecls;
 
-#include "TranslationContext.h"
-#include "ScopeContext.h"
-#include "DesignatedErrorLogger.h"
-#include "ReExp.h"
+import :TranslationContext;
+import :ScopeContext;
+import :DesignatedErrorLogger;
+import :ReExp;
 
 namespace Citron::SyntaxIR0Translator {
 

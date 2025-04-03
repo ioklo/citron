@@ -4,7 +4,7 @@ export module Citron.MDecls:MIdentifier;
 import <vector>;
 import <memory>;
 
-import Citron.MNames;
+import :MNames;
 
 namespace Citron {
 

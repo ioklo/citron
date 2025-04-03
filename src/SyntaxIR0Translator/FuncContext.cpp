@@ -1,25 +1,20 @@
- #include "pch.h"
-#include "FuncContext.h"
+module Citron.SyntaxIR0Translator:FuncContext;
 
 import <variant>;
+import <cassert>;
 
 import Citron.Ptr;
 import Citron.Variants;
 import Citron.Exceptions;
 
-#include <Syntax/Syntax.h>
+import Citron.Syntax;
 
-#include <IR0/NLambdaVarDecl.h>
-#include <IR0/NArgument.h>
-#include <IR0/NFuncDecl.h>
-#include <IR0/NFuncDeclOuter.h>
-#include <IR0/NDecl.h>
-#include <IR0/RTypeArguments.h>
-#include <IR0/NExp.h>
+import Citron.RDecls;
+import Citron.NDecls;
 
-#include "TranslationContext.h"
-#include "ScopeContext.h"
-#include "ImExp.h"
+import :TranslationContext;
+import :ScopeContext;
+import :ImExp;
 
 using namespace std;
 
@@ -83,7 +78,7 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         auto openTypeArgs = MakeOpenTypeArgs(factory);
         auto initArg = NArgument_Normal(MakePtr<NExp_Load>(MakePtr<NLoc_LambdaVar>(lambdaVar->decl, openTypeArgs)));
 
-        auto newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->name, std::move(initArg));
+        auto newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), std::move(initArg));
         return RMember_LambdaVar(std::move(openTypeArgs), std::move(newLambdaVar));
     }
 

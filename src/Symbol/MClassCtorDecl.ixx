@@ -8,7 +8,7 @@ import :MBodyDeclOuter;
 import :MFuncDecl;
 import :MCommonFuncDeclComponent;
 
-import Citron.MAccessor;
+import :MAccessor;
 
 namespace Citron
 {

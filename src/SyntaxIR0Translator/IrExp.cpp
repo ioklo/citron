@@ -1,8 +1,6 @@
-#include "pch.h"
-#include "IrExp.h"
+module Citron.SyntaxIR0Translator:IrExp;
 
-#include <IR0/RClassVarDecl.h>
-#include <IR0/RStructVarDecl.h>
+import Citron.RDecls;
 
 using namespace std;
 

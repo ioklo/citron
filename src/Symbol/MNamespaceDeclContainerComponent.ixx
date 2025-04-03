@@ -9,7 +9,7 @@ import <string>;
 import :MDecl;
 import :MTypeDecl;
 
-import Citron.MNames;
+import :MNames;
 
 namespace Citron {
 

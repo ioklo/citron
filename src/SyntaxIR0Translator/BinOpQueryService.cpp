@@ -1,7 +1,6 @@
-#include "pch.h"
-#include "BinOpQueryService.h"
+module Citron.SyntaxIR0Translator:BinOpQueryService;
 
-#include <IR0/RTypeFactory.h>
+import Citron.RDecls;
 
 using namespace std;
 

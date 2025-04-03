@@ -1,13 +1,12 @@
-#include "pch.h"
-#include "IrExpToNExpTranslation.h"
+module Citron.SyntaxIR0Translator:IrExpToNExpTranslation;
 
 import Citron.Exceptions;
 import Citron.Ptr;
-#include <Logging/Logger.h>
-#include <IR0/NExp.h>
+import Citron.Logger;
+import Citron.NDecls;
 
-#include "IrExp.h"
-#include "TranslationContext.h"
+import :IrExp;
+import :TranslationContext;
 
 namespace Citron::SyntaxIR0Translator {
 

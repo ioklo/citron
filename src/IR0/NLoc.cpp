@@ -33,7 +33,7 @@ RTypePtr NLoc_LocalVar::GetType(RTypeFactory& factory)
     return declType;
 }
 
-NLoc_LambdaVar::NLoc_LambdaVar(const std::shared_ptr<NLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+NLoc_LambdaVar::NLoc_LambdaVar(const std::shared_ptr<RLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }

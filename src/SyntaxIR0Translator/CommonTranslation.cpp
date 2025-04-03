@@ -1,6 +1,5 @@
-#include "pch.h"
-#include "CommonTranslation.h"
-#include <Syntax/Syntax.h>
+module Citron.SyntaxIR0Translator:CommonTranslation;
+import Citron.Syntax;
 
 using namespace std;
 

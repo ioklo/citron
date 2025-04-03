@@ -1,5 +1,7 @@
 export module Citron.MDecls:MClassDecl;
 
+import <memory>;
+
 import :MClassCtorDecl;
 import :MClassFuncDecl;
 import :MClassVarDecl;
@@ -11,8 +13,8 @@ import :MTypeDeclContainerComponent;
 import :MFuncDeclContainerComponent;
 import :MTypeDeclOuter;
 
-import Citron.MAccessor;
-import Citron.MNames;
+import :MAccessor;
+import :MNames;
 
 namespace Citron
 {

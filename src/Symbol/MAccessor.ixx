@@ -1,4 +1,4 @@
-export module Citron.MAccessor;
+export module Citron.MDecls:MAccessor;
 
 namespace Citron {
 

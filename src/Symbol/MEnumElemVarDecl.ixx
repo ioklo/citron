@@ -4,7 +4,7 @@ import <memory>;
 import <optional>;
 
 import :MDecl;
-import Citron.MNames;
+import :MNames;
 
 namespace Citron {
 

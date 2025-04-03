@@ -5,7 +5,7 @@ import <unordered_map>;
 
 import :MTypeDecl;
 
-import Citron.MNames;
+import :MNames;
 
 namespace Citron {
 

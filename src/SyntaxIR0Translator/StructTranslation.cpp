@@ -1,18 +1,19 @@
-#include "pch.h"
-#include "StructTranslation.h"
+module Citron.SyntaxIR0Translator:StructTranslation;
+
+import <cassert>;
 
 import Citron.Unreachable;
 import Citron.Ptr;
 import Citron.Exceptions;
 
-#include "SkeletonPhaseContext.h"
-#include "MemberDeclPhaseContext.h"
-#include "EnumTranslation.h"
-#include "SStmtToNStmtTranslation.h"
-#include "ScopeContext.h"
-#include "BodyPhaseContext.h"
-#include "TranslationContext.h"
-#include "Misc.h"
+import :SkeletonPhaseContext;
+import :MemberDeclPhaseContext;
+import :EnumTranslation;
+import :SStmtToNStmtTranslation;
+import :ScopeContext;
+import :BodyPhaseContext;
+import :TranslationContext;
+import :Misc;
 
 using namespace std;
 
@@ -233,11 +234,19 @@ void AddStruct_MemberDeclPhase(const shared_ptr<NStructDecl>& nStruct, const sha
             if (rBaseStruct != nullptr)
                 throw NotImplementedException();
 
-            rBaseStruct = move(rType);
+            rBaseStruct = dynamic_pointer_cast<RType_Struct>(rType);
+            assert(rBaseStruct); // CustomTypeKind가 Struct이면서 RType_Struct를 따르지 않는것이 뭐가 있을까
         }
         else if (rTypeKind == RCustomTypeKind::Interface)
         {
-            rInterfaces.push_back(move(rType));
+            auto rInterface = dynamic_pointer_cast<RType_Interface>(rType);
+            if (!rInterface)
+            {
+                throw NotImplementedException();
+            }
+
+            // func<>, 등도 interface type인데, 어떻게 할지
+            rInterfaces.push_back(move(rInterface));
         }
         else
         {

@@ -1,6 +1,5 @@
-#include "pch.h"
-#include "DesignatedErrorLogger.h"
-#include <Logging/Logger.h>
+module Citron.SyntaxIR0Translator:DesignatedErrorLogger;
+import Citron.Logger;
 
 namespace Citron::SyntaxIR0Translator {
 

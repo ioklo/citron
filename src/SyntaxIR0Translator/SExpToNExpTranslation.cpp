@@ -1,36 +1,35 @@
-#include "pch.h"
-#include "SExpToNExpTranslation.h"
+module Citron.SyntaxIR0Translator:SExpToNExpTranslation;
 
 import <variant>;
+import <cassert>;
 
 import Citron.Ptr;
 import Citron.Exceptions;
 import Citron.Unreachable;
-#include <Logging/Logger.h>
-#include <Syntax/Syntax.h>
-#include <IR0/RType.h>
-#include <IR0/NExp.h>
-#include <IR0/NLoc.h>
-#include <IR0/RTypeFactory.h>
+import Citron.Logger;
+import Citron.Syntax;
 
-#include "ReExp.h"
-#include "ImExp.h"
+import Citron.RDecls;
+import Citron.NDecls;
 
-#include "SExpToNLocTranslation.h"
-#include "SExpToReExpTranslation.h"
-#include "SExpToImExpTranslation.h"
-#include "SExpRefToNExpTranslation.h"
+import :ReExp;
+import :ImExp;
 
-#include "ReExpToNExpTranslation.h"
-#include "ReExpToNLocTranslation.h"
+import :SExpToNLocTranslation;
+import :SExpToReExpTranslation;
+import :SExpToImExpTranslation;
+import :SExpRefToNExpTranslation;
 
-#include "ImCallableAndSArgsToNExpTranslation.h"
+import :ReExpToNExpTranslation;
+import :ReExpToNLocTranslation;
 
-#include "ScopeContext.h"
-#include "DesignatedErrorLogger.h"
-#include "Misc.h"
-#include "BinOpQueryService.h"
-#include "TranslationContext.h"
+import :ImCallableAndSArgsToNExpTranslation;
+
+import :ScopeContext;
+import :DesignatedErrorLogger;
+import :Misc;
+import :BinOpQueryService;
+import :TranslationContext;
 
 using namespace std;
 

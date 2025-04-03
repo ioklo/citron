@@ -1,30 +1,23 @@
-#include "pch.h"
-#include "ImCallableAndSArgsToNExpTranslation.h"
+module Citron.SyntaxIR0Translator:ImCallableAndSArgsToNExpTranslation;
 
 import Citron.Ptr;
 import Citron.Exceptions;
-#include <Syntax/Syntax.h>
-#include <Logging/Logger.h>
+import Citron.Syntax;
+import Citron.Logger;
 
-#include <IR0/NExp.h>
-#include <IR0/NClassFuncDecl.h>
+import Citron.NDecls;
 
-#include <IR0/NStructDecl.h>
-#include <IR0/NStructFuncDecl.h>
+import :TranslationContext;
+import :ScopeContext;
 
-#include <IR0/NEnumElemDecl.h>
+import :ImExp;
+import :ReExp;
 
-#include "TranslationContext.h"
-#include "ScopeContext.h"
+import :ImExpToReExpTranslation;
+import :ReExpToNLocTranslation;
 
-#include "ImExp.h"
-#include "ReExp.h"
-
-#include "ImExpToReExpTranslation.h"
-#include "ReExpToNLocTranslation.h"
-
-#include "DesignatedErrorLogger.h"
-#include "FuncMatching.h"
+import :DesignatedErrorLogger;
+import :FuncMatching;
 
 namespace Citron::SyntaxIR0Translator {
 

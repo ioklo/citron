@@ -1,2 +1,1 @@
-#include "pch.h"
-#include "DeclTypeInfo.h"
+module Citron.SyntaxIR0Translator:DeclTypeInfo;

@@ -1,32 +1,29 @@
-#include "pch.h"
-#include "SStmtToNStmtTranslation.h"
+module Citron.SyntaxIR0Translator:SStmtToNStmtTranslation;
 
 import <optional>;
 import <variant>;
+import <cassert>;
 
 import Citron.Ptr;
 import Citron.Exceptions;
 import Citron.Variants;
 
-#include <IR0/NStmt.h>
-#include <IR0/NExp.h>
-#include <IR0/RTypeFactory.h>
-#include <IR0/RFuncDecl.h>
-#include <IR0/NLoc.h>
-#include <Syntax/Syntax.h>
-#include <Logging/Logger.h>
+import Citron.Syntax;
+import Citron.Logger;
 
-#include "SExpToNExpTranslation.h"
-#include "SVarDeclToNStmtsTranslation.h"
-#include "SExpToNLocTranslation.h"
+import Citron.RDecls;
+import Citron.NDecls;
 
-#include "TranslationContext.h"
-#include "ScopeContext.h"
-#include "FuncContext.h"
-#include "DesignatedErrorLogger.h"
-#include "Misc.h"
-#include "RFuncAndRArgsToNExpTranslation.h"
-#include <IR0/DeclWithOuterTypeArgs.h>
+import :SExpToNExpTranslation;
+import :SVarDeclToNStmtsTranslation;
+import :SExpToNLocTranslation;
+
+import :TranslationContext;
+import :ScopeContext;
+import :FuncContext;
+import :DesignatedErrorLogger;
+import :Misc;
+import :RFuncAndRArgsToNExpTranslation;
 
 using namespace std;
 
@@ -498,7 +495,7 @@ public:
                     if (setRet->type != context.MakeBoolType()) continue;
 
                     // 인자는 out T*꼴이어야 한다
-                    auto param = context.GetFuncParameter(*funcDecl, *typeArgs, 0);
+                    auto param = context.GetFuncParam(*funcDecl, *typeArgs, 0);
                     if (!param.bOut) continue;
 
                     auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(param.type.get());
@@ -551,7 +548,7 @@ public:
                     // var symbol = (IFuncSymbol)context.InstantiateSymbol(outer, declSymbol, typeArgs: default);
 
                     // 인자는 out T*꼴이어야 한다
-                    auto param = context.GetFuncParameter(*funcDecl, *typeArgs, 0);
+                    auto param = context.GetFuncParam(*funcDecl, *typeArgs, 0);
                     if (!param.bOut) continue;
 
                     auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(param.type.get());

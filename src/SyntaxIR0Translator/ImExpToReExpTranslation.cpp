@@ -1,14 +1,14 @@
-#include "pch.h"
-#include "ImExpToReExpTranslation.h"
+module Citron.SyntaxIR0Translator:ImExpToReExpTranslation;
 
 import Citron.Exceptions;
 import Citron.Ptr;
-#include <Logging/Logger.h>
-#include <IR0/NEnumDecl.h>
+import Citron.Logger;
 
-#include "ImExp.h"
-#include "ReExp.h"
-#include "TranslationContext.h"
+import Citron.NDecls;
+
+import :ImExp;
+import :ReExp;
+import :TranslationContext;
 
 using namespace std;
 

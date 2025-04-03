@@ -139,7 +139,7 @@
     <ClCompile Include="RTypeArguments.ixx">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
-    <ClCompile Include="DeclsWithOuterTypeArgs.ixx">
+    <ClCompile Include="DeclWithOuterTypeArgs.ixx">
       <Filter>RDecls</Filter>
     </ClCompile>
     <ClCompile Include="RIdentifier.ixx">
@@ -297,6 +297,9 @@
     </ClCompile>
     <ClCompile Include="NArgument.ixx">
       <Filter>NDecls</Filter>
+    </ClCompile>
+    <ClCompile Include="RFuncParameter.cpp">
+      <Filter>RDecls\03 Func</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

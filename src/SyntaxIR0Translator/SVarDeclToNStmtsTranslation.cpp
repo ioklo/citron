@@ -1,17 +1,17 @@
-#include "pch.h"
-#include "SVarDeclToNStmtsTranslation.h"
+module Citron.SyntaxIR0Translator:SVarDeclToNStmtsTranslation;
+
+import <cassert>;
 
 import Citron.Ptr;
 import Citron.Unreachable;
-#include <Syntax/Syntax.h>
-#include <Logging/Logger.h>
-#include <IR0/RType.h>
-#include <IR0/NStmt.h>
+import Citron.Syntax;
+import Citron.Logger;
+import Citron.NDecls;
 
-#include "DeclTypeInfo.h"
-#include "TranslationContext.h"
-#include "SExpToNExpTranslation.h"
-#include "Misc.h"
+import :DeclTypeInfo;
+import :TranslationContext;
+import :SExpToNExpTranslation;
+import :Misc;
 
 using namespace std;
 

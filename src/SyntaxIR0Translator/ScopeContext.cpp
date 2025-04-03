@@ -1,11 +1,10 @@
-#include "pch.h"
-#include "ScopeContext.h"
+module Citron.SyntaxIR0Translator:ScopeContext;
 
 import Citron.Ptr;
-#include <Syntax/Syntax.h>
-#include <IR0/RType.h>
+import Citron.Syntax;
+import Citron.RDecls;
 
-#include "FuncContext.h"
+import :FuncContext;
 
 using namespace std;
 

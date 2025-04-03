@@ -61,11 +61,32 @@ RTypePtr NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RType
     return setReturn->type->Apply(typeArgs, factory);
 }
 
+RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments& typeArgs, RTypeFactory& factory)
+{
+    assert(funcReturnAndParams);
+
+    return visit(overloaded{
+        [](RFuncReturn_ForCtor&) -> RFuncReturn { return RFuncReturn_ForCtor{}; },
+        [&typeArgs, &factory](RFuncReturn_Set& setReturn) -> RFuncReturn { return RFuncReturn_Set{setReturn.type->Apply(typeArgs, factory)}; },
+        [](RFuncReturn_NotSet&) -> RFuncReturn { return RFuncReturn_NotSet{}; }
+    }, funcReturnAndParams->funcReturn);
+}
+
+
 RFuncParameter& NCommonFuncDeclComponent::GetUnboundFuncParam(size_t i)
 {
     assert(funcReturnAndParams);
     return funcReturnAndParams->funcParameters[i];
 }
+
+RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory)
+{
+    assert(funcReturnAndParams);
+
+    auto& unboundFuncParam = funcReturnAndParams->funcParameters[index];
+    return unboundFuncParam.Apply(typeArgs, factory);
+}
+
 
 vector<RTypePtr> NCommonFuncDeclComponent::GetParamIds()
 {

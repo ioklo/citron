@@ -621,14 +621,14 @@ export class NExp_CallLambda : public NExp
 {
 public:
     // TODO: RType_Lambda에 있는 정보들, callable->GetType()하면 얻을수 있는 것들이다. 삭제해야 하지 않을까
-    std::shared_ptr<NLambdaDecl> lambdaDecl;
+    std::shared_ptr<RLambdaDecl> lambdaDecl;
     RTypeArgumentsPtr typeArgs;
 
     NLocPtr callable;
     std::vector<NArgument> args;
 
 public:
-    IR0_API NExp_CallLambda(const std::shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const std::vector<NArgument>& args);
+    IR0_API NExp_CallLambda(const std::shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const std::vector<NArgument>& args);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }

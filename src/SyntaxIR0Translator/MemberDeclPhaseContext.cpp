@@ -1,8 +1,7 @@
-#include "pch.h"
-#include "MemberDeclPhaseContext.h"
+module Citron.SyntaxIR0Translator:MemberDeclPhaseContext;
 
 import Citron.Exceptions;
-#include <IR0/RNames.h>
+import Citron.RDecls;
 
 using namespace std;
 
@@ -36,7 +35,7 @@ tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDecl
 
         }
 
-        rParams.push_back(RFuncParameter { sParam.hasOut, type, sParam.name });
+        rParams.emplace_back(sParam.hasOut, type, RName_Normal{sParam.name});
     }
 
     return make_tuple(std::move(rParams), bLastParamVariadic);

@@ -1,18 +1,18 @@
-#include "pch.h"
-#include "Misc.h"
+module Citron.SyntaxIR0Translator:Misc;
+
+import <cassert>;
 
 import Citron.Ptr;
 import Citron.Exceptions;
-#include <Logging/Logger.h>
+import Citron.Logger;
 
-#include <Syntax/Syntax.h>
+import Citron.Syntax;
 
-#include <IR0/RTypeFactory.h>
-#include <IR0/RType.h>
-#include <IR0/NExp.h>
+import Citron.RDecls;
+import Citron.NDecls;
 
-#include "ScopeContext.h"
-#include "TranslationContext.h"
+import :ScopeContext;
+import :TranslationContext;
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -123,7 +123,7 @@ RName_CtorParam MakeBaseCtorParamName(size_t index, RName baseParamName)
     }
     else
     {
-        throw new RuntimeFatalException();
+        throw RuntimeFatalException();
     }
 }
 

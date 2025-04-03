@@ -1,6 +1,6 @@
-#include "pch.h"
-#include "ReExp.h"
-#include <IR0/NLambdaVarDecl.h>
+module Citron.SyntaxIR0Translator:ReExp;
+
+import Citron.NDecls;
 
 namespace Citron::SyntaxIR0Translator {
 

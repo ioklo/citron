@@ -15,6 +15,8 @@ export class RLambdaVarDecl
     : public RDecl
 {
 public:
+    virtual RName GetName() = 0;
+    virtual RTypePtr GetUnboundDeclType() = 0;
     virtual RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
 };

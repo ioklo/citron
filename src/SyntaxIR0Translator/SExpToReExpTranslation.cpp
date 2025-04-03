@@ -1,12 +1,11 @@
-#include "pch.h"
-#include "SExpToReExpTranslation.h"
+module Citron.SyntaxIR0Translator:SExpToReExpTranslation;
 
 import Citron.Ptr;
-#include <Syntax/Syntax.h>
-#include "SExpToImExpTranslation.h"
-#include "ImExpToReExpTranslation.h"
-#include "ReExp.h"
-#include "SExpToNExpTranslation.h"
+import Citron.Syntax;
+import :SExpToImExpTranslation;
+import :ImExpToReExpTranslation;
+import :ReExp;
+import :SExpToNExpTranslation;
 
 namespace Citron::SyntaxIR0Translator {
 

@@ -1,18 +1,12 @@
-#include "pch.h"
-#include "RFuncAndRArgsToNExpTranslation.h"
+module Citron.SyntaxIR0Translator:RFuncAndRArgsToNExpTranslation;
 
 import <vector>;
 import <cassert>;
 
 import Citron.Ptr;
 import Citron.Exceptions;
-#include <IR0/RFuncDecl.h>
-#include <IR0/RTypeArguments.h>
-#include <IR0/NLoc.h>
-#include <IR0/NExp.h>
-#include <IR0/NArgument.h>
-#include <IR0/NClassFuncDecl.h>
-#include <IR0/NStructFuncDecl.h>
+import Citron.RDecls;
+import Citron.NDecls;
 
 using namespace std;
 
@@ -55,7 +49,7 @@ public:
 
     void Visit(RStructCtorDecl& func) override 
     {
-        throw new NotImplementedException();
+        throw NotImplementedException();
     }
 
     void Visit(RStructFuncDecl& func) override 

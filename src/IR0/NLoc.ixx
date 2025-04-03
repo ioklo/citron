@@ -86,11 +86,11 @@ public:
 export class NLoc_LambdaVar : public NLoc
 {
 public:
-    std::shared_ptr<NLambdaVarDecl> decl;
+    std::shared_ptr<RLambdaVarDecl> decl;
     RTypeArgumentsPtr typeArgs;
 
 public:
-    IR0_API NLoc_LambdaVar(const std::shared_ptr<NLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NLoc_LambdaVar(const std::shared_ptr<RLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };

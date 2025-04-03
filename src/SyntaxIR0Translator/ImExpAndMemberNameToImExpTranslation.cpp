@@ -1,28 +1,19 @@
-#include "pch.h"
-#include "ImExpAndMemberNameToImExpTranslation.h"
+module Citron.SyntaxIR0Translator:ImExpAndMemberNameToImExpTranslation;
 
 import <cassert>;
 
 import Citron.Ptr;
 import Citron.Exceptions;
-#include <Logging/Logger.h>
-#include <IR0/RTypeFactory.h>
-#include <IR0/RClassVarDecl.h>
-#include <IR0/NStructVarDecl.h>
-#include <IR0/RMember.h>
-#include <IR0/NNamespaceDecl.h>
-#include <IR0/NClassDecl.h>
-#include <IR0/NStructDecl.h>
-#include <IR0/NEnumDecl.h>
+import Citron.Logger;
+import Citron.RDecls;
+import Citron.NDecls;
 
-#include "TranslationContext.h"
-#include "FuncContext.h"
-#include "ScopeContext.h"
-
-#include "ImExp.h"
-#include "ReExp.h"
-
-#include "ImExpToReExpTranslation.h"
+import :TranslationContext;
+import :FuncContext;
+import :ScopeContext;
+import :ImExp;
+import :ReExp;
+import :ImExpToReExpTranslation;
 
 using namespace std;
 
@@ -172,6 +163,24 @@ public:
     {
         throw RuntimeFatalException();
     }
+
+    // 
+    ImExpPtr operator()(RMember_TypeVar& member)
+    {
+        throw NotImplementedException();
+    }
+
+    ImExpPtr operator()(RMember_LocalVar& member)
+    {
+        throw NotImplementedException();
+    }
+
+    ImExpPtr operator()(RMember_ThisVar& member)
+    {
+        throw NotImplementedException();
+    }
+
+
 };
 
 class InstanceParentTranslator
@@ -300,6 +309,21 @@ public:
     {
         throw NotImplementedException();
     }
+
+    ImExpPtr operator()(RMember_TypeVar& member)
+    {
+        throw NotImplementedException();
+    }
+
+    ImExpPtr operator()(RMember_LocalVar& member)
+    {
+        throw NotImplementedException();
+    }
+
+    ImExpPtr operator()(RMember_ThisVar& member)
+    {
+        throw NotImplementedException();
+    }
 };
 
 // MemberParent And Id Binder
@@ -315,7 +339,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
     void TranslateStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
     {
         auto oMember = decl.GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
-        StaticParentTranslator binder(typeArgsExceptOuter, context);
+        StaticParentTranslator binder{typeArgsExceptOuter, context};
         *result = visit(binder, *oMember);
     }
 

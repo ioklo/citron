@@ -55,9 +55,13 @@ public:
     size_t GetTypeParamCount();
     size_t GetParamCount();
 
-    IR0_API RFuncReturn GetUnboundFuncReturn();
+    IR0_API RFuncReturn GetUnboundFuncReturn();    
     IR0_API RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory);
+    IR0_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RTypeFactory& factory);
+    
     IR0_API RFuncParameter& GetUnboundFuncParam(size_t i);
+    IR0_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory);
+
     IR0_API std::vector<RTypePtr> GetParamIds();
     IR0_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
 };

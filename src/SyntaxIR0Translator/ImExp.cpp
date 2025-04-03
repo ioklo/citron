@@ -1,5 +1,4 @@
-#include "pch.h"
-#include "ImExp.h"
+module Citron.SyntaxIR0Translator:ImExp;
 
 namespace Citron::SyntaxIR0Translator {
 

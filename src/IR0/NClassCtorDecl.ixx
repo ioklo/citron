@@ -55,9 +55,11 @@ public:
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }
 
+    // from RFuncDecl
+    // IR0_API RFuncReturn GetReturn(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+
     // from RClassCtorDecl
     IR0_API std::shared_ptr<RClassDecl> GetClassDecl() override;
 };
-
 
 }

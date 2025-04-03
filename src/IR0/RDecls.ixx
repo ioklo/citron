@@ -1,8 +1,5 @@
 export module Citron.RDecls;
 
-// :ForwardDecls는 포함하지 않는다
-
-
 export import :RTypes;
 export import :DeclWithOuterTypeArgs;
 export import :RAccessor;

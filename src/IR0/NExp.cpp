@@ -375,7 +375,7 @@ RTypePtr NExp_Lambda::GetType(RTypeFactory& factory)
     return factory.MakeLambdaType(lambdaDecl, typeArgs);
 }
 
-NExp_CallLambda::NExp_CallLambda(const shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const vector<NArgument>& args)
+NExp_CallLambda::NExp_CallLambda(const shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const vector<NArgument>& args)
     : lambdaDecl(lambdaDecl), typeArgs(typeArgs), callable(callable), args(args)
 {
 }

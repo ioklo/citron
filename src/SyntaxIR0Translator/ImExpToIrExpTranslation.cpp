@@ -1,15 +1,14 @@
-#include "pch.h"
-#include "ImExpToIrExpTranslation.h"
+module Citron.SyntaxIR0Translator:ImExpToIrExpTranslation;
 
 import Citron.Ptr;
 import Citron.Exceptions;
-#include <IR0/RClassVarDecl.h>
-#include <IR0/NStructVarDecl.h>
+import Citron.RDecls;
+import Citron.NDecls;
 
-#include "ImExp.h"
-#include "IrExp.h"
+import :ImExp;
+import :IrExp;
 
-#include "TranslationContext.h"
+import :TranslationContext;
 
 namespace Citron::SyntaxIR0Translator {
 

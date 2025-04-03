@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="TestGenerator.cpp" />
+    <ClCompile Include="TestGenerator-UnitHeaders.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg-configuration.json" />

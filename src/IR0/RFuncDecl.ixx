@@ -27,15 +27,17 @@ public:
     virtual ~RFuncDecl() {}
 
     virtual RDecl* GetRDecl() = 0;
-
     virtual bool IsStatic() = 0;
     virtual size_t GetTypeParamCount() = 0;
     virtual size_t GetParamCount() = 0;
     virtual RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
-    virtual RFuncParameter GetFuncParameter(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory) = 0;
+    virtual RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
+    virtual RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory) = 0;
 
     virtual void Accept(RFuncDeclVisitor& visitor) = 0;
 };
+
+export using RFuncDeclPtr = std::shared_ptr<RFuncDecl>;
 
 export class RFuncDeclVisitor
 {

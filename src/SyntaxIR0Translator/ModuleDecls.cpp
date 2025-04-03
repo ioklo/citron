@@ -1,2 +1,1 @@
-#include "pch.h"
-#include "ModuleDecls.h"
+module Citron.SyntaxIR0Translator:ModuleDecls;

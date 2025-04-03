@@ -1,22 +1,21 @@
-#include "pch.h"
+module Citron.SyntaxIR0Translator:TranslationContext;
 
 import Citron.Ptr;
 import Citron.Exceptions;
 
-#include <Logging/Logger.h>
+import Citron.Logger;
 
-#include <IR0/NLoc.h>
-#include <IR0/RTypeFactory.h>
-#include <IR0/RType.h>
+import Citron.RDecls;
+import Citron.NDecls;
 
-#include "ReExp.h"
-#include "IrExp.h"
-#include "TranslationContext.h"
-#include "ScopeContext.h"
-#include "FuncContext.h"
-#include "BinOpQueryService.h"
+import :ReExp;
+import :IrExp;
+import :TranslationContext;
+import :ScopeContext;
+import :FuncContext;
+import :BinOpQueryService;
 
-#include "Misc.h"
+import :Misc;
 
 using namespace std;
 
@@ -267,12 +266,12 @@ const vector<BinOpInfo>& TranslationContext::GetBinOpInfos(SBinaryOpKind kind)
 
 RFuncReturn TranslationContext::GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs)
 {
-    return decl.GetReturn(typeArgs, factory);
+    return decl.GetFuncReturn(typeArgs, *factory);
 }
 
-RFuncParameter TranslationContext::GetFuncParameter(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index)
+RFuncParameter TranslationContext::GetFuncParam(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index)
 {
-    return decl.GetFuncParameter(typeArgs, index);
+    return decl.GetFuncParam(typeArgs, index, *factory);
 }
 
 } // namespace Citron::SyntaxIR0Translator
