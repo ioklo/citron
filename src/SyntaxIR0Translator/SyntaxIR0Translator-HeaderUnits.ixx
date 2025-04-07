@@ -1,4 +1,4 @@
-export module SyntaxIR0Translator_HeaderUnits;
+export module Citron.SyntaxIR0Translator.HeaderUnits;
 
 import <stdexcept>;
 import <cassert>;

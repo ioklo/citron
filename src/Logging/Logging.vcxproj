@@ -145,6 +145,8 @@
     <ClInclude Include="Public\Logging\LoggingConfig.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Diag.cpp" />
+    <ClCompile Include="Diag.ixx" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="Logger.ixx" />
   </ItemGroup>

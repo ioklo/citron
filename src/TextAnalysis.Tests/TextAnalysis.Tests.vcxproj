@@ -105,7 +105,7 @@
   <ItemGroup>
     <ClCompile Include="CommandLexerTests.cpp" />
     <ClCompile Include="ExpParserTests.g.cpp" />
-    <ClCompile Include="HeaderUnits.ixx" />
+    <ClCompile Include="TextAnalysis.Tests-HeaderUnits.ixx" />
     <ClCompile Include="LexerTests.cpp" />
     <ClCompile Include="ScriptParserTests.g.cpp" />
     <ClCompile Include="StmtParserTests.g.cpp" />

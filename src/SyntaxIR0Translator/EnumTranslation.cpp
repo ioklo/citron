@@ -6,7 +6,6 @@ import Citron.NDecls;
 import :SkeletonPhaseContext;
 import :MemberDeclPhaseContext;
 
-
 using namespace std;
 
 namespace Citron::SyntaxIR0Translator {

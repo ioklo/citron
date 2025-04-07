@@ -137,7 +137,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CodeGenerator.cpp" />
-    <ClCompile Include="HeaderUnits.ixx" />
+    <ClCompile Include="CodeGenerator-HeaderUnits.ixx" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="Misc.ixx" />
     <ClCompile Include="SyntaxCodeGenerator.cpp" />

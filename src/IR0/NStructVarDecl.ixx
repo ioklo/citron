@@ -41,6 +41,7 @@ public:
 
     // from RStructVarDecl
     IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    bool IsStatic() override { return bStatic; }
 };
 
 }

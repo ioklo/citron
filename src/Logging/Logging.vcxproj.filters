@@ -26,5 +26,11 @@
     <ClCompile Include="Logger.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Diag.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Diag.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

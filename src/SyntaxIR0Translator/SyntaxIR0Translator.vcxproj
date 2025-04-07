@@ -81,6 +81,8 @@
     <ClCompile Include="ReExpToNExpTranslation.ixx" />
     <ClCompile Include="ReExpToNLocTranslation.cpp" />
     <ClCompile Include="ReExpToNLocTranslation.ixx" />
+    <ClCompile Include="ResolveIdentifierError.cpp" />
+    <ClCompile Include="ResolveIdentifierError.ixx" />
     <ClCompile Include="RFuncAndRArgsToNExpTranslation.cpp" />
     <ClCompile Include="RFuncAndRArgsToNExpTranslation.ixx" />
     <ClCompile Include="ScopeContext.cpp" />

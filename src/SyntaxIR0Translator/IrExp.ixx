@@ -7,6 +7,7 @@ import Citron.NDecls;
 namespace Citron::SyntaxIR0Translator {
 
 // Intermediate Ref Exp
+// Sytnax가 &exp 꼴일 경우 IrExp를 거쳐서 ReExp(ResolvedExp)로 변환한다
 
 class IrExp_Namespace;
 class IrExp_TypeVar;

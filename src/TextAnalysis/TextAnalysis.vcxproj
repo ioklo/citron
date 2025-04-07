@@ -151,7 +151,7 @@
     <ClCompile Include="Buffer.ixx" />
     <ClCompile Include="ExpParser.cpp" />
     <ClCompile Include="ExpParser.ixx" />
-    <ClCompile Include="HeaderUnits.ixx" />
+    <ClCompile Include="TextAnalysis-HeaderUnits.ixx" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="Lexer.ixx" />
     <ClCompile Include="ParserMisc.cpp" />

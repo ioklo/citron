@@ -344,13 +344,13 @@ void AddStruct_TrivialCtorPhase(const shared_ptr<NStructDecl>& nStruct)
         }
 
         for (auto& var : nStruct->EnumerateUnboundVars())
-            parameters.emplace_back(/*bOut*/ false, var->GetUnboundDeclType(), var->name);
+            parameters.emplace_back(/*bOut*/ false, var->GetUnboundDeclType(), RName_Normal{var->name});
     }
     else
     {
         parameters.reserve(varCount);
         for (auto& var : nStruct->EnumerateUnboundVars())
-            parameters.emplace_back(/*bOut*/ false, var->GetUnboundDeclType(), var->name);
+            parameters.emplace_back(/*bOut*/ false, var->GetUnboundDeclType(), RName_Normal{var->name});
     }
 
     auto nCtor = MakePtr<NStructCtorDecl>(nStruct, RAccessor::Public, /*bTrivial*/ true);

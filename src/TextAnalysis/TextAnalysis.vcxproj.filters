@@ -35,7 +35,7 @@
       <Filter>Public Headers</Filter>
     </ClCompile>
     <ClCompile Include="ParserMisc.ixx" />
-    <ClCompile Include="HeaderUnits.ixx">
+    <ClCompile Include="TextAnalysis-HeaderUnits.ixx">
       <Filter>Public Headers</Filter>
     </ClCompile>
   </ItemGroup>
