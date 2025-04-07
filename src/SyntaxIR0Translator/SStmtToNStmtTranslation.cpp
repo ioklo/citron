@@ -21,7 +21,7 @@ import :SExpToNLocTranslation;
 import :TranslationContext;
 import :ScopeContext;
 import :FuncContext;
-import :DesignatedErrorLogger;
+import :DesignatedDiagnostic;
 import :Misc;
 import :RFuncAndRArgsToNExpTranslation;
 
@@ -34,7 +34,7 @@ namespace {
 bool TranslateSStmtToNStmts(SStmt& sStmt, std::vector<NStmtPtr>* outStmts, TranslationContext& context);
 bool TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt& embedStmt, std::vector<NStmtPtr>* outStmts, TranslationContext& context);
 bool TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, std::vector<NStmtPtr>* outStmts, TranslationContext& context);
-NExpPtr TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RTypePtr& hintType, IDesignatedErrorLogger* designatedErrorLogger, TranslationContext& context);
+NExpPtr TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RTypePtr& hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context);
 optional<NLambdaDeclAndArgs> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context);
 
 bool IsTopLevelRExp(NExp& exp)
@@ -109,11 +109,10 @@ public:
         if (!nCond) return Fatal();
 
         // cast
-        nCond = TryCastRExp(std::move(nCond), context.MakeBoolType(), context);
+        nCond = CastNExp(std::move(nCond), context.MakeBoolType(), context);
         if (!nCond)
         {
-            context.Log(&Logger::Fatal_IfStmt_ConditionShouldBeBool);
-            return Fatal();
+            return Error(MakePtr<Error_IfStmt_ConditionShouldBeBool>());
         }
 
         auto nestedContext = context.MakeNestedScopeContext();
@@ -202,15 +201,15 @@ public:
             auto rawCond = TranslateSExpToNExp(*stmt.cond, /*hintType*/ boolType, forStmtContext);
             if (!rawCond) return Fatal();
 
-            condExp = TryCastRExp(std::move(rawCond), boolType, context);
+            condExp = CastNExp(std::move(rawCond), boolType, context);
             if (!condExp) return Fatal();
         }
 
         NExpPtr continueExp;
         if (stmt.cont)
         {
-            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ForStmt_ContinueExpShouldBeAssignOrCall);
-            continueExp = TranslateSExpAsTopLevelExpToNExp(*stmt.cont, /*hintType*/ nullptr, &designatedErrorLogger, forStmtContext);
+            DesignatedDiagnostic<Error_ForStmt_ContinueExpShouldBeAssignOrCall> designatedDiag;
+            continueExp = TranslateSExpAsTopLevelExpToNExp(*stmt.cont, /*hintType*/ nullptr, &designatedDiag, forStmtContext);
             if (!continueExp) return Fatal();
         }
 
@@ -227,8 +226,7 @@ public:
     {
         if (!context.IsInLoop())
         {
-            context.Log(&Logger::Fatal_ContinueStmt_ShouldUsedInLoop);
-            return Fatal();
+            return Error(MakePtr<Error_ContinueStmt_ShouldUsedInLoop>());
         }
 
         return Valid(MakePtr<NStmt_Continue>());
@@ -238,8 +236,7 @@ public:
     {
         if (!context.IsInLoop())
         {
-            context.Log(&Logger::Fatal_BreakStmt_ShouldUsedInLoop);
-            return Fatal();
+            return Error(MakePtr<Error_BreakStmt_ShouldUsedInLoop>());
         }
 
         return Valid(MakePtr<NStmt_Break>());
@@ -252,8 +249,7 @@ public:
         {
             if (stmt.value)
             {
-                context.Log(&Logger::Fatal_ReturnStmt_SeqFuncShouldReturnVoid);
-                return Fatal();
+                return Error(MakePtr<Error_ReturnStmt_SeqFuncShouldReturnVoid>());
             }
 
             return Valid(MakePtr<NStmt_Return>(nullptr));
@@ -271,8 +267,7 @@ public:
                     // 생성자거나, void 함수가 아니라면 에러
                     if (set.type != context.MakeVoidType())
                     {
-                        context.Log(&Logger::Fatal_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType);
-                        return Fatal();
+                        return Error(MakePtr<Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType>());
                     }
 
                     return Valid(MakePtr<NStmt_Return>(nullptr));
@@ -284,13 +279,12 @@ public:
                     auto retValue = TranslateSExpToNExp(*stmt.value, /*hintType*/ set.type, context);
                     if (!retValue) return Fatal();
 
-                    auto castRetValue = TryCastRExp(std::move(retValue), set.type, context);
+                    auto castRetValue = CastNExp(std::move(retValue), set.type, context);
 
                     // 캐스트 실패시
                     if (!castRetValue)
                     {
-                        context.Log(&Logger::Fatal_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType);
-                        return Fatal();
+                        return Error(MakePtr<Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType>());
                     }
 
                     return Valid(MakePtr<NStmt_Return>(std::move(castRetValue)));
@@ -359,8 +353,8 @@ public:
 
     void Visit(SStmt_Exp& stmt) override
     {
-        auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ExpStmt_ExpressionShouldBeAssignOrCall);
-        auto exp = TranslateSExpAsTopLevelExpToNExp(*stmt.exp, /*hintType*/ nullptr, &designatedErrorLogger, context);
+        DesignatedDiagnostic<Error_ExpStmt_ExpressionShouldBeAssignOrCall> designatedDiag;
+        auto exp = TranslateSExpAsTopLevelExpToNExp(*stmt.exp, /*hintType*/ nullptr, &designatedDiag, context);
         if (!exp) return Fatal();
 
         return Valid(MakePtr<NStmt_Exp>(std::move(exp)));
@@ -378,9 +372,9 @@ public:
     void Visit(SStmt_Await& stmt) override 
     {
         auto newContext = context.MakeNestedScopeContext();
-        vector<NStmtPtr> body;
-        if (!TranslateSBodyToNStmts(stmt.body, &body, newContext))
-            return Fatal();
+        auto body = TranslateSBodyToNStmts(stmt.body, newContext);
+
+        if (!body) return Fatal();
 
         return Valid(MakePtr<NStmt_Await>(std::move(body)));
     }
@@ -415,9 +409,9 @@ public:
             NExpPtr MakeEnumeratorExp()
             {
                 // TranslationResult<(Exp, IType)> Error() => TranslationResult.Error<(Exp, IType)>();
-                auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+                DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-                auto nEnumerable = TranslateSExpToNLoc(*stmt.enumerable, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
+                auto nEnumerable = TranslateSExpToNLoc(*stmt.enumerable, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
                 if (!nEnumerable) return nullptr;
 
                 // GetEnumerator함수를 손으로 찾는다
@@ -672,8 +666,7 @@ public:
         // TODO: ref 처리?
         if (!context.IsSeqFunc())
         {
-            context.Log(&Logger::Fatal_YieldStmt_YieldShouldBeInSeqFunc);
-            return Fatal();
+            return Error(MakePtr<Error_YieldStmt_YieldShouldBeInSeqFunc>());
         }
 
         // yield에서는 retType이 명시되는 경우만 있을 것이다
@@ -698,12 +691,11 @@ public:
         {
             if (stmt.args.size() != 1)
             {
-                context.Log(&Logger::Fatal_StaticNotNullDirective_ShouldHaveOneArgument);
-                return Fatal();
+                return Error(MakePtr<Error_StaticNotNullDirective_ShouldHaveOneArgument>());
             }
 
-            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_StaticNotNullDirective_ArgumentMustBeLocation);
-            auto arg = TranslateSExpToNLoc(*stmt.args[0], /*hintType*/ nullptr, /*bWrapExpAsLoc*/ false, &designatedErrorLogger, context);
+            DesignatedDiagnostic<Error_StaticNotNullDirective_ArgumentMustBeLocation> designatedDiag;
+            auto arg = TranslateSExpToNLoc(*stmt.args[0], /*hintType*/ nullptr, /*bWrapExpAsLoc*/ false, &designatedDiag, context);
             if (!arg) return Fatal();
 
             return Valid(MakePtr<NStmt_NotNullDirective>(std::move(arg)));
@@ -775,8 +767,8 @@ bool TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, vector<N
 
         void Visit(SForStmtInitializer_Exp& forInit) override
         {
-            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ForStmt_ExpInitializerShouldBeAssignOrCall);
-            auto exp = TranslateSExpAsTopLevelExpToNExp(*forInit.exp, /*hintType*/ nullptr, &designatedErrorLogger, context);
+            DesignatedDiagnostic<Error_ForStmt_ExpInitializerShouldBeAssignOrCall> designatedDiag;
+            auto exp = TranslateSExpAsTopLevelExpToNExp(*forInit.exp, /*hintType*/ nullptr, &designatedDiag, context);
             if (!exp)
             {   
                 *bOutFatal = true;
@@ -803,15 +795,14 @@ bool TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, vector<N
     return !bFatal;
 }
 
-NExpPtr TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RTypePtr& hintType, IDesignatedErrorLogger* designatedErrorLogger, TranslationContext& context)
+expected<NExpPtr, DiagPtr> TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RTypePtr& hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context)
 {
     auto nExp = TranslateSExpToNExp(sExp, hintType, context);
     if (!nExp) return nullptr;
 
     if (!IsTopLevelRExp(*nExp))
     {
-        designatedErrorLogger->Log();
-        return nullptr;
+        return unexpected{designatedDiag->MakeDiag()};
     }
 
     return nExp;
@@ -874,8 +865,7 @@ optional<NLambdaDeclAndArgs> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr
         // TODO: 파라미터 타입은 타입 힌트를 반영해야 한다, ex) func<void, int, int> f = (x, y) => { } 일때, x, y는 int
         if (!sParam.type)
         {
-            context.Log(&Logger::Fatal_NotSupported_LambdaParameterInference);
-            return nullopt;
+            return Error(MakePtr<Error_NotSupported_LambdaParameterInference>());
         }
 
         auto rParamType = context.TranslateSTypeExpToRType(*sParam.type);
@@ -893,14 +883,19 @@ optional<NLambdaDeclAndArgs> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr
 
 } // namespace 
 
-bool TranslateSBodyToNStmts(const vector<SStmtPtr>& stmts, vector<NStmtPtr>* outStmts, TranslationContext& context)
-{
+expected<vector<NStmtPtr>, DiagPtr> TranslateSBodyToNStmts(const vector<SStmtPtr>& stmts, TranslationContext& context)
+{   
+    vector<NStmtPtr> body;
+    expected<vector<NStmtPtr>, DiagPtr>> nStmts;
+
     for(auto& stmt : stmts)
-    {
-        bool bFatal = false;
-        SStmtToNStmtsTranslator translator(&bFatal, outStmts, context);
+    {        
+        SStmtToNStmtsTranslator translator(&nStmts, context);
         stmt->Accept(translator);
-        if (bFatal) return false;
+
+        if (!nStmts) return unexpected{nStmts.error()};
+
+        body
     }
 
     return true;

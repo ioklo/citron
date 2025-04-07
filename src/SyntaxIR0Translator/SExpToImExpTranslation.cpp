@@ -1,5 +1,7 @@
 module Citron.SyntaxIR0Translator:SExpToImExpTranslation;
 
+import <expected>;
+
 import Citron.Ptr;
 import Citron.Exceptions;
 import Citron.Syntax;
@@ -19,8 +21,9 @@ import :ImExpAndMemberNameToImExpTranslation;
 import :TranslationContext;
 import :ScopeContext;
 
-import :DesignatedErrorLogger;
 import :Misc;
+
+using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -28,18 +31,19 @@ namespace {
 
 class SExpToImExpTranslator : public SExpVisitor
 {
+    expected<ImExpPtr, DiagPtr>* result;
     RTypePtr hintType;
-    ImExpPtr* result;
 
     TranslationContext& context;
 
 public:
-    SExpToImExpTranslator(const RTypePtr& hintType, ImExpPtr* result, TranslationContext& context)
-        : hintType(hintType), result(result), context(context)
+    SExpToImExpTranslator(expected<ImExpPtr, DiagPtr>* result, const RTypePtr& hintType, TranslationContext& context)
+        : result(result), hintType(hintType), context(context)
     {
     }
 
-    void HandleExp(NExpPtr&& exp)
+private:
+    void HandleExp(expected<NExpPtr, DiagPtr>&& exp)
     {
         if (!exp)
             *result = nullptr;
@@ -47,6 +51,23 @@ public:
             *result = MakePtr<ImExp_Else>(std::move(exp));
     }
 
+    void Forward(expected<ImExpPtr, DiagPtr>&& r)
+    {
+        *result = std::move(r);
+    }
+
+    void Value(ImExpPtr&& nExp)
+    {
+        *result = std::move(nExp);
+    }
+
+    void Error(const DiagPtr& diag)
+    {
+        *result = unexpected{diag};
+    }
+
+
+public:
     // x
     void Visit(SExp_Identifier& exp) override
     {
@@ -73,28 +94,28 @@ public:
 
     void Visit(SExp_String& exp) override
     {
-        HandleExp(TranslateSStringExpToNStringExp(exp, context));
+        return HandleExp(TranslateSStringExpToNStringExp(exp, context));
     }
 
     void Visit(SExp_IntLiteral& exp) override
     {
-        HandleExp(TranslateSIntLiteralExpToNExp(exp));
+        return HandleExp(TranslateSIntLiteralExpToNExp(exp));
     }
 
     void Visit(SExp_BoolLiteral& exp) override
     {
-        HandleExp(TranslateSBoolLiteralExpToNExp(exp));
+        return HandleExp(TranslateSBoolLiteralExpToNExp(exp));
     }
 
     // 'null'
     void Visit(SExp_NullLiteral& exp) override
     {
-        HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_BinaryOp& exp) override
     {
-        HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
+        return HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
     }
 
     void Visit(SExp_UnaryOp& exp) override
@@ -103,25 +124,15 @@ public:
         if (exp.kind == SUnaryOpKind::Deref)
         {
             auto target = TranslateSExpToReExp(*exp.operand, /*hintType*/nullptr, context);
-            if (!target)
-            {
-                *result = nullptr;
-                return;
-            }
+            if (!target) return Error(target.error());
 
-            auto targetType = context.GetType(*target);
+            auto targetType = context.GetType(**target);
 
             if (dynamic_cast<RType_BoxPtr*>(targetType.get()))
-            {
-                *result = MakePtr<ImExp_BoxDeref>(std::move(target));
-                return;
-            }
+                return Value(MakePtr<ImExp_BoxDeref>(std::move(*target)));
 
             if (dynamic_cast<RType_LocalPtr*>(targetType.get()))
-            {
-                *result = MakePtr<ImExp_LocalDeref>(std::move(target));
-                return;
-            }
+                return Value(MakePtr<ImExp_LocalDeref>(std::move(*target)));
 
             // 에러를 내야 할 것 같다
             throw NotImplementedException();
@@ -134,62 +145,44 @@ public:
 
     void Visit(SExp_Call& exp) override
     {
-        HandleExp(TranslateSCallExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSCallExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_Lambda& exp) override
     {
-        HandleExp(TranslateSLambdaExpToNExp(exp, context));
+        return HandleExp(TranslateSLambdaExpToNExp(exp, context));
     }
 
     void Visit(SExp_Indexer& exp) override
     {
         auto reObj = TranslateSExpToReExp(*exp.obj, /*hintType*/ nullptr, context);
-        if (!reObj)
-        {
-            *result = nullptr;
-            return;
-        }
+        if (!reObj) return Error(reObj.error());
 
         auto reIndex = TranslateSExpToReExp(*exp.index, /*hintType*/ nullptr, context);
-        if (!reIndex)
-        {
-            *result = nullptr;
-            return;
-        }
+        if (!reIndex) return Error(reIndex.error());
 
         auto intType = context.MakeIntType();
 
         NLocPtr nIndexLoc;
-        if (context.GetType(*reIndex) != intType)
+        if (context.GetType(**reIndex) != intType)
         {
             context.SetSyntax(exp.index);
-            auto nIndexExp = TranslateReExpToNExp(*reIndex, context);
-            if (!nIndexExp)
-            {
-                *result = nullptr;
-                return;
-            }
+            auto nIndexExp = TranslateReExpToNExp(**reIndex, context);
+            if (!nIndexExp) return Error(nIndexExp.error());
 
-            auto nCastIndex = CastNExp(std::move(nIndexExp), intType, context);
-            if (!nCastIndex)
-            {
-                *result = nullptr;
-                return;
-            }
+            auto nCastIndex = CastNExp(std::move(*nIndexExp), intType, context);
+            if (!nCastIndex) return Error(nCastIndex.error());
 
-            nIndexLoc = MakePtr<NLoc_Temp>(std::move(nCastIndex));
+            nIndexLoc = MakePtr<NLoc_Temp>(std::move(*nCastIndex));
         }
         else
         {
-            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            nIndexLoc = TranslateReExpToNLoc(*reIndex, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-            if (!nIndexLoc)
-            {
-                *result = nullptr;
-                return;
-            }
+            auto nLoc = TranslateReExpToNLoc(**reIndex, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+            if (!nLoc) return Error(nLoc.error());
+
+            nIndexLoc = *nLoc;
         }
 
         // TODO: custom indexer를 만들수 있으면 좋은가
@@ -197,10 +190,9 @@ public:
 
         // 리스트 타입의 경우,
         RTypePtr itemType;
-        if (context.IsListType(context.GetType(*reObj), &itemType))
+        if (context.IsListType(context.GetType(**reObj), &itemType))
         {
-            *result = MakePtr<ImExp_ListIndexer>(std::move(reObj), std::move(reIndex), std::move(itemType));
-            return;
+            return Value(MakePtr<ImExp_ListIndexer>(std::move(reObj), std::move(reIndex), std::move(itemType)));
         }
 
         throw NotImplementedException();
@@ -241,16 +233,12 @@ public:
     void Visit(SExp_Member& exp) override
     {
         auto imParent = TranslateSExpToImExp(*exp.parent, hintType, context);
-        if (!imParent)
-        {
-            *result = nullptr;
-            return;
-        }
+        if (!imParent) return Error(imParent.error());
 
         auto typeArgs = MakeTypeArgs(exp.memberTypeArgs, context);
 
         // logger.SetSyntax(exp);
-        *result = TranslateImExpAndMemberNameToImExp(*imParent, exp.memberName, typeArgs, context);
+        return Forward(TranslateImExpAndMemberNameToImExp(**imParent, exp.memberName, typeArgs, context));
     }
 
     void Visit(SExp_IndirectMember& exp) override
@@ -260,37 +248,37 @@ public:
 
     void Visit(SExp_List& exp) override
     {
-        HandleExp(TranslateSListExpToNExp(exp, context));
+        return HandleExp(TranslateSListExpToNExp(exp, context));
     }
 
     // 'new C(...)'
     void Visit(SExp_New& exp) override
     {
-        HandleExp(TranslateSNewExpToNExp(exp, context));
+        return HandleExp(TranslateSNewExpToNExp(exp, context));
     }
 
     void Visit(SExp_Box& exp) override
     {
-        HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_Is& exp) override
     {
-        HandleExp(TranslateSIsExpToNExp(exp, context));
+        return HandleExp(TranslateSIsExpToNExp(exp, context));
     }
 
     void Visit(SExp_As& exp) override
     {
-        HandleExp(TranslateSAsExpToNExp(exp, context));
+        return HandleExp(TranslateSAsExpToNExp(exp, context));
     }
 };
 
 }
 
-ImExpPtr TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context)
+expected<ImExpPtr, DiagPtr> TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context)
 {   
-    ImExpPtr imExp;
-    SExpToImExpTranslator translator(hintType, &imExp, context);
+    expected<ImExpPtr, DiagPtr> imExp;
+    SExpToImExpTranslator translator{&imExp, hintType, context};
     exp.Accept(translator);
     return imExp;
 }

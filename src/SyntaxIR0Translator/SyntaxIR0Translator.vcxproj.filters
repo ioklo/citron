@@ -17,7 +17,7 @@
     <ClCompile Include="ReExp.cpp">
       <Filter>ExpTranslation\Structure</Filter>
     </ClCompile>
-    <ClCompile Include="DesignatedErrorLogger.cpp" />
+    <ClCompile Include="DesignatedDiagnostic.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="SExpToImExpTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
@@ -160,7 +160,7 @@
     <ClCompile Include="BodyPhaseContext.ixx" />
     <ClCompile Include="CommonTranslation.ixx" />
     <ClCompile Include="DeclTypeInfo.ixx" />
-    <ClCompile Include="DesignatedErrorLogger.ixx" />
+    <ClCompile Include="DesignatedDiagnostic.ixx" />
     <ClCompile Include="EnumTranslation.ixx" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.ixx" />
     <ClCompile Include="MemberDeclPhaseContext.ixx" />

@@ -40,7 +40,7 @@
     <ClCompile Include="BodyPhaseContext.ixx" />
     <ClCompile Include="CommonTranslation.ixx" />
     <ClCompile Include="DeclTypeInfo.ixx" />
-    <ClCompile Include="DesignatedErrorLogger.ixx" />
+    <ClCompile Include="DesignatedDiagnostic.ixx" />
     <ClCompile Include="EnumTranslation.ixx" />
     <ClCompile Include="FuncContext.cpp" />
     <ClCompile Include="BodyPhaseContext.cpp" />
@@ -71,7 +71,7 @@
     <ClCompile Include="EnumTranslation.cpp" />
     <ClCompile Include="MemberDeclPhaseContext.ixx" />
     <ClCompile Include="Misc.cpp" />
-    <ClCompile Include="DesignatedErrorLogger.cpp" />
+    <ClCompile Include="DesignatedDiagnostic.cpp" />
     <ClCompile Include="Misc.ixx" />
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="ModuleDecls.ixx" />

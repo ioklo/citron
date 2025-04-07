@@ -174,7 +174,7 @@ public:
 
 } // unnamed namespace 
 
-std::shared_ptr<NModule> Translate(
+expected<shared_ptr<NModule>, DiagPtr> Translate(
     std::string moduleName,
     vector<SScript> scripts,
     vector<shared_ptr<MModule>> referenceModules,

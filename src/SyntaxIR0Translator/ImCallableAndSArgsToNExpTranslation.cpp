@@ -1,5 +1,7 @@
 module Citron.SyntaxIR0Translator:ImCallableAndSArgsToNExpTranslation;
 
+import <expected>;
+
 import Citron.Ptr;
 import Citron.Exceptions;
 import Citron.Syntax;
@@ -16,8 +18,9 @@ import :ReExp;
 import :ImExpToReExpTranslation;
 import :ReExpToNLocTranslation;
 
-import :DesignatedErrorLogger;
 import :FuncMatching;
+
+using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -25,9 +28,10 @@ namespace {
 // (IntermediateExp, Args) -> TranslationResult<IR0ExpResult>
 class ImCallableAndSArgsToNExpTranslator : public ImExpVisitor
 {
+    expected<NExpPtr, DiagPtr>* result;
+
     SExpPtr sCallable;
     SArgumentsPtr sArgs;
-    NExpPtr* result;
 
     TranslationContext& context;
 
@@ -35,41 +39,43 @@ class ImCallableAndSArgsToNExpTranslator : public ImExpVisitor
     // S.ISyntaxNode nodeForCallableErrorReport;
 
 public:
-    ImCallableAndSArgsToNExpTranslator(const SExpPtr& sCallable, const SArgumentsPtr& sArgs, NExpPtr* result, TranslationContext& context)
-        : sCallable(sCallable), sArgs(sArgs), result(result), context(context)
+    ImCallableAndSArgsToNExpTranslator(expected<NExpPtr, DiagPtr>* result, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, TranslationContext& context)
+        : result(result), sCallable(sCallable), sArgs(sArgs), context(context)
     {
     }
 
 private:
+    void Value(NExpPtr&& nExp) 
+    {
+        *result = std::move(nExp);
+    }
+
+    void Error(const DiagPtr& diag)
+    {
+        *result = unexpected{diag};
+    }
+
     // CallExp 분석에서 Callable이 Lambda, func<>로 계산되는 경우
     void HandleLoc(ImExp& imExp)
     {
         auto reExp = TranslateImExpToReExp(imExp, context);
         if (!reExp)
-        {
-            *result = nullptr;
-            return;
-        }
+            return Error(reExp.error());
 
-        auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_CallExp_CallableExpressionIsNotCallable);
-        auto callableLoc = TranslateReExpToNLoc(*reExp, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
+        DesignatedDiagnostic<Error_CallExp_CallableExpressionIsNotCallable> designatedDiag;
+        auto callableLoc = TranslateReExpToNLoc(**reExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
 
         if (!callableLoc)
-        {
-            *result = nullptr;
-            return;
-        }
+            return Error(callableLoc.error());
 
         // TODO: Lambda말고 func<>도 있다
-        auto callableType = context.GetType(*callableLoc);
+        auto callableType = context.GetType(**callableLoc);
         auto lambdaType = dynamic_cast<RType_Lambda*>(callableType.get());
 
         if (!lambdaType)
         {
-            // FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable); 
-            context.Log(&Logger::Fatal_CallExp_CallableExpressionIsNotCallable); // sCallable
-            *result = nullptr;
-            return;
+            // FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable);             
+            return Error(MakePtr<Error_CallExp_CallableExpressionIsNotCallable>()); // sCallable
         }
 
         // 일단 lambda파라미터는 params를 지원하지 않는 것으로
@@ -83,20 +89,18 @@ private:
 
         if (match)
         {
-            *result = MakePtr<NExp_CallLambda>(lambdaType->decl, match->typeArgs, callableLoc, match->args);
+            return Value(MakePtr<NExp_CallLambda>(lambdaType->decl, match->typeArgs, *callableLoc, match->args));
         }
         else
         {
-            context.Log(&Logger::Fatal_Parameter_MismatchBetweenParamCountAndArgCount);
-            *result = nullptr;
+            return Error(MakePtr<Error_Parameter_MismatchBetweenParamCountAndArgCount>());
         }
     }
 
 public:
     void Visit(ImExp_Namespace& imExp) override
     {
-        context.Log(&Logger::Fatal_CallExp_CallableExpressionIsNotCallable);
-        *result = nullptr;
+        return Error(MakePtr<Error_CallExp_CallableExpressionIsNotCallable>());
     }
 
     void Visit(ImExp_GlobalFuncs& imExp) override
@@ -107,19 +111,17 @@ public:
             throw NotImplementedException();
         }
 
-        *result = MakePtr<NExp_CallGlobalFunc>(match->funcDecl, match->typeArgs, match->args);
+        return Value(MakePtr<NExp_CallGlobalFunc>(match->funcDecl, match->typeArgs, match->args));
     }
 
     void Visit(ImExp_TypeVar& imExp) override
     {
-        context.Log(&Logger::Fatal_CallExp_CallableExpressionIsNotCallable);
-        *result = nullptr;
+        return Error(MakePtr<Error_CallExp_CallableExpressionIsNotCallable>());
     }
 
     void Visit(ImExp_Class& imExp) override
     {
-        context.Log(&Logger::Fatal_CallExp_CallableExpressionIsNotCallable);
-        *result = nullptr;
+        return Error(MakePtr<Error_CallExp_CallableExpressionIsNotCallable>());
     }
 
     void Visit(ImExp_ClassFuncs& imExp) override
@@ -135,17 +137,13 @@ public:
             // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
             if (match->funcDecl->IsStatic() && imExp.explicitInstance != nullptr)
             {
-                context.Log(&Logger::Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance);
-                *result = nullptr;
-                return;
+                return Error(MakePtr<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>());
             }
 
             // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
             if (!match->funcDecl->IsStatic() && imExp.explicitInstance == nullptr)
             {
-                context.Log(&Logger::Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType);
-                *result = nullptr;
-                return;
+                return Error(MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>());
             }
 
             // ResolvedExp -> RExp
@@ -153,27 +151,24 @@ public:
 
             if (imExp.explicitInstance)
             {
-                auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+                DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
+                auto nInstance = TranslateReExpToNLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+                if (!nInstance) return Error(nInstance.error());
 
-                instance = TranslateReExpToNLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-                if (!instance)
-                {
-                    *result = nullptr;
-                    return;
-                }
+                instance = *nInstance;
             }
 
-            *result = MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), std::move(instance), std::move(match->args));
+            return Value(MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), std::move(instance), std::move(match->args)));
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
             if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                *result = MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args));
+                return Value(MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args)));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                *result = MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(), std::move(match->args));
+                return Value(MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(), std::move(match->args)));
             }
         }
 
@@ -204,11 +199,11 @@ public:
         {
             // 매치에 실패했습니다. 에러
             throw NotImplementedException();
-            *result = nullptr;
-            return;
+            // *result = nullptr;
+            // return Error(MakePtr<>());
         }
 
-        *result = MakePtr<NExp_NewStruct>(match->funcDecl, std::move(match->typeArgs), std::move(match->args));
+        return Value(MakePtr<NExp_NewStruct>(match->funcDecl, std::move(match->typeArgs), std::move(match->args)));
     }
 
     void Visit(ImExp_StructFuncs& imExp) override
@@ -218,8 +213,7 @@ public:
         {
             // 매치에 실패했습니다.
             throw NotImplementedException();
-            *result = nullptr;
-            return;
+            // return Error();
         }
 
         // static 함수를 호출하는 위치가 선언한 타입 내부라면 체크하지 않고 넘어간다 (멤버 호출이 아닌 경우)
@@ -228,42 +222,36 @@ public:
             // static this 체크
             if (match->funcDecl->IsStatic() && imExp.explicitInstance)
             {
-                context.Log(&Logger::Fatal_ResolveIdentifier_CantGetStaticMemberThroughInstance);
-                *result = nullptr;
-                return;
+                return Error(MakePtr<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>());
             }
 
             // 반대의 경우도 체크
             if (!match->funcDecl->IsStatic() && !imExp.explicitInstance)
             {
-                context.Log(&Logger::Fatal_ResolveIdentifier_CantGetInstanceMemberThroughType);
-                *result = nullptr;
-                return;
+                return Error(MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>());
             }
 
             NLocPtr instance;
             if (imExp.explicitInstance)
             {
-                auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
-                instance = TranslateReExpToNLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-                if (!instance)
-                {
-                    *result = nullptr;
-                    return;
-                }
+                DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
+                auto nInstance = TranslateReExpToNLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+                if (!nInstance) return Error(nInstance.error());
+
+                instance = *nInstance;
             }
 
-            *result = MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), std::move(instance), std::move(match->args));
+            return Value(MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), std::move(instance), std::move(match->args)));
         }
         else
         {
             if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                *result = MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args));
+                return Value(MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args)));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                *result = MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(), std::move(match->args));
+                return Value(MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(), std::move(match->args)));
             }
         }
 
@@ -281,8 +269,7 @@ public:
 
     void Visit(ImExp_Enum& imExp) override
     {
-        context.Log(&Logger::Fatal_CallExp_CallableExpressionIsNotCallable);
-        *result = nullptr;
+        return Error(MakePtr<Error_CallExp_CallableExpressionIsNotCallable>());
     }
 
     void Visit(ImExp_EnumElem& imExp) override
@@ -290,9 +277,7 @@ public:
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         if (imExp.decl->IsStandalone())
         {
-            context.Log(&Logger::Fatal_CallExp_CallableExpressionIsNotCallable);
-            *result = nullptr;
-            return;
+            return Error(MakePtr<Error_CallExp_CallableExpressionIsNotCallable>());
         }
 
         auto parameters = imExp.decl->GetUnboundCtorParams();
@@ -304,18 +289,15 @@ public:
 
         if (!match)
         {
-            context.Log(&Logger::Fatal_Parameter_MismatchBetweenParamCountAndArgCount);
-            *result = nullptr;
-            return;
+            return Error(MakePtr<Error_Parameter_MismatchBetweenParamCountAndArgCount>());
         }
 
-        *result = MakePtr<NExp_NewEnumElem>(imExp.decl, std::move(match->typeArgs), std::move(match->args));
+        return Value(MakePtr<NExp_NewEnumElem>(imExp.decl, std::move(match->typeArgs), std::move(match->args)));
     }
 
     void Visit(ImExp_ThisVar& imExp) override
     {
-        context.Log(&Logger::Fatal_CallExp_CallableExpressionIsNotCallable);
-        *result = nullptr;
+        return Error(MakePtr<Error_CallExp_CallableExpressionIsNotCallable>());
     }
 
     void Visit(ImExp_LocalVar& imExp) override
@@ -379,7 +361,7 @@ public:
 
 } // namespace
 
-NExpPtr TranslateImCallableAndSArgsToNExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, TranslationContext& context)
+expected<NExpPtr, DiagPtr> TranslateImCallableAndSArgsToNExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, TranslationContext& context)
 {
     // 여기서 분석해야 할 것은 
     // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -391,10 +373,10 @@ NExpPtr TranslateImCallableAndSArgsToNExp(ImExp& imCallable, const SExpPtr& sCal
     // Argument 타입을 먼저 알아내야 하는가
     // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
 
-    NExpPtr nExp;
-    ImCallableAndSArgsToNExpTranslator binder(sCallable, sArgs, &nExp, context);
+    expected<NExpPtr, DiagPtr> result;
+    ImCallableAndSArgsToNExpTranslator binder{&result, sCallable, sArgs, context};
     imCallable.Accept(binder);
-    return nExp;
+    return result;
 }
 
 } // namespace Citron::SyntaxIR0Translator

@@ -1,11 +1,17 @@
 module Citron.SyntaxIR0Translator:SExpToReExpTranslation;
 
+import <expected>;
+
 import Citron.Ptr;
 import Citron.Syntax;
+import Citron.Diag;
+
 import :SExpToImExpTranslation;
 import :ImExpToReExpTranslation;
 import :ReExp;
 import :SExpToNExpTranslation;
+
+using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -13,37 +19,39 @@ namespace {
 
 class SExpToReExpTranslator : public SExpVisitor
 {
+    expected<ReExpPtr, DiagPtr>* result;
+
     RTypePtr hintType;
-    ReExpPtr* result;
     TranslationContext& context;
 
 public:
-    SExpToReExpTranslator(const RTypePtr& hintType, ReExpPtr* result, TranslationContext& context)
-        : hintType(hintType), result(result), context(context)
+    SExpToReExpTranslator(expected<ReExpPtr, DiagPtr>* result, const RTypePtr& hintType, TranslationContext& context)
+        : result(result), hintType(hintType), context(context)
     {
     }
 
+private:
     void HandleDefault(SExp& exp)
     {
         auto imExp = TranslateSExpToImExp(exp, hintType, context);
         if (!imExp)
         {
-            *result = nullptr;
+            *result = unexpected{imExp.error()};
             return;
         }
 
-        *result = TranslateImExpToReExp(*imExp, context);
+        *result = TranslateImExpToReExp(**imExp, context);
     }
 
-    void HandleExp(NExpPtr&& exp)
+    void HandleExp(expected<NExpPtr, DiagPtr>&& exp)
     {
         if (!exp)
-            *result = nullptr;
+            *result = unexpected{exp.error()};
         else
-            *result = MakePtr<ReExp_Else>(std::move(exp));
+            *result = MakePtr<ReExp_Else>(std::move(*exp));
     }
 
-
+public:
     void Visit(SExp_Identifier& exp) override
     {
         return HandleDefault(exp);
@@ -51,27 +59,27 @@ public:
 
     void Visit(SExp_String& exp) override
     {
-        HandleExp(TranslateSStringExpToNStringExp(exp, context));
+        return HandleExp(TranslateSStringExpToNStringExp(exp, context));
     }
 
     void Visit(SExp_IntLiteral& exp) override
     {
-        HandleExp(TranslateSIntLiteralExpToNExp(exp));
+        return HandleExp(TranslateSIntLiteralExpToNExp(exp));
     }
 
     void Visit(SExp_BoolLiteral& exp) override
     {
-        HandleExp(TranslateSBoolLiteralExpToNExp(exp));
+        return HandleExp(TranslateSBoolLiteralExpToNExp(exp));
     }
 
     void Visit(SExp_NullLiteral& exp) override
     {
-        HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_BinaryOp& exp) override
     {
-        HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
+        return HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
     }
 
     // int만 지원한다
@@ -116,37 +124,37 @@ public:
 
     void Visit(SExp_List& exp) override
     {
-        HandleExp(TranslateSListExpToNExp(exp, context));
+        return HandleExp(TranslateSListExpToNExp(exp, context));
     }
 
     // 'new C(...)'
     void Visit(SExp_New& exp) override
     {
-        HandleExp(TranslateSNewExpToNExp(exp, context));
+        return HandleExp(TranslateSNewExpToNExp(exp, context));
     }
 
     void Visit(SExp_Box& exp) override
     {
-        HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
     }
 
     void Visit(SExp_Is& exp) override
     {
-        HandleExp(TranslateSIsExpToNExp(exp, context));
+        return HandleExp(TranslateSIsExpToNExp(exp, context));
     }
 
     void Visit(SExp_As& exp) override
     {
-        HandleExp(TranslateSAsExpToNExp(exp, context));
+        return HandleExp(TranslateSAsExpToNExp(exp, context));
     }
 };
 
 } // namespace
 
-ReExpPtr TranslateSExpToReExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context)
+expected<ReExpPtr, DiagPtr> TranslateSExpToReExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context)
 {
-    ReExpPtr reExp;
-    SExpToReExpTranslator translator(hintType, &reExp, context);
+    expected<ReExpPtr, DiagPtr> reExp;
+    SExpToReExpTranslator translator{&reExp, hintType, context};
     exp.Accept(translator);
     return reExp;
 }

@@ -46,12 +46,6 @@ TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcR
     return { globalContext, newFuncContext, newScopeContext, logger, factory, binOpQueryService };
 }
 
-DesignatedErrorLogger TranslationContext::MakeDesignatedErrorLogger(void (Logger::* func)())
-{
-    // logger가 heap에 생성되어있으니 참조를 생성해도 괜찮다
-    return { *logger, func }; 
-}
-
 Citron::RTypePtr TranslationContext::GetType(NLoc& loc)
 {
     return loc.GetType(*factory);
@@ -219,7 +213,7 @@ void TranslationContext::SetSyntax(const SSyntaxPtr& syntax)
 }
 
 
-RTypePtr TranslationContext::TranslateSTypeExpToRType(STypeExp& typeExp)
+std::expected<RTypePtr, DiagPtr> TranslationContext::TranslateSTypeExpToRType(STypeExp& typeExp)
 {
     return scopeContext->TranslateSTypeExpToRType(typeExp, *factory);
 }

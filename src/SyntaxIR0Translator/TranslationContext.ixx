@@ -4,19 +4,26 @@ import <memory>;
 import <vector>;
 import <optional>;
 import <string>;
+import <expected>;
+import <expected>;
 
+import Citron.Diag;
 import Citron.Syntax;
 import Citron.RDecls;
 import Citron.NDecls;
 
-import :DesignatedErrorLogger;
+import :DesignatedDiagnostic;
 import :DeclTypeInfo;
+import :ResolveIdentifierError;
 
 namespace Citron::SyntaxIR0Translator {
 
 export class ReExp;
 export class IrExp_BoxRef;
 export struct BinOpInfo;
+
+export class ImExp;
+export using ImExpPtr = std::shared_ptr<ImExp>;
 
 export class GlobalContext;
 export using GlobalContextPtr = std::shared_ptr<GlobalContext>;
@@ -58,8 +65,6 @@ public:
     TranslationContext MakeNestedLoopScopeContext();
     TranslationContext MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
-    DesignatedErrorLogger MakeDesignatedErrorLogger(void (Logger::* func)());
-
     std::shared_ptr<NLoc_This> MakeThisLoc();
     NExpPtr MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& testType);
 
@@ -86,7 +91,7 @@ public: // for logging
     void SetSyntax(const SSyntaxPtr& syntax);
 
 public:
-    RTypePtr TranslateSTypeExpToRType(STypeExp& typeExp);
+    std::expected<RTypePtr, DiagPtr> TranslateSTypeExpToRType(STypeExp& typeExp);
 
 public: // for type factory
     RTypePtr GetType(NLoc& loc);
@@ -107,6 +112,8 @@ public: // for type factory
 
     RFuncReturn GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
     RFuncParameter GetFuncParam(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
+
+    std::expected<ImExpPtr, ResolveIdentifierError> ResolveIdentifier(RName&& name, RTypeArgumentsPtr&& typeArgs);
 
 public: // for BinOpQueryService
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);

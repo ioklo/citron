@@ -7,17 +7,19 @@ import Citron.NDecls;
 
 import :TranslationContext;
 import :ScopeContext;
-import :DesignatedErrorLogger;
+import :DesignatedDiagnostic;
 import :ReExp;
+
+using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-NLocPtr TranslateReThisVarExpToNLoc(ReExp_ThisVar& reExp, TranslationContext& context) // nothrow
+expected<NLocPtr, DiagPtr> TranslateReThisVarExpToNLoc(ReExp_ThisVar& reExp, TranslationContext& context) // nothrow
 {
     return context.MakeThisLoc();
 }
 
-NLocPtr TranslateReClassVarExpToNLoc(ReExp_ClassVar& reExp, TranslationContext& context)
+expected<NLocPtr, DiagPtr> TranslateReClassVarExpToNLoc(ReExp_ClassVar& reExp, TranslationContext& context)
 {
     if (reExp.hasExplicitInstance) // c.x, C.x 둘다 해당
     {
@@ -25,10 +27,13 @@ NLocPtr TranslateReClassVarExpToNLoc(ReExp_ClassVar& reExp, TranslationContext& 
         
         if (reExp.explicitInstance != nullptr)
         {   
-            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
+            auto nInstance = TranslateReExpToNLoc(*reExp.explicitInstance, /* bWrapExpAsLoc */ true, &designatedDiag, context);
 
-            instance = TranslateReExpToNLoc(*reExp.explicitInstance, /* bWrapExpAsLoc */ true, &designatedErrorLogger, context);
-            if (!instance) return nullptr;
+            if (!nInstance)
+                return unexpected{nInstance.error()};
+
+            instance = *nInstance;
         }
 
         return MakePtr<NLoc_ClassVar>(std::move(instance), reExp.decl, reExp.typeArgs);
@@ -40,17 +45,17 @@ NLocPtr TranslateReClassVarExpToNLoc(ReExp_ClassVar& reExp, TranslationContext& 
     }
 }
 
-NLocPtr TranslateReLocalVarExpToNLoc(ReExp_LocalVar& reExp)
+expected<NLocPtr, DiagPtr> TranslateReLocalVarExpToNLoc(ReExp_LocalVar& reExp)
 {
     return MakePtr<NLoc_LocalVar>(RName_Normal(reExp.name), reExp.type);
 }
 
-NLocPtr TranslateReLambdaVarExpToNLoc(ReExp_LambdaVar& reExp)
+expected<NLocPtr, DiagPtr> TranslateReLambdaVarExpToNLoc(ReExp_LambdaVar& reExp)
 {
     return MakePtr<NLoc_LambdaVar>(reExp.decl, reExp.typeArgs);
 }
 
-NLocPtr TranslateReStructVarExpToNLoc(ReExp_StructVar& reExp, TranslationContext& context)
+expected<NLocPtr, DiagPtr> TranslateReStructVarExpToNLoc(ReExp_StructVar& reExp, TranslationContext& context)
 {
     if (reExp.hasExplicitInstance) // c.x, C.x 둘다 해당
     {
@@ -58,11 +63,11 @@ NLocPtr TranslateReStructVarExpToNLoc(ReExp_StructVar& reExp, TranslationContext
 
         if (reExp.explicitInstance != nullptr)
         {
-            auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
+            auto nInstance = TranslateReExpToNLoc(*reExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+            if (!nInstance) return unexpected{nInstance.error()};
 
-            instance = TranslateReExpToNLoc(*reExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-            if (!instance)
-                return nullptr;
+            instance = *nInstance;
         }
 
         return MakePtr<NLoc_StructVar>(instance, reExp.decl, reExp.typeArgs);
@@ -75,61 +80,62 @@ NLocPtr TranslateReStructVarExpToNLoc(ReExp_StructVar& reExp, TranslationContext
     }
 }
 
-NLocPtr TranslateReEnumElemVarExpToNLoc(ReExp_EnumElemVar& reExp, TranslationContext& context)
+expected<NLocPtr, DiagPtr> TranslateReEnumElemVarExpToNLoc(ReExp_EnumElemVar& reExp, TranslationContext& context)
 {   
-    auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+    DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto nInstLoc = TranslateReExpToNLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-    if (!nInstLoc) return nullptr;
+    auto nInstLoc = TranslateReExpToNLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+    if (!nInstLoc) return unexpected{nInstLoc.error()};
 
-    return MakePtr<NLoc_EnumElemVar>(nInstLoc, reExp.decl, reExp.typeArgs);
+    return MakePtr<NLoc_EnumElemVar>(*nInstLoc, reExp.decl, reExp.typeArgs);
 }
 
-NLocPtr TranslateReListIndexerExpToNLoc(ReExp_ListIndexer& reExp, TranslationContext& context)
+expected<NLocPtr, DiagPtr> TranslateReListIndexerExpToNLoc(ReExp_ListIndexer& reExp, TranslationContext& context)
 {
-    auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+    DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto nInstLoc = TranslateReExpToNLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-    if (!nInstLoc) return nullptr;
+    auto nInstLoc = TranslateReExpToNLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+    if (!nInstLoc) return unexpected{nInstLoc.error()};
 
-    return MakePtr<NLoc_ListIndexer>(std::move(nInstLoc), reExp.index, reExp.itemType);
+    return MakePtr<NLoc_ListIndexer>(std::move(*nInstLoc), reExp.index, reExp.itemType);
 }
 
-NLocPtr TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref& reExp, TranslationContext& context)
-{
-    // *x, *G()
-    auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
-
-    auto nTargetLoc = TranslateReExpToNLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-    if (!nTargetLoc) return nullptr;
-
-    return MakePtr<NLoc_LocalDeref>(std::move(nTargetLoc));
-}
-
-NLocPtr TranslateReBoxDerefExpToNLoc(ReExp_BoxDeref& reExp, TranslationContext& context)
+expected<NLocPtr, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref& reExp, TranslationContext& context)
 {
     // *x, *G()
-    auto designatedErrorLogger = context.MakeDesignatedErrorLogger(&Logger::Fatal_ResolveIdentifier_ExpressionIsNotLocation);
+    DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto nTargetLoc = TranslateReExpToNLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &designatedErrorLogger, context);
-    if (!nTargetLoc) return nullptr;
+    auto nTargetLoc = TranslateReExpToNLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+    if (!nTargetLoc) return unexpected{nTargetLoc.error()};
 
-    return MakePtr<NLoc_BoxDeref>(std::move(nTargetLoc));
+    return MakePtr<NLoc_LocalDeref>(std::move(*nTargetLoc));
+}
+
+expected<NLocPtr, DiagPtr> TranslateReBoxDerefExpToNLoc(ReExp_BoxDeref& reExp, TranslationContext& context)
+{
+    // *x, *G()
+    DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
+
+    auto nTargetLoc = TranslateReExpToNLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+    if (!nTargetLoc) return unexpected{nTargetLoc.error()};
+
+    return MakePtr<NLoc_BoxDeref>(std::move(*nTargetLoc));
 }
 
 namespace {
 
 class ReExpToNLocTranslator : public ReExpVisitor
 {
+    expected<NLocPtr, DiagPtr>* result;
     bool bWrapExpAsLoc;
-    IDesignatedErrorLogger* notLocationErrorLogger;
-    NLocPtr* result;
+    IDesignatedDiagnostic* notLocationDiag;
+    
 
     TranslationContext& context;
 
 public:
-    ReExpToNLocTranslator(bool bWrapExpAsLoc, IDesignatedErrorLogger* notLocationErrorLogger, NLocPtr* result, TranslationContext& context)
-        : bWrapExpAsLoc(bWrapExpAsLoc), notLocationErrorLogger(notLocationErrorLogger), result(result), context(context)
+    ReExpToNLocTranslator(expected<NLocPtr, DiagPtr>* result, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
+        : result(result), bWrapExpAsLoc(bWrapExpAsLoc), notLocationDiag(notLocationDiag), context(context)
     {
     }
 
@@ -186,18 +192,17 @@ public:
         }
         else
         {
-            notLocationErrorLogger->Log();
-            *result = nullptr;
+            *result = unexpected{notLocationDiag->MakeDiag()};
         }
     }
 };
 
 }
 
-NLocPtr TranslateReExpToNLoc(ReExp& reExp, bool bWrapExpAsLoc, IDesignatedErrorLogger* notLocationErrorLogger, TranslationContext& context)
+expected<NLocPtr, DiagPtr> TranslateReExpToNLoc(ReExp& reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
 {
-    NLocPtr nLoc;
-    ReExpToNLocTranslator translator(bWrapExpAsLoc, notLocationErrorLogger, &nLoc, context);
+    expected<NLocPtr, DiagPtr> nLoc;
+    ReExpToNLocTranslator translator{&nLoc, bWrapExpAsLoc, notLocationDiag, context};
     reExp.Accept(translator);
     return nLoc;
 }

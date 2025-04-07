@@ -5,7 +5,9 @@ import <vector>;
 import <optional>;
 import <string>;
 import <unordered_map>;
+import <expected>;
 
+import Citron.Diag;
 import Citron.Syntax;
 import Citron.RDecls;
 import Citron.NDecls;
@@ -55,7 +57,7 @@ public:
 
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }
-    RTypePtr TranslateSTypeExpToRType(STypeExp& typeExp, RTypeFactory& factory);
+    std::expected<RTypePtr, DiagPtr> TranslateSTypeExpToRType(STypeExp& typeExp, RTypeFactory& factory);
 
     std::shared_ptr<NLoc_This> MakeThisLoc(RTypeFactory& factory);
     std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);

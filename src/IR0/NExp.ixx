@@ -661,7 +661,7 @@ public:
     RTypePtr classType;
 
 public:
-    IR0_API NExp_ClassIsClass(const NExpPtr& exp, const RTypePtr& classType);
+    IR0_API NExp_ClassIsClass(NExpPtr&& exp, RTypePtr&& classType);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -686,7 +686,7 @@ public:
     NExpPtr exp;
     RTypePtr interfaceType; // func도 interface type이다
 public:
-    IR0_API NExp_ClassIsInterface(const NExpPtr& exp, const RTypePtr& interfaceType);
+    IR0_API NExp_ClassIsInterface(NExpPtr&& exp, RTypePtr&& interfaceType);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -710,7 +710,7 @@ public:
     NExpPtr exp;
     RTypePtr classType;
 public:
-    IR0_API NExp_InterfaceIsClass(const NExpPtr& exp, const RTypePtr& classType);
+    IR0_API NExp_InterfaceIsClass(NExpPtr&& exp, RTypePtr&& classType);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -734,7 +734,7 @@ public:
     NExpPtr exp;
     RTypePtr interfaceType;
 public:
-    IR0_API NExp_InterfaceIsInterface(const NExpPtr& exp, const RTypePtr& interfaceType);
+    IR0_API NExp_InterfaceIsInterface(NExpPtr&& exp, RTypePtr&& interfaceType);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -758,7 +758,7 @@ public:
     NExpPtr exp;
     RTypePtr enumElemType;
 public:
-    IR0_API NExp_EnumIsEnumElem(const NExpPtr& exp, const RTypePtr& enumElemType);
+    IR0_API NExp_EnumIsEnumElem(NExpPtr&& exp, RTypePtr&& enumElemType);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }

@@ -45,22 +45,22 @@ private:
         if (auto* interfaceType = dynamic_cast<RType_Interface*>(initExpType))
         {
             if (interfaceType->bLocal)
-                return Error(&Logger::Fatal_VarDecl_UsingLocalVarInsteadOfVarWhenInitExpIsLocalInterface);
+                return Error(&Logger::Error_VarDecl_UsingLocalVarInsteadOfVarWhenInitExpIsLocalInterface);
 
             return true;
         }
 
         if (dynamic_cast<RType_BoxPtr*>(initExpType))
-            return Error(&Logger::Fatal_VarDecl_UsingBoxPtrVarInsteadOfVarWhenInitExpIsBoxPtr);
+            return Error(&Logger::Error_VarDecl_UsingBoxPtrVarInsteadOfVarWhenInitExpIsBoxPtr);
 
         if (dynamic_cast<RType_LocalPtr*>(initExpType))
-            return Error(&Logger::Fatal_VarDecl_UsingLocalPtrVarInsteadOfVarWhenInitExpIsLocalPtr);
+            return Error(&Logger::Error_VarDecl_UsingLocalPtrVarInsteadOfVarWhenInitExpIsLocalPtr);
 
         if (dynamic_cast<RType_NullableValue*>(initExpType))
-            return Error(&Logger::Fatal_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr);
+            return Error(&Logger::Error_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr);
 
         if (dynamic_cast<RType_NullableRef*>(initExpType))
-            return Error(&Logger::Fatal_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr);
+            return Error(&Logger::Error_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr);
 
         return true;
     }
@@ -80,22 +80,22 @@ private:
             
         case DeclTypeInfoKind::LocalInterfaceVar:
             if (!dynamic_cast<RType_Interface*>(initExpType))
-                return Error(&Logger::Fatal_VarDecl_UsingLocalVarAsDeclTypeButInitExpIsNotLocalInterface);
+                return Error(&Logger::Error_VarDecl_UsingLocalVarAsDeclTypeButInitExpIsNotLocalInterface);
             return true;
 
         case DeclTypeInfoKind::BoxPtrVar:
             if (!dynamic_cast<RType_BoxPtr*>(initExpType))
-                return Error(&Logger::Fatal_VarDecl_UsingBoxPtrVarAsDeclTypeButInitExpIsNotBoxPtr);
+                return Error(&Logger::Error_VarDecl_UsingBoxPtrVarAsDeclTypeButInitExpIsNotBoxPtr);
             return true;
 
         case DeclTypeInfoKind::LocalPtrVar:
             if (!dynamic_cast<RType_LocalPtr*>(initExpType))
-                return Error(&Logger::Fatal_VarDecl_UsingLocalPtrVarAsDeclTypeButInitExpIsNotLocalPtr);
+                return Error(&Logger::Error_VarDecl_UsingLocalPtrVarAsDeclTypeButInitExpIsNotLocalPtr);
             return true;
 
         case DeclTypeInfoKind::NullableVar:
             if (!dynamic_cast<RType_NullableRef*>(initExpType) || !dynamic_cast<RType_NullableValue*>(initExpType))
-                return Error(&Logger::Fatal_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable);
+                return Error(&Logger::Error_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable);
             return true;
 
         default:
@@ -108,7 +108,7 @@ private:
     bool HandleVarDeclType()
     {
         if (!elem.initExp)
-            return Error(&Logger::Fatal_VarDecl_LocalVarDeclNeedInitializer);
+            return Error(&Logger::Error_VarDecl_LocalVarDeclNeedInitializer);
 
         // var꼴로 나오는 경우 hintType은 없다
         auto nInitExp = TranslateSExpToNExp(*elem.initExp, /*hintType*/ nullptr, context);
@@ -139,7 +139,7 @@ private:
 
             nInitExp = CastNExp(std::move(nInitExp), declType, context);
             if (!nInitExp)
-                return Error(&Logger::Fatal_VarDecl_InitExpTypeMismatch);
+                return Error(&Logger::Error_VarDecl_InitExpTypeMismatch);
         }
 
         context.AddLocalVarInfo(declType, RName_Normal(elem.varName));
@@ -152,7 +152,7 @@ public:
     bool Translate()
     {
         if (context.DoesLocalVarNameExistInScope(elem.varName))
-            return Error(&Logger::Fatal_VarDecl_LocalVarNameShouldBeUniqueWithinScope);
+            return Error(&Logger::Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope);
 
         if (declTypeInfo.kind != DeclTypeInfoKind::Normal)
         {
@@ -167,7 +167,7 @@ public:
 
 } // namespace
 
-bool TranslateSVarDeclToNStmts(SVarDecl& varDecl, vector<NStmtPtr>* outResult, TranslationContext& context)
+std::expected<std::vector<NStmtPtr>, DiagPtr> TranslateSVarDeclToNStmts(SVarDecl& varDecl, TranslationContext& context)
 {
     DeclTypeInfo declTypeInfo = context.GetDeclTypeInfo(*varDecl.type);
 

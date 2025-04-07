@@ -395,8 +395,8 @@ RTypePtr NExp_InlineBlock::GetType(RTypeFactory& factory)
     return returnType;
 }
 
-NExp_ClassIsClass::NExp_ClassIsClass(const NExpPtr& exp, const RTypePtr& classType)
-    : exp(exp), classType(classType)
+NExp_ClassIsClass::NExp_ClassIsClass(NExpPtr&& exp, RTypePtr&& classType)
+    : exp(std::move(exp)), classType(std::move(classType))
 {
 }
 
@@ -415,8 +415,8 @@ RTypePtr NExp_ClassAsClass::GetType(RTypeFactory& factory)
     return factory.MakeNullableRefType(classType);
 }
 
-NExp_ClassIsInterface::NExp_ClassIsInterface(const NExpPtr& exp, const RTypePtr& interfaceType)
-    : exp(exp), interfaceType(interfaceType)
+NExp_ClassIsInterface::NExp_ClassIsInterface(NExpPtr&& exp, RTypePtr&& interfaceType)
+    : exp(std::move(exp), interfaceType(std::move(interfaceType))
 {
 }
 
@@ -435,8 +435,8 @@ RTypePtr NExp_ClassAsInterface::GetType(RTypeFactory& factory)
     return factory.MakeNullableRefType(interfaceType);
 }
 
-NExp_InterfaceIsClass::NExp_InterfaceIsClass(const NExpPtr& exp, const RTypePtr& classType)
-    : exp(exp), classType(classType)
+NExp_InterfaceIsClass::NExp_InterfaceIsClass(NExpPtr&& exp, RTypePtr&& classType)
+    : exp(std::move(exp)), classType(std::move(classType))
 {
 }
 
@@ -455,8 +455,8 @@ RTypePtr NExp_InterfaceAsClass::GetType(RTypeFactory& factory)
     return factory.MakeNullableRefType(classType);
 }
 
-NExp_InterfaceIsInterface::NExp_InterfaceIsInterface(const NExpPtr& exp, const RTypePtr& interfaceType)
-    : exp(exp), interfaceType(interfaceType)
+NExp_InterfaceIsInterface::NExp_InterfaceIsInterface(NExpPtr&& exp, RTypePtr&& interfaceType)
+    : exp(std::move(exp)), interfaceType(std::move(interfaceType))
 {
 }
 
@@ -475,8 +475,8 @@ RTypePtr NExp_InterfaceAsInterface::GetType(RTypeFactory& factory)
     return factory.MakeNullableRefType(interfaceType);
 }
 
-NExp_EnumIsEnumElem::NExp_EnumIsEnumElem(const NExpPtr& exp, const RTypePtr& enumElemType)
-    : exp(exp), enumElemType(enumElemType)
+NExp_EnumIsEnumElem::NExp_EnumIsEnumElem(NExpPtr&& exp, RTypePtr&& enumElemType)
+    : exp(std::move(exp)), enumElemType(std::move(enumElemType))
 {
 }
 
