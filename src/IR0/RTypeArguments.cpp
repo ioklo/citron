@@ -32,7 +32,7 @@ RTypeArgumentsPtr RTypeArguments::Apply(RTypeArguments& typeArgs, RTypeFactory& 
     for(auto& item : items)
     {
         auto appliedItem = item->Apply(typeArgs, factory);
-        appliedItems.push_back(std::move(appliedItem));
+        appliedItems.push_back(move(appliedItem));
     }
 
     return factory.MakeTypeArguments(appliedItems);

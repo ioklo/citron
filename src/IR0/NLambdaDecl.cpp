@@ -7,9 +7,9 @@ using namespace std;
 namespace Citron {
 
 NLambdaDecl::NLambdaDecl(NFuncDeclOuterWPtr&& outer, RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
-    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, /*typeParams*/ {}), outer(std::move(outer)), name(std::move(name))
+    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, /*typeParams*/ {}), outer(move(outer)), name(move(name))
 {
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(std::move(funcReturn), std::move(funcParameters), bLastParameterVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcReturn), move(funcParameters), bLastParameterVariadic);
 }
 
 void NLambdaDecl::Init(std::vector<std::shared_ptr<NLambdaVarDecl>>&& vars, std::vector<NStmtPtr>&& body)
@@ -17,9 +17,9 @@ void NLambdaDecl::Init(std::vector<std::shared_ptr<NLambdaVarDecl>>&& vars, std:
     for (auto& var : vars)
         varsMap.emplace(var->name, var);
 
-    this->vars = std::move(vars);
+    this->vars = move(vars);
 
-    NCommonFuncDeclComponent::InitBody(std::move(body));
+    NCommonFuncDeclComponent::InitBody(move(body));
 }
 
 NDecl* NLambdaDecl::GetNOuter()

@@ -10,7 +10,7 @@ namespace Citron {
 void MNamespaceDeclContainerComponent::AddNamespace(shared_ptr<MNamespaceDecl> _namespace)
 {
     namespaceDecls.push_back(_namespace);
-    namespaceDict.insert_or_assign(_namespace->GetName(), std::move(_namespace));
+    namespaceDict.insert_or_assign(_namespace->GetName(), move(_namespace));
 }
 
 shared_ptr<MNamespaceDecl> MNamespaceDeclContainerComponent::GetNamespace(const std::string& name)

@@ -17,7 +17,7 @@ NEnumElemDecl::NEnumElemDecl(weak_ptr<NEnumDecl> _enum, string name, size_t varC
 void NEnumElemDecl::AddVar(const std::shared_ptr<NEnumElemVarDecl>& var)
 {
     vars.push_back(var);
-    varsMap.emplace(var->name, std::move(var));
+    varsMap.emplace(var->name, move(var));
 }
 
 NDecl* NEnumElemDecl::GetNOuter()

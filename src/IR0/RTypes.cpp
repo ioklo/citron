@@ -16,14 +16,14 @@ using namespace std;
 namespace Citron {
 
 RType_NullableValue::RType_NullableValue(RTypePtr&& innerType)
-    : innerType(std::move(innerType))
+    : innerType(move(innerType))
 {
 }
 
 RTypePtr RType_NullableValue::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedInnerType = innerType->Apply(typeArgs, factory);
-    return factory.MakeNullableValueType(std::move(appliedInnerType));
+    return factory.MakeNullableValueType(move(appliedInnerType));
 }
 
 optional<RMember> RType_NullableValue::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -33,7 +33,7 @@ optional<RMember> RType_NullableValue::GetMember(const RName& name, size_t expli
 }
 
 RType_NullableRef::RType_NullableRef(RTypePtr&& innerType)
-    : innerType(std::move(innerType))
+    : innerType(move(innerType))
 {
 }
 
@@ -77,7 +77,7 @@ optional<RMember> RType_Void::GetMember(const RName& name, size_t explicitTypeAr
 }
 
 RType_Tuple::RType_Tuple(std::vector<RTupleVar>&& vars)
-    : vars(std::move(vars))
+    : vars(move(vars))
 {
 }
 
@@ -90,7 +90,7 @@ RTypePtr RType_Tuple::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
         appliedVars.push_back(RTupleVar { appliedDeclType, var.name });
     }
 
-    return factory.MakeTupleType(std::move(appliedVars));
+    return factory.MakeTupleType(move(appliedVars));
 }
 
 optional<RMember> RType_Tuple::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -99,7 +99,7 @@ optional<RMember> RType_Tuple::GetMember(const RName& name, size_t explicitTypeA
 }
 
 RType_Func::RType_Func(bool bLocal, RTypePtr&& retType, std::vector<Parameter>&& params)
-    : bLocal(bLocal), retType(std::move(retType)), params(std::move(params))
+    : bLocal(bLocal), retType(move(retType)), params(move(params))
 {
 }
 
@@ -113,10 +113,10 @@ RTypePtr RType_Func::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
     for (auto& param : params)
     {
         auto appliedParamType = param.type->Apply(typeArgs, factory);
-        appliedParams.emplace_back(param.bOut, std::move(appliedParamType));
+        appliedParams.emplace_back(param.bOut, move(appliedParamType));
     }
 
-    return factory.MakeFuncType(bLocal, std::move(appliedRetType), std::move(appliedParams));
+    return factory.MakeFuncType(bLocal, move(appliedRetType), move(appliedParams));
 }
 
 optional<RMember> RType_Func::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -125,20 +125,20 @@ optional<RMember> RType_Func::GetMember(const RName& name, size_t explicitTypeAr
 }
 
 RType_Func::Parameter::Parameter(bool bOut, RTypePtr&& type)
-    : bOut(bOut), type(std::move(type))
+    : bOut(bOut), type(move(type))
 {
 
 }
 
 RType_LocalPtr::RType_LocalPtr(RTypePtr&& innerType)
-    : innerType(std::move(innerType))
+    : innerType(move(innerType))
 {
 }
 
 RTypePtr RType_LocalPtr::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedInnerType = innerType->Apply(typeArgs, factory);
-    return factory.MakeLocalPtrType(std::move(appliedInnerType));
+    return factory.MakeLocalPtrType(move(appliedInnerType));
 }
 
 
@@ -156,7 +156,7 @@ RType_BoxPtr::RType_BoxPtr(const RTypePtr& innerType)
 RTypePtr RType_BoxPtr::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedInnerType = innerType->Apply(typeArgs, factory);
-    return factory.MakeBoxPtrType(std::move(appliedInnerType));
+    return factory.MakeBoxPtrType(move(appliedInnerType));
 }
 
 optional<RMember> RType_BoxPtr::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -177,7 +177,7 @@ std::optional<RMember_ClassVar> RType_Class::GetVar(const RName& name)
 RTypePtr RType_Class::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
-    return factory.MakeClassType(decl, std::move(appliedTypeArgs));
+    return factory.MakeClassType(decl, move(appliedTypeArgs));
 }
 
 optional<RMember> RType_Class::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -203,7 +203,7 @@ std::shared_ptr<Citron::RStructCtorDecl> RType_Struct::GetUnboundTrivialCtor()
 RTypePtr RType_Struct::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
-    return factory.MakeStructType(decl, std::move(appliedTypeArgs));
+    return factory.MakeStructType(decl, move(appliedTypeArgs));
 }
 
 optional<RMember> RType_Struct::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -219,7 +219,7 @@ RType_Enum::RType_Enum(const std::shared_ptr<REnumDecl>& decl, const RTypeArgume
 RTypePtr RType_Enum::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
-    return factory.MakeEnumType(decl, std::move(appliedTypeArgs));
+    return factory.MakeEnumType(decl, move(appliedTypeArgs));
 }
 
 optional<RMember> RType_Enum::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -240,7 +240,7 @@ std::optional<RMember_EnumElemVar> RType_EnumElem::GetVar(const RName& name)
 RTypePtr RType_EnumElem::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
-    return factory.MakeEnumElemType(decl, std::move(appliedTypeArgs));
+    return factory.MakeEnumElemType(decl, move(appliedTypeArgs));
 }
 
 optional<RMember> RType_EnumElem::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -256,7 +256,7 @@ RType_Interface::RType_Interface(const std::shared_ptr<RInterfaceDecl>& decl, co
 RTypePtr RType_Interface::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
-    return factory.MakeInterfaceType(decl, std::move(appliedTypeArgs), bLocal);
+    return factory.MakeInterfaceType(decl, move(appliedTypeArgs), bLocal);
 }
 
 optional<RMember> RType_Interface::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -272,7 +272,7 @@ RType_Lambda::RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RType
 RTypePtr RType_Lambda::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedOuterTypeArgs = outerTypeArgs->Apply(typeArgs, factory);
-    return factory.MakeLambdaType(decl, std::move(appliedOuterTypeArgs));
+    return factory.MakeLambdaType(decl, move(appliedOuterTypeArgs));
 }
 
 optional<RMember> RType_Lambda::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)

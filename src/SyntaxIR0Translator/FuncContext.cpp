@@ -25,12 +25,12 @@ FuncContext::FuncContext() = default;
 shared_ptr<NLambdaVarDecl> FuncContext::StageLambdaVar(const RTypePtr& type, const RName& name, NArgument_Normal&& arg)
 {
     auto lambdaVar = MakePtr<NLambdaVarDecl>(type, name);
-    lambdaVarAndInitArgs.emplace_back(lambdaVar, std::move(arg));
+    lambdaVarAndInitArgs.emplace_back(lambdaVar, move(arg));
     return lambdaVar;
 }
 
 FuncContext_Lambda::FuncContext_Lambda(const ScopeContextPtr& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
-    : outer(outer), bSeqFunc(bSeqFunc), funcReturn(std::move(funcReturn)), funcParams(std::move(funcParams)), bLastParamVariadic(bLastParamVariadic)
+    : outer(outer), bSeqFunc(bSeqFunc), funcReturn(move(funcReturn)), funcParams(move(funcParams)), bLastParamVariadic(bLastParamVariadic)
 {
 }
 
@@ -51,12 +51,12 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         RName localVarName = RName_Normal(localVar->name);
 
         auto initExp = MakePtr<NExp_Load>(MakePtr<NLoc_LocalVar>(localVarName, localVar->type));
-        auto initArg = NArgument_Normal(std::move(initExp));
+        auto initArg = NArgument_Normal(move(initExp));
 
-        auto lambdaVar = StageLambdaVar(localVar->type, localVarName, std::move(initArg));
+        auto lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg));
 
         auto openTypeArgs = MakeOpenTypeArgs(factory);
-        return RMember_LambdaVar(std::move(openTypeArgs), std::move(lambdaVar));
+        return RMember_LambdaVar(move(openTypeArgs), move(lambdaVar));
     }
 
     if (auto* lambdaVar = get_if<RMember_LambdaVar>(&*oMember))
@@ -78,8 +78,8 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         auto openTypeArgs = MakeOpenTypeArgs(factory);
         auto initArg = NArgument_Normal(MakePtr<NExp_Load>(MakePtr<NLoc_LambdaVar>(lambdaVar->decl, openTypeArgs)));
 
-        auto newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), std::move(initArg));
-        return RMember_LambdaVar(std::move(openTypeArgs), std::move(newLambdaVar));
+        auto newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), move(initArg));
+        return RMember_LambdaVar(move(openTypeArgs), move(newLambdaVar));
     }
 
     if (auto* thisVar = get_if<RMember_ThisVar>(&*oMember))
@@ -89,12 +89,12 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
             throw NotImplementedException();
 
         auto initExp = MakePtr<NExp_Load>(MakePtr<NLoc_This>(thisVar->type));
-        auto initArg = NArgument_Normal(std::move(initExp));
+        auto initArg = NArgument_Normal(move(initExp));
 
-        auto lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, std::move(initArg));
+        auto lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, move(initArg));
         auto openTypeArgs = MakeOpenTypeArgs(factory);
 
-        return RMember_LambdaVar(std::move(openTypeArgs), std::move(lambdaVar));
+        return RMember_LambdaVar(move(openTypeArgs), move(lambdaVar));
     }
 
     // 나머지는 그대로 리턴
@@ -109,7 +109,7 @@ RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
 void FuncContext_Lambda::SetOpenFuncReturn(RTypePtr&& retType)
 {
     assert(holds_alternative<RFuncReturn_NotSet>(funcReturn));
-    funcReturn = std::move(RFuncReturn_Set(retType));
+    funcReturn = move(RFuncReturn_Set(retType));
 }
 
 RTypeArgumentsPtr FuncContext_Lambda::MakeOpenTypeArgs(RTypeFactory& factory)

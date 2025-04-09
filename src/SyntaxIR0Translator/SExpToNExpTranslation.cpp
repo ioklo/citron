@@ -75,38 +75,38 @@ expected<RStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
 
     if (auto* expElem = dynamic_cast<SStringExpElement_Exp*>(elem.get()))
     {
-        auto reExp = TranslateSExpToReExp(*expElem->exp, /* hintType */ nullptr, context);
-        if (!reExp) return unexpected{reExp.error()};
+        auto eReExp = TranslateSExpToReExp(*expElem->exp, /* hintType */ nullptr, context);
+        if (!eReExp) return unexpected{move(eReExp).error()};
 
-        auto reExpType = context.GetType(**reExp);
+        auto reExpType = context.GetType(**eReExp);
 
         // 캐스팅이 필요하다면 
         if (reExpType == context.MakeIntType())
         {   
-            auto nExp = TranslateReExpToNExp(**reExp, context);
-            if (!nExp) return unexpected{nExp.error()};
+            auto eNExp = TranslateReExpToNExp(**eReExp, context);
+            if (!eNExp) return unexpected{move(eNExp).error()};
 
             return RLocStringExpElement(
                 MakePtr<NLoc_Temp>(
-                    MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::ToString_Int_String, std::move(*nExp))));
+                    MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::ToString_Int_String, move(*eNExp))));
         }
         else if (reExpType == context.MakeBoolType())
         {
-            auto nExp = TranslateReExpToNExp(**reExp, context);
-            if (!nExp) return unexpected{nExp.error()};
+            auto eNExp = TranslateReExpToNExp(**eReExp, context);
+            if (!eNExp) return unexpected{move(eNExp).error()};
 
             return RLocStringExpElement(
                 MakePtr<NLoc_Temp>(
-                    MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::ToString_Bool_String, std::move(*nExp))));
+                    MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::ToString_Bool_String, move(*eNExp))));
         }
         else if (reExpType == context.MakeStringType())
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            auto nLoc = TranslateReExpToNLoc(**reExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-            if (!nLoc) return unexpected{nLoc.error()};
+            auto eNLoc = TranslateReExpToNLoc(**eReExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+            if (!eNLoc) return unexpected{move(eNLoc).error()};
 
-            return RLocStringExpElement(std::move(*nLoc));
+            return RLocStringExpElement(move(*eNLoc));
         }
         else
         {
@@ -128,21 +128,21 @@ expected<shared_ptr<NExp_String>, DiagPtr> TranslateSStringExpToNStringExp(SExp_
     vector<RStringExpElement> builder;
     for(auto& elem : exp.elements)
     {
-        auto rStringExpElem = TranslateSStringExpElementToRStringExpElement(elem, context);
+        auto eRStringExpElem = TranslateSStringExpElementToRStringExpElement(elem, context);
 
-        if (!rStringExpElem)
+        if (!eRStringExpElem)
         {
-            diags.push_back(rStringExpElem.error());
+            diags.push_back(eRStringExpElem.error());
             continue;
         }
         
-        builder.push_back(std::move(*rStringExpElem));
+        builder.push_back(move(*eRStringExpElem));
     }
 
     if (!diags.empty())
-        return unexpected{MakePtr<AggregateDiag>(std::move(diags))};
+        return unexpected{MakePtr<AggregateDiag>(move(diags))};
 
-    return MakePtr<NExp_String>(std::move(builder));
+    return MakePtr<NExp_String>(move(builder));
 }
 
 // int만 지원한다
@@ -154,14 +154,14 @@ expected<NExpPtr, DiagPtr> TranslateSIntUnaryAssignExpToNExp(SExp& operand, RInt
     // throws NotLocationException
     
     DesignatedDiagnostic<Error_UnaryAssignOp_AssignableExpressionIsAllowedOnly> designatedDiag;
-    auto nOperand = TranslateSExpToNLoc(operand, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedDiag, context);
-    if (!nOperand) return unexpected{nOperand.error()};
+    auto eNOperand = TranslateSExpToNLoc(operand, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedDiag, context);
+    if (!eNOperand) return unexpected{move(eNOperand).error()};
 
     // int type 검사, exact match
-    if (context.GetType(**nOperand) != context.MakeIntType())
+    if (context.GetType(**eNOperand) != context.MakeIntType())
         return unexpected{MakePtr<Error_UnaryAssignOp_AssignableExpressionIsAllowedOnly>()};
 
-    return MakePtr<NExp_CallInternalUnaryAssignOperator>(op, std::move(*nOperand));
+    return MakePtr<NExp_CallInternalUnaryAssignOperator>(op, move(*eNOperand));
 }
 
 expected<NExpPtr, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp& sExp, TranslationContext& context)
@@ -173,30 +173,30 @@ expected<NExpPtr, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp& s
         return TranslateSExpRefToNExp(*sExp.operand, context);
 
     context.SetSyntax(sExp.operand);
-    auto nOperand = TranslateSExpToNExp(*sExp.operand, /*hintType*/ nullptr, context);
-    if (!nOperand) return unexpected{nOperand.error()};
+    auto eNOperand = TranslateSExpToNExp(*sExp.operand, /*hintType*/ nullptr, context);
+    if (!eNOperand) return unexpected{move(eNOperand).error()};
 
     switch(sExp.kind)
     {
     case SUnaryOpKind::LogicalNot:
     {
         // exact match
-        if (context.GetType(**nOperand) != context.MakeBoolType())
+        if (context.GetType(**eNOperand) != context.MakeBoolType())
         {   
             return unexpected{MakePtr<Error_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly>()};
         }
 
-        return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::LogicalNot_Bool_Bool, std::move(*nOperand));
+        return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::LogicalNot_Bool_Bool, move(*eNOperand));
     }
 
     case SUnaryOpKind::Minus:
     {
-        if (context.GetType(**nOperand) != context.MakeIntType())
+        if (context.GetType(**eNOperand) != context.MakeIntType())
         {
             return unexpected{MakePtr<Error_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly>()};
         }
 
-        return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::UnaryMinus_Int_Int, std::move(nOperand));
+        return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::UnaryMinus_Int_Int, move(eNOperand));
     }
 
     case SUnaryOpKind::PostfixInc: // e.m++ 등
@@ -221,11 +221,11 @@ expected<NExpPtr, DiagPtr> TranslateSAssignBinaryOpExpToNExp(SExp_BinaryOp& exp,
     // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
     context.SetSyntax(exp.operand0);
     DesignatedDiagnostic<Error_BinaryOp_LeftOperandIsNotAssignable> designatedDiag;
-    auto nDestLoc = TranslateSExpToNLoc(*exp.operand0, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedDiag, context);
-    if (!nDestLoc) return unexpected{nDestLoc.error()};
+    auto eNDestLoc = TranslateSExpToNLoc(*exp.operand0, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedDiag, context);
+    if (!eNDestLoc) return unexpected{move(eNDestLoc).error()};
 
     // 안되는거 체크
-    auto* pNDestLoc = nDestLoc->get();
+    auto* pNDestLoc = eNDestLoc->get();
     if (dynamic_cast<NLoc_LambdaVar*>(pNDestLoc))
     {
         // int x = 0; var l = () { x = 3; }, TODO: 이거 가능하도록
@@ -240,15 +240,15 @@ expected<NExpPtr, DiagPtr> TranslateSAssignBinaryOpExpToNExp(SExp_BinaryOp& exp,
         return unexpected{MakePtr<Error_BinaryOp_LeftOperandIsNotAssignable>()};
     }
 
-    auto nDestLocType = context.GetType(**nDestLoc);
+    auto nDestLocType = context.GetType(**eNDestLoc);
     context.SetSyntax(exp.operand1);
-    auto nSrcExp = TranslateSExpToNExp(*exp.operand1, /*hintType*/ nDestLocType, context);
-    if (!nSrcExp) return unexpected{nSrcExp.error()};
+    auto eNSrcExp = TranslateSExpToNExp(*exp.operand1, /*hintType*/ nDestLocType, context);
+    if (!eNSrcExp) return unexpected{move(eNSrcExp).error()};
 
-    auto nWrappedSrcExp = CastNExp(std::move(*nSrcExp), nDestLocType, context);
-    if (!nWrappedSrcExp) return unexpected{nWrappedSrcExp.error()};
+    auto eNWrappedSrcExp = CastNExp(move(*eNSrcExp), nDestLocType, context);
+    if (!eNWrappedSrcExp) return unexpected{move(eNWrappedSrcExp).error()};
 
-    return MakePtr<NExp_Assign>(std::move(*nDestLoc), std::move(*nWrappedSrcExp));
+    return MakePtr<NExp_Assign>(move(*eNDestLoc), move(*eNWrappedSrcExp));
 }
 
 expected<NExpPtr, DiagPtr> TranslateSBinaryOpExpToNExp(SExp_BinaryOp& exp, TranslationContext& context)
@@ -259,11 +259,11 @@ expected<NExpPtr, DiagPtr> TranslateSBinaryOpExpToNExp(SExp_BinaryOp& exp, Trans
         return TranslateSAssignBinaryOpExpToNExp(exp, context);
     }
 
-    auto operand0 = TranslateSExpToNExp(*exp.operand0, /*hintType*/ nullptr, context);
-    if (!operand0) return unexpected{operand0.error()};
+    auto eOperand0 = TranslateSExpToNExp(*exp.operand0, /*hintType*/ nullptr, context);
+    if (!eOperand0) return unexpected{move(eOperand0).error()};
 
-    auto operand1 = TranslateSExpToNExp(*exp.operand1, /*hintType*/ nullptr, context);
-    if (!operand1) return unexpected{operand1.error()};
+    auto eOperand1 = TranslateSExpToNExp(*exp.operand1, /*hintType*/ nullptr, context);
+    if (!eOperand1) return unexpected{move(eOperand1).error()};
 
     // 2. NotEqual 처리
     if (exp.kind == SBinaryOpKind::NotEqual)
@@ -272,15 +272,15 @@ expected<NExpPtr, DiagPtr> TranslateSBinaryOpExpToNExp(SExp_BinaryOp& exp, Trans
         
         for(auto& info : equalInfos)
         {
-            auto castExp0 = CastNExp(*operand0, info.operandType0, context);
+            auto castExp0 = CastNExp(*eOperand0, info.operandType0, context);
             if (!castExp0) continue;
 
-            auto castExp1 = CastNExp(*operand1, info.operandType1, context);
+            auto castExp1 = CastNExp(*eOperand1, info.operandType1, context);
             if (!castExp1) continue;
 
             // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
-            auto equalExp = MakePtr<NExp_CallInternalBinaryOperator>(info.rOperator, std::move(*castExp0), std::move(*castExp1));
-            return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::LogicalNot_Bool_Bool, std::move(equalExp));
+            auto equalExp = MakePtr<NExp_CallInternalBinaryOperator>(info.rOperator, move(*castExp0), move(*castExp1));
+            return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::LogicalNot_Bool_Bool, move(equalExp));
         }
     }
 
@@ -288,15 +288,15 @@ expected<NExpPtr, DiagPtr> TranslateSBinaryOpExpToNExp(SExp_BinaryOp& exp, Trans
     auto matchedInfos = context.GetBinOpInfos(exp.kind);
     for(auto& info : matchedInfos)
     {
-        auto castExp0 = CastNExp(*operand0, info.operandType0, context);
+        auto castExp0 = CastNExp(*eOperand0, info.operandType0, context);
         if (!castExp0) continue;
 
-        auto castExp1 = CastNExp(*operand1, info.operandType1, context);
+        auto castExp1 = CastNExp(*eOperand1, info.operandType1, context);
         if (!castExp1) continue;
 
         // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
 
-        return MakePtr<NExp_CallInternalBinaryOperator>(info.rOperator, std::move(*castExp0), std::move(*castExp1));
+        return MakePtr<NExp_CallInternalBinaryOperator>(info.rOperator, move(*castExp0), move(*castExp1));
     }
 
     // Operator를 찾을 수 없습니다
@@ -327,15 +327,15 @@ expected<NExpPtr, DiagPtr> TranslateSListExpToNExp(SExp_List& exp, TranslationCo
 
     for(auto& elem : exp.elements)
     {
-        auto nElem = TranslateSExpToNExp(*elem, /*hintType*/ nullptr, context);
-        if (!nElem) return unexpected{nElem.error()};
+        auto eNElem = TranslateSExpToNExp(*elem, /*hintType*/ nullptr, context);
+        if (!eNElem) return unexpected{move(eNElem).error()};
 
-        auto rElemType = context.GetType(**nElem);
-        elems.push_back(std::move(*nElem));
+        auto rElemType = context.GetType(**eNElem);
+        elems.push_back(move(*eNElem));
 
         if (curElemType == nullptr)
         {
-            curElemType = std::move(rElemType);
+            curElemType = move(rElemType);
             continue;
         }
 
@@ -350,15 +350,15 @@ expected<NExpPtr, DiagPtr> TranslateSListExpToNExp(SExp_List& exp, TranslationCo
         return unexpected{MakePtr<Error_ListExp_CantInferElementTypeWithEmptyElement>()};
     }
 
-    return MakePtr<NExp_List>(std::move(elems), std::move(curElemType));
+    return MakePtr<NExp_List>(move(elems), move(curElemType));
 }
 
 expected<NExpPtr, DiagPtr> TranslateSNewExpToNExp(SExp_New& exp, TranslationContext& context) // throws ErrorCodeException
 {
-    auto rType = context.TranslateSTypeExpToRType(*exp.type);
-    if (!rType) return unexpected{rType.error()};
+    auto eRType = context.TranslateSTypeExpToRType(*exp.type);
+    if (!eRType) return unexpected{move(eRType).error()};
 
-    if ((*rType)->GetCustomTypeKind() == RCustomTypeKind::Class)
+    if ((*eRType)->GetCustomTypeKind() == RCustomTypeKind::Class)
     {
         return unexpected{MakePtr<Error_NewExp_TypeIsNotClass>()};
     }
@@ -379,10 +379,10 @@ expected<NExpPtr, DiagPtr> TranslateSNewExpToNExp(SExp_New& exp, TranslationCont
 
 expected<NExpPtr, DiagPtr> TranslateSCallExpToNExp(SExp_Call& exp, const RTypePtr& hintType, TranslationContext& context)
 {
-    auto imCallable = TranslateSExpToImExp(*exp.callable, hintType, context);
-    if (!imCallable) return unexpected{imCallable.error()};
+    auto eImCallable = TranslateSExpToImExp(*exp.callable, hintType, context);
+    if (!eImCallable) return unexpected{move(eImCallable).error()};
 
-    return TranslateImCallableAndSArgsToNExp(**imCallable, exp.callable, exp.args, context); // 로깅할때 exp, exp.Callable두개가 다 필요할 수 있다
+    return TranslateImCallableAndSArgsToNExp(**eImCallable, exp.callable, exp.args, context); // 로깅할때 exp, exp.Callable두개가 다 필요할 수 있다
 }
 
 expected<NExpPtr, DiagPtr> TranslateSBoxExpToNExp(SExp_Box& exp, const RTypePtr& hintType, TranslationContext& context)
@@ -391,48 +391,48 @@ expected<NExpPtr, DiagPtr> TranslateSBoxExpToNExp(SExp_Box& exp, const RTypePtr&
     auto innerHintType = hintBoxPtrType ? hintBoxPtrType->innerType : nullptr;
 
     // hintType전수
-    auto nInnerExp = TranslateSExpToNExp(*exp.innerExp, innerHintType, context);
-    if (!nInnerExp) return unexpected{nInnerExp.error()};
+    auto eNInnerExp = TranslateSExpToNExp(*exp.innerExp, innerHintType, context);
+    if (!eNInnerExp) return unexpected{move(eNInnerExp).error()};
 
-    return MakePtr<NExp_Box>(std::move(*nInnerExp));
+    return MakePtr<NExp_Box>(move(*eNInnerExp));
 }
 
 expected<NExpPtr, DiagPtr> TranslateSIsExpToNExp(SExp_Is& exp, TranslationContext& context)
 {
-    auto target = TranslateSExpToNExp(*exp.exp, /*hintType*/ nullptr, context);
-    if (!target) return unexpected{target.error()};
+    auto eTarget = TranslateSExpToNExp(*exp.exp, /*hintType*/ nullptr, context);
+    if (!eTarget) return unexpected{move(eTarget).error()};
 
-    auto targetType = context.GetType(**target);
+    auto targetType = context.GetType(**eTarget);
     auto targetTypeKind = targetType->GetCustomTypeKind();
 
-    auto testType = context.TranslateSTypeExpToRType(*exp.type);
-    if (!testType) return unexpected{testType.error()};
+    auto eTestType = context.TranslateSTypeExpToRType(*exp.type);
+    if (!eTestType) return unexpected{move(eTestType).error()};
 
-    auto testTypeKind = (*testType)->GetCustomTypeKind();
+    auto testTypeKind = (*eTestType)->GetCustomTypeKind();
 
     // 5가지 케이스로 나뉜다
     if (testTypeKind == RCustomTypeKind::Class)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<NExp_ClassIsClass>(std::move(*target), std::move(*testType));
+            return MakePtr<NExp_ClassIsClass>(move(*eTarget), move(*eTestType));
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<NExp_InterfaceIsClass>(std::move(*target), std::move(*testType));
+            return MakePtr<NExp_InterfaceIsClass>(move(*eTarget), move(*eTestType));
         else
             throw NotImplementedException(); // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::Interface)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<NExp_ClassIsInterface>(std::move(*target), std::move(*testType));
+            return MakePtr<NExp_ClassIsInterface>(move(*eTarget), move(*eTestType));
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<NExp_InterfaceIsInterface>(std::move(*target), std::move(*testType));
+            return MakePtr<NExp_InterfaceIsInterface>(move(*eTarget), move(*eTestType));
         else
             throw NotImplementedException(); // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::EnumElem)
     {
         if (targetTypeKind == RCustomTypeKind::Enum)
-            return MakePtr<NExp_EnumIsEnumElem>(std::move(*target), std::move(*testType));
+            return MakePtr<NExp_EnumIsEnumElem>(move(*eTarget), move(*eTestType));
         else
             throw NotImplementedException(); // 에러 처리
     }
@@ -442,13 +442,13 @@ expected<NExpPtr, DiagPtr> TranslateSIsExpToNExp(SExp_Is& exp, TranslationContex
 
 expected<NExpPtr, DiagPtr> TranslateSAsExpToNExp(SExp_As& exp, TranslationContext& context)
 {
-    auto nTarget = TranslateSExpToNExp(*exp.exp, /* hintType */ nullptr, context);
-    if (!nTarget) return unexpected{nTarget.error()};
+    auto eNTarget = TranslateSExpToNExp(*exp.exp, /* hintType */ nullptr, context);
+    if (!eNTarget) return unexpected{move(eNTarget).error()};
 
-    auto nTestType = context.TranslateSTypeExpToRType(*exp.type);
-    if (!nTestType) return unexpected{nTestType.error()};
+    auto eNTestType = context.TranslateSTypeExpToRType(*exp.type);
+    if (!eNTestType) return unexpected{move(eNTestType).error()};
 
-    return context.MakeNExp_As(std::move(*nTarget), *nTestType);
+    return context.MakeNExp_As(move(*eNTarget), *eNTestType);
 }
 
 namespace {
@@ -481,7 +481,7 @@ private:
 
     void Forward(expected<NExpPtr, DiagPtr>&& r)
     {
-        *result = std::move(r);
+        *result = move(r);
     }
 
 public:

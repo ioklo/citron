@@ -28,20 +28,20 @@ expected<NLocPtr, DiagPtr> TranslateReClassVarExpToNLoc(ReExp_ClassVar& reExp, T
         if (reExp.explicitInstance != nullptr)
         {   
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            auto nInstance = TranslateReExpToNLoc(*reExp.explicitInstance, /* bWrapExpAsLoc */ true, &designatedDiag, context);
+            auto eInstance = TranslateReExpToNLoc(*reExp.explicitInstance, /* bWrapExpAsLoc */ true, &designatedDiag, context);
 
-            if (!nInstance)
-                return unexpected{nInstance.error()};
+            if (!eInstance)
+                return unexpected{move(eInstance).error()};
 
-            instance = *nInstance;
+            instance = *eInstance;
         }
 
-        return MakePtr<NLoc_ClassVar>(std::move(instance), reExp.decl, reExp.typeArgs);
+        return MakePtr<NLoc_ClassVar>(move(instance), reExp.decl, reExp.typeArgs);
     }
     else // x, x (static) 둘다 해당
     {   
         NLocPtr nInstanceLoc = reExp.decl->IsStatic()? nullptr : context.MakeThisLoc();
-        return MakePtr<NLoc_ClassVar>(std::move(nInstanceLoc), reExp.decl, reExp.typeArgs);
+        return MakePtr<NLoc_ClassVar>(move(nInstanceLoc), reExp.decl, reExp.typeArgs);
     }
 }
 
@@ -64,10 +64,10 @@ expected<NLocPtr, DiagPtr> TranslateReStructVarExpToNLoc(ReExp_StructVar& reExp,
         if (reExp.explicitInstance != nullptr)
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            auto nInstance = TranslateReExpToNLoc(*reExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-            if (!nInstance) return unexpected{nInstance.error()};
+            auto eInstance = TranslateReExpToNLoc(*reExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+            if (!eInstance) return unexpected{move(eInstance).error()};
 
-            instance = *nInstance;
+            instance = *eInstance;
         }
 
         return MakePtr<NLoc_StructVar>(instance, reExp.decl, reExp.typeArgs);
@@ -84,20 +84,20 @@ expected<NLocPtr, DiagPtr> TranslateReEnumElemVarExpToNLoc(ReExp_EnumElemVar& re
 {   
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto nInstLoc = TranslateReExpToNLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-    if (!nInstLoc) return unexpected{nInstLoc.error()};
+    auto eInst = TranslateReExpToNLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+    if (!eInst) return unexpected{move(eInst).error()};
 
-    return MakePtr<NLoc_EnumElemVar>(*nInstLoc, reExp.decl, reExp.typeArgs);
+    return MakePtr<NLoc_EnumElemVar>(*eInst, reExp.decl, reExp.typeArgs);
 }
 
 expected<NLocPtr, DiagPtr> TranslateReListIndexerExpToNLoc(ReExp_ListIndexer& reExp, TranslationContext& context)
 {
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto nInstLoc = TranslateReExpToNLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-    if (!nInstLoc) return unexpected{nInstLoc.error()};
+    auto eInst = TranslateReExpToNLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+    if (!eInst) return unexpected{move(eInst).error()};
 
-    return MakePtr<NLoc_ListIndexer>(std::move(*nInstLoc), reExp.index, reExp.itemType);
+    return MakePtr<NLoc_ListIndexer>(move(*eInst), reExp.index, reExp.itemType);
 }
 
 expected<NLocPtr, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref& reExp, TranslationContext& context)
@@ -105,10 +105,10 @@ expected<NLocPtr, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref& reEx
     // *x, *G()
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto nTargetLoc = TranslateReExpToNLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-    if (!nTargetLoc) return unexpected{nTargetLoc.error()};
+    auto eTarget = TranslateReExpToNLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+    if (!eTarget) return unexpected{move(eTarget).error()};
 
-    return MakePtr<NLoc_LocalDeref>(std::move(*nTargetLoc));
+    return MakePtr<NLoc_LocalDeref>(move(*eTarget));
 }
 
 expected<NLocPtr, DiagPtr> TranslateReBoxDerefExpToNLoc(ReExp_BoxDeref& reExp, TranslationContext& context)
@@ -116,10 +116,10 @@ expected<NLocPtr, DiagPtr> TranslateReBoxDerefExpToNLoc(ReExp_BoxDeref& reExp, T
     // *x, *G()
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto nTargetLoc = TranslateReExpToNLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-    if (!nTargetLoc) return unexpected{nTargetLoc.error()};
+    auto eTarget = TranslateReExpToNLoc(*reExp.target, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+    if (!eTarget) return unexpected{move(eTarget).error()};
 
-    return MakePtr<NLoc_BoxDeref>(std::move(*nTargetLoc));
+    return MakePtr<NLoc_BoxDeref>(move(*eTarget));
 }
 
 namespace {

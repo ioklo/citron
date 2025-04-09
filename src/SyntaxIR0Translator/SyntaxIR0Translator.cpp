@@ -43,7 +43,7 @@ class NamespaceElemVisitor : public SNamespaceDeclElementVisitor
 
 public:
     NamespaceElemVisitor(shared_ptr<NNamespaceDecl> curDecl, SNamespaceDeclElementPtr sharedElem, SkeletonPhaseContext& context)
-        : curDecl { std::move(curDecl) }, context { context } {}
+        : curDecl { move(curDecl) }, context { context } {}
 
     // Inherited via SNamespaceDeclElementVisitor
     void Visit(SGlobalFuncDecl& elem) override
@@ -87,7 +87,7 @@ public:
         assert(sSharedStructDecl);
 
         auto nStructDecl = MakeStruct(curDecl, sSharedStructDecl, MakeGlobalMemberAccessor, context);
-        curDecl->AddType(std::move(nStructDecl));
+        curDecl->AddType(move(nStructDecl));
     }
 
     void Visit(SEnumDecl& elem) override
@@ -96,7 +96,7 @@ public:
         assert(sSharedEnumDecl);
 
         auto nEnum = MakeEnum(curDecl, *sSharedEnumDecl, MakeGlobalMemberAccessor, context);
-        curDecl->AddType(std::move(nEnum));
+        curDecl->AddType(move(nEnum));
     }
 };
 
@@ -168,7 +168,7 @@ public:
         assert(sharedEnumElem);
 
         auto nEnum = MakeEnum(rootNamespace, *sharedEnumElem, MakeGlobalMemberAccessor, context);
-        rootNamespace->AddType(std::move(nEnum));
+        rootNamespace->AddType(move(nEnum));
     }
 };
 
@@ -181,7 +181,7 @@ expected<shared_ptr<NModule>, DiagPtr> Translate(
     RTypeFactory& factory)
 {
     auto rootNamespace = NNamespaceDecl::MakeRoot(factory);
-    auto nModuleDecl = MakePtr<NModule>(std::move(moduleName), std::move(rootNamespace));
+    auto nModuleDecl = MakePtr<NModule>(move(moduleName), move(rootNamespace));
 
     SkeletonPhaseContext context(factory);
     for (auto& script : scripts)

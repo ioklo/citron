@@ -9,14 +9,14 @@ using namespace std;
 namespace Citron {
 
 NEnumElemVarDecl::NEnumElemVarDecl(std::weak_ptr<NEnumElemDecl> enumElem, const std::string& name)
-    : enumElem(std::move(enumElem))
+    : enumElem(move(enumElem))
     , name(name)
 {
 }
 
 void Citron::NEnumElemVarDecl::InitDeclType(RTypePtr&& declType)
 {
-    this->declType = std::move(declType);
+    this->declType = move(declType);
 }
 
 NDecl* NEnumElemVarDecl::GetNOuter()

@@ -40,7 +40,7 @@ TranslationContext TranslationContext::MakeNestedLoopScopeContext()
 
 TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
 {   
-    auto newFuncContext = MakePtr<FuncContext_Lambda>(scopeContext, /*bSeqFunc*/ false, std::move(funcRet), std::move(funcParams), bLastParamVariadic);
+    auto newFuncContext = MakePtr<FuncContext_Lambda>(scopeContext, /*bSeqFunc*/ false, move(funcRet), move(funcParams), bLastParamVariadic);
     auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, nullptr, 0);
 
     return { globalContext, newFuncContext, newScopeContext, logger, factory, binOpQueryService };
@@ -71,7 +71,7 @@ std::shared_ptr<Citron::NLoc_This> TranslationContext::MakeThisLoc()
     return scopeContext->MakeThisLoc(*factory);
 }
 
-NExpPtr TranslationContext::MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& testType)
+expected<NExpPtr, DiagPtr> TranslationContext::MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& testType)
 {
     auto targetType = targetExp->GetType(*factory);
     auto targetTypeKind = targetType->GetCustomTypeKind();
@@ -81,26 +81,26 @@ NExpPtr TranslationContext::MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& tes
     if (testTypeKind == RCustomTypeKind::Class)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<NExp_ClassAsClass>(std::move(targetExp), testType);
+            return MakePtr<NExp_ClassAsClass>(move(targetExp), testType);
 
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<NExp_InterfaceAsClass>(std::move(targetExp), testType);
+            return MakePtr<NExp_InterfaceAsClass>(move(targetExp), testType);
         else
             throw NotImplementedException(); // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::Interface)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<NExp_ClassAsInterface>(std::move(targetExp), testType);
+            return MakePtr<NExp_ClassAsInterface>(move(targetExp), testType);
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<NExp_InterfaceAsInterface>(std::move(targetExp), testType);
+            return MakePtr<NExp_InterfaceAsInterface>(move(targetExp), testType);
         else
             throw NotImplementedException(); // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::EnumElem)
     {
         if (targetTypeKind == RCustomTypeKind::Enum)
-            return MakePtr<NExp_EnumAsEnumElem>(std::move(targetExp), testType);
+            return MakePtr<NExp_EnumAsEnumElem>(move(targetExp), testType);
         else
             throw NotImplementedException(); // 에러 처리
     }
@@ -127,10 +127,11 @@ public:
 private:
     void Normal(STypeExp& typeExp)
     {
-        auto type = context.TranslateSTypeExpToRType(typeExp);
-        *result = DeclTypeInfo(DeclTypeInfoKind::Normal, type);
+        auto eRType = context.TranslateSTypeExpToRType(typeExp);
+        *result = DeclTypeInfo(DeclTypeInfoKind::Normal, *eRType);
     }
 
+public:
     void Visit(STypeExp_Id& typeExp) override
     {
         if (!IsVarType(typeExp))
@@ -204,7 +205,7 @@ RFuncReturn TranslationContext::GetUnboundFuncReturn()
 
 void TranslationContext::SetOpenFuncReturn(RTypePtr&& retType)
 {
-    funcContext->SetOpenFuncReturn(std::move(retType));
+    funcContext->SetOpenFuncReturn(move(retType));
 }
 
 void TranslationContext::SetSyntax(const SSyntaxPtr& syntax)

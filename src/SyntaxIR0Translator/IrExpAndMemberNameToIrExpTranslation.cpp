@@ -45,7 +45,7 @@ public:
     expected<IrExpPtr, DiagPtr> operator()(RMember_Class& member)
     {
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return MakePtr<IrExp_Class>(member.decl, std::move(typeArgs));
+        return MakePtr<IrExp_Class>(member.decl, move(typeArgs));
     }
 
     // 에러,
@@ -74,7 +74,7 @@ public:
     expected<IrExpPtr, DiagPtr> operator()(RMember_Struct& member)
     {
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return MakePtr<IrExp_Struct>(member.decl, std::move(typeArgs));
+        return MakePtr<IrExp_Struct>(member.decl, move(typeArgs));
     }
 
     expected<IrExpPtr, DiagPtr> operator()(RMember_StructFuncs& member)
@@ -102,7 +102,7 @@ public:
     expected<IrExpPtr, DiagPtr> operator()(RMember_Enum& member)
     {   
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return MakePtr<IrExp_Enum>(member.decl, std::move(typeArgs));
+        return MakePtr<IrExp_Enum>(member.decl, move(typeArgs));
     }
 
     // &E.First.x
@@ -147,12 +147,12 @@ class StaticRefTypeTranslator : public RTypeVisitor
 private:
     void Value(IrExpPtr&& irExp)
     {
-        *result = std::move(irExp);
+        *result = move(irExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
 public:
@@ -304,12 +304,12 @@ class BoxRefTypeTranslator : public RTypeVisitor
 private:
     void Value(IrExpPtr&& irExp)
     {
-        *result = std::move(irExp);
+        *result = move(irExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
 public: 
@@ -439,12 +439,12 @@ class LocalRefTypeTranslator : public RTypeVisitor
 private:
     void Value(IrExpPtr&& irExp)
     {
-        *result = std::move(irExp);
+        *result = move(irExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
 public:
@@ -584,12 +584,12 @@ class BoxValueTypeTranslator : public RTypeVisitor
 private:
     void Value(IrExpPtr&& irExp)
     {
-        *result = std::move(irExp);
+        *result = move(irExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
 public:
@@ -709,12 +709,12 @@ class ThisTypeTranslator : public RTypeVisitor
 private:
     void Value(IrExpPtr&& irExp)
     {
-        *result = std::move(irExp);
+        *result = move(irExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
 public:
@@ -832,12 +832,12 @@ class IrExpAndMemberNameToIrExpTranslator : public IrExpVisitor
 private:
     void Value(IrExpPtr&& irExp)
     {
-        *result = std::move(irExp);
+        *result = move(irExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
     void HandleStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)

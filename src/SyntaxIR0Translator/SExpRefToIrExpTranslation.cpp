@@ -39,29 +39,29 @@ public:
 private:
     void Value(IrExpPtr&& nExp)
     {
-        *result = std::move(nExp);
+        *result = move(nExp);
     }
 
     void Forward(expected<IrExpPtr, DiagPtr>&& r)
     {
-        *result = std::move(r);
+        *result = move(r);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
     void HandleValue(SExp& exp)
     {
-        auto nExp = TranslateSExpToNExp(exp, /*hintType*/ nullptr, context);
-        if (!nExp)
+        auto eExp = TranslateSExpToNExp(exp, /*hintType*/ nullptr, context);
+        if (!eExp)
         {
-            *result = unexpected{nExp.error()};
+            *result = unexpected{move(eExp).error()};
             return;
         }
 
-        *result = MakePtr<IrExp_LocalValue>(std::move(*nExp));
+        *result = MakePtr<IrExp_LocalValue>(move(*eExp));
     }
 
 public:
@@ -86,7 +86,7 @@ public:
         //    //   에러를 던져야 좀 깔끔하게 될지도 모르겠다
         //    
         //    // 2번이 나은것 같다
-        //    if (auto result = context.ResolveIdentifier(RName_Normal{exp.value}, std::move(typeArgs)); result)
+        //    if (auto result = context.ResolveIdentifier(RName_Normal{exp.value}, move(typeArgs)); result)
         //    {
         //        auto& imExp = result.value();
 
@@ -145,19 +145,19 @@ public:
     {
         if (exp.kind == SUnaryOpKind::Ref) // & &는 불가능
         {
-            auto nExp = TranslateSExpRefToNExp(*exp.operand, context);
-            if (!nExp) return Error(nExp.error());
+            auto eExp = TranslateSExpRefToNExp(*exp.operand, context);
+            if (!eExp) return Error(move(eExp).error());
 
-            return Value(MakePtr<IrExp_LocalValue>(std::move(nExp)));
+            return Value(MakePtr<IrExp_LocalValue>(move(eExp)));
         }
         else if (exp.kind == SUnaryOpKind::Deref) // *pS
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            auto nOperandLoc = TranslateSExpToNLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-            if (!nOperandLoc) return Error(nOperandLoc.error());
+            auto eLoc = TranslateSExpToNLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+            if (!eLoc) return Error(move(eLoc).error());
 
-            return Value(MakePtr<IrExp_DerefedBoxValue>(std::move(nOperandLoc)));
+            return Value(MakePtr<IrExp_DerefedBoxValue>(move(*eLoc)));
         }
         else
         {
@@ -184,13 +184,13 @@ public:
 
     void Visit(SExp_Member& exp) override
     {
-        auto parent = TranslateSExpRefToIrExp(*exp.parent, context);
-        if (!parent) return Error(parent.error());
+        auto eIrParent = TranslateSExpRefToIrExp(*exp.parent, context);
+        if (!eIrParent) return Error(move(eIrParent).error());
 
         auto typeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, context);
 
         context.SetSyntax(exp.parent);
-        return Forward(TranslateIrExpAndMemberNameToIrExp(*parent, RName_Normal(exp.memberName), std::move(typeArgsExceptOuter), context));
+        return Forward(TranslateIrExpAndMemberNameToIrExp(*eIrParent, RName_Normal(exp.memberName), move(typeArgsExceptOuter), context));
     }
 
     void Visit(SExp_IndirectMember& exp) override

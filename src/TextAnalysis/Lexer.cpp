@@ -101,7 +101,7 @@ class BufferIterator
 
 public:
     BufferIterator(BufferPosition pos)
-        : pos(std::move(pos))
+        : pos(move(pos))
     {
         validPos = get_if<ValidBufferPosition>(&this->pos);
     }
@@ -110,7 +110,7 @@ public:
 
     BufferIterator& operator=(BufferIterator&& other)
     {
-        pos = std::move(other.pos);
+        pos = move(other.pos);
         validPos = get_if<ValidBufferPosition>(&this->pos);
         return *this;
     }
@@ -166,7 +166,7 @@ public:
         auto nextPos = validPos->Next();
         if (!nextPos) return false;
 
-        pos = std::move(*nextPos);
+        pos = move(*nextPos);
         validPos = get_if<ValidBufferPosition>(&pos);
         return true;
     }
@@ -184,7 +184,7 @@ public:
             ++cp;
         }
 
-        pos = std::move(inner.pos);
+        pos = move(inner.pos);
         return true;
     }
 };
@@ -192,16 +192,16 @@ public:
 optional<LexResult> ResultNextPos(Token token, BufferIterator i)
 {
     if (i.IsReachedEnd())
-        return LexResult{ std::move(token), i.MakeLexer() };
+        return LexResult{ move(token), i.MakeLexer() };
 
     if (!i.Next()) return nullopt;
 
-    return LexResult{ std::move(token), i.MakeLexer() };
+    return LexResult{ move(token), i.MakeLexer() };
 }
 
 LexResult Result(Token token, Lexer lexer)
 {
-    return LexResult{ std::move(token), std::move(lexer) };
+    return LexResult{ move(token), move(lexer) };
 }
 
 template<typename TInt, typename TString>
@@ -221,7 +221,7 @@ TInt ParseInt(TString& str)
 namespace Citron {
 
 Lexer::Lexer(BufferPosition pos)
-    : pos(std::move(pos))
+    : pos(move(pos))
 {
 }
 
@@ -265,7 +265,7 @@ optional<LexResult> Lexer::LexStringModeText()
 
             codePoints += U'"';
 
-            i = std::move(j);
+            i = move(j);
             if (!i.Next()) return nullopt;
         }
         else if (i.Equals(U'$')) // $ 처리
@@ -277,7 +277,7 @@ optional<LexResult> Lexer::LexStringModeText()
 
             codePoints += U'$';
 
-            i = std::move(j);
+            i = move(j);
             if (!i.Next()) return nullopt;
         }
         else
@@ -291,7 +291,7 @@ optional<LexResult> Lexer::LexStringModeText()
         return nullopt; // invalid
 
     std::string u8token = utf8::utf32to8(codePoints);
-    return LexResult { TextToken(std::move(u8token)), i.MakeLexer() };
+    return LexResult { TextToken(move(u8token)), i.MakeLexer() };
 }
 
 optional<LexResult> Lexer::LexNormalMode(bool bSkipNewLine)
@@ -395,7 +395,7 @@ optional<LexResult> Lexer::LexCommandMode()
             {
                 codePoints += U'$';
 
-                i = std::move(j);
+                i = move(j);
                 if (!i.Next()) return nullopt;
                 continue;
             }

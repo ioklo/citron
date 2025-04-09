@@ -63,10 +63,10 @@ void JsonString::ToString(IWriter& writer)
 }
 
 JsonArray::JsonArray(std::vector<JsonItem>&& items)
-    : items(std::move(items)) { }
+    : items(move(items)) { }
 
 JsonArray::JsonArray(std::initializer_list<JsonItem> items)
-    : items(std::move(items)) { }
+    : items(move(items)) { }
 
 JsonArray::JsonArray(const JsonArray&) = default;
 JsonArray::JsonArray(JsonArray&&) = default;
@@ -79,7 +79,7 @@ JsonArray& JsonArray::operator=(const JsonArray& other)
 
 JsonArray& JsonArray::operator=(JsonArray&& other) noexcept
 {
-    items = std::move(other.items);
+    items = move(other.items);
     return *this;
 }
 
@@ -126,7 +126,7 @@ bool JsonArray::operator==(const JsonArray& other) const
 }
 
 JsonObject::JsonObject(std::initializer_list<std::pair<std::string, JsonItem>> list)
-    : fields(std::move(list)) { }
+    : fields(move(list)) { }
 
 JsonObject::JsonObject(const JsonObject& other) = default;
 JsonObject::JsonObject(JsonObject&& other) = default;

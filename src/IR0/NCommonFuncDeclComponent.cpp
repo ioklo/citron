@@ -13,18 +13,18 @@ using namespace std;
 namespace Citron
 {
 NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams)
-    : bStatic(bStatic), bSeqFunc(bSeqFunc), typeParams(std::move(typeParams))
+    : bStatic(bStatic), bSeqFunc(bSeqFunc), typeParams(move(typeParams))
 {
 }
 
 void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
-    funcReturnAndParams = FuncReturnAndParams{std::move(funcReturn), std::move(funcParameters), bLastParameterVariadic};
+    funcReturnAndParams = FuncReturnAndParams{move(funcReturn), move(funcParameters), bLastParameterVariadic};
 }
 
 void NCommonFuncDeclComponent::InitBody(vector<NStmtPtr>&& body)
 {
-    this->body = Body_Set(std::move(body));
+    this->body = Body_Set(move(body));
 }
 
 void NCommonFuncDeclComponent::InitBodyWillBeGenerated()

@@ -43,27 +43,27 @@ public:
 private:
     void HandleDefault(SExp& sExp)
     {
-        if (auto reExp = TranslateSExpToReExp(sExp, hintType, context))
+        if (auto eReExp = TranslateSExpToReExp(sExp, hintType, context))
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            *result = TranslateReExpToNLoc(**reExp, bWrapExpAsLoc, &designatedDiag, context);
+            *result = TranslateReExpToNLoc(**eReExp, bWrapExpAsLoc, &designatedDiag, context);
         }
         else // invalid
         {
-            *result = unexpected{reExp.error()};
+            *result = unexpected{move(eReExp).error()};
         }
     }
 
     // fast track
-    void HandleExp(expected<NExpPtr, DiagPtr>&& nExp)
+    void HandleExp(expected<NExpPtr, DiagPtr>&& eNExp)
     {
-        if (!nExp)
+        if (!eNExp)
         {
-            *result = unexpected{nExp.error()};
+            *result = unexpected{move(eNExp).error()};
         }
         else if (bWrapExpAsLoc)
         {
-            *result = MakePtr<NLoc_Temp>(std::move(*nExp));
+            *result = MakePtr<NLoc_Temp>(move(*eNExp));
         }
         else
         {
@@ -71,9 +71,9 @@ private:
         }
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
 public:
@@ -84,39 +84,39 @@ public:
 
     void Visit(SExp_String& exp) override
     {
-        auto nExp = TranslateSStringExpToNStringExp(exp, context);
-        if (!nExp) return Error(nExp.error());
+        auto eNExp = TranslateSStringExpToNStringExp(exp, context);
+        if (!eNExp) return Error(move(eNExp).error());
 
-        return HandleExp(std::move(*nExp));
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_IntLiteral& exp) override
     {
-        auto nExp = TranslateSIntLiteralExpToNExp(exp);
-        if (!nExp) return Error(nExp.error());
+        auto eNExp = TranslateSIntLiteralExpToNExp(exp);
+        if (!eNExp) return Error(move(eNExp).error());
 
-        return HandleExp(std::move(*nExp));
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_BoolLiteral& exp) override
     {
-        auto nExp = TranslateSBoolLiteralExpToNExp(exp);
-        if (!nExp) return Error(nExp.error());
-        return HandleExp(std::move(*nExp));
+        auto eNExp = TranslateSBoolLiteralExpToNExp(exp);
+        if (!eNExp) return Error(move(eNExp).error());
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_NullLiteral& exp) override
     {
-        auto nExp = TranslateSNullLiteralExpToNExp(exp, hintType, context);
-        if (!nExp) return Error(nExp.error());
-        return HandleExp(std::move(*nExp));
+        auto eNExp = TranslateSNullLiteralExpToNExp(exp, hintType, context);
+        if (!eNExp) return Error(move(eNExp).error());
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_BinaryOp& exp) override
     {
-        auto nExp = TranslateSBinaryOpExpToNExp(exp, context);
-        if (!nExp) return Error(nExp.error());
-        return HandleExp(std::move(*nExp));
+        auto eNExp = TranslateSBinaryOpExpToNExp(exp, context);
+        if (!eNExp) return Error(move(eNExp).error());
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_UnaryOp& exp) override
@@ -128,24 +128,24 @@ public:
         }
         else
         {
-            auto nExp = TranslateSUnaryOpExpToNExpExceptDeref(exp, context);
-            if (!nExp) return Error(nExp.error());
-            return HandleExp(std::move(*nExp));
+            auto eNExp = TranslateSUnaryOpExpToNExpExceptDeref(exp, context);
+            if (!eNExp) return Error(move(eNExp).error());
+            return HandleExp(move(*eNExp));
         }
     }
 
     void Visit(SExp_Call& exp) override
     {
-        auto nExp = TranslateSCallExpToNExp(exp, hintType, context);
-        if (!nExp) return Error(nExp.error());
-        return HandleExp(std::move(*nExp));
+        auto eNExp = TranslateSCallExpToNExp(exp, hintType, context);
+        if (!eNExp) return Error(move(eNExp).error());
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_Lambda& exp) override
     {
-        auto nExp = TranslateSLambdaExpToNExp(exp, context);
-        if (!nExp) return Error(nExp.error());
-        return HandleExp(std::move(*nExp));
+        auto eNExp = TranslateSLambdaExpToNExp(exp, context);
+        if (!eNExp) return Error(move(eNExp).error());
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_Indexer& exp) override
@@ -166,37 +166,37 @@ public:
 
     void Visit(SExp_List& exp) override
     {
-        auto nExp = TranslateSListExpToNExp(exp, context);
-        if (!nExp) return Error(nExp.error());
-        return HandleExp(std::move(*nExp));
+        auto eNExp = TranslateSListExpToNExp(exp, context);
+        if (!eNExp) return Error(move(eNExp).error());
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_New& exp) override
     {
-        auto nExp = TranslateSNewExpToNExp(exp, context);
-        if (!nExp) return Error(nExp.error());
-        return HandleExp(std::move(*nExp));
+        auto eNExp = TranslateSNewExpToNExp(exp, context);
+        if (!eNExp) return Error(move(eNExp).error());
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_Box& exp) override
     {
-        auto nExp = TranslateSBoxExpToNExp(exp, hintType, context);
-        if (!nExp) return Error(nExp.error());
-        return HandleExp(std::move(*nExp));
+        auto eNExp = TranslateSBoxExpToNExp(exp, hintType, context);
+        if (!eNExp) return Error(move(eNExp).error());
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_Is& exp) override
     {
-        auto nExp = TranslateSIsExpToNExp(exp, context);
-        if (!nExp) return Error(nExp.error());
-        return HandleExp(std::move(*nExp));
+        auto eNExp = TranslateSIsExpToNExp(exp, context);
+        if (!eNExp) return Error(move(eNExp).error());
+        return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_As& exp) override
     {
-        auto nExp = TranslateSAsExpToNExp(exp, context);
-        if (!nExp) return Error(nExp.error());
-        return HandleExp(std::move(*nExp));
+        auto eNExp = TranslateSAsExpToNExp(exp, context);
+        if (!eNExp) return Error(move(eNExp).error());
+        return HandleExp(move(*eNExp));
     }
 };
 

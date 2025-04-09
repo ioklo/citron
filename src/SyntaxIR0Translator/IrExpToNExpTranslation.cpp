@@ -23,12 +23,12 @@ struct IrBoxRefExpToNExpTranslator : public IrBoxRefExpVisitor
 private:
     void Value(NExpPtr&& nExp)
     {
-        *result = std::move(nExp);
+        *result = move(nExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
 public:
@@ -51,12 +51,12 @@ public:
     // &(box S()).x.y
     void Visit(IrExp_BoxRef_StructMember& boxRef) override
     {
-        expected<NExpPtr, DiagPtr> parentExp;
-        IrBoxRefExpToNExpTranslator parentTranslator{&parentExp};
+        expected<NExpPtr, DiagPtr> eParent;
+        IrBoxRefExpToNExpTranslator parentTranslator{&eParent};
         boxRef.parent->Accept(parentTranslator);
-        if (!parentExp) return Error(parentExp.error());
+        if (!eParent) return Error(move(eParent).error());
 
-        return Value(MakePtr<NExp_StructMemberBoxRef>(MakePtr<NLoc_Temp>(*parentExp), boxRef.decl, boxRef.typeArgs));
+        return Value(MakePtr<NExp_StructMemberBoxRef>(MakePtr<NLoc_Temp>(*eParent), boxRef.decl, boxRef.typeArgs));
     }
 };
 
@@ -68,12 +68,12 @@ struct IrExpToNExpTranslator : public IrExpVisitor
 private:
     void Value(NExpPtr&& nExp)
     {
-        *result = std::move(nExp);
+        *result = move(nExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
 public:

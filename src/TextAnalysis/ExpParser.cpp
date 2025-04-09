@@ -29,7 +29,7 @@ SExpPtr ParseLeftAssocBinaryOpExp(Lexer* lexer, BinaryOpInfo (&infos)[N])
     if (!operand0)
         return nullptr;
 
-    SExpPtr curExp = std::move(operand0);
+    SExpPtr curExp = move(operand0);
 
     while (true)
     {
@@ -51,7 +51,7 @@ SExpPtr ParseLeftAssocBinaryOpExp(Lexer* lexer, BinaryOpInfo (&infos)[N])
         if (!oOpKind)
         {
             // lexer 반영하고
-            *lexer = std::move(curLexer);
+            *lexer = move(curLexer);
             return curExp;
         }
 
@@ -60,7 +60,7 @@ SExpPtr ParseLeftAssocBinaryOpExp(Lexer* lexer, BinaryOpInfo (&infos)[N])
             return nullptr;
         
         // Fold
-        curExp = MakePtr<SExp_BinaryOp>(*oOpKind, std::move(curExp), std::move(operand1));
+        curExp = MakePtr<SExp_BinaryOp>(*oOpKind, move(curExp), move(operand1));
     }
 }
 
@@ -86,8 +86,8 @@ SArgumentPtr ParseArgument(Lexer* lexer)
     if (!exp)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SArgument>(oOutAndParams->bOut, oOutAndParams->bParams, std::move(exp));
+    *lexer = move(curLexer);
+    return MakePtr<SArgument>(oOutAndParams->bOut, oOutAndParams->bParams, move(exp));
 }
 
 }
@@ -115,11 +115,11 @@ SArgumentsPtr ParseCallArgs(Lexer* lexer)
         if (!arg)
             return nullptr;
 
-        arguments.push_back(std::move(arg));
+        arguments.push_back(move(arg));
     }
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SArguments>(std::move(arguments)); // 이건 move가 되는데..
+    *lexer = move(curLexer);
+    return MakePtr<SArguments>(move(arguments)); // 이건 move가 되는데..
 }
 
 SExpPtr ParseExp(Lexer* lexer)
@@ -138,7 +138,7 @@ SExpPtr ParseAssignExp(Lexer* lexer)
 
     if (!Accept<EqualToken>(&curLexer))
     {
-        *lexer = std::move(curLexer);
+        *lexer = move(curLexer);
         return exp0;
     }
 
@@ -146,8 +146,8 @@ SExpPtr ParseAssignExp(Lexer* lexer)
     if (!exp1)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SExp_BinaryOp>(SBinaryOpKind::Assign, std::move(exp0), std::move(exp1));
+    *lexer = move(curLexer);
+    return MakePtr<SExp_BinaryOp>(SBinaryOpKind::Assign, move(exp0), move(exp1));
 }
 
 SExpPtr ParseEqualityExp(Lexer* lexer)
@@ -177,7 +177,7 @@ SExpPtr ParseTestAndTypeTestExp(Lexer* lexer)
     if (!operand0)
         return nullptr;
 
-    SExpPtr curExp = std::move(operand0);
+    SExpPtr curExp = move(operand0);
     
     while (true)
     {
@@ -191,7 +191,7 @@ SExpPtr ParseTestAndTypeTestExp(Lexer* lexer)
         {
             if (info.token == oLexResult->token)
             {
-                curLexer = std::move(oLexResult->lexer);
+                curLexer = move(oLexResult->lexer);
 
                 // base
                 auto operand1 = ParseAdditiveExp(&curLexer);
@@ -200,7 +200,7 @@ SExpPtr ParseTestAndTypeTestExp(Lexer* lexer)
                     return nullptr;
 
                 // Fold
-                curExp = MakePtr<SExp_BinaryOp>(info.kind, std::move(curExp), std::move(operand1));
+                curExp = MakePtr<SExp_BinaryOp>(info.kind, move(curExp), move(operand1));
                 bHandled = true;
                 break;
             }
@@ -217,7 +217,7 @@ SExpPtr ParseTestAndTypeTestExp(Lexer* lexer)
             if (!typeExp)
                 return nullptr;
 
-            curExp = MakePtr<SExp_Is>(std::move(curExp), std::move(typeExp));
+            curExp = MakePtr<SExp_Is>(move(curExp), move(typeExp));
             continue;
         }
 
@@ -229,14 +229,14 @@ SExpPtr ParseTestAndTypeTestExp(Lexer* lexer)
             if (!typeExp) 
                 return nullptr;
 
-            curExp = MakePtr<SExp_As>(std::move(curExp), std::move(typeExp));
+            curExp = MakePtr<SExp_As>(move(curExp), move(typeExp));
             continue;
         }
 
         break;
     }
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return curExp;
 }
 
@@ -284,7 +284,7 @@ Citron::SExpPtr ParseUnaryExp(Lexer* lexer)
             if (info.token == oLexResult->token)
             {
                 oOpKind = info.kind;
-                curLexer = std::move(oLexResult->lexer);
+                curLexer = move(oLexResult->lexer);
                 break;
             }
         }
@@ -299,12 +299,12 @@ Citron::SExpPtr ParseUnaryExp(Lexer* lexer)
         // '-' '3'은 '-3'
         if (auto handledExp = HandleUnaryMinusWithIntLiteral(*oOpKind, exp.get()))
         {
-            *lexer = std::move(curLexer);
+            *lexer = move(curLexer);
             return handledExp;
         }
 
-        *lexer = std::move(curLexer);
-        return MakePtr<SExp_UnaryOp>(*oOpKind, std::move(exp));
+        *lexer = move(curLexer);
+        return MakePtr<SExp_UnaryOp>(*oOpKind, move(exp));
     }
     else
     {
@@ -328,7 +328,7 @@ Citron::SExpPtr ParsePrimaryExp(Lexer* lexer)
     if (!operand)
         return nullptr;
 
-    auto curExp = std::move(operand);
+    auto curExp = move(operand);
 
     while (true)
     {
@@ -353,7 +353,7 @@ Citron::SExpPtr ParsePrimaryExp(Lexer* lexer)
             curLexer = oLexResult->lexer;
 
             // Fold
-            curExp = MakePtr<SExp_UnaryOp>(primaryInfo->kind, std::move(curExp));
+            curExp = MakePtr<SExp_UnaryOp>(primaryInfo->kind, move(curExp));
             continue;
         }
 
@@ -367,7 +367,7 @@ Citron::SExpPtr ParsePrimaryExp(Lexer* lexer)
             if (!Accept<RBraceToken>(&curLexer))
                 return nullptr;
 
-            curExp = MakePtr<SExp_Indexer>(std::move(curExp), std::move(index));
+            curExp = MakePtr<SExp_Indexer>(move(curExp), move(index));
             continue;
         }
 
@@ -383,9 +383,9 @@ Citron::SExpPtr ParsePrimaryExp(Lexer* lexer)
             auto oTypeArgs = ParseTypeArgs(&curLexer);
 
             if (oTypeArgs)
-                curExp = MakePtr<SExp_Member>(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
+                curExp = MakePtr<SExp_Member>(move(curExp), move(oIdToken->text), move(*oTypeArgs));
             else
-                curExp = MakePtr<SExp_Member>(std::move(curExp), std::move(oIdToken->text), std::vector<STypeExpPtr>());
+                curExp = MakePtr<SExp_Member>(move(curExp), move(oIdToken->text), std::vector<STypeExpPtr>());
 
             continue;
         }
@@ -402,11 +402,11 @@ Citron::SExpPtr ParsePrimaryExp(Lexer* lexer)
             auto oTypeArgs = ParseTypeArgs(&curLexer);
             if (oTypeArgs)
             {   
-                curExp = MakePtr<SExp_IndirectMember>(std::move(curExp), std::move(oIdToken->text), std::move(*oTypeArgs));
+                curExp = MakePtr<SExp_IndirectMember>(move(curExp), move(oIdToken->text), move(*oTypeArgs));
             }
             else
             {   
-                curExp = MakePtr<SExp_IndirectMember>(std::move(curExp), std::move(oIdToken->text), vector<STypeExpPtr>());
+                curExp = MakePtr<SExp_IndirectMember>(move(curExp), move(oIdToken->text), vector<STypeExpPtr>());
             }
 
             continue;
@@ -416,7 +416,7 @@ Citron::SExpPtr ParsePrimaryExp(Lexer* lexer)
         auto arguments = ParseCallArgs(&curLexer);
         if (arguments)
         {
-            curExp = MakePtr<SExp_Call>(std::move(curExp), std::move(arguments));
+            curExp = MakePtr<SExp_Call>(move(curExp), move(arguments));
             continue;
         }
 
@@ -475,8 +475,8 @@ shared_ptr<SExp_Box> ParseBoxExp(Lexer* lexer)
     if (!innerExp)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SExp_Box>(std::move(innerExp));
+    *lexer = move(curLexer);
+    return MakePtr<SExp_Box>(move(innerExp));
 }
 
 shared_ptr<SExp_New> ParseNewExp(Lexer* lexer)
@@ -496,8 +496,8 @@ shared_ptr<SExp_New> ParseNewExp(Lexer* lexer)
     if (!args)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SExp_New>(std::move(type), std::move(args));
+    *lexer = move(curLexer);
+    return MakePtr<SExp_New>(move(type), move(args));
 }
 
 // LambdaExpression, Right Assoc
@@ -531,9 +531,9 @@ shared_ptr<SExp_Lambda> ParseLambdaExp(Lexer* lexer)
 
             auto oSecondIdToken = Accept<IdentifierToken>(&curLexer);
             if (!oSecondIdToken)
-                params.emplace_back(nullptr, std::move(oFirstIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
+                params.emplace_back(nullptr, move(oFirstIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
             else
-                params.emplace_back(MakePtr<STypeExp_Id>(std::move(oFirstIdToken->text), vector<STypeExpPtr>{}), std::move(oSecondIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
+                params.emplace_back(MakePtr<STypeExp_Id>(move(oFirstIdToken->text), vector<STypeExpPtr>{}), move(oSecondIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
         }
     }
     else
@@ -547,7 +547,7 @@ shared_ptr<SExp_Lambda> ParseLambdaExp(Lexer* lexer)
         if (!oIdToken)
             return nullptr;
 
-        params.emplace_back(nullptr, std::move(oIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
+        params.emplace_back(nullptr, move(oIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
     }
 
     // =>
@@ -565,7 +565,7 @@ shared_ptr<SExp_Lambda> ParseLambdaExp(Lexer* lexer)
         if (!oStmtBody)
             return nullptr;
 
-        body = MakePtr<SLambdaExpBody_Stmts>(std::move(*oStmtBody));
+        body = MakePtr<SLambdaExpBody_Stmts>(move(*oStmtBody));
     }
     else
     {
@@ -574,11 +574,11 @@ shared_ptr<SExp_Lambda> ParseLambdaExp(Lexer* lexer)
         if (!exp)
             return nullptr;
 
-        body = MakePtr<SLambdaExpBody_Exp>(std::move(exp));
+        body = MakePtr<SLambdaExpBody_Exp>(move(exp));
     }
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SExp_Lambda>(std::move(params), std::move(body));
+    *lexer = move(curLexer);
+    return MakePtr<SExp_Lambda>(move(params), move(body));
 }
 
 SExpPtr ParseParenExp(Lexer* lexer)
@@ -595,7 +595,7 @@ SExpPtr ParseParenExp(Lexer* lexer)
     if (!Accept<RParenToken>(&curLexer))
         return nullptr;
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return oxp;
 }
 
@@ -645,13 +645,13 @@ shared_ptr<SExp_String> ParseStringExp(Lexer* lexer)
 
         if (auto oTextToken = Accept<TextToken>(&curLexer, oLexResult))
         {
-            elems.push_back(MakePtr<SStringExpElement_Text>(std::move(oTextToken->text)));
+            elems.push_back(MakePtr<SStringExpElement_Text>(move(oTextToken->text)));
             continue;
         }
         
         if (auto oIdToken = Accept<IdentifierToken>(&curLexer, oLexResult))
         {
-            elems.push_back(MakePtr<SStringExpElement_Exp>(MakePtr<SExp_Identifier>(std::move(oIdToken->text), std::vector<STypeExpPtr>{})));
+            elems.push_back(MakePtr<SStringExpElement_Exp>(MakePtr<SExp_Identifier>(move(oIdToken->text), std::vector<STypeExpPtr>{})));
             continue;
         }
 
@@ -666,15 +666,15 @@ shared_ptr<SExp_String> ParseStringExp(Lexer* lexer)
             if (!Accept<RBraceToken>(&curLexer))
                 return nullptr;
 
-            elems.push_back(MakePtr<SStringExpElement_Exp>(std::move(exp)));
+            elems.push_back(MakePtr<SStringExpElement_Exp>(move(exp)));
             continue;
         }
 
         return nullptr;
     }
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SExp_String>(std::move(elems));
+    *lexer = move(curLexer);
+    return MakePtr<SExp_String>(move(elems));
 }
 
 shared_ptr<SExp_List> ParseListExp(Lexer* lexer)
@@ -696,11 +696,11 @@ shared_ptr<SExp_List> ParseListExp(Lexer* lexer)
         if (!elem)
             return nullptr;
 
-        elems.push_back(std::move(elem));
+        elems.push_back(move(elem));
     }
 
     *lexer = curLexer;
-    return MakePtr<SExp_List>(std::move(elems));
+    return MakePtr<SExp_List>(move(elems));
 }
 
 // lexer를 실패했을때 되돌리는 것은 Parser책임
@@ -716,13 +716,13 @@ shared_ptr<SExp_Identifier> ParseIdentifierExp(Lexer* lexer)
 
     if (oTypeArgs)
     {
-        *lexer = std::move(curLexer);
-        return MakePtr<SExp_Identifier>(std::move(oIdToken->text), std::move(*oTypeArgs));
+        *lexer = move(curLexer);
+        return MakePtr<SExp_Identifier>(move(oIdToken->text), move(*oTypeArgs));
     }
     else
     {
-        *lexer = std::move(curLexer);
-        return MakePtr<SExp_Identifier>(std::move(oIdToken->text), std::vector<STypeExpPtr>{});
+        *lexer = move(curLexer);
+        return MakePtr<SExp_Identifier>(move(oIdToken->text), std::vector<STypeExpPtr>{});
     }
 }
 

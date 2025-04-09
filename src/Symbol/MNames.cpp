@@ -9,7 +9,7 @@ namespace Citron
 {
 
 MName_Normal::MName_Normal(std::string&& text)
-    : text(std::move(text))
+    : text(move(text))
 {
 }
 
@@ -21,7 +21,7 @@ MName_Normal MName_Normal::Copy() const
 }
 
 MName_Reserved::MName_Reserved(std::string&& text)
-    : text(std::move(text))
+    : text(move(text))
 {
 }
 
@@ -45,7 +45,7 @@ MName_Lambda MName_Lambda::Copy() const
 }
 
 MName_CtorParam::MName_CtorParam(int index, std::string&& paramText)
-    : index(index), paramText(std::move(paramText))
+    : index(index), paramText(move(paramText))
 {
 }
 

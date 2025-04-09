@@ -13,6 +13,6 @@ namespace Citron::SyntaxIR0Translator {
 
 export class TranslationContext;
 
-export std::expected<std::vector<NStmtPtr>, DiagPtr> TranslateSVarDeclToNStmts(SVarDecl& varDecl, TranslationContext& context);
+export std::expected<void, DiagPtr> TranslateSVarDeclToNStmts(std::vector<NStmtPtr>* outStmts, SVarDecl& varDecl, TranslationContext& context);
 
 } // namespace Citron::SyntaxIR0Translator

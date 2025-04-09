@@ -23,7 +23,7 @@ optional<OutAndParams> AcceptParseOutAndParams(Lexer* lexer)
         return nullopt;
     }
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return OutAndParams{ bOut, bParams };
 }
 

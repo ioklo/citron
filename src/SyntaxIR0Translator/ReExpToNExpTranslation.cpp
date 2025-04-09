@@ -28,67 +28,67 @@ public:
     {
     }
 
-    void HandleLoc(expected<NLocPtr, DiagPtr>&& loc)
+    void HandleLoc(expected<NLocPtr, DiagPtr>&& eLoc)
     {
-        if (!loc)
-            *result = unexpected{loc.error()};
+        if (!eLoc)
+            *result = unexpected{move(eLoc).error()};
         else
-            *result = MakePtr<NExp_Load>(std::move(*loc));
+            *result = MakePtr<NExp_Load>(move(*eLoc));
     }
 
     void Visit(ReExp_ThisVar& exp) override
     {
         auto nLoc = TranslateReThisVarExpToNLoc(exp, context);
-        return HandleLoc(std::move(nLoc));
+        return HandleLoc(move(nLoc));
     }
 
     void Visit(ReExp_LocalVar& exp) override
     {
         auto nLoc = TranslateReLocalVarExpToNLoc(exp);
-        return HandleLoc(std::move(nLoc));
+        return HandleLoc(move(nLoc));
     }
 
     void Visit(ReExp_LambdaVar& exp) override
     {
         auto nLoc = TranslateReLambdaVarExpToNLoc(exp);
-        return HandleLoc(std::move(nLoc));
+        return HandleLoc(move(nLoc));
     }
 
     void Visit(ReExp_ClassVar& exp) override
     {
         auto nLoc = TranslateReClassVarExpToNLoc(exp, context);
-        return HandleLoc(std::move(nLoc));
+        return HandleLoc(move(nLoc));
     }
 
     void Visit(ReExp_StructVar& exp) override
     {
         auto nLoc = TranslateReStructVarExpToNLoc(exp, context);
-        return HandleLoc(std::move(nLoc));
+        return HandleLoc(move(nLoc));
     }
 
     void Visit(ReExp_EnumElemVar& exp) override
     {
         auto nLoc = TranslateReEnumElemVarExpToNLoc(exp, context);
-        return HandleLoc(std::move(nLoc));
+        return HandleLoc(move(nLoc));
     }
 
     void Visit(ReExp_LocalDeref& exp) override
     {
         auto nLoc = TranslateReLocalDerefExpToNLoc(exp, context);
-        return HandleLoc(std::move(nLoc));
+        return HandleLoc(move(nLoc));
     }
 
     // *x
     void Visit(ReExp_BoxDeref& exp) override
     {
         auto nLoc = TranslateReBoxDerefExpToNLoc(exp, context);
-        return HandleLoc(std::move(nLoc));
+        return HandleLoc(move(nLoc));
     }
 
     void Visit(ReExp_ListIndexer& exp) override
     {
         auto nLoc = TranslateReListIndexerExpToNLoc(exp, context);
-        return HandleLoc(std::move(nLoc));
+        return HandleLoc(move(nLoc));
     }
 
     void Visit(ReExp_Else& exp) override

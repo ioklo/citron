@@ -56,7 +56,7 @@ public:
 
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
 
-        return MakePtr<ImExp_Class>(member.decl, std::move(typeArgs));
+        return MakePtr<ImExp_Class>(member.decl, move(typeArgs));
     }
 
     // C.F
@@ -95,7 +95,7 @@ public:
 
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
 
-        return MakePtr<ImExp_Struct>(member.decl, std::move(typeArgs));
+        return MakePtr<ImExp_Struct>(member.decl, move(typeArgs));
     }
 
     // S.F
@@ -132,7 +132,7 @@ public:
         }
 
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return MakePtr<ImExp_Enum>(member.decl, std::move(typeArgs));
+        return MakePtr<ImExp_Enum>(member.decl, move(typeArgs));
     }
 
     // E.First
@@ -193,7 +193,7 @@ class InstanceParentTranslator
 
 public:
     InstanceParentTranslator(ReExpPtr&& reInstExp, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
-        : reInstExp(std::move(reInstExp)), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+        : reInstExp(move(reInstExp)), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
 
@@ -326,12 +326,12 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
 
     void Value(ImExpPtr&& imExp)
     {
-        *result = std::move(imExp);
+        *result = move(imExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
     void TranslateStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
@@ -343,22 +343,18 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
 
     void TranslateInstanceParent(ImExp& imExp)
     {
-        auto reInstExp = TranslateImExpToReExp(imExp, context);
-        if (!reInstExp)
-        {
-            *result = unexpected{reInstExp.error()};
-            return;
-        }
+        auto eReInstExp = TranslateImExpToReExp(imExp, context);
+        if (!eReInstExp)
+            return Error(move(eReInstExp).error());
 
-        auto type = context.GetType(**reInstExp);
+        auto type = context.GetType(**eReInstExp);
         auto oMember = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
         if (!oMember)
         {
-            *result = unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
-            return;
+            return Error(MakePtr<Error_ResolveIdentifier_NotFound>());
         }
 
-        InstanceParentTranslator binder(std::move(*reInstExp), typeArgsExceptOuter, context);
+        InstanceParentTranslator binder(move(*eReInstExp), typeArgsExceptOuter, context);
         *result = visit(binder, *oMember);
     }
 

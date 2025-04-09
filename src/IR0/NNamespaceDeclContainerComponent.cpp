@@ -11,7 +11,7 @@ NNamespaceDeclContainerComponent::NNamespaceDeclContainerComponent() = default;
 void NNamespaceDeclContainerComponent::AddNamespace(shared_ptr<NNamespaceDecl> _namespace)
 {
     namespaceDecls.push_back(_namespace);
-    namespaceDict.insert_or_assign(_namespace->GetName(), std::move(_namespace));
+    namespaceDict.insert_or_assign(_namespace->GetName(), move(_namespace));
 }
 
 shared_ptr<NNamespaceDecl> NNamespaceDeclContainerComponent::GetNamespace(const std::string& name)

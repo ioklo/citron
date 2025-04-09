@@ -5,7 +5,6 @@ import <vector>;
 import <optional>;
 import <string>;
 import <expected>;
-import <expected>;
 
 import Citron.Diag;
 import Citron.Syntax;
@@ -66,7 +65,7 @@ public:
     TranslationContext MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
     std::shared_ptr<NLoc_This> MakeThisLoc();
-    NExpPtr MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& testType);
+    std::expected<NExpPtr, DiagPtr> MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& testType);
 
 public: // for scopeContext
     bool IsInLoop();

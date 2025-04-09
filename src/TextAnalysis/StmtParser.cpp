@@ -57,8 +57,8 @@ shared_ptr<SStmt_IfTest> ParseIfTestFragment(Lexer* lexer)
             return nullptr;
     }
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_IfTest>(std::move(testTypeExp), std::move(oVarNameToken->text), std::move(exp), std::move(body), std::move(elseBody));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_IfTest>(move(testTypeExp), move(oVarNameToken->text), move(exp), move(body), move(elseBody));
 }
 
 // 리턴은 SStmt_If와 SStmt_IfTest
@@ -80,7 +80,7 @@ SStmtPtr ParseIfStmt(Lexer* lexer)
     // typeExp varName = exp꼴인지 먼저 확인
     if (auto ifTestStmt = ParseIfTestFragment(&curLexer))
     {
-        *lexer = std::move(curLexer);
+        *lexer = move(curLexer);
         return ifTestStmt;
     }
 
@@ -106,8 +106,8 @@ SStmtPtr ParseIfStmt(Lexer* lexer)
             return nullptr;
     }
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_If>(std::move(cond), std::move(body), std::move(elseBody));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_If>(move(cond), move(body), move(elseBody));
 }
 
 optional<SVarDecl> ParseVarDecl(Lexer* lexer)
@@ -136,12 +136,12 @@ optional<SVarDecl> ParseVarDecl(Lexer* lexer)
                 return nullopt;
         }
 
-        elems.push_back(SVarDeclElement{ std::move(oVarIdToken->text), std::move(initExp) });
+        elems.push_back(SVarDeclElement{ move(oVarIdToken->text), move(initExp) });
 
     } while (Accept<CommaToken>(&curLexer)); // ,가 나오면 계속한다
 
-    *lexer = std::move(curLexer);
-    return SVarDecl(std::move(varType), std::move(elems));
+    *lexer = move(curLexer);
+    return SVarDecl(move(varType), move(elems));
 }
 
 // int x = 0;
@@ -156,17 +156,17 @@ shared_ptr<SStmt_VarDecl> ParseVarDeclStmt(Lexer* lexer)
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_VarDecl>(std::move(*oVarDecl));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_VarDecl>(move(*oVarDecl));
 }
 
 SForStmtInitializerPtr ParseForStmtInitializer(Lexer* lexer)
 {
     if (auto oVarDecl = ParseVarDecl(lexer))
-        return MakePtr<SForStmtInitializer_VarDecl>(std::move(*oVarDecl));
+        return MakePtr<SForStmtInitializer_VarDecl>(move(*oVarDecl));
 
     if (auto exp = ParseExp(lexer))
-        return MakePtr<SForStmtInitializer_Exp>(std::move(exp));
+        return MakePtr<SForStmtInitializer_Exp>(move(exp));
 
     return nullptr;
 }
@@ -203,8 +203,8 @@ shared_ptr<SStmt_For> ParseForStmt(Lexer* lexer)
     if (!bodyStmt)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_For>(std::move(initializer), std::move(cond), std::move(cont), std::move(bodyStmt));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_For>(move(initializer), move(cond), move(cont), move(bodyStmt));
 }
 
 shared_ptr<SStmt_Continue> ParseContinueStmt(Lexer* lexer)
@@ -217,7 +217,7 @@ shared_ptr<SStmt_Continue> ParseContinueStmt(Lexer* lexer)
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return MakePtr<SStmt_Continue>();
 }
 
@@ -231,7 +231,7 @@ shared_ptr<SStmt_Break> ParseBreakStmt(Lexer* lexer)
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return MakePtr<SStmt_Break>();
 }
 
@@ -245,13 +245,13 @@ shared_ptr<SStmt_Return> ParseReturnStmt(Lexer* lexer)
     SExpPtr returnValue;
 
     if (auto returnExp = ParseExp(&curLexer))
-        returnValue = std::move(returnExp);
+        returnValue = move(returnExp);
 
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_Return>(std::move(returnValue));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_Return>(move(returnValue));
 }
 
 shared_ptr<SStmt_Block> ParseBlockStmt(Lexer* lexer)
@@ -268,11 +268,11 @@ shared_ptr<SStmt_Block> ParseBlockStmt(Lexer* lexer)
         auto stmt = ParseStmt(&curLexer);
         if (!stmt) return nullptr;
 
-        stmts.push_back(std::move(stmt));
+        stmts.push_back(move(stmt));
     }
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_Block>(std::move(stmts));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_Block>(move(stmts));
 }
 
 shared_ptr<SStmt_Blank> ParseBlankStmt(Lexer* lexer)
@@ -295,8 +295,8 @@ shared_ptr<SStmt_Exp> ParseExpStmt(Lexer* lexer)
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_Exp>(std::move(exp));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_Exp>(move(exp));
 }
 
 shared_ptr<SStmt_Task> ParseTaskStmt(Lexer* lexer)
@@ -311,8 +311,8 @@ shared_ptr<SStmt_Task> ParseTaskStmt(Lexer* lexer)
     if (!oBody)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_Task>(std::move(*oBody));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_Task>(move(*oBody));
 }
 
 shared_ptr<SStmt_Await> ParseAwaitStmt(Lexer* lexer)
@@ -326,8 +326,8 @@ shared_ptr<SStmt_Await> ParseAwaitStmt(Lexer* lexer)
     if (!oBody)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_Await>(std::move(*oBody));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_Await>(move(*oBody));
 }
 
 shared_ptr<SStmt_Async> ParseAsyncStmt(Lexer* lexer)
@@ -341,8 +341,8 @@ shared_ptr<SStmt_Async> ParseAsyncStmt(Lexer* lexer)
     if (!oBody)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_Async>(std::move(*oBody));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_Async>(move(*oBody));
 }
 
 shared_ptr<SStmt_Yield> ParseYieldStmt(Lexer* lexer)
@@ -360,8 +360,8 @@ shared_ptr<SStmt_Yield> ParseYieldStmt(Lexer* lexer)
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_Yield>(std::move(yieldValue));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_Yield>(move(yieldValue));
 }
 
 shared_ptr<SExp_String> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
@@ -390,29 +390,29 @@ shared_ptr<SExp_String> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
             if (!Accept<RBraceToken>(&curLexer))
                 return nullptr;
 
-            elems.push_back(MakePtr<SStringExpElement_Exp>(std::move(exp)));
+            elems.push_back(MakePtr<SStringExpElement_Exp>(move(exp)));
             continue;
         }
 
         // aa$b => $b 이야기
         if (auto oIdToken = Accept<IdentifierToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(MakePtr<SStringExpElement_Exp>(MakePtr<SExp_Identifier>(std::move(oIdToken->text), std::vector<STypeExpPtr>{})));
+            elems.push_back(MakePtr<SStringExpElement_Exp>(MakePtr<SExp_Identifier>(move(oIdToken->text), std::vector<STypeExpPtr>{})));
             continue;
         }
 
         
         if (auto oTextToken = Accept<TextToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(MakePtr<SStringExpElement_Text>(std::move(oTextToken->text)));
+            elems.push_back(MakePtr<SStringExpElement_Text>(move(oTextToken->text)));
             continue;
         }
 
         return nullptr;
     }
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SExp_String>(std::move(elems));
+    *lexer = move(curLexer);
+    return MakePtr<SExp_String>(move(elems));
 }
 
 shared_ptr<SStmt_Foreach> ParseForeachStmt(Lexer* lexer)
@@ -456,8 +456,8 @@ shared_ptr<SStmt_Foreach> ParseForeachStmt(Lexer* lexer)
     if (!stmt)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_Foreach>(std::move(typeExp), std::move(oVarNameToken->text), std::move(obj), std::move(stmt));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_Foreach>(move(typeExp), move(oVarNameToken->text), move(obj), move(stmt));
 }
 
 // 
@@ -501,15 +501,15 @@ shared_ptr<SStmt_Command> ParseCommandStmt(Lexer* lexer)
                     }
                 }
 
-                cmds.push_back(std::move(singleCommand));
+                cmds.push_back(move(singleCommand));
                 continue;
             }
 
             return nullptr;
         }
 
-        *lexer = std::move(curLexer);
-        return MakePtr<SStmt_Command>(std::move(cmds));
+        *lexer = move(curLexer);
+        return MakePtr<SStmt_Command>(move(cmds));
     }
     else // 싱글 커맨드, 엔터가 나오면 끝난다
     {
@@ -521,12 +521,12 @@ shared_ptr<SStmt_Command> ParseCommandStmt(Lexer* lexer)
         if (singleCommand->elements.empty())
             return nullptr;
         
-        *lexer = std::move(curLexer);
+        *lexer = move(curLexer);
 
         vector<shared_ptr<SExp_String>> strs;
-        strs.push_back(std::move(singleCommand));
+        strs.push_back(move(singleCommand));
 
-        return MakePtr<SStmt_Command>(std::move(strs));
+        return MakePtr<SStmt_Command>(move(strs));
     }
 }
 
@@ -556,14 +556,14 @@ shared_ptr<SStmt_Directive> ParseDirectiveStmt(Lexer* lexer)
         if (!arg)
             return nullptr;
 
-        args.push_back(std::move(arg));
+        args.push_back(move(arg));
     }
 
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStmt_Directive>(std::move(oIdToken->text), std::move(args));
+    *lexer = move(curLexer);
+    return MakePtr<SStmt_Directive>(move(oIdToken->text), move(args));
 }
 
 // if (...) 'x;' // 단일이냐
@@ -582,8 +582,8 @@ SEmbeddableStmtPtr ParseEmbeddableStmt(Lexer* lexer)
         // block stmt는 제외되서 들어올 것이다
         assert(dynamic_cast<SStmt_Block*>(stmt.get()) == nullptr);
 
-        *lexer = std::move(curLexer);
-        return MakePtr<SEmbeddableStmt_Single>(std::move(stmt));
+        *lexer = move(curLexer);
+        return MakePtr<SEmbeddableStmt_Single>(move(stmt));
     }
     else // 있다면 Embeddable.Multiple
     {
@@ -597,11 +597,11 @@ SEmbeddableStmtPtr ParseEmbeddableStmt(Lexer* lexer)
             if (!stmt)
                 return nullptr;
 
-            stmts.push_back(std::move(stmt));
+            stmts.push_back(move(stmt));
         }
 
-        *lexer = std::move(curLexer);
-        return MakePtr<SEmbeddableStmt_Block>(std::move(stmts));
+        *lexer = move(curLexer);
+        return MakePtr<SEmbeddableStmt_Block>(move(stmts));
     }
 }
 
@@ -619,10 +619,10 @@ optional<vector<SStmtPtr>> ParseBody(Lexer* lexer)
         if (!stmt)
             return nullopt;
 
-        stmts.push_back(std::move(stmt));
+        stmts.push_back(move(stmt));
     }
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return stmts;
 }
 

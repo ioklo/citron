@@ -26,8 +26,8 @@ vector<Token> ProcessInner(TFunc Action, Lexer* lexer)
         if (!oLexResult) return result;
         if (holds_alternative<EndOfFileToken>(oLexResult->token)) break;
 
-        *lexer = std::move(oLexResult->lexer);
-        result.push_back(std::move(oLexResult->token));
+        *lexer = move(oLexResult->lexer);
+        result.push_back(move(oLexResult->token));
     }
 
     return result;
@@ -229,19 +229,19 @@ TEST(Lexer, LexEscapedString)
     vector<Token> tokens;
 
     auto oResult = lexer.LexStringMode();
-    tokens.push_back(std::move(oResult->token));
+    tokens.push_back(move(oResult->token));
 
     oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(std::move(oResult->token));
+    tokens.push_back(move(oResult->token));
 
     oResult = oResult->lexer.LexNormalMode(false);
-    tokens.push_back(std::move(oResult->token));
+    tokens.push_back(move(oResult->token));
 
     oResult = oResult->lexer.LexNormalMode(false);
-    tokens.push_back(std::move(oResult->token));
+    tokens.push_back(move(oResult->token));
 
     oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(std::move(oResult->token));
+    tokens.push_back(move(oResult->token));
 
     vector<Token> expectedTokens {
         TextToken("aaa bbb "),

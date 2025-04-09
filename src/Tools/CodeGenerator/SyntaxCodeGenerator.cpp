@@ -482,7 +482,7 @@ struct ToJsonVisitor {
                 {.type = "std::vector<STypeExpPtr>", .memberVarName = "typeArgs", .getterName = "GetTypeArgs" },
             },
             .extraCtors {
-                "SExp_Identifier(std::string value) : SExp_Identifier(std::move(value), {}) { }"
+                "SExp_Identifier(std::string value) : SExp_Identifier(move(value), {}) { }"
             }
         },
 

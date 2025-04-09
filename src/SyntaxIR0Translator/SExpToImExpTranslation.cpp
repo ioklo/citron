@@ -48,22 +48,22 @@ private:
         if (!exp)
             *result = nullptr;
         else
-            *result = MakePtr<ImExp_Else>(std::move(exp));
+            *result = MakePtr<ImExp_Else>(move(exp));
     }
 
     void Forward(expected<ImExpPtr, DiagPtr>&& r)
     {
-        *result = std::move(r);
+        *result = move(r);
     }
 
     void Value(ImExpPtr&& nExp)
     {
-        *result = std::move(nExp);
+        *result = move(nExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
 
@@ -123,16 +123,16 @@ public:
         // *d
         if (exp.kind == SUnaryOpKind::Deref)
         {
-            auto target = TranslateSExpToReExp(*exp.operand, /*hintType*/nullptr, context);
-            if (!target) return Error(target.error());
+            auto eTarget = TranslateSExpToReExp(*exp.operand, /*hintType*/nullptr, context);
+            if (!eTarget) return Error(move(eTarget).error());
 
-            auto targetType = context.GetType(**target);
+            auto targetType = context.GetType(**eTarget);
 
             if (dynamic_cast<RType_BoxPtr*>(targetType.get()))
-                return Value(MakePtr<ImExp_BoxDeref>(std::move(*target)));
+                return Value(MakePtr<ImExp_BoxDeref>(move(*eTarget)));
 
             if (dynamic_cast<RType_LocalPtr*>(targetType.get()))
-                return Value(MakePtr<ImExp_LocalDeref>(std::move(*target)));
+                return Value(MakePtr<ImExp_LocalDeref>(move(*eTarget)));
 
             // 에러를 내야 할 것 같다
             throw NotImplementedException();
@@ -155,34 +155,34 @@ public:
 
     void Visit(SExp_Indexer& exp) override
     {
-        auto reObj = TranslateSExpToReExp(*exp.obj, /*hintType*/ nullptr, context);
-        if (!reObj) return Error(reObj.error());
+        auto eReObj = TranslateSExpToReExp(*exp.obj, /*hintType*/ nullptr, context);
+        if (!eReObj) return Error(move(eReObj).error());
 
-        auto reIndex = TranslateSExpToReExp(*exp.index, /*hintType*/ nullptr, context);
-        if (!reIndex) return Error(reIndex.error());
+        auto eReIndex = TranslateSExpToReExp(*exp.index, /*hintType*/ nullptr, context);
+        if (!eReIndex) return Error(move(eReIndex).error());
 
         auto intType = context.MakeIntType();
 
         NLocPtr nIndexLoc;
-        if (context.GetType(**reIndex) != intType)
+        if (context.GetType(**eReIndex) != intType)
         {
             context.SetSyntax(exp.index);
-            auto nIndexExp = TranslateReExpToNExp(**reIndex, context);
-            if (!nIndexExp) return Error(nIndexExp.error());
+            auto eNIndexExp = TranslateReExpToNExp(**eReIndex, context);
+            if (!eNIndexExp) return Error(move(eNIndexExp).error());
 
-            auto nCastIndex = CastNExp(std::move(*nIndexExp), intType, context);
-            if (!nCastIndex) return Error(nCastIndex.error());
+            auto eNCastIndex = CastNExp(move(*eNIndexExp), intType, context);
+            if (!eNCastIndex) return Error(move(eNCastIndex).error());
 
-            nIndexLoc = MakePtr<NLoc_Temp>(std::move(*nCastIndex));
+            nIndexLoc = MakePtr<NLoc_Temp>(move(*eNCastIndex));
         }
         else
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            auto nLoc = TranslateReExpToNLoc(**reIndex, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-            if (!nLoc) return Error(nLoc.error());
+            auto eNLoc = TranslateReExpToNLoc(**eReIndex, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+            if (!eNLoc) return Error(move(eNLoc).error());
 
-            nIndexLoc = *nLoc;
+            nIndexLoc = *eNLoc;
         }
 
         // TODO: custom indexer를 만들수 있으면 좋은가
@@ -190,9 +190,9 @@ public:
 
         // 리스트 타입의 경우,
         RTypePtr itemType;
-        if (context.IsListType(context.GetType(**reObj), &itemType))
+        if (context.IsListType(context.GetType(**eReObj), &itemType))
         {
-            return Value(MakePtr<ImExp_ListIndexer>(std::move(reObj), std::move(reIndex), std::move(itemType)));
+            return Value(MakePtr<ImExp_ListIndexer>(move(eReObj), move(eReIndex), move(itemType)));
         }
 
         throw NotImplementedException();
@@ -232,13 +232,13 @@ public:
     // parent."x"<>
     void Visit(SExp_Member& exp) override
     {
-        auto imParent = TranslateSExpToImExp(*exp.parent, hintType, context);
-        if (!imParent) return Error(imParent.error());
+        auto eImParent = TranslateSExpToImExp(*exp.parent, hintType, context);
+        if (!eImParent) return Error(move(eImParent).error());
 
         auto typeArgs = MakeTypeArgs(exp.memberTypeArgs, context);
 
         // logger.SetSyntax(exp);
-        return Forward(TranslateImExpAndMemberNameToImExp(**imParent, exp.memberName, typeArgs, context));
+        return Forward(TranslateImExpAndMemberNameToImExp(**eImParent, exp.memberName, typeArgs, context));
     }
 
     void Visit(SExp_IndirectMember& exp) override

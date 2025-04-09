@@ -42,8 +42,8 @@ optional<SFuncParam> ParseFuncDeclParam(Lexer* lexer)
     if (!oName)
         return nullopt;
 
-    *lexer = std::move(curLexer);
-    return SFuncParam(oOutAndParams->bOut, oOutAndParams->bParams, std::move(typeExp), std::move(oName->text));
+    *lexer = move(curLexer);
+    return SFuncParam(oOutAndParams->bOut, oOutAndParams->bParams, move(typeExp), move(oName->text));
 }
 
 optional<vector<SFuncParam>> ParseFuncDeclParams(Lexer* lexer)
@@ -64,10 +64,10 @@ optional<vector<SFuncParam>> ParseFuncDeclParams(Lexer* lexer)
         if (!oParam)
             return nullopt;
 
-        params.push_back(std::move(*oParam));
+        params.push_back(move(*oParam));
     }
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return params;
 }
 
@@ -99,16 +99,16 @@ shared_ptr<SGlobalFuncDecl> ParseGlobalFuncDecl(Lexer* lexer)
     if (!oBody)
         return nullptr;
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
 
     return MakePtr<SGlobalFuncDecl>(
         nullopt, // TODO: [7] 일단 null
         bSequence,
-        std::move(retType),
-        std::move(oFuncName->text),
+        move(retType),
+        move(oFuncName->text),
         std::vector<STypeParam>{},
-        std::move(*oParameters),
-        std::move(*oBody)
+        move(*oParameters),
+        move(*oBody)
     );
 }
 
@@ -136,7 +136,7 @@ optional<vector<STypeParam>> ParseTypeParams(Lexer* lexer)
         }
     }
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return typeParams;
 }
 
@@ -205,15 +205,15 @@ shared_ptr<SEnumDecl> ParseEnumDecl(Lexer* lexer)
                 if (!oParamName)
                     return nullptr;
 
-                params.push_back(MakePtr<SEnumElemVarDecl>(std::move(typeExp), std::move(oParamName->text)));
+                params.push_back(MakePtr<SEnumElemVarDecl>(move(typeExp), move(oParamName->text)));
             }
         }
 
-        elems.push_back(MakePtr<SEnumElemDecl>(std::move(oElemName->text), std::move(params)));
+        elems.push_back(MakePtr<SEnumElemDecl>(move(oElemName->text), move(params)));
     }
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SEnumDecl>(oAccessModifier, std::move(oEnumName->text), std::move(*oTypeParams), std::move(elems));
+    *lexer = move(curLexer);
+    return MakePtr<SEnumDecl>(oAccessModifier, move(oEnumName->text), move(*oTypeParams), move(elems));
 }
 
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer)
@@ -248,7 +248,7 @@ shared_ptr<SStructVarDecl> ParseStructVarDecl(Lexer* lexer)
     if (!oVarNameToken0)
         return nullptr;
 
-    varNames.push_back(std::move(oVarNameToken0->text));
+    varNames.push_back(move(oVarNameToken0->text));
 
     while (Accept<CommaToken>(&curLexer))
     {
@@ -256,16 +256,16 @@ shared_ptr<SStructVarDecl> ParseStructVarDecl(Lexer* lexer)
         if (!oVarNameToken)
             return nullptr;
 
-        varNames.push_back(std::move(oVarNameToken->text));
+        varNames.push_back(move(oVarNameToken->text));
     }
 
     // ;
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
 
-    return MakePtr<SStructVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
+    return MakePtr<SStructVarDecl>(oAccessModifier, move(varType), move(varNames));
 }
 
 shared_ptr<SStructFuncDecl> ParseStructFuncDecl(Lexer* lexer)
@@ -302,9 +302,9 @@ shared_ptr<SStructFuncDecl> ParseStructFuncDecl(Lexer* lexer)
     if (!oBody)
         return nullptr;
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return MakePtr<SStructFuncDecl>(
-        oAccessModifier, bStatic, bSequence, std::move(retType), std::move(oFuncName->text), std::move(*oTypeParams), std::move(*oParameters), std::move(*oBody)
+        oAccessModifier, bStatic, bSequence, move(retType), move(oFuncName->text), move(*oTypeParams), move(*oParameters), move(*oBody)
     );
 }
 
@@ -333,8 +333,8 @@ shared_ptr<SStructCtorDecl> ParseStructCtorDecl(const string& structName, Lexer*
     if (!oBody)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SStructCtorDecl>(oAccessModifier, std::move(*oParameters), std::move(*oBody));
+    *lexer = move(curLexer);
+    return MakePtr<SStructCtorDecl>(oAccessModifier, move(*oParameters), move(*oBody));
 }
 
 shared_ptr<SStructMemberDecl> ParseStructMemberDecl(const string& structName, Lexer* lexer)
@@ -380,7 +380,7 @@ shared_ptr<SStructDecl> ParseStructDecl(Lexer* lexer)
         if (!typeExp)
             return nullptr;
 
-        baseTypes.push_back(std::move(typeExp));
+        baseTypes.push_back(move(typeExp));
 
         while (Accept<CommaToken>(&curLexer))
         {
@@ -388,7 +388,7 @@ shared_ptr<SStructDecl> ParseStructDecl(Lexer* lexer)
             if (!baseType)
                 return nullptr;
 
-            baseTypes.push_back(std::move(baseType));
+            baseTypes.push_back(move(baseType));
         }
     }
 
@@ -405,11 +405,11 @@ shared_ptr<SStructDecl> ParseStructDecl(Lexer* lexer)
         if (!elem)
             return nullptr;
 
-        elems.push_back(std::move(elem));
+        elems.push_back(move(elem));
     }
     
-    *lexer = std::move(curLexer);
-    return MakePtr<SStructDecl>(oAccessModifier, std::move(oStructName->text), std::move(*oTypeParams), std::move(baseTypes), std::move(elems));
+    *lexer = move(curLexer);
+    return MakePtr<SStructDecl>(oAccessModifier, move(oStructName->text), move(*oTypeParams), move(baseTypes), move(elems));
 }
 
 shared_ptr<SClassFuncDecl> ParseClassFuncDecl(Lexer* lexer)
@@ -446,15 +446,15 @@ shared_ptr<SClassFuncDecl> ParseClassFuncDecl(Lexer* lexer)
     if (!oBody)
         return nullptr;
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return MakePtr<SClassFuncDecl>(
         oAccessModifier,
         bStatic, bSequence,
-        std::move(retType),
-        std::move(oFuncName->text),
-        std::move(*oTypeParams),
-        std::move(*oParameters),
-        std::move(*oBody));
+        move(retType),
+        move(oFuncName->text),
+        move(*oTypeParams),
+        move(*oParameters),
+        move(*oBody));
 }
 
 shared_ptr<SClassCtorDecl> ParseClassCtorDecl(const string& className, Lexer* lexer)
@@ -499,8 +499,8 @@ shared_ptr<SClassCtorDecl> ParseClassCtorDecl(const string& className, Lexer* le
     if (!oBody)
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SClassCtorDecl>(oAccessModifier, std::move(*oParameters), std::move(baseArgs), std::move(*oBody));
+    *lexer = move(curLexer);
+    return MakePtr<SClassCtorDecl>(oAccessModifier, move(*oParameters), move(baseArgs), move(*oBody));
 }
 
 shared_ptr<SClassVarDecl> ParseClassVarDecl(Lexer* lexer)
@@ -520,7 +520,7 @@ shared_ptr<SClassVarDecl> ParseClassVarDecl(Lexer* lexer)
     if (!oVarNameToken0)
         return nullptr;
 
-    varNames.push_back(std::move(oVarNameToken0->text));
+    varNames.push_back(move(oVarNameToken0->text));
 
     while (Accept<CommaToken>(&curLexer))
     {
@@ -528,15 +528,15 @@ shared_ptr<SClassVarDecl> ParseClassVarDecl(Lexer* lexer)
         if (!oVarNameToken)
             return nullptr;
 
-        varNames.push_back(std::move(oVarNameToken->text));
+        varNames.push_back(move(oVarNameToken->text));
     }
 
     // ;
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SClassVarDecl>(oAccessModifier, std::move(varType), std::move(varNames));
+    *lexer = move(curLexer);
+    return MakePtr<SClassVarDecl>(oAccessModifier, move(varType), move(varNames));
 }
 
 shared_ptr<SClassMemberDecl> ParseClassMemberDecl(string& className, Lexer* lexer)
@@ -585,7 +585,7 @@ shared_ptr<SClassDecl> ParseClassDecl(Lexer* lexer)
         if (!baseType0)
             return nullptr;
 
-        baseTypes.push_back(std::move(baseType0));
+        baseTypes.push_back(move(baseType0));
 
         while (Accept<CommaToken>(&curLexer))
         {
@@ -593,7 +593,7 @@ shared_ptr<SClassDecl> ParseClassDecl(Lexer* lexer)
             if (!baseType)
                 return nullptr;
 
-            baseTypes.push_back(std::move(baseType));
+            baseTypes.push_back(move(baseType));
         }
     }
 
@@ -610,16 +610,16 @@ shared_ptr<SClassDecl> ParseClassDecl(Lexer* lexer)
         if (!elem)
             return nullptr;
 
-        members.push_back(std::move(elem));
+        members.push_back(move(elem));
     }
 
-    *lexer = std::move(curLexer);
+    *lexer = move(curLexer);
     return MakePtr<SClassDecl>(
         oAccessModifier, 
-        std::move(oClassName->text), 
-        std::move(*oTypeParams), 
-        std::move(baseTypes), 
-        std::move(members)
+        move(oClassName->text), 
+        move(*oTypeParams), 
+        move(baseTypes), 
+        move(members)
     );
 }
 
@@ -654,7 +654,7 @@ shared_ptr<SNamespaceDecl> ParseNamespaceDecl(Lexer* lexer)
     if (!oNSName)
         return nullptr;
 
-    nsNames.push_back(std::move(oNSName->text));
+    nsNames.push_back(move(oNSName->text));
 
     // . optional
     while (Accept<DotToken>(&curLexer))
@@ -664,7 +664,7 @@ shared_ptr<SNamespaceDecl> ParseNamespaceDecl(Lexer* lexer)
         if (!oNSName)
             return nullptr;
 
-        nsNames.push_back(std::move(oNSName->text));
+        nsNames.push_back(move(oNSName->text));
     }
 
     // {
@@ -679,11 +679,11 @@ shared_ptr<SNamespaceDecl> ParseNamespaceDecl(Lexer* lexer)
         if (!elem)
             return nullptr;
 
-        elems.push_back(std::move(elem));
+        elems.push_back(move(elem));
     }
 
-    *lexer = std::move(curLexer);
-    return MakePtr<SNamespaceDecl>(std::move(nsNames), std::move(elems));
+    *lexer = move(curLexer);
+    return MakePtr<SNamespaceDecl>(move(nsNames), move(elems));
 }
 
 SScriptElementPtr ParseScriptElement(Lexer* lexer)
@@ -712,10 +712,10 @@ optional<SScript> ParseScript(Lexer* lexer)
         if (!scriptElem)
             return nullopt;
 
-        elems.push_back(std::move(scriptElem));
+        elems.push_back(move(scriptElem));
     }
 
-    return SScript(std::move(elems));
+    return SScript(move(elems));
 }
 
 }

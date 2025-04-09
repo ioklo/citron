@@ -30,12 +30,12 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Value(ReExpPtr&& nExp)
     {
-        *result = std::move(nExp);
+        *result = move(nExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
     void Visit(ImExp_Namespace& imExp) override

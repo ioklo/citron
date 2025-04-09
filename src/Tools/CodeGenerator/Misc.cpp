@@ -82,7 +82,7 @@ void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream
 
     hStream << ")" << endl;
 
-    // : bOut(bOut), bParams(bParams), exp(std::move(exp))
+    // : bOut(bOut), bParams(bParams), exp(move(exp))
     if (!structInfo.memberInfos.empty())
     {
         hStream << "        : ";
@@ -92,7 +92,7 @@ void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream
             if (bFirst) bFirst = false;
             else hStream << ", ";
 
-            hStream << memberInfo.name << "(std::move(" << memberInfo.name << "))";
+            hStream << memberInfo.name << "(move(" << memberInfo.name << "))";
         }
     }
 
@@ -146,7 +146,7 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     hStream << ");" << endl;
     bHModified = true;
 
-    // IdentifierExpSyntax::IdentifierExpSyntax(std::string value) : value(std::move(value)) { }
+    // IdentifierExpSyntax::IdentifierExpSyntax(std::string value) : value(move(value)) { }
 
     AddNewLineIfNeeded(bCppModified, cppStream);
     cppStream << classInfo.name << "::" << classInfo.name << "(";
@@ -176,7 +176,7 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
 
             cppStream << memberInfo.memberVarName << '(';
 
-            cppStream << "std::move(" << memberInfo.memberVarName << "))";
+            cppStream << "move(" << memberInfo.memberVarName << "))";
 
         }
         cppStream << " { }" << endl;
@@ -286,10 +286,10 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     // 멤버: ("std::string" "value", "GetValue"), ("std::vector<TypeExpSyntax>", "typeArgs", "GetTypeArgs")
     // 따로 만들 생성자(h, cpp): 
     //   h: IdentifierExpSyntax(std::string value);
-    //   cpp: IdentifierExpSyntax::IdentifierExpSyntax(std::string value) : value(std::move(value)) { }
+    //   cpp: IdentifierExpSyntax::IdentifierExpSyntax(std::string value) : value(move(value)) { }
     // 
     // 따로 만들 새성자 inline(h):
-    //   h: IdentifierExpSyntax(std::string value) : value(std::move(value)) { }
+    //   h: IdentifierExpSyntax(std::string value) : value(move(value)) { }
 
     // 생성할 것
 

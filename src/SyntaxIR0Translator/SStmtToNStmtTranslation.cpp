@@ -3,10 +3,12 @@ module Citron.SyntaxIR0Translator:SStmtToNStmtTranslation;
 import <optional>;
 import <variant>;
 import <cassert>;
+import <expected>;
 
 import Citron.Ptr;
 import Citron.Exceptions;
 import Citron.Variants;
+import Citron.Diag;
 
 import Citron.Syntax;
 import Citron.Logger;
@@ -31,11 +33,12 @@ namespace Citron::SyntaxIR0Translator {
 
 namespace {
 
-bool TranslateSStmtToNStmts(SStmt& sStmt, std::vector<NStmtPtr>* outStmts, TranslationContext& context);
-bool TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt& embedStmt, std::vector<NStmtPtr>* outStmts, TranslationContext& context);
-bool TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, std::vector<NStmtPtr>* outStmts, TranslationContext& context);
-NExpPtr TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RTypePtr& hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context);
-optional<NLambdaDeclAndArgs> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context);
+expected<void, DiagPtr> TranslateSStmtToNStmts(std::vector<NStmtPtr>* outStmts, SStmt& sStmt, TranslationContext& context);
+expected<void, DiagPtr> TranslateSEmbeddableStmtToNStmts(std::vector<NStmtPtr>* outStmts, SEmbeddableStmt& embedStmt, TranslationContext& context);
+expected<vector<NStmtPtr>, DiagPtr> TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt& embedStmt, TranslationContext& context);
+expected<vector<NStmtPtr>, DiagPtr> TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, TranslationContext& context);
+expected<NExpPtr, DiagPtr> TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RTypePtr& hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context);
+expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context);
 
 bool IsTopLevelRExp(NExp& exp)
 {
@@ -49,28 +52,35 @@ bool IsTopLevelRExp(NExp& exp)
 
 class SStmtToNStmtsTranslator : public SStmtVisitor
 {
-    bool* bOutFatal;
+    expected<void, DiagPtr>* outResult;
     vector<NStmtPtr>* outStmts;
     TranslationContext& context;
-    
-    void Fatal()
-    {
-        *bOutFatal = true;
-    }
 
+    void Error(DiagPtr&& diag)
+    {
+        *outResult = unexpected{move(diag)};
+    }
+    
+    void Forward(expected<void, DiagPtr>&& r)
+    {
+        *outResult = move(r);
+    }
+    
     void Valid(NStmtPtr&& stmt)
     {
-        outStmts->push_back(std::move(stmt));
+        *outResult = {};
+        outStmts->push_back(move(stmt));
     }
 
     void Valid(vector<NStmtPtr>&& stmts)
     {
+        *outResult = {};
         outStmts->insert(outStmts->end(), make_move_iterator(stmts.begin()), make_move_iterator(stmts.end()));
     }
 
 public:
-    SStmtToNStmtsTranslator(bool* bOutFatal, vector<NStmtPtr>* outStmts, TranslationContext& context)
-        : bOutFatal(bOutFatal), outStmts(outStmts), context(context)
+    SStmtToNStmtsTranslator(expected<void, DiagPtr>* outResult, vector<NStmtPtr>* outStmts, TranslationContext& context)
+        : outResult(outResult), outStmts(outStmts), context(context)
     {
     }
 
@@ -82,96 +92,87 @@ public:
 
         for(auto& cmd : stmt.commands)
         {
-            auto nStringExp = TranslateSStringExpToNStringExp(*cmd, context);
-            if (!nStringExp) return Fatal();
+            auto eNStringExp = TranslateSStringExpToNStringExp(*cmd, context);
+            if (!eNStringExp) return Error(move(eNStringExp).error());
 
-            builder.push_back(nStringExp);
+            builder.push_back(*eNStringExp);
         }
 
-        return Valid(MakePtr<NStmt_Command>(std::move(builder)));
+        return Valid(MakePtr<NStmt_Command>(move(builder)));
     }
 
     void Visit(SStmt_VarDecl& stmt) override 
     {
         // int a;
         // auto x = 
-        if (!TranslateSVarDeclToNStmts(stmt.varDecl, outStmts, context))
-        {
-            *bOutFatal = true;
-            return;
-        }
+        return Forward(TranslateSVarDeclToNStmts(outStmts, stmt.varDecl, context));
     }
 
     void Visit(SStmt_If& stmt) override 
     {
         // 순회
-        auto nCond = TranslateSExpToNExp(*stmt.cond, /*hintType*/ context.MakeBoolType(), context);
-        if (!nCond) return Fatal();
+        auto eNCond = TranslateSExpToNExp(*stmt.cond, /*hintType*/ context.MakeBoolType(), context);
+        if (!eNCond) return Error(move(eNCond).error());
 
         // cast
-        nCond = CastNExp(std::move(nCond), context.MakeBoolType(), context);
-        if (!nCond)
-        {
-            return Error(MakePtr<Error_IfStmt_ConditionShouldBeBool>());
-        }
+        eNCond = CastNExp(move(*eNCond), context.MakeBoolType(), context);
+        if (!eNCond) return Error(MakePtr<Error_IfStmt_ConditionShouldBeBool>());
 
         auto nestedContext = context.MakeNestedScopeContext();
+        
+        auto eBodyStmts = TranslateSEmbeddableStmtToNStmts(*stmt.body, nestedContext);
+        if (!eBodyStmts) return Error(move(eBodyStmts).error());
 
-        vector<NStmtPtr> bodyStmts;
-        if (!TranslateSEmbeddableStmtToNStmts(*stmt.body, &bodyStmts, nestedContext))
-            return Fatal();
-
-        optional<vector<NStmtPtr>> oElseStmts;
+        vector<NStmtPtr> elseStmts;
         if (stmt.elseBody != nullptr)
         {
             auto elseContext = context.MakeNestedScopeContext();
+            
+            auto eElseResult = TranslateSEmbeddableStmtToNStmts(*stmt.elseBody, elseContext);
+            if (!eElseResult) return Error(move(eElseResult).error());
 
-            vector<NStmtPtr> elseStmts;
-            if (!TranslateSEmbeddableStmtToNStmts(*stmt.elseBody, &elseStmts, elseContext))
-                return Fatal();
-
-            oElseStmts = std::move(elseStmts);
+            elseStmts = move(*eElseResult);
         }
 
-        return Valid(MakePtr<NStmt_If>(std::move(nCond), std::move(bodyStmts), std::move(*oElseStmts)));
+        return Valid(MakePtr<NStmt_If>(move(*eNCond), move(*eBodyStmts), move(elseStmts)));
     }
 
     void Visit(SStmt_IfTest& stmt) override 
     {
         auto varName = RName_Normal(stmt.varName);
 
-        // if (Type varName = e) body         
-        auto testType = context.TranslateSTypeExpToRType(*stmt.testType);
+        // if (Type varName = e) eBody         
+        auto rTestType = context.TranslateSTypeExpToRType(*stmt.testType);
 
-        auto target = TranslateSExpToNExp(*stmt.exp, /*hintType*/ nullptr, context);
-        if (!target) return Fatal();
+        auto eNTarget = TranslateSExpToNExp(*stmt.exp, /*hintType*/ nullptr, context);
+        if (!eNTarget) return Error(move(eNTarget).error());
 
         auto bodyContext = context.MakeNestedScopeContext();
-        bodyContext.AddLocalVarInfo(testType, varName);        
+        bodyContext.AddLocalVarInfo(*rTestType, varName);
+        
+        auto eBodyStmts = TranslateSEmbeddableStmtToNStmts(*stmt.body, bodyContext);
+        if (!eBodyStmts) return Error(move(eBodyStmts).error());
 
-        vector<NStmtPtr> bodyStmts;
-        if (!TranslateSEmbeddableStmtToNStmts(*stmt.body, &bodyStmts, bodyContext))
-            return Fatal();
-
-        optional<vector<NStmtPtr>> oElseStmts;
+        vector<NStmtPtr> elseStmts;
         if (stmt.elseBody)
         {
-            auto elseContext = context.MakeNestedScopeContext();
-            vector<NStmtPtr> elseStmts;
-            if (!TranslateSEmbeddableStmtToNStmts(*stmt.elseBody, &elseStmts, elseContext))
-                return Fatal();
+            auto elseContext = context.MakeNestedScopeContext();            
+            auto elseResult = TranslateSEmbeddableStmtToNStmts(*stmt.elseBody, elseContext);
 
-            oElseStmts = std::move(elseStmts);
+            if (elseResult)
+                return Error(move(elseResult).error());
+
+            elseStmts = move(*elseResult);
         }
 
-        auto asExp = context.MakeNExp_As(std::move(target), testType);
-        if (!target) return Fatal();
+        auto eNAsExp = context.MakeNExp_As(move(*eNTarget), *rTestType);
+        if (!eNAsExp) return Error(move(eNAsExp).error());
 
-        auto testTypeKind = testType->GetCustomTypeKind();
-        if (testTypeKind == RCustomTypeKind::Class || testTypeKind == RCustomTypeKind::Interface)
-            return Valid(MakePtr<NStmt_IfNullableRefTest>(std::move(testType), std::move(varName), std::move(asExp), std::move(bodyStmts), std::move(*oElseStmts)));
-        else if (testTypeKind == RCustomTypeKind::Enum)
-            return Valid(MakePtr<NStmt_IfNullableValueTest>(std::move(testType), std::move(varName), std::move(asExp), std::move(bodyStmts), std::move(*oElseStmts)));
+        auto rTestTypeKind = (*rTestType)->GetCustomTypeKind();
+        if (rTestTypeKind == RCustomTypeKind::Class || rTestTypeKind == RCustomTypeKind::Interface)
+            return Valid(MakePtr<NStmt_IfNullableRefTest>(move(*rTestType), move(varName), move(*eNAsExp), move(*eBodyStmts), move(elseStmts)));
+        else if (rTestTypeKind == RCustomTypeKind::Enum)
+            return Valid(MakePtr<NStmt_IfNullableValueTest>(move(*rTestType), move(varName), move(*eNAsExp), move(*eBodyStmts), move(elseStmts)));
         else
             throw NotImplementedException(); // 에러
     }
@@ -190,36 +191,41 @@ public:
         vector<NStmtPtr> initStmts;
         if (stmt.initializer)
         {   
-            if (!TranslateSForStmtInitializerToNStmts(*stmt.initializer, &initStmts, forStmtContext))
-                return Fatal();
+            auto eInitResult = TranslateSForStmtInitializerToNStmts(*stmt.initializer, forStmtContext);
+            if (!eInitResult) return Error(move(eInitResult).error());
+
+            initStmts = move(*eInitResult);
         }
 
         NExpPtr condExp;
         if (stmt.cond)
         {
             auto boolType = context.MakeBoolType();
-            auto rawCond = TranslateSExpToNExp(*stmt.cond, /*hintType*/ boolType, forStmtContext);
-            if (!rawCond) return Fatal();
+            auto eRawCond = TranslateSExpToNExp(*stmt.cond, /*hintType*/ boolType, forStmtContext);
+            if (!eRawCond) return Error(move(eRawCond).error());
 
-            condExp = CastNExp(std::move(rawCond), boolType, context);
-            if (!condExp) return Fatal();
+            eRawCond = CastNExp(move(*eRawCond), boolType, context);
+            if (!eRawCond) return Error(move(eRawCond).error());
+
+            condExp = *eRawCond;
         }
 
         NExpPtr continueExp;
         if (stmt.cont)
         {
             DesignatedDiagnostic<Error_ForStmt_ContinueExpShouldBeAssignOrCall> designatedDiag;
-            continueExp = TranslateSExpAsTopLevelExpToNExp(*stmt.cont, /*hintType*/ nullptr, &designatedDiag, forStmtContext);
-            if (!continueExp) return Fatal();
+            auto eContResult = TranslateSExpAsTopLevelExpToNExp(*stmt.cont, /*hintType*/ nullptr, &designatedDiag, forStmtContext);
+            if (!eContResult) return Error(move(eContResult).error());
+
+            continueExp = *eContResult;
         }
 
         auto bodyContext = forStmtContext.MakeNestedLoopScopeContext();
+        
+        auto eBodyStmts = TranslateSEmbeddableStmtToNStmts(*stmt.body, bodyContext);
+        if (!eBodyStmts) return Error(move(eBodyStmts).error());
 
-        vector<NStmtPtr> bodyStmts;
-        if (!TranslateSEmbeddableStmtToNStmts(*stmt.body, &bodyStmts, bodyContext))
-            return Fatal();
-
-        return Valid(MakePtr<NStmt_For>(std::move(initStmts), std::move(condExp), std::move(continueExp), std::move(bodyStmts)));
+        return Valid(MakePtr<NStmt_For>(move(initStmts), move(condExp), move(continueExp), move(*eBodyStmts)));
     }
 
     void Visit(SStmt_Continue& stmt) override
@@ -276,18 +282,16 @@ public:
                 {
                     // 리턴타입을 힌트로 사용한다
                     // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                    auto retValue = TranslateSExpToNExp(*stmt.value, /*hintType*/ set.type, context);
-                    if (!retValue) return Fatal();
+                    auto eRetValue = TranslateSExpToNExp(*stmt.value, /*hintType*/ set.type, context);
+                    if (!eRetValue) return Error(move(eRetValue).error());
 
-                    auto castRetValue = CastNExp(std::move(retValue), set.type, context);
+                    auto castRetValue = CastNExp(move(*eRetValue), set.type, context);
 
                     // 캐스트 실패시
                     if (!castRetValue)
-                    {
                         return Error(MakePtr<Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType>());
-                    }
 
-                    return Valid(MakePtr<NStmt_Return>(std::move(castRetValue)));
+                    return Valid(MakePtr<NStmt_Return>(move(*castRetValue)));
                 }
             },
 
@@ -302,12 +306,12 @@ public:
                 else
                 {
                     // 힌트타입 없이 분석
-                    auto retValue = TranslateSExpToNExp(*stmt.value, /*hintType*/ nullptr, context);
-                    if (!retValue) return Fatal();
+                    auto eRetValue = TranslateSExpToNExp(*stmt.value, /*hintType*/ nullptr, context);
+                    if (!eRetValue) return Error(move(eRetValue).error());
 
                     // 리턴값이 안 적혀 있었으므로 적는다
-                    context.SetOpenFuncReturn(context.GetType(*retValue));
-                    return Valid(MakePtr<NStmt_Return>(std::move(retValue)));
+                    context.SetOpenFuncReturn(context.GetType(**eRetValue));
+                    return Valid(MakePtr<NStmt_Return>(move(*eRetValue)));
                 }
             },
 
@@ -320,7 +324,7 @@ public:
                 else
                 {   
                     throw NotImplementedException(); // 에러 처리
-                    return Fatal();
+                    // return Error();
                 }
             }
         }, funcRet);
@@ -329,21 +333,22 @@ public:
     void Visit(SStmt_Block& stmt) override 
     {
         // { }
-        bool bFatalLocal = false;
+        vector<DiagPtr> diags;
         auto blockContext = context.MakeNestedScopeContext();
 
         vector<NStmtPtr> builder;
         for(auto& stmt : stmt.stmts)
         {
-            if (!TranslateSStmtToNStmts(*stmt, &builder, blockContext))
+            auto eStmtResult = TranslateSStmtToNStmts(&builder, *stmt, blockContext);
+            if (!eStmtResult)
             {
-                bFatalLocal = true;
+                diags.push_back(move(eStmtResult).error());
                 continue; // 중간에 에러가 발생해도, 로그를 수집하기 위해서 일단 계속 진행한다
             }
         }
-
-        if (bFatalLocal) return Fatal();
-        return Valid(MakePtr<NStmt_Block>(std::move(builder)));
+        
+        if (!diags.empty()) return Error(MakePtr<AggregateDiag>(move(diags)));
+        return Valid(MakePtr<NStmt_Block>(move(builder)));
     }
 
     void Visit(SStmt_Blank& stmt) override 
@@ -354,59 +359,58 @@ public:
     void Visit(SStmt_Exp& stmt) override
     {
         DesignatedDiagnostic<Error_ExpStmt_ExpressionShouldBeAssignOrCall> designatedDiag;
-        auto exp = TranslateSExpAsTopLevelExpToNExp(*stmt.exp, /*hintType*/ nullptr, &designatedDiag, context);
-        if (!exp) return Fatal();
+        auto eExp = TranslateSExpAsTopLevelExpToNExp(*stmt.exp, /*hintType*/ nullptr, &designatedDiag, context);
+        if (!eExp) return Error(move(eExp).error());
 
-        return Valid(MakePtr<NStmt_Exp>(std::move(exp)));
+        return Valid(MakePtr<NStmt_Exp>(move(*eExp)));
     }
 
     void Visit(SStmt_Task& stmt) override 
     {
         vector<SLambdaExpParam> emptyParams;
-        auto oLambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt.body, context);
-        if (!oLambdaAndArgs) return Fatal();
+        auto eLambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt.body, context);
+        if (!eLambdaAndArgs) return Error(move(eLambdaAndArgs).error());
 
-        return Valid(MakePtr<NStmt_Task>(std::move(oLambdaAndArgs->decl), std::move(oLambdaAndArgs->args)));
+        return Valid(MakePtr<NStmt_Task>(move(eLambdaAndArgs->decl), move(eLambdaAndArgs->args)));
     }
 
     void Visit(SStmt_Await& stmt) override 
     {
         auto newContext = context.MakeNestedScopeContext();
-        auto body = TranslateSBodyToNStmts(stmt.body, newContext);
+        auto eBody = TranslateSBodyToNStmts(stmt.body, newContext);
+        if (!eBody) return Error(move(eBody).error());
 
-        if (!body) return Fatal();
-
-        return Valid(MakePtr<NStmt_Await>(std::move(body)));
+        return Valid(MakePtr<NStmt_Await>(move(*eBody)));
     }
 
     void Visit(SStmt_Async& stmt) override 
     {
         vector<SLambdaExpParam> emptyParams;
-        auto oLambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt.body, context);
-        if (!oLambdaAndArgs) return Fatal();
+        auto eLambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt.body, context);
+        if (!eLambdaAndArgs) return Error(move(eLambdaAndArgs).error());
 
-        return Valid(MakePtr<NStmt_Async>(std::move(oLambdaAndArgs->decl), std::move(oLambdaAndArgs->args)));
+        return Valid(MakePtr<NStmt_Async>(move(eLambdaAndArgs->decl), move(eLambdaAndArgs->args)));
     }
     
     void Visit(SStmt_Foreach& stmt) override
     {
         struct ForeachStmtTranslator
         {
-            SStmt_Foreach& stmt;
             vector<NStmtPtr>* outStmts;
+            SStmt_Foreach& stmt;
             TranslationContext& context;
 
             RName itemVarName;
 
         public:
-            ForeachStmtTranslator(SStmt_Foreach& stmt, vector<NStmtPtr>* outStmts, TranslationContext& context)
-                : stmt(stmt), outStmts(outStmts), context(context)
+            ForeachStmtTranslator(vector<NStmtPtr>* outStmts, SStmt_Foreach& stmt, TranslationContext& context)
+                : outStmts(outStmts), stmt(stmt), context(context)
             {
                 itemVarName = RName_Normal(stmt.varName);
             }
 
             // syntax의 enumerableExp를 사용해서 enumerator를 가져오는 Exp를 생성한다
-            NExpPtr MakeEnumeratorExp()
+            expected<NExpPtr, DiagPtr> MakeEnumeratorExp()
             {
                 // TranslationResult<(Exp, IType)> Error() => TranslationResult.Error<(Exp, IType)>();
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
@@ -415,7 +419,7 @@ public:
                 if (!nEnumerable) return nullptr;
 
                 // GetEnumerator함수를 손으로 찾는다
-                auto rEnumerableType = context.GetType(*nEnumerable);
+                auto rEnumerableType = context.GetType(**nEnumerable);
                 auto oRMember = rEnumerableType->GetMember(RNames::GetEnumerator, /*explicitTypeArgsExceptOuterCount*/ 0);
                 if (!oRMember)
                 {
@@ -459,16 +463,16 @@ public:
                 auto& result = candidates[0];
 
                 // 아까 갯수가 0인지 체크를 했으니 typeArgs는 default이다
-                return TranslateRFuncAndNArgsToNExp(result.decl, result.outerTypeArgs, std::move(nEnumerable), {});
+                return TranslateRFuncAndNArgsToNExp(result.decl, result.outerTypeArgs, move(*nEnumerable), {});
             }
 
-            NExpPtr MakeNextExpAndInferItemVarType(const RTypePtr& enumeratorType)
+            expected<NExpPtr, DiagPtr> MakeNextExpAndInferItemVarType(const RTypePtr& enumeratorType)
             {
-                auto oRMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
-                if (!oRMember) return nullptr;
+                auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
+                if (!rMember) return unexpected{MakePtr<Error_NotImplemented>()};
 
                 vector<NExpPtr> candidates;
-                for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*oRMember))
+                for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*rMember))
                 {
                     auto* funcDecl = funcDeclWithOuter.decl.get();
 
@@ -498,9 +502,10 @@ public:
                     // $enumerator.GetNext(&i);
                     auto nArg = NArgument_Normal(MakePtr<NExp_LocalRef>(MakePtr<NLoc_LocalVar>(itemVarName, localPtrParamType->innerType)));
                     auto nEnumerator = MakePtr<NLoc_LocalVar>(RNames::Enumerator, enumeratorType);
-                    auto nextExp = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, std::move(nEnumerator), { std::move(nArg) });
+                    auto eNextExp = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, move(nEnumerator), { move(nArg) });
+                    if (!eNextExp) return unexpected{move(eNextExp).error()};
 
-                    candidates.push_back(std::move(nextExp));
+                    candidates.push_back(move(*eNextExp));
                 }
 
                 if (candidates.size() == 1)
@@ -516,13 +521,26 @@ public:
 
             // NextExp를 만드는데, 캐스팅이 필요하면 CastInfo를 같이 돌려준다
             // (nextExp, (rawItemType, castExp)? castInfo)
-            optional<tuple<NExpPtr, optional<tuple<RTypePtr, NExpPtr>>>> MakeNextExpAndCastExp(const RTypePtr& enumeratorType, const RTypePtr& itemTypeFromSyntax)
-            {
-                auto oRMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
-                if (!oRMember) return nullopt;
 
-                vector<tuple<NExpPtr, optional<tuple<RTypePtr, NExpPtr>>>> candidates;
-                for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*oRMember))
+            struct CastInfo
+            {
+                RTypePtr rawItemType;
+                NExpPtr castExp;
+            };
+
+            struct NextExpAndCastExp
+            {
+                NExpPtr nextExp;
+                optional<CastInfo> castInfo;
+            };
+
+            expected<NextExpAndCastExp, DiagPtr> MakeNextExpAndCastExp(const RTypePtr& enumeratorType, const RTypePtr& itemTypeFromSyntax)
+            {
+                auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
+                if (!rMember) return unexpected{MakePtr<Error_NotImplemented>()};
+
+                vector<NextExpAndCastExp> candidates;
+                for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*rMember))
                 {
                     auto* funcDecl = funcDeclWithOuter.decl.get();
                     if (funcDecl->GetParamCount() != 1) continue;
@@ -555,9 +573,9 @@ public:
                         // $enumerator.GetNext(&i);
                         NArgument_Normal rArg(MakePtr<NExp_LocalRef>(MakePtr<NLoc_LocalVar>(itemVarName, itemTypeFromNextParam)));
                         auto nEnumerator = MakePtr<NLoc_LocalVar>(RNames::Enumerator, enumeratorType);
-                        auto nNext = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, std::move(nEnumerator), { std::move(rArg) });
+                        auto nNext = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, move(nEnumerator), { move(rArg) });
 
-                        candidates.push_back(make_tuple(std::move(nNext), nullopt));
+                        candidates.emplace_back(move(*nNext), nullopt);
                     }
                     else // 캐스팅
                     {
@@ -566,14 +584,15 @@ public:
                         auto nEnumerator = MakePtr<NLoc_LocalVar>(RNames::Enumerator, enumeratorType);
 
                         // $enumerator.GetNext(&$rawItem)
-                        auto nNext = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, std::move(nEnumerator), { std::move(rArg) });
+                        auto eNNext = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, move(nEnumerator), { move(rArg) });
+                        if (!eNNext) return unexpected{move(eNNext).error()};
 
                         // $rawItem
                         auto rawItemExp = MakePtr<NExp_Load>(MakePtr<NLoc_LocalVar>(RNames::RawItem, itemTypeFromNextParam));
-                        auto castExp = CastNExp(std::move(rawItemExp), itemTypeFromSyntax, context);
-                        if (!castExp) // 캐스팅이 성공할때만 candidates에 넣기
+                        auto castExp = CastNExp(move(rawItemExp), itemTypeFromSyntax, context);
+                        if (castExp) // 캐스팅이 성공할때만 candidates에 넣기
                         {
-                            candidates.push_back(make_tuple(std::move(nNext), make_tuple(rawItemType, castExp)));
+                            candidates.emplace_back(move(*eNNext), CastInfo{rawItemType, *castExp});
                         }
                     }
                 }
@@ -584,7 +603,7 @@ public:
                 {
                     // TODO: [17] NextFunc가 0개 혹은 여러개일때 처리
                     throw NotImplementedException();
-                    return nullopt;
+                    // return nullopt;
                 }
                 else if (count == 1)
                 {
@@ -594,11 +613,11 @@ public:
                 {
                     // TODO: [17] NextFunc가 0개 혹은 여러개일때 처리
                     throw NotImplementedException();
-                    return nullopt;
+                    // return nullopt;
                 }
             }
 
-            bool MakeBody(const RTypePtr& itemVarType, vector<NStmtPtr>* outBody)
+            expected<vector<NStmtPtr>, DiagPtr> MakeBody(const RTypePtr& itemVarType)
             {
                 // 루프 컨텍스트를 하나 열고
                 auto bodyContext = context.MakeNestedLoopScopeContext();
@@ -607,58 +626,59 @@ public:
                 bodyContext.AddLocalVarInfo(itemVarType, RName(itemVarName));
 
                 // 본문 분석
-                return TranslateSEmbeddableStmtToNStmts(*stmt.body, outBody, context);
+                return TranslateSEmbeddableStmtToNStmts(*stmt.body, context);
             }
 
         public:
-            bool Translate()
+            expected<void, DiagPtr> Translate()
             {
-                auto enumerator = MakeEnumeratorExp();
-                if (!enumerator) return false;
+                auto eEnumerator = MakeEnumeratorExp();
+                if (!eEnumerator) return unexpected{move(eEnumerator).error()};
 
-                auto enumeratorType = context.GetType(*enumerator);
+                auto enumeratorType = context.GetType(**eEnumerator);
 
                 if (!IsVarType(*stmt.type))
                 {
-                    auto itemType = context.TranslateSTypeExpToRType(*stmt.type);
+                    auto eItemType = context.TranslateSTypeExpToRType(*stmt.type);
+                    if (!eItemType) return unexpected{move(eItemType).error()};
 
-                    auto oNextExpCastInfo = MakeNextExpAndCastExp(enumeratorType, itemType);
-                    if (!oNextExpCastInfo) return false;
+                    auto eNextExpCastInfo = MakeNextExpAndCastExp(enumeratorType, *eItemType);
+                    if (!eNextExpCastInfo) return unexpected{move(eNextExpCastInfo).error()};
 
-                    auto& [nextExp, oCastInfo] = *oNextExpCastInfo;
+                    auto& [nextExp, oCastInfo] = *eNextExpCastInfo;
 
-                    vector<NStmtPtr> body;
-                    if (!MakeBody(itemType, &body)) return false;
+                    auto eBody = MakeBody(*eItemType);
+                    if (!eBody) return unexpected{move(eBody).error()};
 
                     if (!oCastInfo)
                     {
-                        outStmts->push_back(MakePtr<NStmt_Foreach>(std::move(enumerator), std::move(itemType), itemVarName, std::move(nextExp), std::move(body)));
+                        outStmts->push_back(MakePtr<NStmt_Foreach>(move(*eEnumerator), move(*eItemType), itemVarName, move(nextExp), move(*eBody)));
                     }
                     else
                     {
                         auto& [rawItemType, castExp] = *oCastInfo;
-                        outStmts->push_back(MakePtr<NStmt_ForeachCast>(std::move(enumerator), std::move(itemType), itemVarName, std::move(rawItemType), std::move(nextExp), std::move(castExp), std::move(body)));
+                        outStmts->push_back(MakePtr<NStmt_ForeachCast>(move(*eEnumerator), move(*eItemType), itemVarName, move(rawItemType), move(nextExp), move(castExp), move(*eBody)));
                     }
                 }
                 else // var 일 경우
                 {
-                    auto nextExp = MakeNextExpAndInferItemVarType(enumeratorType);
-                    if (!nextExp) return false;
+                    auto eNextExp = MakeNextExpAndInferItemVarType(enumeratorType);
+                    if (!eNextExp) return unexpected{move(eNextExp).error()};
 
-                    auto itemVarType = context.GetType(*nextExp);
+                    auto itemVarType = context.GetType(**eNextExp);
 
-                    vector<NStmtPtr> body;
-                    if (!MakeBody(itemVarType, &body)) return false;
+                    auto eBody = MakeBody(itemVarType);
+                    if (!eBody) return unexpected{move(eBody).error()};
 
-                    outStmts->push_back(MakePtr<NStmt_Foreach>(std::move(enumerator), std::move(itemVarType), itemVarName, std::move(nextExp), std::move(body)));
+                    outStmts->push_back(MakePtr<NStmt_Foreach>(move(*eEnumerator), move(itemVarType), itemVarName, move(*eNextExp), move(*eBody)));
                 }
 
-                return true;
+                return {};
             }
         };
 
-        ForeachStmtTranslator translator(stmt, outStmts, context);
-        *bOutFatal = !translator.Translate();
+        ForeachStmtTranslator translator{outStmts, stmt, context};
+        *outResult = translator.Translate();
     }
 
     void Visit(SStmt_Yield& stmt) override 
@@ -676,13 +696,13 @@ public:
         assert(setFuncRet); // 아닌 경우는 위에서 거른다 (sequence함수는 무조건 ret포함)
 
         // NOTICE: 리턴 타입을 힌트로 넣었다
-        auto retValue = TranslateSExpToNExp(*stmt.value, /*hintType*/ setFuncRet->type, context);
-        if (!retValue) return Fatal();
+        auto eRetValue = TranslateSExpToNExp(*stmt.value, /*hintType*/ setFuncRet->type, context);
+        if (!eRetValue) return Error(move(eRetValue).error());
 
-        auto castRetValue = CastNExp(std::move(retValue), setFuncRet->type, context);
-        if (!castRetValue) return Fatal();
+        auto eCastRetValue = CastNExp(move(*eRetValue), setFuncRet->type, context);
+        if (!eCastRetValue) return Error(move(eCastRetValue).error());
 
-        return Valid(MakePtr<NStmt_Yield>(std::move(castRetValue)));
+        return Valid(MakePtr<NStmt_Yield>(move(*eCastRetValue)));
     }
 
     void Visit(SStmt_Directive& stmt) override 
@@ -695,38 +715,37 @@ public:
             }
 
             DesignatedDiagnostic<Error_StaticNotNullDirective_ArgumentMustBeLocation> designatedDiag;
-            auto arg = TranslateSExpToNLoc(*stmt.args[0], /*hintType*/ nullptr, /*bWrapExpAsLoc*/ false, &designatedDiag, context);
-            if (!arg) return Fatal();
+            auto eArg = TranslateSExpToNLoc(*stmt.args[0], /*hintType*/ nullptr, /*bWrapExpAsLoc*/ false, &designatedDiag, context);
+            if (!eArg) return Error(move(eArg).error());
 
-            return Valid(MakePtr<NStmt_NotNullDirective>(std::move(arg)));
+            return Valid(MakePtr<NStmt_NotNullDirective>(move(*eArg)));
         }
         
         throw NotImplementedException(); // 인식할 수 없는 directive입니다
     }
 };
 
-bool TranslateSStmtToNStmts(SStmt& sStmt, vector<NStmtPtr>* outStmts, TranslationContext& context)
+expected<void, DiagPtr> TranslateSStmtToNStmts(vector<NStmtPtr>* outStmts, SStmt& sStmt, TranslationContext& context)
 {   
-    bool bFatal;
-
-    SStmtToNStmtsTranslator translator(&bFatal, outStmts, context);
+    expected<void, DiagPtr> result;
+    SStmtToNStmtsTranslator translator(&result, outStmts, context);
     sStmt.Accept(translator);
-    return !bFatal;
+    return result;
 }
 
-bool TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt& embedStmt, vector<NStmtPtr>* outStmts, TranslationContext& context)
+expected<void, DiagPtr> TranslateSEmbeddableStmtToNStmts(vector<NStmtPtr>* outStmts, SEmbeddableStmt& embedStmt, TranslationContext& context)
 {
     // if (...) 'stmt'
     // if (...) '{ stmt... }' 를 받는다
     class EmbeddableStmtTranslator : public SEmbeddableStmtVisitor
     {
-        bool* bOutFatal;
+        expected<void, DiagPtr>* result;
         vector<NStmtPtr>* outStmts;
         TranslationContext& context;
 
     public:
-        EmbeddableStmtTranslator(bool* bOutFatal, vector<NStmtPtr>* outStmts, TranslationContext& context)
-            : bOutFatal(bOutFatal), outStmts(outStmts), context(context)
+        EmbeddableStmtTranslator(expected<void, DiagPtr>* result, vector<NStmtPtr>* outStmts, TranslationContext& context)
+            : result(result), outStmts(outStmts), context(context)
         {
         }
 
@@ -734,65 +753,74 @@ bool TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt& embedStmt, vector<NStmtPt
         {
             // TODO: VarDecl은 등장하면 에러를 내도록 한다
             // 지금은 그냥 패스
-            if (!TranslateSStmtToNStmts(*stmt.stmt, outStmts, context))
-                *bOutFatal = true;
+
+            *result = TranslateSStmtToNStmts(outStmts, *stmt.stmt, context);
         }
 
         void Visit(SEmbeddableStmt_Block& stmt) override
         {
-            if (!TranslateSBodyToNStmts(stmt.stmts, outStmts, context))
-                *bOutFatal = true;
+            *result = TranslateSBodyToNStmts(outStmts, stmt.stmts, context);
         }
     };
 
-    bool bFatal = false;
-    EmbeddableStmtTranslator translator(&bFatal, outStmts, context);
+    expected<void, DiagPtr> result;
+    EmbeddableStmtTranslator translator(&result, outStmts, context);
     embedStmt.Accept(translator);
-    return !bFatal;
+    return result;
 }
 
-bool TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, vector<NStmtPtr>* outStmts, TranslationContext& context)
+expected<vector<NStmtPtr>, DiagPtr> TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt& embedStmt, TranslationContext& context)
+{
+    vector<NStmtPtr> stmts;
+    auto eResult = TranslateSEmbeddableStmtToNStmts(&stmts, embedStmt, context);
+    if (!eResult) return unexpected{move(eResult).error()};
+    return stmts;
+}
+
+expected<vector<NStmtPtr>, DiagPtr> TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, TranslationContext& context)
 {
     class ForInitTranslator : public SForStmtInitializerVisitor
     {
-        bool* bOutFatal;
-        vector<NStmtPtr>* outStmts;
+        expected<vector<NStmtPtr>, DiagPtr>* result;
         TranslationContext& context;
 
     public:
-        ForInitTranslator(bool* bOutFatal, vector<NStmtPtr>* outStmts, TranslationContext& context)
-            : bOutFatal(bOutFatal), outStmts(outStmts), context(context)
+        ForInitTranslator(expected<vector<NStmtPtr>, DiagPtr>* result, TranslationContext& context)
+            : result(result), context(context)
         {
         }
 
         void Visit(SForStmtInitializer_Exp& forInit) override
         {
             DesignatedDiagnostic<Error_ForStmt_ExpInitializerShouldBeAssignOrCall> designatedDiag;
-            auto exp = TranslateSExpAsTopLevelExpToNExp(*forInit.exp, /*hintType*/ nullptr, &designatedDiag, context);
-            if (!exp)
+            auto eExp = TranslateSExpAsTopLevelExpToNExp(*forInit.exp, /*hintType*/ nullptr, &designatedDiag, context);
+            if (!eExp)
             {   
-                *bOutFatal = true;
+                *result = unexpected{move(eExp).error()};
                 return;
             }
 
-            outStmts->push_back(MakePtr<NStmt_Exp>(std::move(exp)));
+            *result = vector<NStmtPtr>{MakePtr<NStmt_Exp>(move(*eExp))};
         }
 
         void Visit(SForStmtInitializer_VarDecl& forInit) override
         {   
-            if (!TranslateSVarDeclToNStmts(forInit.varDecl, outStmts, context))
-            {   
-                *bOutFatal = true;
+            vector<NStmtPtr> stmts;
+            auto eStmtsResult = TranslateSVarDeclToNStmts(&stmts, forInit.varDecl, context);
+            if (!eStmtsResult)
+            {
+                *result = unexpected{move(eStmtsResult).error()};
                 return;
             }
+
+            *result = move(stmts);
         }
     };
 
-    bool bFatal = false;
-    vector<NStmtPtr> stmts;
-    ForInitTranslator translator(&bFatal, &stmts, context);
+    expected<vector<NStmtPtr>, DiagPtr> result;
+    ForInitTranslator translator(&result, context);
     forInit.Accept(translator);
-    return !bFatal;
+    return result;
 }
 
 expected<NExpPtr, DiagPtr> TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RTypePtr& hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context)
@@ -800,7 +828,7 @@ expected<NExpPtr, DiagPtr> TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RT
     auto nExp = TranslateSExpToNExp(sExp, hintType, context);
     if (!nExp) return nullptr;
 
-    if (!IsTopLevelRExp(*nExp))
+    if (!IsTopLevelRExp(**nExp))
     {
         return unexpected{designatedDiag->MakeDiag()};
     }
@@ -824,7 +852,7 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
             throw NotImplementedException();
 
         auto rParamType = context.TranslateSTypeExpToRType(*sParam.type);
-        rParams.emplace_back(sParam.hasOut, std::move(rParamType), RName_Normal(sParam.name));
+        rParams.emplace_back(sParam.hasOut, move(*rParamType), RName_Normal(sParam.name));
 
         if (sParam.hasParams)
         {
@@ -839,10 +867,10 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
         }
     }
 
-    return make_tuple(std::move(rParams), bLastParamVariadic);
+    return make_tuple(move(rParams), bLastParamVariadic);
 }
 
-optional<NLambdaDeclAndArgs> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context)
+expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context)
 {
     // 람다를 분석합니다
     // [int x = x](int p) => { return 3; }
@@ -851,13 +879,13 @@ optional<NLambdaDeclAndArgs> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr
     // var newLambdaBodyContext = funcContext.NewLambdaBodyContext(localContext); // new FuncContext(lambdaDeclHolder, bodyContext.GetThisType(), bSeqFunc: false, localContext);
 
     // 람다 관련 정보는 여기서 수집한다
-    RFuncReturn funcRet = retType ? (RFuncReturn)RFuncReturn_Set(std::move(retType)) : RFuncReturn_NotSet();
+    RFuncReturn funcRet = retType ? (RFuncReturn)RFuncReturn_Set(move(retType)) : RFuncReturn_NotSet();
 
     auto [funcParams, bLastParamVariadic] = MakeParameters(sParams, context);
 
     // Lambda를 만들고 context 인스턴스 안에 저장한다
     // DeclSymbol tree로의 Commit은 함수 백트래킹이 다 끝났을 때 (그냥 Translation이 끝났을때 해도 될거 같다)
-    auto newContext = context.MakeLambdaBodyContext(std::move(funcRet), std::move(funcParams), bLastParamVariadic); // 중첩된 bodyContext를 만들고, 새 scopeContext도 만든다
+    auto newContext = context.MakeLambdaBodyContext(move(funcRet), move(funcParams), bLastParamVariadic); // 중첩된 bodyContext를 만들고, 새 scopeContext도 만든다
 
     // 람다 파라미터(int p)를 지역 변수로 추가한다
     for (auto& sParam : sParams)
@@ -865,40 +893,45 @@ optional<NLambdaDeclAndArgs> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr
         // TODO: 파라미터 타입은 타입 힌트를 반영해야 한다, ex) func<void, int, int> f = (x, y) => { } 일때, x, y는 int
         if (!sParam.type)
         {
-            return Error(MakePtr<Error_NotSupported_LambdaParameterInference>());
+            return unexpected{MakePtr<Error_NotSupported_LambdaParameterInference>()};
         }
 
-        auto rParamType = context.TranslateSTypeExpToRType(*sParam.type);
+        auto eRParamType = context.TranslateSTypeExpToRType(*sParam.type);
+        if (!eRParamType) return unexpected{move(eRParamType).error()};
 
         auto name = RName_Normal(sParam.name);
-        newContext.AddLocalVarInfo(rParamType, name);
+        newContext.AddLocalVarInfo(*eRParamType, name);
     }
 
     vector<NStmtPtr> rBody;
-    if (!TranslateSBodyToNStmts(sBody, &rBody, newContext)) return nullopt;
+    auto eRBodyResult = TranslateSBodyToNStmts(&rBody, sBody, newContext);
+    if (!eRBodyResult) return unexpected{move(eRBodyResult).error()};
 
     // body분석을 했던것을 토대로 캡쳐한 변수들을 LambdaVarDecl로 만들고, 현재 context에서 전달할 argument로 만든다
-    return newContext.MakeLambdaDeclAndArgs(std::move(rBody));
+    return newContext.MakeLambdaDeclAndArgs(move(rBody));
 }
 
 } // namespace 
 
-expected<vector<NStmtPtr>, DiagPtr> TranslateSBodyToNStmts(const vector<SStmtPtr>& stmts, TranslationContext& context)
-{   
-    vector<NStmtPtr> body;
-    expected<vector<NStmtPtr>, DiagPtr>> nStmts;
-
-    for(auto& stmt : stmts)
+expected<void, DiagPtr> TranslateSBodyToNStmts(vector<NStmtPtr>* outBody, const vector<SStmtPtr>& sStmts, TranslationContext& context)
+{
+    for(auto& sStmt : sStmts)
     {        
-        SStmtToNStmtsTranslator translator(&nStmts, context);
-        stmt->Accept(translator);
-
-        if (!nStmts) return unexpected{nStmts.error()};
-
-        body
+        expected<void, DiagPtr> eResult;
+        SStmtToNStmtsTranslator translator(&eResult, outBody, context);
+        sStmt->Accept(translator);
+        if (!eResult) return unexpected{move(eResult).error()};
     }
 
-    return true;
+    return {};
+}
+
+expected<vector<NStmtPtr>, DiagPtr> TranslateSBodyToNStmts(const vector<SStmtPtr>& sStmts, TranslationContext& context)
+{
+    vector<NStmtPtr> body;
+    auto eResult = TranslateSBodyToNStmts(&body, sStmts, context);
+    if (!eResult) return unexpected{move(eResult).error()};
+    return body;
 }
 
 

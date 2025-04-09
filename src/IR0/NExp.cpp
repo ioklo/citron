@@ -12,7 +12,7 @@ using namespace std;
 namespace Citron {
 
 NExp_Load::NExp_Load(NLocPtr&& loc)
-    : loc(std::move(loc))
+    : loc(move(loc))
 {
 }
 
@@ -22,7 +22,7 @@ RTypePtr NExp_Load::GetType(RTypeFactory& factory)
 }
 
 NExp_Assign::NExp_Assign(NLocPtr&& dest, NExpPtr&& src)
-    : dest(std::move(dest)), src(std::move(src))
+    : dest(move(dest)), src(move(src))
 {
 }
 
@@ -32,7 +32,7 @@ RTypePtr NExp_Assign::GetType(RTypeFactory& factory)
 }
 
 NExp_Box::NExp_Box(NExpPtr&& innerExp)
-    : innerExp(std::move(innerExp))
+    : innerExp(move(innerExp))
 {
 }
 
@@ -139,7 +139,7 @@ RLocStringExpElement::RLocStringExpElement(NLocPtr&& loc)
 }
 
 NExp_String::NExp_String(vector<RStringExpElement>&& elements)
-    : elements(std::move(elements))
+    : elements(move(elements))
 {
 }
 
@@ -170,7 +170,7 @@ RTypePtr NExp_ListIterator::GetType(RTypeFactory& factory)
 }
 
 NExp_CallInternalUnaryOperator::NExp_CallInternalUnaryOperator(RInternalUnaryOperator op, NExpPtr&& operand)
-    : op(op), operand(std::move(operand))
+    : op(op), operand(move(operand))
 {
 }
 
@@ -188,7 +188,7 @@ RTypePtr NExp_CallInternalUnaryOperator::GetType(RTypeFactory& factory)
 }
 
 NExp_CallInternalUnaryAssignOperator::NExp_CallInternalUnaryAssignOperator(RInternalUnaryAssignOperator op, NLocPtr&& operand)
-    : op(op), operand(std::move(operand))
+    : op(op), operand(move(operand))
 {
 }
 
@@ -207,7 +207,7 @@ RTypePtr NExp_CallInternalUnaryAssignOperator::GetType(RTypeFactory& factory)
 }
 
 NExp_CallInternalBinaryOperator::NExp_CallInternalBinaryOperator(RInternalBinaryOperator op, NExpPtr&& operand0, NExpPtr&& operand1)
-    : op(op), operand0(std::move(operand0)), operand1(std::move(operand1))
+    : op(op), operand0(move(operand0)), operand1(move(operand1))
 {
 }
 
@@ -270,7 +270,7 @@ RTypePtr NExp_NewClass::GetType(RTypeFactory& factory)
 /////////////////////////////////////
 
 NExp_CallClassFunc::NExp_CallClassFunc(shared_ptr<RClassFuncDecl>&& decl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
-    : decl(std::move(decl)), typeArgs(std::move(typeArgs)), instance(std::move(instance)), args(std::move(args))
+    : decl(move(decl)), typeArgs(move(typeArgs)), instance(move(instance)), args(move(args))
 {
 }
 
@@ -290,7 +290,7 @@ RTypePtr NExp_CastClass::GetType(RTypeFactory& factory)
 }
 
 NExp_NewStruct::NExp_NewStruct(const shared_ptr<RStructCtorDecl>& ctor, RTypeArgumentsPtr&& typeArgs, vector<NArgument>&& args)
-    : ctor(ctor), typeArgs(std::move(typeArgs)), args(std::move(args))
+    : ctor(ctor), typeArgs(move(typeArgs)), args(move(args))
 {
 }
 
@@ -301,7 +301,7 @@ RTypePtr NExp_NewStruct::GetType(RTypeFactory& factory)
 }
 
 NExp_CallStructFunc::NExp_CallStructFunc(shared_ptr<RStructFuncDecl>&& decl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
-    : decl(std::move(decl)), typeArgs(std::move(typeArgs)), instance(std::move(instance)), args(std::move(args))
+    : decl(move(decl)), typeArgs(move(typeArgs)), instance(move(instance)), args(move(args))
 {
 }
 
@@ -316,7 +316,7 @@ NExp_NewEnumElem::NExp_NewEnumElem(const shared_ptr<REnumElemDecl>& enumElemDecl
 }
 
 NExp_NewEnumElem::NExp_NewEnumElem(const std::shared_ptr<REnumElemDecl>& enumElemDecl, RTypeArgumentsPtr&& typeArgs, std::vector<NArgument>&& args)
-    : enumElemDecl(enumElemDecl), typeArgs(std::move(typeArgs)), args(std::move(args))
+    : enumElemDecl(enumElemDecl), typeArgs(move(typeArgs)), args(move(args))
 {
 }
 
@@ -396,7 +396,7 @@ RTypePtr NExp_InlineBlock::GetType(RTypeFactory& factory)
 }
 
 NExp_ClassIsClass::NExp_ClassIsClass(NExpPtr&& exp, RTypePtr&& classType)
-    : exp(std::move(exp)), classType(std::move(classType))
+    : exp(move(exp)), classType(move(classType))
 {
 }
 
@@ -416,7 +416,7 @@ RTypePtr NExp_ClassAsClass::GetType(RTypeFactory& factory)
 }
 
 NExp_ClassIsInterface::NExp_ClassIsInterface(NExpPtr&& exp, RTypePtr&& interfaceType)
-    : exp(std::move(exp), interfaceType(std::move(interfaceType))
+    : exp(move(exp)), interfaceType(move(interfaceType))
 {
 }
 
@@ -436,7 +436,7 @@ RTypePtr NExp_ClassAsInterface::GetType(RTypeFactory& factory)
 }
 
 NExp_InterfaceIsClass::NExp_InterfaceIsClass(NExpPtr&& exp, RTypePtr&& classType)
-    : exp(std::move(exp)), classType(std::move(classType))
+    : exp(move(exp)), classType(move(classType))
 {
 }
 
@@ -456,7 +456,7 @@ RTypePtr NExp_InterfaceAsClass::GetType(RTypeFactory& factory)
 }
 
 NExp_InterfaceIsInterface::NExp_InterfaceIsInterface(NExpPtr&& exp, RTypePtr&& interfaceType)
-    : exp(std::move(exp)), interfaceType(std::move(interfaceType))
+    : exp(move(exp)), interfaceType(move(interfaceType))
 {
 }
 
@@ -476,7 +476,7 @@ RTypePtr NExp_InterfaceAsInterface::GetType(RTypeFactory& factory)
 }
 
 NExp_EnumIsEnumElem::NExp_EnumIsEnumElem(NExpPtr&& exp, RTypePtr&& enumElemType)
-    : exp(std::move(exp)), enumElemType(std::move(enumElemType))
+    : exp(move(exp)), enumElemType(move(enumElemType))
 {
 }
 

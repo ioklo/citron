@@ -40,7 +40,7 @@ NTypeDeclPtr NTypeDeclContainerComponent::GetType(const RIdentifier& identifier)
 void NTypeDeclContainerComponent::AddType(NTypeDeclPtr&& typeDecl)
 {
     types.push_back(typeDecl);
-    typeDict.insert_or_assign(typeDecl->GetNDecl()->GetRDecl()->GetIdentifier(), std::move(typeDecl));
+    typeDict.insert_or_assign(typeDecl->GetNDecl()->GetRDecl()->GetIdentifier(), move(typeDecl));
 }
 
 // 첫번째 인자는 부모의 typeArgs

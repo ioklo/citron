@@ -10,23 +10,23 @@ using namespace std;
 namespace Citron {
 
 NStructDecl::NStructDecl(NTypeDeclOuterWPtr&& outer, RAccessor accessor, RName&& name, vector<string>&& typeParams)
-    : outer(std::move(outer)), accessor(accessor), name(std::move(name)), typeParams(std::move(typeParams))
+    : outer(move(outer)), accessor(accessor), name(move(name)), typeParams(move(typeParams))
 {
 }
 
 void NStructDecl::InitBaseTypes(shared_ptr<RType_Struct>&& baseStruct, vector<shared_ptr<RType_Interface>>&& interfaces)
 {
-    oBaseTypes = BaseTypes { std::move(baseStruct), std::move(interfaces) };
+    oBaseTypes = BaseTypes { move(baseStruct), move(interfaces) };
 }
 
 void NStructDecl::AddCtor(std::shared_ptr<NStructCtorDecl>&& decl)
 {
-    ctors.push_back(std::move(decl));
+    ctors.push_back(move(decl));
 }
 
 void NStructDecl::AddVar(std::shared_ptr<NStructVarDecl>&& decl)
 {
-    vars.push_back(std::move(decl));
+    vars.push_back(move(decl));
 }
 
 shared_ptr<NStructCtorDecl> NStructDecl::GetUnboundTrivialCtor_NStructCtorDecl()

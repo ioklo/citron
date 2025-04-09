@@ -14,6 +14,8 @@ import Citron.NDecls;
 import :ScopeContext;
 import :TranslationContext;
 
+using namespace std;
+
 namespace Citron::SyntaxIR0Translator {
 
 RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context)
@@ -26,7 +28,7 @@ RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationCo
         auto type = context.TranslateSTypeExpToRType(*typeArg);
         if (!type) return nullptr;
 
-        items.push_back(std::move(type));
+        items.push_back(move(*type));
     }
 
     return context.MakeTypeArguments(items);
@@ -101,13 +103,13 @@ expected<NExpPtr, DiagPtr> CastNExp(NExpPtr&& exp, const RTypePtr& expectedType,
     // 위 구현을 참고하여 작성한다
     static_assert(false);
 
-    /*auto result = TryCastRExp(std::move(exp), expectedType, context);
+    /*auto result = TryCastRExp(move(exp), expectedType, context);
     if (result != nullptr) return result;
 
     return unexpected{MakePtr<Error_Cast_Failed>()};*/
 }
 
-export std<Citron::NExpPtr, Citron::DiagPtr> CastNExp(const NExpPtr& exp, const RTypePtr& expectedType, TranslationContext& context)
+expected<NExpPtr, DiagPtr> CastNExp(const NExpPtr& exp, const RTypePtr& expectedType, TranslationContext& context)
 {
     static_assert(false);
 }

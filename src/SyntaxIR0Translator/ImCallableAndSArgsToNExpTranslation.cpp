@@ -47,32 +47,32 @@ public:
 private:
     void Value(NExpPtr&& nExp) 
     {
-        *result = std::move(nExp);
+        *result = move(nExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
     // CallExp 분석에서 Callable이 Lambda, func<>로 계산되는 경우
     void HandleLoc(ImExp& imExp)
     {
-        auto reExp = TranslateImExpToReExp(imExp, context);
-        if (!reExp)
-            return Error(reExp.error());
+        auto eReExp = TranslateImExpToReExp(imExp, context);
+        if (!eReExp)
+            return Error(move(eReExp).error());
 
         DesignatedDiagnostic<Error_CallExp_CallableExpressionIsNotCallable> designatedDiag;
-        auto callableLoc = TranslateReExpToNLoc(**reExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+        auto eNCallable = TranslateReExpToNLoc(**eReExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
 
-        if (!callableLoc)
-            return Error(callableLoc.error());
+        if (!eNCallable)
+            return Error(move(eNCallable).error());
 
         // TODO: Lambda말고 func<>도 있다
-        auto callableType = context.GetType(**callableLoc);
-        auto lambdaType = dynamic_cast<RType_Lambda*>(callableType.get());
+        auto rCallableType = context.GetType(**eNCallable);
+        auto rLambdaType = dynamic_cast<RType_Lambda*>(rCallableType.get());
 
-        if (!lambdaType)
+        if (!rLambdaType)
         {
             // FatalCallable(A0902_CallExp_CallableExpressionIsNotCallable);             
             return Error(MakePtr<Error_CallExp_CallableExpressionIsNotCallable>()); // sCallable
@@ -82,14 +82,14 @@ private:
         // args는 params를 지원 할 수 있음
 
         // partially bound된 파라미터
-        auto parameters = lambdaType->GetPartiallyBoundParameters();
+        auto rParams = rLambdaType->GetPartiallyBoundParameters();
 
         // 
-        auto match = MatchArguments(lambdaType->outerTypeArgs, /*partialTypeArgs*/ {}, std::move(parameters), /*bVariadic*/false, sArgs);
+        auto match = MatchArguments(rLambdaType->outerTypeArgs, /*partialTypeArgs*/ {}, move(rParams), /*bVariadic*/false, sArgs);
 
         if (match)
         {
-            return Value(MakePtr<NExp_CallLambda>(lambdaType->decl, match->typeArgs, *callableLoc, match->args));
+            return Value(MakePtr<NExp_CallLambda>(rLambdaType->decl, match->typeArgs, *eNCallable, match->args));
         }
         else
         {
@@ -147,28 +147,27 @@ public:
             }
 
             // ResolvedExp -> RExp
-            NLocPtr instance;
-
+            NLocPtr nInst;
             if (imExp.explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto nInstance = TranslateReExpToNLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-                if (!nInstance) return Error(nInstance.error());
+                auto eNLoc = TranslateReExpToNLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+                if (!eNLoc) return Error(move(eNLoc).error());
 
-                instance = *nInstance;
+                nInst = *eNLoc;
             }
 
-            return Value(MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), std::move(instance), std::move(match->args)));
+            return Value(MakePtr<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), move(nInst), move(match->args)));
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
             if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                return Value(MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args)));
+                return Value(MakePtr<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), nullptr, move(match->args)));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Value(MakePtr<NExp_CallClassFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(), std::move(match->args)));
+                return Value(MakePtr<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), context.MakeThisLoc(), move(match->args)));
             }
         }
 
@@ -203,7 +202,7 @@ public:
             // return Error(MakePtr<>());
         }
 
-        return Value(MakePtr<NExp_NewStruct>(match->funcDecl, std::move(match->typeArgs), std::move(match->args)));
+        return Value(MakePtr<NExp_NewStruct>(match->funcDecl, move(match->typeArgs), move(match->args)));
     }
 
     void Visit(ImExp_StructFuncs& imExp) override
@@ -235,23 +234,23 @@ public:
             if (imExp.explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto nInstance = TranslateReExpToNLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-                if (!nInstance) return Error(nInstance.error());
+                auto eInstance = TranslateReExpToNLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+                if (!eInstance) return Error(move(eInstance).error());
 
-                instance = *nInstance;
+                instance = *eInstance;
             }
 
-            return Value(MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), std::move(instance), std::move(match->args)));
+            return Value(MakePtr<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), move(instance), move(match->args)));
         }
         else
         {
             if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                return Value(MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), nullptr, std::move(match->args)));
+                return Value(MakePtr<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), nullptr, move(match->args)));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Value(MakePtr<NExp_CallStructFunc>(std::move(match->funcDecl), std::move(match->typeArgs), context.MakeThisLoc(), std::move(match->args)));
+                return Value(MakePtr<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), context.MakeThisLoc(), move(match->args)));
             }
         }
 
@@ -285,14 +284,14 @@ public:
         // EnumElem은 variadic도, typeArgs도 지원하지 않는다
         // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지
         // paramTypes으로 typeValues를 건네 줄것이면 적용해서 넣는게 나을 것 같은데, TypeResolver 동작때문에(?) 어떻게 될지 몰라서 일단 여기서는 적용하고 TypeEnv.None을 넘겨준다
-        auto match = MatchArguments(imExp.typeArgs, /*partialTypeArgsExceptOuter*/ {}, std::move(parameters), /*bVariadic*/ false, sArgs);
+        auto match = MatchArguments(imExp.typeArgs, /*partialTypeArgsExceptOuter*/ {}, move(parameters), /*bVariadic*/ false, sArgs);
 
         if (!match)
         {
             return Error(MakePtr<Error_Parameter_MismatchBetweenParamCountAndArgCount>());
         }
 
-        return Value(MakePtr<NExp_NewEnumElem>(imExp.decl, std::move(match->typeArgs), std::move(match->args)));
+        return Value(MakePtr<NExp_NewEnumElem>(imExp.decl, move(match->typeArgs), move(match->args)));
     }
 
     void Visit(ImExp_ThisVar& imExp) override

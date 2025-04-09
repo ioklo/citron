@@ -13,7 +13,7 @@ tuple<shared_ptr<Buffer>, Lexer> Prepare(u32string str)
 {
     auto buffer = MakePtr<Buffer>(str);
     BufferPosition pos = buffer->MakeStartPosition();
-    return { std::move(buffer), Lexer(pos) };
+    return { move(buffer), Lexer(pos) };
 }
 
 }

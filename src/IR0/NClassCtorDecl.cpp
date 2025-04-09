@@ -8,10 +8,10 @@ using namespace std;
 namespace Citron {
 
 NClassCtorDecl::NClassCtorDecl(const shared_ptr<NClassDecl>& _class, RAccessor accessor, bool bTrivial, vector<string>&& typeParams, vector<RFuncParameter> parameters, bool bLastParamVariadic)
-    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, std::move(typeParams))
+    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, move(typeParams))
     , _class(_class), accessor(accessor), bTrivial(bTrivial)
 {
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor(), std::move(parameters), bLastParamVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor(), move(parameters), bLastParamVariadic);
 }
 
 NDecl* NClassCtorDecl::GetNOuter()

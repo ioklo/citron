@@ -9,10 +9,10 @@ using namespace std;
 namespace Citron {
 
 NStructVarDecl::NStructVarDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bStatic, std::string name)
-    : _struct(std::move(_struct))
+    : _struct(move(_struct))
     , accessor(accessor)
     , bStatic(bStatic)
-    , name(std::move(name))
+    , name(move(name))
 {
 }
 

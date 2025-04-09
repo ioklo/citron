@@ -10,7 +10,7 @@ using namespace icu;
 namespace Citron {
 
 ValidBufferPosition::ValidBufferPosition(weak_ptr<Buffer> weakBuffer, char32_t codePoint, int curIndex)
-    : weakBuffer(std::move(weakBuffer)), codePoint(codePoint), curIndex(curIndex)
+    : weakBuffer(move(weakBuffer)), codePoint(codePoint), curIndex(curIndex)
 {
 }
 
@@ -85,7 +85,7 @@ Buffer::Buffer(std::string str8) // utf-8
 }
 
 Buffer::Buffer(std::u32string string)
-    : string(std::move(string))
+    : string(move(string))
 {
 }
 

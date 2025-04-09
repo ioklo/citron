@@ -38,7 +38,7 @@ tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDecl
         rParams.emplace_back(sParam.hasOut, type, RName_Normal{sParam.name});
     }
 
-    return make_tuple(std::move(rParams), bLastParamVariadic);
+    return make_tuple(move(rParams), bLastParamVariadic);
 }
 
 }

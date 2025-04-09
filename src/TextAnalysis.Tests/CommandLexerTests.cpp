@@ -18,8 +18,8 @@ void RepeatLexCommand(vector<Token>* tokens, Lexer* lexer, int repeatCount)
         auto optLexResult = lexer->LexCommandMode();
         ASSERT_TRUE(optLexResult);
         
-        tokens->push_back(std::move(optLexResult->token)); // ps
-        *lexer = std::move(optLexResult->lexer);
+        tokens->push_back(move(optLexResult->token)); // ps
+        *lexer = move(optLexResult->lexer);
     }
 }
 
@@ -30,8 +30,8 @@ void RepeatLexNormal(vector<Token>* tokens, Lexer* lexer, bool bSkipNewLine, int
         auto optLexResult = lexer->LexNormalMode(bSkipNewLine);
         ASSERT_TRUE(optLexResult);
 
-        tokens->push_back(std::move(optLexResult->token)); // ps
-        *lexer = std::move(optLexResult->lexer);
+        tokens->push_back(move(optLexResult->token)); // ps
+        *lexer = move(optLexResult->lexer);
     }
 }
 
@@ -43,8 +43,8 @@ vector<Token> Process(Lexer lexer)
         auto optLexResult = lexer.LexCommandMode();
         if (!optLexResult) break;
 
-        tokens.push_back(std::move(optLexResult->token));
-        lexer = std::move(optLexResult->lexer);
+        tokens.push_back(move(optLexResult->token));
+        lexer = move(optLexResult->lexer);
     }
 
     return tokens;

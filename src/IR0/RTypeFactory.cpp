@@ -26,7 +26,7 @@ shared_ptr<RType_NullableValue> RTypeFactory::MakeNullableValueType(RTypePtr inn
         return i->second;
 
     auto key = innerType;
-    shared_ptr<RType_NullableValue> newType { new RType_NullableValue(std::move(innerType)) };
+    shared_ptr<RType_NullableValue> newType { new RType_NullableValue(move(innerType)) };
     nullableValueTypes.emplace(key, newType);
 
     return newType;
@@ -40,7 +40,7 @@ shared_ptr<RType_NullableRef> RTypeFactory::MakeNullableRefType(RTypePtr innerTy
         return i->second;
 
     auto key = innerType;
-    shared_ptr<RType_NullableRef> newType { new RType_NullableRef(std::move(innerType)) };
+    shared_ptr<RType_NullableRef> newType { new RType_NullableRef(move(innerType)) };
     nullableRefTypes.emplace(key, newType);
 
     return newType;
@@ -72,8 +72,8 @@ shared_ptr<RType_Tuple> RTypeFactory::MakeTupleType(vector<RTupleVar>&& vars)
         return i->second;
 
     auto key = vars;
-    shared_ptr<RType_Tuple> tupleType { new RType_Tuple(std::move(vars)) };
-    tupleTypes.emplace(std::move(key), tupleType);
+    shared_ptr<RType_Tuple> tupleType { new RType_Tuple(move(vars)) };
+    tupleTypes.emplace(move(key), tupleType);
 
     return tupleType;
 }
@@ -85,7 +85,7 @@ shared_ptr<RType_Func> RTypeFactory::MakeFuncType(bool bLocal, RTypePtr&& retTyp
     if (i != funcTypes.end())
         return i->second;
 
-    shared_ptr<RType_Func> newFuncType { new RType_Func(bLocal, std::move(retType), std::move(params)) };
+    shared_ptr<RType_Func> newFuncType { new RType_Func(bLocal, move(retType), move(params)) };
     funcTypes.emplace(key, newFuncType);
     return newFuncType;
 }
@@ -96,7 +96,7 @@ shared_ptr<RType_LocalPtr> RTypeFactory::MakeLocalPtrType(RTypePtr&& innerType)
     if (i != localPtrTypes.end())
         return i->second;
 
-    shared_ptr<RType_LocalPtr> newType { new RType_LocalPtr(std::move(innerType)) };
+    shared_ptr<RType_LocalPtr> newType { new RType_LocalPtr(move(innerType)) };
     localPtrTypes.emplace(innerType, newType);
     return newType;
 }
@@ -178,7 +178,7 @@ RTypeArgumentsPtr RTypeFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RT
     if (i != typeArgsMap.end())
         return i->second;
 
-    shared_ptr<RTypeArguments> v { new RTypeArguments(std::move(items)) };
+    shared_ptr<RTypeArguments> v { new RTypeArguments(move(items)) };
     typeArgsMap.emplace(key, v);
     return v;
 }

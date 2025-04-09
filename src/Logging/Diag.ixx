@@ -6,7 +6,10 @@ import <vector>;
 
 namespace Citron {
 
-export struct Diag {};
+export struct Diag 
+{
+    virtual ~Diag() = default;
+};
 export struct Warn : Diag {};
 export struct Error : Diag {};
 
@@ -15,7 +18,11 @@ export using DiagPtr = std::shared_ptr<Diag>;
 export struct AggregateDiag : Diag 
 {
     std::vector<DiagPtr> diags;
+
+    AggregateDiag(std::vector<DiagPtr>&& diags) : diags(std::move(diags)) { }
 };
+
+
 
 //LOGGING_API void Fatal_Parameter_MismatchBetweenParamCountAndArgCount(); // A0401_Parameter_MismatchBetweenParamCountAndArgCount
 
@@ -191,5 +198,7 @@ export struct Error_Reference_UselessDereferenceReferencedValue : Error { }; // 
 export struct Error_Reference_CantReferenceThis : Error { }; // A3004_Reference_CantReferenceThis
 export struct Error_NotSupported_LambdaParameterInference : Error { }; // A9901_NotSupported_LambdaParameterInference
 export struct Error_NotSupported_LambdaReturnTypeInference : Error {}; // A9902_NotSupported_LambdaReturnTypeInference
+export struct Error_NotImplemented : Error {};
+export struct Error_NotRechable: Error {};
 
 } // namespace Citron

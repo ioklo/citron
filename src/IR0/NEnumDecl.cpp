@@ -9,10 +9,10 @@ namespace Citron
 {
 
 NEnumDecl::NEnumDecl(NTypeDeclOuterWPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams, size_t elemCount)
-    : outer(std::move(outer))
+    : outer(move(outer))
     , accessor(accessor)
-    , name(std::move(name))
-    , typeParams(std::move(typeParams))
+    , name(move(name))
+    , typeParams(move(typeParams))
 {
     elems.reserve(elemCount);
 }
@@ -20,7 +20,7 @@ NEnumDecl::NEnumDecl(NTypeDeclOuterWPtr outer, RAccessor accessor, RName name, s
 void NEnumDecl::AddElem(std::shared_ptr<NEnumElemDecl>&& elem)
 {
     elems.push_back(elem);
-    elemsMap.emplace(elem->name, std::move(elem));
+    elemsMap.emplace(elem->name, move(elem));
 }
 
 NDecl* NEnumDecl::GetNOuter()

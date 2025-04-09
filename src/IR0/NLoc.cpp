@@ -13,7 +13,7 @@ NLoc_Temp::NLoc_Temp(const NExpPtr& exp)
 }
 
 NLoc_Temp::NLoc_Temp(NExpPtr&& exp)
-    : exp(std::move(exp))
+    : exp(move(exp))
 {
 }
 
@@ -44,7 +44,7 @@ RTypePtr NLoc_LambdaVar::GetType(RTypeFactory& factory)
 }
 
 NLoc_ListIndexer::NLoc_ListIndexer(NLocPtr&& list, const NLocPtr& index, const RTypePtr& itemType)
-    : list(std::move(list)), index(index), itemType(itemType)
+    : list(move(list)), index(index), itemType(itemType)
 {
 }
 
@@ -65,7 +65,7 @@ RTypePtr NLoc_StructVar::GetType(RTypeFactory& factory)
 }
 
 NLoc_ClassVar::NLoc_ClassVar(NLocPtr&& instance, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
-    : instance(std::move(instance)), decl(decl), typeArgs(typeArgs)
+    : instance(move(instance)), decl(decl), typeArgs(typeArgs)
 {
 }
 
@@ -86,7 +86,7 @@ RTypePtr NLoc_EnumElemVar::GetType(RTypeFactory& factory)
 }
 
 NLoc_This::NLoc_This(RTypePtr type)
-    : type(std::move(type))
+    : type(move(type))
 {
 }
 
@@ -96,7 +96,7 @@ RTypePtr NLoc_This::GetType(RTypeFactory& factory)
 }
 
 NLoc_LocalDeref::NLoc_LocalDeref(NLocPtr&& innerLoc)
-    : innerLoc(std::move(innerLoc))
+    : innerLoc(move(innerLoc))
 {
 }
 
@@ -112,7 +112,7 @@ RTypePtr NLoc_LocalDeref::GetType(RTypeFactory& factory)
 }
 
 NLoc_BoxDeref::NLoc_BoxDeref(NLocPtr&& innerLoc)
-    : innerLoc(std::move(innerLoc))
+    : innerLoc(move(innerLoc))
 {
 }
 

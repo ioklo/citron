@@ -75,14 +75,15 @@ void AddStructCtor_BodyPhase(const shared_ptr<NStructCtorDecl>& nCtor, const sha
 {
     auto translationContext = context.MakeTranslationContext();
 
-    vector<NStmtPtr> nStmts;
-    if (!TranslateSBodyToNStmts(sCtor->body, &nStmts, translationContext))
+    auto eNStmts = TranslateSBodyToNStmts(sCtor->body, translationContext);
+
+    if (!eNStmts)
     {
         context.MarkFailed();
         return;
     }
 
-    nCtor->InitBody(move(nStmts));
+    nCtor->InitBody(move(*eNStmts));
 }
 
 #pragma endregion Ctor
@@ -119,15 +120,16 @@ void AddStructFunc_MemberDeclPhase(const shared_ptr<NStructFuncDecl>& nMemberFun
 void AddStructFunc_BodyPhase(const shared_ptr<NStructFuncDecl>& nMemberFunc, const shared_ptr<SStructFuncDecl>& sMemberFunc, BodyPhaseContext& context)
 {
     auto translationContext = context.MakeTranslationContext();
-    std::vector<NStmtPtr> nStmts;
 
-    if (!TranslateSBodyToNStmts(sMemberFunc->body, &nStmts, translationContext))
+    auto eNStmts = TranslateSBodyToNStmts(sMemberFunc->body, translationContext);
+
+    if (!eNStmts)
     {
         context.MarkFailed();
         return;
     }
 
-    nMemberFunc->InitBody(move(nStmts));
+    nMemberFunc->InitBody(move(*eNStmts));
 }
 
 #pragma endregion StructFunc
@@ -255,7 +257,7 @@ void AddStruct_MemberDeclPhase(const shared_ptr<NStructDecl>& nStruct, const sha
         }
     }
 
-    nStruct->InitBaseTypes(std::move(rBaseStruct), move(rInterfaces));
+    nStruct->InitBaseTypes(move(rBaseStruct), move(rInterfaces));
 
     // base의 TrivialCtor가 다 만들어 졌을 때, 수행하는 작업
     context.AddTrivialCtorPhaseTask([nStruct]() {

@@ -30,7 +30,7 @@ void MTypeDeclContainerComponent::AddType(MTypeDecl&& typeDecl)
 
     auto& name = GetName(typeDecl);
     typeDict.insert(name, index);
-    types.push_back(std::move(typeDecl));*/
+    types.push_back(move(typeDecl));*/
 }
 //
 //bool ICyclicEqualityComparableStruct<TypeDeclSymbolComponent>.CyclicEquals(ref TypeDeclSymbolComponent other, ref CyclicEqualityCompareContext context)

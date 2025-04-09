@@ -13,12 +13,12 @@ ImExp_GlobalFuncs::ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<RGl
 }
 
 ImExp_TypeVar::ImExp_TypeVar(std::shared_ptr<RType_TypeVar>&& type)
-    : type(std::move(type))
+    : type(move(type))
 {
 }
 
 ImExp_Class::ImExp_Class(const std::shared_ptr<RClassDecl>& classDecl, RTypeArgumentsPtr&& typeArgs)
-    : classDecl(classDecl), typeArgs(std::move(typeArgs))
+    : classDecl(classDecl), typeArgs(move(typeArgs))
 {
 }
 
@@ -28,7 +28,7 @@ ImExp_ClassFuncs::ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClas
 }
 
 ImExp_Struct::ImExp_Struct(const std::shared_ptr<RStructDecl>& structDecl, RTypeArgumentsPtr&& typeArgs)
-    : structDecl(structDecl), typeArgs(std::move(typeArgs))
+    : structDecl(structDecl), typeArgs(move(typeArgs))
 {
 }
 
@@ -84,7 +84,7 @@ ImExp_EnumElemVar::ImExp_EnumElemVar(const std::shared_ptr<REnumElemVarDecl>& de
 }
 
 ImExp_ListIndexer::ImExp_ListIndexer(ReExpPtr&& instance, NLocPtr&& index, RTypePtr&& itemType)
-    : instance(std::move(instance)), index(std::move(index)), itemType(std::move(itemType))
+    : instance(move(instance)), index(move(index)), itemType(move(itemType))
 {
 
 }

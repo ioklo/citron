@@ -8,18 +8,18 @@ namespace Citron
 {
 
 NStructFuncDecl::NStructFuncDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, std::string name, std::vector<std::string>&& typeParams, bool bStatic)
-    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, std::move(typeParams))
-    , _struct(std::move(_struct))
+    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, move(typeParams))
+    , _struct(move(_struct))
     , accessor(accessor)
-    , name(std::move(name))
-    , typeParams(std::move(typeParams))
+    , name(move(name))
+    , typeParams(move(typeParams))
     , bStatic(bStatic)
 {
 }
 
 void NStructFuncDecl::InitFuncReturnAndParams(RTypePtr funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
 {
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(std::move(funcReturn)), std::move(funcParameters), bLastParameterVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(move(funcReturn)), move(funcParameters), bLastParameterVariadic);
 }
 
 NDecl* NStructFuncDecl::GetNOuter()

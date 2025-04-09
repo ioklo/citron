@@ -32,7 +32,7 @@ JsonItem SSyntax::ToJson()
 }
 
 SArgument::SArgument(bool bOut, bool bParams, SExpPtr exp)
-    : bOut(std::move(bOut)), bParams(std::move(bParams)), exp(std::move(exp)) { }
+    : bOut(move(bOut)), bParams(move(bParams)), exp(move(exp)) { }
 
 SArgument::SArgument(SArgument&& other) noexcept = default;
 
@@ -51,7 +51,7 @@ JsonItem SArgument::ToJson()
 }
 
 SArguments::SArguments(std::vector<SArgumentPtr> items)
-    : items(std::move(items)) { }
+    : items(move(items)) { }
 
 SArguments::SArguments(SArguments&& other) noexcept = default;
 
@@ -68,7 +68,7 @@ JsonItem SArguments::ToJson()
 }
 
 SLambdaExpParam::SLambdaExpParam(STypeExpPtr type, std::string name, bool hasOut, bool hasParams)
-    : type(std::move(type)), name(std::move(name)), hasOut(std::move(hasOut)), hasParams(std::move(hasParams)) { }
+    : type(move(type)), name(move(name)), hasOut(move(hasOut)), hasParams(move(hasParams)) { }
 
 SLambdaExpParam::SLambdaExpParam(SLambdaExpParam&& other) noexcept = default;
 
@@ -88,7 +88,7 @@ JsonItem SLambdaExpParam::ToJson()
 }
 
 SVarDeclElement::SVarDeclElement(std::string varName, SExpPtr initExp)
-    : varName(std::move(varName)), initExp(std::move(initExp)) { }
+    : varName(move(varName)), initExp(move(initExp)) { }
 
 SVarDeclElement::SVarDeclElement(SVarDeclElement&& other) noexcept = default;
 
@@ -106,7 +106,7 @@ JsonItem SVarDeclElement::ToJson()
 }
 
 SVarDecl::SVarDecl(STypeExpPtr type, std::vector<SVarDeclElement> elements)
-    : type(std::move(type)), elements(std::move(elements)) { }
+    : type(move(type)), elements(move(elements)) { }
 
 SVarDecl::SVarDecl(SVarDecl&& other) noexcept = default;
 
@@ -124,7 +124,7 @@ JsonItem SVarDecl::ToJson()
 }
 
 STypeParam::STypeParam(std::string name)
-    : name(std::move(name)) { }
+    : name(move(name)) { }
 
 STypeParam::STypeParam(STypeParam&& other) noexcept = default;
 
@@ -141,7 +141,7 @@ JsonItem STypeParam::ToJson()
 }
 
 SFuncParam::SFuncParam(bool hasOut, bool hasParams, STypeExpPtr type, std::string name)
-    : hasOut(std::move(hasOut)), hasParams(std::move(hasParams)), type(std::move(type)), name(std::move(name)) { }
+    : hasOut(move(hasOut)), hasParams(move(hasParams)), type(move(type)), name(move(name)) { }
 
 SFuncParam::SFuncParam(SFuncParam&& other) noexcept = default;
 
@@ -374,7 +374,7 @@ JsonItem ToJson(SScriptElementPtr& elem)
     return visitor.result;
 }
 SExp_Identifier::SExp_Identifier(std::string value, std::vector<STypeExpPtr> typeArgs)
-    : value(std::move(value)), typeArgs(std::move(typeArgs)) { }
+    : value(move(value)), typeArgs(move(typeArgs)) { }
 
 SExp_Identifier::SExp_Identifier(SExp_Identifier&& other) noexcept = default;
 
@@ -392,7 +392,7 @@ JsonItem SExp_Identifier::ToJson()
 }
 
 SExp_String::SExp_String(std::vector<SStringExpElementPtr> elements)
-    : elements(std::move(elements)) { }
+    : elements(move(elements)) { }
 
 SExp_String::SExp_String(SExp_String&& other) noexcept = default;
 
@@ -409,7 +409,7 @@ JsonItem SExp_String::ToJson()
 }
 
 SExp_IntLiteral::SExp_IntLiteral(int value)
-    : value(std::move(value)) { }
+    : value(move(value)) { }
 
 SExp_IntLiteral::SExp_IntLiteral(SExp_IntLiteral&& other) noexcept = default;
 
@@ -426,7 +426,7 @@ JsonItem SExp_IntLiteral::ToJson()
 }
 
 SExp_BoolLiteral::SExp_BoolLiteral(bool value)
-    : value(std::move(value)) { }
+    : value(move(value)) { }
 
 SExp_BoolLiteral::SExp_BoolLiteral(SExp_BoolLiteral&& other) noexcept = default;
 
@@ -458,7 +458,7 @@ JsonItem SExp_NullLiteral::ToJson()
 }
 
 SExp_List::SExp_List(std::vector<SExpPtr> elements)
-    : elements(std::move(elements)) { }
+    : elements(move(elements)) { }
 
 SExp_List::SExp_List(SExp_List&& other) noexcept = default;
 
@@ -475,7 +475,7 @@ JsonItem SExp_List::ToJson()
 }
 
 SExp_New::SExp_New(STypeExpPtr type, SArgumentsPtr args)
-    : type(std::move(type)), args(std::move(args)) { }
+    : type(move(type)), args(move(args)) { }
 
 SExp_New::SExp_New(SExp_New&& other) noexcept = default;
 
@@ -493,7 +493,7 @@ JsonItem SExp_New::ToJson()
 }
 
 SExp_BinaryOp::SExp_BinaryOp(SBinaryOpKind kind, SExpPtr operand0, SExpPtr operand1)
-    : kind(std::move(kind)), operand0(std::move(operand0)), operand1(std::move(operand1)) { }
+    : kind(move(kind)), operand0(move(operand0)), operand1(move(operand1)) { }
 
 SExp_BinaryOp::SExp_BinaryOp(SExp_BinaryOp&& other) noexcept = default;
 
@@ -512,7 +512,7 @@ JsonItem SExp_BinaryOp::ToJson()
 }
 
 SExp_UnaryOp::SExp_UnaryOp(SUnaryOpKind kind, SExpPtr operand)
-    : kind(std::move(kind)), operand(std::move(operand)) { }
+    : kind(move(kind)), operand(move(operand)) { }
 
 SExp_UnaryOp::SExp_UnaryOp(SExp_UnaryOp&& other) noexcept = default;
 
@@ -530,7 +530,7 @@ JsonItem SExp_UnaryOp::ToJson()
 }
 
 SExp_Call::SExp_Call(SExpPtr callable, SArgumentsPtr args)
-    : callable(std::move(callable)), args(std::move(args)) { }
+    : callable(move(callable)), args(move(args)) { }
 
 SExp_Call::SExp_Call(SExp_Call&& other) noexcept = default;
 
@@ -548,7 +548,7 @@ JsonItem SExp_Call::ToJson()
 }
 
 SExp_Lambda::SExp_Lambda(std::vector<SLambdaExpParam> params, SLambdaExpBodyPtr body)
-    : params(std::move(params)), body(std::move(body)) { }
+    : params(move(params)), body(move(body)) { }
 
 SExp_Lambda::SExp_Lambda(SExp_Lambda&& other) noexcept = default;
 
@@ -566,7 +566,7 @@ JsonItem SExp_Lambda::ToJson()
 }
 
 SExp_Indexer::SExp_Indexer(SExpPtr obj, SExpPtr index)
-    : obj(std::move(obj)), index(std::move(index)) { }
+    : obj(move(obj)), index(move(index)) { }
 
 SExp_Indexer::SExp_Indexer(SExp_Indexer&& other) noexcept = default;
 
@@ -584,7 +584,7 @@ JsonItem SExp_Indexer::ToJson()
 }
 
 SExp_Member::SExp_Member(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs)
-    : parent(std::move(parent)), memberName(std::move(memberName)), memberTypeArgs(std::move(memberTypeArgs)) { }
+    : parent(move(parent)), memberName(move(memberName)), memberTypeArgs(move(memberTypeArgs)) { }
 
 SExp_Member::SExp_Member(SExp_Member&& other) noexcept = default;
 
@@ -603,7 +603,7 @@ JsonItem SExp_Member::ToJson()
 }
 
 SExp_IndirectMember::SExp_IndirectMember(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs)
-    : parent(std::move(parent)), memberName(std::move(memberName)), memberTypeArgs(std::move(memberTypeArgs)) { }
+    : parent(move(parent)), memberName(move(memberName)), memberTypeArgs(move(memberTypeArgs)) { }
 
 SExp_IndirectMember::SExp_IndirectMember(SExp_IndirectMember&& other) noexcept = default;
 
@@ -622,7 +622,7 @@ JsonItem SExp_IndirectMember::ToJson()
 }
 
 SExp_Box::SExp_Box(SExpPtr innerExp)
-    : innerExp(std::move(innerExp)) { }
+    : innerExp(move(innerExp)) { }
 
 SExp_Box::SExp_Box(SExp_Box&& other) noexcept = default;
 
@@ -639,7 +639,7 @@ JsonItem SExp_Box::ToJson()
 }
 
 SExp_Is::SExp_Is(SExpPtr exp, STypeExpPtr type)
-    : exp(std::move(exp)), type(std::move(type)) { }
+    : exp(move(exp)), type(move(type)) { }
 
 SExp_Is::SExp_Is(SExp_Is&& other) noexcept = default;
 
@@ -657,7 +657,7 @@ JsonItem SExp_Is::ToJson()
 }
 
 SExp_As::SExp_As(SExpPtr exp, STypeExpPtr type)
-    : exp(std::move(exp)), type(std::move(type)) { }
+    : exp(move(exp)), type(move(type)) { }
 
 SExp_As::SExp_As(SExp_As&& other) noexcept = default;
 
@@ -675,7 +675,7 @@ JsonItem SExp_As::ToJson()
 }
 
 STypeExp_Id::STypeExp_Id(std::string name, std::vector<STypeExpPtr> typeArgs)
-    : name(std::move(name)), typeArgs(std::move(typeArgs)) { }
+    : name(move(name)), typeArgs(move(typeArgs)) { }
 
 STypeExp_Id::STypeExp_Id(STypeExp_Id&& other) noexcept = default;
 
@@ -693,7 +693,7 @@ JsonItem STypeExp_Id::ToJson()
 }
 
 STypeExp_Member::STypeExp_Member(STypeExpPtr parentType, std::string name, std::vector<STypeExpPtr> typeArgs)
-    : parentType(std::move(parentType)), name(std::move(name)), typeArgs(std::move(typeArgs)) { }
+    : parentType(move(parentType)), name(move(name)), typeArgs(move(typeArgs)) { }
 
 STypeExp_Member::STypeExp_Member(STypeExp_Member&& other) noexcept = default;
 
@@ -712,7 +712,7 @@ JsonItem STypeExp_Member::ToJson()
 }
 
 STypeExp_Nullable::STypeExp_Nullable(STypeExpPtr innerType)
-    : innerType(std::move(innerType)) { }
+    : innerType(move(innerType)) { }
 
 STypeExp_Nullable::STypeExp_Nullable(STypeExp_Nullable&& other) noexcept = default;
 
@@ -729,7 +729,7 @@ JsonItem STypeExp_Nullable::ToJson()
 }
 
 STypeExp_LocalPtr::STypeExp_LocalPtr(STypeExpPtr innerType)
-    : innerType(std::move(innerType)) { }
+    : innerType(move(innerType)) { }
 
 STypeExp_LocalPtr::STypeExp_LocalPtr(STypeExp_LocalPtr&& other) noexcept = default;
 
@@ -746,7 +746,7 @@ JsonItem STypeExp_LocalPtr::ToJson()
 }
 
 STypeExp_BoxPtr::STypeExp_BoxPtr(STypeExpPtr innerType)
-    : innerType(std::move(innerType)) { }
+    : innerType(move(innerType)) { }
 
 STypeExp_BoxPtr::STypeExp_BoxPtr(STypeExp_BoxPtr&& other) noexcept = default;
 
@@ -763,7 +763,7 @@ JsonItem STypeExp_BoxPtr::ToJson()
 }
 
 STypeExp_Local::STypeExp_Local(STypeExpPtr innerType)
-    : innerType(std::move(innerType)) { }
+    : innerType(move(innerType)) { }
 
 STypeExp_Local::STypeExp_Local(STypeExp_Local&& other) noexcept = default;
 
@@ -780,7 +780,7 @@ JsonItem STypeExp_Local::ToJson()
 }
 
 SStringExpElement_Text::SStringExpElement_Text(std::string text)
-    : text(std::move(text)) { }
+    : text(move(text)) { }
 
 SStringExpElement_Text::SStringExpElement_Text(SStringExpElement_Text&& other) noexcept = default;
 
@@ -797,7 +797,7 @@ JsonItem SStringExpElement_Text::ToJson()
 }
 
 SStringExpElement_Exp::SStringExpElement_Exp(SExpPtr exp)
-    : exp(std::move(exp)) { }
+    : exp(move(exp)) { }
 
 SStringExpElement_Exp::SStringExpElement_Exp(SStringExpElement_Exp&& other) noexcept = default;
 
@@ -814,7 +814,7 @@ JsonItem SStringExpElement_Exp::ToJson()
 }
 
 SLambdaExpBody_Stmts::SLambdaExpBody_Stmts(std::vector<SStmtPtr> stmts)
-    : stmts(std::move(stmts)) { }
+    : stmts(move(stmts)) { }
 
 SLambdaExpBody_Stmts::SLambdaExpBody_Stmts(SLambdaExpBody_Stmts&& other) noexcept = default;
 
@@ -831,7 +831,7 @@ JsonItem SLambdaExpBody_Stmts::ToJson()
 }
 
 SLambdaExpBody_Exp::SLambdaExpBody_Exp(SExpPtr exp)
-    : exp(std::move(exp)) { }
+    : exp(move(exp)) { }
 
 SLambdaExpBody_Exp::SLambdaExpBody_Exp(SLambdaExpBody_Exp&& other) noexcept = default;
 
@@ -848,7 +848,7 @@ JsonItem SLambdaExpBody_Exp::ToJson()
 }
 
 SEmbeddableStmt_Single::SEmbeddableStmt_Single(SStmtPtr stmt)
-    : stmt(std::move(stmt)) { }
+    : stmt(move(stmt)) { }
 
 SEmbeddableStmt_Single::SEmbeddableStmt_Single(SEmbeddableStmt_Single&& other) noexcept = default;
 
@@ -865,7 +865,7 @@ JsonItem SEmbeddableStmt_Single::ToJson()
 }
 
 SEmbeddableStmt_Block::SEmbeddableStmt_Block(std::vector<SStmtPtr> stmts)
-    : stmts(std::move(stmts)) { }
+    : stmts(move(stmts)) { }
 
 SEmbeddableStmt_Block::SEmbeddableStmt_Block(SEmbeddableStmt_Block&& other) noexcept = default;
 
@@ -882,7 +882,7 @@ JsonItem SEmbeddableStmt_Block::ToJson()
 }
 
 SForStmtInitializer_Exp::SForStmtInitializer_Exp(SExpPtr exp)
-    : exp(std::move(exp)) { }
+    : exp(move(exp)) { }
 
 SForStmtInitializer_Exp::SForStmtInitializer_Exp(SForStmtInitializer_Exp&& other) noexcept = default;
 
@@ -899,7 +899,7 @@ JsonItem SForStmtInitializer_Exp::ToJson()
 }
 
 SForStmtInitializer_VarDecl::SForStmtInitializer_VarDecl(SVarDecl varDecl)
-    : varDecl(std::move(varDecl)) { }
+    : varDecl(move(varDecl)) { }
 
 SForStmtInitializer_VarDecl::SForStmtInitializer_VarDecl(SForStmtInitializer_VarDecl&& other) noexcept = default;
 
@@ -916,7 +916,7 @@ JsonItem SForStmtInitializer_VarDecl::ToJson()
 }
 
 SStmt_Command::SStmt_Command(std::vector<std::shared_ptr<SExp_String>> commands)
-    : commands(std::move(commands)) { }
+    : commands(move(commands)) { }
 
 SStmt_Command::SStmt_Command(SStmt_Command&& other) noexcept = default;
 
@@ -933,7 +933,7 @@ JsonItem SStmt_Command::ToJson()
 }
 
 SStmt_VarDecl::SStmt_VarDecl(SVarDecl varDecl)
-    : varDecl(std::move(varDecl)) { }
+    : varDecl(move(varDecl)) { }
 
 SStmt_VarDecl::SStmt_VarDecl(SStmt_VarDecl&& other) noexcept = default;
 
@@ -980,7 +980,7 @@ JsonItem SStmt_Break::ToJson()
 }
 
 SStmt_Block::SStmt_Block(std::vector<SStmtPtr> stmts)
-    : stmts(std::move(stmts)) { }
+    : stmts(move(stmts)) { }
 
 SStmt_Block::SStmt_Block(SStmt_Block&& other) noexcept = default;
 
@@ -1012,7 +1012,7 @@ JsonItem SStmt_Blank::ToJson()
 }
 
 SStmt_Task::SStmt_Task(std::vector<SStmtPtr> body)
-    : body(std::move(body)) { }
+    : body(move(body)) { }
 
 SStmt_Task::SStmt_Task(SStmt_Task&& other) noexcept = default;
 
@@ -1029,7 +1029,7 @@ JsonItem SStmt_Task::ToJson()
 }
 
 SStmt_Await::SStmt_Await(std::vector<SStmtPtr> body)
-    : body(std::move(body)) { }
+    : body(move(body)) { }
 
 SStmt_Await::SStmt_Await(SStmt_Await&& other) noexcept = default;
 
@@ -1046,7 +1046,7 @@ JsonItem SStmt_Await::ToJson()
 }
 
 SStmt_Async::SStmt_Async(std::vector<SStmtPtr> body)
-    : body(std::move(body)) { }
+    : body(move(body)) { }
 
 SStmt_Async::SStmt_Async(SStmt_Async&& other) noexcept = default;
 
@@ -1063,7 +1063,7 @@ JsonItem SStmt_Async::ToJson()
 }
 
 SStmt_Directive::SStmt_Directive(std::string name, std::vector<SExpPtr> args)
-    : name(std::move(name)), args(std::move(args)) { }
+    : name(move(name)), args(move(args)) { }
 
 SStmt_Directive::SStmt_Directive(SStmt_Directive&& other) noexcept = default;
 
@@ -1081,7 +1081,7 @@ JsonItem SStmt_Directive::ToJson()
 }
 
 SStmt_If::SStmt_If(SExpPtr cond, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody)
-    : cond(std::move(cond)), body(std::move(body)), elseBody(std::move(elseBody)) { }
+    : cond(move(cond)), body(move(body)), elseBody(move(elseBody)) { }
 
 SStmt_If::SStmt_If(SStmt_If&& other) noexcept = default;
 
@@ -1100,7 +1100,7 @@ JsonItem SStmt_If::ToJson()
 }
 
 SStmt_IfTest::SStmt_IfTest(STypeExpPtr testType, std::string varName, SExpPtr exp, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody)
-    : testType(std::move(testType)), varName(std::move(varName)), exp(std::move(exp)), body(std::move(body)), elseBody(std::move(elseBody)) { }
+    : testType(move(testType)), varName(move(varName)), exp(move(exp)), body(move(body)), elseBody(move(elseBody)) { }
 
 SStmt_IfTest::SStmt_IfTest(SStmt_IfTest&& other) noexcept = default;
 
@@ -1121,7 +1121,7 @@ JsonItem SStmt_IfTest::ToJson()
 }
 
 SStmt_For::SStmt_For(SForStmtInitializerPtr initializer, SExpPtr cond, SExpPtr cont, SEmbeddableStmtPtr body)
-    : initializer(std::move(initializer)), cond(std::move(cond)), cont(std::move(cont)), body(std::move(body)) { }
+    : initializer(move(initializer)), cond(move(cond)), cont(move(cont)), body(move(body)) { }
 
 SStmt_For::SStmt_For(SStmt_For&& other) noexcept = default;
 
@@ -1141,7 +1141,7 @@ JsonItem SStmt_For::ToJson()
 }
 
 SStmt_Return::SStmt_Return(SExpPtr value)
-    : value(std::move(value)) { }
+    : value(move(value)) { }
 
 SStmt_Return::SStmt_Return(SStmt_Return&& other) noexcept = default;
 
@@ -1158,7 +1158,7 @@ JsonItem SStmt_Return::ToJson()
 }
 
 SStmt_Exp::SStmt_Exp(SExpPtr exp)
-    : exp(std::move(exp)) { }
+    : exp(move(exp)) { }
 
 SStmt_Exp::SStmt_Exp(SStmt_Exp&& other) noexcept = default;
 
@@ -1175,7 +1175,7 @@ JsonItem SStmt_Exp::ToJson()
 }
 
 SStmt_Foreach::SStmt_Foreach(STypeExpPtr type, std::string varName, SExpPtr enumerable, SEmbeddableStmtPtr body)
-    : type(std::move(type)), varName(std::move(varName)), enumerable(std::move(enumerable)), body(std::move(body)) { }
+    : type(move(type)), varName(move(varName)), enumerable(move(enumerable)), body(move(body)) { }
 
 SStmt_Foreach::SStmt_Foreach(SStmt_Foreach&& other) noexcept = default;
 
@@ -1195,7 +1195,7 @@ JsonItem SStmt_Foreach::ToJson()
 }
 
 SStmt_Yield::SStmt_Yield(SExpPtr value)
-    : value(std::move(value)) { }
+    : value(move(value)) { }
 
 SStmt_Yield::SStmt_Yield(SStmt_Yield&& other) noexcept = default;
 
@@ -1212,7 +1212,7 @@ JsonItem SStmt_Yield::ToJson()
 }
 
 SGlobalFuncDecl::SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
-    : accessModifier(std::move(accessModifier)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+    : accessModifier(move(accessModifier)), bSequence(move(bSequence)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
 SGlobalFuncDecl::SGlobalFuncDecl(SGlobalFuncDecl&& other) noexcept = default;
 
@@ -1235,7 +1235,7 @@ JsonItem SGlobalFuncDecl::ToJson()
 }
 
 SClassDecl::SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExpPtr> baseTypes, std::vector<SClassMemberDeclPtr> memberDecls)
-    : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
+    : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
 
 SClassDecl::SClassDecl(SClassDecl&& other) noexcept = default;
 
@@ -1256,7 +1256,7 @@ JsonItem SClassDecl::ToJson()
 }
 
 SClassFuncDecl::SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
-    : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+    : accessModifier(move(accessModifier)), bStatic(move(bStatic)), bSequence(move(bSequence)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
 SClassFuncDecl::SClassFuncDecl(SClassFuncDecl&& other) noexcept = default;
 
@@ -1280,7 +1280,7 @@ JsonItem SClassFuncDecl::ToJson()
 }
 
 SClassCtorDecl::SClassCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArgumentsPtr baseArgs, std::vector<SStmtPtr> body)
-    : accessModifier(std::move(accessModifier)), parameters(std::move(parameters)), baseArgs(std::move(baseArgs)), body(std::move(body)) { }
+    : accessModifier(move(accessModifier)), parameters(move(parameters)), baseArgs(move(baseArgs)), body(move(body)) { }
 
 SClassCtorDecl::SClassCtorDecl(SClassCtorDecl&& other) noexcept = default;
 
@@ -1300,7 +1300,7 @@ JsonItem SClassCtorDecl::ToJson()
 }
 
 SClassVarDecl::SClassVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames)
-    : accessModifier(std::move(accessModifier)), varType(std::move(varType)), varNames(std::move(varNames)) { }
+    : accessModifier(move(accessModifier)), varType(move(varType)), varNames(move(varNames)) { }
 
 SClassVarDecl::SClassVarDecl(SClassVarDecl&& other) noexcept = default;
 
@@ -1319,7 +1319,7 @@ JsonItem SClassVarDecl::ToJson()
 }
 
 SStructDecl::SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExpPtr> baseTypes, std::vector<SStructMemberDeclPtr> memberDecls)
-    : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), baseTypes(std::move(baseTypes)), memberDecls(std::move(memberDecls)) { }
+    : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
 
 SStructDecl::SStructDecl(SStructDecl&& other) noexcept = default;
 
@@ -1340,7 +1340,7 @@ JsonItem SStructDecl::ToJson()
 }
 
 SStructFuncDecl::SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
-    : accessModifier(std::move(accessModifier)), bStatic(std::move(bStatic)), bSequence(std::move(bSequence)), retType(std::move(retType)), name(std::move(name)), typeParams(std::move(typeParams)), parameters(std::move(parameters)), body(std::move(body)) { }
+    : accessModifier(move(accessModifier)), bStatic(move(bStatic)), bSequence(move(bSequence)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
 SStructFuncDecl::SStructFuncDecl(SStructFuncDecl&& other) noexcept = default;
 
@@ -1364,7 +1364,7 @@ JsonItem SStructFuncDecl::ToJson()
 }
 
 SStructCtorDecl::SStructCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
-    : accessModifier(std::move(accessModifier)), parameters(std::move(parameters)), body(std::move(body)) { }
+    : accessModifier(move(accessModifier)), parameters(move(parameters)), body(move(body)) { }
 
 SStructCtorDecl::SStructCtorDecl(SStructCtorDecl&& other) noexcept = default;
 
@@ -1383,7 +1383,7 @@ JsonItem SStructCtorDecl::ToJson()
 }
 
 SStructVarDecl::SStructVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames)
-    : accessModifier(std::move(accessModifier)), varType(std::move(varType)), varNames(std::move(varNames)) { }
+    : accessModifier(move(accessModifier)), varType(move(varType)), varNames(move(varNames)) { }
 
 SStructVarDecl::SStructVarDecl(SStructVarDecl&& other) noexcept = default;
 
@@ -1402,7 +1402,7 @@ JsonItem SStructVarDecl::ToJson()
 }
 
 SEnumElemVarDecl::SEnumElemVarDecl(STypeExpPtr type, std::string name)
-    : type(std::move(type)), name(std::move(name)) { }
+    : type(move(type)), name(move(name)) { }
 
 SEnumElemVarDecl::SEnumElemVarDecl(SEnumElemVarDecl&& other) noexcept = default;
 
@@ -1420,7 +1420,7 @@ JsonItem SEnumElemVarDecl::ToJson()
 }
 
 SEnumElemDecl::SEnumElemDecl(std::string name, std::vector<std::shared_ptr<SEnumElemVarDecl>> vars)
-    : name(std::move(name)), vars(std::move(vars)) { }
+    : name(move(name)), vars(move(vars)) { }
 
 SEnumElemDecl::SEnumElemDecl(SEnumElemDecl&& other) noexcept = default;
 
@@ -1438,7 +1438,7 @@ JsonItem SEnumElemDecl::ToJson()
 }
 
 SEnumDecl::SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<std::shared_ptr<SEnumElemDecl>> elements)
-    : accessModifier(std::move(accessModifier)), name(std::move(name)), typeParams(std::move(typeParams)), elements(std::move(elements)) { }
+    : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), elements(move(elements)) { }
 
 SEnumDecl::SEnumDecl(SEnumDecl&& other) noexcept = default;
 
@@ -1458,7 +1458,7 @@ JsonItem SEnumDecl::ToJson()
 }
 
 SNamespaceDecl::SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElementPtr> elements)
-    : names(std::move(names)), elements(std::move(elements)) { }
+    : names(move(names)), elements(move(elements)) { }
 
 SNamespaceDecl::SNamespaceDecl(SNamespaceDecl&& other) noexcept = default;
 
@@ -1476,7 +1476,7 @@ JsonItem SNamespaceDecl::ToJson()
 }
 
 SScript::SScript(std::vector<SScriptElementPtr> elements)
-    : elements(std::move(elements)) { }
+    : elements(move(elements)) { }
 
 SScript::SScript(SScript&& other) noexcept = default;
 

@@ -33,22 +33,22 @@ public:
 private:
     void HandleDefault(SExp& exp)
     {
-        auto imExp = TranslateSExpToImExp(exp, hintType, context);
-        if (!imExp)
+        auto eImExp = TranslateSExpToImExp(exp, hintType, context);
+        if (!eImExp)
         {
-            *result = unexpected{imExp.error()};
+            *result = unexpected{move(eImExp).error()};
             return;
         }
 
-        *result = TranslateImExpToReExp(**imExp, context);
+        *result = TranslateImExpToReExp(**eImExp, context);
     }
 
-    void HandleExp(expected<NExpPtr, DiagPtr>&& exp)
+    void HandleExp(expected<NExpPtr, DiagPtr>&& eExp)
     {
-        if (!exp)
-            *result = unexpected{exp.error()};
+        if (!eExp)
+            *result = unexpected{move(eExp).error()};
         else
-            *result = MakePtr<ReExp_Else>(std::move(*exp));
+            *result = MakePtr<ReExp_Else>(move(*eExp));
     }
 
 public:

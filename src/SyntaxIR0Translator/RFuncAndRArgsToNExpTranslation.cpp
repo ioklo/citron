@@ -27,17 +27,17 @@ class RFuncAndRArgsToNExpTranslator : public RFuncDeclVisitor
 private:
     void Value(NExpPtr&& nExp)
     {
-        *result = std::move(nExp);
+        *result = move(nExp);
     }
 
-    void Error(const DiagPtr& diag)
+    void Error(DiagPtr&& diag)
     {
-        *result = unexpected{diag};
+        *result = unexpected{move(diag)};
     }
 
 public:
     RFuncAndRArgsToNExpTranslator(expected<NExpPtr, DiagPtr>* result, shared_ptr<RFuncDecl> sharedFuncDecl, const RTypeArgumentsPtr& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
-        : result(result), sharedFuncDecl(sharedFuncDecl), typeArgs(typeArgs), instance(std::move(instance)), args(std::move(args))
+        : result(result), sharedFuncDecl(sharedFuncDecl), typeArgs(typeArgs), instance(move(instance)), args(move(args))
     {
     }
 
@@ -56,7 +56,7 @@ public:
         auto sharedClassFuncDecl = dynamic_pointer_cast<RClassFuncDecl>(sharedFuncDecl);
         assert(sharedClassFuncDecl);
 
-        return Value(MakePtr<NExp_CallClassFunc>(std::move(sharedClassFuncDecl), std::move(typeArgs), std::move(instance), std::move(args)));
+        return Value(MakePtr<NExp_CallClassFunc>(move(sharedClassFuncDecl), move(typeArgs), move(instance), move(args)));
     }
 
     void Visit(RStructCtorDecl& func) override 
@@ -69,7 +69,7 @@ public:
         auto sharedStructFuncDecl = dynamic_pointer_cast<RStructFuncDecl>(sharedFuncDecl);
         assert(sharedStructFuncDecl);
 
-        return Value(MakePtr<NExp_CallStructFunc>(std::move(sharedStructFuncDecl), std::move(typeArgs), std::move(instance), std::move(args)));
+        return Value(MakePtr<NExp_CallStructFunc>(move(sharedStructFuncDecl), move(typeArgs), move(instance), move(args)));
     }
 
     void Visit(RLambdaDecl& func) override 
@@ -83,7 +83,7 @@ public:
 expected<NExpPtr, DiagPtr> TranslateRFuncAndNArgsToNExp(const shared_ptr<RFuncDecl>& decl, const RTypeArgumentsPtr& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
 {
     expected<NExpPtr, DiagPtr> exp;
-    RFuncAndRArgsToNExpTranslator binder(&exp, decl, typeArgs, std::move(instance), std::move(args));
+    RFuncAndRArgsToNExpTranslator binder(&exp, decl, typeArgs, move(instance), move(args));
     decl->Accept(binder);
     return exp;
 }

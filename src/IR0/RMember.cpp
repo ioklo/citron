@@ -17,7 +17,7 @@ RMember_Namespace::RMember_Namespace(const shared_ptr<RNamespaceDecl>& decl)
 }
 
 RMember_GlobalFuncs::RMember_GlobalFuncs(vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>&& items)
-    : items(std::move(items))
+    : items(move(items))
 {
 }
 
@@ -32,7 +32,7 @@ RMember_Class::RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const share
 }
 
 RMember_ClassFuncs::RMember_ClassFuncs(vector<DeclWithOuterTypeArgs<RClassFuncDecl>>&& items)
-    : items(std::move(items))
+    : items(move(items))
 {
 }
 
@@ -53,7 +53,7 @@ RMember_Struct::RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const sha
 }
 
 RMember_StructFuncs::RMember_StructFuncs(vector<DeclWithOuterTypeArgs<RStructFuncDecl>>&& items)
-    : items(std::move(items))
+    : items(move(items))
 {
 
 }
@@ -87,7 +87,7 @@ RMember_EnumElemVar::RMember_EnumElemVar(const RTypeArgumentsPtr& outerTypeArgs,
 }
 
 RMember_LambdaVar::RMember_LambdaVar(RTypeArgumentsPtr&& outerTypeArgs, shared_ptr<RLambdaVarDecl>&& decl)
-    : outerTypeArgs(std::move(outerTypeArgs)), decl(std::move(decl))
+    : outerTypeArgs(move(outerTypeArgs)), decl(move(decl))
 {
 
 }
