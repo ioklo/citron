@@ -415,17 +415,17 @@ public:
                 // TranslationResult<(Exp, IType)> Error() => TranslationResult.Error<(Exp, IType)>();
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-                auto nEnumerable = TranslateSExpToNLoc(*stmt.enumerable, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-                if (!nEnumerable) return nullptr;
+                auto eNEnumerable = TranslateSExpToNLoc(*stmt.enumerable, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+                if (!eNEnumerable) return unexpected{move(eNEnumerable).error()};
 
                 // GetEnumerator함수를 손으로 찾는다
-                auto rEnumerableType = context.GetType(**nEnumerable);
+                auto rEnumerableType = context.GetType(**eNEnumerable);
                 auto oRMember = rEnumerableType->GetMember(RNames::GetEnumerator, /*explicitTypeArgsExceptOuterCount*/ 0);
                 if (!oRMember)
                 {
                     // TODO: [15] foreach 에러 처리
                     throw NotImplementedException();
-                    return nullptr;
+                    return unexpected{MakePtr<Error_NotImplemented>()};
                 }
 
                 vector<DeclWithOuterTypeArgs<RFuncDecl>> candidates;
@@ -450,20 +450,20 @@ public:
                 {
                     // TODO: [15] foreach 에러 처리
                     throw NotImplementedException();
-                    return nullptr;
+                    return unexpected{MakePtr<Error_NotImplemented>()};
                 }
 
                 if (candidates.size() != 1)
                 {
                     // TODO: [15] foreach 에러 처리
                     throw NotImplementedException();
-                    return nullptr;
+                    return unexpected{MakePtr<Error_NotImplemented>()};
                 }
 
                 auto& result = candidates[0];
 
                 // 아까 갯수가 0인지 체크를 했으니 typeArgs는 default이다
-                return TranslateRFuncAndNArgsToNExp(result.decl, result.outerTypeArgs, move(*nEnumerable), {});
+                return TranslateRFuncAndNArgsToNExp(result.decl, result.outerTypeArgs, move(*eNEnumerable), {});
             }
 
             expected<NExpPtr, DiagPtr> MakeNextExpAndInferItemVarType(const RTypePtr& enumeratorType)
@@ -515,7 +515,8 @@ public:
                 else
                 {
                     // TODO: [17] NextFunc가 여러개일때 처리
-                    return nullptr;
+                    throw NotImplementedException();
+                    return unexpected{MakePtr<Error_NotImplemented>()};
                 }
             }
 
@@ -825,15 +826,15 @@ expected<vector<NStmtPtr>, DiagPtr> TranslateSForStmtInitializerToNStmts(SForStm
 
 expected<NExpPtr, DiagPtr> TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RTypePtr& hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context)
 {
-    auto nExp = TranslateSExpToNExp(sExp, hintType, context);
-    if (!nExp) return nullptr;
+    auto eNExp = TranslateSExpToNExp(sExp, hintType, context);
+    if (!eNExp) return unexpected{move(eNExp).error()};
 
-    if (!IsTopLevelRExp(**nExp))
+    if (!IsTopLevelRExp(**eNExp))
     {
         return unexpected{designatedDiag->MakeDiag()};
     }
 
-    return nExp;
+    return eNExp;
 }
 
 tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sParams, TranslationContext& context)

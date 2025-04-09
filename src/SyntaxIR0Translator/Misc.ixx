@@ -13,7 +13,7 @@ namespace Citron::SyntaxIR0Translator {
 
 export class TranslationContext;
 
-export RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context);
+export std::expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context);
 
 export std::expected<NExpPtr, DiagPtr> CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context);
 export std::expected<NExpPtr, DiagPtr> CastNExp(const NExpPtr& exp, const RTypePtr& expectedType, TranslationContext& context);

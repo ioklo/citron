@@ -18,7 +18,7 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context)
+expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context)
 {
     std::vector<RTypePtr> items;
     items.reserve(typeArgs.size());
@@ -26,7 +26,7 @@ RTypeArgumentsPtr MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationCo
     for (auto& typeArg : typeArgs)
     {
         auto type = context.TranslateSTypeExpToRType(*typeArg);
-        if (!type) return nullptr;
+        if (!type) return unexpected{move(type).error()};
 
         items.push_back(move(*type));
     }

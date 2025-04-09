@@ -181,17 +181,17 @@ expected<shared_ptr<NModule>, DiagPtr> Translate(
     RTypeFactory& factory)
 {
     auto rootNamespace = NNamespaceDecl::MakeRoot(factory);
-    auto nModuleDecl = MakePtr<NModule>(move(moduleName), move(rootNamespace));
+    auto nModule = MakePtr<NModule>(move(moduleName), move(rootNamespace));
 
     SkeletonPhaseContext context(factory);
     for (auto& script : scripts)
         for (auto& elem : script.elements)
         {
-            ScriptElemVisitor visitor(nModuleDecl->rootNamespace, elem, context);
+            ScriptElemVisitor visitor(nModule->rootNamespace, elem, context);
             elem->Accept(visitor);
         }
 
-    return nullptr;
+    return nModule;
 
     //    var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
     //
