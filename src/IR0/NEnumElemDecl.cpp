@@ -8,8 +8,8 @@ using namespace std;
 
 namespace Citron {
 
-NEnumElemDecl::NEnumElemDecl(weak_ptr<NEnumDecl> _enum, string name, size_t varCount)
-    : _enum(move(_enum)), name(move(name))
+NEnumElemDecl::NEnumElemDecl(weak_ptr<NEnumDecl>&& weakEnum, const string& name, size_t varCount)
+    : weakEnum(move(weakEnum)), name(move(name))
 {
     vars.reserve(varCount);
 }
@@ -22,7 +22,7 @@ void NEnumElemDecl::AddVar(const std::shared_ptr<NEnumElemVarDecl>& var)
 
 NDecl* NEnumElemDecl::GetNOuter()
 {
-    return _enum.lock().get();
+    return weakEnum.lock().get();
 }
 
 RMember NEnumElemDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
@@ -34,7 +34,7 @@ RMember NEnumElemDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const 
 
 RDecl* NEnumElemDecl::GetROuter()
 {
-    return _enum.lock().get();
+    return weakEnum.lock().get();
 }
 
 RIdentifier NEnumElemDecl::GetIdentifier()
@@ -53,6 +53,11 @@ optional<RMember> NEnumElemDecl::ResolveIdentifier(const RName& name, size_t exp
 {
     // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
     throw RuntimeFatalException();
+}
+
+shared_ptr<REnumDecl> NEnumElemDecl::GetBaseEnumDecl()
+{
+    return weakEnum.lock();
 }
 
 optional<RMember_EnumElemVar> NEnumElemDecl::GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name)

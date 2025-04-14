@@ -7,6 +7,8 @@ namespace Citron {
 
 export using SSyntaxPtr = std::shared_ptr<class SSyntax>;
 
+LOGGING_API void Dummy();
+
 export class Logger
 {
 public:

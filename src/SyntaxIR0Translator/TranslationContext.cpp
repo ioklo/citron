@@ -269,4 +269,10 @@ RFuncParameter TranslationContext::GetFuncParam(RFuncDecl& decl, RTypeArguments&
     return decl.GetFuncParam(typeArgs, index, *factory);
 }
 
+shared_ptr<RType_Enum> TranslationContext::GetBaseEnumType(RType_EnumElem& enumElemType)
+{
+    return enumElemType.GetBaseEnumType(*factory);
+}
+
+
 } // namespace Citron::SyntaxIR0Translator

@@ -52,35 +52,43 @@ bool IsTopLevelRExp(NExp& exp)
 
 class SStmtToNStmtsTranslator : public SStmtVisitor
 {
-    expected<void, DiagPtr>* outResult;
+    expected<void, DiagPtr>* result;
     vector<NStmtPtr>* outStmts;
     TranslationContext& context;
-
-    void Error(DiagPtr&& diag)
-    {
-        *outResult = unexpected{move(diag)};
-    }
     
     void Forward(expected<void, DiagPtr>&& r)
     {
-        *outResult = move(r);
-    }
-    
-    void Valid(NStmtPtr&& stmt)
-    {
-        *outResult = {};
-        outStmts->push_back(move(stmt));
+        *result = move(r);
     }
 
-    void Valid(vector<NStmtPtr>&& stmts)
+    template<typename TValue>
+    void Error(expected<TValue, DiagPtr>&& e)
     {
-        *outResult = {};
+        *result = unexpected{move(e).error()};
+    }
+
+    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    void Error(TArgs&&... args)
+    {
+        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+    }
+
+    template<typename TValue, typename... TArgs> requires std::is_base_of_v<NStmt, TValue>
+    void Value(TArgs&&... args)
+    {
+        *result = {};
+        outStmts->push_back(MakePtr<TValue>(forward<TArgs>(args)...));
+    }
+
+    void Values(vector<NStmtPtr>&& stmts)
+    {
+        *result = {};
         outStmts->insert(outStmts->end(), make_move_iterator(stmts.begin()), make_move_iterator(stmts.end()));
     }
 
 public:
-    SStmtToNStmtsTranslator(expected<void, DiagPtr>* outResult, vector<NStmtPtr>* outStmts, TranslationContext& context)
-        : outResult(outResult), outStmts(outStmts), context(context)
+    SStmtToNStmtsTranslator(expected<void, DiagPtr>* result, vector<NStmtPtr>* outStmts, TranslationContext& context)
+        : result(result), outStmts(outStmts), context(context)
     {
     }
 
@@ -93,12 +101,12 @@ public:
         for(auto& cmd : stmt.commands)
         {
             auto eNStringExp = TranslateSStringExpToNStringExp(*cmd, context);
-            if (!eNStringExp) return Error(move(eNStringExp).error());
+            if (!eNStringExp) return Error(move(eNStringExp));
 
             builder.push_back(*eNStringExp);
         }
 
-        return Valid(MakePtr<NStmt_Command>(move(builder)));
+        return Value<NStmt_Command>(move(builder));
     }
 
     void Visit(SStmt_VarDecl& stmt) override 
@@ -112,16 +120,16 @@ public:
     {
         // 순회
         auto eNCond = TranslateSExpToNExp(*stmt.cond, /*hintType*/ context.MakeBoolType(), context);
-        if (!eNCond) return Error(move(eNCond).error());
+        if (!eNCond) return Error(move(eNCond));
 
         // cast
         eNCond = CastNExp(move(*eNCond), context.MakeBoolType(), context);
-        if (!eNCond) return Error(MakePtr<Error_IfStmt_ConditionShouldBeBool>());
+        if (!eNCond) return Error<Error_IfStmt_ConditionShouldBeBool>();
 
         auto nestedContext = context.MakeNestedScopeContext();
         
         auto eBodyStmts = TranslateSEmbeddableStmtToNStmts(*stmt.body, nestedContext);
-        if (!eBodyStmts) return Error(move(eBodyStmts).error());
+        if (!eBodyStmts) return Error(move(eBodyStmts));
 
         vector<NStmtPtr> elseStmts;
         if (stmt.elseBody != nullptr)
@@ -129,12 +137,12 @@ public:
             auto elseContext = context.MakeNestedScopeContext();
             
             auto eElseResult = TranslateSEmbeddableStmtToNStmts(*stmt.elseBody, elseContext);
-            if (!eElseResult) return Error(move(eElseResult).error());
+            if (!eElseResult) return Error(move(eElseResult));
 
             elseStmts = move(*eElseResult);
         }
 
-        return Valid(MakePtr<NStmt_If>(move(*eNCond), move(*eBodyStmts), move(elseStmts)));
+        return Value<NStmt_If>(move(*eNCond), move(*eBodyStmts), move(elseStmts));
     }
 
     void Visit(SStmt_IfTest& stmt) override 
@@ -145,13 +153,13 @@ public:
         auto rTestType = context.TranslateSTypeExpToRType(*stmt.testType);
 
         auto eNTarget = TranslateSExpToNExp(*stmt.exp, /*hintType*/ nullptr, context);
-        if (!eNTarget) return Error(move(eNTarget).error());
+        if (!eNTarget) return Error(move(eNTarget));
 
         auto bodyContext = context.MakeNestedScopeContext();
         bodyContext.AddLocalVarInfo(*rTestType, varName);
         
         auto eBodyStmts = TranslateSEmbeddableStmtToNStmts(*stmt.body, bodyContext);
-        if (!eBodyStmts) return Error(move(eBodyStmts).error());
+        if (!eBodyStmts) return Error(move(eBodyStmts));
 
         vector<NStmtPtr> elseStmts;
         if (stmt.elseBody)
@@ -160,19 +168,19 @@ public:
             auto elseResult = TranslateSEmbeddableStmtToNStmts(*stmt.elseBody, elseContext);
 
             if (elseResult)
-                return Error(move(elseResult).error());
+                return Error(move(elseResult));
 
             elseStmts = move(*elseResult);
         }
 
         auto eNAsExp = context.MakeNExp_As(move(*eNTarget), *rTestType);
-        if (!eNAsExp) return Error(move(eNAsExp).error());
+        if (!eNAsExp) return Error(move(eNAsExp));
 
         auto rTestTypeKind = (*rTestType)->GetCustomTypeKind();
         if (rTestTypeKind == RCustomTypeKind::Class || rTestTypeKind == RCustomTypeKind::Interface)
-            return Valid(MakePtr<NStmt_IfNullableRefTest>(move(*rTestType), move(varName), move(*eNAsExp), move(*eBodyStmts), move(elseStmts)));
+            return Value<NStmt_IfNullableRefTest>(move(*rTestType), move(varName), move(*eNAsExp), move(*eBodyStmts), move(elseStmts));
         else if (rTestTypeKind == RCustomTypeKind::Enum)
-            return Valid(MakePtr<NStmt_IfNullableValueTest>(move(*rTestType), move(varName), move(*eNAsExp), move(*eBodyStmts), move(elseStmts)));
+            return Value<NStmt_IfNullableValueTest>(move(*rTestType), move(varName), move(*eNAsExp), move(*eBodyStmts), move(elseStmts));
         else
             throw NotImplementedException(); // 에러
     }
@@ -192,7 +200,7 @@ public:
         if (stmt.initializer)
         {   
             auto eInitResult = TranslateSForStmtInitializerToNStmts(*stmt.initializer, forStmtContext);
-            if (!eInitResult) return Error(move(eInitResult).error());
+            if (!eInitResult) return Error(move(eInitResult));
 
             initStmts = move(*eInitResult);
         }
@@ -202,10 +210,10 @@ public:
         {
             auto boolType = context.MakeBoolType();
             auto eRawCond = TranslateSExpToNExp(*stmt.cond, /*hintType*/ boolType, forStmtContext);
-            if (!eRawCond) return Error(move(eRawCond).error());
+            if (!eRawCond) return Error(move(eRawCond));
 
             eRawCond = CastNExp(move(*eRawCond), boolType, context);
-            if (!eRawCond) return Error(move(eRawCond).error());
+            if (!eRawCond) return Error(move(eRawCond));
 
             condExp = *eRawCond;
         }
@@ -215,7 +223,7 @@ public:
         {
             DesignatedDiagnostic<Error_ForStmt_ContinueExpShouldBeAssignOrCall> designatedDiag;
             auto eContResult = TranslateSExpAsTopLevelExpToNExp(*stmt.cont, /*hintType*/ nullptr, &designatedDiag, forStmtContext);
-            if (!eContResult) return Error(move(eContResult).error());
+            if (!eContResult) return Error(move(eContResult));
 
             continueExp = *eContResult;
         }
@@ -223,29 +231,29 @@ public:
         auto bodyContext = forStmtContext.MakeNestedLoopScopeContext();
         
         auto eBodyStmts = TranslateSEmbeddableStmtToNStmts(*stmt.body, bodyContext);
-        if (!eBodyStmts) return Error(move(eBodyStmts).error());
+        if (!eBodyStmts) return Error(move(eBodyStmts));
 
-        return Valid(MakePtr<NStmt_For>(move(initStmts), move(condExp), move(continueExp), move(*eBodyStmts)));
+        return Value<NStmt_For>(move(initStmts), move(condExp), move(continueExp), move(*eBodyStmts));
     }
 
     void Visit(SStmt_Continue& stmt) override
     {
         if (!context.IsInLoop())
         {
-            return Error(MakePtr<Error_ContinueStmt_ShouldUsedInLoop>());
+            return Error<Error_ContinueStmt_ShouldUsedInLoop>();
         }
 
-        return Valid(MakePtr<NStmt_Continue>());
+        return Value<NStmt_Continue>();
     }
 
     void Visit(SStmt_Break& stmt) override
     {
         if (!context.IsInLoop())
         {
-            return Error(MakePtr<Error_BreakStmt_ShouldUsedInLoop>());
+            return Error<Error_BreakStmt_ShouldUsedInLoop>();
         }
 
-        return Valid(MakePtr<NStmt_Break>());
+        return Value<NStmt_Break>();
     }
 
     void Visit(SStmt_Return& stmt) override 
@@ -255,10 +263,10 @@ public:
         {
             if (stmt.value)
             {
-                return Error(MakePtr<Error_ReturnStmt_SeqFuncShouldReturnVoid>());
+                return Error<Error_ReturnStmt_SeqFuncShouldReturnVoid>();
             }
 
-            return Valid(MakePtr<NStmt_Return>(nullptr));
+            return Value<NStmt_Return>(nullptr);
         }
 
         // 리턴 값이 없을 경우
@@ -273,25 +281,25 @@ public:
                     // 생성자거나, void 함수가 아니라면 에러
                     if (set.type != context.MakeVoidType())
                     {
-                        return Error(MakePtr<Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType>());
+                        return Error<Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType>();
                     }
 
-                    return Valid(MakePtr<NStmt_Return>(nullptr));
+                    return Value<NStmt_Return>(nullptr);
                 }
                 else
                 {
                     // 리턴타입을 힌트로 사용한다
                     // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
                     auto eRetValue = TranslateSExpToNExp(*stmt.value, /*hintType*/ set.type, context);
-                    if (!eRetValue) return Error(move(eRetValue).error());
+                    if (!eRetValue) return Error(move(eRetValue));
 
                     auto castRetValue = CastNExp(move(*eRetValue), set.type, context);
 
                     // 캐스트 실패시
                     if (!castRetValue)
-                        return Error(MakePtr<Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType>());
+                        return Error<Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType>();
 
-                    return Valid(MakePtr<NStmt_Return>(move(*castRetValue)));
+                    return Value<NStmt_Return>(move(*castRetValue));
                 }
             },
 
@@ -301,17 +309,17 @@ public:
                 {
                     // 이 함수는 void로 리턴을 확정 한다.
                     context.SetOpenFuncReturn(context.MakeVoidType());
-                    return Valid(MakePtr<NStmt_Return>(nullptr));
+                    return Value<NStmt_Return>(nullptr);
                 }
                 else
                 {
                     // 힌트타입 없이 분석
                     auto eRetValue = TranslateSExpToNExp(*stmt.value, /*hintType*/ nullptr, context);
-                    if (!eRetValue) return Error(move(eRetValue).error());
+                    if (!eRetValue) return Error(move(eRetValue));
 
                     // 리턴값이 안 적혀 있었으므로 적는다
                     context.SetOpenFuncReturn(context.GetType(**eRetValue));
-                    return Valid(MakePtr<NStmt_Return>(move(*eRetValue)));
+                    return Value<NStmt_Return>(move(*eRetValue));
                 }
             },
 
@@ -319,7 +327,7 @@ public:
             {
                 if (!stmt.value)
                 {
-                    return Valid(MakePtr<NStmt_Return>(nullptr));
+                    return Value<NStmt_Return>(nullptr);
                 }
                 else
                 {   
@@ -347,49 +355,49 @@ public:
             }
         }
         
-        if (!diags.empty()) return Error(MakePtr<AggregateDiag>(move(diags)));
-        return Valid(MakePtr<NStmt_Block>(move(builder)));
+        if (!diags.empty()) return Error<AggregateDiag>(move(diags));
+        return Value<NStmt_Block>(move(builder));
     }
 
     void Visit(SStmt_Blank& stmt) override 
     {
-        return Valid(MakePtr<NStmt_Blank>());
+        return Value<NStmt_Blank>();
     }
 
     void Visit(SStmt_Exp& stmt) override
     {
         DesignatedDiagnostic<Error_ExpStmt_ExpressionShouldBeAssignOrCall> designatedDiag;
         auto eExp = TranslateSExpAsTopLevelExpToNExp(*stmt.exp, /*hintType*/ nullptr, &designatedDiag, context);
-        if (!eExp) return Error(move(eExp).error());
+        if (!eExp) return Error(move(eExp));
 
-        return Valid(MakePtr<NStmt_Exp>(move(*eExp)));
+        return Value<NStmt_Exp>(move(*eExp));
     }
 
     void Visit(SStmt_Task& stmt) override 
     {
         vector<SLambdaExpParam> emptyParams;
         auto eLambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt.body, context);
-        if (!eLambdaAndArgs) return Error(move(eLambdaAndArgs).error());
+        if (!eLambdaAndArgs) return Error(move(eLambdaAndArgs));
 
-        return Valid(MakePtr<NStmt_Task>(move(eLambdaAndArgs->decl), move(eLambdaAndArgs->args)));
+        return Value<NStmt_Task>(move(eLambdaAndArgs->decl), move(eLambdaAndArgs->args));
     }
 
     void Visit(SStmt_Await& stmt) override 
     {
         auto newContext = context.MakeNestedScopeContext();
         auto eBody = TranslateSBodyToNStmts(stmt.body, newContext);
-        if (!eBody) return Error(move(eBody).error());
+        if (!eBody) return Error(move(eBody));
 
-        return Valid(MakePtr<NStmt_Await>(move(*eBody)));
+        return Value<NStmt_Await>(move(*eBody));
     }
 
     void Visit(SStmt_Async& stmt) override 
     {
         vector<SLambdaExpParam> emptyParams;
         auto eLambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt.body, context);
-        if (!eLambdaAndArgs) return Error(move(eLambdaAndArgs).error());
+        if (!eLambdaAndArgs) return Error(move(eLambdaAndArgs));
 
-        return Valid(MakePtr<NStmt_Async>(move(eLambdaAndArgs->decl), move(eLambdaAndArgs->args)));
+        return Value<NStmt_Async>(move(eLambdaAndArgs->decl), move(eLambdaAndArgs->args));
     }
     
     void Visit(SStmt_Foreach& stmt) override
@@ -679,7 +687,7 @@ public:
         };
 
         ForeachStmtTranslator translator{outStmts, stmt, context};
-        *outResult = translator.Translate();
+        *result = translator.Translate();
     }
 
     void Visit(SStmt_Yield& stmt) override 
@@ -687,7 +695,7 @@ public:
         // TODO: ref 처리?
         if (!context.IsSeqFunc())
         {
-            return Error(MakePtr<Error_YieldStmt_YieldShouldBeInSeqFunc>());
+            return Error<Error_YieldStmt_YieldShouldBeInSeqFunc>();
         }
 
         // yield에서는 retType이 명시되는 경우만 있을 것이다
@@ -698,12 +706,12 @@ public:
 
         // NOTICE: 리턴 타입을 힌트로 넣었다
         auto eRetValue = TranslateSExpToNExp(*stmt.value, /*hintType*/ setFuncRet->type, context);
-        if (!eRetValue) return Error(move(eRetValue).error());
+        if (!eRetValue) return Error(move(eRetValue));
 
         auto eCastRetValue = CastNExp(move(*eRetValue), setFuncRet->type, context);
-        if (!eCastRetValue) return Error(move(eCastRetValue).error());
+        if (!eCastRetValue) return Error(move(eCastRetValue));
 
-        return Valid(MakePtr<NStmt_Yield>(move(*eCastRetValue)));
+        return Value<NStmt_Yield>(move(*eCastRetValue));
     }
 
     void Visit(SStmt_Directive& stmt) override 
@@ -712,14 +720,14 @@ public:
         {
             if (stmt.args.size() != 1)
             {
-                return Error(MakePtr<Error_StaticNotNullDirective_ShouldHaveOneArgument>());
+                return Error<Error_StaticNotNullDirective_ShouldHaveOneArgument>();
             }
 
             DesignatedDiagnostic<Error_StaticNotNullDirective_ArgumentMustBeLocation> designatedDiag;
             auto eArg = TranslateSExpToNLoc(*stmt.args[0], /*hintType*/ nullptr, /*bWrapExpAsLoc*/ false, &designatedDiag, context);
-            if (!eArg) return Error(move(eArg).error());
+            if (!eArg) return Error(move(eArg));
 
-            return Valid(MakePtr<NStmt_NotNullDirective>(move(*eArg)));
+            return Value<NStmt_NotNullDirective>(move(*eArg));
         }
         
         throw NotImplementedException(); // 인식할 수 없는 directive입니다

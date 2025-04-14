@@ -3,6 +3,7 @@ module Citron.SyntaxIR0Translator:SExpRefToIrExpTranslation;
 import <expected>;
 
 import Citron.Ptr;
+import Citron.Exceptions;
 import Citron.Syntax;
 import Citron.Logger;
 import Citron.Diag;
@@ -13,6 +14,7 @@ import :SExpToNExpTranslation;
 import :SExpToNLocTranslation;
 import :SExpRefToNExpTranslation;
 import :IrExpAndMemberNameToIrExpTranslation;
+import :ImExpToIrExpTranslation;
 
 import :TranslationContext;
 import :Misc;
@@ -37,19 +39,32 @@ public:
     }
 
 private:
-    void Value(IrExpPtr&& nExp)
-    {
-        *result = move(nExp);
-    }
-
     void Forward(expected<IrExpPtr, DiagPtr>&& r)
     {
         *result = move(r);
     }
 
-    void Error(DiagPtr&& diag)
+    void Value(IrExpPtr&& v)
     {
-        *result = unexpected{move(diag)};
+        *result = move(v);
+    }
+
+    template<typename TValue, typename... TArgs> requires std::is_base_of_v<IrExp, TValue>
+    void Value(TArgs&&... args)
+    {
+        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+    }
+
+    template<typename TValue>
+    void Error(expected<TValue, DiagPtr>&& e)
+    {
+        *result = unexpected{move(e).error()};
+    }
+
+    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    void Error(TArgs&&... args)
+    {
+        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
     void HandleValue(SExp& exp)
@@ -69,49 +84,30 @@ public:
     void Visit(SExp_Identifier& exp) override
     {   
         // identifier는 name<typeArgs>로 이뤄져 있다
-        static_assert(false);
+        auto eTypeArgs = MakeTypeArgs(exp.typeArgs, context);
+        if (!eTypeArgs) return Error(move(eTypeArgs));
 
-        //try
-        //{
-        //    // syntax로 typeArgs를 만든다
-        //    auto typeArgs = MakeTypeArgs(exp.typeArgs, context);           
+        auto eImExp = context.ResolveIdentifier(RName_Normal{exp.value}, move(*eTypeArgs));
 
-        //    // ResolveIdentifier는 에러를 어떻게 리턴하는가
-        //    // 1. 실행중에 에러가 발생하면, 에러를 로깅하고 바로 리턴한다
-        //    // 2. 바로 리턴하면서 에러를 같이 리턴한다
+        if (!eImExp)
+        {
+            auto* error = eImExp.error().get();
 
-        //    // 1이면, try를 할때마다 logger인스턴스를 새로 생성해야 한다
-        //    // 
-        //    // 2이면, 에러가 늦게 출력된다. nested error처리를 하는것이 좋겠다. 프로그램 작성이 복잡해진다
-        //    //   에러를 던져야 좀 깔끔하게 될지도 모르겠다
-        //    
-        //    // 2번이 나은것 같다
-        //    if (auto result = context.ResolveIdentifier(RName_Normal{exp.value}, move(typeArgs)); result)
-        //    {
-        //        auto& imExp = result.value();
+            if (auto* mcError = dynamic_cast<ResolveIdentifierError_MultipleCandidates*>(error))
+            {
+                return Error<Error_ResolveIdentifier_MultipleCandidatesForIdentifier>();
+            }
+            else
+            {
+                return Error<Error_NotImplemented>();
+            }
+        }
 
-        //    }
-        //    else
-        //    {
-        //        logger->Fatal_ResoveIdentifier();
+        auto eIrExp = TranslateImExpToIrExp(*eImExp, context);
+        if (!eIrExp)
+            return Error(move(eIrExp));
 
-        //        context.MakeDesignatedErrorLogger
-
-        //        return Fatal(A2007_ResolveIdentifier_NotFound, exp);
-        //    }
-
-        //    var imRefExp = TranslateImExpToIrExp(imExp, factory);
-        //    if (imRefExp == null)
-        //    {
-        //        return Fatal(A3001_Reference_CantMakeReference, exp);
-        //    }
-
-        //    return Valid(imRefExp);
-        //}
-        //catch (IdentifierResolverMultipleCandidatesException)
-        //{
-        //    return Fatal(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, exp);
-        //}
+        return Value(move(*eIrExp));
     }
 
     // string은 중간과정에서는 value로 평가하면 될 것 같다
@@ -146,18 +142,18 @@ public:
         if (exp.kind == SUnaryOpKind::Ref) // & &는 불가능
         {
             auto eExp = TranslateSExpRefToNExp(*exp.operand, context);
-            if (!eExp) return Error(move(eExp).error());
+            if (!eExp) return Error(move(eExp));
 
-            return Value(MakePtr<IrExp_LocalValue>(move(eExp)));
+            return Value<IrExp_LocalValue>(move(*eExp));
         }
         else if (exp.kind == SUnaryOpKind::Deref) // *pS
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
             auto eLoc = TranslateSExpToNLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-            if (!eLoc) return Error(move(eLoc).error());
+            if (!eLoc) return Error(move(eLoc));
 
-            return Value(MakePtr<IrExp_DerefedBoxValue>(move(*eLoc)));
+            return Value<IrExp_DerefedBoxValue>(move(*eLoc));
         }
         else
         {
@@ -185,17 +181,17 @@ public:
     void Visit(SExp_Member& exp) override
     {
         auto eIrParent = TranslateSExpRefToIrExp(*exp.parent, context);
-        if (!eIrParent) return Error(move(eIrParent).error());
+        if (!eIrParent) return Error(move(eIrParent));
 
-        auto typeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, context);
+        auto eTypeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, context);
 
         context.SetSyntax(exp.parent);
-        return Forward(TranslateIrExpAndMemberNameToIrExp(*eIrParent, RName_Normal(exp.memberName), move(typeArgsExceptOuter), context));
+        return Forward(TranslateIrExpAndMemberNameToIrExp(*eIrParent, RName_Normal(exp.memberName), move(*eTypeArgsExceptOuter), context));
     }
 
     void Visit(SExp_IndirectMember& exp) override
     {
-        static_assert(false);
+        throw NotImplementedException();
     }
 
     void Visit(SExp_List& exp) override

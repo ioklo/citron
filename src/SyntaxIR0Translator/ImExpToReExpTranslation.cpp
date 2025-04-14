@@ -28,19 +28,30 @@ struct ImExpToReExpTranslator : public ImExpVisitor
     {
     }
 
-    void Value(ReExpPtr&& nExp)
+private:
+
+    template<typename TValue, typename... TArgs> requires std::is_base_of_v<ReExp, TValue>
+    void Value(TArgs&&... args)
     {
-        *result = move(nExp);
+        *result = MakePtr<TValue>(forward<TArgs>(args)...);
     }
 
-    void Error(DiagPtr&& diag)
+    template<typename TValue>
+    void Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(diag)};
+        *result = unexpected{move(e).error()};
     }
 
+    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    void Error(TArgs&&... args)
+    {
+        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+    }
+
+public:
     void Visit(ImExp_Namespace& imExp) override
     {
-        return Error(MakePtr<Error_ResolveIdentifier_CantUseNamespaceAsExpression>());
+        return Error<Error_ResolveIdentifier_CantUseNamespaceAsExpression>();
     }
 
     // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
@@ -51,12 +62,12 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Visit(ImExp_TypeVar& imExp) override
     {
-        return Error(MakePtr<Error_ResolveIdentifier_CantUseTypeAsExpression>());
+        return Error<Error_ResolveIdentifier_CantUseTypeAsExpression>();
     }
 
     void Visit(ImExp_Class& imExp) override
     {
-        return Error(MakePtr<Error_ResolveIdentifier_CantUseTypeAsExpression>());
+        return Error<Error_ResolveIdentifier_CantUseTypeAsExpression>();
     }
 
     void Visit(ImExp_ClassFuncs& imExp) override
@@ -67,7 +78,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Visit(ImExp_Struct& imExp) override
     {
-        return Error(MakePtr<Error_ResolveIdentifier_CantUseTypeAsExpression>());
+        return Error<Error_ResolveIdentifier_CantUseTypeAsExpression>();
     }
 
     void Visit(ImExp_StructFuncs& imExp) override
@@ -78,7 +89,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
 
     void Visit(ImExp_Enum& imExp) override
     {
-        return Error(MakePtr<Error_ResolveIdentifier_CantUseTypeAsExpression>());
+        return Error<Error_ResolveIdentifier_CantUseTypeAsExpression>();
     }
 
     void Visit(ImExp_EnumElem& imExp) override
@@ -86,7 +97,7 @@ struct ImExpToReExpTranslator : public ImExpVisitor
         // if standalone, 값으로 처리한다
         if (imExp.decl->GetVarCount() == 0)
         {
-            return Value(MakePtr<ReExp_Else>(MakePtr<NExp_NewEnumElem>(imExp.decl, imExp.typeArgs, vector<NArgument>())));
+            return Value<ReExp_Else>(MakePtr<NExp_NewEnumElem>(imExp.decl, imExp.typeArgs, vector<NArgument>()));
         }
 
         // lambda (boxed lambda)로 변환할 수 있다.
@@ -95,43 +106,43 @@ struct ImExpToReExpTranslator : public ImExpVisitor
     }
     void Visit(ImExp_ThisVar& imExp) override
     {
-        return Value(MakePtr<ReExp_ThisVar>(imExp.type));
+        return Value<ReExp_ThisVar>(imExp.type);
     }
     void Visit(ImExp_LocalVar& imExp) override
     {
-        return Value(MakePtr<ReExp_LocalVar>(imExp.type, imExp.name));
+        return Value<ReExp_LocalVar>(imExp.type, imExp.name);
     }
     void Visit(ImExp_LambdaVar& imExp) override
     {
-        return Value(MakePtr<ReExp_LambdaVar>(imExp.decl, imExp.typeArgs));
+        return Value<ReExp_LambdaVar>(imExp.decl, imExp.typeArgs);
     }
     void Visit(ImExp_ClassVar& imExp) override
     {
-        return Value(MakePtr<ReExp_ClassVar>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance));
+        return Value<ReExp_ClassVar>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance);
     }
     void Visit(ImExp_StructVar& imExp) override
     {
-        return Value(MakePtr<ReExp_StructVar>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance));
+        return Value<ReExp_StructVar>(imExp.decl, imExp.typeArgs, imExp.hasExplicitInstance, imExp.explicitInstance);
     }
     void Visit(ImExp_EnumElemVar& imExp) override
     {
-        return Value(MakePtr<ReExp_EnumElemVar>(imExp.decl, imExp.typeArgs, imExp.instance));
+        return Value<ReExp_EnumElemVar>(imExp.decl, imExp.typeArgs, imExp.instance);
     }
     void Visit(ImExp_ListIndexer& imExp) override
     {
-        return Value(MakePtr<ReExp_ListIndexer>(imExp.instance, imExp.index, imExp.itemType));
+        return Value<ReExp_ListIndexer>(imExp.instance, imExp.index, imExp.itemType);
     }
     void Visit(ImExp_LocalDeref& imExp) override
     {
-        return Value(MakePtr<ReExp_LocalDeref>(imExp.target));
+        return Value<ReExp_LocalDeref>(imExp.target);
     }
     void Visit(ImExp_BoxDeref& imExp) override
     {
-        return Value(MakePtr<ReExp_BoxDeref>(imExp.target));
+        return Value<ReExp_BoxDeref>(imExp.target);
     }
     void Visit(ImExp_Else& imExp) override
     {
-        return Value(MakePtr<ReExp_Else>(imExp.exp));
+        return Value<ReExp_Else>(imExp.exp);
     }
 };
 

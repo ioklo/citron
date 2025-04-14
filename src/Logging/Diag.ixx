@@ -15,14 +15,18 @@ export struct Error : Diag {};
 
 export using DiagPtr = std::shared_ptr<Diag>;
 
+export struct NestedDiag : Diag
+{
+    DiagPtr diag;
+    DiagPtr child;
+};
+
 export struct AggregateDiag : Diag 
 {
     std::vector<DiagPtr> diags;
 
     AggregateDiag(std::vector<DiagPtr>&& diags) : diags(std::move(diags)) { }
 };
-
-
 
 //LOGGING_API void Fatal_Parameter_MismatchBetweenParamCountAndArgCount(); // A0401_Parameter_MismatchBetweenParamCountAndArgCount
 

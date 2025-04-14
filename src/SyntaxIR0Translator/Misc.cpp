@@ -96,22 +96,62 @@ expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& type
 //    return nullptr;
 //}
 
-
 // 값의 겉보기 타입을 변경한다
 expected<NExpPtr, DiagPtr> CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context)
-{
-    // 위 구현을 참고하여 작성한다
-    static_assert(false);
+{   
+    auto expType = context.GetType(*exp);
 
-    /*auto result = TryCastRExp(move(exp), expectedType, context);
-    if (result != nullptr) return result;
+    // 같으면 그대로 리턴
+    if (expectedType == expType)
+        return exp;
 
-    return unexpected{MakePtr<Error_Cast_Failed>()};*/
+    // 1. enumElem인 경우, enum으로 변경할 수 있다
+    if (auto* expEnumElemType = dynamic_cast<RType_EnumElem*>(expType.get()))
+    {
+        auto expEnumType = context.GetBaseEnumType(*expEnumElemType);
+
+        if (expectedType == expEnumType)
+            return MakePtr<NExp_CastEnumElemToEnum>(exp, expectedType);
+
+        // 에러가 좀더 구체적으로 알려줬으면 좋겠다
+        throw NotImplementedException();
+        return unexpected{MakePtr<Error_Cast_Failed>()};
+    }
+
+    // 2. exp is class type
+    if (auto* expClassType = dynamic_cast<RType_Class*>(expType.get()))
+    {
+        if (auto expectedClassType = dynamic_pointer_cast<RType_Class>(expectedType))
+        {
+            if (expectedClassType->IsBaseOf(*expClassType))
+            {
+                return MakePtr<NExp_CastClass>(exp, expectedClassType);
+            }
+        }
+
+        return unexpected{MakePtr<Error_Cast_Failed>()};
+        // TODO: interface
+        // if (expectType is InterfaceTypeValue )
+    }
+
+    // TODO: 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
+    if (auto* expectedNullableType = dynamic_cast<RType_NullableRef*>(expectedType.get()))
+    {
+        // Nullable<B>를 원한다면 C를 B로 변환해본다
+        auto eCastToInnerTypeExp = CastNExp(exp, expectedNullableType->innerType, context);
+        if (!eCastToInnerTypeExp)
+            return unexpected{MakePtr<Error_Cast_Failed>()};
+
+        // B?로 변경
+        return MakePtr<NExp_NewNullable>(*eCastToInnerTypeExp);
+    }
+
+    return unexpected{MakePtr<Error_Cast_Failed>()};
 }
 
 expected<NExpPtr, DiagPtr> CastNExp(const NExpPtr& exp, const RTypePtr& expectedType, TranslationContext& context)
 {
-    static_assert(false);
+    return CastNExp(NExpPtr(exp), expectedType, context);
 }
 
 bool IsVarType(STypeExp& typeExp)

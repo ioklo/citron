@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClCompile Include="Copy.ixx" />
     <ClCompile Include="Exceptions.ixx" />
+    <ClCompile Include="Expected.ixx" />
     <ClCompile Include="Hash.ixx" />
     <ClCompile Include="Indirect.ixx" />
     <ClCompile Include="IWriter.ixx" />

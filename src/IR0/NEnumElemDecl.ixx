@@ -21,13 +21,13 @@ export class NEnumElemDecl
     , public REnumElemDecl
 {
 public:
-    std::weak_ptr<NEnumDecl> _enum;
+    std::weak_ptr<NEnumDecl> weakEnum;
     std::string name;
     std::vector<std::shared_ptr<NEnumElemVarDecl>> vars; // lazy
     std::unordered_map<std::string, std::shared_ptr<NEnumElemVarDecl>> varsMap;
 
 public:
-    IR0_API NEnumElemDecl(std::weak_ptr<NEnumDecl> _enum, std::string name, size_t varCount);
+    IR0_API NEnumElemDecl(std::weak_ptr<NEnumDecl>&& _enum, const std::string& name, size_t varCount);
     IR0_API void AddVar(const std::shared_ptr<NEnumElemVarDecl>& var);
 
 public:
@@ -52,6 +52,7 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from REnumElemDecl    
+    IR0_API std::shared_ptr<REnumDecl> GetBaseEnumDecl() override;
     IR0_API std::optional<RMember_EnumElemVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
     IR0_API size_t GetVarCount() override;
     bool IsStandalone() override { return vars.empty(); }

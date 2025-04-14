@@ -112,7 +112,9 @@ public: // for type factory
     RFuncReturn GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
     RFuncParameter GetFuncParam(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
 
-    std::expected<ImExpPtr, ResolveIdentifierError> ResolveIdentifier(RName&& name, RTypeArgumentsPtr&& typeArgs);
+    std::shared_ptr<RType_Enum> GetBaseEnumType(RType_EnumElem& enumElemType);
+
+    std::expected<ImExpPtr, std::shared_ptr<ResolveIdentifierError>> ResolveIdentifier(RName&& name, RTypeArgumentsPtr&& typeArgs);
 
 public: // for BinOpQueryService
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);

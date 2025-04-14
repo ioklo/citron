@@ -241,6 +241,7 @@ private:
 
 public:
     std::optional<RMember_ClassVar> GetVar(const RName& name);
+    bool IsBaseOf(RType_Class& derivedClass);
 
 public:
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
@@ -302,6 +303,7 @@ private:
 
 public:
     std::optional<RMember_EnumElemVar> GetVar(const RName& name);
+    std::shared_ptr<RType_Enum> GetBaseEnumType(RTypeFactory& factory);
 
 public:
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;

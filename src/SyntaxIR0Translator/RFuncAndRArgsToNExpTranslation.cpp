@@ -25,14 +25,22 @@ class RFuncAndRArgsToNExpTranslator : public RFuncDeclVisitor
     vector<NArgument> args;
 
 private:
-    void Value(NExpPtr&& nExp)
+    template<typename TValue, typename... TArgs> requires std::is_base_of_v<NExp, TValue>
+    void Value(TArgs&&... args)
     {
-        *result = move(nExp);
+        *result = MakePtr<TValue>(forward<TArgs>(args)...);
     }
 
-    void Error(DiagPtr&& diag)
+    template<typename TValue>
+    void Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(diag)};
+        *result = unexpected{move(e).error()};
+    }
+
+    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    void Error(TArgs&&... args)
+    {
+        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
@@ -56,7 +64,7 @@ public:
         auto sharedClassFuncDecl = dynamic_pointer_cast<RClassFuncDecl>(sharedFuncDecl);
         assert(sharedClassFuncDecl);
 
-        return Value(MakePtr<NExp_CallClassFunc>(move(sharedClassFuncDecl), move(typeArgs), move(instance), move(args)));
+        return Value<NExp_CallClassFunc>(move(sharedClassFuncDecl), move(typeArgs), move(instance), move(args));
     }
 
     void Visit(RStructCtorDecl& func) override 
@@ -69,7 +77,7 @@ public:
         auto sharedStructFuncDecl = dynamic_pointer_cast<RStructFuncDecl>(sharedFuncDecl);
         assert(sharedStructFuncDecl);
 
-        return Value(MakePtr<NExp_CallStructFunc>(move(sharedStructFuncDecl), move(typeArgs), move(instance), move(args)));
+        return Value<NExp_CallStructFunc>(move(sharedStructFuncDecl), move(typeArgs), move(instance), move(args));
     }
 
     void Visit(RLambdaDecl& func) override 

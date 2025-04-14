@@ -237,6 +237,15 @@ std::optional<RMember_EnumElemVar> RType_EnumElem::GetVar(const RName& name)
     return decl->GetVar(typeArgs, name);
 }
 
+shared_ptr<RType_Enum> RType_EnumElem::GetBaseEnumType(RTypeFactory& factory)
+{
+    auto enumDecl = decl->GetBaseEnumDecl();
+
+    // enumElem은 typeArgs를 추가로 받지 않기 때문에 그냥 써도 괜찮을 것 같다
+    return factory.MakeEnumType(enumDecl, typeArgs);
+}
+
+
 RTypePtr RType_EnumElem::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);

@@ -196,7 +196,7 @@ expected<NExpPtr, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp& s
             return unexpected{MakePtr<Error_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly>()};
         }
 
-        return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::UnaryMinus_Int_Int, move(eNOperand));
+        return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::UnaryMinus_Int_Int, move(*eNOperand));
     }
 
     case SUnaryOpKind::PostfixInc: // e.m++ 등
@@ -314,7 +314,7 @@ expected<NExpPtr, DiagPtr> TranslateSLambdaExpToNExp(SExp_Lambda& sExp, Translat
     //    return nullptr;
 
     // return MakePtr<NLambdaExp>(lambdaInfo.lambda, lambdaInfo.args), context.factory->MakeIn);
-    static_assert(false);
+    throw NotImplementedException();
 }
 
 expected<NExpPtr, DiagPtr> TranslateSListExpToNExp(SExp_List& exp, TranslationContext& context)
@@ -363,7 +363,7 @@ expected<NExpPtr, DiagPtr> TranslateSNewExpToNExp(SExp_New& exp, TranslationCont
         return unexpected{MakePtr<Error_NewExp_TypeIsNotClass>()};
     }
 
-    static_assert(false);
+    throw NotImplementedException();
     //var classDecl = classSymbol.GetDecl();
 
     //var candidates = FuncCandidateSMake&<ClassConstructorDeclSymbol, ClassConstructorSymbol>(
@@ -546,7 +546,7 @@ public:
 
     void Visit(SExp_IndirectMember& exp) override
     {
-        static_assert(false);
+        throw NotImplementedException();
     }
 
     void Visit(SExp_List& exp) override

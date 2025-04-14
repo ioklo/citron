@@ -3,6 +3,7 @@ module Citron.SyntaxIR0Translator:SExpToReExpTranslation;
 import <expected>;
 
 import Citron.Ptr;
+import Citron.Exceptions;
 import Citron.Syntax;
 import Citron.Diag;
 
@@ -119,7 +120,7 @@ public:
 
     void Visit(SExp_IndirectMember& exp) override
     {
-        static_assert(false);
+        throw NotImplementedException();
     }
 
     void Visit(SExp_List& exp) override

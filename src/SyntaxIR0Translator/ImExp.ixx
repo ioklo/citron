@@ -304,11 +304,11 @@ export class ImExp_ListIndexer : public ImExp
 {
 public:
     ReExpPtr instance;
-    NLocPtr index;
+    ReExpPtr index;
     RTypePtr itemType;
 
 public:
-    ImExp_ListIndexer(ReExpPtr&& instance, NLocPtr&& index, RTypePtr&& itemType);
+    ImExp_ListIndexer(ReExpPtr&& instance, ReExpPtr&& index, RTypePtr&& itemType);
 
 public:    
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }

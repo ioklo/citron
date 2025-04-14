@@ -16,6 +16,6 @@ export using IrExpPtr = std::shared_ptr<IrExp>;
 
 export class TranslationContext;
 
-export std::expected<IrExpPtr, DiagPtr> TranslateImExpToIrExp(const ImExpPtr& imExp, TranslationContext& context, RTypeFactory& factory);
+export std::expected<IrExpPtr, DiagPtr> TranslateImExpToIrExp(const ImExpPtr& imExp, TranslationContext& context);
 
 } // namespace Citron::SyntaxIR0Translator

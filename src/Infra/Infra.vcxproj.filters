@@ -22,6 +22,7 @@
     <ClCompile Include="Ptr.ixx" />
     <ClCompile Include="StringWriter.ixx" />
     <ClCompile Include="Unreachable.ixx" />
+    <ClCompile Include="Expected.ixx" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Headers">

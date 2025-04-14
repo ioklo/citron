@@ -78,7 +78,7 @@ ReExp_BoxDeref::ReExp_BoxDeref(const ReExpPtr& target)
 //}
 
 
-ReExp_ListIndexer::ReExp_ListIndexer(const ReExpPtr& instance, const NLocPtr& index, const RTypePtr& itemType)
+ReExp_ListIndexer::ReExp_ListIndexer(const ReExpPtr& instance, const ReExpPtr& index, const RTypePtr& itemType)
     : instance(instance), index(index), itemType(itemType)
 {
 

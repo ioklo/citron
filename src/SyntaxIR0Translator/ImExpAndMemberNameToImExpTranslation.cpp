@@ -324,14 +324,22 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
 
     TranslationContext& context;
 
-    void Value(ImExpPtr&& imExp)
+    template<typename TValue, typename... TArgs> requires std::is_base_of_v<ImExp, TValue>
+    void Value(TArgs&&... args)
     {
-        *result = move(imExp);
+        *result = MakePtr<TValue>(forward<TArgs>(args)...);
     }
 
-    void Error(DiagPtr&& diag)
+    template<typename TValue>
+    void Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(diag)};
+        *result = unexpected{move(e).error()};
+    }
+
+    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    void Error(TArgs&&... args)
+    {
+        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
     void TranslateStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
@@ -345,13 +353,17 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
     {
         auto eReInstExp = TranslateImExpToReExp(imExp, context);
         if (!eReInstExp)
-            return Error(move(eReInstExp).error());
+        {
+            *result = unexpected{move(eReInstExp).error()};
+            return;
+        }
 
         auto type = context.GetType(**eReInstExp);
         auto oMember = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
         if (!oMember)
         {
-            return Error(MakePtr<Error_ResolveIdentifier_NotFound>());
+            *result = unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
+            return;
         }
 
         InstanceParentTranslator binder(move(*eReInstExp), typeArgsExceptOuter, context);
@@ -371,7 +383,7 @@ public:
 
     void Visit(ImExp_GlobalFuncs& imExp) override
     {
-        return Error(MakePtr<Error_ResolveIdentifier_FuncCantHaveMember>());
+        return Error<Error_ResolveIdentifier_FuncCantHaveMember>();
     }
 
     void Visit(ImExp_TypeVar& imExp) override
@@ -386,7 +398,7 @@ public:
 
     void Visit(ImExp_ClassFuncs& imExp) override
     {
-        return Error(MakePtr<Error_ResolveIdentifier_FuncCantHaveMember>());
+        return Error<Error_ResolveIdentifier_FuncCantHaveMember>();
     }
 
     void Visit(ImExp_Struct& imExp) override
@@ -396,7 +408,7 @@ public:
 
     void Visit(ImExp_StructFuncs& imExp) override
     {
-        return Error(MakePtr<Error_ResolveIdentifier_FuncCantHaveMember>());
+        return Error<Error_ResolveIdentifier_FuncCantHaveMember>();
     }
 
     // (E).F
@@ -407,7 +419,7 @@ public:
 
     void Visit(ImExp_EnumElem& imExp) override
     {
-        return Error(MakePtr<Error_ResolveIdentifier_EnumElemCantHaveMember>());
+        return Error<Error_ResolveIdentifier_EnumElemCantHaveMember>();
     }
 
     void Visit(ImExp_ThisVar& imExp) override

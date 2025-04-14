@@ -22,89 +22,96 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
 {
     expected<IrExpPtr, DiagPtr>* result;
     TranslationContext& context;
-    RTypeFactory& factory;
 
-    ImExpToIrExpTranslator(expected<IrExpPtr, DiagPtr>* result, TranslationContext& context, RTypeFactory& factory)
-        : result(result), context(context), factory(factory)
+    ImExpToIrExpTranslator(expected<IrExpPtr, DiagPtr>* result, TranslationContext& context)
+        : result(result), context(context)
     {
     }
 
-    void Value(IrExpPtr&& nExp)
+private:
+    template<typename TValue, typename... TArgs> requires std::is_base_of_v<IrExp, TValue>
+    void Value(TArgs&&... args)
     {
-        *result = move(nExp);
+        *result = MakePtr<TValue>(forward<TArgs>(args)...);
     }
 
-    void Error(DiagPtr&& diag)
+    template<typename TValue>
+    void Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(diag)};
+        *result = unexpected{move(e).error()};
     }
 
+    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    void Error(TArgs&&... args)
+    {
+        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+    }
 
+public:
     void Visit(ImExp_Namespace& imExp) override
     {
-        return Value(MakePtr<IrExp_Namespace>(imExp._namespace));
+        return Value<IrExp_Namespace>(imExp._namespace);
     }
 
     void Visit(ImExp_GlobalFuncs& imExp) override
     {
-        static_assert(false);
+        // Intermediate Exp -> Intermediate Ref Exp
+        return Error<Error_NotImplemented>();
     }
 
     void Visit(ImExp_TypeVar& imExp) override
     {
-        return Value(MakePtr<IrExp_TypeVar>(imExp.type));
+        return Value<IrExp_TypeVar>(imExp.type);
     }
 
     void Visit(ImExp_Class& imExp) override
     {
-        return Value(MakePtr<IrExp_Class>(imExp.classDecl, imExp.typeArgs));
+        return Value<IrExp_Class>(imExp.classDecl, imExp.typeArgs);
     }
 
     void Visit(ImExp_ClassFuncs& imExp) override
     {
-        static_assert(false);
+        return Error<Error_NotImplemented>();
     }
 
     void Visit(ImExp_Struct& imExp) override
     {
-        return Value(MakePtr<IrExp_Struct>(imExp.structDecl, imExp.typeArgs));
+        return Value<IrExp_Struct>(imExp.structDecl, imExp.typeArgs);
     }
 
     void Visit(ImExp_StructFuncs& imExp) override
     {
-        static_assert(false);
-        // return Error();
+        return Error<Error_NotImplemented>();
     }
 
     void Visit(ImExp_Enum& imExp) override
     {
-        return Value(MakePtr<IrExp_Enum>(imExp.decl, imExp.typeArgs));
+        return Value<IrExp_Enum>(imExp.decl, imExp.typeArgs);
     }
 
     void Visit(ImExp_EnumElem& imExp) override
     {
-        static_assert(false);
-        // return Error()
+        return Error<Error_NotImplemented>();
     }
 
     // &this   -> invalid
     // &this.a -> valid, box ptr
     void Visit(ImExp_ThisVar& imExp) override
     {
-        return Value(MakePtr<IrExp_ThisVar>());
+        return Value<IrExp_ThisVar>(imExp.type);
     }
 
     // &id
     void Visit(ImExp_LocalVar& imExp) override
     {
-        return Value(MakePtr<IrExp_LocalRef>(MakePtr<NLoc_LocalVar>(RName_Normal(imExp.name), imExp.type)));
+        return Value<IrExp_LocalRef>(MakePtr<NLoc_LocalVar>(RName_Normal(imExp.name), imExp.type));
     }
 
     // &x
     void Visit(ImExp_LambdaVar& imExp) override
     {
         // TODO: [10] box lambda이면 box로 판단해야 한다
-        return Value(MakePtr<IrExp_LocalRef>(MakePtr<NLoc_LambdaVar>(imExp.decl, imExp.typeArgs)));
+        return Value<IrExp_LocalRef>(MakePtr<NLoc_LambdaVar>(imExp.decl, imExp.typeArgs));
     }
 
     // x (C.x, this.x)
@@ -112,12 +119,12 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     {
         if (imExp.decl->IsStatic()) // &C.x
         {
-            return Value(MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassVar>(nullptr, imExp.decl, imExp.typeArgs)));
+            return Value<IrExp_StaticRef>(MakePtr<NLoc_ClassVar>(nullptr, imExp.decl, imExp.typeArgs));
         }
         else // &this.x
         {
             // auto classType = imExp.decl->GetClassType(imExp.typeArgs, factory);
-            return Value(MakePtr<IrExp_BoxRef_ClassMember>(context.MakeThisLoc(), imExp.decl, imExp.typeArgs));
+            return Value<IrExp_BoxRef_ClassMember>(context.MakeThisLoc(), imExp.decl, imExp.typeArgs);
         }
     }
 
@@ -126,14 +133,14 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     {
         if (imExp.decl->IsStatic())
         {
-            return Value(MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructVar>(nullptr, imExp.decl, imExp.typeArgs)));
+            return Value<IrExp_StaticRef>(MakePtr<NLoc_StructVar>(nullptr, imExp.decl, imExp.typeArgs));
         }
         else
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
             auto nDerefThisLoc = MakePtr<NLoc_LocalDeref>(context.MakeThisLoc());
-            return Value(MakePtr<IrExp_LocalRef>(MakePtr<NLoc_StructVar>(nDerefThisLoc, imExp.decl, imExp.typeArgs)));
+            return Value<IrExp_LocalRef>(MakePtr<NLoc_StructVar>(nDerefThisLoc, imExp.decl, imExp.typeArgs));
         }
     }
 
@@ -171,10 +178,10 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
 
 } // namespace 
 
-expected<IrExpPtr, DiagPtr> TranslateImExpToIrExp(const ImExpPtr& imExp, TranslationContext& context, RTypeFactory& factory)
+expected<IrExpPtr, DiagPtr> TranslateImExpToIrExp(const ImExpPtr& imExp, TranslationContext& context)
 {
     expected<IrExpPtr, DiagPtr> result;
-    ImExpToIrExpTranslator translator(&result, context, factory);
+    ImExpToIrExpTranslator translator(&result, context);
     imExp->Accept(translator);
 
     return result;

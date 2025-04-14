@@ -17,18 +17,18 @@ IrExp_TypeVar::IrExp_TypeVar(const shared_ptr<RType_TypeVar>& type)
 
 }
 
-IrExp_Class::IrExp_Class(const std::shared_ptr<RClassDecl>& decl, RTypeArgumentsPtr&& typeArgs)
-    : decl(decl), typeArgs(move(typeArgs))
+IrExp_Class::IrExp_Class(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+    : decl(decl), typeArgs(typeArgs)
 {
 }
 
-IrExp_Struct::IrExp_Struct(const std::shared_ptr<RStructDecl>& decl, RTypeArgumentsPtr&& typeArgs)
-    : decl(decl), typeArgs(move(typeArgs))
+IrExp_Struct::IrExp_Struct(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+    : decl(decl), typeArgs(typeArgs)
 {
 }
 
-IrExp_Enum::IrExp_Enum(const std::shared_ptr<REnumDecl>& decl, RTypeArgumentsPtr&& typeArgs)
-    : decl(decl), typeArgs(move(typeArgs))
+IrExp_Enum::IrExp_Enum(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+    : decl(decl), typeArgs(typeArgs)
 {
 }
 

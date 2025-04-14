@@ -97,7 +97,10 @@ expected<NLocPtr, DiagPtr> TranslateReListIndexerExpToNLoc(ReExp_ListIndexer& re
     auto eInst = TranslateReExpToNLoc(*reExp.instance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
     if (!eInst) return unexpected{move(eInst).error()};
 
-    return MakePtr<NLoc_ListIndexer>(move(*eInst), reExp.index, reExp.itemType);
+    auto eIndex = TranslateReExpToNLoc(*reExp.index, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+    if (!eIndex) return unexpected{move(eIndex).error()};
+
+    return MakePtr<NLoc_ListIndexer>(move(*eInst), move(*eIndex), reExp.itemType);
 }
 
 expected<NLocPtr, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref& reExp, TranslationContext& context)

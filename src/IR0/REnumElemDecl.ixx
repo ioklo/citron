@@ -20,6 +20,7 @@ export class REnumElemDecl
     , public RTypeDecl
 {
 public:
+    virtual std::shared_ptr<REnumDecl> GetBaseEnumDecl() = 0;
     virtual std::optional<RMember_EnumElemVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) = 0;
     virtual size_t GetVarCount() = 0;
     virtual bool IsStandalone() = 0;

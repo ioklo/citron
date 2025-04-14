@@ -3,6 +3,7 @@ module Citron.SyntaxIR0Translator:SExpToNLocTranslation;
 import <expected>;
 
 import Citron.Ptr;
+import Citron.Exceptions;
 import Citron.Logger;
 import Citron.Syntax;
 import Citron.NDecls;
@@ -71,9 +72,16 @@ private:
         }
     }
 
-    void Error(DiagPtr&& diag)
+    template<typename TValue>
+    void Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(diag)};
+        *result = unexpected{move(e).error()};
+    }
+
+    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    void Error(TArgs&&... args)
+    {
+        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
@@ -85,7 +93,7 @@ public:
     void Visit(SExp_String& exp) override
     {
         auto eNExp = TranslateSStringExpToNStringExp(exp, context);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
 
         return HandleExp(move(*eNExp));
     }
@@ -93,7 +101,7 @@ public:
     void Visit(SExp_IntLiteral& exp) override
     {
         auto eNExp = TranslateSIntLiteralExpToNExp(exp);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
 
         return HandleExp(move(*eNExp));
     }
@@ -101,21 +109,21 @@ public:
     void Visit(SExp_BoolLiteral& exp) override
     {
         auto eNExp = TranslateSBoolLiteralExpToNExp(exp);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_NullLiteral& exp) override
     {
         auto eNExp = TranslateSNullLiteralExpToNExp(exp, hintType, context);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_BinaryOp& exp) override
     {
         auto eNExp = TranslateSBinaryOpExpToNExp(exp, context);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
@@ -129,7 +137,7 @@ public:
         else
         {
             auto eNExp = TranslateSUnaryOpExpToNExpExceptDeref(exp, context);
-            if (!eNExp) return Error(move(eNExp).error());
+            if (!eNExp) return Error(move(eNExp));
             return HandleExp(move(*eNExp));
         }
     }
@@ -137,14 +145,14 @@ public:
     void Visit(SExp_Call& exp) override
     {
         auto eNExp = TranslateSCallExpToNExp(exp, hintType, context);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_Lambda& exp) override
     {
         auto eNExp = TranslateSLambdaExpToNExp(exp, context);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
@@ -161,41 +169,41 @@ public:
     // s->x
     void Visit(SExp_IndirectMember& exp) override 
     { 
-        static_assert(false); 
+        throw NotImplementedException();
     }
 
     void Visit(SExp_List& exp) override
     {
         auto eNExp = TranslateSListExpToNExp(exp, context);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_New& exp) override
     {
         auto eNExp = TranslateSNewExpToNExp(exp, context);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_Box& exp) override
     {
         auto eNExp = TranslateSBoxExpToNExp(exp, hintType, context);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_Is& exp) override
     {
         auto eNExp = TranslateSIsExpToNExp(exp, context);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
     void Visit(SExp_As& exp) override
     {
         auto eNExp = TranslateSAsExpToNExp(exp, context);
-        if (!eNExp) return Error(move(eNExp).error());
+        if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 };

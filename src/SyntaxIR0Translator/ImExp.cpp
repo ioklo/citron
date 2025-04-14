@@ -83,7 +83,7 @@ ImExp_EnumElemVar::ImExp_EnumElemVar(const std::shared_ptr<REnumElemVarDecl>& de
 
 }
 
-ImExp_ListIndexer::ImExp_ListIndexer(ReExpPtr&& instance, NLocPtr&& index, RTypePtr&& itemType)
+ImExp_ListIndexer::ImExp_ListIndexer(ReExpPtr&& instance, ReExpPtr&& index, RTypePtr&& itemType)
     : instance(move(instance)), index(move(index)), itemType(move(itemType))
 {
 

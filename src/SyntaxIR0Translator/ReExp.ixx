@@ -150,11 +150,11 @@ export class ReExp_ListIndexer : public ReExp
 {   
 public:
     ReExpPtr instance;
-    NLocPtr index;
+    ReExpPtr index;
     RTypePtr itemType;
     
 public:
-    ReExp_ListIndexer(const ReExpPtr& instance, const NLocPtr& index, const RTypePtr& itemType);
+    ReExp_ListIndexer(const ReExpPtr& instance, const ReExpPtr& index, const RTypePtr& itemType);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RTypePtr GetType(RTypeFactory& factory) override { return itemType; }
 };
