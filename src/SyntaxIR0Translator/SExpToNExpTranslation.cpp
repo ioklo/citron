@@ -71,8 +71,6 @@ expected<RStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
     // TranslationResult<R.StringExpElement> Error() = > TranslationResult.Error<R.StringExpElement>();
     // var stringType = context.GetStringType();
 
-    context.SetSyntax(elem);
-
     if (auto* expElem = dynamic_cast<SStringExpElement_Exp*>(elem.get()))
     {
         auto eReExp = TranslateSExpToReExp(*expElem->exp, /* hintType */ nullptr, context);
@@ -172,7 +170,6 @@ expected<NExpPtr, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp& s
     if (sExp.kind == SUnaryOpKind::Ref)
         return TranslateSExpRefToNExp(*sExp.operand, context);
 
-    context.SetSyntax(sExp.operand);
     auto eNOperand = TranslateSExpToNExp(*sExp.operand, /*hintType*/ nullptr, context);
     if (!eNOperand) return unexpected{move(eNOperand).error()};
 
@@ -219,7 +216,6 @@ expected<NExpPtr, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp& s
 expected<NExpPtr, DiagPtr> TranslateSAssignBinaryOpExpToNExp(SExp_BinaryOp& exp, TranslationContext& context)
 {
     // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
-    context.SetSyntax(exp.operand0);
     DesignatedDiagnostic<Error_BinaryOp_LeftOperandIsNotAssignable> designatedDiag;
     auto eNDestLoc = TranslateSExpToNLoc(*exp.operand0, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedDiag, context);
     if (!eNDestLoc) return unexpected{move(eNDestLoc).error()};
@@ -241,7 +237,6 @@ expected<NExpPtr, DiagPtr> TranslateSAssignBinaryOpExpToNExp(SExp_BinaryOp& exp,
     }
 
     auto nDestLocType = context.GetType(**eNDestLoc);
-    context.SetSyntax(exp.operand1);
     auto eNSrcExp = TranslateSExpToNExp(*exp.operand1, /*hintType*/ nDestLocType, context);
     if (!eNSrcExp) return unexpected{move(eNSrcExp).error()};
 
@@ -530,7 +525,6 @@ public:
 
     void Visit(SExp_Lambda& exp) override
     {
-        // context.SetSyntax(syntax);
         return Forward(TranslateSLambdaExpToNExp(exp, context));
     }
 

@@ -173,6 +173,7 @@
     <ClCompile Include="SyntaxIR0Translator-HeaderUnits.ixx" />
     <ClCompile Include="ResolveIdentifierError.ixx" />
     <ClCompile Include="ResolveIdentifierError.cpp" />
+    <ClCompile Include="SkeletonPhaseContext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SyntaxIR0TranslatorConfig.h" />

@@ -1,5 +1,6 @@
 module Citron.SyntaxIR0Translator:IrExp;
 
+import Citron.Ptr;
 import Citron.RDecls;
 
 using namespace std;
@@ -52,10 +53,10 @@ RTypePtr IrExp_BoxRef_ClassMember::GetTargetType(RTypeFactory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-//RLocPtr ImClassMemberBoxRefRef::MakeLoc()
-//{
-//    return MakePtr<RClassMemberLoc>(loc, decl, typeArgs);
-//}
+NLocPtr IrExp_BoxRef_ClassMember::MakeLoc()
+{
+    return MakePtr<NLoc_ClassVar>(NLocPtr{loc}, decl, typeArgs);
+}
 
 IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(const NLocPtr& loc, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : loc(loc), decl(decl), typeArgs(typeArgs)
@@ -67,11 +68,10 @@ RTypePtr IrExp_BoxRef_StructIndirectMember::GetTargetType(RTypeFactory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-
-//RLocPtr ImStructIndirectMemberBoxRefRef::MakeLoc()
-//{
-//    return MakePtr<RStructMemberLoc>(MakePtr<RBoxDerefLoc>(loc, decl, typeArgs));
-//}
+NLocPtr IrExp_BoxRef_StructIndirectMember::MakeLoc()
+{
+    return MakePtr<NLoc_StructVar>(MakePtr<NLoc_BoxDeref>(NLocPtr{loc}), decl, typeArgs);
+}
 
 IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : parent(parent), decl(decl), typeArgs(typeArgs)
@@ -83,11 +83,10 @@ RTypePtr IrExp_BoxRef_StructMember::GetTargetType(RTypeFactory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-
-//RLocPtr ImStructMemberBoxRefRef::MakeLoc()
-//{
-//    return MakePtr<RStructMemberLoc>(parent->MakeLoc(), decl, typeArgs);
-//}
+NLocPtr IrExp_BoxRef_StructMember::MakeLoc()
+{
+    return MakePtr<NLoc_StructVar>(parent->MakeLoc(), decl, typeArgs);
+}
 
 IrExp_LocalRef::IrExp_LocalRef(const NLocPtr& loc)
     : loc(loc)

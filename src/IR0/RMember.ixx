@@ -37,7 +37,7 @@ export class RMember_Namespace
 public:
     std::shared_ptr<RNamespaceDecl> decl;
 public:
-    RMember_Namespace(const std::shared_ptr<RNamespaceDecl>& decl);
+    IR0_API RMember_Namespace(const std::shared_ptr<RNamespaceDecl>& decl);
 };
 
 export class RMember_GlobalFuncs
@@ -46,9 +46,9 @@ public:
     std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>> items;
 
 public:
-    RMember_GlobalFuncs(std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>&& items);
-    RMember_GlobalFuncs(const RMember_GlobalFuncs&);
-    ~RMember_GlobalFuncs();
+    IR0_API RMember_GlobalFuncs(std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>&& items);
+    IR0_API RMember_GlobalFuncs(const RMember_GlobalFuncs&);
+    IR0_API ~RMember_GlobalFuncs();
 };
 
 export class RMember_Class
@@ -57,7 +57,7 @@ public:
     RTypeArgumentsPtr outerTypeArgs;
     std::shared_ptr<RClassDecl> decl;
 public:
-    RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RClassDecl>& decl);
+    IR0_API RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RClassDecl>& decl);
 };
 
 export class RMember_ClassFuncs
@@ -65,9 +65,9 @@ export class RMember_ClassFuncs
 public:
     std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>> items;
 public:
-    RMember_ClassFuncs(std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>&& items);
-    RMember_ClassFuncs(const RMember_ClassFuncs&);
-    ~RMember_ClassFuncs();
+    IR0_API RMember_ClassFuncs(std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>&& items);
+    IR0_API RMember_ClassFuncs(const RMember_ClassFuncs&);
+    IR0_API ~RMember_ClassFuncs();
 };
 
 export class RMember_ClassVar
@@ -77,7 +77,7 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
-    RMember_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API RMember_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 };
 
 export class RMember_Struct
@@ -87,7 +87,7 @@ public:
     std::shared_ptr<RStructDecl> decl;
 
 public:
-    RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RStructDecl>& decl);
+    IR0_API RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RStructDecl>& decl);
 };
 
 export class RMember_StructFuncs
@@ -96,9 +96,9 @@ public:
     std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>> items;
 
 public:
-    RMember_StructFuncs(std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>&& items);
-    RMember_StructFuncs(const RMember_StructFuncs&);
-    ~RMember_StructFuncs();
+    IR0_API RMember_StructFuncs(std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>&& items);
+    IR0_API RMember_StructFuncs(const RMember_StructFuncs&);
+    IR0_API ~RMember_StructFuncs();
 };
 
 export class RMember_StructVar
@@ -108,7 +108,7 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
-    RMember_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API RMember_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 };
 
 export class RMember_Enum
@@ -118,7 +118,7 @@ public:
     std::shared_ptr<REnumDecl> decl;
 
 public:
-    RMember_Enum(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumDecl>& decl);
+    IR0_API RMember_Enum(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumDecl>& decl);
 };
 
 export class RMember_EnumElem
@@ -128,7 +128,7 @@ public:
     std::shared_ptr<REnumElemDecl> decl;
 
 public:
-    RMember_EnumElem(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumElemDecl>& decl);
+    IR0_API RMember_EnumElem(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumElemDecl>& decl);
 };
 
 export class RMember_EnumElemVar
@@ -138,7 +138,7 @@ public:
     std::shared_ptr<REnumElemVarDecl> decl;
 
 public:
-    RMember_EnumElemVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumElemVarDecl>& decl);
+    IR0_API RMember_EnumElemVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumElemVarDecl>& decl);
 };
 
 export class RMember_LambdaVar
@@ -148,15 +148,15 @@ public:
     std::shared_ptr<RLambdaVarDecl> decl;
 
 public:
-    RMember_LambdaVar(RTypeArgumentsPtr&& outerTypeArgs, std::shared_ptr<RLambdaVarDecl>&& decl);
-    RMember_LambdaVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RLambdaVarDecl>& decl);
+    IR0_API RMember_LambdaVar(RTypeArgumentsPtr&& outerTypeArgs, std::shared_ptr<RLambdaVarDecl>&& decl);
+    IR0_API RMember_LambdaVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RLambdaVarDecl>& decl);
 };
 
 // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
 export class RMember_TupleVar
 {
 public:
-    RMember_TupleVar();
+    IR0_API RMember_TupleVar();
 };
 
 export class RMember_TypeVar
@@ -165,7 +165,7 @@ public:
     size_t index;
 
 public:
-    RMember_TypeVar(size_t index);
+    IR0_API RMember_TypeVar(size_t index);
 };
 
 export class RMember_LocalVar
@@ -174,7 +174,7 @@ public:
     RTypePtr type;
     std::string name;
 public:
-    RMember_LocalVar(const RTypePtr& type, const std::string& name);
+    IR0_API RMember_LocalVar(const RTypePtr& type, const std::string& name);
 };
 
 export class RMember_ThisVar
@@ -183,7 +183,7 @@ public:
     RTypePtr type;
 
 public:
-    RMember_ThisVar(const RTypePtr& type);
+    IR0_API RMember_ThisVar(const RTypePtr& type);
 };
 
 export using RMember = std::variant<

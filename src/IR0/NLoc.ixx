@@ -131,7 +131,7 @@ public:
     RTypeArgumentsPtr typeArgs;
 
 public:
-    NLoc_ClassVar(NLocPtr&& instance, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NLoc_ClassVar(NLocPtr&& instance, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
     void Accept(NLocVisitor& visitor) override { visitor.Visit(*this); }
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
 };

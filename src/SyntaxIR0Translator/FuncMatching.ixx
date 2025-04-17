@@ -4,6 +4,8 @@ import <memory>;
 import <optional>;
 import <vector>;
 
+import Citron.Exceptions;
+
 import Citron.Syntax;
 import Citron.RDecls;
 import Citron.NDecls;
@@ -27,7 +29,10 @@ export struct ArgumentsMatch
 };
 
 export template<typename TFuncDecl>
-std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<DeclWithOuterTypeArgs<TFuncDecl>>& items, const SArgumentsPtr& sArgs, TranslationContext& context);
+std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<DeclWithOuterTypeArgs<TFuncDecl>>& items, const SArgumentsPtr& sArgs, TranslationContext& context)
+{
+    throw NotImplementedException();
+}
 
 export std::optional<ArgumentsMatch> MatchArguments(const RTypeArgumentsPtr& outerTypeArgs, const RTypeArgumentsPtr& partialTypeArgsExceptOuter, std::vector<RFuncParameter>&& funcParams, bool bVariadic, const SArgumentsPtr& sArgs);
 

@@ -1,5 +1,6 @@
 export module Citron.NDecls:NModule;
 
+import "IR0Config.h";
 import <string>;
 import <memory>;
 
@@ -16,7 +17,7 @@ public:
     std::shared_ptr<NNamespaceDecl> rootNamespace;
 
 public:
-    NModule(std::string&& name, std::shared_ptr<NNamespaceDecl>&& rootNamespace);
+    IR0_API NModule(std::string&& name, std::shared_ptr<NNamespaceDecl>&& rootNamespace);
 };
 
 }

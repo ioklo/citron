@@ -36,8 +36,8 @@ private:
     RNamespaceDeclGroupPtr group;
 
 public:
-    static std::shared_ptr<NNamespaceDecl> MakeRoot(RTypeFactory& factory);
-    static std::shared_ptr<NNamespaceDecl> MakeChild(const std::shared_ptr<NNamespaceDecl>& outer, const std::string& name, RTypeFactory& factory);
+    IR0_API static std::shared_ptr<NNamespaceDecl> MakeRoot(RTypeFactory& factory);
+    IR0_API static std::shared_ptr<NNamespaceDecl> MakeChild(const std::shared_ptr<NNamespaceDecl>& outer, const std::string& name, RTypeFactory& factory);
 
 private:
     NNamespaceDecl(const std::shared_ptr<NNamespaceDecl>& outer, const std::string& name, const RNamespaceDeclGroupPtr& group);

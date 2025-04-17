@@ -184,8 +184,7 @@ public:
         if (!eIrParent) return Error(move(eIrParent));
 
         auto eTypeArgsExceptOuter = MakeTypeArgs(exp.memberTypeArgs, context);
-
-        context.SetSyntax(exp.parent);
+        
         return Forward(TranslateIrExpAndMemberNameToIrExp(*eIrParent, RName_Normal(exp.memberName), move(*eTypeArgsExceptOuter), context));
     }
 

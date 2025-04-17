@@ -73,6 +73,14 @@ public:
 
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }
+
+    // from RFuncDecl
+    IR0_API bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
+    IR0_API size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
+    IR0_API size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
+    IR0_API RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
+    IR0_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs, factory); }
+    IR0_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory) { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index, factory); }
 };
 
 }

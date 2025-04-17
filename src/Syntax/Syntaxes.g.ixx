@@ -331,7 +331,7 @@ public:
 class SStmtVisitor
 {
 public:
-    virtual ~SStmtVisitor() { }
+    virtual ~SStmtVisitor() = default;
     virtual void Visit(SStmt_Command& stmt) = 0;
     virtual void Visit(SStmt_VarDecl& stmt) = 0;
     virtual void Visit(SStmt_If& stmt) = 0;
@@ -368,7 +368,7 @@ SYNTAX_API JsonItem ToJson(SStmtPtr& stmt);
 class SExpVisitor
 {
 public:
-    virtual ~SExpVisitor() { }
+    virtual ~SExpVisitor() = default;
     virtual void Visit(SExp_Identifier& exp) = 0;
     virtual void Visit(SExp_String& exp) = 0;
     virtual void Visit(SExp_IntLiteral& exp) = 0;
@@ -405,7 +405,7 @@ SYNTAX_API JsonItem ToJson(SExpPtr& exp);
 class STypeExpVisitor
 {
 public:
-    virtual ~STypeExpVisitor() { }
+    virtual ~STypeExpVisitor() = default;
     virtual void Visit(STypeExp_Id& typeExp) = 0;
     virtual void Visit(STypeExp_Member& typeExp) = 0;
     virtual void Visit(STypeExp_Nullable& typeExp) = 0;
@@ -431,7 +431,7 @@ SYNTAX_API JsonItem ToJson(STypeExpPtr& typeExp);
 class SStringExpElementVisitor
 {
 public:
-    virtual ~SStringExpElementVisitor() { }
+    virtual ~SStringExpElementVisitor() = default;
     virtual void Visit(SStringExpElement_Text& elem) = 0;
     virtual void Visit(SStringExpElement_Exp& elem) = 0;
 };
@@ -453,7 +453,7 @@ SYNTAX_API JsonItem ToJson(SStringExpElementPtr& elem);
 class SLambdaExpBodyVisitor
 {
 public:
-    virtual ~SLambdaExpBodyVisitor() { }
+    virtual ~SLambdaExpBodyVisitor() = default;
     virtual void Visit(SLambdaExpBody_Stmts& body) = 0;
     virtual void Visit(SLambdaExpBody_Exp& body) = 0;
 };
@@ -475,7 +475,7 @@ SYNTAX_API JsonItem ToJson(SLambdaExpBodyPtr& body);
 class SEmbeddableStmtVisitor
 {
 public:
-    virtual ~SEmbeddableStmtVisitor() { }
+    virtual ~SEmbeddableStmtVisitor() = default;
     virtual void Visit(SEmbeddableStmt_Single& stmt) = 0;
     virtual void Visit(SEmbeddableStmt_Block& stmt) = 0;
 };
@@ -497,7 +497,7 @@ SYNTAX_API JsonItem ToJson(SEmbeddableStmtPtr& stmt);
 class SForStmtInitializerVisitor
 {
 public:
-    virtual ~SForStmtInitializerVisitor() { }
+    virtual ~SForStmtInitializerVisitor() = default;
     virtual void Visit(SForStmtInitializer_Exp& initializer) = 0;
     virtual void Visit(SForStmtInitializer_VarDecl& initializer) = 0;
 };
@@ -519,7 +519,7 @@ SYNTAX_API JsonItem ToJson(SForStmtInitializerPtr& initializer);
 class SClassMemberDeclVisitor
 {
 public:
-    virtual ~SClassMemberDeclVisitor() { }
+    virtual ~SClassMemberDeclVisitor() = default;
     virtual void Visit(SClassDecl& decl) = 0;
     virtual void Visit(SStructDecl& decl) = 0;
     virtual void Visit(SEnumDecl& decl) = 0;
@@ -545,7 +545,7 @@ SYNTAX_API JsonItem ToJson(SClassMemberDeclPtr& decl);
 class SStructMemberDeclVisitor
 {
 public:
-    virtual ~SStructMemberDeclVisitor() { }
+    virtual ~SStructMemberDeclVisitor() = default;
     virtual void Visit(SClassDecl& decl) = 0;
     virtual void Visit(SStructDecl& decl) = 0;
     virtual void Visit(SEnumDecl& decl) = 0;
@@ -571,7 +571,7 @@ SYNTAX_API JsonItem ToJson(SStructMemberDeclPtr& decl);
 class SNamespaceDeclElementVisitor
 {
 public:
-    virtual ~SNamespaceDeclElementVisitor() { }
+    virtual ~SNamespaceDeclElementVisitor() = default;
     virtual void Visit(SGlobalFuncDecl& elem) = 0;
     virtual void Visit(SNamespaceDecl& elem) = 0;
     virtual void Visit(SClassDecl& elem) = 0;
@@ -596,7 +596,7 @@ SYNTAX_API JsonItem ToJson(SNamespaceDeclElementPtr& elem);
 class SScriptElementVisitor
 {
 public:
-    virtual ~SScriptElementVisitor() { }
+    virtual ~SScriptElementVisitor() = default;
     virtual void Visit(SNamespaceDecl& elem) = 0;
     virtual void Visit(SGlobalFuncDecl& elem) = 0;
     virtual void Visit(SClassDecl& elem) = 0;
@@ -626,7 +626,7 @@ public:
     std::vector<STypeExpPtr> typeArgs;
 
     SYNTAX_API SExp_Identifier(std::string value, std::vector<STypeExpPtr> typeArgs);
-    SExp_Identifier(std::string value) : SExp_Identifier(std::move(value), {}) { }
+    SExp_Identifier(std::string value) : SExp_Identifier(move(value), {}) { }
     SExp_Identifier(const SExp_Identifier&) = delete;
     SYNTAX_API SExp_Identifier(SExp_Identifier&&) noexcept;
     SYNTAX_API virtual ~SExp_Identifier();

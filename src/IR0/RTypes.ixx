@@ -240,8 +240,8 @@ private:
     RType_Class(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
-    std::optional<RMember_ClassVar> GetVar(const RName& name);
-    bool IsBaseOf(RType_Class& derivedClass);
+    IR0_API std::optional<RMember_ClassVar> GetVar(const RName& name);
+    IR0_API bool IsBaseOf(RType_Class& derivedClass);
 
 public:
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
@@ -302,8 +302,8 @@ private:
     RType_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
 
 public:
-    std::optional<RMember_EnumElemVar> GetVar(const RName& name);
-    std::shared_ptr<RType_Enum> GetBaseEnumType(RTypeFactory& factory);
+    IR0_API std::optional<RMember_EnumElemVar> GetVar(const RName& name);
+    IR0_API std::shared_ptr<RType_Enum> GetBaseEnumType(RTypeFactory& factory);
 
 public:
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
@@ -342,7 +342,7 @@ private:
     RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs);
 
 public:
-    std::vector<RFuncParameter> GetPartiallyBoundParameters(); // outerTypeArgs까지만 bound되어 있는 상태
+    IR0_API std::vector<RFuncParameter> GetPartiallyBoundParameters(); // outerTypeArgs까지만 bound되어 있는 상태
 
 public:
     IR0_API RTypePtr Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;

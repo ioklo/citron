@@ -173,7 +173,6 @@ public:
         NLocPtr nIndexLoc;
         if (context.GetType(**eReIndex) != intType)
         {
-            context.SetSyntax(exp.index);
             auto eNIndexExp = TranslateReExpToNExp(**eReIndex, context);
             if (!eNIndexExp) return Error(move(eNIndexExp));
 
@@ -245,7 +244,6 @@ public:
         auto eTypeArgs = MakeTypeArgs(exp.memberTypeArgs, context);
         if (!eTypeArgs) return Error(move(eTypeArgs));
 
-        // logger.SetSyntax(exp);
         return Forward(TranslateImExpAndMemberNameToImExp(**eImParent, exp.memberName, *eTypeArgs, context));
     }
 

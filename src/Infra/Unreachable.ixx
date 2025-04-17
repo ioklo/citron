@@ -5,6 +5,6 @@ import <cassert>;
 
 namespace Citron {
 
-export [[noreturn]] inline void unreachable() { assert(false); }
+export [[noreturn]] INFRA_API inline void unreachable() { assert(false); }
 
 }

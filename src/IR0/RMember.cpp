@@ -21,7 +21,7 @@ RMember_GlobalFuncs::RMember_GlobalFuncs(vector<DeclWithOuterTypeArgs<RGlobalFun
 {
 }
 
-RMember_GlobalFuncs::RMember_GlobalFuncs(const RMember_GlobalFuncs&) = default;
+RMember_GlobalFuncs::RMember_GlobalFuncs(const RMember_GlobalFuncs& member) = default;
 
 RMember_GlobalFuncs::~RMember_GlobalFuncs() = default;
 

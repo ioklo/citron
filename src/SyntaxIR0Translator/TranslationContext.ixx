@@ -87,8 +87,6 @@ public: // for logging
         (logger.get()->*func)();
     }
 
-    void SetSyntax(const SSyntaxPtr& syntax);
-
 public:
     std::expected<RTypePtr, DiagPtr> TranslateSTypeExpToRType(STypeExp& typeExp);
 

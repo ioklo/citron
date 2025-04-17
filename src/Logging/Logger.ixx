@@ -12,9 +12,6 @@ LOGGING_API void Dummy();
 export class Logger
 {
 public:
-    // 호출자에서 Set하는 것으로 한다. 함수가 끝나도 Syntax가 지속될 수 있기 때문이다
-    LOGGING_API void SetSyntax(const SSyntaxPtr& syntax);
-
 
     //LOGGING_API void Fatal_Parameter_MismatchBetweenParamCountAndArgCount(); // A0401_Parameter_MismatchBetweenParamCountAndArgCount
 

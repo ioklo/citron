@@ -1,5 +1,7 @@
 export module Citron.Diag;
 
+import "LoggingConfig.h";
+
 import <variant>;
 import <memory>;
 import <vector>;
@@ -25,7 +27,7 @@ export struct AggregateDiag : Diag
 {
     std::vector<DiagPtr> diags;
 
-    AggregateDiag(std::vector<DiagPtr>&& diags) : diags(std::move(diags)) { }
+    LOGGING_API AggregateDiag(std::vector<DiagPtr>&& diags) : diags(std::move(diags)) { }
 };
 
 //LOGGING_API void Fatal_Parameter_MismatchBetweenParamCountAndArgCount(); // A0401_Parameter_MismatchBetweenParamCountAndArgCount

@@ -56,15 +56,15 @@ public:
 public:
     using NTypeDeclContainerComponent::AddType;
     IR0_API void AddCtor(std::shared_ptr<NStructCtorDecl>&& decl);
-    void AddFunc(std::shared_ptr<NStructFuncDecl>&& decl) { NFuncDeclContainerComponent<NStructFuncDecl>::AddFunc(std::move(decl)); }
+    IR0_API void AddFunc(std::shared_ptr<NStructFuncDecl>&& decl) { NFuncDeclContainerComponent<NStructFuncDecl>::AddFunc(std::move(decl)); }
     IR0_API void AddVar(std::shared_ptr<NStructVarDecl>&& decl);
 
-    auto EnumerateUnboundCtors() { return std::views::all(ctors); }
-    auto EnumerateUnboundVars() { return std::views::all(vars); }
+    IR0_API auto EnumerateUnboundCtors() { return std::views::all(ctors); }
+    IR0_API auto EnumerateUnboundVars() { return std::views::all(vars); }
     IR0_API std::shared_ptr<NStructCtorDecl> GetUnboundTrivialCtor_NStructCtorDecl();
 
-    size_t GetVarCount() { return vars.size(); }
-    NStructVarDecl* GetUnboundVar(size_t index) { return vars[index].get(); }
+    IR0_API size_t GetVarCount() { return vars.size(); }
+    IR0_API NStructVarDecl* GetUnboundVar(size_t index) { return vars[index].get(); }
 
     IR0_API std::shared_ptr<RType_Struct> GetUnboundBaseStruct();
 

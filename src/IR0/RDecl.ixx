@@ -1,5 +1,6 @@
 export module Citron.RDecls:RDecl;
 
+import "IR0Config.h";
 import <memory>;
 import <optional>;
 import <string>;
@@ -30,15 +31,15 @@ public:
     virtual ~RDecl() {}
 
 public:
-    bool IsDescendantOf(RDecl* container);
-    bool CanAccess(RDecl* target);
-    size_t GetTypeParamCount();
-    size_t GetAllTypeParamCount();
+    IR0_API bool IsDescendantOf(RDecl* container);
+    IR0_API bool CanAccess(RDecl* target);
+    IR0_API size_t GetTypeParamCount();
+    IR0_API size_t GetAllTypeParamCount();
 
-    RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory);
+    IR0_API RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory);
 
 public:
-    virtual std::string GetModuleName(); // once overridden by NModuleDecl, NMModuleDecl
+    IR0_API virtual std::string GetModuleName(); // once overridden by NModuleDecl, NMModuleDecl
     virtual RDecl* GetROuter() = 0;
     virtual RAccessor GetAccessor() = 0;
     virtual RIdentifier GetIdentifier() = 0;

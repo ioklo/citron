@@ -174,6 +174,11 @@ std::optional<RMember_ClassVar> RType_Class::GetVar(const RName& name)
     return decl->GetVar(typeArgs, name);
 }
 
+bool RType_Class::IsBaseOf(RType_Class& derivedClass)
+{
+    throw NotImplementedException();
+}
+
 RTypePtr RType_Class::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     auto appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
@@ -276,6 +281,11 @@ optional<RMember> RType_Interface::GetMember(const RName& name, size_t explicitT
 RType_Lambda::RType_Lambda(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& outerTypeArgs)
     : decl(decl), outerTypeArgs(outerTypeArgs)
 {
+}
+
+vector<RFuncParameter> RType_Lambda::GetPartiallyBoundParameters()
+{
+    throw NotImplementedException();
 }
 
 RTypePtr RType_Lambda::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)

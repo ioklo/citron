@@ -46,6 +46,11 @@ TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcR
     return { globalContext, newFuncContext, newScopeContext, logger, factory, binOpQueryService };
 }
 
+expected<RTypePtr, DiagPtr> TranslationContext::TranslateSTypeExpToRType(STypeExp& typeExp)
+{
+    return scopeContext->TranslateSTypeExpToRType(typeExp, *factory);
+}
+
 Citron::RTypePtr TranslationContext::GetType(NLoc& loc)
 {
     return loc.GetType(*factory);
@@ -188,6 +193,16 @@ DeclTypeInfo TranslationContext::GetDeclTypeInfo(STypeExp& typeExp)
     return info;
 }
 
+bool TranslationContext::DoesLocalVarNameExistInScope(const std::string& name)
+{
+    throw NotImplementedException();
+}
+
+void TranslationContext::AddLocalVarInfo(const RTypePtr& type, RName&& name)
+{
+    throw NotImplementedException();
+}
+
 bool TranslationContext::CanAccess(RDecl* target)
 {
     return funcContext->CanAccess(target);
@@ -208,15 +223,9 @@ void TranslationContext::SetOpenFuncReturn(RTypePtr&& retType)
     funcContext->SetOpenFuncReturn(move(retType));
 }
 
-void TranslationContext::SetSyntax(const SSyntaxPtr& syntax)
+NLambdaDeclAndArgs TranslationContext::MakeLambdaDeclAndArgs(std::vector<NStmtPtr>&& body)
 {
-    logger->SetSyntax(syntax);
-}
-
-
-std::expected<RTypePtr, DiagPtr> TranslationContext::TranslateSTypeExpToRType(STypeExp& typeExp)
-{
-    return scopeContext->TranslateSTypeExpToRType(typeExp, *factory);
+    throw NotImplementedException();
 }
 
 RTypeArgumentsPtr TranslationContext::MakeTypeArguments(const std::vector<RTypePtr>& items)
@@ -274,5 +283,9 @@ shared_ptr<RType_Enum> TranslationContext::GetBaseEnumType(RType_EnumElem& enumE
     return enumElemType.GetBaseEnumType(*factory);
 }
 
+expected<ImExpPtr, shared_ptr<ResolveIdentifierError>> TranslationContext::ResolveIdentifier(RName&& name, RTypeArgumentsPtr&& typeArgs)
+{
+    throw NotImplementedException();
+}
 
 } // namespace Citron::SyntaxIR0Translator

@@ -376,14 +376,14 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     // class 'name' : 'bases...'
     // {
     // public:
-    //     virtual ~'name'() { }
+    //     virtual ~'name'() = default
     //     virtual void Accept('name'Visitor& visitor) = 0;
     // };
 
     hStream << "class " << info.name << "Visitor" << endl;
     hStream << "{" << endl;
     hStream << "public:" << endl;
-    hStream << "    virtual ~" << info.name << "Visitor() { }" << endl;
+    hStream << "    virtual ~" << info.name << "Visitor() = default;" << endl;
     for (auto& member : info.members)
         hStream << "    virtual void Visit(" << member << "& " << info.argName << ") = 0;" << endl;
     hStream << "};" << endl << endl;

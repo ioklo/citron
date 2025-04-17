@@ -29,31 +29,30 @@ ReExp_ClassVar::ReExp_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const
 {
 }
 
-//RTypePtr ReExp_ClassVar::GetType(RTypeFactory& factory)
-//{
-//    return decl->GetDeclType(typeArgs);
-//}
+RTypePtr ReExp_ClassVar::GetType(RTypeFactory& factory)
+{
+    return decl->GetDeclType(*typeArgs, factory);
+}
 
 ReExp_StructVar::ReExp_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
-//RTypePtr ReExp_StructVar::GetType(RTypeFactory& factory)
-//{
-//    return decl->GetDeclType(typeArgs);
-//}
-//
+RTypePtr ReExp_StructVar::GetType(RTypeFactory& factory)
+{
+    return decl->GetDeclType(*typeArgs, factory);
+}
 
 ReExp_EnumElemVar::ReExp_EnumElemVar(const std::shared_ptr<REnumElemVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance)
     : decl(decl), typeArgs(typeArgs), instance(instance)
 {
 }
 
-//RTypePtr ReEnumElemMemberVarExp::GetType(RTypeFactory& factory)
-//{
-//    return decl->GetDeclType(typeArgs);
-//}
+RTypePtr ReExp_EnumElemVar::GetType(RTypeFactory& factory)
+{
+    return decl->GetDeclType(*typeArgs, factory);
+}
 
 ReExp_LocalDeref::ReExp_LocalDeref(const ReExpPtr& target)
     : target(target)
@@ -61,10 +60,13 @@ ReExp_LocalDeref::ReExp_LocalDeref(const ReExpPtr& target)
 
 }
 
-//RTypePtr ReLocalDerefExp::GetType(RTypeFactory& factory)
-//{
-//    return ((RLocalPtrType*)target->GetType().get())->GetInnerType(); // TODO: remove reinterpret cast
-//}
+RTypePtr ReExp_LocalDeref::GetType(RTypeFactory& factory)
+{
+    auto type = target->GetType(factory);
+
+    // TODO: remove reinterpret cast. 어떻게?
+    return ((RType_LocalPtr*)type.get())->innerType;
+}
 
 ReExp_BoxDeref::ReExp_BoxDeref(const ReExpPtr& target)
     : target(target)
@@ -72,11 +74,13 @@ ReExp_BoxDeref::ReExp_BoxDeref(const ReExpPtr& target)
 
 }
 
-//RTypePtr ReBoxDerefExp::GetType(RTypeFactory& factory)
-//{
-//    return ((RBoxPtrType*)target->GetType().get())->GetInnerType(); // TODO: remove reinterpret cast
-//}
+RTypePtr ReExp_BoxDeref::GetType(RTypeFactory& factory)
+{
+    auto type = target->GetType(factory);
 
+    // TODO: remove reinterpret cast
+    return ((RType_BoxPtr*)type.get())->innerType;
+}
 
 ReExp_ListIndexer::ReExp_ListIndexer(const ReExpPtr& instance, const ReExpPtr& index, const RTypePtr& itemType)
     : instance(instance), index(index), itemType(itemType)
@@ -84,16 +88,15 @@ ReExp_ListIndexer::ReExp_ListIndexer(const ReExpPtr& instance, const ReExpPtr& i
 
 }
 
-
 ReExp_Else::ReExp_Else(const NExpPtr& nExp)
     : nExp(nExp)
 {
 }
 
-//RTypePtr ReElseExp::GetType(RTypeFactory& factory)
-//{
-//    return rExp->GetType();
-//}
+RTypePtr ReExp_Else::GetType(RTypeFactory& factory)
+{
+    return nExp->GetType(factory);
+}
 
 
 

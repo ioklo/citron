@@ -99,6 +99,7 @@
     <ClCompile Include="SExpToNExpTranslation.cpp" />
     <ClCompile Include="SExpToNLocTranslation.cpp" />
     <ClCompile Include="SExpToReExpTranslation.ixx" />
+    <ClCompile Include="SkeletonPhaseContext.cpp" />
     <ClCompile Include="SkeletonPhaseContext.ixx" />
     <ClCompile Include="SStmtToNStmtTranslation.cpp" />
     <ClCompile Include="SStmtToNStmtTranslation.ixx" />

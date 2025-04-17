@@ -16,7 +16,7 @@ export using JsonItem = std::variant<struct JsonNull, struct JsonBool, struct Js
 
 export struct JsonNull
 {
-    bool operator==(const JsonNull& other) const
+    INFRA_API bool operator==(const JsonNull& other) const
     {
         return true;
     }
@@ -27,9 +27,9 @@ export struct JsonNull
 export struct JsonBool
 {
     bool value;
-    JsonBool(bool value) : value(value) {}
+    INFRA_API JsonBool(bool value) : value(value) {}
 
-    bool operator==(const JsonBool& other) const
+    INFRA_API bool operator==(const JsonBool& other) const
     {
         return value == other.value;
     }
@@ -40,9 +40,9 @@ export struct JsonBool
 export struct JsonInt
 {
     int value;
-    JsonInt(int value) : value(value) {}
+    INFRA_API JsonInt(int value) : value(value) {}
 
-    bool operator==(const JsonInt& other) const
+    INFRA_API bool operator==(const JsonInt& other) const
     {
         return value == other.value;
     }
@@ -53,9 +53,9 @@ export struct JsonInt
 export struct JsonString
 {
     std::string value;
-    JsonString(std::string value) : value(std::move(value)) {}
+    INFRA_API JsonString(std::string value) : value(std::move(value)) {}
 
-    bool operator==(const JsonString& other) const
+    INFRA_API bool operator==(const JsonString& other) const
     {
         return value == other.value;
     }
@@ -95,12 +95,12 @@ export struct JsonObject
     INFRA_API void ToString(IWriter& writer);
 };
 
-export inline JsonItem ToJson(bool value)
+export INFRA_API JsonItem ToJson(bool value)
 {
     return JsonBool(value);
 }
 
-export inline JsonItem ToJson(int value)
+export INFRA_API JsonItem ToJson(int value)
 {
     return JsonInt(value);
 }
@@ -161,12 +161,12 @@ JsonItem ToJson(std::vector<TElem>&& elems)
     return ToJson(elems);
 }
 
-export inline void ToString(JsonItem& item, class IWriter& writer)
+export INFRA_API void ToString(JsonItem& item, class IWriter& writer)
 {
     return std::visit([&writer](auto&& i) { return i.ToString(writer); }, item);
 }
 
-export inline void ToString(JsonItem&& item, class IWriter& writer)
+export INFRA_API void ToString(JsonItem&& item, class IWriter& writer)
 {
     return ToString(item, writer);
 }

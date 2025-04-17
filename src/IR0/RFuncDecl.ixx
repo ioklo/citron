@@ -1,5 +1,7 @@
 export module Citron.RDecls:RFuncDecl;
 
+import "IR0Config.h";
+
 import <memory>;
 
 import :RDecl;
@@ -41,7 +43,7 @@ export using RFuncDeclPtr = std::shared_ptr<RFuncDecl>;
 export class RFuncDeclVisitor
 {
 public:
-    virtual ~RFuncDeclVisitor() {}
+    IR0_API virtual ~RFuncDeclVisitor() { }
     virtual void Visit(RGlobalFuncDecl& func) = 0;
     virtual void Visit(RClassCtorDecl& func) = 0;
     virtual void Visit(RClassFuncDecl& func) = 0;

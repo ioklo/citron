@@ -47,11 +47,11 @@ export IR0_API RName Copy(const RName& name);
 
 namespace RNames {
 
-export extern RName Enumerator;
-export extern RName GetEnumerator;
-export extern RName Next;
-export extern RName RawItem;
-export extern RName _this; // "this"
+export IR0_API extern RName Enumerator;
+export IR0_API extern RName GetEnumerator;
+export IR0_API extern RName Next;
+export IR0_API extern RName RawItem;
+export IR0_API extern RName _this; // "this"
 
 } // namespace RNames
 

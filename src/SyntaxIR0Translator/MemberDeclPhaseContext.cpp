@@ -1,11 +1,17 @@
 module Citron.SyntaxIR0Translator:MemberDeclPhaseContext;
 
+import Citron.Ptr;
 import Citron.Exceptions;
 import Citron.RDecls;
 
 using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
+
+RTypePtr MemberDeclPhaseContext::MakeType(const STypeExpPtr& sTypeExp, NDeclPtr decl)
+{
+    throw NotImplementedException();
+}
 
 tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDeclPtr decl, vector<SFuncParam>& sParams)
 {
@@ -39,6 +45,16 @@ tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDecl
     }
 
     return make_tuple(move(rParams), bLastParamVariadic);
+}
+
+void MemberDeclPhaseContext::AddBodyPhaseTask(std::function<void(BodyPhaseContext&)> task)
+{
+    throw NotImplementedException();
+}
+
+void MemberDeclPhaseContext::AddTrivialCtorPhaseTask(std::function<void()> task)
+{
+    throw NotImplementedException();
 }
 
 }
