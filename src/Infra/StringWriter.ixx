@@ -21,7 +21,7 @@ public:
     INFRA_API virtual void Write(const std::string& str) override;
     INFRA_API virtual void WriteLine() override;
 
-    std::string ToString() { return oss.str(); }
+    INFRA_API std::string ToString() { return oss.str(); }
 };
 
 }

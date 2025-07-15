@@ -8,8 +8,8 @@ import <variant>;
 namespace Citron {
 
 #define TOKEN_DEF(name, text) export struct name { \
-    inline static const wchar_t* DebugText = text; \
-    bool operator==(const name&) const { return true; } \
+    const wchar_t* DebugText = text; \
+    SYNTAX_API bool operator==(const name&) const { return true; } \
 };
 
 TOKEN_DEF(EqualEqualToken, L"==")
@@ -87,30 +87,30 @@ TOKEN_DEF(AtToken, L"@")
 export struct IntToken
 {
     int value;
-    IntToken(int value) : value(value) {}
-    bool operator==(const IntToken& other) const { return value == other.value; }
+    SYNTAX_API IntToken(int value) : value(value) {}
+    SYNTAX_API bool operator==(const IntToken& other) const { return value == other.value; }
 };
 
 export struct BoolToken
 {
     bool value;
 
-    BoolToken(bool value) : value(value) {}
-    bool operator==(const BoolToken& other) const { return value == other.value; }
+    SYNTAX_API BoolToken(bool value) : value(value) {}
+    SYNTAX_API bool operator==(const BoolToken& other) const { return value == other.value; }
 };
 
 export struct TextToken
 {
     std::string text;
-    TextToken(std::string text) : text(std::move(text)) {}
-    bool operator==(const TextToken& other) const { return text == other.text; }
+    SYNTAX_API TextToken(std::string text) : text(std::move(text)) {}
+    SYNTAX_API bool operator==(const TextToken& other) const { return text == other.text; }
 };
 
 export struct IdentifierToken
 {
     std::string text;
-    IdentifierToken(std::string text) : text(std::move(text)) {}
-    bool operator==(const IdentifierToken& other) const { return text == other.text; }
+    SYNTAX_API IdentifierToken(std::string text) : text(std::move(text)) {}
+    SYNTAX_API bool operator==(const IdentifierToken& other) const { return text == other.text; }
 };
 
 export using Token = std::variant<
