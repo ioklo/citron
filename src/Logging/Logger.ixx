@@ -1,7 +1,8 @@
-export module Citron.Logger;
+module;
+#include "LoggingConfig.h"
+#include <memory>
 
-import "LoggingConfig.h";
-import <memory>;
+export module Citron.Logger;
 
 namespace Citron {
 

@@ -1,7 +1,8 @@
-export module Citron.Hash;
+module;
+#include <type_traits>
+#include <vector>
 
-import <type_traits>;
-import <vector>;
+export module Citron.Hash;
 
 namespace Citron {
 

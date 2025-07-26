@@ -1,6 +1,9 @@
-module Citron.StringWriter;
+module;
+#include <cassert>
+#include <string>
+#include <iostream>
 
-import <cassert>;
+module Citron.StringWriter;
 
 using namespace std;
 

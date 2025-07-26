@@ -1,8 +1,9 @@
-export module Citron.Indirect;
+module;
+#include "InfraConfig.h"
+#include <memory>
+#include <utility>
 
-import "InfraConfig.h";
-import <memory>;
-import <utility>;
+export module Citron.Indirect;
 
 namespace Citron {
 

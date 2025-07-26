@@ -1,6 +1,7 @@
-export module Citron.Expected;
+module;
+#include <expected>
 
-import <expected>;
+export module Citron.Expected;
 
 namespace Citron {
 

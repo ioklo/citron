@@ -1,16 +1,11 @@
 
 add_library(Infra SHARED)
 
-target_include_directories(Infra PUBLIC Public/Infra)
-
-target_precompile_headers(Infra PUBLIC
-  <memory>
-  <type_traits>
-  <vector>
-  <string>
-  <expected>
-  <optional>
+target_compile_options(Infra PRIVATE
+        -Wno-unqualified-std-cast-call
 )
+
+target_include_directories(Infra PUBLIC Public/Infra)
 
 target_sources(Infra
   PRIVATE

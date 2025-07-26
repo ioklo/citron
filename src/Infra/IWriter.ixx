@@ -1,6 +1,7 @@
-export module Citron.IWriter;
+module;
+#include <string>
 
-import <string>;
+export module Citron.IWriter;
 
 namespace Citron {
 

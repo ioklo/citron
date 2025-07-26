@@ -1,7 +1,8 @@
-export module Citron.Copy;
+module;
+#include <optional>
+#include <vector>
 
-import <optional>;
-import <vector>;
+export module Citron.Copy;
 
 namespace Citron {
 

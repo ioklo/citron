@@ -1,9 +1,10 @@
+module;
+#include "InfraConfig.h"
+#include <sstream>
+
 export module Citron.StringWriter;
 
-import "InfraConfig.h";
 import Citron.IWriter;
-
-import <sstream>;
 
 namespace Citron {
 

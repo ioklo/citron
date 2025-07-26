@@ -1,6 +1,10 @@
+module;
+#include <sstream>
+#include <variant>
+#include <vector>
+
 module Citron.Json;
 
-import <sstream>;
 import Citron.IWriter;
 
 using namespace std;

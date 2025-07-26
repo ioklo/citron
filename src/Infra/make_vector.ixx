@@ -1,11 +1,13 @@
+module;
+
+#include <type_traits>
+#include <vector>
+
 export module Citron.make_vector;
 
 // Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See
 //  http://www.boost.org/LICENSE_1_0.txt)
-
-import <type_traits>;
-import <vector>;
 
 namespace tcb {
 

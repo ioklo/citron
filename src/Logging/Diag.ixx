@@ -1,10 +1,10 @@
+module;
+#include "LoggingConfig.h"
+#include <variant>
+#include <memory>
+#include <vector>
+
 export module Citron.Diag;
-
-import "LoggingConfig.h";
-
-import <variant>;
-import <memory>;
-import <vector>;
 
 namespace Citron {
 

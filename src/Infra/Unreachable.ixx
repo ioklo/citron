@@ -1,7 +1,7 @@
+module;
+#include "InfraConfig.h"
+#include <cassert>
 export module Citron.Unreachable;
-
-import "InfraConfig.h";
-import <cassert>;
 
 namespace Citron {
 

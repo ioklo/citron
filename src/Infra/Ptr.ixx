@@ -1,6 +1,7 @@
-export module Citron.Ptr;
+module;
+#include <memory>
 
-import <memory>;
+export module Citron.Ptr;
 
 namespace Citron {
 

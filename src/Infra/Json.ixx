@@ -1,12 +1,13 @@
+module;
+#include "InfraConfig.h"
+
+#include <variant>
+#include <string>
+#include <vector>
+#include <optional>
+#include <memory>
+
 export module Citron.Json;
-
-import "InfraConfig.h";
-
-import <variant>;
-import <string>;
-import <vector>;
-import <optional>;
-import <memory>;
 
 import Citron.IWriter;
 
@@ -161,12 +162,12 @@ JsonItem ToJson(std::vector<TElem>&& elems)
     return ToJson(elems);
 }
 
-export INFRA_API void ToString(JsonItem& item, class IWriter& writer)
+export INFRA_API void ToString(JsonItem& item, IWriter& writer)
 {
     return std::visit([&writer](auto&& i) { return i.ToString(writer); }, item);
 }
 
-export INFRA_API void ToString(JsonItem&& item, class IWriter& writer)
+export INFRA_API void ToString(JsonItem&& item, IWriter& writer)
 {
     return ToString(item, writer);
 }
