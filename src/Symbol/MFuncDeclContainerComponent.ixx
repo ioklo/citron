@@ -1,8 +1,10 @@
-export module Citron.MDecls:MFuncDeclContainerComponent;
+module;
+#include <vector>
+#include <memory>
+#include <unordered_map>
+#include <variant>
 
-import <vector>;
-import <memory>;
-import <unordered_map>;
+export module Citron.MDecls:MFuncDeclContainerComponent;
 
 import :MIdentifier;
 

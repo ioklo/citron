@@ -1,7 +1,8 @@
-export module Citron.MDecls:MFuncReturn;
+module;
+#include <variant>
+#include <memory>
 
-import <variant>;
-import <memory>;
+export module Citron.MDecls:MFuncReturn;
 
 namespace Citron {
 

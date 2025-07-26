@@ -1,6 +1,6 @@
+module;
+#include <string>
 export module Citron.MDecls:MModule;
-
-import <string>;
 
 import :MDecl;
 import :MTypeDeclOuter;

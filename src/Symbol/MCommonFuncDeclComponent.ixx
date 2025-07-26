@@ -1,7 +1,8 @@
-export module Citron.MDecls:MCommonFuncDeclComponent;
+module;
+#include <optional>
+#include <vector>
 
-import <optional>;
-import <vector>;
+export module Citron.MDecls:MCommonFuncDeclComponent;
 
 import :MFuncReturn;
 import :MFuncParameter;

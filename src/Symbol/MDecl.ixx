@@ -1,6 +1,7 @@
-export module Citron.MDecls:MDecl;
+module;
+#include <memory>
 
-import <memory>;
+export module Citron.MDecls:MDecl;
 
 namespace Citron {
 
@@ -19,7 +20,7 @@ export class MEnumElemDecl;
 export class MEnumElemVarDecl;
 export class MInterfaceDecl;
 
-class MDeclVisitor;
+export class MDeclVisitor;
 
 export class MDecl
 {

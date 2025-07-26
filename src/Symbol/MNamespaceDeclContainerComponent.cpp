@@ -1,4 +1,8 @@
-module Citron.MDecls:MNamespaceDeclContainerComponent;
+module;
+#include <memory>
+#include <string>
+
+module Citron.MDecls;
 
 import :MDecl;
 import :MNamespaceDecl;

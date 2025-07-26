@@ -1,10 +1,11 @@
+module;
+#include "SymbolConfig.h"
+#include <unordered_map>
+#include <memory>
+#include <string>
+#include <vector>
+
 export module Citron.MDecls:MNamespaceDeclContainerComponent;
-
-import "SymbolConfig.h";
-
-import <unordered_map>;
-import <memory>;
-import <string>;
 
 import :MDecl;
 import :MTypeDecl;

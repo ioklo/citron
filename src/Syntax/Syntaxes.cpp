@@ -1,3 +1,7 @@
+module;
+#include <utility>
+#include <string>
+
 module Citron.Syntax;
 
 import Citron.make_vector;

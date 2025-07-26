@@ -5,7 +5,7 @@ import :MDecl;
 namespace Citron {
 
 // 같은 unit내에서 forward declaration
-class MTypeDeclVisitor;
+export class MTypeDeclVisitor;
 
 export class MTypeDecl
 {

@@ -1,3 +1,9 @@
+module;
+#include "SymbolConfig.h"
+#include <memory>
+#include <vector>
+#include <optional>
+
 export module Citron.MDecls:MStructDecl;
 
 import :MStructCtorDecl;
@@ -15,7 +21,6 @@ import :MNames;
 
 namespace Citron
 {
-
 export class MType;
 export using MTypePtr = std::shared_ptr<MType>;
 

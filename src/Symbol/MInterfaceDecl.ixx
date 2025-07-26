@@ -1,6 +1,7 @@
-export module Citron.MDecls:MInterfaceDecl;
+module;
+#include <vector>
 
-import <vector>;
+export module Citron.MDecls:MInterfaceDecl;
 
 import :MDecl;
 import :MTypeDecl;

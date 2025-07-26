@@ -1,10 +1,11 @@
-export module Citron.CodeGenerator.Misc;
+module;
+#include <string>
+#include <vector>
+#include <variant>
+#include <sstream>
+#include <filesystem>
 
-import <string>;
-import <vector>;
-import <variant>;
-import <sstream>;
-import <filesystem>;
+export module Citron.CodeGenerator.Misc;
 
 export namespace Citron {
 

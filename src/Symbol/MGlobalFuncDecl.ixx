@@ -1,7 +1,9 @@
-export module Citron.MDecls:MGlobalFuncDecl;
+module;
+#include <vector>
+#include <optional>
+#include <memory>
 
-import <vector>;
-import <optional>;
+export module Citron.MDecls:MGlobalFuncDecl;
 
 import :MDecl;
 import :MBodyDeclOuter;

@@ -1,6 +1,6 @@
+module;
+#include <memory>
 export module Citron.MDecls:MStructVarDecl;
-
-import <memory>;
 
 import :MDecl;
 import :MType;

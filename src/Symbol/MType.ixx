@@ -1,8 +1,9 @@
-export module Citron.MDecls:MType;
+module;
+#include <vector>
+#include <memory>
+#include <string>
 
-import <vector>;
-import <memory>;
-import <string>;
+export module Citron.MDecls:MType;
 
 import :MFuncReturn;
 import :MFuncParameter;
@@ -17,14 +18,14 @@ export class MTypeArguments;
 export using MTypeArgumentsPtr = std::shared_ptr<MTypeArguments>;
 
 // 같은 unit내에서의 forward declaration
-class MType_Nullable;
-class MType_TypeVar;  // 이것은 Symbol인가?
-class MType_Void;     // builtin type
-class MType_Tuple;    // inline type
-class MType_Func;     // inline type, circular
-class MType_LocalPtr; // inline type
-class MType_BoxPtr;   // inline type
-class MType_Instance;
+export class MType_Nullable;
+export class MType_TypeVar;  // 이것은 Symbol인가?
+export class MType_Void;     // builtin type
+export class MType_Tuple;    // inline type
+export class MType_Func;     // inline type, circular
+export class MType_LocalPtr; // inline type
+export class MType_BoxPtr;   // inline type
+export class MType_Instance;
 
 export class MTypeVisitor
 {

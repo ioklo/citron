@@ -1,9 +1,9 @@
+module;
+#include "SymbolConfig.h"
+#include <string>
+#include <memory>
+
 export module Citron.MDecls:MDeclId;
-
-import "SymbolConfig.h";
-
-import <string>;
-import <memory>;
 
 import :MIdentifier;
 
@@ -12,7 +12,7 @@ namespace Citron {
 export class MDeclId;
 export using MDeclIdPtr = std::shared_ptr<MDeclId>;
 
-class MDeclIdFactory;
+export class MDeclIdFactory;
 
 export class MDeclPath
 {

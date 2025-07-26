@@ -1,6 +1,7 @@
-export module Citron.MDecls:MClassVarDecl;
+module;
+#include <memory>
 
-import <memory>;
+export module Citron.MDecls:MClassVarDecl;
 
 import :MDecl;
 import :MType;

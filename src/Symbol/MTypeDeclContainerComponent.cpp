@@ -1,6 +1,7 @@
-module Citron.MDecls:MTypeDeclContainerComponent;
+module;
+#include <optional>
 
-import <optional>;
+module Citron.MDecls;
 
 using namespace std;
 

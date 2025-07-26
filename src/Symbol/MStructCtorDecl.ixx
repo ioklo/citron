@@ -1,7 +1,8 @@
-export module Citron.MDecls:MStructCtorDecl;
+module;
+#include <memory>
+#include <vector>
 
-import <memory>;
-import <vector>;
+export module Citron.MDecls:MStructCtorDecl;
 
 import :MDecl;
 import :MBodyDeclOuter;

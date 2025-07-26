@@ -1,7 +1,9 @@
-export module Citron.MDecls:MBodyDeclOuter;
+module;
 
-import <variant>;
-import <memory>;
+#include <variant>
+#include <memory>
+
+export module Citron.MDecls:MBodyDeclOuter;
 
 namespace Citron {
 

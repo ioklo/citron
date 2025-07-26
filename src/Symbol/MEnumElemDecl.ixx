@@ -1,16 +1,18 @@
-export module Citron.MDecls:MEnumElemDecl;
+module;
 
-import <optional>;
-import <vector>;
-import <memory>;
-import <string>;
+#include "SymbolConfig.h"
+#include <optional>
+#include <vector>
+#include <memory>
+#include <string>
+
+export module Citron.MDecls:MEnumElemDecl;
 
 import :MDecl;
 import :MTypeDecl;
 
 namespace Citron
 {
-
 export class MEnumElemDecl
     : public MDecl
     , public MTypeDecl
@@ -20,6 +22,7 @@ export class MEnumElemDecl
     std::optional<std::vector<MEnumElemVarDecl>> vars; // lazy-init
 
 public:
+    SYMBOL_API ~MEnumElemDecl();
     void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
     void Accept(MTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
 };

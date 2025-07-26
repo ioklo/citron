@@ -1,8 +1,10 @@
-export module Citron.MDecls:MEnumDecl;
+module;
 
-import <vector>;
-import <optional>;
-import <memory>;
+#include <vector>
+#include <optional>
+#include <memory>
+
+export module Citron.MDecls:MEnumDecl;
 
 import :MDecl;
 import :MTypeDecl;

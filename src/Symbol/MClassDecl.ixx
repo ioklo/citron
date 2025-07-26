@@ -1,6 +1,11 @@
-export module Citron.MDecls:MClassDecl;
+module;
+#include "SymbolConfig.h"
+#include <memory>
+#include <vector>
+#include <optional>
+#include <variant>
 
-import <memory>;
+export module Citron.MDecls:MClassDecl;
 
 import :MClassCtorDecl;
 import :MClassFuncDecl;
@@ -15,6 +20,8 @@ import :MTypeDeclOuter;
 
 import :MAccessor;
 import :MNames;
+
+import Citron.Hash;
 
 namespace Citron
 {

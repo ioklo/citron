@@ -1,4 +1,11 @@
+module;
+#include "SymbolConfig.h"
+#include <string>
+#include <variant>
+
 export module Citron.MDecls:MNames;
+
+import Citron.Hash;
 
 #define DECLARE_DEFAULTS(linkage, className) \
     className(const className&) = delete; \
@@ -8,10 +15,6 @@ export module Citron.MDecls:MNames;
     linkage ~className(); \
     linkage className Copy() const;
 
-import "SymbolConfig.h";
-import <string>;
-import <variant>;
-
 namespace Citron
 {
 
@@ -19,6 +22,7 @@ namespace Citron
 // 이름 name, 타입 파라미터 개수 type parameter count, func parameterIds
 export class MName_Normal
 {
+public:
     std::string text;
 
 public:
@@ -28,6 +32,7 @@ public:
 
 export class MName_Reserved
 {
+public:
     std::string text;
 
 public:
@@ -37,6 +42,7 @@ public:
 
 export class MName_Lambda
 {
+public:
     int index;
 
 public:
@@ -46,6 +52,7 @@ public:
 
 export class MName_CtorParam
 {
+public:
     int index;
     std::string paramText;
 public:
@@ -63,3 +70,52 @@ export using MName = std::variant<
 export SYMBOL_API MName Copy(const MName& name);
 
 }
+
+
+namespace std
+{
+    export template<>
+    struct hash<Citron::MName_Normal>
+    {
+        std::size_t operator()(const Citron::MName_Normal& name) const noexcept
+        {
+            size_t s = 0;
+            Citron::hash_combine(s, name.text);
+            return s;
+        }
+    };
+
+    export template<>
+    struct hash<Citron::MName_Reserved>
+    {
+        std::size_t operator()(const Citron::MName_Reserved& name) const noexcept
+        {
+            size_t s = 0;
+            Citron::hash_combine(s, name.text);
+            return s;
+        }
+    };
+
+    export template<>
+    struct hash<Citron::MName_Lambda>
+    {
+        std::size_t operator()(const Citron::MName_Lambda& name) const noexcept
+        {
+            size_t s = 0;
+            Citron::hash_combine(s, name.index);
+            return s;
+        }
+    };
+
+    export template<>
+    struct hash<Citron::MName_CtorParam>
+    {
+        std::size_t operator()(const Citron::MName_CtorParam& name) const noexcept
+        {
+            size_t s = 0;
+            Citron::hash_combine(s, name.index);
+            Citron::hash_combine(s, name.paramText);
+            return s;
+        }
+    };
+} // namespace std

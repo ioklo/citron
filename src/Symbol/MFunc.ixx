@@ -1,6 +1,8 @@
+module;
+#include <memory>
+
 export module Citron.MDecls:MFunc;
 
-import <memory>;
 import :MTypeArguments;
 
 namespace Citron {

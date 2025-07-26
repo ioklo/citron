@@ -1,8 +1,10 @@
-module Citron.CodeGenerator.Misc;
+module;
+#include <fmt/core.h>
+#include <fstream>
+#include <iostream>
+#include <variant>
 
-import <fmt/core.h>;
-import <fstream>;
-import <iostream>;
+module Citron.CodeGenerator.Misc;
 
 using namespace std;
 using namespace std::filesystem;

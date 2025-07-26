@@ -1,10 +1,12 @@
+module;
+#include "SyntaxConfig.h"
+#include <string>
+#include <vector>
+#include <optional>
+#include <memory>
+#include <variant>
+
 export module Citron.Syntax:Generated;
-import "SyntaxConfig.h";
-import <string>;
-import <vector>;
-import <optional>;
-import <memory>;
-import <variant>;
 
 import Citron.Json;
 import Citron.Unreachable;

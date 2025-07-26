@@ -1,7 +1,11 @@
+module;
+#include <iostream>
+#include <filesystem>
+
+#include <fmt/core.h>
+
 module Citron.SyntaxCodeGenerator;
 
-import <iostream>;
-import <fmt/core.h>;
 import Citron.CodeGenerator.Misc;
 
 using namespace std;

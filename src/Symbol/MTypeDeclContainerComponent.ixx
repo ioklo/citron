@@ -1,10 +1,11 @@
+module;
+#include <vector>
+#include <unordered_map>
+#include <variant>
+
 export module Citron.MDecls:MTypeDeclContainerComponent;
 
-import <vector>;
-import <unordered_map>;
-
 import :MTypeDecl;
-
 import :MNames;
 
 namespace Citron {

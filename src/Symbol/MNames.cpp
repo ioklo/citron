@@ -1,4 +1,8 @@
-module Citron.MDecls:MNames;
+module;
+#include <string>
+#include <variant>
+
+module Citron.MDecls;
 
 #define IMPLEMENT_DEFAULTS(className) \
     className::className(className&&) = default; \

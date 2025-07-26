@@ -1,4 +1,9 @@
-module Citron.Syntax:Generated;
+module;
+#include <memory>
+#include <vector>
+#include <optional>
+
+module Citron.Syntax;
 
 import Citron.Json;
 

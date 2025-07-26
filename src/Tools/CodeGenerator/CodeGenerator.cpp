@@ -1,12 +1,10 @@
-// CodeGenerator.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
 
+#include <iostream>
+#include <locale>
+#include <filesystem>
+#include <string>
+#include <vector>
 
-import <iostream>;
-import <locale>;
-import <filesystem>;
-import <string>;
-import <vector>;
 import Citron.SyntaxCodeGenerator;
 
 using namespace std;

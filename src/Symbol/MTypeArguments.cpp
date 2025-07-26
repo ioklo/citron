@@ -1,4 +1,4 @@
-module Citron.MDecls:MTypeArguments;
+module Citron.MDecls;
 
 namespace Citron {
 

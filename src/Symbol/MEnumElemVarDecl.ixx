@@ -1,7 +1,8 @@
-export module Citron.MDecls:MEnumElemVarDecl;
+module;
+#include <memory>
+#include <optional>
 
-import <memory>;
-import <optional>;
+export module Citron.MDecls:MEnumElemVarDecl;
 
 import :MDecl;
 import :MNames;

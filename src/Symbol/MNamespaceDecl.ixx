@@ -1,7 +1,9 @@
-export module Citron.MDecls:MNamespaceDecl;
+module;
+#include "SymbolConfig.h"
+#include <string>
+#include <memory>
 
-import "SymbolConfig.h";
-import <string>;
+export module Citron.MDecls:MNamespaceDecl;
 
 import :MDecl;
 import :MTypeDeclOuter;

@@ -1,6 +1,7 @@
-export module Citron.SyntaxCodeGenerator;
+module;
+#include <filesystem>
 
-import <filesystem>;
+export module Citron.SyntaxCodeGenerator;
 
 namespace Citron {
 

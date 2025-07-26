@@ -1,7 +1,8 @@
-export module Citron.MDecls:MTypeArguments;
+module;
+#include <vector>
+#include <memory>
 
-import <vector>;
-import <memory>;
+export module Citron.MDecls:MTypeArguments;
 
 namespace Citron {
 

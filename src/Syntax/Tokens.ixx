@@ -1,9 +1,10 @@
+module;
+#include "SyntaxConfig.h"
+
+#include <string>
+#include <variant>
+
 export module Citron.Tokens;
-
-import "SyntaxConfig.h";
-
-import <string>;
-import <variant>;
 
 namespace Citron {
 

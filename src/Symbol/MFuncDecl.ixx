@@ -1,6 +1,7 @@
-export module Citron.MDecls:MFuncDecl;
+module;
+#include <memory>
 
-import <memory>;
+export module Citron.MDecls:MFuncDecl;
 
 namespace Citron
 {
@@ -11,7 +12,7 @@ export class MClassFuncDecl;
 export class MStructCtorDecl;
 export class MStructFuncDecl;
 
-class MFuncDeclVisitor;
+export class MFuncDeclVisitor;
 
 export class MFuncDecl
 {

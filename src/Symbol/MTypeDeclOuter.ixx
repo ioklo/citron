@@ -1,6 +1,6 @@
+module;
+#include <memory>
 export module Citron.MDecls:MTypeDeclOuter;
-
-import <memory>;
 
 namespace Citron
 {
@@ -10,7 +10,7 @@ export class MClassDecl;
 export class MStructDecl;
 
 // 같은 unit내에서의 forward declaration
-class MTypeDeclOuterVisitor;
+export class MTypeDeclOuterVisitor;
 
 // 보통 타입의 Outer
 export class MTypeDeclOuter

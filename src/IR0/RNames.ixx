@@ -55,7 +55,7 @@ export IR0_API extern RName _this; // "this"
 
 } // namespace RNames
 
-}
+} // namespace Citron
 
 namespace std {
 
@@ -104,4 +104,4 @@ struct hash<Citron::RName_CtorParam>
     }
 };
 
-} // namespace Citron
+} // namespace std

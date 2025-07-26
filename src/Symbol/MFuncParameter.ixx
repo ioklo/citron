@@ -1,8 +1,7 @@
+module;
+#include <string>
+#include <memory>
 export module Citron.MDecls:MFuncParameter;
-
-import <string>;
-import <memory>;
-
 
 namespace Citron {
 

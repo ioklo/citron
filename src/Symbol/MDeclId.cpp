@@ -1,4 +1,4 @@
-module Citron.MDecls:MDeclId;
+module Citron.MDecls;
 
 namespace Citron {
 

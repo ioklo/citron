@@ -1,2 +1,2 @@
-module Citron.MDecls:MType;
+module Citron.MDecls;
 
