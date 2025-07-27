@@ -3,6 +3,7 @@ module;
 #include <memory>
 #include <vector>
 #include <optional>
+#include <string>
 
 export module Citron.MDecls:MStructDecl;
 

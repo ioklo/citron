@@ -1,24 +1,11 @@
-module;
+#pragma once
+
 #include <type_traits>
 #include <vector>
 
-export module Citron.Hash;
-
-namespace Citron {
-
-// from https://stackoverflow.com/a/2595226/25053202
-export template <class T>
-inline void hash_combine(std::size_t& seed, const T& v)
-{
-    std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-}
-
-}
-
 namespace std {
 
-export template<typename T>
+template<typename T>
 struct hash<std::vector<T>>
 {
     std::size_t operator()(const std::vector<T>& vec) const noexcept {
@@ -31,5 +18,16 @@ struct hash<std::vector<T>>
     }
 };
 
+}
+
+namespace Citron {
+
+// from https://stackoverflow.com/a/2595226/25053202
+template <class T, class Hasher = std::hash<T>>
+void hash_combine(std::size_t& seed, const T& v)
+{
+    Hasher hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
 
 }

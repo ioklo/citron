@@ -1,5 +1,6 @@
 module;
 #include <vector>
+#include <string>
 
 export module Citron.MDecls:MInterfaceDecl;
 

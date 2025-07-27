@@ -2,6 +2,7 @@ module;
 #include <memory>
 #include <vector>
 #include <optional>
+#include <string>
 
 module Citron.Syntax;
 

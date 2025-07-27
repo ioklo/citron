@@ -7,6 +7,9 @@
     <ClInclude Include="Public\Infra\Defaults.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\Infra\Hash.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Json.cpp" />
@@ -14,7 +17,6 @@
     <ClCompile Include="Variants.ixx" />
     <ClCompile Include="Copy.ixx" />
     <ClCompile Include="Exceptions.ixx" />
-    <ClCompile Include="Hash.ixx" />
     <ClCompile Include="Indirect.ixx" />
     <ClCompile Include="IWriter.ixx" />
     <ClCompile Include="Json.ixx" />

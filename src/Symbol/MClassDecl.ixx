@@ -4,6 +4,8 @@ module;
 #include <vector>
 #include <optional>
 #include <variant>
+#include <string>
+#include "Infra/Hash.h"
 
 export module Citron.MDecls:MClassDecl;
 
@@ -20,8 +22,6 @@ import :MTypeDeclOuter;
 
 import :MAccessor;
 import :MNames;
-
-import Citron.Hash;
 
 namespace Citron
 {

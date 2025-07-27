@@ -2,10 +2,9 @@ module;
 #include "SymbolConfig.h"
 #include <string>
 #include <variant>
+#include "Infra/Hash.h"
 
 export module Citron.MDecls:MNames;
-
-import Citron.Hash;
 
 #define DECLARE_DEFAULTS(linkage, className) \
     className(const className&) = delete; \

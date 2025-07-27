@@ -3,6 +3,7 @@ module;
 #include <vector>
 #include <optional>
 #include <memory>
+#include <string>
 
 export module Citron.MDecls:MEnumDecl;
 

@@ -1,3 +1,7 @@
+module;
+module;
+#include "Infra/Hash.h"
+
 module Citron.RDecls:RTypeFactory;
 
 import Citron.Hash;

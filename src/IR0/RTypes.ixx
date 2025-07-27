@@ -1,3 +1,6 @@
+module;
+#include "Infra/Hash.h"
+
 export module Citron.RDecls:RTypes;
 
 import "IR0Config.h";

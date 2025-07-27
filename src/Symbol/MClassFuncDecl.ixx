@@ -1,6 +1,7 @@
 module;
 #include <vector>
 #include <memory>
+#include <string>
 
 export module Citron.MDecls:MClassFuncDecl;
 

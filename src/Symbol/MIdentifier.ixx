@@ -1,11 +1,11 @@
 module;
 #include <vector>
 #include <memory>
+#include "Infra/Hash.h"
 
 export module Citron.MDecls:MIdentifier;
 
 import :MNames;
-import Citron.Hash;
 
 namespace Citron {
 
@@ -32,6 +32,9 @@ struct hash<Citron::MIdentifier>
         Citron::hash_combine(s, identifier.name);
         Citron::hash_combine(s, identifier.typeParamCount);
         Citron::hash_combine(s, identifier.paramIds);
+
+        //std::hash<std::vector<Citron::MTypePtr>> hasher;
+        // s ^= hasher(identifier.paramIds) + 0x9e3779b9 + (s << 6) + (s >> 2);
         return s;
     }
 };

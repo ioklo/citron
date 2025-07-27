@@ -1,9 +1,9 @@
+module;
+#include "Infra/Hash.h"
 export module Citron.RDecls:RIdentifier;
 
 import <memory>;
 import <vector>;
-
-import Citron.Hash;
 
 import :RNames;
 

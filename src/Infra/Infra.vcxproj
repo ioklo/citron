@@ -148,13 +148,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Public\Infra\Defaults.h" />
+    <ClInclude Include="Public\Infra\Hash.h" />
     <ClInclude Include="Public\Infra\InfraConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Copy.ixx" />
     <ClCompile Include="Exceptions.ixx" />
     <ClCompile Include="Expected.ixx" />
-    <ClCompile Include="Hash.ixx" />
     <ClCompile Include="Indirect.ixx" />
     <ClCompile Include="IWriter.ixx" />
     <ClCompile Include="Json.cpp" />

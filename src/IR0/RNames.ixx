@@ -1,11 +1,12 @@
+module;
+#include "Infra/Hash.h"
+
 export module Citron.RDecls:RNames;
 
 import "IR0Config.h";
 
 import <string>;
 import <variant>;
-
-import Citron.Hash;
 
 namespace Citron {
 
