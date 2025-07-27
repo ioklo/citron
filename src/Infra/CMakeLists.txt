@@ -16,13 +16,13 @@ target_sources(Infra
     FILES
       Public/Infra/Defaults.h
       Public/Infra/InfraConfig.h
+      Public/Infra/Hash.h
   PUBLIC FILE_SET cxx_modules
     TYPE CXX_MODULES
     FILES
       Copy.ixx
       Exceptions.ixx
       Expected.ixx
-      Hash.ixx
       Indirect.ixx
       IWriter.ixx
       Json.ixx

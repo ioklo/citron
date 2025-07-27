@@ -5,7 +5,9 @@ target_compile_options(Symbol PRIVATE
         -Wno-unqualified-std-cast-call
 )
 
-target_include_directories(Symbol PUBLIC Public/Symbol)
+target_include_directories(Symbol PUBLIC
+        ../Infra/Public
+        Public/Symbol)
 target_link_libraries(Symbol PUBLIC Infra)
 
 target_sources(Symbol
