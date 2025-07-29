@@ -1,8 +1,8 @@
-module Citron.Buffer;
+#include "Buffer.h"
 
-import <cassert>;
-import <Unicode/unistr.h>;
-import <Unicode/uchar.h>;
+#include <cassert>
+#include <Unicode/unistr.h>
+#include <Unicode/uchar.h>
 
 using namespace std;
 using namespace icu;

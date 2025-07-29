@@ -16,31 +16,30 @@
     <ClCompile Include="ParserMisc.cpp" />
     <ClCompile Include="StmtParser.cpp" />
     <ClCompile Include="ScriptParser.cpp" />
-    <ClCompile Include="Buffer.ixx">
-      <Filter>Public Headers</Filter>
-    </ClCompile>
-    <ClCompile Include="ExpParser.ixx">
-      <Filter>Public Headers</Filter>
-    </ClCompile>
-    <ClCompile Include="Lexer.ixx">
-      <Filter>Public Headers</Filter>
-    </ClCompile>
-    <ClCompile Include="ScriptParser.ixx">
-      <Filter>Public Headers</Filter>
-    </ClCompile>
-    <ClCompile Include="StmtParser.ixx">
-      <Filter>Public Headers</Filter>
-    </ClCompile>
-    <ClCompile Include="TypeExpParser.ixx">
-      <Filter>Public Headers</Filter>
-    </ClCompile>
-    <ClCompile Include="ParserMisc.ixx" />
-    <ClCompile Include="TextAnalysis-HeaderUnits.ixx">
-      <Filter>Public Headers</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\TextAnalysis\TextAnalysisConfig.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\TextAnalysis\Buffer.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\TextAnalysis\ExpParser.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\TextAnalysis\Lexer.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\TextAnalysis\ParserMisc.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\TextAnalysis\ScriptParser.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\TextAnalysis\StmtParser.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\TextAnalysis\TypeExpParser.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
   </ItemGroup>

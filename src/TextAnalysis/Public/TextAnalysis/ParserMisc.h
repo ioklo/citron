@@ -1,13 +1,14 @@
-export module Citron.ParserMisc;
+#pragma once
 
-import <optional>;
-import <variant>;
-import Citron.Tokens;
-import Citron.Lexer;
+#include <optional>
+#include <variant>
+
+#include "Syntax/Tokens.h"
+#include "Lexer.h"
 
 namespace Citron {
 
-export template<typename TToken>
+template<typename TToken>
 std::optional<TToken> Accept(Lexer* lexer, std::optional<LexResult> lexResult)
 {
     if (lexResult)
@@ -22,32 +23,32 @@ std::optional<TToken> Accept(Lexer* lexer, std::optional<LexResult> lexResult)
     return std::nullopt;
 }
 
-export template<typename TToken>
+template<typename TToken>
 std::optional<TToken> Accept(Lexer* lexer)
 {
     auto oLexResult = lexer->LexNormalMode(true);
     return Accept<TToken>(lexer, std::move(oLexResult));
 }
 
-export template<typename TToken>
+template<typename TToken>
 bool Peek(Lexer& lexer)
 {
     auto oLexResult = lexer.LexNormalMode(true);
     return oLexResult && std::holds_alternative<TToken>(oLexResult->token);
 }
 
-export template<typename TToken>
+template<typename TToken>
 bool Peek(std::optional<LexResult> oLexResult)
 {
     return oLexResult && std::holds_alternative<TToken>(oLexResult->token);
 }
 
-export struct OutAndParams
+struct OutAndParams
 {
     bool bOut;
     bool bParams;
 };
 
-export std::optional<OutAndParams> AcceptParseOutAndParams(Lexer* lexer);
+std::optional<OutAndParams> AcceptParseOutAndParams(Lexer* lexer);
 
 }

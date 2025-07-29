@@ -1,17 +1,17 @@
-module Citron.ScriptParser;
+#include "ScriptParser.h"
 
-import <optional>;
-import <memory>;
+#include <optional>
+#include <memory>
 
-import Citron.Ptr;
-import Citron.Syntax;
+#include "Infra/Ptr.h"
+#include "Syntax/Syntax.h"
+#include "Syntax/Tokens.h"
 
-import Citron.Lexer;
-import Citron.ExpParser;
-import Citron.StmtParser;
-import Citron.TypeExpParser;
-import Citron.ParserMisc;
-import Citron.Tokens;
+#include "Lexer.h"
+#include "ExpParser.h"
+#include "StmtParser.h"
+#include "TypeExpParser.h"
+#include "ParserMisc.h"
 
 using namespace std;
 

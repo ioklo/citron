@@ -1,13 +1,13 @@
-export module Citron.Buffer;
+#pragma once
 
-import "TextAnalysisConfig.h";
+#include "TextAnalysisConfig.h"
 
-import <vector>;
-import <optional>;
-import <unordered_map>;
-import <variant>;
-import <memory>;
-import <string>;
+#include <vector>
+#include <optional>
+#include <unordered_map>
+#include <variant>
+#include <memory>
+#include <string>
 
 namespace Citron {
 
@@ -20,7 +20,7 @@ using BufferPosition = std::variant<ValidBufferPosition, EndBufferPosition>;
 //   - 가리키고 있는 상태 (코드포인트와 다음 인덱스가 있다) => next(가리키는 상태) => 가리키는 상태 or 끝
 //   - 끝(끝을 가리키고 있다) => next(끝) => 에러
 
-export class ValidBufferPosition
+class ValidBufferPosition
 {
     std::weak_ptr<Buffer> weakBuffer;
     char32_t codePoint;
@@ -45,15 +45,15 @@ public:
     std::optional<BufferPosition> Next();
 };
 
-export class EndBufferPosition
+class EndBufferPosition
 {
     // no next
 };
 
-export using BufferPosition = std::variant<ValidBufferPosition, EndBufferPosition>;
+using BufferPosition = std::variant<ValidBufferPosition, EndBufferPosition>;
 
 // 필요없지 않은가, 일단 래핑
-export class Buffer : public std::enable_shared_from_this<Buffer>
+class Buffer : public std::enable_shared_from_this<Buffer>
 {
     std::u32string string;
 

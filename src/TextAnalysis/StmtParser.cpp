@@ -1,18 +1,18 @@
-module Citron.StmtParser;
+#include "StmtParser.h"
 
-import <optional>;
-import <algorithm>;
-import <cassert>;
+#include <optional>
+#include <algorithm>
+#include <cassert>
 
-import <unicode/uchar.h>;
+#include <unicode/uchar.h>
 
-import Citron.Ptr;
-import Citron.Syntax;
-import Citron.Lexer;
-import Citron.ExpParser;
-import Citron.TypeExpParser;
-import Citron.ParserMisc;
-import Citron.Tokens;
+#include "Infra/Ptr.h"
+#include "Syntax/Syntax.h"
+#include "Syntax/Tokens.h"
+#include "Lexer.h"
+#include "ExpParser.h"
+#include "TypeExpParser.h"
+#include "ParserMisc.h"
 
 using namespace std;
 

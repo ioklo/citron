@@ -22,5 +22,6 @@
   <ItemGroup>
     <ClCompile Include="Syntaxes.g.cpp" />
     <ClCompile Include="Syntaxes.cpp" />
+    <ClCompile Include="Tokens.cpp" />
   </ItemGroup>
 </Project>

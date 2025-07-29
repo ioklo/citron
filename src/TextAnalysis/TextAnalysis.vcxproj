@@ -144,24 +144,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\TextAnalysis\Buffer.h" />
+    <ClInclude Include="Public\TextAnalysis\ExpParser.h" />
+    <ClInclude Include="Public\TextAnalysis\Lexer.h" />
+    <ClInclude Include="Public\TextAnalysis\ParserMisc.h" />
+    <ClInclude Include="Public\TextAnalysis\ScriptParser.h" />
+    <ClInclude Include="Public\TextAnalysis\StmtParser.h" />
     <ClInclude Include="Public\TextAnalysis\TextAnalysisConfig.h" />
+    <ClInclude Include="Public\TextAnalysis\TypeExpParser.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Buffer.cpp" />
-    <ClCompile Include="Buffer.ixx" />
     <ClCompile Include="ExpParser.cpp" />
-    <ClCompile Include="ExpParser.ixx" />
-    <ClCompile Include="TextAnalysis-HeaderUnits.ixx" />
     <ClCompile Include="Lexer.cpp" />
-    <ClCompile Include="Lexer.ixx" />
     <ClCompile Include="ParserMisc.cpp" />
-    <ClCompile Include="ParserMisc.ixx" />
     <ClCompile Include="ScriptParser.cpp" />
-    <ClCompile Include="ScriptParser.ixx" />
     <ClCompile Include="StmtParser.cpp" />
-    <ClCompile Include="StmtParser.ixx" />
     <ClCompile Include="TypeExpParser.cpp" />
-    <ClCompile Include="TypeExpParser.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">

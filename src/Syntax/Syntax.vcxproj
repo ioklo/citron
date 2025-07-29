@@ -27,6 +27,7 @@
   <ItemGroup>
     <ClCompile Include="Syntaxes.cpp" />
     <ClCompile Include="Syntaxes.g.cpp" />
+    <ClCompile Include="Tokens.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">

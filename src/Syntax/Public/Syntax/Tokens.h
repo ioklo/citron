@@ -4,11 +4,9 @@
 #include <string>
 #include <variant>
 
-export module Citron.Tokens;
-
 namespace Citron {
 
-#define TOKEN_DEF(name, text) export struct name { \
+#define TOKEN_DEF(name, text) struct name { \
     const wchar_t* DebugText = text; \
     SYNTAX_API bool operator==(const name&) const { return true; } \
 };
@@ -85,14 +83,14 @@ TOKEN_DEF(EndOfFileToken, L"<eof>")
 TOKEN_DEF(AtToken, L"@")
 
 // digit
-export struct IntToken
+struct IntToken
 {
     int value;
     SYNTAX_API IntToken(int value) : value(value) {}
     SYNTAX_API bool operator==(const IntToken& other) const { return value == other.value; }
 };
 
-export struct BoolToken
+struct BoolToken
 {
     bool value;
 
@@ -100,21 +98,21 @@ export struct BoolToken
     SYNTAX_API bool operator==(const BoolToken& other) const { return value == other.value; }
 };
 
-export struct TextToken
+struct TextToken
 {
     std::string text;
     SYNTAX_API TextToken(std::string text) : text(std::move(text)) {}
     SYNTAX_API bool operator==(const TextToken& other) const { return text == other.text; }
 };
 
-export struct IdentifierToken
+struct IdentifierToken
 {
     std::string text;
     SYNTAX_API IdentifierToken(std::string text) : text(std::move(text)) {}
     SYNTAX_API bool operator==(const IdentifierToken& other) const { return text == other.text; }
 };
 
-export using Token = std::variant<
+using Token = std::variant<
     EqualEqualToken,
     ExclEqualToken,
 
@@ -193,14 +191,14 @@ export using Token = std::variant<
     IdentifierToken
 > ;
 
-export template<typename TToken, typename = std::enable_if_t<!std::is_same_v<TToken, Token>&& std::is_assignable_v<Token, TToken>>>
+template<typename TToken, typename = std::enable_if_t<!std::is_same_v<TToken, Token>&& std::is_assignable_v<Token, TToken>>>
 bool operator==(const Token& token1, const TToken& token2)
 {
     const TToken* c = std::get_if<TToken>(&token1);
     return c && *c == token2; // true if v contains a T that compares equal to t    
 }
 
-export template<typename TToken, typename = std::enable_if_t<!std::is_same_v<TToken, Token>&& std::is_assignable_v<Token, TToken>>>
+template<typename TToken, typename = std::enable_if_t<!std::is_same_v<TToken, Token>&& std::is_assignable_v<Token, TToken>>>
 bool operator==(const TToken& token1, const Token& token2)
 {
     const TToken* c = std::get_if<TToken>(&token2);
