@@ -1,13 +1,12 @@
-module;
+#pragma once
 #include "InfraConfig.h"
+
 #include <memory>
 #include <utility>
 
-export module Citron.Indirect;
-
 namespace Citron {
 
-export template<typename T>
+template<typename T>
 class Indirect
 {
     std::unique_ptr<T> ptr;

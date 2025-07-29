@@ -1,11 +1,10 @@
-module;
-#include <string>
+#pragma once
 
-export module Citron.IWriter;
+#include <string>
 
 namespace Citron {
 
-export class IWriter
+class IWriter
 {
 public:
     virtual ~IWriter() = default; // default implementation

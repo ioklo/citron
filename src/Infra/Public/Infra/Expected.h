@@ -1,11 +1,10 @@
-module;
-#include <expected>
+#pragma once
 
-export module Citron.Expected;
+#include <expected>
 
 namespace Citron {
 
-export template<typename V, typename E>
+template<typename V, typename E>
 std::unexpected<E> Unexpected(std::expected<V, E>&& e)
 {
     return std::unexpected{std::move(e).error()};

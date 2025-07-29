@@ -1,9 +1,7 @@
-module;
+#pragma once
 
 #include <type_traits>
 #include <vector>
-
-export module Citron.make_vector;
 
 // Copyright (c) 2019 Tristan Brindle (tcbrindle at gmail dot com)
 // Distributed under the Boost Software License, Version 1.0. (See
@@ -63,7 +61,7 @@ std::vector<T> make_vector_impl(Args&&... args)
 } // namespace detail
 
 
-export template <typename T = void, typename... Args,
+template <typename T = void, typename... Args,
     typename V = detail::vec_type_helper_t<T, Args...>,
     typename std::enable_if<
     detail::all_constructible_and_convertible<V, Args...>::value, int>::type = 0>
