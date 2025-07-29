@@ -1,6 +1,6 @@
-module Citron.SyntaxIR0Translator:FuncMatching;
+#include "FuncMatching.h"
 
-import Citron.Exceptions;
+#include "Infra/Exceptions.h"
 
 using namespace std;
 

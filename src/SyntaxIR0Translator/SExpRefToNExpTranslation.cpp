@@ -1,11 +1,11 @@
-module Citron.SyntaxIR0Translator:SExpRefToNExpTranslation;
+#include "SExpRefToNExpTranslation.h"
 
-import <expected>;
+#include <expected>
 
-import :SExpRefToIrExpTranslation;
-import :IrExpToNExpTranslation;
+#include "SExpRefToIrExpTranslation.h"
+#include "IrExpToNExpTranslation.h"
 
-import :IrExp;
+#include "IrExp.h"
 
 using namespace std;
 

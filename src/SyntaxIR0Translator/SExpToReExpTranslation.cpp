@@ -1,16 +1,17 @@
-module Citron.SyntaxIR0Translator:SExpToReExpTranslation;
+#include "SExpToReExpTranslation.h"
 
-import <expected>;
+#include <expected>
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.Syntax;
-import Citron.Diag;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Syntax/Syntax.h"
+#include "Logging/Diag.h"
+#include "IR0/NExp.h"
 
-import :SExpToImExpTranslation;
-import :ImExpToReExpTranslation;
-import :ReExp;
-import :SExpToNExpTranslation;
+#include "SExpToImExpTranslation.h"
+#include "ImExpToReExpTranslation.h"
+#include "ReExp.h"
+#include "SExpToNExpTranslation.h"
 
 using namespace std;
 

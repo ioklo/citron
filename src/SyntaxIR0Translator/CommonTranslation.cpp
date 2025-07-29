@@ -1,5 +1,5 @@
-module Citron.SyntaxIR0Translator:CommonTranslation;
-import Citron.Syntax;
+#include "CommonTranslation.h"
+#include "Syntax/Syntax.h"
 
 using namespace std;
 

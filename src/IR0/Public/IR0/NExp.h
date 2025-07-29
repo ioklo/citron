@@ -364,7 +364,7 @@ public:
 
 #pragma region Call Internal
 
-enum class RInternalUnaryOperator
+enum class NInternalUnaryOperator
 {
     LogicalNot_Bool_Bool,
     UnaryMinus_Int_Int,
@@ -373,7 +373,7 @@ enum class RInternalUnaryOperator
     ToString_Int_String,
 };
 
-enum class RInternalUnaryAssignOperator
+enum class NInternalUnaryAssignOperator
 {
     PrefixInc_Int_Int,
     PrefixDec_Int_Int,
@@ -381,7 +381,7 @@ enum class RInternalUnaryAssignOperator
     PostfixDec_Int_Int,
 };
 
-enum class RInternalBinaryOperator
+enum class NInternalBinaryOperator
 {
     Multiply_Int_Int_Int,
     Divide_Int_Int_Int,
@@ -405,10 +405,10 @@ enum class RInternalBinaryOperator
 class NExp_CallInternalUnaryOperator : public NExp
 {
 public:
-    RInternalUnaryOperator op;
+    NInternalUnaryOperator op;
     NExpPtr operand;
 public:
-    IR0_API NExp_CallInternalUnaryOperator(RInternalUnaryOperator op, NExpPtr&& operand);
+    IR0_API NExp_CallInternalUnaryOperator(NInternalUnaryOperator op, NExpPtr&& operand);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -417,10 +417,10 @@ public:
 class NExp_CallInternalUnaryAssignOperator : public NExp
 {
 public:
-    RInternalUnaryAssignOperator op;
+    NInternalUnaryAssignOperator op;
     NLocPtr operand;
 public:
-    IR0_API NExp_CallInternalUnaryAssignOperator(RInternalUnaryAssignOperator op, NLocPtr&& operand);
+    IR0_API NExp_CallInternalUnaryAssignOperator(NInternalUnaryAssignOperator op, NLocPtr&& operand);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -429,11 +429,11 @@ public:
 class NExp_CallInternalBinaryOperator : public NExp
 {
 public:
-    RInternalBinaryOperator op;
+    NInternalBinaryOperator op;
     NExpPtr operand0;
     NExpPtr operand1;
 public:
-    IR0_API NExp_CallInternalBinaryOperator(RInternalBinaryOperator op, NExpPtr&& operand0, NExpPtr&& operand1);
+    IR0_API NExp_CallInternalBinaryOperator(NInternalBinaryOperator op, NExpPtr&& operand0, NExpPtr&& operand1);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }

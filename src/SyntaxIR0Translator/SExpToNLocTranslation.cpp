@@ -1,19 +1,20 @@
-module Citron.SyntaxIR0Translator:SExpToNLocTranslation;
+#include "SExpToNLocTranslation.h"
 
-import <expected>;
+#include <expected>
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.Logger;
-import Citron.Syntax;
-import Citron.NDecls;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Logging/Logger.h"
+#include "Syntax/Syntax.h"
+#include "IR0/NLoc.h"
+#include "IR0/NExp.h"
 
-import :DesignatedDiagnostic;
-import :ReExpToNLocTranslation;
-import :SExpToReExpTranslation;
-import :SExpToNExpTranslation;
+#include "DesignatedDiagnostic.h"
+#include "ReExpToNLocTranslation.h"
+#include "SExpToReExpTranslation.h"
+#include "SExpToNExpTranslation.h"
 
-import :TranslationContext;
+#include "TranslationContext.h"
 
 using namespace std;
 

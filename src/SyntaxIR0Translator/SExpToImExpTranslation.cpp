@@ -1,27 +1,28 @@
-module Citron.SyntaxIR0Translator:SExpToImExpTranslation;
+#include "SExpToImExpTranslation.h"
 
-import <expected>;
+#include <expected>
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.Syntax;
-import Citron.Logger;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Syntax/Syntax.h"
+#include "Logging/Logger.h"
+#include "IR0/RTypes.h"
+#include "IR0/NLoc.h"
+#include "IR0/NExp.h"
 
-import Citron.RDecls;
+#include "ImExp.h"
+#include "ReExp.h"
 
-import :ImExp;
-import :ReExp;
+#include "SExpToNExpTranslation.h"
+#include "SExpToReExpTranslation.h"
+#include "ReExpToNExpTranslation.h"
+#include "ReExpToNLocTranslation.h"
+#include "ImExpAndMemberNameToImExpTranslation.h"
 
-import :SExpToNExpTranslation;
-import :SExpToReExpTranslation;
-import :ReExpToNExpTranslation;
-import :ReExpToNLocTranslation;
-import :ImExpAndMemberNameToImExpTranslation;
+#include "TranslationContext.h"
+#include "ScopeContext.h"
 
-import :TranslationContext;
-import :ScopeContext;
-
-import :Misc;
+#include "Misc.h"
 
 using namespace std;
 

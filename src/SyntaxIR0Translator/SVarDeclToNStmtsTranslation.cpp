@@ -1,17 +1,18 @@
-module Citron.SyntaxIR0Translator:SVarDeclToNStmtsTranslation;
+#include "SVarDeclToNStmtsTranslation.h"
 
-import <cassert>;
+#include <cassert>
 
-import Citron.Ptr;
-import Citron.Unreachable;
-import Citron.Syntax;
-import Citron.Logger;
-import Citron.NDecls;
+#include "Infra/Ptr.h"
+#include "Infra/Unreachable.h"
+#include "Syntax/Syntax.h"
+#include "Logging/Logger.h"
+#include "IR0/RTypes.h"
+#include "IR0/NStmt.h"
 
-import :DeclTypeInfo;
-import :TranslationContext;
-import :SExpToNExpTranslation;
-import :Misc;
+#include "DeclTypeInfo.h"
+#include "TranslationContext.h"
+#include "SExpToNExpTranslation.h"
+#include "Misc.h"
 
 using namespace std;
 

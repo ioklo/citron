@@ -1,21 +1,22 @@
-module Citron.SyntaxIR0Translator:TranslationContext;
+#include "TranslationContext.h"
 
-import Citron.Ptr;
-import Citron.Exceptions;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Logging/Logger.h"
+#include "IR0/RTypeFactory.h"
+#include "IR0/RFuncDecl.h"
+#include "IR0/RDecl.h"
+#include "IR0/NLoc.h"
+#include "IR0/NExp.h"
 
-import Citron.Logger;
+#include "ReExp.h"
+#include "IrExp.h"
+#include "TranslationContext.h"
+#include "ScopeContext.h"
+#include "FuncContext.h"
+#include "BinOpQueryService.h"
 
-import Citron.RDecls;
-import Citron.NDecls;
-
-import :ReExp;
-import :IrExp;
-import :TranslationContext;
-import :ScopeContext;
-import :FuncContext;
-import :BinOpQueryService;
-
-import :Misc;
+#include "Misc.h"
 
 using namespace std;
 

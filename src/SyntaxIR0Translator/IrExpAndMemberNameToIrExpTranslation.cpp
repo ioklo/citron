@@ -1,22 +1,32 @@
-module Citron.SyntaxIR0Translator:IrExpAndMemberNameToIrExpTranslation;
+#include "IrExpAndMemberNameToIrExpTranslation.h"
 
-import <cassert>;
-import <expected>;
+#include <cassert>
+#include <expected>
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.Logger;
-import Citron.RDecls;
-import Citron.NDecls;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Logging/Logger.h"
+#include "IR0/RMember.h"
+#include "IR0/RClassDecl.h"
+#include "IR0/RClassVarDecl.h"
+#include "IR0/RStructDecl.h"
+#include "IR0/RStructVarDecl.h"
+#include "IR0/REnumDecl.h"
+#include "IR0/RTypeArguments.h"
+#include "IR0/RTypes.h"
+#include "IR0/RNamespaceDecl.h"
+#include "IR0/NLoc.h"
 
-import :IrExp;
-import :TranslationContext;
-import :FuncContext;
-import :ScopeContext;
+#include "IrExp.h"
+#include "TranslationContext.h"
+#include "FuncContext.h"
+#include "ScopeContext.h"
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
+
+namespace SyntaxIR0Translator {
 
 namespace {
 
@@ -1018,5 +1028,6 @@ expected<IrExpPtr, DiagPtr> TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& i
     return irBoundExp;
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace SyntaxIR0Translator
+} // namespace Citron
 

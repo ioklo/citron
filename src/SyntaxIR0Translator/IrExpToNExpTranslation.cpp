@@ -1,14 +1,15 @@
-module Citron.SyntaxIR0Translator:IrExpToNExpTranslation;
+#include "IrExpToNExpTranslation.h"
 
-import <expected>;
+#include <expected>
 
-import Citron.Exceptions;
-import Citron.Ptr;
-import Citron.Logger;
-import Citron.NDecls;
+#include "Infra/Exceptions.h"
+#include "Infra/Ptr.h"
+#include "Logging/Logger.h"
+#include "IR0/NExp.h"
+#include "IR0/NLoc.h"
 
-import :IrExp;
-import :TranslationContext;
+#include "IrExp.h"
+#include "TranslationContext.h"
 
 using namespace std;
 

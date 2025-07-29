@@ -1,14 +1,16 @@
-module Citron.SyntaxIR0Translator:RFuncAndRArgsToNExpTranslation;
+#include "RFuncAndRArgsToNExpTranslation.h"
 
-import <vector>;
-import <cassert>;
-import <expected>;
+#include <vector>
+#include <cassert>
+#include <expected>
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.Diag;
-import Citron.RDecls;
-import Citron.NDecls;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Logging/Diag.h"
+#include "IR0/RFuncDecl.h"
+#include "IR0/NExp.h"
+#include "IR0/RClassFuncDecl.h"
+#include "IR0/RStructFuncDecl.h"
 
 using namespace std;
 

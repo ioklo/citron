@@ -1,22 +1,25 @@
-module Citron.SyntaxIR0Translator:Misc;
+#include "Misc.h"
 
-import <cassert>;
+#include <cassert>
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.Logger;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Logging/Logger.h"
+#include "Syntax/Syntax.h"
+#include "IR0/NExp.h"
+#include "IR0/RTypes.h"
 
-import Citron.Syntax;
-
-import Citron.RDecls;
-import Citron.NDecls;
-
-import :ScopeContext;
-import :TranslationContext;
+#include "ScopeContext.h"
+#include "TranslationContext.h"
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
+
+class RTypeArguments;
+using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
+
+namespace SyntaxIR0Translator {
 
 expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context)
 {
@@ -98,7 +101,7 @@ expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& type
 
 // 값의 겉보기 타입을 변경한다
 expected<NExpPtr, DiagPtr> CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context)
-{   
+{
     auto expType = context.GetType(*exp);
 
     // 같으면 그대로 리턴
@@ -155,7 +158,7 @@ expected<NExpPtr, DiagPtr> CastNExp(const NExpPtr& exp, const RTypePtr& expected
 }
 
 bool IsVarType(STypeExp& typeExp)
-{   
+{
     auto* idTypeExp = dynamic_cast<STypeExp_Id*>(&typeExp);
     return idTypeExp && idTypeExp->name == "var" && idTypeExp->typeArgs.size() == 0;
 }
@@ -176,4 +179,5 @@ RName_CtorParam MakeBaseCtorParamName(size_t index, RName baseParamName)
     }
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace SyntaxIR0Translator
+} // namespace Citron

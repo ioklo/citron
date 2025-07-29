@@ -1,11 +1,15 @@
-module Citron.SyntaxIR0Translator:ScopeContext;
+#include "ScopeContext.h"
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.Syntax;
-import Citron.RDecls;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Syntax/Syntax.h"
+#include "IR0/RTypeArguments.h"
+#include "IR0/RMember.h"
+#include "IR0/RNames.h"
+#include "IR0/RFuncParameter.h"
+#include "IR0/NLambdaDecl.h"
 
-import :FuncContext;
+#include "FuncContext.h"
 
 using namespace std;
 

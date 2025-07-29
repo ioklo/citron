@@ -1,20 +1,27 @@
-module Citron.SyntaxIR0Translator:ImExpAndMemberNameToImExpTranslation;
+#include "ImExpAndMemberNameToImExpTranslation.h"
 
-import <cassert>;
-import <expected>;
+#include <cassert>
+#include <expected>
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.Logger;
-import Citron.RDecls;
-import Citron.NDecls;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Logging/Logger.h"
+#include "IR0/RMember.h"
+#include "IR0/RClassDecl.h"
+#include "IR0/RClassVarDecl.h"
+#include "IR0/RStructDecl.h"
+#include "IR0/RStructVarDecl.h"
+#include "IR0/RTypeArguments.h"
+#include "IR0/RNamespaceDecl.h"
+#include "IR0/REnumDecl.h"
+#include "IR0/RTypes.h"
 
-import :TranslationContext;
-import :FuncContext;
-import :ScopeContext;
-import :ImExp;
-import :ReExp;
-import :ImExpToReExpTranslation;
+#include "TranslationContext.h"
+#include "FuncContext.h"
+#include "ScopeContext.h"
+#include "ImExp.h"
+#include "ReExp.h"
+#include "ImExpToReExpTranslation.h"
 
 using namespace std;
 

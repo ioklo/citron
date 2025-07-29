@@ -1,7 +1,7 @@
-module Citron.SyntaxIR0Translator:BodyPhaseContext;
+#include "BodyPhaseContext.h"
 
-import Citron.Exceptions;
-import :TranslationContext;
+#include "Infra/Exceptions.h"
+#include "TranslationContext.h"
 
 namespace Citron::SyntaxIR0Translator {
 

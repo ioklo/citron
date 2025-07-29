@@ -1,9 +1,9 @@
-module Citron.SyntaxIR0Translator:SkeletonPhaseContext;
+#include "SkeletonPhaseContext.h"
 
-import <memory>;
-import <string>;
+#include <memory>
+#include <string>
 
-import Citron.Exceptions;
+#include "Infra/Exceptions.h"
 
 using namespace std;
 

@@ -1,18 +1,20 @@
-module Citron.SyntaxIR0Translator:SyntaxIR0Translator;
+#include "SyntaxIR0Translator.h"
 
-import <stdexcept>;
-import <memory>;
-import <cassert>;
+#include <stdexcept>
+#include <memory>
+#include <cassert>
 
-import Citron.Unreachable;
-import Citron.Ptr;
-import Citron.Exceptions;
+#include "Infra/Unreachable.h"
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "IR0/NNamespaceDecl.h"
+#include "IR0/NStructDecl.h"
+#include "IR0/NEnumDecl.h"
+#include "IR0/NModule.h"
 
-import Citron.NDecls;
-
-import :EnumTranslation;
-import :StructTranslation;
-import :SkeletonPhaseContext;
+#include "EnumTranslation.h"
+#include "StructTranslation.h"
+#include "SkeletonPhaseContext.h"
 
 using namespace std;
 using namespace Citron::SyntaxIR0Translator;

@@ -1,4 +1,6 @@
-module Citron.SyntaxIR0Translator:ImExp;
+#include "ImExp.h"
+#include "IR0/DeclWithOuterTypeArgs.h"
+#include "IR0/RStructFuncDecl.h"
 
 namespace Citron::SyntaxIR0Translator {
 

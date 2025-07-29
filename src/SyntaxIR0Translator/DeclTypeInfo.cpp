@@ -1,1 +1,1 @@
-module Citron.SyntaxIR0Translator:DeclTypeInfo;
+#include "DeclTypeInfo.h"

@@ -1,20 +1,22 @@
-module Citron.SyntaxIR0Translator:FuncContext;
+#include "FuncContext.h"
 
-import <variant>;
-import <cassert>;
+#include <variant>
+#include <cassert>
 
-import Citron.Ptr;
-import Citron.Variants;
-import Citron.Exceptions;
+#include "Infra/Ptr.h"
+#include "Infra/Variants.h"
+#include "Infra/Exceptions.h"
 
-import Citron.Syntax;
+#include "Syntax/Syntax.h"
+#include "IR0/RTypes.h"
+#include "IR0/NExp.h"
+#include "IR0/NLambdaDecl.h"
+#include "IR0/NArgument.h"
+#include "IR0/NLoc.h"
 
-import Citron.RDecls;
-import Citron.NDecls;
-
-import :TranslationContext;
-import :ScopeContext;
-import :ImExp;
+#include "TranslationContext.h"
+#include "ScopeContext.h"
+#include "ImExp.h"
 
 using namespace std;
 

@@ -1,14 +1,16 @@
-module Citron.SyntaxIR0Translator:ReExpToNLocTranslation;
+#include "ReExpToNLocTranslation.h"
 
-import Citron.Ptr;
-import Citron.Logger;
-import Citron.RDecls;
-import Citron.NDecls;
+#include "Infra/Ptr.h"
+#include "Logging/Logger.h"
+#include "IR0/RClassVarDecl.h"
+#include "IR0/RStructVarDecl.h"
+#include "IR0/NLambdaVarDecl.h"
+#include "IR0/NLoc.h"
 
-import :TranslationContext;
-import :ScopeContext;
-import :DesignatedDiagnostic;
-import :ReExp;
+#include "TranslationContext.h"
+#include "ScopeContext.h"
+#include "DesignatedDiagnostic.h"
+#include "ReExp.h"
 
 using namespace std;
 

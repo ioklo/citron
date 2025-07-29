@@ -1,31 +1,35 @@
-module Citron.SyntaxIR0Translator:SStmtToNStmtTranslation;
+#include "SStmtToNStmtTranslation.h"
 
-import <optional>;
-import <variant>;
-import <cassert>;
-import <expected>;
+#include <optional>
+#include <variant>
+#include <cassert>
+#include <expected>
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.Variants;
-import Citron.Diag;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Infra/Variants.h"
+#include "Logging/Diag.h"
 
-import Citron.Syntax;
-import Citron.Logger;
+#include "Syntax/Syntax.h"
+#include "Logging/Logger.h"
+#include "IR0/DeclWithOuterTypeArgs.h"
+#include "IR0/RFuncReturn.h"
+#include "IR0/RTypes.h"
+#include "IR0/RFuncDecl.h"
+#include "IR0/NStmt.h"
+#include "IR0/NExp.h"
+#include "IR0/NLoc.h"
 
-import Citron.RDecls;
-import Citron.NDecls;
+#include "SExpToNExpTranslation.h"
+#include "SVarDeclToNStmtsTranslation.h"
+#include "SExpToNLocTranslation.h"
 
-import :SExpToNExpTranslation;
-import :SVarDeclToNStmtsTranslation;
-import :SExpToNLocTranslation;
-
-import :TranslationContext;
-import :ScopeContext;
-import :FuncContext;
-import :DesignatedDiagnostic;
-import :Misc;
-import :RFuncAndRArgsToNExpTranslation;
+#include "TranslationContext.h"
+#include "ScopeContext.h"
+#include "FuncContext.h"
+#include "DesignatedDiagnostic.h"
+#include "Misc.h"
+#include "RFuncAndRArgsToNExpTranslation.h"
 
 using namespace std;
 

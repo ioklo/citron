@@ -1,4 +1,4 @@
-module Citron.SyntaxIR0Translator:FuncsWithPartialTypeArgsComponent;
+#include "FuncsWithPartialTypeArgsComponent.h"
 
 namespace Citron::SyntaxIR0Translator {
 

@@ -1,1 +1,1 @@
-module Citron.SyntaxIR0Translator:ModuleDecls;
+#include "ModuleDecls.h"

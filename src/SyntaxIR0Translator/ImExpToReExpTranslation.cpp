@@ -1,16 +1,17 @@
-module Citron.SyntaxIR0Translator:ImExpToReExpTranslation;
+#include "ImExpToReExpTranslation.h"
 
-import <expected>;
+#include <expected>
 
-import Citron.Exceptions;
-import Citron.Ptr;
-import Citron.Logger;
+#include "Infra/Exceptions.h"
+#include "Infra/Ptr.h"
+#include "Logging/Logger.h"
+#include "IR0/REnumElemDecl.h"
+#include "IR0/NArgument.h"
+#include "IR0/NExp.h"
 
-import Citron.NDecls;
-
-import :ImExp;
-import :ReExp;
-import :TranslationContext;
+#include "ImExp.h"
+#include "ReExp.h"
+#include "TranslationContext.h"
 
 using namespace std;
 

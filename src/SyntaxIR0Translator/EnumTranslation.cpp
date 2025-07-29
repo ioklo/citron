@@ -1,10 +1,11 @@
-module Citron.SyntaxIR0Translator:EnumTranslation;
+#include "EnumTranslation.h"
 
-import Citron.Ptr;
-import Citron.NDecls;
+#include "Infra/Ptr.h"
+#include "IR0/NEnumDecl.h"
+#include "IR0/NEnumElemDecl.h"
 
-import :SkeletonPhaseContext;
-import :MemberDeclPhaseContext;
+#include "SkeletonPhaseContext.h"
+#include "MemberDeclPhaseContext.h"
 
 using namespace std;
 

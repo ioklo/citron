@@ -1,2 +1,2 @@
-module Citron.SyntaxIR0Translator:ResolveIdentifierError;
+#include "ResolveIdentifierError.h"
 

@@ -1,5 +1,5 @@
-module Citron.SyntaxIR0Translator:DesignatedDiagnostic;
-import Citron.Logger;
+#include "DesignatedDiagnostic.h"
+#include "Logging/Logger.h"
 
 namespace Citron::SyntaxIR0Translator {
 

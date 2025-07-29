@@ -1,6 +1,10 @@
-module Citron.SyntaxIR0Translator:ReExp;
-
-import Citron.NDecls;
+#include "ReExp.h"
+#include "IR0/RTypes.h"
+#include "IR0/NLambdaVarDecl.h"
+#include "IR0/NExp.h"
+#include "IR0/NClassVarDecl.h"
+#include "IR0/NStructVarDecl.h"
+#include "IR0/NEnumElemVarDecl.h"
 
 namespace Citron::SyntaxIR0Translator {
 

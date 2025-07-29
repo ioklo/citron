@@ -1,19 +1,23 @@
-module Citron.SyntaxIR0Translator:StructTranslation;
+#include "StructTranslation.h"
 
-import <cassert>;
+#include <cassert>
 
-import Citron.Unreachable;
-import Citron.Ptr;
-import Citron.Exceptions;
+#include "Infra/Unreachable.h"
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "IR0/RTypes.h"
+#include "IR0/NStructDecl.h"
+#include "IR0/NStructCtorDecl.h"
+#include "IR0/NEnumDecl.h"
 
-import :SkeletonPhaseContext;
-import :MemberDeclPhaseContext;
-import :EnumTranslation;
-import :SStmtToNStmtTranslation;
-import :ScopeContext;
-import :BodyPhaseContext;
-import :TranslationContext;
-import :Misc;
+#include "SkeletonPhaseContext.h"
+#include "MemberDeclPhaseContext.h"
+#include "EnumTranslation.h"
+#include "SStmtToNStmtTranslation.h"
+#include "ScopeContext.h"
+#include "BodyPhaseContext.h"
+#include "TranslationContext.h"
+#include "Misc.h"
 
 using namespace std;
 

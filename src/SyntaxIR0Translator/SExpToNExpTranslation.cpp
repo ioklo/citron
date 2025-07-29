@@ -1,34 +1,33 @@
-module Citron.SyntaxIR0Translator:SExpToNExpTranslation;
+#include "SExpToNExpTranslation.h"
 
-import <variant>;
-import <cassert>;
+#include <variant>
+#include <cassert>
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.Unreachable;
-import Citron.Logger;
-import Citron.Syntax;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "Infra/Unreachable.h"
+#include "Logging/Logger.h"
+#include "Syntax/Syntax.h"
+#include "IR0/RTypes.h"
+#include "IR0/NLoc.h"
 
-import Citron.RDecls;
-import Citron.NDecls;
+#include "ReExp.h"
+#include "ImExp.h"
 
-import :ReExp;
-import :ImExp;
+#include "SExpToNLocTranslation.h"
+#include "SExpToReExpTranslation.h"
+#include "SExpToImExpTranslation.h"
+#include "SExpRefToNExpTranslation.h"
 
-import :SExpToNLocTranslation;
-import :SExpToReExpTranslation;
-import :SExpToImExpTranslation;
-import :SExpRefToNExpTranslation;
+#include "ReExpToNExpTranslation.h"
+#include "ReExpToNLocTranslation.h"
 
-import :ReExpToNExpTranslation;
-import :ReExpToNLocTranslation;
+#include "ImCallableAndSArgsToNExpTranslation.h"
 
-import :ImCallableAndSArgsToNExpTranslation;
-
-import :ScopeContext;
-import :Misc;
-import :BinOpQueryService;
-import :TranslationContext;
+#include "ScopeContext.h"
+#include "Misc.h"
+#include "BinOpQueryService.h"
+#include "TranslationContext.h"
 
 using namespace std;
 
@@ -55,12 +54,12 @@ expected<NExpPtr, DiagPtr> TranslateSNullLiteralExpToNExp(SExp_NullLiteral& exp,
     return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
 }
 
-expected<NExpPtr, DiagPtr>TranslateSBoolLiteralExpToNExp(SExp_BoolLiteral& exp)
+expected<NExpPtr, DiagPtr> TranslateSBoolLiteralExpToNExp(SExp_BoolLiteral& exp)
 {
     return MakePtr<NExp_BoolLiteral>(exp.value);
 }
 
-expected<NExpPtr, DiagPtr>TranslateSIntLiteralExpToNExp(SExp_IntLiteral& exp)
+expected<NExpPtr, DiagPtr> TranslateSIntLiteralExpToNExp(SExp_IntLiteral& exp)
 {
     return MakePtr<NExp_IntLiteral>(exp.value);
 }
@@ -86,7 +85,7 @@ expected<RStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
 
             return RLocStringExpElement(
                 MakePtr<NLoc_Temp>(
-                    MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::ToString_Int_String, move(*eNExp))));
+                    MakePtr<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::ToString_Int_String, move(*eNExp))));
         }
         else if (reExpType == context.MakeBoolType())
         {
@@ -95,7 +94,7 @@ expected<RStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
 
             return RLocStringExpElement(
                 MakePtr<NLoc_Temp>(
-                    MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::ToString_Bool_String, move(*eNExp))));
+                    MakePtr<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::ToString_Bool_String, move(*eNExp))));
         }
         else if (reExpType == context.MakeStringType())
         {
@@ -144,7 +143,7 @@ expected<shared_ptr<NExp_String>, DiagPtr> TranslateSStringExpToNStringExp(SExp_
 }
 
 // int만 지원한다
-expected<NExpPtr, DiagPtr> TranslateSIntUnaryAssignExpToNExp(SExp& operand, RInternalUnaryAssignOperator op, TranslationContext& context)
+expected<NExpPtr, DiagPtr> TranslateSIntUnaryAssignExpToNExp(SExp& operand, NInternalUnaryAssignOperator op, TranslationContext& context)
 {
     // exp를 loc으로 변환하는 일을 하면 안되지만, ref는 풀어야 한다
     // F()++; (x)
@@ -183,7 +182,7 @@ expected<NExpPtr, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp& s
             return unexpected{MakePtr<Error_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly>()};
         }
 
-        return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::LogicalNot_Bool_Bool, move(*eNOperand));
+        return MakePtr<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::LogicalNot_Bool_Bool, move(*eNOperand));
     }
 
     case SUnaryOpKind::Minus:
@@ -193,20 +192,20 @@ expected<NExpPtr, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp& s
             return unexpected{MakePtr<Error_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly>()};
         }
 
-        return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::UnaryMinus_Int_Int, move(*eNOperand));
+        return MakePtr<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::UnaryMinus_Int_Int, move(*eNOperand));
     }
 
     case SUnaryOpKind::PostfixInc: // e.m++ 등
-        return TranslateSIntUnaryAssignExpToNExp(*sExp.operand, RInternalUnaryAssignOperator::PostfixInc_Int_Int, context);
+        return TranslateSIntUnaryAssignExpToNExp(*sExp.operand, NInternalUnaryAssignOperator::PostfixInc_Int_Int, context);
 
     case SUnaryOpKind::PostfixDec:
-        return TranslateSIntUnaryAssignExpToNExp(*sExp.operand, RInternalUnaryAssignOperator::PostfixDec_Int_Int, context);
+        return TranslateSIntUnaryAssignExpToNExp(*sExp.operand, NInternalUnaryAssignOperator::PostfixDec_Int_Int, context);
 
     case SUnaryOpKind::PrefixInc:
-        return TranslateSIntUnaryAssignExpToNExp(*sExp.operand, RInternalUnaryAssignOperator::PrefixInc_Int_Int, context);
+        return TranslateSIntUnaryAssignExpToNExp(*sExp.operand, NInternalUnaryAssignOperator::PrefixInc_Int_Int, context);
 
     case SUnaryOpKind::PrefixDec:
-        return TranslateSIntUnaryAssignExpToNExp(*sExp.operand, RInternalUnaryAssignOperator::PrefixDec_Int_Int, context);
+        return TranslateSIntUnaryAssignExpToNExp(*sExp.operand, NInternalUnaryAssignOperator::PrefixDec_Int_Int, context);
 
     default:
         unreachable();
@@ -275,7 +274,7 @@ expected<NExpPtr, DiagPtr> TranslateSBinaryOpExpToNExp(SExp_BinaryOp& exp, Trans
 
             // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
             auto equalExp = MakePtr<NExp_CallInternalBinaryOperator>(info.rOperator, move(*castExp0), move(*castExp1));
-            return MakePtr<NExp_CallInternalUnaryOperator>(RInternalUnaryOperator::LogicalNot_Bool_Bool, move(equalExp));
+            return MakePtr<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::LogicalNot_Bool_Bool, move(equalExp));
         }
     }
 

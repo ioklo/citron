@@ -1,8 +1,9 @@
-module Citron.SyntaxIR0Translator:MemberDeclPhaseContext;
+#include "MemberDeclPhaseContext.h"
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.RDecls;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "IR0/RTypes.h"
+#include "IR0/NDecl.h"
 
 using namespace std;
 

@@ -1,16 +1,19 @@
-module Citron.SyntaxIR0Translator:ImExpToIrExpTranslation;
+#include "ImExpToIrExpTranslation.h"
 
-import <expected>;
+#include <expected>
 
-import Citron.Ptr;
-import Citron.Exceptions;
-import Citron.RDecls;
-import Citron.NDecls;
+#include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
+#include "IR0/RNamespaceDecl.h"
+#include "IR0/RTypes.h"
+#include "IR0/RClassVarDecl.h"
+#include "IR0/RStructVarDecl.h"
+#include "IR0/NLambdaVarDecl.h"
+#include "IR0/NLoc.h"
+#include "ImExp.h"
+#include "IrExp.h"
 
-import :ImExp;
-import :IrExp;
-
-import :TranslationContext;
+#include "TranslationContext.h"
 
 using namespace std;
 

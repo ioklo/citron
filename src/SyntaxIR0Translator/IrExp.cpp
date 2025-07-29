@@ -1,7 +1,11 @@
-module Citron.SyntaxIR0Translator:IrExp;
+#include "IrExp.h"
 
-import Citron.Ptr;
-import Citron.RDecls;
+#include "Infra/Ptr.h"
+#include "IR0/RNamespaceDecl.h"
+#include "IR0/RTypes.h"
+#include "IR0/NLoc.h"
+#include "IR0/NClassVarDecl.h"
+#include "IR0/NStructVarDecl.h"
 
 using namespace std;
 
