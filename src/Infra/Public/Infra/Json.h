@@ -94,12 +94,12 @@ struct JsonObject
     INFRA_API void ToString(IWriter& writer);
 };
 
-INFRA_API JsonItem ToJson(bool value)
+inline JsonItem ToJson(bool value)
 {
     return JsonBool(value);
 }
 
-INFRA_API JsonItem ToJson(int value)
+inline JsonItem ToJson(int value)
 {
     return JsonInt(value);
 }
@@ -160,12 +160,12 @@ JsonItem ToJson(std::vector<TElem>&& elems)
     return ToJson(elems);
 }
 
-INFRA_API void ToString(JsonItem& item, IWriter& writer)
+inline void ToString(JsonItem& item, IWriter& writer)
 {
     return std::visit([&writer](auto&& i) { return i.ToString(writer); }, item);
 }
 
-INFRA_API void ToString(JsonItem&& item, IWriter& writer)
+inline void ToString(JsonItem&& item, IWriter& writer)
 {
     return ToString(item, writer);
 }

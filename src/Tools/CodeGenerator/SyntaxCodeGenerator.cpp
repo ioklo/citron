@@ -1,12 +1,11 @@
-module;
+#include "SyntaxCodeGenerator.h"
+
 #include <iostream>
 #include <filesystem>
 
 #include <fmt/core.h>
 
-module Citron.SyntaxCodeGenerator;
-
-import Citron.CodeGenerator.Misc;
+#include "Misc.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -18,32 +17,33 @@ void GenerateSyntax(path srcPath)
     // [src]/Syntax/Public/Syntax/Syntaxes.g.h
     // [src]/Syntax/Syntaxes.g.ixx
     // [src]/Syntax/Syntaxes.g.cpp
-    // path hPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Public").append("Syntax").append("Syntaxes.g.h"); }();
-    path ixxPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Syntaxes.g.ixx"); }();
+    path hPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Public").append("Syntax").append("Syntaxes.g.h"); }();
+    // path ixxPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Syntaxes.g.ixx"); }();
     path cppPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Syntaxes.g.cpp"); }();
 
-    ostringstream ixxStream, cppStream;
+    ostringstream hStream, cppStream;
 
     //  
-    ixxStream << R"---(export module Citron.Syntax:Generated;
-import "SyntaxConfig.h";
-import <string>;
-import <vector>;
-import <optional>;
-import <memory>;
-import <variant>;
+    hStream << R"---(#pragma once
+#include "SyntaxConfig.h"
 
-import Citron.Json;
-import Citron.Unreachable;
+#include <string>
+#include <vector>
+#include <optional>
+#include <memory>
+#include <variant>
 
-export namespace Citron {
+#include "Infra/Json.h"
+#include "Infra/Unreachable.h"
+
+namespace Citron {
 class ArgumentSyntax;
 
 )---";
 
-    cppStream << R"---(module Citron.Syntax:Generated;
+    cppStream << R"---(#include "Syntaxes.g.h"
 
-import Citron.Json;
+#include "Infra/Json.h"
 
 using namespace std;
 
@@ -1128,13 +1128,13 @@ struct ToJsonVisitor {
         },
     };
 
-    GenerateItems(commonInfo, ixxStream, cppStream, itemInfos);
+    GenerateItems(commonInfo, hStream, cppStream, itemInfos);
 
     // footer(close namespaces)
-    ixxStream << endl << '}' << endl;
+    hStream << endl << '}' << endl;
     cppStream << '}' << endl;
 
-    WriteAll(ixxPath, ixxStream.str());
+    WriteAll(hPath, hStream.str());
     WriteAll(cppPath, cppStream.str());
 }
 

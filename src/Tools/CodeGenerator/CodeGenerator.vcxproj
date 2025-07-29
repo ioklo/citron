@@ -137,11 +137,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CodeGenerator.cpp" />
-    <ClCompile Include="CodeGenerator-HeaderUnits.ixx" />
     <ClCompile Include="Misc.cpp" />
-    <ClCompile Include="Misc.ixx" />
     <ClCompile Include="SyntaxCodeGenerator.cpp" />
-    <ClCompile Include="SyntaxCodeGenerator.ixx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Misc.h" />
+    <ClInclude Include="SyntaxCodeGenerator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

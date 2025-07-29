@@ -1,17 +1,16 @@
-module;
+#pragma once
 #include "SyntaxConfig.h"
+
 #include <string>
 #include <vector>
 #include <optional>
 #include <memory>
 #include <variant>
 
-export module Citron.Syntax:Generated;
+#include "Infra/Json.h"
+#include "Infra/Unreachable.h"
 
-import Citron.Json;
-import Citron.Unreachable;
-
-export namespace Citron {
+namespace Citron {
 class ArgumentSyntax;
 
 class SStmt;
