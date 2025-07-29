@@ -1,8 +1,10 @@
-module Citron.NDecls:NStructVarDecl;
+#include "NStructVarDecl.h"
 
-import <cassert>;
-import Citron.Exceptions;
-import :NStructDecl;
+#include <cassert>
+#include "Infra/Exceptions.h"
+
+#include "RTypes.h"
+#include "NStructDecl.h"
 
 using namespace std;
 

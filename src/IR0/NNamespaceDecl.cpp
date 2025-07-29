@@ -1,13 +1,15 @@
-module Citron.NDecls:NNamespaceDecl;
+#include "NNamespaceDecl.h"
 
-import <variant>;
-import <cassert>;
+#include <variant>
+#include <cassert>
 
-import Citron.Variants;
-import Citron.Exceptions;
-import Citron.Ptr;
+#include "Infra/Variants.h"
+#include "Infra/Exceptions.h"
+#include "Infra/Ptr.h"
 
-import Citron.RDecls;
+#include "RTypeFactory.h"
+#include "RNamespaceDeclGroup.h"
+#include "RTypeArguments.h"
 
 using namespace std;
 

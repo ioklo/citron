@@ -1,9 +1,9 @@
-module Citron.RDecls:RDecl;
+#include "RDecl.h"
 
-import Citron.Exceptions;
-import Citron.Unreachable;
+#include "Infra/Exceptions.h"
+#include "Infra/Unreachable.h"
 
-import :RTypeFactory;
+#include "RTypeFactory.h"
 
 using namespace std;
 

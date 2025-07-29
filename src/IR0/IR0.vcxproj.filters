@@ -2,6 +2,201 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="Public\IR0\IR0Config.h" />
+    <ClInclude Include="Public\IR0\NDecl.h">
+      <Filter>NDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NTypeDecl.h">
+      <Filter>NDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NTypeDeclOuter.h">
+      <Filter>NDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NFuncDecl.h">
+      <Filter>NDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NFuncDeclOuter.h">
+      <Filter>NDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NCommonFuncDeclComponent.h">
+      <Filter>NDecls\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NFuncDeclContainerComponent.h">
+      <Filter>NDecls\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NNamespaceDeclContainerComponent.h">
+      <Filter>NDecls\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NTypeDeclContainerComponent.h">
+      <Filter>NDecls\04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NGlobalFuncDecl.h">
+      <Filter>NDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NModule.h">
+      <Filter>NDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NNamespaceDecl.h">
+      <Filter>NDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NClassCtorDecl.h">
+      <Filter>NDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NClassDecl.h">
+      <Filter>NDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NClassFuncDecl.h">
+      <Filter>NDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NClassVarDecl.h">
+      <Filter>NDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NStructCtorDecl.h">
+      <Filter>NDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NStructDecl.h">
+      <Filter>NDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NStructFuncDecl.h">
+      <Filter>NDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NStructVarDecl.h">
+      <Filter>NDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NEnumDecl.h">
+      <Filter>NDecls\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NEnumElemDecl.h">
+      <Filter>NDecls\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NEnumElemVarDecl.h">
+      <Filter>NDecls\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NInterfaceDecl.h">
+      <Filter>NDecls\09 Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NLambdaDecl.h">
+      <Filter>NDecls\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NLambdaVarDecl.h">
+      <Filter>NDecls\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NExp.h">
+      <Filter>NDecls\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NLoc.h">
+      <Filter>NDecls\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NStmt.h">
+      <Filter>NDecls\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NArgument.h">
+      <Filter>NDecls</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\NDecls.h">
+      <Filter>NDecls</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RDecl.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RMember.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeArguments.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeDecl.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeDeclOuter.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypeFactory.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RTypes.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RIdentifier.h">
+      <Filter>RDecls\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RNames.h">
+      <Filter>RDecls\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RAccessor.h">
+      <Filter>RDecls\02 Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RFuncDecl.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RFuncDeclOuter.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RFuncParameter.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RFuncReturn.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RGlobalFuncDecl.h">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RModule.h">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RNamespaceDecl.h">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RNamespaceDeclGroup.h">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassCtorDecl.h">
+      <Filter>RDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassDecl.h">
+      <Filter>RDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassFuncDecl.h">
+      <Filter>RDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RClassVarDecl.h">
+      <Filter>RDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructCtorDecl.h">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructDecl.h">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructFuncDecl.h">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RStructVarDecl.h">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\REnumDecl.h">
+      <Filter>RDecls\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\REnumElemDecl.h">
+      <Filter>RDecls\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\REnumElemVarDecl.h">
+      <Filter>RDecls\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RInterfaceDecl.h">
+      <Filter>RDecls\09 Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RLambdaDecl.h">
+      <Filter>RDecls\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RLambdaVarDecl.h">
+      <Filter>RDecls\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\DeclWithOuterTypeArgs.h">
+      <Filter>RDecls</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0\RDecls.h">
+      <Filter>RDecls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NModule.cpp">
@@ -102,201 +297,6 @@
     </ClCompile>
     <ClCompile Include="RNamespaceDeclGroup.cpp">
       <Filter>RDecls\05 TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="NInterfaceDecl.ixx">
-      <Filter>NDecls\09 Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="NExp.ixx">
-      <Filter>NDecls\Body</Filter>
-    </ClCompile>
-    <ClCompile Include="NLoc.ixx">
-      <Filter>NDecls\Body</Filter>
-    </ClCompile>
-    <ClCompile Include="NStmt.ixx">
-      <Filter>NDecls\Body</Filter>
-    </ClCompile>
-    <ClCompile Include="RDecls.ixx">
-      <Filter>RDecls</Filter>
-    </ClCompile>
-    <ClCompile Include="RDecl.ixx">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="RMember.ixx">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="RTypes.ixx">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="RTypeDecl.ixx">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="RTypeDeclOuter.ixx">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="RTypeFactory.ixx">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="RTypeArguments.ixx">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="DeclWithOuterTypeArgs.ixx">
-      <Filter>RDecls</Filter>
-    </ClCompile>
-    <ClCompile Include="RIdentifier.ixx">
-      <Filter>RDecls\01 Identifier</Filter>
-    </ClCompile>
-    <ClCompile Include="RNames.ixx">
-      <Filter>RDecls\01 Identifier</Filter>
-    </ClCompile>
-    <ClCompile Include="RAccessor.ixx">
-      <Filter>RDecls\02 Properties</Filter>
-    </ClCompile>
-    <ClCompile Include="RFuncDecl.ixx">
-      <Filter>RDecls\03 Func</Filter>
-    </ClCompile>
-    <ClCompile Include="RFuncDeclOuter.ixx">
-      <Filter>RDecls\03 Func</Filter>
-    </ClCompile>
-    <ClCompile Include="RFuncParameter.ixx">
-      <Filter>RDecls\03 Func</Filter>
-    </ClCompile>
-    <ClCompile Include="RFuncReturn.ixx">
-      <Filter>RDecls\03 Func</Filter>
-    </ClCompile>
-    <ClCompile Include="RGlobalFuncDecl.ixx">
-      <Filter>RDecls\05 TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="RModule.ixx">
-      <Filter>RDecls\05 TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="RNamespaceDecl.ixx">
-      <Filter>RDecls\05 TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="RNamespaceDeclGroup.ixx">
-      <Filter>RDecls\05 TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="RClassCtorDecl.ixx">
-      <Filter>RDecls\06 Class</Filter>
-    </ClCompile>
-    <ClCompile Include="RClassDecl.ixx">
-      <Filter>RDecls\06 Class</Filter>
-    </ClCompile>
-    <ClCompile Include="RClassFuncDecl.ixx">
-      <Filter>RDecls\06 Class</Filter>
-    </ClCompile>
-    <ClCompile Include="RClassVarDecl.ixx">
-      <Filter>RDecls\06 Class</Filter>
-    </ClCompile>
-    <ClCompile Include="RStructCtorDecl.ixx">
-      <Filter>RDecls\07 Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="RStructDecl.ixx">
-      <Filter>RDecls\07 Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="RStructFuncDecl.ixx">
-      <Filter>RDecls\07 Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="RStructVarDecl.ixx">
-      <Filter>RDecls\07 Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="REnumDecl.ixx">
-      <Filter>RDecls\08 Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="REnumElemDecl.ixx">
-      <Filter>RDecls\08 Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="REnumElemVarDecl.ixx">
-      <Filter>RDecls\08 Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="RInterfaceDecl.ixx">
-      <Filter>RDecls\09 Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="RLambdaDecl.ixx">
-      <Filter>RDecls\10 Lambda</Filter>
-    </ClCompile>
-    <ClCompile Include="RLambdaVarDecl.ixx">
-      <Filter>RDecls\10 Lambda</Filter>
-    </ClCompile>
-    <ClCompile Include="NDecls.ixx">
-      <Filter>NDecls</Filter>
-    </ClCompile>
-    <ClCompile Include="NDecl.ixx">
-      <Filter>NDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="NTypeDecl.ixx">
-      <Filter>NDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="NTypeDeclOuter.ixx">
-      <Filter>NDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="NFuncDecl.ixx">
-      <Filter>NDecls\03 Func</Filter>
-    </ClCompile>
-    <ClCompile Include="NFuncDeclOuter.ixx">
-      <Filter>NDecls\03 Func</Filter>
-    </ClCompile>
-    <ClCompile Include="NCommonFuncDeclComponent.ixx">
-      <Filter>NDecls\04 Components</Filter>
-    </ClCompile>
-    <ClCompile Include="NFuncDeclContainerComponent.ixx">
-      <Filter>NDecls\04 Components</Filter>
-    </ClCompile>
-    <ClCompile Include="NNamespaceDeclContainerComponent.ixx">
-      <Filter>NDecls\04 Components</Filter>
-    </ClCompile>
-    <ClCompile Include="NTypeDeclContainerComponent.ixx">
-      <Filter>NDecls\04 Components</Filter>
-    </ClCompile>
-    <ClCompile Include="NGlobalFuncDecl.ixx">
-      <Filter>NDecls\05 TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="NModule.ixx">
-      <Filter>NDecls\05 TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="NNamespaceDecl.ixx">
-      <Filter>NDecls\05 TopLevel</Filter>
-    </ClCompile>
-    <ClCompile Include="NClassCtorDecl.ixx">
-      <Filter>NDecls\06 Class</Filter>
-    </ClCompile>
-    <ClCompile Include="NClassDecl.ixx">
-      <Filter>NDecls\06 Class</Filter>
-    </ClCompile>
-    <ClCompile Include="NClassFuncDecl.ixx">
-      <Filter>NDecls\06 Class</Filter>
-    </ClCompile>
-    <ClCompile Include="NClassVarDecl.ixx">
-      <Filter>NDecls\06 Class</Filter>
-    </ClCompile>
-    <ClCompile Include="NStructCtorDecl.ixx">
-      <Filter>NDecls\07 Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="NStructDecl.ixx">
-      <Filter>NDecls\07 Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="NStructFuncDecl.ixx">
-      <Filter>NDecls\07 Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="NStructVarDecl.ixx">
-      <Filter>NDecls\07 Struct</Filter>
-    </ClCompile>
-    <ClCompile Include="NEnumDecl.ixx">
-      <Filter>NDecls\08 Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="NEnumElemDecl.ixx">
-      <Filter>NDecls\08 Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="NEnumElemVarDecl.ixx">
-      <Filter>NDecls\08 Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="NLambdaDecl.ixx">
-      <Filter>NDecls\10 Lambda</Filter>
-    </ClCompile>
-    <ClCompile Include="NLambdaVarDecl.ixx">
-      <Filter>NDecls\10 Lambda</Filter>
-    </ClCompile>
-    <ClCompile Include="NArgument.ixx">
-      <Filter>NDecls</Filter>
     </ClCompile>
     <ClCompile Include="RFuncParameter.cpp">
       <Filter>RDecls\03 Func</Filter>

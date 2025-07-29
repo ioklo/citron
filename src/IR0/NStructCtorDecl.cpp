@@ -1,7 +1,7 @@
-module Citron.NDecls:NStructCtorDecl;
+#include "NStructCtorDecl.h"
 
-import <cassert>;
-import :NStructDecl;
+#include <cassert>
+#include "NStructDecl.h"
 
 using namespace std;
 

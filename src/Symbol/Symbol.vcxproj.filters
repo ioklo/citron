@@ -31,9 +31,6 @@
     <Filter Include="Symbols\09 Interface">
       <UniqueIdentifier>{5a838a2f-b50c-4e17-b969-4d72e070a5c8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Public Headers">
-      <UniqueIdentifier>{0bf2267d-52a8-4715-a8b5-e6a1a7daf8b4}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\Symbol\SymbolConfig.h" />

@@ -1,15 +1,15 @@
-module Citron.RDecls:RTypes;
-import <vector>;
+#include "RTypes.h"
+#include <vector>
 
-import Citron.Exceptions;
+#include "Infra/Exceptions.h"
 
-import :RTypeFactory;
-import :RTypeArguments;
-import :RStructDecl;
-import :RClassDecl;
-import :REnumDecl;
-import :REnumElemDecl;
-import :RLambdaDecl;
+#include "RTypeFactory.h"
+#include "RTypeArguments.h"
+#include "RStructDecl.h"
+#include "RClassDecl.h"
+#include "REnumDecl.h"
+#include "REnumElemDecl.h"
+#include "RLambdaDecl.h"
 
 using namespace std;
 

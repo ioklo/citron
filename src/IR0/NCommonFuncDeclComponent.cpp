@@ -1,12 +1,14 @@
-module Citron.NDecls:NCommonFuncDeclComponent;
+#include "NCommonFuncDeclComponent.h"
 
-import <variant>;
-import <cassert>;
+#include <variant>
+#include <cassert>
 
-import Citron.Variants;
+#include "Infra/Variants.h"
 
-import :NLambdaDecl;
-import :NStmt;
+#include "RTypes.h"
+
+#include "NLambdaDecl.h"
+#include "NStmt.h"
 
 using namespace std;
 

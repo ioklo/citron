@@ -1,4 +1,4 @@
-module Citron.RDecls:RNames;
+#include "RNames.h"
 
 namespace Citron {
 

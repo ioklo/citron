@@ -1,17 +1,13 @@
-module;
-module;
+#include "RTypeFactory.h"
+
 #include "Infra/Hash.h"
+#include "Infra/Ptr.h"
 
-module Citron.RDecls:RTypeFactory;
+#include "RTypes.h"
+#include "RStructDecl.h"
+#include "RNamespaceDeclGroup.h"
 
-import Citron.Hash;
-import Citron.Ptr;
-
-import :RTypes;
-import :RStructDecl;
-import :RNamespaceDeclGroup;
-
-import :RTypeArguments;
+#include "RTypeArguments.h"
 
 using namespace std;
 

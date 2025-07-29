@@ -1,1 +1,1 @@
-module Citron.NDecls:NDecl;
+#include "NDecl.h"

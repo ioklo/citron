@@ -1,6 +1,6 @@
-module Citron.NDecls:NStmt;
+#include "NStmt.h"
 
-import :NExp;
+#include "NExp.h"
 
 using namespace std;
 

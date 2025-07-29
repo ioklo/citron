@@ -1,4 +1,4 @@
-module Citron.RDecls:RModule;
+#include "RModule.h"
 
 using namespace std;
 

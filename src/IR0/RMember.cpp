@@ -1,11 +1,11 @@
-module Citron.RDecls:RMember;
+#include "RMember.h"
 
-import Citron.Variants;
+#include "Infra/Variants.h"
 
-import :RGlobalFuncDecl;
-import :RClassFuncDecl;
-import :RStructFuncDecl;
-import :DeclWithOuterTypeArgs;
+#include "RGlobalFuncDecl.h"
+#include "RClassFuncDecl.h"
+#include "RStructFuncDecl.h"
+#include "DeclWithOuterTypeArgs.h"
 
 using namespace std;
 

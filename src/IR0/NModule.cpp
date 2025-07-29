@@ -1,8 +1,6 @@
-module Citron.NDecls:NModule;
+#include "NModule.h"
 
-import <cassert>;
-
-import Citron.RDecls;
+#include <cassert>
 
 using namespace std;
 

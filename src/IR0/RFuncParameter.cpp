@@ -1,6 +1,6 @@
-module Citron.RDecls:RFuncParameter;
+#include "RFuncParameter.h"
 
-import :RTypes;
+#include "RTypes.h"
 
 namespace Citron {
 

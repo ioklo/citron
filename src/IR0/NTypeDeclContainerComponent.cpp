@@ -1,7 +1,9 @@
-module Citron.NDecls:NTypeDeclContainerComponent;
+#include "NTypeDeclContainerComponent.h"
 
-import <optional>;
-import Citron.RDecls;
+#include <optional>
+
+#include "RDecl.h"
+#include "NTypeDecl.h"
 
 using namespace std;
 

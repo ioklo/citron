@@ -1,11 +1,20 @@
-module Citron.NDecls:NExp;
+#include "NExp.h"
 
-import <cassert>;
+#include <cassert>
 
-import Citron.Unreachable;
-import Citron.RDecls;
-import :NLoc;
-import :NLambdaDecl;
+#include "Infra/Unreachable.h"
+
+#include "RTypeFactory.h"
+#include "RClassCtorDecl.h"
+#include "RClassFuncDecl.h"
+#include "RClassVarDecl.h"
+#include "RStructCtorDecl.h"
+#include "RStructFuncDecl.h"
+#include "RStructVarDecl.h"
+#include "RGlobalFuncDecl.h"
+
+#include "NLoc.h"
+#include "NLambdaDecl.h"
 
 using namespace std;
 
