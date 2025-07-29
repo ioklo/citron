@@ -1,11 +1,10 @@
-module;
+#include "Syntax.h"
+
 #include <utility>
 #include <string>
 
-module Citron.Syntax;
-
-import Citron.make_vector;
-import Citron.Ptr;
+#include "Infra/make_vector.h"
+#include "Infra/Ptr.h"
 
 using namespace tcb;
 using namespace std;

@@ -1,24 +1,23 @@
-module;
+#pragma once
+
 #include <optional>
 #include <vector>
 
-export module Citron.Copy;
-
 namespace Citron {
 
-export template<typename T>
+template<typename T>
 concept Copyable = requires(T t)
 {
     t.Copy();
 };
 
-export template<typename T>
+template<typename T>
 T Copy(const T& t) requires Copyable<T>
 {
     return t.Copy();
 }
 
-export template<typename T>
+template<typename T>
 std::optional<T> Copy(const std::optional<T>& v)
 {
     if (v)
@@ -27,7 +26,7 @@ std::optional<T> Copy(const std::optional<T>& v)
         return std::nullopt;
 }
 
-export template<typename T>
+template<typename T>
 std::vector<T> Copy(const std::vector<T>& v)
 {
     std::vector<T> copied;

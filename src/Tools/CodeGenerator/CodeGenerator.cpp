@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-import Citron.SyntaxCodeGenerator;
+#include "SyntaxCodeGenerator.h"
 
 using namespace std;
 using namespace std::filesystem;

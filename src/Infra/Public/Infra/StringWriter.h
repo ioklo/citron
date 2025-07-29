@@ -1,14 +1,11 @@
-module;
+#pragma once
 #include "InfraConfig.h"
 #include <sstream>
-
-export module Citron.StringWriter;
-
-import Citron.IWriter;
+#include "IWriter.h"
 
 namespace Citron {
 
-export class StringWriter : public IWriter
+class StringWriter : public IWriter
 {
     std::ostringstream oss;
     int indent;

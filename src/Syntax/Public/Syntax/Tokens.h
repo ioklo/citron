@@ -1,4 +1,4 @@
-module;
+#pragma once
 #include "SyntaxConfig.h"
 
 #include <string>

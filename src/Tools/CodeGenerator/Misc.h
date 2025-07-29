@@ -1,13 +1,10 @@
-module;
 #include <string>
 #include <vector>
 #include <variant>
 #include <sstream>
 #include <filesystem>
 
-export module Citron.CodeGenerator.Misc;
-
-export namespace Citron {
+namespace Citron {
 
 struct CommonInfo
 {

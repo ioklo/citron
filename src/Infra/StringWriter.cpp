@@ -1,9 +1,8 @@
-module;
+#include "StringWriter.h"
+
 #include <cassert>
 #include <string>
 #include <iostream>
-
-module Citron.StringWriter;
 
 using namespace std;
 

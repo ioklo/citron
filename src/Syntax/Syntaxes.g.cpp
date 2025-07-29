@@ -1,12 +1,6 @@
-module;
-#include <memory>
-#include <vector>
-#include <optional>
-#include <string>
+#include "Syntaxes.g.h"
 
-module Citron.Syntax;
-
-import Citron.Json;
+#include "Infra/Json.h"
 
 using namespace std;
 

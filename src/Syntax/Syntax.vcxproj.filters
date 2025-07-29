@@ -12,14 +12,15 @@
     <ClInclude Include="Public\Syntax\Syntax.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\Syntax\Syntaxes.g.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Syntax\Tokens.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Syntaxes.g.cpp" />
     <ClCompile Include="Syntaxes.cpp" />
-    <ClCompile Include="Syntaxes.g.ixx" />
-    <ClCompile Include="Syntaxes.ixx">
-      <Filter>Public Headers</Filter>
-    </ClCompile>
-    <ClCompile Include="Tokens.ixx" />
   </ItemGroup>
 </Project>

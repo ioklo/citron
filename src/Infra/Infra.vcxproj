@@ -147,24 +147,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\Infra\Copy.h" />
     <ClInclude Include="Public\Infra\Defaults.h" />
+    <ClInclude Include="Public\Infra\Exceptions.h" />
+    <ClInclude Include="Public\Infra\Expected.h" />
     <ClInclude Include="Public\Infra\Hash.h" />
+    <ClInclude Include="Public\Infra\Indirect.h" />
     <ClInclude Include="Public\Infra\InfraConfig.h" />
+    <ClInclude Include="Public\Infra\IWriter.h" />
+    <ClInclude Include="Public\Infra\Json.h" />
+    <ClInclude Include="Public\Infra\make_vector.h" />
+    <ClInclude Include="Public\Infra\Ptr.h" />
+    <ClInclude Include="Public\Infra\StringWriter.h" />
+    <ClInclude Include="Public\Infra\Unreachable.h" />
+    <ClInclude Include="Public\Infra\Variants.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Copy.ixx" />
-    <ClCompile Include="Exceptions.ixx" />
-    <ClCompile Include="Expected.ixx" />
-    <ClCompile Include="Indirect.ixx" />
-    <ClCompile Include="IWriter.ixx" />
     <ClCompile Include="Json.cpp" />
-    <ClCompile Include="Json.ixx" />
-    <ClCompile Include="make_vector.ixx" />
-    <ClCompile Include="Ptr.ixx" />
     <ClCompile Include="StringWriter.cpp" />
-    <ClCompile Include="StringWriter.ixx" />
-    <ClCompile Include="Unreachable.ixx" />
-    <ClCompile Include="Variants.ixx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

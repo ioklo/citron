@@ -1,11 +1,10 @@
-module;
+#include "Json.h"
+
 #include <sstream>
 #include <variant>
 #include <vector>
 
-module Citron.Json;
-
-import Citron.IWriter;
+#include "IWriter.h"
 
 using namespace std;
 

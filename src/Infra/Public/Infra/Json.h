@@ -1,4 +1,4 @@
-module;
+#pragma once
 #include "InfraConfig.h"
 
 #include <variant>
@@ -7,15 +7,13 @@ module;
 #include <optional>
 #include <memory>
 
-export module Citron.Json;
-
-import Citron.IWriter;
-
 namespace Citron {
 
-export using JsonItem = std::variant<struct JsonNull, struct JsonBool, struct JsonInt, struct JsonString, struct JsonArray, struct JsonObject>;
+class IWriter;
 
-export struct JsonNull
+using JsonItem = std::variant<struct JsonNull, struct JsonBool, struct JsonInt, struct JsonString, struct JsonArray, struct JsonObject>;
+
+struct JsonNull
 {
     INFRA_API bool operator==(const JsonNull& other) const
     {
@@ -25,7 +23,7 @@ export struct JsonNull
     INFRA_API void ToString(IWriter& writer);
 };
 
-export struct JsonBool
+struct JsonBool
 {
     bool value;
     INFRA_API JsonBool(bool value) : value(value) {}
@@ -38,7 +36,7 @@ export struct JsonBool
     INFRA_API void ToString(IWriter& writer);
 };
 
-export struct JsonInt
+struct JsonInt
 {
     int value;
     INFRA_API JsonInt(int value) : value(value) {}
@@ -51,7 +49,7 @@ export struct JsonInt
     INFRA_API void ToString(IWriter& writer);
 };
 
-export struct JsonString
+struct JsonString
 {
     std::string value;
     INFRA_API JsonString(std::string value) : value(std::move(value)) {}
@@ -64,7 +62,7 @@ export struct JsonString
     INFRA_API void ToString(IWriter& writer);
 };
 
-export struct JsonArray
+struct JsonArray
 {
     std::vector<JsonItem> items;
 
@@ -82,7 +80,7 @@ export struct JsonArray
     INFRA_API void ToString(IWriter& writer);
 };
 
-export struct JsonObject
+struct JsonObject
 {
     std::vector<std::pair<std::string, JsonItem>> fields;
 
@@ -96,41 +94,41 @@ export struct JsonObject
     INFRA_API void ToString(IWriter& writer);
 };
 
-export INFRA_API JsonItem ToJson(bool value)
+inline JsonItem ToJson(bool value)
 {
     return JsonBool(value);
 }
 
-export INFRA_API JsonItem ToJson(int value)
+inline JsonItem ToJson(int value)
 {
     return JsonInt(value);
 }
 
 // default
-export template<typename T>
+template<typename T>
 JsonItem ToJson(T& t)
 {
     return t.ToJson();
 }
 
-export template<typename T>
+template<typename T>
 JsonItem ToJson(std::shared_ptr<T>& t)
 {
     return t->ToJson();
 }
 
-export inline JsonItem ToJson(std::string& s)
+inline JsonItem ToJson(std::string& s)
 {
     return JsonString(s);
 }
 
-export template<typename T>
+template<typename T>
 JsonItem ToJson(T&& t)
 {
     return ToJson(t);
 }
 
-export template<typename TElem>
+template<typename TElem>
 JsonItem ToJson(std::optional<TElem>& oElem)
 {
     if (oElem)
@@ -139,13 +137,13 @@ JsonItem ToJson(std::optional<TElem>& oElem)
         return JsonNull();
 }
 
-export template<typename TElem>
+template<typename TElem>
 JsonItem ToJson(std::optional<TElem>&& oElem)
 {
     return ToJson(oElem);
 }
 
-export template<typename TElem>
+template<typename TElem>
 JsonItem ToJson(std::vector<TElem>& elems)
 {
     std::vector<JsonItem> result;
@@ -156,18 +154,18 @@ JsonItem ToJson(std::vector<TElem>& elems)
     return JsonArray(std::move(result));
 }
 
-export template<typename TElem>
+template<typename TElem>
 JsonItem ToJson(std::vector<TElem>&& elems)
 {
     return ToJson(elems);
 }
 
-export INFRA_API void ToString(JsonItem& item, IWriter& writer)
+inline void ToString(JsonItem& item, IWriter& writer)
 {
     return std::visit([&writer](auto&& i) { return i.ToString(writer); }, item);
 }
 
-export INFRA_API void ToString(JsonItem&& item, IWriter& writer)
+inline void ToString(JsonItem&& item, IWriter& writer)
 {
     return ToString(item, writer);
 }
