@@ -1,2 +1,2 @@
-module Citron.Diag;
+#include "Diag.h"
 

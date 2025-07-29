@@ -1,10 +1,5 @@
-module Citron.Logger;
+#include "Logger.h"
 
 namespace Citron {
-
-void Dummy()
-{
-
-}
 
 }

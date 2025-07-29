@@ -142,13 +142,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\Logging\Diag.h" />
+    <ClInclude Include="Public\Logging\Logger.h" />
     <ClInclude Include="Public\Logging\LoggingConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Diag.cpp" />
-    <ClCompile Include="Diag.ixx" />
     <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="Logger.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Syntax\Syntax.vcxproj">
