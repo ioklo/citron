@@ -5,7 +5,9 @@ target_compile_options(Infra PRIVATE
         -Wno-unqualified-std-cast-call
 )
 
-target_include_directories(Infra PUBLIC Public/Infra)
+target_include_directories(Infra
+        PRIVATE Public/Infra
+        INTERFACE Public)
 
 target_sources(Infra
   PRIVATE
@@ -17,18 +19,15 @@ target_sources(Infra
       Public/Infra/Defaults.h
       Public/Infra/InfraConfig.h
       Public/Infra/Hash.h
-  PUBLIC FILE_SET cxx_modules
-    TYPE CXX_MODULES
-    FILES
-      Copy.ixx
-      Exceptions.ixx
-      Expected.ixx
-      Indirect.ixx
-      IWriter.ixx
-      Json.ixx
-      make_vector.ixx
-      Ptr.ixx
-      StringWriter.ixx
-      Unreachable.ixx
-      Variants.ixx
+      Public/Infra/Copy.h
+      Public/Infra/Exceptions.h
+      Public/Infra/Expected.h
+      Public/Infra/Indirect.h
+      Public/Infra/IWriter.h
+      Public/Infra/Json.h
+      Public/Infra/make_vector.h
+      Public/Infra/Ptr.h
+      Public/Infra/StringWriter.h
+      Public/Infra/Unreachable.h
+      Public/Infra/Variants.h
 )

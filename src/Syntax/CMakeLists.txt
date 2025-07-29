@@ -1,12 +1,18 @@
 
 add_library(Syntax SHARED)
 
+add_dependencies(Syntax Infra)
+
 target_compile_options(Syntax PRIVATE
         -Wno-unqualified-std-cast-call
 )
 
-target_include_directories(Syntax PUBLIC Public/Syntax)
+target_include_directories(Syntax
+        PRIVATE Public/Syntax
+        INTERFACE Public)
+
 target_link_libraries(Syntax PUBLIC Infra)
+
 
 target_sources(Syntax
         PRIVATE
@@ -18,12 +24,7 @@ target_sources(Syntax
         FILES
         Public/Syntax/Syntax.h
         Public/Syntax/SyntaxConfig.h
-
-        PUBLIC FILE_SET cxx_modules
-        TYPE CXX_MODULES
-        FILES
-
-        Syntaxes.g.ixx
-        Syntaxes.ixx
-        Tokens.ixx
+        Public/Syntax/Syntaxes.g.h
+        Public/Syntax/Tokens.h
 )
+
