@@ -1,4 +1,4 @@
-module Citron.MDecls;
+#include "MTypeArguments.h"
 
 namespace Citron {
 

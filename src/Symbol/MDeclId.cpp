@@ -1,4 +1,4 @@
-module Citron.MDecls;
+#include "MDeclId.h"
 
 namespace Citron {
 

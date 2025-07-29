@@ -1,7 +1,6 @@
-module;
-#include <optional>
+#include "MTypeDeclContainerComponent.h"
 
-module Citron.MDecls;
+#include <optional>
 
 using namespace std;
 

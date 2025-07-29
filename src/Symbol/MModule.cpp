@@ -1,7 +1,5 @@
-module;
+#include "MModule.h"
 #include <string>
-
-module Citron.MDecls;
 
 using namespace std;
 

@@ -1,3 +1,4 @@
+#pragma once
 #include "MNames.h"
 
 #include "MAccessor.h"

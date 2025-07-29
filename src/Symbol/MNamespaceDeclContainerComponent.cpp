@@ -1,11 +1,9 @@
-module;
+#include "MNamespaceDeclContainerComponent.h"
+
 #include <memory>
 #include <string>
-
-module Citron.MDecls;
-
-import :MDecl;
-import :MNamespaceDecl;
+#include "MDecl.h"
+#include "MNamespaceDecl.h"
 
 using namespace std;
 

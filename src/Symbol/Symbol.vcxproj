@@ -155,51 +155,51 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\Symbol\MAccessor.h" />
+    <ClInclude Include="Public\Symbol\MBodyDeclOuter.h" />
+    <ClInclude Include="Public\Symbol\MClassCtorDecl.h" />
+    <ClInclude Include="Public\Symbol\MClassDecl.h" />
+    <ClInclude Include="Public\Symbol\MClassFuncDecl.h" />
+    <ClInclude Include="Public\Symbol\MClassVarDecl.h" />
+    <ClInclude Include="Public\Symbol\MCommonFuncDeclComponent.h" />
+    <ClInclude Include="Public\Symbol\MDecl.h" />
+    <ClInclude Include="Public\Symbol\MDeclId.h" />
+    <ClInclude Include="Public\Symbol\MDecls.h" />
+    <ClInclude Include="Public\Symbol\MEnumDecl.h" />
+    <ClInclude Include="Public\Symbol\MEnumElemDecl.h" />
+    <ClInclude Include="Public\Symbol\MEnumElemVarDecl.h" />
+    <ClInclude Include="Public\Symbol\MFunc.h" />
+    <ClInclude Include="Public\Symbol\MFuncDecl.h" />
+    <ClInclude Include="Public\Symbol\MFuncDeclContainerComponent.h" />
+    <ClInclude Include="Public\Symbol\MFuncParameter.h" />
+    <ClInclude Include="Public\Symbol\MFuncReturn.h" />
+    <ClInclude Include="Public\Symbol\MGlobalFuncDecl.h" />
+    <ClInclude Include="Public\Symbol\MIdentifier.h" />
+    <ClInclude Include="Public\Symbol\MInterfaceDecl.h" />
+    <ClInclude Include="Public\Symbol\MModule.h" />
+    <ClInclude Include="Public\Symbol\MNames.h" />
+    <ClInclude Include="Public\Symbol\MNamespaceDecl.h" />
+    <ClInclude Include="Public\Symbol\MNamespaceDeclContainerComponent.h" />
+    <ClInclude Include="Public\Symbol\MStructCtorDecl.h" />
+    <ClInclude Include="Public\Symbol\MStructDecl.h" />
+    <ClInclude Include="Public\Symbol\MStructFuncDecl.h" />
+    <ClInclude Include="Public\Symbol\MStructVarDecl.h" />
+    <ClInclude Include="Public\Symbol\MType.h" />
+    <ClInclude Include="Public\Symbol\MTypeArguments.h" />
+    <ClInclude Include="Public\Symbol\MTypeDecl.h" />
+    <ClInclude Include="Public\Symbol\MTypeDeclContainerComponent.h" />
+    <ClInclude Include="Public\Symbol\MTypeDeclOuter.h" />
     <ClInclude Include="Public\Symbol\SymbolConfig.h" />
     <ClInclude Include="Public\Symbol\Symbols.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MAccessor.ixx" />
-    <ClCompile Include="MBodyDeclOuter.ixx" />
-    <ClCompile Include="MClassCtorDecl.ixx" />
-    <ClCompile Include="MClassDecl.ixx" />
-    <ClCompile Include="MClassFuncDecl.ixx" />
-    <ClCompile Include="MClassVarDecl.ixx" />
-    <ClCompile Include="MCommonFuncDeclComponent.ixx" />
-    <ClCompile Include="MDecl.ixx" />
     <ClCompile Include="MDeclId.cpp" />
-    <ClCompile Include="MDeclId.ixx" />
-    <ClCompile Include="MEnumDecl.ixx" />
-    <ClCompile Include="MEnumElemDecl.ixx" />
-    <ClCompile Include="MEnumElemVarDecl.ixx" />
-    <ClCompile Include="MFunc.ixx" />
-    <ClCompile Include="MFuncDecl.ixx" />
-    <ClCompile Include="MFuncDeclContainerComponent.ixx" />
-    <ClCompile Include="MFuncParameter.ixx" />
-    <ClCompile Include="MFuncReturn.ixx" />
-    <ClCompile Include="MGlobalFuncDecl.ixx" />
-    <ClCompile Include="MIdentifier.ixx" />
-    <ClCompile Include="MInterfaceDecl.ixx" />
     <ClCompile Include="MModule.cpp" />
-    <ClCompile Include="MModule.ixx" />
     <ClCompile Include="MNames.cpp" />
-    <ClCompile Include="MNames.ixx" />
-    <ClCompile Include="MNamespaceDecl.ixx" />
     <ClCompile Include="MNamespaceDeclContainerComponent.cpp" />
-    <ClCompile Include="MNamespaceDeclContainerComponent.ixx" />
-    <ClCompile Include="MStructCtorDecl.ixx" />
-    <ClCompile Include="MStructDecl.ixx" />
-    <ClCompile Include="MStructFuncDecl.ixx" />
-    <ClCompile Include="MStructVarDecl.ixx" />
-    <ClCompile Include="MDecls.ixx" />
     <ClCompile Include="MType.cpp" />
-    <ClCompile Include="MType.ixx" />
     <ClCompile Include="MTypeArguments.cpp" />
-    <ClCompile Include="MTypeArguments.ixx" />
-    <ClCompile Include="MTypeDecl.ixx" />
     <ClCompile Include="MTypeDeclContainerComponent.cpp" />
-    <ClCompile Include="MTypeDeclContainerComponent.ixx" />
-    <ClCompile Include="MTypeDeclOuter.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">
