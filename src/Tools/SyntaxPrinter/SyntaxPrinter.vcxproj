@@ -131,7 +131,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SyntaxPrinter-HeaderUnits.ixx" />
     <ClCompile Include="SyntaxPrinter.cpp" />
   </ItemGroup>
   <ItemGroup>

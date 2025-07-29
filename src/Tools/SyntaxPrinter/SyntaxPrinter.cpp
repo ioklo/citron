@@ -1,17 +1,17 @@
-import <iostream>;
+#include <iostream>
 
-import Citron.Json;
-import Citron.StringWriter;
-import Citron.Ptr;
+#include "Infra/Json.h"
+#include "Infra/StringWriter.h"
+#include "Infra/Ptr.h"
 
-import Citron.Syntax;
-import Citron.Lexer;
-import Citron.Buffer;
+#include "Syntax/Syntax.h"
+#include "TextAnalysis/Lexer.h"
+#include "TextAnalysis/Buffer.h"
 
-import Citron.ScriptParser;
-import Citron.TypeExpParser;
-import Citron.ExpParser;
-import Citron.StmtParser;
+#include "TextAnalysis/ScriptParser.h"
+#include "TextAnalysis/TypeExpParser.h"
+#include "TextAnalysis/ExpParser.h"
+#include "TextAnalysis/StmtParser.h"
 
 using namespace std;
 using namespace Citron;

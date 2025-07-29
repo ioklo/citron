@@ -18,8 +18,5 @@
     <ClCompile Include="SyntaxPrinter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SyntaxPrinter-HeaderUnits.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
