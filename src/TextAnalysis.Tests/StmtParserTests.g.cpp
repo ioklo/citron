@@ -1,10 +1,9 @@
-import "gtest/gtest.h";
-import "TestMisc.h";
+#include <gtest/gtest.h>
 
-import Citron.Syntax;
-import Citron.StmtParser;
+#include "Syntax/Syntax.h"
+#include "TextAnalysis/StmtParser.h"
 
-import Citron.TestMisc;
+#include "TestMisc.h"
 
 using namespace std;
 using namespace Citron;

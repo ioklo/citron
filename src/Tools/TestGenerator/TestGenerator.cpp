@@ -6,7 +6,7 @@
 #include <sstream>
 #include <filesystem>
 #include <clocale>
-import <variant>;
+#include <variant>
 #include <Windows.h>
 #include <boost/algorithm/string.hpp>
 #include <fmt/core.h>
@@ -123,13 +123,12 @@ void GenerateScriptParserTests(path inputPath, path srcPath)
     ostringstream oss;
 
     // insert header
-    oss << R"---(import <gtest/gtest.h>;
-import "TestMisc.h";
+    oss << R"---(#include <gtest/gtest.h>
 
-import Citron.Syntax;
-import Citron.ScriptParser;
+#include "Syntax/Syntax.h"
+#include "TextAnalysis/ScriptParser.h"
 
-import Citron.TestMisc;
+#include "TestMisc.h"
 
 using namespace std;
 using namespace Citron;
@@ -181,13 +180,12 @@ void GenerateStmtParserTests(path inputPath, path srcPath)
     ostringstream oss;
 
     // insert header
-    oss << R"---(import <gtest/gtest.h>;
-import "TestMisc.h";
+    oss << R"---(#include <gtest/gtest.h>
 
-import Citron.Syntax;
-import Citron.StmtParser;
+#include "Syntax/Syntax.h"
+#include "TextAnalysis/StmtParser.h"
 
-import Citron.TestMisc;
+#include "TestMisc.h"
 
 using namespace std;
 using namespace Citron;
@@ -239,13 +237,12 @@ void GenerateExpParserTests(path inputPath, path srcPath)
     ostringstream oss;
 
     // insert header
-    oss << R"---(import <gtest/gtest.h>;
-import "TestMisc.h";
+    oss << R"---(#include <gtest/gtest.h>
 
-import Citron.Syntax;
-import Citron.ExpParser;
+#include "Syntax/Syntax.h"
+#include "TextAnalysis/ExpParser.h"
 
-import Citron.TestMisc;
+#include "TestMisc.h"
 
 using namespace std;
 using namespace Citron;
@@ -297,15 +294,12 @@ void GenerateTypeExpParserTests(path inputPath, path srcPath)
     ostringstream oss;
 
     // insert header
-    oss << R"---(import <gtest/gtest.h>;
-import "TestMisc.h";
+    oss << R"---(#include <gtest/gtest.h>
 
-import Citron.Syntax;
-import Citron.TypeExpParser;
+#include "Syntax/Syntax.h"
+#include "TextAnalysis/TypeExpParser.h"
 
-import Citron.TestMisc;
-
-
+#include "TestMisc.h"
 
 using namespace std;
 using namespace Citron;

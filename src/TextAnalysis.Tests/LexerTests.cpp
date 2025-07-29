@@ -1,14 +1,16 @@
+#include <gtest/gtest.h>
 
-import <gtest/gtest.h>;
+#include <variant>
+#include <vector>
+#include <optional>
 
-import <variant>;
-import <vector>;
-import <optional>;
+#include "Syntax/Tokens.h"
+#include "TextAnalysis/Buffer.h"
+#include "TextAnalysis/Lexer.h"
 
-import Citron.Buffer;
-import Citron.Lexer;
-import Citron.TestMisc;
-import Citron.Tokens;
+#include "TestMisc.h"
+
+
 
 using namespace std;
 using namespace Citron;

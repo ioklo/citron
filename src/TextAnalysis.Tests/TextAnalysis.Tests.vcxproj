@@ -105,12 +105,10 @@
   <ItemGroup>
     <ClCompile Include="CommandLexerTests.cpp" />
     <ClCompile Include="ExpParserTests.g.cpp" />
-    <ClCompile Include="TextAnalysis.Tests-HeaderUnits.ixx" />
     <ClCompile Include="LexerTests.cpp" />
     <ClCompile Include="ScriptParserTests.g.cpp" />
     <ClCompile Include="StmtParserTests.g.cpp" />
     <ClCompile Include="TestMisc.cpp" />
-    <ClCompile Include="TestMisc.ixx" />
     <ClCompile Include="TypeExpParserTests.g.cpp" />
   </ItemGroup>
   <ItemGroup>
