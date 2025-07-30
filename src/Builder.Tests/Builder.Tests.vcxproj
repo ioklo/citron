@@ -105,14 +105,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\TextAnalysis.Tests\Compiler.Tests-HeaderUnits.ixx" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Compiler\Compiler.vcxproj">
+    <ProjectReference Include="..\Builder\Builder.vcxproj">
       <Project>{0eb656a8-c01d-45e4-a986-424a707d3943}</Project>
     </ProjectReference>
   </ItemGroup>

@@ -55,11 +55,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4_IR1", "4_IR1", "{CB3003EB
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IR1", "IR1\IR1.vcxproj", "{86A8EF85-C552-47FB-A2CB-8BBE8DACF2E5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "9_Compiler", "9_Compiler", "{DDBC6894-EF4F-41F9-A905-913F7EA6FCDA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "9_Builder", "9_Builder", "{DDBC6894-EF4F-41F9-A905-913F7EA6FCDA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Compiler", "Compiler\Compiler.vcxproj", "{0EB656A8-C01D-45E4-A986-424A707D3943}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Builder", "Builder\Builder.vcxproj", "{0EB656A8-C01D-45E4-A986-424A707D3943}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Compiler.Tests", "Compiler.Tests\Compiler.Tests.vcxproj", "{69C64055-4F39-4C8B-9FB4-184399598E5E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Builder.Tests", "Builder.Tests\Builder.Tests.vcxproj", "{69C64055-4F39-4C8B-9FB4-184399598E5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
