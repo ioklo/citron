@@ -1,4 +1,6 @@
-module Citron.MDecls;
+#include "MEnumElemDecl.h"
+
+#include "MEnumElemVarDecl.h"
 
 namespace Citron {
 

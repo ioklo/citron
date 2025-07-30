@@ -16,10 +16,6 @@ target_sources(Logging
         TYPE HEADERS
         FILES
         Public/Logging/LoggingConfig.h
-
-        PUBLIC FILE_SET cxx_modules
-        TYPE CXX_MODULES
-        FILES
-        Diag.ixx
-        Logger.ixx
+        Public/Logging/Diag.h
+        Public/Logging/Logger.h
 )

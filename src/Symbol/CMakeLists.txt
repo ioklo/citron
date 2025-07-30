@@ -5,10 +5,11 @@ target_compile_options(Symbol PRIVATE
         -Wno-unqualified-std-cast-call
 )
 
-target_include_directories(Symbol PUBLIC
-        ../Infra/Public
-        Public/Symbol)
-target_link_libraries(Symbol PUBLIC Infra)
+target_include_directories(Symbol
+        PRIVATE Public/Symbol
+        PUBLIC Public)
+
+target_link_libraries(Symbol PRIVATE Infra)
 
 target_sources(Symbol
         PRIVATE
@@ -26,51 +27,38 @@ target_sources(Symbol
         FILES
         Public/Symbol/SymbolConfig.h
         Public/Symbol/Symbols.h
-
-        PUBLIC FILE_SET cxx_modules
-        TYPE CXX_MODULES
-        FILES
-
-        MAccessor.ixx
-        MBodyDeclOuter.ixx
-        MClassCtorDecl.ixx
-        MClassDecl.ixx
-        MClassFuncDecl.ixx
-        MClassVarDecl.ixx
-        MCommonFuncDeclComponent.ixx
-        MDecl.ixx
-        MDeclId.ixx
-        MDecls.ixx
-
-        MEnumDecl.ixx
-        MEnumElemDecl.ixx
-        MEnumElemVarDecl.ixx
-
-        MFunc.ixx
-        MFuncDecl.ixx
-        MFuncDeclContainerComponent.ixx
-
-        MFuncParameter.ixx
-        MFuncReturn.ixx
-
-        MGlobalFuncDecl.ixx
-        MIdentifier.ixx
-        MInterfaceDecl.ixx
-        MModule.ixx
-        MNames.ixx
-
-        MNamespaceDecl.ixx
-        MNamespaceDeclContainerComponent.ixx
-
-        MStructCtorDecl.ixx
-        MStructDecl.ixx
-        MStructFuncDecl.ixx
-        MStructVarDecl.ixx
-
-        MType.ixx
-        MTypeArguments.ixx
-        MTypeDecl.ixx
-        MTypeDeclContainerComponent.ixx
-        MTypeDeclOuter.ixx
-
+        Public/Symbol/MAccessor.h
+        Public/Symbol/MBodyDeclOuter.h
+        Public/Symbol/MClassCtorDecl.h
+        Public/Symbol/MClassDecl.h
+        Public/Symbol/MClassFuncDecl.h
+        Public/Symbol/MClassVarDecl.h
+        Public/Symbol/MCommonFuncDeclComponent.h
+        Public/Symbol/MDecl.h
+        Public/Symbol/MDeclId.h
+        Public/Symbol/MDecls.h
+        Public/Symbol/MEnumDecl.h
+        Public/Symbol/MEnumElemDecl.h
+        Public/Symbol/MEnumElemVarDecl.h
+        Public/Symbol/MFunc.h
+        Public/Symbol/MFuncDecl.h
+        Public/Symbol/MFuncDeclContainerComponent.h
+        Public/Symbol/MFuncParameter.h
+        Public/Symbol/MFuncReturn.h
+        Public/Symbol/MGlobalFuncDecl.h
+        Public/Symbol/MIdentifier.h
+        Public/Symbol/MInterfaceDecl.h
+        Public/Symbol/MModule.h
+        Public/Symbol/MNames.h
+        Public/Symbol/MNamespaceDecl.h
+        Public/Symbol/MNamespaceDeclContainerComponent.h
+        Public/Symbol/MStructCtorDecl.h
+        Public/Symbol/MStructDecl.h
+        Public/Symbol/MStructFuncDecl.h
+        Public/Symbol/MStructVarDecl.h
+        Public/Symbol/MType.h
+        Public/Symbol/MTypeArguments.h
+        Public/Symbol/MTypeDecl.h
+        Public/Symbol/MTypeDeclContainerComponent.h
+        Public/Symbol/MTypeDeclOuter.h
 )

@@ -11,7 +11,7 @@ target_include_directories(Syntax
         PRIVATE Public/Syntax
         INTERFACE Public)
 
-target_link_libraries(Syntax PUBLIC Infra)
+target_link_libraries(Syntax PRIVATE Infra)
 
 
 target_sources(Syntax

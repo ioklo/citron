@@ -5,11 +5,12 @@ project(Citron CXX)
 set(CMAKE_CXX_STANDARD 23)
 
 add_subdirectory(Infra)
-add_subdirectory(Logging)
 add_subdirectory(Syntax)
+add_subdirectory(Logging)
 add_subdirectory(Symbol)
+add_subdirectory(TextAnalysis)
 
-add_subdirectory(Tools)
+#add_subdirectory(Tools)
 
 
 
