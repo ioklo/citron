@@ -12,6 +12,8 @@ add_subdirectory(TextAnalysis)
 add_subdirectory(IR0)
 add_subdirectory(SyntaxIR0Translator)
 
+add_subdirectory(Builder)
+
 add_subdirectory(Tools)
 
 # for tests
@@ -25,4 +27,5 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 add_subdirectory(TextAnalysis.Tests)
+add_subdirectory(Builder.Tests)
 

@@ -1,16 +1,16 @@
-export module Citron.IFileSystem;
+#pragma once
 
-import <vector>;
-import <cstddef>;
-import <optional>;
-import <filesystem>;
+#include <vector>
+#include <cstddef>
+#include <optional>
+#include <filesystem>
 
 namespace Citron {
 
-export 
 class IFileSystem 
 {
 public:
+    virtual ~IFileSystem() { }
     virtual std::optional<std::vector<std::byte>> GetFileContents(const std::filesystem::path& path) = 0;
 };
 

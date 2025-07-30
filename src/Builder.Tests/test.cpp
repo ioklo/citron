@@ -1,6 +1,7 @@
-import "gtest/gtest.h";
-import Citron.Compiler;
-import Citron.IFileSystem;
+#include <gtest/gtest.h>
+
+#include "Builder/Builder.h"
+#include "Builder/IFileSystem.h"
 
 using namespace std;
 using namespace Citron;
@@ -29,7 +30,7 @@ public:
     }
 };
 
-TEST(TestCompiler, TestName) 
+TEST(Builder, TestName)
 {
     // 파일 구조 추가
     auto fs = make_unique<InMemoryFileSystem>();
@@ -41,10 +42,7 @@ int main()
 }
 )---");
 
-    // Builder가 따로 있어야 겠다
-
-
-    Compiler compiler{std::move(fs)};
+    Builder builder{std::move(fs)};
 
     // a.ct, b.ct 
     // compiler.Compile("a.ct", "b.ct");
@@ -62,8 +60,6 @@ int main()
 
     // link는 다음에
     Link(aObj, bObj, executable);
-
-
 
     EXPECT_EQ(1, 1);
     EXPECT_TRUE(true);
