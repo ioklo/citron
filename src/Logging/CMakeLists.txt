@@ -5,7 +5,7 @@ target_compile_options(Logging PRIVATE
         -Wno-unqualified-std-cast-call
 )
 
-target_include_directories(Logging PUBLIC Public/Logging)
+target_include_directories(Logging PRIVATE Public/Logging PUBLIC Public)
 
 target_sources(Logging
         PRIVATE

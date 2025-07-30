@@ -14,6 +14,8 @@ ImExp_GlobalFuncs::ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<RGl
 {
 }
 
+ImExp_GlobalFuncs::~ImExp_GlobalFuncs() = default;
+
 ImExp_TypeVar::ImExp_TypeVar(std::shared_ptr<RType_TypeVar>&& type)
     : type(move(type))
 {
@@ -29,6 +31,8 @@ ImExp_ClassFuncs::ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClas
 {
 }
 
+ImExp_ClassFuncs::~ImExp_ClassFuncs() = default;
+
 ImExp_Struct::ImExp_Struct(const std::shared_ptr<RStructDecl>& structDecl, RTypeArgumentsPtr&& typeArgs)
     : structDecl(structDecl), typeArgs(move(typeArgs))
 {
@@ -39,6 +43,8 @@ ImExp_StructFuncs::ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RSt
 {
 
 }
+
+ImExp_StructFuncs::~ImExp_StructFuncs() = default;
 
 ImExp_Enum::ImExp_Enum(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs)
     : decl(decl), typeArgs(typeArgs)

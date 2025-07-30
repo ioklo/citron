@@ -10,6 +10,7 @@ add_subdirectory(Logging)
 add_subdirectory(Symbol)
 add_subdirectory(TextAnalysis)
 add_subdirectory(IR0)
+add_subdirectory(SyntaxIR0Translator)
 
 add_subdirectory(Tools)
 

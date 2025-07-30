@@ -108,6 +108,7 @@ public:
 
 public:
     ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter);
+    virtual ~ImExp_GlobalFuncs();
 
 public:
     using FuncComp::GetCount;
@@ -161,6 +162,7 @@ private:
 
 public:
     ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    virtual ~ImExp_ClassFuncs();
 
 public:
     using FuncComp::GetCount;
@@ -197,6 +199,7 @@ public:
 
 public:
     ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    virtual ~ImExp_StructFuncs();
 
 public:
     using FuncComp::GetCount;
