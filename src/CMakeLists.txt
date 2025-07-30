@@ -9,6 +9,8 @@ add_subdirectory(Syntax)
 add_subdirectory(Logging)
 add_subdirectory(Symbol)
 add_subdirectory(TextAnalysis)
+add_subdirectory(IR0)
+
 add_subdirectory(Tools)
 
 # for tests

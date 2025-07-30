@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <cassert>
+#include <algorithm>
 
 #include "Infra/Variants.h"
 #include "Infra/Exceptions.h"

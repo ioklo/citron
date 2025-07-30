@@ -2,6 +2,7 @@
 #include <cassert>
 
 #include "NNamespaceDecl.h"
+#include "Infra/Exceptions.h"
 
 using namespace std;
 
@@ -15,6 +16,11 @@ NDecl* NGlobalFuncDecl::GetNOuter()
 RDecl* NGlobalFuncDecl::GetROuter()
 {
     return outer.lock().get();
+}
+
+RIdentifier NGlobalFuncDecl::GetIdentifier()
+{
+    throw NotImplementedException{};
 }
 
 optional<RMember> NGlobalFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

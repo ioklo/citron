@@ -11,6 +11,11 @@ NDecl* NInterfaceDecl::GetNOuter()
     return outer.lock()->GetNDecl();
 }
 
+RMember NInterfaceDecl::ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
+{
+    throw NotImplementedException();
+}
+
 RDecl* NInterfaceDecl::GetROuter()
 {
     return outer.lock()->GetNDecl()->GetRDecl();
