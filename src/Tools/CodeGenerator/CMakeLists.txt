@@ -5,7 +5,7 @@ target_compile_options(CodeGenerator PRIVATE
         -Wno-unqualified-std-cast-call
 )
 
-find_package(fmt REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 
 target_sources(CodeGenerator
         PRIVATE

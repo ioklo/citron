@@ -7,7 +7,9 @@
 #include <filesystem>
 #include <clocale>
 #include <variant>
+#ifdef _MSC_VER
 #include <Windows.h>
+#endif
 #include <boost/algorithm/string.hpp>
 #include <fmt/core.h>
 
