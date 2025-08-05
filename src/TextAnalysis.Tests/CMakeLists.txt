@@ -30,6 +30,7 @@ target_sources(TextAnalysis.Tests
         TestMisc.h
 )
 
+find_package(GTest CONFIG REQUIRED)
 
 include(GoogleTest)
 gtest_discover_tests(TextAnalysis.Tests)

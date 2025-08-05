@@ -10,21 +10,15 @@ add_subdirectory(Logging)
 add_subdirectory(Symbol)
 add_subdirectory(TextAnalysis)
 add_subdirectory(IR0)
+add_subdirectory(IR1)
 add_subdirectory(SyntaxIR0Translator)
+add_subdirectory(IR0IR1Translator)
 
 add_subdirectory(Builder)
-
 add_subdirectory(Tools)
 
-# for tests
-include(FetchContent)
-FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+include(CTest)
+enable_testing()
 
 add_subdirectory(TextAnalysis.Tests)
 add_subdirectory(Builder.Tests)

@@ -171,7 +171,7 @@ public:
             auto elseContext = context.MakeNestedScopeContext();            
             auto elseResult = TranslateSEmbeddableStmtToNStmts(*stmt.elseBody, elseContext);
 
-            if (elseResult)
+            if (!elseResult)
                 return Error(move(elseResult));
 
             elseStmts = move(*elseResult);

@@ -136,18 +136,18 @@ RTypePtr NExp_IntLiteral::GetType(RTypeFactory& factory)
     return factory.MakeIntType();
 }
 
-RTextStringExpElement::RTextStringExpElement(const string& text)
+NTextStringExpElement::NTextStringExpElement(const string& text)
     : text(text)
 {
 }
 
-RLocStringExpElement::RLocStringExpElement(NLocPtr&& loc)
+NLocStringExpElement::NLocStringExpElement(NLocPtr&& loc)
     : loc(loc)
 {
 
 }
 
-NExp_String::NExp_String(vector<RStringExpElement>&& elements)
+NExp_String::NExp_String(vector<NStringExpElement>&& elements)
     : elements(move(elements))
 {
 }
@@ -168,10 +168,9 @@ RTypePtr NExp_List::GetType(RTypeFactory& factory)
 }
 
 NExp_ListIterator::NExp_ListIterator(const NLocPtr& listLoc, const RTypePtr& iteratorType)
-    : listLoc(listLoc), type(type)
+    : listLoc(listLoc), type(iteratorType)
 {
 }
-
 
 RTypePtr NExp_ListIterator::GetType(RTypeFactory& factory)
 {

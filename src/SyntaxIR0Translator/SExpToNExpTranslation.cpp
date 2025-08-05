@@ -64,7 +64,7 @@ expected<NExpPtr, DiagPtr> TranslateSIntLiteralExpToNExp(SExp_IntLiteral& exp)
     return MakePtr<NExp_IntLiteral>(exp.value);
 }
 
-expected<RStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpElement(const SStringExpElementPtr& elem, TranslationContext& context)
+expected<NStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpElement(const SStringExpElementPtr& elem, TranslationContext& context)
 {
     // TranslationResult<R.StringExpElement> Valid(R.StringExpElement elem) = > TranslationResult.Valid(elem);
     // TranslationResult<R.StringExpElement> Error() = > TranslationResult.Error<R.StringExpElement>();
@@ -83,7 +83,7 @@ expected<RStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
             auto eNExp = TranslateReExpToNExp(**eReExp, context);
             if (!eNExp) return unexpected{move(eNExp).error()};
 
-            return RLocStringExpElement(
+            return NLocStringExpElement(
                 MakePtr<NLoc_Temp>(
                     MakePtr<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::ToString_Int_String, move(*eNExp))));
         }
@@ -92,7 +92,7 @@ expected<RStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
             auto eNExp = TranslateReExpToNExp(**eReExp, context);
             if (!eNExp) return unexpected{move(eNExp).error()};
 
-            return RLocStringExpElement(
+            return NLocStringExpElement(
                 MakePtr<NLoc_Temp>(
                     MakePtr<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::ToString_Bool_String, move(*eNExp))));
         }
@@ -103,7 +103,7 @@ expected<RStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
             auto eNLoc = TranslateReExpToNLoc(**eReExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
             if (!eNLoc) return unexpected{move(eNLoc).error()};
 
-            return RLocStringExpElement(move(*eNLoc));
+            return NLocStringExpElement(move(*eNLoc));
         }
         else
         {
@@ -113,7 +113,7 @@ expected<RStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
     }
     else if (auto* textElem = dynamic_cast<SStringExpElement_Text*>(elem.get()))
     {
-        return RTextStringExpElement(textElem->text);
+        return NTextStringExpElement(textElem->text);
     }
 
     unreachable();
@@ -122,7 +122,7 @@ expected<RStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
 expected<shared_ptr<NExp_String>, DiagPtr> TranslateSStringExpToNStringExp(SExp_String& exp, TranslationContext& context)
 {
     vector<DiagPtr> diags;
-    vector<RStringExpElement> builder;
+    vector<NStringExpElement> builder;
     for(auto& elem : exp.elements)
     {
         auto eRStringExpElem = TranslateSStringExpElementToRStringExpElement(elem, context);

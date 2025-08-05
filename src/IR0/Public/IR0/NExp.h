@@ -297,34 +297,34 @@ public:
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
-class RTextStringExpElement
+class NTextStringExpElement
 {
 public:
     std::string text;
 
 public:
-    IR0_API RTextStringExpElement(const std::string& text);
+    IR0_API NTextStringExpElement(const std::string& text);
 };
 
-class RLocStringExpElement
+class NLocStringExpElement
 {
 public:
     NLocPtr loc;
 
 public:
-    IR0_API RLocStringExpElement(NLocPtr&& loc);
+    IR0_API NLocStringExpElement(NLocPtr&& loc);
 };
 
-using RStringExpElement = std::variant<RTextStringExpElement, RLocStringExpElement>;
+using NStringExpElement = std::variant<NTextStringExpElement, NLocStringExpElement>;
 
 // "dskfjslkf $abc "
 class NExp_String : public NExp
 {
 public:
-    std::vector<RStringExpElement> elements;
+    std::vector<NStringExpElement> elements;
 
 public:
-    IR0_API NExp_String(std::vector<RStringExpElement>&& elements);
+    IR0_API NExp_String(std::vector<NStringExpElement>&& elements);
 
     IR0_API RTypePtr GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
