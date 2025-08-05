@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace Citron {
 
 class QInst;

@@ -23,6 +23,9 @@
     <ClCompile Include="Public/Builder/Builder.h" />
     <ClCompile Include="Public/Builder/IFileSystem.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Public\Builder\BuilderConfig.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

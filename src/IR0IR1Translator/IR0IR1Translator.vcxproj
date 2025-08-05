@@ -19,22 +19,36 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Public\IR1\IR1Config.h" />
-    <ClInclude Include="Public\IR1\QBlock.h" />
-    <ClInclude Include="Public\IR1\QFactory.h" />
-    <ClInclude Include="Public\IR1\QInsts.h" />
-    <ClInclude Include="Public\IR1\QValues.h" />
+    <ClInclude Include="NExpQInstsTranslation.h" />
+    <ClInclude Include="NLocQInstsTranslation.h" />
+    <ClInclude Include="NStmtQInstsTranslation.h" />
+    <ClInclude Include="Public\IR0IR1Translator\IR0IR1Translator.h" />
+    <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h" />
+    <ClInclude Include="QBodyContext.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="QBlock.cpp" />
-    <ClCompile Include="QFactory.cpp" />
-    <ClCompile Include="QValues.cpp" />
+    <ClCompile Include="IR0IR1Translator.cpp" />
+    <ClCompile Include="NExpQInstsTranslation.cpp" />
+    <ClCompile Include="NLocQInstsTranslation.cpp" />
+    <ClCompile Include="NStmtQInstsTranslation.cpp" />
+    <ClCompile Include="QBodyContext.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Infra\Infra.vcxproj">
+      <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\IR0\IR0.vcxproj">
+      <Project>{66da32eb-365d-4f0e-bc00-3faba2f51f39}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\IR1\IR1.vcxproj">
+      <Project>{86a8ef85-c552-47fb-a2cb-8bbe8dacf2e5}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{86a8ef85-c552-47fb-a2cb-8bbe8dacf2e5}</ProjectGuid>
-    <RootNamespace>IR1</RootNamespace>
+    <ProjectGuid>{2c184d83-f1a3-45b7-a470-906d11b7de69}</ProjectGuid>
+    <RootNamespace>IR0IR1Translator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -90,7 +104,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;IR1_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;IR0IR1TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -106,7 +120,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;IR1_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;IR0IR1TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -120,7 +134,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;IR1_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;IR0IR1TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -136,7 +150,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;IR1_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;IR0IR1TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>

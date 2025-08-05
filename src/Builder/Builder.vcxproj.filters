@@ -14,4 +14,9 @@
     </ClCompile>
     <ClCompile Include="Builder.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Public\Builder\BuilderConfig.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
