@@ -11,7 +11,7 @@
 #include "Infra/Unreachable.h"
 
 namespace Citron {
-class ArgumentSyntax;
+class SFactory;
 
 class SStmt;
 class SStmt_Command;
@@ -97,19 +97,6 @@ class SScript;
 class SArgument;
 class SArguments;
 
-using SStmtPtr = std::shared_ptr<SStmt>;
-using SExpPtr = std::shared_ptr<SExp>;
-using STypeExpPtr = std::shared_ptr<STypeExp>;
-using SStringExpElementPtr = std::shared_ptr<SStringExpElement>;
-using SLambdaExpBodyPtr = std::shared_ptr<SLambdaExpBody>;
-using SEmbeddableStmtPtr = std::shared_ptr<SEmbeddableStmt>;
-using SForStmtInitializerPtr = std::shared_ptr<SForStmtInitializer>;
-using SClassMemberDeclPtr = std::shared_ptr<SClassMemberDecl>;
-using SStructMemberDeclPtr = std::shared_ptr<SStructMemberDecl>;
-using SNamespaceDeclElementPtr = std::shared_ptr<SNamespaceDeclElement>;
-using SScriptElementPtr = std::shared_ptr<SScriptElement>;
-using SArgumentPtr = std::shared_ptr<SArgument>;
-using SArgumentsPtr = std::shared_ptr<SArguments>;
 enum class SAccessModifier
 {
     Public,
@@ -198,7 +185,7 @@ public:
     SYNTAX_API SSyntax();
     SSyntax(const SSyntax&) = delete;
     SYNTAX_API SSyntax(SSyntax&&) noexcept;
-    SYNTAX_API ~SSyntax();
+    SYNTAX_API virtual ~SSyntax();
 
     SSyntax& operator=(const SSyntax& other) = delete;
     SYNTAX_API SSyntax& operator=(SSyntax&& other) noexcept;
@@ -211,10 +198,10 @@ class SArgument
 public:
     bool bOut;
     bool bParams;
-    SExpPtr exp;
+    SExp* exp;
 
-    SYNTAX_API SArgument(bool bOut, bool bParams, SExpPtr exp);
-    SYNTAX_API SArgument(SExpPtr exp);
+    SYNTAX_API SArgument(bool bOut, bool bParams, SExp* exp);
+    SYNTAX_API SArgument(SExp* exp);
     SArgument(const SArgument&) = delete;
     SYNTAX_API SArgument(SArgument&&) noexcept;
     SYNTAX_API ~SArgument();
@@ -228,9 +215,9 @@ public:
 class SArguments
 {
 public:
-    std::vector<SArgumentPtr> items;
+    std::vector<SArgument*> items;
 
-    SYNTAX_API SArguments(std::vector<SArgumentPtr> items);
+    SYNTAX_API SArguments(std::vector<SArgument*> items);
     SArguments(const SArguments&) = delete;
     SYNTAX_API SArguments(SArguments&&) noexcept;
     SYNTAX_API ~SArguments();
@@ -244,12 +231,12 @@ public:
 class SLambdaExpParam
 {
 public:
-    STypeExpPtr type;
+    STypeExp* type;
     std::string name;
     bool hasOut;
     bool hasParams;
 
-    SYNTAX_API SLambdaExpParam(STypeExpPtr type, std::string name, bool hasOut, bool hasParams);
+    SYNTAX_API SLambdaExpParam(STypeExp* type, std::string name, bool hasOut, bool hasParams);
     SLambdaExpParam(const SLambdaExpParam&) = delete;
     SYNTAX_API SLambdaExpParam(SLambdaExpParam&&) noexcept;
     SYNTAX_API ~SLambdaExpParam();
@@ -264,9 +251,9 @@ class SVarDeclElement
 {
 public:
     std::string varName;
-    SExpPtr initExp;
+    SExp* initExp;
 
-    SYNTAX_API SVarDeclElement(std::string varName, SExpPtr initExp);
+    SYNTAX_API SVarDeclElement(std::string varName, SExp* initExp);
     SVarDeclElement(const SVarDeclElement&) = delete;
     SYNTAX_API SVarDeclElement(SVarDeclElement&&) noexcept;
     SYNTAX_API ~SVarDeclElement();
@@ -280,10 +267,10 @@ public:
 class SVarDecl
 {
 public:
-    STypeExpPtr type;
+    STypeExp* type;
     std::vector<SVarDeclElement> elements;
 
-    SYNTAX_API SVarDecl(STypeExpPtr type, std::vector<SVarDeclElement> elements);
+    SYNTAX_API SVarDecl(STypeExp* type, std::vector<SVarDeclElement> elements);
     SVarDecl(const SVarDecl&) = delete;
     SYNTAX_API SVarDecl(SVarDecl&&) noexcept;
     SYNTAX_API ~SVarDecl();
@@ -315,10 +302,10 @@ class SFuncParam
 public:
     bool hasOut;
     bool hasParams;
-    STypeExpPtr type;
+    STypeExp* type;
     std::string name;
 
-    SYNTAX_API SFuncParam(bool hasOut, bool hasParams, STypeExpPtr type, std::string name);
+    SYNTAX_API SFuncParam(bool hasOut, bool hasParams, STypeExp* type, std::string name);
     SFuncParam(const SFuncParam&) = delete;
     SYNTAX_API SFuncParam(SFuncParam&&) noexcept;
     SYNTAX_API ~SFuncParam();
@@ -352,7 +339,7 @@ public:
     virtual void Visit(SStmt_Directive& stmt) = 0;
 };
 
-class SStmt : public SSyntax
+class SStmt : virtual public SSyntax
 {
 public:
     SStmt() = default;
@@ -364,7 +351,7 @@ public:
     virtual void Accept(SStmtVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(SStmtPtr& stmt);
+SYNTAX_API JsonItem ToJson(SStmt* stmt);
 
 class SExpVisitor
 {
@@ -389,7 +376,7 @@ public:
     virtual void Visit(SExp_As& exp) = 0;
 };
 
-class SExp : public SSyntax
+class SExp : virtual public SSyntax
 {
 public:
     SExp() = default;
@@ -401,7 +388,7 @@ public:
     virtual void Accept(SExpVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(SExpPtr& exp);
+SYNTAX_API JsonItem ToJson(SExp* exp);
 
 class STypeExpVisitor
 {
@@ -415,7 +402,7 @@ public:
     virtual void Visit(STypeExp_Local& typeExp) = 0;
 };
 
-class STypeExp : public SSyntax
+class STypeExp : virtual public SSyntax
 {
 public:
     STypeExp() = default;
@@ -427,7 +414,7 @@ public:
     virtual void Accept(STypeExpVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(STypeExpPtr& typeExp);
+SYNTAX_API JsonItem ToJson(STypeExp* typeExp);
 
 class SStringExpElementVisitor
 {
@@ -437,7 +424,7 @@ public:
     virtual void Visit(SStringExpElement_Exp& elem) = 0;
 };
 
-class SStringExpElement : public SSyntax
+class SStringExpElement : virtual public SSyntax
 {
 public:
     SStringExpElement() = default;
@@ -449,7 +436,7 @@ public:
     virtual void Accept(SStringExpElementVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(SStringExpElementPtr& elem);
+SYNTAX_API JsonItem ToJson(SStringExpElement* elem);
 
 class SLambdaExpBodyVisitor
 {
@@ -459,7 +446,7 @@ public:
     virtual void Visit(SLambdaExpBody_Exp& body) = 0;
 };
 
-class SLambdaExpBody : public SSyntax
+class SLambdaExpBody : virtual public SSyntax
 {
 public:
     SLambdaExpBody() = default;
@@ -471,7 +458,7 @@ public:
     virtual void Accept(SLambdaExpBodyVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(SLambdaExpBodyPtr& body);
+SYNTAX_API JsonItem ToJson(SLambdaExpBody* body);
 
 class SEmbeddableStmtVisitor
 {
@@ -481,7 +468,7 @@ public:
     virtual void Visit(SEmbeddableStmt_Block& stmt) = 0;
 };
 
-class SEmbeddableStmt : public SSyntax
+class SEmbeddableStmt : virtual public SSyntax
 {
 public:
     SEmbeddableStmt() = default;
@@ -493,7 +480,7 @@ public:
     virtual void Accept(SEmbeddableStmtVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(SEmbeddableStmtPtr& stmt);
+SYNTAX_API JsonItem ToJson(SEmbeddableStmt* stmt);
 
 class SForStmtInitializerVisitor
 {
@@ -503,7 +490,7 @@ public:
     virtual void Visit(SForStmtInitializer_VarDecl& initializer) = 0;
 };
 
-class SForStmtInitializer : public SSyntax
+class SForStmtInitializer : virtual public SSyntax
 {
 public:
     SForStmtInitializer() = default;
@@ -515,7 +502,7 @@ public:
     virtual void Accept(SForStmtInitializerVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(SForStmtInitializerPtr& initializer);
+SYNTAX_API JsonItem ToJson(SForStmtInitializer* initializer);
 
 class SClassMemberDeclVisitor
 {
@@ -529,7 +516,7 @@ public:
     virtual void Visit(SClassVarDecl& decl) = 0;
 };
 
-class SClassMemberDecl : public SSyntax
+class SClassMemberDecl : virtual public SSyntax
 {
 public:
     SClassMemberDecl() = default;
@@ -541,7 +528,7 @@ public:
     virtual void Accept(SClassMemberDeclVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(SClassMemberDeclPtr& decl);
+SYNTAX_API JsonItem ToJson(SClassMemberDecl* decl);
 
 class SStructMemberDeclVisitor
 {
@@ -555,7 +542,7 @@ public:
     virtual void Visit(SStructVarDecl& decl) = 0;
 };
 
-class SStructMemberDecl : public SSyntax
+class SStructMemberDecl : virtual public SSyntax
 {
 public:
     SStructMemberDecl() = default;
@@ -567,7 +554,7 @@ public:
     virtual void Accept(SStructMemberDeclVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(SStructMemberDeclPtr& decl);
+SYNTAX_API JsonItem ToJson(SStructMemberDecl* decl);
 
 class SNamespaceDeclElementVisitor
 {
@@ -580,7 +567,7 @@ public:
     virtual void Visit(SEnumDecl& elem) = 0;
 };
 
-class SNamespaceDeclElement : public SSyntax
+class SNamespaceDeclElement : virtual public SSyntax
 {
 public:
     SNamespaceDeclElement() = default;
@@ -592,7 +579,7 @@ public:
     virtual void Accept(SNamespaceDeclElementVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(SNamespaceDeclElementPtr& elem);
+SYNTAX_API JsonItem ToJson(SNamespaceDeclElement* elem);
 
 class SScriptElementVisitor
 {
@@ -605,7 +592,7 @@ public:
     virtual void Visit(SEnumDecl& elem) = 0;
 };
 
-class SScriptElement : public SSyntax
+class SScriptElement : virtual public SSyntax
 {
 public:
     SScriptElement() = default;
@@ -617,16 +604,16 @@ public:
     virtual void Accept(SScriptElementVisitor& visitor) = 0;
 };
 
-SYNTAX_API JsonItem ToJson(SScriptElementPtr& elem);
+SYNTAX_API JsonItem ToJson(SScriptElement* elem);
 
 class SExp_Identifier
     : public SExp
 {
 public:
     std::string value;
-    std::vector<STypeExpPtr> typeArgs;
+    std::vector<STypeExp*> typeArgs;
 
-    SYNTAX_API SExp_Identifier(std::string value, std::vector<STypeExpPtr> typeArgs);
+    SYNTAX_API SExp_Identifier(std::string value, std::vector<STypeExp*> typeArgs);
     SExp_Identifier(std::string value) : SExp_Identifier(move(value), {}) { }
     SExp_Identifier(const SExp_Identifier&) = delete;
     SYNTAX_API SExp_Identifier(SExp_Identifier&&) noexcept;
@@ -644,10 +631,10 @@ class SExp_String
     : public SExp
 {
 public:
-    std::vector<SStringExpElementPtr> elements;
+    std::vector<SStringExpElement*> elements;
 
-    SYNTAX_API SExp_String(std::vector<SStringExpElementPtr> elements);
-    SYNTAX_API SExp_String(std::string str);
+    SYNTAX_API SExp_String(std::vector<SStringExpElement*> elements);
+    SYNTAX_API SExp_String(std::string&& str, SFactory& factory);
     SExp_String(const SExp_String&) = delete;
     SYNTAX_API SExp_String(SExp_String&&) noexcept;
     SYNTAX_API virtual ~SExp_String();
@@ -719,9 +706,9 @@ class SExp_List
     : public SExp
 {
 public:
-    std::vector<SExpPtr> elements;
+    std::vector<SExp*> elements;
 
-    SYNTAX_API SExp_List(std::vector<SExpPtr> elements);
+    SYNTAX_API SExp_List(std::vector<SExp*> elements);
     SExp_List(const SExp_List&) = delete;
     SYNTAX_API SExp_List(SExp_List&&) noexcept;
     SYNTAX_API virtual ~SExp_List();
@@ -738,10 +725,10 @@ class SExp_New
     : public SExp
 {
 public:
-    STypeExpPtr type;
-    SArgumentsPtr args;
+    STypeExp* type;
+    SArguments* args;
 
-    SYNTAX_API SExp_New(STypeExpPtr type, SArgumentsPtr args);
+    SYNTAX_API SExp_New(STypeExp* type, SArguments* args);
     SExp_New(const SExp_New&) = delete;
     SYNTAX_API SExp_New(SExp_New&&) noexcept;
     SYNTAX_API virtual ~SExp_New();
@@ -759,10 +746,10 @@ class SExp_BinaryOp
 {
 public:
     SBinaryOpKind kind;
-    SExpPtr operand0;
-    SExpPtr operand1;
+    SExp* operand0;
+    SExp* operand1;
 
-    SYNTAX_API SExp_BinaryOp(SBinaryOpKind kind, SExpPtr operand0, SExpPtr operand1);
+    SYNTAX_API SExp_BinaryOp(SBinaryOpKind kind, SExp* operand0, SExp* operand1);
     SExp_BinaryOp(const SExp_BinaryOp&) = delete;
     SYNTAX_API SExp_BinaryOp(SExp_BinaryOp&&) noexcept;
     SYNTAX_API virtual ~SExp_BinaryOp();
@@ -780,9 +767,9 @@ class SExp_UnaryOp
 {
 public:
     SUnaryOpKind kind;
-    SExpPtr operand;
+    SExp* operand;
 
-    SYNTAX_API SExp_UnaryOp(SUnaryOpKind kind, SExpPtr operand);
+    SYNTAX_API SExp_UnaryOp(SUnaryOpKind kind, SExp* operand);
     SExp_UnaryOp(const SExp_UnaryOp&) = delete;
     SYNTAX_API SExp_UnaryOp(SExp_UnaryOp&&) noexcept;
     SYNTAX_API virtual ~SExp_UnaryOp();
@@ -799,10 +786,10 @@ class SExp_Call
     : public SExp
 {
 public:
-    SExpPtr callable;
-    SArgumentsPtr args;
+    SExp* callable;
+    SArguments* args;
 
-    SYNTAX_API SExp_Call(SExpPtr callable, SArgumentsPtr args);
+    SYNTAX_API SExp_Call(SExp* callable, SArguments* args);
     SExp_Call(const SExp_Call&) = delete;
     SYNTAX_API SExp_Call(SExp_Call&&) noexcept;
     SYNTAX_API virtual ~SExp_Call();
@@ -820,9 +807,9 @@ class SExp_Lambda
 {
 public:
     std::vector<SLambdaExpParam> params;
-    SLambdaExpBodyPtr body;
+    SLambdaExpBody* body;
 
-    SYNTAX_API SExp_Lambda(std::vector<SLambdaExpParam> params, SLambdaExpBodyPtr body);
+    SYNTAX_API SExp_Lambda(std::vector<SLambdaExpParam> params, SLambdaExpBody* body);
     SExp_Lambda(const SExp_Lambda&) = delete;
     SYNTAX_API SExp_Lambda(SExp_Lambda&&) noexcept;
     SYNTAX_API virtual ~SExp_Lambda();
@@ -839,10 +826,10 @@ class SExp_Indexer
     : public SExp
 {
 public:
-    SExpPtr obj;
-    SExpPtr index;
+    SExp* obj;
+    SExp* index;
 
-    SYNTAX_API SExp_Indexer(SExpPtr obj, SExpPtr index);
+    SYNTAX_API SExp_Indexer(SExp* obj, SExp* index);
     SExp_Indexer(const SExp_Indexer&) = delete;
     SYNTAX_API SExp_Indexer(SExp_Indexer&&) noexcept;
     SYNTAX_API virtual ~SExp_Indexer();
@@ -859,12 +846,12 @@ class SExp_Member
     : public SExp
 {
 public:
-    SExpPtr parent;
+    SExp* parent;
     std::string memberName;
-    std::vector<STypeExpPtr> memberTypeArgs;
+    std::vector<STypeExp*> memberTypeArgs;
 
-    SYNTAX_API SExp_Member(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs);
-    SYNTAX_API SExp_Member(SExpPtr parent, std::string memberName);
+    SYNTAX_API SExp_Member(SExp* parent, std::string memberName, std::vector<STypeExp*> memberTypeArgs);
+    SYNTAX_API SExp_Member(SExp* parent, std::string&& memberName);
     SExp_Member(const SExp_Member&) = delete;
     SYNTAX_API SExp_Member(SExp_Member&&) noexcept;
     SYNTAX_API virtual ~SExp_Member();
@@ -881,12 +868,12 @@ class SExp_IndirectMember
     : public SExp
 {
 public:
-    SExpPtr parent;
+    SExp* parent;
     std::string memberName;
-    std::vector<STypeExpPtr> memberTypeArgs;
+    std::vector<STypeExp*> memberTypeArgs;
 
-    SYNTAX_API SExp_IndirectMember(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs);
-    SYNTAX_API SExp_IndirectMember(SExpPtr parent, std::string memberName);
+    SYNTAX_API SExp_IndirectMember(SExp* parent, std::string memberName, std::vector<STypeExp*> memberTypeArgs);
+    SYNTAX_API SExp_IndirectMember(SExp* parent, std::string&& memberName);
     SExp_IndirectMember(const SExp_IndirectMember&) = delete;
     SYNTAX_API SExp_IndirectMember(SExp_IndirectMember&&) noexcept;
     SYNTAX_API virtual ~SExp_IndirectMember();
@@ -903,9 +890,9 @@ class SExp_Box
     : public SExp
 {
 public:
-    SExpPtr innerExp;
+    SExp* innerExp;
 
-    SYNTAX_API SExp_Box(SExpPtr innerExp);
+    SYNTAX_API SExp_Box(SExp* innerExp);
     SExp_Box(const SExp_Box&) = delete;
     SYNTAX_API SExp_Box(SExp_Box&&) noexcept;
     SYNTAX_API virtual ~SExp_Box();
@@ -922,10 +909,10 @@ class SExp_Is
     : public SExp
 {
 public:
-    SExpPtr exp;
-    STypeExpPtr type;
+    SExp* exp;
+    STypeExp* type;
 
-    SYNTAX_API SExp_Is(SExpPtr exp, STypeExpPtr type);
+    SYNTAX_API SExp_Is(SExp* exp, STypeExp* type);
     SExp_Is(const SExp_Is&) = delete;
     SYNTAX_API SExp_Is(SExp_Is&&) noexcept;
     SYNTAX_API virtual ~SExp_Is();
@@ -942,10 +929,10 @@ class SExp_As
     : public SExp
 {
 public:
-    SExpPtr exp;
-    STypeExpPtr type;
+    SExp* exp;
+    STypeExp* type;
 
-    SYNTAX_API SExp_As(SExpPtr exp, STypeExpPtr type);
+    SYNTAX_API SExp_As(SExp* exp, STypeExp* type);
     SExp_As(const SExp_As&) = delete;
     SYNTAX_API SExp_As(SExp_As&&) noexcept;
     SYNTAX_API virtual ~SExp_As();
@@ -963,10 +950,10 @@ class STypeExp_Id
 {
 public:
     std::string name;
-    std::vector<STypeExpPtr> typeArgs;
+    std::vector<STypeExp*> typeArgs;
 
-    SYNTAX_API STypeExp_Id(std::string name, std::vector<STypeExpPtr> typeArgs);
-    SYNTAX_API STypeExp_Id(std::string name);
+    SYNTAX_API STypeExp_Id(std::string name, std::vector<STypeExp*> typeArgs);
+    SYNTAX_API STypeExp_Id(std::string&& name);
     STypeExp_Id(const STypeExp_Id&) = delete;
     SYNTAX_API STypeExp_Id(STypeExp_Id&&) noexcept;
     SYNTAX_API virtual ~STypeExp_Id();
@@ -983,11 +970,11 @@ class STypeExp_Member
     : public STypeExp
 {
 public:
-    STypeExpPtr parentType;
+    STypeExp* parentType;
     std::string name;
-    std::vector<STypeExpPtr> typeArgs;
+    std::vector<STypeExp*> typeArgs;
 
-    SYNTAX_API STypeExp_Member(STypeExpPtr parentType, std::string name, std::vector<STypeExpPtr> typeArgs);
+    SYNTAX_API STypeExp_Member(STypeExp* parentType, std::string name, std::vector<STypeExp*> typeArgs);
     STypeExp_Member(const STypeExp_Member&) = delete;
     SYNTAX_API STypeExp_Member(STypeExp_Member&&) noexcept;
     SYNTAX_API virtual ~STypeExp_Member();
@@ -1004,9 +991,9 @@ class STypeExp_Nullable
     : public STypeExp
 {
 public:
-    STypeExpPtr innerType;
+    STypeExp* innerType;
 
-    SYNTAX_API STypeExp_Nullable(STypeExpPtr innerType);
+    SYNTAX_API STypeExp_Nullable(STypeExp* innerType);
     STypeExp_Nullable(const STypeExp_Nullable&) = delete;
     SYNTAX_API STypeExp_Nullable(STypeExp_Nullable&&) noexcept;
     SYNTAX_API virtual ~STypeExp_Nullable();
@@ -1023,9 +1010,9 @@ class STypeExp_LocalPtr
     : public STypeExp
 {
 public:
-    STypeExpPtr innerType;
+    STypeExp* innerType;
 
-    SYNTAX_API STypeExp_LocalPtr(STypeExpPtr innerType);
+    SYNTAX_API STypeExp_LocalPtr(STypeExp* innerType);
     STypeExp_LocalPtr(const STypeExp_LocalPtr&) = delete;
     SYNTAX_API STypeExp_LocalPtr(STypeExp_LocalPtr&&) noexcept;
     SYNTAX_API virtual ~STypeExp_LocalPtr();
@@ -1042,9 +1029,9 @@ class STypeExp_BoxPtr
     : public STypeExp
 {
 public:
-    STypeExpPtr innerType;
+    STypeExp* innerType;
 
-    SYNTAX_API STypeExp_BoxPtr(STypeExpPtr innerType);
+    SYNTAX_API STypeExp_BoxPtr(STypeExp* innerType);
     STypeExp_BoxPtr(const STypeExp_BoxPtr&) = delete;
     SYNTAX_API STypeExp_BoxPtr(STypeExp_BoxPtr&&) noexcept;
     SYNTAX_API virtual ~STypeExp_BoxPtr();
@@ -1061,9 +1048,9 @@ class STypeExp_Local
     : public STypeExp
 {
 public:
-    STypeExpPtr innerType;
+    STypeExp* innerType;
 
-    SYNTAX_API STypeExp_Local(STypeExpPtr innerType);
+    SYNTAX_API STypeExp_Local(STypeExp* innerType);
     STypeExp_Local(const STypeExp_Local&) = delete;
     SYNTAX_API STypeExp_Local(STypeExp_Local&&) noexcept;
     SYNTAX_API virtual ~STypeExp_Local();
@@ -1099,9 +1086,9 @@ class SStringExpElement_Exp
     : public SStringExpElement
 {
 public:
-    SExpPtr exp;
+    SExp* exp;
 
-    SYNTAX_API SStringExpElement_Exp(SExpPtr exp);
+    SYNTAX_API SStringExpElement_Exp(SExp* exp);
     SStringExpElement_Exp(const SStringExpElement_Exp&) = delete;
     SYNTAX_API SStringExpElement_Exp(SStringExpElement_Exp&&) noexcept;
     SYNTAX_API virtual ~SStringExpElement_Exp();
@@ -1118,9 +1105,9 @@ class SLambdaExpBody_Stmts
     : public SLambdaExpBody
 {
 public:
-    std::vector<SStmtPtr> stmts;
+    std::vector<SStmt*> stmts;
 
-    SYNTAX_API SLambdaExpBody_Stmts(std::vector<SStmtPtr> stmts);
+    SYNTAX_API SLambdaExpBody_Stmts(std::vector<SStmt*> stmts);
     SLambdaExpBody_Stmts(const SLambdaExpBody_Stmts&) = delete;
     SYNTAX_API SLambdaExpBody_Stmts(SLambdaExpBody_Stmts&&) noexcept;
     SYNTAX_API virtual ~SLambdaExpBody_Stmts();
@@ -1137,9 +1124,9 @@ class SLambdaExpBody_Exp
     : public SLambdaExpBody
 {
 public:
-    SExpPtr exp;
+    SExp* exp;
 
-    SYNTAX_API SLambdaExpBody_Exp(SExpPtr exp);
+    SYNTAX_API SLambdaExpBody_Exp(SExp* exp);
     SLambdaExpBody_Exp(const SLambdaExpBody_Exp&) = delete;
     SYNTAX_API SLambdaExpBody_Exp(SLambdaExpBody_Exp&&) noexcept;
     SYNTAX_API virtual ~SLambdaExpBody_Exp();
@@ -1156,9 +1143,9 @@ class SEmbeddableStmt_Single
     : public SEmbeddableStmt
 {
 public:
-    SStmtPtr stmt;
+    SStmt* stmt;
 
-    SYNTAX_API SEmbeddableStmt_Single(SStmtPtr stmt);
+    SYNTAX_API SEmbeddableStmt_Single(SStmt* stmt);
     SEmbeddableStmt_Single(const SEmbeddableStmt_Single&) = delete;
     SYNTAX_API SEmbeddableStmt_Single(SEmbeddableStmt_Single&&) noexcept;
     SYNTAX_API virtual ~SEmbeddableStmt_Single();
@@ -1175,9 +1162,9 @@ class SEmbeddableStmt_Block
     : public SEmbeddableStmt
 {
 public:
-    std::vector<SStmtPtr> stmts;
+    std::vector<SStmt*> stmts;
 
-    SYNTAX_API SEmbeddableStmt_Block(std::vector<SStmtPtr> stmts);
+    SYNTAX_API SEmbeddableStmt_Block(std::vector<SStmt*> stmts);
     SEmbeddableStmt_Block(const SEmbeddableStmt_Block&) = delete;
     SYNTAX_API SEmbeddableStmt_Block(SEmbeddableStmt_Block&&) noexcept;
     SYNTAX_API virtual ~SEmbeddableStmt_Block();
@@ -1194,9 +1181,9 @@ class SForStmtInitializer_Exp
     : public SForStmtInitializer
 {
 public:
-    SExpPtr exp;
+    SExp* exp;
 
-    SYNTAX_API SForStmtInitializer_Exp(SExpPtr exp);
+    SYNTAX_API SForStmtInitializer_Exp(SExp* exp);
     SForStmtInitializer_Exp(const SForStmtInitializer_Exp&) = delete;
     SYNTAX_API SForStmtInitializer_Exp(SForStmtInitializer_Exp&&) noexcept;
     SYNTAX_API virtual ~SForStmtInitializer_Exp();
@@ -1232,9 +1219,9 @@ class SStmt_Command
     : public SStmt
 {
 public:
-    std::vector<std::shared_ptr<SExp_String>> commands;
+    std::vector<SExp_String*> commands;
 
-    SYNTAX_API SStmt_Command(std::vector<std::shared_ptr<SExp_String>> commands);
+    SYNTAX_API SStmt_Command(std::vector<SExp_String*> commands);
     SStmt_Command(const SStmt_Command&) = delete;
     SYNTAX_API SStmt_Command(SStmt_Command&&) noexcept;
     SYNTAX_API virtual ~SStmt_Command();
@@ -1304,9 +1291,9 @@ class SStmt_Block
     : public SStmt
 {
 public:
-    std::vector<SStmtPtr> stmts;
+    std::vector<SStmt*> stmts;
 
-    SYNTAX_API SStmt_Block(std::vector<SStmtPtr> stmts);
+    SYNTAX_API SStmt_Block(std::vector<SStmt*> stmts);
     SStmt_Block(const SStmt_Block&) = delete;
     SYNTAX_API SStmt_Block(SStmt_Block&&) noexcept;
     SYNTAX_API virtual ~SStmt_Block();
@@ -1340,9 +1327,9 @@ class SStmt_Task
     : public SStmt
 {
 public:
-    std::vector<SStmtPtr> body;
+    std::vector<SStmt*> body;
 
-    SYNTAX_API SStmt_Task(std::vector<SStmtPtr> body);
+    SYNTAX_API SStmt_Task(std::vector<SStmt*> body);
     SStmt_Task(const SStmt_Task&) = delete;
     SYNTAX_API SStmt_Task(SStmt_Task&&) noexcept;
     SYNTAX_API virtual ~SStmt_Task();
@@ -1359,9 +1346,9 @@ class SStmt_Await
     : public SStmt
 {
 public:
-    std::vector<SStmtPtr> body;
+    std::vector<SStmt*> body;
 
-    SYNTAX_API SStmt_Await(std::vector<SStmtPtr> body);
+    SYNTAX_API SStmt_Await(std::vector<SStmt*> body);
     SStmt_Await(const SStmt_Await&) = delete;
     SYNTAX_API SStmt_Await(SStmt_Await&&) noexcept;
     SYNTAX_API virtual ~SStmt_Await();
@@ -1378,9 +1365,9 @@ class SStmt_Async
     : public SStmt
 {
 public:
-    std::vector<SStmtPtr> body;
+    std::vector<SStmt*> body;
 
-    SYNTAX_API SStmt_Async(std::vector<SStmtPtr> body);
+    SYNTAX_API SStmt_Async(std::vector<SStmt*> body);
     SStmt_Async(const SStmt_Async&) = delete;
     SYNTAX_API SStmt_Async(SStmt_Async&&) noexcept;
     SYNTAX_API virtual ~SStmt_Async();
@@ -1398,9 +1385,9 @@ class SStmt_Directive
 {
 public:
     std::string name;
-    std::vector<SExpPtr> args;
+    std::vector<SExp*> args;
 
-    SYNTAX_API SStmt_Directive(std::string name, std::vector<SExpPtr> args);
+    SYNTAX_API SStmt_Directive(std::string name, std::vector<SExp*> args);
     SStmt_Directive(const SStmt_Directive&) = delete;
     SYNTAX_API SStmt_Directive(SStmt_Directive&&) noexcept;
     SYNTAX_API virtual ~SStmt_Directive();
@@ -1417,11 +1404,11 @@ class SStmt_If
     : public SStmt
 {
 public:
-    SExpPtr cond;
-    SEmbeddableStmtPtr body;
-    SEmbeddableStmtPtr elseBody;
+    SExp* cond;
+    SEmbeddableStmt* body;
+    SEmbeddableStmt* elseBody;
 
-    SYNTAX_API SStmt_If(SExpPtr cond, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody);
+    SYNTAX_API SStmt_If(SExp* cond, SEmbeddableStmt* body, SEmbeddableStmt* elseBody);
     SStmt_If(const SStmt_If&) = delete;
     SYNTAX_API SStmt_If(SStmt_If&&) noexcept;
     SYNTAX_API virtual ~SStmt_If();
@@ -1438,13 +1425,13 @@ class SStmt_IfTest
     : public SStmt
 {
 public:
-    STypeExpPtr testType;
+    STypeExp* testType;
     std::string varName;
-    SExpPtr exp;
-    SEmbeddableStmtPtr body;
-    SEmbeddableStmtPtr elseBody;
+    SExp* exp;
+    SEmbeddableStmt* body;
+    SEmbeddableStmt* elseBody;
 
-    SYNTAX_API SStmt_IfTest(STypeExpPtr testType, std::string varName, SExpPtr exp, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody);
+    SYNTAX_API SStmt_IfTest(STypeExp* testType, std::string varName, SExp* exp, SEmbeddableStmt* body, SEmbeddableStmt* elseBody);
     SStmt_IfTest(const SStmt_IfTest&) = delete;
     SYNTAX_API SStmt_IfTest(SStmt_IfTest&&) noexcept;
     SYNTAX_API virtual ~SStmt_IfTest();
@@ -1461,12 +1448,12 @@ class SStmt_For
     : public SStmt
 {
 public:
-    SForStmtInitializerPtr initializer;
-    SExpPtr cond;
-    SExpPtr cont;
-    SEmbeddableStmtPtr body;
+    SForStmtInitializer* initializer;
+    SExp* cond;
+    SExp* cont;
+    SEmbeddableStmt* body;
 
-    SYNTAX_API SStmt_For(SForStmtInitializerPtr initializer, SExpPtr cond, SExpPtr cont, SEmbeddableStmtPtr body);
+    SYNTAX_API SStmt_For(SForStmtInitializer* initializer, SExp* cond, SExp* cont, SEmbeddableStmt* body);
     SStmt_For(const SStmt_For&) = delete;
     SYNTAX_API SStmt_For(SStmt_For&&) noexcept;
     SYNTAX_API virtual ~SStmt_For();
@@ -1483,9 +1470,9 @@ class SStmt_Return
     : public SStmt
 {
 public:
-    SExpPtr value;
+    SExp* value;
 
-    SYNTAX_API SStmt_Return(SExpPtr value);
+    SYNTAX_API SStmt_Return(SExp* value);
     SStmt_Return(const SStmt_Return&) = delete;
     SYNTAX_API SStmt_Return(SStmt_Return&&) noexcept;
     SYNTAX_API virtual ~SStmt_Return();
@@ -1502,9 +1489,9 @@ class SStmt_Exp
     : public SStmt
 {
 public:
-    SExpPtr exp;
+    SExp* exp;
 
-    SYNTAX_API SStmt_Exp(SExpPtr exp);
+    SYNTAX_API SStmt_Exp(SExp* exp);
     SStmt_Exp(const SStmt_Exp&) = delete;
     SYNTAX_API SStmt_Exp(SStmt_Exp&&) noexcept;
     SYNTAX_API virtual ~SStmt_Exp();
@@ -1521,12 +1508,12 @@ class SStmt_Foreach
     : public SStmt
 {
 public:
-    STypeExpPtr type;
+    STypeExp* type;
     std::string varName;
-    SExpPtr enumerable;
-    SEmbeddableStmtPtr body;
+    SExp* enumerable;
+    SEmbeddableStmt* body;
 
-    SYNTAX_API SStmt_Foreach(STypeExpPtr type, std::string varName, SExpPtr enumerable, SEmbeddableStmtPtr body);
+    SYNTAX_API SStmt_Foreach(STypeExp* type, std::string varName, SExp* enumerable, SEmbeddableStmt* body);
     SStmt_Foreach(const SStmt_Foreach&) = delete;
     SYNTAX_API SStmt_Foreach(SStmt_Foreach&&) noexcept;
     SYNTAX_API virtual ~SStmt_Foreach();
@@ -1543,9 +1530,9 @@ class SStmt_Yield
     : public SStmt
 {
 public:
-    SExpPtr value;
+    SExp* value;
 
-    SYNTAX_API SStmt_Yield(SExpPtr value);
+    SYNTAX_API SStmt_Yield(SExp* value);
     SStmt_Yield(const SStmt_Yield&) = delete;
     SYNTAX_API SStmt_Yield(SStmt_Yield&&) noexcept;
     SYNTAX_API virtual ~SStmt_Yield();
@@ -1565,13 +1552,13 @@ class SGlobalFuncDecl
 public:
     std::optional<SAccessModifier> accessModifier;
     bool bSequence;
-    STypeExpPtr retType;
+    STypeExp* retType;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
-    std::vector<SStmtPtr> body;
+    std::vector<SStmt*> body;
 
-    SYNTAX_API SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SYNTAX_API SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SGlobalFuncDecl(const SGlobalFuncDecl&) = delete;
     SYNTAX_API SGlobalFuncDecl(SGlobalFuncDecl&&) noexcept;
     SYNTAX_API virtual ~SGlobalFuncDecl();
@@ -1595,10 +1582,10 @@ public:
     std::optional<SAccessModifier> accessModifier;
     std::string name;
     std::vector<STypeParam> typeParams;
-    std::vector<STypeExpPtr> baseTypes;
-    std::vector<SClassMemberDeclPtr> memberDecls;
+    std::vector<STypeExp*> baseTypes;
+    std::vector<SClassMemberDecl*> memberDecls;
 
-    SYNTAX_API SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExpPtr> baseTypes, std::vector<SClassMemberDeclPtr> memberDecls);
+    SYNTAX_API SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl*> memberDecls);
     SClassDecl(const SClassDecl&) = delete;
     SYNTAX_API SClassDecl(SClassDecl&&) noexcept;
     SYNTAX_API virtual ~SClassDecl();
@@ -1621,13 +1608,13 @@ public:
     std::optional<SAccessModifier> accessModifier;
     bool bStatic;
     bool bSequence;
-    STypeExpPtr retType;
+    STypeExp* retType;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
-    std::vector<SStmtPtr> body;
+    std::vector<SStmt*> body;
 
-    SYNTAX_API SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SYNTAX_API SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SClassFuncDecl(const SClassFuncDecl&) = delete;
     SYNTAX_API SClassFuncDecl(SClassFuncDecl&&) noexcept;
     SYNTAX_API virtual ~SClassFuncDecl();
@@ -1646,10 +1633,10 @@ class SClassCtorDecl
 public:
     std::optional<SAccessModifier> accessModifier;
     std::vector<SFuncParam> parameters;
-    SArgumentsPtr baseArgs;
-    std::vector<SStmtPtr> body;
+    SArguments* baseArgs;
+    std::vector<SStmt*> body;
 
-    SYNTAX_API SClassCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArgumentsPtr baseArgs, std::vector<SStmtPtr> body);
+    SYNTAX_API SClassCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArguments* baseArgs, std::vector<SStmt*> body);
     SClassCtorDecl(const SClassCtorDecl&) = delete;
     SYNTAX_API SClassCtorDecl(SClassCtorDecl&&) noexcept;
     SYNTAX_API virtual ~SClassCtorDecl();
@@ -1667,10 +1654,10 @@ class SClassVarDecl
 {
 public:
     std::optional<SAccessModifier> accessModifier;
-    STypeExpPtr varType;
+    STypeExp* varType;
     std::vector<std::string> varNames;
 
-    SYNTAX_API SClassVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames);
+    SYNTAX_API SClassVarDecl(std::optional<SAccessModifier> accessModifier, STypeExp* varType, std::vector<std::string> varNames);
     SClassVarDecl(const SClassVarDecl&) = delete;
     SYNTAX_API SClassVarDecl(SClassVarDecl&&) noexcept;
     SYNTAX_API virtual ~SClassVarDecl();
@@ -1693,10 +1680,10 @@ public:
     std::optional<SAccessModifier> accessModifier;
     std::string name;
     std::vector<STypeParam> typeParams;
-    std::vector<STypeExpPtr> baseTypes;
-    std::vector<SStructMemberDeclPtr> memberDecls;
+    std::vector<STypeExp*> baseTypes;
+    std::vector<SStructMemberDecl*> memberDecls;
 
-    SYNTAX_API SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExpPtr> baseTypes, std::vector<SStructMemberDeclPtr> memberDecls);
+    SYNTAX_API SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl*> memberDecls);
     SStructDecl(const SStructDecl&) = delete;
     SYNTAX_API SStructDecl(SStructDecl&&) noexcept;
     SYNTAX_API virtual ~SStructDecl();
@@ -1719,13 +1706,13 @@ public:
     std::optional<SAccessModifier> accessModifier;
     bool bStatic;
     bool bSequence;
-    STypeExpPtr retType;
+    STypeExp* retType;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
-    std::vector<SStmtPtr> body;
+    std::vector<SStmt*> body;
 
-    SYNTAX_API SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SYNTAX_API SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SStructFuncDecl(const SStructFuncDecl&) = delete;
     SYNTAX_API SStructFuncDecl(SStructFuncDecl&&) noexcept;
     SYNTAX_API virtual ~SStructFuncDecl();
@@ -1744,9 +1731,9 @@ class SStructCtorDecl
 public:
     std::optional<SAccessModifier> accessModifier;
     std::vector<SFuncParam> parameters;
-    std::vector<SStmtPtr> body;
+    std::vector<SStmt*> body;
 
-    SYNTAX_API SStructCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body);
+    SYNTAX_API SStructCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SStructCtorDecl(const SStructCtorDecl&) = delete;
     SYNTAX_API SStructCtorDecl(SStructCtorDecl&&) noexcept;
     SYNTAX_API virtual ~SStructCtorDecl();
@@ -1764,10 +1751,10 @@ class SStructVarDecl
 {
 public:
     std::optional<SAccessModifier> accessModifier;
-    STypeExpPtr varType;
+    STypeExp* varType;
     std::vector<std::string> varNames;
 
-    SYNTAX_API SStructVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames);
+    SYNTAX_API SStructVarDecl(std::optional<SAccessModifier> accessModifier, STypeExp* varType, std::vector<std::string> varNames);
     SStructVarDecl(const SStructVarDecl&) = delete;
     SYNTAX_API SStructVarDecl(SStructVarDecl&&) noexcept;
     SYNTAX_API virtual ~SStructVarDecl();
@@ -1781,12 +1768,13 @@ public:
 };
 
 class SEnumElemVarDecl
+    : virtual public SSyntax
 {
 public:
-    STypeExpPtr type;
+    STypeExp* type;
     std::string name;
 
-    SYNTAX_API SEnumElemVarDecl(STypeExpPtr type, std::string name);
+    SYNTAX_API SEnumElemVarDecl(STypeExp* type, std::string name);
     SEnumElemVarDecl(const SEnumElemVarDecl&) = delete;
     SYNTAX_API SEnumElemVarDecl(SEnumElemVarDecl&&) noexcept;
     SYNTAX_API ~SEnumElemVarDecl();
@@ -1798,12 +1786,13 @@ public:
 };
 
 class SEnumElemDecl
+    : virtual public SSyntax
 {
 public:
     std::string name;
-    std::vector<std::shared_ptr<SEnumElemVarDecl>> vars;
+    std::vector<SEnumElemVarDecl*> vars;
 
-    SYNTAX_API SEnumElemDecl(std::string name, std::vector<std::shared_ptr<SEnumElemVarDecl>> vars);
+    SYNTAX_API SEnumElemDecl(std::string name, std::vector<SEnumElemVarDecl*> vars);
     SEnumElemDecl(const SEnumElemDecl&) = delete;
     SYNTAX_API SEnumElemDecl(SEnumElemDecl&&) noexcept;
     SYNTAX_API ~SEnumElemDecl();
@@ -1824,9 +1813,9 @@ public:
     std::optional<SAccessModifier> accessModifier;
     std::string name;
     std::vector<STypeParam> typeParams;
-    std::vector<std::shared_ptr<SEnumElemDecl>> elements;
+    std::vector<SEnumElemDecl*> elements;
 
-    SYNTAX_API SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<std::shared_ptr<SEnumElemDecl>> elements);
+    SYNTAX_API SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl*> elements);
     SEnumDecl(const SEnumDecl&) = delete;
     SYNTAX_API SEnumDecl(SEnumDecl&&) noexcept;
     SYNTAX_API virtual ~SEnumDecl();
@@ -1848,9 +1837,9 @@ class SNamespaceDecl
 {
 public:
     std::vector<std::string> names;
-    std::vector<SNamespaceDeclElementPtr> elements;
+    std::vector<SNamespaceDeclElement*> elements;
 
-    SYNTAX_API SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElementPtr> elements);
+    SYNTAX_API SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElement*> elements);
     SNamespaceDecl(const SNamespaceDecl&) = delete;
     SYNTAX_API SNamespaceDecl(SNamespaceDecl&&) noexcept;
     SYNTAX_API virtual ~SNamespaceDecl();
@@ -1865,11 +1854,12 @@ public:
 };
 
 class SScript
+    : virtual public SSyntax
 {
 public:
-    std::vector<SScriptElementPtr> elements;
+    std::vector<SScriptElement*> elements;
 
-    SYNTAX_API SScript(std::vector<SScriptElementPtr> elements);
+    SYNTAX_API SScript(std::vector<SScriptElement*> elements);
     SScript(const SScript&) = delete;
     SYNTAX_API SScript(SScript&&) noexcept;
     SYNTAX_API ~SScript();

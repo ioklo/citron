@@ -1,8 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <memory>
-
 
 #include "MDecl.h"
 #include "MBodyDeclOuter.h"
@@ -20,7 +18,7 @@ class MClassCtorDecl
     , public MFuncDecl
     , private MCommonFuncDeclComponent
 {
-    std::weak_ptr<MClassDecl> _class;
+    MClassDecl* _class;
     MAccessor accessor;
     std::vector<MFuncParameter> parameters;
     bool bTrivial;

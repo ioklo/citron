@@ -2,8 +2,6 @@
 
 #include <vector>
 #include <optional>
-#include <memory>
-
 
 #include "MDecl.h"
 #include "MBodyDeclOuter.h"
@@ -27,7 +25,7 @@ class MGlobalFuncDecl
         std::vector<MFuncParameter> parameters;
     };
 
-    std::weak_ptr<MNamespaceDecl> outer;
+    MNamespaceDecl* outer;
     MAccessor accessor;
     MName name;
     std::vector<MName> typeParams;

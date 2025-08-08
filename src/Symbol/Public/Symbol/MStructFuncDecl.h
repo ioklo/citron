@@ -1,9 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 #include <string>
-
 
 #include "MDecl.h"
 #include "MBodyDeclOuter.h"
@@ -22,7 +20,7 @@ class MStructFuncDecl
     , public MFuncDecl
     , private MCommonFuncDeclComponent
 {
-    std::weak_ptr<MStructDecl> _struct;
+    MStructDecl* _struct;
     MAccessor accessor;
     MName name;
     std::vector<std::string> typeParams;

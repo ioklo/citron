@@ -18,7 +18,7 @@ class MInterfaceDecl
     : public MDecl
     , public MTypeDecl
 {
-    MTypeDeclOuterWPtr outer;
+    MTypeDeclOuter* outer;
     MAccessor accessor;
 
     MName name;

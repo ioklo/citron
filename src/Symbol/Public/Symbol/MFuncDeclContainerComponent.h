@@ -1,10 +1,8 @@
 #pragma once
 
 #include <vector>
-#include <memory>
 #include <unordered_map>
 #include <variant>
-
 
 #include "MIdentifier.h"
 
@@ -12,17 +10,15 @@
 
 namespace Citron {
 
-template<typename TNFuncDecl>
+template<typename TMFuncDecl>
 class MFuncDeclContainerComponent
 {
-    using TMFuncDeclPtr = std::shared_ptr<TNFuncDecl>;
-
-    std::vector<TMFuncDeclPtr> funcs;
-    std::unordered_map<MIdentifier, TMFuncDeclPtr> idMap;
-    std::unordered_map<MName, std::vector<TMFuncDeclPtr>> nameMap;
+    std::vector<TMFuncDecl*> funcs;
+    std::unordered_map<MIdentifier, TMFuncDecl*> idMap;
+    std::unordered_map<MName, std::vector<TMFuncDecl*>> nameMap;
 
 public:
-    void AddFunc(TMFuncDeclPtr func) // consume func
+    void AddFunc(TMFuncDecl* func) // consume func
     {
         funcs.push_back(func);
 
@@ -32,9 +28,9 @@ public:
         nameMap[identifier.name].push_back(std::move(func));
     }
 
-    std::vector<TMFuncDeclPtr> GetFuncs(const MName& name, int minTypeParamCount)
+    std::vector<TMFuncDecl*> GetFuncs(const MName& name, int minTypeParamCount)
     {
-        std::vector<TMFuncDeclPtr> result;
+        std::vector<TMFuncDecl*> result;
 
         auto i = nameMap.find(name);
         if (i != nameMap.end()) return {};
@@ -46,7 +42,7 @@ public:
         return result;
     }
 
-    const TMFuncDeclPtr& GetFunc(MIdentifier& identifier)
+    TMFuncDecl* GetFunc(MIdentifier& identifier)
     {
         return idMap[identifier];
     }

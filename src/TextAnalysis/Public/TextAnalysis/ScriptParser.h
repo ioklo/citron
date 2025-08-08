@@ -8,6 +8,6 @@
 
 namespace Citron {
 
-TEXTANALYSIS_API std::optional<SScript> ParseScript(Lexer* lexer);
+TEXTANALYSIS_API SScript* ParseScript(Lexer* lexer, SFactory& factory);
 
 }

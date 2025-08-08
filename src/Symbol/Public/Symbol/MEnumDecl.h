@@ -2,9 +2,7 @@
 
 #include <vector>
 #include <optional>
-#include <memory>
 #include <string>
-
 
 #include "MDecl.h"
 #include "MTypeDecl.h"
@@ -20,13 +18,13 @@ class MEnumDecl
     : public MDecl
     , public MTypeDecl
 {
-    MTypeDeclOuterWPtr outer;
+    MTypeDeclOuter* outer;
     MAccessor accessor;
 
     MName name;
     std::vector<std::string> typeParams;
 
-    std::optional<std::vector<std::shared_ptr<MEnumElemDecl>>> elems; // lazy initialization
+    std::optional<std::vector<MEnumElemDecl*>> elems; // lazy initialization
 
     // std::unordered_map<std::string, int> elemsByName;
 

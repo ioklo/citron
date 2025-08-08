@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #include "MDecl.h"
 #include "MType.h"
 
@@ -12,16 +10,15 @@ namespace Citron
 {
 
 class MType;
-using MTypePtr = std::shared_ptr<MType>;
 
 class MStructVarDecl
     : public MDecl
 {
-    std::weak_ptr<MStructDecl> _struct;
+    MStructDecl* _struct;
 
     MAccessor accessor;
     bool bStatic;
-    MTypePtr declType;
+    MType* declType;
     MName name;
 
 public:

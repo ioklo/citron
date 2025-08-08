@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 namespace Citron {
 
 class MNamespaceDecl;
@@ -27,8 +25,6 @@ public:
     virtual ~MDecl() {}
     virtual void Accept(MDeclVisitor& visitor) = 0;
 };
-
-using MDeclPtr = std::shared_ptr<MDecl>;
 
 class MDeclVisitor
 {

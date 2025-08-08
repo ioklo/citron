@@ -21,10 +21,13 @@ struct ClassMemberInfo
 struct ClassInfo
 {
     std::string name;
+    std::vector<std::string> virtualBases;      // virtual public SSyntax
     std::vector<std::string> variantInterfaces; // public SStmt
     // void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
     std::vector<ClassMemberInfo> memberInfos;
     std::vector<std::string> extraCtors;
+
+    bool bHasVirtualDestructor;
 };
 
 struct EnumInfo
@@ -55,7 +58,7 @@ struct ForwardClassDeclsInfo
 struct VariantInterfaceInfo
 {
     std::string name;
-    std::vector<std::string> bases;
+    std::vector<std::string> virtualBases;
     std::string argName;
     std::vector<std::string> members;
 };

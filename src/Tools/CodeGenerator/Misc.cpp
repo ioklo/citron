@@ -71,7 +71,7 @@ void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream
         hStream << endl;
 
     // 생성자 
-    // ArgumentSyntax(bool bOut, bool bParams, ExpSyntax exp)
+    // SArgument(bool bOut, bool bParams, ExpSyntax exp)
     hStream << "    " << structInfo.name << "(";
 
     bool bFirst = true;
@@ -112,6 +112,20 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     // class begin
     hStream << "class " << classInfo.name << endl;
     bool bFirst = true;
+
+    for (auto& virtualBase : classInfo.virtualBases)
+    {
+        if (bFirst)
+        {
+            hStream << "    : virtual public " << virtualBase << endl;
+            bFirst = false;
+        }
+        else
+        {
+            hStream << "    , virtual public " << virtualBase << endl;
+        }
+    }
+
     for (auto& variantInterface : classInfo.variantInterfaces)
     {
         if (bFirst)
@@ -214,7 +228,7 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     // 소멸자, inline이 아닐때만 생성한다
     // SYNTAX_API ~IdentifierExpSyntax();
     // SYNTAX_API ~IdentifierExpSyntax();
-    if (classInfo.variantInterfaces.empty())
+    if (classInfo.variantInterfaces.empty() && !classInfo.bHasVirtualDestructor)
         hStream << "    " << commonInfo.linkage << " ~" << classInfo.name << "();" << endl;
     else
         hStream << "    " << commonInfo.linkage << " virtual ~" << classInfo.name << "();" << endl;
@@ -376,7 +390,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     //     virtual void Visit(C& c) = 0;
     // };
     // 
-    // class 'name' : 'bases...'
+    // class 'name' : 'virtualBases...'
     // {
     // public:
     //     virtual ~'name'() = default
@@ -393,15 +407,15 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
 
     hStream << "class " << info.name;
 
-    if (!info.bases.empty())
+    if (!info.virtualBases.empty())
     {
         bool bFirst = true;
-        for (auto& base : info.bases)
+        for (auto& virtualBase : info.virtualBases)
         {
             if (bFirst)
-                hStream << " : public " << base;
+                hStream << " : virtual public " << virtualBase;
             else
-                hStream << ", public " << base;
+                hStream << ", virtual public " << virtualBase;
         }
     }
 
@@ -419,7 +433,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     hStream << "};" << endl << endl;
 
     // SYNTAX_API JsonItem ToJson('name'Ptr& 'argName');
-    hStream << commonInfo.linkage << " JsonItem ToJson(" << info.name << "Ptr& " << info.argName << ");" << endl << endl;
+    hStream << commonInfo.linkage << " JsonItem ToJson(" << info.name << "* " << info.argName << ");" << endl << endl;
 
     // struct 'name'ToJsonVisitor
     // {
@@ -441,7 +455,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
         cppStream << "    void Visit(" << member << "& " << info.argName << ") override { result = " << info.argName << ".ToJson(); }" << endl;
     cppStream << "};" << endl << endl;
 
-    cppStream << "JsonItem ToJson(" << info.name << "Ptr& " << info.argName << ")" << endl;
+    cppStream << "JsonItem ToJson(" << info.name << "* " << info.argName << ")" << endl;
     cppStream << "{" << endl;
     cppStream << "    if (!" << info.argName << ") return JsonNull();" << endl << endl;
     cppStream << "    " << info.name << "ToJsonVisitor visitor;" << endl;

@@ -9,7 +9,7 @@ namespace Citron {
 namespace {
 struct ToJsonVisitor {
     template<typename T>
-    JsonItem operator()(std::shared_ptr<T>& t) { return t->ToJson(); }
+    JsonItem operator()(T* t) { return t->ToJson(); }
 
     template<typename T>
     JsonItem operator()(T& t) { return t.ToJson(); }
@@ -31,7 +31,7 @@ JsonItem SSyntax::ToJson()
     };
 }
 
-SArgument::SArgument(bool bOut, bool bParams, SExpPtr exp)
+SArgument::SArgument(bool bOut, bool bParams, SExp* exp)
     : bOut(move(bOut)), bParams(move(bParams)), exp(move(exp)) { }
 
 SArgument::SArgument(SArgument&& other) noexcept = default;
@@ -50,7 +50,7 @@ JsonItem SArgument::ToJson()
     };
 }
 
-SArguments::SArguments(std::vector<SArgumentPtr> items)
+SArguments::SArguments(std::vector<SArgument*> items)
     : items(move(items)) { }
 
 SArguments::SArguments(SArguments&& other) noexcept = default;
@@ -67,7 +67,7 @@ JsonItem SArguments::ToJson()
     };
 }
 
-SLambdaExpParam::SLambdaExpParam(STypeExpPtr type, std::string name, bool hasOut, bool hasParams)
+SLambdaExpParam::SLambdaExpParam(STypeExp* type, std::string name, bool hasOut, bool hasParams)
     : type(move(type)), name(move(name)), hasOut(move(hasOut)), hasParams(move(hasParams)) { }
 
 SLambdaExpParam::SLambdaExpParam(SLambdaExpParam&& other) noexcept = default;
@@ -87,7 +87,7 @@ JsonItem SLambdaExpParam::ToJson()
     };
 }
 
-SVarDeclElement::SVarDeclElement(std::string varName, SExpPtr initExp)
+SVarDeclElement::SVarDeclElement(std::string varName, SExp* initExp)
     : varName(move(varName)), initExp(move(initExp)) { }
 
 SVarDeclElement::SVarDeclElement(SVarDeclElement&& other) noexcept = default;
@@ -105,7 +105,7 @@ JsonItem SVarDeclElement::ToJson()
     };
 }
 
-SVarDecl::SVarDecl(STypeExpPtr type, std::vector<SVarDeclElement> elements)
+SVarDecl::SVarDecl(STypeExp* type, std::vector<SVarDeclElement> elements)
     : type(move(type)), elements(move(elements)) { }
 
 SVarDecl::SVarDecl(SVarDecl&& other) noexcept = default;
@@ -140,7 +140,7 @@ JsonItem STypeParam::ToJson()
     };
 }
 
-SFuncParam::SFuncParam(bool hasOut, bool hasParams, STypeExpPtr type, std::string name)
+SFuncParam::SFuncParam(bool hasOut, bool hasParams, STypeExp* type, std::string name)
     : hasOut(move(hasOut)), hasParams(move(hasParams)), type(move(type)), name(move(name)) { }
 
 SFuncParam::SFuncParam(SFuncParam&& other) noexcept = default;
@@ -182,7 +182,7 @@ struct SStmtToJsonVisitor : public SStmtVisitor
     void Visit(SStmt_Directive& stmt) override { result = stmt.ToJson(); }
 };
 
-JsonItem ToJson(SStmtPtr& stmt)
+JsonItem ToJson(SStmt* stmt)
 {
     if (!stmt) return JsonNull();
 
@@ -212,7 +212,7 @@ struct SExpToJsonVisitor : public SExpVisitor
     void Visit(SExp_As& exp) override { result = exp.ToJson(); }
 };
 
-JsonItem ToJson(SExpPtr& exp)
+JsonItem ToJson(SExp* exp)
 {
     if (!exp) return JsonNull();
 
@@ -231,7 +231,7 @@ struct STypeExpToJsonVisitor : public STypeExpVisitor
     void Visit(STypeExp_Local& typeExp) override { result = typeExp.ToJson(); }
 };
 
-JsonItem ToJson(STypeExpPtr& typeExp)
+JsonItem ToJson(STypeExp* typeExp)
 {
     if (!typeExp) return JsonNull();
 
@@ -246,7 +246,7 @@ struct SStringExpElementToJsonVisitor : public SStringExpElementVisitor
     void Visit(SStringExpElement_Exp& elem) override { result = elem.ToJson(); }
 };
 
-JsonItem ToJson(SStringExpElementPtr& elem)
+JsonItem ToJson(SStringExpElement* elem)
 {
     if (!elem) return JsonNull();
 
@@ -261,7 +261,7 @@ struct SLambdaExpBodyToJsonVisitor : public SLambdaExpBodyVisitor
     void Visit(SLambdaExpBody_Exp& body) override { result = body.ToJson(); }
 };
 
-JsonItem ToJson(SLambdaExpBodyPtr& body)
+JsonItem ToJson(SLambdaExpBody* body)
 {
     if (!body) return JsonNull();
 
@@ -276,7 +276,7 @@ struct SEmbeddableStmtToJsonVisitor : public SEmbeddableStmtVisitor
     void Visit(SEmbeddableStmt_Block& stmt) override { result = stmt.ToJson(); }
 };
 
-JsonItem ToJson(SEmbeddableStmtPtr& stmt)
+JsonItem ToJson(SEmbeddableStmt* stmt)
 {
     if (!stmt) return JsonNull();
 
@@ -291,7 +291,7 @@ struct SForStmtInitializerToJsonVisitor : public SForStmtInitializerVisitor
     void Visit(SForStmtInitializer_VarDecl& initializer) override { result = initializer.ToJson(); }
 };
 
-JsonItem ToJson(SForStmtInitializerPtr& initializer)
+JsonItem ToJson(SForStmtInitializer* initializer)
 {
     if (!initializer) return JsonNull();
 
@@ -310,7 +310,7 @@ struct SClassMemberDeclToJsonVisitor : public SClassMemberDeclVisitor
     void Visit(SClassVarDecl& decl) override { result = decl.ToJson(); }
 };
 
-JsonItem ToJson(SClassMemberDeclPtr& decl)
+JsonItem ToJson(SClassMemberDecl* decl)
 {
     if (!decl) return JsonNull();
 
@@ -329,7 +329,7 @@ struct SStructMemberDeclToJsonVisitor : public SStructMemberDeclVisitor
     void Visit(SStructVarDecl& decl) override { result = decl.ToJson(); }
 };
 
-JsonItem ToJson(SStructMemberDeclPtr& decl)
+JsonItem ToJson(SStructMemberDecl* decl)
 {
     if (!decl) return JsonNull();
 
@@ -347,7 +347,7 @@ struct SNamespaceDeclElementToJsonVisitor : public SNamespaceDeclElementVisitor
     void Visit(SEnumDecl& elem) override { result = elem.ToJson(); }
 };
 
-JsonItem ToJson(SNamespaceDeclElementPtr& elem)
+JsonItem ToJson(SNamespaceDeclElement* elem)
 {
     if (!elem) return JsonNull();
 
@@ -365,7 +365,7 @@ struct SScriptElementToJsonVisitor : public SScriptElementVisitor
     void Visit(SEnumDecl& elem) override { result = elem.ToJson(); }
 };
 
-JsonItem ToJson(SScriptElementPtr& elem)
+JsonItem ToJson(SScriptElement* elem)
 {
     if (!elem) return JsonNull();
 
@@ -373,7 +373,7 @@ JsonItem ToJson(SScriptElementPtr& elem)
     elem->Accept(visitor);
     return visitor.result;
 }
-SExp_Identifier::SExp_Identifier(std::string value, std::vector<STypeExpPtr> typeArgs)
+SExp_Identifier::SExp_Identifier(std::string value, std::vector<STypeExp*> typeArgs)
     : value(move(value)), typeArgs(move(typeArgs)) { }
 
 SExp_Identifier::SExp_Identifier(SExp_Identifier&& other) noexcept = default;
@@ -391,7 +391,7 @@ JsonItem SExp_Identifier::ToJson()
     };
 }
 
-SExp_String::SExp_String(std::vector<SStringExpElementPtr> elements)
+SExp_String::SExp_String(std::vector<SStringExpElement*> elements)
     : elements(move(elements)) { }
 
 SExp_String::SExp_String(SExp_String&& other) noexcept = default;
@@ -457,7 +457,7 @@ JsonItem SExp_NullLiteral::ToJson()
     };
 }
 
-SExp_List::SExp_List(std::vector<SExpPtr> elements)
+SExp_List::SExp_List(std::vector<SExp*> elements)
     : elements(move(elements)) { }
 
 SExp_List::SExp_List(SExp_List&& other) noexcept = default;
@@ -474,7 +474,7 @@ JsonItem SExp_List::ToJson()
     };
 }
 
-SExp_New::SExp_New(STypeExpPtr type, SArgumentsPtr args)
+SExp_New::SExp_New(STypeExp* type, SArguments* args)
     : type(move(type)), args(move(args)) { }
 
 SExp_New::SExp_New(SExp_New&& other) noexcept = default;
@@ -492,7 +492,7 @@ JsonItem SExp_New::ToJson()
     };
 }
 
-SExp_BinaryOp::SExp_BinaryOp(SBinaryOpKind kind, SExpPtr operand0, SExpPtr operand1)
+SExp_BinaryOp::SExp_BinaryOp(SBinaryOpKind kind, SExp* operand0, SExp* operand1)
     : kind(move(kind)), operand0(move(operand0)), operand1(move(operand1)) { }
 
 SExp_BinaryOp::SExp_BinaryOp(SExp_BinaryOp&& other) noexcept = default;
@@ -511,7 +511,7 @@ JsonItem SExp_BinaryOp::ToJson()
     };
 }
 
-SExp_UnaryOp::SExp_UnaryOp(SUnaryOpKind kind, SExpPtr operand)
+SExp_UnaryOp::SExp_UnaryOp(SUnaryOpKind kind, SExp* operand)
     : kind(move(kind)), operand(move(operand)) { }
 
 SExp_UnaryOp::SExp_UnaryOp(SExp_UnaryOp&& other) noexcept = default;
@@ -529,7 +529,7 @@ JsonItem SExp_UnaryOp::ToJson()
     };
 }
 
-SExp_Call::SExp_Call(SExpPtr callable, SArgumentsPtr args)
+SExp_Call::SExp_Call(SExp* callable, SArguments* args)
     : callable(move(callable)), args(move(args)) { }
 
 SExp_Call::SExp_Call(SExp_Call&& other) noexcept = default;
@@ -547,7 +547,7 @@ JsonItem SExp_Call::ToJson()
     };
 }
 
-SExp_Lambda::SExp_Lambda(std::vector<SLambdaExpParam> params, SLambdaExpBodyPtr body)
+SExp_Lambda::SExp_Lambda(std::vector<SLambdaExpParam> params, SLambdaExpBody* body)
     : params(move(params)), body(move(body)) { }
 
 SExp_Lambda::SExp_Lambda(SExp_Lambda&& other) noexcept = default;
@@ -565,7 +565,7 @@ JsonItem SExp_Lambda::ToJson()
     };
 }
 
-SExp_Indexer::SExp_Indexer(SExpPtr obj, SExpPtr index)
+SExp_Indexer::SExp_Indexer(SExp* obj, SExp* index)
     : obj(move(obj)), index(move(index)) { }
 
 SExp_Indexer::SExp_Indexer(SExp_Indexer&& other) noexcept = default;
@@ -583,7 +583,7 @@ JsonItem SExp_Indexer::ToJson()
     };
 }
 
-SExp_Member::SExp_Member(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs)
+SExp_Member::SExp_Member(SExp* parent, std::string memberName, std::vector<STypeExp*> memberTypeArgs)
     : parent(move(parent)), memberName(move(memberName)), memberTypeArgs(move(memberTypeArgs)) { }
 
 SExp_Member::SExp_Member(SExp_Member&& other) noexcept = default;
@@ -602,7 +602,7 @@ JsonItem SExp_Member::ToJson()
     };
 }
 
-SExp_IndirectMember::SExp_IndirectMember(SExpPtr parent, std::string memberName, std::vector<STypeExpPtr> memberTypeArgs)
+SExp_IndirectMember::SExp_IndirectMember(SExp* parent, std::string memberName, std::vector<STypeExp*> memberTypeArgs)
     : parent(move(parent)), memberName(move(memberName)), memberTypeArgs(move(memberTypeArgs)) { }
 
 SExp_IndirectMember::SExp_IndirectMember(SExp_IndirectMember&& other) noexcept = default;
@@ -621,7 +621,7 @@ JsonItem SExp_IndirectMember::ToJson()
     };
 }
 
-SExp_Box::SExp_Box(SExpPtr innerExp)
+SExp_Box::SExp_Box(SExp* innerExp)
     : innerExp(move(innerExp)) { }
 
 SExp_Box::SExp_Box(SExp_Box&& other) noexcept = default;
@@ -638,7 +638,7 @@ JsonItem SExp_Box::ToJson()
     };
 }
 
-SExp_Is::SExp_Is(SExpPtr exp, STypeExpPtr type)
+SExp_Is::SExp_Is(SExp* exp, STypeExp* type)
     : exp(move(exp)), type(move(type)) { }
 
 SExp_Is::SExp_Is(SExp_Is&& other) noexcept = default;
@@ -656,7 +656,7 @@ JsonItem SExp_Is::ToJson()
     };
 }
 
-SExp_As::SExp_As(SExpPtr exp, STypeExpPtr type)
+SExp_As::SExp_As(SExp* exp, STypeExp* type)
     : exp(move(exp)), type(move(type)) { }
 
 SExp_As::SExp_As(SExp_As&& other) noexcept = default;
@@ -674,7 +674,7 @@ JsonItem SExp_As::ToJson()
     };
 }
 
-STypeExp_Id::STypeExp_Id(std::string name, std::vector<STypeExpPtr> typeArgs)
+STypeExp_Id::STypeExp_Id(std::string name, std::vector<STypeExp*> typeArgs)
     : name(move(name)), typeArgs(move(typeArgs)) { }
 
 STypeExp_Id::STypeExp_Id(STypeExp_Id&& other) noexcept = default;
@@ -692,7 +692,7 @@ JsonItem STypeExp_Id::ToJson()
     };
 }
 
-STypeExp_Member::STypeExp_Member(STypeExpPtr parentType, std::string name, std::vector<STypeExpPtr> typeArgs)
+STypeExp_Member::STypeExp_Member(STypeExp* parentType, std::string name, std::vector<STypeExp*> typeArgs)
     : parentType(move(parentType)), name(move(name)), typeArgs(move(typeArgs)) { }
 
 STypeExp_Member::STypeExp_Member(STypeExp_Member&& other) noexcept = default;
@@ -711,7 +711,7 @@ JsonItem STypeExp_Member::ToJson()
     };
 }
 
-STypeExp_Nullable::STypeExp_Nullable(STypeExpPtr innerType)
+STypeExp_Nullable::STypeExp_Nullable(STypeExp* innerType)
     : innerType(move(innerType)) { }
 
 STypeExp_Nullable::STypeExp_Nullable(STypeExp_Nullable&& other) noexcept = default;
@@ -728,7 +728,7 @@ JsonItem STypeExp_Nullable::ToJson()
     };
 }
 
-STypeExp_LocalPtr::STypeExp_LocalPtr(STypeExpPtr innerType)
+STypeExp_LocalPtr::STypeExp_LocalPtr(STypeExp* innerType)
     : innerType(move(innerType)) { }
 
 STypeExp_LocalPtr::STypeExp_LocalPtr(STypeExp_LocalPtr&& other) noexcept = default;
@@ -745,7 +745,7 @@ JsonItem STypeExp_LocalPtr::ToJson()
     };
 }
 
-STypeExp_BoxPtr::STypeExp_BoxPtr(STypeExpPtr innerType)
+STypeExp_BoxPtr::STypeExp_BoxPtr(STypeExp* innerType)
     : innerType(move(innerType)) { }
 
 STypeExp_BoxPtr::STypeExp_BoxPtr(STypeExp_BoxPtr&& other) noexcept = default;
@@ -762,7 +762,7 @@ JsonItem STypeExp_BoxPtr::ToJson()
     };
 }
 
-STypeExp_Local::STypeExp_Local(STypeExpPtr innerType)
+STypeExp_Local::STypeExp_Local(STypeExp* innerType)
     : innerType(move(innerType)) { }
 
 STypeExp_Local::STypeExp_Local(STypeExp_Local&& other) noexcept = default;
@@ -796,7 +796,7 @@ JsonItem SStringExpElement_Text::ToJson()
     };
 }
 
-SStringExpElement_Exp::SStringExpElement_Exp(SExpPtr exp)
+SStringExpElement_Exp::SStringExpElement_Exp(SExp* exp)
     : exp(move(exp)) { }
 
 SStringExpElement_Exp::SStringExpElement_Exp(SStringExpElement_Exp&& other) noexcept = default;
@@ -813,7 +813,7 @@ JsonItem SStringExpElement_Exp::ToJson()
     };
 }
 
-SLambdaExpBody_Stmts::SLambdaExpBody_Stmts(std::vector<SStmtPtr> stmts)
+SLambdaExpBody_Stmts::SLambdaExpBody_Stmts(std::vector<SStmt*> stmts)
     : stmts(move(stmts)) { }
 
 SLambdaExpBody_Stmts::SLambdaExpBody_Stmts(SLambdaExpBody_Stmts&& other) noexcept = default;
@@ -830,7 +830,7 @@ JsonItem SLambdaExpBody_Stmts::ToJson()
     };
 }
 
-SLambdaExpBody_Exp::SLambdaExpBody_Exp(SExpPtr exp)
+SLambdaExpBody_Exp::SLambdaExpBody_Exp(SExp* exp)
     : exp(move(exp)) { }
 
 SLambdaExpBody_Exp::SLambdaExpBody_Exp(SLambdaExpBody_Exp&& other) noexcept = default;
@@ -847,7 +847,7 @@ JsonItem SLambdaExpBody_Exp::ToJson()
     };
 }
 
-SEmbeddableStmt_Single::SEmbeddableStmt_Single(SStmtPtr stmt)
+SEmbeddableStmt_Single::SEmbeddableStmt_Single(SStmt* stmt)
     : stmt(move(stmt)) { }
 
 SEmbeddableStmt_Single::SEmbeddableStmt_Single(SEmbeddableStmt_Single&& other) noexcept = default;
@@ -864,7 +864,7 @@ JsonItem SEmbeddableStmt_Single::ToJson()
     };
 }
 
-SEmbeddableStmt_Block::SEmbeddableStmt_Block(std::vector<SStmtPtr> stmts)
+SEmbeddableStmt_Block::SEmbeddableStmt_Block(std::vector<SStmt*> stmts)
     : stmts(move(stmts)) { }
 
 SEmbeddableStmt_Block::SEmbeddableStmt_Block(SEmbeddableStmt_Block&& other) noexcept = default;
@@ -881,7 +881,7 @@ JsonItem SEmbeddableStmt_Block::ToJson()
     };
 }
 
-SForStmtInitializer_Exp::SForStmtInitializer_Exp(SExpPtr exp)
+SForStmtInitializer_Exp::SForStmtInitializer_Exp(SExp* exp)
     : exp(move(exp)) { }
 
 SForStmtInitializer_Exp::SForStmtInitializer_Exp(SForStmtInitializer_Exp&& other) noexcept = default;
@@ -915,7 +915,7 @@ JsonItem SForStmtInitializer_VarDecl::ToJson()
     };
 }
 
-SStmt_Command::SStmt_Command(std::vector<std::shared_ptr<SExp_String>> commands)
+SStmt_Command::SStmt_Command(std::vector<SExp_String*> commands)
     : commands(move(commands)) { }
 
 SStmt_Command::SStmt_Command(SStmt_Command&& other) noexcept = default;
@@ -979,7 +979,7 @@ JsonItem SStmt_Break::ToJson()
     };
 }
 
-SStmt_Block::SStmt_Block(std::vector<SStmtPtr> stmts)
+SStmt_Block::SStmt_Block(std::vector<SStmt*> stmts)
     : stmts(move(stmts)) { }
 
 SStmt_Block::SStmt_Block(SStmt_Block&& other) noexcept = default;
@@ -1011,7 +1011,7 @@ JsonItem SStmt_Blank::ToJson()
     };
 }
 
-SStmt_Task::SStmt_Task(std::vector<SStmtPtr> body)
+SStmt_Task::SStmt_Task(std::vector<SStmt*> body)
     : body(move(body)) { }
 
 SStmt_Task::SStmt_Task(SStmt_Task&& other) noexcept = default;
@@ -1028,7 +1028,7 @@ JsonItem SStmt_Task::ToJson()
     };
 }
 
-SStmt_Await::SStmt_Await(std::vector<SStmtPtr> body)
+SStmt_Await::SStmt_Await(std::vector<SStmt*> body)
     : body(move(body)) { }
 
 SStmt_Await::SStmt_Await(SStmt_Await&& other) noexcept = default;
@@ -1045,7 +1045,7 @@ JsonItem SStmt_Await::ToJson()
     };
 }
 
-SStmt_Async::SStmt_Async(std::vector<SStmtPtr> body)
+SStmt_Async::SStmt_Async(std::vector<SStmt*> body)
     : body(move(body)) { }
 
 SStmt_Async::SStmt_Async(SStmt_Async&& other) noexcept = default;
@@ -1062,7 +1062,7 @@ JsonItem SStmt_Async::ToJson()
     };
 }
 
-SStmt_Directive::SStmt_Directive(std::string name, std::vector<SExpPtr> args)
+SStmt_Directive::SStmt_Directive(std::string name, std::vector<SExp*> args)
     : name(move(name)), args(move(args)) { }
 
 SStmt_Directive::SStmt_Directive(SStmt_Directive&& other) noexcept = default;
@@ -1080,7 +1080,7 @@ JsonItem SStmt_Directive::ToJson()
     };
 }
 
-SStmt_If::SStmt_If(SExpPtr cond, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody)
+SStmt_If::SStmt_If(SExp* cond, SEmbeddableStmt* body, SEmbeddableStmt* elseBody)
     : cond(move(cond)), body(move(body)), elseBody(move(elseBody)) { }
 
 SStmt_If::SStmt_If(SStmt_If&& other) noexcept = default;
@@ -1099,7 +1099,7 @@ JsonItem SStmt_If::ToJson()
     };
 }
 
-SStmt_IfTest::SStmt_IfTest(STypeExpPtr testType, std::string varName, SExpPtr exp, SEmbeddableStmtPtr body, SEmbeddableStmtPtr elseBody)
+SStmt_IfTest::SStmt_IfTest(STypeExp* testType, std::string varName, SExp* exp, SEmbeddableStmt* body, SEmbeddableStmt* elseBody)
     : testType(move(testType)), varName(move(varName)), exp(move(exp)), body(move(body)), elseBody(move(elseBody)) { }
 
 SStmt_IfTest::SStmt_IfTest(SStmt_IfTest&& other) noexcept = default;
@@ -1120,7 +1120,7 @@ JsonItem SStmt_IfTest::ToJson()
     };
 }
 
-SStmt_For::SStmt_For(SForStmtInitializerPtr initializer, SExpPtr cond, SExpPtr cont, SEmbeddableStmtPtr body)
+SStmt_For::SStmt_For(SForStmtInitializer* initializer, SExp* cond, SExp* cont, SEmbeddableStmt* body)
     : initializer(move(initializer)), cond(move(cond)), cont(move(cont)), body(move(body)) { }
 
 SStmt_For::SStmt_For(SStmt_For&& other) noexcept = default;
@@ -1140,7 +1140,7 @@ JsonItem SStmt_For::ToJson()
     };
 }
 
-SStmt_Return::SStmt_Return(SExpPtr value)
+SStmt_Return::SStmt_Return(SExp* value)
     : value(move(value)) { }
 
 SStmt_Return::SStmt_Return(SStmt_Return&& other) noexcept = default;
@@ -1157,7 +1157,7 @@ JsonItem SStmt_Return::ToJson()
     };
 }
 
-SStmt_Exp::SStmt_Exp(SExpPtr exp)
+SStmt_Exp::SStmt_Exp(SExp* exp)
     : exp(move(exp)) { }
 
 SStmt_Exp::SStmt_Exp(SStmt_Exp&& other) noexcept = default;
@@ -1174,7 +1174,7 @@ JsonItem SStmt_Exp::ToJson()
     };
 }
 
-SStmt_Foreach::SStmt_Foreach(STypeExpPtr type, std::string varName, SExpPtr enumerable, SEmbeddableStmtPtr body)
+SStmt_Foreach::SStmt_Foreach(STypeExp* type, std::string varName, SExp* enumerable, SEmbeddableStmt* body)
     : type(move(type)), varName(move(varName)), enumerable(move(enumerable)), body(move(body)) { }
 
 SStmt_Foreach::SStmt_Foreach(SStmt_Foreach&& other) noexcept = default;
@@ -1194,7 +1194,7 @@ JsonItem SStmt_Foreach::ToJson()
     };
 }
 
-SStmt_Yield::SStmt_Yield(SExpPtr value)
+SStmt_Yield::SStmt_Yield(SExp* value)
     : value(move(value)) { }
 
 SStmt_Yield::SStmt_Yield(SStmt_Yield&& other) noexcept = default;
@@ -1211,7 +1211,7 @@ JsonItem SStmt_Yield::ToJson()
     };
 }
 
-SGlobalFuncDecl::SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
+SGlobalFuncDecl::SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
     : accessModifier(move(accessModifier)), bSequence(move(bSequence)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
 SGlobalFuncDecl::SGlobalFuncDecl(SGlobalFuncDecl&& other) noexcept = default;
@@ -1234,7 +1234,7 @@ JsonItem SGlobalFuncDecl::ToJson()
     };
 }
 
-SClassDecl::SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExpPtr> baseTypes, std::vector<SClassMemberDeclPtr> memberDecls)
+SClassDecl::SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl*> memberDecls)
     : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
 
 SClassDecl::SClassDecl(SClassDecl&& other) noexcept = default;
@@ -1255,7 +1255,7 @@ JsonItem SClassDecl::ToJson()
     };
 }
 
-SClassFuncDecl::SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
+SClassFuncDecl::SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
     : accessModifier(move(accessModifier)), bStatic(move(bStatic)), bSequence(move(bSequence)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
 SClassFuncDecl::SClassFuncDecl(SClassFuncDecl&& other) noexcept = default;
@@ -1279,7 +1279,7 @@ JsonItem SClassFuncDecl::ToJson()
     };
 }
 
-SClassCtorDecl::SClassCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArgumentsPtr baseArgs, std::vector<SStmtPtr> body)
+SClassCtorDecl::SClassCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArguments* baseArgs, std::vector<SStmt*> body)
     : accessModifier(move(accessModifier)), parameters(move(parameters)), baseArgs(move(baseArgs)), body(move(body)) { }
 
 SClassCtorDecl::SClassCtorDecl(SClassCtorDecl&& other) noexcept = default;
@@ -1299,7 +1299,7 @@ JsonItem SClassCtorDecl::ToJson()
     };
 }
 
-SClassVarDecl::SClassVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames)
+SClassVarDecl::SClassVarDecl(std::optional<SAccessModifier> accessModifier, STypeExp* varType, std::vector<std::string> varNames)
     : accessModifier(move(accessModifier)), varType(move(varType)), varNames(move(varNames)) { }
 
 SClassVarDecl::SClassVarDecl(SClassVarDecl&& other) noexcept = default;
@@ -1318,7 +1318,7 @@ JsonItem SClassVarDecl::ToJson()
     };
 }
 
-SStructDecl::SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExpPtr> baseTypes, std::vector<SStructMemberDeclPtr> memberDecls)
+SStructDecl::SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl*> memberDecls)
     : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
 
 SStructDecl::SStructDecl(SStructDecl&& other) noexcept = default;
@@ -1339,7 +1339,7 @@ JsonItem SStructDecl::ToJson()
     };
 }
 
-SStructFuncDecl::SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExpPtr retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
+SStructFuncDecl::SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
     : accessModifier(move(accessModifier)), bStatic(move(bStatic)), bSequence(move(bSequence)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
 SStructFuncDecl::SStructFuncDecl(SStructFuncDecl&& other) noexcept = default;
@@ -1363,7 +1363,7 @@ JsonItem SStructFuncDecl::ToJson()
     };
 }
 
-SStructCtorDecl::SStructCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmtPtr> body)
+SStructCtorDecl::SStructCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
     : accessModifier(move(accessModifier)), parameters(move(parameters)), body(move(body)) { }
 
 SStructCtorDecl::SStructCtorDecl(SStructCtorDecl&& other) noexcept = default;
@@ -1382,7 +1382,7 @@ JsonItem SStructCtorDecl::ToJson()
     };
 }
 
-SStructVarDecl::SStructVarDecl(std::optional<SAccessModifier> accessModifier, STypeExpPtr varType, std::vector<std::string> varNames)
+SStructVarDecl::SStructVarDecl(std::optional<SAccessModifier> accessModifier, STypeExp* varType, std::vector<std::string> varNames)
     : accessModifier(move(accessModifier)), varType(move(varType)), varNames(move(varNames)) { }
 
 SStructVarDecl::SStructVarDecl(SStructVarDecl&& other) noexcept = default;
@@ -1401,7 +1401,7 @@ JsonItem SStructVarDecl::ToJson()
     };
 }
 
-SEnumElemVarDecl::SEnumElemVarDecl(STypeExpPtr type, std::string name)
+SEnumElemVarDecl::SEnumElemVarDecl(STypeExp* type, std::string name)
     : type(move(type)), name(move(name)) { }
 
 SEnumElemVarDecl::SEnumElemVarDecl(SEnumElemVarDecl&& other) noexcept = default;
@@ -1419,7 +1419,7 @@ JsonItem SEnumElemVarDecl::ToJson()
     };
 }
 
-SEnumElemDecl::SEnumElemDecl(std::string name, std::vector<std::shared_ptr<SEnumElemVarDecl>> vars)
+SEnumElemDecl::SEnumElemDecl(std::string name, std::vector<SEnumElemVarDecl*> vars)
     : name(move(name)), vars(move(vars)) { }
 
 SEnumElemDecl::SEnumElemDecl(SEnumElemDecl&& other) noexcept = default;
@@ -1437,7 +1437,7 @@ JsonItem SEnumElemDecl::ToJson()
     };
 }
 
-SEnumDecl::SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<std::shared_ptr<SEnumElemDecl>> elements)
+SEnumDecl::SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl*> elements)
     : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), elements(move(elements)) { }
 
 SEnumDecl::SEnumDecl(SEnumDecl&& other) noexcept = default;
@@ -1457,7 +1457,7 @@ JsonItem SEnumDecl::ToJson()
     };
 }
 
-SNamespaceDecl::SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElementPtr> elements)
+SNamespaceDecl::SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElement*> elements)
     : names(move(names)), elements(move(elements)) { }
 
 SNamespaceDecl::SNamespaceDecl(SNamespaceDecl&& other) noexcept = default;
@@ -1475,7 +1475,7 @@ JsonItem SNamespaceDecl::ToJson()
     };
 }
 
-SScript::SScript(std::vector<SScriptElementPtr> elements)
+SScript::SScript(std::vector<SScriptElement*> elements)
     : elements(move(elements)) { }
 
 SScript::SScript(SScript&& other) noexcept = default;

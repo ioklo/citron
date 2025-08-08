@@ -25,8 +25,9 @@ TEST(ScriptParser, ParseComplexScript)
 
     @echo $sum Completed!
 })---");
+    SFactory factory;
 
-    auto oScript = ParseScript(&lexer);
+    auto* script = ParseScript(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SScript",
@@ -217,7 +218,7 @@ TEST(ScriptParser, ParseComplexScript)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oScript, expected);
+    EXPECT_SYNTAX_EQ(script, expected);
 }
 
 TEST(ScriptParser, ParseEnumDecl)
@@ -228,8 +229,9 @@ TEST(ScriptParser, ParseEnumDecl)
     Second(int i),
     Third
 })---");
+    SFactory factory;
 
-    auto oScript = ParseScript(&lexer);
+    auto* script = ParseScript(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SScript",
@@ -270,14 +272,15 @@ TEST(ScriptParser, ParseEnumDecl)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oScript, expected);
+    EXPECT_SYNTAX_EQ(script, expected);
 }
 
 TEST(ScriptParser, ParseFuncDecl)
 {
     auto [buffer, lexer] = Prepare(UR"---(void Func(int x, string y, params int z) { int a = 0; })---");
+    SFactory factory;
 
-    auto oScript = ParseScript(&lexer);
+    auto* script = ParseScript(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SScript",
@@ -355,7 +358,7 @@ TEST(ScriptParser, ParseFuncDecl)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oScript, expected);
+    EXPECT_SYNTAX_EQ(script, expected);
 }
 
 TEST(ScriptParser, ParseNamespaceDecl)
@@ -370,8 +373,9 @@ TEST(ScriptParser, ParseNamespaceDecl)
         }
     }
 })---");
+    SFactory factory;
 
-    auto oScript = ParseScript(&lexer);
+    auto* script = ParseScript(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SScript",
@@ -410,7 +414,7 @@ TEST(ScriptParser, ParseNamespaceDecl)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oScript, expected);
+    EXPECT_SYNTAX_EQ(script, expected);
 }
 
 TEST(ScriptParser, ParseSimpleScript)
@@ -419,8 +423,9 @@ TEST(ScriptParser, ParseSimpleScript)
 {
     @ls -al
 })---");
+    SFactory factory;
 
-    auto oScript = ParseScript(&lexer);
+    auto* script = ParseScript(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SScript",
@@ -457,7 +462,7 @@ TEST(ScriptParser, ParseSimpleScript)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oScript, expected);
+    EXPECT_SYNTAX_EQ(script, expected);
 }
 
 TEST(ScriptParser, ParseStructDecl)
@@ -474,8 +479,9 @@ TEST(ScriptParser, ParseStructDecl)
     static void Func<X>(string s) { }
     private seq int F2<T>() { yield 4; }
 })---");
+    SFactory factory;
 
-    auto oScript = ParseScript(&lexer);
+    auto* script = ParseScript(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SScript",
@@ -653,6 +659,6 @@ TEST(ScriptParser, ParseStructDecl)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oScript, expected);
+    EXPECT_SYNTAX_EQ(script, expected);
 }
 
