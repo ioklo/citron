@@ -6,13 +6,13 @@ using namespace std;
 
 namespace Citron {
 
-NLambdaDecl::NLambdaDecl(NFuncDeclOuterWPtr&& outer, RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
-    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, /*typeParams*/ {}), outer(move(outer)), name(move(name))
+NLambdaDecl::NLambdaDecl(NFuncDeclOuter* outer, RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, /*typeParams*/{}), outer{outer}, name{move(name)}
 {
     NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcReturn), move(funcParameters), bLastParameterVariadic);
 }
 
-void NLambdaDecl::Init(std::vector<std::shared_ptr<NLambdaVarDecl>>&& vars, std::vector<NStmtPtr>&& body)
+void NLambdaDecl::Init(std::vector<NLambdaVarDecl*>&& vars, std::vector<NStmt*>&& body)
 {
     for (auto& var : vars)
         varsMap.emplace(var->name, var);
@@ -24,12 +24,12 @@ void NLambdaDecl::Init(std::vector<std::shared_ptr<NLambdaVarDecl>>&& vars, std:
 
 NDecl* NLambdaDecl::GetNOuter()
 {
-    return outer.lock()->GetNDecl();
+    return outer->GetNDecl();
 }
 
 RDecl* NLambdaDecl::GetROuter()
 {
-    return outer.lock()->GetNDecl()->GetRDecl();
+    return outer->GetNDecl()->GetRDecl();
 }
 
 RIdentifier NLambdaDecl::GetIdentifier()
@@ -37,12 +37,12 @@ RIdentifier NLambdaDecl::GetIdentifier()
     return RIdentifier { name, 0, {} };
 }
 
-RMember NLambdaDecl::ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
+RMember NLambdaDecl::ToRMember(RTypeArguments* typeArgs)
 {
     throw RuntimeFatalException(); // 들어올수가 없다
 }
 
-optional<RMember> NLambdaDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NLambdaDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 

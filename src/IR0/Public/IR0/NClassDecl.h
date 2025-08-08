@@ -29,24 +29,24 @@ class NClassDecl
 {
     struct BaseTypes
     {
-        std::shared_ptr<RType_Class> baseClass;
+        RType_Class* baseClass;
         std::vector<RType_Interface> interfaces;
     };
 
-    NTypeDeclOuterWPtr outer;
+    NTypeDeclOuter* outer;
     RAccessor accessor;
 
     RName name;
     std::vector<std::string> typeParams;
 
-    std::vector<std::shared_ptr<NClassCtorDecl>> ctors;
+    std::vector<NClassCtorDecl*> ctors;
     int trivialCtorIndex; // can be -1
 
-    std::vector<std::shared_ptr<NClassVarDecl>> vars;
+    std::vector<NClassVarDecl*> vars;
 
     std::optional<BaseTypes> oBaseTypes;
 
-    std::unordered_map<RName, std::shared_ptr<NClassVarDecl>> varsMap;
+    std::unordered_map<RName, NClassVarDecl*> varsMap;
 
 public:
     // from NDecl
@@ -56,7 +56,7 @@ public:
 
     // from NTypeDecl
     NDecl* GetNDecl() override { return this; }
-    RMember ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs) override;
+    RMember ToRMember(RTypeArguments* typeArgs) override;
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
 
     // from NTypeDeclOuter
@@ -71,14 +71,14 @@ public:
     RAccessor GetAccessor() override { return accessor; }
     IR0_API RDecl* GetROuter() override;
     IR0_API RIdentifier GetIdentifier() override;
-    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
     // from RFuncDeclOuter
     //RDecl* GetRDecl() override { return this; }
 
     // from RClassDecl
-    IR0_API std::optional<RMember_ClassVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
+    IR0_API std::optional<RMember_ClassVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
 };
 
 }

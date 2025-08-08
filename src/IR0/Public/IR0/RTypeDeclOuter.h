@@ -34,7 +34,7 @@ public:
 
 class RMTypeDeclOuter : public RTypeDeclOuter
 {
-    std::shared_ptr<MTypeDeclOuter> outer;
+    MTypeDeclOuter* outer;
 };
 
 

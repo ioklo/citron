@@ -11,7 +11,6 @@ namespace Citron {
 class MModule;
 
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 
 class RModule
 {
@@ -20,8 +19,8 @@ public:
 
 class RMModule : public RModule
 {
-    std::shared_ptr<MModule> decl;
-    // std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    MModule* decl;
+    // std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 };
 
 } // namespace Citron

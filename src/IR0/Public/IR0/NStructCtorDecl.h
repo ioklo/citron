@@ -22,12 +22,12 @@ class NStructCtorDecl
     , private NCommonFuncDeclComponent
 {
 public:
-    std::weak_ptr<NStructDecl> _struct;
+    NStructDecl* _struct;
     RAccessor accessor;
     bool bTrivial;
 
 public:
-    IR0_API NStructCtorDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bTrivial);
+    IR0_API NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, bool bTrivial);
     IR0_API void InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic);
     using NCommonFuncDeclComponent::InitBody;
     using NCommonFuncDeclComponent::InitBodyWillBeGenerated;
@@ -53,7 +53,7 @@ public:
     IR0_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     IR0_API RIdentifier GetIdentifier() override;
-    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
     // from RFuncDecl
@@ -61,7 +61,7 @@ public:
     bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
     size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
     size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
-    RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
+    RType* GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
     RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs, factory); }
     RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index, factory); }
 
@@ -69,7 +69,7 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RStructCtorDecl
-    IR0_API std::shared_ptr<RStructDecl> GetStructDecl() override;
+    IR0_API RStructDecl* GetStructDecl() override;
     RFuncParameter& GetUnboundFuncParam(size_t index) override { return NCommonFuncDeclComponent::GetUnboundFuncParam(index); }
 };
 

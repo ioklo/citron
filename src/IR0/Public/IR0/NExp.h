@@ -24,7 +24,6 @@ class REnumElemDecl;
 class RLambdaDecl;
 
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 class RType_Func;
 
 class NExp_Load;
@@ -70,14 +69,11 @@ class NExp_EnumIsEnumElem;
 class NExp_EnumAsEnumElem;
 
 class NLoc;
-using NLocPtr = std::shared_ptr<NLoc>;
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
 class RTypeFactory;
 
 class NStmt;
-using NStmtPtr = std::shared_ptr<NStmt>;
 
 class NLambdaDecl;
 
@@ -134,11 +130,9 @@ class NExp
 {
 public:
     virtual ~NExp() {}
-    virtual RTypePtr GetType(RTypeFactory& factory) = 0;
+    virtual RType* GetType(RTypeFactory& factory) = 0;
     virtual void Accept(NExpVisitor& visitor) = 0;
 };
-
-using NExpPtr = std::shared_ptr<NExp>;
 
 #pragma region Storage
 
@@ -146,12 +140,12 @@ using NExpPtr = std::shared_ptr<NExp>;
 class NExp_Load : public NExp
 {
 public:
-    NLocPtr loc;
+    NLoc* loc;
 
 public:
-    IR0_API NExp_Load(NLocPtr&& loc);
+    IR0_API NExp_Load(NLoc* loc);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -159,12 +153,12 @@ public:
 class NExp_Assign : public NExp
 {
 public:
-    NLocPtr dest;
-    NExpPtr src;
+    NLoc* dest;
+    NExp* src;
 public:
-    IR0_API NExp_Assign(NLocPtr&& dest, NExpPtr&& src);
+    IR0_API NExp_Assign(NLoc* dest, NExp* src);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -172,11 +166,11 @@ public:
 class NExp_Box : public NExp
 {
 public:
-    NExpPtr innerExp;
+    NExp* innerExp;
 public:
-    IR0_API NExp_Box(NExpPtr&& innerExp);
+    IR0_API NExp_Box(NExp* innerExp);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -184,11 +178,11 @@ public:
 class NExp_StaticBoxRef : public NExp
 {
 public:
-    NLocPtr loc;
+    NLoc* loc;
 public:
-    IR0_API NExp_StaticBoxRef(const NLocPtr& loc);
+    IR0_API NExp_StaticBoxRef(NLoc* loc);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -196,14 +190,14 @@ public:
 class NExp_ClassMemberBoxRef : public NExp
 {
 public:
-    NLocPtr holder;
-    std::shared_ptr<RClassVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    NLoc* holder;
+    RClassVarDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IR0_API NExp_ClassMemberBoxRef(const NLocPtr& holder, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NExp_ClassMemberBoxRef(NLoc* holder, RClassVarDecl* decl, RTypeArguments* typeArgs);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -212,14 +206,14 @@ public:
 class NExp_StructIndirectMemberBoxRef : public NExp
 {
 public:
-    NLocPtr holder;
-    std::shared_ptr<RStructVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    NLoc* holder;
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IR0_API NExp_StructIndirectMemberBoxRef(const NLocPtr& holder, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NExp_StructIndirectMemberBoxRef(NLoc* holder, RStructVarDecl* decl, RTypeArguments* typeArgs);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -228,14 +222,14 @@ public:
 class NExp_StructMemberBoxRef : public NExp
 {
 public:
-    NLocPtr parent;
-    std::shared_ptr<RStructVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    NLoc* parent;
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IR0_API NExp_StructMemberBoxRef(const NLocPtr& parent, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API NExp_StructMemberBoxRef(NLoc* parent, RStructVarDecl* decl, RTypeArguments* typeArgs);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -243,12 +237,12 @@ public:
 class NExp_LocalRef : public NExp
 {
 public:
-    NLocPtr innerLoc;
+    NLoc* innerLoc;
 
 public:
-    IR0_API NExp_LocalRef(const NLocPtr& innerLoc);
+    IR0_API NExp_LocalRef(NLoc* innerLoc);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -260,12 +254,12 @@ public:
 class NExp_CastBoxedLambdaToFunc : public NExp
 {
 public:
-    NExpPtr exp;
-    std::shared_ptr<RType_Func> funcType;
+    NExp* exp;
+    RType_Func* funcType;
 public:
-    IR0_API NExp_CastBoxedLambdaToFunc(const NExpPtr& exp, const std::shared_ptr<RType_Func>& funcType);
+    IR0_API NExp_CastBoxedLambdaToFunc(NExp* exp, RType_Func* funcType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -281,7 +275,7 @@ public:
 public:
     IR0_API NExp_BoolLiteral(bool value);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -293,7 +287,7 @@ public:
 public:
     IR0_API NExp_IntLiteral(int value);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -309,10 +303,10 @@ public:
 class NLocStringExpElement
 {
 public:
-    NLocPtr loc;
+    NLoc* loc;
 
 public:
-    IR0_API NLocStringExpElement(NLocPtr&& loc);
+    IR0_API NLocStringExpElement(NLoc* loc);
 };
 
 using NStringExpElement = std::variant<NTextStringExpElement, NLocStringExpElement>;
@@ -326,7 +320,7 @@ public:
 public:
     IR0_API NExp_String(std::vector<NStringExpElement>&& elements);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 
 };
@@ -339,24 +333,24 @@ public:
 class NExp_List : public NExp
 {
 public:
-    std::vector<NExpPtr> elems;
-    RTypePtr itemType;
+    std::vector<NExp*> elems;
+    RType* itemType;
 public:
-    IR0_API NExp_List(std::vector<NExpPtr>&& elems, const RTypePtr& itemType);
+    IR0_API NExp_List(std::vector<NExp*>&& elems, RType* itemType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_ListIterator : public NExp
 {
 public:
-    NLocPtr listLoc;
-    RTypePtr type;
+    NLoc* listLoc;
+    RType* type;
 public:
-    IR0_API NExp_ListIterator(const NLocPtr& listLoc, const RTypePtr& type);
+    IR0_API NExp_ListIterator(NLoc* listLoc, RType* type);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -406,11 +400,11 @@ class NExp_CallInternalUnaryOperator : public NExp
 {
 public:
     NInternalUnaryOperator op;
-    NExpPtr operand;
+    NExp* operand;
 public:
-    IR0_API NExp_CallInternalUnaryOperator(NInternalUnaryOperator op, NExpPtr&& operand);
+    IR0_API NExp_CallInternalUnaryOperator(NInternalUnaryOperator op, NExp* operand);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -418,11 +412,11 @@ class NExp_CallInternalUnaryAssignOperator : public NExp
 {
 public:
     NInternalUnaryAssignOperator op;
-    NLocPtr operand;
+    NLoc* operand;
 public:
-    IR0_API NExp_CallInternalUnaryAssignOperator(NInternalUnaryAssignOperator op, NLocPtr&& operand);
+    IR0_API NExp_CallInternalUnaryAssignOperator(NInternalUnaryAssignOperator op, NLoc* operand);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -430,12 +424,12 @@ class NExp_CallInternalBinaryOperator : public NExp
 {
 public:
     NInternalBinaryOperator op;
-    NExpPtr operand0;
-    NExpPtr operand1;
+    NExp* operand0;
+    NExp* operand1;
 public:
-    IR0_API NExp_CallInternalBinaryOperator(NInternalBinaryOperator op, NExpPtr&& operand0, NExpPtr&& operand1);
+    IR0_API NExp_CallInternalBinaryOperator(NInternalBinaryOperator op, NExp* operand0, NExp* operand1);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -447,13 +441,13 @@ public:
 class NExp_CallGlobalFunc : public NExp
 {
 public:
-    std::shared_ptr<RGlobalFuncDecl> funcDecl;
-    RTypeArgumentsPtr typeArgs;
+    RGlobalFuncDecl* funcDecl;
+    RTypeArguments* typeArgs;
     std::vector<NArgument> args;
 public:
-    IR0_API NExp_CallGlobalFunc(const std::shared_ptr<RGlobalFuncDecl>& funcDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<NArgument>& args);
+    IR0_API NExp_CallGlobalFunc(RGlobalFuncDecl* funcDecl, RTypeArguments* typeArgs, const std::vector<NArgument>& args);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 
 };
@@ -465,13 +459,13 @@ public:
 class NExp_NewClass : public NExp
 {
 public:
-    std::shared_ptr<RClassCtorDecl> ctorDecl;
-    RTypeArgumentsPtr typeArgs;
+    RClassCtorDecl* ctorDecl;
+    RTypeArguments* typeArgs;
     std::vector<NArgument> args;
 public:
-    IR0_API NExp_NewClass(const std::shared_ptr<RClassCtorDecl>& ctorDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<NArgument>& args);
+    IR0_API NExp_NewClass(RClassCtorDecl* ctorDecl, RTypeArguments* typeArgs, const std::vector<NArgument>& args);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -479,14 +473,14 @@ public:
 class NExp_CallClassFunc : public NExp
 {
 public:
-    std::shared_ptr<RClassFuncDecl> decl;
-    RTypeArgumentsPtr typeArgs;
-    NLocPtr instance;
+    RClassFuncDecl* decl;
+    RTypeArguments* typeArgs;
+    NLoc* instance;
     std::vector<NArgument> args;
 public:
-    IR0_API NExp_CallClassFunc(std::shared_ptr<RClassFuncDecl>&& decl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, std::vector<NArgument>&& args);
+    IR0_API NExp_CallClassFunc(RClassFuncDecl* decl, RTypeArguments* typeArgs, NLoc* instance, std::vector<NArgument>&& args);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -494,12 +488,12 @@ public:
 class NExp_CastClass : public NExp
 {
 public:
-    NExpPtr src;
-    RTypePtr classType;
+    NExp* src;
+    RType* classType;
 public:
-    IR0_API NExp_CastClass(const NExpPtr& src, const RTypePtr& classType);
+    IR0_API NExp_CastClass(NExp* src, RType* classType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -511,13 +505,13 @@ public:
 class NExp_NewStruct : public NExp
 {
 public:
-    std::shared_ptr<RStructCtorDecl> ctor;
-    RTypeArgumentsPtr typeArgs;
+    RStructCtorDecl* ctor;
+    RTypeArguments* typeArgs;
     std::vector<NArgument> args;
 public:
-    IR0_API NExp_NewStruct(const std::shared_ptr<RStructCtorDecl>& ctor, RTypeArgumentsPtr&& typeArgs, std::vector<NArgument>&& args);
+    IR0_API NExp_NewStruct(RStructCtorDecl* ctor, RTypeArguments* typeArgs, std::vector<NArgument>&& args);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -525,14 +519,14 @@ public:
 class NExp_CallStructFunc : public NExp
 {
 public:
-    std::shared_ptr<RStructFuncDecl> decl;
-    RTypeArgumentsPtr typeArgs;
-    NLocPtr instance;
+    RStructFuncDecl* decl;
+    RTypeArguments* typeArgs;
+    NLoc* instance;
     std::vector<NArgument> args;
 public:
-    IR0_API NExp_CallStructFunc(std::shared_ptr<RStructFuncDecl>&& decl, RTypeArgumentsPtr&& typeArgs, NLocPtr&& instance, std::vector<NArgument>&& args);
+    IR0_API NExp_CallStructFunc(RStructFuncDecl* decl, RTypeArguments* typeArgs, NLoc* instance, std::vector<NArgument>&& args);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -544,15 +538,14 @@ public:
 class NExp_NewEnumElem : public NExp
 {
 public:
-    std::shared_ptr<REnumElemDecl> enumElemDecl;
-    RTypeArgumentsPtr typeArgs;
+    REnumElemDecl* enumElemDecl;
+    RTypeArguments* typeArgs;
     std::vector<NArgument> args;
 
 public:
-    IR0_API NExp_NewEnumElem(const std::shared_ptr<REnumElemDecl>& enumElemDecl, const RTypeArgumentsPtr& typeArgs, std::vector<NArgument>&& args);
-    IR0_API NExp_NewEnumElem(const std::shared_ptr<REnumElemDecl>& enumElemDecl, RTypeArgumentsPtr&& typeArgs, std::vector<NArgument>&& args);
+    IR0_API NExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* typeArgs, std::vector<NArgument>&& args);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -560,12 +553,12 @@ public:
 class NExp_CastEnumElemToEnum : public NExp
 {
 public:
-    NExpPtr src;
-    RTypePtr enumType;
+    NExp* src;
+    RType* enumType;
 public:
-    IR0_API NExp_CastEnumElemToEnum(const NExpPtr& src, const RTypePtr& enumType);
+    IR0_API NExp_CastEnumElemToEnum(NExp* src, RType* enumType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -576,34 +569,34 @@ public:
 class NExp_NullableValueNullLiteral : public NExp
 {
 public:
-    RTypePtr innerType;
+    RType* innerType;
 
 public:
-    IR0_API NExp_NullableValueNullLiteral(const RTypePtr& innerType);
+    IR0_API NExp_NullableValueNullLiteral(RType* innerType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_NullableRefNullLiteral : public NExp
 {
 public:
-    RTypePtr innerType;
+    RType* innerType;
 public:
-    IR0_API NExp_NullableRefNullLiteral(const RTypePtr& innerType);
+    IR0_API NExp_NullableRefNullLiteral(RType* innerType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_NewNullable : public NExp
 {
 public:
-    NExpPtr innerExp;
+    NExp* innerExp;
 public:
-    IR0_API NExp_NewNullable(const NExpPtr& innerExp);
+    IR0_API NExp_NewNullable(NExp* innerExp);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -618,14 +611,14 @@ public:
 class NExp_Lambda : public NExp
 {
 public:
-    std::shared_ptr<NLambdaDecl> lambdaDecl;
-    RTypeArgumentsPtr typeArgs;
+    NLambdaDecl* lambdaDecl;
+    RTypeArguments* typeArgs;
     std::vector<NArgument> args;
 
 public:
-    IR0_API NExp_Lambda(const std::shared_ptr<NLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const std::vector<NArgument>& args);
+    IR0_API NExp_Lambda(NLambdaDecl* lambdaDecl, RTypeArguments* typeArgs, const std::vector<NArgument>& args);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -635,16 +628,16 @@ class NExp_CallLambda : public NExp
 {
 public:
     // TODO: RType_Lambda에 있는 정보들, callable->GetType()하면 얻을수 있는 것들이다. 삭제해야 하지 않을까
-    std::shared_ptr<RLambdaDecl> lambdaDecl;
-    RTypeArgumentsPtr typeArgs;
+    RLambdaDecl* lambdaDecl;
+    RTypeArguments* typeArgs;
 
-    NLocPtr callable;
+    NLoc* callable;
     std::vector<NArgument> args;
 
 public:
-    IR0_API NExp_CallLambda(const std::shared_ptr<RLambdaDecl>& lambdaDecl, const RTypeArgumentsPtr& typeArgs, const NLocPtr& callable, const std::vector<NArgument>& args);
+    IR0_API NExp_CallLambda(RLambdaDecl* lambdaDecl, RTypeArguments* typeArgs, NLoc* callable, const std::vector<NArgument>& args);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -655,12 +648,12 @@ public:
 class NExp_InlineBlock : public NExp
 {
 public:
-    std::vector<NStmtPtr> stmts;
-    RTypePtr returnType;
+    std::vector<NStmt*> stmts;
+    RType* returnType;
 public:
-    IR0_API NExp_InlineBlock(const std::vector<NStmtPtr>& stmts, const RTypePtr& returnType);
+    IR0_API NExp_InlineBlock(const std::vector<NStmt*>& stmts, RType* returnType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -671,25 +664,25 @@ public:
 class NExp_ClassIsClass : public NExp
 {
 public:
-    NExpPtr exp;
-    RTypePtr classType;
+    NExp* exp;
+    RType* classType;
 
 public:
-    IR0_API NExp_ClassIsClass(NExpPtr&& exp, RTypePtr&& classType);
+    IR0_API NExp_ClassIsClass(NExp* exp, RType* classType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_ClassAsClass: public NExp
 {
 public:
-    NExpPtr exp;
-    RTypePtr classType;
+    NExp* exp;
+    RType* classType;
 public:
-    IR0_API NExp_ClassAsClass(const NExpPtr& exp, const RTypePtr& classType);
+    IR0_API NExp_ClassAsClass(NExp* exp, RType* classType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 
 };
@@ -697,96 +690,96 @@ public:
 class NExp_ClassIsInterface : public NExp
 {
 public:
-    NExpPtr exp;
-    RTypePtr interfaceType; // func도 interface type이다
+    NExp* exp;
+    RType* interfaceType; // func도 interface type이다
 public:
-    IR0_API NExp_ClassIsInterface(NExpPtr&& exp, RTypePtr&& interfaceType);
+    IR0_API NExp_ClassIsInterface(NExp* exp, RType* interfaceType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_ClassAsInterface : public NExp
 {
 public:
-    NExpPtr exp;
-    RTypePtr interfaceType;
+    NExp* exp;
+    RType* interfaceType;
 public:
-    IR0_API NExp_ClassAsInterface(const NExpPtr& exp, const RTypePtr& interfaceType);
+    IR0_API NExp_ClassAsInterface(NExp* exp, RType* interfaceType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_InterfaceIsClass : public NExp
 {
 public:
-    NExpPtr exp;
-    RTypePtr classType;
+    NExp* exp;
+    RType* classType;
 public:
-    IR0_API NExp_InterfaceIsClass(NExpPtr&& exp, RTypePtr&& classType);
+    IR0_API NExp_InterfaceIsClass(NExp* exp, RType* classType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_InterfaceAsClass : public NExp
 {
 public:
-    NExpPtr exp;
-    RTypePtr classType;
+    NExp* exp;
+    RType* classType;
 public:
-    IR0_API NExp_InterfaceAsClass(const NExpPtr& exp, const RTypePtr& classType);
+    IR0_API NExp_InterfaceAsClass(NExp* exp, RType* classType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_InterfaceIsInterface : public NExp
 {
 public:
-    NExpPtr exp;
-    RTypePtr interfaceType;
+    NExp* exp;
+    RType* interfaceType;
 public:
-    IR0_API NExp_InterfaceIsInterface(NExpPtr&& exp, RTypePtr&& interfaceType);
+    IR0_API NExp_InterfaceIsInterface(NExp* exp, RType* interfaceType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_InterfaceAsInterface : public NExp
 {
 public:
-    NExpPtr exp;
-    RTypePtr interfaceType;
+    NExp* exp;
+    RType* interfaceType;
 public:
-    IR0_API NExp_InterfaceAsInterface(const NExpPtr& exp, const RTypePtr& interfaceType);
+    IR0_API NExp_InterfaceAsInterface(NExp* exp, RType* interfaceType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_EnumIsEnumElem : public NExp
 {
 public:
-    NExpPtr exp;
-    RTypePtr enumElemType;
+    NExp* exp;
+    RType* enumElemType;
 public:
-    IR0_API NExp_EnumIsEnumElem(NExpPtr&& exp, RTypePtr&& enumElemType);
+    IR0_API NExp_EnumIsEnumElem(NExp* exp, RType* enumElemType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NExp_EnumAsEnumElem : public NExp
 {
 public:
-    NExpPtr exp;
-    RTypePtr enumElemType;
+    NExp* exp;
+    RType* enumElemType;
 public:
-    IR0_API NExp_EnumAsEnumElem(const NExpPtr& exp, const RTypePtr& enumElemType);
+    IR0_API NExp_EnumAsEnumElem(NExp* exp, RType* enumElemType);
 
-    IR0_API RTypePtr GetType(RTypeFactory& factory) override;
+    IR0_API RType* GetType(RTypeFactory& factory) override;
     void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 

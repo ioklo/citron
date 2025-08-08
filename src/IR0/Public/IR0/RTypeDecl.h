@@ -40,7 +40,7 @@ public:
 
 class RMTypeDecl : public RTypeDecl
 {
-    std::shared_ptr<MTypeDecl> typeDecl;
+    MTypeDecl* typeDecl;
 };
 
 

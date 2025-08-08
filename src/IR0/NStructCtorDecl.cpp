@@ -8,11 +8,11 @@ using namespace std;
 namespace Citron
 {
 
-NStructCtorDecl::NStructCtorDecl(weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bTrivial)
+NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, bool bTrivial)
     : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, /*typeParams*/ {})
-    , _struct(move(_struct))
-    , accessor(accessor)
-    , bTrivial(bTrivial)
+    , _struct{_struct}
+    , accessor{accessor}
+    , bTrivial{bTrivial}
 {
 }
 
@@ -25,12 +25,12 @@ NStructCtorDecl::~NStructCtorDecl() = default;
 
 NDecl* NStructCtorDecl::GetNOuter()
 {
-    return _struct.lock().get();
+    return _struct;
 }
 
 RDecl* NStructCtorDecl::GetROuter()
 {
-    return _struct.lock().get();
+    return _struct;
 }
 
 RIdentifier NStructCtorDecl::GetIdentifier()
@@ -38,26 +38,23 @@ RIdentifier NStructCtorDecl::GetIdentifier()
     return RIdentifier { RName_Reserved("Ctor"), 0, NCommonFuncDeclComponent::GetParamIds() };
 }
 
-shared_ptr<RStructDecl> NStructCtorDecl::GetStructDecl()
+RStructDecl* NStructCtorDecl::GetStructDecl()
 {
-    return _struct.lock();
+    return _struct;
 }
 
-optional<Citron::RMember> NStructCtorDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<Citron::RMember> NStructCtorDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
 optional<RMember> NStructCtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
 {
-    auto sharedStruct = _struct.lock();
-    assert(sharedStruct);
-
-    auto baseTypeParamCount = sharedStruct->GetAllTypeParamCount();
+    auto baseTypeParamCount = _struct->GetAllTypeParamCount();
     if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
         return oMember;
 
-    return sharedStruct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
 }

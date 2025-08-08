@@ -16,7 +16,7 @@ class RClassCtorDecl
     , public RFuncDeclOuter
 {
 public:
-    virtual std::shared_ptr<RClassDecl> GetClassDecl() = 0;
+    virtual RClassDecl* GetClassDecl() = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
     void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(*this); }
@@ -25,7 +25,7 @@ public:
 
 class RMClassCtorDecl : public RClassCtorDecl
 {
-    std::shared_ptr<MClassCtorDecl> decl;
+    MClassCtorDecl* decl;
 };
 
 

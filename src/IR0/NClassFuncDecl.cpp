@@ -11,12 +11,12 @@ namespace Citron {
 
 NDecl* NClassFuncDecl::GetNOuter()
 {
-    return _class.lock().get();
+    return _class;
 }
 
 RDecl* NClassFuncDecl::GetROuter()
 {
-    return _class.lock().get();
+    return _class;
 }
 
 RIdentifier NClassFuncDecl::GetIdentifier()
@@ -24,21 +24,18 @@ RIdentifier NClassFuncDecl::GetIdentifier()
     return RIdentifier { name, typeParams.size(), NCommonFuncDeclComponent::GetParamIds() };
 }
 
-optional<RMember> NClassFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NClassFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
 std::optional<RMember> NClassFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
 {
-    auto sharedClass = _class.lock();
-    assert(sharedClass);
-
-    size_t baseTypeParamCount = sharedClass->GetAllTypeParamCount();
+    size_t baseTypeParamCount = _class->GetAllTypeParamCount();
     if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
         return oMember;
 
-    return _class.lock()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return _class->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
 } // namespace Citron

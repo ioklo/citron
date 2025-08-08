@@ -30,6 +30,4 @@ public:
     virtual void Accept(NFuncDeclVisitor& visitor) = 0;
 };
 
-using NFuncDeclPtr = std::shared_ptr<NFuncDecl>;
-
 }

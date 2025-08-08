@@ -45,7 +45,7 @@ public:
 
 class RMFuncDeclOuter : public RFuncDeclOuter
 {
-    std::shared_ptr<MFuncDeclOuter> outer;
+    MFuncDeclOuter* outer;
 };
 
 

@@ -56,12 +56,12 @@ size_t RDecl::GetAllTypeParamCount()
     return outer->GetAllTypeParamCount() + GetTypeParamCount();
 }
 
-RTypeArgumentsPtr RDecl::MakeOpenTypeArgs(RTypeFactory& factory)
+RTypeArguments* RDecl::MakeOpenTypeArgs(RTypeFactory& factory)
 {
     // gather reversely
     auto allTypeParamCount = GetAllTypeParamCount();    
     
-    vector<RTypePtr> items;
+    vector<RType*> items;
     items.reserve(allTypeParamCount);
     for(int i = 0; i < allTypeParamCount; i++)
     {

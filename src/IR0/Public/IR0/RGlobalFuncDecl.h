@@ -10,8 +10,6 @@ namespace Citron {
 class MGlobalFuncDecl;
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-
 class RTypeFactory;
 
 // abstract
@@ -21,7 +19,7 @@ class RGlobalFuncDecl
     , public RFuncDeclOuter
 {
 public:
-    virtual RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
+    virtual RType* GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
     void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(*this); }
@@ -30,7 +28,7 @@ public:
 
 class RMGlobalFuncDecl : public RGlobalFuncDecl
 {
-    std::shared_ptr<MGlobalFuncDecl> externalFuncDecl;
+    MGlobalFuncDecl* externalFuncDecl;
 };
 
 }

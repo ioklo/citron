@@ -9,19 +9,17 @@
 namespace Citron {
 
 class RNamespaceDeclGroup;
-using RNamespaceDeclGroupPtr = std::shared_ptr<RNamespaceDeclGroup>;
-
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
-
 class RTypeFactory;
+
+class NNamespaceDecl;
 
 namespace IR0 {
 
 struct FuncTypeKey
 {
     bool bLocal;
-    RTypePtr retType;
+    RType* retType;
     std::vector<RType_Func::Parameter> params;
 
     bool operator==(const FuncTypeKey& other) const noexcept
@@ -45,8 +43,8 @@ struct FuncTypeKeyHasher
 template<typename TDecl>
 struct InstanceTypeKey
 {
-    std::shared_ptr<TDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    TDecl* decl;
+    RTypeArguments* typeArgs;
 
     bool operator==(const InstanceTypeKey& other) const noexcept
     {
@@ -68,7 +66,7 @@ struct InstanceTypeKeyHasher
 
 struct TypeArgumentsKey
 {
-    std::vector<RTypePtr> items;
+    std::vector<RType*> items;
 
     bool operator==(const TypeArgumentsKey& other) const noexcept
     {
@@ -93,17 +91,17 @@ struct TypeArgumentsKeyHasher
 class RTypeFactory
 {
     // inner type -> nullable type
-    std::unordered_map<RTypePtr, std::shared_ptr<RType_NullableValue>> nullableValueTypes;
-    std::unordered_map<RTypePtr, std::shared_ptr<RType_NullableRef>> nullableRefTypes;
-    std::unordered_map<int, std::shared_ptr<RType_TypeVar>> typeVarTypes;
-    std::shared_ptr<RType_Void> voidType;
-    std::unordered_map<std::vector<RTupleVar>, std::shared_ptr<RType_Tuple>> tupleTypes;
-    std::unordered_map<IR0::FuncTypeKey, std::shared_ptr<RType_Func>, IR0::FuncTypeKeyHasher> funcTypes;
-    std::unordered_map<RTypePtr, std::shared_ptr<RType_LocalPtr>> localPtrTypes;
-    std::unordered_map<RTypePtr, std::shared_ptr<RType_BoxPtr>> boxPtrTypes;
+    std::unordered_map<RType*, std::unique_ptr<RType_NullableValue>> nullableValueTypes;
+    std::unordered_map<RType*, std::unique_ptr<RType_NullableRef>> nullableRefTypes;
+    std::unordered_map<int, std::unique_ptr<RType_TypeVar>> typeVarTypes;
+    std::unique_ptr<RType_Void> voidType;
+    std::unordered_map<std::vector<RTupleVar>, std::unique_ptr<RType_Tuple>> tupleTypes;
+    std::unordered_map<IR0::FuncTypeKey, std::unique_ptr<RType_Func>, IR0::FuncTypeKeyHasher> funcTypes;
+    std::unordered_map<RType*, std::unique_ptr<RType_LocalPtr>> localPtrTypes;
+    std::unordered_map<RType*, std::unique_ptr<RType_BoxPtr>> boxPtrTypes;
 
     template<typename TDecl, typename TType>
-    using InstanceTypeKeyUnorderedMap = std::unordered_map<IR0::InstanceTypeKey<TDecl>, std::shared_ptr<TType>, IR0::InstanceTypeKeyHasher<TDecl>>;
+    using InstanceTypeKeyUnorderedMap = std::unordered_map<IR0::InstanceTypeKey<TDecl>, std::unique_ptr<TType>, IR0::InstanceTypeKeyHasher<TDecl>>;
 
     InstanceTypeKeyUnorderedMap<RClassDecl, RType_Class> classTypes;
     InstanceTypeKeyUnorderedMap<RStructDecl, RType_Struct> structTypes;
@@ -112,56 +110,59 @@ class RTypeFactory
     InstanceTypeKeyUnorderedMap<RInterfaceDecl, RType_Interface> interfaceTypes;
     InstanceTypeKeyUnorderedMap<RLambdaDecl, RType_Lambda> lambdaTypes;
 
-    std::unordered_map<IR0::TypeArgumentsKey, RTypeArgumentsPtr, IR0::TypeArgumentsKeyHasher> typeArgsMap;
+    std::unordered_map<IR0::TypeArgumentsKey, std::unique_ptr<RTypeArguments>, IR0::TypeArgumentsKeyHasher> typeArgsMap;
 
     // 기본 타입
-    RTypePtr boolType;
-    RTypePtr intType;
-    RTypePtr stringType;
+    std::unique_ptr<RType> boolType;
+    std::unique_ptr<RType> intType;
+    std::unique_ptr<RType> stringType;
 
-    std::shared_ptr<RClassDecl> listDecl;
+    std::unique_ptr<RClassDecl> listDecl;
 
+    std::vector<std::unique_ptr<NNamespaceDecl>> namespaceDecls;
     // namespace group
-    std::unordered_map<std::vector<std::string>, RNamespaceDeclGroupPtr> nsGroupsMap;
+    std::unordered_map<std::vector<std::string>, std::unique_ptr<RNamespaceDeclGroup>> nsGroupsMap;
 
 public:
     IR0_API RTypeFactory();
 
-    IR0_API std::shared_ptr<RType_NullableValue> MakeNullableValueType(RTypePtr innerType);
-    IR0_API std::shared_ptr<RType_NullableRef> MakeNullableRefType(RTypePtr innerType);
-    IR0_API std::shared_ptr<RType_TypeVar> MakeTypeVarType(int index);
-    IR0_API std::shared_ptr<RType_Void> MakeVoidType();
-    IR0_API std::shared_ptr<RType_Tuple> MakeTupleType(std::vector<RTupleVar>&& vars);
-    IR0_API std::shared_ptr<RType_Func> MakeFuncType(bool bLocal, RTypePtr&& retType, std::vector<RType_Func::Parameter>&& params);
-    IR0_API std::shared_ptr<RType_LocalPtr> MakeLocalPtrType(RTypePtr&& innerType);
-    IR0_API std::shared_ptr<RType_BoxPtr> MakeBoxPtrType(RTypePtr&& innerType);
+    IR0_API RType_NullableValue* MakeNullableValueType(RType* innerType);
+    IR0_API RType_NullableRef* MakeNullableRefType(RType* innerType);
+    IR0_API RType_TypeVar* MakeTypeVarType(int index);
+    IR0_API RType_Void* MakeVoidType();
+    IR0_API RType_Tuple* MakeTupleType(std::vector<RTupleVar>&& vars);
+    IR0_API RType_Func* MakeFuncType(bool bLocal, RType* retType, std::vector<RType_Func::Parameter>&& params);
+    IR0_API RType_LocalPtr* MakeLocalPtrType(RType* innerType);
+    IR0_API RType_BoxPtr* MakeBoxPtrType(RType* innerType);
 
-    IR0_API std::shared_ptr<RType_Class> MakeClassType(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
-    IR0_API std::shared_ptr<RType_Struct> MakeStructType(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
-    IR0_API std::shared_ptr<RType_Enum> MakeEnumType(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
-    IR0_API std::shared_ptr<RType_EnumElem> MakeEnumElemType(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
-    IR0_API std::shared_ptr<RType_Interface> MakeInterfaceType(const std::shared_ptr<RInterfaceDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool bLocal);
-    IR0_API std::shared_ptr<RType_Lambda> MakeLambdaType(const std::shared_ptr<RLambdaDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API RType_Class* MakeClassType(RClassDecl* decl, RTypeArguments* typeArgs);
+    IR0_API RType_Struct* MakeStructType(RStructDecl* decl, RTypeArguments* typeArgs);
+    IR0_API RType_Enum* MakeEnumType(REnumDecl* decl, RTypeArguments* typeArgs);
+    IR0_API RType_EnumElem* MakeEnumElemType(REnumElemDecl* decl, RTypeArguments* typeArgs);
+    IR0_API RType_Interface* MakeInterfaceType(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal);
+    IR0_API RType_Lambda* MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeArgs);
 
 
-    IR0_API RTypeArgumentsPtr MakeTypeArguments(const std::vector<RTypePtr>& items);
-    IR0_API RTypeArgumentsPtr MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1);
+    IR0_API RTypeArguments* MakeTypeArguments(const std::vector<RType*>& items);
+    IR0_API RTypeArguments* MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1);
 
     // utilities
-    IR0_API RTypePtr MakeBoolType();
-    IR0_API RTypePtr MakeIntType();
-    IR0_API RTypePtr MakeStringType();
-    IR0_API RTypePtr MakeListType(const RTypePtr& itemType);
+    IR0_API RType* MakeBoolType();
+    IR0_API RType* MakeIntType();
+    IR0_API RType* MakeStringType();
+    IR0_API RType* MakeListType(RType* itemType);
 
-    IR0_API bool IsListType(const RTypePtr& type, RTypePtr* outItemType);
+    IR0_API bool IsListType(RType* type, RType** outItemType);
 
-    RNamespaceDeclGroupPtr GetNamespaceDeclGroup(const std::vector<std::string>& name);
+    NNamespaceDecl* NewRootNamespaceDecl(); // TU당 하나씩 만들어지는 namespace
+    NNamespaceDecl* NewChildNamespaceDecl(NNamespaceDecl* outer, const std::string& name);
+    RNamespaceDeclGroup* GetNamespaceDeclGroup(const std::vector<std::string>& name);
 
 private:
     template<typename TDecl, typename TType, typename... TArgs>
-    std::shared_ptr<TType> MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, const std::shared_ptr<TDecl>& decl, const RTypeArgumentsPtr& typeArgs, TArgs&&... args);
+    TType* MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TDecl* decl, RTypeArguments* typeArgs, TArgs&&... args);
 };
 
-using RTypeFactoryPtr = std::shared_ptr<RTypeFactory>;
+using RTypeFactoryPtr = std::unique_ptr<RTypeFactory>;
 
 } // namespace Citron

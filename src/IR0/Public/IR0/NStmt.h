@@ -13,10 +13,7 @@
 namespace Citron {
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 
 class RClassCtorDecl;
 
@@ -25,7 +22,6 @@ class NLambdaDecl;
 class NStructCtorDecl;
 
 class NLoc;
-using NLocPtr = std::shared_ptr<NLoc>;
 
 class NStmt_Command;
 class NStmt_LocalVarDecl;
@@ -91,14 +87,12 @@ public:
     virtual void Accept(NStmtVisitor& visitor) = 0;
 };
 
-using NStmtPtr = std::shared_ptr<NStmt>;
-
 class NStmt_Command : public NStmt
 {
 public:
-    std::vector<std::shared_ptr<NExp_String>> commands;
+    std::vector<NExp_String*> commands;
 public:
-    IR0_API NStmt_Command(std::vector<std::shared_ptr<NExp_String>>&& commands);
+    IR0_API NStmt_Command(std::vector<NExp_String*>&& commands);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -106,35 +100,35 @@ public:
 class NStmt_LocalVarDecl : public NStmt
 {
 public:
-    RTypePtr type;
+    RType* type;
     std::string name;
-    NExpPtr initExp;
+    NExp* initExp;
 public:
-    IR0_API NStmt_LocalVarDecl(const RTypePtr& type, const std::string& name, NExpPtr&& initExp);
+    IR0_API NStmt_LocalVarDecl(RType* type, const std::string& name, NExp* initExp);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_If : public NStmt
 {
 public:
-    NExpPtr cond;
-    std::vector<NStmtPtr> body;
-    std::vector<NStmtPtr> elseBody;
+    NExp* cond;
+    std::vector<NStmt*> body;
+    std::vector<NStmt*> elseBody;
 public:
-    IR0_API NStmt_If(NExpPtr&& cond, std::vector<NStmtPtr>&& body, std::vector<NStmtPtr>&& elseBody);
+    IR0_API NStmt_If(NExp* cond, std::vector<NStmt*>&& body, std::vector<NStmt*>&& elseBody);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_IfNullableRefTest : public NStmt
 {
 public:
-    RTypePtr refType;
+    RType* refType;
     RName varName;
-    NExpPtr asExp;
-    std::vector<NStmtPtr> body;
-    std::vector<NStmtPtr> elseBody;
+    NExp* asExp;
+    std::vector<NStmt*> body;
+    std::vector<NStmt*> elseBody;
 public:
-    IR0_API NStmt_IfNullableRefTest(RTypePtr&& refType, RName&& varName, NExpPtr&& asExp, std::vector<NStmtPtr>&& body, std::vector<NStmtPtr>&& elseBody);
+    IR0_API NStmt_IfNullableRefTest(RType* refType, RName&& varName, NExp* asExp, std::vector<NStmt*>&& body, std::vector<NStmt*>&& elseBody);
 
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
@@ -142,25 +136,25 @@ public:
 class NStmt_IfNullableValueTest : public NStmt
 {
 public:
-    RTypePtr type;
+    RType* type;
     RName varName;
-    NExpPtr asExp;
-    std::vector<NStmtPtr> body;
-    std::vector<NStmtPtr> elseBody;
+    NExp* asExp;
+    std::vector<NStmt*> body;
+    std::vector<NStmt*> elseBody;
 public:
-    IR0_API NStmt_IfNullableValueTest(RTypePtr&& type, RName&& varName, NExpPtr&& asExp, std::vector<NStmtPtr>&& body, std::vector<NStmtPtr>&& elseBody);
+    IR0_API NStmt_IfNullableValueTest(RType* type, RName&& varName, NExp* asExp, std::vector<NStmt*>&& body, std::vector<NStmt*>&& elseBody);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_For : public NStmt
 {
 public:
-    std::vector<NStmtPtr> initStmts;
-    NExpPtr condExp;
-    NExpPtr continueExp;
-    std::vector<NStmtPtr> body;
+    std::vector<NStmt*> initStmts;
+    NExp* condExp;
+    NExp* continueExp;
+    std::vector<NStmt*> body;
 public:
-    IR0_API NStmt_For(std::vector<NStmtPtr>&& initStmts, NExpPtr&& condExp, NExpPtr&& continueExp, std::vector<NStmtPtr>&& body);
+    IR0_API NStmt_For(std::vector<NStmt*>&& initStmts, NExp* condExp, NExp* continueExp, std::vector<NStmt*>&& body);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -181,18 +175,18 @@ public:
 class NStmt_Return : public NStmt
 {
 public:
-    NExpPtr exp;
+    NExp* exp;
 public:
-    IR0_API NStmt_Return(NExpPtr&& exp);
+    IR0_API NStmt_Return(NExp* exp);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_Block : public NStmt
 {
 public:
-    std::vector<NStmtPtr> stmts;
+    std::vector<NStmt*> stmts;
 public:
-    IR0_API NStmt_Block(std::vector<NStmtPtr>&& stmts);
+    IR0_API NStmt_Block(std::vector<NStmt*>&& stmts);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -206,75 +200,75 @@ public:
 class NStmt_Exp : public NStmt
 {
 public:
-    NExpPtr exp;
+    NExp* exp;
 public:
-    IR0_API NStmt_Exp(NExpPtr&& exp);
+    IR0_API NStmt_Exp(NExp* exp);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_Task : public NStmt
 {
 public:
-    std::shared_ptr<NLambdaDecl> lambdaDecl;
+    NLambdaDecl* lambdaDecl;
     std::vector<NArgument> captureArgs;
 public:
-    IR0_API NStmt_Task(std::shared_ptr<NLambdaDecl>&& lambdaDecl, std::vector<NArgument>&& captureArgs);
+    IR0_API NStmt_Task(NLambdaDecl* lambdaDecl, std::vector<NArgument>&& captureArgs);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_Await : public NStmt
 {
 public:
-    std::vector<NStmtPtr> body;
+    std::vector<NStmt*> body;
 public:
-    IR0_API NStmt_Await(std::vector<NStmtPtr>&& body);
+    IR0_API NStmt_Await(std::vector<NStmt*>&& body);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_Async : public NStmt
 {
 public:
-    std::shared_ptr<NLambdaDecl> lambdaDecl;
+    NLambdaDecl* lambdaDecl;
     std::vector<NArgument> captureArgs;
 public:
-    IR0_API NStmt_Async(std::shared_ptr<NLambdaDecl>&& lambdaDecl, std::vector<NArgument>&& captureArgs);
+    IR0_API NStmt_Async(NLambdaDecl* lambdaDecl, std::vector<NArgument>&& captureArgs);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_Foreach : public NStmt
 {
 public:
-    NExpPtr enumeratorExp;
-    RTypePtr itemType;
+    NExp* enumeratorExp;
+    RType* itemType;
     RName varName;
-    NExpPtr nextExp;
-    std::vector<NStmtPtr> body;
+    NExp* nextExp;
+    std::vector<NStmt*> body;
 public:
-    IR0_API NStmt_Foreach(NExpPtr&& enumeratorExp, RTypePtr&& itemType, const RName& varName, NExpPtr&& nextExp, std::vector<NStmtPtr>&& body);
+    IR0_API NStmt_Foreach(NExp* enumeratorExp, RType* itemType, const RName& varName, NExp* nextExp, std::vector<NStmt*>&& body);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_ForeachCast : public NStmt
 {
 public:
-    NExpPtr enumeratorExp;
-    RTypePtr itemType;
+    NExp* enumeratorExp;
+    RType* itemType;
     RName varName;
-    RTypePtr rawItemType;
-    NExpPtr nextExp;
-    NExpPtr castExp;
-    std::vector<NStmtPtr> body;
+    RType* rawItemType;
+    NExp* nextExp;
+    NExp* castExp;
+    std::vector<NStmt*> body;
 public:
-    IR0_API NStmt_ForeachCast(NExpPtr&& enumeratorExp, RTypePtr&& itemType, const RName& varName, RTypePtr&& rawItemType, NExpPtr&& nextExp, NExpPtr&& castExp, std::vector<NStmtPtr>&& body);
+    IR0_API NStmt_ForeachCast(NExp* enumeratorExp, RType* itemType, const RName& varName, RType* rawItemType, NExp* nextExp, NExp* castExp, std::vector<NStmt*>&& body);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_Yield : public NStmt
 {
 public:
-    NExpPtr value;
+    NExp* value;
 public:
-    IR0_API NStmt_Yield(NExpPtr&& value);
+    IR0_API NStmt_Yield(NExp* value);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -282,7 +276,7 @@ public:
 class NStmt_CallClassCtor : public NStmt
 {
 public:
-    std::shared_ptr<RClassCtorDecl> ctor;
+    RClassCtorDecl* ctor;
     std::vector<NArgument> args;
 public:
     IR0_API NStmt_CallClassCtor();
@@ -292,8 +286,8 @@ public:
 class NStmt_CallStructCtor : public NStmt
 {
 public:
-    std::shared_ptr<NStructCtorDecl> ctor;
-    RTypeArgumentsPtr typeArgs;
+    NStructCtorDecl* ctor;
+    RTypeArguments* typeArgs;
     std::vector<NArgument> args;
 public:
     IR0_API NStmt_CallStructCtor();
@@ -303,25 +297,25 @@ public:
 class NStmt_NullDirective : public NStmt
 {
 public:
-    NLocPtr loc;
+    NLoc* loc;
 public:
-    IR0_API NStmt_NullDirective(NLocPtr&& loc);
+    IR0_API NStmt_NullDirective(NLoc* loc);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_NotNullDirective : public NStmt
 {
 public:
-    NLocPtr loc;
+    NLoc* loc;
 public:
-    IR0_API NStmt_NotNullDirective(NLocPtr&& loc);
+    IR0_API NStmt_NotNullDirective(NLoc* loc);
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class NStmt_StaticNullDirective : public NStmt
 {
 public:
-    NLocPtr loc;
+    NLoc* loc;
 public:
     IR0_API NStmt_StaticNullDirective();
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
@@ -330,7 +324,7 @@ public:
 class NStmt_StaticNotNullDirective : public NStmt
 {
 public:
-    NLocPtr loc;
+    NLoc* loc;
 public:
     IR0_API NStmt_StaticNotNullDirective();
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }
@@ -339,7 +333,7 @@ public:
 class NStmt_StaticUnknownNullDirective : public NStmt
 {
 public:
-    NLocPtr loc;
+    NLoc* loc;
 public:
     IR0_API NStmt_StaticUnknownNullDirective();
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(*this); }

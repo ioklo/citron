@@ -20,7 +20,7 @@ public:
 
 class RMInterfaceDecl : public RInterfaceDecl
 {
-    std::shared_ptr<MInterfaceDecl> decl;
+    MInterfaceDecl* decl;
 };
 
 

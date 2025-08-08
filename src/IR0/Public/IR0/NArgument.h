@@ -6,16 +6,15 @@
 namespace Citron {
 
 class NExp;
-using NExpPtr = std::shared_ptr<NExp>;
 
 struct NArgument_Normal
 {
-    NExpPtr exp;
+    NExp* exp;
 };
 
 struct NArgument_Params
 {
-    NExpPtr exp;
+    NExp* exp;
     int elemCount;
 };
 

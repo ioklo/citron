@@ -42,6 +42,4 @@ public:
     virtual void Accept(NFuncDeclOuterVisitor& visitor) = 0;
 };
 
-using NFuncDeclOuterWPtr = std::weak_ptr<NFuncDeclOuter>;
-
 }

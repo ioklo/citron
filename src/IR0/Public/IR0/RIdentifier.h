@@ -10,13 +10,12 @@
 namespace Citron {
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
 
 struct RIdentifier
 {
     RName name;
     size_t typeParamCount;
-    std::vector<RTypePtr> paramIds;
+    std::vector<RType*> paramIds;
 
     bool operator==(const RIdentifier& other) const = default;
 };

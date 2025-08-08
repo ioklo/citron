@@ -15,14 +15,14 @@ class NEnumElemVarDecl
     , public REnumElemVarDecl
 {
 public:
-    std::weak_ptr<NEnumElemDecl> enumElem;
+    NEnumElemDecl* enumElem;
     std::string name;
 
-    RTypePtr declType; // lazy-init
+    RType* declType; // lazy-init
 
 public:
-    IR0_API NEnumElemVarDecl(std::weak_ptr<NEnumElemDecl> outer, const std::string& name);
-    IR0_API void InitDeclType(RTypePtr&& declType);
+    IR0_API NEnumElemVarDecl(NEnumElemDecl* outer, const std::string& name);
+    IR0_API void InitDeclType(RType* declType);
 
 public:
     // from NDecl
@@ -34,11 +34,11 @@ public:
     IR0_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RIdentifier GetIdentifier() override;
-    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
     // from REnumElemVarDecl
-    IR0_API RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) override;
 };
 
 }

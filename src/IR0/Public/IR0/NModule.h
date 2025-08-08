@@ -14,10 +14,10 @@ class NModule : public RModule
 {
 public:
     std::string name;
-    std::shared_ptr<NNamespaceDecl> rootNamespace;
+    NNamespaceDecl* rootNamespace;
 
 public:
-    IR0_API NModule(std::string&& name, std::shared_ptr<NNamespaceDecl>&& rootNamespace);
+    IR0_API NModule(std::string&& name, NNamespaceDecl* rootNamespace);
 };
 
 }

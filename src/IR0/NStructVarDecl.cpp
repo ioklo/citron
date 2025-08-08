@@ -10,20 +10,20 @@ using namespace std;
 
 namespace Citron {
 
-NStructVarDecl::NStructVarDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bStatic, std::string name)
-    : _struct(move(_struct))
+NStructVarDecl::NStructVarDecl(NStructDecl* _struct, RAccessor accessor, bool bStatic, std::string name)
+    : _struct(_struct)
     , accessor(accessor)
     , bStatic(bStatic)
     , name(move(name))
 {
 }
 
-void NStructVarDecl::InitDeclType(const RTypePtr& declType)
+void NStructVarDecl::InitDeclType(RType* declType)
 {
     this->declType = declType;
 }
 
-RTypePtr NStructVarDecl::GetUnboundDeclType()
+RType* NStructVarDecl::GetUnboundDeclType()
 {
     assert(declType);
     return declType;
@@ -31,12 +31,12 @@ RTypePtr NStructVarDecl::GetUnboundDeclType()
 
 NDecl* NStructVarDecl::GetNOuter()
 {
-    return _struct.lock().get();
+    return _struct;
 }
 
 RDecl* NStructVarDecl::GetROuter()
 {
-    return _struct.lock().get();
+    return _struct;
 }
 
 RIdentifier NStructVarDecl::GetIdentifier()
@@ -44,7 +44,7 @@ RIdentifier NStructVarDecl::GetIdentifier()
     return RIdentifier { RName_Normal(name), 0, {} };
 }
 
-optional<RMember> NStructVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NStructVarDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
@@ -55,7 +55,7 @@ optional<Citron::RMember> NStructVarDecl::ResolveIdentifier(const RName& name, s
     throw RuntimeFatalException();
 }
 
-RTypePtr NStructVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+RType* NStructVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     assert(declType != nullptr);
     return declType->Apply(typeArgs, factory);

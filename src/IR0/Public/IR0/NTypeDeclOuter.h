@@ -28,7 +28,4 @@ public:
     virtual void Accept(NTypeDeclOuterVisitor& visitor) = 0;
 };
 
-// 역링크이기 때문에 weak로 설정한다
-using NTypeDeclOuterWPtr = std::weak_ptr<NTypeDeclOuter>;
-
 }

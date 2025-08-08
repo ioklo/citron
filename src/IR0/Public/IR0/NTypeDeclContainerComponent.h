@@ -14,19 +14,19 @@ namespace Citron {
 class NTypeDeclContainerComponent
 {
 public:
-    std::vector<NTypeDeclPtr> types;
-    std::unordered_map<RIdentifier, NTypeDeclPtr> typeDict;
+    std::vector<NTypeDecl*> types;
+    std::unordered_map<RIdentifier, NTypeDecl*> typeDict;
 
 public:
     IR0_API NTypeDeclContainerComponent();
 
     IR0_API size_t GetTypeCount();
-    IR0_API NTypeDeclPtr GetType(int index);
-    IR0_API NTypeDeclPtr GetType(const RIdentifier& identifier);
-    IR0_API void AddType(NTypeDeclPtr&& typeDecl);
+    IR0_API NTypeDecl* GetType(int index);
+    IR0_API NTypeDecl* GetType(const RIdentifier& identifier);
+    IR0_API void AddType(NTypeDecl* typeDecl);
 
     // internal
-    std::optional<RMember> GetMemberType(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount);
+    std::optional<RMember> GetMemberType(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 }

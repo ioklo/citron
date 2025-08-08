@@ -8,33 +8,33 @@ using namespace std;
 
 namespace Citron {
 
-NStructDecl::NStructDecl(NTypeDeclOuterWPtr&& outer, RAccessor accessor, RName&& name, vector<string>&& typeParams)
-    : outer(move(outer)), accessor(accessor), name(move(name)), typeParams(move(typeParams))
+NStructDecl::NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, vector<string>&& typeParams)
+    : outer(outer), accessor(accessor), name(move(name)), typeParams(move(typeParams))
 {
 }
 
-void NStructDecl::InitBaseTypes(shared_ptr<RType_Struct>&& baseStruct, vector<shared_ptr<RType_Interface>>&& interfaces)
+void NStructDecl::InitBaseTypes(RType_Struct* baseStruct, vector<RType_Interface*>&& interfaces)
 {
-    oBaseTypes = BaseTypes { move(baseStruct), move(interfaces) };
+    oBaseTypes = BaseTypes{baseStruct, move(interfaces)};
 }
 
-void NStructDecl::AddCtor(std::shared_ptr<NStructCtorDecl>&& decl)
+void NStructDecl::AddCtor(NStructCtorDecl* decl)
 {
-    ctors.push_back(move(decl));
+    ctors.push_back(decl);
 }
 
-void NStructDecl::AddVar(std::shared_ptr<NStructVarDecl>&& decl)
+void NStructDecl::AddVar(NStructVarDecl* decl)
 {
-    vars.push_back(move(decl));
+    vars.push_back(decl);
 }
 
-shared_ptr<NStructCtorDecl> NStructDecl::GetUnboundTrivialCtor_NStructCtorDecl()
+NStructCtorDecl* NStructDecl::GetUnboundTrivialCtor_NStructCtorDecl()
 {
     if (trivialCtorIndex == -1) return nullptr;
     return ctors[trivialCtorIndex];
 }
 
-shared_ptr<RType_Struct> NStructDecl::GetUnboundBaseStruct()
+RType_Struct* NStructDecl::GetUnboundBaseStruct()
 {
     assert(oBaseTypes);
     return oBaseTypes->baseStruct;
@@ -42,19 +42,17 @@ shared_ptr<RType_Struct> NStructDecl::GetUnboundBaseStruct()
 
 NDecl* NStructDecl::GetNOuter()
 {
-    return outer.lock()->GetNDecl();
+    return outer->GetNDecl();
 }
 
-RMember NStructDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
+RMember NStructDecl::ToRMember(RTypeArguments* typeArgs)
 {
-    auto sharedStructDecl = dynamic_pointer_cast<NStructDecl>(sharedThis);
-    assert(sharedStructDecl);
-    return RMember_Struct(typeArgs, sharedStructDecl);
+    return RMember_Struct(typeArgs, this);
 }
 
 RDecl* NStructDecl::GetROuter()
 {
-    return outer.lock()->GetNDecl()->GetRDecl();
+    return outer->GetNDecl()->GetRDecl();
 }
 
 RIdentifier NStructDecl::GetIdentifier()
@@ -62,7 +60,7 @@ RIdentifier NStructDecl::GetIdentifier()
     return RIdentifier { name, typeParams.size(), {} };
 }
 
-optional<RMember> NStructDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     vector<RMember> candidates;
 
@@ -91,17 +89,14 @@ optional<RMember> NStructDecl::GetMember(const RTypeArgumentsPtr& typeArgs, cons
 
 optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
 {
-    auto sharedOuter = outer.lock();
-    assert(sharedOuter);
-
     auto typeArgs = MakeOpenTypeArgs(factory);
     if (auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
         return oMember;
 
-    return sharedOuter->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
-optional<RMember_StructVar> NStructDecl::GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
+optional<RMember_StructVar> NStructDecl::GetVar(RTypeArguments* typeArgs, const RName& name)
 {
     auto i = varsMap.find(name);
     if (i == varsMap.end()) return nullopt;
@@ -109,9 +104,9 @@ optional<RMember_StructVar> NStructDecl::GetVar(const RTypeArgumentsPtr& typeArg
     return RMember_StructVar(i->second, typeArgs);
 }
 
-vector<shared_ptr<RStructCtorDecl>> NStructDecl::GetUnboundCtors()
+vector<RStructCtorDecl*> NStructDecl::GetUnboundCtors()
 {
-    vector<shared_ptr<RStructCtorDecl>> result;
+    vector<RStructCtorDecl*> result;
     result.reserve(ctors.size());
 
     for(auto& ctor : ctors)

@@ -10,10 +10,7 @@
 namespace Citron {
 
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
-
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
 
 template<typename TDecl>
 struct DeclWithOuterTypeArgs;
@@ -35,9 +32,10 @@ class RFuncDecl;
 class RMember_Namespace
 {
 public:
-    std::shared_ptr<RNamespaceDecl> decl;
+    RNamespaceDecl* decl;
+
 public:
-    IR0_API RMember_Namespace(const std::shared_ptr<RNamespaceDecl>& decl);
+    IR0_API RMember_Namespace(RNamespaceDecl* decl);
 };
 
 class RMember_GlobalFuncs
@@ -54,10 +52,10 @@ public:
 class RMember_Class
 {
 public:
-    RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<RClassDecl> decl;
+    RTypeArguments* outerTypeArgs;
+    RClassDecl* decl;
 public:
-    IR0_API RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RClassDecl>& decl);
+    IR0_API RMember_Class(RTypeArguments* outerTypeArgs, RClassDecl* decl);
 };
 
 class RMember_ClassFuncs
@@ -73,21 +71,21 @@ public:
 class RMember_ClassVar
 {
 public:
-    std::shared_ptr<RClassVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    RClassVarDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IR0_API RMember_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API RMember_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs);
 };
 
 class RMember_Struct
 {
 public:
-    RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<RStructDecl> decl;
+    RTypeArguments* outerTypeArgs;
+    RStructDecl* decl;
 
 public:
-    IR0_API RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RStructDecl>& decl);
+    IR0_API RMember_Struct(RTypeArguments* outerTypeArgs, RStructDecl* decl);
 };
 
 class RMember_StructFuncs
@@ -104,52 +102,51 @@ public:
 class RMember_StructVar
 {
 public:
-    std::shared_ptr<RStructVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IR0_API RMember_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IR0_API RMember_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs);
 };
 
 class RMember_Enum
 {
 public:
-    RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<REnumDecl> decl;
+    RTypeArguments* outerTypeArgs;
+    REnumDecl* decl;
 
 public:
-    IR0_API RMember_Enum(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumDecl>& decl);
+    IR0_API RMember_Enum(RTypeArguments* outerTypeArgs, REnumDecl* decl);
 };
 
 class RMember_EnumElem
 {
 public:
-    RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<REnumElemDecl> decl;
+    RTypeArguments* outerTypeArgs;
+    REnumElemDecl* decl;
 
 public:
-    IR0_API RMember_EnumElem(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumElemDecl>& decl);
+    IR0_API RMember_EnumElem(RTypeArguments* outerTypeArgs, REnumElemDecl* decl);
 };
 
 class RMember_EnumElemVar
 {
 public:
-    RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<REnumElemVarDecl> decl;
+    RTypeArguments* outerTypeArgs;
+    REnumElemVarDecl* decl;
 
 public:
-    IR0_API RMember_EnumElemVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<REnumElemVarDecl>& decl);
+    IR0_API RMember_EnumElemVar(RTypeArguments* outerTypeArgs, REnumElemVarDecl* decl);
 };
 
 class RMember_LambdaVar
 {
 public:
-    RTypeArgumentsPtr outerTypeArgs;
-    std::shared_ptr<RLambdaVarDecl> decl;
+    RTypeArguments* outerTypeArgs;
+    RLambdaVarDecl* decl;
 
 public:
-    IR0_API RMember_LambdaVar(RTypeArgumentsPtr&& outerTypeArgs, std::shared_ptr<RLambdaVarDecl>&& decl);
-    IR0_API RMember_LambdaVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RLambdaVarDecl>& decl);
+    IR0_API RMember_LambdaVar(RTypeArguments* outerTypeArgs, RLambdaVarDecl* decl);
 };
 
 // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
@@ -171,19 +168,19 @@ public:
 class RMember_LocalVar
 {
 public:
-    RTypePtr type;
+    RType* type;
     std::string name;
 public:
-    IR0_API RMember_LocalVar(const RTypePtr& type, const std::string& name);
+    IR0_API RMember_LocalVar(RType* type, const std::string& name);
 };
 
 class RMember_ThisVar
 {
 public:
-    RTypePtr type;
+    RType* type;
 
 public:
-    IR0_API RMember_ThisVar(const RTypePtr& type);
+    IR0_API RMember_ThisVar(RType* type);
 };
 
 using RMember = std::variant<

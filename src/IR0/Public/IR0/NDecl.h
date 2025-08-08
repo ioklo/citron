@@ -56,6 +56,4 @@ public:
     virtual void Accept(NDeclVisitor& visitor) = 0;
 };
 
-using NDeclPtr = std::shared_ptr<NDecl>;
-
 }

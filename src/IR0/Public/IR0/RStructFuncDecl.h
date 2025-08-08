@@ -11,8 +11,6 @@ namespace Citron {
 class MStructFuncDecl;
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-
 class RTypeFactory;
 
 class RStructFuncDecl
@@ -21,7 +19,7 @@ class RStructFuncDecl
     , public RFuncDeclOuter
 {
 public:
-    virtual RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
+    virtual RType* GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
     virtual bool IsStatic() = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
@@ -31,7 +29,7 @@ public:
 
 class RMStructFuncDecl : public RStructFuncDecl
 {
-    std::shared_ptr<MStructFuncDecl> decl;
+    MStructFuncDecl* decl;
 };
 
 

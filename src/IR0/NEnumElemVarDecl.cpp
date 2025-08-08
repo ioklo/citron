@@ -9,25 +9,25 @@ using namespace std;
 
 namespace Citron {
 
-NEnumElemVarDecl::NEnumElemVarDecl(std::weak_ptr<NEnumElemDecl> enumElem, const std::string& name)
-    : enumElem(move(enumElem))
-    , name(name)
+NEnumElemVarDecl::NEnumElemVarDecl(NEnumElemDecl* enumElem, const std::string& name)
+    : enumElem{enumElem}
+    , name{name}
 {
 }
 
-void Citron::NEnumElemVarDecl::InitDeclType(RTypePtr&& declType)
+void Citron::NEnumElemVarDecl::InitDeclType(RType* declType)
 {
-    this->declType = move(declType);
+    this->declType = declType;
 }
 
 NDecl* NEnumElemVarDecl::GetNOuter()
 {
-    return enumElem.lock().get();
+    return enumElem;
 }
 
 RDecl* NEnumElemVarDecl::GetROuter()
 {
-    return enumElem.lock().get();
+    return enumElem;
 }
 
 RIdentifier NEnumElemVarDecl::GetIdentifier()
@@ -35,7 +35,7 @@ RIdentifier NEnumElemVarDecl::GetIdentifier()
     return RIdentifier { RName_Normal(name), 0, {} };
 }
 
-optional<RMember> NEnumElemVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NEnumElemVarDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
@@ -46,7 +46,7 @@ std::optional<RMember> NEnumElemVarDecl::ResolveIdentifier(const RName& name, si
     throw RuntimeFatalException();
 }
 
-RTypePtr NEnumElemVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+RType* NEnumElemVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     return declType->Apply(typeArgs, factory);
 }

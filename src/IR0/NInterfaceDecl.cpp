@@ -8,17 +8,17 @@ namespace Citron {
 
 NDecl* NInterfaceDecl::GetNOuter()
 {
-    return outer.lock()->GetNDecl();
+    return outer->GetNDecl();
 }
 
-RMember NInterfaceDecl::ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
+RMember NInterfaceDecl::ToRMember(RTypeArguments* typeArgs)
 {
     throw NotImplementedException();
 }
 
 RDecl* NInterfaceDecl::GetROuter()
 {
-    return outer.lock()->GetNDecl()->GetRDecl();
+    return outer->GetNDecl()->GetRDecl();
 }
 
 RIdentifier NInterfaceDecl::GetIdentifier()
@@ -26,7 +26,7 @@ RIdentifier NInterfaceDecl::GetIdentifier()
     return RIdentifier { name, typeParams.size(), {} };
 }
 
-optional<RMember> NInterfaceDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NInterfaceDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     throw NotImplementedException();
 }

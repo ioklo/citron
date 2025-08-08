@@ -23,8 +23,8 @@ public:
 
 class RMNamespaceDecl : public RNamespaceDecl
 {
-    std::shared_ptr<MNamespaceDecl> decl;
-    // std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    MNamespaceDecl* decl;
+    // std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 };
 
 } // namespace Citron

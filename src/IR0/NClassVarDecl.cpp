@@ -9,12 +9,12 @@ namespace Citron {
 
 NDecl* NClassVarDecl::GetNOuter()
 {
-    return _class.lock().get();
+    return _class;
 }
 
 RDecl* NClassVarDecl::GetROuter()
 {
-    return _class.lock().get();
+    return _class;
 }
 
 RIdentifier NClassVarDecl::GetIdentifier()
@@ -22,12 +22,12 @@ RIdentifier NClassVarDecl::GetIdentifier()
     return RIdentifier { name, 0, {} };
 }
 
-RTypePtr NClassVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+RType* NClassVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     return declType->Apply(typeArgs, factory);
 }
 
-optional<RMember> NClassVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NClassVarDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }

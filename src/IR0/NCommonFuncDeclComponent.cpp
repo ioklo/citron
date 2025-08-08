@@ -24,7 +24,7 @@ void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn,
     funcReturnAndParams = FuncReturnAndParams{move(funcReturn), move(funcParameters), bLastParameterVariadic};
 }
 
-void NCommonFuncDeclComponent::InitBody(vector<NStmtPtr>&& body)
+void NCommonFuncDeclComponent::InitBody(vector<NStmt*>&& body)
 {
     this->body = Body_Set(move(body));
 }
@@ -53,7 +53,7 @@ RFuncReturn NCommonFuncDeclComponent::GetUnboundFuncReturn()
     return funcReturnAndParams->funcReturn;
 }
 
-RTypePtr NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory)
+RType* NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     assert(funcReturnAndParams);
 
@@ -90,11 +90,11 @@ RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments& typeArgs, 
 }
 
 
-vector<RTypePtr> NCommonFuncDeclComponent::GetParamIds()
+vector<RType*> NCommonFuncDeclComponent::GetParamIds()
 {
     assert(funcReturnAndParams);
 
-    vector<RTypePtr> result;
+    vector<RType*> result;
     for (auto& param : funcReturnAndParams->funcParameters)
         result.push_back(param.type);
 

@@ -20,7 +20,7 @@ public:
 
 class RMEnumDecl : public REnumDecl
 {
-    std::shared_ptr<MEnumDecl> decl;
+    MEnumDecl* decl;
 };
 
 

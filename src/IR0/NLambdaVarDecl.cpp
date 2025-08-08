@@ -9,32 +9,32 @@ using namespace std;
 
 namespace Citron {
 
-NLambdaVarDecl::NLambdaVarDecl(const RTypePtr& type, const RName& name)
+NLambdaVarDecl::NLambdaVarDecl(RType* type, const RName& name)
     : type(type), name(name)
 {
 }
 
-void NLambdaVarDecl::InitLambda(const std::shared_ptr<NLambdaDecl>& lambda)
+void NLambdaVarDecl::InitLambda(NLambdaDecl* lambda)
 {
     this->lambda = lambda;
 }
 
-RTypePtr NLambdaVarDecl::GetUnboundDeclType()
+RType* NLambdaVarDecl::GetUnboundDeclType()
 {
     return type;
 }
 
 NDecl* NLambdaVarDecl::GetNOuter()
 {
-    return lambda.lock().get();
+    return lambda;
 }
 
 RDecl* NLambdaVarDecl::GetROuter()
 {
-    return lambda.lock().get();
+    return lambda;
 }
 
-RTypePtr NLambdaVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+RType* NLambdaVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
 {
     return type->Apply(typeArgs, factory);
 }
@@ -44,7 +44,7 @@ RIdentifier NLambdaVarDecl::GetIdentifier()
     return RIdentifier { name, 0, {} };
 }
 
-optional<RMember> NLambdaVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NLambdaVarDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }

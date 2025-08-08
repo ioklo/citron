@@ -7,8 +7,6 @@
 namespace Citron {
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-
 class RTypeFactory;
 
 class RLambdaVarDecl
@@ -16,8 +14,8 @@ class RLambdaVarDecl
 {
 public:
     virtual RName GetName() = 0;
-    virtual RTypePtr GetUnboundDeclType() = 0;
-    virtual RTypePtr GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
+    virtual RType* GetUnboundDeclType() = 0;
+    virtual RType* GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
 };
 

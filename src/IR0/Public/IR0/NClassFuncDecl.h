@@ -23,7 +23,7 @@ public:
     using RMemberType = RMember_ClassFuncs;
 
 public:
-    std::weak_ptr<NClassDecl> _class;
+    NClassDecl* _class;
     RAccessor accessor;
     RName name;
     std::vector<std::string> typeParams;
@@ -49,7 +49,7 @@ public:
     IR0_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     IR0_API RIdentifier GetIdentifier() override;
-    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
 
     // from RFuncDecl
@@ -59,7 +59,7 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RClassFuncDecl
-    RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
+    RType* GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
 };
 
 }

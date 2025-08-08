@@ -8,8 +8,8 @@ using namespace std;
 namespace Citron
 {
 
-NEnumDecl::NEnumDecl(NTypeDeclOuterWPtr outer, RAccessor accessor, RName name, std::vector<std::string> typeParams, size_t elemCount)
-    : outer(move(outer))
+NEnumDecl::NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, RName name, std::vector<std::string> typeParams, size_t elemCount)
+    : outer(outer)
     , accessor(accessor)
     , name(move(name))
     , typeParams(move(typeParams))
@@ -17,27 +17,25 @@ NEnumDecl::NEnumDecl(NTypeDeclOuterWPtr outer, RAccessor accessor, RName name, s
     elems.reserve(elemCount);
 }
 
-void NEnumDecl::AddElem(std::shared_ptr<NEnumElemDecl>&& elem)
+void NEnumDecl::AddElem(NEnumElemDecl* elem)
 {
     elems.push_back(elem);
-    elemsMap.emplace(elem->name, move(elem));
+    elemsMap.emplace(elem->name, elem);
 }
 
 NDecl* NEnumDecl::GetNOuter()
 {
-    return outer.lock()->GetNDecl();
+    return outer->GetNDecl();
 }
 
-RMember NEnumDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
-{
-    auto sharedEnumDecl = dynamic_pointer_cast<NEnumDecl>(sharedThis);
-    assert(sharedEnumDecl);
-    return RMember_Enum(typeArgs, sharedEnumDecl);
+RMember NEnumDecl::ToRMember(RTypeArguments* typeArgs)
+{   
+    return RMember_Enum(typeArgs, this);
 }
 
 RDecl* NEnumDecl::GetROuter()
 {
-    return outer.lock()->GetNDecl()->GetRDecl();
+    return outer->GetNDecl()->GetRDecl();
 }
 
 RIdentifier NEnumDecl::GetIdentifier()
@@ -45,7 +43,7 @@ RIdentifier NEnumDecl::GetIdentifier()
     return RIdentifier { name, typeParams.size(), {} };
 }
 
-optional<RMember> NEnumDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NEnumDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 

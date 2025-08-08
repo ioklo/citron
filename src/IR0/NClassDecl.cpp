@@ -11,12 +11,12 @@ namespace Citron {
 
 NDecl* NClassDecl::GetNOuter()
 {
-    return outer.lock()->GetNDecl();
+    return outer->GetNDecl();
 }
 
 RDecl* NClassDecl::GetROuter()
 {
-    return outer.lock()->GetNDecl()->GetRDecl();
+    return outer->GetNDecl()->GetRDecl();
 }
 
 RIdentifier NClassDecl::GetIdentifier()
@@ -24,14 +24,12 @@ RIdentifier NClassDecl::GetIdentifier()
     return RIdentifier { name, typeParams.size(), {} };
 }
 
-RMember NClassDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
-{
-    auto sharedClassDecl = dynamic_pointer_cast<NClassDecl>(sharedThis);
-    assert(sharedClassDecl);
-    return RMember_Class(typeArgs, sharedClassDecl);
+RMember NClassDecl::ToRMember(RTypeArguments* typeArgs)
+{   
+    return RMember_Class(typeArgs, this);
 }
 
-optional<RMember> NClassDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NClassDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     vector<RMember> candidates;
 
@@ -65,10 +63,10 @@ optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explic
     auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount);
     if (oMember) return oMember;
 
-    return outer.lock()->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
-optional<RMember_ClassVar> NClassDecl::GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
+optional<RMember_ClassVar> NClassDecl::GetVar(RTypeArguments* typeArgs, const RName& name)
 {
     auto i = varsMap.find(name);
     if (i == varsMap.end()) return nullopt;

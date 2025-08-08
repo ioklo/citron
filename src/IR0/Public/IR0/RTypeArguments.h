@@ -8,24 +8,20 @@
 namespace Citron {
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-
 class RTypeFactory;
 
 class RTypeArguments
 {
-    std::vector<RTypePtr> items;
+    std::vector<RType*> items;
 
 private:
     friend RTypeFactory;
-    RTypeArguments(const std::vector<RTypePtr>& items);
+    RTypeArguments(const std::vector<RType*>& items);
 
 public:
     IR0_API size_t GetCount();
-    IR0_API const RTypePtr& Get(int i);
-    IR0_API std::shared_ptr<RTypeArguments> Apply(RTypeArguments& typeArgs, RTypeFactory& typeFactory);
+    IR0_API RType* Get(int i);
+    IR0_API RTypeArguments* Apply(RTypeArguments& typeArgs, RTypeFactory& typeFactory);
 };
-
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 
 } // namespace Citron
