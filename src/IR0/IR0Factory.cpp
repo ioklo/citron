@@ -1,4 +1,4 @@
-#include "RTypeFactory.h"
+#include "IR0Factory.h"
 
 #include <cassert>
 
@@ -18,12 +18,12 @@ using namespace std;
 
 namespace Citron {
 
-RTypeFactory::RTypeFactory()
+IR0Factory::IR0Factory()
     : voidType{new RType_Void()}
 {
 }
 
-RType_NullableValue* RTypeFactory::MakeNullableValueType(RType* innerType)
+RType_NullableValue* IR0Factory::MakeNullableValueType(RType* innerType)
 {   
     auto i = nullableValueTypes.find(innerType);
 
@@ -38,7 +38,7 @@ RType_NullableValue* RTypeFactory::MakeNullableValueType(RType* innerType)
     return pNewType;
 }
 
-RType_NullableRef* RTypeFactory::MakeNullableRefType(RType* innerType)
+RType_NullableRef* IR0Factory::MakeNullableRefType(RType* innerType)
 {
     auto i = nullableRefTypes.find(innerType);
 
@@ -53,7 +53,7 @@ RType_NullableRef* RTypeFactory::MakeNullableRefType(RType* innerType)
     return pNewType;
 }
 
-RType_TypeVar* RTypeFactory::MakeTypeVarType(int index)
+RType_TypeVar* IR0Factory::MakeTypeVarType(int index)
 {
     auto i = typeVarTypes.find(index);
     if (i != typeVarTypes.end())
@@ -65,7 +65,7 @@ RType_TypeVar* RTypeFactory::MakeTypeVarType(int index)
     return pNewTypeVarType;
 }
 
-RType_Void* RTypeFactory::MakeVoidType()
+RType_Void* IR0Factory::MakeVoidType()
 {
     return voidType.get();
 }
@@ -73,7 +73,7 @@ RType_Void* RTypeFactory::MakeVoidType()
 // (a: int, b: string)과 (c: int, d: string)은 같은 타입처럼 써야 하는데, 멤버 이름이 달라서
 // 같은 타입이라고 하지 않고, 호환되는 타입이라고 하자
 // 대입같은걸 할때 호환타입도 같이 검색해야 한다
-RType_Tuple* RTypeFactory::MakeTupleType(vector<RTupleVar>&& vars)
+RType_Tuple* IR0Factory::MakeTupleType(vector<RTupleVar>&& vars)
 {
     auto i = tupleTypes.find(vars);
     if (i != tupleTypes.end())
@@ -87,7 +87,7 @@ RType_Tuple* RTypeFactory::MakeTupleType(vector<RTupleVar>&& vars)
     return pTupleType;
 }
 
-RType_Func* RTypeFactory::MakeFuncType(bool bLocal, RType* retType, vector<RType_Func::Parameter>&& params)
+RType_Func* IR0Factory::MakeFuncType(bool bLocal, RType* retType, vector<RType_Func::Parameter>&& params)
 {
     auto key = IR0::FuncTypeKey { bLocal, retType, params };
     auto i = funcTypes.find(key);
@@ -100,7 +100,7 @@ RType_Func* RTypeFactory::MakeFuncType(bool bLocal, RType* retType, vector<RType
     return pNewFuncType;
 }
 
-RType_LocalPtr* RTypeFactory::MakeLocalPtrType(RType* innerType)
+RType_LocalPtr* IR0Factory::MakeLocalPtrType(RType* innerType)
 {
     auto i = localPtrTypes.find(innerType);
     if (i != localPtrTypes.end())
@@ -112,7 +112,7 @@ RType_LocalPtr* RTypeFactory::MakeLocalPtrType(RType* innerType)
     return pNewType;
 }
 
-RType_BoxPtr* RTypeFactory::MakeBoxPtrType(RType* innerType)
+RType_BoxPtr* IR0Factory::MakeBoxPtrType(RType* innerType)
 {
     auto i = boxPtrTypes.find(innerType);
     if (i != boxPtrTypes.end())
@@ -125,7 +125,7 @@ RType_BoxPtr* RTypeFactory::MakeBoxPtrType(RType* innerType)
 }
 
 template<typename TDecl, typename TType, typename... TArgs>
-TType* RTypeFactory::MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TDecl* decl, RTypeArguments* typeArgs, TArgs&&... args)
+TType* IR0Factory::MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TDecl* decl, RTypeArguments* typeArgs, TArgs&&... args)
 {
     auto key = IR0::InstanceTypeKey<TDecl> { decl, typeArgs };
     auto i = instanceTypes.find(key);
@@ -138,37 +138,37 @@ TType* RTypeFactory::MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>&
     return pNewType;
 }
 
-RType_Class* RTypeFactory::MakeClassType(RClassDecl* decl, RTypeArguments* typeArgs)
+RType_Class* IR0Factory::MakeClassType(RClassDecl* decl, RTypeArguments* typeArgs)
 {
     return MakeInstanceType(classTypes, decl, typeArgs);
 }
 
-RType_Struct* RTypeFactory::MakeStructType(RStructDecl* decl, RTypeArguments* typeArgs)
+RType_Struct* IR0Factory::MakeStructType(RStructDecl* decl, RTypeArguments* typeArgs)
 {
     return MakeInstanceType(structTypes, decl, typeArgs);
 }
 
-RType_Enum* RTypeFactory::MakeEnumType(REnumDecl* decl, RTypeArguments* typeArgs)
+RType_Enum* IR0Factory::MakeEnumType(REnumDecl* decl, RTypeArguments* typeArgs)
 {
     return MakeInstanceType(enumTypes, decl, typeArgs);
 }
 
-RType_EnumElem* RTypeFactory::MakeEnumElemType(REnumElemDecl* decl, RTypeArguments* typeArgs)
+RType_EnumElem* IR0Factory::MakeEnumElemType(REnumElemDecl* decl, RTypeArguments* typeArgs)
 {
     return MakeInstanceType(enumElemTypes, decl, typeArgs);
 }
 
-RType_Interface* RTypeFactory::MakeInterfaceType(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal)
+RType_Interface* IR0Factory::MakeInterfaceType(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal)
 {
     return MakeInstanceType(interfaceTypes, decl, typeArgs, bLocal);
 }
 
-RType_Lambda* RTypeFactory::MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeArgs)
+RType_Lambda* IR0Factory::MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeArgs)
 {
     return MakeInstanceType(lambdaTypes, decl, typeArgs);
 }
 
-RTypeArguments* RTypeFactory::MakeTypeArguments(const vector<RType*>& items)
+RTypeArguments* IR0Factory::MakeTypeArguments(const vector<RType*>& items)
 {
     auto key = IR0::TypeArgumentsKey{ items };
 
@@ -182,7 +182,7 @@ RTypeArguments* RTypeFactory::MakeTypeArguments(const vector<RType*>& items)
     return pv;
 }
 
-RTypeArguments* RTypeFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1)
+RTypeArguments* IR0Factory::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1)
 {
     auto items = typeArgs0.items;
     items.insert(items.end(), typeArgs1.items.begin(), typeArgs1.items.end());
@@ -198,28 +198,28 @@ RTypeArguments* RTypeFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RTyp
     return pv;
 }
 
-RType* RTypeFactory::MakeBoolType()
+RType* IR0Factory::MakeBoolType()
 {   
     return boolType.get();
 }
 
-RType* RTypeFactory::MakeIntType()
+RType* IR0Factory::MakeIntType()
 {
     return intType.get();
 }
 
-RType* RTypeFactory::MakeStringType()
+RType* IR0Factory::MakeStringType()
 {
     return stringType.get();
 }
 
-RType* RTypeFactory::MakeListType(RType* itemType)
+RType* IR0Factory::MakeListType(RType* itemType)
 {
     auto typeArgs = MakeTypeArguments({ itemType });
     return MakeClassType(listDecl.get(), typeArgs);
 }
 
-bool RTypeFactory::IsListType(RType* type, RType** outItemType)
+bool IR0Factory::IsListType(RType* type, RType** outItemType)
 {
     auto* classType = dynamic_cast<RType_Class*>(type);
     if (!classType) return false;
@@ -231,7 +231,7 @@ bool RTypeFactory::IsListType(RType* type, RType** outItemType)
     return true;
 }
 
-NNamespaceDecl* RTypeFactory::NewRootNamespaceDecl()
+NNamespaceDecl* IR0Factory::NewRootNamespaceDecl()
 {
     // root namespace면 
     auto group = GetNamespaceDeclGroup({});
@@ -243,7 +243,7 @@ NNamespaceDecl* RTypeFactory::NewRootNamespaceDecl()
     return pNewDecl;
 }
 
-NNamespaceDecl* RTypeFactory::NewChildNamespaceDecl(NNamespaceDecl* outer, const string& name)
+NNamespaceDecl* IR0Factory::NewChildNamespaceDecl(NNamespaceDecl* outer, const string& name)
 {
     assert(outer && !name.empty());
 
@@ -279,7 +279,7 @@ NNamespaceDecl* RTypeFactory::NewChildNamespaceDecl(NNamespaceDecl* outer, const
     return pNewDecl;
 }
 
-RNamespaceDeclGroup* RTypeFactory::GetNamespaceDeclGroup(const std::vector<std::string>& name)
+RNamespaceDeclGroup* IR0Factory::GetNamespaceDeclGroup(const std::vector<std::string>& name)
 {
     auto i = nsGroupsMap.find(name);
     if (i != nsGroupsMap.end())

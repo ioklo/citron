@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 #include "RMember.h"
 #include "NDecl.h"
@@ -11,12 +10,12 @@ class NTypeDeclVisitor
 {
 public:
     virtual ~NTypeDeclVisitor() {}
-    virtual void Visit(NClassDecl& typeDecl) = 0;
-    virtual void Visit(NStructDecl& typeDecl) = 0;
-    virtual void Visit(NEnumDecl& typeDecl) = 0;
-    virtual void Visit(NEnumElemDecl& typeDecl) = 0;
-    virtual void Visit(NInterfaceDecl& typeDecl) = 0;
-    virtual void Visit(NLambdaDecl& typeDecl) = 0;
+    virtual void Visit(NClassDecl* typeDecl) = 0;
+    virtual void Visit(NStructDecl* typeDecl) = 0;
+    virtual void Visit(NEnumDecl* typeDecl) = 0;
+    virtual void Visit(NEnumElemDecl* typeDecl) = 0;
+    virtual void Visit(NInterfaceDecl* typeDecl) = 0;
+    virtual void Visit(NLambdaDecl* typeDecl) = 0;
 };
 
 class NTypeDecl

@@ -4,7 +4,7 @@
 
 #include "Infra/Unreachable.h"
 
-#include "RTypeFactory.h"
+#include "IR0Factory.h"
 #include "RClassCtorDecl.h"
 #include "RClassFuncDecl.h"
 #include "RClassVarDecl.h"
@@ -25,7 +25,7 @@ NExp_Load::NExp_Load(NLoc* loc)
 {
 }
 
-RType* NExp_Load::GetType(RTypeFactory& factory)
+RType* NExp_Load::GetType(IR0Factory& factory)
 {
     return loc->GetType(factory);
 }
@@ -35,7 +35,7 @@ NExp_Assign::NExp_Assign(NLoc* dest, NExp* src)
 {
 }
 
-RType* NExp_Assign::GetType(RTypeFactory& factory)
+RType* NExp_Assign::GetType(IR0Factory& factory)
 {
     return dest->GetType(factory);
 }
@@ -45,7 +45,7 @@ NExp_Box::NExp_Box(NExp* innerExp)
 {
 }
 
-RType* NExp_Box::GetType(RTypeFactory& factory)
+RType* NExp_Box::GetType(IR0Factory& factory)
 {
     auto* innerType = innerExp->GetType(factory);
     return factory.MakeBoxPtrType(innerType);
@@ -56,7 +56,7 @@ NExp_StaticBoxRef::NExp_StaticBoxRef(NLoc* loc)
 {
 }
 
-RType* NExp_StaticBoxRef::GetType(RTypeFactory& factory)
+RType* NExp_StaticBoxRef::GetType(IR0Factory& factory)
 {
     return factory.MakeBoxPtrType(loc->GetType(factory));
 }
@@ -66,7 +66,7 @@ NExp_ClassMemberBoxRef::NExp_ClassMemberBoxRef(NLoc* holder, RClassVarDecl* decl
 {
 }
 
-RType* NExp_ClassMemberBoxRef::GetType(RTypeFactory& factory)
+RType* NExp_ClassMemberBoxRef::GetType(IR0Factory& factory)
 {
     auto* declType = decl->GetDeclType(*typeArgs, factory);
     return factory.MakeBoxPtrType(declType);
@@ -77,7 +77,7 @@ NExp_StructIndirectMemberBoxRef::NExp_StructIndirectMemberBoxRef(NLoc* holder, R
 {
 }
 
-RType* NExp_StructIndirectMemberBoxRef::GetType(RTypeFactory& factory)
+RType* NExp_StructIndirectMemberBoxRef::GetType(IR0Factory& factory)
 {
     auto* declType = decl->GetDeclType(*typeArgs, factory);
     return factory.MakeBoxPtrType(declType);
@@ -88,7 +88,7 @@ NExp_StructMemberBoxRef::NExp_StructMemberBoxRef(NLoc* parent, RStructVarDecl* d
 {
 }
 
-RType* NExp_StructMemberBoxRef::GetType(RTypeFactory& factory)
+RType* NExp_StructMemberBoxRef::GetType(IR0Factory& factory)
 {
     auto* declType = decl->GetDeclType(*typeArgs, factory);
 
@@ -100,7 +100,7 @@ NExp_LocalRef::NExp_LocalRef(NLoc* innerLoc)
 {
 }
 
-RType* NExp_LocalRef::GetType(RTypeFactory& factory)
+RType* NExp_LocalRef::GetType(IR0Factory& factory)
 {
     auto* innerLocType = innerLoc->GetType(factory);
     return factory.MakeLocalPtrType(innerLocType);
@@ -111,7 +111,7 @@ NExp_CastBoxedLambdaToFunc::NExp_CastBoxedLambdaToFunc(NExp* exp, RType_Func* fu
 {
 }
 
-RType* NExp_CastBoxedLambdaToFunc::GetType(RTypeFactory& factory)
+RType* NExp_CastBoxedLambdaToFunc::GetType(IR0Factory& factory)
 {
     return funcType;
 }
@@ -121,7 +121,7 @@ NExp_BoolLiteral::NExp_BoolLiteral(bool value)
 {
 }
 
-RType* NExp_BoolLiteral::GetType(RTypeFactory& factory)
+RType* NExp_BoolLiteral::GetType(IR0Factory& factory)
 {
     return factory.MakeBoolType();
 }
@@ -131,7 +131,7 @@ NExp_IntLiteral::NExp_IntLiteral(int value)
 {
 }
 
-RType* NExp_IntLiteral::GetType(RTypeFactory& factory)
+RType* NExp_IntLiteral::GetType(IR0Factory& factory)
 {
     return factory.MakeIntType();
 }
@@ -152,7 +152,7 @@ NExp_String::NExp_String(vector<NStringExpElement>&& elements)
 {
 }
 
-RType* NExp_String::GetType(RTypeFactory& factory)
+RType* NExp_String::GetType(IR0Factory& factory)
 {
     return factory.MakeStringType();
 }
@@ -162,7 +162,7 @@ NExp_List::NExp_List(vector<NExp*>&& elems, RType* itemType)
 {
 }
 
-RType* NExp_List::GetType(RTypeFactory& factory)
+RType* NExp_List::GetType(IR0Factory& factory)
 {
     return factory.MakeListType(itemType);
 }
@@ -172,7 +172,7 @@ NExp_ListIterator::NExp_ListIterator(NLoc* listLoc, RType* iteratorType)
 {
 }
 
-RType* NExp_ListIterator::GetType(RTypeFactory& factory)
+RType* NExp_ListIterator::GetType(IR0Factory& factory)
 {
     return type;
 }
@@ -182,7 +182,7 @@ NExp_CallInternalUnaryOperator::NExp_CallInternalUnaryOperator(NInternalUnaryOpe
 {
 }
 
-RType* NExp_CallInternalUnaryOperator::GetType(RTypeFactory& factory)
+RType* NExp_CallInternalUnaryOperator::GetType(IR0Factory& factory)
 {
     switch (op)
     {
@@ -200,7 +200,7 @@ NExp_CallInternalUnaryAssignOperator::NExp_CallInternalUnaryAssignOperator(NInte
 {
 }
 
-RType* NExp_CallInternalUnaryAssignOperator::GetType(RTypeFactory& factory)
+RType* NExp_CallInternalUnaryAssignOperator::GetType(IR0Factory& factory)
 {
     switch(op)
     {
@@ -215,11 +215,11 @@ RType* NExp_CallInternalUnaryAssignOperator::GetType(RTypeFactory& factory)
 }
 
 NExp_CallInternalBinaryOperator::NExp_CallInternalBinaryOperator(NInternalBinaryOperator op, NExp* operand0, NExp* operand1)
-    : op(op), operand0(move(operand0)), operand1(move(operand1))
+    : op(op), operand0(operand0), operand1(operand1)
 {
 }
 
-RType* NExp_CallInternalBinaryOperator::GetType(RTypeFactory& factory)
+RType* NExp_CallInternalBinaryOperator::GetType(IR0Factory& factory)
 {
     switch(op)
     {
@@ -257,7 +257,7 @@ NExp_CallGlobalFunc::NExp_CallGlobalFunc(RGlobalFuncDecl* funcDecl, RTypeArgumen
 {
 }
 
-RType* NExp_CallGlobalFunc::GetType(RTypeFactory& factory)
+RType* NExp_CallGlobalFunc::GetType(IR0Factory& factory)
 {
     return funcDecl->GetReturnType(*typeArgs, factory);
 }
@@ -267,7 +267,7 @@ NExp_NewClass::NExp_NewClass(RClassCtorDecl* ctorDecl, RTypeArguments* typeArgs,
 {
 }
 
-RType* NExp_NewClass::GetType(RTypeFactory& factory)
+RType* NExp_NewClass::GetType(IR0Factory& factory)
 {
     auto classDecl = ctorDecl->GetClassDecl();
     assert(classDecl);
@@ -282,7 +282,7 @@ NExp_CallClassFunc::NExp_CallClassFunc(RClassFuncDecl* decl, RTypeArguments* typ
 {
 }
 
-RType* NExp_CallClassFunc::GetType(RTypeFactory& factory)
+RType* NExp_CallClassFunc::GetType(IR0Factory& factory)
 {
     return decl->GetReturnType(*typeArgs, factory);
 }
@@ -292,7 +292,7 @@ NExp_CastClass::NExp_CastClass(NExp* src, RType* classType)
 {
 }
 
-RType* NExp_CastClass::GetType(RTypeFactory& factory)
+RType* NExp_CastClass::GetType(IR0Factory& factory)
 {
     return classType;
 }
@@ -302,7 +302,7 @@ NExp_NewStruct::NExp_NewStruct(RStructCtorDecl* ctor, RTypeArguments* typeArgs, 
 {
 }
 
-RType* NExp_NewStruct::GetType(RTypeFactory& factory)
+RType* NExp_NewStruct::GetType(IR0Factory& factory)
 {
     auto structDecl = ctor->GetStructDecl();
     return factory.MakeStructType(structDecl, typeArgs);
@@ -313,7 +313,7 @@ NExp_CallStructFunc::NExp_CallStructFunc(RStructFuncDecl* decl, RTypeArguments* 
 {
 }
 
-RType* NExp_CallStructFunc::GetType(RTypeFactory& factory)
+RType* NExp_CallStructFunc::GetType(IR0Factory& factory)
 {
     return decl->GetReturnType(*typeArgs, factory);
 }
@@ -323,7 +323,7 @@ NExp_NewEnumElem::NExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* 
 {
 }
 
-RType* NExp_NewEnumElem::GetType(RTypeFactory& factory)
+RType* NExp_NewEnumElem::GetType(IR0Factory& factory)
 {
     return factory.MakeEnumElemType(enumElemDecl, typeArgs);
 }
@@ -333,7 +333,7 @@ NExp_CastEnumElemToEnum::NExp_CastEnumElemToEnum(NExp* src, RType* enumType)
 {
 }
 
-RType* NExp_CastEnumElemToEnum::GetType(RTypeFactory& factory)
+RType* NExp_CastEnumElemToEnum::GetType(IR0Factory& factory)
 {
     return enumType;
 }
@@ -343,7 +343,7 @@ NExp_NullableValueNullLiteral::NExp_NullableValueNullLiteral(RType* innerType)
 {
 }
 
-RType* NExp_NullableValueNullLiteral::GetType(RTypeFactory& factory)
+RType* NExp_NullableValueNullLiteral::GetType(IR0Factory& factory)
 {
     return factory.MakeNullableValueType(innerType);
 }
@@ -353,7 +353,7 @@ NExp_NullableRefNullLiteral::NExp_NullableRefNullLiteral(RType* innerType)
 {
 }
 
-RType* NExp_NullableRefNullLiteral::GetType(RTypeFactory& factory)
+RType* NExp_NullableRefNullLiteral::GetType(IR0Factory& factory)
 {
     return factory.MakeNullableRefType(innerType);
 }
@@ -363,7 +363,7 @@ NExp_NewNullable::NExp_NewNullable(NExp* innerExp)
 {
 }
 
-RType* NExp_NewNullable::GetType(RTypeFactory& factory)
+RType* NExp_NewNullable::GetType(IR0Factory& factory)
 {
     return factory.MakeNullableValueType(innerExp->GetType(factory));
 }
@@ -373,7 +373,7 @@ NExp_Lambda::NExp_Lambda(NLambdaDecl* lambdaDecl, RTypeArguments* typeArgs, cons
 {
 }
 
-RType* NExp_Lambda::GetType(RTypeFactory& factory)
+RType* NExp_Lambda::GetType(IR0Factory& factory)
 {
     return factory.MakeLambdaType(lambdaDecl, typeArgs);
 }
@@ -383,7 +383,7 @@ NExp_CallLambda::NExp_CallLambda(RLambdaDecl* lambdaDecl, RTypeArguments* typeAr
 {
 }
 
-RType* NExp_CallLambda::GetType(RTypeFactory& factory)
+RType* NExp_CallLambda::GetType(IR0Factory& factory)
 {
     return lambdaDecl->GetReturnType(*typeArgs, factory);
 }
@@ -393,7 +393,7 @@ NExp_InlineBlock::NExp_InlineBlock(const vector<NStmt*>& stmts, RType* returnTyp
 {
 }
 
-RType* NExp_InlineBlock::GetType(RTypeFactory& factory)
+RType* NExp_InlineBlock::GetType(IR0Factory& factory)
 {
     return returnType;
 }
@@ -403,7 +403,7 @@ NExp_ClassIsClass::NExp_ClassIsClass(NExp* exp, RType* classType)
 {
 }
 
-RType* NExp_ClassIsClass::GetType(RTypeFactory& factory)
+RType* NExp_ClassIsClass::GetType(IR0Factory& factory)
 {
     return factory.MakeBoolType();
 }
@@ -413,7 +413,7 @@ NExp_ClassAsClass::NExp_ClassAsClass(NExp* exp, RType* classType)
 {
 }
 
-RType* NExp_ClassAsClass::GetType(RTypeFactory& factory)
+RType* NExp_ClassAsClass::GetType(IR0Factory& factory)
 {    
     return factory.MakeNullableRefType(classType);
 }
@@ -423,7 +423,7 @@ NExp_ClassIsInterface::NExp_ClassIsInterface(NExp* exp, RType* interfaceType)
 {
 }
 
-RType* NExp_ClassIsInterface::GetType(RTypeFactory& factory)
+RType* NExp_ClassIsInterface::GetType(IR0Factory& factory)
 {
     return factory.MakeBoolType();
 }
@@ -433,7 +433,7 @@ NExp_ClassAsInterface::NExp_ClassAsInterface(NExp* exp, RType* interfaceType)
 {
 }
 
-RType* NExp_ClassAsInterface::GetType(RTypeFactory& factory)
+RType* NExp_ClassAsInterface::GetType(IR0Factory& factory)
 {
     return factory.MakeNullableRefType(interfaceType);
 }
@@ -443,7 +443,7 @@ NExp_InterfaceIsClass::NExp_InterfaceIsClass(NExp* exp, RType* classType)
 {
 }
 
-RType* NExp_InterfaceIsClass::GetType(RTypeFactory& factory)
+RType* NExp_InterfaceIsClass::GetType(IR0Factory& factory)
 {
     return factory.MakeBoolType();
 }
@@ -453,7 +453,7 @@ NExp_InterfaceAsClass::NExp_InterfaceAsClass(NExp* exp, RType* classType)
 {
 }
 
-RType* NExp_InterfaceAsClass::GetType(RTypeFactory& factory)
+RType* NExp_InterfaceAsClass::GetType(IR0Factory& factory)
 {
     return factory.MakeNullableRefType(classType);
 }
@@ -463,7 +463,7 @@ NExp_InterfaceIsInterface::NExp_InterfaceIsInterface(NExp* exp, RType* interface
 {
 }
 
-RType* NExp_InterfaceIsInterface::GetType(RTypeFactory& factory)
+RType* NExp_InterfaceIsInterface::GetType(IR0Factory& factory)
 {
     return factory.MakeBoolType();
 }
@@ -473,7 +473,7 @@ NExp_InterfaceAsInterface::NExp_InterfaceAsInterface(NExp* exp, RType* interface
 {
 }
 
-RType* NExp_InterfaceAsInterface::GetType(RTypeFactory& factory)
+RType* NExp_InterfaceAsInterface::GetType(IR0Factory& factory)
 {
     return factory.MakeNullableRefType(interfaceType);
 }
@@ -483,7 +483,7 @@ NExp_EnumIsEnumElem::NExp_EnumIsEnumElem(NExp* exp, RType* enumElemType)
 {
 }
 
-RType* NExp_EnumIsEnumElem::GetType(RTypeFactory& factory)
+RType* NExp_EnumIsEnumElem::GetType(IR0Factory& factory)
 {
     return factory.MakeBoolType();
 }
@@ -493,7 +493,7 @@ NExp_EnumAsEnumElem::NExp_EnumAsEnumElem(NExp* exp, RType* enumElemType)
 {
 }
 
-RType* NExp_EnumAsEnumElem::GetType(RTypeFactory& factory)
+RType* NExp_EnumAsEnumElem::GetType(IR0Factory& factory)
 {
     return factory.MakeNullableValueType(enumElemType);
 }

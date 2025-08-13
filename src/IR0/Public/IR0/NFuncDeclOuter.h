@@ -1,8 +1,6 @@
 #pragma once
 
 #include <variant>
-#include <memory>
-
 
 namespace Citron
 {
@@ -22,15 +20,15 @@ class NFuncDeclOuterVisitor
 {
 public:
     virtual ~NFuncDeclOuterVisitor() {}
-    virtual void Visit(NNamespaceDecl& outer) = 0;
-    virtual void Visit(NGlobalFuncDecl& outer) = 0;
-    virtual void Visit(NClassDecl& outer) = 0;
-    virtual void Visit(NClassCtorDecl& outer) = 0;
-    virtual void Visit(NClassFuncDecl& outer) = 0;
-    virtual void Visit(NStructDecl& outer) = 0;
-    virtual void Visit(NStructCtorDecl& outer) = 0;
-    virtual void Visit(NStructFuncDecl& outer) = 0;
-    virtual void Visit(NLambdaDecl& outer) = 0;
+    virtual void Visit(NNamespaceDecl* outer) = 0;
+    virtual void Visit(NGlobalFuncDecl* outer) = 0;
+    virtual void Visit(NClassDecl* outer) = 0;
+    virtual void Visit(NClassCtorDecl* outer) = 0;
+    virtual void Visit(NClassFuncDecl* outer) = 0;
+    virtual void Visit(NStructDecl* outer) = 0;
+    virtual void Visit(NStructCtorDecl* outer) = 0;
+    virtual void Visit(NStructFuncDecl* outer) = 0;
+    virtual void Visit(NLambdaDecl* outer) = 0;
 };
 
 // 이것은 weak_ptr로 선언하도록 한다

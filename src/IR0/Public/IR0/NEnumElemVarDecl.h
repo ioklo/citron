@@ -1,8 +1,6 @@
 #pragma once
-
 #include "IR0Config.h"
 
-#include <memory>
 #include <optional>
 
 #include "REnumElemVarDecl.h"
@@ -28,17 +26,17 @@ public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NDecl* GetNOuter() override;
-    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from RDecl
     IR0_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory) override;
 
     // from REnumElemVarDecl
-    IR0_API RType* GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* GetDeclType(RTypeArguments& typeArgs, IR0Factory& factory) override;
 };
 
 }

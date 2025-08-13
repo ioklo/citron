@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <optional>
 
 #include "RDecl.h"
@@ -25,8 +24,8 @@ public:
     virtual bool IsStandalone() = 0;
     virtual std::vector<RFuncParameter> GetUnboundCtorParams() = 0;
 
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RTypeDeclVisitor& visitor) final { visitor.Visit(*this); }
+    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RTypeDeclVisitor& visitor) final { visitor.Visit(this); }
 };
 
 class RMEnumElemDecl : public REnumElemDecl

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <memory>
 
 #include "RNames.h"
 
@@ -9,7 +8,7 @@ namespace Citron {
 
 class RType;
 class RTypeArguments;
-class RTypeFactory;
+class IR0Factory;
 
 struct RFuncParameter
 {
@@ -17,7 +16,7 @@ struct RFuncParameter
     RType* type; // 람다의 경우 지정이 안될 수 있다
     RName name;
 
-    RFuncParameter Apply(RTypeArguments& typeArgs, RTypeFactory& typeFactory);
+    RFuncParameter Apply(RTypeArguments& typeArgs, IR0Factory& typeFactory);
 };
 
 

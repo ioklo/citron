@@ -1,7 +1,6 @@
 #pragma once
 
 #include <variant>
-#include <memory>
 
 namespace Citron {
 

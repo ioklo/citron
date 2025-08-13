@@ -49,9 +49,9 @@ class MStructDecl
     std::optional<BaseTypes> oBaseTypes;
 
 public:
-    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(MTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(MTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(MTypeDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(MTypeDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 };
 
 }

@@ -1,6 +1,6 @@
 #pragma once
-
 #include "IR0Config.h"
+
 #include <unordered_map>
 #include <memory>
 
@@ -10,7 +10,7 @@ namespace Citron {
 
 class RNamespaceDeclGroup;
 class RTypeArguments;
-class RTypeFactory;
+class IR0Factory;
 
 class NNamespaceDecl;
 
@@ -88,7 +88,7 @@ struct TypeArgumentsKeyHasher
 
 // TODO: weak처리
 // flyweight
-class RTypeFactory
+class IR0Factory
 {
     // inner type -> nullable type
     std::unordered_map<RType*, std::unique_ptr<RType_NullableValue>> nullableValueTypes;
@@ -124,7 +124,7 @@ class RTypeFactory
     std::unordered_map<std::vector<std::string>, std::unique_ptr<RNamespaceDeclGroup>> nsGroupsMap;
 
 public:
-    IR0_API RTypeFactory();
+    IR0_API IR0Factory();
 
     IR0_API RType_NullableValue* MakeNullableValueType(RType* innerType);
     IR0_API RType_NullableRef* MakeNullableRefType(RType* innerType);
@@ -141,7 +141,6 @@ public:
     IR0_API RType_EnumElem* MakeEnumElemType(REnumElemDecl* decl, RTypeArguments* typeArgs);
     IR0_API RType_Interface* MakeInterfaceType(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal);
     IR0_API RType_Lambda* MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeArgs);
-
 
     IR0_API RTypeArguments* MakeTypeArguments(const std::vector<RType*>& items);
     IR0_API RTypeArguments* MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1);
@@ -163,6 +162,6 @@ private:
     TType* MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TDecl* decl, RTypeArguments* typeArgs, TArgs&&... args);
 };
 
-using RTypeFactoryPtr = std::unique_ptr<RTypeFactory>;
+using RTypeFactoryPtr = std::unique_ptr<IR0Factory>;
 
 } // namespace Citron

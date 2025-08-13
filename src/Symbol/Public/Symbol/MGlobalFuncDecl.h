@@ -33,9 +33,9 @@ class MGlobalFuncDecl
     std::optional<FuncReturnAndParams> funcReturnAndParams;
 
 public:
-    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(this); }
     void Accept(MBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(MFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MFuncDeclVisitor& visitor) override { visitor.Visit(this); }
 };
 
 }

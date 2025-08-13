@@ -31,8 +31,8 @@ public:
     using MNamespaceDeclContainerComponent::AddNamespace;
     using MNamespaceDeclContainerComponent::GetNamespace;
 
-    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(MTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(MTypeDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 };
 
 }

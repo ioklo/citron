@@ -29,8 +29,8 @@ class MEnumDecl
     // std::unordered_map<std::string, int> elemsByName;
 
 public:
-    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(MTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(MTypeDeclVisitor& visitor) override { visitor.Visit(this); }
 };
 
 }

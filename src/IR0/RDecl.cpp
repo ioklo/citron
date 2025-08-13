@@ -3,7 +3,7 @@
 #include "Infra/Exceptions.h"
 #include "Infra/Unreachable.h"
 
-#include "RTypeFactory.h"
+#include "IR0Factory.h"
 
 using namespace std;
 
@@ -56,7 +56,7 @@ size_t RDecl::GetAllTypeParamCount()
     return outer->GetAllTypeParamCount() + GetTypeParamCount();
 }
 
-RTypeArguments* RDecl::MakeOpenTypeArgs(RTypeFactory& factory)
+RTypeArguments* RDecl::MakeOpenTypeArgs(IR0Factory& factory)
 {
     // gather reversely
     auto allTypeParamCount = GetAllTypeParamCount();    

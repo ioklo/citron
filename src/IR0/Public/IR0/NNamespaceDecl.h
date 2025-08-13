@@ -4,7 +4,6 @@
 
 #include <string>
 #include <optional>
-#include <memory>
 
 #include "RNamespaceDecl.h"
 
@@ -39,11 +38,11 @@ private:
     RNamespaceDeclGroup* group;
 
 public:
-    IR0_API static NNamespaceDecl* MakeRoot(RTypeFactory& factory);
-    IR0_API static NNamespaceDecl* MakeChild(NNamespaceDecl* outer, const std::string& name, RTypeFactory& factory);
+    IR0_API static NNamespaceDecl* MakeRoot(IR0Factory& factory);
+    IR0_API static NNamespaceDecl* MakeChild(NNamespaceDecl* outer, const std::string& name, IR0Factory& factory);
 
 private:
-    friend class RTypeFactory;
+    friend class IR0Factory;
     NNamespaceDecl(NNamespaceDecl* outer, const std::string& name, RNamespaceDeclGroup* group);
 
 public:
@@ -58,22 +57,22 @@ public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NDecl* GetNOuter() override;
-    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NTypeDeclOuter
     NDecl* GetNDecl() override { return this; }
-    void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
     // from NFuncDeclOuter
     // NDecl* GetNDecl() override { return this; }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
     // from RDecl
     IR0_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory) override;
 
     // from RTypeDeclOuter
     // using RNamespaceDecl::Accept;

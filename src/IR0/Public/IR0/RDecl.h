@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IR0Config.h"
-#include <memory>
 #include <optional>
 #include <string>
 
@@ -16,7 +15,7 @@ class MDecl;
 
 class RTypeArguments;
 
-class RTypeFactory;
+class IR0Factory;
 
 class RStructCtorDecl;
 class RClassCtorDecl;
@@ -36,7 +35,7 @@ public:
     IR0_API size_t GetTypeParamCount();
     IR0_API size_t GetAllTypeParamCount();
 
-    IR0_API RTypeArguments* MakeOpenTypeArgs(RTypeFactory& factory);
+    IR0_API RTypeArguments* MakeOpenTypeArgs(IR0Factory& factory);
 
 public:
     IR0_API virtual std::string GetModuleName(); // once overridden by NModuleDecl, NMModuleDecl
@@ -52,7 +51,7 @@ public:
     virtual std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
 
     // 현재 관점에서 identifier를 찾는다. 못 찾을 경우 부모를 찾는다. 내부에서 GetMember를 쓸 수 있다
-    virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) = 0;
+    virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory) = 0;
 
     virtual void Accept(RDeclVisitor& visitor) = 0;
 };
@@ -61,22 +60,22 @@ class RDeclVisitor
 {
 public:
     virtual ~RDeclVisitor() {}
-    virtual void Visit(RNamespaceDecl& decl) = 0;
-    virtual void Visit(RGlobalFuncDecl& decl) = 0;
-    virtual void Visit(RStructDecl& decl) = 0;
-    virtual void Visit(RStructCtorDecl& decl) = 0;
-    virtual void Visit(RStructFuncDecl& decl) = 0;
-    virtual void Visit(RStructVarDecl& decl) = 0;
-    virtual void Visit(RClassDecl& decl) = 0;
-    virtual void Visit(RClassCtorDecl& decl) = 0;
-    virtual void Visit(RClassFuncDecl& decl) = 0;
-    virtual void Visit(RClassVarDecl& decl) = 0;
-    virtual void Visit(REnumDecl& decl) = 0;
-    virtual void Visit(REnumElemDecl& decl) = 0;
-    virtual void Visit(REnumElemVarDecl& decl) = 0;
-    virtual void Visit(RLambdaDecl& decl) = 0;
-    virtual void Visit(RLambdaVarDecl& decl) = 0;
-    virtual void Visit(RInterfaceDecl& decl) = 0;
+    virtual void Visit(RNamespaceDecl* decl) = 0;
+    virtual void Visit(RGlobalFuncDecl* decl) = 0;
+    virtual void Visit(RStructDecl* decl) = 0;
+    virtual void Visit(RStructCtorDecl* decl) = 0;
+    virtual void Visit(RStructFuncDecl* decl) = 0;
+    virtual void Visit(RStructVarDecl* decl) = 0;
+    virtual void Visit(RClassDecl* decl) = 0;
+    virtual void Visit(RClassCtorDecl* decl) = 0;
+    virtual void Visit(RClassFuncDecl* decl) = 0;
+    virtual void Visit(RClassVarDecl* decl) = 0;
+    virtual void Visit(REnumDecl* decl) = 0;
+    virtual void Visit(REnumElemDecl* decl) = 0;
+    virtual void Visit(REnumElemVarDecl* decl) = 0;
+    virtual void Visit(RLambdaDecl* decl) = 0;
+    virtual void Visit(RLambdaVarDecl* decl) = 0;
+    virtual void Visit(RInterfaceDecl* decl) = 0;
 };
 
 class RMDecl : public RDecl

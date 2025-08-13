@@ -22,9 +22,9 @@ class MTypeDeclOuterVisitor
 {
 public:
     virtual ~MTypeDeclOuterVisitor() {}
-    virtual void Visit(MNamespaceDecl& outer) = 0;
-    virtual void Visit(MClassDecl& outer) = 0;
-    virtual void Visit(MStructDecl& outer) = 0;
+    virtual void Visit(MNamespaceDecl* outer) = 0;
+    virtual void Visit(MClassDecl* outer) = 0;
+    virtual void Visit(MStructDecl* outer) = 0;
 };
 
 }

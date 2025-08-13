@@ -22,7 +22,7 @@ class MStructVarDecl
     MName name;
 
 public:
-    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(this); }
 };
 
 

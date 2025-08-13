@@ -29,7 +29,7 @@ optional<RMember> NClassFuncDecl::GetMember(RTypeArguments* typeArgs, const RNam
     return nullopt;
 }
 
-std::optional<RMember> NClassFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+std::optional<RMember> NClassFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory)
 {
     size_t baseTypeParamCount = _class->GetAllTypeParamCount();
     if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))

@@ -2,7 +2,6 @@
 #include "IR0Config.h"
 
 #include <string>
-#include <memory>
 
 #include "RModule.h"
 

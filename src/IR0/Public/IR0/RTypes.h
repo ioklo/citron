@@ -2,7 +2,6 @@
 
 #include "IR0Config.h"
 
-#include <memory>
 #include <vector>
 #include <optional>
 #include <string>
@@ -18,7 +17,7 @@ namespace Citron
 {
 
 class RTypeArguments;
-class RTypeFactory;
+class IR0Factory;
 class RStructCtorDecl;
 class RInterfaceDecl;
 class RLambdaDecl;
@@ -42,20 +41,20 @@ class RTypeVisitor
 {
 public:
     virtual ~RTypeVisitor() = default;
-    virtual void Visit(RType_NullableValue& type) = 0;
-    virtual void Visit(RType_NullableRef& type) = 0;
-    virtual void Visit(RType_TypeVar& type) = 0;
-    virtual void Visit(RType_Void& type) = 0;
-    virtual void Visit(RType_Tuple& type) = 0;
-    virtual void Visit(RType_Func& type) = 0;
-    virtual void Visit(RType_LocalPtr& type) = 0;
-    virtual void Visit(RType_BoxPtr& type) = 0;
-    virtual void Visit(RType_Class& type) = 0;
-    virtual void Visit(RType_Struct& type) = 0;
-    virtual void Visit(RType_Enum& type) = 0;
-    virtual void Visit(RType_EnumElem& type) = 0;
-    virtual void Visit(RType_Interface& type) = 0;
-    virtual void Visit(RType_Lambda& type) = 0;
+    virtual void Visit(RType_NullableValue* type) = 0;
+    virtual void Visit(RType_NullableRef* type) = 0;
+    virtual void Visit(RType_TypeVar* type) = 0;
+    virtual void Visit(RType_Void* type) = 0;
+    virtual void Visit(RType_Tuple* type) = 0;
+    virtual void Visit(RType_Func* type) = 0;
+    virtual void Visit(RType_LocalPtr* type) = 0;
+    virtual void Visit(RType_BoxPtr* type) = 0;
+    virtual void Visit(RType_Class* type) = 0;
+    virtual void Visit(RType_Struct* type) = 0;
+    virtual void Visit(RType_Enum* type) = 0;
+    virtual void Visit(RType_EnumElem* type) = 0;
+    virtual void Visit(RType_Interface* type) = 0;
+    virtual void Visit(RType_Lambda* type) = 0;
 };
 
 enum class RCustomTypeKind
@@ -72,7 +71,7 @@ class RType
 {
 public:
     virtual ~RType() {}
-    virtual RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
+    virtual RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) = 0;
     virtual RCustomTypeKind GetCustomTypeKind() { return RCustomTypeKind::None; }
     virtual std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) = 0;
 
@@ -87,13 +86,13 @@ public:
     RType* innerType;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_NullableValue(RType* innerType);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_NullableRef : public RType
@@ -102,13 +101,13 @@ public:
     RType* innerType;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_NullableRef(RType* innerType);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // trivial types
@@ -119,25 +118,25 @@ public:
     // std::string name;  다른 클래스에서도 공유할 것이므로 이름을 넣지 않는다
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_TypeVar(int index);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_Void : public RType
 {
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_Void();
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 struct RTupleVar
@@ -157,13 +156,13 @@ public:
     std::vector<RTupleVar> vars;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_Tuple(std::vector<RTupleVar>&& vars);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_Func : public RType
@@ -186,14 +185,14 @@ public:
     std::vector<Parameter> params;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_Func(bool bLocal, RType* retType, std::vector<Parameter>&& params);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Interface; }
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_LocalPtr : public RType
@@ -202,13 +201,13 @@ public:
     RType* innerType;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_LocalPtr(RType* innerType);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_BoxPtr : public RType
@@ -217,13 +216,13 @@ public:
     RType* innerType;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_BoxPtr(RType* innerType);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_Class : public RType
@@ -233,7 +232,7 @@ public:
     RTypeArguments* typeArgs;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_Class(RClassDecl* decl, RTypeArguments* typeArgs);
 
 public:
@@ -241,11 +240,11 @@ public:
     IR0_API bool IsBaseOf(RType_Class& derivedClass);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Class; }
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_Struct : public RType
@@ -255,7 +254,7 @@ public:
     RTypeArguments* typeArgs;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_Struct(RStructDecl* decl, RTypeArguments* typeArgs);
 
 public:
@@ -263,11 +262,11 @@ public:
     IR0_API RStructCtorDecl* GetUnboundTrivialCtor();
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Struct; }
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_Enum : public RType
@@ -277,15 +276,15 @@ public:
     RTypeArguments* typeArgs;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_Enum(REnumDecl* decl, RTypeArguments* typeArgs);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Enum; }
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_EnumElem : public RType
@@ -295,18 +294,18 @@ public:
     RTypeArguments* typeArgs;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs);
 
 public:
     IR0_API std::optional<RMember_EnumElemVar> GetVar(const RName& name);
-    IR0_API RType_Enum* GetBaseEnumType(RTypeFactory& factory);
+    IR0_API RType_Enum* GetBaseEnumType(IR0Factory& factory);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::EnumElem; }
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_Interface : public RType
@@ -317,15 +316,15 @@ public:
     bool bLocal;
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_Interface(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal);
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Interface; }
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class RType_Lambda : public RType
@@ -335,18 +334,18 @@ public:
     RTypeArguments* outerTypeArgs; // 함수 자체의 typeArgs는 호출할때 binding하게 된다
 
 private:
-    friend RTypeFactory;
+    friend IR0Factory;
     RType_Lambda(RLambdaDecl* decl, RTypeArguments* outerTypeArgs);
 
 public:
     IR0_API std::vector<RFuncParameter> GetPartiallyBoundParameters(); // outerTypeArgs까지만 bound되어 있는 상태
 
 public:
-    IR0_API RType* Apply(RTypeArguments& typeArgs, RTypeFactory& factory) override;
+    IR0_API RType* Apply(RTypeArguments& typeArgs, IR0Factory& factory) override;
     RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Struct; }
     IR0_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
-    void Accept(RTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 }

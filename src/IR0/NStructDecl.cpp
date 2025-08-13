@@ -87,7 +87,7 @@ optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& 
     return candidates[1];
 }
 
-optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory)
 {
     auto typeArgs = MakeOpenTypeArgs(factory);
     if (auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))

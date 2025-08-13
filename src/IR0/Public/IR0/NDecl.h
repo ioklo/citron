@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <optional>
 
 namespace Citron
@@ -28,22 +27,22 @@ class NDeclVisitor
 {
 public:
     virtual ~NDeclVisitor() {}
-    virtual void Visit(NNamespaceDecl& decl) = 0;
-    virtual void Visit(NGlobalFuncDecl& decl) = 0;
-    virtual void Visit(NStructDecl& decl) = 0;
-    virtual void Visit(NStructCtorDecl& decl) = 0;
-    virtual void Visit(NStructFuncDecl& decl) = 0;
-    virtual void Visit(NStructVarDecl& decl) = 0;
-    virtual void Visit(NClassDecl& decl) = 0;
-    virtual void Visit(NClassCtorDecl& decl) = 0;
-    virtual void Visit(NClassFuncDecl& decl) = 0;
-    virtual void Visit(NClassVarDecl& decl) = 0;
-    virtual void Visit(NEnumDecl& decl) = 0;
-    virtual void Visit(NEnumElemDecl& decl) = 0;
-    virtual void Visit(NEnumElemVarDecl& decl) = 0;
-    virtual void Visit(NLambdaDecl& decl) = 0;
-    virtual void Visit(NLambdaVarDecl& decl) = 0;
-    virtual void Visit(NInterfaceDecl& decl) = 0;
+    virtual void Visit(NNamespaceDecl* decl) = 0;
+    virtual void Visit(NGlobalFuncDecl* decl) = 0;
+    virtual void Visit(NStructDecl* decl) = 0;
+    virtual void Visit(NStructCtorDecl* decl) = 0;
+    virtual void Visit(NStructFuncDecl* decl) = 0;
+    virtual void Visit(NStructVarDecl* decl) = 0;
+    virtual void Visit(NClassDecl* decl) = 0;
+    virtual void Visit(NClassCtorDecl* decl) = 0;
+    virtual void Visit(NClassFuncDecl* decl) = 0;
+    virtual void Visit(NClassVarDecl* decl) = 0;
+    virtual void Visit(NEnumDecl* decl) = 0;
+    virtual void Visit(NEnumElemDecl* decl) = 0;
+    virtual void Visit(NEnumElemVarDecl* decl) = 0;
+    virtual void Visit(NLambdaDecl* decl) = 0;
+    virtual void Visit(NLambdaVarDecl* decl) = 0;
+    virtual void Visit(NInterfaceDecl* decl) = 0;
 };
 
 class NDecl

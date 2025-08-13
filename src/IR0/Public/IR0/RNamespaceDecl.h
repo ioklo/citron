@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 #include "RDecl.h"
 #include "RFuncDeclOuter.h"
@@ -16,9 +15,9 @@ class RNamespaceDecl
     , public RFuncDeclOuter
 {
 public:
-    virtual void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
-    virtual void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
-    virtual void Accept(RTypeDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
+    virtual void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
+    virtual void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(this); }
+    virtual void Accept(RTypeDeclOuterVisitor& visitor) final { visitor.Visit(this); }
 };
 
 class RMNamespaceDecl : public RNamespaceDecl

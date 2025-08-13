@@ -22,11 +22,11 @@ class MFuncDeclVisitor
 {
 public:
     virtual ~MFuncDeclVisitor() {}
-    virtual void Visit(MGlobalFuncDecl& func) = 0;
-    virtual void Visit(MClassCtorDecl& func) = 0;
-    virtual void Visit(MClassFuncDecl& func) = 0;
-    virtual void Visit(MStructCtorDecl& func) = 0;
-    virtual void Visit(MStructFuncDecl& func) = 0;
+    virtual void Visit(MGlobalFuncDecl* func) = 0;
+    virtual void Visit(MClassCtorDecl* func) = 0;
+    virtual void Visit(MClassFuncDecl* func) = 0;
+    virtual void Visit(MStructCtorDecl* func) = 0;
+    virtual void Visit(MStructFuncDecl* func) = 0;
 };
 
 class MFuncDeclOuter

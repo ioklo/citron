@@ -2,7 +2,6 @@
 #include "IR0Config.h"
 
 #include <optional>
-#include <memory>
 #include <vector>
 #include <string>
 
@@ -13,7 +12,7 @@
 namespace Citron {
 
 struct RFuncParameter;
-class RTypeFactory;
+class IR0Factory;
 class RTypeArguments;
 
 class NStmt;
@@ -60,14 +59,14 @@ public:
     size_t GetParamCount();
 
     IR0_API RFuncReturn GetUnboundFuncReturn();    
-    IR0_API RType* GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory);
-    IR0_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RTypeFactory& factory);
+    IR0_API RType* GetReturnType(RTypeArguments& typeArgs, IR0Factory& factory);
+    IR0_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, IR0Factory& factory);
     
     IR0_API RFuncParameter& GetUnboundFuncParam(size_t i);
-    IR0_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory);
+    IR0_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, IR0Factory& factory);
 
     IR0_API std::vector<RType*> GetParamIds();
-    IR0_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
+    IR0_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory);
 };
 
 }

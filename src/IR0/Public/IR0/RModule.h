@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 #include "RDecl.h"
 #include "RFuncDeclOuter.h"

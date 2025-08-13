@@ -52,7 +52,7 @@ optional<RMember> NLambdaDecl::GetMember(RTypeArguments* typeArgs, const RName& 
     return RMember_LambdaVar(typeArgs, i->second);
 }
 
-optional<RMember> NLambdaDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> NLambdaDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory)
 {
     // Lambda에서 검색하지 않고, FuncContext에서 검색한다
     throw RuntimeFatalException();

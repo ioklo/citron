@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 #include "RDecl.h"
 #include "RFuncDecl.h"
@@ -18,9 +17,9 @@ class RClassCtorDecl
 public:
     virtual RClassDecl* GetClassDecl() = 0;
 
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
+    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(this); }
 };
 
 class RMClassCtorDecl : public RClassCtorDecl

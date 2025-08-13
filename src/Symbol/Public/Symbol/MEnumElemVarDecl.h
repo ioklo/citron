@@ -18,7 +18,7 @@ class MEnumElemVarDecl
     MType* declType; // lazy-init
 
 public:
-    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(this); }
 };
 
 

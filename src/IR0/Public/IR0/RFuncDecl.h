@@ -2,7 +2,6 @@
 
 #include "IR0Config.h"
 
-#include <memory>
 
 #include "Symbol/MFuncDecl.h"
 
@@ -19,7 +18,7 @@ class RStructCtorDecl;
 class RStructFuncDecl;
 
 class RType;
-class RTypeFactory;
+class IR0Factory;
 
 class RFuncDeclVisitor;
 
@@ -32,9 +31,9 @@ public:
     virtual bool IsStatic() = 0;
     virtual size_t GetTypeParamCount() = 0;
     virtual size_t GetParamCount() = 0;
-    virtual RType* GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
-    virtual RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
-    virtual RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory) = 0;
+    virtual RType* GetReturnType(RTypeArguments& typeArgs, IR0Factory& factory) = 0;
+    virtual RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, IR0Factory& factory) = 0;
+    virtual RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, IR0Factory& factory) = 0;
     virtual void Accept(RFuncDeclVisitor& visitor) = 0;
 };
 
@@ -42,12 +41,12 @@ class RFuncDeclVisitor
 {
 public:
     IR0_API virtual ~RFuncDeclVisitor() { }
-    virtual void Visit(RGlobalFuncDecl& func) = 0;
-    virtual void Visit(RClassCtorDecl& func) = 0;
-    virtual void Visit(RClassFuncDecl& func) = 0;
-    virtual void Visit(RStructCtorDecl& func) = 0;
-    virtual void Visit(RStructFuncDecl& func) = 0;
-    virtual void Visit(RLambdaDecl& func) = 0;
+    virtual void Visit(RGlobalFuncDecl* func) = 0;
+    virtual void Visit(RClassCtorDecl* func) = 0;
+    virtual void Visit(RClassFuncDecl* func) = 0;
+    virtual void Visit(RStructCtorDecl* func) = 0;
+    virtual void Visit(RStructFuncDecl* func) = 0;
+    virtual void Visit(RLambdaDecl* func) = 0;
 };
 
 class RMFuncDecl : public RFuncDecl

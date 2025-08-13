@@ -1,9 +1,7 @@
 #pragma once
-
 #include "IR0Config.h"
 
 #include <variant>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -71,7 +69,7 @@ class NExp_EnumAsEnumElem;
 class NLoc;
 
 class RType;
-class RTypeFactory;
+class IR0Factory;
 
 class NStmt;
 
@@ -81,56 +79,56 @@ class NExpVisitor
 {
 public:
     virtual ~NExpVisitor() {}
-    virtual void Visit(NExp_Load& exp) = 0;
-    virtual void Visit(NExp_Assign& exp) = 0;
-    virtual void Visit(NExp_Box& exp) = 0;
-    virtual void Visit(NExp_StaticBoxRef& exp) = 0;
-    virtual void Visit(NExp_ClassMemberBoxRef& exp) = 0;
-    virtual void Visit(NExp_StructIndirectMemberBoxRef& exp) = 0;
-    virtual void Visit(NExp_StructMemberBoxRef& exp) = 0;
-    virtual void Visit(NExp_LocalRef& exp) = 0;
-    virtual void Visit(NExp_BoolLiteral& exp) = 0;
-    virtual void Visit(NExp_IntLiteral& exp) = 0;
-    virtual void Visit(NExp_String& exp) = 0;
-    virtual void Visit(NExp_List& exp) = 0;
-    virtual void Visit(NExp_ListIterator& exp) = 0;
-    virtual void Visit(NExp_CallInternalUnaryOperator& exp) = 0;
-    virtual void Visit(NExp_CallInternalUnaryAssignOperator& exp) = 0;
-    virtual void Visit(NExp_CallInternalBinaryOperator& exp) = 0;
-    virtual void Visit(NExp_CallGlobalFunc& exp) = 0;
-    virtual void Visit(NExp_NewClass& exp) = 0;
-    virtual void Visit(NExp_CallClassFunc& exp) = 0;
-    virtual void Visit(NExp_CastClass& exp) = 0;
-    virtual void Visit(NExp_NewStruct& exp) = 0;
-    virtual void Visit(NExp_CallStructFunc& exp) = 0;
-    virtual void Visit(NExp_NewEnumElem& exp) = 0;
-    virtual void Visit(NExp_CastEnumElemToEnum& exp) = 0;
-    virtual void Visit(NExp_NewNullable& exp) = 0;
+    virtual void Visit(NExp_Load* exp) = 0;
+    virtual void Visit(NExp_Assign* exp) = 0;
+    virtual void Visit(NExp_Box* exp) = 0;
+    virtual void Visit(NExp_StaticBoxRef* exp) = 0;
+    virtual void Visit(NExp_ClassMemberBoxRef* exp) = 0;
+    virtual void Visit(NExp_StructIndirectMemberBoxRef* exp) = 0;
+    virtual void Visit(NExp_StructMemberBoxRef* exp) = 0;
+    virtual void Visit(NExp_LocalRef* exp) = 0;
+    virtual void Visit(NExp_BoolLiteral* exp) = 0;
+    virtual void Visit(NExp_IntLiteral* exp) = 0;
+    virtual void Visit(NExp_String* exp) = 0;
+    virtual void Visit(NExp_List* exp) = 0;
+    virtual void Visit(NExp_ListIterator* exp) = 0;
+    virtual void Visit(NExp_CallInternalUnaryOperator* exp) = 0;
+    virtual void Visit(NExp_CallInternalUnaryAssignOperator* exp) = 0;
+    virtual void Visit(NExp_CallInternalBinaryOperator* exp) = 0;
+    virtual void Visit(NExp_CallGlobalFunc* exp) = 0;
+    virtual void Visit(NExp_NewClass* exp) = 0;
+    virtual void Visit(NExp_CallClassFunc* exp) = 0;
+    virtual void Visit(NExp_CastClass* exp) = 0;
+    virtual void Visit(NExp_NewStruct* exp) = 0;
+    virtual void Visit(NExp_CallStructFunc* exp) = 0;
+    virtual void Visit(NExp_NewEnumElem* exp) = 0;
+    virtual void Visit(NExp_CastEnumElemToEnum* exp) = 0;
+    virtual void Visit(NExp_NewNullable* exp) = 0;
 
-    virtual void Visit(NExp_NullableValueNullLiteral& exp) = 0;
-    virtual void Visit(NExp_NullableRefNullLiteral& exp) = 0;
+    virtual void Visit(NExp_NullableValueNullLiteral* exp) = 0;
+    virtual void Visit(NExp_NullableRefNullLiteral* exp) = 0;
 
-    virtual void Visit(NExp_Lambda& exp) = 0;
-    virtual void Visit(NExp_CallLambda& exp) = 0;
-    virtual void Visit(NExp_CastBoxedLambdaToFunc& exp) = 0;
-    virtual void Visit(NExp_InlineBlock& exp) = 0;
-    virtual void Visit(NExp_ClassIsClass& exp) = 0;
-    virtual void Visit(NExp_ClassAsClass& exp) = 0;
-    virtual void Visit(NExp_ClassIsInterface& exp) = 0;
-    virtual void Visit(NExp_ClassAsInterface& exp) = 0;
-    virtual void Visit(NExp_InterfaceIsClass& exp) = 0;
-    virtual void Visit(NExp_InterfaceAsClass& exp) = 0;
-    virtual void Visit(NExp_InterfaceIsInterface& exp) = 0;
-    virtual void Visit(NExp_InterfaceAsInterface& exp) = 0;
-    virtual void Visit(NExp_EnumIsEnumElem& exp) = 0;
-    virtual void Visit(NExp_EnumAsEnumElem& exp) = 0;
+    virtual void Visit(NExp_Lambda* exp) = 0;
+    virtual void Visit(NExp_CallLambda* exp) = 0;
+    virtual void Visit(NExp_CastBoxedLambdaToFunc* exp) = 0;
+    virtual void Visit(NExp_InlineBlock* exp) = 0;
+    virtual void Visit(NExp_ClassIsClass* exp) = 0;
+    virtual void Visit(NExp_ClassAsClass* exp) = 0;
+    virtual void Visit(NExp_ClassIsInterface* exp) = 0;
+    virtual void Visit(NExp_ClassAsInterface* exp) = 0;
+    virtual void Visit(NExp_InterfaceIsClass* exp) = 0;
+    virtual void Visit(NExp_InterfaceAsClass* exp) = 0;
+    virtual void Visit(NExp_InterfaceIsInterface* exp) = 0;
+    virtual void Visit(NExp_InterfaceAsInterface* exp) = 0;
+    virtual void Visit(NExp_EnumIsEnumElem* exp) = 0;
+    virtual void Visit(NExp_EnumAsEnumElem* exp) = 0;
 };
 
 class NExp
 {
 public:
     virtual ~NExp() {}
-    virtual RType* GetType(RTypeFactory& factory) = 0;
+    virtual RType* GetType(IR0Factory& factory) = 0;
     virtual void Accept(NExpVisitor& visitor) = 0;
 };
 
@@ -145,8 +143,8 @@ public:
 public:
     IR0_API NExp_Load(NLoc* loc);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // a = b
@@ -158,8 +156,8 @@ public:
 public:
     IR0_API NExp_Assign(NLoc* dest, NExp* src);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // box 3
@@ -170,8 +168,8 @@ public:
 public:
     IR0_API NExp_Box(NExp* innerExp);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // &C.x
@@ -182,8 +180,8 @@ public:
 public:
     IR0_API NExp_StaticBoxRef(NLoc* loc);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // &c.x => RClassMemberBoxRefExp(RLocalVar("c"), C::x)
@@ -197,8 +195,8 @@ public:
 public:
     IR0_API NExp_ClassMemberBoxRef(NLoc* holder, RClassVarDecl* decl, RTypeArguments* typeArgs);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // box S* pS;
@@ -213,8 +211,8 @@ public:
 public:
     IR0_API NExp_StructIndirectMemberBoxRef(NLoc* holder, RStructVarDecl* decl, RTypeArguments* typeArgs);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // C c;
@@ -229,8 +227,8 @@ public:
 public:
     IR0_API NExp_StructMemberBoxRef(NLoc* parent, RStructVarDecl* decl, RTypeArguments* typeArgs);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // &i
@@ -242,8 +240,8 @@ public:
 public:
     IR0_API NExp_LocalRef(NLoc* innerLoc);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion Storage
@@ -259,8 +257,8 @@ public:
 public:
     IR0_API NExp_CastBoxedLambdaToFunc(NExp* exp, RType_Func* funcType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion Interface
@@ -275,8 +273,8 @@ public:
 public:
     IR0_API NExp_BoolLiteral(bool value);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // 1
@@ -287,8 +285,8 @@ public:
 public:
     IR0_API NExp_IntLiteral(int value);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NTextStringExpElement
@@ -320,8 +318,8 @@ public:
 public:
     IR0_API NExp_String(std::vector<NStringExpElement>&& elements);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -338,8 +336,8 @@ public:
 public:
     IR0_API NExp_List(std::vector<NExp*>&& elems, RType* itemType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_ListIterator : public NExp
@@ -350,8 +348,8 @@ public:
 public:
     IR0_API NExp_ListIterator(NLoc* listLoc, RType* type);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion List
@@ -404,8 +402,8 @@ public:
 public:
     IR0_API NExp_CallInternalUnaryOperator(NInternalUnaryOperator op, NExp* operand);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_CallInternalUnaryAssignOperator : public NExp
@@ -416,8 +414,8 @@ public:
 public:
     IR0_API NExp_CallInternalUnaryAssignOperator(NInternalUnaryAssignOperator op, NLoc* operand);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_CallInternalBinaryOperator : public NExp
@@ -429,8 +427,8 @@ public:
 public:
     IR0_API NExp_CallInternalBinaryOperator(NInternalBinaryOperator op, NExp* operand0, NExp* operand1);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion Call Internal
@@ -447,8 +445,8 @@ public:
 public:
     IR0_API NExp_CallGlobalFunc(RGlobalFuncDecl* funcDecl, RTypeArguments* typeArgs, const std::vector<NArgument>& args);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 #pragma endregion Global
@@ -465,8 +463,8 @@ public:
 public:
     IR0_API NExp_NewClass(RClassCtorDecl* ctorDecl, RTypeArguments* typeArgs, const std::vector<NArgument>& args);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // c.F();
@@ -480,8 +478,8 @@ public:
 public:
     IR0_API NExp_CallClassFunc(RClassFuncDecl* decl, RTypeArguments* typeArgs, NLoc* instance, std::vector<NArgument>&& args);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // ClassStaticCast
@@ -493,8 +491,8 @@ public:
 public:
     IR0_API NExp_CastClass(NExp* src, RType* classType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion Class
@@ -511,8 +509,8 @@ public:
 public:
     IR0_API NExp_NewStruct(RStructCtorDecl* ctor, RTypeArguments* typeArgs, std::vector<NArgument>&& args);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // s.F();
@@ -526,8 +524,8 @@ public:
 public:
     IR0_API NExp_CallStructFunc(RStructFuncDecl* decl, RTypeArguments* typeArgs, NLoc* instance, std::vector<NArgument>&& args);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion Struct
@@ -545,8 +543,8 @@ public:
 public:
     IR0_API NExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* typeArgs, std::vector<NArgument>&& args);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // 컨테이너를 enumElem -> enum으로
@@ -558,8 +556,8 @@ public:
 public:
     IR0_API NExp_CastEnumElemToEnum(NExp* src, RType* enumType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion Enum
@@ -574,8 +572,8 @@ public:
 public:
     IR0_API NExp_NullableValueNullLiteral(RType* innerType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_NullableRefNullLiteral : public NExp
@@ -585,8 +583,8 @@ public:
 public:
     IR0_API NExp_NullableRefNullLiteral(RType* innerType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_NewNullable : public NExp
@@ -596,8 +594,8 @@ public:
 public:
     IR0_API NExp_NewNullable(NExp* innerExp);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion Nullable
@@ -618,8 +616,8 @@ public:
 public:
     IR0_API NExp_Lambda(NLambdaDecl* lambdaDecl, RTypeArguments* typeArgs, const std::vector<NArgument>& args);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // f(2, 3)
@@ -637,8 +635,8 @@ public:
 public:
     IR0_API NExp_CallLambda(RLambdaDecl* lambdaDecl, RTypeArguments* typeArgs, NLoc* callable, const std::vector<NArgument>& args);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion Lambda
@@ -653,8 +651,8 @@ public:
 public:
     IR0_API NExp_InlineBlock(const std::vector<NStmt*>& stmts, RType* returnType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion Inline
@@ -670,8 +668,8 @@ public:
 public:
     IR0_API NExp_ClassIsClass(NExp* exp, RType* classType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_ClassAsClass: public NExp
@@ -682,8 +680,8 @@ public:
 public:
     IR0_API NExp_ClassAsClass(NExp* exp, RType* classType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -695,8 +693,8 @@ public:
 public:
     IR0_API NExp_ClassIsInterface(NExp* exp, RType* interfaceType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_ClassAsInterface : public NExp
@@ -707,8 +705,8 @@ public:
 public:
     IR0_API NExp_ClassAsInterface(NExp* exp, RType* interfaceType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_InterfaceIsClass : public NExp
@@ -719,8 +717,8 @@ public:
 public:
     IR0_API NExp_InterfaceIsClass(NExp* exp, RType* classType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_InterfaceAsClass : public NExp
@@ -731,8 +729,8 @@ public:
 public:
     IR0_API NExp_InterfaceAsClass(NExp* exp, RType* classType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_InterfaceIsInterface : public NExp
@@ -743,8 +741,8 @@ public:
 public:
     IR0_API NExp_InterfaceIsInterface(NExp* exp, RType* interfaceType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_InterfaceAsInterface : public NExp
@@ -755,8 +753,8 @@ public:
 public:
     IR0_API NExp_InterfaceAsInterface(NExp* exp, RType* interfaceType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_EnumIsEnumElem : public NExp
@@ -767,8 +765,8 @@ public:
 public:
     IR0_API NExp_EnumIsEnumElem(NExp* exp, RType* enumElemType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class NExp_EnumAsEnumElem : public NExp
@@ -779,8 +777,8 @@ public:
 public:
     IR0_API NExp_EnumAsEnumElem(NExp* exp, RType* enumElemType);
 
-    IR0_API RType* GetType(RTypeFactory& factory) override;
-    void Accept(NExpVisitor& visitor) override { visitor.Visit(*this); }
+    IR0_API RType* GetType(IR0Factory& factory) override;
+    void Accept(NExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 #pragma endregion TypeTest

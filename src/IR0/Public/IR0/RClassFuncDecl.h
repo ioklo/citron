@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 #include "RDecl.h"
 #include "RFuncDecl.h"
@@ -11,7 +10,7 @@ namespace Citron {
 class MClassFuncDecl;
 
 class RType;
-class RTypeFactory;
+class IR0Factory;
 
 class RClassFuncDecl
     : public RDecl
@@ -19,12 +18,12 @@ class RClassFuncDecl
     , public RFuncDeclOuter
 {
 public:
-    virtual RType* GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
+    virtual RType* GetReturnType(RTypeArguments& typeArgs, IR0Factory& factory) = 0;
     virtual bool IsStatic() = 0;
 
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
+    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(this); }
 };
 
 class RMClassFuncDecl : public RClassFuncDecl

@@ -8,7 +8,7 @@
 #include "Infra/Exceptions.h"
 #include "Infra/Ptr.h"
 
-#include "RTypeFactory.h"
+#include "IR0Factory.h"
 #include "RNamespaceDeclGroup.h"
 #include "RTypeArguments.h"
 
@@ -67,7 +67,7 @@ optional<RMember> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RNam
     return candidates[1];
 }
 
-optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory)
 {
     auto typeArgs = factory.MakeTypeArguments({});
     if (auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
