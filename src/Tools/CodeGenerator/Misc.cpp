@@ -291,7 +291,7 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
 
     for (auto& variantInterface : classInfo.variantInterfaces)
     {
-        hStream << "    void Accept(" << variantInterface << "Visitor& visitor) override { visitor.Visit(*this); }" << endl;
+        hStream << "    void Accept(" << variantInterface << "Visitor& visitor) override { visitor.Visit(this); }" << endl;
         bHModified = true;
     }
     AddNewLineIfNeeded(bHModified, hStream);
@@ -385,9 +385,9 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     // class 'name'Visitor 
     // {
     // public:
-    //     virtual void Visit(A& a) = 0;
-    //     virtual void Visit(B& b) = 0;
-    //     virtual void Visit(C& c) = 0;
+    //     virtual void Visit(A* a) = 0;
+    //     virtual void Visit(B* b) = 0;
+    //     virtual void Visit(C* c) = 0;
     // };
     // 
     // class 'name' : 'virtualBases...'
@@ -402,7 +402,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     hStream << "public:" << endl;
     hStream << "    virtual ~" << info.name << "Visitor() = default;" << endl;
     for (auto& member : info.members)
-        hStream << "    virtual void Visit(" << member << "& " << info.argName << ") = 0;" << endl;
+        hStream << "    virtual void Visit(" << member << "* " << info.argName << ") = 0;" << endl;
     hStream << "};" << endl << endl;
 
     hStream << "class " << info.name;
@@ -438,8 +438,8 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     // struct 'name'ToJsonVisitor
     // {
     //     JsonItem result;
-    //     void Visit(A& a) override { result = a.ToJson(); }
-    //     void Visit(B& a) override { result = a.ToJson(); }
+    //     void Visit(A* a) override { result = a.ToJson(); }
+    //     void Visit(B* a) override { result = a.ToJson(); }
     // }
     // 
     // JsonItem ToJson('name'Ptr& 'argName')
@@ -452,7 +452,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     cppStream << "{" << endl;
     cppStream << "    JsonItem result;" << endl;
     for (auto& member : info.members)
-        cppStream << "    void Visit(" << member << "& " << info.argName << ") override { result = " << info.argName << ".ToJson(); }" << endl;
+        cppStream << "    void Visit(" << member << "* " << info.argName << ") override { result = " << info.argName << "->ToJson(); }" << endl;
     cppStream << "};" << endl << endl;
 
     cppStream << "JsonItem ToJson(" << info.name << "* " << info.argName << ")" << endl;

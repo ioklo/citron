@@ -163,23 +163,23 @@ JsonItem SFuncParam::ToJson()
 struct SStmtToJsonVisitor : public SStmtVisitor
 {
     JsonItem result;
-    void Visit(SStmt_Command& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_VarDecl& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_If& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_IfTest& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_For& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Continue& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Break& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Return& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Block& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Blank& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Exp& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Task& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Await& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Async& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Foreach& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Yield& stmt) override { result = stmt.ToJson(); }
-    void Visit(SStmt_Directive& stmt) override { result = stmt.ToJson(); }
+    void Visit(SStmt_Command* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_VarDecl* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_If* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_IfTest* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_For* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Continue* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Break* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Return* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Block* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Blank* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Exp* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Task* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Await* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Async* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Foreach* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Yield* stmt) override { result = stmt->ToJson(); }
+    void Visit(SStmt_Directive* stmt) override { result = stmt->ToJson(); }
 };
 
 JsonItem ToJson(SStmt* stmt)
@@ -193,23 +193,23 @@ JsonItem ToJson(SStmt* stmt)
 struct SExpToJsonVisitor : public SExpVisitor
 {
     JsonItem result;
-    void Visit(SExp_Identifier& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_String& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_IntLiteral& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_BoolLiteral& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_NullLiteral& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_BinaryOp& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_UnaryOp& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_Call& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_Lambda& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_Indexer& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_Member& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_IndirectMember& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_List& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_New& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_Box& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_Is& exp) override { result = exp.ToJson(); }
-    void Visit(SExp_As& exp) override { result = exp.ToJson(); }
+    void Visit(SExp_Identifier* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_String* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_IntLiteral* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_BoolLiteral* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_NullLiteral* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_BinaryOp* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_UnaryOp* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_Call* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_Lambda* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_Indexer* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_Member* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_IndirectMember* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_List* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_New* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_Box* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_Is* exp) override { result = exp->ToJson(); }
+    void Visit(SExp_As* exp) override { result = exp->ToJson(); }
 };
 
 JsonItem ToJson(SExp* exp)
@@ -223,12 +223,12 @@ JsonItem ToJson(SExp* exp)
 struct STypeExpToJsonVisitor : public STypeExpVisitor
 {
     JsonItem result;
-    void Visit(STypeExp_Id& typeExp) override { result = typeExp.ToJson(); }
-    void Visit(STypeExp_Member& typeExp) override { result = typeExp.ToJson(); }
-    void Visit(STypeExp_Nullable& typeExp) override { result = typeExp.ToJson(); }
-    void Visit(STypeExp_LocalPtr& typeExp) override { result = typeExp.ToJson(); }
-    void Visit(STypeExp_BoxPtr& typeExp) override { result = typeExp.ToJson(); }
-    void Visit(STypeExp_Local& typeExp) override { result = typeExp.ToJson(); }
+    void Visit(STypeExp_Id* typeExp) override { result = typeExp->ToJson(); }
+    void Visit(STypeExp_Member* typeExp) override { result = typeExp->ToJson(); }
+    void Visit(STypeExp_Nullable* typeExp) override { result = typeExp->ToJson(); }
+    void Visit(STypeExp_LocalPtr* typeExp) override { result = typeExp->ToJson(); }
+    void Visit(STypeExp_BoxPtr* typeExp) override { result = typeExp->ToJson(); }
+    void Visit(STypeExp_Local* typeExp) override { result = typeExp->ToJson(); }
 };
 
 JsonItem ToJson(STypeExp* typeExp)
@@ -242,8 +242,8 @@ JsonItem ToJson(STypeExp* typeExp)
 struct SStringExpElementToJsonVisitor : public SStringExpElementVisitor
 {
     JsonItem result;
-    void Visit(SStringExpElement_Text& elem) override { result = elem.ToJson(); }
-    void Visit(SStringExpElement_Exp& elem) override { result = elem.ToJson(); }
+    void Visit(SStringExpElement_Text* elem) override { result = elem->ToJson(); }
+    void Visit(SStringExpElement_Exp* elem) override { result = elem->ToJson(); }
 };
 
 JsonItem ToJson(SStringExpElement* elem)
@@ -257,8 +257,8 @@ JsonItem ToJson(SStringExpElement* elem)
 struct SLambdaExpBodyToJsonVisitor : public SLambdaExpBodyVisitor
 {
     JsonItem result;
-    void Visit(SLambdaExpBody_Stmts& body) override { result = body.ToJson(); }
-    void Visit(SLambdaExpBody_Exp& body) override { result = body.ToJson(); }
+    void Visit(SLambdaExpBody_Stmts* body) override { result = body->ToJson(); }
+    void Visit(SLambdaExpBody_Exp* body) override { result = body->ToJson(); }
 };
 
 JsonItem ToJson(SLambdaExpBody* body)
@@ -272,8 +272,8 @@ JsonItem ToJson(SLambdaExpBody* body)
 struct SEmbeddableStmtToJsonVisitor : public SEmbeddableStmtVisitor
 {
     JsonItem result;
-    void Visit(SEmbeddableStmt_Single& stmt) override { result = stmt.ToJson(); }
-    void Visit(SEmbeddableStmt_Block& stmt) override { result = stmt.ToJson(); }
+    void Visit(SEmbeddableStmt_Single* stmt) override { result = stmt->ToJson(); }
+    void Visit(SEmbeddableStmt_Block* stmt) override { result = stmt->ToJson(); }
 };
 
 JsonItem ToJson(SEmbeddableStmt* stmt)
@@ -287,8 +287,8 @@ JsonItem ToJson(SEmbeddableStmt* stmt)
 struct SForStmtInitializerToJsonVisitor : public SForStmtInitializerVisitor
 {
     JsonItem result;
-    void Visit(SForStmtInitializer_Exp& initializer) override { result = initializer.ToJson(); }
-    void Visit(SForStmtInitializer_VarDecl& initializer) override { result = initializer.ToJson(); }
+    void Visit(SForStmtInitializer_Exp* initializer) override { result = initializer->ToJson(); }
+    void Visit(SForStmtInitializer_VarDecl* initializer) override { result = initializer->ToJson(); }
 };
 
 JsonItem ToJson(SForStmtInitializer* initializer)
@@ -302,12 +302,12 @@ JsonItem ToJson(SForStmtInitializer* initializer)
 struct SClassMemberDeclToJsonVisitor : public SClassMemberDeclVisitor
 {
     JsonItem result;
-    void Visit(SClassDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SStructDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SEnumDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SClassFuncDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SClassCtorDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SClassVarDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SClassDecl* decl) override { result = decl->ToJson(); }
+    void Visit(SStructDecl* decl) override { result = decl->ToJson(); }
+    void Visit(SEnumDecl* decl) override { result = decl->ToJson(); }
+    void Visit(SClassFuncDecl* decl) override { result = decl->ToJson(); }
+    void Visit(SClassCtorDecl* decl) override { result = decl->ToJson(); }
+    void Visit(SClassVarDecl* decl) override { result = decl->ToJson(); }
 };
 
 JsonItem ToJson(SClassMemberDecl* decl)
@@ -321,12 +321,12 @@ JsonItem ToJson(SClassMemberDecl* decl)
 struct SStructMemberDeclToJsonVisitor : public SStructMemberDeclVisitor
 {
     JsonItem result;
-    void Visit(SClassDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SStructDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SEnumDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SStructFuncDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SStructCtorDecl& decl) override { result = decl.ToJson(); }
-    void Visit(SStructVarDecl& decl) override { result = decl.ToJson(); }
+    void Visit(SClassDecl* decl) override { result = decl->ToJson(); }
+    void Visit(SStructDecl* decl) override { result = decl->ToJson(); }
+    void Visit(SEnumDecl* decl) override { result = decl->ToJson(); }
+    void Visit(SStructFuncDecl* decl) override { result = decl->ToJson(); }
+    void Visit(SStructCtorDecl* decl) override { result = decl->ToJson(); }
+    void Visit(SStructVarDecl* decl) override { result = decl->ToJson(); }
 };
 
 JsonItem ToJson(SStructMemberDecl* decl)
@@ -340,11 +340,11 @@ JsonItem ToJson(SStructMemberDecl* decl)
 struct SNamespaceDeclElementToJsonVisitor : public SNamespaceDeclElementVisitor
 {
     JsonItem result;
-    void Visit(SGlobalFuncDecl& elem) override { result = elem.ToJson(); }
-    void Visit(SNamespaceDecl& elem) override { result = elem.ToJson(); }
-    void Visit(SClassDecl& elem) override { result = elem.ToJson(); }
-    void Visit(SStructDecl& elem) override { result = elem.ToJson(); }
-    void Visit(SEnumDecl& elem) override { result = elem.ToJson(); }
+    void Visit(SGlobalFuncDecl* elem) override { result = elem->ToJson(); }
+    void Visit(SNamespaceDecl* elem) override { result = elem->ToJson(); }
+    void Visit(SClassDecl* elem) override { result = elem->ToJson(); }
+    void Visit(SStructDecl* elem) override { result = elem->ToJson(); }
+    void Visit(SEnumDecl* elem) override { result = elem->ToJson(); }
 };
 
 JsonItem ToJson(SNamespaceDeclElement* elem)
@@ -358,11 +358,11 @@ JsonItem ToJson(SNamespaceDeclElement* elem)
 struct SScriptElementToJsonVisitor : public SScriptElementVisitor
 {
     JsonItem result;
-    void Visit(SNamespaceDecl& elem) override { result = elem.ToJson(); }
-    void Visit(SGlobalFuncDecl& elem) override { result = elem.ToJson(); }
-    void Visit(SClassDecl& elem) override { result = elem.ToJson(); }
-    void Visit(SStructDecl& elem) override { result = elem.ToJson(); }
-    void Visit(SEnumDecl& elem) override { result = elem.ToJson(); }
+    void Visit(SNamespaceDecl* elem) override { result = elem->ToJson(); }
+    void Visit(SGlobalFuncDecl* elem) override { result = elem->ToJson(); }
+    void Visit(SClassDecl* elem) override { result = elem->ToJson(); }
+    void Visit(SStructDecl* elem) override { result = elem->ToJson(); }
+    void Visit(SEnumDecl* elem) override { result = elem->ToJson(); }
 };
 
 JsonItem ToJson(SScriptElement* elem)

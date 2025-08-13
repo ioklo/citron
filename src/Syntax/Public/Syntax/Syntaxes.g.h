@@ -320,23 +320,23 @@ class SStmtVisitor
 {
 public:
     virtual ~SStmtVisitor() = default;
-    virtual void Visit(SStmt_Command& stmt) = 0;
-    virtual void Visit(SStmt_VarDecl& stmt) = 0;
-    virtual void Visit(SStmt_If& stmt) = 0;
-    virtual void Visit(SStmt_IfTest& stmt) = 0;
-    virtual void Visit(SStmt_For& stmt) = 0;
-    virtual void Visit(SStmt_Continue& stmt) = 0;
-    virtual void Visit(SStmt_Break& stmt) = 0;
-    virtual void Visit(SStmt_Return& stmt) = 0;
-    virtual void Visit(SStmt_Block& stmt) = 0;
-    virtual void Visit(SStmt_Blank& stmt) = 0;
-    virtual void Visit(SStmt_Exp& stmt) = 0;
-    virtual void Visit(SStmt_Task& stmt) = 0;
-    virtual void Visit(SStmt_Await& stmt) = 0;
-    virtual void Visit(SStmt_Async& stmt) = 0;
-    virtual void Visit(SStmt_Foreach& stmt) = 0;
-    virtual void Visit(SStmt_Yield& stmt) = 0;
-    virtual void Visit(SStmt_Directive& stmt) = 0;
+    virtual void Visit(SStmt_Command* stmt) = 0;
+    virtual void Visit(SStmt_VarDecl* stmt) = 0;
+    virtual void Visit(SStmt_If* stmt) = 0;
+    virtual void Visit(SStmt_IfTest* stmt) = 0;
+    virtual void Visit(SStmt_For* stmt) = 0;
+    virtual void Visit(SStmt_Continue* stmt) = 0;
+    virtual void Visit(SStmt_Break* stmt) = 0;
+    virtual void Visit(SStmt_Return* stmt) = 0;
+    virtual void Visit(SStmt_Block* stmt) = 0;
+    virtual void Visit(SStmt_Blank* stmt) = 0;
+    virtual void Visit(SStmt_Exp* stmt) = 0;
+    virtual void Visit(SStmt_Task* stmt) = 0;
+    virtual void Visit(SStmt_Await* stmt) = 0;
+    virtual void Visit(SStmt_Async* stmt) = 0;
+    virtual void Visit(SStmt_Foreach* stmt) = 0;
+    virtual void Visit(SStmt_Yield* stmt) = 0;
+    virtual void Visit(SStmt_Directive* stmt) = 0;
 };
 
 class SStmt : virtual public SSyntax
@@ -357,23 +357,23 @@ class SExpVisitor
 {
 public:
     virtual ~SExpVisitor() = default;
-    virtual void Visit(SExp_Identifier& exp) = 0;
-    virtual void Visit(SExp_String& exp) = 0;
-    virtual void Visit(SExp_IntLiteral& exp) = 0;
-    virtual void Visit(SExp_BoolLiteral& exp) = 0;
-    virtual void Visit(SExp_NullLiteral& exp) = 0;
-    virtual void Visit(SExp_BinaryOp& exp) = 0;
-    virtual void Visit(SExp_UnaryOp& exp) = 0;
-    virtual void Visit(SExp_Call& exp) = 0;
-    virtual void Visit(SExp_Lambda& exp) = 0;
-    virtual void Visit(SExp_Indexer& exp) = 0;
-    virtual void Visit(SExp_Member& exp) = 0;
-    virtual void Visit(SExp_IndirectMember& exp) = 0;
-    virtual void Visit(SExp_List& exp) = 0;
-    virtual void Visit(SExp_New& exp) = 0;
-    virtual void Visit(SExp_Box& exp) = 0;
-    virtual void Visit(SExp_Is& exp) = 0;
-    virtual void Visit(SExp_As& exp) = 0;
+    virtual void Visit(SExp_Identifier* exp) = 0;
+    virtual void Visit(SExp_String* exp) = 0;
+    virtual void Visit(SExp_IntLiteral* exp) = 0;
+    virtual void Visit(SExp_BoolLiteral* exp) = 0;
+    virtual void Visit(SExp_NullLiteral* exp) = 0;
+    virtual void Visit(SExp_BinaryOp* exp) = 0;
+    virtual void Visit(SExp_UnaryOp* exp) = 0;
+    virtual void Visit(SExp_Call* exp) = 0;
+    virtual void Visit(SExp_Lambda* exp) = 0;
+    virtual void Visit(SExp_Indexer* exp) = 0;
+    virtual void Visit(SExp_Member* exp) = 0;
+    virtual void Visit(SExp_IndirectMember* exp) = 0;
+    virtual void Visit(SExp_List* exp) = 0;
+    virtual void Visit(SExp_New* exp) = 0;
+    virtual void Visit(SExp_Box* exp) = 0;
+    virtual void Visit(SExp_Is* exp) = 0;
+    virtual void Visit(SExp_As* exp) = 0;
 };
 
 class SExp : virtual public SSyntax
@@ -394,12 +394,12 @@ class STypeExpVisitor
 {
 public:
     virtual ~STypeExpVisitor() = default;
-    virtual void Visit(STypeExp_Id& typeExp) = 0;
-    virtual void Visit(STypeExp_Member& typeExp) = 0;
-    virtual void Visit(STypeExp_Nullable& typeExp) = 0;
-    virtual void Visit(STypeExp_LocalPtr& typeExp) = 0;
-    virtual void Visit(STypeExp_BoxPtr& typeExp) = 0;
-    virtual void Visit(STypeExp_Local& typeExp) = 0;
+    virtual void Visit(STypeExp_Id* typeExp) = 0;
+    virtual void Visit(STypeExp_Member* typeExp) = 0;
+    virtual void Visit(STypeExp_Nullable* typeExp) = 0;
+    virtual void Visit(STypeExp_LocalPtr* typeExp) = 0;
+    virtual void Visit(STypeExp_BoxPtr* typeExp) = 0;
+    virtual void Visit(STypeExp_Local* typeExp) = 0;
 };
 
 class STypeExp : virtual public SSyntax
@@ -420,8 +420,8 @@ class SStringExpElementVisitor
 {
 public:
     virtual ~SStringExpElementVisitor() = default;
-    virtual void Visit(SStringExpElement_Text& elem) = 0;
-    virtual void Visit(SStringExpElement_Exp& elem) = 0;
+    virtual void Visit(SStringExpElement_Text* elem) = 0;
+    virtual void Visit(SStringExpElement_Exp* elem) = 0;
 };
 
 class SStringExpElement : virtual public SSyntax
@@ -442,8 +442,8 @@ class SLambdaExpBodyVisitor
 {
 public:
     virtual ~SLambdaExpBodyVisitor() = default;
-    virtual void Visit(SLambdaExpBody_Stmts& body) = 0;
-    virtual void Visit(SLambdaExpBody_Exp& body) = 0;
+    virtual void Visit(SLambdaExpBody_Stmts* body) = 0;
+    virtual void Visit(SLambdaExpBody_Exp* body) = 0;
 };
 
 class SLambdaExpBody : virtual public SSyntax
@@ -464,8 +464,8 @@ class SEmbeddableStmtVisitor
 {
 public:
     virtual ~SEmbeddableStmtVisitor() = default;
-    virtual void Visit(SEmbeddableStmt_Single& stmt) = 0;
-    virtual void Visit(SEmbeddableStmt_Block& stmt) = 0;
+    virtual void Visit(SEmbeddableStmt_Single* stmt) = 0;
+    virtual void Visit(SEmbeddableStmt_Block* stmt) = 0;
 };
 
 class SEmbeddableStmt : virtual public SSyntax
@@ -486,8 +486,8 @@ class SForStmtInitializerVisitor
 {
 public:
     virtual ~SForStmtInitializerVisitor() = default;
-    virtual void Visit(SForStmtInitializer_Exp& initializer) = 0;
-    virtual void Visit(SForStmtInitializer_VarDecl& initializer) = 0;
+    virtual void Visit(SForStmtInitializer_Exp* initializer) = 0;
+    virtual void Visit(SForStmtInitializer_VarDecl* initializer) = 0;
 };
 
 class SForStmtInitializer : virtual public SSyntax
@@ -508,12 +508,12 @@ class SClassMemberDeclVisitor
 {
 public:
     virtual ~SClassMemberDeclVisitor() = default;
-    virtual void Visit(SClassDecl& decl) = 0;
-    virtual void Visit(SStructDecl& decl) = 0;
-    virtual void Visit(SEnumDecl& decl) = 0;
-    virtual void Visit(SClassFuncDecl& decl) = 0;
-    virtual void Visit(SClassCtorDecl& decl) = 0;
-    virtual void Visit(SClassVarDecl& decl) = 0;
+    virtual void Visit(SClassDecl* decl) = 0;
+    virtual void Visit(SStructDecl* decl) = 0;
+    virtual void Visit(SEnumDecl* decl) = 0;
+    virtual void Visit(SClassFuncDecl* decl) = 0;
+    virtual void Visit(SClassCtorDecl* decl) = 0;
+    virtual void Visit(SClassVarDecl* decl) = 0;
 };
 
 class SClassMemberDecl : virtual public SSyntax
@@ -534,12 +534,12 @@ class SStructMemberDeclVisitor
 {
 public:
     virtual ~SStructMemberDeclVisitor() = default;
-    virtual void Visit(SClassDecl& decl) = 0;
-    virtual void Visit(SStructDecl& decl) = 0;
-    virtual void Visit(SEnumDecl& decl) = 0;
-    virtual void Visit(SStructFuncDecl& decl) = 0;
-    virtual void Visit(SStructCtorDecl& decl) = 0;
-    virtual void Visit(SStructVarDecl& decl) = 0;
+    virtual void Visit(SClassDecl* decl) = 0;
+    virtual void Visit(SStructDecl* decl) = 0;
+    virtual void Visit(SEnumDecl* decl) = 0;
+    virtual void Visit(SStructFuncDecl* decl) = 0;
+    virtual void Visit(SStructCtorDecl* decl) = 0;
+    virtual void Visit(SStructVarDecl* decl) = 0;
 };
 
 class SStructMemberDecl : virtual public SSyntax
@@ -560,11 +560,11 @@ class SNamespaceDeclElementVisitor
 {
 public:
     virtual ~SNamespaceDeclElementVisitor() = default;
-    virtual void Visit(SGlobalFuncDecl& elem) = 0;
-    virtual void Visit(SNamespaceDecl& elem) = 0;
-    virtual void Visit(SClassDecl& elem) = 0;
-    virtual void Visit(SStructDecl& elem) = 0;
-    virtual void Visit(SEnumDecl& elem) = 0;
+    virtual void Visit(SGlobalFuncDecl* elem) = 0;
+    virtual void Visit(SNamespaceDecl* elem) = 0;
+    virtual void Visit(SClassDecl* elem) = 0;
+    virtual void Visit(SStructDecl* elem) = 0;
+    virtual void Visit(SEnumDecl* elem) = 0;
 };
 
 class SNamespaceDeclElement : virtual public SSyntax
@@ -585,11 +585,11 @@ class SScriptElementVisitor
 {
 public:
     virtual ~SScriptElementVisitor() = default;
-    virtual void Visit(SNamespaceDecl& elem) = 0;
-    virtual void Visit(SGlobalFuncDecl& elem) = 0;
-    virtual void Visit(SClassDecl& elem) = 0;
-    virtual void Visit(SStructDecl& elem) = 0;
-    virtual void Visit(SEnumDecl& elem) = 0;
+    virtual void Visit(SNamespaceDecl* elem) = 0;
+    virtual void Visit(SGlobalFuncDecl* elem) = 0;
+    virtual void Visit(SClassDecl* elem) = 0;
+    virtual void Visit(SStructDecl* elem) = 0;
+    virtual void Visit(SEnumDecl* elem) = 0;
 };
 
 class SScriptElement : virtual public SSyntax
@@ -623,7 +623,7 @@ public:
     SYNTAX_API SExp_Identifier& operator=(SExp_Identifier&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -643,7 +643,7 @@ public:
     SYNTAX_API SExp_String& operator=(SExp_String&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -662,7 +662,7 @@ public:
     SYNTAX_API SExp_IntLiteral& operator=(SExp_IntLiteral&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -681,7 +681,7 @@ public:
     SYNTAX_API SExp_BoolLiteral& operator=(SExp_BoolLiteral&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -698,7 +698,7 @@ public:
     SYNTAX_API SExp_NullLiteral& operator=(SExp_NullLiteral&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -717,7 +717,7 @@ public:
     SYNTAX_API SExp_List& operator=(SExp_List&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -737,7 +737,7 @@ public:
     SYNTAX_API SExp_New& operator=(SExp_New&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -758,7 +758,7 @@ public:
     SYNTAX_API SExp_BinaryOp& operator=(SExp_BinaryOp&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -778,7 +778,7 @@ public:
     SYNTAX_API SExp_UnaryOp& operator=(SExp_UnaryOp&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -798,7 +798,7 @@ public:
     SYNTAX_API SExp_Call& operator=(SExp_Call&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -818,7 +818,7 @@ public:
     SYNTAX_API SExp_Lambda& operator=(SExp_Lambda&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -838,7 +838,7 @@ public:
     SYNTAX_API SExp_Indexer& operator=(SExp_Indexer&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -860,7 +860,7 @@ public:
     SYNTAX_API SExp_Member& operator=(SExp_Member&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -882,7 +882,7 @@ public:
     SYNTAX_API SExp_IndirectMember& operator=(SExp_IndirectMember&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -901,7 +901,7 @@ public:
     SYNTAX_API SExp_Box& operator=(SExp_Box&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -921,7 +921,7 @@ public:
     SYNTAX_API SExp_Is& operator=(SExp_Is&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -941,7 +941,7 @@ public:
     SYNTAX_API SExp_As& operator=(SExp_As&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -962,7 +962,7 @@ public:
     SYNTAX_API STypeExp_Id& operator=(STypeExp_Id&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -983,7 +983,7 @@ public:
     SYNTAX_API STypeExp_Member& operator=(STypeExp_Member&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1002,7 +1002,7 @@ public:
     SYNTAX_API STypeExp_Nullable& operator=(STypeExp_Nullable&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1021,7 +1021,7 @@ public:
     SYNTAX_API STypeExp_LocalPtr& operator=(STypeExp_LocalPtr&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1040,7 +1040,7 @@ public:
     SYNTAX_API STypeExp_BoxPtr& operator=(STypeExp_BoxPtr&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1059,7 +1059,7 @@ public:
     SYNTAX_API STypeExp_Local& operator=(STypeExp_Local&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1078,7 +1078,7 @@ public:
     SYNTAX_API SStringExpElement_Text& operator=(SStringExpElement_Text&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStringExpElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStringExpElementVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1097,7 +1097,7 @@ public:
     SYNTAX_API SStringExpElement_Exp& operator=(SStringExpElement_Exp&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStringExpElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStringExpElementVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1116,7 +1116,7 @@ public:
     SYNTAX_API SLambdaExpBody_Stmts& operator=(SLambdaExpBody_Stmts&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SLambdaExpBodyVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SLambdaExpBodyVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1135,7 +1135,7 @@ public:
     SYNTAX_API SLambdaExpBody_Exp& operator=(SLambdaExpBody_Exp&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SLambdaExpBodyVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SLambdaExpBodyVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1154,7 +1154,7 @@ public:
     SYNTAX_API SEmbeddableStmt_Single& operator=(SEmbeddableStmt_Single&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SEmbeddableStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SEmbeddableStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1173,7 +1173,7 @@ public:
     SYNTAX_API SEmbeddableStmt_Block& operator=(SEmbeddableStmt_Block&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SEmbeddableStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SEmbeddableStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1192,7 +1192,7 @@ public:
     SYNTAX_API SForStmtInitializer_Exp& operator=(SForStmtInitializer_Exp&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SForStmtInitializerVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SForStmtInitializerVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1211,7 +1211,7 @@ public:
     SYNTAX_API SForStmtInitializer_VarDecl& operator=(SForStmtInitializer_VarDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SForStmtInitializerVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SForStmtInitializerVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1230,7 +1230,7 @@ public:
     SYNTAX_API SStmt_Command& operator=(SStmt_Command&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1249,7 +1249,7 @@ public:
     SYNTAX_API SStmt_VarDecl& operator=(SStmt_VarDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1266,7 +1266,7 @@ public:
     SYNTAX_API SStmt_Continue& operator=(SStmt_Continue&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1283,7 +1283,7 @@ public:
     SYNTAX_API SStmt_Break& operator=(SStmt_Break&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1302,7 +1302,7 @@ public:
     SYNTAX_API SStmt_Block& operator=(SStmt_Block&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1319,7 +1319,7 @@ public:
     SYNTAX_API SStmt_Blank& operator=(SStmt_Blank&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1338,7 +1338,7 @@ public:
     SYNTAX_API SStmt_Task& operator=(SStmt_Task&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1357,7 +1357,7 @@ public:
     SYNTAX_API SStmt_Await& operator=(SStmt_Await&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1376,7 +1376,7 @@ public:
     SYNTAX_API SStmt_Async& operator=(SStmt_Async&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1396,7 +1396,7 @@ public:
     SYNTAX_API SStmt_Directive& operator=(SStmt_Directive&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1417,7 +1417,7 @@ public:
     SYNTAX_API SStmt_If& operator=(SStmt_If&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1440,7 +1440,7 @@ public:
     SYNTAX_API SStmt_IfTest& operator=(SStmt_IfTest&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1462,7 +1462,7 @@ public:
     SYNTAX_API SStmt_For& operator=(SStmt_For&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1481,7 +1481,7 @@ public:
     SYNTAX_API SStmt_Return& operator=(SStmt_Return&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1500,7 +1500,7 @@ public:
     SYNTAX_API SStmt_Exp& operator=(SStmt_Exp&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1522,7 +1522,7 @@ public:
     SYNTAX_API SStmt_Foreach& operator=(SStmt_Foreach&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1541,7 +1541,7 @@ public:
     SYNTAX_API SStmt_Yield& operator=(SStmt_Yield&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1567,8 +1567,8 @@ public:
     SYNTAX_API SGlobalFuncDecl& operator=(SGlobalFuncDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1594,10 +1594,10 @@ public:
     SYNTAX_API SClassDecl& operator=(SClassDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1623,7 +1623,7 @@ public:
     SYNTAX_API SClassFuncDecl& operator=(SClassFuncDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1645,7 +1645,7 @@ public:
     SYNTAX_API SClassCtorDecl& operator=(SClassCtorDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1666,7 +1666,7 @@ public:
     SYNTAX_API SClassVarDecl& operator=(SClassVarDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1692,10 +1692,10 @@ public:
     SYNTAX_API SStructDecl& operator=(SStructDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1721,7 +1721,7 @@ public:
     SYNTAX_API SStructFuncDecl& operator=(SStructFuncDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1742,7 +1742,7 @@ public:
     SYNTAX_API SStructCtorDecl& operator=(SStructCtorDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1763,7 +1763,7 @@ public:
     SYNTAX_API SStructVarDecl& operator=(SStructVarDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1824,10 +1824,10 @@ public:
     SYNTAX_API SEnumDecl& operator=(SEnumDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -1848,8 +1848,8 @@ public:
     SYNTAX_API SNamespaceDecl& operator=(SNamespaceDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
