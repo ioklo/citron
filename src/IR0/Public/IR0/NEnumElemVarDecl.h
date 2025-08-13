@@ -33,10 +33,10 @@ public:
     RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory) override;
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     // from REnumElemVarDecl
-    IR0_API RType* GetDeclType(RTypeArguments& typeArgs, IR0Factory& factory) override;
+    IR0_API RType* GetDeclType(RTypeArguments& typeArgs, RFactory& factory) override;
 };
 
 }

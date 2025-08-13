@@ -11,7 +11,7 @@ optional<ArgumentsMatch> MatchArguments(
     RTypeArguments* partialTypeArgsExceptOuter, 
     vector<RFuncParameter>&& funcParams, 
     bool bVariadic, 
-    const SArgumentsPtr& sArgs)
+    SArguments* sArgs)
 {
     throw NotImplementedException();
 }

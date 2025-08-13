@@ -52,7 +52,7 @@ IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(NLoc* loc, RClassVarDecl* dec
 {
 }
 
-RType* IrExp_BoxRef_ClassMember::GetTargetType(IR0Factory& factory)
+RType* IrExp_BoxRef_ClassMember::GetTargetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -67,7 +67,7 @@ IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(NLoc* loc, 
 {
 }
 
-RType* IrExp_BoxRef_StructIndirectMember::GetTargetType(IR0Factory& factory)
+RType* IrExp_BoxRef_StructIndirectMember::GetTargetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -82,7 +82,7 @@ IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp
 {
 }
 
-RType* IrExp_BoxRef_StructMember::GetTargetType(IR0Factory& factory)
+RType* IrExp_BoxRef_StructMember::GetTargetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }

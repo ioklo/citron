@@ -7,20 +7,20 @@
 namespace Citron {
 
 class RType;
-class IR0Factory;
+class RFactory;
 
 class RTypeArguments
 {
     std::vector<RType*> items;
 
 private:
-    friend IR0Factory;
+    friend RFactory;
     RTypeArguments(const std::vector<RType*>& items);
 
 public:
     IR0_API size_t GetCount();
     IR0_API RType* Get(int i);
-    IR0_API RTypeArguments* Apply(RTypeArguments& typeArgs, IR0Factory& typeFactory);
+    IR0_API RTypeArguments* Apply(RTypeArguments& typeArgs, RFactory& typeFactory);
 };
 
 } // namespace Citron

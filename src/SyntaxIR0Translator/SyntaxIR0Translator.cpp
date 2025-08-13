@@ -180,7 +180,7 @@ expected<shared_ptr<NModule>, DiagPtr> Translate(
     std::string moduleName,
     vector<SScript> scripts,
     vector<shared_ptr<MModule>> referenceModules,
-    IR0Factory& factory)
+    RFactory& factory)
 {
     auto rootNamespace = factory.MakeRootNamespace();
     auto nModule = MakePtr<NModule>(move(moduleName), move(rootNamespace));

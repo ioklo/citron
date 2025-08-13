@@ -20,7 +20,7 @@ class BodyPhaseContext;
 class MemberDeclPhaseContext
 {
 public:
-    RType* MakeType(const STypeExpPtr& sTypeExp, NDecl* decl);
+    RType* MakeType(STypeExp* sTypeExp, NDecl* decl);
     std::tuple<std::vector<RFuncParameter>, bool> MakeParameters(NDecl* decl, std::vector<SFuncParam>& sParams);
 
     void AddBodyPhaseTask(std::function<void(BodyPhaseContext&)> task);

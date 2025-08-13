@@ -20,12 +20,13 @@ namespace {
 struct IrBoxRefExpToNExpTranslator : public IrBoxRefExpVisitor
 {
     expected<NExp*, DiagPtr>* result;
+    TranslationContext& context;
 
 private:
     template<typename TValue, typename... TArgs> requires std::is_base_of_v<NExp, TValue>
     void Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        *result = context.MakeNExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -41,31 +42,32 @@ private:
     }
 
 public:
-    IrBoxRefExpToNExpTranslator(expected<NExp*, DiagPtr>* result)
-        : result(result) { }
+    IrBoxRefExpToNExpTranslator(expected<NExp*, DiagPtr>* result, TranslationContext& context)
+        : result{result}, context{context} 
+    { }
 
     // &c.x
-    void Visit(IrExp_BoxRef_ClassMember& boxRef)
+    void Visit(IrExp_BoxRef_ClassMember* boxRef) override
     {
-        return Value<NExp_ClassMemberBoxRef>(boxRef.loc, boxRef.decl, boxRef.typeArgs);
+        return Value<NExp_ClassMemberBoxRef>(boxRef->loc, boxRef->decl, boxRef->typeArgs);
     }
 
     // &(*pS).x
-    void Visit(IrExp_BoxRef_StructIndirectMember& boxRef)
+    void Visit(IrExp_BoxRef_StructIndirectMember* boxRef) override
     {
-        return Value<NExp_StructIndirectMemberBoxRef>(boxRef.loc, boxRef.decl, boxRef.typeArgs);
+        return Value<NExp_StructIndirectMemberBoxRef>(boxRef->loc, boxRef->decl, boxRef->typeArgs);
     }
 
     // &c.x.a
     // &(box S()).x.y
-    void Visit(IrExp_BoxRef_StructMember& boxRef) override
+    void Visit(IrExp_BoxRef_StructMember* boxRef) override
     {
         expected<NExp*, DiagPtr> eParent;
-        IrBoxRefExpToNExpTranslator parentTranslator{&eParent};
-        boxRef.parent->Accept(parentTranslator);
+        IrBoxRefExpToNExpTranslator parentTranslator{&eParent, context};
+        boxRef->parent->Accept(parentTranslator);
         if (!eParent) return Error(move(eParent));
 
-        return Value<NExp_StructMemberBoxRef>(MakePtr<NLoc_Temp>(*eParent), boxRef.decl, boxRef.typeArgs);
+        return Value<NExp_StructMemberBoxRef>(context.MakeNLoc<NLoc_Temp>(*eParent), boxRef->decl, boxRef->typeArgs);
     }
 };
 
@@ -78,7 +80,7 @@ private:
     template<typename TValue, typename... TArgs> requires std::is_base_of_v<NExp, TValue>
     void Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        *result = context.MakeNExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -99,69 +101,69 @@ public:
         : result(result), context(context) { }
 
     // &NS
-    void Visit(IrExp_Namespace& irExp) override
+    void Visit(IrExp_Namespace* irExp) override
     {
         return Error<Error_Reference_CantMakeReference>();
     }
 
     // &T
-    void Visit(IrExp_TypeVar& irExp) override
+    void Visit(IrExp_TypeVar* irExp) override
     {
         return Error<Error_Reference_CantMakeReference>();
     }
 
     // &C
-    void Visit(IrExp_Class& irExp) override
+    void Visit(IrExp_Class* irExp) override
     {
         return Error<Error_Reference_CantMakeReference>();
     }
 
     // &S
-    void Visit(IrExp_Struct& irExp) override
+    void Visit(IrExp_Struct* irExp) override
     {
         return Error<Error_Reference_CantMakeReference>();
     }
 
     // &E
-    void Visit(IrExp_Enum& irExp) override
+    void Visit(IrExp_Enum* irExp) override
     {
         return Error<Error_Reference_CantMakeReference>();
     }
 
     // &this, this는 특수 키워드이고, local storage에 속하지 않는다. 에러를 내도록 한다
-    void Visit(IrExp_ThisVar& irExp) override
+    void Visit(IrExp_ThisVar* irExp) override
     {   
         return Error<Error_Reference_CantReferenceThis>();
     }
 
     // &C.x
-    void Visit(IrExp_StaticRef& irExp) override
+    void Visit(IrExp_StaticRef* irExp) override
     {   
         throw NotImplementedException();
     }
 
     // &c.x
-    void Visit(IrExp_BoxRef& irExp) override
+    void Visit(IrExp_BoxRef* irExp) override
     {
-        IrBoxRefExpToNExpTranslator translator(result);
-        irExp.Accept(translator);
+        IrBoxRefExpToNExpTranslator translator{result, context};
+        irExp->Accept(translator);
     }
 
     // 가장 쉬운 &s.x
-    void Visit(IrExp_LocalRef& irExp) override
+    void Visit(IrExp_LocalRef* irExp) override
     {
-        return Value<NExp_LocalRef>(irExp.loc);
+        return Value<NExp_LocalRef>(irExp->loc);
     }
 
     // box S* pS = ...
     // &(*pS)
-    void Visit(IrExp_DerefedBoxValue& irExp) override
+    void Visit(IrExp_DerefedBoxValue* irExp) override
     {
         return Error<Error_Reference_UselessDereferenceReferencedValue>();
     }
 
     // &G()
-    void Visit(IrExp_LocalValue& irExp) override
+    void Visit(IrExp_LocalValue* irExp) override
     {
         return Error<Error_Reference_CantReferenceTempValue>();
     }

@@ -62,7 +62,7 @@ public:
 
     void Visit(RClassFuncDecl* func) override 
     {
-        return Value<NExp_CallClassFunc>(func, move(typeArgs), move(instance), move(args));
+        return Exp<NExp_CallClassFunc>(func, move(typeArgs), move(instance), move(args));
     }
 
     void Visit(RStructCtorDecl* func) override 
@@ -72,7 +72,7 @@ public:
 
     void Visit(RStructFuncDecl* func) override 
     {   
-        return Value<NExp_CallStructFunc>(func, move(typeArgs), move(instance), move(args));
+        return Exp<NExp_CallStructFunc>(func, move(typeArgs), move(instance), move(args));
     }
 
     void Visit(RLambdaDecl* func) override 

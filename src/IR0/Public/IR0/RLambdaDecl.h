@@ -9,7 +9,7 @@
 namespace Citron {
 
 class RType;
-class IR0Factory;
+class RFactory;
 
 class RLambdaDecl
     : public RDecl
@@ -18,7 +18,7 @@ class RLambdaDecl
     , public RTypeDecl
 {
 public:
-    virtual RType* GetReturnType(RTypeArguments& typeArgs, IR0Factory& factory) = 0;
+    virtual RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
     void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(this); }

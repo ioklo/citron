@@ -87,7 +87,7 @@
     <ClCompile Include="DeclTypeInfo.cpp" />
     <ClCompile Include="ResolveIdentifierError.cpp" />
     <ClCompile Include="SkeletonPhaseContext.cpp" />
-    <ClCompile Include="SyntaxIR0TranslatorFactory.cpp" />
+    <ClCompile Include="SRTFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SyntaxIR0TranslatorConfig.h" />
@@ -178,7 +178,7 @@
     <ClInclude Include="SyntaxIR0Translator.h" />
     <ClInclude Include="SyntaxIR0Translator-HeaderUnits.h" />
     <ClInclude Include="ResolveIdentifierError.h" />
-    <ClInclude Include="SyntaxIR0TranslatorFactory.h" />
+    <ClInclude Include="SRTFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

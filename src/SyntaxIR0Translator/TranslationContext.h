@@ -5,13 +5,16 @@
 #include <optional>
 #include <string>
 #include <expected>
+#include <concepts>
 
 #include "Logging/Diag.h"
 #include "Syntax/Syntax.h"
+#include "IR0/RFactory.h"
 #include "IR0/RFuncReturn.h"
 #include "IR0/RNames.h"
 #include "IR0/NArgument.h"
 
+#include "SRTFactory.h"
 #include "DesignatedDiagnostic.h"
 #include "DeclTypeInfo.h"
 #include "ResolveIdentifierError.h"
@@ -19,8 +22,10 @@
 namespace Citron {
 
 struct RFuncParameter;
-class IR0Factory;
-using IR0FactoryPtr = std::shared_ptr<IR0Factory>;
+class RFactory;
+using RFactoryPtr = std::shared_ptr<RFactory>;
+class SRTFactory;
+using SRTFactoryPtr = std::shared_ptr<SRTFactory>;
 class RFuncDecl;
 class RDecl;
 class RType_Enum;
@@ -39,6 +44,7 @@ class IrExp_BoxRef;
 struct BinOpInfo;
 
 class ImExp;
+class IrExp;
 
 class GlobalContext;
 using GlobalContextPtr = std::shared_ptr<GlobalContext>;
@@ -67,10 +73,11 @@ class TranslationContext
     FuncContextPtr funcContext;
     ScopeContextPtr scopeContext;
     LoggerPtr logger;
-    IR0FactoryPtr factory;
+    RFactoryPtr rFactory;
+    SRTFactoryPtr srtFactory;
     BinOpQueryServicePtr binOpQueryService;
 
-    TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const IR0FactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService);
+    TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RFactoryPtr& rfactory, const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService);
 
 public:
     // ScopeContext::MakeNewScopeContext
@@ -80,12 +87,12 @@ public:
     TranslationContext MakeNestedLoopScopeContext();
     TranslationContext MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
-    std::shared_ptr<NLoc_This> MakeThisLoc();
+    NLoc_This* MakeThisLoc();
     std::expected<NExp*, DiagPtr> MakeNExp_As(NExp* targetExp, RType* testType);
 
 public: // for scopeContext
     bool IsInLoop();
-    DeclTypeInfo GetDeclTypeInfo(STypeExp& typeExp);
+    DeclTypeInfo GetDeclTypeInfo(STypeExp* typeExp);
     bool DoesLocalVarNameExistInScope(const std::string& name);
     void AddLocalVarInfo(RType* type, RName&& name);
 
@@ -104,9 +111,9 @@ public: // for logging
     }
 
 public:
-    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp& typeExp);
+    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* typeExp);
 
-public: // for type factory
+public: // for type rFactory
     RType* GetType(NLoc& loc);
     RType* GetType(ReExp& reExp);
     RType* GetType(NExp& exp);
@@ -121,7 +128,7 @@ public: // for type factory
     RType* MakeIntType();
     RType* MakeStringType();
 
-    bool IsListType(RType* type, RType* outItemType);
+    bool IsListType(RType* type, RType** outItemType);
 
     RFuncReturn GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
     RFuncParameter GetFuncParam(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
@@ -129,6 +136,30 @@ public: // for type factory
     RType_Enum* GetBaseEnumType(RType_EnumElem& enumElemType);
 
     std::expected<ImExp*, std::shared_ptr<ResolveIdentifierError>> ResolveIdentifier(RName&& name, RTypeArguments* typeArgs);
+
+    template<typename TNExp, typename... TArgs> requires std::derived_from<TNExp, NExp>
+    constexpr TNExp* MakeNExp(TArgs&&... args)
+    {
+        return rFactory->MakeNExp<TNExp>(std::forward<TArgs>(args)...);
+    }
+
+    template<typename TNLoc, typename... TArgs> requires std::derived_from<TNLoc, NLoc>
+    constexpr TNLoc* MakeNLoc(TArgs&&... args)
+    {
+        return rFactory->MakeNLoc<TNLoc>(std::forward<TArgs>(args)...);
+    }
+
+    template<typename TImExp, typename... TArgs> requires std::derived_from<TImExp, ImExp>
+    constexpr TImExp* MakeImExp(TArgs&&... args)
+    {
+        return srtFactory->MakeImExp<TImExp>(std::forward<TArgs>(args)...);
+    }
+
+    template<typename TIrExp, typename... TArgs> requires std::derived_from<TIrExp, IrExp>
+    constexpr TIrExp* MakeIrExp(TArgs&&... args)
+    {
+        return srtFactory->MakeIrExp<TIrExp>(std::forward<TArgs>(args)...);
+    }
 
 public: // for BinOpQueryService
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);

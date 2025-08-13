@@ -110,7 +110,7 @@
     <ClInclude Include="Public\IR0\RTypeDeclOuter.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0\IR0Factory.h">
+    <ClInclude Include="Public\IR0\RFactory.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="Public\IR0\RTypes.h">
@@ -277,7 +277,7 @@
     <ClCompile Include="RTypeArguments.cpp">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
-    <ClCompile Include="IR0Factory.cpp">
+    <ClCompile Include="RFactory.cpp">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
     <ClCompile Include="RNames.cpp">

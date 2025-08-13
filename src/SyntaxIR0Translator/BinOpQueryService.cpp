@@ -1,7 +1,7 @@
 #include "BinOpQueryService.h"
 
 #include "IR0/RTypes.h"
-#include "IR0/IR0Factory.h"
+#include "IR0/RFactory.h"
 
 #include "IR0/NExp.h"
 
@@ -14,7 +14,7 @@ BinOpInfo::BinOpInfo(RType* operandType0, RType* operandType1, RType* resultType
 {
 }
 
-BinOpQueryService::BinOpQueryService(IR0Factory& factory)
+BinOpQueryService::BinOpQueryService(RFactory& factory)
 {   
     auto intType = factory.MakeIntType();
     auto boolType = factory.MakeBoolType();

@@ -17,7 +17,7 @@ NLoc_Temp::NLoc_Temp(NExp* exp)
 {
 }
 
-RType* NLoc_Temp::GetType(IR0Factory& factory)
+RType* NLoc_Temp::GetType(RFactory& factory)
 {
     return exp->GetType(factory);
 }
@@ -28,7 +28,7 @@ NLoc_LocalVar::NLoc_LocalVar(const RName& name, RType* declType)
 
 }
 
-RType* NLoc_LocalVar::GetType(IR0Factory& factory)
+RType* NLoc_LocalVar::GetType(RFactory& factory)
 {
     return declType;
 }
@@ -38,7 +38,7 @@ NLoc_LambdaVar::NLoc_LambdaVar(RLambdaVarDecl* decl, RTypeArguments* typeArgs)
 {
 }
 
-RType* NLoc_LambdaVar::GetType(IR0Factory& factory)
+RType* NLoc_LambdaVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -48,7 +48,7 @@ NLoc_ListIndexer::NLoc_ListIndexer(NLoc* list, NLoc* index, RType* itemType)
 {
 }
 
-RType* NLoc_ListIndexer::GetType(IR0Factory& factory)
+RType* NLoc_ListIndexer::GetType(RFactory& factory)
 {
     return itemType;
 }
@@ -58,7 +58,7 @@ NLoc_StructVar::NLoc_StructVar(NLoc* instance, RStructVarDecl* decl, RTypeArgume
 {
 }
 
-RType* NLoc_StructVar::GetType(IR0Factory& factory)
+RType* NLoc_StructVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 
@@ -70,7 +70,7 @@ NLoc_ClassVar::NLoc_ClassVar(NLoc* instance, RClassVarDecl* decl, RTypeArguments
 }
 
 
-RType* NLoc_ClassVar::GetType(IR0Factory& factory)
+RType* NLoc_ClassVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -80,7 +80,7 @@ NLoc_EnumElemVar::NLoc_EnumElemVar(NLoc* instance, REnumElemVarDecl* decl, RType
 {
 }
 
-RType* NLoc_EnumElemVar::GetType(IR0Factory& factory)
+RType* NLoc_EnumElemVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -90,7 +90,7 @@ NLoc_This::NLoc_This(RType* type)
 {
 }
 
-RType* NLoc_This::GetType(IR0Factory& factory)
+RType* NLoc_This::GetType(RFactory& factory)
 {
     return type;
 }
@@ -100,7 +100,7 @@ NLoc_LocalDeref::NLoc_LocalDeref(NLoc* innerLoc)
 {
 }
 
-RType* NLoc_LocalDeref::GetType(IR0Factory& factory)
+RType* NLoc_LocalDeref::GetType(RFactory& factory)
 {
     auto type = innerLoc->GetType(factory);
     
@@ -116,7 +116,7 @@ NLoc_BoxDeref::NLoc_BoxDeref(NLoc* innerLoc)
 {
 }
 
-RType* NLoc_BoxDeref::GetType(IR0Factory& factory)
+RType* NLoc_BoxDeref::GetType(RFactory& factory)
 {
     auto type = innerLoc->GetType(factory);
 
@@ -133,7 +133,7 @@ NLoc_NullableValue::NLoc_NullableValue(NLoc* loc)
 
 }
 
-RType* NLoc_NullableValue::GetType(IR0Factory& factory)
+RType* NLoc_NullableValue::GetType(RFactory& factory)
 {
     auto type = loc->GetType(factory);
 

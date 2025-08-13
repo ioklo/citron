@@ -68,7 +68,7 @@ public:
     RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory) override;
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }
@@ -77,9 +77,9 @@ public:
     IR0_API bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
     IR0_API size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
     IR0_API size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
-    IR0_API RType* GetReturnType(RTypeArguments& typeArgs, IR0Factory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
-    IR0_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, IR0Factory& factory) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs, factory); }
-    IR0_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, IR0Factory& factory) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index, factory); }
+    IR0_API RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
+    IR0_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs, factory); }
+    IR0_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index, factory); }
 };
 
 }

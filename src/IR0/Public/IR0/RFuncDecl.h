@@ -18,7 +18,7 @@ class RStructCtorDecl;
 class RStructFuncDecl;
 
 class RType;
-class IR0Factory;
+class RFactory;
 
 class RFuncDeclVisitor;
 
@@ -31,9 +31,9 @@ public:
     virtual bool IsStatic() = 0;
     virtual size_t GetTypeParamCount() = 0;
     virtual size_t GetParamCount() = 0;
-    virtual RType* GetReturnType(RTypeArguments& typeArgs, IR0Factory& factory) = 0;
-    virtual RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, IR0Factory& factory) = 0;
-    virtual RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, IR0Factory& factory) = 0;
+    virtual RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) = 0;
+    virtual RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory) = 0;
+    virtual RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory) = 0;
     virtual void Accept(RFuncDeclVisitor& visitor) = 0;
 };
 

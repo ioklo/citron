@@ -5,6 +5,8 @@
 #include "Infra/Exceptions.h"
 #include "Infra/Ptr.h"
 #include "Logging/Logger.h"
+
+#include "IR0/RFactory.h"
 #include "IR0/REnumElemDecl.h"
 #include "IR0/NArgument.h"
 #include "IR0/NExp.h"
@@ -34,7 +36,7 @@ private:
     template<typename TValue, typename... TArgs> requires std::is_base_of_v<ReExp, TValue>
     void Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        *result = context.MakeReExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -98,7 +100,7 @@ public:
         // if standalone, 값으로 처리한다
         if (imExp.decl->GetVarCount() == 0)
         {
-            return Value<ReExp_Else>(MakePtr<NExp_NewEnumElem>(imExp.decl, imExp.typeArgs, vector<NArgument>()));
+            return Value<ReExp_Else>(context.MakeNExp<NExp_NewEnumElem>(imExp.decl, imExp.typeArgs, vector<NArgument>()));
         }
 
         // lambda (boxed lambda)로 변환할 수 있다.
@@ -150,11 +152,11 @@ public:
 }
 
 // outermost로 변경
-expected<ReExp*, DiagPtr> TranslateImExpToReExp(ImExp& imExp, TranslationContext& context)
+expected<ReExp*, DiagPtr> TranslateImExpToReExp(ImExp* imExp, TranslationContext& context)
 {
     expected<ReExp*, DiagPtr> result;
     ImExpToReExpTranslator translator(&result, context);
-    imExp.Accept(translator);
+    imExp->Accept(translator);
     return result;
 }
 

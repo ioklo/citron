@@ -8,13 +8,13 @@ namespace Citron {
 class MEnumElemVarDecl;
 
 class RType;
-class IR0Factory;
+class RFactory;
 
 class REnumElemVarDecl
     : public RDecl
 {
 public:
-    virtual RType* GetDeclType(RTypeArguments& typeArgs, IR0Factory& factory) = 0;
+    virtual RType* GetDeclType(RTypeArguments& typeArgs, RFactory& factory) = 0;
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
 };
 

@@ -60,25 +60,25 @@ class ImExpVisitor
 {
 public:
     virtual ~ImExpVisitor() {}
-    virtual void Visit(ImExp_Namespace& imExp) = 0;
-    virtual void Visit(ImExp_GlobalFuncs& imExp) = 0;
-    virtual void Visit(ImExp_TypeVar& imExp) = 0;
-    virtual void Visit(ImExp_Class& imExp) = 0;
-    virtual void Visit(ImExp_ClassFuncs& imExp) = 0;
-    virtual void Visit(ImExp_Struct& imExp) = 0;
-    virtual void Visit(ImExp_StructFuncs& imExp) = 0;
-    virtual void Visit(ImExp_Enum& imExp) = 0;
-    virtual void Visit(ImExp_EnumElem& imExp) = 0;
-    virtual void Visit(ImExp_ThisVar& imExp) = 0;
-    virtual void Visit(ImExp_LocalVar& imExp) = 0;
-    virtual void Visit(ImExp_LambdaVar& imExp) = 0;
-    virtual void Visit(ImExp_ClassVar& imExp) = 0;
-    virtual void Visit(ImExp_StructVar& imExp) = 0;
-    virtual void Visit(ImExp_EnumElemVar& imExp) = 0;
-    virtual void Visit(ImExp_ListIndexer& imExp) = 0;
-    virtual void Visit(ImExp_LocalDeref& imExp) = 0;
-    virtual void Visit(ImExp_BoxDeref& imExp) = 0;
-    virtual void Visit(ImExp_Else& imExp) = 0;
+    virtual void Visit(ImExp_Namespace* imExp) = 0;
+    virtual void Visit(ImExp_GlobalFuncs* imExp) = 0;
+    virtual void Visit(ImExp_TypeVar* imExp) = 0;
+    virtual void Visit(ImExp_Class* imExp) = 0;
+    virtual void Visit(ImExp_ClassFuncs* imExp) = 0;
+    virtual void Visit(ImExp_Struct* imExp) = 0;
+    virtual void Visit(ImExp_StructFuncs* imExp) = 0;
+    virtual void Visit(ImExp_Enum* imExp) = 0;
+    virtual void Visit(ImExp_EnumElem* imExp) = 0;
+    virtual void Visit(ImExp_ThisVar* imExp) = 0;
+    virtual void Visit(ImExp_LocalVar* imExp) = 0;
+    virtual void Visit(ImExp_LambdaVar* imExp) = 0;
+    virtual void Visit(ImExp_ClassVar* imExp) = 0;
+    virtual void Visit(ImExp_StructVar* imExp) = 0;
+    virtual void Visit(ImExp_EnumElemVar* imExp) = 0;
+    virtual void Visit(ImExp_ListIndexer* imExp) = 0;
+    virtual void Visit(ImExp_LocalDeref* imExp) = 0;
+    virtual void Visit(ImExp_BoxDeref* imExp) = 0;
+    virtual void Visit(ImExp_Else* imExp) = 0;
 };
 
 class ImExp_Namespace : public ImExp
@@ -88,7 +88,7 @@ public:
 
 public:
     ImExp_Namespace(RNamespaceDecl* _namespace);
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // 
@@ -111,7 +111,7 @@ public:
     using FuncComp::GetOuterTypeArgs;
     using FuncComp::GetPartialTypeArgsExceptOuter;
 
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_TypeVar : public ImExp
@@ -123,7 +123,7 @@ public:
     ImExp_TypeVar(RType_TypeVar* type);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_Class : public ImExp
@@ -134,7 +134,7 @@ public:
 
 public:
     ImExp_Class(RClassDecl* classDecl, RTypeArguments* typeArgs);
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_ClassFuncs 
@@ -165,7 +165,7 @@ public:
     using FuncComp::GetOuterTypeArgs;
     using FuncComp::GetPartialTypeArgsExceptOuter;
 
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_Struct : public ImExp
@@ -178,7 +178,7 @@ public:
     ImExp_Struct(RStructDecl* structDecl, RTypeArguments* typeArgs);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_StructFuncs 
@@ -202,7 +202,7 @@ public:
     using FuncComp::GetOuterTypeArgs;
     using FuncComp::GetPartialTypeArgsExceptOuter;
 
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_Enum : public ImExp
@@ -215,7 +215,7 @@ public:
     ImExp_Enum(REnumDecl* decl, RTypeArguments* typeArgs);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_EnumElem : public ImExp
@@ -228,7 +228,7 @@ public:
     ImExp_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // exp로 사용할 수 있는
@@ -241,7 +241,7 @@ public:
     ImExp_ThisVar(RType* type);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_LocalVar : public ImExp
@@ -254,7 +254,7 @@ public:
     ImExp_LocalVar(RType* type, const std::string& name);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_LambdaVar : public ImExp
@@ -267,7 +267,7 @@ public:
     ImExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_ClassVar : public ImExp
@@ -283,7 +283,7 @@ public:
     ImExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_StructVar : public ImExp
@@ -299,7 +299,7 @@ public:
     ImExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_EnumElemVar : public ImExp
@@ -313,7 +313,7 @@ public:
     ImExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, ReExp* instance);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_ListIndexer : public ImExp
@@ -327,7 +327,7 @@ public:
     ImExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemType);
 
 public:    
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_LocalDeref : public ImExp
@@ -339,7 +339,7 @@ public:
     ImExp_LocalDeref(ReExp* target);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class ImExp_BoxDeref : public ImExp
@@ -351,7 +351,7 @@ public:
     ImExp_BoxDeref(ReExp* target);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // 기타의 경우
@@ -364,7 +364,7 @@ public:
     ImExp_Else(NExp* exp);
 
 public:
-    void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 } // namespace SyntaxIR0Translator

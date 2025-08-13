@@ -650,7 +650,7 @@ public:
 
                 auto enumeratorType = context.GetType(**eEnumerator);
 
-                if (!IsVarType(*stmt.type))
+                if (!IsVarType(stmt.type))
                 {
                     auto eItemType = context.TranslateSTypeExpToRType(*stmt.type);
                     if (!eItemType) return unexpected{move(eItemType).error()};

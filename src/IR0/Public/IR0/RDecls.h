@@ -31,5 +31,5 @@
 #include "RStructVarDecl.h"
 #include "RTypeDecl.h"
 #include "RTypeDeclOuter.h"
-#include "IR0Factory.h"
+#include "RFactory.h"
 #include "RTypeArguments.h"

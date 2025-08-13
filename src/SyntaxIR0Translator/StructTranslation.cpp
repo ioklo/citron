@@ -30,7 +30,7 @@ void AddStructCtor_MemberDeclPhase(NStructCtorDecl* nCtor, const shared_ptr<SStr
 void AddStructCtor_BodyPhase(NStructCtorDecl* nCtor, const shared_ptr<SStructCtorDecl>& sCtor, BodyPhaseContext& context);
 void AddStructFunc_MemberDeclPhase(NStructFuncDecl* nFunc, const shared_ptr<SStructFuncDecl>& sFunc, MemberDeclPhaseContext& context);
 void AddStructFunc_BodyPhase(NStructFuncDecl* nFunc, const shared_ptr<SStructFuncDecl>& sFunc, BodyPhaseContext& context);
-void AddStructVar_MemberDeclPhase(vector<NStructVarDecl*>&& nVars, NDecl* nDecl, STypeExpPtr sTypeExp, MemberDeclPhaseContext& context);
+void AddStructVar_MemberDeclPhase(vector<NStructVarDecl*>&& nVars, NDecl* nDecl, STypeExp* sTypeExp, MemberDeclPhaseContext& context);
 void AddStruct_TrivialCtorPhase(const shared_ptr<NStructDecl>& nStruct);
 
 RAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessModifier) // throws FatalException
@@ -160,7 +160,7 @@ void AddStructVar(const shared_ptr<NStructDecl>& nStruct, SStructVarDecl& sStruc
     });
 }
 
-void AddStructVar_MemberDeclPhase(vector<NStructVarDecl*>&& nStructVars, NDecl* nDecl, STypeExpPtr sTypeExp, MemberDeclPhaseContext& context)
+void AddStructVar_MemberDeclPhase(vector<NStructVarDecl*>&& nStructVars, NDecl* nDecl, STypeExp* sTypeExp, MemberDeclPhaseContext& context)
 {
     auto declType = context.MakeType(sTypeExp, nDecl);
     for (auto& nStructVar : nStructVars)

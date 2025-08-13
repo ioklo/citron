@@ -30,7 +30,7 @@ void ScopeContext::Update(ScopeContext& src, UpdateContext& context)
     throw NotImplementedException();
 }
 
-RTypeArguments* ScopeContext::MakeOpenTypeArgs(IR0Factory& factory)
+RTypeArguments* ScopeContext::MakeOpenTypeArgs(RFactory& factory)
 {
     // funcContext로 점프
     return funcContext->MakeOpenTypeArgs(factory);
@@ -72,17 +72,17 @@ bool ScopeContext::IsFailed()
     throw NotImplementedException();
 }
 
-expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp& typeExp, IR0Factory& factory)
+expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* typeExp, RFactory& factory)
 {
     throw NotImplementedException();
 }
 
-shared_ptr<NLoc_This> ScopeContext::MakeThisLoc(IR0Factory& factory)
+NLoc_This* ScopeContext::MakeThisLoc(RFactory& factory)
 {
     throw NotImplementedException();
 }
 
-optional<RMember> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory)
+optional<RMember> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
 {
     if (auto* normalName = get_if<RName_Normal>(&name))
     {

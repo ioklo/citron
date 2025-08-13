@@ -56,7 +56,7 @@ optional<RMember> NClassDecl::GetMember(RTypeArguments* typeArgs, const RName& n
     return candidates[1];
 }
 
-optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory)
+optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
 {
     auto typeArgs = MakeOpenTypeArgs(factory);
 

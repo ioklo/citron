@@ -6,7 +6,7 @@
 namespace Citron {
 
 class RType;
-class IR0Factory;
+class RFactory;
 
 class RLambdaVarDecl
     : public RDecl
@@ -14,7 +14,7 @@ class RLambdaVarDecl
 public:
     virtual RName GetName() = 0;
     virtual RType* GetUnboundDeclType() = 0;
-    virtual RType* GetDeclType(RTypeArguments& typeArgs, IR0Factory& factory) = 0;
+    virtual RType* GetDeclType(RTypeArguments& typeArgs, RFactory& factory) = 0;
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
 };
 

@@ -8,6 +8,7 @@
 namespace Citron::SyntaxIR0Translator {
 
 class ImExp;
+class IrExp;
 class TranslationContext;
 
 std::expected<IrExp*, DiagPtr> TranslateImExpToIrExp(ImExp* imExp, TranslationContext& context);

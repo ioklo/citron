@@ -12,7 +12,7 @@ namespace Citron {
 
 class RType;
 class RDecl;
-class IR0Factory;
+class RFactory;
 class RTypeArguments;
 struct RFuncParameter;
 
@@ -53,15 +53,15 @@ class FuncContext
 
 public:
     FuncContext();
-    NLambdaVarDecl* StageLambdaVar(RType* type, const RName& name, NArgument_Normal&& arg);
+    NLambdaVarDecl* StageLambdaVar(RType* type, const RName& name, NArgument_Normal&& arg, RFactory& factory);
 
     virtual bool CanAccess(RDecl* target) = 0;
-    virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory) = 0;
+    virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) = 0;
 
     // decl/body space의 return type을 리턴한다
     virtual RFuncReturn GetUnboundFuncReturn() = 0;
     virtual void SetOpenFuncReturn(RType* retType) = 0;
-    virtual RTypeArguments* MakeOpenTypeArgs(IR0Factory& factory) = 0;
+    virtual RTypeArguments* MakeOpenTypeArgs(RFactory& factory) = 0;
 
     virtual bool IsSeqFunc() = 0;
 
@@ -82,12 +82,12 @@ public:
     FuncContext_Lambda(const ScopeContextPtr& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
     bool CanAccess(RDecl* target) override;
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory) override;
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RType* retType) override;
 
-    RTypeArguments* MakeOpenTypeArgs(IR0Factory& factory) override;
+    RTypeArguments* MakeOpenTypeArgs(RFactory& factory) override;
 
     bool IsSeqFunc() override;
 };
@@ -99,12 +99,12 @@ class FuncContext_FuncDecl : public FuncContext
 
 public:
     bool CanAccess(RDecl* target) override;
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory) override;
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RType* retType) override;
 
-    RTypeArguments* MakeOpenTypeArgs(IR0Factory& factory) override;
+    RTypeArguments* MakeOpenTypeArgs(RFactory& factory) override;
 
     bool IsSeqFunc() override;
 };

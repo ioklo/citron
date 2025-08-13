@@ -9,7 +9,7 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-RType* MemberDeclPhaseContext::MakeType(const STypeExpPtr& sTypeExp, NDecl* decl)
+RType* MemberDeclPhaseContext::MakeType(STypeExp* sTypeExp, NDecl* decl)
 {
     throw NotImplementedException();
 }

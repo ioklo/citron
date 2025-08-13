@@ -11,7 +11,7 @@ class RTypeArguments;
 class RStructDecl;
 class REnumDecl;
 class RType;
-class IR0Factory;
+class RFactory;
 class RClassVarDecl;
 class RStructVarDecl;
 class NExp;
@@ -51,17 +51,17 @@ class IrExpVisitor
 {
 public:
     virtual ~IrExpVisitor() {}
-    virtual void Visit(IrExp_Namespace& irExp) = 0;
-    virtual void Visit(IrExp_TypeVar& irExp) = 0;
-    virtual void Visit(IrExp_Class& irExp) = 0;
-    virtual void Visit(IrExp_Struct& irExp) = 0;
-    virtual void Visit(IrExp_Enum& irExp) = 0;
-    virtual void Visit(IrExp_ThisVar& irExp) = 0;
-    virtual void Visit(IrExp_StaticRef& irExp) = 0;
-    virtual void Visit(IrExp_BoxRef& irExp) = 0;
-    virtual void Visit(IrExp_LocalRef& irExp) = 0;
-    virtual void Visit(IrExp_DerefedBoxValue& irExp) = 0;
-    virtual void Visit(IrExp_LocalValue& irExp) = 0;
+    virtual void Visit(IrExp_Namespace* irExp) = 0;
+    virtual void Visit(IrExp_TypeVar* irExp) = 0;
+    virtual void Visit(IrExp_Class* irExp) = 0;
+    virtual void Visit(IrExp_Struct* irExp) = 0;
+    virtual void Visit(IrExp_Enum* irExp) = 0;
+    virtual void Visit(IrExp_ThisVar* irExp) = 0;
+    virtual void Visit(IrExp_StaticRef* irExp) = 0;
+    virtual void Visit(IrExp_BoxRef* irExp) = 0;
+    virtual void Visit(IrExp_LocalRef* irExp) = 0;
+    virtual void Visit(IrExp_DerefedBoxValue* irExp) = 0;
+    virtual void Visit(IrExp_LocalValue* irExp) = 0;
 };
 
 class IrExp_Namespace : public IrExp
@@ -71,7 +71,7 @@ public:
 
 public:
     IrExp_Namespace(RNamespaceDecl* decl);
-    void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class IrExp_TypeVar : public IrExp
@@ -81,7 +81,7 @@ public:
 
 public:
     IrExp_TypeVar(RType_TypeVar* type);
-    void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class IrExp_Class : public IrExp
@@ -92,7 +92,7 @@ public:
 
 public:
     IrExp_Class(RClassDecl* decl, RTypeArguments* typeArgs);
-    void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class IrExp_Struct : public IrExp
@@ -103,7 +103,7 @@ public:
 
 public:
     IrExp_Struct(RStructDecl* decl, RTypeArguments* typeArgs);
-    void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class IrExp_Enum : public IrExp
@@ -114,7 +114,7 @@ public:
 
 public:
     IrExp_Enum(REnumDecl* decl, RTypeArguments* typeArgs);
-    void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // 자체로는 invalid하지만 memberExp랑 결합되면 의미가 생기기때문에 정보를 갖고 있는다
@@ -124,7 +124,7 @@ public:
     RType* type;
 public:
     IrExp_ThisVar(RType* type);
-    void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // exp로 사용할 수 있는
@@ -176,26 +176,26 @@ public:
 
 public:
     IrExp_StaticRef(NLoc* loc);
-    void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class IrBoxRefExpVisitor
 {
 public:
     virtual ~IrBoxRefExpVisitor() {}
-    virtual void Visit(IrExp_BoxRef_ClassMember& irBoxRefExp) = 0;
-    virtual void Visit(IrExp_BoxRef_StructIndirectMember& irBoxRefExp) = 0;
-    virtual void Visit(IrExp_BoxRef_StructMember& irBoxRefExp) = 0;
+    virtual void Visit(IrExp_BoxRef_ClassMember* irBoxRefExp) = 0;
+    virtual void Visit(IrExp_BoxRef_StructIndirectMember* irBoxRefExp) = 0;
+    virtual void Visit(IrExp_BoxRef_StructMember* irBoxRefExp) = 0;
 };
 
 class IrExp_BoxRef : public IrExp
 {
 public:
     virtual ~IrExp_BoxRef() {}
-    void Accept(IrExpVisitor& visitor) final { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) final { visitor.Visit(this); }
 
     virtual void Accept(IrBoxRefExpVisitor& visitor) = 0;
-    virtual RType* GetTargetType(IR0Factory& factory) = 0;
+    virtual RType* GetTargetType(RFactory& factory) = 0;
     virtual NLoc* MakeLoc() = 0;
 };
 
@@ -209,9 +209,9 @@ public:
 
 public:
     IrExp_BoxRef_ClassMember(NLoc* loc, RClassVarDecl* decl, RTypeArguments* typeArgs);
-    void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(this); }
 
-    RType* GetTargetType(IR0Factory& factory) override;
+    RType* GetTargetType(RFactory& factory) override;
     NLoc* MakeLoc() override;
 };
 
@@ -226,8 +226,8 @@ public:
 
 public:
     IrExp_BoxRef_StructIndirectMember(NLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs);
-    void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetTargetType(IR0Factory& factory) override;
+    void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetTargetType(RFactory& factory) override;
     NLoc* MakeLoc() override;
 };
 
@@ -240,8 +240,8 @@ public:
 
 public:
     IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, RStructVarDecl* decl, RTypeArguments* typeArgs);
-    void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetTargetType(IR0Factory& factory) override;
+    void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetTargetType(RFactory& factory) override;
     NLoc* MakeLoc() override;
 };
 
@@ -252,7 +252,7 @@ public:
 
 public:
     IrExp_LocalRef(NLoc* loc);
-    void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // Value로 나오는 경우
@@ -263,7 +263,7 @@ public:
 
 public:
     IrExp_LocalValue(NExp* exp);
-    void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // handle
@@ -278,7 +278,7 @@ public:
 
 public:
     IrExp_DerefedBoxValue(NLoc* innerLoc);
-    void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 } // namespace SyntaxIR0Translator

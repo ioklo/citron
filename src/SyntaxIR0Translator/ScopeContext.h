@@ -17,7 +17,7 @@ namespace Citron {
 
 struct RFuncParameter;
 class RType;
-class IR0Factory;
+class RFactory;
 
 class NLoc_This;
 class NLambdaDecl;
@@ -52,7 +52,7 @@ public:
     void Update(ScopeContext& src, UpdateContext& context);
 
 public:
-    RTypeArguments* MakeOpenTypeArgs(IR0Factory& factory);
+    RTypeArguments* MakeOpenTypeArgs(RFactory& factory);
     void SetFlowEndsCompletely();
 
     std::shared_ptr<ScopeContext> MakeNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
@@ -66,10 +66,10 @@ public:
 
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }
-    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp& typeExp, IR0Factory& factory);
+    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* typeExp, RFactory& factory);
 
-    std::shared_ptr<NLoc_This> MakeThisLoc(IR0Factory& factory);
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory);
+    NLoc_This* MakeThisLoc(RFactory& factory);
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory);
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;

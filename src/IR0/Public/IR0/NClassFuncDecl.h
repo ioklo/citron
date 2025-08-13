@@ -50,7 +50,7 @@ public:
     RAccessor GetAccessor() override { return accessor; }
     IR0_API RIdentifier GetIdentifier() override;
     IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory) override;
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     // from RFuncDecl
     size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
@@ -59,7 +59,7 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RClassFuncDecl
-    RType* GetReturnType(RTypeArguments& typeArgs, IR0Factory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
+    RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
 };
 
 }

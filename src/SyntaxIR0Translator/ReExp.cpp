@@ -23,7 +23,7 @@ ReExp_LambdaVar::ReExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs)
 {
 }
 
-RType* ReExp_LambdaVar::GetType(IR0Factory& factory)
+RType* ReExp_LambdaVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -33,7 +33,7 @@ ReExp_ClassVar::ReExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bo
 {
 }
 
-RType* ReExp_ClassVar::GetType(IR0Factory& factory)
+RType* ReExp_ClassVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -43,7 +43,7 @@ ReExp_StructVar::ReExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs,
 {
 }
 
-RType* ReExp_StructVar::GetType(IR0Factory& factory)
+RType* ReExp_StructVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -53,7 +53,7 @@ ReExp_EnumElemVar::ReExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typ
 {
 }
 
-RType* ReExp_EnumElemVar::GetType(IR0Factory& factory)
+RType* ReExp_EnumElemVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
@@ -64,7 +64,7 @@ ReExp_LocalDeref::ReExp_LocalDeref(ReExp* target)
 
 }
 
-RType* ReExp_LocalDeref::GetType(IR0Factory& factory)
+RType* ReExp_LocalDeref::GetType(RFactory& factory)
 {
     auto type = target->GetType(factory);
 
@@ -78,7 +78,7 @@ ReExp_BoxDeref::ReExp_BoxDeref(ReExp* target)
 
 }
 
-RType* ReExp_BoxDeref::GetType(IR0Factory& factory)
+RType* ReExp_BoxDeref::GetType(RFactory& factory)
 {
     auto type = target->GetType(factory);
 
@@ -97,7 +97,7 @@ ReExp_Else::ReExp_Else(NExp* nExp)
 {
 }
 
-RType* ReExp_Else::GetType(IR0Factory& factory)
+RType* ReExp_Else::GetType(RFactory& factory)
 {
     return nExp->GetType(factory);
 }

@@ -7,6 +7,7 @@
 #include "Syntax/Syntax.h"
 #include "Logging/Logger.h"
 #include "IR0/DeclWithOuterTypeArgs.h"
+#include "IR0/RFactory.h"
 #include "IR0/RTypes.h"
 #include "IR0/RClassDecl.h"
 #include "IR0/RClassCtorDecl.h"
@@ -40,8 +41,8 @@ class ImCallableAndSArgsToNExpTranslator : public ImExpVisitor
 {
     expected<NExp*, DiagPtr>* result;
 
-    SExpPtr sCallable;
-    SArgumentsPtr sArgs;
+    SExp* sCallable;
+    SArguments* sArgs;
 
     TranslationContext& context;
 
@@ -49,32 +50,32 @@ class ImCallableAndSArgsToNExpTranslator : public ImExpVisitor
     // S.ISyntaxNode nodeForCallableErrorReport;
 
 public:
-    ImCallableAndSArgsToNExpTranslator(expected<NExp*, DiagPtr>* result, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, TranslationContext& context)
+    ImCallableAndSArgsToNExpTranslator(expected<NExp*, DiagPtr>* result, SExp* sCallable, SArguments* sArgs, TranslationContext& context)
         : result(result), sCallable(sCallable), sArgs(sArgs), context(context)
     {
     }
 
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<NExp, TValue>
-    void Value(TArgs&&... args)
+    template<typename TNExp, typename... TArgs> requires std::derived_from<TNExp, NExp>
+    constexpr void Exp(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        *result = context.MakeNExp<TNExp>(std::forward<TArgs>(args)...);
     }
     
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    constexpr void Error(expected<TValue, DiagPtr>&& e)
     {
         *result = unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
-    void Error(TArgs&&... args)
+    constexpr void Error(TArgs&&... args)
     {
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
     // CallExp 분석에서 Callable이 Lambda, func<>로 계산되는 경우
-    void HandleLoc(ImExp& imExp)
+    void HandleLoc(ImExp* imExp)
     {
         auto eReExp = TranslateImExpToReExp(imExp, context);
         if (!eReExp)
@@ -87,8 +88,8 @@ private:
             return Error(move(eNCallable));
 
         // TODO: Lambda말고 func<>도 있다
-        auto rCallableType = context.GetType(**eNCallable);
-        auto rLambdaType = dynamic_cast<RType_Lambda*>(rCallableType.get());
+        auto* rCallableType = context.GetType(**eNCallable);
+        auto* rLambdaType = dynamic_cast<RType_Lambda*>(rCallableType);
 
         if (!rLambdaType)
         {
@@ -107,7 +108,7 @@ private:
 
         if (match)
         {
-            return Value<NExp_CallLambda>(rLambdaType->decl, match->typeArgs, *eNCallable, match->args);
+            return Exp<NExp_CallLambda>(rLambdaType->decl, match->typeArgs, *eNCallable, match->args);
         }
         else
         {
@@ -116,76 +117,76 @@ private:
     }
 
 public:
-    void Visit(ImExp_Namespace& imExp) override
+    void Visit(ImExp_Namespace* imExp) override
     {
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
-    void Visit(ImExp_GlobalFuncs& imExp) override
+    void Visit(ImExp_GlobalFuncs* imExp) override
     {
-        auto match = MatchFunc(imExp.items, sArgs, context);
+        auto match = MatchFunc(imExp->items, sArgs, context);
         if (!match)
         {
             throw NotImplementedException();
         }
 
-        return Value<NExp_CallGlobalFunc>(match->funcDecl, match->typeArgs, match->args);
+        return Exp<NExp_CallGlobalFunc>(match->funcDecl, match->typeArgs, match->args);
     }
 
-    void Visit(ImExp_TypeVar& imExp) override
+    void Visit(ImExp_TypeVar* imExp) override
     {
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
-    void Visit(ImExp_Class& imExp) override
+    void Visit(ImExp_Class* imExp) override
     {
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
-    void Visit(ImExp_ClassFuncs& imExp) override
+    void Visit(ImExp_ClassFuncs* imExp) override
     {
-        auto match = MatchFunc(imExp.items, sArgs, context);
+        auto match = MatchFunc(imExp->items, sArgs, context);
         if (!match)
         {
             throw NotImplementedException();
         }
 
-        if (imExp.hasExplicitInstance) // x.F, C.F 등 인스턴스 부분이 명시적으로 정해졌다면
+        if (imExp->hasExplicitInstance) // x.F, C.F 등 인스턴스 부분이 명시적으로 정해졌다면
         {
             // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
-            if (match->funcDecl->IsStatic() && imExp.explicitInstance != nullptr)
+            if (match->funcDecl->IsStatic() && imExp->explicitInstance != nullptr)
             {
                 return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
             }
 
             // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
-            if (!match->funcDecl->IsStatic() && imExp.explicitInstance == nullptr)
+            if (!match->funcDecl->IsStatic() && imExp->explicitInstance == nullptr)
             {
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
 
             // ResolvedExp -> RExp
             NLoc* nInst;
-            if (imExp.explicitInstance)
+            if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto eNLoc = TranslateReExpToNLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+                auto eNLoc = TranslateReExpToNLoc(*imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
                 if (!eNLoc) return Error(move(eNLoc));
 
                 nInst = *eNLoc;
             }
 
-            return Value<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), move(nInst), move(match->args));
+            return Exp<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), move(nInst), move(match->args));
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
             if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                return Value<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), nullptr, move(match->args));
+                return Exp<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), nullptr, move(match->args));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Value<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), context.MakeThisLoc(), move(match->args));
+                return Exp<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), context.MakeThisLoc(), move(match->args));
             }
         }
 
@@ -201,14 +202,14 @@ public:
         //}
     }
 
-    void Visit(ImExp_Struct& imExp) override
+    void Visit(ImExp_Struct* imExp) override
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
         std::vector<DeclWithOuterTypeArgs<RStructCtorDecl>> items;
-        for (auto& ctor : imExp.structDecl->GetUnboundCtors())
+        for (auto& ctor : imExp->structDecl->GetUnboundCtors())
         {
-            items.emplace_back(ctor, imExp.typeArgs);
+            items.emplace_back(ctor, imExp->typeArgs);
         }
 
         auto match = MatchFunc(items, sArgs, context);
@@ -220,12 +221,12 @@ public:
             // return Error(MakePtr<>());
         }
 
-        return Value<NExp_NewStruct>(match->funcDecl, move(match->typeArgs), move(match->args));
+        return Exp<NExp_NewStruct>(match->funcDecl, move(match->typeArgs), move(match->args));
     }
 
-    void Visit(ImExp_StructFuncs& imExp) override
+    void Visit(ImExp_StructFuncs* imExp) override
     {
-        auto match = MatchFunc(imExp.items, sArgs, context);
+        auto match = MatchFunc(imExp->items, sArgs, context);
         if (!match)
         {
             // 매치에 실패했습니다.
@@ -234,41 +235,41 @@ public:
         }
 
         // static 함수를 호출하는 위치가 선언한 타입 내부라면 체크하지 않고 넘어간다 (멤버 호출이 아닌 경우)
-        if (imExp.hasExplicitInstance)
+        if (imExp->hasExplicitInstance)
         {
             // static this 체크
-            if (match->funcDecl->IsStatic() && imExp.explicitInstance)
+            if (match->funcDecl->IsStatic() && imExp->explicitInstance)
             {
                 return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
             }
 
             // 반대의 경우도 체크
-            if (!match->funcDecl->IsStatic() && !imExp.explicitInstance)
+            if (!match->funcDecl->IsStatic() && !imExp->explicitInstance)
             {
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
 
             NLoc* instance;
-            if (imExp.explicitInstance)
+            if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto eInstance = TranslateReExpToNLoc(*imExp.explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+                auto eInstance = TranslateReExpToNLoc(*imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
                 if (!eInstance) return Error(move(eInstance));
 
                 instance = *eInstance;
             }
 
-            return Value<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), move(instance), move(match->args));
+            return Exp<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), move(instance), move(match->args));
         }
         else
         {
             if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                return Value<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), nullptr, move(match->args));
+                return Exp<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), nullptr, move(match->args));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Value<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), context.MakeThisLoc(), move(match->args));
+                return Exp<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), context.MakeThisLoc(), move(match->args));
             }
         }
 
@@ -284,81 +285,81 @@ public:
         //}
     }
 
-    void Visit(ImExp_Enum& imExp) override
+    void Visit(ImExp_Enum* imExp) override
     {
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
-    void Visit(ImExp_EnumElem& imExp) override
+    void Visit(ImExp_EnumElem* imExp) override
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
-        if (imExp.decl->IsStandalone())
+        if (imExp->decl->IsStandalone())
         {
             return Error<Error_CallExp_CallableExpressionIsNotCallable>();
         }
 
-        auto parameters = imExp.decl->GetUnboundCtorParams();
+        auto parameters = imExp->decl->GetUnboundCtorParams();
 
         // EnumElem은 variadic도, typeArgs도 지원하지 않는다
         // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지
         // paramTypes으로 typeValues를 건네 줄것이면 적용해서 넣는게 나을 것 같은데, TypeResolver 동작때문에(?) 어떻게 될지 몰라서 일단 여기서는 적용하고 TypeEnv.None을 넘겨준다
-        auto match = MatchArguments(imExp.typeArgs, /*partialTypeArgsExceptOuter*/ {}, move(parameters), /*bVariadic*/ false, sArgs);
+        auto match = MatchArguments(imExp->typeArgs, /*partialTypeArgsExceptOuter*/ {}, move(parameters), /*bVariadic*/ false, sArgs);
 
         if (!match)
         {
             return Error<Error_Parameter_MismatchBetweenParamCountAndArgCount>();
         }
 
-        return Value<NExp_NewEnumElem>(imExp.decl, move(match->typeArgs), move(match->args));
+        return Exp<NExp_NewEnumElem>(imExp->decl, move(match->typeArgs), move(match->args));
     }
 
-    void Visit(ImExp_ThisVar& imExp) override
+    void Visit(ImExp_ThisVar* imExp) override
     {
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
-    void Visit(ImExp_LocalVar& imExp) override
+    void Visit(ImExp_LocalVar* imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_LambdaVar& imExp) override
+    void Visit(ImExp_LambdaVar* imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_ClassVar& imExp) override
+    void Visit(ImExp_ClassVar* imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_StructVar& imExp) override
+    void Visit(ImExp_StructVar* imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_EnumElemVar& imExp) override
+    void Visit(ImExp_EnumElemVar* imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_ListIndexer& imExp) override
+    void Visit(ImExp_ListIndexer* imExp) override
     {
         // l[0]
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_LocalDeref& imExp) override
+    void Visit(ImExp_LocalDeref* imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_BoxDeref& imExp) override
+    void Visit(ImExp_BoxDeref* imExp) override
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_Else& imExp) override
+    void Visit(ImExp_Else* imExp) override
     {
         return HandleLoc(imExp);
     }
@@ -378,7 +379,7 @@ public:
 
 } // namespace
 
-expected<NExp*, DiagPtr> TranslateImCallableAndSArgsToNExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateImCallableAndSArgsToNExp(ImExp& imCallable, SExp* sCallable, SArguments* sArgs, TranslationContext& context)
 {
     // 여기서 분석해야 할 것은 
     // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다

@@ -6,7 +6,7 @@
 namespace Citron {
 
 class RType;
-class IR0Factory;
+class RFactory;
 class RTypeArguments;
 class RClassVarDecl;
 class RStructVarDecl;
@@ -37,23 +37,23 @@ class ReExp
 public:
     virtual ~ReExp() { }
     virtual void Accept(ReExpVisitor& visitor) = 0;
-    virtual RType* GetType(IR0Factory& factory) = 0;
+    virtual RType* GetType(RFactory& factory) = 0;
 };
 
 class ReExpVisitor
 {
 public:    
     virtual ~ReExpVisitor() { }
-    virtual void Visit(ReExp_ThisVar& exp) = 0;
-    virtual void Visit(ReExp_LocalVar& exp) = 0;
-    virtual void Visit(ReExp_LambdaVar& exp) = 0;
-    virtual void Visit(ReExp_ClassVar& exp) = 0;
-    virtual void Visit(ReExp_StructVar& exp) = 0;
-    virtual void Visit(ReExp_EnumElemVar& exp) = 0;
-    virtual void Visit(ReExp_LocalDeref& exp) = 0;
-    virtual void Visit(ReExp_BoxDeref& exp) = 0;
-    virtual void Visit(ReExp_ListIndexer& exp) = 0;
-    virtual void Visit(ReExp_Else& exp) = 0;
+    virtual void Visit(ReExp_ThisVar* exp) = 0;
+    virtual void Visit(ReExp_LocalVar* exp) = 0;
+    virtual void Visit(ReExp_LambdaVar* exp) = 0;
+    virtual void Visit(ReExp_ClassVar* exp) = 0;
+    virtual void Visit(ReExp_StructVar* exp) = 0;
+    virtual void Visit(ReExp_EnumElemVar* exp) = 0;
+    virtual void Visit(ReExp_LocalDeref* exp) = 0;
+    virtual void Visit(ReExp_BoxDeref* exp) = 0;
+    virtual void Visit(ReExp_ListIndexer* exp) = 0;
+    virtual void Visit(ReExp_Else* exp) = 0;
 };
 
 class ReExp_ThisVar : public ReExp
@@ -63,8 +63,8 @@ public:
 
 public:
     ReExp_ThisVar(RType* type);
-    void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetType(IR0Factory& factory) override { return type; }
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType(RFactory& factory) override { return type; }
 };
 
 class ReExp_LocalVar : public ReExp
@@ -75,8 +75,8 @@ public:
     
 public:
     ReExp_LocalVar(RType* type, const std::string& name);
-    void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetType(IR0Factory& factory) override { return type; }
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType(RFactory& factory) override { return type; }
 };
 
 class ReExp_LambdaVar : public ReExp
@@ -87,8 +87,8 @@ public:
     
 public:
     ReExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs);
-    void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetType(IR0Factory& factory) override;
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType(RFactory& factory) override;
 };
 
 class ReExp_ClassVar : public ReExp
@@ -101,8 +101,8 @@ public:
     
 public:
     ReExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance);
-    void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetType(IR0Factory& factory) override;
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType(RFactory& factory) override;
 };
 
 class ReExp_StructVar : public ReExp
@@ -115,8 +115,8 @@ public:
     
 public:
     ReExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance);
-    void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetType(IR0Factory& factory) override;
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType(RFactory& factory) override;
 };
 
 class ReExp_EnumElemVar : public ReExp
@@ -128,8 +128,8 @@ public:
 
 public:
     ReExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, ReExp* instance);
-    void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetType(IR0Factory& factory) override;
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType(RFactory& factory) override;
 };
 
 class ReExp_LocalDeref : public ReExp
@@ -139,8 +139,8 @@ public:
     
 public:
     ReExp_LocalDeref(ReExp* target);
-    void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetType(IR0Factory& factory) override;
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType(RFactory& factory) override;
 };
 
 class ReExp_BoxDeref : public ReExp
@@ -150,8 +150,8 @@ public:
 
 public:
     ReExp_BoxDeref(ReExp* target);
-    void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetType(IR0Factory& factory) override;
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType(RFactory& factory) override;
 };
 
 class ReExp_ListIndexer : public ReExp
@@ -163,8 +163,8 @@ public:
     
 public:
     ReExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemType);
-    void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetType(IR0Factory& factory) override { return itemType; }
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType(RFactory& factory) override { return itemType; }
 };
 
 // 기타의 경우, Value
@@ -176,8 +176,8 @@ public:
 public:
     ReExp_Else(NExp* ptr);
 
-    void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RType* GetType(IR0Factory& factory) override;
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType(RFactory& factory) override;
 };
 
 } // namespace SyntaxIR0Translator

@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "RTypes.h"
-#include "IR0Factory.h"
+#include "RFactory.h"
 
 using namespace std;
 
@@ -24,7 +24,7 @@ RType* RTypeArguments::Get(int i)
     return items[i];
 }
 
-RTypeArguments* RTypeArguments::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RTypeArguments* RTypeArguments::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     vector<RType*> appliedItems;
     appliedItems.reserve(items.size());

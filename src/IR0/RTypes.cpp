@@ -3,7 +3,7 @@
 
 #include "Infra/Exceptions.h"
 
-#include "IR0Factory.h"
+#include "RFactory.h"
 #include "RTypeArguments.h"
 #include "RStructDecl.h"
 #include "RClassDecl.h"
@@ -20,7 +20,7 @@ RType_NullableValue::RType_NullableValue(RType* innerType)
 {
 }
 
-RType* RType_NullableValue::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_NullableValue::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedInnerType = innerType->Apply(typeArgs, factory);
     return factory.MakeNullableValueType(appliedInnerType);
@@ -37,7 +37,7 @@ RType_NullableRef::RType_NullableRef(RType* innerType)
 {
 }
 
-RType* RType_NullableRef::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_NullableRef::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {   
     return factory.MakeNullableRefType(innerType->Apply(typeArgs, factory));
 }
@@ -52,7 +52,7 @@ RType_TypeVar::RType_TypeVar(int index)
 {
 }
 
-RType* RType_TypeVar::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_TypeVar::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     return typeArgs.Get(index);
 }
@@ -66,7 +66,7 @@ RType_Void::RType_Void()
 {
 }
 
-RType* RType_Void::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_Void::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     return factory.MakeVoidType();
 }
@@ -81,7 +81,7 @@ RType_Tuple::RType_Tuple(std::vector<RTupleVar>&& vars)
 {
 }
 
-RType* RType_Tuple::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_Tuple::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     vector<RTupleVar> appliedVars;
     for (auto& var : vars)
@@ -103,7 +103,7 @@ RType_Func::RType_Func(bool bLocal, RType* retType, std::vector<Parameter>&& par
 {
 }
 
-RType* RType_Func::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_Func::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedRetType = retType->Apply(typeArgs, factory);
 
@@ -135,7 +135,7 @@ RType_LocalPtr::RType_LocalPtr(RType* innerType)
 {
 }
 
-RType* RType_LocalPtr::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_LocalPtr::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedInnerType = innerType->Apply(typeArgs, factory);
     return factory.MakeLocalPtrType(appliedInnerType);
@@ -153,7 +153,7 @@ RType_BoxPtr::RType_BoxPtr(RType* innerType)
 
 }
 
-RType* RType_BoxPtr::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_BoxPtr::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedInnerType = innerType->Apply(typeArgs, factory);
     return factory.MakeBoxPtrType(appliedInnerType);
@@ -179,7 +179,7 @@ bool RType_Class::IsBaseOf(RType_Class& derivedClass)
     throw NotImplementedException();
 }
 
-RType* RType_Class::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_Class::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
     return factory.MakeClassType(decl, appliedTypeArgs);
@@ -205,7 +205,7 @@ RStructCtorDecl* RType_Struct::GetUnboundTrivialCtor()
     return decl->GetUnboundTrivialCtor_RStructCtorDecl();
 }
 
-RType* RType_Struct::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_Struct::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
     return factory.MakeStructType(decl, appliedTypeArgs);
@@ -221,7 +221,7 @@ RType_Enum::RType_Enum(REnumDecl* decl, RTypeArguments* typeArgs)
 {   
 }
 
-RType* RType_Enum::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_Enum::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
     return factory.MakeEnumType(decl, appliedTypeArgs);
@@ -242,7 +242,7 @@ std::optional<RMember_EnumElemVar> RType_EnumElem::GetVar(const RName& name)
     return decl->GetVar(typeArgs, name);
 }
 
-RType_Enum* RType_EnumElem::GetBaseEnumType(IR0Factory& factory)
+RType_Enum* RType_EnumElem::GetBaseEnumType(RFactory& factory)
 {
     auto enumDecl = decl->GetBaseEnumDecl();
 
@@ -251,7 +251,7 @@ RType_Enum* RType_EnumElem::GetBaseEnumType(IR0Factory& factory)
 }
 
 
-RType* RType_EnumElem::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_EnumElem::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
     return factory.MakeEnumElemType(decl, appliedTypeArgs);
@@ -267,7 +267,7 @@ RType_Interface::RType_Interface(RInterfaceDecl* decl, RTypeArguments* typeArgs,
 {
 }
 
-RType* RType_Interface::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_Interface::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs, factory);
     return factory.MakeInterfaceType(decl, appliedTypeArgs, bLocal);
@@ -288,7 +288,7 @@ vector<RFuncParameter> RType_Lambda::GetPartiallyBoundParameters()
     throw NotImplementedException();
 }
 
-RType* RType_Lambda::Apply(RTypeArguments& typeArgs, IR0Factory& factory)
+RType* RType_Lambda::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedOuterTypeArgs = outerTypeArgs->Apply(typeArgs, factory);
     return factory.MakeLambdaType(decl, appliedOuterTypeArgs);

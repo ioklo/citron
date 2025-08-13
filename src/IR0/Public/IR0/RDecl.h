@@ -15,7 +15,7 @@ class MDecl;
 
 class RTypeArguments;
 
-class IR0Factory;
+class RFactory;
 
 class RStructCtorDecl;
 class RClassCtorDecl;
@@ -35,7 +35,7 @@ public:
     IR0_API size_t GetTypeParamCount();
     IR0_API size_t GetAllTypeParamCount();
 
-    IR0_API RTypeArguments* MakeOpenTypeArgs(IR0Factory& factory);
+    IR0_API RTypeArguments* MakeOpenTypeArgs(RFactory& factory);
 
 public:
     IR0_API virtual std::string GetModuleName(); // once overridden by NModuleDecl, NMModuleDecl
@@ -51,7 +51,7 @@ public:
     virtual std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
 
     // 현재 관점에서 identifier를 찾는다. 못 찾을 경우 부모를 찾는다. 내부에서 GetMember를 쓸 수 있다
-    virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory) = 0;
+    virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) = 0;
 
     virtual void Accept(RDeclVisitor& visitor) = 0;
 };

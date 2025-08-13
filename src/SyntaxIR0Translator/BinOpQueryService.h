@@ -7,7 +7,7 @@
 
 namespace Citron {
 
-class IR0Factory;
+class RFactory;
 class RType;
 enum class NInternalBinaryOperator;
 
@@ -28,7 +28,7 @@ class BinOpQueryService
     std::unordered_map<SBinaryOpKind, std::vector<BinOpInfo>> infos;
 
 public:
-    BinOpQueryService(IR0Factory& factory);
+    BinOpQueryService(RFactory& factory);
 
     const std::vector<BinOpInfo>& GetInfos(SBinaryOpKind kind);
 };

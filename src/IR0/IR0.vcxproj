@@ -222,7 +222,7 @@
     <ClInclude Include="Public\IR0\RTypeArguments.h" />
     <ClInclude Include="Public\IR0\RTypeDecl.h" />
     <ClInclude Include="Public\IR0\RTypeDeclOuter.h" />
-    <ClInclude Include="Public\IR0\IR0Factory.h" />
+    <ClInclude Include="Public\IR0\RFactory.h" />
     <ClInclude Include="Public\IR0\RTypes.h" />
   </ItemGroup>
   <ItemGroup>
@@ -267,7 +267,7 @@
     <ClCompile Include="RTypes.cpp" />
     <ClCompile Include="RTypeArguments.cpp" />
     <ClCompile Include="NTypeDeclContainerComponent.cpp" />
-    <ClCompile Include="IR0Factory.cpp" />
+    <ClCompile Include="RFactory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -10,7 +10,12 @@ namespace Citron {
 
 class RNamespaceDeclGroup;
 class RTypeArguments;
-class IR0Factory;
+class RFactory;
+
+class NDecl;
+class NStmt;
+class NExp;
+class NLoc;
 
 class NNamespaceDecl;
 
@@ -88,7 +93,7 @@ struct TypeArgumentsKeyHasher
 
 // TODO: weak처리
 // flyweight
-class IR0Factory
+class RFactory
 {
     // inner type -> nullable type
     std::unordered_map<RType*, std::unique_ptr<RType_NullableValue>> nullableValueTypes;
@@ -123,8 +128,14 @@ class IR0Factory
     // namespace group
     std::unordered_map<std::vector<std::string>, std::unique_ptr<RNamespaceDeclGroup>> nsGroupsMap;
 
+    std::vector<std::unique_ptr<NDecl>> nDecls;
+    std::vector<std::unique_ptr<NStmt>> nStmts;
+    std::vector<std::unique_ptr<NExp>> nExps;
+    std::vector<std::unique_ptr<NLoc>> nLocs;
+
 public:
-    IR0_API IR0Factory();
+    IR0_API RFactory();
+    IR0_API ~RFactory();
 
     IR0_API RType_NullableValue* MakeNullableValueType(RType* innerType);
     IR0_API RType_NullableRef* MakeNullableRefType(RType* innerType);
@@ -157,11 +168,48 @@ public:
     NNamespaceDecl* NewChildNamespaceDecl(NNamespaceDecl* outer, const std::string& name);
     RNamespaceDeclGroup* GetNamespaceDeclGroup(const std::vector<std::string>& name);
 
+    template<typename TNDecl, typename... TArgs> requires std::derived_from<TNDecl, NDecl> && (!std::same_as<TNDecl, NNamespaceDecl>)
+    constexpr TNDecl* MakeNDecl(TArgs&&... args)
+    {
+        auto decl = std::make_unique<TNDecl>(std::forward<TArgs>(args)...);
+        auto* pDecl = decl.get();
+        nDecls.push_back(std::move(decl));
+        return pDecl;
+    }
+
+    template<typename TNStmt, typename... TArgs> requires std::derived_from<TNStmt, NStmt>
+    constexpr TNStmt* MakeNStmt(TArgs&&... args)
+    {
+        auto stmt = std::make_unique<TNStmt>(std::forward<TArgs>(args)...);
+        auto* pStmt = stmt.get();
+        nStmts.push_back(std::move(stmt));
+        return pStmt;
+    }
+
+    template<typename TNExp, typename... TArgs> requires std::derived_from<TNExp, NExp>
+    constexpr TNExp* MakeNExp(TArgs&&... args)
+    {
+        auto exp = std::make_unique<TNExp>(std::forward<TArgs>(args)...);
+        auto* pExp= exp.get();
+        nExps.push_back(std::move(exp));
+        return pExp;
+    }  
+
+    template<typename TNLoc, typename... TArgs> requires std::derived_from<TNLoc, NLoc>
+    constexpr TNLoc* MakeNLoc(TArgs&&... args)
+    {
+        auto loc = std::make_unique<TNLoc>(std::forward<TArgs>(args)...);
+        auto* pLoc = loc.get();
+        nLocs.push_back(std::move(loc));
+        return pLoc;
+    }
+    
+
 private:
     template<typename TDecl, typename TType, typename... TArgs>
     TType* MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TDecl* decl, RTypeArguments* typeArgs, TArgs&&... args);
 };
 
-using IR0FactoryPtr = std::shared_ptr<IR0Factory>;
+using RFactoryPtr = std::shared_ptr<RFactory>;
 
 } // namespace Citron

@@ -20,7 +20,7 @@ class RTypeArguments;
 
 namespace SyntaxIR0Translator {
 
-expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context)
+expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context)
 {
     std::vector<RType*> items;
     items.reserve(typeArgs.size());
@@ -113,7 +113,7 @@ expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationCon
         auto expEnumType = context.GetBaseEnumType(*expEnumElemType);
 
         if (expectedType == expEnumType)
-            return MakePtr<NExp_CastEnumElemToEnum>(exp, expectedType);
+            return context.MakeNExp<NExp_CastEnumElemToEnum>(exp, expectedType);
 
         // 에러가 좀더 구체적으로 알려줬으면 좋겠다
         throw NotImplementedException();
@@ -156,9 +156,9 @@ expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationCon
     return CastNExp(NExp*(exp), expectedType, context);
 }
 
-bool IsVarType(STypeExp& typeExp)
+bool IsVarType(STypeExp* typeExp)
 {
-    auto* idTypeExp = dynamic_cast<STypeExp_Id*>(&typeExp);
+    auto* idTypeExp = dynamic_cast<STypeExp_Id*>(typeExp);
     return idTypeExp && idTypeExp->name == "var" && idTypeExp->typeArgs.size() == 0;
 }
 

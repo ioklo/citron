@@ -10,7 +10,7 @@ namespace Citron {
 class MStructFuncDecl;
 
 class RType;
-class IR0Factory;
+class RFactory;
 
 class RStructFuncDecl
     : public RDecl
@@ -18,7 +18,7 @@ class RStructFuncDecl
     , public RFuncDeclOuter
 {
 public:
-    virtual RType* GetReturnType(RTypeArguments& typeArgs, IR0Factory& factory) = 0;
+    virtual RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) = 0;
     virtual bool IsStatic() = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
