@@ -27,7 +27,6 @@ class NLambdaVarDecl;
 namespace SyntaxIR0Translator {
 
 class ReExp;
-using ReExpPtr = std::shared_ptr<ReExp>;
 
 class ImExp_Namespace;
 class ImExp_GlobalFuncs;
@@ -151,13 +150,13 @@ public:
     // F   => HasExplicitInstance: false, null
     using FuncsWithPartialTypeArgsComponent::items;
     bool hasExplicitInstance;
-    ReExpPtr explicitInstance;
+    ReExp* explicitInstance;
 
 private:
     using FuncComp = FuncsWithPartialTypeArgsComponent<RClassFuncDecl>;
 
 public:
-    ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, ReExp* explicitInstance);
     virtual ~ImExp_ClassFuncs();
 
 public:
@@ -191,10 +190,10 @@ class ImExp_StructFuncs
 public:
     using FuncComp::items;
     bool hasExplicitInstance;
-    ReExpPtr explicitInstance;
+    ReExp* explicitInstance;
 
 public:
-    ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, ReExp* explicitInstance);
     virtual ~ImExp_StructFuncs();
 
 public:
@@ -278,10 +277,10 @@ public:
     RTypeArguments* typeArgs;
     
     bool hasExplicitInstance;
-    ReExpPtr explicitInstance;
+    ReExp* explicitInstance;
 
 public:
-    ImExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -294,10 +293,10 @@ public:
     RTypeArguments* typeArgs;
     
     bool hasExplicitInstance;
-    ReExpPtr explicitInstance;
+    ReExp* explicitInstance;
 
 public:
-    ImExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -308,10 +307,10 @@ class ImExp_EnumElemVar : public ImExp
 public:
     REnumElemVarDecl* decl;
     RTypeArguments* typeArgs;
-    ReExpPtr instance;
+    ReExp* instance;
 
 public:
-    ImExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, const ReExpPtr& instance);
+    ImExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, ReExp* instance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -320,12 +319,12 @@ public:
 class ImExp_ListIndexer : public ImExp
 {
 public:
-    ReExpPtr instance;
-    ReExpPtr index;
+    ReExp* instance;
+    ReExp* index;
     RType* itemType;
 
 public:
-    ImExp_ListIndexer(ReExpPtr&& instance, ReExpPtr&& index, RType* itemType);
+    ImExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemType);
 
 public:    
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -334,10 +333,10 @@ public:
 class ImExp_LocalDeref : public ImExp
 {
 public:
-    ReExpPtr target;
+    ReExp* target;
 
 public:
-    ImExp_LocalDeref(const ReExpPtr& target);
+    ImExp_LocalDeref(ReExp* target);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -346,10 +345,10 @@ public:
 class ImExp_BoxDeref : public ImExp
 {
 public:
-    ReExpPtr target;
+    ReExp* target;
 
 public:
-    ImExp_BoxDeref(const ReExpPtr& target);
+    ImExp_BoxDeref(ReExp* target);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }

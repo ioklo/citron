@@ -29,22 +29,22 @@ namespace {
 // SExp -> IrExp
 struct SExpRefToIrExpTranslator : public SExpVisitor
 {
-    expected<IrExpPtr, DiagPtr>* result;
+    expected<IrExp*, DiagPtr>* result;
     TranslationContext& context;
 
 public:
-    SExpRefToIrExpTranslator(std::expected<IrExpPtr, DiagPtr>* result, TranslationContext& context)
+    SExpRefToIrExpTranslator(std::expected<IrExp*, DiagPtr>* result, TranslationContext& context)
         : result(result), context(context)
     {
     }
 
 private:
-    void Forward(expected<IrExpPtr, DiagPtr>&& r)
+    void Forward(expected<IrExp*, DiagPtr>&& r)
     {
         *result = move(r);
     }
 
-    void Value(IrExpPtr&& v)
+    void Value(IrExp* v)
     {
         *result = move(v);
     }
@@ -221,9 +221,9 @@ public:
 
 } // namespace 
 
-expected<IrExpPtr, DiagPtr> TranslateSExpRefToIrExp(SExp& exp, TranslationContext& context)
+expected<IrExp*, DiagPtr> TranslateSExpRefToIrExp(SExp& exp, TranslationContext& context)
 {
-    expected<IrExpPtr, DiagPtr> irExp;
+    expected<IrExp*, DiagPtr> irExp;
     SExpRefToIrExpTranslator translator(&irExp, context);
     exp.Accept(translator);
 

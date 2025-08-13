@@ -162,6 +162,6 @@ private:
     TType* MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TDecl* decl, RTypeArguments* typeArgs, TArgs&&... args);
 };
 
-using RTypeFactoryPtr = std::unique_ptr<IR0Factory>;
+using IR0FactoryPtr = std::shared_ptr<IR0Factory>;
 
 } // namespace Citron

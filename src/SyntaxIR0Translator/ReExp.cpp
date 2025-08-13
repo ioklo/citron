@@ -28,7 +28,7 @@ RType* ReExp_LambdaVar::GetType(IR0Factory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_ClassVar::ReExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ReExp_ClassVar::ReExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
@@ -38,7 +38,7 @@ RType* ReExp_ClassVar::GetType(IR0Factory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_StructVar::ReExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ReExp_StructVar::ReExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
@@ -48,7 +48,7 @@ RType* ReExp_StructVar::GetType(IR0Factory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_EnumElemVar::ReExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, const ReExpPtr& instance)
+ReExp_EnumElemVar::ReExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, ReExp* instance)
     : decl(decl), typeArgs(typeArgs), instance(instance)
 {
 }
@@ -58,7 +58,7 @@ RType* ReExp_EnumElemVar::GetType(IR0Factory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_LocalDeref::ReExp_LocalDeref(const ReExpPtr& target)
+ReExp_LocalDeref::ReExp_LocalDeref(ReExp* target)
     : target(target)
 {
 
@@ -72,7 +72,7 @@ RType* ReExp_LocalDeref::GetType(IR0Factory& factory)
     return ((RType_LocalPtr*)type.get())->innerType;
 }
 
-ReExp_BoxDeref::ReExp_BoxDeref(const ReExpPtr& target)
+ReExp_BoxDeref::ReExp_BoxDeref(ReExp* target)
     : target(target)
 {
 
@@ -86,7 +86,7 @@ RType* ReExp_BoxDeref::GetType(IR0Factory& factory)
     return ((RType_BoxPtr*)type.get())->innerType;
 }
 
-ReExp_ListIndexer::ReExp_ListIndexer(const ReExpPtr& instance, const ReExpPtr& index, RType* itemType)
+ReExp_ListIndexer::ReExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemType)
     : instance(instance), index(index), itemType(itemType)
 {
 

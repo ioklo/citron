@@ -21,10 +21,10 @@ namespace {
 
 struct ImExpToReExpTranslator : public ImExpVisitor
 {   
-    expected<ReExpPtr, DiagPtr>* result;
+    expected<ReExp*, DiagPtr>* result;
     TranslationContext& context;
 
-    ImExpToReExpTranslator(expected<ReExpPtr, DiagPtr>* result, TranslationContext& context)
+    ImExpToReExpTranslator(expected<ReExp*, DiagPtr>* result, TranslationContext& context)
         : result(result), context(context)
     {
     }
@@ -150,9 +150,9 @@ public:
 }
 
 // outermost로 변경
-expected<ReExpPtr, DiagPtr> TranslateImExpToReExp(ImExp& imExp, TranslationContext& context)
+expected<ReExp*, DiagPtr> TranslateImExpToReExp(ImExp& imExp, TranslationContext& context)
 {
-    expected<ReExpPtr, DiagPtr> result;
+    expected<ReExp*, DiagPtr> result;
     ImExpToReExpTranslator translator(&result, context);
     imExp.Accept(translator);
     return result;

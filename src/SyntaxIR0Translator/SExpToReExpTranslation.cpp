@@ -21,13 +21,13 @@ namespace {
 
 class SExpToReExpTranslator : public SExpVisitor
 {
-    expected<ReExpPtr, DiagPtr>* result;
+    expected<ReExp*, DiagPtr>* result;
 
     RType* hintType;
     TranslationContext& context;
 
 public:
-    SExpToReExpTranslator(expected<ReExpPtr, DiagPtr>* result, RType* hintType, TranslationContext& context)
+    SExpToReExpTranslator(expected<ReExp*, DiagPtr>* result, RType* hintType, TranslationContext& context)
         : result(result), hintType(hintType), context(context)
     {
     }
@@ -153,9 +153,9 @@ public:
 
 } // namespace
 
-expected<ReExpPtr, DiagPtr> TranslateSExpToReExp(SExp& exp, RType* hintType, TranslationContext& context)
+expected<ReExp*, DiagPtr> TranslateSExpToReExp(SExp& exp, RType* hintType, TranslationContext& context)
 {
-    expected<ReExpPtr, DiagPtr> reExp;
+    expected<ReExp*, DiagPtr> reExp;
     SExpToReExpTranslator translator{&reExp, hintType, context};
     exp.Accept(translator);
     return reExp;

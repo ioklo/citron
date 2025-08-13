@@ -41,31 +41,31 @@ public:
     {
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_Namespace& member) 
+    expected<IrExp*, DiagPtr> operator()(RMember_Namespace& member) 
     {
         return MakePtr<IrExp_Namespace>(member.decl);
     }
 
     // S.F
-    expected<IrExpPtr, DiagPtr> operator()(RMember_GlobalFuncs& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_GlobalFuncs& member)
     {   
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_Class& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_Class& member)
     {
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
         return MakePtr<IrExp_Class>(member.decl, move(typeArgs));
     }
 
     // 에러,
-    expected<IrExpPtr, DiagPtr> operator()(RMember_ClassFuncs& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_ClassFuncs& member)
     {
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
     // C.x
-    expected<IrExpPtr, DiagPtr> operator()(RMember_ClassVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_ClassVar& member)
     {
         if (!member.decl->IsStatic())
         {
@@ -81,18 +81,18 @@ public:
         return MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_Struct& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_Struct& member)
     {
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
         return MakePtr<IrExp_Struct>(member.decl, move(typeArgs));
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_StructFuncs& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_StructFuncs& member)
     {
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_StructVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_StructVar& member)
     {
         if (!member.decl->IsStatic())
         {
@@ -109,46 +109,46 @@ public:
     }
 
     // E
-    expected<IrExpPtr, DiagPtr> operator()(RMember_Enum& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_Enum& member)
     {   
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
         return MakePtr<IrExp_Enum>(member.decl, move(typeArgs));
     }
 
     // &E.First.x
-    expected<IrExpPtr, DiagPtr> operator()(RMember_EnumElem& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_EnumElem& member)
     {   
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
     // &E.x
-    expected<IrExpPtr, DiagPtr> operator()(RMember_EnumElemVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_EnumElemVar& member)
     {
         // 표현 불가능
         throw RuntimeFatalException();
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_LambdaVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_LambdaVar& member)
     {
         throw RuntimeFatalException();
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_TupleVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_TupleVar& member)
     {
         throw RuntimeFatalException();
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_TypeVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_TypeVar& member)
     {
         throw NotImplementedException();
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_LocalVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_LocalVar& member)
     {
         throw NotImplementedException();
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_ThisVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_ThisVar& member)
     {
         throw NotImplementedException();
     }
@@ -162,7 +162,7 @@ public:
 
 class StaticRefTypeTranslator : public RTypeVisitor
 {
-    expected<IrExpPtr, DiagPtr>* result;
+    expected<IrExp*, DiagPtr>* result;
 
     shared_ptr<IrExp_StaticRef> parent;
     RName name;
@@ -190,7 +190,7 @@ private:
     }
 
 public:
-    StaticRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const std::shared_ptr<IrExp_StaticRef>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+    StaticRefTypeTranslator(expected<IrExp*, DiagPtr>* result, const std::shared_ptr<IrExp_StaticRef>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -327,7 +327,7 @@ public:
 
 class BoxRefTypeTranslator : public RTypeVisitor
 {
-    expected<IrExpPtr, DiagPtr>* result;
+    expected<IrExp*, DiagPtr>* result;
 
     std::shared_ptr<IrExp_BoxRef> parent;
     RName name;
@@ -355,7 +355,7 @@ private:
     }
 
 public: 
-    BoxRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const std::shared_ptr<IrExp_BoxRef>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+    BoxRefTypeTranslator(expected<IrExp*, DiagPtr>* result, const std::shared_ptr<IrExp_BoxRef>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -470,7 +470,7 @@ public:
 
 class LocalRefTypeTranslator : public RTypeVisitor
 {
-    expected<IrExpPtr, DiagPtr>* result;
+    expected<IrExp*, DiagPtr>* result;
 
     shared_ptr<IrExp_LocalRef> parent;
     RName name;
@@ -498,7 +498,7 @@ private:
     }
 
 public:
-    LocalRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const shared_ptr<IrExp_LocalRef>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+    LocalRefTypeTranslator(expected<IrExp*, DiagPtr>* result, const shared_ptr<IrExp_LocalRef>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -624,7 +624,7 @@ public:
 // *pS, valueType일때만 여기를 거치도록 나머지는 value로 가게
 class BoxValueTypeTranslator : public RTypeVisitor
 {
-    expected<IrExpPtr, DiagPtr>* result;
+    expected<IrExp*, DiagPtr>* result;
     shared_ptr<IrExp_DerefedBoxValue> parent;
     RName name;
     RTypeArguments* typeArgsExceptOuter;
@@ -651,7 +651,7 @@ private:
     }
 
 public:
-    BoxValueTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const shared_ptr<IrExp_DerefedBoxValue>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+    BoxValueTypeTranslator(expected<IrExp*, DiagPtr>* result, const shared_ptr<IrExp_DerefedBoxValue>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -758,7 +758,7 @@ public:
 
 class ThisTypeTranslator : public RTypeVisitor
 {   
-    expected<IrExpPtr, DiagPtr>* result;
+    expected<IrExp*, DiagPtr>* result;
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
@@ -784,7 +784,7 @@ private:
     }
 
 public:
-    ThisTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+    ThisTypeTranslator(expected<IrExp*, DiagPtr>* result, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context)
     {
     }
@@ -886,9 +886,9 @@ public:
 
 class IrExpAndMemberNameToIrExpTranslator : public IrExpVisitor
 {
-    expected<IrExpPtr, DiagPtr>* result;
+    expected<IrExp*, DiagPtr>* result;
 
-    IrExpPtr irThis;
+    IrExp* irThis;
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
@@ -927,7 +927,7 @@ private:
     }
 
 public:
-    IrExpAndMemberNameToIrExpTranslator(expected<IrExpPtr, DiagPtr>* result, const IrExpPtr& irThis, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+    IrExpAndMemberNameToIrExpTranslator(expected<IrExp*, DiagPtr>* result, IrExp* irThis, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), irThis(irThis), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -1020,9 +1020,9 @@ public:
 
 } // namespace 
 
-expected<IrExpPtr, DiagPtr> TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+expected<IrExp*, DiagPtr> TranslateIrExpAndMemberNameToIrExp(IrExp* irExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
 {
-    expected<IrExpPtr, DiagPtr> irBoundExp;
+    expected<IrExp*, DiagPtr> irBoundExp;
     IrExpAndMemberNameToIrExpTranslator binder(&irBoundExp, irExp, name, typeArgsExceptOuter, context);
     irExp->Accept(binder);
     return irBoundExp;

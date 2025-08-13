@@ -22,7 +22,7 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-TranslationContext::TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RTypeFactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService)
+TranslationContext::TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const IR0FactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService)
     : globalContext(globalContext), funcContext(funcContext), scopeContext(scopeContext), logger(logger), factory(factory), binOpQueryService(binOpQueryService)
 {
 }
@@ -284,7 +284,7 @@ RType_Enum* TranslationContext::GetBaseEnumType(RType_EnumElem& enumElemType)
     return enumElemType.GetBaseEnumType(*factory);
 }
 
-expected<ImExpPtr, shared_ptr<ResolveIdentifierError>> TranslationContext::ResolveIdentifier(RName&& name, RTypeArguments* typeArgs)
+expected<ImExp*, shared_ptr<ResolveIdentifierError>> TranslationContext::ResolveIdentifier(RName&& name, RTypeArguments* typeArgs)
 {
     throw NotImplementedException();
 }

@@ -40,8 +40,6 @@ public:
     virtual RType* GetType(IR0Factory& factory) = 0;
 };
 
-using ReExpPtr = std::shared_ptr<ReExp>;
-
 class ReExpVisitor
 {
 public:    
@@ -99,10 +97,10 @@ public:
     RClassVarDecl* decl;
     RTypeArguments* typeArgs;
     bool hasExplicitInstance;
-    ReExpPtr explicitInstance;
+    ReExp* explicitInstance;
     
 public:
-    ReExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ReExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RType* GetType(IR0Factory& factory) override;
 };
@@ -113,10 +111,10 @@ public:
     RStructVarDecl* decl;
     RTypeArguments* typeArgs;
     bool hasExplicitInstance;
-    ReExpPtr explicitInstance;
+    ReExp* explicitInstance;
     
 public:
-    ReExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ReExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RType* GetType(IR0Factory& factory) override;
 };
@@ -126,10 +124,10 @@ class ReExp_EnumElemVar : public ReExp
 public:
     REnumElemVarDecl* decl;
     RTypeArguments* typeArgs;
-    ReExpPtr instance;
+    ReExp* instance;
 
 public:
-    ReExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, const ReExpPtr& instance);
+    ReExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, ReExp* instance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RType* GetType(IR0Factory& factory) override;
 };
@@ -137,10 +135,10 @@ public:
 class ReExp_LocalDeref : public ReExp
 {
 public:
-    ReExpPtr target;
+    ReExp* target;
     
 public:
-    ReExp_LocalDeref(const ReExpPtr& target);
+    ReExp_LocalDeref(ReExp* target);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RType* GetType(IR0Factory& factory) override;
 };
@@ -148,10 +146,10 @@ public:
 class ReExp_BoxDeref : public ReExp
 {
 public:
-    ReExpPtr target;
+    ReExp* target;
 
 public:
-    ReExp_BoxDeref(const ReExpPtr& target);
+    ReExp_BoxDeref(ReExp* target);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RType* GetType(IR0Factory& factory) override;
 };
@@ -159,12 +157,12 @@ public:
 class ReExp_ListIndexer : public ReExp
 {   
 public:
-    ReExpPtr instance;
-    ReExpPtr index;
+    ReExp* instance;
+    ReExp* index;
     RType* itemType;
     
 public:
-    ReExp_ListIndexer(const ReExpPtr& instance, const ReExpPtr& index, RType* itemType);
+    ReExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemType);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
     RType* GetType(IR0Factory& factory) override { return itemType; }
 };

@@ -26,7 +26,7 @@ ImExp_Class::ImExp_Class(RClassDecl* classDecl, RTypeArguments* typeArgs)
 {
 }
 
-ImExp_ClassFuncs::ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ImExp_ClassFuncs::ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, ReExp* explicitInstance)
     : FuncsWithPartialTypeArgsComponent<RClassFuncDecl>(items, partialTypeArgsExceptOuter), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
@@ -38,7 +38,7 @@ ImExp_Struct::ImExp_Struct(RStructDecl* structDecl, RTypeArguments* typeArgs)
 {
 }
 
-ImExp_StructFuncs::ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ImExp_StructFuncs::ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, ReExp* explicitInstance)
     : FuncsWithPartialTypeArgsComponent<RStructFuncDecl>(items, partialTypeArgsExceptOuter), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 
@@ -75,35 +75,35 @@ ImExp_LambdaVar::ImExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs)
 
 }
 
-ImExp_ClassVar::ImExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ImExp_ClassVar::ImExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
-ImExp_StructVar::ImExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ImExp_StructVar::ImExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
-ImExp_EnumElemVar::ImExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, const ReExpPtr& instance)
+ImExp_EnumElemVar::ImExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, ReExp* instance)
     : decl(decl), typeArgs(typeArgs), instance(instance)
 {
 
 }
 
-ImExp_ListIndexer::ImExp_ListIndexer(ReExpPtr&& instance, ReExpPtr&& index, RType* itemType)
+ImExp_ListIndexer::ImExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemType)
     : instance(move(instance)), index(move(index)), itemType(move(itemType))
 {
 
 }
 
-ImExp_LocalDeref::ImExp_LocalDeref(const ReExpPtr& target)
+ImExp_LocalDeref::ImExp_LocalDeref(ReExp* target)
     : target(target)
 {
 
 }
 
-ImExp_BoxDeref::ImExp_BoxDeref(const ReExpPtr& target)
+ImExp_BoxDeref::ImExp_BoxDeref(ReExp* target)
     : target(target)
 {
 

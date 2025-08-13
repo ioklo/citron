@@ -32,13 +32,13 @@ namespace {
 
 class SExpToImExpTranslator : public SExpVisitor
 {
-    expected<ImExpPtr, DiagPtr>* result;
+    expected<ImExp*, DiagPtr>* result;
     RType* hintType;
 
     TranslationContext& context;
 
 public:
-    SExpToImExpTranslator(expected<ImExpPtr, DiagPtr>* result, RType* hintType, TranslationContext& context)
+    SExpToImExpTranslator(expected<ImExp*, DiagPtr>* result, RType* hintType, TranslationContext& context)
         : result(result), hintType(hintType), context(context)
     {
     }
@@ -52,7 +52,7 @@ private:
             *result = MakePtr<ImExp_Else>(move(*eExp));
     }
 
-    void Forward(expected<ImExpPtr, DiagPtr>&& r)
+    void Forward(expected<ImExp*, DiagPtr>&& r)
     {
         *result = move(r);
     }
@@ -282,9 +282,9 @@ public:
 
 }
 
-expected<ImExpPtr, DiagPtr> TranslateSExpToImExp(SExp& exp, RType* hintType, TranslationContext& context)
+expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp& exp, RType* hintType, TranslationContext& context)
 {   
-    expected<ImExpPtr, DiagPtr> imExp;
+    expected<ImExp*, DiagPtr> imExp;
     SExpToImExpTranslator translator{&imExp, hintType, context};
     exp.Accept(translator);
     return imExp;

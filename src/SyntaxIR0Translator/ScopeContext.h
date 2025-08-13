@@ -31,7 +31,6 @@ class FuncContext;
 using FuncContextPtr = std::shared_ptr<FuncContext>;
 
 class ImExp;
-using ImExpPtr = std::shared_ptr<ImExp>;
 
 class CloneContext;
 class UpdateContext;

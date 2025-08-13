@@ -20,7 +20,7 @@ namespace Citron {
 
 struct RFuncParameter;
 class IR0Factory;
-using RTypeFactoryPtr = std::shared_ptr<IR0Factory>;
+using IR0FactoryPtr = std::shared_ptr<IR0Factory>;
 class RFuncDecl;
 class RDecl;
 class RType_Enum;
@@ -39,7 +39,6 @@ class IrExp_BoxRef;
 struct BinOpInfo;
 
 class ImExp;
-using ImExpPtr = std::shared_ptr<ImExp>;
 
 class GlobalContext;
 using GlobalContextPtr = std::shared_ptr<GlobalContext>;
@@ -68,10 +67,10 @@ class TranslationContext
     FuncContextPtr funcContext;
     ScopeContextPtr scopeContext;
     LoggerPtr logger;
-    RTypeFactoryPtr factory;
+    IR0FactoryPtr factory;
     BinOpQueryServicePtr binOpQueryService;
 
-    TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RTypeFactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService);
+    TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const IR0FactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService);
 
 public:
     // ScopeContext::MakeNewScopeContext
@@ -129,7 +128,7 @@ public: // for type factory
 
     RType_Enum* GetBaseEnumType(RType_EnumElem& enumElemType);
 
-    std::expected<ImExpPtr, std::shared_ptr<ResolveIdentifierError>> ResolveIdentifier(RName&& name, RTypeArguments* typeArgs);
+    std::expected<ImExp*, std::shared_ptr<ResolveIdentifierError>> ResolveIdentifier(RName&& name, RTypeArguments* typeArgs);
 
 public: // for BinOpQueryService
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);

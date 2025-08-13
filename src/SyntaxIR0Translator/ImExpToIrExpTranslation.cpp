@@ -23,10 +23,10 @@ namespace {
 
 struct ImExpToIrExpTranslator : public ImExpVisitor
 {
-    expected<IrExpPtr, DiagPtr>* result;
+    expected<IrExp*, DiagPtr>* result;
     TranslationContext& context;
 
-    ImExpToIrExpTranslator(expected<IrExpPtr, DiagPtr>* result, TranslationContext& context)
+    ImExpToIrExpTranslator(expected<IrExp*, DiagPtr>* result, TranslationContext& context)
         : result(result), context(context)
     {
     }
@@ -181,9 +181,9 @@ public:
 
 } // namespace 
 
-expected<IrExpPtr, DiagPtr> TranslateImExpToIrExp(const ImExpPtr& imExp, TranslationContext& context)
+expected<IrExp*, DiagPtr> TranslateImExpToIrExp(ImExp* imExp, TranslationContext& context)
 {
-    expected<IrExpPtr, DiagPtr> result;
+    expected<IrExp*, DiagPtr> result;
     ImExpToIrExpTranslator translator(&result, context);
     imExp->Accept(translator);
 

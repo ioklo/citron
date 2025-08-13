@@ -41,19 +41,19 @@ public:
     }
 
     // NS.'NS'
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Namespace& member) 
+    expected<ImExp*, DiagPtr> operator()(RMember_Namespace& member) 
     { 
         return MakePtr<ImExp_Namespace>(member.decl); 
     }
 
     // NS.F
-    expected<ImExpPtr, DiagPtr> operator()(RMember_GlobalFuncs& member) 
+    expected<ImExp*, DiagPtr> operator()(RMember_GlobalFuncs& member) 
     { 
         return MakePtr<ImExp_GlobalFuncs>(member.items, typeArgsExceptOuter); 
     }
 
     // T.C
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Class& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Class& member)
     {
         // check access, TODO: ? 여기서 Access체크를 왜 하나? 이미 decl찾을때 access 체크를 했을텐데
         if (!context.CanAccess(member.decl.get()))
@@ -67,13 +67,13 @@ public:
     }
 
     // C.F
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ClassFuncs& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ClassFuncs& member)
     {
         return MakePtr<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // C.x
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ClassVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ClassVar& member)
     {
         if (!member.decl->IsStatic())
         {
@@ -92,7 +92,7 @@ public:
     }
 
     // T.S
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Struct& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Struct& member)
     {
         // check access, TODO: ? 여기서 Access체크를 왜 하나? 이미 decl찾을때 access 체크를 했을텐데
         if (!context.CanAccess(member.decl.get()))
@@ -106,13 +106,13 @@ public:
     }
 
     // S.F
-    expected<ImExpPtr, DiagPtr> operator()(RMember_StructFuncs& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_StructFuncs& member)
     {
         return MakePtr<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // S.x
-    expected<ImExpPtr, DiagPtr> operator()(RMember_StructVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_StructVar& member)
     {
         if (!member.decl->IsStatic())
         {
@@ -130,7 +130,7 @@ public:
     }
 
     // T.E
-    expected<ImExpPtr, DiagPtr>  operator()(RMember_Enum& member)
+    expected<ImExp*, DiagPtr>  operator()(RMember_Enum& member)
     {
         // check access
         if (!context.CanAccess(member.decl.get()))
@@ -143,7 +143,7 @@ public:
     }
 
     // E.First
-    expected<ImExpPtr, DiagPtr> operator()(RMember_EnumElem& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_EnumElem& member)
     {
         // EnumElem은 TypeArgs를 가질 수 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
@@ -151,35 +151,35 @@ public:
     }
 
     // 표현 불가능
-    expected<ImExpPtr, DiagPtr> operator()(RMember_EnumElemVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_EnumElemVar& member)
     {
         throw RuntimeFatalException();
     }
 
     // 표현 불가능
-    expected<ImExpPtr, DiagPtr> operator()(RMember_LambdaVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_LambdaVar& member)
     {
         throw RuntimeFatalException();
     }
 
     // 표현 불가능
-    expected<ImExpPtr, DiagPtr> operator()(RMember_TupleVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_TupleVar& member)
     {
         throw RuntimeFatalException();
     }
 
     // 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_TypeVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_TypeVar& member)
     {
         throw NotImplementedException();
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_LocalVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_LocalVar& member)
     {
         throw NotImplementedException();
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ThisVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ThisVar& member)
     {
         throw NotImplementedException();
     }
@@ -188,7 +188,7 @@ public:
 
 class InstanceParentTranslator
 {
-    ReExpPtr reInstExp;
+    ReExp* reInstExp;
     RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
@@ -199,37 +199,37 @@ class InstanceParentTranslator
     }*/
 
 public:
-    InstanceParentTranslator(ReExpPtr&& reInstExp, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+    InstanceParentTranslator(ReExp* reInstExp, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : reInstExp(move(reInstExp)), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
 
     // 표현 불가
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Namespace& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Namespace& member)
     {   
         throw RuntimeFatalException();
     }
 
     // 표현 불가
-    expected<ImExpPtr, DiagPtr> operator()(RMember_GlobalFuncs& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_GlobalFuncs& member)
     {   
         throw RuntimeFatalException();
     }
 
     // exp.C
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Class& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Class& member)
     {
         return unexpected{MakePtr<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>()};
     }
 
     // exp.F
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ClassFuncs& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ClassFuncs& member)
     {   
         return MakePtr<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.x
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ClassVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ClassVar& member)
     {   
         // static인지 검사
         if (member.decl->IsStatic())
@@ -247,19 +247,19 @@ public:
     }
 
     // exp.S
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Struct& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Struct& member)
     {   
         return unexpected{MakePtr<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>()};
     }
 
     // exp.F
-    expected<ImExpPtr, DiagPtr> operator()(RMember_StructFuncs& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_StructFuncs& member)
     {   
         return MakePtr<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.x
-    expected<ImExpPtr, DiagPtr> operator()(RMember_StructVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_StructVar& member)
     {   
         // static인지 검사
         if (member.decl->IsStatic())
@@ -277,45 +277,45 @@ public:
     }
 
     // exp.E
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Enum& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Enum& member)
     {
         return unexpected{MakePtr<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>()};
     }
 
     // exp.First
-    expected<ImExpPtr, DiagPtr> operator()(RMember_EnumElem& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_EnumElem& member)
     {   
         return unexpected{MakePtr<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>()};
     }
 
     // exp.firstX
-    expected<ImExpPtr, DiagPtr> operator()(RMember_EnumElemVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_EnumElemVar& member)
     {   
         return MakePtr<ImExp_EnumElemVar>(member.decl, member.outerTypeArgs, reInstExp);
     }
 
     // 표현 불가
-    expected<ImExpPtr, DiagPtr> operator()(RMember_LambdaVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_LambdaVar& member)
     {   
         throw RuntimeFatalException();
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_TupleVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_TupleVar& member)
     {
         throw NotImplementedException();
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_TypeVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_TypeVar& member)
     {
         throw NotImplementedException();
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_LocalVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_LocalVar& member)
     {
         throw NotImplementedException();
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ThisVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ThisVar& member)
     {
         throw NotImplementedException();
     }
@@ -325,7 +325,7 @@ public:
 // (IntermediateExp, name, typeArgs) -> IntermediateExp
 class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
 {
-    expected<ImExpPtr, DiagPtr>* result;
+    expected<ImExp*, DiagPtr>* result;
     string name;
     RTypeArguments* typeArgsExceptOuter;
 
@@ -378,7 +378,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
     }
 
 public:
-    ImExpAndMemberNameToImExpTranslator(expected<ImExpPtr, DiagPtr>* result, const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+    ImExpAndMemberNameToImExpTranslator(expected<ImExp*, DiagPtr>* result, const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }

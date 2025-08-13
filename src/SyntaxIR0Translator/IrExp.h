@@ -47,8 +47,6 @@ public:
     virtual void Accept(IrExpVisitor& visitor) = 0;
 };
 
-using IrExpPtr = std::shared_ptr<IrExp>;
-
 class IrExpVisitor
 {
 public:
