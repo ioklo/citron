@@ -19,11 +19,10 @@ namespace {
 
 class RFuncAndRArgsToNExpTranslator : public RFuncDeclVisitor
 {
-    expected<NExpPtr, DiagPtr>* result;
-
-    shared_ptr<RFuncDecl> sharedFuncDecl;
-    RTypeArgumentsPtr typeArgs;
-    NLocPtr instance;
+    expected<NExp*, DiagPtr>* result;
+    
+    RTypeArguments* typeArgs;
+    NLoc* instance;
     vector<NArgument> args;
 
 private:
@@ -46,43 +45,37 @@ private:
     }
 
 public:
-    RFuncAndRArgsToNExpTranslator(expected<NExpPtr, DiagPtr>* result, shared_ptr<RFuncDecl> sharedFuncDecl, const RTypeArgumentsPtr& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
-        : result(result), sharedFuncDecl(sharedFuncDecl), typeArgs(typeArgs), instance(move(instance)), args(move(args))
+    RFuncAndRArgsToNExpTranslator(expected<NExp*, DiagPtr>* result, RTypeArguments* typeArgs, NLoc* instance, vector<NArgument>&& args)
+        : result(result), typeArgs(typeArgs), instance(move(instance)), args(move(args))
     {
     }
 
-    void Visit(RGlobalFuncDecl& func) override 
-    {
-        throw NotImplementedException();
-    }
-
-    void Visit(RClassCtorDecl& func) override 
+    void Visit(RGlobalFuncDecl* func) override 
     {
         throw NotImplementedException();
     }
 
-    void Visit(RClassFuncDecl& func) override 
-    {
-        auto sharedClassFuncDecl = dynamic_pointer_cast<RClassFuncDecl>(sharedFuncDecl);
-        assert(sharedClassFuncDecl);
-
-        return Value<NExp_CallClassFunc>(move(sharedClassFuncDecl), move(typeArgs), move(instance), move(args));
-    }
-
-    void Visit(RStructCtorDecl& func) override 
+    void Visit(RClassCtorDecl* func) override 
     {
         throw NotImplementedException();
     }
 
-    void Visit(RStructFuncDecl& func) override 
+    void Visit(RClassFuncDecl* func) override 
+    {
+        return Value<NExp_CallClassFunc>(func, move(typeArgs), move(instance), move(args));
+    }
+
+    void Visit(RStructCtorDecl* func) override 
+    {
+        throw NotImplementedException();
+    }
+
+    void Visit(RStructFuncDecl* func) override 
     {   
-        auto sharedStructFuncDecl = dynamic_pointer_cast<RStructFuncDecl>(sharedFuncDecl);
-        assert(sharedStructFuncDecl);
-
-        return Value<NExp_CallStructFunc>(move(sharedStructFuncDecl), move(typeArgs), move(instance), move(args));
+        return Value<NExp_CallStructFunc>(func, move(typeArgs), move(instance), move(args));
     }
 
-    void Visit(RLambdaDecl& func) override 
+    void Visit(RLambdaDecl* func) override 
     {
         throw NotImplementedException();
     }
@@ -90,10 +83,10 @@ public:
 
 } // namespace Citron::SyntaxIR0Translator
 
-expected<NExpPtr, DiagPtr> TranslateRFuncAndNArgsToNExp(const shared_ptr<RFuncDecl>& decl, const RTypeArgumentsPtr& typeArgs, NLocPtr&& instance, vector<NArgument>&& args)
+expected<NExp*, DiagPtr> TranslateRFuncAndNArgsToNExp(RFuncDecl* decl, RTypeArguments* typeArgs, NLoc* instance, vector<NArgument>&& args)
 {
-    expected<NExpPtr, DiagPtr> exp;
-    RFuncAndRArgsToNExpTranslator binder(&exp, decl, typeArgs, move(instance), move(args));
+    expected<NExp*, DiagPtr> exp;
+    RFuncAndRArgsToNExpTranslator binder{&exp, typeArgs, move(instance), move(args)};
     decl->Accept(binder);
     return exp;
 }

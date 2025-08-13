@@ -8,20 +8,15 @@ class RNamespaceDecl;
 class RType_TypeVar;
 class RClassDecl;
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 class RStructDecl;
 class REnumDecl;
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-class RTypeFactory;
+class IR0Factory;
 class RClassVarDecl;
 class RStructVarDecl;
 class NExp;
-using NExpPtr = std::shared_ptr<NExp>;
 
 class NLoc;
-using NLocPtr = std::shared_ptr<NLoc>;
-
 
 namespace SyntaxIR0Translator {
 
@@ -74,53 +69,53 @@ public:
 class IrExp_Namespace : public IrExp
 {
 public:
-    std::shared_ptr<RNamespaceDecl> decl;
+    RNamespaceDecl* decl;
 
 public:
-    IrExp_Namespace(const std::shared_ptr<RNamespaceDecl>& decl);
+    IrExp_Namespace(RNamespaceDecl* decl);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrExp_TypeVar : public IrExp
 {
 public:
-    std::shared_ptr<RType_TypeVar> type;
+    RType_TypeVar* type;
 
 public:
-    IrExp_TypeVar(const std::shared_ptr<RType_TypeVar>& type);
+    IrExp_TypeVar(RType_TypeVar* type);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrExp_Class : public IrExp
 {
 public:
-    std::shared_ptr<RClassDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    RClassDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IrExp_Class(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_Class(RClassDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrExp_Struct : public IrExp
 {
 public:
-    std::shared_ptr<RStructDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    RStructDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IrExp_Struct(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_Struct(RStructDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
 class IrExp_Enum : public IrExp
 {
 public:
-    std::shared_ptr<REnumDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    REnumDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IrExp_Enum(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_Enum(REnumDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -128,9 +123,9 @@ public:
 class IrExp_ThisVar : public IrExp
 {
 public:
-    RTypePtr type;
+    RType* type;
 public:
-    IrExp_ThisVar(const RTypePtr& type);
+    IrExp_ThisVar(RType* type);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -179,10 +174,10 @@ public:
 class IrExp_StaticRef : public IrExp
 {
 public:
-    NLocPtr loc;
+    NLoc* loc;
 
 public:
-    IrExp_StaticRef(const NLocPtr& loc);
+    IrExp_StaticRef(NLoc* loc);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -202,24 +197,24 @@ public:
     void Accept(IrExpVisitor& visitor) final { visitor.Visit(*this); }
 
     virtual void Accept(IrBoxRefExpVisitor& visitor) = 0;
-    virtual RTypePtr GetTargetType(RTypeFactory& factory) = 0;
-    virtual NLocPtr MakeLoc() = 0;
+    virtual RType* GetTargetType(IR0Factory& factory) = 0;
+    virtual NLoc* MakeLoc() = 0;
 };
 
 // 홀더가 C로 시작하는 경우
 class IrExp_BoxRef_ClassMember : public IrExp_BoxRef
 {
 public:
-    NLocPtr loc;
-    std::shared_ptr<RClassVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    NLoc* loc;
+    RClassVarDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_ClassMember(NLoc* loc, RClassVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
 
-    RTypePtr GetTargetType(RTypeFactory& factory) override;
-    NLocPtr MakeLoc() override;
+    RType* GetTargetType(IR0Factory& factory) override;
+    NLoc* MakeLoc() override;
 };
 
 // 홀더가 box* T로 시작하는 경우
@@ -227,38 +222,38 @@ public:
 class IrExp_BoxRef_StructIndirectMember : public IrExp_BoxRef
 {
 public:
-    NLocPtr loc;
-    std::shared_ptr<RStructVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    NLoc* loc;
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IrExp_BoxRef_StructIndirectMember(const NLocPtr& loc, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_StructIndirectMember(NLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetTargetType(RTypeFactory& factory) override;
-    NLocPtr MakeLoc() override;
+    RType* GetTargetType(IR0Factory& factory) override;
+    NLoc* MakeLoc() override;
 };
 
 class IrExp_BoxRef_StructMember : public IrExp_BoxRef
 {
 public:
     std::shared_ptr<IrExp_BoxRef> parent;
-    std::shared_ptr<RStructVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, RStructVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetTargetType(RTypeFactory& factory) override;
-    NLocPtr MakeLoc() override;
+    RType* GetTargetType(IR0Factory& factory) override;
+    NLoc* MakeLoc() override;
 };
 
 class IrExp_LocalRef : public IrExp
 {
 public:
-    NLocPtr loc;
+    NLoc* loc;
 
 public:
-    IrExp_LocalRef(const NLocPtr& loc);
+    IrExp_LocalRef(NLoc* loc);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -266,10 +261,10 @@ public:
 class IrExp_LocalValue : public IrExp
 {
 public:
-    NExpPtr exp;
+    NExp* exp;
 
 public:
-    IrExp_LocalValue(NExpPtr&& exp);
+    IrExp_LocalValue(NExp* exp);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -281,10 +276,10 @@ public:
 class IrExp_DerefedBoxValue : public IrExp
 {
 public:
-    NLocPtr innerLoc;
+    NLoc* innerLoc;
 
 public:
-    IrExp_DerefedBoxValue(NLocPtr&& innerLoc);
+    IrExp_DerefedBoxValue(NLoc* innerLoc);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 

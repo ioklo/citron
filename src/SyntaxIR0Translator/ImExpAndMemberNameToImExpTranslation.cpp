@@ -31,11 +31,11 @@ namespace {
 
 class StaticParentTranslator
 {
-    RTypeArgumentsPtr typeArgsExceptOuter; // outer 제외
+    RTypeArguments* typeArgsExceptOuter; // outer 제외
     TranslationContext& context;
 
 public:
-    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    StaticParentTranslator(RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -189,7 +189,7 @@ public:
 class InstanceParentTranslator
 {
     ReExpPtr reInstExp;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
     
@@ -199,7 +199,7 @@ class InstanceParentTranslator
     }*/
 
 public:
-    InstanceParentTranslator(ReExpPtr&& reInstExp, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    InstanceParentTranslator(ReExpPtr&& reInstExp, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : reInstExp(move(reInstExp)), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -327,7 +327,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
 {
     expected<ImExpPtr, DiagPtr>* result;
     string name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
@@ -349,7 +349,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
-    void TranslateStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
+    void TranslateStaticParent(RDecl& decl, RTypeArguments* typeArgs)
     {
         auto oMember = decl.GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
         StaticParentTranslator binder{typeArgsExceptOuter, context};
@@ -378,7 +378,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
     }
 
 public:
-    ImExpAndMemberNameToImExpTranslator(expected<ImExpPtr, DiagPtr>* result, const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    ImExpAndMemberNameToImExpTranslator(expected<ImExpPtr, DiagPtr>* result, const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -482,11 +482,11 @@ public:
 
 } // namespace
 
-expected<ImExpPtr, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp& imExp, const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+expected<ImExp*, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp* imExp, const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
 {
-    expected<ImExpPtr, DiagPtr> boundImExp;
+    expected<ImExp*, DiagPtr> boundImExp;
     ImExpAndMemberNameToImExpTranslator binder{&boundImExp, name, typeArgsExceptOuter, context};
-    imExp.Accept(binder);
+    imExp->Accept(binder);
     return boundImExp;
 }
 

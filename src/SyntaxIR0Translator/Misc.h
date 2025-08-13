@@ -11,20 +11,17 @@
 namespace Citron {
 
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 class NExp;
-using NExpPtr = std::shared_ptr<NExp>;
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
 
 namespace SyntaxIR0Translator {
 
 class TranslationContext;
 
-std::expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context);
+std::expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context);
 
-std::expected<NExpPtr, DiagPtr> CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context);
-std::expected<NExpPtr, DiagPtr> CastNExp(const NExpPtr& exp, const RTypePtr& expectedType, TranslationContext& context);
+std::expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationContext& context);
+std::expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationContext& context);
 
 bool IsVarType(STypeExp& typeExp);
 

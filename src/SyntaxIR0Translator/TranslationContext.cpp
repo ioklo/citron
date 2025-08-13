@@ -3,7 +3,7 @@
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
 #include "Logging/Logger.h"
-#include "IR0/RTypeFactory.h"
+#include "IR0/IR0Factory.h"
 #include "IR0/RFuncDecl.h"
 #include "IR0/RDecl.h"
 #include "IR0/NLoc.h"
@@ -47,37 +47,37 @@ TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcR
     return { globalContext, newFuncContext, newScopeContext, logger, factory, binOpQueryService };
 }
 
-expected<RTypePtr, DiagPtr> TranslationContext::TranslateSTypeExpToRType(STypeExp& typeExp)
+expected<RType*, DiagPtr> TranslationContext::TranslateSTypeExpToRType(STypeExp& typeExp)
 {
     return scopeContext->TranslateSTypeExpToRType(typeExp, *factory);
 }
 
-Citron::RTypePtr TranslationContext::GetType(NLoc& loc)
+Citron::RType* TranslationContext::GetType(NLoc& loc)
 {
     return loc.GetType(*factory);
 }
 
-RTypePtr TranslationContext::GetType(ReExp& reExp)
+RType* TranslationContext::GetType(ReExp& reExp)
 {
     return reExp.GetType(*factory);
 }
 
-Citron::RTypePtr TranslationContext::GetType(NExp& exp)
+Citron::RType* TranslationContext::GetType(NExp& exp)
 {
     return exp.GetType(*factory);
 }
 
-RTypePtr TranslationContext::GetTargetType(IrExp_BoxRef& boxRef)
+RType* TranslationContext::GetTargetType(IrExp_BoxRef& boxRef)
 {
     return boxRef.GetTargetType(*factory);
 }
 
-std::shared_ptr<Citron::NLoc_This> TranslationContext::MakeThisLoc()
+NLoc_This* TranslationContext::MakeThisLoc()
 {
     return scopeContext->MakeThisLoc(*factory);
 }
 
-expected<NExpPtr, DiagPtr> TranslationContext::MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& testType)
+expected<NExp*, DiagPtr> TranslationContext::MakeNExp_As(NExp* targetExp, RType* testType)
 {
     auto targetType = targetExp->GetType(*factory);
     auto targetTypeKind = targetType->GetCustomTypeKind();
@@ -199,7 +199,7 @@ bool TranslationContext::DoesLocalVarNameExistInScope(const std::string& name)
     throw NotImplementedException();
 }
 
-void TranslationContext::AddLocalVarInfo(const RTypePtr& type, RName&& name)
+void TranslationContext::AddLocalVarInfo(RType* type, RName&& name)
 {
     throw NotImplementedException();
 }
@@ -219,47 +219,47 @@ RFuncReturn TranslationContext::GetUnboundFuncReturn()
     return funcContext->GetUnboundFuncReturn();
 }
 
-void TranslationContext::SetOpenFuncReturn(RTypePtr&& retType)
+void TranslationContext::SetOpenFuncReturn(RType* retType)
 {
     funcContext->SetOpenFuncReturn(move(retType));
 }
 
-NLambdaDeclAndArgs TranslationContext::MakeLambdaDeclAndArgs(std::vector<NStmtPtr>&& body)
+NLambdaDeclAndArgs TranslationContext::MakeLambdaDeclAndArgs(std::vector<NStmt*>&& body)
 {
     throw NotImplementedException();
 }
 
-RTypeArgumentsPtr TranslationContext::MakeTypeArguments(const std::vector<RTypePtr>& items)
+RTypeArguments* TranslationContext::MakeTypeArguments(const std::vector<RType*>& items)
 {
     return factory->MakeTypeArguments(items);
 }
 
-RTypeArgumentsPtr TranslationContext::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1)
+RTypeArguments* TranslationContext::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1)
 {
     return factory->MergeTypeArguments(typeArgs0, typeArgs1);
 }
 
-RTypePtr TranslationContext::MakeVoidType()
+RType* TranslationContext::MakeVoidType()
 {
     return factory->MakeVoidType();
 }
 
-RTypePtr TranslationContext::MakeBoolType()
+RType* TranslationContext::MakeBoolType()
 {
     return factory->MakeBoolType();
 }
 
-RTypePtr TranslationContext::MakeIntType()
+RType* TranslationContext::MakeIntType()
 {
     return factory->MakeIntType();
 }
 
-RTypePtr TranslationContext::MakeStringType()
+RType* TranslationContext::MakeStringType()
 {
     return factory->MakeStringType();
 }
 
-bool TranslationContext::IsListType(const RTypePtr& type, RTypePtr* outItemType)
+bool TranslationContext::IsListType(RType* type, RType* outItemType)
 {
     return factory->IsListType(type, outItemType);
 }
@@ -279,12 +279,12 @@ RFuncParameter TranslationContext::GetFuncParam(RFuncDecl& decl, RTypeArguments&
     return decl.GetFuncParam(typeArgs, index, *factory);
 }
 
-shared_ptr<RType_Enum> TranslationContext::GetBaseEnumType(RType_EnumElem& enumElemType)
+RType_Enum* TranslationContext::GetBaseEnumType(RType_EnumElem& enumElemType)
 {
     return enumElemType.GetBaseEnumType(*factory);
 }
 
-expected<ImExpPtr, shared_ptr<ResolveIdentifierError>> TranslationContext::ResolveIdentifier(RName&& name, RTypeArgumentsPtr&& typeArgs)
+expected<ImExpPtr, shared_ptr<ResolveIdentifierError>> TranslationContext::ResolveIdentifier(RName&& name, RTypeArguments* typeArgs)
 {
     throw NotImplementedException();
 }

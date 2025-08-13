@@ -33,18 +33,18 @@ namespace {
 class SExpToImExpTranslator : public SExpVisitor
 {
     expected<ImExpPtr, DiagPtr>* result;
-    RTypePtr hintType;
+    RType* hintType;
 
     TranslationContext& context;
 
 public:
-    SExpToImExpTranslator(expected<ImExpPtr, DiagPtr>* result, const RTypePtr& hintType, TranslationContext& context)
+    SExpToImExpTranslator(expected<ImExpPtr, DiagPtr>* result, RType* hintType, TranslationContext& context)
         : result(result), hintType(hintType), context(context)
     {
     }
 
 private:
-    void HandleExp(expected<NExpPtr, DiagPtr>&& eExp)
+    void HandleExp(expected<NExp*, DiagPtr>&& eExp)
     {
         if (!eExp)
             *result = nullptr;
@@ -171,7 +171,7 @@ public:
 
         auto intType = context.MakeIntType();
 
-        NLocPtr nIndexLoc;
+        NLoc* nIndexLoc;
         if (context.GetType(**eReIndex) != intType)
         {
             auto eNIndexExp = TranslateReExpToNExp(**eReIndex, context);
@@ -196,7 +196,7 @@ public:
         // var memberResult = objResult.TypeSymbol.QueryMember(new M.Name(M.SpecialName.IndexerGet, null), 0);
 
         // 리스트 타입의 경우,
-        RTypePtr itemType;
+        RType* itemType;
         if (context.IsListType(context.GetType(**eReObj), &itemType))
         {
             return Value<ImExp_ListIndexer>(move(*eReObj), move(*eReIndex), move(itemType));
@@ -282,7 +282,7 @@ public:
 
 }
 
-expected<ImExpPtr, DiagPtr> TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context)
+expected<ImExpPtr, DiagPtr> TranslateSExpToImExp(SExp& exp, RType* hintType, TranslationContext& context)
 {   
     expected<ImExpPtr, DiagPtr> imExp;
     SExpToImExpTranslator translator{&imExp, hintType, context};

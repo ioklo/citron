@@ -16,16 +16,16 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-expected<NLocPtr, DiagPtr> TranslateReThisVarExpToNLoc(ReExp_ThisVar& reExp, TranslationContext& context) // nothrow
+expected<NLoc*, DiagPtr> TranslateReThisVarExpToNLoc(ReExp_ThisVar& reExp, TranslationContext& context) // nothrow
 {
     return context.MakeThisLoc();
 }
 
-expected<NLocPtr, DiagPtr> TranslateReClassVarExpToNLoc(ReExp_ClassVar& reExp, TranslationContext& context)
+expected<NLoc*, DiagPtr> TranslateReClassVarExpToNLoc(ReExp_ClassVar& reExp, TranslationContext& context)
 {
     if (reExp.hasExplicitInstance) // c.x, C.x 둘다 해당
     {
-        NLocPtr instance = nullptr;
+        NLoc* instance = nullptr;
         
         if (reExp.explicitInstance != nullptr)
         {   
@@ -42,26 +42,26 @@ expected<NLocPtr, DiagPtr> TranslateReClassVarExpToNLoc(ReExp_ClassVar& reExp, T
     }
     else // x, x (static) 둘다 해당
     {   
-        NLocPtr nInstanceLoc = reExp.decl->IsStatic()? nullptr : context.MakeThisLoc();
+        NLoc* nInstanceLoc = reExp.decl->IsStatic()? nullptr : context.MakeThisLoc();
         return MakePtr<NLoc_ClassVar>(move(nInstanceLoc), reExp.decl, reExp.typeArgs);
     }
 }
 
-expected<NLocPtr, DiagPtr> TranslateReLocalVarExpToNLoc(ReExp_LocalVar& reExp)
+expected<NLoc*, DiagPtr> TranslateReLocalVarExpToNLoc(ReExp_LocalVar& reExp)
 {
     return MakePtr<NLoc_LocalVar>(RName_Normal(reExp.name), reExp.type);
 }
 
-expected<NLocPtr, DiagPtr> TranslateReLambdaVarExpToNLoc(ReExp_LambdaVar& reExp)
+expected<NLoc*, DiagPtr> TranslateReLambdaVarExpToNLoc(ReExp_LambdaVar& reExp)
 {
     return MakePtr<NLoc_LambdaVar>(reExp.decl, reExp.typeArgs);
 }
 
-expected<NLocPtr, DiagPtr> TranslateReStructVarExpToNLoc(ReExp_StructVar& reExp, TranslationContext& context)
+expected<NLoc*, DiagPtr> TranslateReStructVarExpToNLoc(ReExp_StructVar& reExp, TranslationContext& context)
 {
     if (reExp.hasExplicitInstance) // c.x, C.x 둘다 해당
     {
-        NLocPtr instance = nullptr;
+        NLoc* instance = nullptr;
 
         if (reExp.explicitInstance != nullptr)
         {
@@ -77,12 +77,12 @@ expected<NLocPtr, DiagPtr> TranslateReStructVarExpToNLoc(ReExp_StructVar& reExp,
     else // x, x (static) 둘다 해당
     {   
         // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
-        NLocPtr nInstanceLoc = reExp.decl->IsStatic() ? nullptr : MakePtr<NLoc_LocalDeref>(context.MakeThisLoc());
+        NLoc* nInstanceLoc = reExp.decl->IsStatic() ? nullptr : MakePtr<NLoc_LocalDeref>(context.MakeThisLoc());
         return MakePtr<NLoc_StructVar>(nInstanceLoc, reExp.decl, reExp.typeArgs);
     }
 }
 
-expected<NLocPtr, DiagPtr> TranslateReEnumElemVarExpToNLoc(ReExp_EnumElemVar& reExp, TranslationContext& context)
+expected<NLoc*, DiagPtr> TranslateReEnumElemVarExpToNLoc(ReExp_EnumElemVar& reExp, TranslationContext& context)
 {   
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
@@ -92,7 +92,7 @@ expected<NLocPtr, DiagPtr> TranslateReEnumElemVarExpToNLoc(ReExp_EnumElemVar& re
     return MakePtr<NLoc_EnumElemVar>(*eInst, reExp.decl, reExp.typeArgs);
 }
 
-expected<NLocPtr, DiagPtr> TranslateReListIndexerExpToNLoc(ReExp_ListIndexer& reExp, TranslationContext& context)
+expected<NLoc*, DiagPtr> TranslateReListIndexerExpToNLoc(ReExp_ListIndexer& reExp, TranslationContext& context)
 {
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
@@ -105,7 +105,7 @@ expected<NLocPtr, DiagPtr> TranslateReListIndexerExpToNLoc(ReExp_ListIndexer& re
     return MakePtr<NLoc_ListIndexer>(move(*eInst), move(*eIndex), reExp.itemType);
 }
 
-expected<NLocPtr, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref& reExp, TranslationContext& context)
+expected<NLoc*, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref& reExp, TranslationContext& context)
 {
     // *x, *G()
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
@@ -116,7 +116,7 @@ expected<NLocPtr, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref& reEx
     return MakePtr<NLoc_LocalDeref>(move(*eTarget));
 }
 
-expected<NLocPtr, DiagPtr> TranslateReBoxDerefExpToNLoc(ReExp_BoxDeref& reExp, TranslationContext& context)
+expected<NLoc*, DiagPtr> TranslateReBoxDerefExpToNLoc(ReExp_BoxDeref& reExp, TranslationContext& context)
 {
     // *x, *G()
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
@@ -131,7 +131,7 @@ namespace {
 
 class ReExpToNLocTranslator : public ReExpVisitor
 {
-    expected<NLocPtr, DiagPtr>* result;
+    expected<NLoc*, DiagPtr>* result;
     bool bWrapExpAsLoc;
     IDesignatedDiagnostic* notLocationDiag;
     
@@ -139,7 +139,7 @@ class ReExpToNLocTranslator : public ReExpVisitor
     TranslationContext& context;
 
 public:
-    ReExpToNLocTranslator(expected<NLocPtr, DiagPtr>* result, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
+    ReExpToNLocTranslator(expected<NLoc*, DiagPtr>* result, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
         : result(result), bWrapExpAsLoc(bWrapExpAsLoc), notLocationDiag(notLocationDiag), context(context)
     {
     }
@@ -204,9 +204,9 @@ public:
 
 }
 
-expected<NLocPtr, DiagPtr> TranslateReExpToNLoc(ReExp& reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
+expected<NLoc*, DiagPtr> TranslateReExpToNLoc(ReExp& reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
 {
-    expected<NLocPtr, DiagPtr> nLoc;
+    expected<NLoc*, DiagPtr> nLoc;
     ReExpToNLocTranslator translator{&nLoc, bWrapExpAsLoc, notLocationDiag, context};
     reExp.Accept(translator);
     return nLoc;

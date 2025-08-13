@@ -37,12 +37,12 @@ namespace Citron::SyntaxIR0Translator {
 
 namespace {
 
-expected<void, DiagPtr> TranslateSStmtToNStmts(std::vector<NStmtPtr>* outStmts, SStmt& sStmt, TranslationContext& context);
-expected<void, DiagPtr> TranslateSEmbeddableStmtToNStmts(std::vector<NStmtPtr>* outStmts, SEmbeddableStmt& embedStmt, TranslationContext& context);
-expected<vector<NStmtPtr>, DiagPtr> TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt& embedStmt, TranslationContext& context);
-expected<vector<NStmtPtr>, DiagPtr> TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, TranslationContext& context);
-expected<NExpPtr, DiagPtr> TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RTypePtr& hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context);
-expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context);
+expected<void, DiagPtr> TranslateSStmtToNStmts(std::vector<NStmt*>* outStmts, SStmt& sStmt, TranslationContext& context);
+expected<void, DiagPtr> TranslateSEmbeddableStmtToNStmts(std::vector<NStmt*>* outStmts, SEmbeddableStmt& embedStmt, TranslationContext& context);
+expected<vector<NStmt*>, DiagPtr> TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt& embedStmt, TranslationContext& context);
+expected<vector<NStmt*>, DiagPtr> TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, TranslationContext& context);
+expected<NExp*, DiagPtr> TranslateSExpAsTopLevelExpToNExp(SExp& sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context);
+expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context);
 
 bool IsTopLevelRExp(NExp& exp)
 {
@@ -57,7 +57,7 @@ bool IsTopLevelRExp(NExp& exp)
 class SStmtToNStmtsTranslator : public SStmtVisitor
 {
     expected<void, DiagPtr>* result;
-    vector<NStmtPtr>* outStmts;
+    vector<NStmt*>* outStmts;
     TranslationContext& context;
     
     void Forward(expected<void, DiagPtr>&& r)
@@ -84,14 +84,14 @@ class SStmtToNStmtsTranslator : public SStmtVisitor
         outStmts->push_back(MakePtr<TValue>(forward<TArgs>(args)...));
     }
 
-    void Values(vector<NStmtPtr>&& stmts)
+    void Values(vector<NStmt*>&& stmts)
     {
         *result = {};
         outStmts->insert(outStmts->end(), make_move_iterator(stmts.begin()), make_move_iterator(stmts.end()));
     }
 
 public:
-    SStmtToNStmtsTranslator(expected<void, DiagPtr>* result, vector<NStmtPtr>* outStmts, TranslationContext& context)
+    SStmtToNStmtsTranslator(expected<void, DiagPtr>* result, vector<NStmt*>* outStmts, TranslationContext& context)
         : result(result), outStmts(outStmts), context(context)
     {
     }
@@ -100,7 +100,7 @@ public:
     {
         // CommandStmt에 있는 expStringElement를 분석한다
 
-        vector<shared_ptr<NExp_String>> builder;
+        vector<NExp_String*> builder;
 
         for(auto& cmd : stmt.commands)
         {
@@ -135,7 +135,7 @@ public:
         auto eBodyStmts = TranslateSEmbeddableStmtToNStmts(*stmt.body, nestedContext);
         if (!eBodyStmts) return Error(move(eBodyStmts));
 
-        vector<NStmtPtr> elseStmts;
+        vector<NStmt*> elseStmts;
         if (stmt.elseBody != nullptr)
         {
             auto elseContext = context.MakeNestedScopeContext();
@@ -165,7 +165,7 @@ public:
         auto eBodyStmts = TranslateSEmbeddableStmtToNStmts(*stmt.body, bodyContext);
         if (!eBodyStmts) return Error(move(eBodyStmts));
 
-        vector<NStmtPtr> elseStmts;
+        vector<NStmt*> elseStmts;
         if (stmt.elseBody)
         {
             auto elseContext = context.MakeNestedScopeContext();            
@@ -200,7 +200,7 @@ public:
         // }
         auto forStmtContext = context.MakeNestedScopeContext(); // prelude는 loop가 아니다
 
-        vector<NStmtPtr> initStmts;
+        vector<NStmt*> initStmts;
         if (stmt.initializer)
         {   
             auto eInitResult = TranslateSForStmtInitializerToNStmts(*stmt.initializer, forStmtContext);
@@ -209,7 +209,7 @@ public:
             initStmts = move(*eInitResult);
         }
 
-        NExpPtr condExp;
+        NExp* condExp;
         if (stmt.cond)
         {
             auto boolType = context.MakeBoolType();
@@ -222,7 +222,7 @@ public:
             condExp = *eRawCond;
         }
 
-        NExpPtr continueExp;
+        NExp* continueExp;
         if (stmt.cont)
         {
             DesignatedDiagnostic<Error_ForStmt_ContinueExpShouldBeAssignOrCall> designatedDiag;
@@ -348,7 +348,7 @@ public:
         vector<DiagPtr> diags;
         auto blockContext = context.MakeNestedScopeContext();
 
-        vector<NStmtPtr> builder;
+        vector<NStmt*> builder;
         for(auto& stmt : stmt.stmts)
         {
             auto eStmtResult = TranslateSStmtToNStmts(&builder, *stmt, blockContext);
@@ -408,21 +408,21 @@ public:
     {
         struct ForeachStmtTranslator
         {
-            vector<NStmtPtr>* outStmts;
+            vector<NStmt*>* outStmts;
             SStmt_Foreach& stmt;
             TranslationContext& context;
 
             RName itemVarName;
 
         public:
-            ForeachStmtTranslator(vector<NStmtPtr>* outStmts, SStmt_Foreach& stmt, TranslationContext& context)
+            ForeachStmtTranslator(vector<NStmt*>* outStmts, SStmt_Foreach& stmt, TranslationContext& context)
                 : outStmts(outStmts), stmt(stmt), context(context)
             {
                 itemVarName = RName_Normal(stmt.varName);
             }
 
             // syntax의 enumerableExp를 사용해서 enumerator를 가져오는 Exp를 생성한다
-            expected<NExpPtr, DiagPtr> MakeEnumeratorExp()
+            expected<NExp*, DiagPtr> MakeEnumeratorExp()
             {
                 // TranslationResult<(Exp, IType)> Error() => TranslationResult.Error<(Exp, IType)>();
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
@@ -478,12 +478,12 @@ public:
                 return TranslateRFuncAndNArgsToNExp(result.decl, result.outerTypeArgs, move(*eNEnumerable), {});
             }
 
-            expected<NExpPtr, DiagPtr> MakeNextExpAndInferItemVarType(const RTypePtr& enumeratorType)
+            expected<NExp*, DiagPtr> MakeNextExpAndInferItemVarType(RType* enumeratorType)
             {
                 auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
                 if (!rMember) return unexpected{MakePtr<Error_NotImplemented>()};
 
-                vector<NExpPtr> candidates;
+                vector<NExp*> candidates;
                 for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*rMember))
                 {
                     auto* funcDecl = funcDeclWithOuter.decl.get();
@@ -537,17 +537,17 @@ public:
 
             struct CastInfo
             {
-                RTypePtr rawItemType;
-                NExpPtr castExp;
+                RType* rawItemType;
+                NExp* castExp;
             };
 
             struct NextExpAndCastExp
             {
-                NExpPtr nextExp;
+                NExp* nextExp;
                 optional<CastInfo> castInfo;
             };
 
-            expected<NextExpAndCastExp, DiagPtr> MakeNextExpAndCastExp(const RTypePtr& enumeratorType, const RTypePtr& itemTypeFromSyntax)
+            expected<NextExpAndCastExp, DiagPtr> MakeNextExpAndCastExp(RType* enumeratorType, RType* itemTypeFromSyntax)
             {
                 auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
                 if (!rMember) return unexpected{MakePtr<Error_NotImplemented>()};
@@ -630,7 +630,7 @@ public:
                 }
             }
 
-            expected<vector<NStmtPtr>, DiagPtr> MakeBody(const RTypePtr& itemVarType)
+            expected<vector<NStmt*>, DiagPtr> MakeBody(RType* itemVarType)
             {
                 // 루프 컨텍스트를 하나 열고
                 auto bodyContext = context.MakeNestedLoopScopeContext();
@@ -738,7 +738,7 @@ public:
     }
 };
 
-expected<void, DiagPtr> TranslateSStmtToNStmts(vector<NStmtPtr>* outStmts, SStmt& sStmt, TranslationContext& context)
+expected<void, DiagPtr> TranslateSStmtToNStmts(vector<NStmt*>* outStmts, SStmt& sStmt, TranslationContext& context)
 {   
     expected<void, DiagPtr> result;
     SStmtToNStmtsTranslator translator(&result, outStmts, context);
@@ -746,18 +746,18 @@ expected<void, DiagPtr> TranslateSStmtToNStmts(vector<NStmtPtr>* outStmts, SStmt
     return result;
 }
 
-expected<void, DiagPtr> TranslateSEmbeddableStmtToNStmts(vector<NStmtPtr>* outStmts, SEmbeddableStmt& embedStmt, TranslationContext& context)
+expected<void, DiagPtr> TranslateSEmbeddableStmtToNStmts(vector<NStmt*>* outStmts, SEmbeddableStmt& embedStmt, TranslationContext& context)
 {
     // if (...) 'stmt'
     // if (...) '{ stmt... }' 를 받는다
     class EmbeddableStmtTranslator : public SEmbeddableStmtVisitor
     {
         expected<void, DiagPtr>* result;
-        vector<NStmtPtr>* outStmts;
+        vector<NStmt*>* outStmts;
         TranslationContext& context;
 
     public:
-        EmbeddableStmtTranslator(expected<void, DiagPtr>* result, vector<NStmtPtr>* outStmts, TranslationContext& context)
+        EmbeddableStmtTranslator(expected<void, DiagPtr>* result, vector<NStmt*>* outStmts, TranslationContext& context)
             : result(result), outStmts(outStmts), context(context)
         {
         }
@@ -782,23 +782,23 @@ expected<void, DiagPtr> TranslateSEmbeddableStmtToNStmts(vector<NStmtPtr>* outSt
     return result;
 }
 
-expected<vector<NStmtPtr>, DiagPtr> TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt& embedStmt, TranslationContext& context)
+expected<vector<NStmt*>, DiagPtr> TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt& embedStmt, TranslationContext& context)
 {
-    vector<NStmtPtr> stmts;
+    vector<NStmt*> stmts;
     auto eResult = TranslateSEmbeddableStmtToNStmts(&stmts, embedStmt, context);
     if (!eResult) return unexpected{move(eResult).error()};
     return stmts;
 }
 
-expected<vector<NStmtPtr>, DiagPtr> TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, TranslationContext& context)
+expected<vector<NStmt*>, DiagPtr> TranslateSForStmtInitializerToNStmts(SForStmtInitializer& forInit, TranslationContext& context)
 {
     class ForInitTranslator : public SForStmtInitializerVisitor
     {
-        expected<vector<NStmtPtr>, DiagPtr>* result;
+        expected<vector<NStmt*>, DiagPtr>* result;
         TranslationContext& context;
 
     public:
-        ForInitTranslator(expected<vector<NStmtPtr>, DiagPtr>* result, TranslationContext& context)
+        ForInitTranslator(expected<vector<NStmt*>, DiagPtr>* result, TranslationContext& context)
             : result(result), context(context)
         {
         }
@@ -813,12 +813,12 @@ expected<vector<NStmtPtr>, DiagPtr> TranslateSForStmtInitializerToNStmts(SForStm
                 return;
             }
 
-            *result = vector<NStmtPtr>{MakePtr<NStmt_Exp>(move(*eExp))};
+            *result = vector<NStmt*>{MakePtr<NStmt_Exp>(move(*eExp))};
         }
 
         void Visit(SForStmtInitializer_VarDecl& forInit) override
         {   
-            vector<NStmtPtr> stmts;
+            vector<NStmt*> stmts;
             auto eStmtsResult = TranslateSVarDeclToNStmts(&stmts, forInit.varDecl, context);
             if (!eStmtsResult)
             {
@@ -830,13 +830,13 @@ expected<vector<NStmtPtr>, DiagPtr> TranslateSForStmtInitializerToNStmts(SForStm
         }
     };
 
-    expected<vector<NStmtPtr>, DiagPtr> result;
+    expected<vector<NStmt*>, DiagPtr> result;
     ForInitTranslator translator(&result, context);
     forInit.Accept(translator);
     return result;
 }
 
-expected<NExpPtr, DiagPtr> TranslateSExpAsTopLevelExpToNExp(SExp& sExp, const RTypePtr& hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSExpAsTopLevelExpToNExp(SExp& sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context)
 {
     auto eNExp = TranslateSExpToNExp(sExp, hintType, context);
     if (!eNExp) return unexpected{move(eNExp).error()};
@@ -883,7 +883,7 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
     return make_tuple(move(rParams), bLastParamVariadic);
 }
 
-expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(const RTypePtr& retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context)
+expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmtPtr>& sBody, TranslationContext& context)
 {
     // 람다를 분석합니다
     // [int x = x](int p) => { return 3; }
@@ -916,7 +916,7 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(const
         newContext.AddLocalVarInfo(*eRParamType, name);
     }
 
-    vector<NStmtPtr> rBody;
+    vector<NStmt*> rBody;
     auto eRBodyResult = TranslateSBodyToNStmts(&rBody, sBody, newContext);
     if (!eRBodyResult) return unexpected{move(eRBodyResult).error()};
 
@@ -926,7 +926,7 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(const
 
 } // namespace 
 
-expected<void, DiagPtr> TranslateSBodyToNStmts(vector<NStmtPtr>* outBody, const vector<SStmtPtr>& sStmts, TranslationContext& context)
+expected<void, DiagPtr> TranslateSBodyToNStmts(vector<NStmt*>* outBody, const vector<SStmtPtr>& sStmts, TranslationContext& context)
 {
     for(auto& sStmt : sStmts)
     {        
@@ -939,9 +939,9 @@ expected<void, DiagPtr> TranslateSBodyToNStmts(vector<NStmtPtr>* outBody, const 
     return {};
 }
 
-expected<vector<NStmtPtr>, DiagPtr> TranslateSBodyToNStmts(const vector<SStmtPtr>& sStmts, TranslationContext& context)
+expected<vector<NStmt*>, DiagPtr> TranslateSBodyToNStmts(const vector<SStmtPtr>& sStmts, TranslationContext& context)
 {
-    vector<NStmtPtr> body;
+    vector<NStmt*> body;
     auto eResult = TranslateSBodyToNStmts(&body, sStmts, context);
     if (!eResult) return unexpected{move(eResult).error()};
     return body;

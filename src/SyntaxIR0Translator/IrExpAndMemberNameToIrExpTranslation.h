@@ -10,7 +10,6 @@
 namespace Citron {
 
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 
 namespace SyntaxIR0Translator {
 
@@ -19,7 +18,7 @@ using IrExpPtr = std::shared_ptr<IrExp>;
 
 class TranslationContext;
 
-std::expected<IrExpPtr, DiagPtr> TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context);
+std::expected<IrExpPtr, DiagPtr> TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator 
 } // namespace Citron

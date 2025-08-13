@@ -11,7 +11,7 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-void AddEnumElemVar(const shared_ptr<NEnumElemDecl>& rEnumElem, SEnumElemVarDecl& sEnumElemVar, SkeletonPhaseContext& context)
+void AddEnumElemVar(NEnumElemDecl* rEnumElem, SEnumElemVarDecl& sEnumElemVar, SkeletonPhaseContext& context)
 {
     auto nEnumElemVar = MakePtr<NEnumElemVarDecl>(rEnumElem, sEnumElemVar.name);
     rEnumElem->AddVar(nEnumElemVar);
@@ -22,7 +22,7 @@ void AddEnumElemVar(const shared_ptr<NEnumElemDecl>& rEnumElem, SEnumElemVarDecl
     });
 }
 
-void AddEnumElem(const shared_ptr<NEnumDecl>& nEnum, SEnumElemDecl& sEnumElem, SkeletonPhaseContext& context)
+void AddEnumElem(NEnumDecl* nEnum, SEnumElemDecl& sEnumElem, SkeletonPhaseContext& context)
 {
     auto nEnumElem = MakePtr<NEnumElemDecl>(nEnum, sEnumElem.name, sEnumElem.vars.size());
 
@@ -32,7 +32,7 @@ void AddEnumElem(const shared_ptr<NEnumDecl>& nEnum, SEnumElemDecl& sEnumElem, S
     nEnum->AddElem(move(nEnumElem));
 }
 
-std::shared_ptr<NEnumDecl> InnerMakeEnum(NTypeDeclOuterWPtr nOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context)
+NEnumDecl* InnerMakeEnum(NTypeDeclOuter* nOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context)
 {
     auto typeParams = MakeTypeParams(sDecl.typeParams);
     auto nDecl = MakePtr<NEnumDecl>(move(nOuter), accessor, RName_Normal(sDecl.name), typeParams, sDecl.elements.size());

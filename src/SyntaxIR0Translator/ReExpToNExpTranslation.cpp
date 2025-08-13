@@ -20,16 +20,16 @@ namespace {
 // 기본적으로 load를 한다
 class ReExpToNExpTranslator : public ReExpVisitor
 {   
-    expected<NExpPtr, DiagPtr>* result;
+    expected<NExp*, DiagPtr>* result;
     TranslationContext& context;
 
 public:
-    ReExpToNExpTranslator(expected<NExpPtr, DiagPtr>* result, TranslationContext& context)
+    ReExpToNExpTranslator(expected<NExp*, DiagPtr>* result, TranslationContext& context)
         : result(result), context(context)
     {
     }
 
-    void HandleLoc(expected<NLocPtr, DiagPtr>&& eLoc)
+    void HandleLoc(expected<NLoc*, DiagPtr>&& eLoc)
     {
         if (!eLoc)
             *result = unexpected{move(eLoc).error()};
@@ -100,9 +100,9 @@ public:
 
 } // namespace 
 
-expected<NExpPtr, DiagPtr> TranslateReExpToNExp(ReExp& reExp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateReExpToNExp(ReExp& reExp, TranslationContext& context)
 {
-    expected<NExpPtr, DiagPtr> nExp;
+    expected<NExp*, DiagPtr> nExp;
     ReExpToNExpTranslator translator(&nExp, context);
     reExp.Accept(translator);
     return nExp;

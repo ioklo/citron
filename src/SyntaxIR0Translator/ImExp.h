@@ -20,9 +20,7 @@ class REnumDecl;
 class REnumElemDecl;
 class REnumElemVarDecl;
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
 class NExp;
-using NExpPtr = std::shared_ptr<NExp>;
 
 class NLambdaVarDecl;
 
@@ -59,8 +57,6 @@ public:
     virtual void Accept(ImExpVisitor& visitor) = 0;
 };
 
-using ImExpPtr = std::shared_ptr<ImExp>;
-
 class ImExpVisitor
 {
 public:
@@ -89,10 +85,10 @@ public:
 class ImExp_Namespace : public ImExp
 {
 public:
-    std::shared_ptr<RNamespaceDecl> _namespace; // namespace를 뭘로 저장하고 있어야 하나
+    RNamespaceDecl* _namespace; // namespace를 뭘로 저장하고 있어야 하나
 
 public:
-    ImExp_Namespace(const std::shared_ptr<RNamespaceDecl>& _namespace);
+    ImExp_Namespace(RNamespaceDecl* _namespace);
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -107,7 +103,7 @@ public:
     using FuncComp::items;
 
 public:
-    ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter);
+    ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter);
     virtual ~ImExp_GlobalFuncs();
 
 public:
@@ -122,10 +118,10 @@ public:
 class ImExp_TypeVar : public ImExp
 {
 public:
-    std::shared_ptr<RType_TypeVar> type;
+    RType_TypeVar* type;
 
 public:
-    ImExp_TypeVar(std::shared_ptr<RType_TypeVar>&& type);
+    ImExp_TypeVar(RType_TypeVar* type);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -134,11 +130,11 @@ public:
 class ImExp_Class : public ImExp
 {
 public:
-    std::shared_ptr<RClassDecl> classDecl;
-    RTypeArgumentsPtr typeArgs;
+    RClassDecl* classDecl;
+    RTypeArguments* typeArgs;
 
 public:
-    ImExp_Class(const std::shared_ptr<RClassDecl>& classDecl, RTypeArgumentsPtr&& typeArgs);
+    ImExp_Class(RClassDecl* classDecl, RTypeArguments* typeArgs);
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
 };
 
@@ -161,7 +157,7 @@ private:
     using FuncComp = FuncsWithPartialTypeArgsComponent<RClassFuncDecl>;
 
 public:
-    ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
     virtual ~ImExp_ClassFuncs();
 
 public:
@@ -176,11 +172,11 @@ public:
 class ImExp_Struct : public ImExp
 {
 public:
-    std::shared_ptr<RStructDecl> structDecl;
-    RTypeArgumentsPtr typeArgs;
+    RStructDecl* structDecl;
+    RTypeArguments* typeArgs;
 
 public:
-    ImExp_Struct(const std::shared_ptr<RStructDecl>& structDecl, RTypeArgumentsPtr&& typeArgs);
+    ImExp_Struct(RStructDecl* structDecl, RTypeArguments* typeArgs);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -198,7 +194,7 @@ public:
     ReExpPtr explicitInstance;
 
 public:
-    ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, const std::shared_ptr<RTypeArguments>& partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
     virtual ~ImExp_StructFuncs();
 
 public:
@@ -213,11 +209,11 @@ public:
 class ImExp_Enum : public ImExp
 {
 public:
-    std::shared_ptr<REnumDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    REnumDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    ImExp_Enum(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ImExp_Enum(REnumDecl* decl, RTypeArguments* typeArgs);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -226,11 +222,11 @@ public:
 class ImExp_EnumElem : public ImExp
 {
 public:
-    std::shared_ptr<REnumElemDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    REnumElemDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    ImExp_EnumElem(const std::shared_ptr<REnumElemDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ImExp_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -240,10 +236,10 @@ public:
 class ImExp_ThisVar : public ImExp
 {
 public:
-    RTypePtr type;
+    RType* type;
 
 public:
-    ImExp_ThisVar(const RTypePtr& type);
+    ImExp_ThisVar(RType* type);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -252,11 +248,11 @@ public:
 class ImExp_LocalVar : public ImExp
 {
 public:
-    RTypePtr type;
+    RType* type;
     std::string name;
 
 public: 
-    ImExp_LocalVar(const RTypePtr& type, const std::string& name);
+    ImExp_LocalVar(RType* type, const std::string& name);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -265,11 +261,11 @@ public:
 class ImExp_LambdaVar : public ImExp
 {
 public:
-    std::shared_ptr<NLambdaVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    NLambdaVarDecl* decl;
+    RTypeArguments* typeArgs;
 
 public:
-    ImExp_LambdaVar(const std::shared_ptr<NLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ImExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -278,14 +274,14 @@ public:
 class ImExp_ClassVar : public ImExp
 {
 public:
-    std::shared_ptr<RClassVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    RClassVarDecl* decl;
+    RTypeArguments* typeArgs;
     
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
 
 public:
-    ImExp_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -294,14 +290,14 @@ public:
 class ImExp_StructVar : public ImExp
 {
 public:
-    std::shared_ptr<RStructVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
     
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
 
 public:
-    ImExp_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ImExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -310,12 +306,12 @@ public:
 class ImExp_EnumElemVar : public ImExp
 {
 public:
-    std::shared_ptr<REnumElemVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    REnumElemVarDecl* decl;
+    RTypeArguments* typeArgs;
     ReExpPtr instance;
 
 public:
-    ImExp_EnumElemVar(const std::shared_ptr<REnumElemVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance);
+    ImExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, const ReExpPtr& instance);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -326,10 +322,10 @@ class ImExp_ListIndexer : public ImExp
 public:
     ReExpPtr instance;
     ReExpPtr index;
-    RTypePtr itemType;
+    RType* itemType;
 
 public:
-    ImExp_ListIndexer(ReExpPtr&& instance, ReExpPtr&& index, RTypePtr&& itemType);
+    ImExp_ListIndexer(ReExpPtr&& instance, ReExpPtr&& index, RType* itemType);
 
 public:    
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }
@@ -363,10 +359,10 @@ public:
 class ImExp_Else : public ImExp
 {
 public:
-    NExpPtr exp;
+    NExp* exp;
 
 public:
-    ImExp_Else(const NExpPtr& exp);
+    ImExp_Else(NExp* exp);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(*this); }

@@ -24,7 +24,7 @@ namespace Citron::SyntaxIR0Translator {
 
 FuncContext::FuncContext() = default;
 
-shared_ptr<NLambdaVarDecl> FuncContext::StageLambdaVar(const RTypePtr& type, const RName& name, NArgument_Normal&& arg)
+shared_ptr<NLambdaVarDecl> FuncContext::StageLambdaVar(RType* type, const RName& name, NArgument_Normal&& arg)
 {
     auto lambdaVar = MakePtr<NLambdaVarDecl>(type, name);
     lambdaVarAndInitArgs.emplace_back(lambdaVar, move(arg));
@@ -41,7 +41,7 @@ bool FuncContext_Lambda::CanAccess(RDecl* target)
     return outer->funcContext->CanAccess(target);
 }
 
-optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory)
 {
     auto oMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
     if (!oMember) return nullopt;
@@ -108,13 +108,13 @@ RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
     return funcReturn;
 }
 
-void FuncContext_Lambda::SetOpenFuncReturn(RTypePtr&& retType)
+void FuncContext_Lambda::SetOpenFuncReturn(RType* retType)
 {
     assert(holds_alternative<RFuncReturn_NotSet>(funcReturn));
     funcReturn = move(RFuncReturn_Set(retType));
 }
 
-RTypeArgumentsPtr FuncContext_Lambda::MakeOpenTypeArgs(RTypeFactory& factory)
+RTypeArguments* FuncContext_Lambda::MakeOpenTypeArgs(IR0Factory& factory)
 {
     return outer->MakeOpenTypeArgs(factory);
 }
@@ -129,7 +129,7 @@ bool FuncContext_FuncDecl::CanAccess(RDecl* target)
     return funcDecl->GetNDecl()->GetRDecl()->CanAccess(target);
 }
 
-optional<RMember> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory)
 {
     return funcDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
@@ -139,13 +139,13 @@ RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()
     return funcDecl->GetUnboundFuncReturn();
 }
 
-void FuncContext_FuncDecl::SetOpenFuncReturn(RTypePtr&& retType)
+void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
 {
     throw RuntimeFatalException();
 }
 
 
-RTypeArgumentsPtr FuncContext_FuncDecl::MakeOpenTypeArgs(RTypeFactory& factory)
+RTypeArguments* FuncContext_FuncDecl::MakeOpenTypeArgs(IR0Factory& factory)
 {
     return funcDecl->GetNDecl()->GetRDecl()->MakeOpenTypeArgs(factory);
 }

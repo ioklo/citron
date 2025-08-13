@@ -6,16 +6,13 @@
 namespace Citron {
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-class RTypeFactory;
+class IR0Factory;
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 class RClassVarDecl;
 class RStructVarDecl;
 class REnumElemVarDecl;
 
 class NExp;
-using NExpPtr = std::shared_ptr<NExp>;
 
 class NLambdaVarDecl;
 
@@ -40,7 +37,7 @@ class ReExp
 public:
     virtual ~ReExp() { }
     virtual void Accept(ReExpVisitor& visitor) = 0;
-    virtual RTypePtr GetType(RTypeFactory& factory) = 0;
+    virtual RType* GetType(IR0Factory& factory) = 0;
 };
 
 using ReExpPtr = std::shared_ptr<ReExp>;
@@ -64,77 +61,77 @@ public:
 class ReExp_ThisVar : public ReExp
 { 
 public:
-    RTypePtr type;
+    RType* type;
 
 public:
-    ReExp_ThisVar(const RTypePtr& type);
+    ReExp_ThisVar(RType* type);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType(RTypeFactory& factory) override { return type; }
+    RType* GetType(IR0Factory& factory) override { return type; }
 };
 
 class ReExp_LocalVar : public ReExp
 {
 public:
-    RTypePtr type;
+    RType* type;
     std::string name;
     
 public:
-    ReExp_LocalVar(const RTypePtr& type, const std::string& name);
+    ReExp_LocalVar(RType* type, const std::string& name);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType(RTypeFactory& factory) override { return type; }
+    RType* GetType(IR0Factory& factory) override { return type; }
 };
 
 class ReExp_LambdaVar : public ReExp
 {
 public:
-    std::shared_ptr<NLambdaVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    NLambdaVarDecl* decl;
+    RTypeArguments* typeArgs;
     
 public:
-    ReExp_LambdaVar(const std::shared_ptr<NLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs);
+    ReExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType(RTypeFactory& factory) override;
+    RType* GetType(IR0Factory& factory) override;
 };
 
 class ReExp_ClassVar : public ReExp
 {
 public:
-    std::shared_ptr<RClassVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    RClassVarDecl* decl;
+    RTypeArguments* typeArgs;
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
     
 public:
-    ReExp_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ReExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType(RTypeFactory& factory) override;
+    RType* GetType(IR0Factory& factory) override;
 };
 
 class ReExp_StructVar : public ReExp
 {
 public:
-    std::shared_ptr<RStructVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
     bool hasExplicitInstance;
     ReExpPtr explicitInstance;
     
 public:
-    ReExp_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
+    ReExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType(RTypeFactory& factory) override;
+    RType* GetType(IR0Factory& factory) override;
 };
 
 class ReExp_EnumElemVar : public ReExp
 {
 public:
-    std::shared_ptr<REnumElemVarDecl> decl;
-    RTypeArgumentsPtr typeArgs;
+    REnumElemVarDecl* decl;
+    RTypeArguments* typeArgs;
     ReExpPtr instance;
 
 public:
-    ReExp_EnumElemVar(const std::shared_ptr<REnumElemVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance);
+    ReExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, const ReExpPtr& instance);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType(RTypeFactory& factory) override;
+    RType* GetType(IR0Factory& factory) override;
 };
 
 class ReExp_LocalDeref : public ReExp
@@ -145,7 +142,7 @@ public:
 public:
     ReExp_LocalDeref(const ReExpPtr& target);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType(RTypeFactory& factory) override;
+    RType* GetType(IR0Factory& factory) override;
 };
 
 class ReExp_BoxDeref : public ReExp
@@ -156,7 +153,7 @@ public:
 public:
     ReExp_BoxDeref(const ReExpPtr& target);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType(RTypeFactory& factory) override;
+    RType* GetType(IR0Factory& factory) override;
 };
 
 class ReExp_ListIndexer : public ReExp
@@ -164,25 +161,25 @@ class ReExp_ListIndexer : public ReExp
 public:
     ReExpPtr instance;
     ReExpPtr index;
-    RTypePtr itemType;
+    RType* itemType;
     
 public:
-    ReExp_ListIndexer(const ReExpPtr& instance, const ReExpPtr& index, const RTypePtr& itemType);
+    ReExp_ListIndexer(const ReExpPtr& instance, const ReExpPtr& index, RType* itemType);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType(RTypeFactory& factory) override { return itemType; }
+    RType* GetType(IR0Factory& factory) override { return itemType; }
 };
 
 // 기타의 경우, Value
 class ReExp_Else : public ReExp
 {
 public:
-    NExpPtr nExp;
+    NExp* nExp;
     
 public:
-    ReExp_Else(const NExpPtr& ptr);
+    ReExp_Else(NExp* ptr);
 
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(*this); }
-    RTypePtr GetType(RTypeFactory& factory) override;
+    RType* GetType(IR0Factory& factory) override;
 };
 
 } // namespace SyntaxIR0Translator

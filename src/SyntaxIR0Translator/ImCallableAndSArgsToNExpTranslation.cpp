@@ -38,7 +38,7 @@ namespace {
 // (IntermediateExp, Args) -> TranslationResult<IR0ExpResult>
 class ImCallableAndSArgsToNExpTranslator : public ImExpVisitor
 {
-    expected<NExpPtr, DiagPtr>* result;
+    expected<NExp*, DiagPtr>* result;
 
     SExpPtr sCallable;
     SArgumentsPtr sArgs;
@@ -49,7 +49,7 @@ class ImCallableAndSArgsToNExpTranslator : public ImExpVisitor
     // S.ISyntaxNode nodeForCallableErrorReport;
 
 public:
-    ImCallableAndSArgsToNExpTranslator(expected<NExpPtr, DiagPtr>* result, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, TranslationContext& context)
+    ImCallableAndSArgsToNExpTranslator(expected<NExp*, DiagPtr>* result, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, TranslationContext& context)
         : result(result), sCallable(sCallable), sArgs(sArgs), context(context)
     {
     }
@@ -165,7 +165,7 @@ public:
             }
 
             // ResolvedExp -> RExp
-            NLocPtr nInst;
+            NLoc* nInst;
             if (imExp.explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
@@ -248,7 +248,7 @@ public:
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
 
-            NLocPtr instance;
+            NLoc* instance;
             if (imExp.explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
@@ -378,7 +378,7 @@ public:
 
 } // namespace
 
-expected<NExpPtr, DiagPtr> TranslateImCallableAndSArgsToNExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateImCallableAndSArgsToNExp(ImExp& imCallable, const SExpPtr& sCallable, const SArgumentsPtr& sArgs, TranslationContext& context)
 {
     // 여기서 분석해야 할 것은 
     // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -390,7 +390,7 @@ expected<NExpPtr, DiagPtr> TranslateImCallableAndSArgsToNExp(ImExp& imCallable, 
     // Argument 타입을 먼저 알아내야 하는가
     // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
 
-    expected<NExpPtr, DiagPtr> result;
+    expected<NExp*, DiagPtr> result;
     ImCallableAndSArgsToNExpTranslator binder{&result, sCallable, sArgs, context};
     imCallable.Accept(binder);
     return result;

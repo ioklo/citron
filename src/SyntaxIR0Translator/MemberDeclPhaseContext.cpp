@@ -9,12 +9,12 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-RTypePtr MemberDeclPhaseContext::MakeType(const STypeExpPtr& sTypeExp, NDeclPtr decl)
+RType* MemberDeclPhaseContext::MakeType(const STypeExpPtr& sTypeExp, NDecl* decl)
 {
     throw NotImplementedException();
 }
 
-tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDeclPtr decl, vector<SFuncParam>& sParams)
+tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDecl* decl, vector<SFuncParam>& sParams)
 {
     bool bLastParamVariadic = false;
 

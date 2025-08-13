@@ -39,12 +39,12 @@ RAccessor MakeGlobalMemberAccessor(std::optional<SAccessModifier> modifier)
 
 class NamespaceElemVisitor : public SNamespaceDeclElementVisitor
 {   
-    shared_ptr<NNamespaceDecl> curDecl;
+    NNamespaceDecl* curDecl;
     SNamespaceDeclElementPtr sSharedElem;
     SkeletonPhaseContext& context;
 
 public:
-    NamespaceElemVisitor(shared_ptr<NNamespaceDecl> curDecl, SNamespaceDeclElementPtr sharedElem, SkeletonPhaseContext& context)
+    NamespaceElemVisitor(NNamespaceDecl* curDecl, SNamespaceDeclElementPtr sharedElem, SkeletonPhaseContext& context)
         : curDecl { move(curDecl) }, context { context } {}
 
     // Inherited via SNamespaceDeclElementVisitor
@@ -56,12 +56,12 @@ public:
 
     void Visit(SNamespaceDecl& elem) override
     {
-        shared_ptr<NNamespaceDecl> curNamespace = curDecl;
+        NNamespaceDecl* curNamespace = curDecl;
         for (size_t i = 0, size = elem.names.size(); i < size; i++)
         {
             auto& name = elem.names[i];
 
-            shared_ptr<NNamespaceDecl> childNamespace = curNamespace->GetNamespace(name);
+            NNamespaceDecl* childNamespace = curNamespace->GetNamespace(name);
             if (!childNamespace)
             {
                 childNamespace = context.MakeChildNamespace(curNamespace, name);
@@ -104,12 +104,12 @@ public:
 
 class ScriptElemVisitor : public SScriptElementVisitor
 {
-    shared_ptr<NNamespaceDecl> rootNamespace;
+    NNamespaceDecl* rootNamespace;
     SScriptElementPtr sharedElem;
     SkeletonPhaseContext& context;
 
 public:
-    ScriptElemVisitor(const shared_ptr<NNamespaceDecl>& rootNamespace, const SScriptElementPtr& sharedElem, SkeletonPhaseContext& context)
+    ScriptElemVisitor(NNamespaceDecl* rootNamespace, const SScriptElementPtr& sharedElem, SkeletonPhaseContext& context)
         : rootNamespace(rootNamespace), sharedElem(sharedElem), context(context)
     {
     }
@@ -180,9 +180,9 @@ expected<shared_ptr<NModule>, DiagPtr> Translate(
     std::string moduleName,
     vector<SScript> scripts,
     vector<shared_ptr<MModule>> referenceModules,
-    RTypeFactory& factory)
+    IR0Factory& factory)
 {
-    auto rootNamespace = NNamespaceDecl::MakeRoot(factory);
+    auto rootNamespace = factory.MakeRootNamespace();
     auto nModule = MakePtr<NModule>(move(moduleName), move(rootNamespace));
 
     SkeletonPhaseContext context(factory);

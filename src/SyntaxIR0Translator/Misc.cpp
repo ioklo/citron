@@ -17,13 +17,12 @@ using namespace std;
 namespace Citron {
 
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 
 namespace SyntaxIR0Translator {
 
-expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context)
+expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context)
 {
-    std::vector<RTypePtr> items;
+    std::vector<RType*> items;
     items.reserve(typeArgs.size());
 
     for (auto& typeArg : typeArgs)
@@ -38,7 +37,7 @@ expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& type
 }
 
 // TODO: implementation을 CastNExp로 옮긴다
-//NExpPtr TryCastRExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context) // nothrow
+//NExp* TryCastRExp(NExp* exp, RType* expectedType, TranslationContext& context) // nothrow
 //{
 //    static_assert(false);
 //
@@ -100,7 +99,7 @@ expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& type
 //}
 
 // 값의 겉보기 타입을 변경한다
-expected<NExpPtr, DiagPtr> CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context)
+expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationContext& context)
 {
     auto expType = context.GetType(*exp);
 
@@ -152,9 +151,9 @@ expected<NExpPtr, DiagPtr> CastNExp(NExpPtr&& exp, const RTypePtr& expectedType,
     return unexpected{MakePtr<Error_Cast_Failed>()};
 }
 
-expected<NExpPtr, DiagPtr> CastNExp(const NExpPtr& exp, const RTypePtr& expectedType, TranslationContext& context)
+expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationContext& context)
 {
-    return CastNExp(NExpPtr(exp), expectedType, context);
+    return CastNExp(NExp*(exp), expectedType, context);
 }
 
 bool IsVarType(STypeExp& typeExp)

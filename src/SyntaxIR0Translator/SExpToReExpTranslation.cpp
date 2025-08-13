@@ -23,11 +23,11 @@ class SExpToReExpTranslator : public SExpVisitor
 {
     expected<ReExpPtr, DiagPtr>* result;
 
-    RTypePtr hintType;
+    RType* hintType;
     TranslationContext& context;
 
 public:
-    SExpToReExpTranslator(expected<ReExpPtr, DiagPtr>* result, const RTypePtr& hintType, TranslationContext& context)
+    SExpToReExpTranslator(expected<ReExpPtr, DiagPtr>* result, RType* hintType, TranslationContext& context)
         : result(result), hintType(hintType), context(context)
     {
     }
@@ -45,7 +45,7 @@ private:
         *result = TranslateImExpToReExp(**eImExp, context);
     }
 
-    void HandleExp(expected<NExpPtr, DiagPtr>&& eExp)
+    void HandleExp(expected<NExp*, DiagPtr>&& eExp)
     {
         if (!eExp)
             *result = unexpected{move(eExp).error()};
@@ -153,7 +153,7 @@ public:
 
 } // namespace
 
-expected<ReExpPtr, DiagPtr> TranslateSExpToReExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context)
+expected<ReExpPtr, DiagPtr> TranslateSExpToReExp(SExp& exp, RType* hintType, TranslationContext& context)
 {
     expected<ReExpPtr, DiagPtr> reExp;
     SExpToReExpTranslator translator{&reExp, hintType, context};

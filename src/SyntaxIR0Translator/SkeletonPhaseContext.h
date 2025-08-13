@@ -7,7 +7,7 @@
 namespace Citron {
 
 class NNamespaceDecl;
-class RTypeFactory;
+class IR0Factory;
 
 namespace SyntaxIR0Translator {
 
@@ -15,12 +15,12 @@ class MemberDeclPhaseContext;
 
 class SkeletonPhaseContext
 {
-    RTypeFactory& factory;
+    IR0Factory& factory;
 
 public:
-    SkeletonPhaseContext(RTypeFactory& factory);
+    SkeletonPhaseContext(IR0Factory& factory);
 
-    std::shared_ptr<NNamespaceDecl> MakeChildNamespace(const std::shared_ptr<NNamespaceDecl>& decl, const std::string& name);
+    NNamespaceDecl* MakeChildNamespace(NNamespaceDecl* decl, const std::string& name);
     void AddMemberDeclPhaseTask(std::function<void(MemberDeclPhaseContext&)> f);
 };
 

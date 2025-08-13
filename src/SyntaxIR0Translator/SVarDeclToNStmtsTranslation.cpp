@@ -22,7 +22,7 @@ namespace {
 
 class VarDeclElemTranslator
 {
-    vector<NStmtPtr>* outStmts;
+    vector<NStmt*>* outStmts;
 
     SVarDeclElement& elem;
     DeclTypeInfo& declTypeInfo;
@@ -30,7 +30,7 @@ class VarDeclElemTranslator
     TranslationContext& context;
 
 public:
-    VarDeclElemTranslator(vector<NStmtPtr>* outStmts, SVarDeclElement& elem, DeclTypeInfo& declTypeInfo, TranslationContext& context)
+    VarDeclElemTranslator(vector<NStmt*>* outStmts, SVarDeclElement& elem, DeclTypeInfo& declTypeInfo, TranslationContext& context)
         : outStmts(outStmts), elem(elem), declTypeInfo(declTypeInfo), context(context)
     {
     }
@@ -126,7 +126,7 @@ private:
         assert(declTypeInfo.kind == DeclTypeInfoKind::Normal);
         auto& declType = declTypeInfo.type;
 
-        NExpPtr nInitExp;
+        NExp* nInitExp;
         if (elem.initExp)
         {
             auto eNExp = TranslateSExpToNExp(*elem.initExp, declType, context);
@@ -163,7 +163,7 @@ public:
 
 } // namespace
 
-expected<void, DiagPtr> TranslateSVarDeclToNStmts(std::vector<NStmtPtr>* outStmts, SVarDecl& varDecl, TranslationContext& context)
+expected<void, DiagPtr> TranslateSVarDeclToNStmts(std::vector<NStmt*>* outStmts, SVarDecl& varDecl, TranslationContext& context)
 {
     DeclTypeInfo declTypeInfo = context.GetDeclTypeInfo(*varDecl.type);
 

@@ -24,8 +24,8 @@ namespace {
 
 class SExpToNLocTranslator : public SExpVisitor
 {
-    expected<NLocPtr, DiagPtr>* result;
-    RTypePtr hintType;
+    expected<NLoc*, DiagPtr>* result;
+    RType* hintType;
     bool bWrapExpAsLoc;
 
     IDesignatedDiagnostic* notLocationDiag;
@@ -33,8 +33,8 @@ class SExpToNLocTranslator : public SExpVisitor
 
 public:
     SExpToNLocTranslator(
-        expected<NLocPtr, DiagPtr>* result,
-        const RTypePtr& hintType,
+        expected<NLoc*, DiagPtr>* result,
+        RType* hintType,
         bool bWrapExpAsLoc,
         IDesignatedDiagnostic* notLocationDiag,
         TranslationContext& context)
@@ -57,7 +57,7 @@ private:
     }
 
     // fast track
-    void HandleExp(expected<NExpPtr, DiagPtr>&& eNExp)
+    void HandleExp(expected<NExp*, DiagPtr>&& eNExp)
     {
         if (!eNExp)
         {
@@ -211,9 +211,9 @@ public:
 
 } // namespace 
 
-expected<NLocPtr, DiagPtr> TranslateSExpToNLoc(SExp& sExp, const RTypePtr& hintType, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
+expected<NLoc*, DiagPtr> TranslateSExpToNLoc(SExp& sExp, RType* hintType, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
 {
-    expected<NLocPtr, DiagPtr> nLoc;
+    expected<NLoc*, DiagPtr> nLoc;
     SExpToNLocTranslator translator{&nLoc, hintType, bWrapExpAsLoc, notLocationDiag, context};
     sExp.Accept(translator);
     return nLoc;

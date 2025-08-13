@@ -36,7 +36,7 @@ namespace Citron::SyntaxIR0Translator {
 // Syntax Exp -> IR0 Exp로 바꿔주는 기본적인 코드
 // Deref를 적용하지 않는다. 따로 해주어야 한다
 
-expected<NExpPtr, DiagPtr> TranslateSNullLiteralExpToNExp(SExp_NullLiteral& exp, const RTypePtr& hintType, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSNullLiteralExpToNExp(SExp_NullLiteral& exp, RType* hintType, TranslationContext& context)
 {
     if (hintType != nullptr)
     {
@@ -54,12 +54,12 @@ expected<NExpPtr, DiagPtr> TranslateSNullLiteralExpToNExp(SExp_NullLiteral& exp,
     return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
 }
 
-expected<NExpPtr, DiagPtr> TranslateSBoolLiteralExpToNExp(SExp_BoolLiteral& exp)
+expected<NExp*, DiagPtr> TranslateSBoolLiteralExpToNExp(SExp_BoolLiteral& exp)
 {
     return MakePtr<NExp_BoolLiteral>(exp.value);
 }
 
-expected<NExpPtr, DiagPtr> TranslateSIntLiteralExpToNExp(SExp_IntLiteral& exp)
+expected<NExp*, DiagPtr> TranslateSIntLiteralExpToNExp(SExp_IntLiteral& exp)
 {
     return MakePtr<NExp_IntLiteral>(exp.value);
 }
@@ -119,7 +119,7 @@ expected<NStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
     unreachable();
 }
 
-expected<shared_ptr<NExp_String>, DiagPtr> TranslateSStringExpToNStringExp(SExp_String& exp, TranslationContext& context)
+expected<NExp_String*, DiagPtr> TranslateSStringExpToNStringExp(SExp_String& exp, TranslationContext& context)
 {
     vector<DiagPtr> diags;
     vector<NStringExpElement> builder;
@@ -143,7 +143,7 @@ expected<shared_ptr<NExp_String>, DiagPtr> TranslateSStringExpToNStringExp(SExp_
 }
 
 // int만 지원한다
-expected<NExpPtr, DiagPtr> TranslateSIntUnaryAssignExpToNExp(SExp& operand, NInternalUnaryAssignOperator op, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSIntUnaryAssignExpToNExp(SExp& operand, NInternalUnaryAssignOperator op, TranslationContext& context)
 {
     // exp를 loc으로 변환하는 일을 하면 안되지만, ref는 풀어야 한다
     // F()++; (x)
@@ -161,7 +161,7 @@ expected<NExpPtr, DiagPtr> TranslateSIntUnaryAssignExpToNExp(SExp& operand, NInt
     return MakePtr<NExp_CallInternalUnaryAssignOperator>(op, move(*eNOperand));
 }
 
-expected<NExpPtr, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp& sExp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp& sExp, TranslationContext& context)
 {
     assert(sExp.kind != SUnaryOpKind::Deref);
 
@@ -212,7 +212,7 @@ expected<NExpPtr, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp& s
     }
 }
 
-expected<NExpPtr, DiagPtr> TranslateSAssignBinaryOpExpToNExp(SExp_BinaryOp& exp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSAssignBinaryOpExpToNExp(SExp_BinaryOp& exp, TranslationContext& context)
 {
     // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
     DesignatedDiagnostic<Error_BinaryOp_LeftOperandIsNotAssignable> designatedDiag;
@@ -245,7 +245,7 @@ expected<NExpPtr, DiagPtr> TranslateSAssignBinaryOpExpToNExp(SExp_BinaryOp& exp,
     return MakePtr<NExp_Assign>(move(*eNDestLoc), move(*eNWrappedSrcExp));
 }
 
-expected<NExpPtr, DiagPtr> TranslateSBinaryOpExpToNExp(SExp_BinaryOp& exp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSBinaryOpExpToNExp(SExp_BinaryOp& exp, TranslationContext& context)
 {
     // 1. Assign 먼저 처리
     if (exp.kind == SBinaryOpKind::Assign)
@@ -297,10 +297,10 @@ expected<NExpPtr, DiagPtr> TranslateSBinaryOpExpToNExp(SExp_BinaryOp& exp, Trans
     return unexpected{MakePtr<Error_BinaryOp_OperatorNotFound>()};
 }
 
-expected<NExpPtr, DiagPtr> TranslateSLambdaExpToNExp(SExp_Lambda& sExp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSLambdaExpToNExp(SExp_Lambda& sExp, TranslationContext& context)
 {
     // TODO: 리턴 타입과 인자타입은 타입 힌트를 반영해야 한다
-    //RTypePtr retType = nullptr;
+    //RType* retType = nullptr;
     
     //auto oLambdaInfo = TranslateLambda(retType, sExp.params, sExp.body, context);
 
@@ -311,13 +311,13 @@ expected<NExpPtr, DiagPtr> TranslateSLambdaExpToNExp(SExp_Lambda& sExp, Translat
     throw NotImplementedException();
 }
 
-expected<NExpPtr, DiagPtr> TranslateSListExpToNExp(SExp_List& exp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSListExpToNExp(SExp_List& exp, TranslationContext& context)
 {
-    vector<NExpPtr> elems;
+    vector<NExp*> elems;
     elems.reserve(exp.elements.size());
 
     // TODO: 타입 힌트도 이용해야 할 것 같다
-    RTypePtr curElemType = nullptr;
+    RType* curElemType = nullptr;
 
     for(auto& elem : exp.elements)
     {
@@ -347,7 +347,7 @@ expected<NExpPtr, DiagPtr> TranslateSListExpToNExp(SExp_List& exp, TranslationCo
     return MakePtr<NExp_List>(move(elems), move(curElemType));
 }
 
-expected<NExpPtr, DiagPtr> TranslateSNewExpToNExp(SExp_New& exp, TranslationContext& context) // throws ErrorCodeException
+expected<NExp*, DiagPtr> TranslateSNewExpToNExp(SExp_New& exp, TranslationContext& context) // throws ErrorCodeException
 {
     auto eRType = context.TranslateSTypeExpToRType(*exp.type);
     if (!eRType) return unexpected{move(eRType).error()};
@@ -371,7 +371,7 @@ expected<NExpPtr, DiagPtr> TranslateSNewExpToNExp(SExp_New& exp, TranslationCont
     //return Valid(new IR0ExpResult(new R.NewClassExp(constructor, args), new ClassType(classSymbol)));
 }
 
-expected<NExpPtr, DiagPtr> TranslateSCallExpToNExp(SExp_Call& exp, const RTypePtr& hintType, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSCallExpToNExp(SExp_Call& exp, RType* hintType, TranslationContext& context)
 {
     auto eImCallable = TranslateSExpToImExp(*exp.callable, hintType, context);
     if (!eImCallable) return unexpected{move(eImCallable).error()};
@@ -379,7 +379,7 @@ expected<NExpPtr, DiagPtr> TranslateSCallExpToNExp(SExp_Call& exp, const RTypePt
     return TranslateImCallableAndSArgsToNExp(**eImCallable, exp.callable, exp.args, context); // 로깅할때 exp, exp.Callable두개가 다 필요할 수 있다
 }
 
-expected<NExpPtr, DiagPtr> TranslateSBoxExpToNExp(SExp_Box& exp, const RTypePtr& hintType, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSBoxExpToNExp(SExp_Box& exp, RType* hintType, TranslationContext& context)
 {
     auto* hintBoxPtrType = dynamic_cast<RType_BoxPtr*>(hintType.get());
     auto innerHintType = hintBoxPtrType ? hintBoxPtrType->innerType : nullptr;
@@ -391,7 +391,7 @@ expected<NExpPtr, DiagPtr> TranslateSBoxExpToNExp(SExp_Box& exp, const RTypePtr&
     return MakePtr<NExp_Box>(move(*eNInnerExp));
 }
 
-expected<NExpPtr, DiagPtr> TranslateSIsExpToNExp(SExp_Is& exp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSIsExpToNExp(SExp_Is& exp, TranslationContext& context)
 {
     auto eTarget = TranslateSExpToNExp(*exp.exp, /*hintType*/ nullptr, context);
     if (!eTarget) return unexpected{move(eTarget).error()};
@@ -434,7 +434,7 @@ expected<NExpPtr, DiagPtr> TranslateSIsExpToNExp(SExp_Is& exp, TranslationContex
         throw NotImplementedException(); // 에러 처리
 }
 
-expected<NExpPtr, DiagPtr> TranslateSAsExpToNExp(SExp_As& exp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSAsExpToNExp(SExp_As& exp, TranslationContext& context)
 {
     auto eNTarget = TranslateSExpToNExp(*exp.exp, /* hintType */ nullptr, context);
     if (!eNTarget) return unexpected{move(eNTarget).error()};
@@ -450,13 +450,13 @@ namespace {
 // S.Exp -> R.Exp
 class SExpToNExpTranslator : public SExpVisitor
 {
-    expected<NExpPtr, DiagPtr>* result;
-    RTypePtr hintType;
+    expected<NExp*, DiagPtr>* result;
+    RType* hintType;
 
     TranslationContext& context;
 
 public:
-    SExpToNExpTranslator(expected<NExpPtr, DiagPtr>* result, const RTypePtr& hintType, TranslationContext& context)
+    SExpToNExpTranslator(expected<NExp*, DiagPtr>* result, RType* hintType, TranslationContext& context)
         : result(result), hintType(hintType), context(context)
     {
     }
@@ -473,7 +473,7 @@ private:
             *result = nullptr;
     }
 
-    void Forward(expected<NExpPtr, DiagPtr>&& r)
+    void Forward(expected<NExp*, DiagPtr>&& r)
     {
         *result = move(r);
     }
@@ -570,9 +570,9 @@ public:
 
 } // namespace 
 
-expected<NExpPtr, DiagPtr> TranslateSExpToNExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateSExpToNExp(SExp& exp, RType* hintType, TranslationContext& context)
 {
-    expected<NExpPtr, DiagPtr> result;
+    expected<NExp*, DiagPtr> result;
 
     SExpToNExpTranslator translator(&result, hintType, context);
     exp.Accept(translator);

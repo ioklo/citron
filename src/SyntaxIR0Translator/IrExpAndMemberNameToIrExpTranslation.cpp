@@ -32,11 +32,11 @@ namespace {
 
 class StaticParentTranslator
 {
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
     TranslationContext& context;
 
 public:
-    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    StaticParentTranslator(RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -166,7 +166,7 @@ class StaticRefTypeTranslator : public RTypeVisitor
 
     shared_ptr<IrExp_StaticRef> parent;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
@@ -190,7 +190,7 @@ private:
     }
 
 public:
-    StaticRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const std::shared_ptr<IrExp_StaticRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    StaticRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const std::shared_ptr<IrExp_StaticRef>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -331,7 +331,7 @@ class BoxRefTypeTranslator : public RTypeVisitor
 
     std::shared_ptr<IrExp_BoxRef> parent;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
@@ -355,7 +355,7 @@ private:
     }
 
 public: 
-    BoxRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const std::shared_ptr<IrExp_BoxRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    BoxRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const std::shared_ptr<IrExp_BoxRef>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -474,7 +474,7 @@ class LocalRefTypeTranslator : public RTypeVisitor
 
     shared_ptr<IrExp_LocalRef> parent;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
@@ -498,7 +498,7 @@ private:
     }
 
 public:
-    LocalRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const shared_ptr<IrExp_LocalRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    LocalRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const shared_ptr<IrExp_LocalRef>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -627,7 +627,7 @@ class BoxValueTypeTranslator : public RTypeVisitor
     expected<IrExpPtr, DiagPtr>* result;
     shared_ptr<IrExp_DerefedBoxValue> parent;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
@@ -651,7 +651,7 @@ private:
     }
 
 public:
-    BoxValueTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const shared_ptr<IrExp_DerefedBoxValue>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    BoxValueTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const shared_ptr<IrExp_DerefedBoxValue>& parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -760,7 +760,7 @@ class ThisTypeTranslator : public RTypeVisitor
 {   
     expected<IrExpPtr, DiagPtr>* result;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
@@ -784,7 +784,7 @@ private:
     }
 
 public:
-    ThisTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    ThisTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context)
     {
     }
@@ -890,7 +890,7 @@ class IrExpAndMemberNameToIrExpTranslator : public IrExpVisitor
 
     IrExpPtr irThis;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
@@ -913,7 +913,7 @@ private:
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
-    void HandleStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
+    void HandleStaticParent(RDecl& decl, RTypeArguments* typeArgs)
     {
         auto oMember = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
         if (!oMember)
@@ -927,7 +927,7 @@ private:
     }
 
 public:
-    IrExpAndMemberNameToIrExpTranslator(expected<IrExpPtr, DiagPtr>* result, const IrExpPtr& irThis, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    IrExpAndMemberNameToIrExpTranslator(expected<IrExpPtr, DiagPtr>* result, const IrExpPtr& irThis, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : result(result), irThis(irThis), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
@@ -973,7 +973,7 @@ public:
         auto locType = context.GetType(*irExp.loc);
 
         // static ref가 부모이면
-        StaticRefTypeTranslator binder(result, irStaticRefThis, name, typeArgsExceptOuter, context);
+        StaticRefTypeTranslator binder(result, &irExp, name, typeArgsExceptOuter, context);
         return locType->Accept(binder);
     }
 
@@ -1020,7 +1020,7 @@ public:
 
 } // namespace 
 
-expected<IrExpPtr, DiagPtr> TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+expected<IrExpPtr, DiagPtr> TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
 {
     expected<IrExpPtr, DiagPtr> irBoundExp;
     IrExpAndMemberNameToIrExpTranslator binder(&irBoundExp, irExp, name, typeArgsExceptOuter, context);

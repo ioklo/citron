@@ -11,13 +11,12 @@
 namespace Citron {
 
 class NStmt;
-using NStmtPtr = std::shared_ptr<NStmt>;
 
 namespace SyntaxIR0Translator {
 
 class TranslationContext;
 
-std::expected<void, DiagPtr> TranslateSVarDeclToNStmts(std::vector<NStmtPtr>* outStmts, SVarDecl& varDecl, TranslationContext& context);
+std::expected<void, DiagPtr> TranslateSVarDeclToNStmts(std::vector<NStmt*>* outStmts, SVarDecl& varDecl, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

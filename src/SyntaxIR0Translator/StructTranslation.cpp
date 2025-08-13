@@ -26,11 +26,11 @@ namespace Citron::SyntaxIR0Translator {
 namespace {
 
 // forward declaration
-void AddStructCtor_MemberDeclPhase(const shared_ptr<NStructCtorDecl>& nCtor, const shared_ptr<SStructCtorDecl>& sCtor, MemberDeclPhaseContext& context);
-void AddStructCtor_BodyPhase(const shared_ptr<NStructCtorDecl>& nCtor, const shared_ptr<SStructCtorDecl>& sCtor, BodyPhaseContext& context);
-void AddStructFunc_MemberDeclPhase(const shared_ptr<NStructFuncDecl>& nFunc, const shared_ptr<SStructFuncDecl>& sFunc, MemberDeclPhaseContext& context);
-void AddStructFunc_BodyPhase(const shared_ptr<NStructFuncDecl>& nFunc, const shared_ptr<SStructFuncDecl>& sFunc, BodyPhaseContext& context);
-void AddStructVar_MemberDeclPhase(vector<shared_ptr<NStructVarDecl>>&& nVars, const NDeclPtr& nDecl, STypeExpPtr sTypeExp, MemberDeclPhaseContext& context);
+void AddStructCtor_MemberDeclPhase(NStructCtorDecl* nCtor, const shared_ptr<SStructCtorDecl>& sCtor, MemberDeclPhaseContext& context);
+void AddStructCtor_BodyPhase(NStructCtorDecl* nCtor, const shared_ptr<SStructCtorDecl>& sCtor, BodyPhaseContext& context);
+void AddStructFunc_MemberDeclPhase(NStructFuncDecl* nFunc, const shared_ptr<SStructFuncDecl>& sFunc, MemberDeclPhaseContext& context);
+void AddStructFunc_BodyPhase(NStructFuncDecl* nFunc, const shared_ptr<SStructFuncDecl>& sFunc, BodyPhaseContext& context);
+void AddStructVar_MemberDeclPhase(vector<NStructVarDecl*>&& nVars, NDecl* nDecl, STypeExpPtr sTypeExp, MemberDeclPhaseContext& context);
 void AddStruct_TrivialCtorPhase(const shared_ptr<NStructDecl>& nStruct);
 
 RAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessModifier) // throws FatalException
@@ -63,7 +63,7 @@ void AddStructCtor(const shared_ptr<NStructDecl>& nStruct, shared_ptr<SStructCto
     nStruct->AddCtor(move(nCtor));
 }
 
-void AddStructCtor_MemberDeclPhase(const shared_ptr<NStructCtorDecl>& nCtor, const shared_ptr<SStructCtorDecl>& sCtor, MemberDeclPhaseContext& context)
+void AddStructCtor_MemberDeclPhase(NStructCtorDecl* nCtor, const shared_ptr<SStructCtorDecl>& sCtor, MemberDeclPhaseContext& context)
 {
     // ctor는 Type Parameter가 없으므로 파라미터를 만들 때, 상위(struct) declSymbol을 넘긴다
     auto [parameters, bLastParamVariadic] = context.MakeParameters(nCtor, sCtor->parameters);
@@ -75,7 +75,7 @@ void AddStructCtor_MemberDeclPhase(const shared_ptr<NStructCtorDecl>& nCtor, con
     });
 }
 
-void AddStructCtor_BodyPhase(const shared_ptr<NStructCtorDecl>& nCtor, const shared_ptr<SStructCtorDecl>& sCtor, BodyPhaseContext& context)
+void AddStructCtor_BodyPhase(NStructCtorDecl* nCtor, const shared_ptr<SStructCtorDecl>& sCtor, BodyPhaseContext& context)
 {
     auto translationContext = context.MakeTranslationContext();
 
@@ -109,7 +109,7 @@ void AddStructFunc(const shared_ptr<NStructDecl>& nStruct, shared_ptr<SStructFun
     nStruct->AddFunc(move(nMemberFunc));
 }
 
-void AddStructFunc_MemberDeclPhase(const shared_ptr<NStructFuncDecl>& nMemberFunc, const shared_ptr<SStructFuncDecl>& sMemberFunc, MemberDeclPhaseContext& context)
+void AddStructFunc_MemberDeclPhase(NStructFuncDecl* nMemberFunc, const shared_ptr<SStructFuncDecl>& sMemberFunc, MemberDeclPhaseContext& context)
 {
     auto rRetType = context.MakeType(sMemberFunc->retType, nMemberFunc);
     auto [rParameters, bLastParamVariadic] = context.MakeParameters(nMemberFunc, sMemberFunc->parameters);
@@ -121,7 +121,7 @@ void AddStructFunc_MemberDeclPhase(const shared_ptr<NStructFuncDecl>& nMemberFun
     });
 }
 
-void AddStructFunc_BodyPhase(const shared_ptr<NStructFuncDecl>& nMemberFunc, const shared_ptr<SStructFuncDecl>& sMemberFunc, BodyPhaseContext& context)
+void AddStructFunc_BodyPhase(NStructFuncDecl* nMemberFunc, const shared_ptr<SStructFuncDecl>& sMemberFunc, BodyPhaseContext& context)
 {
     auto translationContext = context.MakeTranslationContext();
 
@@ -145,7 +145,7 @@ void AddStructVar(const shared_ptr<NStructDecl>& nStruct, SStructVarDecl& sStruc
     auto accessor = MakeStructMemberAccessor(sStructVar.accessModifier);
 
     // TODO: bStatic 지원
-    vector<shared_ptr<NStructVarDecl>> nStructVars;
+    vector<NStructVarDecl*> nStructVars;
     nStructVars.reserve(sStructVar.varNames.size());
 
     for (auto& varName : sStructVar.varNames)
@@ -160,9 +160,9 @@ void AddStructVar(const shared_ptr<NStructDecl>& nStruct, SStructVarDecl& sStruc
     });
 }
 
-void AddStructVar_MemberDeclPhase(vector<shared_ptr<NStructVarDecl>>&& nStructVars, const NDeclPtr& rDecl, STypeExpPtr sTypeExp, MemberDeclPhaseContext& context)
+void AddStructVar_MemberDeclPhase(vector<NStructVarDecl*>&& nStructVars, NDecl* nDecl, STypeExpPtr sTypeExp, MemberDeclPhaseContext& context)
 {
-    auto declType = context.MakeType(sTypeExp, rDecl);
+    auto declType = context.MakeType(sTypeExp, nDecl);
     for (auto& nStructVar : nStructVars)
         nStructVar->InitDeclType(declType);
 }
@@ -224,10 +224,10 @@ public:
 void AddStruct_MemberDeclPhase(const shared_ptr<NStructDecl>& nStruct, const shared_ptr<SStructDecl>& sStruct, MemberDeclPhaseContext& context)
 {
     // 유일한 베이스 타입은 struct인데, 외부에서 선언된 struct일수도 있고, 조합 타입일 수도 있다 (사실 조합타입이 될 가능성은 거의 없어보인다)
-    shared_ptr<RType_Struct> rBaseStruct = nullptr; // nullable
+    RType_Struct* rBaseStruct = nullptr; // nullable
 
     // 나머지는 interface들이다
-    vector<shared_ptr<RType_Interface>> rInterfaces;
+    vector<RType_Interface*> rInterfaces;
 
     for (auto& sType : sStruct->baseTypes)
     {
@@ -310,7 +310,7 @@ bool HasConflictTrivialCtor(NStructDecl &nStruct, RStructCtorDecl *rBaseTrivialC
 void AddStruct_TrivialCtorPhase(const shared_ptr<NStructDecl>& nStruct)
 {   
     auto rBaseStruct = nStruct->GetUnboundBaseStruct();
-    shared_ptr<RStructCtorDecl> rBaseTrivialCtor;
+    RStructCtorDecl* rBaseTrivialCtor;
 
     if (rBaseStruct)
     {

@@ -9,13 +9,13 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-SkeletonPhaseContext::SkeletonPhaseContext(RTypeFactory& factory)
+SkeletonPhaseContext::SkeletonPhaseContext(IR0Factory& factory)
     : factory(factory)
 {
     throw NotImplementedException();
 }
 
-shared_ptr<NNamespaceDecl> SkeletonPhaseContext::MakeChildNamespace(const shared_ptr<NNamespaceDecl>& decl, const string& name)
+NNamespaceDecl* SkeletonPhaseContext::MakeChildNamespace(NNamespaceDecl* decl, const string& name)
 {
 
     throw NotImplementedException();

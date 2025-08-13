@@ -19,7 +19,7 @@ namespace {
 
 struct IrBoxRefExpToNExpTranslator : public IrBoxRefExpVisitor
 {
-    expected<NExpPtr, DiagPtr>* result;
+    expected<NExp*, DiagPtr>* result;
 
 private:
     template<typename TValue, typename... TArgs> requires std::is_base_of_v<NExp, TValue>
@@ -41,7 +41,7 @@ private:
     }
 
 public:
-    IrBoxRefExpToNExpTranslator(expected<NExpPtr, DiagPtr>* result)
+    IrBoxRefExpToNExpTranslator(expected<NExp*, DiagPtr>* result)
         : result(result) { }
 
     // &c.x
@@ -60,7 +60,7 @@ public:
     // &(box S()).x.y
     void Visit(IrExp_BoxRef_StructMember& boxRef) override
     {
-        expected<NExpPtr, DiagPtr> eParent;
+        expected<NExp*, DiagPtr> eParent;
         IrBoxRefExpToNExpTranslator parentTranslator{&eParent};
         boxRef.parent->Accept(parentTranslator);
         if (!eParent) return Error(move(eParent));
@@ -71,7 +71,7 @@ public:
 
 struct IrExpToNExpTranslator : public IrExpVisitor
 {
-    expected<NExpPtr, DiagPtr>* result;
+    expected<NExp*, DiagPtr>* result;
     TranslationContext& context;
 
 private:
@@ -95,7 +95,7 @@ private:
 
 public:
 
-    IrExpToNExpTranslator(expected<NExpPtr, DiagPtr>* result, TranslationContext& context)
+    IrExpToNExpTranslator(expected<NExp*, DiagPtr>* result, TranslationContext& context)
         : result(result), context(context) { }
 
     // &NS
@@ -170,9 +170,9 @@ public:
 
 } // namespace 
 
-expected<NExpPtr, DiagPtr> TranslateIrExpToNExp(IrExp& irExp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateIrExpToNExp(IrExp& irExp, TranslationContext& context)
 {
-    expected<NExpPtr, DiagPtr> result;
+    expected<NExp*, DiagPtr> result;
     IrExpToNExpTranslator translator{&result, context};
     irExp.Accept(translator);
     return result;

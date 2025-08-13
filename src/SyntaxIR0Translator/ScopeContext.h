@@ -17,8 +17,7 @@ namespace Citron {
 
 struct RFuncParameter;
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-class RTypeFactory;
+class IR0Factory;
 
 class NLoc_This;
 class NLambdaDecl;
@@ -45,7 +44,7 @@ public:
     int nestedLoop;
 
     // 로컬 관리
-    std::unordered_map<std::string, RTypePtr> locals;
+    std::unordered_map<std::string, RType*> locals;
 
 public:
     ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop);
@@ -54,24 +53,24 @@ public:
     void Update(ScopeContext& src, UpdateContext& context);
 
 public:
-    RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory);
+    RTypeArguments* MakeOpenTypeArgs(IR0Factory& factory);
     void SetFlowEndsCompletely();
 
     std::shared_ptr<ScopeContext> MakeNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
     std::shared_ptr<ScopeContext> MakeLoopNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
     std::tuple<ScopeContextPtr, NLambdaDecl> MakeLambdaBodyContext(const RFuncReturn& ret, std::vector<RFuncParameter> params, bool bLastParamVariadic);
 
-    void AddLocalVarInfo(const RTypePtr& type, const RName& name);
+    void AddLocalVarInfo(RType* type, const RName& name);
     // std::optional<LocalVarInfo> GetLocalVarInfo(const RName& name);
 
     bool DoesLocalVarNameExistInScope(const std::string& name);
 
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }
-    std::expected<RTypePtr, DiagPtr> TranslateSTypeExpToRType(STypeExp& typeExp, RTypeFactory& factory);
+    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp& typeExp, IR0Factory& factory);
 
-    std::shared_ptr<NLoc_This> MakeThisLoc(RTypeFactory& factory);
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
+    std::shared_ptr<NLoc_This> MakeThisLoc(IR0Factory& factory);
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, IR0Factory& factory);
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;

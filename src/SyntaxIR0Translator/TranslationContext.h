@@ -19,19 +19,16 @@
 namespace Citron {
 
 struct RFuncParameter;
-class RTypeFactory;
-using RTypeFactoryPtr = std::shared_ptr<RTypeFactory>;
+class IR0Factory;
+using RTypeFactoryPtr = std::shared_ptr<IR0Factory>;
 class RFuncDecl;
-using RFuncDeclPtr = std::shared_ptr<RFuncDecl>;
 class RDecl;
 class RType_Enum;
 class RType_EnumElem;
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 
 class NLoc;
 class NStmt;
-using NStmtPtr = std::shared_ptr<NStmt>;
 class NLambdaDecl;
 class NLoc_This;
 
@@ -61,7 +58,7 @@ using TranslationContextPtr = std::shared_ptr<TranslationContext>;
 
 struct NLambdaDeclAndArgs
 {
-    std::shared_ptr<NLambdaDecl> decl;
+    NLambdaDecl* decl;
     std::vector<NArgument> args;   // ctor args
 };
 
@@ -78,27 +75,27 @@ class TranslationContext
 
 public:
     // ScopeContext::MakeNewScopeContext
-    static TranslationContext New(const RFuncDeclPtr& funcDecl, bool bSeqFunc, const RFuncReturn& funcReturn);
+    static TranslationContext New(RFuncDecl* funcDecl, bool bSeqFunc, const RFuncReturn& funcReturn);
 
     TranslationContext MakeNestedScopeContext();
     TranslationContext MakeNestedLoopScopeContext();
     TranslationContext MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
     std::shared_ptr<NLoc_This> MakeThisLoc();
-    std::expected<NExpPtr, DiagPtr> MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& testType);
+    std::expected<NExp*, DiagPtr> MakeNExp_As(NExp* targetExp, RType* testType);
 
 public: // for scopeContext
     bool IsInLoop();
     DeclTypeInfo GetDeclTypeInfo(STypeExp& typeExp);
     bool DoesLocalVarNameExistInScope(const std::string& name);
-    void AddLocalVarInfo(const RTypePtr& type, RName&& name);
+    void AddLocalVarInfo(RType* type, RName&& name);
 
 public: // for funcContext
     bool CanAccess(RDecl* target);
     bool IsSeqFunc();
     RFuncReturn GetUnboundFuncReturn();
-    void SetOpenFuncReturn(RTypePtr&& retType);
-    NLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<NStmtPtr>&& body);
+    void SetOpenFuncReturn(RType* retType);
+    NLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<NStmt*>&& body);
 
 public: // for logging
     template<typename TFunc>
@@ -108,31 +105,31 @@ public: // for logging
     }
 
 public:
-    std::expected<RTypePtr, DiagPtr> TranslateSTypeExpToRType(STypeExp& typeExp);
+    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp& typeExp);
 
 public: // for type factory
-    RTypePtr GetType(NLoc& loc);
-    RTypePtr GetType(ReExp& reExp);
-    RTypePtr GetType(NExp& exp);
+    RType* GetType(NLoc& loc);
+    RType* GetType(ReExp& reExp);
+    RType* GetType(NExp& exp);
 
-    RTypePtr GetTargetType(IrExp_BoxRef& boxRef);
+    RType* GetTargetType(IrExp_BoxRef& boxRef);
 
-    RTypeArgumentsPtr MakeTypeArguments(const std::vector<RTypePtr>& items);
-    RTypeArgumentsPtr MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1);
+    RTypeArguments* MakeTypeArguments(const std::vector<RType*>& items);
+    RTypeArguments* MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1);
 
-    RTypePtr MakeVoidType();
-    RTypePtr MakeBoolType();
-    RTypePtr MakeIntType();
-    RTypePtr MakeStringType();
+    RType* MakeVoidType();
+    RType* MakeBoolType();
+    RType* MakeIntType();
+    RType* MakeStringType();
 
-    bool IsListType(const RTypePtr& type, RTypePtr* outItemType);
+    bool IsListType(RType* type, RType* outItemType);
 
     RFuncReturn GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs);
     RFuncParameter GetFuncParam(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index);
 
-    std::shared_ptr<RType_Enum> GetBaseEnumType(RType_EnumElem& enumElemType);
+    RType_Enum* GetBaseEnumType(RType_EnumElem& enumElemType);
 
-    std::expected<ImExpPtr, std::shared_ptr<ResolveIdentifierError>> ResolveIdentifier(RName&& name, RTypeArgumentsPtr&& typeArgs);
+    std::expected<ImExpPtr, std::shared_ptr<ResolveIdentifierError>> ResolveIdentifier(RName&& name, RTypeArguments* typeArgs);
 
 public: // for BinOpQueryService
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);
