@@ -11,7 +11,7 @@ namespace Citron::SyntaxIR0Translator {
 
 RType* MemberDeclPhaseContext::MakeType(STypeExp* sTypeExp, NDecl* decl)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDecl* decl, vector<SFuncParam>& sParams)
@@ -27,7 +27,7 @@ tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDecl
         auto& sParam = sParams[i];
 
         auto type = this->MakeType(sParam.type, decl);
-        if (!type) throw NotImplementedException(); // 에러 처리
+        if (!type) throw NotImplementedException{}; // 에러 처리
 
         if (sParam.hasParams)
         {
@@ -37,7 +37,7 @@ tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDecl
             }
             else
             {
-                throw NotImplementedException(); // 에러 처리, params는 마지막 파라미터에만 사용할 수 있습니다
+                throw NotImplementedException{}; // 에러 처리, params는 마지막 파라미터에만 사용할 수 있습니다
             }
 
         }
@@ -50,12 +50,12 @@ tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDecl
 
 void MemberDeclPhaseContext::AddBodyPhaseTask(std::function<void(BodyPhaseContext&)> task)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 void MemberDeclPhaseContext::AddTrivialCtorPhaseTask(std::function<void()> task)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 }

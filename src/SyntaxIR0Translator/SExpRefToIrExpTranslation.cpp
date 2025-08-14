@@ -46,7 +46,7 @@ private:
 
     void Value(IrExp* v)
     {
-        *result = move(v);
+        *result = v;
     }
 
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
@@ -76,7 +76,7 @@ private:
             return;
         }
 
-        *result = context.MakeIrExp<IrExp_LocalValue>(move(*eExp));
+        *result = context.MakeIrExp<IrExp_LocalValue>(*eExp);
     }
 
 public:
@@ -87,7 +87,7 @@ public:
         auto eTypeArgs = MakeTypeArgs(exp->typeArgs, context);
         if (!eTypeArgs) return Error(move(eTypeArgs));
 
-        auto eImExp = context.ResolveIdentifier(RName_Normal{exp->value}, move(*eTypeArgs));
+        auto eImExp = context.ResolveIdentifier(RName_Normal{exp->value}, *eTypeArgs);
 
         if (!eImExp)
         {
@@ -107,7 +107,7 @@ public:
         if (!eIrExp)
             return Error(move(eIrExp));
 
-        return Value(move(*eIrExp));
+        return Value(*eIrExp);
     }
 
     // string은 중간과정에서는 value로 평가하면 될 것 같다
@@ -144,7 +144,7 @@ public:
             auto eExp = TranslateSExpRefToNExp(exp->operand, context);
             if (!eExp) return Error(move(eExp));
 
-            return Value<IrExp_LocalValue>(move(*eExp));
+            return Value<IrExp_LocalValue>(*eExp);
         }
         else if (exp->kind == SUnaryOpKind::Deref) // *pS
         {
@@ -153,7 +153,7 @@ public:
             auto eLoc = TranslateSExpToNLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
             if (!eLoc) return Error(move(eLoc));
 
-            return Value<IrExp_DerefedBoxValue>(move(*eLoc));
+            return Value<IrExp_DerefedBoxValue>(*eLoc);
         }
         else
         {
@@ -185,12 +185,12 @@ public:
 
         auto eTypeArgsExceptOuter = MakeTypeArgs(exp->memberTypeArgs, context);
         
-        return Forward(TranslateIrExpAndMemberNameToIrExp(*eIrParent, RName_Normal(exp->memberName), move(*eTypeArgsExceptOuter), context));
+        return Forward(TranslateIrExpAndMemberNameToIrExp(*eIrParent, RName_Normal(exp->memberName), *eTypeArgsExceptOuter, context));
     }
 
     void Visit(SExp_IndirectMember* exp) override
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(SExp_List* exp) override

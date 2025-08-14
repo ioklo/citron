@@ -68,9 +68,8 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-
-        return MakeImExp<ImExp_Class>(member.decl, move(typeArgs));
+        auto* typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        return MakeImExp<ImExp_Class>(member.decl, typeArgs);
     }
 
     // C.F
@@ -109,7 +108,7 @@ public:
 
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
 
-        return MakeImExp<ImExp_Struct>(member.decl, move(typeArgs));
+        return MakeImExp<ImExp_Struct>(member.decl, typeArgs);
     }
 
     // S.F
@@ -146,7 +145,7 @@ public:
         }
 
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return MakeImExp<ImExp_Enum>(member.decl, move(typeArgs));
+        return MakeImExp<ImExp_Enum>(member.decl, typeArgs);
     }
 
     // E.First
@@ -160,35 +159,35 @@ public:
     // 표현 불가능
     expected<ImExp*, DiagPtr> operator()(RMember_EnumElemVar& member)
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     // 표현 불가능
     expected<ImExp*, DiagPtr> operator()(RMember_LambdaVar& member)
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     // 표현 불가능
     expected<ImExp*, DiagPtr> operator()(RMember_TupleVar& member)
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     // 
     expected<ImExp*, DiagPtr> operator()(RMember_TypeVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     expected<ImExp*, DiagPtr> operator()(RMember_LocalVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     expected<ImExp*, DiagPtr> operator()(RMember_ThisVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
 };
@@ -213,20 +212,20 @@ class InstanceParentTranslator
 
 public:
     InstanceParentTranslator(ReExp* reInstExp, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : reInstExp(move(reInstExp)), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+        : reInstExp{reInstExp}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
     {
     }
 
     // 표현 불가
     expected<ImExp*, DiagPtr> operator()(RMember_Namespace& member)
     {   
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     // 표현 불가
     expected<ImExp*, DiagPtr> operator()(RMember_GlobalFuncs& member)
     {   
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     // exp.C
@@ -310,27 +309,27 @@ public:
     // 표현 불가
     expected<ImExp*, DiagPtr> operator()(RMember_LambdaVar& member)
     {   
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     expected<ImExp*, DiagPtr> operator()(RMember_TupleVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     expected<ImExp*, DiagPtr> operator()(RMember_TypeVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     expected<ImExp*, DiagPtr> operator()(RMember_LocalVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     expected<ImExp*, DiagPtr> operator()(RMember_ThisVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 };
 
@@ -380,7 +379,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
             return;
         }
 
-        InstanceParentTranslator binder(move(*eReInstExp), typeArgsExceptOuter, context);
+        InstanceParentTranslator binder(*eReInstExp, typeArgsExceptOuter, context);
         *result = visit(binder, *oMember);
     }
 
@@ -402,7 +401,7 @@ public:
 
     void Visit(ImExp_TypeVar* imExp) override
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(ImExp_Class* imExp) override
@@ -468,7 +467,7 @@ public:
 
     void Visit(ImExp_ListIndexer* imExp) override
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(ImExp_LocalDeref* imExp) override

@@ -127,7 +127,7 @@ public:
         auto match = MatchFunc(imExp->items, sArgs, context);
         if (!match)
         {
-            throw NotImplementedException();
+            throw NotImplementedException{};
         }
 
         return Exp<NExp_CallGlobalFunc>(match->funcDecl, match->typeArgs, match->args);
@@ -148,7 +148,7 @@ public:
         auto match = MatchFunc(imExp->items, sArgs, context);
         if (!match)
         {
-            throw NotImplementedException();
+            throw NotImplementedException{};
         }
 
         if (imExp->hasExplicitInstance) // x.F, C.F 등 인스턴스 부분이 명시적으로 정해졌다면
@@ -176,17 +176,17 @@ public:
                 nInst = *eNLoc;
             }
 
-            return Exp<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), move(nInst), move(match->args));
+            return Exp<NExp_CallClassFunc>(match->funcDecl, match->typeArgs, nInst, move(match->args));
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
             if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                return Exp<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), nullptr, move(match->args));
+                return Exp<NExp_CallClassFunc>(match->funcDecl, match->typeArgs, nullptr, move(match->args));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Exp<NExp_CallClassFunc>(move(match->funcDecl), move(match->typeArgs), context.MakeThisLoc(), move(match->args));
+                return Exp<NExp_CallClassFunc>(match->funcDecl, match->typeArgs, context.MakeThisLoc(), move(match->args));
             }
         }
 
@@ -216,12 +216,12 @@ public:
         if (!match)
         {
             // 매치에 실패했습니다. 에러
-            throw NotImplementedException();
+            throw NotImplementedException{};
             // *result = nullptr;
             // return Error(MakePtr<>());
         }
 
-        return Exp<NExp_NewStruct>(match->funcDecl, move(match->typeArgs), move(match->args));
+        return Exp<NExp_NewStruct>(match->funcDecl, match->typeArgs, move(match->args));
     }
 
     void Visit(ImExp_StructFuncs* imExp) override
@@ -230,7 +230,7 @@ public:
         if (!match)
         {
             // 매치에 실패했습니다.
-            throw NotImplementedException();
+            throw NotImplementedException{};
             // return Error();
         }
 
@@ -259,17 +259,17 @@ public:
                 instance = *eInstance;
             }
 
-            return Exp<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), move(instance), move(match->args));
+            return Exp<NExp_CallStructFunc>(match->funcDecl, match->typeArgs, instance, move(match->args));
         }
         else
         {
             if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                return Exp<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), nullptr, move(match->args));
+                return Exp<NExp_CallStructFunc>(match->funcDecl, match->typeArgs, nullptr, move(match->args));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Exp<NExp_CallStructFunc>(move(match->funcDecl), move(match->typeArgs), context.MakeThisLoc(), move(match->args));
+                return Exp<NExp_CallStructFunc>(match->funcDecl, match->typeArgs, context.MakeThisLoc(), move(match->args));
             }
         }
 
@@ -310,7 +310,7 @@ public:
             return Error<Error_Parameter_MismatchBetweenParamCountAndArgCount>();
         }
 
-        return Exp<NExp_NewEnumElem>(imExp->decl, move(match->typeArgs), move(match->args));
+        return Exp<NExp_NewEnumElem>(imExp->decl, match->typeArgs, move(match->args));
     }
 
     void Visit(ImExp_ThisVar* imExp) override

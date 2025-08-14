@@ -51,7 +51,7 @@ private:
         if (!eExp)
             *result = unexpected{move(eExp).error()};
         else
-            *result = context.MakeReExp<ReExp_Else>(move(*eExp));
+            *result = context.MakeReExp<ReExp_Else>(*eExp);
     }
 
 public:
@@ -122,7 +122,7 @@ public:
 
     void Visit(SExp_IndirectMember* exp) override
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(SExp_List* exp) override

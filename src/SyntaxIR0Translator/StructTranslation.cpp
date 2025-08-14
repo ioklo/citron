@@ -40,8 +40,8 @@ RAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessModifier) // 
     switch (*accessModifier)
     {
     case SAccessModifier::Private: return RAccessor::Private;
-    case SAccessModifier::Protected: throw NotImplementedException();
-    case SAccessModifier::Public: throw NotImplementedException();
+    case SAccessModifier::Protected: throw NotImplementedException{};
+    case SAccessModifier::Public: throw NotImplementedException{};
     }
 
     unreachable();
@@ -60,7 +60,7 @@ void AddStructCtor(NStructDecl* nStruct, SStructCtorDecl* sCtor, SkeletonPhaseCo
         AddStructCtor_MemberDeclPhase(nCtor, sCtor, context);
     });
 
-    nStruct->AddCtor(move(nCtor));
+    nStruct->AddCtor(nCtor);
 }
 
 void AddStructCtor_MemberDeclPhase(NStructCtorDecl* nCtor, SStructCtorDecl* sCtor, MemberDeclPhaseContext& context)
@@ -182,7 +182,7 @@ public:
     void Visit(SClassDecl* decl) override 
     { 
         // ClassTranslation을 만들어야 한다
-        throw NotImplementedException();
+        throw NotImplementedException{};
         /*auto sSharedClassDecl = dynamic_pointer_cast<SClassDecl>(sSharedMemberDecl);
         auto nNestedClassDecl= MakeClass(nStructDecl, sSharedClassDecl, MakeStructMemberAccessor, context);
         nStructDecl->AddType(move(nNestedClassDecl));*/
@@ -197,7 +197,7 @@ public:
     void Visit(SEnumDecl* decl) override
     {
         auto* nEnum = MakeEnum(nStructDecl, decl, MakeStructMemberAccessor, context);
-        nStructDecl->AddType(move(nEnum));
+        nStructDecl->AddType(nEnum);
     }
 
     void Visit(SStructCtorDecl* decl) override
@@ -233,26 +233,26 @@ void AddStruct_MemberDeclPhase(NStructDecl* nStruct, SStructDecl* sStruct, Membe
         {
             // 두개 이상의 struct를 상속받으려고 했다면, 에러 처리
             if (rBaseStruct != nullptr)
-                throw NotImplementedException();
+                throw NotImplementedException{};
 
             rBaseStruct = dynamic_cast<RType_Struct*>(rType);
             assert(rBaseStruct); // CustomTypeKind가 Struct이면서 RType_Struct를 따르지 않는것이 뭐가 있을까
         }
         else if (rTypeKind == RCustomTypeKind::Interface)
         {
-            auto rInterface = dynamic_cast<RType_Interface*>(rType);
+            auto* rInterface = dynamic_cast<RType_Interface*>(rType);
             if (!rInterface)
             {
-                throw NotImplementedException();
+                throw NotImplementedException{};
             }
 
             // func<>, 등도 interface type인데, 어떻게 할지
-            rInterfaces.push_back(move(rInterface));
+            rInterfaces.push_back(rInterface);
         }
         else
         {
             // 다른 타입은 struct의 basetype자리에 올 수 없습니다 에러 출력
-            throw NotImplementedException();
+            throw NotImplementedException{};
         }
     }
 

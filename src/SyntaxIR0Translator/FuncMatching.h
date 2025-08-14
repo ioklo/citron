@@ -37,7 +37,7 @@ struct ArgumentsMatch
 template<typename TFuncDecl>
 std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<DeclWithOuterTypeArgs<TFuncDecl>>& items, SArguments* sArgs, TranslationContext& context)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 std::optional<ArgumentsMatch> MatchArguments(RTypeArguments* outerTypeArgs, RTypeArguments* partialTypeArgsExceptOuter, std::vector<RFuncParameter>&& funcParams, bool bVariadic, SArguments* sArgs);

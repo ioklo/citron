@@ -55,7 +55,7 @@ public:
     expected<IrExp*, DiagPtr> operator()(RMember_Class& member)
     {
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return context.MakeIrExp<IrExp_Class>(member.decl, move(typeArgs));
+        return context.MakeIrExp<IrExp_Class>(member.decl, typeArgs);
     }
 
     // 에러,
@@ -84,7 +84,7 @@ public:
     expected<IrExp*, DiagPtr> operator()(RMember_Struct& member)
     {
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return context.MakeIrExp<IrExp_Struct>(member.decl, move(typeArgs));
+        return context.MakeIrExp<IrExp_Struct>(member.decl, typeArgs);
     }
 
     expected<IrExp*, DiagPtr> operator()(RMember_StructFuncs& member)
@@ -112,7 +112,7 @@ public:
     expected<IrExp*, DiagPtr> operator()(RMember_Enum& member)
     {   
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return context.MakeIrExp<IrExp_Enum>(member.decl, move(typeArgs));
+        return context.MakeIrExp<IrExp_Enum>(member.decl, typeArgs);
     }
 
     // &E.First.x
@@ -125,32 +125,32 @@ public:
     expected<IrExp*, DiagPtr> operator()(RMember_EnumElemVar& member)
     {
         // 표현 불가능
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     expected<IrExp*, DiagPtr> operator()(RMember_LambdaVar& member)
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     expected<IrExp*, DiagPtr> operator()(RMember_TupleVar& member)
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     expected<IrExp*, DiagPtr> operator()(RMember_TypeVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     expected<IrExp*, DiagPtr> operator()(RMember_LocalVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     expected<IrExp*, DiagPtr> operator()(RMember_ThisVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
 
@@ -198,30 +198,30 @@ public:
     // &C.optS.id
     void Visit(RType_NullableValue* type) override 
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     // &C.optS.id
     void Visit(RType_NullableRef* type) override 
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_TypeVar* type) override 
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_Void* type) override 
     {
         // void인 멤버가 나올 수 없으므로
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Tuple* type) override 
     {
         // TupleMemberLoc이 없으므로 일단 보류
-        throw NotImplementedException();
+        throw NotImplementedException{};
         //int count = type.GetMemberVarCount();
         //for (int i = 0; i < count; i++)
         //{
@@ -315,7 +315,7 @@ public:
     // &C.i.id
     void Visit(RType_Interface* type) override 
     {   
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     // &C.l.id
@@ -363,32 +363,32 @@ public:
     void Visit(RType_NullableValue* type) override 
     {
         // &c.optS.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_NullableRef* type) override 
     {
         // &c.c.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_TypeVar* type) override 
     {
         // &c.t.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_Void* type) override 
     {
         // &c.v
         // void인 멤버가 나올 수 없으므로
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Tuple* type) override 
     {
         // &c.t.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_Func* type) override 
@@ -452,13 +452,13 @@ public:
     void Visit(RType_EnumElem* type) override 
     {
         // &c.e.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_Interface* type) override 
     {
         // &c.i.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_Lambda* type) override 
@@ -506,31 +506,31 @@ public:
     void Visit(RType_NullableValue* type) override 
     {
         // &s.optS.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_NullableRef* type) override 
     {
         // &s.c.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_TypeVar* type) override 
     {
         // &s.t.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_Void* type) override 
     {
         // void인 멤버가 나올 수 없으므로
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Tuple* type) override 
     {
         // &s.t.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_Func* type) override 
@@ -611,7 +611,7 @@ public:
     void Visit(RType_Interface* type) override 
     {
         // &s.i.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_Lambda* type) override 
@@ -659,41 +659,41 @@ public:
     void Visit(RType_NullableValue* type) override 
     {
         // &(*pOptS).x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_NullableRef* type) override 
     {
         // &(*c).x ?
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_TypeVar* type) override 
     {
         // &(*pT).x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_Void* type) override 
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Tuple* type) override 
     {
         // &(*pT).x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RType_Func* type) override 
     {
         // box ref contained
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_LocalPtr* type) override 
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_BoxPtr* type) override 
@@ -704,7 +704,7 @@ public:
     void Visit(RType_Class* type) override 
     {
         // &(*pC).x
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Struct* type) override 
@@ -727,14 +727,14 @@ public:
     void Visit(RType_Enum* type) override 
     {
         // (*pE).x
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_EnumElem* type) override 
     {
         // box E.Second* pE = ...
         // &(*pE).x
-        throw NotImplementedException();
+        throw NotImplementedException{};
 
         //var var = type->Symbol.GetVar(name);
         //if (var == null)
@@ -746,7 +746,7 @@ public:
     void Visit(RType_Interface* type) override 
     {
         // box ref contained
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Lambda* type) override 
@@ -792,7 +792,7 @@ public:
     void Visit(RType_NullableValue* type) override 
     {
         // NullableValue는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_NullableRef* type) override 
@@ -804,25 +804,25 @@ public:
     void Visit(RType_TypeVar* type) override 
     {
         // TypeVar는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Void* type) override 
     {
         // void는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Tuple* type) override 
     {
         // Tuple은 멤버함수를 가질 수 없다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Func* type) override 
     {
         // Func가 멤버함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_LocalPtr* type) override 
@@ -862,25 +862,25 @@ public:
     void Visit(RType_Enum* type) override 
     {
         // Enum이 멤버 함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_EnumElem* type) override 
     {
         // EnumElem이 멤버함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Interface* type) override 
     {
         // Interface가 멤버함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(RType_Lambda* type) override 
     {
         // Lambda는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 };
 
@@ -940,7 +940,7 @@ public:
     void Visit(IrExp_TypeVar* irExp) override 
     {
         // 이건 진짜
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(IrExp_Class* irExp) override 

@@ -57,10 +57,10 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         auto* initExp = rFactory.MakeNExp<NExp_Load>(localVarLoc);
         auto initArg = NArgument_Normal(initExp);
 
-        auto lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg), rFactory);
+        auto* lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg), rFactory);
 
-        auto openTypeArgs = MakeOpenTypeArgs(rFactory);
-        return RMember_LambdaVar(move(openTypeArgs), move(lambdaVar));
+        auto* openTypeArgs = MakeOpenTypeArgs(rFactory);
+        return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
     if (auto* lambdaVar = get_if<RMember_LambdaVar>(&*oMember))
@@ -92,7 +92,7 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
     {
         // TODO: 워닝, struct의 this는 복사가 일어납니다. 원본과 다를 수 있습니다. ref this로 명시적으로 지정해주세요(?)
         if (auto structType = dynamic_cast<RType_Struct*>(thisVar->type))
-            throw NotImplementedException();
+            throw NotImplementedException{};
 
         auto* thisLoc = rFactory.MakeNLoc<NLoc_This>(thisVar->type);
         auto* initExp = rFactory.MakeNExp<NExp_Load>(thisLoc);
@@ -116,7 +116,7 @@ RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
 void FuncContext_Lambda::SetOpenFuncReturn(RType* retType)
 {
     assert(holds_alternative<RFuncReturn_NotSet>(funcReturn));
-    funcReturn = move(RFuncReturn_Set(retType));
+    funcReturn = RFuncReturn_Set{retType};
 }
 
 RTypeArguments* FuncContext_Lambda::MakeOpenTypeArgs(RFactory& factory)
@@ -146,7 +146,7 @@ RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()
 
 void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
 {
-    throw RuntimeFatalException();
+    throw RuntimeFatalException{};
 }
 
 

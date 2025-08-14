@@ -13,7 +13,7 @@ optional<ArgumentsMatch> MatchArguments(
     bool bVariadic, 
     SArguments* sArgs)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 } // namespace Citron

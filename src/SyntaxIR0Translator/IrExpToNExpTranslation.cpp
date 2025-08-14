@@ -139,7 +139,7 @@ public:
     // &C.x
     void Visit(IrExp_StaticRef* irExp) override
     {   
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     // &c.x

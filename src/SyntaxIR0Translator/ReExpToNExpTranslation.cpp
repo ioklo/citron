@@ -35,7 +35,7 @@ public:
         if (!eLoc)
             *result = unexpected{move(eLoc).error()};
         else
-            *result = context.MakeNExp<NExp_Load>(move(*eLoc));
+            *result = context.MakeNExp<NExp_Load>(*eLoc);
     }
 
     void Visit(ReExp_ThisVar* exp) override

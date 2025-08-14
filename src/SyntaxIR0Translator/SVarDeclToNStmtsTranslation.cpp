@@ -116,7 +116,7 @@ private:
         if (!eResult) return unexpected{move(eResult).error()};
 
         context.AddLocalVarInfo(rInitExpType, RName_Normal(elem->varName));
-        outStmts->push_back(context.MakeNStmt<NStmt_LocalVarDecl>(rInitExpType, elem->varName, move(*eNInitExp)));
+        outStmts->push_back(context.MakeNStmt<NStmt_LocalVarDecl>(rInitExpType, elem->varName, *eNInitExp));
 
         return {};
     }
@@ -132,14 +132,14 @@ private:
             auto eNExp = TranslateSExpToNExp(elem->initExp, declType, context);
             if (!eNExp) return unexpected{move(eNExp).error()};
 
-            eNExp = CastNExp(move(*eNExp), declType, context);
+            eNExp = CastNExp(*eNExp, declType, context);
             if (!eNExp) return unexpected{MakePtr<Error_VarDecl_InitExpTypeMismatch>()};
 
             nInitExp = *eNExp;
         }
 
         context.AddLocalVarInfo(declType, RName_Normal(elem->varName));
-        outStmts->push_back(context.MakeNStmt<NStmt_LocalVarDecl>(declType, elem->varName, move(nInitExp)));
+        outStmts->push_back(context.MakeNStmt<NStmt_LocalVarDecl>(declType, elem->varName, nInitExp));
 
         return {};
     }

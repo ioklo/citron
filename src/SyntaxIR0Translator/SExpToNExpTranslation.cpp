@@ -50,7 +50,7 @@ expected<NExp*, DiagPtr> TranslateSNullLiteralExpToNExp(SExp_NullLiteral* exp, R
     }
 
     // TODO: if (a == nullptr)도 반영해야 한다
-    throw NotImplementedException();
+    throw NotImplementedException{};
     return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
 }
 
@@ -94,7 +94,7 @@ expected<NStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
 
             return NLocStringExpElement(
                 context.MakeNLoc<NLoc_Temp>(
-                    context.MakeNExp<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::ToString_Bool_String, move(*eNExp))));
+                    context.MakeNExp<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::ToString_Bool_String, *eNExp)));
         }
         else if (reExpType == context.MakeStringType())
         {
@@ -103,7 +103,7 @@ expected<NStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
             auto eNLoc = TranslateReExpToNLoc(*eReExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
             if (!eNLoc) return unexpected{move(eNLoc).error()};
 
-            return NLocStringExpElement(move(*eNLoc));
+            return NLocStringExpElement{*eNLoc};
         }
         else
         {
@@ -182,7 +182,7 @@ expected<NExp*, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp* sEx
             return unexpected{MakePtr<Error_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly>()};
         }
 
-        return context.MakeNExp<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::LogicalNot_Bool_Bool, move(*eNOperand));
+        return context.MakeNExp<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::LogicalNot_Bool_Bool, *eNOperand);
     }
 
     case SUnaryOpKind::Minus:
@@ -192,7 +192,7 @@ expected<NExp*, DiagPtr> TranslateSUnaryOpExpToNExpExceptDeref(SExp_UnaryOp* sEx
             return unexpected{MakePtr<Error_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly>()};
         }
 
-        return context.MakeNExp<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::UnaryMinus_Int_Int, move(*eNOperand));
+        return context.MakeNExp<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::UnaryMinus_Int_Int, *eNOperand);
     }
 
     case SUnaryOpKind::PostfixInc: // e.m++ 등
@@ -239,7 +239,7 @@ expected<NExp*, DiagPtr> TranslateSAssignBinaryOpExpToNExp(SExp_BinaryOp* exp, T
     auto eNSrcExp = TranslateSExpToNExp(exp->operand1, /*hintType*/ nDestLocType, context);
     if (!eNSrcExp) return unexpected{move(eNSrcExp).error()};
 
-    auto eNWrappedSrcExp = CastNExp(move(*eNSrcExp), nDestLocType, context);
+    auto eNWrappedSrcExp = CastNExp(*eNSrcExp, nDestLocType, context);
     if (!eNWrappedSrcExp) return unexpected{move(eNWrappedSrcExp).error()};
 
     return context.MakeNExp<NExp_Assign>(*eNDestLoc, *eNWrappedSrcExp);
@@ -273,8 +273,8 @@ expected<NExp*, DiagPtr> TranslateSBinaryOpExpToNExp(SExp_BinaryOp* exp, Transla
             if (!castExp1) continue;
 
             // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
-            auto equalExp = context.MakeNExp<NExp_CallInternalBinaryOperator>(info.rOperator, move(*castExp0), move(*castExp1));
-            return context.MakeNExp<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::LogicalNot_Bool_Bool, move(equalExp));
+            auto* equalExp = context.MakeNExp<NExp_CallInternalBinaryOperator>(info.rOperator, *castExp0, *castExp1);
+            return context.MakeNExp<NExp_CallInternalUnaryOperator>(NInternalUnaryOperator::LogicalNot_Bool_Bool, equalExp);
         }
     }
 
@@ -290,7 +290,7 @@ expected<NExp*, DiagPtr> TranslateSBinaryOpExpToNExp(SExp_BinaryOp* exp, Transla
 
         // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
 
-        return context.MakeNExp<NExp_CallInternalBinaryOperator>(info.rOperator, move(*castExp0), move(*castExp1));
+        return context.MakeNExp<NExp_CallInternalBinaryOperator>(info.rOperator, *castExp0, *castExp1);
     }
 
     // Operator를 찾을 수 없습니다
@@ -308,7 +308,7 @@ expected<NExp*, DiagPtr> TranslateSLambdaExpToNExp(SExp_Lambda* sExp, Translatio
     //    return nullptr;
 
     // return MakePtr<NLambdaExp>(lambdaInfo.lambda, lambdaInfo.args), context.factory->MakeIn);
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 expected<NExp*, DiagPtr> TranslateSListExpToNExp(SExp_List* exp, TranslationContext& context)
@@ -324,12 +324,12 @@ expected<NExp*, DiagPtr> TranslateSListExpToNExp(SExp_List* exp, TranslationCont
         auto eNElem = TranslateSExpToNExp(elem, /*hintType*/ nullptr, context);
         if (!eNElem) return unexpected{move(eNElem).error()};
 
-        auto rElemType = context.GetType(*eNElem);
+        auto* rElemType = context.GetType(*eNElem);
         elems.push_back(*eNElem);
 
         if (curElemType == nullptr)
         {
-            curElemType = move(rElemType);
+            curElemType = rElemType;
             continue;
         }
 
@@ -344,7 +344,7 @@ expected<NExp*, DiagPtr> TranslateSListExpToNExp(SExp_List* exp, TranslationCont
         return unexpected{MakePtr<Error_ListExp_CantInferElementTypeWithEmptyElement>()};
     }
 
-    return context.MakeNExp<NExp_List>(move(elems), move(curElemType));
+    return context.MakeNExp<NExp_List>(move(elems), curElemType);
 }
 
 expected<NExp*, DiagPtr> TranslateSNewExpToNExp(SExp_New* exp, TranslationContext& context) // throws ErrorCodeException
@@ -357,7 +357,7 @@ expected<NExp*, DiagPtr> TranslateSNewExpToNExp(SExp_New* exp, TranslationContex
         return unexpected{MakePtr<Error_NewExp_TypeIsNotClass>()};
     }
 
-    throw NotImplementedException();
+    throw NotImplementedException{};
     //var classDecl = classSymbol.GetDecl();
 
     //var candidates = FuncCandidateSMake&<ClassConstructorDeclSymbol, ClassConstructorSymbol>(
@@ -365,7 +365,7 @@ expected<NExp*, DiagPtr> TranslateSNewExpToNExp(SExp_New* exp, TranslationContex
 
     //var matchResult = FuncsMatcher.Match(candidates, exp->Args, context);
     //if (matchResult == null)
-    //    throw NotImplementedException(); // 매치에 실패했습니다.
+    //    throw NotImplementedException{}; // 매치에 실패했습니다.
 
     //var(constructor, args) = matchResult.Value;
     //return Valid(new IR0ExpResult(new R.NewClassExp(constructor, args), new ClassType(classSymbol)));
@@ -388,7 +388,7 @@ expected<NExp*, DiagPtr> TranslateSBoxExpToNExp(SExp_Box* exp, RType* hintType, 
     auto eNInnerExp = TranslateSExpToNExp(exp->innerExp, innerHintType, context);
     if (!eNInnerExp) return unexpected{move(eNInnerExp).error()};
 
-    return context.MakeNExp<NExp_Box>(move(*eNInnerExp));
+    return context.MakeNExp<NExp_Box>(*eNInnerExp);
 }
 
 expected<NExp*, DiagPtr> TranslateSIsExpToNExp(SExp_Is* exp, TranslationContext& context)
@@ -408,30 +408,30 @@ expected<NExp*, DiagPtr> TranslateSIsExpToNExp(SExp_Is* exp, TranslationContext&
     if (testTypeKind == RCustomTypeKind::Class)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return context.MakeNExp<NExp_ClassIsClass>(move(*eTarget), move(*eTestType));
+            return context.MakeNExp<NExp_ClassIsClass>(*eTarget, *eTestType);
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return context.MakeNExp<NExp_InterfaceIsClass>(move(*eTarget), move(*eTestType));
+            return context.MakeNExp<NExp_InterfaceIsClass>(*eTarget, *eTestType);
         else
-            throw NotImplementedException(); // 에러 처리
+            throw NotImplementedException{}; // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::Interface)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return context.MakeNExp<NExp_ClassIsInterface>(move(*eTarget), move(*eTestType));
+            return context.MakeNExp<NExp_ClassIsInterface>(*eTarget, *eTestType);
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return context.MakeNExp<NExp_InterfaceIsInterface>(move(*eTarget), move(*eTestType));
+            return context.MakeNExp<NExp_InterfaceIsInterface>(*eTarget, *eTestType);
         else
-            throw NotImplementedException(); // 에러 처리
+            throw NotImplementedException{}; // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::EnumElem)
     {
         if (targetTypeKind == RCustomTypeKind::Enum)
-            return context.MakeNExp<NExp_EnumIsEnumElem>(move(*eTarget), move(*eTestType));
+            return context.MakeNExp<NExp_EnumIsEnumElem>(*eTarget, *eTestType);
         else
-            throw NotImplementedException(); // 에러 처리
+            throw NotImplementedException{}; // 에러 처리
     }
     else
-        throw NotImplementedException(); // 에러 처리
+        throw NotImplementedException{}; // 에러 처리
 }
 
 expected<NExp*, DiagPtr> TranslateSAsExpToNExp(SExp_As* exp, TranslationContext& context)
@@ -442,7 +442,7 @@ expected<NExp*, DiagPtr> TranslateSAsExpToNExp(SExp_As* exp, TranslationContext&
     auto eNTestType = context.TranslateSTypeExpToRType(exp->type);
     if (!eNTestType) return unexpected{move(eNTestType).error()};
 
-    return context.MakeNExp_As(move(*eNTarget), *eNTestType);
+    return context.MakeNExp_As(*eNTarget, *eNTestType);
 }
 
 namespace {
@@ -539,7 +539,7 @@ public:
 
     void Visit(SExp_IndirectMember* exp) override
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(SExp_List* exp) override

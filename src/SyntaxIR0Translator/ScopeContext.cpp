@@ -22,12 +22,12 @@ ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContext
 
 ScopeContextPtr ScopeContext::Clone(CloneContext& context)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 void ScopeContext::Update(ScopeContext& src, UpdateContext& context)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 RTypeArguments* ScopeContext::MakeOpenTypeArgs(RFactory& factory)
@@ -38,48 +38,48 @@ RTypeArguments* ScopeContext::MakeOpenTypeArgs(RFactory& factory)
 
 void ScopeContext::SetFlowEndsCompletely()
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 shared_ptr<ScopeContext> ScopeContext::MakeNestedScopeContext(shared_ptr<ScopeContext> sharedThis)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 shared_ptr<ScopeContext> ScopeContext::MakeLoopNestedScopeContext(shared_ptr<ScopeContext> sharedThis)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 tuple<ScopeContextPtr, NLambdaDecl> ScopeContext::MakeLambdaBodyContext(const RFuncReturn& ret, vector<RFuncParameter> params, bool bLastParamVariadic)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 void ScopeContext::AddLocalVarInfo(RType* type, const RName& name)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 
 bool ScopeContext::DoesLocalVarNameExistInScope(const string& name)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 bool ScopeContext::IsFailed() 
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* typeExp, RFactory& factory)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 NLoc_This* ScopeContext::MakeThisLoc(RFactory& factory)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 optional<RMember> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)

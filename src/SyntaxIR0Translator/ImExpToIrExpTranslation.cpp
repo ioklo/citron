@@ -142,7 +142,7 @@ public:
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            auto nDerefThisLoc = context.MakeNLoc<NLoc_LocalDeref>(context.MakeThisLoc());
+            auto* nDerefThisLoc = context.MakeNLoc<NLoc_LocalDeref>(context.MakeThisLoc());
             return Value<IrExp_LocalRef>(context.MakeNLoc<NLoc_StructVar>(nDerefThisLoc, imExp->decl, imExp->typeArgs));
         }
     }
@@ -151,31 +151,31 @@ public:
     void Visit(ImExp_EnumElemVar* imExp) override
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(ImExp_ListIndexer* imExp) override
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(ImExp_LocalDeref* imExp) override
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(ImExp_BoxDeref* imExp) override
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     void Visit(ImExp_Else* imExp) override
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 };
 

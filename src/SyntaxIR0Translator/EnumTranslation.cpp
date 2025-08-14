@@ -18,8 +18,8 @@ void AddEnumElemVar(NEnumElemDecl* rEnumElem, SEnumElemVarDecl* sEnumElemVar, Sk
     rEnumElem->AddVar(nEnumElemVar);
 
     context.AddMemberDeclPhaseTask([type = sEnumElemVar->type, nEnumElemVar, rEnumElem](MemberDeclPhaseContext& context) {
-        auto declType = context.MakeType(type, rEnumElem);
-        nEnumElemVar->InitDeclType(move(declType));
+        auto* declType = context.MakeType(type, rEnumElem);
+        nEnumElemVar->InitDeclType(declType);
     });
 }
 
@@ -30,7 +30,7 @@ void AddEnumElem(NEnumDecl* nEnum, SEnumElemDecl* sEnumElem, SkeletonPhaseContex
     for (auto* sEnumElemVar : sEnumElem->vars)
         AddEnumElemVar(nEnumElem, sEnumElemVar, context);
 
-    nEnum->AddElem(move(nEnumElem));
+    nEnum->AddElem(nEnumElem);
 }
 
 NEnumDecl* InnerMakeEnum(NTypeDeclOuter* nOuter, SEnumDecl* sDecl, RAccessor accessor, SkeletonPhaseContext& context)

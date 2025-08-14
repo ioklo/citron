@@ -65,7 +65,7 @@ private:
         }
         else if (bWrapExpAsLoc)
         {
-            *result = context.MakeNLoc<NLoc_Temp>(move(*eNExp));
+            *result = context.MakeNLoc<NLoc_Temp>(*eNExp);
         }
         else
         {
@@ -170,7 +170,7 @@ public:
     // s->x
     void Visit(SExp_IndirectMember* exp) override 
     { 
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(SExp_List* exp) override

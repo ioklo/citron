@@ -100,13 +100,13 @@ IrExp_LocalRef::IrExp_LocalRef(NLoc* loc)
 }
 
 IrExp_LocalValue::IrExp_LocalValue(NExp* exp)
-    : exp(move(exp))
+    : exp{exp}
 {
 
 }
 
 IrExp_DerefedBoxValue::IrExp_DerefedBoxValue(NLoc* innerLoc)
-    : innerLoc(move(innerLoc))
+    : innerLoc{innerLoc}
 {
 }
 

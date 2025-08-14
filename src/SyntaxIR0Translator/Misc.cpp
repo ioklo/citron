@@ -116,7 +116,7 @@ expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationCon
             return context.MakeNExp<NExp_CastEnumElemToEnum>(exp, expectedType);
 
         // 에러가 좀더 구체적으로 알려줬으면 좋겠다
-        throw NotImplementedException();
+        throw NotImplementedException{};
         return unexpected{MakePtr<Error_Cast_Failed>()};
     }
 
@@ -169,7 +169,7 @@ RName_CtorParam MakeBaseCtorParamName(size_t index, RName baseParamName)
     }
     else
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 }
 

@@ -88,31 +88,31 @@ expected<NExp*, DiagPtr> TranslationContext::MakeNExp_As(NExp* targetExp, RType*
     if (testTypeKind == RCustomTypeKind::Class)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakeNExp<NExp_ClassAsClass>(move(targetExp), testType);
+            return MakeNExp<NExp_ClassAsClass>(targetExp, testType);
 
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakeNExp<NExp_InterfaceAsClass>(move(targetExp), testType);
+            return MakeNExp<NExp_InterfaceAsClass>(targetExp, testType);
         else
-            throw NotImplementedException(); // 에러 처리
+            throw NotImplementedException{}; // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::Interface)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakeNExp<NExp_ClassAsInterface>(move(targetExp), testType);
+            return MakeNExp<NExp_ClassAsInterface>(targetExp, testType);
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakeNExp<NExp_InterfaceAsInterface>(move(targetExp), testType);
+            return MakeNExp<NExp_InterfaceAsInterface>(targetExp, testType);
         else
-            throw NotImplementedException(); // 에러 처리
+            throw NotImplementedException{}; // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::EnumElem)
     {
         if (targetTypeKind == RCustomTypeKind::Enum)
-            return MakeNExp<NExp_EnumAsEnumElem>(move(targetExp), testType);
+            return MakeNExp<NExp_EnumAsEnumElem>(targetExp, testType);
         else
-            throw NotImplementedException(); // 에러 처리
+            throw NotImplementedException{}; // 에러 처리
     }
     else
-        throw NotImplementedException(); // 에러 처리
+        throw NotImplementedException{}; // 에러 처리
 }
 
 bool TranslationContext::IsInLoop()
@@ -197,12 +197,12 @@ DeclTypeInfo TranslationContext::GetDeclTypeInfo(STypeExp* typeExp)
 
 bool TranslationContext::DoesLocalVarNameExistInScope(const std::string& name)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 void TranslationContext::AddLocalVarInfo(RType* type, RName&& name)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 bool TranslationContext::CanAccess(RDecl* target)
@@ -222,12 +222,12 @@ RFuncReturn TranslationContext::GetUnboundFuncReturn()
 
 void TranslationContext::SetOpenFuncReturn(RType* retType)
 {
-    funcContext->SetOpenFuncReturn(move(retType));
+    funcContext->SetOpenFuncReturn(retType);
 }
 
 NLambdaDeclAndArgs TranslationContext::MakeLambdaDeclAndArgs(std::vector<NStmt*>&& body)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 RTypeArguments* TranslationContext::MakeTypeArguments(const std::vector<RType*>& items)
@@ -287,7 +287,7 @@ RType_Enum* TranslationContext::GetBaseEnumType(RType_EnumElem& enumElemType)
 
 expected<ImExp*, shared_ptr<ResolveIdentifierError>> TranslationContext::ResolveIdentifier(RName&& name, RTypeArguments* typeArgs)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 } // namespace Citron::SyntaxIR0Translator

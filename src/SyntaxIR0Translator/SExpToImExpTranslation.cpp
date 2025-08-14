@@ -49,7 +49,7 @@ private:
         if (!eExp)
             *result = nullptr;
         else
-            *result = context.MakeImExp<ImExp_Else>(move(*eExp));
+            *result = context.MakeImExp<ImExp_Else>(*eExp);
     }
 
     void Forward(expected<ImExp*, DiagPtr>&& r)
@@ -79,7 +79,7 @@ public:
     // x
     void Visit(SExp_Identifier* exp) override
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
         /*try
         {
             auto typeArgs = MakeTypeArgs(exp.typeArgs, context, factory);
@@ -143,7 +143,7 @@ public:
                 return Value<ImExp_LocalDeref>(*eTarget);
 
             // 에러를 내야 할 것 같다
-            throw NotImplementedException();
+            throw NotImplementedException{};
         }
         else
         {
@@ -177,10 +177,10 @@ public:
             auto eNIndexExp = TranslateReExpToNExp(*eReIndex, context);
             if (!eNIndexExp) return Error(move(eNIndexExp));
 
-            auto eNCastIndex = CastNExp(move(*eNIndexExp), intType, context);
+            auto eNCastIndex = CastNExp(*eNIndexExp, intType, context);
             if (!eNCastIndex) return Error(move(eNCastIndex));
 
-            nIndexLoc = context.MakeNLoc<NLoc_Temp>(move(*eNCastIndex));
+            nIndexLoc = context.MakeNLoc<NLoc_Temp>(*eNCastIndex);
         }
         else
         {
@@ -199,10 +199,10 @@ public:
         RType* itemType;
         if (context.IsListType(context.GetType(*eReObj), &itemType))
         {
-            return Value<ImExp_ListIndexer>(move(*eReObj), move(*eReIndex), move(itemType));
+            return Value<ImExp_ListIndexer>(*eReObj, *eReIndex, itemType);
         }
 
-        throw NotImplementedException();
+        throw NotImplementedException{};
 
         //// objTypeValue에 indexTypeValue를 인자로 갖고 있는 indexer가 있는지
         //if (!context.TypeValueService.GetMemberFuncValue(objType, SpecialNames.IndexerGet, ImmutableArray<TypeValue>.Empty, out var funcValue))
@@ -250,7 +250,7 @@ public:
 
     void Visit(SExp_IndirectMember* exp) override
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(SExp_List* exp) override

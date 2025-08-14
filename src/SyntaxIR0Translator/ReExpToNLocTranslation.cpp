@@ -38,12 +38,12 @@ expected<NLoc*, DiagPtr> TranslateReClassVarExpToNLoc(ReExp_ClassVar* reExp, Tra
             instance = *eInstance;
         }
 
-        return context.MakeNLoc<NLoc_ClassVar>(move(instance), reExp->decl, reExp->typeArgs);
+        return context.MakeNLoc<NLoc_ClassVar>(instance, reExp->decl, reExp->typeArgs);
     }
     else // x, x (static) 둘다 해당
     {   
         NLoc* nInstanceLoc = reExp->decl->IsStatic()? nullptr : context.MakeThisLoc();
-        return context.MakeNLoc<NLoc_ClassVar>(move(nInstanceLoc), reExp->decl, reExp->typeArgs);
+        return context.MakeNLoc<NLoc_ClassVar>(nInstanceLoc, reExp->decl, reExp->typeArgs);
     }
 }
 
@@ -102,7 +102,7 @@ expected<NLoc*, DiagPtr> TranslateReListIndexerExpToNLoc(ReExp_ListIndexer* reEx
     auto eIndex = TranslateReExpToNLoc(reExp->index, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
     if (!eIndex) return unexpected{move(eIndex).error()};
 
-    return context.MakeNLoc<NLoc_ListIndexer>(move(*eInst), move(*eIndex), reExp->itemType);
+    return context.MakeNLoc<NLoc_ListIndexer>(*eInst, *eIndex, reExp->itemType);
 }
 
 expected<NLoc*, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref* reExp, TranslationContext& context)
@@ -113,7 +113,7 @@ expected<NLoc*, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref* reExp,
     auto eTarget = TranslateReExpToNLoc(reExp->target, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
     if (!eTarget) return unexpected{move(eTarget).error()};
 
-    return context.MakeNLoc<NLoc_LocalDeref>(move(*eTarget));
+    return context.MakeNLoc<NLoc_LocalDeref>(*eTarget);
 }
 
 expected<NLoc*, DiagPtr> TranslateReBoxDerefExpToNLoc(ReExp_BoxDeref* reExp, TranslationContext& context)

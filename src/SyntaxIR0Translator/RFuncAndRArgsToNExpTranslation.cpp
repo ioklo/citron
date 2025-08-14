@@ -59,12 +59,12 @@ public:
 
     void Visit(RGlobalFuncDecl* func) override 
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RClassCtorDecl* func) override 
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RClassFuncDecl* func) override 
@@ -74,7 +74,7 @@ public:
 
     void Visit(RStructCtorDecl* func) override 
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(RStructFuncDecl* func) override 
@@ -84,7 +84,7 @@ public:
 
     void Visit(RLambdaDecl* func) override 
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 };
 

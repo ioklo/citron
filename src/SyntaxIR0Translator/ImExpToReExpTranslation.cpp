@@ -60,7 +60,7 @@ public:
     // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
     void Visit(ImExp_GlobalFuncs* imExp) override
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(ImExp_TypeVar* imExp) override
@@ -76,7 +76,7 @@ public:
     void Visit(ImExp_ClassFuncs* imExp) override
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(ImExp_Struct* imExp) override
@@ -87,7 +87,7 @@ public:
     void Visit(ImExp_StructFuncs* imExp) override
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(ImExp_Enum* imExp) override
@@ -104,7 +104,7 @@ public:
         }
 
         // lambda (boxed lambda)로 변환할 수 있다.
-        throw NotImplementedException();
+        throw NotImplementedException{};
 
     }
     void Visit(ImExp_ThisVar* imExp) override

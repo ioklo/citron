@@ -127,7 +127,7 @@ public:
         if (!eNCond) return Error(move(eNCond));
 
         // cast
-        eNCond = CastNExp(move(*eNCond), context.MakeBoolType(), context);
+        eNCond = CastNExp(*eNCond, context.MakeBoolType(), context);
         if (!eNCond) return Error<Error_IfStmt_ConditionShouldBeBool>();
 
         auto nestedContext = context.MakeNestedScopeContext();
@@ -146,7 +146,7 @@ public:
             elseStmts = move(*eElseResult);
         }
 
-        return Value<NStmt_If>(move(*eNCond), move(*eBodyStmts), move(elseStmts));
+        return Value<NStmt_If>(*eNCond, move(*eBodyStmts), move(elseStmts));
     }
 
     void Visit(SStmt_IfTest* stmt) override 
@@ -154,13 +154,13 @@ public:
         auto varName = RName_Normal(stmt->varName);
 
         // if (Type varName = e) eBody         
-        auto rTestType = context.TranslateSTypeExpToRType(stmt->testType);
+        auto eRTestType = context.TranslateSTypeExpToRType(stmt->testType);
 
         auto eNTarget = TranslateSExpToNExp(stmt->exp, /*hintType*/ nullptr, context);
         if (!eNTarget) return Error(move(eNTarget));
 
         auto bodyContext = context.MakeNestedScopeContext();
-        bodyContext.AddLocalVarInfo(*rTestType, varName);
+        bodyContext.AddLocalVarInfo(*eRTestType, varName);
         
         auto eBodyStmts = TranslateSEmbeddableStmtToNStmts(stmt->body, bodyContext);
         if (!eBodyStmts) return Error(move(eBodyStmts));
@@ -177,16 +177,16 @@ public:
             elseStmts = move(*elseResult);
         }
 
-        auto eNAsExp = context.MakeNExp_As(move(*eNTarget), *rTestType);
+        auto eNAsExp = context.MakeNExp_As(*eNTarget, *eRTestType);
         if (!eNAsExp) return Error(move(eNAsExp));
 
-        auto rTestTypeKind = (*rTestType)->GetCustomTypeKind();
+        auto rTestTypeKind = (*eRTestType)->GetCustomTypeKind();
         if (rTestTypeKind == RCustomTypeKind::Class || rTestTypeKind == RCustomTypeKind::Interface)
-            return Value<NStmt_IfNullableRefTest>(move(*rTestType), move(varName), move(*eNAsExp), move(*eBodyStmts), move(elseStmts));
+            return Value<NStmt_IfNullableRefTest>(*eRTestType, move(varName), *eNAsExp, move(*eBodyStmts), move(elseStmts));
         else if (rTestTypeKind == RCustomTypeKind::Enum)
-            return Value<NStmt_IfNullableValueTest>(move(*rTestType), move(varName), move(*eNAsExp), move(*eBodyStmts), move(elseStmts));
+            return Value<NStmt_IfNullableValueTest>(*eRTestType, move(varName), *eNAsExp, move(*eBodyStmts), move(elseStmts));
         else
-            throw NotImplementedException(); // 에러
+            throw NotImplementedException{}; // 에러
     }
 
     void Visit(SStmt_For* stmt) override 
@@ -216,7 +216,7 @@ public:
             auto eRawCond = TranslateSExpToNExp(stmt->cond, /*hintType*/ boolType, forStmtContext);
             if (!eRawCond) return Error(move(eRawCond));
 
-            eRawCond = CastNExp(move(*eRawCond), boolType, context);
+            eRawCond = CastNExp(*eRawCond, boolType, context);
             if (!eRawCond) return Error(move(eRawCond));
 
             condExp = *eRawCond;
@@ -237,7 +237,7 @@ public:
         auto eBodyStmts = TranslateSEmbeddableStmtToNStmts(stmt->body, bodyContext);
         if (!eBodyStmts) return Error(move(eBodyStmts));
 
-        return Value<NStmt_For>(move(initStmts), move(condExp), move(continueExp), move(*eBodyStmts));
+        return Value<NStmt_For>(move(initStmts), condExp, continueExp, move(*eBodyStmts));
     }
 
     void Visit(SStmt_Continue* stmt) override
@@ -297,13 +297,13 @@ public:
                     auto eRetValue = TranslateSExpToNExp(stmt->value, /*hintType*/ set.type, context);
                     if (!eRetValue) return Error(move(eRetValue));
 
-                    auto castRetValue = CastNExp(move(*eRetValue), set.type, context);
+                    auto castRetValue = CastNExp(*eRetValue, set.type, context);
 
                     // 캐스트 실패시
                     if (!castRetValue)
                         return Error<Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType>();
 
-                    return Value<NStmt_Return>(move(*castRetValue));
+                    return Value<NStmt_Return>(*castRetValue);
                 }
             },
 
@@ -323,7 +323,7 @@ public:
 
                     // 리턴값이 안 적혀 있었으므로 적는다
                     context.SetOpenFuncReturn(context.GetType(*eRetValue));
-                    return Value<NStmt_Return>(move(*eRetValue));
+                    return Value<NStmt_Return>(*eRetValue);
                 }
             },
 
@@ -335,7 +335,7 @@ public:
                 }
                 else
                 {   
-                    throw NotImplementedException(); // 에러 처리
+                    throw NotImplementedException{}; // 에러 처리
                     // return Error();
                 }
             }
@@ -374,7 +374,7 @@ public:
         auto eExp = TranslateSExpAsTopLevelExpToNExp(stmt->exp, /*hintType*/ nullptr, &designatedDiag, context);
         if (!eExp) return Error(move(eExp));
 
-        return Value<NStmt_Exp>(move(*eExp));
+        return Value<NStmt_Exp>(*eExp);
     }
 
     void Visit(SStmt_Task* stmt) override 
@@ -383,7 +383,7 @@ public:
         auto eLambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt->body, context);
         if (!eLambdaAndArgs) return Error(move(eLambdaAndArgs));
 
-        return Value<NStmt_Task>(move(eLambdaAndArgs->decl), move(eLambdaAndArgs->args));
+        return Value<NStmt_Task>(eLambdaAndArgs->decl, move(eLambdaAndArgs->args));
     }
 
     void Visit(SStmt_Await* stmt) override 
@@ -401,7 +401,7 @@ public:
         auto eLambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt->body, context);
         if (!eLambdaAndArgs) return Error(move(eLambdaAndArgs));
 
-        return Value<NStmt_Async>(move(eLambdaAndArgs->decl), move(eLambdaAndArgs->args));
+        return Value<NStmt_Async>(eLambdaAndArgs->decl, move(eLambdaAndArgs->args));
     }
     
     void Visit(SStmt_Foreach* stmt) override
@@ -436,7 +436,7 @@ public:
                 if (!oRMember)
                 {
                     // TODO: [15] foreach 에러 처리
-                    throw NotImplementedException();
+                    throw NotImplementedException{};
                     return unexpected{MakePtr<Error_NotImplemented>()};
                 }
 
@@ -461,21 +461,21 @@ public:
                 if (candidates.empty())
                 {
                     // TODO: [15] foreach 에러 처리
-                    throw NotImplementedException();
+                    throw NotImplementedException{};
                     return unexpected{MakePtr<Error_NotImplemented>()};
                 }
 
                 if (candidates.size() != 1)
                 {
                     // TODO: [15] foreach 에러 처리
-                    throw NotImplementedException();
+                    throw NotImplementedException{};
                     return unexpected{MakePtr<Error_NotImplemented>()};
                 }
 
                 auto& result = candidates[0];
 
                 // 아까 갯수가 0인지 체크를 했으니 typeArgs는 default이다
-                return TranslateRFuncAndNArgsToNExp(result.decl, result.outerTypeArgs, move(*eNEnumerable), {}, context);
+                return TranslateRFuncAndNArgsToNExp(result.decl, result.outerTypeArgs, *eNEnumerable, {}, context);
             }
 
             expected<NExp*, DiagPtr> MakeNextExpAndInferItemVarType(RType* enumeratorType)
@@ -513,11 +513,11 @@ public:
 
                     // $enumerator.GetNext(&i);
                     auto nArg = NArgument_Normal(context.MakeNExp<NExp_LocalRef>(context.MakeNLoc<NLoc_LocalVar>(itemVarName, localPtrParamType->innerType)));
-                    auto nEnumerator = context.MakeNLoc<NLoc_LocalVar>(RNames::Enumerator, enumeratorType);
-                    auto eNextExp = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, move(nEnumerator), {move(nArg)}, context);
+                    auto* nEnumerator = context.MakeNLoc<NLoc_LocalVar>(RNames::Enumerator, enumeratorType);
+                    auto eNextExp = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, { move(nArg) }, context);
                     if (!eNextExp) return unexpected{move(eNextExp).error()};
 
-                    candidates.push_back(move(*eNextExp));
+                    candidates.push_back(*eNextExp);
                 }
 
                 if (candidates.size() == 1)
@@ -527,7 +527,7 @@ public:
                 else
                 {
                     // TODO: [17] NextFunc가 여러개일때 처리
-                    throw NotImplementedException();
+                    throw NotImplementedException{};
                     return unexpected{MakePtr<Error_NotImplemented>()};
                 }
             }
@@ -585,27 +585,27 @@ public:
                     {
                         // $enumerator.GetNext(&i);
                         NArgument_Normal rArg(context.MakeNExp<NExp_LocalRef>(context.MakeNLoc<NLoc_LocalVar>(itemVarName, itemTypeFromNextParam)));
-                        auto nEnumerator = context.MakeNLoc<NLoc_LocalVar>(RNames::Enumerator, enumeratorType);
-                        auto nNext = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, move(nEnumerator), {move(rArg)}, context);
+                        auto* nEnumerator = context.MakeNLoc<NLoc_LocalVar>(RNames::Enumerator, enumeratorType);
+                        auto nNext = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, {move(rArg)}, context);
 
-                        candidates.emplace_back(move(*nNext), nullopt);
+                        candidates.emplace_back(*nNext, nullopt);
                     }
                     else // 캐스팅
                     {
                         auto& rawItemType = itemTypeFromNextParam;
                         NArgument_Normal rArg(context.MakeNExp<NExp_LocalRef>(context.MakeNLoc<NLoc_LocalVar>(RNames::RawItem, itemTypeFromNextParam)));
-                        auto nEnumerator = context.MakeNLoc<NLoc_LocalVar>(RNames::Enumerator, enumeratorType);
+                        auto* nEnumerator = context.MakeNLoc<NLoc_LocalVar>(RNames::Enumerator, enumeratorType);
 
                         // $enumerator.GetNext(&$rawItem)
-                        auto eNNext = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, move(nEnumerator), {move(rArg)}, context);
+                        auto eNNext = TranslateRFuncAndNArgsToNExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, { move(rArg) }, context);
                         if (!eNNext) return unexpected{move(eNNext).error()};
 
                         // $rawItem
-                        auto rawItemExp = context.MakeNExp<NExp_Load>(context.MakeNLoc<NLoc_LocalVar>(RNames::RawItem, itemTypeFromNextParam));
-                        auto castExp = CastNExp(move(rawItemExp), itemTypeFromSyntax, context);
+                        auto* rawItemExp = context.MakeNExp<NExp_Load>(context.MakeNLoc<NLoc_LocalVar>(RNames::RawItem, itemTypeFromNextParam));
+                        auto castExp = CastNExp(rawItemExp, itemTypeFromSyntax, context);
                         if (castExp) // 캐스팅이 성공할때만 candidates에 넣기
                         {
-                            candidates.emplace_back(move(*eNNext), CastInfo{rawItemType, *castExp});
+                            candidates.emplace_back(*eNNext, CastInfo{rawItemType, *castExp});
                         }
                     }
                 }
@@ -615,7 +615,7 @@ public:
                 if (count == 0)
                 {
                     // TODO: [17] NextFunc가 0개 혹은 여러개일때 처리
-                    throw NotImplementedException();
+                    throw NotImplementedException{};
                     // return nullopt;
                 }
                 else if (count == 1)
@@ -625,7 +625,7 @@ public:
                 else
                 {
                     // TODO: [17] NextFunc가 0개 혹은 여러개일때 처리
-                    throw NotImplementedException();
+                    throw NotImplementedException{};
                     // return nullopt;
                 }
             }
@@ -665,12 +665,12 @@ public:
 
                     if (!oCastInfo)
                     {
-                        outStmts->push_back(context.MakeNStmt<NStmt_Foreach>(move(*eEnumerator), move(*eItemType), itemVarName, move(nextExp), move(*eBody)));
+                        outStmts->push_back(context.MakeNStmt<NStmt_Foreach>(*eEnumerator, *eItemType, itemVarName, nextExp, move(*eBody)));
                     }
                     else
                     {
                         auto& [rawItemType, castExp] = *oCastInfo;
-                        outStmts->push_back(context.MakeNStmt<NStmt_ForeachCast>(move(*eEnumerator), move(*eItemType), itemVarName, move(rawItemType), move(nextExp), move(castExp), move(*eBody)));
+                        outStmts->push_back(context.MakeNStmt<NStmt_ForeachCast>(*eEnumerator, *eItemType, itemVarName, rawItemType, nextExp, castExp, move(*eBody)));
                     }
                 }
                 else // var 일 경우
@@ -683,7 +683,7 @@ public:
                     auto eBody = MakeBody(itemVarType);
                     if (!eBody) return unexpected{move(eBody).error()};
 
-                    outStmts->push_back(context.MakeNStmt<NStmt_Foreach>(move(*eEnumerator), move(itemVarType), itemVarName, move(*eNextExp), move(*eBody)));
+                    outStmts->push_back(context.MakeNStmt<NStmt_Foreach>(*eEnumerator, itemVarType, itemVarName, *eNextExp, move(*eBody)));
                 }
 
                 return {};
@@ -712,10 +712,10 @@ public:
         auto eRetValue = TranslateSExpToNExp(stmt->value, /*hintType*/ setFuncRet->type, context);
         if (!eRetValue) return Error(move(eRetValue));
 
-        auto eCastRetValue = CastNExp(move(*eRetValue), setFuncRet->type, context);
+        auto eCastRetValue = CastNExp(*eRetValue, setFuncRet->type, context);
         if (!eCastRetValue) return Error(move(eCastRetValue));
 
-        return Value<NStmt_Yield>(move(*eCastRetValue));
+        return Value<NStmt_Yield>(*eCastRetValue);
     }
 
     void Visit(SStmt_Directive* stmt) override 
@@ -731,10 +731,10 @@ public:
             auto eArg = TranslateSExpToNLoc(stmt->args[0], /*hintType*/ nullptr, /*bWrapExpAsLoc*/ false, &designatedDiag, context);
             if (!eArg) return Error(move(eArg));
 
-            return Value<NStmt_NotNullDirective>(move(*eArg));
+            return Value<NStmt_NotNullDirective>(*eArg);
         }
         
-        throw NotImplementedException(); // 인식할 수 없는 directive입니다
+        throw NotImplementedException{}; // 인식할 수 없는 directive입니다
     }
 };
 
@@ -862,10 +862,10 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
 
         // 파라미터에 Type이 명시되어있지 않으면 hintType기반으로 inference 해야 한다.
         if (!sParam.type)
-            throw NotImplementedException();
+            throw NotImplementedException{};
 
-        auto rParamType = context.TranslateSTypeExpToRType(sParam.type);
-        rParams.emplace_back(sParam.hasOut, move(*rParamType), RName_Normal(sParam.name));
+        auto eRParamType = context.TranslateSTypeExpToRType(sParam.type);
+        rParams.emplace_back(sParam.hasOut, *eRParamType, RName_Normal(sParam.name));
 
         if (sParam.hasParams)
         {
@@ -875,7 +875,7 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
             }
             else
             {
-                throw NotImplementedException(); // 에러 처리. bVariadic은 마지막에 있어야 합니다
+                throw NotImplementedException{}; // 에러 처리. bVariadic은 마지막에 있어야 합니다
             }
         }
     }
@@ -892,7 +892,7 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType
     // var newLambdaBodyContext = funcContext.NewLambdaBodyContext(localContext); // new FuncContext(lambdaDeclHolder, bodyContext.GetThisType(), bSeqFunc: false, localContext);
 
     // 람다 관련 정보는 여기서 수집한다
-    RFuncReturn funcRet = retType ? (RFuncReturn)RFuncReturn_Set(move(retType)) : RFuncReturn_NotSet();
+    RFuncReturn funcRet = retType ? (RFuncReturn)RFuncReturn_Set{retType} : RFuncReturn_NotSet();
 
     auto [funcParams, bLastParamVariadic] = MakeParameters(sParams, context);
 

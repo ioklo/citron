@@ -12,18 +12,18 @@ namespace Citron::SyntaxIR0Translator {
 SkeletonPhaseContext::SkeletonPhaseContext(RFactory& rFactory)
     : rFactory(rFactory)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 NNamespaceDecl* SkeletonPhaseContext::MakeChildNamespace(NNamespaceDecl* decl, const string& name)
 {
 
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 void SkeletonPhaseContext::AddMemberDeclPhaseTask(std::function<void(MemberDeclPhaseContext&)> f)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 } // Citron::SyntaxIR0Translator

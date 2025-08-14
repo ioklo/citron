@@ -30,8 +30,8 @@ RAccessor MakeGlobalMemberAccessor(std::optional<SAccessModifier> modifier)
     switch(*modifier)
     {
     case SAccessModifier::Public: return RAccessor::Public;
-    case SAccessModifier::Private: throw NotImplementedException();
-    case SAccessModifier::Protected: throw NotImplementedException();
+    case SAccessModifier::Private: throw NotImplementedException{};
+    case SAccessModifier::Protected: throw NotImplementedException{};
     }
 
     unreachable();
@@ -44,7 +44,8 @@ class NamespaceElemVisitor : public SNamespaceDeclElementVisitor
 
 public:
     NamespaceElemVisitor(NNamespaceDecl* curDecl, SkeletonPhaseContext& context)
-        : curDecl { move(curDecl) }, context { context } {}
+        : curDecl{curDecl}, context{context}
+    { }
 
     // Inherited via SNamespaceDeclElementVisitor
     void Visit(SGlobalFuncDecl* elem) override
@@ -79,7 +80,7 @@ public:
 
     void Visit(SClassDecl* elem) override
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     void Visit(SStructDecl* elem) override
@@ -159,7 +160,7 @@ public:
     void Visit(SEnumDecl* elem) override
     {   
         auto* nEnum = MakeEnum(rootNamespace, elem, MakeGlobalMemberAccessor, context);
-        rootNamespace->AddType(move(nEnum));
+        rootNamespace->AddType(nEnum);
     }
 };
 
