@@ -40,6 +40,8 @@ class IrExp_LocalValue;
 
 class IrExpVisitor;
 
+class TranslationContext;
+
 class IrExp
 {
 public:
@@ -196,7 +198,7 @@ public:
 
     virtual void Accept(IrBoxRefExpVisitor& visitor) = 0;
     virtual RType* GetTargetType(RFactory& factory) = 0;
-    virtual NLoc* MakeLoc() = 0;
+    virtual NLoc* MakeLoc(TranslationContext& context) = 0;
 };
 
 // 홀더가 C로 시작하는 경우
@@ -212,7 +214,7 @@ public:
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(this); }
 
     RType* GetTargetType(RFactory& factory) override;
-    NLoc* MakeLoc() override;
+    NLoc* MakeLoc(TranslationContext& context) override;
 };
 
 // 홀더가 box* T로 시작하는 경우
@@ -228,21 +230,21 @@ public:
     IrExp_BoxRef_StructIndirectMember(NLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(this); }
     RType* GetTargetType(RFactory& factory) override;
-    NLoc* MakeLoc() override;
+    NLoc* MakeLoc(TranslationContext& context) override;
 };
 
 class IrExp_BoxRef_StructMember : public IrExp_BoxRef
 {
 public:
-    std::shared_ptr<IrExp_BoxRef> parent;
+    IrExp_BoxRef* parent;
     RStructVarDecl* decl;
     RTypeArguments* typeArgs;
 
 public:
-    IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, RStructVarDecl* decl, RTypeArguments* typeArgs);
+    IrExp_BoxRef_StructMember(IrExp_BoxRef* parent, RStructVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(this); }
     RType* GetTargetType(RFactory& factory) override;
-    NLoc* MakeLoc() override;
+    NLoc* MakeLoc(TranslationContext& context) override;
 };
 
 class IrExp_LocalRef : public IrExp

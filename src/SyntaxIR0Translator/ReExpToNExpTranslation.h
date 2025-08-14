@@ -14,7 +14,7 @@ namespace SyntaxIR0Translator {
 class TranslationContext;
 class ReExp;
 
-std::expected<NExp*, DiagPtr> TranslateReExpToNExp(ReExp& reExp, TranslationContext& context);
+std::expected<NExp*, DiagPtr> TranslateReExpToNExp(ReExp* reExp, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

@@ -38,6 +38,7 @@ target_sources(IR0
         NStructVarDecl.cpp
         NTypeDeclContainerComponent.cpp
         RDecl.cpp
+        RFactory.cpp
         RFuncParameter.cpp
         RGlobalFuncDecl.cpp
         RMember.cpp
@@ -45,7 +46,6 @@ target_sources(IR0
         RNames.cpp
         RNamespaceDeclGroup.cpp
         RTypeArguments.cpp
-        RTypeFactory.cpp
         RTypes.cpp
 
         PUBLIC FILE_SET headers
@@ -94,6 +94,7 @@ target_sources(IR0
         Public/IR0/REnumDecl.h
         Public/IR0/REnumElemDecl.h
         Public/IR0/REnumElemVarDecl.h
+        Public/IR0/RFactory.h
         Public/IR0/RFuncDecl.h
         Public/IR0/RFuncDeclOuter.h
         Public/IR0/RFuncParameter.h
@@ -115,7 +116,6 @@ target_sources(IR0
         Public/IR0/RTypeArguments.h
         Public/IR0/RTypeDecl.h
         Public/IR0/RTypeDeclOuter.h
-        Public/IR0/RTypeFactory.h
         Public/IR0/RTypes.h
 
 )

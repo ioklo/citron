@@ -68,7 +68,7 @@ private:
         *result = unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
     constexpr void Error(TArgs&&... args)
     {
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
@@ -82,13 +82,13 @@ private:
             return Error(move(eReExp));
 
         DesignatedDiagnostic<Error_CallExp_CallableExpressionIsNotCallable> designatedDiag;
-        auto eNCallable = TranslateReExpToNLoc(**eReExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+        auto eNCallable = TranslateReExpToNLoc(*eReExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
 
         if (!eNCallable)
             return Error(move(eNCallable));
 
         // TODO: Lambda말고 func<>도 있다
-        auto* rCallableType = context.GetType(**eNCallable);
+        auto* rCallableType = context.GetType(*eNCallable);
         auto* rLambdaType = dynamic_cast<RType_Lambda*>(rCallableType);
 
         if (!rLambdaType)
@@ -170,7 +170,7 @@ public:
             if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto eNLoc = TranslateReExpToNLoc(*imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+                auto eNLoc = TranslateReExpToNLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
                 if (!eNLoc) return Error(move(eNLoc));
 
                 nInst = *eNLoc;
@@ -207,7 +207,7 @@ public:
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
         std::vector<DeclWithOuterTypeArgs<RStructCtorDecl>> items;
-        for (auto& ctor : imExp->structDecl->GetUnboundCtors())
+        for (auto* ctor : imExp->structDecl->GetUnboundCtors())
         {
             items.emplace_back(ctor, imExp->typeArgs);
         }
@@ -253,7 +253,7 @@ public:
             if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto eInstance = TranslateReExpToNLoc(*imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+                auto eInstance = TranslateReExpToNLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
                 if (!eInstance) return Error(move(eInstance));
 
                 instance = *eInstance;
@@ -379,7 +379,7 @@ public:
 
 } // namespace
 
-expected<NExp*, DiagPtr> TranslateImCallableAndSArgsToNExp(ImExp& imCallable, SExp* sCallable, SArguments* sArgs, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateImCallableAndSArgsToNExp(ImExp* imCallable, SExp* sCallable, SArguments* sArgs, TranslationContext& context)
 {
     // 여기서 분석해야 할 것은 
     // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -393,7 +393,7 @@ expected<NExp*, DiagPtr> TranslateImCallableAndSArgsToNExp(ImExp& imCallable, SE
 
     expected<NExp*, DiagPtr> result;
     ImCallableAndSArgsToNExpTranslator binder{&result, sCallable, sArgs, context};
-    imCallable.Accept(binder);
+    imCallable->Accept(binder);
     return result;
 }
 

@@ -16,7 +16,9 @@ class NLoc;
 
 namespace SyntaxIR0Translator {
 
-std::expected<NExp*, DiagPtr> TranslateRFuncAndNArgsToNExp(RFuncDecl* decl, RTypeArguments* typeArgs, NLoc* instance, std::vector<NArgument>&& args);
+class TranslationContext;
+
+std::expected<NExp*, DiagPtr> TranslateRFuncAndNArgsToNExp(RFuncDecl* decl, RTypeArguments* typeArgs, NLoc* instance, std::vector<NArgument>&& args, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

@@ -21,7 +21,6 @@ class TranslationContext;
 std::expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context);
 
 std::expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationContext& context);
-std::expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationContext& context);
 
 bool IsVarType(STypeExp* typeExp);
 

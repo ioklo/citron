@@ -2,6 +2,8 @@
 #include "IR0/DeclWithOuterTypeArgs.h"
 #include "IR0/RStructFuncDecl.h"
 
+using namespace std;
+
 namespace Citron::SyntaxIR0Translator {
 
 ImExp_Namespace::ImExp_Namespace(RNamespaceDecl* _namespace)
@@ -17,12 +19,12 @@ ImExp_GlobalFuncs::ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<RGl
 ImExp_GlobalFuncs::~ImExp_GlobalFuncs() = default;
 
 ImExp_TypeVar::ImExp_TypeVar(RType_TypeVar* type)
-    : type(move(type))
+    : type(type)
 {
 }
 
 ImExp_Class::ImExp_Class(RClassDecl* classDecl, RTypeArguments* typeArgs)
-    : classDecl(classDecl), typeArgs(move(typeArgs))
+    : classDecl(classDecl), typeArgs(typeArgs)
 {
 }
 
@@ -34,7 +36,7 @@ ImExp_ClassFuncs::ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClas
 ImExp_ClassFuncs::~ImExp_ClassFuncs() = default;
 
 ImExp_Struct::ImExp_Struct(RStructDecl* structDecl, RTypeArguments* typeArgs)
-    : structDecl(structDecl), typeArgs(move(typeArgs))
+    : structDecl(structDecl), typeArgs(typeArgs)
 {
 }
 
@@ -92,7 +94,7 @@ ImExp_EnumElemVar::ImExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typ
 }
 
 ImExp_ListIndexer::ImExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemType)
-    : instance(move(instance)), index(move(index)), itemType(move(itemType))
+    : instance{instance}, index{index}, itemType{itemType}
 {
 
 }

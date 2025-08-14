@@ -43,12 +43,12 @@ public:
     }
 
 private:
-    void HandleDefault(SExp& sExp)
+    void HandleDefault(SExp* sExp)
     {
         if (auto eReExp = TranslateSExpToReExp(sExp, hintType, context))
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            *result = TranslateReExpToNLoc(**eReExp, bWrapExpAsLoc, &designatedDiag, context);
+            *result = TranslateReExpToNLoc(*eReExp, bWrapExpAsLoc, &designatedDiag, context);
         }
         else // invalid
         {
@@ -65,7 +65,7 @@ private:
         }
         else if (bWrapExpAsLoc)
         {
-            *result = MakePtr<NLoc_Temp>(move(*eNExp));
+            *result = context.MakeNLoc<NLoc_Temp>(move(*eNExp));
         }
         else
         {
@@ -79,19 +79,19 @@ private:
         *result = unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
     void Error(TArgs&&... args)
     {
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
-    void Visit(SExp_Identifier& exp) override
+    void Visit(SExp_Identifier* exp) override
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_String& exp) override
+    void Visit(SExp_String* exp) override
     {
         auto eNExp = TranslateSStringExpToNStringExp(exp, context);
         if (!eNExp) return Error(move(eNExp));
@@ -99,39 +99,39 @@ public:
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_IntLiteral& exp) override
+    void Visit(SExp_IntLiteral* exp) override
     {
-        auto eNExp = TranslateSIntLiteralExpToNExp(exp);
+        auto eNExp = TranslateSIntLiteralExpToNExp(exp, context);
         if (!eNExp) return Error(move(eNExp));
 
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_BoolLiteral& exp) override
+    void Visit(SExp_BoolLiteral* exp) override
     {
-        auto eNExp = TranslateSBoolLiteralExpToNExp(exp);
+        auto eNExp = TranslateSBoolLiteralExpToNExp(exp, context);
         if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_NullLiteral& exp) override
+    void Visit(SExp_NullLiteral* exp) override
     {
         auto eNExp = TranslateSNullLiteralExpToNExp(exp, hintType, context);
         if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_BinaryOp& exp) override
+    void Visit(SExp_BinaryOp* exp) override
     {
         auto eNExp = TranslateSBinaryOpExpToNExp(exp, context);
         if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_UnaryOp& exp) override
+    void Visit(SExp_UnaryOp* exp) override
     {
         // Deref는 loc으로 변경되어야 한다
-        if (exp.kind == SUnaryOpKind::Deref)
+        if (exp->kind == SUnaryOpKind::Deref)
         {
             return HandleDefault(exp);
         }
@@ -143,65 +143,65 @@ public:
         }
     }
 
-    void Visit(SExp_Call& exp) override
+    void Visit(SExp_Call* exp) override
     {
         auto eNExp = TranslateSCallExpToNExp(exp, hintType, context);
         if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_Lambda& exp) override
+    void Visit(SExp_Lambda* exp) override
     {
         auto eNExp = TranslateSLambdaExpToNExp(exp, context);
         if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_Indexer& exp) override
+    void Visit(SExp_Indexer* exp) override
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_Member& exp) override
+    void Visit(SExp_Member* exp) override
     {
         return HandleDefault(exp);
     }
 
     // s->x
-    void Visit(SExp_IndirectMember& exp) override 
+    void Visit(SExp_IndirectMember* exp) override 
     { 
         throw NotImplementedException();
     }
 
-    void Visit(SExp_List& exp) override
+    void Visit(SExp_List* exp) override
     {
         auto eNExp = TranslateSListExpToNExp(exp, context);
         if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_New& exp) override
+    void Visit(SExp_New* exp) override
     {
         auto eNExp = TranslateSNewExpToNExp(exp, context);
         if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_Box& exp) override
+    void Visit(SExp_Box* exp) override
     {
         auto eNExp = TranslateSBoxExpToNExp(exp, hintType, context);
         if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_Is& exp) override
+    void Visit(SExp_Is* exp) override
     {
         auto eNExp = TranslateSIsExpToNExp(exp, context);
         if (!eNExp) return Error(move(eNExp));
         return HandleExp(move(*eNExp));
     }
 
-    void Visit(SExp_As& exp) override
+    void Visit(SExp_As* exp) override
     {
         auto eNExp = TranslateSAsExpToNExp(exp, context);
         if (!eNExp) return Error(move(eNExp));
@@ -211,11 +211,11 @@ public:
 
 } // namespace 
 
-expected<NLoc*, DiagPtr> TranslateSExpToNLoc(SExp& sExp, RType* hintType, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
+expected<NLoc*, DiagPtr> TranslateSExpToNLoc(SExp* sExp, RType* hintType, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
 {
     expected<NLoc*, DiagPtr> nLoc;
     SExpToNLocTranslator translator{&nLoc, hintType, bWrapExpAsLoc, notLocationDiag, context};
-    sExp.Accept(translator);
+    sExp->Accept(translator);
     return nLoc;
 }
 

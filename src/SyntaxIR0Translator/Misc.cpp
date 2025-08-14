@@ -25,12 +25,12 @@ expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExp*>& typeArgs
     std::vector<RType*> items;
     items.reserve(typeArgs.size());
 
-    for (auto& typeArg : typeArgs)
+    for (auto* typeArg : typeArgs)
     {
-        auto type = context.TranslateSTypeExpToRType(*typeArg);
-        if (!type) return unexpected{move(type).error()};
+        auto eType = context.TranslateSTypeExpToRType(typeArg);
+        if (!eType) return unexpected{move(eType).error()};
 
-        items.push_back(move(*type));
+        items.push_back(*eType);
     }
 
     return context.MakeTypeArguments(items);
@@ -101,14 +101,14 @@ expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExp*>& typeArgs
 // 값의 겉보기 타입을 변경한다
 expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationContext& context)
 {
-    auto expType = context.GetType(*exp);
+    auto expType = context.GetType(exp);
 
     // 같으면 그대로 리턴
     if (expectedType == expType)
         return exp;
 
     // 1. enumElem인 경우, enum으로 변경할 수 있다
-    if (auto* expEnumElemType = dynamic_cast<RType_EnumElem*>(expType.get()))
+    if (auto* expEnumElemType = dynamic_cast<RType_EnumElem*>(expType))
     {
         auto expEnumType = context.GetBaseEnumType(*expEnumElemType);
 
@@ -121,13 +121,13 @@ expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationCon
     }
 
     // 2. exp is class type
-    if (auto* expClassType = dynamic_cast<RType_Class*>(expType.get()))
+    if (auto* expClassType = dynamic_cast<RType_Class*>(expType))
     {
-        if (auto expectedClassType = dynamic_pointer_cast<RType_Class>(expectedType))
+        if (auto* expectedClassType = dynamic_cast<RType_Class*>(expectedType))
         {
             if (expectedClassType->IsBaseOf(*expClassType))
             {
-                return MakePtr<NExp_CastClass>(exp, expectedClassType);
+                return context.MakeNExp<NExp_CastClass>(exp, expectedClassType);
             }
         }
 
@@ -137,7 +137,7 @@ expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationCon
     }
 
     // TODO: 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
-    if (auto* expectedNullableType = dynamic_cast<RType_NullableRef*>(expectedType.get()))
+    if (auto* expectedNullableType = dynamic_cast<RType_NullableRef*>(expectedType))
     {
         // Nullable<B>를 원한다면 C를 B로 변환해본다
         auto eCastToInnerTypeExp = CastNExp(exp, expectedNullableType->innerType, context);
@@ -145,15 +145,10 @@ expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationCon
             return unexpected{MakePtr<Error_Cast_Failed>()};
 
         // B?로 변경
-        return MakePtr<NExp_NewNullable>(*eCastToInnerTypeExp);
+        return context.MakeNExp<NExp_NewNullable>(*eCastToInnerTypeExp);
     }
 
     return unexpected{MakePtr<Error_Cast_Failed>()};
-}
-
-expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationContext& context)
-{
-    return CastNExp(NExp*(exp), expectedType, context);
 }
 
 bool IsVarType(STypeExp* typeExp)

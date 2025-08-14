@@ -17,10 +17,10 @@ class MModule;
 class RFactory;
 
 SYNTAXIR0TRANSLATOR_API
-std::expected<std::shared_ptr<NModule>, DiagPtr> Translate(
+std::expected<NModule*, DiagPtr> Translate(
     MName moduleName,
-    std::vector<SScript> scripts,
-    std::vector<std::shared_ptr<MModule>> referenceModules,
+    const std::vector<SScript*>& scripts,
+    const std::vector<MModule*>& referenceModules,
     RFactory& factory);
 
 } // namespace Citron

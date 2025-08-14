@@ -15,12 +15,12 @@ namespace SyntaxIR0Translator {
 
 class SkeletonPhaseContext;
 
-NEnumDecl* InnerMakeEnum(NTypeDeclOuter* nOuter, SEnumDecl& sDecl, RAccessor accessor, SkeletonPhaseContext& context);
+NEnumDecl* InnerMakeEnum(NTypeDeclOuter* nOuter, SEnumDecl* sDecl, RAccessor accessor, SkeletonPhaseContext& context);
 
 template<typename TNOuter, typename TMakeAccessor>
-NEnumDecl* MakeEnum(TNOuter* rOuter, SEnumDecl& sDecl, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)
+NEnumDecl* MakeEnum(TNOuter* rOuter, SEnumDecl* sDecl, TMakeAccessor makeAccessor, SkeletonPhaseContext& context)
 {
-    auto accessor = makeAccessor(sDecl.accessModifier);
+    auto accessor = makeAccessor(sDecl->accessModifier);
     return InnerMakeEnum(rOuter, sDecl, accessor, context);
 }
 

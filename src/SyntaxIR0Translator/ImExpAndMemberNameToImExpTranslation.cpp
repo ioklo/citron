@@ -350,7 +350,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
         *result = unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
     void Error(TArgs&&... args)
     {
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
@@ -372,7 +372,7 @@ class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
             return;
         }
 
-        auto type = context.GetType(**eReInstExp);
+        auto type = context.GetType(*eReInstExp);
         auto oMember = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
         if (!oMember)
         {

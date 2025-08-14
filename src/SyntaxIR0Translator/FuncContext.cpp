@@ -42,9 +42,9 @@ bool FuncContext_Lambda::CanAccess(RDecl* target)
     return outer->funcContext->CanAccess(target);
 }
 
-optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& rFactory)
 {
-    auto oMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    auto oMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, rFactory);
     if (!oMember) return nullopt;
     
     // 상위 스코프에서 얻어오는 
@@ -53,13 +53,13 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
     {
         RName localVarName = RName_Normal(localVar->name);
 
-        auto* localVarLoc = factory.MakeNLoc<NLoc_LocalVar>(localVarName, localVar->type);
-        auto* initExp = factory.MakeNExp<NExp_Load>(localVarLoc);
+        auto* localVarLoc = rFactory.MakeNLoc<NLoc_LocalVar>(localVarName, localVar->type);
+        auto* initExp = rFactory.MakeNExp<NExp_Load>(localVarLoc);
         auto initArg = NArgument_Normal(initExp);
 
-        auto lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg));
+        auto lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg), rFactory);
 
-        auto openTypeArgs = MakeOpenTypeArgs(factory);
+        auto openTypeArgs = MakeOpenTypeArgs(rFactory);
         return RMember_LambdaVar(move(openTypeArgs), move(lambdaVar));
     }
 
@@ -79,13 +79,13 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         //     }
         // } }
 
-        auto openTypeArgs = MakeOpenTypeArgs(factory);
-        auto* lambdaVarDecl = factory.MakeNLoc<NLoc_LambdaVar>(lambdaVar->decl, openTypeArgs);
-        auto* loadExp = factory.MakeNExp<NExp_Load>(lambdaVarDecl);
-        auto initArg = NArgument_Normal();
+        auto openTypeArgs = MakeOpenTypeArgs(rFactory);
+        auto* lambdaVarDecl = rFactory.MakeNLoc<NLoc_LambdaVar>(lambdaVar->decl, openTypeArgs);
+        auto* loadExp = rFactory.MakeNExp<NExp_Load>(lambdaVarDecl);
+        NArgument_Normal initArg{loadExp};
 
-        auto newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), move(initArg));
-        return RMember_LambdaVar(move(openTypeArgs), move(newLambdaVar));
+        auto* newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), move(initArg), rFactory);
+        return RMember_LambdaVar{openTypeArgs, newLambdaVar};
     }
 
     if (auto* thisVar = get_if<RMember_ThisVar>(&*oMember))
@@ -94,14 +94,14 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         if (auto structType = dynamic_cast<RType_Struct*>(thisVar->type))
             throw NotImplementedException();
 
-        auto thisLoc = factory.MakeNLoc<NLoc_This>(thisVar->type);
-        auto initExp = factory.MakeNExp<NExp_Load>(thisLoc);
-        auto initArg = NArgument_Normal(move(initExp));
+        auto* thisLoc = rFactory.MakeNLoc<NLoc_This>(thisVar->type);
+        auto* initExp = rFactory.MakeNExp<NExp_Load>(thisLoc);
+        auto initArg = NArgument_Normal{initExp};
 
-        auto lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, move(initArg));
-        auto openTypeArgs = MakeOpenTypeArgs(factory);
+        auto* lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, move(initArg), rFactory);
+        auto* openTypeArgs = MakeOpenTypeArgs(rFactory);
 
-        return RMember_LambdaVar(move(openTypeArgs), move(lambdaVar));
+        return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
     // 나머지는 그대로 리턴

@@ -17,7 +17,7 @@ namespace SyntaxIR0Translator {
 class TranslationContext;
 class IDesignatedDiagnostic;
 
-std::expected<NLoc*, DiagPtr> TranslateSExpToNLoc(SExp& sExp, RType* hintType, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context);
+std::expected<NLoc*, DiagPtr> TranslateSExpToNLoc(SExp* sExp, RType* hintType, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator 
 } // namespace Citron

@@ -12,9 +12,14 @@
 #include "IR0/RClassFuncDecl.h"
 #include "IR0/RStructFuncDecl.h"
 
+#include "TranslationContext.h"
+
 using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
+
+class TranslationContext;
+
 namespace {
 
 class RFuncAndRArgsToNExpTranslator : public RFuncDeclVisitor
@@ -25,11 +30,13 @@ class RFuncAndRArgsToNExpTranslator : public RFuncDeclVisitor
     NLoc* instance;
     vector<NArgument> args;
 
+    TranslationContext& context;
+
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<NExp, TValue>
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, NExp>
     void Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        *result = context.MakeNExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -38,15 +45,15 @@ private:
         *result = unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
     void Error(TArgs&&... args)
     {
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
-    RFuncAndRArgsToNExpTranslator(expected<NExp*, DiagPtr>* result, RTypeArguments* typeArgs, NLoc* instance, vector<NArgument>&& args)
-        : result(result), typeArgs(typeArgs), instance(move(instance)), args(move(args))
+    RFuncAndRArgsToNExpTranslator(expected<NExp*, DiagPtr>* result, RTypeArguments* typeArgs, NLoc* instance, vector<NArgument>&& args, TranslationContext& context)
+        : result{result}, typeArgs{typeArgs}, instance{instance}, args{move(args)}, context{context}
     {
     }
 
@@ -62,7 +69,7 @@ public:
 
     void Visit(RClassFuncDecl* func) override 
     {
-        return Exp<NExp_CallClassFunc>(func, move(typeArgs), move(instance), move(args));
+        return Value<NExp_CallClassFunc>(func, typeArgs, instance, move(args));
     }
 
     void Visit(RStructCtorDecl* func) override 
@@ -72,7 +79,7 @@ public:
 
     void Visit(RStructFuncDecl* func) override 
     {   
-        return Exp<NExp_CallStructFunc>(func, move(typeArgs), move(instance), move(args));
+        return Value<NExp_CallStructFunc>(func, typeArgs, instance, move(args));
     }
 
     void Visit(RLambdaDecl* func) override 
@@ -83,10 +90,10 @@ public:
 
 } // namespace Citron::SyntaxIR0Translator
 
-expected<NExp*, DiagPtr> TranslateRFuncAndNArgsToNExp(RFuncDecl* decl, RTypeArguments* typeArgs, NLoc* instance, vector<NArgument>&& args)
+expected<NExp*, DiagPtr> TranslateRFuncAndNArgsToNExp(RFuncDecl* decl, RTypeArguments* typeArgs, NLoc* instance, vector<NArgument>&& args, TranslationContext& context)
 {
     expected<NExp*, DiagPtr> exp;
-    RFuncAndRArgsToNExpTranslator binder{&exp, typeArgs, move(instance), move(args)};
+    RFuncAndRArgsToNExpTranslator binder{&exp, typeArgs, instance, move(args), context};
     decl->Accept(binder);
     return exp;
 }

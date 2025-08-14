@@ -69,7 +69,7 @@ RType* ReExp_LocalDeref::GetType(RFactory& factory)
     auto type = target->GetType(factory);
 
     // TODO: remove reinterpret cast. 어떻게?
-    return ((RType_LocalPtr*)type.get())->innerType;
+    return ((RType_LocalPtr*)type)->innerType;
 }
 
 ReExp_BoxDeref::ReExp_BoxDeref(ReExp* target)
@@ -83,7 +83,7 @@ RType* ReExp_BoxDeref::GetType(RFactory& factory)
     auto type = target->GetType(factory);
 
     // TODO: remove reinterpret cast
-    return ((RType_BoxPtr*)type.get())->innerType;
+    return ((RType_BoxPtr*)type)->innerType;
 }
 
 ReExp_ListIndexer::ReExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemType)

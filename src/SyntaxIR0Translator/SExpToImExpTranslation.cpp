@@ -49,7 +49,7 @@ private:
         if (!eExp)
             *result = nullptr;
         else
-            *result = MakePtr<ImExp_Else>(move(*eExp));
+            *result = context.MakeImExp<ImExp_Else>(move(*eExp));
     }
 
     void Forward(expected<ImExp*, DiagPtr>&& r)
@@ -57,10 +57,10 @@ private:
         *result = move(r);
     }
 
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<ImExp, TValue>
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, ImExp>
     void Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        *result = context.MakeImExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -69,7 +69,7 @@ private:
         *result = unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
     void Error(TArgs&&... args)
     {
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
@@ -77,7 +77,7 @@ private:
 
 public:
     // x
-    void Visit(SExp_Identifier& exp) override
+    void Visit(SExp_Identifier* exp) override
     {
         throw NotImplementedException();
         /*try
@@ -100,47 +100,47 @@ public:
         }*/
     }
 
-    void Visit(SExp_String& exp) override
+    void Visit(SExp_String* exp) override
     {
         return HandleExp(TranslateSStringExpToNStringExp(exp, context));
     }
 
-    void Visit(SExp_IntLiteral& exp) override
+    void Visit(SExp_IntLiteral* exp) override
     {
-        return HandleExp(TranslateSIntLiteralExpToNExp(exp));
+        return HandleExp(TranslateSIntLiteralExpToNExp(exp, context));
     }
 
-    void Visit(SExp_BoolLiteral& exp) override
+    void Visit(SExp_BoolLiteral* exp) override
     {
-        return HandleExp(TranslateSBoolLiteralExpToNExp(exp));
+        return HandleExp(TranslateSBoolLiteralExpToNExp(exp, context));
     }
 
     // 'null'
-    void Visit(SExp_NullLiteral& exp) override
+    void Visit(SExp_NullLiteral* exp) override
     {
         return HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
     }
 
-    void Visit(SExp_BinaryOp& exp) override
+    void Visit(SExp_BinaryOp* exp) override
     {
         return HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
     }
 
-    void Visit(SExp_UnaryOp& exp) override
+    void Visit(SExp_UnaryOp* exp) override
     {
         // *d
-        if (exp.kind == SUnaryOpKind::Deref)
+        if (exp->kind == SUnaryOpKind::Deref)
         {
-            auto eTarget = TranslateSExpToReExp(*exp.operand, /*hintType*/nullptr, context);
+            auto eTarget = TranslateSExpToReExp(exp->operand, /*hintType*/nullptr, context);
             if (!eTarget) return Error(move(eTarget));
 
-            auto targetType = context.GetType(**eTarget);
+            auto targetType = context.GetType(*eTarget);
 
-            if (dynamic_cast<RType_BoxPtr*>(targetType.get()))
-                return Value<ImExp_BoxDeref>(move(*eTarget));
+            if (dynamic_cast<RType_BoxPtr*>(targetType))
+                return Value<ImExp_BoxDeref>(*eTarget);
 
-            if (dynamic_cast<RType_LocalPtr*>(targetType.get()))
-                return Value<ImExp_LocalDeref>(move(*eTarget));
+            if (dynamic_cast<RType_LocalPtr*>(targetType))
+                return Value<ImExp_LocalDeref>(*eTarget);
 
             // 에러를 내야 할 것 같다
             throw NotImplementedException();
@@ -151,42 +151,42 @@ public:
         }
     }
 
-    void Visit(SExp_Call& exp) override
+    void Visit(SExp_Call* exp) override
     {
         return HandleExp(TranslateSCallExpToNExp(exp, hintType, context));
     }
 
-    void Visit(SExp_Lambda& exp) override
+    void Visit(SExp_Lambda* exp) override
     {
         return HandleExp(TranslateSLambdaExpToNExp(exp, context));
     }
 
-    void Visit(SExp_Indexer& exp) override
+    void Visit(SExp_Indexer* exp) override
     {
-        auto eReObj = TranslateSExpToReExp(*exp.obj, /*hintType*/ nullptr, context);
+        auto eReObj = TranslateSExpToReExp(exp->obj, /*hintType*/ nullptr, context);
         if (!eReObj) return Error(move(eReObj));
 
-        auto eReIndex = TranslateSExpToReExp(*exp.index, /*hintType*/ nullptr, context);
+        auto eReIndex = TranslateSExpToReExp(exp->index, /*hintType*/ nullptr, context);
         if (!eReIndex) return Error(move(eReIndex));
 
         auto intType = context.MakeIntType();
 
         NLoc* nIndexLoc;
-        if (context.GetType(**eReIndex) != intType)
+        if (context.GetType(*eReIndex) != intType)
         {
-            auto eNIndexExp = TranslateReExpToNExp(**eReIndex, context);
+            auto eNIndexExp = TranslateReExpToNExp(*eReIndex, context);
             if (!eNIndexExp) return Error(move(eNIndexExp));
 
             auto eNCastIndex = CastNExp(move(*eNIndexExp), intType, context);
             if (!eNCastIndex) return Error(move(eNCastIndex));
 
-            nIndexLoc = MakePtr<NLoc_Temp>(move(*eNCastIndex));
+            nIndexLoc = context.MakeNLoc<NLoc_Temp>(move(*eNCastIndex));
         }
         else
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            auto eNLoc = TranslateReExpToNLoc(**eReIndex, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+            auto eNLoc = TranslateReExpToNLoc(*eReIndex, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
             if (!eNLoc) return Error(move(eNLoc));
 
             nIndexLoc = *eNLoc;
@@ -197,7 +197,7 @@ public:
 
         // 리스트 타입의 경우,
         RType* itemType;
-        if (context.IsListType(context.GetType(**eReObj), &itemType))
+        if (context.IsListType(context.GetType(*eReObj), &itemType))
         {
             return Value<ImExp_ListIndexer>(move(*eReObj), move(*eReIndex), move(itemType));
         }
@@ -237,44 +237,44 @@ public:
     }
 
     // parent."x"<>
-    void Visit(SExp_Member& exp) override
+    void Visit(SExp_Member* exp) override
     {
-        auto eImParent = TranslateSExpToImExp(*exp.parent, hintType, context);
+        auto eImParent = TranslateSExpToImExp(exp->parent, hintType, context);
         if (!eImParent) return Error(move(eImParent));
 
-        auto eTypeArgs = MakeTypeArgs(exp.memberTypeArgs, context);
+        auto eTypeArgs = MakeTypeArgs(exp->memberTypeArgs, context);
         if (!eTypeArgs) return Error(move(eTypeArgs));
 
-        return Forward(TranslateImExpAndMemberNameToImExp(**eImParent, exp.memberName, *eTypeArgs, context));
+        return Forward(TranslateImExpAndMemberNameToImExp(*eImParent, exp->memberName, *eTypeArgs, context));
     }
 
-    void Visit(SExp_IndirectMember& exp) override
+    void Visit(SExp_IndirectMember* exp) override
     {
         throw NotImplementedException();
     }
 
-    void Visit(SExp_List& exp) override
+    void Visit(SExp_List* exp) override
     {
         return HandleExp(TranslateSListExpToNExp(exp, context));
     }
 
     // 'new C(...)'
-    void Visit(SExp_New& exp) override
+    void Visit(SExp_New* exp) override
     {
         return HandleExp(TranslateSNewExpToNExp(exp, context));
     }
 
-    void Visit(SExp_Box& exp) override
+    void Visit(SExp_Box* exp) override
     {
         return HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
     }
 
-    void Visit(SExp_Is& exp) override
+    void Visit(SExp_Is* exp) override
     {
         return HandleExp(TranslateSIsExpToNExp(exp, context));
     }
 
-    void Visit(SExp_As& exp) override
+    void Visit(SExp_As* exp) override
     {
         return HandleExp(TranslateSAsExpToNExp(exp, context));
     }
@@ -282,11 +282,11 @@ public:
 
 }
 
-expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp& exp, RType* hintType, TranslationContext& context)
+expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp* exp, RType* hintType, TranslationContext& context)
 {   
     expected<ImExp*, DiagPtr> imExp;
     SExpToImExpTranslator translator{&imExp, hintType, context};
-    exp.Accept(translator);
+    exp->Accept(translator);
     return imExp;
 }
 

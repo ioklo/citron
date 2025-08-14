@@ -22,7 +22,7 @@ public:
     {
         funcs.push_back(func);
 
-        auto identifier = func.GetIdentifier();
+        auto identifier = func->GetIdentifier();
         idMap.insert_or_assign(identifier, func);
 
         nameMap[identifier.name].push_back(std::move(func));

@@ -52,24 +52,24 @@ expected<RType*, DiagPtr> TranslationContext::TranslateSTypeExpToRType(STypeExp*
     return scopeContext->TranslateSTypeExpToRType(typeExp, *rFactory);
 }
 
-Citron::RType* TranslationContext::GetType(NLoc& loc)
+Citron::RType* TranslationContext::GetType(NLoc* loc)
 {
-    return loc.GetType(*rFactory);
+    return loc->GetType(*rFactory);
 }
 
-RType* TranslationContext::GetType(ReExp& reExp)
+RType* TranslationContext::GetType(ReExp* reExp)
 {
-    return reExp.GetType(*rFactory);
+    return reExp->GetType(*rFactory);
 }
 
-Citron::RType* TranslationContext::GetType(NExp& exp)
+Citron::RType* TranslationContext::GetType(NExp* exp)
 {
-    return exp.GetType(*rFactory);
+    return exp->GetType(*rFactory);
 }
 
-RType* TranslationContext::GetTargetType(IrExp_BoxRef& boxRef)
+RType* TranslationContext::GetTargetType(IrExp_BoxRef* boxRef)
 {
-    return boxRef.GetTargetType(*rFactory);
+    return boxRef->GetTargetType(*rFactory);
 }
 
 NLoc_This* TranslationContext::MakeThisLoc()

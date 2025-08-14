@@ -16,7 +16,7 @@ class TranslationContext;
 
 class ImExp;
 
-std::expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp& exp, RType* hintType, TranslationContext& context);
+std::expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp* exp, RType* hintType, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 

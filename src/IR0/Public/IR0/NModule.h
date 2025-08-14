@@ -4,6 +4,7 @@
 #include <string>
 
 #include "RModule.h"
+#include "NDecl.h"
 
 namespace Citron {
 
@@ -13,10 +14,9 @@ class NModule : public RModule
 {
 public:
     std::string name;
-    NNamespaceDecl* rootNamespace;
 
 public:
-    IR0_API NModule(std::string&& name, NNamespaceDecl* rootNamespace);
+    IR0_API NModule(std::string&& name);
 };
 
 }

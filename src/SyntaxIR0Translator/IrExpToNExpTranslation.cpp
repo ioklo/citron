@@ -23,7 +23,7 @@ struct IrBoxRefExpToNExpTranslator : public IrBoxRefExpVisitor
     TranslationContext& context;
 
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<NExp, TValue>
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, NExp>
     void Value(TArgs&&... args)
     {
         *result = context.MakeNExp<TValue>(forward<TArgs>(args)...);
@@ -35,7 +35,7 @@ private:
         *result = unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
     void Error(TArgs&&... args)
     {
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
@@ -77,7 +77,7 @@ struct IrExpToNExpTranslator : public IrExpVisitor
     TranslationContext& context;
 
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<NExp, TValue>
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, NExp>
     void Value(TArgs&&... args)
     {
         *result = context.MakeNExp<TValue>(forward<TArgs>(args)...);
@@ -89,7 +89,7 @@ private:
         *result = unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
     void Error(TArgs&&... args)
     {
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
@@ -172,11 +172,11 @@ public:
 
 } // namespace 
 
-expected<NExp*, DiagPtr> TranslateIrExpToNExp(IrExp& irExp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateIrExpToNExp(IrExp* irExp, TranslationContext& context)
 {
     expected<NExp*, DiagPtr> result;
     IrExpToNExpTranslator translator{&result, context};
-    irExp.Accept(translator);
+    irExp->Accept(translator);
     return result;
 }
 

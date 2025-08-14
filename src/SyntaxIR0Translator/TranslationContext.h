@@ -114,11 +114,11 @@ public:
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* typeExp);
 
 public: // for type rFactory
-    RType* GetType(NLoc& loc);
-    RType* GetType(ReExp& reExp);
-    RType* GetType(NExp& exp);
+    RType* GetType(NLoc* loc);
+    RType* GetType(ReExp* reExp);
+    RType* GetType(NExp* exp);
 
-    RType* GetTargetType(IrExp_BoxRef& boxRef);
+    RType* GetTargetType(IrExp_BoxRef* boxRef);
 
     RTypeArguments* MakeTypeArguments(const std::vector<RType*>& items);
     RTypeArguments* MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1);
@@ -136,6 +136,12 @@ public: // for type rFactory
     RType_Enum* GetBaseEnumType(RType_EnumElem& enumElemType);
 
     std::expected<ImExp*, std::shared_ptr<ResolveIdentifierError>> ResolveIdentifier(RName&& name, RTypeArguments* typeArgs);
+
+    template<typename TNStmt, typename... TArgs> requires std::derived_from<TNStmt, NStmt>
+    constexpr TNStmt* MakeNStmt(TArgs&&... args)
+    {
+        return rFactory->MakeNStmt<TNStmt>(std::forward<TArgs>(args)...);
+    }
 
     template<typename TNExp, typename... TArgs> requires std::derived_from<TNExp, NExp>
     constexpr TNExp* MakeNExp(TArgs&&... args)
@@ -159,6 +165,12 @@ public: // for type rFactory
     constexpr TIrExp* MakeIrExp(TArgs&&... args)
     {
         return srtFactory->MakeIrExp<TIrExp>(std::forward<TArgs>(args)...);
+    }
+
+    template<typename TReExp, typename... TArgs> requires std::derived_from<TReExp, ReExp>
+    constexpr TReExp* MakeReExp(TArgs&&... args)
+    {
+        return srtFactory->MakeReExp<TReExp>(std::forward<TArgs>(args)...);
     }
 
 public: // for BinOpQueryService

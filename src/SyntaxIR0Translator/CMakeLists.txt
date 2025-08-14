@@ -48,6 +48,7 @@ target_sources(SyntaxIR0Translator
         SVarDeclToNStmtsTranslation.cpp
         ScopeContext.cpp
         SkeletonPhaseContext.cpp
+        SRTFactory.cpp
         StructTranslation.cpp
         SyntaxIR0Translator.cpp
         TranslationContext.cpp
@@ -90,6 +91,7 @@ target_sources(SyntaxIR0Translator
         SVarDeclToNStmtsTranslation.h
         ScopeContext.h
         SkeletonPhaseContext.h
+        SRTFactory.h
         StructTranslation.h
         SyntaxIR0Translator-HeaderUnits.h
         SyntaxIR0Translator.h

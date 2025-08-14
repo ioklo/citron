@@ -1,6 +1,7 @@
 #include "RFactory.h"
 
 #include <cassert>
+#include <algorithm>
 
 #include "Infra/Hash.h"
 #include "Infra/Ptr.h"
@@ -11,6 +12,7 @@
 #include "RTypeArguments.h"
 #include "RClassDecl.h"
 
+#include "NModule.h"
 #include "NNamespaceDecl.h"
 #include "NStmt.h"
 #include "NExp.h"
@@ -238,7 +240,15 @@ bool RFactory::IsListType(RType* type, RType** outItemType)
     return true;
 }
 
-NNamespaceDecl* RFactory::NewRootNamespaceDecl()
+NModule* RFactory::MakeNModule(std::string&& name)
+{
+    auto nModule = make_unique<NModule>(std::move(name));
+    auto* pNModule = nModule.get();
+    nModules.push_back(std::move(nModule));
+    return pNModule;
+}
+
+NNamespaceDecl* RFactory::MakeRootNamespaceDecl()
 {
     // root namespace면 
     auto group = GetNamespaceDeclGroup({});
@@ -250,7 +260,7 @@ NNamespaceDecl* RFactory::NewRootNamespaceDecl()
     return pNewDecl;
 }
 
-NNamespaceDecl* RFactory::NewChildNamespaceDecl(NNamespaceDecl* outer, const string& name)
+NNamespaceDecl* RFactory::MakeChildNamespaceDecl(NNamespaceDecl* outer, const string& name)
 {
     assert(outer && !name.empty());
 

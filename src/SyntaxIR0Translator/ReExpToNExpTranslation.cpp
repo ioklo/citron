@@ -9,6 +9,7 @@
 
 #include "ReExp.h"
 #include "ScopeContext.h"
+#include "TranslationContext.h"
 #include "ReExpToNLocTranslation.h"
 
 using namespace std;
@@ -34,77 +35,77 @@ public:
         if (!eLoc)
             *result = unexpected{move(eLoc).error()};
         else
-            *result = MakePtr<NExp_Load>(move(*eLoc));
+            *result = context.MakeNExp<NExp_Load>(move(*eLoc));
     }
 
-    void Visit(ReExp_ThisVar& exp) override
+    void Visit(ReExp_ThisVar* exp) override
     {
-        auto nLoc = TranslateReThisVarExpToNLoc(exp, context);
-        return HandleLoc(move(nLoc));
+        auto eNLoc = TranslateReThisVarExpToNLoc(exp, context);
+        return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_LocalVar& exp) override
+    void Visit(ReExp_LocalVar* exp) override
     {
-        auto nLoc = TranslateReLocalVarExpToNLoc(exp);
-        return HandleLoc(move(nLoc));
+        auto eNLoc = TranslateReLocalVarExpToNLoc(exp, context);
+        return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_LambdaVar& exp) override
+    void Visit(ReExp_LambdaVar* exp) override
     {
-        auto nLoc = TranslateReLambdaVarExpToNLoc(exp);
-        return HandleLoc(move(nLoc));
+        auto eNLoc = TranslateReLambdaVarExpToNLoc(exp, context);
+        return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_ClassVar& exp) override
+    void Visit(ReExp_ClassVar* exp) override
     {
-        auto nLoc = TranslateReClassVarExpToNLoc(exp, context);
-        return HandleLoc(move(nLoc));
+        auto eNLoc = TranslateReClassVarExpToNLoc(exp, context);
+        return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_StructVar& exp) override
+    void Visit(ReExp_StructVar* exp) override
     {
-        auto nLoc = TranslateReStructVarExpToNLoc(exp, context);
-        return HandleLoc(move(nLoc));
+        auto eNLoc = TranslateReStructVarExpToNLoc(exp, context);
+        return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_EnumElemVar& exp) override
+    void Visit(ReExp_EnumElemVar* exp) override
     {
-        auto nLoc = TranslateReEnumElemVarExpToNLoc(exp, context);
-        return HandleLoc(move(nLoc));
+        auto eNLoc = TranslateReEnumElemVarExpToNLoc(exp, context);
+        return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_LocalDeref& exp) override
+    void Visit(ReExp_LocalDeref* exp) override
     {
-        auto nLoc = TranslateReLocalDerefExpToNLoc(exp, context);
-        return HandleLoc(move(nLoc));
+        auto eNLoc = TranslateReLocalDerefExpToNLoc(exp, context);
+        return HandleLoc(move(eNLoc));
     }
 
     // *x
-    void Visit(ReExp_BoxDeref& exp) override
+    void Visit(ReExp_BoxDeref* exp) override
     {
-        auto nLoc = TranslateReBoxDerefExpToNLoc(exp, context);
-        return HandleLoc(move(nLoc));
+        auto eNLoc = TranslateReBoxDerefExpToNLoc(exp, context);
+        return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_ListIndexer& exp) override
+    void Visit(ReExp_ListIndexer* exp) override
     {
-        auto nLoc = TranslateReListIndexerExpToNLoc(exp, context);
-        return HandleLoc(move(nLoc));
+        auto eNLoc = TranslateReListIndexerExpToNLoc(exp, context);
+        return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_Else& exp) override
+    void Visit(ReExp_Else* exp) override
     {
-        *result = exp.nExp;
+        *result = exp->nExp;
     }
 };
 
 } // namespace 
 
-expected<NExp*, DiagPtr> TranslateReExpToNExp(ReExp& reExp, TranslationContext& context)
+expected<NExp*, DiagPtr> TranslateReExpToNExp(ReExp* reExp, TranslationContext& context)
 {
     expected<NExp*, DiagPtr> nExp;
     ReExpToNExpTranslator translator(&nExp, context);
-    reExp.Accept(translator);
+    reExp->Accept(translator);
     return nExp;
 }
 

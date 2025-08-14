@@ -12,6 +12,7 @@ class RNamespaceDeclGroup;
 class RTypeArguments;
 class RFactory;
 
+class NModule;
 class NDecl;
 class NStmt;
 class NExp;
@@ -128,6 +129,7 @@ class RFactory
     // namespace group
     std::unordered_map<std::vector<std::string>, std::unique_ptr<RNamespaceDeclGroup>> nsGroupsMap;
 
+    std::vector<std::unique_ptr<NModule>> nModules;
     std::vector<std::unique_ptr<NDecl>> nDecls;
     std::vector<std::unique_ptr<NStmt>> nStmts;
     std::vector<std::unique_ptr<NExp>> nExps;
@@ -164,8 +166,12 @@ public:
 
     IR0_API bool IsListType(RType* type, RType** outItemType);
 
-    NNamespaceDecl* NewRootNamespaceDecl(); // TU당 하나씩 만들어지는 namespace
-    NNamespaceDecl* NewChildNamespaceDecl(NNamespaceDecl* outer, const std::string& name);
+    NModule* MakeNModule(std::string&& name);
+
+    NNamespaceDecl* MakeRootNamespaceDecl(); // TU당 하나씩 만들어지는 namespace
+    NNamespaceDecl* MakeChildNamespaceDecl(NNamespaceDecl* outer, const std::string& name);
+
+    // Reference Module까지 아우를 수 있는 DeclGroup
     RNamespaceDeclGroup* GetNamespaceDeclGroup(const std::vector<std::string>& name);
 
     template<typename TNDecl, typename... TArgs> requires std::derived_from<TNDecl, NDecl> && (!std::same_as<TNDecl, NNamespaceDecl>)

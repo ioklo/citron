@@ -6,8 +6,8 @@ using namespace std;
 
 namespace Citron {
 
-NModule::NModule(string&& name, NNamespaceDecl* rootNamespace)
-    : name{move(name)}, rootNamespace{rootNamespace}
+NModule::NModule(string&& name)
+    : name{move(name)}
 {
 }
 

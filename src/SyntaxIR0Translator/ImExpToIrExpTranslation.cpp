@@ -32,7 +32,7 @@ struct ImExpToIrExpTranslator : public ImExpVisitor
     }
 
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<IrExp, TValue>
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     void Value(TArgs&&... args)
     {
         *result = context.MakeIrExp<TValue>(forward<TArgs>(args)...);
@@ -44,7 +44,7 @@ private:
         *result = unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
     void Error(TArgs&&... args)
     {
         *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};

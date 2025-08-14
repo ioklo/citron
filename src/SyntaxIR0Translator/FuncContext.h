@@ -82,7 +82,7 @@ public:
     FuncContext_Lambda(const ScopeContextPtr& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
     bool CanAccess(RDecl* target) override;
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& rFactory) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RType* retType) override;

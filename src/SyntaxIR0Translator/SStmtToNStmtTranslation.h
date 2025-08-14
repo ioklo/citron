@@ -16,8 +16,8 @@ namespace SyntaxIR0Translator {
 
 class TranslationContext;
 
-std::expected<void, DiagPtr> TranslateSBodyToNStmts(std::vector<NStmt*>* outStmts, const std::vector<SStmtPtr>& stmts, TranslationContext& context);
-std::expected<std::vector<NStmt*>, DiagPtr> TranslateSBodyToNStmts(const std::vector<SStmtPtr>& stmts, TranslationContext& context);
+std::expected<void, DiagPtr> TranslateSBodyToNStmts(std::vector<NStmt*>* outStmts, const std::vector<SStmt*>& stmts, TranslationContext& context);
+std::expected<std::vector<NStmt*>, DiagPtr> TranslateSBodyToNStmts(const std::vector<SStmt*>& stmts, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron
