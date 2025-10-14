@@ -304,8 +304,8 @@ bool HasConflictTrivialCtor(NStructDecl* nStruct, RStructCtorDecl* rBaseTrivialC
 
 void AddStruct_TrivialCtorPhase(NStructDecl* nStruct)
 {   
-    auto rBaseStruct = nStruct->GetUnboundBaseStruct();
-    RStructCtorDecl* rBaseTrivialCtor;
+    auto* rBaseStruct = nStruct->GetUnboundBaseStruct();
+    RStructCtorDecl* rBaseTrivialCtor = nullptr;
 
     if (rBaseStruct)
     {
