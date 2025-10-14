@@ -4,6 +4,7 @@
 #include <variant>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "NArgument.h"
 
@@ -72,7 +73,6 @@ class RType;
 class RFactory;
 
 class NStmt;
-
 class NLambdaDecl;
 
 class NExpVisitor
@@ -782,5 +782,172 @@ public:
 };
 
 #pragma endregion TypeTest
+
+template<class TFrom, class TVisitor>
+concept NExpConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+
+// TResult타입은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept NExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    { v.Visit(std::declval<NExp_Load*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_Assign*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_Box*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_StaticBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_ClassMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_StructIndirectMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_StructMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_LocalRef*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_BoolLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_IntLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_String*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_List*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_ListIterator*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_CallInternalUnaryOperator*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_CallInternalUnaryAssignOperator*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_CallInternalBinaryOperator*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_CallGlobalFunc*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_NewClass*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_CallClassFunc*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_CastClass*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_NewStruct*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_CallStructFunc*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_NewEnumElem*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_CastEnumElemToEnum*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_NewNullable*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_NullableValueNullLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_NullableRefNullLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_Lambda*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_CallLambda*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_CastBoxedLambdaToFunc*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_InlineBlock*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_ClassIsClass*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_ClassAsClass*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_ClassIsInterface*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_ClassAsInterface*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_InterfaceIsClass*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_InterfaceAsClass*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_InterfaceIsInterface*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_InterfaceAsInterface*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_EnumIsEnumElem*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NExp_EnumAsEnumElem*>(), std::forward<TVisitorArgs>(args)...) } -> NExpConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires NExpVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, NExp* nExp, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : NExpVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(NExp_Load* nExp) override { call(nExp); }
+            void Visit(NExp_Assign* nExp) override { call(nExp); }
+            void Visit(NExp_Box* nExp) override { call(nExp); }
+            void Visit(NExp_StaticBoxRef* nExp) override { call(nExp); }
+            void Visit(NExp_ClassMemberBoxRef* nExp) override { call(nExp); }
+            void Visit(NExp_StructIndirectMemberBoxRef* nExp) override { call(nExp); }
+            void Visit(NExp_StructMemberBoxRef* nExp) override { call(nExp); }
+            void Visit(NExp_LocalRef* nExp) override { call(nExp); }
+            void Visit(NExp_BoolLiteral* nExp) override { call(nExp); }
+            void Visit(NExp_IntLiteral* nExp) override { call(nExp); }
+            void Visit(NExp_String* nExp) override { call(nExp); }
+            void Visit(NExp_List* nExp) override { call(nExp); }
+            void Visit(NExp_ListIterator* nExp) override { call(nExp); }
+            void Visit(NExp_CallInternalUnaryOperator* nExp) override { call(nExp); }
+            void Visit(NExp_CallInternalUnaryAssignOperator* nExp) override { call(nExp); }
+            void Visit(NExp_CallInternalBinaryOperator* nExp) override { call(nExp); }
+            void Visit(NExp_CallGlobalFunc* nExp) override { call(nExp); }
+            void Visit(NExp_NewClass* nExp) override { call(nExp); }
+            void Visit(NExp_CallClassFunc* nExp) override { call(nExp); }
+            void Visit(NExp_CastClass* nExp) override { call(nExp); }
+            void Visit(NExp_NewStruct* nExp) override { call(nExp); }
+            void Visit(NExp_CallStructFunc* nExp) override { call(nExp); }
+            void Visit(NExp_NewEnumElem* nExp) override { call(nExp); }
+            void Visit(NExp_CastEnumElemToEnum* nExp) override { call(nExp); }
+            void Visit(NExp_NewNullable* nExp) override { call(nExp); }
+            void Visit(NExp_NullableValueNullLiteral* nExp) override { call(nExp); }
+            void Visit(NExp_NullableRefNullLiteral* nExp) override { call(nExp); }
+            void Visit(NExp_Lambda* nExp) override { call(nExp); }
+            void Visit(NExp_CallLambda* nExp) override { call(nExp); }
+            void Visit(NExp_CastBoxedLambdaToFunc* nExp) override { call(nExp); }
+            void Visit(NExp_InlineBlock* nExp) override { call(nExp); }
+            void Visit(NExp_ClassIsClass* nExp) override { call(nExp); }
+            void Visit(NExp_ClassAsClass* nExp) override { call(nExp); }
+            void Visit(NExp_ClassIsInterface* nExp) override { call(nExp); }
+            void Visit(NExp_ClassAsInterface* nExp) override { call(nExp); }
+            void Visit(NExp_InterfaceIsClass* nExp) override { call(nExp); }
+            void Visit(NExp_InterfaceAsClass* nExp) override { call(nExp); }
+            void Visit(NExp_InterfaceIsInterface* nExp) override { call(nExp); }
+            void Visit(NExp_InterfaceAsInterface* nExp) override { call(nExp); }
+            void Visit(NExp_EnumIsEnumElem* nExp) override { call(nExp); }
+            void Visit(NExp_EnumAsEnumElem* nExp) override { call(nExp); }
+        };
+
+        Bridge bridge{caller};
+        nExp->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : NExpVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(NExp_Load* nExp) override { call(nExp); }
+            void Visit(NExp_Assign* nExp) override { call(nExp); }
+            void Visit(NExp_Box* nExp) override { call(nExp); }
+            void Visit(NExp_StaticBoxRef* nExp) override { call(nExp); }
+            void Visit(NExp_ClassMemberBoxRef* nExp) override { call(nExp); }
+            void Visit(NExp_StructIndirectMemberBoxRef* nExp) override { call(nExp); }
+            void Visit(NExp_StructMemberBoxRef* nExp) override { call(nExp); }
+            void Visit(NExp_LocalRef* nExp) override { call(nExp); }
+            void Visit(NExp_BoolLiteral* nExp) override { call(nExp); }
+            void Visit(NExp_IntLiteral* nExp) override { call(nExp); }
+            void Visit(NExp_String* nExp) override { call(nExp); }
+            void Visit(NExp_List* nExp) override { call(nExp); }
+            void Visit(NExp_ListIterator* nExp) override { call(nExp); }
+            void Visit(NExp_CallInternalUnaryOperator* nExp) override { call(nExp); }
+            void Visit(NExp_CallInternalUnaryAssignOperator* nExp) override { call(nExp); }
+            void Visit(NExp_CallInternalBinaryOperator* nExp) override { call(nExp); }
+            void Visit(NExp_CallGlobalFunc* nExp) override { call(nExp); }
+            void Visit(NExp_NewClass* nExp) override { call(nExp); }
+            void Visit(NExp_CallClassFunc* nExp) override { call(nExp); }
+            void Visit(NExp_CastClass* nExp) override { call(nExp); }
+            void Visit(NExp_NewStruct* nExp) override { call(nExp); }
+            void Visit(NExp_CallStructFunc* nExp) override { call(nExp); }
+            void Visit(NExp_NewEnumElem* nExp) override { call(nExp); }
+            void Visit(NExp_CastEnumElemToEnum* nExp) override { call(nExp); }
+            void Visit(NExp_NewNullable* nExp) override { call(nExp); }
+            void Visit(NExp_NullableValueNullLiteral* nExp) override { call(nExp); }
+            void Visit(NExp_NullableRefNullLiteral* nExp) override { call(nExp); }
+            void Visit(NExp_Lambda* nExp) override { call(nExp); }
+            void Visit(NExp_CallLambda* nExp) override { call(nExp); }
+            void Visit(NExp_CastBoxedLambdaToFunc* nExp) override { call(nExp); }
+            void Visit(NExp_InlineBlock* nExp) override { call(nExp); }
+            void Visit(NExp_ClassIsClass* nExp) override { call(nExp); }
+            void Visit(NExp_ClassAsClass* nExp) override { call(nExp); }
+            void Visit(NExp_ClassIsInterface* nExp) override { call(nExp); }
+            void Visit(NExp_ClassAsInterface* nExp) override { call(nExp); }
+            void Visit(NExp_InterfaceIsClass* nExp) override { call(nExp); }
+            void Visit(NExp_InterfaceAsClass* nExp) override { call(nExp); }
+            void Visit(NExp_InterfaceIsInterface* nExp) override { call(nExp); }
+            void Visit(NExp_InterfaceAsInterface* nExp) override { call(nExp); }
+            void Visit(NExp_EnumIsEnumElem* nExp) override { call(nExp); }
+            void Visit(NExp_EnumAsEnumElem* nExp) override { call(nExp); }
+        };
+
+        Bridge bridge{caller};
+        nExp->Accept(bridge);
+        return *bridge.result;
+    }
+}
 
 }

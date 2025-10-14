@@ -19,83 +19,86 @@ namespace Citron::SyntaxIR0Translator {
 namespace {
 
 // 기본적으로 load를 한다
-class ReExpToNExpTranslator : public ReExpVisitor
-{   
-    expected<NExp*, DiagPtr>* result;
+class ReExpToNExpTranslator
+{
+public:
+    using ResultType = expected<NExp*, DiagPtr>;
+
+private:
     TranslationContext& context;
 
 public:
-    ReExpToNExpTranslator(expected<NExp*, DiagPtr>* result, TranslationContext& context)
-        : result(result), context(context)
+    ReExpToNExpTranslator(TranslationContext& context)
+        : context(context)
     {
     }
 
-    void HandleLoc(expected<NLoc*, DiagPtr>&& eLoc)
+    ResultType HandleLoc(expected<NLoc*, DiagPtr>&& eLoc)
     {
         if (!eLoc)
-            *result = unexpected{move(eLoc).error()};
+            return unexpected{move(eLoc).error()};
         else
-            *result = context.MakeNExp<NExp_Load>(*eLoc);
+            return context.MakeNExp<NExp_Load>(*eLoc);
     }
 
-    void Visit(ReExp_ThisVar* exp) override
+    ResultType Visit(ReExp_ThisVar* exp)
     {
         auto eNLoc = TranslateReThisVarExpToNLoc(exp, context);
         return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_LocalVar* exp) override
+    ResultType Visit(ReExp_LocalVar* exp)
     {
         auto eNLoc = TranslateReLocalVarExpToNLoc(exp, context);
         return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_LambdaVar* exp) override
+    ResultType Visit(ReExp_LambdaVar* exp)
     {
         auto eNLoc = TranslateReLambdaVarExpToNLoc(exp, context);
         return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_ClassVar* exp) override
+    ResultType Visit(ReExp_ClassVar* exp)
     {
         auto eNLoc = TranslateReClassVarExpToNLoc(exp, context);
         return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_StructVar* exp) override
+    ResultType Visit(ReExp_StructVar* exp)
     {
         auto eNLoc = TranslateReStructVarExpToNLoc(exp, context);
         return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_EnumElemVar* exp) override
+    ResultType Visit(ReExp_EnumElemVar* exp)
     {
         auto eNLoc = TranslateReEnumElemVarExpToNLoc(exp, context);
         return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_LocalDeref* exp) override
+    ResultType Visit(ReExp_LocalDeref* exp)
     {
         auto eNLoc = TranslateReLocalDerefExpToNLoc(exp, context);
         return HandleLoc(move(eNLoc));
     }
 
     // *x
-    void Visit(ReExp_BoxDeref* exp) override
+    ResultType Visit(ReExp_BoxDeref* exp)
     {
         auto eNLoc = TranslateReBoxDerefExpToNLoc(exp, context);
         return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_ListIndexer* exp) override
+    ResultType Visit(ReExp_ListIndexer* exp)
     {
         auto eNLoc = TranslateReListIndexerExpToNLoc(exp, context);
         return HandleLoc(move(eNLoc));
     }
 
-    void Visit(ReExp_Else* exp) override
+    ResultType Visit(ReExp_Else* exp)
     {
-        *result = exp->nExp;
+        return exp->nExp;
     }
 };
 
@@ -103,10 +106,8 @@ public:
 
 expected<NExp*, DiagPtr> TranslateReExpToNExp(ReExp* reExp, TranslationContext& context)
 {
-    expected<NExp*, DiagPtr> nExp;
-    ReExpToNExpTranslator translator(&nExp, context);
-    reExp->Accept(translator);
-    return nExp;
+    ReExpToNExpTranslator translator{context};
+    return Accept(translator, reExp);
 }
 
 }

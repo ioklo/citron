@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <memory>
 
 namespace Citron {
@@ -282,6 +283,142 @@ public:
     IrExp_DerefedBoxValue(NLoc* innerLoc);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
+
+
+template<class TFrom, class TVisitor>
+concept IrBoxRefExpConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+
+// TResult타입은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept IrBoxRefExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    { v.Visit(std::declval<IrExp_BoxRef_ClassMember*>(), std::forward<TVisitorArgs>(args)...) } -> IrBoxRefExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_BoxRef_StructIndirectMember*>(), std::forward<TVisitorArgs>(args)...) } -> IrBoxRefExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_BoxRef_StructMember*>(), std::forward<TVisitorArgs>(args)...) } -> IrBoxRefExpConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires IrBoxRefExpVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, IrExp_BoxRef* irExp, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // using TResult = decltype(v.Visit(std::declval<MNamespaceDecl*>(), std::forward<U>(u)...));
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : IrBoxRefExpVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(IrExp_BoxRef_ClassMember* irBoxRefExp) override { call(irBoxRefExp); }
+            void Visit(IrExp_BoxRef_StructIndirectMember* irBoxRefExp) override { call(irBoxRefExp); }
+            void Visit(IrExp_BoxRef_StructMember* irBoxRefExp) override { call(irBoxRefExp); }
+        };
+
+        Bridge bridge{caller};
+        irExp->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : IrBoxRefExpVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(IrExp_BoxRef_ClassMember* irBoxRefExp) override { result.emplace(call(irBoxRefExp)); }
+            void Visit(IrExp_BoxRef_StructIndirectMember* irBoxRefExp) override { result.emplace(call(irBoxRefExp)); }
+            void Visit(IrExp_BoxRef_StructMember* irBoxRefExp) override { result.emplace(call(irBoxRefExp)); }
+        };
+
+        Bridge bridge{caller};
+        irExp->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
+
+template<class TFrom, class TVisitor>
+concept IrExpConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+
+// TResult타입은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept IrExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args) {
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    { v.Visit(std::declval<IrExp_Namespace*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_TypeVar*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_Class*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_Struct*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_Enum*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_ThisVar*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_StaticRef*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_BoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_LocalRef*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_DerefedBoxValue*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_LocalValue*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires IrExpVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, IrExp* irExp, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // using TResult = decltype(v.Visit(std::declval<MNamespaceDecl*>(), std::forward<U>(u)...));
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : IrExpVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(IrExp_Namespace* irExp) override { call(irExp); }
+            void Visit(IrExp_TypeVar* irExp) override { call(irExp); }
+            void Visit(IrExp_Class* irExp) override { call(irExp); }
+            void Visit(IrExp_Struct* irExp) override { call(irExp); }
+            void Visit(IrExp_Enum* irExp) override { call(irExp); }
+            void Visit(IrExp_ThisVar* irExp) override { call(irExp); }
+            void Visit(IrExp_StaticRef* irExp) override { call(irExp); }
+            void Visit(IrExp_BoxRef* irExp) override { call(irExp); }
+            void Visit(IrExp_LocalRef* irExp) override { call(irExp); }
+            void Visit(IrExp_DerefedBoxValue* irExp) override { call(irExp); }
+            void Visit(IrExp_LocalValue* irExp) override { call(irExp); }
+        };
+
+        Bridge bridge{caller};
+        irExp->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : IrExpVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(IrExp_Namespace* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_TypeVar* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_Class* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_Struct* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_Enum* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_ThisVar* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_StaticRef* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_BoxRef* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_LocalRef* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_DerefedBoxValue* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_LocalValue* irExp) override { result.emplace(call(irExp)); }
+        };
+
+        Bridge bridge{caller};
+        irExp->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

@@ -5,6 +5,7 @@
 #include <variant>
 #include <vector>
 #include <string>
+#include <optional>
 
 #include "RNames.h"
 #include "NArgument.h"
@@ -337,5 +338,124 @@ public:
     IR0_API NStmt_StaticUnknownNullDirective();
     void Accept(NStmtVisitor& visitor) override { visitor.Visit(this); }
 };
+
+template<class TFrom, class TVisitor>
+concept NStmtConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+
+// TResult타입은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept NStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    { v.Visit(std::declval<NStmt_Command*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_LocalVarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_If*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_IfNullableRefTest*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_IfNullableValueTest*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_For*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Continue*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Break*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Return*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Block*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Blank*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Exp*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Task*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Await*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Async*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Foreach*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_ForeachCast*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_Yield*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_CallClassCtor*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_CallStructCtor*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_NullDirective*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_NotNullDirective*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_StaticNullDirective*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_StaticNotNullDirective*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<NStmt_StaticUnknownNullDirective*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires NStmtVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, NStmt* nStmt, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : NStmtVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(NStmt_Command* nStmt) override { call(nStmt); }
+            void Visit(NStmt_LocalVarDecl* nStmt) override { call(nStmt); }
+            void Visit(NStmt_If* nStmt) override { call(nStmt); }
+            void Visit(NStmt_IfNullableRefTest* nStmt) override { call(nStmt); }
+            void Visit(NStmt_IfNullableValueTest* nStmt) override { call(nStmt); }
+            void Visit(NStmt_For* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Continue* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Break* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Return* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Block* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Blank* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Exp* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Task* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Await* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Async* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Foreach* nStmt) override { call(nStmt); }
+            void Visit(NStmt_ForeachCast* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Yield* nStmt) override { call(nStmt); }
+            void Visit(NStmt_CallClassCtor* nStmt) override { call(nStmt); }
+            void Visit(NStmt_CallStructCtor* nStmt) override { call(nStmt); }
+            void Visit(NStmt_NullDirective* nStmt) override { call(nStmt); }
+            void Visit(NStmt_NotNullDirective* nStmt) override { call(nStmt); }
+            void Visit(NStmt_StaticNullDirective* nStmt) override { call(nStmt); }
+            void Visit(NStmt_StaticNotNullDirective* nStmt) override { call(nStmt); }
+            void Visit(NStmt_StaticUnknownNullDirective* nStmt) override { call(nStmt); }
+        };
+
+        Bridge bridge{caller};
+        nStmt->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : NStmtVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(NStmt_Command* nStmt) override { call(nStmt); }
+            void Visit(NStmt_LocalVarDecl* nStmt) override { call(nStmt); }
+            void Visit(NStmt_If* nStmt) override { call(nStmt); }
+            void Visit(NStmt_IfNullableRefTest* nStmt) override { call(nStmt); }
+            void Visit(NStmt_IfNullableValueTest* nStmt) override { call(nStmt); }
+            void Visit(NStmt_For* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Continue* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Break* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Return* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Block* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Blank* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Exp* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Task* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Await* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Async* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Foreach* nStmt) override { call(nStmt); }
+            void Visit(NStmt_ForeachCast* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Yield* nStmt) override { call(nStmt); }
+            void Visit(NStmt_CallClassCtor* nStmt) override { call(nStmt); }
+            void Visit(NStmt_CallStructCtor* nStmt) override { call(nStmt); }
+            void Visit(NStmt_NullDirective* nStmt) override { call(nStmt); }
+            void Visit(NStmt_NotNullDirective* nStmt) override { call(nStmt); }
+            void Visit(NStmt_StaticNullDirective* nStmt) override { call(nStmt); }
+            void Visit(NStmt_StaticNotNullDirective* nStmt) override { call(nStmt); }
+            void Visit(NStmt_StaticUnknownNullDirective* nStmt) override { call(nStmt); }
+        };
+
+        Bridge bridge{caller};
+        nStmt->Accept(bridge);
+        return *bridge.result;
+    }
+}
 
 }

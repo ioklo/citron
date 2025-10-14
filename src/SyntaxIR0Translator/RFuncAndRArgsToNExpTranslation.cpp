@@ -22,9 +22,10 @@ class TranslationContext;
 
 namespace {
 
-class RFuncAndRArgsToNExpTranslator : public RFuncDeclVisitor
+class RFuncAndRArgsToNExpTranslator
 {
-    expected<NExp*, DiagPtr>* result;
+public:
+    using ResultType = expected<NExp*, DiagPtr>;
     
     RTypeArguments* typeArgs;
     NLoc* instance;
@@ -34,55 +35,55 @@ class RFuncAndRArgsToNExpTranslator : public RFuncDeclVisitor
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, NExp>
-    void Value(TArgs&&... args)
+    ResultType Value(TArgs&&... args)
     {
-        *result = context.MakeNExp<TValue>(forward<TArgs>(args)...);
+        return context.MakeNExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    void Error(TArgs&&... args)
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
-    RFuncAndRArgsToNExpTranslator(expected<NExp*, DiagPtr>* result, RTypeArguments* typeArgs, NLoc* instance, vector<NArgument>&& args, TranslationContext& context)
-        : result{result}, typeArgs{typeArgs}, instance{instance}, args{move(args)}, context{context}
+    RFuncAndRArgsToNExpTranslator(RTypeArguments* typeArgs, NLoc* instance, vector<NArgument>&& args, TranslationContext& context)
+        : typeArgs{typeArgs}, instance{instance}, args{move(args)}, context{context}
     {
     }
 
-    void Visit(RGlobalFuncDecl* func) override 
-    {
-        throw NotImplementedException{};
-    }
-
-    void Visit(RClassCtorDecl* func) override 
+    ResultType Visit(RGlobalFuncDecl* func) 
     {
         throw NotImplementedException{};
     }
 
-    void Visit(RClassFuncDecl* func) override 
+    ResultType Visit(RClassCtorDecl* func) 
+    {
+        throw NotImplementedException{};
+    }
+
+    ResultType Visit(RClassFuncDecl* func) 
     {
         return Value<NExp_CallClassFunc>(func, typeArgs, instance, move(args));
     }
 
-    void Visit(RStructCtorDecl* func) override 
+    ResultType Visit(RStructCtorDecl* func) 
     {
         throw NotImplementedException{};
     }
 
-    void Visit(RStructFuncDecl* func) override 
+    ResultType Visit(RStructFuncDecl* func) 
     {   
         return Value<NExp_CallStructFunc>(func, typeArgs, instance, move(args));
     }
 
-    void Visit(RLambdaDecl* func) override 
+    ResultType Visit(RLambdaDecl* func) 
     {
         throw NotImplementedException{};
     }
@@ -92,11 +93,8 @@ public:
 
 expected<NExp*, DiagPtr> TranslateRFuncAndNArgsToNExp(RFuncDecl* decl, RTypeArguments* typeArgs, NLoc* instance, vector<NArgument>&& args, TranslationContext& context)
 {
-    expected<NExp*, DiagPtr> exp;
-    RFuncAndRArgsToNExpTranslator binder{&exp, typeArgs, instance, move(args), context};
-    decl->Accept(binder);
-    return exp;
+    RFuncAndRArgsToNExpTranslator binder{typeArgs, instance, move(args), context};
+    return Accept(binder, decl);
 }
-
 
 }

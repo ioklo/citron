@@ -37,10 +37,12 @@ namespace Citron::SyntaxIR0Translator {
 
 namespace {
 // (IntermediateExp, Args) -> TranslationResult<IR0ExpResult>
-class ImCallableAndSArgsToNExpTranslator : public ImExpVisitor
+class ImCallableAndSArgsToNExpTranslator
 {
-    expected<NExp*, DiagPtr>* result;
+public:
+    using ResultType = expected<NExp*, DiagPtr>;
 
+private:
     SExp* sCallable;
     SArguments* sArgs;
 
@@ -50,32 +52,32 @@ class ImCallableAndSArgsToNExpTranslator : public ImExpVisitor
     // S.ISyntaxNode nodeForCallableErrorReport;
 
 public:
-    ImCallableAndSArgsToNExpTranslator(expected<NExp*, DiagPtr>* result, SExp* sCallable, SArguments* sArgs, TranslationContext& context)
-        : result(result), sCallable(sCallable), sArgs(sArgs), context(context)
+    ImCallableAndSArgsToNExpTranslator(SExp* sCallable, SArguments* sArgs, TranslationContext& context)
+        : sCallable(sCallable), sArgs(sArgs), context(context)
     {
     }
 
 private:
     template<typename TNExp, typename... TArgs> requires std::derived_from<TNExp, NExp>
-    constexpr void Exp(TArgs&&... args)
+    constexpr ResultType Exp(TArgs&&... args)
     {
-        *result = context.MakeNExp<TNExp>(std::forward<TArgs>(args)...);
+        return context.MakeNExp<TNExp>(std::forward<TArgs>(args)...);
     }
     
     template<typename TValue>
-    constexpr void Error(expected<TValue, DiagPtr>&& e)
+    constexpr ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    constexpr void Error(TArgs&&... args)
+    constexpr ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
     // CallExp 분석에서 Callable이 Lambda, func<>로 계산되는 경우
-    void HandleLoc(ImExp* imExp)
+    ResultType HandleLoc(ImExp* imExp)
     {
         auto eReExp = TranslateImExpToReExp(imExp, context);
         if (!eReExp)
@@ -117,12 +119,12 @@ private:
     }
 
 public:
-    void Visit(ImExp_Namespace* imExp) override
+    ResultType Visit(ImExp_Namespace* imExp)
     {
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
-    void Visit(ImExp_GlobalFuncs* imExp) override
+    ResultType Visit(ImExp_GlobalFuncs* imExp)
     {
         auto match = MatchFunc(imExp->items, sArgs, context);
         if (!match)
@@ -133,17 +135,17 @@ public:
         return Exp<NExp_CallGlobalFunc>(match->funcDecl, match->typeArgs, match->args);
     }
 
-    void Visit(ImExp_TypeVar* imExp) override
+    ResultType Visit(ImExp_TypeVar* imExp)
     {
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
-    void Visit(ImExp_Class* imExp) override
+    ResultType Visit(ImExp_Class* imExp)
     {
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
-    void Visit(ImExp_ClassFuncs* imExp) override
+    ResultType Visit(ImExp_ClassFuncs* imExp)
     {
         auto match = MatchFunc(imExp->items, sArgs, context);
         if (!match)
@@ -202,7 +204,7 @@ public:
         //}
     }
 
-    void Visit(ImExp_Struct* imExp) override
+    ResultType Visit(ImExp_Struct* imExp)
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
@@ -224,7 +226,7 @@ public:
         return Exp<NExp_NewStruct>(match->funcDecl, match->typeArgs, move(match->args));
     }
 
-    void Visit(ImExp_StructFuncs* imExp) override
+    ResultType Visit(ImExp_StructFuncs* imExp)
     {
         auto match = MatchFunc(imExp->items, sArgs, context);
         if (!match)
@@ -285,12 +287,12 @@ public:
         //}
     }
 
-    void Visit(ImExp_Enum* imExp) override
+    ResultType Visit(ImExp_Enum* imExp)
     {
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
-    void Visit(ImExp_EnumElem* imExp) override
+    ResultType Visit(ImExp_EnumElem* imExp)
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         if (imExp->decl->IsStandalone())
@@ -313,53 +315,53 @@ public:
         return Exp<NExp_NewEnumElem>(imExp->decl, match->typeArgs, move(match->args));
     }
 
-    void Visit(ImExp_ThisVar* imExp) override
+    ResultType Visit(ImExp_ThisVar* imExp)
     {
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
-    void Visit(ImExp_LocalVar* imExp) override
+    ResultType Visit(ImExp_LocalVar* imExp)
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_LambdaVar* imExp) override
+    ResultType Visit(ImExp_LambdaVar* imExp)
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_ClassVar* imExp) override
+    ResultType Visit(ImExp_ClassVar* imExp)
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_StructVar* imExp) override
+    ResultType Visit(ImExp_StructVar* imExp)
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_EnumElemVar* imExp) override
+    ResultType Visit(ImExp_EnumElemVar* imExp)
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_ListIndexer* imExp) override
+    ResultType Visit(ImExp_ListIndexer* imExp)
     {
         // l[0]
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_LocalDeref* imExp) override
+    ResultType Visit(ImExp_LocalDeref* imExp)
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_BoxDeref* imExp) override
+    ResultType Visit(ImExp_BoxDeref* imExp)
     {
         return HandleLoc(imExp);
     }
 
-    void Visit(ImExp_Else* imExp) override
+    ResultType Visit(ImExp_Else* imExp)
     {
         return HandleLoc(imExp);
     }
@@ -390,11 +392,8 @@ expected<NExp*, DiagPtr> TranslateImCallableAndSArgsToNExp(ImExp* imCallable, SE
     // 함수 이름을 먼저 찾는가
     // Argument 타입을 먼저 알아내야 하는가
     // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
-
-    expected<NExp*, DiagPtr> result;
-    ImCallableAndSArgsToNExpTranslator binder{&result, sCallable, sArgs, context};
-    imCallable->Accept(binder);
-    return result;
+    ImCallableAndSArgsToNExpTranslator binder{sCallable, sArgs, context};
+    return Accept(binder, imCallable);
 }
 
 } // namespace Citron::SyntaxIR0Translator

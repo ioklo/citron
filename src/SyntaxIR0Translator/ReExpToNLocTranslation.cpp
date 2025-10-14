@@ -129,75 +129,76 @@ expected<NLoc*, DiagPtr> TranslateReBoxDerefExpToNLoc(ReExp_BoxDeref* reExp, Tra
 
 namespace {
 
-class ReExpToNLocTranslator : public ReExpVisitor
+class ReExpToNLocTranslator
 {
-    expected<NLoc*, DiagPtr>* result;
+public:
+    using ResultType = expected<NLoc*, DiagPtr>;
+
+private:
     bool bWrapExpAsLoc;
     IDesignatedDiagnostic* notLocationDiag;
-    
-
     TranslationContext& context;
 
 public:
-    ReExpToNLocTranslator(expected<NLoc*, DiagPtr>* result, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
-        : result(result), bWrapExpAsLoc(bWrapExpAsLoc), notLocationDiag(notLocationDiag), context(context)
+    ReExpToNLocTranslator(bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
+        : bWrapExpAsLoc(bWrapExpAsLoc), notLocationDiag(notLocationDiag), context(context)
     {
     }
 
-    void Visit(ReExp_ThisVar* exp) override
+    ResultType Visit(ReExp_ThisVar* exp)
     {
-        *result = TranslateReThisVarExpToNLoc(exp, context);
+        return TranslateReThisVarExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_LocalVar* exp) override
+    ResultType Visit(ReExp_LocalVar* exp)
     {
-        *result = TranslateReLocalVarExpToNLoc(exp, context);
+        return TranslateReLocalVarExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_LambdaVar* exp) override
+    ResultType Visit(ReExp_LambdaVar* exp)
     {
-        *result = TranslateReLambdaVarExpToNLoc(exp, context);
+        return TranslateReLambdaVarExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_ClassVar* exp) override
+    ResultType Visit(ReExp_ClassVar* exp)
     {
-        *result = TranslateReClassVarExpToNLoc(exp, context);
+        return TranslateReClassVarExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_StructVar* exp) override
+    ResultType Visit(ReExp_StructVar* exp)
     {
-        *result = TranslateReStructVarExpToNLoc(exp, context);
+        return TranslateReStructVarExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_EnumElemVar* exp) override
+    ResultType Visit(ReExp_EnumElemVar* exp)
     {
-        *result = TranslateReEnumElemVarExpToNLoc(exp, context);
+        return TranslateReEnumElemVarExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_LocalDeref* exp) override
+    ResultType Visit(ReExp_LocalDeref* exp)
     {
-        *result = TranslateReLocalDerefExpToNLoc(exp, context);
+        return TranslateReLocalDerefExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_BoxDeref* exp) override
+    ResultType Visit(ReExp_BoxDeref* exp)
     {
-        *result = TranslateReBoxDerefExpToNLoc(exp, context);
+        return TranslateReBoxDerefExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_ListIndexer* exp) override
+    ResultType Visit(ReExp_ListIndexer* exp)
     {
-        *result = TranslateReListIndexerExpToNLoc(exp, context);
+        return TranslateReListIndexerExpToNLoc(exp, context);
     }
 
-    void Visit(ReExp_Else* exp) override
+    ResultType Visit(ReExp_Else* exp)
     {
         if (bWrapExpAsLoc)
         {
-            *result = context.MakeNLoc<NLoc_Temp>(exp->nExp);
+            return context.MakeNLoc<NLoc_Temp>(exp->nExp);
         }
         else
         {
-            *result = unexpected{notLocationDiag->MakeDiag()};
+            return unexpected{notLocationDiag->MakeDiag()};
         }
     }
 };
@@ -206,10 +207,8 @@ public:
 
 expected<NLoc*, DiagPtr> TranslateReExpToNLoc(ReExp* reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
 {
-    expected<NLoc*, DiagPtr> nLoc;
-    ReExpToNLocTranslator translator{&nLoc, bWrapExpAsLoc, notLocationDiag, context};
-    reExp->Accept(translator);
-    return nLoc;
+    ReExpToNLocTranslator translator{bWrapExpAsLoc, notLocationDiag, context};
+    return Accept(translator, reExp);
 }
 
 }

@@ -21,104 +21,104 @@ namespace Citron::SyntaxIR0Translator {
 
 namespace {
 
-struct ImExpToIrExpTranslator : public ImExpVisitor
+struct ImExpToIrExpTranslator
 {
-    expected<IrExp*, DiagPtr>* result;
+    using ResultType = expected<IrExp*, DiagPtr>;
     TranslationContext& context;
 
-    ImExpToIrExpTranslator(expected<IrExp*, DiagPtr>* result, TranslationContext& context)
-        : result(result), context(context)
+    ImExpToIrExpTranslator(TranslationContext& context)
+        : context(context)
     {
     }
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
-    void Value(TArgs&&... args)
+    constexpr ResultType Value(TArgs&&... args)
     {
-        *result = context.MakeIrExp<TValue>(forward<TArgs>(args)...);
+        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    constexpr ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    void Error(TArgs&&... args)
+    constexpr ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
-    void Visit(ImExp_Namespace* imExp) override
+    ResultType Visit(ImExp_Namespace* imExp)
     {
         return Value<IrExp_Namespace>(imExp->_namespace);
     }
 
-    void Visit(ImExp_GlobalFuncs* imExp) override
+    ResultType Visit(ImExp_GlobalFuncs* imExp)
     {
         // Intermediate Exp -> Intermediate Ref Exp
         return Error<Error_NotImplemented>();
     }
 
-    void Visit(ImExp_TypeVar* imExp) override
+    ResultType Visit(ImExp_TypeVar* imExp)
     {
         return Value<IrExp_TypeVar>(imExp->type);
     }
 
-    void Visit(ImExp_Class* imExp) override
+    ResultType Visit(ImExp_Class* imExp)
     {
         return Value<IrExp_Class>(imExp->classDecl, imExp->typeArgs);
     }
 
-    void Visit(ImExp_ClassFuncs* imExp) override
+    ResultType Visit(ImExp_ClassFuncs* imExp)
     {
         return Error<Error_NotImplemented>();
     }
 
-    void Visit(ImExp_Struct* imExp) override
+    ResultType Visit(ImExp_Struct* imExp)
     {
         return Value<IrExp_Struct>(imExp->structDecl, imExp->typeArgs);
     }
 
-    void Visit(ImExp_StructFuncs* imExp) override
+    ResultType Visit(ImExp_StructFuncs* imExp)
     {
         return Error<Error_NotImplemented>();
     }
 
-    void Visit(ImExp_Enum* imExp) override
+    ResultType Visit(ImExp_Enum* imExp)
     {
         return Value<IrExp_Enum>(imExp->decl, imExp->typeArgs);
     }
 
-    void Visit(ImExp_EnumElem* imExp) override
+    ResultType Visit(ImExp_EnumElem* imExp)
     {
         return Error<Error_NotImplemented>();
     }
 
     // &this   -> invalid
     // &this.a -> valid, box ptr
-    void Visit(ImExp_ThisVar* imExp) override
+    ResultType Visit(ImExp_ThisVar* imExp)
     {
         return Value<IrExp_ThisVar>(imExp->type);
     }
 
     // &id
-    void Visit(ImExp_LocalVar* imExp) override
+    ResultType Visit(ImExp_LocalVar* imExp)
     {
         return Value<IrExp_LocalRef>(context.MakeNLoc<NLoc_LocalVar>(RName_Normal(imExp->name), imExp->type));
     }
 
     // &x
-    void Visit(ImExp_LambdaVar* imExp) override
+    ResultType Visit(ImExp_LambdaVar* imExp)
     {
         // TODO: [10] box lambda이면 box로 판단해야 한다
         return Value<IrExp_LocalRef>(context.MakeNLoc<NLoc_LambdaVar>(imExp->decl, imExp->typeArgs));
     }
 
     // x (C.x, this.x)
-    void Visit(ImExp_ClassVar* imExp) override
+    ResultType Visit(ImExp_ClassVar* imExp)
     {
         if (imExp->decl->IsStatic()) // &C.x
         {
@@ -132,7 +132,7 @@ public:
     }
 
     // x (S.x, this->x)
-    void Visit(ImExp_StructVar* imExp) override
+    ResultType Visit(ImExp_StructVar* imExp)
     {
         if (imExp->decl->IsStatic())
         {
@@ -148,31 +148,31 @@ public:
     }
 
     // &x (E.First.x)    
-    void Visit(ImExp_EnumElemVar* imExp) override
+    ResultType Visit(ImExp_EnumElemVar* imExp)
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException{};
     }
 
-    void Visit(ImExp_ListIndexer* imExp) override
+    ResultType Visit(ImExp_ListIndexer* imExp)
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException{};
     }
 
-    void Visit(ImExp_LocalDeref* imExp) override
+    ResultType Visit(ImExp_LocalDeref* imExp)
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException{};
     }
 
-    void Visit(ImExp_BoxDeref* imExp) override
+    ResultType Visit(ImExp_BoxDeref* imExp)
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException{};
     }
 
-    void Visit(ImExp_Else* imExp) override
+    ResultType Visit(ImExp_Else* imExp)
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException{};
@@ -183,11 +183,8 @@ public:
 
 expected<IrExp*, DiagPtr> TranslateImExpToIrExp(ImExp* imExp, TranslationContext& context)
 {
-    expected<IrExp*, DiagPtr> result;
-    ImExpToIrExpTranslator translator(&result, context);
-    imExp->Accept(translator);
-
-    return result;
+    ImExpToIrExpTranslator translator{context};
+    return Accept(translator, imExp);
 }
 
 } // namespace Citron::SyntaxIR0Translation

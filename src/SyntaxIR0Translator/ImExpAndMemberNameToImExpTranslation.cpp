@@ -5,7 +5,6 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
-#include "Logging/Logger.h"
 #include "IR0/RMember.h"
 #include "IR0/RClassDecl.h"
 #include "IR0/RClassVarDecl.h"
@@ -18,10 +17,8 @@
 
 #include "SRTFactory.h"
 #include "TranslationContext.h"
-#include "FuncContext.h"
 #include "ScopeContext.h"
 #include "ImExp.h"
-#include "ReExp.h"
 #include "ImExpToReExpTranslation.h"
 
 using namespace std;
@@ -335,152 +332,153 @@ public:
 
 // MemberParent And Id Binder
 // (IntermediateExp, name, typeArgs) -> IntermediateExp
-class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
+class ImExpAndMemberNameToImExpTranslator
 {
-    expected<ImExp*, DiagPtr>* result;
+public:
+    using ResultType = expected<ImExp*, DiagPtr>;
+
+private:
     string name;
     RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    void Error(TArgs&&... args)
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
-    void TranslateStaticParent(RDecl* decl, RTypeArguments* typeArgs)
+    ResultType TranslateStaticParent(RDecl* decl, RTypeArguments* typeArgs)
     {
         auto oMember = decl->GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
         StaticParentTranslator binder{typeArgsExceptOuter, context};
-        *result = visit(binder, *oMember);
+        return visit(binder, *oMember);
     }
 
-    void TranslateInstanceParent(ImExp* imExp)
+    ResultType TranslateInstanceParent(ImExp* imExp)
     {
         auto eReInstExp = TranslateImExpToReExp(imExp, context);
         if (!eReInstExp)
         {
-            *result = unexpected{move(eReInstExp).error()};
-            return;
+            return unexpected{move(eReInstExp).error()};
         }
 
         auto type = context.GetType(*eReInstExp);
         auto oMember = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
         if (!oMember)
         {
-            *result = unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
-            return;
+            return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
         }
 
         InstanceParentTranslator binder(*eReInstExp, typeArgsExceptOuter, context);
-        *result = visit(binder, *oMember);
+        return visit(binder, *oMember);
     }
 
 public:
-    ImExpAndMemberNameToImExpTranslator(expected<ImExp*, DiagPtr>* result, const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : result(result), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    ImExpAndMemberNameToImExpTranslator(const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+        : name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
 
-    void Visit(ImExp_Namespace* imExp) override
+    ResultType Visit(ImExp_Namespace* imExp)
     {
         return TranslateStaticParent(imExp->_namespace, context.MakeTypeArguments({}));
     }
 
-    void Visit(ImExp_GlobalFuncs* imExp) override
+    ResultType Visit(ImExp_GlobalFuncs* imExp)
     {
         return Error<Error_ResolveIdentifier_FuncCantHaveMember>();
     }
 
-    void Visit(ImExp_TypeVar* imExp) override
+    ResultType Visit(ImExp_TypeVar* imExp)
     {
         throw NotImplementedException{};
     }
 
-    void Visit(ImExp_Class* imExp) override
+    ResultType Visit(ImExp_Class* imExp)
     {
         return TranslateStaticParent(imExp->classDecl, imExp->typeArgs);
     }
 
-    void Visit(ImExp_ClassFuncs* imExp) override
+    ResultType Visit(ImExp_ClassFuncs* imExp)
     {
         return Error<Error_ResolveIdentifier_FuncCantHaveMember>();
     }
 
-    void Visit(ImExp_Struct* imExp) override
+    ResultType Visit(ImExp_Struct* imExp)
     {
         return TranslateStaticParent(imExp->structDecl, imExp->typeArgs);
     }
 
-    void Visit(ImExp_StructFuncs* imExp) override
+    ResultType Visit(ImExp_StructFuncs* imExp)
     {
         return Error<Error_ResolveIdentifier_FuncCantHaveMember>();
     }
 
     // (E).F
-    void Visit(ImExp_Enum* imExp) override
+    ResultType Visit(ImExp_Enum* imExp)
     {
         return TranslateStaticParent(imExp->decl, imExp->typeArgs);
     }
 
-    void Visit(ImExp_EnumElem* imExp) override
+    ResultType Visit(ImExp_EnumElem* imExp)
     {
         return Error<Error_ResolveIdentifier_EnumElemCantHaveMember>();
     }
 
-    void Visit(ImExp_ThisVar* imExp) override
+    ResultType Visit(ImExp_ThisVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_LocalVar* imExp) override
+    ResultType Visit(ImExp_LocalVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_LambdaVar* imExp) override
+    ResultType Visit(ImExp_LambdaVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_ClassVar* imExp) override
+    ResultType Visit(ImExp_ClassVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_StructVar* imExp) override
+    ResultType Visit(ImExp_StructVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_EnumElemVar* imExp) override
+    ResultType Visit(ImExp_EnumElemVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_ListIndexer* imExp) override
+    ResultType Visit(ImExp_ListIndexer* imExp)
     {
         throw NotImplementedException{};
     }
 
-    void Visit(ImExp_LocalDeref* imExp) override
+    ResultType Visit(ImExp_LocalDeref* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_BoxDeref* imExp) override
+    ResultType Visit(ImExp_BoxDeref* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_Else* imExp) override
+    ResultType Visit(ImExp_Else* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
@@ -490,10 +488,8 @@ public:
 
 expected<ImExp*, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp* imExp, const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
 {
-    expected<ImExp*, DiagPtr> boundImExp;
-    ImExpAndMemberNameToImExpTranslator binder{&boundImExp, name, typeArgsExceptOuter, context};
-    imExp->Accept(binder);
-    return boundImExp;
+    ImExpAndMemberNameToImExpTranslator binder{name, typeArgsExceptOuter, context};
+    return Accept(binder, imExp);
 }
 
 }
