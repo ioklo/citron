@@ -103,12 +103,12 @@ decltype(auto) Accept(TVisitor&& v, RFuncDecl* decl, TVisitorArgs&&... args)
             std::optional<TResult> result{};
             Bridge(decltype(caller)& call) : call(call) {}
 
-            void Visit(RGlobalFuncDecl* decl) override { call(decl); }
-            void Visit(RClassCtorDecl* decl) override { call(decl); }
-            void Visit(RClassFuncDecl* decl) override { call(decl); }
-            void Visit(RStructCtorDecl* decl) override { call(decl); }
-            void Visit(RStructFuncDecl* decl) override { call(decl); }
-            void Visit(RLambdaDecl* decl) override { call(decl); }
+            void Visit(RGlobalFuncDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(RClassCtorDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(RClassFuncDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(RStructCtorDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(RStructFuncDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(RLambdaDecl* decl) override { result.emplace(call(decl)); }
         };
 
         Bridge bridge{caller};

@@ -425,31 +425,31 @@ decltype(auto) Accept(TVisitor&& v, NStmt* nStmt, TVisitorArgs&&... args)
             std::optional<TResult> result{};
             Bridge(decltype(caller)& call) : call(call) {}
 
-            void Visit(NStmt_Command* nStmt) override { call(nStmt); }
-            void Visit(NStmt_LocalVarDecl* nStmt) override { call(nStmt); }
-            void Visit(NStmt_If* nStmt) override { call(nStmt); }
-            void Visit(NStmt_IfNullableRefTest* nStmt) override { call(nStmt); }
-            void Visit(NStmt_IfNullableValueTest* nStmt) override { call(nStmt); }
-            void Visit(NStmt_For* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Continue* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Break* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Return* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Block* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Blank* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Exp* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Task* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Await* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Async* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Foreach* nStmt) override { call(nStmt); }
-            void Visit(NStmt_ForeachCast* nStmt) override { call(nStmt); }
-            void Visit(NStmt_Yield* nStmt) override { call(nStmt); }
-            void Visit(NStmt_CallClassCtor* nStmt) override { call(nStmt); }
-            void Visit(NStmt_CallStructCtor* nStmt) override { call(nStmt); }
-            void Visit(NStmt_NullDirective* nStmt) override { call(nStmt); }
-            void Visit(NStmt_NotNullDirective* nStmt) override { call(nStmt); }
-            void Visit(NStmt_StaticNullDirective* nStmt) override { call(nStmt); }
-            void Visit(NStmt_StaticNotNullDirective* nStmt) override { call(nStmt); }
-            void Visit(NStmt_StaticUnknownNullDirective* nStmt) override { call(nStmt); }
+            void Visit(NStmt_Command* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_LocalVarDecl* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_If* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_IfNullableRefTest* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_IfNullableValueTest* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_For* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Continue* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Break* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Return* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Block* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Blank* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Exp* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Task* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Await* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Async* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Foreach* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_ForeachCast* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_Yield* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_CallClassCtor* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_CallStructCtor* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_NullDirective* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_NotNullDirective* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_StaticNullDirective* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_StaticNotNullDirective* nStmt) override { result.emplace(call(nStmt)); }
+            void Visit(NStmt_StaticUnknownNullDirective* nStmt) override { result.emplace(call(nStmt)); }
         };
 
         Bridge bridge{caller};

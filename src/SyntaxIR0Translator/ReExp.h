@@ -237,16 +237,16 @@ decltype(auto) Accept(TVisitor&& v, ReExp* reExp, TVisitorArgs&&... args)
             std::optional<TResult> result{};
             Bridge(decltype(caller)& call) : call(call) {}
 
-            void Visit(ReExp_ThisVar* reExp) override { call(reExp); }
-            void Visit(ReExp_LocalVar* reExp) override { call(reExp); }
-            void Visit(ReExp_LambdaVar* reExp) override { call(reExp); }
-            void Visit(ReExp_ClassVar* reExp) override { call(reExp); }
-            void Visit(ReExp_StructVar* reExp) override { call(reExp); }
-            void Visit(ReExp_EnumElemVar* reExp) override { call(reExp); }
-            void Visit(ReExp_LocalDeref* reExp) override { call(reExp); }
-            void Visit(ReExp_BoxDeref* reExp) override { call(reExp); }
-            void Visit(ReExp_ListIndexer* reExp) override { call(reExp); }
-            void Visit(ReExp_Else* reExp) override { call(reExp); }
+            void Visit(ReExp_ThisVar* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_LocalVar* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_LambdaVar* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_ClassVar* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_StructVar* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_EnumElemVar* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_LocalDeref* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_BoxDeref* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_ListIndexer* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_Else* reExp) override { result.emplace(call(reExp)); }
         };
 
         Bridge bridge{caller};
