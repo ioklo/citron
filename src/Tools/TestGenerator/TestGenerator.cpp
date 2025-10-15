@@ -140,12 +140,13 @@ using namespace Citron;
     constexpr auto templ = R"----(TEST({}, {})
 {{
     auto [buffer, lexer] = Prepare(UR"---({})---");
+    SFactory factory;
 
-    auto oScript = ParseScript(&lexer);
+    auto* script = ParseScript(&lexer, factory);
 
     auto expected = R"---({})---";
 
-    EXPECT_SYNTAX_EQ(oScript, expected);
+    EXPECT_SYNTAX_EQ(script, expected);
 }})----";
 
     for (auto& [name, inFilePath, bFail, outFilePath] : GetFiles(testsPath))
@@ -197,12 +198,13 @@ using namespace Citron;
     constexpr auto templ = R"----(TEST({}, {})
 {{
     auto [buffer, lexer] = Prepare(UR"---({})---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({})---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }})----";
 
     for (auto& [name, inFilePath, bFail, outFilePath] : GetFiles(testsPath))
@@ -254,12 +256,13 @@ using namespace Citron;
     constexpr auto templ = R"----(TEST({}, {})
 {{
     auto [buffer, lexer] = Prepare(UR"---({})---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({})---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }})----";
 
     for (auto& [name, inFilePath, bFail, outFilePath] : GetFiles(testsPath))
@@ -311,20 +314,22 @@ using namespace Citron;
     constexpr auto succTempl = R"----(TEST({}, {})
 {{
     auto [buffer, lexer] = Prepare(UR"---({})---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({})---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }})----";
 
     constexpr auto failTempl = R"----(TEST({}, {})
 {{
     auto [buffer, lexer] = Prepare(UR"---({})---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    ParseTypeExp(&lexer, factory);
 
     EXPECT_TRUE(!lexer.IsReachedEnd());
 }})----";

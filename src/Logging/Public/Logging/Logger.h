@@ -5,8 +5,6 @@
 
 namespace Citron {
 
-using SSyntaxPtr = std::shared_ptr<class SSyntax>;
-
 LOGGING_API void Dummy();
 
 class Logger

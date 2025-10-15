@@ -4,10 +4,12 @@
 #include <memory>
 #include <string>
 
+#include "IR0/RFactory.h"
+
 namespace Citron {
 
 class NNamespaceDecl;
-class RTypeFactory;
+class RFactory;
 
 namespace SyntaxIR0Translator {
 
@@ -15,13 +17,19 @@ class MemberDeclPhaseContext;
 
 class SkeletonPhaseContext
 {
-    RTypeFactory& factory;
+    RFactory& rFactory;
 
 public:
-    SkeletonPhaseContext(RTypeFactory& factory);
+    SkeletonPhaseContext(RFactory& rFactory);
 
-    std::shared_ptr<NNamespaceDecl> MakeChildNamespace(const std::shared_ptr<NNamespaceDecl>& decl, const std::string& name);
+    NNamespaceDecl* MakeChildNamespace(NNamespaceDecl* decl, const std::string& name);
     void AddMemberDeclPhaseTask(std::function<void(MemberDeclPhaseContext&)> f);
+
+    template<typename TNDecl, typename... TArgs> requires std::derived_from<TNDecl, NDecl>
+    TNDecl* MakeNDecl(TArgs&&... args)
+    {
+        return rFactory.MakeNDecl<TNDecl>(std::forward<TArgs>(args)...);
+    }
 };
 
 } // SyntaxIR0Translator

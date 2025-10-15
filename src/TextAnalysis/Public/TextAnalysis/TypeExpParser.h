@@ -11,17 +11,19 @@
 
 namespace Citron {
 
-std::optional<std::vector<STypeExpPtr>> ParseTypeArgs(Lexer* lexer);
-std::shared_ptr<STypeExp_Id> ParseIdTypeExp(Lexer* lexer);
-std::shared_ptr<STypeExp_Nullable> ParseNullableTypeExp(Lexer* lexer);
-std::shared_ptr<STypeExp_BoxPtr> ParseBoxPtrTypeExp(Lexer* lexer);
-STypeExpPtr ParseLocalPtrTypeExp(Lexer* lexer);
-STypeExpPtr ParseParenTypeExp(Lexer* lexer);
-STypeExpPtr ParseIdChainTypeExp(Lexer* lexer);
+class SFactory;
 
-// std::shared_ptr<SFuncTypeExp> ParseFuncTypeExp(Lexer* lexer);
-// std::shared_ptr<STupleTypeExp> ParseTupleTypeExp(Lexer* lexer);
+std::optional<std::vector<STypeExp*>> ParseTypeArgs(Lexer* lexer, SFactory& factory);
+STypeExp_Id* ParseIdTypeExp(Lexer* lexer, SFactory& factory);
+STypeExp_Nullable* ParseNullableTypeExp(Lexer* lexer, SFactory& factory);
+STypeExp_BoxPtr* ParseBoxPtrTypeExp(Lexer* lexer, SFactory& factory);
+STypeExp* ParseLocalPtrTypeExp(Lexer* lexer, SFactory& factory);
+STypeExp* ParseParenTypeExp(Lexer* lexer, SFactory& factory);
+STypeExp* ParseIdChainTypeExp(Lexer* lexer, SFactory& factory);
 
-std::shared_ptr<STypeExp_Local> ParseLocalTypeExp(Lexer* lexer);
-TEXTANALYSIS_API STypeExpPtr ParseTypeExp(Lexer* lexer);
+// SFuncTypeExp* ParseFuncTypeExp(Lexer* lexer, SFactory& factory);
+// STupleTypeExp* ParseTupleTypeExp(Lexer* lexer, SFactory& factory);
+
+STypeExp_Local* ParseLocalTypeExp(Lexer* lexer, SFactory& factory);
+TEXTANALYSIS_API STypeExp* ParseTypeExp(Lexer* lexer, SFactory& factory);
 }

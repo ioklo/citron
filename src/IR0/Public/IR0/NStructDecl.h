@@ -4,7 +4,6 @@
 
 #include <vector>
 #include <optional>
-#include <memory>
 #include <ranges>
 
 #include "RStructDecl.h"
@@ -35,68 +34,68 @@ class NStructDecl
 {
     struct BaseTypes
     {
-        std::shared_ptr<RType_Struct> baseStruct;
-        std::vector<std::shared_ptr<RType_Interface>> interfaces;
+        RType_Struct* baseStruct;
+        std::vector<RType_Interface*> interfaces;
     };
 
-    NTypeDeclOuterWPtr outer;
+    NTypeDeclOuter* outer;
     RAccessor accessor;
 
     RName name;
     std::vector<std::string> typeParams;
 
-    std::vector<std::shared_ptr<NStructCtorDecl>> ctors;
+    std::vector<NStructCtorDecl*> ctors;
     int trivialCtorIndex; // can be -1
 
-    std::vector<std::shared_ptr<NStructVarDecl>> vars;
+    std::vector<NStructVarDecl*> vars;
     std::optional<BaseTypes> oBaseTypes;
 
-    std::unordered_map<RName, std::shared_ptr<NStructVarDecl>> varsMap;
+    std::unordered_map<RName, NStructVarDecl*> varsMap;
 
 public:
-    IR0_API NStructDecl(NTypeDeclOuterWPtr&& outer, RAccessor accessor, RName&& name, std::vector<std::string>&& typeParams);
-    IR0_API void InitBaseTypes(std::shared_ptr<RType_Struct>&& baseStruct, std::vector<std::shared_ptr<RType_Interface>>&& interfaces);
+    IR0_API NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, std::vector<std::string>&& typeParams);
+    IR0_API void InitBaseTypes(RType_Struct* baseStruct, std::vector<RType_Interface*>&& interfaces);
 
 public:
     using NTypeDeclContainerComponent::AddType;
-    IR0_API void AddCtor(std::shared_ptr<NStructCtorDecl>&& decl);
-    IR0_API void AddFunc(std::shared_ptr<NStructFuncDecl>&& decl) { NFuncDeclContainerComponent<NStructFuncDecl>::AddFunc(std::move(decl)); }
-    IR0_API void AddVar(std::shared_ptr<NStructVarDecl>&& decl);
+    IR0_API void AddCtor(NStructCtorDecl* decl);
+    IR0_API void AddFunc(NStructFuncDecl* decl) { NFuncDeclContainerComponent<NStructFuncDecl>::AddFunc(decl); }
+    IR0_API void AddVar(NStructVarDecl* decl);
 
     IR0_API auto EnumerateUnboundCtors() { return std::views::all(ctors); }
     IR0_API auto EnumerateUnboundVars() { return std::views::all(vars); }
-    IR0_API std::shared_ptr<NStructCtorDecl> GetUnboundTrivialCtor_NStructCtorDecl();
+    IR0_API NStructCtorDecl* GetUnboundTrivialCtor_NStructCtorDecl();
 
     IR0_API size_t GetVarCount() { return vars.size(); }
-    IR0_API NStructVarDecl* GetUnboundVar(size_t index) { return vars[index].get(); }
+    IR0_API NStructVarDecl* GetUnboundVar(size_t index) { return vars[index]; }
 
-    IR0_API std::shared_ptr<RType_Struct> GetUnboundBaseStruct();
+    IR0_API RType_Struct* GetUnboundBaseStruct();
 
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NDecl* GetNOuter() override;
-    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NTypeDecl
     NDecl* GetNDecl() override { return this; }
-    RMember ToRMember(const std::shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs) override;
-    void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(*this); }
+    RMember ToRMember(RTypeArguments* typeArgs) override;
+    void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NTypeDeclOuter
     // NDecl* GetNDecl() override { return this; }
-    void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
     // from NFuncDeclOuter
     // NDecl* GetNDecl() override { return this; }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
     // from RDecl
     IR0_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     IR0_API RIdentifier GetIdentifier() override;
-    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
+    IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     // from RTypeDecl
     // RDecl* GetRDecl() override { return this; }
@@ -108,9 +107,9 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RStructDecl
-    IR0_API std::optional<RMember_StructVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) override;
-    IR0_API std::vector<std::shared_ptr<RStructCtorDecl>> GetUnboundCtors() override;
-    IR0_API std::shared_ptr<RStructCtorDecl> GetUnboundTrivialCtor_RStructCtorDecl() override { return GetUnboundTrivialCtor_NStructCtorDecl(); }
+    IR0_API std::optional<RMember_StructVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
+    IR0_API std::vector<RStructCtorDecl*> GetUnboundCtors() override;
+    IR0_API RStructCtorDecl* GetUnboundTrivialCtor_RStructCtorDecl() override { return GetUnboundTrivialCtor_NStructCtorDecl(); }
 
 };
 

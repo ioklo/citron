@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <unordered_map>
-#include <memory>
 #include <optional>
 
 #include "DeclWithOuterTypeArgs.h"
@@ -11,32 +10,31 @@ namespace Citron {
 
 template<typename TNFuncDecl>
 class NFuncDeclContainerComponent
-{
-    using TNFuncDeclPtr = std::shared_ptr<TNFuncDecl>;
+{   
     using RDeclType = typename TNFuncDecl::RDeclType;
     using RMemberType = typename TNFuncDecl::RMemberType;
 
-    std::vector<TNFuncDeclPtr> funcs;
-    std::unordered_map<RIdentifier, TNFuncDeclPtr> idMap;
-    std::unordered_map<RName, std::vector<TNFuncDeclPtr>> nameMap;
+    std::vector<TNFuncDecl*> funcs;
+    std::unordered_map<RIdentifier, TNFuncDecl*> idMap;
+    std::unordered_map<RName, std::vector<TNFuncDecl*>> nameMap;
 
 public:
-    void AddFunc(TNFuncDeclPtr&& func) // consume func
+    void AddFunc(TNFuncDecl* func) // consume func
     {
         funcs.push_back(func);
 
         auto identifier = func->GetIdentifier();
         idMap.insert_or_assign(identifier, func);
 
-        nameMap[identifier.name].push_back(std::move(func));
+        nameMap[identifier.name].push_back(func);
     }
 
-    const TNFuncDeclPtr& GetFunc(RIdentifier& identifier)
+    TNFuncDecl* GetFunc(RIdentifier& identifier)
     {
         return idMap[identifier];
     }
 
-    std::optional<RMemberType> GetMemberFunc(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+    std::optional<RMemberType> GetMemberFunc(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
     {
         std::vector<DeclWithOuterTypeArgs<RDeclType>> result;
 

@@ -2,8 +2,6 @@
 
 #include <vector>
 #include <optional>
-#include <memory>
-
 
 #include "MDecl.h"
 #include "MBodyDeclOuter.h"
@@ -27,7 +25,7 @@ class MGlobalFuncDecl
         std::vector<MFuncParameter> parameters;
     };
 
-    std::weak_ptr<MNamespaceDecl> outer;
+    MNamespaceDecl* outer;
     MAccessor accessor;
     MName name;
     std::vector<MName> typeParams;
@@ -35,9 +33,9 @@ class MGlobalFuncDecl
     std::optional<FuncReturnAndParams> funcReturnAndParams;
 
 public:
-    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(this); }
     void Accept(MBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(MFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MFuncDeclVisitor& visitor) override { visitor.Visit(this); }
 };
 
 }

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 namespace Citron
 {
 
@@ -20,17 +18,15 @@ public:
     virtual void Accept(MFuncDeclVisitor& visitor) = 0;
 };
 
-using MFuncDeclPtr = std::shared_ptr<MFuncDecl>;
-
 class MFuncDeclVisitor
 {
 public:
     virtual ~MFuncDeclVisitor() {}
-    virtual void Visit(MGlobalFuncDecl& func) = 0;
-    virtual void Visit(MClassCtorDecl& func) = 0;
-    virtual void Visit(MClassFuncDecl& func) = 0;
-    virtual void Visit(MStructCtorDecl& func) = 0;
-    virtual void Visit(MStructFuncDecl& func) = 0;
+    virtual void Visit(MGlobalFuncDecl* func) = 0;
+    virtual void Visit(MClassCtorDecl* func) = 0;
+    virtual void Visit(MClassFuncDecl* func) = 0;
+    virtual void Visit(MStructCtorDecl* func) = 0;
+    virtual void Visit(MStructFuncDecl* func) = 0;
 };
 
 class MFuncDeclOuter

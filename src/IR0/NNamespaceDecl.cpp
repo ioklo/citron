@@ -8,7 +8,7 @@
 #include "Infra/Exceptions.h"
 #include "Infra/Ptr.h"
 
-#include "RTypeFactory.h"
+#include "RFactory.h"
 #include "RNamespaceDeclGroup.h"
 #include "RTypeArguments.h"
 
@@ -16,62 +16,19 @@ using namespace std;
 
 namespace Citron {
 
-shared_ptr<NNamespaceDecl> NNamespaceDecl::MakeRoot(RTypeFactory& factory)
-{
-    // root namespace면 
-    auto group = factory.GetNamespaceDeclGroup({});
-    shared_ptr<NNamespaceDecl> newDecl(new NNamespaceDecl(nullptr, "", group));
-    group->Add(newDecl);
-    return newDecl;
-}
-
-shared_ptr<NNamespaceDecl> NNamespaceDecl::MakeChild(const shared_ptr<NNamespaceDecl>& outer, const string& name, RTypeFactory& factory)
-{   
-    assert(outer && !name.empty());
-
-    // root namespace면 
-    std::vector<std::string> id;
-
-    id.push_back(name);
-    auto curNS = outer;
-
-    while (curNS)
-    {
-        auto curOuter = curNS->outer.lock();
-        
-        if (!curOuter) 
-        {              
-            // root 라면 그만둔다
-            assert(curNS->name.empty());
-            break;
-        }
-
-        id.push_back(curNS->name);
-        curNS = curOuter;
-    }
-
-    reverse(id.begin(), id.end());
-
-    auto group = factory.GetNamespaceDeclGroup(id);
-    shared_ptr<NNamespaceDecl> newDecl(new NNamespaceDecl(outer, name, group));
-    group->Add(newDecl);
-
-    return newDecl;
-}
-
-NNamespaceDecl::NNamespaceDecl(const shared_ptr<NNamespaceDecl>& outer, const std::string& name, const RNamespaceDeclGroupPtr& group)
+NNamespaceDecl::NNamespaceDecl(NNamespaceDecl* outer, const std::string& name, RNamespaceDeclGroup* group)
     : outer(outer), name(name), group(group)
 {
 }
 
 NDecl* NNamespaceDecl::GetNOuter()
 {
-    return outer.lock().get();
+    return outer;
 }
 
 RDecl* NNamespaceDecl::GetROuter()
 {
-    return outer.lock().get();
+    return outer;
 }
 
 RIdentifier NNamespaceDecl::GetIdentifier()
@@ -81,7 +38,7 @@ RIdentifier NNamespaceDecl::GetIdentifier()
 
 // NotFound, Valid는 리턴으로, Fatal은 exception으로
 // Fatal을 처리해서 복구하고 싶으면 catch로
-optional<RMember> NNamespaceDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     assert(typeArgs->GetCount() == 0);
 
@@ -110,16 +67,13 @@ optional<RMember> NNamespaceDecl::GetMember(const RTypeArgumentsPtr& typeArgs, c
     return candidates[1];
 }
 
-optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
 {
     auto typeArgs = factory.MakeTypeArguments({});
     if (auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
         return oMember;
-
-    if (auto sharedOuter = outer.lock())
-        return sharedOuter->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
-
-    return nullopt;
+    
+    return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
 } // namespace Citron

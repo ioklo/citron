@@ -4,7 +4,6 @@
 
 #include <string>
 #include <optional>
-#include <memory>
 
 #include "RNamespaceDecl.h"
 
@@ -19,7 +18,6 @@ namespace Citron
 {
 
 class RNamespaceDeclGroup;
-using RNamespaceDeclGroupPtr = std::shared_ptr<RNamespaceDeclGroup>;
 
 class NNamespaceDecl
     : public NDecl
@@ -35,16 +33,17 @@ public:
     using RMemberType = RMember_Namespace;
 
 private:
-    std::weak_ptr<NNamespaceDecl> outer;
+    NNamespaceDecl* outer;
     std::string name;
-    RNamespaceDeclGroupPtr group;
+    RNamespaceDeclGroup* group;
 
 public:
-    IR0_API static std::shared_ptr<NNamespaceDecl> MakeRoot(RTypeFactory& factory);
-    IR0_API static std::shared_ptr<NNamespaceDecl> MakeChild(const std::shared_ptr<NNamespaceDecl>& outer, const std::string& name, RTypeFactory& factory);
+    IR0_API static NNamespaceDecl* MakeRoot(RFactory& factory);
+    IR0_API static NNamespaceDecl* MakeChild(NNamespaceDecl* outer, const std::string& name, RFactory& factory);
 
 private:
-    NNamespaceDecl(const std::shared_ptr<NNamespaceDecl>& outer, const std::string& name, const RNamespaceDeclGroupPtr& group);
+    friend class RFactory;
+    NNamespaceDecl(NNamespaceDecl* outer, const std::string& name, RNamespaceDeclGroup* group);
 
 public:
     const std::string& GetName() { return name; }
@@ -58,22 +57,22 @@ public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NDecl* GetNOuter() override;
-    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NTypeDeclOuter
     NDecl* GetNDecl() override { return this; }
-    void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
     // from NFuncDeclOuter
     // NDecl* GetNDecl() override { return this; }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
     // from RDecl
     IR0_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
     IR0_API RIdentifier GetIdentifier() override;
-    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
+    IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     // from RTypeDeclOuter
     // using RNamespaceDecl::Accept;

@@ -2,7 +2,7 @@
 
 namespace Citron {
 
-void RNamespaceDeclGroup::Add(const std::shared_ptr<RNamespaceDecl>& decl)
+void RNamespaceDeclGroup::Add(RNamespaceDecl* decl)
 {
     decls.push_back(decl);
 }

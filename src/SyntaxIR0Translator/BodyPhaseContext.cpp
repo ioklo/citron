@@ -7,12 +7,12 @@ namespace Citron::SyntaxIR0Translator {
 
 void BodyPhaseContext::MarkFailed()
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 TranslationContext BodyPhaseContext::MakeTranslationContext()
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 

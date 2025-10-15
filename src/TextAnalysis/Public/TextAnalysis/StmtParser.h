@@ -11,7 +11,7 @@
 
 namespace Citron {
 
-TEXTANALYSIS_API SStmtPtr ParseStmt(Lexer* lexer);
-std::optional<std::vector<SStmtPtr>> ParseBody(Lexer* lexer);
+TEXTANALYSIS_API SStmt* ParseStmt(Lexer* lexer, SFactory& factory);
+std::optional<std::vector<SStmt*>> ParseBody(Lexer* lexer, SFactory& factory);
 
 }

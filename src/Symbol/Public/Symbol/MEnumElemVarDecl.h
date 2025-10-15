@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <optional>
 
 #include "MDecl.h"
@@ -9,18 +8,17 @@
 namespace Citron {
 
 class MType;
-using MTypePtr = std::shared_ptr<MType>;
 
 class MEnumElemVarDecl
     : public MDecl
 {
-    std::weak_ptr<MEnumElemDecl> outer;
+    MEnumElemDecl* outer;
     MName name;
 
-    MTypePtr declType; // lazy-init
+    MType* declType; // lazy-init
 
 public:
-    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(this); }
 };
 
 

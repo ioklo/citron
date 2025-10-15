@@ -8,7 +8,6 @@
 namespace Citron {
 
 class NLoc;
-using NLocPtr = std::shared_ptr<NLoc>;
 
 namespace SyntaxIR0Translator {
 
@@ -27,17 +26,17 @@ class ReExp_BoxDeref;
 
 class TranslationContext;
 
-std::expected<NLocPtr, DiagPtr> TranslateReThisVarExpToNLoc(ReExp_ThisVar& reExp, TranslationContext& context); // nothrow
-std::expected<NLocPtr, DiagPtr> TranslateReClassVarExpToNLoc(ReExp_ClassVar& reExp, TranslationContext& context);
-std::expected<NLocPtr, DiagPtr> TranslateReLocalVarExpToNLoc(ReExp_LocalVar& reExp);
-std::expected<NLocPtr, DiagPtr> TranslateReLambdaVarExpToNLoc(ReExp_LambdaVar& reExp);
-std::expected<NLocPtr, DiagPtr> TranslateReStructVarExpToNLoc(ReExp_StructVar& reExp, TranslationContext& context);
-std::expected<NLocPtr, DiagPtr> TranslateReEnumElemVarExpToNLoc(ReExp_EnumElemVar& reExp, TranslationContext& context);
-std::expected<NLocPtr, DiagPtr> TranslateReListIndexerExpToNLoc(ReExp_ListIndexer& reExp, TranslationContext& context);
-std::expected<NLocPtr, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref& reExp, TranslationContext& context);
-std::expected<NLocPtr, DiagPtr> TranslateReBoxDerefExpToNLoc(ReExp_BoxDeref& reExp, TranslationContext& context);
+std::expected<NLoc*, DiagPtr> TranslateReThisVarExpToNLoc(ReExp_ThisVar* reExp, TranslationContext& context); // nothrow
+std::expected<NLoc*, DiagPtr> TranslateReClassVarExpToNLoc(ReExp_ClassVar* reExp, TranslationContext& context);
+std::expected<NLoc*, DiagPtr> TranslateReLocalVarExpToNLoc(ReExp_LocalVar* reExp, TranslationContext& context);
+std::expected<NLoc*, DiagPtr> TranslateReLambdaVarExpToNLoc(ReExp_LambdaVar* reExp, TranslationContext& context);
+std::expected<NLoc*, DiagPtr> TranslateReStructVarExpToNLoc(ReExp_StructVar* reExp, TranslationContext& context);
+std::expected<NLoc*, DiagPtr> TranslateReEnumElemVarExpToNLoc(ReExp_EnumElemVar* reExp, TranslationContext& context);
+std::expected<NLoc*, DiagPtr> TranslateReListIndexerExpToNLoc(ReExp_ListIndexer* reExp, TranslationContext& context);
+std::expected<NLoc*, DiagPtr> TranslateReLocalDerefExpToNLoc(ReExp_LocalDeref* reExp, TranslationContext& context);
+std::expected<NLoc*, DiagPtr> TranslateReBoxDerefExpToNLoc(ReExp_BoxDeref* reExp, TranslationContext& context);
 
-std::expected<NLocPtr, DiagPtr> TranslateReExpToNLoc(ReExp& reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context);
+std::expected<NLoc*, DiagPtr> TranslateReExpToNLoc(ReExp* reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

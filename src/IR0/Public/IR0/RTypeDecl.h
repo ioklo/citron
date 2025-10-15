@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 #include "RDecl.h"
 
@@ -30,17 +29,17 @@ class RTypeDeclVisitor
 {
 public:
     virtual ~RTypeDeclVisitor() {}
-    virtual void Visit(RClassDecl& typeDecl) = 0;
-    virtual void Visit(RStructDecl& typeDecl) = 0;
-    virtual void Visit(REnumDecl& typeDecl) = 0;
-    virtual void Visit(REnumElemDecl& typeDecl) = 0;
-    virtual void Visit(RInterfaceDecl& typeDecl) = 0;
-    virtual void Visit(RLambdaDecl& typeDecl) = 0;
+    virtual void Visit(RClassDecl* typeDecl) = 0;
+    virtual void Visit(RStructDecl* typeDecl) = 0;
+    virtual void Visit(REnumDecl* typeDecl) = 0;
+    virtual void Visit(REnumElemDecl* typeDecl) = 0;
+    virtual void Visit(RInterfaceDecl* typeDecl) = 0;
+    virtual void Visit(RLambdaDecl* typeDecl) = 0;
 };
 
 class RMTypeDecl : public RTypeDecl
 {
-    std::shared_ptr<MTypeDecl> typeDecl;
+    MTypeDecl* typeDecl;
 };
 
 

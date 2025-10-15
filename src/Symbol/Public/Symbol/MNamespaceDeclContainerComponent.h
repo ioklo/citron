@@ -2,10 +2,8 @@
 #include "SymbolConfig.h"
 
 #include <unordered_map>
-#include <memory>
 #include <string>
 #include <vector>
-
 
 #include "MDecl.h"
 #include "MTypeDecl.h"
@@ -16,15 +14,15 @@ namespace Citron {
 
 class MNamespaceDeclContainerComponent
 {
-    std::vector<std::shared_ptr<MNamespaceDecl>> namespaceDecls; // preserve order
-    std::unordered_map<std::string, std::shared_ptr<MNamespaceDecl>> namespaceDict;
+    std::vector<MNamespaceDecl*> namespaceDecls; // preserve order
+    std::unordered_map<std::string, MNamespaceDecl*> namespaceDict;
 
 public:
     MNamespaceDeclContainerComponent();
     MTypeDecl* GetType(const MName& name);
 
-    SYMBOL_API void AddNamespace(std::shared_ptr<MNamespaceDecl> _namespace);
-    SYMBOL_API std::shared_ptr<MNamespaceDecl> GetNamespace(const std::string& name);
+    SYMBOL_API void AddNamespace(MNamespaceDecl* _namespace);
+    SYMBOL_API MNamespaceDecl* GetNamespace(const std::string& name);
 
     //    public ITypeDeclSymbol ? GetType(Name name, int typeParamCount)
     //        = > typeComp.GetType(name, typeParamCount);

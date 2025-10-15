@@ -10,12 +10,12 @@ namespace Citron {
 
 NDecl* NGlobalFuncDecl::GetNOuter()
 {
-    return outer.lock().get();
+    return outer;
 }
 
 RDecl* NGlobalFuncDecl::GetROuter()
 {
-    return outer.lock().get();
+    return outer;
 }
 
 RIdentifier NGlobalFuncDecl::GetIdentifier()
@@ -23,23 +23,20 @@ RIdentifier NGlobalFuncDecl::GetIdentifier()
     throw NotImplementedException{};
 }
 
-optional<RMember> NGlobalFuncDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NGlobalFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 람다는 검색시키지 않는다
     // 현재 함수에서 Declaration을 할 수 없기 때문에 
     return nullopt;
 }
 
-optional<RMember> NGlobalFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> NGlobalFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
 {
-    auto sharedOuter = outer.lock();
-    assert(sharedOuter);
-
-    size_t baseTypeParamCount = sharedOuter->GetRDecl()->GetAllTypeParamCount();
+    size_t baseTypeParamCount = outer->GetRDecl()->GetAllTypeParamCount();
     if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
         return oMember;
 
-    return sharedOuter->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
 }

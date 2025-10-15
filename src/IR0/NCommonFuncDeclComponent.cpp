@@ -24,7 +24,7 @@ void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn,
     funcReturnAndParams = FuncReturnAndParams{move(funcReturn), move(funcParameters), bLastParameterVariadic};
 }
 
-void NCommonFuncDeclComponent::InitBody(vector<NStmtPtr>&& body)
+void NCommonFuncDeclComponent::InitBody(vector<NStmt*>&& body)
 {
     this->body = Body_Set(move(body));
 }
@@ -53,7 +53,7 @@ RFuncReturn NCommonFuncDeclComponent::GetUnboundFuncReturn()
     return funcReturnAndParams->funcReturn;
 }
 
-RTypePtr NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory)
+RType* NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RFactory& factory)
 {
     assert(funcReturnAndParams);
 
@@ -63,7 +63,7 @@ RTypePtr NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RType
     return setReturn->type->Apply(typeArgs, factory);
 }
 
-RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments& typeArgs, RTypeFactory& factory)
+RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory)
 {
     assert(funcReturnAndParams);
 
@@ -81,7 +81,7 @@ RFuncParameter& NCommonFuncDeclComponent::GetUnboundFuncParam(size_t i)
     return funcReturnAndParams->funcParameters[i];
 }
 
-RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory)
+RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory)
 {
     assert(funcReturnAndParams);
 
@@ -90,18 +90,18 @@ RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments& typeArgs, 
 }
 
 
-vector<RTypePtr> NCommonFuncDeclComponent::GetParamIds()
+vector<RType*> NCommonFuncDeclComponent::GetParamIds()
 {
     assert(funcReturnAndParams);
 
-    vector<RTypePtr> result;
+    vector<RType*> result;
     for (auto& param : funcReturnAndParams->funcParameters)
         result.push_back(param.type);
 
     return result;
 }
 
-optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
 {
     auto* normalName = get_if<RName_Normal>(&name);
     if (!normalName) return nullopt;

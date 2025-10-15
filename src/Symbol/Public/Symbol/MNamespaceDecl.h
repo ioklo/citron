@@ -2,8 +2,6 @@
 #include "SymbolConfig.h"
 
 #include <string>
-#include <memory>
-
 
 #include "MDecl.h"
 #include "MTypeDeclOuter.h"
@@ -20,21 +18,21 @@ class MNamespaceDecl
     , public MTypeDeclOuter
     , private MNamespaceDeclContainerComponent
     , private MTypeDeclContainerComponent
-    , private MFuncDeclContainerComponent<std::shared_ptr<MGlobalFuncDecl>>
+    , private MFuncDeclContainerComponent<MGlobalFuncDecl>
 {
-    std::weak_ptr<MNamespaceDecl> outer;
+    MNamespaceDecl* outer;
     std::string name;
 
 public:
-    SYMBOL_API MNamespaceDecl(std::weak_ptr<MNamespaceDecl> outer, std::string name);
+    SYMBOL_API MNamespaceDecl(MNamespaceDecl* outer, std::string name);
 
     const std::string& GetName() { return name; }
 
     using MNamespaceDeclContainerComponent::AddNamespace;
     using MNamespaceDeclContainerComponent::GetNamespace;
 
-    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(MTypeDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(this); }
+    void Accept(MTypeDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 };
 
 }

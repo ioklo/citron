@@ -26,12 +26,12 @@ size_t NTypeDeclContainerComponent::GetTypeCount()
     return types.size();
 }
 
-NTypeDeclPtr NTypeDeclContainerComponent::GetType(int index)
+NTypeDecl* NTypeDeclContainerComponent::GetType(int index)
 {
     return types[index];
 }
 
-NTypeDeclPtr NTypeDeclContainerComponent::GetType(const RIdentifier& identifier)
+NTypeDecl* NTypeDeclContainerComponent::GetType(const RIdentifier& identifier)
 {
     auto i = typeDict.find(identifier);
     if (i == typeDict.end()) return nullptr;
@@ -39,19 +39,19 @@ NTypeDeclPtr NTypeDeclContainerComponent::GetType(const RIdentifier& identifier)
     return i->second;
 }
 
-void NTypeDeclContainerComponent::AddType(NTypeDeclPtr&& typeDecl)
+void NTypeDeclContainerComponent::AddType(NTypeDecl* typeDecl)
 {
     types.push_back(typeDecl);
-    typeDict.insert_or_assign(typeDecl->GetNDecl()->GetRDecl()->GetIdentifier(), move(typeDecl));
+    typeDict.insert_or_assign(typeDecl->GetNDecl()->GetRDecl()->GetIdentifier(), typeDecl);
 }
 
 // 첫번째 인자는 부모의 typeArgs
-optional<RMember> NTypeDeclContainerComponent::GetMemberType(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NTypeDeclContainerComponent::GetMemberType(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     auto i = typeDict.find({ name, explicitTypeParamsExceptOuterCount, {} });
     if (i == typeDict.end()) return nullopt;
 
-    return i->second->ToRMember(i->second, typeArgs);
+    return i->second->ToRMember(typeArgs);
 }
 
 //bool ICyclicEqualityComparableStruct<TypeDeclSymbolComponent>.CyclicEquals(ref TypeDeclSymbolComponent other, ref CyclicEqualityCompareContext context)

@@ -12,6 +12,7 @@
 #include "ImExpToReExpTranslation.h"
 #include "ReExp.h"
 #include "SExpToNExpTranslation.h"
+#include "TranslationContext.h"
 
 using namespace std;
 
@@ -19,75 +20,76 @@ namespace Citron::SyntaxIR0Translator {
 
 namespace {
 
-class SExpToReExpTranslator : public SExpVisitor
+class SExpToReExpTranslator
 {
-    expected<ReExpPtr, DiagPtr>* result;
+public:
+    using ResultType = expected<ReExp*, DiagPtr>;
 
-    RTypePtr hintType;
+private:
+    RType* hintType;
     TranslationContext& context;
 
 public:
-    SExpToReExpTranslator(expected<ReExpPtr, DiagPtr>* result, const RTypePtr& hintType, TranslationContext& context)
-        : result(result), hintType(hintType), context(context)
+    SExpToReExpTranslator(RType* hintType, TranslationContext& context)
+        : hintType{hintType}, context{context}
     {
     }
 
 private:
-    void HandleDefault(SExp& exp)
+    ResultType HandleDefault(SExp* exp)
     {
         auto eImExp = TranslateSExpToImExp(exp, hintType, context);
         if (!eImExp)
         {
-            *result = unexpected{move(eImExp).error()};
-            return;
+            return unexpected{move(eImExp).error()};
         }
 
-        *result = TranslateImExpToReExp(**eImExp, context);
+        return TranslateImExpToReExp(*eImExp, context);
     }
 
-    void HandleExp(expected<NExpPtr, DiagPtr>&& eExp)
+    ResultType HandleExp(expected<NExp*, DiagPtr>&& eExp)
     {
         if (!eExp)
-            *result = unexpected{move(eExp).error()};
+            return unexpected{move(eExp).error()};
         else
-            *result = MakePtr<ReExp_Else>(move(*eExp));
+            return context.MakeReExp<ReExp_Else>(*eExp);
     }
 
 public:
-    void Visit(SExp_Identifier& exp) override
+    ResultType Visit(SExp_Identifier* exp)
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_String& exp) override
+    ResultType Visit(SExp_String* exp)
     {
         return HandleExp(TranslateSStringExpToNStringExp(exp, context));
     }
 
-    void Visit(SExp_IntLiteral& exp) override
+    ResultType Visit(SExp_IntLiteral* exp)
     {
-        return HandleExp(TranslateSIntLiteralExpToNExp(exp));
+        return HandleExp(TranslateSIntLiteralExpToNExp(exp, context));
     }
 
-    void Visit(SExp_BoolLiteral& exp) override
+    ResultType Visit(SExp_BoolLiteral* exp)
     {
-        return HandleExp(TranslateSBoolLiteralExpToNExp(exp));
+        return HandleExp(TranslateSBoolLiteralExpToNExp(exp, context));
     }
 
-    void Visit(SExp_NullLiteral& exp) override
+    ResultType Visit(SExp_NullLiteral* exp)
     {
         return HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
     }
 
-    void Visit(SExp_BinaryOp& exp) override
+    ResultType Visit(SExp_BinaryOp* exp)
     {
         return HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
     }
 
     // int만 지원한다
-    void Visit(SExp_UnaryOp& exp) override
+    ResultType Visit(SExp_UnaryOp* exp)
     {
-        if (exp.kind == SUnaryOpKind::Deref)
+        if (exp->kind == SUnaryOpKind::Deref)
         {
             return HandleDefault(exp);
         }
@@ -97,55 +99,55 @@ public:
         }
     }
 
-    void Visit(SExp_Call& exp) override
+    ResultType Visit(SExp_Call* exp)
     {
         return HandleExp(TranslateSCallExpToNExp(exp, hintType, context));
     }
 
-    void Visit(SExp_Lambda& exp) override
+    ResultType Visit(SExp_Lambda* exp)
     {
         return HandleExp(TranslateSLambdaExpToNExp(exp, context));
     }
 
-    void Visit(SExp_Indexer& exp) override
+    ResultType Visit(SExp_Indexer* exp)
     {
         return HandleDefault(exp);
     }
 
     // exp를 돌려주는 버전
     // parent."x"<>
-    void Visit(SExp_Member& exp) override
+    ResultType Visit(SExp_Member* exp)
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_IndirectMember& exp) override
+    ResultType Visit(SExp_IndirectMember* exp)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(SExp_List& exp) override
+    ResultType Visit(SExp_List* exp)
     {
         return HandleExp(TranslateSListExpToNExp(exp, context));
     }
 
     // 'new C(...)'
-    void Visit(SExp_New& exp) override
+    ResultType Visit(SExp_New* exp)
     {
         return HandleExp(TranslateSNewExpToNExp(exp, context));
     }
 
-    void Visit(SExp_Box& exp) override
+    ResultType Visit(SExp_Box* exp)
     {
         return HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
     }
 
-    void Visit(SExp_Is& exp) override
+    ResultType Visit(SExp_Is* exp)
     {
         return HandleExp(TranslateSIsExpToNExp(exp, context));
     }
 
-    void Visit(SExp_As& exp) override
+    ResultType Visit(SExp_As* exp)
     {
         return HandleExp(TranslateSAsExpToNExp(exp, context));
     }
@@ -153,12 +155,10 @@ public:
 
 } // namespace
 
-expected<ReExpPtr, DiagPtr> TranslateSExpToReExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context)
+expected<ReExp*, DiagPtr> TranslateSExpToReExp(SExp* exp, RType* hintType, TranslationContext& context)
 {
-    expected<ReExpPtr, DiagPtr> reExp;
-    SExpToReExpTranslator translator{&reExp, hintType, context};
-    exp.Accept(translator);
-    return reExp;
+    SExpToReExpTranslator translator{hintType, context};
+    return Accept(translator, exp);
 }
 
 } // namesapce Citron::SyntaxIR0Translator

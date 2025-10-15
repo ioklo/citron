@@ -18,10 +18,12 @@
     <ClInclude Include="Public\Syntax\Tokens.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\Syntax\SFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Syntaxes.g.cpp" />
     <ClCompile Include="Syntaxes.cpp" />
     <ClCompile Include="Tokens.cpp" />
+    <ClCompile Include="SFactory.cpp" />
   </ItemGroup>
 </Project>

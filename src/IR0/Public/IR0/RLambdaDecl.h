@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 #include "RDecl.h"
 #include "RFuncDecl.h"
@@ -10,9 +9,7 @@
 namespace Citron {
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-
-class RTypeFactory;
+class RFactory;
 
 class RLambdaDecl
     : public RDecl
@@ -21,12 +18,12 @@ class RLambdaDecl
     , public RTypeDecl
 {
 public:
-    virtual RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory) = 0;
+    virtual RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) = 0;
 
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RTypeDeclVisitor& visitor) final { visitor.Visit(*this); }
+    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RTypeDeclVisitor& visitor) final { visitor.Visit(this); }
 };
 
 // M버전이 없다

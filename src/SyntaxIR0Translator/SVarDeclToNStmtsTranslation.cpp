@@ -22,16 +22,16 @@ namespace {
 
 class VarDeclElemTranslator
 {
-    vector<NStmtPtr>* outStmts;
+    vector<NStmt*>* outStmts;
 
-    SVarDeclElement& elem;
+    SVarDeclElement* elem;
     DeclTypeInfo& declTypeInfo;
     
     TranslationContext& context;
 
 public:
-    VarDeclElemTranslator(vector<NStmtPtr>* outStmts, SVarDeclElement& elem, DeclTypeInfo& declTypeInfo, TranslationContext& context)
-        : outStmts(outStmts), elem(elem), declTypeInfo(declTypeInfo), context(context)
+    VarDeclElemTranslator(vector<NStmt*>* outStmts, SVarDeclElement* elem, DeclTypeInfo& declTypeInfo, TranslationContext& context)
+        : outStmts{outStmts}, elem{elem}, declTypeInfo{declTypeInfo}, context{context}
     {
     }
 
@@ -104,19 +104,19 @@ private:
 
     expected<void, DiagPtr> HandleVarDeclType()
     {
-        if (!elem.initExp)
+        if (!elem->initExp)
             return unexpected{MakePtr<Error_VarDecl_LocalVarDeclNeedInitializer>()};
 
         // var꼴로 나오는 경우 hintType은 없다
-        auto eNInitExp = TranslateSExpToNExp(*elem.initExp, /*hintType*/ nullptr, context);
+        auto eNInitExp = TranslateSExpToNExp(elem->initExp, /*hintType*/ nullptr, context);
         if (!eNInitExp) return unexpected{move(eNInitExp).error()};
-        auto rInitExpType = context.GetType(**eNInitExp);
+        auto rInitExpType = context.GetType(*eNInitExp);
 
-        auto eResult = CheckVarConsistency(rInitExpType.get());
+        auto eResult = CheckVarConsistency(rInitExpType);
         if (!eResult) return unexpected{move(eResult).error()};
 
-        context.AddLocalVarInfo(rInitExpType, RName_Normal(elem.varName));
-        outStmts->push_back(MakePtr<NStmt_LocalVarDecl>(rInitExpType, elem.varName, move(*eNInitExp)));
+        context.AddLocalVarInfo(rInitExpType, RName_Normal(elem->varName));
+        outStmts->push_back(context.MakeNStmt<NStmt_LocalVarDecl>(rInitExpType, elem->varName, *eNInitExp));
 
         return {};
     }
@@ -126,20 +126,20 @@ private:
         assert(declTypeInfo.kind == DeclTypeInfoKind::Normal);
         auto& declType = declTypeInfo.type;
 
-        NExpPtr nInitExp;
-        if (elem.initExp)
+        NExp* nInitExp;
+        if (elem->initExp)
         {
-            auto eNExp = TranslateSExpToNExp(*elem.initExp, declType, context);
+            auto eNExp = TranslateSExpToNExp(elem->initExp, declType, context);
             if (!eNExp) return unexpected{move(eNExp).error()};
 
-            eNExp = CastNExp(move(*eNExp), declType, context);
+            eNExp = CastNExp(*eNExp, declType, context);
             if (!eNExp) return unexpected{MakePtr<Error_VarDecl_InitExpTypeMismatch>()};
 
             nInitExp = *eNExp;
         }
 
-        context.AddLocalVarInfo(declType, RName_Normal(elem.varName));
-        outStmts->push_back(MakePtr<NStmt_LocalVarDecl>(declType, elem.varName, move(nInitExp)));
+        context.AddLocalVarInfo(declType, RName_Normal(elem->varName));
+        outStmts->push_back(context.MakeNStmt<NStmt_LocalVarDecl>(declType, elem->varName, nInitExp));
 
         return {};
     }
@@ -147,7 +147,7 @@ private:
 public:
     expected<void, DiagPtr> Translate()
     {
-        if (context.DoesLocalVarNameExistInScope(elem.varName))
+        if (context.DoesLocalVarNameExistInScope(elem->varName))
             return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
 
         if (declTypeInfo.kind != DeclTypeInfoKind::Normal)
@@ -163,14 +163,13 @@ public:
 
 } // namespace
 
-expected<void, DiagPtr> TranslateSVarDeclToNStmts(std::vector<NStmtPtr>* outStmts, SVarDecl& varDecl, TranslationContext& context)
+expected<void, DiagPtr> TranslateSVarDeclToNStmts(std::vector<NStmt*>* outStmts, SVarDecl* varDecl, TranslationContext& context)
 {
-    DeclTypeInfo declTypeInfo = context.GetDeclTypeInfo(*varDecl.type);
+    DeclTypeInfo declTypeInfo = context.GetDeclTypeInfo(varDecl->type);
 
-    for (auto& elem : varDecl.elements)
+    for (auto& elem : varDecl->elements)
     {
-        VarDeclElemTranslator translator{outStmts, elem, declTypeInfo, context};
-
+        VarDeclElemTranslator translator{outStmts, &elem, declTypeInfo, context};
         auto eResult = translator.Translate();
         if (!eResult) return unexpected{move(eResult).error()};
     }

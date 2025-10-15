@@ -1,7 +1,7 @@
 #include "BinOpQueryService.h"
 
 #include "IR0/RTypes.h"
-#include "IR0/RTypeFactory.h"
+#include "IR0/RFactory.h"
 
 #include "IR0/NExp.h"
 
@@ -9,12 +9,12 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-BinOpInfo::BinOpInfo(const RTypePtr& operandType0, const RTypePtr& operandType1, const RTypePtr& resultType, NInternalBinaryOperator rOperator)
+BinOpInfo::BinOpInfo(RType* operandType0, RType* operandType1, RType* resultType, NInternalBinaryOperator rOperator)
     : operandType0(operandType0), operandType1(operandType1), resultType(resultType), rOperator(rOperator)
 {
 }
 
-BinOpQueryService::BinOpQueryService(RTypeFactory& factory)
+BinOpQueryService::BinOpQueryService(RFactory& factory)
 {   
     auto intType = factory.MakeIntType();
     auto boolType = factory.MakeBoolType();

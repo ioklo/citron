@@ -11,17 +11,14 @@
 namespace Citron {
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
 class RDecl;
-class RTypeFactory;
+class RFactory;
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 struct RFuncParameter;
 
 class NLambdaDecl;
 class NLambdaVarDecl;
 class NFuncDecl;
-using NFuncDeclPtr = std::shared_ptr<NFuncDecl>;
 
 namespace SyntaxIR0Translator {
 
@@ -30,7 +27,7 @@ using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 
 struct NLambdaVarAndArg
 {
-    std::shared_ptr<NLambdaVarDecl> var;
+    NLambdaVarDecl* var;
     NArgument arg;
 };
 
@@ -52,19 +49,19 @@ class FuncContext
     std::vector<NLambdaVarAndArg> lambdaVarAndInitArgs;
 
     // 이 함수가 갖고 있는 자식 lambda에 대한 것. lambda syntax를 처리한 후에 lambda에 해당하는 FuncContext를 통해 만들어 진다
-    std::vector<std::shared_ptr<NLambdaDecl>> lambdaDecls;
+    std::vector<NLambdaDecl*> lambdaDecls;
 
 public:
     FuncContext();
-    std::shared_ptr<NLambdaVarDecl> StageLambdaVar(const RTypePtr& type, const RName& name, NArgument_Normal&& arg);
+    NLambdaVarDecl* StageLambdaVar(RType* type, const RName& name, NArgument_Normal&& arg, RFactory& factory);
 
     virtual bool CanAccess(RDecl* target) = 0;
-    virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) = 0;
+    virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) = 0;
 
     // decl/body space의 return type을 리턴한다
     virtual RFuncReturn GetUnboundFuncReturn() = 0;
-    virtual void SetOpenFuncReturn(RTypePtr&& retType) = 0;
-    virtual RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory) = 0;
+    virtual void SetOpenFuncReturn(RType* retType) = 0;
+    virtual RTypeArguments* MakeOpenTypeArgs(RFactory& factory) = 0;
 
     virtual bool IsSeqFunc() = 0;
 
@@ -85,12 +82,12 @@ public:
     FuncContext_Lambda(const ScopeContextPtr& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
     bool CanAccess(RDecl* target) override;
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& rFactory) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
-    void SetOpenFuncReturn(RTypePtr&& retType) override;
+    void SetOpenFuncReturn(RType* retType) override;
 
-    RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory) override;
+    RTypeArguments* MakeOpenTypeArgs(RFactory& factory) override;
 
     bool IsSeqFunc() override;
 };
@@ -98,16 +95,16 @@ public:
 // FuncDecl인 경우
 class FuncContext_FuncDecl : public FuncContext
 {
-    NFuncDeclPtr funcDecl;
+    NFuncDecl* funcDecl;
 
 public:
     bool CanAccess(RDecl* target) override;
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
-    void SetOpenFuncReturn(RTypePtr&& retType) override;
+    void SetOpenFuncReturn(RType* retType) override;
 
-    RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory) override;
+    RTypeArguments* MakeOpenTypeArgs(RFactory& factory) override;
 
     bool IsSeqFunc() override;
 };

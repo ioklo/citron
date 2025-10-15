@@ -8,14 +8,13 @@
 namespace Citron {
 
 class NExp;
-using NExpPtr = std::shared_ptr<NExp>;
 
 namespace SyntaxIR0Translator {
 
 class TranslationContext;
 class ReExp;
 
-std::expected<NExpPtr, DiagPtr> TranslateReExpToNExp(ReExp& reExp, TranslationContext& context);
+std::expected<NExp*, DiagPtr> TranslateReExpToNExp(ReExp* reExp, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

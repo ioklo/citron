@@ -3,13 +3,13 @@
 #include <vector>
 
 #include "RTypes.h"
-#include "RTypeFactory.h"
+#include "RFactory.h"
 
 using namespace std;
 
 namespace Citron {
 
-RTypeArguments::RTypeArguments(const std::vector<RTypePtr>& items)
+RTypeArguments::RTypeArguments(const std::vector<RType*>& items)
     : items(items)
 {
 }
@@ -19,20 +19,20 @@ size_t RTypeArguments::GetCount()
     return items.size();
 }
 
-const RTypePtr& RTypeArguments::Get(int i)
+RType* RTypeArguments::Get(int i)
 {
     return items[i];
 }
 
-RTypeArgumentsPtr RTypeArguments::Apply(RTypeArguments& typeArgs, RTypeFactory& factory)
+RTypeArguments* RTypeArguments::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
-    vector<RTypePtr> appliedItems;
+    vector<RType*> appliedItems;
     appliedItems.reserve(items.size());
 
     for(auto& item : items)
     {
-        auto appliedItem = item->Apply(typeArgs, factory);
-        appliedItems.push_back(move(appliedItem));
+        auto* appliedItem = item->Apply(typeArgs, factory);
+        appliedItems.push_back(appliedItem);
     }
 
     return factory.MakeTypeArguments(appliedItems);
