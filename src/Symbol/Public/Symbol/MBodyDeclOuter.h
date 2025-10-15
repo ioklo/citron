@@ -1,7 +1,6 @@
 #pragma once
 
 #include <variant>
-#include <memory>
 
 namespace Citron {
 
@@ -22,14 +21,11 @@ public:
     virtual void Visit(MStructFuncDecl& outer) = 0;
 };
 
-// 이것은 weak_ptr로 선언하도록 한다
 class MBodyDeclOuter
 {
 public:
     virtual ~MBodyDeclOuter() = default;
     virtual void Accept(MBodyDeclOuterVisitor& visitor) = 0;
 };
-
-using MBodyDeclOuterWPtr = std::weak_ptr<MBodyDeclOuter>;
 
 }

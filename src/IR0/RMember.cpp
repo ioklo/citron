@@ -11,7 +11,7 @@ using namespace std;
 
 namespace Citron {
 
-RMember_Namespace::RMember_Namespace(const shared_ptr<RNamespaceDecl>& decl)
+RMember_Namespace::RMember_Namespace(RNamespaceDecl* decl)
     : decl(decl)
 {
 }
@@ -25,7 +25,7 @@ RMember_GlobalFuncs::RMember_GlobalFuncs(const RMember_GlobalFuncs& member) = de
 
 RMember_GlobalFuncs::~RMember_GlobalFuncs() = default;
 
-RMember_Class::RMember_Class(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<RClassDecl>& decl)
+RMember_Class::RMember_Class(RTypeArguments* outerTypeArgs, RClassDecl* decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 
@@ -40,13 +40,13 @@ RMember_ClassFuncs::RMember_ClassFuncs(const RMember_ClassFuncs&) = default;
 
 RMember_ClassFuncs::~RMember_ClassFuncs() = default;
 
-RMember_ClassVar::RMember_ClassVar(const shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RMember_ClassVar::RMember_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 
 }
 
-RMember_Struct::RMember_Struct(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<RStructDecl>& decl)
+RMember_Struct::RMember_Struct(RTypeArguments* outerTypeArgs, RStructDecl* decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 
@@ -62,39 +62,34 @@ RMember_StructFuncs::RMember_StructFuncs(const RMember_StructFuncs&) = default;
 
 RMember_StructFuncs::~RMember_StructFuncs() = default;
 
-RMember_StructVar::RMember_StructVar(const shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+RMember_StructVar::RMember_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 
 }
 
-RMember_Enum::RMember_Enum(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<REnumDecl>& decl)
+RMember_Enum::RMember_Enum(RTypeArguments* outerTypeArgs, REnumDecl* decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 
 }
 
-RMember_EnumElem::RMember_EnumElem(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<REnumElemDecl>& decl)
+RMember_EnumElem::RMember_EnumElem(RTypeArguments* outerTypeArgs, REnumElemDecl* decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 
 }
 
-RMember_EnumElemVar::RMember_EnumElemVar(const RTypeArgumentsPtr& outerTypeArgs, const shared_ptr<REnumElemVarDecl>& decl)
+RMember_EnumElemVar::RMember_EnumElemVar(RTypeArguments* outerTypeArgs, REnumElemVarDecl* decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
 
 }
 
-RMember_LambdaVar::RMember_LambdaVar(RTypeArgumentsPtr&& outerTypeArgs, shared_ptr<RLambdaVarDecl>&& decl)
-    : outerTypeArgs(move(outerTypeArgs)), decl(move(decl))
-{
-
-}
-
-RMember_LambdaVar::RMember_LambdaVar(const RTypeArgumentsPtr& outerTypeArgs, const std::shared_ptr<RLambdaVarDecl>& decl)
+RMember_LambdaVar::RMember_LambdaVar(RTypeArguments* outerTypeArgs, RLambdaVarDecl* decl)
     : outerTypeArgs(outerTypeArgs), decl(decl)
 {
+
 }
 
 RMember_TupleVar::RMember_TupleVar()
@@ -103,7 +98,7 @@ RMember_TupleVar::RMember_TupleVar()
 }
 
 template<typename TRFuncDecl>
-constexpr vector<DeclWithOuterTypeArgs<RFuncDecl>> GetItems(vector<DeclWithOuterTypeArgs<TRFuncDecl>>& items)
+vector<DeclWithOuterTypeArgs<RFuncDecl>> GetItems(vector<DeclWithOuterTypeArgs<TRFuncDecl>>& items)
 {
     vector<DeclWithOuterTypeArgs<RFuncDecl>> result;
     result.reserve(items.size());
@@ -130,13 +125,13 @@ RMember_TypeVar::RMember_TypeVar(size_t index)
 {
 }
 
-RMember_LocalVar::RMember_LocalVar(const RTypePtr& type, const std::string& name)
+RMember_LocalVar::RMember_LocalVar(RType* type, const std::string& name)
     : type(type), name(name)
 {
 
 }
 
-RMember_ThisVar::RMember_ThisVar(const RTypePtr& type)
+RMember_ThisVar::RMember_ThisVar(RType* type)
     : type(type)
 {
 }

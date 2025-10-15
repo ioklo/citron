@@ -8,6 +8,7 @@
 #include "Infra/Exceptions.h"
 
 #include "Syntax/Syntax.h"
+#include "IR0/RFactory.h"
 #include "IR0/RTypes.h"
 #include "IR0/NExp.h"
 #include "IR0/NLambdaDecl.h"
@@ -24,9 +25,9 @@ namespace Citron::SyntaxIR0Translator {
 
 FuncContext::FuncContext() = default;
 
-shared_ptr<NLambdaVarDecl> FuncContext::StageLambdaVar(const RTypePtr& type, const RName& name, NArgument_Normal&& arg)
+NLambdaVarDecl* FuncContext::StageLambdaVar(RType* type, const RName& name, NArgument_Normal&& arg, RFactory& factory)
 {
-    auto lambdaVar = MakePtr<NLambdaVarDecl>(type, name);
+    auto* lambdaVar = factory.MakeNDecl<NLambdaVarDecl>(type, name);
     lambdaVarAndInitArgs.emplace_back(lambdaVar, move(arg));
     return lambdaVar;
 }
@@ -41,9 +42,9 @@ bool FuncContext_Lambda::CanAccess(RDecl* target)
     return outer->funcContext->CanAccess(target);
 }
 
-optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& rFactory)
 {
-    auto oMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    auto oMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, rFactory);
     if (!oMember) return nullopt;
     
     // 상위 스코프에서 얻어오는 
@@ -52,13 +53,14 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
     {
         RName localVarName = RName_Normal(localVar->name);
 
-        auto initExp = MakePtr<NExp_Load>(MakePtr<NLoc_LocalVar>(localVarName, localVar->type));
-        auto initArg = NArgument_Normal(move(initExp));
+        auto* localVarLoc = rFactory.MakeNLoc<NLoc_LocalVar>(localVarName, localVar->type);
+        auto* initExp = rFactory.MakeNExp<NExp_Load>(localVarLoc);
+        auto initArg = NArgument_Normal(initExp);
 
-        auto lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg));
+        auto* lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg), rFactory);
 
-        auto openTypeArgs = MakeOpenTypeArgs(factory);
-        return RMember_LambdaVar(move(openTypeArgs), move(lambdaVar));
+        auto* openTypeArgs = MakeOpenTypeArgs(rFactory);
+        return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
     if (auto* lambdaVar = get_if<RMember_LambdaVar>(&*oMember))
@@ -77,26 +79,29 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         //     }
         // } }
 
-        auto openTypeArgs = MakeOpenTypeArgs(factory);
-        auto initArg = NArgument_Normal(MakePtr<NExp_Load>(MakePtr<NLoc_LambdaVar>(lambdaVar->decl, openTypeArgs)));
+        auto openTypeArgs = MakeOpenTypeArgs(rFactory);
+        auto* lambdaVarDecl = rFactory.MakeNLoc<NLoc_LambdaVar>(lambdaVar->decl, openTypeArgs);
+        auto* loadExp = rFactory.MakeNExp<NExp_Load>(lambdaVarDecl);
+        NArgument_Normal initArg{loadExp};
 
-        auto newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), move(initArg));
-        return RMember_LambdaVar(move(openTypeArgs), move(newLambdaVar));
+        auto* newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), move(initArg), rFactory);
+        return RMember_LambdaVar{openTypeArgs, newLambdaVar};
     }
 
     if (auto* thisVar = get_if<RMember_ThisVar>(&*oMember))
     {
         // TODO: 워닝, struct의 this는 복사가 일어납니다. 원본과 다를 수 있습니다. ref this로 명시적으로 지정해주세요(?)
-        if (auto structType = dynamic_cast<RType_Struct*>(thisVar->type.get()))
-            throw NotImplementedException();
+        if (auto structType = dynamic_cast<RType_Struct*>(thisVar->type))
+            throw NotImplementedException{};
 
-        auto initExp = MakePtr<NExp_Load>(MakePtr<NLoc_This>(thisVar->type));
-        auto initArg = NArgument_Normal(move(initExp));
+        auto* thisLoc = rFactory.MakeNLoc<NLoc_This>(thisVar->type);
+        auto* initExp = rFactory.MakeNExp<NExp_Load>(thisLoc);
+        auto initArg = NArgument_Normal{initExp};
 
-        auto lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, move(initArg));
-        auto openTypeArgs = MakeOpenTypeArgs(factory);
+        auto* lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, move(initArg), rFactory);
+        auto* openTypeArgs = MakeOpenTypeArgs(rFactory);
 
-        return RMember_LambdaVar(move(openTypeArgs), move(lambdaVar));
+        return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
     // 나머지는 그대로 리턴
@@ -108,13 +113,13 @@ RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
     return funcReturn;
 }
 
-void FuncContext_Lambda::SetOpenFuncReturn(RTypePtr&& retType)
+void FuncContext_Lambda::SetOpenFuncReturn(RType* retType)
 {
     assert(holds_alternative<RFuncReturn_NotSet>(funcReturn));
-    funcReturn = move(RFuncReturn_Set(retType));
+    funcReturn = RFuncReturn_Set{retType};
 }
 
-RTypeArgumentsPtr FuncContext_Lambda::MakeOpenTypeArgs(RTypeFactory& factory)
+RTypeArguments* FuncContext_Lambda::MakeOpenTypeArgs(RFactory& factory)
 {
     return outer->MakeOpenTypeArgs(factory);
 }
@@ -129,7 +134,7 @@ bool FuncContext_FuncDecl::CanAccess(RDecl* target)
     return funcDecl->GetNDecl()->GetRDecl()->CanAccess(target);
 }
 
-optional<RMember> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
 {
     return funcDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
@@ -139,13 +144,13 @@ RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()
     return funcDecl->GetUnboundFuncReturn();
 }
 
-void FuncContext_FuncDecl::SetOpenFuncReturn(RTypePtr&& retType)
+void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
 {
-    throw RuntimeFatalException();
+    throw RuntimeFatalException{};
 }
 
 
-RTypeArgumentsPtr FuncContext_FuncDecl::MakeOpenTypeArgs(RTypeFactory& factory)
+RTypeArguments* FuncContext_FuncDecl::MakeOpenTypeArgs(RFactory& factory)
 {
     return funcDecl->GetNDecl()->GetRDecl()->MakeOpenTypeArgs(factory);
 }

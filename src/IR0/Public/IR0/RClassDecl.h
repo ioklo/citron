@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 #include "RDecl.h"
 #include "RFuncDeclOuter.h"
@@ -13,7 +12,6 @@ namespace Citron {
 class MClassDecl;
 
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 
 class RClassDecl
     : public RDecl
@@ -22,17 +20,17 @@ class RClassDecl
     , public RTypeDeclOuter
 {
 public:
-    virtual std::optional<RMember_ClassVar> GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name) = 0;
+    virtual std::optional<RMember_ClassVar> GetVar(RTypeArguments* typeArgs, const RName& name) = 0;
 
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RTypeDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RTypeDeclOuterVisitor& visitor) final { visitor.Visit(*this); }
+    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RTypeDeclVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RTypeDeclOuterVisitor& visitor) final { visitor.Visit(this); }
 };
 
 class RMClassDecl : public RClassDecl
 {
-    std::shared_ptr<MClassDecl> decl;
+    MClassDecl* decl;
 };
 
 

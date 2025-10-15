@@ -14,9 +14,9 @@ using namespace std;
 
 namespace Citron {
 
-optional<vector<STypeExpPtr>> ParseTypeArgs(Lexer* lexer)
+optional<vector<STypeExp*>> ParseTypeArgs(Lexer* lexer, SFactory& factory)
 {
-    vector<STypeExpPtr> typeArgs;
+    vector<STypeExp*> typeArgs;
 
     Lexer curLexer = *lexer;
 
@@ -29,7 +29,7 @@ optional<vector<STypeExpPtr>> ParseTypeArgs(Lexer* lexer)
             if (!Accept<CommaToken>(&curLexer))
                 return nullopt;
 
-        auto oTypeArg = ParseTypeExp(&curLexer);
+        auto oTypeArg = ParseTypeExp(&curLexer, factory);
         if (!oTypeArg)
             return nullopt;
 
@@ -40,7 +40,7 @@ optional<vector<STypeExpPtr>> ParseTypeArgs(Lexer* lexer)
     return typeArgs;
 }
 
-shared_ptr<STypeExp_Id> ParseIdTypeExp(Lexer* lexer)
+STypeExp_Id* ParseIdTypeExp(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
@@ -48,76 +48,76 @@ shared_ptr<STypeExp_Id> ParseIdTypeExp(Lexer* lexer)
     if (!oIdToken)
         return nullptr;
 
-    if (auto oTypeArgs = ParseTypeArgs(&curLexer))
+    if (auto oTypeArgs = ParseTypeArgs(&curLexer, factory))
     {
         *lexer = move(curLexer);
-        return MakePtr<STypeExp_Id>(oIdToken->text, move(*oTypeArgs));
+        return factory.MakeSTypeExp_Id(oIdToken->text, move(*oTypeArgs));
     }
     else
     {
         *lexer = move(curLexer);
-        return MakePtr<STypeExp_Id>(oIdToken->text, vector<STypeExpPtr>());
+        return factory.MakeSTypeExp_Id(oIdToken->text, vector<STypeExp*>());
     }
 }
 
 // T?
-shared_ptr<STypeExp_Nullable> ParseNullableTypeExp(Lexer* lexer)
+STypeExp_Nullable* ParseNullableTypeExp(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    STypeExpPtr typeExp = ParseBoxPtrTypeExp(&curLexer);
-    if (!typeExp) typeExp = ParseLocalPtrTypeExp(&curLexer);
-    if (!typeExp) typeExp = ParseParenTypeExp(&curLexer);
-    if (!typeExp) typeExp = ParseIdChainTypeExp(&curLexer);
+    STypeExp* typeExp = ParseBoxPtrTypeExp(&curLexer, factory);
+    if (!typeExp) typeExp = ParseLocalPtrTypeExp(&curLexer, factory);
+    if (!typeExp) typeExp = ParseParenTypeExp(&curLexer, factory);
+    if (!typeExp) typeExp = ParseIdChainTypeExp(&curLexer, factory);
     if (!typeExp) return nullptr;
 
     if (!Accept<QuestionToken>(&curLexer))
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<STypeExp_Nullable>(move(typeExp));
+    return factory.MakeSTypeExp_Nullable(typeExp);
 }
 
 // box T*
-shared_ptr<STypeExp_BoxPtr> ParseBoxPtrTypeExp(Lexer* lexer)
+STypeExp_BoxPtr* ParseBoxPtrTypeExp(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<BoxToken>(&curLexer))
         return nullptr;
 
-    STypeExpPtr typeExp = ParseParenTypeExp(&curLexer);
-    if (!typeExp) typeExp = ParseIdChainTypeExp(&curLexer);
+    STypeExp* typeExp = ParseParenTypeExp(&curLexer, factory);
+    if (!typeExp) typeExp = ParseIdChainTypeExp(&curLexer, factory);
     if (!typeExp) return nullptr;
 
     if (!Accept<StarToken>(&curLexer))
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<STypeExp_BoxPtr>(move(typeExp));
+    return factory.MakeSTypeExp_BoxPtr(typeExp);
 }
 
 // T*
-STypeExpPtr ParseLocalPtrTypeExp(Lexer* lexer)
+STypeExp* ParseLocalPtrTypeExp(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     // avoid left recursion
 
-    STypeExpPtr innerTypeExp = ParseParenTypeExp(&curLexer);
-    if (!innerTypeExp) innerTypeExp = ParseIdChainTypeExp(&curLexer);
+    STypeExp* innerTypeExp = ParseParenTypeExp(&curLexer, factory);
+    if (!innerTypeExp) innerTypeExp = ParseIdChainTypeExp(&curLexer, factory);
     if (!innerTypeExp) return nullptr;
     
     // 적어도 한개는 있어야 한다
     if (!Accept<StarToken>(&curLexer))
         return nullptr;
     
-    STypeExpPtr curTypeExp = MakePtr<STypeExp_LocalPtr>(move(innerTypeExp));
+    STypeExp* curTypeExp = factory.MakeSTypeExp_LocalPtr(innerTypeExp);
 
     while (Accept<StarToken>(&curLexer))
     {
         // NOTICE: STypeExp_LocalPtr(move(curTypeExp)); curTypeExp가 STypeExp_LocalPtr라면 감싸는게 아니라 이동생성자가 호출된다
-        curTypeExp = MakePtr<STypeExp_LocalPtr>(move(curTypeExp));
+        curTypeExp = factory.MakeSTypeExp_LocalPtr(curTypeExp);
     }
 
     *lexer = move(curLexer);
@@ -125,17 +125,17 @@ STypeExpPtr ParseLocalPtrTypeExp(Lexer* lexer)
 }
 
 // (T)
-STypeExpPtr ParseParenTypeExp(Lexer* lexer)
+STypeExp* ParseParenTypeExp(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LParenToken>(&curLexer))
         return nullptr;
 
-    STypeExpPtr innerTypeExp = ParseNullableTypeExp(&curLexer);
-    if (!innerTypeExp) innerTypeExp = ParseBoxPtrTypeExp(&curLexer);
-    if (!innerTypeExp) innerTypeExp = ParseLocalPtrTypeExp(&curLexer);
-    if (!innerTypeExp) innerTypeExp = ParseLocalTypeExp(&curLexer);
+    STypeExp* innerTypeExp = ParseNullableTypeExp(&curLexer, factory);
+    if (!innerTypeExp) innerTypeExp = ParseBoxPtrTypeExp(&curLexer, factory);
+    if (!innerTypeExp) innerTypeExp = ParseLocalPtrTypeExp(&curLexer, factory);
+    if (!innerTypeExp) innerTypeExp = ParseLocalTypeExp(&curLexer, factory);
     if (!innerTypeExp) return nullptr;
     
     if (!Accept<RParenToken>(&curLexer))
@@ -146,15 +146,15 @@ STypeExpPtr ParseParenTypeExp(Lexer* lexer)
 }
 
 // ID...
-STypeExpPtr ParseIdChainTypeExp(Lexer* lexer)
+STypeExp* ParseIdChainTypeExp(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto idTypeExp = ParseIdTypeExp(&curLexer);
+    auto* idTypeExp = ParseIdTypeExp(&curLexer, factory);
     if (!idTypeExp)
         return nullptr;
 
-    STypeExpPtr curTypeExp = move(idTypeExp);
+    STypeExp* curTypeExp = idTypeExp;
 
     // .
     while (Accept<DotToken>(&curLexer))
@@ -164,11 +164,11 @@ STypeExpPtr ParseIdChainTypeExp(Lexer* lexer)
         if (!oIdToken)
             return nullptr;
 
-        auto oTypeArgs = ParseTypeArgs(&curLexer);
+        auto oTypeArgs = ParseTypeArgs(&curLexer, factory);
         if (oTypeArgs)
-            curTypeExp = MakePtr<STypeExp_Member>(move(curTypeExp), move(oIdToken->text), move(*oTypeArgs));
+            curTypeExp = factory.MakeSTypeExp_Member(curTypeExp, move(oIdToken->text), move(*oTypeArgs));
         else 
-            curTypeExp = MakePtr<STypeExp_Member>(move(curTypeExp), move(oIdToken->text), std::vector<STypeExpPtr>{});
+            curTypeExp = factory.MakeSTypeExp_Member(curTypeExp, move(oIdToken->text), std::vector<STypeExp*>{});
     }
 
     *lexer = move(curLexer);
@@ -182,37 +182,37 @@ STypeExpPtr ParseIdChainTypeExp(Lexer* lexer)
 // std::optional<STupleTypeExp> ParseTupleTypeExp(Lexer* lexer);
 
 // local I i;
-shared_ptr<STypeExp_Local> ParseLocalTypeExp(Lexer* lexer)
+STypeExp_Local* ParseLocalTypeExp(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LocalToken>(&curLexer))
         return nullptr;
 
-    STypeExpPtr innerTypeExp = ParseIdChainTypeExp(&curLexer);
+    STypeExp* innerTypeExp = ParseIdChainTypeExp(&curLexer, factory);
     // if (!oInnerTypeExp) oInnerTypeExp = ParseFuncTypeExp(&curLexer);
     if (!innerTypeExp) return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<STypeExp_Local>(move(innerTypeExp));
+    return factory.MakeSTypeExp_Local(innerTypeExp);
 }
 
 // 
-STypeExpPtr ParseTypeExp(Lexer* lexer)
+STypeExp* ParseTypeExp(Lexer* lexer, SFactory& factory)
 {
-    if (auto nullableTypeExp = ParseNullableTypeExp(lexer))
+    if (auto* nullableTypeExp = ParseNullableTypeExp(lexer, factory))
         return nullableTypeExp;
 
-    if (auto boxPtrTypeExp = ParseBoxPtrTypeExp(lexer))
+    if (auto* boxPtrTypeExp = ParseBoxPtrTypeExp(lexer, factory))
         return boxPtrTypeExp;
 
-    if (auto localPtrTypeExp = ParseLocalPtrTypeExp(lexer))
+    if (auto* localPtrTypeExp = ParseLocalPtrTypeExp(lexer, factory))
         return localPtrTypeExp;
 
-    if (auto idChainTypeExp = ParseIdChainTypeExp(lexer))
+    if (auto* idChainTypeExp = ParseIdChainTypeExp(lexer, factory))
         return idChainTypeExp;
 
-    if (auto localTypeExp = ParseLocalTypeExp(lexer))
+    if (auto* localTypeExp = ParseLocalTypeExp(lexer, factory))
         return localTypeExp;
 
     return nullptr;

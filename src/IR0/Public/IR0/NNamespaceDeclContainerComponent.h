@@ -13,14 +13,14 @@ namespace Citron {
 class NNamespaceDeclContainerComponent
 {
 public:
-    std::vector<std::shared_ptr<NNamespaceDecl>> namespaceDecls; // preserve order
-    std::unordered_map<std::string, std::shared_ptr<NNamespaceDecl>> namespaceDict;
+    std::vector<NNamespaceDecl*> namespaceDecls; // preserve order
+    std::unordered_map<std::string, NNamespaceDecl*> namespaceDict;
 
 public:
     NNamespaceDeclContainerComponent();
 
-    IR0_API void AddNamespace(std::shared_ptr<NNamespaceDecl> _namespace);
-    IR0_API std::shared_ptr<NNamespaceDecl> GetNamespace(const std::string& name);
+    IR0_API void AddNamespace(NNamespaceDecl* _namespace);
+    IR0_API NNamespaceDecl* GetNamespace(const std::string& name);
 
     // internal
     std::optional<RMember> GetMemberNamespace(const RName& name, size_t explicitTypeParamsExceptOuterCount);

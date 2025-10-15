@@ -14,7 +14,6 @@ template<typename TDecl>
 struct DeclWithOuterTypeArgs;
 
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 struct RFuncParameter;
 
 namespace SyntaxIR0Translator {
@@ -24,24 +23,24 @@ class TranslationContext;
 template<typename TFuncDecl>
 struct FuncMatch
 {
-    std::shared_ptr<TFuncDecl> funcDecl;
-    RTypeArgumentsPtr typeArgs;
+    TFuncDecl* funcDecl;
+    RTypeArguments* typeArgs;
     std::vector<NArgument> args;
 };
 
 struct ArgumentsMatch
 {
-    RTypeArgumentsPtr typeArgs;
+    RTypeArguments* typeArgs;
     std::vector<NArgument> args;
 };
 
 template<typename TFuncDecl>
-std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<DeclWithOuterTypeArgs<TFuncDecl>>& items, const SArgumentsPtr& sArgs, TranslationContext& context)
+std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<DeclWithOuterTypeArgs<TFuncDecl>>& items, SArguments* sArgs, TranslationContext& context)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
-std::optional<ArgumentsMatch> MatchArguments(const RTypeArgumentsPtr& outerTypeArgs, const RTypeArgumentsPtr& partialTypeArgsExceptOuter, std::vector<RFuncParameter>&& funcParams, bool bVariadic, const SArgumentsPtr& sArgs);
+std::optional<ArgumentsMatch> MatchArguments(RTypeArguments* outerTypeArgs, RTypeArguments* partialTypeArgsExceptOuter, std::vector<RFuncParameter>&& funcParams, bool bVariadic, SArguments* sArgs);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

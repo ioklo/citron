@@ -2,52 +2,45 @@
 #include "SymbolConfig.h"
 
 #include <string>
-#include <memory>
-
 
 #include "MIdentifier.h"
 
 namespace Citron {
 
 class MDeclId;
-using MDeclIdPtr = std::shared_ptr<MDeclId>;
 
 class MDeclIdFactory;
 
 class MDeclPath
 {
-    std::shared_ptr<MDeclPath> outer;
+    MDeclPath* outer;
     MIdentifier identifier;
 
 private:
-    MDeclPath(std::shared_ptr<MDeclPath>&& outer, MIdentifier&& identifier);
+    MDeclPath(MDeclPath* outer, MIdentifier&& identifier);
     friend MDeclIdFactory;
 };
-
-using MDeclPathPtr = std::shared_ptr<MDeclPath>;
 
 class MDeclId
 {
     std::string moduleName;
-    MDeclPathPtr path;
+    MDeclPath* path;
 
 private:
-    MDeclId(std::string&& moduleName, MDeclPathPtr&& path);
+    MDeclId(std::string&& moduleName, MDeclPath*&& path);
     friend MDeclIdFactory;
 };
-
-using MDeclIdPtr = std::shared_ptr<MDeclId>;
 
 // flyweight
 class MDeclIdFactory
 {
 public:
-    SYMBOL_API MDeclIdPtr GetBool();
-    SYMBOL_API MDeclIdPtr GetInt();
-    SYMBOL_API MDeclIdPtr GetString();
+    SYMBOL_API MDeclId* GetBool();
+    SYMBOL_API MDeclId* GetInt();
+    SYMBOL_API MDeclId* GetString();
 
-    SYMBOL_API MDeclIdPtr Get(std::string&& moduleName, MIdentifier&& identifier);
-    SYMBOL_API MDeclIdPtr GetChild(MDeclIdPtr&& id, MIdentifier&& identifier);
+    SYMBOL_API MDeclId* Get(std::string&& moduleName, MIdentifier&& identifier);
+    SYMBOL_API MDeclId* GetChild(MDeclId* id, MIdentifier&& identifier);
 };
 
 } // namespace Citron

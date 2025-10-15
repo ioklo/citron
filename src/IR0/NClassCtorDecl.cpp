@@ -7,7 +7,7 @@ using namespace std;
 
 namespace Citron {
 
-NClassCtorDecl::NClassCtorDecl(const shared_ptr<NClassDecl>& _class, RAccessor accessor, bool bTrivial, vector<string>&& typeParams, vector<RFuncParameter> parameters, bool bLastParamVariadic)
+NClassCtorDecl::NClassCtorDecl(NClassDecl* _class, RAccessor accessor, bool bTrivial, vector<string>&& typeParams, vector<RFuncParameter> parameters, bool bLastParamVariadic)
     : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, move(typeParams))
     , _class(_class), accessor(accessor), bTrivial(bTrivial)
 {
@@ -16,12 +16,12 @@ NClassCtorDecl::NClassCtorDecl(const shared_ptr<NClassDecl>& _class, RAccessor a
 
 NDecl* NClassCtorDecl::GetNOuter()
 {
-    return _class.lock().get();
+    return _class;
 }
 
 RDecl* NClassCtorDecl::GetROuter()
 {
-    return _class.lock().get();
+    return _class;
 }
 
 RIdentifier NClassCtorDecl::GetIdentifier()
@@ -29,27 +29,24 @@ RIdentifier NClassCtorDecl::GetIdentifier()
     return RIdentifier { RName_Reserved("Ctor"), 0, NCommonFuncDeclComponent::GetParamIds() };
 }
 
-optional<RMember> NClassCtorDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NClassCtorDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
-std::optional<RMember> NClassCtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+std::optional<RMember> NClassCtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
 {
-    auto sharedClass = _class.lock();
-    assert(sharedClass);
-
-    auto baseTypeParamCount = sharedClass->GetAllTypeParamCount();
+    auto baseTypeParamCount = _class->GetAllTypeParamCount();
     if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
         return oMember;
 
 
-    return sharedClass->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return _class->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 
-shared_ptr<RClassDecl> NClassCtorDecl::GetClassDecl()
+RClassDecl* NClassCtorDecl::GetClassDecl()
 {
-    return _class.lock();
+    return _class;
 }
 
 } // namespace Citron

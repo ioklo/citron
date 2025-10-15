@@ -108,7 +108,7 @@ public:
 
     BufferIterator(const BufferIterator& pos) = default;
 
-    BufferIterator& operator=(BufferIterator&& other)
+    BufferIterator& operator=(BufferIterator&& other) noexcept
     {
         pos = move(other.pos);
         validPos = get_if<ValidBufferPosition>(&this->pos);

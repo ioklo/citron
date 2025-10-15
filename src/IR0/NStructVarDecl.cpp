@@ -10,20 +10,20 @@ using namespace std;
 
 namespace Citron {
 
-NStructVarDecl::NStructVarDecl(std::weak_ptr<NStructDecl> _struct, RAccessor accessor, bool bStatic, std::string name)
-    : _struct(move(_struct))
+NStructVarDecl::NStructVarDecl(NStructDecl* _struct, RAccessor accessor, bool bStatic, std::string name)
+    : _struct(_struct)
     , accessor(accessor)
     , bStatic(bStatic)
     , name(move(name))
 {
 }
 
-void NStructVarDecl::InitDeclType(const RTypePtr& declType)
+void NStructVarDecl::InitDeclType(RType* declType)
 {
     this->declType = declType;
 }
 
-RTypePtr NStructVarDecl::GetUnboundDeclType()
+RType* NStructVarDecl::GetUnboundDeclType()
 {
     assert(declType);
     return declType;
@@ -31,12 +31,12 @@ RTypePtr NStructVarDecl::GetUnboundDeclType()
 
 NDecl* NStructVarDecl::GetNOuter()
 {
-    return _struct.lock().get();
+    return _struct;
 }
 
 RDecl* NStructVarDecl::GetROuter()
 {
-    return _struct.lock().get();
+    return _struct;
 }
 
 RIdentifier NStructVarDecl::GetIdentifier()
@@ -44,18 +44,18 @@ RIdentifier NStructVarDecl::GetIdentifier()
     return RIdentifier { RName_Normal(name), 0, {} };
 }
 
-optional<RMember> NStructVarDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NStructVarDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
-optional<Citron::RMember> NStructVarDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<Citron::RMember> NStructVarDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
 {
     // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
     throw RuntimeFatalException();
 }
 
-RTypePtr NStructVarDecl::GetDeclType(RTypeArguments& typeArgs, RTypeFactory& factory)
+RType* NStructVarDecl::GetDeclType(RTypeArguments& typeArgs, RFactory& factory)
 {
     assert(declType != nullptr);
     return declType->Apply(typeArgs, factory);

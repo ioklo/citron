@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 #include "RDecl.h"
 #include "RTypeDecl.h"
@@ -14,13 +13,13 @@ class RInterfaceDecl
     , public RTypeDecl
 {
 public:
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(*this); }
-    void Accept(RTypeDeclVisitor& visitor) final { visitor.Visit(*this); }
+    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
+    void Accept(RTypeDeclVisitor& visitor) final { visitor.Visit(this); }
 };
 
 class RMInterfaceDecl : public RInterfaceDecl
 {
-    std::shared_ptr<MInterfaceDecl> decl;
+    MInterfaceDecl* decl;
 };
 
 

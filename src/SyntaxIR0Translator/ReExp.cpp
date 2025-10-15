@@ -8,96 +8,96 @@
 
 namespace Citron::SyntaxIR0Translator {
 
-ReExp_ThisVar::ReExp_ThisVar(const RTypePtr& type)
+ReExp_ThisVar::ReExp_ThisVar(RType* type)
     : type(type)
 {
 }
 
-ReExp_LocalVar::ReExp_LocalVar(const RTypePtr& type, const std::string& name)
+ReExp_LocalVar::ReExp_LocalVar(RType* type, const std::string& name)
     : type(type), name(name)
 {
 }
 
-ReExp_LambdaVar::ReExp_LambdaVar(const std::shared_ptr<NLambdaVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+ReExp_LambdaVar::ReExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr ReExp_LambdaVar::GetType(RTypeFactory& factory)
+RType* ReExp_LambdaVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_ClassVar::ReExp_ClassVar(const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ReExp_ClassVar::ReExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
-RTypePtr ReExp_ClassVar::GetType(RTypeFactory& factory)
+RType* ReExp_ClassVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_StructVar::ReExp_StructVar(const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, bool hasExplicitInstance, const ReExpPtr& explicitInstance)
+ReExp_StructVar::ReExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance)
     : decl(decl), typeArgs(typeArgs), hasExplicitInstance(hasExplicitInstance), explicitInstance(explicitInstance)
 {
 }
 
-RTypePtr ReExp_StructVar::GetType(RTypeFactory& factory)
+RType* ReExp_StructVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_EnumElemVar::ReExp_EnumElemVar(const std::shared_ptr<REnumElemVarDecl>& decl, const RTypeArgumentsPtr& typeArgs, const ReExpPtr& instance)
+ReExp_EnumElemVar::ReExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, ReExp* instance)
     : decl(decl), typeArgs(typeArgs), instance(instance)
 {
 }
 
-RTypePtr ReExp_EnumElemVar::GetType(RTypeFactory& factory)
+RType* ReExp_EnumElemVar::GetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_LocalDeref::ReExp_LocalDeref(const ReExpPtr& target)
+ReExp_LocalDeref::ReExp_LocalDeref(ReExp* target)
     : target(target)
 {
 
 }
 
-RTypePtr ReExp_LocalDeref::GetType(RTypeFactory& factory)
+RType* ReExp_LocalDeref::GetType(RFactory& factory)
 {
     auto type = target->GetType(factory);
 
     // TODO: remove reinterpret cast. 어떻게?
-    return ((RType_LocalPtr*)type.get())->innerType;
+    return ((RType_LocalPtr*)type)->innerType;
 }
 
-ReExp_BoxDeref::ReExp_BoxDeref(const ReExpPtr& target)
+ReExp_BoxDeref::ReExp_BoxDeref(ReExp* target)
     : target(target)
 {
 
 }
 
-RTypePtr ReExp_BoxDeref::GetType(RTypeFactory& factory)
+RType* ReExp_BoxDeref::GetType(RFactory& factory)
 {
     auto type = target->GetType(factory);
 
     // TODO: remove reinterpret cast
-    return ((RType_BoxPtr*)type.get())->innerType;
+    return ((RType_BoxPtr*)type)->innerType;
 }
 
-ReExp_ListIndexer::ReExp_ListIndexer(const ReExpPtr& instance, const ReExpPtr& index, const RTypePtr& itemType)
+ReExp_ListIndexer::ReExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemType)
     : instance(instance), index(index), itemType(itemType)
 {
 
 }
 
-ReExp_Else::ReExp_Else(const NExpPtr& nExp)
+ReExp_Else::ReExp_Else(NExp* nExp)
     : nExp(nExp)
 {
 }
 
-RTypePtr ReExp_Else::GetType(RTypeFactory& factory)
+RType* ReExp_Else::GetType(RFactory& factory)
 {
     return nExp->GetType(factory);
 }

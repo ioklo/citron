@@ -1,9 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <memory>
 #include <string>
-
 
 #include "MFuncReturn.h"
 #include "MFuncParameter.h"
@@ -12,10 +10,8 @@ namespace Citron
 {
 
 class MDeclId;
-using MDeclIdPtr = std::shared_ptr<MDeclId>;
 
 class MTypeArguments;
-using MTypeArgumentsPtr = std::shared_ptr<MTypeArguments>;
 
 // 같은 unit내에서의 forward declaration
 class MType_Nullable;
@@ -31,14 +27,14 @@ class MTypeVisitor
 {
 public:
     virtual ~MTypeVisitor() {}
-    virtual void Visit(MType_Nullable& type) = 0;
-    virtual void Visit(MType_TypeVar& type) = 0;
-    virtual void Visit(MType_Void& type) = 0;
-    virtual void Visit(MType_Tuple& type) = 0;
-    virtual void Visit(MType_Func& type) = 0;
-    virtual void Visit(MType_LocalPtr& type) = 0;
-    virtual void Visit(MType_BoxPtr& type) = 0;
-    virtual void Visit(MType_Instance& type) = 0;
+    virtual void Visit(MType_Nullable* type) = 0;
+    virtual void Visit(MType_TypeVar* type) = 0;
+    virtual void Visit(MType_Void* type) = 0;
+    virtual void Visit(MType_Tuple* type) = 0;
+    virtual void Visit(MType_Func* type) = 0;
+    virtual void Visit(MType_LocalPtr* type) = 0;
+    virtual void Visit(MType_BoxPtr* type) = 0;
+    virtual void Visit(MType_Instance* type) = 0;
 };
 
 class MType
@@ -48,15 +44,13 @@ public:
     virtual void Accept(MTypeVisitor& visitor) = 0;
 };
 
-using MTypePtr = std::shared_ptr<MType>;
-
 // recursive types
 class MType_Nullable : public MType
 {
-    MTypePtr innerType;
+    MType* innerType;
 
 public:
-    void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // trivial types
@@ -74,18 +68,18 @@ class MType_TypeVar : public MType
     // std::string name;
 
 public:
-    void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class MType_Void : public MType
 {
 public:
-    void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class MTupleVar
 {
-    MTypePtr declType;
+    MType* declType;
     std::string name;
 };
 
@@ -94,7 +88,7 @@ class MType_Tuple : public MType
     std::vector<MTupleVar> vars;
 
 public:
-    void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class MType_Func : public MType
@@ -104,31 +98,31 @@ class MType_Func : public MType
     std::vector<MFuncParameter> parameters;
 
 public:
-    void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class MType_LocalPtr : public MType
 {
-    MTypePtr innerType;
+    MType* innerType;
 
 public:
-    void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class MType_BoxPtr : public MType
 {
-    MTypePtr innerType;
+    MType* innerType;
 public:
-    void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 class MType_Instance : public MType
 {
-    MDeclIdPtr declId;
-    MTypeArgumentsPtr typeArgs;
+    MDeclId* declId;
+    MTypeArguments* typeArgs;
 
 public:
-    void Accept(MTypeVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 

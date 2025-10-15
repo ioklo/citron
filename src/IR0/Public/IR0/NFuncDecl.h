@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #include "RFuncReturn.h"
 #include "NDecl.h"
 
@@ -12,12 +10,12 @@ class NFuncDeclVisitor
 {
 public:
     virtual ~NFuncDeclVisitor() {}
-    virtual void Visit(NGlobalFuncDecl& func) = 0;
-    virtual void Visit(NClassCtorDecl& func) = 0;
-    virtual void Visit(NClassFuncDecl& func) = 0;
-    virtual void Visit(NStructCtorDecl& func) = 0;
-    virtual void Visit(NStructFuncDecl& func) = 0;
-    virtual void Visit(NLambdaDecl& func) = 0;
+    virtual void Visit(NGlobalFuncDecl* func) = 0;
+    virtual void Visit(NClassCtorDecl* func) = 0;
+    virtual void Visit(NClassFuncDecl* func) = 0;
+    virtual void Visit(NStructCtorDecl* func) = 0;
+    virtual void Visit(NStructFuncDecl* func) = 0;
+    virtual void Visit(NLambdaDecl* func) = 0;
 };
 
 class NFuncDecl
@@ -29,7 +27,5 @@ public:
     virtual bool IsSeqFunc() = 0;
     virtual void Accept(NFuncDeclVisitor& visitor) = 0;
 };
-
-using NFuncDeclPtr = std::shared_ptr<NFuncDecl>;
 
 }

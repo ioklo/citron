@@ -22,15 +22,15 @@ ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContext
 
 ScopeContextPtr ScopeContext::Clone(CloneContext& context)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 void ScopeContext::Update(ScopeContext& src, UpdateContext& context)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
-RTypeArgumentsPtr ScopeContext::MakeOpenTypeArgs(RTypeFactory& factory)
+RTypeArguments* ScopeContext::MakeOpenTypeArgs(RFactory& factory)
 {
     // funcContext로 점프
     return funcContext->MakeOpenTypeArgs(factory);
@@ -38,51 +38,51 @@ RTypeArgumentsPtr ScopeContext::MakeOpenTypeArgs(RTypeFactory& factory)
 
 void ScopeContext::SetFlowEndsCompletely()
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 shared_ptr<ScopeContext> ScopeContext::MakeNestedScopeContext(shared_ptr<ScopeContext> sharedThis)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 shared_ptr<ScopeContext> ScopeContext::MakeLoopNestedScopeContext(shared_ptr<ScopeContext> sharedThis)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 tuple<ScopeContextPtr, NLambdaDecl> ScopeContext::MakeLambdaBodyContext(const RFuncReturn& ret, vector<RFuncParameter> params, bool bLastParamVariadic)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
-void ScopeContext::AddLocalVarInfo(const RTypePtr& type, const RName& name)
+void ScopeContext::AddLocalVarInfo(RType* type, const RName& name)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 
 bool ScopeContext::DoesLocalVarNameExistInScope(const string& name)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 bool ScopeContext::IsFailed() 
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
-expected<RTypePtr, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp& typeExp, RTypeFactory& factory)
+expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* typeExp, RFactory& factory)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
-shared_ptr<NLoc_This> ScopeContext::MakeThisLoc(RTypeFactory& factory)
+NLoc_This* ScopeContext::MakeThisLoc(RFactory& factory)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
-optional<RMember> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
 {
     if (auto* normalName = get_if<RName_Normal>(&name))
     {

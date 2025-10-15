@@ -11,33 +11,31 @@ using namespace std;
 
 namespace Citron {
 
-NEnumElemDecl::NEnumElemDecl(weak_ptr<NEnumDecl>&& weakEnum, const string& name, size_t varCount)
-    : weakEnum(move(weakEnum)), name(move(name))
+NEnumElemDecl::NEnumElemDecl(NEnumDecl* _enum, const string& name, size_t varCount)
+    : _enum{_enum}, name{name}
 {
     vars.reserve(varCount);
 }
 
-void NEnumElemDecl::AddVar(const std::shared_ptr<NEnumElemVarDecl>& var)
+void NEnumElemDecl::AddVar(NEnumElemVarDecl* var)
 {
     vars.push_back(var);
-    varsMap.emplace(var->name, move(var));
+    varsMap.emplace(var->name, var);
 }
 
 NDecl* NEnumElemDecl::GetNOuter()
 {
-    return weakEnum.lock().get();
+    return _enum;
 }
 
-RMember NEnumElemDecl::ToRMember(const shared_ptr<NTypeDecl>& sharedThis, const RTypeArgumentsPtr& typeArgs)
+RMember NEnumElemDecl::ToRMember(RTypeArguments* typeArgs)
 {
-    auto sharedEnumElemDecl = dynamic_pointer_cast<NEnumElemDecl>(sharedThis);
-    assert(sharedEnumElemDecl);
-    return RMember_EnumElem(typeArgs, sharedEnumElemDecl);
+    return RMember_EnumElem(typeArgs, this);
 }
 
 RDecl* NEnumElemDecl::GetROuter()
 {
-    return weakEnum.lock().get();
+    return _enum;
 }
 
 RIdentifier NEnumElemDecl::GetIdentifier()
@@ -45,25 +43,25 @@ RIdentifier NEnumElemDecl::GetIdentifier()
     return RIdentifier { RName_Normal(name), 0, {} };
 }
 
-optional<RMember> NEnumElemDecl::GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> NEnumElemDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
     return GetVar(typeArgs, name);
 }
 
-optional<RMember> NEnumElemDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+optional<RMember> NEnumElemDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
 {
     // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
     throw RuntimeFatalException();
 }
 
-shared_ptr<REnumDecl> NEnumElemDecl::GetBaseEnumDecl()
+REnumDecl* NEnumElemDecl::GetBaseEnumDecl()
 {
-    return weakEnum.lock();
+    return _enum;
 }
 
-optional<RMember_EnumElemVar> NEnumElemDecl::GetVar(const RTypeArgumentsPtr& typeArgs, const RName& name)
+optional<RMember_EnumElemVar> NEnumElemDecl::GetVar(RTypeArguments* typeArgs, const RName& name)
 {
     auto* normalName = get_if<RName_Normal>(&name);
     if (!normalName) return nullopt;

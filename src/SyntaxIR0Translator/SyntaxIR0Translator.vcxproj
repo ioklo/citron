@@ -73,6 +73,7 @@
     <ClCompile Include="SVarDeclToNStmtsTranslation.cpp" />
     <ClCompile Include="SyntaxIR0Translator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
+    <ClCompile Include="SRTFactory.cpp" />
     <ClCompile Include="TranslationContext.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +116,7 @@
     <ClInclude Include="SVarDeclToNStmtsTranslation.h" />
     <ClInclude Include="SyntaxIR0Translator-HeaderUnits.h" />
     <ClInclude Include="SyntaxIR0Translator.h" />
+    <ClInclude Include="SRTFactory.h" />
     <ClInclude Include="TranslationContext.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

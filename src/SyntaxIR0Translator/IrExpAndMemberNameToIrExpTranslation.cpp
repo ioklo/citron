@@ -32,125 +32,125 @@ namespace {
 
 class StaticParentTranslator
 {
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
     TranslationContext& context;
 
 public:
-    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    StaticParentTranslator(RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_Namespace& member) 
+    expected<IrExp*, DiagPtr> operator()(RMember_Namespace& member) 
     {
-        return MakePtr<IrExp_Namespace>(member.decl);
+        return context.MakeIrExp<IrExp_Namespace>(member.decl);
     }
 
     // S.F
-    expected<IrExpPtr, DiagPtr> operator()(RMember_GlobalFuncs& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_GlobalFuncs& member)
     {   
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_Class& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_Class& member)
     {
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return MakePtr<IrExp_Class>(member.decl, move(typeArgs));
+        return context.MakeIrExp<IrExp_Class>(member.decl, typeArgs);
     }
 
     // 에러,
-    expected<IrExpPtr, DiagPtr> operator()(RMember_ClassFuncs& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_ClassFuncs& member)
     {
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
     // C.x
-    expected<IrExpPtr, DiagPtr> operator()(RMember_ClassVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_ClassVar& member)
     {
         if (!member.decl->IsStatic())
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>()};
         }
 
-        if (!context.CanAccess(member.decl.get()))
+        if (!context.CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return MakePtr<IrExp_StaticRef>(MakePtr<NLoc_ClassVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return context.MakeIrExp<IrExp_StaticRef>(context.MakeNLoc<NLoc_ClassVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_Struct& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_Struct& member)
     {
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return MakePtr<IrExp_Struct>(member.decl, move(typeArgs));
+        return context.MakeIrExp<IrExp_Struct>(member.decl, typeArgs);
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_StructFuncs& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_StructFuncs& member)
     {
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_StructVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_StructVar& member)
     {
         if (!member.decl->IsStatic())
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>()};
         }
 
-        if (!context.CanAccess(member.decl.get()))
+        if (!context.CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return MakePtr<IrExp_StaticRef>(MakePtr<NLoc_StructVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return context.MakeIrExp<IrExp_StaticRef>(context.MakeNLoc<NLoc_StructVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     // E
-    expected<IrExpPtr, DiagPtr> operator()(RMember_Enum& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_Enum& member)
     {   
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return MakePtr<IrExp_Enum>(member.decl, move(typeArgs));
+        return context.MakeIrExp<IrExp_Enum>(member.decl, typeArgs);
     }
 
     // &E.First.x
-    expected<IrExpPtr, DiagPtr> operator()(RMember_EnumElem& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_EnumElem& member)
     {   
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
     // &E.x
-    expected<IrExpPtr, DiagPtr> operator()(RMember_EnumElemVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_EnumElemVar& member)
     {
         // 표현 불가능
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_LambdaVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_LambdaVar& member)
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_TupleVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_TupleVar& member)
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_TypeVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_TypeVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_LocalVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_LocalVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    expected<IrExpPtr, DiagPtr> operator()(RMember_ThisVar& member)
+    expected<IrExp*, DiagPtr> operator()(RMember_ThisVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
 
@@ -160,68 +160,70 @@ public:
     }*/
 };
 
-class StaticRefTypeTranslator : public RTypeVisitor
+class StaticRefTypeTranslator
 {
-    expected<IrExpPtr, DiagPtr>* result;
+public:
+    using ResultType = expected<IrExp*, DiagPtr>;
 
-    shared_ptr<IrExp_StaticRef> parent;
+private:
+    IrExp_StaticRef* parent;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<IrExp, TValue>
-    void Value(TArgs&&... args)
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
+    ResultType Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
-    void Error(TArgs&&... args)
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
-    StaticRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const std::shared_ptr<IrExp_StaticRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
-        : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    StaticRefTypeTranslator(IrExp_StaticRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
     {
     }
 
     // &C.optS.id
-    void Visit(RType_NullableValue& type) override 
+    ResultType Visit(RType_NullableValue* type) 
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     // &C.optS.id
-    void Visit(RType_NullableRef& type) override 
+    ResultType Visit(RType_NullableRef* type) 
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_TypeVar& type) override 
+    ResultType Visit(RType_TypeVar* type) 
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_Void& type) override 
+    ResultType Visit(RType_Void* type) 
     {
         // void인 멤버가 나올 수 없으므로
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Tuple& type) override 
+    ResultType Visit(RType_Tuple* type) 
     {
         // TupleMemberLoc이 없으므로 일단 보류
-        throw NotImplementedException();
+        throw NotImplementedException{};
         //int count = type.GetMemberVarCount();
         //for (int i = 0; i < count; i++)
         //{
@@ -236,26 +238,26 @@ public:
     }
 
     // &C.f.id
-    void Visit(RType_Func& type) override
+    ResultType Visit(RType_Func* type)
     {
         return Error<Error_ResolveIdentifier_FuncInstanceCantHaveMember>();
     }
 
     // &C.pS.id;
-    void Visit(RType_LocalPtr& type) override 
+    ResultType Visit(RType_LocalPtr* type) 
     {   
         return Error<Error_ResolveIdentifier_LocalPtrCantHaveMember>();
     }
 
-    void Visit(RType_BoxPtr& type) override 
+    ResultType Visit(RType_BoxPtr* type) 
     {
         // &(C.x).a
         return Error<Error_Reference_CantMakeReference>();
     }
 
-    void Visit(RType_Class& type) override 
+    ResultType Visit(RType_Class* type) 
     {
-        auto var = type.GetVar(name);
+        auto var = type->GetVar(name);
 
         if (!var)
         {
@@ -272,9 +274,9 @@ public:
     }
 
     // &C.s.id
-    void Visit(RType_Struct& type) override 
+    ResultType Visit(RType_Struct* type) 
     {   
-        auto var = type.GetVar(name);
+        auto var = type->GetVar(name);
 
         if (!var)
         {
@@ -286,19 +288,19 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_StaticRef>(MakePtr<NLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
+        return Value<IrExp_StaticRef>(context.MakeNLoc<NLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
     }
 
     // Enum자체는 member를 가져올 수 없다
-    void Visit(RType_Enum& type) override 
+    ResultType Visit(RType_Enum* type) 
     {
         return Error<Error_ResolveIdentifier_NotFound>();
     }
 
     // e.x (E.Second.x)
-    void Visit(RType_EnumElem& type) override 
+    ResultType Visit(RType_EnumElem* type) 
     {   
-        auto var = type.GetVar(name);
+        auto var = type->GetVar(name);
         if (!var)
         {
             return Error<Error_ResolveIdentifier_NotFound>();
@@ -309,110 +311,111 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_StaticRef>(MakePtr<NLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
+        return Value<IrExp_StaticRef>(context.MakeNLoc<NLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
     }
 
     // &C.i.id
-    void Visit(RType_Interface& type) override 
+    ResultType Visit(RType_Interface* type) 
     {   
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
     // &C.l.id
-    void Visit(RType_Lambda& type) override 
+    ResultType Visit(RType_Lambda* type) 
     {   
         return Error<Error_ResolveIdentifier_LambdaInstanceCantHaveMember>();
     }
 };
 
-class BoxRefTypeTranslator : public RTypeVisitor
+class BoxRefTypeTranslator
 {
-    expected<IrExpPtr, DiagPtr>* result;
+public:
+    using ResultType = expected<IrExp*, DiagPtr>;
 
-    std::shared_ptr<IrExp_BoxRef> parent;
+    IrExp_BoxRef* parent;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<IrExp, TValue>
-    void Value(TArgs&&... args)
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
+    ResultType Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
-    void Error(TArgs&&... args)
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public: 
-    BoxRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const std::shared_ptr<IrExp_BoxRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
-        : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    BoxRefTypeTranslator(IrExp_BoxRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
     {
     }
 
-    void Visit(RType_NullableValue& type) override 
+    ResultType Visit(RType_NullableValue* type) 
     {
         // &c.optS.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_NullableRef& type) override 
+    ResultType Visit(RType_NullableRef* type) 
     {
         // &c.c.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_TypeVar& type) override 
+    ResultType Visit(RType_TypeVar* type) 
     {
         // &c.t.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_Void& type) override 
+    ResultType Visit(RType_Void* type) 
     {
         // &c.v
         // void인 멤버가 나올 수 없으므로
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Tuple& type) override 
+    ResultType Visit(RType_Tuple* type) 
     {
         // &c.t.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_Func& type) override 
+    ResultType Visit(RType_Func* type) 
     {
         // &c.f.x
         return Error<Error_ResolveIdentifier_FuncInstanceCantHaveMember>();
     }
 
-    void Visit(RType_LocalPtr& type) override 
+    ResultType Visit(RType_LocalPtr* type) 
     {
         // &c.p.x
         return Error<Error_ResolveIdentifier_LocalPtrCantHaveMember>();
     }
 
-    void Visit(RType_BoxPtr& type) override 
+    ResultType Visit(RType_BoxPtr* type) 
     {
         // &c.p.x, 문법에러        
         return Error<Error_ResolveIdentifier_BoxPtrCantHaveMember>();
     }
 
-    void Visit(RType_Class& type) override 
+    ResultType Visit(RType_Class* type) 
     {
         // &c.c.x
-        auto var = type.GetVar(name);
+        auto var = type->GetVar(name);
         if (!var)
         {
             return Error<Error_ResolveIdentifier_NotFound>();
@@ -423,13 +426,13 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_BoxRef_ClassMember>(parent->MakeLoc(), var->decl, var->typeArgs);
+        return Value<IrExp_BoxRef_ClassMember>(parent->MakeLoc(context), var->decl, var->typeArgs);
     }
 
-    void Visit(RType_Struct& type) override 
+    ResultType Visit(RType_Struct* type) 
     {
         // &c.s.x
-        auto var = type.GetVar(name);
+        auto var = type->GetVar(name);
         if (!var)
         {
             return Error<Error_ResolveIdentifier_NotFound>();
@@ -443,118 +446,119 @@ public:
         return Value<IrExp_BoxRef_StructMember>(parent, var->decl, var->typeArgs);
     }
 
-    void Visit(RType_Enum& type) override 
+    ResultType Visit(RType_Enum* type) 
     {
         // &c.e.x
         return Error<Error_ResolveIdentifier_EnumInstanceCantHaveMember>();
     }
 
-    void Visit(RType_EnumElem& type) override 
+    ResultType Visit(RType_EnumElem* type) 
     {
         // &c.e.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_Interface& type) override 
+    ResultType Visit(RType_Interface* type) 
     {
         // &c.i.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_Lambda& type) override 
+    ResultType Visit(RType_Lambda* type) 
     {
         // &c.l.x
         return Error<Error_ResolveIdentifier_LambdaInstanceCantHaveMember>();
     }
 };
 
-class LocalRefTypeTranslator : public RTypeVisitor
+class LocalRefTypeTranslator
 {
-    expected<IrExpPtr, DiagPtr>* result;
+public:
+    using ResultType = expected<IrExp*, DiagPtr>;
 
-    shared_ptr<IrExp_LocalRef> parent;
+    IrExp_LocalRef* parent;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<IrExp, TValue>
-    void Value(TArgs&&... args)
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
+    ResultType Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
-    void Error(TArgs&&... args)
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
-    LocalRefTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const shared_ptr<IrExp_LocalRef>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
-        : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    LocalRefTypeTranslator(IrExp_LocalRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
     {
     }
 
-    void Visit(RType_NullableValue& type) override 
+    ResultType Visit(RType_NullableValue* type) 
     {
         // &s.optS.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_NullableRef& type) override 
+    ResultType Visit(RType_NullableRef* type) 
     {
         // &s.c.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_TypeVar& type) override 
+    ResultType Visit(RType_TypeVar* type) 
     {
         // &s.t.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_Void& type) override 
+    ResultType Visit(RType_Void* type) 
     {
         // void인 멤버가 나올 수 없으므로
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Tuple& type) override 
+    ResultType Visit(RType_Tuple* type) 
     {
         // &s.t.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_Func& type) override 
+    ResultType Visit(RType_Func* type) 
     {
         // &s.f.x
         return Error<Error_ResolveIdentifier_FuncInstanceCantHaveMember>();
     }
 
-    void Visit(RType_LocalPtr& type) override 
+    ResultType Visit(RType_LocalPtr* type) 
     {
         // &s.p.x
         return Error<Error_ResolveIdentifier_LocalPtrCantHaveMember>();
     }
 
-    void Visit(RType_BoxPtr& type) override 
+    ResultType Visit(RType_BoxPtr* type) 
     {
         // &s.p.x
         return Error<Error_ResolveIdentifier_BoxPtrCantHaveMember>();
     }
 
-    void Visit(RType_Class& type) override 
+    ResultType Visit(RType_Class* type) 
     {
         // &s.c.x
-        auto var = type.GetVar(name);
+        auto var = type->GetVar(name);
         if (!var)
         {
             return Error<Error_ResolveIdentifier_NotFound>();
@@ -568,10 +572,10 @@ public:
         return Value<IrExp_BoxRef_ClassMember>(parent->loc, var->decl, var->typeArgs);
     }
 
-    void Visit(RType_Struct& type) override 
+    ResultType Visit(RType_Struct* type) 
     {
         // &s.s.x
-        auto var = type.GetVar(name);
+        auto var = type->GetVar(name);
         if (!var)
         {
             return Error<Error_ResolveIdentifier_NotFound>();
@@ -582,19 +586,19 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_LocalRef>(MakePtr<NLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
+        return Value<IrExp_LocalRef>(context.MakeNLoc<NLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
     }
 
-    void Visit(RType_Enum& type) override 
+    ResultType Visit(RType_Enum* type) 
     {
         // &s.e.x
         return Error<Error_ResolveIdentifier_EnumInstanceCantHaveMember>();
     }
 
-    void Visit(RType_EnumElem& type) override 
+    ResultType Visit(RType_EnumElem* type) 
     {
         // &s.e.x
-        auto var = type.GetVar(name);
+        auto var = type->GetVar(name);
         if (!var)
         {
             return Error<Error_ResolveIdentifier_NotFound>();
@@ -605,16 +609,16 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_LocalRef>(MakePtr<NLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
+        return Value<IrExp_LocalRef>(context.MakeNLoc<NLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
     }
 
-    void Visit(RType_Interface& type) override 
+    ResultType Visit(RType_Interface* type) 
     {
         // &s.i.x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_Lambda& type) override 
+    ResultType Visit(RType_Lambda* type) 
     {
         // &s.l.x
         return Error<Error_ResolveIdentifier_LambdaInstanceCantHaveMember>();
@@ -622,95 +626,98 @@ public:
 };
 
 // *pS, valueType일때만 여기를 거치도록 나머지는 value로 가게
-class BoxValueTypeTranslator : public RTypeVisitor
+class BoxValueTypeTranslator
 {
-    expected<IrExpPtr, DiagPtr>* result;
-    shared_ptr<IrExp_DerefedBoxValue> parent;
+public:
+    using ResultType = expected<IrExp*, DiagPtr>;
+
+private:
+    IrExp_DerefedBoxValue* parent;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<IrExp, TValue>
-    void Value(TArgs&&... args)
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
+    ResultType Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
-    void Error(TArgs&&... args)
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
-    BoxValueTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const shared_ptr<IrExp_DerefedBoxValue>& parent, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
-        : result(result), parent(parent), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    BoxValueTypeTranslator(IrExp_DerefedBoxValue* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
     {
     }
 
-    void Visit(RType_NullableValue& type) override 
+    ResultType Visit(RType_NullableValue* type) 
     {
         // &(*pOptS).x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_NullableRef& type) override 
+    ResultType Visit(RType_NullableRef* type) 
     {
         // &(*c).x ?
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_TypeVar& type) override 
+    ResultType Visit(RType_TypeVar* type) 
     {
         // &(*pT).x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_Void& type) override 
+    ResultType Visit(RType_Void* type) 
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Tuple& type) override 
+    ResultType Visit(RType_Tuple* type) 
     {
         // &(*pT).x
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(RType_Func& type) override 
+    ResultType Visit(RType_Func* type) 
     {
         // box ref contained
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_LocalPtr& type) override 
+    ResultType Visit(RType_LocalPtr* type) 
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_BoxPtr& type) override 
+    ResultType Visit(RType_BoxPtr* type) 
     {
         return Error<Error_ResolveIdentifier_BoxPtrCantHaveMember>();
     }
 
-    void Visit(RType_Class& type) override 
+    ResultType Visit(RType_Class* type) 
     {
         // &(*pC).x
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Struct& type) override 
+    ResultType Visit(RType_Struct* type) 
     {
         // &(*pS).x
-        auto var = type.GetVar(name);
+        auto var = type->GetVar(name);
         if (!var)
         {
             return Error<Error_ResolveIdentifier_NotFound>();
@@ -724,121 +731,124 @@ public:
         return Value<IrExp_BoxRef_StructIndirectMember>(parent->innerLoc, var->decl, var->typeArgs);
     }
 
-    void Visit(RType_Enum& type) override 
+    ResultType Visit(RType_Enum* type) 
     {
         // (*pE).x
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_EnumElem& type) override 
+    ResultType Visit(RType_EnumElem* type) 
     {
         // box E.Second* pE = ...
         // &(*pE).x
-        throw NotImplementedException();
+        throw NotImplementedException{};
 
-        //var var = type.Symbol.GetVar(name);
+        //var var = type->Symbol.GetVar(name);
         //if (var == null)
         //    return Fatal();
 
         //return Valid(new IntermediateRefExp.BoxRef.EnumMember(parent, var));
     }
 
-    void Visit(RType_Interface& type) override 
+    ResultType Visit(RType_Interface* type) 
     {
         // box ref contained
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Lambda& type) override 
+    ResultType Visit(RType_Lambda* type) 
     {
         // doesn't have member variable
         return Error<Error_ResolveIdentifier_LambdaInstanceCantHaveMember>();
     }
 };
 
-class ThisTypeTranslator : public RTypeVisitor
-{   
-    expected<IrExpPtr, DiagPtr>* result;
+class ThisTypeTranslator
+{
+public:
+    using ResultType = expected<IrExp*, DiagPtr>;
+
+private:
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<IrExp, TValue>
-    void Value(TArgs&&... args)
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
+    ResultType Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
-    void Error(TArgs&&... args)
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
-    ThisTypeTranslator(expected<IrExpPtr, DiagPtr>* result, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
-        : name(name), typeArgsExceptOuter(typeArgsExceptOuter), result(result), context(context)
+    ThisTypeTranslator(const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+        : name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
     {
     }
 
-    void Visit(RType_NullableValue& type) override 
+    ResultType Visit(RType_NullableValue* type) 
     {
         // NullableValue는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_NullableRef& type) override 
+    ResultType Visit(RType_NullableRef* type) 
     {
         // Nullable은 멤버함수를 가질 수 없다?
         return Error<Error_NotImplemented>();
     }
 
-    void Visit(RType_TypeVar& type) override 
+    ResultType Visit(RType_TypeVar* type) 
     {
         // TypeVar는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Void& type) override 
+    ResultType Visit(RType_Void* type) 
     {
         // void는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Tuple& type) override 
+    ResultType Visit(RType_Tuple* type) 
     {
         // Tuple은 멤버함수를 가질 수 없다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Func& type) override 
+    ResultType Visit(RType_Func* type) 
     {
         // Func가 멤버함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_LocalPtr& type) override 
+    ResultType Visit(RType_LocalPtr* type) 
     {
         return Error<Error_ResolveIdentifier_LocalPtrCantHaveMember>();
     }
 
-    void Visit(RType_BoxPtr& type) override 
+    ResultType Visit(RType_BoxPtr* type) 
     {
         return Error<Error_ResolveIdentifier_BoxPtrCantHaveMember>();
     }
 
-    void Visit(RType_Class& type) override 
+    ResultType Visit(RType_Class* type) 
     {
         // &this.x
-        auto var = type.GetVar(name);
+        auto var = type->GetVar(name);
         if (!var)
         {
             return Error<Error_ResolveIdentifier_NotFound>();
@@ -852,165 +862,166 @@ public:
         return Value<IrExp_BoxRef_ClassMember>(context.MakeThisLoc(), var->decl, var->typeArgs);
     }
 
-    void Visit(RType_Struct& type) override 
+    ResultType Visit(RType_Struct* type) 
     {
         // &this.x
         // TODO: [10] box함수인 경우 에러 메시지를 다르게 해야 한다
         return Error<Error_ResolveIdentifier_LocalPtrCantHaveMember>();
     }
 
-    void Visit(RType_Enum& type) override 
+    ResultType Visit(RType_Enum* type) 
     {
         // Enum이 멤버 함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_EnumElem& type) override 
+    ResultType Visit(RType_EnumElem* type) 
     {
         // EnumElem이 멤버함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Interface& type) override 
+    ResultType Visit(RType_Interface* type) 
     {
         // Interface가 멤버함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    void Visit(RType_Lambda& type) override 
+    ResultType Visit(RType_Lambda* type) 
     {
         // Lambda는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 };
 
-class IrExpAndMemberNameToIrExpTranslator : public IrExpVisitor
+class IrExpAndMemberNameToIrExpTranslator
 {
-    expected<IrExpPtr, DiagPtr>* result;
+public:
+    using ResultType = expected<IrExp*, DiagPtr>;
 
-    IrExpPtr irThis;
+private:
+    IrExp* irThis;
     RName name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
 private:
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<IrExp, TValue>
-    void Value(TArgs&&... args)
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
+    ResultType Value(TArgs&&... args)
     {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
-    void Error(TArgs&&... args)
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
-    void HandleStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
+    ResultType HandleStaticParent(RDecl& decl, RTypeArguments* typeArgs)
     {
         auto oMember = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
         if (!oMember)
         {
-            *result = unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
-            return;
+            return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
         }
 
         StaticParentTranslator binder(typeArgsExceptOuter, context);
-        *result = visit(binder, *oMember);
+        return visit(binder, *oMember);
     }
 
 public:
-    IrExpAndMemberNameToIrExpTranslator(expected<IrExpPtr, DiagPtr>* result, const IrExpPtr& irThis, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
-        : result(result), irThis(irThis), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    IrExpAndMemberNameToIrExpTranslator(IrExp* irThis, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+        : irThis(irThis), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
 
-    void Visit(IrExp_Namespace& irExp) override 
+    ResultType Visit(IrExp_Namespace* irExp) 
     {
-        return HandleStaticParent(*irExp.decl, context.MakeTypeArguments({}));
+        return HandleStaticParent(*irExp->decl, context.MakeTypeArguments({}));
     }
 
-    void Visit(IrExp_TypeVar& irExp) override 
+    ResultType Visit(IrExp_TypeVar* irExp) 
     {
         // 이건 진짜
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(IrExp_Class& irExp) override 
+    ResultType Visit(IrExp_Class* irExp) 
     {
-        return HandleStaticParent(*irExp.decl, irExp.typeArgs);
+        return HandleStaticParent(*irExp->decl, irExp->typeArgs);
     }
 
-    void Visit(IrExp_Struct& irExp) override 
+    ResultType Visit(IrExp_Struct* irExp) 
     {
-        return HandleStaticParent(*irExp.decl, irExp.typeArgs);
+        return HandleStaticParent(*irExp->decl, irExp->typeArgs);
     }
 
-    void Visit(IrExp_Enum& irExp) override 
+    ResultType Visit(IrExp_Enum* irExp) 
     {
-        return HandleStaticParent(*irExp.decl, irExp.typeArgs);
+        return HandleStaticParent(*irExp->decl, irExp->typeArgs);
     }
 
-    void Visit(IrExp_ThisVar& irExp) override 
+    ResultType Visit(IrExp_ThisVar* irExp) 
     {
         // this.id        
-        ThisTypeTranslator binder(result, name, typeArgsExceptOuter, context);
-        return irExp.type->Accept(binder);
+        ThisTypeTranslator binder{name, typeArgsExceptOuter, context};
+        return Accept(binder, irExp->type);
     }
 
-    void Visit(IrExp_StaticRef& irExp) override 
+    ResultType Visit(IrExp_StaticRef* irExp) 
     {
-        auto irStaticRefThis = dynamic_pointer_cast<IrExp_StaticRef>(irThis);
+        auto* irStaticRefThis = dynamic_cast<IrExp_StaticRef*>(irThis);
         assert(irStaticRefThis);
 
-        auto locType = context.GetType(*irExp.loc);
+        auto* locType = context.GetType(irExp->loc);
 
         // static ref가 부모이면
-        StaticRefTypeTranslator binder(result, irStaticRefThis, name, typeArgsExceptOuter, context);
-        return locType->Accept(binder);
+        StaticRefTypeTranslator binder{irExp, name, typeArgsExceptOuter, context};
+        return Accept(binder, locType);
     }
 
-    void Visit(IrExp_BoxRef& irExp) override 
+    ResultType Visit(IrExp_BoxRef* irExp) 
     {
-        auto irBoxRefThis = dynamic_pointer_cast<IrExp_BoxRef>(irThis);
+        auto irBoxRefThis = dynamic_cast<IrExp_BoxRef*>(irThis);
         assert(irBoxRefThis);
 
-        auto targetType = context.GetTargetType(irExp);
-        BoxRefTypeTranslator binder(result, irBoxRefThis, name, typeArgsExceptOuter, context);
-        return targetType->Accept(binder);
+        auto* targetType = context.GetTargetType(irExp);
+        BoxRefTypeTranslator binder{irBoxRefThis, name, typeArgsExceptOuter, context};
+        return Accept(binder, targetType);
     }
 
-    void Visit(IrExp_LocalRef& irExp) override 
+    ResultType Visit(IrExp_LocalRef* irExp) 
     {
-        auto irLocalRefThis = dynamic_pointer_cast<IrExp_LocalRef>(irThis);
+        auto* irLocalRefThis = dynamic_cast<IrExp_LocalRef*>(irThis);
         assert(irLocalRefThis);
 
-        auto locType = context.GetType(*irExp.loc);
+        auto locType = context.GetType(irExp->loc);
 
-        LocalRefTypeTranslator binder(result, irLocalRefThis, name, typeArgsExceptOuter, context);
-        return locType->Accept(binder);
+        LocalRefTypeTranslator binder{irLocalRefThis, name, typeArgsExceptOuter, context};
+        return Accept(binder, locType);
     }
 
     // *pS, 오직 value type에만 작동을 하도록 보장해야 한다
-    void Visit(IrExp_DerefedBoxValue& irExp) override 
+    ResultType Visit(IrExp_DerefedBoxValue* irExp) 
     {
-        auto irDerefedBoxThis = dynamic_pointer_cast<IrExp_DerefedBoxValue>(irThis);
+        auto* irDerefedBoxThis = dynamic_cast<IrExp_DerefedBoxValue*>(irThis);
         assert(irDerefedBoxThis);
 
-        auto innerType = context.GetType(*irExp.innerLoc);
+        auto innerType = context.GetType(irExp->innerLoc);
 
-        BoxValueTypeTranslator binder(result, irDerefedBoxThis, name, typeArgsExceptOuter, context);
-        return innerType->Accept(binder);
+        BoxValueTypeTranslator binder{irDerefedBoxThis, name, typeArgsExceptOuter, context};
+        return Accept(binder, innerType);
     }
 
-    void Visit(IrExp_LocalValue& irExp) override 
+    ResultType Visit(IrExp_LocalValue* irExp) 
     {
         // exp.id
         // 함수 호출 인자 제외 temp 참조 불가
@@ -1020,12 +1031,10 @@ public:
 
 } // namespace 
 
-expected<IrExpPtr, DiagPtr> TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+expected<IrExp*, DiagPtr> TranslateIrExpAndMemberNameToIrExp(IrExp* irExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
 {
-    expected<IrExpPtr, DiagPtr> irBoundExp;
-    IrExpAndMemberNameToIrExpTranslator binder(&irBoundExp, irExp, name, typeArgsExceptOuter, context);
-    irExp->Accept(binder);
-    return irBoundExp;
+    IrExpAndMemberNameToIrExpTranslator binder{irExp, name, typeArgsExceptOuter, context};
+    return Accept(binder, irExp);
 }
 
 } // namespace SyntaxIR0Translator

@@ -25,7 +25,7 @@ public:
     using RMemberType = RMember_GlobalFuncs;
 
 public:
-    std::weak_ptr<NNamespaceDecl> outer;
+    NNamespaceDecl* outer;
     RAccessor accessor;
     RName name;
 
@@ -33,24 +33,24 @@ public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NDecl* GetNOuter() override;
-    void Accept(NDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NFuncDecl
     NDecl* GetNDecl() override { return this; }
     RFuncReturn GetUnboundFuncReturn() override { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
     bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
-    void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NFuncDeclOuter
     // NDecl* GetNDecl() override { return this; }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
     // from RDecl
     IR0_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     IR0_API RIdentifier GetIdentifier() override;
-    IR0_API std::optional<RMember> GetMember(const RTypeArgumentsPtr& typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory) override;
+    IR0_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    IR0_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     // from RFuncDecl
     size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }

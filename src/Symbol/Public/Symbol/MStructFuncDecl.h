@@ -1,9 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 #include <string>
-
 
 #include "MDecl.h"
 #include "MBodyDeclOuter.h"
@@ -22,16 +20,16 @@ class MStructFuncDecl
     , public MFuncDecl
     , private MCommonFuncDeclComponent
 {
-    std::weak_ptr<MStructDecl> _struct;
+    MStructDecl* _struct;
     MAccessor accessor;
     MName name;
     std::vector<std::string> typeParams;
     bool bStatic;
 
 public:
-    void Accept(MDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MDeclVisitor& visitor) override { visitor.Visit(this); }
     void Accept(MBodyDeclOuterVisitor& visitor) override { visitor.Visit(*this); }
-    void Accept(MFuncDeclVisitor& visitor) override { visitor.Visit(*this); }
+    void Accept(MFuncDeclVisitor& visitor) override { visitor.Visit(this); }
 };
 
 }

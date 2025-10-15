@@ -4,10 +4,10 @@
 
 namespace Citron {
 
-RFuncParameter RFuncParameter::Apply(RTypeArguments& typeArgs, RTypeFactory& typeFactory)
+RFuncParameter RFuncParameter::Apply(RTypeArguments& typeArgs, RFactory& typeFactory)
 {
     auto appliedType = type->Apply(typeArgs, typeFactory);
-    return RFuncParameter{bOut, move(appliedType), name};
+    return RFuncParameter{bOut, appliedType, name};
 }
 
 } // namespace Citron;

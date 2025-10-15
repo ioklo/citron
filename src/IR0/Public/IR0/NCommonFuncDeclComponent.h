@@ -2,7 +2,6 @@
 #include "IR0Config.h"
 
 #include <optional>
-#include <memory>
 #include <vector>
 #include <string>
 
@@ -13,12 +12,10 @@
 namespace Citron {
 
 struct RFuncParameter;
-class RTypeFactory;
+class RFactory;
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 
 class NStmt;
-using NStmtPtr = std::shared_ptr<NStmt>;
 
 class NLambdaVarDecl;
 class NLambdaDecl;
@@ -34,7 +31,7 @@ class NCommonFuncDeclComponent
     };
 
     struct Body_WillBeGenerated {}; // ex) trivial constructors
-    struct Body_Set { std::vector<NStmtPtr> stmts; };
+    struct Body_Set { std::vector<NStmt*> stmts; };
     using Body = std::variant<Body_WillBeGenerated, Body_Set>;
 
 private:
@@ -50,7 +47,7 @@ private:
 public:
     IR0_API NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams);
     IR0_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
-    IR0_API void InitBody(std::vector<NStmtPtr>&& body);
+    IR0_API void InitBody(std::vector<NStmt*>&& body);
     IR0_API void InitBodyWillBeGenerated();
 
     IR0_API ~NCommonFuncDeclComponent();
@@ -62,14 +59,14 @@ public:
     size_t GetParamCount();
 
     IR0_API RFuncReturn GetUnboundFuncReturn();    
-    IR0_API RTypePtr GetReturnType(RTypeArguments& typeArgs, RTypeFactory& factory);
-    IR0_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RTypeFactory& factory);
+    IR0_API RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory);
+    IR0_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory);
     
     IR0_API RFuncParameter& GetUnboundFuncParam(size_t i);
-    IR0_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RTypeFactory& factory);
+    IR0_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory);
 
-    IR0_API std::vector<RTypePtr> GetParamIds();
-    IR0_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
+    IR0_API std::vector<RType*> GetParamIds();
+    IR0_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory);
 };
 
 }

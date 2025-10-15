@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 
 
 namespace Citron {
@@ -27,14 +26,14 @@ class RTypeDeclOuterVisitor
 {
 public:
     virtual ~RTypeDeclOuterVisitor() {}
-    virtual void Visit(RNamespaceDecl& outer) = 0;
-    virtual void Visit(RClassDecl& outer) = 0;
-    virtual void Visit(RStructDecl& outer) = 0;
+    virtual void Visit(RNamespaceDecl* outer) = 0;
+    virtual void Visit(RClassDecl* outer) = 0;
+    virtual void Visit(RStructDecl* outer) = 0;
 };
 
 class RMTypeDeclOuter : public RTypeDeclOuter
 {
-    std::shared_ptr<MTypeDeclOuter> outer;
+    MTypeDeclOuter* outer;
 };
 
 

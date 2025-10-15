@@ -16,12 +16,14 @@ target_link_libraries(Syntax PRIVATE Infra)
 
 target_sources(Syntax
         PRIVATE
+        SFactory.cpp
         Syntaxes.cpp
         Syntaxes.g.cpp
 
         PUBLIC FILE_SET headers
         TYPE HEADERS
         FILES
+        Public/Syntax/SFactory.h
         Public/Syntax/Syntax.h
         Public/Syntax/SyntaxConfig.h
         Public/Syntax/Syntaxes.g.h
