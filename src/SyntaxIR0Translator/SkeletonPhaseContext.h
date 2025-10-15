@@ -26,7 +26,7 @@ public:
     void AddMemberDeclPhaseTask(std::function<void(MemberDeclPhaseContext&)> f);
 
     template<typename TNDecl, typename... TArgs> requires std::derived_from<TNDecl, NDecl>
-    constexpr TNDecl* MakeNDecl(TArgs&&... args)
+    TNDecl* MakeNDecl(TArgs&&... args)
     {
         return rFactory.MakeNDecl<TNDecl>(std::forward<TArgs>(args)...);
     }

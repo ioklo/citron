@@ -33,19 +33,19 @@ struct ImExpToIrExpTranslator
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
-    constexpr ResultType Value(TArgs&&... args)
+    ResultType Value(TArgs&&... args)
     {
         return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    constexpr ResultType Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
         return unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    constexpr ResultType Error(TArgs&&... args)
+    ResultType Error(TArgs&&... args)
     {
         return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }

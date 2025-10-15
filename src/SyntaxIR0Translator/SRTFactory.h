@@ -23,7 +23,7 @@ public:
     ~SRTFactory();
 
     template<typename TImExp, typename... TArgs> requires std::derived_from<TImExp, ImExp>
-    constexpr TImExp* MakeImExp(TArgs&&... args)
+    TImExp* MakeImExp(TArgs&&... args)
     {
         auto imExp = std::make_unique<TImExp>(std::forward<TArgs>(args)...);
         auto* pImExp = imExp.get();
@@ -32,7 +32,7 @@ public:
     }
 
     template<typename TIrExp, typename... TArgs> requires std::derived_from<TIrExp, IrExp>
-    constexpr TIrExp* MakeIrExp(TArgs&&... args)
+    TIrExp* MakeIrExp(TArgs&&... args)
     {
         auto irExp = std::make_unique<TIrExp>(std::forward<TArgs>(args)...);
         auto* pIrExp = irExp.get();
@@ -41,7 +41,7 @@ public:
     }
 
     template<typename TReExp, typename... TArgs> requires std::derived_from<TReExp, ReExp>
-    constexpr TReExp* MakeReExp(TArgs&&... args)
+    TReExp* MakeReExp(TArgs&&... args)
     {
         auto reExp = std::make_unique<TReExp>(std::forward<TArgs>(args)...);
         auto* pReExp = reExp.get();

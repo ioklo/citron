@@ -138,37 +138,37 @@ public: // for type rFactory
     std::expected<ImExp*, std::shared_ptr<ResolveIdentifierError>> ResolveIdentifier(RName&& name, RTypeArguments* typeArgs);
 
     template<typename TNStmt, typename... TArgs> requires std::derived_from<TNStmt, NStmt>
-    constexpr TNStmt* MakeNStmt(TArgs&&... args)
+    TNStmt* MakeNStmt(TArgs&&... args)
     {
         return rFactory->MakeNStmt<TNStmt>(std::forward<TArgs>(args)...);
     }
 
     template<typename TNExp, typename... TArgs> requires std::derived_from<TNExp, NExp>
-    constexpr TNExp* MakeNExp(TArgs&&... args)
+    TNExp* MakeNExp(TArgs&&... args)
     {
         return rFactory->MakeNExp<TNExp>(std::forward<TArgs>(args)...);
     }
 
     template<typename TNLoc, typename... TArgs> requires std::derived_from<TNLoc, NLoc>
-    constexpr TNLoc* MakeNLoc(TArgs&&... args)
+    TNLoc* MakeNLoc(TArgs&&... args)
     {
         return rFactory->MakeNLoc<TNLoc>(std::forward<TArgs>(args)...);
     }
 
     template<typename TImExp, typename... TArgs> requires std::derived_from<TImExp, ImExp>
-    constexpr TImExp* MakeImExp(TArgs&&... args)
+    TImExp* MakeImExp(TArgs&&... args)
     {
         return srtFactory->MakeImExp<TImExp>(std::forward<TArgs>(args)...);
     }
 
     template<typename TIrExp, typename... TArgs> requires std::derived_from<TIrExp, IrExp>
-    constexpr TIrExp* MakeIrExp(TArgs&&... args)
+    TIrExp* MakeIrExp(TArgs&&... args)
     {
         return srtFactory->MakeIrExp<TIrExp>(std::forward<TArgs>(args)...);
     }
 
     template<typename TReExp, typename... TArgs> requires std::derived_from<TReExp, ReExp>
-    constexpr TReExp* MakeReExp(TArgs&&... args)
+    TReExp* MakeReExp(TArgs&&... args)
     {
         return srtFactory->MakeReExp<TReExp>(std::forward<TArgs>(args)...);
     }

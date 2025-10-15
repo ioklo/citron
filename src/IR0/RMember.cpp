@@ -98,7 +98,7 @@ RMember_TupleVar::RMember_TupleVar()
 }
 
 template<typename TRFuncDecl>
-constexpr vector<DeclWithOuterTypeArgs<RFuncDecl>> GetItems(vector<DeclWithOuterTypeArgs<TRFuncDecl>>& items)
+vector<DeclWithOuterTypeArgs<RFuncDecl>> GetItems(vector<DeclWithOuterTypeArgs<TRFuncDecl>>& items)
 {
     vector<DeclWithOuterTypeArgs<RFuncDecl>> result;
     result.reserve(items.size());

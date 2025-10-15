@@ -175,7 +175,7 @@ public:
     RNamespaceDeclGroup* GetNamespaceDeclGroup(const std::vector<std::string>& name);
 
     template<typename TNDecl, typename... TArgs> requires std::derived_from<TNDecl, NDecl> && (!std::same_as<TNDecl, NNamespaceDecl>)
-    constexpr TNDecl* MakeNDecl(TArgs&&... args)
+    TNDecl* MakeNDecl(TArgs&&... args)
     {
         auto decl = std::make_unique<TNDecl>(std::forward<TArgs>(args)...);
         auto* pDecl = decl.get();
@@ -184,7 +184,7 @@ public:
     }
 
     template<typename TNStmt, typename... TArgs> requires std::derived_from<TNStmt, NStmt>
-    constexpr TNStmt* MakeNStmt(TArgs&&... args)
+    TNStmt* MakeNStmt(TArgs&&... args)
     {
         auto stmt = std::make_unique<TNStmt>(std::forward<TArgs>(args)...);
         auto* pStmt = stmt.get();
@@ -193,7 +193,7 @@ public:
     }
 
     template<typename TNExp, typename... TArgs> requires std::derived_from<TNExp, NExp>
-    constexpr TNExp* MakeNExp(TArgs&&... args)
+    TNExp* MakeNExp(TArgs&&... args)
     {
         auto exp = std::make_unique<TNExp>(std::forward<TArgs>(args)...);
         auto* pExp= exp.get();
@@ -202,7 +202,7 @@ public:
     }  
 
     template<typename TNLoc, typename... TArgs> requires std::derived_from<TNLoc, NLoc>
-    constexpr TNLoc* MakeNLoc(TArgs&&... args)
+    TNLoc* MakeNLoc(TArgs&&... args)
     {
         auto loc = std::make_unique<TNLoc>(std::forward<TArgs>(args)...);
         auto* pLoc = loc.get();

@@ -107,7 +107,7 @@ public:
     
 #define MAKE(ITEM) \
     template<typename... TArgs> \
-    constexpr ITEM* Make##ITEM(TArgs&&... args) \
+    ITEM* Make##ITEM(TArgs&&... args) \
     { \
         auto elem = make_unique<ITEM>(std::forward<TArgs>(args)...); \
         auto* pElem = elem.get(); \
@@ -192,7 +192,7 @@ public:
     MAKE(SScript)
 
     template<typename... TArgs> 
-    constexpr SArgument* MakeSArgument(TArgs&&... args)
+    SArgument* MakeSArgument(TArgs&&... args)
     {
         auto elem = make_unique<SArgument>(std::forward<TArgs>(args)...);
         auto* pElem = elem.get();
@@ -201,7 +201,7 @@ public:
     }
 
     template<typename... TArgs>
-    constexpr SArguments* MakeSArguments(TArgs&&... args)
+    SArguments* MakeSArguments(TArgs&&... args)
     {
         auto elem = make_unique<SArguments>(std::forward<TArgs>(args)...);
         auto* pElem = elem.get();

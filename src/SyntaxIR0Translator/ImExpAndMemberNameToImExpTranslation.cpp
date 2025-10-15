@@ -39,7 +39,7 @@ public:
     }
 
     template<typename TImExp, typename... TArgs>
-    constexpr TImExp* MakeImExp(TArgs&&... args)
+    TImExp* MakeImExp(TArgs&&... args)
     {
         return context.MakeImExp<TImExp>(std::forward<TArgs>(args)...);
     }
@@ -202,7 +202,7 @@ class InstanceParentTranslator
     }*/
 
     template<typename TImExp, typename... TArgs>
-    constexpr TImExp* MakeImExp(TArgs&&... args)
+    TImExp* MakeImExp(TArgs&&... args)
     {
         return context.MakeImExp<TImExp>(std::forward<TArgs>(args)...);
     }

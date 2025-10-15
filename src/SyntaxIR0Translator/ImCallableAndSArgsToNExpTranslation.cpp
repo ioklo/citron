@@ -59,19 +59,19 @@ public:
 
 private:
     template<typename TNExp, typename... TArgs> requires std::derived_from<TNExp, NExp>
-    constexpr ResultType Exp(TArgs&&... args)
+    ResultType Exp(TArgs&&... args)
     {
         return context.MakeNExp<TNExp>(std::forward<TArgs>(args)...);
     }
     
     template<typename TValue>
-    constexpr ResultType Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
         return unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    constexpr ResultType Error(TArgs&&... args)
+    ResultType Error(TArgs&&... args)
     {
         return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
