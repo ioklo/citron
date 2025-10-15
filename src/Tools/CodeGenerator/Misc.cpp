@@ -432,35 +432,89 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     hStream << "    virtual void Accept(" << info.name << "Visitor& visitor) = 0;" << endl;
     hStream << "};" << endl << endl;
 
+    // visitor
+    hStream << "template<class TFrom, class TVisitor>" << endl;
+    hStream << "concept " << info.name << "ConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;" << endl;
+
+    hStream << "// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다" << endl;
+    hStream << "template<typename TVisitor, typename... TVisitorArgs>" << endl;
+    hStream << "concept " << info.name << "Visitable = requires(TVisitor&& v, TVisitorArgs&&... args)" << endl;
+    hStream << "{" << endl;
+    hStream << "    typename std::remove_cvref_t<TVisitor>::ResultType;" << endl;
+
+    for (auto& member : info.members)
+        hStream << "    { v.Visit(std::declval<" << member << "*>(), std::forward<TVisitorArgs>(args)...) } -> " << info.name << "ConvertibleToResultType<TVisitor>;" << endl;
+
+    hStream << "};" << endl << endl;
+
+    hStream << "template<typename TVisitor, typename... TVisitorArgs> requires " << info.name <<"Visitable<TVisitor, TVisitorArgs...>" << endl;
+    hStream << "decltype(auto) Accept(TVisitor&& v, " << info.name << "* " << info.argName << ", TVisitorArgs&&... args)" << endl;
+    hStream << "{" << endl;
+    hStream << "    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;" << endl;
+    hStream << endl;
+    hStream << "    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)" << endl;
+    hStream << "    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };" << endl;
+    hStream << endl;
+    hStream << "    if constexpr (std::is_void_v<TResult>)" << endl;
+    hStream << "    {" << endl;
+    hStream << "        struct Bridge : " << info.name << "Visitor {" << endl;
+    hStream << "            decltype(caller)& call;" << endl;
+    hStream << "            Bridge(decltype(caller)& call) : call(call) {}" << endl;
+
+    for (auto& member : info.members)
+        hStream << "            void Visit(" << member << "* " << info.argName << ") override { call(" << info.argName << "); }" << endl;
+
+    hStream << "        };" << endl;
+    hStream << "" << endl;
+    hStream << "        Bridge bridge{caller};" << endl;
+    hStream << "        " << info.argName << "->Accept(bridge);" << endl;
+    hStream << "    }" << endl;
+    hStream << "    else" << endl;
+    hStream << "    {" << endl;
+    hStream << "        struct Bridge : " << info.name << "Visitor {" << endl;
+    hStream << "            decltype(caller)& call;" << endl;
+    hStream << "            std::optional<TResult> result{};" << endl;
+    hStream << "            Bridge(decltype(caller)& call) : call(call) {}" << endl;
+    hStream << "" << endl;
+
+    for (auto& member : info.members)
+        hStream << "            void Visit(" << member << "* " << info.argName << ") override { result.emplace(call(" << info.argName << ")); }" << endl;
+
+    hStream << "        };" << endl;
+    hStream << endl;
+    hStream << "        Bridge bridge{caller};" << endl;
+    hStream << "        " << info.argName << "->Accept(bridge);" << endl;
+    hStream << "        return *bridge.result;" << endl;
+    hStream << "    }" << endl;
+    hStream << "}" << endl << endl;
+
     // SYNTAX_API JsonItem ToJson('name'Ptr& 'argName');
     hStream << commonInfo.linkage << " JsonItem ToJson(" << info.name << "* " << info.argName << ");" << endl << endl;
 
     // struct 'name'ToJsonVisitor
     // {
-    //     JsonItem result;
-    //     void Visit(A* a) override { result = a.ToJson(); }
-    //     void Visit(B* a) override { result = a.ToJson(); }
+    //     using ResultType = JsonItem;
+    //     ResultType Visit(A* a) { return a->ToJson(); }
+    //     ResultType Visit(B* a) { return a->ToJson(); }
     // }
     // 
     // JsonItem ToJson('name'Ptr& 'argName')
     // {
     //     'name'ToJsonVisitor visitor;
-    //     'argName'->Accept(visitor);
-    //     return visitor.result;
+    //     return Accept(visitor, 'argName');
     // }
-    cppStream << "struct " << info.name << "ToJsonVisitor : " << "public " << info.name << "Visitor" << endl;
+    cppStream << "struct " << info.name << "ToJsonVisitor" << endl;
     cppStream << "{" << endl;
-    cppStream << "    JsonItem result;" << endl;
+    cppStream << "    using ResultType = JsonItem;" << endl;
     for (auto& member : info.members)
-        cppStream << "    void Visit(" << member << "* " << info.argName << ") override { result = " << info.argName << "->ToJson(); }" << endl;
+        cppStream << "    ResultType Visit(" << member << "* " << info.argName << ") { return " << info.argName << "->ToJson(); }" << endl;
     cppStream << "};" << endl << endl;
 
     cppStream << "JsonItem ToJson(" << info.name << "* " << info.argName << ")" << endl;
     cppStream << "{" << endl;
     cppStream << "    if (!" << info.argName << ") return JsonNull();" << endl << endl;
     cppStream << "    " << info.name << "ToJsonVisitor visitor;" << endl;
-    cppStream << "    " << info.argName << "->Accept(visitor);" << endl;
-    cppStream << "    return visitor.result;" << endl;
+    cppStream << "    return Accept(visitor, " << info.argName << ");" << endl;
     cppStream << "}" << endl;
 }
 

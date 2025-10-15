@@ -120,79 +120,77 @@ bool TranslationContext::IsInLoop()
     return scopeContext->IsInLoop();
 }
 
-struct DeclTypeVisitor : public STypeExpVisitor
+struct DeclTypeVisitor
 {
-    DeclTypeInfo* result;
+    using ResultType = DeclTypeInfo;
     TranslationContext& context;
 
 public:
-    DeclTypeVisitor(DeclTypeInfo* result, TranslationContext& context)
-        : result(result), context(context)
+    DeclTypeVisitor(TranslationContext& context)
+        : context{context}
     {
     }
 
 private:
-    void Normal(STypeExp* typeExp)
+    ResultType Normal(STypeExp* typeExp)
     {
         auto eRType = context.TranslateSTypeExpToRType(typeExp);
-        *result = DeclTypeInfo(DeclTypeInfoKind::Normal, *eRType);
+        return DeclTypeInfo(DeclTypeInfoKind::Normal, *eRType);
     }
 
 public:
-    void Visit(STypeExp_Id* typeExp) override
+    ResultType Visit(STypeExp_Id* typeExp)
     {
         if (!IsVarType(typeExp))
             return Normal(typeExp);
 
-        *result = DeclTypeInfo { DeclTypeInfoKind::PlainVar, /*type*/ nullptr };
+        return DeclTypeInfo{DeclTypeInfoKind::PlainVar, /*type*/ nullptr};
     }
 
-    void Visit(STypeExp_Member* typeExp) override
+    ResultType Visit(STypeExp_Member* typeExp)
     {
         return Normal(typeExp);
     }
 
     // var?
-    void Visit(STypeExp_Nullable* typeExp) override
+    ResultType Visit(STypeExp_Nullable* typeExp)
     {
         if (!IsVarType(typeExp->innerType))
             return Normal(typeExp);
 
-        *result = DeclTypeInfo { DeclTypeInfoKind::NullableVar, /*type*/ nullptr };
+        return DeclTypeInfo{DeclTypeInfoKind::NullableVar, /*type*/ nullptr};
     }
 
-    void Visit(STypeExp_LocalPtr* typeExp) override
+    ResultType Visit(STypeExp_LocalPtr* typeExp)
     {
         if (!IsVarType(typeExp->innerType))
             return Normal(typeExp);
 
-        *result = DeclTypeInfo { DeclTypeInfoKind::LocalPtrVar, /*type*/ nullptr };
+        return DeclTypeInfo{DeclTypeInfoKind::LocalPtrVar, /*type*/ nullptr};
     }
 
-    void Visit(STypeExp_BoxPtr* typeExp) override
+    ResultType Visit(STypeExp_BoxPtr* typeExp)
     {
         if (!IsVarType(typeExp->innerType))
             return Normal(typeExp);
 
-        *result = DeclTypeInfo { DeclTypeInfoKind::BoxPtrVar, /*type*/ nullptr };
+        return DeclTypeInfo{DeclTypeInfoKind::BoxPtrVar, /*type*/ nullptr};
     }
 
     // local var i = ...
-    void Visit(STypeExp_Local* typeExp) override
+    ResultType Visit(STypeExp_Local* typeExp)
     {
         if (!IsVarType(typeExp->innerType))
             return Normal(typeExp);
 
-        *result = DeclTypeInfo { DeclTypeInfoKind::LocalInterfaceVar, /*type*/ nullptr };
+        return DeclTypeInfo{DeclTypeInfoKind::LocalInterfaceVar, /*type*/ nullptr};
     }
 };
 
 DeclTypeInfo TranslationContext::GetDeclTypeInfo(STypeExp* typeExp)
 {
-    DeclTypeInfo info;
-    DeclTypeVisitor visitor(&info, *this);
-    typeExp->Accept(visitor);
-    return info;
+    DeclTypeVisitor visitor{*this};
+    return Accept(visitor, typeExp);
 }
 
 bool TranslationContext::DoesLocalVarNameExistInScope(const std::string& name)

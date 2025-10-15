@@ -448,123 +448,120 @@ expected<NExp*, DiagPtr> TranslateSAsExpToNExp(SExp_As* exp, TranslationContext&
 namespace {
 
 // S.Exp -> R.Exp
-class SExpToNExpTranslator : public SExpVisitor
+class SExpToNExpTranslator
 {
-    expected<NExp*, DiagPtr>* result;
-    RType* hintType;
+public:
+    using ResultType = expected<NExp*, DiagPtr>;
 
+private:
+    RType* hintType;
     TranslationContext& context;
 
 public:
-    SExpToNExpTranslator(expected<NExp*, DiagPtr>* result, RType* hintType, TranslationContext& context)
-        : result{result}, hintType{hintType}, context{context}
+    SExpToNExpTranslator(RType* hintType, TranslationContext& context)
+        : hintType{hintType}, context{context}
     {
     }
 
 private:
     // S.Exp -> IntermediateExp -> ResolvedExp -> R.Exp
-    void HandleDefault(SExp* exp)
+    ResultType HandleDefault(SExp* exp)
     {
         auto eReExp = TranslateSExpToReExp(exp, hintType, context);
 
-        if (eReExp)
-            *result = TranslateReExpToNExp(*eReExp, context);
-        else
-            *result = nullptr;
-    }
+        if (!eReExp)
+            return unexpected{move(eReExp).error()};
 
-    void Forward(expected<NExp*, DiagPtr>&& r)
-    {
-        *result = move(r);
+        return TranslateReExpToNExp(*eReExp, context);
     }
-
+    
 public:
-    void Visit(SExp_Identifier* exp) override
+    ResultType Visit(SExp_Identifier* exp)
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_String* exp) override
+    ResultType Visit(SExp_String* exp)
     {
-        return Forward(TranslateSStringExpToNStringExp(exp, context));
+        return TranslateSStringExpToNStringExp(exp, context);
     }
 
-    void Visit(SExp_IntLiteral* exp) override
+    ResultType Visit(SExp_IntLiteral* exp)
     {
-        return Forward(TranslateSIntLiteralExpToNExp(exp, context));
+        return TranslateSIntLiteralExpToNExp(exp, context);
     }
 
-    void Visit(SExp_BoolLiteral* exp) override
+    ResultType Visit(SExp_BoolLiteral* exp)
     {
-        return Forward(TranslateSBoolLiteralExpToNExp(exp, context));
+        return TranslateSBoolLiteralExpToNExp(exp, context);
     }
 
-    void Visit(SExp_NullLiteral* exp) override
+    ResultType Visit(SExp_NullLiteral* exp)
     {
-        return Forward(TranslateSNullLiteralExpToNExp(exp, hintType, context));
+        return TranslateSNullLiteralExpToNExp(exp, hintType, context);
     }
 
-    void Visit(SExp_BinaryOp* exp) override
+    ResultType Visit(SExp_BinaryOp* exp)
     {
-        return Forward(TranslateSBinaryOpExpToNExp(exp, context));
+        return TranslateSBinaryOpExpToNExp(exp, context);
     }
 
-    void Visit(SExp_UnaryOp* exp) override
+    ResultType Visit(SExp_UnaryOp* exp)
     {
         if (exp->kind == SUnaryOpKind::Deref)
             return HandleDefault(exp);
 
-        return Forward(TranslateSUnaryOpExpToNExpExceptDeref(exp, context));
+        return TranslateSUnaryOpExpToNExpExceptDeref(exp, context);
     }
 
-    void Visit(SExp_Call* exp) override
+    ResultType Visit(SExp_Call* exp)
     {
-        return Forward(TranslateSCallExpToNExp(exp, hintType, context));
+        return TranslateSCallExpToNExp(exp, hintType, context);
     }
 
-    void Visit(SExp_Lambda* exp) override
+    ResultType Visit(SExp_Lambda* exp)
     {
-        return Forward(TranslateSLambdaExpToNExp(exp, context));
+        return TranslateSLambdaExpToNExp(exp, context);
     }
 
-    void Visit(SExp_Indexer* exp) override
-    {
-        return HandleDefault(exp);
-    }
-
-    void Visit(SExp_Member* exp) override
+    ResultType Visit(SExp_Indexer* exp)
     {
         return HandleDefault(exp);
     }
 
-    void Visit(SExp_IndirectMember* exp) override
+    ResultType Visit(SExp_Member* exp)
+    {
+        return HandleDefault(exp);
+    }
+
+    ResultType Visit(SExp_IndirectMember* exp)
     {
         throw NotImplementedException{};
     }
 
-    void Visit(SExp_List* exp) override
+    ResultType Visit(SExp_List* exp)
     {
-        return Forward(TranslateSListExpToNExp(exp, context));
+        return TranslateSListExpToNExp(exp, context);
     }
 
-    void Visit(SExp_New* exp) override
+    ResultType Visit(SExp_New* exp)
     {
-        return Forward(TranslateSNewExpToNExp(exp, context));
+        return TranslateSNewExpToNExp(exp, context);
     }
 
-    void Visit(SExp_Box* exp) override
+    ResultType Visit(SExp_Box* exp)
     {
-        return Forward(TranslateSBoxExpToNExp(exp, hintType, context));
+        return TranslateSBoxExpToNExp(exp, hintType, context);
     }
 
-    void Visit(SExp_Is* exp) override
+    ResultType Visit(SExp_Is* exp)
     {
-        return Forward(TranslateSIsExpToNExp(exp, context));
+        return TranslateSIsExpToNExp(exp, context);
     }
 
-    void Visit(SExp_As* exp) override
+    ResultType Visit(SExp_As* exp)
     {
-        return Forward(TranslateSAsExpToNExp(exp, context));
+        return TranslateSAsExpToNExp(exp, context);
     }
 };
 
@@ -572,12 +569,8 @@ public:
 
 expected<NExp*, DiagPtr> TranslateSExpToNExp(SExp* exp, RType* hintType, TranslationContext& context)
 {
-    expected<NExp*, DiagPtr> result;
-
-    SExpToNExpTranslator translator{&result, hintType, context};
-    exp->Accept(translator);
-
-    return result;
+    SExpToNExpTranslator translator{hintType, context};
+    return Accept(translator, exp);
 }
 
 }

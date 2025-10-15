@@ -54,49 +54,47 @@ bool IsTopLevelRExp(NExp* exp)
         || dynamic_cast<NExp_CallLambda*>(exp) != nullptr;
 }
 
-class SStmtToNStmtsTranslator : public SStmtVisitor
+class SStmtToNStmtsTranslator
 {
-    expected<void, DiagPtr>* result;
+public:
+    using ResultType = expected<void, DiagPtr>;
+
+private:
     vector<NStmt*>* outStmts;
     TranslationContext& context;
-    
-    void Forward(expected<void, DiagPtr>&& r)
-    {
-        *result = move(r);
-    }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    void Error(TArgs&&... args)
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, NStmt>
-    void Value(TArgs&&... args)
+    ResultType Value(TArgs&&... args)
     {
-        *result = {};
         outStmts->push_back(context.MakeNStmt<TValue>(forward<TArgs>(args)...));
+        return {};
     }
 
-    void Values(vector<NStmt*>&& stmts)
+    ResultType Values(vector<NStmt*>&& stmts)
     {
-        *result = {};
         outStmts->insert(outStmts->end(), make_move_iterator(stmts.begin()), make_move_iterator(stmts.end()));
+        return {};
     }
 
 public:
-    SStmtToNStmtsTranslator(expected<void, DiagPtr>* result, vector<NStmt*>* outStmts, TranslationContext& context)
-        : result(result), outStmts(outStmts), context(context)
+    SStmtToNStmtsTranslator(vector<NStmt*>* outStmts, TranslationContext& context)
+        : outStmts{outStmts}, context{context}
     {
     }
 
-    void Visit(SStmt_Command* stmt) override 
+    ResultType Visit(SStmt_Command* stmt) 
     {
         // CommandStmt에 있는 expStringElement를 분석한다
 
@@ -113,14 +111,14 @@ public:
         return Value<NStmt_Command>(move(builder));
     }
 
-    void Visit(SStmt_VarDecl* stmt) override 
+    ResultType Visit(SStmt_VarDecl* stmt) 
     {
         // int a;
         // auto x = 
-        return Forward(TranslateSVarDeclToNStmts(outStmts, &stmt->varDecl, context));
+        return TranslateSVarDeclToNStmts(outStmts, &stmt->varDecl, context);
     }
 
-    void Visit(SStmt_If* stmt) override 
+    ResultType Visit(SStmt_If* stmt) 
     {
         // 순회
         auto eNCond = TranslateSExpToNExp(stmt->cond, /*hintType*/ context.MakeBoolType(), context);
@@ -149,7 +147,7 @@ public:
         return Value<NStmt_If>(*eNCond, move(*eBodyStmts), move(elseStmts));
     }
 
-    void Visit(SStmt_IfTest* stmt) override 
+    ResultType Visit(SStmt_IfTest* stmt) 
     {
         auto varName = RName_Normal(stmt->varName);
 
@@ -189,7 +187,7 @@ public:
             throw NotImplementedException{}; // 에러
     }
 
-    void Visit(SStmt_For* stmt) override 
+    ResultType Visit(SStmt_For* stmt) 
     {
         // for(
         //     int i = 0; <- forStmtContext 
@@ -240,7 +238,7 @@ public:
         return Value<NStmt_For>(move(initStmts), condExp, continueExp, move(*eBodyStmts));
     }
 
-    void Visit(SStmt_Continue* stmt) override
+    ResultType Visit(SStmt_Continue* stmt)
     {
         if (!context.IsInLoop())
         {
@@ -250,7 +248,7 @@ public:
         return Value<NStmt_Continue>();
     }
 
-    void Visit(SStmt_Break* stmt) override
+    ResultType Visit(SStmt_Break* stmt)
     {
         if (!context.IsInLoop())
         {
@@ -260,7 +258,7 @@ public:
         return Value<NStmt_Break>();
     }
 
-    void Visit(SStmt_Return* stmt) override 
+    ResultType Visit(SStmt_Return* stmt) 
     {
         // seq 함수는 여기서 모두 처리 
         if (context.IsSeqFunc())
@@ -342,7 +340,7 @@ public:
         }, funcRet);
     }
 
-    void Visit(SStmt_Block* stmt) override 
+    ResultType Visit(SStmt_Block* stmt) 
     {
         // { }
         vector<DiagPtr> diags;
@@ -363,12 +361,12 @@ public:
         return Value<NStmt_Block>(move(builder));
     }
 
-    void Visit(SStmt_Blank* stmt) override 
+    ResultType Visit(SStmt_Blank* stmt) 
     {
         return Value<NStmt_Blank>();
     }
 
-    void Visit(SStmt_Exp* stmt) override
+    ResultType Visit(SStmt_Exp* stmt)
     {
         DesignatedDiagnostic<Error_ExpStmt_ExpressionShouldBeAssignOrCall> designatedDiag;
         auto eExp = TranslateSExpAsTopLevelExpToNExp(stmt->exp, /*hintType*/ nullptr, &designatedDiag, context);
@@ -377,7 +375,7 @@ public:
         return Value<NStmt_Exp>(*eExp);
     }
 
-    void Visit(SStmt_Task* stmt) override 
+    ResultType Visit(SStmt_Task* stmt) 
     {
         vector<SLambdaExpParam> emptyParams;
         auto eLambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt->body, context);
@@ -386,7 +384,7 @@ public:
         return Value<NStmt_Task>(eLambdaAndArgs->decl, move(eLambdaAndArgs->args));
     }
 
-    void Visit(SStmt_Await* stmt) override 
+    ResultType Visit(SStmt_Await* stmt) 
     {
         auto newContext = context.MakeNestedScopeContext();
         auto eBody = TranslateSBodyToNStmts(stmt->body, newContext);
@@ -395,7 +393,7 @@ public:
         return Value<NStmt_Await>(move(*eBody));
     }
 
-    void Visit(SStmt_Async* stmt) override 
+    ResultType Visit(SStmt_Async* stmt) 
     {
         vector<SLambdaExpParam> emptyParams;
         auto eLambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(context.MakeVoidType(), emptyParams, stmt->body, context);
@@ -404,7 +402,7 @@ public:
         return Value<NStmt_Async>(eLambdaAndArgs->decl, move(eLambdaAndArgs->args));
     }
     
-    void Visit(SStmt_Foreach* stmt) override
+    ResultType Visit(SStmt_Foreach* stmt)
     {
         struct ForeachStmtTranslator
         {
@@ -691,10 +689,10 @@ public:
         };
 
         ForeachStmtTranslator translator{outStmts, stmt, context};
-        *result = translator.Translate();
+        return translator.Translate();
     }
 
-    void Visit(SStmt_Yield* stmt) override 
+    ResultType Visit(SStmt_Yield* stmt) 
     {
         // TODO: ref 처리?
         if (!context.IsSeqFunc())
@@ -718,7 +716,7 @@ public:
         return Value<NStmt_Yield>(*eCastRetValue);
     }
 
-    void Visit(SStmt_Directive* stmt) override 
+    ResultType Visit(SStmt_Directive* stmt) 
     {
         if (stmt->name == "static_notnull")
         {
@@ -739,47 +737,44 @@ public:
 };
 
 expected<void, DiagPtr> TranslateSStmtToNStmts(vector<NStmt*>* outStmts, SStmt* sStmt, TranslationContext& context)
-{   
-    expected<void, DiagPtr> result;
-    SStmtToNStmtsTranslator translator{&result, outStmts, context};
-    sStmt->Accept(translator);
-    return result;
+{
+    SStmtToNStmtsTranslator translator{outStmts, context};
+    return Accept(translator, sStmt);
 }
 
 expected<void, DiagPtr> TranslateSEmbeddableStmtToNStmts(vector<NStmt*>* outStmts, SEmbeddableStmt* embedStmt, TranslationContext& context)
 {
     // if (...) 'stmt'
     // if (...) '{ stmt... }' 를 받는다
-    class EmbeddableStmtTranslator : public SEmbeddableStmtVisitor
+    class EmbeddableStmtTranslator
     {
-        expected<void, DiagPtr>* result;
+    public:
+        using ResultType = expected<void, DiagPtr>;
         vector<NStmt*>* outStmts;
         TranslationContext& context;
 
     public:
-        EmbeddableStmtTranslator(expected<void, DiagPtr>* result, vector<NStmt*>* outStmts, TranslationContext& context)
-            : result(result), outStmts(outStmts), context(context)
+        EmbeddableStmtTranslator(vector<NStmt*>* outStmts, TranslationContext& context)
+            : outStmts{outStmts}, context{context}
         {
         }
 
-        void Visit(SEmbeddableStmt_Single* stmt) override
+        ResultType Visit(SEmbeddableStmt_Single* stmt)
         {
             // TODO: VarDecl은 등장하면 에러를 내도록 한다
             // 지금은 그냥 패스
 
-            *result = TranslateSStmtToNStmts(outStmts, stmt->stmt, context);
+            return TranslateSStmtToNStmts(outStmts, stmt->stmt, context);
         }
 
-        void Visit(SEmbeddableStmt_Block* stmt) override
+        ResultType Visit(SEmbeddableStmt_Block* stmt)
         {
-            *result = TranslateSBodyToNStmts(outStmts, stmt->stmts, context);
+            return TranslateSBodyToNStmts(outStmts, stmt->stmts, context);
         }
     };
 
-    expected<void, DiagPtr> result;
-    EmbeddableStmtTranslator translator{&result, outStmts, context};
-    embedStmt->Accept(translator);
-    return result;
+    EmbeddableStmtTranslator translator{outStmts, context};
+    return Accept(translator, embedStmt);
 }
 
 expected<vector<NStmt*>, DiagPtr> TranslateSEmbeddableStmtToNStmts(SEmbeddableStmt* embedStmt, TranslationContext& context)
@@ -792,48 +787,47 @@ expected<vector<NStmt*>, DiagPtr> TranslateSEmbeddableStmtToNStmts(SEmbeddableSt
 
 expected<vector<NStmt*>, DiagPtr> TranslateSForStmtInitializerToNStmts(SForStmtInitializer* forInit, TranslationContext& context)
 {
-    class ForInitTranslator : public SForStmtInitializerVisitor
+    class ForInitTranslator
     {
-        expected<vector<NStmt*>, DiagPtr>* result;
+    public:
+        using ResultType = expected<vector<NStmt*>, DiagPtr>;
+
+    private:
         TranslationContext& context;
 
     public:
-        ForInitTranslator(expected<vector<NStmt*>, DiagPtr>* result, TranslationContext& context)
-            : result(result), context(context)
+        ForInitTranslator(TranslationContext& context)
+            : context{context}
         {
         }
 
-        void Visit(SForStmtInitializer_Exp* forInit) override
+        ResultType Visit(SForStmtInitializer_Exp* forInit)
         {
             DesignatedDiagnostic<Error_ForStmt_ExpInitializerShouldBeAssignOrCall> designatedDiag;
             auto eExp = TranslateSExpAsTopLevelExpToNExp(forInit->exp, /*hintType*/ nullptr, &designatedDiag, context);
             if (!eExp)
             {   
-                *result = unexpected{move(eExp).error()};
-                return;
+                return unexpected{move(eExp).error()};
             }
 
-            *result = vector<NStmt*>{context.MakeNStmt<NStmt_Exp>(*eExp)};
+            return vector<NStmt*>{context.MakeNStmt<NStmt_Exp>(*eExp)};
         }
 
-        void Visit(SForStmtInitializer_VarDecl* forInit) override
+        ResultType Visit(SForStmtInitializer_VarDecl* forInit)
         {   
             vector<NStmt*> stmts;
             auto eStmtsResult = TranslateSVarDeclToNStmts(&stmts, &forInit->varDecl, context);
             if (!eStmtsResult)
             {
-                *result = unexpected{move(eStmtsResult).error()};
-                return;
+                return unexpected{move(eStmtsResult).error()};
             }
 
-            *result = move(stmts);
+            return std::move(stmts); // for making ResultType
         }
     };
 
-    expected<vector<NStmt*>, DiagPtr> result;
-    ForInitTranslator translator(&result, context);
-    forInit->Accept(translator);
-    return result;
+    ForInitTranslator translator{context};
+    return Accept(translator, forInit);
 }
 
 expected<NExp*, DiagPtr> TranslateSExpAsTopLevelExpToNExp(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContext& context)
@@ -929,10 +923,9 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType
 expected<void, DiagPtr> TranslateSBodyToNStmts(vector<NStmt*>* outBody, const vector<SStmt*>& sStmts, TranslationContext& context)
 {
     for(auto* sStmt : sStmts)
-    {        
-        expected<void, DiagPtr> eResult;
-        SStmtToNStmtsTranslator translator(&eResult, outBody, context);
-        sStmt->Accept(translator);
+    {
+        SStmtToNStmtsTranslator translator{outBody, context};
+        auto eResult = Accept(translator, sStmt);
         if (!eResult) return unexpected{move(eResult).error()};
     }
 

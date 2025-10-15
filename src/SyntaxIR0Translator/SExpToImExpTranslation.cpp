@@ -30,54 +30,51 @@ namespace Citron::SyntaxIR0Translator {
 
 namespace {
 
-class SExpToImExpTranslator : public SExpVisitor
+class SExpToImExpTranslator
 {
-    expected<ImExp*, DiagPtr>* result;
-    RType* hintType;
+public:
+    using ResultType = expected<ImExp*, DiagPtr>;
 
+private:
+    RType* hintType;
     TranslationContext& context;
 
 public:
-    SExpToImExpTranslator(expected<ImExp*, DiagPtr>* result, RType* hintType, TranslationContext& context)
-        : result(result), hintType(hintType), context(context)
+    SExpToImExpTranslator(RType* hintType, TranslationContext& context)
+        : hintType{hintType}, context{context}
     {
     }
 
 private:
-    void HandleExp(expected<NExp*, DiagPtr>&& eExp)
+    ResultType HandleExp(expected<NExp*, DiagPtr>&& eExp)
     {
         if (!eExp)
-            *result = nullptr;
+            return unexpected{move(eExp).error()};
         else
-            *result = context.MakeImExp<ImExp_Else>(*eExp);
-    }
-
-    void Forward(expected<ImExp*, DiagPtr>&& r)
-    {
-        *result = move(r);
+            return context.MakeImExp<ImExp_Else>(*eExp);
     }
 
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, ImExp>
-    void Value(TArgs&&... args)
+    ResultType Value(TArgs&&... args)
     {
-        *result = context.MakeImExp<TValue>(forward<TArgs>(args)...);
+        return context.MakeImExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    void Error(TArgs&&... args)
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
     // x
-    void Visit(SExp_Identifier* exp) override
+    ResultType Visit(SExp_Identifier* exp)
     {
         throw NotImplementedException{};
         /*try
@@ -100,33 +97,33 @@ public:
         }*/
     }
 
-    void Visit(SExp_String* exp) override
+    ResultType Visit(SExp_String* exp)
     {
         return HandleExp(TranslateSStringExpToNStringExp(exp, context));
     }
 
-    void Visit(SExp_IntLiteral* exp) override
+    ResultType Visit(SExp_IntLiteral* exp)
     {
         return HandleExp(TranslateSIntLiteralExpToNExp(exp, context));
     }
 
-    void Visit(SExp_BoolLiteral* exp) override
+    ResultType Visit(SExp_BoolLiteral* exp)
     {
         return HandleExp(TranslateSBoolLiteralExpToNExp(exp, context));
     }
 
     // 'null'
-    void Visit(SExp_NullLiteral* exp) override
+    ResultType Visit(SExp_NullLiteral* exp)
     {
         return HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
     }
 
-    void Visit(SExp_BinaryOp* exp) override
+    ResultType Visit(SExp_BinaryOp* exp)
     {
         return HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
     }
 
-    void Visit(SExp_UnaryOp* exp) override
+    ResultType Visit(SExp_UnaryOp* exp)
     {
         // *d
         if (exp->kind == SUnaryOpKind::Deref)
@@ -151,17 +148,17 @@ public:
         }
     }
 
-    void Visit(SExp_Call* exp) override
+    ResultType Visit(SExp_Call* exp)
     {
         return HandleExp(TranslateSCallExpToNExp(exp, hintType, context));
     }
 
-    void Visit(SExp_Lambda* exp) override
+    ResultType Visit(SExp_Lambda* exp)
     {
         return HandleExp(TranslateSLambdaExpToNExp(exp, context));
     }
 
-    void Visit(SExp_Indexer* exp) override
+    ResultType Visit(SExp_Indexer* exp)
     {
         auto eReObj = TranslateSExpToReExp(exp->obj, /*hintType*/ nullptr, context);
         if (!eReObj) return Error(move(eReObj));
@@ -237,7 +234,7 @@ public:
     }
 
     // parent."x"<>
-    void Visit(SExp_Member* exp) override
+    ResultType Visit(SExp_Member* exp)
     {
         auto eImParent = TranslateSExpToImExp(exp->parent, hintType, context);
         if (!eImParent) return Error(move(eImParent));
@@ -245,36 +242,36 @@ public:
         auto eTypeArgs = MakeTypeArgs(exp->memberTypeArgs, context);
         if (!eTypeArgs) return Error(move(eTypeArgs));
 
-        return Forward(TranslateImExpAndMemberNameToImExp(*eImParent, exp->memberName, *eTypeArgs, context));
+        return TranslateImExpAndMemberNameToImExp(*eImParent, exp->memberName, *eTypeArgs, context);
     }
 
-    void Visit(SExp_IndirectMember* exp) override
+    ResultType Visit(SExp_IndirectMember* exp)
     {
         throw NotImplementedException{};
     }
 
-    void Visit(SExp_List* exp) override
+    ResultType Visit(SExp_List* exp)
     {
         return HandleExp(TranslateSListExpToNExp(exp, context));
     }
 
     // 'new C(...)'
-    void Visit(SExp_New* exp) override
+    ResultType Visit(SExp_New* exp)
     {
         return HandleExp(TranslateSNewExpToNExp(exp, context));
     }
 
-    void Visit(SExp_Box* exp) override
+    ResultType Visit(SExp_Box* exp)
     {
         return HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
     }
 
-    void Visit(SExp_Is* exp) override
+    ResultType Visit(SExp_Is* exp)
     {
         return HandleExp(TranslateSIsExpToNExp(exp, context));
     }
 
-    void Visit(SExp_As* exp) override
+    ResultType Visit(SExp_As* exp)
     {
         return HandleExp(TranslateSAsExpToNExp(exp, context));
     }
@@ -283,11 +280,9 @@ public:
 }
 
 expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp* exp, RType* hintType, TranslationContext& context)
-{   
-    expected<ImExp*, DiagPtr> imExp;
-    SExpToImExpTranslator translator{&imExp, hintType, context};
-    exp->Accept(translator);
-    return imExp;
+{
+    SExpToImExpTranslator translator{hintType, context};
+    return Accept(translator, exp);
 }
 
 } // namespace Citron::SyntaxIR0Translator

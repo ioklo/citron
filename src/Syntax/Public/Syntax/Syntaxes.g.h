@@ -351,6 +351,99 @@ public:
     virtual void Accept(SStmtVisitor& visitor) = 0;
 };
 
+template<class TFrom, class TVisitor>
+concept SStmtConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SStmt_Command*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_VarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_If*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_IfTest*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_For*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Continue*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Break*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Return*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Block*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Blank*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Exp*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Task*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Await*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Async*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Foreach*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Yield*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Directive*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SStmtVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, SStmt* stmt, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SStmtVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SStmt_Command* stmt) override { call(stmt); }
+            void Visit(SStmt_VarDecl* stmt) override { call(stmt); }
+            void Visit(SStmt_If* stmt) override { call(stmt); }
+            void Visit(SStmt_IfTest* stmt) override { call(stmt); }
+            void Visit(SStmt_For* stmt) override { call(stmt); }
+            void Visit(SStmt_Continue* stmt) override { call(stmt); }
+            void Visit(SStmt_Break* stmt) override { call(stmt); }
+            void Visit(SStmt_Return* stmt) override { call(stmt); }
+            void Visit(SStmt_Block* stmt) override { call(stmt); }
+            void Visit(SStmt_Blank* stmt) override { call(stmt); }
+            void Visit(SStmt_Exp* stmt) override { call(stmt); }
+            void Visit(SStmt_Task* stmt) override { call(stmt); }
+            void Visit(SStmt_Await* stmt) override { call(stmt); }
+            void Visit(SStmt_Async* stmt) override { call(stmt); }
+            void Visit(SStmt_Foreach* stmt) override { call(stmt); }
+            void Visit(SStmt_Yield* stmt) override { call(stmt); }
+            void Visit(SStmt_Directive* stmt) override { call(stmt); }
+        };
+
+        Bridge bridge{caller};
+        stmt->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SStmtVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SStmt_Command* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_VarDecl* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_If* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_IfTest* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_For* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Continue* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Break* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Return* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Block* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Blank* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Exp* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Task* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Await* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Async* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Foreach* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Yield* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Directive* stmt) override { result.emplace(call(stmt)); }
+        };
+
+        Bridge bridge{caller};
+        stmt->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
 SYNTAX_API JsonItem ToJson(SStmt* stmt);
 
 class SExpVisitor
@@ -388,6 +481,99 @@ public:
     virtual void Accept(SExpVisitor& visitor) = 0;
 };
 
+template<class TFrom, class TVisitor>
+concept SExpConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SExp_Identifier*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_String*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_IntLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_BoolLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_NullLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_BinaryOp*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_UnaryOp*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_Call*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_Lambda*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_Indexer*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_Member*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_IndirectMember*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_List*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_New*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_Box*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_Is*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_As*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SExpVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, SExp* exp, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SExpVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SExp_Identifier* exp) override { call(exp); }
+            void Visit(SExp_String* exp) override { call(exp); }
+            void Visit(SExp_IntLiteral* exp) override { call(exp); }
+            void Visit(SExp_BoolLiteral* exp) override { call(exp); }
+            void Visit(SExp_NullLiteral* exp) override { call(exp); }
+            void Visit(SExp_BinaryOp* exp) override { call(exp); }
+            void Visit(SExp_UnaryOp* exp) override { call(exp); }
+            void Visit(SExp_Call* exp) override { call(exp); }
+            void Visit(SExp_Lambda* exp) override { call(exp); }
+            void Visit(SExp_Indexer* exp) override { call(exp); }
+            void Visit(SExp_Member* exp) override { call(exp); }
+            void Visit(SExp_IndirectMember* exp) override { call(exp); }
+            void Visit(SExp_List* exp) override { call(exp); }
+            void Visit(SExp_New* exp) override { call(exp); }
+            void Visit(SExp_Box* exp) override { call(exp); }
+            void Visit(SExp_Is* exp) override { call(exp); }
+            void Visit(SExp_As* exp) override { call(exp); }
+        };
+
+        Bridge bridge{caller};
+        exp->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SExpVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SExp_Identifier* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_String* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_IntLiteral* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_BoolLiteral* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_NullLiteral* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_BinaryOp* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_UnaryOp* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_Call* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_Lambda* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_Indexer* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_Member* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_IndirectMember* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_List* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_New* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_Box* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_Is* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_As* exp) override { result.emplace(call(exp)); }
+        };
+
+        Bridge bridge{caller};
+        exp->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
 SYNTAX_API JsonItem ToJson(SExp* exp);
 
 class STypeExpVisitor
@@ -414,6 +600,66 @@ public:
     virtual void Accept(STypeExpVisitor& visitor) = 0;
 };
 
+template<class TFrom, class TVisitor>
+concept STypeExpConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept STypeExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<STypeExp_Id*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<STypeExp_Member*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<STypeExp_Nullable*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<STypeExp_LocalPtr*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<STypeExp_BoxPtr*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<STypeExp_Local*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires STypeExpVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, STypeExp* typeExp, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : STypeExpVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(STypeExp_Id* typeExp) override { call(typeExp); }
+            void Visit(STypeExp_Member* typeExp) override { call(typeExp); }
+            void Visit(STypeExp_Nullable* typeExp) override { call(typeExp); }
+            void Visit(STypeExp_LocalPtr* typeExp) override { call(typeExp); }
+            void Visit(STypeExp_BoxPtr* typeExp) override { call(typeExp); }
+            void Visit(STypeExp_Local* typeExp) override { call(typeExp); }
+        };
+
+        Bridge bridge{caller};
+        typeExp->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : STypeExpVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(STypeExp_Id* typeExp) override { result.emplace(call(typeExp)); }
+            void Visit(STypeExp_Member* typeExp) override { result.emplace(call(typeExp)); }
+            void Visit(STypeExp_Nullable* typeExp) override { result.emplace(call(typeExp)); }
+            void Visit(STypeExp_LocalPtr* typeExp) override { result.emplace(call(typeExp)); }
+            void Visit(STypeExp_BoxPtr* typeExp) override { result.emplace(call(typeExp)); }
+            void Visit(STypeExp_Local* typeExp) override { result.emplace(call(typeExp)); }
+        };
+
+        Bridge bridge{caller};
+        typeExp->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
 SYNTAX_API JsonItem ToJson(STypeExp* typeExp);
 
 class SStringExpElementVisitor
@@ -435,6 +681,54 @@ public:
     SStringExpElement& operator=(SStringExpElement&& other) noexcept = default;
     virtual void Accept(SStringExpElementVisitor& visitor) = 0;
 };
+
+template<class TFrom, class TVisitor>
+concept SStringExpElementConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SStringExpElementVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SStringExpElement_Text*>(), std::forward<TVisitorArgs>(args)...) } -> SStringExpElementConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStringExpElement_Exp*>(), std::forward<TVisitorArgs>(args)...) } -> SStringExpElementConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SStringExpElementVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, SStringExpElement* elem, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SStringExpElementVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SStringExpElement_Text* elem) override { call(elem); }
+            void Visit(SStringExpElement_Exp* elem) override { call(elem); }
+        };
+
+        Bridge bridge{caller};
+        elem->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SStringExpElementVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SStringExpElement_Text* elem) override { result.emplace(call(elem)); }
+            void Visit(SStringExpElement_Exp* elem) override { result.emplace(call(elem)); }
+        };
+
+        Bridge bridge{caller};
+        elem->Accept(bridge);
+        return *bridge.result;
+    }
+}
 
 SYNTAX_API JsonItem ToJson(SStringExpElement* elem);
 
@@ -458,6 +752,54 @@ public:
     virtual void Accept(SLambdaExpBodyVisitor& visitor) = 0;
 };
 
+template<class TFrom, class TVisitor>
+concept SLambdaExpBodyConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SLambdaExpBodyVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SLambdaExpBody_Stmts*>(), std::forward<TVisitorArgs>(args)...) } -> SLambdaExpBodyConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SLambdaExpBody_Exp*>(), std::forward<TVisitorArgs>(args)...) } -> SLambdaExpBodyConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SLambdaExpBodyVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, SLambdaExpBody* body, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SLambdaExpBodyVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SLambdaExpBody_Stmts* body) override { call(body); }
+            void Visit(SLambdaExpBody_Exp* body) override { call(body); }
+        };
+
+        Bridge bridge{caller};
+        body->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SLambdaExpBodyVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SLambdaExpBody_Stmts* body) override { result.emplace(call(body)); }
+            void Visit(SLambdaExpBody_Exp* body) override { result.emplace(call(body)); }
+        };
+
+        Bridge bridge{caller};
+        body->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
 SYNTAX_API JsonItem ToJson(SLambdaExpBody* body);
 
 class SEmbeddableStmtVisitor
@@ -480,6 +822,54 @@ public:
     virtual void Accept(SEmbeddableStmtVisitor& visitor) = 0;
 };
 
+template<class TFrom, class TVisitor>
+concept SEmbeddableStmtConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SEmbeddableStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SEmbeddableStmt_Single*>(), std::forward<TVisitorArgs>(args)...) } -> SEmbeddableStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SEmbeddableStmt_Block*>(), std::forward<TVisitorArgs>(args)...) } -> SEmbeddableStmtConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SEmbeddableStmtVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, SEmbeddableStmt* stmt, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SEmbeddableStmtVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SEmbeddableStmt_Single* stmt) override { call(stmt); }
+            void Visit(SEmbeddableStmt_Block* stmt) override { call(stmt); }
+        };
+
+        Bridge bridge{caller};
+        stmt->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SEmbeddableStmtVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SEmbeddableStmt_Single* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SEmbeddableStmt_Block* stmt) override { result.emplace(call(stmt)); }
+        };
+
+        Bridge bridge{caller};
+        stmt->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
 SYNTAX_API JsonItem ToJson(SEmbeddableStmt* stmt);
 
 class SForStmtInitializerVisitor
@@ -501,6 +891,54 @@ public:
     SForStmtInitializer& operator=(SForStmtInitializer&& other) noexcept = default;
     virtual void Accept(SForStmtInitializerVisitor& visitor) = 0;
 };
+
+template<class TFrom, class TVisitor>
+concept SForStmtInitializerConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SForStmtInitializerVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SForStmtInitializer_Exp*>(), std::forward<TVisitorArgs>(args)...) } -> SForStmtInitializerConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SForStmtInitializer_VarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SForStmtInitializerConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SForStmtInitializerVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, SForStmtInitializer* initializer, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SForStmtInitializerVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SForStmtInitializer_Exp* initializer) override { call(initializer); }
+            void Visit(SForStmtInitializer_VarDecl* initializer) override { call(initializer); }
+        };
+
+        Bridge bridge{caller};
+        initializer->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SForStmtInitializerVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SForStmtInitializer_Exp* initializer) override { result.emplace(call(initializer)); }
+            void Visit(SForStmtInitializer_VarDecl* initializer) override { result.emplace(call(initializer)); }
+        };
+
+        Bridge bridge{caller};
+        initializer->Accept(bridge);
+        return *bridge.result;
+    }
+}
 
 SYNTAX_API JsonItem ToJson(SForStmtInitializer* initializer);
 
@@ -528,6 +966,66 @@ public:
     virtual void Accept(SClassMemberDeclVisitor& visitor) = 0;
 };
 
+template<class TFrom, class TVisitor>
+concept SClassMemberDeclConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SClassMemberDeclVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SClassDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStructDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SEnumDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SClassFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SClassCtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SClassVarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SClassMemberDeclVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, SClassMemberDecl* decl, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SClassMemberDeclVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SClassDecl* decl) override { call(decl); }
+            void Visit(SStructDecl* decl) override { call(decl); }
+            void Visit(SEnumDecl* decl) override { call(decl); }
+            void Visit(SClassFuncDecl* decl) override { call(decl); }
+            void Visit(SClassCtorDecl* decl) override { call(decl); }
+            void Visit(SClassVarDecl* decl) override { call(decl); }
+        };
+
+        Bridge bridge{caller};
+        decl->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SClassMemberDeclVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SClassDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SStructDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SEnumDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SClassFuncDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SClassCtorDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SClassVarDecl* decl) override { result.emplace(call(decl)); }
+        };
+
+        Bridge bridge{caller};
+        decl->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
 SYNTAX_API JsonItem ToJson(SClassMemberDecl* decl);
 
 class SStructMemberDeclVisitor
@@ -554,6 +1052,66 @@ public:
     virtual void Accept(SStructMemberDeclVisitor& visitor) = 0;
 };
 
+template<class TFrom, class TVisitor>
+concept SStructMemberDeclConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SStructMemberDeclVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SClassDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStructDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SEnumDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStructFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStructCtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStructVarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SStructMemberDeclVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, SStructMemberDecl* decl, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SStructMemberDeclVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SClassDecl* decl) override { call(decl); }
+            void Visit(SStructDecl* decl) override { call(decl); }
+            void Visit(SEnumDecl* decl) override { call(decl); }
+            void Visit(SStructFuncDecl* decl) override { call(decl); }
+            void Visit(SStructCtorDecl* decl) override { call(decl); }
+            void Visit(SStructVarDecl* decl) override { call(decl); }
+        };
+
+        Bridge bridge{caller};
+        decl->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SStructMemberDeclVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SClassDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SStructDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SEnumDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SStructFuncDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SStructCtorDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SStructVarDecl* decl) override { result.emplace(call(decl)); }
+        };
+
+        Bridge bridge{caller};
+        decl->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
 SYNTAX_API JsonItem ToJson(SStructMemberDecl* decl);
 
 class SNamespaceDeclElementVisitor
@@ -579,6 +1137,63 @@ public:
     virtual void Accept(SNamespaceDeclElementVisitor& visitor) = 0;
 };
 
+template<class TFrom, class TVisitor>
+concept SNamespaceDeclElementConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SNamespaceDeclElementVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SGlobalFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SNamespaceDeclElementConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SNamespaceDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SNamespaceDeclElementConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SClassDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SNamespaceDeclElementConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStructDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SNamespaceDeclElementConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SEnumDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SNamespaceDeclElementConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SNamespaceDeclElementVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, SNamespaceDeclElement* elem, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SNamespaceDeclElementVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SGlobalFuncDecl* elem) override { call(elem); }
+            void Visit(SNamespaceDecl* elem) override { call(elem); }
+            void Visit(SClassDecl* elem) override { call(elem); }
+            void Visit(SStructDecl* elem) override { call(elem); }
+            void Visit(SEnumDecl* elem) override { call(elem); }
+        };
+
+        Bridge bridge{caller};
+        elem->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SNamespaceDeclElementVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SGlobalFuncDecl* elem) override { result.emplace(call(elem)); }
+            void Visit(SNamespaceDecl* elem) override { result.emplace(call(elem)); }
+            void Visit(SClassDecl* elem) override { result.emplace(call(elem)); }
+            void Visit(SStructDecl* elem) override { result.emplace(call(elem)); }
+            void Visit(SEnumDecl* elem) override { result.emplace(call(elem)); }
+        };
+
+        Bridge bridge{caller};
+        elem->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
 SYNTAX_API JsonItem ToJson(SNamespaceDeclElement* elem);
 
 class SScriptElementVisitor
@@ -603,6 +1218,63 @@ public:
     SScriptElement& operator=(SScriptElement&& other) noexcept = default;
     virtual void Accept(SScriptElementVisitor& visitor) = 0;
 };
+
+template<class TFrom, class TVisitor>
+concept SScriptElementConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SScriptElementVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SNamespaceDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SScriptElementConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SGlobalFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SScriptElementConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SClassDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SScriptElementConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStructDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SScriptElementConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SEnumDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SScriptElementConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SScriptElementVisitable<TVisitor, TVisitorArgs...>
+decltype(auto) Accept(TVisitor&& v, SScriptElement* elem, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SScriptElementVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SNamespaceDecl* elem) override { call(elem); }
+            void Visit(SGlobalFuncDecl* elem) override { call(elem); }
+            void Visit(SClassDecl* elem) override { call(elem); }
+            void Visit(SStructDecl* elem) override { call(elem); }
+            void Visit(SEnumDecl* elem) override { call(elem); }
+        };
+
+        Bridge bridge{caller};
+        elem->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SScriptElementVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SNamespaceDecl* elem) override { result.emplace(call(elem)); }
+            void Visit(SGlobalFuncDecl* elem) override { result.emplace(call(elem)); }
+            void Visit(SClassDecl* elem) override { result.emplace(call(elem)); }
+            void Visit(SStructDecl* elem) override { result.emplace(call(elem)); }
+            void Visit(SEnumDecl* elem) override { result.emplace(call(elem)); }
+        };
+
+        Bridge bridge{caller};
+        elem->Accept(bridge);
+        return *bridge.result;
+    }
+}
 
 SYNTAX_API JsonItem ToJson(SScriptElement* elem);
 

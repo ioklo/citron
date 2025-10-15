@@ -27,61 +27,48 @@ namespace {
 
 // & exp syntax를 중간과정으로 번역해주는 역할
 // SExp -> IrExp
-struct SExpRefToIrExpTranslator : public SExpVisitor
+struct SExpRefToIrExpTranslator
 {
-    expected<IrExp*, DiagPtr>* result;
+    using ResultType = expected<IrExp*, DiagPtr>;
     TranslationContext& context;
 
 public:
-    SExpRefToIrExpTranslator(std::expected<IrExp*, DiagPtr>* result, TranslationContext& context)
-        : result(result), context(context)
+    SExpRefToIrExpTranslator(TranslationContext& context)
+        : context{context}
     {
     }
 
 private:
-    void Forward(expected<IrExp*, DiagPtr>&& r)
-    {
-        *result = move(r);
-    }
-
-    void Value(IrExp* v)
-    {
-        *result = v;
-    }
-
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
-    void Value(TArgs&&... args)
+    ResultType Value(TArgs&&... args)
     {
-        *result = context.MakeIrExp<TValue>(forward<TArgs>(args)...);
+        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    void Error(TArgs&&... args)
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
-    void HandleValue(SExp* exp)
+    ResultType HandleValue(SExp* exp)
     {
         auto eExp = TranslateSExpToNExp(exp, /*hintType*/ nullptr, context);
         if (!eExp)
-        {
-            *result = unexpected{move(eExp).error()};
-            return;
-        }
-
-        *result = context.MakeIrExp<IrExp_LocalValue>(*eExp);
+            return unexpected{move(eExp).error()};
+        
+        return context.MakeIrExp<IrExp_LocalValue>(*eExp);
     }
 
 public:
     // identifier에 &가 붙으면 어떻게 처리할 것인가
-    void Visit(SExp_Identifier* exp) override
+    ResultType Visit(SExp_Identifier* exp)
     {   
         // identifier는 name<typeArgs>로 이뤄져 있다
         auto eTypeArgs = MakeTypeArgs(exp->typeArgs, context);
@@ -107,37 +94,37 @@ public:
         if (!eIrExp)
             return Error(move(eIrExp));
 
-        return Value(*eIrExp);
+        return *eIrExp;
     }
 
     // string은 중간과정에서는 value로 평가하면 될 것 같다
-    void Visit(SExp_String* exp) override
+    ResultType Visit(SExp_String* exp)
     {
         return HandleValue(exp);
     }
 
-    void Visit(SExp_IntLiteral* exp) override
+    ResultType Visit(SExp_IntLiteral* exp)
     {
         return HandleValue(exp);
     }
 
-    void Visit(SExp_BoolLiteral* exp) override
+    ResultType Visit(SExp_BoolLiteral* exp)
     {
         return HandleValue(exp);
     }
 
-    void Visit(SExp_NullLiteral* exp) override
+    ResultType Visit(SExp_NullLiteral* exp)
     {
         return HandleValue(exp);
     }
 
-    void Visit(SExp_BinaryOp* exp) override
+    ResultType Visit(SExp_BinaryOp* exp)
     {
         // assign 제외
         return HandleValue(exp);
     }
 
-    void Visit(SExp_UnaryOp* exp) override
+    ResultType Visit(SExp_UnaryOp* exp)
     {
         if (exp->kind == SUnaryOpKind::Ref) // & &는 불가능
         {
@@ -161,59 +148,59 @@ public:
         }
     }
 
-    void Visit(SExp_Call* exp) override
+    ResultType Visit(SExp_Call* exp)
     {
-        HandleValue(exp);
+        return HandleValue(exp);
     }
 
-    void Visit(SExp_Lambda* exp) override
+    ResultType Visit(SExp_Lambda* exp)
     {
-        HandleValue(exp);
+        return HandleValue(exp);
     }
 
     // e[e] 꼴
-    void Visit(SExp_Indexer* exp) override
+    ResultType Visit(SExp_Indexer* exp)
     {
         // location으로 쓰지 않고 value로 쓴다
-        HandleValue(exp);
+        return HandleValue(exp);
     }
 
-    void Visit(SExp_Member* exp) override
+    ResultType Visit(SExp_Member* exp)
     {
         auto eIrParent = TranslateSExpRefToIrExp(exp->parent, context);
         if (!eIrParent) return Error(move(eIrParent));
 
         auto eTypeArgsExceptOuter = MakeTypeArgs(exp->memberTypeArgs, context);
         
-        return Forward(TranslateIrExpAndMemberNameToIrExp(*eIrParent, RName_Normal(exp->memberName), *eTypeArgsExceptOuter, context));
+        return TranslateIrExpAndMemberNameToIrExp(*eIrParent, RName_Normal(exp->memberName), *eTypeArgsExceptOuter, context);
     }
 
-    void Visit(SExp_IndirectMember* exp) override
+    ResultType Visit(SExp_IndirectMember* exp)
     {
         throw NotImplementedException{};
     }
 
-    void Visit(SExp_List* exp) override
+    ResultType Visit(SExp_List* exp)
     {
         return HandleValue(exp);
     }
 
-    void Visit(SExp_New* exp) override
+    ResultType Visit(SExp_New* exp)
     {
         return HandleValue(exp);
     }
 
-    void Visit(SExp_Box* exp) override
+    ResultType Visit(SExp_Box* exp)
     {
         return HandleValue(exp);
     }
 
-    void Visit(SExp_Is* exp) override
+    ResultType Visit(SExp_Is* exp)
     {
         return HandleValue(exp);
     }
 
-    void Visit(SExp_As* exp) override
+    ResultType Visit(SExp_As* exp)
     {
         return HandleValue(exp);
     }
@@ -223,11 +210,8 @@ public:
 
 expected<IrExp*, DiagPtr> TranslateSExpRefToIrExp(SExp* exp, TranslationContext& context)
 {
-    expected<IrExp*, DiagPtr> irExp;
-    SExpRefToIrExpTranslator translator{&irExp, context};
-    exp->Accept(translator);
-
-    return irExp;
+    SExpRefToIrExpTranslator translator{context};
+    return Accept(translator, exp);
 }
 
 } // namespace Citron::SyntaxIR0Translator
