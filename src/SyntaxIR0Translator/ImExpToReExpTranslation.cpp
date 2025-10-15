@@ -37,68 +37,68 @@ public:
 private:
 
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, ReExp>
-    expected<ReExp*, DiagPtr> Value(TArgs&&... args)
+    ResultType Value(TArgs&&... args)
     {
         return context.MakeReExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    expected<ReExp*, DiagPtr> Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
         return unexpected{move(e).error()};
     }
 
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    expected<ReExp*, DiagPtr> Error(TArgs&&... args)
+    ResultType Error(TArgs&&... args)
     {
         return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
-    expected<ReExp*, DiagPtr> Visit(ImExp_Namespace* imExp)
+    ResultType Visit(ImExp_Namespace* imExp)
     {
         return Error<Error_ResolveIdentifier_CantUseNamespaceAsExpression>();
     }
 
     // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
-    expected<ReExp*, DiagPtr> Visit(ImExp_GlobalFuncs* imExp)
+    ResultType Visit(ImExp_GlobalFuncs* imExp)
     {
         throw NotImplementedException{};
     }
 
-    expected<ReExp*, DiagPtr> Visit(ImExp_TypeVar* imExp)
+    ResultType Visit(ImExp_TypeVar* imExp)
     {
         return Error<Error_ResolveIdentifier_CantUseTypeAsExpression>();
     }
 
-    expected<ReExp*, DiagPtr> Visit(ImExp_Class* imExp)
+    ResultType Visit(ImExp_Class* imExp)
     {
         return Error<Error_ResolveIdentifier_CantUseTypeAsExpression>();
     }
 
-    expected<ReExp*, DiagPtr> Visit(ImExp_ClassFuncs* imExp)
+    ResultType Visit(ImExp_ClassFuncs* imExp)
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
         throw NotImplementedException{};
     }
 
-    expected<ReExp*, DiagPtr> Visit(ImExp_Struct* imExp)
+    ResultType Visit(ImExp_Struct* imExp)
     {
         return Error<Error_ResolveIdentifier_CantUseTypeAsExpression>();
     }
 
-    expected<ReExp*, DiagPtr> Visit(ImExp_StructFuncs* imExp)
+    ResultType Visit(ImExp_StructFuncs* imExp)
     {
         // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
         throw NotImplementedException{};
     }
 
-    expected<ReExp*, DiagPtr> Visit(ImExp_Enum* imExp)
+    ResultType Visit(ImExp_Enum* imExp)
     {
         return Error<Error_ResolveIdentifier_CantUseTypeAsExpression>();
     }
 
-    expected<ReExp*, DiagPtr> Visit(ImExp_EnumElem* imExp)
+    ResultType Visit(ImExp_EnumElem* imExp)
     {
         // if standalone, 값으로 처리한다
         if (imExp->decl->GetVarCount() == 0)
@@ -110,43 +110,43 @@ public:
         throw NotImplementedException{};
 
     }
-    expected<ReExp*, DiagPtr> Visit(ImExp_ThisVar* imExp)
+    ResultType Visit(ImExp_ThisVar* imExp)
     {
         return Value<ReExp_ThisVar>(imExp->type);
     }
-    expected<ReExp*, DiagPtr> Visit(ImExp_LocalVar* imExp)
+    ResultType Visit(ImExp_LocalVar* imExp)
     {
         return Value<ReExp_LocalVar>(imExp->type, imExp->name);
     }
-    expected<ReExp*, DiagPtr> Visit(ImExp_LambdaVar* imExp)
+    ResultType Visit(ImExp_LambdaVar* imExp)
     {
         return Value<ReExp_LambdaVar>(imExp->decl, imExp->typeArgs);
     }
-    expected<ReExp*, DiagPtr> Visit(ImExp_ClassVar* imExp)
+    ResultType Visit(ImExp_ClassVar* imExp)
     {
         return Value<ReExp_ClassVar>(imExp->decl, imExp->typeArgs, imExp->hasExplicitInstance, imExp->explicitInstance);
     }
-    expected<ReExp*, DiagPtr> Visit(ImExp_StructVar* imExp)
+    ResultType Visit(ImExp_StructVar* imExp)
     {
         return Value<ReExp_StructVar>(imExp->decl, imExp->typeArgs, imExp->hasExplicitInstance, imExp->explicitInstance);
     }
-    expected<ReExp*, DiagPtr> Visit(ImExp_EnumElemVar* imExp)
+    ResultType Visit(ImExp_EnumElemVar* imExp)
     {
         return Value<ReExp_EnumElemVar>(imExp->decl, imExp->typeArgs, imExp->instance);
     }
-    expected<ReExp*, DiagPtr> Visit(ImExp_ListIndexer* imExp)
+    ResultType Visit(ImExp_ListIndexer* imExp)
     {
         return Value<ReExp_ListIndexer>(imExp->instance, imExp->index, imExp->itemType);
     }
-    expected<ReExp*, DiagPtr> Visit(ImExp_LocalDeref* imExp)
+    ResultType Visit(ImExp_LocalDeref* imExp)
     {
         return Value<ReExp_LocalDeref>(imExp->target);
     }
-    expected<ReExp*, DiagPtr> Visit(ImExp_BoxDeref* imExp)
+    ResultType Visit(ImExp_BoxDeref* imExp)
     {
         return Value<ReExp_BoxDeref>(imExp->target);
     }
-    expected<ReExp*, DiagPtr> Visit(ImExp_Else* imExp)
+    ResultType Visit(ImExp_Else* imExp)
     {
         return Value<ReExp_Else>(imExp->exp);
     }
