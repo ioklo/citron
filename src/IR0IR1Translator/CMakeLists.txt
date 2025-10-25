@@ -10,7 +10,7 @@ target_include_directories(IR0IR1Translator
         PRIVATE Public/IR0IR1Translator
         PUBLIC Public)
 
-target_link_libraries(IR0IR1Translator PRIVATE Logging Infra ESymbol MIR QIR)
+target_link_libraries(IR0IR1Translator PRIVATE Logging Infra ESymbol RSymbol MIR QIR)
 
 target_sources(IR0IR1Translator
         PRIVATE

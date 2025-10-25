@@ -9,7 +9,7 @@ target_include_directories(SyntaxIR0Translator
         PRIVATE Public/SyntaxIR0Translator
         PUBLIC Public)
 
-target_link_libraries(SyntaxIR0Translator PRIVATE Infra Syntax Logging Symbol IR0)
+target_link_libraries(SyntaxIR0Translator PRIVATE Infra Syntax Logging ESymbol RSymbol NSymbol MIR)
 
 target_sources(SyntaxIR0Translator
         PRIVATE
@@ -22,30 +22,30 @@ target_sources(SyntaxIR0Translator
         FuncContext.cpp
         FuncMatching.cpp
         FuncsWithPartialTypeArgsComponent.cpp
-        ImCallableAndSArgsToNExpTranslation.cpp
+        ImCallableAndSArgsToMExpTranslation.cpp
         ImExp.cpp
         ImExpAndMemberNameToImExpTranslation.cpp
         ImExpToIrExpTranslation.cpp
         ImExpToReExpTranslation.cpp
         IrExp.cpp
         IrExpAndMemberNameToIrExpTranslation.cpp
-        IrExpToNExpTranslation.cpp
+        IrExpToMExpTranslation.cpp
         MemberDeclPhaseContext.cpp
         Misc.cpp
         ModuleDecls.cpp
-        RFuncAndRArgsToNExpTranslation.cpp
+        RFuncAndRArgsToMExpTranslation.cpp
         ReExp.cpp
-        ReExpToNExpTranslation.cpp
-        ReExpToNLocTranslation.cpp
+        ReExpToMExpTranslation.cpp
+        ReExpToMLocTranslation.cpp
         ResolveIdentifierError.cpp
         SExpRefToIrExpTranslation.cpp
-        SExpRefToNExpTranslation.cpp
+        SExpRefToMExpTranslation.cpp
         SExpToImExpTranslation.cpp
-        SExpToNExpTranslation.cpp
-        SExpToNLocTranslation.cpp
+        SExpToMExpTranslation.cpp
+        SExpToMLocTranslation.cpp
         SExpToReExpTranslation.cpp
-        SStmtToNStmtTranslation.cpp
-        SVarDeclToNStmtsTranslation.cpp
+        SStmtToMStmtTranslation.cpp
+        SVarDeclToMStmtsTranslation.cpp
         ScopeContext.cpp
         SkeletonPhaseContext.cpp
         SRTFactory.cpp
@@ -65,35 +65,34 @@ target_sources(SyntaxIR0Translator
         FuncContext.h
         FuncMatching.h
         FuncsWithPartialTypeArgsComponent.h
-        ImCallableAndSArgsToNExpTranslation.h
+        ImCallableAndSArgsToMExpTranslation.h
         ImExp.h
         ImExpAndMemberNameToImExpTranslation.h
         ImExpToIrExpTranslation.h
         ImExpToReExpTranslation.h
         IrExp.h
         IrExpAndMemberNameToIrExpTranslation.h
-        IrExpToNExpTranslation.h
+        IrExpToMExpTranslation.h
         MemberDeclPhaseContext.h
         Misc.h
         ModuleDecls.h
-        RFuncAndRArgsToNExpTranslation.h
+        RFuncAndRArgsToMExpTranslation.h
         ReExp.h
-        ReExpToNExpTranslation.h
-        ReExpToNLocTranslation.h
+        ReExpToMExpTranslation.h
+        ReExpToMLocTranslation.h
         ResolveIdentifierError.h
         SExpRefToIrExpTranslation.h
-        SExpRefToNExpTranslation.h
+        SExpRefToMExpTranslation.h
         SExpToImExpTranslation.h
-        SExpToNExpTranslation.h
-        SExpToNLocTranslation.h
+        SExpToMExpTranslation.h
+        SExpToMLocTranslation.h
         SExpToReExpTranslation.h
-        SStmtToNStmtTranslation.h
-        SVarDeclToNStmtsTranslation.h
+        SStmtToMStmtTranslation.h
+        SVarDeclToMStmtsTranslation.h
         ScopeContext.h
         SkeletonPhaseContext.h
         SRTFactory.h
         StructTranslation.h
-        SyntaxIR0Translator-HeaderUnits.h
         SyntaxIR0Translator.h
         SyntaxIR0TranslatorConfig.h
         TranslationContext.h

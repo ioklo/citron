@@ -6,6 +6,7 @@
 #include "NNamespaceDecl.h"
 
 #include <cassert>
+#include <algorithm>
 
 using namespace std;
 

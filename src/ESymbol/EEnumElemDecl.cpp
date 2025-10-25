@@ -1,9 +1,9 @@
-#include "MEnumElemDecl.h"
+#include "EEnumElemDecl.h"
 
-#include "MEnumElemVarDecl.h"
+#include "EEnumElemVarDecl.h"
 
 namespace Citron {
 
-MEnumElemDecl::~MEnumElemDecl() = default;
+EEnumElemDecl::~EEnumElemDecl() = default;
 
 } // namespace Citron
