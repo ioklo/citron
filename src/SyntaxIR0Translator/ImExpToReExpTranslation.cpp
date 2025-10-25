@@ -6,10 +6,10 @@
 #include "Infra/Ptr.h"
 #include "Logging/Logger.h"
 
-#include "IR0/RFactory.h"
-#include "IR0/REnumElemDecl.h"
-#include "IR0/NArgument.h"
-#include "IR0/NExp.h"
+#include "RSymbol/RFactory.h"
+#include "RSymbol/REnumElemDecl.h"
+#include "MIR/MArgument.h"
+#include "MIR/MExp.h"
 
 #include "ImExp.h"
 #include "ReExp.h"
@@ -103,7 +103,7 @@ public:
         // if standalone, 값으로 처리한다
         if (imExp->decl->GetVarCount() == 0)
         {
-            return Value<ReExp_Else>(context.MakeNExp<NExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<NArgument>()));
+            return Value<ReExp_Else>(context.MakeMExp<MExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<MArgument>()));
         }
 
         // lambda (boxed lambda)로 변환할 수 있다.

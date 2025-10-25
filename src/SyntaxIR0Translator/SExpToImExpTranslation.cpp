@@ -6,17 +6,17 @@
 #include "Infra/Exceptions.h"
 #include "Syntax/Syntax.h"
 #include "Logging/Logger.h"
-#include "IR0/RTypes.h"
-#include "IR0/NLoc.h"
-#include "IR0/NExp.h"
+#include "RSymbol/RTypes.h"
+#include "MIR/MLoc.h"
+#include "MIR/MExp.h"
 
 #include "ImExp.h"
 #include "ReExp.h"
 
-#include "SExpToNExpTranslation.h"
+#include "SExpToMExpTranslation.h"
 #include "SExpToReExpTranslation.h"
-#include "ReExpToNExpTranslation.h"
-#include "ReExpToNLocTranslation.h"
+#include "ReExpToMExpTranslation.h"
+#include "ReExpToMLocTranslation.h"
 #include "ImExpAndMemberNameToImExpTranslation.h"
 
 #include "TranslationContext.h"
@@ -46,7 +46,7 @@ public:
     }
 
 private:
-    ResultType HandleExp(expected<NExp*, DiagPtr>&& eExp)
+    ResultType HandleExp(expected<MExp*, DiagPtr>&& eExp)
     {
         if (!eExp)
             return unexpected{move(eExp).error()};
@@ -104,23 +104,23 @@ public:
 
     ResultType Visit(SExp_IntLiteral* exp)
     {
-        return HandleExp(TranslateSIntLiteralExpToNExp(exp, context));
+        return HandleExp(TranslateSIntLiteralExpToMExp(exp, context));
     }
 
     ResultType Visit(SExp_BoolLiteral* exp)
     {
-        return HandleExp(TranslateSBoolLiteralExpToNExp(exp, context));
+        return HandleExp(TranslateSBoolLiteralExpToMExp(exp, context));
     }
 
     // 'null'
     ResultType Visit(SExp_NullLiteral* exp)
     {
-        return HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSNullLiteralExpToMExp(exp, hintType, context));
     }
 
     ResultType Visit(SExp_BinaryOp* exp)
     {
-        return HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
+        return HandleExp(TranslateSBinaryOpExpToMExp(exp, context));
     }
 
     ResultType Visit(SExp_UnaryOp* exp)
@@ -144,18 +144,18 @@ public:
         }
         else
         {
-            return HandleExp(TranslateSUnaryOpExpToNExpExceptDeref(exp, context));
+            return HandleExp(TranslateSUnaryOpExpToMExpExceptDeref(exp, context));
         }
     }
 
     ResultType Visit(SExp_Call* exp)
     {
-        return HandleExp(TranslateSCallExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSCallExpToMExp(exp, hintType, context));
     }
 
     ResultType Visit(SExp_Lambda* exp)
     {
-        return HandleExp(TranslateSLambdaExpToNExp(exp, context));
+        return HandleExp(TranslateSLambdaExpToMExp(exp, context));
     }
 
     ResultType Visit(SExp_Indexer* exp)
@@ -168,22 +168,22 @@ public:
 
         auto intType = context.MakeIntType();
 
-        NLoc* nIndexLoc;
+        MLoc* nIndexLoc;
         if (context.GetType(*eReIndex) != intType)
         {
-            auto eNIndexExp = TranslateReExpToNExp(*eReIndex, context);
+            auto eNIndexExp = TranslateReExpToMExp(*eReIndex, context);
             if (!eNIndexExp) return Error(move(eNIndexExp));
 
-            auto eNCastIndex = CastNExp(*eNIndexExp, intType, context);
+            auto eNCastIndex = CastMExp(*eNIndexExp, intType, context);
             if (!eNCastIndex) return Error(move(eNCastIndex));
 
-            nIndexLoc = context.MakeNLoc<NLoc_Temp>(*eNCastIndex);
+            nIndexLoc = context.MakeNLoc<MLoc_Temp>(*eNCastIndex);
         }
         else
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            auto eNLoc = TranslateReExpToNLoc(*eReIndex, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+            auto eNLoc = TranslateReExpToMLoc(*eReIndex, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
             if (!eNLoc) return Error(move(eNLoc));
 
             nIndexLoc = *eNLoc;
@@ -252,28 +252,28 @@ public:
 
     ResultType Visit(SExp_List* exp)
     {
-        return HandleExp(TranslateSListExpToNExp(exp, context));
+        return HandleExp(TranslateSListExpToMExp(exp, context));
     }
 
     // 'new C(...)'
     ResultType Visit(SExp_New* exp)
     {
-        return HandleExp(TranslateSNewExpToNExp(exp, context));
+        return HandleExp(TranslateSNewExpToMExp(exp, context));
     }
 
     ResultType Visit(SExp_Box* exp)
     {
-        return HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSBoxExpToMExp(exp, hintType, context));
     }
 
     ResultType Visit(SExp_Is* exp)
     {
-        return HandleExp(TranslateSIsExpToNExp(exp, context));
+        return HandleExp(TranslateSIsExpToMExp(exp, context));
     }
 
     ResultType Visit(SExp_As* exp)
     {
-        return HandleExp(TranslateSAsExpToNExp(exp, context));
+        return HandleExp(TranslateSAsExpToMExp(exp, context));
     }
 };
 

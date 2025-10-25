@@ -8,7 +8,7 @@ namespace Citron {
 class NModule;
 class QModule;
 class QFactory;
-class Diag;
+struct Diag;
 using DiagPtr = std::shared_ptr<Diag>;
 
 // body만 바꾸면 되는데

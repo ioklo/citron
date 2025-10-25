@@ -7,10 +7,10 @@
 #include "Infra/Unreachable.h"
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
-#include "IR0/NNamespaceDecl.h"
-#include "IR0/NStructDecl.h"
-#include "IR0/NEnumDecl.h"
-#include "IR0/NModule.h"
+#include "NSymbol/NNamespaceDecl.h"
+#include "NSymbol/NStructDecl.h"
+#include "NSymbol/NEnumDecl.h"
+#include "NSymbol/NModule.h"
 
 #include "EnumTranslation.h"
 #include "StructTranslation.h"
@@ -169,18 +169,19 @@ public:
 expected<NModule*, DiagPtr> Translate(
     std::string moduleName,
     const vector<SScript*>& scripts, // translation units
-    const vector<MModule*>& referenceModules,
-    RFactory& factory)
+    const vector<EModule*>& referenceModules,
+    const RFactoryPtr& rFactory,
+    const NFactoryPtr& nFactory)
 {
     // TODO: NewRootNamespaceDecl이 아니라 RootNamespaceGroupDecl이어야 할것 같고, 모듈은 rootNamespaceDeclGroup을 가져야 할 것 같다
 
     // NNamespaceDecl은 각 TranslationUnit별로 별개로 가지는데,
-    auto* nModule = factory.MakeNModule(move(moduleName));
+    auto* nModule = nFactory->MakeNModule(move(moduleName));
 
-    SkeletonPhaseContext context{factory};
+    SkeletonPhaseContext context{rFactory, nFactory};
     for (auto* script : scripts) // translation units
     {
-        auto* rootNamespace = factory.MakeRootNamespaceDecl();
+        auto* rootNamespace = nFactory->MakeRootNamespaceDecl();
 
         for (auto* elem : script->elements)
         {

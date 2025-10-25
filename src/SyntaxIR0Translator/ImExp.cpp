@@ -1,6 +1,6 @@
 #include "ImExp.h"
-#include "IR0/DeclWithOuterTypeArgs.h"
-#include "IR0/RStructFuncDecl.h"
+#include "RSymbol/DeclWithOuterTypeArgs.h"
+#include "RSymbol/RStructFuncDecl.h"
 
 using namespace std;
 
@@ -111,7 +111,7 @@ ImExp_BoxDeref::ImExp_BoxDeref(ReExp* target)
 
 }
 
-ImExp_Else::ImExp_Else(NExp* exp)
+ImExp_Else::ImExp_Else(MExp* exp)
     : exp(exp)
 {
 }

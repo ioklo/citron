@@ -9,9 +9,9 @@
 
 #include "Logging/Diag.h"
 #include "Syntax/Syntax.h"
-#include "IR0/RNames.h"
-#include "IR0/RMember.h"
-#include "IR0/RFuncReturn.h"
+#include "RSymbol/RNames.h"
+#include "RSymbol/RMember.h"
+#include "RSymbol/RFuncReturn.h"
 
 namespace Citron { 
 
@@ -19,7 +19,7 @@ struct RFuncParameter;
 class RType;
 class RFactory;
 
-class NLoc_This;
+class MLoc_This;
 class NLambdaDecl;
 
 namespace SyntaxIR0Translator {
@@ -52,7 +52,7 @@ public:
     void Update(ScopeContext& src, UpdateContext& context);
 
 public:
-    RTypeArguments* MakeOpenTypeArgs(RFactory& factory);
+    RTypeArguments* MakeOpenTypeArgs();
     void SetFlowEndsCompletely();
 
     std::shared_ptr<ScopeContext> MakeNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
@@ -66,10 +66,10 @@ public:
 
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }
-    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* typeExp, RFactory& factory);
+    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* typeExp);
 
-    NLoc_This* MakeThisLoc(RFactory& factory);
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory);
+    MLoc_This* MakeThisLoc();
+    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;

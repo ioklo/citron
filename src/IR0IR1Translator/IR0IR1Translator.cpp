@@ -1,7 +1,7 @@
 #include "IR0IR1Translator.h"
 
-#include "IR0/NModule.h"
-#include "IR1/QFactory.h"
+#include "NSymbol/NModule.h"
+#include "QIR/QFactory.h"
 #include "Logging/Diag.h"
 
 using namespace std;

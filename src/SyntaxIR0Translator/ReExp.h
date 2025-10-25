@@ -13,7 +13,7 @@ class RClassVarDecl;
 class RStructVarDecl;
 class REnumElemVarDecl;
 
-class NExp;
+class MExp;
 
 class NLambdaVarDecl;
 
@@ -172,10 +172,10 @@ public:
 class ReExp_Else : public ReExp
 {
 public:
-    NExp* nExp;
+    MExp* mExp;
     
 public:
-    ReExp_Else(NExp* ptr);
+    ReExp_Else(MExp* ptr);
 
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
     RType* GetType(RFactory& factory) override;

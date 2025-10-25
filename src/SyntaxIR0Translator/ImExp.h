@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <string>
-#include "IR0/RGlobalFuncDecl.h"
+#include "RSymbol/RGlobalFuncDecl.h"
 
 #include "FuncsWithPartialTypeArgsComponent.h"
 
@@ -20,7 +20,7 @@ class REnumDecl;
 class REnumElemDecl;
 class REnumElemVarDecl;
 class RType;
-class NExp;
+class MExp;
 
 class NLambdaVarDecl;
 
@@ -358,10 +358,10 @@ public:
 class ImExp_Else : public ImExp
 {
 public:
-    NExp* exp;
+    MExp* exp;
 
 public:
-    ImExp_Else(NExp* exp);
+    ImExp_Else(MExp* exp);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }

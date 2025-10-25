@@ -3,11 +3,11 @@
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
 #include "Syntax/Syntax.h"
-#include "IR0/RTypeArguments.h"
-#include "IR0/RMember.h"
-#include "IR0/RNames.h"
-#include "IR0/RFuncParameter.h"
-#include "IR0/NLambdaDecl.h"
+#include "RSymbol/RTypeArguments.h"
+#include "RSymbol/RMember.h"
+#include "RSymbol/RNames.h"
+#include "RSymbol/RFuncParameter.h"
+#include "NSymbol/NLambdaDecl.h"
 
 #include "FuncContext.h"
 
@@ -30,10 +30,10 @@ void ScopeContext::Update(ScopeContext& src, UpdateContext& context)
     throw NotImplementedException{};
 }
 
-RTypeArguments* ScopeContext::MakeOpenTypeArgs(RFactory& factory)
+RTypeArguments* ScopeContext::MakeOpenTypeArgs()
 {
     // funcContext로 점프
-    return funcContext->MakeOpenTypeArgs(factory);
+    return funcContext->MakeOpenTypeArgs();
 }
 
 void ScopeContext::SetFlowEndsCompletely()
@@ -72,17 +72,17 @@ bool ScopeContext::IsFailed()
     throw NotImplementedException{};
 }
 
-expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* typeExp, RFactory& factory)
+expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* typeExp)
 {
     throw NotImplementedException{};
 }
 
-NLoc_This* ScopeContext::MakeThisLoc(RFactory& factory)
+MLoc_This* ScopeContext::MakeThisLoc()
 {
     throw NotImplementedException{};
 }
 
-optional<RMember> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (auto* normalName = get_if<RName_Normal>(&name))
     {
@@ -94,10 +94,10 @@ optional<RMember> ScopeContext::ResolveIdentifier(const RName& name, size_t expl
 
     // 상위 스코프가 있으면 그곳을 검색한다
     if (parentContext)
-        return parentContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+        return parentContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 
     // 상위 스코프가 없으면 scope가 속해있는 함수 컨텍스트를 검색한다
-    return funcContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return funcContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 };

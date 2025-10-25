@@ -9,10 +9,11 @@
 
 #include "Logging/Diag.h"
 #include "Syntax/Syntax.h"
-#include "IR0/RFactory.h"
-#include "IR0/RFuncReturn.h"
-#include "IR0/RNames.h"
-#include "IR0/NArgument.h"
+#include "RSymbol/RFactory.h"
+#include "RSymbol/RFuncReturn.h"
+#include "RSymbol/RNames.h"
+#include "MIR/MFactory.h"
+#include "MIR/MArgument.h"
 
 #include "SRTFactory.h"
 #include "DesignatedDiagnostic.h"
@@ -22,20 +23,17 @@
 namespace Citron {
 
 struct RFuncParameter;
-class RFactory;
-using RFactoryPtr = std::shared_ptr<RFactory>;
-class SRTFactory;
-using SRTFactoryPtr = std::shared_ptr<SRTFactory>;
+
 class RFuncDecl;
 class RDecl;
 class RType_Enum;
 class RType_EnumElem;
 class RTypeArguments;
 
-class NLoc;
-class NStmt;
+class MLoc;
+class MStmt;
 class NLambdaDecl;
-class NLoc_This;
+class MLoc_This;
 
 namespace SyntaxIR0Translator {
 
@@ -64,7 +62,7 @@ using TranslationContextPtr = std::shared_ptr<TranslationContext>;
 struct NLambdaDeclAndArgs
 {
     NLambdaDecl* decl;
-    std::vector<NArgument> args;   // ctor args
+    std::vector<MArgument> args;   // ctor args
 };
 
 class TranslationContext
@@ -74,6 +72,7 @@ class TranslationContext
     ScopeContextPtr scopeContext;
     LoggerPtr logger;
     RFactoryPtr rFactory;
+    MFactoryPtr mFactory;
     SRTFactoryPtr srtFactory;
     BinOpQueryServicePtr binOpQueryService;
 
@@ -87,8 +86,8 @@ public:
     TranslationContext MakeNestedLoopScopeContext();
     TranslationContext MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
-    NLoc_This* MakeThisLoc();
-    std::expected<NExp*, DiagPtr> MakeNExp_As(NExp* targetExp, RType* testType);
+    MLoc_This* MakeThisLoc();
+    std::expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType);
 
 public: // for scopeContext
     bool IsInLoop();
@@ -101,7 +100,7 @@ public: // for funcContext
     bool IsSeqFunc();
     RFuncReturn GetUnboundFuncReturn();
     void SetOpenFuncReturn(RType* retType);
-    NLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<NStmt*>&& body);
+    NLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<MStmt*>&& body);
 
 public: // for logging
     template<typename TFunc>
@@ -114,9 +113,9 @@ public:
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* typeExp);
 
 public: // for type rFactory
-    RType* GetType(NLoc* loc);
+    RType* GetType(MLoc* loc);
     RType* GetType(ReExp* reExp);
-    RType* GetType(NExp* exp);
+    RType* GetType(MExp* exp);
 
     RType* GetTargetType(IrExp_BoxRef* boxRef);
 
@@ -137,22 +136,22 @@ public: // for type rFactory
 
     std::expected<ImExp*, std::shared_ptr<ResolveIdentifierError>> ResolveIdentifier(RName&& name, RTypeArguments* typeArgs);
 
-    template<typename TNStmt, typename... TArgs> requires std::derived_from<TNStmt, NStmt>
-    TNStmt* MakeNStmt(TArgs&&... args)
+    template<typename TMStmt, typename... TArgs> requires std::derived_from<TMStmt, MStmt>
+    TMStmt* MakeNStmt(TArgs&&... args)
     {
-        return rFactory->MakeNStmt<TNStmt>(std::forward<TArgs>(args)...);
+        return mFactory->MakeMStmt<TMStmt>(std::forward<TArgs>(args)...);
     }
 
-    template<typename TNExp, typename... TArgs> requires std::derived_from<TNExp, NExp>
-    TNExp* MakeNExp(TArgs&&... args)
+    template<typename TMExp, typename... TArgs> requires std::derived_from<TMExp, MExp>
+    TMExp* MakeMExp(TArgs&&... args)
     {
-        return rFactory->MakeNExp<TNExp>(std::forward<TArgs>(args)...);
+        return mFactory->MakeMExp<TMExp>(std::forward<TArgs>(args)...);
     }
 
-    template<typename TNLoc, typename... TArgs> requires std::derived_from<TNLoc, NLoc>
-    TNLoc* MakeNLoc(TArgs&&... args)
+    template<typename TMLoc, typename... TArgs> requires std::derived_from<TMLoc, MLoc>
+    TMLoc* MakeNLoc(TArgs&&... args)
     {
-        return rFactory->MakeNLoc<TNLoc>(std::forward<TArgs>(args)...);
+        return mFactory->MakeMLoc<TMLoc>(std::forward<TArgs>(args)...);
     }
 
     template<typename TImExp, typename... TArgs> requires std::derived_from<TImExp, ImExp>

@@ -6,8 +6,8 @@
 #include "Infra/Exceptions.h"
 #include "Logging/Logger.h"
 #include "Syntax/Syntax.h"
-#include "IR0/NExp.h"
-#include "IR0/RTypes.h"
+#include "MIR/MExp.h"
+#include "RSymbol/RTypes.h"
 
 #include "ScopeContext.h"
 #include "TranslationContext.h"
@@ -37,7 +37,7 @@ expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExp*>& typeArgs
 }
 
 // TODO: implementation을 CastNExp로 옮긴다
-//NExp* TryCastRExp(NExp* exp, RType* expectedType, TranslationContext& context) // nothrow
+//MExp* TryCastRExp(MExp* exp, RType* expectedType, TranslationContext& context) // nothrow
 //{
 //    static_assert(false);
 //
@@ -99,7 +99,7 @@ expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExp*>& typeArgs
 //}
 
 // 값의 겉보기 타입을 변경한다
-expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationContext& context)
+expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContext& context)
 {
     auto expType = context.GetType(exp);
 
@@ -113,7 +113,7 @@ expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationCon
         auto expEnumType = context.GetBaseEnumType(*expEnumElemType);
 
         if (expectedType == expEnumType)
-            return context.MakeNExp<NExp_CastEnumElemToEnum>(exp, expectedType);
+            return context.MakeMExp<MExp_CastEnumElemToEnum>(exp, expectedType);
 
         // 에러가 좀더 구체적으로 알려줬으면 좋겠다
         throw NotImplementedException{};
@@ -127,7 +127,7 @@ expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationCon
         {
             if (expectedClassType->IsBaseOf(*expClassType))
             {
-                return context.MakeNExp<NExp_CastClass>(exp, expectedClassType);
+                return context.MakeMExp<MExp_CastClass>(exp, expectedClassType);
             }
         }
 
@@ -140,12 +140,12 @@ expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationCon
     if (auto* expectedNullableType = dynamic_cast<RType_NullableRef*>(expectedType))
     {
         // Nullable<B>를 원한다면 C를 B로 변환해본다
-        auto eCastToInnerTypeExp = CastNExp(exp, expectedNullableType->innerType, context);
+        auto eCastToInnerTypeExp = CastMExp(exp, expectedNullableType->innerType, context);
         if (!eCastToInnerTypeExp)
             return unexpected{MakePtr<Error_Cast_Failed>()};
 
         // B?로 변경
-        return context.MakeNExp<NExp_NewNullable>(*eCastToInnerTypeExp);
+        return context.MakeMExp<MExp_NewNullable>(*eCastToInnerTypeExp);
     }
 
     return unexpected{MakePtr<Error_Cast_Failed>()};

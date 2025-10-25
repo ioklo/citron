@@ -1,11 +1,12 @@
 #include "IrExp.h"
 
 #include "Infra/Ptr.h"
-#include "IR0/RNamespaceDecl.h"
-#include "IR0/RTypes.h"
-#include "IR0/NLoc.h"
-#include "IR0/NClassVarDecl.h"
-#include "IR0/NStructVarDecl.h"
+#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RTypes.h"
+#include "NSymbol/NClassVarDecl.h"
+#include "NSymbol/NStructVarDecl.h"
+
+#include "MIR/MLoc.h"
 
 #include "TranslationContext.h"
 
@@ -44,12 +45,12 @@ IrExp_ThisVar::IrExp_ThisVar(RType* type)
 {
 }
 
-IrExp_StaticRef::IrExp_StaticRef(NLoc* loc)
+IrExp_StaticRef::IrExp_StaticRef(MLoc* loc)
     : loc(loc)
 {
 }
 
-IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(NLoc* loc, RClassVarDecl* decl, RTypeArguments* typeArgs)
+IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(MLoc* loc, RClassVarDecl* decl, RTypeArguments* typeArgs)
     : loc(loc), decl(decl), typeArgs(typeArgs)
 {
 }
@@ -59,12 +60,12 @@ RType* IrExp_BoxRef_ClassMember::GetTargetType(RFactory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-NLoc* IrExp_BoxRef_ClassMember::MakeLoc(TranslationContext& context)
+MLoc* IrExp_BoxRef_ClassMember::MakeLoc(TranslationContext& context)
 {
-    return context.MakeNLoc<NLoc_ClassVar>(loc, decl, typeArgs);
+    return context.MakeNLoc<MLoc_ClassVar>(loc, decl, typeArgs);
 }
 
-IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(NLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs)
+IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(MLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs)
     : loc(loc), decl(decl), typeArgs(typeArgs)
 {
 }
@@ -74,9 +75,9 @@ RType* IrExp_BoxRef_StructIndirectMember::GetTargetType(RFactory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-NLoc* IrExp_BoxRef_StructIndirectMember::MakeLoc(TranslationContext& context)
+MLoc* IrExp_BoxRef_StructIndirectMember::MakeLoc(TranslationContext& context)
 {
-    return context.MakeNLoc<NLoc_StructVar>(context.MakeNLoc<NLoc_BoxDeref>(loc), decl, typeArgs);
+    return context.MakeNLoc<MLoc_StructVar>(context.MakeNLoc<MLoc_BoxDeref>(loc), decl, typeArgs);
 }
 
 IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(IrExp_BoxRef* parent, RStructVarDecl* decl, RTypeArguments* typeArgs)
@@ -89,23 +90,23 @@ RType* IrExp_BoxRef_StructMember::GetTargetType(RFactory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-NLoc* IrExp_BoxRef_StructMember::MakeLoc(TranslationContext& context)
+MLoc* IrExp_BoxRef_StructMember::MakeLoc(TranslationContext& context)
 {
-    return context.MakeNLoc<NLoc_StructVar>(parent->MakeLoc(context), decl, typeArgs);
+    return context.MakeNLoc<MLoc_StructVar>(parent->MakeLoc(context), decl, typeArgs);
 }
 
-IrExp_LocalRef::IrExp_LocalRef(NLoc* loc)
+IrExp_LocalRef::IrExp_LocalRef(MLoc* loc)
     : loc(loc)
 {
 }
 
-IrExp_LocalValue::IrExp_LocalValue(NExp* exp)
+IrExp_LocalValue::IrExp_LocalValue(MExp* exp)
     : exp{exp}
 {
 
 }
 
-IrExp_DerefedBoxValue::IrExp_DerefedBoxValue(NLoc* innerLoc)
+IrExp_DerefedBoxValue::IrExp_DerefedBoxValue(MLoc* innerLoc)
     : innerLoc{innerLoc}
 {
 }

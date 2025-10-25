@@ -1,9 +1,9 @@
 #include "BinOpQueryService.h"
 
-#include "IR0/RTypes.h"
-#include "IR0/RFactory.h"
+#include "RSymbol/RTypes.h"
+#include "RSymbol/RFactory.h"
 
-#include "IR0/NExp.h"
+#include "MIR/MExp.h"
 
 using namespace std;
 

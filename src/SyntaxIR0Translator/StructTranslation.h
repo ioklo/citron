@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "Syntax/Syntax.h"
-#include "IR0/RAccessor.h"
+#include "RSymbol/RAccessor.h"
 
 namespace Citron {
 

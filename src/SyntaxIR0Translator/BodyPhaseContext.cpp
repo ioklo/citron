@@ -5,6 +5,11 @@
 
 namespace Citron::SyntaxIR0Translator {
 
+void BodyPhaseContext::AddBody(NFuncDecl* funcDecl, std::vector<MStmt*>&& mStmts)
+{
+    throw NotImplementedException{};
+}
+
 void BodyPhaseContext::MarkFailed()
 {
     throw NotImplementedException{};

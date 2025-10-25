@@ -5,7 +5,7 @@
 #include <expected>
 
 #include "Logging/Diag.h"
-#include "IR0/RNames.h"
+#include "RSymbol/RNames.h"
 
 namespace Citron {
 

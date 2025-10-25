@@ -8,19 +8,19 @@
 
 #include "Logging/Diag.h"
 #include "Syntax/Syntax.h"
-#include "Symbol/MNames.h"
+#include "ESymbol/ENames.h"
 
 namespace Citron {
 
 class NModule;
-class MModule;
+class EModule;
 class RFactory;
 
 SYNTAXIR0TRANSLATOR_API
 std::expected<NModule*, DiagPtr> Translate(
-    MName moduleName,
+    EName moduleName,
     const std::vector<SScript*>& scripts,
-    const std::vector<MModule*>& referenceModules,
+    const std::vector<EModule*>& referenceModules,
     RFactory& factory);
 
 } // namespace Citron

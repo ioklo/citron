@@ -4,12 +4,12 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
-#include "IR0/RNamespaceDecl.h"
-#include "IR0/RTypes.h"
-#include "IR0/RClassVarDecl.h"
-#include "IR0/RStructVarDecl.h"
-#include "IR0/NLambdaVarDecl.h"
-#include "IR0/NLoc.h"
+#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RTypes.h"
+#include "RSymbol/RClassVarDecl.h"
+#include "RSymbol/RStructVarDecl.h"
+#include "NSymbol/NLambdaVarDecl.h"
+#include "MIR/MLoc.h"
 #include "ImExp.h"
 #include "IrExp.h"
 
@@ -107,14 +107,14 @@ public:
     // &id
     ResultType Visit(ImExp_LocalVar* imExp)
     {
-        return Value<IrExp_LocalRef>(context.MakeNLoc<NLoc_LocalVar>(RName_Normal(imExp->name), imExp->type));
+        return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_LocalVar>(RName_Normal(imExp->name), imExp->type));
     }
 
     // &x
     ResultType Visit(ImExp_LambdaVar* imExp)
     {
         // TODO: [10] box lambda이면 box로 판단해야 한다
-        return Value<IrExp_LocalRef>(context.MakeNLoc<NLoc_LambdaVar>(imExp->decl, imExp->typeArgs));
+        return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_LambdaVar>(imExp->decl, imExp->typeArgs));
     }
 
     // x (C.x, this.x)
@@ -122,7 +122,7 @@ public:
     {
         if (imExp->decl->IsStatic()) // &C.x
         {
-            return Value<IrExp_StaticRef>(context.MakeNLoc<NLoc_ClassVar>(nullptr, imExp->decl, imExp->typeArgs));
+            return Value<IrExp_StaticRef>(context.MakeNLoc<MLoc_ClassVar>(nullptr, imExp->decl, imExp->typeArgs));
         }
         else // &this.x
         {
@@ -136,14 +136,14 @@ public:
     {
         if (imExp->decl->IsStatic())
         {
-            return Value<IrExp_StaticRef>(context.MakeNLoc<NLoc_StructVar>(nullptr, imExp->decl, imExp->typeArgs));
+            return Value<IrExp_StaticRef>(context.MakeNLoc<MLoc_StructVar>(nullptr, imExp->decl, imExp->typeArgs));
         }
         else
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            auto* nDerefThisLoc = context.MakeNLoc<NLoc_LocalDeref>(context.MakeThisLoc());
-            return Value<IrExp_LocalRef>(context.MakeNLoc<NLoc_StructVar>(nDerefThisLoc, imExp->decl, imExp->typeArgs));
+            auto* nDerefThisLoc = context.MakeNLoc<MLoc_LocalDeref>(context.MakeThisLoc());
+            return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_StructVar>(nDerefThisLoc, imExp->decl, imExp->typeArgs));
         }
     }
 

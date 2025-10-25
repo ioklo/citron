@@ -1,10 +1,10 @@
 #include "ReExp.h"
-#include "IR0/RTypes.h"
-#include "IR0/NLambdaVarDecl.h"
-#include "IR0/NExp.h"
-#include "IR0/NClassVarDecl.h"
-#include "IR0/NStructVarDecl.h"
-#include "IR0/NEnumElemVarDecl.h"
+#include "RSymbol/RTypes.h"
+#include "NSymbol/NLambdaVarDecl.h"
+#include "NSymbol/NClassVarDecl.h"
+#include "NSymbol/NStructVarDecl.h"
+#include "NSymbol/NEnumElemVarDecl.h"
+#include "MIR/MExp.h"
 
 namespace Citron::SyntaxIR0Translator {
 
@@ -92,14 +92,14 @@ ReExp_ListIndexer::ReExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemT
 
 }
 
-ReExp_Else::ReExp_Else(NExp* nExp)
-    : nExp(nExp)
+ReExp_Else::ReExp_Else(MExp* mExp)
+    : mExp(mExp)
 {
 }
 
 RType* ReExp_Else::GetType(RFactory& factory)
 {
-    return nExp->GetType(factory);
+    return mExp->GetType(factory);
 }
 
 

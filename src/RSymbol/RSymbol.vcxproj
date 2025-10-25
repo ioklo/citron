@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Public\RSymbol\DeclWithOuterTypeArgs.h" />
+    <ClInclude Include="Public\RSymbol\RAccessor.h" />
+    <ClInclude Include="Public\RSymbol\RClassCtorDecl.h" />
+    <ClInclude Include="Public\RSymbol\RClassDecl.h" />
+    <ClInclude Include="Public\RSymbol\RClassFuncDecl.h" />
+    <ClInclude Include="Public\RSymbol\RClassVarDecl.h" />
+    <ClInclude Include="Public\RSymbol\RDecl.h" />
+    <ClInclude Include="Public\RSymbol\RDecls.h" />
+    <ClInclude Include="Public\RSymbol\REnumDecl.h" />
+    <ClInclude Include="Public\RSymbol\REnumElemDecl.h" />
+    <ClInclude Include="Public\RSymbol\REnumElemVarDecl.h" />
+    <ClInclude Include="Public\RSymbol\RFactory.h" />
+    <ClInclude Include="Public\RSymbol\RFuncDecl.h" />
+    <ClInclude Include="Public\RSymbol\RFuncDeclOuter.h" />
+    <ClInclude Include="Public\RSymbol\RFuncParameter.h" />
+    <ClInclude Include="Public\RSymbol\RFuncReturn.h" />
+    <ClInclude Include="Public\RSymbol\RGlobalFuncDecl.h" />
+    <ClInclude Include="Public\RSymbol\RIdentifier.h" />
+    <ClInclude Include="Public\RSymbol\RInterfaceDecl.h" />
+    <ClInclude Include="Public\RSymbol\RLambdaDecl.h" />
+    <ClInclude Include="Public\RSymbol\RLambdaVarDecl.h" />
+    <ClInclude Include="Public\RSymbol\RMember.h" />
+    <ClInclude Include="Public\RSymbol\RModule.h" />
+    <ClInclude Include="Public\RSymbol\RNames.h" />
+    <ClInclude Include="Public\RSymbol\RNamespaceDecl.h" />
+    <ClInclude Include="Public\RSymbol\RNamespaceDeclGroup.h" />
+    <ClInclude Include="Public\RSymbol\RStructCtorDecl.h" />
+    <ClInclude Include="Public\RSymbol\RStructDecl.h" />
+    <ClInclude Include="Public\RSymbol\RStructFuncDecl.h" />
+    <ClInclude Include="Public\RSymbol\RStructVarDecl.h" />
+    <ClInclude Include="Public\RSymbol\RTypeArguments.h" />
+    <ClInclude Include="Public\RSymbol\RTypeDecl.h" />
+    <ClInclude Include="Public\RSymbol\RTypeDeclOuter.h" />
+    <ClInclude Include="Public\RSymbol\RTypes.h" />
+    <ClInclude Include="Public\RSymbol\RSymbolConfig.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RDecl.cpp" />
+    <ClCompile Include="RFactory.cpp" />
+    <ClCompile Include="RFuncParameter.cpp" />
+    <ClCompile Include="RGlobalFuncDecl.cpp" />
+    <ClCompile Include="RMember.cpp" />
+    <ClCompile Include="RModule.cpp" />
+    <ClCompile Include="RNames.cpp" />
+    <ClCompile Include="RNamespaceDeclGroup.cpp" />
+    <ClCompile Include="RTypeArguments.cpp" />
+    <ClCompile Include="RTypes.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ESymbol\ESymbol.vcxproj">
+      <Project>{32d49f02-b752-4509-9988-6ba71be3a6fe}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Infra\Infra.vcxproj">
+      <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{42f5b624-3a9b-48b6-9e12-736206097339}</ProjectGuid>
+    <RootNamespace>RSymbol</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;RSYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;RSYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;RSYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;RSYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

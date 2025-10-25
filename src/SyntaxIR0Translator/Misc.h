@@ -6,12 +6,12 @@
 
 #include "Logging/Diag.h"
 #include "Syntax/Syntax.h"
-#include "IR0/RNames.h"
+#include "RSymbol/RNames.h"
 
 namespace Citron {
 
 class RTypeArguments;
-class NExp;
+class MExp;
 class RType;
 
 namespace SyntaxIR0Translator {
@@ -20,7 +20,7 @@ class TranslationContext;
 
 std::expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context);
 
-std::expected<NExp*, DiagPtr> CastNExp(NExp* exp, RType* expectedType, TranslationContext& context);
+std::expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContext& context);
 
 bool IsVarType(STypeExp* typeExp);
 

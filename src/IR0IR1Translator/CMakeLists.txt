@@ -10,23 +10,23 @@ target_include_directories(IR0IR1Translator
         PRIVATE Public/IR0IR1Translator
         PUBLIC Public)
 
-target_link_libraries(IR0IR1Translator PRIVATE Logging Infra Symbol IR0 IR1)
+target_link_libraries(IR0IR1Translator PRIVATE Logging Infra ESymbol MIR QIR)
 
 target_sources(IR0IR1Translator
         PRIVATE
-        IR0IR1Translator.cpp
-        NExpQInstsTranslation.cpp
-        NLocQInstsTranslation.cpp
-        NStmtQInstsTranslation.cpp
+        MExpQInstsTranslation.cpp
+        MLocQInstsTranslation.cpp
+        MStmtQInstsTranslation.cpp
         QBodyContext.cpp
 
         PUBLIC FILE_SET headers
         TYPE HEADERS
         FILES
-        Public/IR0IR1Translator/IR0IR1TranslatorConfig.h
         Public/IR0IR1Translator/IR0IR1Translator.h
-        NExpQInstsTranslation.h
-        NLocQInstsTranslation.h
-        NStmtQInstsTranslation.h
+        Public/IR0IR1Translator/IR0IR1TranslatorConfig.h
+
+        MExpQInstsTranslation.h
+        MLocQInstsTranslation.h
+        MStmtQInstsTranslation.h
         QBodyContext.h
 )

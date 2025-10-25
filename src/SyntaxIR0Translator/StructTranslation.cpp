@@ -5,15 +5,15 @@
 #include "Infra/Unreachable.h"
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
-#include "IR0/RTypes.h"
-#include "IR0/NStructDecl.h"
-#include "IR0/NStructCtorDecl.h"
-#include "IR0/NEnumDecl.h"
+#include "RSymbol/RTypes.h"
+#include "NSymbol/NStructDecl.h"
+#include "NSymbol/NStructCtorDecl.h"
+#include "NSymbol/NEnumDecl.h"
 
 #include "SkeletonPhaseContext.h"
 #include "MemberDeclPhaseContext.h"
 #include "EnumTranslation.h"
-#include "SStmtToNStmtTranslation.h"
+#include "SStmtToMStmtTranslation.h"
 #include "ScopeContext.h"
 #include "BodyPhaseContext.h"
 #include "TranslationContext.h"
@@ -79,15 +79,15 @@ void AddStructCtor_BodyPhase(NStructCtorDecl* nCtor, SStructCtorDecl* sCtor, Bod
 {
     auto translationContext = context.MakeTranslationContext();
 
-    auto eNStmts = TranslateSBodyToNStmts(sCtor->body, translationContext);
+    auto eMStmts = TranslateSBodyToMStmts(sCtor->body, translationContext);
 
-    if (!eNStmts)
+    if (!eMStmts)
     {
         context.MarkFailed();
         return;
     }
 
-    nCtor->InitBody(move(*eNStmts));
+    context.AddBody(nCtor, move(*eMStmts));
 }
 
 #pragma endregion Ctor
@@ -124,7 +124,7 @@ void AddStructFunc_MemberDeclPhase(NStructFuncDecl* nMemberFunc, SStructFuncDecl
 void AddStructFunc_BodyPhase(NStructFuncDecl* nMemberFunc, SStructFuncDecl* sMemberFunc, BodyPhaseContext& context)
 {
     auto translationContext = context.MakeTranslationContext();
-    auto eNStmts = TranslateSBodyToNStmts(sMemberFunc->body, translationContext);
+    auto eNStmts = TranslateSBodyToMStmts(sMemberFunc->body, translationContext);
 
     if (!eNStmts)
     {
@@ -132,7 +132,7 @@ void AddStructFunc_BodyPhase(NStructFuncDecl* nMemberFunc, SStructFuncDecl* sMem
         return;
     }
 
-    nMemberFunc->InitBody(move(*eNStmts));
+    context.AddBody(nMemberFunc, move(*eNStmts));
 }
 
 #pragma endregion StructFunc

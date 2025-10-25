@@ -12,16 +12,16 @@
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="NExpQInstsTranslation.h" />
-    <ClInclude Include="NLocQInstsTranslation.h" />
-    <ClInclude Include="NStmtQInstsTranslation.h" />
+    <ClInclude Include="MExpQInstsTranslation.h" />
+    <ClInclude Include="MLocQInstsTranslation.h" />
+    <ClInclude Include="MStmtQInstsTranslation.h" />
     <ClInclude Include="QBodyContext.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IR0IR1Translator.cpp" />
-    <ClCompile Include="NExpQInstsTranslation.cpp" />
-    <ClCompile Include="NLocQInstsTranslation.cpp" />
-    <ClCompile Include="NStmtQInstsTranslation.cpp" />
+    <ClCompile Include="MExpQInstsTranslation.cpp" />
+    <ClCompile Include="MLocQInstsTranslation.cpp" />
+    <ClCompile Include="MStmtQInstsTranslation.cpp" />
     <ClCompile Include="QBodyContext.cpp" />
   </ItemGroup>
 </Project>

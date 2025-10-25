@@ -9,8 +9,8 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-SkeletonPhaseContext::SkeletonPhaseContext(RFactory& rFactory)
-    : rFactory(rFactory)
+SkeletonPhaseContext::SkeletonPhaseContext(const RFactoryPtr& rFactory, const NFactoryPtr& nFactory)
+    : rFactory{rFactory}, nFactory{nFactory}
 {
     throw NotImplementedException{};
 }

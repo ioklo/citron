@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Public\RSymbol\RSymbolConfig.h" />
+    <ClInclude Include="Public\RSymbol\DeclWithOuterTypeArgs.h">
+      <Filter>RDecls</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RDecls.h">
+      <Filter>RDecls</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RDecl.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RFactory.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RMember.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTypeArguments.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTypeDecl.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTypeDeclOuter.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTypes.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RIdentifier.h">
+      <Filter>RDecls\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RNames.h">
+      <Filter>RDecls\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RAccessor.h">
+      <Filter>RDecls\02 Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RFuncDecl.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RFuncDeclOuter.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RFuncParameter.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RFuncReturn.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RGlobalFuncDecl.h">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RModule.h">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RNamespaceDecl.h">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RNamespaceDeclGroup.h">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RClassCtorDecl.h">
+      <Filter>RDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RClassDecl.h">
+      <Filter>RDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RClassFuncDecl.h">
+      <Filter>RDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RClassVarDecl.h">
+      <Filter>RDecls\06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RStructCtorDecl.h">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RStructDecl.h">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RStructFuncDecl.h">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RStructVarDecl.h">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\REnumDecl.h">
+      <Filter>RDecls\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\REnumElemDecl.h">
+      <Filter>RDecls\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\REnumElemVarDecl.h">
+      <Filter>RDecls\08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RInterfaceDecl.h">
+      <Filter>RDecls\09 Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RLambdaDecl.h">
+      <Filter>RDecls\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RLambdaVarDecl.h">
+      <Filter>RDecls\10 Lambda</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="RDecls">
+      <UniqueIdentifier>{c99fb87f-7917-4dbf-bf1b-fc2f296bfa5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\00 Abstraction">
+      <UniqueIdentifier>{700f1fcf-ec70-418a-8ef2-210f2dbbf0be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\01 Identifier">
+      <UniqueIdentifier>{f9bfb826-1851-4727-8d0d-5cd0879bb339}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\02 Properties">
+      <UniqueIdentifier>{e04f02ff-5e18-44cd-8c22-09dfa6abd7ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\03 Func">
+      <UniqueIdentifier>{02d612c3-0284-45f7-b0d5-e2f6d4a4eb5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\05 TopLevel">
+      <UniqueIdentifier>{9ac5c374-af1c-4ae2-8a1d-3edf39605626}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\06 Class">
+      <UniqueIdentifier>{1d7a2f53-d4b7-49a5-af0e-634ba0a2bc82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\07 Struct">
+      <UniqueIdentifier>{092c2b03-00f8-4ff7-aa0a-81b57a23448e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\08 Enum">
+      <UniqueIdentifier>{cf750b33-e269-4f4a-a6c0-db9bfe6bc897}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\09 Interface">
+      <UniqueIdentifier>{6557ab76-f679-4e60-9d79-81fc44f894a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\10 Lambda">
+      <UniqueIdentifier>{7667c2ab-9529-41c8-8493-f19857ae9008}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RDecl.cpp">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RFactory.cpp">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RMember.cpp">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypeArguments.cpp">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypes.cpp">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RNames.cpp">
+      <Filter>RDecls\01 Identifier</Filter>
+    </ClCompile>
+    <ClCompile Include="RFuncParameter.cpp">
+      <Filter>RDecls\03 Func</Filter>
+    </ClCompile>
+    <ClCompile Include="RGlobalFuncDecl.cpp">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="RModule.cpp">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="RNamespaceDeclGroup.cpp">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

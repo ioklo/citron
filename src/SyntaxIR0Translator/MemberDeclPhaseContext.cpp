@@ -2,8 +2,8 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
-#include "IR0/RTypes.h"
-#include "IR0/NDecl.h"
+#include "RSymbol/RTypes.h"
+#include "NSymbol/NDecl.h"
 
 using namespace std;
 

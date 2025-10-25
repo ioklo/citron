@@ -10,9 +10,9 @@
 
 #include "IrExp.h"
 
-#include "SExpToNExpTranslation.h"
-#include "SExpToNLocTranslation.h"
-#include "SExpRefToNExpTranslation.h"
+#include "SExpToMExpTranslation.h"
+#include "SExpToMLocTranslation.h"
+#include "SExpRefToMExpTranslation.h"
 #include "IrExpAndMemberNameToIrExpTranslation.h"
 #include "ImExpToIrExpTranslation.h"
 
@@ -59,7 +59,7 @@ private:
 
     ResultType HandleValue(SExp* exp)
     {
-        auto eExp = TranslateSExpToNExp(exp, /*hintType*/ nullptr, context);
+        auto eExp = TranslateSExpToMExp(exp, /*hintType*/ nullptr, context);
         if (!eExp)
             return unexpected{move(eExp).error()};
         
@@ -128,7 +128,7 @@ public:
     {
         if (exp->kind == SUnaryOpKind::Ref) // & &는 불가능
         {
-            auto eExp = TranslateSExpRefToNExp(exp->operand, context);
+            auto eExp = TranslateSExpRefToMExp(exp->operand, context);
             if (!eExp) return Error(move(eExp));
 
             return Value<IrExp_LocalValue>(*eExp);
@@ -137,7 +137,7 @@ public:
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            auto eLoc = TranslateSExpToNLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+            auto eLoc = TranslateSExpToMLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
             if (!eLoc) return Error(move(eLoc));
 
             return Value<IrExp_DerefedBoxValue>(*eLoc);

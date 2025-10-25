@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="QBlock.cpp" />
+    <ClCompile Include="QFactory.cpp" />
+    <ClCompile Include="QValues.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Public\QIR\QBlock.h" />
+    <ClInclude Include="Public\QIR\QFactory.h" />
+    <ClInclude Include="Public\QIR\QInsts.h" />
+    <ClInclude Include="Public\QIR\QValues.h" />
+    <ClInclude Include="Public\QIR\QIRConfig.h" />
+  </ItemGroup>
+</Project>

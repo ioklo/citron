@@ -1,9 +1,9 @@
 #include "EnumTranslation.h"
 
 #include "Infra/Ptr.h"
-#include "IR0/RFactory.h"
-#include "IR0/NEnumDecl.h"
-#include "IR0/NEnumElemDecl.h"
+#include "RSymbol/RFactory.h"
+#include "NSymbol/NEnumDecl.h"
+#include "NSymbol/NEnumElemDecl.h"
 
 #include "SkeletonPhaseContext.h"
 #include "MemberDeclPhaseContext.h"

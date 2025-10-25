@@ -6,7 +6,7 @@
 
 #include "Infra/Exceptions.h"
 #include "Syntax/Syntax.h"
-#include "IR0/NArgument.h"
+#include "MIR/MArgument.h"
 
 namespace Citron {
 
@@ -25,13 +25,13 @@ struct FuncMatch
 {
     TFuncDecl* funcDecl;
     RTypeArguments* typeArgs;
-    std::vector<NArgument> args;
+    std::vector<MArgument> args;
 };
 
 struct ArgumentsMatch
 {
     RTypeArguments* typeArgs;
-    std::vector<NArgument> args;
+    std::vector<MArgument> args;
 };
 
 template<typename TFuncDecl>

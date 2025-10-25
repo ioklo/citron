@@ -6,16 +6,16 @@
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
 #include "Logging/Logger.h"
-#include "IR0/RMember.h"
-#include "IR0/RClassDecl.h"
-#include "IR0/RClassVarDecl.h"
-#include "IR0/RStructDecl.h"
-#include "IR0/RStructVarDecl.h"
-#include "IR0/REnumDecl.h"
-#include "IR0/RTypeArguments.h"
-#include "IR0/RTypes.h"
-#include "IR0/RNamespaceDecl.h"
-#include "IR0/NLoc.h"
+#include "RSymbol/RMember.h"
+#include "RSymbol/RClassDecl.h"
+#include "RSymbol/RClassVarDecl.h"
+#include "RSymbol/RStructDecl.h"
+#include "RSymbol/RStructVarDecl.h"
+#include "RSymbol/REnumDecl.h"
+#include "RSymbol/RTypeArguments.h"
+#include "RSymbol/RTypes.h"
+#include "RSymbol/RNamespaceDecl.h"
+#include "MIR/MLoc.h"
 
 #include "IrExp.h"
 #include "TranslationContext.h"
@@ -78,7 +78,7 @@ public:
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return context.MakeIrExp<IrExp_StaticRef>(context.MakeNLoc<NLoc_ClassVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return context.MakeIrExp<IrExp_StaticRef>(context.MakeNLoc<MLoc_ClassVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     expected<IrExp*, DiagPtr> operator()(RMember_Struct& member)
@@ -105,7 +105,7 @@ public:
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return context.MakeIrExp<IrExp_StaticRef>(context.MakeNLoc<NLoc_StructVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return context.MakeIrExp<IrExp_StaticRef>(context.MakeNLoc<MLoc_StructVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     // E
@@ -288,7 +288,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_StaticRef>(context.MakeNLoc<NLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
+        return Value<IrExp_StaticRef>(context.MakeNLoc<MLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
     }
 
     // Enum자체는 member를 가져올 수 없다
@@ -311,7 +311,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_StaticRef>(context.MakeNLoc<NLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
+        return Value<IrExp_StaticRef>(context.MakeNLoc<MLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
     }
 
     // &C.i.id
@@ -586,7 +586,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_LocalRef>(context.MakeNLoc<NLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
+        return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
     }
 
     ResultType Visit(RType_Enum* type) 
@@ -609,7 +609,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_LocalRef>(context.MakeNLoc<NLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
+        return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
     }
 
     ResultType Visit(RType_Interface* type) 

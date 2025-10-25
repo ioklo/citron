@@ -8,12 +8,16 @@
 #include "Infra/Exceptions.h"
 
 #include "Syntax/Syntax.h"
-#include "IR0/RFactory.h"
-#include "IR0/RTypes.h"
-#include "IR0/NExp.h"
-#include "IR0/NLambdaDecl.h"
-#include "IR0/NArgument.h"
-#include "IR0/NLoc.h"
+#include "RSymbol/RFactory.h"
+#include "RSymbol/RTypes.h"
+
+#include "NSymbol/NLambdaDecl.h"
+#include "NSymbol/NFactory.h"
+
+#include "MIR/MExp.h"
+#include "MIR/MArgument.h"
+#include "MIR/MLoc.h"
+#include "MIR/MFactory.h"
 
 #include "TranslationContext.h"
 #include "ScopeContext.h"
@@ -25,9 +29,9 @@ namespace Citron::SyntaxIR0Translator {
 
 FuncContext::FuncContext() = default;
 
-NLambdaVarDecl* FuncContext::StageLambdaVar(RType* type, const RName& name, NArgument_Normal&& arg, RFactory& factory)
+NLambdaVarDecl* FuncContext::StageLambdaVar(RType* type, const RName& name, MArgument_Normal&& arg)
 {
-    auto* lambdaVar = factory.MakeNDecl<NLambdaVarDecl>(type, name);
+    auto* lambdaVar = nFactory->MakeNDecl<NLambdaVarDecl>(type, name);
     lambdaVarAndInitArgs.emplace_back(lambdaVar, move(arg));
     return lambdaVar;
 }
@@ -42,9 +46,9 @@ bool FuncContext_Lambda::CanAccess(RDecl* target)
     return outer->funcContext->CanAccess(target);
 }
 
-optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& rFactory)
+optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto oMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, rFactory);
+    auto oMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
     if (!oMember) return nullopt;
     
     // 상위 스코프에서 얻어오는 
@@ -53,13 +57,13 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
     {
         RName localVarName = RName_Normal(localVar->name);
 
-        auto* localVarLoc = rFactory.MakeNLoc<NLoc_LocalVar>(localVarName, localVar->type);
-        auto* initExp = rFactory.MakeNExp<NExp_Load>(localVarLoc);
-        auto initArg = NArgument_Normal(initExp);
+        auto* localVarLoc = mFactory->MakeMLoc<MLoc_LocalVar>(localVarName, localVar->type);
+        auto* initExp = mFactory->MakeMExp<MExp_Load>(localVarLoc);
+        auto initArg = MArgument_Normal(initExp);
 
-        auto* lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg), rFactory);
+        auto* lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg));
 
-        auto* openTypeArgs = MakeOpenTypeArgs(rFactory);
+        auto* openTypeArgs = MakeOpenTypeArgs();
         return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
@@ -79,12 +83,12 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         //     }
         // } }
 
-        auto openTypeArgs = MakeOpenTypeArgs(rFactory);
-        auto* lambdaVarDecl = rFactory.MakeNLoc<NLoc_LambdaVar>(lambdaVar->decl, openTypeArgs);
-        auto* loadExp = rFactory.MakeNExp<NExp_Load>(lambdaVarDecl);
-        NArgument_Normal initArg{loadExp};
+        auto openTypeArgs = MakeOpenTypeArgs();
+        auto* lambdaVarDecl = mFactory->MakeMLoc<MLoc_LambdaVar>(lambdaVar->decl, openTypeArgs);
+        auto* loadExp = mFactory->MakeMExp<MExp_Load>(lambdaVarDecl);
+        MArgument_Normal initArg{loadExp};
 
-        auto* newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), move(initArg), rFactory);
+        auto* newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), move(initArg));
         return RMember_LambdaVar{openTypeArgs, newLambdaVar};
     }
 
@@ -94,12 +98,12 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         if (auto structType = dynamic_cast<RType_Struct*>(thisVar->type))
             throw NotImplementedException{};
 
-        auto* thisLoc = rFactory.MakeNLoc<NLoc_This>(thisVar->type);
-        auto* initExp = rFactory.MakeNExp<NExp_Load>(thisLoc);
-        auto initArg = NArgument_Normal{initExp};
+        auto* thisLoc = mFactory->MakeMLoc<MLoc_This>(thisVar->type);
+        auto* initExp = mFactory->MakeMExp<MExp_Load>(thisLoc);
+        auto initArg = MArgument_Normal{initExp};
 
-        auto* lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, move(initArg), rFactory);
-        auto* openTypeArgs = MakeOpenTypeArgs(rFactory);
+        auto* lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, move(initArg));
+        auto* openTypeArgs = MakeOpenTypeArgs();
 
         return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
@@ -119,9 +123,9 @@ void FuncContext_Lambda::SetOpenFuncReturn(RType* retType)
     funcReturn = RFuncReturn_Set{retType};
 }
 
-RTypeArguments* FuncContext_Lambda::MakeOpenTypeArgs(RFactory& factory)
+RTypeArguments* FuncContext_Lambda::MakeOpenTypeArgs()
 {
-    return outer->MakeOpenTypeArgs(factory);
+    return outer->MakeOpenTypeArgs();
 }
 
 bool FuncContext_Lambda::IsSeqFunc()
@@ -134,9 +138,9 @@ bool FuncContext_FuncDecl::CanAccess(RDecl* target)
     return funcDecl->GetNDecl()->GetRDecl()->CanAccess(target);
 }
 
-optional<RMember> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    return funcDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return funcDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, *rFactory);
 }
 
 RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()
@@ -150,9 +154,9 @@ void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
 }
 
 
-RTypeArguments* FuncContext_FuncDecl::MakeOpenTypeArgs(RFactory& factory)
+RTypeArguments* FuncContext_FuncDecl::MakeOpenTypeArgs()
 {
-    return funcDecl->GetNDecl()->GetRDecl()->MakeOpenTypeArgs(factory);
+    return funcDecl->GetNDecl()->GetRDecl()->MakeOpenTypeArgs(*rFactory);
 }
 
 bool FuncContext_FuncDecl::IsSeqFunc()

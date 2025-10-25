@@ -3,11 +3,11 @@
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
 #include "Logging/Logger.h"
-#include "IR0/RFactory.h"
-#include "IR0/RFuncDecl.h"
-#include "IR0/RDecl.h"
-#include "IR0/NLoc.h"
-#include "IR0/NExp.h"
+#include "RSymbol/RFactory.h"
+#include "RSymbol/RFuncDecl.h"
+#include "RSymbol/RDecl.h"
+#include "MIR/MLoc.h"
+#include "MIR/MExp.h"
 
 #include "ReExp.h"
 #include "IrExp.h"
@@ -49,10 +49,10 @@ TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcR
 
 expected<RType*, DiagPtr> TranslationContext::TranslateSTypeExpToRType(STypeExp* typeExp)
 {
-    return scopeContext->TranslateSTypeExpToRType(typeExp, *rFactory);
+    return scopeContext->TranslateSTypeExpToRType(typeExp);
 }
 
-Citron::RType* TranslationContext::GetType(NLoc* loc)
+Citron::RType* TranslationContext::GetType(MLoc* loc)
 {
     return loc->GetType(*rFactory);
 }
@@ -62,7 +62,7 @@ RType* TranslationContext::GetType(ReExp* reExp)
     return reExp->GetType(*rFactory);
 }
 
-Citron::RType* TranslationContext::GetType(NExp* exp)
+Citron::RType* TranslationContext::GetType(MExp* exp)
 {
     return exp->GetType(*rFactory);
 }
@@ -72,13 +72,13 @@ RType* TranslationContext::GetTargetType(IrExp_BoxRef* boxRef)
     return boxRef->GetTargetType(*rFactory);
 }
 
-NLoc_This* TranslationContext::MakeThisLoc()
+MLoc_This* TranslationContext::MakeThisLoc()
 {
 
-    return scopeContext->MakeThisLoc(*rFactory);
+    return scopeContext->MakeThisLoc();
 }
 
-expected<NExp*, DiagPtr> TranslationContext::MakeNExp_As(NExp* targetExp, RType* testType)
+expected<MExp*, DiagPtr> TranslationContext::MakeMExp_As(MExp* targetExp, RType* testType)
 {
     auto targetType = targetExp->GetType(*rFactory);
     auto targetTypeKind = targetType->GetCustomTypeKind();
@@ -88,26 +88,26 @@ expected<NExp*, DiagPtr> TranslationContext::MakeNExp_As(NExp* targetExp, RType*
     if (testTypeKind == RCustomTypeKind::Class)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakeNExp<NExp_ClassAsClass>(targetExp, testType);
+            return MakeMExp<MExp_ClassAsClass>(targetExp, testType);
 
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakeNExp<NExp_InterfaceAsClass>(targetExp, testType);
+            return MakeMExp<MExp_InterfaceAsClass>(targetExp, testType);
         else
             throw NotImplementedException{}; // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::Interface)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakeNExp<NExp_ClassAsInterface>(targetExp, testType);
+            return MakeMExp<MExp_ClassAsInterface>(targetExp, testType);
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakeNExp<NExp_InterfaceAsInterface>(targetExp, testType);
+            return MakeMExp<MExp_InterfaceAsInterface>(targetExp, testType);
         else
             throw NotImplementedException{}; // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::EnumElem)
     {
         if (targetTypeKind == RCustomTypeKind::Enum)
-            return MakeNExp<NExp_EnumAsEnumElem>(targetExp, testType);
+            return MakeMExp<MExp_EnumAsEnumElem>(targetExp, testType);
         else
             throw NotImplementedException{}; // 에러 처리
     }
@@ -223,7 +223,7 @@ void TranslationContext::SetOpenFuncReturn(RType* retType)
     funcContext->SetOpenFuncReturn(retType);
 }
 
-NLambdaDeclAndArgs TranslationContext::MakeLambdaDeclAndArgs(std::vector<NStmt*>&& body)
+NLambdaDeclAndArgs TranslationContext::MakeLambdaDeclAndArgs(std::vector<MStmt*>&& body)
 {
     throw NotImplementedException{};
 }
