@@ -109,7 +109,7 @@ public:
     template<typename... TArgs> \
     ITEM* Make##ITEM(TArgs&&... args) \
     { \
-        auto elem = make_unique<ITEM>(std::forward<TArgs>(args)...); \
+        auto elem = std::make_unique<ITEM>(std::forward<TArgs>(args)...); \
         auto* pElem = elem.get(); \
         syntaxes.push_back(std::move(elem)); \
         return pElem; \
@@ -194,7 +194,7 @@ public:
     template<typename... TArgs> 
     SArgument* MakeSArgument(TArgs&&... args)
     {
-        auto elem = make_unique<SArgument>(std::forward<TArgs>(args)...);
+        auto elem = std::make_unique<SArgument>(std::forward<TArgs>(args)...);
         auto* pElem = elem.get();
         this->args.push_back(std::move(elem));
         return pElem;
@@ -203,7 +203,7 @@ public:
     template<typename... TArgs>
     SArguments* MakeSArguments(TArgs&&... args)
     {
-        auto elem = make_unique<SArguments>(std::forward<TArgs>(args)...);
+        auto elem = std::make_unique<SArguments>(std::forward<TArgs>(args)...);
         auto* pElem = elem.get();
         this->argsArray.push_back(std::move(elem));
         return pElem;

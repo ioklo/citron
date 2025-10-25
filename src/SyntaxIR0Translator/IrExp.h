@@ -300,7 +300,7 @@ concept IrBoxRefExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires IrBoxRefExpVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, IrExp_BoxRef* irExp, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp_BoxRef* irExp, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -363,7 +363,7 @@ concept IrExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args) {
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires IrExpVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, IrExp* irExp, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp* irExp, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 

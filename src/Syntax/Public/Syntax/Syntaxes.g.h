@@ -378,7 +378,7 @@ concept SStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SStmtVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, SStmt* stmt, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStmt* stmt, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -508,7 +508,7 @@ concept SExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SExpVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, SExp* exp, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SExp* exp, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -616,7 +616,7 @@ concept STypeExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires STypeExpVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, STypeExp* typeExp, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, STypeExp* typeExp, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -694,7 +694,7 @@ concept SStringExpElementVisitable = requires(TVisitor&& v, TVisitorArgs&&... ar
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SStringExpElementVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, SStringExpElement* elem, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStringExpElement* elem, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -764,7 +764,7 @@ concept SLambdaExpBodyVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SLambdaExpBodyVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, SLambdaExpBody* body, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SLambdaExpBody* body, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -834,7 +834,7 @@ concept SEmbeddableStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SEmbeddableStmtVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, SEmbeddableStmt* stmt, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SEmbeddableStmt* stmt, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -904,7 +904,7 @@ concept SForStmtInitializerVisitable = requires(TVisitor&& v, TVisitorArgs&&... 
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SForStmtInitializerVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, SForStmtInitializer* initializer, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SForStmtInitializer* initializer, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -982,7 +982,7 @@ concept SClassMemberDeclVisitable = requires(TVisitor&& v, TVisitorArgs&&... arg
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SClassMemberDeclVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, SClassMemberDecl* decl, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SClassMemberDecl* decl, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -1068,7 +1068,7 @@ concept SStructMemberDeclVisitable = requires(TVisitor&& v, TVisitorArgs&&... ar
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SStructMemberDeclVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, SStructMemberDecl* decl, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStructMemberDecl* decl, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -1152,7 +1152,7 @@ concept SNamespaceDeclElementVisitable = requires(TVisitor&& v, TVisitorArgs&&..
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SNamespaceDeclElementVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, SNamespaceDeclElement* elem, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SNamespaceDeclElement* elem, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
@@ -1234,7 +1234,7 @@ concept SScriptElementVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SScriptElementVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, SScriptElement* elem, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SScriptElement* elem, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 

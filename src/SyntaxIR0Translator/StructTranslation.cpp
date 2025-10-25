@@ -49,6 +49,21 @@ RAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessModifier) // 
 
 #pragma region Ctor
 
+struct AddStructCtor_MemberDeclPhase_Functor
+{
+    NStructCtorDecl* nCtor;
+    SStructCtorDecl* sCtor;
+
+    void operator()(MemberDeclPhaseContext& context);
+};
+
+struct AddStructCtor_BodyPhase_Functor
+{
+    NStructCtorDecl* nCtor;
+    SStructCtorDecl* sCtor;
+    void operator()(BodyPhaseContext& context);
+};
+
 void AddStructCtor(NStructDecl* nStruct, SStructCtorDecl* sCtor, SkeletonPhaseContext& context)
 {
     auto accessModifier = MakeStructMemberAccessor(sCtor->accessModifier);
@@ -56,26 +71,19 @@ void AddStructCtor(NStructDecl* nStruct, SStructCtorDecl* sCtor, SkeletonPhaseCo
     // TODO: 타이프 쳐서 만들어진 ctor는 'trivial' 표시를 하기 전까지는 trivial로 인식하지 않는다. 지금은 false로 표기
     // 그리고 컴파일러가 trivial 조건을 체크해서 에러를 낼 수도 있다 (하위 타입의 trivial constructor가 이 constructor를 참조하지 않는다)
     auto* nCtor = context.MakeNDecl<NStructCtorDecl>(nStruct, accessModifier, false);
-    context.AddMemberDeclPhaseTask([nCtor, sCtor](MemberDeclPhaseContext& context) {
-        AddStructCtor_MemberDeclPhase(nCtor, sCtor, context);
-    });
-
+    context.AddMemberDeclPhaseTask(AddStructCtor_MemberDeclPhase_Functor{nCtor, sCtor});
     nStruct->AddCtor(nCtor);
 }
 
-void AddStructCtor_MemberDeclPhase(NStructCtorDecl* nCtor, SStructCtorDecl* sCtor, MemberDeclPhaseContext& context)
+void AddStructCtor_MemberDeclPhase_Functor::operator()(MemberDeclPhaseContext& context)
 {
     // ctor는 Type Parameter가 없으므로 파라미터를 만들 때, 상위(struct) declSymbol을 넘긴다
     auto [parameters, bLastParamVariadic] = context.MakeParameters(nCtor, sCtor->parameters);
-
     nCtor->InitFuncParameters(move(parameters), bLastParamVariadic);
-
-    context.AddBodyPhaseTask([nCtor, sCtor](BodyPhaseContext& context) {
-        AddStructCtor_BodyPhase(nCtor, sCtor, context);
-    });
+    context.AddBodyPhaseTask(AddStructCtor_BodyPhase_Functor{nCtor, sCtor});
 }
 
-void AddStructCtor_BodyPhase(NStructCtorDecl* nCtor, SStructCtorDecl* sCtor, BodyPhaseContext& context)
+void AddStructCtor_BodyPhase_Functor::operator()(BodyPhaseContext& context)
 {
     auto translationContext = context.MakeTranslationContext();
 

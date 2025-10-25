@@ -448,7 +448,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     hStream << "};" << endl << endl;
 
     hStream << "template<typename TVisitor, typename... TVisitorArgs> requires " << info.name <<"Visitable<TVisitor, TVisitorArgs...>" << endl;
-    hStream << "decltype(auto) Accept(TVisitor&& v, " << info.name << "* " << info.argName << ", TVisitorArgs&&... args)" << endl;
+    hStream << "typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, " << info.name << "* " << info.argName << ", TVisitorArgs&&... args)" << endl;
     hStream << "{" << endl;
     hStream << "    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;" << endl;
     hStream << endl;

@@ -836,7 +836,7 @@ concept MExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires MExpVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, MExp* mExp, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mExp, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 

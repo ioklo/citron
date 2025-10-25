@@ -73,7 +73,7 @@ concept RFuncDeclVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires RFuncDeclVisitable<TVisitor, TVisitorArgs...>
-decltype(auto) Accept(TVisitor&& v, RFuncDecl* decl, TVisitorArgs&&... args)
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RFuncDecl* decl, TVisitorArgs&&... args)
 {
     using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
 
