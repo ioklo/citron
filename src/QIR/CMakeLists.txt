@@ -1,6 +1,8 @@
 
 add_library(QIR SHARED)
 
+set_target_properties(QIR PROPERTIES DEFINE_SYMBOL QIR_EXPORTS)
+
 target_compile_options(QIR PRIVATE
         -Wno-unqualified-std-cast-call
 )

@@ -1,6 +1,8 @@
 
 add_library(MIR SHARED)
 
+set_target_properties(MIR PROPERTIES DEFINE_SYMBOL MIR_EXPORTS)
+
 target_compile_options(MIR PRIVATE
         -Wno-unqualified-std-cast-call
 )

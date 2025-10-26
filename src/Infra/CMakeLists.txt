@@ -1,6 +1,8 @@
 
 add_library(Infra SHARED)
 
+set_target_properties(Infra PROPERTIES DEFINE_SYMBOL INFRA_EXPORTS)
+
 target_compile_options(Infra PRIVATE
         -Wno-unqualified-std-cast-call
 )

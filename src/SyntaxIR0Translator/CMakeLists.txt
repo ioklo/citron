@@ -1,6 +1,8 @@
 
 add_library(SyntaxIR0Translator SHARED)
 
+set_target_properties(SyntaxIR0Translator PROPERTIES DEFINE_SYMBOL SYNTAXIR0TRANSLATOR_EXPORTS)
+
 target_compile_options(SyntaxIR0Translator PRIVATE
         -Wno-unqualified-std-cast-call
 )

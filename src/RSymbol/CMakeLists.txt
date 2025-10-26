@@ -1,6 +1,8 @@
 
 add_library(RSymbol SHARED)
 
+set_target_properties(RSymbol PROPERTIES DEFINE_SYMBOL RSYMBOL_EXPORTS)
+
 target_compile_options(RSymbol PRIVATE
         -Wno-unqualified-std-cast-call
 )

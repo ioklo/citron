@@ -1,6 +1,8 @@
 
 add_library(ESymbol SHARED)
 
+set_target_properties(ESymbol PROPERTIES DEFINE_SYMBOL ESYMBOL_EXPORTS)
+
 target_compile_options(ESymbol PRIVATE
         -Wno-unqualified-std-cast-call
 )

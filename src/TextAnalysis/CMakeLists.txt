@@ -1,6 +1,8 @@
 
 add_library(TextAnalysis SHARED)
 
+set_target_properties(TextAnalysis PROPERTIES DEFINE_SYMBOL TEXTANALYSIS_EXPORTS)
+
 target_compile_options(TextAnalysis PRIVATE
         -Wno-unqualified-std-cast-call
 )

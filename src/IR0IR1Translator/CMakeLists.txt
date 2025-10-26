@@ -2,6 +2,8 @@
 add_library(IR0IR1Translator SHARED
         )
 
+set_target_properties(IR0IR1Translator PROPERTIES DEFINE_SYMBOL IR0IR1TRANSLATOR_EXPORTS)
+
 target_compile_options(IR0IR1Translator PRIVATE
         -Wno-unqualified-std-cast-call
 )

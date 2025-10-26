@@ -1,6 +1,8 @@
 
 add_library(NSymbol SHARED)
 
+set_target_properties(NSymbol PROPERTIES DEFINE_SYMBOL NSYMBOL_EXPORTS)
+
 target_compile_options(NSymbol PRIVATE
         -Wno-unqualified-std-cast-call
 )

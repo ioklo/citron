@@ -1,6 +1,8 @@
 
 add_library(Syntax SHARED)
 
+set_target_properties(Syntax PROPERTIES DEFINE_SYMBOL SYNTAX_EXPORTS)
+
 add_dependencies(Syntax Infra)
 
 target_compile_options(Syntax PRIVATE
