@@ -5,10 +5,10 @@ target_compile_options(TestGenerator PRIVATE
         -Wno-unqualified-std-cast-call
 )
 
-find_package(Boost CONFIG REQUIRED)
+find_package(Boost REQUIRED COMPONENTS algorithm)
 find_package(fmt CONFIG REQUIRED)
 
-target_link_libraries(TestGenerator PRIVATE Boost::algorithm Boost::container_hash)
+target_link_libraries(TestGenerator PRIVATE Boost::algorithm)
 target_link_libraries(TestGenerator PRIVATE fmt::fmt)
 
 target_sources(TestGenerator
