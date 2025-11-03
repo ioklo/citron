@@ -15,6 +15,7 @@ add_subdirectory(QIR)
 add_subdirectory(TextAnalysis)
 add_subdirectory(SyntaxIR0Translator)
 add_subdirectory(IR0IR1Translator)
+add_subdirectory(QEvaluator)
 
 add_subdirectory(Builder)
 add_subdirectory(Tools)
@@ -24,4 +25,5 @@ enable_testing()
 
 add_subdirectory(TextAnalysis.Tests)
 add_subdirectory(Builder.Tests)
+add_subdirectory(QEvaluator.Tests)
 

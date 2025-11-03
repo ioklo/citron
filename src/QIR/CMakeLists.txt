@@ -16,6 +16,7 @@ target_link_libraries(QIR PRIVATE)
 target_sources(QIR
         PRIVATE
         QBlock.cpp
+        QData.cpp
         QFactory.cpp
         QValues.cpp
 
@@ -24,7 +25,9 @@ target_sources(QIR
         FILES
 
         Public/QIR/QBlock.h
+        Public/QIR/QData.h
         Public/QIR/QFactory.h
+        Public/QIR/QFuncBody.h
         Public/QIR/QInsts.h
         Public/QIR/QIRConfig.h
         Public/QIR/QValues.h

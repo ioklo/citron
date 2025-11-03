@@ -25,8 +25,10 @@ target_sources(MIR
         FILES
         
         Public/MIR/MArgument.h
+        Public/MIR/MData.h
         Public/MIR/MExp.h
         Public/MIR/MFactory.h
+        Public/MIR/MFuncBody.h
         Public/MIR/MIRConfig.h
         Public/MIR/MLoc.h
         Public/MIR/MStmt.h

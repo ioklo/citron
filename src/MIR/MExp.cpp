@@ -169,7 +169,7 @@ RType* MExp_List::GetType(RFactory& factory)
 }
 
 MExp_ListIterator::MExp_ListIterator(MLoc* listLoc, RType* iteratorType)
-    : listLoc(listLoc), type(iteratorType)
+    : listLoc(listLoc), iteratorType{iteratorType}
 {
 }
 

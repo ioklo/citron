@@ -62,7 +62,7 @@ public:
     size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
     RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
     RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs, factory); }
-    RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory) { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index, factory); }
+    RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index, factory); }
     // virtual void Accept(RFuncDeclVisitor& visitor) = 0;
 
     // from RFuncDeclOuter
