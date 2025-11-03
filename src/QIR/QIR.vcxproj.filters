@@ -4,6 +4,7 @@
     <ClCompile Include="QBlock.cpp" />
     <ClCompile Include="QFactory.cpp" />
     <ClCompile Include="QValues.cpp" />
+    <ClCompile Include="QData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\QIR\QBlock.h" />
@@ -11,5 +12,7 @@
     <ClInclude Include="Public\QIR\QInsts.h" />
     <ClInclude Include="Public\QIR\QValues.h" />
     <ClInclude Include="Public\QIR\QIRConfig.h" />
+    <ClInclude Include="Public\QIR\QData.h" />
+    <ClInclude Include="Public\QIR\QFuncBody.h" />
   </ItemGroup>
 </Project>

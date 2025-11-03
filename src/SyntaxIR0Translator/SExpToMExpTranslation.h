@@ -14,7 +14,7 @@ class RType;
 
 class MExp;
 class MExp_String;
-enum class NInternalUnaryAssignOperator;
+enum class MInternalUnaryAssignOperator;
 
 namespace SyntaxIR0Translator {
 
@@ -24,7 +24,7 @@ std::expected<MExp*, DiagPtr> TranslateSNullLiteralExpToMExp(SExp_NullLiteral* e
 std::expected<MExp*, DiagPtr> TranslateSBoolLiteralExpToMExp(SExp_BoolLiteral* exp, TranslationContext& context);
 std::expected<MExp*, DiagPtr> TranslateSIntLiteralExpToMExp(SExp_IntLiteral* exp, TranslationContext& context);
 std::expected<MExp_String*, DiagPtr> TranslateSStringExpToNStringExp(SExp_String* exp, TranslationContext& context);
-std::expected<MExp*, DiagPtr> TranslateSIntUnaryAssignExpToMExp(SExp* operand, NInternalUnaryAssignOperator op, TranslationContext& context);
+std::expected<MExp*, DiagPtr> TranslateSIntUnaryAssignExpToMExp(SExp* operand, MInternalUnaryAssignOperator op, TranslationContext& context);
 std::expected<MExp*, DiagPtr> TranslateSUnaryOpExpToMExpExceptDeref(SExp_UnaryOp* sExp, TranslationContext& context);
 std::expected<MExp*, DiagPtr> TranslateSAssignBinaryOpExpToMExp(SExp_BinaryOp* exp, TranslationContext& context);
 std::expected<MExp*, DiagPtr> TranslateSBinaryOpExpToMExp(SExp_BinaryOp* exp, TranslationContext& context);

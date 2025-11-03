@@ -12,7 +12,7 @@ class RNamespaceDeclGroup;
 class RTypeArguments;
 class RFactory;
 
-namespace RDecls {
+namespace RSymbols {
 
 struct FuncTypeKey
 {
@@ -82,7 +82,7 @@ struct TypeArgumentsKeyHasher
     }
 };
 
-} // namespace RDecls
+} // namespace RSymbols
 
 // TODO: weak처리
 // flyweight
@@ -94,12 +94,12 @@ class RFactory
     std::unordered_map<int, std::unique_ptr<RType_TypeVar>> typeVarTypes;
     std::unique_ptr<RType_Void> voidType;
     std::unordered_map<std::vector<RTupleVar>, std::unique_ptr<RType_Tuple>> tupleTypes;
-    std::unordered_map<RDecls::FuncTypeKey, std::unique_ptr<RType_Func>, RDecls::FuncTypeKeyHasher> funcTypes;
+    std::unordered_map<RSymbols::FuncTypeKey, std::unique_ptr<RType_Func>, RSymbols::FuncTypeKeyHasher> funcTypes;
     std::unordered_map<RType*, std::unique_ptr<RType_LocalPtr>> localPtrTypes;
     std::unordered_map<RType*, std::unique_ptr<RType_BoxPtr>> boxPtrTypes;
 
     template<typename TDecl, typename TType>
-    using InstanceTypeKeyUnorderedMap = std::unordered_map<RDecls::InstanceTypeKey<TDecl>, std::unique_ptr<TType>, RDecls::InstanceTypeKeyHasher<TDecl>>;
+    using InstanceTypeKeyUnorderedMap = std::unordered_map<RSymbols::InstanceTypeKey<TDecl>, std::unique_ptr<TType>, RSymbols::InstanceTypeKeyHasher<TDecl>>;
 
     InstanceTypeKeyUnorderedMap<RClassDecl, RType_Class> classTypes;
     InstanceTypeKeyUnorderedMap<RStructDecl, RType_Struct> structTypes;
@@ -108,7 +108,7 @@ class RFactory
     InstanceTypeKeyUnorderedMap<RInterfaceDecl, RType_Interface> interfaceTypes;
     InstanceTypeKeyUnorderedMap<RLambdaDecl, RType_Lambda> lambdaTypes;
 
-    std::unordered_map<RDecls::TypeArgumentsKey, std::unique_ptr<RTypeArguments>, RDecls::TypeArgumentsKeyHasher> typeArgsMap;
+    std::unordered_map<RSymbols::TypeArgumentsKey, std::unique_ptr<RTypeArguments>, RSymbols::TypeArgumentsKeyHasher> typeArgsMap;
 
     // 기본 타입
     std::unique_ptr<RType> boolType;

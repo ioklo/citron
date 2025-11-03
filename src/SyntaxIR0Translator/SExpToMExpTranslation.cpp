@@ -64,7 +64,7 @@ expected<MExp*, DiagPtr> TranslateSIntLiteralExpToMExp(SExp_IntLiteral* exp, Tra
     return context.MakeMExp<MExp_IntLiteral>(exp->value);
 }
 
-expected<NStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpElement(SStringExpElement* elem, TranslationContext& context)
+expected<MExp_StringElem, DiagPtr> TranslateSStringExpElementToRStringExpElement(SStringExpElement* elem, TranslationContext& context)
 {
     // TranslationResult<R.StringExpElement> Valid(R.StringExpElement elem) = > TranslationResult.Valid(elem);
     // TranslationResult<R.StringExpElement> Error() = > TranslationResult.Error<R.StringExpElement>();
@@ -83,27 +83,21 @@ expected<NStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
             auto eNExp = TranslateReExpToMExp(*eReExp, context);
             if (!eNExp) return unexpected{move(eNExp).error()};
 
-            return NLocStringExpElement(
-                context.MakeNLoc<MLoc_Temp>(
-                    context.MakeMExp<MExp_CallInternalUnaryOperator>(NInternalUnaryOperator::ToString_Int_String, *eNExp)));
+            return MExp_StringElem_Exp{context.MakeMExp<MExp_CallInternalUnaryOperator>(MInternalUnaryOperator::ToString_Int_String, *eNExp)};
         }
         else if (reExpType == context.MakeBoolType())
         {
             auto eNExp = TranslateReExpToMExp(*eReExp, context);
             if (!eNExp) return unexpected{move(eNExp).error()};
 
-            return NLocStringExpElement(
-                context.MakeNLoc<MLoc_Temp>(
-                    context.MakeMExp<MExp_CallInternalUnaryOperator>(NInternalUnaryOperator::ToString_Bool_String, *eNExp)));
+            return MExp_StringElem_Exp{context.MakeMExp<MExp_CallInternalUnaryOperator>(MInternalUnaryOperator::ToString_Bool_String, *eNExp)};
         }
         else if (reExpType == context.MakeStringType())
         {
-            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
+            auto eMExp = TranslateReExpToMExp(*eReExp, context);
+            if (!eMExp) return unexpected{move(eMExp).error()};
 
-            auto eNLoc = TranslateReExpToMLoc(*eReExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-            if (!eNLoc) return unexpected{move(eNLoc).error()};
-
-            return NLocStringExpElement{*eNLoc};
+            return MExp_StringElem_Exp{*eMExp};
         }
         else
         {
@@ -113,7 +107,7 @@ expected<NStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
     }
     else if (auto* textElem = dynamic_cast<SStringExpElement_Text*>(elem))
     {
-        return NTextStringExpElement(textElem->text);
+        return MExp_StringElem_Text(textElem->text);
     }
 
     unreachable();
@@ -122,7 +116,7 @@ expected<NStringExpElement, DiagPtr> TranslateSStringExpElementToRStringExpEleme
 expected<MExp_String*, DiagPtr> TranslateSStringExpToNStringExp(SExp_String* exp, TranslationContext& context)
 {
     vector<DiagPtr> diags;
-    vector<NStringExpElement> builder;
+    vector<MExp_StringElem> builder;
     for(auto& elem : exp->elements)
     {
         auto eRStringExpElem = TranslateSStringExpElementToRStringExpElement(elem, context);
@@ -143,7 +137,7 @@ expected<MExp_String*, DiagPtr> TranslateSStringExpToNStringExp(SExp_String* exp
 }
 
 // int만 지원한다
-expected<MExp*, DiagPtr> TranslateSIntUnaryAssignExpToMExp(SExp* operand, NInternalUnaryAssignOperator op, TranslationContext& context)
+expected<MExp*, DiagPtr> TranslateSIntUnaryAssignExpToMExp(SExp* operand, MInternalUnaryAssignOperator op, TranslationContext& context)
 {
     // exp를 loc으로 변환하는 일을 하면 안되지만, ref는 풀어야 한다
     // F()++; (x)
@@ -182,7 +176,7 @@ expected<MExp*, DiagPtr> TranslateSUnaryOpExpToMExpExceptDeref(SExp_UnaryOp* sEx
             return unexpected{MakePtr<Error_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly>()};
         }
 
-        return context.MakeMExp<MExp_CallInternalUnaryOperator>(NInternalUnaryOperator::LogicalNot_Bool_Bool, *eNOperand);
+        return context.MakeMExp<MExp_CallInternalUnaryOperator>(MInternalUnaryOperator::LogicalNot_Bool_Bool, *eNOperand);
     }
 
     case SUnaryOpKind::Minus:
@@ -192,20 +186,20 @@ expected<MExp*, DiagPtr> TranslateSUnaryOpExpToMExpExceptDeref(SExp_UnaryOp* sEx
             return unexpected{MakePtr<Error_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly>()};
         }
 
-        return context.MakeMExp<MExp_CallInternalUnaryOperator>(NInternalUnaryOperator::UnaryMinus_Int_Int, *eNOperand);
+        return context.MakeMExp<MExp_CallInternalUnaryOperator>(MInternalUnaryOperator::UnaryMinus_Int_Int, *eNOperand);
     }
 
     case SUnaryOpKind::PostfixInc: // e.m++ 등
-        return TranslateSIntUnaryAssignExpToMExp(sExp->operand, NInternalUnaryAssignOperator::PostfixInc_Int_Int, context);
+        return TranslateSIntUnaryAssignExpToMExp(sExp->operand, MInternalUnaryAssignOperator::PostfixInc_Int_Int, context);
 
     case SUnaryOpKind::PostfixDec:
-        return TranslateSIntUnaryAssignExpToMExp(sExp->operand, NInternalUnaryAssignOperator::PostfixDec_Int_Int, context);
+        return TranslateSIntUnaryAssignExpToMExp(sExp->operand, MInternalUnaryAssignOperator::PostfixDec_Int_Int, context);
 
     case SUnaryOpKind::PrefixInc:
-        return TranslateSIntUnaryAssignExpToMExp(sExp->operand, NInternalUnaryAssignOperator::PrefixInc_Int_Int, context);
+        return TranslateSIntUnaryAssignExpToMExp(sExp->operand, MInternalUnaryAssignOperator::PrefixInc_Int_Int, context);
 
     case SUnaryOpKind::PrefixDec:
-        return TranslateSIntUnaryAssignExpToMExp(sExp->operand, NInternalUnaryAssignOperator::PrefixDec_Int_Int, context);
+        return TranslateSIntUnaryAssignExpToMExp(sExp->operand, MInternalUnaryAssignOperator::PrefixDec_Int_Int, context);
 
     default:
         unreachable();
@@ -274,7 +268,7 @@ expected<MExp*, DiagPtr> TranslateSBinaryOpExpToMExp(SExp_BinaryOp* exp, Transla
 
             // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다
             auto* equalExp = context.MakeMExp<MExp_CallInternalBinaryOperator>(info.rOperator, *castExp0, *castExp1);
-            return context.MakeMExp<MExp_CallInternalUnaryOperator>(NInternalUnaryOperator::LogicalNot_Bool_Bool, equalExp);
+            return context.MakeMExp<MExp_CallInternalUnaryOperator>(MInternalUnaryOperator::LogicalNot_Bool_Bool, equalExp);
         }
     }
 

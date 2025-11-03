@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Public\MIR\MFuncBody.h" />
+    <ClInclude Include="Public\MIR\MData.h" />
     <ClInclude Include="Public\MIR\MIRConfig.h" />
     <ClInclude Include="Public\MIR\MArgument.h" />
     <ClInclude Include="Public\MIR\MExp.h" />

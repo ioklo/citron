@@ -7,6 +7,8 @@
     <ClInclude Include="Public\MIR\MFactory.h" />
     <ClInclude Include="Public\MIR\MLoc.h" />
     <ClInclude Include="Public\MIR\MStmt.h" />
+    <ClInclude Include="Public\MIR\MData.h" />
+    <ClInclude Include="Public\MIR\MFuncBody.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MExp.cpp" />

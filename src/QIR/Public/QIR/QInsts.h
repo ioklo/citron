@@ -1,60 +1,128 @@
 #pragma once
 #include <string>
+#include <variant>
+#include <optional>
+
+#include "QValues.h"
 
 namespace Citron {
 
-class QValue;
-
-class QInst
-{
-public:
-    virtual ~QInst() { }
-};
-
-class QJumpInst
-{
-public:
-    virtual ~QJumpInst() { }
-};
+class RFuncDecl;
+class QBlock;
 
 // QLocalVar(lv, name)
-class QInst_LocalVarDecl : public QInst
+struct QInst_LocalVarDecl
 {
-    QValue* loc;
+    QValue loc;
     std::string name;
 };
 
 // QInst_Store(lv, v)
-class QInst_Store : public QInst
+struct QInst_Store
 {
-    QValue* loc;
-    QValue* value;
-
-public:
-    QInst_Store(QValue* loc, QValue* value)
-        : loc{loc}, value{value} { }
+    QValue loc;
+    QValue value;
 };
 
 // QInst_Load(v, lv)
-class QInst_Load : public QInst
+struct QInst_Load
 {
-    QValue* value;
-    QValue* loc;
-
-public:
-    QInst_Load(QValue* value, QValue* loc)
-        : value{value}, loc{loc} {}
+    QValue value;
+    QValue loc;
 };
 
-class QJumpInst_CondJump : public QInst, public QJumpInst
+struct QInst_Alloc
 {
-
+    QValue loc;
+    size_t size;
 };
 
-class QJumpInst_Jump : public QInst, public QJumpInst
+// class, struct, interface 구분 없이 Call
+struct QInst_Call
 {
-
+    RFuncDecl* funcDecl;
+    std::vector<QValue> args;
 };
 
+struct QInst_Return
+{
+};
+
+enum struct QInst_IntrinsicKind
+{   
+    DebugPrint_Items,
+
+    NewList_Items,
+    GetListIterator_List,
+    LogicalNot_Bool,
+    UnaryMinus_Int,
+    ToString_Bool,
+    ToString_Int,
+
+    PrefixInc_Int,
+    PrefixDec_Int,
+    PostfixInc_Int,
+    PostfixDec_Int,
+
+    Multiply_Int_Int,
+    Divide_Int_Int,
+    Modulo_Int_Int,
+    Add_Int_Int,
+    Add_String_String,
+    Subtract_Int_Int,
+    LessThan_Int_Int,
+    LessThan_String_String,
+    GreaterThan_Int_Int,
+    GreaterThan_String_String,
+    LessThanOrEqual_Int_Int,
+    LessThanOrEqual_String_String,
+    GreaterThanOrEqual_Int_Int,
+    GreaterThanOrEqual_String_String,
+    Equal_Int_Int,
+    Equal_Bool_Bool,
+    Equal_String_String,
+};
+
+struct QInst_Intrinsic
+{
+    QInst_IntrinsicKind kind;
+    std::optional<QValue> result;
+    std::vector<QValue> args;
+
+    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QValue>&& result, std::vector<QValue>&& args)
+        : kind{kind}, result{std::move(result)}, args{std::move(args)}
+    {
+    }
+};
+
+struct QInst_CondJump
+{
+    QValue value;
+    QBlock* trueBlock;
+    QBlock* falseBlock;
+};
+
+struct QInst_Jump
+{
+    QBlock* block;
+};
+
+using QInst = std::variant<
+    QInst_LocalVarDecl,
+    QInst_Store,
+    QInst_Load,
+    QInst_Alloc,
+    QInst_Call,
+    QInst_Intrinsic,
+    QInst_CondJump,
+    QInst_Jump,
+    QInst_Return
+>;
+
+using QJumpInst = std::variant<
+    QInst_CondJump,
+    QInst_Jump,
+    QInst_Return
+>;
 
 } // namespace Citron

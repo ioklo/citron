@@ -137,18 +137,18 @@ RType* MExp_IntLiteral::GetType(RFactory& factory)
     return factory.MakeIntType();
 }
 
-NTextStringExpElement::NTextStringExpElement(const string& text)
-    : text(text)
+MExp_StringElem_Text::MExp_StringElem_Text(const string& text)
+    : text{text}
 {
 }
 
-NLocStringExpElement::NLocStringExpElement(MLoc* loc)
-    : loc(loc)
+MExp_StringElem_Exp::MExp_StringElem_Exp(MExp* mExp)
+    : mExp{mExp}
 {
 
 }
 
-MExp_String::MExp_String(vector<NStringExpElement>&& elements)
+MExp_String::MExp_String(vector<MExp_StringElem>&& elements)
     : elements(move(elements))
 {
 }
@@ -175,10 +175,10 @@ MExp_ListIterator::MExp_ListIterator(MLoc* listLoc, RType* iteratorType)
 
 RType* MExp_ListIterator::GetType(RFactory& factory)
 {
-    return type;
+    return iteratorType;
 }
 
-MExp_CallInternalUnaryOperator::MExp_CallInternalUnaryOperator(NInternalUnaryOperator op, MExp* operand)
+MExp_CallInternalUnaryOperator::MExp_CallInternalUnaryOperator(MInternalUnaryOperator op, MExp* operand)
     : op{op}, operand{operand}
 {
 }
@@ -187,16 +187,16 @@ RType* MExp_CallInternalUnaryOperator::GetType(RFactory& factory)
 {
     switch (op)
     {
-    case NInternalUnaryOperator::LogicalNot_Bool_Bool: return factory.MakeBoolType();
-    case NInternalUnaryOperator::UnaryMinus_Int_Int: return factory.MakeIntType();
-    case NInternalUnaryOperator::ToString_Bool_String: return factory.MakeStringType();
-    case NInternalUnaryOperator::ToString_Int_String: return factory.MakeStringType();
+    case MInternalUnaryOperator::LogicalNot_Bool_Bool: return factory.MakeBoolType();
+    case MInternalUnaryOperator::UnaryMinus_Int_Int: return factory.MakeIntType();
+    case MInternalUnaryOperator::ToString_Bool_String: return factory.MakeStringType();
+    case MInternalUnaryOperator::ToString_Int_String: return factory.MakeStringType();
     }
 
     unreachable();
 }
 
-MExp_CallInternalUnaryAssignOperator::MExp_CallInternalUnaryAssignOperator(NInternalUnaryAssignOperator op, MLoc* operand)
+MExp_CallInternalUnaryAssignOperator::MExp_CallInternalUnaryAssignOperator(MInternalUnaryAssignOperator op, MLoc* operand)
     : op{op}, operand{operand}
 {
 }
@@ -205,17 +205,17 @@ RType* MExp_CallInternalUnaryAssignOperator::GetType(RFactory& factory)
 {
     switch(op)
     {
-    case NInternalUnaryAssignOperator::PrefixInc_Int_Int:
-    case NInternalUnaryAssignOperator::PrefixDec_Int_Int:
-    case NInternalUnaryAssignOperator::PostfixInc_Int_Int:
-    case NInternalUnaryAssignOperator::PostfixDec_Int_Int:
+    case MInternalUnaryAssignOperator::PrefixInc_Int_Int:
+    case MInternalUnaryAssignOperator::PrefixDec_Int_Int:
+    case MInternalUnaryAssignOperator::PostfixInc_Int_Int:
+    case MInternalUnaryAssignOperator::PostfixDec_Int_Int:
         return factory.MakeIntType();
     }
 
     unreachable();
 }
 
-MExp_CallInternalBinaryOperator::MExp_CallInternalBinaryOperator(NInternalBinaryOperator op, MExp* operand0, MExp* operand1)
+MExp_CallInternalBinaryOperator::MExp_CallInternalBinaryOperator(MInternalBinaryOperator op, MExp* operand0, MExp* operand1)
     : op(op), operand0(operand0), operand1(operand1)
 {
 }
@@ -224,29 +224,29 @@ RType* MExp_CallInternalBinaryOperator::GetType(RFactory& factory)
 {
     switch(op)
     {
-        case NInternalBinaryOperator::Multiply_Int_Int_Int:
-        case NInternalBinaryOperator::Divide_Int_Int_Int:
-        case NInternalBinaryOperator::Modulo_Int_Int_Int:
-        case NInternalBinaryOperator::Add_Int_Int_Int:
+        case MInternalBinaryOperator::Multiply_Int_Int_Int:
+        case MInternalBinaryOperator::Divide_Int_Int_Int:
+        case MInternalBinaryOperator::Modulo_Int_Int_Int:
+        case MInternalBinaryOperator::Add_Int_Int_Int:
             return factory.MakeIntType();
 
-        case NInternalBinaryOperator::Add_String_String_String:
+        case MInternalBinaryOperator::Add_String_String_String:
             return factory.MakeStringType();
 
-        case NInternalBinaryOperator::Subtract_Int_Int_Int:
+        case MInternalBinaryOperator::Subtract_Int_Int_Int:
             return factory.MakeIntType();
 
-        case NInternalBinaryOperator::LessThan_Int_Int_Bool:
-        case NInternalBinaryOperator::LessThan_String_String_Bool:
-        case NInternalBinaryOperator::GreaterThan_Int_Int_Bool:
-        case NInternalBinaryOperator::GreaterThan_String_String_Bool:
-        case NInternalBinaryOperator::LessThanOrEqual_Int_Int_Bool:
-        case NInternalBinaryOperator::LessThanOrEqual_String_String_Bool:
-        case NInternalBinaryOperator::GreaterThanOrEqual_Int_Int_Bool:
-        case NInternalBinaryOperator::GreaterThanOrEqual_String_String_Bool:
-        case NInternalBinaryOperator::Equal_Int_Int_Bool:
-        case NInternalBinaryOperator::Equal_Bool_Bool_Bool:
-        case NInternalBinaryOperator::Equal_String_String_Bool:
+        case MInternalBinaryOperator::LessThan_Int_Int_Bool:
+        case MInternalBinaryOperator::LessThan_String_String_Bool:
+        case MInternalBinaryOperator::GreaterThan_Int_Int_Bool:
+        case MInternalBinaryOperator::GreaterThan_String_String_Bool:
+        case MInternalBinaryOperator::LessThanOrEqual_Int_Int_Bool:
+        case MInternalBinaryOperator::LessThanOrEqual_String_String_Bool:
+        case MInternalBinaryOperator::GreaterThanOrEqual_Int_Int_Bool:
+        case MInternalBinaryOperator::GreaterThanOrEqual_String_String_Bool:
+        case MInternalBinaryOperator::Equal_Int_Int_Bool:
+        case MInternalBinaryOperator::Equal_Bool_Bool_Bool:
+        case MInternalBinaryOperator::Equal_String_String_Bool:
             return factory.MakeBoolType();
         default:
             unreachable();

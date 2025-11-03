@@ -289,34 +289,34 @@ public:
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
-class NTextStringExpElement
+class MExp_StringElem_Text
 {
 public:
     std::string text;
 
 public:
-    MIR_API NTextStringExpElement(const std::string& text);
+    MIR_API MExp_StringElem_Text(const std::string& text);
 };
 
-class NLocStringExpElement
+class MExp_StringElem_Exp
 {
 public:
-    MLoc* loc;
+    MExp* mExp;
 
 public:
-    MIR_API NLocStringExpElement(MLoc* loc);
+    MIR_API MExp_StringElem_Exp(MExp* mExp);
 };
 
-using NStringExpElement = std::variant<NTextStringExpElement, NLocStringExpElement>;
+using MExp_StringElem = std::variant<MExp_StringElem_Text, MExp_StringElem_Exp>;
 
 // "dskfjslkf $abc "
 class MExp_String : public MExp
 {
 public:
-    std::vector<NStringExpElement> elements;
+    std::vector<MExp_StringElem> elements;
 
 public:
-    MIR_API MExp_String(std::vector<NStringExpElement>&& elements);
+    MIR_API MExp_String(std::vector<MExp_StringElem>&& elements);
 
     MIR_API RType* GetType(RFactory& factory) override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -344,9 +344,9 @@ class MExp_ListIterator : public MExp
 {
 public:
     MLoc* listLoc;
-    RType* type;
+    RType* iteratorType;
 public:
-    MIR_API MExp_ListIterator(MLoc* listLoc, RType* type);
+    MIR_API MExp_ListIterator(MLoc* listLoc, RType* iteratorType);
 
     MIR_API RType* GetType(RFactory& factory) override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -356,7 +356,7 @@ public:
 
 #pragma region Call Internal
 
-enum class NInternalUnaryOperator
+enum class MInternalUnaryOperator
 {
     LogicalNot_Bool_Bool,
     UnaryMinus_Int_Int,
@@ -365,7 +365,7 @@ enum class NInternalUnaryOperator
     ToString_Int_String,
 };
 
-enum class NInternalUnaryAssignOperator
+enum class MInternalUnaryAssignOperator
 {
     PrefixInc_Int_Int,
     PrefixDec_Int_Int,
@@ -373,7 +373,7 @@ enum class NInternalUnaryAssignOperator
     PostfixDec_Int_Int,
 };
 
-enum class NInternalBinaryOperator
+enum class MInternalBinaryOperator
 {
     Multiply_Int_Int_Int,
     Divide_Int_Int_Int,
@@ -397,10 +397,10 @@ enum class NInternalBinaryOperator
 class MExp_CallInternalUnaryOperator : public MExp
 {
 public:
-    NInternalUnaryOperator op;
+    MInternalUnaryOperator op;
     MExp* operand;
 public:
-    MIR_API MExp_CallInternalUnaryOperator(NInternalUnaryOperator op, MExp* operand);
+    MIR_API MExp_CallInternalUnaryOperator(MInternalUnaryOperator op, MExp* operand);
 
     MIR_API RType* GetType(RFactory& factory) override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -409,10 +409,10 @@ public:
 class MExp_CallInternalUnaryAssignOperator : public MExp
 {
 public:
-    NInternalUnaryAssignOperator op;
+    MInternalUnaryAssignOperator op;
     MLoc* operand;
 public:
-    MIR_API MExp_CallInternalUnaryAssignOperator(NInternalUnaryAssignOperator op, MLoc* operand);
+    MIR_API MExp_CallInternalUnaryAssignOperator(MInternalUnaryAssignOperator op, MLoc* operand);
 
     MIR_API RType* GetType(RFactory& factory) override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -421,11 +421,11 @@ public:
 class MExp_CallInternalBinaryOperator : public MExp
 {
 public:
-    NInternalBinaryOperator op;
+    MInternalBinaryOperator op;
     MExp* operand0;
     MExp* operand1;
 public:
-    MIR_API MExp_CallInternalBinaryOperator(NInternalBinaryOperator op, MExp* operand0, MExp* operand1);
+    MIR_API MExp_CallInternalBinaryOperator(MInternalBinaryOperator op, MExp* operand0, MExp* operand1);
 
     MIR_API RType* GetType(RFactory& factory) override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }

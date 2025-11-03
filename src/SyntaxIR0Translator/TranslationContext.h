@@ -56,9 +56,6 @@ using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 class BinOpQueryService;
 using BinOpQueryServicePtr = std::shared_ptr<BinOpQueryService>;
 
-class TranslationContext;
-using TranslationContextPtr = std::shared_ptr<TranslationContext>;
-
 struct NLambdaDeclAndArgs
 {
     NLambdaDecl* decl;

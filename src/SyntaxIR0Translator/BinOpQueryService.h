@@ -9,7 +9,7 @@ namespace Citron {
 
 class RFactory;
 class RType;
-enum class NInternalBinaryOperator;
+enum class MInternalBinaryOperator;
 
 namespace SyntaxIR0Translator {
 
@@ -18,9 +18,9 @@ struct BinOpInfo
     RType* operandType0;
     RType* operandType1;
     RType* resultType;
-    NInternalBinaryOperator rOperator;
+    MInternalBinaryOperator rOperator;
 
-    BinOpInfo(RType* operandType0, RType* operandType1, RType* resultType, NInternalBinaryOperator rOperator);
+    BinOpInfo(RType* operandType0, RType* operandType1, RType* resultType, MInternalBinaryOperator rOperator);
 };
 
 class BinOpQueryService

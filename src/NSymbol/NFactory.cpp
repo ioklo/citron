@@ -12,6 +12,11 @@ using namespace std;
 
 namespace Citron {
 
+NFactory::NFactory(RFactory* rFactory)
+    : rFactory{rFactory}
+{
+}
+
 NModule* NFactory::MakeNModule(string&& name)
 {
     auto nModule = make_unique<NModule>(move(name));

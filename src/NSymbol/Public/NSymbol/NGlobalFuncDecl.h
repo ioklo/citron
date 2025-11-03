@@ -3,6 +3,7 @@
 #include "NSymbolConfig.h"
 #include <vector>
 #include <optional>
+#include <string>
 
 #include "NDecl.h"
 #include "NFuncDecl.h"
@@ -30,6 +31,8 @@ public:
     RName name;
 
 public:
+    NSYMBOL_API NGlobalFuncDecl(NNamespaceDecl* outer, RAccessor accessor, bool bStatic, bool bSeqFunc, RName&& name, std::vector<std::string>&& typeParams);
+
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NDecl* GetNOuter() override;
@@ -53,7 +56,14 @@ public:
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     // from RFuncDecl
+    // virtual RDecl* GetRDecl() = 0;
+    bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
     size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
+    size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
+    RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
+    RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs, factory); }
+    RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory) { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index, factory); }
+    // virtual void Accept(RFuncDeclVisitor& visitor) = 0;
 
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }

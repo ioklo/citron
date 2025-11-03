@@ -16,74 +16,74 @@ namespace Citron::IR0IR1Translator {
 class MStmtQInstsTranslator
 {
 public:
-    using ResultType = expected<QBlock*, DiagPtr>;
+    using ResultType = expected<void, DiagPtr>;
     
 private:
-    QBlock* block;
-    QBodyContext* bodyContext;
-    QFactory* factory;
+    QBodyContext& qBodyContext;
 
 public:
-    MStmtQInstsTranslator(QBlock* block, QBodyContext* bodyContext, QFactory* factory)
-        : block{block}, bodyContext{bodyContext}, factory{factory} { }
+    MStmtQInstsTranslator(QBodyContext& qBodyContext)
+        : qBodyContext{qBodyContext} { }
 
     // command는 일단 넘깁시다
     ResultType Visit(MStmt_Command* stmt)
     {
         throw NotImplementedException{};
     }
+
     ResultType Visit(MStmt_LocalVarDecl* stmt)
     {
         throw NotImplementedException{};
     }
+
     ResultType Visit(MStmt_If* stmt)
     {
         // 1. stmt.cond
-        auto eCondV = TranslateMExpToQInsts(stmt->cond, block, bodyContext, factory);
+        auto eCondV = TranslateMExpToQInsts(stmt->cond, qBodyContext);
         if (!eCondV) return unexpected{eCondV.error()};
 
         if (!stmt->elseBody.empty())
         {
             // 2. add three blocks
-            auto* trueBlock = bodyContext->AddBlock("if_true"); // debug label, b23_if_true
-            auto* falseBlock = bodyContext->AddBlock("if_false");
-            auto* endBlock = bodyContext->AddBlock("if_end");
+            auto* trueBlock = qBodyContext.AddBlock("if_true"); // debug label, b23_if_true
+            auto* falseBlock = qBodyContext.AddBlock("if_false");
+            auto* endBlock = qBodyContext.AddBlock("if_end");
 
             // 3. add conditional jump
-            auto* condJumpInst = factory->MakeQJumpInst_CondJump(*eCondV, trueBlock, falseBlock);
-            block->SetTerminator(condJumpInst);
+            qBodyContext.SetTerminator<QInst_CondJump>(*eCondV, trueBlock, falseBlock);
 
             // 4. fill trueBlock
-            auto eNewTrueBlock = TranslateMStmtsToQInsts(stmt->body, trueBlock, bodyContext, factory);
-            if (!eNewTrueBlock) return unexpected{eNewTrueBlock.error()};
-            auto* trueTerminator = factory->MakeQJumpInst_Jump(endBlock);
-            (*eNewTrueBlock)->SetTerminator(trueTerminator);
+            qBodyContext.SetCurBlock(trueBlock);
+            auto eTrueResult = TranslateMStmtsToQInsts(stmt->body, qBodyContext);
+            if (!eTrueResult) return unexpected{eTrueResult.error()};
+            qBodyContext.SetTerminator<QInst_Jump>(endBlock);
 
             // 5. fill falseBlock
-            auto eNewFalseBlock = TranslateMStmtsToQInsts(stmt->elseBody, falseBlock, bodyContext, factory);
-            if (!eNewFalseBlock) return unexpected{eNewFalseBlock.error()};
-            auto* falseTerminator = factory->MakeQJumpInst_Jump(endBlock);
-            (*eNewFalseBlock)->SetTerminator(falseTerminator);
+            qBodyContext.SetCurBlock(falseBlock);
+            auto eFalseResult = TranslateMStmtsToQInsts(stmt->elseBody, qBodyContext);
+            if (!eFalseResult) return unexpected{eFalseResult.error()};
+            qBodyContext.SetTerminator<QInst_Jump>(endBlock);
 
-            return endBlock;
+            qBodyContext.SetCurBlock(endBlock);
+            return {};
         }
         else
         {
             // 2. add three blocks
-            auto* trueBlock = bodyContext->AddBlock("if_true"); // debug label, b23_if_true
-            auto* endBlock = bodyContext->AddBlock("if_end");
+            auto* trueBlock = qBodyContext.AddBlock("if_true"); // debug label, b23_if_true
+            auto* endBlock = qBodyContext.AddBlock("if_end");
 
             // 3. add conditional jump
-            auto* condJumpInst = factory->MakeQJumpInst_CondJump(*eCondV, trueBlock, endBlock);
-            block->SetTerminator(condJumpInst);
+            qBodyContext.SetTerminator<QInst_CondJump>(*eCondV, trueBlock, endBlock);
 
             // 4. fill trueBlock
-            auto eNewTrueBlock = TranslateMStmtsToQInsts(stmt->body, trueBlock, bodyContext, factory);
+            qBodyContext.SetCurBlock(trueBlock);
+            auto eNewTrueBlock = TranslateMStmtsToQInsts(stmt->body, qBodyContext);
             if (!eNewTrueBlock) return unexpected{eNewTrueBlock.error()};
-            auto* trueTerminator = factory->MakeQJumpInst_Jump(endBlock);
-            (*eNewTrueBlock)->SetTerminator(trueTerminator);
+            qBodyContext.SetTerminator<QInst_Jump>(endBlock);
 
-            return endBlock;
+            qBodyContext.SetCurBlock(endBlock);
+            return {};
         }
     }
     ResultType Visit(MStmt_IfNullableRefTest* stmt)
@@ -176,9 +176,20 @@ public:
     }
 };
 
-expected<QBlock*, DiagPtr> TranslateMStmtToQInsts(MStmt* nStmt, QBlock* block, QBodyContext* bodyContext, QFactory* factory)
+expected<void, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, QBodyContext& qBodyContext)
 {
-    MStmtQInstsTranslator translator{block, bodyContext, factory};
-    return Accept(translator, nStmt);
+    for(auto* mStmt : mStmts)
+    {
+        auto eResult = TranslateMStmtToQInsts(mStmt, qBodyContext);
+        if (!eResult) return unexpected{eResult.error()};
+    }
+
+    return {};
+}
+
+expected<void, DiagPtr> TranslateMStmtToQInsts(MStmt* mStmt, QBodyContext& qBodyContext)
+{
+    MStmtQInstsTranslator translator{qBodyContext};
+    return Accept(translator, mStmt);
 }
 } // namespace Citron::IIR0IR1Translator

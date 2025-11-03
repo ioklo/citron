@@ -4,24 +4,37 @@
 #include "QIR/QFactory.h"
 #include "Logging/Diag.h"
 
+#include "MIR/MData.h"
+
+#include "MStmtQInstsTranslation.h"
+
 using namespace std;
 
 namespace Citron {
 
-// L M N O P Q R S T U
+expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, QFactoryPtr& factory)
+{   
+    QBodyContext qBodyContext{};
 
-// Module M
-// IR0 R, N
-// IR1 Q 만으로 해보자
+    // BodyContext를 하나 만들고,
+    QBodyContext qBodyContext{};
 
+    for (auto* mStmt : body.stmts)
+    {
+        TranslateMStmtToQInsts(mStmt, )
+    }
 
+    return QFuncBody{};
+}
 
-// body만 바꾸면 되는데
-QModule* Translate(NModule* nModule, DiagPtr diag, QFactory* factory)
-{
-    // nModule에는 NBody가 들어있다. 그 body만 변환해서 QModule로 만들어서 돌려주기만 하면 된다
+expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, QFactoryPtr& qFactory)
+{   
+    QData* data = qFactory->MakeQData();
 
-
+    for (auto& funcBody : mData->GetAllFuncBodies())
+    {
+        TranslateMFuncBodyToQFuncBody(funcBody, factory);
+    }
 
     return nullptr;
 }

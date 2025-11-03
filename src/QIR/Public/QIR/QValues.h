@@ -1,25 +1,35 @@
 #pragma once
+#include <string>
+#include <variant>
 
 namespace Citron {
 
 // 값을 지칭하는 구조
-class QValue
+struct QValue_Named
 {
-
+    std::string name;
 };
 
-class QValue_ConstBool : public QValue
+struct QValue_ConstBool
 {
     bool value;
-public:
-    QValue_ConstBool(bool value): value{value} { }
 };
 
-class QValue_ConstInteger : public QValue
+struct QValue_ConstInteger
 {
     int value;
-public:
-    QValue_ConstInteger(int value) : value{value} { }
 };
+
+struct QValue_String
+{
+    std::string value;
+};
+
+using QValue = std::variant<
+    QValue_Named, 
+    QValue_ConstBool,
+    QValue_ConstInteger,
+    QValue_String
+>;
 
 } // Citron
