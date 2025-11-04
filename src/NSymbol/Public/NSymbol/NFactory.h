@@ -1,8 +1,5 @@
 #pragma once
 #include "NSymbolConfig.h"
-#include "NModule.h"
-#include "NNamespaceDecl.h"
-#include "NDecl.h"
 
 #include <vector>
 #include <memory>
@@ -11,6 +8,9 @@
 namespace Citron {
 
 class RFactory;
+class NModule;
+class NNamespaceDecl;
+class NDecl;
 
 class NFactory
 {
@@ -22,6 +22,7 @@ class NFactory
 
 public:
     NSYMBOL_API NFactory(RFactory* rFactory);
+    NSYMBOL_API ~NFactory();
     NSYMBOL_API NModule* MakeNModule(std::string&& name);
 
     NSYMBOL_API NNamespaceDecl* MakeRootNamespaceDecl(); // TU당 하나씩 만들어지는 namespace

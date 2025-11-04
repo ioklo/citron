@@ -2,10 +2,11 @@
 #include <expected>
 #include <memory>
 
+#include "QIR/QValues.h"
+
 namespace Citron {
 
 class MExp;
-class QValue;
 class QBlock;
 class QFactory;
 struct Diag;

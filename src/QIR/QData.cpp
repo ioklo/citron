@@ -10,6 +10,8 @@ QData::QData(vector<QFuncBody>&& bodies)
 {
 }
 
+QData::~QData() = default;
+
 span<QFuncBody> QData::GetAllBodies()
 {
     return bodies;

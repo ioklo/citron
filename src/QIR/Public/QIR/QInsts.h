@@ -119,9 +119,9 @@ using QInst = std::variant<
     QInst_Return
 >;
 
-using QJumpInst = std::variant<
-    QInst_CondJump,
+using QTermInst = std::variant<
     QInst_Jump,
+    QInst_CondJump, // 완전 CondJump
     QInst_Return
 >;
 

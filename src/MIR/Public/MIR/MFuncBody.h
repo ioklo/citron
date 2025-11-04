@@ -8,7 +8,7 @@ class MStmt;
 
 struct MFuncBody
 {
-    NFuncDecl* funcDecl;
+    NFuncDecl* nFuncDecl;
     std::vector<MStmt*> stmts;
 };
 

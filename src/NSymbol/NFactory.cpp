@@ -17,6 +17,8 @@ NFactory::NFactory(RFactory* rFactory)
 {
 }
 
+NFactory::~NFactory() = default;
+
 NModule* NFactory::MakeNModule(string&& name)
 {
     auto nModule = make_unique<NModule>(move(name));

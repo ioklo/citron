@@ -14,6 +14,7 @@ class QData
 
 public:
     QIR_API QData(std::vector<QFuncBody>&& bodies);
+    QIR_API ~QData();
     QIR_API std::span<QFuncBody> GetAllBodies();
 };
 

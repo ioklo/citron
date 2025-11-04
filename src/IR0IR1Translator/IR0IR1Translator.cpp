@@ -1,42 +1,53 @@
 #include "IR0IR1Translator.h"
 
-#include "NSymbol/NModule.h"
-#include "QIR/QFactory.h"
+#include "Infra/Expected.h"
 #include "Logging/Diag.h"
 
+#include "NSymbol/NModule.h"
 #include "MIR/MData.h"
+#include "QIR/QFactory.h"
+#include "QIR/QFuncBody.h"
 
 #include "MStmtQInstsTranslation.h"
+#include "QBodyContext.h"
 
 using namespace std;
+using namespace Citron::IR0IR1Translator;
 
 namespace Citron {
+namespace {
 
-expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, QFactoryPtr& factory)
+expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, QFactoryPtr& qFactory)
 {   
-    QBodyContext qBodyContext{};
+    QBodyContext qBodyContext{qFactory};
 
-    // BodyContext를 하나 만들고,
-    QBodyContext qBodyContext{};
-
-    for (auto* mStmt : body.stmts)
-    {
-        TranslateMStmtToQInsts(mStmt, )
+    for (auto* mStmt : mFuncBody.stmts)
+    {   
+        auto eResult = TranslateMStmtToQInsts(mStmt, qBodyContext);
+        RETURN_ON_ERROR(eResult);
     }
 
-    return QFuncBody{};
+    qBodyContext.Verify();
+    return QFuncBody{mFuncBody.nFuncDecl, qBodyContext.GetEntryBlock()};
 }
+
+} // namespace
 
 expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, QFactoryPtr& qFactory)
 {   
-    QData* data = qFactory->MakeQData();
+    std::vector<QFuncBody> qFuncBodies;
+    auto mFuncBodies = mData->GetAllFuncBodies();
 
-    for (auto& funcBody : mData->GetAllFuncBodies())
+    qFuncBodies.reserve(mFuncBodies.size());
+    for (auto& mFuncBody : mFuncBodies)
     {
-        TranslateMFuncBodyToQFuncBody(funcBody, factory);
+        auto eQFuncBody = TranslateMFuncBodyToQFuncBody(mFuncBody, qFactory);
+        RETURN_ON_ERROR(eQFuncBody);
+
+        qFuncBodies.push_back(std::move(*eQFuncBody));
     }
 
-    return nullptr;
+    return qFactory->MakeQData(move(qFuncBodies));
 }
 
 } // namespace Citron

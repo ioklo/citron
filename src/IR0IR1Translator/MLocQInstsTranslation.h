@@ -2,17 +2,16 @@
 #include <expected>
 #include <memory>
 
+#include "QIR/QValues.h"
+
 namespace Citron {
 
 struct Diag;
 using DiagPtr = std::shared_ptr<Diag>;
 
 class MLoc;
-
-class QValue;
 class QBlock;
 class QFactory;
-
 
 namespace IR0IR1Translator {
 class QBodyContext;

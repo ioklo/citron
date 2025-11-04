@@ -50,19 +50,19 @@ public:
             auto* endBlock = qBodyContext.AddBlock("if_end");
 
             // 3. add conditional jump
-            qBodyContext.SetTerminator<QInst_CondJump>(*eCondV, trueBlock, falseBlock);
+            qBodyContext.CompleteBlock(QInst_CondJump{*eCondV, trueBlock, falseBlock});
 
             // 4. fill trueBlock
             qBodyContext.SetCurBlock(trueBlock);
             auto eTrueResult = TranslateMStmtsToQInsts(stmt->body, qBodyContext);
             if (!eTrueResult) return unexpected{eTrueResult.error()};
-            qBodyContext.SetTerminator<QInst_Jump>(endBlock);
+            qBodyContext.CompleteBlock(QInst_Jump{endBlock});
 
             // 5. fill falseBlock
             qBodyContext.SetCurBlock(falseBlock);
             auto eFalseResult = TranslateMStmtsToQInsts(stmt->elseBody, qBodyContext);
             if (!eFalseResult) return unexpected{eFalseResult.error()};
-            qBodyContext.SetTerminator<QInst_Jump>(endBlock);
+            qBodyContext.CompleteBlock(QInst_Jump{endBlock});
 
             qBodyContext.SetCurBlock(endBlock);
             return {};
@@ -74,13 +74,13 @@ public:
             auto* endBlock = qBodyContext.AddBlock("if_end");
 
             // 3. add conditional jump
-            qBodyContext.SetTerminator<QInst_CondJump>(*eCondV, trueBlock, endBlock);
+            qBodyContext.CompleteBlock(QInst_CondJump{*eCondV, trueBlock, endBlock});
 
             // 4. fill trueBlock
             qBodyContext.SetCurBlock(trueBlock);
             auto eNewTrueBlock = TranslateMStmtsToQInsts(stmt->body, qBodyContext);
             if (!eNewTrueBlock) return unexpected{eNewTrueBlock.error()};
-            qBodyContext.SetTerminator<QInst_Jump>(endBlock);
+            qBodyContext.CompleteBlock(QInst_Jump{endBlock});
 
             qBodyContext.SetCurBlock(endBlock);
             return {};

@@ -3,14 +3,23 @@
 #include <memory>
 
 #include "QBlock.h"
+#include "QData.h"
 
 using namespace std;
 
 namespace Citron {
 
-QBlock* QFactory::MakeQBlock()
+QData* QFactory::MakeQData(std::vector<QFuncBody>&& body)
 {
-    auto block = make_unique<QBlock>();
+    auto data = make_unique<QData>(std::move(body));
+    auto* pData = data.get();
+    dataList.push_back(std::move(data));
+    return pData;
+}
+
+QBlock* QFactory::MakeQBlock(std::string&& debugText)
+{
+    auto block = make_unique<QBlock>(std::move(debugText));
     auto* pBlock = block.get();
     blocks.push_back(std::move(block));
     return pBlock;

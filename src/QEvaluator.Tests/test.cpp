@@ -1,4 +1,6 @@
-#include "pch.h"
+#include <gtest/gtest.h>
+
+#include "RSymbol/RModule.h"
 #include "RSymbol/RFactory.h"
 #include "NSymbol/NFactory.h"
 #include "NSymbol/NGlobalFuncDecl.h"
@@ -33,12 +35,12 @@ TEST(QEvaluator, DebugPrint_PrintWell)
         RName_Normal{"main"}, 
         /*typeParams*/vector<string>{});
 
-    auto* qEntryBlock = qFactory.MakeQBlock();
+    auto* qEntryBlock = qFactory.MakeQBlock("entry");
     std::vector<QValue> args{QValue_ConstInteger{1}};
 
     QInst_Intrinsic inst{QInst_IntrinsicKind::DebugPrint_Items, nullopt, move(args)};
     qEntryBlock->AddInst(inst);
-    qEntryBlock->SetTerminator(QInst_Return{});
+    qEntryBlock->AddInst(QInst_Return{});
 
     std::vector<QFuncBody> funcBodies;
     funcBodies.emplace_back(nEntry, qEntryBlock);
@@ -46,4 +48,8 @@ TEST(QEvaluator, DebugPrint_PrintWell)
 
     auto eResult = Evaluate({}, qData, nEntry);
     EXPECT_TRUE(eResult);
+}
+
+TEST(QEvaluator, Translate)
+{   
 }

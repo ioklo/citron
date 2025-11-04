@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
 #include "Infra/Variants.h"
 #include "Infra/Unreachable.h"
 
@@ -16,8 +17,6 @@
 
 #include "MLocQInstsTranslation.h"
 #include "QBodyContext.h"
-
-#define RETURN_ON_ERROR(e) { if (!e) return unexpected{std::move(e).error()}; }
 
 using namespace std;
 
@@ -44,9 +43,9 @@ public:
         RETURN_ON_ERROR(eLV);
 
         // 새로운 value 도입
-        auto* v = qBodyContext.NewValue();
-        qBodyContext.Add<QInst_Load>(v, *eLV);
-        return v;
+        auto lv = qBodyContext.NewValue();
+        qBodyContext.AddInst(QInst_Load{lv, *eLV});
+        return lv;
     }
 
     // Assign(loc dest, src exp)
@@ -60,7 +59,7 @@ public:
         auto eV = TranslateMExpToQInsts(exp->src, qBodyContext);
         RETURN_ON_ERROR(eV);
 
-        qBodyContext.Add<QInst_Store>(*eLV, *eV);
+        qBodyContext.AddInst(QInst_Store{*eLV, *eV});
 
         // src를 평가한 값을 그대로 리턴
         return eV;
@@ -73,16 +72,16 @@ public:
     ResultType Visit(MExp_Box* exp)
     {
         // 1. alloc, size
-        auto* lv = qBodyContext.NewValue();
+        auto lv = qBodyContext.NewValue();
         size_t size = qBodyContext.GetExpTypeSize(exp->innerExp);
-        qBodyContext.Add<QInst_Alloc>(lv, size);
+        qBodyContext.AddInst(QInst_Alloc{lv, size});
 
         // 2. exp
         auto eQValue = TranslateMExpToQInsts(exp->innerExp, qBodyContext);
         RETURN_ON_ERROR(eQValue);
 
         // 3. 저장
-        qBodyContext.Add<QInst_Store>(lv, *eQValue);
+        qBodyContext.AddInst(QInst_Store{lv, *eQValue});
         return *eQValue;
     }
     
@@ -105,12 +104,12 @@ public:
 
     ResultType Visit(MExp_BoolLiteral* exp)
     {
-        return qBodyContext.Make<QValue_ConstBool>(exp->value);
+        return QValue_ConstBool{exp->value};
     }
 
     ResultType Visit(MExp_IntLiteral* exp)
     {
-        return qBodyContext.Make<QValue_ConstInteger>(exp->value);
+        return QValue_ConstInteger{exp->value};
     }
 
     ResultType Visit(MExp_String* exp)
@@ -120,7 +119,7 @@ public:
         for(auto& elem : exp->elements)
         {
             auto eValueResult = visit(overloaded{
-                [this](MExp_StringElem_Text& textElem) { return expected<QValue, DiagPtr>{qBodyContext.Make<QValue_String>(textElem.text)}; },
+                [this](MExp_StringElem_Text& textElem) { return expected<QValue, DiagPtr>{QValue_String{textElem.text}}; },
                 [this](MExp_StringElem_Exp& expElem) { return TranslateMExpToQInsts(expElem.mExp, qBodyContext); }
             }, elem);
             RETURN_ON_ERROR(eValueResult);
@@ -138,7 +137,7 @@ public:
         }
 
         assert(curValue);
-        return curValue;
+        return *curValue;
     }
 
     ResultType Visit(MExp_List* exp) 
@@ -154,7 +153,7 @@ public:
             items.push_back(*eItem);
         }
 
-        auto* result = qBodyContext.AddIntrinsic(QInst_IntrinsicKind::NewList_Items, std::move(items));
+        auto result = qBodyContext.AddIntrinsic(QInst_IntrinsicKind::NewList_Items, std::move(items));
         return result;
     }
 
@@ -163,7 +162,7 @@ public:
         auto eLV = TranslateMLocToQInsts(exp->listLoc, qBodyContext);
         RETURN_ON_ERROR(eLV);
 
-        auto* result = qBodyContext.AddIntrinsic(QInst_IntrinsicKind::GetListIterator_List, {*eLV});
+        auto result = qBodyContext.AddIntrinsic(QInst_IntrinsicKind::GetListIterator_List, {*eLV});
         return result;
     }
 
@@ -248,7 +247,7 @@ public:
         for(auto& arg : exp->args)
         {
             visit(overloaded{
-                [](MArgument_Normal& normalArg) 
+                [this](MArgument_Normal& normalArg) 
                 {
                     TranslateMExpToQInsts(normalArg.exp, qBodyContext);
                 },
@@ -261,7 +260,7 @@ public:
             }, arg);
         }
         throw NotImplementedException{};
-        // qBodyContext.Add<QInst_Call>(exp->funcDecl, 
+        // qBodyContext.AddInst(QInst_Call{exp->funcDecl, }
     }
 
     ResultType Visit(MExp_NewClass* exp) { throw NotImplementedException{}; }
