@@ -108,7 +108,7 @@ vector<tuple<string, path, bool, path>> GetFiles(path p)
 
 void GenerateScriptParserTests(path inputPath, path srcPath)
 {
-    // input/ScriptParserTests
+    // TestData/ScriptParserTests
     path testsPath = inputPath;
     testsPath.append("ScriptParserTests");
 
