@@ -5,6 +5,7 @@ LocalVarRefExp(Loc inner)
 
 %%BEGIN_EMBED(Local_Variable_Reference_Expression_Basic)%%
 ```cs
+//@ 3
 void Main()
 {
     int s = 3;
@@ -17,6 +18,7 @@ void Main()
 
 %%BEGIN_EMBED(Local_Variable_Reference_Expression_Nested)%%
 ```cs
+//@ 4
 void Main()
 {
 	int s = 3;
@@ -30,6 +32,7 @@ void Main()
 
 %%BEGIN_EMBED(Local_Variable_Reference_Expression_Uninitialized)%%
 ```cs
+//@ $Error
 void Main()
 {
 	int i;       // uninitialized

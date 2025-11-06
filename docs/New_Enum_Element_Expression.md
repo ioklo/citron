@@ -10,7 +10,8 @@ NewEnumElemExp(EnumElemSymbol symbol, [Argument] args)
 ```
 
 %%BEGIN_EMBED(New_Enum_Element_Expression_Basic)%%
-```
+```cs
+//@ 
 enum E { First, Second(int i) }
 void Main()
 {
@@ -21,7 +22,8 @@ void Main()
 %%END_EMBED%%
 
 %%BEGIN_EMBED(New_Enum_Element_Expression_Shorthand)%%
-```
+```cs
+//@  
 enum E { First, Second(int i) }
 void Main()
 {

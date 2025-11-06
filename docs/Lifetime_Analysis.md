@@ -1,5 +1,6 @@
 %%BEGIN_EMBED(Lifetime_Analysis_ReturnLocalPointer)%%
 ```cs
+//@ 4
 int* F(int* i)
 {
     return i;
@@ -15,6 +16,7 @@ var* y = F(&x);
 
 %%BEGIN_EMBED(Lifetime_Analysis_StructThisLifeTime)%%
 ```cs
+//@ 4
 // 05 
 struct S
 {
@@ -36,6 +38,7 @@ var* x = s.GetX();
 
 %%BEGIN_EMBED(Lifetime_Analysis_CantReferenceEnumElemMemberVaraible)%%
 ```cs
+//@ $Error
 // $Error
 enum E
 {
@@ -74,6 +77,7 @@ void Main()
 
 %%BEGIN_EMBED(Lifetime_Analysis_StructMemberSequenceFunction)%%
 ```cs
+//@ $Error
 // $Error()
 
 struct S
@@ -102,6 +106,7 @@ void Main()
 
 %%BEGIN_EMBED(Lifetime_Analysis_PreventBox1)%%
 ```cs
+//@ $Error
 struct S
 {
     int x;
@@ -121,7 +126,8 @@ void Main()
 %%END_EMBED%%
 
 %%BEGIN_EMBED(Lifetime_Analysis_PreventBox2)%%
-```
+```cs
+//@ $Error
 struct S
 {
     seq int F(int* i)
@@ -142,6 +148,7 @@ void Main()
 
 %%BEGIN_EMBED(Lifetime_Analysis_PreventBox3)%%
 ```cs
+//@ $Error
 struct S
 {
     int x;
@@ -162,6 +169,7 @@ void Main()
 
 %%BEGIN_EMBED(Lifetime_Analysis_LocalPtrContainedLambda)%%
 ```cs
+//@ $Error
 void Main()
 {
     int i = 3;

@@ -1,5 +1,6 @@
 %%BEGIN_EMBED(Return_Statement_ControlFlow)%%
 ```cs
+//@ F
 void F()
 {    
     @F
@@ -19,6 +20,7 @@ void Main()
 
 %%BEGIN_EMBED(Return_Statement_ReturnValue)%%
 ```cs
+//@ F6
 int F(int i)
 {    
     @F
@@ -37,6 +39,7 @@ void Main()
 
 %%BEGIN_EMBED(Return_Statement_LambdaReturn)%%
 ```cs
+//@ 3
 void Main()
 {
     var f = () => {
@@ -50,6 +53,7 @@ void Main()
 
 %%BEGIN_EMBED(Return_Statement_SeqReturn)%%
 ```cs
+//@ 01234
 seq int F()
 {
     for(int i = 0; i < 10; i++)

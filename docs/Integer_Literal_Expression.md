@@ -5,7 +5,8 @@
 환경의 result에 int값을 넣습니다
 
 %%BEGIN_EMBED(Integer_Literal_Expression_Basic)%%
-```
+```cs
+//@ 123456
 void Main()
 {
 	@${123456}
@@ -14,7 +15,8 @@ void Main()
 %%END_EMBED%%
 
 %%BEGIN_EMBED(Integer_Literal_Expression_OverTheLimit)%%
-```
+```cs
+//@ $Error
 void Main()
 {
 	@${12345678901234567890123456789012345678901234567890}

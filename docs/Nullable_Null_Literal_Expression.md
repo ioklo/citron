@@ -11,6 +11,7 @@ NullableNullLiteralExp(Type innerType)
 
 %%BEGIN_EMBED(Nullable_Null_Literal_Expression_Basic)%%
 ```cs
+//@ 
 void Main()
 {
 	int? i = null;
@@ -20,6 +21,7 @@ void Main()
 
 %%BEGIN_EMBED(Nullable_Null_Literal_Expression_CantInferType)%%
 ```cs
+//@ $Error
 void Main()
 {
 	var? i = null;

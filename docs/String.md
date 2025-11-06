@@ -14,6 +14,7 @@
 
 %%BEGIN_EMBED(String_Basic)%%
 ```cs
+//@ hi hello world world true true false false onetwo true false true true false false true false true true
 void Main()
 {
     string s = "hi";

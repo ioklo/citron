@@ -10,6 +10,7 @@ ClassIsClassExp(Exp exp, ClassSymbol symbol)
 
 %%BEGIN_EMBED(Class_Is_Class_Expression_Basic)%%
 ```cs
+//@ true true
 class B { }
 class C : B { }
 
@@ -27,6 +28,7 @@ void Main()
 
 %%BEGIN_EMBED(Class_Is_Class_Expression_NotRelated)%%
 ```cs
+//@ false
 class C { }
 class D { }
 

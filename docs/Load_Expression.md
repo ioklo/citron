@@ -8,6 +8,7 @@ s-expression은 r-location 또는 r-expression으로 해석됩니다. 만약 r-l
 
 %%BEGIN_EMBED(Load_Expression_LoadLocalVar)%%
 ```cs
+//@ 1
 void Main()
 {
 	int a = 1;

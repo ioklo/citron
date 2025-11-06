@@ -10,6 +10,7 @@ NewStructExp(StructConstructorSymbol symbol, [Argument] args)
 
 %%BEGIN_EMBED(New_Struct_Expression_Basic)%%
 ```cs
+//@ 3
 struct S
 {
 	int x;

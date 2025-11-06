@@ -1,5 +1,6 @@
 %%BEGIN_EMBED(Break_Statement_For)%%
 ```cs
+//@ 123end
 void Main()
 {
     for (int i = 1; i < 6; i++)
@@ -15,6 +16,7 @@ void Main()
 
 %%BEGIN_EMBED(Break_Statement_Foreach)%%
 ```cs
+//@ 67end
 void Main()
 {
     foreach (int e in [6, 7, 1, 1, 4])
@@ -30,6 +32,7 @@ void Main()
 
 %%BEGIN_EMBED(Break_Statement_NestedFor)%%
 ```cs
+//@ 6767
 void Main()
 {
     for(int i = 0; i < 2; i++)

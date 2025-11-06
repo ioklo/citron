@@ -7,6 +7,7 @@ CastEnumElemToEnumExp(Exp source, EnumSymbol symbol)
 
 %%BEGIN_EMBED(Cast_Enum_Element_To_Enum_Expression_Basic)%%
 ```cs
+//@ 
 enum E { First, Second(int i) }
 
 void Main()

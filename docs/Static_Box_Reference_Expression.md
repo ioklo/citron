@@ -7,6 +7,7 @@ static member variable의 위치를 box pointer로 저장할 필요가 있을 �
 
 %%BEGIN_EMBED(Static_Box_Reference_Expression_Basic)%%
 ```cs
+//@ 3
 struct C
 {
 	static int x;

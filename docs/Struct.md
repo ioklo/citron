@@ -3,6 +3,7 @@
 
 %%BEGIN_EMBED(Struct_Complex)%%
 ```cs
+//@ 2 3 6 1
 public struct B
 {
     int a;
@@ -47,6 +48,7 @@ void Main()
 
 %%BEGIN_EMBED(Struct_AutoTrivialConstructor)%%
 ```cs
+//@ 2 3
 // 2, 3
 struct S
 {

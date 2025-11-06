@@ -9,6 +9,7 @@ struct type이지만 생성자를 써서 만들지 않고,  숫자 literal을 �
 
 %%BEGIN_EMBED(Integer_Literal)%%
 ```cs
+//@ 1024
 void Main() 
 { 
     int i = 1024;
@@ -20,6 +21,7 @@ void Main()
 # 정수형 간에 미리 정의된 단항 연산, 대입 연산
 %%BEGIN_EMBED(Integer_UnaryOperation)%%
 ```cs
+//@ -3 3 -3 -2 -2 -3
 void Main()
 {
     int i = -3;
@@ -36,6 +38,7 @@ void Main()
 
 %%BEGIN_EMBED(Integer_BinaryOperation)%%
 ```cs
+//@ -3 4 4 false true true -4 -6 -26 2 3 true false true true false false true false true true
 void Main()
 {
     int i;

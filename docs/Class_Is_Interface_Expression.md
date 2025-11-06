@@ -10,6 +10,7 @@ ClassIsInterfaceExp(Exp exp, InterfaceSymbol symbol)
 
 %%BEGIN_EMBED(Class_Is_Interface_Expression_Basic)%%
 ```cs
+//@ true
 interface I { }
 
 class B { }
@@ -27,6 +28,7 @@ void Main()
 
 %%BEGIN_EMBED(Class_Is_Interface_Expression_NotRelated)%%
 ```cs
+//@ false
 interface I { }
 class C { }
 

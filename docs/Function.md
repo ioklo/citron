@@ -30,6 +30,7 @@ print(2, "hi", false); // template<int, (string, bool)> print(2, ("hi, false));
 
 %%BEGIN_EMBED(Function_Out)%%
 ```cs
+//@ 2
 void F(out int* i)
 {
     *i = 2;

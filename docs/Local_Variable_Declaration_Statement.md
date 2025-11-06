@@ -21,6 +21,7 @@ LocalVarDeclStmt(Type type, string name, Exp? initExp)
 
 %%BEGIN_EMBED(Local_Variable_Declaration_Statement_Basic)%%
 ```cs
+//@ 0
 void Main()
 {
     int x = 0;
@@ -34,6 +35,7 @@ void Main()
 
 %%BEGIN_EMBED(Local_Variable_Declaration_Statement_Uninitialized)%%
 ```cs
+//@ 0 1
 void Main()
 {
     int a;
@@ -48,6 +50,7 @@ void Main()
 
 %%BEGIN_EMBED(Local_Variable_Declaration_Statement_UseUninitialized)%%
 ```cs
+//@ $Error
 bool F()
 {
     return true;
@@ -70,6 +73,7 @@ void Main()
 
 %%BEGIN_EMBED(Local_Variable_Declaration_Statement_TypeInference)%%
 ```cs
+//@ 3 hello false 3
 int MakeInt()
 {
     return 3;
@@ -91,7 +95,8 @@ void Main()
 
 따라서 초기화 식이 없으면 에러가 납니다.
 %%BEGIN_EMBED(Local_Variable_Declaration_Statement_CantInferenceType)%%
-```
+```cs
+//@ $Error
 void Main()
 {
     var x; // 에러
@@ -103,6 +108,7 @@ void Main()
 
 %%BEGIN_EMBED(Local_Variable_Declaration_Statement_VarWithPointerForPointerValue)%%
 ```cs
+//@ 
 void Main()
 {
     var i = 3;
@@ -117,6 +123,7 @@ void Main()
 
 %%BEGIN_EMBED(Local_Variable_Declaration_Statement_VarWithoutPointerSignForPointerValue)%%
 ```cs
+//@ $Error
 void Main()
 {
     var i = 3;
@@ -132,6 +139,7 @@ void Main()
 여러 변수를 `var`타입으로 선언하면, 각각 타입을 유추하게 됩니다.
 %%BEGIN_EMBED(Local_Variable_Declaration_Statement_MultipleVarItemsInferSeparately)%%
 ```cs
+//@ 1 hello 1 false 0 2
 void Main()
 {
     int a = 0, x;
@@ -148,6 +156,7 @@ void Main()
 local pointer나 box pointer와 함께 var를 쓴 경우, 여러 변수들은 각각 local pointer나 box pointer로 유추하게 됩니다.
 %%BEGIN_EMBED(Local_Variable_Declaration_Statement_VarWithPointerInferenceSeparately)%%
 ```cs
+//@ 0 hi
 void Main()
 {
     int a = 0
@@ -160,6 +169,7 @@ void Main()
 
 %%BEGIN_EMBED(Local_Variable_Declaration_Statement_VarWithPointerForValue)%%
 ```cs
+//@ $Error
 void Main()
 {
     int a = 0;

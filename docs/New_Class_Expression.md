@@ -9,7 +9,8 @@ NewClassExp(ClassConstructorSymbol symbol, [Argument] args)
 ```
 
 %%BEGIN_EMBED(New_Class_Expression_Basic)%%
-```
+```cs
+//@ 2 3
 class C
 {
 	int x;
@@ -30,7 +31,8 @@ void Main()
 %%END_EMBED%%
 
 %%BEGIN_EMBED(New_Class_Expression_Generics)%%
-```
+```cs
+//@ hello
 class C<T>
 {
 	T a;

@@ -12,6 +12,7 @@ BoxExp는
 
 %%BEGIN_EMBED(Box_Expression_Basic)%%
 ```cs
+//@ 5
 void Main()
 {
 	@${*(box 5)}

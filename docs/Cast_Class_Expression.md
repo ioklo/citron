@@ -7,6 +7,7 @@ CastClassExp(Exp source, ClassSymbol symbol)
 
 %%BEGIN_EMBED(Cast_Class_Expression_Upcast)%%
 ```cs
+//@ 
 class B { }
 class C : B { }
 

@@ -10,6 +10,7 @@ CallLambdaExp(LambdaSymbol symbol, Loc callable, [Argument] args)
 
 %%BEGIN_EMBED(Call_Lambda_Expression_General)%%
 ```cs
+//@ 1 3 true
 void Main()
 {
 	var f = (int i, string s, bool b) => { 
@@ -23,6 +24,7 @@ void Main()
 
 %%BEGIN_EMBED(Call_Lambda_Expression_CallInstanceMember)%%
 ```cs
+//@ 2
 class C
 {
     func<int, void> F;
@@ -46,7 +48,7 @@ void Main()
 
 %%BEGIN_EMBED(Call_Lambda_Expression_CallStaticMember)%%
 ```cs
-
+//@ 2
 class C
 {
     public static func<int, void> F;

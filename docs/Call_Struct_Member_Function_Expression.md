@@ -10,6 +10,7 @@ CallStructMemberFuncExp(StructMemberFuncSymbol symbol, Loc? instance, [Argument]
 
 %%BEGIN_EMBED(Call_Struct_Member_Function_Expression_Instance)%%
 ```cs
+//@ hello
 struct S
 {
 	string s;
@@ -29,6 +30,7 @@ void Main()
 
 %%BEGIN_EMBED(Call_Struct_Member_Function_Expression_Static)%%
 ```cs
+//@ hello
 struct S
 {
 	static void Print()

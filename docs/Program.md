@@ -12,11 +12,7 @@ Program = Module Declaration * Function Bodies * Entry Id * [Loading External Mo
 
 `Hello World!`를 출력하는 가장 기본적인 형태입니다.
 %%BEGIN_EMBED(Program_Basic)%%
-```
-void Main()
-{
-    @Hello World!
-}
+```cs
 ```
 %%END_EMBED%%
 

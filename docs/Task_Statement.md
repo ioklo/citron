@@ -1,5 +1,6 @@
 %%BEGIN_EMBED(Task_Statement_Basic)%%
-```
+```cs
+//@ 49505050
 // 49505050
 
 void Main()

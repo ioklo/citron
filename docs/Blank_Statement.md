@@ -1,5 +1,6 @@
 %%BEGIN_EMBED(Blank_Statement_For)%%
 ```cs
+//@ 01234
 int Add(int i)
 {
     @$i
@@ -15,6 +16,7 @@ void Main()
 
 %%BEGIN_EMBED(Blank_Statement_Foreach)%%
 ```cs
+//@ helloworld1
 seq string F()
 {
     @hello

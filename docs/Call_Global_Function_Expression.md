@@ -10,6 +10,7 @@ CallGlobalFuncExp(GlobalFuncSymbol symbol, [Argument] args)
 
 %%BEGIN_EMBED(Call_Global_Function_Expression_General)%%
 ```cs
+//@ 1 2 false
 void F(int i, string s, bool b)
 {    
     @$i $s $b
@@ -24,6 +25,7 @@ void Main()
 
 %%BEGIN_EMBED(Call_Global_Function_Expression_Recursive)%%
 ```cs
+//@ 345
 void F(int i, int end)
 {    
     if (end <= i) return;
@@ -41,6 +43,7 @@ void Main()
 
 %%BEGIN_EMBED(Call_Global_Function_Expression_Generator)%%
 ```cs
+//@ 123
 seq int Func()
 {
     yield 1;

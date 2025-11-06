@@ -3,6 +3,7 @@ box pointer를 local pointer로 변환하려면, box pointer 값이 local pointe
 
 %%BEGIN_EMBED(Cast_Box_Pointer_To_Local_Pointer_NotFixed)%%
 ```cs
+//@ $Error
 void Main()
 {
     int* s = box 3; // 에러, box가 고정되지 못함
@@ -14,6 +15,7 @@ void Main()
 
 %%BEGIN_EMBED(Cast_Box_Pointer_To_Local_Pointer_AsArgument)%%
 ```cs
+//@ 
 void F(int *s)
 {
 	*s = 3;

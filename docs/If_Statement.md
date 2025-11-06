@@ -12,6 +12,7 @@ IfStmt(Exp cond, [Stmt] body, [Stmt] elseBody)
 
 %%BEGIN_EMBED(If_Statement_Basic)%%
 ```cs
+//@ good
 void Main()
 {
     if (1 < 2) @good
@@ -26,6 +27,7 @@ void Main()
 
 %%BEGIN_EMBED(If_Statement_BasicElse)%%
 ```cs
+//@ pass
 void Main()
 {
     if (2 < 1) { }
@@ -36,6 +38,7 @@ void Main()
 
 %%BEGIN_EMBED(If_Statement_NestedIf)%%
 ```cs
+//@ completed
 void Main()
 {
     if (false)

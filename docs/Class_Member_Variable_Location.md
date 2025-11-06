@@ -1,6 +1,7 @@
 
 %%BEGIN_EMBED(Class_Member_Variable_Location_Basic)%%
-```
+```cs
+//@ 2
 class X
 {
     public int x;
@@ -16,7 +17,8 @@ void Main()
 %%END_EMBED%%
 
 %%BEGIN_EMBED(Class_Member_Variable_Location_Static)%%
-```
+```cs
+//@ 11
 // 11
 class C
 {

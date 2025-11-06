@@ -1,5 +1,6 @@
 %%BEGIN_EMBED(Block_Statement_Scope)%%
 ```cs
+//@ 7
 void Main()
 {
     int a = 7;

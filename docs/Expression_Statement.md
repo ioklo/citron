@@ -1,5 +1,6 @@
 %%BEGIN_EMBED(Expression_Statement_AssignAllowed)%%
-```
+```cs
+//@ 
 void Main()
 {
     int a = 0;
@@ -10,7 +11,8 @@ void Main()
 %%END_EMBED%%
 
 %%BEGIN_EMBED(Expression_Statement_IntLiteralAsTopLevelExp)%%
-```
+```cs
+//@ $Error
 void Main()
 {
 	3; // error

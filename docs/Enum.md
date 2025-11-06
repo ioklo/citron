@@ -3,7 +3,8 @@ Discriminated Union, Algebraic Data Type
 기존 C/C++의 enum과 비슷하지만, 멤버변수와 함께 넣을 수 있습니다.
 
 %%BEGIN_EMBED(Enum_Complex)%%
-```csharp
+```cs
+//@ 1300
 // 선언
 enum Coord2D<T>
 {
@@ -36,7 +37,8 @@ enum case는 멤버변수가 없는 standalone 형식, 멤버변수가 있는 �
 
 standalone을 생성할땐 괄호 없이 그냥 써주면 됩니다.
 %%BEGIN_EMBED(Enum_ConstructStandalone)%%
-```
+```cs
+//@ 
 enum E { First }
 
 void Main()
@@ -49,7 +51,8 @@ void Main()
 
 멤버변수가 있는 타입은 함수처럼 인자를 주어서 생성합니다.
 %%BEGIN_EMBED(Enum_ConstructWIthArgument)%%
-```
+```cs
+//@ 2
 enum E { Second(int x) }
 
 void Main()
@@ -61,7 +64,8 @@ void Main()
 
 # Generics
 %%BEGIN_EMBED(Enum_Generics)%%
-```
+```cs
+//@ Hi
 enum Option<T>
 {
     None,
@@ -83,7 +87,8 @@ if (s is Option<string>.Some some)
 `if (<exp> is <enum_case> <variable>?) { ... } ` 형식을 사용해서 패턴 매칭을 할 수 있습니다. `optional variable`은 테스트가 성공했을때 할당할 지역 변수입니다. 지역변수를 할당하지 않도록 생략 가능합니다
 
 %%BEGIN_EMBED(Enum_IfTest)%%
-```
+```cs
+//@ true
 enum E { First, Second(int x) }
 
 void Main()
@@ -118,7 +123,8 @@ case <enum_case> <optional_var_name>:
 로컬변수가 만들어지는 경우 모두 값을 복사 하게 됩니다.
 
 %%BEGIN_EMBED(Enum_SwitchTest)%%
-```
+```cs
+//@ 2
 enum E { First, Second(int x, bool y), Third(string s) }
 void Main()
 {
@@ -207,7 +213,8 @@ expression의 타입이 enum타입인 것을 미리 알 수 있을 때, Enum의 
 
 로컬변수 초기화, 대입의 값 부분, 함수 인자, 함수 리턴에서 사용할 수 있습니다
 %%BEGIN_EMBED(Enum_TypeHint)%%
-```
+```cs
+//@ 
 enum E 
 {
     First,

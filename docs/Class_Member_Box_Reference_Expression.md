@@ -5,6 +5,7 @@ ClassMemberBoxRefExp(Loc holder, ClassMemberVarSymbol symbol)
 
 %%BEGIN_EMBED(Class_Member_Box_Reference_Expression_Basic)%%
 ```cs
+//@ 4
 class C
 {
 	int x;

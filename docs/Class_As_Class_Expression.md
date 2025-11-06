@@ -10,6 +10,7 @@ ClassAsClassExp(Exp exp, ClassSymbol symbol)
 
 %%BEGIN_EMBED(Class_As_Class_Expression_Basic)%%
 ```cs
+//@ 2
 class B { }
 class C : B { public int x; }
 
@@ -26,6 +27,7 @@ void Main()
 
 %%BEGIN_EMBED(Class_As_Class_Expression_NotRelated)%%
 ```cs
+//@ ok
 class C { }
 class D { }
 

@@ -21,6 +21,7 @@ args는 캡쳐할 변수
 
 %%BEGIN_EMBED(Lambda_Expression_Basic)%%
 ```cs
+//@ hi
 void Main() 
 {
     var f = () => { @{hi} };
@@ -33,6 +34,7 @@ void Main()
 # 람다 만들고 사용하기
 %%BEGIN_EMBED(Lambda_Expression_Usage)%%
 ```cs
+//@ 3 hi
 void Main()
 {
     var l1 = (int x) => x + 1; // 본문 축약형
@@ -52,6 +54,7 @@ void Main()
 
 %%BEGIN_EMBED(Lambda_Expression_GlobalFunctionAsLambda)%%
 ```cs
+//@ hi
 void Func()
 {
     @hi
@@ -67,7 +70,8 @@ void Main()
 
 멤버함수도 함수 호출 부분이 없으면 인스턴스와 함께 바인딩 됩니다
 %%BEGIN_EMBED(Lambda_Expression_MemberFunctionAsLambda)%%
-```
+```cs
+//@ 2
 struct S
 {
 	int x;
@@ -93,6 +97,7 @@ void Main()
 
 %%BEGIN_EMBED(Lambda_Expression_Capture_Copy)%%
 ```cs
+//@ 0
 void Main()
 {
     int x = 0;
@@ -107,6 +112,7 @@ void Main()
 
 %%BEGIN_EMBED(Lambda_Expression_Capture_LocalPtr)%%
 ```cs
+//@ 1
 void Main()
 {
     int x = 0;
@@ -124,6 +130,7 @@ void Main()
 
 %%BEGIN_EMBED(Lambda_Expression_Capture_BoxPtr)%%
 ```cs
+//@ 2
 void Main()
 {
     box int* x = box 0; // heap을 사용하는 버전
@@ -142,6 +149,7 @@ void Main()
 
 %%BEGIN_EMBED(Lambda_Expression_Capture_This)%%
 ```cs
+//@ 5
 struct S
 {
     int x;
@@ -169,23 +177,6 @@ void Main()
 일반 로컬 변수와 this 변수의 캡쳐후 결과가 다르기 때문에, 람다 내부에서는 멤버변수를 바로 쓸 수 없습니다. 필요한 경우 로컬변수에 복사해서 씁니다.
 %%BEGIN_EMBED(Lambda_Expression_UseThisMemberDirectly)%%
 ```cs
-struct S
-{
-    int x;
-    
-    void F()
-    {
-        var l = () => x + 2; // 에러
-        x = 3;
-        @${l()}
-    }
-}
-
-void Main()
-{
-    var s = S(3);
-    s.F();
-}
 ```
 %%END_EMBED%%
 

@@ -4,7 +4,8 @@ StructIndirectMemberBoxRefExp(Exp holder, StructMemberVarSymbol symbol)
 ```
 
 %%BEGIN_EMBED(Struct_Indirect_Member_Box_Reference_Expression_Basic)%%
-```
+```cs
+//@ 2
 struct S
 {
 	int i;

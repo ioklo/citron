@@ -10,7 +10,8 @@
 # bool형을 인자로 받는 미리 정의된 단항 연산
 - bool -> bool: {!}
 %%BEGIN_EMBED(Boolean_UnaryOperation)%%
-```
+```cs
+//@ true false false true
 void Main()
 {
     bool t = true;
@@ -27,7 +28,8 @@ bool형 간에는 두 값이 같은지 비교할 수 있습니다.
 - (bool, bool) -> bool: { == }
 
 %%BEGIN_EMBED(Boolean_BinOp)%%
-```
+```cs
+//@ false true true true false false true false true true false
 void Main()
 {
     bool b;

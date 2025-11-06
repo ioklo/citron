@@ -10,6 +10,7 @@ CallClassMemberFuncExp(ClassMemberFuncSymbol symbol, Loc? instance, [Argument] a
 
 %%BEGIN_EMBED(Call_Class_Member_Function_Expression_Instance)%%
 ```cs
+//@ 2 4
 class X
 {
     int x;
@@ -30,6 +31,7 @@ void Main()
 
 %%BEGIN_EMBED(Call_Class_Member_Function_Expression_Static)%%
 ```cs
+//@ X: 3
 class X
 {
 	public static void Print(int a)

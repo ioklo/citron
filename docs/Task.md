@@ -1,7 +1,8 @@
 # Async
 
 %%BEGIN_EMBED(Task_Async)%%
-```
+```cs
+//@ 50504950
 void Main()
 {
     int sum = 0, sum2 = 0;
@@ -33,7 +34,8 @@ void Main()
 
 # Await
 %%BEGIN_EMBED(Task_Await_LocalScope)%%
-```
+```cs
+//@ 
 void F()
 {
     // await가 없으므로 기다리지 않는다

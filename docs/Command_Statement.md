@@ -12,6 +12,7 @@ CommandStmt([StringExp] stringExps)
 
 %%BEGIN_EMBED(Command_Statement_Basic)%%
 ```cs
+//@ hi
 void Main()
 {
     @hi
@@ -21,6 +22,7 @@ void Main()
 
 %%BEGIN_EMBED(Command_Statement_Interpolated)%%
 ```cs
+//@ abc177 abcworlddef false.84
 void Main()
 {
     int i = 177;
@@ -34,6 +36,7 @@ void Main()
 
 %%BEGIN_EMBED(Command_Statement_Block)%%
 ```cs
+//@          <- no ignore 8 blanks        hello world        good
 void Main()
 {
     // plain, ignore blank lines, trailing blanks

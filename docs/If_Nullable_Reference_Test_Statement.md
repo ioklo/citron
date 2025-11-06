@@ -12,6 +12,7 @@ IfNullableRefTestStmt(Type refType, Name varName, Exp castExp, [Stmt] body, [Stm
 
 %%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_Basic)%%
 ```cs
+//@ succeed
 class B { }
 class C : B { }
 
@@ -29,6 +30,7 @@ void Main()
 %%TODO is로 옮길 것%%
 %%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_CantTestValueType)%%
 ```cs
+//@ $Error
 class C {}
 
 void Main()
@@ -42,6 +44,7 @@ void Main()
 
 %%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestUnrelatedClass)%%
 ```cs
+//@ $Error
 class C { }
 class D { }
 
@@ -57,6 +60,7 @@ void Main()
 test interface is class
 %%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestInterface)%%
 ```cs
+//@ true
 interface I {}
 class C : I {}
 
@@ -72,6 +76,7 @@ void Main()
 test class implements interface
 %%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestClassImplInterface)%%
 ```cs
+//@ true
 interface I {}
 class B { }
 class C : B, I { }
@@ -90,6 +95,7 @@ void Main()
 test interface's own type also implements interface
 %%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestInterfaceImplInterface)%%
 ```cs
+//@ true
 interface I1 { }
 interface I2 { }
 class B : I1 { }

@@ -15,7 +15,7 @@ InlineBlockExp([Stmt] body)
 
 %%BEGIN_EMBED(Inline_Block_Expression_Basic)%%
 ```cs
-
+//@ 3
 void Main()
 {
     int s = 2;
@@ -31,6 +31,7 @@ void Main()
 
 %%BEGIN_EMBED(Inline_Block_Expression_InferByReturnType)%%
 ```cs
+//@ 3
 void Main()
 {
 	var x = inline { return 3; };
@@ -41,6 +42,7 @@ void Main()
 
 %%BEGIN_EMBED(Inline_Block_Expression_InferByAssignTargetType)%%
 ```cs
+//@ 3
 void Main()
 {
 	int x;
@@ -52,7 +54,7 @@ void Main()
 
 %%BEGIN_EMBED(Inline_Block_Expression_InferByFunctionParameter)%%
 ```cs
-
+//@ 3
 void F(int x)
 {
 	@$x
@@ -67,6 +69,7 @@ void Main()
 
 %%BEGIN_EMBED(Inline_Block_Expression_DifferentReturnType)%%
 ```cs
+//@ $Error
 class B { }
 class C1 : B { }
 class C2 : B { }
@@ -89,6 +92,7 @@ void Main()
 
 %%BEGIN_EMBED(Inline_Block_Expression_HintTypeFirst)%%
 ```cs
+//@ 
 class B { }
 class C1 : B { }
 class C2 : B { }
@@ -111,6 +115,7 @@ void Main()
 
 %%BEGIN_EMBED(Inline_Block_Expression_ShouldNotBeVoid)%%
 ```cs
+//@ $Error
 void Main()
 {
 	var s = inline { };
@@ -120,6 +125,7 @@ void Main()
 
 %%BEGIN_EMBED(Inline_Block_Expression_TopLevelNotAllowed)%%
 ```cs
+//@ $Error
 void Main()
 {
 	inline { @{hello} } 
