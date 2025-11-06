@@ -3,7 +3,7 @@
 ClassMemberBoxRefExp(Loc holder, ClassMemberVarSymbol symbol)
 ```
 
-%%TEST(Basic, 4)%%
+%%BEGIN_EMBED(Class_Member_Box_Reference_Expression_Basic)%%
 ```cs
 class C
 {
@@ -30,6 +30,7 @@ void Main()
 }
 
 ```
+%%END_EMBED%%
 
 
 

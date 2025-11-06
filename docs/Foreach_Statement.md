@@ -1,4 +1,4 @@
-%%TEST(Basic, 1234)%%
+%%BEGIN_EMBED(Foreach_Statement_Basic)%%
 ```cs
 void Main()
 {
@@ -6,8 +6,9 @@ void Main()
         @$e
 }
 ```
+%%END_EMBED%%
 
-%%TEST(WithManualEnumerable, 01234)%%
+%%BEGIN_EMBED(Foreach_Statement_WithManualEnumerable)%%
 ```
 struct EnumerableX
 {
@@ -46,8 +47,9 @@ void Main()
 	}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(WithSeqFunc,  HelloWorld)%%
+%%BEGIN_EMBED(Foreach_Statement_WithSeqFunc)%%
 ```cs
 void Main()
 {
@@ -61,8 +63,9 @@ void Main()
         @$e
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Scope, 7)%%
+%%BEGIN_EMBED(Foreach_Statement_Scope)%%
 ```cs
 void Main()
 {
@@ -73,8 +76,9 @@ void Main()
     @$i
 }
 ```
+%%END_EMBED%%
 
-%%TEST(LambdaAsItem, 12343)%%
+%%BEGIN_EMBED(Foreach_Statement_LambdaAsItem)%%
 ```cs
 void Main()
 {
@@ -90,4 +94,5 @@ void Main()
         f();
 }
 ```
+%%END_EMBED%%
 

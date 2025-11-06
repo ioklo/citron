@@ -1,0 +1,13 @@
+//@ hello
+class C<T>
+{
+	T a;
+	public T GetA() { return a; }
+}
+
+void Main()
+{
+	var c = new C<string>("hello");
+	var a = c.GetA();
+	@$a
+}

@@ -1,0 +1,17 @@
+//@ 2
+enum E { First, Second(int x, bool y), Third(string s) }
+void Main()
+{
+    var e = E.Second(2);
+    switch (e)
+    {
+        case E.First:
+            @First
+        
+        case E.Second(var x, _):
+            @$x
+            
+        case E.Third x:
+            @${x.s}
+    }
+}

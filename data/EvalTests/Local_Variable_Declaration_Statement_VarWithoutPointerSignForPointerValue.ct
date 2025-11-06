@@ -1,0 +1,10 @@
+//@ $Error
+void Main()
+{
+    var i = 3;
+    var x = &i; // 에러
+    var y = box 3; // 에러
+
+	int? i = 3;
+    var optI = i; // 에러
+}

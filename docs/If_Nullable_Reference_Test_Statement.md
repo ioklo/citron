@@ -10,7 +10,7 @@ if (<type-exp> <name> = <exp>) <embeddable-stmt> else <embeddable-stmt>
 IfNullableRefTestStmt(Type refType, Name varName, Exp castExp, [Stmt] body, [Stmt] elseBody)
 ```
 
-%%TEST(Basic, succeed)%%
+%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_Basic)%%
 ```cs
 class B { }
 class C : B { }
@@ -24,9 +24,10 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%
 
 %%TODO is로 옮길 것%%
-%%TEST(CantTestValueType, $Error)%%
+%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_CantTestValueType)%%
 ```cs
 class C {}
 
@@ -37,8 +38,9 @@ void Main()
         @false
 }
 ```
+%%END_EMBED%%
 
-%%TEST(TestUnrelatedClass, $Error)%%
+%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestUnrelatedClass)%%
 ```cs
 class C { }
 class D { }
@@ -50,9 +52,10 @@ void Main()
 	if (D d = c); // 미리 잡을 수 있는 경우는 최대한 잡습니다
 }
 ```
+%%END_EMBED%%
 
 test interface is class
-%%TEST(TestInterface, true)%%
+%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestInterface)%%
 ```cs
 interface I {}
 class C : I {}
@@ -64,9 +67,10 @@ void Main()
 	if (C c = i) @true
 }
 ```
+%%END_EMBED%%
 
 test class implements interface
-%%TEST(TestClassImplInterface, true)%%
+%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestClassImplInterface)%%
 ```cs
 interface I {}
 class B { }
@@ -81,9 +85,10 @@ void Main()
 	}
 }
 ```
+%%END_EMBED%%
 
 test interface's own type also implements interface
-%%TEST(TestInterfaceImplInterface, true)%%
+%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestInterfaceImplInterface)%%
 ```cs
 interface I1 { }
 interface I2 { }
@@ -102,6 +107,7 @@ void Main()
 
 
 ```
+%%END_EMBED%%
 
 
 # Reference

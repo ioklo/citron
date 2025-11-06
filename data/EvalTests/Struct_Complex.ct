@@ -1,0 +1,40 @@
+//@ 2 3 6 1
+public struct B
+{
+    int a;
+}
+
+struct S : B
+{
+    int x; // default public
+    private int y;
+
+    int Sum() // default public
+    {
+        return a + x + y;
+    }
+
+    int GetY() 
+    {
+        return y;
+    }
+}
+
+void Main()
+{	
+	// 일단 다 적고 나중에 분리
+	
+	var s1 = new S<int>(1, 2, 3); // a, x, y
+	@${s1.x}
+	@ ${s1.GetY()}
+	@ ${s1.Sum()}
+	
+	S s2 = s1;                // 복사 생성, 오버라이드 불가능
+	
+	// 고급, box, boxed 타입 S*
+	box var* s3 = box S(1, 2, 3);
+	
+	@${*s3.a}
+	s2 = *s3;
+}
+

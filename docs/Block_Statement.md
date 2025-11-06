@@ -1,4 +1,4 @@
-%%TEST(Scope, 7)%%
+%%BEGIN_EMBED(Block_Statement_Scope)%%
 ```cs
 void Main()
 {
@@ -12,3 +12,4 @@ void Main()
     @$a
 }
 ```
+%%END_EMBED%%

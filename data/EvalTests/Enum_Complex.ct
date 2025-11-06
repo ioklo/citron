@@ -1,0 +1,24 @@
+//@ 1300
+// 선언
+enum Coord2D<T>
+{
+    Rect(T x, T y),            // 기본 C syntax와 비슷한 느낌을 주려고 콤마로 구분합니다
+    Polar(T radius, T angle),
+}
+
+int GetLengthSq(Coord2D<int> m)
+{
+    if (m is .Rect)
+        return m.x * m.x + m.y * m.y;
+
+    else if (m is .Polar) 
+        return m.radius * m.radius;
+}
+
+void Main()
+{
+    Coord2D<int> m = .Rect(20, 30); // 타입힌트가 있어서 Coord2D<int>.Rect로 쓰지 않아도 됩니다
+    var lenSq = GetLengthSq(m);
+
+    @$lenSq
+}

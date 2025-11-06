@@ -1,0 +1,7 @@
+//@ 3
+void Main()
+{
+	int x;
+	x = inline { return 3; };
+	@$x
+}

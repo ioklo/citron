@@ -1,0 +1,22 @@
+//@ 5
+struct S
+{
+    int x;
+    
+    void F()
+    {
+        var l = () => this->x + 2; // this는 캡쳐대상 S*
+        
+        x = 3;
+        
+        // 5
+        @${l()}
+    }
+}
+
+
+void Main()
+{
+    var s = S(3);
+    s.F();
+}

@@ -1,7 +1,7 @@
 
 
 
-%%TEST(Complex, 2 3 6 1)%%
+%%BEGIN_EMBED(Struct_Complex)%%
 ```cs
 public struct B
 {
@@ -43,8 +43,9 @@ void Main()
 }
 
 ```
+%%END_EMBED%%
 
-%%TEST(AutoTrivialConstructor, 2 3)%%
+%%BEGIN_EMBED(Struct_AutoTrivialConstructor)%%
 ```cs
 // 2, 3
 struct S
@@ -56,6 +57,7 @@ struct S
 var s = new S(2, 3);
 @${s.x} ${s.y}
 ```
+%%END_EMBED%%
 
 # 선언
 

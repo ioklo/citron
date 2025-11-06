@@ -8,7 +8,7 @@ new <symbol-id>(<argument>,...)
 NewClassExp(ClassConstructorSymbol symbol, [Argument] args)
 ```
 
-%%TEST(Basic, 2 3)%%
+%%BEGIN_EMBED(New_Class_Expression_Basic)%%
 ```
 class C
 {
@@ -27,8 +27,9 @@ void Main()
 	c.Print();
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Generics, hello)%%
+%%BEGIN_EMBED(New_Class_Expression_Generics)%%
 ```
 class C<T>
 {
@@ -43,6 +44,7 @@ void Main()
 	@$a
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Class_Constructor](Class_Constructor.md)

@@ -9,21 +9,23 @@ null
 NullableNullLiteralExp(Type innerType)
 ```
 
-%%TEST(Basic, )%%
+%%BEGIN_EMBED(Nullable_Null_Literal_Expression_Basic)%%
 ```cs
 void Main()
 {
 	int? i = null;
 }
 ```
+%%END_EMBED%%
 
-%%TEST(CantInferType, $Error)%%
+%%BEGIN_EMBED(Nullable_Null_Literal_Expression_CantInferType)%%
 ```cs
 void Main()
 {
 	var? i = null;
 }
 ```
+%%END_EMBED%%
 
 # Reference
 

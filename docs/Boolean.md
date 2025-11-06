@@ -9,7 +9,7 @@
 
 # bool형을 인자로 받는 미리 정의된 단항 연산
 - bool -> bool: {!}
-%%TEST(UnaryOperation, true false false true)%%
+%%BEGIN_EMBED(Boolean_UnaryOperation)%%
 ```
 void Main()
 {
@@ -19,13 +19,14 @@ void Main()
     @$t ${!t} $f ${!f}
 }
 ```
+%%END_EMBED%%
 
 # bool형을 인자로 받는 미리 정의된 이항 연산
 
 bool형 간에는 두 값이 같은지 비교할 수 있습니다.
 - (bool, bool) -> bool: { == }
 
-%%TEST(BinOp, false true true true false false true false true true false)%%
+%%BEGIN_EMBED(Boolean_BinOp)%%
 ```
 void Main()
 {
@@ -40,6 +41,7 @@ void Main()
     @ ${false != false} ${false != true} ${true != false} ${true != true}
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Boolean_Literal_Expression](Boolean_Literal_Expression.md)

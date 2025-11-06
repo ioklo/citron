@@ -8,7 +8,7 @@
 CallStructMemberFuncExp(StructMemberFuncSymbol symbol, Loc? instance, [Argument] args)
 ```
 
-%%TEST(Instance, hello)%%
+%%BEGIN_EMBED(Call_Struct_Member_Function_Expression_Instance)%%
 ```cs
 struct S
 {
@@ -25,8 +25,9 @@ void Main()
 	s.Print();
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Static, hello)%%
+%%BEGIN_EMBED(Call_Struct_Member_Function_Expression_Static)%%
 ```cs
 struct S
 {
@@ -36,6 +37,7 @@ struct S
 	}
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Struct_Member_Function](Struct_Member_Function.md)

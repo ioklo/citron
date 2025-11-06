@@ -1,4 +1,4 @@
-%%TEST(For, 135)%%
+%%BEGIN_EMBED(Continue_Statement_For)%%
 ```cs
 void Main()
 {
@@ -9,8 +9,9 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Foreach, 711)%%
+%%BEGIN_EMBED(Continue_Statement_Foreach)%%
 ```cs
 void Main()
 {
@@ -21,8 +22,9 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%
 
-%%TEST(NestedFor, 711711)%%
+%%BEGIN_EMBED(Continue_Statement_NestedFor)%%
 ```cs
 void Main()
 {
@@ -36,3 +38,4 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%

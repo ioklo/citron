@@ -1,0 +1,7 @@
+//@ 2
+enum E { Second(int x) }
+
+void Main()
+{
+    var e = E.Second(2); // e는 E 타입입니다
+}

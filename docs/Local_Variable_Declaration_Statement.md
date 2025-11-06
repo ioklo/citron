@@ -19,7 +19,7 @@ Type Expression관련은 [TypeExpression](Type.md) 을 참조하세요.
 LocalVarDeclStmt(Type type, string name, Exp? initExp)
 ```
 
-%%TEST(Basic, 0)%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_Basic)%%
 ```cs
 void Main()
 {
@@ -27,11 +27,12 @@ void Main()
     @$x
 }
 ```
+%%END_EMBED%%
 
 ## 초기화 구문 생략
 초기화 구문은 생략 가능합니다. 다만 모든 경로에서 대입이 일어나기 전까지는 사용이 불가능합니다 자세한 사항은 uninitialized value analysis 부분을 참조하세요
 
-%%TEST(Uninitialized, 0 1)%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_Uninitialized)%%
 ```cs
 void Main()
 {
@@ -43,8 +44,9 @@ void Main()
     @$a $b
 }
 ```
+%%END_EMBED%%
 
-%%TEST(UseUninitialized, $Error)%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_UseUninitialized)%%
 ```cs
 bool F()
 {
@@ -61,11 +63,12 @@ void Main()
     @$x 
 }
 ```
+%%END_EMBED%%
 
 ## Local Variable Type Inference
 타입 부분에 `var`를 사용해서 타입을 직접 명시 하지 않을 수 있습니다. 해당 변수의 타입은 초기화 식의 타입을 그대로 사용합니다. 
 
-%%TEST(TypeInference, 3 hello false 3)%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_TypeInference)%%
 ```cs
 int MakeInt()
 {
@@ -84,19 +87,21 @@ void Main()
     @$i $s $b $le
 }
 ```
+%%END_EMBED%%
 
 따라서 초기화 식이 없으면 에러가 납니다.
-%%TEST(CantInferenceType, $Error)%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_CantInferenceType)%%
 ```
 void Main()
 {
     var x; // 에러
 }
 ```
+%%END_EMBED%%
 
 실수를 방지하기 위해 최종 타입이 local pointer, box pointer, nullable인 타입은 var 단독으로 사용해서 유추할 수 없습니다. 대신 `var*`, `box var*`, `var?` 를 사용합니다
 
-%%TEST(VarWithPointerForPointerValue, )%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_VarWithPointerForPointerValue)%%
 ```cs
 void Main()
 {
@@ -108,8 +113,9 @@ void Main()
     var? optI = i;
 }
 ```
+%%END_EMBED%%
 
-%%TEST(VarWithoutPointerSignForPointerValue, $Error)%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_VarWithoutPointerSignForPointerValue)%%
 ```cs
 void Main()
 {
@@ -121,9 +127,10 @@ void Main()
     var optI = i; // 에러
 }
 ```
+%%END_EMBED%%
 
 여러 변수를 `var`타입으로 선언하면, 각각 타입을 유추하게 됩니다.
-%%TEST(MultipleVarItemsInferSeparately, 1 hello 1 false 0 2)%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_MultipleVarItemsInferSeparately)%%
 ```cs
 void Main()
 {
@@ -136,9 +143,10 @@ void Main()
     @$i $s ${l[0]} $b $a $x
 }
 ```
+%%END_EMBED%%
 
 local pointer나 box pointer와 함께 var를 쓴 경우, 여러 변수들은 각각 local pointer나 box pointer로 유추하게 됩니다.
-%%TEST(VarWithPointerInferenceSeparately, 0 hi)%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_VarWithPointerInferenceSeparately)%%
 ```cs
 void Main()
 {
@@ -148,8 +156,9 @@ void Main()
     @${*x}, ${*y}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(VarWithPointerForValue, $Error)%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_VarWithPointerForValue)%%
 ```cs
 void Main()
 {
@@ -157,6 +166,7 @@ void Main()
     var* x = &a, y = 3; // 에러
 }
 ```
+%%END_EMBED%%
 
 # Temp Variable
 복잡한 expression을 계산하기 위해서는 최종 결과 하나로는 부족할 수 있습니다. sub expression이 value로 평가되고 어딘가에 잠시 저장되어야 할 때, 컴파일러는 이름없는 temp variable을 스택에 만들어서 그 곳에 값을 저장합니다.

@@ -1,0 +1,11 @@
+//@ 1
+void Main()
+{
+	int a = 1;
+
+	// a는 Local_Variable_Location이고, b에 대입하기 위해 내부적으로 load expression을 사용하게 됩니다
+	// local_var_decl_stmt("b", load_exp(local_var_loc("a")))
+	int b = a;
+
+	@$b
+}

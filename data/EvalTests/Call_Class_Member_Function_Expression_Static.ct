@@ -1,0 +1,13 @@
+//@ X: 3
+class X
+{
+	public static void Print(int a)
+	{
+		@X: $a
+	}
+}
+
+void Main()
+{
+	X.Print(3);
+}

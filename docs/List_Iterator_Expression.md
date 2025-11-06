@@ -5,7 +5,7 @@ No corresponding s-expression
 ListIterExp(Loc list)
 ```
 
-%%TEST(Basic, 123)%%
+%%BEGIN_EMBED(List_Iterator_Expression_Basic)%%
 ```cs
 var l = [1, 2, 3]
 foreach(var i in l) // ListIterExp(LocalVarLoc("l"))
@@ -13,6 +13,7 @@ foreach(var i in l) // ListIterExp(LocalVarLoc("l"))
 	@$i
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Locations](Locations.md)

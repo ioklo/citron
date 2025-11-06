@@ -3,7 +3,7 @@
 CastBoxedLambdaToFuncExp(Exp exp, FuncType funcType)
 ```
 
-%%TEST(Basic, 3)%%
+%%BEGIN_EMBED(Cast_Boxed_Lambda_To_Func_Expression_Basic)%%
 ```cs
 void Main()
 {
@@ -13,3 +13,4 @@ void Main()
 	@${f()}
 }
 ```
+%%END_EMBED%%

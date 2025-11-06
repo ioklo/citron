@@ -1,0 +1,11 @@
+//@ 3
+struct S
+{
+	int x;
+}
+
+void Main()
+{
+	var s = S(3);
+	@${s.x}
+}

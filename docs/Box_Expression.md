@@ -10,13 +10,14 @@ BoxExp는
 - 실행환경의 result를 원래대로 돌려놓습니다
 - 실행환경의 result에 힙에 할당한 위치를 저장한 box 포인터 값을 저장합니다
 
-%%TEST(Basic, 5)%%
+%%BEGIN_EMBED(Box_Expression_Basic)%%
 ```cs
 void Main()
 {
 	@${*(box 5)}
 }
 ```
+%%END_EMBED%%
 
 
 # Reference

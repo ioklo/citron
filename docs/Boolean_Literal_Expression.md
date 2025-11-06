@@ -6,7 +6,7 @@ false
 ```
 bool형 값을 환경의 result에 넣습니다
 
-%%TEST(Literal, true false)%%
+%%BEGIN_EMBED(Boolean_Literal_Expression_Literal)%%
 ```cs
 void Main()
 {
@@ -15,5 +15,6 @@ void Main()
     @$t $f
 }
 ```
+%%END_EMBED%%
 
 [Boolean](Boolean.md)

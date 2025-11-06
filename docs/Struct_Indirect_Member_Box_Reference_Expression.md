@@ -3,7 +3,7 @@
 StructIndirectMemberBoxRefExp(Exp holder, StructMemberVarSymbol symbol)
 ```
 
-%%TEST(Basic, 2)%%
+%%BEGIN_EMBED(Struct_Indirect_Member_Box_Reference_Expression_Basic)%%
 ```
 struct S
 {
@@ -20,6 +20,7 @@ void Main()
 	@${bs->i}
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Expressions](Expressions.md)

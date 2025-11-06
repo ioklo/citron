@@ -1,0 +1,8 @@
+//@ 
+enum E { First }
+
+void Main()
+{   
+    var e = E.First; // e는 E 타입입니다
+    
+}

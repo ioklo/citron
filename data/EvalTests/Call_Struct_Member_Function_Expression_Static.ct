@@ -1,0 +1,8 @@
+//@ hello
+struct S
+{
+	static void Print()
+	{
+		@hello
+	}
+}

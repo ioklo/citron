@@ -1,0 +1,12 @@
+//@ 2
+class B { }
+class C : B { public int x; }
+
+void Main()
+{
+	var b = new C(2);
+	
+	var c = b is C; // c는 nullable C 타입
+	if (c != null)	
+		@${c.x}
+}

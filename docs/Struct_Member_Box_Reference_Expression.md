@@ -4,7 +4,7 @@ StructMemberBoxRefExp(Exp holder, StructMemberVarSymbol symbol)
 ```
 
 
-%%TEST(Basic, 5)%%
+%%BEGIN_EMBED(Struct_Member_Box_Reference_Expression_Basic)%%
 ```
 struct A { int i; }
 struct S { A a; }
@@ -19,6 +19,7 @@ void Main()
 }
 
 ```
+%%END_EMBED%%
 
 # Reference
 [Expressions](Expressions.md)

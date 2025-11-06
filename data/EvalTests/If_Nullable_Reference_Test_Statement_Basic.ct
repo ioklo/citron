@@ -1,0 +1,12 @@
+//@ succeed
+class B { }
+class C : B { }
+
+void Main()
+{
+    B b = new C();
+    if (C c = b)
+    {
+        @succeed
+    }
+}

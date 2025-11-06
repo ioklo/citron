@@ -10,7 +10,7 @@ assign_expression은
 - 환경의 result를 원래 위치로 다시 돌려놓습니다
 - 환경의 result에 계산된 값을 저장합니다
 
-%%TEST(Basic, 10)%%
+%%BEGIN_EMBED(Assign_Expression_Basic)%%
 ```
 void Main()
 {
@@ -20,10 +20,11 @@ void Main()
 	@$a
 }
 ```
+%%END_EMBED%%
 
 문법적으로 assignment는 중첩될 수 있습니다. 한 식에 =가 여러번 나타날때, 왼쪽의 = 를 기준으로 오른쪽 전체를 먼저 계산하게 됩니다. 고로 `a = b = 1`은 `a = (b = 1)`과 같습니다. `b = 1`의 결괏값은 1이므로 a에도 1이 대입됩니다.
 
-%%TEST(Nested, 1 1 1)%%
+%%BEGIN_EMBED(Assign_Expression_Nested)%%
 ```
 void Main()
 {
@@ -36,6 +37,7 @@ void Main()
 	@$a $b $c
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Locations](Locations.md)

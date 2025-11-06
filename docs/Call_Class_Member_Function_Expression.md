@@ -8,7 +8,7 @@
 CallClassMemberFuncExp(ClassMemberFuncSymbol symbol, Loc? instance, [Argument] args)
 ```
 
-%%TEST(Instance, 2 4)%%
+%%BEGIN_EMBED(Call_Class_Member_Function_Expression_Instance)%%
 ```cs
 class X
 {
@@ -26,8 +26,9 @@ void Main()
     x.F(4);
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Static, X: 3)%%
+%%BEGIN_EMBED(Call_Class_Member_Function_Expression_Static)%%
 ```cs
 class X
 {
@@ -42,6 +43,7 @@ void Main()
 	X.Print(3);
 }
 ```
+%%END_EMBED%%
 
 # Referece
 [Class_Member_Function](Class_Member_Function.md)

@@ -1,7 +1,7 @@
 box pointer를 local pointer로 변환하려면, box pointer 값이 local pointer의 생명 주기 동안 계속 살아있어야 한다는 보장이 있어야 합니다.
 그래서 캐스팅은 일반적인 경우에 사용할 수는 없고, 함수 호출시 인자 변환의 형태로만 사용할 수 있습니다.
 
-%%TEST(NotFixed, $Error)%%
+%%BEGIN_EMBED(Cast_Box_Pointer_To_Local_Pointer_NotFixed)%%
 ```cs
 void Main()
 {
@@ -10,8 +10,9 @@ void Main()
     @${*s}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(AsArgument, )%%
+%%BEGIN_EMBED(Cast_Box_Pointer_To_Local_Pointer_AsArgument)%%
 ```cs
 void F(int *s)
 {
@@ -24,3 +25,4 @@ void Main()
 }
 
 ```
+%%END_EMBED%%

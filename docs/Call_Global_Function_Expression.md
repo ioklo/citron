@@ -8,7 +8,7 @@ id(exp, params exp)
 CallGlobalFuncExp(GlobalFuncSymbol symbol, [Argument] args)
 ```
 
-%%TEST(General, 1 2 false)%%
+%%BEGIN_EMBED(Call_Global_Function_Expression_General)%%
 ```cs
 void F(int i, string s, bool b)
 {    
@@ -20,8 +20,9 @@ void Main()
 	F(1, "2", false);
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Recursive, 345)%%
+%%BEGIN_EMBED(Call_Global_Function_Expression_Recursive)%%
 ```cs
 void F(int i, int end)
 {    
@@ -36,8 +37,9 @@ void Main()
 	F(3, 6);
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Generator, 123)%%
+%%BEGIN_EMBED(Call_Global_Function_Expression_Generator)%%
 ```cs
 seq int Func()
 {
@@ -52,6 +54,7 @@ void Main()
         @$i
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Global_Function](Global_Function.md)

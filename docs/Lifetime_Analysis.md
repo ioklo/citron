@@ -1,4 +1,4 @@
-%%TEST(ReturnLocalPointer, 4)%%
+%%BEGIN_EMBED(Lifetime_Analysis_ReturnLocalPointer)%%
 ```cs
 int* F(int* i)
 {
@@ -11,8 +11,9 @@ var* y = F(&x);
 
 @$x
 ```
+%%END_EMBED%%
 
-%%TEST(StructThisLifeTime, 4)%%
+%%BEGIN_EMBED(Lifetime_Analysis_StructThisLifeTime)%%
 ```cs
 // 05 
 struct S
@@ -31,8 +32,9 @@ var* x = s.GetX();
 
 @${s.x}
 ```
+%%END_EMBED%%
 
-%%TEST(CantReferenceEnumElemMemberVaraible, $Error)%%
+%%BEGIN_EMBED(Lifetime_Analysis_CantReferenceEnumElemMemberVaraible)%%
 ```cs
 // $Error
 enum E
@@ -68,8 +70,9 @@ void Main()
     x = 3;
 }
 ```
+%%END_EMBED%%
 
-%%TEST(StructMemberSequenceFunction, $Error)%%
+%%BEGIN_EMBED(Lifetime_Analysis_StructMemberSequenceFunction)%%
 ```cs
 // $Error()
 
@@ -95,8 +98,9 @@ void Main()
 }
 
 ```
+%%END_EMBED%%
 
-%%TEST(PreventBox1, $Error)%%
+%%BEGIN_EMBED(Lifetime_Analysis_PreventBox1)%%
 ```cs
 struct S
 {
@@ -114,8 +118,9 @@ void Main()
     seq<int> sq = box s.F(); // 에러, box 불가
 }
 ```
+%%END_EMBED%%
 
-%%TEST(PreventBox2, $Error)%%
+%%BEGIN_EMBED(Lifetime_Analysis_PreventBox2)%%
 ```
 struct S
 {
@@ -133,8 +138,9 @@ void Main()
     var sq = box s.F(&i); // 에러, ptr이 들어가는 seq call 값은 스코프를 벗어날 수 없다
 }
 ```
+%%END_EMBED%%
 
-%%TEST(PreventBox3, $Error)%%
+%%BEGIN_EMBED(Lifetime_Analysis_PreventBox3)%%
 ```cs
 struct S
 {
@@ -152,8 +158,9 @@ void Main()
     var x = box s.F(); // 에러, s를 캡쳐해서 x에 넣을수 없으므로 불가
 }
 ```
+%%END_EMBED%%
 
-%%TEST(LocalPtrContainedLambda, $Error)%%
+%%BEGIN_EMBED(Lifetime_Analysis_LocalPtrContainedLambda)%%
 ```cs
 void Main()
 {
@@ -166,6 +173,7 @@ void Main()
     var s = box p;   // 에러, p는 local을 갖고 있으므로 boxing 불가
 }
 ```
+%%END_EMBED%%
 
 %%TODO%%
 ```cs

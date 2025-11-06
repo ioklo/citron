@@ -13,7 +13,7 @@ InlineBlockExp([Stmt] body)
 # General
 인라인 블록은 함수 본문에서 값으로 바로 평가되는 블록입니다. 함수 호출 오버헤드가 생기지 않습니다.
 
-%%TEST(Basic, 3)%%
+%%BEGIN_EMBED(Inline_Block_Expression_Basic)%%
 ```cs
 
 void Main()
@@ -27,8 +27,9 @@ void Main()
 }
 
 ```
+%%END_EMBED%%
 
-%%TEST(InferByReturnType, 3)%%
+%%BEGIN_EMBED(Inline_Block_Expression_InferByReturnType)%%
 ```cs
 void Main()
 {
@@ -36,8 +37,9 @@ void Main()
 	@$x
 }
 ```
+%%END_EMBED%%
 
-%%TEST(InferByAssignTargetType, 3)%%
+%%BEGIN_EMBED(Inline_Block_Expression_InferByAssignTargetType)%%
 ```cs
 void Main()
 {
@@ -46,8 +48,9 @@ void Main()
 	@$x
 }
 ```
+%%END_EMBED%%
 
-%%TEST(InferByFunctionParameter, 3)%%
+%%BEGIN_EMBED(Inline_Block_Expression_InferByFunctionParameter)%%
 ```cs
 
 void F(int x)
@@ -60,8 +63,9 @@ void Main()
 	F(inline { return 3; });
 }
 ```
+%%END_EMBED%%
 
-%%TEST(DifferentReturnType, $Error)%%
+%%BEGIN_EMBED(Inline_Block_Expression_DifferentReturnType)%%
 ```cs
 class B { }
 class C1 : B { }
@@ -81,8 +85,9 @@ void Main()
 	};
 }
 ```
+%%END_EMBED%%
 
-%%TEST(HintTypeFirst, )%%
+%%BEGIN_EMBED(Inline_Block_Expression_HintTypeFirst)%%
 ```cs
 class B { }
 class C1 : B { }
@@ -102,19 +107,22 @@ void Main()
 	};
 }
 ```
+%%END_EMBED%%
 
-%%TEST(ShouldNotBeVoid, $Error)%%
+%%BEGIN_EMBED(Inline_Block_Expression_ShouldNotBeVoid)%%
 ```cs
 void Main()
 {
 	var s = inline { };
 }
 ```
+%%END_EMBED%%
 
-%%TEST(TopLevelNotAllowed, $Error)%%
+%%BEGIN_EMBED(Inline_Block_Expression_TopLevelNotAllowed)%%
 ```cs
 void Main()
 {
 	inline { @{hello} } 
 }
 ```
+%%END_EMBED%%

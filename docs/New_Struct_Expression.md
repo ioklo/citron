@@ -8,7 +8,7 @@
 NewStructExp(StructConstructorSymbol symbol, [Argument] args)
 ```
 
-%%TEST(Basic, 3)%%
+%%BEGIN_EMBED(New_Struct_Expression_Basic)%%
 ```cs
 struct S
 {
@@ -21,6 +21,7 @@ void Main()
 	@${s.x}
 }
 ```
+%%END_EMBED%%
 
 
 # Reference

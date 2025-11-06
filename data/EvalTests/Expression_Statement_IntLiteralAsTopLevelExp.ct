@@ -1,0 +1,5 @@
+//@ $Error
+void Main()
+{
+	3; // error
+}

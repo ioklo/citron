@@ -5,7 +5,7 @@
 CastClassExp(Exp source, ClassSymbol symbol)
 ```
 
-%%TEST(Upcast, )%%
+%%BEGIN_EMBED(Cast_Class_Expression_Upcast)%%
 ```cs
 class B { }
 class C : B { }
@@ -17,6 +17,7 @@ void Main()
 }
 
 ```
+%%END_EMBED%%
 
 # Reference
 [Expressions](Expressions.md)

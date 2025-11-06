@@ -1,0 +1,18 @@
+//@ $Error
+class B { }
+class C1 : B { }
+class C2 : B { }
+
+void Main()
+{
+	var x = inline {
+		if (true) 
+		{
+			return new C1();
+		}
+		else 
+		{
+			return new C2();
+		}
+	};
+}

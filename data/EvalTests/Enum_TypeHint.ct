@@ -1,0 +1,30 @@
+//@ 
+enum E 
+{
+    First,
+    Second(int x)
+}
+
+
+// 함수 인자
+void F1(E e)
+{
+}
+
+E F2()
+{
+    return .First;
+}
+
+void Main()
+{
+    // 1. local variable declaration의 initialization 부분
+    E e = .Second(2);
+
+    // 2. 함수 인자
+    F1(.First);
+    
+    // 3. 함수 리턴
+    e = F2();
+}
+

@@ -1,6 +1,6 @@
 : Stmt, Exp
 
-%%TEST(Basic, 01234)%%
+%%BEGIN_EMBED(For_Statement_Basic)%%
 ```cs
 void Main()
 {
@@ -8,8 +8,9 @@ void Main()
         @$i
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Initializer, hi234)%%
+%%BEGIN_EMBED(For_Statement_Initializer)%%
 ```
 
 void F()
@@ -24,8 +25,9 @@ void Main()
         @$i
 }
 ```
+%%END_EMBED%%
 
-%%TEST(EmptyInitializer, 01234)%%
+%%BEGIN_EMBED(For_Statement_EmptyInitializer)%%
 ```cs
 void Main()
 {
@@ -36,8 +38,9 @@ void Main()
 }
 
 ```
+%%END_EMBED%%
 
-%%TEST(Scope, 001224364834)%%
+%%BEGIN_EMBED(For_Statement_Scope)%%
 ```cs
 void Main()
 {
@@ -52,8 +55,9 @@ void Main()
     @$i$j
 }
 ```
+%%END_EMBED%%
 
-%%TEST(EmptyCond, 01234)%%
+%%BEGIN_EMBED(For_Statement_EmptyCond)%%
 ```cs
 void Main()
 {
@@ -64,8 +68,9 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%
 
-%%TEST(EmptyContinueExp, 01234 )%%
+%%BEGIN_EMBED(For_Statement_EmptyContinueExp)%%
 ```cs
 void Main()
 {
@@ -76,8 +81,9 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%
 
-%%TEST(EmptyAll, 01234)%%
+%%BEGIN_EMBED(For_Statement_EmptyAll)%%
 ```cs
 void Main()
 {
@@ -90,3 +96,4 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%

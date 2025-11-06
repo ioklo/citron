@@ -1,4 +1,4 @@
-%%TEST(For, 123end)%%
+%%BEGIN_EMBED(Break_Statement_For)%%
 ```cs
 void Main()
 {
@@ -11,8 +11,9 @@ void Main()
     @end
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Foreach, 67end)%%
+%%BEGIN_EMBED(Break_Statement_Foreach)%%
 ```cs
 void Main()
 {
@@ -25,8 +26,9 @@ void Main()
     @end
 }
 ```
+%%END_EMBED%%
 
-%%TEST(NestedFor, 6767)%%
+%%BEGIN_EMBED(Break_Statement_NestedFor)%%
 ```cs
 void Main()
 {
@@ -40,3 +42,4 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%

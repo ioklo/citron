@@ -9,7 +9,7 @@
 NewEnumElemExp(EnumElemSymbol symbol, [Argument] args)
 ```
 
-%%TEST(Basic, )%%
+%%BEGIN_EMBED(New_Enum_Element_Expression_Basic)%%
 ```
 enum E { First, Second(int i) }
 void Main()
@@ -18,8 +18,9 @@ void Main()
 	e = E.Second(2);
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Shorthand,  )%%
+%%BEGIN_EMBED(New_Enum_Element_Expression_Shorthand)%%
 ```
 enum E { First, Second(int i) }
 void Main()
@@ -28,6 +29,7 @@ void Main()
 	e = .Second(2);
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Enum_Element](Enum_Element.md)

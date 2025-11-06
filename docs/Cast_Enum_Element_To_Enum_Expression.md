@@ -5,7 +5,7 @@
 CastEnumElemToEnumExp(Exp source, EnumSymbol symbol)
 ```
 
-%%TEST(Basic, )%%
+%%BEGIN_EMBED(Cast_Enum_Element_To_Enum_Expression_Basic)%%
 ```cs
 enum E { First, Second(int i) }
 
@@ -16,6 +16,7 @@ void Main()
 }
 
 ```
+%%END_EMBED%%
 
 # Reference
 [Expressions](Expressions.md)

@@ -1,6 +1,6 @@
 # Async
 
-%%TEST(Async, 50504950)%%
+%%BEGIN_EMBED(Task_Async)%%
 ```
 void Main()
 {
@@ -29,9 +29,10 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%
 
 # Await
-%%TEST(Await_LocalScope, )%%
+%%BEGIN_EMBED(Task_Await_LocalScope)%%
 ```
 void F()
 {
@@ -51,3 +52,4 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%

@@ -10,7 +10,7 @@ if (<exp>) <embeddable-stmt> else <embeddable-stmt>
 IfStmt(Exp cond, [Stmt] body, [Stmt] elseBody)
 ```
 
-%%TEST(Basic, good)%%
+%%BEGIN_EMBED(If_Statement_Basic)%%
 ```cs
 void Main()
 {
@@ -22,8 +22,9 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%
 
-%%TEST(BasicElse, pass)%%
+%%BEGIN_EMBED(If_Statement_BasicElse)%%
 ```cs
 void Main()
 {
@@ -31,8 +32,9 @@ void Main()
     else @{pass}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(NestedIf, completed)%%
+%%BEGIN_EMBED(If_Statement_NestedIf)%%
 ```cs
 void Main()
 {
@@ -43,6 +45,7 @@ void Main()
     @completed
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Expressions](Expressions.md)

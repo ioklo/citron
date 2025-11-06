@@ -1,0 +1,17 @@
+//@ 2
+struct S
+{
+	int x;
+	
+	void Func()
+	{
+	    @$x
+	}
+}
+
+void Main()
+{
+	var s = S(2);
+    var f = s.Func;
+    f();
+}

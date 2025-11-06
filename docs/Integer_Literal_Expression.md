@@ -4,21 +4,23 @@
 ```
 환경의 result에 int값을 넣습니다
 
-%%TEST(Basic, 123456)%%
+%%BEGIN_EMBED(Integer_Literal_Expression_Basic)%%
 ```
 void Main()
 {
 	@${123456}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(OverTheLimit, $Error)%%
+%%BEGIN_EMBED(Integer_Literal_Expression_OverTheLimit)%%
 ```
 void Main()
 {
 	@${12345678901234567890123456789012345678901234567890}
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Integer](Integer.md)

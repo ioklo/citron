@@ -10,15 +10,16 @@ string의 따옴표 안쪽과 같이 취급합니다.
 CommandStmt([StringExp] stringExps)
 ```
 
-%%TEST(Basic, hi)%%
+%%BEGIN_EMBED(Command_Statement_Basic)%%
 ```cs
 void Main()
 {
     @hi
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Interpolated, abc177 abcworlddef false.84)%%
+%%BEGIN_EMBED(Command_Statement_Interpolated)%%
 ```cs
 void Main()
 {
@@ -29,8 +30,9 @@ void Main()
     @abc$i abc${s}def $b.84
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Block,          <- no ignore 8 blanks        hello world        good)%%
+%%BEGIN_EMBED(Command_Statement_Block)%%
 ```cs
 void Main()
 {
@@ -50,6 +52,7 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [String_Expression](String_Expression.md)

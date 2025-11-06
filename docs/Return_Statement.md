@@ -1,4 +1,4 @@
-%%TEST(ControlFlow, F)%%
+%%BEGIN_EMBED(Return_Statement_ControlFlow)%%
 ```cs
 void F()
 {    
@@ -15,8 +15,9 @@ void Main()
 }
 
 ```
+%%END_EMBED%%
 
-%%TEST(ReturnValue, F6)%%
+%%BEGIN_EMBED(Return_Statement_ReturnValue)%%
 ```cs
 int F(int i)
 {    
@@ -32,8 +33,9 @@ void Main()
     @${F(3)}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(LambdaReturn, 3)%%
+%%BEGIN_EMBED(Return_Statement_LambdaReturn)%%
 ```cs
 void Main()
 {
@@ -44,8 +46,9 @@ void Main()
     @${f()}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(SeqReturn, 01234)%%
+%%BEGIN_EMBED(Return_Statement_SeqReturn)%%
 ```cs
 seq int F()
 {
@@ -64,3 +67,4 @@ void Main()
     }
 }
 ```
+%%END_EMBED%%

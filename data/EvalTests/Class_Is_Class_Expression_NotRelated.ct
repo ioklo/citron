@@ -1,0 +1,10 @@
+//@ false
+class C { }
+class D { }
+
+void Main()
+{
+	var c = new C();
+	var t = c is D;
+	@$t
+}

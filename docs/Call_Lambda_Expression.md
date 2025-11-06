@@ -8,7 +8,7 @@
 CallLambdaExp(LambdaSymbol symbol, Loc callable, [Argument] args)
 ```
 
-%%TEST(General, 1 3 true)%%
+%%BEGIN_EMBED(Call_Lambda_Expression_General)%%
 ```cs
 void Main()
 {
@@ -19,8 +19,9 @@ void Main()
 	f(1, "3", true);
 }
 ```
+%%END_EMBED%%
 
-%%TEST(CallInstanceMember, 2)%%
+%%BEGIN_EMBED(Call_Lambda_Expression_CallInstanceMember)%%
 ```cs
 class C
 {
@@ -41,8 +42,9 @@ void Main()
     c.InvokeF(2);
 }
 ```
+%%END_EMBED%%
 
-%%TEST(CallStaticMember, 2)%%
+%%BEGIN_EMBED(Call_Lambda_Expression_CallStaticMember)%%
 ```cs
 
 class C
@@ -60,6 +62,7 @@ void Main()
     C.F(2);
 }
 ```
+%%END_EMBED%%
 
 # Reference
 [Lambda](Lambda.md)

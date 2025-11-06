@@ -1,0 +1,6 @@
+//@ hello"
+void Main()
+{
+    string x = "hello""";
+    @$x
+}

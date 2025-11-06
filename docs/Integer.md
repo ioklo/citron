@@ -7,7 +7,7 @@
 # Value
 struct type이지만 생성자를 써서 만들지 않고,  숫자 literal을 사용해서 생성합니다.
 
-%%TEST(Literal, 1024)%%
+%%BEGIN_EMBED(Integer_Literal)%%
 ```cs
 void Main() 
 { 
@@ -15,9 +15,10 @@ void Main()
     @$i
 }
 ```
+%%END_EMBED%%
 
 # 정수형 간에 미리 정의된 단항 연산, 대입 연산
-%%TEST(UnaryOperation, -3 3 -3 -2 -2 -3)%%
+%%BEGIN_EMBED(Integer_UnaryOperation)%%
 ```cs
 void Main()
 {
@@ -26,13 +27,14 @@ void Main()
     @ ${i++} ${i--} ${++i} ${--i}
 }
 ```
+%%END_EMBED%%
 
 # 정수형 간에 미리 정의된 이항 연산
 정수형끼리는 덧셈, 뺄셈, 곱셈, 나눗셈, 나머지 연산을 할 수 있습니다. 정수형끼리 비교도 가능합니다.
 - (int, int) -> int: { +, -, \*, /, % }
 - (int, int) -> bool: { <, >, <=, >=, == }
 
-%%TEST(BinaryOperation, -3 4 4 false true true -4 -6 -26 2 3 true false true true false false true false true true)%%
+%%BEGIN_EMBED(Integer_BinaryOperation)%%
 ```cs
 void Main()
 {
@@ -49,3 +51,4 @@ void Main()
     @ ${2 < 4} ${4 < 2} ${2 <= 2} ${1 <= 2} ${3 <= 2} ${-10 > 20} ${20 > -10} ${-10 >= 20} ${20 >= -10} ${28 >= 28}
 }
 ```
+%%END_EMBED%%

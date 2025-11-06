@@ -1,0 +1,15 @@
+//@ hello
+struct S
+{
+	string s;
+	void Print()
+	{
+		@$s
+	}
+}
+
+void Main()
+{
+	var s = S("hello");
+	s.Print();
+}

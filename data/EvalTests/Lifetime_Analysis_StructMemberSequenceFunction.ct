@@ -1,0 +1,24 @@
+//@ $Error
+// $Error()
+
+struct S
+{
+    int x;
+
+    // 이 함수의 리턴 값에는 this를 함유하게 되는데, lifetime이 같으므로 컴파일 가능하다
+    seq int F()
+    {
+        yield this->x; // capture this(S*)
+    }
+}
+
+void Main()
+{
+    local seq<int> sq;
+    {
+        S s = S(3);
+        sq = s.F(); // 에러, local variable의 seq call, 상위 스코프로 assign 불가
+                    // s.F()의 lifetime은 s와 같고, sq의 lifetime은 그보다 길어지므로 대입이 불가능하다
+    }
+}
+

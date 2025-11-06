@@ -1,0 +1,9 @@
+//@ 
+enum E { First, Second(int i) }
+
+void Main()
+{
+	E.Second s = E.Second(2);
+	E e = s; // CastEnumElemToEnumExp(LoadExp(LocalVarLoc(s)), E)
+}
+

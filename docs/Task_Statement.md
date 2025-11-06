@@ -1,4 +1,4 @@
-%%TEST(Basic, 49505050)%%
+%%BEGIN_EMBED(Task_Statement_Basic)%%
 ```
 // 49505050
 
@@ -25,3 +25,4 @@ void Main()
     @$sum$sum2
 }
 ```
+%%END_EMBED%%

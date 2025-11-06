@@ -1,4 +1,4 @@
-%%TEST(General, 2)%%
+%%BEGIN_EMBED(List_Indexer_Location_General)%%
 ```cs
 void Main()
 {
@@ -6,3 +6,4 @@ void Main()
 	@${a[1]}
 }
 ```
+%%END_EMBED%%

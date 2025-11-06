@@ -8,7 +8,7 @@
 ClassAsClassExp(Exp exp, ClassSymbol symbol)
 ```
 
-%%TEST(Basic, 2)%%
+%%BEGIN_EMBED(Class_As_Class_Expression_Basic)%%
 ```cs
 class B { }
 class C : B { public int x; }
@@ -22,8 +22,9 @@ void Main()
 		@${c.x}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(NotRelated, ok)%%
+%%BEGIN_EMBED(Class_As_Class_Expression_NotRelated)%%
 ```cs
 class C { }
 class D { }
@@ -37,3 +38,4 @@ void Main()
 		@ok
 }
 ```
+%%END_EMBED%%

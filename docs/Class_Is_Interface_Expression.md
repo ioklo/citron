@@ -8,7 +8,7 @@
 ClassIsInterfaceExp(Exp exp, InterfaceSymbol symbol)
 ```
 
-%%TEST(Basic, true)%%
+%%BEGIN_EMBED(Class_Is_Interface_Expression_Basic)%%
 ```cs
 interface I { }
 
@@ -23,8 +23,9 @@ void Main()
 	@$t
 }
 ```
+%%END_EMBED%%
 
-%%TEST(NotRelated, false)%%
+%%BEGIN_EMBED(Class_Is_Interface_Expression_NotRelated)%%
 ```cs
 interface I { }
 class C { }
@@ -36,3 +37,4 @@ void Main()
 	@$t
 }
 ```
+%%END_EMBED%%

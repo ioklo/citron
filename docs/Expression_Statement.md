@@ -1,4 +1,4 @@
-%%TEST(AssignAllowed, )%%
+%%BEGIN_EMBED(Expression_Statement_AssignAllowed)%%
 ```
 void Main()
 {
@@ -7,11 +7,13 @@ void Main()
 }
 
 ```
+%%END_EMBED%%
 
-%%TEST(IntLiteralAsTopLevelExp, $Error)%%
+%%BEGIN_EMBED(Expression_Statement_IntLiteralAsTopLevelExp)%%
 ```
 void Main()
 {
 	3; // error
 }
 ```
+%%END_EMBED%%

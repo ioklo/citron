@@ -19,7 +19,7 @@ LambdaExp(LambdaSymbol symbol, [Argument] args)
 ```
 args는 캡쳐할 변수
 
-%%TEST(Basic, hi)%%
+%%BEGIN_EMBED(Lambda_Expression_Basic)%%
 ```cs
 void Main() 
 {
@@ -27,10 +27,11 @@ void Main()
     f();
 }
 ```
+%%END_EMBED%%
 
 
 # 람다 만들고 사용하기
-%%TEST(Usage, 3 hi)%%
+%%BEGIN_EMBED(Lambda_Expression_Usage)%%
 ```cs
 void Main()
 {
@@ -44,11 +45,12 @@ void Main()
     @$v1, $v2
 }
 ```
+%%END_EMBED%%
 
 # Function as Lambda
 변수의 초기화 구문(또는 호출인자)에 함수 이름만 쓰면 람다로 만들어집니다. 
 
-%%TEST(GlobalFunctionAsLambda, hi)%%
+%%BEGIN_EMBED(Lambda_Expression_GlobalFunctionAsLambda)%%
 ```cs
 void Func()
 {
@@ -61,9 +63,10 @@ void Main()
     f();
 }
 ```
+%%END_EMBED%%
 
 멤버함수도 함수 호출 부분이 없으면 인스턴스와 함께 바인딩 됩니다
-%%TEST(MemberFunctionAsLambda, 2)%%
+%%BEGIN_EMBED(Lambda_Expression_MemberFunctionAsLambda)%%
 ```
 struct S
 {
@@ -82,12 +85,13 @@ void Main()
     f();
 }
 ```
+%%END_EMBED%%
 
 
 # 캡쳐
 람다가 본문에서 사용하는 변수가 람다 바깥에 있는 경우 람다는 해당 값을 복사해서 저장합니다. 이를 캡쳐라고 합니다. 값을 복사했기 때문에, 람다가 생성된 이후로 변수의 값이 바뀌어도 적용되지 않습니다. 바꾸고 싶으면 local pointer나 box pointer를 사용해야 합니다.
 
-%%TEST(Capture_Copy, 0)%%
+%%BEGIN_EMBED(Lambda_Expression_Capture_Copy)%%
 ```cs
 void Main()
 {
@@ -99,8 +103,9 @@ void Main()
     @${l()}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Capture_LocalPtr, 1)%%
+%%BEGIN_EMBED(Lambda_Expression_Capture_LocalPtr)%%
 ```cs
 void Main()
 {
@@ -115,8 +120,9 @@ void Main()
     @${l()}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Capture_BoxPtr, 2)%%
+%%BEGIN_EMBED(Lambda_Expression_Capture_BoxPtr)%%
 ```cs
 void Main()
 {
@@ -129,11 +135,12 @@ void Main()
     @${l()}
 }
 ```
+%%END_EMBED%%
 
 # this 캡쳐
 람다 내부에서 사용한 `this`는 람다가 선언된 본문의 `this`를 의미합니다. 바깥 본문의 this도 캡쳐 대상입니다.
 
-%%TEST(Capture_This, 5)%%
+%%BEGIN_EMBED(Lambda_Expression_Capture_This)%%
 ```cs
 struct S
 {
@@ -157,9 +164,10 @@ void Main()
     s.F();
 }
 ```
+%%END_EMBED%%
 
 일반 로컬 변수와 this 변수의 캡쳐후 결과가 다르기 때문에, 람다 내부에서는 멤버변수를 바로 쓸 수 없습니다. 필요한 경우 로컬변수에 복사해서 씁니다.
-%%TEST(UseThisMemberDirectly, $Error) %%
+%%BEGIN_EMBED(Lambda_Expression_UseThisMemberDirectly)%%
 ```cs
 struct S
 {
@@ -179,6 +187,7 @@ void Main()
     s.F();
 }
 ```
+%%END_EMBED%%
 
 # Nested Capture
 

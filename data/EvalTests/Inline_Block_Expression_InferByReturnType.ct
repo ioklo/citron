@@ -1,0 +1,6 @@
+//@ 3
+void Main()
+{
+	var x = inline { return 3; };
+	@$x
+}

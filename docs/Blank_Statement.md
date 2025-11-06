@@ -1,4 +1,4 @@
-%%TEST(For, 01234)%%
+%%BEGIN_EMBED(Blank_Statement_For)%%
 ```cs
 int Add(int i)
 {
@@ -11,8 +11,9 @@ void Main()
     for(int i = 0; i < 5; i = Add(i));
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Foreach, helloworld1)%%
+%%BEGIN_EMBED(Blank_Statement_Foreach)%%
 ```cs
 seq string F()
 {
@@ -29,3 +30,4 @@ void Main()
 }
 
 ```
+%%END_EMBED%%

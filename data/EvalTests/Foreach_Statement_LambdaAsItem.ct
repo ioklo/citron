@@ -1,0 +1,14 @@
+//@ 12343
+void Main()
+{
+    list<func<void>> fs = [];
+
+    foreach(var x in [1, 2, 3, 4])
+        fs.Add(() => @{$x});
+
+    int a = 1, b = 2;
+    fs.Add(() => ${a + b}); // a, b두개가 캡쳐되서 들어간다
+
+    foreach(var f in fs)
+        f();
+}

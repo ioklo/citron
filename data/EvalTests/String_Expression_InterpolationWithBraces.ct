@@ -1,0 +1,9 @@
+//@ hello.3
+void Main()
+{
+    int i = 2;
+    string x = "hell";
+    string y = "${x + "o"}.${i + 1}";
+    
+    @${y}
+}

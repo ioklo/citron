@@ -1,5 +1,5 @@
 
-%%TEST(Basic, 2)%%
+%%BEGIN_EMBED(Class_Member_Variable_Location_Basic)%%
 ```
 class X
 {
@@ -13,8 +13,9 @@ void Main()
     @${x.x}
 }
 ```
+%%END_EMBED%%
 
-%%TEST(Static, 11)%%
+%%BEGIN_EMBED(Class_Member_Variable_Location_Static)%%
 ```
 // 11
 class C
@@ -35,3 +36,4 @@ void Main()
 	c.F();
 }
 ```
+%%END_EMBED%%
