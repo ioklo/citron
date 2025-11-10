@@ -1,6 +1,8 @@
 #include "QBodyContext.h"
 
 #include "Infra/Unreachable.h"
+#include "Infra/Exceptions.h"
+
 #include "QIR/QInsts.h"
 #include "QIR/QValues.h"
 
@@ -128,6 +130,16 @@ QValue QBodyContext::AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QValue>&
     auto lv = NewValue();
     QBlockWriter::AddInst(QInst_Intrinsic{kind, lv, move(args)});
     return lv;
+}
+
+QValue_Named QBodyContext::NewValue()
+{
+    throw NotImplementedException{};
+}
+
+size_t QBodyContext::GetExpTypeSize(MExp* exp)
+{
+    throw NotImplementedException{};
 }
 
 } // Citron::IR0IR1Translator

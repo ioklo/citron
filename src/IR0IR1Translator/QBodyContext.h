@@ -53,7 +53,7 @@ class QBodyContext : QBlockWriter
 public:
     QBodyContext(QFactoryPtr& qFactory);
 
-    QBlock* AddBlock(std::string&& debugText) { QBlockWriter::AddBlock(std::move(debugText)); }
+    QBlock* AddBlock(std::string&& debugText) { return QBlockWriter::AddBlock(std::move(debugText)); }
     QBlock* GetEntryBlock() { return QBlockWriter::GetEntryBlock(); }
     template<typename TQInst, typename... TArgs> 
         requires std::convertible_to<TQInst, QInst>

@@ -30,7 +30,8 @@ public:
     {
         throw NotImplementedException{};
     }
-
+    
+    // 스택에 변수를 둔다.
     ResultType Visit(MStmt_LocalVarDecl* stmt)
     {
         throw NotImplementedException{};

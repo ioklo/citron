@@ -51,5 +51,5 @@ TEST(QEvaluator, DebugPrint_PrintWell)
 }
 
 TEST(QEvaluator, Translate)
-{   
+{
 }
