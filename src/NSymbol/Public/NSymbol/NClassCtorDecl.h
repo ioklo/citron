@@ -27,7 +27,8 @@ public:
     bool bTrivial;
 
 public:
-    NClassCtorDecl(NClassDecl* _class, RAccessor accessor, bool bTrivial, std::vector<std::string>&& typeParams, std::vector<RFuncParameter> parameters, bool bLastParamVariadic);
+    NSYMBOL_API NClassCtorDecl(NClassDecl* _class);
+    NSYMBOL_API void Init(RAccessor accessor, bool bTrivial, std::vector<std::string>&& typeParams, std::vector<RFuncParameter> parameters, bool bLastParamVariadic);
 
 public:
     // from NDecl

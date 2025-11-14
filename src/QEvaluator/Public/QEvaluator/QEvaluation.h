@@ -12,6 +12,12 @@ class RModule;
 class QData;
 class NGlobalFuncDecl;
 
-QEVALUATOR_API std::expected<void, DiagPtr> Evaluate(std::span<RModule> modules, QData& qData, NGlobalFuncDecl* nEntry);
+class IEvalQDataCommandHandler
+{
+};
+
+using IEvalQDataCommandHandlerPtr = std::shared_ptr<IEvalQDataCommandHandler>;
+
+QEVALUATOR_API std::expected<void, DiagPtr> EvaluateQData(std::span<RModule*> modules, QData* qData, NGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler);
 
 } // namespace Citron

@@ -7,21 +7,21 @@
 
 namespace Citron {
 
-class RFactory;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 class NModule;
 class NNamespaceDecl;
 class NDecl;
 
 class NFactory
 {
-    RFactory* rFactory;
+    RFactoryPtr rFactory;
 
     std::vector<std::unique_ptr<NModule>> nModules;
     std::vector<std::unique_ptr<NNamespaceDecl>> namespaceDecls;
     std::vector<std::unique_ptr<NDecl>> nDecls;
 
 public:
-    NSYMBOL_API NFactory(RFactory* rFactory);
+    NSYMBOL_API NFactory(RFactoryPtr& rFactory);
     NSYMBOL_API ~NFactory();
     NSYMBOL_API NModule* MakeNModule(std::string&& name);
 

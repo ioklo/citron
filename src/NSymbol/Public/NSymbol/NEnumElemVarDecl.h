@@ -19,8 +19,8 @@ public:
     RType* declType; // lazy-init
 
 public:
-    NSYMBOL_API NEnumElemVarDecl(NEnumElemDecl* outer, const std::string& name);
-    NSYMBOL_API void InitDeclType(RType* declType);
+    NSYMBOL_API NEnumElemVarDecl(NEnumElemDecl* outer);
+    NSYMBOL_API void Init(const std::string& name, RType* declType);
 
 public:
     // from NDecl

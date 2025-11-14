@@ -1,19 +1,19 @@
 #pragma once
-#include <vector>
+#include <span>
 
 namespace Citron {
 
 class NFuncDecl;
-class MStmt;
+class SStmt;
 
 namespace SyntaxIR0Translator {
 
 class TranslationContext;
 
-class BodyPhaseContext
+class TranslateBodyContext
 {
 public:
-    void AddBody(NFuncDecl* funcDecl, std::vector<MStmt*>&& mStmts);
+    void Translate(NFuncDecl* funcDecl, std::span<SStmt*> mStmts);
     void MarkFailed();
     TranslationContext MakeTranslationContext();
 };

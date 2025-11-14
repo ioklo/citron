@@ -15,5 +15,4 @@ public:
     std::span<MFuncBody> GetAllFuncBodies() { return funcBodies; }
 };
 
-
 } // namespace Citron

@@ -8,12 +8,17 @@ using namespace std;
 namespace Citron
 {
 
-NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, bool bTrivial)
-    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, /*typeParams*/ {})
-    , _struct{_struct}
-    , accessor{accessor}
-    , bTrivial{bTrivial}
+NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct)
+    : _struct{_struct}
 {
+}
+
+void NStructCtorDecl::Init(RAccessor accessor, bool bTrivial)
+{   
+    this->accessor = accessor;
+    this->bTrivial = bTrivial;
+
+    NCommonFuncDeclComponent::Init(/*bStatic*/false, /*bSeqFunc*/false, /*typeParams*/{});
 }
 
 void NStructCtorDecl::InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic)

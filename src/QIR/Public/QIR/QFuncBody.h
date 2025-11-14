@@ -8,7 +8,7 @@ class NFuncDecl;
 
 struct QFuncBody
 {   
-    NFuncDecl* funcDecl;
+    NFuncDecl* nFuncDecl;
     QBlock* entry;
 };
 

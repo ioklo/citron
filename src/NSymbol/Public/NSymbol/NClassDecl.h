@@ -47,6 +47,8 @@ class NClassDecl
     std::unordered_map<RName, NClassVarDecl*> varsMap;
 
 public:
+    using NTypeDeclContainerComponent::AddType;
+
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NDecl* GetNOuter() override;

@@ -26,10 +26,10 @@ struct InstructionPointer
 };
 
 } // namespace 
-expected<void, DiagPtr> Evaluate(span<RModule> rModules, QData& qData, NGlobalFuncDecl* nEntry)
+expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler)
 {
-    auto bodies = qData.GetAllBodies();
-    auto i = ranges::find_if(bodies, [nEntry](QFuncBody& body) { return body.funcDecl == nEntry; });
+    auto bodies = qData->GetAllBodies();
+    auto i = ranges::find_if(bodies, [nEntry](QFuncBody& body) { return body.nFuncDecl == nEntry; });
     if (i == bodies.end()) return unexpected{nullptr};
 
     InstructionPointer ip{i->entry, 0};

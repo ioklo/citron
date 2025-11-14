@@ -7,13 +7,18 @@ using namespace std;
 namespace Citron
 {
 
-NStructFuncDecl::NStructFuncDecl(NStructDecl* _struct, RAccessor accessor, std::string name, std::vector<std::string>&& typeParams, bool bStatic)
-    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, move(typeParams))
-    , _struct(_struct)
-    , accessor(accessor)
-    , name(move(name))
-    , bStatic(bStatic)
+NStructFuncDecl::NStructFuncDecl(NStructDecl* _struct)
+    : _struct{_struct}
 {
+}
+
+void NStructFuncDecl::Init(RAccessor accessor, std::string name, std::vector<std::string>&& typeParams, bool bStatic)
+{
+    this->accessor = accessor;
+    this->name = move(name);
+    this->bStatic = bStatic;
+
+    NCommonFuncDeclComponent::Init(/*bStatic*/false, /*bSeqFunc*/false, move(typeParams));
 }
 
 void NStructFuncDecl::InitFuncReturnAndParams(RType* funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)

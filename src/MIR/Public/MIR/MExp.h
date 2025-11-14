@@ -439,11 +439,11 @@ public:
 class MExp_CallGlobalFunc : public MExp
 {
 public:
-    RGlobalFuncDecl* funcDecl;
-    RTypeArguments* typeArgs;
+    RGlobalFuncDecl* rFuncDecl;
+    RTypeArguments* rTypeArgs;
     std::vector<MArgument> args;
 public:
-    MIR_API MExp_CallGlobalFunc(RGlobalFuncDecl* funcDecl, RTypeArguments* typeArgs, const std::vector<MArgument>& args);
+    MIR_API MExp_CallGlobalFunc(RGlobalFuncDecl* rFuncDecl, RTypeArguments* rTypeArgs, const std::vector<MArgument>& args);
 
     MIR_API RType* GetType(RFactory& factory) override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }

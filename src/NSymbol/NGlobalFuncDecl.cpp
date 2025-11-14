@@ -8,12 +8,16 @@ using namespace std;
 
 namespace Citron {
 
-NGlobalFuncDecl::NGlobalFuncDecl(NNamespaceDecl* outer, RAccessor accessor, bool bStatic, bool bSeqFunc, RName&& rName, std::vector<std::string>&& typeParams)
-    : NCommonFuncDeclComponent(bStatic, bSeqFunc, std::move(typeParams))
-    , outer{outer}
-    , accessor{accessor}
-    , name{std::move(rName)}
+NGlobalFuncDecl::NGlobalFuncDecl(NNamespaceDecl* outer)
+    : outer{outer}
 {
+}
+
+void NGlobalFuncDecl::Init(RAccessor accessor, bool bSeqFunc, RName&& rName, std::vector<std::string>&& typeParams)
+{   
+    this->accessor = accessor;
+    this->name = std::move(rName);
+    NCommonFuncDeclComponent::Init(/*bStatic*/true, bSeqFunc, std::move(typeParams));
 }
 
 NDecl* NGlobalFuncDecl::GetNOuter()

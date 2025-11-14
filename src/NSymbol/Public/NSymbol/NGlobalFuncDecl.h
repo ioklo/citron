@@ -31,7 +31,12 @@ public:
     RName name;
 
 public:
-    NSYMBOL_API NGlobalFuncDecl(NNamespaceDecl* outer, RAccessor accessor, bool bStatic, bool bSeqFunc, RName&& name, std::vector<std::string>&& typeParams);
+    NSYMBOL_API NGlobalFuncDecl(NNamespaceDecl* outer);
+    NSYMBOL_API void Init(RAccessor accessor, bool bSeqFunc, RName&& name, std::vector<std::string>&& typeParams);
+    void InitFuncReturnAndParams(RType* funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+    {
+        NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(funcReturn), move(funcParameters), bLastParameterVariadic);
+    }
 
     // from NDecl
     RDecl* GetRDecl() override { return this; }

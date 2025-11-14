@@ -1,4 +1,4 @@
-#include "MemberDeclPhaseContext.h"
+#include "BuildTypeDependentSymbolContext.h"
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
@@ -9,12 +9,18 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-RType* MemberDeclPhaseContext::MakeType(STypeExp* sTypeExp, NDecl* decl)
+BuildTypeDependentSymbolContext::BuildTypeDependentSymbolContext(const NFactoryPtr& nFactory)
+    : nFactory{nFactory}
+{
+}
+
+
+RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl)
 {
     throw NotImplementedException{};
 }
 
-tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDecl* decl, vector<SFuncParam>& sParams)
+tuple<vector<RFuncParameter>, bool> BuildTypeDependentSymbolContext::MakeParameters(NDecl* decl, vector<SFuncParam>& sParams)
 {
     bool bLastParamVariadic = false;
 
@@ -46,16 +52,6 @@ tuple<vector<RFuncParameter>, bool> MemberDeclPhaseContext::MakeParameters(NDecl
     }
 
     return make_tuple(move(rParams), bLastParamVariadic);
-}
-
-void MemberDeclPhaseContext::AddBodyPhaseTask(std::function<void(BodyPhaseContext&)> task)
-{
-    throw NotImplementedException{};
-}
-
-void MemberDeclPhaseContext::AddTrivialCtorPhaseTask(std::function<void()> task)
-{
-    throw NotImplementedException{};
 }
 
 }

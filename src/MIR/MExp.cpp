@@ -253,14 +253,14 @@ RType* MExp_CallInternalBinaryOperator::GetType(RFactory& factory)
     }
 }
 
-MExp_CallGlobalFunc::MExp_CallGlobalFunc(RGlobalFuncDecl* funcDecl, RTypeArguments* typeArgs, const vector<MArgument>& args)
-    : funcDecl(funcDecl), typeArgs(typeArgs), args(args)
+MExp_CallGlobalFunc::MExp_CallGlobalFunc(RGlobalFuncDecl* rFuncDecl, RTypeArguments* rTypeArgs, const vector<MArgument>& args)
+    : rFuncDecl{rFuncDecl}, rTypeArgs{rTypeArgs}, args{args}
 {
 }
 
 RType* MExp_CallGlobalFunc::GetType(RFactory& factory)
 {
-    return funcDecl->GetReturnType(*typeArgs, factory);
+    return rFuncDecl->GetReturnType(*rTypeArgs, factory);
 }
 
 MExp_NewClass::MExp_NewClass(RClassCtorDecl* ctorDecl, RTypeArguments* typeArgs, const vector<MArgument>& args)

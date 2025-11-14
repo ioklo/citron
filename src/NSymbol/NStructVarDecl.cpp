@@ -10,16 +10,16 @@ using namespace std;
 
 namespace Citron {
 
-NStructVarDecl::NStructVarDecl(NStructDecl* _struct, RAccessor accessor, bool bStatic, std::string name)
-    : _struct(_struct)
-    , accessor(accessor)
-    , bStatic(bStatic)
-    , name(move(name))
+NStructVarDecl::NStructVarDecl(NStructDecl* _struct)
+    : _struct{_struct}
 {
 }
 
-void NStructVarDecl::InitDeclType(RType* declType)
+void NStructVarDecl::Init(RAccessor accessor, bool bStatic, const std::string& name, RType* declType)
 {
+    this->accessor = accessor;
+    this->bStatic = bStatic;
+    this->name = move(name);
     this->declType = declType;
 }
 

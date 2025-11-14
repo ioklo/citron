@@ -12,7 +12,7 @@ using namespace std;
 
 namespace Citron {
 
-NFactory::NFactory(RFactory* rFactory)
+NFactory::NFactory(RFactoryPtr& rFactory)
     : rFactory{rFactory}
 {
 }

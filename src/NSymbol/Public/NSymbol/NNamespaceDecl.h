@@ -53,6 +53,8 @@ public:
 
     using NTypeDeclContainerComponent::AddType;
 
+    void AddGlobalFuncDecl(NGlobalFuncDecl* func) { NFuncDeclContainerComponent<NGlobalFuncDecl>::AddFunc(func); }
+
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }

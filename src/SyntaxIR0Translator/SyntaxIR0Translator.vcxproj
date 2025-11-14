@@ -42,8 +42,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EnumTasks.cpp" />
     <ClCompile Include="FuncContext.cpp" />
-    <ClCompile Include="BodyPhaseContext.cpp" />
+    <ClCompile Include="PhaseManager.cpp" />
+    <ClCompile Include="ResolveTypeHierarchyContext.cpp" />
+    <ClCompile Include="StructCtorTask.cpp" />
+    <ClCompile Include="StructFuncTask.cpp" />
+    <ClCompile Include="StructTask.cpp" />
+    <ClCompile Include="StructVarTask.cpp" />
+    <ClCompile Include="TranslateBodyContext.cpp" />
     <ClCompile Include="DeclTypeInfo.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
@@ -56,8 +63,8 @@
     <ClCompile Include="IrExp.cpp" />
     <ClCompile Include="IrExpAndMemberNameToIrExpTranslation.cpp" />
     <ClCompile Include="IrExpToMExpTranslation.cpp" />
-    <ClCompile Include="MemberDeclPhaseContext.cpp" />
-    <ClCompile Include="EnumTranslation.cpp" />
+    <ClCompile Include="GlobalFuncTask.cpp" />
+    <ClCompile Include="BuildTypeDependentSymbolContext.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="DesignatedDiagnostic.cpp" />
     <ClCompile Include="ModuleDecls.cpp" />
@@ -73,9 +80,8 @@
     <ClCompile Include="SExpToReExpTranslation.cpp" />
     <ClCompile Include="SExpToMExpTranslation.cpp" />
     <ClCompile Include="SExpToMLocTranslation.cpp" />
-    <ClCompile Include="SkeletonPhaseContext.cpp" />
+    <ClCompile Include="BuildTypeSymbolContext.cpp" />
     <ClCompile Include="SStmtToMStmtTranslation.cpp" />
-    <ClCompile Include="StructTranslation.cpp" />
     <ClCompile Include="SVarDeclToMStmtsTranslation.cpp" />
     <ClCompile Include="SyntaxIR0Translator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
@@ -83,13 +89,20 @@
     <ClCompile Include="TranslationContext.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SyntaxIR0TranslatorConfig.h" />
+    <ClInclude Include="EnumTasks.h" />
+    <ClInclude Include="GlobalFuncTask.h" />
+    <ClInclude Include="PhaseManager.h" />
+    <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0Translator.h" />
     <ClInclude Include="BinOpQueryService.h" />
-    <ClInclude Include="BodyPhaseContext.h" />
+    <ClInclude Include="ResolveTypeHierarchyContext.h" />
+    <ClInclude Include="StructCtorTask.h" />
+    <ClInclude Include="StructFuncTask.h" />
+    <ClInclude Include="StructTask.h" />
+    <ClInclude Include="StructVarTask.h" />
+    <ClInclude Include="TranslateBodyContext.h" />
     <ClInclude Include="CommonTranslation.h" />
     <ClInclude Include="DeclTypeInfo.h" />
     <ClInclude Include="DesignatedDiagnostic.h" />
-    <ClInclude Include="EnumTranslation.h" />
     <ClInclude Include="FuncContext.h" />
     <ClInclude Include="FuncMatching.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
@@ -101,9 +114,10 @@
     <ClInclude Include="IrExp.h" />
     <ClInclude Include="IrExpAndMemberNameToIrExpTranslation.h" />
     <ClInclude Include="IrExpToMExpTranslation.h" />
-    <ClInclude Include="MemberDeclPhaseContext.h" />
+    <ClInclude Include="BuildTypeDependentSymbolContext.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ModuleDecls.h" />
+    <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0TranslatorConfig.h" />
     <ClInclude Include="ReExp.h" />
     <ClInclude Include="ReExpToMExpTranslation.h" />
     <ClInclude Include="ReExpToMLocTranslation.h" />
@@ -116,13 +130,12 @@
     <ClInclude Include="SExpToMExpTranslation.h" />
     <ClInclude Include="SExpToMLocTranslation.h" />
     <ClInclude Include="SExpToReExpTranslation.h" />
-    <ClInclude Include="SkeletonPhaseContext.h" />
+    <ClInclude Include="BuildTypeSymbolContext.h" />
     <ClInclude Include="SStmtToMStmtTranslation.h" />
-    <ClInclude Include="StructTranslation.h" />
     <ClInclude Include="SVarDeclToMStmtsTranslation.h" />
-    <ClInclude Include="SyntaxIR0Translator.h" />
     <ClInclude Include="SRTFactory.h" />
     <ClInclude Include="TranslationContext.h" />
+    <ClInclude Include="TranslationTasks.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

@@ -9,13 +9,12 @@ using namespace std;
 
 namespace Citron {
 
-NEnumElemVarDecl::NEnumElemVarDecl(NEnumElemDecl* enumElem, const std::string& name)
+NEnumElemVarDecl::NEnumElemVarDecl(NEnumElemDecl* enumElem)
     : enumElem{enumElem}
-    , name{name}
 {
 }
 
-void Citron::NEnumElemVarDecl::InitDeclType(RType* declType)
+void NEnumElemVarDecl::Init(const std::string& name, RType* declType)
 {
     this->declType = declType;
 }

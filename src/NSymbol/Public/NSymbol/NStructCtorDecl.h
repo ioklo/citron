@@ -26,7 +26,8 @@ public:
     bool bTrivial;
 
 public:
-    NSYMBOL_API NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, bool bTrivial);
+    NSYMBOL_API NStructCtorDecl(NStructDecl* _struct);
+    NSYMBOL_API void Init(RAccessor accessor, bool bTrivial);
     NSYMBOL_API void InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic);
     NSYMBOL_API ~NStructCtorDecl();
 

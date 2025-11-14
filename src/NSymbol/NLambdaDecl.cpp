@@ -6,13 +6,20 @@ using namespace std;
 
 namespace Citron {
 
-NLambdaDecl::NLambdaDecl(NFuncDeclOuter* outer, RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
-    : NCommonFuncDeclComponent(/*bStatic*/ false, /*bSeqFunc*/ false, /*typeParams*/{}), outer{outer}, name{move(name)}
+NLambdaDecl::NLambdaDecl(NFuncDeclOuter* outer)
+    : outer{outer}
 {
+}
+
+void NLambdaDecl::Init(RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+{   
+    this->name = move(name);
+
+    NCommonFuncDeclComponent::Init(/*bStatic*/false, /*bSeqFunc*/false, /*typeParams*/{});
     NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcReturn), move(funcParameters), bLastParameterVariadic);
 }
 
-void NLambdaDecl::Init(std::vector<NLambdaVarDecl*>&& vars)
+void NLambdaDecl::InitVars(std::vector<NLambdaVarDecl*>&& vars)
 {
     for (auto& var : vars)
         varsMap.emplace(var->name, var);
