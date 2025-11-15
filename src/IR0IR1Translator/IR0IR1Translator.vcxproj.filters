@@ -16,6 +16,7 @@
     <ClInclude Include="MLocQInstsTranslation.h" />
     <ClInclude Include="MStmtQInstsTranslation.h" />
     <ClInclude Include="QBodyContext.h" />
+    <ClInclude Include="CommonQInstsTranslation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IR0IR1Translator.cpp" />
@@ -23,5 +24,6 @@
     <ClCompile Include="MLocQInstsTranslation.cpp" />
     <ClCompile Include="MStmtQInstsTranslation.cpp" />
     <ClCompile Include="QBodyContext.cpp" />
+    <ClCompile Include="CommonQInstsTranslation.cpp" />
   </ItemGroup>
 </Project>

@@ -1,14 +1,24 @@
 #pragma once
 #include <vector>
 #include <memory>
-
-#include "RSymbol/RFactory.h"
-#include "NSymbol/NFactory.h"
+#include <expected>
 
 #include "TranslationTasks.h"
 
 namespace Citron {
+
+struct MFuncBody;
+
+using LoggerPtr = std::shared_ptr<class Logger>;
+using DiagPtr = std::shared_ptr<struct Diag>;
+using MFactoryPtr = std::shared_ptr<class MFactory>;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
+using NFactoryPtr = std::shared_ptr<class NFactory>;
+
 namespace SyntaxIR0Translator {
+
+using SRTFactoryPtr = std::shared_ptr<class SRTFactory>;
+using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 
 // Phase 1 : ResolveTypeHierarchyPhase 
 // Phase 2 : BuildTypeDependentSymbolPhase 
@@ -16,9 +26,14 @@ namespace SyntaxIR0Translator {
 // Phase 4 : TranslateBodyPhase
 
 class PhaseManager
-{
+{   
+    LoggerPtr logger;
     RFactoryPtr rFactory;
     NFactoryPtr nFactory;
+    MFactoryPtr mFactory;
+
+    SRTFactoryPtr srtFactory;
+    BinOpQueryServicePtr binOpQueryService;
 
     std::vector<std::shared_ptr<IResolveTypeHierarchyTask>> resolveTypeHierarchyTasks;
     std::vector<std::shared_ptr<IBuildTypeDependentSymbolTask>> buildTypeDependentSymbolTasks;
@@ -26,7 +41,10 @@ class PhaseManager
     std::vector<std::shared_ptr<ITranslateBodyTask>> translatingBodyTasks;
 
 public:
-    PhaseManager(const RFactoryPtr& rFactory, const NFactoryPtr& nFactory);
+    PhaseManager(
+        const LoggerPtr& logger, 
+        const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, const MFactoryPtr& mFactory,
+        const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService);
     ~PhaseManager(); 
 
     void AddResolveTypeHierarchyTask(std::shared_ptr<IResolveTypeHierarchyTask>&& task);
@@ -34,7 +52,7 @@ public:
     void AddSynthesizeImplicitSymbolTask(std::shared_ptr<ISynthesizeImplicitSymbolTask>&& task);
     void AddTranslateBodyTask(std::shared_ptr<ITranslateBodyTask>&& task);
 
-    void Run();
+    std::expected<std::vector<MFuncBody>, DiagPtr> Run();
 };
 
 

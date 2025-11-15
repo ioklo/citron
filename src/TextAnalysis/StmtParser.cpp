@@ -97,7 +97,7 @@ SStmt* ParseIfStmt(Lexer* lexer, SFactory& factory)
     if (!body)
         return nullptr;
 
-    SEmbeddableStmt* elseBody;
+    SEmbeddableStmt* elseBody = nullptr;
     
     if (Accept<ElseToken>(&curLexer))
     {

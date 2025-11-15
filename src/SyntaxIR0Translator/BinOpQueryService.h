@@ -29,9 +29,10 @@ class BinOpQueryService
 
 public:
     BinOpQueryService(RFactory& factory);
-
     const std::vector<BinOpInfo>& GetInfos(SBinaryOpKind kind);
 };
+
+using BinOpQueryServicePtr = std::shared_ptr<BinOpQueryService>;
 
 } // namespace SyntaxIR0Translator
 

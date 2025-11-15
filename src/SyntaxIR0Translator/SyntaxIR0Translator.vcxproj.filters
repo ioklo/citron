@@ -93,6 +93,7 @@
     <ClCompile Include="StructCtorTask.cpp" />
     <ClCompile Include="StructVarTask.cpp" />
     <ClCompile Include="EnumElemVarTask.cpp" />
+    <ClCompile Include="GlobalContext.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncContext.h">
@@ -193,6 +194,7 @@
     <ClInclude Include="StructCtorTask.h" />
     <ClInclude Include="StructVarTask.h" />
     <ClInclude Include="EnumElemVarTask.h" />
+    <ClInclude Include="GlobalContext.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

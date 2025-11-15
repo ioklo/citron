@@ -4,6 +4,7 @@
 #include <span>
 #include <expected>
 #include <memory>
+#include <string>
 
 namespace Citron {
 
@@ -14,6 +15,8 @@ class NGlobalFuncDecl;
 
 class IEvalQDataCommandHandler
 {
+public:
+    virtual void Execute(const std::string& str) = 0;
 };
 
 using IEvalQDataCommandHandlerPtr = std::shared_ptr<IEvalQDataCommandHandler>;

@@ -15,5 +15,6 @@
     <ClCompile Include="MFactory.cpp" />
     <ClCompile Include="MLoc.cpp" />
     <ClCompile Include="MStmt.cpp" />
+    <ClCompile Include="MData.cpp" />
   </ItemGroup>
 </Project>

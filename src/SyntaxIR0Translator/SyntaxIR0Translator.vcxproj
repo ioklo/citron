@@ -44,6 +44,7 @@
   <ItemGroup>
     <ClCompile Include="EnumElemVarTask.cpp" />
     <ClCompile Include="FuncContext.cpp" />
+    <ClCompile Include="GlobalContext.cpp" />
     <ClCompile Include="PhaseManager.cpp" />
     <ClCompile Include="ResolveTypeHierarchyContext.cpp" />
     <ClCompile Include="StructCtorTask.cpp" />
@@ -89,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EnumElemVarTask.h" />
+    <ClInclude Include="GlobalContext.h" />
     <ClInclude Include="GlobalFuncTask.h" />
     <ClInclude Include="PhaseManager.h" />
     <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0Translator.h" />

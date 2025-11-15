@@ -19,16 +19,16 @@ namespace {
 
 expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, QFactoryPtr& qFactory)
 {   
-    QBodyContext qBodyContext{qFactory};
+    QBodyContext bodyContext{qFactory};
 
     for (auto* mStmt : mFuncBody.stmts)
     {   
-        auto eResult = TranslateMStmtToQInsts(mStmt, qBodyContext);
+        auto eResult = TranslateMStmtToQInsts(mStmt, bodyContext);
         RETURN_ON_ERROR(eResult);
     }
 
-    qBodyContext.Verify();
-    return QFuncBody{mFuncBody.nFuncDecl, qBodyContext.GetEntryBlock()};
+    bodyContext.Verify();
+    return QFuncBody{mFuncBody.nFuncDecl, bodyContext.GetEntryBlock()};
 }
 
 } // namespace

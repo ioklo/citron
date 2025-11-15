@@ -2,6 +2,7 @@
 
 #include "NSymbol/NStructDecl.h"
 #include "NSymbol/NStructCtorDecl.h"
+#include "MIR/MFuncBody.h"
 
 #include "CommonTranslation.h"
 #include "BuildTypeDependentSymbolContext.h"
@@ -36,9 +37,9 @@ void StructCtorTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& c
     nStructCtor->InitFuncParameters(move(parameters), bLastParamVariadic);
 }
 
-void StructCtorTask::TranslateBody(TranslateBodyContext& context)
+expected<MFuncBody, DiagPtr> StructCtorTask::TranslateBody(TranslateBodyContext& context)
 {
-    context.Translate(nStructCtor, sStructCtor->body);
+    return context.Translate(nStructCtor, sStructCtor->body);
 }
 
 

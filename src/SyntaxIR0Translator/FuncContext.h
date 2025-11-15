@@ -106,10 +106,12 @@ public:
 // FuncDecl인 경우
 class FuncContext_FuncDecl : public FuncContext
 {
-    NFuncDecl* funcDecl;
+    NFuncDecl* nFuncDecl;
     RFactoryPtr rFactory;
 
 public:
+    FuncContext_FuncDecl(NFuncDecl* funcDecl, const RFactoryPtr& rFactory);
+
     bool CanAccess(RDecl* target) override;
     std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 

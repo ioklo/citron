@@ -1,6 +1,11 @@
 #pragma once
+#include <memory>
+#include <expected>
 
 namespace Citron {
+struct MFuncBody;
+using DiagPtr = std::shared_ptr<struct Diag>;
+
 namespace SyntaxIR0Translator {
 
 class ResolveTypeHierarchyContext;
@@ -33,7 +38,7 @@ class ITranslateBodyTask
 {
 public:
     ~ITranslateBodyTask() = default;
-    virtual void TranslateBody(TranslateBodyContext& context) = 0;
+    virtual std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) = 0;
 };
 
 

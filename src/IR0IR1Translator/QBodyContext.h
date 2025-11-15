@@ -29,6 +29,9 @@ class QBlockWriter
     std::vector<QBlock*> pendingBlocks;
     QFactoryPtr qFactory;
 
+public:
+    QBlockWriter(const QFactoryPtr& qFactory);
+
 private:
     void Allocate();
     void AddInstInternal(QInst&& inst);
@@ -38,17 +41,18 @@ public:
     QBlock* GetEntryBlock();
 
     template<typename TQInst>
-        requires std::convertible_to<TQInst, QInst> and !std::convertible_to<TQInst, QTermInst>
+        requires std::convertible_to<TQInst, QInst> && !std::convertible_to<TQInst, QTermInst>
     void AddInst(TQInst&& inst) { AddInstInternal(std::move(inst)); }
     void CompleteBlock(QTermInst&& termInst);
 
     void SetCurBlock(QBlock* block);
-    bool Verify();
+    void Verify();
 };
 
 class QBodyContext : QBlockWriter
 {
     QFactoryPtr qFactory;
+    int valueCounter;
 
 public:
     QBodyContext(QFactoryPtr& qFactory);
@@ -57,13 +61,13 @@ public:
     QBlock* GetEntryBlock() { return QBlockWriter::GetEntryBlock(); }
     template<typename TQInst, typename... TArgs> 
         requires std::convertible_to<TQInst, QInst>
-            and !std::convertible_to<TQInst, QTermInst>
-            and !std::same_as<TQInst, QInst_Intrinsic>
+            && !std::convertible_to<TQInst, QTermInst>
+            && !std::same_as<TQInst, QInst_Intrinsic>
     void AddInst(TQInst&& inst) { QBlockWriter::AddInst(std::move(inst)); }
     QValue AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QValue>&& args);
     void CompleteBlock(QTermInst&& termInst) { QBlockWriter::CompleteBlock(std::move(termInst)); }
     void SetCurBlock(QBlock* block) { QBlockWriter::SetCurBlock(block); }
-    bool Verify() { return QBlockWriter::Verify(); }
+    void Verify() { QBlockWriter::Verify(); }
 
     QValue_Named NewValue();
     size_t GetExpTypeSize(MExp* exp);

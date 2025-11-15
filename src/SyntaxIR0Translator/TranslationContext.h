@@ -34,6 +34,11 @@ class MLoc;
 class MStmt;
 class NLambdaDecl;
 class MLoc_This;
+class NFuncDecl;
+
+using MFactoryPtr = std::shared_ptr<class MFactory>;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
+using LoggerPtr = std::shared_ptr<class Logger>;
 
 namespace SyntaxIR0Translator {
 
@@ -44,17 +49,10 @@ struct BinOpInfo;
 class ImExp;
 class IrExp;
 
-class GlobalContext;
-using GlobalContextPtr = std::shared_ptr<GlobalContext>;
-
-class FuncContext;
-using FuncContextPtr = std::shared_ptr<FuncContext>;
-
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
-
-class BinOpQueryService;
-using BinOpQueryServicePtr = std::shared_ptr<BinOpQueryService>;
+using GlobalContextPtr = std::shared_ptr<class GlobalContext>;
+using FuncContextPtr = std::shared_ptr<class FuncContext>;
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 
 struct NLambdaDeclAndArgs
 {
@@ -68,16 +66,23 @@ class TranslationContext
     FuncContextPtr funcContext;
     ScopeContextPtr scopeContext;
     LoggerPtr logger;
-    RFactoryPtr rFactory;
     MFactoryPtr mFactory;
+    RFactoryPtr rFactory;
     SRTFactoryPtr srtFactory;
     BinOpQueryServicePtr binOpQueryService;
 
-    TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RFactoryPtr& rfactory, const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService);
+    TranslationContext(
+        const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, 
+        const LoggerPtr& logger, const RFactoryPtr& rfactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory,
+        const BinOpQueryServicePtr& binOpQueryService);
 
 public:
     // ScopeContext::MakeNewScopeContext
-    static TranslationContext New(RFuncDecl* funcDecl, bool bSeqFunc, const RFuncReturn& funcReturn);
+    static TranslationContext Make(
+        NFuncDecl* nFuncDecl, 
+        const LoggerPtr& logger,
+        const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory,
+        const BinOpQueryServicePtr& binOpQueryService);
 
     TranslationContext MakeNestedScopeContext();
     TranslationContext MakeNestedLoopScopeContext();

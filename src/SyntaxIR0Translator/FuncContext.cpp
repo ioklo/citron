@@ -133,19 +133,26 @@ bool FuncContext_Lambda::IsSeqFunc()
     return bSeqFunc;
 }
 
+FuncContext_FuncDecl::FuncContext_FuncDecl(NFuncDecl* nFuncDecl, const RFactoryPtr& rFactory)
+    : nFuncDecl{nFuncDecl}, rFactory{rFactory}
+{
+
+}
+
+
 bool FuncContext_FuncDecl::CanAccess(RDecl* target)
 {
-    return funcDecl->GetNDecl()->GetRDecl()->CanAccess(target);
+    return nFuncDecl->GetNDecl()->GetRDecl()->CanAccess(target);
 }
 
 optional<RMember> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    return funcDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, *rFactory);
+    return nFuncDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, *rFactory);
 }
 
 RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()
 {
-    return funcDecl->GetUnboundFuncReturn();
+    return nFuncDecl->GetUnboundFuncReturn();
 }
 
 void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
@@ -156,13 +163,14 @@ void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
 
 RTypeArguments* FuncContext_FuncDecl::MakeOpenTypeArgs()
 {
-    return funcDecl->GetNDecl()->GetRDecl()->MakeOpenTypeArgs(*rFactory);
+    return nFuncDecl->GetNDecl()->GetRDecl()->MakeOpenTypeArgs(*rFactory);
 }
 
 bool FuncContext_FuncDecl::IsSeqFunc()
 {
-    return funcDecl->IsSeqFunc();
+    return nFuncDecl->IsSeqFunc();
 }
+
 
 //public void CommitLambdasToDeclSymbolTree()
 //{

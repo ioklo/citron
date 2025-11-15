@@ -43,6 +43,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MData.cpp" />
     <ClCompile Include="MExp.cpp" />
     <ClCompile Include="MFactory.cpp" />
     <ClCompile Include="MLoc.cpp" />

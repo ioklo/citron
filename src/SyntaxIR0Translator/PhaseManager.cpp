@@ -1,6 +1,9 @@
 #include "PhaseManager.h"
 
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
+
+#include "MIR/MFuncBody.h"
 
 #include "ResolveTypeHierarchyContext.h"
 #include "BuildTypeDependentSymbolContext.h"
@@ -20,11 +23,18 @@
 //// 4. TranslatingBodyPhase : Body를 translation하는 단계.
 //virtual void TranslatingBodyPhase(TranslatingBodyPhaseContext& context) {}
 
+using namespace std;
+
 namespace Citron {
 namespace SyntaxIR0Translator {
 
-PhaseManager::PhaseManager(const RFactoryPtr& rFactory, const NFactoryPtr& nFactory)
-    : rFactory{rFactory}, nFactory{nFactory}
+PhaseManager::PhaseManager(
+    const LoggerPtr& logger, 
+    const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, const MFactoryPtr& mFactory,
+    const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService)
+    : logger{logger}
+    , rFactory{rFactory}, nFactory{nFactory}, mFactory{mFactory}, srtFactory{srtFactory}
+    , binOpQueryService{binOpQueryService}
 {}
 
 PhaseManager::~PhaseManager() = default;
@@ -49,7 +59,7 @@ void PhaseManager::AddTranslateBodyTask(std::shared_ptr<ITranslateBodyTask>&& ta
     translatingBodyTasks.push_back(move(task));
 }
 
-void PhaseManager::Run()
+expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
 {
     // 1. ResolveTypeHierarchy
 
@@ -61,9 +71,17 @@ void PhaseManager::Run()
     // 3. SynthesizeImplicitSymbol, dependency 순서대로 한다
 
     // 4. TranslateBody
-    TranslateBodyContext tbContext{};
+    vector<MFuncBody> funcBodies;
+    TranslateBodyContext tbContext{logger, rFactory, mFactory, srtFactory, binOpQueryService};
     for (auto&& task : translatingBodyTasks)
-        task->TranslateBody(tbContext);
+    {
+        auto eResult = task->TranslateBody(tbContext);
+        RETURN_ON_ERROR(eResult);
+
+        funcBodies.push_back(move(*eResult));
+    }
+
+    return funcBodies;
 }
 
 } // namespace SyntaxIR0Translator 

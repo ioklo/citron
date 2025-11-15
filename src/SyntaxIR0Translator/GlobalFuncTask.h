@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <expected>
 
 #include "TranslationTasks.h"
 
@@ -33,7 +34,7 @@ public:
     static void Register(NNamespaceDecl* nOuter, SGlobalFuncDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
 
     void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
-    void TranslateBody(TranslateBodyContext& context) override;
+    std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 };
 
 } // namespace SyntaxIR0Translator

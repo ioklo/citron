@@ -4,6 +4,8 @@
 
 #include "Infra/Ptr.h"
 
+#include "Logging/Logger.h"
+
 #include "TextAnalysis/ScriptParser.h"
 #include "TextAnalysis/Buffer.h"
 
@@ -34,6 +36,11 @@ class CommandHandler : public IEvalQDataCommandHandler
     ostringstream output;
 
 public:
+    void Execute(const std::string& command) override
+    {
+        output << command;
+    }
+
     string GetOutput()
     {
         return output.str();
@@ -70,7 +77,10 @@ void Main()
     RFactoryPtr rFactory = MakePtr<RFactory>();
     NFactoryPtr nFactory = MakePtr<NFactory>(rFactory);
 
-    auto eNModuleMData = TranslateSyntaxToNModuleMData(moduleName, {sScript}, {}, rFactory, nFactory);
+    auto logger = MakePtr<Logger>();
+    auto mFactory = MakePtr<MFactory>();
+
+    auto eNModuleMData = TranslateSyntaxToNModuleMData(moduleName, {sScript}, {}, logger, rFactory, nFactory, mFactory);
     EXPECT_TRUE(eNModuleMData);
     auto& [nModule, mData] = *eNModuleMData;
 

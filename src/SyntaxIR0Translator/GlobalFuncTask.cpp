@@ -4,6 +4,8 @@
 #include "NSymbol/NGlobalFuncDecl.h"
 #include "NSymbol/NNamespaceDecl.h"
 
+#include "MIR/MFuncBody.h"
+
 #include "CommonTranslation.h"
 #include "PhaseManager.h"
 #include "BuildTypeDependentSymbolContext.h"
@@ -35,9 +37,9 @@ void GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& c
     nOuter->AddGlobalFuncDecl(nGFuncDecl);
 }
 
-void GlobalFuncTask::TranslateBody(TranslateBodyContext& context)
+expected<MFuncBody, DiagPtr> GlobalFuncTask::TranslateBody(TranslateBodyContext& context)
 {
-    context.Translate(nGFuncDecl, syntax->body);
+    return context.Translate(nGFuncDecl, syntax->body);
 }
 
 } // namespace Citron::SyntaxIR0Translator

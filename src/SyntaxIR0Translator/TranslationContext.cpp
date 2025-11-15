@@ -12,8 +12,9 @@
 #include "ReExp.h"
 #include "IrExp.h"
 #include "TranslationContext.h"
-#include "ScopeContext.h"
+#include "GlobalContext.h"
 #include "FuncContext.h"
+#include "ScopeContext.h"
 #include "BinOpQueryService.h"
 
 #include "Misc.h"
@@ -22,26 +23,39 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-TranslationContext::TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RFactoryPtr& rFactory, const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService)
-    : globalContext(globalContext), funcContext(funcContext), scopeContext(scopeContext), logger(logger), rFactory(rFactory), srtFactory(srtFactory), binOpQueryService(binOpQueryService)
+TranslationContext::TranslationContext(
+    const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, 
+    const LoggerPtr& logger, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory,
+    const BinOpQueryServicePtr& binOpQueryService)
+    : globalContext{globalContext}, funcContext{funcContext}, scopeContext{scopeContext}
+    , logger{logger}, rFactory{rFactory}, mFactory{mFactory}, srtFactory{srtFactory}
+    , binOpQueryService{binOpQueryService}
 {
 }
 
-TranslationContext TranslationContext::New(RFuncDecl* funcDecl, bool bSeqFunc, const RFuncReturn& funcReturn)
+TranslationContext TranslationContext::Make(
+    NFuncDecl* nFuncDecl, 
+    const LoggerPtr& logger,
+    const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory,
+    const BinOpQueryServicePtr& binOpQueryService)
 {
-    throw NotImplementedException{};
+    auto globalContext = MakePtr<GlobalContext>();
+    auto funcContext = MakePtr<FuncContext_FuncDecl>(nFuncDecl, rFactory);
+    auto scopeContext = MakePtr<ScopeContext>(funcContext, nullptr, 0);
+
+    return { globalContext, funcContext, scopeContext, logger, rFactory, mFactory, srtFactory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeNestedScopeContext()
 {
     auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop);
-    return { globalContext, funcContext, newScopeContext, logger, rFactory, srtFactory, binOpQueryService };
+    return { globalContext, funcContext, newScopeContext, logger, rFactory, mFactory, srtFactory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeNestedLoopScopeContext()
 {
     auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop + 1);
-    return { globalContext, funcContext, newScopeContext, logger, rFactory, srtFactory, binOpQueryService };
+    return { globalContext, funcContext, newScopeContext, logger, rFactory, mFactory,  srtFactory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
@@ -49,7 +63,7 @@ TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcR
     auto newFuncContext = MakePtr<FuncContext_Lambda>(scopeContext, /*bSeqFunc*/ false, move(funcRet), move(funcParams), bLastParamVariadic);
     auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, nullptr, 0);
 
-    return { globalContext, newFuncContext, newScopeContext, logger, rFactory, srtFactory, binOpQueryService };
+    return { globalContext, newFuncContext, newScopeContext, logger, rFactory, mFactory, srtFactory, binOpQueryService };
 }
 
 expected<RType*, DiagPtr> TranslationContext::TranslateSTypeExpToRType(STypeExp* typeExp)

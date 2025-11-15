@@ -33,7 +33,7 @@ public:
     static void Register(NStructDecl* nStructDecl, SStructFuncDecl* sStructDecl, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
 
     void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
-    void TranslateBody(TranslateBodyContext& context) override;
+    std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 };
 
 } // namespace SyntaxIR0Translator

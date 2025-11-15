@@ -17,6 +17,7 @@
 
 #include "MLocQInstsTranslation.h"
 #include "QBodyContext.h"
+#include "CommonQInstsTranslation.h"
 
 using namespace std;
 
@@ -29,22 +30,22 @@ class MExpQInstsTranslator
 {
 public:
     using ResultType = expected<QValue, DiagPtr>;
-    QBodyContext& qBodyContext;
+    QBodyContext& bodyContext;
 
 public:
-    MExpQInstsTranslator(QBodyContext& qBodyContext)
-        : qBodyContext{qBodyContext}{ }
+    MExpQInstsTranslator(QBodyContext& bodyContext)
+        : bodyContext{bodyContext}{ }
 
     // load(loc),
     ResultType Visit(MExp_Load* exp)
     {
         // 이 translation으로 lv가 하나 나올 것이다
-        auto eLV = TranslateMLocToQInsts(exp->loc, qBodyContext);
+        auto eLV = TranslateMLocToQInsts(exp->loc, bodyContext);
         RETURN_ON_ERROR(eLV);
 
         // 새로운 value 도입
-        auto lv = qBodyContext.NewValue();
-        qBodyContext.AddInst(QInst_Load{lv, *eLV});
+        auto lv = bodyContext.NewValue();
+        bodyContext.AddInst(QInst_Load{lv, *eLV});
         return lv;
     }
 
@@ -52,14 +53,14 @@ public:
     ResultType Visit(MExp_Assign* exp)
     {
         // dest를 먼저 계산한다
-        auto eLV = TranslateMLocToQInsts(exp->dest, qBodyContext);
+        auto eLV = TranslateMLocToQInsts(exp->dest, bodyContext);
         RETURN_ON_ERROR(eLV);
 
         // src계산
-        auto eV = TranslateMExpToQInsts(exp->src, qBodyContext);
+        auto eV = TranslateMExpToQInsts(exp->src, bodyContext);
         RETURN_ON_ERROR(eV);
 
-        qBodyContext.AddInst(QInst_Store{*eLV, *eV});
+        bodyContext.AddInst(QInst_Store{*eLV, *eV});
 
         // src를 평가한 값을 그대로 리턴
         return eV;
@@ -72,16 +73,16 @@ public:
     ResultType Visit(MExp_Box* exp)
     {
         // 1. alloc, size
-        auto lv = qBodyContext.NewValue();
-        size_t size = qBodyContext.GetExpTypeSize(exp->innerExp);
-        qBodyContext.AddInst(QInst_Alloc{lv, size});
+        auto lv = bodyContext.NewValue();
+        size_t size = bodyContext.GetExpTypeSize(exp->innerExp);
+        bodyContext.AddInst(QInst_Alloc{lv, size});
 
         // 2. exp
-        auto eQValue = TranslateMExpToQInsts(exp->innerExp, qBodyContext);
+        auto eQValue = TranslateMExpToQInsts(exp->innerExp, bodyContext);
         RETURN_ON_ERROR(eQValue);
 
         // 3. 저장
-        qBodyContext.AddInst(QInst_Store{lv, *eQValue});
+        bodyContext.AddInst(QInst_Store{lv, *eQValue});
         return *eQValue;
     }
     
@@ -95,7 +96,7 @@ public:
     ResultType Visit(MExp_LocalRef* exp)
     {
         // local ref는 &s.a 같은 걸 수 있다
-        auto eLV = TranslateMLocToQInsts(exp->innerLoc, qBodyContext);
+        auto eLV = TranslateMLocToQInsts(exp->innerLoc, bodyContext);
         RETURN_ON_ERROR(eLV);
 
         // lv 그대로 리턴하면 될거 같다
@@ -114,30 +115,7 @@ public:
 
     ResultType Visit(MExp_String* exp)
     {
-        // "abc $x" => "abc " + x
-        optional<QValue> curValue;
-        for(auto& elem : exp->elements)
-        {
-            auto eValueResult = visit(overloaded{
-                [this](MExp_StringElem_Text& textElem) { return expected<QValue, DiagPtr>{QValue_String{textElem.text}}; },
-                [this](MExp_StringElem_Exp& expElem) { return TranslateMExpToQInsts(expElem.mExp, qBodyContext); }
-            }, elem);
-            RETURN_ON_ERROR(eValueResult);
-
-            if (curValue)
-            {   
-                QValue_Named newValue;
-                qBodyContext.AddIntrinsic(QInst_IntrinsicKind::Add_String_String, {newValue, *curValue, *eValueResult});
-                curValue = newValue;
-            }
-            else
-            {
-                curValue = *eValueResult;
-            }
-        }
-
-        assert(curValue);
-        return *curValue;
+        return TranslateMExp_StringToQInsts(exp, bodyContext);
     }
 
     ResultType Visit(MExp_List* exp) 
@@ -147,28 +125,28 @@ public:
 
         for (auto* elem : exp->elems)
         {
-            auto eItem = TranslateMExpToQInsts(elem, qBodyContext);
+            auto eItem = TranslateMExpToQInsts(elem, bodyContext);
             RETURN_ON_ERROR(eItem);
 
             items.push_back(*eItem);
         }
 
-        auto result = qBodyContext.AddIntrinsic(QInst_IntrinsicKind::NewList_Items, std::move(items));
+        auto result = bodyContext.AddIntrinsic(QInst_IntrinsicKind::NewList_Items, std::move(items));
         return result;
     }
 
     ResultType Visit(MExp_ListIterator* exp)
     {
-        auto eLV = TranslateMLocToQInsts(exp->listLoc, qBodyContext);
+        auto eLV = TranslateMLocToQInsts(exp->listLoc, bodyContext);
         RETURN_ON_ERROR(eLV);
 
-        auto result = qBodyContext.AddIntrinsic(QInst_IntrinsicKind::GetListIterator_List, {*eLV});
+        auto result = bodyContext.AddIntrinsic(QInst_IntrinsicKind::GetListIterator_List, {*eLV});
         return result;
     }
 
     ResultType Visit(MExp_CallInternalUnaryOperator* exp) 
     { 
-        auto eOperand = TranslateMExpToQInsts(exp, qBodyContext);
+        auto eOperand = TranslateMExpToQInsts(exp, bodyContext);
         RETURN_ON_ERROR(eOperand);
 
         static unordered_map<MInternalUnaryOperator, QInst_IntrinsicKind> m{
@@ -181,12 +159,12 @@ public:
         auto i = m.find(exp->op);
         assert(i != m.end());
 
-        return qBodyContext.AddIntrinsic(i->second, {*eOperand});
+        return bodyContext.AddIntrinsic(i->second, {*eOperand});
     }
 
     ResultType Visit(MExp_CallInternalUnaryAssignOperator* exp)
     {
-        auto eOperand = TranslateMExpToQInsts(exp, qBodyContext);
+        auto eOperand = TranslateMExpToQInsts(exp, bodyContext);
         RETURN_ON_ERROR(eOperand);
 
         static unordered_map<MInternalUnaryAssignOperator, QInst_IntrinsicKind> m{
@@ -199,15 +177,15 @@ public:
         auto i = m.find(exp->op);
         assert(i != m.end());
 
-        return qBodyContext.AddIntrinsic(i->second, {*eOperand});
+        return bodyContext.AddIntrinsic(i->second, {*eOperand});
     }
 
     ResultType Visit(MExp_CallInternalBinaryOperator* exp)
     {
-        auto eOperand0 = TranslateMExpToQInsts(exp->operand0, qBodyContext);
+        auto eOperand0 = TranslateMExpToQInsts(exp->operand0, bodyContext);
         RETURN_ON_ERROR(eOperand0);
 
-        auto eOperand1 = TranslateMExpToQInsts(exp->operand1, qBodyContext);
+        auto eOperand1 = TranslateMExpToQInsts(exp->operand1, bodyContext);
         RETURN_ON_ERROR(eOperand1);
 
         static unordered_map<MInternalBinaryOperator, QInst_IntrinsicKind> m{
@@ -233,7 +211,7 @@ public:
         auto i = m.find(exp->op);
         assert(i != m.end());
 
-        return qBodyContext.AddIntrinsic(i->second, {*eOperand0, *eOperand1});
+        return bodyContext.AddIntrinsic(i->second, {*eOperand0, *eOperand1});
     }
 
     // GlobalFunc
@@ -249,7 +227,7 @@ public:
             visit(overloaded{
                 [this](MArgument_Normal& normalArg) 
                 {
-                    TranslateMExpToQInsts(normalArg.exp, qBodyContext);
+                    TranslateMExpToQInsts(normalArg.exp, bodyContext);
                 },
 
                 // 파라미터를 여러개 받는 경우
@@ -260,7 +238,7 @@ public:
             }, arg);
         }
         throw NotImplementedException{};
-        // qBodyContext.AddInst(QInst_Call{exp->funcDecl, }
+        // bodyContext.AddInst(QInst_Call{exp->funcDecl, }
     }
 
     ResultType Visit(MExp_NewClass* exp) { throw NotImplementedException{}; }

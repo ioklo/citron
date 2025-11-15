@@ -8,14 +8,18 @@
 #include "Infra/Unreachable.h"
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
+
 #include "NSymbol/NNamespaceDecl.h"
 #include "NSymbol/NStructDecl.h"
 #include "NSymbol/NEnumDecl.h"
 #include "NSymbol/NModule.h"
 #include "NSymbol/NClassDecl.h"
+#include "MIR/MFuncBody.h"
+#include "MIR/MFactory.h"
 
 #include "BuildTypeDependentSymbolContext.h"
-
+#include "SRTFactory.h"
 #include "GlobalFuncTask.h"
 #include "StructTask.h"
 #include "StructFuncTask.h"
@@ -24,6 +28,7 @@
 #include "EnumElemVarTask.h"
 #include "PhaseManager.h"
 #include "CommonTranslation.h"
+#include "BinOpQueryService.h"
 
 using namespace std;
 using namespace Citron::SyntaxIR0Translator;
@@ -322,15 +327,20 @@ expected<NModuleMData, DiagPtr> TranslateSyntaxToNModuleMData(
     string moduleName,
     const vector<SScript*>& scripts, // translation units
     const vector<EModule*>& referenceModules,
+    const LoggerPtr& logger,
     const RFactoryPtr& rFactory,
-    const NFactoryPtr& nFactory)
+    const NFactoryPtr& nFactory,
+    const MFactoryPtr& mFactory)
 {
     // TODO: NewRootNamespaceDecl이 아니라 RootNamespaceGroupDecl이어야 할것 같고, 모듈은 rootNamespaceDeclGroup을 가져야 할 것 같다
 
     // NNamespaceDecl은 각 TranslationUnit별로 별개로 가지는데,
     auto* nModule = nFactory->MakeNModule(move(moduleName));
 
-    PhaseManager phaseManager{rFactory, nFactory};
+    auto srtFactory = MakePtr<SRTFactory>();
+    auto binOpQueryService = MakePtr<BinOpQueryService>(*rFactory);
+    
+    PhaseManager phaseManager{logger, rFactory, nFactory, mFactory, srtFactory, binOpQueryService};
     for (auto* script : scripts) // translation units
     {
         auto* rootNamespace = nFactory->MakeRootNamespaceDecl();
@@ -342,9 +352,11 @@ expected<NModuleMData, DiagPtr> TranslateSyntaxToNModuleMData(
         }
     }
 
-    phaseManager.Run();
-    
-    throw NotImplementedException{};
+    auto eFuncBodies = phaseManager.Run();
+    RETURN_ON_ERROR(eFuncBodies);
+
+    auto* mData = mFactory->MakeMData(move(*eFuncBodies));
+    return NModuleMData{nModule, mData};
 
     // return {nModule, };
 

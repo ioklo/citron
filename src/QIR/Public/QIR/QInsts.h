@@ -44,13 +44,14 @@ struct QInst_Call
     std::vector<QValue> args;
 };
 
-struct QInst_Return
+struct QInst_ReturnVoid
 {
 };
 
 enum struct QInst_IntrinsicKind
 {   
     DebugPrint_Items,
+    Command_Items,
 
     NewList_Items,
     GetListIterator_List,
@@ -86,10 +87,10 @@ enum struct QInst_IntrinsicKind
 struct QInst_Intrinsic
 {
     QInst_IntrinsicKind kind;
-    std::optional<QValue> result;
+    std::optional<QValue_Named> result;
     std::vector<QValue> args;
 
-    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QValue>&& result, std::vector<QValue>&& args)
+    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QValue_Named>&& result, std::vector<QValue>&& args)
         : kind{kind}, result{std::move(result)}, args{std::move(args)}
     {
     }
@@ -116,13 +117,13 @@ using QInst = std::variant<
     QInst_Intrinsic,
     QInst_CondJump,
     QInst_Jump,
-    QInst_Return
+    QInst_ReturnVoid
 >;
 
 using QTermInst = std::variant<
     QInst_Jump,
     QInst_CondJump, // 완전 CondJump
-    QInst_Return
+    QInst_ReturnVoid
 >;
 
 } // namespace Citron

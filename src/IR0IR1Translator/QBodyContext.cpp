@@ -1,5 +1,8 @@
 #include "QBodyContext.h"
 
+#include <sstream>
+#include <format>
+
 #include "Infra/Unreachable.h"
 #include "Infra/Exceptions.h"
 
@@ -10,12 +13,19 @@ using namespace std;
 
 namespace Citron::IR0IR1Translator {
 
+QBlockWriter::QBlockWriter(const QFactoryPtr& qFactory)
+    : state{QBlockWriterState::NotAllocated}
+    , entryBlock{nullptr}, curBlock{nullptr}, qFactory{qFactory}
+{
+}
+
 void QBlockWriter::Allocate()
 {
     switch(state)
     {
     case QBlockWriterState::NotAllocated:
-        curBlock = qFactory->MakeQBlock("entry");
+        assert(!curBlock && !entryBlock);
+        entryBlock = curBlock = qFactory->MakeQBlock("entry");
         state = QBlockWriterState::CanWrite;
         return;
 
@@ -110,20 +120,18 @@ void QBlockWriter::SetCurBlock(QBlock* block)
     }
 }
 
-bool QBlockWriter::Verify()
+void QBlockWriter::Verify()
 {
-    if (state != QBlockWriterState::EndOfBlock) return false;
-    if (!pendingBlocks.empty()) return false;
-
-    return true;
+    assert(state == QBlockWriterState::EndOfBlock);
+    assert(pendingBlocks.empty());
 }
 
 QBodyContext::QBodyContext(QFactoryPtr& qFactory)
-    : QBlockWriter{}
-    , qFactory {qFactory}
+    : QBlockWriter{qFactory}
+    , qFactory{qFactory}
+    , valueCounter{0}
 {   
 }
-
 
 QValue QBodyContext::AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QValue>&& args)
 {
@@ -133,8 +141,8 @@ QValue QBodyContext::AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QValue>&
 }
 
 QValue_Named QBodyContext::NewValue()
-{
-    throw NotImplementedException{};
+{   
+    return {format("v{}", valueCounter++)};
 }
 
 size_t QBodyContext::GetExpTypeSize(MExp* exp)

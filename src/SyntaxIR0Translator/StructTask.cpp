@@ -3,6 +3,7 @@
 #include "Infra/Exceptions.h"
 
 #include "Syntax/Syntax.h"
+#include "RSymbol/RTypes.h"
 #include "NSymbol/NStructDecl.h"
 
 #include "CommonTranslation.h"
@@ -76,7 +77,7 @@ void StructTask::ResolveTypeHierarchy(ResolveTypeHierarchyContext& context)
 
     for (auto* sType : syntax->baseTypes)
     {
-        auto rType = context.MakeType(sType, nStructDecl);
+        auto* rType = context.MakeType(sType, nStructDecl);
         auto rTypeKind = rType->GetCustomTypeKind();
 
         if (rTypeKind == RCustomTypeKind::Struct)
