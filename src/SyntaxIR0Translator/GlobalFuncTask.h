@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 #include "TranslationTasks.h"
 
 namespace Citron {
@@ -6,6 +8,7 @@ namespace Citron {
 class NNamespaceDecl;
 class SGlobalFuncDecl;
 class NGlobalFuncDecl;
+using NFactoryPtr = std::shared_ptr<class NFactory>;
 
 namespace SyntaxIR0Translator {
 
@@ -15,16 +18,19 @@ class GlobalFuncTask
     : public IBuildTypeDependentSymbolTask
     , public ITranslateBodyTask
 {
-    NGlobalFuncDecl* nGFuncDecl;
+    NNamespaceDecl* nOuter;    
     SGlobalFuncDecl* syntax;
+    NFactoryPtr nFactory;
 
-    GlobalFuncTask(NGlobalFuncDecl* nGFuncDecl, SGlobalFuncDecl* syntax)
-        : nGFuncDecl{nGFuncDecl}, syntax{syntax}
+    NGlobalFuncDecl* nGFuncDecl;
+
+    GlobalFuncTask(NNamespaceDecl* nOuter, SGlobalFuncDecl* syntax, const NFactoryPtr& nFactory)
+        : nOuter{nOuter}, syntax{syntax}, nFactory{nFactory}, nGFuncDecl{nullptr}
     {
     }
 
 public:
-    static void Register(NGlobalFuncDecl* nGFuncDecl, SGlobalFuncDecl* syntax, PhaseManager& phaseManager);
+    static void Register(NNamespaceDecl* nOuter, SGlobalFuncDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
 
     void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
     void TranslateBody(TranslateBodyContext& context) override;

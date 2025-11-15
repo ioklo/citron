@@ -49,15 +49,11 @@ RAccessor MakeAccessor(optional<SAccessModifier> modifier, AccessorContext conte
     unreachable();
 }
 
-
 vector<string> MakeTypeParams(const vector<STypeParam>& sTypeParams)
 {
     return sTypeParams
         | views::transform([](const STypeParam& typeParam) { return typeParam.name; })
         | ranges::to<std::vector>();
 }
-
-
-
 
 }

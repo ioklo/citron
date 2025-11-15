@@ -53,8 +53,7 @@ class NStructDecl
     std::unordered_map<RName, NStructVarDecl*> varsMap;
 
 public:
-    NSYMBOL_API NStructDecl(NTypeDeclOuter* outer);
-    NSYMBOL_API void Init(RAccessor accessor, RName&& name, std::vector<std::string>&& typeParams);
+    NSYMBOL_API NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, std::vector<std::string>&& typeParams);
     NSYMBOL_API void InitBaseTypes(RType_Struct* baseStruct, std::vector<RType_Interface*>&& interfaces);
 
 public:
@@ -71,6 +70,7 @@ public:
     NSYMBOL_API NStructVarDecl* GetUnboundVar(size_t index) { return vars[index]; }
 
     NSYMBOL_API RType_Struct* GetUnboundBaseStruct();
+    NTypeDeclOuter* GetNTypeDeclOuter() { return outer; }
 
 public:
     // from NDecl

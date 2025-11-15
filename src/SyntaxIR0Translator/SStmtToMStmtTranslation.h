@@ -1,7 +1,7 @@
 #pragma once
 
 #include <optional>
-#include <vector>
+#include <span>
 #include <memory>
 #include <expected>
 
@@ -16,8 +16,8 @@ namespace SyntaxIR0Translator {
 
 class TranslationContext;
 
-std::expected<void, DiagPtr> TranslateSBodyToMStmts(std::vector<MStmt*>* outStmts, const std::vector<SStmt*>& stmts, TranslationContext& context);
-std::expected<std::vector<MStmt*>, DiagPtr> TranslateSBodyToMStmts(const std::vector<SStmt*>& stmts, TranslationContext& context);
+std::expected<void, DiagPtr> TranslateSBodyToMStmts(std::vector<MStmt*>* outStmts, std::span<SStmt*> stmts, TranslationContext& context);
+std::expected<std::vector<MStmt*>, DiagPtr> TranslateSBodyToMStmts(std::span<SStmt*> stmts, TranslationContext& context);
 
 } // namespace SyntaxIR0Translator
 } // namespace Citron

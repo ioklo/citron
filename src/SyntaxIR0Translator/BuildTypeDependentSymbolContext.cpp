@@ -1,23 +1,47 @@
 #include "BuildTypeDependentSymbolContext.h"
 
+#include "Syntax/Syntax.h"
+
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
 #include "RSymbol/RTypes.h"
+#include "RSymbol/RFactory.h"
 #include "NSymbol/NDecl.h"
+#include "CommonTranslation.h"
 
 using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-BuildTypeDependentSymbolContext::BuildTypeDependentSymbolContext(const NFactoryPtr& nFactory)
-    : nFactory{nFactory}
+BuildTypeDependentSymbolContext::BuildTypeDependentSymbolContext(const RFactoryPtr& rFactory, const NFactoryPtr& nFactory)
+    : rFactory{rFactory}, nFactory{nFactory}
 {
 }
 
-
 RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl)
 {
-    throw NotImplementedException{};
+    struct Visitor
+    {
+        using ResultType = RType*;
+
+        RFactory* rFactory;
+
+        RType* Visit(STypeExp_Id* idExp)
+        {
+            if (idExp->name == "void")
+                return rFactory->MakeVoidType();
+
+            else
+                throw NotImplementedException{};
+        }
+
+        RType* Visit(STypeExp* e)
+        {
+            throw NotImplementedException{};
+        }
+    } visitor{rFactory.get()};
+
+    return Accept(visitor, sTypeExp);
 }
 
 tuple<vector<RFuncParameter>, bool> BuildTypeDependentSymbolContext::MakeParameters(NDecl* decl, vector<SFuncParam>& sParams)

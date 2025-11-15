@@ -11,14 +11,10 @@ using namespace std;
 
 namespace Citron {
 
-NEnumElemDecl::NEnumElemDecl(NEnumDecl* _enum)
+NEnumElemDecl::NEnumElemDecl(NEnumDecl* _enum, const string& name)
     : _enum{_enum}
+    , name{name}
 {
-}
-
-void NEnumElemDecl::Init(const string& name)
-{   
-    this->name = name;
 }
 
 void NEnumElemDecl::AddVar(NEnumElemVarDecl* var)

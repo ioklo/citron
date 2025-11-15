@@ -62,17 +62,8 @@ StructTask::StructTask(NStructDecl* nStructDecl, SStructDecl* syntax, AccessorCo
 void StructTask::Register(NStructDecl* nStructDecl, SStructDecl* syntax, AccessorContext accessorContext, PhaseManager& phaseManager)
 {
     shared_ptr<StructTask> task{new StructTask(nStructDecl, syntax, accessorContext)};
-    phaseManager.AddBuildTypeSymbolTask(task);
     phaseManager.AddResolveTypeHierarchyTask(task);
     phaseManager.AddSynthesizeImplicitSymbolTask(task);
-}
-
-void StructTask::BuildTypeSymbol(BuildTypeSymbolContext& context)
-{
-    auto accessor = MakeAccessor(syntax->accessModifier, accessorContext);
-    auto typeParams = MakeTypeParams(syntax->typeParams);
-
-    nStructDecl->Init(accessor, RName_Normal(syntax->name), move(typeParams));
 }
 
 void StructTask::ResolveTypeHierarchy(ResolveTypeHierarchyContext& context)

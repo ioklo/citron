@@ -8,16 +8,9 @@ using namespace std;
 
 namespace Citron {
 
-NStructDecl::NStructDecl(NTypeDeclOuter* outer)
-    : outer{outer}
+NStructDecl::NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, vector<string>&& typeParams)
+    : outer{outer}, accessor{accessor}, name{move(name)}, typeParams(move(typeParams))
 {
-}
-
-void NStructDecl::Init(RAccessor accessor, RName&& name, vector<string>&& typeParams)
-{
-    this->accessor = accessor;
-    this->name = move(name);
-    this->typeParams = move(typeParams);
 }
 
 void NStructDecl::InitBaseTypes(RType_Struct* baseStruct, vector<RType_Interface*>&& interfaces)

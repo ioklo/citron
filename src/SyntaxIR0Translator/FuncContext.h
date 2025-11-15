@@ -107,7 +107,6 @@ public:
 class FuncContext_FuncDecl : public FuncContext
 {
     NFuncDecl* funcDecl;
-
     RFactoryPtr rFactory;
 
 public:

@@ -8,16 +8,12 @@ using namespace std;
 
 namespace Citron {
 
-NGlobalFuncDecl::NGlobalFuncDecl(NNamespaceDecl* outer)
+NGlobalFuncDecl::NGlobalFuncDecl(NNamespaceDecl* outer, RAccessor accessor, bool bSeqFunc, RName&& rName, std::vector<std::string>&& typeParams)
     : outer{outer}
-{
-}
-
-void NGlobalFuncDecl::Init(RAccessor accessor, bool bSeqFunc, RName&& rName, std::vector<std::string>&& typeParams)
+    , accessor{accessor}
+    , name{move(rName)}
+    , NCommonFuncDeclComponent(/*bStatic*/true, bSeqFunc, std::move(typeParams))
 {   
-    this->accessor = accessor;
-    this->name = std::move(rName);
-    NCommonFuncDeclComponent::Init(/*bStatic*/true, bSeqFunc, std::move(typeParams));
 }
 
 NDecl* NGlobalFuncDecl::GetNOuter()
@@ -32,7 +28,7 @@ RDecl* NGlobalFuncDecl::GetROuter()
 
 RIdentifier NGlobalFuncDecl::GetIdentifier()
 {
-    throw NotImplementedException{};
+    return RIdentifier{name, NCommonFuncDeclComponent::GetTypeParamCount(), GetParamIds()};
 }
 
 optional<RMember> NGlobalFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

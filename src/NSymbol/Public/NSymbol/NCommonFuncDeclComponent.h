@@ -38,8 +38,7 @@ private:
     std::vector<NLambdaDecl> lambdaDecls;
 
 public:
-    NSYMBOL_API NCommonFuncDeclComponent();
-    NSYMBOL_API void Init(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams);
+    NSYMBOL_API NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams);
     NSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     NSYMBOL_API ~NCommonFuncDeclComponent();

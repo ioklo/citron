@@ -12,6 +12,7 @@ namespace Citron {
 struct RFuncParameter;
 class RType;
 class NDecl;
+using RFactoryPtr = std::shared_ptr<RFactory>;
 using NFactoryPtr = std::shared_ptr<NFactory>;
 
 namespace SyntaxIR0Translator {
@@ -20,10 +21,11 @@ class TranslateBodyContext;
 
 class BuildTypeDependentSymbolContext
 {
+    RFactoryPtr rFactory;
     NFactoryPtr nFactory;
 
 public:
-    BuildTypeDependentSymbolContext(const NFactoryPtr& nFactory);
+    BuildTypeDependentSymbolContext(const RFactoryPtr& rFactory, const NFactoryPtr& nFactory);
 
     template<typename TNDecl, typename... TArgs> requires std::derived_from<TNDecl, NDecl>
     TNDecl* MakeNDecl(TArgs&&... args)

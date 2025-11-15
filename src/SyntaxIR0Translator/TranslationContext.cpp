@@ -27,6 +27,11 @@ TranslationContext::TranslationContext(const GlobalContextPtr& globalContext, co
 {
 }
 
+TranslationContext TranslationContext::New(RFuncDecl* funcDecl, bool bSeqFunc, const RFuncReturn& funcReturn)
+{
+    throw NotImplementedException{};
+}
+
 TranslationContext TranslationContext::MakeNestedScopeContext()
 {
     auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop);

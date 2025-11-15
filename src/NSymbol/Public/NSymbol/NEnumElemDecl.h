@@ -26,8 +26,7 @@ public:
     std::unordered_map<std::string, NEnumElemVarDecl*> varsMap;
 
 public:
-    NSYMBOL_API NEnumElemDecl(NEnumDecl* _enum);
-    NSYMBOL_API void Init(const std::string& name);
+    NSYMBOL_API NEnumElemDecl(NEnumDecl* _enum, const std::string& name);
     NSYMBOL_API void AddVar(NEnumElemVarDecl* var);
 
 public:

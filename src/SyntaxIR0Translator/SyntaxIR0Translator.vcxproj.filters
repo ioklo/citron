@@ -84,7 +84,6 @@
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="DeclTypeInfo.cpp" />
     <ClCompile Include="ResolveIdentifierError.cpp" />
-    <ClCompile Include="BuildTypeSymbolContext.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
     <ClCompile Include="GlobalFuncTask.cpp" />
     <ClCompile Include="PhaseManager.cpp" />
@@ -93,7 +92,7 @@
     <ClCompile Include="StructFuncTask.cpp" />
     <ClCompile Include="StructCtorTask.cpp" />
     <ClCompile Include="StructVarTask.cpp" />
-    <ClCompile Include="EnumTasks.cpp" />
+    <ClCompile Include="EnumElemVarTask.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncContext.h">
@@ -177,7 +176,6 @@
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ModuleDecls.h" />
     <ClInclude Include="RFuncAndRArgsToMExpTranslation.h" />
-    <ClInclude Include="BuildTypeSymbolContext.h" />
     <ClInclude Include="ResolveIdentifierError.h" />
     <ClInclude Include="SRTFactory.h" />
     <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0Translator.h">
@@ -194,7 +192,7 @@
     <ClInclude Include="StructFuncTask.h" />
     <ClInclude Include="StructCtorTask.h" />
     <ClInclude Include="StructVarTask.h" />
-    <ClInclude Include="EnumTasks.h" />
+    <ClInclude Include="EnumElemVarTask.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

@@ -7,17 +7,16 @@ using namespace std;
 
 namespace Citron {
 
-NClassCtorDecl::NClassCtorDecl(NClassDecl* _class)
+NClassCtorDecl::NClassCtorDecl(NClassDecl* _class, RAccessor accessor, bool bTrivial, vector<string>&& typeParams)
     : _class{_class}
-{
+    , accessor{accessor}
+    , bTrivial{bTrivial}
+    , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false, move(typeParams))
+{   
 }
 
-void NClassCtorDecl::Init(RAccessor accessor, bool bTrivial, vector<string>&& typeParams, vector<RFuncParameter> parameters, bool bLastParamVariadic)
-{
-    this->accessor = accessor;
-    this->bTrivial = bTrivial;
-
-    NCommonFuncDeclComponent::Init(/*bStatic*/false, /*bSeqFunc*/false, move(typeParams));
+void NClassCtorDecl::Init(vector<RFuncParameter>&& parameters, bool bLastParamVariadic)
+{   
     NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor(), move(parameters), bLastParamVariadic);
 }
 

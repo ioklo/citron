@@ -1,5 +1,5 @@
 #pragma once
-#include <vector>
+#include <memory>
 
 #include "TranslationTasks.h"
 
@@ -8,6 +8,7 @@ namespace Citron {
 class NStructDecl;
 class NStructVarDecl;
 class SStructVarDecl;
+using NFactoryPtr = std::shared_ptr<class NFactory>;
 
 namespace SyntaxIR0Translator {
 
@@ -16,17 +17,17 @@ class PhaseManager;
 class StructVarTask
     : public IBuildTypeDependentSymbolTask
 {
-    NStructDecl* nOuter;
-    std::vector<NStructVarDecl*> symbols;
-    SStructVarDecl* syntax;
+    NStructDecl* nStruct;
+    SStructVarDecl* sStructVar;
+    NFactoryPtr nFactory;
 
 private:
-    StructVarTask(NStructDecl* nOuter, std::vector<NStructVarDecl*>&& symbols, SStructVarDecl* syntax)
-        : nOuter{nOuter}, symbols{std::move(symbols)}, syntax{syntax}
+    StructVarTask(NStructDecl* nStruct, SStructVarDecl* sStructVar, const NFactoryPtr& nFactory)
+        : nStruct{nStruct}, sStructVar{sStructVar}, nFactory{nFactory}
     {}
 
 public:
-    static void Register(NStructDecl* nOuter, std::vector<NStructVarDecl*>&& symbols, SStructVarDecl* syntax, PhaseManager& phaseManager);
+    static void Register(NStructDecl* nOuter, SStructVarDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
     void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
 };
 

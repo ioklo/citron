@@ -14,13 +14,11 @@ using namespace std;
 namespace Citron
 {
 
-NCommonFuncDeclComponent::NCommonFuncDeclComponent() = default;
-
-void NCommonFuncDeclComponent::Init(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams)
+NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams)
+    : bStatic{bStatic}
+    , bSeqFunc{bSeqFunc}
+    , typeParams{move(typeParams)}
 {
-    this->bStatic = bStatic;
-    this->bSeqFunc = bSeqFunc;
-    this->typeParams = move(typeParams);
 }
 
 void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)

@@ -32,8 +32,7 @@ class NEnumDecl
     // std::unordered_map<std::string, int> elemsByName;
 
 public:
-    NSYMBOL_API NEnumDecl(NTypeDeclOuter* outer);
-    NSYMBOL_API void Init(RAccessor accessor, RName name, std::vector<std::string>&& typeParams);
+    NSYMBOL_API NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, RName name, std::vector<std::string>&& typeParams);
     NSYMBOL_API void AddElem(NEnumElemDecl* elem);
 
 public:

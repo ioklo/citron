@@ -27,11 +27,11 @@ public:
     NStructDecl* _struct;
     RAccessor accessor;
     std::string name;
-    bool bStatic;
 
 public:
-    NSYMBOL_API NStructFuncDecl(NStructDecl* _struct);
-    NSYMBOL_API void Init(RAccessor accessor, std::string name, std::vector<std::string>&& typeParams, bool bStatic);
+    NSYMBOL_API NStructFuncDecl(
+        NStructDecl* _struct, RAccessor accessor, bool bStatic, bool bSeqFunc, 
+        const std::string& name, std::vector<std::string>&& typeParams);
     NSYMBOL_API void InitFuncReturnAndParams(RType* funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic);
 
 public:

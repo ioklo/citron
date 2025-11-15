@@ -920,7 +920,7 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType
 
 } // namespace 
 
-expected<void, DiagPtr> TranslateSBodyToMStmts(vector<MStmt*>* outBody, const vector<SStmt*>& sStmts, TranslationContext& context)
+expected<void, DiagPtr> TranslateSBodyToMStmts(vector<MStmt*>* outBody, span<SStmt*> sStmts, TranslationContext& context)
 {
     for(auto* sStmt : sStmts)
     {
@@ -932,7 +932,7 @@ expected<void, DiagPtr> TranslateSBodyToMStmts(vector<MStmt*>* outBody, const ve
     return {};
 }
 
-expected<vector<MStmt*>, DiagPtr> TranslateSBodyToMStmts(const vector<SStmt*>& sStmts, TranslationContext& context)
+expected<vector<MStmt*>, DiagPtr> TranslateSBodyToMStmts(span<SStmt*> sStmts, TranslationContext& context)
 {
     vector<MStmt*> body;
     auto eResult = TranslateSBodyToMStmts(&body, sStmts, context);

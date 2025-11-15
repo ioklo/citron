@@ -1,10 +1,14 @@
 #pragma once
+#include <memory>
+
 #include "TranslationTasks.h"
 
 namespace Citron {
 
+class NStructDecl;
 class NStructCtorDecl;
 class SStructCtorDecl;
+using NFactoryPtr = std::shared_ptr<class NFactory>;
 
 namespace SyntaxIR0Translator {
 
@@ -14,22 +18,20 @@ class StructCtorTask
     : public IBuildTypeDependentSymbolTask
     , public ITranslateBodyTask
 {
-    NStructCtorDecl* symbol;
-    SStructCtorDecl* syntax;
+    NStructDecl* nStruct;
+    SStructCtorDecl* sStructCtor;
+    NFactoryPtr nFactory;
+
+    NStructCtorDecl* nStructCtor;
 
 private:
-    StructCtorTask(NStructCtorDecl* symbol, SStructCtorDecl* syntax)
-        : symbol{symbol}, syntax{syntax}
+    StructCtorTask(NStructDecl* nStruct, SStructCtorDecl* sStructCtor, const NFactoryPtr& nFactory)
+        : nStruct{nStruct}, sStructCtor{sStructCtor}, nFactory{nFactory}
     {}
 
 public:
-    static void Register(NStructCtorDecl* nFuncDecl, SStructCtorDecl* syntax, PhaseManager& phaseManager);
-
-    // Inherited via IBuildTypeDependentSymbolTask
+    static void Register(NStructDecl* nStruct, SStructCtorDecl* sStructCtor, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
     void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
-
-
-    // Inherited via ITranslateBodyTask
     void TranslateBody(TranslateBodyContext& context) override;
 
 };

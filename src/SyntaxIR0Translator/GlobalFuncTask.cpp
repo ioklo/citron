@@ -13,9 +13,9 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-void GlobalFuncTask::Register(NGlobalFuncDecl* nGFuncDecl, SGlobalFuncDecl* syntax, PhaseManager& phaseManager)
+void GlobalFuncTask::Register(NNamespaceDecl* outer, SGlobalFuncDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<GlobalFuncTask> task{new GlobalFuncTask(nGFuncDecl, syntax)};
+    shared_ptr<GlobalFuncTask> task{new GlobalFuncTask(outer, syntax, nFactory)};
     phaseManager.AddBuildTypeDependentSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
@@ -24,17 +24,20 @@ void GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& c
 {
     auto accessor = MakeAccessor(syntax->accessModifier, AccessorContext::Global);
     auto typeParams = MakeTypeParams(syntax->typeParams);
-
+    bool bSeqFunc = false; // TODO:
+    nGFuncDecl = nFactory->MakeNDecl<NGlobalFuncDecl>(
+        nOuter, accessor, bSeqFunc, RName_Normal(syntax->name), move(typeParams));
+    
     auto* rRetType = context.MakeType(syntax->retType, nGFuncDecl);
     auto [rParameters, bLastParamVariadic] = context.MakeParameters(nGFuncDecl, syntax->parameters);
 
-    nGFuncDecl->InitFuncReturnAndParams(rRetType, move(rParameters), bLastParamVariadic);
+    nGFuncDecl->InitFuncReturnAndParams(RFuncReturn_Set(rRetType), move(rParameters), bLastParamVariadic);
+    nOuter->AddGlobalFuncDecl(nGFuncDecl);
 }
 
 void GlobalFuncTask::TranslateBody(TranslateBodyContext& context)
 {
     context.Translate(nGFuncDecl, syntax->body);
 }
-
 
 } // namespace Citron::SyntaxIR0Translator

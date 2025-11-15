@@ -3,18 +3,10 @@
 namespace Citron {
 namespace SyntaxIR0Translator {
 
-class BuildTypeSymbolContext;
 class ResolveTypeHierarchyContext;
 class BuildTypeDependentSymbolContext;
 class SynthesizeImplicitSymbolContext;
 class TranslateBodyContext;
-
-class IBuildTypeSymbolTask
-{
-public:
-    ~IBuildTypeSymbolTask() = default;
-    virtual void BuildTypeSymbol(BuildTypeSymbolContext& context) = 0;
-};
 
 class IResolveTypeHierarchyTask
 {

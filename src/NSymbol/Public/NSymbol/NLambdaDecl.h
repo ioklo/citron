@@ -35,8 +35,8 @@ class NLambdaDecl
     std::unordered_map<RName, NLambdaVarDecl*> varsMap;
 
 public:
-    NSYMBOL_API NLambdaDecl(NFuncDeclOuter* outer);
-    NSYMBOL_API void Init(RName&& name, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    NSYMBOL_API NLambdaDecl(NFuncDeclOuter* outer, RName&& name);
+    NSYMBOL_API void Init(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
     NSYMBOL_API void InitVars(std::vector<NLambdaVarDecl*>&& vars);
 
     using NCommonFuncDeclComponent::GetReturnType;

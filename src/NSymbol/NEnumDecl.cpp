@@ -7,17 +7,12 @@ using namespace std;
 
 namespace Citron
 {
-NEnumDecl::NEnumDecl(NTypeDeclOuter* outer)
+NEnumDecl::NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, RName name, std::vector<std::string>&& typeParams)
     : outer{outer}
+    , accessor{accessor}
+    , name{move(name)}
+    , typeParams{move(typeParams)}
 {}
-
-void NEnumDecl::Init(RAccessor accessor, RName name, std::vector<std::string>&& typeParams)
-{
-    this->outer = outer;
-    this->accessor = accessor;
-    this->name = move(name);
-    this->typeParams = move(typeParams);
-}
 
 void NEnumDecl::AddElem(NEnumElemDecl* elem)
 {

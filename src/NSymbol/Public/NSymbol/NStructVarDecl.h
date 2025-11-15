@@ -21,9 +21,7 @@ public:
     std::string name;
 
 public:
-    NSYMBOL_API NStructVarDecl(NStructDecl* _struct);
-    NSYMBOL_API void Init(RAccessor accessor, bool bStatic, const std::string& name, RType* declType);
-
+    NSYMBOL_API NStructVarDecl(NStructDecl* _struct, RAccessor accessor, bool bStatic, const std::string& name, RType* declType);
     NSYMBOL_API RType* GetUnboundDeclType();
 
 public:

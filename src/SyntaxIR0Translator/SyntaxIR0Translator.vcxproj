@@ -42,7 +42,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EnumTasks.cpp" />
+    <ClCompile Include="EnumElemVarTask.cpp" />
     <ClCompile Include="FuncContext.cpp" />
     <ClCompile Include="PhaseManager.cpp" />
     <ClCompile Include="ResolveTypeHierarchyContext.cpp" />
@@ -80,7 +80,6 @@
     <ClCompile Include="SExpToReExpTranslation.cpp" />
     <ClCompile Include="SExpToMExpTranslation.cpp" />
     <ClCompile Include="SExpToMLocTranslation.cpp" />
-    <ClCompile Include="BuildTypeSymbolContext.cpp" />
     <ClCompile Include="SStmtToMStmtTranslation.cpp" />
     <ClCompile Include="SVarDeclToMStmtsTranslation.cpp" />
     <ClCompile Include="SyntaxIR0Translator.cpp" />
@@ -89,7 +88,7 @@
     <ClCompile Include="TranslationContext.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EnumTasks.h" />
+    <ClInclude Include="EnumElemVarTask.h" />
     <ClInclude Include="GlobalFuncTask.h" />
     <ClInclude Include="PhaseManager.h" />
     <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0Translator.h" />
@@ -130,7 +129,6 @@
     <ClInclude Include="SExpToMExpTranslation.h" />
     <ClInclude Include="SExpToMLocTranslation.h" />
     <ClInclude Include="SExpToReExpTranslation.h" />
-    <ClInclude Include="BuildTypeSymbolContext.h" />
     <ClInclude Include="SStmtToMStmtTranslation.h" />
     <ClInclude Include="SVarDeclToMStmtsTranslation.h" />
     <ClInclude Include="SRTFactory.h" />

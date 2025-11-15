@@ -26,7 +26,7 @@ public:
     NSYMBOL_API NModule* MakeNModule(std::string&& name);
 
     NSYMBOL_API NNamespaceDecl* MakeRootNamespaceDecl(); // TU당 하나씩 만들어지는 namespace
-    NNamespaceDecl* MakeChildNamespaceDecl(NNamespaceDecl* outer, const std::string& name);
+    NSYMBOL_API NNamespaceDecl* MakeChildNamespaceDecl(NNamespaceDecl* outer, const std::string& name);
 
     template<typename TNDecl, typename... TArgs> requires std::derived_from<TNDecl, NDecl> && (!std::same_as<TNDecl, NNamespaceDecl>)
         TNDecl* MakeNDecl(TArgs&&... args)

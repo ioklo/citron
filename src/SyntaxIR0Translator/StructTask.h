@@ -12,8 +12,7 @@ class PhaseManager;
 enum class AccessorContext;
 
 class StructTask
-    : public IBuildTypeSymbolTask
-    , public IResolveTypeHierarchyTask
+    : public IResolveTypeHierarchyTask
     , public ISynthesizeImplicitSymbolTask
 {   
     NStructDecl* nStructDecl;
@@ -25,8 +24,7 @@ private:
 
 public:
     static void Register(NStructDecl* nStructDecl, SStructDecl* syntax, AccessorContext accessorContext, PhaseManager& phaseManager);
-
-    void BuildTypeSymbol(BuildTypeSymbolContext& context) override;
+    
     void ResolveTypeHierarchy(ResolveTypeHierarchyContext& context) override;
     void SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& context) override;
 };

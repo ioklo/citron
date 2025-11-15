@@ -14,7 +14,6 @@
 #include "NSymbol/NModule.h"
 #include "NSymbol/NClassDecl.h"
 
-#include "BuildTypeSymbolContext.h"
 #include "BuildTypeDependentSymbolContext.h"
 
 #include "GlobalFuncTask.h"
@@ -22,7 +21,7 @@
 #include "StructFuncTask.h"
 #include "StructCtorTask.h"
 #include "StructVarTask.h"
-#include "EnumTasks.h"
+#include "EnumElemVarTask.h"
 #include "PhaseManager.h"
 #include "CommonTranslation.h"
 
@@ -111,19 +110,17 @@ public:
     void Visit(SEnumDecl* elem) override;
 };
 
-
-void VisitGlobalFunc(SGlobalFuncDecl* syntax, NNamespaceDecl* outer, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
-{
-    auto* nGlobalFuncDecl = nFactory->MakeNDecl<NGlobalFuncDecl>(outer);
-    outer->AddGlobalFuncDecl(nGlobalFuncDecl);
-
-    GlobalFuncTask::Register(nGlobalFuncDecl, syntax, phaseManager);
+void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, NNamespaceDecl* outer, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+{   
+    GlobalFuncTask::Register(outer, sGFuncDecl, nFactory, phaseManager);
 }
 
 template<typename TNOuter>
 void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorContext, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {   
-    auto* nStructDecl = nFactory->MakeNDecl<NStructDecl>(outer);
+    auto accessor = MakeAccessor(syntax->accessModifier, accessorContext);
+    auto typeParams = MakeTypeParams(syntax->typeParams);
+    auto* nStructDecl = nFactory->MakeNDecl<NStructDecl>(outer, accessor, RName_Normal(syntax->name), move(typeParams));
     outer->AddType(nStructDecl);
 
     StructTask::Register(nStructDecl, syntax, accessorContext, phaseManager);
@@ -139,22 +136,21 @@ void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorCo
 template<typename TNOuter>
 void VisitEnum(TNOuter* outer, SEnumDecl* sEnum, AccessorContext accessorContext, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {   
-    auto* nEnum = nFactory->MakeNDecl<NEnumDecl>(outer);
+    auto accessor = MakeAccessor(sEnum->accessModifier, accessorContext);
+    auto typeParams = MakeTypeParams(sEnum->typeParams);
+    auto* nEnum = nFactory->MakeNDecl<NEnumDecl>(outer, accessor, RName_Normal(sEnum->name), move(typeParams));
     outer->AddType(nEnum);
-    EnumTask::Register(nEnum, sEnum, accessorContext, phaseManager);
 
     // EnumElem
     for (auto* sEnumElem : sEnum->elements)
     {
-        auto* nEnumElem = nFactory->MakeNDecl<NEnumElemDecl>(nEnum);
+        auto* nEnumElem = nFactory->MakeNDecl<NEnumElemDecl>(nEnum, sEnumElem->name);
         nEnum->AddElem(nEnumElem);
-        EnumElemTask::Register(nEnumElem, sEnumElem, phaseManager);
 
         // EnumElemVar
         for (auto* sEnumElemVar : sEnumElem->vars)
         {
-            auto* nEnumElemVar = nFactory->MakeNDecl<NEnumElemVarDecl>(nEnumElem);
-            nEnumElem->AddVar(nEnumElemVar);
+            auto* nEnumElemVar = nFactory->MakeNDecl<NEnumElemVarDecl>(nEnumElem, sEnumElemVar->name);
             EnumElemVarTask::Register(nEnumElemVar, sEnumElemVar, phaseManager);
         }
     }
@@ -176,34 +172,18 @@ void StructElemVisitor::Visit(SEnumDecl* decl)
 }
 
 void StructElemVisitor::Visit(SStructFuncDecl* decl)
-{
-    auto* nStructFuncDecl = nFactory->MakeNDecl<NStructFuncDecl>(nStruct);
-    nStruct->AddFunc(nStructFuncDecl);
-
-    StructFuncTask::Register(nStructFuncDecl, decl, phaseManager);
+{   
+    StructFuncTask::Register(nStruct, decl, nFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructCtorDecl* decl)
 {
-    auto* nCtor = nFactory->MakeNDecl<NStructCtorDecl>(nStruct);
-    nStruct->AddCtor(nCtor);
-
-    StructCtorTask::Register(nCtor, decl, phaseManager);
+    StructCtorTask::Register(nStruct, decl, nFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructVarDecl* decl)
-{
-    vector<NStructVarDecl*> symbols;
-    symbols.reserve(decl->varNames.size());
-
-    for (auto& varName : decl->varNames)
-    {
-        auto* symbol= nFactory->MakeNDecl<NStructVarDecl>(nStruct);
-        symbols.push_back(symbol);
-        nStruct->AddVar(symbol);
-    }
-
-    StructVarTask::Register(nStruct, move(symbols), decl, phaseManager);
+{   
+    StructVarTask::Register(nStruct, decl, nFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(SClassDecl* decl)
@@ -350,9 +330,7 @@ expected<NModuleMData, DiagPtr> TranslateSyntaxToNModuleMData(
     // NNamespaceDecl은 각 TranslationUnit별로 별개로 가지는데,
     auto* nModule = nFactory->MakeNModule(move(moduleName));
 
-    PhaseManager phaseManager;
-
-    BuildTypeSymbolContext context{nFactory};
+    PhaseManager phaseManager{rFactory, nFactory};
     for (auto* script : scripts) // translation units
     {
         auto* rootNamespace = nFactory->MakeRootNamespaceDecl();
@@ -364,7 +342,10 @@ expected<NModuleMData, DiagPtr> TranslateSyntaxToNModuleMData(
         }
     }
 
+    phaseManager.Run();
+    
     throw NotImplementedException{};
+
     // return {nModule, };
 
     //    var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
