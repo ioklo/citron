@@ -7,11 +7,14 @@
 #include <filesystem>
 #include <clocale>
 #include <variant>
+#include <format>
+#include <regex>
 #ifdef _MSC_VER
 #include <Windows.h>
 #endif
 #include <boost/algorithm/string.hpp>
-#include <fmt/core.h>
+
+#include "Infra/Variants.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -106,6 +109,68 @@ vector<tuple<string, path, bool, path>> GetFiles(path p)
     return results;
 }
 
+struct CTInfoResult_Error {};
+struct CTInfoResult_Text { string text; };
+using CTInfoResult = variant<CTInfoResult_Error, CTInfoResult_Text>;
+struct CTInfo { string category; string name; string code; CTInfoResult result; };
+vector<CTInfo> ReadCTFiles(path p)
+{
+    vector<CTInfo> results;
+
+    string ctExt = ".ct";
+    size_t extLength = ctExt.length();
+
+    for (auto& dir_entry : std::filesystem::directory_iterator(p))
+    {
+        if (!dir_entry.is_regular_file()) continue;
+
+        auto ctFilePath = dir_entry.path();
+        auto filename = ctFilePath.filename().string();
+
+        if (filename.length() <= extLength) continue;
+
+        size_t lengthWithoutExt = filename.length() - extLength;
+        if (!boost::iequals(string_view(filename).substr(lengthWithoutExt), ctExt)) continue;
+
+        auto text = readAll(ctFilePath);
+
+        // 파일 이름 카테고리
+        regex r{R"-(([\w_]+)_(\w+))-"};
+        auto stem = ctFilePath.stem().string();
+        smatch match;
+        if (!regex_match(stem, match, r))
+        {
+            wcout << L"file name doesn't match TestCategory_Name.ct";
+            continue;
+        }
+
+        string category = match.str(1);
+        string name = match.str(2);
+
+        // 첫째줄 (\n 나올때)
+        //@ 10
+        auto s = text.find_first_of("\r\n");
+        if (s == string::npos) s = text.find_first_of("\n");
+        if (s == string::npos || !text.starts_with("//@ ")) // 에러
+        {
+            wcout << "doesn't have header: " << ctFilePath << endl;
+            continue;
+        }
+
+        // 
+        string_view header{text.data() + 4, s - 4};
+        string_view code{text.data() + s + 1};
+
+        if (header.starts_with("$Error"))
+            results.emplace_back(category, name, string{code}, CTInfoResult_Error{});
+        else
+            results.emplace_back(category, name, string{code}, CTInfoResult_Text{string{header}});
+    }
+    return results;
+}
+
+
+
 void GenerateScriptParserTests(path inputPath, path srcPath)
 {
     // TestData/ScriptParserTests
@@ -157,7 +222,7 @@ using namespace Citron;
         auto inContents = readAll(inFilePath);
         auto outContents = readAll(outFilePath);
 
-        auto testContents = fmt::format(templ, "ScriptParser", name.c_str(), inContents, outContents);
+        auto testContents = format(templ, "ScriptParser", name.c_str(), inContents, outContents);
         oss << testContents << endl << endl;
     }
 
@@ -215,7 +280,7 @@ using namespace Citron;
         auto inContents = readAll(inFilePath);
         auto outContents = readAll(outFilePath);
 
-        auto testContents = fmt::format(templ, "StmtParser", name.c_str(), inContents, outContents);
+        auto testContents = format(templ, "StmtParser", name.c_str(), inContents, outContents);
         oss << testContents << endl << endl;
     }
 
@@ -273,7 +338,7 @@ using namespace Citron;
         auto inContents = readAll(inFilePath);
         auto outContents = readAll(outFilePath);
 
-        auto testContents = fmt::format(templ, "ExpParser", name.c_str(), inContents, outContents);
+        auto testContents = format(templ, "ExpParser", name.c_str(), inContents, outContents);
         oss << testContents << endl << endl;
     }
 
@@ -342,12 +407,12 @@ using namespace Citron;
         {
             auto outContents = readAll(outFilePath);
 
-            auto testContents = fmt::format(succTempl, "TypeExpParser", name.c_str(), inContents, outContents);
+            auto testContents = format(succTempl, "TypeExpParser", name.c_str(), inContents, outContents);
             oss << testContents << endl << endl;
         }
         else
         {
-            auto testContents = fmt::format(failTempl, "TypeExpParser", name.c_str(), inContents);
+            auto testContents = format(failTempl, "TypeExpParser", name.c_str(), inContents);
             oss << testContents << endl << endl;
         }
     }
@@ -355,31 +420,167 @@ using namespace Citron;
     writeAll(resultPath, oss.str());
 }
 
+void GenerateEvalTests(path basePath)
+{
+    // EvalTests
+    path testsPath = basePath / "data/TestData/EvalTests";
+
+    // src/TestAnalysis.Tests/TypeExpParserTests.g.cpp
+    path resultPath = basePath / "src/EvalTests/EvalTests.g.cpp";
+
+    if (!exists(testsPath))
+        return;
+
+    ostringstream oss;
+
+    // insert header
+    oss << R"---(#include <gtest/gtest.h>
+#include <string>
+#include <sstream>
+
+#include "Infra/Ptr.h"
+
+#include "Logging/Logger.h"
+
+#include "TextAnalysis/ScriptParser.h"
+#include "TextAnalysis/Buffer.h"
+
+#include "SyntaxIR0Translator/SyntaxIR0Translator.h"
+#include "IR0IR1Translator/IR0IR1Translator.h"
+
+#include "RSymbol/RFactory.h"
+#include "RSymbol/RDecl.h"
+#include "RSymbol/RModule.h"
+
+#include "NSymbol/NFactory.h"
+#include "NSymbol/NFuncDecl.h"
+#include "NSymbol/NModule.h"
+#include "NSymbol/NGlobalFuncDecl.h"
+
+#include "MIR/MFactory.h"
+
+#include "QIR/QFactory.h"
+#include "QIR/QBlock.h"
+
+#include "QEvaluator/QEvaluation.h"
+
+using namespace std;
+using namespace Citron;
+
+class CommandHandler : public IEvalQDataCommandHandler
+{
+    ostringstream output;
+
+public:
+    void Execute(const std::string& command) override
+    {
+        output << command;
+    }
+
+    string GetOutput()
+    {
+        return output.str();
+    }
+};
+
+void DoTest(const string& code, const string& expected)
+{
+    // 1. TextAnalysis
+    auto buffer = MakePtr<Buffer>(code);
+    BufferPosition pos = buffer->MakeStartPosition();
+    Lexer lexer{pos};
+    SFactory sFactory;
+
+    auto* sScript = ParseScript(&lexer, sFactory);
+    EXPECT_TRUE(sScript);
+
+    string moduleName = "MyModule";
+    auto rFactory = MakePtr<RFactory>();
+    auto nFactory = MakePtr<NFactory>(rFactory);
+    auto logger = MakePtr<Logger>();
+    auto mFactory = MakePtr<MFactory>();
+
+    auto eNModuleMData = TranslateSyntaxToNModuleMData(moduleName, {sScript}, {}, logger, rFactory, nFactory, mFactory);
+    EXPECT_TRUE(eNModuleMData);
+    auto& [nModule, mData] = *eNModuleMData;
+
+    QFactoryPtr qFactory = MakePtr<QFactory>();
+    auto eQData = TranslateMDataToQData(mData, qFactory);
+    EXPECT_TRUE(eQData);
+    auto* qData = *eQData;
+
+    // "Main" 찾기
+    NGlobalFuncDecl* nEntry = nullptr;
+    for (auto& body : qData->GetAllBodies())
+    {
+        if (NGlobalFuncDecl* globalFuncDecl = dynamic_cast<NGlobalFuncDecl*>(body.nFuncDecl))
+        {
+            auto id = body.nFuncDecl->GetNDecl()->GetRDecl()->GetIdentifier();
+            if (id == RIdentifier{RName_Normal("Main"), 0, {}})
+                nEntry = globalFuncDecl;
+        }
+    }
+    EXPECT_TRUE(nEntry);
+
+    auto commandHandler = MakePtr<CommandHandler>();
+    vector<RModule*> rModules{nModule};
+    auto eResult = EvaluateQData(rModules, qData, nEntry, commandHandler);
+    EXPECT_TRUE(eResult);
+
+    // 
+    EXPECT_EQ(commandHandler->GetOutput(), expected);
+}
+)---";
+
+    constexpr auto succTempl = R"----(TEST({}, {}) 
+{{
+    auto code = R"---({})---";
+    string expected = R"---({})---";
+
+    DoTest(code, expected);
+}})----";
+    
+    for (auto& info : ReadCTFiles(testsPath))
+    {
+        visit(overloaded{
+            [&oss, &succTempl, &info](CTInfoResult_Text& textResult) -> void {
+                oss << format(succTempl, info.category, info.name, info.code, textResult.text) << endl << endl;
+            },
+            [](CTInfoResult_Error& errorResult) -> void {
+                // NotImplemented
+            }
+        }, info.result);
+    }
+
+    writeAll(resultPath, oss.str());
+}
+
 // argv는 프로그램 포함
-// 소스가 utf8로 고정되어서(모든 char*리터럴은 utf-8이다)
-// 일반 main을 쓰면, cout쓸때 utf8로 나가게 된다. 그럼 현재 locale로 conversion하기 귀찮아 져서 wmain을 쓰도록 한다
+// 소스가 utf-8로 고정되어서(모든 char*리터럴은 utf-8이다)
+// 일반 main을 쓰면, cout쓸때 utf-8로 나가게 된다. 그럼 현재 locale로 conversion하기 귀찮아 져서 wmain을 쓰도록 한다
 int wmain(int argc, wchar_t* argv[])
 {   
-    locale::global(locale(""));
+    locale::global(locale("")); // locale을 C (0~127 ASCII)에서 현재 국가, ansi code page로 변경
 
     // wcout << L"abc 안녕하세요 abc";
-    if (argc < 3)
+    if (argc < 2)
     {
-        wcout << L"Usage: " << argv[0] << ' ' << L"[Input Directory] [Source Directory]" << endl;
-        wcout << L"   ex: " << argv[0] << ' ' << L"Inputs ..\\..   (relative to working directory)" << endl;
+        wcout << L"Usage: " << argv[0] << ' ' << L"[Base Directory]" << endl;
+        wcout << L"   ex: " << argv[0] << ' ' << L"..\\..\\..   (relative to working directory)" << endl;
         return 1;
     }
-    
-    auto inputsPath = absolute(argv[1]);
-    auto srcPath = absolute(argv[2]);
 
-    wcout << L"Input Directory: " << inputsPath << endl;
-    wcout << L"Source Directory: " << srcPath << endl;
+    auto basePath = canonical(argv[1]);
+    wcout << L"Base Directory: " << basePath << endl;
+
+    auto inputsPath = basePath / "data" / "TestData";
+    auto srcPath = basePath / "src";
         
     GenerateScriptParserTests(inputsPath, srcPath);
     GenerateStmtParserTests(inputsPath, srcPath);
     GenerateExpParserTests(inputsPath, srcPath);
     GenerateTypeExpParserTests(inputsPath, srcPath);
+    GenerateEvalTests(basePath);
 
     return 0;
 }

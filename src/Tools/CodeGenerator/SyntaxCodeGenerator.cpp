@@ -3,8 +3,6 @@
 #include <iostream>
 #include <filesystem>
 
-#include <fmt/core.h>
-
 #include "Misc.h"
 
 using namespace std;

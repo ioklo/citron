@@ -1,6 +1,6 @@
 #include "Misc.h"
 
-#include <fmt/core.h>
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <variant>
@@ -145,7 +145,7 @@ void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& 
     bool bHModified = false, bCppModified = false;
     for (auto& memberInfo : classInfo.memberInfos)
     {
-        hStream << fmt::format(R"---(    {} {};)---", memberInfo.type, memberInfo.memberVarName) << endl;
+        hStream << format(R"---(    {} {};)---", memberInfo.type, memberInfo.memberVarName) << endl;
         bHModified = true;
     }
 

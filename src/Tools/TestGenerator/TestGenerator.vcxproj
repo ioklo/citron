@@ -267,6 +267,11 @@
     <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseParenSolo.fail.txt" />
     <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseParenSolo.in.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infra\Infra.vcxproj">
+      <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
