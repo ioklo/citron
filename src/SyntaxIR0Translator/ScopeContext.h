@@ -21,15 +21,12 @@ class RFactory;
 
 class MLoc_This;
 class NLambdaDecl;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 namespace SyntaxIR0Translator {
 
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
-
-class FuncContext;
-using FuncContextPtr = std::shared_ptr<FuncContext>;
-
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+using FuncContextPtr = std::shared_ptr<class FuncContext>;
 class ImExp;
 
 class CloneContext;
@@ -42,11 +39,13 @@ public:
     ScopeContextPtr parentContext;
     int nestedLoop;
 
+    RFactoryPtr rFactory;
+
     // 로컬 관리
     std::unordered_map<std::string, RType*> locals;
 
 public:
-    ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop);
+    ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop, const RFactoryPtr& rFactory);
 
     ScopeContextPtr Clone(CloneContext& context);
     void Update(ScopeContext& src, UpdateContext& context);
@@ -59,14 +58,14 @@ public:
     std::shared_ptr<ScopeContext> MakeLoopNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
     std::tuple<ScopeContextPtr, NLambdaDecl> MakeLambdaBodyContext(const RFuncReturn& ret, std::vector<RFuncParameter> params, bool bLastParamVariadic);
 
-    void AddLocalVarInfo(RType* type, const RName& name);
+    void AddLocalVarInfo(RType* type, const std::string& name);
     // std::optional<LocalVarInfo> GetLocalVarInfo(const RName& name);
 
     bool DoesLocalVarNameExistInScope(const std::string& name);
 
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }
-    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* typeExp);
+    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
 
     MLoc_This* MakeThisLoc();
     std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);

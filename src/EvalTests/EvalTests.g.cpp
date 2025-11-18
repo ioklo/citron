@@ -69,7 +69,7 @@ void DoTest(const string& code, const string& expected)
     auto& [nModule, mData] = *eNModuleMData;
 
     QFactoryPtr qFactory = MakePtr<QFactory>();
-    auto eQData = TranslateMDataToQData(mData, qFactory);
+    auto eQData = TranslateMDataToQData(mData, rFactory, qFactory);
     EXPECT_TRUE(eQData);
     auto* qData = *eQData;
 

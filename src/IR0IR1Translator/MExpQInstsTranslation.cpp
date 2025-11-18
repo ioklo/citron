@@ -73,9 +73,9 @@ public:
     ResultType Visit(MExp_Box* exp)
     {
         // 1. alloc, size
-        auto lv = bodyContext.NewValue();
-        size_t size = bodyContext.GetExpTypeSize(exp->innerExp);
-        bodyContext.AddInst(QInst_Alloc{lv, size});
+        // auto lv = bodyContext.NewValue();
+        size_t size = bodyContext.GetMExpTypeSize(exp->innerExp);
+        auto lv = bodyContext.AddIntrinsic(QInst_IntrinsicKind::Alloc_Int, {QValue_ConstInteger{(int)size}});
 
         // 2. exp
         auto eQValue = TranslateMExpToQInsts(exp->innerExp, bodyContext);
@@ -146,7 +146,7 @@ public:
 
     ResultType Visit(MExp_CallInternalUnaryOperator* exp) 
     { 
-        auto eOperand = TranslateMExpToQInsts(exp, bodyContext);
+        auto eOperand = TranslateMExpToQInsts(exp->operand, bodyContext);
         RETURN_ON_ERROR(eOperand);
 
         static unordered_map<MInternalUnaryOperator, QInst_IntrinsicKind> m{

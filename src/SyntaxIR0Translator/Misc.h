@@ -18,7 +18,7 @@ namespace SyntaxIR0Translator {
 
 class TranslationContext;
 
-std::expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context);
+std::expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context);
 
 std::expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContext& context);
 

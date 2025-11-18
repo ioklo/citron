@@ -10,9 +10,10 @@ namespace Citron {
 
 struct MFuncBody;
 class MData;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 using QFactoryPtr = std::shared_ptr<class QFactory>;
 using DiagPtr = std::shared_ptr<struct Diag>;
 
-IR0IR1TRANSLATOR_API std::expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, QFactoryPtr& qFactory);
+IR0IR1TRANSLATOR_API std::expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, const RFactoryPtr& rFactory, const QFactoryPtr& qFactory);
 
 }

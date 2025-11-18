@@ -6,6 +6,7 @@
 #include "Infra/Ptr.h"
 #include "Infra/Variants.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
 
 #include "Syntax/Syntax.h"
 #include "RSymbol/RFactory.h"
@@ -48,12 +49,12 @@ bool FuncContext_Lambda::CanAccess(RDecl* target)
 
 optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto oMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
-    if (!oMember) return nullopt;
+    auto oRMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    if (!oRMember) return nullopt;
     
     // 상위 스코프에서 얻어오는 
     // 로컬과 람다 멤버, this만 감싸는 대상이다
-    if (auto* localVar = get_if<RMember_LocalVar>(&*oMember))
+    if (auto* localVar = get_if<RMember_LocalVar>(&*oRMember))
     {
         RName localVarName = RName_Normal(localVar->name);
 
@@ -67,7 +68,7 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
-    if (auto* lambdaVar = get_if<RMember_LambdaVar>(&*oMember))
+    if (auto* lambdaVar = get_if<RMember_LambdaVar>(&*oRMember))
     {
         // class C<T> { void F<S> {
         //     List<T> x;      // 5) scopeContext.ResolveIdentifier(x, 0) => RMember
@@ -92,7 +93,7 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         return RMember_LambdaVar{openTypeArgs, newLambdaVar};
     }
 
-    if (auto* thisVar = get_if<RMember_ThisVar>(&*oMember))
+    if (auto* thisVar = get_if<RMember_ThisVar>(&*oRMember))
     {
         // TODO: 워닝, struct의 this는 복사가 일어납니다. 원본과 다를 수 있습니다. ref this로 명시적으로 지정해주세요(?)
         if (auto structType = dynamic_cast<RType_Struct*>(thisVar->type))
@@ -109,7 +110,7 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
     }
 
     // 나머지는 그대로 리턴
-    return oMember;
+    return oRMember;
 }
 
 RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()

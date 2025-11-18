@@ -20,7 +20,7 @@ class RTypeArguments;
 
 namespace SyntaxIR0Translator {
 
-expected<RTypeArguments*, DiagPtr> MakeTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context)
+expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context)
 {
     std::vector<RType*> items;
     items.reserve(typeArgs.size());

@@ -83,7 +83,6 @@
     </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="DeclTypeInfo.cpp" />
-    <ClCompile Include="ResolveIdentifierError.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
     <ClCompile Include="GlobalFuncTask.cpp" />
     <ClCompile Include="PhaseManager.cpp" />
@@ -177,7 +176,6 @@
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ModuleDecls.h" />
     <ClInclude Include="RFuncAndRArgsToMExpTranslation.h" />
-    <ClInclude Include="ResolveIdentifierError.h" />
     <ClInclude Include="SRTFactory.h" />
     <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0Translator.h">
       <Filter>Public Headers</Filter>

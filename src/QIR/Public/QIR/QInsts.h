@@ -10,13 +10,6 @@ namespace Citron {
 class RFuncDecl;
 class QBlock;
 
-// QLocalVar(lv, name)
-struct QInst_LocalVarDecl
-{
-    QValue loc;
-    std::string name;
-};
-
 // QInst_Store(lv, v)
 struct QInst_Store
 {
@@ -33,7 +26,7 @@ struct QInst_Load
 
 struct QInst_Alloc
 {
-    QValue loc;
+    QValue_Local loc;
     size_t size;
 };
 
@@ -52,6 +45,7 @@ enum struct QInst_IntrinsicKind
 {   
     DebugPrint_Items,
     Command_Items,
+    Alloc_Int,
 
     NewList_Items,
     GetListIterator_List,
@@ -109,7 +103,6 @@ struct QInst_Jump
 };
 
 using QInst = std::variant<
-    QInst_LocalVarDecl,
     QInst_Store,
     QInst_Load,
     QInst_Alloc,

@@ -3,6 +3,7 @@
 #include "NSymbolConfig.h"
 #include <vector>
 #include <string>
+#include <optional>
 
 #include "RSymbol/RClassCtorDecl.h"
 

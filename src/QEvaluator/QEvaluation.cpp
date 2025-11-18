@@ -27,15 +27,18 @@ struct InstructionPointer
 };
 
 // 실제 value
+struct RawValue_Ptr { void* ptr; };
 struct RawValue_Int { int value; };
 struct RawValue_Bool { bool value; };
+struct RawValue_String { string value; };
 
-using RawValue = variant<RawValue_Int, RawValue_Bool>;
+using RawValue = variant<RawValue_Ptr, RawValue_Int, RawValue_Bool, RawValue_String>;
 
 struct Environment
 {   
     using Value = variant<int>;
     unordered_map<string, RawValue> namedValues;
+    std::unordered_map<size_t, RawValue> locals;
 };
 
 int GetInt(QValue value, Environment& env)
@@ -61,6 +64,31 @@ void SetBool(QValue_Named namedValue, bool v, Environment& env)
     env.namedValues[namedValue.name] = RawValue_Bool{v};
 }
 
+void SetString(QValue_Named namedValue, string s, Environment& env)
+{
+    env.namedValues[namedValue.name] = RawValue_String{s};
+}
+
+RawValue GetRawValue(QValue& value, Environment& env)
+{
+    return visit<RawValue>(overloaded{
+        [&env](QValue_Local& local) { return env.locals[local.index]; },
+        [&env](QValue_Named& named) { return env.namedValues[named.name]; },
+        [&env](QValue_ConstBool& cb) { return RawValue_Bool{cb.value}; },
+        [&env](QValue_ConstInteger& ci) { return RawValue_Int{ci.value}; },
+        [&env](QValue_String& s) { throw NotImplementedException{}; return RawValue_Int{0}; }
+    }, value);
+}
+
+void SetRawValue(QValue& value, RawValue& rawValue, Environment& env)
+{
+    return visit(overloaded{
+        [&env, &rawValue](QValue_Local& local) { env.locals[local.index] = rawValue; },
+        [&env, &rawValue](QValue_Named& named) { env.namedValues[named.name] = rawValue; },
+        [](auto&) { throw NotImplementedException{}; }
+    }, value);
+}
+
 } // namespace 
 expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler)
 {
@@ -76,6 +104,40 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
         auto& inst = ip.block->GetInst(ip.index++);
 
         bool cont = visit(overloaded{
+            [&env](QInst_Store& inst)
+            {
+                auto rawLoc = GetRawValue(inst.loc, env);
+                auto rawValue = GetRawValue(inst.value, env);
+
+                // ptr에 value를 저장합니다.
+                void* ptr = get<RawValue_Ptr>(rawLoc).ptr;
+
+                visit(overloaded{
+                    [&ptr](RawValue_String& rb) {*((string*)ptr) = rb.value; },
+                    [&ptr](RawValue_Bool& rb) {*((bool*)ptr) = rb.value; },
+                    [&ptr](RawValue_Int& ri) {*((int*)ptr) = ri.value; },
+                    [&ptr](RawValue_Ptr& p) {*((void**)ptr) = p.ptr; }
+                }, rawValue);
+                return true;
+            },
+            [&env](QInst_Load& inst)
+            {
+                auto rawValue = GetRawValue(inst.loc, env);
+
+                // TODO: rawValue는 포인터고, 무슨 타입인지 알수가 없으니, 어딘가에 적어놓고 *rawValue를 저장하는 방식으로 해야한다
+                throw NotImplementedException{};
+
+                SetRawValue(inst.value, rawValue, env);
+
+                return true;
+            },
+            [&env](QInst_Alloc& alloc)
+            {
+                // stack이니 그냥 하나 올리면 되는데 일단 new
+                // TODO: 
+                env.locals[alloc.loc.index] = RawValue_Ptr{new byte[alloc.size]};
+                return true;
+            },
             [&cmdHandler, &env](QInst_Intrinsic& inst) -> bool
             {
                 switch (inst.kind)
@@ -126,6 +188,14 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
                     return true;
                 }
 
+                case QInst_IntrinsicKind::ToString_Int:
+                {
+                    auto i = GetInt(inst.args[0], env);
+
+                    SetString(*inst.result, format("{}", i), env);
+                    return true;
+                }
+
                 default:
                     throw NotImplementedException{};
                 }
@@ -145,6 +215,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
                 ip = InstructionPointer{jump.block, 0};
                 return true;
             },
+            
             [](auto& inst) { throw NotImplementedException{}; return false; }
         }, inst);
 

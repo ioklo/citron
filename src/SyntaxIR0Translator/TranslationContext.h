@@ -18,7 +18,6 @@
 #include "SRTFactory.h"
 #include "DesignatedDiagnostic.h"
 #include "DeclTypeInfo.h"
-#include "ResolveIdentifierError.h"
 
 namespace Citron {
 
@@ -91,11 +90,10 @@ public:
     MLoc_This* MakeThisLoc();
     std::expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType);
 
-public: // for scopeContext
-    bool IsInLoop();
     DeclTypeInfo GetDeclTypeInfo(STypeExp* typeExp);
-    bool DoesLocalVarNameExistInScope(const std::string& name);
-    void AddLocalVarInfo(RType* type, RName&& name);
+
+public: // for scopeContext
+    ScopeContext& GetScopeContext() { return *scopeContext; }
 
 public: // for funcContext
     bool CanAccess(RDecl* target);
@@ -136,7 +134,7 @@ public: // for type rFactory
 
     RType_Enum* GetBaseEnumType(RType_EnumElem& enumElemType);
 
-    std::expected<ImExp*, std::shared_ptr<ResolveIdentifierError>> ResolveIdentifier(RName&& name, RTypeArguments* typeArgs);
+    std::expected<ImExp*, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* typeArgs);
 
     template<typename TMStmt, typename... TArgs> requires std::derived_from<TMStmt, MStmt>
     TMStmt* MakeNStmt(TArgs&&... args)

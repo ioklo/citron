@@ -9,23 +9,12 @@
 #include <variant>
 #include <format>
 #include <regex>
-#ifdef _MSC_VER
-#include <Windows.h>
-#endif
 #include <boost/algorithm/string.hpp>
 
 #include "Infra/Variants.h"
 
 using namespace std;
 using namespace std::filesystem;
-
-template<typename Facet>
-struct deletable_facet : Facet
-{
-    template<class... Args>
-    deletable_facet(Args&&... args) : Facet(std::forward<Args>(args)...) {}
-    ~deletable_facet() {}
-};
 
 // u8string
 std::string readAll(path filePath)
@@ -35,18 +24,6 @@ std::string readAll(path filePath)
     oss << ifs.rdbuf();
 
     return oss.str();
-
-
-    //ifs.seekg(0, ifs.end);
-    //ifstream::pos_type length = ifs.tellg();
-    //ifs.seekg(0, ifs.beg);
-
-    //std::string s;
-    //s.resize(length);
-
-    //ifs.read(s.data(), length);
-
-    // return s;
 }
 
 void writeAll(path filePath, string contents)
@@ -505,7 +482,7 @@ void DoTest(const string& code, const string& expected)
     auto& [nModule, mData] = *eNModuleMData;
 
     QFactoryPtr qFactory = MakePtr<QFactory>();
-    auto eQData = TranslateMDataToQData(mData, qFactory);
+    auto eQData = TranslateMDataToQData(mData, rFactory, qFactory);
     EXPECT_TRUE(eQData);
     auto* qData = *eQData;
 
@@ -586,7 +563,7 @@ int wmain(int argc, wchar_t* argv[])
 }
 
 
-#if defined(__clang__)
+#ifndef _WIN32
 int main(int argc, char* argv[])
 {
     vector<std::wstring> wsargvs;

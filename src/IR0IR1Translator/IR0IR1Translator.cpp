@@ -17,9 +17,9 @@ using namespace Citron::IR0IR1Translator;
 namespace Citron {
 namespace {
 
-expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, QFactoryPtr& qFactory)
+expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
 {   
-    QBodyContext bodyContext{qFactory};
+    QBodyContext bodyContext{rFactory, qFactory};
 
     for (auto* mStmt : mFuncBody.stmts)
     {   
@@ -27,13 +27,13 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
         RETURN_ON_ERROR(eResult);
     }
 
-    bodyContext.Verify();
+    bodyContext.CompleteFunc();
     return QFuncBody{mFuncBody.nFuncDecl, bodyContext.GetEntryBlock()};
 }
 
 } // namespace
 
-expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, QFactoryPtr& qFactory)
+expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
 {   
     std::vector<QFuncBody> qFuncBodies;
     auto mFuncBodies = mData->GetAllFuncBodies();
@@ -41,7 +41,7 @@ expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, QFactoryPtr& qFact
     qFuncBodies.reserve(mFuncBodies.size());
     for (auto& mFuncBody : mFuncBodies)
     {
-        auto eQFuncBody = TranslateMFuncBodyToQFuncBody(mFuncBody, qFactory);
+        auto eQFuncBody = TranslateMFuncBodyToQFuncBody(mFuncBody, rFactory, qFactory);
         RETURN_ON_ERROR(eQFuncBody);
 
         qFuncBodies.push_back(std::move(*eQFuncBody));

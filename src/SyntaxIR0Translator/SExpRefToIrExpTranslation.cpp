@@ -4,6 +4,7 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
 #include "Syntax/Syntax.h"
 #include "Logging/Logger.h"
 #include "Logging/Diag.h"
@@ -45,12 +46,6 @@ private:
         return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
     template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
     ResultType Error(TArgs&&... args)
     {
@@ -60,8 +55,7 @@ private:
     ResultType HandleValue(SExp* exp)
     {
         auto eExp = TranslateSExpToMExp(exp, /*hintType*/ nullptr, context);
-        if (!eExp)
-            return unexpected{move(eExp).error()};
+        RETURN_ON_ERROR(eExp);
         
         return context.MakeIrExp<IrExp_LocalValue>(*eExp);
     }
@@ -71,28 +65,14 @@ public:
     ResultType Visit(SExp_Identifier* exp)
     {   
         // identifier는 name<typeArgs>로 이뤄져 있다
-        auto eTypeArgs = MakeTypeArgs(exp->typeArgs, context);
-        if (!eTypeArgs) return Error(move(eTypeArgs));
+        auto eRTypeArgs = MakeRTypeArgs(exp->typeArgs, context);
+        RETURN_ON_ERROR(eRTypeArgs);
 
-        auto eImExp = context.ResolveIdentifier(RName_Normal{exp->value}, *eTypeArgs);
-
-        if (!eImExp)
-        {
-            auto* error = eImExp.error().get();
-
-            if (auto* mcError = dynamic_cast<ResolveIdentifierError_MultipleCandidates*>(error))
-            {
-                return Error<Error_ResolveIdentifier_MultipleCandidatesForIdentifier>();
-            }
-            else
-            {
-                return Error<Error_NotImplemented>();
-            }
-        }
+        auto eImExp = context.ResolveIdentifier(RName_Normal{exp->value}, *eRTypeArgs);
+        RETURN_ON_ERROR(eImExp);
 
         auto eIrExp = TranslateImExpToIrExp(*eImExp, context);
-        if (!eIrExp)
-            return Error(move(eIrExp));
+        RETURN_ON_ERROR(eIrExp);
 
         return *eIrExp;
     }
@@ -129,7 +109,7 @@ public:
         if (exp->kind == SUnaryOpKind::Ref) // & &는 불가능
         {
             auto eExp = TranslateSExpRefToMExp(exp->operand, context);
-            if (!eExp) return Error(move(eExp));
+            RETURN_ON_ERROR(eExp);
 
             return Value<IrExp_LocalValue>(*eExp);
         }
@@ -138,7 +118,7 @@ public:
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
             auto eLoc = TranslateSExpToMLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-            if (!eLoc) return Error(move(eLoc));
+            RETURN_ON_ERROR(eLoc);
 
             return Value<IrExp_DerefedBoxValue>(*eLoc);
         }
@@ -168,11 +148,11 @@ public:
     ResultType Visit(SExp_Member* exp)
     {
         auto eIrParent = TranslateSExpRefToIrExp(exp->parent, context);
-        if (!eIrParent) return Error(move(eIrParent));
+        RETURN_ON_ERROR(eIrParent);
 
-        auto eTypeArgsExceptOuter = MakeTypeArgs(exp->memberTypeArgs, context);
+        auto eRTypeArgsExceptOuter = MakeRTypeArgs(exp->memberTypeArgs, context);
         
-        return TranslateIrExpAndMemberNameToIrExp(*eIrParent, RName_Normal(exp->memberName), *eTypeArgsExceptOuter, context);
+        return TranslateIrExpAndMemberNameToIrExp(*eIrParent, RName_Normal(exp->memberName), *eRTypeArgsExceptOuter, context);
     }
 
     ResultType Visit(SExp_IndirectMember* exp)

@@ -48,7 +48,8 @@ public:
     // 스택에 변수를 둔다.
     ResultType Visit(MStmt_LocalVarDecl* stmt)
     {
-        throw NotImplementedException{};
+        bodyContext.AddLocalVar(stmt->type, RName_Normal{stmt->name});
+        return {};
     }
 
     ResultType Visit(MStmt_If* stmt)
@@ -136,7 +137,10 @@ public:
     }
     ResultType Visit(MStmt_Exp* stmt)
     {
-        throw NotImplementedException{};
+        auto eQValue = TranslateMExpToQInsts(stmt->exp, bodyContext);
+        RETURN_ON_ERROR(eQValue);
+
+        return {};
     }
     ResultType Visit(MStmt_Task* stmt)
     {

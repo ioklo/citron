@@ -4,6 +4,8 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
+
 #include "Syntax/Syntax.h"
 #include "Logging/Logger.h"
 #include "RSymbol/RTypes.h"
@@ -76,25 +78,13 @@ public:
     // x
     ResultType Visit(SExp_Identifier* exp)
     {
-        throw NotImplementedException{};
-        /*try
-        {
-            auto typeArgs = MakeTypeArgs(exp.typeArgs, context, factory);
+        auto eRTypeArgs = MakeRTypeArgs(exp->typeArgs, context);
+        RETURN_ON_ERROR(eRTypeArgs);
 
-            var imExp = context.ResolveIdentifier(new Name.Normal(exp.Value), typeArgs);
-            if (imExp == null)
-            {
-                context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp);
-                return Error();
-            }
+        auto eImExp = context.ResolveIdentifier(RName_Normal(exp->value), *eRTypeArgs);
+        RETURN_ON_ERROR(eImExp);
 
-            return Valid(imExp);
-        }
-        catch (IdentifierResolverMultipleCandidatesException)
-        {
-            context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, exp);
-            return Error();
-        }*/
+        return *eImExp;
     }
 
     ResultType Visit(SExp_String* exp)
@@ -239,10 +229,10 @@ public:
         auto eImParent = TranslateSExpToImExp(exp->parent, hintType, context);
         if (!eImParent) return Error(move(eImParent));
 
-        auto eTypeArgs = MakeTypeArgs(exp->memberTypeArgs, context);
-        if (!eTypeArgs) return Error(move(eTypeArgs));
+        auto eRTypeArgs = MakeRTypeArgs(exp->memberTypeArgs, context);
+        if (!eRTypeArgs) return Error(move(eRTypeArgs));
 
-        return TranslateImExpAndMemberNameToImExp(*eImParent, exp->memberName, *eTypeArgs, context);
+        return TranslateImExpAndMemberNameToImExp(*eImParent, exp->memberName, *eRTypeArgs, context);
     }
 
     ResultType Visit(SExp_IndirectMember* exp)

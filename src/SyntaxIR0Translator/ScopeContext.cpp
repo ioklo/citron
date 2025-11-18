@@ -7,6 +7,7 @@
 #include "RSymbol/RMember.h"
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncParameter.h"
+#include "RSymbol/RFactory.h"
 #include "NSymbol/NLambdaDecl.h"
 
 #include "FuncContext.h"
@@ -15,8 +16,8 @@ using namespace std;
 
 namespace Citron::SyntaxIR0Translator {
 
-ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop)
-    : funcContext{funcContext}, parentContext{parentContext}, nestedLoop{nestedLoop}
+ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop, const RFactoryPtr& rFactory)
+    : funcContext{funcContext}, parentContext{parentContext}, nestedLoop{nestedLoop}, rFactory{rFactory}
 {
 }
 
@@ -56,15 +57,22 @@ tuple<ScopeContextPtr, NLambdaDecl> ScopeContext::MakeLambdaBodyContext(const RF
     throw NotImplementedException{};
 }
 
-void ScopeContext::AddLocalVarInfo(RType* type, const RName& name)
+void ScopeContext::AddLocalVarInfo(RType* type, const std::string& name)
 {
-    throw NotImplementedException{};
+    auto [i, b] = locals.try_emplace(name, type);
+    assert(b);
 }
-
 
 bool ScopeContext::DoesLocalVarNameExistInScope(const string& name)
 {
-    throw NotImplementedException{};
+    auto i = locals.find(name);
+    if (i != locals.end())
+        return true;
+
+    if (parentContext)
+        return parentContext->DoesLocalVarNameExistInScope(name);
+
+    return false;
 }
 
 bool ScopeContext::IsFailed() 
@@ -72,9 +80,32 @@ bool ScopeContext::IsFailed()
     throw NotImplementedException{};
 }
 
-expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* typeExp)
+expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sTypeExp)
 {
-    throw NotImplementedException{};
+    // TODO: BuildTypeDependentSymbolContext::MakeType 에도 같은 코드가 있다
+    struct Visitor
+    {
+        using ResultType = RType*;
+
+        RFactory* rFactory;
+
+        RType* Visit(STypeExp_Id* idExp)
+        {
+            if (idExp->name == "void")
+                return rFactory->MakeVoidType();
+            else if (idExp->name == "int")
+                return rFactory->MakeIntType();
+            else
+                throw NotImplementedException{};
+        }
+
+        RType* Visit(STypeExp* e)
+        {
+            throw NotImplementedException{};
+        }
+    } visitor{rFactory.get()};
+
+    return Accept(visitor, sTypeExp);
 }
 
 MLoc_This* ScopeContext::MakeThisLoc()

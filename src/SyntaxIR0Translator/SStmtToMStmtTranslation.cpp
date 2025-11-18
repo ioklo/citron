@@ -149,8 +149,6 @@ public:
 
     ResultType Visit(SStmt_IfTest* stmt) 
     {
-        auto varName = RName_Normal(stmt->varName);
-
         // if (Type varName = e) eBody         
         auto eRTestType = context.TranslateSTypeExpToRType(stmt->testType);
 
@@ -158,7 +156,7 @@ public:
         if (!eNTarget) return Error(move(eNTarget));
 
         auto bodyContext = context.MakeNestedScopeContext();
-        bodyContext.AddLocalVarInfo(*eRTestType, varName);
+        bodyContext.GetScopeContext().AddLocalVarInfo(*eRTestType, stmt->varName);
         
         auto eBodyStmts = TranslateSEmbeddableStmtToMStmts(stmt->body, bodyContext);
         if (!eBodyStmts) return Error(move(eBodyStmts));
@@ -180,9 +178,9 @@ public:
 
         auto rTestTypeKind = (*eRTestType)->GetCustomTypeKind();
         if (rTestTypeKind == RCustomTypeKind::Class || rTestTypeKind == RCustomTypeKind::Interface)
-            return Value<MStmt_IfNullableRefTest>(*eRTestType, move(varName), *eNAsExp, move(*eBodyStmts), move(elseStmts));
+            return Value<MStmt_IfNullableRefTest>(*eRTestType, RName_Normal(stmt->varName), *eNAsExp, move(*eBodyStmts), move(elseStmts));
         else if (rTestTypeKind == RCustomTypeKind::Enum)
-            return Value<MStmt_IfNullableValueTest>(*eRTestType, move(varName), *eNAsExp, move(*eBodyStmts), move(elseStmts));
+            return Value<MStmt_IfNullableValueTest>(*eRTestType, RName_Normal(stmt->varName), *eNAsExp, move(*eBodyStmts), move(elseStmts));
         else
             throw NotImplementedException{}; // 에러
     }
@@ -240,7 +238,7 @@ public:
 
     ResultType Visit(SStmt_Continue* stmt)
     {
-        if (!context.IsInLoop())
+        if (!context.GetScopeContext().IsInLoop())
         {
             return Error<Error_ContinueStmt_ShouldUsedInLoop>();
         }
@@ -250,7 +248,7 @@ public:
 
     ResultType Visit(SStmt_Break* stmt)
     {
-        if (!context.IsInLoop())
+        if (!context.GetScopeContext().IsInLoop())
         {
             return Error<Error_BreakStmt_ShouldUsedInLoop>();
         }
@@ -407,16 +405,13 @@ public:
         struct ForeachStmtTranslator
         {
             vector<MStmt*>* outStmts;
-            SStmt_Foreach* stmt;
+            SStmt_Foreach* sStmt;
             TranslationContext& context;
 
-            RName itemVarName;
-
         public:
-            ForeachStmtTranslator(vector<MStmt*>* outStmts, SStmt_Foreach* stmt, TranslationContext& context)
-                : outStmts(outStmts), stmt(stmt), context(context)
+            ForeachStmtTranslator(vector<MStmt*>* outStmts, SStmt_Foreach* sStmt, TranslationContext& context)
+                : outStmts{outStmts}, sStmt{sStmt}, context{context}
             {
-                itemVarName = RName_Normal(stmt->varName);
             }
 
             // syntax의 enumerableExp를 사용해서 enumerator를 가져오는 Exp를 생성한다
@@ -425,7 +420,7 @@ public:
                 // TranslationResult<(Exp, IType)> Error() => TranslationResult.Error<(Exp, IType)>();
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-                auto eNEnumerable = TranslateSExpToMLoc(stmt->enumerable, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+                auto eNEnumerable = TranslateSExpToMLoc(sStmt->enumerable, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
                 if (!eNEnumerable) return unexpected{move(eNEnumerable).error()};
 
                 // GetEnumerator함수를 손으로 찾는다
@@ -510,7 +505,7 @@ public:
                     if (!localPtrParamType) continue;
 
                     // $enumerator.GetNext(&i);
-                    auto nArg = MArgument_Normal(context.MakeMExp<MExp_LocalRef>(context.MakeNLoc<MLoc_LocalVar>(itemVarName, localPtrParamType->innerType)));
+                    auto nArg = MArgument_Normal(context.MakeMExp<MExp_LocalRef>(context.MakeNLoc<MLoc_LocalVar>(RName_Normal(sStmt->varName), localPtrParamType->innerType)));
                     auto* nEnumerator = context.MakeNLoc<MLoc_LocalVar>(RNames::Enumerator, enumeratorType);
                     auto eNextExp = TranslateRFuncAndNArgsToMExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, { move(nArg) }, context);
                     if (!eNextExp) return unexpected{move(eNextExp).error()};
@@ -582,7 +577,7 @@ public:
                     if (itemTypeFromNextParam == itemTypeFromSyntax)
                     {
                         // $enumerator.GetNext(&i);
-                        MArgument_Normal rArg(context.MakeMExp<MExp_LocalRef>(context.MakeNLoc<MLoc_LocalVar>(itemVarName, itemTypeFromNextParam)));
+                        MArgument_Normal rArg(context.MakeMExp<MExp_LocalRef>(context.MakeNLoc<MLoc_LocalVar>(RName_Normal(sStmt->varName), itemTypeFromNextParam)));
                         auto* nEnumerator = context.MakeNLoc<MLoc_LocalVar>(RNames::Enumerator, enumeratorType);
                         auto nNext = TranslateRFuncAndNArgsToMExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, {move(rArg)}, context);
 
@@ -634,10 +629,10 @@ public:
                 auto bodyContext = context.MakeNestedLoopScopeContext();
 
                 // 루프 컨텍스트에 로컬을 하나 추가하고 (enumerator는 추가해야 할까)
-                bodyContext.AddLocalVarInfo(itemVarType, RName(itemVarName));
+                bodyContext.GetScopeContext().AddLocalVarInfo(itemVarType, sStmt->varName);
 
                 // 본문 분석
-                return TranslateSEmbeddableStmtToMStmts(stmt->body, context);
+                return TranslateSEmbeddableStmtToMStmts(sStmt->body, context);
             }
 
         public:
@@ -648,9 +643,9 @@ public:
 
                 auto enumeratorType = context.GetType(*eEnumerator);
 
-                if (!IsVarType(stmt->type))
+                if (!IsVarType(sStmt->type))
                 {
-                    auto eItemType = context.TranslateSTypeExpToRType(stmt->type);
+                    auto eItemType = context.TranslateSTypeExpToRType(sStmt->type);
                     if (!eItemType) return unexpected{move(eItemType).error()};
 
                     auto eNextExpCastInfo = MakeNextExpAndCastExp(enumeratorType, *eItemType);
@@ -663,12 +658,12 @@ public:
 
                     if (!oCastInfo)
                     {
-                        outStmts->push_back(context.MakeNStmt<MStmt_Foreach>(*eEnumerator, *eItemType, itemVarName, nextExp, move(*eBody)));
+                        outStmts->push_back(context.MakeNStmt<MStmt_Foreach>(*eEnumerator, *eItemType, RName_Normal(sStmt->varName), nextExp, move(*eBody)));
                     }
                     else
                     {
                         auto& [rawItemType, castExp] = *oCastInfo;
-                        outStmts->push_back(context.MakeNStmt<MStmt_ForeachCast>(*eEnumerator, *eItemType, itemVarName, rawItemType, nextExp, castExp, move(*eBody)));
+                        outStmts->push_back(context.MakeNStmt<MStmt_ForeachCast>(*eEnumerator, *eItemType, RName_Normal(sStmt->varName), rawItemType, nextExp, castExp, move(*eBody)));
                     }
                 }
                 else // var 일 경우
@@ -681,7 +676,7 @@ public:
                     auto eBody = MakeBody(itemVarType);
                     if (!eBody) return unexpected{move(eBody).error()};
 
-                    outStmts->push_back(context.MakeNStmt<MStmt_Foreach>(*eEnumerator, itemVarType, itemVarName, *eNextExp, move(*eBody)));
+                    outStmts->push_back(context.MakeNStmt<MStmt_Foreach>(*eEnumerator, itemVarType, RName_Normal(sStmt->varName), *eNextExp, move(*eBody)));
                 }
 
                 return {};
@@ -906,8 +901,7 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType
         auto eRParamType = context.TranslateSTypeExpToRType(sParam.type);
         if (!eRParamType) return unexpected{move(eRParamType).error()};
 
-        auto name = RName_Normal(sParam.name);
-        newContext.AddLocalVarInfo(*eRParamType, name);
+        newContext.GetScopeContext().AddLocalVarInfo(*eRParamType, sParam.name);
     }
 
     vector<MStmt*> rBody;

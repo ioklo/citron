@@ -10,6 +10,11 @@ struct QValue_Named
     std::string name;
 };
 
+struct QValue_Local
+{
+    size_t index;
+};
+
 struct QValue_ConstBool
 {
     bool value;
@@ -26,6 +31,7 @@ struct QValue_String
 };
 
 using QValue = std::variant<
+    QValue_Local,
     QValue_Named, 
     QValue_ConstBool,
     QValue_ConstInteger,

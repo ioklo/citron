@@ -2,20 +2,24 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Variants.h"
 #include "Logging/Logger.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RFuncDecl.h"
 #include "RSymbol/RDecl.h"
+#include "RSymbol/RTypeArguments.h"
 #include "MIR/MLoc.h"
 #include "MIR/MExp.h"
 
 #include "ReExp.h"
 #include "IrExp.h"
-#include "TranslationContext.h"
+#include "ImExp.h"
+
 #include "GlobalContext.h"
 #include "FuncContext.h"
 #include "ScopeContext.h"
 #include "BinOpQueryService.h"
+#include "SRTFactory.h"
 
 #include "Misc.h"
 
@@ -41,27 +45,27 @@ TranslationContext TranslationContext::Make(
 {
     auto globalContext = MakePtr<GlobalContext>();
     auto funcContext = MakePtr<FuncContext_FuncDecl>(nFuncDecl, rFactory);
-    auto scopeContext = MakePtr<ScopeContext>(funcContext, nullptr, 0);
+    auto scopeContext = MakePtr<ScopeContext>(funcContext, nullptr, 0, rFactory);
 
     return { globalContext, funcContext, scopeContext, logger, rFactory, mFactory, srtFactory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeNestedScopeContext()
 {
-    auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop);
+    auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop, rFactory);
     return { globalContext, funcContext, newScopeContext, logger, rFactory, mFactory, srtFactory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeNestedLoopScopeContext()
 {
-    auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop + 1);
+    auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop + 1, rFactory);
     return { globalContext, funcContext, newScopeContext, logger, rFactory, mFactory,  srtFactory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
 {   
     auto newFuncContext = MakePtr<FuncContext_Lambda>(scopeContext, /*bSeqFunc*/ false, move(funcRet), move(funcParams), bLastParamVariadic);
-    auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, nullptr, 0);
+    auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, nullptr, 0, rFactory);
 
     return { globalContext, newFuncContext, newScopeContext, logger, rFactory, mFactory, srtFactory, binOpQueryService };
 }
@@ -132,11 +136,6 @@ expected<MExp*, DiagPtr> TranslationContext::MakeMExp_As(MExp* targetExp, RType*
     }
     else
         throw NotImplementedException{}; // 에러 처리
-}
-
-bool TranslationContext::IsInLoop()
-{
-    return scopeContext->IsInLoop();
 }
 
 struct DeclTypeVisitor
@@ -210,16 +209,6 @@ DeclTypeInfo TranslationContext::GetDeclTypeInfo(STypeExp* typeExp)
 {
     DeclTypeVisitor visitor{*this};
     return Accept(visitor, typeExp);
-}
-
-bool TranslationContext::DoesLocalVarNameExistInScope(const std::string& name)
-{
-    throw NotImplementedException{};
-}
-
-void TranslationContext::AddLocalVarInfo(RType* type, RName&& name)
-{
-    throw NotImplementedException{};
 }
 
 bool TranslationContext::CanAccess(RDecl* target)
@@ -302,9 +291,16 @@ RType_Enum* TranslationContext::GetBaseEnumType(RType_EnumElem& enumElemType)
     return enumElemType.GetBaseEnumType(*rFactory);
 }
 
-expected<ImExp*, shared_ptr<ResolveIdentifierError>> TranslationContext::ResolveIdentifier(RName&& name, RTypeArguments* typeArgs)
-{
-    throw NotImplementedException{};
+expected<ImExp*, DiagPtr> TranslationContext::ResolveIdentifier(const RName& name, RTypeArguments* typeArgs)
+{   
+    auto oRMember = scopeContext->ResolveIdentifier(name, typeArgs->GetCount());
+    if (!oRMember)
+        return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
+
+    return visit<ImExp*>(overloaded{
+        [this](RMember_LocalVar& localVar) { return srtFactory->MakeImExp<ImExp_LocalVar>(localVar.type, localVar.name); },
+        [](auto&) { throw NotImplementedException{}; return nullptr; }
+    }, *oRMember);
 }
 
 } // namespace Citron::SyntaxIR0Translator

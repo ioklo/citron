@@ -20,6 +20,7 @@ BuildTypeDependentSymbolContext::BuildTypeDependentSymbolContext(const RFactoryP
 
 RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl)
 {
+    // TODO: ScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
     struct Visitor
     {
         using ResultType = RType*;
@@ -30,7 +31,8 @@ RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl
         {
             if (idExp->name == "void")
                 return rFactory->MakeVoidType();
-
+            else if (idExp->name == "int")
+                return rFactory->MakeIntType();
             else
                 throw NotImplementedException{};
         }

@@ -11,6 +11,7 @@
 
 #include "DeclTypeInfo.h"
 #include "TranslationContext.h"
+#include "ScopeContext.h"
 #include "SExpToMExpTranslation.h"
 #include "Misc.h"
 
@@ -115,7 +116,7 @@ private:
         auto eResult = CheckVarConsistency(rInitExpType);
         if (!eResult) return unexpected{move(eResult).error()};
 
-        context.AddLocalVarInfo(rInitExpType, RName_Normal(elem->varName));
+        context.GetScopeContext().AddLocalVarInfo(rInitExpType, elem->varName);
         outStmts->push_back(context.MakeNStmt<MStmt_LocalVarDecl>(rInitExpType, elem->varName, *eNInitExp));
 
         return {};
@@ -138,7 +139,7 @@ private:
             nInitExp = *eNExp;
         }
 
-        context.AddLocalVarInfo(declType, RName_Normal(elem->varName));
+        context.GetScopeContext().AddLocalVarInfo(declType, elem->varName);
         outStmts->push_back(context.MakeNStmt<MStmt_LocalVarDecl>(declType, elem->varName, nInitExp));
 
         return {};
@@ -147,7 +148,7 @@ private:
 public:
     expected<void, DiagPtr> Translate()
     {
-        if (context.DoesLocalVarNameExistInScope(elem->varName))
+        if (context.GetScopeContext().DoesLocalVarNameExistInScope(elem->varName))
             return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
 
         if (declTypeInfo.kind != DeclTypeInfoKind::Normal)

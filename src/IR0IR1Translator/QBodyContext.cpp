@@ -6,6 +6,11 @@
 #include "Infra/Unreachable.h"
 #include "Infra/Exceptions.h"
 
+#include "RSymbol/RTypes.h"
+#include "RSymbol/RFactory.h"
+
+#include "MIR/MExp.h"
+
 #include "QIR/QInsts.h"
 #include "QIR/QValues.h"
 
@@ -13,44 +18,19 @@ using namespace std;
 
 namespace Citron::IR0IR1Translator {
 
-QBlockWriter::QBlockWriter(const QFactoryPtr& qFactory)
-    : state{QBlockWriterState::NotAllocated}
-    , entryBlock{nullptr}, curBlock{nullptr}, qFactory{qFactory}
+QBlockWriter::QBlockWriter(const QFactoryPtr& qFactory, string&& firstBlockName)
+    : qFactory{qFactory}
 {
-}
-
-void QBlockWriter::Allocate()
-{
-    switch(state)
-    {
-    case QBlockWriterState::NotAllocated:
-        assert(!curBlock && !entryBlock);
-        entryBlock = curBlock = qFactory->MakeQBlock("entry");
-        state = QBlockWriterState::CanWrite;
-        return;
-
-    case QBlockWriterState::CanWrite:
-    case QBlockWriterState::EndOfBlock:
-        assert(false);
-    }
-}
-
-QBlock* QBlockWriter::GetEntryBlock()
-{
-    assert(entryBlock);
-    return entryBlock;
+    auto* firstBlock = qFactory->MakeQBlock(move(firstBlockName));
+    this->curBlock = firstBlock;
+    this->blocks.push_back(firstBlock);
+    this->state = QBlockWriterState::CanWrite;
 }
 
 void QBlockWriter::AddInstInternal(QInst&& inst)
 {
     switch (state)
     {
-    case QBlockWriterState::NotAllocated:
-        Allocate();
-        assert(state == QBlockWriterState::CanWrite);
-        curBlock->AddInst(std::move(inst));
-        return;
-
     case QBlockWriterState::CanWrite:
         curBlock->AddInst(std::move(inst));
         return;
@@ -65,6 +45,7 @@ void QBlockWriter::AddInstInternal(QInst&& inst)
 QBlock* QBlockWriter::AddBlock(string&& debugText)
 {
     auto* newBlock = qFactory->MakeQBlock(move(debugText));
+    blocks.push_back(newBlock);
     pendingBlocks.push_back(newBlock);
     return newBlock;
 }
@@ -73,11 +54,6 @@ void QBlockWriter::CompleteBlock(QTermInst&& termInst)
 {
     switch(state)
     {
-    case QBlockWriterState::NotAllocated:
-        AddInstInternal(visit([](auto&& termInst) -> QInst { return termInst; }, termInst));
-        state = QBlockWriterState::EndOfBlock;
-        return;
-
     case QBlockWriterState::CanWrite:
         AddInstInternal(visit([](auto&& termInst) -> QInst { return termInst; }, termInst));
         state = QBlockWriterState::EndOfBlock;
@@ -93,7 +69,6 @@ void QBlockWriter::SetCurBlock(QBlock* block)
 {
     switch (state)
     {
-    case QBlockWriterState::NotAllocated:
     case QBlockWriterState::CanWrite:
         assert(false);
 
@@ -126,11 +101,15 @@ void QBlockWriter::Verify()
     assert(pendingBlocks.empty());
 }
 
-QBodyContext::QBodyContext(QFactoryPtr& qFactory)
-    : QBlockWriter{qFactory}
+QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
+    : rFactory{rFactory}
     , qFactory{qFactory}
+    , QBlockWriter{qFactory, "body"}
     , valueCounter{0}
-{   
+    , entryBlock{nullptr}
+{
+    scopes.emplace_back();
+    bodyBlock = QBlockWriter::GetCurBlock();
 }
 
 QValue QBodyContext::AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QValue>&& args)
@@ -145,9 +124,69 @@ QValue_Named QBodyContext::NewValue()
     return {format("v{}", valueCounter++)};
 }
 
-size_t QBodyContext::GetExpTypeSize(MExp* exp)
+size_t QBodyContext::GetMExpTypeSize(MExp* exp)
 {
-    throw NotImplementedException{};
+    auto* type = exp->GetType(*rFactory);
+    return GetRTypeSize(type);
 }
+
+size_t QBodyContext::GetRTypeSize(RType* type)
+{
+    if (type == rFactory->MakeBoolType())
+        return 1;
+
+    if (type == rFactory->MakeIntType())
+        return 4;
+
+    throw NotImplementedException{};
+
+    /*struct Visitor
+    {
+        using ResultType = size_t;
+        size_t Visit(RType_Void*) { return 0; }
+        size_t Visit(RType_Struct* structType)
+        {
+            rFactory->
+
+        }
+
+    } visitor{} ;
+
+    return Accept(visitor, type);*/
+    
+}
+
+QValue_Local QBodyContext::AddLocalVar(RType* type, const RName& name)
+{
+    size_t index = localVars.size();
+    localVars.emplace_back(name, type);
+
+    scopes.back().varNames[name] = index;
+    return QValue_Local{index};
+}
+
+QValue_Local QBodyContext::GetLocalVar(const RName& name)
+{
+    return QValue_Local{scopes.back().varNames[name]};
+}
+
+
+void QBodyContext::CompleteFunc()
+{
+    // make entry
+    entryBlock = QBlockWriter::AddBlock("entry");
+    QBlockWriter::SetCurBlock(entryBlock);
+
+    for(size_t i = 0, count = localVars.size(); i < count; i++)
+    {
+        size_t typeSize = GetRTypeSize(localVars[i].type);
+        QBlockWriter::AddInst(QInst_Alloc{QValue_Local{i}, typeSize});
+    }
+
+    QBlockWriter::CompleteBlock(QInst_Jump{bodyBlock});
+
+    QBlockWriter::Verify();
+}
+
 
 } // Citron::IR0IR1Translator
