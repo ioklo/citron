@@ -2,15 +2,18 @@
 #include <locale>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <codecvt>
 #include <regex>
 #include <cassert>
-#include <Windows.h>
 
 #include <boost/algorithm/string.hpp>
 
 using namespace std;
 using namespace std::filesystem;
+
+#ifdef _MSC_VER
+#include <Windows.h>
 
 std::wstring string_to_wide_string(std::string_view view)
 {
@@ -29,6 +32,23 @@ std::wstring string_to_wide_string(std::string_view view)
     MultiByteToWideChar(CP_UTF8, 0, view.data(), (int)view.size(), result.data(), size_needed);
     return result;
 }
+#else
+
+#include <cwchar>
+
+std::wstring string_to_wide_string(std::string_view view)
+{
+    mbstate_t state{};
+    const char* str = view.data();
+    size_t len = 1 + mbsrtowcs(nullptr, &str, 0, &state);
+
+    vector<wchar_t> wstr(len);
+    mbsrtowcs(&wstr[0], &str, wstr.size(), &state);
+
+    return wstr.data();
+}
+
+#endif
 
 std::string readAll(path filePath)
 {
@@ -137,4 +157,37 @@ int wmain(int argc, wchar_t* argv[])
         if (!Update(basePath, filePath))
         break;
     }
+
+    return 0;
 }
+
+
+#if defined(__clang__)
+int main(int argc, char* argv[])
+{
+    vector<std::wstring> wsargvs;
+    wsargvs.reserve(argc);
+
+    setlocale(LC_ALL, "");
+
+    for(int i = 0; i < argc; i++)
+    {
+        size_t requiredSize = mbstowcs(nullptr, argv[i], 0);
+        if (requiredSize == (size_t)-1)
+            return 1;
+
+        wsargvs.emplace_back(requiredSize, L' ');
+        size_t ret = mbstowcs(wsargvs.back().data(), argv[i], requiredSize + 1);
+        if (ret == (size_t)-1)
+            return 1;
+    }
+
+    vector<wchar_t*> wargvs;
+    wargvs.reserve(argc);
+    for(int i = 0; i < argc; i++)
+        wargvs.push_back(wsargvs[i].data());
+
+    return wmain(argc, wargvs.data());
+}
+#endif
+
