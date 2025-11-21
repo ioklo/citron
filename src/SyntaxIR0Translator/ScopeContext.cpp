@@ -87,8 +87,12 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
         {
             if (idExp->name == "void")
                 return rFactory->MakeVoidType();
+            else if (idExp->name == "bool")
+                return rFactory->MakeBoolType();
             else if (idExp->name == "int")
                 return rFactory->MakeIntType();
+            else if (idExp->name == "string")
+                return rFactory->MakeStringType();
             else
                 throw NotImplementedException{};
         }

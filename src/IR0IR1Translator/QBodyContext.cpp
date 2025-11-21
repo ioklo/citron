@@ -14,7 +14,7 @@
 #include "MIR/MExp.h"
 
 #include "QIR/QInsts.h"
-#include "QIR/QValues.h"
+#include "QIR/QArgs.h"
 #include "QIR/QFactory.h"
 
 
@@ -48,7 +48,7 @@ void QBlockWriter::AddInstInternal(QInst&& inst)
 
 QBlock* QBlockWriter::AddBlock(string&& debugText)
 {
-    auto* newBlock = qFactory->MakeQBlock(move(debugText));
+    auto* newBlock = qFactory->MakeQBlock(format("{}_{}", move(debugText), blocks.size()));
     blocks.push_back(newBlock);
     pendingBlocks.push_back(newBlock);
     return newBlock;
@@ -110,6 +110,7 @@ QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFact
     , qFactory{qFactory}
     , QBlockWriter{qFactory, "body"}
     , regCounter{0}
+    , slotCounter{0}
     , entryBlock{nullptr}
 {
     scopes.emplace_back();
@@ -171,25 +172,35 @@ QType* QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind kind)
     throw NotImplementedException{};
 }
 
-QArg_Register QBodyContext::AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QArg>&& args)
+QArg QBodyContext::AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QArg>&& args)
 {
     auto* qType = GetIntrinsicResultType(kind);
-    auto resultReg = NewRegister(qType);
-    QBlockWriter::AddInst(QInst_Intrinsic{kind, resultReg, move(args)});
-    return resultReg;
+    assert(qType != qFactory->MakeVoidType());
+
+    auto resultArg = NewContainer(qType);
+    QBlockWriter::AddInst(QInst_Intrinsic{kind, resultArg, move(args)});
+    return resultArg;
 }
 
-QArg_Register QBodyContext::NewRegister(QType* qType)
+void QBodyContext::AddIntrinsicVoid(QInst_IntrinsicKind kind, std::vector<QArg>&& args)
+{
+    auto* qType = GetIntrinsicResultType(kind);
+    assert(qType == qFactory->MakeVoidType());
+
+    QBlockWriter::AddInst(QInst_Intrinsic{kind, nullopt, move(args)});
+}
+
+QArg QBodyContext::NewContainer(QType* qType)
 {   
     // TODO: 일반적인 타입에 대해서 해야 한다
     if (qType == qFactory->MakeStringType())
     {
         // string은 레지스터가 아닌 메모리에 할당된다
-        return AddBuffer(qType);
+        return NewStackSlot(qType);
     }
 
     size_t regIndex = regCounter++;
-    return {regIndex, qType};
+    return QArg_Register{regIndex, format("%r{}", regIndex), qType};
 }
 
 QType* QBodyContext::GetMExpQType(MExp* mExp)
@@ -205,11 +216,15 @@ size_t QBodyContext::GetMExpTypeSize(MExp* exp)
 
 size_t QBodyContext::GetRTypeSize(RType* type)
 {
+    // TODO: HARD CODED
     if (type == rFactory->MakeBoolType())
         return 1;
 
     if (type == rFactory->MakeIntType())
         return 4;
+
+    if (type == rFactory->MakeStringType())
+        return sizeof(string);
 
     throw NotImplementedException{};
 
@@ -241,6 +256,7 @@ string RNameToString(const RName& name)
 
 QType* QBodyContext::MakeQType(RType* rType)
 {
+    // TODO: HARD CODED
     if (rType == rFactory->MakeVoidType())
         return qFactory->MakeVoidType();
 
@@ -250,6 +266,9 @@ QType* QBodyContext::MakeQType(RType* rType)
     if (rType == rFactory->MakeIntType())
         return qFactory->MakeIntType();
 
+    if (rType == rFactory->MakeStringType())
+        return qFactory->MakeStringType();
+
     throw NotImplementedException{};
 }
 
@@ -258,32 +277,33 @@ QType_Class* QBodyContext::MakeQStringType()
     return qFactory->MakeStringType();
 }
 
-QArg_Register QBodyContext::AddLocalVar(RType* rType, const RName& rName)
+QArg_StackSlot QBodyContext::AddLocalVar(RType* rType, const RName& rName)
 {   
-    size_t regIndex = regCounter++; // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
+    size_t slotIndex = slotCounter++; // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
+    auto name = format("%s{}_{}", slotIndex, RNameToString(rName));
     QType* qType = MakeQType(rType);
 
     // 1. 함수 entry에서 할당할 목록에 추가
-    stackAllocationInfos.emplace_back(regIndex, qType);
-
+    stackSlots.emplace_back(name, qType);
+    
     // 2. 현재 스코프에 이름 추가
-    scopes.back().localVarInfos[rName] = QLocalVarInfo{regIndex, qType};
+    scopes.back().localVarInfos[rName] = QLocalVarInfo{slotIndex, name, qType};
 
-    return {regIndex, qType};
+    return {slotIndex, name, qType};
 }
 
-QArg_Register QBodyContext::GetLocalVar(const RName& name)
+QArg_StackSlot QBodyContext::GetLocalVar(const RName& name)
 {   
     auto localVarInfo = scopes.back().localVarInfos[name];
-
-    return {localVarInfo.regIndex, localVarInfo.qType};
+    return {localVarInfo.slotIndex, localVarInfo.name, localVarInfo.qType};
 }
 
-QArg_Register QBodyContext::AddBuffer(QType* qType)
+QArg_StackSlot QBodyContext::NewStackSlot(QType* qType)
 {
-    size_t regIndex = regCounter++;
-    stackAllocationInfos.emplace_back(regIndex, qType);
-    return {regIndex, qType};
+    size_t slotIndex = slotCounter++;
+    std::string s = format("%s{}", slotIndex);
+    stackSlots.emplace_back(s, qType);
+    return {slotIndex, s, qType};
 }
 
 void QBodyContext::CompleteFunc()
@@ -292,11 +312,9 @@ void QBodyContext::CompleteFunc()
     entryBlock = QBlockWriter::AddBlock("entry");
     QBlockWriter::SetCurBlock(entryBlock);
 
-    for(auto& stackAllocationInfo : stackAllocationInfos)
-        QBlockWriter::AddInst(QInst_Alloc{QArg_Register{stackAllocationInfo.regIndex, stackAllocationInfo.qType}});
+    // entry를 일단은 살려둠
 
     QBlockWriter::CompleteBlock(QInst_Jump{bodyBlock});
-
     QBlockWriter::Verify();
 }
 

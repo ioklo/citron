@@ -1,5 +1,6 @@
 #include "CommonQInstsTranslation.h"
 #include <optional>
+#include <ranges>
 
 #include "Infra/Variants.h"
 #include "Infra/Expected.h"
@@ -16,30 +17,31 @@ expected<QArg, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, QBodyCont
 {
     // "abc $x" => "abc " + x
     optional<QArg> curArg;
+
     for (auto& elem : exp->elements)
     {
-        auto eValueResult = visit(overloaded{
-            [&bodyContext](MExp_StringElem_Text& textElem) 
-            { 
-                auto reg = bodyContext.AddBuffer(bodyContext.MakeQStringType());
-                bodyContext.AddInst(QInst_InitString{reg, textElem.text});
-                return expected<QArg, DiagPtr>{reg};
+        auto eElemValue = visit(overloaded{
+            [&bodyContext](MExp_StringElem_Text& textElem)
+            {
+                auto slot = bodyContext.NewStackSlot(bodyContext.MakeQStringType());
+                bodyContext.AddInst(QInst_InitString{slot, textElem.text});
+                return expected<QArg, DiagPtr>{slot};
             },
             [&bodyContext](MExp_StringElem_Exp& expElem) { return TranslateMExpToQInsts(expElem.mExp, bodyContext); }
         }, elem);
-        RETURN_ON_ERROR(eValueResult);
+        RETURN_ON_ERROR(eElemValue);
 
         if (curArg)
-        {   
-            auto newReg = bodyContext.AddIntrinsic(QInst_IntrinsicKind::Add_String_String, {*curArg, *eValueResult});
-            curArg = newReg;
+        {
+            auto newArg = bodyContext.AddIntrinsic(QInst_IntrinsicKind::Add_String_String, {*curArg, *eElemValue});
+            curArg = newArg;
         }
         else
         {
-            curArg = *eValueResult;
+            curArg = *eElemValue;
         }
     }
-
+    
     assert(curArg);
     return *curArg;
 }

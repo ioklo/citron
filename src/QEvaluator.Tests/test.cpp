@@ -12,7 +12,7 @@
 #include "QIR/QData.h"
 #include "QIR/QFactory.h"
 #include "QIR/QBlock.h"
-#include "QIR/QValues.h"
+#include "QIR/QArgs.h"
 #include "QIR/QInsts.h"
 
 using namespace std;
@@ -36,7 +36,7 @@ TEST(QEvaluator, DebugPrint_PrintWell)
 {
     auto rFactory = MakePtr<RFactory>();
     NFactory nFactory{rFactory};
-    QFactory qFactory;
+    QFactoryPtr qFactory = MakePtr<QFactory>();
 
     auto* nRootNamespace = nFactory.MakeRootNamespaceDecl();
     auto* nEntry = nFactory.MakeNDecl<NGlobalFuncDecl>(
@@ -45,7 +45,7 @@ TEST(QEvaluator, DebugPrint_PrintWell)
         RName_Normal{"main"}, 
         /*typeParams*/vector<string>{});
 
-    auto* qEntryBlock = qFactory.MakeQBlock("entry");
+    auto* qEntryBlock = qFactory->MakeQBlock("entry");
     std::vector<QArg> args{QArg_ConstInt32{1}};
 
     QInst_Intrinsic inst{QInst_IntrinsicKind::DebugPrint_Items, nullopt, move(args)};
@@ -53,10 +53,10 @@ TEST(QEvaluator, DebugPrint_PrintWell)
     qEntryBlock->AddInst(QInst_ReturnVoid{});
 
     std::vector<QFuncBody> funcBodies;
-    funcBodies.emplace_back(nEntry, qEntryBlock);
-    QData* qData = qFactory.MakeQData(move(funcBodies));
+    funcBodies.emplace_back(nEntry, vector<QStackSlot>{}, qEntryBlock, 0);
+    QData* qData = qFactory->MakeQData(move(funcBodies));
     
-    auto eResult = EvaluateQData({}, qData, nEntry, MakePtr<NullCommandHandler>());
+    auto eResult = EvaluateQData({}, qData, nEntry, MakePtr<NullCommandHandler>(), qFactory);
     EXPECT_TRUE(eResult);
 }
 

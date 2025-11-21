@@ -41,14 +41,20 @@ public:
             values.push_back(move(*eQValue));
         }
 
-        bodyContext.AddIntrinsic(QInst_IntrinsicKind::Command_Items, move(values));
+        bodyContext.AddIntrinsicVoid(QInst_IntrinsicKind::Command_Items, move(values));
         return {};
     }
     
     // 스택에 변수를 둔다.
     ResultType Visit(MStmt_LocalVarDecl* stmt)
     {
-        bodyContext.AddLocalVar(stmt->type, RName_Normal{stmt->name});
+        auto lv = bodyContext.AddLocalVar(stmt->type, RName_Normal{stmt->name});
+
+        auto eInitValue = TranslateMExpToQInsts(stmt->initExp, bodyContext);
+        RETURN_ON_ERROR(eInitValue);
+
+        size_t size = bodyContext.GetMExpTypeSize(stmt->initExp);
+        bodyContext.AddInst(QInst_Assign{lv, *eInitValue, size});
         return {};
     }
 

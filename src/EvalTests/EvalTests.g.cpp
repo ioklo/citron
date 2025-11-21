@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "Infra/Ptr.h"
+#include "Infra/StringWriter.h"
 
 #include "Logging/Logger.h"
 
@@ -25,6 +26,7 @@
 
 #include "QIR/QFactory.h"
 #include "QIR/QBlock.h"
+#include "QIR/QPrinter.h"
 
 #include "QEvaluator/QEvaluation.h"
 
@@ -90,6 +92,10 @@ void DoTest(const string& code, const string& expected)
     vector<RModule*> rModules{nModule};
     auto eResult = EvaluateQData(rModules, qData, nEntry, commandHandler, qFactory);
     EXPECT_TRUE(eResult);
+
+    StringWriter writer;
+    PrintQData(qData, writer);
+    auto out = writer.ToString();
 
     // 
     EXPECT_EQ(commandHandler->GetOutput(), expected);
@@ -790,7 +796,7 @@ TEST(Command_Statement, Block)
     }
 }
 )---";
-    string expected = R"---(         <- no ignore 8 blanks        hello world        good)---";
+    string expected = R"---(        <- no ignore 8 blanks        hello world        good)---";
 
     DoTest(code, expected);
 }

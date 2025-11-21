@@ -3,11 +3,11 @@
   <ItemGroup>
     <ClCompile Include="QBlock.cpp" />
     <ClCompile Include="QFactory.cpp" />
-    <ClCompile Include="QValues.cpp" />
+    <ClCompile Include="QArgs.cpp" />
     <ClCompile Include="QData.cpp" />
+    <ClCompile Include="QPrinter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Public\QIR\QValues.h" />
     <ClInclude Include="Public\QIR\QBlock.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
@@ -27,6 +27,12 @@
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="Public\QIR\QTypes.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\QIR\QPrinter.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\QIR\QArgs.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
   </ItemGroup>

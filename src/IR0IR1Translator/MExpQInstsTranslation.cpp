@@ -13,7 +13,7 @@
 #include "QIR/QFactory.h"
 #include "QIR/QBlock.h"
 #include "QIR/QInsts.h"
-#include "QIR/QValues.h"
+#include "QIR/QArgs.h"
 
 #include "MLocQInstsTranslation.h"
 #include "QBodyContext.h"
@@ -40,15 +40,15 @@ public:
     // load(loc),
     ResultType Visit(MExp_Load* exp)
     {
+        // 새로운 value 도입
+        auto* qType = bodyContext.GetMExpQType(exp);
+        auto lv = bodyContext.NewContainer(qType);
+
         // 이 translation으로 lv가 하나 나올 것이다
         auto eLV = TranslateMLocToQInsts(exp->loc, bodyContext);
         RETURN_ON_ERROR(eLV);
-
-        // 새로운 value 도입
-
-        auto* qType = bodyContext.GetMExpQType(exp);
-        auto lv = bodyContext.NewRegister(qType);
-        bodyContext.AddInst(QInst_Load{lv, *eLV});
+        
+        bodyContext.AddInst(QInst_Load{.value = lv, .src = *eLV});
         return lv;
     }
 
@@ -76,16 +76,15 @@ public:
     ResultType Visit(MExp_Box* exp)
     {
         // 1. alloc, size
-        // auto lv = bodyContext.NewValue();
         size_t size = bodyContext.GetMExpTypeSize(exp->innerExp);
-        auto lv = bodyContext.AddIntrinsic(QInst_IntrinsicKind::Alloc_Int, {QArg_ConstInt32{(int)size}});
+        auto ptr = bodyContext.AddIntrinsic(QInst_IntrinsicKind::Alloc_Int, {QArg_ConstInt32{(int)size}});
 
         // 2. exp
         auto eQValue = TranslateMExpToQInsts(exp->innerExp, bodyContext);
         RETURN_ON_ERROR(eQValue);
 
         // 3. 저장
-        bodyContext.AddInst(QInst_Store{lv, *eQValue});
+        bodyContext.AddInst(QInst_Store{.dest = ptr, .value = *eQValue});
         return *eQValue;
     }
     

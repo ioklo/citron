@@ -501,7 +501,7 @@ void DoTest(const string& code, const string& expected)
 
     auto commandHandler = MakePtr<CommandHandler>();
     vector<RModule*> rModules{nModule};
-    auto eResult = EvaluateQData(rModules, qData, nEntry, commandHandler);
+    auto eResult = EvaluateQData(rModules, qData, nEntry, commandHandler, qFactory);
     EXPECT_TRUE(eResult);
 
     // 

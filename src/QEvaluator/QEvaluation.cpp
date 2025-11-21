@@ -33,7 +33,8 @@ struct InstructionPointer
 struct Environment
 {   
     // register index -> values
-    std::vector<void*> regValues;  // 최소 void* 크기 만큼에서 동작하는
+    std::vector<void*> regValues;  // 최소 void* 크기 만큼에서 동작하는, bool, int, T*
+    std::vector<void*> stackSlots; // 스택 포인터
     std::vector<byte> stack;
 
     byte* stackPointer;
@@ -41,6 +42,7 @@ struct Environment
 
 size_t GetSize(QType* type, QFactory& qFactory)
 {   
+    // TODO: HARD CODED
     if (type == qFactory.MakeBoolType())
         return 1;
 
@@ -53,11 +55,32 @@ size_t GetSize(QType* type, QFactory& qFactory)
     throw NotImplementedException{};
 }
 
+void* GetPtr(QArg& arg, Environment& env)
+{
+    return visit(overloaded{
+        [&env](QArg_StackSlot& slot) { return env.stackSlots[slot.index]; },
+        [&env](QArg_Register& reg) { return env.regValues[reg.index]; },
+        [](auto&&) -> void* { throw NotImplementedException{}; }
+    }, arg);
+}
+
+void* GetLoc(QArg& arg, Environment& env)
+{
+    return visit(overloaded{
+        [&env](QArg_StackSlot& slot) { return env.stackSlots[slot.index]; },
+        [&env](QArg_Register& reg) { return (void*)&env.regValues[reg.index]; },
+        [&env](QArg_ConstBool& cb) { return (void*)&cb.value; },
+        [&env](QArg_ConstInt32& ci) { return (void*)&ci.value; },
+        [](auto&&) -> void* { throw NotImplementedException{}; }
+    }, arg);
+}
+
 int GetInt(QArg arg, Environment& env)
 {
     return visit(overloaded{
         [](QArg_ConstInt32& ci) { return ci.value; },
         [&env](QArg_Register& r) { return *(int*)&env.regValues[r.index]; },
+        [&env](QArg_StackSlot& s) { return *(int*)env.stackSlots[s.index]; },
         [](auto&&) -> int { throw NotImplementedException{}; }
     }, arg);
 }
@@ -66,26 +89,32 @@ bool GetBool(QArg arg, Environment& env)
 {
     return visit(overloaded{
         [](QArg_ConstBool& cb) { return cb.value; },
-        [&env](QArg_Register& r) { return (bool)env.regValues[r.index]; },
+        [&env](QArg_Register& r) { return *(bool*)&env.regValues[r.index]; },
+        [&env](QArg_StackSlot& s) { return *(bool*)env.stackSlots[s.index]; },
         [](auto&&) -> bool { throw NotImplementedException{}; }
     }, arg);
 }
 
 //
-void SetBool(QArg_Register reg, bool v, Environment& env)
+void SetBool(QArg dest, bool v, Environment& env)
 {
-    *(bool*)&env.regValues[reg.index] = v;
+    visit(overloaded{
+        [&env, v](QArg_Register& reg) { *(bool*)&env.regValues[reg.index] = v; },
+        [&env, v](QArg_StackSlot& slot) { *(bool*)env.stackSlots[slot.index] = v; },
+        [](auto&&) { throw NotImplementedException{}; }
+    }, dest);
 }
 
 string* GetString(QArg arg, Environment& env)
 {
-    auto& reg = get<QArg_Register>(arg);
-    return (string*)env.regValues[reg.index];
+    auto& slot = get<QArg_StackSlot>(arg);
+    return (string*)env.stackSlots[slot.index];
 }
 
-void SetString(QArg_Register reg, string&& s, Environment& env)
+void SetString(QArg dest, string&& s, Environment& env)
 {   
-    new ((string*)env.regValues[reg.index]) string{move(s)};
+    auto& slot = get<QArg_StackSlot>(dest); // string은 stack slot에만 들어갈 수 있다
+    *(string*)env.stackSlots[slot.index] = move(s);
 }
 
 //
@@ -121,70 +150,99 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
     env.stackPointer = env.stack.data() + env.stack.size();
     env.regValues.resize(i->registerCount);
 
+    env.stackSlots.resize(i->stackSlots.size());
+    for (size_t j = 0, count = i->stackSlots.size(); j < count; j++)
+    {
+        auto& slot = i->stackSlots[j];
+        size_t size = GetSize(slot.qType, *qFactory);
+        env.stackPointer -= size;
+        env.stackSlots[j] = env.stackPointer;
+    }
+
     while(true)
     {
         auto& inst = ip.block->GetInst(ip.index++);
 
         bool cont = visit(overloaded{
             [&env](QInst_InitString& inst) {
-                auto* buf = (string*)env.regValues[inst.buf.index];
-                new (buf) string{inst.s};
+                auto* buf = env.stackSlots[inst.slot.index];
+                new (buf) string{inst.text};
                 return true;
             },
             [&env, qFactory](QInst_Store& inst)
             {
-                // loc <- value;
-                void* ptr = &env.regValues[inst.loc.index];
+                // *dest = value;
+                void* dest = GetPtr(inst.dest, env);
 
                 // inst.value가 
                 visit(overloaded{
-                    [ptr](QArg_ConstBool& cb) {
-                        *((bool*)ptr) = cb.value;
+                    [dest](QArg_ConstBool& cb) {
+                        *((bool*)dest) = cb.value;
                     },
-                    [ptr](QArg_ConstInt32& ci) {
-                        *((int*)ptr) = ci.value;
+                    [dest](QArg_ConstInt32& ci) {
+                        *((int*)dest) = ci.value;
                     },
-                    [&env, ptr, qFactory](QArg_Register& reg) {
+                    [&env, dest, qFactory](QArg_Register& reg) {
+                        // TODO: HARD CODED
                         if (reg.qType == qFactory->MakeBoolType())
-                            *((bool*)ptr) = *(bool*)&env.regValues[reg.index];
+                            *((bool*)dest) = *(bool*)&env.regValues[reg.index];
                         else if (reg.qType == qFactory->MakeIntType())
-                            *((int*)ptr) = *(int*)&env.regValues[reg.index];
-                        else if (reg.qType == qFactory->MakeStringType())
-                            *((string**)ptr) = (string*)env.regValues[reg.index];
+                            *((int*)dest) = *(int*)&env.regValues[reg.index];
                         else
                             throw NotImplementedException{};
-                    }
+                    },
+                    [&env, dest, qFactory](QArg_StackSlot& slot) {
+                        if (slot.qType == qFactory->MakeStringType())
+                            *((string*)dest) = *(string*)env.stackSlots[slot.index];
+                        else
+                            throw NotImplementedException{};
+                    },
                 }, inst.value);
 
                 return true;
             },
             [&env, qFactory](QInst_Load& inst)
             {
-                // value <- *loc;
-                void* ptr = &env.regValues[inst.loc.index];
+                // value <- *src;
+                void* src = GetPtr(inst.src, env);
 
                 // value쪽의 qType을 쓴다
-                if (inst.value.qType == qFactory->MakeBoolType())
-                {
-                    env.regValues[inst.value.index] = (void*)*(bool*)ptr;
-                }
-                else if (inst.value.qType == qFactory->MakeIntType())
-                {
-                    env.regValues[inst.value.index] = (void*)(int*)ptr;
-                }
-                else
-                {
-                    throw NotImplementedException{};
-                    // env.regValues[inst.value.index] = RegValue_Ptr{*((void**)ptr)};
-                }
+                visit(overloaded{
+                    [&env, src, qFactory](QArg_Register& reg) {
+                        // TODO: HARD CODED
+                        if (reg.qType == qFactory->MakeBoolType())
+                            *(bool*)&env.regValues[reg.index] = *((bool*)src);
+                        else if (reg.qType == qFactory->MakeIntType())
+                            *(int*)&env.regValues[reg.index] = *((int*)src);
+                        else
+                            throw NotImplementedException{};
+                    },
 
+                    [&env, src, qFactory](QArg_StackSlot& slot) {
+                        // TODO: HARD CODED
+                        if (slot.qType == qFactory->MakeBoolType())
+                            *(bool*)env.stackSlots[slot.index] = *((bool*)src);
+                        else if (slot.qType == qFactory->MakeIntType())
+                            *(int*)env.stackSlots[slot.index] = *((int*)src);
+                        else if (slot.qType == qFactory->MakeStringType())
+                            new (env.stackSlots[slot.index]) string{*((string*)src)};
+                        else
+                            throw NotImplementedException{};
+                    },
+                    [](auto&&) { throw NotImplementedException{}; }
+                }, inst.value);
+                
                 return true;
             },
-            [&env, qFactory](QInst_Alloc& alloc)
+            [&env](QInst_Assign& inst)
             {   
-                // stack이니 그냥 하나 올리면 되는데 일단 new
-                env.stackPointer -= GetSize(alloc.loc.qType, *qFactory);
-                env.regValues[alloc.loc.index] = env.stackPointer;
+                // %dest = %src
+                // %r2 = %r1: memcpy(&regValues[r1.index], &regValues[r2.index], size) // void* 복사, size는 8보다 작을 것이다
+                // %s2 = %s1: memcpy(stackSlots[s1.index], stackSlots[s2.index], size)
+
+                void* src = GetLoc(inst.src, env);
+                void* dest = GetLoc(inst.dest, env);
+                memmove(dest, src, inst.size);
                 return true;
             },
             [&cmdHandler, &env](QInst_Intrinsic& inst) -> bool
@@ -197,8 +255,8 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
                     {
                         // string이라면, 크기가 8을 넘으므로
                         visit(overloaded{
-                            [&env, &cmdHandler](QArg_Register& r) { 
-                                auto* s = (string*)env.regValues[r.index];
+                            [&env, &cmdHandler](QArg_StackSlot& slot) { 
+                                auto* s = (string*)env.stackSlots[slot.index];
                                 cmdHandler->Execute(*s); 
                             },
                             [](auto&&) { assert(false);  }
@@ -247,6 +305,13 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
                     return true;
                 }
 
+                case QInst_IntrinsicKind::ToString_Bool:
+                {
+                    auto b = GetBool(inst.args[0], env);
+                    SetString(*inst.result, format("{}", b), env);
+                    return true;
+                }
+
                 case QInst_IntrinsicKind::Add_String_String:
                 {
                     auto* s1 = GetString(inst.args[0], env);
@@ -262,7 +327,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
             [](QInst_ReturnVoid& inst) { return false; },
             [&ip, &env](QInst_CondJump& condJump) 
             {
-                if (GetBool(condJump.value, env))
+                if (GetBool(condJump.cond, env))
                     ip = InstructionPointer{condJump.trueBlock, 0};
                 else
                     ip = InstructionPointer{condJump.falseBlock, 0};

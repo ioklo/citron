@@ -14,6 +14,8 @@ class QBlock
     std::string debugText;
     std::vector<QInst> insts;
 
+    friend class QPrinter;
+
 public:
     QBlock(std::string&& debugText)
         : debugText(std::move(debugText))

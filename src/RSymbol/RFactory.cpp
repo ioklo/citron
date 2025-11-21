@@ -19,6 +19,7 @@ namespace Citron {
 RFactory::RFactory()
     : voidType{new RType_Void()}
 {
+    
 }
 
 RFactory::~RFactory()
@@ -203,17 +204,23 @@ RTypeArguments* RFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArg
 
 RType* RFactory::MakeBoolType()
 {   
-    return boolType.get();
+    // TODO: HARD CODED
+    return (RType*)1;
+    // return boolType.get();
 }
 
 RType* RFactory::MakeIntType()
 {
-    return intType.get();
+    // TODO: HARD CODED
+    return (RType*)2;
+    // return intType.get();
 }
 
 RType* RFactory::MakeStringType()
 {
-    return stringType.get();
+    // TODO: HARD CODED
+    return (RType*)3; // 임시
+    // return stringType.get();
 }
 
 RType* RFactory::MakeListType(RType* itemType)

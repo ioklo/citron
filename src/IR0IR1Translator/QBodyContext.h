@@ -3,16 +3,19 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
+#include <span>
 
 #include "RSymbol/RNames.h"
 
 #include "QIR/QFactory.h"
 #include "QIR/QBlock.h"
+#include "QIR/QFuncBody.h"
 
 namespace Citron {
 
 class MExp;
 class RType;
+struct QStackSlot;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 struct QArg_Register;
@@ -55,7 +58,8 @@ public:
 
 struct QLocalVarInfo
 {
-    size_t regIndex;
+    size_t slotIndex;
+    std::string name;
     QType* qType;
 };
 
@@ -65,22 +69,17 @@ struct QScope
     std::unordered_map<RName, QLocalVarInfo> localVarInfos;
 };
 
-struct StackAllocationInfo
-{
-    size_t regIndex;
-    QType* qType;
-};
-
 class QBodyContext : QBlockWriter
 {
     RFactoryPtr rFactory;
     QFactoryPtr qFactory;
     size_t regCounter;
+    size_t slotCounter;
 
     // 함수의 스택 변수
     QBlock* entryBlock;
     QBlock* bodyBlock;
-    std::vector<StackAllocationInfo> stackAllocationInfos;
+    std::vector<QStackSlot> stackSlots;
     std::vector<QScope> scopes;
 
 public:
@@ -94,7 +93,8 @@ public:
             && !std::convertible_to<TQInst, QTermInst>
             && !std::same_as<TQInst, QInst_Intrinsic>
     void AddInst(TQInst&& inst) { QBlockWriter::AddInst(std::move(inst)); }
-    QArg_Register AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QArg>&& args);
+    QArg AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QArg>&& args);
+    void AddIntrinsicVoid(QInst_IntrinsicKind kind, std::vector<QArg>&& args);
     void CompleteBlock(QTermInst&& termInst) { QBlockWriter::CompleteBlock(std::move(termInst)); }
     void SetCurBlock(QBlock* block) { QBlockWriter::SetCurBlock(block); }
 
@@ -104,7 +104,7 @@ public:
     QBlock* GetEntryBlock() { return entryBlock; }
     size_t GetRegisterCount() { return regCounter; }
 
-    QArg_Register NewRegister(QType* qType);
+    QArg NewContainer(QType* qType);
     QType* GetMExpQType(MExp* mExp);    
     size_t GetMExpTypeSize(MExp* exp);
     size_t GetRTypeSize(RType* rType);
@@ -112,10 +112,11 @@ public:
     QType* MakeQType(RType* rType);
     QType_Class* MakeQStringType();
 
-    QArg_Register AddLocalVar(RType* type, const RName& name);
-    QArg_Register GetLocalVar(const RName& name);
+    QArg_StackSlot AddLocalVar(RType* type, const RName& name);
+    QArg_StackSlot GetLocalVar(const RName& name);
 
-    QArg_Register AddBuffer(QType* qType);
+    QArg_StackSlot NewStackSlot(QType* qType);
+    std::span<QStackSlot> GetStackSlots() { return stackSlots; }
 
     void CompleteFunc();
 

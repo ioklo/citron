@@ -22,7 +22,8 @@
     <ClCompile Include="QBlock.cpp" />
     <ClCompile Include="QData.cpp" />
     <ClCompile Include="QFactory.cpp" />
-    <ClCompile Include="QValues.cpp" />
+    <ClCompile Include="QPrinter.cpp" />
+    <ClCompile Include="QArgs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\QIR\QBlock.h" />
@@ -31,8 +32,20 @@
     <ClInclude Include="Public\QIR\QFuncBody.h" />
     <ClInclude Include="Public\QIR\QInsts.h" />
     <ClInclude Include="Public\QIR\QIRConfig.h" />
+    <ClInclude Include="Public\QIR\QPrinter.h" />
     <ClInclude Include="Public\QIR\QTypes.h" />
-    <ClInclude Include="Public\QIR\QValues.h" />
+    <ClInclude Include="Public\QIR\QArgs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Infra\Infra.vcxproj">
+      <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\NSymbol\NSymbol.vcxproj">
+      <Project>{56fa279c-712f-4c9b-ba1e-c8e983ea97e8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\RSymbol\RSymbol.vcxproj">
+      <Project>{42f5b624-3a9b-48b6-9e12-736206097339}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

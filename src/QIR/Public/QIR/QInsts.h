@@ -3,36 +3,41 @@
 #include <variant>
 #include <optional>
 
-#include "QValues.h"
+#include "QArgs.h"
 
 namespace Citron {
 
 class RFuncDecl;
 class QBlock;
 
+// %slot = init_string "hello"
 struct QInst_InitString
 {
-    QArg_Register buf;
-    std::string s;
+    QArg_StackSlot slot;
+    std::string text;
 };
 
-// QInst_Store(lv, v)
+// store [%dest], %value
+// loc은 ptr을 담고 있음
 struct QInst_Store
 {
-    QArg_Register loc;
-    QArg value;
+    QArg dest;   // T*을 나타내는 register, slot 가능
+    QArg value;  // T의 const, register, slot 가능
 };
 
-// QInst_Load(v, lv)
+// %value = load [%src]
 struct QInst_Load
 {
-    QArg_Register value;
-    QArg_Register loc;
+    QArg value; // T register, slot 가능
+    QArg src;   // T* 나타내는 register, slot가능
 };
 
-struct QInst_Alloc
+// %dest = %src
+struct QInst_Assign
 {
-    QArg_Register loc;
+    QArg dest; // T register, slot 가능
+    QArg src;  // T const, register, slot 가능
+    size_t size;
 };
 
 // class, struct, interface 구분 없이 Call
@@ -84,12 +89,12 @@ enum struct QInst_IntrinsicKind
 };
 
 struct QInst_Intrinsic
-{
+{   
     QInst_IntrinsicKind kind;
-    std::optional<QArg_Register> result;
+    std::optional<QArg> result;
     std::vector<QArg> args;
 
-    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Register>&& result, std::vector<QArg>&& args)
+    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QArg>&& result, std::vector<QArg>&& args)
         : kind{kind}, result{std::move(result)}, args{std::move(args)}
     {
     }
@@ -97,7 +102,7 @@ struct QInst_Intrinsic
 
 struct QInst_CondJump
 {
-    QArg value;
+    QArg cond;
     QBlock* trueBlock;
     QBlock* falseBlock;
 };
@@ -111,7 +116,7 @@ using QInst = std::variant<
     QInst_InitString,
     QInst_Store,
     QInst_Load,
-    QInst_Alloc,
+    QInst_Assign,
     QInst_Call,
     QInst_Intrinsic,
     QInst_CondJump,
