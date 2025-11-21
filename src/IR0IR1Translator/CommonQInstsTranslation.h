@@ -12,7 +12,7 @@ namespace IR0IR1Translator {
 
 class QBodyContext;
 
-std::expected<QValue, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, QBodyContext& bodyContext);
+std::expected<QArg, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, QBodyContext& bodyContext);
 
 } // namespace IR0IR1Translator
 } // namespace Citron

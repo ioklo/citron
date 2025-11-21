@@ -2,8 +2,7 @@
 
 #include <variant>
 
-namespace Citron
-{
+namespace Citron {
 
 class NDecl;
 class NNamespaceDecl;
@@ -31,7 +30,6 @@ public:
     virtual void Visit(NLambdaDecl* outer) = 0;
 };
 
-// 이것은 weak_ptr로 선언하도록 한다
 class NFuncDeclOuter
 {
 public:

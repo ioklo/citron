@@ -29,7 +29,8 @@ namespace IR0IR1Translator {
 class MExpQInstsTranslator
 {
 public:
-    using ResultType = expected<QValue, DiagPtr>;
+    using ResultType = expected<QArg, DiagPtr>;
+
     QBodyContext& bodyContext;
 
 public:
@@ -44,7 +45,9 @@ public:
         RETURN_ON_ERROR(eLV);
 
         // 새로운 value 도입
-        auto lv = bodyContext.NewValue();
+
+        auto* qType = bodyContext.GetMExpQType(exp);
+        auto lv = bodyContext.NewRegister(qType);
         bodyContext.AddInst(QInst_Load{lv, *eLV});
         return lv;
     }
@@ -75,7 +78,7 @@ public:
         // 1. alloc, size
         // auto lv = bodyContext.NewValue();
         size_t size = bodyContext.GetMExpTypeSize(exp->innerExp);
-        auto lv = bodyContext.AddIntrinsic(QInst_IntrinsicKind::Alloc_Int, {QValue_ConstInteger{(int)size}});
+        auto lv = bodyContext.AddIntrinsic(QInst_IntrinsicKind::Alloc_Int, {QArg_ConstInt32{(int)size}});
 
         // 2. exp
         auto eQValue = TranslateMExpToQInsts(exp->innerExp, bodyContext);
@@ -105,12 +108,12 @@ public:
 
     ResultType Visit(MExp_BoolLiteral* exp)
     {
-        return QValue_ConstBool{exp->value};
+        return QArg_ConstBool{exp->value};
     }
 
     ResultType Visit(MExp_IntLiteral* exp)
     {
-        return QValue_ConstInteger{exp->value};
+        return QArg_ConstInt32{exp->value};
     }
 
     ResultType Visit(MExp_String* exp)
@@ -120,7 +123,7 @@ public:
 
     ResultType Visit(MExp_List* exp) 
     {
-        std::vector<QValue> items;
+        std::vector<QArg> items;
         items.reserve(exp->elems.size());
 
         for (auto* elem : exp->elems)
@@ -268,7 +271,7 @@ public:
     ResultType Visit(MExp_EnumAsEnumElem* exp) { throw NotImplementedException{}; }
 };
 
-expected<QValue, DiagPtr> TranslateMExpToQInsts(MExp* mExp, QBodyContext& bodyContext)
+expected<QArg, DiagPtr> TranslateMExpToQInsts(MExp* mExp, QBodyContext& bodyContext)
 {
     MExpQInstsTranslator translator{bodyContext};
     return Accept(translator, mExp);

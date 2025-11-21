@@ -10,31 +10,36 @@ namespace Citron {
 class RFuncDecl;
 class QBlock;
 
+struct QInst_InitString
+{
+    QArg_Register buf;
+    std::string s;
+};
+
 // QInst_Store(lv, v)
 struct QInst_Store
 {
-    QValue loc;
-    QValue value;
+    QArg_Register loc;
+    QArg value;
 };
 
 // QInst_Load(v, lv)
 struct QInst_Load
 {
-    QValue value;
-    QValue loc;
+    QArg_Register value;
+    QArg_Register loc;
 };
 
 struct QInst_Alloc
 {
-    QValue_Local loc;
-    size_t size;
+    QArg_Register loc;
 };
 
 // class, struct, interface 구분 없이 Call
 struct QInst_Call
 {
     RFuncDecl* funcDecl;
-    std::vector<QValue> args;
+    std::vector<QArg> args;
 };
 
 struct QInst_ReturnVoid
@@ -81,10 +86,10 @@ enum struct QInst_IntrinsicKind
 struct QInst_Intrinsic
 {
     QInst_IntrinsicKind kind;
-    std::optional<QValue_Named> result;
-    std::vector<QValue> args;
+    std::optional<QArg_Register> result;
+    std::vector<QArg> args;
 
-    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QValue_Named>&& result, std::vector<QValue>&& args)
+    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Register>&& result, std::vector<QArg>&& args)
         : kind{kind}, result{std::move(result)}, args{std::move(args)}
     {
     }
@@ -92,7 +97,7 @@ struct QInst_Intrinsic
 
 struct QInst_CondJump
 {
-    QValue value;
+    QArg value;
     QBlock* trueBlock;
     QBlock* falseBlock;
 };
@@ -103,6 +108,7 @@ struct QInst_Jump
 };
 
 using QInst = std::variant<
+    QInst_InitString,
     QInst_Store,
     QInst_Load,
     QInst_Alloc,

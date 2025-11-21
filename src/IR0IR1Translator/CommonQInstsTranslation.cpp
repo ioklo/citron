@@ -12,32 +12,36 @@ using namespace std;
 
 namespace Citron::IR0IR1Translator {
 
-expected<QValue, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, QBodyContext& bodyContext)
+expected<QArg, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, QBodyContext& bodyContext)
 {
     // "abc $x" => "abc " + x
-    optional<QValue> curValue;
+    optional<QArg> curArg;
     for (auto& elem : exp->elements)
     {
         auto eValueResult = visit(overloaded{
-            [](MExp_StringElem_Text& textElem) { return expected<QValue, DiagPtr>{QValue_String{textElem.text}}; },
+            [&bodyContext](MExp_StringElem_Text& textElem) 
+            { 
+                auto reg = bodyContext.AddBuffer(bodyContext.MakeQStringType());
+                bodyContext.AddInst(QInst_InitString{reg, textElem.text});
+                return expected<QArg, DiagPtr>{reg};
+            },
             [&bodyContext](MExp_StringElem_Exp& expElem) { return TranslateMExpToQInsts(expElem.mExp, bodyContext); }
         }, elem);
         RETURN_ON_ERROR(eValueResult);
 
-        if (curValue)
-        {
-            QValue_Named newValue;
-            bodyContext.AddIntrinsic(QInst_IntrinsicKind::Add_String_String, {newValue, *curValue, *eValueResult});
-            curValue = newValue;
+        if (curArg)
+        {   
+            auto newReg = bodyContext.AddIntrinsic(QInst_IntrinsicKind::Add_String_String, {*curArg, *eValueResult});
+            curArg = newReg;
         }
         else
         {
-            curValue = *eValueResult;
+            curArg = *eValueResult;
         }
     }
 
-    assert(curValue);
-    return *curValue;
+    assert(curArg);
+    return *curArg;
 }
 
 } // namespace Citron::IR0IR1Translator

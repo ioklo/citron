@@ -4,38 +4,34 @@
 
 namespace Citron {
 
-// 값을 지칭하는 구조
-struct QValue_Named
-{
-    std::string name;
-};
+struct QType;
 
-struct QValue_Local
+// 값을 지칭하는 구조
+struct QArg_Register
 {
     size_t index;
+    QType* qType;
+
+public:
+    QArg_Register(size_t index, QType* qType)
+        : index{index}, qType{qType} {
+    }
 };
 
-struct QValue_ConstBool
+struct QArg_ConstBool
 {
     bool value;
 };
 
-struct QValue_ConstInteger
+struct QArg_ConstInt32
 {
     int value;
 };
 
-struct QValue_String
-{
-    std::string value;
-};
-
-using QValue = std::variant<
-    QValue_Local,
-    QValue_Named, 
-    QValue_ConstBool,
-    QValue_ConstInteger,
-    QValue_String
+using QArg = std::variant<
+    QArg_Register, 
+    QArg_ConstBool,
+    QArg_ConstInt32
 >;
 
 } // Citron

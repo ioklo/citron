@@ -15,7 +15,7 @@ class MExp;
 class RType;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-struct QValue_Named;
+struct QArg_Register;
 enum class QInst_IntrinsicKind;
 
 namespace IR0IR1Translator {
@@ -55,30 +55,38 @@ public:
 
 struct QLocalVarInfo
 {
-    RName name;
-    RType* type;
+    size_t regIndex;
+    QType* qType;
 };
 
 struct QScope
 {
-    // a -> 16
-    std::unordered_map<RName, size_t> varNames;
+    // "a_16" -> regIndex
+    std::unordered_map<RName, QLocalVarInfo> localVarInfos;
+};
+
+struct StackAllocationInfo
+{
+    size_t regIndex;
+    QType* qType;
 };
 
 class QBodyContext : QBlockWriter
 {
     RFactoryPtr rFactory;
     QFactoryPtr qFactory;
-    int valueCounter;
+    size_t regCounter;
 
     // 함수의 스택 변수
     QBlock* entryBlock;
     QBlock* bodyBlock;
-    std::vector<QLocalVarInfo> localVars;
+    std::vector<StackAllocationInfo> stackAllocationInfos;
     std::vector<QScope> scopes;
 
 public:
     QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory);
+
+    QType* GetIntrinsicResultType(QInst_IntrinsicKind kind);
 
     QBlock* AddBlock(std::string&& debugText) { return QBlockWriter::AddBlock(std::move(debugText)); }
     template<typename TQInst, typename... TArgs> 
@@ -86,19 +94,28 @@ public:
             && !std::convertible_to<TQInst, QTermInst>
             && !std::same_as<TQInst, QInst_Intrinsic>
     void AddInst(TQInst&& inst) { QBlockWriter::AddInst(std::move(inst)); }
-    QValue AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QValue>&& args);
+    QArg_Register AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QArg>&& args);
     void CompleteBlock(QTermInst&& termInst) { QBlockWriter::CompleteBlock(std::move(termInst)); }
     void SetCurBlock(QBlock* block) { QBlockWriter::SetCurBlock(block); }
 
 public:
+    QFactory& GetQFactory() { return *qFactory; }
+
     QBlock* GetEntryBlock() { return entryBlock; }
+    size_t GetRegisterCount() { return regCounter; }
 
-    QValue_Named NewValue();
+    QArg_Register NewRegister(QType* qType);
+    QType* GetMExpQType(MExp* mExp);    
     size_t GetMExpTypeSize(MExp* exp);
-    size_t GetRTypeSize(RType* type);
+    size_t GetRTypeSize(RType* rType);
 
-    QValue_Local AddLocalVar(RType* type, const RName& name);
-    QValue_Local GetLocalVar(const RName& name);
+    QType* MakeQType(RType* rType);
+    QType_Class* MakeQStringType();
+
+    QArg_Register AddLocalVar(RType* type, const RName& name);
+    QArg_Register GetLocalVar(const RName& name);
+
+    QArg_Register AddBuffer(QType* qType);
 
     void CompleteFunc();
 

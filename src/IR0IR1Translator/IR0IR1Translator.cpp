@@ -28,7 +28,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     }
 
     bodyContext.CompleteFunc();
-    return QFuncBody{mFuncBody.nFuncDecl, bodyContext.GetEntryBlock()};
+    return QFuncBody{mFuncBody.nFuncDecl, bodyContext.GetEntryBlock(), bodyContext.GetRegisterCount()};
 }
 
 } // namespace

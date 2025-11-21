@@ -66,13 +66,7 @@ void ScopeContext::AddLocalVarInfo(RType* type, const std::string& name)
 bool ScopeContext::DoesLocalVarNameExistInScope(const string& name)
 {
     auto i = locals.find(name);
-    if (i != locals.end())
-        return true;
-
-    if (parentContext)
-        return parentContext->DoesLocalVarNameExistInScope(name);
-
-    return false;
+    return i != locals.end();
 }
 
 bool ScopeContext::IsFailed() 

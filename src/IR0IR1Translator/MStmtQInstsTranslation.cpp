@@ -32,7 +32,7 @@ public:
     // command는 일단 넘깁시다
     ResultType Visit(MStmt_Command* stmt)
     {
-        vector<QValue> values;
+        vector<QArg> values;
         for(auto* command : stmt->commands)
         {
             auto eQValue = TranslateMExp_StringToQInsts(command, bodyContext);

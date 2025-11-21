@@ -13,7 +13,7 @@ namespace Citron::IR0IR1Translator {
 class MLocQInstsTranslator
 {
 public:
-    using ResultType = expected<QValue, DiagPtr>;
+    using ResultType = expected<QArg_Register, DiagPtr>;
     QBodyContext& bodyContext;
 
 public:
@@ -39,7 +39,7 @@ public:
     ResultType Visit(MLoc_NullableValue* loc) { throw NotImplementedException{}; }
 };
 
-expected<QValue, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QBodyContext& bodyContext)
+expected<QArg_Register, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QBodyContext& bodyContext)
 {
     MLocQInstsTranslator translator{bodyContext};
     return Accept(translator, loc);

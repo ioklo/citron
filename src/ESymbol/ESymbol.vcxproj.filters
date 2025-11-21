@@ -95,6 +95,8 @@
     <ClInclude Include="Public\ESymbol\EInterfaceDecl.h">
       <Filter>09 Interface</Filter>
     </ClInclude>
+    <ClInclude Include="Public\ESymbol\EAccessor.h" />
+    <ClInclude Include="Public\ESymbol\ENames.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="00 Abstraction">
@@ -144,5 +146,6 @@
     <ClCompile Include="EModule.cpp">
       <Filter>05 TopLevel</Filter>
     </ClCompile>
+    <ClCompile Include="ENames.cpp" />
   </ItemGroup>
 </Project>

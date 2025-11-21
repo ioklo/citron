@@ -16,6 +16,6 @@ namespace IR0IR1Translator {
 class QBodyContext;
 
 // mExp를 여러개의 qInst로 번역해서 block에 집어넣는다.
-std::expected<QValue, DiagPtr> TranslateMExpToQInsts(MExp* mExp, QBodyContext& bodyContext);
+std::expected<QArg, DiagPtr> TranslateMExpToQInsts(MExp* mExp, QBodyContext& bodyContext);
 } // namespace IR0IR1Translator
 } // namespace Citron

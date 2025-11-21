@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include "Infra/Ptr.h"
+
 #include "RSymbol/RModule.h"
 #include "RSymbol/RFactory.h"
 #include "NSymbol/NFactory.h"
@@ -21,32 +23,40 @@ TEST(TestCaseName, TestName) {
   EXPECT_TRUE(true);
 }
 
+class NullCommandHandler : public IEvalQDataCommandHandler
+{
+    // Inherited via IEvalQDataCommandHandler
+    void Execute(const std::string& str) override
+    {
+    }
+};
+
 // Scenario_Result
 TEST(QEvaluator, DebugPrint_PrintWell)
 {
-    RFactory rFactory;
-    NFactory nFactory{&rFactory};
+    auto rFactory = MakePtr<RFactory>();
+    NFactory nFactory{rFactory};
     QFactory qFactory;
 
     auto* nRootNamespace = nFactory.MakeRootNamespaceDecl();
     auto* nEntry = nFactory.MakeNDecl<NGlobalFuncDecl>(
         nRootNamespace, RAccessor::Public, 
-        /*bStatic*/false, /*bSeqFunc*/false, 
+        /*bSeqFunc*/false, 
         RName_Normal{"main"}, 
         /*typeParams*/vector<string>{});
 
     auto* qEntryBlock = qFactory.MakeQBlock("entry");
-    std::vector<QValue> args{QValue_ConstInteger{1}};
+    std::vector<QArg> args{QArg_ConstInt32{1}};
 
     QInst_Intrinsic inst{QInst_IntrinsicKind::DebugPrint_Items, nullopt, move(args)};
     qEntryBlock->AddInst(inst);
-    qEntryBlock->AddInst(QInst_Return{});
+    qEntryBlock->AddInst(QInst_ReturnVoid{});
 
     std::vector<QFuncBody> funcBodies;
     funcBodies.emplace_back(nEntry, qEntryBlock);
-    QData qData{move(funcBodies)};
-
-    auto eResult = Evaluate({}, qData, nEntry);
+    QData* qData = qFactory.MakeQData(move(funcBodies));
+    
+    auto eResult = EvaluateQData({}, qData, nEntry, MakePtr<NullCommandHandler>());
     EXPECT_TRUE(eResult);
 }
 

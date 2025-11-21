@@ -4,6 +4,7 @@
 
 #include "QBlock.h"
 #include "QData.h"
+#include "QTypes.h"
 
 using namespace std;
 
@@ -23,6 +24,26 @@ QBlock* QFactory::MakeQBlock(std::string&& debugText)
     auto* pBlock = block.get();
     blocks.push_back(std::move(block));
     return pBlock;
+}
+
+QType_Void* QFactory::MakeVoidType()
+{
+    return &voidType;
+}
+
+QType_Struct* QFactory::MakeBoolType()
+{
+    return &boolType;
+}
+
+QType_Struct* QFactory::MakeIntType()
+{
+    return &intType;
+}
+
+QType_Class* QFactory::MakeStringType()
+{
+    return &stringType;
 }
 
 } // namespace Citron

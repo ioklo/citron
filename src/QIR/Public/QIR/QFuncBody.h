@@ -10,6 +10,7 @@ struct QFuncBody
 {   
     NFuncDecl* nFuncDecl;
     QBlock* entry;
+    size_t registerCount;
 };
 
 
