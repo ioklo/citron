@@ -15,6 +15,7 @@ target_link_libraries(MIR PRIVATE Infra ESymbol RSymbol NSymbol)
 
 target_sources(MIR
         PRIVATE
+        MData.cpp
         MExp.cpp 
         MFactory.cpp 
         MLoc.cpp 

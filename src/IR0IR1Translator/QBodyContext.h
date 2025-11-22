@@ -47,7 +47,7 @@ public:
     QBlock* AddBlock(std::string&& debugText);
 
     template<typename TQInst>
-        requires std::convertible_to<TQInst, QInst> && !std::convertible_to<TQInst, QTermInst>
+        requires std::convertible_to<TQInst, QInst> && (!std::convertible_to<TQInst, QTermInst>)
     void AddInst(TQInst&& inst) { AddInstInternal(std::move(inst)); }
     void CompleteBlock(QTermInst&& termInst);
 
@@ -90,8 +90,8 @@ public:
     QBlock* AddBlock(std::string&& debugText) { return QBlockWriter::AddBlock(std::move(debugText)); }
     template<typename TQInst, typename... TArgs> 
         requires std::convertible_to<TQInst, QInst>
-            && !std::convertible_to<TQInst, QTermInst>
-            && !std::same_as<TQInst, QInst_Intrinsic>
+            && (!std::convertible_to<TQInst, QTermInst>)
+            && (!std::same_as<TQInst, QInst_Intrinsic>)
     void AddInst(TQInst&& inst) { QBlockWriter::AddInst(std::move(inst)); }
     QArg AddIntrinsic(QInst_IntrinsicKind kind, std::vector<QArg>&& args);
     void AddIntrinsicVoid(QInst_IntrinsicKind kind, std::vector<QArg>&& args);

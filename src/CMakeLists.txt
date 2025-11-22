@@ -26,4 +26,5 @@ enable_testing()
 add_subdirectory(TextAnalysis.Tests)
 add_subdirectory(Builder.Tests)
 add_subdirectory(QEvaluator.Tests)
+add_subdirectory(EvalTests)
 

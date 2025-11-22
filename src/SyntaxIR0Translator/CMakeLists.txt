@@ -16,14 +16,16 @@ target_link_libraries(SyntaxIR0Translator PRIVATE Infra Syntax Logging ESymbol R
 target_sources(SyntaxIR0Translator
         PRIVATE
         BinOpQueryService.cpp
-        BodyPhaseContext.cpp
+        BuildTypeDependentSymbolContext.cpp
         CommonTranslation.cpp
         DeclTypeInfo.cpp
         DesignatedDiagnostic.cpp
-        EnumTranslation.cpp
+        EnumElemVarTask.cpp
         FuncContext.cpp
         FuncMatching.cpp
         FuncsWithPartialTypeArgsComponent.cpp
+        GlobalContext.cpp
+        GlobalFuncTask.cpp
         ImCallableAndSArgsToMExpTranslation.cpp
         ImExp.cpp
         ImExpAndMemberNameToImExpTranslation.cpp
@@ -32,41 +34,48 @@ target_sources(SyntaxIR0Translator
         IrExp.cpp
         IrExpAndMemberNameToIrExpTranslation.cpp
         IrExpToMExpTranslation.cpp
-        MemberDeclPhaseContext.cpp
         Misc.cpp
         ModuleDecls.cpp
-        RFuncAndRArgsToMExpTranslation.cpp
+        PhaseManager.cpp
         ReExp.cpp
         ReExpToMExpTranslation.cpp
         ReExpToMLocTranslation.cpp
-        ResolveIdentifierError.cpp
+        ResolveTypeHierarchyContext.cpp
+        RFuncAndRArgsToMExpTranslation.cpp
+        ScopeContext.cpp
         SExpRefToIrExpTranslation.cpp
         SExpRefToMExpTranslation.cpp
         SExpToImExpTranslation.cpp
         SExpToMExpTranslation.cpp
         SExpToMLocTranslation.cpp
         SExpToReExpTranslation.cpp
-        SStmtToMStmtTranslation.cpp
-        SVarDeclToMStmtsTranslation.cpp
-        ScopeContext.cpp
-        SkeletonPhaseContext.cpp
         SRTFactory.cpp
-        StructTranslation.cpp
+        SStmtToMStmtTranslation.cpp
+        StructCtorTask.cpp
+        StructFuncTask.cpp
+        StructTask.cpp
+        StructVarTask.cpp
+        SVarDeclToMStmtsTranslation.cpp
         SyntaxIR0Translator.cpp
+        TranslateBodyContext.cpp
         TranslationContext.cpp
 
         PUBLIC FILE_SET headers
         TYPE HEADERS
         FILES
+        Public/SyntaxIR0Translator/SyntaxIR0Translator.h
+        Public/SyntaxIR0Translator/SyntaxIR0TranslatorConfig.h
         BinOpQueryService.h
-        BodyPhaseContext.h
+        BuildTypeDependentSymbolContext.h
         CommonTranslation.h
         DeclTypeInfo.h
         DesignatedDiagnostic.h
-        EnumTranslation.h
+        EnumElemVarTask.h
         FuncContext.h
         FuncMatching.h
         FuncsWithPartialTypeArgsComponent.h
+        GlobalContext.h
+        GlobalFuncTask.h
         ImCallableAndSArgsToMExpTranslation.h
         ImExp.h
         ImExpAndMemberNameToImExpTranslation.h
@@ -75,28 +84,30 @@ target_sources(SyntaxIR0Translator
         IrExp.h
         IrExpAndMemberNameToIrExpTranslation.h
         IrExpToMExpTranslation.h
-        MemberDeclPhaseContext.h
         Misc.h
         ModuleDecls.h
-        RFuncAndRArgsToMExpTranslation.h
+        PhaseManager.h
         ReExp.h
         ReExpToMExpTranslation.h
         ReExpToMLocTranslation.h
-        ResolveIdentifierError.h
+        ResolveTypeHierarchyContext.h
+        RFuncAndRArgsToMExpTranslation.h
+        ScopeContext.h
         SExpRefToIrExpTranslation.h
         SExpRefToMExpTranslation.h
         SExpToImExpTranslation.h
         SExpToMExpTranslation.h
         SExpToMLocTranslation.h
         SExpToReExpTranslation.h
-        SStmtToMStmtTranslation.h
-        SVarDeclToMStmtsTranslation.h
-        ScopeContext.h
-        SkeletonPhaseContext.h
         SRTFactory.h
-        StructTranslation.h
-        SyntaxIR0Translator.h
-        SyntaxIR0TranslatorConfig.h
+        SStmtToMStmtTranslation.h
+        StructCtorTask.h
+        StructFuncTask.h
+        StructTask.h
+        StructVarTask.h
+        SVarDeclToMStmtsTranslation.h
+        TranslateBodyContext.h
         TranslationContext.h
+        TranslationTasks.h
 
 )

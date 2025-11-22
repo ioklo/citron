@@ -12,10 +12,12 @@ target_include_directories(IR0IR1Translator
         PRIVATE Public/IR0IR1Translator
         PUBLIC Public)
 
-target_link_libraries(IR0IR1Translator PRIVATE Logging Infra ESymbol RSymbol MIR QIR)
+target_link_libraries(IR0IR1Translator PRIVATE Logging Infra ESymbol RSymbol NSymbol MIR QIR)
 
 target_sources(IR0IR1Translator
         PRIVATE
+        CommonQInstsTranslation.cpp
+        IR0IR1Translator.cpp
         MExpQInstsTranslation.cpp
         MLocQInstsTranslation.cpp
         MStmtQInstsTranslation.cpp
@@ -27,6 +29,7 @@ target_sources(IR0IR1Translator
         Public/IR0IR1Translator/IR0IR1Translator.h
         Public/IR0IR1Translator/IR0IR1TranslatorConfig.h
 
+        CommonQInstsTranslation.h
         MExpQInstsTranslation.h
         MLocQInstsTranslation.h
         MStmtQInstsTranslation.h
