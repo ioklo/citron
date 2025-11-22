@@ -478,7 +478,7 @@ SClassCtorDecl* ParseClassCtorDecl(const string& className, Lexer* lexer, SFacto
         return nullptr;
 
     // : base()
-    SArguments* baseArgs;
+    SArguments* baseArgs = nullptr;
     if (Accept<ColonToken>(&curLexer))
     {
         auto oExpectedToBeBase = Accept<IdentifierToken>(&curLexer);

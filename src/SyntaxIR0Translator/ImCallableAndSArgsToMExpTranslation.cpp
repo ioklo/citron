@@ -168,7 +168,7 @@ public:
             }
 
             // ResolvedExp -> RExp
-            MLoc* nInst;
+            MLoc* nInst = nullptr;
             if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
@@ -251,7 +251,7 @@ public:
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
 
-            MLoc* instance;
+            MLoc* instance = nullptr;
             if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;

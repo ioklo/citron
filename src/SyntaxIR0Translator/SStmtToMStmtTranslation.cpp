@@ -205,7 +205,7 @@ public:
             initStmts = move(*eInitResult);
         }
 
-        MExp* condExp;
+        MExp* condExp = nullptr;
         if (stmt->cond)
         {
             auto boolType = context.MakeBoolType();
@@ -218,7 +218,7 @@ public:
             condExp = *eRawCond;
         }
 
-        MExp* continueExp;
+        MExp* continueExp = nullptr;
         if (stmt->cont)
         {
             DesignatedDiagnostic<Error_ForStmt_ContinueExpShouldBeAssignOrCall> designatedDiag;

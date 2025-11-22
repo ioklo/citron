@@ -23,7 +23,6 @@ using namespace std;
 namespace Citron {
 
 namespace {
-
 struct InstructionPointer
 {
     QBlock* block;
@@ -55,6 +54,7 @@ size_t GetSize(QType* type, QFactory& qFactory)
     throw NotImplementedException{};
 }
 
+// 실제 값의 위치 포인터
 void* GetPtr(QArg& arg, Environment& env)
 {
     return visit(overloaded{
@@ -64,6 +64,7 @@ void* GetPtr(QArg& arg, Environment& env)
     }, arg);
 }
 
+// inplace 값의 위치를 나타내는
 void* GetLoc(QArg& arg, Environment& env)
 {
     return visit(overloaded{
@@ -75,7 +76,7 @@ void* GetLoc(QArg& arg, Environment& env)
     }, arg);
 }
 
-int GetInt(QArg arg, Environment& env)
+int GetInt(QArg& arg, Environment& env)
 {
     return visit(overloaded{
         [](QArg_ConstInt32& ci) { return ci.value; },
@@ -85,7 +86,16 @@ int GetInt(QArg arg, Environment& env)
     }, arg);
 }
 
-bool GetBool(QArg arg, Environment& env)
+void SetInt(QArg& dest, int v, Environment& env)
+{
+    visit(overloaded{
+        [&env, v](QArg_Register& reg) { *(int*)&env.regValues[reg.index] = v; },
+        [&env, v](QArg_StackSlot& slot) { *(int*)env.stackSlots[slot.index] = v; },
+        [](auto&&) { throw NotImplementedException{}; }
+    }, dest);
+}
+
+bool GetBool(QArg& arg, Environment& env)
 {
     return visit(overloaded{
         [](QArg_ConstBool& cb) { return cb.value; },
@@ -96,7 +106,7 @@ bool GetBool(QArg arg, Environment& env)
 }
 
 //
-void SetBool(QArg dest, bool v, Environment& env)
+void SetBool(QArg& dest, bool v, Environment& env)
 {
     visit(overloaded{
         [&env, v](QArg_Register& reg) { *(bool*)&env.regValues[reg.index] = v; },
@@ -105,13 +115,13 @@ void SetBool(QArg dest, bool v, Environment& env)
     }, dest);
 }
 
-string* GetString(QArg arg, Environment& env)
+string* GetString(QArg& arg, Environment& env)
 {
     auto& slot = get<QArg_StackSlot>(arg);
     return (string*)env.stackSlots[slot.index];
 }
 
-void SetString(QArg dest, string&& s, Environment& env)
+void SetString(QArg& dest, string&& s, Environment& env)
 {   
     auto& slot = get<QArg_StackSlot>(dest); // string은 stack slot에만 들어갈 수 있다
     *(string*)env.stackSlots[slot.index] = move(s);
@@ -135,6 +145,259 @@ void SetString(QArg dest, string&& s, Environment& env)
 //        [](auto&) { throw NotImplementedException{}; }
 //    }, value);
 //}
+
+void EvalIntrinsic(QInst_Intrinsic& inst, IEvalQDataCommandHandler* cmdHandler, Environment& env)
+{
+    using enum QInst_IntrinsicKind;
+
+    switch (inst.kind)
+    {
+    case DebugPrint_Items:
+        {
+            for (auto& arg : inst.args)
+            {
+                visit(overloaded{
+                    [](QArg_ConstBool& b) { cout << b.value; },
+                    [](QArg_ConstInt32& i) { cout << i.value; },
+                    [](auto&&) {}
+                }, arg);
+            }
+            return;
+        }
+
+    case Command_Items:
+        {
+            for (auto& arg : inst.args)
+            {
+                // string이라면, 크기가 8을 넘으므로
+                visit(overloaded{
+                    [&env, &cmdHandler](QArg_StackSlot& slot) {
+                        auto* s = (string*)env.stackSlots[slot.index];
+                        cmdHandler->Execute(*s);
+                    },
+                    [](auto&&) { assert(false);  }
+                }, arg);
+            }
+            return;
+        }
+
+    case Alloc_Int: throw NotImplementedException{};
+    case NewList_Items: throw NotImplementedException{};
+    case GetListIterator_List: throw NotImplementedException{};
+    case LogicalNot_Bool:
+        {
+            auto b = GetBool(inst.args[0], env);
+            SetBool(*inst.result, !b, env);
+            return;
+        }
+
+    case UnaryMinus_Int:
+        {
+            auto i = GetInt(inst.args[0], env);
+            SetInt(*inst.result, -i, env);
+            return;
+        }
+
+    case ToString_Bool:
+        {
+            auto b = GetBool(inst.args[0], env);
+            SetString(*inst.result, format("{}", b), env);
+            return;
+        }
+
+
+    case ToString_Int:
+        {
+            auto i = GetInt(inst.args[0], env);
+            SetString(*inst.result, format("{}", i), env);
+            return;
+        }
+
+    case PrefixInc_Int:
+        {
+            // ++i
+
+            // 인자는 location
+            int* ptr = (int*)GetPtr(inst.args[0], env);
+            SetInt(*inst.result, ++(*ptr), env);
+            return;
+        }
+
+    case PrefixDec_Int:
+        {
+            // --i
+
+            // 인자는 location
+            int* ptr = (int*)GetPtr(inst.args[0], env);
+            SetInt(*inst.result, --(*ptr), env);
+            return;
+        }
+    case PostfixInc_Int:
+        {
+            // i++
+
+            // 인자는 location
+            int* ptr = (int*)GetPtr(inst.args[0], env);
+            SetInt(*inst.result, (*ptr)++, env);
+            return;
+        }
+    case PostfixDec_Int:
+        {
+            // i--
+            // 인자는 location
+            int* ptr = (int*)GetPtr(inst.args[0], env);
+            SetInt(*inst.result, (*ptr)--, env);
+            return;
+        }
+
+    case Multiply_Int_Int:
+        {
+            auto i1 = GetInt(inst.args[0], env);
+            auto i2 = GetInt(inst.args[1], env);
+            SetInt(*inst.result, i1 * i2, env);
+            return;
+        }
+    case Divide_Int_Int:
+        {
+            auto i1 = GetInt(inst.args[0], env);
+            auto i2 = GetInt(inst.args[1], env);
+            SetInt(*inst.result, i1 / i2, env);
+            return;
+        }
+
+    case Modulo_Int_Int:
+        {
+            auto i1 = GetInt(inst.args[0], env);
+            auto i2 = GetInt(inst.args[1], env);
+            SetInt(*inst.result, i1 % i2, env);
+            return;
+        }
+    case Add_Int_Int:
+        {
+            auto i1 = GetInt(inst.args[0], env);
+            auto i2 = GetInt(inst.args[1], env);
+            SetInt(*inst.result, i1 + i2, env);
+            return;
+        }
+
+    case Add_String_String:
+        {
+            auto* s1 = GetString(inst.args[0], env);
+            auto* s2 = GetString(inst.args[1], env);
+            SetString(*inst.result, *s1 + *s2, env);
+            return;
+        }
+
+    case Subtract_Int_Int:
+        {
+            auto i1 = GetInt(inst.args[0], env);
+            auto i2 = GetInt(inst.args[1], env);
+            SetInt(*inst.result, i1 - i2, env);
+            return;
+        }
+
+    case LessThan_Int_Int:
+        {
+            // const integer가 있으면,
+            auto i1 = GetInt(inst.args[0], env);
+            auto i2 = GetInt(inst.args[1], env);
+
+            SetBool(*inst.result, i1 < i2, env);
+            return;
+        }
+
+    case LessThan_String_String:
+        {
+            auto* s1 = GetString(inst.args[0], env);
+            auto* s2 = GetString(inst.args[1], env);
+
+            SetBool(*inst.result, *s1 < *s2, env);
+            return;
+        }
+
+    case GreaterThan_Int_Int:
+        {
+            // const integer가 있으면,
+            auto i1 = GetInt(inst.args[0], env);
+            auto i2 = GetInt(inst.args[1], env);
+
+            SetBool(*inst.result, i1 > i2, env);
+            return;
+        }
+
+    case GreaterThan_String_String:
+        {
+            auto* s1 = GetString(inst.args[0], env);
+            auto* s2 = GetString(inst.args[1], env);
+
+            SetBool(*inst.result, *s1 > *s2, env);
+            return;
+        }
+
+    case LessThanOrEqual_Int_Int:
+        {
+            auto i1 = GetInt(inst.args[0], env);
+            auto i2 = GetInt(inst.args[1], env);
+            SetBool(*inst.result, i1 <= i2, env);
+            return;
+        }
+    case LessThanOrEqual_String_String:
+        {
+            auto* s1 = GetString(inst.args[0], env);
+            auto* s2 = GetString(inst.args[1], env);
+
+            SetBool(*inst.result, *s1 <= *s2, env);
+            return;
+        }
+
+    case GreaterThanOrEqual_Int_Int:
+        {
+            auto i1 = GetInt(inst.args[0], env);
+            auto i2 = GetInt(inst.args[1], env);
+            SetBool(*inst.result, i1 >= i2, env);
+            return;
+        }
+
+    case GreaterThanOrEqual_String_String:
+        {
+            auto* s1 = GetString(inst.args[0], env);
+            auto* s2 = GetString(inst.args[1], env);
+
+            SetBool(*inst.result, *s1 >= *s2, env);
+            return;
+        }
+
+    case Equal_Int_Int:
+        {
+            // const integer가 있으면,
+            auto i1 = GetInt(inst.args[0], env);
+            auto i2 = GetInt(inst.args[1], env);
+
+            SetBool(*inst.result, i1 == i2, env);
+            return;
+        }
+
+    case Equal_Bool_Bool:
+        {
+            auto b1 = GetBool(inst.args[0], env);
+            auto b2 = GetBool(inst.args[1], env);
+
+            SetBool(*inst.result, b1 == b2, env);
+            return;
+        }
+
+    case Equal_String_String:
+        {
+            auto* s1 = GetString(inst.args[0], env);
+            auto* s2 = GetString(inst.args[1], env);
+            SetBool(*inst.result, *s1 == *s2, env);
+            return;
+        }
+
+    default: throw NotImplementedException{};
+    }
+}
+
 
 } // namespace 
 expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, const QFactoryPtr& qFactory)
@@ -245,85 +508,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
                 memmove(dest, src, inst.size);
                 return true;
             },
-            [&cmdHandler, &env](QInst_Intrinsic& inst) -> bool
-            {
-                switch (inst.kind)
-                {
-                case QInst_IntrinsicKind::Command_Items:
-                {
-                    for (auto& arg : inst.args)
-                    {
-                        // string이라면, 크기가 8을 넘으므로
-                        visit(overloaded{
-                            [&env, &cmdHandler](QArg_StackSlot& slot) { 
-                                auto* s = (string*)env.stackSlots[slot.index];
-                                cmdHandler->Execute(*s); 
-                            },
-                            [](auto&&) { assert(false);  }
-                        }, arg);
-                    }
-                    return true;
-                }
-
-                case QInst_IntrinsicKind::DebugPrint_Items:
-                {
-                    for (auto& arg : inst.args)
-                    {
-                        visit(overloaded{
-                            [](QArg_ConstBool& b) { cout << b.value; },
-                            [](QArg_ConstInt32& i) { cout << i.value; },
-                            [](auto&&) {}
-                        }, arg);
-                    }
-                    return true;
-                }
-
-                case QInst_IntrinsicKind::LessThan_Int_Int:
-                {
-                    // const integer가 있으면, 
-                    auto i1 = GetInt(inst.args[0], env);
-                    auto i2 = GetInt(inst.args[1], env);
-
-                    SetBool(*inst.result, i1 < i2, env);
-                    return true;
-                }
-
-                case QInst_IntrinsicKind::GreaterThan_Int_Int:
-                {
-                    // const integer가 있으면, 
-                    auto i1 = GetInt(inst.args[0], env);
-                    auto i2 = GetInt(inst.args[1], env);
-
-                    SetBool(*inst.result, i1 > i2, env);
-                    return true;
-                }
-
-                case QInst_IntrinsicKind::ToString_Int:
-                {
-                    auto i = GetInt(inst.args[0], env);
-                    SetString(*inst.result, format("{}", i), env);
-                    return true;
-                }
-
-                case QInst_IntrinsicKind::ToString_Bool:
-                {
-                    auto b = GetBool(inst.args[0], env);
-                    SetString(*inst.result, format("{}", b), env);
-                    return true;
-                }
-
-                case QInst_IntrinsicKind::Add_String_String:
-                {
-                    auto* s1 = GetString(inst.args[0], env);
-                    auto* s2 = GetString(inst.args[1], env);
-                    SetString(*inst.result, *s1 + *s2, env);
-                    return true;
-                }
-
-                default:
-                    throw NotImplementedException{};
-                }
-            },
+            [&cmdHandler, &env](QInst_Intrinsic& inst) { EvalIntrinsic(inst, cmdHandler.get(), env); return true; },
             [](QInst_ReturnVoid& inst) { return false; },
             [&ip, &env](QInst_CondJump& condJump) 
             {

@@ -166,7 +166,8 @@ public:
 
     ResultType Visit(MExp_CallInternalUnaryAssignOperator* exp)
     {
-        auto eOperand = TranslateMExpToQInsts(exp, bodyContext);
+        // exp->operand는 항상 lvalue이다
+        auto eOperand = TranslateMLocToQInsts(exp->operand, bodyContext);
         RETURN_ON_ERROR(eOperand);
 
         static unordered_map<MInternalUnaryAssignOperator, QInst_IntrinsicKind> m{

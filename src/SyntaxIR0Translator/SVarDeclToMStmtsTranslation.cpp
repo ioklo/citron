@@ -127,7 +127,7 @@ private:
         assert(declTypeInfo.kind == DeclTypeInfoKind::Normal);
         auto& declType = declTypeInfo.type;
 
-        MExp* nInitExp;
+        MExp* nInitExp = nullptr;
         if (elem->initExp)
         {
             auto eNExp = TranslateSExpToMExp(elem->initExp, declType, context);

@@ -19,7 +19,10 @@ namespace Citron {
 RFactory::RFactory()
     : voidType{new RType_Void()}
 {
-    
+    // 아직 MakeStructType, MakeClassType과는 연결이 되지 않은 상태
+    boolType = unique_ptr<RType_Struct>(new RType_Struct(nullptr, MakeTypeArguments({})));
+    intType = unique_ptr<RType_Struct>(new RType_Struct(nullptr, MakeTypeArguments({})));
+    stringType = unique_ptr<RType_Class>(new RType_Class(nullptr, MakeTypeArguments({})));
 }
 
 RFactory::~RFactory()
@@ -203,24 +206,18 @@ RTypeArguments* RFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArg
 }
 
 RType* RFactory::MakeBoolType()
-{   
-    // TODO: HARD CODED
-    return (RType*)1;
-    // return boolType.get();
+{
+    return boolType.get();
 }
 
 RType* RFactory::MakeIntType()
 {
-    // TODO: HARD CODED
-    return (RType*)2;
-    // return intType.get();
+    return intType.get();
 }
 
 RType* RFactory::MakeStringType()
 {
-    // TODO: HARD CODED
-    return (RType*)3; // 임시
-    // return stringType.get();
+    return stringType.get();
 }
 
 RType* RFactory::MakeListType(RType* itemType)

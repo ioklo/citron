@@ -50,11 +50,14 @@ public:
     {
         auto lv = bodyContext.AddLocalVar(stmt->type, RName_Normal{stmt->name});
 
-        auto eInitValue = TranslateMExpToQInsts(stmt->initExp, bodyContext);
-        RETURN_ON_ERROR(eInitValue);
+        if (stmt->initExp)
+        {
+            auto eInitValue = TranslateMExpToQInsts(stmt->initExp, bodyContext);
+            RETURN_ON_ERROR(eInitValue);
 
-        size_t size = bodyContext.GetMExpTypeSize(stmt->initExp);
-        bodyContext.AddInst(QInst_Assign{lv, *eInitValue, size});
+            size_t size = bodyContext.GetMExpTypeSize(stmt->initExp);
+            bodyContext.AddInst(QInst_Assign{lv, *eInitValue, size});
+        }
         return {};
     }
 

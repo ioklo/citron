@@ -75,6 +75,10 @@ void DoTest(const string& code, const string& expected)
     EXPECT_TRUE(eQData);
     auto* qData = *eQData;
 
+    StringWriter writer;
+    PrintQData(qData, writer);
+    auto out = writer.ToString();
+
     // "Main" 찾기
     NGlobalFuncDecl* nEntry = nullptr;
     for (auto& body : qData->GetAllBodies())
@@ -92,10 +96,6 @@ void DoTest(const string& code, const string& expected)
     vector<RModule*> rModules{nModule};
     auto eResult = EvaluateQData(rModules, qData, nEntry, commandHandler, qFactory);
     EXPECT_TRUE(eResult);
-
-    StringWriter writer;
-    PrintQData(qData, writer);
-    auto out = writer.ToString();
 
     // 
     EXPECT_EQ(commandHandler->GetOutput(), expected);
