@@ -11,14 +11,15 @@ target_include_directories(QIR
         PRIVATE Public/QIR
         PUBLIC Public)
 
-target_link_libraries(QIR PRIVATE)
+target_link_libraries(QIR PRIVATE Infra NSymbol RSymbol)
 
 target_sources(QIR
         PRIVATE
         QBlock.cpp
         QData.cpp
         QFactory.cpp
-        QValues.cpp
+        QArgs.cpp
+        QPrinter.cpp
 
         PUBLIC FILE_SET headers
         TYPE HEADERS
@@ -30,6 +31,7 @@ target_sources(QIR
         Public/QIR/QFuncBody.h
         Public/QIR/QInsts.h
         Public/QIR/QIRConfig.h
-        Public/QIR/QValues.h
+        Public/QIR/QArgs.h
+        Public/QIR/QPrinter.h
 
 )

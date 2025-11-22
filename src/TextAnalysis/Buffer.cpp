@@ -75,13 +75,13 @@ optional<BufferPosition> ValidBufferPosition::Next()
 Buffer::Buffer(std::string str8) // utf-8
 {
     auto ustr = UnicodeString::fromUTF8(str8);
-    auto size = ustr.countChar32();
+    auto requiredSize = ustr.countChar32();
+    string.resize(requiredSize);
 
-    string.resize(size);
-    
-    UErrorCode errorCode;
-    auto resultSize = ustr.toUTF32((UChar32*)string.data(), size, errorCode);
-    assert(resultSize == size);
+    UErrorCode errorCode = U_ZERO_ERROR;
+    auto size = ustr.toUTF32((UChar32*)string.data(), requiredSize, errorCode);
+
+    assert(requiredSize == size);
 }
 
 Buffer::Buffer(std::u32string string)
