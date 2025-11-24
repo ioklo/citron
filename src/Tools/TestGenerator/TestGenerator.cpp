@@ -416,6 +416,7 @@ void GenerateEvalTests(path basePath)
 #include <sstream>
 
 #include "Infra/Ptr.h"
+#include "Infra/StringWriter.h"
 
 #include "Logging/Logger.h"
 
@@ -438,6 +439,7 @@ void GenerateEvalTests(path basePath)
 
 #include "QIR/QFactory.h"
 #include "QIR/QBlock.h"
+#include "QIR/QPrinter.h"
 
 #include "QEvaluator/QEvaluation.h"
 
@@ -469,7 +471,7 @@ void DoTest(const string& code, const string& expected)
     SFactory sFactory;
 
     auto* sScript = ParseScript(&lexer, sFactory);
-    EXPECT_TRUE(sScript);
+    ASSERT_TRUE(sScript);
 
     string moduleName = "MyModule";
     auto rFactory = MakePtr<RFactory>();
@@ -478,13 +480,17 @@ void DoTest(const string& code, const string& expected)
     auto mFactory = MakePtr<MFactory>();
 
     auto eNModuleMData = TranslateSyntaxToNModuleMData(moduleName, {sScript}, {}, logger, rFactory, nFactory, mFactory);
-    EXPECT_TRUE(eNModuleMData);
+    ASSERT_TRUE(eNModuleMData);
     auto& [nModule, mData] = *eNModuleMData;
 
     QFactoryPtr qFactory = MakePtr<QFactory>();
     auto eQData = TranslateMDataToQData(mData, rFactory, qFactory);
-    EXPECT_TRUE(eQData);
+    ASSERT_TRUE(eQData);
     auto* qData = *eQData;
+
+    StringWriter writer;
+    PrintQData(qData, writer);
+    auto out = writer.ToString();
 
     // "Main" 찾기
     NGlobalFuncDecl* nEntry = nullptr;
@@ -497,12 +503,12 @@ void DoTest(const string& code, const string& expected)
                 nEntry = globalFuncDecl;
         }
     }
-    EXPECT_TRUE(nEntry);
+    ASSERT_TRUE(nEntry);
 
     auto commandHandler = MakePtr<CommandHandler>();
     vector<RModule*> rModules{nModule};
     auto eResult = EvaluateQData(rModules, qData, nEntry, commandHandler, qFactory);
-    EXPECT_TRUE(eResult);
+    ASSERT_TRUE(eResult);
 
     // 
     EXPECT_EQ(commandHandler->GetOutput(), expected);

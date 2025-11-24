@@ -12,7 +12,10 @@ struct Diag
     virtual ~Diag() = default;
 };
 struct Warn : Diag {};
-struct Error : Diag {};
+struct Error : Diag 
+{
+    Error() {}
+};
 
 using DiagPtr = std::shared_ptr<Diag>;
 

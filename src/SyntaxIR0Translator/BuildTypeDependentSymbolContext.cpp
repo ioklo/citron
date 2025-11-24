@@ -33,8 +33,12 @@ RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl
                 return rFactory->MakeVoidType();
             else if (idExp->name == "int")
                 return rFactory->MakeIntType();
-            else
-                throw NotImplementedException{};
+            else if (idExp->name == "string")
+                return rFactory->MakeStringType();
+            else if (idExp->name == "bool")
+                return rFactory->MakeBoolType();
+
+            throw NotImplementedException{};
         }
 
         RType* Visit(STypeExp* e)

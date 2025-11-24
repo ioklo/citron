@@ -72,8 +72,11 @@ optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t ex
     auto typeArgs = factory.MakeTypeArguments({});
     if (auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
         return oMember;
-    
-    return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+
+    if (outer)
+        return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+
+    return nullopt;
 }
 
 } // namespace Citron

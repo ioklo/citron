@@ -39,7 +39,7 @@ public:
         std::vector<DeclWithOuterTypeArgs<RDeclType>> result;
 
         auto i = nameMap.find(name);
-        if (i != nameMap.end()) return {};
+        if (i == nameMap.end()) return {};
 
         for (auto& func : i->second)
             if (explicitTypeParamsExceptOuterCount <= func->GetTypeParamCount())
