@@ -2,6 +2,7 @@
 
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
+#include "Infra/Variants.h"
 
 #include "MIR/MStmt.h"
 #include "QIR/QFactory.h"
@@ -32,40 +33,41 @@ public:
     // command는 일단 넘깁시다
     ResultType Visit(MStmt_Command* stmt)
     {
-        vector<QArg> values;
+        auto* qStringType = bodyContext.MakeQStringType();
+        vector<QArg_Input> values;
         for(auto* command : stmt->commands)
         {
-            auto eQValue = TranslateMExp_StringToQInsts(command, bodyContext);
-            RETURN_ON_ERROR(eQValue);
+            auto slot = bodyContext.NewStackSlot(qStringType);
+            auto eResult = TranslateMExp_StringToQInsts(command, slot, bodyContext);
+            RETURN_ON_ERROR(eResult);
 
-            values.push_back(move(*eQValue));
+            values.push_back(slot);
         }
 
-        bodyContext.AddIntrinsicVoid(QInst_IntrinsicKind::Command_Items, move(values));
+        bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Items, nullopt, move(values));
         return {};
     }
     
     // 스택에 변수를 둔다.
     ResultType Visit(MStmt_LocalVarDecl* stmt)
     {
-        auto lv = bodyContext.AddLocalVar(stmt->type, RName_Normal{stmt->name});
+        auto slot = bodyContext.AddLocalVar(stmt->type, RName_Normal{stmt->name});
 
         if (stmt->initExp)
-        {
-            auto eInitValue = TranslateMExpToQInsts(stmt->initExp, bodyContext);
-            RETURN_ON_ERROR(eInitValue);
-
-            size_t size = bodyContext.GetMExpTypeSize(stmt->initExp);
-            bodyContext.AddInst(QInst_Assign{lv, *eInitValue, size});
+        {   
+            auto eInitResult = TranslateMExpToQInsts(stmt->initExp, slot, bodyContext);
+            RETURN_ON_ERROR(eInitResult);
         }
         return {};
     }
 
     ResultType Visit(MStmt_If* stmt)
     {
+        auto condReg = bodyContext.NewRegister(QRegisterType::Int1);
+
         // 1. stmt.cond
-        auto eCondV = TranslateMExpToQInsts(stmt->cond, bodyContext);
-        if (!eCondV) return unexpected{eCondV.error()};
+        auto eCondResult = TranslateMExpToQInsts(stmt->cond, condReg, bodyContext);
+        RETURN_ON_ERROR(eCondResult);
 
         if (!stmt->elseBody.empty())
         {
@@ -75,7 +77,7 @@ public:
             auto* endBlock = bodyContext.AddBlock("if_end");
 
             // 3. add conditional jump
-            bodyContext.CompleteBlock(QInst_CondJump{*eCondV, trueBlock, falseBlock});
+            bodyContext.CompleteBlock(QInst_CondJump{condReg, trueBlock, falseBlock});
 
             // 4. fill trueBlock
             bodyContext.SetCurBlock(trueBlock);
@@ -99,7 +101,7 @@ public:
             auto* endBlock = bodyContext.AddBlock("if_end");
 
             // 3. add conditional jump
-            bodyContext.CompleteBlock(QInst_CondJump{*eCondV, trueBlock, endBlock});
+            bodyContext.CompleteBlock(QInst_CondJump{condReg, trueBlock, endBlock});
 
             // 4. fill trueBlock
             bodyContext.SetCurBlock(trueBlock);
@@ -133,7 +135,18 @@ public:
     }
     ResultType Visit(MStmt_Return* stmt)
     {
-        bodyContext.CompleteBlock(QInst_ReturnVoid{});
+        if (stmt->exp)
+        {
+            auto dest = bodyContext.NewContainerForMExp(stmt->exp);
+            auto eResult = TranslateMExpToQInsts(stmt->exp, dest, bodyContext);
+            RETURN_ON_ERROR(eResult);
+            bodyContext.CompleteBlock(QInst_Return{Cast<QArg_Input>(dest)});
+        }
+        else
+        {
+            bodyContext.CompleteBlock(QInst_Return{nullopt});
+        }
+
         return {};
     }
     ResultType Visit(MStmt_Block* stmt)
@@ -146,8 +159,8 @@ public:
     }
     ResultType Visit(MStmt_Exp* stmt)
     {
-        auto eQValue = TranslateMExpToQInsts(stmt->exp, bodyContext);
-        RETURN_ON_ERROR(eQValue);
+        auto eResult = TranslateMExpToQInsts(stmt->exp, nullopt, bodyContext);
+        RETURN_ON_ERROR(eResult);
 
         return {};
     }

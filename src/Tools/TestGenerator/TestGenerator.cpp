@@ -489,7 +489,7 @@ void DoTest(const string& code, const string& expected)
     auto* qData = *eQData;
 
     StringWriter writer;
-    PrintQData(qData, writer);
+    PrintQData(qData, writer, *qFactory);
     auto out = writer.ToString();
 
     // "Main" 찾기

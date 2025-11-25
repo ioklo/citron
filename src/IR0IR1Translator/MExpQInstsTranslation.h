@@ -1,6 +1,7 @@
 #pragma once
 #include <expected>
 #include <memory>
+#include <optional>
 
 #include "QIR/QArgs.h"
 
@@ -16,6 +17,6 @@ namespace IR0IR1Translator {
 class QBodyContext;
 
 // mExp를 여러개의 qInst로 번역해서 block에 집어넣는다.
-std::expected<QArg, DiagPtr> TranslateMExpToQInsts(MExp* mExp, QBodyContext& bodyContext);
+std::expected<void, DiagPtr> TranslateMExpToQInsts(MExp* mExp, std::optional<QArg_Loc> oDest, QBodyContext& bodyContext);
 } // namespace IR0IR1Translator
 } // namespace Citron

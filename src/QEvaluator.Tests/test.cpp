@@ -53,7 +53,7 @@ TEST(QEvaluator, DebugPrint_PrintWell)
     qEntryBlock->AddInst(QInst_ReturnVoid{});
 
     std::vector<QFuncBody> funcBodies;
-    funcBodies.emplace_back(nEntry, vector<QStackSlot>{}, qEntryBlock, 0);
+    funcBodies.emplace_back(nEntry, vector<QStackSlotInfo>{}, qEntryBlock, 0);
     QData* qData = qFactory->MakeQData(move(funcBodies));
     
     auto eResult = EvaluateQData({}, qData, nEntry, MakePtr<NullCommandHandler>(), qFactory);

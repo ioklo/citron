@@ -10,12 +10,10 @@ struct QType;
 struct QArg_Register
 {
     size_t index;
-    std::string name; // r{index}
-    QType* qType;
 
 public:
-    QArg_Register(size_t index, std::string name, QType* qType)
-        : index{index}, name{std::move(name)}, qType{qType} 
+    QArg_Register(size_t index)
+        : index{index}
     {
     }
 };
@@ -26,12 +24,10 @@ public:
 struct QArg_StackSlot
 {
     size_t index;
-    std::string name; // s{index}_varName
-    QType* qType;
 
 public:
-    QArg_StackSlot(size_t index, std::string name, QType* qType)
-        : index{index}, name{std::move(name)}, qType{qType} 
+    QArg_StackSlot(size_t index)
+        : index{index}
     {
     }
 };
@@ -46,11 +42,8 @@ struct QArg_ConstInt32
     int value;
 };
 
-using QArg = std::variant<
-    QArg_Register, 
-    QArg_StackSlot, 
-    QArg_ConstBool,
-    QArg_ConstInt32
->;
+// Exp의 결과 값으로 가능 한 것들
+using QArg_Loc = std::variant<QArg_Register, QArg_StackSlot>;
+using QArg_Input = std::variant<QArg_Register, QArg_StackSlot, QArg_ConstBool, QArg_ConstInt32>;
 
 } // Citron

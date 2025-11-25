@@ -35,6 +35,9 @@
     <ClInclude Include="Public\QIR\QArgs.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\QIR\QRegisterType.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Headers">

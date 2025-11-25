@@ -9,11 +9,14 @@
 
 #include <boost/algorithm/string.hpp>
 
+#ifdef _MSC_VER
+#include <Windows.h>
+#endif
+
 using namespace std;
 using namespace std::filesystem;
 
 #ifdef _MSC_VER
-#include <Windows.h>
 
 std::wstring string_to_wide_string(std::string_view view)
 {

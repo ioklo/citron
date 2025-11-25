@@ -33,6 +33,7 @@
     <ClInclude Include="Public\QIR\QInsts.h" />
     <ClInclude Include="Public\QIR\QIRConfig.h" />
     <ClInclude Include="Public\QIR\QPrinter.h" />
+    <ClInclude Include="Public\QIR\QRegisterType.h" />
     <ClInclude Include="Public\QIR\QTypes.h" />
     <ClInclude Include="Public\QIR\QArgs.h" />
   </ItemGroup>
