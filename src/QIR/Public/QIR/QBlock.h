@@ -22,7 +22,7 @@ public:
     {
     }
 
-    void AddInst(QInst&& inst)
+    void EmitInst(QInst&& inst)
     {
         insts.push_back(std::move(inst));
     }

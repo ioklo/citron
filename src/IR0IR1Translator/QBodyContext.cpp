@@ -25,18 +25,18 @@ namespace Citron::IR0IR1Translator {
 QBlockWriter::QBlockWriter(const QFactoryPtr& qFactory, string&& firstBlockName)
     : qFactory{qFactory}
 {
-    auto* firstBlock = qFactory->MakeQBlock(move(firstBlockName));
+    auto* firstBlock = qFactory->MakeQBlock(format("b{}_{}", blocks.size(), move(firstBlockName)));
     this->curBlock = firstBlock;
     this->blocks.push_back(firstBlock);
     this->state = QBlockWriterState::CanWrite;
 }
 
-void QBlockWriter::AddInstInternal(QInst&& inst)
+void QBlockWriter::EmitInstInternal(QInst&& inst)
 {
     switch (state)
     {
     case QBlockWriterState::CanWrite:
-        curBlock->AddInst(std::move(inst));
+        curBlock->EmitInst(std::move(inst));
         return;
 
     case QBlockWriterState::EndOfBlock:
@@ -59,7 +59,7 @@ void QBlockWriter::CompleteBlock(QTermInst&& termInst)
     switch(state)
     {
     case QBlockWriterState::CanWrite:
-        AddInstInternal(visit([](auto&& termInst) -> QInst { return termInst; }, termInst));
+        EmitInstInternal(visit([](auto&& termInst) -> QInst { return termInst; }, termInst));
         state = QBlockWriterState::EndOfBlock;
         return;
 
@@ -184,16 +184,39 @@ void QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Loc> oR
     visit(overloaded{
         [kind, this, &args, oResult](QIntrinsicKindResultType_Register& regType)
         {
-            QBlockWriter::AddInst(QInst_Intrinsic{kind, get<QArg_Register>(*oResult), move(args)});
+            // intrinsic은 Register에 리턴값을 주려고 하는데, oResult가 nullopt거나 StackSlot일 수도 있다.
+            // intrinsic은 함수 경계로 봐야 하고. 함수의 리턴값 정책은 정해져 있으므로. exp에 값을 저장할 공간을 미리 줬더라도 쓰지 않을 수 있다
+            // 일단 최대한 쓰는 쪽으로는 가겠지만, 인자에 따라서 안쓰더라도 제대로 동작은 해야한다
+            // 이건 call도 마찬가지일 것 같다
+            if (!oResult)
+            {
+                // 레지스터를 하나 생성하고, Intrinsic을 실행한 다음, 바로 종료
+                auto reg = NewRegister(regType.type);
+                QBlockWriter::EmitInst(QInst_Intrinsic{kind, reg, move(args)});
+            }
+            else if (auto* reg = get_if<QArg_Register>(&*oResult))
+            {
+                // 모든것이 맞아떨어지는 경우
+                QBlockWriter::EmitInst(QInst_Intrinsic{kind, *reg, move(args)});
+            }
+            else if (auto* slot = get_if<QArg_StackSlot>(&*oResult))
+            {
+                // 레지스터를 하나 생성하고
+                auto reg = NewRegister(regType.type);
+                QBlockWriter::EmitInst(QInst_Intrinsic{kind, reg, move(args)});
+
+                // stack에 바로 store
+                QBlockWriter::EmitInst(QInst_Store{regType.type, *slot, reg});
+            }
         },
         [kind, this, &args, oResult](QIntrinsicKindResultType_StackSlot& slotType)
         {
             args.insert(args.begin(), get<QArg_StackSlot>(*oResult));
-            QBlockWriter::AddInst(QInst_Intrinsic{kind, nullopt, move(args)});
+            QBlockWriter::EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
         },
         [kind, this, &args](QIntrinsicKindResultType_Void&) 
         { 
-            QBlockWriter::AddInst(QInst_Intrinsic{kind, nullopt, move(args)});
+            QBlockWriter::EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
         }
     }, resultType);
 }
@@ -217,9 +240,9 @@ QArg_Register QBodyContext::NewRegister(QRegisterType type)
     string name;
     switch (type)
     {
-    case QRegisterType::Ptr: name = format("p{}", index); break;
-    case QRegisterType::Int1: name = format("b{}", index); break;
-    case QRegisterType::Int32: name = format("i{}", index); break;
+    case QRegisterType::Ptr: name = format("%p{}", index); break;
+    case QRegisterType::Int1: name = format("%b{}", index); break;
+    case QRegisterType::Int32: name = format("%i{}", index); break;
     default: unreachable();
     }
 

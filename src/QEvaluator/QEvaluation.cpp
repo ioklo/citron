@@ -227,214 +227,214 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     case NewList_Items: throw NotImplementedException{};
     case GetListIterator_List: throw NotImplementedException{};
     case LogicalNot_Bool:
-        {
-            auto b = GetBool(inst.args[0], env);
-            SetBool(*inst.result, !b, env);
-            return;
-        }
+    {
+        auto b = GetBool(inst.args[0], env);
+        SetBool(*inst.result, !b, env);
+        return;
+    }
 
     case UnaryMinus_Int:
-        {
-            auto i = GetInt(inst.args[0], env);
-            SetInt(*inst.result, -i, env);
-            return;
-        }
+    {
+        auto i = GetInt(inst.args[0], env);
+        SetInt(*inst.result, -i, env);
+        return;
+    }
 
     case ToString_Bool:
-        {
-            auto b = GetBool(inst.args[1], env);
-            SetString(inst.args[0], format("{}", b), env);
-            return;
-        }
+    {
+        auto b = GetBool(inst.args[1], env);
+        SetString(inst.args[0], format("{}", b), env);
+        return;
+    }
 
 
     case ToString_Int:
-        {
-            auto i = GetInt(inst.args[1], env);
-            SetString(inst.args[0], format("{}", i), env);
-            return;
-        }
+    {
+        auto i = GetInt(inst.args[1], env);
+        SetString(inst.args[0], format("{}", i), env);
+        return;
+    }
 
     case PrefixInc_Int:
-        {
-            // ++i
+    {
+        // ++i
 
-            // 인자는 location
-            int* ptr = (int*)GetPtr(inst.args[0], env);
-            SetInt(*inst.result, ++(*ptr), env);
-            return;
-        }
+        // 인자는 location
+        int* ptr = (int*)GetPtr(inst.args[0], env);
+        SetInt(*inst.result, ++(*ptr), env);
+        return;
+    }
 
     case PrefixDec_Int:
-        {
-            // --i
+    {
+        // --i
 
-            // 인자는 location
-            int* ptr = (int*)GetPtr(inst.args[0], env);
-            SetInt(*inst.result, --(*ptr), env);
-            return;
-        }
+        // 인자는 location
+        int* ptr = (int*)GetPtr(inst.args[0], env);
+        SetInt(*inst.result, --(*ptr), env);
+        return;
+    }
     case PostfixInc_Int:
-        {
-            // i++
+    {
+        // i++
 
-            // 인자는 location
-            int* ptr = (int*)GetPtr(inst.args[0], env);
-            SetInt(*inst.result, (*ptr)++, env);
-            return;
-        }
+        // 인자는 location
+        int* ptr = (int*)GetPtr(inst.args[0], env);
+        SetInt(*inst.result, (*ptr)++, env);
+        return;
+    }
     case PostfixDec_Int:
-        {
-            // i--
-            // 인자는 location
-            int* ptr = (int*)GetPtr(inst.args[0], env);
-            SetInt(*inst.result, (*ptr)--, env);
-            return;
-        }
+    {
+        // i--
+        // 인자는 location
+        int* ptr = (int*)GetPtr(inst.args[0], env);
+        SetInt(*inst.result, (*ptr)--, env);
+        return;
+    }
 
     case Multiply_Int_Int:
-        {
-            auto i1 = GetInt(inst.args[0], env);
-            auto i2 = GetInt(inst.args[1], env);
-            SetInt(*inst.result, i1 * i2, env);
-            return;
-        }
+    {
+        auto i1 = GetInt(inst.args[0], env);
+        auto i2 = GetInt(inst.args[1], env);
+        SetInt(*inst.result, i1 * i2, env);
+        return;
+    }
     case Divide_Int_Int:
-        {
-            auto i1 = GetInt(inst.args[0], env);
-            auto i2 = GetInt(inst.args[1], env);
-            SetInt(*inst.result, i1 / i2, env);
-            return;
-        }
+    {
+        auto i1 = GetInt(inst.args[0], env);
+        auto i2 = GetInt(inst.args[1], env);
+        SetInt(*inst.result, i1 / i2, env);
+        return;
+    }
 
     case Modulo_Int_Int:
-        {
-            auto i1 = GetInt(inst.args[0], env);
-            auto i2 = GetInt(inst.args[1], env);
-            SetInt(*inst.result, i1 % i2, env);
-            return;
-        }
+    {
+        auto i1 = GetInt(inst.args[0], env);
+        auto i2 = GetInt(inst.args[1], env);
+        SetInt(*inst.result, i1 % i2, env);
+        return;
+    }
     case Add_Int_Int:
-        {
-            auto i1 = GetInt(inst.args[0], env);
-            auto i2 = GetInt(inst.args[1], env);
-            SetInt(*inst.result, i1 + i2, env);
-            return;
-        }
+    {
+        auto i1 = GetInt(inst.args[0], env);
+        auto i2 = GetInt(inst.args[1], env);
+        SetInt(*inst.result, i1 + i2, env);
+        return;
+    }
 
     case Add_String_String:
-        {
-            auto* s1 = GetStringPtr(inst.args[1], env);
-            auto* s2 = GetStringPtr(inst.args[2], env);
-            SetString(inst.args[0], *s1 + *s2, env);
-            return;
-        }
+    {
+        auto* s1 = GetStringPtr(inst.args[1], env);
+        auto* s2 = GetStringPtr(inst.args[2], env);
+        SetString(inst.args[0], *s1 + *s2, env);
+        return;
+    }
 
     case Subtract_Int_Int:
-        {
-            auto i1 = GetInt(inst.args[0], env);
-            auto i2 = GetInt(inst.args[1], env);
-            SetInt(*inst.result, i1 - i2, env);
-            return;
-        }
+    {
+        auto i1 = GetInt(inst.args[0], env);
+        auto i2 = GetInt(inst.args[1], env);
+        SetInt(*inst.result, i1 - i2, env);
+        return;
+    }
 
     case LessThan_Int_Int:
-        {
-            // const integer가 있으면,
-            auto i1 = GetInt(inst.args[0], env);
-            auto i2 = GetInt(inst.args[1], env);
+    {
+        // const integer가 있으면,
+        auto i1 = GetInt(inst.args[0], env);
+        auto i2 = GetInt(inst.args[1], env);
 
-            SetBool(*inst.result, i1 < i2, env);
-            return;
-        }
+        SetBool(*inst.result, i1 < i2, env);
+        return;
+    }
 
     case LessThan_String_String:
-        {
-            auto* s1 = GetStringPtr(inst.args[0], env);
-            auto* s2 = GetStringPtr(inst.args[1], env);
+    {
+        auto* s1 = GetStringPtr(inst.args[0], env);
+        auto* s2 = GetStringPtr(inst.args[1], env);
 
-            SetBool(*inst.result, *s1 < *s2, env);
-            return;
-        }
+        SetBool(*inst.result, *s1 < *s2, env);
+        return;
+    }
 
     case GreaterThan_Int_Int:
-        {
-            // const integer가 있으면,
-            auto i1 = GetInt(inst.args[0], env);
-            auto i2 = GetInt(inst.args[1], env);
+    {
+        // const integer가 있으면,
+        auto i1 = GetInt(inst.args[0], env);
+        auto i2 = GetInt(inst.args[1], env);
 
-            SetBool(*inst.result, i1 > i2, env);
-            return;
-        }
+        SetBool(*inst.result, i1 > i2, env);
+        return;
+    }
 
     case GreaterThan_String_String:
-        {
-            auto* s1 = GetStringPtr(inst.args[0], env);
-            auto* s2 = GetStringPtr(inst.args[1], env);
+    {
+        auto* s1 = GetStringPtr(inst.args[0], env);
+        auto* s2 = GetStringPtr(inst.args[1], env);
 
-            SetBool(*inst.result, *s1 > *s2, env);
-            return;
-        }
+        SetBool(*inst.result, *s1 > *s2, env);
+        return;
+    }
 
     case LessThanOrEqual_Int_Int:
-        {
-            auto i1 = GetInt(inst.args[0], env);
-            auto i2 = GetInt(inst.args[1], env);
-            SetBool(*inst.result, i1 <= i2, env);
-            return;
-        }
+    {
+        auto i1 = GetInt(inst.args[0], env);
+        auto i2 = GetInt(inst.args[1], env);
+        SetBool(*inst.result, i1 <= i2, env);
+        return;
+    }
     case LessThanOrEqual_String_String:
-        {
-            auto* s1 = GetStringPtr(inst.args[0], env);
-            auto* s2 = GetStringPtr(inst.args[1], env);
+    {
+        auto* s1 = GetStringPtr(inst.args[0], env);
+        auto* s2 = GetStringPtr(inst.args[1], env);
 
-            SetBool(*inst.result, *s1 <= *s2, env);
-            return;
-        }
+        SetBool(*inst.result, *s1 <= *s2, env);
+        return;
+    }
 
     case GreaterThanOrEqual_Int_Int:
-        {
-            auto i1 = GetInt(inst.args[0], env);
-            auto i2 = GetInt(inst.args[1], env);
-            SetBool(*inst.result, i1 >= i2, env);
-            return;
-        }
+    {
+        auto i1 = GetInt(inst.args[0], env);
+        auto i2 = GetInt(inst.args[1], env);
+        SetBool(*inst.result, i1 >= i2, env);
+        return;
+    }
 
     case GreaterThanOrEqual_String_String:
-        {
-            auto* s1 = GetStringPtr(inst.args[0], env);
-            auto* s2 = GetStringPtr(inst.args[1], env);
+    {
+        auto* s1 = GetStringPtr(inst.args[0], env);
+        auto* s2 = GetStringPtr(inst.args[1], env);
 
-            SetBool(*inst.result, *s1 >= *s2, env);
-            return;
-        }
+        SetBool(*inst.result, *s1 >= *s2, env);
+        return;
+    }
 
     case Equal_Int_Int:
-        {
-            // const integer가 있으면,
-            auto i1 = GetInt(inst.args[0], env);
-            auto i2 = GetInt(inst.args[1], env);
+    {
+        // const integer가 있으면,
+        auto i1 = GetInt(inst.args[0], env);
+        auto i2 = GetInt(inst.args[1], env);
 
-            SetBool(*inst.result, i1 == i2, env);
-            return;
-        }
+        SetBool(*inst.result, i1 == i2, env);
+        return;
+    }
 
     case Equal_Bool_Bool:
-        {
-            auto b1 = GetBool(inst.args[0], env);
-            auto b2 = GetBool(inst.args[1], env);
+    {
+        auto b1 = GetBool(inst.args[0], env);
+        auto b2 = GetBool(inst.args[1], env);
 
-            SetBool(*inst.result, b1 == b2, env);
-            return;
-        }
+        SetBool(*inst.result, b1 == b2, env);
+        return;
+    }
 
     case Equal_String_String:
-        {
-            auto* s1 = GetStringPtr(inst.args[0], env);
-            auto* s2 = GetStringPtr(inst.args[1], env);
-            SetBool(*inst.result, *s1 == *s2, env);
-            return;
-        }
+    {
+        auto* s1 = GetStringPtr(inst.args[0], env);
+        auto* s2 = GetStringPtr(inst.args[1], env);
+        SetBool(*inst.result, *s1 == *s2, env);
+        return;
+    }
 
     default: throw NotImplementedException{};
     }
@@ -482,8 +482,6 @@ struct Evaluator
         }
         return true;
     }
-
-    
 
     bool operator()(QInst_Assign& inst)
     {

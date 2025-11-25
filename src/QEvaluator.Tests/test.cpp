@@ -49,8 +49,8 @@ TEST(QEvaluator, DebugPrint_PrintWell)
     std::vector<QArg> args{QArg_ConstInt32{1}};
 
     QInst_Intrinsic inst{QInst_IntrinsicKind::DebugPrint_Items, nullopt, move(args)};
-    qEntryBlock->AddInst(inst);
-    qEntryBlock->AddInst(QInst_ReturnVoid{});
+    qEntryBlock->EmitInst(inst);
+    qEntryBlock->EmitInst(QInst_ReturnVoid{});
 
     std::vector<QFuncBody> funcBodies;
     funcBodies.emplace_back(nEntry, vector<QStackSlotInfo>{}, qEntryBlock, 0);

@@ -68,9 +68,10 @@ class QPrinter
 
         void operator()(QInst_InitString& inst)
         {
-            // %a = init_string "hello"
+            // init_string %a, "hello"            
+            printer.Print("init_string ");
             printer.PrintQArg_StackSlot(inst.dest);
-            printer.Print(" = init_string ");
+            printer.Print(", ");
             printer.PrintStringLiteral(inst.text);
             printer.PrintLine();
         }
@@ -81,6 +82,8 @@ class QPrinter
             printer.PrintQArg_Register(inst.dest);
             printer.Print(" = ");
             printer.Print("load ");
+            printer.PrintQRegisterType(inst.type);
+            printer.Print(", ");
             printer.PrintAddrQArg_Loc(inst.src);
             printer.PrintLine();
         }

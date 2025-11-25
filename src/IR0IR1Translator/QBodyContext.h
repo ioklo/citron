@@ -42,14 +42,14 @@ public:
     QBlockWriter(const QFactoryPtr& qFactory, std::string&& blockName);
 
 private:
-    void AddInstInternal(QInst&& inst);
+    void EmitInstInternal(QInst&& inst);
 
 public:
     QBlock* AddBlock(std::string&& debugText);
 
     template<typename TQInst>
         requires std::convertible_to<TQInst, QInst> && (!std::convertible_to<TQInst, QTermInst>)
-    void AddInst(TQInst&& inst) { AddInstInternal(std::move(inst)); }
+    void EmitInst(TQInst&& inst) { EmitInstInternal(std::move(inst)); }
     void CompleteBlock(QTermInst&& termInst);
 
     QBlock* GetCurBlock() { return curBlock; }
@@ -100,7 +100,7 @@ public:
         requires std::convertible_to<TQInst, QInst>
             && (!std::convertible_to<TQInst, QTermInst>)
             && (!std::same_as<TQInst, QInst_Intrinsic>)
-    void EmitInst(TQInst&& inst) { QBlockWriter::AddInst(std::move(inst)); }
+    void EmitInst(TQInst&& inst) { QBlockWriter::EmitInst(std::move(inst)); }
     void EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Loc> oResult, std::vector<QArg_Input>&& args);
     void CompleteBlock(QTermInst&& termInst) { QBlockWriter::CompleteBlock(std::move(termInst)); }
     void SetCurBlock(QBlock* block) { QBlockWriter::SetCurBlock(block); }
