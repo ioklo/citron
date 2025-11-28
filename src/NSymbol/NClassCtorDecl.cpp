@@ -47,7 +47,6 @@ optional<RMember> NClassCtorDecl::ResolveIdentifier(const RName& name, size_t ex
     if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
         return oMember;
 
-
     return _class->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
 }
 

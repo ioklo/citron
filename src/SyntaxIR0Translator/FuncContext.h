@@ -3,6 +3,9 @@
 #include <vector>
 #include <memory>
 #include <optional>
+#include <expected>
+
+#include "Logging/Diag.h"
 
 #include "MIR/MArgument.h"
 #include "RSymbol/RNames.h"
@@ -65,7 +68,7 @@ public:
     NLambdaVarDecl* StageLambdaVar(RType* type, const RName& name, MArgument_Normal&& arg);
 
     virtual bool CanAccess(RDecl* target) = 0;
-    virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
+    virtual std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
 
     // decl/body space의 return type을 리턴한다
     virtual RFuncReturn GetUnboundFuncReturn() = 0;
@@ -93,7 +96,7 @@ public:
     FuncContext_Lambda(const ScopeContextPtr& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
     bool CanAccess(RDecl* target) override;
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RType* retType) override;
@@ -113,7 +116,7 @@ public:
     FuncContext_FuncDecl(NFuncDecl* funcDecl, const RFactoryPtr& rFactory);
 
     bool CanAccess(RDecl* target) override;
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RType* retType) override;

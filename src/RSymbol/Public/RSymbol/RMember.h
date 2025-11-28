@@ -6,6 +6,8 @@
 #include <variant>
 #include <string>
 
+#include "RNames.h"
+
 namespace Citron {
 
 class RTypeArguments;
@@ -168,9 +170,9 @@ class RMember_LocalVar
 {
 public:
     RType* type;
-    std::string name;
+    RName name;
 public:
-    RSYMBOL_API RMember_LocalVar(RType* type, const std::string& name);
+    RSYMBOL_API RMember_LocalVar(RType* type, const RName& name);
 };
 
 class RMember_ThisVar

@@ -248,10 +248,10 @@ class ImExp_LocalVar : public ImExp
 {
 public:
     RType* type;
-    std::string name;
+    RName name;
 
 public: 
-    ImExp_LocalVar(RType* type, const std::string& name);
+    ImExp_LocalVar(RType* type, const RName& name);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }

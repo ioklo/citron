@@ -1,5 +1,7 @@
 #include "MLocQInstsTranslation.h"
 
+#include <variant>
+
 #include "Infra/Exceptions.h"
 #include "MIR/MLoc.h"
 
@@ -13,7 +15,7 @@ namespace Citron::IR0IR1Translator {
 class MLocQInstsTranslator
 {
 public:
-    using ResultType = expected<QArg_Loc, DiagPtr>;
+    using ResultType = expected<QLocResult, DiagPtr>;
     QBodyContext& bodyContext;
 
 public:
@@ -25,7 +27,8 @@ public:
 
     ResultType Visit(MLoc_LocalVar* loc)
     {
-        return bodyContext.GetLocalVar(loc->name);
+        size_t slotIndex = bodyContext.GetLocalVarSlotIndex(loc->name);
+        return QLocResult_Slot{slotIndex};
     }
 
     ResultType Visit(MLoc_LambdaVar* loc) { throw NotImplementedException{}; }
@@ -39,7 +42,7 @@ public:
     ResultType Visit(MLoc_NullableValue* loc) { throw NotImplementedException{}; }
 };
 
-expected<QArg_Loc, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QBodyContext& bodyContext)
+expected<QLocResult, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QBodyContext& bodyContext)
 {
     MLocQInstsTranslator translator{bodyContext};
     return Accept(translator, loc);

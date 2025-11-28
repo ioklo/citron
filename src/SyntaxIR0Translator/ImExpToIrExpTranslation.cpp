@@ -107,7 +107,7 @@ public:
     // &id
     ResultType Visit(ImExp_LocalVar* imExp)
     {
-        return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_LocalVar>(RName_Normal(imExp->name), imExp->type));
+        return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_LocalVar>(imExp->name, imExp->type));
     }
 
     // &x

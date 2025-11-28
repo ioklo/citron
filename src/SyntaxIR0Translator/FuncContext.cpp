@@ -47,28 +47,28 @@ bool FuncContext_Lambda::CanAccess(RDecl* target)
     return outer->funcContext->CanAccess(target);
 }
 
-optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+expected<optional<RMember>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto oRMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
-    if (!oRMember) return nullopt;
+    auto eORMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    RETURN_ON_ERROR(eORMember);
+
+    if (!*eORMember) return nullopt;
     
     // 상위 스코프에서 얻어오는 
     // 로컬과 람다 멤버, this만 감싸는 대상이다
-    if (auto* localVar = get_if<RMember_LocalVar>(&*oRMember))
+    if (auto* localVar = get_if<RMember_LocalVar>(&**eORMember))
     {
-        RName localVarName = RName_Normal(localVar->name);
-
-        auto* localVarLoc = mFactory->MakeMLoc<MLoc_LocalVar>(localVarName, localVar->type);
+        auto* localVarLoc = mFactory->MakeMLoc<MLoc_LocalVar>(localVar->name, localVar->type);
         auto* initExp = mFactory->MakeMExp<MExp_Load>(localVarLoc);
         auto initArg = MArgument_Normal(initExp);
 
-        auto* lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg));
+        auto* lambdaVar = StageLambdaVar(localVar->type, localVar->name, move(initArg));
 
         auto* openTypeArgs = MakeOpenTypeArgs();
         return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
-    if (auto* lambdaVar = get_if<RMember_LambdaVar>(&*oRMember))
+    if (auto* lambdaVar = get_if<RMember_LambdaVar>(&**eORMember))
     {
         // class C<T> { void F<S> {
         //     List<T> x;      // 5) scopeContext.ResolveIdentifier(x, 0) => RMember
@@ -93,7 +93,7 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         return RMember_LambdaVar{openTypeArgs, newLambdaVar};
     }
 
-    if (auto* thisVar = get_if<RMember_ThisVar>(&*oRMember))
+    if (auto* thisVar = get_if<RMember_ThisVar>(&**eORMember))
     {
         // TODO: 워닝, struct의 this는 복사가 일어납니다. 원본과 다를 수 있습니다. ref this로 명시적으로 지정해주세요(?)
         if (auto structType = dynamic_cast<RType_Struct*>(thisVar->type))
@@ -110,7 +110,7 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
     }
 
     // 나머지는 그대로 리턴
-    return oRMember;
+    return eORMember;
 }
 
 RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
@@ -146,7 +146,7 @@ bool FuncContext_FuncDecl::CanAccess(RDecl* target)
     return nFuncDecl->GetNDecl()->GetRDecl()->CanAccess(target);
 }
 
-optional<RMember> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+expected<optional<RMember>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nFuncDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, *rFactory);
 }

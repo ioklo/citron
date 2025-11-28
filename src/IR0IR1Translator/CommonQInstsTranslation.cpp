@@ -14,7 +14,7 @@ using namespace std;
 namespace Citron::IR0IR1Translator {
 
 namespace {
-expected<void, DiagPtr> TranslateMExp_StringElemToQInsts(MExp_StringElem& elem, optional<QArg_StackSlot> oDestSlot, QBodyContext& bodyContext)
+expected<void, DiagPtr> TranslateMExp_StringElemToQInsts(MExp_StringElem& elem, optional<QArg_Slot> oDestSlot, QBodyContext& bodyContext)
 {
     return visit<expected<void, DiagPtr>>(overloaded{
         [&bodyContext, oDestSlot](MExp_StringElem_Text& textElem) -> expected<void, DiagPtr>
@@ -29,7 +29,7 @@ expected<void, DiagPtr> TranslateMExp_StringElemToQInsts(MExp_StringElem& elem, 
 }
 } // namespace 
 
-expected<void, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, std::optional<QArg_StackSlot> destSlot, QBodyContext& bodyContext)
+expected<void, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, std::optional<QArg_Slot> destSlot, QBodyContext& bodyContext)
 {
     assert(!exp->elements.empty());
 
@@ -41,15 +41,15 @@ expected<void, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, std::opti
     }
     else
     {
-        auto* qStringType = bodyContext.MakeQStringType();
+        auto* qStringType = bodyContext.GetStringQType();
 
         // "abc $x" => "abc " + x
-        auto curSlot = bodyContext.NewStackSlot(qStringType);
+        auto curSlot = bodyContext.NewSlot(qStringType);
         auto eResultFront = TranslateMExp_StringElemToQInsts(exp->elements.front(), curSlot, bodyContext);
         RETURN_ON_ERROR(eResultFront);
 
-        auto elemSlot = bodyContext.NewStackSlot(qStringType);
-        auto newSlot = bodyContext.NewStackSlot(qStringType);
+        auto elemSlot = bodyContext.NewSlot(qStringType);
+        auto newSlot = bodyContext.NewSlot(qStringType);
         for (size_t i = 1, end = exp->elements.size() - 1; i < end; i++)
         {   
             auto eResult = TranslateMExp_StringElemToQInsts(exp->elements[i], elemSlot, bodyContext);

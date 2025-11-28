@@ -4,6 +4,7 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
 #include "Syntax/Syntax.h"
 #include "Logging/Logger.h"
 #include "RSymbol/DeclWithOuterTypeArgs.h"
@@ -126,13 +127,19 @@ public:
 
     ResultType Visit(ImExp_GlobalFuncs* imExp)
     {
-        auto match = MatchFunc(imExp->items, sArgs, context);
-        if (!match)
+        auto eOMatch = MatchFunc(imExp->items, sArgs, context);
+        RETURN_ON_ERROR(eOMatch);
+
+        auto& oMatch = *eOMatch;
+
+        if (!oMatch)
         {
             throw NotImplementedException{};
         }
 
-        return Exp<MExp_CallGlobalFunc>(match->funcDecl, match->typeArgs, match->args);
+        auto& match = *oMatch;
+
+        return Exp<MExp_CallGlobalFunc>(match.funcDecl, match.typeArgs, match.args);
     }
 
     ResultType Visit(ImExp_TypeVar* imExp)
@@ -147,22 +154,27 @@ public:
 
     ResultType Visit(ImExp_ClassFuncs* imExp)
     {
-        auto match = MatchFunc(imExp->items, sArgs, context);
-        if (!match)
+        auto eOMatch = MatchFunc(imExp->items, sArgs, context);
+        RETURN_ON_ERROR(eOMatch);
+
+        auto& oMatch = *eOMatch;
+        if (!oMatch)
         {
             throw NotImplementedException{};
         }
 
+        auto& match = *oMatch;
+
         if (imExp->hasExplicitInstance) // x.F, C.F 등 인스턴스 부분이 명시적으로 정해졌다면
         {
             // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
-            if (match->funcDecl->IsStatic() && imExp->explicitInstance != nullptr)
+            if (match.funcDecl->IsStatic() && imExp->explicitInstance != nullptr)
             {
                 return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
             }
 
             // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
-            if (!match->funcDecl->IsStatic() && imExp->explicitInstance == nullptr)
+            if (!match.funcDecl->IsStatic() && imExp->explicitInstance == nullptr)
             {
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
@@ -178,17 +190,17 @@ public:
                 nInst = *eNLoc;
             }
 
-            return Exp<MExp_CallClassFunc>(match->funcDecl, match->typeArgs, nInst, move(match->args));
+            return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, nInst, move(match.args));
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
-            if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
+            if (match.funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                return Exp<MExp_CallClassFunc>(match->funcDecl, match->typeArgs, nullptr, move(match->args));
+                return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, nullptr, move(match.args));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Exp<MExp_CallClassFunc>(match->funcDecl, match->typeArgs, context.MakeThisLoc(), move(match->args));
+                return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, context.MakeThisLoc(), move(match.args));
             }
         }
 
@@ -214,8 +226,11 @@ public:
             items.emplace_back(ctor, imExp->typeArgs);
         }
 
-        auto match = MatchFunc(items, sArgs, context);
-        if (!match)
+        auto eOMatch = MatchFunc(items, sArgs, context);
+        RETURN_ON_ERROR(eOMatch);
+
+        auto& oMatch = *eOMatch;
+        if (!oMatch)
         {
             // 매치에 실패했습니다. 에러
             throw NotImplementedException{};
@@ -223,30 +238,35 @@ public:
             // return Error(MakePtr<>());
         }
 
-        return Exp<MExp_NewStruct>(match->funcDecl, match->typeArgs, move(match->args));
+        auto& match = *oMatch;
+        return Exp<MExp_NewStruct>(match.funcDecl, match.typeArgs, move(match.args));
     }
 
     ResultType Visit(ImExp_StructFuncs* imExp)
     {
-        auto match = MatchFunc(imExp->items, sArgs, context);
-        if (!match)
+        auto eOMatch = MatchFunc(imExp->items, sArgs, context);
+        RETURN_ON_ERROR(eOMatch);
+
+        auto& oMatch = *eOMatch;
+        if (!oMatch)
         {
             // 매치에 실패했습니다.
             throw NotImplementedException{};
             // return Error();
         }
 
+        auto& match = *oMatch;
         // static 함수를 호출하는 위치가 선언한 타입 내부라면 체크하지 않고 넘어간다 (멤버 호출이 아닌 경우)
         if (imExp->hasExplicitInstance)
         {
             // static this 체크
-            if (match->funcDecl->IsStatic() && imExp->explicitInstance)
+            if (match.funcDecl->IsStatic() && imExp->explicitInstance)
             {
                 return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
             }
 
             // 반대의 경우도 체크
-            if (!match->funcDecl->IsStatic() && !imExp->explicitInstance)
+            if (!match.funcDecl->IsStatic() && !imExp->explicitInstance)
             {
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
@@ -261,17 +281,17 @@ public:
                 instance = *eInstance;
             }
 
-            return Exp<MExp_CallStructFunc>(match->funcDecl, match->typeArgs, instance, move(match->args));
+            return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, instance, move(match.args));
         }
         else
         {
-            if (match->funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
+            if (match.funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
             {
-                return Exp<MExp_CallStructFunc>(match->funcDecl, match->typeArgs, nullptr, move(match->args));
+                return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, nullptr, move(match.args));
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Exp<MExp_CallStructFunc>(match->funcDecl, match->typeArgs, context.MakeThisLoc(), move(match->args));
+                return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, context.MakeThisLoc(), move(match.args));
             }
         }
 

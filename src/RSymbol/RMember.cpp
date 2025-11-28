@@ -125,7 +125,7 @@ RMember_TypeVar::RMember_TypeVar(size_t index)
 {
 }
 
-RMember_LocalVar::RMember_LocalVar(RType* type, const std::string& name)
+RMember_LocalVar::RMember_LocalVar(RType* type, const RName& name)
     : type(type), name(name)
 {
 

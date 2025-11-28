@@ -27,26 +27,47 @@ struct InstructionPointer
 {
     QBlock* block;
     int index;
+
+    InstructionPointer() : block{nullptr}, index{0} 
+    {
+    }
+
+    InstructionPointer(QBlock* block, int index) : block{block}, index{index}
+    {
+    }
+};
+
+struct StackFrame
+{
+    QFuncBody* qFuncBody;
+    InstructionPointer ip;
+    std::vector<void*> slots; // 스택에 저장하는 공간
+    byte* stackPointer;
+    void* retSlot; // 리턴용 저장공간
+
+    StackFrame()
+        : qFuncBody{nullptr}, ip{}, stackPointer{nullptr}, retSlot{nullptr}
+    { }
+    StackFrame(StackFrame&& other) = default;
 };
 
 struct Environment
 {   
-    InstructionPointer ip;
+    QData* qData; // 임시
     IEvalQDataCommandHandlerPtr cmdHandler;
-
-    // stack frame    
-    QFuncBody* qFuncBody;
-    // register index -> values
-    std::vector<void*> regValues;  // 최소 void* 크기 만큼에서 동작하는, bool, int, T*
-    std::vector<void*> stackSlots; // 스택 포인터
     std::vector<byte> stack;
+    StackFrame* curFrame;
 
-    byte* stackPointer;
+    // stack frame, 굳이 frame을 스택에 넣지 않는다
+    vector<StackFrame> frames;
 };
 
 size_t GetSize(QType* type, QFactory& qFactory)
 {   
     // TODO: HARD CODED
+    if (type == qFactory.MakePtrType())
+        return sizeof(void*);
+
     if (type == qFactory.MakeBoolType())
         return 1;
 
@@ -59,42 +80,34 @@ size_t GetSize(QType* type, QFactory& qFactory)
     throw NotImplementedException{};
 }
 
-// 실제 값의 위치 포인터x
+// GetLoc은 value자체의 메모리 상의 위치를 
+// GetPtr은 value가 갖고 있는 값이 ptr인 경우에 그 값을 반환
 
 // Ptr타입의 값
 void* GetPtr(QArg_Input& src, Environment& env)
 {
     return visit(overloaded{
-        [&env](QArg_Register& reg) { return env.regValues[reg.index]; },
-        [&env](QArg_StackSlot& slot) { return env.stackSlots[slot.index]; },
+        [&env](QArg_Slot& slot) { return *(void**)env.curFrame->slots[slot.index]; },
         [](auto&) -> void* { throw NotImplementedException{}; }
     }, src);
 }
 
-void* GetPtr(QArg_Register& src, Environment& env)
+void* GetPtr(QArg_Slot& slot, Environment& env)
 {
-    return env.regValues[src.index];
+    return *(void**)env.curFrame->slots[slot.index];
 }
 
-void* GetPtr(QArg_Loc& loc, Environment& env)
+// slot이 가리키고 있는 값의 위치
+void* GetLoc(QArg_Slot& slot, Environment& env)
 {
-    return visit(overloaded{
-        [&env](QArg_Register& reg) { return env.regValues[reg.index]; },
-        [&env](QArg_StackSlot& slot) { return env.stackSlots[slot.index]; }
-    }, loc);
-}
-
-void SetPtr(QArg_Register& dest, void* v, Environment& env)
-{
-    env.regValues[dest.index] = v;
+    return env.curFrame->slots[slot.index];
 }
 
 // inplace 값의 위치를 나타내는
 //void* GetLoc(QArg& arg, Environment& env)
 //{
 //    return visit(overloaded{
-//        [&env](QArg_StackSlot& slot) { return env.stackSlots[slot.index]; },
-//        [&env](QArg_Register& reg) { return (void*)&env.regValues[reg.index]; },
+//        [&env](QArg_StackSlot& slot) { return env.slots[slot.index]; },
 //        [&env](QArg_ConstBool& cb) { return (void*)&cb.value; },
 //        [&env](QArg_ConstInt32& ci) { return (void*)&ci.value; },
 //        [](auto&&) -> void* { throw NotImplementedException{}; }
@@ -105,59 +118,52 @@ int GetInt(QArg_Input& arg, Environment& env)
 {
     return visit(overloaded{
         [](QArg_ConstInt32& ci) { return ci.value; },
-        [&env](QArg_Register& r) { return *(int*)&env.regValues[r.index]; },
-        [&env](QArg_StackSlot& s) { return *(int*)env.stackSlots[s.index]; },
+        [&env](QArg_Slot& s) { return *(int*)env.curFrame->slots[s.index]; },
         [](auto&&) -> int { throw NotImplementedException{}; }
     }, arg);
 }
 
-void SetInt(QArg_Register& dest, int v, Environment& env)
+void SetInt(QArg_Slot& slot, int v, Environment& env)
 {
-    *(int*)&env.regValues[dest.index] = v;
+    *(int*)env.curFrame->slots[slot.index] = v;
 }
 
 bool GetBool(QArg_Input& arg, Environment& env)
 {
     return visit(overloaded{
         [](QArg_ConstBool& cb) { return cb.value; },
-        [&env](QArg_Register& r) { return *(bool*)&env.regValues[r.index]; },
-        [&env](QArg_StackSlot& s) { return *(bool*)env.stackSlots[s.index]; },
+        [&env](QArg_Slot& s) { return *(bool*)env.curFrame->slots[s.index]; },
         [](auto&&) -> bool { throw NotImplementedException{}; }
     }, arg);
 }
 
-bool GetBool(QArg_Register& reg, Environment& env)
+bool GetBool(QArg_Slot& slot, Environment& env)
 {
-    return *(bool*)&env.regValues[reg.index];
+    return *(bool*)env.curFrame->slots[slot.index];
 }
 
 //
-void SetBool(QArg_Register& dest, bool v, Environment& env)
+void SetBool(QArg_Slot& slot, bool v, Environment& env)
 {
-    *(bool*)&env.regValues[dest.index] = v;
+    *(bool*)env.curFrame->slots[slot.index] = v;
 }
 
-string* GetStringPtr(QArg_Register& arg, Environment& env)
+string& GetStringRef(QArg_Slot& slot, Environment& env)
 {
-    return (string*)env.regValues[arg.index];
+    return *(string*)env.curFrame->slots[slot.index];
 }
 
-string* GetStringPtr(QArg_Input& arg, Environment& env)
+string& GetStringRef(QArg_Input& arg, Environment& env)
 {
     return visit(overloaded{        
-        [&env](QArg_Register& r) { return (string*)env.regValues[r.index]; },
-        [&env](QArg_StackSlot& s) { return (string*)env.stackSlots[s.index]; },
-        [](auto&&) -> string* { unreachable(); }
+        [&env](QArg_Slot& s) -> string& { return *(string*)env.curFrame->slots[s.index]; },
+        [](auto&&) -> string& { unreachable(); }
     }, arg);
 }
 
-void SetString(QArg_Input& arg, string&& s, Environment& env)
+void SetString(QArg_Slot& slot, string&& s, Environment& env)
 {   
-    return visit(overloaded{
-        [&env, &s](QArg_Register& reg) { *(string*)env.regValues[reg.index] = move(s); },
-        [&env, &s](QArg_StackSlot& slot) { *(string*)env.stackSlots[slot.index] = move(s); },
-        [](auto&&) { unreachable(); }
-    }, arg);
+    *(string*)env.curFrame->slots[slot.index] = move(s);
 }
 
 //
@@ -204,8 +210,8 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         {
             // string이라면, 크기가 8을 넘으므로
             visit(overloaded{
-                [&env](QArg_StackSlot& slot) {
-                    auto* s = (string*)env.stackSlots[slot.index];
+                [&env](QArg_Slot& slot) {
+                    auto* s = (string*)env.curFrame->slots[slot.index];
                     env.cmdHandler->Execute(*s);
                 },
                 [](auto&&) { assert(false);  }
@@ -229,29 +235,29 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     case LogicalNot_Bool:
     {
         auto b = GetBool(inst.args[0], env);
-        SetBool(*inst.result, !b, env);
+        SetBool(*inst.oDest, !b, env);
         return;
     }
 
     case UnaryMinus_Int:
     {
         auto i = GetInt(inst.args[0], env);
-        SetInt(*inst.result, -i, env);
+        SetInt(*inst.oDest, -i, env);
         return;
     }
 
     case ToString_Bool:
     {
-        auto b = GetBool(inst.args[1], env);
-        SetString(inst.args[0], format("{}", b), env);
+        auto b = GetBool(inst.args[0], env);
+        SetString(*inst.oDest, format("{}", b), env);
         return;
     }
 
 
     case ToString_Int:
     {
-        auto i = GetInt(inst.args[1], env);
-        SetString(inst.args[0], format("{}", i), env);
+        auto i = GetInt(inst.args[0], env);
+        SetString(*inst.oDest, format("{}", i), env);
         return;
     }
 
@@ -261,7 +267,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
         // 인자는 location
         int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.result, ++(*ptr), env);
+        SetInt(*inst.oDest, ++(*ptr), env);
         return;
     }
 
@@ -271,7 +277,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
         // 인자는 location
         int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.result, --(*ptr), env);
+        SetInt(*inst.oDest, --(*ptr), env);
         return;
     }
     case PostfixInc_Int:
@@ -280,7 +286,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
         // 인자는 location
         int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.result, (*ptr)++, env);
+        SetInt(*inst.oDest, (*ptr)++, env);
         return;
     }
     case PostfixDec_Int:
@@ -288,7 +294,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         // i--
         // 인자는 location
         int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.result, (*ptr)--, env);
+        SetInt(*inst.oDest, (*ptr)--, env);
         return;
     }
 
@@ -296,14 +302,14 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.result, i1 * i2, env);
+        SetInt(*inst.oDest, i1 * i2, env);
         return;
     }
     case Divide_Int_Int:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.result, i1 / i2, env);
+        SetInt(*inst.oDest, i1 / i2, env);
         return;
     }
 
@@ -311,22 +317,22 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.result, i1 % i2, env);
+        SetInt(*inst.oDest, i1 % i2, env);
         return;
     }
     case Add_Int_Int:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.result, i1 + i2, env);
+        SetInt(*inst.oDest, i1 + i2, env);
         return;
     }
 
     case Add_String_String:
     {
-        auto* s1 = GetStringPtr(inst.args[1], env);
-        auto* s2 = GetStringPtr(inst.args[2], env);
-        SetString(inst.args[0], *s1 + *s2, env);
+        auto& s1 = GetStringRef(inst.args[0], env);
+        auto& s2 = GetStringRef(inst.args[1], env);
+        SetString(*inst.oDest, s1 + s2, env);
         return;
     }
 
@@ -334,7 +340,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.result, i1 - i2, env);
+        SetInt(*inst.oDest, i1 - i2, env);
         return;
     }
 
@@ -344,16 +350,16 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
 
-        SetBool(*inst.result, i1 < i2, env);
+        SetBool(*inst.oDest, i1 < i2, env);
         return;
     }
 
     case LessThan_String_String:
     {
-        auto* s1 = GetStringPtr(inst.args[0], env);
-        auto* s2 = GetStringPtr(inst.args[1], env);
+        auto& s1 = GetStringRef(inst.args[0], env);
+        auto& s2 = GetStringRef(inst.args[1], env);
 
-        SetBool(*inst.result, *s1 < *s2, env);
+        SetBool(*inst.oDest, s1 < s2, env);
         return;
     }
 
@@ -363,16 +369,16 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
 
-        SetBool(*inst.result, i1 > i2, env);
+        SetBool(*inst.oDest, i1 > i2, env);
         return;
     }
 
     case GreaterThan_String_String:
     {
-        auto* s1 = GetStringPtr(inst.args[0], env);
-        auto* s2 = GetStringPtr(inst.args[1], env);
+        auto& s1 = GetStringRef(inst.args[0], env);
+        auto& s2 = GetStringRef(inst.args[1], env);
 
-        SetBool(*inst.result, *s1 > *s2, env);
+        SetBool(*inst.oDest, s1 > s2, env);
         return;
     }
 
@@ -380,15 +386,15 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetBool(*inst.result, i1 <= i2, env);
+        SetBool(*inst.oDest, i1 <= i2, env);
         return;
     }
     case LessThanOrEqual_String_String:
     {
-        auto* s1 = GetStringPtr(inst.args[0], env);
-        auto* s2 = GetStringPtr(inst.args[1], env);
+        auto& s1 = GetStringRef(inst.args[0], env);
+        auto& s2 = GetStringRef(inst.args[1], env);
 
-        SetBool(*inst.result, *s1 <= *s2, env);
+        SetBool(*inst.oDest, s1 <= s2, env);
         return;
     }
 
@@ -396,16 +402,16 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetBool(*inst.result, i1 >= i2, env);
+        SetBool(*inst.oDest, i1 >= i2, env);
         return;
     }
 
     case GreaterThanOrEqual_String_String:
     {
-        auto* s1 = GetStringPtr(inst.args[0], env);
-        auto* s2 = GetStringPtr(inst.args[1], env);
+        auto& s1 = GetStringRef(inst.args[0], env);
+        auto& s2 = GetStringRef(inst.args[1], env);
 
-        SetBool(*inst.result, *s1 >= *s2, env);
+        SetBool(*inst.oDest, s1 >= s2, env);
         return;
     }
 
@@ -415,7 +421,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
 
-        SetBool(*inst.result, i1 == i2, env);
+        SetBool(*inst.oDest, i1 == i2, env);
         return;
     }
 
@@ -424,20 +430,52 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto b1 = GetBool(inst.args[0], env);
         auto b2 = GetBool(inst.args[1], env);
 
-        SetBool(*inst.result, b1 == b2, env);
+        SetBool(*inst.oDest, b1 == b2, env);
         return;
     }
 
     case Equal_String_String:
     {
-        auto* s1 = GetStringPtr(inst.args[0], env);
-        auto* s2 = GetStringPtr(inst.args[1], env);
-        SetBool(*inst.result, *s1 == *s2, env);
+        auto& s1 = GetStringRef(inst.args[0], env);
+        auto& s2 = GetStringRef(inst.args[1], env);
+        SetBool(*inst.oDest, s1 == s2, env);
         return;
     }
 
     default: throw NotImplementedException{};
     }
+}
+
+StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<QArg_Slot> oDest, span<QArg_Input> args, QFactory& qFactory)
+{
+    StackFrame frame;
+
+    frame.qFuncBody = qFuncBody;
+    frame.ip = InstructionPointer{qFuncBody->entry, 0},
+    frame.stackPointer = curFrame.stackPointer;
+    frame.slots.resize(qFuncBody->slotInfos.size());
+
+    // retSlot 위치 담기
+    if (oDest)
+        frame.retSlot = curFrame.slots[oDest->index];
+    
+    for (size_t i = 0, count = qFuncBody->slotInfos.size(); i < count; i++)
+    {
+        auto& slot = qFuncBody->slotInfos[i];
+
+        if (slot.oArgIndex) // argument로부터 복사
+        {
+            frame.slots[i] = curFrame.slots[*slot.oArgIndex];
+        }
+        else
+        {
+            size_t size = GetSize(slot.qType, qFactory);
+            frame.stackPointer -= size;
+            frame.slots[i] = frame.stackPointer;
+        }
+    }
+
+    return frame;
 }
 
 struct Evaluator
@@ -447,24 +485,21 @@ struct Evaluator
 
     bool operator()(QInst_InitString& inst)
     {
-        auto* buf = env.stackSlots[inst.dest.index];
+        auto* buf = env.curFrame->slots[inst.dest.index];
         new (buf) string{inst.text};
         return true;
     }
 
     bool operator()(QInst_Load& inst)
     {
-        // value <- *src;
+        // dest <- *src;
+
+        // src는 포인터 값을 갖고 있다
+        void* dest = GetLoc(inst.dest, env);
         void* src = GetPtr(inst.src, env);
+        size_t size = GetSize(inst.qType, *qFactory);
 
-        switch (inst.type)
-        {
-        case QRegisterType::Ptr: SetPtr(inst.dest, *(void**)src, env); break;
-        case QRegisterType::Int1: SetBool(inst.dest, *(bool*)src, env); break;
-        case QRegisterType::Int32: SetInt(inst.dest, *(int*)src, env); break;
-        default: unreachable();
-        }
-
+        memcpy(dest, src, size);
         return true;
     }
 
@@ -473,13 +508,32 @@ struct Evaluator
         // *dest = value;
         void* dest = GetPtr(inst.dest, env);
 
-        switch (inst.type)
+        visit([this, dest, qType = inst.qType](auto& src)
         {
-        case QRegisterType::Int1: *(bool*)dest = GetBool(inst.src, env); break;
-        case QRegisterType::Int32: *(int*)dest = GetInt(inst.src, env); break;
-        case QRegisterType::Ptr: *(void**)dest = GetPtr(inst.src, env); break;
-        default: unreachable();
-        }
+            using T = remove_cvref_t<decltype(src)>;
+            if constexpr (same_as<T, QArg_ConstBool>)
+            {
+                *(bool*)dest = src.value;
+            }
+            else if constexpr (same_as < T, QArg_ConstInt32>)
+            {
+                *(int*)dest = src.value;
+            }
+            else if constexpr (same_as<T, QArg_Slot>)
+            {
+                void* pSrc = GetLoc(src, env);
+                size_t size = GetSize(qType, *qFactory);
+                memcpy(dest, pSrc, size);
+            }
+            else static_assert(false);
+        }, inst.src);
+
+        return true;
+    }
+
+    bool operator()(QInst_AddrOf& inst)
+    {   
+        *(void**)env.curFrame->slots[inst.dest.index] = env.curFrame->slots[inst.slot.index];
         return true;
     }
 
@@ -487,15 +541,47 @@ struct Evaluator
     {
         // %dest = %src
         // %r2 = %r1: memcpy(&regValues[r1.index], &regValues[r2.index], size) // void* 복사, size는 8보다 작을 것이다
-        // %s2 = %s1: memcpy(stackSlots[s1.index], stackSlots[s2.index], size)
+        // %s2 = %s1: memcpy(slots[s1.index], slots[s2.index], size)
 
-        switch (inst.type)
+        void* dest = GetLoc(inst.dest, env);
+
+        visit([this, dest, qType = inst.qType](auto& src)
         {
-        case QRegisterType::Ptr: SetPtr(inst.dest, GetPtr(inst.src, env), env); break;
-        case QRegisterType::Int1: SetBool(inst.dest, GetBool(inst.src, env), env); break;
-        case QRegisterType::Int32: SetInt(inst.dest, GetInt(inst.src, env), env); break;
-        default: unreachable();
-        }
+            using T = remove_cvref_t<decltype(src)>;
+            if constexpr (same_as<T, QArg_ConstBool>)
+            {
+                *(bool*)dest = src.value;
+            }
+            else if constexpr (same_as < T, QArg_ConstInt32>)
+            {
+                *(int*)dest = src.value;
+            }
+            else if constexpr (same_as<T, QArg_Slot>)
+            {
+                void* pSrc = GetLoc(src, env);
+                size_t size = GetSize(qType, *qFactory);
+                memcpy(dest, pSrc, size);
+            }
+            else static_assert(false);
+        }, inst.src);
+
+        return true;
+    }
+
+    bool operator()(QInst_Call& inst)
+    {
+        // TODO: linker가 미리 어떻게 할지 알렸어야 한다
+
+        // 여기서는 RFuncDecl이 NFuncDecl이고
+        // RFuncDecl -> RGlobalFuncDecl -> NGlobalFuncDecl
+        auto nFuncDecl = dynamic_cast<NFuncDecl*>(inst.rFuncDecl);
+        auto bodies = env.qData->GetAllBodies();
+        auto i = ranges::find_if(bodies, [nFuncDecl](QFuncBody& body) { return body.nFuncDecl == nFuncDecl; });
+        if (i == bodies.end()) throw NotImplementedException{};
+
+        auto frame = MakeStackFrame(&*i, *env.curFrame, inst.oDest, inst.args, *qFactory);
+        env.frames.push_back(move(frame));
+        env.curFrame = &env.frames.back();
         return true;
     }
 
@@ -507,8 +593,33 @@ struct Evaluator
      
     bool operator()(QInst_Return& inst) 
     {
-        // throw NotImplementedException{};
-        return false; 
+        if (inst.oValue)
+        {
+            visit([this, &retValue = *inst.oValue](auto& value) 
+            {
+                using T = remove_cvref_t<decltype(value)>;
+
+                if constexpr (same_as<T, QArg_ConstInt32>)
+                {   
+                    *(int*)env.curFrame->retSlot = value.value;
+                }
+                else if constexpr (same_as<T, QArg_ConstBool>)
+                {
+                    *(bool*)env.curFrame->retSlot = value.value;
+                }
+                else if constexpr (same_as<T, QArg_Slot>)
+                {
+                    void* valueLoc = GetLoc(value, env);
+                    size_t size = GetSize(retValue.qType, *qFactory);
+                    memcpy(env.curFrame->retSlot, valueLoc, size);
+                }
+            }, inst.oValue->value);
+        }
+
+        env.frames.pop_back();
+        if (env.frames.empty()) return false;
+        env.curFrame = &env.frames.back();
+        return true;
     }
 
     bool operator()(QInst_CondJump& condJump)
@@ -516,16 +627,16 @@ struct Evaluator
         bool cond = GetBool(condJump.cond, env);
 
         if (cond)
-            env.ip = InstructionPointer{condJump.trueBlock, 0};
+            env.curFrame->ip = InstructionPointer{condJump.trueBlock, 0};
         else
-            env.ip = InstructionPointer{condJump.falseBlock, 0};
+            env.curFrame->ip = InstructionPointer{condJump.falseBlock, 0};
 
         return true;
     }
 
     bool operator()(QInst_Jump& jump)
     {
-        env.ip = InstructionPointer{jump.block, 0};
+        env.curFrame->ip = InstructionPointer{jump.block, 0};
         return true;
     }
 
@@ -548,24 +659,28 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
     if (i == bodies.end()) return unexpected{nullptr};
 
     Environment env;
-    env.ip = InstructionPointer{i->entry, 0};
+    env.qData = qData;
     env.cmdHandler = move(cmdHandler);
-
     env.stack.resize(1024 * 1024);
-    env.stackPointer = env.stack.data() + env.stack.size();
-    env.regValues.resize(i->regInfos.size());
-    env.stackSlots.resize(i->slotInfos.size());
+
+    env.frames.push_back(StackFrame{});
+    env.curFrame = &env.frames.back();
+
+    env.curFrame->qFuncBody = &*i;
+    env.curFrame->ip = InstructionPointer{i->entry, 0},    
+    env.curFrame->stackPointer = env.stack.data() + env.stack.size();
+    env.curFrame->slots.resize(i->slotInfos.size());
     for (size_t j = 0, count = i->slotInfos.size(); j < count; j++)
     {
         auto& slot = i->slotInfos[j];
         size_t size = GetSize(slot.qType, *qFactory);
-        env.stackPointer -= size;
-        env.stackSlots[j] = env.stackPointer;
+        env.curFrame->stackPointer -= size;
+        env.curFrame->slots[j] = env.curFrame->stackPointer;
     }
 
     while(true)
     {
-        auto& inst = env.ip.block->GetInst(env.ip.index++);
+        auto& inst = env.curFrame->ip.block->GetInst(env.curFrame->ip.index++);
 
         bool cont = Evaluate(inst, env, qFactory);
 

@@ -29,10 +29,12 @@ bool HasConflictTrivialCtor(NStructDecl* nStruct, RStructCtorDecl* rBaseTrivialC
 
         //// constructorDecl의 앞부분이 baseConstructor와 일치하는지를 봐야 한다
         bool bMatch = true;
+        auto baseUnboundParams = rBaseTrivialCtor->GetUnboundFuncParams();
+        auto unboundParams = nCtor->GetUnboundFuncParams();
         for (size_t i = 0; i < baseParamCount; i++)
         {
-            auto& baseParameter = rBaseTrivialCtor->GetUnboundFuncParam(i);
-            auto& parameter = nCtor->GetUnboundFuncParam(i);
+            auto& baseParameter = baseUnboundParams[i];
+            auto& parameter = unboundParams[i];
 
             bMatch &= (baseParameter.type == parameter.type);
         }
@@ -40,10 +42,11 @@ bool HasConflictTrivialCtor(NStructDecl* nStruct, RStructCtorDecl* rBaseTrivialC
         if (!bMatch) continue;
 
         // baseParam을 제외한 뒷부분이 varType과 맞는지 봐야 한다
+        auto unboundFuncParams = nCtor->GetUnboundFuncParams();
         for (size_t i = 0; i < paramCount; i++)
         {
             auto* structVar = nStruct->GetUnboundVar(i); // varCount == paramCount체크를 위에서 했다
-            auto& ctorParam = nCtor->GetUnboundFuncParam(i + baseParamCount);
+            auto& ctorParam = unboundFuncParams[i + baseParamCount];
 
             bMatch &= (structVar->GetUnboundDeclType() == ctorParam.type);
         }
@@ -143,9 +146,10 @@ void StructTask::SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& conte
     {
         size_t baseParamCount = rBaseTrivialCtor->GetParamCount();
         parameters.reserve(baseParamCount + varCount);
+        auto baseUnboundParams = rBaseTrivialCtor->GetUnboundFuncParams();
         for (size_t i = 0; i < baseParamCount; i++)
         {
-            auto& baseParam = rBaseTrivialCtor->GetUnboundFuncParam(i);
+            auto& baseParam = baseUnboundParams[i];
             auto paramName = MakeBaseCtorParamName(i, baseParam.name);
 
             // 이름 보정, base로 가는 파라미터들은 다 이름이 CtorParam이다.

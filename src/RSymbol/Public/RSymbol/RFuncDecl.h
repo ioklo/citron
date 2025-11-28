@@ -3,6 +3,7 @@
 #include "RSymbolConfig.h"
 
 #include <optional>
+#include <span>
 
 #include "RDecl.h"
 #include "RFuncReturn.h"
@@ -35,6 +36,7 @@ public:
     virtual RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) = 0;
     virtual RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory) = 0;
     virtual RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory) = 0;
+    virtual std::span<RFuncParameter> GetUnboundFuncParams() = 0;
     virtual void Accept(RFuncDeclVisitor& visitor) = 0;
 };
 

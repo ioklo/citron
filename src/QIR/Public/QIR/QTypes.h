@@ -3,6 +3,13 @@ namespace Citron {
 
 struct QType {};
 
+struct QType_Ptr : public QType
+{
+private:
+    QType_Ptr() = default;
+    friend class QFactory;
+};
+
 struct QType_Void : public QType 
 {
 private:

@@ -64,7 +64,7 @@ optional<RMember> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RNam
         throw NotImplementedException();
     }
 
-    return candidates[1];
+    return candidates[0];
 }
 
 optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)

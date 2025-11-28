@@ -10,6 +10,7 @@
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RNames.h"
+#include "RSymbol/RFuncDecl.h"
 
 #include "MIR/MExp.h"
 
@@ -119,34 +120,34 @@ QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFact
 // 1. result = intrinsic kind, args, ...
 // 2. intrinsic kind, &result, args, ...
 // 3. intrinsic kind, args, ... (void)
-QIntrinsicKindResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind kind)
+QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind kind)
 {
     switch (kind)
     {
     case QInst_IntrinsicKind::DebugPrint_Items: 
-        return QIntrinsicKindResultType_Void{};
+        return QIntrinsicKindResult_Void{};
 
     case QInst_IntrinsicKind::Command_Items: 
-        return QIntrinsicKindResultType_Void{};
+        return QIntrinsicKindResult_Void{};
 
     case QInst_IntrinsicKind::Alloc_Int: throw NotImplementedException{};
 
     case QInst_IntrinsicKind::Memcpy_Ptr_Ptr_Int:
-        return QIntrinsicKindResultType_Void{};
+        return QIntrinsicKindResult_Void{};
 
     case QInst_IntrinsicKind::NewList_Items: throw NotImplementedException{};
     case QInst_IntrinsicKind::GetListIterator_List: throw NotImplementedException{};
 
     case QInst_IntrinsicKind::LogicalNot_Bool:
-        return QIntrinsicKindResultType_Register{QRegisterType::Int1};
+        return QIntrinsicResultType_Slot{qFactory->MakeBoolType()};
 
     case QInst_IntrinsicKind::UnaryMinus_Int:
-        return QIntrinsicKindResultType_Register{QRegisterType::Int32};
+        return QIntrinsicResultType_Slot{qFactory->MakeIntType()};
 
     case QInst_IntrinsicKind::ToString_Bool:
     case QInst_IntrinsicKind::ToString_Int: 
     case QInst_IntrinsicKind::Add_String_String:
-        return QIntrinsicKindResultType_StackSlot{qFactory->MakeStringType()};
+        return QIntrinsicResultType_Slot{qFactory->MakeStringType()};
 
     case QInst_IntrinsicKind::PrefixInc_Int: 
     case QInst_IntrinsicKind::PrefixDec_Int:
@@ -158,7 +159,7 @@ QIntrinsicKindResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKin
     case QInst_IntrinsicKind::Modulo_Int_Int:
     case QInst_IntrinsicKind::Add_Int_Int:
     case QInst_IntrinsicKind::Subtract_Int_Int:
-        return QIntrinsicKindResultType_Register{QRegisterType::Int32};
+        return QIntrinsicResultType_Slot{qFactory->MakeIntType()};
     
     case QInst_IntrinsicKind::LessThan_Int_Int:
     case QInst_IntrinsicKind::LessThan_String_String:
@@ -171,88 +172,35 @@ QIntrinsicKindResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKin
     case QInst_IntrinsicKind::Equal_Int_Int:
     case QInst_IntrinsicKind::Equal_Bool_Bool:
     case QInst_IntrinsicKind::Equal_String_String:
-        return QIntrinsicKindResultType_Register{QRegisterType::Int1};
+        return QIntrinsicResultType_Slot{qFactory->MakeBoolType()};
     }
 
     throw NotImplementedException{};
 }
 
-void QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Loc> oResult, std::vector<QArg_Input>&& args)
+void QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Slot> oDest, std::vector<QArg_Input>&& args)
 {
     auto resultType = GetIntrinsicResultType(kind);
-    
-    visit(overloaded{
-        [kind, this, &args, oResult](QIntrinsicKindResultType_Register& regType)
-        {
-            // intrinsic은 Register에 리턴값을 주려고 하는데, oResult가 nullopt거나 StackSlot일 수도 있다.
-            // intrinsic은 함수 경계로 봐야 하고. 함수의 리턴값 정책은 정해져 있으므로. exp에 값을 저장할 공간을 미리 줬더라도 쓰지 않을 수 있다
-            // 일단 최대한 쓰는 쪽으로는 가겠지만, 인자에 따라서 안쓰더라도 제대로 동작은 해야한다
-            // 이건 call도 마찬가지일 것 같다
-            if (!oResult)
-            {
-                // 레지스터를 하나 생성하고, Intrinsic을 실행한 다음, 바로 종료
-                auto reg = NewRegister(regType.type);
-                QBlockWriter::EmitInst(QInst_Intrinsic{kind, reg, move(args)});
-            }
-            else if (auto* reg = get_if<QArg_Register>(&*oResult))
-            {
-                // 모든것이 맞아떨어지는 경우
-                QBlockWriter::EmitInst(QInst_Intrinsic{kind, *reg, move(args)});
-            }
-            else if (auto* slot = get_if<QArg_StackSlot>(&*oResult))
-            {
-                // 레지스터를 하나 생성하고
-                auto reg = NewRegister(regType.type);
-                QBlockWriter::EmitInst(QInst_Intrinsic{kind, reg, move(args)});
-
-                // stack에 바로 store
-                QBlockWriter::EmitInst(QInst_Store{regType.type, *slot, reg});
-            }
-        },
-        [kind, this, &args, oResult](QIntrinsicKindResultType_StackSlot& slotType)
-        {
-            args.insert(args.begin(), get<QArg_StackSlot>(*oResult));
-            QBlockWriter::EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
-        },
-        [kind, this, &args](QIntrinsicKindResultType_Void&) 
-        { 
-            QBlockWriter::EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
-        }
-    }, resultType);
-}
-
-optional<QRegisterType> QBodyContext::GetRegisterType(QType* qType)
-{
-    // TODO: HARD CODED
-    if (qType == qFactory->MakeBoolType())
-        return QRegisterType::Int1;
-
-    if (qType == qFactory->MakeIntType())
-        return QRegisterType::Int32;
-
-    return nullopt;
-}
-
-QArg_Register QBodyContext::NewRegister(QRegisterType type)
-{
-    size_t index = registerInfos.size();
-
-    string name;
-    switch (type)
+    if (auto* slotResultType = get_if<QIntrinsicResultType_Slot>(&resultType))
     {
-    case QRegisterType::Ptr: name = format("%p{}", index); break;
-    case QRegisterType::Int1: name = format("%b{}", index); break;
-    case QRegisterType::Int32: name = format("%i{}", index); break;
-    default: unreachable();
-    }
+        QArg_Slot resultSlot = [this, &oDest, slotResultType] {
+            if (oDest) return *oDest;
+            return NewSlot(slotResultType->qType);
+        }();
 
-    registerInfos.emplace_back(type, name);
-    return {index};
+        QBlockWriter::EmitInst(QInst_Intrinsic{kind, resultSlot, move(args)});
+    }
+    else if (auto* voidResultType = get_if<QIntrinsicKindResult_Void>(&resultType))
+    {
+        assert(!oDest);
+        QBlockWriter::EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
+    }
+    else unreachable();
 }
 
 QType* QBodyContext::GetMExpQType(MExp* mExp)
 {
-    return MakeQType(mExp->GetType(*rFactory));
+    return GetQTypeFromRType(mExp->GetType(*rFactory));
 }
 
 size_t QBodyContext::GetQTypeSize(QType* qType)
@@ -281,7 +229,7 @@ string RNameToString(const RName& name)
     }, name);
 }
 
-QType* QBodyContext::MakeQType(RType* rType)
+QType* QBodyContext::GetQTypeFromRType(RType* rType)
 {
     // TODO: HARD CODED
     if (rType == rFactory->MakeVoidType())
@@ -299,52 +247,59 @@ QType* QBodyContext::MakeQType(RType* rType)
     throw NotImplementedException{};
 }
 
-QType_Class* QBodyContext::MakeQStringType()
+QType_Class* QBodyContext::GetStringQType()
 {
     return qFactory->MakeStringType();
 }
 
-QArg_StackSlot QBodyContext::AddLocalVar(RType* rType, const RName& rName)
+QType* QBodyContext::GetBoolQType()
+{
+    return qFactory->MakeBoolType();
+}
+
+QType* QBodyContext::GetIntQType()
+{
+    return qFactory->MakeIntType();
+}
+
+QType* QBodyContext::GetPtrQType()
+{
+    return qFactory->MakePtrType();
+}
+
+size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size_t> oArgIndex)
 {   
     size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
     auto name = format("%s{}_{}", slotIndex, RNameToString(rName));
-    QType* qType = MakeQType(rType);
+    QType* qType = GetQTypeFromRType(rType);
 
     // 1. 함수 entry에서 할당할 목록에 추가
-    slotInfos.emplace_back(name, qType);
+    slotInfos.emplace_back(qType, name, oArgIndex);
     
     // 2. 현재 스코프에 이름 추가
     scopes.back().localVarInfos[rName] = QLocalVarInfo{slotIndex, name, qType};
 
-    return {slotIndex};
+    return slotIndex;
 }
 
-QArg_StackSlot QBodyContext::GetLocalVar(const RName& name)
+size_t QBodyContext::GetLocalVarSlotIndex(const RName& name)
 {   
     auto localVarInfo = scopes.back().localVarInfos[name];
-    return {localVarInfo.slotIndex};
+    return localVarInfo.slotIndex;
 }
 
-QArg_StackSlot QBodyContext::NewStackSlot(QType* qType)
+QArg_Slot QBodyContext::NewSlot(QType* qType)
 {
     size_t slotIndex = slotInfos.size();
     std::string s = format("%s{}", slotIndex);
-    slotInfos.emplace_back(s, qType);
+    slotInfos.emplace_back(qType, s, nullopt);
     return {slotIndex};
 }
 
-QArg_Loc QBodyContext::NewContainerForMExp(MExp* exp)
+QArg_Slot QBodyContext::NewSlotForMExp(MExp* exp)
 {
     auto* qType = GetMExpQType(exp);
-    
-    if (auto oRegType = GetRegisterType(qType))
-    {
-        return NewRegister(*oRegType);
-    }
-    else
-    {
-        return NewStackSlot(qType);
-    }
+    return NewSlot(qType);
 }
 
 void QBodyContext::CompleteFunc()
@@ -357,6 +312,17 @@ void QBodyContext::CompleteFunc()
 
     QBlockWriter::CompleteBlock(QInst_Jump{bodyBlock});
     QBlockWriter::Verify();
+}
+
+QType* QBodyContext::GetReturnQType(RFuncDecl* rFuncDecl, RTypeArguments& typeArgs)
+{
+    auto* rType = rFuncDecl->GetReturnType(typeArgs, *rFactory);
+    return GetQTypeFromRType(rType);
+}
+
+bool QBodyContext::IsVoidQType(QType* qType)
+{
+    return qType == qFactory->MakeVoidType();
 }
 
 

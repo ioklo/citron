@@ -116,7 +116,7 @@ private:
         auto eResult = CheckVarConsistency(rInitExpType);
         if (!eResult) return unexpected{move(eResult).error()};
 
-        context.GetScopeContext().AddLocalVarInfo(rInitExpType, elem->varName);
+        context.GetScopeContext().AddLocalVarInfo(rInitExpType, RName_Normal{elem->varName});
         outStmts->push_back(context.MakeNStmt<MStmt_LocalVarDecl>(rInitExpType, elem->varName, *eNInitExp));
 
         return {};
@@ -139,7 +139,7 @@ private:
             nInitExp = *eNExp;
         }
 
-        context.GetScopeContext().AddLocalVarInfo(declType, elem->varName);
+        context.GetScopeContext().AddLocalVarInfo(declType, RName_Normal{elem->varName});
         outStmts->push_back(context.MakeNStmt<MStmt_LocalVarDecl>(declType, elem->varName, nInitExp));
 
         return {};
@@ -148,7 +148,7 @@ private:
 public:
     expected<void, DiagPtr> Translate()
     {
-        if (context.GetScopeContext().DoesLocalVarNameExistInScope(elem->varName))
+        if (context.GetScopeContext().DoesLocalVarNameExistInScope(RName_Normal{elem->varName}))
             return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
 
         if (declTypeInfo.kind != DeclTypeInfoKind::Normal)

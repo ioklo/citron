@@ -156,7 +156,7 @@ public:
         if (!eNTarget) return Error(move(eNTarget));
 
         auto bodyContext = context.MakeNestedScopeContext();
-        bodyContext.GetScopeContext().AddLocalVarInfo(*eRTestType, stmt->varName);
+        bodyContext.GetScopeContext().AddLocalVarInfo(*eRTestType, RName_Normal{stmt->varName});
         
         auto eBodyStmts = TranslateSEmbeddableStmtToMStmts(stmt->body, bodyContext);
         if (!eBodyStmts) return Error(move(eBodyStmts));
@@ -629,7 +629,7 @@ public:
                 auto bodyContext = context.MakeNestedLoopScopeContext();
 
                 // 루프 컨텍스트에 로컬을 하나 추가하고 (enumerator는 추가해야 할까)
-                bodyContext.GetScopeContext().AddLocalVarInfo(itemVarType, sStmt->varName);
+                bodyContext.GetScopeContext().AddLocalVarInfo(itemVarType, RName_Normal{sStmt->varName});
 
                 // 본문 분석
                 return TranslateSEmbeddableStmtToMStmts(sStmt->body, context);
@@ -901,7 +901,7 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType
         auto eRParamType = context.TranslateSTypeExpToRType(sParam.type);
         if (!eRParamType) return unexpected{move(eRParamType).error()};
 
-        newContext.GetScopeContext().AddLocalVarInfo(*eRParamType, sParam.name);
+        newContext.GetScopeContext().AddLocalVarInfo(*eRParamType, RName_Normal{sParam.name});
     }
 
     vector<MStmt*> rBody;

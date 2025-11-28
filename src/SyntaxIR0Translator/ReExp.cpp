@@ -13,7 +13,7 @@ ReExp_ThisVar::ReExp_ThisVar(RType* type)
 {
 }
 
-ReExp_LocalVar::ReExp_LocalVar(RType* type, const std::string& name)
+ReExp_LocalVar::ReExp_LocalVar(RType* type, const RName& name)
     : type(type), name(name)
 {
 }

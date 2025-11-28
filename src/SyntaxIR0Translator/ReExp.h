@@ -2,7 +2,8 @@
 
 #include <memory>
 #include <optional>
-#include <string>
+
+#include "RSymbol/RNames.h"
 
 namespace Citron {
 
@@ -72,10 +73,10 @@ class ReExp_LocalVar : public ReExp
 {
 public:
     RType* type;
-    std::string name;
+    RName name;
     
 public:
-    ReExp_LocalVar(RType* type, const std::string& name);
+    ReExp_LocalVar(RType* type, const RName& name);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
     RType* GetType(RFactory& factory) override { return type; }
 };

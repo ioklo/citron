@@ -65,7 +65,7 @@ ImExp_ThisVar::ImExp_ThisVar(RType* type)
 
 }
 
-ImExp_LocalVar::ImExp_LocalVar(RType* type, const std::string& name)
+ImExp_LocalVar::ImExp_LocalVar(RType* type, const RName& name)
     : type(type), name(name)
 {
 

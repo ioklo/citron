@@ -55,6 +55,7 @@ public:
     // from NFuncDecl
     // NDecl* GetNDecl() override { return this; }
     RFuncReturn GetUnboundFuncReturn() override { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
+    std::span<RFuncParameter> GetUnboundFuncParams() override { return NCommonFuncDeclComponent::GetUnboundFuncParams(); }
     bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(this); }
 
@@ -73,12 +74,13 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RFuncDecl
-    NSYMBOL_API bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
-    NSYMBOL_API size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
-    NSYMBOL_API size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
-    NSYMBOL_API RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
-    NSYMBOL_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs, factory); }
-    NSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index, factory); }
+    bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
+    size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
+    size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
+    RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
+    RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs, factory); }
+    RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index, factory); }
+    // std::span<RFuncParameter> GetUnboundFuncParams() override { return NCommonFuncDeclComponent::GetUnboundFuncParams(); }
 };
 
 }

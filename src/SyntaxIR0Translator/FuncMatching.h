@@ -7,6 +7,7 @@
 #include "Infra/Exceptions.h"
 #include "Syntax/Syntax.h"
 #include "MIR/MArgument.h"
+#include "SExpToMExpTranslation.h"
 
 namespace Citron {
 
@@ -35,9 +36,22 @@ struct ArgumentsMatch
 };
 
 template<typename TFuncDecl>
-std::optional<FuncMatch<TFuncDecl>> MatchFunc(std::vector<DeclWithOuterTypeArgs<TFuncDecl>>& items, SArguments* sArgs, TranslationContext& context)
+std::expected<std::optional<FuncMatch<TFuncDecl>>, DiagPtr> MatchFunc(std::vector<DeclWithOuterTypeArgs<TFuncDecl>>& items, SArguments* sArgs, TranslationContext& context)
 {
-    throw NotImplementedException{};
+    // test 용 임시 구현
+    if (items.size() != 1) return std::nullopt;
+
+    std::vector<MArgument> mArgs;
+    for (auto* sArgItem : sArgs->items)
+    {
+        auto eMExp = TranslateSExpToMExp(sArgItem->exp, /*hintType*/nullptr, context);
+        RETURN_ON_ERROR(eMExp);
+
+        mArgs.push_back(MArgument_Normal{*eMExp});
+    }
+
+    return FuncMatch<TFuncDecl>{items[0].decl, items[0].outerTypeArgs, std::move(mArgs)};
+    // throw NotImplementedException{};
 }
 
 std::optional<ArgumentsMatch> MatchArguments(RTypeArguments* outerTypeArgs, RTypeArguments* partialTypeArgsExceptOuter, std::vector<RFuncParameter>&& funcParams, bool bVariadic, SArguments* sArgs);

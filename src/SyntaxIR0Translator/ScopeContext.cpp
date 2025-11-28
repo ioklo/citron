@@ -57,13 +57,13 @@ tuple<ScopeContextPtr, NLambdaDecl> ScopeContext::MakeLambdaBodyContext(const RF
     throw NotImplementedException{};
 }
 
-void ScopeContext::AddLocalVarInfo(RType* type, const std::string& name)
+void ScopeContext::AddLocalVarInfo(RType* type, const RName& name)
 {
     auto [i, b] = locals.try_emplace(name, type);
     assert(b);
 }
 
-bool ScopeContext::DoesLocalVarNameExistInScope(const string& name)
+bool ScopeContext::DoesLocalVarNameExistInScope(const RName& name)
 {
     auto i = locals.find(name);
     return i != locals.end();
@@ -111,15 +111,12 @@ MLoc_This* ScopeContext::MakeThisLoc()
     throw NotImplementedException{};
 }
 
-optional<RMember> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+expected<optional<RMember>, DiagPtr> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto* normalName = get_if<RName_Normal>(&name))
-    {
-        // 로컬을 검색한다
-        auto i = locals.find(normalName->text);
-        if (i != locals.end())
-            return RMember_LocalVar(i->second, normalName->text);
-    }
+    // 로컬을 검색한다
+    auto i = locals.find(name);
+    if ( i != locals.end())
+        return RMember_LocalVar(i->second, name);
 
     // 상위 스코프가 있으면 그곳을 검색한다
     if (parentContext)

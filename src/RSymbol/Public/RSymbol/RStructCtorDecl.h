@@ -16,7 +16,7 @@ class RStructCtorDecl
 {
 public:
     virtual RStructDecl* GetStructDecl() = 0;
-    virtual RFuncParameter& GetUnboundFuncParam(size_t index) = 0;
+    virtual std::span<RFuncParameter> GetUnboundFuncParams() = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
     void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(this); }

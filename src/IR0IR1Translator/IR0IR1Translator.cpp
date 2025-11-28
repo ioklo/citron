@@ -5,7 +5,11 @@
 #include "Infra/Expected.h"
 #include "Logging/Diag.h"
 
+#include "RSymbol/RFuncParameter.h"
+
 #include "NSymbol/NModule.h"
+#include "NSymbol/NFuncDecl.h"
+
 #include "MIR/MData.h"
 #include "QIR/QFactory.h"
 #include "QIR/QFuncBody.h"
@@ -23,6 +27,17 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 {   
     QBodyContext bodyContext{rFactory, qFactory};
 
+    // parameter 세팅
+    // TODO: 일단 generics없이 진행
+    auto unboundParams = mFuncBody.nFuncDecl->GetUnboundFuncParams();
+    for (size_t i = 0, count = unboundParams.size(); i < count; i++)
+    {
+        auto& unboundParam = unboundParams[i];
+
+        // 새 local 변수 추가
+        bodyContext.AddLocalVar(unboundParam.type, unboundParam.name, i);
+    }
+
     for (auto* mStmt : mFuncBody.stmts)
     {   
         auto eResult = TranslateMStmtToQInsts(mStmt, bodyContext);
@@ -32,7 +47,6 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     bodyContext.CompleteFunc();
     return QFuncBody{
         mFuncBody.nFuncDecl, 
-        bodyContext.GetRegisterInfos() | ranges::to<vector>(), 
         bodyContext.GetStackSlotInfos() | ranges::to<vector>(), 
         bodyContext.GetEntryBlock()};
 }

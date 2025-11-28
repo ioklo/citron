@@ -16,7 +16,10 @@ class QFactory;
 namespace IR0IR1Translator {
 class QBodyContext;
 
-std::expected<QArg_Loc, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QBodyContext& bodyContext);
+struct QLocResult_Slot { size_t slotIndex; };
+using QLocResult = std::variant<QLocResult_Slot>;
+
+std::expected<QLocResult, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QBodyContext& bodyContext);
 
 } // namespace IR0IR1Translator
 } // namespace Citron

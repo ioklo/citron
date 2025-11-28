@@ -4,7 +4,6 @@
 #include <optional>
 
 #include "QArgs.h"
-#include "QRegisterType.h"
 
 namespace Citron {
 
@@ -14,45 +13,59 @@ class QBlock;
 // init_string %dest, "hello"
 struct QInst_InitString
 {
-    QArg_StackSlot dest;
+    QArg_Slot dest;
     std::string text;
 };
 
 // %dest = load [%src]
 struct QInst_Load
 {
-    QRegisterType type;
-    QArg_Register dest;  // T register가능
-    QArg_Loc src;   // T* 나타내는 register가능
+    QType *qType;
+    QArg_Slot dest;  // T slot
+    QArg_Slot src;   // T* 나타내는 slot가능
 };
 
 // store [%dest], %src
 // loc은 ptr을 담고 있음
 struct QInst_Store
 {
-    QRegisterType type;
-    QArg_Loc dest;   // T*을 나타내는 register, slot
-    QArg_Input src;  // T의 const, register 가능
+    QType* qType;     // T
+    QArg_Slot dest;   // T*을 나타내는 slot
+    QArg_Input src;   // T의 const, register 가능
+};
+
+// slot의 위치 포인터를 반환한다
+struct QInst_AddrOf
+{
+    QArg_Slot dest;
+    QArg_Slot slot;
 };
 
 // %dest = <ty> %src
 struct QInst_Assign
 {
-    QRegisterType type;
-    QArg_Register dest; // T register 가능
-    QArg_Input src;  // T const, register 가능
+    QType* qType;
+    QArg_Slot dest; // T slot 가능
+    QArg_Input src;  // T const, slot가능
 };
 
 // class, struct, interface 구분 없이 Call
 struct QInst_Call
+{   
+    RFuncDecl* rFuncDecl;
+    std::optional<QArg_Slot> oDest;      // void인 경우 nullopt, 나머지는 slot
+    std::vector<QArg_Input> args;         // 
+};
+
+struct QInst_ReturnValue
 {
-    RFuncDecl* funcDecl;
-    std::vector<QArg_Input> args;
+    QType* qType;
+    QArg_Input value;
 };
 
 struct QInst_Return
 {
-    std::optional<QArg_Input> value; // void면 없음
+    std::optional<QInst_ReturnValue> oValue; // void면 없음
 };
 
 enum struct QInst_IntrinsicKind
@@ -96,18 +109,18 @@ enum struct QInst_IntrinsicKind
 struct QInst_Intrinsic
 {   
     QInst_IntrinsicKind kind;
-    std::optional<QArg_Register> result; // stack slot인 경우 첫 arg에 들어간다
+    std::optional<QArg_Slot> oDest; // stack slot인 경우 첫 arg에 들어간다
     std::vector<QArg_Input> args;
 
-    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Register>&& result, std::vector<QArg_Input>&& args)
-        : kind{kind}, result{std::move(result)}, args{std::move(args)}
+    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot>&& oDest, std::vector<QArg_Input>&& args)
+        : kind{kind}, oDest{std::move(oDest)}, args{std::move(args)}
     {
     }
 };
 
 struct QInst_CondJump
 {
-    QArg_Register cond; // 여기에 const를 쓸거면 CondJump를 뭣하러 하는가. 그냥 Register만 받도록 한다
+    QArg_Slot cond; // 여기에 const를 쓸거면 CondJump를 뭣하러 하는가. 그냥 Slot만 받도록 한다
     QBlock* trueBlock;
     QBlock* falseBlock;
 };
@@ -121,6 +134,7 @@ using QInst = std::variant<
     QInst_InitString,
     QInst_Load,
     QInst_Store,
+    QInst_AddrOf,
     QInst_Assign,
     QInst_Call,
     QInst_Return,

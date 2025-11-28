@@ -31,6 +31,11 @@ QType_Void* QFactory::MakeVoidType()
     return &voidType;
 }
 
+QType_Ptr* QFactory::MakePtrType()
+{
+    return &ptrType;
+}
+
 QType_Struct* QFactory::MakeBoolType()
 {
     return &boolType;

@@ -8,8 +8,9 @@
 #include "Infra/Variants.h"
 #include "Infra/Exceptions.h"
 
-#include "NSymbol/NFuncDecl.h"
 #include "RSymbol/RDecl.h"
+#include "RSymbol/RFuncDecl.h"
+#include "NSymbol/NFuncDecl.h"
 
 #include "QData.h"
 #include "QFuncBody.h"
@@ -40,15 +41,10 @@ class QPrinter
     struct ArgPrinter
     {
         QPrinter& printer;
-
-        void operator()(QArg_Register& arg)
+        
+        void operator()(QArg_Slot& arg)
         {
-            printer.PrintQArg_Register(arg);
-        }
-
-        void operator()(QArg_StackSlot& arg)
-        {
-            printer.PrintQArg_StackSlot(arg);
+            printer.PrintQArg_Slot(arg);
         }
 
         void operator()(QArg_ConstBool& arg)
@@ -70,7 +66,7 @@ class QPrinter
         {
             // init_string %a, "hello"            
             printer.Print("init_string ");
-            printer.PrintQArg_StackSlot(inst.dest);
+            printer.PrintQArg_Slot(inst.dest);
             printer.Print(", ");
             printer.PrintStringLiteral(inst.text);
             printer.PrintLine();
@@ -79,12 +75,12 @@ class QPrinter
         void operator()(QInst_Load& inst)
         {
             // %v = load [%lv]
-            printer.PrintQArg_Register(inst.dest);
+            printer.PrintQArg_Slot(inst.dest);
             printer.Print(" = ");
             printer.Print("load ");
-            printer.PrintQRegisterType(inst.type);
+            printer.PrintQType(inst.qType);
             printer.Print(", ");
-            printer.PrintAddrQArg_Loc(inst.src);
+            printer.PrintAddrQArg_Slot(inst.src);
             printer.PrintLine();
         }
 
@@ -92,21 +88,30 @@ class QPrinter
         {
             // store <ty> [%lv], %v
             printer.Print("store ");
-            printer.PrintQRegisterType(inst.type);
+            printer.PrintQType(inst.qType);
             printer.Print(", ");
-            printer.PrintAddrQArg_Loc(inst.dest);
+            printer.PrintAddrQArg_Slot(inst.dest);
             printer.Print(", ");
             printer.PrintQArg_Input(inst.src);
             printer.PrintLine();
         }
 
+        void operator()(QInst_AddrOf& inst)
+        {
+            // %v = addr_of [%s]
+
+            printer.PrintQArg_Slot(inst.dest);
+            printer.Print(" = addr_of ");
+            printer.PrintAddrQArg_Slot(inst.slot);
+            printer.PrintLine();
+        }
 
         void operator()(QInst_Assign& inst)
         {
             // %dest = <ty> %src
-            printer.PrintQArg_Register(inst.dest);
+            printer.PrintQArg_Slot(inst.dest);
             printer.Print(" = ");
-            printer.PrintQRegisterType(inst.type);
+            printer.PrintQType(inst.qType);
             printer.Print(", ");
             printer.PrintQArg_Input(inst.src);
             printer.PrintLine();
@@ -114,25 +119,30 @@ class QPrinter
 
         void operator()(QInst_Call& inst)
         {
-            /*printer.Print("call ");
-            printer.Print(inst.funcDecl->GetFullName());
-            printer.Print("(");
-            for (size_t i = 0; i < inst.args.size(); i++)
+            // %s = call @F, %s2
+
+            if (inst.oDest)
             {
-                if (i > 0)
-                    printer.Print(", ");
-                printer.PrintQArg(inst.args[i]);
+                printer.PrintQArg_Slot(*inst.oDest);
+                printer.Print(" = ");
             }
-            printer.Print(")");
-            printer.PrintLine();*/
-            throw NotImplementedException{};
+
+            printer.Print("call ");
+            auto rId = inst.rFuncDecl->GetRDecl()->GetIdentifier();
+            printer.PrintRName(rId.name);
+            for (size_t i = 0; i < inst.args.size(); i++)
+            {   
+                printer.Print(", ");
+                printer.PrintQArg_Input(inst.args[i]);
+            }
+            printer.PrintLine();            
         }
 
         void operator()(QInst_Intrinsic& inst)
         {
-            if (inst.result)
+            if (inst.oDest)
             {
-                printer.PrintQArg_Register(*inst.result);
+                printer.PrintQArg_Slot(*inst.oDest);
                 printer.Print(" = ");
             }
 
@@ -151,7 +161,7 @@ class QPrinter
         void operator()(QInst_CondJump& inst)
         {
             printer.Print("condjump ");
-            printer.PrintQArg_Register(inst.cond);
+            printer.PrintQArg_Slot(inst.cond);
             printer.Print(", ");
             printer.PrintBlockLabel(inst.trueBlock);
             printer.Print(", ");
@@ -175,10 +185,15 @@ class QPrinter
         {
             printer.Print("return");
 
-            if (inst.value)
+            if (inst.oValue)
             {
+                printer.Print(" ");
+
+                printer.PrintQType(inst.oValue->qType);
+                
                 printer.Print(", ");
-                printer.PrintQArg_Input(*inst.value);
+
+                printer.PrintQArg_Input(inst.oValue->value);
             }
 
             printer.PrintLine();
@@ -200,40 +215,7 @@ public:
     {
         writer.WriteLine();
     }
-
-    void PrintQRegisterType(QRegisterType type)
-    {
-        using enum QRegisterType;
-        switch (type)
-        {
-        case Int1:
-            writer.Write("<i1>");
-            break;
-        case Int32:
-            writer.Write("<i32>");
-            break;
-        case Ptr:
-            writer.Write("<ptr>");
-            break;
-        default:
-            unreachable();
-        }
-    }
-
-    void PrintAddrQArg_Loc(QArg_Loc& arg)
-    {
-        writer.Write("[");
-        PrintQArg_Loc(arg);
-        writer.Write("]");
-    }
-
-    void PrintAddrQArg_Register(QArg_Register& arg)
-    {
-        writer.Write("[");
-        PrintQArg_Register(arg);
-        writer.Write("]");
-    }
-
+    
     void Print(std::string&& str)
     {
         writer.Write(str);
@@ -244,21 +226,20 @@ public:
         visit(ArgPrinter{*this}, arg);
     }
 
-    void PrintQArg_StackSlot(QArg_StackSlot& arg)
+    void PrintQArg_Slot(QArg_Slot& arg)
     {
         writer.Write(funcBody.slotInfos[arg.index].name);
     }
 
-    void PrintQArg_Register(QArg_Register& arg)
+    void PrintRName(RName& name)
     {
-        writer.Write(funcBody.regInfos[arg.index].name);
+        if (auto* normalName = get_if<RName_Normal>(&name))
+        {
+            writer.Write(normalName->text);
+        }
+        else throw NotImplementedException{};
     }
-
-    void PrintQArg_Loc(QArg_Loc& arg)
-    {
-        visit(ArgPrinter{*this}, arg);
-    }
-
+    
     void AddNextBlock(QBlock* block)
     {
         auto i = queued.find(block);
@@ -321,6 +302,13 @@ public:
         writer.Write(":");
     }
 
+    void PrintAddrQArg_Slot(QArg_Slot& slot)
+    {
+        writer.Write("[");
+        PrintQArg_Slot(slot);
+        writer.Write("]");
+    }
+
     void PrintQType(QType* type)
     {
         // TODO: HARD CODED
@@ -353,14 +341,6 @@ public:
         writer.AddIndent();
         writer.WriteLine();
         
-        // TODO: register info, slot info를 출력해줘야 할 것 같다
-        for (auto& regInfo : funcBody.regInfos)
-        {
-            writer.Write(format("// register {}: ", regInfo.name));
-            PrintQRegisterType(regInfo.type);
-            writer.WriteLine();
-        }
-
         for (auto& slotInfo : funcBody.slotInfos)
         {
             writer.Write(format("// slot {}: ", slotInfo.name));

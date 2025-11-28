@@ -3,6 +3,8 @@
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
 #include "Infra/Variants.h"
+#include "Infra/Expected.h"
+
 #include "Logging/Logger.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RFuncDecl.h"
@@ -293,14 +295,17 @@ RType_Enum* TranslationContext::GetBaseEnumType(RType_EnumElem& enumElemType)
 
 expected<ImExp*, DiagPtr> TranslationContext::ResolveIdentifier(const RName& name, RTypeArguments* typeArgs)
 {   
-    auto oRMember = scopeContext->ResolveIdentifier(name, typeArgs->GetCount());
-    if (!oRMember)
+    auto eORMember = scopeContext->ResolveIdentifier(name, typeArgs->GetCount());
+    RETURN_ON_ERROR(eORMember)
+
+    if (!*eORMember)
         return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
 
     return visit<ImExp*>(overloaded{
         [this](RMember_LocalVar& localVar) { return srtFactory->MakeImExp<ImExp_LocalVar>(localVar.type, localVar.name); },
+        [this, typeArgs](RMember_GlobalFuncs& globalFuncs) { return srtFactory->MakeImExp<ImExp_GlobalFuncs>(globalFuncs.items, typeArgs); },
         [](auto&) { throw NotImplementedException{}; return nullptr; }
-    }, *oRMember);
+    }, **eORMember);
 }
 
 } // namespace Citron::SyntaxIR0Translator

@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <vector>
+#include <span>
 #include <string>
 
 #include "RSymbol/RFuncReturn.h"
@@ -53,7 +54,7 @@ public:
     NSYMBOL_API RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory);
     NSYMBOL_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory);
     
-    NSYMBOL_API RFuncParameter& GetUnboundFuncParam(size_t i);
+    NSYMBOL_API std::span<RFuncParameter> GetUnboundFuncParams();
     NSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory);
 
     NSYMBOL_API std::vector<RType*> GetParamIds();

@@ -49,7 +49,7 @@ expected<MLoc*, DiagPtr> TranslateReClassVarExpToMLoc(ReExp_ClassVar* reExp, Tra
 
 expected<MLoc*, DiagPtr> TranslateReLocalVarExpToMLoc(ReExp_LocalVar* reExp, TranslationContext& context)
 {
-    return context.MakeNLoc<MLoc_LocalVar>(RName_Normal(reExp->name), reExp->type);
+    return context.MakeNLoc<MLoc_LocalVar>(reExp->name, reExp->type);
 }
 
 expected<MLoc*, DiagPtr> TranslateReLambdaVarExpToMLoc(ReExp_LambdaVar* reExp, TranslationContext& context)

@@ -33,11 +33,11 @@ public:
     // command는 일단 넘깁시다
     ResultType Visit(MStmt_Command* stmt)
     {
-        auto* qStringType = bodyContext.MakeQStringType();
+        auto* qStringType = bodyContext.GetStringQType();
         vector<QArg_Input> values;
         for(auto* command : stmt->commands)
         {
-            auto slot = bodyContext.NewStackSlot(qStringType);
+            auto slot = bodyContext.NewSlot(qStringType);
             auto eResult = TranslateMExp_StringToQInsts(command, slot, bodyContext);
             RETURN_ON_ERROR(eResult);
 
@@ -51,11 +51,11 @@ public:
     // 스택에 변수를 둔다.
     ResultType Visit(MStmt_LocalVarDecl* stmt)
     {
-        auto slot = bodyContext.AddLocalVar(stmt->type, RName_Normal{stmt->name});
+        auto slotIndex = bodyContext.AddLocalVar(stmt->type, RName_Normal{stmt->name}, nullopt);
 
         if (stmt->initExp)
         {   
-            auto eInitResult = TranslateMExpToQInsts(stmt->initExp, slot, bodyContext);
+            auto eInitResult = TranslateMExpToQInsts(stmt->initExp, QArg_Slot{slotIndex}, bodyContext);
             RETURN_ON_ERROR(eInitResult);
         }
         return {};
@@ -63,10 +63,10 @@ public:
 
     ResultType Visit(MStmt_If* stmt)
     {
-        auto condReg = bodyContext.NewRegister(QRegisterType::Int1);
+        auto condSlot = bodyContext.NewSlot(bodyContext.GetBoolQType());
 
         // 1. stmt.cond
-        auto eCondResult = TranslateMExpToQInsts(stmt->cond, condReg, bodyContext);
+        auto eCondResult = TranslateMExpToQInsts(stmt->cond, condSlot, bodyContext);
         RETURN_ON_ERROR(eCondResult);
 
         if (!stmt->elseBody.empty())
@@ -77,7 +77,7 @@ public:
             auto* endBlock = bodyContext.AddBlock("if_end");
 
             // 3. add conditional jump
-            bodyContext.CompleteBlock(QInst_CondJump{condReg, trueBlock, falseBlock});
+            bodyContext.CompleteBlock(QInst_CondJump{condSlot, trueBlock, falseBlock});
 
             // 4. fill trueBlock
             bodyContext.SetCurBlock(trueBlock);
@@ -101,7 +101,7 @@ public:
             auto* endBlock = bodyContext.AddBlock("if_end");
 
             // 3. add conditional jump
-            bodyContext.CompleteBlock(QInst_CondJump{condReg, trueBlock, endBlock});
+            bodyContext.CompleteBlock(QInst_CondJump{condSlot, trueBlock, endBlock});
 
             // 4. fill trueBlock
             bodyContext.SetCurBlock(trueBlock);
@@ -137,10 +137,11 @@ public:
     {
         if (stmt->exp)
         {
-            auto dest = bodyContext.NewContainerForMExp(stmt->exp);
+            auto* qType = bodyContext.GetMExpQType(stmt->exp);
+            auto dest = bodyContext.NewSlot(qType);
             auto eResult = TranslateMExpToQInsts(stmt->exp, dest, bodyContext);
             RETURN_ON_ERROR(eResult);
-            bodyContext.CompleteBlock(QInst_Return{Cast<QArg_Input>(dest)});
+            bodyContext.CompleteBlock(QInst_Return{QInst_ReturnValue{qType, dest}});
         }
         else
         {

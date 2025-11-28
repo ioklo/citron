@@ -67,10 +67,10 @@ RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments& typeArgs, RF
 }
 
 
-RFuncParameter& NCommonFuncDeclComponent::GetUnboundFuncParam(size_t i)
+span<RFuncParameter> NCommonFuncDeclComponent::GetUnboundFuncParams()
 {
     assert(funcReturnAndParams);
-    return funcReturnAndParams->funcParameters[i];
+    return funcReturnAndParams->funcParameters;
 }
 
 RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory)
@@ -102,6 +102,10 @@ optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(size_t baseTypePar
     for (size_t i = 0; i < typeParamCount; i++)
         if (typeParams[i] == normalName->text)
             return RMember_TypeVar(baseTypeParamCount + i);
+
+    assert(funcReturnAndParams);
+    for (auto& param : funcReturnAndParams->funcParameters)
+        if (param.name == name) return RMember_LocalVar{param.type, param.name};
 
     return nullopt;
 } 

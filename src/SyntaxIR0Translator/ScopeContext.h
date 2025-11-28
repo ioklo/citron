@@ -42,7 +42,7 @@ public:
     RFactoryPtr rFactory;
 
     // 로컬 관리
-    std::unordered_map<std::string, RType*> locals;
+    std::unordered_map<RName, RType*> locals;
 
 public:
     ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop, const RFactoryPtr& rFactory);
@@ -58,17 +58,17 @@ public:
     std::shared_ptr<ScopeContext> MakeLoopNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
     std::tuple<ScopeContextPtr, NLambdaDecl> MakeLambdaBodyContext(const RFuncReturn& ret, std::vector<RFuncParameter> params, bool bLastParamVariadic);
 
-    void AddLocalVarInfo(RType* type, const std::string& name);
+    void AddLocalVarInfo(RType* type, const RName& name);
     // std::optional<LocalVarInfo> GetLocalVarInfo(const RName& name);
 
-    bool DoesLocalVarNameExistInScope(const std::string& name);
+    bool DoesLocalVarNameExistInScope(const RName& name);
 
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
 
     MLoc_This* MakeThisLoc();
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
+    std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;

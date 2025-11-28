@@ -1,10 +1,14 @@
 #pragma once
 
+#include <span>
+
 #include "RSymbol/RFuncReturn.h"
 #include "NDecl.h"
 
 namespace Citron
 {
+
+struct RFuncParameter;
 
 class NFuncDeclVisitor
 {
@@ -24,6 +28,7 @@ public:
     virtual ~NFuncDecl() {}
     virtual NDecl* GetNDecl() = 0;
     virtual RFuncReturn GetUnboundFuncReturn() = 0;
+    virtual std::span<RFuncParameter> GetUnboundFuncParams() = 0;
     virtual bool IsSeqFunc() = 0;
     virtual void Accept(NFuncDeclVisitor& visitor) = 0;
 };

@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
 #include <string>
-
-#include "QRegisterType.h"
+#include <variant>
+#include <optional>
 
 namespace Citron {
 
@@ -10,24 +10,17 @@ class QBlock;
 class NFuncDecl;
 struct QType;
 
-// 실행속도는 생각하지 않는다
-struct QRegisterInfo
-{
-    QRegisterType type;
-    std::string name; // %i2_a
-};
-
-struct QStackSlotInfo
+struct QSlotInfo
 {   
-    std::string name;
     QType* qType;
+    std::string name;
+    std::optional<size_t> oArgIndex;
 };
 
 struct QFuncBody
 {   
     NFuncDecl* nFuncDecl;
-    std::vector<QRegisterInfo> regInfos;
-    std::vector<QStackSlotInfo> slotInfos;
+    std::vector<QSlotInfo> slotInfos;
     QBlock* entry;
 };
 
