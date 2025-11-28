@@ -125,6 +125,9 @@ public:
 
     QType* GetReturnQType(RFuncDecl* rFuncDecl, RTypeArguments& typeArgs);
     bool IsVoidQType(QType* qType);
+
+    void PushScope();
+    void PopScope();
     
 };
 

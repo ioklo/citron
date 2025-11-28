@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <format>
+#include <ranges>
 
 #include "Infra/Unreachable.h"
 #include "Infra/Exceptions.h"
@@ -284,8 +285,15 @@ size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size
 
 size_t QBodyContext::GetLocalVarSlotIndex(const RName& name)
 {   
-    auto localVarInfo = scopes.back().localVarInfos[name];
-    return localVarInfo.slotIndex;
+    for (auto& scope : scopes | views::reverse)
+    {
+        auto i = scope.localVarInfos.find(name);
+        if (i != scope.localVarInfos.end())
+            return i->second.slotIndex;
+    }
+
+    assert(false);
+    return (size_t)-1;
 }
 
 QArg_Slot QBodyContext::NewSlot(QType* qType)
@@ -323,6 +331,16 @@ QType* QBodyContext::GetReturnQType(RFuncDecl* rFuncDecl, RTypeArguments& typeAr
 bool QBodyContext::IsVoidQType(QType* qType)
 {
     return qType == qFactory->MakeVoidType();
+}
+
+void QBodyContext::PushScope()
+{
+    scopes.push_back(QScope{});
+}
+
+void QBodyContext::PopScope()
+{
+    scopes.pop_back();
 }
 
 

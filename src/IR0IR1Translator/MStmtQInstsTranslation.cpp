@@ -150,9 +150,16 @@ public:
 
         return {};
     }
+
     ResultType Visit(MStmt_Block* stmt)
     {
-        throw NotImplementedException{};
+        bodyContext.PushScope();
+
+        auto eResult = TranslateMStmtsToQInsts(stmt->stmts, bodyContext);
+        RETURN_ON_ERROR(eResult);
+
+        bodyContext.PopScope();
+        return {};
     }
     ResultType Visit(MStmt_Blank* stmt)
     {
