@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 IrExp_Namespace::IrExp_Namespace(RNamespaceDecl* decl)
     : decl(decl)

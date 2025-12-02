@@ -18,7 +18,6 @@
 #include "QBodyContext.h"
 
 using namespace std;
-using namespace Citron::IR0IR1Translator;
 
 namespace Citron {
 namespace {

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace Citron::IR0IR1Translator {
+namespace Citron {
 
 // 메모리 주소를 value로 돌려주는 
 class MLocQInstsTranslator

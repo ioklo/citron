@@ -24,8 +24,6 @@ class MExp;
 
 class NLambdaVarDecl;
 
-namespace SyntaxIR0Translator {
-
 class ReExp;
 
 class ImExp_Namespace;
@@ -470,5 +468,4 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ImExp* e
     }
 }
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

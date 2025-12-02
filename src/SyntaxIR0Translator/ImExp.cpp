@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 ImExp_Namespace::ImExp_Namespace(RNamespaceDecl* _namespace)
     : _namespace(_namespace)
@@ -116,4 +116,4 @@ ImExp_Else::ImExp_Else(MExp* exp)
 {
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

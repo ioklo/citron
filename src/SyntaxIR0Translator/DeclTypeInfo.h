@@ -6,8 +6,6 @@ namespace Citron {
 
 class RType;
 
-namespace SyntaxIR0Translator {
-
 enum class DeclTypeInfoKind
 {
     Normal,
@@ -23,7 +21,5 @@ struct DeclTypeInfo
     DeclTypeInfoKind kind;
     RType* type;
 };
-
-} // namespace SyntaxIR0Translator
 
 } // namespace Citron

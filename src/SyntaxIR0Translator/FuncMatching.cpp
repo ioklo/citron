@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 optional<ArgumentsMatch> MatchArguments(
     RTypeArguments* outerTypeArgs, 

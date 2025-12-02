@@ -9,8 +9,6 @@ class NStructFuncDecl;
 class SStructFuncDecl;
 using NFactoryPtr = std::shared_ptr<class NFactory>;
 
-namespace SyntaxIR0Translator {
-
 class PhaseManager;
 
 class StructFuncTask
@@ -36,5 +34,4 @@ public:
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 };
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

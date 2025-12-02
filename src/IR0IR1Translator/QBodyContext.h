@@ -22,8 +22,6 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 enum class QInst_IntrinsicKind;
 
-namespace IR0IR1Translator {
-
 enum class QBlockWriterState
 {   
     CanWrite,
@@ -135,8 +133,6 @@ public:
     void PopScope();
     
 };
-
-} // namespace IR0IR1Translator
 
 
 } // namespace Citron

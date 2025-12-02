@@ -9,8 +9,6 @@ namespace Citron {
 
 class MLoc;
 
-namespace SyntaxIR0Translator {
-
 class IDesignatedDiagnostic;
 
 class ReExp;
@@ -38,5 +36,4 @@ std::expected<MLoc*, DiagPtr> TranslateReBoxDerefExpToMLoc(ReExp_BoxDeref* reExp
 
 std::expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp* reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context);
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

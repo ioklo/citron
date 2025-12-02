@@ -17,8 +17,6 @@ struct DeclWithOuterTypeArgs;
 class RTypeArguments;
 struct RFuncParameter;
 
-namespace SyntaxIR0Translator {
-
 class TranslationContext;
 
 template<typename TFuncDecl>
@@ -56,6 +54,5 @@ std::expected<std::optional<FuncMatch<TFuncDecl>>, DiagPtr> MatchFunc(std::vecto
 
 std::optional<ArgumentsMatch> MatchArguments(RTypeArguments* outerTypeArgs, RTypeArguments* partialTypeArgsExceptOuter, std::vector<RFuncParameter>&& funcParams, bool bVariadic, SArguments* sArgs);
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron
 

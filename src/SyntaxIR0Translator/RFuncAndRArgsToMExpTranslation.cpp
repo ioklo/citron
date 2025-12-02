@@ -16,7 +16,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 class TranslationContext;
 
@@ -89,7 +89,7 @@ public:
     }
 };
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron
 
 expected<MExp*, DiagPtr> TranslateRFuncAndNArgsToMExp(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContext& context)
 {

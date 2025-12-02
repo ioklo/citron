@@ -31,7 +31,7 @@
 #include "BinOpQueryService.h"
 
 using namespace std;
-using namespace Citron::SyntaxIR0Translator;
+using namespace Citron;
 
 namespace Citron {
 

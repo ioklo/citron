@@ -6,8 +6,6 @@ namespace Citron {
 struct MFuncBody;
 using DiagPtr = std::shared_ptr<struct Diag>;
 
-namespace SyntaxIR0Translator {
-
 class ResolveTypeHierarchyContext;
 class BuildTypeDependentSymbolContext;
 class SynthesizeImplicitSymbolContext;
@@ -42,5 +40,4 @@ public:
 };
 
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

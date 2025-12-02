@@ -27,7 +27,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 TranslationContext::TranslationContext(
     const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, 
@@ -308,4 +308,4 @@ expected<ImExp*, DiagPtr> TranslationContext::ResolveIdentifier(const RName& nam
     }, **eORMember);
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

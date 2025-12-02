@@ -26,7 +26,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 FuncContext::FuncContext() = default;
 
@@ -206,4 +206,4 @@ bool FuncContext_FuncDecl::IsSeqFunc()
 //}
 
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

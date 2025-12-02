@@ -39,8 +39,6 @@ using MFactoryPtr = std::shared_ptr<class MFactory>;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using LoggerPtr = std::shared_ptr<class Logger>;
 
-namespace SyntaxIR0Translator {
-
 class ReExp;
 class IrExp_BoxRef;
 struct BinOpInfo;
@@ -176,5 +174,4 @@ public: // for BinOpQueryService
     const std::vector<BinOpInfo>& GetBinOpInfos(SBinaryOpKind kind);
 };
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

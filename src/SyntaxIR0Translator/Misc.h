@@ -14,8 +14,6 @@ class RTypeArguments;
 class MExp;
 class RType;
 
-namespace SyntaxIR0Translator {
-
 class TranslationContext;
 
 std::expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context);
@@ -26,5 +24,4 @@ bool IsVarType(STypeExp* typeExp);
 
 RName_CtorParam MakeBaseCtorParamName(size_t index, RName baseParamName);
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

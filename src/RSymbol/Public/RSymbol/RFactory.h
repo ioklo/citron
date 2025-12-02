@@ -12,23 +12,21 @@ class RNamespaceDeclGroup;
 class RTypeArguments;
 class RFactory;
 
-namespace RSymbols {
-
-struct FuncTypeKey
+struct RFuncTypeKey
 {
     bool bLocal;
     RType* retType;
     std::vector<RType_Func::Parameter> params;
 
-    bool operator==(const FuncTypeKey& other) const noexcept
+    bool operator==(const RFuncTypeKey& other) const noexcept
     {
         return bLocal == other.bLocal && retType == other.retType && params == other.params;
     }
 };
 
-struct FuncTypeKeyHasher
+struct RFuncTypeKeyHasher
 {
-    size_t operator()(const FuncTypeKey& key) const noexcept
+    size_t operator()(const RFuncTypeKey& key) const noexcept
     {
         size_t s = 0;
         Citron::hash_combine(s, key.bLocal);
@@ -39,21 +37,21 @@ struct FuncTypeKeyHasher
 };
 
 template<typename TDecl>
-struct InstanceTypeKey
+struct RInstanceTypeKey
 {
     TDecl* decl;
     RTypeArguments* typeArgs;
 
-    bool operator==(const InstanceTypeKey& other) const noexcept
+    bool operator==(const RInstanceTypeKey& other) const noexcept
     {
         return decl == other.decl && typeArgs == other.typeArgs;
     }
 };
 
 template<typename TDecl>
-struct InstanceTypeKeyHasher
+struct RInstanceTypeKeyHasher
 {
-    size_t operator()(const InstanceTypeKey<TDecl>& key) const noexcept
+    size_t operator()(const RInstanceTypeKey<TDecl>& key) const noexcept
     {
         size_t s = 0;
         Citron::hash_combine(s, key.decl);
@@ -62,27 +60,25 @@ struct InstanceTypeKeyHasher
     }
 };
 
-struct TypeArgumentsKey
+struct RTypeArgumentsKey
 {
     std::vector<RType*> items;
 
-    bool operator==(const TypeArgumentsKey& other) const noexcept
+    bool operator==(const RTypeArgumentsKey& other) const noexcept
     {
         return items == other.items;
     }
 };
 
-struct TypeArgumentsKeyHasher
+struct RTypeArgumentsKeyHasher
 {
-    size_t operator()(const TypeArgumentsKey& key) const noexcept
+    size_t operator()(const RTypeArgumentsKey& key) const noexcept
     {
         size_t s = 0;
         Citron::hash_combine(s, key.items);
         return s;
     }
 };
-
-} // namespace RSymbols
 
 // TODO: weak처리
 // flyweight
@@ -94,12 +90,12 @@ class RFactory
     std::unordered_map<int, std::unique_ptr<RType_TypeVar>> typeVarTypes;
     std::unique_ptr<RType_Void> voidType;
     std::unordered_map<std::vector<RTupleVar>, std::unique_ptr<RType_Tuple>> tupleTypes;
-    std::unordered_map<RSymbols::FuncTypeKey, std::unique_ptr<RType_Func>, RSymbols::FuncTypeKeyHasher> funcTypes;
+    std::unordered_map<RFuncTypeKey, std::unique_ptr<RType_Func>, RFuncTypeKeyHasher> funcTypes;
     std::unordered_map<RType*, std::unique_ptr<RType_LocalPtr>> localPtrTypes;
     std::unordered_map<RType*, std::unique_ptr<RType_BoxPtr>> boxPtrTypes;
 
     template<typename TDecl, typename TType>
-    using InstanceTypeKeyUnorderedMap = std::unordered_map<RSymbols::InstanceTypeKey<TDecl>, std::unique_ptr<TType>, RSymbols::InstanceTypeKeyHasher<TDecl>>;
+    using InstanceTypeKeyUnorderedMap = std::unordered_map<RInstanceTypeKey<TDecl>, std::unique_ptr<TType>, RInstanceTypeKeyHasher<TDecl>>;
 
     InstanceTypeKeyUnorderedMap<RClassDecl, RType_Class> classTypes;
     InstanceTypeKeyUnorderedMap<RStructDecl, RType_Struct> structTypes;
@@ -108,7 +104,7 @@ class RFactory
     InstanceTypeKeyUnorderedMap<RInterfaceDecl, RType_Interface> interfaceTypes;
     InstanceTypeKeyUnorderedMap<RLambdaDecl, RType_Lambda> lambdaTypes;
 
-    std::unordered_map<RSymbols::TypeArgumentsKey, std::unique_ptr<RTypeArguments>, RSymbols::TypeArgumentsKeyHasher> typeArgsMap;
+    std::unordered_map<RTypeArgumentsKey, std::unique_ptr<RTypeArguments>, RTypeArgumentsKeyHasher> typeArgsMap;
 
     // 기본 타입
     std::unique_ptr<RType> boolType;

@@ -16,7 +16,7 @@
 
 using namespace std;
 
-namespace Citron::IR0IR1Translator {
+namespace Citron {
 
 class MStmtQInstsTranslator
 {
@@ -84,14 +84,14 @@ public:
             auto eTrueResult = TranslateMStmtsToQInsts(stmt->body, bodyContext);
             RETURN_ON_ERROR(eTrueResult);
             if(!bodyContext.IsBlockCompleted())
-            bodyContext.CompleteBlock(QInst_Jump{endBlock});
+                bodyContext.CompleteBlock(QInst_Jump{endBlock});
 
             // 5. fill falseBlock
             bodyContext.SetCurBlock(falseBlock);
             auto eFalseResult = TranslateMStmtsToQInsts(stmt->elseBody, bodyContext);
             RETURN_ON_ERROR(eFalseResult);
             if (!bodyContext.IsBlockCompleted())
-            bodyContext.CompleteBlock(QInst_Jump{endBlock});
+                bodyContext.CompleteBlock(QInst_Jump{endBlock});
 
             bodyContext.SetCurBlock(endBlock);
             return {};
@@ -110,7 +110,7 @@ public:
             auto eTrueBlockResult = TranslateMStmtsToQInsts(stmt->body, bodyContext);
             RETURN_ON_ERROR(eTrueBlockResult);
             if (!bodyContext.IsBlockCompleted())
-            bodyContext.CompleteBlock(QInst_Jump{endBlock});
+                bodyContext.CompleteBlock(QInst_Jump{endBlock});
 
             bodyContext.SetCurBlock(endBlock);
             return {};
@@ -245,4 +245,4 @@ expected<void, DiagPtr> TranslateMStmtToQInsts(MStmt* mStmt, QBodyContext& qBody
     MStmtQInstsTranslator translator{qBodyContext};
     return Accept(translator, mStmt);
 }
-} // namespace Citron::IIR0IR1Translator
+} // namespace Citron

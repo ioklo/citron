@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 void EnumElemVarTask::Register(NEnumElemVarDecl* nEnumElemVar, SEnumElemVarDecl* sEnumElemVar, PhaseManager& phaseManager)
 {
@@ -24,4 +24,4 @@ void EnumElemVarTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& 
     nEnumElemVar->enumElem->AddVar(nEnumElemVar);
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

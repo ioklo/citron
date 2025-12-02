@@ -26,9 +26,7 @@ using namespace std;
 
 namespace Citron {
 
-namespace IR0IR1Translator {
 // MExp는 QInst와 1:1로 대응되지는 않는다
-
 class MExpQInstsTranslator
 {
 public:
@@ -403,7 +401,5 @@ expected<void, DiagPtr> TranslateMExpToQInsts(MExp* mExp, std::optional<QArg_Slo
     MExpQInstsTranslator translator{oDest, bodyContext};
     return Accept(translator, mExp);
 }
-
-} // namesapce IR0IR1Tranaslator
 
 } // namespace Citron

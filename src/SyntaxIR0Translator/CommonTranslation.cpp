@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 RAccessor MakeGlobalMemberAccessor(optional<SAccessModifier> modifier)
 {

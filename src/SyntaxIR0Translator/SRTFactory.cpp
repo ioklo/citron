@@ -3,7 +3,7 @@
 #include "IrExp.h"
 #include "ReExp.h"
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 SRTFactory::SRTFactory()
 {
@@ -16,4 +16,4 @@ SRTFactory::~SRTFactory()
 }
 
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

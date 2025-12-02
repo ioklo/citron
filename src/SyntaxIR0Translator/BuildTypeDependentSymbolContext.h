@@ -15,8 +15,6 @@ class NDecl;
 using RFactoryPtr = std::shared_ptr<RFactory>;
 using NFactoryPtr = std::shared_ptr<NFactory>;
 
-namespace SyntaxIR0Translator {
-
 class TranslateBodyContext;
 
 class BuildTypeDependentSymbolContext
@@ -37,5 +35,4 @@ public:
     std::tuple<std::vector<RFuncParameter>, bool> MakeParameters(NDecl* decl, std::vector<SFuncParam>& sParams);
 };
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

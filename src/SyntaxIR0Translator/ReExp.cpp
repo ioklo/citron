@@ -6,7 +6,7 @@
 #include "NSymbol/NEnumElemVarDecl.h"
 #include "MIR/MExp.h"
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 ReExp_ThisVar::ReExp_ThisVar(RType* type)
     : type(type)

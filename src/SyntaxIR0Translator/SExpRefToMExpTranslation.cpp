@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 expected<MExp*, DiagPtr> TranslateSExpRefToMExp(SExp* exp, TranslationContext& context)
 {

@@ -12,8 +12,6 @@ class NEnumDecl;
 class NEnumElemDecl;
 class NEnumElemVarDecl;
 
-namespace SyntaxIR0Translator {
-
 class PhaseManager;
 enum class AccessorContext;
 
@@ -32,7 +30,5 @@ public:
     void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
 };
 
-
-} // namespace SyntaxIR0Translator
 } // namespace Citron
 

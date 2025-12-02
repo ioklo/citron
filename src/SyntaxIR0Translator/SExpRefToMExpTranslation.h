@@ -10,11 +10,8 @@ namespace Citron {
 
 class MExp;
 
-namespace SyntaxIR0Translator {
-
 class TranslationContext;
 
 std::expected<MExp*, DiagPtr> TranslateSExpRefToMExp(SExp* exp, TranslationContext& context);
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

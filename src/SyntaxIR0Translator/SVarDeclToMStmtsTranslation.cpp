@@ -17,7 +17,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 namespace {
 
@@ -178,4 +178,4 @@ expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>* outStmts,
     return {};
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

@@ -4,8 +4,7 @@
 #include "Syntax/Tokens.h"
 #include "Buffer.h"
 
-namespace Citron
-{
+namespace Citron {
 
 struct LexResult;
 

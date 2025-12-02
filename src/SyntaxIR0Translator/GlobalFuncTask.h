@@ -11,8 +11,6 @@ class SGlobalFuncDecl;
 class NGlobalFuncDecl;
 using NFactoryPtr = std::shared_ptr<class NFactory>;
 
-namespace SyntaxIR0Translator {
-
 class PhaseManager;
 
 class GlobalFuncTask 
@@ -36,7 +34,5 @@ public:
     void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 };
-
-} // namespace SyntaxIR0Translator
 
 } // namespace Citron

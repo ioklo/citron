@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator
+namespace Citron
 {
 
 void StructCtorTask::Register(NStructDecl* nStruct, SStructCtorDecl* sStructCtor, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
@@ -43,4 +43,4 @@ expected<MFuncBody, DiagPtr> StructCtorTask::TranslateBody(TranslateBodyContext&
 }
 
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

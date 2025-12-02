@@ -18,8 +18,6 @@ class MExp;
 
 class NLambdaVarDecl;
 
-namespace SyntaxIR0Translator {
-
 class ReExp_ThisVar;
 class ReExp_LocalVar;
 class ReExp_LambdaVar;
@@ -256,5 +254,4 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ReExp* r
     }
 }
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

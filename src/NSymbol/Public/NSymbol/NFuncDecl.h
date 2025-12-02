@@ -7,7 +7,6 @@
 
 namespace Citron
 {
-
 struct RFuncParameter;
 
 class NFuncDeclVisitor

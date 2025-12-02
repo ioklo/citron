@@ -26,8 +26,6 @@ using namespace std;
 
 namespace Citron {
 
-namespace SyntaxIR0Translator {
-
 namespace {
 
 class StaticParentTranslator
@@ -1037,6 +1035,5 @@ expected<IrExp*, DiagPtr> TranslateIrExpAndMemberNameToIrExp(IrExp* irExp, const
     return Accept(binder, irExp);
 }
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron
 

@@ -96,7 +96,7 @@ RType_Tuple* RFactory::MakeTupleType(vector<RTupleVar>&& vars)
 
 RType_Func* RFactory::MakeFuncType(bool bLocal, RType* retType, vector<RType_Func::Parameter>&& params)
 {
-    auto key = RSymbols::FuncTypeKey { bLocal, retType, params };
+    RFuncTypeKey key{bLocal, retType, params};
     auto i = funcTypes.find(key);
     if (i != funcTypes.end())
         return i->second.get();
@@ -134,7 +134,7 @@ RType_BoxPtr* RFactory::MakeBoxPtrType(RType* innerType)
 template<typename TDecl, typename TType, typename... TArgs>
 TType* RFactory::MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TDecl* decl, RTypeArguments* typeArgs, TArgs&&... args)
 {
-    auto key = RSymbols::InstanceTypeKey<TDecl> { decl, typeArgs };
+    RInstanceTypeKey<TDecl> key{decl, typeArgs};
     auto i = instanceTypes.find(key);
     if (i != instanceTypes.end())
         return i->second.get();
@@ -177,7 +177,7 @@ RType_Lambda* RFactory::MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeAr
 
 RTypeArguments* RFactory::MakeTypeArguments(const vector<RType*>& items)
 {
-    auto key = RSymbols::TypeArgumentsKey{ items };
+    RTypeArgumentsKey key{items};
 
     auto i = typeArgsMap.find(key);
     if (i != typeArgsMap.end())
@@ -194,7 +194,7 @@ RTypeArguments* RFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArg
     auto items = typeArgs0.items;
     items.insert(items.end(), typeArgs1.items.begin(), typeArgs1.items.end());
 
-    auto key = RSymbols::TypeArgumentsKey { items };
+    RTypeArgumentsKey key{items};
     auto i = typeArgsMap.find(key);
     if (i != typeArgsMap.end())
         return i->second.get();

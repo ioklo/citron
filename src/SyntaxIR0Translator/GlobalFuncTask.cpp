@@ -13,7 +13,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 void GlobalFuncTask::Register(NNamespaceDecl* outer, SGlobalFuncDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {
@@ -42,4 +42,4 @@ expected<MFuncBody, DiagPtr> GlobalFuncTask::TranslateBody(TranslateBodyContext&
     return context.Translate(nGFuncDecl, syntax->body);
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

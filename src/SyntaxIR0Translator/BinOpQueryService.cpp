@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 BinOpInfo::BinOpInfo(RType* operandType0, RType* operandType1, RType* resultType, MInternalBinaryOperator rOperator)
     : operandType0(operandType0), operandType1(operandType1), resultType(resultType), rOperator(rOperator)

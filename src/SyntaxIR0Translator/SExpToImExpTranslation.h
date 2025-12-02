@@ -10,14 +10,10 @@ namespace Citron {
 
 class RType;
 
-namespace SyntaxIR0Translator {
-
 class TranslationContext;
 
 class ImExp;
 
 std::expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp* exp, RType* hintType, TranslationContext& context);
-
-} // namespace SyntaxIR0Translator
 
 } // namespace Citron

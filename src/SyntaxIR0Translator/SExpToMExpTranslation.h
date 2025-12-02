@@ -16,8 +16,6 @@ class MExp;
 class MExp_String;
 enum class MInternalUnaryAssignOperator;
 
-namespace SyntaxIR0Translator {
-
 class TranslationContext;
 
 std::expected<MExp*, DiagPtr> TranslateSNullLiteralExpToMExp(SExp_NullLiteral* exp, RType* hintType, TranslationContext& context);
@@ -38,6 +36,5 @@ std::expected<MExp*, DiagPtr> TranslateSAsExpToMExp(SExp_As* exp, TranslationCon
 
 std::expected<MExp*, DiagPtr> TranslateSExpToMExp(SExp* exp, RType* hintType, TranslationContext& context);
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron
 

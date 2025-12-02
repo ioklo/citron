@@ -5,8 +5,6 @@
 
 namespace Citron {
 
-namespace SyntaxIR0Translator {
-
 class ImExp;
 class IrExp;
 class ReExp;
@@ -51,7 +49,5 @@ public:
 };
 
 using SRTFactoryPtr = std::shared_ptr<SRTFactory>;
-
-} // namespace SyntaxIR0Translator
 
 } // namespace Citron

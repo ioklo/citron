@@ -15,8 +15,6 @@ using MFactoryPtr = std::shared_ptr<class MFactory>;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using NFactoryPtr = std::shared_ptr<class NFactory>;
 
-namespace SyntaxIR0Translator {
-
 using SRTFactoryPtr = std::shared_ptr<class SRTFactory>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 
@@ -56,5 +54,4 @@ public:
 };
 
 
-} // namespace SyntaxIR0Translator 
 } // namespace Citron

@@ -6,8 +6,6 @@ class STypeExp;
 class RType;
 class NDecl;
 
-namespace SyntaxIR0Translator {
-
 class ResolveTypeHierarchyContext
 {
 public:
@@ -15,6 +13,4 @@ public:
 
 };
 
-
-} // namespace SyntaxIR0Translator
 } // namespace Citron

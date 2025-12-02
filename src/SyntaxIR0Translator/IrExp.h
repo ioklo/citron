@@ -19,8 +19,6 @@ class MExp;
 
 class MLoc;
 
-namespace SyntaxIR0Translator {
-
 // Intermediate Ref Exp
 // Sytnax가 &exp 꼴일 경우 IrExp를 거쳐서 ReExp(ResolvedExp)로 변환한다
 
@@ -419,6 +417,4 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp* i
     }
 }
 
-
-} // namespace SyntaxIR0Translator
 } // namespace Citron

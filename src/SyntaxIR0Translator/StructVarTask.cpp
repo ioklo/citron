@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 void StructVarTask::Register(NStructDecl* nOuter, SStructVarDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {
@@ -36,4 +36,4 @@ void StructVarTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& co
     }
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

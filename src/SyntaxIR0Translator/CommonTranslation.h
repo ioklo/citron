@@ -10,8 +10,6 @@ namespace Citron {
 
 enum class RAccessor;
 
-namespace SyntaxIR0Translator {
-
 enum class AccessorContext
 {
     Global,
@@ -23,5 +21,4 @@ RAccessor MakeAccessor(std::optional<SAccessModifier> modifier, AccessorContext 
 
 std::vector<std::string> MakeTypeParams(const std::vector<STypeParam>& typeParams);
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

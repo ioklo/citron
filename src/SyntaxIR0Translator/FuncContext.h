@@ -30,8 +30,6 @@ using NFactoryPtr = std::shared_ptr<NFactory>;
 class MFactory;
 using MFactoryPtr = std::shared_ptr<MFactory>;
 
-namespace SyntaxIR0Translator {
-
 class ScopeContext;
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 
@@ -126,5 +124,4 @@ public:
     bool IsSeqFunc() override;
 };
 
-} // namespace SyntaxIR0Translator 
 } // namespace Citron

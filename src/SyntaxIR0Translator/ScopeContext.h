@@ -23,8 +23,6 @@ class MLoc_This;
 class NLambdaDecl;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-namespace SyntaxIR0Translator {
-
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 using FuncContextPtr = std::shared_ptr<class FuncContext>;
 class ImExp;
@@ -73,5 +71,4 @@ public:
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

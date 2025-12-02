@@ -31,7 +31,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 // Syntax Exp -> IR0 Exp로 바꿔주는 기본적인 코드
 // Deref를 적용하지 않는다. 따로 해주어야 한다

@@ -26,7 +26,6 @@
 using namespace std;
 
 namespace Citron {
-namespace SyntaxIR0Translator {
 
 PhaseManager::PhaseManager(
     const LoggerPtr& logger, 
@@ -84,5 +83,4 @@ expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
     return funcBodies;
 }
 
-} // namespace SyntaxIR0Translator 
 } // namespace Citron

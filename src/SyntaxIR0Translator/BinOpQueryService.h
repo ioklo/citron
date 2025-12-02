@@ -11,8 +11,6 @@ class RFactory;
 class RType;
 enum class MInternalBinaryOperator;
 
-namespace SyntaxIR0Translator {
-
 struct BinOpInfo
 {
     RType* operandType0;
@@ -33,7 +31,5 @@ public:
 };
 
 using BinOpQueryServicePtr = std::shared_ptr<BinOpQueryService>;
-
-} // namespace SyntaxIR0Translator
 
 } // namespace Citron

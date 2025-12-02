@@ -10,8 +10,6 @@ class NStructVarDecl;
 class SStructVarDecl;
 using NFactoryPtr = std::shared_ptr<class NFactory>;
 
-namespace SyntaxIR0Translator {
-
 class PhaseManager;
 
 class StructVarTask
@@ -31,5 +29,4 @@ public:
     void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
 };
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

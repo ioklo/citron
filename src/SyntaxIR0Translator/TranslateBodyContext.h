@@ -15,8 +15,6 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-namespace SyntaxIR0Translator {
-
 class TranslationContext;
 using SRTFactoryPtr = std::shared_ptr<class SRTFactory>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
@@ -39,7 +37,5 @@ public:
     void MarkFailed();
     TranslationContext MakeTranslationContext();
 };
-
-} // namespace SyntaxIR0Translator
 
 } // namespace Citron

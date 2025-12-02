@@ -10,8 +10,6 @@ struct DeclWithOuterTypeArgs;
 
 class RTypeArguments;
 
-namespace SyntaxIR0Translator {
-
 template<typename TFuncDecl>
 class FuncsWithPartialTypeArgsComponent
 {
@@ -31,5 +29,4 @@ public:
     RTypeArguments* GetPartialTypeArgsExceptOuter() { return partialTypeArgsExceptOuter; }
 };
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

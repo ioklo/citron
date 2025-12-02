@@ -10,8 +10,6 @@ class NStructCtorDecl;
 class SStructCtorDecl;
 using NFactoryPtr = std::shared_ptr<class NFactory>;
 
-namespace SyntaxIR0Translator {
-
 class PhaseManager;
 
 class StructCtorTask
@@ -36,5 +34,4 @@ public:
 
 };
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

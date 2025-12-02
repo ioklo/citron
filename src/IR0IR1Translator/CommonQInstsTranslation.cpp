@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace Citron::IR0IR1Translator {
+namespace Citron {
 
 namespace {
 expected<void, DiagPtr> TranslateMExp_StringElemToQInsts(MExp_StringElem& elem, optional<QArg_Slot> oDestSlot, QBodyContext& bodyContext)
@@ -69,4 +69,4 @@ expected<void, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, std::opti
     return {};
 }
 
-} // namespace Citron::IR0IR1Translator
+} // namespace Citron

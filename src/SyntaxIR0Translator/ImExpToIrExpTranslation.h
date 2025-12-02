@@ -5,7 +5,7 @@
 
 #include "Logging/Diag.h"
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 class ImExp;
 class IrExp;
@@ -13,4 +13,4 @@ class TranslationContext;
 
 std::expected<IrExp*, DiagPtr> TranslateImExpToIrExp(ImExp* imExp, TranslationContext& context);
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

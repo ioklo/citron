@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 BuildTypeDependentSymbolContext::BuildTypeDependentSymbolContext(const RFactoryPtr& rFactory, const NFactoryPtr& nFactory)
     : rFactory{rFactory}, nFactory{nFactory}

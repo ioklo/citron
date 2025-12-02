@@ -13,7 +13,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 void StructFuncTask::Register(NStructDecl* nStructDecl, SStructFuncDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {

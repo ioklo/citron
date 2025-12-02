@@ -6,7 +6,7 @@
 #include "Logging/Logger.h"
 #include "Logging/Diag.h"
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 class IDesignatedDiagnostic
 {
@@ -31,4 +31,4 @@ struct DesignatedDiagnostic : public IDesignatedDiagnostic
     DiagPtr MakeDiag() { return ctor(); }
 };
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

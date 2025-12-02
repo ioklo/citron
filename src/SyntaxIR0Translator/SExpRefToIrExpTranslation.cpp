@@ -22,7 +22,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 namespace {
 
@@ -194,4 +194,4 @@ expected<IrExp*, DiagPtr> TranslateSExpRefToIrExp(SExp* exp, TranslationContext&
     return Accept(translator, exp);
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

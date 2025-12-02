@@ -6,8 +6,6 @@ namespace Citron {
 class SStructDecl;
 class NStructDecl;
 
-namespace SyntaxIR0Translator {
-
 class PhaseManager;
 enum class AccessorContext;
 
@@ -29,5 +27,4 @@ public:
     void SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& context) override;
 };
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

@@ -34,7 +34,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 namespace {
 // (IntermediateExp, Args) -> TranslationResult<IR0ExpResult>
@@ -416,4 +416,4 @@ expected<MExp*, DiagPtr> TranslateImCallableAndSArgsToMExp(ImExp* imCallable, SE
     return Accept(binder, imCallable);
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

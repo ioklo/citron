@@ -22,7 +22,7 @@
 
 using namespace std;
 
-namespace Citron::IR0IR1Translator {
+namespace Citron {
 
 QBlockWriter::QBlockWriter(const QFactoryPtr& qFactory, string&& firstBlockName)
     : qFactory{qFactory}
@@ -343,5 +343,4 @@ void QBodyContext::PopScope()
     scopes.pop_back();
 }
 
-
-} // Citron::IR0IR1Translator
+} // Citron

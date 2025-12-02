@@ -18,7 +18,7 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 namespace {
 
@@ -220,4 +220,4 @@ expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool b
 }
 
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron
