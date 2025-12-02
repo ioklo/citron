@@ -21,7 +21,7 @@ struct QFuncBody
 {   
     NFuncDecl* nFuncDecl;
     std::vector<QSlotInfo> slotInfos;
-    QBlock* entry;
+    std::vector<QBlock*> blocks;
 };
 
 

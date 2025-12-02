@@ -25,7 +25,7 @@ class QFactory
 
 public:
     QIR_API QData* MakeQData(std::vector<QFuncBody>&& funcBodies);
-    QIR_API QBlock* MakeQBlock(std::string&& debugText);
+    QIR_API QBlock* MakeQBlock(size_t index, std::string&& debugText);
 
     QIR_API QType_Void* MakeVoidType();
     QIR_API QType_Ptr* MakePtrType();

@@ -69,7 +69,7 @@ size_t GetSize(QType* type, QFactory& qFactory)
         return sizeof(void*);
 
     if (type == qFactory.MakeBoolType())
-        return 1;
+        return 4;
 
     if (type == qFactory.MakeIntType())
         return 4;
@@ -451,7 +451,7 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
     StackFrame frame;
 
     frame.qFuncBody = qFuncBody;
-    frame.ip = InstructionPointer{qFuncBody->entry, 0},
+    frame.ip = InstructionPointer{qFuncBody->blocks.front(), 0},
     frame.stackPointer = curFrame.stackPointer;
     frame.slots.resize(qFuncBody->slotInfos.size());
 
@@ -465,13 +465,34 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
 
         if (slot.oArgIndex) // argument로부터 복사
         {
-            frame.slots[i] = curFrame.slots[*slot.oArgIndex];
+            visit([i, &frame, &curFrame](auto& arg) {
+                using T = remove_cvref_t<decltype(arg)>;
+                if constexpr (same_as<T, QArg_Slot>)
+                {
+                    frame.slots[i] = curFrame.slots[arg.index];
+                }
+                else if constexpr (same_as<T, QArg_ConstBool>)
+                {
+                    *(bool*)frame.slots[i] = arg.value;
+                }
+                else if constexpr (same_as<T, QArg_ConstInt32>)
+                {
+                    *(int*)frame.slots[i] = arg.value;
+                }
+                else static_assert(false);
+            }, args[*slot.oArgIndex]);
+
         }
         else
         {
             size_t size = GetSize(slot.qType, qFactory);
             frame.stackPointer -= size;
             frame.slots[i] = frame.stackPointer;
+
+            if (slot.qType == qFactory.MakeStringType())
+            {
+                new (frame.slots[i]) string{};
+            }
         }
     }
 
@@ -497,7 +518,7 @@ struct Evaluator
         // src는 포인터 값을 갖고 있다
         void* dest = GetLoc(inst.dest, env);
         void* src = GetPtr(inst.src, env);
-        size_t size = GetSize(inst.qType, *qFactory);
+        size_t size = GetSize(inst.type, *qFactory);
 
         memcpy(dest, src, size);
         return true;
@@ -508,7 +529,7 @@ struct Evaluator
         // *dest = value;
         void* dest = GetPtr(inst.dest, env);
 
-        visit([this, dest, qType = inst.qType](auto& src)
+        visit([this, dest, qType = inst.type](auto& src)
         {
             using T = remove_cvref_t<decltype(src)>;
             if constexpr (same_as<T, QArg_ConstBool>)
@@ -545,7 +566,7 @@ struct Evaluator
 
         void* dest = GetLoc(inst.dest, env);
 
-        visit([this, dest, qType = inst.qType](auto& src)
+        visit([this, dest, qType = inst.type](auto& src)
         {
             using T = remove_cvref_t<decltype(src)>;
             if constexpr (same_as<T, QArg_ConstBool>)

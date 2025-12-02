@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <string>
-#include <cassert>
-#include <optional>
+#include <span>
+
 #include "QInsts.h"
 
 namespace Citron {
@@ -13,25 +13,26 @@ class QBlock
 {
     std::string debugText;
     std::vector<QInst> insts;
+    size_t index;
 
     friend class QPrinter;
 
 public:
-    QBlock(std::string&& debugText)
-        : debugText(std::move(debugText))
+    QBlock(size_t index, std::string&& debugText)
+        : index{index}, debugText(std::move(debugText))
     {
     }
+
+    size_t GetIndex() { return index; }
+    std::string_view GetName() { return debugText; }
 
     void EmitInst(QInst&& inst)
     {
         insts.push_back(std::move(inst));
     }
 
-    size_t GetInstCount()
-    {
-        return insts.size();
-    }
-    
+    std::span<QInst> GetInsts() { return insts; }
+
     QInst& GetInst(size_t index)
     {
         return insts[index];

@@ -48,7 +48,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     return QFuncBody{
         mFuncBody.nFuncDecl, 
         bodyContext.GetStackSlotInfos() | ranges::to<vector>(), 
-        bodyContext.GetEntryBlock()};
+        bodyContext.GetBlocks() | ranges::to<vector>() };
 }
 
 } // namespace

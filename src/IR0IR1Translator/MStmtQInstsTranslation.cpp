@@ -82,13 +82,15 @@ public:
             // 4. fill trueBlock
             bodyContext.SetCurBlock(trueBlock);
             auto eTrueResult = TranslateMStmtsToQInsts(stmt->body, bodyContext);
-            if (!eTrueResult) return unexpected{eTrueResult.error()};
+            RETURN_ON_ERROR(eTrueResult);
+            if(!bodyContext.IsBlockCompleted())
             bodyContext.CompleteBlock(QInst_Jump{endBlock});
 
             // 5. fill falseBlock
             bodyContext.SetCurBlock(falseBlock);
             auto eFalseResult = TranslateMStmtsToQInsts(stmt->elseBody, bodyContext);
-            if (!eFalseResult) return unexpected{eFalseResult.error()};
+            RETURN_ON_ERROR(eFalseResult);
+            if (!bodyContext.IsBlockCompleted())
             bodyContext.CompleteBlock(QInst_Jump{endBlock});
 
             bodyContext.SetCurBlock(endBlock);
@@ -105,8 +107,9 @@ public:
 
             // 4. fill trueBlock
             bodyContext.SetCurBlock(trueBlock);
-            auto eNewTrueBlock = TranslateMStmtsToQInsts(stmt->body, bodyContext);
-            if (!eNewTrueBlock) return unexpected{eNewTrueBlock.error()};
+            auto eTrueBlockResult = TranslateMStmtsToQInsts(stmt->body, bodyContext);
+            RETURN_ON_ERROR(eTrueBlockResult);
+            if (!bodyContext.IsBlockCompleted())
             bodyContext.CompleteBlock(QInst_Jump{endBlock});
 
             bodyContext.SetCurBlock(endBlock);

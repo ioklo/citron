@@ -53,8 +53,11 @@ public:
     void CompleteBlock(QTermInst&& termInst);
 
     QBlock* GetCurBlock() { return curBlock; }
+    std::span<QBlock*> GetBlocks() { return blocks; }
     void SetCurBlock(QBlock* block);
     void Verify();
+
+    bool IsBlockCompleted() { return state == QBlockWriterState::EndOfBlock; }
 };
 
 struct QLocalVarInfo
@@ -101,6 +104,7 @@ public:
     void EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> oDest, std::vector<QArg_Input>&& args);
     void CompleteBlock(QTermInst&& termInst) { QBlockWriter::CompleteBlock(std::move(termInst)); }
     void SetCurBlock(QBlock* block) { QBlockWriter::SetCurBlock(block); }
+    bool IsBlockCompleted() { return QBlockWriter::IsBlockCompleted(); }
 
 public:
     QBlock* GetEntryBlock() { return entryBlock; }
@@ -118,6 +122,7 @@ public:
 
     QArg_Slot NewSlot(QType* qType);
     std::span<QSlotInfo> GetStackSlotInfos() { return slotInfos; }
+    std::span<QBlock*> GetBlocks() { return QBlockWriter::GetBlocks(); }
 
     QArg_Slot NewSlotForMExp(MExp* exp);
 

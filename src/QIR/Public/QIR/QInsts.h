@@ -20,7 +20,7 @@ struct QInst_InitString
 // %dest = load [%src]
 struct QInst_Load
 {
-    QType *qType;
+    QType *type;
     QArg_Slot dest;  // T slot
     QArg_Slot src;   // T* 나타내는 slot가능
 };
@@ -29,7 +29,7 @@ struct QInst_Load
 // loc은 ptr을 담고 있음
 struct QInst_Store
 {
-    QType* qType;     // T
+    QType* type;     // T
     QArg_Slot dest;   // T*을 나타내는 slot
     QArg_Input src;   // T의 const, register 가능
 };
@@ -44,7 +44,7 @@ struct QInst_AddrOf
 // %dest = <ty> %src
 struct QInst_Assign
 {
-    QType* qType;
+    QType* type;
     QArg_Slot dest; // T slot 가능
     QArg_Input src;  // T const, slot가능
 };

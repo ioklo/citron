@@ -1,5 +1,4 @@
 #include "QPrinter.h"
-#include <queue>
 #include <format>
 #include <regex>
 #include <unordered_set>
@@ -33,10 +32,6 @@ class QPrinter
     IWriter& writer;
     QFuncBody& funcBody;
     QFactory& qFactory;
-
-    queue<QBlock*> nextBlocks;
-    std::unordered_set<QBlock*> queued;
-    
 
     struct ArgPrinter
     {
@@ -78,7 +73,7 @@ class QPrinter
             printer.PrintQArg_Slot(inst.dest);
             printer.Print(" = ");
             printer.Print("load ");
-            printer.PrintQType(inst.qType);
+            printer.PrintQType(inst.type);
             printer.Print(", ");
             printer.PrintAddrQArg_Slot(inst.src);
             printer.PrintLine();
@@ -88,7 +83,7 @@ class QPrinter
         {
             // store <ty> [%lv], %v
             printer.Print("store ");
-            printer.PrintQType(inst.qType);
+            printer.PrintQType(inst.type);
             printer.Print(", ");
             printer.PrintAddrQArg_Slot(inst.dest);
             printer.Print(", ");
@@ -111,7 +106,7 @@ class QPrinter
             // %dest = <ty> %src
             printer.PrintQArg_Slot(inst.dest);
             printer.Print(" = ");
-            printer.PrintQType(inst.qType);
+            printer.PrintQType(inst.type);
             printer.Print(", ");
             printer.PrintQArg_Input(inst.src);
             printer.PrintLine();
@@ -167,9 +162,6 @@ class QPrinter
             printer.Print(", ");
             printer.PrintBlockLabel(inst.falseBlock);
             printer.PrintLine();
-
-            printer.AddNextBlock(inst.trueBlock);
-            printer.AddNextBlock(inst.falseBlock);
         }
 
         void operator()(QInst_Jump& inst)
@@ -177,8 +169,6 @@ class QPrinter
             printer.Print("jump ");
             printer.PrintBlockLabel(inst.block);
             printer.PrintLine();
-
-            printer.AddNextBlock(inst.block);
         }
 
         void operator()(QInst_Return& inst)
@@ -240,15 +230,6 @@ public:
         else throw NotImplementedException{};
     }
     
-    void AddNextBlock(QBlock* block)
-    {
-        auto i = queued.find(block);
-        if (i != queued.end()) return;
-
-        queued.insert(block);
-        nextBlocks.push(block);
-    }
-
     string ToString(QInst_IntrinsicKind kind)
     {
         using enum QInst_IntrinsicKind;
@@ -350,21 +331,16 @@ public:
         
         writer.WriteLine();
 
-        AddNextBlock(funcBody.entry);
-
-        while (!nextBlocks.empty())
+        for(auto* block : funcBody.blocks)
         {
-            QBlock* curBlock = nextBlocks.front();
-            nextBlocks.pop();
-
             // debugText:
             writer.WriteLine();
-            writer.Write(format("{}:", curBlock->debugText));
+            writer.Write(format("{}:", block->debugText));
 
             writer.AddIndent();
             writer.WriteLine();
 
-            for (auto& inst : curBlock->insts)
+            for (auto& inst : block->insts)
             {
                 visit(InstPrinter{*this}, inst);
             }
