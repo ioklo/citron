@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 
-project(Citron CXX)
+project(Citron)
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -15,6 +15,7 @@ add_subdirectory(QIR)
 add_subdirectory(TextAnalysis)
 add_subdirectory(SyntaxIR0Translator)
 add_subdirectory(IR0IR1Translator)
+add_subdirectory(QIrLLVMTranslator)
 add_subdirectory(QEvaluator)
 
 add_subdirectory(Builder)

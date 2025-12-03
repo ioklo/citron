@@ -33,5 +33,6 @@ target_sources(QIR
         Public/QIR/QIRConfig.h
         Public/QIR/QArgs.h
         Public/QIR/QPrinter.h
+        Public/QIR/QTypes.h
 
 )

@@ -19,6 +19,7 @@ target_sources(Syntax
         SFactory.cpp
         Syntaxes.cpp
         Syntaxes.g.cpp
+        Tokens.cpp
 
         PUBLIC FILE_SET headers
         TYPE HEADERS
@@ -29,4 +30,3 @@ target_sources(Syntax
         Public/Syntax/Syntaxes.g.h
         Public/Syntax/Tokens.h
 )
-

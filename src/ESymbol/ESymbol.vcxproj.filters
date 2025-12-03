@@ -147,5 +147,6 @@
       <Filter>05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="ENames.cpp" />
+    <ClCompile Include="EEnumElemDecl.cpp" />
   </ItemGroup>
 </Project>

@@ -27,7 +27,7 @@ namespace Citron {
 QBlockWriter::QBlockWriter(const QFactoryPtr& qFactory, string&& firstBlockName)
     : qFactory{qFactory}
 {
-    auto* firstBlock = qFactory->MakeQBlock(format("b{}_{}", blocks.size(), move(firstBlockName)));
+    auto* firstBlock = qFactory->MakeQBlock(blocks.size(), format("b{}_{}", blocks.size(), move(firstBlockName)));
     this->curBlock = firstBlock;
     this->blocks.push_back(firstBlock);
     this->state = QBlockWriterState::CanWrite;
@@ -50,7 +50,7 @@ void QBlockWriter::EmitInstInternal(QInst&& inst)
 
 QBlock* QBlockWriter::AddBlock(string&& debugText)
 {
-    auto* newBlock = qFactory->MakeQBlock(format("b{}_{}", blocks.size(), move(debugText)));
+    auto* newBlock = qFactory->MakeQBlock(blocks.size(), format("b{}_{}", blocks.size(), move(debugText)));
     blocks.push_back(newBlock);
     pendingBlocks.push_back(newBlock);
     return newBlock;
