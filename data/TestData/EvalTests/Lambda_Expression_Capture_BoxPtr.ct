@@ -1,0 +1,11 @@
+//@ 2
+void Main()
+{
+    box int* x = box 0; // heap을 사용하는 버전
+    var l = () => *x;
+    
+    *x = 2;
+
+    // 2
+    @${l()}
+}

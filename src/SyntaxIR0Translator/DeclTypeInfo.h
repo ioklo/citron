@@ -5,9 +5,6 @@
 namespace Citron {
 
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-
-namespace SyntaxIR0Translator {
 
 enum class DeclTypeInfoKind
 {
@@ -22,9 +19,7 @@ enum class DeclTypeInfoKind
 struct DeclTypeInfo
 {
     DeclTypeInfoKind kind;
-    RTypePtr type;
+    RType* type;
 };
-
-} // namespace SyntaxIR0Translator
 
 } // namespace Citron

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public Headers">
+      <UniqueIdentifier>{f7d062b3-085a-4c7e-b17c-6a51dd4b3c71}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Public\IR0IR1Translator\IR0IR1Translator.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="MExpQInstsTranslation.h" />
+    <ClInclude Include="MLocQInstsTranslation.h" />
+    <ClInclude Include="MStmtQInstsTranslation.h" />
+    <ClInclude Include="QBodyContext.h" />
+    <ClInclude Include="CommonQInstsTranslation.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="IR0IR1Translator.cpp" />
+    <ClCompile Include="MExpQInstsTranslation.cpp" />
+    <ClCompile Include="MLocQInstsTranslation.cpp" />
+    <ClCompile Include="MStmtQInstsTranslation.cpp" />
+    <ClCompile Include="QBodyContext.cpp" />
+    <ClCompile Include="CommonQInstsTranslation.cpp" />
+  </ItemGroup>
+</Project>

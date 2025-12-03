@@ -10,46 +10,48 @@
 
 namespace Citron {
 
-TEXTANALYSIS_API SExpPtr ParseExp(Lexer* lexer);
+class SFactory;
+
+TEXTANALYSIS_API SExp* ParseExp(Lexer* lexer, SFactory& factory);
 
 // 1. Assignment, Right Assoc
-SExpPtr ParseAssignExp(Lexer* lexer);
+SExp* ParseAssignExp(Lexer* lexer, SFactory& factory);
 
 // 2. Equality, Left Assoc
-SExpPtr ParseEqualityExp(Lexer* lexer);
+SExp* ParseEqualityExp(Lexer* lexer, SFactory& factory);
 
 // 3. TestAndTypeTest, LeftAssoc
-SExpPtr ParseTestAndTypeTestExp(Lexer* lexer);
+SExp* ParseTestAndTypeTestExp(Lexer* lexer, SFactory& factory);
 
 // 4. Additive, LeftAssoc
-SExpPtr ParseAdditiveExp(Lexer* lexer);
+SExp* ParseAdditiveExp(Lexer* lexer, SFactory& factory);
 
 // 5. Multiplicative, LeftAssoc
-SExpPtr ParseMultiplicativeExp(Lexer* lexer);
+SExp* ParseMultiplicativeExp(Lexer* lexer, SFactory& factory);
 
 // 6. Unary, Prefix Inc / Dec
-SExpPtr ParseUnaryExp(Lexer* lexer);
+SExp* ParseUnaryExp(Lexer* lexer, SFactory& factory);
 
 // 7. Primary, Postfix Inc / Dec
-SExpPtr ParsePrimaryExp(Lexer* lexer);
+SExp* ParsePrimaryExp(Lexer* lexer, SFactory& factory);
 
 // 8. Single
-SExpPtr ParseSingleExp(Lexer* lexer);
+SExp* ParseSingleExp(Lexer* lexer, SFactory& factory);
 
 // 기타
-std::shared_ptr<SExp_Box> ParseBoxExp(Lexer* lexer);
-std::shared_ptr<SExp_New> ParseNewExp(Lexer* lexer);
+SExp_Box* ParseBoxExp(Lexer* lexer, SFactory& factory);
+SExp_New* ParseNewExp(Lexer* lexer, SFactory& factory);
 
 // LambdaExpression, Right Assoc
-std::shared_ptr<SExp_Lambda> ParseLambdaExp(Lexer* lexer);
-SExpPtr ParseParenExp(Lexer* lexer);
-std::shared_ptr<SExp_NullLiteral> ParseNullLiteralExp(Lexer* lexer);
-std::shared_ptr<SExp_BoolLiteral> ParseBoolLiteralExp(Lexer* lexer);
-std::shared_ptr<SExp_IntLiteral> ParseIntLiteralExp(Lexer* lexer);
-std::shared_ptr<SExp_String> ParseStringExp(Lexer* lexer);
-std::shared_ptr<SExp_List> ParseListExp(Lexer* lexer);
-std::shared_ptr<SExp_Identifier> ParseIdentifierExp(Lexer* lexer);
+SExp_Lambda* ParseLambdaExp(Lexer* lexer, SFactory& factory);
+SExp* ParseParenExp(Lexer* lexer, SFactory& factory);
+SExp_NullLiteral* ParseNullLiteralExp(Lexer* lexer, SFactory& factory);
+SExp_BoolLiteral* ParseBoolLiteralExp(Lexer* lexer, SFactory& factory);
+SExp_IntLiteral* ParseIntLiteralExp(Lexer* lexer, SFactory& factory);
+SExp_String* ParseStringExp(Lexer* lexer, SFactory& factory);
+SExp_List* ParseListExp(Lexer* lexer, SFactory& factory);
+SExp_Identifier* ParseIdentifierExp(Lexer* lexer, SFactory& factory);
 
-SArgumentsPtr ParseCallArgs(Lexer* lexer);
+SArguments* ParseCallArgs(Lexer* lexer, SFactory& factory);
 
 }

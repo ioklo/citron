@@ -9,30 +9,23 @@
 
 #include "Logging/Diag.h"
 #include "Syntax/Syntax.h"
-#include "IR0/RNames.h"
-#include "IR0/RMember.h"
-#include "IR0/RFuncReturn.h"
+#include "RSymbol/RNames.h"
+#include "RSymbol/RMember.h"
+#include "RSymbol/RFuncReturn.h"
 
 namespace Citron { 
 
 struct RFuncParameter;
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-class RTypeFactory;
+class RFactory;
 
-class NLoc_This;
+class MLoc_This;
 class NLambdaDecl;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-namespace SyntaxIR0Translator {
-
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
-
-class FuncContext;
-using FuncContextPtr = std::shared_ptr<FuncContext>;
-
+using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+using FuncContextPtr = std::shared_ptr<class FuncContext>;
 class ImExp;
-using ImExpPtr = std::shared_ptr<ImExp>;
 
 class CloneContext;
 class UpdateContext;
@@ -44,37 +37,38 @@ public:
     ScopeContextPtr parentContext;
     int nestedLoop;
 
+    RFactoryPtr rFactory;
+
     // 로컬 관리
-    std::unordered_map<std::string, RTypePtr> locals;
+    std::unordered_map<RName, RType*> locals;
 
 public:
-    ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop);
+    ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop, const RFactoryPtr& rFactory);
 
     ScopeContextPtr Clone(CloneContext& context);
     void Update(ScopeContext& src, UpdateContext& context);
 
 public:
-    RTypeArgumentsPtr MakeOpenTypeArgs(RTypeFactory& factory);
+    RTypeArguments* MakeOpenTypeArgs();
     void SetFlowEndsCompletely();
 
     std::shared_ptr<ScopeContext> MakeNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
     std::shared_ptr<ScopeContext> MakeLoopNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
     std::tuple<ScopeContextPtr, NLambdaDecl> MakeLambdaBodyContext(const RFuncReturn& ret, std::vector<RFuncParameter> params, bool bLastParamVariadic);
 
-    void AddLocalVarInfo(const RTypePtr& type, const RName& name);
+    void AddLocalVarInfo(RType* type, const RName& name);
     // std::optional<LocalVarInfo> GetLocalVarInfo(const RName& name);
 
-    bool DoesLocalVarNameExistInScope(const std::string& name);
+    bool DoesLocalVarNameExistInScope(const RName& name);
 
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }
-    std::expected<RTypePtr, DiagPtr> TranslateSTypeExpToRType(STypeExp& typeExp, RTypeFactory& factory);
+    std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
 
-    std::shared_ptr<NLoc_This> MakeThisLoc(RTypeFactory& factory);
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory);
+    MLoc_This* MakeThisLoc();
+    std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

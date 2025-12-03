@@ -11,8 +11,9 @@ using namespace Citron;
 TEST(TypeExpParser, BoxPtr_ParseAmbiguousLocalAndBoxPtrs)
 {
     auto [buffer, lexer] = Prepare(UR"---(box T**)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    ParseTypeExp(&lexer, factory);
 
     EXPECT_TRUE(!lexer.IsReachedEnd());
 }
@@ -20,8 +21,9 @@ TEST(TypeExpParser, BoxPtr_ParseAmbiguousLocalAndBoxPtrs)
 TEST(TypeExpParser, BoxPtr_ParseBoxPtrOfIdChain)
 {
     auto [buffer, lexer] = Prepare(UR"---(box A.B<int>.C*)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_BoxPtr",
@@ -49,14 +51,15 @@ TEST(TypeExpParser, BoxPtr_ParseBoxPtrOfIdChain)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, BoxPtr_ParseBoxPtrOfNullableRaw)
 {
     auto [buffer, lexer] = Prepare(UR"---(box T?*)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    ParseTypeExp(&lexer, factory);
 
     EXPECT_TRUE(!lexer.IsReachedEnd());
 }
@@ -64,8 +67,9 @@ TEST(TypeExpParser, BoxPtr_ParseBoxPtrOfNullableRaw)
 TEST(TypeExpParser, BoxPtr_ParseBoxPtrOfParen)
 {
     auto [buffer, lexer] = Prepare(UR"---(box (T?)*)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_BoxPtr",
@@ -80,14 +84,15 @@ TEST(TypeExpParser, BoxPtr_ParseBoxPtrOfParen)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, BoxPtr_ParseNestedBoxPtrs)
 {
     auto [buffer, lexer] = Prepare(UR"---(box box T**)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    ParseTypeExp(&lexer, factory);
 
     EXPECT_TRUE(!lexer.IsReachedEnd());
 }
@@ -95,8 +100,9 @@ TEST(TypeExpParser, BoxPtr_ParseNestedBoxPtrs)
 TEST(TypeExpParser, LocalPtr_ParseLocalPtrOfIdChain)
 {
     auto [buffer, lexer] = Prepare(UR"---(A.B<int>.C*)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_LocalPtr",
@@ -124,14 +130,15 @@ TEST(TypeExpParser, LocalPtr_ParseLocalPtrOfIdChain)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, LocalPtr_ParseLocalPtrOfNullableRaw)
 {
     auto [buffer, lexer] = Prepare(UR"---(T?*)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    ParseTypeExp(&lexer, factory);
 
     EXPECT_TRUE(!lexer.IsReachedEnd());
 }
@@ -139,8 +146,9 @@ TEST(TypeExpParser, LocalPtr_ParseLocalPtrOfNullableRaw)
 TEST(TypeExpParser, LocalPtr_ParseLocalPtrOfParen)
 {
     auto [buffer, lexer] = Prepare(UR"---((T?)*)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_LocalPtr",
@@ -155,14 +163,15 @@ TEST(TypeExpParser, LocalPtr_ParseLocalPtrOfParen)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, LocalPtr_ParseNestedLocalPtrs)
 {
     auto [buffer, lexer] = Prepare(UR"---(T**)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_LocalPtr",
@@ -177,14 +186,15 @@ TEST(TypeExpParser, LocalPtr_ParseNestedLocalPtrs)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, Nullable_ParseDoubleQuestionMark)
 {
     auto [buffer, lexer] = Prepare(UR"---(T??)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    ParseTypeExp(&lexer, factory);
 
     EXPECT_TRUE(!lexer.IsReachedEnd());
 }
@@ -192,8 +202,9 @@ TEST(TypeExpParser, Nullable_ParseDoubleQuestionMark)
 TEST(TypeExpParser, Nullable_ParseIdChainNullable)
 {
     auto [buffer, lexer] = Prepare(UR"---(A.B<int>.C?)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_Nullable",
@@ -221,14 +232,15 @@ TEST(TypeExpParser, Nullable_ParseIdChainNullable)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, Nullable_ParseNullableBoxPtr)
 {
     auto [buffer, lexer] = Prepare(UR"---(box T*?)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_Nullable",
@@ -243,14 +255,15 @@ TEST(TypeExpParser, Nullable_ParseNullableBoxPtr)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, Nullable_ParseNullableLocalPtr)
 {
     auto [buffer, lexer] = Prepare(UR"---(T*?)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_Nullable",
@@ -265,14 +278,15 @@ TEST(TypeExpParser, Nullable_ParseNullableLocalPtr)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, Nullable_ParseNullableParen)
 {
     auto [buffer, lexer] = Prepare(UR"---((T*)?)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_Nullable",
@@ -287,14 +301,15 @@ TEST(TypeExpParser, Nullable_ParseNullableParen)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, Paren_ParseWrappedBoxPtr)
 {
     auto [buffer, lexer] = Prepare(UR"---((box T*)?)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_Nullable",
@@ -309,14 +324,15 @@ TEST(TypeExpParser, Paren_ParseWrappedBoxPtr)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, Paren_ParseWrappedIdChain)
 {
     auto [buffer, lexer] = Prepare(UR"---((A.B<int>.C)?)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    ParseTypeExp(&lexer, factory);
 
     EXPECT_TRUE(!lexer.IsReachedEnd());
 }
@@ -324,8 +340,9 @@ TEST(TypeExpParser, Paren_ParseWrappedIdChain)
 TEST(TypeExpParser, Paren_ParseWrappedLocalPtr)
 {
     auto [buffer, lexer] = Prepare(UR"---((T*)*)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_LocalPtr",
@@ -340,14 +357,15 @@ TEST(TypeExpParser, Paren_ParseWrappedLocalPtr)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, Paren_ParseWrappedNested)
 {
     auto [buffer, lexer] = Prepare(UR"---(((T*))?)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    ParseTypeExp(&lexer, factory);
 
     EXPECT_TRUE(!lexer.IsReachedEnd());
 }
@@ -355,8 +373,9 @@ TEST(TypeExpParser, Paren_ParseWrappedNested)
 TEST(TypeExpParser, Paren_ParseWrappedNullable)
 {
     auto [buffer, lexer] = Prepare(UR"---((T?)?)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_Nullable",
@@ -371,14 +390,15 @@ TEST(TypeExpParser, Paren_ParseWrappedNullable)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, TopLevel_ParseBoxPtr)
 {
     auto [buffer, lexer] = Prepare(UR"---(box T*)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_BoxPtr",
@@ -390,14 +410,15 @@ TEST(TypeExpParser, TopLevel_ParseBoxPtr)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, TopLevel_ParseIdChain)
 {
     auto [buffer, lexer] = Prepare(UR"---(A.B<int>.C)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_Member",
@@ -422,14 +443,15 @@ TEST(TypeExpParser, TopLevel_ParseIdChain)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, TopLevel_ParseLocalPtr)
 {
     auto [buffer, lexer] = Prepare(UR"---(int*)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_LocalPtr",
@@ -441,14 +463,15 @@ TEST(TypeExpParser, TopLevel_ParseLocalPtr)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, TopLevel_ParseNullable)
 {
     auto [buffer, lexer] = Prepare(UR"---(T?)---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    auto* typeExp = ParseTypeExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "STypeExp_Nullable",
@@ -460,14 +483,15 @@ TEST(TypeExpParser, TopLevel_ParseNullable)
 })---";
 
     EXPECT_TRUE(lexer.IsReachedEnd());
-    EXPECT_SYNTAX_EQ(oTypeExp, expected);
+    EXPECT_SYNTAX_EQ(typeExp, expected);
 }
 
 TEST(TypeExpParser, TopLevel_ParseParenSolo)
 {
     auto [buffer, lexer] = Prepare(UR"---((T))---");
+    SFactory factory;
 
-    auto oTypeExp = ParseTypeExp(&lexer);
+    ParseTypeExp(&lexer, factory);
 
     EXPECT_TRUE(!lexer.IsReachedEnd());
 }

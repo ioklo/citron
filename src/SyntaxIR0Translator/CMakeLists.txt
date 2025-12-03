@@ -1,6 +1,8 @@
 
 add_library(SyntaxIR0Translator SHARED)
 
+set_target_properties(SyntaxIR0Translator PROPERTIES DEFINE_SYMBOL SYNTAXIR0TRANSLATOR_EXPORTS)
+
 target_compile_options(SyntaxIR0Translator PRIVATE
         -Wno-unqualified-std-cast-call
 )
@@ -9,91 +11,103 @@ target_include_directories(SyntaxIR0Translator
         PRIVATE Public/SyntaxIR0Translator
         PUBLIC Public)
 
-target_link_libraries(SyntaxIR0Translator PRIVATE Infra Syntax Logging Symbol IR0)
+target_link_libraries(SyntaxIR0Translator PRIVATE Infra Syntax Logging ESymbol RSymbol NSymbol MIR)
 
 target_sources(SyntaxIR0Translator
         PRIVATE
         BinOpQueryService.cpp
-        BodyPhaseContext.cpp
+        BuildTypeDependentSymbolContext.cpp
         CommonTranslation.cpp
         DeclTypeInfo.cpp
         DesignatedDiagnostic.cpp
-        EnumTranslation.cpp
+        EnumElemVarTask.cpp
         FuncContext.cpp
         FuncMatching.cpp
         FuncsWithPartialTypeArgsComponent.cpp
-        ImCallableAndSArgsToNExpTranslation.cpp
+        GlobalContext.cpp
+        GlobalFuncTask.cpp
+        ImCallableAndSArgsToMExpTranslation.cpp
         ImExp.cpp
         ImExpAndMemberNameToImExpTranslation.cpp
         ImExpToIrExpTranslation.cpp
         ImExpToReExpTranslation.cpp
         IrExp.cpp
         IrExpAndMemberNameToIrExpTranslation.cpp
-        IrExpToNExpTranslation.cpp
-        MemberDeclPhaseContext.cpp
+        IrExpToMExpTranslation.cpp
         Misc.cpp
         ModuleDecls.cpp
-        RFuncAndRArgsToNExpTranslation.cpp
+        PhaseManager.cpp
         ReExp.cpp
-        ReExpToNExpTranslation.cpp
-        ReExpToNLocTranslation.cpp
-        ResolveIdentifierError.cpp
-        SExpRefToIrExpTranslation.cpp
-        SExpRefToNExpTranslation.cpp
-        SExpToImExpTranslation.cpp
-        SExpToNExpTranslation.cpp
-        SExpToNLocTranslation.cpp
-        SExpToReExpTranslation.cpp
-        SStmtToNStmtTranslation.cpp
-        SVarDeclToNStmtsTranslation.cpp
+        ReExpToMExpTranslation.cpp
+        ReExpToMLocTranslation.cpp
+        ResolveTypeHierarchyContext.cpp
+        RFuncAndRArgsToMExpTranslation.cpp
         ScopeContext.cpp
-        SkeletonPhaseContext.cpp
-        StructTranslation.cpp
+        SExpRefToIrExpTranslation.cpp
+        SExpRefToMExpTranslation.cpp
+        SExpToImExpTranslation.cpp
+        SExpToMExpTranslation.cpp
+        SExpToMLocTranslation.cpp
+        SExpToReExpTranslation.cpp
+        SRTFactory.cpp
+        SStmtToMStmtTranslation.cpp
+        StructCtorTask.cpp
+        StructFuncTask.cpp
+        StructTask.cpp
+        StructVarTask.cpp
+        SVarDeclToMStmtsTranslation.cpp
         SyntaxIR0Translator.cpp
+        TranslateBodyContext.cpp
         TranslationContext.cpp
 
         PUBLIC FILE_SET headers
         TYPE HEADERS
         FILES
+        Public/SyntaxIR0Translator/SyntaxIR0Translator.h
+        Public/SyntaxIR0Translator/SyntaxIR0TranslatorConfig.h
         BinOpQueryService.h
-        BodyPhaseContext.h
+        BuildTypeDependentSymbolContext.h
         CommonTranslation.h
         DeclTypeInfo.h
         DesignatedDiagnostic.h
-        EnumTranslation.h
+        EnumElemVarTask.h
         FuncContext.h
         FuncMatching.h
         FuncsWithPartialTypeArgsComponent.h
-        ImCallableAndSArgsToNExpTranslation.h
+        GlobalContext.h
+        GlobalFuncTask.h
+        ImCallableAndSArgsToMExpTranslation.h
         ImExp.h
         ImExpAndMemberNameToImExpTranslation.h
         ImExpToIrExpTranslation.h
         ImExpToReExpTranslation.h
         IrExp.h
         IrExpAndMemberNameToIrExpTranslation.h
-        IrExpToNExpTranslation.h
-        MemberDeclPhaseContext.h
+        IrExpToMExpTranslation.h
         Misc.h
         ModuleDecls.h
-        RFuncAndRArgsToNExpTranslation.h
+        PhaseManager.h
         ReExp.h
-        ReExpToNExpTranslation.h
-        ReExpToNLocTranslation.h
-        ResolveIdentifierError.h
-        SExpRefToIrExpTranslation.h
-        SExpRefToNExpTranslation.h
-        SExpToImExpTranslation.h
-        SExpToNExpTranslation.h
-        SExpToNLocTranslation.h
-        SExpToReExpTranslation.h
-        SStmtToNStmtTranslation.h
-        SVarDeclToNStmtsTranslation.h
+        ReExpToMExpTranslation.h
+        ReExpToMLocTranslation.h
+        ResolveTypeHierarchyContext.h
+        RFuncAndRArgsToMExpTranslation.h
         ScopeContext.h
-        SkeletonPhaseContext.h
-        StructTranslation.h
-        SyntaxIR0Translator-HeaderUnits.h
-        SyntaxIR0Translator.h
-        SyntaxIR0TranslatorConfig.h
+        SExpRefToIrExpTranslation.h
+        SExpRefToMExpTranslation.h
+        SExpToImExpTranslation.h
+        SExpToMExpTranslation.h
+        SExpToMLocTranslation.h
+        SExpToReExpTranslation.h
+        SRTFactory.h
+        SStmtToMStmtTranslation.h
+        StructCtorTask.h
+        StructFuncTask.h
+        StructTask.h
+        StructVarTask.h
+        SVarDeclToMStmtsTranslation.h
+        TranslateBodyContext.h
         TranslationContext.h
+        TranslationTasks.h
 
 )

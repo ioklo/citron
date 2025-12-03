@@ -1,0 +1,12 @@
+//@ 3 hi
+void Main()
+{
+    var l1 = (int x) => x + 1; // 본문 축약형
+    var l2 = (string s) => { return s; } // 완전한 본문
+
+    var v1 = l1(2);
+    var v2 = l2("hi");
+
+    // 3, "hi"
+    @$v1, $v2
+}

@@ -1,0 +1,12 @@
+//@ ok
+class C { }
+class D { }
+
+void Main()
+{
+	var c = new C();
+	var d = c as D;
+	
+	if (d == null)
+		@ok
+}

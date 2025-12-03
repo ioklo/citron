@@ -11,14 +11,15 @@ using namespace Citron;
 TEST(StmtParser, ParseBlankStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(  ;  )---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_Blank"
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseBlockCommandStmt)
@@ -27,8 +28,9 @@ TEST(StmtParser, ParseBlockCommandStmt)
     echo ${ a } bbb   
 xxx
 })---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_Command",
@@ -66,14 +68,15 @@ xxx
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseBlockStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---({ { } { ; } ; })---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_Block",
@@ -96,14 +99,15 @@ TEST(StmtParser, ParseBlockStmt)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseBoxPtrVarDeclStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(box int* p;)---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_VarDecl",
@@ -127,40 +131,43 @@ TEST(StmtParser, ParseBoxPtrVarDeclStmt)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseBreakStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(break;)---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_Break"
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseContinueStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(continue;)---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_Continue"
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseDirectiveStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(`notnull(a);)---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_Directive",
@@ -174,14 +181,15 @@ TEST(StmtParser, ParseDirectiveStmt)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseExpStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(a = b * c(1);)---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_Exp",
@@ -227,14 +235,15 @@ TEST(StmtParser, ParseExpStmt)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseForStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(for (f(); g; h + g) ;)---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_For",
@@ -280,14 +289,15 @@ TEST(StmtParser, ParseForStmt)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseForeachStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(foreach( var x in l ) { } )---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_Foreach",
@@ -308,14 +318,15 @@ TEST(StmtParser, ParseForeachStmt)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseIfIsExpCondStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(if (b is T) {} else if (c) {} else {})---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_If",
@@ -357,14 +368,15 @@ TEST(StmtParser, ParseIfIsExpCondStmt)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseIfStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(if (b) {} else if (c) {} else {})---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_If",
@@ -398,14 +410,15 @@ TEST(StmtParser, ParseIfStmt)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseIfTestStmtWithVarName)
 {
     auto [buffer, lexer] = Prepare(UR"---(if (T t = b) {} else if (c) {} else {})---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_IfTest",
@@ -445,14 +458,15 @@ TEST(StmtParser, ParseIfTestStmtWithVarName)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseInlineCommandStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(@echo ${a}bbb  )---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_Command",
@@ -481,14 +495,15 @@ TEST(StmtParser, ParseInlineCommandStmt)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseLocalPtrVarDeclStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(int* p;)---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_VarDecl",
@@ -512,14 +527,15 @@ TEST(StmtParser, ParseLocalPtrVarDeclStmt)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseNullableVarDeclStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(int? p;)---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_VarDecl",
@@ -543,14 +559,15 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
 TEST(StmtParser, ParseVarDeclStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(string a = "hello";)---");
+    SFactory factory;
 
-    auto oStmt = ParseStmt(&lexer);
+    auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SStmt_VarDecl",
@@ -579,6 +596,6 @@ TEST(StmtParser, ParseVarDeclStmt)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oStmt, expected);
+    EXPECT_SYNTAX_EQ(stmt, expected);
 }
 

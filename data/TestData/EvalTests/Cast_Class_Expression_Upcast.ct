@@ -1,0 +1,10 @@
+//@ 
+class B { }
+class C : B { }
+
+void Main()
+{
+	var c = new C(); 
+	B b = c; // CastClassExp(NewClassExp(C, []), B)
+}
+

@@ -19,29 +19,43 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ESymbol\ESymbol.vcxproj">
+      <Project>{32d49f02-b752-4509-9988-6ba71be3a6fe}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Infra\Infra.vcxproj">
       <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\IR0\IR0.vcxproj">
-      <Project>{66da32eb-365d-4f0e-bc00-3faba2f51f39}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Logging\Logging.vcxproj">
       <Project>{3bb70f45-01b2-474d-aa79-c1b78d3c37e4}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Symbol\Symbol.vcxproj">
-      <Project>{b424f6ab-85bc-4fe0-af89-ec60b1a13fa7}</Project>
+    <ProjectReference Include="..\MIR\MIR.vcxproj">
+      <Project>{608246f1-30d1-4394-93be-300d67e25dfe}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\NSymbol\NSymbol.vcxproj">
+      <Project>{56fa279c-712f-4c9b-ba1e-c8e983ea97e8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\RSymbol\RSymbol.vcxproj">
+      <Project>{42f5b624-3a9b-48b6-9e12-736206097339}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Syntax\Syntax.vcxproj">
       <Project>{74d0511c-d9ae-44b9-9741-007e3b012565}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EnumElemVarTask.cpp" />
     <ClCompile Include="FuncContext.cpp" />
-    <ClCompile Include="BodyPhaseContext.cpp" />
+    <ClCompile Include="GlobalContext.cpp" />
+    <ClCompile Include="PhaseManager.cpp" />
+    <ClCompile Include="ResolveTypeHierarchyContext.cpp" />
+    <ClCompile Include="StructCtorTask.cpp" />
+    <ClCompile Include="StructFuncTask.cpp" />
+    <ClCompile Include="StructTask.cpp" />
+    <ClCompile Include="StructVarTask.cpp" />
+    <ClCompile Include="TranslateBodyContext.cpp" />
     <ClCompile Include="DeclTypeInfo.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
-    <ClCompile Include="ImCallableAndSArgsToNExpTranslation.cpp" />
+    <ClCompile Include="ImCallableAndSArgsToMExpTranslation.cpp" />
     <ClCompile Include="ImExp.cpp" />
     <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp" />
     <ClCompile Include="ImExpToIrExpTranslation.cpp" />
@@ -49,73 +63,77 @@
     <ClCompile Include="BinOpQueryService.cpp" />
     <ClCompile Include="IrExp.cpp" />
     <ClCompile Include="IrExpAndMemberNameToIrExpTranslation.cpp" />
-    <ClCompile Include="IrExpToNExpTranslation.cpp" />
-    <ClCompile Include="MemberDeclPhaseContext.cpp" />
-    <ClCompile Include="EnumTranslation.cpp" />
+    <ClCompile Include="IrExpToMExpTranslation.cpp" />
+    <ClCompile Include="GlobalFuncTask.cpp" />
+    <ClCompile Include="BuildTypeDependentSymbolContext.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="DesignatedDiagnostic.cpp" />
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="ReExp.cpp" />
-    <ClCompile Include="ReExpToNExpTranslation.cpp" />
-    <ClCompile Include="ReExpToNLocTranslation.cpp" />
-    <ClCompile Include="ResolveIdentifierError.cpp" />
-    <ClCompile Include="RFuncAndRArgsToNExpTranslation.cpp" />
+    <ClCompile Include="ReExpToMExpTranslation.cpp" />
+    <ClCompile Include="ReExpToMLocTranslation.cpp" />
+    <ClCompile Include="RFuncAndRArgsToMExpTranslation.cpp" />
     <ClCompile Include="ScopeContext.cpp" />
     <ClCompile Include="SExpRefToIrExpTranslation.cpp" />
-    <ClCompile Include="SExpRefToNExpTranslation.cpp" />
+    <ClCompile Include="SExpRefToMExpTranslation.cpp" />
     <ClCompile Include="SExpToImExpTranslation.cpp" />
     <ClCompile Include="SExpToReExpTranslation.cpp" />
-    <ClCompile Include="SExpToNExpTranslation.cpp" />
-    <ClCompile Include="SExpToNLocTranslation.cpp" />
-    <ClCompile Include="SkeletonPhaseContext.cpp" />
-    <ClCompile Include="SStmtToNStmtTranslation.cpp" />
-    <ClCompile Include="StructTranslation.cpp" />
-    <ClCompile Include="SVarDeclToNStmtsTranslation.cpp" />
+    <ClCompile Include="SExpToMExpTranslation.cpp" />
+    <ClCompile Include="SExpToMLocTranslation.cpp" />
+    <ClCompile Include="SStmtToMStmtTranslation.cpp" />
+    <ClCompile Include="SVarDeclToMStmtsTranslation.cpp" />
     <ClCompile Include="SyntaxIR0Translator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
+    <ClCompile Include="SRTFactory.cpp" />
     <ClCompile Include="TranslationContext.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SyntaxIR0TranslatorConfig.h" />
+    <ClInclude Include="EnumElemVarTask.h" />
+    <ClInclude Include="GlobalContext.h" />
+    <ClInclude Include="GlobalFuncTask.h" />
+    <ClInclude Include="PhaseManager.h" />
+    <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0Translator.h" />
     <ClInclude Include="BinOpQueryService.h" />
-    <ClInclude Include="BodyPhaseContext.h" />
+    <ClInclude Include="ResolveTypeHierarchyContext.h" />
+    <ClInclude Include="StructCtorTask.h" />
+    <ClInclude Include="StructFuncTask.h" />
+    <ClInclude Include="StructTask.h" />
+    <ClInclude Include="StructVarTask.h" />
+    <ClInclude Include="TranslateBodyContext.h" />
     <ClInclude Include="CommonTranslation.h" />
     <ClInclude Include="DeclTypeInfo.h" />
     <ClInclude Include="DesignatedDiagnostic.h" />
-    <ClInclude Include="EnumTranslation.h" />
     <ClInclude Include="FuncContext.h" />
     <ClInclude Include="FuncMatching.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
-    <ClInclude Include="ImCallableAndSArgsToNExpTranslation.h" />
+    <ClInclude Include="ImCallableAndSArgsToMExpTranslation.h" />
     <ClInclude Include="ImExp.h" />
     <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h" />
     <ClInclude Include="ImExpToIrExpTranslation.h" />
     <ClInclude Include="ImExpToReExpTranslation.h" />
     <ClInclude Include="IrExp.h" />
     <ClInclude Include="IrExpAndMemberNameToIrExpTranslation.h" />
-    <ClInclude Include="IrExpToNExpTranslation.h" />
-    <ClInclude Include="MemberDeclPhaseContext.h" />
+    <ClInclude Include="IrExpToMExpTranslation.h" />
+    <ClInclude Include="BuildTypeDependentSymbolContext.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ModuleDecls.h" />
+    <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0TranslatorConfig.h" />
     <ClInclude Include="ReExp.h" />
-    <ClInclude Include="ReExpToNExpTranslation.h" />
-    <ClInclude Include="ReExpToNLocTranslation.h" />
-    <ClInclude Include="ResolveIdentifierError.h" />
-    <ClInclude Include="RFuncAndRArgsToNExpTranslation.h" />
+    <ClInclude Include="ReExpToMExpTranslation.h" />
+    <ClInclude Include="ReExpToMLocTranslation.h" />
+    <ClInclude Include="RFuncAndRArgsToMExpTranslation.h" />
     <ClInclude Include="ScopeContext.h" />
     <ClInclude Include="SExpRefToIrExpTranslation.h" />
-    <ClInclude Include="SExpRefToNExpTranslation.h" />
+    <ClInclude Include="SExpRefToMExpTranslation.h" />
     <ClInclude Include="SExpToImExpTranslation.h" />
-    <ClInclude Include="SExpToNExpTranslation.h" />
-    <ClInclude Include="SExpToNLocTranslation.h" />
+    <ClInclude Include="SExpToMExpTranslation.h" />
+    <ClInclude Include="SExpToMLocTranslation.h" />
     <ClInclude Include="SExpToReExpTranslation.h" />
-    <ClInclude Include="SkeletonPhaseContext.h" />
-    <ClInclude Include="SStmtToNStmtTranslation.h" />
-    <ClInclude Include="StructTranslation.h" />
-    <ClInclude Include="SVarDeclToNStmtsTranslation.h" />
-    <ClInclude Include="SyntaxIR0Translator-HeaderUnits.h" />
-    <ClInclude Include="SyntaxIR0Translator.h" />
+    <ClInclude Include="SStmtToMStmtTranslation.h" />
+    <ClInclude Include="SVarDeclToMStmtsTranslation.h" />
+    <ClInclude Include="SRTFactory.h" />
     <ClInclude Include="TranslationContext.h" />
+    <ClInclude Include="TranslationTasks.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -128,26 +146,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -180,7 +198,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SYNTAXIR0TRANSLATOR_EXPORT;WIN32;_DEBUG;SYNTAXIR0TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;SYNTAXIR0TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -195,7 +213,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SYNTAXIR0TRANSLATOR_EXPORT;WIN32;NDEBUG;SYNTAXIR0TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;SYNTAXIR0TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -210,7 +228,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SYNTAXIR0TRANSLATOR_EXPORT;_DEBUG;SYNTAXIR0TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;SYNTAXIR0TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -225,7 +243,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>SYNTAXIR0TRANSLATOR_EXPORT;NDEBUG;SYNTAXIR0TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;SYNTAXIR0TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>

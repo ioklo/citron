@@ -1,0 +1,11 @@
+//@ 
+void F(int *s)
+{
+	*s = 3;
+}
+
+void Main()
+{
+	F(box 3); // box 3의 결과는 temporary variable에 저장되고, statement가 끝날때 사라집니다.
+}
+

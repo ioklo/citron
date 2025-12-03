@@ -1,0 +1,16 @@
+//@ $Error
+struct S
+{
+    seq int F(int* i)
+    {
+        yield *i;        
+    }
+}
+
+void Main()
+{
+    int i = 6;
+    S s = S();
+
+    var sq = box s.F(&i); // 에러, ptr이 들어가는 seq call 값은 스코프를 벗어날 수 없다
+}

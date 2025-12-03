@@ -11,36 +11,39 @@ using namespace Citron;
 TEST(ExpParser, ParseBoolFalse)
 {
     auto [buffer, lexer] = Prepare(UR"---(false)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_BoolLiteral",
     "value": false
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseBoolTrue)
 {
     auto [buffer, lexer] = Prepare(UR"---(true)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_BoolLiteral",
     "value": true
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseComplexExp)
 {
     auto [buffer, lexer] = Prepare(UR"---(a = b = !!(c % d)++ * e + f - g / h % i == 3 != false)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_BinaryOp",
@@ -148,14 +151,15 @@ TEST(ExpParser, ParseComplexExp)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseComplexMemberExpSyntax)
 {
     auto [buffer, lexer] = Prepare(UR"---(a.b.c<int, list<int>>(1, "str").d)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_Member",
@@ -226,14 +230,15 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
     "memberTypeArgs": []
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseIdentifier)
 {
     auto [buffer, lexer] = Prepare(UR"---(s)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_Identifier",
@@ -241,14 +246,15 @@ TEST(ExpParser, ParseIdentifier)
     "typeArgs": []
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseIdentifierExpWithTypeArgs)
 {
     auto [buffer, lexer] = Prepare(UR"---(x<T>)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_Identifier",
@@ -262,14 +268,15 @@ TEST(ExpParser, ParseIdentifierExpWithTypeArgs)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseIndirectMemberExp)
 {
     auto [buffer, lexer] = Prepare(UR"---(a->b<int>)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_IndirectMember",
@@ -288,28 +295,30 @@ TEST(ExpParser, ParseIndirectMemberExp)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseInt)
 {
     auto [buffer, lexer] = Prepare(UR"---(1234)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_IntLiteral",
     "value": 1234
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseLambdaExp)
 {
     auto [buffer, lexer] = Prepare(UR"---(a = b => (c, int d) => e)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_BinaryOp",
@@ -367,14 +376,15 @@ TEST(ExpParser, ParseLambdaExp)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseListExp)
 {
     auto [buffer, lexer] = Prepare(UR"---([ 1, 2, 3 ])---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_List",
@@ -394,14 +404,15 @@ TEST(ExpParser, ParseListExp)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseNewExp)
 {
     auto [buffer, lexer] = Prepare(UR"---(new MyType<X>(2, false, "string"))---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_New",
@@ -455,14 +466,15 @@ TEST(ExpParser, ParseNewExp)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParsePrimaryExp)
 {
     auto [buffer, lexer] = Prepare(UR"---((c++(e, f) % d)++)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_UnaryOp",
@@ -515,14 +527,15 @@ TEST(ExpParser, ParsePrimaryExp)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseStringExp)
 {
     auto [buffer, lexer] = Prepare(UR"---("aaa bbb ${"xxx ${ddd}"} ddd")---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_String",
@@ -558,14 +571,15 @@ TEST(ExpParser, ParseStringExp)
     ]
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 
 TEST(ExpParser, ParseTestAndTypeTestExp)
 {
     auto [buffer, lexer] = Prepare(UR"---(e + 1 is X<int> < d + 1 is T)---");
+    SFactory factory;
 
-    auto oExp = ParseExp(&lexer);
+    auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
     "$type": "SExp_Is",
@@ -620,6 +634,6 @@ TEST(ExpParser, ParseTestAndTypeTestExp)
     }
 })---";
 
-    EXPECT_SYNTAX_EQ(oExp, expected);
+    EXPECT_SYNTAX_EQ(exp, expected);
 }
 

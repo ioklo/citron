@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Public\NSymbol\NClassCtorDecl.h" />
+    <ClInclude Include="Public\NSymbol\NClassDecl.h" />
+    <ClInclude Include="Public\NSymbol\NClassFuncDecl.h" />
+    <ClInclude Include="Public\NSymbol\NClassVarDecl.h" />
+    <ClInclude Include="Public\NSymbol\NCommonFuncDeclComponent.h" />
+    <ClInclude Include="Public\NSymbol\NDecl.h" />
+    <ClInclude Include="Public\NSymbol\NEnumDecl.h" />
+    <ClInclude Include="Public\NSymbol\NEnumElemDecl.h" />
+    <ClInclude Include="Public\NSymbol\NEnumElemVarDecl.h" />
+    <ClInclude Include="Public\NSymbol\NFactory.h" />
+    <ClInclude Include="Public\NSymbol\NFuncDecl.h" />
+    <ClInclude Include="Public\NSymbol\NFuncDeclContainerComponent.h" />
+    <ClInclude Include="Public\NSymbol\NFuncDeclOuter.h" />
+    <ClInclude Include="Public\NSymbol\NGlobalFuncDecl.h" />
+    <ClInclude Include="Public\NSymbol\NInterfaceDecl.h" />
+    <ClInclude Include="Public\NSymbol\NLambdaDecl.h" />
+    <ClInclude Include="Public\NSymbol\NLambdaVarDecl.h" />
+    <ClInclude Include="Public\NSymbol\NModule.h" />
+    <ClInclude Include="Public\NSymbol\NNamespaceDecl.h" />
+    <ClInclude Include="Public\NSymbol\NNamespaceDeclContainerComponent.h" />
+    <ClInclude Include="Public\NSymbol\NStructCtorDecl.h" />
+    <ClInclude Include="Public\NSymbol\NStructDecl.h" />
+    <ClInclude Include="Public\NSymbol\NStructFuncDecl.h" />
+    <ClInclude Include="Public\NSymbol\NStructVarDecl.h" />
+    <ClInclude Include="Public\NSymbol\NTypeDecl.h" />
+    <ClInclude Include="Public\NSymbol\NTypeDeclContainerComponent.h" />
+    <ClInclude Include="Public\NSymbol\NTypeDeclOuter.h" />
+    <ClInclude Include="Public\NSymbol\NSymbolConfig.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NClassCtorDecl.cpp" />
+    <ClCompile Include="NClassDecl.cpp" />
+    <ClCompile Include="NClassFuncDecl.cpp" />
+    <ClCompile Include="NClassVarDecl.cpp" />
+    <ClCompile Include="NCommonFuncDeclComponent.cpp" />
+    <ClCompile Include="NDecl.cpp" />
+    <ClCompile Include="NEnumDecl.cpp" />
+    <ClCompile Include="NEnumElemDecl.cpp" />
+    <ClCompile Include="NEnumElemVarDecl.cpp" />
+    <ClCompile Include="NFactory.cpp" />
+    <ClCompile Include="NGlobalFuncDecl.cpp" />
+    <ClCompile Include="NInterfaceDecl.cpp" />
+    <ClCompile Include="NLambdaDecl.cpp" />
+    <ClCompile Include="NLambdaVarDecl.cpp" />
+    <ClCompile Include="NModule.cpp" />
+    <ClCompile Include="NNamespaceDecl.cpp" />
+    <ClCompile Include="NNamespaceDeclContainerComponent.cpp" />
+    <ClCompile Include="NStructCtorDecl.cpp" />
+    <ClCompile Include="NStructDecl.cpp" />
+    <ClCompile Include="NStructFuncDecl.cpp" />
+    <ClCompile Include="NStructVarDecl.cpp" />
+    <ClCompile Include="NTypeDeclContainerComponent.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ESymbol\ESymbol.vcxproj">
+      <Project>{32d49f02-b752-4509-9988-6ba71be3a6fe}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Infra\Infra.vcxproj">
+      <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\RSymbol\RSymbol.vcxproj">
+      <Project>{42f5b624-3a9b-48b6-9e12-736206097339}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{56fa279c-712f-4c9b-ba1e-c8e983ea97e8}</ProjectGuid>
+    <RootNamespace>NSymbol</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Common.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;NSYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;NSYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;NSYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;NSYMBOL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

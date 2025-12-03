@@ -1,0 +1,13 @@
+//@ true
+enum E { First, Second(int x) }
+
+void Main()
+{
+    var e = E.First;
+
+    if (e is E.First)
+        @true
+    else if (e is E.Second s)
+        @{s.x}
+}
+

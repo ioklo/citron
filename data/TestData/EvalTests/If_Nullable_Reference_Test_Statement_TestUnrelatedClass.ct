@@ -1,0 +1,10 @@
+//@ $Error
+class C { }
+class D { }
+
+void Main()
+{
+	var c = new C();
+
+	if (D d = c); // 미리 잡을 수 있는 경우는 최대한 잡습니다
+}

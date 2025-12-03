@@ -1,0 +1,13 @@
+//@ 1
+void Main()
+{
+    int x = 0;
+    int* y = &x;
+
+    // local pointer 함유 lambda, 내부에서밖에 쓸 수 없습니다
+    var l = () => *y;
+    x = 1;
+
+    // 1
+    @${l()}
+}

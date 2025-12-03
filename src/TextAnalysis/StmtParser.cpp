@@ -18,14 +18,14 @@ using namespace std;
 
 namespace Citron {
 
-shared_ptr<SEmbeddableStmt> ParseEmbeddableStmt(Lexer* lexer);
+SEmbeddableStmt* ParseEmbeddableStmt(Lexer* lexer, SFactory& factory);
 
 // typeExp id = exp)
-shared_ptr<SStmt_IfTest> ParseIfTestFragment(Lexer* lexer)
+SStmt_IfTest* ParseIfTestFragment(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto testTypeExp = ParseTypeExp(&curLexer);
+    auto* testTypeExp = ParseTypeExp(&curLexer, factory);
     if (!testTypeExp)
         return nullptr;
 
@@ -36,7 +36,7 @@ shared_ptr<SStmt_IfTest> ParseIfTestFragment(Lexer* lexer)
     if (!Accept<EqualToken>(&curLexer))
         return nullptr;
 
-    auto exp = ParseExp(&curLexer);
+    auto* exp = ParseExp(&curLexer, factory);
     if (!exp)
         return nullptr;
 
@@ -44,25 +44,25 @@ shared_ptr<SStmt_IfTest> ParseIfTestFragment(Lexer* lexer)
         return nullptr;
     
     // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
-    auto body = ParseEmbeddableStmt(&curLexer);
+    auto* body = ParseEmbeddableStmt(&curLexer, factory);
     if (!body)
         return nullptr;
 
-    shared_ptr<SEmbeddableStmt> elseBody;
+    SEmbeddableStmt* elseBody = nullptr;
 
     if (Accept<ElseToken>(&curLexer))
     {
-        elseBody = ParseEmbeddableStmt(&curLexer);
+        elseBody = ParseEmbeddableStmt(&curLexer, factory);
         if (!elseBody)
             return nullptr;
     }
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_IfTest>(move(testTypeExp), move(oVarNameToken->text), move(exp), move(body), move(elseBody));
+    return factory.MakeSStmt_IfTest(testTypeExp, move(oVarNameToken->text), exp, body, elseBody);
 }
 
 // 리턴은 SStmt_If와 SStmt_IfTest
-SStmtPtr ParseIfStmt(Lexer* lexer)
+SStmt* ParseIfStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
@@ -78,14 +78,14 @@ SStmtPtr ParseIfStmt(Lexer* lexer)
         return nullptr;
 
     // typeExp varName = exp꼴인지 먼저 확인
-    if (auto ifTestStmt = ParseIfTestFragment(&curLexer))
+    if (auto* ifTestStmt = ParseIfTestFragment(&curLexer, factory))
     {
         *lexer = move(curLexer);
         return ifTestStmt;
     }
 
     // 아니라면
-    auto cond = ParseExp(&curLexer);
+    auto* cond = ParseExp(&curLexer, factory);
     if (!cond)
         return nullptr;
 
@@ -93,28 +93,28 @@ SStmtPtr ParseIfStmt(Lexer* lexer)
         return nullptr;
 
     // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
-    auto body = ParseEmbeddableStmt(&curLexer);
+    auto* body = ParseEmbeddableStmt(&curLexer, factory);
     if (!body)
         return nullptr;
 
-    SEmbeddableStmtPtr elseBody;
+    SEmbeddableStmt* elseBody = nullptr;
     
     if (Accept<ElseToken>(&curLexer))
     {
-        elseBody = ParseEmbeddableStmt(&curLexer);
+        elseBody = ParseEmbeddableStmt(&curLexer, factory);
         if (!elseBody)
             return nullptr;
     }
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_If>(move(cond), move(body), move(elseBody));
+    return factory.MakeSStmt_If(cond, body, elseBody);
 }
 
-optional<SVarDecl> ParseVarDecl(Lexer* lexer)
+optional<SVarDecl> ParseVarDecl(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto varType = ParseTypeExp(&curLexer);
+    auto* varType = ParseTypeExp(&curLexer, factory);
     if (!varType)
         return nullopt;
 
@@ -126,30 +126,30 @@ optional<SVarDecl> ParseVarDecl(Lexer* lexer)
         if (!oVarIdToken)
             return nullopt;
 
-        SExpPtr initExp;
+        SExp* initExp = nullptr;
 
         if (Accept<EqualToken>(&curLexer))
         {
             // TODO: ;나 ,가 나올때까지라는걸 명시해주면 좋겠다
-            initExp = ParseExp(&curLexer);
+            initExp = ParseExp(&curLexer, factory);
             if (!initExp)
                 return nullopt;
         }
 
-        elems.push_back(SVarDeclElement{ move(oVarIdToken->text), move(initExp) });
+        elems.push_back(SVarDeclElement{move(oVarIdToken->text), initExp});
 
     } while (Accept<CommaToken>(&curLexer)); // ,가 나오면 계속한다
 
     *lexer = move(curLexer);
-    return SVarDecl(move(varType), move(elems));
+    return SVarDecl(varType, move(elems));
 }
 
 // int x = 0;
-shared_ptr<SStmt_VarDecl> ParseVarDeclStmt(Lexer* lexer)
+SStmt_VarDecl* ParseVarDeclStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto oVarDecl = ParseVarDecl(&curLexer);
+    auto oVarDecl = ParseVarDecl(&curLexer, factory);
     if (!oVarDecl)
         return nullptr;
 
@@ -157,21 +157,21 @@ shared_ptr<SStmt_VarDecl> ParseVarDeclStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_VarDecl>(move(*oVarDecl));
+    return factory.MakeSStmt_VarDecl(move(*oVarDecl));
 }
 
-SForStmtInitializerPtr ParseForStmtInitializer(Lexer* lexer)
+SForStmtInitializer* ParseForStmtInitializer(Lexer* lexer, SFactory& factory)
 {
-    if (auto oVarDecl = ParseVarDecl(lexer))
-        return MakePtr<SForStmtInitializer_VarDecl>(move(*oVarDecl));
+    if (auto oVarDecl = ParseVarDecl(lexer, factory))
+        return factory.MakeSForStmtInitializer_VarDecl(move(*oVarDecl));
 
-    if (auto exp = ParseExp(lexer))
-        return MakePtr<SForStmtInitializer_Exp>(move(exp));
+    if (auto* exp = ParseExp(lexer, factory))
+        return factory.MakeSForStmtInitializer_Exp(exp);
 
     return nullptr;
 }
 
-shared_ptr<SStmt_For> ParseForStmt(Lexer* lexer)
+SStmt_For* ParseForStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
@@ -182,32 +182,32 @@ shared_ptr<SStmt_For> ParseForStmt(Lexer* lexer)
         return nullptr;
 
     // TODO: 이 Initializer의 끝은 ';' 이다
-    auto initializer = ParseForStmtInitializer(&curLexer);
+    auto* initializer = ParseForStmtInitializer(&curLexer, factory);
 
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
     // TODO: 이 CondExp의 끝은 ';' 이다
-    auto cond = ParseExp(&curLexer);
+    auto* cond = ParseExp(&curLexer, factory);
 
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
     // TODO: 이 CondExp의 끝은 ')' 이다            
-    auto cont = ParseExp(&curLexer);
+    auto* cont = ParseExp(&curLexer, factory);
 
     if (!Accept<RParenToken>(&curLexer))
         return nullptr;
 
-    auto bodyStmt = ParseEmbeddableStmt(&curLexer);
+    auto* bodyStmt = ParseEmbeddableStmt(&curLexer, factory);
     if (!bodyStmt)
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_For>(move(initializer), move(cond), move(cont), move(bodyStmt));
+    return factory.MakeSStmt_For(initializer, cond, cont, bodyStmt);
 }
 
-shared_ptr<SStmt_Continue> ParseContinueStmt(Lexer* lexer)
+SStmt_Continue* ParseContinueStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
@@ -218,10 +218,10 @@ shared_ptr<SStmt_Continue> ParseContinueStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Continue>();
+    return factory.MakeSStmt_Continue();
 }
 
-shared_ptr<SStmt_Break> ParseBreakStmt(Lexer* lexer)
+SStmt_Break* ParseBreakStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
@@ -232,63 +232,63 @@ shared_ptr<SStmt_Break> ParseBreakStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Break>();
+    return factory.MakeSStmt_Break();
 }
 
-shared_ptr<SStmt_Return> ParseReturnStmt(Lexer* lexer)
+SStmt_Return* ParseReturnStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<ReturnToken>(&curLexer))
         return nullptr;
 
-    SExpPtr returnValue;
+    SExp* returnValue = nullptr;
 
-    if (auto returnExp = ParseExp(&curLexer))
-        returnValue = move(returnExp);
+    if (auto* returnExp = ParseExp(&curLexer, factory))
+        returnValue = returnExp;
 
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Return>(move(returnValue));
+    return factory.MakeSStmt_Return(returnValue);
 }
 
-shared_ptr<SStmt_Block> ParseBlockStmt(Lexer* lexer)
+SStmt_Block* ParseBlockStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LBraceToken>(&curLexer))
         return nullptr;
 
-    vector<SStmtPtr> stmts;
+    vector<SStmt*> stmts;
     
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto stmt = ParseStmt(&curLexer);
+        auto* stmt = ParseStmt(&curLexer, factory);
         if (!stmt) return nullptr;
 
-        stmts.push_back(move(stmt));
+        stmts.push_back(stmt);
     }
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Block>(move(stmts));
+    return factory.MakeSStmt_Block(move(stmts));
 }
 
-shared_ptr<SStmt_Blank> ParseBlankStmt(Lexer* lexer)
+SStmt_Blank* ParseBlankStmt(Lexer* lexer, SFactory& factory)
 {
     if (!Accept<SemiColonToken>(lexer))
         return nullptr;
 
-    return MakePtr<SStmt_Blank>();
+    return factory.MakeSStmt_Blank();
 }
 
 // TODO: Assign, Call만 가능하게 해야 한다
-shared_ptr<SStmt_Exp> ParseExpStmt(Lexer* lexer)
+SStmt_Exp* ParseExpStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto exp = ParseExp(&curLexer);
+    auto* exp = ParseExp(&curLexer, factory);
     if (!exp)
         return nullptr;
     
@@ -296,63 +296,63 @@ shared_ptr<SStmt_Exp> ParseExpStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Exp>(move(exp));
+    return factory.MakeSStmt_Exp(exp);
 }
 
-shared_ptr<SStmt_Task> ParseTaskStmt(Lexer* lexer)
+SStmt_Task* ParseTaskStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<TaskToken>(&curLexer))
         return nullptr;
 
-    auto oBody = ParseBody(&curLexer);
+    auto oBody = ParseBody(&curLexer, factory);
     
     if (!oBody)
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Task>(move(*oBody));
+    return factory.MakeSStmt_Task(move(*oBody));
 }
 
-shared_ptr<SStmt_Await> ParseAwaitStmt(Lexer* lexer)
+SStmt_Await* ParseAwaitStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<AwaitToken>(&curLexer))
         return nullptr;
     
-    auto oBody = ParseBody(&curLexer);
+    auto oBody = ParseBody(&curLexer, factory);
     if (!oBody)
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Await>(move(*oBody));
+    return factory.MakeSStmt_Await(move(*oBody));
 }
 
-shared_ptr<SStmt_Async> ParseAsyncStmt(Lexer* lexer)
+SStmt_Async* ParseAsyncStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<AsyncToken>(&curLexer))
         return nullptr;
 
-    auto oBody = ParseBody(&curLexer);
+    auto oBody = ParseBody(&curLexer, factory);
     if (!oBody)
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Async>(move(*oBody));
+    return factory.MakeSStmt_Async(move(*oBody));
 }
 
-shared_ptr<SStmt_Yield> ParseYieldStmt(Lexer* lexer)
+SStmt_Yield* ParseYieldStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<YieldToken>(&curLexer))
         return nullptr;
 
-    auto yieldValue = ParseExp(&curLexer);
+    auto* yieldValue = ParseExp(&curLexer, factory);
 
     if (!yieldValue)
         return nullptr;
@@ -361,14 +361,14 @@ shared_ptr<SStmt_Yield> ParseYieldStmt(Lexer* lexer)
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Yield>(move(yieldValue));
+    return factory.MakeSStmt_Yield(yieldValue);
 }
 
-shared_ptr<SExp_String> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
+SExp_String* ParseSingleCommand(bool bStopRBrace, Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    vector<SStringExpElementPtr> elems;
+    vector<SStringExpElement*> elems;
 
     // 새 줄이거나 끝에 다다르면 종료
     while (!curLexer.IsReachedEnd())
@@ -383,28 +383,28 @@ shared_ptr<SExp_String> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
         if (Accept<DollarLBraceToken>(&curLexer, curLexer.LexCommandMode()))
         {
             // TODO: EndInnerExpToken 일때 빠져나와야 한다는 표시를 해줘야 한다
-            auto exp = ParseExp(&curLexer);
+            auto* exp = ParseExp(&curLexer, factory);
             if (!exp)
                 return nullptr;
 
             if (!Accept<RBraceToken>(&curLexer))
                 return nullptr;
 
-            elems.push_back(MakePtr<SStringExpElement_Exp>(move(exp)));
+            elems.push_back(factory.MakeSStringExpElement_Exp(exp));
             continue;
         }
 
         // aa$b => $b 이야기
         if (auto oIdToken = Accept<IdentifierToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(MakePtr<SStringExpElement_Exp>(MakePtr<SExp_Identifier>(move(oIdToken->text), std::vector<STypeExpPtr>{})));
+            elems.push_back(factory.MakeSStringExpElement_Exp(factory.MakeSExp_Identifier(move(oIdToken->text), std::vector<STypeExp*>{})));
             continue;
         }
 
         
         if (auto oTextToken = Accept<TextToken>(&curLexer, curLexer.LexCommandMode()))
         {
-            elems.push_back(MakePtr<SStringExpElement_Text>(move(oTextToken->text)));
+            elems.push_back(factory.MakeSStringExpElement_Text(move(oTextToken->text)));
             continue;
         }
 
@@ -412,10 +412,10 @@ shared_ptr<SExp_String> ParseSingleCommand(bool bStopRBrace, Lexer* lexer)
     }
 
     *lexer = move(curLexer);
-    return MakePtr<SExp_String>(move(elems));
+    return factory.MakeSExp_String(move(elems));
 }
 
-shared_ptr<SStmt_Foreach> ParseForeachStmt(Lexer* lexer)
+SStmt_Foreach* ParseForeachStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
@@ -429,7 +429,7 @@ shared_ptr<SStmt_Foreach> ParseForeachStmt(Lexer* lexer)
     
 
     // var 
-    auto typeExp = ParseTypeExp(&curLexer);
+    auto* typeExp = ParseTypeExp(&curLexer, factory);
     if (!typeExp)
         return nullptr;
 
@@ -443,7 +443,7 @@ shared_ptr<SStmt_Foreach> ParseForeachStmt(Lexer* lexer)
         return nullptr;
 
     // obj
-    auto obj = ParseExp(&curLexer);
+    auto* obj = ParseExp(&curLexer, factory);
     if (!obj)
         return nullptr;
 
@@ -452,16 +452,16 @@ shared_ptr<SStmt_Foreach> ParseForeachStmt(Lexer* lexer)
         return nullptr;
 
     // stmt
-    auto stmt = ParseEmbeddableStmt(&curLexer);
+    auto* stmt = ParseEmbeddableStmt(&curLexer, factory);
     if (!stmt)
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Foreach>(move(typeExp), move(oVarNameToken->text), move(obj), move(stmt));
+    return factory.MakeSStmt_Foreach(typeExp, move(oVarNameToken->text), obj, stmt);
 }
 
 // 
-shared_ptr<SStmt_Command> ParseCommandStmt(Lexer* lexer)
+SStmt_Command* ParseCommandStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
@@ -475,13 +475,13 @@ shared_ptr<SStmt_Command> ParseCommandStmt(Lexer* lexer)
     if (Accept<LBraceToken>(&curLexer))
     {
         // 새줄이거나 끝에 다다르거나 }가 나오면 종료,
-        vector<shared_ptr<SExp_String>> cmds;
+        vector<SExp_String*> cmds;
         while (true)
         {
             if (Accept<RBraceToken>(&curLexer, curLexer.LexCommandMode()))
                 break;
 
-            auto singleCommand = ParseSingleCommand(true, &curLexer);
+            auto* singleCommand = ParseSingleCommand(true, &curLexer, factory);
 
             if (singleCommand)
             {
@@ -493,7 +493,7 @@ shared_ptr<SStmt_Command> ParseCommandStmt(Lexer* lexer)
 
                 if (elemCount == 1)
                 {
-                    auto* elem = singleCommand->elements[0].get();
+                    auto* elem = singleCommand->elements[0];
                     if (SStringExpElement_Text* textElem = dynamic_cast<SStringExpElement_Text*>(elem))
                     {
                         if (all_of(textElem->text.begin(), textElem->text.end(), [](char32_t c) { return u_isWhitespace(c); }))
@@ -501,7 +501,7 @@ shared_ptr<SStmt_Command> ParseCommandStmt(Lexer* lexer)
                     }
                 }
 
-                cmds.push_back(move(singleCommand));
+                cmds.push_back(singleCommand);
                 continue;
             }
 
@@ -509,11 +509,11 @@ shared_ptr<SStmt_Command> ParseCommandStmt(Lexer* lexer)
         }
 
         *lexer = move(curLexer);
-        return MakePtr<SStmt_Command>(move(cmds));
+        return factory.MakeSStmt_Command(move(cmds));
     }
     else // 싱글 커맨드, 엔터가 나오면 끝난다
     {
-        auto singleCommand = ParseSingleCommand(false, &curLexer);
+        auto* singleCommand = ParseSingleCommand(false, &curLexer, factory);
 
         if (!singleCommand)
             return nullptr;
@@ -523,14 +523,14 @@ shared_ptr<SStmt_Command> ParseCommandStmt(Lexer* lexer)
         
         *lexer = move(curLexer);
 
-        vector<shared_ptr<SExp_String>> strs;
-        strs.push_back(move(singleCommand));
+        vector<SExp_String*> strs;
+        strs.push_back(singleCommand);
 
-        return MakePtr<SStmt_Command>(move(strs));
+        return factory.MakeSStmt_Command(move(strs));
     }
 }
 
-shared_ptr<SStmt_Directive> ParseDirectiveStmt(Lexer* lexer)
+SStmt_Directive* ParseDirectiveStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
@@ -545,135 +545,135 @@ shared_ptr<SStmt_Directive> ParseDirectiveStmt(Lexer* lexer)
     if (!Accept<LParenToken>(&curLexer))
         return nullptr;
 
-    vector<SExpPtr> args;    
+    vector<SExp*> args;    
     while (!Accept<RParenToken>(&curLexer))
     {
         if (!args.empty())
             if (!Accept<CommaToken>(&curLexer))
                 return nullptr;
 
-        auto arg = ParseExp(&curLexer);
+        auto* arg = ParseExp(&curLexer, factory);
         if (!arg)
             return nullptr;
 
-        args.push_back(move(arg));
+        args.push_back(arg);
     }
 
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
     *lexer = move(curLexer);
-    return MakePtr<SStmt_Directive>(move(oIdToken->text), move(args));
+    return factory.MakeSStmt_Directive(move(oIdToken->text), move(args));
 }
 
 // if (...) 'x;' // 단일이냐
 // if (...) '{ }' // 묶음이냐
-SEmbeddableStmtPtr ParseEmbeddableStmt(Lexer* lexer)
+SEmbeddableStmt* ParseEmbeddableStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     // { 가 없다면, Embeddable.Single
     if (!Accept<LBraceToken>(&curLexer))
     {
-        auto stmt = ParseStmt(&curLexer);
+        auto* stmt = ParseStmt(&curLexer, factory);
         if (!stmt)
             return nullptr;
         
         // block stmt는 제외되서 들어올 것이다
-        assert(dynamic_cast<SStmt_Block*>(stmt.get()) == nullptr);
+        assert(dynamic_cast<SStmt_Block*>(stmt) == nullptr);
 
         *lexer = move(curLexer);
-        return MakePtr<SEmbeddableStmt_Single>(move(stmt));
+        return factory.MakeSEmbeddableStmt_Single(stmt);
     }
     else // 있다면 Embeddable.Multiple
     {
-        vector<SStmtPtr> stmts;
+        vector<SStmt*> stmts;
 
         // } 가 나올때까지
         while (!Accept<RBraceToken>(&curLexer))
         {
-            auto stmt = ParseStmt(&curLexer);
+            auto* stmt = ParseStmt(&curLexer, factory);
 
             if (!stmt)
                 return nullptr;
 
-            stmts.push_back(move(stmt));
+            stmts.push_back(stmt);
         }
 
         *lexer = move(curLexer);
-        return MakePtr<SEmbeddableStmt_Block>(move(stmts));
+        return factory.MakeSEmbeddableStmt_Block(move(stmts));
     }
 }
 
-optional<vector<SStmtPtr>> ParseBody(Lexer* lexer)
+optional<vector<SStmt*>> ParseBody(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     if (!Accept<LBraceToken>(&curLexer))
         return nullopt;
 
-    vector<SStmtPtr> stmts;
+    vector<SStmt*> stmts;
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto stmt = ParseStmt(&curLexer);
+        auto* stmt = ParseStmt(&curLexer, factory);
         if (!stmt)
             return nullopt;
 
-        stmts.push_back(move(stmt));
+        stmts.push_back(stmt);
     }
 
     *lexer = move(curLexer);
     return stmts;
 }
 
-SStmtPtr ParseStmt(Lexer* lexer)
+SStmt* ParseStmt(Lexer* lexer, SFactory& factory)
 {
-    if (auto stmt = ParseDirectiveStmt(lexer))
+    if (auto* stmt = ParseDirectiveStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseBlankStmt(lexer))
+    if (auto* stmt = ParseBlankStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseBlockStmt(lexer))
+    if (auto* stmt = ParseBlockStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseContinueStmt(lexer))
+    if (auto* stmt = ParseContinueStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseBreakStmt(lexer))
+    if (auto* stmt = ParseBreakStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseReturnStmt(lexer))
+    if (auto* stmt = ParseReturnStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseVarDeclStmt(lexer))
+    if (auto* stmt = ParseVarDeclStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseIfStmt(lexer))
+    if (auto* stmt = ParseIfStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseForStmt(lexer))
+    if (auto* stmt = ParseForStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseExpStmt(lexer))
+    if (auto* stmt = ParseExpStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseTaskStmt(lexer))
+    if (auto* stmt = ParseTaskStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseAwaitStmt(lexer))
+    if (auto* stmt = ParseAwaitStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseAsyncStmt(lexer))
+    if (auto* stmt = ParseAsyncStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseForeachStmt(lexer))
+    if (auto* stmt = ParseForeachStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseYieldStmt(lexer))
+    if (auto* stmt = ParseYieldStmt(lexer, factory))
         return stmt;
 
-    if (auto stmt = ParseCommandStmt(lexer))
+    if (auto* stmt = ParseCommandStmt(lexer, factory))
         return stmt;
 
     return nullptr;

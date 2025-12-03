@@ -6,8 +6,8 @@
 #include "Infra/Exceptions.h"
 #include "Logging/Logger.h"
 #include "Syntax/Syntax.h"
-#include "IR0/NExp.h"
-#include "IR0/RTypes.h"
+#include "MIR/MExp.h"
+#include "RSymbol/RTypes.h"
 
 #include "ScopeContext.h"
 #include "TranslationContext.h"
@@ -17,28 +17,25 @@ using namespace std;
 namespace Citron {
 
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
 
-namespace SyntaxIR0Translator {
-
-expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& typeArgs, TranslationContext& context)
+expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context)
 {
-    std::vector<RTypePtr> items;
+    std::vector<RType*> items;
     items.reserve(typeArgs.size());
 
-    for (auto& typeArg : typeArgs)
+    for (auto* typeArg : typeArgs)
     {
-        auto type = context.TranslateSTypeExpToRType(*typeArg);
-        if (!type) return unexpected{move(type).error()};
+        auto eType = context.TranslateSTypeExpToRType(typeArg);
+        if (!eType) return unexpected{move(eType).error()};
 
-        items.push_back(move(*type));
+        items.push_back(*eType);
     }
 
     return context.MakeTypeArguments(items);
 }
 
 // TODO: implementation을 CastNExp로 옮긴다
-//NExpPtr TryCastRExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context) // nothrow
+//MExp* TryCastRExp(MExp* exp, RType* expectedType, TranslationContext& context) // nothrow
 //{
 //    static_assert(false);
 //
@@ -100,35 +97,35 @@ expected<RTypeArgumentsPtr, DiagPtr> MakeTypeArgs(std::vector<STypeExpPtr>& type
 //}
 
 // 값의 겉보기 타입을 변경한다
-expected<NExpPtr, DiagPtr> CastNExp(NExpPtr&& exp, const RTypePtr& expectedType, TranslationContext& context)
+expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContext& context)
 {
-    auto expType = context.GetType(*exp);
+    auto expType = context.GetType(exp);
 
     // 같으면 그대로 리턴
     if (expectedType == expType)
         return exp;
 
     // 1. enumElem인 경우, enum으로 변경할 수 있다
-    if (auto* expEnumElemType = dynamic_cast<RType_EnumElem*>(expType.get()))
+    if (auto* expEnumElemType = dynamic_cast<RType_EnumElem*>(expType))
     {
         auto expEnumType = context.GetBaseEnumType(*expEnumElemType);
 
         if (expectedType == expEnumType)
-            return MakePtr<NExp_CastEnumElemToEnum>(exp, expectedType);
+            return context.MakeMExp<MExp_CastEnumElemToEnum>(exp, expectedType);
 
         // 에러가 좀더 구체적으로 알려줬으면 좋겠다
-        throw NotImplementedException();
+        throw NotImplementedException{};
         return unexpected{MakePtr<Error_Cast_Failed>()};
     }
 
     // 2. exp is class type
-    if (auto* expClassType = dynamic_cast<RType_Class*>(expType.get()))
+    if (auto* expClassType = dynamic_cast<RType_Class*>(expType))
     {
-        if (auto expectedClassType = dynamic_pointer_cast<RType_Class>(expectedType))
+        if (auto* expectedClassType = dynamic_cast<RType_Class*>(expectedType))
         {
             if (expectedClassType->IsBaseOf(*expClassType))
             {
-                return MakePtr<NExp_CastClass>(exp, expectedClassType);
+                return context.MakeMExp<MExp_CastClass>(exp, expectedClassType);
             }
         }
 
@@ -138,28 +135,23 @@ expected<NExpPtr, DiagPtr> CastNExp(NExpPtr&& exp, const RTypePtr& expectedType,
     }
 
     // TODO: 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
-    if (auto* expectedNullableType = dynamic_cast<RType_NullableRef*>(expectedType.get()))
+    if (auto* expectedNullableType = dynamic_cast<RType_NullableRef*>(expectedType))
     {
         // Nullable<B>를 원한다면 C를 B로 변환해본다
-        auto eCastToInnerTypeExp = CastNExp(exp, expectedNullableType->innerType, context);
+        auto eCastToInnerTypeExp = CastMExp(exp, expectedNullableType->innerType, context);
         if (!eCastToInnerTypeExp)
             return unexpected{MakePtr<Error_Cast_Failed>()};
 
         // B?로 변경
-        return MakePtr<NExp_NewNullable>(*eCastToInnerTypeExp);
+        return context.MakeMExp<MExp_NewNullable>(*eCastToInnerTypeExp);
     }
 
     return unexpected{MakePtr<Error_Cast_Failed>()};
 }
 
-expected<NExpPtr, DiagPtr> CastNExp(const NExpPtr& exp, const RTypePtr& expectedType, TranslationContext& context)
+bool IsVarType(STypeExp* typeExp)
 {
-    return CastNExp(NExpPtr(exp), expectedType, context);
-}
-
-bool IsVarType(STypeExp& typeExp)
-{
-    auto* idTypeExp = dynamic_cast<STypeExp_Id*>(&typeExp);
+    auto* idTypeExp = dynamic_cast<STypeExp_Id*>(typeExp);
     return idTypeExp && idTypeExp->name == "var" && idTypeExp->typeArgs.size() == 0;
 }
 
@@ -175,9 +167,8 @@ RName_CtorParam MakeBaseCtorParamName(size_t index, RName baseParamName)
     }
     else
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 }
 
-} // namespace SyntaxIR0Translator
 } // namespace Citron

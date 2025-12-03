@@ -6,13 +6,19 @@
 #include "Infra/Ptr.h"
 #include "Infra/Variants.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
 
 #include "Syntax/Syntax.h"
-#include "IR0/RTypes.h"
-#include "IR0/NExp.h"
-#include "IR0/NLambdaDecl.h"
-#include "IR0/NArgument.h"
-#include "IR0/NLoc.h"
+#include "RSymbol/RFactory.h"
+#include "RSymbol/RTypes.h"
+
+#include "NSymbol/NLambdaDecl.h"
+#include "NSymbol/NFactory.h"
+
+#include "MIR/MExp.h"
+#include "MIR/MArgument.h"
+#include "MIR/MLoc.h"
+#include "MIR/MFactory.h"
 
 #include "TranslationContext.h"
 #include "ScopeContext.h"
@@ -20,13 +26,13 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 FuncContext::FuncContext() = default;
 
-shared_ptr<NLambdaVarDecl> FuncContext::StageLambdaVar(const RTypePtr& type, const RName& name, NArgument_Normal&& arg)
+NLambdaVarDecl* FuncContext::StageLambdaVar(RType* type, const RName& name, MArgument_Normal&& arg)
 {
-    auto lambdaVar = MakePtr<NLambdaVarDecl>(type, name);
+    auto* lambdaVar = nFactory->MakeNDecl<NLambdaVarDecl>(type, name);
     lambdaVarAndInitArgs.emplace_back(lambdaVar, move(arg));
     return lambdaVar;
 }
@@ -41,27 +47,28 @@ bool FuncContext_Lambda::CanAccess(RDecl* target)
     return outer->funcContext->CanAccess(target);
 }
 
-optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+expected<optional<RMember>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto oMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
-    if (!oMember) return nullopt;
+    auto eORMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    RETURN_ON_ERROR(eORMember);
+
+    if (!*eORMember) return nullopt;
     
     // 상위 스코프에서 얻어오는 
     // 로컬과 람다 멤버, this만 감싸는 대상이다
-    if (auto* localVar = get_if<RMember_LocalVar>(&*oMember))
+    if (auto* localVar = get_if<RMember_LocalVar>(&**eORMember))
     {
-        RName localVarName = RName_Normal(localVar->name);
+        auto* localVarLoc = mFactory->MakeMLoc<MLoc_LocalVar>(localVar->name, localVar->type);
+        auto* initExp = mFactory->MakeMExp<MExp_Load>(localVarLoc);
+        auto initArg = MArgument_Normal(initExp);
 
-        auto initExp = MakePtr<NExp_Load>(MakePtr<NLoc_LocalVar>(localVarName, localVar->type));
-        auto initArg = NArgument_Normal(move(initExp));
+        auto* lambdaVar = StageLambdaVar(localVar->type, localVar->name, move(initArg));
 
-        auto lambdaVar = StageLambdaVar(localVar->type, localVarName, move(initArg));
-
-        auto openTypeArgs = MakeOpenTypeArgs(factory);
-        return RMember_LambdaVar(move(openTypeArgs), move(lambdaVar));
+        auto* openTypeArgs = MakeOpenTypeArgs();
+        return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
-    if (auto* lambdaVar = get_if<RMember_LambdaVar>(&*oMember))
+    if (auto* lambdaVar = get_if<RMember_LambdaVar>(&**eORMember))
     {
         // class C<T> { void F<S> {
         //     List<T> x;      // 5) scopeContext.ResolveIdentifier(x, 0) => RMember
@@ -77,30 +84,33 @@ optional<RMember> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_
         //     }
         // } }
 
-        auto openTypeArgs = MakeOpenTypeArgs(factory);
-        auto initArg = NArgument_Normal(MakePtr<NExp_Load>(MakePtr<NLoc_LambdaVar>(lambdaVar->decl, openTypeArgs)));
+        auto openTypeArgs = MakeOpenTypeArgs();
+        auto* lambdaVarDecl = mFactory->MakeMLoc<MLoc_LambdaVar>(lambdaVar->decl, openTypeArgs);
+        auto* loadExp = mFactory->MakeMExp<MExp_Load>(lambdaVarDecl);
+        MArgument_Normal initArg{loadExp};
 
-        auto newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), move(initArg));
-        return RMember_LambdaVar(move(openTypeArgs), move(newLambdaVar));
+        auto* newLambdaVar = StageLambdaVar(lambdaVar->decl->GetUnboundDeclType(), lambdaVar->decl->GetName(), move(initArg));
+        return RMember_LambdaVar{openTypeArgs, newLambdaVar};
     }
 
-    if (auto* thisVar = get_if<RMember_ThisVar>(&*oMember))
+    if (auto* thisVar = get_if<RMember_ThisVar>(&**eORMember))
     {
         // TODO: 워닝, struct의 this는 복사가 일어납니다. 원본과 다를 수 있습니다. ref this로 명시적으로 지정해주세요(?)
-        if (auto structType = dynamic_cast<RType_Struct*>(thisVar->type.get()))
-            throw NotImplementedException();
+        if (auto structType = dynamic_cast<RType_Struct*>(thisVar->type))
+            throw NotImplementedException{};
 
-        auto initExp = MakePtr<NExp_Load>(MakePtr<NLoc_This>(thisVar->type));
-        auto initArg = NArgument_Normal(move(initExp));
+        auto* thisLoc = mFactory->MakeMLoc<MLoc_This>(thisVar->type);
+        auto* initExp = mFactory->MakeMExp<MExp_Load>(thisLoc);
+        auto initArg = MArgument_Normal{initExp};
 
-        auto lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, move(initArg));
-        auto openTypeArgs = MakeOpenTypeArgs(factory);
+        auto* lambdaVar = StageLambdaVar(thisVar->type, RNames::_this, move(initArg));
+        auto* openTypeArgs = MakeOpenTypeArgs();
 
-        return RMember_LambdaVar(move(openTypeArgs), move(lambdaVar));
+        return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
     // 나머지는 그대로 리턴
-    return oMember;
+    return eORMember;
 }
 
 RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
@@ -108,15 +118,15 @@ RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
     return funcReturn;
 }
 
-void FuncContext_Lambda::SetOpenFuncReturn(RTypePtr&& retType)
+void FuncContext_Lambda::SetOpenFuncReturn(RType* retType)
 {
     assert(holds_alternative<RFuncReturn_NotSet>(funcReturn));
-    funcReturn = move(RFuncReturn_Set(retType));
+    funcReturn = RFuncReturn_Set{retType};
 }
 
-RTypeArgumentsPtr FuncContext_Lambda::MakeOpenTypeArgs(RTypeFactory& factory)
+RTypeArguments* FuncContext_Lambda::MakeOpenTypeArgs()
 {
-    return outer->MakeOpenTypeArgs(factory);
+    return outer->MakeOpenTypeArgs();
 }
 
 bool FuncContext_Lambda::IsSeqFunc()
@@ -124,36 +134,44 @@ bool FuncContext_Lambda::IsSeqFunc()
     return bSeqFunc;
 }
 
-bool FuncContext_FuncDecl::CanAccess(RDecl* target)
+FuncContext_FuncDecl::FuncContext_FuncDecl(NFuncDecl* nFuncDecl, const RFactoryPtr& rFactory)
+    : nFuncDecl{nFuncDecl}, rFactory{rFactory}
 {
-    return funcDecl->GetNDecl()->GetRDecl()->CanAccess(target);
+
 }
 
-optional<RMember> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
+
+bool FuncContext_FuncDecl::CanAccess(RDecl* target)
 {
-    return funcDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return nFuncDecl->GetNDecl()->GetRDecl()->CanAccess(target);
+}
+
+expected<optional<RMember>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    return nFuncDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, *rFactory);
 }
 
 RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()
 {
-    return funcDecl->GetUnboundFuncReturn();
+    return nFuncDecl->GetUnboundFuncReturn();
 }
 
-void FuncContext_FuncDecl::SetOpenFuncReturn(RTypePtr&& retType)
+void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
 {
-    throw RuntimeFatalException();
+    throw RuntimeFatalException{};
 }
 
 
-RTypeArgumentsPtr FuncContext_FuncDecl::MakeOpenTypeArgs(RTypeFactory& factory)
+RTypeArguments* FuncContext_FuncDecl::MakeOpenTypeArgs()
 {
-    return funcDecl->GetNDecl()->GetRDecl()->MakeOpenTypeArgs(factory);
+    return nFuncDecl->GetNDecl()->GetRDecl()->MakeOpenTypeArgs(*rFactory);
 }
 
 bool FuncContext_FuncDecl::IsSeqFunc()
 {
-    return funcDecl->IsSeqFunc();
+    return nFuncDecl->IsSeqFunc();
 }
+
 
 //public void CommitLambdasToDeclSymbolTree()
 //{
@@ -188,4 +206,4 @@ bool FuncContext_FuncDecl::IsSeqFunc()
 //}
 
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

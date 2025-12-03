@@ -4,16 +4,16 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 optional<ArgumentsMatch> MatchArguments(
-    const RTypeArgumentsPtr& outerTypeArgs, 
-    const RTypeArgumentsPtr& partialTypeArgsExceptOuter, 
+    RTypeArguments* outerTypeArgs, 
+    RTypeArguments* partialTypeArgsExceptOuter, 
     vector<RFuncParameter>&& funcParams, 
     bool bVariadic, 
-    const SArgumentsPtr& sArgs)
+    SArguments* sArgs)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 } // namespace Citron

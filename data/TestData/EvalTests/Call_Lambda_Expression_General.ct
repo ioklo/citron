@@ -1,0 +1,9 @@
+//@ 1 3 true
+void Main()
+{
+	var f = (int i, string s, bool b) => { 
+	    @$i $s $b
+	};
+	
+	f(1, "3", true);
+}

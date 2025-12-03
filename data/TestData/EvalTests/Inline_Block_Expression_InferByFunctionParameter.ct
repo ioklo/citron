@@ -1,0 +1,10 @@
+//@ 3
+void F(int x)
+{
+	@$x
+}
+
+void Main()
+{
+	F(inline { return 3; });
+}

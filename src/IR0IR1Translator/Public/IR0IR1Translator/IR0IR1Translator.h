@@ -1,17 +1,19 @@
 #pragma once
 #include "IR0IR1TranslatorConfig.h"
+#include "QIR/QData.h"
+#include "QIR/QFuncBody.h"
 
 #include <memory>
+#include <expected>
 
 namespace Citron {
 
-class NModule;
-class QModule;
-class QFactory;
-class Diag;
-using DiagPtr = std::shared_ptr<Diag>;
+struct MFuncBody;
+class MData;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
+using QFactoryPtr = std::shared_ptr<class QFactory>;
+using DiagPtr = std::shared_ptr<struct Diag>;
 
-// body만 바꾸면 되는데
-IR0IR1TRANSLATOR_API QModule* Translate(NModule *nModule, DiagPtr diag, QFactory* factory);
+IR0IR1TRANSLATOR_API std::expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, const RFactoryPtr& rFactory, const QFactoryPtr& qFactory);
 
 }

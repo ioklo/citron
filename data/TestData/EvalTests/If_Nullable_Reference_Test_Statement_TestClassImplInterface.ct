@@ -1,0 +1,13 @@
+//@ true
+interface I {}
+class B { }
+class C : B, I { }
+
+void Main()
+{
+	var b = new C();
+	if (I i = b)
+	{
+		@true
+	}
+}

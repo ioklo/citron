@@ -5,21 +5,15 @@
 #include <expected>
 
 #include "Logging/Diag.h"
-#include "IR0/RNames.h"
+#include "RSymbol/RNames.h"
 
 namespace Citron {
 
 class RTypeArguments;
-using RTypeArgumentsPtr = std::shared_ptr<RTypeArguments>;
-
-namespace SyntaxIR0Translator {
 
 class IrExp;
-using IrExpPtr = std::shared_ptr<IrExp>;
-
 class TranslationContext;
 
-std::expected<IrExpPtr, DiagPtr> TranslateIrExpAndMemberNameToIrExp(const IrExpPtr& irExp, const RName& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context);
+std::expected<IrExp*, DiagPtr> TranslateIrExpAndMemberNameToIrExp(IrExp* irExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context);
 
-} // namespace SyntaxIR0Translator 
 } // namespace Citron

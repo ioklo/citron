@@ -1,0 +1,18 @@
+%%NOTTEST%%
+```
+[exp, exp, ...]
+```
+
+%%NOTTEST%%
+```
+ListExp([Exp] exps)
+```
+리스트를 만들고 환경의 result에 값을 넣습니다
+
+%%BEGIN_EMBED(List_Expression_Basic)%%
+```cs
+```
+%%END_EMBED%%
+
+# Reference
+[Expressions](Expressions.md)

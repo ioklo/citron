@@ -1,110 +1,113 @@
 #include "IrExp.h"
 
 #include "Infra/Ptr.h"
-#include "IR0/RNamespaceDecl.h"
-#include "IR0/RTypes.h"
-#include "IR0/NLoc.h"
-#include "IR0/NClassVarDecl.h"
-#include "IR0/NStructVarDecl.h"
+#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RTypes.h"
+#include "NSymbol/NClassVarDecl.h"
+#include "NSymbol/NStructVarDecl.h"
+
+#include "MIR/MLoc.h"
+
+#include "TranslationContext.h"
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
-IrExp_Namespace::IrExp_Namespace(const shared_ptr<RNamespaceDecl>& decl)
+IrExp_Namespace::IrExp_Namespace(RNamespaceDecl* decl)
     : decl(decl)
 {
 }
 
-IrExp_TypeVar::IrExp_TypeVar(const shared_ptr<RType_TypeVar>& type)
+IrExp_TypeVar::IrExp_TypeVar(RType_TypeVar* type)
     : type(type)
 {
 
 }
 
-IrExp_Class::IrExp_Class(const std::shared_ptr<RClassDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_Class::IrExp_Class(RClassDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }
 
-IrExp_Struct::IrExp_Struct(const std::shared_ptr<RStructDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_Struct::IrExp_Struct(RStructDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }
 
-IrExp_Enum::IrExp_Enum(const std::shared_ptr<REnumDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_Enum::IrExp_Enum(REnumDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
 }
 
-IrExp_ThisVar::IrExp_ThisVar(const RTypePtr& type)
+IrExp_ThisVar::IrExp_ThisVar(RType* type)
     : type(type)
 {
 }
 
-IrExp_StaticRef::IrExp_StaticRef(const NLocPtr& loc)
+IrExp_StaticRef::IrExp_StaticRef(MLoc* loc)
     : loc(loc)
 {
 }
 
-IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(const NLocPtr& loc, const std::shared_ptr<RClassVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(MLoc* loc, RClassVarDecl* decl, RTypeArguments* typeArgs)
     : loc(loc), decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr IrExp_BoxRef_ClassMember::GetTargetType(RTypeFactory& factory)
+RType* IrExp_BoxRef_ClassMember::GetTargetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-NLocPtr IrExp_BoxRef_ClassMember::MakeLoc()
+MLoc* IrExp_BoxRef_ClassMember::MakeLoc(TranslationContext& context)
 {
-    return MakePtr<NLoc_ClassVar>(NLocPtr{loc}, decl, typeArgs);
+    return context.MakeNLoc<MLoc_ClassVar>(loc, decl, typeArgs);
 }
 
-IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(const NLocPtr& loc, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
+IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(MLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs)
     : loc(loc), decl(decl), typeArgs(typeArgs)
 {
 }
 
-RTypePtr IrExp_BoxRef_StructIndirectMember::GetTargetType(RTypeFactory& factory)
+RType* IrExp_BoxRef_StructIndirectMember::GetTargetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-NLocPtr IrExp_BoxRef_StructIndirectMember::MakeLoc()
+MLoc* IrExp_BoxRef_StructIndirectMember::MakeLoc(TranslationContext& context)
 {
-    return MakePtr<NLoc_StructVar>(MakePtr<NLoc_BoxDeref>(NLocPtr{loc}), decl, typeArgs);
+    return context.MakeNLoc<MLoc_StructVar>(context.MakeNLoc<MLoc_BoxDeref>(loc), decl, typeArgs);
 }
 
-IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(const std::shared_ptr<IrExp_BoxRef>& parent, const std::shared_ptr<RStructVarDecl>& decl, const RTypeArgumentsPtr& typeArgs)
-    : parent(parent), decl(decl), typeArgs(typeArgs)
+IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(IrExp_BoxRef* parent, RStructVarDecl* decl, RTypeArguments* typeArgs)
+    : parent{parent}, decl{decl}, typeArgs{typeArgs}
 {
 }
 
-RTypePtr IrExp_BoxRef_StructMember::GetTargetType(RTypeFactory& factory)
+RType* IrExp_BoxRef_StructMember::GetTargetType(RFactory& factory)
 {
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-NLocPtr IrExp_BoxRef_StructMember::MakeLoc()
+MLoc* IrExp_BoxRef_StructMember::MakeLoc(TranslationContext& context)
 {
-    return MakePtr<NLoc_StructVar>(parent->MakeLoc(), decl, typeArgs);
+    return context.MakeNLoc<MLoc_StructVar>(parent->MakeLoc(context), decl, typeArgs);
 }
 
-IrExp_LocalRef::IrExp_LocalRef(const NLocPtr& loc)
+IrExp_LocalRef::IrExp_LocalRef(MLoc* loc)
     : loc(loc)
 {
 }
 
-IrExp_LocalValue::IrExp_LocalValue(NExpPtr&& exp)
-    : exp(move(exp))
+IrExp_LocalValue::IrExp_LocalValue(MExp* exp)
+    : exp{exp}
 {
 
 }
 
-IrExp_DerefedBoxValue::IrExp_DerefedBoxValue(NLocPtr&& innerLoc)
-    : innerLoc(move(innerLoc))
+IrExp_DerefedBoxValue::IrExp_DerefedBoxValue(MLoc* innerLoc)
+    : innerLoc{innerLoc}
 {
 }
 

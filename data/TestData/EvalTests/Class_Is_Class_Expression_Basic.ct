@@ -1,0 +1,13 @@
+//@ true true
+class B { }
+class C : B { }
+
+void Main()
+{
+	var b = new C();
+	
+	var t0 = b is B;
+	var t1 = b is C;
+
+	@$t0 $t1
+}

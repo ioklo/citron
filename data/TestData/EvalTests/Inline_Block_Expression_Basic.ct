@@ -1,0 +1,11 @@
+//@ 3
+void Main()
+{
+    int s = 2;
+    int x = inline {
+        return (s + 4) / 2;
+    };
+
+    @$x;
+}
+

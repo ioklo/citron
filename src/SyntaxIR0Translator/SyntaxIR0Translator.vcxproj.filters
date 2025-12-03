@@ -2,11 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="SyntaxIR0Translator.cpp" />
-    <ClCompile Include="EnumTranslation.cpp" />
-    <ClCompile Include="StructTranslation.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
-    <ClCompile Include="MemberDeclPhaseContext.cpp" />
-    <ClCompile Include="BodyPhaseContext.cpp" />
+    <ClCompile Include="BuildTypeDependentSymbolContext.cpp" />
+    <ClCompile Include="TranslateBodyContext.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
     <ClCompile Include="ImExp.cpp">
       <Filter>ExpTranslation\Structure</Filter>
@@ -22,28 +20,28 @@
     <ClCompile Include="SExpToImExpTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SExpToNLocTranslation.cpp">
+    <ClCompile Include="SExpToMLocTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SExpToNExpTranslation.cpp">
+    <ClCompile Include="SExpToMExpTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="SExpToReExpTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SExpRefToNExpTranslation.cpp">
+    <ClCompile Include="SExpRefToMExpTranslation.cpp">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClCompile>
     <ClCompile Include="SExpRefToIrExpTranslation.cpp">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ReExpToNLocTranslation.cpp">
+    <ClCompile Include="ReExpToMLocTranslation.cpp">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ReExpToNExpTranslation.cpp">
+    <ClCompile Include="ReExpToMExpTranslation.cpp">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="IrExpToNExpTranslation.cpp">
+    <ClCompile Include="IrExpToMExpTranslation.cpp">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="ImExpToReExpTranslation.cpp">
@@ -61,17 +59,17 @@
     <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ImCallableAndSArgsToNExpTranslation.cpp">
+    <ClCompile Include="ImCallableAndSArgsToMExpTranslation.cpp">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="RFuncAndRArgsToNExpTranslation.cpp" />
+    <ClCompile Include="RFuncAndRArgsToMExpTranslation.cpp" />
     <ClCompile Include="FuncMatching.cpp">
       <Filter>ExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SStmtToNStmtTranslation.cpp">
+    <ClCompile Include="SStmtToMStmtTranslation.cpp">
       <Filter>StmtTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SVarDeclToNStmtsTranslation.cpp">
+    <ClCompile Include="SVarDeclToMStmtsTranslation.cpp">
       <Filter>StmtTranslation</Filter>
     </ClCompile>
     <ClCompile Include="FuncContext.cpp">
@@ -85,11 +83,18 @@
     </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="DeclTypeInfo.cpp" />
-    <ClCompile Include="ResolveIdentifierError.cpp" />
-    <ClCompile Include="SkeletonPhaseContext.cpp" />
+    <ClCompile Include="SRTFactory.cpp" />
+    <ClCompile Include="GlobalFuncTask.cpp" />
+    <ClCompile Include="PhaseManager.cpp" />
+    <ClCompile Include="StructTask.cpp" />
+    <ClCompile Include="ResolveTypeHierarchyContext.cpp" />
+    <ClCompile Include="StructFuncTask.cpp" />
+    <ClCompile Include="StructCtorTask.cpp" />
+    <ClCompile Include="StructVarTask.cpp" />
+    <ClCompile Include="EnumElemVarTask.cpp" />
+    <ClCompile Include="GlobalContext.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SyntaxIR0TranslatorConfig.h" />
     <ClInclude Include="FuncContext.h">
       <Filter>Context</Filter>
     </ClInclude>
@@ -99,7 +104,7 @@
     <ClInclude Include="TranslationContext.h">
       <Filter>Context</Filter>
     </ClInclude>
-    <ClInclude Include="ImCallableAndSArgsToNExpTranslation.h">
+    <ClInclude Include="ImCallableAndSArgsToMExpTranslation.h">
       <Filter>ExpTranslation\ImExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h">
@@ -114,28 +119,28 @@
     <ClInclude Include="IrExpAndMemberNameToIrExpTranslation.h">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="IrExpToNExpTranslation.h">
+    <ClInclude Include="IrExpToMExpTranslation.h">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ReExpToNExpTranslation.h">
+    <ClInclude Include="ReExpToMExpTranslation.h">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ReExpToNLocTranslation.h">
+    <ClInclude Include="ReExpToMLocTranslation.h">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="SExpRefToIrExpTranslation.h">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SExpRefToNExpTranslation.h">
+    <ClInclude Include="SExpRefToMExpTranslation.h">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClInclude>
     <ClInclude Include="SExpToImExpTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SExpToNExpTranslation.h">
+    <ClInclude Include="SExpToMExpTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SExpToNLocTranslation.h">
+    <ClInclude Include="SExpToMLocTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="SExpToReExpTranslation.h">
@@ -156,27 +161,38 @@
     <ClInclude Include="FuncMatching.h">
       <Filter>ExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SStmtToNStmtTranslation.h">
+    <ClInclude Include="SStmtToMStmtTranslation.h">
       <Filter>StmtTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SVarDeclToNStmtsTranslation.h">
+    <ClInclude Include="SVarDeclToMStmtsTranslation.h">
       <Filter>StmtTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="BodyPhaseContext.h" />
+    <ClInclude Include="TranslateBodyContext.h" />
     <ClInclude Include="CommonTranslation.h" />
     <ClInclude Include="DeclTypeInfo.h" />
     <ClInclude Include="DesignatedDiagnostic.h" />
-    <ClInclude Include="EnumTranslation.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
-    <ClInclude Include="MemberDeclPhaseContext.h" />
+    <ClInclude Include="BuildTypeDependentSymbolContext.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ModuleDecls.h" />
-    <ClInclude Include="RFuncAndRArgsToNExpTranslation.h" />
-    <ClInclude Include="SkeletonPhaseContext.h" />
-    <ClInclude Include="StructTranslation.h" />
-    <ClInclude Include="SyntaxIR0Translator.h" />
-    <ClInclude Include="SyntaxIR0Translator-HeaderUnits.h" />
-    <ClInclude Include="ResolveIdentifierError.h" />
+    <ClInclude Include="RFuncAndRArgsToMExpTranslation.h" />
+    <ClInclude Include="SRTFactory.h" />
+    <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0Translator.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0TranslatorConfig.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalFuncTask.h" />
+    <ClInclude Include="PhaseManager.h" />
+    <ClInclude Include="StructTask.h" />
+    <ClInclude Include="TranslationTasks.h" />
+    <ClInclude Include="ResolveTypeHierarchyContext.h" />
+    <ClInclude Include="StructFuncTask.h" />
+    <ClInclude Include="StructCtorTask.h" />
+    <ClInclude Include="StructVarTask.h" />
+    <ClInclude Include="EnumElemVarTask.h" />
+    <ClInclude Include="GlobalContext.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">
@@ -205,6 +221,9 @@
     </Filter>
     <Filter Include="Context">
       <UniqueIdentifier>{71f12024-77ba-4bd3-8447-8685b9e9d2c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public Headers">
+      <UniqueIdentifier>{0a442679-8d7f-49a0-8403-92d752158c97}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

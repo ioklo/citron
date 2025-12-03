@@ -1,0 +1,19 @@
+//@ 2
+class C
+{
+    func<int, void> F;
+
+	public void InvokeF(int i)
+	{
+		F(i);
+	}
+}
+
+void Main()
+{
+    C c = new C(i => {
+        @$i
+    });
+
+    c.InvokeF(2);
+}

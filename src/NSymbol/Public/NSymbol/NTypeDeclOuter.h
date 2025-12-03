@@ -1,0 +1,30 @@
+#pragma once
+
+
+namespace Citron
+{
+
+class NNamespaceDecl;
+class NClassDecl;
+class NStructDecl;
+class NDecl;
+
+class NTypeDeclOuterVisitor
+{
+public:
+    virtual ~NTypeDeclOuterVisitor() {}
+    virtual void Visit(NNamespaceDecl* outer) = 0;
+    virtual void Visit(NClassDecl* outer) = 0;
+    virtual void Visit(NStructDecl* outer) = 0;
+};
+
+// 보통 타입의 Outer
+class NTypeDeclOuter
+{
+public:
+    virtual ~NTypeDeclOuter() {}
+    virtual NDecl* GetNDecl() = 0;
+    virtual void Accept(NTypeDeclOuterVisitor& visitor) = 0;
+};
+
+}

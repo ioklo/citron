@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Public\ESymbol\ESymbolConfig.h" />
+    <ClInclude Include="Public\ESymbol\EBodyDeclOuter.h">
+      <Filter>00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EDecl.h">
+      <Filter>00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EType.h">
+      <Filter>00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\ETypeArguments.h">
+      <Filter>00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\ETypeDecl.h">
+      <Filter>00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\ETypeDeclOuter.h">
+      <Filter>00 Abstraction</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EDeclId.h">
+      <Filter>01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EIdentifier.h">
+      <Filter>01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EFunc.h">
+      <Filter>03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EFuncDecl.h">
+      <Filter>03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EFuncParameter.h">
+      <Filter>03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EFuncReturn.h">
+      <Filter>03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\ECommonFuncDeclComponent.h">
+      <Filter>04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EFuncDeclContainerComponent.h">
+      <Filter>04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\ENamespaceDeclContainerComponent.h">
+      <Filter>04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\ETypeDeclContainerComponent.h">
+      <Filter>04 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EGlobalFuncDecl.h">
+      <Filter>05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EModule.h">
+      <Filter>05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\ENamespaceDecl.h">
+      <Filter>05 TopLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EClassCtorDecl.h">
+      <Filter>06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EClassDecl.h">
+      <Filter>06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EClassFuncDecl.h">
+      <Filter>06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EClassVarDecl.h">
+      <Filter>06 Class</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EStructCtorDecl.h">
+      <Filter>07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EStructDecl.h">
+      <Filter>07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EStructFuncDecl.h">
+      <Filter>07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EStructVarDecl.h">
+      <Filter>07 Struct</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EEnumDecl.h">
+      <Filter>08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EEnumElemDecl.h">
+      <Filter>08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EEnumElemVarDecl.h">
+      <Filter>08 Enum</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EInterfaceDecl.h">
+      <Filter>09 Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\ESymbol\EAccessor.h" />
+    <ClInclude Include="Public\ESymbol\ENames.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="00 Abstraction">
+      <UniqueIdentifier>{04e79faf-9c4a-4f80-80f0-13d437893247}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01 Identifier">
+      <UniqueIdentifier>{ad2f74f5-59cb-4a36-ba37-db10f0e161f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03 Func">
+      <UniqueIdentifier>{5046e9ab-df4a-4cf5-bc2b-250a7fe3aa89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04 Components">
+      <UniqueIdentifier>{8a3fb9b2-dbf9-4fbe-8626-50687dd1633c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05 TopLevel">
+      <UniqueIdentifier>{dd1b4788-84a1-4ff6-8f5f-b946daedf126}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="06 Class">
+      <UniqueIdentifier>{6400cf8a-195c-4856-8327-df041778416f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="07 Struct">
+      <UniqueIdentifier>{35d0c736-15d6-4247-8e28-4fb649d0deec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="08 Enum">
+      <UniqueIdentifier>{1bd7c271-6883-4307-8112-58fee30644d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="09 Interface">
+      <UniqueIdentifier>{78ade187-d59a-46d7-a817-5ec87f8d3396}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="EType.cpp">
+      <Filter>00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="ETypeArguments.cpp">
+      <Filter>00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="EDeclId.cpp">
+      <Filter>01 Identifier</Filter>
+    </ClCompile>
+    <ClCompile Include="ENamespaceDeclContainerComponent.cpp">
+      <Filter>04 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ETypeDeclContainerComponent.cpp">
+      <Filter>04 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="EModule.cpp">
+      <Filter>05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="ENames.cpp" />
+    <ClCompile Include="EEnumElemDecl.cpp" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,54 @@
+#include "NStructFuncDecl.h"
+#include <cassert>
+#include "NStructDecl.h"
+
+using namespace std;
+
+namespace Citron
+{
+
+NStructFuncDecl::NStructFuncDecl(
+    NStructDecl* _struct, RAccessor accessor, bool bStatic, bool bSeqFunc, 
+    const string& name, vector<string>&& typeParams)
+    : _struct{_struct}
+    , accessor{accessor}
+    , name{name}
+    , NCommonFuncDeclComponent(bStatic, bSeqFunc, move(typeParams))
+{   
+}
+
+void NStructFuncDecl::InitFuncReturnAndParams(RType* funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
+{
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(funcReturn), move(funcParameters), bLastParameterVariadic);
+}
+
+NDecl* NStructFuncDecl::GetNOuter()
+{
+    return _struct;
+}
+
+RDecl* NStructFuncDecl::GetROuter()
+{
+    return _struct;
+}
+
+RIdentifier NStructFuncDecl::GetIdentifier()
+{
+    return RIdentifier { RName_Normal(name), NCommonFuncDeclComponent::GetTypeParamCount(), NCommonFuncDeclComponent::GetParamIds() };
+}
+
+optional<RMember> NStructFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    return nullopt;
+}
+
+optional<RMember> NStructFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+{
+    size_t baseTypeParamCount = _struct->GetAllTypeParamCount();
+    if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
+        return oMember;
+
+    return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+}
+
+}

@@ -7,21 +7,18 @@
 
 namespace Citron {
 
-class RTypeFactory;
+class RFactory;
 class RType;
-using RTypePtr = std::shared_ptr<RType>;
-enum class NInternalBinaryOperator;
-
-namespace SyntaxIR0Translator {
+enum class MInternalBinaryOperator;
 
 struct BinOpInfo
 {
-    RTypePtr operandType0;
-    RTypePtr operandType1;
-    RTypePtr resultType;
-    NInternalBinaryOperator rOperator;
+    RType* operandType0;
+    RType* operandType1;
+    RType* resultType;
+    MInternalBinaryOperator rOperator;
 
-    BinOpInfo(const RTypePtr& operandType0, const RTypePtr& operandType1, const RTypePtr& resultType, NInternalBinaryOperator rOperator);
+    BinOpInfo(RType* operandType0, RType* operandType1, RType* resultType, MInternalBinaryOperator rOperator);
 };
 
 class BinOpQueryService
@@ -29,11 +26,10 @@ class BinOpQueryService
     std::unordered_map<SBinaryOpKind, std::vector<BinOpInfo>> infos;
 
 public:
-    BinOpQueryService(RTypeFactory& factory);
-
+    BinOpQueryService(RFactory& factory);
     const std::vector<BinOpInfo>& GetInfos(SBinaryOpKind kind);
 };
 
-} // namespace SyntaxIR0Translator
+using BinOpQueryServicePtr = std::shared_ptr<BinOpQueryService>;
 
 } // namespace Citron

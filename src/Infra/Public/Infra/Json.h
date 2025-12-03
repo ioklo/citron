@@ -104,12 +104,24 @@ inline JsonItem ToJson(int value)
     return JsonInt(value);
 }
 
-// default
 template<typename T>
+concept HasToJson = requires(T t) {
+    { t.ToJson() } -> std::same_as<JsonItem>;
+};
+
+// default
+template<typename T> requires HasToJson<T>
 JsonItem ToJson(T& t)
 {
     return t.ToJson();
 }
+
+template<typename T> requires HasToJson<T>
+JsonItem ToJson(T* t)
+{
+    return t->ToJson();
+}
+
 
 template<typename T>
 JsonItem ToJson(std::shared_ptr<T>& t)

@@ -1,0 +1,15 @@
+//@ 2
+class C
+{
+    public static func<int, void> F;
+}
+
+void Main()
+{
+    C.F = i => {
+        @$i
+    };
+
+
+    C.F(2);
+}

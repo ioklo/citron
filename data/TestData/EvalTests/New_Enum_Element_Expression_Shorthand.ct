@@ -1,0 +1,7 @@
+//@  
+enum E { First, Second(int i) }
+void Main()
+{
+	E e = .First;
+	e = .Second(2);
+}

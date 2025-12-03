@@ -1,0 +1,10 @@
+//@ false
+interface I { }
+class C { }
+
+void Main()
+{
+	var c = new C();
+	var t = c is I;
+	@$t
+}

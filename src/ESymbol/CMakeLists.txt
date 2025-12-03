@@ -1,0 +1,67 @@
+
+add_library(ESymbol SHARED)
+
+set_target_properties(ESymbol PROPERTIES DEFINE_SYMBOL ESYMBOL_EXPORTS)
+
+target_compile_options(ESymbol PRIVATE
+        -Wno-unqualified-std-cast-call
+)
+
+target_include_directories(ESymbol
+        PRIVATE Public/ESymbol
+        PUBLIC Public)
+
+target_link_libraries(ESymbol PRIVATE Infra)
+
+target_sources(ESymbol
+        PRIVATE
+        EDeclId.cpp
+        EEnumElemDecl.cpp
+        EModule.cpp
+        ENames.cpp
+        ENamespaceDeclContainerComponent.cpp
+        EType.cpp
+        ETypeArguments.cpp
+        ETypeDeclContainerComponent.cpp
+
+        PUBLIC FILE_SET headers
+        TYPE HEADERS
+        FILES
+
+        Public/ESymbol/EAccessor.h
+        Public/ESymbol/EBodyDeclOuter.h
+        Public/ESymbol/EClassCtorDecl.h
+        Public/ESymbol/EClassDecl.h
+        Public/ESymbol/EClassFuncDecl.h
+        Public/ESymbol/EClassVarDecl.h
+        Public/ESymbol/ECommonFuncDeclComponent.h
+        Public/ESymbol/EDecl.h
+        Public/ESymbol/EDeclId.h
+        Public/ESymbol/EEnumDecl.h
+        Public/ESymbol/EEnumElemDecl.h
+        Public/ESymbol/EEnumElemVarDecl.h
+        Public/ESymbol/EFunc.h
+        Public/ESymbol/EFuncDecl.h
+        Public/ESymbol/EFuncDeclContainerComponent.h
+        Public/ESymbol/EFuncParameter.h
+        Public/ESymbol/EFuncReturn.h
+        Public/ESymbol/EGlobalFuncDecl.h
+        Public/ESymbol/EIdentifier.h
+        Public/ESymbol/EInterfaceDecl.h
+        Public/ESymbol/EModule.h
+        Public/ESymbol/ENames.h
+        Public/ESymbol/ENamespaceDecl.h
+        Public/ESymbol/ENamespaceDeclContainerComponent.h
+        Public/ESymbol/EStructCtorDecl.h
+        Public/ESymbol/EStructDecl.h
+        Public/ESymbol/EStructFuncDecl.h
+        Public/ESymbol/EStructVarDecl.h
+        Public/ESymbol/ESymbolConfig.h
+        Public/ESymbol/EType.h
+        Public/ESymbol/ETypeArguments.h
+        Public/ESymbol/ETypeDecl.h
+        Public/ESymbol/ETypeDeclContainerComponent.h
+        Public/ESymbol/ETypeDeclOuter.h
+
+
+)

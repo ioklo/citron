@@ -2,84 +2,110 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Variants.h"
+#include "Infra/Expected.h"
+
 #include "Logging/Logger.h"
-#include "IR0/RTypeFactory.h"
-#include "IR0/RFuncDecl.h"
-#include "IR0/RDecl.h"
-#include "IR0/NLoc.h"
-#include "IR0/NExp.h"
+#include "RSymbol/RFactory.h"
+#include "RSymbol/RFuncDecl.h"
+#include "RSymbol/RDecl.h"
+#include "RSymbol/RTypeArguments.h"
+#include "MIR/MLoc.h"
+#include "MIR/MExp.h"
 
 #include "ReExp.h"
 #include "IrExp.h"
-#include "TranslationContext.h"
-#include "ScopeContext.h"
+#include "ImExp.h"
+
+#include "GlobalContext.h"
 #include "FuncContext.h"
+#include "ScopeContext.h"
 #include "BinOpQueryService.h"
+#include "SRTFactory.h"
 
 #include "Misc.h"
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
-TranslationContext::TranslationContext(const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, const LoggerPtr& logger, const RTypeFactoryPtr& factory, const BinOpQueryServicePtr& binOpQueryService)
-    : globalContext(globalContext), funcContext(funcContext), scopeContext(scopeContext), logger(logger), factory(factory), binOpQueryService(binOpQueryService)
+TranslationContext::TranslationContext(
+    const GlobalContextPtr& globalContext, const FuncContextPtr& funcContext, const ScopeContextPtr& scopeContext, 
+    const LoggerPtr& logger, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory,
+    const BinOpQueryServicePtr& binOpQueryService)
+    : globalContext{globalContext}, funcContext{funcContext}, scopeContext{scopeContext}
+    , logger{logger}, rFactory{rFactory}, mFactory{mFactory}, srtFactory{srtFactory}
+    , binOpQueryService{binOpQueryService}
 {
+}
+
+TranslationContext TranslationContext::Make(
+    NFuncDecl* nFuncDecl, 
+    const LoggerPtr& logger,
+    const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory,
+    const BinOpQueryServicePtr& binOpQueryService)
+{
+    auto globalContext = MakePtr<GlobalContext>();
+    auto funcContext = MakePtr<FuncContext_FuncDecl>(nFuncDecl, rFactory);
+    auto scopeContext = MakePtr<ScopeContext>(funcContext, nullptr, 0, rFactory);
+
+    return { globalContext, funcContext, scopeContext, logger, rFactory, mFactory, srtFactory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeNestedScopeContext()
 {
-    auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop);
-    return { globalContext, funcContext, newScopeContext, logger, factory, binOpQueryService };
+    auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop, rFactory);
+    return { globalContext, funcContext, newScopeContext, logger, rFactory, mFactory, srtFactory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeNestedLoopScopeContext()
 {
-    auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop + 1);
-    return { globalContext, funcContext, newScopeContext, logger, factory, binOpQueryService };
+    auto newScopeContext = MakePtr<ScopeContext>(funcContext, scopeContext, scopeContext->nestedLoop + 1, rFactory);
+    return { globalContext, funcContext, newScopeContext, logger, rFactory, mFactory,  srtFactory, binOpQueryService };
 }
 
 TranslationContext TranslationContext::MakeLambdaBodyContext(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
 {   
     auto newFuncContext = MakePtr<FuncContext_Lambda>(scopeContext, /*bSeqFunc*/ false, move(funcRet), move(funcParams), bLastParamVariadic);
-    auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, nullptr, 0);
+    auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, nullptr, 0, rFactory);
 
-    return { globalContext, newFuncContext, newScopeContext, logger, factory, binOpQueryService };
+    return { globalContext, newFuncContext, newScopeContext, logger, rFactory, mFactory, srtFactory, binOpQueryService };
 }
 
-expected<RTypePtr, DiagPtr> TranslationContext::TranslateSTypeExpToRType(STypeExp& typeExp)
+expected<RType*, DiagPtr> TranslationContext::TranslateSTypeExpToRType(STypeExp* typeExp)
 {
-    return scopeContext->TranslateSTypeExpToRType(typeExp, *factory);
+    return scopeContext->TranslateSTypeExpToRType(typeExp);
 }
 
-Citron::RTypePtr TranslationContext::GetType(NLoc& loc)
+Citron::RType* TranslationContext::GetType(MLoc* loc)
 {
-    return loc.GetType(*factory);
+    return loc->GetType(*rFactory);
 }
 
-RTypePtr TranslationContext::GetType(ReExp& reExp)
+RType* TranslationContext::GetType(ReExp* reExp)
 {
-    return reExp.GetType(*factory);
+    return reExp->GetType(*rFactory);
 }
 
-Citron::RTypePtr TranslationContext::GetType(NExp& exp)
+Citron::RType* TranslationContext::GetType(MExp* exp)
 {
-    return exp.GetType(*factory);
+    return exp->GetType(*rFactory);
 }
 
-RTypePtr TranslationContext::GetTargetType(IrExp_BoxRef& boxRef)
+RType* TranslationContext::GetTargetType(IrExp_BoxRef* boxRef)
 {
-    return boxRef.GetTargetType(*factory);
+    return boxRef->GetTargetType(*rFactory);
 }
 
-std::shared_ptr<Citron::NLoc_This> TranslationContext::MakeThisLoc()
+MLoc_This* TranslationContext::MakeThisLoc()
 {
-    return scopeContext->MakeThisLoc(*factory);
+
+    return scopeContext->MakeThisLoc();
 }
 
-expected<NExpPtr, DiagPtr> TranslationContext::MakeNExp_As(NExpPtr&& targetExp, const RTypePtr& testType)
+expected<MExp*, DiagPtr> TranslationContext::MakeMExp_As(MExp* targetExp, RType* testType)
 {
-    auto targetType = targetExp->GetType(*factory);
+    auto targetType = targetExp->GetType(*rFactory);
     auto targetTypeKind = targetType->GetCustomTypeKind();
     auto testTypeKind = testType->GetCustomTypeKind();
 
@@ -87,121 +113,104 @@ expected<NExpPtr, DiagPtr> TranslationContext::MakeNExp_As(NExpPtr&& targetExp, 
     if (testTypeKind == RCustomTypeKind::Class)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<NExp_ClassAsClass>(move(targetExp), testType);
+            return MakeMExp<MExp_ClassAsClass>(targetExp, testType);
 
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<NExp_InterfaceAsClass>(move(targetExp), testType);
+            return MakeMExp<MExp_InterfaceAsClass>(targetExp, testType);
         else
-            throw NotImplementedException(); // 에러 처리
+            throw NotImplementedException{}; // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::Interface)
     {
         if (targetTypeKind == RCustomTypeKind::Class)
-            return MakePtr<NExp_ClassAsInterface>(move(targetExp), testType);
+            return MakeMExp<MExp_ClassAsInterface>(targetExp, testType);
         else if (targetTypeKind == RCustomTypeKind::Interface)
-            return MakePtr<NExp_InterfaceAsInterface>(move(targetExp), testType);
+            return MakeMExp<MExp_InterfaceAsInterface>(targetExp, testType);
         else
-            throw NotImplementedException(); // 에러 처리
+            throw NotImplementedException{}; // 에러 처리
     }
     else if (testTypeKind == RCustomTypeKind::EnumElem)
     {
         if (targetTypeKind == RCustomTypeKind::Enum)
-            return MakePtr<NExp_EnumAsEnumElem>(move(targetExp), testType);
+            return MakeMExp<MExp_EnumAsEnumElem>(targetExp, testType);
         else
-            throw NotImplementedException(); // 에러 처리
+            throw NotImplementedException{}; // 에러 처리
     }
     else
-        throw NotImplementedException(); // 에러 처리
+        throw NotImplementedException{}; // 에러 처리
 }
 
-bool TranslationContext::IsInLoop()
+struct DeclTypeVisitor
 {
-    return scopeContext->IsInLoop();
-}
-
-struct DeclTypeVisitor : public STypeExpVisitor
-{
-    DeclTypeInfo* result;
+    using ResultType = DeclTypeInfo;
     TranslationContext& context;
 
 public:
-    DeclTypeVisitor(DeclTypeInfo* result, TranslationContext& context)
-        : result(result), context(context)
+    DeclTypeVisitor(TranslationContext& context)
+        : context{context}
     {
     }
 
 private:
-    void Normal(STypeExp& typeExp)
+    ResultType Normal(STypeExp* typeExp)
     {
         auto eRType = context.TranslateSTypeExpToRType(typeExp);
-        *result = DeclTypeInfo(DeclTypeInfoKind::Normal, *eRType);
+        return DeclTypeInfo(DeclTypeInfoKind::Normal, *eRType);
     }
 
 public:
-    void Visit(STypeExp_Id& typeExp) override
+    ResultType Visit(STypeExp_Id* typeExp)
     {
         if (!IsVarType(typeExp))
             return Normal(typeExp);
 
-        *result = DeclTypeInfo { DeclTypeInfoKind::PlainVar, /*type*/ nullptr };
+        return DeclTypeInfo{DeclTypeInfoKind::PlainVar, /*type*/ nullptr};
     }
 
-    void Visit(STypeExp_Member& typeExp) override
+    ResultType Visit(STypeExp_Member* typeExp)
     {
         return Normal(typeExp);
     }
 
     // var?
-    void Visit(STypeExp_Nullable& typeExp) override
+    ResultType Visit(STypeExp_Nullable* typeExp)
     {
-        if (!IsVarType(*typeExp.innerType))
+        if (!IsVarType(typeExp->innerType))
             return Normal(typeExp);
 
-        *result = DeclTypeInfo { DeclTypeInfoKind::NullableVar, /*type*/ nullptr };
+        return DeclTypeInfo{DeclTypeInfoKind::NullableVar, /*type*/ nullptr};
     }
 
-    void Visit(STypeExp_LocalPtr& typeExp) override
+    ResultType Visit(STypeExp_LocalPtr* typeExp)
     {
-        if (!IsVarType(*typeExp.innerType))
+        if (!IsVarType(typeExp->innerType))
             return Normal(typeExp);
 
-        *result = DeclTypeInfo { DeclTypeInfoKind::LocalPtrVar, /*type*/ nullptr };
+        return DeclTypeInfo{DeclTypeInfoKind::LocalPtrVar, /*type*/ nullptr};
     }
 
-    void Visit(STypeExp_BoxPtr& typeExp) override
+    ResultType Visit(STypeExp_BoxPtr* typeExp)
     {
-        if (!IsVarType(*typeExp.innerType))
+        if (!IsVarType(typeExp->innerType))
             return Normal(typeExp);
 
-        *result = DeclTypeInfo { DeclTypeInfoKind::BoxPtrVar, /*type*/ nullptr };
+        return DeclTypeInfo{DeclTypeInfoKind::BoxPtrVar, /*type*/ nullptr};
     }
 
     // local var i = ...
-    void Visit(STypeExp_Local& typeExp) override
+    ResultType Visit(STypeExp_Local* typeExp)
     {
-        if (!IsVarType(*typeExp.innerType))
+        if (!IsVarType(typeExp->innerType))
             return Normal(typeExp);
 
-        *result = DeclTypeInfo { DeclTypeInfoKind::LocalInterfaceVar, /*type*/ nullptr };
+        return DeclTypeInfo{DeclTypeInfoKind::LocalInterfaceVar, /*type*/ nullptr};
     }
 };
 
-DeclTypeInfo TranslationContext::GetDeclTypeInfo(STypeExp& typeExp)
+DeclTypeInfo TranslationContext::GetDeclTypeInfo(STypeExp* typeExp)
 {
-    DeclTypeInfo info;
-    DeclTypeVisitor visitor(&info, *this);
-    typeExp.Accept(visitor);
-    return info;
-}
-
-bool TranslationContext::DoesLocalVarNameExistInScope(const std::string& name)
-{
-    throw NotImplementedException();
-}
-
-void TranslationContext::AddLocalVarInfo(const RTypePtr& type, RName&& name)
-{
-    throw NotImplementedException();
+    DeclTypeVisitor visitor{*this};
+    return Accept(visitor, typeExp);
 }
 
 bool TranslationContext::CanAccess(RDecl* target)
@@ -219,49 +228,49 @@ RFuncReturn TranslationContext::GetUnboundFuncReturn()
     return funcContext->GetUnboundFuncReturn();
 }
 
-void TranslationContext::SetOpenFuncReturn(RTypePtr&& retType)
+void TranslationContext::SetOpenFuncReturn(RType* retType)
 {
-    funcContext->SetOpenFuncReturn(move(retType));
+    funcContext->SetOpenFuncReturn(retType);
 }
 
-NLambdaDeclAndArgs TranslationContext::MakeLambdaDeclAndArgs(std::vector<NStmtPtr>&& body)
+NLambdaDeclAndArgs TranslationContext::MakeLambdaDeclAndArgs(std::vector<MStmt*>&& body)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
-RTypeArgumentsPtr TranslationContext::MakeTypeArguments(const std::vector<RTypePtr>& items)
+RTypeArguments* TranslationContext::MakeTypeArguments(const std::vector<RType*>& items)
 {
-    return factory->MakeTypeArguments(items);
+    return rFactory->MakeTypeArguments(items);
 }
 
-RTypeArgumentsPtr TranslationContext::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1)
+RTypeArguments* TranslationContext::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1)
 {
-    return factory->MergeTypeArguments(typeArgs0, typeArgs1);
+    return rFactory->MergeTypeArguments(typeArgs0, typeArgs1);
 }
 
-RTypePtr TranslationContext::MakeVoidType()
+RType* TranslationContext::MakeVoidType()
 {
-    return factory->MakeVoidType();
+    return rFactory->MakeVoidType();
 }
 
-RTypePtr TranslationContext::MakeBoolType()
+RType* TranslationContext::MakeBoolType()
 {
-    return factory->MakeBoolType();
+    return rFactory->MakeBoolType();
 }
 
-RTypePtr TranslationContext::MakeIntType()
+RType* TranslationContext::MakeIntType()
 {
-    return factory->MakeIntType();
+    return rFactory->MakeIntType();
 }
 
-RTypePtr TranslationContext::MakeStringType()
+RType* TranslationContext::MakeStringType()
 {
-    return factory->MakeStringType();
+    return rFactory->MakeStringType();
 }
 
-bool TranslationContext::IsListType(const RTypePtr& type, RTypePtr* outItemType)
+bool TranslationContext::IsListType(RType* type, RType** outItemType)
 {
-    return factory->IsListType(type, outItemType);
+    return rFactory->IsListType(type, outItemType);
 }
 
 const vector<BinOpInfo>& TranslationContext::GetBinOpInfos(SBinaryOpKind kind)
@@ -271,22 +280,32 @@ const vector<BinOpInfo>& TranslationContext::GetBinOpInfos(SBinaryOpKind kind)
 
 RFuncReturn TranslationContext::GetFuncReturn(RFuncDecl& decl, RTypeArguments& typeArgs)
 {
-    return decl.GetFuncReturn(typeArgs, *factory);
+    return decl.GetFuncReturn(typeArgs, *rFactory);
 }
 
 RFuncParameter TranslationContext::GetFuncParam(RFuncDecl& decl, RTypeArguments& typeArgs, size_t index)
 {
-    return decl.GetFuncParam(typeArgs, index, *factory);
+    return decl.GetFuncParam(typeArgs, index, *rFactory);
 }
 
-shared_ptr<RType_Enum> TranslationContext::GetBaseEnumType(RType_EnumElem& enumElemType)
+RType_Enum* TranslationContext::GetBaseEnumType(RType_EnumElem& enumElemType)
 {
-    return enumElemType.GetBaseEnumType(*factory);
+    return enumElemType.GetBaseEnumType(*rFactory);
 }
 
-expected<ImExpPtr, shared_ptr<ResolveIdentifierError>> TranslationContext::ResolveIdentifier(RName&& name, RTypeArgumentsPtr&& typeArgs)
-{
-    throw NotImplementedException();
+expected<ImExp*, DiagPtr> TranslationContext::ResolveIdentifier(const RName& name, RTypeArguments* typeArgs)
+{   
+    auto eORMember = scopeContext->ResolveIdentifier(name, typeArgs->GetCount());
+    RETURN_ON_ERROR(eORMember)
+
+    if (!*eORMember)
+        return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
+
+    return visit<ImExp*>(overloaded{
+        [this](RMember_LocalVar& localVar) { return srtFactory->MakeImExp<ImExp_LocalVar>(localVar.type, localVar.name); },
+        [this, typeArgs](RMember_GlobalFuncs& globalFuncs) { return srtFactory->MakeImExp<ImExp_GlobalFuncs>(globalFuncs.items, typeArgs); },
+        [](auto&) { throw NotImplementedException{}; return nullptr; }
+    }, **eORMember);
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

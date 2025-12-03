@@ -4,19 +4,21 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
+
 #include "Syntax/Syntax.h"
 #include "Logging/Logger.h"
-#include "IR0/RTypes.h"
-#include "IR0/NLoc.h"
-#include "IR0/NExp.h"
+#include "RSymbol/RTypes.h"
+#include "MIR/MLoc.h"
+#include "MIR/MExp.h"
 
 #include "ImExp.h"
 #include "ReExp.h"
 
-#include "SExpToNExpTranslation.h"
+#include "SExpToMExpTranslation.h"
 #include "SExpToReExpTranslation.h"
-#include "ReExpToNExpTranslation.h"
-#include "ReExpToNLocTranslation.h"
+#include "ReExpToMExpTranslation.h"
+#include "ReExpToMLocTranslation.h"
 #include "ImExpAndMemberNameToImExpTranslation.h"
 
 #include "TranslationContext.h"
@@ -26,167 +28,152 @@
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 namespace {
 
-class SExpToImExpTranslator : public SExpVisitor
+class SExpToImExpTranslator
 {
-    expected<ImExpPtr, DiagPtr>* result;
-    RTypePtr hintType;
+public:
+    using ResultType = expected<ImExp*, DiagPtr>;
 
+private:
+    RType* hintType;
     TranslationContext& context;
 
 public:
-    SExpToImExpTranslator(expected<ImExpPtr, DiagPtr>* result, const RTypePtr& hintType, TranslationContext& context)
-        : result(result), hintType(hintType), context(context)
+    SExpToImExpTranslator(RType* hintType, TranslationContext& context)
+        : hintType{hintType}, context{context}
     {
     }
 
 private:
-    void HandleExp(expected<NExpPtr, DiagPtr>&& eExp)
+    ResultType HandleExp(expected<MExp*, DiagPtr>&& eExp)
     {
         if (!eExp)
-            *result = nullptr;
+            return unexpected{move(eExp).error()};
         else
-            *result = MakePtr<ImExp_Else>(move(*eExp));
+            return context.MakeImExp<ImExp_Else>(*eExp);
     }
 
-    void Forward(expected<ImExpPtr, DiagPtr>&& r)
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, ImExp>
+    ResultType Value(TArgs&&... args)
     {
-        *result = move(r);
-    }
-
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<ImExp, TValue>
-    void Value(TArgs&&... args)
-    {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
+        return context.MakeImExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
-    void Error(TArgs&&... args)
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:
     // x
-    void Visit(SExp_Identifier& exp) override
+    ResultType Visit(SExp_Identifier* exp)
     {
-        throw NotImplementedException();
-        /*try
-        {
-            auto typeArgs = MakeTypeArgs(exp.typeArgs, context, factory);
+        auto eRTypeArgs = MakeRTypeArgs(exp->typeArgs, context);
+        RETURN_ON_ERROR(eRTypeArgs);
 
-            var imExp = context.ResolveIdentifier(new Name.Normal(exp.Value), typeArgs);
-            if (imExp == null)
-            {
-                context.AddFatalError(A2007_ResolveIdentifier_NotFound, exp);
-                return Error();
-            }
+        auto eImExp = context.ResolveIdentifier(RName_Normal(exp->value), *eRTypeArgs);
+        RETURN_ON_ERROR(eImExp);
 
-            return Valid(imExp);
-        }
-        catch (IdentifierResolverMultipleCandidatesException)
-        {
-            context.AddFatalError(A2001_ResolveIdentifier_MultipleCandidatesForIdentifier, exp);
-            return Error();
-        }*/
+        return *eImExp;
     }
 
-    void Visit(SExp_String& exp) override
+    ResultType Visit(SExp_String* exp)
     {
         return HandleExp(TranslateSStringExpToNStringExp(exp, context));
     }
 
-    void Visit(SExp_IntLiteral& exp) override
+    ResultType Visit(SExp_IntLiteral* exp)
     {
-        return HandleExp(TranslateSIntLiteralExpToNExp(exp));
+        return HandleExp(TranslateSIntLiteralExpToMExp(exp, context));
     }
 
-    void Visit(SExp_BoolLiteral& exp) override
+    ResultType Visit(SExp_BoolLiteral* exp)
     {
-        return HandleExp(TranslateSBoolLiteralExpToNExp(exp));
+        return HandleExp(TranslateSBoolLiteralExpToMExp(exp, context));
     }
 
     // 'null'
-    void Visit(SExp_NullLiteral& exp) override
+    ResultType Visit(SExp_NullLiteral* exp)
     {
-        return HandleExp(TranslateSNullLiteralExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSNullLiteralExpToMExp(exp, hintType, context));
     }
 
-    void Visit(SExp_BinaryOp& exp) override
+    ResultType Visit(SExp_BinaryOp* exp)
     {
-        return HandleExp(TranslateSBinaryOpExpToNExp(exp, context));
+        return HandleExp(TranslateSBinaryOpExpToMExp(exp, context));
     }
 
-    void Visit(SExp_UnaryOp& exp) override
+    ResultType Visit(SExp_UnaryOp* exp)
     {
         // *d
-        if (exp.kind == SUnaryOpKind::Deref)
+        if (exp->kind == SUnaryOpKind::Deref)
         {
-            auto eTarget = TranslateSExpToReExp(*exp.operand, /*hintType*/nullptr, context);
+            auto eTarget = TranslateSExpToReExp(exp->operand, /*hintType*/nullptr, context);
             if (!eTarget) return Error(move(eTarget));
 
-            auto targetType = context.GetType(**eTarget);
+            auto targetType = context.GetType(*eTarget);
 
-            if (dynamic_cast<RType_BoxPtr*>(targetType.get()))
-                return Value<ImExp_BoxDeref>(move(*eTarget));
+            if (dynamic_cast<RType_BoxPtr*>(targetType))
+                return Value<ImExp_BoxDeref>(*eTarget);
 
-            if (dynamic_cast<RType_LocalPtr*>(targetType.get()))
-                return Value<ImExp_LocalDeref>(move(*eTarget));
+            if (dynamic_cast<RType_LocalPtr*>(targetType))
+                return Value<ImExp_LocalDeref>(*eTarget);
 
             // 에러를 내야 할 것 같다
-            throw NotImplementedException();
+            throw NotImplementedException{};
         }
         else
         {
-            return HandleExp(TranslateSUnaryOpExpToNExpExceptDeref(exp, context));
+            return HandleExp(TranslateSUnaryOpExpToMExpExceptDeref(exp, context));
         }
     }
 
-    void Visit(SExp_Call& exp) override
+    ResultType Visit(SExp_Call* exp)
     {
-        return HandleExp(TranslateSCallExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSCallExpToMExp(exp, hintType, context));
     }
 
-    void Visit(SExp_Lambda& exp) override
+    ResultType Visit(SExp_Lambda* exp)
     {
-        return HandleExp(TranslateSLambdaExpToNExp(exp, context));
+        return HandleExp(TranslateSLambdaExpToMExp(exp, context));
     }
 
-    void Visit(SExp_Indexer& exp) override
+    ResultType Visit(SExp_Indexer* exp)
     {
-        auto eReObj = TranslateSExpToReExp(*exp.obj, /*hintType*/ nullptr, context);
+        auto eReObj = TranslateSExpToReExp(exp->obj, /*hintType*/ nullptr, context);
         if (!eReObj) return Error(move(eReObj));
 
-        auto eReIndex = TranslateSExpToReExp(*exp.index, /*hintType*/ nullptr, context);
+        auto eReIndex = TranslateSExpToReExp(exp->index, /*hintType*/ nullptr, context);
         if (!eReIndex) return Error(move(eReIndex));
 
         auto intType = context.MakeIntType();
 
-        NLocPtr nIndexLoc;
-        if (context.GetType(**eReIndex) != intType)
+        MLoc* nIndexLoc;
+        if (context.GetType(*eReIndex) != intType)
         {
-            auto eNIndexExp = TranslateReExpToNExp(**eReIndex, context);
+            auto eNIndexExp = TranslateReExpToMExp(*eReIndex, context);
             if (!eNIndexExp) return Error(move(eNIndexExp));
 
-            auto eNCastIndex = CastNExp(move(*eNIndexExp), intType, context);
+            auto eNCastIndex = CastMExp(*eNIndexExp, intType, context);
             if (!eNCastIndex) return Error(move(eNCastIndex));
 
-            nIndexLoc = MakePtr<NLoc_Temp>(move(*eNCastIndex));
+            nIndexLoc = context.MakeNLoc<MLoc_Temp>(*eNCastIndex);
         }
         else
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            auto eNLoc = TranslateReExpToNLoc(**eReIndex, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+            auto eNLoc = TranslateReExpToMLoc(*eReIndex, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
             if (!eNLoc) return Error(move(eNLoc));
 
             nIndexLoc = *eNLoc;
@@ -196,13 +183,13 @@ public:
         // var memberResult = objResult.TypeSymbol.QueryMember(new M.Name(M.SpecialName.IndexerGet, null), 0);
 
         // 리스트 타입의 경우,
-        RTypePtr itemType;
-        if (context.IsListType(context.GetType(**eReObj), &itemType))
+        RType* itemType;
+        if (context.IsListType(context.GetType(*eReObj), &itemType))
         {
-            return Value<ImExp_ListIndexer>(move(*eReObj), move(*eReIndex), move(itemType));
+            return Value<ImExp_ListIndexer>(*eReObj, *eReIndex, itemType);
         }
 
-        throw NotImplementedException();
+        throw NotImplementedException{};
 
         //// objTypeValue에 indexTypeValue를 인자로 갖고 있는 indexer가 있는지
         //if (!context.TypeValueService.GetMemberFuncValue(objType, SpecialNames.IndexerGet, ImmutableArray<TypeValue>.Empty, out var funcValue))
@@ -237,57 +224,55 @@ public:
     }
 
     // parent."x"<>
-    void Visit(SExp_Member& exp) override
+    ResultType Visit(SExp_Member* exp)
     {
-        auto eImParent = TranslateSExpToImExp(*exp.parent, hintType, context);
+        auto eImParent = TranslateSExpToImExp(exp->parent, hintType, context);
         if (!eImParent) return Error(move(eImParent));
 
-        auto eTypeArgs = MakeTypeArgs(exp.memberTypeArgs, context);
-        if (!eTypeArgs) return Error(move(eTypeArgs));
+        auto eRTypeArgs = MakeRTypeArgs(exp->memberTypeArgs, context);
+        if (!eRTypeArgs) return Error(move(eRTypeArgs));
 
-        return Forward(TranslateImExpAndMemberNameToImExp(**eImParent, exp.memberName, *eTypeArgs, context));
+        return TranslateImExpAndMemberNameToImExp(*eImParent, exp->memberName, *eRTypeArgs, context);
     }
 
-    void Visit(SExp_IndirectMember& exp) override
+    ResultType Visit(SExp_IndirectMember* exp)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(SExp_List& exp) override
+    ResultType Visit(SExp_List* exp)
     {
-        return HandleExp(TranslateSListExpToNExp(exp, context));
+        return HandleExp(TranslateSListExpToMExp(exp, context));
     }
 
     // 'new C(...)'
-    void Visit(SExp_New& exp) override
+    ResultType Visit(SExp_New* exp)
     {
-        return HandleExp(TranslateSNewExpToNExp(exp, context));
+        return HandleExp(TranslateSNewExpToMExp(exp, context));
     }
 
-    void Visit(SExp_Box& exp) override
+    ResultType Visit(SExp_Box* exp)
     {
-        return HandleExp(TranslateSBoxExpToNExp(exp, hintType, context));
+        return HandleExp(TranslateSBoxExpToMExp(exp, hintType, context));
     }
 
-    void Visit(SExp_Is& exp) override
+    ResultType Visit(SExp_Is* exp)
     {
-        return HandleExp(TranslateSIsExpToNExp(exp, context));
+        return HandleExp(TranslateSIsExpToMExp(exp, context));
     }
 
-    void Visit(SExp_As& exp) override
+    ResultType Visit(SExp_As* exp)
     {
-        return HandleExp(TranslateSAsExpToNExp(exp, context));
+        return HandleExp(TranslateSAsExpToMExp(exp, context));
     }
 };
 
 }
 
-expected<ImExpPtr, DiagPtr> TranslateSExpToImExp(SExp& exp, const RTypePtr& hintType, TranslationContext& context)
-{   
-    expected<ImExpPtr, DiagPtr> imExp;
-    SExpToImExpTranslator translator{&imExp, hintType, context};
-    exp.Accept(translator);
-    return imExp;
+expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp* exp, RType* hintType, TranslationContext& context)
+{
+    SExpToImExpTranslator translator{hintType, context};
+    return Accept(translator, exp);
 }
 
-} // namespace Citron::SyntaxIR0Translator
+} // namespace Citron

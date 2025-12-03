@@ -5,82 +5,85 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
-#include "Logging/Logger.h"
-#include "IR0/RMember.h"
-#include "IR0/RClassDecl.h"
-#include "IR0/RClassVarDecl.h"
-#include "IR0/RStructDecl.h"
-#include "IR0/RStructVarDecl.h"
-#include "IR0/RTypeArguments.h"
-#include "IR0/RNamespaceDecl.h"
-#include "IR0/REnumDecl.h"
-#include "IR0/RTypes.h"
+#include "RSymbol/RMember.h"
+#include "RSymbol/RClassDecl.h"
+#include "RSymbol/RClassVarDecl.h"
+#include "RSymbol/RStructDecl.h"
+#include "RSymbol/RStructVarDecl.h"
+#include "RSymbol/RTypeArguments.h"
+#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/REnumDecl.h"
+#include "RSymbol/RTypes.h"
 
+#include "SRTFactory.h"
 #include "TranslationContext.h"
-#include "FuncContext.h"
 #include "ScopeContext.h"
 #include "ImExp.h"
-#include "ReExp.h"
 #include "ImExpToReExpTranslation.h"
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
 namespace {
 
 class StaticParentTranslator
 {
-    RTypeArgumentsPtr typeArgsExceptOuter; // outer 제외
+    RTypeArguments* typeArgsExceptOuter; // outer 제외
     TranslationContext& context;
 
 public:
-    StaticParentTranslator(const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+    StaticParentTranslator(RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
         : typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
 
+    template<typename TImExp, typename... TArgs>
+    TImExp* MakeImExp(TArgs&&... args)
+    {
+        return context.MakeImExp<TImExp>(std::forward<TArgs>(args)...);
+    }
+
     // NS.'NS'
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Namespace& member) 
+    expected<ImExp*, DiagPtr> operator()(RMember_Namespace& member) 
     { 
-        return MakePtr<ImExp_Namespace>(member.decl); 
+        return MakeImExp<ImExp_Namespace>(member.decl); 
     }
 
     // NS.F
-    expected<ImExpPtr, DiagPtr> operator()(RMember_GlobalFuncs& member) 
+    expected<ImExp*, DiagPtr> operator()(RMember_GlobalFuncs& member) 
     { 
-        return MakePtr<ImExp_GlobalFuncs>(member.items, typeArgsExceptOuter); 
+        return MakeImExp<ImExp_GlobalFuncs>(member.items, typeArgsExceptOuter);
     }
 
     // T.C
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Class& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Class& member)
     {
         // check access, TODO: ? 여기서 Access체크를 왜 하나? 이미 decl찾을때 access 체크를 했을텐데
-        if (!context.CanAccess(member.decl.get()))
+        if (!context.CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-
-        return MakePtr<ImExp_Class>(member.decl, move(typeArgs));
+        auto* typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        return MakeImExp<ImExp_Class>(member.decl, typeArgs);
     }
 
     // C.F
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ClassFuncs& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ClassFuncs& member)
     {
-        return MakePtr<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakeImExp<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // C.x
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ClassVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ClassVar& member)
     {
         if (!member.decl->IsStatic())
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>()};
         }
 
-        if (!context.CanAccess(member.decl.get()))
+        if (!context.CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
@@ -88,108 +91,108 @@ public:
         // variable은 typeArgs가 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
 
-        return MakePtr<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // T.S
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Struct& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Struct& member)
     {
         // check access, TODO: ? 여기서 Access체크를 왜 하나? 이미 decl찾을때 access 체크를 했을텐데
-        if (!context.CanAccess(member.decl.get()))
+        if (!context.CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
 
-        return MakePtr<ImExp_Struct>(member.decl, move(typeArgs));
+        return MakeImExp<ImExp_Struct>(member.decl, typeArgs);
     }
 
     // S.F
-    expected<ImExpPtr, DiagPtr> operator()(RMember_StructFuncs& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_StructFuncs& member)
     {
-        return MakePtr<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakeImExp<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // S.x
-    expected<ImExpPtr, DiagPtr> operator()(RMember_StructVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_StructVar& member)
     {
         if (!member.decl->IsStatic())
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>()};
         }
 
-        if (!context.CanAccess(member.decl.get()))
+        if (!context.CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
         // variable은 typeArgs가 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
-        return MakePtr<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
     }
 
     // T.E
-    expected<ImExpPtr, DiagPtr>  operator()(RMember_Enum& member)
+    expected<ImExp*, DiagPtr>  operator()(RMember_Enum& member)
     {
         // check access
-        if (!context.CanAccess(member.decl.get()))
+        if (!context.CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
         auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return MakePtr<ImExp_Enum>(member.decl, move(typeArgs));
+        return MakeImExp<ImExp_Enum>(member.decl, typeArgs);
     }
 
     // E.First
-    expected<ImExpPtr, DiagPtr> operator()(RMember_EnumElem& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_EnumElem& member)
     {
         // EnumElem은 TypeArgs를 가질 수 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
-        return MakePtr<ImExp_EnumElem>(member.decl, member.outerTypeArgs);
+        return MakeImExp<ImExp_EnumElem>(member.decl, member.outerTypeArgs);
     }
 
     // 표현 불가능
-    expected<ImExpPtr, DiagPtr> operator()(RMember_EnumElemVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_EnumElemVar& member)
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     // 표현 불가능
-    expected<ImExpPtr, DiagPtr> operator()(RMember_LambdaVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_LambdaVar& member)
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     // 표현 불가능
-    expected<ImExpPtr, DiagPtr> operator()(RMember_TupleVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_TupleVar& member)
     {
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     // 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_TypeVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_TypeVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_LocalVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_LocalVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ThisVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ThisVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
 };
 
 class InstanceParentTranslator
 {
-    ReExpPtr reInstExp;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    ReExp* reInstExp;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
     
@@ -198,38 +201,44 @@ class InstanceParentTranslator
         return Fatal(A2014_ResolveIdentifier_MultipleCandidatesForMember);
     }*/
 
+    template<typename TImExp, typename... TArgs>
+    TImExp* MakeImExp(TArgs&&... args)
+    {
+        return context.MakeImExp<TImExp>(std::forward<TArgs>(args)...);
+    }
+
 public:
-    InstanceParentTranslator(ReExpPtr&& reInstExp, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
-        : reInstExp(move(reInstExp)), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    InstanceParentTranslator(ReExp* reInstExp, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+        : reInstExp{reInstExp}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
     {
     }
 
     // 표현 불가
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Namespace& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Namespace& member)
     {   
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     // 표현 불가
-    expected<ImExpPtr, DiagPtr> operator()(RMember_GlobalFuncs& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_GlobalFuncs& member)
     {   
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
     // exp.C
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Class& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Class& member)
     {
         return unexpected{MakePtr<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>()};
     }
 
     // exp.F
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ClassFuncs& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ClassFuncs& member)
     {   
-        return MakePtr<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
+        return MakeImExp<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.x
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ClassVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ClassVar& member)
     {   
         // static인지 검사
         if (member.decl->IsStatic())
@@ -238,28 +247,28 @@ public:
         }
 
         // access modifier 검사?
-        if (!context.CanAccess(member.decl.get()))
+        if (!context.CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        return  MakePtr<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
+        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.S
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Struct& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Struct& member)
     {   
         return unexpected{MakePtr<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>()};
     }
 
     // exp.F
-    expected<ImExpPtr, DiagPtr> operator()(RMember_StructFuncs& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_StructFuncs& member)
     {   
-        return MakePtr<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
+        return MakeImExp<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.x
-    expected<ImExpPtr, DiagPtr> operator()(RMember_StructVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_StructVar& member)
     {   
         // static인지 검사
         if (member.decl->IsStatic())
@@ -268,213 +277,208 @@ public:
         }
 
         // access modifier 검사                            
-        if (!context.CanAccess(member.decl.get()))
+        if (!context.CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        return MakePtr<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
+        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
     }
 
     // exp.E
-    expected<ImExpPtr, DiagPtr> operator()(RMember_Enum& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_Enum& member)
     {
         return unexpected{MakePtr<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>()};
     }
 
     // exp.First
-    expected<ImExpPtr, DiagPtr> operator()(RMember_EnumElem& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_EnumElem& member)
     {   
         return unexpected{MakePtr<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>()};
     }
 
     // exp.firstX
-    expected<ImExpPtr, DiagPtr> operator()(RMember_EnumElemVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_EnumElemVar& member)
     {   
-        return MakePtr<ImExp_EnumElemVar>(member.decl, member.outerTypeArgs, reInstExp);
+        return MakeImExp<ImExp_EnumElemVar>(member.decl, member.outerTypeArgs, reInstExp);
     }
 
     // 표현 불가
-    expected<ImExpPtr, DiagPtr> operator()(RMember_LambdaVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_LambdaVar& member)
     {   
-        throw RuntimeFatalException();
+        throw RuntimeFatalException{};
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_TupleVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_TupleVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_TypeVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_TypeVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_LocalVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_LocalVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    expected<ImExpPtr, DiagPtr> operator()(RMember_ThisVar& member)
+    expected<ImExp*, DiagPtr> operator()(RMember_ThisVar& member)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 };
 
 // MemberParent And Id Binder
 // (IntermediateExp, name, typeArgs) -> IntermediateExp
-class ImExpAndMemberNameToImExpTranslator : public ImExpVisitor
+class ImExpAndMemberNameToImExpTranslator
 {
-    expected<ImExpPtr, DiagPtr>* result;
+public:
+    using ResultType = expected<ImExp*, DiagPtr>;
+
+private:
     string name;
-    RTypeArgumentsPtr typeArgsExceptOuter;
+    RTypeArguments* typeArgsExceptOuter;
 
     TranslationContext& context;
 
-    template<typename TValue, typename... TArgs> requires std::is_base_of_v<ImExp, TValue>
-    void Value(TArgs&&... args)
-    {
-        *result = MakePtr<TValue>(forward<TArgs>(args)...);
-    }
-
     template<typename TValue>
-    void Error(expected<TValue, DiagPtr>&& e)
+    ResultType Error(expected<TValue, DiagPtr>&& e)
     {
-        *result = unexpected{move(e).error()};
+        return unexpected{move(e).error()};
     }
 
-    template<typename TDiag, typename... TArgs> requires std::is_base_of_v<Diag, TDiag>
-    void Error(TArgs&&... args)
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
+    ResultType Error(TArgs&&... args)
     {
-        *result = unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
-    void TranslateStaticParent(RDecl& decl, const RTypeArgumentsPtr& typeArgs)
+    ResultType TranslateStaticParent(RDecl* decl, RTypeArguments* typeArgs)
     {
-        auto oMember = decl.GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
+        auto oMember = decl->GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
         StaticParentTranslator binder{typeArgsExceptOuter, context};
-        *result = visit(binder, *oMember);
+        return visit(binder, *oMember);
     }
 
-    void TranslateInstanceParent(ImExp& imExp)
+    ResultType TranslateInstanceParent(ImExp* imExp)
     {
         auto eReInstExp = TranslateImExpToReExp(imExp, context);
         if (!eReInstExp)
         {
-            *result = unexpected{move(eReInstExp).error()};
-            return;
+            return unexpected{move(eReInstExp).error()};
         }
 
-        auto type = context.GetType(**eReInstExp);
+        auto type = context.GetType(*eReInstExp);
         auto oMember = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
         if (!oMember)
         {
-            *result = unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
-            return;
+            return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
         }
 
-        InstanceParentTranslator binder(move(*eReInstExp), typeArgsExceptOuter, context);
-        *result = visit(binder, *oMember);
+        InstanceParentTranslator binder(*eReInstExp, typeArgsExceptOuter, context);
+        return visit(binder, *oMember);
     }
 
 public:
-    ImExpAndMemberNameToImExpTranslator(expected<ImExpPtr, DiagPtr>* result, const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
-        : result(result), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    ImExpAndMemberNameToImExpTranslator(const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+        : name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
     {
     }
 
-    void Visit(ImExp_Namespace& imExp) override
+    ResultType Visit(ImExp_Namespace* imExp)
     {
-        return TranslateStaticParent(*imExp._namespace, context.MakeTypeArguments({}));
+        return TranslateStaticParent(imExp->_namespace, context.MakeTypeArguments({}));
     }
 
-    void Visit(ImExp_GlobalFuncs& imExp) override
-    {
-        return Error<Error_ResolveIdentifier_FuncCantHaveMember>();
-    }
-
-    void Visit(ImExp_TypeVar& imExp) override
-    {
-        throw NotImplementedException();
-    }
-
-    void Visit(ImExp_Class& imExp) override
-    {
-        return TranslateStaticParent(*imExp.classDecl, imExp.typeArgs);
-    }
-
-    void Visit(ImExp_ClassFuncs& imExp) override
+    ResultType Visit(ImExp_GlobalFuncs* imExp)
     {
         return Error<Error_ResolveIdentifier_FuncCantHaveMember>();
     }
 
-    void Visit(ImExp_Struct& imExp) override
+    ResultType Visit(ImExp_TypeVar* imExp)
     {
-        return TranslateStaticParent(*imExp.structDecl, imExp.typeArgs);
+        throw NotImplementedException{};
     }
 
-    void Visit(ImExp_StructFuncs& imExp) override
+    ResultType Visit(ImExp_Class* imExp)
+    {
+        return TranslateStaticParent(imExp->classDecl, imExp->typeArgs);
+    }
+
+    ResultType Visit(ImExp_ClassFuncs* imExp)
+    {
+        return Error<Error_ResolveIdentifier_FuncCantHaveMember>();
+    }
+
+    ResultType Visit(ImExp_Struct* imExp)
+    {
+        return TranslateStaticParent(imExp->structDecl, imExp->typeArgs);
+    }
+
+    ResultType Visit(ImExp_StructFuncs* imExp)
     {
         return Error<Error_ResolveIdentifier_FuncCantHaveMember>();
     }
 
     // (E).F
-    void Visit(ImExp_Enum& imExp) override
+    ResultType Visit(ImExp_Enum* imExp)
     {
-        return TranslateStaticParent(*imExp.decl, imExp.typeArgs);
+        return TranslateStaticParent(imExp->decl, imExp->typeArgs);
     }
 
-    void Visit(ImExp_EnumElem& imExp) override
+    ResultType Visit(ImExp_EnumElem* imExp)
     {
         return Error<Error_ResolveIdentifier_EnumElemCantHaveMember>();
     }
 
-    void Visit(ImExp_ThisVar& imExp) override
+    ResultType Visit(ImExp_ThisVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_LocalVar& imExp) override
+    ResultType Visit(ImExp_LocalVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_LambdaVar& imExp) override
+    ResultType Visit(ImExp_LambdaVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_ClassVar& imExp) override
+    ResultType Visit(ImExp_ClassVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_StructVar& imExp) override
+    ResultType Visit(ImExp_StructVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_EnumElemVar& imExp) override
+    ResultType Visit(ImExp_EnumElemVar* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_ListIndexer& imExp) override
+    ResultType Visit(ImExp_ListIndexer* imExp)
     {
-        throw NotImplementedException();
+        throw NotImplementedException{};
     }
 
-    void Visit(ImExp_LocalDeref& imExp) override
-    {
-        return TranslateInstanceParent(imExp);
-    }
-
-    void Visit(ImExp_BoxDeref& imExp) override
+    ResultType Visit(ImExp_LocalDeref* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
 
-    void Visit(ImExp_Else& imExp) override
+    ResultType Visit(ImExp_BoxDeref* imExp)
+    {
+        return TranslateInstanceParent(imExp);
+    }
+
+    ResultType Visit(ImExp_Else* imExp)
     {
         return TranslateInstanceParent(imExp);
     }
@@ -482,12 +486,10 @@ public:
 
 } // namespace
 
-expected<ImExpPtr, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp& imExp, const std::string& name, const RTypeArgumentsPtr& typeArgsExceptOuter, TranslationContext& context)
+expected<ImExp*, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp* imExp, const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
 {
-    expected<ImExpPtr, DiagPtr> boundImExp;
-    ImExpAndMemberNameToImExpTranslator binder{&boundImExp, name, typeArgsExceptOuter, context};
-    imExp.Accept(binder);
-    return boundImExp;
+    ImExpAndMemberNameToImExpTranslator binder{name, typeArgsExceptOuter, context};
+    return Accept(binder, imExp);
 }
 
 }

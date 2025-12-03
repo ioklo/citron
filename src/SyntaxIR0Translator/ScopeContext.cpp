@@ -3,101 +3,127 @@
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
 #include "Syntax/Syntax.h"
-#include "IR0/RTypeArguments.h"
-#include "IR0/RMember.h"
-#include "IR0/RNames.h"
-#include "IR0/RFuncParameter.h"
-#include "IR0/NLambdaDecl.h"
+#include "RSymbol/RTypeArguments.h"
+#include "RSymbol/RMember.h"
+#include "RSymbol/RNames.h"
+#include "RSymbol/RFuncParameter.h"
+#include "RSymbol/RFactory.h"
+#include "NSymbol/NLambdaDecl.h"
 
 #include "FuncContext.h"
 
 using namespace std;
 
-namespace Citron::SyntaxIR0Translator {
+namespace Citron {
 
-ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop)
-    : funcContext{funcContext}, parentContext{parentContext}, nestedLoop{nestedLoop}
+ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop, const RFactoryPtr& rFactory)
+    : funcContext{funcContext}, parentContext{parentContext}, nestedLoop{nestedLoop}, rFactory{rFactory}
 {
 }
 
 ScopeContextPtr ScopeContext::Clone(CloneContext& context)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 void ScopeContext::Update(ScopeContext& src, UpdateContext& context)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
-RTypeArgumentsPtr ScopeContext::MakeOpenTypeArgs(RTypeFactory& factory)
+RTypeArguments* ScopeContext::MakeOpenTypeArgs()
 {
     // funcContext로 점프
-    return funcContext->MakeOpenTypeArgs(factory);
+    return funcContext->MakeOpenTypeArgs();
 }
 
 void ScopeContext::SetFlowEndsCompletely()
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 shared_ptr<ScopeContext> ScopeContext::MakeNestedScopeContext(shared_ptr<ScopeContext> sharedThis)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 shared_ptr<ScopeContext> ScopeContext::MakeLoopNestedScopeContext(shared_ptr<ScopeContext> sharedThis)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
 tuple<ScopeContextPtr, NLambdaDecl> ScopeContext::MakeLambdaBodyContext(const RFuncReturn& ret, vector<RFuncParameter> params, bool bLastParamVariadic)
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
-void ScopeContext::AddLocalVarInfo(const RTypePtr& type, const RName& name)
+void ScopeContext::AddLocalVarInfo(RType* type, const RName& name)
 {
-    throw NotImplementedException();
+    auto [i, b] = locals.try_emplace(name, type);
+    assert(b);
 }
 
-
-bool ScopeContext::DoesLocalVarNameExistInScope(const string& name)
+bool ScopeContext::DoesLocalVarNameExistInScope(const RName& name)
 {
-    throw NotImplementedException();
+    auto i = locals.find(name);
+    return i != locals.end();
 }
 
 bool ScopeContext::IsFailed() 
 {
-    throw NotImplementedException();
+    throw NotImplementedException{};
 }
 
-expected<RTypePtr, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp& typeExp, RTypeFactory& factory)
+expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sTypeExp)
 {
-    throw NotImplementedException();
-}
-
-shared_ptr<NLoc_This> ScopeContext::MakeThisLoc(RTypeFactory& factory)
-{
-    throw NotImplementedException();
-}
-
-optional<RMember> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RTypeFactory& factory)
-{
-    if (auto* normalName = get_if<RName_Normal>(&name))
+    // TODO: BuildTypeDependentSymbolContext::MakeType 에도 같은 코드가 있다
+    struct Visitor
     {
-        // 로컬을 검색한다
-        auto i = locals.find(normalName->text);
-        if (i != locals.end())
-            return RMember_LocalVar(i->second, normalName->text);
-    }
+        using ResultType = RType*;
+
+        RFactory* rFactory;
+
+        RType* Visit(STypeExp_Id* idExp)
+        {
+            if (idExp->name == "void")
+                return rFactory->MakeVoidType();
+            else if (idExp->name == "bool")
+                return rFactory->MakeBoolType();
+            else if (idExp->name == "int")
+                return rFactory->MakeIntType();
+            else if (idExp->name == "string")
+                return rFactory->MakeStringType();
+            else
+                throw NotImplementedException{};
+        }
+
+        RType* Visit(STypeExp* e)
+        {
+            throw NotImplementedException{};
+        }
+    } visitor{rFactory.get()};
+
+    return Accept(visitor, sTypeExp);
+}
+
+MLoc_This* ScopeContext::MakeThisLoc()
+{
+    throw NotImplementedException{};
+}
+
+expected<optional<RMember>, DiagPtr> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    // 로컬을 검색한다
+    auto i = locals.find(name);
+    if ( i != locals.end())
+        return RMember_LocalVar(i->second, name);
 
     // 상위 스코프가 있으면 그곳을 검색한다
     if (parentContext)
-        return parentContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+        return parentContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 
     // 상위 스코프가 없으면 scope가 속해있는 함수 컨텍스트를 검색한다
-    return funcContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return funcContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 };

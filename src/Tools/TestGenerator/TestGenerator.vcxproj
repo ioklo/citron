@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -144,132 +144,133 @@
     <ClCompile Include="TestGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="vcpkg-configuration.json" />
-    <None Include="vcpkg.json" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseBoolFalse.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseBoolFalse.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseBoolTrue.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseBoolTrue.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseComplexExp.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseComplexExp.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseComplexMemberExpSyntax.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseComplexMemberExpSyntax.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseIdentifier.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseIdentifier.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseIdentifierExpWithTypeArgs.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseIdentifierExpWithTypeArgs.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseIndirectMemberExp.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseIndirectMemberExp.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseInt.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseInt.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseLambdaExp.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseLambdaExp.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseListExp.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseListExp.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseNewExp.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseNewExp.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParsePrimaryExp.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParsePrimaryExp.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseStringExp.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseStringExp.out.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseTestAndTypeTestExp.in.txt" />
+    <Text Include="..\..\..\data\TestData\ExpParserTests\ParseTestAndTypeTestExp.out.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseComplexScript.in.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseComplexScript.out.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseEnumDecl.in.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseEnumDecl.out.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseFuncDecl.in.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseFuncDecl.out.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseNamespaceDecl.in.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseNamespaceDecl.out.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseSimpleScript.in.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseSimpleScript.out.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseStructDecl.in.txt" />
+    <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseStructDecl.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlankStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlankStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockCommandStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockCommandStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxPtrVarDeclStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxPtrVarDeclStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBreakStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBreakStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseContinueStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseContinueStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseDirectiveStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseDirectiveStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseExpStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseExpStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseForeachStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseForeachStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseForStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseForStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfIsExpCondStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfIsExpCondStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfTestStmtWithVarName.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfTestStmtWithVarName.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseInlineCommandStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseInlineCommandStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseLocalPtrVarDeclStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseLocalPtrVarDeclStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseNullableVarDeclStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseNullableVarDeclStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseVarDeclStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseVarDeclStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseAmbiguousLocalAndBoxPtrs.fail.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseAmbiguousLocalAndBoxPtrs.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfIdChain.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfIdChain.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfNullableRaw.fail.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfNullableRaw.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfParen.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfParen.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseNestedBoxPtrs.fail.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseNestedBoxPtrs.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfIdChain.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfIdChain.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfNullableRaw.fail.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfNullableRaw.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfParen.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfParen.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseNestedLocalPtrs.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseNestedLocalPtrs.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseDoubleQuestionMark.fail.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseDoubleQuestionMark.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseIdChainNullable.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseIdChainNullable.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableBoxPtr.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableBoxPtr.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableLocalPtr.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableLocalPtr.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableParen.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableParen.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedBoxPtr.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedBoxPtr.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedIdChain.fail.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedIdChain.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedLocalPtr.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedLocalPtr.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedNested.fail.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedNested.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedNullable.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedNullable.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseBoxPtr.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseBoxPtr.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseIdChain.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseIdChain.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseLocalPtr.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseLocalPtr.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseNullable.in.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseNullable.out.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseParenSolo.fail.txt" />
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseParenSolo.in.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Inputs\ExpParserTests\ParseBoolFalse.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseBoolFalse.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseBoolTrue.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseBoolTrue.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseComplexExp.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseComplexExp.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseComplexMemberExpSyntax.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseComplexMemberExpSyntax.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseIdentifier.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseIdentifier.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseIdentifierExpWithTypeArgs.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseIdentifierExpWithTypeArgs.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseIndirectMemberExp.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseIndirectMemberExp.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseInt.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseInt.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseLambdaExp.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseLambdaExp.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseListExp.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseListExp.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseNewExp.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseNewExp.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParsePrimaryExp.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParsePrimaryExp.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseStringExp.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseStringExp.out.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseTestAndTypeTestExp.in.txt" />
-    <Text Include="Inputs\ExpParserTests\ParseTestAndTypeTestExp.out.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseComplexScript.in.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseComplexScript.out.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseEnumDecl.in.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseEnumDecl.out.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseFuncDecl.in.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseFuncDecl.out.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseNamespaceDecl.in.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseNamespaceDecl.out.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseSimpleScript.in.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseSimpleScript.out.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseStructDecl.in.txt" />
-    <Text Include="Inputs\ScriptParserTests\ParseStructDecl.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseBlankStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseBlankStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseBlockCommandStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseBlockCommandStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseBlockStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseBlockStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseBoxPtrVarDeclStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseBoxPtrVarDeclStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseBreakStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseBreakStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseContinueStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseContinueStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseDirectiveStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseDirectiveStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseExpStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseExpStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseForeachStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseForeachStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseForStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseForStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseIfIsExpCondStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseIfIsExpCondStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseIfStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseIfStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseIfTestStmtWithVarName.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseIfTestStmtWithVarName.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseInlineCommandStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseInlineCommandStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseLocalPtrVarDeclStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseLocalPtrVarDeclStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseNullableVarDeclStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseNullableVarDeclStmt.out.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseVarDeclStmt.in.txt" />
-    <Text Include="Inputs\StmtParserTests\ParseVarDeclStmt.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseAmbiguousLocalAndBoxPtrs.fail.txt" />
-    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseAmbiguousLocalAndBoxPtrs.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfIdChain.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfIdChain.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfNullableRaw.fail.txt" />
-    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfNullableRaw.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfParen.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseBoxPtrOfParen.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseNestedBoxPtrs.fail.txt" />
-    <Text Include="Inputs\TypeExpParserTests\BoxPtr_ParseNestedBoxPtrs.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfIdChain.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfIdChain.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfNullableRaw.fail.txt" />
-    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfNullableRaw.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfParen.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseLocalPtrOfParen.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseNestedLocalPtrs.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\LocalPtr_ParseNestedLocalPtrs.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseDoubleQuestionMark.fail.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseDoubleQuestionMark.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseIdChainNullable.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseIdChainNullable.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableBoxPtr.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableBoxPtr.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableLocalPtr.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableLocalPtr.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableParen.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Nullable_ParseNullableParen.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedBoxPtr.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedBoxPtr.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedIdChain.fail.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedIdChain.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedLocalPtr.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedLocalPtr.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedNested.fail.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedNested.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedNullable.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\Paren_ParseWrappedNullable.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseBoxPtr.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseBoxPtr.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseIdChain.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseIdChain.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseLocalPtr.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseLocalPtr.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseNullable.in.txt" />
-    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseNullable.out.txt" />
-    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseParenSolo.fail.txt" />
-    <Text Include="Inputs\TypeExpParserTests\TopLevel_ParseParenSolo.in.txt" />
+    <ProjectReference Include="..\..\Infra\Infra.vcxproj">
+      <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,0 +1,8 @@
+//@ 0 hi
+void Main()
+{
+    int a = 0
+    string b = "hi"
+    var* x = &a, y = &b;
+    @${*x}, ${*y}
+}

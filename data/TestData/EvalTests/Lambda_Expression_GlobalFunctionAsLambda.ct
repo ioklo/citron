@@ -1,0 +1,11 @@
+//@ hi
+void Func()
+{
+    @hi
+}
+
+void Main()
+{
+    var f = Func;
+    f();
+}

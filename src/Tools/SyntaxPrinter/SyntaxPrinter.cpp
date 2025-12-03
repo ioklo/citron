@@ -54,23 +54,24 @@ int main(int argc, char* argv[])
 
     auto buffer = MakePtr<Buffer>(oss.str());
     Lexer lexer(buffer->MakeStartPosition());
+    SFactory factory;
 
     switch (mode)
     {
     case Mode::Script:
-        Print(ParseScript(&lexer));
+        Print(ParseScript(&lexer, factory));
         break;
 
     case Mode::TypeExp:
-        Print(ParseTypeExp(&lexer));
+        Print(ParseTypeExp(&lexer, factory));
         break;
 
     case Mode::Stmt:
-        Print(ParseStmt(&lexer));
+        Print(ParseStmt(&lexer, factory));
         break;
 
     case Mode::Exp:
-        Print(ParseExp(&lexer));
+        Print(ParseExp(&lexer, factory));
         break;
     }
     

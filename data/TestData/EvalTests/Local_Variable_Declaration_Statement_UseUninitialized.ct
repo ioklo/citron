@@ -1,0 +1,15 @@
+//@ $Error
+bool F()
+{
+    return true;
+}
+
+void Main()
+{
+    int x;
+    
+    if (F()) { x = 3; } // 심지어 F()가 항상 true를 리턴해도
+
+    // 에러, x가 초기화 되지 않았습니다
+    @$x 
+}

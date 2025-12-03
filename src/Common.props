@@ -7,6 +7,9 @@
     <IncludePath>$(ProjectDir)Public\$(ProjectName);$(IncludePath)</IncludePath>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <LanguageStandard>stdcpp23</LanguageStandard>

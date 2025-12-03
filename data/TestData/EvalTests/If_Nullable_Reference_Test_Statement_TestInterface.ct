@@ -1,0 +1,10 @@
+//@ true
+interface I {}
+class C : I {}
+
+void Main()
+{
+	I i = new C();
+
+	if (C c = i) @true
+}

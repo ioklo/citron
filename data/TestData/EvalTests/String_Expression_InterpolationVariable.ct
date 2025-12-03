@@ -1,0 +1,9 @@
+//@ hello.3 $
+void Main()
+{
+    int i = 3;
+    string x = "hello";
+    string y = "$x.$i $$";
+    
+    @$y
+}

@@ -1,0 +1,17 @@
+//@ 2 3
+class C
+{
+	int x;
+	int y;
+
+	public void Print()
+	{
+		@$x $y
+	}
+}
+
+void Main()
+{
+	var c = new C(2, 3);
+	c.Print();
+}
