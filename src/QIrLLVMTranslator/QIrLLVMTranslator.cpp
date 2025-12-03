@@ -185,11 +185,19 @@ LData* TranslateQDataToLLVMData(QData* qData, LContext& lContext)
         // 함수 인자 이름 붙이기.
         for (auto& qSlotInfo : qFuncBody.slotInfos)
         {
-            if (qSlotInfo.oArgIndex) // 아규먼트에 매핑 되어있으면
+            // 함수 초기에 할당
+
+            if (qSlotInfo.oArgIndex) // 아규먼트에 매핑 되어있으면,
             {
                 auto* lArg = lFunc->getArg(*qSlotInfo.oArgIndex);
                 lArg->setName(qSlotInfo.name);
                 slotValues.push_back(lArg);
+
+                auto* lType = GetType(qSlotInfo.qType, lContextImpl);
+                auto* allocaInst = preludeBuilder.CreateAlloca(lType, nullptr, qSlotInfo.name + "_ptr");
+
+                preludeBuilder.CreateStore(lArg, allocaInst);
+                slotValues.push_back(allocaInst);
             }
             else
             {
@@ -219,7 +227,13 @@ LData* TranslateQDataToLLVMData(QData* qData, LContext& lContext)
                 visit([&builder, &lContextImpl, &slotValues, &qFuncBody, &lBlocks](auto& qInst)
                 {
                     using T = remove_cvref_t<decltype(qInst)>;
-                    if constexpr (same_as<T, QInst_InitString>) { throw NotImplementedException{}; }
+                    if constexpr (same_as<T, QInst_InitString>)
+                    {
+                        // dest slot에 string이 들어가 있다. 런타임 함수 호출
+                        builder.CreateCall();
+
+                        throw NotImplementedException{};
+                    }
                     else if constexpr (same_as<T, QInst_Load>)
                     {
                         auto* lPtrValueType = llvm::PointerType::get(lContextImpl.context, 0);
@@ -251,7 +265,10 @@ LData* TranslateQDataToLLVMData(QData* qData, LContext& lContext)
                         auto* lValue = GetValue(qInst.src, qInst.type, slotValues, lContextImpl, builder);
                         builder.CreateStore(lValue, slotValues[qInst.dest.index]);
                     }
-                    else if constexpr (same_as<T, QInst_Call>) { throw NotImplementedException{}; }
+                    else if constexpr (same_as<T, QInst_Call>)
+                    {
+                        throw NotImplementedException{};
+                    }
                     else if constexpr (same_as<T, QInst_Return>) { throw NotImplementedException{}; }
                     else if constexpr (same_as<T, QInst_Intrinsic>) 
                     { 
