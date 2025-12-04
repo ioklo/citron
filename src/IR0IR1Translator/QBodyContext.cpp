@@ -111,7 +111,6 @@ QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFact
     : rFactory{rFactory}
     , qFactory{qFactory}
     , QBlockWriter{qFactory, "body"}
-    , entryBlock{nullptr}
 {
     scopes.emplace_back();
     bodyBlock = QBlockWriter::GetCurBlock();
@@ -125,9 +124,6 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
 {
     switch (kind)
     {
-    case QInst_IntrinsicKind::DebugPrint_Items: 
-        return QIntrinsicKindResult_Void{};
-
     case QInst_IntrinsicKind::Command_Items: 
         return QIntrinsicKindResult_Void{};
 
@@ -311,14 +307,7 @@ QArg_Slot QBodyContext::NewSlotForMExp(MExp* exp)
 }
 
 void QBodyContext::CompleteFunc()
-{
-    // make entry
-    entryBlock = QBlockWriter::AddBlock("entry");
-    QBlockWriter::SetCurBlock(entryBlock);
-
-    // entry를 일단은 살려둠
-
-    QBlockWriter::CompleteBlock(QInst_Jump{bodyBlock});
+{   
     QBlockWriter::Verify();
 }
 

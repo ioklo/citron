@@ -147,6 +147,8 @@
       <Filter>05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="ENames.cpp" />
-    <ClCompile Include="EEnumElemDecl.cpp" />
+    <ClCompile Include="EEnumElemDecl.cpp">
+      <Filter>08 Enum</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

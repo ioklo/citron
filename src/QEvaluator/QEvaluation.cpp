@@ -4,6 +4,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <variant>
+#include <cassert>
 
 #include "Infra/Variants.h"
 #include "Infra/Exceptions.h"
@@ -191,19 +192,6 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
     switch (inst.kind)
     {
-    case DebugPrint_Items:
-    {
-        for (auto& arg : inst.args)
-        {
-            visit(overloaded{
-                [](QArg_ConstBool& b) { cout << b.value; },
-                [](QArg_ConstInt32& i) { cout << i.value; },
-                [](auto&&) {}
-            }, arg);
-        }
-        return;
-    }
-
     case Command_Items:
     {
         for (auto& arg : inst.args)
@@ -688,7 +676,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
     env.curFrame = &env.frames.back();
 
     env.curFrame->qFuncBody = &*i;
-    env.curFrame->ip = InstructionPointer{i->entry, 0},    
+    env.curFrame->ip = InstructionPointer{i->blocks.front(), 0},
     env.curFrame->stackPointer = env.stack.data() + env.stack.size();
     env.curFrame->slots.resize(i->slotInfos.size());
     for (size_t j = 0, count = i->slotInfos.size(); j < count; j++)

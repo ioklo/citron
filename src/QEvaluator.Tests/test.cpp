@@ -32,7 +32,7 @@ class NullCommandHandler : public IEvalQDataCommandHandler
 };
 
 // Scenario_Result
-TEST(QEvaluator, DebugPrint_PrintWell)
+TEST(QEvaluator, CommandInst_DoingWell)
 {
     auto rFactory = MakePtr<RFactory>();
     NFactory nFactory{rFactory};
@@ -45,15 +45,25 @@ TEST(QEvaluator, DebugPrint_PrintWell)
         RName_Normal{"main"}, 
         /*typeParams*/vector<string>{});
 
-    auto* qEntryBlock = qFactory->MakeQBlock("entry");
-    std::vector<QArg> args{QArg_ConstInt32{1}};
+    vector<QBlock*> blocks;
+    auto* qEntryBlock = qFactory->MakeQBlock(blocks.size(), "entry");
+    blocks.push_back(qEntryBlock);
 
-    QInst_Intrinsic inst{QInst_IntrinsicKind::DebugPrint_Items, nullopt, move(args)};
+    vector<QSlotInfo> slotInfos;
+    slotInfos.push_back(QSlotInfo{qFactory->MakeStringType(), "s0", /*oArgIndex*/nullopt});
+
+    // 1을 문자열로 변환
+    QInst_Intrinsic toStringInst{QInst_IntrinsicKind::ToString_Int, QArg_Slot{0}, {QArg_ConstInt32{1}}};
+    qEntryBlock->EmitInst(toStringInst);
+
+    std::vector<QArg_Input> args{QArg_Slot{0}};
+    QInst_Intrinsic inst{QInst_IntrinsicKind::Command_Items, nullopt, move(args)};
     qEntryBlock->EmitInst(inst);
-    qEntryBlock->EmitInst(QInst_ReturnVoid{});
+
+    qEntryBlock->EmitInst(QInst_Return{nullopt});
 
     std::vector<QFuncBody> funcBodies;
-    funcBodies.emplace_back(nEntry, vector<QSlotInfo>{}, qEntryBlock, 0);
+    funcBodies.emplace_back(nEntry, move(slotInfos), move(blocks));
     QData* qData = qFactory->MakeQData(move(funcBodies));
     
     auto eResult = EvaluateQData({}, qData, nEntry, MakePtr<NullCommandHandler>(), qFactory);

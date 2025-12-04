@@ -34,7 +34,6 @@ TEST(Builder, TestName)
 {
     // 파일 구조 추가
     auto fs = make_unique<InMemoryFileSystem>();
-
     fs->AddFile("a.ct", R"---(
 int main()
 {

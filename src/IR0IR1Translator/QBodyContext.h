@@ -83,7 +83,6 @@ class QBodyContext : QBlockWriter
     QFactoryPtr qFactory;
 
     // 함수의 스택 변수
-    QBlock* entryBlock;
     QBlock* bodyBlock;
     std::vector<QSlotInfo> slotInfos;
     std::vector<QScope> scopes;
@@ -105,7 +104,6 @@ public:
     bool IsBlockCompleted() { return QBlockWriter::IsBlockCompleted(); }
 
 public:
-    QBlock* GetEntryBlock() { return entryBlock; }
     QType* GetMExpQType(MExp* mExp);    
     size_t GetQTypeSize(QType* qType);
 

@@ -1,6 +1,7 @@
 #include "CommonQInstsTranslation.h"
 #include <optional>
 #include <ranges>
+#include <cassert>
 
 #include "Infra/Variants.h"
 #include "Infra/Expected.h"

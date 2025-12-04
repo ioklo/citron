@@ -236,7 +236,6 @@ public:
 
         switch (kind)
         {
-        case DebugPrint_Items: return "DebugPrint_Items";
         case Command_Items: return "Command_Items";
         case Alloc_Int: return "Alloc_Int";
         case Memcpy_Ptr_Ptr_Int: return "Memcpy_Ptr_Ptr_Int";

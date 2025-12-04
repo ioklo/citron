@@ -70,7 +70,6 @@ struct QInst_Return
 
 enum struct QInst_IntrinsicKind
 {   
-    DebugPrint_Items,
     Command_Items,
     Alloc_Int,
     Memcpy_Ptr_Ptr_Int,
@@ -109,7 +108,7 @@ enum struct QInst_IntrinsicKind
 struct QInst_Intrinsic
 {   
     QInst_IntrinsicKind kind;
-    std::optional<QArg_Slot> oDest; // stack slot인 경우 첫 arg에 들어간다
+    std::optional<QArg_Slot> oDest;
     std::vector<QArg_Input> args;
 
     QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot>&& oDest, std::vector<QArg_Input>&& args)
