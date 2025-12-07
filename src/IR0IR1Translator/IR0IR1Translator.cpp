@@ -3,6 +3,8 @@
 #include <ranges>
 
 #include "Infra/Expected.h"
+#include "Infra/Exceptions.h"
+
 #include "Logging/Diag.h"
 
 #include "RSymbol/RFuncParameter.h"
@@ -28,7 +30,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 {   
     // TODO: generics
     auto rFuncReturn = mFuncBody.nFuncDecl->GetUnboundFuncReturn();
-    auto* rRetType = visit([&rFactory](auto& rFuncReturn) 
+    auto* rRetType = visit([&rFactory](auto& rFuncReturn) -> RType*
     {
         using T = remove_cvref_t<decltype(rFuncReturn)>;
         if constexpr (same_as<T, RFuncReturn_Set>)

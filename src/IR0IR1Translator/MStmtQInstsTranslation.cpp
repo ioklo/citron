@@ -156,10 +156,12 @@ public:
             RETURN_ON_ERROR(eResult);
 
             bodyContext.EmitJumpToCleanUpForReturnBlock();
+            bodyContext.MarkReturnHandledOnCurScope();
         }
         else
         {
             bodyContext.EmitJumpToCleanUpForReturnBlock();
+            bodyContext.MarkReturnHandledOnCurScope();
         }
 
         return {};
@@ -256,7 +258,7 @@ expected<void, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, QBo
 std::expected<void, DiagPtr> TranslateMStmtsToQInstsWithNewScope(std::vector<MStmt*>& mStmts, QBodyContext& qBodyContext)
 {
     ScopeGuard guard{qBodyContext};
-    TranslateMStmtsToQInsts(mStmts, qBodyContext);
+    return TranslateMStmtsToQInsts(mStmts, qBodyContext);
 }
 
 expected<void, DiagPtr> TranslateMStmtToQInsts(MStmt* mStmt, QBodyContext& qBodyContext)

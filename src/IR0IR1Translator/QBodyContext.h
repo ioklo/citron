@@ -146,7 +146,8 @@ public:
     void PopScope();
     void CleanUpScope();
 
-    bool HandleReturn();
+    void MarkReturnHandledOnCurScope();
+    bool IsReturnHandledOnCurScope();
     
 };
 

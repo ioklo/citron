@@ -14,7 +14,7 @@ struct ScopeGuard
     ~ScopeGuard()
     {
         // 이 스코프에서 리턴을 처리했다면 (다음으로 진행이 되지 않는다면)
-        if (!bodyContext.HandleReturn())
+        if (!bodyContext.IsReturnHandledOnCurScope())
             bodyContext.CleanUpScope();
         
         bodyContext.PopScope();

@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
+
 #include "Syntax/Syntax.h"
 #include "MIR/MArgument.h"
 #include "SExpToMExpTranslation.h"

@@ -20,6 +20,7 @@ target_link_libraries(EvalTests PRIVATE
         SyntaxIR0Translator
         IR0IR1Translator
         QEvaluator
+        QIrLLVMTranslator
         GTest::gtest_main
 )
 target_sources(EvalTests

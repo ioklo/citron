@@ -102,6 +102,16 @@ void QBlockWriter::SetCurBlock(QBlock* block)
 
 void QBlockWriter::Verify()
 {
+    // blocks의 모든 block에 대해서
+    // 1. 모두 terminator로 끝나는지
+    // 2. block들이 비어있진 않은지 (terminator로 끝나면 비진 않았으니 1만 검사해도 될듯)
+    // 3. 그 block으로 가는 path가 있는지
+
+
+
+
+
+
     assert(state == QBlockWriterState::EndOfBlock);
     assert(pendingBlocks.empty());
 }
@@ -443,6 +453,17 @@ void QBodyContext::CleanUpScope()
             QBlockWriter::EmitInst(QInst_DestroyString{QArg_Slot{slotIndex}});
         }
     }
+}
+
+void QBodyContext::MarkReturnHandledOnCurScope()
+{
+    assert(!curScope->handleReturn);
+    curScope->handleReturn = true;
+}
+
+bool QBodyContext::IsReturnHandledOnCurScope()
+{
+    return curScope->handleReturn;
 }
 
 } // Citron
