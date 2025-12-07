@@ -4,6 +4,11 @@ project(Citron)
 
 set(CMAKE_CXX_STANDARD 23)
 
+# 프로젝트 전체에 쓰일 option용 pseudo library
+add_library(Common INTERFACE)
+
+target_compile_options(Common INTERFACE -Wno-unqualified-std-cast-call)
+
 add_subdirectory(Infra)
 add_subdirectory(Syntax)
 add_subdirectory(Logging)
@@ -20,6 +25,8 @@ add_subdirectory(QEvaluator)
 
 add_subdirectory(Builder)
 add_subdirectory(Tools)
+add_subdirectory(RuntimeLibrary)
+add_subdirectory(TestConsole)
 
 include(CTest)
 enable_testing()
@@ -28,4 +35,3 @@ add_subdirectory(TextAnalysis.Tests)
 add_subdirectory(Builder.Tests)
 add_subdirectory(QEvaluator.Tests)
 add_subdirectory(EvalTests)
-

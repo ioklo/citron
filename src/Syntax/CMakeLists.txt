@@ -3,16 +3,14 @@ add_library(Syntax SHARED)
 
 set_target_properties(Syntax PROPERTIES DEFINE_SYMBOL SYNTAX_EXPORTS)
 
-target_compile_options(Syntax PRIVATE
-        -Wno-unqualified-std-cast-call
-)
-
 target_include_directories(Syntax
         PRIVATE Public/Syntax
         INTERFACE Public)
 
-target_link_libraries(Syntax PRIVATE Infra)
-
+target_link_libraries(Syntax PRIVATE
+        Common
+        Infra
+)
 
 target_sources(Syntax
         PRIVATE

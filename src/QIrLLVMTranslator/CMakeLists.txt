@@ -8,10 +8,6 @@ message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 set_target_properties(QIrLLVMTranslator PROPERTIES DEFINE_SYMBOL QIRLLVMTRANSLATOR_EXPORTS)
 
-target_compile_options(QIrLLVMTranslator PRIVATE
-        -Wno-unqualified-std-cast-call
-)
-
 target_compile_definitions(QIrLLVMTranslator PRIVATE ${LLVM_DEFINITIONS})
 
 target_include_directories(QIrLLVMTranslator
@@ -19,10 +15,17 @@ target_include_directories(QIrLLVMTranslator
         ${LLVM_INCLUDE_DIRS}
         PUBLIC Public)
 
-target_link_libraries(QIrLLVMTranslator PRIVATE Infra NSymbol QIR RSymbol)
-
 llvm_map_components_to_libnames(LLVM_LIBS core support)
-target_link_libraries(QIrLLVMTranslator PRIVATE ${LLVM_LIBS})
+
+target_link_libraries(QIrLLVMTranslator PRIVATE
+        Common
+        Infra
+        NSymbol
+        QIR
+        RSymbol
+        ${LLVM_LIBS}
+)
+
 
 target_sources(QIrLLVMTranslator
         PRIVATE

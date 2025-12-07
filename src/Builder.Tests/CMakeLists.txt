@@ -1,14 +1,15 @@
 
 add_executable(Builder.Tests)
 
-target_compile_options(Builder.Tests PRIVATE
-        -Wno-unqualified-std-cast-call
-)
-
-target_link_libraries(Builder.Tests PRIVATE Infra Syntax TextAnalysis SyntaxIR0Translator Builder
+target_link_libraries(Builder.Tests PRIVATE
+        Common
+        Infra
+        Syntax
+        TextAnalysis
+        SyntaxIR0Translator
+        Builder
         GTest::gtest_main
-        )
-
+)
 target_sources(Builder.Tests
         PRIVATE
         test.cpp

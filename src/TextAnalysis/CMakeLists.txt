@@ -3,10 +3,6 @@ add_library(TextAnalysis SHARED)
 
 set_target_properties(TextAnalysis PROPERTIES DEFINE_SYMBOL TEXTANALYSIS_EXPORTS)
 
-target_compile_options(TextAnalysis PRIVATE
-        -Wno-unqualified-std-cast-call
-)
-
 target_include_directories(TextAnalysis
         PRIVATE
           Public/TextAnalysis
@@ -15,11 +11,13 @@ target_include_directories(TextAnalysis
 
 find_package(ICU REQUIRED COMPONENTS uc i18n)
 
-target_link_libraries(TextAnalysis PRIVATE Infra Syntax
+target_link_libraries(TextAnalysis PRIVATE
+        Common
+        Infra
+        Syntax
         ICU::uc
         ICU::i18n
-        )
-
+)
 target_sources(TextAnalysis
         PRIVATE
         Buffer.cpp

@@ -3,13 +3,14 @@ add_library(Infra SHARED)
 
 set_target_properties(Infra PROPERTIES DEFINE_SYMBOL INFRA_EXPORTS)
 
-target_compile_options(Infra PRIVATE
-        -Wno-unqualified-std-cast-call
-)
-
 target_include_directories(Infra
         PRIVATE Public/Infra
         INTERFACE Public)
+
+
+target_link_libraries(Infra PRIVATE
+        Common
+)
 
 target_sources(Infra
   PRIVATE

@@ -1,10 +1,6 @@
 
 add_executable(DocUpdater)
 
-target_compile_options(DocUpdater PRIVATE
-        -Wno-unqualified-std-cast-call
-)
-
 find_package(Boost REQUIRED COMPONENTS algorithm)
 
 target_sources(DocUpdater
@@ -12,4 +8,7 @@ target_sources(DocUpdater
         DocUpdater.cpp
 )
 
-target_link_libraries(DocUpdater PRIVATE Boost::algorithm)
+target_link_libraries(DocUpdater PRIVATE
+        Common
+        Boost::algorithm
+)

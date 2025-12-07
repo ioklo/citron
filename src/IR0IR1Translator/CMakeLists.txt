@@ -4,16 +4,20 @@ add_library(IR0IR1Translator SHARED
 
 set_target_properties(IR0IR1Translator PROPERTIES DEFINE_SYMBOL IR0IR1TRANSLATOR_EXPORTS)
 
-target_compile_options(IR0IR1Translator PRIVATE
-        -Wno-unqualified-std-cast-call
-)
-
 target_include_directories(IR0IR1Translator
         PRIVATE Public/IR0IR1Translator
         PUBLIC Public)
 
-target_link_libraries(IR0IR1Translator PRIVATE Logging Infra ESymbol RSymbol NSymbol MIR QIR)
-
+target_link_libraries(IR0IR1Translator PRIVATE
+        Common
+        Logging
+        Infra
+        ESymbol
+        RSymbol
+        NSymbol
+        MIR
+        QIR
+)
 target_sources(IR0IR1Translator
         PRIVATE
         CommonQInstsTranslation.cpp
@@ -34,4 +38,5 @@ target_sources(IR0IR1Translator
         MLocQInstsTranslation.h
         MStmtQInstsTranslation.h
         QBodyContext.h
+        ScopeGuard.h
 )

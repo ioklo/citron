@@ -20,7 +20,7 @@ QData* QFactory::MakeQData(std::vector<QFuncBody>&& body)
 
 QBlock* QFactory::MakeQBlock(size_t index, std::string&& debugText)
 {
-    auto block = make_unique<QBlock>(index, std::move(debugText));
+    auto block = make_unique<QBlock>(std::move(debugText));
     auto* pBlock = block.get();
     blocks.push_back(std::move(block));
     return pBlock;

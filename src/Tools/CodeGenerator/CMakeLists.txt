@@ -1,10 +1,6 @@
 
 add_executable(CodeGenerator)
 
-target_compile_options(CodeGenerator PRIVATE
-        -Wno-unqualified-std-cast-call
-)
-
 find_package(fmt CONFIG REQUIRED)
 
 target_sources(CodeGenerator
@@ -19,4 +15,7 @@ target_sources(CodeGenerator
           SyntaxCodeGenerator.h
 )
 
-target_link_libraries(CodeGenerator PRIVATE fmt::fmt)
+target_link_libraries(CodeGenerator PRIVATE
+        Common
+        fmt::fmt
+)

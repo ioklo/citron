@@ -3,16 +3,16 @@ add_library(QIR SHARED)
 
 set_target_properties(QIR PROPERTIES DEFINE_SYMBOL QIR_EXPORTS)
 
-target_compile_options(QIR PRIVATE
-        -Wno-unqualified-std-cast-call
-)
-
 target_include_directories(QIR
         PRIVATE Public/QIR
         PUBLIC Public)
 
-target_link_libraries(QIR PRIVATE Infra NSymbol RSymbol)
-
+target_link_libraries(QIR PRIVATE
+        Common
+        Infra
+        NSymbol
+        RSymbol
+)
 target_sources(QIR
         PRIVATE
         QBlock.cpp
