@@ -22,40 +22,22 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 enum class QInst_IntrinsicKind;
 
-enum class QBlockWriterState
-{   
-    CanWrite,
-    EndOfBlock,
-};
-
 class QBlockWriter
 {
-    QBlockWriterState state;
     QBlock* curBlock;
     std::vector<QBlock*> blocks;
-    std::vector<QBlock*> pendingBlocks;
     QFactoryPtr qFactory;
 
 public:
     QBlockWriter(const QFactoryPtr& qFactory, std::string&& blockName);
-
-private:
-    void EmitInstInternal(QInst&& inst);
-
-public:
     QBlock* AddBlock(std::string&& debugText);
-
-    template<typename TQInst>
-        requires std::convertible_to<TQInst, QInst> && (!std::convertible_to<TQInst, QTermInst>)
-    void EmitInst(TQInst&& inst) { EmitInstInternal(std::move(inst)); }
-    void EmitTerminateBlock(QTermInst&& termInst);
 
     QBlock* GetCurBlock() { return curBlock; }
     std::span<QBlock*> GetBlocks() { return blocks; }
     void SetCurBlock(QBlock* block);
     void Verify();
 
-    bool IsBlockCompleted() { return state == QBlockWriterState::EndOfBlock; }
+    bool CurBlockEndsWithTermInst();
 };
 
 struct QLocalVarInfo
@@ -105,16 +87,17 @@ public:
     QBlock* AddBlock(std::string&& debugText) { return QBlockWriter::AddBlock(std::move(debugText)); }
     template<typename TQInst, typename... TArgs> 
         requires std::convertible_to<TQInst, QInst>
-            && (!std::convertible_to<TQInst, QTermInst>)
             && (!std::same_as<TQInst, QInst_Intrinsic>)
-    void EmitInst(TQInst&& inst) { QBlockWriter::EmitInst(std::move(inst)); }
+    void EmitInst(TQInst&& inst)
+    {
+        QBlockWriter::GetCurBlock()->EmitInst(std::move(inst));
+    }
     void EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> oDest, std::vector<QArg_Input>&& args);
     QBlock* MakeCleanUpForReturnBlock(size_t scopeIndex);
     void EmitJumpToCleanUpForReturnBlock();
 
-    void CompleteBlock(QTermInst&& termInst) { QBlockWriter::EmitTerminateBlock(std::move(termInst)); }
     void SetCurBlock(QBlock* block) { QBlockWriter::SetCurBlock(block); }
-    bool IsBlockCompleted() { return QBlockWriter::IsBlockCompleted(); }
+    bool CurBlockEndsWithTermInst() { return QBlockWriter::CurBlockEndsWithTermInst(); }
 
 public:
     QType* GetMExpQType(MExp* mExp);    

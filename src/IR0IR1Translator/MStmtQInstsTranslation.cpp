@@ -62,6 +62,9 @@ public:
         return {};
     }
 
+    // stmt는 qblock으로 변환을 하고 나면, 꼭 포인터가 다음 실행 위치로 가 있어야 한다
+    // 근데 둘다 unreachable일 수가 있다. if (cond) return; else return;
+    // 1. 
     ResultType Visit(MStmt_If* stmt)
     {
         {
@@ -78,10 +81,10 @@ public:
                 // 2. add three blocks
                 auto* trueBlock = bodyContext.AddBlock("if_true"); // debug label, b23_if_true
                 auto* falseBlock = bodyContext.AddBlock("if_false");
-                auto* endBlock = bodyContext.AddBlock("if_end");
+                QBlock* endBlock = nullptr; // lazy init
 
                 // 3. add conditional jump
-                bodyContext.CompleteBlock(QInst_CondJump{condSlot, trueBlock, falseBlock});
+                bodyContext.EmitInst(QInst_CondJump{condSlot, trueBlock, falseBlock});
 
                 // 4. fill trueBlock
                 bodyContext.SetCurBlock(trueBlock);
@@ -89,8 +92,11 @@ public:
                 auto eTrueResult = TranslateMStmtsToQInstsWithNewScope(stmt->body, bodyContext);
                 RETURN_ON_ERROR(eTrueResult);
 
-                if (!bodyContext.IsBlockCompleted())
-                    bodyContext.CompleteBlock(QInst_Jump{endBlock});
+                if (!bodyContext.CurBlockEndsWithTermInst())
+                {
+                    if (!endBlock) endBlock = bodyContext.AddBlock("if_end");
+                    bodyContext.EmitInst(QInst_Jump{endBlock});
+                }
 
                 // 5. fill falseBlock
                 bodyContext.SetCurBlock(falseBlock);
@@ -98,9 +104,13 @@ public:
                 auto eFalseResult = TranslateMStmtsToQInstsWithNewScope(stmt->elseBody, bodyContext);
                 RETURN_ON_ERROR(eFalseResult);
 
-                if (!bodyContext.IsBlockCompleted())
-                    bodyContext.CompleteBlock(QInst_Jump{endBlock});
+                if (!bodyContext.CurBlockEndsWithTermInst())
+                {
+                    if (!endBlock) endBlock = bodyContext.AddBlock("if_end");
+                    bodyContext.EmitInst(QInst_Jump{endBlock});
+                }
 
+                // 만약 endBlock이 없으면 unreachable인데..
                 bodyContext.SetCurBlock(endBlock);
             }
             else
@@ -110,15 +120,15 @@ public:
                 auto* endBlock = bodyContext.AddBlock("if_end");
 
                 // 3. add conditional jump
-                bodyContext.CompleteBlock(QInst_CondJump{condSlot, trueBlock, endBlock});
+                bodyContext.EmitInst(QInst_CondJump{condSlot, trueBlock, endBlock});
 
                 // 4. fill trueBlock
                 bodyContext.SetCurBlock(trueBlock);
                 auto eTrueBlockResult = TranslateMStmtsToQInstsWithNewScope(stmt->body, bodyContext);
                 RETURN_ON_ERROR(eTrueBlockResult);
                 
-                if (!bodyContext.IsBlockCompleted())
-                    bodyContext.CompleteBlock(QInst_Jump{endBlock});
+                if (!bodyContext.CurBlockEndsWithTermInst())
+                    bodyContext.EmitInst(QInst_Jump{endBlock});
 
                 bodyContext.SetCurBlock(endBlock);
             }

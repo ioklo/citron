@@ -3,6 +3,7 @@
 #include <variant>
 #include <format>
 #include <ranges>
+#include <unordered_set>
 
 #include "Infra/Unreachable.h"
 #include "Infra/Exceptions.h"
@@ -23,97 +24,125 @@ using namespace std;
 
 namespace Citron {
 
+namespace {
+
+inline bool IsTerminator(QInst& inst)
+{
+    return holds_alternative<QInst_Jump>(inst)
+        || holds_alternative<QInst_CondJump>(inst)
+        || holds_alternative<QInst_Return>(inst);
+}
+
+}
+
 QBlockWriter::QBlockWriter(const QFactoryPtr& qFactory, string&& firstBlockName)
     : qFactory{qFactory}
 {
     auto* firstBlock = qFactory->MakeQBlock(blocks.size(), format("b{}_{}", blocks.size(), move(firstBlockName)));
     this->curBlock = firstBlock;
     this->blocks.push_back(firstBlock);
-    this->state = QBlockWriterState::CanWrite;
-}
-
-void QBlockWriter::EmitInstInternal(QInst&& inst)
-{
-    switch (state)
-    {
-    case QBlockWriterState::CanWrite:
-        curBlock->EmitInst(std::move(inst));
-        return;
-
-    case QBlockWriterState::EndOfBlock:
-        assert(false);
-    }
-
-    unreachable();
 }
 
 QBlock* QBlockWriter::AddBlock(string&& debugText)
 {
     auto* newBlock = qFactory->MakeQBlock(blocks.size(), format("b{}_{}", blocks.size(), move(debugText)));
     blocks.push_back(newBlock);
-    pendingBlocks.push_back(newBlock);
     return newBlock;
-}
-
-void QBlockWriter::EmitTerminateBlock(QTermInst&& termInst)
-{
-    switch(state)
-    {
-    case QBlockWriterState::CanWrite:
-        EmitInstInternal(visit([](auto&& termInst) -> QInst { return termInst; }, termInst));
-        state = QBlockWriterState::EndOfBlock;
-        return;
-
-    case QBlockWriterState::EndOfBlock:
-        assert(false);
-        return;
-    }
 }
 
 void QBlockWriter::SetCurBlock(QBlock* block)
 {
-    switch (state)
-    {
-    case QBlockWriterState::CanWrite:
-        assert(false);
+    curBlock = block;
+}
 
-    case QBlockWriterState::EndOfBlock:
-        for (size_t i = 0, count = pendingBlocks.size(); i < count; i++)
-        {
-            if (pendingBlocks[i] == block)
-            {   
-                // swap
-                if (size_t lastIndex = count - 1; i != lastIndex)
-                {
-                    auto* t = pendingBlocks[lastIndex];
-                    pendingBlocks[lastIndex] = pendingBlocks[i];
-                    pendingBlocks[i] = t;
-                }
+bool QBlockWriter::CurBlockEndsWithTermInst()
+{
+    auto inst = curBlock->GetInsts();
+    if (inst.empty()) return false;
 
-                pendingBlocks.pop_back();
-                curBlock = block;
-                state = QBlockWriterState::CanWrite;
-                return;
-            }
-        }
-        assert(false);
-    }
+    return IsTerminator(inst.back());
 }
 
 void QBlockWriter::Verify()
 {
     // blocks의 모든 block에 대해서
-    // 1. 모두 terminator로 끝나는지
-    // 2. block들이 비어있진 않은지 (terminator로 끝나면 비진 않았으니 1만 검사해도 될듯)
-    // 3. 그 block으로 가는 path가 있는지
+    // 1. 모두 terminator로 끝나는지, block들이 비어있진 않은지 (terminator로 끝나면 비진 않았으니)
+    // 2. terminator가 여러번 들어갔는지
+    // 3. 그 entry부터 block으로 가는 path가 있는지 => 그래프 순회
 
+    // 1, 2 검사
+    for (auto* block : blocks)
+    {
+        auto insts = block->GetInsts();
+        assert(!insts.empty());
 
+        for (size_t i = 0, count = insts.size(); i < count; i++)
+        {
+            bool bLast = (i == count - 1);
+            bool bTerminator = IsTerminator(insts[i]);
 
+            // bLast: true, bTerminator: true
+            // bLast: false, bTerminator: false
+            assert(bLast == bTerminator);
+        }
+    }
 
+    // 3 검사
+    unordered_set<QBlock*> visited; // 큐잉을 포함해서, 한번 도달했는지
+    visited.reserve(blocks.size());
 
+    vector<QBlock*> stack;
+    stack.reserve(blocks.size()); // 이렇게 크게 갈리가 없는데
 
-    assert(state == QBlockWriterState::EndOfBlock);
-    assert(pendingBlocks.empty());
+    // front부터 시작해서 도달했는지 검사
+    visited.insert(blocks.front());
+    stack.push_back(blocks.front());
+
+    while (!stack.empty())
+    {
+        auto* block = stack.back();
+        stack.pop_back();
+
+        auto& termInst = block->GetInsts().back();
+        visit([&visited, &stack](auto& termInst)
+        {
+            using T = remove_cvref_t<decltype(termInst)>;
+
+            if constexpr (same_as<T, QInst_Jump>)
+            {
+                if (visited.find(termInst.block) == visited.end())
+                {
+                    visited.insert(termInst.block);
+                    stack.push_back(termInst.block);
+                }
+            }
+            else if constexpr (same_as<T, QInst_CondJump>)
+            {
+                if (visited.find(termInst.trueBlock) == visited.end())
+                {
+                    visited.insert(termInst.trueBlock);
+                    stack.push_back(termInst.trueBlock);
+                }
+
+                if (visited.find(termInst.falseBlock) == visited.end())
+                {
+                    visited.insert(termInst.falseBlock);
+                    stack.push_back(termInst.falseBlock);
+                }
+            }
+            else if constexpr(same_as<T, QInst_Return>)
+            {
+                // no exit
+            }
+            else
+            {
+                assert(false);
+            }
+
+        }, termInst);
+    }
+
+    assert(visited.size() == blocks.size()); // 모두 도달했어야
 }
 
 QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType)
