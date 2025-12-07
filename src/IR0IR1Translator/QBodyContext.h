@@ -48,7 +48,7 @@ public:
     template<typename TQInst>
         requires std::convertible_to<TQInst, QInst> && (!std::convertible_to<TQInst, QTermInst>)
     void EmitInst(TQInst&& inst) { EmitInstInternal(std::move(inst)); }
-    void CompleteBlock(QTermInst&& termInst);
+    void EmitTerminateBlock(QTermInst&& termInst);
 
     QBlock* GetCurBlock() { return curBlock; }
     std::span<QBlock*> GetBlocks() { return blocks; }
@@ -67,8 +67,16 @@ struct QLocalVarInfo
 
 struct QScope
 {
+    bool childHasReturn = false; // 이 스코프의 child가 return을 갖고 있는가
+    bool handleReturn = false;   // 이 스코프에서 return을 처리했다. 더이상 명령어가 나오면 안된다
+
     // "a_16" -> slotIndex
     std::unordered_map<RName, QLocalVarInfo> localVarInfos;
+    std::vector<size_t> slotIndices; // 이 스코프가 관리하는 slot
+
+    // 최근 return용 cleanUp블록
+    size_t coveredSlots = 0; // 어느 슬롯까지 커버했는지 count, slots의 인덱스이다 [0, slots.size())
+    QBlock* recentCleanUpForReturn = nullptr; // return시 정리 블록
 };
 
 struct QIntrinsicResultType_Slot { QType* qType; };
@@ -84,11 +92,13 @@ class QBodyContext : QBlockWriter
 
     // 함수의 스택 변수
     QBlock* bodyBlock;
+    QScope* curScope;
     std::vector<QSlotInfo> slotInfos;
     std::vector<QScope> scopes;
+    std::optional<QArg_Slot> retSlot; // 함수의 반환값 slot
 
 public:
-    QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory);
+    QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType);
 
     QIntrinsicResultType GetIntrinsicResultType(QInst_IntrinsicKind kind);
 
@@ -99,7 +109,10 @@ public:
             && (!std::same_as<TQInst, QInst_Intrinsic>)
     void EmitInst(TQInst&& inst) { QBlockWriter::EmitInst(std::move(inst)); }
     void EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> oDest, std::vector<QArg_Input>&& args);
-    void CompleteBlock(QTermInst&& termInst) { QBlockWriter::CompleteBlock(std::move(termInst)); }
+    QBlock* MakeCleanUpForReturnBlock(size_t scopeIndex);
+    void EmitJumpToCleanUpForReturnBlock();
+
+    void CompleteBlock(QTermInst&& termInst) { QBlockWriter::EmitTerminateBlock(std::move(termInst)); }
     void SetCurBlock(QBlock* block) { QBlockWriter::SetCurBlock(block); }
     bool IsBlockCompleted() { return QBlockWriter::IsBlockCompleted(); }
 
@@ -112,6 +125,8 @@ public:
     QType* GetBoolQType();
     QType* GetIntQType();
     QType* GetPtrQType();
+
+    QArg_Slot GetRetSlot();
 
     size_t AddLocalVar(RType* type, const RName& name, std::optional<size_t> oArgIndex);
     size_t GetLocalVarSlotIndex(const RName& name);
@@ -129,6 +144,9 @@ public:
 
     void PushScope();
     void PopScope();
+    void CleanUpScope();
+
+    bool HandleReturn();
     
 };
 

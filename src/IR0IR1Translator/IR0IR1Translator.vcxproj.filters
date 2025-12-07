@@ -17,6 +17,7 @@
     <ClInclude Include="MStmtQInstsTranslation.h" />
     <ClInclude Include="QBodyContext.h" />
     <ClInclude Include="CommonQInstsTranslation.h" />
+    <ClInclude Include="ScopeGuard.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IR0IR1Translator.cpp" />

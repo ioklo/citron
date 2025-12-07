@@ -35,6 +35,7 @@ enum class LRuntimeFuncKind
     BoolToString,
     IntToString,
     StringInit,
+    StringDestroy,
     StringConcat,
     StringLessThan,
     StringGreaterThan,
@@ -204,6 +205,15 @@ public:
         }
 
         {
+            // void citron_string_destroy(string* dest);
+            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
+                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType()}, /*isVarArg*/false);
+                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_destroy", _module);
+            };
+            runtimeFuncs.try_emplace(LRuntimeFuncKind::StringDestroy, move(ctor));
+        }
+
+        {
             // void citron_string_concat(string* dest, string* x, string* y);
             auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
                 auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
@@ -280,7 +290,7 @@ class QFuncBodyToLFuncTranslator
     LModuleContext& lModuleContext;
 
     vector<llvm::Value*> slotValues;
-    vector<llvm::BasicBlock*> lBlocksByQBlockIndex;
+    unordered_map<QBlock*, llvm::BasicBlock*> lBlocksByQBlock;
 
 public:
     QFuncBodyToLFuncTranslator(QFuncBody& qFuncBody, llvm::Module& _module, llvm::IRBuilder<>& builder, LContextImpl& lContextImpl, LModuleContext& lModuleContext)
@@ -675,7 +685,11 @@ private:
             if constexpr (same_as<T, QInst_InitString>) // InitString{string& dest, std::string text}
             {
                 auto* textPtr = builder.CreateGlobalString(qInst.text);
-                EmitRuntimeCall(LRuntimeFuncKind::StringInit, {slotValues[qInst.dest.index], textPtr});
+                EmitRuntimeCall(LRuntimeFuncKind::StringInit, {slotValues[qInst.slot.index], textPtr});
+            }
+            else if constexpr (same_as<T, QInst_DestroyString>)
+            {
+                EmitRuntimeCall(LRuntimeFuncKind::StringDestroy, {slotValues[qInst.slot.index]});
             }
             else if constexpr (same_as<T, QInst_Load>)
             {
@@ -728,11 +742,11 @@ private:
             else if constexpr (same_as<T, QInst_CondJump>)
             {
                 auto* lCond = builder.CreateLoad(lContextImpl.GetBoolType(), slotValues[qInst.cond.index]);
-                builder.CreateCondBr(lCond, lBlocksByQBlockIndex[qInst.trueBlock->GetIndex()], lBlocksByQBlockIndex[qInst.falseBlock->GetIndex()]);
+                builder.CreateCondBr(lCond, lBlocksByQBlock[qInst.trueBlock], lBlocksByQBlock[qInst.falseBlock]);
             }
             else if constexpr (same_as<T, QInst_Jump>)
             {
-                builder.CreateBr(lBlocksByQBlockIndex[qInst.block->GetIndex()]);
+                builder.CreateBr(lBlocksByQBlock[qInst.block]);
             }
             else static_assert(false);
         }, qInst);
@@ -807,15 +821,15 @@ public:
         for (auto* qBlock : qFuncBody.blocks)
         {
             auto* lBlock = llvm::BasicBlock::Create(lContextImpl.context, qBlock->GetName(), lFunc);
-            lBlocksByQBlockIndex.push_back(lBlock);
+            lBlocksByQBlock.try_emplace(qBlock, lBlock);
         }
 
-        builder.CreateBr(lBlocksByQBlockIndex[0]);
+        builder.CreateBr(lBlocksByQBlock[qFuncBody.blocks.front()]);
 
         for (size_t i = 0, count = qFuncBody.blocks.size(); i < count; i++)
         {
             auto* qBlock = qFuncBody.blocks[i];
-            auto* lBlock = lBlocksByQBlockIndex[i];
+            auto* lBlock = lBlocksByQBlock[qBlock];
 
             builder.SetInsertPoint(lBlock);
             for (auto& qInst : qBlock->GetInsts())

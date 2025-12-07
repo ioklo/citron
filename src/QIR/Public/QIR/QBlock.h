@@ -13,17 +13,15 @@ class QBlock
 {
     std::string debugText;
     std::vector<QInst> insts;
-    size_t index;
 
     friend class QPrinter;
 
 public:
-    QBlock(size_t index, std::string&& debugText)
-        : index{index}, debugText(std::move(debugText))
+    QBlock(std::string&& debugText)
+        : debugText(std::move(debugText))
     {
     }
-
-    size_t GetIndex() { return index; }
+    
     std::string_view GetName() { return debugText; }
 
     void EmitInst(QInst&& inst)

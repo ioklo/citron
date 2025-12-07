@@ -25,7 +25,7 @@ extern "C" void citron_string_init(void* dest, const char* text)
     new (dest) string{text};
 }
 
-extern "C" void citron_string_destruct(void* str)
+extern "C" void citron_string_destroy(void* str)
 {
     auto* s = (string*)str;
     s->~string();

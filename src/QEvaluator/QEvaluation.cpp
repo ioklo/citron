@@ -494,8 +494,16 @@ struct Evaluator
 
     bool operator()(QInst_InitString& inst)
     {
-        auto* buf = env.curFrame->slots[inst.dest.index];
+        auto* buf = env.curFrame->slots[inst.slot.index];
         new (buf) string{inst.text};
+        return true;
+    }
+
+    bool operator()(QInst_DestroyString& inst)
+    {
+        auto* buf = env.curFrame->slots[inst.slot.index];
+        auto* str = (string*)buf;
+        str->~string();
         return true;
     }
 

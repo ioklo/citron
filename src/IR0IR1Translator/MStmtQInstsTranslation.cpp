@@ -12,6 +12,7 @@
 #include "CommonQInstsTranslation.h"
 #include "MExpQInstsTranslation.h"
 #include "QBodyContext.h"
+#include "ScopeGuard.h"
 
 
 using namespace std;
@@ -63,59 +64,69 @@ public:
 
     ResultType Visit(MStmt_If* stmt)
     {
-        auto condSlot = bodyContext.NewSlot(bodyContext.GetBoolQType());
-
-        // 1. stmt.cond
-        auto eCondResult = TranslateMExpToQInsts(stmt->cond, condSlot, bodyContext);
-        RETURN_ON_ERROR(eCondResult);
-
-        if (!stmt->elseBody.empty())
         {
-            // 2. add three blocks
-            auto* trueBlock = bodyContext.AddBlock("if_true"); // debug label, b23_if_true
-            auto* falseBlock = bodyContext.AddBlock("if_false");
-            auto* endBlock = bodyContext.AddBlock("if_end");
+            ScopeGuard mainGuard{bodyContext};
+            // 최종 condSlot은 branch에 필요하기 때문에 정리하지 않음
+            auto condSlot = bodyContext.NewSlot(bodyContext.GetBoolQType());
 
-            // 3. add conditional jump
-            bodyContext.CompleteBlock(QInst_CondJump{condSlot, trueBlock, falseBlock});
+            // 1. stmt.cond
+            auto eCondResult = TranslateMExpToQInstsWithNewScope(stmt->cond, condSlot, bodyContext);
+            RETURN_ON_ERROR(eCondResult);
 
-            // 4. fill trueBlock
-            bodyContext.SetCurBlock(trueBlock);
-            auto eTrueResult = TranslateMStmtsToQInsts(stmt->body, bodyContext);
-            RETURN_ON_ERROR(eTrueResult);
-            if(!bodyContext.IsBlockCompleted())
-                bodyContext.CompleteBlock(QInst_Jump{endBlock});
+            if (!stmt->elseBody.empty())
+            {
+                // 2. add three blocks
+                auto* trueBlock = bodyContext.AddBlock("if_true"); // debug label, b23_if_true
+                auto* falseBlock = bodyContext.AddBlock("if_false");
+                auto* endBlock = bodyContext.AddBlock("if_end");
 
-            // 5. fill falseBlock
-            bodyContext.SetCurBlock(falseBlock);
-            auto eFalseResult = TranslateMStmtsToQInsts(stmt->elseBody, bodyContext);
-            RETURN_ON_ERROR(eFalseResult);
-            if (!bodyContext.IsBlockCompleted())
-                bodyContext.CompleteBlock(QInst_Jump{endBlock});
+                // 3. add conditional jump
+                bodyContext.CompleteBlock(QInst_CondJump{condSlot, trueBlock, falseBlock});
 
-            bodyContext.SetCurBlock(endBlock);
-            return {};
+                // 4. fill trueBlock
+                bodyContext.SetCurBlock(trueBlock);
+                
+                auto eTrueResult = TranslateMStmtsToQInstsWithNewScope(stmt->body, bodyContext);
+                RETURN_ON_ERROR(eTrueResult);
+
+                if (!bodyContext.IsBlockCompleted())
+                    bodyContext.CompleteBlock(QInst_Jump{endBlock});
+
+                // 5. fill falseBlock
+                bodyContext.SetCurBlock(falseBlock);
+                
+                auto eFalseResult = TranslateMStmtsToQInstsWithNewScope(stmt->elseBody, bodyContext);
+                RETURN_ON_ERROR(eFalseResult);
+
+                if (!bodyContext.IsBlockCompleted())
+                    bodyContext.CompleteBlock(QInst_Jump{endBlock});
+
+                bodyContext.SetCurBlock(endBlock);
+            }
+            else
+            {
+                // 2. add three blocks
+                auto* trueBlock = bodyContext.AddBlock("if_true"); // debug label, b23_if_true
+                auto* endBlock = bodyContext.AddBlock("if_end");
+
+                // 3. add conditional jump
+                bodyContext.CompleteBlock(QInst_CondJump{condSlot, trueBlock, endBlock});
+
+                // 4. fill trueBlock
+                bodyContext.SetCurBlock(trueBlock);
+                auto eTrueBlockResult = TranslateMStmtsToQInstsWithNewScope(stmt->body, bodyContext);
+                RETURN_ON_ERROR(eTrueBlockResult);
+                
+                if (!bodyContext.IsBlockCompleted())
+                    bodyContext.CompleteBlock(QInst_Jump{endBlock});
+
+                bodyContext.SetCurBlock(endBlock);
+            }
         }
-        else
-        {
-            // 2. add three blocks
-            auto* trueBlock = bodyContext.AddBlock("if_true"); // debug label, b23_if_true
-            auto* endBlock = bodyContext.AddBlock("if_end");
 
-            // 3. add conditional jump
-            bodyContext.CompleteBlock(QInst_CondJump{condSlot, trueBlock, endBlock});
-
-            // 4. fill trueBlock
-            bodyContext.SetCurBlock(trueBlock);
-            auto eTrueBlockResult = TranslateMStmtsToQInsts(stmt->body, bodyContext);
-            RETURN_ON_ERROR(eTrueBlockResult);
-            if (!bodyContext.IsBlockCompleted())
-                bodyContext.CompleteBlock(QInst_Jump{endBlock});
-
-            bodyContext.SetCurBlock(endBlock);
-            return {};
-        }
+        return {};
     }
+
     ResultType Visit(MStmt_IfNullableRefTest* stmt)
     {
         throw NotImplementedException{};
@@ -141,14 +152,14 @@ public:
         if (stmt->exp)
         {
             auto* qType = bodyContext.GetMExpQType(stmt->exp);
-            auto dest = bodyContext.NewSlot(qType);
-            auto eResult = TranslateMExpToQInsts(stmt->exp, dest, bodyContext);
+            auto eResult = TranslateMExpToQInstsWithNewScope(stmt->exp, bodyContext.GetRetSlot(), bodyContext);
             RETURN_ON_ERROR(eResult);
-            bodyContext.CompleteBlock(QInst_Return{QInst_ReturnValue{qType, dest}});
+
+            bodyContext.EmitJumpToCleanUpForReturnBlock();
         }
         else
         {
-            bodyContext.CompleteBlock(QInst_Return{nullopt});
+            bodyContext.EmitJumpToCleanUpForReturnBlock();
         }
 
         return {};
@@ -156,20 +167,22 @@ public:
 
     ResultType Visit(MStmt_Block* stmt)
     {
-        bodyContext.PushScope();
+        ScopeGuard mainGuard{bodyContext};
 
         auto eResult = TranslateMStmtsToQInsts(stmt->stmts, bodyContext);
         RETURN_ON_ERROR(eResult);
 
-        bodyContext.PopScope();
         return {};
     }
+
     ResultType Visit(MStmt_Blank* stmt)
     {
-        throw NotImplementedException{};
+        return {};
     }
+
     ResultType Visit(MStmt_Exp* stmt)
     {
+        ScopeGuard mainGuard{bodyContext};
         auto eResult = TranslateMExpToQInsts(stmt->exp, nullopt, bodyContext);
         RETURN_ON_ERROR(eResult);
 
@@ -238,6 +251,12 @@ expected<void, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, QBo
     }
 
     return {};
+}
+
+std::expected<void, DiagPtr> TranslateMStmtsToQInstsWithNewScope(std::vector<MStmt*>& mStmts, QBodyContext& qBodyContext)
+{
+    ScopeGuard guard{qBodyContext};
+    TranslateMStmtsToQInsts(mStmts, qBodyContext);
 }
 
 expected<void, DiagPtr> TranslateMStmtToQInsts(MStmt* mStmt, QBodyContext& qBodyContext)

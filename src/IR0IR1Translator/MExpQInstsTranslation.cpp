@@ -20,6 +20,7 @@
 
 #include "MLocQInstsTranslation.h"
 #include "QBodyContext.h"
+#include "ScopeGuard.h"
 #include "CommonQInstsTranslation.h"
 
 using namespace std;
@@ -396,10 +397,16 @@ public:
     ResultType Visit(MExp_EnumAsEnumElem* exp) { throw NotImplementedException{}; }
 };
 
-expected<void, DiagPtr> TranslateMExpToQInsts(MExp* mExp, std::optional<QArg_Slot> oDest, QBodyContext& bodyContext)
+expected<void, DiagPtr> TranslateMExpToQInsts(MExp* mExp, optional<QArg_Slot> oDest, QBodyContext& bodyContext)
 {
     MExpQInstsTranslator translator{oDest, bodyContext};
     return Accept(translator, mExp);
+}
+
+expected<void, DiagPtr> TranslateMExpToQInstsWithNewScope(MExp* mExp, optional<QArg_Slot> oDest, QBodyContext& bodyContext)
+{
+    ScopeGuard expGuard{bodyContext};
+    return TranslateMExpToQInsts(mExp, oDest, bodyContext);
 }
 
 } // namespace Citron

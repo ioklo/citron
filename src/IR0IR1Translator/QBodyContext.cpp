@@ -19,7 +19,6 @@
 #include "QIR/QArgs.h"
 #include "QIR/QFactory.h"
 
-
 using namespace std;
 
 namespace Citron {
@@ -56,7 +55,7 @@ QBlock* QBlockWriter::AddBlock(string&& debugText)
     return newBlock;
 }
 
-void QBlockWriter::CompleteBlock(QTermInst&& termInst)
+void QBlockWriter::EmitTerminateBlock(QTermInst&& termInst)
 {
     switch(state)
     {
@@ -107,12 +106,18 @@ void QBlockWriter::Verify()
     assert(pendingBlocks.empty());
 }
 
-QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
+QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType)
     : rFactory{rFactory}
     , qFactory{qFactory}
     , QBlockWriter{qFactory, "body"}
 {
     scopes.emplace_back();
+    curScope = &scopes.back();
+
+    auto* qRetType = GetQTypeFromRType(rRetType);
+    if (qRetType != qFactory->MakeVoidType())
+        retSlot = NewSlot(qRetType);
+
     bodyBlock = QBlockWriter::GetCurBlock();
 }
 
@@ -195,6 +200,85 @@ void QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Slot> o
     else unreachable();
 }
 
+QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
+{
+    auto& scope = scopes[scopeIndex];
+
+    // 지금 처리해야 할 slots의 갯수가 크다면, scope.recentCleanUpForReturn 업데이트
+    if (scope.coveredSlots < scope.slotIndices.size())
+    {
+        // 1. cleanUp블록이 필요하지 않으면, 그냥 coveredSlots만 맞춰주고 리턴
+
+        // TODO: String을 세는게 아니라, 각 타입의 소멸자가 있는지 검사
+        QBlock* newCleanUpForRet = nullptr;
+        for (size_t i = scope.coveredSlots, end = i < scope.slotIndices.size(); i < end; i++)
+        {
+            size_t slotIndex = scope.slotIndices[i];
+            if (slotInfos[slotIndex].qType == GetStringQType())
+            {
+                if (newCleanUpForRet == nullptr)
+                    newCleanUpForRet = QBlockWriter::AddBlock("cleanUpForRet"); // TODO: 뒤에 디버그용 번호 붙이기
+
+                newCleanUpForRet->EmitInst(QInst_DestroyString{QArg_Slot{slotIndex}});
+            }
+        }
+
+        scope.coveredSlots = scope.slotIndices.size();
+
+        if (newCleanUpForRet)
+        {
+            if (scope.recentCleanUpForReturn)
+            {
+                newCleanUpForRet->EmitInst(QInst_Jump{scope.recentCleanUpForReturn});
+                scope.recentCleanUpForReturn = newCleanUpForRet;
+            }
+            else
+            {
+                if (scopeIndex != 0)
+                {
+                    auto* parentCleanUpForRet = MakeCleanUpForReturnBlock(scopeIndex - 1);
+                    newCleanUpForRet->EmitInst(QInst_Jump{parentCleanUpForRet});
+                    scope.recentCleanUpForReturn = newCleanUpForRet;
+                }
+                else // 0이면?
+                {
+                    if (retSlot)
+                        newCleanUpForRet->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[retSlot->index].qType, *retSlot}});
+                    else
+                        newCleanUpForRet->EmitInst(QInst_Return{});
+
+                    scope.recentCleanUpForReturn = newCleanUpForRet;
+                }
+            }
+        }
+    }
+    
+    if (scope.recentCleanUpForReturn)
+        return scope.recentCleanUpForReturn;
+
+    if (scopeIndex != 0)
+    {
+        return MakeCleanUpForReturnBlock(scopeIndex - 1);
+    }
+    else // 0이면?
+    {
+        // 바로 리턴 블록 생성
+        auto* retBlock = QBlockWriter::AddBlock("cleanUpForRet");
+        if (retSlot)
+            retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[retSlot->index].qType, *retSlot}});
+        else
+            retBlock->EmitInst(QInst_Return{});
+        scope.recentCleanUpForReturn = retBlock;
+        return retBlock;
+    }
+}
+
+void QBodyContext::EmitJumpToCleanUpForReturnBlock()
+{
+    auto* cleanUpForRetBlock = MakeCleanUpForReturnBlock(scopes.size() - 1);
+    QBlockWriter::EmitTerminateBlock(QInst_Jump{cleanUpForRetBlock});
+}
+
 QType* QBodyContext::GetMExpQType(MExp* mExp)
 {
     return GetQTypeFromRType(mExp->GetType(*rFactory));
@@ -213,7 +297,6 @@ size_t QBodyContext::GetQTypeSize(QType* qType)
         return sizeof(string);
 
     throw NotImplementedException{};
-
 }
 
 string RNameToString(const RName& name)
@@ -264,6 +347,11 @@ QType* QBodyContext::GetPtrQType()
     return qFactory->MakePtrType();
 }
 
+QArg_Slot QBodyContext::GetRetSlot()
+{
+    return *retSlot;
+}
+
 size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size_t> oArgIndex)
 {   
     size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
@@ -274,7 +362,8 @@ size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size
     slotInfos.emplace_back(qType, name, oArgIndex);
     
     // 2. 현재 스코프에 이름 추가
-    scopes.back().localVarInfos[rName] = QLocalVarInfo{slotIndex, name, qType};
+    curScope->localVarInfos[rName] = QLocalVarInfo{slotIndex, name, qType};
+    curScope->slotIndices.push_back(slotIndex);
 
     return slotIndex;
 }
@@ -297,6 +386,8 @@ QArg_Slot QBodyContext::NewSlot(QType* qType)
     size_t slotIndex = slotInfos.size();
     std::string s = format("%s{}", slotIndex);
     slotInfos.emplace_back(qType, s, nullopt);
+
+    curScope->slotIndices.push_back(slotIndex);
     return {slotIndex};
 }
 
@@ -325,11 +416,33 @@ bool QBodyContext::IsVoidQType(QType* qType)
 void QBodyContext::PushScope()
 {
     scopes.push_back(QScope{});
+    curScope = &scopes.back();
 }
 
 void QBodyContext::PopScope()
 {
+    bool childHasReturn = scopes.back().childHasReturn;
     scopes.pop_back();
+
+    curScope = (!scopes.empty()) ? &scopes.back() : nullptr;
+
+    if (curScope)
+        curScope->childHasReturn |= childHasReturn;
+}
+
+// 일반적인 CleanUp
+void QBodyContext::CleanUpScope()
+{
+    // 순서는 거꾸로
+    for (auto slotIndex : curScope->slotIndices | views::reverse)
+    {
+        // 소멸자 호출
+        // TODO: HARD CODED
+        if (slotInfos[slotIndex].qType == qFactory->MakeStringType())
+        {
+            QBlockWriter::EmitInst(QInst_DestroyString{QArg_Slot{slotIndex}});
+        }
+    }
 }
 
 } // Citron

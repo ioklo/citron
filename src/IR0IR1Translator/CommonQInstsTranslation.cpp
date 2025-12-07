@@ -15,6 +15,7 @@ using namespace std;
 namespace Citron {
 
 namespace {
+
 expected<void, DiagPtr> TranslateMExp_StringElemToQInsts(MExp_StringElem& elem, optional<QArg_Slot> oDestSlot, QBodyContext& bodyContext)
 {
     return visit<expected<void, DiagPtr>>(overloaded{

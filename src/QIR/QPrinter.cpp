@@ -61,9 +61,17 @@ class QPrinter
         {
             // init_string %a, "hello"            
             printer.Print("init_string ");
-            printer.PrintQArg_Slot(inst.dest);
+            printer.PrintQArg_Slot(inst.slot);
             printer.Print(", ");
             printer.PrintStringLiteral(inst.text);
+            printer.PrintLine();
+        }
+
+        void operator()(QInst_DestroyString& inst)
+        {
+            // destroy_string %a
+            printer.Print("destroy_string ");
+            printer.PrintQArg_Slot(inst.slot);
             printer.PrintLine();
         }
 
