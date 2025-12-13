@@ -54,11 +54,11 @@ TEST(QEvaluator, CommandInst_DoingWell)
 
     // 1을 문자열로 변환
     QInst_Intrinsic toStringInst{QInst_IntrinsicKind::ToString_Int, QArg_Slot{0}, {QArg_ConstInt32{1}}};
-    qEntryBlock->EmitInst(toStringInst);
+    qEntryBlock->EmitInst(move(toStringInst));
 
     std::vector<QArg_Input> args{QArg_Slot{0}};
     QInst_Intrinsic inst{QInst_IntrinsicKind::Command_Items, nullopt, move(args)};
-    qEntryBlock->EmitInst(inst);
+    qEntryBlock->EmitInst(move(inst));
 
     qEntryBlock->EmitInst(QInst_Return{nullopt});
 

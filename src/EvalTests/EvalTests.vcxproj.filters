@@ -1,0 +1,443 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="EvalTests.g.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="..\..\data\TestData\EvalTests\Assign_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Assign_Expression_Nested.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Blank_Statement_For.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Blank_Statement_Foreach.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Block_Statement_Scope.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Boolean_BinOp.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Boolean_Literal_Expression_Literal.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Boolean_UnaryOperation.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Box_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Break_Statement_For.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Break_Statement_Foreach.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Break_Statement_NestedFor.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Call_Class_Member_Function_Expression_Instance.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Call_Class_Member_Function_Expression_Static.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Call_Global_Function_Expression_General.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Call_Global_Function_Expression_Generator.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Call_Global_Function_Expression_Recursive.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Call_Lambda_Expression_CallInstanceMember.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Call_Lambda_Expression_CallStaticMember.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Call_Lambda_Expression_General.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Call_Struct_Member_Function_Expression_Instance.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Call_Struct_Member_Function_Expression_Static.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Cast_Box_Pointer_To_Local_Pointer_AsArgument.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Cast_Box_Pointer_To_Local_Pointer_NotFixed.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Cast_Boxed_Lambda_To_Func_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Cast_Class_Expression_Upcast.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Cast_Enum_Element_To_Enum_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Class_As_Class_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Class_As_Class_Expression_NotRelated.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Class_Is_Class_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Class_Is_Class_Expression_NotRelated.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Class_Is_Interface_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Class_Is_Interface_Expression_NotRelated.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Class_Member_Box_Reference_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Class_Member_Variable_Location_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Class_Member_Variable_Location_Static.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Command_Statement_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Command_Statement_Block.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Command_Statement_Interpolated.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Continue_Statement_For.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Continue_Statement_Foreach.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Continue_Statement_NestedFor.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Enum_Complex.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Enum_ConstructStandalone.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Enum_ConstructWIthArgument.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Enum_Generics.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Enum_IfTest.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Enum_SwitchTest.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Enum_TypeHint.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Expression_Statement_AssignAllowed.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Expression_Statement_IntLiteralAsTopLevelExp.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\For_Statement_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\For_Statement_EmptyAll.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\For_Statement_EmptyCond.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\For_Statement_EmptyContinueExp.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\For_Statement_EmptyInitializer.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\For_Statement_Initializer.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\For_Statement_Scope.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Foreach_Statement_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Foreach_Statement_LambdaAsItem.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Foreach_Statement_Scope.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Foreach_Statement_WithManualEnumerable.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Foreach_Statement_WithSeqFunc.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Function_Out.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\If_Nullable_Reference_Test_Statement_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\If_Nullable_Reference_Test_Statement_CantTestValueType.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\If_Nullable_Reference_Test_Statement_TestClassImplInterface.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\If_Nullable_Reference_Test_Statement_TestInterface.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\If_Nullable_Reference_Test_Statement_TestInterfaceImplInterface.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\If_Nullable_Reference_Test_Statement_TestUnrelatedClass.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\If_Statement_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\If_Statement_BasicElse.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\If_Statement_NestedIf.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Inline_Block_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Inline_Block_Expression_DifferentReturnType.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Inline_Block_Expression_HintTypeFirst.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Inline_Block_Expression_InferByAssignTargetType.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Inline_Block_Expression_InferByFunctionParameter.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Inline_Block_Expression_InferByReturnType.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Inline_Block_Expression_ShouldNotBeVoid.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Inline_Block_Expression_TopLevelNotAllowed.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Integer_BinaryOperation.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Integer_Literal.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Integer_Literal_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Integer_Literal_Expression_OverTheLimit.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Integer_UnaryOperation.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_BoxPtr.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_Copy.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_LocalPtr.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_This.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_GlobalFunctionAsLambda.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_MemberFunctionAsLambda.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Usage.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lifetime_Analysis_CantReferenceEnumElemMemberVaraible.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lifetime_Analysis_LocalPtrContainedLambda.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lifetime_Analysis_PreventBox1.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lifetime_Analysis_PreventBox2.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lifetime_Analysis_PreventBox3.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lifetime_Analysis_ReturnLocalPointer.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lifetime_Analysis_StructMemberSequenceFunction.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Lifetime_Analysis_StructThisLifeTime.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\List_Indexer_Location_General.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\List_Iterator_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Load_Expression_LoadLocalVar.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Declaration_Statement_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Declaration_Statement_CantInferenceType.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Declaration_Statement_MultipleVarItemsInferSeparately.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Declaration_Statement_TypeInference.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Declaration_Statement_Uninitialized.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Declaration_Statement_UseUninitialized.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Declaration_Statement_VarWithoutPointerSignForPointerValue.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Declaration_Statement_VarWithPointerForPointerValue.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Declaration_Statement_VarWithPointerForValue.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Declaration_Statement_VarWithPointerInferenceSeparately.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Reference_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Reference_Expression_Nested.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Local_Variable_Reference_Expression_Uninitialized.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\New_Class_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\New_Class_Expression_Generics.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\New_Enum_Element_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\New_Enum_Element_Expression_Shorthand.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\New_Struct_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Nullable_Null_Literal_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Nullable_Null_Literal_Expression_CantInferType.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Progam_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Return_Statement_ControlFlow.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Return_Statement_LambdaReturn.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Return_Statement_ReturnValue.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Return_Statement_SeqReturn.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Static_Box_Reference_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\String_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\String_Expression_InterpolationVariable.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\String_Expression_InterpolationWithBraces.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\String_Expression_Literal.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Struct_AutoTrivialConstructor.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Struct_Complex.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Struct_Indirect_Member_Box_Reference_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Struct_Member_Box_Reference_Expression_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Task_Async.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Task_Await_LocalScope.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\Task_Statement_Basic.ct">
+      <Filter>TestData</Filter>
+    </None>
+    <None Include="..\..\data\TestData\EvalTests\String_Expression_Concat.ct">
+      <Filter>TestData</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="TestData">
+      <UniqueIdentifier>{58f9532f-610d-4208-84cf-de539aac8393}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

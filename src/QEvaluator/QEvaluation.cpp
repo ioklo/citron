@@ -492,14 +492,14 @@ struct Evaluator
     Environment& env;
     QFactoryPtr qFactory;
 
-    bool operator()(QInst_InitString& inst)
+    bool operator()(QInst_Ctor_String& inst)
     {
         auto* buf = env.curFrame->slots[inst.slot.index];
         new (buf) string{inst.text};
         return true;
     }
 
-    bool operator()(QInst_DestroyString& inst)
+    bool operator()(QInst_DestructString& inst)
     {
         auto* buf = env.curFrame->slots[inst.slot.index];
         auto* str = (string*)buf;

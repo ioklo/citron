@@ -10,6 +10,8 @@
 #include "Infra/Variants.h"
 #include "Infra/Unreachable.h"
 
+#include "Logging/Diag.h"
+
 #include "RSymbol/RGlobalFuncDecl.h"
 
 #include "MIR/MExp.h"
@@ -53,21 +55,26 @@ public:
         // dest를 할당할일이 없으면, loc까지만 실행하고 종료
         if (!oDest) return {};
 
-        visit([this, exp](auto& srcLoc) 
+        return visit([this, exp](auto& srcLoc) -> expected<void, DiagPtr>
         {
             using T = remove_cvref_t<decltype(srcLoc)>;
-            if constexpr (same_as <T, QLocResult_Slot>)
+            if constexpr (same_as<T, QLocResult_Slot>)
             {
                 auto* qType = bodyContext.GetMExpQType(exp);
 
-                // 위치가 slot으로 나왔으면, assign을 해도 된다
-                bodyContext.EmitInst(QInst_Assign{qType, *oDest, QArg_Slot{srcLoc.slotIndex}});
+                // TODO: String을 일반적인 struct로
+                if (qType == bodyContext.GetStringQType())
+                {
+                    // string이면 string의 Copy Assign을 불러줘야 한다.
+                    return bodyContext.EmitInst(QInst_CopyAssign_String{*oDest, QArg_Slot{srcLoc.slotIndex}});
+                }
+
+                // primitive는 assign을 해도 된다 => CopyAssign으로 대체해야할지도
+                return bodyContext.EmitInst(QInst_Assign{qType, *oDest, QArg_Slot{srcLoc.slotIndex}});
             }
             else static_assert(false);
 
         }, *eSrcLoc);
-
-        
 
         return {};
     }
@@ -96,7 +103,8 @@ public:
                 if (oDest)
                 {
                     auto* qType = bodyContext.GetMExpQType(exp->src);
-                    bodyContext.EmitInst(QInst_Assign{qType, *oDest, QArg_Slot{destLoc.slotIndex}});
+                    auto eEmitResult = bodyContext.EmitInst(QInst_Assign{qType, *oDest, QArg_Slot{destLoc.slotIndex}});
+                    RETURN_ON_ERROR(eEmitResult);
                 }
 
                 return {};
@@ -150,16 +158,14 @@ public:
     {
         if (!oDest) return {}; // nested가 없으니 바로 리턴한다
 
-        bodyContext.EmitInst(QInst_Assign{bodyContext.GetBoolQType(), *oDest, QArg_ConstBool{exp->value}});
-        return {};
+        return bodyContext.EmitInst(QInst_Assign{bodyContext.GetBoolQType(), *oDest, QArg_ConstBool{exp->value}});
     }
 
     ResultType Visit(MExp_IntLiteral* exp)
     {
         if (!oDest) return {};
 
-        bodyContext.EmitInst(QInst_Assign{bodyContext.GetIntQType(), *oDest, QArg_ConstInt32{exp->value}});
-        return {};
+        return bodyContext.EmitInst(QInst_Assign{bodyContext.GetIntQType(), *oDest, QArg_ConstInt32{exp->value}});
     }
 
     ResultType Visit(MExp_String* exp)
@@ -215,7 +221,7 @@ public:
         assert(i != m.end());
 
         if (oDest)
-            bodyContext.EmitIntrinsic(i->second, *oDest, {operand});
+            return bodyContext.EmitIntrinsic(i->second, *oDest, {operand});
 
         return {};
     }
@@ -236,7 +242,7 @@ public:
         auto i = m.find(exp->op);
         assert(i != m.end());
 
-        visit([this, op = i->second](auto& operand) {
+        return visit([this, op = i->second](auto& operand) -> expected<void, DiagPtr> {
 
             using T = remove_cvref_t<decltype(operand)>;
             if constexpr (same_as<T, QLocResult_Slot>)
@@ -244,15 +250,17 @@ public:
                 // slot to ptr
                 auto* qPtrType = bodyContext.GetPtrQType();
                 auto ptrSlot = bodyContext.NewSlot(qPtrType);
-                bodyContext.EmitInst(QInst_AddrOf{ptrSlot, QArg_Slot{operand.slotIndex}});
+                auto eEmitAddrResult = bodyContext.EmitInst(QInst_AddrOf{ptrSlot, QArg_Slot{operand.slotIndex}});
+                RETURN_ON_ERROR(eEmitAddrResult);
 
                 auto dest = oDest ? *oDest : bodyContext.NewSlot(bodyContext.GetIntQType());
-                bodyContext.EmitIntrinsic(op, dest, {ptrSlot});
+                auto eEmitIntrinsicResult = bodyContext.EmitIntrinsic(op, dest, {ptrSlot});
+                RETURN_ON_ERROR(eEmitIntrinsicResult);
+                return {};
             }
+            else static_assert(false);
 
         }, *eOperand);
-        
-        return {};
     }
 
     ResultType Visit(MExp_CallInternalBinaryOperator* exp)
@@ -289,7 +297,8 @@ public:
         assert(i != m.end());
 
         if (oDest)
-            bodyContext.EmitIntrinsic(i->second, *oDest, {operand0, operand1});
+            return bodyContext.EmitIntrinsic(i->second, *oDest, {operand0, operand1});
+
         return {};
     }
 
@@ -347,7 +356,7 @@ public:
         }
 
         // 3. Emit처리
-        visit([this, exp, &args](auto& retPolicy)
+        return visit([this, exp, &args](auto& retPolicy) -> expected<void, DiagPtr>
         {
             using T = remove_cvref_t<decltype(retPolicy)>;
             if constexpr (same_as<T, RetPolicy_Void>)
@@ -356,18 +365,12 @@ public:
             }
             else if constexpr (same_as<T, RetPolicy_UsingStackSlot>)
             {
-                QArg_Slot resultSlot = [this, &retPolicy] {
-                    if (oDest) return *oDest;
-                    return bodyContext.NewSlot(retPolicy.qSlotType);
-                }();
-                
-                bodyContext.EmitInst(QInst_Call{exp->rFuncDecl, resultSlot, move(args)});
+                QArg_Slot resultSlot = oDest ? *oDest : bodyContext.NewSlot(retPolicy.qSlotType);
+                return bodyContext.EmitInst(QInst_Call{exp->rFuncDecl, resultSlot, move(args)});
             }
             else static_assert(false);
 
         }, retPolicy);
-
-        return {};
     }
 
     ResultType Visit(MExp_NewClass* exp) { throw NotImplementedException{}; }

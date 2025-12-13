@@ -8,6 +8,7 @@
 
 #include "MIR/MExp.h"
 #include "QBodyContext.h"
+#include "ScopeGuard.h"
 #include "MExpQInstsTranslation.h"
 
 using namespace std;
@@ -18,15 +19,20 @@ namespace {
 
 expected<void, DiagPtr> TranslateMExp_StringElemToQInsts(MExp_StringElem& elem, optional<QArg_Slot> oDestSlot, QBodyContext& bodyContext)
 {
-    return visit<expected<void, DiagPtr>>(overloaded{
-        [&bodyContext, oDestSlot](MExp_StringElem_Text& textElem) -> expected<void, DiagPtr>
+    return visit([&bodyContext, &oDestSlot](auto& elem) -> expected<void, DiagPtr> {
+        using T = remove_cvref_t<decltype(elem)>;
+        if constexpr (same_as<T, MExp_StringElem_Text>)
         {
             if (oDestSlot)
-                bodyContext.EmitInst(QInst_InitString{*oDestSlot, textElem.text});
+                return bodyContext.EmitInst(QInst_Ctor_String{*oDestSlot, elem.text});
 
             return {};
-        },
-        [&bodyContext, oDestSlot](MExp_StringElem_Exp& expElem) { return TranslateMExpToQInsts(expElem.mExp, oDestSlot, bodyContext); }
+        }
+        else if constexpr (same_as<T, MExp_StringElem_Exp>)
+        {
+            return TranslateMExpToQInsts(elem.mExp, oDestSlot, bodyContext);
+        }
+        else static_assert(false);
     }, elem);
 }
 } // namespace 
@@ -57,7 +63,9 @@ expected<void, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, std::opti
             auto eResult = TranslateMExp_StringElemToQInsts(exp->elements[i], elemSlot, bodyContext);
             RETURN_ON_ERROR(eResult);
             
-            bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_String_String, newSlot, {curSlot, elemSlot});
+            auto eEmitResult = bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_String_String, newSlot, {curSlot, elemSlot});
+            RETURN_ON_ERROR(eEmitResult);
+
             swap(curSlot, newSlot);
         }
         
@@ -65,10 +73,19 @@ expected<void, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, std::opti
         RETURN_ON_ERROR(eResultBack);
 
         if (destSlot)
-            bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_String_String, *destSlot, {curSlot, elemSlot});
+        {
+            auto eEmitResult = bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_String_String, *destSlot, {curSlot, elemSlot});
+            RETURN_ON_ERROR(eEmitResult);
+        }
     }
 
     return {};
+}
+
+std::expected<void, DiagPtr> TranslateMExp_StringToQInstsWithNewScope(MExp_String* exp, std::optional<QArg_Slot> destSlot, QBodyContext& bodyContext)
+{
+    ScopeGuard guard{bodyContext};
+    return TranslateMExp_StringToQInsts(exp, move(destSlot), bodyContext);
 }
 
 } // namespace Citron

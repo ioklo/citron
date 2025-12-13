@@ -207,6 +207,6 @@ struct Error_Reference_CantReferenceThis : Error { }; // A3004_Reference_CantRef
 struct Error_NotSupported_LambdaParameterInference : Error { }; // A9901_NotSupported_LambdaParameterInference
 struct Error_NotSupported_LambdaReturnTypeInference : Error {}; // A9902_NotSupported_LambdaReturnTypeInference
 struct Error_NotImplemented : Error {};
-struct Error_NotRechable: Error {};
+struct Error_Unreachable: Error {};
 
 } // namespace Citron

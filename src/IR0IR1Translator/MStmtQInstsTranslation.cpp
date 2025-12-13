@@ -4,6 +4,8 @@
 #include "Infra/Expected.h"
 #include "Infra/Variants.h"
 
+#include "Logging/Diag.h"
+
 #include "MIR/MStmt.h"
 #include "QIR/QFactory.h"
 #include "QIR/QBlock.h"
@@ -18,6 +20,7 @@
 using namespace std;
 
 namespace Citron {
+
 
 class MStmtQInstsTranslator
 {
@@ -34,19 +37,20 @@ public:
     // command는 일단 넘깁시다
     ResultType Visit(MStmt_Command* stmt)
     {
+        ScopeGuard guard{bodyContext};
+
         auto* qStringType = bodyContext.GetStringQType();
         vector<QArg_Input> values;
         for(auto* command : stmt->commands)
         {
             auto slot = bodyContext.NewSlot(qStringType);
-            auto eResult = TranslateMExp_StringToQInsts(command, slot, bodyContext);
+            auto eResult = TranslateMExp_StringToQInstsWithNewScope(command, slot, bodyContext);
             RETURN_ON_ERROR(eResult);
 
             values.push_back(slot);
         }
 
-        bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Items, nullopt, move(values));
-        return {};
+        return bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Items, nullopt, move(values));
     }
     
     // 스택에 변수를 둔다.
@@ -54,9 +58,10 @@ public:
     {
         auto slotIndex = bodyContext.AddLocalVar(stmt->type, RName_Normal{stmt->name}, nullopt);
 
+        // TODO: initExp가 없어도, default constructor가 불려야 한다. 어떤 Constructor를 부를지는 IR0에서 결정한다
         if (stmt->initExp)
         {   
-            auto eInitResult = TranslateMExpToQInsts(stmt->initExp, QArg_Slot{slotIndex}, bodyContext);
+            auto eInitResult = TranslateMExpToQInstsWithNewScope(stmt->initExp, QArg_Slot{slotIndex}, bodyContext);
             RETURN_ON_ERROR(eInitResult);
         }
         return {};
@@ -84,7 +89,8 @@ public:
                 QBlock* endBlock = nullptr; // lazy init
 
                 // 3. add conditional jump
-                bodyContext.EmitInst(QInst_CondJump{condSlot, trueBlock, falseBlock});
+                auto eEmitResult = bodyContext.EmitTermInst(QInst_CondJump{condSlot, trueBlock, falseBlock});
+                RETURN_ON_ERROR(eEmitResult);
 
                 // 4. fill trueBlock
                 bodyContext.SetCurBlock(trueBlock);
@@ -92,10 +98,11 @@ public:
                 auto eTrueResult = TranslateMStmtsToQInstsWithNewScope(stmt->body, bodyContext);
                 RETURN_ON_ERROR(eTrueResult);
 
-                if (!bodyContext.CurBlockEndsWithTermInst())
+                if (!bodyContext.IsUnreachable())
                 {
                     if (!endBlock) endBlock = bodyContext.AddBlock("if_end");
-                    bodyContext.EmitInst(QInst_Jump{endBlock});
+                    auto eEmitTermInstResult = bodyContext.EmitTermInst(QInst_Jump{endBlock});
+                    RETURN_ON_ERROR(eEmitTermInstResult);
                 }
 
                 // 5. fill falseBlock
@@ -104,14 +111,16 @@ public:
                 auto eFalseResult = TranslateMStmtsToQInstsWithNewScope(stmt->elseBody, bodyContext);
                 RETURN_ON_ERROR(eFalseResult);
 
-                if (!bodyContext.CurBlockEndsWithTermInst())
+                if (!bodyContext.IsUnreachable())
                 {
                     if (!endBlock) endBlock = bodyContext.AddBlock("if_end");
-                    bodyContext.EmitInst(QInst_Jump{endBlock});
+                    auto eEmitTermInstResult = bodyContext.EmitTermInst(QInst_Jump{endBlock});
+                    RETURN_ON_ERROR(eEmitTermInstResult);
                 }
 
-                // 만약 endBlock이 없으면 unreachable인데..
-                bodyContext.SetCurBlock(endBlock);
+                // 만약 endBlock이 없으면 unreachable상태이고, 그럼 그냥 둔다
+                if (endBlock)
+                    bodyContext.SetCurBlock(endBlock);
             }
             else
             {
@@ -120,15 +129,19 @@ public:
                 auto* endBlock = bodyContext.AddBlock("if_end");
 
                 // 3. add conditional jump
-                bodyContext.EmitInst(QInst_CondJump{condSlot, trueBlock, endBlock});
+                auto eEmitTermInstResult = bodyContext.EmitTermInst(QInst_CondJump{condSlot, trueBlock, endBlock});
+                RETURN_ON_ERROR(eEmitTermInstResult);
 
                 // 4. fill trueBlock
                 bodyContext.SetCurBlock(trueBlock);
                 auto eTrueBlockResult = TranslateMStmtsToQInstsWithNewScope(stmt->body, bodyContext);
                 RETURN_ON_ERROR(eTrueBlockResult);
                 
-                if (!bodyContext.CurBlockEndsWithTermInst())
-                    bodyContext.EmitInst(QInst_Jump{endBlock});
+                if (!bodyContext.IsUnreachable())
+                {
+                    auto eEmitTermInstResult = bodyContext.EmitTermInst(QInst_Jump{endBlock});
+                    RETURN_ON_ERROR(eEmitTermInstResult);
+                }
 
                 bodyContext.SetCurBlock(endBlock);
             }
@@ -165,12 +178,16 @@ public:
             auto eResult = TranslateMExpToQInstsWithNewScope(stmt->exp, bodyContext.GetRetSlot(), bodyContext);
             RETURN_ON_ERROR(eResult);
 
-            bodyContext.EmitJumpToCleanUpForReturnBlock();
+            auto eEmitResult = bodyContext.EmitJumpToCleanUpForReturnBlock();
+            RETURN_ON_ERROR(eEmitResult);
+
             bodyContext.MarkReturnHandledOnCurScope();
         }
         else
         {
-            bodyContext.EmitJumpToCleanUpForReturnBlock();
+            auto eEmitResult = bodyContext.EmitJumpToCleanUpForReturnBlock();
+            RETURN_ON_ERROR(eEmitResult);
+
             bodyContext.MarkReturnHandledOnCurScope();
         }
 
@@ -195,7 +212,7 @@ public:
     ResultType Visit(MStmt_Exp* stmt)
     {
         ScopeGuard mainGuard{bodyContext};
-        auto eResult = TranslateMExpToQInsts(stmt->exp, nullopt, bodyContext);
+        auto eResult = TranslateMExpToQInstsWithNewScope(stmt->exp, nullopt, bodyContext);
         RETURN_ON_ERROR(eResult);
 
         return {};
@@ -254,12 +271,13 @@ public:
     }
 };
 
-expected<void, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, QBodyContext& qBodyContext)
-{
+expected<void, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, QBodyContext& bodyContext)
+{   
     for(auto* mStmt : mStmts)
     {
-        auto eResult = TranslateMStmtToQInsts(mStmt, qBodyContext);
-        if (!eResult) return unexpected{eResult.error()};
+        // unreachable 처리는 Emit이 실제로 일어날때 처리해야 한다. 여기서 처리하지 않는다
+        auto eResult = TranslateMStmtToQInsts(mStmt, bodyContext);
+        RETURN_ON_ERROR(eResult);
     }
 
     return {};
@@ -276,4 +294,5 @@ expected<void, DiagPtr> TranslateMStmtToQInsts(MStmt* mStmt, QBodyContext& qBody
     MStmtQInstsTranslator translator{qBodyContext};
     return Accept(translator, mStmt);
 }
+
 } // namespace Citron

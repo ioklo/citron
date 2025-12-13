@@ -57,20 +57,50 @@ class QPrinter
     {
         QPrinter& printer;
 
-        void operator()(QInst_InitString& inst)
+        void operator()(QInst_Ctor_String& inst)
         {
-            // init_string %a, "hello"            
-            printer.Print("init_string ");
+            // construct_string %a, "hello"            
+            printer.Print("construct_string");
             printer.PrintQArg_Slot(inst.slot);
             printer.Print(", ");
             printer.PrintStringLiteral(inst.text);
             printer.PrintLine();
         }
 
-        void operator()(QInst_DestroyString& inst)
+        void operator()(QInst_MoveCtor_String& inst)
+        {
+            // move_construct_string %dest, %src
+            printer.Print("move_construct_string ");
+            printer.PrintQArg_Slot(inst.slot);
+            printer.Print(", ");
+            printer.PrintQArg_Slot(inst.src);
+            printer.PrintLine();
+        }
+
+        void operator()(QInst_CopyAssign_String& inst)
+        {
+            // copy_assign_string %a
+            printer.Print("copy_assign_string ");
+            printer.PrintQArg_Slot(inst.dest);
+            printer.Print(", ");
+            printer.PrintQArg_Slot(inst.src);
+            printer.PrintLine();
+        }
+
+        void operator()(QInst_MoveAssign_String& inst)
+        {
+            // move_assign_string %a
+            printer.Print("move_assign_string ");
+            printer.PrintQArg_Slot(inst.dest);
+            printer.Print(", ");
+            printer.PrintQArg_Slot(inst.src);
+            printer.PrintLine();
+        }
+
+        void operator()(QInst_Dtor_String& inst)
         {
             // destroy_string %a
-            printer.Print("destroy_string ");
+            printer.Print("destruct_string ");
             printer.PrintQArg_Slot(inst.slot);
             printer.PrintLine();
         }

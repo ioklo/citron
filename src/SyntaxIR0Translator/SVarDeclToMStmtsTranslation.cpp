@@ -5,7 +5,8 @@
 #include "Infra/Ptr.h"
 #include "Infra/Unreachable.h"
 #include "Syntax/Syntax.h"
-#include "Logging/Logger.h"
+#include "Logging/Diag.h"
+
 #include "RSymbol/RTypes.h"
 #include "MIR/MStmt.h"
 
@@ -70,7 +71,7 @@ private:
         {
         case DeclTypeInfoKind::Normal:
             assert(false);
-            return unexpected{MakePtr<Error_NotRechable>()};
+            return unexpected{MakePtr<Error_Unreachable>()};
 
             // local, boxptr, localptr, nullable 인지 체크한다 
         case DeclTypeInfoKind::PlainVar:

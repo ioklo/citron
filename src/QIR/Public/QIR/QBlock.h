@@ -23,17 +23,15 @@ public:
     }
     
     std::string_view GetName() { return debugText; }
+    std::span<QInst> GetInsts() { return insts; }
+    QInst& GetInst(size_t index)
+    {
+        return insts[index];
+    }
 
     void EmitInst(QInst&& inst)
     {
         insts.push_back(std::move(inst));
-    }
-
-    std::span<QInst> GetInsts() { return insts; }
-
-    QInst& GetInst(size_t index)
-    {
-        return insts[index];
     }
 };
 

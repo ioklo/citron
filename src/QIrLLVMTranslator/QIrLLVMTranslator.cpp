@@ -682,12 +682,12 @@ private:
         visit([this](auto& qInst)
         {
             using T = remove_cvref_t<decltype(qInst)>;
-            if constexpr (same_as<T, QInst_InitString>) // InitString{string& dest, std::string text}
+            if constexpr (same_as<T, QInst_Ctor_String>) // InitString{string& dest, std::string text}
             {
                 auto* textPtr = builder.CreateGlobalString(qInst.text);
                 EmitRuntimeCall(LRuntimeFuncKind::StringInit, {slotValues[qInst.slot.index], textPtr});
             }
-            else if constexpr (same_as<T, QInst_DestroyString>)
+            else if constexpr (same_as<T, QInst_Dtor_String>)
             {
                 EmitRuntimeCall(LRuntimeFuncKind::StringDestroy, {slotValues[qInst.slot.index]});
             }

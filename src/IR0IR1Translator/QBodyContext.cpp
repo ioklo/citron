@@ -8,6 +8,9 @@
 #include "Infra/Unreachable.h"
 #include "Infra/Exceptions.h"
 #include "Infra/Variants.h"
+#include "Infra/Ptr.h"
+
+#include "Logging/Diag.h"
 
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFactory.h"
@@ -35,120 +38,9 @@ inline bool IsTerminator(QInst& inst)
 
 }
 
-QBlockWriter::QBlockWriter(const QFactoryPtr& qFactory, string&& firstBlockName)
-    : qFactory{qFactory}
-{
-    auto* firstBlock = qFactory->MakeQBlock(blocks.size(), format("b{}_{}", blocks.size(), move(firstBlockName)));
-    this->curBlock = firstBlock;
-    this->blocks.push_back(firstBlock);
-}
-
-QBlock* QBlockWriter::AddBlock(string&& debugText)
-{
-    auto* newBlock = qFactory->MakeQBlock(blocks.size(), format("b{}_{}", blocks.size(), move(debugText)));
-    blocks.push_back(newBlock);
-    return newBlock;
-}
-
-void QBlockWriter::SetCurBlock(QBlock* block)
-{
-    curBlock = block;
-}
-
-bool QBlockWriter::CurBlockEndsWithTermInst()
-{
-    auto inst = curBlock->GetInsts();
-    if (inst.empty()) return false;
-
-    return IsTerminator(inst.back());
-}
-
-void QBlockWriter::Verify()
-{
-    // blocks의 모든 block에 대해서
-    // 1. 모두 terminator로 끝나는지, block들이 비어있진 않은지 (terminator로 끝나면 비진 않았으니)
-    // 2. terminator가 여러번 들어갔는지
-    // 3. 그 entry부터 block으로 가는 path가 있는지 => 그래프 순회
-
-    // 1, 2 검사
-    for (auto* block : blocks)
-    {
-        auto insts = block->GetInsts();
-        assert(!insts.empty());
-
-        for (size_t i = 0, count = insts.size(); i < count; i++)
-        {
-            bool bLast = (i == count - 1);
-            bool bTerminator = IsTerminator(insts[i]);
-
-            // bLast: true, bTerminator: true
-            // bLast: false, bTerminator: false
-            assert(bLast == bTerminator);
-        }
-    }
-
-    // 3 검사
-    unordered_set<QBlock*> visited; // 큐잉을 포함해서, 한번 도달했는지
-    visited.reserve(blocks.size());
-
-    vector<QBlock*> stack;
-    stack.reserve(blocks.size()); // 이렇게 크게 갈리가 없는데
-
-    // front부터 시작해서 도달했는지 검사
-    visited.insert(blocks.front());
-    stack.push_back(blocks.front());
-
-    while (!stack.empty())
-    {
-        auto* block = stack.back();
-        stack.pop_back();
-
-        auto& termInst = block->GetInsts().back();
-        visit([&visited, &stack](auto& termInst)
-        {
-            using T = remove_cvref_t<decltype(termInst)>;
-
-            if constexpr (same_as<T, QInst_Jump>)
-            {
-                if (visited.find(termInst.block) == visited.end())
-                {
-                    visited.insert(termInst.block);
-                    stack.push_back(termInst.block);
-                }
-            }
-            else if constexpr (same_as<T, QInst_CondJump>)
-            {
-                if (visited.find(termInst.trueBlock) == visited.end())
-                {
-                    visited.insert(termInst.trueBlock);
-                    stack.push_back(termInst.trueBlock);
-                }
-
-                if (visited.find(termInst.falseBlock) == visited.end())
-                {
-                    visited.insert(termInst.falseBlock);
-                    stack.push_back(termInst.falseBlock);
-                }
-            }
-            else if constexpr(same_as<T, QInst_Return>)
-            {
-                // no exit
-            }
-            else
-            {
-                assert(false);
-            }
-
-        }, termInst);
-    }
-
-    assert(visited.size() == blocks.size()); // 모두 도달했어야
-}
-
 QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType)
     : rFactory{rFactory}
     , qFactory{qFactory}
-    , QBlockWriter{qFactory, "body"}
 {
     scopes.emplace_back();
     curScope = &scopes.back();
@@ -157,7 +49,8 @@ QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFact
     if (qRetType != qFactory->MakeVoidType())
         retSlot = NewSlot(qRetType);
 
-    bodyBlock = QBlockWriter::GetCurBlock();
+    auto* firstBlock = AddBlock("entry");
+    this->curBlock = firstBlock;
 }
 
 // GetIntrinsicResultType
@@ -219,24 +112,55 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
     throw NotImplementedException{};
 }
 
-void QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Slot> oDest, std::vector<QArg_Input>&& args)
+QBlock* QBodyContext::AddBlock(std::string&& debugText)
+{
+    auto* newBlock = qFactory->MakeQBlock(blocks.size(), format("b{}_{}", blocks.size(), move(debugText)));
+    blocks.push_back(newBlock);
+    return newBlock;
+}
+
+expected<void, DiagPtr> QBodyContext::EmitInstInternal(QInst&& inst)
+{
+    if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
+
+    curBlock->EmitInst(std::move(inst));
+    return {};
+}
+
+expected<void, DiagPtr> QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Slot> oDest, std::vector<QArg_Input>&& args)
 {
     auto resultType = GetIntrinsicResultType(kind);
-    if (auto* slotResultType = get_if<QIntrinsicResultType_Slot>(&resultType))
-    {
-        QArg_Slot resultSlot = [this, &oDest, slotResultType] {
-            if (oDest) return *oDest;
-            return NewSlot(slotResultType->qType);
-        }();
+    return visit([this, kind, &oDest, &args](auto& resultType) -> expected<void, DiagPtr>{
+        using T = remove_cvref_t<decltype(resultType)>;
 
-        QBlockWriter::EmitInst(QInst_Intrinsic{kind, resultSlot, move(args)});
-    }
-    else if (auto* voidResultType = get_if<QIntrinsicKindResult_Void>(&resultType))
-    {
-        assert(!oDest);
-        QBlockWriter::EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
-    }
-    else unreachable();
+        if constexpr (same_as<T, QIntrinsicResultType_Slot>)
+        {
+            QArg_Slot resultSlot = oDest ? *oDest : NewSlot(resultType.qType);
+
+            if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
+            curBlock->EmitInst(QInst_Intrinsic{kind, resultSlot, move(args)});
+            return {};
+        }
+        else if constexpr (same_as<T, QIntrinsicKindResult_Void>)
+        {
+            assert(!oDest);
+
+            if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
+            curBlock->EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
+            return {};
+        }
+        else static_assert(false);
+        
+    }, resultType);
+}
+
+std::expected<void, DiagPtr> QBodyContext::EmitTermInst(QTermInst&& termInst)
+{
+    if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
+
+    curBlock->EmitInst(Cast<QInst>(termInst));
+    curBlock = nullptr;
+    return {};
 }
 
 QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
@@ -250,15 +174,15 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
 
         // TODO: String을 세는게 아니라, 각 타입의 소멸자가 있는지 검사
         QBlock* newCleanUpForRet = nullptr;
-        for (size_t i = scope.coveredSlots, end = i < scope.slotIndices.size(); i < end; i++)
+        for (size_t i = scope.coveredSlots, end = scope.slotIndices.size(); i < end; i++)
         {
             size_t slotIndex = scope.slotIndices[i];
             if (slotInfos[slotIndex].qType == GetStringQType())
             {
                 if (newCleanUpForRet == nullptr)
-                    newCleanUpForRet = QBlockWriter::AddBlock("cleanUpForRet"); // TODO: 뒤에 디버그용 번호 붙이기
+                    newCleanUpForRet = AddBlock("cleanUpForRet"); // TODO: 뒤에 디버그용 번호 붙이기
 
-                newCleanUpForRet->EmitInst(QInst_DestroyString{QArg_Slot{slotIndex}});
+                newCleanUpForRet->EmitInst(QInst_Dtor_String{QArg_Slot{slotIndex}});
             }
         }
 
@@ -302,7 +226,7 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
     else // 0이면?
     {
         // 바로 리턴 블록 생성
-        auto* retBlock = QBlockWriter::AddBlock("cleanUpForRet");
+        auto* retBlock = AddBlock("cleanUpForRet");
         if (retSlot)
             retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[retSlot->index].qType, *retSlot}});
         else
@@ -312,10 +236,15 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
     }
 }
 
-void QBodyContext::EmitJumpToCleanUpForReturnBlock()
+expected<void, DiagPtr> QBodyContext::EmitJumpToCleanUpForReturnBlock()
 {
+    if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
+
     auto* cleanUpForRetBlock = MakeCleanUpForReturnBlock(scopes.size() - 1);
-    QBlockWriter::EmitTerminateBlock(QInst_Jump{cleanUpForRetBlock});
+    curBlock->EmitInst(QInst_Jump{cleanUpForRetBlock});
+    curBlock = nullptr;
+
+    return {};
 }
 
 QType* QBodyContext::GetMExpQType(MExp* mExp)
@@ -436,9 +365,86 @@ QArg_Slot QBodyContext::NewSlotForMExp(MExp* exp)
     return NewSlot(qType);
 }
 
-void QBodyContext::CompleteFunc()
-{   
-    QBlockWriter::Verify();
+void QBodyContext::VerifyBlocks()
+{
+    // blocks의 모든 block에 대해서
+    // 1. 모두 terminator로 끝나는지, block들이 비어있진 않은지 (terminator로 끝나면 비진 않았으니)
+    // 2. terminator가 여러번 들어갔는지
+    // 3. 그 entry부터 block으로 가는 path가 있는지 => 그래프 순회
+
+    // 1, 2 검사
+    for (auto* block : blocks)
+    {
+        auto insts = block->GetInsts();
+        assert(!insts.empty());
+
+        for (size_t i = 0, count = insts.size(); i < count; i++)
+        {
+            bool bLast = (i == count - 1);
+            bool bTerminator = IsTerminator(insts[i]);
+
+            // bLast: true, bTerminator: true
+            // bLast: false, bTerminator: false
+            assert(bLast == bTerminator);
+        }
+    }
+
+    // 3 검사
+    unordered_set<QBlock*> visited; // 큐잉을 포함해서, 한번 도달했는지
+    visited.reserve(blocks.size());
+
+    vector<QBlock*> stack;
+    stack.reserve(blocks.size()); // 이렇게 크게 갈리가 없는데
+
+    // front부터 시작해서 도달했는지 검사
+    visited.insert(blocks.front());
+    stack.push_back(blocks.front());
+
+    while (!stack.empty())
+    {
+        auto* block = stack.back();
+        stack.pop_back();
+
+        auto& termInst = block->GetInsts().back();
+        visit([&visited, &stack](auto& termInst)
+        {
+            using T = remove_cvref_t<decltype(termInst)>;
+
+            if constexpr (same_as<T, QInst_Jump>)
+            {
+                if (visited.find(termInst.block) == visited.end())
+                {
+                    visited.insert(termInst.block);
+                    stack.push_back(termInst.block);
+                }
+            }
+            else if constexpr (same_as<T, QInst_CondJump>)
+            {
+                if (visited.find(termInst.trueBlock) == visited.end())
+                {
+                    visited.insert(termInst.trueBlock);
+                    stack.push_back(termInst.trueBlock);
+                }
+
+                if (visited.find(termInst.falseBlock) == visited.end())
+                {
+                    visited.insert(termInst.falseBlock);
+                    stack.push_back(termInst.falseBlock);
+                }
+            }
+            else if constexpr (same_as<T, QInst_Return>)
+            {
+                // no exit
+            }
+            else
+            {
+                assert(false);
+            }
+
+        }, termInst);
+    }
+
+    assert(visited.size() == blocks.size()); // 모두 도달했어야
 }
 
 QType* QBodyContext::GetReturnQType(RFuncDecl* rFuncDecl, RTypeArguments& typeArgs)
@@ -479,7 +485,8 @@ void QBodyContext::CleanUpScope()
         // TODO: HARD CODED
         if (slotInfos[slotIndex].qType == qFactory->MakeStringType())
         {
-            QBlockWriter::EmitInst(QInst_DestroyString{QArg_Slot{slotIndex}});
+            assert(curBlock);
+            curBlock->EmitInst(QInst_Dtor_String{QArg_Slot{slotIndex}});
         }
     }
 }

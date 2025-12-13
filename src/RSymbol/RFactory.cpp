@@ -22,7 +22,7 @@ RFactory::RFactory()
     // 아직 MakeStructType, MakeClassType과는 연결이 되지 않은 상태
     boolType = unique_ptr<RType_Struct>(new RType_Struct(nullptr, MakeTypeArguments({})));
     intType = unique_ptr<RType_Struct>(new RType_Struct(nullptr, MakeTypeArguments({})));
-    stringType = unique_ptr<RType_Class>(new RType_Class(nullptr, MakeTypeArguments({})));
+    stringType = unique_ptr<RType_Struct>(new RType_Struct(nullptr, MakeTypeArguments({})));
 }
 
 RFactory::~RFactory()

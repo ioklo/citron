@@ -442,6 +442,7 @@ void GenerateEvalTests(path basePath)
 #include "QIR/QPrinter.h"
 
 #include "QEvaluator/QEvaluation.h"
+#include "QIrLLVMTranslator/QIrLLVMTranslator.h"
 
 using namespace std;
 using namespace Citron;
@@ -492,6 +493,12 @@ void DoTest(const string& code, const string& expected)
     PrintQData(qData, writer, *qFactory);
     auto out = writer.ToString();
 
+    // LLVM
+    Citron::LContext lContext{rFactory, qFactory};
+    auto lData = TranslateQDataToLData(qData, lContext);
+
+    // 실행
+    
     // "Main" 찾기
     NGlobalFuncDecl* nEntry = nullptr;
     for (auto& body : qData->GetAllBodies())
@@ -511,7 +518,10 @@ void DoTest(const string& code, const string& expected)
     ASSERT_TRUE(eResult);
 
     // 
-    EXPECT_EQ(commandHandler->GetOutput(), expected);
+    ASSERT_EQ(commandHandler->GetOutput(), expected);
+
+
+    // 
 }
 )---";
 

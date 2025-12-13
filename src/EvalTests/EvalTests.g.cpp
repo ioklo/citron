@@ -85,8 +85,7 @@ void DoTest(const string& code, const string& expected)
     auto lData = TranslateQDataToLData(qData, lContext);
 
     // 실행
-
-
+    
     // "Main" 찾기
     NGlobalFuncDecl* nEntry = nullptr;
     for (auto& body : qData->GetAllBodies())
@@ -110,9 +109,6 @@ void DoTest(const string& code, const string& expected)
 
 
     // 
-
-
-
 }
 TEST(Assign_Expression, Basic) 
 {
@@ -2199,6 +2195,20 @@ TEST(String, Basic)
 
 )---";
     string expected = R"---(hi hello world world true true false false onetwo true false true true false false true false true true)---";
+
+    DoTest(code, expected);
+}
+
+TEST(String_Expression, Concat) 
+{
+    auto code = R"---(void Main()
+{
+    string a = "hell";
+    string b = a + "o";
+    @$b
+}
+)---";
+    string expected = R"---(hello)---";
 
     DoTest(code, expected);
 }

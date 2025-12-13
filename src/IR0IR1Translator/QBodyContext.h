@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <span>
 #include <optional>
+#include <expected>
+#include <cassert>
 
 #include "RSymbol/RNames.h"
 
@@ -19,26 +21,9 @@ class RType;
 class RTypeArguments;
 struct QSlotInfo;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
+using DiagPtr = std::shared_ptr<struct Diag>;
 
 enum class QInst_IntrinsicKind;
-
-class QBlockWriter
-{
-    QBlock* curBlock;
-    std::vector<QBlock*> blocks;
-    QFactoryPtr qFactory;
-
-public:
-    QBlockWriter(const QFactoryPtr& qFactory, std::string&& blockName);
-    QBlock* AddBlock(std::string&& debugText);
-
-    QBlock* GetCurBlock() { return curBlock; }
-    std::span<QBlock*> GetBlocks() { return blocks; }
-    void SetCurBlock(QBlock* block);
-    void Verify();
-
-    bool CurBlockEndsWithTermInst();
-};
 
 struct QLocalVarInfo
 {
@@ -67,37 +52,49 @@ using QIntrinsicResultType = std::variant<
     QIntrinsicResultType_Slot,
     QIntrinsicKindResult_Void>;
 
-class QBodyContext : QBlockWriter
+class QBodyContext
 {
     RFactoryPtr rFactory;
     QFactoryPtr qFactory;
 
     // 함수의 스택 변수
-    QBlock* bodyBlock;
     QScope* curScope;
     std::vector<QSlotInfo> slotInfos;
     std::vector<QScope> scopes;
     std::optional<QArg_Slot> retSlot; // 함수의 반환값 slot
+
+    QBlock* curBlock;
+    std::vector<QBlock*> blocks;
 
 public:
     QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType);
 
     QIntrinsicResultType GetIntrinsicResultType(QInst_IntrinsicKind kind);
 
-    QBlock* AddBlock(std::string&& debugText) { return QBlockWriter::AddBlock(std::move(debugText)); }
-    template<typename TQInst, typename... TArgs> 
-        requires std::convertible_to<TQInst, QInst>
-            && (!std::same_as<TQInst, QInst_Intrinsic>)
-    void EmitInst(TQInst&& inst)
-    {
-        QBlockWriter::GetCurBlock()->EmitInst(std::move(inst));
-    }
-    void EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> oDest, std::vector<QArg_Input>&& args);
-    QBlock* MakeCleanUpForReturnBlock(size_t scopeIndex);
-    void EmitJumpToCleanUpForReturnBlock();
+    QBlock* AddBlock(std::string&& debugText);
+    void SetCurBlock(QBlock* block) { assert(block); curBlock = block; } // SetCurBlock으로 Unreachable 상태를 만들지 않도록 한다
+    QBlock* GetCurBlock() { return curBlock; }
+    bool IsUnreachable() { return curBlock == nullptr; }
 
-    void SetCurBlock(QBlock* block) { QBlockWriter::SetCurBlock(block); }
-    bool CurBlockEndsWithTermInst() { return QBlockWriter::CurBlockEndsWithTermInst(); }
+private:
+    std::expected<void, DiagPtr> EmitInstInternal(QInst&& inst);
+
+public:
+    template<typename TQInst, typename... TArgs> 
+        requires std::convertible_to<TQInst, QInst> 
+            && (!std::same_as<TQInst, QInst_Intrinsic>)
+            && (!std::convertible_to<TQInst, QTermInst>)
+    std::expected<void, DiagPtr> EmitInst(TQInst&& inst)
+    {   
+        return EmitInstInternal(std::forward<TQInst>(inst));
+    }
+    std::expected<void, DiagPtr> EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> oDest, std::vector<QArg_Input>&& args);
+    std::expected<void, DiagPtr> EmitTermInst(QTermInst&& termInst);
+    
+private:
+    QBlock* MakeCleanUpForReturnBlock(size_t scopeIndex);
+public:
+    std::expected<void, DiagPtr> EmitJumpToCleanUpForReturnBlock();
 
 public:
     QType* GetMExpQType(MExp* mExp);    
@@ -116,11 +113,10 @@ public:
 
     QArg_Slot NewSlot(QType* qType);
     std::span<QSlotInfo> GetStackSlotInfos() { return slotInfos; }
-    std::span<QBlock*> GetBlocks() { return QBlockWriter::GetBlocks(); }
+    std::span<QBlock*> GetBlocks() { return blocks; }
 
     QArg_Slot NewSlotForMExp(MExp* exp);
-
-    void CompleteFunc();
+    void VerifyBlocks();
 
     QType* GetReturnQType(RFuncDecl* rFuncDecl, RTypeArguments& typeArgs);
     bool IsVoidQType(QType* qType);

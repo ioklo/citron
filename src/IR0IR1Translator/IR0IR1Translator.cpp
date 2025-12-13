@@ -65,7 +65,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
         }
     }
 
-    bodyContext.CompleteFunc();
+    bodyContext.VerifyBlocks();
     return QFuncBody{
         mFuncBody.nFuncDecl, 
         bodyContext.GetStackSlotInfos() | ranges::to<vector>(), 
