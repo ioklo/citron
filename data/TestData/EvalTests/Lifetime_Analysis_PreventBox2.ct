@@ -1,9 +1,9 @@
 //@ $Error
 struct S
 {
-    seq int F(int* i)
+    seq int F(int& i)
     {
-        yield *i;        
+        yield i;
     }
 }
 

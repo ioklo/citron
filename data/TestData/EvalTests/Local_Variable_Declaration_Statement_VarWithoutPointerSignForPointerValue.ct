@@ -1,10 +1,11 @@
 //@ $Error
 void Main()
 {
+    // var는 &, box, shared를 inference해주지 않기 때문에 직접 붙여야 한다
     var i = 3;
-    var x = &i; // 에러
-    var y = box 3; // 에러
+    var x = &i; // 에러, ptr인지, shared인지 명확하지 않다. ptr로 하고 싶으면 var* x = &i; shared로 하고 싶으면 shared var x = &i; (물론 에러)
+    var y = box 3; // 에러, box var y
 
 	int? i = 3;
-    var optI = i; // 에러
+    var optI = i; // 에러, var?
 }

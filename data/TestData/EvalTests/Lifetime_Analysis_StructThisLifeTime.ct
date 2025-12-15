@@ -4,14 +4,14 @@ struct S
 {
     int x;
 
-    int* GetX()
+    int& GetX()
     {
-        return &x; // this의 라이프 타임
+        return x; // this의 라이프 타임
     }
 }
 
 var s = S(3);
-var* x = s.GetX();
-*x = 4;
+var& x = s.GetX();
+x = 4;
 
 @${s.x}

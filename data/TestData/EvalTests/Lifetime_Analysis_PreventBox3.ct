@@ -3,9 +3,9 @@ struct S
 {
     int x;
 
-    int* F()
+    yield int F()
     {
-        return &x;
+        return x;
     }
 }
 

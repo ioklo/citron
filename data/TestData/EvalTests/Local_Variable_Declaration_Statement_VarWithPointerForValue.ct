@@ -2,5 +2,5 @@
 void Main()
 {
     int a = 0;
-    var* x = &a, y = 3; // 에러
+    var& x = a, y = 3; // 에러
 }

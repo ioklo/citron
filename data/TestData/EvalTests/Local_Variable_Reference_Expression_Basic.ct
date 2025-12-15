@@ -2,7 +2,7 @@
 void Main()
 {
     int s = 3;
-    var* i = &s; // LocalVarRefExp(LocalVar("i"))
+    var& i = s;
 
     @{${*i}}
 }

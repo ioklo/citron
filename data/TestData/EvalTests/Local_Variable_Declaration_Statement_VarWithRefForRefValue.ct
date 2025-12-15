@@ -2,8 +2,8 @@
 void Main()
 {
     var i = 3;
-    var* x = &i;
-    box var* y = box 3;
+    var& x = i;
+    box var y = box 3;
 
 	int? i = null;
     var? optI = i;
