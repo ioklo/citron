@@ -34,7 +34,11 @@ enum class LRuntimeFuncKind
     Command,
     BoolToString,
     IntToString,
-    StringInit,
+    StringCtor,
+    StringCopyCtor,
+    StringMoveCtor,
+    StringCopyAssign,
+    StringMoveAssign,
     StringDestroy,
     StringConcat,
     StringLessThan,
@@ -42,6 +46,7 @@ enum class LRuntimeFuncKind
     StringLessThanOrEqual,
     StringGreaterThanOrEqual,
     StringEquals,
+    Count,
 };
 
 class LContextImpl
@@ -152,131 +157,138 @@ string RNameToString2(const RName& name)
 
 class LModuleContext
 {   
-    struct RuntimeFuncEntry
-    {
-        llvm::Function* func;
-        std::function<llvm::Function* (llvm::Module& _module, LContextImpl& lContextImpl)> ctor;
+    using RuntimeFuncCtorContainer = array<llvm::Function* (LModuleContext::*)(llvm::Module&, LContextImpl&), (size_t)LRuntimeFuncKind::Count>;
+    RuntimeFuncCtorContainer runtimeFuncCtors;
+    array<llvm::Function*, (size_t)LRuntimeFuncKind::Count> runtimeFuncs;
+    
+    void InitRuntimeFuncCtors()
+    {   
+        using enum LRuntimeFuncKind;
 
-        RuntimeFuncEntry(std::function<llvm::Function* (llvm::Module& _module, LContextImpl& lContextImpl)> ctor)
-            : func{nullptr}, ctor{move(ctor)}
-        {
-        }
-    };
+        runtimeFuncCtors[(size_t)Command] = &LModuleContext::Init_Command;
+        runtimeFuncCtors[(size_t)BoolToString] = &LModuleContext::Init_BoolToString;
+        runtimeFuncCtors[(size_t)IntToString] = &LModuleContext::Init_IntToString;
+        runtimeFuncCtors[(size_t)StringCtor] = &LModuleContext::Init_StringCtor;
+        runtimeFuncCtors[(size_t)StringCopyCtor] = &LModuleContext::Init_StringCopyCtor;
+        runtimeFuncCtors[(size_t)StringMoveCtor] = &LModuleContext::Init_StringMoveCtor;
+        runtimeFuncCtors[(size_t)StringCopyAssign] = &LModuleContext::Init_StringCopyAssign;
+        runtimeFuncCtors[(size_t)StringMoveAssign] = &LModuleContext::Init_StringMoveAssign;
+        runtimeFuncCtors[(size_t)StringDestroy] = &LModuleContext::Init_StringDestroy;
+        runtimeFuncCtors[(size_t)StringConcat] = &LModuleContext::Init_StringConcat;
+        runtimeFuncCtors[(size_t)StringLessThan] = &LModuleContext::Init_StringLessThan;
+        runtimeFuncCtors[(size_t)StringGreaterThan] = &LModuleContext::Init_StringGreaterThan;
+        runtimeFuncCtors[(size_t)StringLessThanOrEqual] = &LModuleContext::Init_StringLessThanOrEqual;
+        runtimeFuncCtors[(size_t)StringGreaterThanOrEqual] = &LModuleContext::Init_StringGreaterThanOrEqual;
+        runtimeFuncCtors[(size_t)StringEquals] = &LModuleContext::Init_StringEquals;
 
-    unordered_map<LRuntimeFuncKind, RuntimeFuncEntry> runtimeFuncs;
+        for (auto& ctor : runtimeFuncCtors)
+            assert(ctor);
+    }
 
 public:
-    void InitRuntimeFuncs()
+    LModuleContext()
     {   
-        {
-            // void citron_command(string*);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_command", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::Command, move(ctor));
-        }
-
-        {
-            // citron_bool_to_string(void* dest, bool value);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetBoolType()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_bool_to_string", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::BoolToString, move(ctor));
-        }
-
-        {
-            // void citron_int_to_string(void* dest, int value);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetInt32Type()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_int_to_string", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::IntToString, move(ctor));
-        }
-
-        {
-            // void citron_string_init(string* dest, const char* text);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_init", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::StringInit, move(ctor));
-        }
-
-        {
-            // void citron_string_destroy(string* dest);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_destroy", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::StringDestroy, move(ctor));
-        }
-
-        {
-            // void citron_string_concat(string* dest, string* x, string* y);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_concat", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::StringConcat, move(ctor));
-        }
-
-        {
-            // bool citron_string_less_than(string* x, string* y);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetBoolType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_less_than", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::StringLessThan, move(ctor));
-        }
-
-        {
-            // bool citron_string_greater_than(string* x, string* y);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetBoolType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_greater_than", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::StringGreaterThan, move(ctor));
-        }
-
-        {
-            // bool citron_string_less_than_eq(string* x, string* y);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetBoolType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_less_than_eq", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::StringLessThanOrEqual, move(ctor));
-        }
-
-        {
-            // bool citron_string_greater_than_eq(string* x, string* y);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetBoolType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_greater_than_eq", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::StringGreaterThanOrEqual, move(ctor));
-        }
-
-        {
-            // bool citron_string_eq(string* x, string* y);
-            auto ctor = [](llvm::Module& _module, LContextImpl& lContextImpl) {
-                auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetBoolType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
-                return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_eq", _module);
-            };
-            runtimeFuncs.try_emplace(LRuntimeFuncKind::StringEquals, move(ctor));
-        }
+        InitRuntimeFuncCtors();
     }
+
     llvm::Function* GetRuntimeFunc(LRuntimeFuncKind kind, llvm::Module& _module, LContextImpl& lContextImpl)
     {
-        auto i = runtimeFuncs.find(kind);
-        assert(i != runtimeFuncs.end());
+        auto& runtimeFunc = runtimeFuncs[(size_t)kind];
+        if (runtimeFunc) return runtimeFunc;
 
-        if (i->second.func) 
-            return i->second.func;
+        runtimeFunc = (this->*runtimeFuncCtors[(size_t)kind])(_module, lContextImpl);
+        return runtimeFunc;
+    }
 
-        i->second.func = i->second.ctor(_module, lContextImpl);
-        return i->second.func;
+private:
+    llvm::Function* Init_Command(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_command", _module);
+    }
+
+    llvm::Function* Init_BoolToString(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetBoolType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_bool_to_string", _module);
+    }
+
+    llvm::Function* Init_IntToString(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetInt32Type()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_int_to_string", _module);
+    }
+
+    llvm::Function* Init_StringCtor(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_ctor", _module);
+    }
+
+    llvm::Function* Init_StringCopyCtor(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_copy_ctor", _module);
+    }
+
+    llvm::Function* Init_StringMoveCtor(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_move_ctor", _module);
+    }
+
+    llvm::Function* Init_StringCopyAssign(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_copy_assign", _module);
+    }
+
+    llvm::Function* Init_StringMoveAssign(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_move_assign", _module);
+    }
+
+    llvm::Function* Init_StringDestroy(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_dtor", _module);
+    }
+
+    llvm::Function* Init_StringConcat(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetVoidType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_concat", _module);
+    }
+
+    llvm::Function* Init_StringLessThan(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetBoolType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_less_than", _module);
+    }
+
+    llvm::Function* Init_StringGreaterThan(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetBoolType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_greater_than", _module);
+    }
+
+    llvm::Function* Init_StringLessThanOrEqual(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetBoolType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_less_than_eq", _module);
+    }
+
+    llvm::Function* Init_StringGreaterThanOrEqual(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetBoolType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_greater_than_eq", _module);
+    }
+
+    llvm::Function* Init_StringEquals(llvm::Module& _module, LContextImpl& lContextImpl)
+    {
+        auto* rtFuncTy = llvm::FunctionType::get(lContextImpl.GetBoolType(), {lContextImpl.GetPtrType(), lContextImpl.GetPtrType()}, /*isVarArg*/false);
+        return llvm::Function::Create(rtFuncTy, llvm::Function::ExternalLinkage, "citron_string_eq", _module);
     }
 };
 
@@ -677,79 +689,96 @@ private:
         }
     }
 
+    struct Emitter
+    {
+        QFuncBodyToLFuncTranslator& self;
+
+        void operator()(auto& inst) { Emit(inst); }
+
+        void Emit(QInst_Ctor_String& qInst)
+        {
+            auto* textPtr = self.builder.CreateGlobalString(qInst.text);
+            self.EmitRuntimeCall(LRuntimeFuncKind::StringCtor, {self.slotValues[qInst.slot.index], textPtr});
+        }
+
+        void Emit(QInst_CopyCtor_String& qInst)
+        {
+            self.EmitRuntimeCall(LRuntimeFuncKind::StringCtor, {self.slotValues[qInst.slot.index], emptyStrPtr});
+        }
+
+        void Emit(QInst_Dtor_String& qInst)
+        {
+            self.EmitRuntimeCall(LRuntimeFuncKind::StringDestroy, {self.slotValues[qInst.slot.index]});
+        }
+
+        void Emit(QInst_Load& qInst)
+        {
+            auto* lPtrValueType = self.lContextImpl.GetPtrType();
+            auto* lPtrValue = self.builder.CreateLoad(self.lContextImpl.GetPtrType(), self.slotValues[qInst.src.index]);
+            auto* lValueType = self.lContextImpl.GetType(qInst.type);
+            auto* lValue = self.builder.CreateLoad(lValueType, lPtrValue);
+
+            self.builder.CreateStore(lValue, self.slotValues[qInst.dest.index]);
+        }
+
+        void Emit(QInst_Store& qInst)
+        {
+            auto* lValue = self.GetValue(qInst.src, qInst.type);
+            auto* lPtrValue = self.builder.CreateLoad(self.lContextImpl.GetPtrType(), self.slotValues[qInst.dest.index]);
+            self.builder.CreateStore(lValue, lPtrValue);
+        }
+
+        void Emit(QInst_AddrOf& qInst)
+        {
+            auto* lPtrValue = self.builder.CreateLoad(self.lContextImpl.GetPtrType(), self.slotValues[qInst.dest.index]);
+            self.builder.CreateStore(self.slotValues[qInst.slot.index], lPtrValue);
+        }
+
+        void Emit(QInst_Assign& qInst)
+        {
+            auto* lValue = self.GetValue(qInst.src, qInst.type);
+            self.builder.CreateStore(lValue, self.slotValues[qInst.dest.index]);
+        }
+
+        void Emit(QInst_Call&)
+        {
+            throw NotImplementedException{};
+        }
+
+        void Emit(QInst_Return& qInst)
+        {
+            if (!qInst.oValue)
+            {
+                self.builder.CreateRetVoid();
+            }
+            else
+            {
+                auto* v = self.GetValue(qInst.oValue->value, qInst.oValue->qType);
+                self.builder.CreateRet(v);
+            }
+        }
+
+        void Emit(QInst_Intrinsic& qInst)
+        {
+            self.EmitIntrinsic(qInst);
+        }
+
+        void Emit(QInst_CondJump& qInst)
+        {
+            auto* lCond = self.builder.CreateLoad(self.lContextImpl.GetBoolType(), self.slotValues[qInst.cond.index]);
+            self.builder.CreateCondBr(lCond, self.lBlocksByQBlock[qInst.trueBlock], self.lBlocksByQBlock[qInst.falseBlock]);
+        }
+
+        void Emit(QInst_Jump& qInst)
+        {
+            self.builder.CreateBr(self.lBlocksByQBlock[qInst.block]);
+        }
+    };
+
     void Emit(QInst& qInst)
     {
-        visit([this](auto& qInst)
-        {
-            using T = remove_cvref_t<decltype(qInst)>;
-            if constexpr (same_as<T, QInst_Ctor_String>) // InitString{string& dest, std::string text}
-            {
-                auto* textPtr = builder.CreateGlobalString(qInst.text);
-                EmitRuntimeCall(LRuntimeFuncKind::StringInit, {slotValues[qInst.slot.index], textPtr});
-            }
-            else if constexpr (same_as<T, QInst_Dtor_String>)
-            {
-                EmitRuntimeCall(LRuntimeFuncKind::StringDestroy, {slotValues[qInst.slot.index]});
-            }
-            else if constexpr (same_as<T, QInst_Load>)
-            {
-                auto* lPtrValueType = lContextImpl.GetPtrType();
-                auto* lPtrValue = builder.CreateLoad(lContextImpl.GetPtrType(), slotValues[qInst.src.index]);
-                auto* lValueType = lContextImpl.GetType(qInst.type);
-                auto* lValue = builder.CreateLoad(lValueType, lPtrValue);
-
-                // 1:1변환이므로, 다시 slot에 저장한다
-                builder.CreateStore(lValue, slotValues[qInst.dest.index]);
-            }
-            else if constexpr (same_as<T, QInst_Store>)
-            {
-                // source가 뭐냐에따라 달라진다
-                auto* lValue = GetValue(qInst.src, qInst.type);
-                auto* lPtrValue = builder.CreateLoad(lContextImpl.GetPtrType(), slotValues[qInst.dest.index]);
-                builder.CreateStore(lValue, lPtrValue);
-            }
-            else if constexpr (same_as<T, QInst_AddrOf>)
-            {   
-                auto* lPtrValue = builder.CreateLoad(lContextImpl.GetPtrType(), slotValues[qInst.dest.index]);
-                builder.CreateStore(slotValues[qInst.slot.index], lPtrValue);
-            }
-            else if constexpr (same_as<T, QInst_Assign>)
-            {
-                // source가 뭐냐에따라 달라진다
-                auto* lValue = GetValue(qInst.src, qInst.type);
-                builder.CreateStore(lValue, slotValues[qInst.dest.index]);
-            }
-            else if constexpr (same_as<T, QInst_Call>)
-            {
-                throw NotImplementedException{};
-            }
-            else if constexpr (same_as<T, QInst_Return>) 
-            {
-                if (!qInst.oValue)
-                {
-                    builder.CreateRetVoid();
-                }
-                else
-                {
-                    auto* v = GetValue(qInst.oValue->value, qInst.oValue->qType);
-                    builder.CreateRet(v);
-                }
-            }
-            else if constexpr (same_as<T, QInst_Intrinsic>)
-            {
-                EmitIntrinsic(qInst);
-            }
-            else if constexpr (same_as<T, QInst_CondJump>)
-            {
-                auto* lCond = builder.CreateLoad(lContextImpl.GetBoolType(), slotValues[qInst.cond.index]);
-                builder.CreateCondBr(lCond, lBlocksByQBlock[qInst.trueBlock], lBlocksByQBlock[qInst.falseBlock]);
-            }
-            else if constexpr (same_as<T, QInst_Jump>)
-            {
-                builder.CreateBr(lBlocksByQBlock[qInst.block]);
-            }
-            else static_assert(false);
-        }, qInst);
+        Emitter emitter{*this};
+        visit(emitter, qInst);
     }
 
 public:
@@ -847,8 +876,6 @@ LData TranslateQDataToLData(QData* qData, LContext& lContext)
     auto _module = make_unique<llvm::Module>("MyModule", lContextImpl.context);
 
     LModuleContext lModuleContext;
-    lModuleContext.InitRuntimeFuncs();
-
     for (auto& qFuncBody : qData->GetAllBodies())
     {   
         llvm::IRBuilder<> builder{lContextImpl.context};

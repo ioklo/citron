@@ -10,12 +10,17 @@ namespace Citron {
 class RFuncDecl;
 class QBlock;
 
-// TODO: 일반 struct type에 대해 construct하는 걸로 바꿀 예정
-// construct_string %slot, "hello"
+// construct <string>, %slot, "hello"
 struct QInst_Ctor_String
 {
     QArg_Slot slot;
     std::string text; // TODO: ptr이 들어가는 slot으로 바꾸고, Global Ptr을 넣는 방식으로 바꾼 다음, Intrinsic으로 넣기. QData에는 GlobalString을 넣고, index로 참조하기
+};
+
+struct QInst_CopyCtor_String
+{
+    QArg_Slot slot;
+    QArg_Slot src;
 };
 
 struct QInst_MoveCtor_String
@@ -157,7 +162,7 @@ struct QInst_Jump
 
 using QInst = std::variant<
     QInst_Ctor_String,
-    // QInst_CopyCtor_String,
+    QInst_CopyCtor_String,
     QInst_MoveCtor_String,
     QInst_CopyAssign_String,
     QInst_MoveAssign_String,

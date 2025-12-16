@@ -20,12 +20,38 @@ extern "C" void citron_int_to_string(void* dest, int value)
 }
 
 // TODO: string_destruct를 만들어야 함
-extern "C" void citron_string_init(void* dest, const char* text)
+extern "C" void citron_string_ctor(void* dest, const char* text)
 {
     new (dest) string{text};
 }
 
-extern "C" void citron_string_destroy(void* str)
+extern "C" void citron_string_copy_ctor(void* dest, void* src)
+{
+    auto* src_s = (string*)src;
+    new (dest) string{*src_s};
+}
+
+extern "C" void citron_string_move_ctor(void* dest, void* src)
+{
+    auto* src_s = (string*)src;
+    new (dest) string{move(*src_s)};
+}
+
+extern "C" void citron_string_copy_assign(void* dest, void* src)
+{
+    auto* src_s = (string*)src;
+    auto* dest_s = (string*)dest;
+    *dest_s = *src_s;
+}
+
+extern "C" void citron_string_move_ctor(void* dest, void* src)
+{
+    auto* src_s = (string*)src;
+    auto* dest_s = (string*)dest;
+    *dest_s = std::move(*src_s);
+}
+
+extern "C" void citron_string_dtor(void* str)
 {
     auto* s = (string*)str;
     s->~string();

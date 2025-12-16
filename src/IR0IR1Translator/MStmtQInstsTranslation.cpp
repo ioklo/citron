@@ -61,6 +61,10 @@ public:
         // TODO: initExp가 없어도, default constructor가 불려야 한다. 어떤 Constructor를 부를지는 IR0에서 결정한다
         if (stmt->initExp)
         {   
+            // var s = expr;
+            // expr이 lvalue인 경우, 복사 (복사가 지원 가능할때)
+            // expr이 rvalue인 경우, 이동 
+
             auto eInitResult = TranslateMExpToQInstsWithNewScope(stmt->initExp, QArg_Slot{slotIndex}, bodyContext);
             RETURN_ON_ERROR(eInitResult);
         }

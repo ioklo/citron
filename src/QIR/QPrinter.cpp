@@ -56,8 +56,9 @@ class QPrinter
     struct InstPrinter
     {
         QPrinter& printer;
+        void operator()(auto& inst) { Print(inst); }
 
-        void operator()(QInst_Ctor_String& inst)
+        void Print(QInst_Ctor_String& inst)
         {
             // construct_string %a, "hello"            
             printer.Print("construct_string");
@@ -67,7 +68,17 @@ class QPrinter
             printer.PrintLine();
         }
 
-        void operator()(QInst_MoveCtor_String& inst)
+        void Print(QInst_CopyCtor_String& inst)
+        {
+            // copy_construct_string %dest, %src
+            printer.Print("copy_construct_string ");
+            printer.PrintQArg_Slot(inst.slot);
+            printer.Print(", ");
+            printer.PrintQArg_Slot(inst.src);
+            printer.PrintLine();
+        }
+
+        void Print(QInst_MoveCtor_String& inst)
         {
             // move_construct_string %dest, %src
             printer.Print("move_construct_string ");
@@ -77,7 +88,7 @@ class QPrinter
             printer.PrintLine();
         }
 
-        void operator()(QInst_CopyAssign_String& inst)
+        void Print(QInst_CopyAssign_String& inst)
         {
             // copy_assign_string %a
             printer.Print("copy_assign_string ");
@@ -87,7 +98,7 @@ class QPrinter
             printer.PrintLine();
         }
 
-        void operator()(QInst_MoveAssign_String& inst)
+        void Print(QInst_MoveAssign_String& inst)
         {
             // move_assign_string %a
             printer.Print("move_assign_string ");
@@ -97,7 +108,7 @@ class QPrinter
             printer.PrintLine();
         }
 
-        void operator()(QInst_Dtor_String& inst)
+        void Print(QInst_Dtor_String& inst)
         {
             // destroy_string %a
             printer.Print("destruct_string ");
@@ -105,7 +116,7 @@ class QPrinter
             printer.PrintLine();
         }
 
-        void operator()(QInst_Load& inst)
+        void Print(QInst_Load& inst)
         {
             // %v = load [%lv]
             printer.PrintQArg_Slot(inst.dest);
@@ -117,7 +128,7 @@ class QPrinter
             printer.PrintLine();
         }
 
-        void operator()(QInst_Store& inst)
+        void Print(QInst_Store& inst)
         {
             // store <ty> [%lv], %v
             printer.Print("store ");
@@ -129,17 +140,16 @@ class QPrinter
             printer.PrintLine();
         }
 
-        void operator()(QInst_AddrOf& inst)
+        void Print(QInst_AddrOf& inst)
         {
             // %v = addr_of [%s]
-
             printer.PrintQArg_Slot(inst.dest);
             printer.Print(" = addr_of ");
             printer.PrintAddrQArg_Slot(inst.slot);
             printer.PrintLine();
         }
 
-        void operator()(QInst_Assign& inst)
+        void Print(QInst_Assign& inst)
         {
             // %dest = <ty> %src
             printer.PrintQArg_Slot(inst.dest);
@@ -150,10 +160,9 @@ class QPrinter
             printer.PrintLine();
         }
 
-        void operator()(QInst_Call& inst)
+        void Print(QInst_Call& inst)
         {
             // %s = call @F, %s2
-
             if (inst.oDest)
             {
                 printer.PrintQArg_Slot(*inst.oDest);
@@ -171,7 +180,7 @@ class QPrinter
             printer.PrintLine();            
         }
 
-        void operator()(QInst_Intrinsic& inst)
+        void Print(QInst_Intrinsic& inst)
         {
             if (inst.oDest)
             {
@@ -191,7 +200,7 @@ class QPrinter
             printer.PrintLine();
         }
 
-        void operator()(QInst_CondJump& inst)
+        void Print(QInst_CondJump& inst)
         {
             printer.Print("condjump ");
             printer.PrintQArg_Slot(inst.cond);
@@ -202,14 +211,14 @@ class QPrinter
             printer.PrintLine();
         }
 
-        void operator()(QInst_Jump& inst)
+        void Print(QInst_Jump& inst)
         {
             printer.Print("jump ");
             printer.PrintBlockLabel(inst.block);
             printer.PrintLine();
         }
 
-        void operator()(QInst_Return& inst)
+        void Print(QInst_Return& inst)
         {
             printer.Print("return");
 

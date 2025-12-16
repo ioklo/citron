@@ -492,14 +492,48 @@ struct Evaluator
     Environment& env;
     QFactoryPtr qFactory;
 
-    bool operator()(QInst_Ctor_String& inst)
+    bool operator()(auto& inst) { return Eval(inst); }
+
+    bool Eval(QInst_Ctor_String& inst)
     {
         auto* buf = env.curFrame->slots[inst.slot.index];
         new (buf) string{inst.text};
         return true;
     }
 
-    bool operator()(QInst_DestructString& inst)
+    bool Eval(QInst_CopyCtor_String& inst)
+    {
+        auto* buf = env.curFrame->slots[inst.slot.index];
+        auto& srcStr = GetStringRef(inst.src, env);
+        new (buf) string{srcStr};
+        return true;
+    }
+
+    bool Eval(QInst_MoveCtor_String& inst)
+    {
+        auto* buf = env.curFrame->slots[inst.slot.index];
+        auto& srcStr = GetStringRef(inst.src, env);
+        new (buf) string{std::move(srcStr)};
+        return true;
+    }
+
+    bool Eval(QInst_CopyAssign_String& inst)
+    {
+        auto& destStr = GetStringRef(inst.dest, env);
+        auto& srcStr = GetStringRef(inst.src, env);
+        destStr = srcStr;
+        return true;
+    }
+
+    bool Eval(QInst_MoveAssign_String& inst)
+    {
+        auto& destStr = GetStringRef(inst.dest, env);
+        auto& srcStr = GetStringRef(inst.src, env);
+        destStr = move(srcStr);
+        return true;
+    }
+
+    bool Eval(QInst_Dtor_String& inst)
     {
         auto* buf = env.curFrame->slots[inst.slot.index];
         auto* str = (string*)buf;
@@ -507,7 +541,7 @@ struct Evaluator
         return true;
     }
 
-    bool operator()(QInst_Load& inst)
+    bool Eval(QInst_Load& inst)
     {
         // dest <- *src;
 
@@ -520,7 +554,7 @@ struct Evaluator
         return true;
     }
 
-    bool operator()(QInst_Store& inst)
+    bool Eval(QInst_Store& inst)
     {
         // *dest = value;
         void* dest = GetPtr(inst.dest, env);
@@ -548,13 +582,13 @@ struct Evaluator
         return true;
     }
 
-    bool operator()(QInst_AddrOf& inst)
+    bool Eval(QInst_AddrOf& inst)
     {   
         *(void**)env.curFrame->slots[inst.dest.index] = env.curFrame->slots[inst.slot.index];
         return true;
     }
 
-    bool operator()(QInst_Assign& inst)
+    bool Eval(QInst_Assign& inst)
     {
         // %dest = %src
         // %r2 = %r1: memcpy(&regValues[r1.index], &regValues[r2.index], size) // void* 복사, size는 8보다 작을 것이다
@@ -585,7 +619,7 @@ struct Evaluator
         return true;
     }
 
-    bool operator()(QInst_Call& inst)
+    bool Eval(QInst_Call& inst)
     {
         // TODO: linker가 미리 어떻게 할지 알렸어야 한다
 
@@ -602,13 +636,13 @@ struct Evaluator
         return true;
     }
 
-    bool operator()(QInst_Intrinsic& inst)
+    bool Eval(QInst_Intrinsic& inst)
     { 
         EvalIntrinsic(inst, env);
         return true; 
     }
      
-    bool operator()(QInst_Return& inst) 
+    bool Eval(QInst_Return& inst) 
     {
         if (inst.oValue)
         {
@@ -639,7 +673,7 @@ struct Evaluator
         return true;
     }
 
-    bool operator()(QInst_CondJump& condJump)
+    bool Eval(QInst_CondJump& condJump)
     {
         bool cond = GetBool(condJump.cond, env);
 
@@ -651,15 +685,10 @@ struct Evaluator
         return true;
     }
 
-    bool operator()(QInst_Jump& jump)
+    bool Eval(QInst_Jump& jump)
     {
         env.curFrame->ip = InstructionPointer{jump.block, 0};
         return true;
-    }
-
-    bool operator()(auto& inst) 
-    { 
-        throw NotImplementedException{};
     }
 };
 
