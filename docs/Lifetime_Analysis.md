@@ -167,7 +167,7 @@ void Main()
 ```
 %%END_EMBED%%
 
-%%BEGIN_EMBED(Lifetime_Analysis_LocalPtrContainedLambda)%%
+%%BEGIN_EMBED(Lifetime_Analysis_LocalRefContainedLambda)%%
 ```cs
 //@ $Error
 void Main()

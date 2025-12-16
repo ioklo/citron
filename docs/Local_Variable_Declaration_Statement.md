@@ -106,7 +106,7 @@ void Main()
 
 실수를 방지하기 위해 최종 타입이 local pointer, box pointer, nullable인 타입은 var 단독으로 사용해서 유추할 수 없습니다. 대신 `var*`, `box var*`, `var?` 를 사용합니다
 
-%%BEGIN_EMBED(Local_Variable_Declaration_Statement_VarWithPointerForPointerValue)%%
+%%BEGIN_EMBED(Local_Variable_Declaration_Statement_VarWithRefForRefValue)%%
 ```cs
 //@ 
 void Main()

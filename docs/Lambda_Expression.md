@@ -110,7 +110,7 @@ void Main()
 ```
 %%END_EMBED%%
 
-%%BEGIN_EMBED(Lambda_Expression_Capture_LocalPtr)%%
+%%BEGIN_EMBED(Lambda_Expression_Capture_LocalRef)%%
 ```cs
 //@ 1
 void Main()
