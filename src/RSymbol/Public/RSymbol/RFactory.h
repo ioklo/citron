@@ -109,6 +109,7 @@ class RFactory
     // 기본 타입
     std::unique_ptr<RType> boolType;
     std::unique_ptr<RType> intType;
+
     std::unique_ptr<RType> stringType;
 
     std::unique_ptr<RClassDecl> listDecl;

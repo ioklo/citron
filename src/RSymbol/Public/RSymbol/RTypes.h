@@ -26,6 +26,7 @@ class RType_NullableValue;
 class RType_NullableRef;
 class RType_TypeVar;
 class RType_Void;
+class RType_Primitive;
 class RType_Tuple;
 class RType_Func;
 class RType_LocalPtr;
@@ -45,6 +46,7 @@ public:
     virtual void Visit(RType_NullableRef* type) = 0;
     virtual void Visit(RType_TypeVar* type) = 0;
     virtual void Visit(RType_Void* type) = 0;
+    virtual void Visit(RType_Primitive* type) = 0;
     virtual void Visit(RType_Tuple* type) = 0;
     virtual void Visit(RType_Func* type) = 0;
     virtual void Visit(RType_LocalPtr* type) = 0;
@@ -58,13 +60,13 @@ public:
 };
 
 enum class RCustomTypeKind
-{
-    None,
+{   
     Struct,
     Class,
     Enum,
     EnumElem,
     Interface,
+    Others,
 };
 
 class RType
@@ -72,7 +74,7 @@ class RType
 public:
     virtual ~RType() {}
     virtual RType* Apply(RTypeArguments& typeArgs, RFactory& factory) = 0;
-    virtual RCustomTypeKind GetCustomTypeKind() { return RCustomTypeKind::None; }
+    virtual RCustomTypeKind GetCustomTypeKind() { return RCustomTypeKind::Others; }
     virtual std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) = 0;
 
     virtual void Accept(RTypeVisitor& visitor) = 0;
@@ -137,6 +139,28 @@ public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs, RFactory& factory) override;
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
+};
+
+enum class RType_PrimitiveKind
+{
+    Bool,
+    Int32,
+};
+
+class RType_Primitive : public RType
+{
+    RType_PrimitiveKind kind;
+
+public:
+    RType_Primitive(RType_PrimitiveKind kind) : kind{kind}
+    { }
+
+    // from RType
+    RType* Apply(RTypeArguments& typeArgs, RFactory& factory) override { return this; } // no typeArgs
+    // RCustomTypeKind GetCustomTypeKind() { return RCustomTypeKind::Others; }
+    std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override { return std::nullopt; }
+
+    void Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
 };
 
 struct RTupleVar
@@ -361,6 +385,7 @@ concept RTypeVisitable = requires(TVisitor&& v, TVisitorArgs&&... args) {
     { v.Visit(std::declval<RType_NullableRef*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_TypeVar*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Void*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<RType_Primitive*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Tuple*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Func*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_LocalPtr*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
@@ -392,6 +417,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RType* r
             void Visit(RType_NullableRef* rType) override { call(rType); }
             void Visit(RType_TypeVar* rType) override { call(rType); }
             void Visit(RType_Void* rType) override { call(rType); }
+            void Visit(RType_Primitive* rType) override { call(rType); }
             void Visit(RType_Tuple* rType) override { call(rType); }
             void Visit(RType_Func* rType) override { call(rType); }
             void Visit(RType_LocalPtr* rType) override { call(rType); }
@@ -418,6 +444,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RType* r
             void Visit(RType_NullableRef* rType) override { result.emplace(call(rType)); }
             void Visit(RType_TypeVar* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Void* rType) override { result.emplace(call(rType)); }
+            void Visit(RType_Primitive* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Tuple* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Func* rType) override { result.emplace(call(rType)); }
             void Visit(RType_LocalPtr* rType) override { result.emplace(call(rType)); }

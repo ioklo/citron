@@ -39,7 +39,7 @@ enum class LRuntimeFuncKind
     StringMoveCtor,
     StringCopyAssign,
     StringMoveAssign,
-    StringDestroy,
+    StringDtor,
     StringConcat,
     StringLessThan,
     StringGreaterThan,
@@ -173,7 +173,7 @@ class LModuleContext
         runtimeFuncCtors[(size_t)StringMoveCtor] = &LModuleContext::Init_StringMoveCtor;
         runtimeFuncCtors[(size_t)StringCopyAssign] = &LModuleContext::Init_StringCopyAssign;
         runtimeFuncCtors[(size_t)StringMoveAssign] = &LModuleContext::Init_StringMoveAssign;
-        runtimeFuncCtors[(size_t)StringDestroy] = &LModuleContext::Init_StringDestroy;
+        runtimeFuncCtors[(size_t)StringDtor] = &LModuleContext::Init_StringDestroy;
         runtimeFuncCtors[(size_t)StringConcat] = &LModuleContext::Init_StringConcat;
         runtimeFuncCtors[(size_t)StringLessThan] = &LModuleContext::Init_StringLessThan;
         runtimeFuncCtors[(size_t)StringGreaterThan] = &LModuleContext::Init_StringGreaterThan;
@@ -187,6 +187,7 @@ class LModuleContext
 
 public:
     LModuleContext()
+        : runtimeFuncs{}
     {   
         InitRuntimeFuncCtors();
     }
@@ -703,12 +704,27 @@ private:
 
         void Emit(QInst_CopyCtor_String& qInst)
         {
-            self.EmitRuntimeCall(LRuntimeFuncKind::StringCtor, {self.slotValues[qInst.slot.index], emptyStrPtr});
+            self.EmitRuntimeCall(LRuntimeFuncKind::StringCopyCtor, {self.slotValues[qInst.slot.index], self.slotValues[qInst.src.index]});
+        }
+
+        void Emit(QInst_MoveCtor_String& qInst)
+        {
+            self.EmitRuntimeCall(LRuntimeFuncKind::StringMoveCtor, {self.slotValues[qInst.slot.index], self.slotValues[qInst.src.index]});
+        }
+
+        void Emit(QInst_CopyAssign_String& qInst)
+        {
+            self.EmitRuntimeCall(LRuntimeFuncKind::StringCopyAssign, {self.slotValues[qInst.dest.index], self.slotValues[qInst.src.index]});
+        }
+
+        void Emit(QInst_MoveAssign_String& qInst)
+        {
+            self.EmitRuntimeCall(LRuntimeFuncKind::StringMoveAssign, {self.slotValues[qInst.dest.index], self.slotValues[qInst.src.index]});
         }
 
         void Emit(QInst_Dtor_String& qInst)
         {
-            self.EmitRuntimeCall(LRuntimeFuncKind::StringDestroy, {self.slotValues[qInst.slot.index]});
+            self.EmitRuntimeCall(LRuntimeFuncKind::StringDtor, {self.slotValues[qInst.slot.index]});
         }
 
         void Emit(QInst_Load& qInst)

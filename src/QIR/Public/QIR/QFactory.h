@@ -19,8 +19,8 @@ class QFactory
     std::vector<std::unique_ptr<QBlock>> blocks;
     QType_Void voidType;
     QType_Ptr ptrType;
-    QType_Struct boolType;
-    QType_Struct intType;
+    QType_Primitive boolType;
+    QType_Primitive intType;
     QType_Class stringType;
 
 public:
@@ -29,8 +29,8 @@ public:
 
     QIR_API QType_Void* MakeVoidType();
     QIR_API QType_Ptr* MakePtrType();
-    QIR_API QType_Struct* MakeBoolType();
-    QIR_API QType_Struct* MakeIntType();
+    QIR_API QType_Primitive* MakeBoolType();
+    QIR_API QType_Primitive* MakeIntType();
     QIR_API QType_Class* MakeStringType();
 };
 

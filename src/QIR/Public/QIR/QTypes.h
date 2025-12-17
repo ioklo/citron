@@ -17,6 +17,13 @@ private:
     friend class QFactory;
 };
 
+struct QType_Primitive : public QType
+{
+private:
+    QType_Primitive() = default;
+    friend class QFactory;
+};
+
 struct QType_Struct : public QType
 {
 private:

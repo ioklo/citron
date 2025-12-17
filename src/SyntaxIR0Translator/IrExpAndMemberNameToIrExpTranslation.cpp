@@ -218,6 +218,12 @@ public:
         throw RuntimeFatalException{};
     }
 
+    ResultType Visit(RType_Primitive* type)
+    {
+        // primitive type에 멤버가 나올 수 없으므로 에러 내고 종료
+        throw NotImplementedException{};
+    }
+
     ResultType Visit(RType_Tuple* type) 
     {
         // TupleMemberLoc이 없으므로 일단 보류
@@ -249,7 +255,7 @@ public:
 
     ResultType Visit(RType_BoxPtr* type) 
     {
-        // &(C.x).a
+        // T& t = (C.x).a
         return Error<Error_Reference_CantMakeReference>();
     }
 
@@ -384,6 +390,12 @@ public:
         // &c.v
         // void인 멤버가 나올 수 없으므로
         throw RuntimeFatalException{};
+    }
+
+    ResultType Visit(RType_Primitive* type)
+    {
+        // &c.i.x, primitive type에 멤버는 없으므로 에러 내고 종료
+        throw NotImplementedException{};
     }
 
     ResultType Visit(RType_Tuple* type) 
@@ -525,8 +537,14 @@ public:
 
     ResultType Visit(RType_Void* type) 
     {
-        // void인 멤버가 나올 수 없으므로
-        throw RuntimeFatalException{};
+        // void에 멤버가 나올 수 없으므로, 에러 내고 종료
+        throw NotImplementedException{};
+    }
+
+    ResultType Visit(RType_Primitive* type)
+    {
+        // primitive type에 멤버는 없으므로, 에러 내고 종료
+        throw NotImplementedException{};
     }
 
     ResultType Visit(RType_Tuple* type) 
@@ -684,6 +702,12 @@ public:
         throw RuntimeFatalException{};
     }
 
+    ResultType Visit(RType_Primitive* type)
+    {
+        // &(*pI).x, 에러를 내고 종료
+        throw NotImplementedException{};
+    }
+
     ResultType Visit(RType_Tuple* type) 
     {
         // &(*pT).x
@@ -819,6 +843,12 @@ public:
     {
         // void는 멤버함수를 가질 수 없다
         throw RuntimeFatalException{};
+    }
+
+    ResultType Visit(RType_Primitive* type)
+    {
+        // &(*pI).x, 에러를 내고 종료
+        throw NotImplementedException{};
     }
 
     ResultType Visit(RType_Tuple* type) 

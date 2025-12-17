@@ -110,7 +110,7 @@ class QPrinter
 
         void Print(QInst_Dtor_String& inst)
         {
-            // destroy_string %a
+            // destruct_string %a
             printer.Print("destruct_string ");
             printer.PrintQArg_Slot(inst.slot);
             printer.PrintLine();

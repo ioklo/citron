@@ -36,12 +36,12 @@ QType_Ptr* QFactory::MakePtrType()
     return &ptrType;
 }
 
-QType_Struct* QFactory::MakeBoolType()
+QType_Primitive* QFactory::MakeBoolType()
 {
     return &boolType;
 }
 
-QType_Struct* QFactory::MakeIntType()
+QType_Primitive* QFactory::MakeIntType()
 {
     return &intType;
 }
