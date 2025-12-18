@@ -225,7 +225,6 @@ struct STypeExpToJsonVisitor
     ResultType Visit(STypeExp_Member* typeExp) { return typeExp->ToJson(); }
     ResultType Visit(STypeExp_Nullable* typeExp) { return typeExp->ToJson(); }
     ResultType Visit(STypeExp_LocalPtr* typeExp) { return typeExp->ToJson(); }
-    ResultType Visit(STypeExp_BoxPtr* typeExp) { return typeExp->ToJson(); }
     ResultType Visit(STypeExp_Local* typeExp) { return typeExp->ToJson(); }
 };
 
@@ -730,23 +729,6 @@ JsonItem STypeExp_LocalPtr::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("STypeExp_LocalPtr") },
-        { "innerType", Citron::ToJson(innerType) },
-    };
-}
-
-STypeExp_BoxPtr::STypeExp_BoxPtr(STypeExp* innerType)
-    : innerType(move(innerType)) { }
-
-STypeExp_BoxPtr::STypeExp_BoxPtr(STypeExp_BoxPtr&& other) noexcept = default;
-
-STypeExp_BoxPtr::~STypeExp_BoxPtr() = default;
-
-STypeExp_BoxPtr& STypeExp_BoxPtr::operator=(STypeExp_BoxPtr&& other) noexcept = default;
-
-JsonItem STypeExp_BoxPtr::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("STypeExp_BoxPtr") },
         { "innerType", Citron::ToJson(innerType) },
     };
 }

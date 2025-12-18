@@ -51,7 +51,6 @@ class STypeExp_Id;
 class STypeExp_Member;
 class STypeExp_Nullable;
 class STypeExp_LocalPtr;
-class STypeExp_BoxPtr;
 class STypeExp_Local;
 
 class SStringExpElement;
@@ -155,7 +154,6 @@ public:
     MAKE(STypeExp_Member)
     MAKE(STypeExp_Nullable)
     MAKE(STypeExp_LocalPtr)
-    MAKE(STypeExp_BoxPtr)
     MAKE(STypeExp_Local)
 
     MAKE(SStringExpElement_Text)

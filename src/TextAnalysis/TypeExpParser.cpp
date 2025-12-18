@@ -65,7 +65,8 @@ STypeExp_Nullable* ParseNullableTypeExp(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    STypeExp* typeExp = ParseBoxPtrTypeExp(&curLexer, factory);
+    STypeExp* typeExp = nullptr;
+    
     if (!typeExp) typeExp = ParseLocalPtrTypeExp(&curLexer, factory);
     if (!typeExp) typeExp = ParseParenTypeExp(&curLexer, factory);
     if (!typeExp) typeExp = ParseIdChainTypeExp(&curLexer, factory);
@@ -76,25 +77,6 @@ STypeExp_Nullable* ParseNullableTypeExp(Lexer* lexer, SFactory& factory)
 
     *lexer = move(curLexer);
     return factory.MakeSTypeExp_Nullable(typeExp);
-}
-
-// box T*
-STypeExp_BoxPtr* ParseBoxPtrTypeExp(Lexer* lexer, SFactory& factory)
-{
-    Lexer curLexer = *lexer;
-
-    if (!Accept<BoxToken>(&curLexer))
-        return nullptr;
-
-    STypeExp* typeExp = ParseParenTypeExp(&curLexer, factory);
-    if (!typeExp) typeExp = ParseIdChainTypeExp(&curLexer, factory);
-    if (!typeExp) return nullptr;
-
-    if (!Accept<StarToken>(&curLexer))
-        return nullptr;
-
-    *lexer = move(curLexer);
-    return factory.MakeSTypeExp_BoxPtr(typeExp);
 }
 
 // T*
@@ -133,7 +115,6 @@ STypeExp* ParseParenTypeExp(Lexer* lexer, SFactory& factory)
         return nullptr;
 
     STypeExp* innerTypeExp = ParseNullableTypeExp(&curLexer, factory);
-    if (!innerTypeExp) innerTypeExp = ParseBoxPtrTypeExp(&curLexer, factory);
     if (!innerTypeExp) innerTypeExp = ParseLocalPtrTypeExp(&curLexer, factory);
     if (!innerTypeExp) innerTypeExp = ParseLocalTypeExp(&curLexer, factory);
     if (!innerTypeExp) return nullptr;
@@ -202,9 +183,6 @@ STypeExp* ParseTypeExp(Lexer* lexer, SFactory& factory)
 {
     if (auto* nullableTypeExp = ParseNullableTypeExp(lexer, factory))
         return nullableTypeExp;
-
-    if (auto* boxPtrTypeExp = ParseBoxPtrTypeExp(lexer, factory))
-        return boxPtrTypeExp;
 
     if (auto* localPtrTypeExp = ParseLocalPtrTypeExp(lexer, factory))
         return localPtrTypeExp;

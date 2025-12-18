@@ -56,7 +56,6 @@ class STypeExp_Id;
 class STypeExp_Member;
 class STypeExp_Nullable;
 class STypeExp_LocalPtr;
-class STypeExp_BoxPtr;
 class STypeExp_Local;
 
 class SStringExpElement;
@@ -584,7 +583,6 @@ public:
     virtual void Visit(STypeExp_Member* typeExp) = 0;
     virtual void Visit(STypeExp_Nullable* typeExp) = 0;
     virtual void Visit(STypeExp_LocalPtr* typeExp) = 0;
-    virtual void Visit(STypeExp_BoxPtr* typeExp) = 0;
     virtual void Visit(STypeExp_Local* typeExp) = 0;
 };
 
@@ -611,7 +609,6 @@ concept STypeExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<STypeExp_Member*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<STypeExp_Nullable*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<STypeExp_LocalPtr*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<STypeExp_BoxPtr*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<STypeExp_Local*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
 };
 
@@ -632,7 +629,6 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, STypeExp
             void Visit(STypeExp_Member* typeExp) override { call(typeExp); }
             void Visit(STypeExp_Nullable* typeExp) override { call(typeExp); }
             void Visit(STypeExp_LocalPtr* typeExp) override { call(typeExp); }
-            void Visit(STypeExp_BoxPtr* typeExp) override { call(typeExp); }
             void Visit(STypeExp_Local* typeExp) override { call(typeExp); }
         };
 
@@ -650,7 +646,6 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, STypeExp
             void Visit(STypeExp_Member* typeExp) override { result.emplace(call(typeExp)); }
             void Visit(STypeExp_Nullable* typeExp) override { result.emplace(call(typeExp)); }
             void Visit(STypeExp_LocalPtr* typeExp) override { result.emplace(call(typeExp)); }
-            void Visit(STypeExp_BoxPtr* typeExp) override { result.emplace(call(typeExp)); }
             void Visit(STypeExp_Local* typeExp) override { result.emplace(call(typeExp)); }
         };
 
@@ -1691,25 +1686,6 @@ public:
 
     STypeExp_LocalPtr& operator=(const STypeExp_LocalPtr& other) = delete;
     SYNTAX_API STypeExp_LocalPtr& operator=(STypeExp_LocalPtr&& other) noexcept;
-
-    SYNTAX_API JsonItem ToJson();
-    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(this); }
-
-};
-
-class STypeExp_BoxPtr
-    : public STypeExp
-{
-public:
-    STypeExp* innerType;
-
-    SYNTAX_API STypeExp_BoxPtr(STypeExp* innerType);
-    STypeExp_BoxPtr(const STypeExp_BoxPtr&) = delete;
-    SYNTAX_API STypeExp_BoxPtr(STypeExp_BoxPtr&&) noexcept;
-    SYNTAX_API virtual ~STypeExp_BoxPtr();
-
-    STypeExp_BoxPtr& operator=(const STypeExp_BoxPtr& other) = delete;
-    SYNTAX_API STypeExp_BoxPtr& operator=(STypeExp_BoxPtr&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(STypeExpVisitor& visitor) override { visitor.Visit(this); }

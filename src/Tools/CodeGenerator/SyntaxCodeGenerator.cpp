@@ -119,7 +119,6 @@ struct ToJsonVisitor {
                 "STypeExp_Member",
                 "STypeExp_Nullable",
                 "STypeExp_LocalPtr",
-                "STypeExp_BoxPtr",
                 "STypeExp_Local"
             }
         },
@@ -352,7 +351,6 @@ struct ToJsonVisitor {
                 "STypeExp_Member",
                 "STypeExp_Nullable",
                 "STypeExp_LocalPtr",
-                "STypeExp_BoxPtr",
                 "STypeExp_Local"
             }
         },
@@ -659,15 +657,6 @@ struct ToJsonVisitor {
         // STypeExp_LocalPtr(STypeExp typeExp)
         ClassInfo {
             .name = "STypeExp_LocalPtr",
-            .variantInterfaces { "STypeExp" },
-            .memberInfos {
-                {.type = "STypeExp*", .memberVarName = "innerType", .getterName = "GetInnerType" },
-            },
-        },
-
-        // STypeExp_BoxPtr(STypeExp typeExp)
-        ClassInfo {
-            .name = "STypeExp_BoxPtr",
             .variantInterfaces { "STypeExp" },
             .memberInfos {
                 {.type = "STypeExp*", .memberVarName = "innerType", .getterName = "GetInnerType" },

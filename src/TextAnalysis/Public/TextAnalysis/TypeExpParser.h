@@ -16,7 +16,6 @@ class SFactory;
 std::optional<std::vector<STypeExp*>> ParseTypeArgs(Lexer* lexer, SFactory& factory);
 STypeExp_Id* ParseIdTypeExp(Lexer* lexer, SFactory& factory);
 STypeExp_Nullable* ParseNullableTypeExp(Lexer* lexer, SFactory& factory);
-STypeExp_BoxPtr* ParseBoxPtrTypeExp(Lexer* lexer, SFactory& factory);
 STypeExp* ParseLocalPtrTypeExp(Lexer* lexer, SFactory& factory);
 STypeExp* ParseParenTypeExp(Lexer* lexer, SFactory& factory);
 STypeExp* ParseIdChainTypeExp(Lexer* lexer, SFactory& factory);

@@ -136,6 +136,9 @@ optional<SVarDecl> ParseVarDecl(Lexer* lexer, SFactory& factory)
                 return nullopt;
         }
 
+        // TODO: uninitialized 분석을 넣기 전까진 initExp가 무조건 있도록 함
+        assert(initExp);
+
         elems.push_back(SVarDeclElement{move(oVarIdToken->text), initExp});
 
     } while (Accept<CommaToken>(&curLexer)); // ,가 나오면 계속한다

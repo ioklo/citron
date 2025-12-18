@@ -188,15 +188,7 @@ public:
 
         return DeclTypeInfo{DeclTypeInfoKind::LocalPtrVar, /*type*/ nullptr};
     }
-
-    ResultType Visit(STypeExp_BoxPtr* typeExp)
-    {
-        if (!IsVarType(typeExp->innerType))
-            return Normal(typeExp);
-
-        return DeclTypeInfo{DeclTypeInfoKind::BoxPtrVar, /*type*/ nullptr};
-    }
-
+    
     // local var i = ...
     ResultType Visit(STypeExp_Local* typeExp)
     {
