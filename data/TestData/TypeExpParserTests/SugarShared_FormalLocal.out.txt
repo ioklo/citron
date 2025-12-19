@@ -1,0 +1,11 @@
+{
+    "$type": "STypeExp_Shared",
+    "innerType": {
+        "$type": "STypeExp_Local",
+        "innerType": {
+            "$type": "STypeExp_Id",
+            "name": "I",
+            "typeArgs": []
+        }
+    }
+}

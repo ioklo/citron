@@ -703,7 +703,7 @@ TEST(Class_Member_Box_Reference_Expression, Basic)
 {
 	int x;
 	
-	box int* GetX()
+	shared int GetX()
 	{
 		return &x; // ClassMemberBoxExp(this, C.x)
 	}
@@ -717,7 +717,7 @@ TEST(Class_Member_Box_Reference_Expression, Basic)
 void Main()
 {
 	var c = new C(3);
-	box var* pX = c.GetX();
+	shared var pX = c.GetX();
 	*pX = 4;
 	
 	c.PrintX();
@@ -1286,13 +1286,13 @@ TEST(For_Statement, Scope)
 
 TEST(Function, Out) 
 {
-    auto code = R"---(void F(out int* i)
+    auto code = R"---(void F([out] int& i)
 {
     *i = 2;
 }
 
 int j = 3;
-F(out &j); // out을 반드시 써줘야 합니다
+F(out j); // out을 반드시 써줘야 합니다
 
 @$j
 )---";
@@ -1623,15 +1623,15 @@ TEST(Lambda_Expression_Capture, Copy)
     DoTest(code, expected);
 }
 
-TEST(Lambda_Expression_Capture, LocalPtr) 
+TEST(Lambda_Expression_Capture, LocalRef) 
 {
     auto code = R"---(void Main()
 {
     int x = 0;
-    int* y = &x;
+    int& y = x;
 
-    // local pointer 함유 lambda, 내부에서밖에 쓸 수 없습니다
-    var l = () => *y;
+    // local ref 함유 lambda, 내부에서밖에 쓸 수 없습니다
+    var l = () => y;
     x = 1;
 
     // 1
@@ -1735,14 +1735,14 @@ TEST(Lambda_Expression, Usage)
 
 TEST(Lifetime_Analysis, ReturnLocalPointer) 
 {
-    auto code = R"---(int* F(int* i)
+    auto code = R"---(int& F(int& i)
 {
     return i;
 }
 
 int x = 3;
-var* y = F(&x);
-*y = 4;
+var& y = F(ref x);
+y = 4;
 
 @$x
 )---";
@@ -1758,15 +1758,15 @@ struct S
 {
     int x;
 
-    int* GetX()
+    int& GetX()
     {
-        return &x; // this의 라이프 타임
+        return x; // this의 라이프 타임
     }
 }
 
 var s = S(3);
-var* x = s.GetX();
-*x = 4;
+var& x = s.GetX();
+x = 4;
 
 @${s.x}
 )---";
@@ -1891,13 +1891,28 @@ TEST(Local_Variable_Declaration_Statement, Uninitialized)
     DoTest(code, expected);
 }
 
-TEST(Local_Variable_Declaration_Statement, VarWithPointerForPointerValue) 
+TEST(Local_Variable_Declaration_Statement, VarWithPointerInferenceSeparately) 
+{
+    auto code = R"---(void Main()
+{
+    int a = 0
+    string b = "hi"
+    var& x = a, y = b;
+    @${x}, ${y}
+}
+)---";
+    string expected = R"---(0 hi)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Local_Variable_Declaration_Statement, VarWithRefForRefValue) 
 {
     auto code = R"---(void Main()
 {
     var i = 3;
-    var* x = &i;
-    box var* y = box 3;
+    var& x = i;
+    box var y = box 3;
 
 	int? i = null;
     var? optI = i;
@@ -1908,27 +1923,12 @@ TEST(Local_Variable_Declaration_Statement, VarWithPointerForPointerValue)
     DoTest(code, expected);
 }
 
-TEST(Local_Variable_Declaration_Statement, VarWithPointerInferenceSeparately) 
-{
-    auto code = R"---(void Main()
-{
-    int a = 0
-    string b = "hi"
-    var* x = &a, y = &b;
-    @${*x}, ${*y}
-}
-)---";
-    string expected = R"---(0 hi)---";
-
-    DoTest(code, expected);
-}
-
 TEST(Local_Variable_Reference_Expression, Basic) 
 {
     auto code = R"---(void Main()
 {
     int s = 3;
-    var* i = &s; // LocalVarRefExp(LocalVar("i"))
+    var& i = s;
 
     @{${*i}}
 }
@@ -1943,9 +1943,9 @@ TEST(Local_Variable_Reference_Expression, Nested)
     auto code = R"---(void Main()
 {
 	int s = 3;
-	int* i = &s;  
-	int** j = &i;
-	**j = 4;
+	int& i = s;  
+	int& j = i;
+	j = 4;
 }
 @$s
 )---";
@@ -2351,8 +2351,8 @@ struct S { A a; }
 
 void Main()
 {
-	box var* s = box S(A(3));
-	box var* x = &s->a.i; // StructMemberBoxRefExp(StructIndirectMemberBoxRefExp(s, S.a), S.i)
+	shared var s = shared S(A(3));
+	shared var x = &s->a.i; // StructMemberSharedRefExp(StructIndirectMemberSharedRefExp(s, S.a), S.i)
 	*x = 5;
 
 	@${s->a.i}

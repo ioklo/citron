@@ -1,0 +1,1 @@
+ptr<A.B.C<int>.D>

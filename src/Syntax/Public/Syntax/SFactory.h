@@ -50,8 +50,9 @@ class STypeExp;
 class STypeExp_Id;
 class STypeExp_Member;
 class STypeExp_Nullable;
-class STypeExp_LocalPtr;
-class STypeExp_Local;
+class STypeExp_Shared; // shared int
+class STypeExp_Ptr;
+class STypeExp_Local; // local I
 
 class SStringExpElement;
 class SStringExpElement_Text;
@@ -153,7 +154,8 @@ public:
     MAKE(STypeExp_Id)
     MAKE(STypeExp_Member)
     MAKE(STypeExp_Nullable)
-    MAKE(STypeExp_LocalPtr)
+    MAKE(STypeExp_Shared)
+    MAKE(STypeExp_Ptr)
     MAKE(STypeExp_Local)
 
     MAKE(SStringExpElement_Text)

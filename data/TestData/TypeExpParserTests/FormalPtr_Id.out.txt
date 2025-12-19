@@ -1,0 +1,29 @@
+{
+    "$type": "STypeExp_Ptr",
+    "innerType": {
+        "$type": "STypeExp_Member",
+        "parentType": {
+            "$type": "STypeExp_Member",
+            "parentType": {
+                "$type": "STypeExp_Member",
+                "parentType": {
+                    "$type": "STypeExp_Id",
+                    "name": "A",
+                    "typeArgs": []
+                },
+                "name": "B",
+                "typeArgs": []
+            },
+            "name": "C",
+            "typeArgs": [
+                {
+                    "$type": "STypeExp_Id",
+                    "name": "int",
+                    "typeArgs": []
+                }
+            ]
+        },
+        "name": "D",
+        "typeArgs": []
+    }
+}

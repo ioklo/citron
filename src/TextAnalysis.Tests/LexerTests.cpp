@@ -83,8 +83,6 @@ TEST(Lexer, LexSymbols)
         IsToken(),
         AsToken(),
         RefToken(),
-        BoxToken(),
-        LocalToken(),
         NullToken(),
 
         PublicToken(),

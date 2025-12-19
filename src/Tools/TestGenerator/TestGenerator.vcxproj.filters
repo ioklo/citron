@@ -71,58 +71,40 @@
     <Text Include="..\..\..\data\TestData\ScriptParserTests\ParseStructDecl.out.txt">
       <Filter>Inputs\ScriptParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseAmbiguousLocalAndBoxPtrs.fail.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_ParseAmbiguousPtrAndShared.fail.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseAmbiguousLocalAndBoxPtrs.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_ParseAmbiguousPtrAndShared.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfIdChain.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_ParseSharedOfIdChain.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfIdChain.out.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_ParseSharedOfIdChain.out.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfNullableRaw.fail.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_ParseNestedBoxPtrs.fail.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfNullableRaw.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_ParseNestedBoxPtrs.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfParen.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Ptr_ParsePtrOfIdChain.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseBoxPtrOfParen.out.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Ptr_ParsePtrOfIdChain.out.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseNestedBoxPtrs.fail.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Ptr_ParsePtrOfNullableRaw.fail.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\BoxPtr_ParseNestedBoxPtrs.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Ptr_ParsePtrOfNullableRaw.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfIdChain.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Ptr_ParseNestedPtrs.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfIdChain.out.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfNullableRaw.fail.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfNullableRaw.in.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfParen.in.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseLocalPtrOfParen.out.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseNestedLocalPtrs.in.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\LocalPtr_ParseNestedLocalPtrs.out.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Ptr_ParseNestedPtrs.out.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
     <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseDoubleQuestionMark.fail.txt">
@@ -137,58 +119,22 @@
     <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseIdChainNullable.out.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableBoxPtr.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableShared.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableBoxPtr.out.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableShared.fail.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableLocalPtr.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullablePtr.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableLocalPtr.out.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullablePtr.failed.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableParen.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_ParseShared.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullableParen.out.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedBoxPtr.in.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedBoxPtr.out.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedIdChain.fail.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedIdChain.in.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedLocalPtr.in.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedLocalPtr.out.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedNested.fail.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedNested.in.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedNullable.in.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Paren_ParseWrappedNullable.out.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseBoxPtr.in.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseBoxPtr.out.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_ParseShared.out.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
     <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseIdChain.in.txt">
@@ -197,22 +143,16 @@
     <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseIdChain.out.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseLocalPtr.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Ptr_ParsePtr.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseLocalPtr.out.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Ptr_ParsePtr.out.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseNullable.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullable.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseNullable.out.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseParenSolo.fail.txt">
-      <Filter>Inputs\TypeExpParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_ParseParenSolo.in.txt">
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Nullable_ParseNullable.out.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlankStmt.in.txt">
@@ -400,6 +340,18 @@
     </Text>
     <Text Include="..\..\..\data\TestData\ExpParserTests\ParseTestAndTypeTestExp.out.txt">
       <Filter>Inputs\ExpParserTests</Filter>
+    </Text>
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_ParseSharedOfNullableRaw.fail.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_ParseSharedOfNullableRaw.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_FormalShared.in.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="..\..\..\data\TestData\TypeExpParserTests\Shared_FormalShared.out.txt">
+      <Filter>Inputs\TypeExpParserTests</Filter>
     </Text>
   </ItemGroup>
 </Project>

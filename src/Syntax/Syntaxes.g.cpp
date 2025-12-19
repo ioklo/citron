@@ -224,7 +224,8 @@ struct STypeExpToJsonVisitor
     ResultType Visit(STypeExp_Id* typeExp) { return typeExp->ToJson(); }
     ResultType Visit(STypeExp_Member* typeExp) { return typeExp->ToJson(); }
     ResultType Visit(STypeExp_Nullable* typeExp) { return typeExp->ToJson(); }
-    ResultType Visit(STypeExp_LocalPtr* typeExp) { return typeExp->ToJson(); }
+    ResultType Visit(STypeExp_Shared* typeExp) { return typeExp->ToJson(); }
+    ResultType Visit(STypeExp_Ptr* typeExp) { return typeExp->ToJson(); }
     ResultType Visit(STypeExp_Local* typeExp) { return typeExp->ToJson(); }
 };
 
@@ -716,19 +717,36 @@ JsonItem STypeExp_Nullable::ToJson()
     };
 }
 
-STypeExp_LocalPtr::STypeExp_LocalPtr(STypeExp* innerType)
+STypeExp_Shared::STypeExp_Shared(STypeExp* innerType)
     : innerType(move(innerType)) { }
 
-STypeExp_LocalPtr::STypeExp_LocalPtr(STypeExp_LocalPtr&& other) noexcept = default;
+STypeExp_Shared::STypeExp_Shared(STypeExp_Shared&& other) noexcept = default;
 
-STypeExp_LocalPtr::~STypeExp_LocalPtr() = default;
+STypeExp_Shared::~STypeExp_Shared() = default;
 
-STypeExp_LocalPtr& STypeExp_LocalPtr::operator=(STypeExp_LocalPtr&& other) noexcept = default;
+STypeExp_Shared& STypeExp_Shared::operator=(STypeExp_Shared&& other) noexcept = default;
 
-JsonItem STypeExp_LocalPtr::ToJson()
+JsonItem STypeExp_Shared::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("STypeExp_LocalPtr") },
+        { "$type", JsonString("STypeExp_Shared") },
+        { "innerType", Citron::ToJson(innerType) },
+    };
+}
+
+STypeExp_Ptr::STypeExp_Ptr(STypeExp* innerType)
+    : innerType(move(innerType)) { }
+
+STypeExp_Ptr::STypeExp_Ptr(STypeExp_Ptr&& other) noexcept = default;
+
+STypeExp_Ptr::~STypeExp_Ptr() = default;
+
+STypeExp_Ptr& STypeExp_Ptr::operator=(STypeExp_Ptr&& other) noexcept = default;
+
+JsonItem STypeExp_Ptr::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("STypeExp_Ptr") },
         { "innerType", Citron::ToJson(innerType) },
     };
 }

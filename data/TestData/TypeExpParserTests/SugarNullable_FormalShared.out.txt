@@ -1,0 +1,11 @@
+{
+    "$type": "STypeExp_Nullable",
+    "innerType": {
+        "$type": "STypeExp_Shared",
+        "innerType": {
+            "$type": "STypeExp_Id",
+            "name": "int",
+            "typeArgs": []
+        }
+    }
+}

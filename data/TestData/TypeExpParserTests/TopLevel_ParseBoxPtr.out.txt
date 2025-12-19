@@ -1,8 +1,0 @@
-{
-    "$type": "STypeExp_BoxPtr",
-    "innerType": {
-        "$type": "STypeExp_Id",
-        "name": "T",
-        "typeArgs": []
-    }
-}

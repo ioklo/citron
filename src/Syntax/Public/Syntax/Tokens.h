@@ -61,8 +61,6 @@ TOKEN_DEF(ClassToken, L"class")
 TOKEN_DEF(IsToken, L"is")
 TOKEN_DEF(AsToken, L"as")
 TOKEN_DEF(RefToken, L"ref")
-TOKEN_DEF(BoxToken, L"box")
-TOKEN_DEF(LocalToken, L"local")
 TOKEN_DEF(NullToken, L"null")
 
 TOKEN_DEF(PublicToken, L"public")
@@ -164,8 +162,6 @@ using Token = std::variant<
     IsToken,
     AsToken,
     RefToken,
-    BoxToken,
-    LocalToken,
     NullToken,
 
     PublicToken,

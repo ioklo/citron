@@ -428,8 +428,8 @@ Citron::SExp* ParsePrimaryExp(Lexer* lexer, SFactory& factory)
 
 SExp* ParseSingleExp(Lexer* lexer, SFactory& factory)
 {
-    if (auto* exp = ParseBoxExp(lexer, factory))
-        return exp;
+    /*if (auto* exp = ParseBoxExp(lexer, factory))
+        return exp;*/
         
     if (auto* exp = ParseNewExp(lexer, factory))
         return exp;
@@ -462,21 +462,21 @@ SExp* ParseSingleExp(Lexer* lexer, SFactory& factory)
 }
 
 
-SExp_Box* ParseBoxExp(Lexer* lexer, SFactory& factory)
-{
-    // <BOX> <EXP>
-    Lexer curLexer = *lexer;
-
-    if (!Accept<BoxToken>(&curLexer))
-        return nullptr;
-
-    auto* innerExp = ParseExp(&curLexer, factory);
-    if (!innerExp)
-        return nullptr;
-
-    *lexer = move(curLexer);
-    return factory.MakeSExp_Box(innerExp);
-}
+//SExp_Box* ParseBoxExp(Lexer* lexer, SFactory& factory)
+//{
+//    // <BOX> <EXP>
+//    Lexer curLexer = *lexer;
+//
+//    if (!Accept<BoxToken>(&curLexer))
+//        return nullptr;
+//
+//    auto* innerExp = ParseExp(&curLexer, factory);
+//    if (!innerExp)
+//        return nullptr;
+//
+//    *lexer = move(curLexer);
+//    return factory.MakeSExp_Box(innerExp);
+//}
 
 SExp_New* ParseNewExp(Lexer* lexer, SFactory& factory)
 {

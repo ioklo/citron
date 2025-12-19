@@ -14,6 +14,223 @@ using namespace std;
 
 namespace Citron {
 
+// nullable, shared, ptr,
+// T?**** 섞는거 불가능
+// nullable<T> = T?, T?????불가능, 안될 이유는 없을거 같지만 일단 문법차원에서 막는다
+// ptr<T> = T*, T***** 가능
+// shared<T> = shared T
+// local<T> = local T
+// shared T* 불가능
+// ref는 타입에 없다
+
+// Formal =  // 오로지 id와 키워드만 있는 버전
+//     | Id
+//     | 'nullable' '<' TypeExp '>'
+//     | 'shared' '<' TypeExp '>'
+//     | 'local' '<' TypeExp '>'
+//     ... 
+
+// Postfix = '*'+ | '?'
+
+// TypeExp = // prefix, postfix 가능한 버전
+//     | Id Postfix
+//     | 'nullable' '<' TypeExp '>' Postfix
+//     | 'shared' '<' TypeExp '>' Postfix
+//     | 'shared' Formal 
+//     | 'local' '<' TypeExp '>' Postfix
+//     ...
+
+STypeExp* ParseIdChainTypeExp(Lexer* lexer, SFactory& factory);
+
+// SFuncTypeExp* ParseFuncTypeExp(Lexer* lexer, SFactory& factory);
+// STupleTypeExp* ParseTupleTypeExp(Lexer* lexer, SFactory& factory);
+
+// postfix 처리를 하지 않는 버전
+STypeExp* ParseFormalTypeExp_Keywords(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer{*lexer};
+
+    auto oIdToken = Accept<IdentifierToken>(&curLexer);
+    if (!oIdToken) return nullptr;
+
+    if (oIdToken->text == "nullable")
+    {
+        if (!Accept<LessThanToken>(&curLexer)) return nullptr;
+        auto oInnerTypeExp = ParseTypeExp(&curLexer, factory);
+        if (!oInnerTypeExp) return nullptr;
+
+        if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;
+
+        *lexer = move(curLexer);
+        return factory.MakeSTypeExp_Nullable(move(oInnerTypeExp));
+    }
+    else if (oIdToken->text == "ptr")
+    {
+        if (!Accept<LessThanToken>(&curLexer)) return nullptr;
+        auto oInnerTypeExp = ParseTypeExp(&curLexer, factory);
+        if (!oInnerTypeExp) return nullptr;
+
+        if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;
+
+        *lexer = move(curLexer);
+        return factory.MakeSTypeExp_Ptr(move(oInnerTypeExp));
+    }
+    else if (oIdToken->text == "shared")
+    {
+        if (!Accept<LessThanToken>(&curLexer)) return nullptr;
+        auto oInnerTypeExp = ParseTypeExp(&curLexer, factory);
+        if (!oInnerTypeExp) return nullptr;
+
+        if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;
+
+        *lexer = move(curLexer);
+        return factory.MakeSTypeExp_Shared(move(oInnerTypeExp));
+    }
+    else if (oIdToken->text == "local")
+    {   
+        if (!Accept<LessThanToken>(&curLexer)) return nullptr;
+        auto oInnerTypeExp = ParseTypeExp(&curLexer, factory);
+        if (!oInnerTypeExp) return nullptr;
+
+        if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;
+
+        *lexer = move(curLexer);
+        return factory.MakeSTypeExp_Local(move(oInnerTypeExp));
+    }
+
+    return nullptr;
+}
+
+STypeExp* ParseFormalTypeExp(Lexer* lexer, SFactory& factory)
+{
+    if (STypeExp* typeExp = ParseFormalTypeExp_Keywords(lexer, factory))
+        return typeExp;
+
+    if (STypeExp* typeExp = ParseIdChainTypeExp(lexer, factory))
+        return typeExp;
+
+    return nullptr;
+}
+
+STypeExp* ParseTypeExp_Postfix(STypeExp* typeExp, Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer{*lexer};
+
+    if (Accept<StarToken>(&curLexer))
+    {
+        typeExp = factory.MakeSTypeExp_Ptr(move(typeExp));
+
+        while (Accept<StarToken>(&curLexer))
+            typeExp = factory.MakeSTypeExp_Ptr(move(typeExp));
+
+        *lexer = move(curLexer);
+        return typeExp;
+    }
+    else if (Accept<QuestionToken>(&curLexer))
+    {
+        typeExp = factory.MakeSTypeExp_Nullable(move(typeExp));
+        *lexer = move(curLexer);
+        return typeExp;
+    }
+    else return typeExp;
+}
+
+STypeExp* ParseTypeExp_Keywords(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer{*lexer};
+
+    auto oIdToken = Accept<IdentifierToken>(&curLexer);
+    if (!oIdToken) return nullptr;
+    
+    if (oIdToken->text == "nullable")
+    {
+        if (!Accept<LessThanToken>(&curLexer)) return nullptr;
+        auto oInnerTypeExp = ParseTypeExp(&curLexer, factory);
+        if (!oInnerTypeExp) return nullptr;
+
+        if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;        
+
+        *lexer = move(curLexer);
+        auto* typeExp = factory.MakeSTypeExp_Nullable(move(oInnerTypeExp));
+        return ParseTypeExp_Postfix(typeExp, lexer, factory);
+    }
+    else if (oIdToken->text == "ptr")
+    {
+        if (!Accept<LessThanToken>(&curLexer)) return nullptr;
+        auto oInnerTypeExp = ParseTypeExp(&curLexer, factory);
+        if (!oInnerTypeExp) return nullptr;
+
+        if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;
+
+        *lexer = move(curLexer);
+        auto* typeExp = factory.MakeSTypeExp_Ptr(move(oInnerTypeExp));
+        return ParseTypeExp_Postfix(typeExp, lexer, factory);
+    }
+    else if (oIdToken->text == "shared") 
+    {
+        // <가 있느냐 여부
+        if (Accept<LessThanToken>(&curLexer))
+        {
+            auto oInnerTypeExp = ParseTypeExp(&curLexer, factory);
+            if (!oInnerTypeExp) return nullptr;
+
+            if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;
+
+            *lexer = move(curLexer);
+            auto* typeExp = factory.MakeSTypeExp_Shared(move(oInnerTypeExp));
+            return ParseTypeExp_Postfix(typeExp, lexer, factory);
+        }
+        else
+        {
+            // shared T 꼴
+            auto* innerTypeExp = ParseFormalTypeExp(&curLexer, factory);
+            if (!innerTypeExp) return nullptr;
+
+            *lexer = move(curLexer);
+            return factory.MakeSTypeExp_Shared(innerTypeExp);
+        }
+    }
+    else if (oIdToken->text == "local")
+    {
+        // <가 있느냐 여부
+        if (Accept<LessThanToken>(&curLexer))
+        {
+            auto oInnerTypeExp = ParseTypeExp(&curLexer, factory);
+            if (!oInnerTypeExp) return nullptr;
+
+            if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;
+
+            *lexer = move(curLexer);
+            auto* typeExp = factory.MakeSTypeExp_Local(move(oInnerTypeExp));
+            return ParseTypeExp_Postfix(typeExp, lexer, factory);
+        }
+        else
+        {
+            // local T 꼴
+            auto* innerTypeExp = ParseFormalTypeExp(&curLexer, factory);
+            if (!innerTypeExp) return nullptr;
+
+            *lexer = move(curLexer);
+            return factory.MakeSTypeExp_Local(innerTypeExp);
+        }
+    }
+
+    return nullptr;
+}
+
+// postfix 처리를 하는 버전
+STypeExp* ParseTypeExp(Lexer* lexer, SFactory& factory)
+{
+    // 항상 nullable, ptr, shared, local 먼저
+    if (STypeExp* typeExp = ParseTypeExp_Keywords(lexer, factory))
+        return typeExp;
+
+    if (STypeExp* typeExp = ParseIdChainTypeExp(lexer, factory))
+        return ParseTypeExp_Postfix(typeExp, lexer, factory);
+
+    return nullptr;
+}
+
 optional<vector<STypeExp*>> ParseTypeArgs(Lexer* lexer, SFactory& factory)
 {
     vector<STypeExp*> typeArgs;
@@ -48,6 +265,9 @@ STypeExp_Id* ParseIdTypeExp(Lexer* lexer, SFactory& factory)
     if (!oIdToken)
         return nullptr;
 
+    if (oIdToken->text == "nullable" || oIdToken->text == "ptr" || oIdToken->text == "shared" || oIdToken->text == "local")
+        return nullptr;
+
     if (auto oTypeArgs = ParseTypeArgs(&curLexer, factory))
     {
         *lexer = move(curLexer);
@@ -58,72 +278,6 @@ STypeExp_Id* ParseIdTypeExp(Lexer* lexer, SFactory& factory)
         *lexer = move(curLexer);
         return factory.MakeSTypeExp_Id(oIdToken->text, vector<STypeExp*>());
     }
-}
-
-// T?
-STypeExp_Nullable* ParseNullableTypeExp(Lexer* lexer, SFactory& factory)
-{
-    Lexer curLexer = *lexer;
-
-    STypeExp* typeExp = nullptr;
-    
-    if (!typeExp) typeExp = ParseLocalPtrTypeExp(&curLexer, factory);
-    if (!typeExp) typeExp = ParseParenTypeExp(&curLexer, factory);
-    if (!typeExp) typeExp = ParseIdChainTypeExp(&curLexer, factory);
-    if (!typeExp) return nullptr;
-
-    if (!Accept<QuestionToken>(&curLexer))
-        return nullptr;
-
-    *lexer = move(curLexer);
-    return factory.MakeSTypeExp_Nullable(typeExp);
-}
-
-// T*
-STypeExp* ParseLocalPtrTypeExp(Lexer* lexer, SFactory& factory)
-{
-    Lexer curLexer = *lexer;
-
-    // avoid left recursion
-
-    STypeExp* innerTypeExp = ParseParenTypeExp(&curLexer, factory);
-    if (!innerTypeExp) innerTypeExp = ParseIdChainTypeExp(&curLexer, factory);
-    if (!innerTypeExp) return nullptr;
-    
-    // 적어도 한개는 있어야 한다
-    if (!Accept<StarToken>(&curLexer))
-        return nullptr;
-    
-    STypeExp* curTypeExp = factory.MakeSTypeExp_LocalPtr(innerTypeExp);
-
-    while (Accept<StarToken>(&curLexer))
-    {
-        // NOTICE: STypeExp_LocalPtr(move(curTypeExp)); curTypeExp가 STypeExp_LocalPtr라면 감싸는게 아니라 이동생성자가 호출된다
-        curTypeExp = factory.MakeSTypeExp_LocalPtr(curTypeExp);
-    }
-
-    *lexer = move(curLexer);
-    return curTypeExp;
-}
-
-// (T)
-STypeExp* ParseParenTypeExp(Lexer* lexer, SFactory& factory)
-{
-    Lexer curLexer = *lexer;
-
-    if (!Accept<LParenToken>(&curLexer))
-        return nullptr;
-
-    STypeExp* innerTypeExp = ParseNullableTypeExp(&curLexer, factory);
-    if (!innerTypeExp) innerTypeExp = ParseLocalPtrTypeExp(&curLexer, factory);
-    if (!innerTypeExp) innerTypeExp = ParseLocalTypeExp(&curLexer, factory);
-    if (!innerTypeExp) return nullptr;
-    
-    if (!Accept<RParenToken>(&curLexer))
-        return nullptr;
-
-    *lexer = move(curLexer);
-    return innerTypeExp;
 }
 
 // ID...
@@ -159,41 +313,10 @@ STypeExp* ParseIdChainTypeExp(Lexer* lexer, SFactory& factory)
 // func<>
 // std::optional<SFuncTypeExp> ParseFuncTypeExp(Lexer* lexer);
 
+// swift some
+// some<>
+
 // tuple
 // std::optional<STupleTypeExp> ParseTupleTypeExp(Lexer* lexer);
-
-// local I i;
-STypeExp_Local* ParseLocalTypeExp(Lexer* lexer, SFactory& factory)
-{
-    Lexer curLexer = *lexer;
-
-    if (!Accept<LocalToken>(&curLexer))
-        return nullptr;
-
-    STypeExp* innerTypeExp = ParseIdChainTypeExp(&curLexer, factory);
-    // if (!oInnerTypeExp) oInnerTypeExp = ParseFuncTypeExp(&curLexer);
-    if (!innerTypeExp) return nullptr;
-
-    *lexer = move(curLexer);
-    return factory.MakeSTypeExp_Local(innerTypeExp);
-}
-
-// 
-STypeExp* ParseTypeExp(Lexer* lexer, SFactory& factory)
-{
-    if (auto* nullableTypeExp = ParseNullableTypeExp(lexer, factory))
-        return nullableTypeExp;
-
-    if (auto* localPtrTypeExp = ParseLocalPtrTypeExp(lexer, factory))
-        return localPtrTypeExp;
-
-    if (auto* idChainTypeExp = ParseIdChainTypeExp(lexer, factory))
-        return idChainTypeExp;
-
-    if (auto* localTypeExp = ParseLocalTypeExp(lexer, factory))
-        return localTypeExp;
-
-    return nullptr;
-}
 
 }

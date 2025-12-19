@@ -11,7 +11,7 @@ enum class DeclTypeInfoKind
     Normal,
     PlainVar,
     LocalInterfaceVar, // starts with local
-    BoxPtrVar,
+    SharedVar,
     LocalPtrVar,
     NullableVar,
 };

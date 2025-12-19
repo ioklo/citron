@@ -181,7 +181,16 @@ public:
         return DeclTypeInfo{DeclTypeInfoKind::NullableVar, /*type*/ nullptr};
     }
 
-    ResultType Visit(STypeExp_LocalPtr* typeExp)
+    // shared int
+    ResultType Visit(STypeExp_Shared* typeExp)
+    {
+        if (!IsVarType(typeExp->innerType))
+            return Normal(typeExp);
+
+        return DeclTypeInfo{DeclTypeInfoKind::SharedVar, /*type*/ nullptr};
+    }
+
+    ResultType Visit(STypeExp_Ptr* typeExp)
     {
         if (!IsVarType(typeExp->innerType))
             return Normal(typeExp);

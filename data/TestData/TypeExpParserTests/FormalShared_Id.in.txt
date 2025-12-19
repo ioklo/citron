@@ -1,0 +1,1 @@
+shared<A.B.C<int>.D>
