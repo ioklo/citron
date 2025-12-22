@@ -1,14 +1,12 @@
-%%NOTTEST%%
 ```
 <exp> is <interface-type-exp>
 ```
 
-%%NOTTEST%%
 ```
 ClassIsInterfaceExp(Exp exp, InterfaceSymbol symbol)
 ```
 
-%%BEGIN_EMBED(Class_Is_Interface_Expression_Basic)%%
+<!--BEGIN_EMBED(Class_Is_Interface_Expression_Basic)-->
 ```cs
 //@ true
 interface I { }
@@ -24,9 +22,9 @@ void Main()
 	@$t
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Class_Is_Interface_Expression_NotRelated)%%
+<!--BEGIN_EMBED(Class_Is_Interface_Expression_NotRelated)-->
 ```cs
 //@ false
 interface I { }
@@ -39,4 +37,4 @@ void Main()
 	@$t
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

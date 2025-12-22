@@ -1,4 +1,4 @@
-%%BEGIN_EMBED(Break_Statement_For)%%
+<!--BEGIN_EMBED(Break_Statement_For)-->
 ```cs
 //@ 123end
 void Main()
@@ -12,9 +12,9 @@ void Main()
     @end
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Break_Statement_Foreach)%%
+<!--BEGIN_EMBED(Break_Statement_Foreach)-->
 ```cs
 //@ 67end
 void Main()
@@ -28,9 +28,9 @@ void Main()
     @end
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Break_Statement_NestedFor)%%
+<!--BEGIN_EMBED(Break_Statement_NestedFor)-->
 ```cs
 //@ 6767
 void Main()
@@ -45,4 +45,4 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

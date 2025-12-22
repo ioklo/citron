@@ -1,4 +1,4 @@
-%%BEGIN_EMBED(Block_Statement_Scope)%%
+<!--BEGIN_EMBED(Block_Statement_Scope)-->
 ```cs
 //@ 7
 void Main()
@@ -13,4 +13,4 @@ void Main()
     @$a
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

@@ -1,5 +1,5 @@
 
-%%BEGIN_EMBED(Class_Member_Variable_Location_Basic)%%
+<!--BEGIN_EMBED(Class_Member_Variable_Location_Basic)-->
 ```cs
 //@ 2
 class X
@@ -14,9 +14,9 @@ void Main()
     @${x.x}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Class_Member_Variable_Location_Static)%%
+<!--BEGIN_EMBED(Class_Member_Variable_Location_Static)-->
 ```cs
 //@ 11
 // 11
@@ -38,4 +38,4 @@ void Main()
 	c.F();
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

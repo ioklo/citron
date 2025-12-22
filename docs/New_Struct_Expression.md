@@ -1,14 +1,12 @@
-%%NOTTEST%%
 ```
 <struct-id>(<argument>, ...)
 ```
 
-%%NOTTEST%%
 ```
 NewStructExp(StructConstructorSymbol symbol, [Argument] args)
 ```
 
-%%BEGIN_EMBED(New_Struct_Expression_Basic)%%
+<!--BEGIN_EMBED(New_Struct_Expression_Basic)-->
 ```cs
 //@ 3
 struct S
@@ -22,7 +20,7 @@ void Main()
 	@${s.x}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 
 # Reference

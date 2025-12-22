@@ -1,6 +1,6 @@
 # Async
 
-%%BEGIN_EMBED(Task_Async)%%
+<!--BEGIN_EMBED(Task_Async)-->
 ```cs
 //@ 50504950
 void Main()
@@ -30,10 +30,10 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Await
-%%BEGIN_EMBED(Task_Await_LocalScope)%%
+<!--BEGIN_EMBED(Task_Await_LocalScope)-->
 ```cs
 //@ 
 void F()
@@ -54,4 +54,4 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

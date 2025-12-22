@@ -1,14 +1,12 @@
-%%NOTTEST%%
 ```
 <exp>(<argument>, ...)
 ```
 
-%%NOTTEST%%
 ```
 CallStructMemberFuncExp(StructMemberFuncSymbol symbol, Loc? instance, [Argument] args)
 ```
 
-%%BEGIN_EMBED(Call_Struct_Member_Function_Expression_Instance)%%
+<!--BEGIN_EMBED(Call_Struct_Member_Function_Expression_Instance)-->
 ```cs
 //@ hello
 struct S
@@ -26,9 +24,9 @@ void Main()
 	s.Print();
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Call_Struct_Member_Function_Expression_Static)%%
+<!--BEGIN_EMBED(Call_Struct_Member_Function_Expression_Static)-->
 ```cs
 //@ hello
 struct S
@@ -39,7 +37,7 @@ struct S
 	}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [Struct_Member_Function](Struct_Member_Function.md)

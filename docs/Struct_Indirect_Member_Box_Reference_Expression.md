@@ -1,9 +1,8 @@
-%%NOTTEST%%
 ```
 StructIndirectMemberBoxRefExp(Exp holder, StructMemberVarSymbol symbol)
 ```
 
-%%BEGIN_EMBED(Struct_Indirect_Member_Box_Reference_Expression_Basic)%%
+<!--BEGIN_EMBED(Struct_Indirect_Member_Box_Reference_Expression_Basic)-->
 ```cs
 //@ 2
 struct S
@@ -21,7 +20,7 @@ void Main()
 	@${bs->i}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [Expressions](Expressions.md)

@@ -2,7 +2,7 @@
 Discriminated Union, Algebraic Data Type
 기존 C/C++의 enum과 비슷하지만, 멤버변수와 함께 넣을 수 있습니다.
 
-%%BEGIN_EMBED(Enum_Complex)%%
+<!--BEGIN_EMBED(Enum_Complex)-->
 ```cs
 //@ 1300
 // 선언
@@ -29,14 +29,14 @@ void Main()
     @$lenSq
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 `Rect`, `Polar`를 Enum Case라고 합니다
 
 # Enum Case들의 생성, 타입
 enum case는 멤버변수가 없는 standalone 형식, 멤버변수가 있는 형식 두가지 형식이 있습니다. 두 형식 모두 생성시 enum case 타입이 아닌 부모 enum타입으로 생성합니다. var를 이용한 local variable선언시 에도 variable의 타입은 부모 enum 타입입니다. 이렇게 해야 다른 case를 대입하기 수월합니다. enum case타입을 직접 쓰는 경우는 패턴매칭 등에서 각각의 멤버변수에 접근해야 할 때 입니다.
 
 standalone을 생성할땐 괄호 없이 그냥 써주면 됩니다.
-%%BEGIN_EMBED(Enum_ConstructStandalone)%%
+<!--BEGIN_EMBED(Enum_ConstructStandalone)-->
 ```cs
 //@ 
 enum E { First }
@@ -47,10 +47,10 @@ void Main()
     
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 멤버변수가 있는 타입은 함수처럼 인자를 주어서 생성합니다.
-%%BEGIN_EMBED(Enum_ConstructWIthArgument)%%
+<!--BEGIN_EMBED(Enum_ConstructWIthArgument)-->
 ```cs
 //@ 2
 enum E { Second(int x) }
@@ -60,10 +60,10 @@ void Main()
     var e = E.Second(2); // e는 E 타입입니다
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Generics
-%%BEGIN_EMBED(Enum_Generics)%%
+<!--BEGIN_EMBED(Enum_Generics)-->
 ```cs
 //@ Hi
 enum Option<T>
@@ -79,14 +79,14 @@ if (s is Option<string>.Some some)
     @${some.value}
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Pattern Matching
 
 ## if test
 `if (<exp> is <enum_case> <variable>?) { ... } ` 형식을 사용해서 패턴 매칭을 할 수 있습니다. `optional variable`은 테스트가 성공했을때 할당할 지역 변수입니다. 지역변수를 할당하지 않도록 생략 가능합니다
 
-%%BEGIN_EMBED(Enum_IfTest)%%
+<!--BEGIN_EMBED(Enum_IfTest)-->
 ```cs
 //@ true
 enum E { First, Second(int x) }
@@ -102,12 +102,11 @@ void Main()
 }
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 ## Switch test
 
 다음과 같은 switch의 case 구문을 쓸 수 있습니다. 
-%%NOTTEST%%
 ```
 case <enum_case>:
 case <enum_case>(var <case_member_var_name> | _, ...):
@@ -122,7 +121,7 @@ case <enum_case> <optional_var_name>:
 
 로컬변수가 만들어지는 경우 모두 값을 복사 하게 됩니다.
 
-%%BEGIN_EMBED(Enum_SwitchTest)%%
+<!--BEGIN_EMBED(Enum_SwitchTest)-->
 ```cs
 //@ 2
 enum E { First, Second(int x, bool y), Third(string s) }
@@ -142,7 +141,7 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference member variable (추후)
 enum case의 멤버변수를 직접 참조하는 것은 안전하지 않습니다. 언제고 enum변수의 값이 다른 enum case로 설정될 수 있기 때문입니다. 
@@ -212,7 +211,7 @@ Animal3 animal32 = Mammal.Cat(2); // 생성 후, conversion
 expression의 타입이 enum타입인 것을 미리 알 수 있을 때, Enum의 case 중 하나를 사용하려고 하는 경우, Enum명을 생략하고 .부터 시작할 수 있습니다.
 
 로컬변수 초기화, 대입의 값 부분, 함수 인자, 함수 리턴에서 사용할 수 있습니다
-%%BEGIN_EMBED(Enum_TypeHint)%%
+<!--BEGIN_EMBED(Enum_TypeHint)-->
 ```cs
 //@ 
 enum E 
@@ -245,4 +244,4 @@ void Main()
 }
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

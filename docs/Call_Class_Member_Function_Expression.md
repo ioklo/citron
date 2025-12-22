@@ -1,14 +1,12 @@
-%%NOTTEST%%
 ```
 <exp>(<argument>, ...)
 ```
 
-%%NOTTEST%%
 ```
 CallClassMemberFuncExp(ClassMemberFuncSymbol symbol, Loc? instance, [Argument] args)
 ```
 
-%%BEGIN_EMBED(Call_Class_Member_Function_Expression_Instance)%%
+<!--BEGIN_EMBED(Call_Class_Member_Function_Expression_Instance)-->
 ```cs
 //@ 2 4
 class X
@@ -27,9 +25,9 @@ void Main()
     x.F(4);
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Call_Class_Member_Function_Expression_Static)%%
+<!--BEGIN_EMBED(Call_Class_Member_Function_Expression_Static)-->
 ```cs
 //@ X: 3
 class X
@@ -45,7 +43,7 @@ void Main()
 	X.Print(3);
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Referece
 [Class_Member_Function](Class_Member_Function.md)

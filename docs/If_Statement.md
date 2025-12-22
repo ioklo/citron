@@ -1,16 +1,14 @@
-%%NOTTEST%%
 ```
 if (<exp>) <embeddable-stmt>
 
 if (<exp>) <embeddable-stmt> else <embeddable-stmt>
 ```
 
-%%NOTTEST%%
 ```
 IfStmt(Exp cond, [Stmt] body, [Stmt] elseBody)
 ```
 
-%%BEGIN_EMBED(If_Statement_Basic)%%
+<!--BEGIN_EMBED(If_Statement_Basic)-->
 ```cs
 //@ good
 void Main()
@@ -23,9 +21,9 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(If_Statement_BasicElse)%%
+<!--BEGIN_EMBED(If_Statement_BasicElse)-->
 ```cs
 //@ pass
 void Main()
@@ -34,9 +32,9 @@ void Main()
     else @{pass}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(If_Statement_NestedIf)%%
+<!--BEGIN_EMBED(If_Statement_NestedIf)-->
 ```cs
 //@ completed
 void Main()
@@ -48,7 +46,7 @@ void Main()
     @completed
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [Expressions](Expressions.md)

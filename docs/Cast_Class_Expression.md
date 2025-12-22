@@ -1,11 +1,10 @@
 대응하는 syntax 없음. static cast.
 
-%%NOTTEST%%
 ```
 CastClassExp(Exp source, ClassSymbol symbol)
 ```
 
-%%BEGIN_EMBED(Cast_Class_Expression_Upcast)%%
+<!--BEGIN_EMBED(Cast_Class_Expression_Upcast)-->
 ```cs
 //@ 
 class B { }
@@ -18,7 +17,7 @@ void Main()
 }
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [Expressions](Expressions.md)

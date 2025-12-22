@@ -1,4 +1,4 @@
-%%BEGIN_EMBED(Blank_Statement_For)%%
+<!--BEGIN_EMBED(Blank_Statement_For)-->
 ```cs
 //@ 01234
 int Add(int i)
@@ -12,9 +12,9 @@ void Main()
     for(int i = 0; i < 5; i = Add(i));
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Blank_Statement_Foreach)%%
+<!--BEGIN_EMBED(Blank_Statement_Foreach)-->
 ```cs
 //@ helloworld1
 seq string F()
@@ -32,4 +32,4 @@ void Main()
 }
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

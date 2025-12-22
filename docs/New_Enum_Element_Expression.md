@@ -1,15 +1,13 @@
-%%NOTTEST%%
 ```
 <enum-id>.<enum> // standalone
 <enum-id>.<enum-element-name>(<argument>, ...) // with arguments
 ```
 
-%%NOTTEST%%
 ```
 NewEnumElemExp(EnumElemSymbol symbol, [Argument] args)
 ```
 
-%%BEGIN_EMBED(New_Enum_Element_Expression_Basic)%%
+<!--BEGIN_EMBED(New_Enum_Element_Expression_Basic)-->
 ```cs
 //@ 
 enum E { First, Second(int i) }
@@ -19,9 +17,9 @@ void Main()
 	e = E.Second(2);
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(New_Enum_Element_Expression_Shorthand)%%
+<!--BEGIN_EMBED(New_Enum_Element_Expression_Shorthand)-->
 ```cs
 //@  
 enum E { First, Second(int i) }
@@ -31,7 +29,7 @@ void Main()
 	e = .Second(2);
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [Enum_Element](Enum_Element.md)

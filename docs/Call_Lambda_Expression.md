@@ -1,14 +1,12 @@
-%%NOTTEST%%
 ```
 <exp>(<argument>, ...) // exp가 lambda value로 계산될 때
 ```
 
-%%NOTTEST%%
 ```
 CallLambdaExp(LambdaSymbol symbol, Loc callable, [Argument] args)
 ```
 
-%%BEGIN_EMBED(Call_Lambda_Expression_General)%%
+<!--BEGIN_EMBED(Call_Lambda_Expression_General)-->
 ```cs
 //@ 1 3 true
 void Main()
@@ -20,9 +18,9 @@ void Main()
 	f(1, "3", true);
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Call_Lambda_Expression_CallInstanceMember)%%
+<!--BEGIN_EMBED(Call_Lambda_Expression_CallInstanceMember)-->
 ```cs
 //@ 2
 class C
@@ -44,9 +42,9 @@ void Main()
     c.InvokeF(2);
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Call_Lambda_Expression_CallStaticMember)%%
+<!--BEGIN_EMBED(Call_Lambda_Expression_CallStaticMember)-->
 ```cs
 //@ 2
 class C
@@ -64,7 +62,7 @@ void Main()
     C.F(2);
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [Lambda](Lambda.md)

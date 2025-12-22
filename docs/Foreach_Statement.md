@@ -1,4 +1,4 @@
-%%BEGIN_EMBED(Foreach_Statement_Basic)%%
+<!--BEGIN_EMBED(Foreach_Statement_Basic)-->
 ```cs
 //@ 1234
 void Main()
@@ -7,9 +7,9 @@ void Main()
         @$e
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Foreach_Statement_WithManualEnumerable)%%
+<!--BEGIN_EMBED(Foreach_Statement_WithManualEnumerable)-->
 ```cs
 //@ 01234
 struct EnumerableX
@@ -49,9 +49,9 @@ void Main()
 	}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Foreach_Statement_WithSeqFunc)%%
+<!--BEGIN_EMBED(Foreach_Statement_WithSeqFunc)-->
 ```cs
 //@  HelloWorld
 void Main()
@@ -66,9 +66,9 @@ void Main()
         @$e
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Foreach_Statement_Scope)%%
+<!--BEGIN_EMBED(Foreach_Statement_Scope)-->
 ```cs
 //@ 7
 void Main()
@@ -80,9 +80,9 @@ void Main()
     @$i
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Foreach_Statement_LambdaAsItem)%%
+<!--BEGIN_EMBED(Foreach_Statement_LambdaAsItem)-->
 ```cs
 //@ 12343
 void Main()
@@ -99,5 +99,5 @@ void Main()
         f();
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 

@@ -1,14 +1,12 @@
-%%NOTTEST%%
 ```
 id(exp, params exp)
 ```
 
-%%NOTTEST%%
 ```
 CallGlobalFuncExp(GlobalFuncSymbol symbol, [Argument] args)
 ```
 
-%%BEGIN_EMBED(Call_Global_Function_Expression_General)%%
+<!--BEGIN_EMBED(Call_Global_Function_Expression_General)-->
 ```cs
 //@ 1 2 false
 void F(int i, string s, bool b)
@@ -21,9 +19,9 @@ void Main()
 	F(1, "2", false);
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Call_Global_Function_Expression_Recursive)%%
+<!--BEGIN_EMBED(Call_Global_Function_Expression_Recursive)-->
 ```cs
 //@ 345
 void F(int i, int end)
@@ -39,9 +37,9 @@ void Main()
 	F(3, 6);
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Call_Global_Function_Expression_Generator)%%
+<!--BEGIN_EMBED(Call_Global_Function_Expression_Generator)-->
 ```cs
 //@ 123
 seq int Func()
@@ -57,7 +55,7 @@ void Main()
         @$i
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [Global_Function](Global_Function.md)

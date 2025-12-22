@@ -22,19 +22,24 @@ struct S : B
 
 void Main()
 {	
-	// 일단 다 적고 나중에 분리
-	
-	var s1 = new S<int>(1, 2, 3); // a, x, y
+	var s1 = S(1, 2, 3); // a, x, y
+    
+    // 2
 	@${s1.x}
-	@ ${s1.GetY()}
-	@ ${s1.Sum()}
+
+    // 3
+	@${s1.GetY()}
+
+    // 6
+	@${s1.Sum()}
+    
+    S s2 = uninit; // 미초기화 상태
 	
-	S s2 = s1;                // 복사 생성, 오버라이드 불가능
+	s2 = s1;                  // 복사 생성
 	
-	// 고급, box, boxed 타입 S*
-	box var* s3 = box S(1, 2, 3);
+	// 고급, shared
+	shared S s3 = shared S(1, 2, 3);
 	
 	@${*s3.a}
-	s2 = *s3;
+	s2 = *s3;                 // 복사 대입
 }
-

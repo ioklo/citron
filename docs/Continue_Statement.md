@@ -1,4 +1,4 @@
-%%BEGIN_EMBED(Continue_Statement_For)%%
+<!--BEGIN_EMBED(Continue_Statement_For)-->
 ```cs
 //@ 135
 void Main()
@@ -10,9 +10,9 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Continue_Statement_Foreach)%%
+<!--BEGIN_EMBED(Continue_Statement_Foreach)-->
 ```cs
 //@ 711
 void Main()
@@ -24,9 +24,9 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Continue_Statement_NestedFor)%%
+<!--BEGIN_EMBED(Continue_Statement_NestedFor)-->
 ```cs
 //@ 711711
 void Main()
@@ -41,4 +41,4 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

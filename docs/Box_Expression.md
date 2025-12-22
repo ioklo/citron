@@ -1,4 +1,3 @@
-%%NOTTEST%%
 ```
 BoxExp(Exp innerExp)
 ```
@@ -10,7 +9,7 @@ BoxExp는
 - 실행환경의 result를 원래대로 돌려놓습니다
 - 실행환경의 result에 힙에 할당한 위치를 저장한 box 포인터 값을 저장합니다
 
-%%BEGIN_EMBED(Box_Expression_Basic)%%
+<!--BEGIN_EMBED(Box_Expression_Basic)-->
 ```cs
 //@ 5
 void Main()
@@ -18,7 +17,7 @@ void Main()
 	@${*(box 5)}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 
 # Reference

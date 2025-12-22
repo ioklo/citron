@@ -1,4 +1,4 @@
-%%BEGIN_EMBED(Return_Statement_ControlFlow)%%
+<!--BEGIN_EMBED(Return_Statement_ControlFlow)-->
 ```cs
 //@ F
 void F()
@@ -16,9 +16,9 @@ void Main()
 }
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Return_Statement_ReturnValue)%%
+<!--BEGIN_EMBED(Return_Statement_ReturnValue)-->
 ```cs
 //@ F6
 int F(int i)
@@ -35,9 +35,9 @@ void Main()
     @${F(3)}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Return_Statement_LambdaReturn)%%
+<!--BEGIN_EMBED(Return_Statement_LambdaReturn)-->
 ```cs
 //@ 3
 void Main()
@@ -49,9 +49,9 @@ void Main()
     @${f()}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Return_Statement_SeqReturn)%%
+<!--BEGIN_EMBED(Return_Statement_SeqReturn)-->
 ```cs
 //@ 01234
 seq int F()
@@ -71,4 +71,4 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

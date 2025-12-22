@@ -1,11 +1,10 @@
-%%NOTTEST%%
 ```
 StaticBoxRefExp(Loc loc)
 ```
 struct나 class의 static member variable은 reference시 힌트에 따라서 box pointer가 될 수도, local pointer가 될 수 도 있습니다.
 static member variable의 위치를 box pointer로 저장할 필요가 있을 때, 이 컴파일러는 이 expression을 사용합니다.
 
-%%BEGIN_EMBED(Static_Box_Reference_Expression_Basic)%%
+<!--BEGIN_EMBED(Static_Box_Reference_Expression_Basic)-->
 ```cs
 //@ 3
 struct C
@@ -23,7 +22,7 @@ void Main()
 	@${*s}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 
 

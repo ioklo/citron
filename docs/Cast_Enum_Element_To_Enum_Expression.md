@@ -1,11 +1,10 @@
 대응하는 syntax 없음 
 
-%%NOTTESt%%
 ```
 CastEnumElemToEnumExp(Exp source, EnumSymbol symbol)
 ```
 
-%%BEGIN_EMBED(Cast_Enum_Element_To_Enum_Expression_Basic)%%
+<!--BEGIN_EMBED(Cast_Enum_Element_To_Enum_Expression_Basic)-->
 ```cs
 //@ 
 enum E { First, Second(int i) }
@@ -17,7 +16,7 @@ void Main()
 }
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [Expressions](Expressions.md)

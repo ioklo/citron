@@ -1,6 +1,6 @@
 : Stmt, Exp
 
-%%BEGIN_EMBED(For_Statement_Basic)%%
+<!--BEGIN_EMBED(For_Statement_Basic)-->
 ```cs
 //@ 01234
 void Main()
@@ -9,9 +9,9 @@ void Main()
         @$i
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(For_Statement_Initializer)%%
+<!--BEGIN_EMBED(For_Statement_Initializer)-->
 ```cs
 //@ hi234
 void F()
@@ -26,9 +26,9 @@ void Main()
         @$i
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(For_Statement_EmptyInitializer)%%
+<!--BEGIN_EMBED(For_Statement_EmptyInitializer)-->
 ```cs
 //@ 01234
 void Main()
@@ -40,9 +40,9 @@ void Main()
 }
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(For_Statement_Scope)%%
+<!--BEGIN_EMBED(For_Statement_Scope)-->
 ```cs
 //@ 001224364834
 void Main()
@@ -58,9 +58,9 @@ void Main()
     @$i$j
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(For_Statement_EmptyCond)%%
+<!--BEGIN_EMBED(For_Statement_EmptyCond)-->
 ```cs
 //@ 01234
 void Main()
@@ -72,9 +72,9 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(For_Statement_EmptyContinueExp)%%
+<!--BEGIN_EMBED(For_Statement_EmptyContinueExp)-->
 ```cs
 //@ 01234 
 void Main()
@@ -86,9 +86,9 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(For_Statement_EmptyAll)%%
+<!--BEGIN_EMBED(For_Statement_EmptyAll)-->
 ```cs
 //@ 01234
 void Main()
@@ -102,4 +102,4 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

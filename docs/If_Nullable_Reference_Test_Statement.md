@@ -1,16 +1,14 @@
 nullable reference가 가능한 타입에 대해서 dynamic cast를 수행하고, 성공시 본문을 수행합니다
 
-%%NOTTEST%%
 ```
 if (<type-exp> <name> = <exp>) <embeddable-stmt> else <embeddable-stmt>
 ```
 
-%%NOTTEST%%
 ```
 IfNullableRefTestStmt(Type refType, Name varName, Exp castExp, [Stmt] body, [Stmt] elseBody)
 ```
 
-%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_Basic)%%
+<!--BEGIN_EMBED(If_Nullable_Reference_Test_Statement_Basic)-->
 ```cs
 //@ succeed
 class B { }
@@ -25,10 +23,10 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 %%TODO is로 옮길 것%%
-%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_CantTestValueType)%%
+<!--BEGIN_EMBED(If_Nullable_Reference_Test_Statement_CantTestValueType)-->
 ```cs
 //@ $Error
 class C {}
@@ -40,9 +38,9 @@ void Main()
         @false
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestUnrelatedClass)%%
+<!--BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestUnrelatedClass)-->
 ```cs
 //@ $Error
 class C { }
@@ -55,10 +53,10 @@ void Main()
 	if (D d = c); // 미리 잡을 수 있는 경우는 최대한 잡습니다
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 test interface is class
-%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestInterface)%%
+<!--BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestInterface)-->
 ```cs
 //@ true
 interface I {}
@@ -71,10 +69,10 @@ void Main()
 	if (C c = i) @true
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 test class implements interface
-%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestClassImplInterface)%%
+<!--BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestClassImplInterface)-->
 ```cs
 //@ true
 interface I {}
@@ -90,10 +88,10 @@ void Main()
 	}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 test interface's own type also implements interface
-%%BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestInterfaceImplInterface)%%
+<!--BEGIN_EMBED(If_Nullable_Reference_Test_Statement_TestInterfaceImplInterface)-->
 ```cs
 //@ true
 interface I1 { }
@@ -113,7 +111,7 @@ void Main()
 
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 
 # Reference

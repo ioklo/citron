@@ -1,6 +1,5 @@
 다음으로 미룹니다. 기본적으로는 함수 하나당 한 Exception만 던질수 있게 하기. Syntax는 C++이랑 비슷하게 가는게 맞지 않나
 
-%%NOTTEST%%
 ```
 enum FResult { One, Two, Three }
 

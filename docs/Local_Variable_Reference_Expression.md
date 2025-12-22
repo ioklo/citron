@@ -1,9 +1,8 @@
-%%NOTTEST%%
 ```
 LocalVarRefExp(Loc inner)
 ```
 
-%%BEGIN_EMBED(Local_Variable_Reference_Expression_Basic)%%
+<!--BEGIN_EMBED(Local_Variable_Reference_Expression_Basic)-->
 ```cs
 //@ 3
 void Main()
@@ -14,9 +13,9 @@ void Main()
     @{${*i}}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Local_Variable_Reference_Expression_Nested)%%
+<!--BEGIN_EMBED(Local_Variable_Reference_Expression_Nested)-->
 ```cs
 //@ 4
 void Main()
@@ -28,9 +27,9 @@ void Main()
 }
 @$s
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Local_Variable_Reference_Expression_Uninitialized)%%
+<!--BEGIN_EMBED(Local_Variable_Reference_Expression_Uninitialized)-->
 ```cs
 //@ $Error
 void Main()
@@ -40,7 +39,7 @@ void Main()
 	@{$p} 
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [Locations](Locations.md)

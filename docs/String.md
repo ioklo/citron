@@ -12,7 +12,7 @@
 - (string, string) -> string {+}
 - (string, string) -> bool { <, >, <=, >=, == }
 
-%%BEGIN_EMBED(String_Basic)%%
+<!--BEGIN_EMBED(String_Basic)-->
 ```cs
 //@ hi hello world world true true false false onetwo true false true true false false true false true true
 void Main()
@@ -35,4 +35,4 @@ void Main()
 }
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

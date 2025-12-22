@@ -1,9 +1,8 @@
-%%NOTTEST%%
 ```
 CastBoxedLambdaToFuncExp(Exp exp, FuncType funcType)
 ```
 
-%%BEGIN_EMBED(Cast_Boxed_Lambda_To_Func_Expression_Basic)%%
+<!--BEGIN_EMBED(Cast_Boxed_Lambda_To_Func_Expression_Basic)-->
 ```cs
 //@ 3
 void Main()
@@ -14,4 +13,4 @@ void Main()
 	@${f()}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

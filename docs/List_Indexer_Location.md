@@ -1,4 +1,4 @@
-%%BEGIN_EMBED(List_Indexer_Location_General)%%
+<!--BEGIN_EMBED(List_Indexer_Location_General)-->
 ```cs
 //@ 2
 void Main()
@@ -7,4 +7,4 @@ void Main()
 	@${a[1]}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

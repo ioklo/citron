@@ -1,16 +1,14 @@
-%%NOTTEST%%
 ```
 @<string-body>[\r\n]+ // 한줄짜리
 @{<string-body>}      // 범위 (여러 줄 가능)
 ```
 string의 따옴표 안쪽과 같이 취급합니다. 
 
-%%NOTTEST%%
 ```
 CommandStmt([StringExp] stringExps)
 ```
 
-%%BEGIN_EMBED(Command_Statement_Basic)%%
+<!--BEGIN_EMBED(Command_Statement_Basic)-->
 ```cs
 //@ hi
 void Main()
@@ -18,9 +16,9 @@ void Main()
     @hi
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Command_Statement_Interpolated)%%
+<!--BEGIN_EMBED(Command_Statement_Interpolated)-->
 ```cs
 //@ abc177 abcworlddef false.84
 void Main()
@@ -32,9 +30,9 @@ void Main()
     @abc$i abc${s}def $b.84
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Command_Statement_Block)%%
+<!--BEGIN_EMBED(Command_Statement_Block)-->
 ```cs
 //@          <- no ignore 8 blanks        hello world        good
 void Main()
@@ -55,7 +53,7 @@ void Main()
     }
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [String_Expression](String_Expression.md)

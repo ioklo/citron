@@ -1,9 +1,7 @@
-%%NOTTEST%%
 ```
 if (<type-exp> <id> = <exp>) <embeddable-stmt> else <embeddable-stmt>
 ```
 
-%%NOTTEST%%
 ```
 IfNullableValueTestStmt(Type type, Name varName, Exp castExp, [Stmt] body, [Stmt] elseBody)
 ```

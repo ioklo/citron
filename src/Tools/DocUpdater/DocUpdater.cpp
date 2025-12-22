@@ -78,8 +78,8 @@ bool Update(path basePath, path docPath)
     optional<string> embed;
     ostringstream oss;
 
-    //           12             3       3  2 4         41
-    regex r{R"(%%((BEGIN_EMBED\(([^\\)]+)\))|(END_EMBED))%%)"};
+    //             12             3       3  2 4         41
+    regex r{R"(<!--((BEGIN_EMBED\(([^\\)]+)\))|(END_EMBED))-->)"};
     
     auto end = text.cend();
     while(true)

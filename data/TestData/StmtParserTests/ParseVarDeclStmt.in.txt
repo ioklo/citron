@@ -1,1 +1,10 @@
-string a = "hello";
+{
+	string a = "hello";
+	var b = 3;
+	var* c = &b;
+	var& d = b;
+	var? e = 1;
+	shared var f = F();
+	shared<int>& g = f;
+	nullable<int>& h = e;
+}

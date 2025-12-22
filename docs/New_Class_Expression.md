@@ -1,14 +1,12 @@
-%%NOTTEST%%
 ```
 new <symbol-id>(<argument>,...)
 ```
 
-%%NOTTEST%%
 ```
 NewClassExp(ClassConstructorSymbol symbol, [Argument] args)
 ```
 
-%%BEGIN_EMBED(New_Class_Expression_Basic)%%
+<!--BEGIN_EMBED(New_Class_Expression_Basic)-->
 ```cs
 //@ 2 3
 class C
@@ -28,9 +26,9 @@ void Main()
 	c.Print();
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(New_Class_Expression_Generics)%%
+<!--BEGIN_EMBED(New_Class_Expression_Generics)-->
 ```cs
 //@ hello
 class C<T>
@@ -46,7 +44,7 @@ void Main()
 	@$a
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
 # Reference
 [Class_Constructor](Class_Constructor.md)

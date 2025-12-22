@@ -1,14 +1,12 @@
-%%NOTTEST%%
 ```
 <exp> as <class-type-exp>
 ```
 
-%%NOTTEST%%
 ```
 ClassAsClassExp(Exp exp, ClassSymbol symbol)
 ```
 
-%%BEGIN_EMBED(Class_As_Class_Expression_Basic)%%
+<!--BEGIN_EMBED(Class_As_Class_Expression_Basic)-->
 ```cs
 //@ 2
 class B { }
@@ -23,9 +21,9 @@ void Main()
 		@${c.x}
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Class_As_Class_Expression_NotRelated)%%
+<!--BEGIN_EMBED(Class_As_Class_Expression_NotRelated)-->
 ```cs
 //@ ok
 class C { }
@@ -40,4 +38,4 @@ void Main()
 		@ok
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->

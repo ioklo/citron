@@ -1,4 +1,4 @@
-%%BEGIN_EMBED(Expression_Statement_AssignAllowed)%%
+<!--BEGIN_EMBED(Expression_Statement_AssignAllowed)-->
 ```cs
 //@ 
 void Main()
@@ -8,9 +8,9 @@ void Main()
 }
 
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
 
-%%BEGIN_EMBED(Expression_Statement_IntLiteralAsTopLevelExp)%%
+<!--BEGIN_EMBED(Expression_Statement_IntLiteralAsTopLevelExp)-->
 ```cs
 //@ $Error
 void Main()
@@ -18,4 +18,4 @@ void Main()
 	3; // error
 }
 ```
-%%END_EMBED%%
+<!--END_EMBED-->
