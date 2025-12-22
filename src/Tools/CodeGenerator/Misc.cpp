@@ -59,8 +59,11 @@ void WriteAll(path filePath, string contents)
 }
 
 // struct는 거진 인라인으로 작성한다
-void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream& hStream)
+void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream& hStream, ostringstream& cppStream)
 {
+    bool bHModified = false;
+    bool bCppModified = false;
+
     hStream << "struct " << structInfo.name << endl;
     hStream << "{" << endl;
 
@@ -83,11 +86,12 @@ void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream
         hStream << memberInfo.type << " " << memberInfo.name;
     }
 
-    hStream << ")" << endl;
+    hStream << ")";
 
     // : bOut(bOut), bParams(bParams), exp(move(exp))
     if (!structInfo.memberInfos.empty())
     {
+        hStream << endl;
         hStream << "        : ";
         bFirst = true;
         for (auto& memberInfo : structInfo.memberInfos)
@@ -95,7 +99,10 @@ void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream
             if (bFirst) bFirst = false;
             else hStream << ", ";
 
-            hStream << memberInfo.name << "(move(" << memberInfo.name << "))";
+            if (!memberInfo.bUseMove)
+                hStream << memberInfo.name << "{" << memberInfo.name << "}";
+            else
+                hStream << memberInfo.name << "{std::move(" << memberInfo.name << ")}";
         }
     }
 
@@ -103,7 +110,30 @@ void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream
 
     for (auto& extraCtor : structInfo.extraCtors)
         hStream << endl << extraCtor << endl;
+    bHModified = true;
 
+    // SYNTAX_API JsonItem ToJson();
+    AddNewLineIfNeeded(bHModified, hStream);
+    hStream << "    " << commonInfo.linkage << " JsonItem ToJson();";
+    bHModified = true;
+
+    // JsonItem IdentifierExpSyntax::ToJson()
+    AddNewLineIfNeeded(bCppModified, cppStream);
+    cppStream << "JsonItem " << structInfo.name << "::ToJson()" << endl;
+    cppStream << "{" << endl;
+    cppStream << "    return JsonObject {" << endl;
+    cppStream << "        { \"$type\", JsonString(\"" << structInfo.name << "\") }," << endl;
+
+    for (auto& memberInfo : structInfo.memberInfos)
+    {
+        cppStream << "        { \"" << memberInfo.name << "\", Citron::ToJson(" << memberInfo.name << ") }," << endl;
+    }
+
+    cppStream << "    };" << endl;
+    cppStream << "}" << endl << endl;
+    bCppModified = true;
+
+    AddNewLineIfNeeded(bHModified, hStream);
     hStream << "};" << endl << endl;
 }
 
@@ -534,7 +564,7 @@ void GenerateItems(CommonInfo& commonInfo, ostringstream& ixxStream, ostringstre
         ostringstream& cppStream;
 
         void operator()(EnumInfo& enumInfo) { GenerateEnum(commonInfo, enumInfo, ixxStream); }
-        void operator()(StructInfo& structInfo) { GenerateStruct(commonInfo, structInfo, ixxStream); }
+        void operator()(StructInfo& structInfo) { GenerateStruct(commonInfo, structInfo, ixxStream, cppStream); }
         void operator()(ClassInfo& classInfo) { GenerateClass(commonInfo, classInfo, ixxStream, cppStream); }
         void operator()(VariantInfo& info) { GenerateVariant(commonInfo, info, ixxStream, cppStream); }
         void operator()(ForwardClassDeclsInfo& info) { GenerateForwardClassDecls(commonInfo, info, ixxStream); }

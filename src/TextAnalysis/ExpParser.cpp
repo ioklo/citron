@@ -269,7 +269,8 @@ Citron::SExp* ParseUnaryExp(Lexer* lexer, SFactory& factory)
         { ExclToken(), SUnaryOpKind::LogicalNot },
         { PlusPlusToken(), SUnaryOpKind::PrefixInc },
         { MinusMinusToken(), SUnaryOpKind::PrefixDec },
-        { StarToken(), SUnaryOpKind::Deref }
+        { StarToken(), SUnaryOpKind::Deref },
+        { AmpersandToken(), SUnaryOpKind::Ref },
     };
 
     Lexer curLexer = *lexer;

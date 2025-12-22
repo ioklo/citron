@@ -36,7 +36,6 @@ void GenerateSyntax(path srcPath)
 
 namespace Citron {
 class SFactory;
-
 )---";
 
     cppStream << R"---(#include "Syntaxes.g.h"
@@ -109,6 +108,17 @@ struct ToJsonVisitor {
                 "SExp_Is",
                 "SExp_As",
             }
+        },
+
+        // VarDeclType
+        ForwardClassDeclsInfo {
+            .names { 
+                "SVarDeclType",
+                "SVarDeclType_Var",
+                "SVarDeclType_VarRef",
+                "SVarDeclType_Ref",
+                "SVarDeclType_Normal" 
+            },
         },
 
         // TypeExp
@@ -255,20 +265,20 @@ struct ToJsonVisitor {
         },
 
         // SVarDecl
-            ClassInfo {
-                .name = "SVarDeclElement",
-                .memberInfos {
-                    {.type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
-                    {.type = "SExp*", .memberVarName = "initExp", .getterName = "GetInitExp" }
-                },
+        ClassInfo {
+            .name = "SVarDeclElement",
+            .memberInfos {
+                {.type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
+                {.type = "SExp*", .memberVarName = "initExp", .getterName = "GetInitExp" }
+            },
         },
 
-            ClassInfo {
-                .name = "SVarDecl",
-                .memberInfos {
-                    {.type = "STypeExp*", .memberVarName = "type", .getterName = "GetType" },
-                    {.type = "std::vector<SVarDeclElement>", .memberVarName = "elements", .getterName = "GetElements" }
-                },
+        ClassInfo{
+            .name = "SVarDecl",
+            .memberInfos {
+                {.type = "SVarDeclType*", .memberVarName = "type", .getterName = "GetType" },
+                {.type = "std::vector<SVarDeclElement>", .memberVarName = "elements", .getterName = "GetElements" }
+            },
         },
 
         // STypeParam
@@ -452,6 +462,18 @@ struct ToJsonVisitor {
                 "SClassDecl",
                 "SStructDecl",
                 "SEnumDecl",
+            }
+        },
+
+        VariantInterfaceInfo{
+            .name = "SVarDeclType",
+            .virtualBases { "SSyntax" },
+            .argName = "type",
+            .members {
+                "SVarDeclType_Var",
+                "SVarDeclType_VarRef",
+                "SVarDeclType_Ref",
+                "SVarDeclType_Normal"
             }
         },
 
@@ -680,6 +702,42 @@ struct ToJsonVisitor {
             .variantInterfaces { "STypeExp" },
             .memberInfos {
                 {.type = "STypeExp*", .memberVarName = "innerType", .getterName = "GetInnerType" },
+            },
+        },
+
+        // SVarDeclType
+        EnumInfo{
+            .name = "SVarDeclType_VarKind",
+            .cases = { "Normal", "Ptr", "Nullable", "Shared" }
+        },
+
+        ClassInfo{
+            .name = "SVarDeclType_Var",
+            .variantInterfaces { "SVarDeclType" },
+            .memberInfos {
+                {.type = "SVarDeclType_VarKind", .memberVarName = "kind", .getterName = "GetKind"},
+            },
+        },
+
+        ClassInfo{
+            .name = "SVarDeclType_VarRef",
+            .variantInterfaces { "SVarDeclType" },
+            .memberInfos { },
+        },
+
+        ClassInfo{
+            .name = "SVarDeclType_Ref",
+            .variantInterfaces { "SVarDeclType" },
+            .memberInfos {
+                {.type = "STypeExp*", .memberVarName = "typeExp", .getterName = "GetTypeExp"},
+            },
+        },
+
+        ClassInfo{
+            .name = "SVarDeclType_Normal",
+            .variantInterfaces { "SVarDeclType" },
+            .memberInfos {
+                {.type = "STypeExp*", .memberVarName = "typeExp", .getterName = "GetTypeExp"},
             },
         },
 

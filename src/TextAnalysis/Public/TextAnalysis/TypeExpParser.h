@@ -14,7 +14,6 @@ namespace Citron {
 class SFactory;
 
 std::optional<std::vector<STypeExp*>> ParseTypeArgs(Lexer* lexer, SFactory& factory);
-
-STypeExp_Local* ParseLocalTypeExp(Lexer* lexer, SFactory& factory);
+SVarDeclType* ParseVarDeclTypeExp(Lexer* lexer, SFactory& factory);
 TEXTANALYSIS_API STypeExp* ParseTypeExp(Lexer* lexer, SFactory& factory);
 }

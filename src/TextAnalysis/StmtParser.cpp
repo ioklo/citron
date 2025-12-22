@@ -114,7 +114,7 @@ optional<SVarDecl> ParseVarDecl(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto* varType = ParseTypeExp(&curLexer, factory);
+    auto* varType = ParseVarDeclTypeExp(&curLexer, factory);
     if (!varType)
         return nullopt;
 

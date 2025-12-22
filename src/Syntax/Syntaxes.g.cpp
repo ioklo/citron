@@ -105,7 +105,7 @@ JsonItem SVarDeclElement::ToJson()
     };
 }
 
-SVarDecl::SVarDecl(STypeExp* type, std::vector<SVarDeclElement> elements)
+SVarDecl::SVarDecl(SVarDeclType* type, std::vector<SVarDeclElement> elements)
     : type(move(type)), elements(move(elements)) { }
 
 SVarDecl::SVarDecl(SVarDecl&& other) noexcept = default;
@@ -361,6 +361,22 @@ JsonItem ToJson(SScriptElement* elem)
 
     SScriptElementToJsonVisitor visitor;
     return Accept(visitor, elem);
+}
+struct SVarDeclTypeToJsonVisitor
+{
+    using ResultType = JsonItem;
+    ResultType Visit(SVarDeclType_Var* type) { return type->ToJson(); }
+    ResultType Visit(SVarDeclType_VarRef* type) { return type->ToJson(); }
+    ResultType Visit(SVarDeclType_Ref* type) { return type->ToJson(); }
+    ResultType Visit(SVarDeclType_Normal* type) { return type->ToJson(); }
+};
+
+JsonItem ToJson(SVarDeclType* type)
+{
+    if (!type) return JsonNull();
+
+    SVarDeclTypeToJsonVisitor visitor;
+    return Accept(visitor, type);
 }
 SExp_Identifier::SExp_Identifier(std::string value, std::vector<STypeExp*> typeArgs)
     : value(move(value)), typeArgs(move(typeArgs)) { }
@@ -765,6 +781,72 @@ JsonItem STypeExp_Local::ToJson()
     return JsonObject {
         { "$type", JsonString("STypeExp_Local") },
         { "innerType", Citron::ToJson(innerType) },
+    };
+}
+
+SVarDeclType_Var::SVarDeclType_Var(SVarDeclType_VarKind kind)
+    : kind(move(kind)) { }
+
+SVarDeclType_Var::SVarDeclType_Var(SVarDeclType_Var&& other) noexcept = default;
+
+SVarDeclType_Var::~SVarDeclType_Var() = default;
+
+SVarDeclType_Var& SVarDeclType_Var::operator=(SVarDeclType_Var&& other) noexcept = default;
+
+JsonItem SVarDeclType_Var::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SVarDeclType_Var") },
+        { "kind", Citron::ToJson(kind) },
+    };
+}
+
+SVarDeclType_VarRef::SVarDeclType_VarRef()
+{ }
+SVarDeclType_VarRef::SVarDeclType_VarRef(SVarDeclType_VarRef&& other) noexcept = default;
+
+SVarDeclType_VarRef::~SVarDeclType_VarRef() = default;
+
+SVarDeclType_VarRef& SVarDeclType_VarRef::operator=(SVarDeclType_VarRef&& other) noexcept = default;
+
+JsonItem SVarDeclType_VarRef::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SVarDeclType_VarRef") },
+    };
+}
+
+SVarDeclType_Ref::SVarDeclType_Ref(STypeExp* typeExp)
+    : typeExp(move(typeExp)) { }
+
+SVarDeclType_Ref::SVarDeclType_Ref(SVarDeclType_Ref&& other) noexcept = default;
+
+SVarDeclType_Ref::~SVarDeclType_Ref() = default;
+
+SVarDeclType_Ref& SVarDeclType_Ref::operator=(SVarDeclType_Ref&& other) noexcept = default;
+
+JsonItem SVarDeclType_Ref::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SVarDeclType_Ref") },
+        { "typeExp", Citron::ToJson(typeExp) },
+    };
+}
+
+SVarDeclType_Normal::SVarDeclType_Normal(STypeExp* typeExp)
+    : typeExp(move(typeExp)) { }
+
+SVarDeclType_Normal::SVarDeclType_Normal(SVarDeclType_Normal&& other) noexcept = default;
+
+SVarDeclType_Normal::~SVarDeclType_Normal() = default;
+
+SVarDeclType_Normal& SVarDeclType_Normal::operator=(SVarDeclType_Normal&& other) noexcept = default;
+
+JsonItem SVarDeclType_Normal::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SVarDeclType_Normal") },
+        { "typeExp", Citron::ToJson(typeExp) },
     };
 }
 

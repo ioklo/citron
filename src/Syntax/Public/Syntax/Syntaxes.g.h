@@ -12,7 +12,6 @@
 
 namespace Citron {
 class SFactory;
-
 class SStmt;
 class SStmt_Command;
 class SStmt_VarDecl;
@@ -50,6 +49,12 @@ class SExp_New;
 class SExp_Box;
 class SExp_Is;
 class SExp_As;
+
+class SVarDeclType;
+class SVarDeclType_Var;
+class SVarDeclType_VarRef;
+class SVarDeclType_Ref;
+class SVarDeclType_Normal;
 
 class STypeExp;
 class STypeExp_Id;
@@ -267,10 +272,10 @@ public:
 class SVarDecl
 {
 public:
-    STypeExp* type;
+    SVarDeclType* type;
     std::vector<SVarDeclElement> elements;
 
-    SYNTAX_API SVarDecl(STypeExp* type, std::vector<SVarDeclElement> elements);
+    SYNTAX_API SVarDecl(SVarDeclType* type, std::vector<SVarDeclElement> elements);
     SVarDecl(const SVarDecl&) = delete;
     SYNTAX_API SVarDecl(SVarDecl&&) noexcept;
     SYNTAX_API ~SVarDecl();
@@ -1278,6 +1283,84 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SScriptE
 
 SYNTAX_API JsonItem ToJson(SScriptElement* elem);
 
+class SVarDeclTypeVisitor
+{
+public:
+    virtual ~SVarDeclTypeVisitor() = default;
+    virtual void Visit(SVarDeclType_Var* type) = 0;
+    virtual void Visit(SVarDeclType_VarRef* type) = 0;
+    virtual void Visit(SVarDeclType_Ref* type) = 0;
+    virtual void Visit(SVarDeclType_Normal* type) = 0;
+};
+
+class SVarDeclType : virtual public SSyntax
+{
+public:
+    SVarDeclType() = default;
+    SVarDeclType(const SVarDeclType&) = delete;
+    SVarDeclType(SVarDeclType&&) = default;
+    virtual ~SVarDeclType() { }
+    SVarDeclType& operator=(const SVarDeclType& other) = delete;
+    SVarDeclType& operator=(SVarDeclType&& other) noexcept = default;
+    virtual void Accept(SVarDeclTypeVisitor& visitor) = 0;
+};
+
+template<class TFrom, class TVisitor>
+concept SVarDeclTypeConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
+// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
+template<typename TVisitor, typename... TVisitorArgs>
+concept SVarDeclTypeVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
+{
+    typename std::remove_cvref_t<TVisitor>::ResultType;
+    { v.Visit(std::declval<SVarDeclType_Var*>(), std::forward<TVisitorArgs>(args)...) } -> SVarDeclTypeConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SVarDeclType_VarRef*>(), std::forward<TVisitorArgs>(args)...) } -> SVarDeclTypeConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SVarDeclType_Ref*>(), std::forward<TVisitorArgs>(args)...) } -> SVarDeclTypeConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SVarDeclType_Normal*>(), std::forward<TVisitorArgs>(args)...) } -> SVarDeclTypeConvertibleToResultType<TVisitor>;
+};
+
+template<typename TVisitor, typename... TVisitorArgs> requires SVarDeclTypeVisitable<TVisitor, TVisitorArgs...>
+typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SVarDeclType* type, TVisitorArgs&&... args)
+{
+    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
+
+    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
+    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
+
+    if constexpr (std::is_void_v<TResult>)
+    {
+        struct Bridge : SVarDeclTypeVisitor {
+            decltype(caller)& call;
+            Bridge(decltype(caller)& call) : call(call) {}
+            void Visit(SVarDeclType_Var* type) override { call(type); }
+            void Visit(SVarDeclType_VarRef* type) override { call(type); }
+            void Visit(SVarDeclType_Ref* type) override { call(type); }
+            void Visit(SVarDeclType_Normal* type) override { call(type); }
+        };
+
+        Bridge bridge{caller};
+        type->Accept(bridge);
+    }
+    else
+    {
+        struct Bridge : SVarDeclTypeVisitor {
+            decltype(caller)& call;
+            std::optional<TResult> result{};
+            Bridge(decltype(caller)& call) : call(call) {}
+
+            void Visit(SVarDeclType_Var* type) override { result.emplace(call(type)); }
+            void Visit(SVarDeclType_VarRef* type) override { result.emplace(call(type)); }
+            void Visit(SVarDeclType_Ref* type) override { result.emplace(call(type)); }
+            void Visit(SVarDeclType_Normal* type) override { result.emplace(call(type)); }
+        };
+
+        Bridge bridge{caller};
+        type->Accept(bridge);
+        return *bridge.result;
+    }
+}
+
+SYNTAX_API JsonItem ToJson(SVarDeclType* type);
+
 class SExp_Identifier
     : public SExp
 {
@@ -1732,6 +1815,100 @@ public:
 
     SYNTAX_API JsonItem ToJson();
     void Accept(STypeExpVisitor& visitor) override { visitor.Visit(this); }
+
+};
+
+enum class SVarDeclType_VarKind
+{
+    Normal,
+    Ptr,
+    Nullable,
+    Shared,
+};
+
+inline JsonItem ToJson(SVarDeclType_VarKind& arg)
+{
+    switch(arg)
+    {
+    case SVarDeclType_VarKind::Normal: return JsonString("Normal");
+    case SVarDeclType_VarKind::Ptr: return JsonString("Ptr");
+    case SVarDeclType_VarKind::Nullable: return JsonString("Nullable");
+    case SVarDeclType_VarKind::Shared: return JsonString("Shared");
+    }
+    unreachable();
+}
+
+class SVarDeclType_Var
+    : public SVarDeclType
+{
+public:
+    SVarDeclType_VarKind kind;
+
+    SYNTAX_API SVarDeclType_Var(SVarDeclType_VarKind kind);
+    SVarDeclType_Var(const SVarDeclType_Var&) = delete;
+    SYNTAX_API SVarDeclType_Var(SVarDeclType_Var&&) noexcept;
+    SYNTAX_API virtual ~SVarDeclType_Var();
+
+    SVarDeclType_Var& operator=(const SVarDeclType_Var& other) = delete;
+    SYNTAX_API SVarDeclType_Var& operator=(SVarDeclType_Var&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SVarDeclTypeVisitor& visitor) override { visitor.Visit(this); }
+
+};
+
+class SVarDeclType_VarRef
+    : public SVarDeclType
+{
+public:
+    SYNTAX_API SVarDeclType_VarRef();
+    SVarDeclType_VarRef(const SVarDeclType_VarRef&) = delete;
+    SYNTAX_API SVarDeclType_VarRef(SVarDeclType_VarRef&&) noexcept;
+    SYNTAX_API virtual ~SVarDeclType_VarRef();
+
+    SVarDeclType_VarRef& operator=(const SVarDeclType_VarRef& other) = delete;
+    SYNTAX_API SVarDeclType_VarRef& operator=(SVarDeclType_VarRef&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SVarDeclTypeVisitor& visitor) override { visitor.Visit(this); }
+
+};
+
+class SVarDeclType_Ref
+    : public SVarDeclType
+{
+public:
+    STypeExp* typeExp;
+
+    SYNTAX_API SVarDeclType_Ref(STypeExp* typeExp);
+    SVarDeclType_Ref(const SVarDeclType_Ref&) = delete;
+    SYNTAX_API SVarDeclType_Ref(SVarDeclType_Ref&&) noexcept;
+    SYNTAX_API virtual ~SVarDeclType_Ref();
+
+    SVarDeclType_Ref& operator=(const SVarDeclType_Ref& other) = delete;
+    SYNTAX_API SVarDeclType_Ref& operator=(SVarDeclType_Ref&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SVarDeclTypeVisitor& visitor) override { visitor.Visit(this); }
+
+};
+
+class SVarDeclType_Normal
+    : public SVarDeclType
+{
+public:
+    STypeExp* typeExp;
+
+    SYNTAX_API SVarDeclType_Normal(STypeExp* typeExp);
+    SVarDeclType_Normal(const SVarDeclType_Normal&) = delete;
+    SYNTAX_API SVarDeclType_Normal(SVarDeclType_Normal&&) noexcept;
+    SYNTAX_API virtual ~SVarDeclType_Normal();
+
+    SVarDeclType_Normal& operator=(const SVarDeclType_Normal& other) = delete;
+    SYNTAX_API SVarDeclType_Normal& operator=(SVarDeclType_Normal&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SVarDeclTypeVisitor& visitor) override { visitor.Visit(this); }
 
 };
 

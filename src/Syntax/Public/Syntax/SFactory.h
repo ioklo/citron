@@ -1,5 +1,6 @@
 #pragma once
 #include "SyntaxConfig.h"
+#include "Syntaxes.g.h"
 
 #include <vector>
 #include <memory>
@@ -157,6 +158,11 @@ public:
     MAKE(STypeExp_Shared)
     MAKE(STypeExp_Ptr)
     MAKE(STypeExp_Local)
+
+    MAKE(SVarDeclType_Var)
+    MAKE(SVarDeclType_VarRef)
+    MAKE(SVarDeclType_Ref)
+    MAKE(SVarDeclType_Normal)
 
     MAKE(SStringExpElement_Text)
     MAKE(SStringExpElement_Exp)

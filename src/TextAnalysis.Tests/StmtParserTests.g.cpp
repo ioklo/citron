@@ -564,36 +564,222 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
 
 TEST(StmtParser, ParseVarDeclStmt)
 {
-    auto [buffer, lexer] = Prepare(UR"---(string a = "hello";)---");
+    auto [buffer, lexer] = Prepare(UR"---({
+	string a = "hello";
+	var b = 3;
+	var* c = &b;
+	var& d = b;
+	var? e = 1;
+	shared var f = F();
+	shared<int>& g = f;
+	nullable<int>& h = e;
+})---");
     SFactory factory;
 
     auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
-    "$type": "SStmt_VarDecl",
-    "varDecl": {
-        "$type": "SVarDecl",
-        "type": {
-            "$type": "STypeExp_Id",
-            "name": "string",
-            "typeArgs": []
-        },
-        "elements": [
-            {
-                "$type": "SVarDeclElement",
-                "varName": "a",
-                "initExp": {
-                    "$type": "SExp_String",
-                    "elements": [
-                        {
-                            "$type": "SStringExpElement_Text",
-                            "text": "hello"
+    "$type": "SStmt_Block",
+    "stmts": [
+        {
+            "$type": "SStmt_VarDecl",
+            "varDecl": {
+                "$type": "SVarDecl",
+                "type": {
+                    "$type": "SVarDeclType_Normal",
+                    "typeExp": {
+                        "$type": "STypeExp_Id",
+                        "name": "string",
+                        "typeArgs": []
+                    }
+                },
+                "elements": [
+                    {
+                        "$type": "SVarDeclElement",
+                        "varName": "a",
+                        "initExp": {
+                            "$type": "SExp_String",
+                            "elements": [
+                                {
+                                    "$type": "SStringExpElement_Text",
+                                    "text": "hello"
+                                }
+                            ]
                         }
-                    ]
-                }
+                    }
+                ]
             }
-        ]
-    }
+        },
+        {
+            "$type": "SStmt_VarDecl",
+            "varDecl": {
+                "$type": "SVarDecl",
+                "type": {
+                    "$type": "SVarDeclType_Var",
+                    "kind": "Normal"
+                },
+                "elements": [
+                    {
+                        "$type": "SVarDeclElement",
+                        "varName": "b",
+                        "initExp": {
+                            "$type": "SExp_IntLiteral",
+                            "value": 3
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "SStmt_VarDecl",
+            "varDecl": {
+                "$type": "SVarDecl",
+                "type": {
+                    "$type": "SVarDeclType_Var",
+                    "kind": "Ptr"
+                },
+                "elements": [
+                    {
+                        "$type": "SVarDeclElement",
+                        "varName": "c",
+                        "initExp": {
+                            "$type": "SExp_UnaryOp",
+                            "kind": "Ref",
+                            "operand": {
+                                "$type": "SExp_Identifier",
+                                "value": "b",
+                                "typeArgs": []
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "SStmt_VarDecl",
+            "varDecl": {
+                "$type": "SVarDecl",
+                "type": {
+                    "$type": "SVarDeclType_VarRef"
+                },
+                "elements": [
+                    {
+                        "$type": "SVarDeclElement",
+                        "varName": "d",
+                        "initExp": {
+                            "$type": "SExp_Identifier",
+                            "value": "b",
+                            "typeArgs": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "SStmt_VarDecl",
+            "varDecl": {
+                "$type": "SVarDecl",
+                "type": {
+                    "$type": "SVarDeclType_Var",
+                    "kind": "Nullable"
+                },
+                "elements": [
+                    {
+                        "$type": "SVarDeclElement",
+                        "varName": "e",
+                        "initExp": {
+                            "$type": "SExp_IntLiteral",
+                            "value": 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "SStmt_VarDecl",
+            "varDecl": {
+                "$type": "SVarDecl",
+                "type": {
+                    "$type": "SVarDeclType_Var",
+                    "kind": "Shared"
+                },
+                "elements": [
+                    {
+                        "$type": "SVarDeclElement",
+                        "varName": "f",
+                        "initExp": {
+                            "$type": "SExp_Call",
+                            "callable": {
+                                "$type": "SExp_Identifier",
+                                "value": "F",
+                                "typeArgs": []
+                            },
+                            "args": {
+                                "$type": "SArguments",
+                                "items": []
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "SStmt_VarDecl",
+            "varDecl": {
+                "$type": "SVarDecl",
+                "type": {
+                    "$type": "SVarDeclType_Ref",
+                    "typeExp": {
+                        "$type": "STypeExp_Shared",
+                        "innerType": {
+                            "$type": "STypeExp_Id",
+                            "name": "int",
+                            "typeArgs": []
+                        }
+                    }
+                },
+                "elements": [
+                    {
+                        "$type": "SVarDeclElement",
+                        "varName": "g",
+                        "initExp": {
+                            "$type": "SExp_Identifier",
+                            "value": "f",
+                            "typeArgs": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "SStmt_VarDecl",
+            "varDecl": {
+                "$type": "SVarDecl",
+                "type": {
+                    "$type": "SVarDeclType_Ref",
+                    "typeExp": {
+                        "$type": "STypeExp_Nullable",
+                        "innerType": {
+                            "$type": "STypeExp_Id",
+                            "name": "int",
+                            "typeArgs": []
+                        }
+                    }
+                },
+                "elements": [
+                    {
+                        "$type": "SVarDeclElement",
+                        "varName": "h",
+                        "initExp": {
+                            "$type": "SExp_Identifier",
+                            "value": "e",
+                            "typeArgs": []
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 })---";
 
     EXPECT_SYNTAX_EQ(stmt, expected);

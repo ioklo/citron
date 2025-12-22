@@ -135,7 +135,8 @@ STypeExp* ParseTypeExp_Postfix(STypeExp* typeExp, Lexer* lexer, SFactory& factor
     else return typeExp;
 }
 
-STypeExp* ParseTypeExp_Keywords(Lexer* lexer, SFactory& factory)
+template<typename TResultType, TResultType* (*PostfixFunc)(STypeExp*, Lexer*, SFactory&), TResultType* (*Wrapper)(STypeExp*, SFactory&)>
+TResultType* TParseTypeExpKeywords(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer{*lexer};
 
@@ -152,7 +153,7 @@ STypeExp* ParseTypeExp_Keywords(Lexer* lexer, SFactory& factory)
 
         *lexer = move(curLexer);
         auto* typeExp = factory.MakeSTypeExp_Nullable(move(oInnerTypeExp));
-        return ParseTypeExp_Postfix(typeExp, lexer, factory);
+        return PostfixFunc(typeExp, lexer, factory);
     }
     else if (oIdToken->text == "ptr")
     {
@@ -164,7 +165,7 @@ STypeExp* ParseTypeExp_Keywords(Lexer* lexer, SFactory& factory)
 
         *lexer = move(curLexer);
         auto* typeExp = factory.MakeSTypeExp_Ptr(move(oInnerTypeExp));
-        return ParseTypeExp_Postfix(typeExp, lexer, factory);
+        return PostfixFunc(typeExp, lexer, factory);
     }
     else if (oIdToken->text == "shared") 
     {
@@ -178,7 +179,7 @@ STypeExp* ParseTypeExp_Keywords(Lexer* lexer, SFactory& factory)
 
             *lexer = move(curLexer);
             auto* typeExp = factory.MakeSTypeExp_Shared(move(oInnerTypeExp));
-            return ParseTypeExp_Postfix(typeExp, lexer, factory);
+            return PostfixFunc(typeExp, lexer, factory);
         }
         else
         {
@@ -187,7 +188,7 @@ STypeExp* ParseTypeExp_Keywords(Lexer* lexer, SFactory& factory)
             if (!innerTypeExp) return nullptr;
 
             *lexer = move(curLexer);
-            return factory.MakeSTypeExp_Shared(innerTypeExp);
+            return Wrapper(factory.MakeSTypeExp_Shared(innerTypeExp), factory);
         }
     }
     else if (oIdToken->text == "local")
@@ -202,7 +203,7 @@ STypeExp* ParseTypeExp_Keywords(Lexer* lexer, SFactory& factory)
 
             *lexer = move(curLexer);
             auto* typeExp = factory.MakeSTypeExp_Local(move(oInnerTypeExp));
-            return ParseTypeExp_Postfix(typeExp, lexer, factory);
+            return PostfixFunc(typeExp, lexer, factory);
         }
         else
         {
@@ -211,22 +212,115 @@ STypeExp* ParseTypeExp_Keywords(Lexer* lexer, SFactory& factory)
             if (!innerTypeExp) return nullptr;
 
             *lexer = move(curLexer);
-            return factory.MakeSTypeExp_Local(innerTypeExp);
+            return Wrapper(factory.MakeSTypeExp_Local(innerTypeExp), factory);
         }
     }
 
     return nullptr;
 }
 
+STypeExp* Identity(STypeExp* typeExp, SFactory& factory) { return typeExp; }
+
 // postfix 처리를 하는 버전
 STypeExp* ParseTypeExp(Lexer* lexer, SFactory& factory)
 {
     // 항상 nullable, ptr, shared, local 먼저
-    if (STypeExp* typeExp = ParseTypeExp_Keywords(lexer, factory))
+    if (STypeExp* typeExp = TParseTypeExpKeywords<STypeExp, ParseTypeExp_Postfix, Identity> (lexer, factory))
         return typeExp;
 
     if (STypeExp* typeExp = ParseIdChainTypeExp(lexer, factory))
         return ParseTypeExp_Postfix(typeExp, lexer, factory);
+
+    return nullptr;
+}
+
+SVarDeclType* ParseVarDeclTypeExp_Postfix(STypeExp* typeExp, Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer{*lexer};
+
+    if (Accept<StarToken>(&curLexer))
+    {
+        typeExp = factory.MakeSTypeExp_Ptr(typeExp);
+
+        while (Accept<StarToken>(&curLexer))
+            typeExp = factory.MakeSTypeExp_Ptr(typeExp);
+
+        *lexer = move(curLexer);
+        return factory.MakeSVarDeclType_Normal(typeExp);
+    }
+    else if (Accept<QuestionToken>(&curLexer))
+    {
+        typeExp = factory.MakeSTypeExp_Nullable(typeExp);
+        *lexer = move(curLexer);
+        return factory.MakeSVarDeclType_Normal(typeExp);
+    }
+    else if (Accept<AmpersandToken>(&curLexer))
+    {
+        *lexer = move(curLexer);
+        return factory.MakeSVarDeclType_Ref(typeExp);
+    }
+    else return factory.MakeSVarDeclType_Normal(typeExp);
+}
+
+SVarDeclType* ParseVarDeclTypeExp_Var(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer{*lexer};
+    auto oVarToken = Accept<IdentifierToken>(&curLexer);
+    if (!oVarToken) return nullptr;
+
+    // shared var 처리
+    if (oVarToken->text == "shared")
+    {
+        auto oNextVarToken = Accept<IdentifierToken>(&curLexer);
+        if (!oNextVarToken) return nullptr;
+        if (oNextVarToken->text != "var") return nullptr;
+
+        *lexer = move(curLexer);
+        return factory.MakeSVarDeclType_Var(SVarDeclType_VarKind::Shared);
+    }
+
+    if (oVarToken->text != "var") return nullptr;
+
+    if (Accept<StarToken>(&curLexer))
+    {
+        *lexer = move(curLexer);
+        return factory.MakeSVarDeclType_Var(SVarDeclType_VarKind::Ptr);
+    }
+    else if (Accept<QuestionToken>(&curLexer))
+    {
+        *lexer = move(curLexer);
+        return factory.MakeSVarDeclType_Var(SVarDeclType_VarKind::Nullable);
+    }
+    else if (Accept<AmpersandToken>(&curLexer))
+    {
+        *lexer = move(curLexer);
+        return factory.MakeSVarDeclType_VarRef();
+    }
+    else
+    {
+        *lexer = move(curLexer);
+        return factory.MakeSVarDeclType_Var(SVarDeclType_VarKind::Normal);
+    }
+}
+
+SVarDeclType* ParseVarDeclTypeExp_Wrapper(STypeExp* typeExp, SFactory& factory)
+{
+    return factory.MakeSVarDeclType_Normal(typeExp);
+}
+
+// var와 &를 더 처리 하는 버전
+SVarDeclType* ParseVarDeclTypeExp(Lexer* lexer, SFactory& factory)
+{
+    // var, var*, var?, var& 처리
+    if (auto* varType = ParseVarDeclTypeExp_Var(lexer, factory))
+        return varType;
+
+    // nullable, ptr, shared, local 먼저
+    if (SVarDeclType* typeExp = TParseTypeExpKeywords<SVarDeclType, ParseVarDeclTypeExp_Postfix, ParseVarDeclTypeExp_Wrapper>(lexer, factory))
+        return typeExp;
+
+    if (STypeExp* typeExp = ParseIdChainTypeExp(lexer, factory))
+        return ParseVarDeclTypeExp_Postfix(typeExp, lexer, factory);
 
     return nullptr;
 }
