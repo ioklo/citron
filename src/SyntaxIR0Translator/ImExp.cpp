@@ -99,7 +99,7 @@ ImExp_ListIndexer::ImExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemT
 
 }
 
-ImExp_LocalDeref::ImExp_LocalDeref(ReExp* target)
+ImExp_Deref::ImExp_Deref(ReExp* target)
     : target(target)
 {
 

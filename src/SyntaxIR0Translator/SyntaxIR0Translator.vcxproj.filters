@@ -82,7 +82,6 @@
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
-    <ClCompile Include="DeclTypeInfo.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
     <ClCompile Include="GlobalFuncTask.cpp" />
     <ClCompile Include="PhaseManager.cpp" />
@@ -169,7 +168,6 @@
     </ClInclude>
     <ClInclude Include="TranslateBodyContext.h" />
     <ClInclude Include="CommonTranslation.h" />
-    <ClInclude Include="DeclTypeInfo.h" />
     <ClInclude Include="DesignatedDiagnostic.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
     <ClInclude Include="BuildTypeDependentSymbolContext.h" />

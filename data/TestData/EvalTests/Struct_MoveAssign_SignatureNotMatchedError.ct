@@ -1,0 +1,8 @@
+//@ $Error
+
+struct S
+{
+    special void move_assign(S& s) // signature not matched
+    {
+    }
+}

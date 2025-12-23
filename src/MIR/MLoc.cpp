@@ -95,17 +95,17 @@ RType* MLoc_This::GetType(RFactory& factory)
     return type;
 }
 
-MLoc_LocalDeref::MLoc_LocalDeref(MLoc* innerLoc)
+MLoc_Deref::MLoc_Deref(MLoc* innerLoc)
     : innerLoc{innerLoc}
 {
 }
 
-RType* MLoc_LocalDeref::GetType(RFactory& factory)
+RType* MLoc_Deref::GetType(RFactory& factory)
 {
     auto type = innerLoc->GetType(factory);
     
-    if (auto* localPtrType = dynamic_cast<RType_LocalPtr*>(type))
-        return localPtrType->innerType;
+    if (auto* ptrType = dynamic_cast<RType_Ptr*>(type))
+        return ptrType->innerType;
 
     // 에러, 어떻게 해야할지 생각해본다
     throw NotImplementedException();
@@ -120,8 +120,8 @@ RType* MLoc_BoxDeref::GetType(RFactory& factory)
 {
     auto type = innerLoc->GetType(factory);
 
-    if (auto* boxPtrType = dynamic_cast<RType_BoxPtr*>(type))
-        return boxPtrType->innerType;
+    if (auto* boxType = dynamic_cast<RType_Box*>(type))
+        return boxType->innerType;
 
     // 에러, 어떻게 해야할지 생각해본다
     throw NotImplementedException();

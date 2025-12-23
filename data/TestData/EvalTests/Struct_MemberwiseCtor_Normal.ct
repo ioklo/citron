@@ -1,0 +1,13 @@
+//@ 3 true
+
+struct S
+{
+    int x;
+    bool y;
+}
+
+void Main()
+{
+    S s = S(3, true);
+    @${s.x} ${s.y}
+}

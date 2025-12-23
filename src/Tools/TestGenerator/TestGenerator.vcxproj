@@ -190,8 +190,8 @@
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockCommandStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockStmt.in.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockStmt.out.txt" />
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxPtrVarDeclStmt.in.txt" />
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxPtrVarDeclStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxVarDeclStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxVarDeclStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBreakStmt.in.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBreakStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseContinueStmt.in.txt" />
@@ -212,8 +212,8 @@
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfTestStmtWithVarName.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseInlineCommandStmt.in.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseInlineCommandStmt.out.txt" />
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseLocalPtrVarDeclStmt.in.txt" />
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseLocalPtrVarDeclStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParsePtrVarDeclStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParsePtrVarDeclStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseNullableVarDeclStmt.in.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseNullableVarDeclStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseVarDeclStmt.in.txt" />

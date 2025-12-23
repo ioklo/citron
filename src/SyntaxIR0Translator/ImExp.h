@@ -42,7 +42,7 @@ class ImExp_ClassVar;
 class ImExp_StructVar;
 class ImExp_EnumElemVar;
 class ImExp_ListIndexer;
-class ImExp_LocalDeref;
+class ImExp_Deref;
 class ImExp_BoxDeref;
 class ImExp_Else;
 class ImExpVisitor;
@@ -74,7 +74,7 @@ public:
     virtual void Visit(ImExp_StructVar* imExp) = 0;
     virtual void Visit(ImExp_EnumElemVar* imExp) = 0;
     virtual void Visit(ImExp_ListIndexer* imExp) = 0;
-    virtual void Visit(ImExp_LocalDeref* imExp) = 0;
+    virtual void Visit(ImExp_Deref* imExp) = 0;
     virtual void Visit(ImExp_BoxDeref* imExp) = 0;
     virtual void Visit(ImExp_Else* imExp) = 0;
 };
@@ -328,13 +328,13 @@ public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
-class ImExp_LocalDeref : public ImExp
+class ImExp_Deref : public ImExp
 {
 public:
     ReExp* target;
 
 public:
-    ImExp_LocalDeref(ReExp* target);
+    ImExp_Deref(ReExp* target);
 
 public:
     void Accept(ImExpVisitor& visitor) override { visitor.Visit(this); }
@@ -389,7 +389,7 @@ concept ImExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args) {
     { v.Visit(std::declval<ImExp_StructVar*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ImExp_EnumElemVar*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ImExp_ListIndexer*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ImExp_LocalDeref*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<ImExp_Deref*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ImExp_BoxDeref*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ImExp_Else*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
 };
@@ -425,7 +425,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ImExp* e
             void Visit(ImExp_StructVar* imExp) override { call(imExp); }
             void Visit(ImExp_EnumElemVar* imExp) override { call(imExp); }
             void Visit(ImExp_ListIndexer* imExp) override { call(imExp); }
-            void Visit(ImExp_LocalDeref* imExp) override { call(imExp); }
+            void Visit(ImExp_Deref* imExp) override { call(imExp); }
             void Visit(ImExp_BoxDeref* imExp) override { call(imExp); }
             void Visit(ImExp_Else* imExp) override { call(imExp); }
         };
@@ -456,7 +456,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ImExp* e
             void Visit(ImExp_StructVar* imExp) override { result.emplace(call(imExp)); }
             void Visit(ImExp_EnumElemVar* imExp) override { result.emplace(call(imExp)); }
             void Visit(ImExp_ListIndexer* imExp) override { result.emplace(call(imExp)); }
-            void Visit(ImExp_LocalDeref* imExp) override { result.emplace(call(imExp)); }
+            void Visit(ImExp_Deref* imExp) override { result.emplace(call(imExp)); }
             void Visit(ImExp_BoxDeref* imExp) override { result.emplace(call(imExp)); }
             void Visit(ImExp_Else* imExp) override { result.emplace(call(imExp)); }
         };

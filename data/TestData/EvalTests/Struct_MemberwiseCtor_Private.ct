@@ -1,0 +1,23 @@
+//@ 2 false
+
+struct S
+{
+    int x;
+    bool y;
+
+    private S(...) = default;
+
+    S() { x = 3; y = true; }
+
+    void Func()
+    {
+        S s = S(2, false);
+        @${s.x} ${s.y}
+    }
+}
+
+void Main()
+{
+    S s = S();
+    s.Func();
+}

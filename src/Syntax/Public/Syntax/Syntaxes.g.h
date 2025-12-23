@@ -61,6 +61,7 @@ class STypeExp_Id;
 class STypeExp_Member;
 class STypeExp_Nullable;
 class STypeExp_Shared;
+class STypeExp_Box;
 class STypeExp_Ptr;
 class STypeExp_Local;
 
@@ -88,6 +89,7 @@ class SClassVarDecl;
 class SStructMemberDecl;
 class SStructFuncDecl;
 class SStructCtorDecl;
+class SStructDtorDecl;
 class SStructVarDecl;
 
 class SNamespaceDeclElement;
@@ -589,6 +591,7 @@ public:
     virtual void Visit(STypeExp_Member* typeExp) = 0;
     virtual void Visit(STypeExp_Nullable* typeExp) = 0;
     virtual void Visit(STypeExp_Shared* typeExp) = 0;
+    virtual void Visit(STypeExp_Box* typeExp) = 0;
     virtual void Visit(STypeExp_Ptr* typeExp) = 0;
     virtual void Visit(STypeExp_Local* typeExp) = 0;
 };
@@ -616,6 +619,7 @@ concept STypeExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<STypeExp_Member*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<STypeExp_Nullable*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<STypeExp_Shared*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<STypeExp_Box*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<STypeExp_Ptr*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<STypeExp_Local*>(), std::forward<TVisitorArgs>(args)...) } -> STypeExpConvertibleToResultType<TVisitor>;
 };
@@ -637,6 +641,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, STypeExp
             void Visit(STypeExp_Member* typeExp) override { call(typeExp); }
             void Visit(STypeExp_Nullable* typeExp) override { call(typeExp); }
             void Visit(STypeExp_Shared* typeExp) override { call(typeExp); }
+            void Visit(STypeExp_Box* typeExp) override { call(typeExp); }
             void Visit(STypeExp_Ptr* typeExp) override { call(typeExp); }
             void Visit(STypeExp_Local* typeExp) override { call(typeExp); }
         };
@@ -655,6 +660,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, STypeExp
             void Visit(STypeExp_Member* typeExp) override { result.emplace(call(typeExp)); }
             void Visit(STypeExp_Nullable* typeExp) override { result.emplace(call(typeExp)); }
             void Visit(STypeExp_Shared* typeExp) override { result.emplace(call(typeExp)); }
+            void Visit(STypeExp_Box* typeExp) override { result.emplace(call(typeExp)); }
             void Visit(STypeExp_Ptr* typeExp) override { result.emplace(call(typeExp)); }
             void Visit(STypeExp_Local* typeExp) override { result.emplace(call(typeExp)); }
         };
@@ -1042,6 +1048,7 @@ public:
     virtual void Visit(SEnumDecl* decl) = 0;
     virtual void Visit(SStructFuncDecl* decl) = 0;
     virtual void Visit(SStructCtorDecl* decl) = 0;
+    virtual void Visit(SStructDtorDecl* decl) = 0;
     virtual void Visit(SStructVarDecl* decl) = 0;
 };
 
@@ -1069,6 +1076,7 @@ concept SStructMemberDeclVisitable = requires(TVisitor&& v, TVisitorArgs&&... ar
     { v.Visit(std::declval<SEnumDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStructFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStructCtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStructDtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStructVarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
 };
 
@@ -1090,6 +1098,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStructM
             void Visit(SEnumDecl* decl) override { call(decl); }
             void Visit(SStructFuncDecl* decl) override { call(decl); }
             void Visit(SStructCtorDecl* decl) override { call(decl); }
+            void Visit(SStructDtorDecl* decl) override { call(decl); }
             void Visit(SStructVarDecl* decl) override { call(decl); }
         };
 
@@ -1108,6 +1117,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStructM
             void Visit(SEnumDecl* decl) override { result.emplace(call(decl)); }
             void Visit(SStructFuncDecl* decl) override { result.emplace(call(decl)); }
             void Visit(SStructCtorDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(SStructDtorDecl* decl) override { result.emplace(call(decl)); }
             void Visit(SStructVarDecl* decl) override { result.emplace(call(decl)); }
         };
 
@@ -1780,6 +1790,25 @@ public:
 
 };
 
+class STypeExp_Box
+    : public STypeExp
+{
+public:
+    STypeExp* innerType;
+
+    SYNTAX_API STypeExp_Box(STypeExp* innerType);
+    STypeExp_Box(const STypeExp_Box&) = delete;
+    SYNTAX_API STypeExp_Box(STypeExp_Box&&) noexcept;
+    SYNTAX_API virtual ~STypeExp_Box();
+
+    STypeExp_Box& operator=(const STypeExp_Box& other) = delete;
+    SYNTAX_API STypeExp_Box& operator=(STypeExp_Box&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(STypeExpVisitor& visitor) override { visitor.Visit(this); }
+
+};
+
 class STypeExp_Ptr
     : public STypeExp
 {
@@ -1824,6 +1853,8 @@ enum class SVarDeclType_VarKind
     Ptr,
     Nullable,
     Shared,
+    Box,
+    Local,
 };
 
 inline JsonItem ToJson(SVarDeclType_VarKind& arg)
@@ -1834,6 +1865,8 @@ inline JsonItem ToJson(SVarDeclType_VarKind& arg)
     case SVarDeclType_VarKind::Ptr: return JsonString("Ptr");
     case SVarDeclType_VarKind::Nullable: return JsonString("Nullable");
     case SVarDeclType_VarKind::Shared: return JsonString("Shared");
+    case SVarDeclType_VarKind::Box: return JsonString("Box");
+    case SVarDeclType_VarKind::Local: return JsonString("Local");
     }
     unreachable();
 }
@@ -2589,6 +2622,26 @@ public:
 
     SStructCtorDecl& operator=(const SStructCtorDecl& other) = delete;
     SYNTAX_API SStructCtorDecl& operator=(SStructCtorDecl&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
+
+};
+
+class SStructDtorDecl
+    : public SStructMemberDecl
+{
+public:
+    std::optional<SAccessModifier> accessModifier;
+    std::vector<SStmt*> body;
+
+    SYNTAX_API SStructDtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SStmt*> body);
+    SStructDtorDecl(const SStructDtorDecl&) = delete;
+    SYNTAX_API SStructDtorDecl(SStructDtorDecl&&) noexcept;
+    SYNTAX_API virtual ~SStructDtorDecl();
+
+    SStructDtorDecl& operator=(const SStructDtorDecl& other) = delete;
+    SYNTAX_API SStructDtorDecl& operator=(SStructDtorDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }

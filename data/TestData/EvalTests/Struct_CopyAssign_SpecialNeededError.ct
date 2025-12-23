@@ -1,0 +1,8 @@
+//@ $Error
+
+struct S
+{
+    void copy_assign([in] S& s) // special needed
+    {
+    }
+}

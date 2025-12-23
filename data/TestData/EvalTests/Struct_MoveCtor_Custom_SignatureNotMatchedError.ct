@@ -1,0 +1,8 @@
+//@ $Error
+
+struct S
+{
+    special S(S s) // error signature not matched, should use ([move] S& s)
+    {
+    }
+}

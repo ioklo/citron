@@ -49,8 +49,8 @@ public:
     //LOGGING_API void Fatal_ResolveIdentifier_CantUseNamespaceAsExpression();       // A2013_ResolveIdentifier_CantUseNamespaceAsExpression
     //LOGGING_API void Fatal_ResolveIdentifier_ExpressionIsNotLocation();            // A2015_ResolveIdentifier_ExpressionIsNotLocation    
     //LOGGING_API void Fatal_ResolveIdentifier_LambdaInstanceCantHaveMember();       // A2016_ResolveIdentifier_LambdaInstanceCantHaveMember
-    //LOGGING_API void Fatal_ResolveIdentifier_LocalPtrCantHaveMember();             // A2017_ResolveIdentifier_LocalPtrCantHaveMember
-    //LOGGING_API void Fatal_ResolveIdentifier_BoxPtrCantHaveMember();               // A2018_ResolveIdentifier_BoxPtrCantHaveMember
+    //LOGGING_API void Fatal_ResolveIdentifier_PtrCantHaveMember();                  // A2017_ResolveIdentifier_PtrCantHaveMember
+    //LOGGING_API void Fatal_ResolveIdentifier_BoxCantHaveMember();                  // A2018_ResolveIdentifier_BoxCantHaveMember
     //LOGGING_API void Fatal_ResolveIdentifier_FuncInstanceCantHaveMember();         // A2019_ResolveIdentifier_FuncInstanceCantHaveMember
     //
 
@@ -76,13 +76,13 @@ public:
     LOGGING_API void Fatal_VarDecl_RefDeclNeedLocationInitializer(); // A0112_VarDecl_RefDeclNeedLocationInitializer
 
     LOGGING_API void Fatal_VarDecl_UsingLocalVarInsteadOfVarWhenInitExpIsLocalInterface(); // A0113_VarDecl_UsingLocalVarInsteadOfVarWhenInitExpIsLocalInterface
-    LOGGING_API void Fatal_VarDecl_UsingBoxPtrVarInsteadOfVarWhenInitExpIsBoxPtr(); // A0114_VarDecl_UsingBoxPtrVarInsteadOfVarWhenInitExpIsBoxPtr
-    LOGGING_API void Fatal_VarDecl_UsingLocalPtrVarInsteadOfVarWhenInitExpIsLocalPtr(); // A0115_VarDecl_UsingLocalPtrVarInsteadOfVarWhenInitExpIsLocalPtr
+    LOGGING_API void Fatal_VarDecl_UsingBoxVarInsteadOfVarWhenInitExpIsBox(); // A0114_VarDecl_UsingBoxVarInsteadOfVarWhenInitExpIsBox
+    LOGGING_API void Fatal_VarDecl_UsingPtrVarInsteadOfVarWhenInitExpIsPtr(); // A0115_VarDecl_UsingPtrVarInsteadOfVarWhenInitExpIsPtr
     LOGGING_API void Fatal_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr(); // A0116_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr
 
     LOGGING_API void Fatal_VarDecl_UsingLocalVarAsDeclTypeButInitExpIsNotLocalInterface(); // A0117_VarDecl_UsingLocalVarAsDeclTypeButInitExpIsNotLocalInterface
-    LOGGING_API void Fatal_VarDecl_UsingBoxPtrVarAsDeclTypeButInitExpIsNotBoxPtr(); // A0118_VarDecl_UsingBoxPtrVarAsDeclTypeButInitExpIsNotBoxPtr
-    LOGGING_API void Fatal_VarDecl_UsingLocalPtrVarAsDeclTypeButInitExpIsNotLocalPtr(); // A0119_VarDecl_UsingLocalPtrVarAsDeclTypeButInitExpIsNotLocalPtr
+    LOGGING_API void Fatal_VarDecl_UsingBoxVarAsDeclTypeButInitExpIsNotBox(); // A0118_VarDecl_UsingBoxVarAsDeclTypeButInitExpIsNotBox
+    LOGGING_API void Fatal_VarDecl_UsingPtrVarAsDeclTypeButInitExpIsNotPtr(); // A0119_VarDecl_UsingPtrVarAsDeclTypeButInitExpIsNotPtr
     LOGGING_API void Fatal_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable(); // A0120_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable
 
     LOGGING_API void Fatal_VarDecl_InitExpTypeMismatch(); // A0121_VarDecl_InitExpTypeMismatch
@@ -179,8 +179,8 @@ public:
     LOGGING_API void Fatal_ResolveIdentifier_ExpressionIsNotLocation(); // A2015_ResolveIdentifier_ExpressionIsNotLocation
 
     LOGGING_API void Fatal_ResolveIdentifier_LambdaInstanceCantHaveMember(); // A2016_ResolveIdentifier_LambdaInstanceCantHaveMember
-    LOGGING_API void Fatal_ResolveIdentifier_LocalPtrCantHaveMember(); // A2017_ResolveIdentifier_LocalPtrCantHaveMember
-    LOGGING_API void Fatal_ResolveIdentifier_BoxPtrCantHaveMember(); // A2018_ResolveIdentifier_BoxPtrCantHaveMember
+    LOGGING_API void Fatal_ResolveIdentifier_PtrCantHaveMember(); // A2017_ResolveIdentifier_PtrCantHaveMember
+    LOGGING_API void Fatal_ResolveIdentifier_BoxCantHaveMember(); // A2018_ResolveIdentifier_BoxCantHaveMember
     LOGGING_API void Fatal_ResolveIdentifier_FuncInstanceCantHaveMember(); // A2019_ResolveIdentifier_FuncInstanceCantHaveMember
 
     // funcMatcher 자체에서 에러를 내지 않고, 각각 노드 처리기에서 에러를 생성하도록 한다

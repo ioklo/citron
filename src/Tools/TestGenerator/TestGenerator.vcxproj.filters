@@ -89,10 +89,10 @@
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockStmt.out.txt">
       <Filter>Inputs\StmtParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxPtrVarDeclStmt.in.txt">
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxVarDeclStmt.in.txt">
       <Filter>Inputs\StmtParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxPtrVarDeclStmt.out.txt">
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxVarDeclStmt.out.txt">
       <Filter>Inputs\StmtParserTests</Filter>
     </Text>
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBreakStmt.in.txt">
@@ -155,10 +155,10 @@
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseInlineCommandStmt.out.txt">
       <Filter>Inputs\StmtParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseLocalPtrVarDeclStmt.in.txt">
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParsePtrVarDeclStmt.in.txt">
       <Filter>Inputs\StmtParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseLocalPtrVarDeclStmt.out.txt">
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParsePtrVarDeclStmt.out.txt">
       <Filter>Inputs\StmtParserTests</Filter>
     </Text>
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseNullableVarDeclStmt.in.txt">

@@ -52,7 +52,6 @@
     <ClCompile Include="StructTask.cpp" />
     <ClCompile Include="StructVarTask.cpp" />
     <ClCompile Include="TranslateBodyContext.cpp" />
-    <ClCompile Include="DeclTypeInfo.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
     <ClCompile Include="ImCallableAndSArgsToMExpTranslation.cpp" />
@@ -101,7 +100,6 @@
     <ClInclude Include="StructVarTask.h" />
     <ClInclude Include="TranslateBodyContext.h" />
     <ClInclude Include="CommonTranslation.h" />
-    <ClInclude Include="DeclTypeInfo.h" />
     <ClInclude Include="DesignatedDiagnostic.h" />
     <ClInclude Include="FuncContext.h" />
     <ClInclude Include="FuncMatching.h" />

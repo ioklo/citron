@@ -49,7 +49,7 @@ MExp_Box::MExp_Box(MExp* innerExp)
 RType* MExp_Box::GetType(RFactory& factory)
 {
     auto* innerType = innerExp->GetType(factory);
-    return factory.MakeBoxPtrType(innerType);
+    return factory.MakeBoxType(innerType);
 }
 
 MExp_StaticBoxRef::MExp_StaticBoxRef(MLoc* loc)
@@ -59,7 +59,7 @@ MExp_StaticBoxRef::MExp_StaticBoxRef(MLoc* loc)
 
 RType* MExp_StaticBoxRef::GetType(RFactory& factory)
 {
-    return factory.MakeBoxPtrType(loc->GetType(factory));
+    return factory.MakeBoxType(loc->GetType(factory));
 }
 
 MExp_ClassMemberBoxRef::MExp_ClassMemberBoxRef(MLoc* holder, RClassVarDecl* decl, RTypeArguments* typeArgs)
@@ -70,7 +70,7 @@ MExp_ClassMemberBoxRef::MExp_ClassMemberBoxRef(MLoc* holder, RClassVarDecl* decl
 RType* MExp_ClassMemberBoxRef::GetType(RFactory& factory)
 {
     auto* declType = decl->GetDeclType(*typeArgs, factory);
-    return factory.MakeBoxPtrType(declType);
+    return factory.MakeBoxType(declType);
 }
 
 MExp_StructIndirectMemberBoxRef::MExp_StructIndirectMemberBoxRef(MLoc* holder, RStructVarDecl* decl, RTypeArguments* typeArgs)
@@ -81,7 +81,7 @@ MExp_StructIndirectMemberBoxRef::MExp_StructIndirectMemberBoxRef(MLoc* holder, R
 RType* MExp_StructIndirectMemberBoxRef::GetType(RFactory& factory)
 {
     auto* declType = decl->GetDeclType(*typeArgs, factory);
-    return factory.MakeBoxPtrType(declType);
+    return factory.MakeBoxType(declType);
 }
 
 MExp_StructMemberBoxRef::MExp_StructMemberBoxRef(MLoc* parent, RStructVarDecl* decl, RTypeArguments* typeArgs)
@@ -93,7 +93,7 @@ RType* MExp_StructMemberBoxRef::GetType(RFactory& factory)
 {
     auto* declType = decl->GetDeclType(*typeArgs, factory);
 
-    return factory.MakeBoxPtrType(declType);
+    return factory.MakeBoxType(declType);
 }
 
 MExp_LocalRef::MExp_LocalRef(MLoc* innerLoc)
@@ -104,7 +104,7 @@ MExp_LocalRef::MExp_LocalRef(MLoc* innerLoc)
 RType* MExp_LocalRef::GetType(RFactory& factory)
 {
     auto* innerLocType = innerLoc->GetType(factory);
-    return factory.MakeLocalPtrType(innerLocType);
+    return factory.MakePtrType(innerLocType);
 }
 
 MExp_CastBoxedLambdaToFunc::MExp_CastBoxedLambdaToFunc(MExp* exp, RType_Func* funcType)

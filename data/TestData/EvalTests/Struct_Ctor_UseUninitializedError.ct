@@ -1,0 +1,13 @@
+//@ $Error
+
+struct S
+{
+    int x;
+    bool y;
+
+    S()
+    {
+        // error uninitialized
+        @$x
+    }
+}

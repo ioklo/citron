@@ -159,9 +159,9 @@ public:
 //    public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitListIndexer(this);
 //}
 
-//class LocalDeref(ResolvedExp Target) : public IrExp
+//class Deref(ResolvedExp Target) : public IrExp
 //{
-//    public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitLocalDeref(this);
+//    public override TResult Accept<TVisitor, TResult>(ref TVisitor visitor) => visitor.VisitDeref(this);
 //}
 
 //class BoxDeref(ResolvedExp Target) : public IrExp

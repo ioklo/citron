@@ -130,36 +130,52 @@ RType_Func::Parameter::Parameter(bool bOut, RType* type)
 
 }
 
-RType_LocalPtr::RType_LocalPtr(RType* innerType)
+RType_Ptr::RType_Ptr(RType* innerType)
     : innerType(innerType)
 {
 }
 
-RType* RType_LocalPtr::Apply(RTypeArguments& typeArgs, RFactory& factory)
+RType* RType_Ptr::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedInnerType = innerType->Apply(typeArgs, factory);
-    return factory.MakeLocalPtrType(appliedInnerType);
+    return factory.MakePtrType(appliedInnerType);
 }
 
 
-optional<RMember> RType_LocalPtr::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RMember> RType_Ptr::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return nullopt;
 }
 
-RType_BoxPtr::RType_BoxPtr(RType* innerType)
+RType_Shared::RType_Shared(RType* innerType)
+    : innerType{innerType}
+{
+}
+
+RType* RType_Shared::Apply(RTypeArguments& typeArgs, RFactory& factory)
+{
+    auto* appliedInnerType = innerType->Apply(typeArgs, factory);
+    return factory.MakeSharedType(appliedInnerType);
+}
+
+std::optional<RMember> RType_Shared::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+{
+    return nullopt;
+}
+
+RType_Box::RType_Box(RType* innerType)
     : innerType(innerType)
 {
 
 }
 
-RType* RType_BoxPtr::Apply(RTypeArguments& typeArgs, RFactory& factory)
+RType* RType_Box::Apply(RTypeArguments& typeArgs, RFactory& factory)
 {
     auto* appliedInnerType = innerType->Apply(typeArgs, factory);
-    return factory.MakeBoxPtrType(appliedInnerType);
+    return factory.MakeBoxType(appliedInnerType);
 }
 
-optional<RMember> RType_BoxPtr::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RMember> RType_Box::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return nullopt;
 }
@@ -298,5 +314,6 @@ optional<RMember> RType_Lambda::GetMember(const RName& name, size_t explicitType
 {
     return decl->GetMember(outerTypeArgs, name, explicitTypeArgsExceptOuterCount);
 }
+
 
 } // Citron

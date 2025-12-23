@@ -501,11 +501,11 @@ public:
                     auto param = context.GetFuncParam(*funcDecl, *typeArgs, 0);
                     if (!param.bOut) continue;
 
-                    auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(param.type);
-                    if (!localPtrParamType) continue;
+                    auto* ptrParamType = dynamic_cast<RType_Ptr*>(param.type);
+                    if (!ptrParamType) continue;
 
                     // $enumerator.GetNext(&i);
-                    auto nArg = MArgument_Normal(context.MakeMExp<MExp_LocalRef>(context.MakeNLoc<MLoc_LocalVar>(RName_Normal(sStmt->varName), localPtrParamType->innerType)));
+                    auto nArg = MArgument_Normal(context.MakeMExp<MExp_LocalRef>(context.MakeNLoc<MLoc_LocalVar>(RName_Normal(sStmt->varName), ptrParamType->innerType)));
                     auto* nEnumerator = context.MakeNLoc<MLoc_LocalVar>(RNames::Enumerator, enumeratorType);
                     auto eNextExp = TranslateRFuncAndNArgsToMExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, { move(nArg) }, context);
                     if (!eNextExp) return unexpected{move(eNextExp).error()};
@@ -569,10 +569,10 @@ public:
                     auto param = context.GetFuncParam(*funcDecl, *typeArgs, 0);
                     if (!param.bOut) continue;
 
-                    auto* localPtrParamType = dynamic_cast<RType_LocalPtr*>(param.type);
-                    if (!localPtrParamType) continue;
+                    auto* ptrParamType = dynamic_cast<RType_Ptr*>(param.type);
+                    if (!ptrParamType) continue;
 
-                    auto itemTypeFromNextParam = localPtrParamType->innerType;
+                    auto itemTypeFromNextParam = ptrParamType->innerType;
 
                     if (itemTypeFromNextParam == itemTypeFromSyntax)
                     {

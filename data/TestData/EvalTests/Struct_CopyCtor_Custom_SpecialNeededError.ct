@@ -1,0 +1,8 @@
+//@ $Error
+
+struct S
+{
+    S([in] S& s) // error, should use special
+    {
+    }
+}

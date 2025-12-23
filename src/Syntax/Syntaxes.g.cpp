@@ -225,6 +225,7 @@ struct STypeExpToJsonVisitor
     ResultType Visit(STypeExp_Member* typeExp) { return typeExp->ToJson(); }
     ResultType Visit(STypeExp_Nullable* typeExp) { return typeExp->ToJson(); }
     ResultType Visit(STypeExp_Shared* typeExp) { return typeExp->ToJson(); }
+    ResultType Visit(STypeExp_Box* typeExp) { return typeExp->ToJson(); }
     ResultType Visit(STypeExp_Ptr* typeExp) { return typeExp->ToJson(); }
     ResultType Visit(STypeExp_Local* typeExp) { return typeExp->ToJson(); }
 };
@@ -318,6 +319,7 @@ struct SStructMemberDeclToJsonVisitor
     ResultType Visit(SEnumDecl* decl) { return decl->ToJson(); }
     ResultType Visit(SStructFuncDecl* decl) { return decl->ToJson(); }
     ResultType Visit(SStructCtorDecl* decl) { return decl->ToJson(); }
+    ResultType Visit(SStructDtorDecl* decl) { return decl->ToJson(); }
     ResultType Visit(SStructVarDecl* decl) { return decl->ToJson(); }
 };
 
@@ -746,6 +748,23 @@ JsonItem STypeExp_Shared::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("STypeExp_Shared") },
+        { "innerType", Citron::ToJson(innerType) },
+    };
+}
+
+STypeExp_Box::STypeExp_Box(STypeExp* innerType)
+    : innerType(move(innerType)) { }
+
+STypeExp_Box::STypeExp_Box(STypeExp_Box&& other) noexcept = default;
+
+STypeExp_Box::~STypeExp_Box() = default;
+
+STypeExp_Box& STypeExp_Box::operator=(STypeExp_Box&& other) noexcept = default;
+
+JsonItem STypeExp_Box::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("STypeExp_Box") },
         { "innerType", Citron::ToJson(innerType) },
     };
 }
@@ -1449,6 +1468,24 @@ JsonItem SStructCtorDecl::ToJson()
         { "$type", JsonString("SStructCtorDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "parameters", Citron::ToJson(parameters) },
+        { "body", Citron::ToJson(body) },
+    };
+}
+
+SStructDtorDecl::SStructDtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SStmt*> body)
+    : accessModifier(move(accessModifier)), body(move(body)) { }
+
+SStructDtorDecl::SStructDtorDecl(SStructDtorDecl&& other) noexcept = default;
+
+SStructDtorDecl::~SStructDtorDecl() = default;
+
+SStructDtorDecl& SStructDtorDecl::operator=(SStructDtorDecl&& other) noexcept = default;
+
+JsonItem SStructDtorDecl::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SStructDtorDecl") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
         { "body", Citron::ToJson(body) },
     };
 }

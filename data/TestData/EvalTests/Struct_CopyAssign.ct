@@ -1,0 +1,49 @@
+//@ S_copy_ctor,S_dtor,S_copy_ctor,S_dtor,T_copy_ctor,T_copy_assign,T_dtor,
+
+struct S
+{
+    special S([in] S& s)
+    {
+        @S_copy_ctor,
+    }
+
+    ~S()
+    {
+        @S_dtor,
+    }    
+}
+
+struct T
+{
+    special T([in] T& t)
+    {
+        @T_copy_ctor,
+    }
+
+    special void copy_assign([in] T& t)
+    {
+        @T_copy_assign,
+    }
+
+    ~T()
+    {
+        @T_dtor,
+    }
+}
+
+void Main()
+{
+    {
+        S s = S();
+        S s1 = s; // copy_ctor
+        s1 = s;   // dtor,copy_ctor
+        // dtor
+    }
+
+    {
+        T t = T();
+        T t1 = t; // copy_ctor
+        t1 = t;   // copy_assign
+        // dtor
+    }
+}

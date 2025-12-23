@@ -29,8 +29,9 @@ class RType_Void;
 class RType_Primitive;
 class RType_Tuple;
 class RType_Func;
-class RType_LocalPtr;
-class RType_BoxPtr;
+class RType_Ptr;
+class RType_Shared;
+class RType_Box;
 class RType_Class;
 class RType_Struct;
 class RType_Enum;
@@ -49,8 +50,9 @@ public:
     virtual void Visit(RType_Primitive* type) = 0;
     virtual void Visit(RType_Tuple* type) = 0;
     virtual void Visit(RType_Func* type) = 0;
-    virtual void Visit(RType_LocalPtr* type) = 0;
-    virtual void Visit(RType_BoxPtr* type) = 0;
+    virtual void Visit(RType_Ptr* type) = 0;
+    virtual void Visit(RType_Shared* type) = 0;
+    virtual void Visit(RType_Box* type) = 0;
     virtual void Visit(RType_Class* type) = 0;
     virtual void Visit(RType_Struct* type) = 0;
     virtual void Visit(RType_Enum* type) = 0;
@@ -219,14 +221,14 @@ public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
-class RType_LocalPtr : public RType
+class RType_Ptr : public RType
 {
 public:
     RType* innerType;
 
 private:
     friend RFactory;
-    RType_LocalPtr(RType* innerType);
+    RType_Ptr(RType* innerType);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs, RFactory& factory) override;
@@ -234,14 +236,29 @@ public:
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
-class RType_BoxPtr : public RType
+class RType_Shared : public RType
 {
 public:
     RType* innerType;
 
 private:
     friend RFactory;
-    RType_BoxPtr(RType* innerType);
+    RType_Shared(RType* innerType);
+
+public:
+    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs, RFactory& factory) override;
+    RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
+};
+
+class RType_Box : public RType
+{
+public:
+    RType* innerType;
+
+private:
+    friend RFactory;
+    RType_Box(RType* innerType);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs, RFactory& factory) override;
@@ -388,8 +405,9 @@ concept RTypeVisitable = requires(TVisitor&& v, TVisitorArgs&&... args) {
     { v.Visit(std::declval<RType_Primitive*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Tuple*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Func*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<RType_LocalPtr*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<RType_BoxPtr*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<RType_Ptr*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<RType_Shared*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<RType_Box*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Class*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Struct*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Enum*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
@@ -420,8 +438,9 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RType* r
             void Visit(RType_Primitive* rType) override { call(rType); }
             void Visit(RType_Tuple* rType) override { call(rType); }
             void Visit(RType_Func* rType) override { call(rType); }
-            void Visit(RType_LocalPtr* rType) override { call(rType); }
-            void Visit(RType_BoxPtr* rType) override { call(rType); }
+            void Visit(RType_Ptr* rType) override { call(rType); }
+            void Visit(RType_Shared* rType) override { call(rType); }
+            void Visit(RType_Box* rType) override { call(rType); }
             void Visit(RType_Class* rType) override { call(rType); }
             void Visit(RType_Struct* rType) override { call(rType); }
             void Visit(RType_Enum* rType) override { call(rType); }
@@ -447,8 +466,9 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RType* r
             void Visit(RType_Primitive* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Tuple* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Func* rType) override { result.emplace(call(rType)); }
-            void Visit(RType_LocalPtr* rType) override { result.emplace(call(rType)); }
-            void Visit(RType_BoxPtr* rType) override { result.emplace(call(rType)); }
+            void Visit(RType_Ptr* rType) override { result.emplace(call(rType)); }
+            void Visit(RType_Shared* rType) override { result.emplace(call(rType)); }
+            void Visit(RType_Box* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Class* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Struct* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Enum* rType) override { result.emplace(call(rType)); }

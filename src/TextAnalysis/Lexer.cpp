@@ -55,6 +55,7 @@ TokenInfo infos[] = {
     { U".", DotToken() },
     { U"?", QuestionToken() },
     { U"&", AmpersandToken() },
+    { U"~", TildeToken() },
 
     { U":", ColonToken() },
     { U"`", BacktickToken() },

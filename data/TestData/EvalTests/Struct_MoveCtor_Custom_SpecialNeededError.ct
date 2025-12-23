@@ -1,0 +1,8 @@
+//@ $Error
+
+struct S
+{
+    S([move] S& s) // error special needed
+    {
+    }
+}

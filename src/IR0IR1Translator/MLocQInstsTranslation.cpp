@@ -37,7 +37,7 @@ public:
     ResultType Visit(MLoc_ClassVar* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_EnumElemVar* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_This* loc) { throw NotImplementedException{}; }
-    ResultType Visit(MLoc_LocalDeref* loc) { throw NotImplementedException{}; }
+    ResultType Visit(MLoc_Deref* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_BoxDeref* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_NullableValue* loc) { throw NotImplementedException{}; }
 };

@@ -77,7 +77,7 @@ expected<MLoc*, DiagPtr> TranslateReStructVarExpToMLoc(ReExp_StructVar* reExp, T
     else // x, x (static) 둘다 해당
     {   
         // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
-        MLoc* nInstanceLoc = reExp->decl->IsStatic() ? nullptr : context.MakeNLoc<MLoc_LocalDeref>(context.MakeThisLoc());
+        MLoc* nInstanceLoc = reExp->decl->IsStatic() ? nullptr : context.MakeNLoc<MLoc_Deref>(context.MakeThisLoc());
         return context.MakeNLoc<MLoc_StructVar>(nInstanceLoc, reExp->decl, reExp->typeArgs);
     }
 }
@@ -105,7 +105,7 @@ expected<MLoc*, DiagPtr> TranslateReListIndexerExpToMLoc(ReExp_ListIndexer* reEx
     return context.MakeNLoc<MLoc_ListIndexer>(*eInst, *eIndex, reExp->itemType);
 }
 
-expected<MLoc*, DiagPtr> TranslateReLocalDerefExpToMLoc(ReExp_LocalDeref* reExp, TranslationContext& context)
+expected<MLoc*, DiagPtr> TranslateReDerefExpToMLoc(ReExp_Deref* reExp, TranslationContext& context)
 {
     // *x, *G()
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
@@ -113,7 +113,7 @@ expected<MLoc*, DiagPtr> TranslateReLocalDerefExpToMLoc(ReExp_LocalDeref* reExp,
     auto eTarget = TranslateReExpToMLoc(reExp->target, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
     if (!eTarget) return unexpected{move(eTarget).error()};
 
-    return context.MakeNLoc<MLoc_LocalDeref>(*eTarget);
+    return context.MakeNLoc<MLoc_Deref>(*eTarget);
 }
 
 expected<MLoc*, DiagPtr> TranslateReBoxDerefExpToMLoc(ReExp_BoxDeref* reExp, TranslationContext& context)
@@ -175,9 +175,9 @@ public:
         return TranslateReEnumElemVarExpToMLoc(exp, context);
     }
 
-    ResultType Visit(ReExp_LocalDeref* exp)
+    ResultType Visit(ReExp_Deref* exp)
     {
-        return TranslateReLocalDerefExpToMLoc(exp, context);
+        return TranslateReDerefExpToMLoc(exp, context);
     }
 
     ResultType Visit(ReExp_BoxDeref* exp)

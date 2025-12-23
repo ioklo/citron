@@ -1,0 +1,16 @@
+//@ 3
+
+struct S
+{
+    int x;
+
+    S([move] S& s) = default;
+}
+
+void Main()
+{
+    S s1 = S(3);
+    S s2 = move s1;
+    
+    @${s2.x}
+}

@@ -1,0 +1,27 @@
+//@ $Error
+
+struct S
+{
+    int x;
+    bool y;
+
+    S(int i)
+    {
+        while(i < 3)
+        {
+            if (x is uninit)
+                x = 4; // init
+            else 
+                x = x * 2 + 1;
+
+            i++;                
+        }
+
+        // error, x is { uninit, init }
+    }
+}
+
+void Main()
+{
+    S(0);
+}

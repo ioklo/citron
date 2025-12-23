@@ -1,0 +1,13 @@
+//@ $Error
+
+// T doesn't have move constructor
+struct T
+{
+    int a;
+}
+
+struct S
+{
+    T x;
+    S([move] S& s) = default; // error
+}

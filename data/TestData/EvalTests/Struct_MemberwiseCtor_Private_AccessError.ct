@@ -1,0 +1,14 @@
+//@ $Error
+
+struct S
+{
+    int x;
+    bool y;
+
+    private S(...) = default;
+}
+
+void Main()
+{
+    S s = S(2, false); // error
+}

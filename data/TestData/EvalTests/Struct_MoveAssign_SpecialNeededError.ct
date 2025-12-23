@@ -1,0 +1,8 @@
+//@ $Error
+
+struct S
+{
+    void move_assign([move] S& s) // special needed
+    {
+    }
+}

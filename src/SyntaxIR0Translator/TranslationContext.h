@@ -17,7 +17,6 @@
 
 #include "SRTFactory.h"
 #include "DesignatedDiagnostic.h"
-#include "DeclTypeInfo.h"
 
 namespace Citron {
 
@@ -87,8 +86,6 @@ public:
 
     MLoc_This* MakeThisLoc();
     std::expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType);
-
-    DeclTypeInfo GetDeclTypeInfo(STypeExp* typeExp);
 
 public: // for scopeContext
     ScopeContext& GetScopeContext() { return *scopeContext; }

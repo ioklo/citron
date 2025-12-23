@@ -1588,7 +1588,7 @@ TEST(Lambda_Expression, Basic)
     DoTest(code, expected);
 }
 
-TEST(Lambda_Expression_Capture, BoxPtr) 
+TEST(Lambda_Expression_Capture, Box) 
 {
     auto code = R"---(void Main()
 {
@@ -2260,16 +2260,17 @@ TEST(String_Expression, Literal)
 
 TEST(Struct, AutoTrivialConstructor) 
 {
-    auto code = R"---(// 2, 3
-struct S
+    auto code = R"---(struct S
 {
     int x;
     int y;
 }
 
-var s = new S(2, 3);
-@${s.x} ${s.y}
-)---";
+void Main()
+{
+    var s = S(2, 3);
+    @${s.x} ${s.y}
+})---";
     string expected = R"---(2 3)---";
 
     DoTest(code, expected);
@@ -2300,24 +2301,204 @@ struct S : B
 
 void Main()
 {	
-	// 일단 다 적고 나중에 분리
-	
-	var s1 = new S<int>(1, 2, 3); // a, x, y
+	var s1 = S(1, 2, 3); // a, x, y
+    
+    // 2
 	@${s1.x}
-	@ ${s1.GetY()}
-	@ ${s1.Sum()}
+
+    // 3
+	@${s1.GetY()}
+
+    // 6
+	@${s1.Sum()}
+    
+    S s2 = uninit; // 미초기화 상태
 	
-	S s2 = s1;                // 복사 생성, 오버라이드 불가능
+	s2 = s1;                  // 복사 생성
 	
-	// 고급, box, boxed 타입 S*
-	box var* s3 = box S(1, 2, 3);
+	// 고급, shared
+	shared S s3 = shared S(1, 2, 3);
 	
 	@${*s3.a}
-	s2 = *s3;
+	s2 = *s3;                 // 복사 대입
+})---";
+    string expected = R"---(2 3 6 1)---";
+
+    DoTest(code, expected);
 }
 
+TEST(Struct, CopyAssign) 
+{
+    auto code = R"---(
+struct S
+{
+    special S([in] S& s)
+    {
+        @S_copy_ctor,
+    }
+
+    ~S()
+    {
+        @S_dtor,
+    }    
+}
+
+struct T
+{
+    special T([in] T& t)
+    {
+        @T_copy_ctor,
+    }
+
+    special void copy_assign([in] T& t)
+    {
+        @T_copy_assign,
+    }
+
+    ~T()
+    {
+        @T_dtor,
+    }
+}
+
+void Main()
+{
+    {
+        S s = S();
+        S s1 = s; // copy_ctor
+        s1 = s;   // dtor,copy_ctor
+        // dtor
+    }
+
+    {
+        T t = T();
+        T t1 = t; // copy_ctor
+        t1 = t;   // copy_assign
+        // dtor
+    }
+}
 )---";
-    string expected = R"---(2 3 6 1)---";
+    string expected = R"---(S_copy_ctor,S_dtor,S_copy_ctor,S_dtor,T_copy_ctor,T_copy_assign,T_dtor,)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Struct_CopyCtor, Custom) 
+{
+    auto code = R"---(
+struct S
+{
+    int x;
+
+    special S([in] S& s)
+    {
+        this.x = s.x;
+        @copy constructor
+    }
+}
+
+void Main()
+{
+    S s1 = S(3);
+    S s2 = s1;
+
+    s1.x = 2;
+    @${s2.x}
+}
+)---";
+    string expected = R"---(copy constructor3)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Struct_CopyCtor, Default) 
+{
+    auto code = R"---(
+struct S
+{
+    int x;
+
+    S([in] S& s) = default;
+}
+
+void Main()
+{
+    S s1 = S(3);
+    S s2 = s1;
+
+    s1.x = 2;
+    @${s1.x} {s2.x}
+}
+)---";
+    string expected = R"---(2 3)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Struct_Ctor, UninitializedLoop) 
+{
+    auto code = R"---(
+struct S
+{
+    int x;
+    bool y;
+
+    S(int i)
+    {
+        while(i < 3)
+        {
+            if (x is uninit)
+                x = 4; // init
+            else 
+                x = x * 2 + 1;
+
+            i++;                
+        }
+        
+        if (x is uninit)
+            x = 3;
+    }
+}
+
+void Main()
+{
+    var s = S(0);
+    @${s.x}
+}
+)---";
+    string expected = R"---(19)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Struct, Dtor) 
+{
+    auto code = R"---(
+struct S
+{
+    int x;
+
+    S() // memberwise constructor가 생기면 제거한다.
+    { 
+        x = 0; 
+    } 
+
+    ~S()
+    {
+        @dtor $x,
+    }
+}
+
+void Main()
+{
+    S s1 = S();
+    s1.x = 1;
+
+    S s2 = S();
+    s2.x = 2; 
+}
+)---";
+    string expected = R"---(dtor 2,dtor 1)---";
 
     DoTest(code, expected);
 }
@@ -2344,6 +2525,76 @@ void Main()
     DoTest(code, expected);
 }
 
+TEST(Struct_MemberwiseCtor, Disable) 
+{
+    auto code = R"---(
+struct S
+{
+    int x;
+    bool y;
+    S(...) = delete;
+}
+
+void Main()
+{
+    S s = S(3, true); // error
+}
+)---";
+    string expected = R"---($error)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Struct_MemberwiseCtor, Normal) 
+{
+    auto code = R"---(
+struct S
+{
+    int x;
+    bool y;
+}
+
+void Main()
+{
+    S s = S(3, true);
+    @${s.x} ${s.y}
+}
+)---";
+    string expected = R"---(3 true)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Struct_MemberwiseCtor, Private) 
+{
+    auto code = R"---(
+struct S
+{
+    int x;
+    bool y;
+
+    private S(...) = default;
+
+    S() { x = 3; y = true; }
+
+    void Func()
+    {
+        S s = S(2, false);
+        @${s.x} ${s.y}
+    }
+}
+
+void Main()
+{
+    S s = S();
+    s.Func();
+}
+)---";
+    string expected = R"---(2 false)---";
+
+    DoTest(code, expected);
+}
+
 TEST(Struct_Member_Box_Reference_Expression, Basic) 
 {
     auto code = R"---(struct A { int i; }
@@ -2360,6 +2611,110 @@ void Main()
 
 )---";
     string expected = R"---(5)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Struct, MoveAssign) 
+{
+    auto code = R"---(
+struct S
+{
+    special S([move] S& s)
+    {
+        @S_move_ctor,
+    }
+
+    ~S()
+    {
+        @S_dtor,
+    }    
+}
+
+struct T
+{
+    special T([move] T& t)
+    {
+        @T_move_ctor,
+    }
+
+    special void move_assign([move] T& t)
+    {
+        @T_move_assign,
+    }
+
+    ~T()
+    {
+        @T_dtor,
+    }
+}
+
+void Main()
+{
+    {
+        S s = S();
+        S s1 = move s; // move_ctor
+        s1 = move s;   // dtor,move_ctor
+        // dtor
+    }
+
+    {
+        T t = T();
+        T t1 = move t; // move_ctor
+        t1 = move t;   // move_assign
+        // dtor
+    }
+}
+)---";
+    string expected = R"---(S_move_ctor,S_dtor,S_move_ctor,S_dtor,T_move_ctor,T_move_assign,T_dtor,)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Struct_MoveCtor, Custom) 
+{
+    auto code = R"---(
+struct S
+{
+    int x;
+
+    special S([move] S& s)
+    {
+        this.x = s.x;
+        @move_ctor,
+    }
+}
+
+void Main()
+{
+    S s1 = S(3);
+    S s2 = move s1;
+    
+    @${s2.x}
+})---";
+    string expected = R"---(move_ctor,3)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Struct_MoveCtor, Default) 
+{
+    auto code = R"---(
+struct S
+{
+    int x;
+
+    S([move] S& s) = default;
+}
+
+void Main()
+{
+    S s1 = S(3);
+    S s2 = move s1;
+    
+    @${s2.x}
+})---";
+    string expected = R"---(3)---";
 
     DoTest(code, expected);
 }

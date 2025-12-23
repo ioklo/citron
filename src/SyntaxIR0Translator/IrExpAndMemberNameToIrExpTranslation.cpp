@@ -248,15 +248,21 @@ public:
     }
 
     // &C.pS.id;
-    ResultType Visit(RType_LocalPtr* type) 
+    ResultType Visit(RType_Ptr* type) 
     {   
-        return Error<Error_ResolveIdentifier_LocalPtrCantHaveMember>();
+        return Error<Error_ResolveIdentifier_PtrCantHaveMember>();
     }
 
-    ResultType Visit(RType_BoxPtr* type) 
+    ResultType Visit(RType_Shared* type)
     {
         // T& t = (C.x).a
-        return Error<Error_Reference_CantMakeReference>();
+        return Error<Error_ResolveIdentifier_SharedCantHaveMember>();
+    }
+
+    ResultType Visit(RType_Box* type) 
+    {
+        // T& t = (C.x).a
+        return Error<Error_ResolveIdentifier_BoxCantHaveMember>();
     }
 
     ResultType Visit(RType_Class* type) 
@@ -410,16 +416,22 @@ public:
         return Error<Error_ResolveIdentifier_FuncInstanceCantHaveMember>();
     }
 
-    ResultType Visit(RType_LocalPtr* type) 
+    ResultType Visit(RType_Ptr* type) 
     {
         // &c.p.x
-        return Error<Error_ResolveIdentifier_LocalPtrCantHaveMember>();
+        return Error<Error_ResolveIdentifier_PtrCantHaveMember>();
     }
 
-    ResultType Visit(RType_BoxPtr* type) 
+    ResultType Visit(RType_Shared* type)
+    {
+        // T& t = c.x.a
+        return Error<Error_ResolveIdentifier_SharedCantHaveMember>();
+    }
+
+    ResultType Visit(RType_Box* type) 
     {
         // &c.p.x, 문법에러        
-        return Error<Error_ResolveIdentifier_BoxPtrCantHaveMember>();
+        return Error<Error_ResolveIdentifier_BoxCantHaveMember>();
     }
 
     ResultType Visit(RType_Class* type) 
@@ -559,16 +571,22 @@ public:
         return Error<Error_ResolveIdentifier_FuncInstanceCantHaveMember>();
     }
 
-    ResultType Visit(RType_LocalPtr* type) 
+    ResultType Visit(RType_Ptr* type) 
     {
         // &s.p.x
-        return Error<Error_ResolveIdentifier_LocalPtrCantHaveMember>();
+        return Error<Error_ResolveIdentifier_PtrCantHaveMember>();
     }
 
-    ResultType Visit(RType_BoxPtr* type) 
+    ResultType Visit(RType_Shared* type)
+    {
+        // T& t = s.p.x;
+        return Error<Error_ResolveIdentifier_SharedCantHaveMember>();
+    }
+
+    ResultType Visit(RType_Box* type) 
     {
         // &s.p.x
-        return Error<Error_ResolveIdentifier_BoxPtrCantHaveMember>();
+        return Error<Error_ResolveIdentifier_BoxCantHaveMember>();
     }
 
     ResultType Visit(RType_Class* type) 
@@ -720,14 +738,20 @@ public:
         throw RuntimeFatalException{};
     }
 
-    ResultType Visit(RType_LocalPtr* type) 
+    ResultType Visit(RType_Ptr* type) 
     {
         throw RuntimeFatalException{};
     }
 
-    ResultType Visit(RType_BoxPtr* type) 
+    ResultType Visit(RType_Shared* type)
     {
-        return Error<Error_ResolveIdentifier_BoxPtrCantHaveMember>();
+        // T& t = (C.x).a
+        return Error<Error_ResolveIdentifier_SharedCantHaveMember>();
+    }
+
+    ResultType Visit(RType_Box* type) 
+    {
+        return Error<Error_ResolveIdentifier_BoxCantHaveMember>();
     }
 
     ResultType Visit(RType_Class* type) 
@@ -863,14 +887,19 @@ public:
         throw RuntimeFatalException{};
     }
 
-    ResultType Visit(RType_LocalPtr* type) 
+    ResultType Visit(RType_Ptr* type) 
     {
-        return Error<Error_ResolveIdentifier_LocalPtrCantHaveMember>();
+        return Error<Error_ResolveIdentifier_PtrCantHaveMember>();
     }
 
-    ResultType Visit(RType_BoxPtr* type) 
+    ResultType Visit(RType_Shared* type)
+    {   
+        return Error<Error_ResolveIdentifier_SharedCantHaveMember>();
+    }
+
+    ResultType Visit(RType_Box* type) 
     {
-        return Error<Error_ResolveIdentifier_BoxPtrCantHaveMember>();
+        return Error<Error_ResolveIdentifier_BoxCantHaveMember>();
     }
 
     ResultType Visit(RType_Class* type) 
@@ -894,7 +923,7 @@ public:
     {
         // &this.x
         // TODO: [10] box함수인 경우 에러 메시지를 다르게 해야 한다
-        return Error<Error_ResolveIdentifier_LocalPtrCantHaveMember>();
+        return Error<Error_ResolveIdentifier_PtrCantHaveMember>();
     }
 
     ResultType Visit(RType_Enum* type) 

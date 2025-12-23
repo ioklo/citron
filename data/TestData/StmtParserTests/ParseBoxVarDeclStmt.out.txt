@@ -3,7 +3,7 @@
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "STypeExp_BoxPtr",
+            "$type": "STypeExp_Box",
             "innerType": {
                 "$type": "STypeExp_Id",
                 "name": "int",

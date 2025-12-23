@@ -70,8 +70,8 @@ struct AggregateDiag : Diag
 //LOGGING_API void Fatal_ResolveIdentifier_CantUseNamespaceAsExpression();       // A2013_ResolveIdentifier_CantUseNamespaceAsExpression
 //LOGGING_API void Fatal_ResolveIdentifier_ExpressionIsNotLocation();            // A2015_ResolveIdentifier_ExpressionIsNotLocation    
 //LOGGING_API void Fatal_ResolveIdentifier_LambdaInstanceCantHaveMember();       // A2016_ResolveIdentifier_LambdaInstanceCantHaveMember
-//LOGGING_API void Fatal_ResolveIdentifier_LocalPtrCantHaveMember();             // A2017_ResolveIdentifier_LocalPtrCantHaveMember
-//LOGGING_API void Fatal_ResolveIdentifier_BoxPtrCantHaveMember();               // A2018_ResolveIdentifier_BoxPtrCantHaveMember
+//LOGGING_API void Fatal_ResolveIdentifier_PtrCantHaveMember();                  // A2017_ResolveIdentifier_PtrCantHaveMember
+//LOGGING_API void Fatal_ResolveIdentifier_BoxCantHaveMember();                  // A2018_ResolveIdentifier_BoxCantHaveMember
 //LOGGING_API void Fatal_ResolveIdentifier_FuncInstanceCantHaveMember();         // A2019_ResolveIdentifier_FuncInstanceCantHaveMember
 
 //LOGGING_API void Fatal_Cast_Failed();                   // A2201_Cast_Failed
@@ -122,12 +122,14 @@ struct Error_VarDecl_RefDeclNeedInitializer : Error { }; // A0106_VarDecl_RefDec
 struct Error_VarDecl_LocalVarDeclNeedInitializer : Error { }; // A0111_VarDecl_LocalVarDeclNeedInitializer
 struct Error_VarDecl_RefDeclNeedLocationInitializer : Error { }; // A0112_VarDecl_RefDeclNeedLocationInitializer
 struct Error_VarDecl_UsingLocalVarInsteadOfVarWhenInitExpIsLocalInterface : Error { }; // A0113_VarDecl_UsingLocalVarInsteadOfVarWhenInitExpIsLocalInterface
-struct Error_VarDecl_UsingBoxPtrVarInsteadOfVarWhenInitExpIsBoxPtr : Error { }; // A0114_VarDecl_UsingBoxPtrVarInsteadOfVarWhenInitExpIsBoxPtr
-struct Error_VarDecl_UsingLocalPtrVarInsteadOfVarWhenInitExpIsLocalPtr : Error { }; // A0115_VarDecl_UsingLocalPtrVarInsteadOfVarWhenInitExpIsLocalPtr
+struct Error_VarDecl_UsingSharedVarInsteadOfVarWhenInitExpIsShared : Error {}; 
+struct Error_VarDecl_UsingBoxVarInsteadOfVarWhenInitExpIsBox : Error { }; // A0114_VarDecl_UsingBoxVarInsteadOfVarWhenInitExpIsBox
+struct Error_VarDecl_UsingPtrVarInsteadOfVarWhenInitExpIsPtr : Error { }; // A0115_VarDecl_UsingPtrVarrInsteadOfVarWhenInitExpIsPtr
 struct Error_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr : Error { }; // A0116_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr
 struct Error_VarDecl_UsingLocalVarAsDeclTypeButInitExpIsNotLocalInterface : Error { }; // A0117_VarDecl_UsingLocalVarAsDeclTypeButInitExpIsNotLocalInterface
-struct Error_VarDecl_UsingBoxPtrVarAsDeclTypeButInitExpIsNotBoxPtr : Error { }; // A0118_VarDecl_UsingBoxPtrVarAsDeclTypeButInitExpIsNotBoxPtr
-struct Error_VarDecl_UsingLocalPtrVarAsDeclTypeButInitExpIsNotLocalPtr : Error { }; // A0119_VarDecl_UsingLocalPtrVarAsDeclTypeButInitExpIsNotLocalPtr
+struct Error_VarDecl_UsingSharedVarAsDeclTypeButInitExpIsNotShared : Error {}; // 
+struct Error_VarDecl_UsingBoxVarAsDeclTypeButInitExpIsNotBox : Error { }; // A0118_VarDecl_UsingBoxVarAsDeclTypeButInitExpIsNotBox
+struct Error_VarDecl_UsingPtrVarAsDeclTypeButInitExpIsNotPtr : Error { }; // A0119_VarDecl_UsingPtrVarAsDeclTypeButInitExpIsNotPtr
 struct Error_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable : Error { }; // A0120_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable
 struct Error_VarDecl_InitExpTypeMismatch : Error { }; // A0121_VarDecl_InitExpTypeMismatch
 struct Error_Capturer_ReferencingLocalVariableIsNotAllowed : Error { }; // A0201_Capturer_ReferencingLocalVariableIsNotAllowed
@@ -180,8 +182,9 @@ struct Error_ResolveIdentifier_CantUseNamespaceAsExpression : Error { }; // A201
 struct Error_ResolveIdentifier_MultipleCandidatesForMember : Error { }; // A2014_ResolveIdentifier_MultipleCandidatesForMember
 struct Error_ResolveIdentifier_ExpressionIsNotLocation : Error { }; // A2015_ResolveIdentifier_ExpressionIsNotLocation
 struct Error_ResolveIdentifier_LambdaInstanceCantHaveMember : Error { }; // A2016_ResolveIdentifier_LambdaInstanceCantHaveMember
-struct Error_ResolveIdentifier_LocalPtrCantHaveMember : Error { }; // A2017_ResolveIdentifier_LocalPtrCantHaveMember
-struct Error_ResolveIdentifier_BoxPtrCantHaveMember : Error { }; // A2018_ResolveIdentifier_BoxPtrCantHaveMember
+struct Error_ResolveIdentifier_PtrCantHaveMember : Error { }; // A2017_ResolveIdentifier_PtrCantHaveMember
+struct Error_ResolveIdentifier_SharedCantHaveMember : Error {}; 
+struct Error_ResolveIdentifier_BoxCantHaveMember : Error { }; // A2018_ResolveIdentifier_BoxCantHaveMember
 struct Error_ResolveIdentifier_FuncInstanceCantHaveMember : Error { }; // A2019_ResolveIdentifier_FuncInstanceCantHaveMember
 struct Error_Cast_Failed : Error { }; // A2201_Cast_Failed
 struct Error_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault : Error { }; // A2301_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault

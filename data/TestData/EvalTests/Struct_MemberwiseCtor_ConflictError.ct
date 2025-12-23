@@ -1,0 +1,15 @@
+//@ $Error
+
+struct S
+{
+    int x;
+    bool y;
+
+    // S(...) = delete; needed
+    S(int x, bool y) { this.x = x; this.y = y; }
+}
+
+void Main()
+{
+    S s = S(2, false); // error
+}

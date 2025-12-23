@@ -231,7 +231,7 @@
     <None Include="..\..\data\TestData\EvalTests\Integer_Literal_Expression_OverTheLimit.ct" />
     <None Include="..\..\data\TestData\EvalTests\Integer_UnaryOperation.ct" />
     <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Basic.ct" />
-    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_BoxPtr.ct" />
+    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_Box.ct" />
     <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_Copy.ct" />
     <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_LocalPtr.ct" />
     <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_This.ct" />

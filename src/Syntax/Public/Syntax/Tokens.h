@@ -40,6 +40,7 @@ TOKEN_DEF(ExclToken, L"!") // !
 TOKEN_DEF(DotToken, L".") // .
 TOKEN_DEF(QuestionToken, L"?") // ?
 TOKEN_DEF(AmpersandToken, L"&") // &
+TOKEN_DEF(TildeToken, L"~") // ~
 TOKEN_DEF(IfToken, L"if")
 TOKEN_DEF(ElseToken, L"else")
 TOKEN_DEF(ForToken, L"for")
@@ -141,6 +142,7 @@ using Token = std::variant<
     DotToken,
     QuestionToken,
     AmpersandToken,
+    TildeToken,
     IfToken,
     ElseToken,
     ForToken,

@@ -142,7 +142,7 @@ public:
         {
             // this의 타입이 S*이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            auto* nDerefThisLoc = context.MakeNLoc<MLoc_LocalDeref>(context.MakeThisLoc());
+            auto* nDerefThisLoc = context.MakeNLoc<MLoc_Deref>(context.MakeThisLoc());
             return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_StructVar>(nDerefThisLoc, imExp->decl, imExp->typeArgs));
         }
     }
@@ -160,7 +160,7 @@ public:
         throw RuntimeFatalException{};
     }
 
-    ResultType Visit(ImExp_LocalDeref* imExp)
+    ResultType Visit(ImExp_Deref* imExp)
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException{};

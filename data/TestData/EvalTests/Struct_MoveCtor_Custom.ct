@@ -1,0 +1,20 @@
+//@ move_ctor,3
+
+struct S
+{
+    int x;
+
+    special S([move] S& s)
+    {
+        this.x = s.x;
+        @move_ctor,
+    }
+}
+
+void Main()
+{
+    S s1 = S(3);
+    S s2 = move s1;
+    
+    @${s2.x}
+}

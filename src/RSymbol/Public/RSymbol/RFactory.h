@@ -91,8 +91,9 @@ class RFactory
     std::unique_ptr<RType_Void> voidType;
     std::unordered_map<std::vector<RTupleVar>, std::unique_ptr<RType_Tuple>> tupleTypes;
     std::unordered_map<RFuncTypeKey, std::unique_ptr<RType_Func>, RFuncTypeKeyHasher> funcTypes;
-    std::unordered_map<RType*, std::unique_ptr<RType_LocalPtr>> localPtrTypes;
-    std::unordered_map<RType*, std::unique_ptr<RType_BoxPtr>> boxPtrTypes;
+    std::unordered_map<RType*, std::unique_ptr<RType_Ptr>> ptrTypes;
+    std::unordered_map<RType*, std::unique_ptr<RType_Shared>> sharedTypes;
+    std::unordered_map<RType*, std::unique_ptr<RType_Box>> boxTypes;
 
     template<typename TDecl, typename TType>
     using InstanceTypeKeyUnorderedMap = std::unordered_map<RInstanceTypeKey<TDecl>, std::unique_ptr<TType>, RInstanceTypeKeyHasher<TDecl>>;
@@ -127,8 +128,9 @@ public:
     RSYMBOL_API RType_Void* MakeVoidType();
     RSYMBOL_API RType_Tuple* MakeTupleType(std::vector<RTupleVar>&& vars);
     RSYMBOL_API RType_Func* MakeFuncType(bool bLocal, RType* retType, std::vector<RType_Func::Parameter>&& params);
-    RSYMBOL_API RType_LocalPtr* MakeLocalPtrType(RType* innerType);
-    RSYMBOL_API RType_BoxPtr* MakeBoxPtrType(RType* innerType);
+    RSYMBOL_API RType_Ptr* MakePtrType(RType* innerType);
+    RSYMBOL_API RType_Shared* MakeSharedType(RType* innerType);
+    RSYMBOL_API RType_Box* MakeBoxType(RType* innerType);
 
     RSYMBOL_API RType_Class* MakeClassType(RClassDecl* decl, RTypeArguments* typeArgs);
     RSYMBOL_API RType_Struct* MakeStructType(RStructDecl* decl, RTypeArguments* typeArgs);

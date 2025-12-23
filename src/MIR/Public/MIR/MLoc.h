@@ -26,7 +26,7 @@ class MLoc_StructVar;
 class MLoc_ClassVar;
 class MLoc_EnumElemVar;
 class MLoc_This;
-class MLoc_LocalDeref;
+class MLoc_Deref;
 class MLoc_BoxDeref;
 class MLoc_NullableValue;
 
@@ -46,7 +46,7 @@ public:
     virtual void Visit(MLoc_ClassVar* loc) = 0;
     virtual void Visit(MLoc_EnumElemVar* loc) = 0;
     virtual void Visit(MLoc_This* loc) = 0;
-    virtual void Visit(MLoc_LocalDeref* loc) = 0;
+    virtual void Visit(MLoc_Deref* loc) = 0;
     virtual void Visit(MLoc_BoxDeref* loc) = 0;
     virtual void Visit(MLoc_NullableValue* loc) = 0;
 };
@@ -161,12 +161,12 @@ public:
 };
 
 // dereference pointer, *
-class MLoc_LocalDeref : public MLoc
+class MLoc_Deref : public MLoc
 {
 public:
     MLoc* innerLoc;
 public:
-    MIR_API MLoc_LocalDeref(MLoc* innerLoc);
+    MIR_API MLoc_Deref(MLoc* innerLoc);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
     MIR_API RType* GetType(RFactory& factory) override;
 };
@@ -211,7 +211,7 @@ concept MLocVisitable = requires(TVisitor && v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MLoc_ClassVar*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MLoc_EnumElemVar*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MLoc_This*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MLoc_LocalDeref*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MLoc_Deref*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MLoc_BoxDeref*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MLoc_NullableValue*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
 };
@@ -238,7 +238,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MLoc* mL
             void Visit(MLoc_ClassVar* loc) override { call(loc); }
             void Visit(MLoc_EnumElemVar* loc) override { call(loc); }
             void Visit(MLoc_This* loc) override { call(loc); }
-            void Visit(MLoc_LocalDeref* loc) override { call(loc); }
+            void Visit(MLoc_Deref* loc) override { call(loc); }
             void Visit(MLoc_BoxDeref* loc) override { call(loc); }
             void Visit(MLoc_NullableValue* loc) override { call(loc); }
         };
@@ -261,7 +261,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MLoc* mL
             void Visit(MLoc_ClassVar* loc) override { result.emplace(call(loc)); }
             void Visit(MLoc_EnumElemVar* loc) override { result.emplace(call(loc)); }
             void Visit(MLoc_This* loc) override { result.emplace(call(loc)); }
-            void Visit(MLoc_LocalDeref* loc) override { result.emplace(call(loc)); }
+            void Visit(MLoc_Deref* loc) override { result.emplace(call(loc)); }
             void Visit(MLoc_BoxDeref* loc) override { result.emplace(call(loc)); }
             void Visit(MLoc_NullableValue* loc) override { result.emplace(call(loc)); }
         };

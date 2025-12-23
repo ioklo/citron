@@ -468,7 +468,7 @@ public:
         throw NotImplementedException{};
     }
 
-    ResultType Visit(ImExp_LocalDeref* imExp)
+    ResultType Visit(ImExp_Deref* imExp)
     {
         return TranslateInstanceParent(imExp);
     }

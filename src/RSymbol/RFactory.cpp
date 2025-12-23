@@ -107,27 +107,39 @@ RType_Func* RFactory::MakeFuncType(bool bLocal, RType* retType, vector<RType_Fun
     return pNewFuncType;
 }
 
-RType_LocalPtr* RFactory::MakeLocalPtrType(RType* innerType)
+RType_Ptr* RFactory::MakePtrType(RType* innerType)
 {
-    auto i = localPtrTypes.find(innerType);
-    if (i != localPtrTypes.end())
+    auto i = ptrTypes.find(innerType);
+    if (i != ptrTypes.end())
         return i->second.get();
 
-    unique_ptr<RType_LocalPtr> newType{new RType_LocalPtr{innerType}};
+    unique_ptr<RType_Ptr> newType{new RType_Ptr{innerType}};
     auto pNewType = newType.get();
-    localPtrTypes.emplace(innerType, move(newType));
+    ptrTypes.emplace(innerType, move(newType));
     return pNewType;
 }
 
-RType_BoxPtr* RFactory::MakeBoxPtrType(RType* innerType)
+RType_Shared* RFactory::MakeSharedType(RType* innerType)
 {
-    auto i = boxPtrTypes.find(innerType);
-    if (i != boxPtrTypes.end())
+    auto i = sharedTypes.find(innerType);
+    if (i != sharedTypes.end())
         return i->second.get();
 
-    unique_ptr<RType_BoxPtr> newType{new RType_BoxPtr{innerType}};
+    unique_ptr<RType_Shared> newType{new RType_Shared{innerType}};
     auto pNewType = newType.get();
-    boxPtrTypes.emplace(innerType, move(newType));
+    sharedTypes.emplace(innerType, move(newType));
+    return pNewType;
+}
+
+RType_Box* RFactory::MakeBoxType(RType* innerType)
+{
+    auto i = boxTypes.find(innerType);
+    if (i != boxTypes.end())
+        return i->second.get();
+
+    unique_ptr<RType_Box> newType{new RType_Box{innerType}};
+    auto pNewType = newType.get();
+    boxTypes.emplace(innerType, move(newType));
     return pNewType;
 }
 

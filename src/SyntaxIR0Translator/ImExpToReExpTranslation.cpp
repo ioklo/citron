@@ -138,9 +138,9 @@ public:
     {
         return Value<ReExp_ListIndexer>(imExp->instance, imExp->index, imExp->itemType);
     }
-    ResultType Visit(ImExp_LocalDeref* imExp)
+    ResultType Visit(ImExp_Deref* imExp)
     {
-        return Value<ReExp_LocalDeref>(imExp->target);
+        return Value<ReExp_Deref>(imExp->target);
     }
     ResultType Visit(ImExp_BoxDeref* imExp)
     {

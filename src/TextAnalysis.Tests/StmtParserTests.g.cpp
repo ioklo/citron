@@ -102,7 +102,7 @@ TEST(StmtParser, ParseBlockStmt)
     EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
-TEST(StmtParser, ParseBoxPtrVarDeclStmt)
+TEST(StmtParser, ParseBoxVarDeclStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(box int* p;)---");
     SFactory factory;
@@ -114,7 +114,7 @@ TEST(StmtParser, ParseBoxPtrVarDeclStmt)
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "STypeExp_BoxPtr",
+            "$type": "STypeExp_Box",
             "innerType": {
                 "$type": "STypeExp_Id",
                 "name": "int",
@@ -498,9 +498,9 @@ TEST(StmtParser, ParseInlineCommandStmt)
     EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
-TEST(StmtParser, ParseLocalPtrVarDeclStmt)
+TEST(StmtParser, ParseNullableVarDeclStmt)
 {
-    auto [buffer, lexer] = Prepare(UR"---(int* p;)---");
+    auto [buffer, lexer] = Prepare(UR"---(int? p;)---");
     SFactory factory;
 
     auto* stmt = ParseStmt(&lexer, factory);
@@ -510,7 +510,7 @@ TEST(StmtParser, ParseLocalPtrVarDeclStmt)
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "STypeExp_LocalPtr",
+            "$type": "STypeExp_Nullable",
             "innerType": {
                 "$type": "STypeExp_Id",
                 "name": "int",
@@ -530,9 +530,9 @@ TEST(StmtParser, ParseLocalPtrVarDeclStmt)
     EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
-TEST(StmtParser, ParseNullableVarDeclStmt)
+TEST(StmtParser, ParsePtrVarDeclStmt)
 {
-    auto [buffer, lexer] = Prepare(UR"---(int? p;)---");
+    auto [buffer, lexer] = Prepare(UR"---(int* p;)---");
     SFactory factory;
 
     auto* stmt = ParseStmt(&lexer, factory);
@@ -542,7 +542,7 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "STypeExp_Nullable",
+            "$type": "STypeExp_Ptr",
             "innerType": {
                 "$type": "STypeExp_Id",
                 "name": "int",

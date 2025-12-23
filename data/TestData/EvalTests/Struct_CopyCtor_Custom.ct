@@ -1,0 +1,21 @@
+//@ copy constructor3
+
+struct S
+{
+    int x;
+
+    special S([in] S& s)
+    {
+        this.x = s.x;
+        @copy constructor
+    }
+}
+
+void Main()
+{
+    S s1 = S(3);
+    S s2 = s1;
+
+    s1.x = 2;
+    @${s2.x}
+}

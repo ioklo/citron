@@ -1,0 +1,13 @@
+//@ $Error
+
+// T doesn't have copy constructor
+struct T
+{
+    int x;
+}
+
+struct S
+{
+    T x;
+    S([in] S& s) = default; // error
+}

@@ -375,8 +375,8 @@ expected<MExp*, DiagPtr> TranslateSCallExpToMExp(SExp_Call* exp, RType* hintType
 
 expected<MExp*, DiagPtr> TranslateSBoxExpToMExp(SExp_Box* exp, RType* hintType, TranslationContext& context)
 {
-    auto* hintBoxPtrType = dynamic_cast<RType_BoxPtr*>(hintType);
-    auto innerHintType = hintBoxPtrType ? hintBoxPtrType->innerType : nullptr;
+    auto* hintBoxType = dynamic_cast<RType_Box*>(hintType);
+    auto innerHintType = hintBoxType ? hintBoxType->innerType : nullptr;
 
     // hintType전수
     auto eNInnerExp = TranslateSExpToMExp(exp->innerExp, innerHintType, context);

@@ -19,8 +19,8 @@ class EType_TypeVar;  // 이것은 Symbol인가?
 class EType_Void;     // builtin type
 class EType_Tuple;    // inline type
 class EType_Func;     // inline type, circular
-class EType_LocalPtr; // inline type
-class EType_BoxPtr;   // inline type
+class EType_Ptr; // inline type
+class EType_Box;   // inline type
 class EType_Instance;
 
 class ETypeVisitor
@@ -32,8 +32,8 @@ public:
     virtual void Visit(EType_Void* type) = 0;
     virtual void Visit(EType_Tuple* type) = 0;
     virtual void Visit(EType_Func* type) = 0;
-    virtual void Visit(EType_LocalPtr* type) = 0;
-    virtual void Visit(EType_BoxPtr* type) = 0;
+    virtual void Visit(EType_Ptr* type) = 0;
+    virtual void Visit(EType_Box* type) = 0;
     virtual void Visit(EType_Instance* type) = 0;
 };
 
@@ -101,7 +101,7 @@ public:
     void Accept(ETypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
-class EType_LocalPtr : public EType
+class EType_Ptr : public EType
 {
     EType* innerType;
 
@@ -109,7 +109,7 @@ public:
     void Accept(ETypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
-class EType_BoxPtr : public EType
+class EType_Box : public EType
 {
     EType* innerType;
 public:

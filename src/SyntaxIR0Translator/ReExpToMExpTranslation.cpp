@@ -77,9 +77,9 @@ public:
         return HandleLoc(move(eNLoc));
     }
 
-    ResultType Visit(ReExp_LocalDeref* exp)
+    ResultType Visit(ReExp_Deref* exp)
     {
-        auto eNLoc = TranslateReLocalDerefExpToMLoc(exp, context);
+        auto eNLoc = TranslateReDerefExpToMLoc(exp, context);
         return HandleLoc(move(eNLoc));
     }
 

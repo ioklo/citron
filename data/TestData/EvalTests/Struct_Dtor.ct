@@ -1,0 +1,25 @@
+//@ dtor 2,dtor 1
+
+struct S
+{
+    int x;
+
+    S() // memberwise constructor가 생기면 제거한다.
+    { 
+        x = 0; 
+    } 
+
+    ~S()
+    {
+        @dtor $x,
+    }
+}
+
+void Main()
+{
+    S s1 = S();
+    s1.x = 1;
+
+    S s2 = S();
+    s2.x = 2; 
+}

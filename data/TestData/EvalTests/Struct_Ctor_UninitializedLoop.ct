@@ -1,0 +1,29 @@
+//@ 19
+
+struct S
+{
+    int x;
+    bool y;
+
+    S(int i)
+    {
+        while(i < 3)
+        {
+            if (x is uninit)
+                x = 4; // init
+            else 
+                x = x * 2 + 1;
+
+            i++;                
+        }
+        
+        if (x is uninit)
+            x = 3;
+    }
+}
+
+void Main()
+{
+    var s = S(0);
+    @${s.x}
+}

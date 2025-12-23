@@ -1,0 +1,13 @@
+//@ $error
+
+struct S
+{
+    int x;
+    bool y;
+    S(...) = delete;
+}
+
+void Main()
+{
+    S s = S(3, true); // error
+}

@@ -371,7 +371,7 @@ public:
         return HandleLoc(imExp);
     }
 
-    ResultType Visit(ImExp_LocalDeref* imExp)
+    ResultType Visit(ImExp_Deref* imExp)
     {
         return HandleLoc(imExp);
     }

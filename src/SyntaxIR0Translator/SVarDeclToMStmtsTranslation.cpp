@@ -1,16 +1,18 @@
 #include "SVarDeclToMStmtsTranslation.h"
 
-#include <cassert>
+#include <span>
 
 #include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
 #include "Infra/Unreachable.h"
+#include "Infra/Expected.h"
+
 #include "Syntax/Syntax.h"
 #include "Logging/Diag.h"
 
 #include "RSymbol/RTypes.h"
 #include "MIR/MStmt.h"
 
-#include "DeclTypeInfo.h"
 #include "TranslationContext.h"
 #include "ScopeContext.h"
 #include "SExpToMExpTranslation.h"
@@ -25,15 +27,12 @@ namespace {
 class VarDeclElemTranslator
 {
     vector<MStmt*>* outStmts;
-
-    SVarDeclElement* elem;
-    DeclTypeInfo& declTypeInfo;
-    
+    span<SVarDeclElement> elems;
     TranslationContext& context;
 
 public:
-    VarDeclElemTranslator(vector<MStmt*>* outStmts, SVarDeclElement* elem, DeclTypeInfo& declTypeInfo, TranslationContext& context)
-        : outStmts{outStmts}, elem{elem}, declTypeInfo{declTypeInfo}, context{context}
+    VarDeclElemTranslator(vector<MStmt*>* outStmts, std::span<SVarDeclElement>&& elems, TranslationContext& context)
+        : outStmts{outStmts}, elems{move(elems)}, context{context}
     {
     }
 
@@ -41,6 +40,7 @@ private:
 
     expected<void, DiagPtr> CheckVarConsistencyPlainVar(RType* initExpType)
     {
+        // 1단계 까지만 체크하고 나머지는 넘어간다
         if (auto* interfaceType = dynamic_cast<RType_Interface*>(initExpType))
         {
             if (interfaceType->bLocal)
@@ -49,11 +49,14 @@ private:
             return {};
         }
 
-        if (dynamic_cast<RType_BoxPtr*>(initExpType))
-            return unexpected{MakePtr<Error_VarDecl_UsingBoxPtrVarInsteadOfVarWhenInitExpIsBoxPtr>()};
+        if (dynamic_cast<RType_Shared*>(initExpType))
+            return unexpected{MakePtr<Error_VarDecl_UsingSharedVarInsteadOfVarWhenInitExpIsShared>()};
 
-        if (dynamic_cast<RType_LocalPtr*>(initExpType))
-            return unexpected{MakePtr<Error_VarDecl_UsingLocalPtrVarInsteadOfVarWhenInitExpIsLocalPtr>()};
+        if (dynamic_cast<RType_Box*>(initExpType))
+            return unexpected{MakePtr<Error_VarDecl_UsingBoxVarInsteadOfVarWhenInitExpIsBox>()};
+
+        if (dynamic_cast<RType_Ptr*>(initExpType))
+            return unexpected{MakePtr<Error_VarDecl_UsingPtrVarInsteadOfVarWhenInitExpIsPtr>()};
 
         if (dynamic_cast<RType_NullableValue*>(initExpType))
             return unexpected{MakePtr<Error_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr>()};
@@ -64,102 +67,111 @@ private:
         return {};
     }
 
-    expected<void, DiagPtr> CheckVarConsistency(RType* initExpType)
+    expected<void, DiagPtr> CheckVarConsistency(SVarDeclType_VarKind kind, RType* initExpType)
     {
         // var 꼴별로 에러 체크
-        switch (declTypeInfo.kind)
+        switch (kind)
         {
-        case DeclTypeInfoKind::Normal:
-            assert(false);
-            return unexpected{MakePtr<Error_Unreachable>()};
-
-            // local, boxptr, localptr, nullable 인지 체크한다 
-        case DeclTypeInfoKind::PlainVar:
+        // local, box, shared, ptr, nullable 인지 체크한다 
+        case SVarDeclType_VarKind::Normal:
             return CheckVarConsistencyPlainVar(initExpType);
             
-        case DeclTypeInfoKind::LocalInterfaceVar:
+        case SVarDeclType_VarKind::Local:
             if (!dynamic_cast<RType_Interface*>(initExpType))
                 return unexpected{MakePtr<Error_VarDecl_UsingLocalVarAsDeclTypeButInitExpIsNotLocalInterface>()};
             return {};
 
-        case DeclTypeInfoKind::BoxPtrVar:
-            if (!dynamic_cast<RType_BoxPtr*>(initExpType))
-                return unexpected{MakePtr<Error_VarDecl_UsingBoxPtrVarAsDeclTypeButInitExpIsNotBoxPtr>()};
+        case SVarDeclType_VarKind::Shared:
+            if (!dynamic_cast<RType_Shared*>(initExpType))
+                return unexpected{MakePtr<Error_VarDecl_UsingSharedVarAsDeclTypeButInitExpIsNotShared>()};
             return {};
 
-        case DeclTypeInfoKind::LocalPtrVar:
-            if (!dynamic_cast<RType_LocalPtr*>(initExpType))
-                return unexpected{MakePtr<Error_VarDecl_UsingLocalPtrVarAsDeclTypeButInitExpIsNotLocalPtr>()};
+        case SVarDeclType_VarKind::Box:
+            if (!dynamic_cast<RType_Box*>(initExpType))
+                return unexpected{MakePtr<Error_VarDecl_UsingBoxVarAsDeclTypeButInitExpIsNotBox>()};
             return {};
 
-        case DeclTypeInfoKind::NullableVar:
+        case SVarDeclType_VarKind::Ptr:
+            if (!dynamic_cast<RType_Ptr*>(initExpType))
+                return unexpected{MakePtr<Error_VarDecl_UsingPtrVarAsDeclTypeButInitExpIsNotPtr>()};
+            return {};
+
+        case SVarDeclType_VarKind::Nullable:
             if (!dynamic_cast<RType_NullableRef*>(initExpType) || !dynamic_cast<RType_NullableValue*>(initExpType))
                 return unexpected{MakePtr<Error_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable>()};
             return {};
 
         default:
-            return {};
+            unreachable();
         }
-
-        unreachable();
     }
-
-    expected<void, DiagPtr> HandleVarDeclType()
-    {
-        if (!elem->initExp)
-            return unexpected{MakePtr<Error_VarDecl_LocalVarDeclNeedInitializer>()};
-
-        // var꼴로 나오는 경우 hintType은 없다
-        auto eNInitExp = TranslateSExpToMExp(elem->initExp, /*hintType*/ nullptr, context);
-        if (!eNInitExp) return unexpected{move(eNInitExp).error()};
-        auto rInitExpType = context.GetType(*eNInitExp);
-
-        auto eResult = CheckVarConsistency(rInitExpType);
-        if (!eResult) return unexpected{move(eResult).error()};
-
-        context.GetScopeContext().AddLocalVarInfo(rInitExpType, RName_Normal{elem->varName});
-        outStmts->push_back(context.MakeNStmt<MStmt_LocalVarDecl>(rInitExpType, elem->varName, *eNInitExp));
-
-        return {};
-    }
-
-    expected<void, DiagPtr> HandleExplicitDeclType()
-    {
-        assert(declTypeInfo.kind == DeclTypeInfoKind::Normal);
-        auto& declType = declTypeInfo.type;
-
-        MExp* nInitExp = nullptr;
-        if (elem->initExp)
-        {
-            auto eNExp = TranslateSExpToMExp(elem->initExp, declType, context);
-            if (!eNExp) return unexpected{move(eNExp).error()};
-
-            eNExp = CastMExp(*eNExp, declType, context);
-            if (!eNExp) return unexpected{MakePtr<Error_VarDecl_InitExpTypeMismatch>()};
-
-            nInitExp = *eNExp;
-        }
-
-        context.GetScopeContext().AddLocalVarInfo(declType, RName_Normal{elem->varName});
-        outStmts->push_back(context.MakeNStmt<MStmt_LocalVarDecl>(declType, elem->varName, nInitExp));
-
-        return {};
-    }
-
+    
 public:
-    expected<void, DiagPtr> Translate()
-    {
-        if (context.GetScopeContext().DoesLocalVarNameExistInScope(RName_Normal{elem->varName}))
-            return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
+    using ResultType = expected<void, DiagPtr>;
 
-        if (declTypeInfo.kind != DeclTypeInfoKind::Normal)
+    ResultType Visit(SVarDeclType_Var* sVarDeclType)
+    {
+        for (auto& elem : elems)
         {
-            return HandleVarDeclType();
+            if (context.GetScopeContext().DoesLocalVarNameExistInScope(RName_Normal{elem.varName}))
+                return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
+
+            if (!elem.initExp)
+                return unexpected{MakePtr<Error_VarDecl_LocalVarDeclNeedInitializer>()};
+
+            // var꼴로 나오는 경우 hintType은 없다
+            auto eNInitExp = TranslateSExpToMExp(elem.initExp, /*hintType*/ nullptr, context);
+            RETURN_ON_ERROR(eNInitExp);
+            
+            auto* rInitExpType = context.GetType(*eNInitExp);
+            auto eResult = CheckVarConsistency(sVarDeclType->kind, rInitExpType);
+            RETURN_ON_ERROR(eResult);
+
+            context.GetScopeContext().AddLocalVarInfo(rInitExpType, RName_Normal{elem.varName});
+            outStmts->push_back(context.MakeNStmt<MStmt_LocalVarDecl>(rInitExpType, elem.varName, *eNInitExp));
         }
-        else
+
+        return {};
+    }
+
+    ResultType Visit(SVarDeclType_VarRef* sVarDeclType)
+    {
+        throw NotImplementedException{};
+    }
+
+    ResultType Visit(SVarDeclType_Ref* sVarDeclType)
+    {
+        throw NotImplementedException{};
+    }
+
+    ResultType Visit(SVarDeclType_Normal* sVarDeclType)
+    {   
+        auto eRDeclType = context.TranslateSTypeExpToRType(sVarDeclType->typeExp);
+        RETURN_ON_ERROR(eRDeclType);
+        auto* rDeclType = *eRDeclType;
+
+        for (auto& elem : elems)
         {
-            return HandleExplicitDeclType();
+            if (context.GetScopeContext().DoesLocalVarNameExistInScope(RName_Normal{elem.varName}))
+                return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
+
+            MExp* nInitExp = nullptr;
+            if (elem.initExp)
+            {
+                auto eNExp = TranslateSExpToMExp(elem.initExp, rDeclType, context);
+                if (!eNExp) return unexpected{move(eNExp).error()};
+
+                eNExp = CastMExp(*eNExp, rDeclType, context);
+                if (!eNExp) return unexpected{MakePtr<Error_VarDecl_InitExpTypeMismatch>()};
+
+                nInitExp = *eNExp;
+            }
+
+            context.GetScopeContext().AddLocalVarInfo(rDeclType, RName_Normal{elem.varName});
+            outStmts->push_back(context.MakeNStmt<MStmt_LocalVarDecl>(rDeclType, elem.varName, nInitExp));
         }
+
+        return {};
     }
 };
 
@@ -167,13 +179,17 @@ public:
 
 expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>* outStmts, SVarDecl* varDecl, TranslationContext& context)
 {
-    DeclTypeInfo declTypeInfo = context.GetDeclTypeInfo(varDecl->type);
+    VarDeclElemTranslator translator{outStmts, varDecl->elements, context};
+    auto eResult = Accept(translator, varDecl->type);
+    RETURN_ON_ERROR(eResult);
 
+    // DeclTypeInfo declTypeInfo = context.GetDeclTypeInfo(varDecl->type);
     for (auto& elem : varDecl->elements)
     {
-        VarDeclElemTranslator translator{outStmts, &elem, declTypeInfo, context};
-        auto eResult = translator.Translate();
-        if (!eResult) return unexpected{move(eResult).error()};
+        if (context.GetScopeContext().DoesLocalVarNameExistInScope(RName_Normal{elem.varName}))
+            return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
+
+        
     }
 
     return {};

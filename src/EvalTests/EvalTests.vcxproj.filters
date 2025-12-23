@@ -266,7 +266,7 @@
     <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Basic.ct">
       <Filter>TestData</Filter>
     </None>
-    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_BoxPtr.ct">
+    <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_Box.ct">
       <Filter>TestData</Filter>
     </None>
     <None Include="..\..\data\TestData\EvalTests\Lambda_Expression_Capture_Copy.ct">

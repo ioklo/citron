@@ -123,11 +123,14 @@ public:
 
             auto targetType = context.GetType(*eTarget);
 
-            if (dynamic_cast<RType_BoxPtr*>(targetType))
+            if (dynamic_cast<RType_Shared*>(targetType))
+                throw NotImplementedException{}; // Value<ImExp_SharedDeref>(*eTarget);
+
+            if (dynamic_cast<RType_Box*>(targetType))
                 return Value<ImExp_BoxDeref>(*eTarget);
 
-            if (dynamic_cast<RType_LocalPtr*>(targetType))
-                return Value<ImExp_LocalDeref>(*eTarget);
+            if (dynamic_cast<RType_Ptr*>(targetType))
+                return Value<ImExp_Deref>(*eTarget);
 
             // 에러를 내야 할 것 같다
             throw NotImplementedException{};

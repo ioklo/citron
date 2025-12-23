@@ -58,18 +58,18 @@ RType* ReExp_EnumElemVar::GetType(RFactory& factory)
     return decl->GetDeclType(*typeArgs, factory);
 }
 
-ReExp_LocalDeref::ReExp_LocalDeref(ReExp* target)
+ReExp_Deref::ReExp_Deref(ReExp* target)
     : target(target)
 {
 
 }
 
-RType* ReExp_LocalDeref::GetType(RFactory& factory)
+RType* ReExp_Deref::GetType(RFactory& factory)
 {
     auto type = target->GetType(factory);
 
     // TODO: remove reinterpret cast. 어떻게?
-    return ((RType_LocalPtr*)type)->innerType;
+    return ((RType_Ptr*)type)->innerType;
 }
 
 ReExp_BoxDeref::ReExp_BoxDeref(ReExp* target)
@@ -83,7 +83,7 @@ RType* ReExp_BoxDeref::GetType(RFactory& factory)
     auto type = target->GetType(factory);
 
     // TODO: remove reinterpret cast
-    return ((RType_BoxPtr*)type)->innerType;
+    return ((RType_Box*)type)->innerType;
 }
 
 ReExp_ListIndexer::ReExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemType)

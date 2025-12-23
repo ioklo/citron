@@ -1,0 +1,17 @@
+//@ $Error
+
+struct S
+{
+    int x;
+    bool y;
+
+    S()
+    {
+        // all uninitialized, error
+    }
+}
+
+void Main()
+{
+    S s = S();
+}

@@ -1,0 +1,17 @@
+//@ 2 3
+
+struct S
+{
+    int x;
+
+    S([in] S& s) = default;
+}
+
+void Main()
+{
+    S s1 = S(3);
+    S s2 = s1;
+
+    s1.x = 2;
+    @${s1.x} {s2.x}
+}

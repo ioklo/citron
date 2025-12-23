@@ -1,0 +1,49 @@
+//@ S_move_ctor,S_dtor,S_move_ctor,S_dtor,T_move_ctor,T_move_assign,T_dtor,
+
+struct S
+{
+    special S([move] S& s)
+    {
+        @S_move_ctor,
+    }
+
+    ~S()
+    {
+        @S_dtor,
+    }    
+}
+
+struct T
+{
+    special T([move] T& t)
+    {
+        @T_move_ctor,
+    }
+
+    special void move_assign([move] T& t)
+    {
+        @T_move_assign,
+    }
+
+    ~T()
+    {
+        @T_dtor,
+    }
+}
+
+void Main()
+{
+    {
+        S s = S();
+        S s1 = move s; // move_ctor
+        s1 = move s;   // dtor,move_ctor
+        // dtor
+    }
+
+    {
+        T t = T();
+        T t1 = move t; // move_ctor
+        t1 = move t;   // move_assign
+        // dtor
+    }
+}

@@ -129,8 +129,9 @@ struct ToJsonVisitor {
                 "STypeExp_Member",
                 "STypeExp_Nullable",
                 "STypeExp_Shared",
+                "STypeExp_Box",
                 "STypeExp_Ptr",
-                "STypeExp_Local"
+                "STypeExp_Local",
             }
         },
 
@@ -180,6 +181,7 @@ struct ToJsonVisitor {
                 "SStructMemberDecl",
                 "SStructFuncDecl",
                 "SStructCtorDecl",
+                "SStructDtorDecl",
                 "SStructVarDecl",
             }
         },
@@ -362,6 +364,7 @@ struct ToJsonVisitor {
                 "STypeExp_Member",
                 "STypeExp_Nullable",
                 "STypeExp_Shared",
+                "STypeExp_Box",
                 "STypeExp_Ptr",
                 "STypeExp_Local"
             }
@@ -433,6 +436,7 @@ struct ToJsonVisitor {
                 "SEnumDecl",
                 "SStructFuncDecl",
                 "SStructCtorDecl",
+                "SStructDtorDecl",
                 "SStructVarDecl",
             }
         },
@@ -687,6 +691,14 @@ struct ToJsonVisitor {
             },
         },
 
+        ClassInfo{
+            .name = "STypeExp_Box",
+            .variantInterfaces { "STypeExp" },
+            .memberInfos {
+                {.type = "STypeExp*", .memberVarName = "innerType", .getterName = "GetInnerType" },
+            },
+        },
+
         // STypeExp_Ptr(STypeExp typeExp)
         ClassInfo {
             .name = "STypeExp_Ptr",
@@ -708,7 +720,7 @@ struct ToJsonVisitor {
         // SVarDeclType
         EnumInfo{
             .name = "SVarDeclType_VarKind",
-            .cases = { "Normal", "Ptr", "Nullable", "Shared" }
+            .cases = { "Normal", "Ptr", "Nullable", "Shared", "Box", "Local"}
         },
 
         ClassInfo{
@@ -1098,6 +1110,15 @@ struct ToJsonVisitor {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
                 { .type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody" },
+            },
+        },
+
+        ClassInfo{
+            .name = "SStructDtorDecl",
+            .variantInterfaces { "SStructMemberDecl" },
+            .memberInfos {
+                {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                {.type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody" },
             },
         },
 

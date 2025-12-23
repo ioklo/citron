@@ -19,7 +19,7 @@ class ReExp_LambdaVar;
 class ReExp_StructVar;
 class ReExp_EnumElemVar;
 class ReExp_ListIndexer;
-class ReExp_LocalDeref;
+class ReExp_Deref;
 class ReExp_BoxDeref;
 
 class TranslationContext;
@@ -31,7 +31,7 @@ std::expected<MLoc*, DiagPtr> TranslateReLambdaVarExpToMLoc(ReExp_LambdaVar* reE
 std::expected<MLoc*, DiagPtr> TranslateReStructVarExpToMLoc(ReExp_StructVar* reExp, TranslationContext& context);
 std::expected<MLoc*, DiagPtr> TranslateReEnumElemVarExpToMLoc(ReExp_EnumElemVar* reExp, TranslationContext& context);
 std::expected<MLoc*, DiagPtr> TranslateReListIndexerExpToMLoc(ReExp_ListIndexer* reExp, TranslationContext& context);
-std::expected<MLoc*, DiagPtr> TranslateReLocalDerefExpToMLoc(ReExp_LocalDeref* reExp, TranslationContext& context);
+std::expected<MLoc*, DiagPtr> TranslateReDerefExpToMLoc(ReExp_Deref* reExp, TranslationContext& context);
 std::expected<MLoc*, DiagPtr> TranslateReBoxDerefExpToMLoc(ReExp_BoxDeref* reExp, TranslationContext& context);
 
 std::expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp* reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context);

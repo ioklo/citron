@@ -1,0 +1,19 @@
+//@ $Error
+
+struct S
+{
+    int x;
+
+    special S([move] S& s)
+    {
+        this.x = s.x;
+    }
+}
+
+void Main()
+{
+    S s1 = S(3);
+    S s2 = move s1;
+    
+    @${s1.x} // error
+}
