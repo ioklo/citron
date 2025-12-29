@@ -78,6 +78,11 @@ public:
         throw NotImplementedException{};
     }
 
+    ResultType Visit(RStructDtorDecl* func)
+    {
+        throw NotImplementedException{};
+    }
+
     ResultType Visit(RStructFuncDecl* func) 
     {   
         return Value<MExp_CallStructFunc>(func, typeArgs, instance, move(args));

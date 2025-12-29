@@ -24,6 +24,7 @@
 #include "StructTask.h"
 #include "StructFuncTask.h"
 #include "StructCtorTask.h"
+#include "StructDtorTask.h"
 #include "StructVarTask.h"
 #include "EnumElemVarTask.h"
 #include "PhaseManager.h"
@@ -53,6 +54,7 @@ public:
     void Visit(SEnumDecl* decl) override;
     void Visit(SStructFuncDecl* decl) override;
     void Visit(SStructCtorDecl* decl) override;
+    void Visit(SStructDtorDecl* decl) override;
     void Visit(SStructVarDecl* decl) override;
 };
 
@@ -184,6 +186,11 @@ void StructElemVisitor::Visit(SStructFuncDecl* decl)
 void StructElemVisitor::Visit(SStructCtorDecl* decl)
 {
     StructCtorTask::Register(nStruct, decl, nFactory, phaseManager);
+}
+
+void StructElemVisitor::Visit(SStructDtorDecl* decl)
+{
+    StructDtorTask::Register(nStruct, decl, nFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructVarDecl* decl)

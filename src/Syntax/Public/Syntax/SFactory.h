@@ -184,6 +184,7 @@ public:
     MAKE(SStructMemberDecl)
     MAKE(SStructFuncDecl)
     MAKE(SStructCtorDecl)
+    MAKE(SStructDtorDecl)
     MAKE(SStructVarDecl)
 
     MAKE(SNamespaceDeclElement)

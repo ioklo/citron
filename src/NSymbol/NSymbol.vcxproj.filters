@@ -81,6 +81,9 @@
       <Filter>10 Lambda</Filter>
     </ClInclude>
     <ClInclude Include="Public\NSymbol\NFactory.h" />
+    <ClInclude Include="Public\NSymbol\NStructDtorDecl.h">
+      <Filter>07 Struct</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="10 Lambda">
@@ -181,6 +184,9 @@
     </ClCompile>
     <ClCompile Include="NTypeDeclContainerComponent.cpp">
       <Filter>04 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="NStructDtorDecl.cpp">
+      <Filter>07 Struct</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

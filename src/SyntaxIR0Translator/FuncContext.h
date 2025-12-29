@@ -30,6 +30,8 @@ using NFactoryPtr = std::shared_ptr<NFactory>;
 class MFactory;
 using MFactoryPtr = std::shared_ptr<MFactory>;
 
+class MLoc_This;
+
 class ScopeContext;
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 
@@ -74,6 +76,7 @@ public:
     virtual RTypeArguments* MakeOpenTypeArgs() = 0;
 
     virtual bool IsSeqFunc() = 0;
+    virtual MLoc_This* MakeThisLoc() = 0;
 
     // virtual FuncContextPtr Clone(CloneContext& context) = 0;
     // virtual void Update(const FuncContextPtr& src, UpdateContext& context) = 0;
@@ -102,6 +105,7 @@ public:
     RTypeArguments* MakeOpenTypeArgs() override;
 
     bool IsSeqFunc() override;
+    MLoc_This* MakeThisLoc() override;
 };
 
 // FuncDecl인 경우
@@ -109,9 +113,10 @@ class FuncContext_FuncDecl : public FuncContext
 {
     NFuncDecl* nFuncDecl;
     RFactoryPtr rFactory;
+    MFactoryPtr mFactory;
 
 public:
-    FuncContext_FuncDecl(NFuncDecl* funcDecl, const RFactoryPtr& rFactory);
+    FuncContext_FuncDecl(NFuncDecl* funcDecl, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory);
 
     bool CanAccess(RDecl* target) override;
     std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
@@ -122,6 +127,7 @@ public:
     RTypeArguments* MakeOpenTypeArgs() override;
 
     bool IsSeqFunc() override;
+    MLoc_This* MakeThisLoc() override;
 };
 
 } // namespace Citron

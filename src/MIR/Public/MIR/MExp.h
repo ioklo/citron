@@ -15,6 +15,7 @@ class RClassCtorDecl;
 class RClassFuncDecl;
 class RClassVarDecl;
 class RStructCtorDecl;
+class RStructDtorDecl;
 class RStructFuncDecl;
 class RStructVarDecl;
 

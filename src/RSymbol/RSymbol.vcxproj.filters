@@ -5,9 +5,6 @@
     <ClInclude Include="Public\RSymbol\DeclWithOuterTypeArgs.h">
       <Filter>RDecls</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RDecls.h">
-      <Filter>RDecls</Filter>
-    </ClInclude>
     <ClInclude Include="Public\RSymbol\RDecl.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
@@ -103,6 +100,9 @@
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RLambdaVarDecl.h">
       <Filter>RDecls\10 Lambda</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RStructDtorDecl.h">
+      <Filter>RDecls\07 Struct</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

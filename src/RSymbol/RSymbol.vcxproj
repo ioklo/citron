@@ -26,7 +26,6 @@
     <ClInclude Include="Public\RSymbol\RClassFuncDecl.h" />
     <ClInclude Include="Public\RSymbol\RClassVarDecl.h" />
     <ClInclude Include="Public\RSymbol\RDecl.h" />
-    <ClInclude Include="Public\RSymbol\RDecls.h" />
     <ClInclude Include="Public\RSymbol\REnumDecl.h" />
     <ClInclude Include="Public\RSymbol\REnumElemDecl.h" />
     <ClInclude Include="Public\RSymbol\REnumElemVarDecl.h" />
@@ -47,6 +46,7 @@
     <ClInclude Include="Public\RSymbol\RNamespaceDeclGroup.h" />
     <ClInclude Include="Public\RSymbol\RStructCtorDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructDecl.h" />
+    <ClInclude Include="Public\RSymbol\RStructDtorDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructFuncDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructVarDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeArguments.h" />

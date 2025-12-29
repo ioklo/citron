@@ -41,6 +41,7 @@
     <ClInclude Include="Public\NSymbol\NNamespaceDeclContainerComponent.h" />
     <ClInclude Include="Public\NSymbol\NStructCtorDecl.h" />
     <ClInclude Include="Public\NSymbol\NStructDecl.h" />
+    <ClInclude Include="Public\NSymbol\NStructDtorDecl.h" />
     <ClInclude Include="Public\NSymbol\NStructFuncDecl.h" />
     <ClInclude Include="Public\NSymbol\NStructVarDecl.h" />
     <ClInclude Include="Public\NSymbol\NTypeDecl.h" />
@@ -68,6 +69,7 @@
     <ClCompile Include="NNamespaceDeclContainerComponent.cpp" />
     <ClCompile Include="NStructCtorDecl.cpp" />
     <ClCompile Include="NStructDecl.cpp" />
+    <ClCompile Include="NStructDtorDecl.cpp" />
     <ClCompile Include="NStructFuncDecl.cpp" />
     <ClCompile Include="NStructVarDecl.cpp" />
     <ClCompile Include="NTypeDeclContainerComponent.cpp" />

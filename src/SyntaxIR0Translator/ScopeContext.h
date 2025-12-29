@@ -64,8 +64,6 @@ public:
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
-
-    MLoc_This* MakeThisLoc();
     std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 

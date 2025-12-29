@@ -99,8 +99,7 @@ RType* TranslationContext::GetTargetType(IrExp_BoxRef* boxRef)
 
 MLoc_This* TranslationContext::MakeThisLoc()
 {
-
-    return scopeContext->MakeThisLoc();
+    return funcContext->MakeThisLoc();
 }
 
 expected<MExp*, DiagPtr> TranslationContext::MakeMExp_As(MExp* targetExp, RType* testType)
@@ -228,10 +227,30 @@ expected<ImExp*, DiagPtr> TranslationContext::ResolveIdentifier(const RName& nam
     if (!*eORMember)
         return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
 
-    return visit<ImExp*>(overloaded{
-        [this](RMember_LocalVar& localVar) { return srtFactory->MakeImExp<ImExp_LocalVar>(localVar.type, localVar.name); },
-        [this, typeArgs](RMember_GlobalFuncs& globalFuncs) { return srtFactory->MakeImExp<ImExp_GlobalFuncs>(globalFuncs.items, typeArgs); },
-        [](auto&) { throw NotImplementedException{}; return nullptr; }
+    return visit([this, typeArgs](auto& rMember) -> ImExp* {
+
+        using T = remove_cvref_t<decltype(rMember)>;
+
+        if constexpr (same_as<T, RMember_LocalVar>)
+        {
+            return srtFactory->MakeImExp<ImExp_LocalVar>(rMember.type, rMember.name);
+        }
+        else if constexpr (same_as<T, RMember_GlobalFuncs>)
+        {
+            return srtFactory->MakeImExp<ImExp_GlobalFuncs>(rMember.items, typeArgs);
+        }
+        else if constexpr (same_as<T, RMember_StructVar>)
+        {
+            return srtFactory->MakeImExp<ImExp_StructVar>(rMember.decl, rMember.typeArgs, /*hasExplicitInstance*/ false, /*explicitInstance*/ nullptr);
+        }
+        else if constexpr (same_as<T, RMember_ClassVar>)
+        {
+            return srtFactory->MakeImExp<ImExp_ClassVar>(rMember.decl, rMember.typeArgs, /*hasExplicitInstance*/ false, /*explicitInstance*/ nullptr);
+        }
+        else
+        {
+            throw NotImplementedException{};
+        }
     }, **eORMember);
 }
 

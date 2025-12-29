@@ -18,6 +18,7 @@ class RTypeArguments;
 class RFactory;
 
 class RStructCtorDecl;
+class RStructDtorDecl;
 class RClassCtorDecl;
 class RLambdaDecl;
 class RInterfaceDecl;
@@ -64,6 +65,7 @@ public:
     virtual void Visit(RGlobalFuncDecl* decl) = 0;
     virtual void Visit(RStructDecl* decl) = 0;
     virtual void Visit(RStructCtorDecl* decl) = 0;
+    virtual void Visit(RStructDtorDecl* decl) = 0;
     virtual void Visit(RStructFuncDecl* decl) = 0;
     virtual void Visit(RStructVarDecl* decl) = 0;
     virtual void Visit(RClassDecl* decl) = 0;

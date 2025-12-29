@@ -337,6 +337,31 @@ SStructCtorDecl* ParseStructCtorDecl(const string& structName, Lexer* lexer, SFa
     return factory.MakeSStructCtorDecl(oAccessModifier, move(*oParameters), move(*oBody));
 }
 
+// ~S
+SStructDtorDecl* ParseStructDtorDecl(const string& structName, Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer{*lexer};
+    auto oAccessModifier = ParseAccessModifier(&curLexer);
+
+    if (!Accept<TildeToken>(&curLexer)) return nullptr;
+
+    auto oName = Accept<IdentifierToken>(&curLexer);
+    if (!oName) return nullptr;
+
+    // 이름이 같아야 dtor이다
+    if (oName->text != structName) return nullptr;
+
+    if (!Accept<LParenToken>(&curLexer)) return nullptr;
+    if (!Accept<RParenToken>(&curLexer)) return nullptr;
+
+    auto oBody = ParseBody(&curLexer, factory);
+    if (!oBody)
+        return nullptr;
+
+    *lexer = move(curLexer);
+    return factory.MakeSStructDtorDecl(oAccessModifier, move(*oBody));
+}
+
 SStructMemberDecl* ParseStructMemberDecl(const string& structName, Lexer* lexer, SFactory& factory)
 {
     if (auto* memberDecl = ParseTypeDecl<SStructMemberDecl>(lexer, factory))
@@ -346,6 +371,9 @@ SStructMemberDecl* ParseStructMemberDecl(const string& structName, Lexer* lexer,
         return memberDecl;
 
     if (auto* memberDecl = ParseStructCtorDecl(structName, lexer, factory))
+        return memberDecl;
+
+    if (auto* memberDecl = ParseStructDtorDecl(structName, lexer, factory))
         return memberDecl;
 
     if (auto* memberDecl = ParseStructVarDecl(lexer, factory))

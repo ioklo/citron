@@ -9,7 +9,7 @@ using namespace std;
 namespace Citron {
 
 NStructDecl::NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, vector<string>&& typeParams)
-    : outer{outer}, accessor{accessor}, name{move(name)}, typeParams(move(typeParams))
+    : outer{outer}, accessor{accessor}, name{move(name)}, typeParams(move(typeParams)), dtor{nullptr}
 {
 }
 
@@ -23,9 +23,16 @@ void NStructDecl::AddCtor(NStructCtorDecl* decl)
     ctors.push_back(decl);
 }
 
+void NStructDecl::AddDtor(NStructDtorDecl* decl)
+{
+    assert(!dtor);
+    dtor = decl;
+}
+
 void NStructDecl::AddVar(NStructVarDecl* decl)
 {
     vars.push_back(decl);
+    varsMap.try_emplace(RName_Normal{decl->name}, decl);
 }
 
 NStructCtorDecl* NStructDecl::GetUnboundTrivialCtor_NStructCtorDecl()
@@ -84,7 +91,7 @@ optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& 
         throw NotImplementedException();
     }
 
-    return candidates[1];
+    return candidates[0];
 }
 
 optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)

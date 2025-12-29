@@ -106,11 +106,6 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
     return Accept(visitor, sTypeExp);
 }
 
-MLoc_This* ScopeContext::MakeThisLoc()
-{
-    throw NotImplementedException{};
-}
-
 expected<optional<RMember>, DiagPtr> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 로컬을 검색한다

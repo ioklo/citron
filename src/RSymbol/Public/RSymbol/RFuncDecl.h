@@ -15,6 +15,7 @@ class RGlobalFuncDecl;
 class RClassCtorDecl;
 class RClassFuncDecl;
 class RStructCtorDecl;
+class RStructDtorDecl;
 class RStructFuncDecl;
 
 class RType;
@@ -48,6 +49,7 @@ public:
     virtual void Visit(RClassCtorDecl* func) = 0;
     virtual void Visit(RClassFuncDecl* func) = 0;
     virtual void Visit(RStructCtorDecl* func) = 0;
+    virtual void Visit(RStructDtorDecl* func) = 0;
     virtual void Visit(RStructFuncDecl* func) = 0;
     virtual void Visit(RLambdaDecl* func) = 0;
 };
@@ -70,6 +72,7 @@ concept RFuncDeclVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<RClassCtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RFuncDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RClassFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RFuncDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RStructCtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RFuncDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<RStructDtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RFuncDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RStructFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RFuncDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RLambdaDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RFuncDeclConvertibleToResultType<TVisitor>;
 };
@@ -91,6 +94,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RFuncDec
             void Visit(RClassCtorDecl* decl) override { call(decl); }
             void Visit(RClassFuncDecl* decl) override { call(decl); }
             void Visit(RStructCtorDecl* decl) override { call(decl); }
+            void Visit(RStructDtorDecl* decl) override { call(decl); }
             void Visit(RStructFuncDecl* decl) override { call(decl); }
             void Visit(RLambdaDecl* decl) override { call(decl); }
         };
@@ -109,6 +113,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RFuncDec
             void Visit(RClassCtorDecl* decl) override { result.emplace(call(decl)); }
             void Visit(RClassFuncDecl* decl) override { result.emplace(call(decl)); }
             void Visit(RStructCtorDecl* decl) override { result.emplace(call(decl)); }
+            void Visit(RStructDtorDecl* decl) override { result.emplace(call(decl)); }
             void Visit(RStructFuncDecl* decl) override { result.emplace(call(decl)); }
             void Visit(RLambdaDecl* decl) override { result.emplace(call(decl)); }
         };

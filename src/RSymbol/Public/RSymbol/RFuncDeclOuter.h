@@ -13,6 +13,7 @@ class RClassCtorDecl;
 class RClassFuncDecl;
 class RStructDecl;
 class RStructCtorDecl;
+class RStructDtorDecl;
 class RStructFuncDecl;
 class RLambdaDecl;
 
@@ -38,6 +39,7 @@ public:
     virtual void Visit(RClassFuncDecl* outer) = 0;
     virtual void Visit(RStructDecl* outer) = 0;
     virtual void Visit(RStructCtorDecl* outer) = 0;
+    virtual void Visit(RStructDtorDecl* outer) = 0;
     virtual void Visit(RStructFuncDecl* outer) = 0;
     virtual void Visit(RLambdaDecl* outer) = 0;
 };

@@ -17,6 +17,7 @@ public:
     virtual void Visit(NClassCtorDecl* func) = 0;
     virtual void Visit(NClassFuncDecl* func) = 0; 
     virtual void Visit(NStructCtorDecl* func) = 0;
+    virtual void Visit(NStructDtorDecl* func) = 0;
     virtual void Visit(NStructFuncDecl* func) = 0;
     virtual void Visit(NLambdaDecl* func) = 0;
 };

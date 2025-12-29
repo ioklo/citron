@@ -134,10 +134,14 @@ bool FuncContext_Lambda::IsSeqFunc()
     return bSeqFunc;
 }
 
-FuncContext_FuncDecl::FuncContext_FuncDecl(NFuncDecl* nFuncDecl, const RFactoryPtr& rFactory)
-    : nFuncDecl{nFuncDecl}, rFactory{rFactory}
+MLoc_This* FuncContext_Lambda::MakeThisLoc()
 {
+    return nullptr;
+}
 
+FuncContext_FuncDecl::FuncContext_FuncDecl(NFuncDecl* nFuncDecl, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory)
+    : nFuncDecl{nFuncDecl}, rFactory{rFactory}, mFactory{mFactory}
+{
 }
 
 
@@ -172,6 +176,15 @@ bool FuncContext_FuncDecl::IsSeqFunc()
     return nFuncDecl->IsSeqFunc();
 }
 
+MLoc_This* FuncContext_FuncDecl::MakeThisLoc()
+{
+    // struct S에서는 this가 S& 타입
+    // class C에서는 this가 C 타입
+    // lambda에서는 this가 lambda를 선언한 함수의 this타입
+
+    // mFactory->MakeMLoc<MLoc_This>();
+    return nullptr;
+}
 
 //public void CommitLambdasToDeclSymbolTree()
 //{

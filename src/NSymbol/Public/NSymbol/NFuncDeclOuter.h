@@ -12,6 +12,7 @@ class NClassCtorDecl;
 class NClassFuncDecl;
 class NStructDecl;
 class NStructCtorDecl;
+class NStructDtorDecl;
 class NStructFuncDecl;
 class NLambdaDecl;
 
@@ -26,6 +27,7 @@ public:
     virtual void Visit(NClassFuncDecl* outer) = 0;
     virtual void Visit(NStructDecl* outer) = 0;
     virtual void Visit(NStructCtorDecl* outer) = 0;
+    virtual void Visit(NStructDtorDecl* outer) = 0;
     virtual void Visit(NStructFuncDecl* outer) = 0;
     virtual void Visit(NLambdaDecl* outer) = 0;
 };

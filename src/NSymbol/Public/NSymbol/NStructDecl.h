@@ -23,6 +23,8 @@ namespace Citron {
 class RType_Struct;
 class RType_Interface;
 
+class NStructDtorDecl;
+
 class NStructDecl
     : public NDecl
     , public NTypeDecl
@@ -45,6 +47,7 @@ class NStructDecl
     std::vector<std::string> typeParams;
 
     std::vector<NStructCtorDecl*> ctors;
+    NStructDtorDecl* dtor;
     int trivialCtorIndex; // can be -1
 
     std::vector<NStructVarDecl*> vars;
@@ -59,6 +62,7 @@ public:
 public:
     using NTypeDeclContainerComponent::AddType;
     NSYMBOL_API void AddCtor(NStructCtorDecl* decl);
+    NSYMBOL_API void AddDtor(NStructDtorDecl* decl);
     NSYMBOL_API void AddFunc(NStructFuncDecl* decl) { NFuncDeclContainerComponent<NStructFuncDecl>::AddFunc(decl); }
     NSYMBOL_API void AddVar(NStructVarDecl* decl);
 

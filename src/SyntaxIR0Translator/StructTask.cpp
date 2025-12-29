@@ -169,12 +169,12 @@ void StructTask::SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& conte
 
     throw NotImplementedException{};
 
-    // auto* nCtor = context.MakeNDecl<NStructCtorDecl>(nStructDecl, RAccessor::Public, /*bTrivial*/ true);
+    // auto* nCtor = context.MakeNDecl<NStructCtorDecl>(nStruct, RAccessor::Public, /*bTrivial*/ true);
     //
     // nCtor->InitFuncParameters(parameters, /*bLastParameterVariadic*/ false);
     // nCtor->InitBodyWillBeGenerated();
     //
-    // nStructDecl->AddCtor(nCtor);
+    // nStruct->AddCtor(nCtor);
 }
 
 

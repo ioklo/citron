@@ -10,6 +10,7 @@ class NNamespaceDecl;
 class NGlobalFuncDecl;
 class NStructDecl;
 class NStructCtorDecl;
+class NStructDtorDecl;
 class NStructFuncDecl;
 class NStructVarDecl;
 class NClassDecl;
@@ -31,6 +32,7 @@ public:
     virtual void Visit(NGlobalFuncDecl* decl) = 0;
     virtual void Visit(NStructDecl* decl) = 0;
     virtual void Visit(NStructCtorDecl* decl) = 0;
+    virtual void Visit(NStructDtorDecl* decl) = 0;
     virtual void Visit(NStructFuncDecl* decl) = 0;
     virtual void Visit(NStructVarDecl* decl) = 0;
     virtual void Visit(NClassDecl* decl) = 0;
