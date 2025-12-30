@@ -1,8 +1,9 @@
 #include "NClassDecl.h"
 
 #include <cassert>
-#include "Infra/Exceptions.h"
+#include <ranges>
 
+#include "Infra/Exceptions.h"
 #include "NClassFuncDecl.h"
 
 using namespace std;
@@ -21,7 +22,13 @@ RDecl* NClassDecl::GetROuter()
 
 RIdentifier NClassDecl::GetIdentifier()
 {
-    return RIdentifier { name, typeParams.size(), {} };
+    return RIdentifier{name, typeParams.size(), {}};
+}
+
+RTypeDecl* NClassDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl 추가 필요)
+    return NTypeDeclContainerComponent::GetTypeMember(name, typeParamCount);
 }
 
 RMember NClassDecl::ToRMember(RTypeArguments* typeArgs)

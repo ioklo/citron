@@ -41,6 +41,12 @@ RIdentifier NLambdaDecl::GetIdentifier()
     return RIdentifier { name, 0, {} };
 }
 
+RTypeDecl* NLambdaDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요), lambda에 type params가 추가될까?
+    return nullptr;
+}
+
 RMember NLambdaDecl::ToRMember(RTypeArguments* typeArgs)
 {
     throw RuntimeFatalException(); // 들어올수가 없다

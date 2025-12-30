@@ -45,6 +45,14 @@ void NTypeDeclContainerComponent::AddType(NTypeDecl* typeDecl)
     typeDict.insert_or_assign(typeDecl->GetNDecl()->GetRDecl()->GetIdentifier(), typeDecl);
 }
 
+RTypeDecl* NTypeDeclContainerComponent::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    auto i = typeDict.find({name, typeParamCount, {}});
+    if (i == typeDict.end()) return nullptr;
+
+    return i->second->GetRTypeDecl();
+}
+
 // 첫번째 인자는 부모의 typeArgs
 optional<RMember> NTypeDeclContainerComponent::GetMemberType(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {

@@ -61,7 +61,7 @@ class QBodyContext
     QScope* curScope;
     std::vector<QSlotInfo> slotInfos;
     std::vector<QScope> scopes;
-    std::optional<QArg_Slot> retSlot; // 함수의 반환값 slot
+    std::optional<size_t> oRetSlotIndex; // 함수의 반환값 slot
 
     QBlock* curBlock;
     std::vector<QBlock*> blocks;
@@ -106,16 +106,16 @@ public:
     QType* GetIntQType();
     QType* GetPtrQType();
 
-    QArg_Slot GetRetSlot();
+    size_t GetRetSlotIndex();
 
     size_t AddLocalVar(RType* type, const RName& name, std::optional<size_t> oArgIndex);
     size_t GetLocalVarSlotIndex(const RName& name);
 
-    QArg_Slot NewSlot(QType* qType);
+    size_t NewSlot(QType* qType);
     std::span<QSlotInfo> GetStackSlotInfos() { return slotInfos; }
     std::span<QBlock*> GetBlocks() { return blocks; }
 
-    QArg_Slot NewSlotForMExp(MExp* exp);
+    size_t NewSlotForMExp(MExp* exp);
     void VerifyBlocks();
 
     QType* GetReturnQType(RFuncDecl* rFuncDecl, RTypeArguments& typeArgs);

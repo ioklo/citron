@@ -16,7 +16,9 @@ class QFactory;
 class QBodyContext;
 
 struct QLocResult_Slot { size_t slotIndex; };
-using QLocResult = std::variant<QLocResult_Slot>;
+struct QLocResult_PtrSlot { size_t slotIndex; }; // ptr
+
+using QLocResult = std::variant<QLocResult_Slot, QLocResult_PtrSlot>;
 
 std::expected<QLocResult, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QBodyContext& bodyContext);
 

@@ -27,6 +27,11 @@ NDecl* NStructFuncDecl::GetNOuter()
     return _struct;
 }
 
+NFuncDeclOuter* NStructFuncDecl::GetNFuncDeclOuter()
+{
+    return _struct;
+}
+
 RDecl* NStructFuncDecl::GetROuter()
 {
     return _struct;
@@ -35,6 +40,12 @@ RDecl* NStructFuncDecl::GetROuter()
 RIdentifier NStructFuncDecl::GetIdentifier()
 {
     return RIdentifier { RName_Normal(name), NCommonFuncDeclComponent::GetTypeParamCount(), NCommonFuncDeclComponent::GetParamIds() };
+}
+
+RTypeDecl* NStructFuncDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
+    return nullptr;
 }
 
 optional<RMember> NStructFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

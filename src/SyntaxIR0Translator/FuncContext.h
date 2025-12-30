@@ -16,6 +16,7 @@ namespace Citron {
 
 class RType;
 class RDecl;
+class RTypeDecl;
 class RFactory;
 using RFactoryPtr = std::shared_ptr<RFactory>;
 class RTypeArguments;
@@ -68,6 +69,7 @@ public:
     NLambdaVarDecl* StageLambdaVar(RType* type, const RName& name, MArgument_Normal&& arg);
 
     virtual bool CanAccess(RDecl* target) = 0;
+    virtual RTypeDecl* ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
     virtual std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
 
     // decl/body space의 return type을 리턴한다
@@ -84,7 +86,7 @@ public:
 
 // 람다인 경우
 class FuncContext_Lambda : public FuncContext
-{
+{   
     ScopeContextPtr outer;
     bool bSeqFunc; // reserved
     RFuncReturn funcReturn;
@@ -97,6 +99,7 @@ public:
     FuncContext_Lambda(const ScopeContextPtr& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
     bool CanAccess(RDecl* target) override;
+    RTypeDecl* ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
@@ -119,6 +122,7 @@ public:
     FuncContext_FuncDecl(NFuncDecl* funcDecl, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory);
 
     bool CanAccess(RDecl* target) override;
+    RTypeDecl* ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     RFuncReturn GetUnboundFuncReturn() override;

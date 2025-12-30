@@ -11,6 +11,7 @@ namespace Citron {
 class RNamespaceDeclGroup;
 class RTypeArguments;
 class RFactory;
+class RTypeDecl;
 
 struct RFuncTypeKey
 {
@@ -141,6 +142,8 @@ public:
 
     RSYMBOL_API RTypeArguments* MakeTypeArguments(const std::vector<RType*>& items);
     RSYMBOL_API RTypeArguments* MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1);
+
+    RSYMBOL_API RType* MakeType(RTypeDecl* decl, RTypeArguments* typeArgs);
 
     // utilities
     RSYMBOL_API RType* MakeBoolType();

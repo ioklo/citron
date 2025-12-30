@@ -22,6 +22,11 @@ RIdentifier NClassVarDecl::GetIdentifier()
     return RIdentifier { name, 0, {} };
 }
 
+RTypeDecl* NClassVarDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    return nullptr;
+}
+
 RType* NClassVarDecl::GetDeclType(RTypeArguments& typeArgs, RFactory& factory)
 {
     return declType->Apply(typeArgs, factory);

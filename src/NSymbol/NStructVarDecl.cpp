@@ -10,12 +10,13 @@ using namespace std;
 
 namespace Citron {
 
-NStructVarDecl::NStructVarDecl(NStructDecl* _struct, RAccessor accessor, bool bStatic, const std::string& name, RType* declType)
+NStructVarDecl::NStructVarDecl(NStructDecl* _struct, RAccessor accessor, bool bStatic, const std::string& name, RType* declType, size_t index)
     : _struct{_struct}
     , accessor{accessor}
     , bStatic{bStatic}
-    , name{move(name)}
+    , name{name}
     , declType{declType}
+    , index{index}
 {
 }
 
@@ -38,6 +39,11 @@ RDecl* NStructVarDecl::GetROuter()
 RIdentifier NStructVarDecl::GetIdentifier()
 {
     return RIdentifier { RName_Normal(name), 0, {} };
+}
+
+RTypeDecl* NStructVarDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    return nullptr;
 }
 
 optional<RMember> NStructVarDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

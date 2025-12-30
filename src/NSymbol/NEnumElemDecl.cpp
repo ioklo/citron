@@ -1,17 +1,14 @@
 #include "NEnumElemDecl.h"
-#include <cassert>
 
 #include "Infra/Exceptions.h"
-
 #include "RSymbol/RFuncParameter.h"
-
 #include "NEnumDecl.h"
 
 using namespace std;
 
 namespace Citron {
 
-NEnumElemDecl::NEnumElemDecl(NEnumDecl* _enum, const string& name)
+NEnumElemDecl::NEnumElemDecl(NEnumDecl* _enum, const RName& name)
     : _enum{_enum}
     , name{name}
 {
@@ -40,7 +37,12 @@ RDecl* NEnumElemDecl::GetROuter()
 
 RIdentifier NEnumElemDecl::GetIdentifier()
 {
-    return RIdentifier { RName_Normal(name), 0, {} };
+    return RIdentifier { name, 0, {} };
+}
+
+RTypeDecl* NEnumElemDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    return nullptr;
 }
 
 optional<RMember> NEnumElemDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
@@ -63,10 +65,7 @@ REnumDecl* NEnumElemDecl::GetBaseEnumDecl()
 
 optional<RMember_EnumElemVar> NEnumElemDecl::GetVar(RTypeArguments* typeArgs, const RName& name)
 {
-    auto* normalName = get_if<RName_Normal>(&name);
-    if (!normalName) return nullopt;
-
-    auto i = varsMap.find(normalName->text);
+    auto i = varsMap.find(name);
     if (i == varsMap.end()) return nullopt;
 
     return RMember_EnumElemVar(typeArgs, i->second);
@@ -83,7 +82,7 @@ vector<RFuncParameter> NEnumElemDecl::GetUnboundCtorParams()
 
     result.reserve(vars.size());
     for (auto& var : vars)
-        result.emplace_back(/*bOut*/ false, var->declType, RName_Normal(var->name));
+        result.emplace_back(/*bOut*/ false, var->declType, var->name);
 
     return result;
 }

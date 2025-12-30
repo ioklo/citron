@@ -43,11 +43,11 @@ public:
         vector<QArg_Input> values;
         for(auto* command : stmt->commands)
         {
-            auto slot = bodyContext.NewSlot(qStringType);
-            auto eResult = TranslateMExp_StringToQInstsWithNewScope(command, slot, bodyContext);
+            size_t slotIndex = bodyContext.NewSlot(qStringType);
+            auto eResult = TranslateMExp_StringToQInstsWithNewScope(command, slotIndex, bodyContext);
             RETURN_ON_ERROR(eResult);
 
-            values.push_back(slot);
+            values.push_back(slotIndex);
         }
 
         return bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Items, nullopt, move(values));
@@ -65,7 +65,7 @@ public:
             // expr이 lvalue인 경우, 복사 (복사가 지원 가능할때)
             // expr이 rvalue인 경우, 이동 
 
-            auto eInitResult = TranslateMExpToQInstsWithNewScope(stmt->initExp, QArg_Slot{slotIndex}, bodyContext);
+            auto eInitResult = TranslateMExpToQInstsWithNewScope(stmt->initExp, slotIndex, bodyContext);
             RETURN_ON_ERROR(eInitResult);
         }
         return {};
@@ -79,10 +79,10 @@ public:
         {
             ScopeGuard mainGuard{bodyContext};
             // 최종 condSlot은 branch에 필요하기 때문에 정리하지 않음
-            auto condSlot = bodyContext.NewSlot(bodyContext.GetBoolQType());
+            auto condSlotIndex = bodyContext.NewSlot(bodyContext.GetBoolQType());
 
             // 1. stmt.cond
-            auto eCondResult = TranslateMExpToQInstsWithNewScope(stmt->cond, condSlot, bodyContext);
+            auto eCondResult = TranslateMExpToQInstsWithNewScope(stmt->cond, condSlotIndex, bodyContext);
             RETURN_ON_ERROR(eCondResult);
 
             if (!stmt->elseBody.empty())
@@ -93,7 +93,7 @@ public:
                 QBlock* endBlock = nullptr; // lazy init
 
                 // 3. add conditional jump
-                auto eEmitResult = bodyContext.EmitTermInst(QInst_CondJump{condSlot, trueBlock, falseBlock});
+                auto eEmitResult = bodyContext.EmitTermInst(QInst_CondJump{condSlotIndex, trueBlock, falseBlock});
                 RETURN_ON_ERROR(eEmitResult);
 
                 // 4. fill trueBlock
@@ -133,7 +133,7 @@ public:
                 auto* endBlock = bodyContext.AddBlock("if_end");
 
                 // 3. add conditional jump
-                auto eEmitTermInstResult = bodyContext.EmitTermInst(QInst_CondJump{condSlot, trueBlock, endBlock});
+                auto eEmitTermInstResult = bodyContext.EmitTermInst(QInst_CondJump{condSlotIndex, trueBlock, endBlock});
                 RETURN_ON_ERROR(eEmitTermInstResult);
 
                 // 4. fill trueBlock
@@ -179,7 +179,7 @@ public:
         if (stmt->exp)
         {
             auto* qType = bodyContext.GetMExpQType(stmt->exp);
-            auto eResult = TranslateMExpToQInstsWithNewScope(stmt->exp, bodyContext.GetRetSlot(), bodyContext);
+            auto eResult = TranslateMExpToQInstsWithNewScope(stmt->exp, bodyContext.GetRetSlotIndex(), bodyContext);
             RETURN_ON_ERROR(eResult);
 
             auto eEmitResult = bodyContext.EmitJumpToCleanUpForReturnBlock();

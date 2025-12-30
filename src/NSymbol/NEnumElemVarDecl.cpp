@@ -9,7 +9,7 @@ using namespace std;
 
 namespace Citron {
 
-NEnumElemVarDecl::NEnumElemVarDecl(NEnumElemDecl* enumElem, const std::string& name)
+NEnumElemVarDecl::NEnumElemVarDecl(NEnumElemDecl* enumElem, const RName& name)
     : enumElem{enumElem}
     , name{name}
 {
@@ -32,7 +32,12 @@ RDecl* NEnumElemVarDecl::GetROuter()
 
 RIdentifier NEnumElemVarDecl::GetIdentifier()
 {
-    return RIdentifier { RName_Normal(name), 0, {} };
+    return RIdentifier { name, 0, {} };
+}
+
+RTypeDecl* NEnumElemVarDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    return nullptr;
 }
 
 optional<RMember> NEnumElemVarDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

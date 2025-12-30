@@ -140,10 +140,10 @@ public:
         }
         else
         {
-            // this의 타입이 S*이다.
+            // this의 타입이 S&이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            auto* nDerefThisLoc = context.MakeNLoc<MLoc_Deref>(context.MakeThisLoc());
-            return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_StructVar>(nDerefThisLoc, imExp->decl, imExp->typeArgs));
+            auto* nThisLoc = context.MakeThisLoc();
+            return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_StructVar>(nThisLoc, imExp->decl, imExp->typeArgs));
         }
     }
 

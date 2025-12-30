@@ -16,6 +16,7 @@ class RStructVarDecl
 public:
     virtual RType* GetDeclType(RTypeArguments& typeArgs, RFactory& factory) = 0;
     virtual bool IsStatic() = 0;
+    virtual size_t GetIndex() = 0;
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
 };
 

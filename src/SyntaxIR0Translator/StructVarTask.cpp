@@ -30,7 +30,7 @@ void StructVarTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& co
 
     for (auto& varName : sStructVar->varNames)
     {
-        auto* symbol = nFactory->MakeNDecl<NStructVarDecl>(nStruct, accessor, bStatic, varName, declType);
+        auto* symbol = nFactory->MakeNDecl<NStructVarDecl>(nStruct, accessor, bStatic, varName, declType, nStruct->GetVarCount());
         symbols.push_back(symbol);
         nStruct->AddVar(symbol);
     }

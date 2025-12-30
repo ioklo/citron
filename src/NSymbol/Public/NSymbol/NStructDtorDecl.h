@@ -5,12 +5,13 @@
 
 #include "RSymbol/RStructDtorDecl.h"
 
-#include "NStructDecl.h"
 #include "NFuncDecl.h"
 #include "NFuncDeclOuter.h"
 #include "NCommonFuncDeclComponent.h"
 
 namespace Citron {
+
+class NStructDecl;
 
 class NStructDtorDecl
     : public NDecl
@@ -20,18 +21,19 @@ class NStructDtorDecl
     , private NCommonFuncDeclComponent
 {
     RAccessor accessor;
-    NStructDecl* structDecl;
+    NStructDecl* _struct;
 
 public:
     NSYMBOL_API NStructDtorDecl(RAccessor accessor, NStructDecl* structDecl);
 
     // from NDecl
     RDecl* GetRDecl() override { return this; }
-    NDecl* GetNOuter() override { return structDecl; }
+    NSYMBOL_API NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NFuncDecl
     NDecl* GetNDecl() override { return this; }
+    NSYMBOL_API NFuncDeclOuter* GetNFuncDeclOuter() override;
     RFuncReturn GetUnboundFuncReturn() override { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
     std::span<RFuncParameter> GetUnboundFuncParams() override { return NCommonFuncDeclComponent::GetUnboundFuncParams(); }
     bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
@@ -42,15 +44,16 @@ public:
     void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
     // from RDecl
-    RDecl* GetROuter() override { return structDecl; }
+    NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
-    RIdentifier GetIdentifier() override { return RIdentifier{RName_Reserved("Dtor"), 0, {}};    }
-    std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override { return std::nullopt; }
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override { return std::nullopt; }
+    RIdentifier GetIdentifier() override { return RIdentifier{RName_Reserved("Dtor"), 0, {}}; }
+    NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
+    NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     // from RFuncDecl
-    // RDecl* GetRDecl() override { return this;
-    bool IsStatic() override { return false; }
+    // RDecl* GetRDecl() override { return this; }
+    bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
     size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
     size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
     RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }

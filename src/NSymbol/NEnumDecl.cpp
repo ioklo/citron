@@ -7,7 +7,7 @@ using namespace std;
 
 namespace Citron
 {
-NEnumDecl::NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, RName name, std::vector<std::string>&& typeParams)
+NEnumDecl::NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, const RName& name, std::vector<std::string>&& typeParams)
     : outer{outer}
     , accessor{accessor}
     , name{move(name)}
@@ -40,15 +40,23 @@ RIdentifier NEnumDecl::GetIdentifier()
     return RIdentifier { name, typeParams.size(), {} };
 }
 
+RTypeDecl* NEnumDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
+
+    auto i = elemsMap.find(name);
+    if (i != elemsMap.end())
+        return i->second->GetRTypeDecl();
+
+    return nullptr;
+}
+
 optional<RMember> NEnumDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
-    auto* normalName = get_if<RName_Normal>(&name);
-    if (!normalName) return nullopt;
-
     // enumElem에서 검색, 같은 이름은 
-    auto i = elemsMap.find(normalName->text);
+    auto i = elemsMap.find(name);
     if (i == elemsMap.end()) return nullopt;
 
     return RMember_EnumElem(typeArgs, i->second);

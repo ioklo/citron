@@ -25,7 +25,7 @@ public:
     NSYMBOL_API NTypeDecl* GetType(const RIdentifier& identifier);
     NSYMBOL_API void AddType(NTypeDecl* typeDecl);
 
-    // internal
+    RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount);
     std::optional<RMember> GetMemberType(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 

@@ -21,22 +21,23 @@ class NEnumElemDecl
 {
 public:
     NEnumDecl* _enum;
-    std::string name;
+    RName name;
     std::vector<NEnumElemVarDecl*> vars; // lazy
-    std::unordered_map<std::string, NEnumElemVarDecl*> varsMap;
+    std::unordered_map<RName, NEnumElemVarDecl*> varsMap;
 
 public:
-    NSYMBOL_API NEnumElemDecl(NEnumDecl* _enum, const std::string& name);
+    NSYMBOL_API NEnumElemDecl(NEnumDecl* _enum, const RName& name);
     NSYMBOL_API void AddVar(NEnumElemVarDecl* var);
 
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
-    NDecl* GetNOuter() override;
+    NSYMBOL_API NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NTypeDecl
     NDecl* GetNDecl() override { return this; }
+    RTypeDecl* GetRTypeDecl() override { return this; }
     RMember ToRMember(RTypeArguments* typeArgs) override;
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(this); }
 
@@ -44,6 +45,7 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
+    NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 

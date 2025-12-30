@@ -72,6 +72,13 @@ struct QInst_AddrOf
     QArg_Slot slot;
 };
 
+struct QInst_FieldOf
+{
+    QArg_Slot dest;
+    QArg_Slot src;
+    size_t fieldIndex;
+};
+
 // %dest = <ty> %src
 struct QInst_Assign
 {
@@ -170,6 +177,7 @@ using QInst = std::variant<
     QInst_Load,
     QInst_Store,
     QInst_AddrOf,
+    QInst_FieldOf,
     QInst_Assign,
     QInst_Call,
     QInst_Return,

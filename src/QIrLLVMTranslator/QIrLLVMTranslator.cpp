@@ -750,6 +750,11 @@ private:
             self.builder.CreateStore(self.slotValues[qInst.slot.index], lPtrValue);
         }
 
+        void Emit(QInst_FieldOf& qInst)
+        {
+            throw NotImplementedException{};
+        }
+
         void Emit(QInst_Assign& qInst)
         {
             auto* lValue = self.GetValue(qInst.src, qInst.type);

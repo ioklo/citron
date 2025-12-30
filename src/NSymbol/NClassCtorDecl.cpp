@@ -26,6 +26,11 @@ NDecl* NClassCtorDecl::GetNOuter()
     return _class;
 }
 
+NFuncDeclOuter* NClassCtorDecl::GetNFuncDeclOuter()
+{
+    return _class;
+}
+
 RDecl* NClassCtorDecl::GetROuter()
 {
     return _class;
@@ -33,7 +38,7 @@ RDecl* NClassCtorDecl::GetROuter()
 
 RIdentifier NClassCtorDecl::GetIdentifier()
 {
-    return RIdentifier { RName_Reserved("Ctor"), 0, NCommonFuncDeclComponent::GetParamIds() };
+    return RIdentifier{RName_Reserved("Ctor"), 0, NCommonFuncDeclComponent::GetParamIds()};
 }
 
 optional<RMember> NClassCtorDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

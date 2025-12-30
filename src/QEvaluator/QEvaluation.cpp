@@ -443,7 +443,7 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
     frame.stackPointer = curFrame.stackPointer;
     frame.slots.resize(qFuncBody->slotInfos.size());
 
-    // retSlot 위치 담기
+    // oRetSlotIndex 위치 담기
     if (oDest)
         frame.retSlot = curFrame.slots[oDest->index];
     
@@ -586,6 +586,11 @@ struct Evaluator
     {   
         *(void**)env.curFrame->slots[inst.dest.index] = env.curFrame->slots[inst.slot.index];
         return true;
+    }
+
+    bool Eval(QInst_FieldOf& inst)
+    {
+        throw NotImplementedException{};
     }
 
     bool Eval(QInst_Assign& inst)

@@ -19,27 +19,30 @@ public:
     bool bStatic;
     RType* declType; // lazy-init
     std::string name;
+    size_t index;
 
 public:
-    NSYMBOL_API NStructVarDecl(NStructDecl* _struct, RAccessor accessor, bool bStatic, const std::string& name, RType* declType);
+    NSYMBOL_API NStructVarDecl(NStructDecl* _struct, RAccessor accessor, bool bStatic, const std::string& name, RType* declType, size_t index);
     NSYMBOL_API RType* GetUnboundDeclType();
 
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
-    NDecl* GetNOuter() override;
+    NSYMBOL_API NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
+    NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
 
     // from RStructVarDecl
     NSYMBOL_API RType* GetDeclType(RTypeArguments& typeArgs, RFactory& factory) override;
     bool IsStatic() override { return bStatic; }
+    size_t GetIndex() override { return index; }
 };
 
 }

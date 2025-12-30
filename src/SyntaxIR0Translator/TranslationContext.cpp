@@ -46,7 +46,7 @@ TranslationContext TranslationContext::Make(
     const BinOpQueryServicePtr& binOpQueryService)
 {
     auto globalContext = MakePtr<GlobalContext>();
-    auto funcContext = MakePtr<FuncContext_FuncDecl>(nFuncDecl, rFactory);
+    auto funcContext = MakePtr<FuncContext_FuncDecl>(nFuncDecl, rFactory, mFactory);
     auto scopeContext = MakePtr<ScopeContext>(funcContext, nullptr, 0, rFactory);
 
     return { globalContext, funcContext, scopeContext, logger, rFactory, mFactory, srtFactory, binOpQueryService };
@@ -220,7 +220,16 @@ RType_Enum* TranslationContext::GetBaseEnumType(RType_EnumElem& enumElemType)
 }
 
 expected<ImExp*, DiagPtr> TranslationContext::ResolveIdentifier(const RName& name, RTypeArguments* typeArgs)
-{   
+{
+    // struct S<T>
+    // {
+    //    struct X<V> { }
+    //    void F<U>()
+    //    {
+    //        X<int> x; // 여기서 (X<>, [int])는? (S<>.X<>, [T, int]) // 컴파일 타임엔 여기까지인 거고, 실행중엔 (S<>.X<>, [T, int])는 S<>.F<>의 타입 컨텍스트(예) [string, bool]
+    //    }
+    // }
+
     auto eORMember = scopeContext->ResolveIdentifier(name, typeArgs->GetCount());
     RETURN_ON_ERROR(eORMember)
 
@@ -228,7 +237,6 @@ expected<ImExp*, DiagPtr> TranslationContext::ResolveIdentifier(const RName& nam
         return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
 
     return visit([this, typeArgs](auto& rMember) -> ImExp* {
-
         using T = remove_cvref_t<decltype(rMember)>;
 
         if constexpr (same_as<T, RMember_LocalVar>)
@@ -236,16 +244,23 @@ expected<ImExp*, DiagPtr> TranslationContext::ResolveIdentifier(const RName& nam
             return srtFactory->MakeImExp<ImExp_LocalVar>(rMember.type, rMember.name);
         }
         else if constexpr (same_as<T, RMember_GlobalFuncs>)
-        {
+        {   
             return srtFactory->MakeImExp<ImExp_GlobalFuncs>(rMember.items, typeArgs);
         }
         else if constexpr (same_as<T, RMember_StructVar>)
         {
+            assert(typeArgs->GetCount() == 0); // ResolveIdentifier가 typeArgs가 있는데 *var를 돌려줬을리가 없다
             return srtFactory->MakeImExp<ImExp_StructVar>(rMember.decl, rMember.typeArgs, /*hasExplicitInstance*/ false, /*explicitInstance*/ nullptr);
         }
         else if constexpr (same_as<T, RMember_ClassVar>)
         {
+            assert(typeArgs->GetCount() == 0);
             return srtFactory->MakeImExp<ImExp_ClassVar>(rMember.decl, rMember.typeArgs, /*hasExplicitInstance*/ false, /*explicitInstance*/ nullptr);
+        }
+        else if constexpr (same_as<T, RMember_Struct>)
+        {   
+            auto* mergedTypeArgs = rFactory->MergeTypeArguments(*rMember.outerTypeArgs, *typeArgs);
+            return srtFactory->MakeImExp<ImExp_Struct>(rMember.decl, mergedTypeArgs);
         }
         else
         {

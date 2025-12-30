@@ -15,6 +15,17 @@
 #include "NSymbol/NLambdaDecl.h"
 #include "NSymbol/NFactory.h"
 
+#include "NSymbol/NStructDecl.h"
+#include "NSymbol/NStructCtorDecl.h"
+#include "NSymbol/NStructDtorDecl.h"
+#include "NSymbol/NStructFuncDecl.h"
+#include "NSymbol/NNamespaceDecl.h"
+#include "NSymbol/NGlobalFuncDecl.h"
+#include "NSymbol/NClassDecl.h"
+#include "NSymbol/NClassCtorDecl.h"
+#include "NSymbol/NClassFuncDecl.h"
+#include "NSymbol/NFuncDeclOuter.h"
+
 #include "MIR/MExp.h"
 #include "MIR/MArgument.h"
 #include "MIR/MLoc.h"
@@ -45,6 +56,11 @@ FuncContext_Lambda::FuncContext_Lambda(const ScopeContextPtr& outer, bool bSeqFu
 bool FuncContext_Lambda::CanAccess(RDecl* target)
 {
     return outer->funcContext->CanAccess(target);
+}
+
+RTypeDecl* FuncContext_Lambda::ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    return outer->funcContext->ResolveTypeDecl(name, explicitTypeParamsExceptOuterCount);
 }
 
 expected<optional<RMember>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
@@ -136,7 +152,7 @@ bool FuncContext_Lambda::IsSeqFunc()
 
 MLoc_This* FuncContext_Lambda::MakeThisLoc()
 {
-    return nullptr;
+    return outer->funcContext->MakeThisLoc();
 }
 
 FuncContext_FuncDecl::FuncContext_FuncDecl(NFuncDecl* nFuncDecl, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory)
@@ -148,6 +164,21 @@ FuncContext_FuncDecl::FuncContext_FuncDecl(NFuncDecl* nFuncDecl, const RFactoryP
 bool FuncContext_FuncDecl::CanAccess(RDecl* target)
 {
     return nFuncDecl->GetNDecl()->GetRDecl()->CanAccess(target);
+}
+
+RTypeDecl* FuncContext_FuncDecl::ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{
+    RDecl* curDecl = nFuncDecl->GetNDecl()->GetRDecl();
+
+    while (curDecl)
+    {
+        if (RTypeDecl* typeDecl = curDecl->GetTypeMember(name, explicitTypeParamsExceptOuterCount))
+            return typeDecl;
+
+        curDecl = curDecl->GetROuter();
+    }
+
+    return nullptr;
 }
 
 expected<optional<RMember>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
@@ -176,14 +207,31 @@ bool FuncContext_FuncDecl::IsSeqFunc()
     return nFuncDecl->IsSeqFunc();
 }
 
+struct GetThisTypeFunctor
+{
+    using ResultType = RType*;
+
+    RFactoryPtr rFactory;
+
+    RType* Visit(NStructDecl* nDecl)
+    {
+        auto* typeArgs = nDecl->GetRDecl()->MakeOpenTypeArgs(*rFactory);
+        return rFactory->MakeStructType(nDecl, typeArgs);
+    }
+
+    RType* Visit(NFuncDeclOuter* nDecl)
+    {
+        throw NotImplementedException{};
+    }
+};
+
 MLoc_This* FuncContext_FuncDecl::MakeThisLoc()
 {
-    // struct S에서는 this가 S& 타입
+    // struct S에서는 this가 S 타입
     // class C에서는 this가 C 타입
     // lambda에서는 this가 lambda를 선언한 함수의 this타입
-
-    // mFactory->MakeMLoc<MLoc_This>();
-    return nullptr;
+    auto* rThisType = Accept(GetThisTypeFunctor{rFactory}, nFuncDecl->GetNFuncDeclOuter());
+    return mFactory->MakeMLoc<MLoc_This>(rThisType);
 }
 
 //public void CommitLambdasToDeclSymbolTree()

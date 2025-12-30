@@ -44,6 +44,11 @@ RIdentifier NLambdaVarDecl::GetIdentifier()
     return RIdentifier { name, 0, {} };
 }
 
+RTypeDecl* NLambdaVarDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    return nullptr;
+}
+
 optional<RMember> NLambdaVarDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;

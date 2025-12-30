@@ -8,6 +8,7 @@
 namespace Citron
 {
 struct RFuncParameter;
+class NFuncDeclOuter;
 
 class NFuncDeclVisitor
 {
@@ -27,6 +28,7 @@ class NFuncDecl
 public:
     virtual ~NFuncDecl() {}
     virtual NDecl* GetNDecl() = 0;
+    virtual NFuncDeclOuter* GetNFuncDeclOuter() = 0;
     virtual RFuncReturn GetUnboundFuncReturn() = 0;
     virtual std::span<RFuncParameter> GetUnboundFuncParams() = 0;
     virtual bool IsSeqFunc() = 0;

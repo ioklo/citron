@@ -77,7 +77,7 @@ expected<MLoc*, DiagPtr> TranslateReStructVarExpToMLoc(ReExp_StructVar* reExp, T
     else // x, x (static) 둘다 해당
     {   
         // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
-        MLoc* nInstanceLoc = reExp->decl->IsStatic() ? nullptr : context.MakeNLoc<MLoc_Deref>(context.MakeThisLoc());
+        MLoc* nInstanceLoc = reExp->decl->IsStatic() ? nullptr : context.MakeThisLoc();
         return context.MakeNLoc<MLoc_StructVar>(nInstanceLoc, reExp->decl, reExp->typeArgs);
     }
 }

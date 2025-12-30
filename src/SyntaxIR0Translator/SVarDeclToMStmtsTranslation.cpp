@@ -183,15 +183,6 @@ expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>* outStmts,
     auto eResult = Accept(translator, varDecl->type);
     RETURN_ON_ERROR(eResult);
 
-    // DeclTypeInfo declTypeInfo = context.GetDeclTypeInfo(varDecl->type);
-    for (auto& elem : varDecl->elements)
-    {
-        if (context.GetScopeContext().DoesLocalVarNameExistInScope(RName_Normal{elem.varName}))
-            return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
-
-        
-    }
-
     return {};
 }
 

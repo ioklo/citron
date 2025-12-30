@@ -34,11 +34,12 @@ public:
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
-    NDecl* GetNOuter() override;
+    NSYMBOL_API NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NFuncDecl
     NDecl* GetNDecl() override { return this; }
+    NSYMBOL_API NFuncDeclOuter* GetNFuncDeclOuter() override;
     RFuncReturn GetUnboundFuncReturn() override { return RFuncReturn_ForCtor(); }
     bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(this); }

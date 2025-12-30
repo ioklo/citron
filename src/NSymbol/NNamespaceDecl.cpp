@@ -36,6 +36,11 @@ RIdentifier NNamespaceDecl::GetIdentifier()
     return RIdentifier { RName_Normal(name), 0, {} };
 }
 
+RTypeDecl* NNamespaceDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    return NTypeDeclContainerComponent::GetTypeMember(name, typeParamCount);
+}
+
 // NotFound, Valid는 리턴으로, Fatal은 exception으로
 // Fatal을 처리해서 복구하고 싶으면 catch로
 optional<RMember> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

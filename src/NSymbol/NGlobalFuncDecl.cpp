@@ -21,6 +21,11 @@ NDecl* NGlobalFuncDecl::GetNOuter()
     return outer;
 }
 
+NFuncDeclOuter* NGlobalFuncDecl::GetNFuncDeclOuter()
+{
+    return outer;
+}
+
 RDecl* NGlobalFuncDecl::GetROuter()
 {
     return outer;
@@ -29,6 +34,12 @@ RDecl* NGlobalFuncDecl::GetROuter()
 RIdentifier NGlobalFuncDecl::GetIdentifier()
 {
     return RIdentifier{name, NCommonFuncDeclComponent::GetTypeParamCount(), GetParamIds()};
+}
+
+RTypeDecl* NGlobalFuncDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
+    return nullptr;
 }
 
 optional<RMember> NGlobalFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)

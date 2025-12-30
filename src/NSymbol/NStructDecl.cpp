@@ -67,6 +67,12 @@ RIdentifier NStructDecl::GetIdentifier()
     return RIdentifier { name, typeParams.size(), {} };
 }
 
+RTypeDecl* NStructDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
+    return NTypeDeclContainerComponent::GetTypeMember(name, typeParamCount);
+}
+
 optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     vector<RMember> candidates;

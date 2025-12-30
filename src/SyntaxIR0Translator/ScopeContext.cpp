@@ -82,26 +82,40 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
         using ResultType = RType*;
 
         RFactory* rFactory;
+        ScopeContext& scopeContext;
 
         RType* Visit(STypeExp_Id* idExp)
         {
-            if (idExp->name == "void")
+            // 예약어 처리
+            if (idExp->name == "void" && idExp->typeArgs.empty())
                 return rFactory->MakeVoidType();
-            else if (idExp->name == "bool")
+            else if (idExp->name == "bool" && idExp->typeArgs.empty())
                 return rFactory->MakeBoolType();
-            else if (idExp->name == "int")
+            else if (idExp->name == "int" && idExp->typeArgs.empty())
                 return rFactory->MakeIntType();
-            else if (idExp->name == "string")
+            else if (idExp->name == "string" && idExp->typeArgs.empty())
                 return rFactory->MakeStringType();
-            else
-                throw NotImplementedException{};
+
+            auto* rTypeDecl = scopeContext.funcContext->ResolveTypeDecl(RName_Normal{idExp->name}, idExp->typeArgs.size());
+            if (!rTypeDecl) return nullptr;
+
+            vector<RType*> rTypeArgVector;
+            rTypeArgVector.reserve(idExp->typeArgs.size());
+            for (auto* sTypeArg : idExp->typeArgs)
+            {
+                auto eRTypeArg = scopeContext.TranslateSTypeExpToRType(sTypeArg);
+                if (!eRTypeArg) return nullptr;
+                rTypeArgVector.push_back(*eRTypeArg);
+            }
+            auto* rTypeArgs = rFactory->MakeTypeArguments(rTypeArgVector);
+            return rFactory->MakeType(rTypeDecl, rTypeArgs);
         }
 
         RType* Visit(STypeExp* e)
         {
             throw NotImplementedException{};
         }
-    } visitor{rFactory.get()};
+    } visitor{rFactory.get(), *this};
 
     return Accept(visitor, sTypeExp);
 }

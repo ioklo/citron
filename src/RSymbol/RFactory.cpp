@@ -7,10 +7,17 @@
 #include "Infra/Ptr.h"
 
 #include "RTypes.h"
+#include "RTypeDecl.h"
 #include "RStructDecl.h"
+#include "RClassDecl.h"
+#include "REnumDecl.h"
+#include "REnumElemDecl.h"
+#include "RInterfaceDecl.h"
+#include "RLambdaDecl.h"
+
 #include "RNamespaceDeclGroup.h"
 #include "RTypeArguments.h"
-#include "RClassDecl.h"
+
 
 using namespace std;
 
@@ -215,6 +222,49 @@ RTypeArguments* RFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArg
     auto pv = v.get();
     typeArgsMap.emplace(key, move(v));
     return pv;
+}
+
+RType* RFactory::MakeType(RTypeDecl* decl, RTypeArguments* typeArgs)
+{
+    struct Visitor
+    {
+        using ResultType = RType*;
+
+        RFactory& factory;
+        RTypeArguments* typeArgs;
+
+        RType* Visit(RClassDecl* classDecl)
+        {
+            return factory.MakeClassType(classDecl, typeArgs);
+        }
+
+        RType* Visit(RStructDecl* structDecl)
+        {
+            return factory.MakeStructType(structDecl, typeArgs);
+        }
+
+        RType* Visit(REnumDecl* enumDecl)
+        {
+            return factory.MakeEnumType(enumDecl, typeArgs);
+        }
+
+        RType* Visit(REnumElemDecl* enumElemDecl)
+        {
+            return factory.MakeEnumElemType(enumElemDecl, typeArgs);
+        }
+
+        RType* Visit(RInterfaceDecl* interfaceDecl)
+        {
+            return factory.MakeInterfaceType(interfaceDecl, typeArgs, false);
+        }
+
+        RType* Visit(RLambdaDecl* lambdaDecl)
+        {
+            return factory.MakeLambdaType(lambdaDecl, typeArgs);
+        }
+    };
+
+    return Accept(Visitor{*this, typeArgs}, decl);
 }
 
 RType* RFactory::MakeBoolType()

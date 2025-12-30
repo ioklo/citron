@@ -47,7 +47,7 @@ QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFact
 
     auto* qRetType = GetQTypeFromRType(rRetType);
     if (qRetType != qFactory->MakeVoidType())
-        retSlot = NewSlot(qRetType);
+        oRetSlotIndex = NewSlot(qRetType);
 
     auto* firstBlock = AddBlock("entry");
     this->curBlock = firstBlock;
@@ -135,7 +135,7 @@ expected<void, DiagPtr> QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, op
 
         if constexpr (same_as<T, QIntrinsicResultType_Slot>)
         {
-            QArg_Slot resultSlot = oDest ? *oDest : NewSlot(resultType.qType);
+            QArg_Slot resultSlot = oDest ? *oDest : QArg_Slot{NewSlot(resultType.qType)};
 
             if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
             curBlock->EmitInst(QInst_Intrinsic{kind, resultSlot, move(args)});
@@ -205,8 +205,8 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
                 }
                 else // 0이면?
                 {
-                    if (retSlot)
-                        newCleanUpForRet->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[retSlot->index].qType, *retSlot}});
+                    if (oRetSlotIndex)
+                        newCleanUpForRet->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*oRetSlotIndex].qType, QArg_Slot{*oRetSlotIndex}}});
                     else
                         newCleanUpForRet->EmitInst(QInst_Return{});
 
@@ -227,8 +227,8 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
     {
         // 바로 리턴 블록 생성
         auto* retBlock = AddBlock("cleanUpForRet");
-        if (retSlot)
-            retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[retSlot->index].qType, *retSlot}});
+        if (oRetSlotIndex)
+            retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*oRetSlotIndex].qType, QArg_Slot{*oRetSlotIndex}}});
         else
             retBlock->EmitInst(QInst_Return{});
         scope.recentCleanUpForReturn = retBlock;
@@ -315,9 +315,9 @@ QType* QBodyContext::GetPtrQType()
     return qFactory->MakePtrType();
 }
 
-QArg_Slot QBodyContext::GetRetSlot()
+size_t QBodyContext::GetRetSlotIndex()
 {
-    return *retSlot;
+    return *oRetSlotIndex;
 }
 
 size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size_t> oArgIndex)
@@ -349,17 +349,17 @@ size_t QBodyContext::GetLocalVarSlotIndex(const RName& name)
     return (size_t)-1;
 }
 
-QArg_Slot QBodyContext::NewSlot(QType* qType)
+size_t QBodyContext::NewSlot(QType* qType)
 {
     size_t slotIndex = slotInfos.size();
     std::string s = format("%s{}", slotIndex);
     slotInfos.emplace_back(qType, s, nullopt);
 
     curScope->slotIndices.push_back(slotIndex);
-    return {slotIndex};
+    return slotIndex;
 }
 
-QArg_Slot QBodyContext::NewSlotForMExp(MExp* exp)
+size_t QBodyContext::NewSlotForMExp(MExp* exp)
 {
     auto* qType = GetMExpQType(exp);
     return NewSlot(qType);

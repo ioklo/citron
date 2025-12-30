@@ -145,19 +145,19 @@ void VisitEnum(TNOuter* outer, SEnumDecl* sEnum, AccessorContext accessorContext
 {   
     auto accessor = MakeAccessor(sEnum->accessModifier, accessorContext);
     auto typeParams = MakeTypeParams(sEnum->typeParams);
-    auto* nEnum = nFactory->MakeNDecl<NEnumDecl>(outer, accessor, RName_Normal(sEnum->name), move(typeParams));
+    auto* nEnum = nFactory->MakeNDecl<NEnumDecl>(outer, accessor, RName_Normal{sEnum->name}, move(typeParams));
     outer->AddType(nEnum);
 
     // EnumElem
     for (auto* sEnumElem : sEnum->elements)
     {
-        auto* nEnumElem = nFactory->MakeNDecl<NEnumElemDecl>(nEnum, sEnumElem->name);
+        auto* nEnumElem = nFactory->MakeNDecl<NEnumElemDecl>(nEnum, RName_Normal{sEnumElem->name});
         nEnum->AddElem(nEnumElem);
 
         // EnumElemVar
         for (auto* sEnumElemVar : sEnumElem->vars)
         {
-            auto* nEnumElemVar = nFactory->MakeNDecl<NEnumElemVarDecl>(nEnumElem, sEnumElemVar->name);
+            auto* nEnumElemVar = nFactory->MakeNDecl<NEnumElemVarDecl>(nEnumElem, RName_Normal{sEnumElemVar->name});
             EnumElemVarTask::Register(nEnumElemVar, sEnumElemVar, phaseManager);
         }
     }

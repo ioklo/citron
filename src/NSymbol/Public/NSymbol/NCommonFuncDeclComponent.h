@@ -36,7 +36,7 @@ private:
 
     // need initializations
     std::optional<FuncReturnAndParams> funcReturnAndParams;
-    std::vector<NLambdaDecl> lambdaDecls;
+    std::vector<NLambdaDecl*> lambdaDecls;
 
 public:
     NSYMBOL_API NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams);

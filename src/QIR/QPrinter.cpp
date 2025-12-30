@@ -149,6 +149,17 @@ class QPrinter
             printer.PrintLine();
         }
 
+        void Print(QInst_FieldOf& inst)
+        {
+            // %dest = field_of [%src], fieldIndex
+            printer.PrintQArg_Slot(inst.dest);
+            printer.Print(" = field_of ");
+            printer.PrintAddrQArg_Slot(inst.src);
+            printer.Print(", ");
+            printer.Print(to_string(inst.fieldIndex));
+            printer.PrintLine();
+        }
+
         void Print(QInst_Assign& inst)
         {
             // %dest = <ty> %src

@@ -2,6 +2,7 @@
 
 #include "RSymbolConfig.h"
 #include <optional>
+#include <span>
 #include <string>
 
 #include "RMember.h"
@@ -25,6 +26,8 @@ class RInterfaceDecl;
 
 class RDeclVisitor;
 
+class RTypeDecl;
+
 class RDecl
 {
 public:
@@ -43,6 +46,7 @@ public:
     virtual RDecl* GetROuter() = 0;
     virtual RAccessor GetAccessor() = 0;
     virtual RIdentifier GetIdentifier() = 0;
+    virtual RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) = 0; // type-space search
 
     // typeArgs는 RDecl의 typeArgs이다
     // explicitTypeParamsExceptOuterCount는 검색할 멤버가 추가로 가지고 있을 typeArgs이다
@@ -52,6 +56,7 @@ public:
     virtual std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
 
     // 현재 관점에서 identifier를 찾는다. 못 찾을 경우 부모를 찾는다. 내부에서 GetMember를 쓸 수 있다
+    // virtual std::optional<RMember> ResolveTypeIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) = 0;
     virtual std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) = 0;
 
     virtual void Accept(RDeclVisitor& visitor) = 0;
