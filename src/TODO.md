@@ -1,0 +1,8 @@
+- [ ] // TODO: [7] 일단 null
+- [ ] // TODO: [10] box lambda이면 box로 판단해야 한다
+- [ ] // TODO: [15] foreach 에러 처리
+- [ ] // TODO: [16] TypeResolver적용
+- [ ] // TODO: [17] NextFunc가 여러개일때 처리
+- [ ] // TODO: [25] out과 params를 같이 쓰면 에러 처리
+- [ ] // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
+- [ ] 
