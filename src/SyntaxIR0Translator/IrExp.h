@@ -196,7 +196,7 @@ public:
     void Accept(IrExpVisitor& visitor) final { visitor.Visit(this); }
 
     virtual void Accept(IrBoxRefExpVisitor& visitor) = 0;
-    virtual RType* GetTargetType(RFactory& factory) = 0;
+    virtual RType* GetTargetType() = 0;
     virtual MLoc* MakeLoc(TranslationContext& context) = 0;
 };
 
@@ -212,7 +212,7 @@ public:
     IrExp_BoxRef_ClassMember(MLoc* loc, RClassVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(this); }
 
-    RType* GetTargetType(RFactory& factory) override;
+    RType* GetTargetType() override;
     MLoc* MakeLoc(TranslationContext& context) override;
 };
 
@@ -228,7 +228,7 @@ public:
 public:
     IrExp_BoxRef_StructIndirectMember(MLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(this); }
-    RType* GetTargetType(RFactory& factory) override;
+    RType* GetTargetType() override;
     MLoc* MakeLoc(TranslationContext& context) override;
 };
 
@@ -242,7 +242,7 @@ public:
 public:
     IrExp_BoxRef_StructMember(IrExp_BoxRef* parent, RStructVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrBoxRefExpVisitor& visitor) override { visitor.Visit(this); }
-    RType* GetTargetType(RFactory& factory) override;
+    RType* GetTargetType() override;
     MLoc* MakeLoc(TranslationContext& context) override;
 };
 

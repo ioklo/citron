@@ -52,7 +52,7 @@ public:
     NSYMBOL_API RIdentifier GetIdentifier() override;
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
+    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RFuncDecl
     size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
@@ -61,7 +61,7 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RClassFuncDecl
-    RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
+    RType* GetReturnType(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
 };
 
 }

@@ -382,7 +382,7 @@ expected<MExp*, DiagPtr> TranslateSBoxExpToMExp(SExp_Box* exp, RType* hintType, 
     auto eNInnerExp = TranslateSExpToMExp(exp->innerExp, innerHintType, context);
     if (!eNInnerExp) return unexpected{move(eNInnerExp).error()};
 
-    return context.MakeMExp<MExp_Box>(*eNInnerExp);
+    return context.MakeMExpWithRFactory<MExp_Box>(*eNInnerExp);
 }
 
 expected<MExp*, DiagPtr> TranslateSIsExpToMExp(SExp_Is* exp, TranslationContext& context)

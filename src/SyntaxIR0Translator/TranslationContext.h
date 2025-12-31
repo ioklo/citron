@@ -138,6 +138,12 @@ public: // for type rFactory
     }
 
     template<typename TMExp, typename... TArgs> requires std::derived_from<TMExp, MExp>
+    TMExp* MakeMExpWithRFactory(TArgs&&... args)
+    {
+        return mFactory->MakeMExp<TMExp>(std::forward<TArgs>(args)..., rFactory);
+    }
+
+    template<typename TMExp, typename... TArgs> requires std::derived_from<TMExp, MExp>
     TMExp* MakeMExp(TArgs&&... args)
     {
         return mFactory->MakeMExp<TMExp>(std::forward<TArgs>(args)...);

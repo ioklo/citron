@@ -53,13 +53,13 @@ public:
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory) override;
+    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }
 
     // from RFuncDecl
-    // NSYMBOL_API RFuncReturn GetReturn(RTypeArguments& typeArgs, RFactory& factory) override;
+    // NSYMBOL_API RFuncReturn GetReturn(RTypeArguments& typeArgs) override;
 
     // from RClassCtorDecl
     NSYMBOL_API RClassDecl* GetClassDecl() override;

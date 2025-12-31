@@ -56,7 +56,7 @@ class MLoc
 public:
     virtual ~MLoc() {}
     virtual void Accept(MLocVisitor& visitor) = 0;
-    virtual RType* GetType(RFactory& factory) = 0;
+    virtual RType* GetType() = 0;
 };
 
 class MLoc_Temp : public MLoc
@@ -67,7 +67,7 @@ public:
 public:
     MIR_API MLoc_Temp(MExp* exp);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 class MLoc_LocalVar : public MLoc
@@ -79,7 +79,7 @@ public:
 public:
     MIR_API MLoc_LocalVar(const RName& name, RType* declType);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 // only this member allowed, so no need this
@@ -92,7 +92,7 @@ public:
 public:
     MIR_API MLoc_LambdaVar(RLambdaVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 // l[b], l is list
@@ -106,7 +106,7 @@ public:
 public:
     MIR_API MLoc_ListIndexer(MLoc* list, MLoc* index, RType* itemType);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 // Instance가 null이면 static
@@ -120,7 +120,7 @@ public:
 public:
     MIR_API MLoc_StructVar(MLoc* instance, RStructVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 class MLoc_ClassVar : public MLoc
@@ -133,7 +133,7 @@ public:
 public:
     MIR_API MLoc_ClassVar(MLoc* instance, RClassVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 class MLoc_EnumElemVar : public MLoc
@@ -146,7 +146,7 @@ public:
 public:
     MIR_API MLoc_EnumElemVar(MLoc* instance, REnumElemVarDecl* decl, RTypeArguments* typeArgs);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 class MLoc_This : public MLoc
@@ -157,7 +157,7 @@ public:
 public:
     MIR_API MLoc_This(RType* type);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 // dereference pointer, *
@@ -168,7 +168,7 @@ public:
 public:
     MIR_API MLoc_Deref(MLoc* innerLoc);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 // dereference box pointer, *
@@ -180,7 +180,7 @@ public:
 public:
     MIR_API MLoc_BoxDeref(MLoc* innerLoc);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 // nullable value에서 value를 가져온다
@@ -191,7 +191,7 @@ public:
 public:
     MIR_API MLoc_NullableValue(MLoc* loc);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
-    MIR_API RType* GetType(RFactory& factory) override;
+    MIR_API RType* GetType() override;
 };
 
 template<class TFrom, class TVisitor>
