@@ -12,15 +12,16 @@ class RFactory;
 class RTypeArguments
 {
     std::vector<RType*> items;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RTypeArguments(const std::vector<RType*>& items);
+    RTypeArguments(const std::vector<RType*>& items, RFactory* factory);
 
 public:
     RSYMBOL_API size_t GetCount();
     RSYMBOL_API RType* Get(int i);
-    RSYMBOL_API RTypeArguments* Apply(RTypeArguments& typeArgs, RFactory& typeFactory);
+    RSYMBOL_API RTypeArguments* Apply(RTypeArguments& typeArgs);
 };
 
 } // namespace Citron

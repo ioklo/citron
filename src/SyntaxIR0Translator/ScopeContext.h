@@ -52,9 +52,9 @@ public:
     RTypeArguments* MakeOpenTypeArgs();
     void SetFlowEndsCompletely();
 
-    std::shared_ptr<ScopeContext> MakeNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
+    std::shared_ptr<ScopeContext> MakeTranslationContexts_NestedScope(std::shared_ptr<ScopeContext> sharedThis);
     std::shared_ptr<ScopeContext> MakeLoopNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
-    std::tuple<ScopeContextPtr, NLambdaDecl> MakeLambdaBodyContext(const RFuncReturn& ret, std::vector<RFuncParameter> params, bool bLastParamVariadic);
+    std::tuple<ScopeContextPtr, NLambdaDecl> MakeTranslationContexts_Lambda(const RFuncReturn& ret, std::vector<RFuncParameter> params, bool bLastParamVariadic);
 
     void AddLocalVarInfo(RType* type, const RName& name);
     // std::optional<LocalVarInfo> GetLocalVarInfo(const RName& name);

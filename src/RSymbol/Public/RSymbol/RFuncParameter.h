@@ -16,7 +16,7 @@ struct RFuncParameter
     RType* type; // 람다의 경우 지정이 안될 수 있다
     RName name;
 
-    RSYMBOL_API RFuncParameter Apply(RTypeArguments& typeArgs, RFactory& typeFactory);
+    RSYMBOL_API RFuncParameter Apply(RTypeArguments& typeArgs);
 };
 
 

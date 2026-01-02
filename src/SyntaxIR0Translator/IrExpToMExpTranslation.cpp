@@ -7,9 +7,10 @@
 #include "Logging/Logger.h"
 #include "MIR/MExp.h"
 #include "MIR/MLoc.h"
+#include "MIR/MFactory.h"
 
 #include "IrExp.h"
-#include "TranslationContext.h"
+#include "TranslationContexts.h"
 
 using namespace std;
 
@@ -21,13 +22,13 @@ struct IrBoxRefExpToMExpTranslator
 {
 public:
     using ResultType = expected<MExp*, DiagPtr>;
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, MExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeMExp<TValue>(forward<TArgs>(args)...);
+        return contexts.mFactory->MakeMExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -43,44 +44,44 @@ private:
     }
 
 public:
-    IrBoxRefExpToMExpTranslator(TranslationContext& context)
-        : context{context}
+    IrBoxRefExpToMExpTranslator(TranslationContexts& contexts)
+        : contexts{contexts}
     { }
 
     // &c.x
     ResultType Visit(IrExp_BoxRef_ClassMember* boxRef)
     {
-        return Value<MExp_ClassMemberBoxRef>(boxRef->loc, boxRef->decl, boxRef->typeArgs);
+        return Value<MExp_ClassMemberBoxRef>(boxRef->loc, boxRef->decl, boxRef->typeArgs, contexts.rFactory);
     }
 
     // &(*pS).x
     ResultType Visit(IrExp_BoxRef_StructIndirectMember* boxRef)
     {
-        return Value<MExp_StructIndirectMemberBoxRef>(boxRef->loc, boxRef->decl, boxRef->typeArgs);
+        return Value<MExp_StructIndirectMemberBoxRef>(boxRef->loc, boxRef->decl, boxRef->typeArgs, contexts.rFactory);
     }
 
     // &c.x.a
     // &(box S()).x.y
     ResultType Visit(IrExp_BoxRef_StructMember* boxRef)
     {
-        IrBoxRefExpToMExpTranslator parentTranslator{context};
-        auto eParent = Accept(parentTranslator, boxRef->parent);
-        if (!eParent) return Error(move(eParent));
+        IrBoxRefExpToMExpTranslator parentTranslator{contexts};
+        auto e_parent = Accept(parentTranslator, boxRef->parent);
+        if (!e_parent) return Error(move(e_parent));
 
-        return Value<MExp_StructMemberBoxRef>(context.MakeNLoc<MLoc_Temp>(*eParent), boxRef->decl, boxRef->typeArgs);
+        return Value<MExp_StructMemberBoxRef>(contexts.mFactory->MakeMLoc<MLoc_Temp>(*e_parent), boxRef->decl, boxRef->typeArgs, contexts.rFactory);
     }
 };
 
 struct IrExpToMExpTranslator
 {
     using ResultType = expected<MExp*, DiagPtr>;
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, MExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeMExp<TValue>(forward<TArgs>(args)...);
+        return contexts.mFactory->MakeMExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -97,8 +98,8 @@ private:
 
 public:
 
-    IrExpToMExpTranslator(TranslationContext& context)
-        : context{context} { }
+    IrExpToMExpTranslator(TranslationContexts& contexts)
+        : contexts{contexts} { }
 
     // &NS
     ResultType Visit(IrExp_Namespace* irExp)
@@ -145,14 +146,14 @@ public:
     // &c.x
     ResultType Visit(IrExp_BoxRef* irExp)
     {
-        IrBoxRefExpToMExpTranslator translator{context};
+        IrBoxRefExpToMExpTranslator translator{contexts};
         return Accept(translator, irExp);
     }
 
     // 가장 쉬운 &s.x
     ResultType Visit(IrExp_LocalRef* irExp)
     {
-        return Value<MExp_LocalRef>(irExp->loc);
+        return Value<MExp_LocalRef>(irExp->loc, contexts.rFactory);
     }
 
     // box S* pS = ...
@@ -172,9 +173,9 @@ public:
 
 } // namespace 
 
-expected<MExp*, DiagPtr> TranslateIrExpToMExp(IrExp* irExp, TranslationContext& context)
+expected<MExp*, DiagPtr> TranslateIrExpToMExp(IrExp* irExp, TranslationContexts& contexts)
 {
-    IrExpToMExpTranslator translator{context};
+    IrExpToMExpTranslator translator{contexts};
     return Accept(translator, irExp);
 }
 

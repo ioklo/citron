@@ -3,6 +3,7 @@
 #include "NSymbolConfig.h"
 
 #include <vector>
+#include <memory>
 #include <optional>
 #include <ranges>
 
@@ -22,8 +23,9 @@ namespace Citron {
 
 class RType_Struct;
 class RType_Interface;
-
 class NStructDtorDecl;
+
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class NStructDecl
     : public NDecl
@@ -45,6 +47,7 @@ class NStructDecl
 
     RName name;
     std::vector<std::string> typeParams;
+    RFactoryPtr rFactory;
 
     std::vector<NStructCtorDecl*> ctors;
     NStructDtorDecl* dtor;
@@ -52,11 +55,10 @@ class NStructDecl
 
     std::vector<NStructVarDecl*> vars;
     std::optional<BaseTypes> oBaseTypes;
-
     std::unordered_map<RName, NStructVarDecl*> varsMap;
 
 public:
-    NSYMBOL_API NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, std::vector<std::string>&& typeParams);
+    NSYMBOL_API NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, std::vector<std::string>&& typeParams, const RFactoryPtr& rFactory);
     NSYMBOL_API void InitBaseTypes(RType_Struct* baseStruct, std::vector<RType_Interface*>&& interfaces);
 
 public:

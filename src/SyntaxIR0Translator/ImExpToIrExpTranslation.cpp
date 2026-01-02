@@ -10,10 +10,12 @@
 #include "RSymbol/RStructVarDecl.h"
 #include "NSymbol/NLambdaVarDecl.h"
 #include "MIR/MLoc.h"
+#include "MIR/MFactory.h"
 #include "ImExp.h"
 #include "IrExp.h"
-
-#include "TranslationContext.h"
+#include "TranslationContexts.h"
+#include "SRTFactory.h"
+#include "FuncContext.h"
 
 using namespace std;
 
@@ -24,10 +26,10 @@ namespace {
 struct ImExpToIrExpTranslator
 {
     using ResultType = expected<IrExp*, DiagPtr>;
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
-    ImExpToIrExpTranslator(TranslationContext& context)
-        : context(context)
+    ImExpToIrExpTranslator(TranslationContexts& contexts)
+        : contexts{contexts}
     {
     }
 
@@ -35,7 +37,7 @@ private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -107,14 +109,14 @@ public:
     // &id
     ResultType Visit(ImExp_LocalVar* imExp)
     {
-        return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_LocalVar>(imExp->name, imExp->type));
+        return Value<IrExp_LocalRef>(contexts.mFactory->MakeMLoc<MLoc_LocalVar>(imExp->name, imExp->type));
     }
 
     // &x
     ResultType Visit(ImExp_LambdaVar* imExp)
     {
         // TODO: [10] box lambda이면 box로 판단해야 한다
-        return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_LambdaVar>(imExp->decl, imExp->typeArgs));
+        return Value<IrExp_LocalRef>(contexts.mFactory->MakeMLoc<MLoc_LambdaVar>(imExp->decl, imExp->typeArgs));
     }
 
     // x (C.x, this.x)
@@ -122,12 +124,12 @@ public:
     {
         if (imExp->decl->IsStatic()) // &C.x
         {
-            return Value<IrExp_StaticRef>(context.MakeNLoc<MLoc_ClassVar>(nullptr, imExp->decl, imExp->typeArgs));
+            return Value<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_ClassVar>(nullptr, imExp->decl, imExp->typeArgs));
         }
         else // &this.x
         {
             // auto classType = imExp.decl->GetClassType(imExp.typeArgs, factory);
-            return Value<IrExp_BoxRef_ClassMember>(context.MakeThisLoc(), imExp->decl, imExp->typeArgs);
+            return Value<IrExp_BoxRef_ClassMember>(contexts.funcContext->MakeThisLoc(), imExp->decl, imExp->typeArgs, contexts.mFactory);
         }
     }
 
@@ -136,14 +138,14 @@ public:
     {
         if (imExp->decl->IsStatic())
         {
-            return Value<IrExp_StaticRef>(context.MakeNLoc<MLoc_StructVar>(nullptr, imExp->decl, imExp->typeArgs));
+            return Value<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(nullptr, imExp->decl, imExp->typeArgs));
         }
         else
         {
             // this의 타입이 S&이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            auto* nThisLoc = context.MakeThisLoc();
-            return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_StructVar>(nThisLoc, imExp->decl, imExp->typeArgs));
+            auto* nThisLoc = contexts.funcContext->MakeThisLoc();
+            return Value<IrExp_LocalRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(nThisLoc, imExp->decl, imExp->typeArgs));
         }
     }
 
@@ -181,9 +183,9 @@ public:
 
 } // namespace 
 
-expected<IrExp*, DiagPtr> TranslateImExpToIrExp(ImExp* imExp, TranslationContext& context)
+expected<IrExp*, DiagPtr> TranslateImExpToIrExp(ImExp* imExp, TranslationContexts& contexts)
 {
-    ImExpToIrExpTranslator translator{context};
+    ImExpToIrExpTranslator translator{contexts};
     return Accept(translator, imExp);
 }
 

@@ -10,10 +10,12 @@
 #include "RSymbol/REnumElemDecl.h"
 #include "MIR/MArgument.h"
 #include "MIR/MExp.h"
+#include "MIR/MFactory.h"
 
 #include "ImExp.h"
 #include "ReExp.h"
-#include "TranslationContext.h"
+#include "TranslationContexts.h"
+#include "SRTFactory.h"
 
 using namespace std;
 
@@ -27,10 +29,10 @@ struct ImExpToReExpTranslator
 public:
     using ResultType = expected<ReExp*, DiagPtr>;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
-    ImExpToReExpTranslator(TranslationContext& context)
-        : context(context)
+    ImExpToReExpTranslator(TranslationContexts& contexts)
+        : contexts{contexts}
     {
     }
 
@@ -39,7 +41,7 @@ private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, ReExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeReExp<TValue>(forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeReExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -103,7 +105,8 @@ public:
         // if standalone, 값으로 처리한다
         if (imExp->decl->GetVarCount() == 0)
         {
-            return Value<ReExp_Else>(context.MakeMExp<MExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<MArgument>()));
+            auto* newEnumElem = contexts.mFactory->MakeMExp<MExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<MArgument>{}, contexts.rFactory);
+            return Value<ReExp_Else>(newEnumElem);
         }
 
         // lambda (boxed lambda)로 변환할 수 있다.
@@ -155,9 +158,9 @@ public:
 }
 
 // outermost로 변경
-expected<ReExp*, DiagPtr> TranslateImExpToReExp(ImExp* imExp, TranslationContext& context)
+expected<ReExp*, DiagPtr> TranslateImExpToReExp(ImExp* imExp, TranslationContexts& contexts)
 {
-    ImExpToReExpTranslator translator{context};
+    ImExpToReExpTranslator translator{contexts};
     return Accept(translator, imExp);
 }
 

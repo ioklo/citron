@@ -40,13 +40,13 @@ optional<RMember> NClassFuncDecl::GetMember(RTypeArguments* typeArgs, const RNam
     return nullopt;
 }
 
-std::optional<RMember> NClassFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+std::optional<RMember> NClassFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     size_t baseTypeParamCount = _class->GetAllTypeParamCount();
-    if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
-        return oMember;
+    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount))
+        return o_member;
 
-    return _class->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return _class->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 } // namespace Citron

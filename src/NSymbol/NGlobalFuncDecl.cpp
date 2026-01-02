@@ -49,13 +49,13 @@ optional<RMember> NGlobalFuncDecl::GetMember(RTypeArguments* typeArgs, const RNa
     return nullopt;
 }
 
-optional<RMember> NGlobalFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> NGlobalFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     size_t baseTypeParamCount = outer->GetRDecl()->GetAllTypeParamCount();
-    if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
-        return oMember;
+    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount))
+        return o_member;
 
-    return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 }

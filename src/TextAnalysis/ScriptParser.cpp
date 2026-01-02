@@ -30,20 +30,20 @@ optional<SFuncParam> ParseFuncDeclParam(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto oOutAndParams = AcceptParseOutAndParams(&curLexer);
-    if (!oOutAndParams)
+    auto o_outAndParams = AcceptParseOutAndParams(&curLexer);
+    if (!o_outAndParams)
         return nullopt;
 
     auto* typeExp = ParseTypeExp(&curLexer, factory);
     if (!typeExp)
         return nullopt;
 
-    auto oName = Accept<IdentifierToken>(&curLexer);
-    if (!oName)
+    auto o_name = Accept<IdentifierToken>(&curLexer);
+    if (!o_name)
         return nullopt;
 
     *lexer = move(curLexer);
-    return SFuncParam(oOutAndParams->bOut, oOutAndParams->bParams, typeExp, move(oName->text));
+    return SFuncParam(o_outAndParams->bOut, o_outAndParams->bParams, typeExp, move(o_name->text));
 }
 
 optional<vector<SFuncParam>> ParseFuncDeclParams(Lexer* lexer, SFactory& factory)
@@ -60,11 +60,11 @@ optional<vector<SFuncParam>> ParseFuncDeclParams(Lexer* lexer, SFactory& factory
             if (!Accept<CommaToken>(&curLexer))
                 return nullopt;
 
-        auto oParam = ParseFuncDeclParam(&curLexer, factory);
-        if (!oParam)
+        auto o_param = ParseFuncDeclParam(&curLexer, factory);
+        if (!o_param)
             return nullopt;
 
-        params.push_back(move(*oParam));
+        params.push_back(move(*o_param));
     }
 
     *lexer = move(curLexer);
@@ -87,16 +87,16 @@ SGlobalFuncDecl* ParseGlobalFuncDecl(Lexer* lexer, SFactory& factory)
     if (!retType)
         return nullptr;
 
-    auto oFuncName = Accept<IdentifierToken>(&curLexer);
-    if (!oFuncName)
+    auto o_funcName = Accept<IdentifierToken>(&curLexer);
+    if (!o_funcName)
         return nullptr;
 
-    auto oParameters = ParseFuncDeclParams(&curLexer, factory);
-    if (!oParameters)
+    auto o_parameters = ParseFuncDeclParams(&curLexer, factory);
+    if (!o_parameters)
         return nullptr;
 
-    auto oBody = ParseBody(&curLexer, factory);
-    if (!oBody)
+    auto o_body = ParseBody(&curLexer, factory);
+    if (!o_body)
         return nullptr;
 
     *lexer = move(curLexer);
@@ -105,10 +105,10 @@ SGlobalFuncDecl* ParseGlobalFuncDecl(Lexer* lexer, SFactory& factory)
         nullopt, // TODO: [7] 일단 null
         bSequence,
         retType,
-        move(oFuncName->text),
+        move(o_funcName->text),
         std::vector<STypeParam>{},
-        move(*oParameters),
-        move(*oBody)
+        move(*o_parameters),
+        move(*o_body)
     );
 }
 
@@ -128,11 +128,11 @@ optional<vector<STypeParam>> ParseTypeParams(Lexer* lexer, SFactory& factory)
                     return nullopt;
 
             // 변수 이름만 받을 것이므로 TypeExp가 아니라 Identifier여야 한다
-            auto oTypeParam = Accept<IdentifierToken>(&curLexer);
-            if (!oTypeParam)
+            auto o_typeParam = Accept<IdentifierToken>(&curLexer);
+            if (!o_typeParam)
                 return nullopt;
 
-            typeParams.push_back(STypeParam{ oTypeParam->text });
+            typeParams.push_back(STypeParam{ o_typeParam->text });
         }
     }
 
@@ -160,17 +160,17 @@ SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory)
     Lexer curLexer = *lexer;
 
     // public enum E<T1, T2> { a , b () } 
-    auto oAccessModifier = ParseAccessModifier(&curLexer);
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
 
     if (!Accept<EnumToken>(&curLexer))
         return nullptr;
     
-    auto oEnumName = Accept<IdentifierToken>(&curLexer);
-    if (!oEnumName)
+    auto o_enumName = Accept<IdentifierToken>(&curLexer);
+    if (!o_enumName)
         return nullptr;
 
-    auto oTypeParams = ParseTypeParams(&curLexer, factory);
-    if (!oTypeParams)
+    auto o_typeParams = ParseTypeParams(&curLexer, factory);
+    if (!o_typeParams)
         return nullptr;
 
     if (!Accept<LBraceToken>(&curLexer))
@@ -183,8 +183,8 @@ SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory)
             if (!Accept<CommaToken>(&curLexer))
                 return nullptr;
 
-        auto oElemName = Accept<IdentifierToken>(&curLexer);
-        if (!oElemName)
+        auto o_elemName = Accept<IdentifierToken>(&curLexer);
+        if (!o_elemName)
             return nullptr;
 
         vector<SEnumElemVarDecl*> params;
@@ -201,19 +201,19 @@ SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory)
                 if (!typeExp)
                     return nullptr;
 
-                auto oParamName = Accept<IdentifierToken>(&curLexer);
-                if (!oParamName)
+                auto o_paramName = Accept<IdentifierToken>(&curLexer);
+                if (!o_paramName)
                     return nullptr;
 
-                params.push_back(factory.MakeSEnumElemVarDecl(typeExp, move(oParamName->text)));
+                params.push_back(factory.MakeSEnumElemVarDecl(typeExp, move(o_paramName->text)));
             }
         }
 
-        elems.push_back(factory.MakeSEnumElemDecl(move(oElemName->text), move(params)));
+        elems.push_back(factory.MakeSEnumElemDecl(move(o_elemName->text), move(params)));
     }
 
     *lexer = move(curLexer);
-    return factory.MakeSEnumDecl(oAccessModifier, move(oEnumName->text), move(*oTypeParams), move(elems));
+    return factory.MakeSEnumDecl(o_accessModifier, move(o_enumName->text), move(*o_typeParams), move(elems));
 }
 
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer)
@@ -234,7 +234,7 @@ SStructVarDecl* ParseStructVarDecl(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto oAccessModifier = ParseAccessModifier(&curLexer);
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
 
     // ex) int
     auto* varType = ParseTypeExp(&curLexer, factory);
@@ -244,19 +244,19 @@ SStructVarDecl* ParseStructVarDecl(Lexer* lexer, SFactory& factory)
     // ex) x, y, z
     vector<string> varNames;
 
-    auto oVarNameToken0 = Accept<IdentifierToken>(&curLexer);
-    if (!oVarNameToken0)
+    auto o_varNameToken0 = Accept<IdentifierToken>(&curLexer);
+    if (!o_varNameToken0)
         return nullptr;
 
-    varNames.push_back(move(oVarNameToken0->text));
+    varNames.push_back(move(o_varNameToken0->text));
 
     while (Accept<CommaToken>(&curLexer))
     {
-        auto oVarNameToken = Accept<IdentifierToken>(&curLexer);
-        if (!oVarNameToken)
+        auto o_varNameToken = Accept<IdentifierToken>(&curLexer);
+        if (!o_varNameToken)
             return nullptr;
 
-        varNames.push_back(move(oVarNameToken->text));
+        varNames.push_back(move(o_varNameToken->text));
     }
 
     // ;
@@ -265,14 +265,14 @@ SStructVarDecl* ParseStructVarDecl(Lexer* lexer, SFactory& factory)
 
     *lexer = move(curLexer);
 
-    return factory.MakeSStructVarDecl(oAccessModifier, varType, move(varNames));
+    return factory.MakeSStructVarDecl(o_accessModifier, varType, move(varNames));
 }
 
 SStructFuncDecl* ParseStructFuncDecl(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto oAccessModifier = ParseAccessModifier(&curLexer);
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
 
     bool bStatic = Accept<StaticToken>(&curLexer).has_value();
     bool bSequence = Accept<SeqToken>(&curLexer).has_value();
@@ -283,28 +283,28 @@ SStructFuncDecl* ParseStructFuncDecl(Lexer* lexer, SFactory& factory)
         return nullptr;
 
     // ex) F
-    auto oFuncName = Accept<IdentifierToken>(&curLexer);
-    if (!oFuncName)
+    auto o_funcName = Accept<IdentifierToken>(&curLexer);
+    if (!o_funcName)
         return nullptr;
 
     // ex) <T1, T2>
-    auto oTypeParams = ParseTypeParams(&curLexer, factory);
-    if (!oTypeParams)
+    auto o_typeParams = ParseTypeParams(&curLexer, factory);
+    if (!o_typeParams)
         return nullptr;
 
     // ex) (int i, int a)
-    auto oParameters = ParseFuncDeclParams(&curLexer, factory);
-    if (!oParameters)
+    auto o_parameters = ParseFuncDeclParams(&curLexer, factory);
+    if (!o_parameters)
         return nullptr;
 
     // ex) { ... }
-    auto oBody = ParseBody(&curLexer, factory);
-    if (!oBody)
+    auto o_body = ParseBody(&curLexer, factory);
+    if (!o_body)
         return nullptr;
 
     *lexer = move(curLexer);
     return factory.MakeSStructFuncDecl(
-        oAccessModifier, bStatic, bSequence, retType, move(oFuncName->text), move(*oTypeParams), move(*oParameters), move(*oBody)
+        o_accessModifier, bStatic, bSequence, retType, move(o_funcName->text), move(*o_typeParams), move(*o_parameters), move(*o_body)
     );
 }
 
@@ -312,54 +312,54 @@ SStructCtorDecl* ParseStructCtorDecl(const string& structName, Lexer* lexer, SFa
 {
     Lexer curLexer = *lexer;
 
-    auto oAccessModifier = ParseAccessModifier(&curLexer);
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
 
     // ex) F
-    auto oName = Accept<IdentifierToken>(&curLexer);
-    if (!oName)
+    auto o_name = Accept<IdentifierToken>(&curLexer);
+    if (!o_name)
         return nullptr;
 
     // 이름이 같아야 ctor이다
-    if (oName->text != structName)
+    if (o_name->text != structName)
         return nullptr;
 
     // ex) (int i, int a)
-    auto oParameters = ParseFuncDeclParams(&curLexer, factory);
-    if (!oParameters)
+    auto o_parameters = ParseFuncDeclParams(&curLexer, factory);
+    if (!o_parameters)
         return nullptr;
 
     // ex) { ... }
-    auto oBody = ParseBody(&curLexer, factory);
-    if (!oBody)
+    auto o_body = ParseBody(&curLexer, factory);
+    if (!o_body)
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSStructCtorDecl(oAccessModifier, move(*oParameters), move(*oBody));
+    return factory.MakeSStructCtorDecl(o_accessModifier, move(*o_parameters), move(*o_body));
 }
 
 // ~S
 SStructDtorDecl* ParseStructDtorDecl(const string& structName, Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer{*lexer};
-    auto oAccessModifier = ParseAccessModifier(&curLexer);
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
 
     if (!Accept<TildeToken>(&curLexer)) return nullptr;
 
-    auto oName = Accept<IdentifierToken>(&curLexer);
-    if (!oName) return nullptr;
+    auto o_name = Accept<IdentifierToken>(&curLexer);
+    if (!o_name) return nullptr;
 
     // 이름이 같아야 dtor이다
-    if (oName->text != structName) return nullptr;
+    if (o_name->text != structName) return nullptr;
 
     if (!Accept<LParenToken>(&curLexer)) return nullptr;
     if (!Accept<RParenToken>(&curLexer)) return nullptr;
 
-    auto oBody = ParseBody(&curLexer, factory);
-    if (!oBody)
+    auto o_body = ParseBody(&curLexer, factory);
+    if (!o_body)
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSStructDtorDecl(oAccessModifier, move(*oBody));
+    return factory.MakeSStructDtorDecl(o_accessModifier, move(*o_body));
 }
 
 SStructMemberDecl* ParseStructMemberDecl(const string& structName, Lexer* lexer, SFactory& factory)
@@ -387,17 +387,17 @@ SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory)
     Lexer curLexer = *lexer;
 
     // AccessModifier, 텍스트에는 없을 수 있다
-    auto oAccessModifier = ParseAccessModifier(&curLexer);
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
 
     if (!Accept<StructToken>(&curLexer))
         return nullptr;
 
-    auto oStructName = Accept<IdentifierToken>(&curLexer);
-    if (!oStructName)
+    auto o_structName = Accept<IdentifierToken>(&curLexer);
+    if (!o_structName)
         return nullptr;
 
-    auto oTypeParams = ParseTypeParams(&curLexer, factory);
-    if (!oTypeParams)
+    auto o_typeParams = ParseTypeParams(&curLexer, factory);
+    if (!o_typeParams)
         return nullptr;
 
     // 상속 부분 : B, I, ...
@@ -429,7 +429,7 @@ SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory)
     // } 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto* elem = ParseStructMemberDecl(oStructName->text, &curLexer, factory);
+        auto* elem = ParseStructMemberDecl(o_structName->text, &curLexer, factory);
         if (!elem)
             return nullptr;
 
@@ -437,14 +437,14 @@ SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory)
     }
     
     *lexer = move(curLexer);
-    return factory.MakeSStructDecl(oAccessModifier, move(oStructName->text), move(*oTypeParams), move(baseTypes), move(elems));
+    return factory.MakeSStructDecl(o_accessModifier, move(o_structName->text), move(*o_typeParams), move(baseTypes), move(elems));
 }
 
 SClassFuncDecl* ParseClassFuncDecl(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto oAccessModifier = ParseAccessModifier(&curLexer);
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
 
     bool bStatic = Accept<StaticToken>(&curLexer).has_value();
     bool bSequence = Accept<SeqToken>(&curLexer).has_value();
@@ -455,66 +455,66 @@ SClassFuncDecl* ParseClassFuncDecl(Lexer* lexer, SFactory& factory)
         return nullptr;
 
     // ex) F
-    auto oFuncName = Accept<IdentifierToken>(&curLexer);
-    if (!oFuncName)
+    auto o_funcName = Accept<IdentifierToken>(&curLexer);
+    if (!o_funcName)
         return nullptr;
 
     // ex) <T1, T2>
-    auto oTypeParams = ParseTypeParams(&curLexer, factory);
-    if (!oTypeParams)
+    auto o_typeParams = ParseTypeParams(&curLexer, factory);
+    if (!o_typeParams)
         return nullptr;
 
     // ex) (int i, int a)
-    auto oParameters = ParseFuncDeclParams(&curLexer, factory);
-    if (!oParameters)
+    auto o_parameters = ParseFuncDeclParams(&curLexer, factory);
+    if (!o_parameters)
         return nullptr;
 
     // ex) { ... }
-    auto oBody = ParseBody(&curLexer, factory);
-    if (!oBody)
+    auto o_body = ParseBody(&curLexer, factory);
+    if (!o_body)
         return nullptr;
 
     *lexer = move(curLexer);
     return factory.MakeSClassFuncDecl(
-        oAccessModifier,
+        o_accessModifier,
         bStatic, bSequence,
         retType,
-        move(oFuncName->text),
-        move(*oTypeParams),
-        move(*oParameters),
-        move(*oBody));
+        move(o_funcName->text),
+        move(*o_typeParams),
+        move(*o_parameters),
+        move(*o_body));
 }
 
 SClassCtorDecl* ParseClassCtorDecl(const string& className, Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto oAccessModifier = ParseAccessModifier(&curLexer);
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
 
     // ex) F
-    auto oName = Accept<IdentifierToken>(&curLexer);
-    if (!oName)
+    auto o_name = Accept<IdentifierToken>(&curLexer);
+    if (!o_name)
         return nullptr;
 
     // 이름이 같아야 ctor다
-    if (oName->text != className)
+    if (o_name->text != className)
         return nullptr;
 
     // ex) (int i, int a)
-    auto oParameters = ParseFuncDeclParams(&curLexer, factory);
-    if (!oParameters)
+    auto o_parameters = ParseFuncDeclParams(&curLexer, factory);
+    if (!o_parameters)
         return nullptr;
 
     // : base()
     SArguments* baseArgs = nullptr;
     if (Accept<ColonToken>(&curLexer))
     {
-        auto oExpectedToBeBase = Accept<IdentifierToken>(&curLexer);
-        if (!oExpectedToBeBase)
+        auto o_expectedToBeBase = Accept<IdentifierToken>(&curLexer);
+        if (!o_expectedToBeBase)
             return nullptr;
 
         // base가 아닌 identifier는 오면 안된다. 다음은 '{' 토큰이다
-        if (oExpectedToBeBase->text != "base")
+        if (o_expectedToBeBase->text != "base")
             return nullptr;
             
         baseArgs = ParseCallArgs(&curLexer, factory);
@@ -523,18 +523,18 @@ SClassCtorDecl* ParseClassCtorDecl(const string& className, Lexer* lexer, SFacto
     }
 
     // ex) { ... }
-    auto oBody = ParseBody(&curLexer, factory);
-    if (!oBody)
+    auto o_body = ParseBody(&curLexer, factory);
+    if (!o_body)
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSClassCtorDecl(oAccessModifier, move(*oParameters), move(baseArgs), move(*oBody));
+    return factory.MakeSClassCtorDecl(o_accessModifier, move(*o_parameters), move(baseArgs), move(*o_body));
 }
 
 SClassVarDecl* ParseClassVarDecl(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
-    auto oAccessModifier = ParseAccessModifier(&curLexer);
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
 
     // ex) int
     auto* varType = ParseTypeExp(&curLexer, factory);
@@ -544,19 +544,19 @@ SClassVarDecl* ParseClassVarDecl(Lexer* lexer, SFactory& factory)
     // ex) x, y, z
     vector<string> varNames;  
 
-    auto oVarNameToken0 = Accept<IdentifierToken>(&curLexer);
-    if (!oVarNameToken0)
+    auto o_varNameToken0 = Accept<IdentifierToken>(&curLexer);
+    if (!o_varNameToken0)
         return nullptr;
 
-    varNames.push_back(move(oVarNameToken0->text));
+    varNames.push_back(move(o_varNameToken0->text));
 
     while (Accept<CommaToken>(&curLexer))
     {
-        auto oVarNameToken = Accept<IdentifierToken>(&curLexer);
-        if (!oVarNameToken)
+        auto o_varNameToken = Accept<IdentifierToken>(&curLexer);
+        if (!o_varNameToken)
             return nullptr;
 
-        varNames.push_back(move(oVarNameToken->text));
+        varNames.push_back(move(o_varNameToken->text));
     }
 
     // ;
@@ -564,7 +564,7 @@ SClassVarDecl* ParseClassVarDecl(Lexer* lexer, SFactory& factory)
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSClassVarDecl(oAccessModifier, varType, move(varNames));
+    return factory.MakeSClassVarDecl(o_accessModifier, varType, move(varNames));
 }
 
 SClassMemberDecl* ParseClassMemberDecl(string& className, Lexer* lexer, SFactory& factory)
@@ -589,20 +589,20 @@ SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory)
     Lexer curLexer = *lexer;
 
     // AccessModifier, 텍스트에는 없을 수 있다
-    auto oAccessModifier = ParseAccessModifier(&curLexer);
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
 
     // class
     if (!Accept<ClassToken>(&curLexer))
         return nullptr;
 
     // C
-    auto oClassName = Accept<IdentifierToken>(&curLexer);
-    if (!oClassName)
+    auto o_className = Accept<IdentifierToken>(&curLexer);
+    if (!o_className)
         return nullptr;
 
     // <T1, T2>
-    auto oTypeParams = ParseTypeParams(&curLexer, factory);
-    if (!oTypeParams)
+    auto o_typeParams = ParseTypeParams(&curLexer, factory);
+    if (!o_typeParams)
         return nullptr;
 
     // 상속 부분 : B, I, ...
@@ -634,7 +634,7 @@ SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory)
     // } 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto* elem = ParseClassMemberDecl(oClassName->text, &curLexer, factory);
+        auto* elem = ParseClassMemberDecl(o_className->text, &curLexer, factory);
         if (!elem)
             return nullptr;
 
@@ -643,9 +643,9 @@ SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory)
 
     *lexer = move(curLexer);
     return factory.MakeSClassDecl(
-        oAccessModifier, 
-        move(oClassName->text), 
-        move(*oTypeParams), 
+        o_accessModifier, 
+        move(o_className->text), 
+        move(*o_typeParams), 
         move(baseTypes), 
         move(members)
     );
@@ -678,21 +678,21 @@ SNamespaceDecl* ParseNamespaceDecl(Lexer* lexer, SFactory& factory)
     vector<string> nsNames;
 
     // ex) NS
-    auto oNSName = Accept<IdentifierToken>(&curLexer);
-    if (!oNSName)
+    auto o_nsName = Accept<IdentifierToken>(&curLexer);
+    if (!o_nsName)
         return nullptr;
 
-    nsNames.push_back(move(oNSName->text));
+    nsNames.push_back(move(o_nsName->text));
 
     // . optional
     while (Accept<DotToken>(&curLexer))
     {
         // ex) NS
-        oNSName = Accept<IdentifierToken>(&curLexer);
-        if (!oNSName)
+        o_nsName = Accept<IdentifierToken>(&curLexer);
+        if (!o_nsName)
             return nullptr;
 
-        nsNames.push_back(move(oNSName->text));
+        nsNames.push_back(move(o_nsName->text));
     }
 
     // {

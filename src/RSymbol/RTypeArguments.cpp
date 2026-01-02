@@ -9,8 +9,8 @@ using namespace std;
 
 namespace Citron {
 
-RTypeArguments::RTypeArguments(const std::vector<RType*>& items)
-    : items(items)
+RTypeArguments::RTypeArguments(const std::vector<RType*>& items, RFactory* factory)
+    : items{items}, factory{factory}
 {
 }
 
@@ -24,18 +24,18 @@ RType* RTypeArguments::Get(int i)
     return items[i];
 }
 
-RTypeArguments* RTypeArguments::Apply(RTypeArguments& typeArgs, RFactory& factory)
+RTypeArguments* RTypeArguments::Apply(RTypeArguments& typeArgs)
 {
     vector<RType*> appliedItems;
     appliedItems.reserve(items.size());
 
     for(auto& item : items)
     {
-        auto* appliedItem = item->Apply(typeArgs, factory);
+        auto* appliedItem = item->Apply(typeArgs);
         appliedItems.push_back(appliedItem);
     }
 
-    return factory.MakeTypeArguments(appliedItems);
+    return factory->MakeTypeArguments(appliedItems);
 }
 
 } // namespace Citron

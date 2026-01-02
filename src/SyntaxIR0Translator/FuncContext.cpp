@@ -31,7 +31,6 @@
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 
-#include "TranslationContext.h"
 #include "ScopeContext.h"
 #include "ImExp.h"
 
@@ -65,14 +64,14 @@ RTypeDecl* FuncContext_Lambda::ResolveTypeDecl(const RName& name, size_t explici
 
 expected<optional<RMember>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto eORMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
-    RETURN_ON_ERROR(eORMember);
+    auto e_o_rMember = outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    RETURN_ON_ERROR(e_o_rMember);
 
-    if (!*eORMember) return nullopt;
+    if (!*e_o_rMember) return nullopt;
     
     // 상위 스코프에서 얻어오는 
     // 로컬과 람다 멤버, this만 감싸는 대상이다
-    if (auto* localVar = get_if<RMember_LocalVar>(&**eORMember))
+    if (auto* localVar = get_if<RMember_LocalVar>(&**e_o_rMember))
     {
         auto* localVarLoc = mFactory->MakeMLoc<MLoc_LocalVar>(localVar->name, localVar->type);
         auto* initExp = mFactory->MakeMExp<MExp_Load>(localVarLoc);
@@ -84,7 +83,7 @@ expected<optional<RMember>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
         return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
-    if (auto* lambdaVar = get_if<RMember_LambdaVar>(&**eORMember))
+    if (auto* lambdaVar = get_if<RMember_LambdaVar>(&**e_o_rMember))
     {
         // class C<T> { void F<S> {
         //     List<T> x;      // 5) scopeContext.ResolveIdentifier(x, 0) => RMember
@@ -109,7 +108,7 @@ expected<optional<RMember>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
         return RMember_LambdaVar{openTypeArgs, newLambdaVar};
     }
 
-    if (auto* thisVar = get_if<RMember_ThisVar>(&**eORMember))
+    if (auto* thisVar = get_if<RMember_ThisVar>(&**e_o_rMember))
     {
         // TODO: 워닝, struct의 this는 복사가 일어납니다. 원본과 다를 수 있습니다. ref this로 명시적으로 지정해주세요(?)
         if (auto structType = dynamic_cast<RType_Struct*>(thisVar->type))
@@ -126,7 +125,7 @@ expected<optional<RMember>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
     }
 
     // 나머지는 그대로 리턴
-    return eORMember;
+    return e_o_rMember;
 }
 
 RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
@@ -183,7 +182,7 @@ RTypeDecl* FuncContext_FuncDecl::ResolveTypeDecl(const RName& name, size_t expli
 
 expected<optional<RMember>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    return nFuncDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, *rFactory);
+    return nFuncDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()

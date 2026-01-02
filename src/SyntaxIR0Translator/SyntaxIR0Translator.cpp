@@ -41,12 +41,13 @@ namespace {
 class StructElemVisitor : public SStructMemberDeclVisitor
 {
     NStructDecl* nStruct;
+    RFactoryPtr rFactory;
     NFactoryPtr nFactory;
     PhaseManager& phaseManager;
 
 public:
-    StructElemVisitor(NStructDecl* nStruct, const NFactoryPtr& nFactory, PhaseManager& phaseManager) 
-        : nStruct{nStruct}, nFactory{nFactory}, phaseManager{phaseManager}
+    StructElemVisitor(NStructDecl* nStruct, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+        : nStruct{nStruct}, rFactory{rFactory}, nFactory{nFactory}, phaseManager{phaseManager}
     {}
 
     void Visit(SClassDecl* decl) override;
@@ -61,12 +62,13 @@ public:
 class ClassElemVisitor : public SClassMemberDeclVisitor
 {
     NClassDecl* outer;
+    RFactoryPtr rFactory;
     NFactoryPtr nFactory;
     PhaseManager& phaseManager;
 
 public:
-    ClassElemVisitor(NClassDecl* outer, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
-        : outer{outer}, nFactory{nFactory}, phaseManager{phaseManager}
+    ClassElemVisitor(NClassDecl* outer, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+        : outer{outer}, rFactory{rFactory}, nFactory{nFactory}, phaseManager{phaseManager}
     {}
 
     void Visit(SClassDecl* decl) override;
@@ -81,12 +83,13 @@ public:
 class NamespaceElemVisitor : public SNamespaceDeclElementVisitor
 {
     NNamespaceDecl* curDecl;
+    RFactoryPtr rFactory;
     NFactoryPtr nFactory;
     PhaseManager& phaseManager;
 
 public:
-    NamespaceElemVisitor(NNamespaceDecl* curDecl, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
-        : curDecl{curDecl}, nFactory{nFactory}, phaseManager{phaseManager}
+    NamespaceElemVisitor(NNamespaceDecl* curDecl, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+        : curDecl{curDecl}, rFactory{rFactory}, nFactory{nFactory}, phaseManager{phaseManager}
     {
     }
 
@@ -101,12 +104,13 @@ public:
 class ScriptElemVisitor : public SScriptElementVisitor
 {
     NNamespaceDecl* rootNamespace;
+    RFactoryPtr rFactory;
     NFactoryPtr nFactory;
     PhaseManager& phaseManager;
 
 public:
-    ScriptElemVisitor(NNamespaceDecl* rootNamespace, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
-        : rootNamespace{rootNamespace}, nFactory{nFactory}, phaseManager{phaseManager}
+    ScriptElemVisitor(NNamespaceDecl* rootNamespace, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+        : rootNamespace{rootNamespace}, rFactory{rFactory}, nFactory{nFactory}, phaseManager{phaseManager}
     {
     }
 
@@ -123,11 +127,11 @@ void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, NNamespaceDecl* outer, const N
 }
 
 template<typename TNOuter>
-void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorContext, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorContext, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {   
     auto accessor = MakeAccessor(syntax->accessModifier, accessorContext);
     auto typeParams = MakeTypeParams(syntax->typeParams);
-    auto* nStructDecl = nFactory->MakeNDecl<NStructDecl>(outer, accessor, RName_Normal(syntax->name), move(typeParams));
+    auto* nStructDecl = nFactory->MakeNDecl<NStructDecl>(outer, accessor, RName_Normal(syntax->name), move(typeParams), rFactory);
     outer->AddType(nStructDecl);
 
     StructTask::Register(nStructDecl, syntax, accessorContext, phaseManager);
@@ -135,7 +139,7 @@ void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorCo
     // child     
     for (auto* memberDecl : syntax->memberDecls)
     {
-        StructElemVisitor visitor{nStructDecl, nFactory, phaseManager};
+        StructElemVisitor visitor{nStructDecl, rFactory, nFactory, phaseManager};
         memberDecl->Accept(visitor);
     }
 }
@@ -170,7 +174,7 @@ void StructElemVisitor::Visit(SClassDecl* decl)
 
 void StructElemVisitor::Visit(SStructDecl* decl)
 {
-    VisitStruct(nStruct, decl, AccessorContext::InsideStruct, nFactory, phaseManager);
+    VisitStruct(nStruct, decl, AccessorContext::InsideStruct, rFactory, nFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SEnumDecl* decl)
@@ -205,7 +209,7 @@ void ClassElemVisitor::Visit(SClassDecl* decl)
 
 void ClassElemVisitor::Visit(SStructDecl* decl)
 {
-    VisitStruct(outer, decl, AccessorContext::InsideClass, nFactory, phaseManager);
+    VisitStruct(outer, decl, AccessorContext::InsideClass, rFactory, nFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(SEnumDecl* decl)
@@ -253,7 +257,7 @@ void NamespaceElemVisitor::Visit(SNamespaceDecl* elem)
 
     for (auto* nsElem : elem->elements)
     {
-        NamespaceElemVisitor visitor{curNamespace, nFactory, phaseManager};
+        NamespaceElemVisitor visitor{curNamespace, rFactory, nFactory, phaseManager};
         nsElem->Accept(visitor);
     }
 }
@@ -265,7 +269,7 @@ void NamespaceElemVisitor::Visit(SClassDecl* elem)
 
 void NamespaceElemVisitor::Visit(SStructDecl* elem)
 {
-    VisitStruct(curDecl, elem, AccessorContext::Global, nFactory, phaseManager);
+    VisitStruct(curDecl, elem, AccessorContext::Global, rFactory, nFactory, phaseManager);
 }
 
 void NamespaceElemVisitor::Visit(SEnumDecl* elem)
@@ -303,7 +307,7 @@ void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
 
     for (auto* nsElem : elem->elements)
     {
-        NamespaceElemVisitor visitor{curNamespace, nFactory, phaseManager};
+        NamespaceElemVisitor visitor{curNamespace, rFactory, nFactory, phaseManager};
         nsElem->Accept(visitor);
     }
 }
@@ -320,7 +324,7 @@ void ScriptElemVisitor::Visit(SClassDecl* elem)
 
 void ScriptElemVisitor::Visit(SStructDecl* elem)
 {
-    VisitStruct(rootNamespace, elem, AccessorContext::Global, nFactory, phaseManager);
+    VisitStruct(rootNamespace, elem, AccessorContext::Global, rFactory, nFactory, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(SEnumDecl* elem)
@@ -354,15 +358,15 @@ expected<NModuleMData, DiagPtr> TranslateSyntaxToNModuleMData(
 
         for (auto* elem : script->elements)
         {
-            ScriptElemVisitor visitor{rootNamespace, nFactory, phaseManager};
+            ScriptElemVisitor visitor{rootNamespace, rFactory, nFactory, phaseManager};
             elem->Accept(visitor);
         }
     }
 
-    auto eFuncBodies = phaseManager.Run();
-    RETURN_ON_ERROR(eFuncBodies);
+    auto e_funcBodies = phaseManager.Run();
+    RETURN_ON_ERROR(e_funcBodies);
 
-    auto* mData = mFactory->MakeMData(move(*eFuncBodies));
+    auto* mData = mFactory->MakeMData(move(*e_funcBodies));
     return NModuleMData{nModule, mData};
 
     // return {nModule, };

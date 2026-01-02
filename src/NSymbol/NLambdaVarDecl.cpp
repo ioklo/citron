@@ -34,9 +34,9 @@ RDecl* NLambdaVarDecl::GetROuter()
     return lambda;
 }
 
-RType* NLambdaVarDecl::GetDeclType(RTypeArguments& typeArgs, RFactory& factory)
+RType* NLambdaVarDecl::GetDeclType(RTypeArguments& typeArgs)
 {
-    return type->Apply(typeArgs, factory);
+    return type->Apply(typeArgs);
 }
 
 RIdentifier NLambdaVarDecl::GetIdentifier()
@@ -55,7 +55,7 @@ optional<RMember> NLambdaVarDecl::GetMember(RTypeArguments* typeArgs, const RNam
 }
 
 
-optional<RMember> NLambdaVarDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> NLambdaVarDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // VarDecl 하위 declspace에서 identifier를 resolve할 일이 없다
     throw RuntimeFatalException();

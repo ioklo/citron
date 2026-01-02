@@ -44,7 +44,7 @@ extern "C" void citron_string_copy_assign(void* dest, void* src)
     *dest_s = *src_s;
 }
 
-extern "C" void citron_string_move_ctor(void* dest, void* src)
+extern "C" void citron_string_move_assign(void* dest, void* src)
 {
     auto* src_s = (string*)src;
     auto* dest_s = (string*)dest;

@@ -5,6 +5,8 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
+
 #include "RSymbol/RMember.h"
 #include "RSymbol/RClassDecl.h"
 #include "RSymbol/RClassVarDecl.h"
@@ -14,11 +16,14 @@
 #include "RSymbol/RNamespaceDecl.h"
 #include "RSymbol/REnumDecl.h"
 #include "RSymbol/RTypes.h"
+#include "RSymbol/RFactory.h"
 
+#include "TranslationContexts.h"
 #include "SRTFactory.h"
-#include "TranslationContext.h"
+#include "FuncContext.h"
 #include "ScopeContext.h"
 #include "ImExp.h"
+#include "ReExp.h"
 #include "ImExpToReExpTranslation.h"
 
 using namespace std;
@@ -30,18 +35,18 @@ namespace {
 class StaticParentTranslator
 {
     RTypeArguments* typeArgsExceptOuter; // outer 제외
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 public:
-    StaticParentTranslator(RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    StaticParentTranslator(RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
 
     template<typename TImExp, typename... TArgs>
     TImExp* MakeImExp(TArgs&&... args)
     {
-        return context.MakeImExp<TImExp>(std::forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeImExp<TImExp>(std::forward<TArgs>(args)...);
     }
 
     // NS.'NS'
@@ -60,12 +65,12 @@ public:
     expected<ImExp*, DiagPtr> operator()(RMember_Class& member)
     {
         // check access, TODO: ? 여기서 Access체크를 왜 하나? 이미 decl찾을때 access 체크를 했을텐데
-        if (!context.CanAccess(member.decl))
+        if (!contexts.funcContext->CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto* typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        auto* typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
         return MakeImExp<ImExp_Class>(member.decl, typeArgs);
     }
 
@@ -83,7 +88,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>()};
         }
 
-        if (!context.CanAccess(member.decl))
+        if (!contexts.funcContext->CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
@@ -98,12 +103,12 @@ public:
     expected<ImExp*, DiagPtr> operator()(RMember_Struct& member)
     {
         // check access, TODO: ? 여기서 Access체크를 왜 하나? 이미 decl찾을때 access 체크를 했을텐데
-        if (!context.CanAccess(member.decl))
+        if (!contexts.funcContext->CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
 
         return MakeImExp<ImExp_Struct>(member.decl, typeArgs);
     }
@@ -122,7 +127,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>()};
         }
 
-        if (!context.CanAccess(member.decl))
+        if (!contexts.funcContext->CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
@@ -136,12 +141,12 @@ public:
     expected<ImExp*, DiagPtr>  operator()(RMember_Enum& member)
     {
         // check access
-        if (!context.CanAccess(member.decl))
+        if (!contexts.funcContext->CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
         return MakeImExp<ImExp_Enum>(member.decl, typeArgs);
     }
 
@@ -194,7 +199,7 @@ class InstanceParentTranslator
     ReExp* reInstExp;
     RTypeArguments* typeArgsExceptOuter;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
     
     /*TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
     {
@@ -204,12 +209,12 @@ class InstanceParentTranslator
     template<typename TImExp, typename... TArgs>
     TImExp* MakeImExp(TArgs&&... args)
     {
-        return context.MakeImExp<TImExp>(std::forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeImExp<TImExp>(std::forward<TArgs>(args)...);
     }
 
 public:
-    InstanceParentTranslator(ReExp* reInstExp, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : reInstExp{reInstExp}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
+    InstanceParentTranslator(ReExp* reInstExp, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : reInstExp{reInstExp}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
 
@@ -247,7 +252,7 @@ public:
         }
 
         // access modifier 검사?
-        if (!context.CanAccess(member.decl))
+        if (!contexts.funcContext->CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
@@ -277,7 +282,7 @@ public:
         }
 
         // access modifier 검사                            
-        if (!context.CanAccess(member.decl))
+        if (!contexts.funcContext->CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
@@ -341,7 +346,7 @@ private:
     string name;
     RTypeArguments* typeArgsExceptOuter;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
     template<typename TValue>
     ResultType Error(expected<TValue, DiagPtr>&& e)
@@ -357,39 +362,36 @@ private:
 
     ResultType TranslateStaticParent(RDecl* decl, RTypeArguments* typeArgs)
     {
-        auto oMember = decl->GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
-        StaticParentTranslator binder{typeArgsExceptOuter, context};
-        return visit(binder, *oMember);
+        auto o_member = decl->GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
+        StaticParentTranslator binder{typeArgsExceptOuter, contexts};
+        return visit(binder, *o_member);
     }
 
     ResultType TranslateInstanceParent(ImExp* imExp)
     {
-        auto eReInstExp = TranslateImExpToReExp(imExp, context);
-        if (!eReInstExp)
-        {
-            return unexpected{move(eReInstExp).error()};
-        }
+        auto e_reInstExp = TranslateImExpToReExp(imExp, contexts);
+        RETURN_ON_ERROR(e_reInstExp);
 
-        auto type = context.GetType(*eReInstExp);
-        auto oMember = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
-        if (!oMember)
+        auto type = (*e_reInstExp)->GetType();
+        auto o_member = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
+        if (!o_member)
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
         }
 
-        InstanceParentTranslator binder(*eReInstExp, typeArgsExceptOuter, context);
-        return visit(binder, *oMember);
+        InstanceParentTranslator binder(*e_reInstExp, typeArgsExceptOuter, contexts);
+        return visit(binder, *o_member);
     }
 
 public:
-    ImExpAndMemberNameToImExpTranslator(const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    ImExpAndMemberNameToImExpTranslator(const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
 
     ResultType Visit(ImExp_Namespace* imExp)
     {
-        return TranslateStaticParent(imExp->_namespace, context.MakeTypeArguments({}));
+        return TranslateStaticParent(imExp->_namespace, contexts.rFactory->MakeTypeArguments({}));
     }
 
     ResultType Visit(ImExp_GlobalFuncs* imExp)
@@ -486,9 +488,9 @@ public:
 
 } // namespace
 
-expected<ImExp*, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp* imExp, const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+expected<ImExp*, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp* imExp, const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
 {
-    ImExpAndMemberNameToImExpTranslator binder{name, typeArgsExceptOuter, context};
+    ImExpAndMemberNameToImExpTranslator binder{name, typeArgsExceptOuter, contexts};
     return Accept(binder, imExp);
 }
 

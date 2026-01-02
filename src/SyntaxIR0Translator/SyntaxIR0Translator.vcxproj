@@ -85,7 +85,7 @@
     <ClCompile Include="SyntaxIR0Translator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
-    <ClCompile Include="TranslationContext.cpp" />
+    <ClCompile Include="TranslationContexts.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EnumElemVarTask.h" />
@@ -132,7 +132,7 @@
     <ClInclude Include="SStmtToMStmtTranslation.h" />
     <ClInclude Include="SVarDeclToMStmtsTranslation.h" />
     <ClInclude Include="SRTFactory.h" />
-    <ClInclude Include="TranslationContext.h" />
+    <ClInclude Include="TranslationContexts.h" />
     <ClInclude Include="TranslationTasks.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

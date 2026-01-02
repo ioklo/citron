@@ -9,11 +9,9 @@
 namespace Citron {
 
 class RTypeArguments;
-
 class ImExp;
+struct TranslationContexts;
 
-class TranslationContext;
-
-std::expected<ImExp*, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp* imExp, const std::string& name, RTypeArguments* typeArgs, TranslationContext& context);
+std::expected<ImExp*, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp* imExp, const std::string& name, RTypeArguments* typeArgs, TranslationContexts& contexts);
 
 } // namespace Citron

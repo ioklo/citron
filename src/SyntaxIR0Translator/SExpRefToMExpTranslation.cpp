@@ -2,21 +2,24 @@
 
 #include <expected>
 
+#include "Infra/Expected.h"
+
 #include "SExpRefToIrExpTranslation.h"
 #include "IrExpToMExpTranslation.h"
 
 #include "IrExp.h"
+#include "TranslationContexts.h"
 
 using namespace std;
 
 namespace Citron {
 
-expected<MExp*, DiagPtr> TranslateSExpRefToMExp(SExp* exp, TranslationContext& context)
+expected<MExp*, DiagPtr> TranslateSExpRefToMExp(SExp* exp, TranslationContexts& contexts)
 {
-    auto eIrExp = TranslateSExpRefToIrExp(exp, context);
-    if (!eIrExp) return unexpected{move(eIrExp).error()};
+    auto e_irExp = TranslateSExpRefToIrExp(exp, contexts);
+    RETURN_ON_ERROR(e_irExp);
 
-    return TranslateIrExpToMExp(*eIrExp, context);
+    return TranslateIrExpToMExp(*e_irExp, contexts);
 }
 
 }

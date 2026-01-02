@@ -37,8 +37,8 @@ public:
     ResultType Visit(MLoc_ListIndexer* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_StructVar* loc) 
     {
-        auto eInstanceResult = TranslateMLocToQInsts(loc->instance, bodyContext);
-        RETURN_ON_ERROR(eInstanceResult);
+        auto e_instanceResult = TranslateMLocToQInsts(loc->instance, bodyContext);
+        RETURN_ON_ERROR(e_instanceResult);
 
         return visit([this, loc](auto& locResult) -> ResultType {
             using T = remove_cvref_t<decltype(locResult)>;
@@ -47,12 +47,12 @@ public:
                 // slot의 addrof를 하나 한다 ptr 타입
                 auto* qPtrType = bodyContext.GetPtrQType();
                 size_t instSlotIndex = bodyContext.NewSlot(qPtrType);
-                auto eAddrResult = bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{instSlotIndex}, QArg_Slot{locResult.slotIndex}});
-                RETURN_ON_ERROR(eAddrResult);
+                auto e_addrResult = bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{instSlotIndex}, QArg_Slot{locResult.slotIndex}});
+                RETURN_ON_ERROR(e_addrResult);
 
                 size_t destSlotIndex = bodyContext.NewSlot(qPtrType);
-                auto eFieldResult = bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{instSlotIndex}, loc->decl->GetIndex()});
-                RETURN_ON_ERROR(eFieldResult);
+                auto e_fieldResult = bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{instSlotIndex}, loc->decl->GetIndex()});
+                RETURN_ON_ERROR(e_fieldResult);
 
                 return QLocResult_PtrSlot{destSlotIndex};
             }
@@ -62,15 +62,15 @@ public:
                 auto* qPtrType = bodyContext.GetPtrQType();
 
                 size_t destSlotIndex = bodyContext.NewSlot(qPtrType);
-                auto eFieldResult = bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{locResult.slotIndex}, loc->decl->GetIndex()});
-                RETURN_ON_ERROR(eFieldResult);
+                auto e_fieldResult = bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{locResult.slotIndex}, loc->decl->GetIndex()});
+                RETURN_ON_ERROR(e_fieldResult);
 
                 return QLocResult_PtrSlot{destSlotIndex};
             }
             else static_assert(false);
 
             
-        }, *eInstanceResult);
+        }, *e_instanceResult);
     }
 
     ResultType Visit(MLoc_ClassVar* loc) { throw NotImplementedException{}; }

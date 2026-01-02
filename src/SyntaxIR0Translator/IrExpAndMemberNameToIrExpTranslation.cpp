@@ -14,13 +14,17 @@
 #include "RSymbol/REnumDecl.h"
 #include "RSymbol/RTypeArguments.h"
 #include "RSymbol/RTypes.h"
+#include "RSymbol/RFactory.h"
 #include "RSymbol/RNamespaceDecl.h"
 #include "MIR/MLoc.h"
+#include "MIR/MFactory.h"
 
 #include "IrExp.h"
-#include "TranslationContext.h"
 #include "FuncContext.h"
 #include "ScopeContext.h"
+#include "TranslationContexts.h"
+#include "SRTFactory.h"
+
 
 using namespace std;
 
@@ -31,17 +35,17 @@ namespace {
 class StaticParentTranslator
 {
     RTypeArguments* typeArgsExceptOuter;
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 public:
-    StaticParentTranslator(RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    StaticParentTranslator(RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : typeArgsExceptOuter(typeArgsExceptOuter), contexts{contexts}
     {
     }
 
     expected<IrExp*, DiagPtr> operator()(RMember_Namespace& member) 
     {
-        return context.MakeIrExp<IrExp_Namespace>(member.decl);
+        return contexts.srtFactory->MakeIrExp<IrExp_Namespace>(member.decl);
     }
 
     // S.F
@@ -52,8 +56,8 @@ public:
 
     expected<IrExp*, DiagPtr> operator()(RMember_Class& member)
     {
-        auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return context.MakeIrExp<IrExp_Class>(member.decl, typeArgs);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        return contexts.srtFactory->MakeIrExp<IrExp_Class>(member.decl, typeArgs);
     }
 
     // 에러,
@@ -70,19 +74,19 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>()};
         }
 
-        if (!context.CanAccess(member.decl))
+        if (!contexts.funcContext->CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return context.MakeIrExp<IrExp_StaticRef>(context.MakeNLoc<MLoc_ClassVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return contexts.srtFactory->MakeIrExp<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     expected<IrExp*, DiagPtr> operator()(RMember_Struct& member)
     {
-        auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return context.MakeIrExp<IrExp_Struct>(member.decl, typeArgs);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        return contexts.srtFactory->MakeIrExp<IrExp_Struct>(member.decl, typeArgs);
     }
 
     expected<IrExp*, DiagPtr> operator()(RMember_StructFuncs& member)
@@ -97,20 +101,20 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>()};
         }
 
-        if (!context.CanAccess(member.decl))
+        if (!contexts.funcContext->CanAccess(member.decl))
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return context.MakeIrExp<IrExp_StaticRef>(context.MakeNLoc<MLoc_StructVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return contexts.srtFactory->MakeIrExp<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
     // E
     expected<IrExp*, DiagPtr> operator()(RMember_Enum& member)
     {   
-        auto typeArgs = context.MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return context.MakeIrExp<IrExp_Enum>(member.decl, typeArgs);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        return contexts.srtFactory->MakeIrExp<IrExp_Enum>(member.decl, typeArgs);
     }
 
     // &E.First.x
@@ -168,13 +172,13 @@ private:
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -190,8 +194,8 @@ private:
     }
 
 public:
-    StaticRefTypeTranslator(IrExp_StaticRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
+    StaticRefTypeTranslator(IrExp_StaticRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
 
@@ -280,7 +284,7 @@ public:
         }
 
         // 이제 BoxRef로 변경
-        return Value<IrExp_BoxRef_ClassMember>(parent->loc, var->decl, var->typeArgs);
+        return Value<IrExp_BoxRef_ClassMember>(parent->loc, var->decl, var->typeArgs, contexts.mFactory);
     }
 
     // &C.s.id
@@ -298,7 +302,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_StaticRef>(context.MakeNLoc<MLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
+        return Value<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
     }
 
     // Enum자체는 member를 가져올 수 없다
@@ -321,7 +325,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_StaticRef>(context.MakeNLoc<MLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
+        return Value<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
     }
 
     // &C.i.id
@@ -346,13 +350,13 @@ public:
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -368,8 +372,8 @@ private:
     }
 
 public: 
-    BoxRefTypeTranslator(IrExp_BoxRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
+    BoxRefTypeTranslator(IrExp_BoxRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
 
@@ -448,7 +452,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_BoxRef_ClassMember>(parent->MakeLoc(context), var->decl, var->typeArgs);
+        return Value<IrExp_BoxRef_ClassMember>(parent->MakeLoc(), var->decl, var->typeArgs, contexts.mFactory);
     }
 
     ResultType Visit(RType_Struct* type) 
@@ -465,7 +469,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_BoxRef_StructMember>(parent, var->decl, var->typeArgs);
+        return Value<IrExp_BoxRef_StructMember>(parent, var->decl, var->typeArgs, contexts.mFactory);
     }
 
     ResultType Visit(RType_Enum* type) 
@@ -502,13 +506,13 @@ public:
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -524,8 +528,8 @@ private:
     }
 
 public:
-    LocalRefTypeTranslator(IrExp_LocalRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
+    LocalRefTypeTranslator(IrExp_LocalRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
 
@@ -603,7 +607,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_BoxRef_ClassMember>(parent->loc, var->decl, var->typeArgs);
+        return Value<IrExp_BoxRef_ClassMember>(parent->loc, var->decl, var->typeArgs, contexts.mFactory);
     }
 
     ResultType Visit(RType_Struct* type) 
@@ -620,7 +624,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
+        return Value<IrExp_LocalRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
     }
 
     ResultType Visit(RType_Enum* type) 
@@ -643,7 +647,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_LocalRef>(context.MakeNLoc<MLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
+        return Value<IrExp_LocalRef>(contexts.mFactory->MakeMLoc<MLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
     }
 
     ResultType Visit(RType_Interface* type) 
@@ -670,13 +674,13 @@ private:
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -692,8 +696,8 @@ private:
     }
 
 public:
-    BoxValueTypeTranslator(IrExp_DerefedBoxValue* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
+    BoxValueTypeTranslator(IrExp_DerefedBoxValue* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
 
@@ -774,7 +778,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_BoxRef_StructIndirectMember>(parent->innerLoc, var->decl, var->typeArgs);
+        return Value<IrExp_BoxRef_StructIndirectMember>(parent->innerLoc, var->decl, var->typeArgs, contexts.mFactory);
     }
 
     ResultType Visit(RType_Enum* type) 
@@ -818,13 +822,13 @@ private:
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -840,8 +844,8 @@ private:
     }
 
 public:
-    ThisTypeTranslator(const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, context{context}
+    ThisTypeTranslator(const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
 
@@ -916,7 +920,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
         
-        return Value<IrExp_BoxRef_ClassMember>(context.MakeThisLoc(), var->decl, var->typeArgs);
+        return Value<IrExp_BoxRef_ClassMember>(contexts.funcContext->MakeThisLoc(), var->decl, var->typeArgs, contexts.mFactory);
     }
 
     ResultType Visit(RType_Struct* type) 
@@ -961,13 +965,13 @@ private:
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeIrExp<TValue>(forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -984,25 +988,25 @@ private:
 
     ResultType HandleStaticParent(RDecl& decl, RTypeArguments* typeArgs)
     {
-        auto oMember = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
-        if (!oMember)
+        auto o_member = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
+        if (!o_member)
         {
             return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
         }
 
-        StaticParentTranslator binder(typeArgsExceptOuter, context);
-        return visit(binder, *oMember);
+        StaticParentTranslator binder(typeArgsExceptOuter, contexts);
+        return visit(binder, *o_member);
     }
 
 public:
-    IrExpAndMemberNameToIrExpTranslator(IrExp* irThis, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
-        : irThis(irThis), name(name), typeArgsExceptOuter(typeArgsExceptOuter), context(context)
+    IrExpAndMemberNameToIrExpTranslator(IrExp* irThis, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : irThis{irThis}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
 
     ResultType Visit(IrExp_Namespace* irExp) 
     {
-        return HandleStaticParent(*irExp->decl, context.MakeTypeArguments({}));
+        return HandleStaticParent(*irExp->decl, contexts.rFactory->MakeTypeArguments({}));
     }
 
     ResultType Visit(IrExp_TypeVar* irExp) 
@@ -1029,7 +1033,7 @@ public:
     ResultType Visit(IrExp_ThisVar* irExp) 
     {
         // this.id        
-        ThisTypeTranslator binder{name, typeArgsExceptOuter, context};
+        ThisTypeTranslator binder{name, typeArgsExceptOuter, contexts};
         return Accept(binder, irExp->type);
     }
 
@@ -1038,10 +1042,10 @@ public:
         auto* irStaticRefThis = dynamic_cast<IrExp_StaticRef*>(irThis);
         assert(irStaticRefThis);
 
-        auto* locType = context.GetType(irExp->loc);
+        auto* locType = irExp->loc->GetType();
 
         // static ref가 부모이면
-        StaticRefTypeTranslator binder{irExp, name, typeArgsExceptOuter, context};
+        StaticRefTypeTranslator binder{irExp, name, typeArgsExceptOuter, contexts};
         return Accept(binder, locType);
     }
 
@@ -1050,8 +1054,8 @@ public:
         auto irBoxRefThis = dynamic_cast<IrExp_BoxRef*>(irThis);
         assert(irBoxRefThis);
 
-        auto* targetType = context.GetTargetType(irExp);
-        BoxRefTypeTranslator binder{irBoxRefThis, name, typeArgsExceptOuter, context};
+        auto* targetType = irExp->GetTargetType();
+        BoxRefTypeTranslator binder{irBoxRefThis, name, typeArgsExceptOuter, contexts};
         return Accept(binder, targetType);
     }
 
@@ -1060,9 +1064,9 @@ public:
         auto* irLocalRefThis = dynamic_cast<IrExp_LocalRef*>(irThis);
         assert(irLocalRefThis);
 
-        auto locType = context.GetType(irExp->loc);
+        auto locType = irExp->loc->GetType();
 
-        LocalRefTypeTranslator binder{irLocalRefThis, name, typeArgsExceptOuter, context};
+        LocalRefTypeTranslator binder{irLocalRefThis, name, typeArgsExceptOuter, contexts};
         return Accept(binder, locType);
     }
 
@@ -1072,9 +1076,9 @@ public:
         auto* irDerefedBoxThis = dynamic_cast<IrExp_DerefedBoxValue*>(irThis);
         assert(irDerefedBoxThis);
 
-        auto innerType = context.GetType(irExp->innerLoc);
+        auto innerType = irExp->innerLoc->GetType();
 
-        BoxValueTypeTranslator binder{irDerefedBoxThis, name, typeArgsExceptOuter, context};
+        BoxValueTypeTranslator binder{irDerefedBoxThis, name, typeArgsExceptOuter, contexts};
         return Accept(binder, innerType);
     }
 
@@ -1088,9 +1092,9 @@ public:
 
 } // namespace 
 
-expected<IrExp*, DiagPtr> TranslateIrExpAndMemberNameToIrExp(IrExp* irExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContext& context)
+expected<IrExp*, DiagPtr> TranslateIrExpAndMemberNameToIrExp(IrExp* irExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
 {
-    IrExpAndMemberNameToIrExpTranslator binder{irExp, name, typeArgsExceptOuter, context};
+    IrExpAndMemberNameToIrExpTranslator binder{irExp, name, typeArgsExceptOuter, contexts};
     return Accept(binder, irExp);
 }
 

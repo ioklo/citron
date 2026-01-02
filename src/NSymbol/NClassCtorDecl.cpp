@@ -46,13 +46,13 @@ optional<RMember> NClassCtorDecl::GetMember(RTypeArguments* typeArgs, const RNam
     return nullopt;
 }
 
-optional<RMember> NClassCtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> NClassCtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     auto baseTypeParamCount = _class->GetAllTypeParamCount();
-    if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
-        return oMember;
+    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount))
+        return o_member;
 
-    return _class->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return _class->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 RClassDecl* NClassCtorDecl::GetClassDecl()

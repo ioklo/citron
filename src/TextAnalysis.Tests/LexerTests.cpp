@@ -23,13 +23,13 @@ vector<Token> ProcessInner(TFunc Action, Lexer* lexer)
 
     while (true)
     {
-        auto oLexResult = Action(lexer);
+        auto o_lexResult = Action(lexer);
 
-        if (!oLexResult) return result;
-        if (holds_alternative<EndOfFileToken>(oLexResult->token)) break;
+        if (!o_lexResult) return result;
+        if (holds_alternative<EndOfFileToken>(o_lexResult->token)) break;
 
-        *lexer = move(oLexResult->lexer);
-        result.push_back(move(oLexResult->token));
+        *lexer = move(o_lexResult->lexer);
+        result.push_back(move(o_lexResult->token));
     }
 
     return result;
@@ -149,53 +149,53 @@ TEST(Lexer, LexKeywords)
 TEST(Lexer, LexSimpleIdentifier)
 {
     auto [buffer, lexer] = Prepare(U"x");    
-    auto oTokenResult = lexer.LexNormalMode(false);
+    auto o_tokenResult = lexer.LexNormalMode(false);
 
-    EXPECT_TRUE(oTokenResult);
-    // EXPECT_EQ(oTokenResult->token, IdentifierToken("x"));
+    EXPECT_TRUE(o_tokenResult);
+    // EXPECT_EQ(o_tokenResult->token, IdentifierToken("x"));
 
-    EXPECT_EQ(IdentifierToken("x"), oTokenResult->token);
+    EXPECT_EQ(IdentifierToken("x"), o_tokenResult->token);
 }
 
 TEST(Lexer, LexNormalString)
 {
     auto [buffer, lexer] = Prepare(U"  \"aaa bbb \"  ");
     
-    auto oResult0 = lexer.LexNormalMode(false);
-    ASSERT_TRUE(oResult0);
+    auto o_result0 = lexer.LexNormalMode(false);
+    ASSERT_TRUE(o_result0);
 
-    auto oResult1 = oResult0->lexer.LexStringMode();
-    ASSERT_TRUE(oResult1);
+    auto o_result1 = o_result0->lexer.LexStringMode();
+    ASSERT_TRUE(o_result1);
 
-    auto oResult2 = oResult1->lexer.LexStringMode();
-    ASSERT_TRUE(oResult2);
+    auto o_result2 = o_result1->lexer.LexStringMode();
+    ASSERT_TRUE(o_result2);
 
-    EXPECT_EQ(oResult0->token, DoubleQuoteToken());
-    EXPECT_EQ(oResult1->token, TextToken("aaa bbb "));
-    EXPECT_EQ(oResult2->token, DoubleQuoteToken());
+    EXPECT_EQ(o_result0->token, DoubleQuoteToken());
+    EXPECT_EQ(o_result1->token, TextToken("aaa bbb "));
+    EXPECT_EQ(o_result2->token, DoubleQuoteToken());
 }
 
 // stringMode
 TEST(Lexer, LexDoubleQuoteString)
 {
     auto [buffer, lexer] = Prepare(U"\"\"");
-    auto oTokenResult = lexer.LexStringMode();
+    auto o_tokenResult = lexer.LexStringMode();
 
     auto expectedToken = TextToken("\"");
 
-    EXPECT_EQ(oTokenResult->token, expectedToken);
+    EXPECT_EQ(o_tokenResult->token, expectedToken);
 }
 
 TEST(Lexer, LexDollarString)
 {
     auto [buffer, lexer] = Prepare(U"$$");
 
-    auto oResult = lexer.LexStringMode();
-    ASSERT_TRUE(oResult);
+    auto o_result = lexer.LexStringMode();
+    ASSERT_TRUE(o_result);
 
     auto expectedToken = TextToken("$");
 
-    EXPECT_EQ(oResult->token, expectedToken);
+    EXPECT_EQ(o_result->token, expectedToken);
 }
 
 TEST(Lexer, LexSimpleEscapedString2)
@@ -229,20 +229,20 @@ TEST(Lexer, LexEscapedString)
 
     vector<Token> tokens;
 
-    auto oResult = lexer.LexStringMode();
-    tokens.push_back(move(oResult->token));
+    auto o_result = lexer.LexStringMode();
+    tokens.push_back(move(o_result->token));
 
-    oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(move(oResult->token));
+    o_result = o_result->lexer.LexStringMode();
+    tokens.push_back(move(o_result->token));
 
-    oResult = oResult->lexer.LexNormalMode(false);
-    tokens.push_back(move(oResult->token));
+    o_result = o_result->lexer.LexNormalMode(false);
+    tokens.push_back(move(o_result->token));
 
-    oResult = oResult->lexer.LexNormalMode(false);
-    tokens.push_back(move(oResult->token));
+    o_result = o_result->lexer.LexNormalMode(false);
+    tokens.push_back(move(o_result->token));
 
-    oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(move(oResult->token));
+    o_result = o_result->lexer.LexStringMode();
+    tokens.push_back(move(o_result->token));
 
     vector<Token> expectedTokens {
         TextToken("aaa bbb "),
@@ -261,41 +261,41 @@ TEST(Lexer, LexComplexString)
 
     vector<Token> tokens;
 
-    auto oResult = lexer.LexNormalMode(false);
-    tokens.push_back(oResult->token); // "
+    auto o_result = lexer.LexNormalMode(false);
+    tokens.push_back(o_result->token); // "
 
-    oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(oResult->token); // aaa bbb
+    o_result = o_result->lexer.LexStringMode();
+    tokens.push_back(o_result->token); // aaa bbb
 
-    oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(oResult->token); // ${
+    o_result = o_result->lexer.LexStringMode();
+    tokens.push_back(o_result->token); // ${
 
-    oResult = oResult->lexer.LexNormalMode(false);
-    tokens.push_back(oResult->token); // "
+    o_result = o_result->lexer.LexNormalMode(false);
+    tokens.push_back(o_result->token); // "
 
-    oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(oResult->token); // xxx 
+    o_result = o_result->lexer.LexStringMode();
+    tokens.push_back(o_result->token); // xxx 
 
-    oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(oResult->token); // ${
+    o_result = o_result->lexer.LexStringMode();
+    tokens.push_back(o_result->token); // ${
 
-    oResult = oResult->lexer.LexNormalMode(false);
-    tokens.push_back(oResult->token); // ddd
+    o_result = o_result->lexer.LexNormalMode(false);
+    tokens.push_back(o_result->token); // ddd
 
-    oResult = oResult->lexer.LexNormalMode(false);
-    tokens.push_back(oResult->token); // }
+    o_result = o_result->lexer.LexNormalMode(false);
+    tokens.push_back(o_result->token); // }
 
-    oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(oResult->token); // "
+    o_result = o_result->lexer.LexStringMode();
+    tokens.push_back(o_result->token); // "
 
-    oResult = oResult->lexer.LexNormalMode(false);
-    tokens.push_back(oResult->token); // }
+    o_result = o_result->lexer.LexNormalMode(false);
+    tokens.push_back(o_result->token); // }
 
-    oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(oResult->token); // ddd 
+    o_result = o_result->lexer.LexStringMode();
+    tokens.push_back(o_result->token); // ddd 
 
-    oResult = oResult->lexer.LexStringMode();
-    tokens.push_back(oResult->token); // "
+    o_result = o_result->lexer.LexStringMode();
+    tokens.push_back(o_result->token); // "
 
     vector<Token> expectedTokens {
         DoubleQuoteToken(),
@@ -321,12 +321,12 @@ TEST(Lexer, LexInt)
 {
     auto [buffer, lexer] = Prepare(U"1234"); // 나머지는 지원 안함
 
-    auto oResult = lexer.LexNormalMode(false);
-    ASSERT_TRUE(oResult);
+    auto o_result = lexer.LexNormalMode(false);
+    ASSERT_TRUE(o_result);
 
     auto expectedToken = IntToken(1234);
 
-    EXPECT_EQ(oResult->token, expectedToken);
+    EXPECT_EQ(o_result->token, expectedToken);
 }
 
 TEST(Lexer, LexComment)
@@ -335,26 +335,26 @@ TEST(Lexer, LexComment)
 
     vector<Token> tokens;
 
-    auto oResult = lexer.LexWhitespace(false);
-    tokens.push_back(oResult->token);
+    auto o_result = lexer.LexWhitespace(false);
+    tokens.push_back(o_result->token);
 
-    oResult = oResult->lexer.LexNewLine();
-    tokens.push_back(oResult->token);
+    o_result = o_result->lexer.LexNewLine();
+    tokens.push_back(o_result->token);
 
-    oResult = oResult->lexer.LexWhitespace(false);
-    tokens.push_back(oResult->token);
+    o_result = o_result->lexer.LexWhitespace(false);
+    tokens.push_back(o_result->token);
 
-    oResult = oResult->lexer.LexNewLine();
-    tokens.push_back(oResult->token);
+    o_result = o_result->lexer.LexNewLine();
+    tokens.push_back(o_result->token);
 
-    oResult = oResult->lexer.LexWhitespace(false);
-    tokens.push_back(oResult->token);
+    o_result = o_result->lexer.LexWhitespace(false);
+    tokens.push_back(o_result->token);
 
-    oResult = oResult->lexer.LexNewLine();
-    tokens.push_back(oResult->token);
+    o_result = o_result->lexer.LexNewLine();
+    tokens.push_back(o_result->token);
 
-    oResult = oResult->lexer.LexInt();
-    tokens.push_back(oResult->token);
+    o_result = o_result->lexer.LexInt();
+    tokens.push_back(o_result->token);
 
     vector<Token> expectedTokens{
         WhitespaceToken(),
@@ -375,14 +375,14 @@ TEST(Lexer, LexNextLine)
 
     vector<Token> tokens;
 
-    auto oResult = lexer.LexInt();
-    tokens.push_back(oResult->token);
+    auto o_result = lexer.LexInt();
+    tokens.push_back(o_result->token);
 
-    oResult = oResult->lexer.LexWhitespace(false);
-    tokens.push_back(oResult->token);
+    o_result = o_result->lexer.LexWhitespace(false);
+    tokens.push_back(o_result->token);
 
-    oResult = oResult->lexer.LexInt();
-    tokens.push_back(oResult->token);
+    o_result = o_result->lexer.LexInt();
+    tokens.push_back(o_result->token);
 
     vector<Token> expectedTokens{
         IntToken(1234),

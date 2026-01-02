@@ -84,27 +84,26 @@ RType* MExp_StructIndirectMemberBoxRef::GetType()
     return rFactory->MakeBoxType(declType);
 }
 
-MExp_StructMemberBoxRef::MExp_StructMemberBoxRef(MLoc* parent, RStructVarDecl* decl, RTypeArguments* typeArgs)
-    : parent(parent), decl(decl), typeArgs(typeArgs)
+MExp_StructMemberBoxRef::MExp_StructMemberBoxRef(MLoc* parent, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
+    : parent{parent}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
 {
 }
 
 RType* MExp_StructMemberBoxRef::GetType()
 {
-    auto* declType = decl->GetDeclType(*typeArgs, factory);
-
-    return factory.MakeBoxType(declType);
+    auto* declType = decl->GetDeclType(*typeArgs);
+    return rFactory->MakeBoxType(declType);
 }
 
-MExp_LocalRef::MExp_LocalRef(MLoc* innerLoc)
-    : innerLoc(innerLoc)
+MExp_LocalRef::MExp_LocalRef(MLoc* innerLoc, const RFactoryPtr& rFactory)
+    : innerLoc{innerLoc}, rFactory{rFactory}
 {
 }
 
 RType* MExp_LocalRef::GetType()
 {
-    auto* innerLocType = innerLoc->GetType(factory);
-    return factory.MakePtrType(innerLocType);
+    auto* innerLocType = innerLoc->GetType();
+    return rFactory->MakePtrType(innerLocType);
 }
 
 MExp_CastBoxedLambdaToFunc::MExp_CastBoxedLambdaToFunc(MExp* exp, RType_Func* funcType)
@@ -117,24 +116,24 @@ RType* MExp_CastBoxedLambdaToFunc::GetType()
     return funcType;
 }
 
-MExp_BoolLiteral::MExp_BoolLiteral(bool value)
-    : value(value)
+MExp_BoolLiteral::MExp_BoolLiteral(bool value, const RFactoryPtr& rFactory)
+    : value{value}, rFactory{rFactory}
 {
 }
 
 RType* MExp_BoolLiteral::GetType()
 {
-    return factory.MakeBoolType();
+    return rFactory->MakeBoolType();
 }
 
-MExp_IntLiteral::MExp_IntLiteral(int value)
-    : value(value)
+MExp_IntLiteral::MExp_IntLiteral(int value, const RFactoryPtr& rFactory)
+    : value{value}, rFactory{rFactory}
 {
 }
 
 RType* MExp_IntLiteral::GetType()
 {
-    return factory.MakeIntType();
+    return rFactory->MakeIntType();
 }
 
 MExp_StringElem_Text::MExp_StringElem_Text(const string& text)
@@ -148,24 +147,24 @@ MExp_StringElem_Exp::MExp_StringElem_Exp(MExp* mExp)
 
 }
 
-MExp_String::MExp_String(vector<MExp_StringElem>&& elements)
-    : elements(move(elements))
+MExp_String::MExp_String(vector<MExp_StringElem>&& elements, const RFactoryPtr& rFactory)
+    : elements{move(elements)}, rFactory{rFactory}
 {
 }
 
 RType* MExp_String::GetType()
 {
-    return factory.MakeStringType();
+    return rFactory->MakeStringType();
 }
 
-MExp_List::MExp_List(vector<MExp*>&& elems, RType* itemType)
-    : elems(move(elems)), itemType(itemType)
+MExp_List::MExp_List(vector<MExp*>&& elems, RType* itemType, const RFactoryPtr& rFactory)
+    : elems{move(elems)}, itemType{itemType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_List::GetType()
 {
-    return factory.MakeListType(itemType);
+    return rFactory->MakeListType(itemType);
 }
 
 MExp_ListIterator::MExp_ListIterator(MLoc* listLoc, RType* iteratorType)
@@ -178,8 +177,8 @@ RType* MExp_ListIterator::GetType()
     return iteratorType;
 }
 
-MExp_CallInternalUnaryOperator::MExp_CallInternalUnaryOperator(MInternalUnaryOperator op, MExp* operand)
-    : op{op}, operand{operand}
+MExp_CallInternalUnaryOperator::MExp_CallInternalUnaryOperator(MInternalUnaryOperator op, MExp* operand, const RFactoryPtr& rFactory)
+    : op{op}, operand{operand}, rFactory{rFactory}
 {
 }
 
@@ -187,17 +186,17 @@ RType* MExp_CallInternalUnaryOperator::GetType()
 {
     switch (op)
     {
-    case MInternalUnaryOperator::LogicalNot_Bool_Bool: return factory.MakeBoolType();
-    case MInternalUnaryOperator::UnaryMinus_Int_Int: return factory.MakeIntType();
-    case MInternalUnaryOperator::ToString_Bool_String: return factory.MakeStringType();
-    case MInternalUnaryOperator::ToString_Int_String: return factory.MakeStringType();
+    case MInternalUnaryOperator::LogicalNot_Bool_Bool: return rFactory->MakeBoolType();
+    case MInternalUnaryOperator::UnaryMinus_Int_Int: return rFactory->MakeIntType();
+    case MInternalUnaryOperator::ToString_Bool_String: return rFactory->MakeStringType();
+    case MInternalUnaryOperator::ToString_Int_String: return rFactory->MakeStringType();
     }
 
     unreachable();
 }
 
-MExp_CallInternalUnaryAssignOperator::MExp_CallInternalUnaryAssignOperator(MInternalUnaryAssignOperator op, MLoc* operand)
-    : op{op}, operand{operand}
+MExp_CallInternalUnaryAssignOperator::MExp_CallInternalUnaryAssignOperator(MInternalUnaryAssignOperator op, MLoc* operand, const RFactoryPtr& rFactory)
+    : op{op}, operand{operand}, rFactory{rFactory}
 {
 }
 
@@ -209,14 +208,14 @@ RType* MExp_CallInternalUnaryAssignOperator::GetType()
     case MInternalUnaryAssignOperator::PrefixDec_Int_Int:
     case MInternalUnaryAssignOperator::PostfixInc_Int_Int:
     case MInternalUnaryAssignOperator::PostfixDec_Int_Int:
-        return factory.MakeIntType();
+        return rFactory->MakeIntType();
     }
 
     unreachable();
 }
 
-MExp_CallInternalBinaryOperator::MExp_CallInternalBinaryOperator(MInternalBinaryOperator op, MExp* operand0, MExp* operand1)
-    : op(op), operand0(operand0), operand1(operand1)
+MExp_CallInternalBinaryOperator::MExp_CallInternalBinaryOperator(MInternalBinaryOperator op, MExp* operand0, MExp* operand1, const RFactoryPtr& rFactory)
+    : op{op}, operand0{operand0}, operand1{operand1}, rFactory{rFactory}
 {
 }
 
@@ -228,13 +227,13 @@ RType* MExp_CallInternalBinaryOperator::GetType()
         case MInternalBinaryOperator::Divide_Int_Int_Int:
         case MInternalBinaryOperator::Modulo_Int_Int_Int:
         case MInternalBinaryOperator::Add_Int_Int_Int:
-            return factory.MakeIntType();
+            return rFactory->MakeIntType();
 
         case MInternalBinaryOperator::Add_String_String_String:
-            return factory.MakeStringType();
+            return rFactory->MakeStringType();
 
         case MInternalBinaryOperator::Subtract_Int_Int_Int:
-            return factory.MakeIntType();
+            return rFactory->MakeIntType();
 
         case MInternalBinaryOperator::LessThan_Int_Int_Bool:
         case MInternalBinaryOperator::LessThan_String_String_Bool:
@@ -247,7 +246,7 @@ RType* MExp_CallInternalBinaryOperator::GetType()
         case MInternalBinaryOperator::Equal_Int_Int_Bool:
         case MInternalBinaryOperator::Equal_Bool_Bool_Bool:
         case MInternalBinaryOperator::Equal_String_String_Bool:
-            return factory.MakeBoolType();
+            return rFactory->MakeBoolType();
         default:
             unreachable();
     }
@@ -260,11 +259,11 @@ MExp_CallGlobalFunc::MExp_CallGlobalFunc(RGlobalFuncDecl* rFuncDecl, RTypeArgume
 
 RType* MExp_CallGlobalFunc::GetType()
 {
-    return rFuncDecl->GetReturnType(*rTypeArgs, factory);
+    return rFuncDecl->GetReturnType(*rTypeArgs);
 }
 
-MExp_NewClass::MExp_NewClass(RClassCtorDecl* ctorDecl, RTypeArguments* typeArgs, const vector<MArgument>& args)
-    : ctorDecl(ctorDecl), typeArgs(typeArgs), args(args)
+MExp_NewClass::MExp_NewClass(RClassCtorDecl* ctorDecl, RTypeArguments* typeArgs, const vector<MArgument>& args, const RFactoryPtr& rFactory)
+    : ctorDecl{ctorDecl}, typeArgs{typeArgs}, args{args}, rFactory{rFactory}
 {
 }
 
@@ -273,7 +272,7 @@ RType* MExp_NewClass::GetType()
     auto classDecl = ctorDecl->GetClassDecl();
     assert(classDecl);
 
-    return factory.MakeClassType(classDecl, typeArgs);
+    return rFactory->MakeClassType(classDecl, typeArgs);
 }
 
 /////////////////////////////////////
@@ -285,7 +284,7 @@ MExp_CallClassFunc::MExp_CallClassFunc(RClassFuncDecl* decl, RTypeArguments* typ
 
 RType* MExp_CallClassFunc::GetType()
 {
-    return decl->GetReturnType(*typeArgs, factory);
+    return decl->GetReturnType(*typeArgs);
 }
 
 MExp_CastClass::MExp_CastClass(MExp* src, RType* classType)
@@ -298,15 +297,15 @@ RType* MExp_CastClass::GetType()
     return classType;
 }
 
-MExp_NewStruct::MExp_NewStruct(RStructCtorDecl* ctor, RTypeArguments* typeArgs, vector<MArgument>&& args)
-    : ctor{ctor}, typeArgs{typeArgs}, args{move(args)}
+MExp_NewStruct::MExp_NewStruct(RStructCtorDecl* ctor, RTypeArguments* typeArgs, vector<MArgument>&& args, const RFactoryPtr& rFactory)
+    : ctor{ctor}, typeArgs{typeArgs}, args{move(args)}, rFactory{rFactory}
 {
 }
 
 RType* MExp_NewStruct::GetType()
 {
     auto structDecl = ctor->GetStructDecl();
-    return factory.MakeStructType(structDecl, typeArgs);
+    return rFactory->MakeStructType(structDecl, typeArgs);
 }
 
 MExp_CallStructFunc::MExp_CallStructFunc(RStructFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args)
@@ -316,17 +315,17 @@ MExp_CallStructFunc::MExp_CallStructFunc(RStructFuncDecl* decl, RTypeArguments* 
 
 RType* MExp_CallStructFunc::GetType()
 {
-    return decl->GetReturnType(*typeArgs, factory);
+    return decl->GetReturnType(*typeArgs);
 }
 
-MExp_NewEnumElem::MExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* typeArgs, vector<MArgument>&& args)
-    : enumElemDecl{enumElemDecl}, typeArgs{typeArgs}, args{move(args)}
+MExp_NewEnumElem::MExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* typeArgs, vector<MArgument>&& args, const RFactoryPtr& rFactory)
+    : enumElemDecl{enumElemDecl}, typeArgs{typeArgs}, args{move(args)}, rFactory{rFactory}
 {
 }
 
 RType* MExp_NewEnumElem::GetType()
 {
-    return factory.MakeEnumElemType(enumElemDecl, typeArgs);
+    return rFactory->MakeEnumElemType(enumElemDecl, typeArgs);
 }
 
 MExp_CastEnumElemToEnum::MExp_CastEnumElemToEnum(MExp* src, RType* enumType)
@@ -339,44 +338,44 @@ RType* MExp_CastEnumElemToEnum::GetType()
     return enumType;
 }
 
-MExp_NullableValueNullLiteral::MExp_NullableValueNullLiteral(RType* innerType)
-    : innerType(innerType)
+MExp_NullableValueNullLiteral::MExp_NullableValueNullLiteral(RType* innerType, const RFactoryPtr& rFactory)
+    : innerType{innerType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_NullableValueNullLiteral::GetType()
 {
-    return factory.MakeNullableValueType(innerType);
+    return rFactory->MakeNullableValueType(innerType);
 }
 
-MExp_NullableRefNullLiteral::MExp_NullableRefNullLiteral(RType* innerType)
-    : innerType(innerType)
+MExp_NullableRefNullLiteral::MExp_NullableRefNullLiteral(RType* innerType, const RFactoryPtr& rFactory)
+    : innerType{innerType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_NullableRefNullLiteral::GetType()
 {
-    return factory.MakeNullableRefType(innerType);
+    return rFactory->MakeNullableRefType(innerType);
 }
 
-MExp_NewNullable::MExp_NewNullable(MExp* innerExp)
-    : innerExp(innerExp)
+MExp_NewNullable::MExp_NewNullable(MExp* innerExp, const RFactoryPtr& rFactory)
+    : innerExp{innerExp}, rFactory{rFactory}
 {
 }
 
 RType* MExp_NewNullable::GetType()
 {
-    return factory.MakeNullableValueType(innerExp->GetType(factory));
+    return rFactory->MakeNullableValueType(innerExp->GetType());
 }
 
-MExp_Lambda::MExp_Lambda(NLambdaDecl* lambdaDecl, RTypeArguments* typeArgs, const vector<MArgument>& args)
-    : lambdaDecl(lambdaDecl), typeArgs(typeArgs), args(args)
+MExp_Lambda::MExp_Lambda(NLambdaDecl* lambdaDecl, RTypeArguments* typeArgs, const vector<MArgument>& args, const RFactoryPtr& rFactory)
+    : lambdaDecl{lambdaDecl}, typeArgs{typeArgs}, args{args}, rFactory{rFactory}
 {
 }
 
 RType* MExp_Lambda::GetType()
 {
-    return factory.MakeLambdaType(lambdaDecl, typeArgs);
+    return rFactory->MakeLambdaType(lambdaDecl, typeArgs);
 }
 
 MExp_CallLambda::MExp_CallLambda(RLambdaDecl* lambdaDecl, RTypeArguments* typeArgs, MLoc* callable, const vector<MArgument>& args)
@@ -386,7 +385,7 @@ MExp_CallLambda::MExp_CallLambda(RLambdaDecl* lambdaDecl, RTypeArguments* typeAr
 
 RType* MExp_CallLambda::GetType()
 {
-    return lambdaDecl->GetReturnType(*typeArgs, factory);
+    return lambdaDecl->GetReturnType(*typeArgs);
 }
 
 MExp_InlineBlock::MExp_InlineBlock(const vector<MStmt*>& stmts, RType* returnType)
@@ -399,104 +398,104 @@ RType* MExp_InlineBlock::GetType()
     return returnType;
 }
 
-MExp_ClassIsClass::MExp_ClassIsClass(MExp* exp, RType* classType)
-    : exp{exp}, classType{classType}
+MExp_ClassIsClass::MExp_ClassIsClass(MExp* exp, RType* classType, const RFactoryPtr& rFactory)
+    : exp{exp}, classType{classType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_ClassIsClass::GetType()
 {
-    return factory.MakeBoolType();
+    return rFactory->MakeBoolType();
 }
 
-MExp_ClassAsClass::MExp_ClassAsClass(MExp* exp, RType* classType)
-    : exp(exp), classType(classType)
+MExp_ClassAsClass::MExp_ClassAsClass(MExp* exp, RType* classType, const RFactoryPtr& rFactory)
+    : exp{exp}, classType{classType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_ClassAsClass::GetType()
 {    
-    return factory.MakeNullableRefType(classType);
+    return rFactory->MakeNullableRefType(classType);
 }
 
-MExp_ClassIsInterface::MExp_ClassIsInterface(MExp* exp, RType* interfaceType)
-    : exp{exp}, interfaceType{interfaceType}
+MExp_ClassIsInterface::MExp_ClassIsInterface(MExp* exp, RType* interfaceType, const RFactoryPtr& rFactory)
+    : exp{exp}, interfaceType{interfaceType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_ClassIsInterface::GetType()
 {
-    return factory.MakeBoolType();
+    return rFactory->MakeBoolType();
 }
 
-MExp_ClassAsInterface::MExp_ClassAsInterface(MExp* exp, RType* interfaceType)
-    : exp(exp), interfaceType(interfaceType)
+MExp_ClassAsInterface::MExp_ClassAsInterface(MExp* exp, RType* interfaceType, const RFactoryPtr& rFactory)
+    : exp{exp}, interfaceType{interfaceType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_ClassAsInterface::GetType()
 {
-    return factory.MakeNullableRefType(interfaceType);
+    return rFactory->MakeNullableRefType(interfaceType);
 }
 
-MExp_InterfaceIsClass::MExp_InterfaceIsClass(MExp* exp, RType* classType)
-    : exp{exp}, classType{classType}
+MExp_InterfaceIsClass::MExp_InterfaceIsClass(MExp* exp, RType* classType, const RFactoryPtr& rFactory)
+    : exp{exp}, classType{classType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_InterfaceIsClass::GetType()
 {
-    return factory.MakeBoolType();
+    return rFactory->MakeBoolType();
 }
 
-MExp_InterfaceAsClass::MExp_InterfaceAsClass(MExp* exp, RType* classType)
-    : exp(exp), classType(classType)
+MExp_InterfaceAsClass::MExp_InterfaceAsClass(MExp* exp, RType* classType, const RFactoryPtr& rFactory)
+    : exp{exp}, classType{classType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_InterfaceAsClass::GetType()
 {
-    return factory.MakeNullableRefType(classType);
+    return rFactory->MakeNullableRefType(classType);
 }
 
-MExp_InterfaceIsInterface::MExp_InterfaceIsInterface(MExp* exp, RType* interfaceType)
-    : exp{exp}, interfaceType{interfaceType}
+MExp_InterfaceIsInterface::MExp_InterfaceIsInterface(MExp* exp, RType* interfaceType, const RFactoryPtr& rFactory)
+    : exp{exp}, interfaceType{interfaceType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_InterfaceIsInterface::GetType()
 {
-    return factory.MakeBoolType();
+    return rFactory->MakeBoolType();
 }
 
-MExp_InterfaceAsInterface::MExp_InterfaceAsInterface(MExp* exp, RType* interfaceType)
-    : exp(exp), interfaceType(interfaceType)
+MExp_InterfaceAsInterface::MExp_InterfaceAsInterface(MExp* exp, RType* interfaceType, const RFactoryPtr& rFactory)
+    : exp{exp}, interfaceType{interfaceType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_InterfaceAsInterface::GetType()
 {
-    return factory.MakeNullableRefType(interfaceType);
+    return rFactory->MakeNullableRefType(interfaceType);
 }
 
-MExp_EnumIsEnumElem::MExp_EnumIsEnumElem(MExp* exp, RType* enumElemType)
-    : exp{exp}, enumElemType{enumElemType}
+MExp_EnumIsEnumElem::MExp_EnumIsEnumElem(MExp* exp, RType* enumElemType, const RFactoryPtr& rFactory)
+    : exp{exp}, enumElemType{enumElemType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_EnumIsEnumElem::GetType()
 {
-    return factory.MakeBoolType();
+    return rFactory->MakeBoolType();
 }
 
-MExp_EnumAsEnumElem::MExp_EnumAsEnumElem(MExp* exp, RType* enumElemType)
-    : exp(exp), enumElemType(enumElemType)
+MExp_EnumAsEnumElem::MExp_EnumAsEnumElem(MExp* exp, RType* enumElemType, const RFactoryPtr& rFactory)
+    : exp{exp}, enumElemType{enumElemType}, rFactory{rFactory}
 {
 }
 
 RType* MExp_EnumAsEnumElem::GetType()
 {
-    return factory.MakeNullableValueType(enumElemType);
+    return rFactory->MakeNullableValueType(enumElemType);
 }
 
 } // namespace Citron

@@ -41,16 +41,16 @@ optional<RMember> NClassDecl::GetMember(RTypeArguments* typeArgs, const RName& n
     vector<RMember> candidates;
 
     // type
-    if (auto oType = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*oType);
+    if (auto o_type = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        candidates.push_back(*o_type);
 
     // class member func
-    if (auto oFunc = NFuncDeclContainerComponent<NClassFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*oFunc);
+    if (auto o_func = NFuncDeclContainerComponent<NClassFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        candidates.push_back(*o_func);
 
     if (explicitTypeParamsExceptOuterCount == 0)
-        if (auto oVar = GetVar(typeArgs, name))
-            candidates.push_back(*oVar);
+        if (auto o_var = GetVar(typeArgs, name))
+            candidates.push_back(*o_var);
 
     if (candidates.empty()) return nullopt;
 
@@ -63,14 +63,14 @@ optional<RMember> NClassDecl::GetMember(RTypeArguments* typeArgs, const RName& n
     return candidates[1];
 }
 
-optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto typeArgs = MakeOpenTypeArgs(factory);
+    auto* typeArgs = MakeOpenTypeArgs(*rFactory);
 
-    auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount);
-    if (oMember) return oMember;
+    auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount);
+    if (o_member) return o_member;
 
-    return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 optional<RMember_ClassVar> NClassDecl::GetVar(RTypeArguments* typeArgs, const RName& name)

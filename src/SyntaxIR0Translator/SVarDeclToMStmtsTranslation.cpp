@@ -12,11 +12,13 @@
 
 #include "RSymbol/RTypes.h"
 #include "MIR/MStmt.h"
+#include "MIR/MExp.h"
+#include "MIR/MFactory.h"
 
-#include "TranslationContext.h"
 #include "ScopeContext.h"
 #include "SExpToMExpTranslation.h"
 #include "Misc.h"
+#include "TranslationContexts.h"
 
 using namespace std;
 
@@ -28,11 +30,11 @@ class VarDeclElemTranslator
 {
     vector<MStmt*>* outStmts;
     span<SVarDeclElement> elems;
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 public:
-    VarDeclElemTranslator(vector<MStmt*>* outStmts, std::span<SVarDeclElement>&& elems, TranslationContext& context)
-        : outStmts{outStmts}, elems{move(elems)}, context{context}
+    VarDeclElemTranslator(vector<MStmt*>* outStmts, std::span<SVarDeclElement>&& elems, TranslationContexts& contexts)
+        : outStmts{outStmts}, elems{move(elems)}, contexts{contexts}
     {
     }
 
@@ -113,22 +115,22 @@ public:
     {
         for (auto& elem : elems)
         {
-            if (context.GetScopeContext().DoesLocalVarNameExistInScope(RName_Normal{elem.varName}))
+            if (contexts.scopeContext->DoesLocalVarNameExistInScope(RName_Normal{elem.varName}))
                 return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
 
             if (!elem.initExp)
                 return unexpected{MakePtr<Error_VarDecl_LocalVarDeclNeedInitializer>()};
 
             // var꼴로 나오는 경우 hintType은 없다
-            auto eNInitExp = TranslateSExpToMExp(elem.initExp, /*hintType*/ nullptr, context);
-            RETURN_ON_ERROR(eNInitExp);
+            auto e_nInitExp = TranslateSExpToMExp(elem.initExp, /*hintType*/ nullptr, contexts);
+            RETURN_ON_ERROR(e_nInitExp);
             
-            auto* rInitExpType = context.GetType(*eNInitExp);
-            auto eResult = CheckVarConsistency(sVarDeclType->kind, rInitExpType);
-            RETURN_ON_ERROR(eResult);
+            auto* rInitExpType = (*e_nInitExp)->GetType();
+            auto e_result = CheckVarConsistency(sVarDeclType->kind, rInitExpType);
+            RETURN_ON_ERROR(e_result);
 
-            context.GetScopeContext().AddLocalVarInfo(rInitExpType, RName_Normal{elem.varName});
-            outStmts->push_back(context.MakeNStmt<MStmt_LocalVarDecl>(rInitExpType, elem.varName, *eNInitExp));
+            contexts.scopeContext->AddLocalVarInfo(rInitExpType, RName_Normal{elem.varName});
+            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rInitExpType, elem.varName, *e_nInitExp));
         }
 
         return {};
@@ -146,29 +148,29 @@ public:
 
     ResultType Visit(SVarDeclType_Normal* sVarDeclType)
     {   
-        auto eRDeclType = context.TranslateSTypeExpToRType(sVarDeclType->typeExp);
-        RETURN_ON_ERROR(eRDeclType);
-        auto* rDeclType = *eRDeclType;
+        auto e_rDeclType = contexts.scopeContext->TranslateSTypeExpToRType(sVarDeclType->typeExp);
+        RETURN_ON_ERROR(e_rDeclType);
+        auto* rDeclType = *e_rDeclType;
 
         for (auto& elem : elems)
         {
-            if (context.GetScopeContext().DoesLocalVarNameExistInScope(RName_Normal{elem.varName}))
+            if (contexts.scopeContext->DoesLocalVarNameExistInScope(RName_Normal{elem.varName}))
                 return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
 
             MExp* nInitExp = nullptr;
             if (elem.initExp)
             {
-                auto eNExp = TranslateSExpToMExp(elem.initExp, rDeclType, context);
-                if (!eNExp) return unexpected{move(eNExp).error()};
+                auto e_nExp = TranslateSExpToMExp(elem.initExp, rDeclType, contexts);
+                RETURN_ON_ERROR(e_nExp);
 
-                eNExp = CastMExp(*eNExp, rDeclType, context);
-                if (!eNExp) return unexpected{MakePtr<Error_VarDecl_InitExpTypeMismatch>()};
+                e_nExp = CastMExp(*e_nExp, rDeclType, contexts);
+                if (!e_nExp) return unexpected{MakePtr<Error_VarDecl_InitExpTypeMismatch>()};
 
-                nInitExp = *eNExp;
+                nInitExp = *e_nExp;
             }
 
-            context.GetScopeContext().AddLocalVarInfo(rDeclType, RName_Normal{elem.varName});
-            outStmts->push_back(context.MakeNStmt<MStmt_LocalVarDecl>(rDeclType, elem.varName, nInitExp));
+            contexts.scopeContext->AddLocalVarInfo(rDeclType, RName_Normal{elem.varName});
+            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rDeclType, elem.varName, nInitExp));
         }
 
         return {};
@@ -177,11 +179,11 @@ public:
 
 } // namespace
 
-expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>* outStmts, SVarDecl* varDecl, TranslationContext& context)
+expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>* outStmts, SVarDecl* varDecl, TranslationContexts& contexts)
 {
-    VarDeclElemTranslator translator{outStmts, varDecl->elements, context};
-    auto eResult = Accept(translator, varDecl->type);
-    RETURN_ON_ERROR(eResult);
+    VarDeclElemTranslator translator{outStmts, varDecl->elements, contexts};
+    auto e_result = Accept(translator, varDecl->type);
+    RETURN_ON_ERROR(e_result);
 
     return {};
 }

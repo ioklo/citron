@@ -53,13 +53,13 @@ optional<RMember> NStructFuncDecl::GetMember(RTypeArguments* typeArgs, const RNa
     return nullopt;
 }
 
-optional<RMember> NStructFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> NStructFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     size_t baseTypeParamCount = _struct->GetAllTypeParamCount();
-    if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
-        return oMember;
+    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount))
+        return o_member;
 
-    return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 }

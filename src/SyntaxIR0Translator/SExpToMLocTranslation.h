@@ -9,12 +9,10 @@
 namespace Citron { 
 
 class RType;
-
 class MLoc;
-
-class TranslationContext;
 class IDesignatedDiagnostic;
+struct TranslationContexts;
 
-std::expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context);
+std::expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts);
 
 } // namespace Citron

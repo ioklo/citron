@@ -11,9 +11,8 @@
 namespace Citron {
 
 class MStmt;
+struct TranslationContexts;
 
-class TranslationContext;
-
-std::expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>* outStmts, SVarDecl* varDecl, TranslationContext& context);
+std::expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>* outStmts, SVarDecl* varDecl, TranslationContexts& contexts);
 
 } // namespace Citron

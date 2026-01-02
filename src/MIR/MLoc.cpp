@@ -17,18 +17,17 @@ MLoc_Temp::MLoc_Temp(MExp* exp)
 {
 }
 
-RType* MLoc_Temp::GetType(RFactory& factory)
+RType* MLoc_Temp::GetType()
 {
-    return exp->GetType(factory);
+    return exp->GetType();
 }
 
 MLoc_LocalVar::MLoc_LocalVar(const RName& name, RType* declType)
-    : name(name), declType(declType)
+    : name{name}, declType{declType}
 {
-
 }
 
-RType* MLoc_LocalVar::GetType(RFactory& factory)
+RType* MLoc_LocalVar::GetType()
 {
     return declType;
 }
@@ -38,9 +37,9 @@ MLoc_LambdaVar::MLoc_LambdaVar(RLambdaVarDecl* decl, RTypeArguments* typeArgs)
 {
 }
 
-RType* MLoc_LambdaVar::GetType(RFactory& factory)
+RType* MLoc_LambdaVar::GetType()
 {
-    return decl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs);
 }
 
 MLoc_ListIndexer::MLoc_ListIndexer(MLoc* list, MLoc* index, RType* itemType)
@@ -48,7 +47,7 @@ MLoc_ListIndexer::MLoc_ListIndexer(MLoc* list, MLoc* index, RType* itemType)
 {
 }
 
-RType* MLoc_ListIndexer::GetType(RFactory& factory)
+RType* MLoc_ListIndexer::GetType()
 {
     return itemType;
 }
@@ -58,9 +57,9 @@ MLoc_StructVar::MLoc_StructVar(MLoc* instance, RStructVarDecl* decl, RTypeArgume
 {
 }
 
-RType* MLoc_StructVar::GetType(RFactory& factory)
+RType* MLoc_StructVar::GetType()
 {
-    return decl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs);
 
 }
 
@@ -69,10 +68,9 @@ MLoc_ClassVar::MLoc_ClassVar(MLoc* instance, RClassVarDecl* decl, RTypeArguments
 {
 }
 
-
-RType* MLoc_ClassVar::GetType(RFactory& factory)
+RType* MLoc_ClassVar::GetType()
 {
-    return decl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs);
 }
 
 MLoc_EnumElemVar::MLoc_EnumElemVar(MLoc* instance, REnumElemVarDecl* decl, RTypeArguments* typeArgs)
@@ -80,9 +78,9 @@ MLoc_EnumElemVar::MLoc_EnumElemVar(MLoc* instance, REnumElemVarDecl* decl, RType
 {
 }
 
-RType* MLoc_EnumElemVar::GetType(RFactory& factory)
+RType* MLoc_EnumElemVar::GetType()
 {
-    return decl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs);
 }
 
 MLoc_This::MLoc_This(RType* type)
@@ -90,7 +88,7 @@ MLoc_This::MLoc_This(RType* type)
 {
 }
 
-RType* MLoc_This::GetType(RFactory& factory)
+RType* MLoc_This::GetType()
 {
     return type;
 }
@@ -100,9 +98,9 @@ MLoc_Deref::MLoc_Deref(MLoc* innerLoc)
 {
 }
 
-RType* MLoc_Deref::GetType(RFactory& factory)
+RType* MLoc_Deref::GetType()
 {
-    auto type = innerLoc->GetType(factory);
+    auto type = innerLoc->GetType();
     
     if (auto* ptrType = dynamic_cast<RType_Ptr*>(type))
         return ptrType->innerType;
@@ -116,9 +114,9 @@ MLoc_BoxDeref::MLoc_BoxDeref(MLoc* innerLoc)
 {
 }
 
-RType* MLoc_BoxDeref::GetType(RFactory& factory)
+RType* MLoc_BoxDeref::GetType()
 {
-    auto type = innerLoc->GetType(factory);
+    auto type = innerLoc->GetType();
 
     if (auto* boxType = dynamic_cast<RType_Box*>(type))
         return boxType->innerType;
@@ -133,9 +131,9 @@ MLoc_NullableValue::MLoc_NullableValue(MLoc* loc)
 
 }
 
-RType* MLoc_NullableValue::GetType(RFactory& factory)
+RType* MLoc_NullableValue::GetType()
 {
-    auto type = loc->GetType(factory);
+    auto* type = loc->GetType();
 
     if (auto* nullableType = dynamic_cast<RType_NullableValue*>(type))
         return nullableType->innerType;

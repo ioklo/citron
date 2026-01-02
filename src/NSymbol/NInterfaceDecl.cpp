@@ -37,7 +37,7 @@ optional<RMember> NInterfaceDecl::GetMember(RTypeArguments* typeArgs, const RNam
     throw NotImplementedException();
 }
 
-optional<RMember> NInterfaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> NInterfaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     throw NotImplementedException();
 }

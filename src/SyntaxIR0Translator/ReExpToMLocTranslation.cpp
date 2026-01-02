@@ -1,27 +1,30 @@
 #include "ReExpToMLocTranslation.h"
 
 #include "Infra/Ptr.h"
+#include "Infra/Expected.h"
 #include "Logging/Logger.h"
 #include "RSymbol/RClassVarDecl.h"
 #include "RSymbol/RStructVarDecl.h"
 #include "NSymbol/NLambdaVarDecl.h"
 #include "MIR/MLoc.h"
+#include "MIR/MFactory.h"
 
-#include "TranslationContext.h"
 #include "ScopeContext.h"
 #include "DesignatedDiagnostic.h"
 #include "ReExp.h"
+#include "TranslationContexts.h"
+#include "FuncContext.h"
 
 using namespace std;
 
 namespace Citron {
 
-expected<MLoc*, DiagPtr> TranslateReThisVarExpToMLoc(ReExp_ThisVar* reExp, TranslationContext& context) // nothrow
+expected<MLoc*, DiagPtr> TranslateReThisVarExpToMLoc(ReExp_ThisVar* reExp, TranslationContexts& contexts) // nothrow
 {
-    return context.MakeThisLoc();
+    return contexts.funcContext->MakeThisLoc();
 }
 
-expected<MLoc*, DiagPtr> TranslateReClassVarExpToMLoc(ReExp_ClassVar* reExp, TranslationContext& context)
+expected<MLoc*, DiagPtr> TranslateReClassVarExpToMLoc(ReExp_ClassVar* reExp, TranslationContexts& contexts)
 {
     if (reExp->hasExplicitInstance) // c.x, C.x 둘다 해당
     {
@@ -30,34 +33,34 @@ expected<MLoc*, DiagPtr> TranslateReClassVarExpToMLoc(ReExp_ClassVar* reExp, Tra
         if (reExp->explicitInstance != nullptr)
         {   
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            auto eInstance = TranslateReExpToMLoc(reExp->explicitInstance, /* bWrapExpAsLoc */ true, &designatedDiag, context);
+            auto e_instance = TranslateReExpToMLoc(reExp->explicitInstance, /* bWrapExpAsLoc */ true, &designatedDiag, contexts);
 
-            if (!eInstance)
-                return unexpected{move(eInstance).error()};
+            if (!e_instance)
+                return unexpected{move(e_instance).error()};
 
-            instance = *eInstance;
+            instance = *e_instance;
         }
 
-        return context.MakeNLoc<MLoc_ClassVar>(instance, reExp->decl, reExp->typeArgs);
+        return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(instance, reExp->decl, reExp->typeArgs);
     }
     else // x, x (static) 둘다 해당
     {   
-        MLoc* nInstanceLoc = reExp->decl->IsStatic()? nullptr : context.MakeThisLoc();
-        return context.MakeNLoc<MLoc_ClassVar>(nInstanceLoc, reExp->decl, reExp->typeArgs);
+        MLoc* nInstanceLoc = reExp->decl->IsStatic()? nullptr : contexts.funcContext->MakeThisLoc();
+        return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(nInstanceLoc, reExp->decl, reExp->typeArgs);
     }
 }
 
-expected<MLoc*, DiagPtr> TranslateReLocalVarExpToMLoc(ReExp_LocalVar* reExp, TranslationContext& context)
+expected<MLoc*, DiagPtr> TranslateReLocalVarExpToMLoc(ReExp_LocalVar* reExp, TranslationContexts& contexts)
 {
-    return context.MakeNLoc<MLoc_LocalVar>(reExp->name, reExp->type);
+    return contexts.mFactory->MakeMLoc<MLoc_LocalVar>(reExp->name, reExp->type);
 }
 
-expected<MLoc*, DiagPtr> TranslateReLambdaVarExpToMLoc(ReExp_LambdaVar* reExp, TranslationContext& context)
+expected<MLoc*, DiagPtr> TranslateReLambdaVarExpToMLoc(ReExp_LambdaVar* reExp, TranslationContexts& contexts)
 {
-    return context.MakeNLoc<MLoc_LambdaVar>(reExp->decl, reExp->typeArgs);
+    return contexts.mFactory->MakeMLoc<MLoc_LambdaVar>(reExp->decl, reExp->typeArgs);
 }
 
-expected<MLoc*, DiagPtr> TranslateReStructVarExpToMLoc(ReExp_StructVar* reExp, TranslationContext& context)
+expected<MLoc*, DiagPtr> TranslateReStructVarExpToMLoc(ReExp_StructVar* reExp, TranslationContexts& contexts)
 {
     if (reExp->hasExplicitInstance) // c.x, C.x 둘다 해당
     {
@@ -66,65 +69,65 @@ expected<MLoc*, DiagPtr> TranslateReStructVarExpToMLoc(ReExp_StructVar* reExp, T
         if (reExp->explicitInstance != nullptr)
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            auto eInstance = TranslateReExpToMLoc(reExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-            if (!eInstance) return unexpected{move(eInstance).error()};
+            auto e_instance = TranslateReExpToMLoc(reExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+            RETURN_ON_ERROR(e_instance);
 
-            instance = *eInstance;
+            instance = *e_instance;
         }
 
-        return context.MakeNLoc<MLoc_StructVar>(instance, reExp->decl, reExp->typeArgs);
+        return contexts.mFactory->MakeMLoc<MLoc_StructVar>(instance, reExp->decl, reExp->typeArgs);
     }
     else // x, x (static) 둘다 해당
     {   
         // TODO: [10] box 함수 내부이면, local ptr대신 box ptr로 변경해야 한다
-        MLoc* nInstanceLoc = reExp->decl->IsStatic() ? nullptr : context.MakeThisLoc();
-        return context.MakeNLoc<MLoc_StructVar>(nInstanceLoc, reExp->decl, reExp->typeArgs);
+        MLoc* nInstanceLoc = reExp->decl->IsStatic() ? nullptr : contexts.funcContext->MakeThisLoc();
+        return contexts.mFactory->MakeMLoc<MLoc_StructVar>(nInstanceLoc, reExp->decl, reExp->typeArgs);
     }
 }
 
-expected<MLoc*, DiagPtr> TranslateReEnumElemVarExpToMLoc(ReExp_EnumElemVar* reExp, TranslationContext& context)
+expected<MLoc*, DiagPtr> TranslateReEnumElemVarExpToMLoc(ReExp_EnumElemVar* reExp, TranslationContexts& contexts)
 {   
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto eInst = TranslateReExpToMLoc(reExp->instance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-    if (!eInst) return unexpected{move(eInst).error()};
+    auto e_inst = TranslateReExpToMLoc(reExp->instance, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+    RETURN_ON_ERROR(e_inst);
 
-    return context.MakeNLoc<MLoc_EnumElemVar>(*eInst, reExp->decl, reExp->typeArgs);
+    return contexts.mFactory->MakeMLoc<MLoc_EnumElemVar>(*e_inst, reExp->decl, reExp->typeArgs);
 }
 
-expected<MLoc*, DiagPtr> TranslateReListIndexerExpToMLoc(ReExp_ListIndexer* reExp, TranslationContext& context)
+expected<MLoc*, DiagPtr> TranslateReListIndexerExpToMLoc(ReExp_ListIndexer* reExp, TranslationContexts& contexts)
 {
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto eInst = TranslateReExpToMLoc(reExp->instance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-    if (!eInst) return unexpected{move(eInst).error()};
+    auto e_inst = TranslateReExpToMLoc(reExp->instance, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+    RETURN_ON_ERROR(e_inst);
 
-    auto eIndex = TranslateReExpToMLoc(reExp->index, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-    if (!eIndex) return unexpected{move(eIndex).error()};
+    auto e_index = TranslateReExpToMLoc(reExp->index, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+    RETURN_ON_ERROR(e_index);
 
-    return context.MakeNLoc<MLoc_ListIndexer>(*eInst, *eIndex, reExp->itemType);
+    return contexts.mFactory->MakeMLoc<MLoc_ListIndexer>(*e_inst, *e_index, reExp->itemType);
 }
 
-expected<MLoc*, DiagPtr> TranslateReDerefExpToMLoc(ReExp_Deref* reExp, TranslationContext& context)
-{
-    // *x, *G()
-    DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-
-    auto eTarget = TranslateReExpToMLoc(reExp->target, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-    if (!eTarget) return unexpected{move(eTarget).error()};
-
-    return context.MakeNLoc<MLoc_Deref>(*eTarget);
-}
-
-expected<MLoc*, DiagPtr> TranslateReBoxDerefExpToMLoc(ReExp_BoxDeref* reExp, TranslationContext& context)
+expected<MLoc*, DiagPtr> TranslateReDerefExpToMLoc(ReExp_Deref* reExp, TranslationContexts& contexts)
 {
     // *x, *G()
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto eTarget = TranslateReExpToMLoc(reExp->target, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-    if (!eTarget) return unexpected{move(eTarget).error()};
+    auto e_target = TranslateReExpToMLoc(reExp->target, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+    RETURN_ON_ERROR(e_target);
 
-    return context.MakeNLoc<MLoc_BoxDeref>(*eTarget);
+    return contexts.mFactory->MakeMLoc<MLoc_Deref>(*e_target);
+}
+
+expected<MLoc*, DiagPtr> TranslateReBoxDerefExpToMLoc(ReExp_BoxDeref* reExp, TranslationContexts& contexts)
+{
+    // *x, *G()
+    DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
+
+    auto e_target = TranslateReExpToMLoc(reExp->target, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+    RETURN_ON_ERROR(e_target);
+
+    return contexts.mFactory->MakeMLoc<MLoc_BoxDeref>(*e_target);
 }
 
 namespace {
@@ -137,64 +140,64 @@ public:
 private:
     bool bWrapExpAsLoc;
     IDesignatedDiagnostic* notLocationDiag;
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 public:
-    ReExpToMLocTranslator(bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
-        : bWrapExpAsLoc(bWrapExpAsLoc), notLocationDiag(notLocationDiag), context(context)
+    ReExpToMLocTranslator(bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts)
+        : bWrapExpAsLoc(bWrapExpAsLoc), notLocationDiag(notLocationDiag), contexts{contexts}
     {
     }
 
     ResultType Visit(ReExp_ThisVar* exp)
     {
-        return TranslateReThisVarExpToMLoc(exp, context);
+        return TranslateReThisVarExpToMLoc(exp, contexts);
     }
 
     ResultType Visit(ReExp_LocalVar* exp)
     {
-        return TranslateReLocalVarExpToMLoc(exp, context);
+        return TranslateReLocalVarExpToMLoc(exp, contexts);
     }
 
     ResultType Visit(ReExp_LambdaVar* exp)
     {
-        return TranslateReLambdaVarExpToMLoc(exp, context);
+        return TranslateReLambdaVarExpToMLoc(exp, contexts);
     }
 
     ResultType Visit(ReExp_ClassVar* exp)
     {
-        return TranslateReClassVarExpToMLoc(exp, context);
+        return TranslateReClassVarExpToMLoc(exp, contexts);
     }
 
     ResultType Visit(ReExp_StructVar* exp)
     {
-        return TranslateReStructVarExpToMLoc(exp, context);
+        return TranslateReStructVarExpToMLoc(exp, contexts);
     }
 
     ResultType Visit(ReExp_EnumElemVar* exp)
     {
-        return TranslateReEnumElemVarExpToMLoc(exp, context);
+        return TranslateReEnumElemVarExpToMLoc(exp, contexts);
     }
 
     ResultType Visit(ReExp_Deref* exp)
     {
-        return TranslateReDerefExpToMLoc(exp, context);
+        return TranslateReDerefExpToMLoc(exp, contexts);
     }
 
     ResultType Visit(ReExp_BoxDeref* exp)
     {
-        return TranslateReBoxDerefExpToMLoc(exp, context);
+        return TranslateReBoxDerefExpToMLoc(exp, contexts);
     }
 
     ResultType Visit(ReExp_ListIndexer* exp)
     {
-        return TranslateReListIndexerExpToMLoc(exp, context);
+        return TranslateReListIndexerExpToMLoc(exp, contexts);
     }
 
     ResultType Visit(ReExp_Else* exp)
     {
         if (bWrapExpAsLoc)
         {
-            return context.MakeNLoc<MLoc_Temp>(exp->mExp);
+            return contexts.mFactory->MakeMLoc<MLoc_Temp>(exp->mExp);
         }
         else
         {
@@ -205,9 +208,9 @@ public:
 
 }
 
-expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp* reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContext& context)
+expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp* reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts)
 {
-    ReExpToMLocTranslator translator{bWrapExpAsLoc, notLocationDiag, context};
+    ReExpToMLocTranslator translator{bWrapExpAsLoc, notLocationDiag, contexts};
     return Accept(translator, reExp);
 }
 

@@ -3,6 +3,7 @@
 #include "NSymbolConfig.h"
 
 #include <string>
+#include <memory>
 #include <optional>
 
 #include "RSymbol/RNamespaceDecl.h"
@@ -16,8 +17,9 @@
 
 namespace Citron
 {
-
 class RNamespaceDeclGroup;
+
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class NNamespaceDecl
     : public NDecl
@@ -36,6 +38,7 @@ private:
     NNamespaceDecl* outer;
     std::string name;
     RNamespaceDeclGroup* group;
+    RFactoryPtr rFactory;
 
 public:
     NSYMBOL_API static NNamespaceDecl* MakeRoot(RFactory& factory);
@@ -43,7 +46,7 @@ public:
 
 private:
     friend class NFactory;
-    NNamespaceDecl(NNamespaceDecl* outer, const std::string& name, RNamespaceDeclGroup* group);
+    NNamespaceDecl(NNamespaceDecl* outer, const std::string& name, RNamespaceDeclGroup* group, const RFactoryPtr& rFactory);
 
 public:
     const std::string& GetName() { return name; }

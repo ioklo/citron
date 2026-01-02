@@ -8,10 +8,9 @@
 namespace Citron {
 
 class MExp;
-
 class IrExp;
-class TranslationContext;
+struct TranslationContexts;
 
-std::expected<MExp*, DiagPtr> TranslateIrExpToMExp(IrExp* irExp, TranslationContext& context);
+std::expected<MExp*, DiagPtr> TranslateIrExpToMExp(IrExp* irExp, TranslationContexts& contexts);
 
 } // namespace Citron

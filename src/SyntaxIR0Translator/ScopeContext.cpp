@@ -42,7 +42,7 @@ void ScopeContext::SetFlowEndsCompletely()
     throw NotImplementedException{};
 }
 
-shared_ptr<ScopeContext> ScopeContext::MakeNestedScopeContext(shared_ptr<ScopeContext> sharedThis)
+shared_ptr<ScopeContext> ScopeContext::MakeTranslationContexts_NestedScope(shared_ptr<ScopeContext> sharedThis)
 {
     throw NotImplementedException{};
 }
@@ -52,7 +52,7 @@ shared_ptr<ScopeContext> ScopeContext::MakeLoopNestedScopeContext(shared_ptr<Sco
     throw NotImplementedException{};
 }
 
-tuple<ScopeContextPtr, NLambdaDecl> ScopeContext::MakeLambdaBodyContext(const RFuncReturn& ret, vector<RFuncParameter> params, bool bLastParamVariadic)
+tuple<ScopeContextPtr, NLambdaDecl> ScopeContext::MakeTranslationContexts_Lambda(const RFuncReturn& ret, vector<RFuncParameter> params, bool bLastParamVariadic)
 {
     throw NotImplementedException{};
 }
@@ -103,9 +103,9 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
             rTypeArgVector.reserve(idExp->typeArgs.size());
             for (auto* sTypeArg : idExp->typeArgs)
             {
-                auto eRTypeArg = scopeContext.TranslateSTypeExpToRType(sTypeArg);
-                if (!eRTypeArg) return nullptr;
-                rTypeArgVector.push_back(*eRTypeArg);
+                auto e_rTypeArg = scopeContext.TranslateSTypeExpToRType(sTypeArg);
+                if (!e_rTypeArg) return nullptr;
+                rTypeArgVector.push_back(*e_rTypeArg);
             }
             auto* rTypeArgs = rFactory->MakeTypeArguments(rTypeArgVector);
             return rFactory->MakeType(rTypeDecl, rTypeArgs);

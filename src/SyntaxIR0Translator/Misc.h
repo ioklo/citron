@@ -13,12 +13,10 @@ namespace Citron {
 class RTypeArguments;
 class MExp;
 class RType;
+struct TranslationContexts;
 
-class TranslationContext;
-
-std::expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context);
-
-std::expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContext& context);
+std::expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContexts& contexts);
+std::expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContexts& contexts);
 
 bool IsVarType(STypeExp* typeExp);
 

@@ -5,6 +5,7 @@
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
+
 #include "Syntax/Syntax.h"
 #include "Logging/Logger.h"
 #include "RSymbol/DeclWithOuterTypeArgs.h"
@@ -19,17 +20,15 @@
 #include "RSymbol/REnumElemDecl.h"
 #include "MIR/MExp.h"
 #include "MIR/MLoc.h"
+#include "MIR/MFactory.h"
 
-#include "TranslationContext.h"
-#include "ScopeContext.h"
-
+#include "TranslationContexts.h"
 #include "ImExp.h"
-#include "ReExp.h"
-
+#include "DesignatedDiagnostic.h"
 #include "ImExpToReExpTranslation.h"
 #include "ReExpToMLocTranslation.h"
-
 #include "FuncMatching.h"
+#include "FuncContext.h"
 
 
 using namespace std;
@@ -47,14 +46,14 @@ private:
     SExp* sCallable;
     SArguments* sArgs;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
     // S.ISyntaxNode nodeForCallExpErrorReport;
     // S.ISyntaxNode nodeForCallableErrorReport;
 
 public:
-    ImCallableAndSArgsToMExpTranslator(SExp* sCallable, SArguments* sArgs, TranslationContext& context)
-        : sCallable(sCallable), sArgs(sArgs), context(context)
+    ImCallableAndSArgsToMExpTranslator(SExp* sCallable, SArguments* sArgs, TranslationContexts& contexts)
+        : sCallable{sCallable}, sArgs{sArgs}, contexts{contexts}
     {
     }
 
@@ -62,7 +61,7 @@ private:
     template<typename TMExp, typename... TArgs> requires std::derived_from<TMExp, MExp>
     ResultType Exp(TArgs&&... args)
     {
-        return context.MakeMExp<TMExp>(std::forward<TArgs>(args)...);
+        return contexts.mFactory->MakeMExp<TMExp>(std::forward<TArgs>(args)...);
     }
     
     template<typename TValue>
@@ -80,18 +79,18 @@ private:
     // CallExp 분석에서 Callable이 Lambda, func<>로 계산되는 경우
     ResultType HandleLoc(ImExp* imExp)
     {
-        auto eReExp = TranslateImExpToReExp(imExp, context);
-        if (!eReExp)
-            return Error(move(eReExp));
+        auto e_reExp = TranslateImExpToReExp(imExp, contexts);
+        if (!e_reExp)
+            return Error(move(e_reExp));
 
         DesignatedDiagnostic<Error_CallExp_CallableExpressionIsNotCallable> designatedDiag;
-        auto eNCallable = TranslateReExpToMLoc(*eReExp, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
+        auto e_mCallable = TranslateReExpToMLoc(*e_reExp, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
 
-        if (!eNCallable)
-            return Error(move(eNCallable));
+        if (!e_mCallable)
+            return Error(move(e_mCallable));
 
         // TODO: Lambda말고 func<>도 있다
-        auto* rCallableType = context.GetType(*eNCallable);
+        auto* rCallableType = (*e_mCallable)->GetType();
         auto* rLambdaType = dynamic_cast<RType_Lambda*>(rCallableType);
 
         if (!rLambdaType)
@@ -111,7 +110,7 @@ private:
 
         if (match)
         {
-            return Exp<MExp_CallLambda>(rLambdaType->decl, match->typeArgs, *eNCallable, match->args);
+            return Exp<MExp_CallLambda>(rLambdaType->decl, match->typeArgs, *e_mCallable, match->args);
         }
         else
         {
@@ -127,10 +126,10 @@ public:
 
     ResultType Visit(ImExp_GlobalFuncs* imExp)
     {
-        auto eOMatch = MatchFunc(imExp->items, sArgs, context);
-        RETURN_ON_ERROR(eOMatch);
+        auto e_o_Match = MatchFunc(imExp->items, sArgs, contexts);
+        RETURN_ON_ERROR(e_o_Match);
 
-        auto& oMatch = *eOMatch;
+        auto& oMatch = *e_o_Match;
 
         if (!oMatch)
         {
@@ -154,10 +153,10 @@ public:
 
     ResultType Visit(ImExp_ClassFuncs* imExp)
     {
-        auto eOMatch = MatchFunc(imExp->items, sArgs, context);
-        RETURN_ON_ERROR(eOMatch);
+        auto e_o_match = MatchFunc(imExp->items, sArgs, contexts);
+        RETURN_ON_ERROR(e_o_match);
 
-        auto& oMatch = *eOMatch;
+        auto& oMatch = *e_o_match;
         if (!oMatch)
         {
             throw NotImplementedException{};
@@ -184,10 +183,10 @@ public:
             if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto eNLoc = TranslateReExpToMLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-                if (!eNLoc) return Error(move(eNLoc));
+                auto e_nLoc = TranslateReExpToMLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+                if (!e_nLoc) return Error(move(e_nLoc));
 
-                nInst = *eNLoc;
+                nInst = *e_nLoc;
             }
 
             return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, nInst, move(match.args));
@@ -200,7 +199,7 @@ public:
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, context.MakeThisLoc(), move(match.args));
+                return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, contexts.funcContext->MakeThisLoc(), move(match.args));
             }
         }
 
@@ -226,10 +225,10 @@ public:
             items.emplace_back(ctor, imExp->typeArgs);
         }
 
-        auto eOMatch = MatchFunc(items, sArgs, context);
-        RETURN_ON_ERROR(eOMatch);
+        auto e_o_match = MatchFunc(items, sArgs, contexts);
+        RETURN_ON_ERROR(e_o_match);
 
-        auto& oMatch = *eOMatch;
+        auto& oMatch = *e_o_match;
         if (!oMatch)
         {
             // 매치에 실패했습니다. 에러
@@ -239,15 +238,15 @@ public:
         }
 
         auto& match = *oMatch;
-        return Exp<MExp_NewStruct>(match.funcDecl, match.typeArgs, move(match.args));
+        return Exp<MExp_NewStruct>(match.funcDecl, match.typeArgs, move(match.args), contexts.rFactory);
     }
 
     ResultType Visit(ImExp_StructFuncs* imExp)
     {
-        auto eOMatch = MatchFunc(imExp->items, sArgs, context);
-        RETURN_ON_ERROR(eOMatch);
+        auto e_o_match = MatchFunc(imExp->items, sArgs, contexts);
+        RETURN_ON_ERROR(e_o_match);
 
-        auto& oMatch = *eOMatch;
+        auto& oMatch = *e_o_match;
         if (!oMatch)
         {
             // 매치에 실패했습니다.
@@ -275,10 +274,10 @@ public:
             if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto eInstance = TranslateReExpToMLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, context);
-                if (!eInstance) return Error(move(eInstance));
+                auto e_instance = TranslateReExpToMLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+                if (!e_instance) return Error(move(e_instance));
 
-                instance = *eInstance;
+                instance = *e_instance;
             }
 
             return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, instance, move(match.args));
@@ -291,7 +290,7 @@ public:
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, context.MakeThisLoc(), move(match.args));
+                return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, contexts.funcContext->MakeThisLoc(), move(match.args));
             }
         }
 
@@ -332,7 +331,7 @@ public:
             return Error<Error_Parameter_MismatchBetweenParamCountAndArgCount>();
         }
 
-        return Exp<MExp_NewEnumElem>(imExp->decl, match->typeArgs, move(match->args));
+        return Exp<MExp_NewEnumElem>(imExp->decl, match->typeArgs, move(match->args), contexts.rFactory);
     }
 
     ResultType Visit(ImExp_ThisVar* imExp)
@@ -385,23 +384,11 @@ public:
     {
         return HandleLoc(imExp);
     }
-
-    /*TranslationResult<IR0ExpResult> FatalCallable(SyntaxAnalysisErrorCode code)
-    {
-        context.AddFatalError(code, nodeForCallableErrorReport);
-        return TranslationResult.Error<IR0ExpResult>();
-    }
-
-    TranslationResult<IR0ExpResult> FatalCallExp(SyntaxAnalysisErrorCode code)
-    {
-        context.AddFatalError(code, nodeForCallExpErrorReport);
-        return TranslationResult.Error<IR0ExpResult>();
-    }*/
 };
 
 } // namespace
 
-expected<MExp*, DiagPtr> TranslateImCallableAndSArgsToMExp(ImExp* imCallable, SExp* sCallable, SArguments* sArgs, TranslationContext& context)
+expected<MExp*, DiagPtr> TranslateImCallableAndSArgsToMExp(ImExp* imCallable, SExp* sCallable, SArguments* sArgs, TranslationContexts& contexts)
 {
     // 여기서 분석해야 할 것은 
     // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -412,7 +399,7 @@ expected<MExp*, DiagPtr> TranslateImCallableAndSArgsToMExp(ImExp* imCallable, SE
     // 함수 이름을 먼저 찾는가
     // Argument 타입을 먼저 알아내야 하는가
     // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
-    ImCallableAndSArgsToMExpTranslator binder{sCallable, sArgs, context};
+    ImCallableAndSArgsToMExpTranslator binder{sCallable, sArgs, contexts};
     return Accept(binder, imCallable);
 }
 

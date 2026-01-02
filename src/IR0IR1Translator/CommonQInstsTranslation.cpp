@@ -44,8 +44,8 @@ expected<void, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, optional<
     // 원소가 한개라면, dest에 직접 넣는다
     if (exp->elements.size() == 1)
     {
-        auto eResult = TranslateMExp_StringElemToQInsts(exp->elements.front(), destSlotIndex, bodyContext);
-        RETURN_ON_ERROR(eResult);
+        auto e_result = TranslateMExp_StringElemToQInsts(exp->elements.front(), destSlotIndex, bodyContext);
+        RETURN_ON_ERROR(e_result);
     }
     else
     {
@@ -53,29 +53,29 @@ expected<void, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, optional<
 
         // "abc $x" => "abc " + x
         auto curSlotIndex = bodyContext.NewSlot(qStringType);
-        auto eResultFront = TranslateMExp_StringElemToQInsts(exp->elements.front(), curSlotIndex, bodyContext);
-        RETURN_ON_ERROR(eResultFront);
+        auto e_resultFront = TranslateMExp_StringElemToQInsts(exp->elements.front(), curSlotIndex, bodyContext);
+        RETURN_ON_ERROR(e_resultFront);
 
         auto elemSlotIndex = bodyContext.NewSlot(qStringType);
         auto newSlotIndex = bodyContext.NewSlot(qStringType);
         for (size_t i = 1, end = exp->elements.size() - 1; i < end; i++)
         {   
-            auto eResult = TranslateMExp_StringElemToQInsts(exp->elements[i], elemSlotIndex, bodyContext);
-            RETURN_ON_ERROR(eResult);
+            auto e_result = TranslateMExp_StringElemToQInsts(exp->elements[i], elemSlotIndex, bodyContext);
+            RETURN_ON_ERROR(e_result);
             
-            auto eEmitResult = bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_String_String, QArg_Slot{newSlotIndex}, {QArg_Slot{curSlotIndex}, QArg_Slot{elemSlotIndex}});
-            RETURN_ON_ERROR(eEmitResult);
+            auto e_emitResult = bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_String_String, QArg_Slot{newSlotIndex}, {QArg_Slot{curSlotIndex}, QArg_Slot{elemSlotIndex}});
+            RETURN_ON_ERROR(e_emitResult);
 
             swap(curSlotIndex, newSlotIndex);
         }
         
-        auto eResultBack = TranslateMExp_StringElemToQInsts(exp->elements.back(), elemSlotIndex, bodyContext);
-        RETURN_ON_ERROR(eResultBack);
+        auto e_resultBack = TranslateMExp_StringElemToQInsts(exp->elements.back(), elemSlotIndex, bodyContext);
+        RETURN_ON_ERROR(e_resultBack);
 
         if (destSlotIndex)
         {
-            auto eEmitResult = bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_String_String, QArg_Slot{*destSlotIndex}, {QArg_Slot{curSlotIndex}, QArg_Slot{elemSlotIndex}});
-            RETURN_ON_ERROR(eEmitResult);
+            auto e_emitResult = bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_String_String, QArg_Slot{*destSlotIndex}, {QArg_Slot{curSlotIndex}, QArg_Slot{elemSlotIndex}});
+            RETURN_ON_ERROR(e_emitResult);
         }
     }
 

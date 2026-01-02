@@ -74,10 +74,10 @@ expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
     TranslateBodyContext tbContext{logger, rFactory, mFactory, srtFactory, binOpQueryService};
     for (auto&& task : translatingBodyTasks)
     {
-        auto eResult = task->TranslateBody(tbContext);
-        RETURN_ON_ERROR(eResult);
+        auto e_result = task->TranslateBody(tbContext);
+        RETURN_ON_ERROR(e_result);
 
-        funcBodies.push_back(move(*eResult));
+        funcBodies.push_back(move(*e_result));
     }
 
     return funcBodies;

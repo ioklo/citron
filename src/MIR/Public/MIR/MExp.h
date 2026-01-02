@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <memory>
 
 #include "MArgument.h"
 
@@ -166,9 +167,10 @@ public:
 // box 3
 class MExp_Box : public MExp
 {
-    RFactoryPtr rFactory;
 public:
     MExp* innerExp;
+    RFactoryPtr rFactory;
+
 public:
     MIR_API MExp_Box(MExp* innerExp, const RFactoryPtr& rFactory);
 
@@ -230,9 +232,10 @@ public:
     MLoc* parent;
     RStructVarDecl* decl;
     RTypeArguments* typeArgs;
+    RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_StructMemberBoxRef(MLoc* parent, RStructVarDecl* decl, RTypeArguments* typeArgs);
+    MIR_API MExp_StructMemberBoxRef(MLoc* parent, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -243,9 +246,10 @@ class MExp_LocalRef : public MExp
 {
 public:
     MLoc* innerLoc;
+    RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_LocalRef(MLoc* innerLoc);
+    MIR_API MExp_LocalRef(MLoc* innerLoc, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -277,8 +281,10 @@ class MExp_BoolLiteral : public MExp
 {
 public:
     bool value;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_BoolLiteral(bool value);
+    MIR_API MExp_BoolLiteral(bool value, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -289,8 +295,10 @@ class MExp_IntLiteral : public MExp
 {
 public:
     int value;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_IntLiteral(int value);
+    MIR_API MExp_IntLiteral(int value, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -321,9 +329,10 @@ class MExp_String : public MExp
 {
 public:
     std::vector<MExp_StringElem> elements;
+    RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_String(std::vector<MExp_StringElem>&& elements);
+    MIR_API MExp_String(std::vector<MExp_StringElem>&& elements, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -340,8 +349,10 @@ class MExp_List : public MExp
 public:
     std::vector<MExp*> elems;
     RType* itemType;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_List(std::vector<MExp*>&& elems, RType* itemType);
+    MIR_API MExp_List(std::vector<MExp*>&& elems, RType* itemType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -406,8 +417,10 @@ class MExp_CallInternalUnaryOperator : public MExp
 public:
     MInternalUnaryOperator op;
     MExp* operand;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_CallInternalUnaryOperator(MInternalUnaryOperator op, MExp* operand);
+    MIR_API MExp_CallInternalUnaryOperator(MInternalUnaryOperator op, MExp* operand, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -418,8 +431,10 @@ class MExp_CallInternalUnaryAssignOperator : public MExp
 public:
     MInternalUnaryAssignOperator op;
     MLoc* operand;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_CallInternalUnaryAssignOperator(MInternalUnaryAssignOperator op, MLoc* operand);
+    MIR_API MExp_CallInternalUnaryAssignOperator(MInternalUnaryAssignOperator op, MLoc* operand, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -431,8 +446,10 @@ public:
     MInternalBinaryOperator op;
     MExp* operand0;
     MExp* operand1;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_CallInternalBinaryOperator(MInternalBinaryOperator op, MExp* operand0, MExp* operand1);
+    MIR_API MExp_CallInternalBinaryOperator(MInternalBinaryOperator op, MExp* operand0, MExp* operand1, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -449,6 +466,7 @@ public:
     RGlobalFuncDecl* rFuncDecl;
     RTypeArguments* rTypeArgs;
     std::vector<MArgument> args;
+
 public:
     MIR_API MExp_CallGlobalFunc(RGlobalFuncDecl* rFuncDecl, RTypeArguments* rTypeArgs, const std::vector<MArgument>& args);
 
@@ -467,8 +485,10 @@ public:
     RClassCtorDecl* ctorDecl;
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_NewClass(RClassCtorDecl* ctorDecl, RTypeArguments* typeArgs, const std::vector<MArgument>& args);
+    MIR_API MExp_NewClass(RClassCtorDecl* ctorDecl, RTypeArguments* typeArgs, const std::vector<MArgument>& args, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -513,8 +533,10 @@ public:
     RStructCtorDecl* ctor;
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_NewStruct(RStructCtorDecl* ctor, RTypeArguments* typeArgs, std::vector<MArgument>&& args);
+    MIR_API MExp_NewStruct(RStructCtorDecl* ctor, RTypeArguments* typeArgs, std::vector<MArgument>&& args, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -546,9 +568,10 @@ public:
     REnumElemDecl* enumElemDecl;
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
+    RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* typeArgs, std::vector<MArgument>&& args);
+    MIR_API MExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* typeArgs, std::vector<MArgument>&& args, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -575,9 +598,10 @@ class MExp_NullableValueNullLiteral : public MExp
 {
 public:
     RType* innerType;
+    RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_NullableValueNullLiteral(RType* innerType);
+    MIR_API MExp_NullableValueNullLiteral(RType* innerType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -587,8 +611,10 @@ class MExp_NullableRefNullLiteral : public MExp
 {
 public:
     RType* innerType;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_NullableRefNullLiteral(RType* innerType);
+    MIR_API MExp_NullableRefNullLiteral(RType* innerType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -598,8 +624,10 @@ class MExp_NewNullable : public MExp
 {
 public:
     MExp* innerExp;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_NewNullable(MExp* innerExp);
+    MIR_API MExp_NewNullable(MExp* innerExp, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -619,9 +647,10 @@ public:
     NLambdaDecl* lambdaDecl;
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
+    RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_Lambda(NLambdaDecl* lambdaDecl, RTypeArguments* typeArgs, const std::vector<MArgument>& args);
+    MIR_API MExp_Lambda(NLambdaDecl* lambdaDecl, RTypeArguments* typeArgs, const std::vector<MArgument>& args, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -671,9 +700,10 @@ class MExp_ClassIsClass : public MExp
 public:
     MExp* exp;
     RType* classType;
+    RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_ClassIsClass(MExp* exp, RType* classType);
+    MIR_API MExp_ClassIsClass(MExp* exp, RType* classType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -684,8 +714,10 @@ class MExp_ClassAsClass: public MExp
 public:
     MExp* exp;
     RType* classType;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_ClassAsClass(MExp* exp, RType* classType);
+    MIR_API MExp_ClassAsClass(MExp* exp, RType* classType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -697,8 +729,10 @@ class MExp_ClassIsInterface : public MExp
 public:
     MExp* exp;
     RType* interfaceType; // func도 interface type이다
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_ClassIsInterface(MExp* exp, RType* interfaceType);
+    MIR_API MExp_ClassIsInterface(MExp* exp, RType* interfaceType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -709,8 +743,10 @@ class MExp_ClassAsInterface : public MExp
 public:
     MExp* exp;
     RType* interfaceType;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_ClassAsInterface(MExp* exp, RType* interfaceType);
+    MIR_API MExp_ClassAsInterface(MExp* exp, RType* interfaceType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -721,8 +757,10 @@ class MExp_InterfaceIsClass : public MExp
 public:
     MExp* exp;
     RType* classType;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_InterfaceIsClass(MExp* exp, RType* classType);
+    MIR_API MExp_InterfaceIsClass(MExp* exp, RType* classType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -733,8 +771,10 @@ class MExp_InterfaceAsClass : public MExp
 public:
     MExp* exp;
     RType* classType;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_InterfaceAsClass(MExp* exp, RType* classType);
+    MIR_API MExp_InterfaceAsClass(MExp* exp, RType* classType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -745,8 +785,10 @@ class MExp_InterfaceIsInterface : public MExp
 public:
     MExp* exp;
     RType* interfaceType;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_InterfaceIsInterface(MExp* exp, RType* interfaceType);
+    MIR_API MExp_InterfaceIsInterface(MExp* exp, RType* interfaceType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -757,8 +799,10 @@ class MExp_InterfaceAsInterface : public MExp
 public:
     MExp* exp;
     RType* interfaceType;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_InterfaceAsInterface(MExp* exp, RType* interfaceType);
+    MIR_API MExp_InterfaceAsInterface(MExp* exp, RType* interfaceType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -769,8 +813,10 @@ class MExp_EnumIsEnumElem : public MExp
 public:
     MExp* exp;
     RType* enumElemType;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_EnumIsEnumElem(MExp* exp, RType* enumElemType);
+    MIR_API MExp_EnumIsEnumElem(MExp* exp, RType* enumElemType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -781,8 +827,10 @@ class MExp_EnumAsEnumElem : public MExp
 public:
     MExp* exp;
     RType* enumElemType;
+    RFactoryPtr rFactory;
+
 public:
-    MIR_API MExp_EnumAsEnumElem(MExp* exp, RType* enumElemType);
+    MIR_API MExp_EnumAsEnumElem(MExp* exp, RType* enumElemType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }

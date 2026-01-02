@@ -1,6 +1,7 @@
 #pragma once
-
 #include "NSymbolConfig.h"
+
+#include <memory>
 
 #include "RSymbol/RClassFuncDecl.h"
 
@@ -61,7 +62,7 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RClassFuncDecl
-    RType* GetReturnType(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs, factory); }
+    RType* GetReturnType(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs); }
 };
 
 }

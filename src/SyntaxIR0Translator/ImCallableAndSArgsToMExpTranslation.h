@@ -11,8 +11,8 @@
 namespace Citron {
 
 class ImExp;
-class TranslationContext;
+struct TranslationContexts;
 
-std::expected<MExp*, DiagPtr> TranslateImCallableAndSArgsToMExp(ImExp* imCallable, SExp* sCallable, SArguments* sArgs, TranslationContext& context);
+std::expected<MExp*, DiagPtr> TranslateImCallableAndSArgsToMExp(ImExp* imCallable, SExp* sCallable, SArguments* sArgs, TranslationContexts& contexts);
 
 } // namespace Citron

@@ -66,8 +66,8 @@ TEST(QEvaluator, CommandInst_DoingWell)
     funcBodies.emplace_back(nEntry, move(slotInfos), move(blocks));
     QData* qData = qFactory->MakeQData(move(funcBodies));
     
-    auto eResult = EvaluateQData({}, qData, nEntry, MakePtr<NullCommandHandler>(), qFactory);
-    EXPECT_TRUE(eResult);
+    auto e_result = EvaluateQData({}, qData, nEntry, MakePtr<NullCommandHandler>(), qFactory);
+    EXPECT_TRUE(e_result);
 }
 
 TEST(QEvaluator, Translate)

@@ -23,9 +23,9 @@ ReExp_LambdaVar::ReExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs)
 {
 }
 
-RType* ReExp_LambdaVar::GetType(RFactory& factory)
+RType* ReExp_LambdaVar::GetType()
 {
-    return decl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs);
 }
 
 ReExp_ClassVar::ReExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance)
@@ -33,9 +33,9 @@ ReExp_ClassVar::ReExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bo
 {
 }
 
-RType* ReExp_ClassVar::GetType(RFactory& factory)
+RType* ReExp_ClassVar::GetType()
 {
-    return decl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs);
 }
 
 ReExp_StructVar::ReExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, ReExp* explicitInstance)
@@ -43,9 +43,9 @@ ReExp_StructVar::ReExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs,
 {
 }
 
-RType* ReExp_StructVar::GetType(RFactory& factory)
+RType* ReExp_StructVar::GetType()
 {
-    return decl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs);
 }
 
 ReExp_EnumElemVar::ReExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, ReExp* instance)
@@ -53,9 +53,9 @@ ReExp_EnumElemVar::ReExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typ
 {
 }
 
-RType* ReExp_EnumElemVar::GetType(RFactory& factory)
+RType* ReExp_EnumElemVar::GetType()
 {
-    return decl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs);
 }
 
 ReExp_Deref::ReExp_Deref(ReExp* target)
@@ -64,9 +64,9 @@ ReExp_Deref::ReExp_Deref(ReExp* target)
 
 }
 
-RType* ReExp_Deref::GetType(RFactory& factory)
+RType* ReExp_Deref::GetType()
 {
-    auto type = target->GetType(factory);
+    auto type = target->GetType();
 
     // TODO: remove reinterpret cast. 어떻게?
     return ((RType_Ptr*)type)->innerType;
@@ -78,9 +78,9 @@ ReExp_BoxDeref::ReExp_BoxDeref(ReExp* target)
 
 }
 
-RType* ReExp_BoxDeref::GetType(RFactory& factory)
+RType* ReExp_BoxDeref::GetType()
 {
-    auto type = target->GetType(factory);
+    auto type = target->GetType();
 
     // TODO: remove reinterpret cast
     return ((RType_Box*)type)->innerType;
@@ -97,9 +97,9 @@ ReExp_Else::ReExp_Else(MExp* mExp)
 {
 }
 
-RType* ReExp_Else::GetType(RFactory& factory)
+RType* ReExp_Else::GetType()
 {
-    return mExp->GetType(factory);
+    return mExp->GetType();
 }
 
 

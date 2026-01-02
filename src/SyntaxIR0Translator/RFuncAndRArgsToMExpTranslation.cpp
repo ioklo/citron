@@ -11,14 +11,13 @@
 #include "RSymbol/RClassFuncDecl.h"
 #include "RSymbol/RStructFuncDecl.h"
 #include "MIR/MExp.h"
+#include "MIR/MFactory.h"
 
-#include "TranslationContext.h"
+#include "TranslationContexts.h"
 
 using namespace std;
 
 namespace Citron {
-
-class TranslationContext;
 
 namespace {
 
@@ -31,13 +30,13 @@ public:
     MLoc* instance;
     vector<MArgument> args;
 
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, MExp>
     ResultType Value(TArgs&&... args)
     {
-        return context.MakeMExp<TValue>(forward<TArgs>(args)...);
+        return contexts.mFactory->MakeMExp<TValue>(forward<TArgs>(args)...);
     }
 
     template<typename TValue>
@@ -53,8 +52,8 @@ private:
     }
 
 public:
-    RFuncAndRArgsToMExpTranslator(RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContext& context)
-        : typeArgs{typeArgs}, instance{instance}, args{move(args)}, context{context}
+    RFuncAndRArgsToMExpTranslator(RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContexts& contexts)
+        : typeArgs{typeArgs}, instance{instance}, args{move(args)}, contexts{contexts}
     {
     }
 
@@ -96,9 +95,9 @@ public:
 
 } // namespace Citron
 
-expected<MExp*, DiagPtr> TranslateRFuncAndNArgsToMExp(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContext& context)
+expected<MExp*, DiagPtr> TranslateRFuncAndNArgsToMExp(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContexts& contexts)
 {
-    RFuncAndRArgsToMExpTranslator binder{typeArgs, instance, move(args), context};
+    RFuncAndRArgsToMExpTranslator binder{typeArgs, instance, move(args), contexts};
     return Accept(binder, decl);
 }
 

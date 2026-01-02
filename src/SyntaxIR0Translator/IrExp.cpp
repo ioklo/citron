@@ -7,8 +7,9 @@
 #include "NSymbol/NStructVarDecl.h"
 
 #include "MIR/MLoc.h"
+#include "MIR/MFactory.h"
 
-#include "TranslationContext.h"
+#include "TranslationContexts.h"
 
 using namespace std;
 
@@ -50,49 +51,49 @@ IrExp_StaticRef::IrExp_StaticRef(MLoc* loc)
 {
 }
 
-IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(MLoc* loc, RClassVarDecl* decl, RTypeArguments* typeArgs)
-    : loc(loc), decl(decl), typeArgs(typeArgs)
+IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(MLoc* loc, RClassVarDecl* decl, RTypeArguments* typeArgs, const MFactoryPtr& mFactory)
+    : loc{loc}, decl{decl}, typeArgs{typeArgs}, mFactory{mFactory}
 {
 }
 
-RType* IrExp_BoxRef_ClassMember::GetTargetType(RFactory& factory)
+RType* IrExp_BoxRef_ClassMember::GetTargetType()
 {
-    return decl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs);
 }
 
-MLoc* IrExp_BoxRef_ClassMember::MakeLoc(TranslationContext& context)
+MLoc* IrExp_BoxRef_ClassMember::MakeLoc()
 {
-    return context.MakeNLoc<MLoc_ClassVar>(loc, decl, typeArgs);
+    return mFactory->MakeMLoc<MLoc_ClassVar>(loc, decl, typeArgs);
 }
 
-IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(MLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs)
-    : loc(loc), decl(decl), typeArgs(typeArgs)
-{
-}
-
-RType* IrExp_BoxRef_StructIndirectMember::GetTargetType(RFactory& factory)
-{
-    return decl->GetDeclType(*typeArgs, factory);
-}
-
-MLoc* IrExp_BoxRef_StructIndirectMember::MakeLoc(TranslationContext& context)
-{
-    return context.MakeNLoc<MLoc_StructVar>(context.MakeNLoc<MLoc_BoxDeref>(loc), decl, typeArgs);
-}
-
-IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(IrExp_BoxRef* parent, RStructVarDecl* decl, RTypeArguments* typeArgs)
-    : parent{parent}, decl{decl}, typeArgs{typeArgs}
+IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(MLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs, const MFactoryPtr& mFactory)
+    : loc{loc}, decl{decl}, typeArgs{typeArgs}, mFactory{mFactory}
 {
 }
 
-RType* IrExp_BoxRef_StructMember::GetTargetType(RFactory& factory)
+RType* IrExp_BoxRef_StructIndirectMember::GetTargetType()
 {
-    return decl->GetDeclType(*typeArgs, factory);
+    return decl->GetDeclType(*typeArgs);
 }
 
-MLoc* IrExp_BoxRef_StructMember::MakeLoc(TranslationContext& context)
+MLoc* IrExp_BoxRef_StructIndirectMember::MakeLoc()
 {
-    return context.MakeNLoc<MLoc_StructVar>(parent->MakeLoc(context), decl, typeArgs);
+    return mFactory->MakeMLoc<MLoc_StructVar>(mFactory->MakeMLoc<MLoc_BoxDeref>(loc), decl, typeArgs);
+}
+
+IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(IrExp_BoxRef* parent, RStructVarDecl* decl, RTypeArguments* typeArgs, const MFactoryPtr& mFactory)
+    : parent{parent}, decl{decl}, typeArgs{typeArgs}, mFactory{mFactory}
+{
+}
+
+RType* IrExp_BoxRef_StructMember::GetTargetType()
+{
+    return decl->GetDeclType(*typeArgs);
+}
+
+MLoc* IrExp_BoxRef_StructMember::MakeLoc()
+{
+    return mFactory->MakeMLoc<MLoc_StructVar>(parent->MakeLoc(), decl, typeArgs);
 }
 
 IrExp_LocalRef::IrExp_LocalRef(MLoc* loc)

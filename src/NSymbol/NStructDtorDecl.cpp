@@ -6,7 +6,8 @@ using namespace std;
 namespace Citron {
 
 NStructDtorDecl::NStructDtorDecl(RAccessor accessor, NStructDecl* _struct)
-    : accessor{accessor}, _struct{_struct}, NCommonFuncDeclComponent{false, false, {}}
+    : accessor{accessor}, _struct{_struct}
+    , NCommonFuncDeclComponent{false, false, {}}
 {
     NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor{}, {}, /*bLastParamVariadic*/false);
 }
@@ -36,13 +37,13 @@ optional<RMember> NStructDtorDecl::GetMember(RTypeArguments* typeArgs, const RNa
     return nullopt;
 }
 
-std::optional<RMember> NStructDtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+std::optional<RMember> NStructDtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     auto baseTypeParamCount = _struct->GetAllTypeParamCount();
-    if (auto oMember = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount, factory))
-        return oMember;
+    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount))
+        return o_member;
 
-    return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 } // namespace Citron

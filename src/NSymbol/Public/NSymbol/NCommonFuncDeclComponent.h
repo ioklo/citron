@@ -13,7 +13,6 @@
 namespace Citron {
 
 struct RFuncParameter;
-class RFactory;
 class RTypeArguments;
 
 class NLambdaVarDecl;
@@ -51,14 +50,14 @@ public:
     NSYMBOL_API size_t GetParamCount();
 
     NSYMBOL_API RFuncReturn GetUnboundFuncReturn();    
-    NSYMBOL_API RType* GetReturnType(RTypeArguments& typeArgs, RFactory& factory);
-    NSYMBOL_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory);
+    NSYMBOL_API RType* GetReturnType(RTypeArguments& typeArgs);
+    NSYMBOL_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs);
     
     NSYMBOL_API std::span<RFuncParameter> GetUnboundFuncParams();
-    NSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory);
+    NSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index);
 
     NSYMBOL_API std::vector<RType*> GetParamIds();
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory);
+    NSYMBOL_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 }

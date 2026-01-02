@@ -6,11 +6,12 @@
 #include "Logging/Logger.h"
 #include "Logging/Diag.h"
 #include "MIR/MExp.h"
+#include "MIR/MFactory.h"
 
 #include "ReExp.h"
 #include "ScopeContext.h"
-#include "TranslationContext.h"
 #include "ReExpToMLocTranslation.h"
+#include "TranslationContexts.h"
 
 using namespace std;
 
@@ -25,11 +26,11 @@ public:
     using ResultType = expected<MExp*, DiagPtr>;
 
 private:
-    TranslationContext& context;
+    TranslationContexts& contexts;
 
 public:
-    ReExpToMExpTranslator(TranslationContext& context)
-        : context(context)
+    ReExpToMExpTranslator(TranslationContexts& contexts)
+        : contexts{contexts}
     {
     }
 
@@ -38,62 +39,62 @@ public:
         if (!eLoc)
             return unexpected{move(eLoc).error()};
         else
-            return context.MakeMExp<MExp_Load>(*eLoc);
+            return contexts.mFactory->MakeMExp<MExp_Load>(*eLoc);
     }
 
     ResultType Visit(ReExp_ThisVar* exp)
     {
-        auto eNLoc = TranslateReThisVarExpToMLoc(exp, context);
-        return HandleLoc(move(eNLoc));
+        auto e_nLoc = TranslateReThisVarExpToMLoc(exp, contexts);
+        return HandleLoc(move(e_nLoc));
     }
 
     ResultType Visit(ReExp_LocalVar* exp)
     {
-        auto eNLoc = TranslateReLocalVarExpToMLoc(exp, context);
-        return HandleLoc(move(eNLoc));
+        auto e_nLoc = TranslateReLocalVarExpToMLoc(exp, contexts);
+        return HandleLoc(move(e_nLoc));
     }
 
     ResultType Visit(ReExp_LambdaVar* exp)
     {
-        auto eNLoc = TranslateReLambdaVarExpToMLoc(exp, context);
-        return HandleLoc(move(eNLoc));
+        auto e_nLoc = TranslateReLambdaVarExpToMLoc(exp, contexts);
+        return HandleLoc(move(e_nLoc));
     }
 
     ResultType Visit(ReExp_ClassVar* exp)
     {
-        auto eNLoc = TranslateReClassVarExpToMLoc(exp, context);
-        return HandleLoc(move(eNLoc));
+        auto e_nLoc = TranslateReClassVarExpToMLoc(exp, contexts);
+        return HandleLoc(move(e_nLoc));
     }
 
     ResultType Visit(ReExp_StructVar* exp)
     {
-        auto eNLoc = TranslateReStructVarExpToMLoc(exp, context);
-        return HandleLoc(move(eNLoc));
+        auto e_nLoc = TranslateReStructVarExpToMLoc(exp, contexts);
+        return HandleLoc(move(e_nLoc));
     }
 
     ResultType Visit(ReExp_EnumElemVar* exp)
     {
-        auto eNLoc = TranslateReEnumElemVarExpToMLoc(exp, context);
-        return HandleLoc(move(eNLoc));
+        auto e_nLoc = TranslateReEnumElemVarExpToMLoc(exp, contexts);
+        return HandleLoc(move(e_nLoc));
     }
 
     ResultType Visit(ReExp_Deref* exp)
     {
-        auto eNLoc = TranslateReDerefExpToMLoc(exp, context);
-        return HandleLoc(move(eNLoc));
+        auto e_nLoc = TranslateReDerefExpToMLoc(exp, contexts);
+        return HandleLoc(move(e_nLoc));
     }
 
     // *x
     ResultType Visit(ReExp_BoxDeref* exp)
     {
-        auto eNLoc = TranslateReBoxDerefExpToMLoc(exp, context);
-        return HandleLoc(move(eNLoc));
+        auto e_nLoc = TranslateReBoxDerefExpToMLoc(exp, contexts);
+        return HandleLoc(move(e_nLoc));
     }
 
     ResultType Visit(ReExp_ListIndexer* exp)
     {
-        auto eNLoc = TranslateReListIndexerExpToMLoc(exp, context);
-        return HandleLoc(move(eNLoc));
+        auto e_nLoc = TranslateReListIndexerExpToMLoc(exp, contexts);
+        return HandleLoc(move(e_nLoc));
     }
 
     ResultType Visit(ReExp_Else* exp)
@@ -104,9 +105,9 @@ public:
 
 } // namespace 
 
-expected<MExp*, DiagPtr> TranslateReExpToMExp(ReExp* reExp, TranslationContext& context)
+expected<MExp*, DiagPtr> TranslateReExpToMExp(ReExp* reExp, TranslationContexts& contexts)
 {
-    ReExpToMExpTranslator translator{context};
+    ReExpToMExpTranslator translator{contexts};
     return Accept(translator, reExp);
 }
 

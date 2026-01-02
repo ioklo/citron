@@ -13,9 +13,8 @@ class RFuncDecl;
 class RTypeArguments;
 class MExp;
 class MLoc;
+struct TranslationContexts;
 
-class TranslationContext;
-
-std::expected<MExp*, DiagPtr> TranslateRFuncAndNArgsToMExp(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, std::vector<MArgument>&& args, TranslationContext& context);
+std::expected<MExp*, DiagPtr> TranslateRFuncAndNArgsToMExp(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, std::vector<MArgument>&& args, TranslationContexts& contexts);
 
 } // namespace Citron

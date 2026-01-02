@@ -707,7 +707,11 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
 {
     auto bodies = qData->GetAllBodies();
     auto i = ranges::find_if(bodies, [nEntry](QFuncBody& body) { return body.nFuncDecl == nEntry; });
-    if (i == bodies.end()) return unexpected{nullptr};
+    if (i == bodies.end())
+    {
+        throw NotImplementedException{}; // 에러 처리
+        return unexpected{nullptr};
+    }
 
     Environment env;
     env.qData = qData;

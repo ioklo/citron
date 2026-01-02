@@ -15,7 +15,6 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-class TranslationContext;
 using SRTFactoryPtr = std::shared_ptr<class SRTFactory>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 
@@ -35,7 +34,6 @@ public:
 
     std::expected<MFuncBody, DiagPtr> Translate(NFuncDecl* funcDecl, std::span<SStmt*> mStmts);
     void MarkFailed();
-    TranslationContext MakeTranslationContext();
 };
 
 } // namespace Citron

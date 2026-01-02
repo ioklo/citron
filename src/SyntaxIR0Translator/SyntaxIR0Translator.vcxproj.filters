@@ -78,9 +78,6 @@
     <ClCompile Include="ScopeContext.cpp">
       <Filter>Context</Filter>
     </ClCompile>
-    <ClCompile Include="TranslationContext.cpp">
-      <Filter>Context</Filter>
-    </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
     <ClCompile Include="GlobalFuncTask.cpp" />
@@ -93,15 +90,15 @@
     <ClCompile Include="EnumElemVarTask.cpp" />
     <ClCompile Include="GlobalContext.cpp" />
     <ClCompile Include="StructDtorTask.cpp" />
+    <ClCompile Include="TranslationContexts.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncContext.h">
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="ScopeContext.h">
-      <Filter>Context</Filter>
-    </ClInclude>
-    <ClInclude Include="TranslationContext.h">
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="ImCallableAndSArgsToMExpTranslation.h">
@@ -193,6 +190,9 @@
     <ClInclude Include="EnumElemVarTask.h" />
     <ClInclude Include="GlobalContext.h" />
     <ClInclude Include="StructDtorTask.h" />
+    <ClInclude Include="TranslationContexts.h">
+      <Filter>Context</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

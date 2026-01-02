@@ -16,8 +16,8 @@ using namespace std;
 
 namespace Citron {
 
-NNamespaceDecl::NNamespaceDecl(NNamespaceDecl* outer, const std::string& name, RNamespaceDeclGroup* group)
-    : outer(outer), name(name), group(group)
+NNamespaceDecl::NNamespaceDecl(NNamespaceDecl* outer, const std::string& name, RNamespaceDeclGroup* group, const RFactoryPtr& rFactory)
+    : outer{outer}, name{name}, group{group}, rFactory{rFactory}
 {
 }
 
@@ -50,16 +50,16 @@ optional<RMember> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RNam
     vector<RMember> candidates;
 
     // namespace 
-    if (auto oNamespace = NNamespaceDeclContainerComponent::GetMemberNamespace(name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*oNamespace);
+    if (auto o_namespace = NNamespaceDeclContainerComponent::GetMemberNamespace(name, explicitTypeParamsExceptOuterCount))
+        candidates.push_back(*o_namespace);
 
     // type
-    if (auto oType = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*oType);
+    if (auto o_type = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        candidates.push_back(*o_type);
 
     // func
-    if (auto oFunc = NFuncDeclContainerComponent<NGlobalFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*oFunc);
+    if (auto o_func = NFuncDeclContainerComponent<NGlobalFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        candidates.push_back(*o_func);
 
     if (candidates.empty()) return nullopt;
 
@@ -72,14 +72,14 @@ optional<RMember> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RNam
     return candidates[0];
 }
 
-optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto typeArgs = factory.MakeTypeArguments({});
-    if (auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        return oMember;
+    auto typeArgs = rFactory->MakeTypeArguments({});
+    if (auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        return o_member;
 
     if (outer)
-        return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+        return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 
     return nullopt;
 }

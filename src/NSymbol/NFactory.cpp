@@ -31,7 +31,7 @@ NNamespaceDecl* NFactory::MakeRootNamespaceDecl()
 {
     // root namespace면 
     auto* group = rFactory->GetNamespaceDeclGroup({});
-    unique_ptr<NNamespaceDecl> newDecl{new NNamespaceDecl{nullptr, "", group}};
+    unique_ptr<NNamespaceDecl> newDecl{new NNamespaceDecl{nullptr, "", group, rFactory}};
     auto pNewDecl = newDecl.get();
     namespaceDecls.push_back(move(newDecl));
 
@@ -67,7 +67,7 @@ NNamespaceDecl* NFactory::MakeChildNamespaceDecl(NNamespaceDecl* outer, const st
     reverse(id.begin(), id.end());
 
     auto group = rFactory->GetNamespaceDeclGroup(id);
-    unique_ptr<NNamespaceDecl> newDecl{new NNamespaceDecl{outer, name, group}};
+    unique_ptr<NNamespaceDecl> newDecl{new NNamespaceDecl{outer, name, group, rFactory}};
     auto pNewDecl = newDecl.get();
     namespaceDecls.push_back(move(newDecl));
 

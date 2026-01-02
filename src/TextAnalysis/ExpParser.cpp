@@ -35,14 +35,14 @@ SExp* ParseLeftAssocBinaryOpExp(Lexer* lexer, BinaryOpInfo (&infos)[N], SFactory
     {
         optional<SBinaryOpKind> oOpKind;
 
-        if (auto oLexResult = curLexer.LexNormalMode(true))
+        if (auto o_lexResult = curLexer.LexNormalMode(true))
         {
             for(auto& info : infos)
             {
-                if (info.token == oLexResult->token)
+                if (info.token == o_lexResult->token)
                 {
                     oOpKind = info.kind;
-                    curLexer = oLexResult->lexer;
+                    curLexer = o_lexResult->lexer;
                     break;
                 }
             }
@@ -77,8 +77,8 @@ SExp* HandleUnaryMinusWithIntLiteral(SUnaryOpKind kind, SExp* exp, SFactory& fac
 SArgument* ParseArgument(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
-    auto oOutAndParams = AcceptParseOutAndParams(&curLexer);
-    if (!oOutAndParams)
+    auto o_outAndParams = AcceptParseOutAndParams(&curLexer);
+    if (!o_outAndParams)
         return nullptr;
 
     auto* exp = ParseExp(&curLexer, factory);
@@ -87,7 +87,7 @@ SArgument* ParseArgument(Lexer* lexer, SFactory& factory)
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSArgument(oOutAndParams->bOut, oOutAndParams->bParams, exp);
+    return factory.MakeSArgument(o_outAndParams->bOut, o_outAndParams->bParams, exp);
 }
 
 }
@@ -182,15 +182,15 @@ SExp* ParseTestAndTypeTestExp(Lexer* lexer, SFactory& factory)
     {
         bool bHandled = false;
 
-        auto oLexResult = curLexer.LexNormalMode(true);
-        if (!oLexResult) break;
+        auto o_lexResult = curLexer.LexNormalMode(true);
+        if (!o_lexResult) break;
 
         // search binary
         for(auto& info : testInfos)
         {
-            if (info.token == oLexResult->token)
+            if (info.token == o_lexResult->token)
             {
-                curLexer = move(oLexResult->lexer);
+                curLexer = move(o_lexResult->lexer);
 
                 // base
                 auto* operand1 = ParseAdditiveExp(&curLexer, factory);
@@ -207,9 +207,9 @@ SExp* ParseTestAndTypeTestExp(Lexer* lexer, SFactory& factory)
 
         if (bHandled) continue;
 
-        if (holds_alternative<IsToken>(oLexResult->token))
+        if (holds_alternative<IsToken>(o_lexResult->token))
         {
-            curLexer = oLexResult->lexer;
+            curLexer = o_lexResult->lexer;
 
             auto* typeExp = ParseTypeExp(&curLexer, factory);
 
@@ -220,9 +220,9 @@ SExp* ParseTestAndTypeTestExp(Lexer* lexer, SFactory& factory)
             continue;
         }
 
-        if (holds_alternative<AsToken>(oLexResult->token))
+        if (holds_alternative<AsToken>(o_lexResult->token))
         {
-            curLexer = oLexResult->lexer;
+            curLexer = o_lexResult->lexer;
 
             auto* typeExp = ParseTypeExp(&curLexer, factory);
             if (!typeExp) 
@@ -276,15 +276,15 @@ Citron::SExp* ParseUnaryExp(Lexer* lexer, SFactory& factory)
     Lexer curLexer = *lexer;
     optional<SUnaryOpKind> oOpKind;
 
-    auto oLexResult = curLexer.LexNormalMode(true);
-    if (oLexResult)
+    auto o_lexResult = curLexer.LexNormalMode(true);
+    if (o_lexResult)
     {
         for(auto& info : unaryInfos)
         {
-            if (info.token == oLexResult->token)
+            if (info.token == o_lexResult->token)
             {
                 oOpKind = info.kind;
-                curLexer = move(oLexResult->lexer);
+                curLexer = move(o_lexResult->lexer);
                 break;
             }
         }
@@ -333,14 +333,14 @@ Citron::SExp* ParsePrimaryExp(Lexer* lexer, SFactory& factory)
     while (true)
     {
         // Unary일수도 있고, ()일수도 있다
-        auto oLexResult = curLexer.LexNormalMode(true);
-        if (!oLexResult) break;
+        auto o_lexResult = curLexer.LexNormalMode(true);
+        if (!o_lexResult) break;
 
         optional<UnaryOpInfo> primaryInfo;
 
         for (auto& info : primaryInfos)
         {
-            if (info.token == oLexResult->token)
+            if (info.token == o_lexResult->token)
             {
                 // TODO: postfix++이 두번 이상 나타나지 않도록 한다
                 primaryInfo = info;
@@ -350,7 +350,7 @@ Citron::SExp* ParsePrimaryExp(Lexer* lexer, SFactory& factory)
 
         if (primaryInfo)
         {
-            curLexer = oLexResult->lexer;
+            curLexer = o_lexResult->lexer;
 
             // Fold
             curExp = factory.MakeSExp_UnaryOp(primaryInfo->kind, curExp);
@@ -374,39 +374,39 @@ Citron::SExp* ParsePrimaryExp(Lexer* lexer, SFactory& factory)
         // . id < >
         if (Accept<DotToken>(&curLexer))
         {
-            auto oIdToken = Accept<IdentifierToken>(&curLexer);
+            auto o_idToken = Accept<IdentifierToken>(&curLexer);
 
-            if (!oIdToken)
+            if (!o_idToken)
                 return nullptr;
 
             // <
-            auto oTypeArgs = ParseTypeArgs(&curLexer, factory);
+            auto o_typeArgs = ParseTypeArgs(&curLexer, factory);
 
-            if (oTypeArgs)
-                curExp = factory.MakeSExp_Member(curExp, move(oIdToken->text), move(*oTypeArgs));
+            if (o_typeArgs)
+                curExp = factory.MakeSExp_Member(curExp, move(o_idToken->text), move(*o_typeArgs));
             else
-                curExp = factory.MakeSExp_Member(curExp, move(oIdToken->text), std::vector<STypeExp*>{});
+                curExp = factory.MakeSExp_Member(curExp, move(o_idToken->text), std::vector<STypeExp*>{});
 
             continue;
         }
 
         // exp -> id < > => (*exp).id
-        if (Accept<MinusGreaterThanToken>(&curLexer, oLexResult))
+        if (Accept<MinusGreaterThanToken>(&curLexer, o_lexResult))
         {
-            auto oIdToken = Accept<IdentifierToken>(&curLexer);
+            auto o_idToken = Accept<IdentifierToken>(&curLexer);
 
-            if (!oIdToken)
+            if (!o_idToken)
                 return nullptr;
 
             // <
-            auto oTypeArgs = ParseTypeArgs(&curLexer, factory);
-            if (oTypeArgs)
+            auto o_typeArgs = ParseTypeArgs(&curLexer, factory);
+            if (o_typeArgs)
             {   
-                curExp = factory.MakeSExp_IndirectMember(curExp, move(oIdToken->text), move(*oTypeArgs));
+                curExp = factory.MakeSExp_IndirectMember(curExp, move(o_idToken->text), move(*o_typeArgs));
             }
             else
             {   
-                curExp = factory.MakeSExp_IndirectMember(curExp, move(oIdToken->text), vector<STypeExp*>{});
+                curExp = factory.MakeSExp_IndirectMember(curExp, move(o_idToken->text), vector<STypeExp*>{});
             }
 
             continue;
@@ -520,34 +520,34 @@ SExp_Lambda* ParseLambdaExp(Lexer* lexer, SFactory& factory)
                 if (!Accept<CommaToken>(&curLexer))
                     return nullptr;
 
-            auto oOutAndParams = AcceptParseOutAndParams(&curLexer);
-            if (!oOutAndParams)
+            auto o_outAndParams = AcceptParseOutAndParams(&curLexer);
+            if (!o_outAndParams)
                 return nullptr;
 
             // id id or id
-            auto oFirstIdToken = Accept<IdentifierToken>(&curLexer);
-            if (!oFirstIdToken)
+            auto o_FirstIdToken = Accept<IdentifierToken>(&curLexer);
+            if (!o_FirstIdToken)
                 return nullptr;
 
-            auto oSecondIdToken = Accept<IdentifierToken>(&curLexer);
-            if (!oSecondIdToken)
-                params.emplace_back(nullptr, move(oFirstIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
+            auto o_secondIdToken = Accept<IdentifierToken>(&curLexer);
+            if (!o_secondIdToken)
+                params.emplace_back(nullptr, move(o_FirstIdToken->text), o_outAndParams->bOut, o_outAndParams->bParams);
             else
-                params.emplace_back(factory.MakeSTypeExp_Id(move(oFirstIdToken->text), vector<STypeExp*>{}), move(oSecondIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
+                params.emplace_back(factory.MakeSTypeExp_Id(move(o_FirstIdToken->text), vector<STypeExp*>{}), move(o_secondIdToken->text), o_outAndParams->bOut, o_outAndParams->bParams);
         }
     }
     else
     {
         // out과 params는 동시에 쓸 수 없다
-        auto oOutAndParams = AcceptParseOutAndParams(&curLexer);
-        if (!oOutAndParams)
+        auto o_outAndParams = AcceptParseOutAndParams(&curLexer);
+        if (!o_outAndParams)
             return nullptr;
         
-        auto oIdToken = Accept<IdentifierToken>(&curLexer);
-        if (!oIdToken)
+        auto o_idToken = Accept<IdentifierToken>(&curLexer);
+        if (!o_idToken)
             return nullptr;
 
-        params.emplace_back(nullptr, move(oIdToken->text), oOutAndParams->bOut, oOutAndParams->bParams);
+        params.emplace_back(nullptr, move(o_idToken->text), o_outAndParams->bOut, o_outAndParams->bParams);
     }
 
     // =>
@@ -561,11 +561,11 @@ SExp_Lambda* ParseLambdaExp(Lexer* lexer, SFactory& factory)
     if (Peek<LBraceToken>(curLexer))
     {
         // Body 파싱을 그대로 쓴다
-        auto oStmtBody = ParseBody(&curLexer, factory);
-        if (!oStmtBody)
+        auto o_stmtBody = ParseBody(&curLexer, factory);
+        if (!o_stmtBody)
             return nullptr;
 
-        body = factory.MakeSLambdaExpBody_Stmts(move(*oStmtBody));
+        body = factory.MakeSLambdaExpBody_Stmts(move(*o_stmtBody));
     }
     else
     {
@@ -609,22 +609,22 @@ SExp_NullLiteral* ParseNullLiteralExp(Lexer* lexer, SFactory& factory)
 
 SExp_BoolLiteral* ParseBoolLiteralExp(Lexer* lexer, SFactory& factory)
 {
-    auto oBoolToken = Accept<BoolToken>(lexer);
+    auto o_boolToken = Accept<BoolToken>(lexer);
 
-    if (!oBoolToken)
+    if (!o_boolToken)
         return nullptr;
 
-    return factory.MakeSExp_BoolLiteral(oBoolToken->value);
+    return factory.MakeSExp_BoolLiteral(o_boolToken->value);
 }
 
 SExp_IntLiteral* ParseIntLiteralExp(Lexer* lexer, SFactory& factory)
 {
-    auto oIntToken = Accept<IntToken>(lexer);
+    auto o_intToken = Accept<IntToken>(lexer);
 
-    if (!oIntToken)
+    if (!o_intToken)
         return nullptr;
 
-    return factory.MakeSExp_IntLiteral(oIntToken->value);
+    return factory.MakeSExp_IntLiteral(o_intToken->value);
 }
 
 // 스트링 파싱
@@ -639,24 +639,24 @@ SExp_String* ParseStringExp(Lexer* lexer, SFactory& factory)
     
     while (true)
     {
-        auto oLexResult = curLexer.LexStringMode();
-        if (Accept<DoubleQuoteToken>(&curLexer, oLexResult))
+        auto o_lexResult = curLexer.LexStringMode();
+        if (Accept<DoubleQuoteToken>(&curLexer, o_lexResult))
             break;
 
-        if (auto oTextToken = Accept<TextToken>(&curLexer, oLexResult))
+        if (auto o_textToken = Accept<TextToken>(&curLexer, o_lexResult))
         {
-            elems.push_back(factory.MakeSStringExpElement_Text(move(oTextToken->text)));
+            elems.push_back(factory.MakeSStringExpElement_Text(move(o_textToken->text)));
             continue;
         }
         
-        if (auto oIdToken = Accept<IdentifierToken>(&curLexer, oLexResult))
+        if (auto o_idToken = Accept<IdentifierToken>(&curLexer, o_lexResult))
         {
-            elems.push_back(factory.MakeSStringExpElement_Exp(factory.MakeSExp_Identifier(move(oIdToken->text), std::vector<STypeExp*>{})));
+            elems.push_back(factory.MakeSStringExpElement_Exp(factory.MakeSExp_Identifier(move(o_idToken->text), std::vector<STypeExp*>{})));
             continue;
         }
 
         // ${
-        if (Accept<DollarLBraceToken>(&curLexer, oLexResult))
+        if (Accept<DollarLBraceToken>(&curLexer, o_lexResult))
         {
             // TODO: EndInnerExpToken 일때 빠져나와야 한다는 표시를 해줘야 한다
             auto* exp = ParseExp(&curLexer, factory);
@@ -708,21 +708,21 @@ SExp_Identifier* ParseIdentifierExp(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto oIdToken = Accept<IdentifierToken>(&curLexer);
-    if (!oIdToken) return nullptr;
+    auto o_idToken = Accept<IdentifierToken>(&curLexer);
+    if (!o_idToken) return nullptr;
 
     // 실패해도 괜찮다
-    auto oTypeArgs = ParseTypeArgs(&curLexer, factory);
+    auto o_typeArgs = ParseTypeArgs(&curLexer, factory);
 
-    if (oTypeArgs)
+    if (o_typeArgs)
     {
         *lexer = move(curLexer);
-        return factory.MakeSExp_Identifier(move(oIdToken->text), move(*oTypeArgs));
+        return factory.MakeSExp_Identifier(move(o_idToken->text), move(*o_typeArgs));
     }
     else
     {
         *lexer = move(curLexer);
-        return factory.MakeSExp_Identifier(move(oIdToken->text), std::vector<STypeExp*>{});
+        return factory.MakeSExp_Identifier(move(o_idToken->text), std::vector<STypeExp*>{});
     }
 }
 

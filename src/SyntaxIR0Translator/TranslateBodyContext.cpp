@@ -5,12 +5,16 @@
 #include "Infra/Expected.h"
 #include "Infra/Variants.h"
 
+#include "RSymbol/RFactory.h"
 #include "NSymbol/NFuncDecl.h"
 
 #include "MIR/MFuncBody.h"
 #include "MIR/MStmt.h"
-#include "TranslationContext.h"
+#include "MIR/MFactory.h"
+
 #include "SStmtToMStmtTranslation.h"
+#include "TranslationContexts.h"
+
 
 using namespace std;
 
@@ -67,19 +71,19 @@ CheckEndReturnResult CheckEndReturn(NFuncDecl* nFuncDecl, vector<MStmt*>& mStmts
 
 expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(NFuncDecl* nFuncDecl, std::span<SStmt*> sStmts)
 {   
-    auto tContext = TranslationContext::Make(nFuncDecl, logger, rFactory, mFactory, srtFactory, binOpQueryService);
-    auto eMStmts = TranslateSBodyToMStmts(sStmts, tContext);
-    RETURN_ON_ERROR(eMStmts);
+    auto tContext = MakeTranslationContexts(nFuncDecl, logger, rFactory, mFactory, srtFactory, binOpQueryService);
+    auto e_mStmts = TranslateSBodyToMStmts(sStmts, tContext);
+    RETURN_ON_ERROR(e_mStmts);
 
     // 함수가 return이나 never를 리턴하는 함수로 끝맺지 않았을 경우, 리턴인자가 void인 경우 Return을 추가한다. 나머지는 에러
-    auto checkEndReturnResult = CheckEndReturn(nFuncDecl, *eMStmts, *rFactory);
+    auto checkEndReturnResult = CheckEndReturn(nFuncDecl, *e_mStmts, *rFactory);
 
     switch(checkEndReturnResult)
     {
     case CheckEndReturnResult::PutReturnVoid:
     {
         auto* mReturnStmt = mFactory->MakeMStmt<MStmt_Return>(nullptr);
-        eMStmts->push_back(mReturnStmt);
+        e_mStmts->push_back(mReturnStmt);
         break;
     }
 
@@ -90,15 +94,10 @@ expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(NFuncDecl* nFuncDec
         break;
     }
 
-    return MFuncBody{nFuncDecl, *eMStmts};
+    return MFuncBody{nFuncDecl, *e_mStmts};
 }
 
 void TranslateBodyContext::MarkFailed()
-{
-    throw NotImplementedException{};
-}
-
-TranslationContext TranslateBodyContext::MakeTranslationContext()
 {
     throw NotImplementedException{};
 }

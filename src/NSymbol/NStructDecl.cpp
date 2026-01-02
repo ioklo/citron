@@ -8,8 +8,9 @@ using namespace std;
 
 namespace Citron {
 
-NStructDecl::NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, vector<string>&& typeParams)
-    : outer{outer}, accessor{accessor}, name{move(name)}, typeParams(move(typeParams)), dtor{nullptr}
+NStructDecl::NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, vector<string>&& typeParams, const RFactoryPtr& rFactory)
+    : outer{outer}, accessor{accessor}, name{move(name)}, typeParams(move(typeParams)), rFactory{rFactory}
+    , dtor{nullptr}
 {
 }
 
@@ -78,16 +79,16 @@ optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& 
     vector<RMember> candidates;
 
     // type
-    if (auto oType = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*oType);
+    if (auto o_type = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        candidates.push_back(*o_type);
 
     // struct member func
-    if (auto oFunc = NFuncDeclContainerComponent<NStructFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*oFunc);
+    if (auto o_func = NFuncDeclContainerComponent<NStructFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        candidates.push_back(*o_func);
 
     if (explicitTypeParamsExceptOuterCount == 0)
-        if (auto oVar = GetVar(typeArgs, name))
-            candidates.push_back(*oVar);
+        if (auto o_var = GetVar(typeArgs, name))
+            candidates.push_back(*o_var);
 
     if (candidates.empty()) return nullopt;
 
@@ -100,13 +101,13 @@ optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& 
     return candidates[0];
 }
 
-optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto typeArgs = MakeOpenTypeArgs(factory);
-    if (auto oMember = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        return oMember;
+    auto typeArgs = MakeOpenTypeArgs(*rFactory);
+    if (auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        return o_member;
 
-    return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount, factory);
+    return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 optional<RMember_StructVar> NStructDecl::GetVar(RTypeArguments* typeArgs, const RName& name)

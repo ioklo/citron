@@ -226,8 +226,8 @@ Lexer::Lexer(BufferPosition pos)
 
 optional<LexResult> Lexer::LexStringMode()
 {
-    auto oTextResult = LexStringModeText();
-    if (oTextResult) return oTextResult;
+    auto o_textResult = LexStringModeText();
+    if (o_textResult) return o_textResult;
 
     BufferIterator i(pos);
     if (i.IsReachedEnd()) return nullopt;
@@ -296,9 +296,9 @@ optional<LexResult> Lexer::LexStringModeText()
 optional<LexResult> Lexer::LexNormalMode(bool bSkipNewLine)
 {
     // 스킵처리
-    auto oWSResult = LexWhitespace(bSkipNewLine);
-    if (oWSResult)
-        return oWSResult->lexer.LexNormalModeAfterSkipWhitespace();
+    auto o_wsResult = LexWhitespace(bSkipNewLine);
+    if (o_wsResult)
+        return o_wsResult->lexer.LexNormalModeAfterSkipWhitespace();
 
     return LexNormalModeAfterSkipWhitespace();
 }
@@ -312,15 +312,15 @@ optional<LexResult> Lexer::LexNormalModeAfterSkipWhitespace()
         return LexResult{ EndOfFileToken(), i.MakeLexer() };
 
     // 줄바꿈 문자
-    if (auto oNewLineResult = LexNewLine())
-        return *oNewLineResult;
+    if (auto o_newLineResult = LexNewLine())
+        return *o_newLineResult;
 
     // 여러개 먼저
-    if (auto oIntResult = LexInt())
-        return *oIntResult;
+    if (auto o_intResult = LexInt())
+        return *o_intResult;
 
-    if (auto oBoolResult = LexBool())
-        return *oBoolResult;
+    if (auto o_boolResult = LexBool())
+        return *o_boolResult;
 
     for(auto& info : infos)
     {
@@ -331,20 +331,20 @@ optional<LexResult> Lexer::LexNormalModeAfterSkipWhitespace()
     if (i.Equals(U'"'))
         return ResultNextPos(DoubleQuoteToken(), i);
 
-    if (auto oKeywordResult = LexKeyword())
-        return *oKeywordResult;
+    if (auto o_keywordResult = LexKeyword())
+        return *o_keywordResult;
 
     // Identifier 시도
-    if (auto oIdResult = LexIdentifier(true))
-        return *oIdResult;
+    if (auto o_idResult = LexIdentifier(true))
+        return *o_idResult;
 
     return nullopt;
 }
 
 optional<LexResult> Lexer::LexCommandMode()
 {
-    if (auto oNewLineResult = LexNewLine())
-        return *oNewLineResult;
+    if (auto o_newLineResult = LexNewLine())
+        return *o_newLineResult;
 
     BufferIterator i(pos);
 
@@ -366,8 +366,8 @@ optional<LexResult> Lexer::LexCommandMode()
 
         if (!j.Equals('$'))
         {
-            if (auto oIdResult = j.MakeLexer().LexIdentifier(false))
-                return *oIdResult;
+            if (auto o_idResult = j.MakeLexer().LexIdentifier(false))
+                return *o_idResult;
         }
     }
 
@@ -560,9 +560,9 @@ optional<LexResult> Lexer::LexWhitespace(bool bIncludeNewLine)
 
         if (nextLineModeFailedResult)
         {
-            auto oRNPos = i.Consume(U"\r\n");
+            auto o_rnPos = i.Consume(U"\r\n");
 
-            if (oRNPos)
+            if (o_rnPos)
             {   
                 nextLineModeFailedResult = nullopt;
                 bUpdated = true;

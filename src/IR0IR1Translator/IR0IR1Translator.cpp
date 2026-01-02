@@ -60,8 +60,8 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
         for (auto* mStmt : mFuncBody.stmts)
         {
-            auto eResult = TranslateMStmtToQInsts(mStmt, bodyContext);
-            RETURN_ON_ERROR(eResult);
+            auto e_result = TranslateMStmtToQInsts(mStmt, bodyContext);
+            RETURN_ON_ERROR(e_result);
         }
     }
 
@@ -82,10 +82,10 @@ expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, const RFactoryPtr&
     qFuncBodies.reserve(mFuncBodies.size());
     for (auto& mFuncBody : mFuncBodies)
     {
-        auto eQFuncBody = TranslateMFuncBodyToQFuncBody(mFuncBody, rFactory, qFactory);
-        RETURN_ON_ERROR(eQFuncBody);
+        auto e_qFuncBody = TranslateMFuncBodyToQFuncBody(mFuncBody, rFactory, qFactory);
+        RETURN_ON_ERROR(e_qFuncBody);
 
-        qFuncBodies.push_back(move(*eQFuncBody));
+        qFuncBodies.push_back(move(*e_qFuncBody));
     }
 
     return qFactory->MakeQData(move(qFuncBodies));

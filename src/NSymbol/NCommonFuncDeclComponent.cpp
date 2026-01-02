@@ -45,27 +45,33 @@ RFuncReturn NCommonFuncDeclComponent::GetUnboundFuncReturn()
     return funcReturnAndParams->funcReturn;
 }
 
-RType* NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs, RFactory& factory)
+RType* NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs)
 {
     assert(funcReturnAndParams);
 
     auto* setReturn = get_if<RFuncReturn_Set>(&funcReturnAndParams->funcReturn);
     assert(setReturn);
 
-    return setReturn->type->Apply(typeArgs, factory);
+    return setReturn->type->Apply(typeArgs);
 }
 
-RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments& typeArgs, RFactory& factory)
+RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments& typeArgs)
 {
     assert(funcReturnAndParams);
 
-    return visit(overloaded{
-        [](RFuncReturn_ForCtor&) -> RFuncReturn { return RFuncReturn_ForCtor{}; },
-        [&typeArgs, &factory](RFuncReturn_Set& setReturn) -> RFuncReturn { return RFuncReturn_Set{setReturn.type->Apply(typeArgs, factory)}; },
-        [](RFuncReturn_NotSet&) -> RFuncReturn { return RFuncReturn_NotSet{}; }
+    return visit([&typeArgs](auto& funcReturn) -> RFuncReturn {
+        using T = remove_cvref_t<decltype(funcReturn)>;
+
+        if constexpr (same_as<T, RFuncReturn_ForCtor>) 
+            return RFuncReturn_ForCtor{};
+        else if constexpr (same_as<T, RFuncReturn_Set>)
+            return RFuncReturn_Set{funcReturn.type->Apply(typeArgs)};
+        else if constexpr (same_as<T, RFuncReturn_NotSet>)
+            return RFuncReturn_NotSet{};
+        else static_assert(false);
+
     }, funcReturnAndParams->funcReturn);
 }
-
 
 span<RFuncParameter> NCommonFuncDeclComponent::GetUnboundFuncParams()
 {
@@ -73,12 +79,12 @@ span<RFuncParameter> NCommonFuncDeclComponent::GetUnboundFuncParams()
     return funcReturnAndParams->funcParameters;
 }
 
-RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments& typeArgs, size_t index, RFactory& factory)
+RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments& typeArgs, size_t index)
 {
     assert(funcReturnAndParams);
 
     auto& unboundFuncParam = funcReturnAndParams->funcParameters[index];
-    return unboundFuncParam.Apply(typeArgs, factory);
+    return unboundFuncParam.Apply(typeArgs);
 }
 
 
@@ -93,7 +99,7 @@ vector<RType*> NCommonFuncDeclComponent::GetParamIds()
     return result;
 }
 
-optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     auto* normalName = get_if<RName_Normal>(&name);
     if (!normalName) return nullopt;

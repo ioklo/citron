@@ -249,7 +249,7 @@ expected<void, DiagPtr> QBodyContext::EmitJumpToCleanUpForReturnBlock()
 
 QType* QBodyContext::GetMExpQType(MExp* mExp)
 {
-    return GetQTypeFromRType(mExp->GetType(*rFactory));
+    return GetQTypeFromRType(mExp->GetType());
 }
 
 size_t QBodyContext::GetQTypeSize(QType* qType)
@@ -449,7 +449,7 @@ void QBodyContext::VerifyBlocks()
 
 QType* QBodyContext::GetReturnQType(RFuncDecl* rFuncDecl, RTypeArguments& typeArgs)
 {
-    auto* rType = rFuncDecl->GetReturnType(typeArgs, *rFactory);
+    auto* rType = rFuncDecl->GetReturnType(typeArgs);
     return GetQTypeFromRType(rType);
 }
 

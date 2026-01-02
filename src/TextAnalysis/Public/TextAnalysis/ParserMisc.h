@@ -26,15 +26,15 @@ std::optional<TToken> Accept(Lexer* lexer, std::optional<LexResult> lexResult)
 template<typename TToken>
 std::optional<TToken> Accept(Lexer* lexer)
 {
-    auto oLexResult = lexer->LexNormalMode(true);
-    return Accept<TToken>(lexer, std::move(oLexResult));
+    auto o_lexResult = lexer->LexNormalMode(true);
+    return Accept<TToken>(lexer, std::move(o_lexResult));
 }
 
 template<typename TToken>
 bool Peek(Lexer& lexer)
 {
-    auto oLexResult = lexer.LexNormalMode(true);
-    return oLexResult && std::holds_alternative<TToken>(oLexResult->token);
+    auto o_lexResult = lexer.LexNormalMode(true);
+    return o_lexResult && std::holds_alternative<TToken>(o_lexResult->token);
 }
 
 template<typename TToken>

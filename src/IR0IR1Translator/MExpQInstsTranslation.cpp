@@ -49,8 +49,8 @@ public:
     ResultType Visit(MExp_Load* exp)
     {
         // 이 translation으로 lv가 하나 나올 것이다
-        auto eSrcLoc = TranslateMLocToQInsts(exp->loc, bodyContext); // ptr이 담긴 slot
-        RETURN_ON_ERROR(eSrcLoc);
+        auto e_srcLoc = TranslateMLocToQInsts(exp->loc, bodyContext); // ptr이 담긴 slot
+        RETURN_ON_ERROR(e_srcLoc);
 
         // dest를 할당할일이 없으면, loc까지만 실행하고 종료
         if (!oDestSlotIndex) return {};
@@ -80,7 +80,7 @@ public:
             }
             else static_assert(false);
 
-        }, *eSrcLoc);
+        }, *e_srcLoc);
 
         return {};
     }
@@ -92,8 +92,8 @@ public:
         auto* qType = bodyContext.GetMExpQType(exp);
 
         // dest를 먼저 계산한다
-        auto eDest = TranslateMLocToQInsts(exp->dest, bodyContext);
-        RETURN_ON_ERROR(eDest);
+        auto e_dest = TranslateMLocToQInsts(exp->dest, bodyContext);
+        RETURN_ON_ERROR(e_dest);
         
         return visit([this, exp](auto& destLoc) -> expected<void, DiagPtr>
         {
@@ -101,16 +101,16 @@ public:
             if constexpr (same_as <T, QLocResult_Slot>)
             {
                 // slot이면 바로 exp계산에 참여시킬수 있다
-                auto eSrc = TranslateMExpToQInsts(exp->src, destLoc.slotIndex, bodyContext);
-                RETURN_ON_ERROR(eSrc);
+                auto e_src = TranslateMExpToQInsts(exp->src, destLoc.slotIndex, bodyContext);
+                RETURN_ON_ERROR(e_src);
 
                 // *oDest에 *eDest를 넣어야 한다
-                // *oDestSlotIndex: T, *eDest: T
+                // *oDestSlotIndex: T, *e_dest: T
                 if (oDestSlotIndex)
                 {
                     auto* qType = bodyContext.GetMExpQType(exp->src);
-                    auto eEmitResult = bodyContext.EmitInst(QInst_Assign{qType, *oDestSlotIndex, QArg_Slot{destLoc.slotIndex}});
-                    RETURN_ON_ERROR(eEmitResult);
+                    auto e_emitResult = bodyContext.EmitInst(QInst_Assign{qType, *oDestSlotIndex, QArg_Slot{destLoc.slotIndex}});
+                    RETURN_ON_ERROR(e_emitResult);
                 }
 
                 return {};
@@ -118,19 +118,19 @@ public:
             else if constexpr (same_as<T, QLocResult_PtrSlot>)
             {
                 // *oDest에 *eDest를 넣어야 한다
-                // *oDestSlotIndex: T, *eDest: T
+                // *oDestSlotIndex: T, *e_dest: T
                 if (oDestSlotIndex)
                 {
                     auto* qType = bodyContext.GetMExpQType(exp->src);
-                    auto eEmitResult = bodyContext.EmitInst(QInst_Load{qType, *oDestSlotIndex, QArg_Slot{destLoc.slotIndex}});
-                    RETURN_ON_ERROR(eEmitResult);
+                    auto e_emitResult = bodyContext.EmitInst(QInst_Load{qType, *oDestSlotIndex, QArg_Slot{destLoc.slotIndex}});
+                    RETURN_ON_ERROR(e_emitResult);
                 }
 
                 return {};
             }
             else static_assert(false); // 나머지는 추후에
 
-        }, *eDest);
+        }, *e_dest);
     }
 
     // box 3;
@@ -147,8 +147,8 @@ public:
         //auto ptr = bodyContext.AddIntrinsic(QInst_IntrinsicKind::Alloc_Int, {QArg_ConstInt32{(int)size}});
 
         //// 2. exp
-        //auto eQValue = TranslateMExpToQInsts(exp->innerExp, bodyContext);
-        //RETURN_ON_ERROR(eQValue);
+        //auto e_qValue = TranslateMExpToQInsts(exp->innerExp, bodyContext);
+        //RETURN_ON_ERROR(e_qValue);
 
         //// 3. 저장
         //bodyContext.AddInst(QInst_Store{.dest = ptr, .src = *eQValue});
@@ -165,11 +165,11 @@ public:
     ResultType Visit(MExp_LocalRef* exp)
     {
         //// local ref는 &s.a 같은 걸 수 있다
-        //auto eLV = TranslateMLocToQInsts(exp->innerLoc, bodyContext);
-        //RETURN_ON_ERROR(eLV);
+        //auto e_lv = TranslateMLocToQInsts(exp->innerLoc, bodyContext);
+        //RETURN_ON_ERROR(e_lv);
 
         //// lv 그대로 리턴하면 될거 같다
-        //return *eLV;
+        //return *e_lv;
         throw NotImplementedException{};
     }
 
@@ -202,10 +202,10 @@ public:
 
         for (auto* elem : exp->elems)
         {
-            auto eItem = TranslateMExpToQInsts(elem, bodyContext);
-            RETURN_ON_ERROR(eItem);
+            auto e_item = TranslateMExpToQInsts(elem, bodyContext);
+            RETURN_ON_ERROR(e_item);
 
-            items.push_back(*eItem);
+            items.push_back(*e_item);
         }
 
         auto result = bodyContext.AddIntrinsic(QInst_IntrinsicKind::NewList_Items, std::move(items));
@@ -215,10 +215,10 @@ public:
 
     ResultType Visit(MExp_ListIterator* exp)
     {
-        /*auto eLV = TranslateMLocToQInsts(exp->listLoc, bodyContext);
-        RETURN_ON_ERROR(eLV);
+        /*auto e_lv = TranslateMLocToQInsts(exp->listLoc, bodyContext);
+        RETURN_ON_ERROR(e_lv);
 
-        auto result = bodyContext.AddIntrinsic(QInst_IntrinsicKind::GetListIterator_List, {*eLV});
+        auto result = bodyContext.AddIntrinsic(QInst_IntrinsicKind::GetListIterator_List, {*e_lv});
         return *result;*/
         throw NotImplementedException{};
     }
@@ -226,8 +226,8 @@ public:
     ResultType Visit(MExp_CallInternalUnaryOperator* exp)
     {   
         auto operandSlotIndex = bodyContext.NewSlotForMExp(exp->operand);
-        auto eOperand = TranslateMExpToQInsts(exp->operand, operandSlotIndex, bodyContext);
-        RETURN_ON_ERROR(eOperand);
+        auto e_operand = TranslateMExpToQInsts(exp->operand, operandSlotIndex, bodyContext);
+        RETURN_ON_ERROR(e_operand);
 
         static unordered_map<MInternalUnaryOperator, QInst_IntrinsicKind> m{
             {MInternalUnaryOperator::LogicalNot_Bool_Bool, QInst_IntrinsicKind::LogicalNot_Bool},
@@ -248,8 +248,8 @@ public:
     ResultType Visit(MExp_CallInternalUnaryAssignOperator* exp)
     {
         // exp->operand는 항상 lvalue이다
-        auto eOperand = TranslateMLocToQInsts(exp->operand, bodyContext);
-        RETURN_ON_ERROR(eOperand);
+        auto e_operand = TranslateMLocToQInsts(exp->operand, bodyContext);
+        RETURN_ON_ERROR(e_operand);
 
         static unordered_map<MInternalUnaryAssignOperator, QInst_IntrinsicKind> m{
             {MInternalUnaryAssignOperator::PrefixInc_Int_Int, QInst_IntrinsicKind::PrefixInc_Int},
@@ -269,35 +269,35 @@ public:
                 // slot to ptr
                 auto* qPtrType = bodyContext.GetPtrQType();
                 auto ptrSlotIndex = bodyContext.NewSlot(qPtrType);
-                auto eEmitAddrResult = bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{operand.slotIndex}});
-                RETURN_ON_ERROR(eEmitAddrResult);
+                auto e_emitAddrResult = bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{operand.slotIndex}});
+                RETURN_ON_ERROR(e_emitAddrResult);
 
                 auto destSlotIndex = oDestSlotIndex ? *oDestSlotIndex : bodyContext.NewSlot(bodyContext.GetIntQType());
-                auto eEmitIntrinsicResult = bodyContext.EmitIntrinsic(op, QArg_Slot{destSlotIndex}, {QArg_Slot{ptrSlotIndex}});
-                RETURN_ON_ERROR(eEmitIntrinsicResult);
+                auto e_emitIntrinsicResult = bodyContext.EmitIntrinsic(op, QArg_Slot{destSlotIndex}, {QArg_Slot{ptrSlotIndex}});
+                RETURN_ON_ERROR(e_emitIntrinsicResult);
                 return {};
             }
             else if constexpr (same_as<T, QLocResult_PtrSlot>)
             {
                 auto destSlotIndex = oDestSlotIndex ? *oDestSlotIndex : bodyContext.NewSlot(bodyContext.GetIntQType());
-                auto eEmitIntrinsicResult = bodyContext.EmitIntrinsic(op, QArg_Slot{destSlotIndex}, {QArg_Slot{operand.slotIndex}});
-                RETURN_ON_ERROR(eEmitIntrinsicResult);
+                auto e_emitIntrinsicResult = bodyContext.EmitIntrinsic(op, QArg_Slot{destSlotIndex}, {QArg_Slot{operand.slotIndex}});
+                RETURN_ON_ERROR(e_emitIntrinsicResult);
                 return {};
             }
             else static_assert(false);
 
-        }, *eOperand);
+        }, *e_operand);
     }
 
     ResultType Visit(MExp_CallInternalBinaryOperator* exp)
     {
         auto operandSlotIndex0 = bodyContext.NewSlotForMExp(exp->operand0);
-        auto eOperand0 = TranslateMExpToQInsts(exp->operand0, operandSlotIndex0, bodyContext);
-        RETURN_ON_ERROR(eOperand0);
+        auto e_operand0 = TranslateMExpToQInsts(exp->operand0, operandSlotIndex0, bodyContext);
+        RETURN_ON_ERROR(e_operand0);
 
         auto operandSlotIndex1 = bodyContext.NewSlotForMExp(exp->operand1);
-        auto eOperand1 = TranslateMExpToQInsts(exp->operand1, operandSlotIndex1, bodyContext);
-        RETURN_ON_ERROR(eOperand1);
+        auto e_operand1 = TranslateMExpToQInsts(exp->operand1, operandSlotIndex1, bodyContext);
+        RETURN_ON_ERROR(e_operand1);
 
         static unordered_map<MInternalBinaryOperator, QInst_IntrinsicKind> m{
             {MInternalBinaryOperator::Multiply_Int_Int_Int, QInst_IntrinsicKind::Multiply_Int_Int},
@@ -359,15 +359,15 @@ public:
         // 2. 인자를 args에 넣는다
         for (auto& arg : exp->args)
         {
-            auto eResult = visit([this, &args](auto& arg) -> expected<void, DiagPtr>
+            auto e_result = visit([this, &args](auto& arg) -> expected<void, DiagPtr>
             {
                 using T = remove_cvref_t<decltype(arg)>;
 
                 if constexpr (same_as<T, MArgument_Normal>)
                 {
                     auto argDestSlotIndex = bodyContext.NewSlotForMExp(arg.exp);
-                    auto eResult = TranslateMExpToQInsts(arg.exp, argDestSlotIndex, bodyContext);
-                    RETURN_ON_ERROR(eResult);
+                    auto e_result = TranslateMExpToQInsts(arg.exp, argDestSlotIndex, bodyContext);
+                    RETURN_ON_ERROR(e_result);
                     args.push_back(QArg_Slot{argDestSlotIndex});
                     return {};
                 }
@@ -378,7 +378,7 @@ public:
                 }
                 else static_assert(false);
             }, arg);
-            RETURN_ON_ERROR(eResult);
+            RETURN_ON_ERROR(e_result);
         }
 
         // 3. Emit처리

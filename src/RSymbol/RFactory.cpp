@@ -29,7 +29,7 @@ RFactory::RFactory()
     , intType{new RType_Primitive(RType_PrimitiveKind::Int32)}
 {
     // TODO: 아직 MakeStructType, MakeClassType과는 연결이 되지 않은 상태
-    stringType = unique_ptr<RType_Struct>(new RType_Struct(nullptr, MakeTypeArguments({})));
+    stringType = unique_ptr<RType_Struct>(new RType_Struct(nullptr, MakeTypeArguments({}), this));
 }
 
 RFactory::~RFactory()
@@ -45,7 +45,7 @@ RType_NullableValue* RFactory::MakeNullableValueType(RType* innerType)
         return i->second.get();
 
     auto* key = innerType;
-    unique_ptr<RType_NullableValue> newType{new RType_NullableValue(innerType)};
+    unique_ptr<RType_NullableValue> newType{new RType_NullableValue(innerType, this)};
     auto* pNewType = newType.get();
     nullableValueTypes.emplace(innerType, move(newType));
 
@@ -60,7 +60,7 @@ RType_NullableRef* RFactory::MakeNullableRefType(RType* innerType)
         return i->second.get();
 
     auto* key = innerType;
-    unique_ptr<RType_NullableRef> newType{new RType_NullableRef{innerType}};    
+    unique_ptr<RType_NullableRef> newType{new RType_NullableRef{innerType, this}};
     auto pNewType = newType.get();
     nullableRefTypes.emplace(key, move(newType));
 
@@ -94,7 +94,7 @@ RType_Tuple* RFactory::MakeTupleType(vector<RTupleVar>&& vars)
         return i->second.get();
 
     auto key = vars;
-    unique_ptr<RType_Tuple> tupleType{new RType_Tuple{move(vars)}};
+    unique_ptr<RType_Tuple> tupleType{new RType_Tuple{move(vars), this}};
     auto pTupleType = tupleType.get();
     tupleTypes.emplace(move(key), move(tupleType));
 
@@ -108,7 +108,7 @@ RType_Func* RFactory::MakeFuncType(bool bLocal, RType* retType, vector<RType_Fun
     if (i != funcTypes.end())
         return i->second.get();
     
-    unique_ptr<RType_Func> newFuncType{new RType_Func{bLocal, retType, move(params)}};
+    unique_ptr<RType_Func> newFuncType{new RType_Func{bLocal, retType, move(params), this}};
     auto pNewFuncType = newFuncType.get();
     funcTypes.emplace(key, move(newFuncType));
     return pNewFuncType;
@@ -120,7 +120,7 @@ RType_Ptr* RFactory::MakePtrType(RType* innerType)
     if (i != ptrTypes.end())
         return i->second.get();
 
-    unique_ptr<RType_Ptr> newType{new RType_Ptr{innerType}};
+    unique_ptr<RType_Ptr> newType{new RType_Ptr{innerType, this}};
     auto pNewType = newType.get();
     ptrTypes.emplace(innerType, move(newType));
     return pNewType;
@@ -132,7 +132,7 @@ RType_Shared* RFactory::MakeSharedType(RType* innerType)
     if (i != sharedTypes.end())
         return i->second.get();
 
-    unique_ptr<RType_Shared> newType{new RType_Shared{innerType}};
+    unique_ptr<RType_Shared> newType{new RType_Shared{innerType, this}};
     auto pNewType = newType.get();
     sharedTypes.emplace(innerType, move(newType));
     return pNewType;
@@ -144,7 +144,7 @@ RType_Box* RFactory::MakeBoxType(RType* innerType)
     if (i != boxTypes.end())
         return i->second.get();
 
-    unique_ptr<RType_Box> newType{new RType_Box{innerType}};
+    unique_ptr<RType_Box> newType{new RType_Box{innerType, this}};
     auto pNewType = newType.get();
     boxTypes.emplace(innerType, move(newType));
     return pNewType;
@@ -158,7 +158,7 @@ TType* RFactory::MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& ins
     if (i != instanceTypes.end())
         return i->second.get();
     
-    unique_ptr<TType> newType{new TType{decl, typeArgs, std::forward<TArgs>(args)...}};
+    unique_ptr<TType> newType{new TType{decl, typeArgs, std::forward<TArgs>(args)..., this}};
     auto pNewType = newType.get();
     instanceTypes.emplace(key, move(newType));
     return pNewType;
@@ -202,7 +202,7 @@ RTypeArguments* RFactory::MakeTypeArguments(const vector<RType*>& items)
     if (i != typeArgsMap.end())
         return i->second.get();
 
-    unique_ptr<RTypeArguments> v{new RTypeArguments{items}};
+    unique_ptr<RTypeArguments> v{new RTypeArguments{items, this}};
     auto pv = v.get();
     typeArgsMap.emplace(key, move(v));
     return pv;
@@ -218,7 +218,7 @@ RTypeArguments* RFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArg
     if (i != typeArgsMap.end())
         return i->second.get();
 
-    unique_ptr<RTypeArguments> v{new RTypeArguments{move(items)}};
+    unique_ptr<RTypeArguments> v{new RTypeArguments{move(items), this}};
     auto pv = v.get();
     typeArgsMap.emplace(key, move(v));
     return pv;

@@ -4,13 +4,16 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
 #include "Logging/Logger.h"
 #include "Syntax/Syntax.h"
+#include "RSymbol/RFactory.h"
 #include "MIR/MExp.h"
+#include "MIR/MFactory.h"
 #include "RSymbol/RTypes.h"
 
 #include "ScopeContext.h"
-#include "TranslationContext.h"
+#include "TranslationContexts.h"
 
 using namespace std;
 
@@ -18,24 +21,24 @@ namespace Citron {
 
 class RTypeArguments;
 
-expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContext& context)
+expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContexts& contexts)
 {
     std::vector<RType*> items;
     items.reserve(typeArgs.size());
 
     for (auto* typeArg : typeArgs)
     {
-        auto eType = context.TranslateSTypeExpToRType(typeArg);
-        if (!eType) return unexpected{move(eType).error()};
+        auto e_type = contexts.scopeContext->TranslateSTypeExpToRType(typeArg);
+        RETURN_ON_ERROR(e_type);
 
-        items.push_back(*eType);
+        items.push_back(*e_type);
     }
 
-    return context.MakeTypeArguments(items);
+    return contexts.rFactory->MakeTypeArguments(items);
 }
 
 // TODO: implementation을 CastNExp로 옮긴다
-//MExp* TryCastRExp(MExp* exp, RType* expectedType, TranslationContext& context) // nothrow
+//MExp* TryCastRExp(MExp* exp, RType* expectedType, TranslationContexts& contexts) // nothrow
 //{
 //    static_assert(false);
 //
@@ -97,9 +100,9 @@ expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArg
 //}
 
 // 값의 겉보기 타입을 변경한다
-expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContext& context)
+expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContexts& contexts)
 {
-    auto expType = context.GetType(exp);
+    auto* expType = exp->GetType();
 
     // 같으면 그대로 리턴
     if (expectedType == expType)
@@ -108,10 +111,10 @@ expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationCon
     // 1. enumElem인 경우, enum으로 변경할 수 있다
     if (auto* expEnumElemType = dynamic_cast<RType_EnumElem*>(expType))
     {
-        auto expEnumType = context.GetBaseEnumType(*expEnumElemType);
+        auto expEnumType = expEnumElemType->GetBaseEnumType();
 
         if (expectedType == expEnumType)
-            return context.MakeMExp<MExp_CastEnumElemToEnum>(exp, expectedType);
+            return contexts.mFactory->MakeMExp<MExp_CastEnumElemToEnum>(exp, expectedType);
 
         // 에러가 좀더 구체적으로 알려줬으면 좋겠다
         throw NotImplementedException{};
@@ -125,7 +128,7 @@ expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationCon
         {
             if (expectedClassType->IsBaseOf(*expClassType))
             {
-                return context.MakeMExp<MExp_CastClass>(exp, expectedClassType);
+                return contexts.mFactory->MakeMExp<MExp_CastClass>(exp, expectedClassType);
             }
         }
 
@@ -138,12 +141,12 @@ expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationCon
     if (auto* expectedNullableType = dynamic_cast<RType_NullableRef*>(expectedType))
     {
         // Nullable<B>를 원한다면 C를 B로 변환해본다
-        auto eCastToInnerTypeExp = CastMExp(exp, expectedNullableType->innerType, context);
-        if (!eCastToInnerTypeExp)
+        auto e_castToInnerTypeExp = CastMExp(exp, expectedNullableType->innerType, contexts);
+        if (!e_castToInnerTypeExp)
             return unexpected{MakePtr<Error_Cast_Failed>()};
 
         // B?로 변경
-        return context.MakeMExp<MExp_NewNullable>(*eCastToInnerTypeExp);
+        return contexts.mFactory->MakeMExp<MExp_NewNullable>(*e_castToInnerTypeExp, contexts.rFactory);
     }
 
     return unexpected{MakePtr<Error_Cast_Failed>()};

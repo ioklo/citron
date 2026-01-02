@@ -88,10 +88,11 @@ class RType_NullableValue : public RType
 {
 public:
     RType* innerType;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_NullableValue(RType* innerType);
+    RType_NullableValue(RType* innerType, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -103,10 +104,11 @@ class RType_NullableRef : public RType
 {
 public:
     RType* innerType;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_NullableRef(RType* innerType);
+    RType_NullableRef(RType* innerType, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -180,10 +182,11 @@ class RType_Tuple : public RType
 {
 public:
     std::vector<RTupleVar> vars;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Tuple(std::vector<RTupleVar>&& vars);
+    RType_Tuple(std::vector<RTupleVar>&& vars, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -210,9 +213,11 @@ public:
     RType* retType;
     std::vector<Parameter> params;
 
+    RFactory* factory;
+
 private:
     friend RFactory;
-    RType_Func(bool bLocal, RType* retType, std::vector<Parameter>&& params);
+    RType_Func(bool bLocal, RType* retType, std::vector<Parameter>&& params, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -225,10 +230,11 @@ class RType_Ptr : public RType
 {
 public:
     RType* innerType;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Ptr(RType* innerType);
+    RType_Ptr(RType* innerType, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -240,10 +246,11 @@ class RType_Shared : public RType
 {
 public:
     RType* innerType;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Shared(RType* innerType);
+    RType_Shared(RType* innerType, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -255,10 +262,11 @@ class RType_Box : public RType
 {
 public:
     RType* innerType;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Box(RType* innerType);
+    RType_Box(RType* innerType, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -271,10 +279,11 @@ class RType_Class : public RType
 public:
     RClassDecl* decl;
     RTypeArguments* typeArgs;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Class(RClassDecl* decl, RTypeArguments* typeArgs);
+    RType_Class(RClassDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
 
 public:
     RSYMBOL_API std::optional<RMember_ClassVar> GetVar(const RName& name);
@@ -293,10 +302,11 @@ class RType_Struct : public RType
 public:
     RStructDecl* decl;
     RTypeArguments* typeArgs;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Struct(RStructDecl* decl, RTypeArguments* typeArgs);
+    RType_Struct(RStructDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
 
 public:
     RSYMBOL_API std::optional<RMember_StructVar> GetVar(const RName& name);
@@ -315,10 +325,11 @@ class RType_Enum : public RType
 public:
     REnumDecl* decl;
     RTypeArguments* typeArgs;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Enum(REnumDecl* decl, RTypeArguments* typeArgs);
+    RType_Enum(REnumDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -334,13 +345,15 @@ public:
     REnumElemDecl* decl;
     RTypeArguments* typeArgs;
 
+    RFactory* factory;
+
 private:
     friend RFactory;
-    RType_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs);
+    RType_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
 
 public:
     RSYMBOL_API std::optional<RMember_EnumElemVar> GetVar(const RName& name);
-    RSYMBOL_API RType_Enum* GetBaseEnumType(RFactory& factory);
+    RSYMBOL_API RType_Enum* GetBaseEnumType();
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -355,10 +368,11 @@ public:
     RInterfaceDecl* decl;
     RTypeArguments* typeArgs;
     bool bLocal;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Interface(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal);
+    RType_Interface(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -373,10 +387,11 @@ class RType_Lambda : public RType
 public:
     RLambdaDecl* decl;
     RTypeArguments* outerTypeArgs; // 함수 자체의 typeArgs는 호출할때 binding하게 된다
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Lambda(RLambdaDecl* decl, RTypeArguments* outerTypeArgs);
+    RType_Lambda(RLambdaDecl* decl, RTypeArguments* outerTypeArgs, RFactory* factory);
 
 public:
     RSYMBOL_API std::vector<RFuncParameter> GetPartiallyBoundParameters(); // outerTypeArgs까지만 bound되어 있는 상태

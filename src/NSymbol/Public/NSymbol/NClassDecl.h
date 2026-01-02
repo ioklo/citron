@@ -1,6 +1,8 @@
 #pragma once
 #include "NSymbolConfig.h"
 
+#include <memory>
+
 #include "RSymbol/RClassDecl.h"
 
 #include "NDecl.h"
@@ -15,6 +17,8 @@
 
 namespace Citron
 {
+
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class NClassDecl
     : public NDecl
@@ -36,15 +40,14 @@ class NClassDecl
 
     RName name;
     std::vector<std::string> typeParams;
-
     std::vector<NClassCtorDecl*> ctors;
     int trivialCtorIndex; // can be -1
 
     std::vector<NClassVarDecl*> vars;
-
     std::optional<BaseTypes> oBaseTypes;
-
     std::unordered_map<RName, NClassVarDecl*> varsMap;
+
+    RFactoryPtr rFactory;
 
 public:
     using NTypeDeclContainerComponent::AddType;

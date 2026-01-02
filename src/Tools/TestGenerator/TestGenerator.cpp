@@ -480,14 +480,14 @@ void DoTest(const string& code, const string& expected)
     auto logger = MakePtr<Logger>();
     auto mFactory = MakePtr<MFactory>();
 
-    auto eNModuleMData = TranslateSyntaxToNModuleMData(moduleName, {sScript}, {}, logger, rFactory, nFactory, mFactory);
-    ASSERT_TRUE(eNModuleMData);
-    auto& [nModule, mData] = *eNModuleMData;
+    auto e_nModuleMData = TranslateSyntaxToNModuleMData(moduleName, {sScript}, {}, logger, rFactory, nFactory, mFactory);
+    ASSERT_TRUE(e_nModuleMData);
+    auto& [nModule, mData] = *e_nModuleMData;
 
     QFactoryPtr qFactory = MakePtr<QFactory>();
-    auto eQData = TranslateMDataToQData(mData, rFactory, qFactory);
-    ASSERT_TRUE(eQData);
-    auto* qData = *eQData;
+    auto e_qData = TranslateMDataToQData(mData, rFactory, qFactory);
+    ASSERT_TRUE(e_qData);
+    auto* qData = *e_qData;
 
     StringWriter writer;
     PrintQData(qData, writer, *qFactory);
@@ -514,8 +514,8 @@ void DoTest(const string& code, const string& expected)
 
     auto commandHandler = MakePtr<CommandHandler>();
     vector<RModule*> rModules{nModule};
-    auto eResult = EvaluateQData(rModules, qData, nEntry, commandHandler, qFactory);
-    ASSERT_TRUE(eResult);
+    auto e_result = EvaluateQData(rModules, qData, nEntry, commandHandler, qFactory);
+    ASSERT_TRUE(e_result);
 
     // 
     ASSERT_EQ(commandHandler->GetOutput(), expected);

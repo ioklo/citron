@@ -51,16 +51,16 @@ optional<RMember> NStructVarDecl::GetMember(RTypeArguments* typeArgs, const RNam
     return nullopt;
 }
 
-optional<Citron::RMember> NStructVarDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount, RFactory& factory)
+optional<Citron::RMember> NStructVarDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
     throw RuntimeFatalException();
 }
 
-RType* NStructVarDecl::GetDeclType(RTypeArguments& typeArgs, RFactory& factory)
+RType* NStructVarDecl::GetDeclType(RTypeArguments& typeArgs)
 {
     assert(declType != nullptr);
-    return declType->Apply(typeArgs, factory);
+    return declType->Apply(typeArgs);
 }
 
 
