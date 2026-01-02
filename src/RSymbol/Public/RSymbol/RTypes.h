@@ -21,6 +21,7 @@ class RFactory;
 class RStructCtorDecl;
 class RInterfaceDecl;
 class RLambdaDecl;
+class RTypeParamDecl;
 
 class RType_NullableValue;
 class RType_NullableRef;
@@ -120,12 +121,11 @@ public:
 class RType_TypeVar : public RType
 {
 public:
-    int index;
-    // std::string name;  다른 클래스에서도 공유할 것이므로 이름을 넣지 않는다
+    RTypeParamDecl* decl;
 
 private:
     friend RFactory;
-    RType_TypeVar(int index);
+    RType_TypeVar(RTypeParamDecl* decl);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;

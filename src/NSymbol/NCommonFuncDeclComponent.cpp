@@ -8,17 +8,22 @@
 #include "RSymbol/RTypes.h"
 
 #include "NLambdaDecl.h"
+#include "NTypeParamDecl.h"
 
 using namespace std;
 
 namespace Citron
 {
 
-NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams)
+NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc)
     : bStatic{bStatic}
     , bSeqFunc{bSeqFunc}
-    , typeParams{move(typeParams)}
 {
+}
+
+void NCommonFuncDeclComponent::InitTypeParams(std::vector<NTypeParamDecl*>&& typeParams)
+{
+    this->typeParams = move(typeParams);
 }
 
 void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
@@ -33,10 +38,20 @@ size_t NCommonFuncDeclComponent::GetTypeParamCount()
     return typeParams.size();
 }
 
+RTypeParamDecl* NCommonFuncDeclComponent::GetTypeParam(size_t i)
+{
+    return typeParams[i];
+}
+
 size_t NCommonFuncDeclComponent::GetParamCount()
 {
     assert(funcReturnAndParams);
     return funcReturnAndParams->funcParameters.size();
+}
+
+RTypeDecl* NCommonFuncDeclComponent::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    return nullptr;
 }
 
 RFuncReturn NCommonFuncDeclComponent::GetUnboundFuncReturn()
@@ -99,15 +114,11 @@ vector<RType*> NCommonFuncDeclComponent::GetParamIds()
     return result;
 }
 
-optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount)
-{
-    auto* normalName = get_if<RName_Normal>(&name);
-    if (!normalName) return nullopt;
-
-    size_t typeParamCount = typeParams.size();
-    for (size_t i = 0; i < typeParamCount; i++)
-        if (typeParams[i] == normalName->text)
-            return RMember_TypeVar(baseTypeParamCount + i);
+optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+{   
+    for (auto* typeParam : typeParams)
+        if (typeParam->GetIdentifier().name == name)
+            return RMember_TypeVar(typeParam);
 
     assert(funcReturnAndParams);
     for (auto& param : funcReturnAndParams->funcParameters)

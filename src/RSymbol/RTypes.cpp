@@ -10,6 +10,7 @@
 #include "REnumDecl.h"
 #include "REnumElemDecl.h"
 #include "RLambdaDecl.h"
+#include "RTypeParamDecl.h"
 
 using namespace std;
 
@@ -47,14 +48,15 @@ optional<RMember> RType_NullableRef::GetMember(const RName& name, size_t explici
     return nullopt;
 }
 
-RType_TypeVar::RType_TypeVar(int index)
-    : index(index)
+RType_TypeVar::RType_TypeVar(RTypeParamDecl* decl)
+    : decl{decl}
 {
 }
 
 RType* RType_TypeVar::Apply(RTypeArguments& typeArgs)
 {
-    return typeArgs.Get(index);
+    size_t globalIndex = decl->GetGlobalIndex();
+    return typeArgs.Get(globalIndex);
 }
 
 optional<RMember> RType_TypeVar::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)

@@ -84,6 +84,9 @@
     <ClInclude Include="Public\NSymbol\NStructDtorDecl.h">
       <Filter>07 Struct</Filter>
     </ClInclude>
+    <ClInclude Include="Public\NSymbol\NTypeParamDecl.h">
+      <Filter>11 Generics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="10 Lambda">
@@ -118,6 +121,9 @@
     </Filter>
     <Filter Include="09 Interface">
       <UniqueIdentifier>{c4a3b135-daf8-48ec-bf76-acbb1ac04586}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="11 Generics">
+      <UniqueIdentifier>{d2a9230d-1f79-4c83-94c2-e760c1fc9c09}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -187,6 +193,9 @@
     </ClCompile>
     <ClCompile Include="NStructDtorDecl.cpp">
       <Filter>07 Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="NTypeParamDecl.cpp">
+      <Filter>11 Generics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

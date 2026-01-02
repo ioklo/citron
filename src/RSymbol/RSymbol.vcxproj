@@ -52,6 +52,7 @@
     <ClInclude Include="Public\RSymbol\RTypeArguments.h" />
     <ClInclude Include="Public\RSymbol\RTypeDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclOuter.h" />
+    <ClInclude Include="Public\RSymbol\RTypeParamDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypes.h" />
     <ClInclude Include="Public\RSymbol\RSymbolConfig.h" />
   </ItemGroup>
@@ -65,6 +66,7 @@
     <ClCompile Include="RNames.cpp" />
     <ClCompile Include="RNamespaceDeclGroup.cpp" />
     <ClCompile Include="RTypeArguments.cpp" />
+    <ClCompile Include="RTypeParamDecl.cpp" />
     <ClCompile Include="RTypes.cpp" />
   </ItemGroup>
   <ItemGroup>

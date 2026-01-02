@@ -17,6 +17,7 @@ public:
     virtual void Visit(NEnumElemDecl* typeDecl) = 0;
     virtual void Visit(NInterfaceDecl* typeDecl) = 0;
     virtual void Visit(NLambdaDecl* typeDecl) = 0;
+    virtual void Visit(NTypeParamDecl* typeDecl) = 0;
 };
 
 class NTypeDecl

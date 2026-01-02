@@ -8,12 +8,12 @@ namespace Citron
 {
 
 NStructFuncDecl::NStructFuncDecl(
-    NStructDecl* _struct, RAccessor accessor, bool bStatic, bool bSeqFunc, 
-    const string& name, vector<string>&& typeParams)
+    NStructDecl* _struct, RAccessor accessor, bool bStatic, bool bSeqFunc,
+    const string& name)
     : _struct{_struct}
     , accessor{accessor}
     , name{name}
-    , NCommonFuncDeclComponent(bStatic, bSeqFunc, move(typeParams))
+    , NCommonFuncDeclComponent{bStatic, bSeqFunc}
 {   
 }
 
@@ -54,9 +54,8 @@ optional<RMember> NStructFuncDecl::GetMember(RTypeArguments* typeArgs, const RNa
 }
 
 optional<RMember> NStructFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
-{
-    size_t baseTypeParamCount = _struct->GetAllTypeParamCount();
-    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount))
+{   
+    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);

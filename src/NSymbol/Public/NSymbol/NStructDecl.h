@@ -24,6 +24,7 @@ namespace Citron {
 class RType_Struct;
 class RType_Interface;
 class NStructDtorDecl;
+class NTypeParamDecl;
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
@@ -46,7 +47,7 @@ class NStructDecl
     RAccessor accessor;
 
     RName name;
-    std::vector<std::string> typeParams;
+    std::vector<NTypeParamDecl*> typeParams;
     RFactoryPtr rFactory;
 
     std::vector<NStructCtorDecl*> ctors;
@@ -58,7 +59,8 @@ class NStructDecl
     std::unordered_map<RName, NStructVarDecl*> varsMap;
 
 public:
-    NSYMBOL_API NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, std::vector<std::string>&& typeParams, const RFactoryPtr& rFactory);
+    NSYMBOL_API NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, const RFactoryPtr& rFactory);
+    NSYMBOL_API void InitTypeParams(std::vector<NTypeParamDecl*>&& typeParams);
     NSYMBOL_API void InitBaseTypes(RType_Struct* baseStruct, std::vector<RType_Interface*>&& interfaces);
 
 public:
@@ -102,6 +104,8 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
+    size_t GetTypeParamCount() override { return typeParams.size(); }
+    NSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

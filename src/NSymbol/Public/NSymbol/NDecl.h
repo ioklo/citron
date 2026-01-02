@@ -23,6 +23,7 @@ class NEnumElemVarDecl;
 class NLambdaDecl;
 class NLambdaVarDecl;
 class NInterfaceDecl;
+class NTypeParamDecl;
 
 class NDeclVisitor
 {
@@ -45,6 +46,7 @@ public:
     virtual void Visit(NLambdaDecl* decl) = 0;
     virtual void Visit(NLambdaVarDecl* decl) = 0;
     virtual void Visit(NInterfaceDecl* decl) = 0;
+    virtual void Visit(NTypeParamDecl* decl) = 0;
 };
 
 class NDecl

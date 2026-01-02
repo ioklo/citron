@@ -43,11 +43,6 @@ bool RDecl::CanAccess(RDecl* target)
     }
 }
 
-size_t RDecl::GetTypeParamCount()
-{
-    return GetIdentifier().typeParamCount;
-}
-
 size_t RDecl::GetAllTypeParamCount()
 {
     auto* outer = GetROuter();
@@ -56,20 +51,29 @@ size_t RDecl::GetAllTypeParamCount()
     return outer->GetAllTypeParamCount() + GetTypeParamCount();
 }
 
+void MakeOpenTypeArgsCore(RDecl* decl, vector<RType*>& typeArgItems, size_t totalSize, RFactory& rFactory)
+{
+    size_t typeParamCount = decl->GetTypeParamCount();
+
+    auto* outer = decl->GetROuter();
+    if (!outer)
+        typeArgItems.reserve(totalSize); // base case
+    else
+        MakeOpenTypeArgsCore(outer, typeArgItems, totalSize + typeParamCount, rFactory);
+    
+    for (size_t i = 0; i < typeParamCount; i++)
+    {
+        auto* typeParam = decl->GetTypeParam(i);
+        auto* typeVar = rFactory.MakeTypeVarType(typeParam);
+        typeArgItems.push_back(typeVar);
+    }
+}
+
 RTypeArguments* RDecl::MakeOpenTypeArgs(RFactory& factory)
 {
-    // gather reversely
-    auto allTypeParamCount = GetAllTypeParamCount();    
-    
-    vector<RType*> items;
-    items.reserve(allTypeParamCount);
-    for(int i = 0; i < allTypeParamCount; i++)
-    {
-        auto typeVar = factory.MakeTypeVarType(i);
-        items.push_back(typeVar);
-    }
-
-    return factory.MakeTypeArguments(items);
+    vector<RType*> typeArgItems;
+    MakeOpenTypeArgsCore(this, typeArgItems, 0, factory);
+    return factory.MakeTypeArguments(typeArgItems);
 }
 
 std::string RDecl::GetModuleName()

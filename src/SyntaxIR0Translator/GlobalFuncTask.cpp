@@ -24,11 +24,13 @@ void GlobalFuncTask::Register(NNamespaceDecl* outer, SGlobalFuncDecl* syntax, co
 
 void GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
-    auto accessor = MakeAccessor(syntax->accessModifier, AccessorContext::Global);
-    auto typeParams = MakeTypeParams(syntax->typeParams);
+    auto accessor = MakeAccessor(syntax->accessModifier, AccessorContext::Global);    
     bool bSeqFunc = false; // TODO:
     nGFuncDecl = nFactory->MakeNDecl<NGlobalFuncDecl>(
-        nOuter, accessor, bSeqFunc, RName_Normal(syntax->name), move(typeParams));
+        nOuter, accessor, bSeqFunc, RName_Normal(syntax->name));
+
+    auto typeParams = MakeTypeParams(nGFuncDecl, syntax->typeParams, *nFactory);
+    nGFuncDecl->InitTypeParams(move(typeParams));
     
     auto* rRetType = context.MakeType(syntax->retType, nGFuncDecl);
     auto [rParameters, bLastParamVariadic] = context.MakeParameters(nGFuncDecl, syntax->parameters);

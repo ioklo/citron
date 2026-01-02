@@ -20,7 +20,7 @@ private:
 
 public:
     RSYMBOL_API size_t GetCount();
-    RSYMBOL_API RType* Get(int i);
+    RSYMBOL_API RType* Get(size_t i);
     RSYMBOL_API RTypeArguments* Apply(RTypeArguments& typeArgs);
 };
 

@@ -130,8 +130,11 @@ template<typename TNOuter>
 void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorContext, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {   
     auto accessor = MakeAccessor(syntax->accessModifier, accessorContext);
-    auto typeParams = MakeTypeParams(syntax->typeParams);
-    auto* nStructDecl = nFactory->MakeNDecl<NStructDecl>(outer, accessor, RName_Normal(syntax->name), move(typeParams), rFactory);
+    auto* nStructDecl = nFactory->MakeNDecl<NStructDecl>(outer, accessor, RName_Normal(syntax->name), rFactory);
+
+    auto typeParams = MakeTypeParams(nStructDecl, syntax->typeParams, *nFactory);
+    nStructDecl->InitTypeParams(move(typeParams));
+    
     outer->AddType(nStructDecl);
 
     StructTask::Register(nStructDecl, syntax, accessorContext, phaseManager);
@@ -147,9 +150,12 @@ void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorCo
 template<typename TNOuter>
 void VisitEnum(TNOuter* outer, SEnumDecl* sEnum, AccessorContext accessorContext, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {   
-    auto accessor = MakeAccessor(sEnum->accessModifier, accessorContext);
-    auto typeParams = MakeTypeParams(sEnum->typeParams);
-    auto* nEnum = nFactory->MakeNDecl<NEnumDecl>(outer, accessor, RName_Normal{sEnum->name}, move(typeParams));
+    auto accessor = MakeAccessor(sEnum->accessModifier, accessorContext);    
+    auto* nEnum = nFactory->MakeNDecl<NEnumDecl>(outer, accessor, RName_Normal{sEnum->name});
+
+    auto typeParams = MakeTypeParams(nEnum, sEnum->typeParams, *nFactory);
+    nEnum->InitTypeParams(move(typeParams));
+    
     outer->AddType(nEnum);
 
     // EnumElem

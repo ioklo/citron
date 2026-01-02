@@ -120,8 +120,8 @@ vector<DeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs(RMember& m
 }
 
 
-RMember_TypeVar::RMember_TypeVar(size_t index)
-    : index(index)
+RMember_TypeVar::RMember_TypeVar(RTypeParamDecl* decl)
+    : decl{decl}
 {
 }
 

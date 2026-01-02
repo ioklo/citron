@@ -88,7 +88,7 @@ class RFactory
     // inner type -> nullable type
     std::unordered_map<RType*, std::unique_ptr<RType_NullableValue>> nullableValueTypes;
     std::unordered_map<RType*, std::unique_ptr<RType_NullableRef>> nullableRefTypes;
-    std::unordered_map<int, std::unique_ptr<RType_TypeVar>> typeVarTypes;
+    std::unordered_map<RTypeParamDecl*, std::unique_ptr<RType_TypeVar>> typeVarTypes;
     std::unique_ptr<RType_Void> voidType;
     std::unordered_map<std::vector<RTupleVar>, std::unique_ptr<RType_Tuple>> tupleTypes;
     std::unordered_map<RFuncTypeKey, std::unique_ptr<RType_Func>, RFuncTypeKeyHasher> funcTypes;
@@ -125,7 +125,7 @@ public:
 
     RSYMBOL_API RType_NullableValue* MakeNullableValueType(RType* innerType);
     RSYMBOL_API RType_NullableRef* MakeNullableRefType(RType* innerType);
-    RSYMBOL_API RType_TypeVar* MakeTypeVarType(int index);
+    RSYMBOL_API RType_TypeVar* MakeTypeVarType(RTypeParamDecl* decl);
     RSYMBOL_API RType_Void* MakeVoidType();
     RSYMBOL_API RType_Tuple* MakeTupleType(std::vector<RTupleVar>&& vars);
     RSYMBOL_API RType_Func* MakeFuncType(bool bLocal, RType* retType, std::vector<RType_Func::Parameter>&& params);

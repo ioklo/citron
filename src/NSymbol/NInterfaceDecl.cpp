@@ -2,6 +2,8 @@
 
 #include "Infra/Exceptions.h"
 
+#include "NTypeParamDecl.h"
+
 using namespace std;
 
 namespace Citron {
@@ -24,6 +26,11 @@ RDecl* NInterfaceDecl::GetROuter()
 RIdentifier NInterfaceDecl::GetIdentifier()
 {
     return RIdentifier { name, typeParams.size(), {} };
+}
+
+RTypeParamDecl* NInterfaceDecl::GetTypeParam(size_t index)
+{
+    return typeParams[index];
 }
 
 RTypeDecl* NInterfaceDecl::GetTypeMember(const RName& name, size_t typeParamCount)

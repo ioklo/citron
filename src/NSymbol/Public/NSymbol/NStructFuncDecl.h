@@ -32,7 +32,8 @@ public:
 public:
     NSYMBOL_API NStructFuncDecl(
         NStructDecl* _struct, RAccessor accessor, bool bStatic, bool bSeqFunc, 
-        const std::string& name, std::vector<std::string>&& typeParams);
+        const std::string& name);
+    using NCommonFuncDeclComponent::InitTypeParams;
     NSYMBOL_API void InitFuncReturnAndParams(RType* funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic);
 
 public:
@@ -57,6 +58,8 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
+    size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
+    RTypeParamDecl* GetTypeParam(size_t index) override { return NCommonFuncDeclComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
@@ -64,7 +67,7 @@ public:
     // from RFuncDecl
     // RDecl* GetRDecl() override { return this; }
     bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
-    size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
+    // size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
     size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
     RType* GetReturnType(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs); }
     RFuncReturn GetFuncReturn(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs); }

@@ -35,6 +35,7 @@ public:
     virtual void Visit(REnumElemDecl* typeDecl) = 0;
     virtual void Visit(RInterfaceDecl* typeDecl) = 0;
     virtual void Visit(RLambdaDecl* typeDecl) = 0;
+    virtual void Visit(RTypeParamDecl* typeDecl) = 0;
 };
 
 class RETypeDecl : public RTypeDecl
@@ -57,6 +58,7 @@ concept RTypeDeclVisitable = requires(TVisitor && v, TVisitorArgs&&... args)
     { v.Visit(std::declval<REnumElemDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RInterfaceDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RLambdaDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<RTypeParamDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeDeclConvertibleToResultType<TVisitor>;
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires RTypeDeclVisitable<TVisitor, TVisitorArgs...>
@@ -78,6 +80,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RTypeDec
             void Visit(REnumElemDecl* typeDecl) override { call(typeDecl); }
             void Visit(RInterfaceDecl* typeDecl) override { call(typeDecl); }
             void Visit(RLambdaDecl* typeDecl) override { call(typeDecl); }
+            void Visit(RTypeParamDecl* typeDecl) override { call(typeDecl); }
         };
 
         Bridge bridge{caller};
@@ -96,6 +99,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RTypeDec
             void Visit(REnumElemDecl* typeDecl) override { result.emplace(call(typeDecl)); }
             void Visit(RInterfaceDecl* typeDecl) override { result.emplace(call(typeDecl)); }
             void Visit(RLambdaDecl* typeDecl) override { result.emplace(call(typeDecl)); }
+            void Visit(RTypeParamDecl* typeDecl) override { result.emplace(call(typeDecl)); }
         };
 
         Bridge bridge{caller};

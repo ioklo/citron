@@ -27,7 +27,6 @@ public:
     NClassDecl* _class;
     RAccessor accessor;
     RName name;
-    std::vector<std::string> typeParams;
     bool bStatic;
 
 public:
@@ -51,12 +50,14 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
+    size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
+    RTypeParamDecl* GetTypeParam(size_t index) override { return NCommonFuncDeclComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RFuncDecl
-    size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
+    // size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
 
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }

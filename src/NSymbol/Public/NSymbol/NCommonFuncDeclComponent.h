@@ -14,9 +14,12 @@ namespace Citron {
 
 struct RFuncParameter;
 class RTypeArguments;
+class RTypeParamDecl;
+class RTypeDecl;
 
 class NLambdaVarDecl;
 class NLambdaDecl;
+class NTypeParamDecl;
 
 class NCommonFuncDeclComponent
 {
@@ -31,14 +34,15 @@ class NCommonFuncDeclComponent
 private:
     bool bStatic;
     bool bSeqFunc;
-    std::vector<std::string> typeParams;
+    std::vector<NTypeParamDecl*> typeParams;
 
     // need initializations
     std::optional<FuncReturnAndParams> funcReturnAndParams;
     std::vector<NLambdaDecl*> lambdaDecls;
 
 public:
-    NSYMBOL_API NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc, std::vector<std::string>&& typeParams);
+    NSYMBOL_API NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc);
+    NSYMBOL_API void InitTypeParams(std::vector<NTypeParamDecl*>&& typeParams);
     NSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     NSYMBOL_API ~NCommonFuncDeclComponent();
@@ -47,7 +51,11 @@ public:
     bool IsStatic() { return bStatic; }
     bool IsSeqFunc() { return bSeqFunc; }
     NSYMBOL_API size_t GetTypeParamCount();
+    NSYMBOL_API RTypeParamDecl* GetTypeParam(size_t i);
+
     NSYMBOL_API size_t GetParamCount();
+
+    NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount);
 
     NSYMBOL_API RFuncReturn GetUnboundFuncReturn();    
     NSYMBOL_API RType* GetReturnType(RTypeArguments& typeArgs);
@@ -57,7 +65,7 @@ public:
     NSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index);
 
     NSYMBOL_API std::vector<RType*> GetParamIds();
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(size_t baseTypeParamCount, const RName& name, size_t explicitTypeParamsExceptOuterCount);
+    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 }

@@ -9,6 +9,9 @@
 namespace Citron {
 
 enum class RAccessor;
+class NTypeParamDecl;
+class NFactory;
+class NDecl;
 
 enum class AccessorContext
 {
@@ -19,6 +22,6 @@ enum class AccessorContext
 
 RAccessor MakeAccessor(std::optional<SAccessModifier> modifier, AccessorContext context);
 
-std::vector<std::string> MakeTypeParams(const std::vector<STypeParam>& typeParams);
+std::vector<NTypeParamDecl*> MakeTypeParams(NDecl* outer, const std::vector<STypeParam>& sTypeParams, NFactory& nFactory);
 
 } // namespace Citron

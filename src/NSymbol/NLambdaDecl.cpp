@@ -9,12 +9,13 @@ namespace Citron {
 NLambdaDecl::NLambdaDecl(NFuncDeclOuter* outer, RName&& name)
     : outer{outer}
     , name{move(name)}
-    , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false, /*typeParams*/{})
-{   
+    , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false)
+{
+    NCommonFuncDeclComponent::InitTypeParams({}); // lambda에는 type param이 없다
 }
 
 void NLambdaDecl::Init(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
-{
+{   
     NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcReturn), move(funcParameters), bLastParameterVariadic);
 }
 

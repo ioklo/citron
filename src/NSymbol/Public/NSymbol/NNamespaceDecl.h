@@ -75,6 +75,8 @@ public:
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
+    size_t GetTypeParamCount() override { return 0; }
+    RTypeParamDecl* GetTypeParam(size_t index) override { return nullptr; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

@@ -4,6 +4,11 @@
 
 #include "Infra/Exceptions.h"
 #include "RSymbol/RAccessor.h"
+#include "RSymbol/RDecl.h"
+
+#include "NSymbol/NFactory.h"
+#include "NSymbol/NDecl.h"
+#include "NSymbol/NTypeParamDecl.h"
 
 using namespace std;
 
@@ -49,11 +54,22 @@ RAccessor MakeAccessor(optional<SAccessModifier> modifier, AccessorContext conte
     unreachable();
 }
 
-vector<string> MakeTypeParams(const vector<STypeParam>& sTypeParams)
+vector<NTypeParamDecl*> MakeTypeParams(NDecl* outer, const vector<STypeParam>& sTypeParams, NFactory& nFactory)
 {
-    return sTypeParams
-        | views::transform([](const STypeParam& typeParam) { return typeParam.name; })
-        | ranges::to<std::vector>();
+    assert(outer);
+    size_t baseIndex = outer->GetRDecl()->GetAllTypeParamCount();
+
+    vector<NTypeParamDecl*> nTypeParams;
+    size_t count = sTypeParams.size();
+    nTypeParams.reserve(count);
+    for (size_t i = 0; i < count; i++)
+    {
+        auto& sTypeParam = sTypeParams[i];
+        auto* nTypeParam = nFactory.MakeNDecl<NTypeParamDecl>(outer, RName_Normal{sTypeParam.name}, baseIndex + i);
+        nTypeParams.push_back(nTypeParam);
+    }
+
+    return nTypeParams;
 }
 
 }

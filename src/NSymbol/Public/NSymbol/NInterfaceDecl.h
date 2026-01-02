@@ -21,7 +21,7 @@ class NInterfaceDecl
     RAccessor accessor;
 
     RName name;
-    std::vector<std::string> typeParams;
+    std::vector<NTypeParamDecl*> typeParams;
 
 public:
     // from NDecl
@@ -39,6 +39,8 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
+    size_t GetTypeParamCount() override { return typeParams.size(); }
+    NSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

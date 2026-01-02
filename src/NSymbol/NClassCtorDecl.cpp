@@ -7,16 +7,17 @@ using namespace std;
 
 namespace Citron {
 
-NClassCtorDecl::NClassCtorDecl(NClassDecl* _class, RAccessor accessor, bool bTrivial, vector<string>&& typeParams)
+NClassCtorDecl::NClassCtorDecl(NClassDecl* _class, RAccessor accessor, bool bTrivial)
     : _class{_class}
     , accessor{accessor}
     , bTrivial{bTrivial}
-    , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false, move(typeParams))
+    , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false)
 {   
 }
 
-void NClassCtorDecl::Init(vector<RFuncParameter>&& parameters, bool bLastParamVariadic)
+void NClassCtorDecl::Init(vector<NTypeParamDecl*>&& typeParams, vector<RFuncParameter>&& parameters, bool bLastParamVariadic)
 {   
+    NCommonFuncDeclComponent::InitTypeParams(move(typeParams));
     NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor(), move(parameters), bLastParamVariadic);
 }
 
@@ -41,15 +42,19 @@ RIdentifier NClassCtorDecl::GetIdentifier()
     return RIdentifier{RName_Reserved("Ctor"), 0, NCommonFuncDeclComponent::GetParamIds()};
 }
 
+RTypeDecl* NClassCtorDecl::GetTypeMember(const RName& name, size_t typeParamCount)
+{
+    return NCommonFuncDeclComponent::GetTypeMember(name, typeParamCount);
+}
+
 optional<RMember> NClassCtorDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
 optional<RMember> NClassCtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
-{
-    auto baseTypeParamCount = _class->GetAllTypeParamCount();
-    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount))
+{   
+    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     return _class->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);

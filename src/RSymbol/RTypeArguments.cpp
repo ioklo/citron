@@ -19,7 +19,7 @@ size_t RTypeArguments::GetCount()
     return items.size();
 }
 
-RType* RTypeArguments::Get(int i)
+RType* RTypeArguments::Get(size_t i)
 {
     return items[i];
 }

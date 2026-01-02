@@ -48,6 +48,7 @@
     <ClInclude Include="Public\NSymbol\NTypeDeclContainerComponent.h" />
     <ClInclude Include="Public\NSymbol\NTypeDeclOuter.h" />
     <ClInclude Include="Public\NSymbol\NSymbolConfig.h" />
+    <ClInclude Include="Public\NSymbol\NTypeParamDecl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NClassCtorDecl.cpp" />
@@ -73,6 +74,7 @@
     <ClCompile Include="NStructFuncDecl.cpp" />
     <ClCompile Include="NStructVarDecl.cpp" />
     <ClCompile Include="NTypeDeclContainerComponent.cpp" />
+    <ClCompile Include="NTypeParamDecl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ESymbol\ESymbol.vcxproj">

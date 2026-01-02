@@ -67,15 +67,15 @@ RType_NullableRef* RFactory::MakeNullableRefType(RType* innerType)
     return pNewType;
 }
 
-RType_TypeVar* RFactory::MakeTypeVarType(int index)
+RType_TypeVar* RFactory::MakeTypeVarType(RTypeParamDecl* decl)
 {
-    auto i = typeVarTypes.find(index);
+    auto i = typeVarTypes.find(decl);
     if (i != typeVarTypes.end())
         return i->second.get();
 
-    unique_ptr<RType_TypeVar> newTypeVarType{new RType_TypeVar(index)};
+    unique_ptr<RType_TypeVar> newTypeVarType{new RType_TypeVar(decl)};
     auto pNewTypeVarType = newTypeVarType.get();
-    typeVarTypes.emplace(index, move(newTypeVarType));
+    typeVarTypes.try_emplace(decl, move(newTypeVarType));
     return pNewTypeVarType;
 }
 
@@ -261,6 +261,12 @@ RType* RFactory::MakeType(RTypeDecl* decl, RTypeArguments* typeArgs)
         RType* Visit(RLambdaDecl* lambdaDecl)
         {
             return factory.MakeLambdaType(lambdaDecl, typeArgs);
+        }
+
+        RType* Visit(RTypeParamDecl* typeParamDecl)
+        {
+            assert(typeArgs->GetCount() == 0);
+            return factory.MakeTypeVarType(typeParamDecl);
         }
     };
 

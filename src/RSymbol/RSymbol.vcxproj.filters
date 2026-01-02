@@ -104,6 +104,9 @@
     <ClInclude Include="Public\RSymbol\RStructDtorDecl.h">
       <Filter>RDecls\07 Struct</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTypeParamDecl.h">
+      <Filter>RDecls\11 Generics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">
@@ -139,6 +142,9 @@
     <Filter Include="RDecls\10 Lambda">
       <UniqueIdentifier>{7667c2ab-9529-41c8-8493-f19857ae9008}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RDecls\11 Generics">
+      <UniqueIdentifier>{d504e20d-8c04-4bbb-a0c1-e07c716fce1f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RDecl.cpp">
@@ -170,6 +176,9 @@
     </ClCompile>
     <ClCompile Include="RNamespaceDeclGroup.cpp">
       <Filter>RDecls\05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypeParamDecl.cpp">
+      <Filter>RDecls\11 Generics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

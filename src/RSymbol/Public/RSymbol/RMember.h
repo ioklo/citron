@@ -12,6 +12,7 @@ namespace Citron {
 
 class RTypeArguments;
 class RType;
+class RTypeParamDecl;
 
 template<typename TDecl>
 struct DeclWithOuterTypeArgs;
@@ -160,10 +161,10 @@ public:
 class RMember_TypeVar
 {
 public:
-    size_t index;
+    RTypeParamDecl* decl;
 
 public:
-    RSYMBOL_API RMember_TypeVar(size_t index);
+    RSYMBOL_API RMember_TypeVar(RTypeParamDecl* decl);
 };
 
 class RMember_LocalVar

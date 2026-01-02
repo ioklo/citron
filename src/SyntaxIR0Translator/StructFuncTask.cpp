@@ -25,10 +25,13 @@ void StructFuncTask::Register(NStructDecl* nStructDecl, SStructFuncDecl* syntax,
 void StructFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
     auto accessor = MakeAccessor(sStruct->accessModifier, AccessorContext::InsideStruct);
-    auto typeParams = MakeTypeParams(sStruct->typeParams);
     nStructFunc = nFactory->MakeNDecl<NStructFuncDecl>(
         nStruct, accessor, sStruct->bStatic, sStruct->bSequence,
-        sStruct->name, move(typeParams));
+        sStruct->name);
+
+    auto typeParams = MakeTypeParams(nStructFunc, sStruct->typeParams, *nFactory);
+    nStructFunc->InitTypeParams(move(typeParams));
+
     nStruct->AddFunc(nStructFunc);
 
     // symbol tree에 매달린 nStructFunc가 필요

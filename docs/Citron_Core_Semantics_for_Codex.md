@@ -217,3 +217,10 @@ When in doubt:
 - Prefer **compile-time errors** over runtime behavior
 - Prefer **explicit rules** over implicit convenience
 - Do not emulate C++ or Rust unless explicitly stated
+
+---
+## Generics 용어 정리
+
+ - TypeParam: decl-space에서 custom 타입을 정의할때 쓰이는 "내가 바인딩한 파라미터" (RTypeParamDecl, NTypeParamDecl, ETypeParamDecl, RETypeParamDecl)
+ - TypeVar: RType_TypeVar 형태로 "파라미터를 가리키는 참조"
+ - TypeArg: 파라미터 자리에 들어가는 인자

@@ -12,8 +12,9 @@ NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, bool 
     : _struct{_struct}
     , accessor{accessor}
     , bTrivial{bTrivial}
-    , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false, /*typeParams*/{})
-{   
+    , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false)
+{
+    NCommonFuncDeclComponent::InitTypeParams({});
 }
 
 void NStructCtorDecl::InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic)
@@ -60,9 +61,8 @@ optional<Citron::RMember> NStructCtorDecl::GetMember(RTypeArguments* typeArgs, c
 }
 
 optional<RMember> NStructCtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
-{
-    auto baseTypeParamCount = _struct->GetAllTypeParamCount();
-    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(baseTypeParamCount, name, explicitTypeParamsExceptOuterCount))
+{   
+    if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);

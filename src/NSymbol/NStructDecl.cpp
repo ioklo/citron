@@ -3,15 +3,21 @@
 #include <cassert>
 
 #include "Infra/Exceptions.h"
+#include "NTypeParamDecl.h"
 
 using namespace std;
 
 namespace Citron {
 
-NStructDecl::NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, vector<string>&& typeParams, const RFactoryPtr& rFactory)
-    : outer{outer}, accessor{accessor}, name{move(name)}, typeParams(move(typeParams)), rFactory{rFactory}
+NStructDecl::NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, const RFactoryPtr& rFactory)
+    : outer{outer}, accessor{accessor}, name{move(name)}, rFactory{rFactory}
     , dtor{nullptr}
 {
+}
+
+void NStructDecl::InitTypeParams(vector<NTypeParamDecl*>&& typeParams)
+{
+    this->typeParams = move(typeParams);
 }
 
 void NStructDecl::InitBaseTypes(RType_Struct* baseStruct, vector<RType_Interface*>&& interfaces)
@@ -65,7 +71,12 @@ RDecl* NStructDecl::GetROuter()
 
 RIdentifier NStructDecl::GetIdentifier()
 {
-    return RIdentifier { name, typeParams.size(), {} };
+    return RIdentifier{name, typeParams.size(), {}};
+}
+
+RTypeParamDecl* NStructDecl::GetTypeParam(size_t index)
+{
+    return typeParams[index];
 }
 
 RTypeDecl* NStructDecl::GetTypeMember(const RName& name, size_t typeParamCount)

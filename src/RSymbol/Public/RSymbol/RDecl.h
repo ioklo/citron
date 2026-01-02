@@ -23,6 +23,7 @@ class RStructDtorDecl;
 class RClassCtorDecl;
 class RLambdaDecl;
 class RInterfaceDecl;
+class RTypeParamDecl;
 
 class RDeclVisitor;
 
@@ -36,7 +37,6 @@ public:
 public:
     RSYMBOL_API bool IsDescendantOf(RDecl* container);
     RSYMBOL_API bool CanAccess(RDecl* target);
-    RSYMBOL_API size_t GetTypeParamCount();
     RSYMBOL_API size_t GetAllTypeParamCount();
 
     RSYMBOL_API RTypeArguments* MakeOpenTypeArgs(RFactory& factory);
@@ -46,6 +46,9 @@ public:
     virtual RDecl* GetROuter() = 0;
     virtual RAccessor GetAccessor() = 0;
     virtual RIdentifier GetIdentifier() = 0;
+    virtual size_t GetTypeParamCount() = 0;
+    virtual RTypeParamDecl* GetTypeParam(size_t index) = 0;
+
     virtual RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) = 0; // type-space search
 
     // typeArgs는 RDecl의 typeArgs이다
@@ -83,6 +86,7 @@ public:
     virtual void Visit(RLambdaDecl* decl) = 0;
     virtual void Visit(RLambdaVarDecl* decl) = 0;
     virtual void Visit(RInterfaceDecl* decl) = 0;
+    virtual void Visit(RTypeParamDecl* decl) = 0;
 };
 
 class REDecl : public RDecl

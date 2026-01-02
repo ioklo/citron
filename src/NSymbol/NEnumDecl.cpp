@@ -3,16 +3,22 @@
 #include <cassert>
 #include "Infra/Exceptions.h"
 
+#include "NTypeParamDecl.h"
+
 using namespace std;
 
 namespace Citron
 {
-NEnumDecl::NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, const RName& name, std::vector<std::string>&& typeParams)
+NEnumDecl::NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, const RName& name)
     : outer{outer}
     , accessor{accessor}
     , name{move(name)}
-    , typeParams{move(typeParams)}
 {}
+
+void NEnumDecl::InitTypeParams(std::vector<NTypeParamDecl*>&& typeParams)
+{
+    this->typeParams = move(typeParams);
+}
 
 void NEnumDecl::AddElem(NEnumElemDecl* elem)
 {
@@ -38,6 +44,11 @@ RDecl* NEnumDecl::GetROuter()
 RIdentifier NEnumDecl::GetIdentifier()
 {
     return RIdentifier { name, typeParams.size(), {} };
+}
+
+RTypeParamDecl* NEnumDecl::GetTypeParam(size_t index)
+{
+    return typeParams[index];
 }
 
 RTypeDecl* NEnumDecl::GetTypeMember(const RName& name, size_t typeParamCount)

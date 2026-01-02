@@ -5,6 +5,7 @@
 
 #include "Infra/Exceptions.h"
 #include "NClassFuncDecl.h"
+#include "NTypeParamDecl.h"
 
 using namespace std;
 
@@ -23,6 +24,11 @@ RDecl* NClassDecl::GetROuter()
 RIdentifier NClassDecl::GetIdentifier()
 {
     return RIdentifier{name, typeParams.size(), {}};
+}
+
+RTypeParamDecl* NClassDecl::GetTypeParam(size_t index)
+{
+    return typeParams[index];
 }
 
 RTypeDecl* NClassDecl::GetTypeMember(const RName& name, size_t typeParamCount)
