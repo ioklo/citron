@@ -32,6 +32,7 @@
     <ClInclude Include="Public\NSymbol\NFuncDecl.h" />
     <ClInclude Include="Public\NSymbol\NFuncDeclContainerComponent.h" />
     <ClInclude Include="Public\NSymbol\NFuncDeclOuter.h" />
+    <ClInclude Include="Public\NSymbol\NGenericsComponent.h" />
     <ClInclude Include="Public\NSymbol\NGlobalFuncDecl.h" />
     <ClInclude Include="Public\NSymbol\NInterfaceDecl.h" />
     <ClInclude Include="Public\NSymbol\NLambdaDecl.h" />
@@ -61,6 +62,7 @@
     <ClCompile Include="NEnumElemDecl.cpp" />
     <ClCompile Include="NEnumElemVarDecl.cpp" />
     <ClCompile Include="NFactory.cpp" />
+    <ClCompile Include="NGenericsComponent.cpp" />
     <ClCompile Include="NGlobalFuncDecl.cpp" />
     <ClCompile Include="NInterfaceDecl.cpp" />
     <ClCompile Include="NLambdaDecl.cpp" />

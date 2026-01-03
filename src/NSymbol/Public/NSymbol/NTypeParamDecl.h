@@ -23,6 +23,8 @@ public:
     NSYMBOL_API NTypeParamDecl(NDecl* outer, RName&& name, size_t globalIndex);
     NSYMBOL_API ~NTypeParamDecl();
 
+    const RName& GetName() { return name; }
+
 public: // from NDecl
     RDecl* GetRDecl() override { return this; }
     NDecl* GetNOuter() override { return outer; }

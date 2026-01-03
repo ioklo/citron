@@ -33,12 +33,13 @@ RDecl* NGlobalFuncDecl::GetROuter()
 
 RIdentifier NGlobalFuncDecl::GetIdentifier()
 {
-    return RIdentifier{name, NCommonFuncDeclComponent::GetTypeParamCount(), GetParamIds()};
+    return RIdentifier{name, NGenericsComponent::GetTypeParamCount(), GetParamIds()};
 }
 
 RTypeDecl* NGlobalFuncDecl::GetTypeMember(const RName& name, size_t typeParamCount)
 {
-    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
+    if (auto* typeDecl = NGenericsComponent::GetTypeMember(name, typeParamCount))
+        return typeDecl;
     return nullptr;
 }
 
@@ -51,6 +52,9 @@ optional<RMember> NGlobalFuncDecl::GetMember(RTypeArguments* typeArgs, const RNa
 
 optional<RMember> NGlobalFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
+    if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+        return o_member;
+
     if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 

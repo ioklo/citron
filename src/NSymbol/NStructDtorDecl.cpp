@@ -9,7 +9,6 @@ NStructDtorDecl::NStructDtorDecl(RAccessor accessor, NStructDecl* _struct)
     : accessor{accessor}, _struct{_struct}
     , NCommonFuncDeclComponent{/*bStatic*/false, /*bSeqFunc*/false}
 {
-    NCommonFuncDeclComponent::InitTypeParams({});
     NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor{}, {}, /*bLastParamVariadic*/false);
 }
 

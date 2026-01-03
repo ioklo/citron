@@ -12,6 +12,7 @@
 #include "NTypeDecl.h"
 #include "NEnumElemDecl.h"
 #include "NTypeDeclOuter.h"
+#include "NGenericsComponent.h"
 
 namespace Citron
 {
@@ -22,12 +23,12 @@ class NEnumDecl
     : public NDecl
     , public NTypeDecl
     , public REnumDecl
+    , private NGenericsComponent
 {
     NTypeDeclOuter* outer;
     RAccessor accessor;
 
     RName name;
-    std::vector<NTypeParamDecl*> typeParams;
     std::vector<NEnumElemDecl*> elems;
     std::unordered_map<RName, NEnumElemDecl*> elemsMap;
 
@@ -35,7 +36,7 @@ class NEnumDecl
 
 public:
     NSYMBOL_API NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, const RName& name);
-    NSYMBOL_API void InitTypeParams(std::vector<NTypeParamDecl*>&& typeParams);
+    using NGenericsComponent::InitTypeParams;
     NSYMBOL_API void AddElem(NEnumElemDecl* elem);
 
 public:
@@ -54,8 +55,8 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
-    size_t GetTypeParamCount() override { return typeParams.size(); }
-    NSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
+    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
+    RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

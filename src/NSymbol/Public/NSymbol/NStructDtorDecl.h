@@ -48,8 +48,8 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     RIdentifier GetIdentifier() override { return RIdentifier{RName_Reserved("Dtor"), 0, {}}; }
-    size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
-    RTypeParamDecl* GetTypeParam(size_t index) override { return NCommonFuncDeclComponent::GetTypeParam(index); }
+    size_t GetTypeParamCount() override { return 0; }
+    RTypeParamDecl* GetTypeParam(size_t index) override { return nullptr; }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
@@ -57,7 +57,7 @@ public:
     // from RFuncDecl
     // RDecl* GetRDecl() override { return this; }
     bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
-    // size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
+    // size_t GetTypeParamCount() override { return 0; }
     size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
     RType* GetReturnType(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs); }
     RFuncReturn GetFuncReturn(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs); }

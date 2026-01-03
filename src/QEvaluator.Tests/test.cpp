@@ -40,10 +40,11 @@ TEST(QEvaluator, CommandInst_DoingWell)
 
     auto* nRootNamespace = nFactory.MakeRootNamespaceDecl();
     auto* nEntry = nFactory.MakeNDecl<NGlobalFuncDecl>(
-        nRootNamespace, RAccessor::Public, 
-        /*bSeqFunc*/false, 
-        RName_Normal{"main"}, 
-        /*typeParams*/vector<string>{});
+        nRootNamespace, RAccessor::Public,
+        /*bSeqFunc*/false,
+        RName_Normal{"main"});
+
+    nEntry->InitTypeParams({});
 
     vector<QBlock*> blocks;
     auto* qEntryBlock = qFactory->MakeQBlock(blocks.size(), "entry");

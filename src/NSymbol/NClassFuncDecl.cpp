@@ -9,6 +9,12 @@ using namespace std;
 
 namespace Citron {
 
+NClassFuncDecl::NClassFuncDecl(NClassDecl* _class, RAccessor accessor, RName&& name, bool bStatic, bool bSeqFunc)
+    : _class{_class}, accessor{accessor}, name{move(name)}
+    , NCommonFuncDeclComponent{bStatic, bSeqFunc}
+{
+}
+
 NDecl* NClassFuncDecl::GetNOuter()
 {
     return _class;
@@ -26,13 +32,12 @@ RDecl* NClassFuncDecl::GetROuter()
 
 RIdentifier NClassFuncDecl::GetIdentifier()
 {
-    return RIdentifier{ name, NCommonFuncDeclComponent::GetTypeParamCount(), NCommonFuncDeclComponent::GetParamIds() };
+    return RIdentifier{ name, NGenericsComponent::GetTypeParamCount(), NCommonFuncDeclComponent::GetParamIds() };
 }
 
 RTypeDecl* NClassFuncDecl::GetTypeMember(const RName& name, size_t typeParamCount)
 {
-    // TODO: [26] typeParams에서도 검색해야 함
-    return nullptr;
+    return NGenericsComponent::GetTypeMember(name, typeParamCount);
 }
 
 optional<RMember> NClassFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
@@ -42,6 +47,9 @@ optional<RMember> NClassFuncDecl::GetMember(RTypeArguments* typeArgs, const RNam
 
 std::optional<RMember> NClassFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
+    if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+        return o_member;
+
     if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 

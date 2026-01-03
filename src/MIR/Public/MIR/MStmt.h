@@ -279,7 +279,7 @@ public:
     RClassCtorDecl* ctor;
     std::vector<MArgument> args;
 public:
-    MIR_API MStmt_CallClassCtor();
+    MIR_API MStmt_CallClassCtor(RClassCtorDecl* ctor, std::vector<MArgument>&& args);
     void Accept(MStmtVisitor& visitor) override { visitor.Visit(this); }
 };
 
@@ -290,7 +290,7 @@ public:
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
 public:
-    MIR_API MStmt_CallStructCtor();
+    MIR_API MStmt_CallStructCtor(NStructCtorDecl* ctor, RTypeArguments* typeArgs, std::vector<MArgument>&& args);
     void Accept(MStmtVisitor& visitor) override { visitor.Visit(this); }
 };
 
@@ -317,7 +317,7 @@ class MStmt_StaticNullDirective : public MStmt
 public:
     MLoc* loc;
 public:
-    MIR_API MStmt_StaticNullDirective();
+    MIR_API MStmt_StaticNullDirective(MLoc* loc);
     void Accept(MStmtVisitor& visitor) override { visitor.Visit(this); }
 };
 
@@ -326,7 +326,7 @@ class MStmt_StaticNotNullDirective : public MStmt
 public:
     MLoc* loc;
 public:
-    MIR_API MStmt_StaticNotNullDirective();
+    MIR_API MStmt_StaticNotNullDirective(MLoc* loc);
     void Accept(MStmtVisitor& visitor) override { visitor.Visit(this); }
 };
 
@@ -335,7 +335,7 @@ class MStmt_StaticUnknownNullDirective : public MStmt
 public:
     MLoc* loc;
 public:
-    MIR_API MStmt_StaticUnknownNullDirective();
+    MIR_API MStmt_StaticUnknownNullDirective(MLoc* loc);
     void Accept(MStmtVisitor& visitor) override { visitor.Visit(this); }
 };
 

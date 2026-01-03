@@ -12,12 +12,8 @@ namespace Citron {
 NStructDecl::NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, const RFactoryPtr& rFactory)
     : outer{outer}, accessor{accessor}, name{move(name)}, rFactory{rFactory}
     , dtor{nullptr}
+    , trivialCtorIndex{-1}
 {
-}
-
-void NStructDecl::InitTypeParams(vector<NTypeParamDecl*>&& typeParams)
-{
-    this->typeParams = move(typeParams);
 }
 
 void NStructDecl::InitBaseTypes(RType_Struct* baseStruct, vector<RType_Interface*>&& interfaces)
@@ -71,17 +67,14 @@ RDecl* NStructDecl::GetROuter()
 
 RIdentifier NStructDecl::GetIdentifier()
 {
-    return RIdentifier{name, typeParams.size(), {}};
-}
-
-RTypeParamDecl* NStructDecl::GetTypeParam(size_t index)
-{
-    return typeParams[index];
+    return RIdentifier{name, NGenericsComponent::GetTypeParamCount(), {}};
 }
 
 RTypeDecl* NStructDecl::GetTypeMember(const RName& name, size_t typeParamCount)
 {
-    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
+    if (auto* typeDecl = NGenericsComponent::GetTypeMember(name, typeParamCount))
+        return typeDecl;
+    
     return NTypeDeclContainerComponent::GetTypeMember(name, typeParamCount);
 }
 
@@ -114,6 +107,9 @@ optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& 
 
 optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
+    if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+        return o_member;
+
     auto typeArgs = MakeOpenTypeArgs(*rFactory);
     if (auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
         return o_member;

@@ -23,17 +23,14 @@ RDecl* NClassDecl::GetROuter()
 
 RIdentifier NClassDecl::GetIdentifier()
 {
-    return RIdentifier{name, typeParams.size(), {}};
-}
-
-RTypeParamDecl* NClassDecl::GetTypeParam(size_t index)
-{
-    return typeParams[index];
+    return RIdentifier{name, NGenericsComponent::GetTypeParamCount(), {}};
 }
 
 RTypeDecl* NClassDecl::GetTypeMember(const RName& name, size_t typeParamCount)
 {
-    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl 추가 필요)
+    if (auto* typeDecl = NGenericsComponent::GetTypeMember(name, typeParamCount))
+        return typeDecl;
+    
     return NTypeDeclContainerComponent::GetTypeMember(name, typeParamCount);
 }
 
@@ -71,10 +68,12 @@ optional<RMember> NClassDecl::GetMember(RTypeArguments* typeArgs, const RName& n
 
 optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto* typeArgs = MakeOpenTypeArgs(*rFactory);
+    if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+        return o_member;
 
-    auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount);
-    if (o_member) return o_member;
+    auto* typeArgs = MakeOpenTypeArgs(*rFactory);
+    if (auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
+        return o_member;
 
     return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }

@@ -110,14 +110,14 @@ MStmt_Yield::MStmt_Yield(MExp* value)
 
 }
 
-MStmt_CallClassCtor::MStmt_CallClassCtor()
+MStmt_CallClassCtor::MStmt_CallClassCtor(RClassCtorDecl* ctor, vector<MArgument>&& args)
+    : ctor{ctor}, args{move(args)}
 {
-
 }
 
-MStmt_CallStructCtor::MStmt_CallStructCtor()
+MStmt_CallStructCtor::MStmt_CallStructCtor(NStructCtorDecl* ctor, RTypeArguments* typeArgs, vector<MArgument>&& args)
+    : ctor{ctor}, typeArgs{typeArgs}, args{move(args)}
 {
-
 }
 
 MStmt_NullDirective::MStmt_NullDirective(MLoc* loc)
@@ -126,22 +126,25 @@ MStmt_NullDirective::MStmt_NullDirective(MLoc* loc)
 }
 
 MStmt_NotNullDirective::MStmt_NotNullDirective(MLoc* loc)
-    : loc(loc)
+    : loc{loc}
 {
 
 }
 
-MStmt_StaticNullDirective::MStmt_StaticNullDirective()
+MStmt_StaticNullDirective::MStmt_StaticNullDirective(MLoc* loc)
+    : loc{loc}
 {
 
 }
 
-MStmt_StaticNotNullDirective::MStmt_StaticNotNullDirective()
+MStmt_StaticNotNullDirective::MStmt_StaticNotNullDirective(MLoc* loc)
+    : loc{loc}
 {
 
 }
 
-MStmt_StaticUnknownNullDirective::MStmt_StaticUnknownNullDirective()
+MStmt_StaticUnknownNullDirective::MStmt_StaticUnknownNullDirective(MLoc* loc)
+    : loc{loc}
 {
 
 }

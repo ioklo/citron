@@ -14,10 +14,10 @@ NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, bool 
     , bTrivial{bTrivial}
     , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false)
 {
-    NCommonFuncDeclComponent::InitTypeParams({});
+    NGenericsComponent::InitTypeParams({});
 }
 
-void NStructCtorDecl::InitFuncParameters(std::vector<RFuncParameter> parameters, bool bLastParameterVariadic)
+void NStructCtorDecl::InitFuncParameters(vector<RFuncParameter>&& parameters, bool bLastParameterVariadic)
 {
     NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor(), move(parameters), bLastParameterVariadic);
 }
@@ -46,8 +46,7 @@ RIdentifier NStructCtorDecl::GetIdentifier()
 
 RTypeDecl* NStructCtorDecl::GetTypeMember(const RName& name, size_t typeParamCount)
 {
-    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
-    return nullptr;
+    return NGenericsComponent::GetTypeMember(name, typeParamCount);
 }
 
 RStructDecl* NStructCtorDecl::GetStructDecl()
@@ -62,6 +61,9 @@ optional<Citron::RMember> NStructCtorDecl::GetMember(RTypeArguments* typeArgs, c
 
 optional<RMember> NStructCtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {   
+    if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+        return o_member;
+
     if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 

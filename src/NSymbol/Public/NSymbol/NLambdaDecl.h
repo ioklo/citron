@@ -13,6 +13,7 @@
 #include "NTypeDecl.h"
 #include "NFuncDeclOuter.h"
 #include "NFuncDecl.h"
+#include "NGenericsComponent.h"
 #include "NCommonFuncDeclComponent.h"
 #include "NLambdaVarDecl.h"
 
@@ -27,6 +28,7 @@ class NLambdaDecl
     , public NFuncDeclOuter
     , public NFuncDecl
     , public RLambdaDecl
+    , private NGenericsComponent
     , private NCommonFuncDeclComponent
 {
     NFuncDeclOuter* outer;
@@ -34,8 +36,6 @@ class NLambdaDecl
 
     // 가지고 있어야 할 멤버 변수들, type, name, ref 여부
     std::optional<std::vector<NLambdaVarDecl*>> vars;
-
-    //
     std::unordered_map<RName, NLambdaVarDecl*> varsMap;
 
 public:
@@ -73,8 +73,8 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
-    size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
-    RTypeParamDecl* GetTypeParam(size_t index) override { return NCommonFuncDeclComponent::GetTypeParam(index); }
+    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
+    RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
@@ -84,7 +84,7 @@ public:
 
     // from RFuncDecl
     bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
-    // size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
+    // size_t GetTypeParamCount() override { return 0; }
     size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
     RType* GetReturnType(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs); }
     RFuncReturn GetFuncReturn(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs); }

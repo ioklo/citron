@@ -87,6 +87,9 @@
     <ClInclude Include="Public\NSymbol\NTypeParamDecl.h">
       <Filter>11 Generics</Filter>
     </ClInclude>
+    <ClInclude Include="Public\NSymbol\NGenericsComponent.h">
+      <Filter>04 Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="10 Lambda">
@@ -196,6 +199,9 @@
     </ClCompile>
     <ClCompile Include="NTypeParamDecl.cpp">
       <Filter>11 Generics</Filter>
+    </ClCompile>
+    <ClCompile Include="NGenericsComponent.cpp">
+      <Filter>04 Components</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

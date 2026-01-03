@@ -34,7 +34,6 @@ class NCommonFuncDeclComponent
 private:
     bool bStatic;
     bool bSeqFunc;
-    std::vector<NTypeParamDecl*> typeParams;
 
     // need initializations
     std::optional<FuncReturnAndParams> funcReturnAndParams;
@@ -42,7 +41,6 @@ private:
 
 public:
     NSYMBOL_API NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc);
-    NSYMBOL_API void InitTypeParams(std::vector<NTypeParamDecl*>&& typeParams);
     NSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     NSYMBOL_API ~NCommonFuncDeclComponent();
@@ -50,13 +48,8 @@ public:
     // internal?
     bool IsStatic() { return bStatic; }
     bool IsSeqFunc() { return bSeqFunc; }
-    NSYMBOL_API size_t GetTypeParamCount();
-    NSYMBOL_API RTypeParamDecl* GetTypeParam(size_t i);
 
     NSYMBOL_API size_t GetParamCount();
-
-    NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount);
-
     NSYMBOL_API RFuncReturn GetUnboundFuncReturn();    
     NSYMBOL_API RType* GetReturnType(RTypeArguments& typeArgs);
     NSYMBOL_API RFuncReturn GetFuncReturn(RTypeArguments& typeArgs);

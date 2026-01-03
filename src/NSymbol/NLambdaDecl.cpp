@@ -10,8 +10,8 @@ NLambdaDecl::NLambdaDecl(NFuncDeclOuter* outer, RName&& name)
     : outer{outer}
     , name{move(name)}
     , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false)
-{
-    NCommonFuncDeclComponent::InitTypeParams({}); // lambda에는 type param이 없다
+{   
+    NGenericsComponent::InitTypeParams({});
 }
 
 void NLambdaDecl::Init(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
@@ -44,8 +44,7 @@ RIdentifier NLambdaDecl::GetIdentifier()
 
 RTypeDecl* NLambdaDecl::GetTypeMember(const RName& name, size_t typeParamCount)
 {
-    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요), lambda에 type params가 추가될까?
-    return nullptr;
+    return NGenericsComponent::GetTypeMember(name, typeParamCount);
 }
 
 RMember NLambdaDecl::ToRMember(RTypeArguments* typeArgs)
@@ -65,6 +64,9 @@ optional<RMember> NLambdaDecl::GetMember(RTypeArguments* typeArgs, const RName& 
 
 optional<RMember> NLambdaDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
+    if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+        return o_member;
+
     // Lambda에서 검색하지 않고, FuncContext에서 검색한다
     throw RuntimeFatalException();
 }

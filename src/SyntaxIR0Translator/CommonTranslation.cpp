@@ -54,10 +54,11 @@ RAccessor MakeAccessor(optional<SAccessModifier> modifier, AccessorContext conte
     unreachable();
 }
 
-vector<NTypeParamDecl*> MakeTypeParams(NDecl* outer, const vector<STypeParam>& sTypeParams, NFactory& nFactory)
+vector<NTypeParamDecl*> MakeTypeParams(NDecl* nDecl, const vector<STypeParam>& sTypeParams, NFactory& nFactory)
 {
-    assert(outer);
-    size_t baseIndex = outer->GetRDecl()->GetAllTypeParamCount();
+    assert(nDecl);
+    auto* rOuter = nDecl->GetRDecl()->GetROuter();
+    size_t baseIndex = rOuter ? rOuter->GetAllTypeParamCount() : 0;
 
     vector<NTypeParamDecl*> nTypeParams;
     size_t count = sTypeParams.size();
@@ -65,7 +66,7 @@ vector<NTypeParamDecl*> MakeTypeParams(NDecl* outer, const vector<STypeParam>& s
     for (size_t i = 0; i < count; i++)
     {
         auto& sTypeParam = sTypeParams[i];
-        auto* nTypeParam = nFactory.MakeNDecl<NTypeParamDecl>(outer, RName_Normal{sTypeParam.name}, baseIndex + i);
+        auto* nTypeParam = nFactory.MakeNDecl<NTypeParamDecl>(nDecl, RName_Normal{sTypeParam.name}, baseIndex + i);
         nTypeParams.push_back(nTypeParam);
     }
 

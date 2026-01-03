@@ -11,6 +11,7 @@
 #include "NClassCtorDecl.h"
 #include "NClassFuncDecl.h"
 #include "NClassVarDecl.h"
+#include "NGenericsComponent.h"
 #include "NTypeDeclContainerComponent.h"
 #include "NFuncDeclContainerComponent.h"
 #include "NTypeDeclOuter.h"
@@ -28,6 +29,7 @@ class NClassDecl
     , public NTypeDeclOuter
     , public NFuncDeclOuter
     , public RClassDecl
+    , private NGenericsComponent
     , private NTypeDeclContainerComponent
     , private NFuncDeclContainerComponent<NClassFuncDecl>
 {
@@ -41,7 +43,6 @@ class NClassDecl
     RAccessor accessor;
 
     RName name;
-    std::vector<NTypeParamDecl*> typeParams;
     std::vector<NClassCtorDecl*> ctors;
     int trivialCtorIndex; // can be -1
 
@@ -77,8 +78,8 @@ public:
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RDecl* GetROuter() override;
     NSYMBOL_API RIdentifier GetIdentifier() override;
-    size_t GetTypeParamCount() override { return typeParams.size(); }
-    NSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
+    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
+    RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

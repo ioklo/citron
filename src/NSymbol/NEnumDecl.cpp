@@ -12,13 +12,8 @@ namespace Citron
 NEnumDecl::NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, const RName& name)
     : outer{outer}
     , accessor{accessor}
-    , name{move(name)}
+    , name{name}
 {}
-
-void NEnumDecl::InitTypeParams(std::vector<NTypeParamDecl*>&& typeParams)
-{
-    this->typeParams = move(typeParams);
-}
 
 void NEnumDecl::AddElem(NEnumElemDecl* elem)
 {
@@ -43,17 +38,13 @@ RDecl* NEnumDecl::GetROuter()
 
 RIdentifier NEnumDecl::GetIdentifier()
 {
-    return RIdentifier { name, typeParams.size(), {} };
-}
-
-RTypeParamDecl* NEnumDecl::GetTypeParam(size_t index)
-{
-    return typeParams[index];
+    return RIdentifier { name, NGenericsComponent::GetTypeParamCount(), {} };
 }
 
 RTypeDecl* NEnumDecl::GetTypeMember(const RName& name, size_t typeParamCount)
 {
-    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
+    if (RTypeDecl* typeDecl = NGenericsComponent::GetTypeMember(name, typeParamCount))
+        return typeDecl;
 
     auto i = elemsMap.find(name);
     if (i != elemsMap.end())
@@ -76,6 +67,9 @@ optional<RMember> NEnumDecl::GetMember(RTypeArguments* typeArgs, const RName& na
 
 optional<RMember> NEnumDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
+    if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+        return o_member;
+
     // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
     throw RuntimeFatalException();
 }

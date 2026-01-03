@@ -8,6 +8,7 @@
 #include "NDecl.h"
 #include "NFuncDeclOuter.h"
 #include "NFuncDecl.h"
+#include "NGenericsComponent.h"
 #include "NCommonFuncDeclComponent.h"
 
 namespace Citron {
@@ -17,6 +18,7 @@ class NClassFuncDecl
     , public NFuncDecl
     , public NFuncDeclOuter
     , public RClassFuncDecl
+    , private NGenericsComponent
     , private NCommonFuncDeclComponent
 {
 public:
@@ -27,9 +29,11 @@ public:
     NClassDecl* _class;
     RAccessor accessor;
     RName name;
-    bool bStatic;
 
 public:
+    NClassFuncDecl(NClassDecl* _class, RAccessor accessor, RName&& name, bool bStatic, bool bSeqFunc);
+    using NGenericsComponent::InitTypeParams;
+
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NSYMBOL_API NDecl* GetNOuter() override;
@@ -50,14 +54,14 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
-    size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
-    RTypeParamDecl* GetTypeParam(size_t index) override { return NCommonFuncDeclComponent::GetTypeParam(index); }
+    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
+    RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RFuncDecl
-    // size_t GetTypeParamCount() override { return NCommonFuncDeclComponent::GetTypeParamCount(); }
+    // size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
 
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }

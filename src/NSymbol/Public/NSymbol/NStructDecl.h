@@ -34,6 +34,7 @@ class NStructDecl
     , public NTypeDeclOuter
     , public NFuncDeclOuter
     , public RStructDecl
+    , private NGenericsComponent
     , private NTypeDeclContainerComponent
     , private NFuncDeclContainerComponent<NStructFuncDecl>
 {
@@ -47,7 +48,6 @@ class NStructDecl
     RAccessor accessor;
 
     RName name;
-    std::vector<NTypeParamDecl*> typeParams;
     RFactoryPtr rFactory;
 
     std::vector<NStructCtorDecl*> ctors;
@@ -60,7 +60,7 @@ class NStructDecl
 
 public:
     NSYMBOL_API NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, const RFactoryPtr& rFactory);
-    NSYMBOL_API void InitTypeParams(std::vector<NTypeParamDecl*>&& typeParams);
+    using NGenericsComponent::InitTypeParams;
     NSYMBOL_API void InitBaseTypes(RType_Struct* baseStruct, std::vector<RType_Interface*>&& interfaces);
 
 public:
@@ -104,8 +104,8 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
-    size_t GetTypeParamCount() override { return typeParams.size(); }
-    NSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
+    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
+    RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

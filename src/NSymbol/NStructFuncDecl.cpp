@@ -39,13 +39,12 @@ RDecl* NStructFuncDecl::GetROuter()
 
 RIdentifier NStructFuncDecl::GetIdentifier()
 {
-    return RIdentifier { RName_Normal(name), NCommonFuncDeclComponent::GetTypeParamCount(), NCommonFuncDeclComponent::GetParamIds() };
+    return RIdentifier { RName_Normal(name), NGenericsComponent::GetTypeParamCount(), NCommonFuncDeclComponent::GetParamIds() };
 }
 
 RTypeDecl* NStructFuncDecl::GetTypeMember(const RName& name, size_t typeParamCount)
 {
-    // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
-    return nullptr;
+    return NGenericsComponent::GetTypeMember(name, typeParamCount);
 }
 
 optional<RMember> NStructFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
@@ -55,6 +54,9 @@ optional<RMember> NStructFuncDecl::GetMember(RTypeArguments* typeArgs, const RNa
 
 optional<RMember> NStructFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {   
+    if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+        return o_member;
+
     if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 

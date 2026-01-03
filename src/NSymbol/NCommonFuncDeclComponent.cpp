@@ -21,11 +21,6 @@ NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc)
 {
 }
 
-void NCommonFuncDeclComponent::InitTypeParams(std::vector<NTypeParamDecl*>&& typeParams)
-{
-    this->typeParams = move(typeParams);
-}
-
 void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
     funcReturnAndParams = FuncReturnAndParams{move(funcReturn), move(funcParameters), bLastParameterVariadic};
@@ -33,25 +28,10 @@ void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn,
 
 NCommonFuncDeclComponent::~NCommonFuncDeclComponent() = default;
 
-size_t NCommonFuncDeclComponent::GetTypeParamCount()
-{
-    return typeParams.size();
-}
-
-RTypeParamDecl* NCommonFuncDeclComponent::GetTypeParam(size_t i)
-{
-    return typeParams[i];
-}
-
 size_t NCommonFuncDeclComponent::GetParamCount()
 {
     assert(funcReturnAndParams);
     return funcReturnAndParams->funcParameters.size();
-}
-
-RTypeDecl* NCommonFuncDeclComponent::GetTypeMember(const RName& name, size_t typeParamCount)
-{
-    return nullptr;
 }
 
 RFuncReturn NCommonFuncDeclComponent::GetUnboundFuncReturn()
@@ -116,10 +96,6 @@ vector<RType*> NCommonFuncDeclComponent::GetParamIds()
 
 optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {   
-    for (auto* typeParam : typeParams)
-        if (typeParam->GetIdentifier().name == name)
-            return RMember_TypeVar(typeParam);
-
     assert(funcReturnAndParams);
     for (auto& param : funcReturnAndParams->funcParameters)
         if (param.name == name) return RMember_LocalVar{param.type, param.name};

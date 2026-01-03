@@ -280,7 +280,7 @@ optional<RMember> RType_EnumElem::GetMember(const RName& name, size_t explicitTy
 }
 
 RType_Interface::RType_Interface(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal, RFactory* factory)
-    : decl(decl), typeArgs(typeArgs), bLocal(bLocal)
+    : decl{decl}, typeArgs{typeArgs}, bLocal{bLocal}, factory{factory}
 {
 }
 

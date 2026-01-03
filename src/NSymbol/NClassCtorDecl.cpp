@@ -13,12 +13,12 @@ NClassCtorDecl::NClassCtorDecl(NClassDecl* _class, RAccessor accessor, bool bTri
     , bTrivial{bTrivial}
     , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false)
 {   
+    NGenericsComponent::InitTypeParams({});
 }
 
-void NClassCtorDecl::Init(vector<NTypeParamDecl*>&& typeParams, vector<RFuncParameter>&& parameters, bool bLastParamVariadic)
+void NClassCtorDecl::Init(vector<RFuncParameter>&& parameters, bool bLastParamVariadic)
 {   
-    NCommonFuncDeclComponent::InitTypeParams(move(typeParams));
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor(), move(parameters), bLastParamVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor{}, move(parameters), bLastParamVariadic);
 }
 
 
@@ -44,7 +44,7 @@ RIdentifier NClassCtorDecl::GetIdentifier()
 
 RTypeDecl* NClassCtorDecl::GetTypeMember(const RName& name, size_t typeParamCount)
 {
-    return NCommonFuncDeclComponent::GetTypeMember(name, typeParamCount);
+    return NGenericsComponent::GetTypeMember(name, typeParamCount);
 }
 
 optional<RMember> NClassCtorDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
@@ -54,6 +54,9 @@ optional<RMember> NClassCtorDecl::GetMember(RTypeArguments* typeArgs, const RNam
 
 optional<RMember> NClassCtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {   
+    if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+        return o_member;
+
     if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
