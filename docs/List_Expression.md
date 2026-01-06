@@ -18,7 +18,8 @@ void Main()
     var b = [false, false, true, true]; // list<bool>
 
     // 그냥 pass
-}```
+}
+```
 <!--END_EMBED-->
 
 

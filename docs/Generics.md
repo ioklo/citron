@@ -15,7 +15,8 @@ void Main()
 {
     var a = A<int>(3);
     @$a.t
-}```
+}
+```
 <!--END_EMBED-->
 
 
@@ -38,7 +39,8 @@ void Main()
 {
     // 컴파일만 되도 성공
     var s = C<int>.S<string>(3, "hi");
-}```
+}
+```
 <!--END_EMBED-->
 
 
@@ -61,7 +63,8 @@ void Main()
 {
     // 컴파일만 되도 성공
     var s = C<int>.S<bool>(false); // bool이 사용됩니다.
-}```
+}
+```
 <!--END_EMBED-->
 
 

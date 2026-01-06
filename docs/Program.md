@@ -17,7 +17,8 @@ Program = Module Declaration * Function Bodies * Entry Id * [Loading External Mo
 void Main()
 {
     @Hello World!
-}```
+}
+```
 <!--END_EMBED-->
 
 

@@ -114,7 +114,16 @@ bool Update(path basePath, path docPath)
             {
 
                 auto code = readAll(codePath);
-                oss << endl << "```cs" << endl << code << "```" << endl;
+
+                if (!code.ends_with("\n"))
+                {
+                    oss << endl << "```cs" << endl << code << endl << "```" << endl;
+                }
+                else
+                {
+                    oss << endl << "```cs" << endl << code << "```" << endl;
+                }
+                
                 oss << string_view{text.data() + pos + prefixLength, (size_t)m.length(0)};
             }
 

@@ -44,7 +44,8 @@ void Main()
 	
 	@${*s3.a}
 	s2 = *s3;                 // 복사 대입
-}```
+}
+```
 <!--END_EMBED-->
 
 <!--BEGIN_EMBED(Struct_AutoTrivialConstructor)-->
@@ -60,7 +61,8 @@ void Main()
 {
     var s = S(2, 3);
     @${s.x} ${s.y}
-}```
+}
+```
 <!--END_EMBED-->
 
 # 선언
