@@ -1,0 +1,19 @@
+//@ $Error
+
+struct S
+{
+    int x;
+    
+    void F()
+    {
+        var l = () => x + 2; // 에러
+        x = 3;
+        @${l()}
+    }
+}
+
+void Main()
+{
+    var s = S(3);
+    s.F();
+}

@@ -34,7 +34,7 @@ void Main()
 
 <!--BEGIN_EMBED(Command_Statement_Block)-->
 ```cs
-//@          <- no ignore 8 blanks        hello world        good
+//@         <- no ignore 8 blanks        hello world        good
 void Main()
 {
     // plain, ignore blank lines, trailing blanks

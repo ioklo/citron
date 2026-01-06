@@ -9,8 +9,20 @@ ListExp([Exp] exps)
 
 <!--BEGIN_EMBED(List_Expression_Basic)-->
 ```cs
-```
+//@
+
+void Main()
+{
+    var l = [1, 2, 3]; // list<int>
+    var s = ["2", "3", "4"]; // list<string>
+    var b = [false, false, true, true]; // list<bool>
+
+    // 그냥 pass
+}```
 <!--END_EMBED-->
+
+
+
 
 # Reference
 [Expressions](Expressions.md)

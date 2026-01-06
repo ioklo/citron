@@ -1,0 +1,15 @@
+//@
+class C<T>
+{
+    struct S<U>
+    {
+        T t;
+        U u;
+    }
+}
+
+void Main()
+{
+    // 컴파일만 되도 성공
+    var s = C<int>.S<string>(3, "hi");
+}

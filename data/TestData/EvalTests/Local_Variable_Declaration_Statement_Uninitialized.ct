@@ -1,7 +1,7 @@
 //@ 0 1
 void Main()
 {
-    int a;
+    int a = uninit;
     int b = 1;
 
     a = 0;

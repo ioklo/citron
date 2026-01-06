@@ -38,7 +38,7 @@ void Main()
 //@ 0 1
 void Main()
 {
-    int a;
+    int a = uninit;
     int b = 1;
 
     a = 0;
@@ -112,8 +112,8 @@ void Main()
 void Main()
 {
     var i = 3;
-    var* x = &i;
-    box var* y = box 3;
+    var& x = i;
+    box var y = box 3;
 
 	int? i = null;
     var? optI = i;
@@ -126,12 +126,13 @@ void Main()
 //@ $Error
 void Main()
 {
+    // var는 &, box, shared를 inference해주지 않기 때문에 직접 붙여야 한다
     var i = 3;
-    var x = &i; // 에러
-    var y = box 3; // 에러
+    var x = &i; // 에러, ptr인지, shared인지 명확하지 않다. ptr로 하고 싶으면 var* x = &i; shared로 하고 싶으면 shared var x = &i; (물론 에러)
+    var y = box 3; // 에러, box var y
 
 	int? i = 3;
-    var optI = i; // 에러
+    var optI = i; // 에러, var?
 }
 ```
 <!--END_EMBED-->
@@ -161,8 +162,8 @@ void Main()
 {
     int a = 0
     string b = "hi"
-    var* x = &a, y = &b;
-    @${*x}, ${*y}
+    var& x = a, y = b;
+    @${x}, ${y}
 }
 ```
 <!--END_EMBED-->
@@ -173,7 +174,7 @@ void Main()
 void Main()
 {
     int a = 0;
-    var* x = &a, y = 3; // 에러
+    var& x = a, y = 3; // 에러
 }
 ```
 <!--END_EMBED-->

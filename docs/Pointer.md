@@ -1,19 +1,45 @@
-
-# General  
-값의 **위치**를 값으로 저장한 것을 포인터 라고 합니다. Citron에서는 두가지 형식의 pointer가 있습니다. 위치가 현재 함수의 실행 중에 유효한것이 보장된 pointer를 local pointer, 항상 살아있는(그 값을 가리키는 것이 전혀 없을때까지) 포인터를 box pointer라고 합니다. 의미상 box pointer는 local pointer로 변환할 수 있지만, 반대는 불가능합니다.
+# Pointer
+메모리 주소를 값으로 저장한 것을 포인터 라고 합니다. C나 C++에서 쓰이는 포인터랑 같은 의미 입니다.
+포인터는 저수준이고, 메모리가 유효한지 여부를 언어차원에서 따지지 않습니다. 
+유효하지 않은 메모리 참조를 했을 경우, 정의되지 않은 동작을 합니다. 
 
 ```csharp
 int a = 0;
-int* x = &a; // 1. local pointer
-box int* y = box 5; // 2. box pointer
+int* x = &a; // pointer
 
 class C { public int x; }
 
 var c = new C();
 
-box int* z = &c.x; // 3. box pointer
+int* z = &c.x; // 3. box pointer
 ```
 
+## Reference
+변수에 & 연산자를 통해서 포인터를 가져올 수 있습니다.
+& 연산자는 대상 위치의 타입에 따라 동작이 다릅니다. &는 T*, shared T 꼴에 사용할 수 있습니다.
+
+```
+int x = 0;
+int* p = &x; // 여기서 &는 포인터를 만드는 연산
+var* q = &x;
+
+struct S { int x; }
+shared S s = shared s;
+shared int sp = &s.x; // 여기서 &는 shared int를 만드는 연산
+```
+
+## Dereference
+포인터에 *연산을 하면, 값을 돌려줍니다. *연산결과는 lvalue입니다.
+
+```
+int x;
+int *p = &x;
+
+*p = 3;     // lvalue를 위치 문맥(location context)에 사용
+int a = *p; // lvalue를 값 문맥(value context)에 사용
+```
+
+<!-- 폐기
 ## Notation
 아무런 언급이 없다면 기본적으로 local pointer입니다. box pointer가 필요하면 앞에 box키워드를 붙여서 box pointer 임을 나타냅니다. 예외적으로, interface는 기본적으로 heap의 값들을 가리키고 있기 때문에 interface 앞에 local을 붙여서 interface가 가리키는 값이 local에 있음을 표시합니다.
 
@@ -334,7 +360,7 @@ void Main()
 ```
 
 # box pointer internal
-  
+
 box pointer가 가리키는 value가 가비지 컬렉션대상에서 제외되기 위해서는 box pointer가 유지되어야 할 instance를 갖고 있어야 합니다
 
 ```csharp
@@ -357,4 +383,4 @@ box int* x = &s.t.a; // box-struct-member(box-struct-member(box-loc(local-loc(s)
 
 ```
 
-
+ -->

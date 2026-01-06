@@ -1,14 +1,14 @@
 <!--BEGIN_EMBED(Lifetime_Analysis_ReturnLocalPointer)-->
 ```cs
 //@ 4
-int* F(int* i)
+int& F(int& i)
 {
     return i;
 }
 
 int x = 3;
-var* y = F(&x);
-*y = 4;
+var& y = F(ref x);
+y = 4;
 
 @$x
 ```
@@ -22,15 +22,15 @@ struct S
 {
     int x;
 
-    int* GetX()
+    int& GetX()
     {
-        return &x; // this의 라이프 타임
+        return x; // this의 라이프 타임
     }
 }
 
 var s = S(3);
-var* x = s.GetX();
-*x = 4;
+var& x = s.GetX();
+x = 4;
 
 @${s.x}
 ```
@@ -39,7 +39,6 @@ var* x = s.GetX();
 <!--BEGIN_EMBED(Lifetime_Analysis_CantReferenceEnumElemMemberVaraible)-->
 ```cs
 //@ $Error
-// $Error
 enum E
 {
     First,
@@ -51,12 +50,12 @@ struct S
     E e;
     int y;
 
-    int* GetX()
+    int& GetX()
     {
-        if (e is E.Second s)
-            return &s.x;  // error, enum element는 레퍼런스의 대상이 될 수 없다.
+        if (e is E.Second(s))
+            return s.x;  // error, enum element는 레퍼런스의 대상이 될 수 없다.
         else 
-            return &y;
+            return y;
     }
 
     void Mutate()
@@ -78,7 +77,6 @@ void Main()
 <!--BEGIN_EMBED(Lifetime_Analysis_StructMemberSequenceFunction)-->
 ```cs
 //@ $Error
-// $Error()
 
 struct S
 {
@@ -130,9 +128,9 @@ void Main()
 //@ $Error
 struct S
 {
-    seq int F(int* i)
+    seq int F(int& i)
     {
-        yield *i;        
+        yield i;
     }
 }
 
@@ -153,9 +151,9 @@ struct S
 {
     int x;
 
-    int* F()
+    yield int F()
     {
-        return &x;
+        return x;
     }
 }
 
@@ -173,10 +171,10 @@ void Main()
 void Main()
 {
     int i = 3;
-    int* x = &i;
+    ref int x = &i;
 
-    var l = () => *x; // l은 local-ptr-contained
-    var p = l;        // p는 local-ptr-contained, 전파
+    var l = () => x; // l은 local-ref-contained
+    var p = l;       // p는 local-ref-contained, 전파
 
     var s = box p;   // 에러, p는 local을 갖고 있으므로 boxing 불가
 }

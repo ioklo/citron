@@ -9,7 +9,7 @@ class C
 {
 	int x;
 	
-	box int* GetX()
+	shared int GetX()
 	{
 		return &x; // ClassMemberBoxExp(this, C.x)
 	}
@@ -23,7 +23,7 @@ class C
 void Main()
 {
 	var c = new C(3);
-	box var* pX = c.GetX();
+	shared var pX = c.GetX();
 	*pX = 4;
 	
 	c.PrintX();

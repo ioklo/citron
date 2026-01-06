@@ -11,8 +11,8 @@ struct S { A a; }
 
 void Main()
 {
-	box var* s = box S(A(3));
-	box var* x = &s->a.i; // StructMemberBoxRefExp(StructIndirectMemberBoxRefExp(s, S.a), S.i)
+	shared var s = shared S(A(3));
+	shared var x = &s->a.i; // StructMemberSharedRefExp(StructIndirectMemberSharedRefExp(s, S.a), S.i)
 	*x = 5;
 
 	@${s->a.i}

@@ -44,23 +44,23 @@ void Main()
 	
 	@${*s3.a}
 	s2 = *s3;                 // 복사 대입
-}
-```
+}```
 <!--END_EMBED-->
 
 <!--BEGIN_EMBED(Struct_AutoTrivialConstructor)-->
 ```cs
 //@ 2 3
-// 2, 3
 struct S
 {
     int x;
     int y;
 }
 
-var s = new S(2, 3);
-@${s.x} ${s.y}
-```
+void Main()
+{
+    var s = S(2, 3);
+    @${s.x} ${s.y}
+}```
 <!--END_EMBED-->
 
 # 선언
@@ -76,16 +76,20 @@ public struct S<T...> : B, I...
 
     // 1. default constructor
     S() { this.x = T(); this.y = T(); }
+    // S() = default;
+    // S() = delete;
 
     // 2. memberwise constructor
     // S(...) = delete;
 
     // 3. copy constructor (special)
     special S([in] S& s) { this.x = s.x; this.y = s.y; }
-    // S([in] S& s) = default;
+    // S([in] S& s) = default;    
+    // S([in] S& s) = delete;    
 
     // 4. move constructor (special)
     // S([move] S& s) = default;
+    // S([move] S& s) = delete;
 
     // 5. copy assign (special)
     special void copy_assign([in] S& s) {...}
@@ -118,9 +122,12 @@ private T y, z;
 ## 생성자
 
 ### 기본 생성자
- - 아무것도 적지 않았을 경우, 기본값으로 초기화 하는 생성자 입니다
- - 자동으로 생성합니다. 모든 멤버가 기본생성자를 지원하지 않으면 생성에 실패하면서 에러를 냅니다. 에러를 우회하고 싶으면 = delete를 사용해서 명시적으로 기본 생성자를 지워야 합니다
+ - 인자에 아무것도 적지 않았을 경우, 기본값으로 초기화 하는 생성자 입니다
+ - 모든 멤버가 기본생성자를 지원하면, 자동으로 생성합니다. 모든 멤버가 기본생성자를 지원하지 않으면, 자동으로 생성하지 않습니다.
+ - 자동으로 기본생성자가 생성되는것을 막고 싶으면 = delete를 씁니다.
+ - 기본생성자를 무조건 만들고 싶으면 = default;를 쓰면 됩니다. 만들수 없다면 에러를 냅니다.
 ```
+S() = default;
 S() = delete;
 ```
 
@@ -150,9 +157,9 @@ S(...) = delete;
 ```cs
 special S([in] S& s) { ... } // 또는
 S([in] S& s) = default;
+S([in] S& s) = delete;
 ```
-
- - 복사 초기화를 할때 사용하는 생성자입니다. 자동생성 하지 않습니다.
+ - 멤버들이 모두 복사 가능하면 자동으로 생성됩니다. = default, = delete를 써서 자동생성을 제어할 수 있습니다.
  - 초기화 표현이 같은 타입의 lvalue, talias가 오는 경우 복사 생성을 합니다.
 ```
 S a = S();
@@ -164,13 +171,14 @@ S s = a; // 복사 생성자
  - ```= default```를 사용해서 자동으로 만들 수 있습니다. 자동생성의 경우에는 ```special```의미가 내포되어 있으므로 키워드를 붙이지 않습니다.
 
 ### 이동 생성자
-```cs
+```cpp
 special S([move] S& s) { ... } // 또는
 S([move] S& s) = default;
-```
- - 이동 초기화를 할때 사용하는 생성자입니다
+S([move] S& s) = delete;
+``` 
+ - 멤버들이 모두 이동 가능하면 자동으로 생성됩니다. = default, = delete를 써서 자동생성을 제어할 수 있습니다.
  - 초기화 표현이 같은 타입의 rvalue가 오는 경우 이동 생성을 합니다
-```cs
+```cpp
 S F() { ... }
 S a = S();
 S s1 = move a; // 이동 생성자
@@ -219,7 +227,6 @@ struct S
     }
 }
 ```
-
 
 ## 대입 함수
 ### 복사 대입 연산자
@@ -301,3 +308,9 @@ assert(s3.x == 9 && s6.x == 9);
 s7->x = 10;
 assert(s3.x == 10 && s6.x == 10 && s7->x == 10 && s8->x == 10);
 ```
+
+### special 키워드
+
+ - 이 함수가 특정 **특수 함수 후보**(copy ctor, copy assign, move ctor, move assign)로 인식되도록 강제하고 시그니처를 검증하는 키워드입니다.
+ - ```special```이 붙은 함수가 해당 특수 함수의 시그니처 규격과 다르면 컴파일 에러입니다.
+ - ```= default```는 본래 해당 특수 함수임이 문법적으로 고정되므로, ```special```을 붙이지 않습니다(중복 표기 지양).

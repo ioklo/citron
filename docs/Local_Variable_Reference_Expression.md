@@ -8,7 +8,7 @@ LocalVarRefExp(Loc inner)
 void Main()
 {
     int s = 3;
-    var* i = &s; // LocalVarRefExp(LocalVar("i"))
+    var& i = s;
 
     @{${*i}}
 }
@@ -21,9 +21,9 @@ void Main()
 void Main()
 {
 	int s = 3;
-	int* i = &s;  
-	int** j = &i;
-	**j = 4;
+	int& i = s;  
+	int& j = i;
+	j = 4;
 }
 @$s
 ```
@@ -35,7 +35,7 @@ void Main()
 void Main()
 {
 	int i;       // uninitialized
-	int* p = &i; // 에러, uninitialized는 포인터로 가리킬 수 없습니다
+	int& p = i; // 에러, uninitialized는 포인터로 가리킬 수 없습니다
 	@{$p} 
 }
 ```

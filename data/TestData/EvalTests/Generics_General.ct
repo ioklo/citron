@@ -1,0 +1,12 @@
+//@ 3
+
+struct A<T>
+{
+    T t;
+}
+
+void Main()
+{
+    var a = A<int>(3);
+    @$a.t
+}

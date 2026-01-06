@@ -32,7 +32,6 @@
 - [Pointer](Pointer.md)
     - [Local Pointer](Pointer.md#local-pointer)
     - [Box Pointer](Pointer.md#box-pointer)
-- [Pointer](Pointer.md)
 - [Tuple](Tuple.md)
 - [Struct](Struct.md)
 - [Enum](Enum.md)

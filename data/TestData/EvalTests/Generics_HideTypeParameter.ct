@@ -1,0 +1,17 @@
+//@
+
+class C<T>
+{
+    T t;
+    
+    struct S<T>
+    {
+        T t;
+    }
+}
+
+void Main()
+{
+    // 컴파일만 되도 성공
+    var s = C<int>.S<bool>(false); // bool이 사용됩니다.
+}

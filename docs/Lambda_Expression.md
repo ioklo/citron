@@ -114,10 +114,10 @@ void Main()
 void Main()
 {
     int x = 0;
-    int* y = &x;
+    int& y = x;
 
-    // local pointer 함유 lambda, 내부에서밖에 쓸 수 없습니다
-    var l = () => *y;
+    // local ref 함유 lambda, 내부에서밖에 쓸 수 없습니다
+    var l = () => y;
     x = 1;
 
     // 1
@@ -126,7 +126,7 @@ void Main()
 ```
 <!--END_EMBED-->
 
-<!--BEGIN_EMBED(Lambda_Expression_Capture_BoxPtr)-->
+<!--BEGIN_EMBED(Lambda_Expression_Capture_Box)-->
 ```cs
 //@ 2
 void Main()
@@ -141,6 +141,8 @@ void Main()
 }
 ```
 <!--END_EMBED-->
+
+
 
 # this 캡쳐
 람다 내부에서 사용한 `this`는 람다가 선언된 본문의 `this`를 의미합니다. 바깥 본문의 this도 캡쳐 대상입니다.
@@ -175,8 +177,28 @@ void Main()
 일반 로컬 변수와 this 변수의 캡쳐후 결과가 다르기 때문에, 람다 내부에서는 멤버변수를 바로 쓸 수 없습니다. 필요한 경우 로컬변수에 복사해서 씁니다.
 <!--BEGIN_EMBED(Lambda_Expression_UseThisMemberDirectly)-->
 ```cs
-```
+//@ $Error
+
+struct S
+{
+    int x;
+    
+    void F()
+    {
+        var l = () => x + 2; // 에러
+        x = 3;
+        @${l()}
+    }
+}
+
+void Main()
+{
+    var s = S(3);
+    s.F();
+}```
 <!--END_EMBED-->
+
+
 
 # Nested Capture
 

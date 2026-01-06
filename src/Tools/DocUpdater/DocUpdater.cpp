@@ -70,8 +70,6 @@ void writeAll(path filePath, const string& str)
 
 bool Update(path basePath, path docPath)
 {
-    wcout << docPath << endl;
-
     auto text = readAll(docPath);
     size_t pos = 0;
     
@@ -106,9 +104,19 @@ bool Update(path basePath, path docPath)
 
             // 파일 복사
             auto codePath = basePath / "data" / "TestData" / "EvalTests" / (*embed + ".ct");
-            auto code = readAll(codePath);
-            oss << endl << "```cs" << endl << code << "```" << endl;
-            oss << string_view{text.data() + pos + prefixLength, (size_t)m.length(0)};
+
+            if (!exists(codePath))
+            {
+                wcout << L"Code file not found: " << codePath << endl;
+                oss << endl << "<!--END_EMBED-->" << endl;
+            }
+            else
+            {
+
+                auto code = readAll(codePath);
+                oss << endl << "```cs" << endl << code << "```" << endl;
+                oss << string_view{text.data() + pos + prefixLength, (size_t)m.length(0)};
+            }
 
             embed.reset();
         }
@@ -121,7 +129,11 @@ bool Update(path basePath, path docPath)
     }
 
     // 아직 embed가 남아있으면 에러
-    if (embed) return false;
+    if (embed)
+    {
+        wcout << L"BEGIN_EMBED not matched " << endl;
+        return false;
+    }
 
     // wcout << string_to_wide_string(oss.str());
     writeAll(docPath, oss.str());
@@ -150,6 +162,8 @@ int wmain(int argc, wchar_t* argv[])
     wstring mdExt = L".md";
     for (auto& entry : recursive_directory_iterator(docsPath))
     {
+        wcout << entry << endl;
+
         auto filePath = entry.path();
         auto filename = filePath.wstring();
         if (filename.length() <= mdExt.size()) continue;
@@ -158,7 +172,7 @@ int wmain(int argc, wchar_t* argv[])
         if (!boost::iequals(wstring_view(filename).substr(lengthWithoutExt), mdExt)) continue;
 
         if (!Update(basePath, filePath))
-        break;
+            break;
     }
 
     return 0;
