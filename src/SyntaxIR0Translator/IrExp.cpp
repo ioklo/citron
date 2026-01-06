@@ -96,7 +96,7 @@ MLoc* IrExp_BoxRef_StructMember::MakeLoc()
     return mFactory->MakeMLoc<MLoc_StructVar>(parent->MakeLoc(), decl, typeArgs);
 }
 
-IrExp_LocalRef::IrExp_LocalRef(MLoc* loc)
+IrExp_PtrRef::IrExp_PtrRef(MLoc* loc)
     : loc(loc)
 {
 }

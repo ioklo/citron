@@ -151,9 +151,9 @@ public:
     }
 
     // 가장 쉬운 &s.x
-    ResultType Visit(IrExp_LocalRef* irExp)
+    ResultType Visit(IrExp_PtrRef* irExp)
     {
-        return Value<MExp_LocalRef>(irExp->loc, contexts.rFactory);
+        return Value<MExp_PtrRef>(irExp->loc, contexts.rFactory);
     }
 
     // box S* pS = ...

@@ -18,7 +18,7 @@ NStructDecl::NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name
 
 void NStructDecl::InitBaseTypes(RType_Struct* baseStruct, vector<RType_Interface*>&& interfaces)
 {
-    oBaseTypes = BaseTypes{baseStruct, move(interfaces)};
+    o_baseTypes = BaseTypes{baseStruct, move(interfaces)};
 }
 
 void NStructDecl::AddCtor(NStructCtorDecl* decl)
@@ -46,8 +46,8 @@ NStructCtorDecl* NStructDecl::GetUnboundTrivialCtor_NStructCtorDecl()
 
 RType_Struct* NStructDecl::GetUnboundBaseStruct()
 {
-    assert(oBaseTypes);
-    return oBaseTypes->baseStruct;
+    assert(o_baseTypes);
+    return o_baseTypes->baseStruct;
 }
 
 NDecl* NStructDecl::GetNOuter()

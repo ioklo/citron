@@ -174,9 +174,9 @@ class QPrinter
         void Print(QInst_Call& inst)
         {
             // %s = call @F, %s2
-            if (inst.oDest)
+            if (inst.o_dest)
             {
-                printer.PrintQArg_Slot(*inst.oDest);
+                printer.PrintQArg_Slot(*inst.o_dest);
                 printer.Print(" = ");
             }
 
@@ -193,9 +193,9 @@ class QPrinter
 
         void Print(QInst_Intrinsic& inst)
         {
-            if (inst.oDest)
+            if (inst.o_dest)
             {
-                printer.PrintQArg_Slot(*inst.oDest);
+                printer.PrintQArg_Slot(*inst.o_dest);
                 printer.Print(" = ");
             }
 
@@ -233,15 +233,15 @@ class QPrinter
         {
             printer.Print("return");
 
-            if (inst.oValue)
+            if (inst.o_value)
             {
                 printer.Print(" ");
 
-                printer.PrintQType(inst.oValue->qType);
+                printer.PrintQType(inst.o_value->qType);
                 
                 printer.Print(", ");
 
-                printer.PrintQArg_Input(inst.oValue->value);
+                printer.PrintQArg_Input(inst.o_value->value);
             }
 
             printer.PrintLine();

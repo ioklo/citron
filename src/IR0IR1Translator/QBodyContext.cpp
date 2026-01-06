@@ -47,7 +47,7 @@ QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFact
 
     auto* qRetType = GetQTypeFromRType(rRetType);
     if (qRetType != qFactory->MakeVoidType())
-        oRetSlotIndex = NewSlot(qRetType);
+        o_retSlotIndex = NewSlot(qRetType);
 
     auto* firstBlock = AddBlock("entry");
     this->curBlock = firstBlock;
@@ -205,8 +205,8 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
                 }
                 else // 0이면?
                 {
-                    if (oRetSlotIndex)
-                        newCleanUpForRet->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*oRetSlotIndex].qType, QArg_Slot{*oRetSlotIndex}}});
+                    if (o_retSlotIndex)
+                        newCleanUpForRet->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].qType, QArg_Slot{*o_retSlotIndex}}});
                     else
                         newCleanUpForRet->EmitInst(QInst_Return{});
 
@@ -227,8 +227,8 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
     {
         // 바로 리턴 블록 생성
         auto* retBlock = AddBlock("cleanUpForRet");
-        if (oRetSlotIndex)
-            retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*oRetSlotIndex].qType, QArg_Slot{*oRetSlotIndex}}});
+        if (o_retSlotIndex)
+            retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].qType, QArg_Slot{*o_retSlotIndex}}});
         else
             retBlock->EmitInst(QInst_Return{});
         scope.recentCleanUpForReturn = retBlock;
@@ -317,7 +317,19 @@ QType* QBodyContext::GetPtrQType()
 
 size_t QBodyContext::GetRetSlotIndex()
 {
-    return *oRetSlotIndex;
+    return *o_retSlotIndex;
+}
+
+optional<QLocalInfo> QBodyContext::GetLocalInfo(const RName& name)
+{
+    for (auto& scope : scopes | views::reverse)
+    {
+        auto i = scope.localInfos.find(name);
+        if (i != scope.localInfos.end())
+            return i->second;
+    }
+
+    return nullopt;
 }
 
 size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size_t> oArgIndex)
@@ -330,23 +342,22 @@ size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size
     slotInfos.emplace_back(qType, name, oArgIndex);
     
     // 2. 현재 스코프에 이름 추가
-    curScope->localVarInfos[rName] = QLocalVarInfo{slotIndex, name, qType};
+    curScope->localInfos[rName] = QLocalInfo_Var{slotIndex, name};
     curScope->slotIndices.push_back(slotIndex);
 
     return slotIndex;
 }
 
-size_t QBodyContext::GetLocalVarSlotIndex(const RName& name)
-{   
-    for (auto& scope : scopes | views::reverse)
-    {
-        auto i = scope.localVarInfos.find(name);
-        if (i != scope.localVarInfos.end())
-            return i->second.slotIndex;
-    }
+void QBodyContext::AddLocalRef_Alias(const RName& rName, size_t slotIndex)
+{
+    curScope->localInfos[rName] = QLocalInfo_RefAlias{slotIndex, RNameToString(rName)};
+    // 레퍼런스는 수명을 관리하지 않기 때문에 slotIndices에 추가하지 않는다
+}
 
-    assert(false);
-    return (size_t)-1;
+void QBodyContext::AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex)
+{
+    QType* qType = GetQTypeFromRType(rType);
+    curScope->localInfos[rName] = QLocalInfo_RefPtr{slotIndex, RNameToString(rName), qType};
 }
 
 size_t QBodyContext::NewSlot(QType* qType)

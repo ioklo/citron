@@ -54,6 +54,12 @@ public:
         return HandleLoc(move(e_nLoc));
     }
 
+    ResultType Visit(ReExp_LocalRef* exp)
+    {
+        auto e_nLoc = TranslateReLocalRefExpToMLoc(exp, contexts);
+        return HandleLoc(move(e_nLoc));
+    }
+
     ResultType Visit(ReExp_LambdaVar* exp)
     {
         auto e_nLoc = TranslateReLambdaVarExpToMLoc(exp, contexts);
@@ -78,7 +84,7 @@ public:
         return HandleLoc(move(e_nLoc));
     }
 
-    ResultType Visit(ReExp_Deref* exp)
+    ResultType Visit(ReExp_PtrDeref* exp)
     {
         auto e_nLoc = TranslateReDerefExpToMLoc(exp, contexts);
         return HandleLoc(move(e_nLoc));

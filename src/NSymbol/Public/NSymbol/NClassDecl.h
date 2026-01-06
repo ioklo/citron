@@ -47,7 +47,7 @@ class NClassDecl
     int trivialCtorIndex; // can be -1
 
     std::vector<NClassVarDecl*> vars;
-    std::optional<BaseTypes> oBaseTypes;
+    std::optional<BaseTypes> o_baseTypes;
     std::unordered_map<RName, NClassVarDecl*> varsMap;
 
     RFactoryPtr rFactory;

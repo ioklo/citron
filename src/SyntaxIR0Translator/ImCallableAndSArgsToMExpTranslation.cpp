@@ -344,6 +344,11 @@ public:
         return HandleLoc(imExp);
     }
 
+    ResultType Visit(ImExp_LocalRef* imExp)
+    {
+        return HandleLoc(imExp);
+    }
+
     ResultType Visit(ImExp_LambdaVar* imExp)
     {
         return HandleLoc(imExp);
@@ -370,7 +375,7 @@ public:
         return HandleLoc(imExp);
     }
 
-    ResultType Visit(ImExp_Deref* imExp)
+    ResultType Visit(ImExp_PtrDeref* imExp)
     {
         return HandleLoc(imExp);
     }

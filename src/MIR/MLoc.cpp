@@ -32,6 +32,17 @@ RType* MLoc_LocalVar::GetType()
     return declType;
 }
 
+MLoc_LocalRef::MLoc_LocalRef(const RName& name, RType* declType)
+    : name{name}, declType{declType}
+{
+}
+
+RType* MLoc_LocalRef::GetType()
+{
+    return declType;
+}
+
+
 MLoc_LambdaVar::MLoc_LambdaVar(RLambdaVarDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
@@ -93,14 +104,14 @@ RType* MLoc_This::GetType()
     return type;
 }
 
-MLoc_Deref::MLoc_Deref(MLoc* innerLoc)
+MLoc_PtrDeref::MLoc_PtrDeref(MLoc* innerLoc)
     : innerLoc{innerLoc}
 {
 }
 
-RType* MLoc_Deref::GetType()
+RType* MLoc_PtrDeref::GetType()
 {
-    auto type = innerLoc->GetType();
+    auto* type = innerLoc->GetType();
     
     if (auto* ptrType = dynamic_cast<RType_Ptr*>(type))
         return ptrType->innerType;
@@ -141,5 +152,6 @@ RType* MLoc_NullableValue::GetType()
     // 에러, 어떻게 해야할지 생각해본다
     throw NotImplementedException();
 }
+
 
 }

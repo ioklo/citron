@@ -34,7 +34,7 @@ class MExp_StaticBoxRef;
 class MExp_ClassMemberBoxRef;
 class MExp_StructIndirectMemberBoxRef;
 class MExp_StructMemberBoxRef;
-class MExp_LocalRef;
+class MExp_PtrRef;
 class MExp_BoolLiteral;
 class MExp_IntLiteral;
 class MExp_String;
@@ -90,7 +90,7 @@ public:
     virtual void Visit(MExp_ClassMemberBoxRef* exp) = 0;
     virtual void Visit(MExp_StructIndirectMemberBoxRef* exp) = 0;
     virtual void Visit(MExp_StructMemberBoxRef* exp) = 0;
-    virtual void Visit(MExp_LocalRef* exp) = 0;
+    virtual void Visit(MExp_PtrRef* exp) = 0;
     virtual void Visit(MExp_BoolLiteral* exp) = 0;
     virtual void Visit(MExp_IntLiteral* exp) = 0;
     virtual void Visit(MExp_String* exp) = 0;
@@ -242,14 +242,14 @@ public:
 };
 
 // &i
-class MExp_LocalRef : public MExp
+class MExp_PtrRef : public MExp
 {
 public:
     MLoc* innerLoc;
     RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_LocalRef(MLoc* innerLoc, const RFactoryPtr& rFactory);
+    MIR_API MExp_PtrRef(MLoc* innerLoc, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -854,7 +854,7 @@ concept MExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MExp_ClassMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_StructIndirectMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_StructMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MExp_LocalRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MExp_PtrRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_BoolLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_IntLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_String*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
@@ -910,7 +910,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             void Visit(MExp_ClassMemberBoxRef* mExp) override { call(mExp); }
             void Visit(MExp_StructIndirectMemberBoxRef* mExp) override { call(mExp); }
             void Visit(MExp_StructMemberBoxRef* mExp) override { call(mExp); }
-            void Visit(MExp_LocalRef* mExp) override { call(mExp); }
+            void Visit(MExp_PtrRef* mExp) override { call(mExp); }
             void Visit(MExp_BoolLiteral* mExp) override { call(mExp); }
             void Visit(MExp_IntLiteral* mExp) override { call(mExp); }
             void Visit(MExp_String* mExp) override { call(mExp); }
@@ -963,7 +963,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             void Visit(MExp_ClassMemberBoxRef* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_StructIndirectMemberBoxRef* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_StructMemberBoxRef* mExp) override { result.emplace(call(mExp)); }
-            void Visit(MExp_LocalRef* mExp) override { result.emplace(call(mExp)); }
+            void Visit(MExp_PtrRef* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_BoolLiteral* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_IntLiteral* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_String* mExp) override { result.emplace(call(mExp)); }

@@ -83,6 +83,11 @@ expected<optional<RMember>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
         return RMember_LambdaVar(openTypeArgs, lambdaVar);
     }
 
+    if (auto* localRef = get_if<RMember_LocalRef>(&**e_o_rMember))
+    {
+        throw NotImplementedException{};
+    }
+
     if (auto* lambdaVar = get_if<RMember_LambdaVar>(&**e_o_rMember))
     {
         // class C<T> { void F<S> {

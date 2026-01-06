@@ -59,14 +59,20 @@ tuple<ScopeContextPtr, NLambdaDecl> ScopeContext::MakeTranslationContexts_Lambda
 
 void ScopeContext::AddLocalVarInfo(RType* type, const RName& name)
 {
-    auto [i, b] = locals.try_emplace(name, type);
+    auto [i, b] = localInfos.try_emplace(name, LocalInfo{LocalInfoKind::Var, type});
     assert(b);
 }
 
-bool ScopeContext::DoesLocalVarNameExistInScope(const RName& name)
+void ScopeContext::AddLocalRefInfo(RType* type, const RName& name)
 {
-    auto i = locals.find(name);
-    return i != locals.end();
+    auto [i, b] = localInfos.try_emplace(name, LocalInfo{LocalInfoKind::Ref, type});
+    assert(b);
+}
+
+bool ScopeContext::DoesLocalNameExistInScope(const RName& name)
+{
+    auto i = localInfos.find(name);
+    return i != localInfos.end();
 }
 
 bool ScopeContext::IsFailed() 
@@ -123,9 +129,15 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
 expected<optional<RMember>, DiagPtr> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 로컬을 검색한다
-    auto i = locals.find(name);
-    if ( i != locals.end())
-        return RMember_LocalVar(i->second, name);
+    auto i = localInfos.find(name);
+    if (i != localInfos.end())
+    {
+        if (i->second.kind == LocalInfoKind::Var)
+            return RMember_LocalVar(i->second.type, name);
+        else if (i->second.kind == LocalInfoKind::Ref)
+            return RMember_LocalRef(i->second.type, name);
+        else assert(false);
+    }
 
     // 상위 스코프가 있으면 그곳을 검색한다
     if (parentContext)

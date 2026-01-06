@@ -12,10 +12,16 @@ MStmt_Command::MStmt_Command(vector<MExp_String*>&& commands)
 {
 }
 
-MStmt_LocalVarDecl::MStmt_LocalVarDecl(RType* type, const string& name, MExp* initExp)
-    : type{type}, name{name}, initExp{initExp}
+MStmt_LocalVarDecl::MStmt_LocalVarDecl(RType* type, RName&& name, MExp* initExp)
+    : type{type}, name{move(name)}, initExp{initExp}
 {
 
+}
+
+MStmt_LocalRefDecl::MStmt_LocalRefDecl(RType* type, RName&& name, MLoc* loc)
+    : type{type}, name{move(name)}, loc{loc}
+{
+    
 }
 
 MStmt_If::MStmt_If(MExp* cond, vector<MStmt*>&& body, vector<MStmt*>&& elseBody)

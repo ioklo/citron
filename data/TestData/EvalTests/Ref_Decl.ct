@@ -5,5 +5,5 @@ void Main()
     int& x = a;
 
     x = 4;
-    @$a    
+    @$a
 }

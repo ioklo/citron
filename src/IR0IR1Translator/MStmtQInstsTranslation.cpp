@@ -13,6 +13,7 @@
 
 #include "CommonQInstsTranslation.h"
 #include "MExpQInstsTranslation.h"
+#include "MLocQInstsTranslation.h"
 #include "QBodyContext.h"
 #include "ScopeGuard.h"
 
@@ -56,9 +57,8 @@ public:
     // 스택에 변수를 둔다.
     ResultType Visit(MStmt_LocalVarDecl* stmt)
     {
-        auto slotIndex = bodyContext.AddLocalVar(stmt->type, RName_Normal{stmt->name}, nullopt);
+        auto slotIndex = bodyContext.AddLocalVar(stmt->type, stmt->name, nullopt);
 
-        // TODO: initExp가 없어도, default constructor가 불려야 한다. 어떤 Constructor를 부를지는 IR0에서 결정한다
         if (stmt->initExp)
         {   
             // var s = expr;
@@ -68,6 +68,32 @@ public:
             auto e_initResult = TranslateMExpToQInstsWithNewScope(stmt->initExp, slotIndex, bodyContext);
             RETURN_ON_ERROR(e_initResult);
         }
+
+        return {};
+    }
+
+    ResultType Visit(MStmt_LocalRefDecl* stmt)
+    {   
+        // auto slotIndex = bodyContext.AddLocalRef(stmt->type, stmt->name, nullopt);
+        auto e_locResult = TranslateMLocToQInsts(stmt->loc, bodyContext);
+        RETURN_ON_ERROR(e_locResult);
+
+        visit([this, stmt](auto& locResult) {
+
+            using T = remove_cvref_t<decltype(locResult)>;
+
+            if constexpr (same_as<T, QLocResult_Slot>)
+            {
+                bodyContext.AddLocalRef_Alias(stmt->name, locResult.slotIndex);
+            }
+            else if constexpr (same_as<T, QLocResult_PtrSlot>)
+            {
+                // ptr slot을 로컬 ref로 선언
+                bodyContext.AddLocalRef_Ptr(stmt->type, stmt->name, locResult.slotIndex);
+            }
+            else static_assert(false);
+        }, *e_locResult);
+
         return {};
     }
 

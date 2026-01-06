@@ -71,6 +71,12 @@ ImExp_LocalVar::ImExp_LocalVar(RType* type, const RName& name)
 
 }
 
+ImExp_LocalRef::ImExp_LocalRef(RType* type, const RName& name)
+    : type(type), name(name)
+{
+
+}
+
 ImExp_LambdaVar::ImExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
@@ -99,7 +105,7 @@ ImExp_ListIndexer::ImExp_ListIndexer(ReExp* instance, ReExp* index, RType* itemT
 
 }
 
-ImExp_Deref::ImExp_Deref(ReExp* target)
+ImExp_PtrDeref::ImExp_PtrDeref(ReExp* target)
     : target(target)
 {
 

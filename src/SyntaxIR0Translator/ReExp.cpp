@@ -18,6 +18,11 @@ ReExp_LocalVar::ReExp_LocalVar(RType* type, const RName& name)
 {
 }
 
+ReExp_LocalRef::ReExp_LocalRef(RType* type, const RName& name)
+    : type(type), name(name)
+{
+}
+
 ReExp_LambdaVar::ReExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
@@ -58,13 +63,13 @@ RType* ReExp_EnumElemVar::GetType()
     return decl->GetDeclType(*typeArgs);
 }
 
-ReExp_Deref::ReExp_Deref(ReExp* target)
+ReExp_PtrDeref::ReExp_PtrDeref(ReExp* target)
     : target(target)
 {
 
 }
 
-RType* ReExp_Deref::GetType()
+RType* ReExp_PtrDeref::GetType()
 {
     auto type = target->GetType();
 

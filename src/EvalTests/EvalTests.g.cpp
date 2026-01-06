@@ -2153,7 +2153,7 @@ TEST(Ref, Decl)
     int& x = a;
 
     x = 4;
-    @$a    
+    @$a
 })---";
     string expected = R"---(4)---";
 

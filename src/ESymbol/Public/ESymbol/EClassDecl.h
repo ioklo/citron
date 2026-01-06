@@ -50,7 +50,7 @@ class EClassDecl
 
     std::vector<EClassVarDecl*> vars;
 
-    std::optional<BaseTypes> oBaseTypes;
+    std::optional<BaseTypes> o_baseTypes;
 
 public:
     void Accept(EDeclVisitor& visitor) override { visitor.Visit(this); }

@@ -161,10 +161,10 @@ public:
     ResultType Visit(MExp_StructIndirectMemberBoxRef* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_StructMemberBoxRef* exp) { throw NotImplementedException{}; }
 
-    // LocalRef (Loc)
-    ResultType Visit(MExp_LocalRef* exp)
+    // PtrRef (Loc)
+    ResultType Visit(MExp_PtrRef* exp)
     {
-        //// local ref는 &s.a 같은 걸 수 있다
+        //// ptr ref는 &s.a 같은 걸 수 있다
         //auto e_lv = TranslateMLocToQInsts(exp->innerLoc, bodyContext);
         //RETURN_ON_ERROR(e_lv);
 

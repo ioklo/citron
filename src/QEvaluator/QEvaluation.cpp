@@ -223,21 +223,21 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     case LogicalNot_Bool:
     {
         auto b = GetBool(inst.args[0], env);
-        SetBool(*inst.oDest, !b, env);
+        SetBool(*inst.o_dest, !b, env);
         return;
     }
 
     case UnaryMinus_Int:
     {
         auto i = GetInt(inst.args[0], env);
-        SetInt(*inst.oDest, -i, env);
+        SetInt(*inst.o_dest, -i, env);
         return;
     }
 
     case ToString_Bool:
     {
         auto b = GetBool(inst.args[0], env);
-        SetString(*inst.oDest, format("{}", b), env);
+        SetString(*inst.o_dest, format("{}", b), env);
         return;
     }
 
@@ -245,7 +245,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     case ToString_Int:
     {
         auto i = GetInt(inst.args[0], env);
-        SetString(*inst.oDest, format("{}", i), env);
+        SetString(*inst.o_dest, format("{}", i), env);
         return;
     }
 
@@ -255,7 +255,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
         // 인자는 location
         int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.oDest, ++(*ptr), env);
+        SetInt(*inst.o_dest, ++(*ptr), env);
         return;
     }
 
@@ -265,7 +265,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
         // 인자는 location
         int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.oDest, --(*ptr), env);
+        SetInt(*inst.o_dest, --(*ptr), env);
         return;
     }
     case PostfixInc_Int:
@@ -274,7 +274,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
         // 인자는 location
         int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.oDest, (*ptr)++, env);
+        SetInt(*inst.o_dest, (*ptr)++, env);
         return;
     }
     case PostfixDec_Int:
@@ -282,7 +282,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         // i--
         // 인자는 location
         int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.oDest, (*ptr)--, env);
+        SetInt(*inst.o_dest, (*ptr)--, env);
         return;
     }
 
@@ -290,14 +290,14 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.oDest, i1 * i2, env);
+        SetInt(*inst.o_dest, i1 * i2, env);
         return;
     }
     case Divide_Int_Int:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.oDest, i1 / i2, env);
+        SetInt(*inst.o_dest, i1 / i2, env);
         return;
     }
 
@@ -305,14 +305,14 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.oDest, i1 % i2, env);
+        SetInt(*inst.o_dest, i1 % i2, env);
         return;
     }
     case Add_Int_Int:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.oDest, i1 + i2, env);
+        SetInt(*inst.o_dest, i1 + i2, env);
         return;
     }
 
@@ -320,7 +320,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
-        SetString(*inst.oDest, s1 + s2, env);
+        SetString(*inst.o_dest, s1 + s2, env);
         return;
     }
 
@@ -328,7 +328,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.oDest, i1 - i2, env);
+        SetInt(*inst.o_dest, i1 - i2, env);
         return;
     }
 
@@ -338,7 +338,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
 
-        SetBool(*inst.oDest, i1 < i2, env);
+        SetBool(*inst.o_dest, i1 < i2, env);
         return;
     }
 
@@ -347,7 +347,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
 
-        SetBool(*inst.oDest, s1 < s2, env);
+        SetBool(*inst.o_dest, s1 < s2, env);
         return;
     }
 
@@ -357,7 +357,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
 
-        SetBool(*inst.oDest, i1 > i2, env);
+        SetBool(*inst.o_dest, i1 > i2, env);
         return;
     }
 
@@ -366,7 +366,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
 
-        SetBool(*inst.oDest, s1 > s2, env);
+        SetBool(*inst.o_dest, s1 > s2, env);
         return;
     }
 
@@ -374,7 +374,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetBool(*inst.oDest, i1 <= i2, env);
+        SetBool(*inst.o_dest, i1 <= i2, env);
         return;
     }
     case LessThanOrEqual_String_String:
@@ -382,7 +382,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
 
-        SetBool(*inst.oDest, s1 <= s2, env);
+        SetBool(*inst.o_dest, s1 <= s2, env);
         return;
     }
 
@@ -390,7 +390,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
-        SetBool(*inst.oDest, i1 >= i2, env);
+        SetBool(*inst.o_dest, i1 >= i2, env);
         return;
     }
 
@@ -399,7 +399,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
 
-        SetBool(*inst.oDest, s1 >= s2, env);
+        SetBool(*inst.o_dest, s1 >= s2, env);
         return;
     }
 
@@ -409,7 +409,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
 
-        SetBool(*inst.oDest, i1 == i2, env);
+        SetBool(*inst.o_dest, i1 == i2, env);
         return;
     }
 
@@ -418,7 +418,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         auto b1 = GetBool(inst.args[0], env);
         auto b2 = GetBool(inst.args[1], env);
 
-        SetBool(*inst.oDest, b1 == b2, env);
+        SetBool(*inst.o_dest, b1 == b2, env);
         return;
     }
 
@@ -426,7 +426,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
-        SetBool(*inst.oDest, s1 == s2, env);
+        SetBool(*inst.o_dest, s1 == s2, env);
         return;
     }
 
@@ -434,7 +434,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     }
 }
 
-StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<QArg_Slot> oDest, span<QArg_Input> args, QFactory& qFactory)
+StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<QArg_Slot> o_dest, span<QArg_Input> args, QFactory& qFactory)
 {
     StackFrame frame;
 
@@ -444,14 +444,14 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
     frame.slots.resize(qFuncBody->slotInfos.size());
 
     // oRetSlotIndex 위치 담기
-    if (oDest)
-        frame.retSlot = curFrame.slots[oDest->index];
+    if (o_dest)
+        frame.retSlot = curFrame.slots[o_dest->index];
     
     for (size_t i = 0, count = qFuncBody->slotInfos.size(); i < count; i++)
     {
         auto& slot = qFuncBody->slotInfos[i];
 
-        if (slot.oArgIndex) // argument로부터 복사
+        if (slot.o_argIndex) // argument로부터 복사
         {
             visit([i, &frame, &curFrame](auto& arg) {
                 using T = remove_cvref_t<decltype(arg)>;
@@ -468,7 +468,7 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
                     *(int*)frame.slots[i] = arg.value;
                 }
                 else static_assert(false);
-            }, args[*slot.oArgIndex]);
+            }, args[*slot.o_argIndex]);
 
         }
         else
@@ -635,7 +635,7 @@ struct Evaluator
         auto i = ranges::find_if(bodies, [nFuncDecl](QFuncBody& body) { return body.nFuncDecl == nFuncDecl; });
         if (i == bodies.end()) throw NotImplementedException{};
 
-        auto frame = MakeStackFrame(&*i, *env.curFrame, inst.oDest, inst.args, *qFactory);
+        auto frame = MakeStackFrame(&*i, *env.curFrame, inst.o_dest, inst.args, *qFactory);
         env.frames.push_back(move(frame));
         env.curFrame = &env.frames.back();
         return true;
@@ -649,9 +649,9 @@ struct Evaluator
      
     bool Eval(QInst_Return& inst) 
     {
-        if (inst.oValue)
+        if (inst.o_value)
         {
-            visit([this, &retValue = *inst.oValue](auto& value) 
+            visit([this, &retValue = *inst.o_value](auto& value) 
             {
                 using T = remove_cvref_t<decltype(value)>;
 
@@ -669,7 +669,7 @@ struct Evaluator
                     size_t size = GetSize(retValue.qType, *qFactory);
                     memcpy(env.curFrame->retSlot, valueLoc, size);
                 }
-            }, inst.oValue->value);
+            }, inst.o_value->value);
         }
 
         env.frames.pop_back();

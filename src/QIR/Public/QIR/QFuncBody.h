@@ -14,7 +14,7 @@ struct QSlotInfo
 {   
     QType* qType;
     std::string name;
-    std::optional<size_t> oArgIndex;
+    std::optional<size_t> o_argIndex;
 };
 
 struct QFuncBody

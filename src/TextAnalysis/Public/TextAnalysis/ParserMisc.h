@@ -38,9 +38,9 @@ bool Peek(Lexer& lexer)
 }
 
 template<typename TToken>
-bool Peek(std::optional<LexResult> oLexResult)
+bool Peek(std::optional<LexResult> o_lexResult)
 {
-    return oLexResult && std::holds_alternative<TToken>(oLexResult->token);
+    return o_lexResult && std::holds_alternative<TToken>(o_lexResult->token);
 }
 
 struct OutAndParams

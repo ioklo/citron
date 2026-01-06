@@ -109,14 +109,19 @@ public:
     // &id
     ResultType Visit(ImExp_LocalVar* imExp)
     {
-        return Value<IrExp_LocalRef>(contexts.mFactory->MakeMLoc<MLoc_LocalVar>(imExp->name, imExp->type));
+        return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_LocalVar>(imExp->name, imExp->type));
+    }
+
+    ResultType Visit(ImExp_LocalRef* imExp)
+    {
+        return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_LocalRef>(imExp->name, imExp->type));
     }
 
     // &x
     ResultType Visit(ImExp_LambdaVar* imExp)
     {
         // TODO: [10] box lambda이면 box로 판단해야 한다
-        return Value<IrExp_LocalRef>(contexts.mFactory->MakeMLoc<MLoc_LambdaVar>(imExp->decl, imExp->typeArgs));
+        return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_LambdaVar>(imExp->decl, imExp->typeArgs));
     }
 
     // x (C.x, this.x)
@@ -145,7 +150,7 @@ public:
             // this의 타입이 S&이다.
             // TODO: [10] box함수이면 this를 box로 판단해야 한다
             auto* nThisLoc = contexts.funcContext->MakeThisLoc();
-            return Value<IrExp_LocalRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(nThisLoc, imExp->decl, imExp->typeArgs));
+            return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(nThisLoc, imExp->decl, imExp->typeArgs));
         }
     }
 
@@ -162,7 +167,7 @@ public:
         throw RuntimeFatalException{};
     }
 
-    ResultType Visit(ImExp_Deref* imExp)
+    ResultType Visit(ImExp_PtrDeref* imExp)
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException{};

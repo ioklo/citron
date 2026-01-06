@@ -463,7 +463,7 @@ private:
             { 
                 auto* boolValue = GetBool(qInst.args[0]);
                 auto* notValue = builder.CreateNot(boolValue);
-                SetSlot(*qInst.oDest, notValue);
+                SetSlot(*qInst.o_dest, notValue);
                 return;
             }
 
@@ -471,21 +471,21 @@ private:
             {
                 auto* intValue = GetInt(qInst.args[0]);
                 auto* negValue = builder.CreateNeg(intValue);
-                SetSlot(*qInst.oDest, negValue);
+                SetSlot(*qInst.o_dest, negValue);
                 return;
             }
 
             case ToString_Bool: 
             { 
                 auto* boolValue = GetBool(qInst.args[0]);
-                EmitRuntimeCall(LRuntimeFuncKind::BoolToString, {slotValues[qInst.oDest->index], boolValue});
+                EmitRuntimeCall(LRuntimeFuncKind::BoolToString, {slotValues[qInst.o_dest->index], boolValue});
                 return;
             }
 
             case ToString_Int:
             {
                 auto* intValue = GetInt(qInst.args[0]);
-                EmitRuntimeCall(LRuntimeFuncKind::IntToString, {slotValues[qInst.oDest->index], intValue});
+                EmitRuntimeCall(LRuntimeFuncKind::IntToString, {slotValues[qInst.o_dest->index], intValue});
                 return;
             }
 
@@ -499,7 +499,7 @@ private:
                 auto* loadedValue = builder.CreateLoad(lContextImpl.GetInt32Type(), ptrValue);
                 auto* increasedValue = builder.CreateAdd(loadedValue, llvm::ConstantInt::get(lContextImpl.GetInt32Type(), 1));
                 builder.CreateStore(increasedValue, ptrValue);
-                SetSlot(*qInst.oDest, increasedValue);
+                SetSlot(*qInst.o_dest, increasedValue);
                 return;
             }
 
@@ -509,7 +509,7 @@ private:
                 auto* loadedValue = builder.CreateLoad(lContextImpl.GetInt32Type(), ptrValue);
                 auto* decreasedValue = builder.CreateSub(loadedValue, llvm::ConstantInt::get(lContextImpl.GetInt32Type(), 1));
                 builder.CreateStore(decreasedValue, ptrValue);
-                SetSlot(*qInst.oDest, decreasedValue);
+                SetSlot(*qInst.o_dest, decreasedValue);
                 return;
             }
 
@@ -519,7 +519,7 @@ private:
                 auto* loadedValue = builder.CreateLoad(lContextImpl.GetInt32Type(), ptrValue);
                 auto* increasedValue = builder.CreateAdd(loadedValue, llvm::ConstantInt::get(lContextImpl.GetInt32Type(), 1));
                 builder.CreateStore(increasedValue, ptrValue);
-                SetSlot(*qInst.oDest, loadedValue);
+                SetSlot(*qInst.o_dest, loadedValue);
                 return;
             }
 
@@ -529,7 +529,7 @@ private:
                 auto* loadedValue = builder.CreateLoad(lContextImpl.GetInt32Type(), ptrValue);
                 auto* decreasedValue = builder.CreateSub(loadedValue, llvm::ConstantInt::get(lContextImpl.GetInt32Type(), 1));
                 builder.CreateStore(decreasedValue, ptrValue);
-                SetSlot(*qInst.oDest, loadedValue);
+                SetSlot(*qInst.o_dest, loadedValue);
                 return;
             }
 
@@ -538,7 +538,7 @@ private:
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
                 auto* result = builder.CreateMul(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -547,7 +547,7 @@ private:
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
                 auto* result = builder.CreateSDiv(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -556,7 +556,7 @@ private:
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
                 auto* result = builder.CreateSRem(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -565,7 +565,7 @@ private:
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
                 auto* result = builder.CreateAdd(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -573,7 +573,7 @@ private:
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);
-                auto* result = slotValues[qInst.oDest->index];
+                auto* result = slotValues[qInst.o_dest->index];
                 EmitRuntimeCall(LRuntimeFuncKind::StringConcat, {result, str0, str1});
                 return;
             }
@@ -583,7 +583,7 @@ private:
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
                 auto* result = builder.CreateSub(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -592,7 +592,7 @@ private:
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
                 auto* result = builder.CreateICmpSLT(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -601,7 +601,7 @@ private:
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
                 auto* result = EmitRuntimeCall(LRuntimeFuncKind::StringLessThan, {str0, str1});
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -610,7 +610,7 @@ private:
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
                 auto* result = builder.CreateICmpSGT(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -619,7 +619,7 @@ private:
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
                 auto* result = EmitRuntimeCall(LRuntimeFuncKind::StringGreaterThan, {str0, str1});
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -628,7 +628,7 @@ private:
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
                 auto* result = builder.CreateICmpSLE(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -637,7 +637,7 @@ private:
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
                 auto* result = EmitRuntimeCall(LRuntimeFuncKind::StringLessThanOrEqual, {str0, str1});
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -646,7 +646,7 @@ private:
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
                 auto* result = builder.CreateICmpSGE(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -655,7 +655,7 @@ private:
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
                 auto* result = EmitRuntimeCall(LRuntimeFuncKind::StringGreaterThanOrEqual, {str0, str1});
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -664,7 +664,7 @@ private:
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
                 auto* result = builder.CreateICmpEQ(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -673,7 +673,7 @@ private:
                 auto* operand0 = GetBool(qInst.args[0]);
                 auto* operand1 = GetBool(qInst.args[1]);
                 auto* result = builder.CreateICmpEQ(operand0, operand1);
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -682,7 +682,7 @@ private:
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
                 auto* result = EmitRuntimeCall(LRuntimeFuncKind::StringEquals, {str0, str1});
-                SetSlot(*qInst.oDest, result);
+                SetSlot(*qInst.o_dest, result);
                 return;
             }
 
@@ -768,13 +768,13 @@ private:
 
         void Emit(QInst_Return& qInst)
         {
-            if (!qInst.oValue)
+            if (!qInst.o_value)
             {
                 self.builder.CreateRetVoid();
             }
             else
             {
-                auto* v = self.GetValue(qInst.oValue->value, qInst.oValue->qType);
+                auto* v = self.GetValue(qInst.o_value->value, qInst.o_value->qType);
                 self.builder.CreateRet(v);
             }
         }
@@ -848,9 +848,9 @@ public:
         {
             // 함수 초기에 할당
 
-            if (qSlotInfo.oArgIndex) // 아규먼트에 매핑 되어있으면,
+            if (qSlotInfo.o_argIndex) // 아규먼트에 매핑 되어있으면,
             {
-                auto* lArg = lFunc->getArg(*qSlotInfo.oArgIndex);
+                auto* lArg = lFunc->getArg(*qSlotInfo.o_argIndex);
                 lArg->setName(qSlotInfo.name.substr(1) + "_arg");
                 auto* lType = lContextImpl.GetType(qSlotInfo.qType);
                 auto* allocaInst = builder.CreateAlloca(lType, nullptr, qSlotInfo.name.substr(1));

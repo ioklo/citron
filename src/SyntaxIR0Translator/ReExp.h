@@ -20,11 +20,12 @@ class NLambdaVarDecl;
 
 class ReExp_ThisVar;
 class ReExp_LocalVar;
+class ReExp_LocalRef;
 class ReExp_LambdaVar;
 class ReExp_ClassVar;
 class ReExp_StructVar;
 class ReExp_EnumElemVar;
-class ReExp_Deref;
+class ReExp_PtrDeref;
 class ReExp_BoxDeref;
 class ReExp_ListIndexer;
 class ReExp_Else;
@@ -46,11 +47,12 @@ public:
     virtual ~ReExpVisitor() { }
     virtual void Visit(ReExp_ThisVar* exp) = 0;
     virtual void Visit(ReExp_LocalVar* exp) = 0;
+    virtual void Visit(ReExp_LocalRef* exp) = 0;
     virtual void Visit(ReExp_LambdaVar* exp) = 0;
     virtual void Visit(ReExp_ClassVar* exp) = 0;
     virtual void Visit(ReExp_StructVar* exp) = 0;
     virtual void Visit(ReExp_EnumElemVar* exp) = 0;
-    virtual void Visit(ReExp_Deref* exp) = 0;
+    virtual void Visit(ReExp_PtrDeref* exp) = 0;
     virtual void Visit(ReExp_BoxDeref* exp) = 0;
     virtual void Visit(ReExp_ListIndexer* exp) = 0;
     virtual void Visit(ReExp_Else* exp) = 0;
@@ -78,6 +80,19 @@ public:
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
     RType* GetType() override { return type; }
 };
+
+class ReExp_LocalRef : public ReExp
+{
+public:
+    RType* type;
+    RName name;
+
+public:
+    ReExp_LocalRef(RType* type, const RName& name);
+    void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
+    RType* GetType() override { return type; }
+};
+
 
 class ReExp_LambdaVar : public ReExp
 {
@@ -132,13 +147,13 @@ public:
     RType* GetType() override;
 };
 
-class ReExp_Deref : public ReExp
+class ReExp_PtrDeref : public ReExp
 {
 public:
     ReExp* target;
     
 public:
-    ReExp_Deref(ReExp* target);
+    ReExp_PtrDeref(ReExp* target);
     void Accept(ReExpVisitor& visitor) override { visitor.Visit(this); }
     RType* GetType() override;
 };
@@ -191,11 +206,12 @@ concept ReExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 
     { v.Visit(std::declval<ReExp_ThisVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ReExp_LocalVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<ReExp_LocalRef*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ReExp_LambdaVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ReExp_ClassVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ReExp_StructVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ReExp_EnumElemVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_Deref*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<ReExp_PtrDeref*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ReExp_BoxDeref*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ReExp_ListIndexer*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ReExp_Else*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
@@ -216,11 +232,12 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ReExp* r
             Bridge(decltype(caller)& call) : call(call) {}
             void Visit(ReExp_ThisVar* reExp) override { call(reExp); }
             void Visit(ReExp_LocalVar* reExp) override { call(reExp); }
+            void Visit(ReExp_LocalRef* reExp) override { call(reExp); }
             void Visit(ReExp_LambdaVar* reExp) override { call(reExp); }
             void Visit(ReExp_ClassVar* reExp) override { call(reExp); }
             void Visit(ReExp_StructVar* reExp) override { call(reExp); }
             void Visit(ReExp_EnumElemVar* reExp) override { call(reExp); }
-            void Visit(ReExp_Deref* reExp) override { call(reExp); }
+            void Visit(ReExp_PtrDeref* reExp) override { call(reExp); }
             void Visit(ReExp_BoxDeref* reExp) override { call(reExp); }
             void Visit(ReExp_ListIndexer* reExp) override { call(reExp); }
             void Visit(ReExp_Else* reExp) override { call(reExp); }
@@ -238,11 +255,12 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ReExp* r
 
             void Visit(ReExp_ThisVar* reExp) override { result.emplace(call(reExp)); }
             void Visit(ReExp_LocalVar* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_LocalRef* reExp) override { result.emplace(call(reExp)); }
             void Visit(ReExp_LambdaVar* reExp) override { result.emplace(call(reExp)); }
             void Visit(ReExp_ClassVar* reExp) override { result.emplace(call(reExp)); }
             void Visit(ReExp_StructVar* reExp) override { result.emplace(call(reExp)); }
             void Visit(ReExp_EnumElemVar* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_Deref* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_PtrDeref* reExp) override { result.emplace(call(reExp)); }
             void Visit(ReExp_BoxDeref* reExp) override { result.emplace(call(reExp)); }
             void Visit(ReExp_ListIndexer* reExp) override { result.emplace(call(reExp)); }
             void Visit(ReExp_Else* reExp) override { result.emplace(call(reExp)); }

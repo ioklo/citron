@@ -95,12 +95,12 @@ RType* MExp_StructMemberBoxRef::GetType()
     return rFactory->MakeBoxType(declType);
 }
 
-MExp_LocalRef::MExp_LocalRef(MLoc* innerLoc, const RFactoryPtr& rFactory)
+MExp_PtrRef::MExp_PtrRef(MLoc* innerLoc, const RFactoryPtr& rFactory)
     : innerLoc{innerLoc}, rFactory{rFactory}
 {
 }
 
-RType* MExp_LocalRef::GetType()
+RType* MExp_PtrRef::GetType()
 {
     auto* innerLocType = innerLoc->GetType();
     return rFactory->MakePtrType(innerLocType);

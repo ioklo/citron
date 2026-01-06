@@ -15,7 +15,7 @@ class QFactory;
 
 class QBodyContext;
 
-struct QLocResult_Slot { size_t slotIndex; };
+struct QLocResult_Slot { size_t slotIndex; }; // local var
 struct QLocResult_PtrSlot { size_t slotIndex; }; // ptr
 
 using QLocResult = std::variant<QLocResult_Slot, QLocResult_PtrSlot>;

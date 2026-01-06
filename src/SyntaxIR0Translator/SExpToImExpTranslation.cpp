@@ -134,7 +134,7 @@ public:
                 return Value<ImExp_BoxDeref>(*e_target);
 
             if (dynamic_cast<RType_Ptr*>(targetType))
-                return Value<ImExp_Deref>(*e_target);
+                return Value<ImExp_PtrDeref>(*e_target);
 
             // 에러를 내야 할 것 같다
             throw NotImplementedException{};

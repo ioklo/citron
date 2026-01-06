@@ -43,31 +43,33 @@ public:
     {
     }
 
-    expected<IrExp*, DiagPtr> operator()(RMember_Namespace& member) 
+    expected<IrExp*, DiagPtr> operator()(auto& member) { return Visit(member); }
+
+    expected<IrExp*, DiagPtr> Visit(RMember_Namespace& member) 
     {
         return contexts.srtFactory->MakeIrExp<IrExp_Namespace>(member.decl);
     }
 
     // S.F
-    expected<IrExp*, DiagPtr> operator()(RMember_GlobalFuncs& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_GlobalFuncs& member)
     {   
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
-    expected<IrExp*, DiagPtr> operator()(RMember_Class& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_Class& member)
     {
         auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
         return contexts.srtFactory->MakeIrExp<IrExp_Class>(member.decl, typeArgs);
     }
 
     // 에러,
-    expected<IrExp*, DiagPtr> operator()(RMember_ClassFuncs& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_ClassFuncs& member)
     {
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
     // C.x
-    expected<IrExp*, DiagPtr> operator()(RMember_ClassVar& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_ClassVar& member)
     {
         if (!member.decl->IsStatic())
         {
@@ -83,18 +85,18 @@ public:
         return contexts.srtFactory->MakeIrExp<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
     }
 
-    expected<IrExp*, DiagPtr> operator()(RMember_Struct& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_Struct& member)
     {
         auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
         return contexts.srtFactory->MakeIrExp<IrExp_Struct>(member.decl, typeArgs);
     }
 
-    expected<IrExp*, DiagPtr> operator()(RMember_StructFuncs& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_StructFuncs& member)
     {
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
-    expected<IrExp*, DiagPtr> operator()(RMember_StructVar& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_StructVar& member)
     {
         if (!member.decl->IsStatic())
         {
@@ -111,46 +113,51 @@ public:
     }
 
     // E
-    expected<IrExp*, DiagPtr> operator()(RMember_Enum& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_Enum& member)
     {   
         auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
         return contexts.srtFactory->MakeIrExp<IrExp_Enum>(member.decl, typeArgs);
     }
 
     // &E.First.x
-    expected<IrExp*, DiagPtr> operator()(RMember_EnumElem& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_EnumElem& member)
     {   
         return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
     }
 
     // &E.x
-    expected<IrExp*, DiagPtr> operator()(RMember_EnumElemVar& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_EnumElemVar& member)
     {
         // 표현 불가능
         throw RuntimeFatalException{};
     }
 
-    expected<IrExp*, DiagPtr> operator()(RMember_LambdaVar& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_LambdaVar& member)
     {
         throw RuntimeFatalException{};
     }
 
-    expected<IrExp*, DiagPtr> operator()(RMember_TupleVar& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_TupleVar& member)
     {
         throw RuntimeFatalException{};
     }
 
-    expected<IrExp*, DiagPtr> operator()(RMember_TypeVar& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_TypeVar& member)
     {
         throw NotImplementedException{};
     }
 
-    expected<IrExp*, DiagPtr> operator()(RMember_LocalVar& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_LocalVar& member)
     {
         throw NotImplementedException{};
     }
 
-    expected<IrExp*, DiagPtr> operator()(RMember_ThisVar& member)
+    expected<IrExp*, DiagPtr> Visit(RMember_LocalRef& member)
+    {
+        throw NotImplementedException{};
+    }
+
+    expected<IrExp*, DiagPtr> Visit(RMember_ThisVar& member)
     {
         throw NotImplementedException{};
     }
@@ -497,12 +504,12 @@ public:
     }
 };
 
-class LocalRefTypeTranslator
+class PtrRefTypeTranslator
 {
 public:
     using ResultType = expected<IrExp*, DiagPtr>;
 
-    IrExp_LocalRef* parent;
+    IrExp_PtrRef* parent;
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
@@ -528,7 +535,7 @@ private:
     }
 
 public:
-    LocalRefTypeTranslator(IrExp_LocalRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+    PtrRefTypeTranslator(IrExp_PtrRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
         : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
@@ -624,7 +631,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_LocalRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
+        return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
     }
 
     ResultType Visit(RType_Enum* type) 
@@ -647,7 +654,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_LocalRef>(contexts.mFactory->MakeMLoc<MLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
+        return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
     }
 
     ResultType Visit(RType_Interface* type) 
@@ -1059,14 +1066,14 @@ public:
         return Accept(binder, targetType);
     }
 
-    ResultType Visit(IrExp_LocalRef* irExp) 
+    ResultType Visit(IrExp_PtrRef* irExp)
     {
-        auto* irLocalRefThis = dynamic_cast<IrExp_LocalRef*>(irThis);
-        assert(irLocalRefThis);
+        auto* irPtrRefThis = dynamic_cast<IrExp_PtrRef*>(irThis);
+        assert(irPtrRefThis);
 
         auto locType = irExp->loc->GetType();
 
-        LocalRefTypeTranslator binder{irLocalRefThis, name, typeArgsExceptOuter, contexts};
+        PtrRefTypeTranslator binder{irPtrRefThis, name, typeArgsExceptOuter, contexts};
         return Accept(binder, locType);
     }
 

@@ -55,7 +55,7 @@ class NStructDecl
     int trivialCtorIndex; // can be -1
 
     std::vector<NStructVarDecl*> vars;
-    std::optional<BaseTypes> oBaseTypes;
+    std::optional<BaseTypes> o_baseTypes;
     std::unordered_map<RName, NStructVarDecl*> varsMap;
 
 public:

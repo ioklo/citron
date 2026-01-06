@@ -116,6 +116,10 @@ expected<ImExp*, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* t
         {
             return contexts.srtFactory->MakeImExp<ImExp_LocalVar>(rMember.type, rMember.name);
         }
+        else if constexpr (same_as<T, RMember_LocalRef>)
+        {
+            return contexts.srtFactory->MakeImExp<ImExp_LocalRef>(rMember.type, rMember.name);
+        }
         else if constexpr (same_as<T, RMember_GlobalFuncs>)
         {
             return contexts.srtFactory->MakeImExp<ImExp_GlobalFuncs>(rMember.items, typeArgs);

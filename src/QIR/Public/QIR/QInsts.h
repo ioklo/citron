@@ -91,7 +91,7 @@ struct QInst_Assign
 struct QInst_Call
 {   
     RFuncDecl* rFuncDecl;
-    std::optional<QArg_Slot> oDest;      // void인 경우 nullopt, 나머지는 slot
+    std::optional<QArg_Slot> o_dest;      // void인 경우 nullopt, 나머지는 slot
     std::vector<QArg_Input> args;         // 
 };
 
@@ -103,7 +103,7 @@ struct QInst_ReturnValue
 
 struct QInst_Return
 {
-    std::optional<QInst_ReturnValue> oValue; // void면 없음
+    std::optional<QInst_ReturnValue> o_value; // void면 없음
 };
 
 enum struct QInst_IntrinsicKind
@@ -146,11 +146,11 @@ enum struct QInst_IntrinsicKind
 struct QInst_Intrinsic
 {   
     QInst_IntrinsicKind kind;
-    std::optional<QArg_Slot> oDest;
+    std::optional<QArg_Slot> o_dest;
     std::vector<QArg_Input> args;
 
-    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot>&& oDest, std::vector<QArg_Input>&& args)
-        : kind{kind}, oDest{std::move(oDest)}, args{std::move(args)}
+    QInst_Intrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot>&& o_dest, std::vector<QArg_Input>&& args)
+        : kind{kind}, o_dest{std::move(o_dest)}, args{std::move(args)}
     {
     }
 };

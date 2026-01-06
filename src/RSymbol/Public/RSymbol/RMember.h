@@ -176,6 +176,15 @@ public:
     RSYMBOL_API RMember_LocalVar(RType* type, const RName& name);
 };
 
+class RMember_LocalRef
+{
+public:
+    RType* type;
+    RName name;
+public:
+    RSYMBOL_API RMember_LocalRef(RType* type, const RName& name);
+};
+
 class RMember_ThisVar
 {
 public:
@@ -202,6 +211,7 @@ using RMember = std::variant<
     RMember_TypeVar,
 
     RMember_LocalVar,
+    RMember_LocalRef,
     RMember_ThisVar
 >;
 

@@ -34,7 +34,7 @@ class IrExp_BoxRef;
 class IrExp_BoxRef_ClassMember;
 class IrExp_BoxRef_StructIndirectMember;
 class IrExp_BoxRef_StructMember;
-class IrExp_LocalRef;
+class IrExp_PtrRef;
 class IrExp_DerefedBoxValue;
 class IrExp_LocalValue;
 
@@ -60,7 +60,7 @@ public:
     virtual void Visit(IrExp_ThisVar* irExp) = 0;
     virtual void Visit(IrExp_StaticRef* irExp) = 0;
     virtual void Visit(IrExp_BoxRef* irExp) = 0;
-    virtual void Visit(IrExp_LocalRef* irExp) = 0;
+    virtual void Visit(IrExp_PtrRef* irExp) = 0;
     virtual void Visit(IrExp_DerefedBoxValue* irExp) = 0;
     virtual void Visit(IrExp_LocalValue* irExp) = 0;
 };
@@ -251,13 +251,13 @@ public:
     MLoc* MakeLoc() override;
 };
 
-class IrExp_LocalRef : public IrExp
+class IrExp_PtrRef : public IrExp
 {
 public:
     MLoc* loc;
 
 public:
-    IrExp_LocalRef(MLoc* loc);
+    IrExp_PtrRef(MLoc* loc);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
@@ -360,7 +360,7 @@ concept IrExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args) {
     { v.Visit(std::declval<IrExp_ThisVar*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_StaticRef*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_BoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<IrExp_LocalRef*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_PtrRef*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_DerefedBoxValue*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_LocalValue*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
 };
@@ -388,7 +388,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp* i
             void Visit(IrExp_ThisVar* irExp) override { call(irExp); }
             void Visit(IrExp_StaticRef* irExp) override { call(irExp); }
             void Visit(IrExp_BoxRef* irExp) override { call(irExp); }
-            void Visit(IrExp_LocalRef* irExp) override { call(irExp); }
+            void Visit(IrExp_PtrRef* irExp) override { call(irExp); }
             void Visit(IrExp_DerefedBoxValue* irExp) override { call(irExp); }
             void Visit(IrExp_LocalValue* irExp) override { call(irExp); }
         };
@@ -411,7 +411,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp* i
             void Visit(IrExp_ThisVar* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_StaticRef* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_BoxRef* irExp) override { result.emplace(call(irExp)); }
-            void Visit(IrExp_LocalRef* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_PtrRef* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_DerefedBoxValue* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_LocalValue* irExp) override { result.emplace(call(irExp)); }
         };

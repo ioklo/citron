@@ -25,12 +25,26 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 
 enum class QInst_IntrinsicKind;
 
-struct QLocalVarInfo
+struct QLocalInfo_Var
 {
     size_t slotIndex;
     std::string name;
-    QType* qType;
 };
+
+struct QLocalInfo_RefAlias
+{
+    size_t slotIndex; // slotIndex를 다른 var와 공유
+    std::string name;
+};
+
+struct QLocalInfo_RefPtr
+{
+    size_t slotIndex; // ptr slot
+    std::string name;
+    QType* qType; // 참조하는 타입
+};
+
+using QLocalInfo = std::variant<QLocalInfo_Var, QLocalInfo_RefAlias, QLocalInfo_RefPtr>;
 
 struct QScope
 {
@@ -38,7 +52,7 @@ struct QScope
     bool handleReturn = false;   // 이 스코프에서 return을 처리했다. 더이상 명령어가 나오면 안된다
 
     // "a_16" -> slotIndex
-    std::unordered_map<RName, QLocalVarInfo> localVarInfos;
+    std::unordered_map<RName, QLocalInfo> localInfos;
     std::vector<size_t> slotIndices; // 이 스코프가 관리하는 slot
 
     // 최근 return용 cleanUp블록
@@ -61,7 +75,7 @@ class QBodyContext
     QScope* curScope;
     std::vector<QSlotInfo> slotInfos;
     std::vector<QScope> scopes;
-    std::optional<size_t> oRetSlotIndex; // 함수의 반환값 slot
+    std::optional<size_t> o_retSlotIndex; // 함수의 반환값 slot
 
     QBlock* curBlock;
     std::vector<QBlock*> blocks;
@@ -88,7 +102,7 @@ public:
     {   
         return EmitInstInternal(std::forward<TQInst>(inst));
     }
-    std::expected<void, DiagPtr> EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> oDest, std::vector<QArg_Input>&& args);
+    std::expected<void, DiagPtr> EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> o_dest, std::vector<QArg_Input>&& args);
     std::expected<void, DiagPtr> EmitTermInst(QTermInst&& termInst);
     
 private:
@@ -108,8 +122,11 @@ public:
 
     size_t GetRetSlotIndex();
 
-    size_t AddLocalVar(RType* type, const RName& name, std::optional<size_t> oArgIndex);
-    size_t GetLocalVarSlotIndex(const RName& name);
+    std::optional<QLocalInfo> GetLocalInfo(const RName& name);
+    size_t AddLocalVar(RType* type, const RName& name, std::optional<size_t> o_argIndex);
+
+    void AddLocalRef_Alias(const RName& rName, size_t slotIndex);
+    void AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex);
 
     size_t NewSlot(QType* qType);
     std::span<QSlotInfo> GetStackSlotInfos() { return slotInfos; }

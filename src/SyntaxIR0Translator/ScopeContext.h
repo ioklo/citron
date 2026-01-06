@@ -39,8 +39,15 @@ public:
 
     RFactoryPtr rFactory;
 
-    // 로컬 관리
-    std::unordered_map<RName, RType*> locals;
+    // 로컬 관리, var, ref
+    enum class LocalInfoKind { Var, Ref };
+    struct LocalInfo
+    {
+        LocalInfoKind kind;
+        RType* type;
+    };
+
+    std::unordered_map<RName, LocalInfo> localInfos;
 
 public:
     ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop, const RFactoryPtr& rFactory);
@@ -57,9 +64,10 @@ public:
     std::tuple<ScopeContextPtr, NLambdaDecl> MakeTranslationContexts_Lambda(const RFuncReturn& ret, std::vector<RFuncParameter> params, bool bLastParamVariadic);
 
     void AddLocalVarInfo(RType* type, const RName& name);
+    void AddLocalRefInfo(RType* type, const RName& name);
     // std::optional<LocalVarInfo> GetLocalVarInfo(const RName& name);
 
-    bool DoesLocalVarNameExistInScope(const RName& name);
+    bool DoesLocalNameExistInScope(const RName& name);
 
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }

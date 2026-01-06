@@ -121,6 +121,10 @@ public:
     {
         return Value<ReExp_LocalVar>(imExp->type, imExp->name);
     }
+    ResultType Visit(ImExp_LocalRef* imExp)
+    {
+        return Value<ReExp_LocalRef>(imExp->type, imExp->name);
+    }
     ResultType Visit(ImExp_LambdaVar* imExp)
     {
         return Value<ReExp_LambdaVar>(imExp->decl, imExp->typeArgs);
@@ -141,9 +145,9 @@ public:
     {
         return Value<ReExp_ListIndexer>(imExp->instance, imExp->index, imExp->itemType);
     }
-    ResultType Visit(ImExp_Deref* imExp)
+    ResultType Visit(ImExp_PtrDeref* imExp)
     {
-        return Value<ReExp_Deref>(imExp->target);
+        return Value<ReExp_PtrDeref>(imExp->target);
     }
     ResultType Visit(ImExp_BoxDeref* imExp)
     {

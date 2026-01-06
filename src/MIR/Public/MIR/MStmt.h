@@ -25,6 +25,7 @@ class MLoc;
 
 class MStmt_Command;
 class MStmt_LocalVarDecl;
+class MStmt_LocalRefDecl;
 class MStmt_If;
 class MStmt_IfNullableRefTest;
 class MStmt_IfNullableValueTest;
@@ -55,6 +56,7 @@ public:
     virtual ~MStmtVisitor() {}
     virtual void Visit(MStmt_Command* stmt) = 0;
     virtual void Visit(MStmt_LocalVarDecl* stmt) = 0;
+    virtual void Visit(MStmt_LocalRefDecl* stmt) = 0;
     virtual void Visit(MStmt_If* stmt) = 0;
     virtual void Visit(MStmt_IfNullableRefTest* stmt) = 0;
     virtual void Visit(MStmt_IfNullableValueTest* stmt) = 0;
@@ -101,10 +103,22 @@ class MStmt_LocalVarDecl : public MStmt
 {
 public:
     RType* type;
-    std::string name;
+    RName name;
     MExp* initExp;
 public:
-    MIR_API MStmt_LocalVarDecl(RType* type, const std::string& name, MExp* initExp);
+    MIR_API MStmt_LocalVarDecl(RType* type, RName&& name, MExp* initExp);
+    void Accept(MStmtVisitor& visitor) override { visitor.Visit(this); }
+};
+
+class MStmt_LocalRefDecl : public MStmt
+{
+public:
+    RType* type;
+    RName name;
+    MLoc* loc;
+
+public:
+    MIR_API MStmt_LocalRefDecl(RType* type, RName&& name, MLoc* loc);
     void Accept(MStmtVisitor& visitor) override { visitor.Visit(this); }
 };
 
@@ -350,6 +364,7 @@ concept NStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 
     { v.Visit(std::declval<MStmt_Command*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_LocalVarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MStmt_LocalRefDecl*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_If*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_IfNullableRefTest*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_IfNullableValueTest*>(), std::forward<TVisitorArgs>(args)...) } -> NStmtConvertibleToResultType<TVisitor>;
@@ -390,6 +405,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MStmt* m
             Bridge(decltype(caller)& call) : call(call) {}
             void Visit(MStmt_Command* mStmt) override { call(mStmt); }
             void Visit(MStmt_LocalVarDecl* mStmt) override { call(mStmt); }
+            void Visit(MStmt_LocalRefDecl* mStmt) override { call(mStmt); }
             void Visit(MStmt_If* mStmt) override { call(mStmt); }
             void Visit(MStmt_IfNullableRefTest* mStmt) override { call(mStmt); }
             void Visit(MStmt_IfNullableValueTest* mStmt) override { call(mStmt); }
@@ -427,6 +443,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MStmt* m
 
             void Visit(MStmt_Command* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_LocalVarDecl* mStmt) override { result.emplace(call(mStmt)); }
+            void Visit(MStmt_LocalRefDecl* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_If* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_IfNullableRefTest* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_IfNullableValueTest* mStmt) override { result.emplace(call(mStmt)); }

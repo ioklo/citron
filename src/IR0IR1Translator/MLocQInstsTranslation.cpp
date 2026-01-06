@@ -29,8 +29,35 @@ public:
 
     ResultType Visit(MLoc_LocalVar* loc)
     {
-        size_t slotIndex = bodyContext.GetLocalVarSlotIndex(loc->name);
-        return QLocResult_Slot{slotIndex};
+        auto o_localInfo = bodyContext.GetLocalInfo(loc->name);
+        assert(o_localInfo);
+
+        auto& varInfo = get<QLocalInfo_Var>(*o_localInfo);
+        return QLocResult_Slot{varInfo.slotIndex};
+    }
+
+    ResultType Visit(MLoc_LocalRef* loc)
+    {
+        auto o_localInfo = bodyContext.GetLocalInfo(loc->name);
+        assert(o_localInfo);
+
+        return visit([](auto& localInfo) -> ResultType
+        {
+            using T = remove_cvref_t<decltype(localInfo)>;
+            if constexpr (same_as<T, QLocalInfo_RefAlias>)
+            {
+                return QLocResult_Slot{localInfo.slotIndex};
+            }
+            else if constexpr (same_as<T, QLocalInfo_RefPtr>)
+            {
+                return QLocResult_PtrSlot{localInfo.slotIndex};
+            }
+            else if constexpr (same_as<T, QLocalInfo_Var>)
+            {   
+                throw RuntimeFatalException{};
+            }
+            else static_assert(false);
+        }, *o_localInfo);
     }
 
     ResultType Visit(MLoc_LambdaVar* loc) { throw NotImplementedException{}; }
@@ -76,7 +103,7 @@ public:
     ResultType Visit(MLoc_ClassVar* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_EnumElemVar* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_This* loc) { throw NotImplementedException{}; }
-    ResultType Visit(MLoc_Deref* loc) { throw NotImplementedException{}; }
+    ResultType Visit(MLoc_PtrDeref* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_BoxDeref* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_NullableValue* loc) { throw NotImplementedException{}; }
 };

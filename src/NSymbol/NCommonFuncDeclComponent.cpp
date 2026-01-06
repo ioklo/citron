@@ -97,7 +97,7 @@ vector<RType*> NCommonFuncDeclComponent::GetParamIds()
 optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {   
     assert(funcReturnAndParams);
-    for (auto& param : funcReturnAndParams->funcParameters)
+    for (auto& param : funcReturnAndParams->funcParameters) // TODO: LocalRef가 나올수 있다
         if (param.name == name) return RMember_LocalVar{param.type, param.name};
 
     return nullopt;

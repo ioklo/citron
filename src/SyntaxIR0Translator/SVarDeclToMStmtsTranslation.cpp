@@ -13,12 +13,15 @@
 #include "RSymbol/RTypes.h"
 #include "MIR/MStmt.h"
 #include "MIR/MExp.h"
+#include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 
 #include "ScopeContext.h"
 #include "SExpToMExpTranslation.h"
+#include "SExpToMLocTranslation.h"
 #include "Misc.h"
 #include "TranslationContexts.h"
+#include "DesignatedDiagnostic.h"
 
 using namespace std;
 
@@ -115,7 +118,7 @@ public:
     {
         for (auto& elem : elems)
         {
-            if (contexts.scopeContext->DoesLocalVarNameExistInScope(RName_Normal{elem.varName}))
+            if (contexts.scopeContext->DoesLocalNameExistInScope(RName_Normal{elem.varName}))
                 return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
 
             if (!elem.initExp)
@@ -130,7 +133,7 @@ public:
             RETURN_ON_ERROR(e_result);
 
             contexts.scopeContext->AddLocalVarInfo(rInitExpType, RName_Normal{elem.varName});
-            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rInitExpType, elem.varName, *e_nInitExp));
+            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rInitExpType, RName_Normal{elem.varName}, *e_nInitExp));
         }
 
         return {};
@@ -143,7 +146,29 @@ public:
 
     ResultType Visit(SVarDeclType_Ref* sVarDeclType)
     {
-        throw NotImplementedException{};
+        auto e_rDeclType = contexts.scopeContext->TranslateSTypeExpToRType(sVarDeclType->typeExp);
+        RETURN_ON_ERROR(e_rDeclType);
+
+        for (auto& elem : elems)
+        {
+            if (contexts.scopeContext->DoesLocalNameExistInScope(RName_Normal{elem.varName}))
+                return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
+
+            assert(elem.initExp); // 이제 초기화 식이 반드시 있어야 한다. 초기화를 안할거면 명시적으로 uninit을 써주는걸로
+
+            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
+            auto e_mLoc = TranslateSExpToMLoc(elem.initExp, *e_rDeclType, /*bWrapExpAsLoc*/false, &designatedDiag, contexts);
+            RETURN_ON_ERROR(e_mLoc);
+
+            // 둘이 타입이 mismatch되면 에러를 낸다
+            if ((*e_mLoc)->GetType() != *e_rDeclType)
+                return unexpected{MakePtr<Error_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType>()};
+
+            contexts.scopeContext->AddLocalRefInfo(*e_rDeclType, RName_Normal{elem.varName});
+            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalRefDecl>(*e_rDeclType, RName_Normal{elem.varName}, *e_mLoc));
+        }
+
+        return {};
     }
 
     ResultType Visit(SVarDeclType_Normal* sVarDeclType)
@@ -154,7 +179,7 @@ public:
 
         for (auto& elem : elems)
         {
-            if (contexts.scopeContext->DoesLocalVarNameExistInScope(RName_Normal{elem.varName}))
+            if (contexts.scopeContext->DoesLocalNameExistInScope(RName_Normal{elem.varName}))
                 return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
 
             MExp* nInitExp = nullptr;
@@ -170,7 +195,7 @@ public:
             }
 
             contexts.scopeContext->AddLocalVarInfo(rDeclType, RName_Normal{elem.varName});
-            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rDeclType, elem.varName, nInitExp));
+            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rDeclType, RName_Normal{elem.varName}, nInitExp));
         }
 
         return {};

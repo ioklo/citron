@@ -55,6 +55,11 @@ expected<MLoc*, DiagPtr> TranslateReLocalVarExpToMLoc(ReExp_LocalVar* reExp, Tra
     return contexts.mFactory->MakeMLoc<MLoc_LocalVar>(reExp->name, reExp->type);
 }
 
+expected<MLoc*, DiagPtr> TranslateReLocalRefExpToMLoc(ReExp_LocalRef* reExp, TranslationContexts& contexts)
+{
+    return contexts.mFactory->MakeMLoc<MLoc_LocalRef>(reExp->name, reExp->type);
+}
+
 expected<MLoc*, DiagPtr> TranslateReLambdaVarExpToMLoc(ReExp_LambdaVar* reExp, TranslationContexts& contexts)
 {
     return contexts.mFactory->MakeMLoc<MLoc_LambdaVar>(reExp->decl, reExp->typeArgs);
@@ -108,7 +113,7 @@ expected<MLoc*, DiagPtr> TranslateReListIndexerExpToMLoc(ReExp_ListIndexer* reEx
     return contexts.mFactory->MakeMLoc<MLoc_ListIndexer>(*e_inst, *e_index, reExp->itemType);
 }
 
-expected<MLoc*, DiagPtr> TranslateReDerefExpToMLoc(ReExp_Deref* reExp, TranslationContexts& contexts)
+expected<MLoc*, DiagPtr> TranslateReDerefExpToMLoc(ReExp_PtrDeref* reExp, TranslationContexts& contexts)
 {
     // *x, *G()
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
@@ -116,7 +121,7 @@ expected<MLoc*, DiagPtr> TranslateReDerefExpToMLoc(ReExp_Deref* reExp, Translati
     auto e_target = TranslateReExpToMLoc(reExp->target, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
     RETURN_ON_ERROR(e_target);
 
-    return contexts.mFactory->MakeMLoc<MLoc_Deref>(*e_target);
+    return contexts.mFactory->MakeMLoc<MLoc_PtrDeref>(*e_target);
 }
 
 expected<MLoc*, DiagPtr> TranslateReBoxDerefExpToMLoc(ReExp_BoxDeref* reExp, TranslationContexts& contexts)
@@ -158,6 +163,11 @@ public:
         return TranslateReLocalVarExpToMLoc(exp, contexts);
     }
 
+    ResultType Visit(ReExp_LocalRef* exp)
+    {
+        return TranslateReLocalRefExpToMLoc(exp, contexts);
+    }
+
     ResultType Visit(ReExp_LambdaVar* exp)
     {
         return TranslateReLambdaVarExpToMLoc(exp, contexts);
@@ -178,7 +188,7 @@ public:
         return TranslateReEnumElemVarExpToMLoc(exp, contexts);
     }
 
-    ResultType Visit(ReExp_Deref* exp)
+    ResultType Visit(ReExp_PtrDeref* exp)
     {
         return TranslateReDerefExpToMLoc(exp, contexts);
     }
