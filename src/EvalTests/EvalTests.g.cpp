@@ -1301,6 +1301,68 @@ F(out j); // out을 반드시 써줘야 합니다
     DoTest(code, expected);
 }
 
+TEST(Generics, General) 
+{
+    auto code = R"---(
+struct A<T>
+{
+    T t;
+}
+
+void Main()
+{
+    var a = A<int>(3);
+    @$a.t
+})---";
+    string expected = R"---(3)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Generics, HideTypeParameter) 
+{
+    auto code = R"---(
+class C<T>
+{
+    T t;
+    
+    struct S<T>
+    {
+        T t;
+    }
+}
+
+void Main()
+{
+    // 컴파일만 되도 성공
+    var s = C<int>.S<bool>(false); // bool이 사용됩니다.
+})---";
+    string expected = R"---()---";
+
+    DoTest(code, expected);
+}
+
+TEST(Generics, NestedTypeParameters) 
+{
+    auto code = R"---(class C<T>
+{
+    struct S<U>
+    {
+        T t;
+        U u;
+    }
+}
+
+void Main()
+{
+    // 컴파일만 되도 성공
+    var s = C<int>.S<string>(3, "hi");
+})---";
+    string expected = R"---()---";
+
+    DoTest(code, expected);
+}
+
 TEST(If_Nullable_Reference_Test_Statement, Basic) 
 {
     auto code = R"---(class B { }
@@ -1775,6 +1837,22 @@ x = 4;
     DoTest(code, expected);
 }
 
+TEST(List_Expression, Basic) 
+{
+    auto code = R"---(
+void Main()
+{
+    var l = [1, 2, 3]; // list<int>
+    var s = ["2", "3", "4"]; // list<string>
+    var b = [false, false, true, true]; // list<bool>
+
+    // 그냥 pass
+})---";
+    string expected = R"---()---";
+
+    DoTest(code, expected);
+}
+
 TEST(List_Indexer_Location, General) 
 {
     auto code = R"---(void Main()
@@ -1878,7 +1956,7 @@ TEST(Local_Variable_Declaration_Statement, Uninitialized)
 {
     auto code = R"---(void Main()
 {
-    int a;
+    int a = uninit;
     int b = 1;
 
     a = 0;
@@ -2056,13 +2134,28 @@ TEST(Nullable_Null_Literal_Expression, Basic)
     DoTest(code, expected);
 }
 
-TEST(Progam, Basic) 
+TEST(Program, Basic) 
 {
     auto code = R"---(void Main()
 {
     @Hello World!
 })---";
     string expected = R"---(Hello World!)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Ref, Decl) 
+{
+    auto code = R"---(void Main()
+{
+    int a = 3;
+    int& x = a;
+
+    x = 4;
+    @$a    
+})---";
+    string expected = R"---(4)---";
 
     DoTest(code, expected);
 }
