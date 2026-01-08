@@ -54,8 +54,18 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
         {
             auto& unboundParam = unboundParams[i];
 
-            // 새 local 변수 추가
-            bodyContext.AddLocalVar(unboundParam.type, unboundParam.name, i);
+            if (unboundParam.bRef)
+            {   
+                // QType* qType = bodyContext.GetQTypeFromRType(unboundParam.type);
+                QType* ptrQType = bodyContext.GetPtrQType();
+                size_t slotIndex = bodyContext.NewSlot(ptrQType, i);
+                bodyContext.AddLocalRef_Ptr(unboundParam.type, unboundParam.name, slotIndex);
+            }
+            else
+            {
+                // 새 local 변수 추가
+                bodyContext.AddLocalVar(unboundParam.type, unboundParam.name, i);
+            }
         }
 
         for (auto* mStmt : mFuncBody.stmts)

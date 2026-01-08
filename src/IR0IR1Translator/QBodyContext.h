@@ -128,7 +128,7 @@ public:
     void AddLocalRef_Alias(const RName& rName, size_t slotIndex);
     void AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex);
 
-    size_t NewSlot(QType* qType);
+    size_t NewSlot(QType* qType, std::optional<size_t> o_argIndex = std::nullopt);
     std::span<QSlotInfo> GetStackSlotInfos() { return slotInfos; }
     std::span<QBlock*> GetBlocks() { return blocks; }
 

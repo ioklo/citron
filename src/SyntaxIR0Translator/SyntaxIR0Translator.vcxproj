@@ -44,6 +44,8 @@
   <ItemGroup>
     <ClCompile Include="EnumElemVarTask.cpp" />
     <ClCompile Include="FuncContext.cpp" />
+    <ClCompile Include="FuncContext_FuncDecl.cpp" />
+    <ClCompile Include="FuncContext_Lambda.cpp" />
     <ClCompile Include="GlobalContext.cpp" />
     <ClCompile Include="PhaseManager.cpp" />
     <ClCompile Include="ResolveTypeHierarchyContext.cpp" />
@@ -89,6 +91,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EnumElemVarTask.h" />
+    <ClInclude Include="FuncContext_FuncDecl.h" />
+    <ClInclude Include="FuncContext_Lambda.h" />
     <ClInclude Include="GlobalContext.h" />
     <ClInclude Include="GlobalFuncTask.h" />
     <ClInclude Include="PhaseManager.h" />

@@ -17,24 +17,14 @@ namespace Citron {
 class RType;
 class RDecl;
 class RTypeDecl;
-class RFactory;
-using RFactoryPtr = std::shared_ptr<RFactory>;
 class RTypeArguments;
-struct RFuncParameter;
 
 class NLambdaDecl;
 class NLambdaVarDecl;
-class NFuncDecl;
-class NFactory;
-using NFactoryPtr = std::shared_ptr<NFactory>;
 
-class MFactory;
-using MFactoryPtr = std::shared_ptr<MFactory>;
+using NFactoryPtr = std::shared_ptr<class NFactory>;
 
 class MLoc_This;
-
-class ScopeContext;
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
 
 struct NLambdaVarAndArg
 {
@@ -61,12 +51,27 @@ class FuncContext
 
     // 이 함수가 갖고 있는 자식 lambda에 대한 것. lambda syntax를 처리한 후에 lambda에 해당하는 FuncContext를 통해 만들어 진다
     std::vector<NLambdaDecl*> lambdaDecls;
-
     NFactoryPtr nFactory;
+
+private: // transaction
+    struct TransactionInfo
+    {
+        size_t prevLambdaVarAndInitArgsCount; // 이전 상태의 lambdaVarAndInitArgs 크기
+        size_t prevLambdaDeclsCount;
+    };
+    std::vector<TransactionInfo> transactionInfos;
 
 public:
     FuncContext();
-    NLambdaVarDecl* StageLambdaVar(RType* type, const RName& name, MArgument_Normal&& arg);
+    NLambdaVarDecl* StageLambdaVar(RType* type, const RName& name, MArgument_Exp&& arg);
+
+    void BeginTransaction();
+    void CommitTransaction();
+    void RollbackTransaction();
+
+    virtual void BeginTransaction_FuncContext() = 0;
+    virtual void CommitTransaction_FuncContext() = 0;
+    virtual void RollbackTransaction_FuncContext() = 0;
 
     virtual bool CanAccess(RDecl* target) = 0;
     virtual RTypeDecl* ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
@@ -79,59 +84,7 @@ public:
 
     virtual bool IsSeqFunc() = 0;
     virtual MLoc_This* MakeThisLoc() = 0;
-
-    // virtual FuncContextPtr Clone(CloneContext& context) = 0;
-    // virtual void Update(const FuncContextPtr& src, UpdateContext& context) = 0;
 };
 
-// 람다인 경우
-class FuncContext_Lambda : public FuncContext
-{   
-    ScopeContextPtr outer;
-    bool bSeqFunc; // reserved
-    RFuncReturn funcReturn;
-    std::vector<RFuncParameter> funcParams;
-    bool bLastParamVariadic;
-
-    MFactoryPtr mFactory;
-
-public:
-    FuncContext_Lambda(const ScopeContextPtr& outer, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
-
-    bool CanAccess(RDecl* target) override;
-    RTypeDecl* ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-
-    RFuncReturn GetUnboundFuncReturn() override;
-    void SetOpenFuncReturn(RType* retType) override;
-
-    RTypeArguments* MakeOpenTypeArgs() override;
-
-    bool IsSeqFunc() override;
-    MLoc_This* MakeThisLoc() override;
-};
-
-// FuncDecl인 경우
-class FuncContext_FuncDecl : public FuncContext
-{
-    NFuncDecl* nFuncDecl;
-    RFactoryPtr rFactory;
-    MFactoryPtr mFactory;
-
-public:
-    FuncContext_FuncDecl(NFuncDecl* funcDecl, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory);
-
-    bool CanAccess(RDecl* target) override;
-    RTypeDecl* ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-
-    RFuncReturn GetUnboundFuncReturn() override;
-    void SetOpenFuncReturn(RType* retType) override;
-
-    RTypeArguments* MakeOpenTypeArgs() override;
-
-    bool IsSeqFunc() override;
-    MLoc_This* MakeThisLoc() override;
-};
 
 } // namespace Citron

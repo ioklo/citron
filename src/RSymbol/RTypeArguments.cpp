@@ -14,16 +14,6 @@ RTypeArguments::RTypeArguments(const std::vector<RType*>& items, RFactory* facto
 {
 }
 
-size_t RTypeArguments::GetCount()
-{
-    return items.size();
-}
-
-RType* RTypeArguments::Get(size_t i)
-{
-    return items[i];
-}
-
 RTypeArguments* RTypeArguments::Apply(RTypeArguments& typeArgs)
 {
     vector<RType*> appliedItems;

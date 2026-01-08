@@ -154,17 +154,20 @@ void StructTask::SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& conte
 
             // 이름 보정, base로 가는 파라미터들은 다 이름이 CtorParam이다.
             // ctor에 out은 지원하지 않는다
-            parameters.emplace_back(/*bOut*/ false, baseParam.type, move(paramName));
+            // TODO: [27] enumElemDecl에 memberwise ctor 추가하기, memberwise ctor에서 직접 대입 처리
+            parameters.emplace_back(/*bOut*/false, /*bRef*/false, baseParam.type, move(paramName));
         }
 
         for (auto* var : nStructDecl->EnumerateUnboundVars())
-            parameters.emplace_back(/*bOut*/ false, var->GetUnboundDeclType(), RName_Normal{var->name});
+            // TODO: [27] enumElemDecl에 memberwise ctor 추가하기, memberwise ctor에서 직접 대입 처리
+            parameters.emplace_back(/*bOut*/false, /*bRef*/false, var->GetUnboundDeclType(), RName_Normal{var->name});
     }
     else
     {
         parameters.reserve(varCount);
         for (auto* var : nStructDecl->EnumerateUnboundVars())
-            parameters.emplace_back(/*bOut*/ false, var->GetUnboundDeclType(), RName_Normal{var->name});
+            // TODO: [27] enumElemDecl에 memberwise ctor 추가하기, memberwise ctor에서 직접 대입 처리
+            parameters.emplace_back(/*bOut*/false, /*bRef*/false, var->GetUnboundDeclType(), RName_Normal{var->name});
     }
 
     throw NotImplementedException{};

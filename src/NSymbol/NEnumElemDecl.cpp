@@ -71,20 +71,14 @@ optional<RMember_EnumElemVar> NEnumElemDecl::GetVar(RTypeArguments* typeArgs, co
     return RMember_EnumElemVar(typeArgs, i->second);
 }
 
+REnumElemVarDecl* NEnumElemDecl::GetVarDecl(size_t index)
+{
+    return vars[index];
+}
+
 size_t NEnumElemDecl::GetVarCount()
 {
     return vars.size();
-}
-
-vector<RFuncParameter> NEnumElemDecl::GetUnboundCtorParams()
-{
-    vector<RFuncParameter> result;
-
-    result.reserve(vars.size());
-    for (auto& var : vars)
-        result.emplace_back(/*bOut*/ false, var->declType, var->name);
-
-    return result;
 }
 
 } // namespace Citron

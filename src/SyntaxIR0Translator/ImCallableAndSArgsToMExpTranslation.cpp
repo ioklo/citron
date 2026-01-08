@@ -18,6 +18,7 @@
 #include "RSymbol/RStructCtorDecl.h"
 #include "RSymbol/RStructFuncDecl.h"
 #include "RSymbol/REnumElemDecl.h"
+#include "RSymbol/REnumElemVarDecl.h"
 #include "MIR/MExp.h"
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
@@ -105,17 +106,21 @@ private:
         // partially bound된 파라미터
         auto rParams = rLambdaType->GetPartiallyBoundParameters();
 
-        // 
-        auto match = MatchArguments(rLambdaType->outerTypeArgs, /*partialTypeArgs*/ {}, move(rParams), /*bVariadic*/false, sArgs);
+        throw NotImplementedException{};
 
-        if (match)
-        {
-            return Exp<MExp_CallLambda>(rLambdaType->decl, match->typeArgs, *e_mCallable, match->args);
-        }
-        else
-        {
-            return Error<Error_Parameter_MismatchBetweenParamCountAndArgCount>();
-        }
+        // 
+        //auto e_o_match = MatchArguments(rLambdaType, rLambdaType->outerTypeArgs, /*partialTypeArgsExceptOuter*/{}, sArgs, contexts);
+        //RETURN_ON_ERROR(e_o_match);
+
+        //if (*e_o_match)
+        //{
+        //    auto& match = **e_o_match;
+        //    return Exp<MExp_CallLambda>(rLambdaType->decl, match.typeArgs, *e_mCallable, match.args);
+        //}
+        //else
+        //{
+        //    return Error<Error_FuncMatch_MismatchBetweenParamCountAndArgCount>();
+        //}
     }
 
 public:
@@ -126,7 +131,7 @@ public:
 
     ResultType Visit(ImExp_GlobalFuncs* imExp)
     {
-        auto e_o_Match = MatchFunc(imExp->items, sArgs, contexts);
+        auto e_o_Match = MatchFunc<RGlobalFuncDecl>(imExp->items, imExp->partialTypeArgsExceptOuter, sArgs, contexts);
         RETURN_ON_ERROR(e_o_Match);
 
         auto& oMatch = *e_o_Match;
@@ -153,7 +158,7 @@ public:
 
     ResultType Visit(ImExp_ClassFuncs* imExp)
     {
-        auto e_o_match = MatchFunc(imExp->items, sArgs, contexts);
+        auto e_o_match = MatchFunc<RClassFuncDecl>(imExp->items, imExp->partialTypeArgsExceptOuter, sArgs, contexts);
         RETURN_ON_ERROR(e_o_match);
 
         auto& oMatch = *e_o_match;
@@ -225,7 +230,7 @@ public:
             items.emplace_back(ctor, imExp->typeArgs);
         }
 
-        auto e_o_match = MatchFunc(items, sArgs, contexts);
+        auto e_o_match = MatchFunc<RStructCtorDecl>(items, /*partialTypeArgsExceptOuter*/contexts.rFactory->MakeTypeArguments({}), sArgs, contexts);
         RETURN_ON_ERROR(e_o_match);
 
         auto& oMatch = *e_o_match;
@@ -243,7 +248,7 @@ public:
 
     ResultType Visit(ImExp_StructFuncs* imExp)
     {
-        auto e_o_match = MatchFunc(imExp->items, sArgs, contexts);
+        auto e_o_match = MatchFunc<RStructFuncDecl>(imExp->items, imExp->partialTypeArgsExceptOuter, sArgs, contexts);
         RETURN_ON_ERROR(e_o_match);
 
         auto& oMatch = *e_o_match;
@@ -311,6 +316,30 @@ public:
         return Error<Error_CallExp_CallableExpressionIsNotCallable>();
     }
 
+    class EnumElemMatchArgumentsInput : public IMatchArgumentsInput
+    {
+        REnumElemDecl* enumElemDecl;
+        
+    public:
+        EnumElemMatchArgumentsInput(REnumElemDecl* enumElemDecl)
+            : enumElemDecl{enumElemDecl}
+        {   
+        }
+
+        // from IMatchArgumentsInput
+        size_t GetTypeParamCount() override { return 0; }
+        RTypeParamDecl* GetTypeParam(size_t index) override { return nullptr; }
+        size_t GetFuncParamCount() override { return enumElemDecl->GetVarCount(); }
+        RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) override
+        {
+            auto* varDecl = enumElemDecl->GetVarDecl(index);
+            auto* declType = varDecl->GetDeclType(*typeArgs);
+
+            // TODO: memberwise로 작성하기
+            return RFuncParameter{.bOut = false, .bRef = false, .type = declType, .name = varDecl->GetIdentifier().name };
+        }
+    };
+
     ResultType Visit(ImExp_EnumElem* imExp)
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
@@ -319,19 +348,17 @@ public:
             return Error<Error_CallExp_CallableExpressionIsNotCallable>();
         }
 
-        auto parameters = imExp->decl->GetUnboundCtorParams();
-
         // EnumElem은 variadic도, typeArgs도 지원하지 않는다
         // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지
         // paramTypes으로 typeValues를 건네 줄것이면 적용해서 넣는게 나을 것 같은데, TypeResolver 동작때문에(?) 어떻게 될지 몰라서 일단 여기서는 적용하고 TypeEnv.None을 넘겨준다
-        auto match = MatchArguments(imExp->typeArgs, /*partialTypeArgsExceptOuter*/ {}, move(parameters), /*bVariadic*/ false, sArgs);
+        auto e_o_match = MatchArguments(&EnumElemMatchArgumentsInput{imExp->decl}, imExp->typeArgs, /*partialTypeArgsExceptOuter*/contexts.rFactory->MakeTypeArguments({}), sArgs, contexts);
+        RETURN_ON_ERROR(e_o_match);
 
-        if (!match)
-        {
-            return Error<Error_Parameter_MismatchBetweenParamCountAndArgCount>();
-        }
+        if (!*e_o_match)
+            return Error<Error_FuncMatch_NotFound>();
 
-        return Exp<MExp_NewEnumElem>(imExp->decl, match->typeArgs, move(match->args), contexts.rFactory);
+        auto& match = **e_o_match;
+        return Exp<MExp_NewEnumElem>(imExp->decl, match.typeArgs, move(match.args), contexts.rFactory);
     }
 
     ResultType Visit(ImExp_ThisVar* imExp)

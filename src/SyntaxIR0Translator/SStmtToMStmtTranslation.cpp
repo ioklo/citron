@@ -520,7 +520,7 @@ public:
                     auto* nEnumerator = contexts.mFactory->MakeMLoc<MLoc_LocalVar>(RNames::Enumerator, enumeratorType);
                     auto* mLocalVar = contexts.mFactory->MakeMLoc<MLoc_LocalVar>(RName_Normal(sStmt->varName), ptrParamType->innerType);
                     auto* mLocalRef = contexts.mFactory->MakeMExp<MExp_PtrRef>(mLocalVar, contexts.rFactory);
-                    auto e_nextExp = TranslateRFuncAndNArgsToMExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, {MArgument_Normal(mLocalRef)}, contexts);
+                    auto e_nextExp = TranslateRFuncAndNArgsToMExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, {MArgument_Exp(mLocalRef)}, contexts);
                     RETURN_ON_ERROR(e_nextExp);
 
                     candidates.push_back(*e_nextExp);
@@ -593,7 +593,7 @@ public:
                         auto* nEnumerator = contexts.mFactory->MakeMLoc<MLoc_LocalVar>(RNames::Enumerator, enumeratorType);
                         auto* mLocalVar = contexts.mFactory->MakeMLoc<MLoc_LocalVar>(RName_Normal(sStmt->varName), itemTypeFromNextParam);
                         auto* mLocalRef = contexts.mFactory->MakeMExp<MExp_PtrRef>(mLocalVar, contexts.rFactory);
-                        auto nNext = TranslateRFuncAndNArgsToMExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, {MArgument_Normal{mLocalRef}}, contexts);
+                        auto nNext = TranslateRFuncAndNArgsToMExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, {MArgument_Exp{mLocalRef}}, contexts);
 
                         candidates.emplace_back(*nNext, nullopt);
                     }
@@ -606,7 +606,7 @@ public:
                         auto* mLocalRef = contexts.mFactory->MakeMExp<MExp_PtrRef>(mLocalVar, contexts.rFactory);
 
                         // $enumerator.GetNext(&$rawItem)
-                        auto e_nNext = TranslateRFuncAndNArgsToMExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, {MArgument_Normal{mLocalRef}}, contexts);
+                        auto e_nNext = TranslateRFuncAndNArgsToMExp(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, {MArgument_Exp{mLocalRef}}, contexts);
                         RETURN_ON_ERROR(e_nNext);
 
                         // $rawItem
@@ -867,7 +867,7 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
         // RETURN_ON_ERROR(e_rParamType);
         assert(false); // TODO: expected리턴 하도록 수정
 
-        rParams.emplace_back(sParam.hasOut, *e_rParamType, RName_Normal(sParam.name));
+        rParams.emplace_back(sParam.hasOut, /*bRef*/false, *e_rParamType, RName_Normal(sParam.name));
 
         if (sParam.hasParams)
         {

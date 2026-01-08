@@ -761,7 +761,7 @@ private:
             self.builder.CreateStore(lValue, self.slotValues[qInst.dest.index]);
         }
 
-        void Emit(QInst_Call&)
+        void Emit(QInst_Call& qInst)
         {
             throw NotImplementedException{};
         }

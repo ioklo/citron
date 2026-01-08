@@ -17,20 +17,20 @@ namespace Citron {
 
 namespace {
 
-expected<void, DiagPtr> TranslateMExp_StringElemToQInsts(MExp_StringElem& elem, optional<size_t> oDestSlotIndex, QBodyContext& bodyContext)
+expected<void, DiagPtr> TranslateMExp_StringElemToQInsts(MExp_StringElem& elem, optional<size_t> o_destSlotIndex, QBodyContext& bodyContext)
 {
-    return visit([&bodyContext, &oDestSlotIndex](auto& elem) -> expected<void, DiagPtr> {
+    return visit([&bodyContext, &o_destSlotIndex](auto& elem) -> expected<void, DiagPtr> {
         using T = remove_cvref_t<decltype(elem)>;
         if constexpr (same_as<T, MExp_StringElem_Text>)
         {
-            if (oDestSlotIndex)
-                return bodyContext.EmitInst(QInst_Ctor_String{QArg_Slot{*oDestSlotIndex}, elem.text});
+            if (o_destSlotIndex)
+                return bodyContext.EmitInst(QInst_Ctor_String{QArg_Slot{*o_destSlotIndex}, elem.text});
 
             return {};
         }
         else if constexpr (same_as<T, MExp_StringElem_Exp>)
         {
-            return TranslateMExpToQInsts(elem.mExp, oDestSlotIndex, bodyContext);
+            return TranslateMExpToQInsts(elem.mExp, o_destSlotIndex, bodyContext);
         }
         else static_assert(false);
     }, elem);

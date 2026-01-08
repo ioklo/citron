@@ -20,14 +20,32 @@ void Main()
     int& x = a;
 
     x = 4;
-    @$a    
+    @$a
 }
 ```
 <!--END_EMBED-->
 
+```var&```를 사용해서 레퍼런스의 타입을 추론하게 할 수 있습니다.
+
+<!--BEGIN_EMBED(Ref_VarRef)-->
+```cs
+//@ 4
+void Main()
+{
+    int a = 3;
+    var& x = a;
+
+    x = 4;
+    @$a
+}
+```
+<!--END_EMBED-->
 
 ## 함수 호출
-```
+<!--BEGIN_EMBED(Ref_FuncArg)-->
+```cs
+//@ 3
+
 void F(int& t) { t = 3; }
 
 void Main()
@@ -37,6 +55,7 @@ void Main()
     @$i;
 }
 ```
+<!--END_EMBED-->
 
 ### 함수 인자 지시자
 함수인자에 ```[in]``` ```[move]``` ```[forward]``` 표시를 해서 인자를 넘기는 방식을 조정할 수 있습니다.

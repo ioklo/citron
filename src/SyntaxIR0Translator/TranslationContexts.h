@@ -13,6 +13,7 @@ class NFuncDecl;
 class ImExp;
 class MExp;
 class RTypeArguments;
+class ITransactionable;
 struct RFuncParameter;
 
 using GlobalContextPtr = std::shared_ptr<class GlobalContext>;
@@ -43,6 +44,8 @@ TranslationContexts MakeTranslationContexts(NFuncDecl* nFuncDecl, const LoggerPt
 TranslationContexts MakeTranslationContexts_NestedScope(TranslationContexts& contexts);
 TranslationContexts MakeTranslationContexts_NestedLoop(TranslationContexts& contexts);
 TranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic, TranslationContexts& contexts);
+
+std::vector<ITransactionable*> BeginTransaction(TranslationContexts& contexts);
 
 std::expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType, TranslationContexts& contexts);
 

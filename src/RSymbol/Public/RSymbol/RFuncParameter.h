@@ -13,6 +13,7 @@ class RFactory;
 struct RFuncParameter
 {
     bool bOut;
+    bool bRef;
     RType* type; // 람다의 경우 지정이 안될 수 있다
     RName name;
 

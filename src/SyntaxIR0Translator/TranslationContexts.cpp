@@ -14,7 +14,8 @@
 
 #include "ScopeContext.h"
 #include "SRTFactory.h"
-#include "FuncContext.h"
+#include "FuncContext_FuncDecl.h"
+#include "FuncContext_Lambda.h"
 #include "GlobalContext.h"
 
 using namespace std;
@@ -37,19 +38,19 @@ TranslationContexts MakeTranslationContexts(
 
 TranslationContexts MakeTranslationContexts_NestedScope(TranslationContexts& contexts)
 {
-    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, contexts.scopeContext->nestedLoop, contexts.rFactory);
+    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, contexts.scopeContext->GetNestedLoopCount(), contexts.rFactory);
     return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
 }
 
 TranslationContexts MakeTranslationContexts_NestedLoop(TranslationContexts& contexts)
 {
-    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, contexts.scopeContext->nestedLoop + 1, contexts.rFactory);
+    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, contexts.scopeContext->GetNestedLoopCount() + 1, contexts.rFactory);
     return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
 }
 
 TranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, vector<RFuncParameter>&& funcParams, bool bLastParamVariadic, TranslationContexts& contexts)
 {
-    auto newFuncContext = MakePtr<FuncContext_Lambda>(contexts.scopeContext, /*bSeqFunc*/ false, move(funcRet), move(funcParams), bLastParamVariadic);
+    auto newFuncContext = MakePtr<FuncContext_Lambda>(contexts.funcContext, contexts.scopeContext, /*bSeqFunc*/ false, move(funcRet), move(funcParams), bLastParamVariadic);
     auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, nullptr, 0, contexts.rFactory);
 
     return {contexts.globalContext, newFuncContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};

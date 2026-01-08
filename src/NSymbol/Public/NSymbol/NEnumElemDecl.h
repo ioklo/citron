@@ -57,9 +57,9 @@ public:
     // from REnumElemDecl    
     NSYMBOL_API REnumDecl* GetBaseEnumDecl() override;
     NSYMBOL_API std::optional<RMember_EnumElemVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
+    NSYMBOL_API REnumElemVarDecl* GetVarDecl(size_t index) override;
     NSYMBOL_API size_t GetVarCount() override;
     bool IsStandalone() override { return vars.empty(); }
-    NSYMBOL_API std::vector<RFuncParameter> GetUnboundCtorParams() override;
 };
 
 }

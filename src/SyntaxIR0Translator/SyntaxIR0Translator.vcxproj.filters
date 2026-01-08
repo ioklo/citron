@@ -93,6 +93,12 @@
     <ClCompile Include="TranslationContexts.cpp">
       <Filter>Context</Filter>
     </ClCompile>
+    <ClCompile Include="FuncContext_FuncDecl.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
+    <ClCompile Include="FuncContext_Lambda.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncContext.h">
@@ -191,6 +197,12 @@
     <ClInclude Include="GlobalContext.h" />
     <ClInclude Include="StructDtorTask.h" />
     <ClInclude Include="TranslationContexts.h">
+      <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="FuncContext_Lambda.h">
+      <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="FuncContext_FuncDecl.h">
       <Filter>Context</Filter>
     </ClInclude>
   </ItemGroup>

@@ -360,11 +360,11 @@ void QBodyContext::AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slot
     curScope->localInfos[rName] = QLocalInfo_RefPtr{slotIndex, RNameToString(rName), qType};
 }
 
-size_t QBodyContext::NewSlot(QType* qType)
+size_t QBodyContext::NewSlot(QType* qType, optional<size_t> o_argIndex)
 {
     size_t slotIndex = slotInfos.size();
     std::string s = format("%s{}", slotIndex);
-    slotInfos.emplace_back(qType, s, nullopt);
+    slotInfos.emplace_back(qType, s, o_argIndex);
 
     curScope->slotIndices.push_back(slotIndex);
     return slotIndex;

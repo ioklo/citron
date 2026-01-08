@@ -98,7 +98,7 @@ struct AggregateDiag : Diag
 // LOGGING_API void Fatal_MemberExp_MemberIsNotExpression(); // A0307_MemberExp_MemberIsNotExpression
 
 // funcMatcher 자체에서 에러를 내지 않고, 각각 노드 처리기에서 에러를 생성하도록 한다
-// LOGGING_API void Fatal_Parameter_MismatchBetweenParamTypeAndArgType(); // A0402_Parameter_MismatchBetweenParamTypeAndArgType => FuncMatcher..로 변경
+// LOGGING_API void Fatal_Parameter_MismatchBetweenParamTypeAndArgType(); // A0403_Parameter_MismatchBetweenParamTypeAndArgType => FuncMatcher..로 변경
 // LOGGING_API void Fatal_IdExp_VariableNotFound(); // A0501_IdExp_VariableNotFound
 // LOGGING_API void Fatal_IdExp_CantUseTypeAsExpression(); // A0502_IdExp_CantUseTypeAsExpression
 // LOGGING_API void Fatal_IdExp_MultipleCandidates(); // A0503_IdExp_MultipleCandidates
@@ -133,8 +133,13 @@ struct Error_VarDecl_UsingPtrVarAsDeclTypeButInitExpIsNotPtr : Error { }; // A01
 struct Error_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable : Error { }; // A0120_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable
 struct Error_VarDecl_InitExpTypeMismatch : Error { }; // A0121_VarDecl_InitExpTypeMismatch
 struct Error_Capturer_ReferencingLocalVariableIsNotAllowed : Error { }; // A0201_Capturer_ReferencingLocalVariableIsNotAllowed
-struct Error_Parameter_MismatchBetweenParamCountAndArgCount : Error { }; // A0401_Parameter_MismatchBetweenParamCountAndArgCount
-struct Error_Parameter_ParamsArgumentShouldBeTuple : Error { }; // A0402_Parameter_ParamsArgumentShouldBeTuple
+
+struct Error_FuncMatch_MultipleCandidates : Error {}; // A0401
+struct Error_FuncMatch_NotFound : Error {}; // A0402
+struct Error_FuncMatch_MismatchBetweenParamCountAndArgCount : Error {}; // A0403
+struct Error_FuncMatch_ParamsArgumentShouldBeTuple : Error {}; // A0404
+struct Error_FuncMatch_MismatchBetweenParamTypeAndArgType : Error {}; // A0405
+
 struct Error_UnaryAssignOp_IntTypeIsAllowedOnly : Error { }; // A0601_UnaryAssignOp_IntTypeIsAllowedOnly
 struct Error_UnaryAssignOp_AssignableExpressionIsAllowedOnly : Error { }; // A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly
 struct Error_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly : Error { }; // A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly
@@ -186,6 +191,7 @@ struct Error_ResolveIdentifier_PtrCantHaveMember : Error { }; // A2017_ResolveId
 struct Error_ResolveIdentifier_SharedCantHaveMember : Error {}; 
 struct Error_ResolveIdentifier_BoxCantHaveMember : Error { }; // A2018_ResolveIdentifier_BoxCantHaveMember
 struct Error_ResolveIdentifier_FuncInstanceCantHaveMember : Error { }; // A2019_ResolveIdentifier_FuncInstanceCantHaveMember
+
 struct Error_Cast_Failed : Error { }; // A2201_Cast_Failed
 struct Error_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault : Error { }; // A2301_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault
 struct Error_StructDecl_CannotSetMemberPublicAccessExplicitlyBecauseItsDefault : Error { }; // A2401_StructDecl_CannotSetMemberPublicAccessExplicitlyBecauseItsDefault
@@ -207,6 +213,7 @@ struct Error_Reference_CantMakeReference : Error { }; // A3001_Reference_CantMak
 struct Error_Reference_CantReferenceTempValue : Error { }; // A3002_Reference_CantReferenceTempValue
 struct Error_Reference_UselessDereferenceReferencedValue : Error { }; // A3003_Reference_UselessDereferenceReferencedValue
 struct Error_Reference_CantReferenceThis : Error { }; // A3004_Reference_CantReferenceThis
+
 struct Error_NotSupported_LambdaParameterInference : Error { }; // A9901_NotSupported_LambdaParameterInference
 struct Error_NotSupported_LambdaReturnTypeInference : Error {}; // A9902_NotSupported_LambdaReturnTypeInference
 struct Error_NotImplemented : Error {};

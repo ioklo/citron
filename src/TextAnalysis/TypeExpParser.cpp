@@ -135,21 +135,21 @@ STypeExp* ParseTypeExp_Postfix(STypeExp* typeExp, Lexer* lexer, SFactory& factor
     else return typeExp;
 }
 
-template<typename TResultType, TResultType* (*PostfixFunc)(STypeExp*, Lexer*, SFactory&), TResultType* (*Wrapper)(STypeExp*, SFactory&)>
-TResultType* TParseTypeExpKeywords(Lexer* lexer, SFactory& factory)
+template<typename TResultType, TResultType (*PostfixFunc)(STypeExp*, Lexer*, SFactory&), TResultType (*Wrapper)(STypeExp*, SFactory&)>
+TResultType TParseTypeExpKeywords(Lexer* lexer, TResultType defaultValue, SFactory& factory)
 {
     Lexer curLexer{*lexer};
 
     auto o_idToken = Accept<IdentifierToken>(&curLexer);
-    if (!o_idToken) return nullptr;
+    if (!o_idToken) return defaultValue;
     
     if (o_idToken->text == "nullable")
     {
-        if (!Accept<LessThanToken>(&curLexer)) return nullptr;
+        if (!Accept<LessThanToken>(&curLexer)) return defaultValue;
         auto o_innerTypeExp = ParseTypeExp(&curLexer, factory);
-        if (!o_innerTypeExp) return nullptr;
+        if (!o_innerTypeExp) return defaultValue;
 
-        if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;        
+        if (!Accept<GreaterThanToken>(&curLexer)) return defaultValue;
 
         *lexer = move(curLexer);
         auto* typeExp = factory.MakeSTypeExp_Nullable(move(o_innerTypeExp));
@@ -157,11 +157,11 @@ TResultType* TParseTypeExpKeywords(Lexer* lexer, SFactory& factory)
     }
     else if (o_idToken->text == "ptr")
     {
-        if (!Accept<LessThanToken>(&curLexer)) return nullptr;
+        if (!Accept<LessThanToken>(&curLexer)) return defaultValue;
         auto o_innerTypeExp = ParseTypeExp(&curLexer, factory);
-        if (!o_innerTypeExp) return nullptr;
+        if (!o_innerTypeExp) return defaultValue;
 
-        if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;
+        if (!Accept<GreaterThanToken>(&curLexer)) return defaultValue;
 
         *lexer = move(curLexer);
         auto* typeExp = factory.MakeSTypeExp_Ptr(move(o_innerTypeExp));
@@ -173,9 +173,9 @@ TResultType* TParseTypeExpKeywords(Lexer* lexer, SFactory& factory)
         if (Accept<LessThanToken>(&curLexer))
         {
             auto o_innerTypeExp = ParseTypeExp(&curLexer, factory);
-            if (!o_innerTypeExp) return nullptr;
+            if (!o_innerTypeExp) return defaultValue;
 
-            if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;
+            if (!Accept<GreaterThanToken>(&curLexer)) return defaultValue;
 
             *lexer = move(curLexer);
             auto* typeExp = factory.MakeSTypeExp_Shared(move(o_innerTypeExp));
@@ -185,7 +185,7 @@ TResultType* TParseTypeExpKeywords(Lexer* lexer, SFactory& factory)
         {
             // shared T 꼴
             auto* innerTypeExp = ParseFormalTypeExp(&curLexer, factory);
-            if (!innerTypeExp) return nullptr;
+            if (!innerTypeExp) return defaultValue;
 
             *lexer = move(curLexer);
             return Wrapper(factory.MakeSTypeExp_Shared(innerTypeExp), factory);
@@ -197,9 +197,9 @@ TResultType* TParseTypeExpKeywords(Lexer* lexer, SFactory& factory)
         if (Accept<LessThanToken>(&curLexer))
         {
             auto o_innerTypeExp = ParseTypeExp(&curLexer, factory);
-            if (!o_innerTypeExp) return nullptr;
+            if (!o_innerTypeExp) return defaultValue;
 
-            if (!Accept<GreaterThanToken>(&curLexer)) return nullptr;
+            if (!Accept<GreaterThanToken>(&curLexer)) return defaultValue;
 
             *lexer = move(curLexer);
             auto* typeExp = factory.MakeSTypeExp_Local(move(o_innerTypeExp));
@@ -209,23 +209,65 @@ TResultType* TParseTypeExpKeywords(Lexer* lexer, SFactory& factory)
         {
             // local T 꼴
             auto* innerTypeExp = ParseFormalTypeExp(&curLexer, factory);
-            if (!innerTypeExp) return nullptr;
+            if (!innerTypeExp) return defaultValue;
 
             *lexer = move(curLexer);
             return Wrapper(factory.MakeSTypeExp_Local(innerTypeExp), factory);
         }
     }
 
-    return nullptr;
+    return defaultValue;
 }
 
 STypeExp* Identity(STypeExp* typeExp, SFactory& factory) { return typeExp; }
+
+optional<FuncParamType> ParseFuncParamTypeExp_Wrapper(STypeExp* typeExp, SFactory& factory) { return FuncParamType{/*bRef*/false, typeExp}; }
+optional<FuncParamType> ParseFuncParamTypeExp_Postfix(STypeExp* typeExp, Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer{*lexer};
+
+    if (Accept<StarToken>(&curLexer))
+    {
+        typeExp = factory.MakeSTypeExp_Ptr(typeExp);
+
+        while (Accept<StarToken>(&curLexer))
+            typeExp = factory.MakeSTypeExp_Ptr(typeExp);
+
+        *lexer = move(curLexer);
+        return FuncParamType{/*bRef*/false, typeExp};
+    }
+    else if (Accept<QuestionToken>(&curLexer))
+    {
+        typeExp = factory.MakeSTypeExp_Nullable(typeExp);
+        *lexer = move(curLexer);
+        return FuncParamType{/*bRef*/false, typeExp};
+    }
+    else if (Accept<AmpersandToken>(&curLexer))
+    {
+        *lexer = move(curLexer);
+        return FuncParamType{/*bRef*/true, typeExp};
+    }
+    else 
+        return FuncParamType{/*bRef*/false, typeExp};
+}
+
+optional<FuncParamType> ParseFuncParamTypeExp(Lexer* lexer, SFactory& factory)
+{
+    // nullable, ptr, shared, local 먼저
+    if (auto o_funcParamType = TParseTypeExpKeywords<optional<FuncParamType>, ParseFuncParamTypeExp_Postfix, ParseFuncParamTypeExp_Wrapper>(lexer, nullopt, factory))
+        return o_funcParamType;
+
+    if (STypeExp* typeExp = ParseIdChainTypeExp(lexer, factory))
+        return ParseFuncParamTypeExp_Postfix(typeExp, lexer, factory);
+
+    return nullopt;
+}
 
 // postfix 처리를 하는 버전
 STypeExp* ParseTypeExp(Lexer* lexer, SFactory& factory)
 {
     // 항상 nullable, ptr, shared, local 먼저
-    if (STypeExp* typeExp = TParseTypeExpKeywords<STypeExp, ParseTypeExp_Postfix, Identity> (lexer, factory))
+    if (STypeExp* typeExp = TParseTypeExpKeywords<STypeExp*, ParseTypeExp_Postfix, Identity> (lexer, nullptr, factory))
         return typeExp;
 
     if (STypeExp* typeExp = ParseIdChainTypeExp(lexer, factory))
@@ -316,7 +358,7 @@ SVarDeclType* ParseVarDeclTypeExp(Lexer* lexer, SFactory& factory)
         return varType;
 
     // nullable, ptr, shared, local 먼저
-    if (SVarDeclType* typeExp = TParseTypeExpKeywords<SVarDeclType, ParseVarDeclTypeExp_Postfix, ParseVarDeclTypeExp_Wrapper>(lexer, factory))
+    if (SVarDeclType* typeExp = TParseTypeExpKeywords<SVarDeclType*, ParseVarDeclTypeExp_Postfix, ParseVarDeclTypeExp_Wrapper>(lexer, nullptr, factory))
         return typeExp;
 
     if (STypeExp* typeExp = ParseIdChainTypeExp(lexer, factory))

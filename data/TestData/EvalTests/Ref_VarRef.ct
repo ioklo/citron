@@ -1,0 +1,9 @@
+//@ 4
+void Main()
+{
+    int a = 3;
+    var& x = a;
+
+    x = 4;
+    @$a
+}

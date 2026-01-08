@@ -78,7 +78,7 @@ tuple<vector<RFuncParameter>, bool> BuildTypeDependentSymbolContext::MakeParamet
 
         }
 
-        rParams.emplace_back(sParam.hasOut, type, RName_Normal{sParam.name});
+        rParams.emplace_back(sParam.hasOut, sParam.bRef, type, RName_Normal{sParam.name});
     }
 
     return make_tuple(move(rParams), bLastParamVariadic);

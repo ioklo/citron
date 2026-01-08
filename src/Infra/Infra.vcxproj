@@ -159,6 +159,7 @@
     <ClInclude Include="Public\Infra\make_vector.h" />
     <ClInclude Include="Public\Infra\Ptr.h" />
     <ClInclude Include="Public\Infra\StringWriter.h" />
+    <ClInclude Include="Public\Infra\Transaction.h" />
     <ClInclude Include="Public\Infra\Unreachable.h" />
     <ClInclude Include="Public\Infra\Variants.h" />
   </ItemGroup>

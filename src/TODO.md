@@ -4,5 +4,5 @@
 - [ ] // TODO: [16] TypeResolver적용
 - [ ] // TODO: [17] NextFunc가 여러개일때 처리
 - [ ] // TODO: [25] out과 params를 같이 쓰면 에러 처리
-- [ ] // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
-- [ ] 
+- [x] // TODO: [26] typeParams에서도 검색 (NTypeParamDecl, RType_TypeVar 추가 필요)
+- [ ] // TODO: [27] enumElemDecl에 memberwise ctor 추가하기, memberwise ctor에서 직접 대입 처리

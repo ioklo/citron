@@ -1,7 +1,10 @@
 #include "ScopeContext.h"
 
+#include <ranges>
+
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+
 #include "Syntax/Syntax.h"
 #include "RSymbol/RTypeArguments.h"
 #include "RSymbol/RMember.h"
@@ -16,25 +19,53 @@ using namespace std;
 
 namespace Citron {
 
-ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop, const RFactoryPtr& rFactory)
+ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, size_t nestedLoop, const RFactoryPtr& rFactory)
     : funcContext{funcContext}, parentContext{parentContext}, nestedLoop{nestedLoop}, rFactory{rFactory}
 {
 }
 
-ScopeContextPtr ScopeContext::Clone(CloneContext& context)
+void ScopeContext::BeginTransaction()
 {
-    throw NotImplementedException{};
+    transactionInfos.emplace_back();
+
+    if (parentContext)
+        return parentContext->BeginTransaction();
+    
+    funcContext->BeginTransaction();
 }
 
-void ScopeContext::Update(ScopeContext& src, UpdateContext& context)
+void ScopeContext::CommitTransaction()
 {
-    throw NotImplementedException{};
+    auto& transactionInfo = transactionInfos.back();
+
+    if (2 <= transactionInfos.size())
+    {
+        auto& parentTransactionInfo = transactionInfos[transactionInfos.size() - 2];
+        parentTransactionInfo.deltaLocalInfos.merge(transactionInfo.deltaLocalInfos);
+        assert(transactionInfo.deltaLocalInfos.empty());
+    }
+    else
+    {
+        localInfos.merge(transactionInfo.deltaLocalInfos);
+        assert(transactionInfo.deltaLocalInfos.empty());
+    }
+
+    transactionInfos.pop_back();
+
+    if (parentContext)
+        return parentContext->CommitTransaction();
+
+    return funcContext->CommitTransaction();
 }
 
-RTypeArguments* ScopeContext::MakeOpenTypeArgs()
+void ScopeContext::RollbackTransaction()
 {
-    // funcContext로 점프
-    return funcContext->MakeOpenTypeArgs();
+    transactionInfos.pop_back();
+
+    if (parentContext)
+        return parentContext->RollbackTransaction();
+
+    return funcContext->RollbackTransaction();
 }
 
 void ScopeContext::SetFlowEndsCompletely()
@@ -59,18 +90,44 @@ tuple<ScopeContextPtr, NLambdaDecl> ScopeContext::MakeTranslationContexts_Lambda
 
 void ScopeContext::AddLocalVarInfo(RType* type, const RName& name)
 {
-    auto [i, b] = localInfos.try_emplace(name, LocalInfo{LocalInfoKind::Var, type});
-    assert(b);
+    if (transactionInfos.empty())
+    {
+        auto [i, b] = localInfos.try_emplace(name, LocalInfo{LocalInfoKind::Var, type});
+        assert(b);
+    }
+    else
+    {
+        assert(!DoesLocalNameExistInScope(name));
+        transactionInfos.back().deltaLocalInfos.emplace(name, LocalInfo{LocalInfoKind::Var, type});
+    }
 }
 
 void ScopeContext::AddLocalRefInfo(RType* type, const RName& name)
 {
-    auto [i, b] = localInfos.try_emplace(name, LocalInfo{LocalInfoKind::Ref, type});
-    assert(b);
+    if (transactionInfos.empty())
+    {
+        auto [i, b] = localInfos.try_emplace(name, LocalInfo{LocalInfoKind::Ref, type});
+        assert(b);
+    }
+    else
+    {
+        assert(!DoesLocalNameExistInScope(name));
+        transactionInfos.back().deltaLocalInfos.emplace(name, LocalInfo{LocalInfoKind::Ref, type});
+    }
 }
 
 bool ScopeContext::DoesLocalNameExistInScope(const RName& name)
 {
+    if (!transactionInfos.empty())
+    {
+        for (auto& transactionInfo : transactionInfos | views::reverse)
+        {
+            auto i = transactionInfo.deltaLocalInfos.find(name);
+            if (i != transactionInfo.deltaLocalInfos.end())
+                return true;
+        }
+    }
+
     auto i = localInfos.find(name);
     return i != localInfos.end();
 }
@@ -129,6 +186,22 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
 expected<optional<RMember>, DiagPtr> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 로컬을 검색한다
+    if (!transactionInfos.empty())
+    {
+        for (auto& transactionInfo : transactionInfos | views::reverse)
+        {
+            auto i = transactionInfo.deltaLocalInfos.find(name);
+            if (i != transactionInfo.deltaLocalInfos.end())
+            {
+                if (i->second.kind == LocalInfoKind::Var)
+                    return RMember_LocalVar(i->second.type, name);
+                else if (i->second.kind == LocalInfoKind::Ref)
+                    return RMember_LocalRef(i->second.type, name);
+                else assert(false);
+            }
+        }
+    }
+    
     auto i = localInfos.find(name);
     if (i != localInfos.end())
     {

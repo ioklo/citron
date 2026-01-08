@@ -1,7 +1,5 @@
 #pragma once
-
 #include "RSymbolConfig.h"
-
 #include <vector>
 
 namespace Citron {
@@ -19,8 +17,8 @@ private:
     RTypeArguments(const std::vector<RType*>& items, RFactory* factory);
 
 public:
-    RSYMBOL_API size_t GetCount();
-    RSYMBOL_API RType* Get(size_t i);
+    size_t GetCount() { return items.size(); }
+    RType* Get(size_t i) { return items[i]; }
     RSYMBOL_API RTypeArguments* Apply(RTypeArguments& typeArgs);
 };
 

@@ -24,8 +24,8 @@ optional<SAccessModifier> ParseAccessModifier(Lexer* lexer);
 SNamespaceDecl* ParseNamespaceDecl(Lexer* lexer, SFactory& factory);
 
 // int t
-// ref int t
-// params T t
+// int& t
+// [params] T t
 optional<SFuncParam> ParseFuncDeclParam(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
@@ -34,8 +34,8 @@ optional<SFuncParam> ParseFuncDeclParam(Lexer* lexer, SFactory& factory)
     if (!o_outAndParams)
         return nullopt;
 
-    auto* typeExp = ParseTypeExp(&curLexer, factory);
-    if (!typeExp)
+    auto o_funcParamType = ParseFuncParamTypeExp(&curLexer, factory);
+    if (!o_funcParamType)
         return nullopt;
 
     auto o_name = Accept<IdentifierToken>(&curLexer);
@@ -43,7 +43,7 @@ optional<SFuncParam> ParseFuncDeclParam(Lexer* lexer, SFactory& factory)
         return nullopt;
 
     *lexer = move(curLexer);
-    return SFuncParam(o_outAndParams->bOut, o_outAndParams->bParams, typeExp, move(o_name->text));
+    return SFuncParam(o_outAndParams->bOut, o_outAndParams->bParams, o_funcParamType->bRef, o_funcParamType->typeExp, move(o_name->text));
 }
 
 optional<vector<SFuncParam>> ParseFuncDeclParams(Lexer* lexer, SFactory& factory)

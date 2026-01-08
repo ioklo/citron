@@ -100,6 +100,7 @@ class ImExp_GlobalFuncs
 
 public:
     using FuncComp::items;
+    using FuncComp::partialTypeArgsExceptOuter;
 
 public:
     ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter);
@@ -149,6 +150,7 @@ public:
     // x.F => HasExplicitInstance: true, "x"
     // F   => HasExplicitInstance: false, null
     using FuncsWithPartialTypeArgsComponent::items;
+    using FuncsWithPartialTypeArgsComponent::partialTypeArgsExceptOuter;
     bool hasExplicitInstance;
     ReExp* explicitInstance;
 
@@ -189,6 +191,8 @@ class ImExp_StructFuncs
 
 public:
     using FuncComp::items;
+    using FuncComp::partialTypeArgsExceptOuter;
+
     bool hasExplicitInstance;
     ReExp* explicitInstance;
 

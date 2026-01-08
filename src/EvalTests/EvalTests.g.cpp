@@ -81,8 +81,8 @@ void DoTest(const string& code, const string& expected)
     auto out = writer.ToString();
 
     // LLVM
-    Citron::LContext lContext{rFactory, qFactory};
-    auto lData = TranslateQDataToLData(qData, lContext);
+    // Citron::LContext lContext{rFactory, qFactory};
+    // auto lData = TranslateQDataToLData(qData, lContext);
 
     // 실행
     
@@ -2151,6 +2151,37 @@ TEST(Ref, Decl)
 {
     int a = 3;
     int& x = a;
+
+    x = 4;
+    @$a
+})---";
+    string expected = R"---(4)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Ref, FuncArg) 
+{
+    auto code = R"---(
+void F(int& t) { t = 3; }
+
+void Main()
+{
+    int i = 2;
+    F(i);
+    @$i
+})---";
+    string expected = R"---(3)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Ref, VarRef) 
+{
+    auto code = R"---(void Main()
+{
+    int a = 3;
+    var& x = a;
 
     x = 4;
     @$a

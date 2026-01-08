@@ -309,10 +309,11 @@ class SFuncParam
 public:
     bool hasOut;
     bool hasParams;
+    bool bRef;
     STypeExp* type;
     std::string name;
 
-    SYNTAX_API SFuncParam(bool hasOut, bool hasParams, STypeExp* type, std::string name);
+    SYNTAX_API SFuncParam(bool hasOut, bool hasParams, bool bRef, STypeExp* type, std::string name);
     SFuncParam(const SFuncParam&) = delete;
     SYNTAX_API SFuncParam(SFuncParam&&) noexcept;
     SYNTAX_API ~SFuncParam();

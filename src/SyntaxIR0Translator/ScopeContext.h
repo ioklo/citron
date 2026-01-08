@@ -32,13 +32,15 @@ class UpdateContext;
 
 class ScopeContext
 {
-public:
+private: // transaction에 영향 받지 않는 변수들 (인자로 들어온)
     FuncContextPtr funcContext;
     ScopeContextPtr parentContext;
-    int nestedLoop;
+    size_t nestedLoop;
 
+private: // dependency
     RFactoryPtr rFactory;
 
+private: // transaction에 영향 받는 변수들
     // 로컬 관리, var, ref
     enum class LocalInfoKind { Var, Ref };
     struct LocalInfo
@@ -49,14 +51,23 @@ public:
 
     std::unordered_map<RName, LocalInfo> localInfos;
 
-public:
-    ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, int nestedLoop, const RFactoryPtr& rFactory);
+private: // for transaction
+    struct TransactionInfo
+    {   
+        // localInfo는 delta만 더 저장한다
+        std::unordered_map<RName, LocalInfo> deltaLocalInfos;
+    };
 
-    ScopeContextPtr Clone(CloneContext& context);
-    void Update(ScopeContext& src, UpdateContext& context);
+    std::vector<TransactionInfo> transactionInfos;
 
 public:
-    RTypeArguments* MakeOpenTypeArgs();
+    ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, size_t nestedLoop, const RFactoryPtr& rFactory);
+
+    void BeginTransaction();
+    void CommitTransaction();
+    void RollbackTransaction();
+
+public:
     void SetFlowEndsCompletely();
 
     std::shared_ptr<ScopeContext> MakeTranslationContexts_NestedScope(std::shared_ptr<ScopeContext> sharedThis);
@@ -71,6 +82,8 @@ public:
 
     bool IsFailed();
     bool IsInLoop() { return nestedLoop != 0; }
+    size_t GetNestedLoopCount() { return nestedLoop; }
+
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
     std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };

@@ -140,8 +140,8 @@ JsonItem STypeParam::ToJson()
     };
 }
 
-SFuncParam::SFuncParam(bool hasOut, bool hasParams, STypeExp* type, std::string name)
-    : hasOut(move(hasOut)), hasParams(move(hasParams)), type(move(type)), name(move(name)) { }
+SFuncParam::SFuncParam(bool hasOut, bool hasParams, bool bRef, STypeExp* type, std::string name)
+    : hasOut(move(hasOut)), hasParams(move(hasParams)), bRef(move(bRef)), type(move(type)), name(move(name)) { }
 
 SFuncParam::SFuncParam(SFuncParam&& other) noexcept = default;
 
@@ -155,6 +155,7 @@ JsonItem SFuncParam::ToJson()
         { "$type", JsonString("SFuncParam") },
         { "hasOut", Citron::ToJson(hasOut) },
         { "hasParams", Citron::ToJson(hasParams) },
+        { "bRef", Citron::ToJson(bRef) },
         { "type", Citron::ToJson(type) },
         { "name", Citron::ToJson(name) },
     };
