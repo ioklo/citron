@@ -1,0 +1,12 @@
+//@ 2
+
+void F([in]int& i)
+{
+    @$i
+}
+
+void Main()
+{
+    int s = 2;
+    F(s); // lvalue
+}

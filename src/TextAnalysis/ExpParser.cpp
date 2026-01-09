@@ -74,20 +74,55 @@ SExp* HandleUnaryMinusWithIntLiteral(SUnaryOpKind kind, SExp* exp, SFactory& fac
     return nullptr;
 }
 
+// argModifier는 ref, move, forward, out, params가능
+optional<SArgModifier> ParseArgModifier(Lexer* lexer)
+{
+    Lexer curLexer = *lexer;
+
+    SArgModifier argModifier;
+    if (Accept<RefToken>(&curLexer))
+    {
+        argModifier = SArgModifier::Ref;
+    }
+    else if (Accept<MoveToken>(&curLexer))
+    {
+        argModifier = SArgModifier::Move;
+    }
+    else if (Accept<OutToken>(&curLexer))
+    {
+        argModifier = SArgModifier::Out;
+    }
+    else if (Accept<ParamsToken>(&curLexer))
+    {
+        argModifier = SArgModifier::Params;
+    }
+    else if (auto o_idToken = Accept<IdentifierToken>(&curLexer))
+    {
+        if (o_idToken->text == "forward")
+        {
+            argModifier = SArgModifier::Forward;
+        }
+        else return nullopt;
+    }
+    else return nullopt;
+
+    *lexer = move(curLexer);
+    return argModifier;
+}
+
 SArgument* ParseArgument(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
-    auto o_outAndParams = AcceptParseOutAndParams(&curLexer);
-    if (!o_outAndParams)
-        return nullptr;
 
+    optional<SArgModifier> argModifier = ParseArgModifier(&curLexer);
+    
     auto* exp = ParseExp(&curLexer, factory);
 
     if (!exp)
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSArgument(o_outAndParams->bOut, o_outAndParams->bParams, exp);
+    return factory.MakeSArgument(argModifier, exp);
 }
 
 }
@@ -520,9 +555,7 @@ SExp_Lambda* ParseLambdaExp(Lexer* lexer, SFactory& factory)
                 if (!Accept<CommaToken>(&curLexer))
                     return nullptr;
 
-            auto o_outAndParams = AcceptParseOutAndParams(&curLexer);
-            if (!o_outAndParams)
-                return nullptr;
+            auto o_paramModifier = ParseParamModifier(&curLexer);
 
             // id id or id
             auto o_FirstIdToken = Accept<IdentifierToken>(&curLexer);
@@ -531,23 +564,20 @@ SExp_Lambda* ParseLambdaExp(Lexer* lexer, SFactory& factory)
 
             auto o_secondIdToken = Accept<IdentifierToken>(&curLexer);
             if (!o_secondIdToken)
-                params.emplace_back(nullptr, move(o_FirstIdToken->text), o_outAndParams->bOut, o_outAndParams->bParams);
+                params.emplace_back(o_paramModifier, nullptr, move(o_FirstIdToken->text));
             else
-                params.emplace_back(factory.MakeSTypeExp_Id(move(o_FirstIdToken->text), vector<STypeExp*>{}), move(o_secondIdToken->text), o_outAndParams->bOut, o_outAndParams->bParams);
+                params.emplace_back(o_paramModifier, factory.MakeSTypeExp_Id(move(o_FirstIdToken->text), vector<STypeExp*>{}), move(o_secondIdToken->text));
         }
     }
     else
-    {
-        // out과 params는 동시에 쓸 수 없다
-        auto o_outAndParams = AcceptParseOutAndParams(&curLexer);
-        if (!o_outAndParams)
-            return nullptr;
+    {   
+        auto o_paramModifier = ParseParamModifier(&curLexer);
         
         auto o_idToken = Accept<IdentifierToken>(&curLexer);
         if (!o_idToken)
             return nullptr;
 
-        params.emplace_back(nullptr, move(o_idToken->text), o_outAndParams->bOut, o_outAndParams->bParams);
+        params.emplace_back(o_paramModifier, nullptr, move(o_idToken->text));
     }
 
     // =>

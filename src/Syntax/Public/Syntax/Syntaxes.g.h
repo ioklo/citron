@@ -186,6 +186,50 @@ inline JsonItem ToJson(SUnaryOpKind& arg)
     unreachable();
 }
 
+enum class SParamModifier
+{
+    In,
+    Move,
+    Forward,
+    Out,
+    Params,
+};
+
+inline JsonItem ToJson(SParamModifier& arg)
+{
+    switch(arg)
+    {
+    case SParamModifier::In: return JsonString("In");
+    case SParamModifier::Move: return JsonString("Move");
+    case SParamModifier::Forward: return JsonString("Forward");
+    case SParamModifier::Out: return JsonString("Out");
+    case SParamModifier::Params: return JsonString("Params");
+    }
+    unreachable();
+}
+
+enum class SArgModifier
+{
+    Ref,
+    Move,
+    Forward,
+    Out,
+    Params,
+};
+
+inline JsonItem ToJson(SArgModifier& arg)
+{
+    switch(arg)
+    {
+    case SArgModifier::Ref: return JsonString("Ref");
+    case SArgModifier::Move: return JsonString("Move");
+    case SArgModifier::Forward: return JsonString("Forward");
+    case SArgModifier::Out: return JsonString("Out");
+    case SArgModifier::Params: return JsonString("Params");
+    }
+    unreachable();
+}
+
 class SSyntax
 {
 public:
@@ -203,11 +247,10 @@ public:
 class SArgument
 {
 public:
-    bool bOut;
-    bool bParams;
+    std::optional<SArgModifier> o_modifier;
     SExp* exp;
 
-    SYNTAX_API SArgument(bool bOut, bool bParams, SExp* exp);
+    SYNTAX_API SArgument(std::optional<SArgModifier> o_modifier, SExp* exp);
     SYNTAX_API SArgument(SExp* exp);
     SArgument(const SArgument&) = delete;
     SYNTAX_API SArgument(SArgument&&) noexcept;
@@ -238,12 +281,11 @@ public:
 class SLambdaExpParam
 {
 public:
+    std::optional<SParamModifier> o_paramModifier;
     STypeExp* type;
     std::string name;
-    bool hasOut;
-    bool hasParams;
 
-    SYNTAX_API SLambdaExpParam(STypeExp* type, std::string name, bool hasOut, bool hasParams);
+    SYNTAX_API SLambdaExpParam(std::optional<SParamModifier> o_paramModifier, STypeExp* type, std::string name);
     SLambdaExpParam(const SLambdaExpParam&) = delete;
     SYNTAX_API SLambdaExpParam(SLambdaExpParam&&) noexcept;
     SYNTAX_API ~SLambdaExpParam();
@@ -307,13 +349,12 @@ public:
 class SFuncParam
 {
 public:
-    bool hasOut;
-    bool hasParams;
+    std::optional<SParamModifier> o_modifier;
     bool bRef;
     STypeExp* type;
     std::string name;
 
-    SYNTAX_API SFuncParam(bool hasOut, bool hasParams, bool bRef, STypeExp* type, std::string name);
+    SYNTAX_API SFuncParam(std::optional<SParamModifier> o_modifier, bool bRef, STypeExp* type, std::string name);
     SFuncParam(const SFuncParam&) = delete;
     SYNTAX_API SFuncParam(SFuncParam&&) noexcept;
     SYNTAX_API ~SFuncParam();

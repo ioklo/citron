@@ -43,12 +43,7 @@ bool Peek(std::optional<LexResult> o_lexResult)
     return o_lexResult && std::holds_alternative<TToken>(o_lexResult->token);
 }
 
-struct OutAndParams
-{
-    bool bOut;
-    bool bParams;
-};
-
-std::optional<OutAndParams> AcceptParseOutAndParams(Lexer* lexer);
+enum class SParamModifier;
+std::optional<SParamModifier> ParseParamModifier(Lexer* lexer);
 
 }

@@ -1,5 +1,5 @@
 //@ 11
-// 11
+
 class C
 {
     public static int x = 0;

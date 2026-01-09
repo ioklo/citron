@@ -334,9 +334,8 @@ public:
         {
             auto* varDecl = enumElemDecl->GetVarDecl(index);
             auto* declType = varDecl->GetDeclType(*typeArgs);
-
-            // TODO: memberwise로 작성하기
-            return RFuncParameter{.bOut = false, .bRef = false, .type = declType, .name = varDecl->GetIdentifier().name };
+            
+            return RFuncParameter{.kind = RFuncParameterKind::Init, .bRef = true, .type = declType, .name = varDecl->GetIdentifier().name };
         }
     };
 

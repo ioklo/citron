@@ -54,7 +54,7 @@ TEST(Lexer, LexSymbols)
 {
     auto [buffer, lexer] = Prepare(U"if else for continue break task params out return async await foreach in yield seq"
         " enum struct class is as ref"
-        " null public protected private static"
+        " null move public protected private static"
         " new namespace"
         " ++ -- <= >= => == != ->"
         " @ < > ; , = { } ( ) [ ] + - * / % ! . ? & ~ : `");
@@ -84,6 +84,7 @@ TEST(Lexer, LexSymbols)
         AsToken{},
         RefToken{},
         NullToken{},
+        MoveToken{},
 
         PublicToken{},
         ProtectedToken{},

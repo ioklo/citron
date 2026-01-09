@@ -1,4 +1,5 @@
 #include "ParserMisc.h"
+#include "Syntax/Syntaxes.g.h"
 
 #include "Lexer.h"
 
@@ -6,25 +7,43 @@ using namespace std;
 
 namespace Citron {
 
-optional<OutAndParams> AcceptParseOutAndParams(Lexer* lexer)
+optional<SParamModifier> ParseParamModifier(Lexer* lexer)
 {
     Lexer curLexer = *lexer;
-    bool bOut = false, bParams = false;
-    while (true)
-    {
-        if (!bOut && Accept<OutToken>(&curLexer)) { bOut = true; continue; }
-        if (!bParams && Accept<ParamsToken>(&curLexer)) { bParams = true; continue; }
-        break;
-    }
+    if (!Accept<LBracketToken>(&curLexer)) return nullopt;
 
-    if (bOut && bParams)
+    SParamModifier modifier;
+
+    if (Accept<InToken>(&curLexer))
     {
-        // TODO: [25] out과 params를 같이 쓰면 에러 처리
-        return nullopt;
+        modifier = SParamModifier::In;
     }
+    else if (Accept<MoveToken>(&curLexer))
+    {
+        modifier = SParamModifier::Move;
+    }
+    else if (Accept<OutToken>(&curLexer))
+    {
+        modifier = SParamModifier::Out;
+    }
+    else if (Accept<ParamsToken>(&curLexer))
+    {
+        modifier = SParamModifier::Params;
+    }
+    else if (auto o_idToken = Accept<IdentifierToken>(&curLexer))
+    {
+        if (o_idToken->text == "forward")
+        {
+            modifier = SParamModifier::Forward;
+        }
+        else return nullopt;
+    }
+    else return nullopt;
+
+    if (!Accept<RBracketToken>(&curLexer)) return nullopt;
 
     *lexer = move(curLexer);
-    return OutAndParams{ bOut, bParams };
+    return modifier;
 }
 
 }

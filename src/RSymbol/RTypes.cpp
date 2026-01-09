@@ -115,7 +115,7 @@ RType* RType_Func::Apply(RTypeArguments& typeArgs)
     for (auto& param : params)
     {
         auto* appliedParamType = param.type->Apply(typeArgs);
-        appliedParams.emplace_back(param.bOut, appliedParamType);
+        appliedParams.emplace_back(param.kind, appliedParamType);
     }
 
     return factory->MakeFuncType(bLocal, appliedRetType, move(appliedParams));
@@ -126,14 +126,14 @@ optional<RMember> RType_Func::GetMember(const RName& name, size_t explicitTypeAr
     return nullopt;
 }
 
-RType_Func::Parameter::Parameter(bool bOut, RType* type)
-    : bOut(bOut), type(type)
+RType_Func::Parameter::Parameter(RFuncParameterKind kind, RType* type)
+    : kind{kind}, type{type}
 {
 
 }
 
 RType_Ptr::RType_Ptr(RType* innerType, RFactory* factory)
-    : innerType(innerType), factory{factory}
+    : innerType{innerType}, factory{factory}
 {
 }
 

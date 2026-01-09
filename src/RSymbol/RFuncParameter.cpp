@@ -7,7 +7,7 @@ namespace Citron {
 RFuncParameter RFuncParameter::Apply(RTypeArguments& typeArgs)
 {
     auto appliedType = type->Apply(typeArgs);
-    return RFuncParameter{bOut, bRef, appliedType, name};
+    return RFuncParameter{kind, bRef, appliedType, name};
 }
 
 } // namespace Citron;

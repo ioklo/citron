@@ -232,6 +232,16 @@ struct ToJsonVisitor {
             }
         },
 
+        EnumInfo{
+            .name = "SParamModifier",
+            .cases { "In", "Move", "Forward", "Out", "Params" }
+        },
+
+        EnumInfo{
+            .name = "SArgModifier",
+            .cases { "Ref", "Move", "Forward", "Out", "Params" }
+        },
+
         ClassInfo {
             .name = "SSyntax",
             .bHasVirtualDestructor = true
@@ -240,8 +250,7 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "SArgument",
             .memberInfos {
-                {.type = "bool", .memberVarName = "bOut", .getterName = "HasOut" },
-                {.type = "bool", .memberVarName = "bParams", .getterName = "GetParams" },
+                {.type = "std::optional<SArgModifier>", .memberVarName = "o_modifier", .getterName = "GetModifier" },
                 {.type = "SExp*", .memberVarName = "exp", .getterName = "GetExp" },
             },
             .extraCtors {
@@ -259,10 +268,9 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "SLambdaExpParam",
             .memberInfos {
+                {.type="std::optional<SParamModifier>", .memberVarName="o_paramModifier", .getterName="GetParamModifier" },
                 {.type = "STypeExp*", .memberVarName = "type", .getterName = "GetType" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                {.type = "bool", .memberVarName = "hasOut", .getterName = "HasOut" },
-                {.type = "bool", .memberVarName = "hasParams", .getterName = "HasParams" },
             },
         },
 
@@ -295,8 +303,7 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "SFuncParam",
             .memberInfos {
-                {.type = "bool", .memberVarName = "hasOut", .getterName = "HasOut" },
-                {.type = "bool", .memberVarName = "hasParams", .getterName = "HasParams" },
+                {.type = "std::optional<SParamModifier>", .memberVarName = "o_modifier", .getterName = "GetModifier"},
                 {.type = "bool", .memberVarName = "bRef", .getterName = "IsRef" },
                 {.type = "STypeExp*", .memberVarName = "type", .getterName = "GetType" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" }

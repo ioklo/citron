@@ -8,6 +8,7 @@
 #include "MIR/MLoc.h"
 
 #include "QBodyContext.h"
+#include "MExpQInstsTranslation.h"
 
 using namespace std;
 
@@ -25,7 +26,15 @@ public:
         : bodyContext{bodyContext} {
     }
     
-    ResultType Visit(MLoc_Temp* loc) { throw NotImplementedException{}; }
+    ResultType Visit(MLoc_Temp* loc) 
+    { 
+        QType* qType = bodyContext.GetMExpQType(loc->exp);
+        size_t slotIndex = bodyContext.NewSlot(qType);
+        auto e_result = TranslateMExpToQInsts(loc->exp, slotIndex, bodyContext);
+        RETURN_ON_ERROR(e_result);
+
+        return QLocResult_Slot{slotIndex};
+    }
 
     ResultType Visit(MLoc_LocalVar* loc)
     {

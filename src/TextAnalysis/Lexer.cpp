@@ -85,6 +85,7 @@ unordered_map<u32string, Token> keywordInfos{
     { U"as"s, AsToken() },
     { U"ref"s, RefToken() },
     { U"null"s, NullToken() },
+    { U"move"s, MoveToken() },
     { U"public"s, PublicToken() },
     { U"protected"s, ProtectedToken() },
     { U"private"s, PrivateToken() },

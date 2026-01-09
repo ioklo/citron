@@ -21,6 +21,21 @@ namespace Citron {
 
 class RTypeArguments;
 
+RFuncParameterKind MakeParamKind(optional<SParamModifier> o_modifier)
+{
+    if (!o_modifier) return RFuncParameterKind::Normal;
+
+    switch (*o_modifier)
+    {
+    case SParamModifier::In: return RFuncParameterKind::In;
+    case SParamModifier::Move: return RFuncParameterKind::Move;
+    case SParamModifier::Forward: return RFuncParameterKind::Forward;
+    case SParamModifier::Out: return RFuncParameterKind::Out;
+    case SParamModifier::Params: return RFuncParameterKind::Params;
+    default: unreachable();
+    }
+}
+
 expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContexts& contexts)
 {
     std::vector<RType*> items;

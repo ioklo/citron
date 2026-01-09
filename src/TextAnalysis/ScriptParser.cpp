@@ -30,9 +30,7 @@ optional<SFuncParam> ParseFuncDeclParam(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    auto o_outAndParams = AcceptParseOutAndParams(&curLexer);
-    if (!o_outAndParams)
-        return nullopt;
+    auto o_paramModifier = ParseParamModifier(&curLexer);
 
     auto o_funcParamType = ParseFuncParamTypeExp(&curLexer, factory);
     if (!o_funcParamType)
@@ -43,7 +41,7 @@ optional<SFuncParam> ParseFuncDeclParam(Lexer* lexer, SFactory& factory)
         return nullopt;
 
     *lexer = move(curLexer);
-    return SFuncParam(o_outAndParams->bOut, o_outAndParams->bParams, o_funcParamType->bRef, o_funcParamType->typeExp, move(o_name->text));
+    return SFuncParam(o_paramModifier, o_funcParamType->bRef, o_funcParamType->typeExp, move(o_name->text));
 }
 
 optional<vector<SFuncParam>> ParseFuncDeclParams(Lexer* lexer, SFactory& factory)

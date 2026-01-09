@@ -199,13 +199,13 @@ class RType_Func : public RType
 public:
     struct Parameter
     {
-        bool bOut;
+        RFuncParameterKind kind;
         RType* type;
 
-        Parameter(bool bOut, RType* type);
+        Parameter(RFuncParameterKind kind, RType* type);
         bool operator==(const Parameter& other) const noexcept
         {
-            return bOut == other.bOut && type == other.type;
+            return kind == other.kind && type == other.type;
         }
     };
 
@@ -520,7 +520,7 @@ struct hash<Citron::RType_Func::Parameter>
     size_t operator()(const Citron::RType_Func::Parameter& parameter) const noexcept
     {
         size_t s = 0;
-        Citron::hash_combine(s, parameter.bOut);
+        Citron::hash_combine(s, parameter.kind);
         Citron::hash_combine(s, parameter.type);
         return s;
     }

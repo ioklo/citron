@@ -96,21 +96,43 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
         if (rFuncParam.bRef)
         {
             // TODO: [in], [move], [out] 별로 다르게 적용
-            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag{};
-            auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bWrapExpAsLoc*/false, &designatedDiag, contexts);
-            RETURN_ON_ERROR(e_mLoc);
-
-            auto* locType = (*e_mLoc)->GetType();
-            if (locType != rFuncParam.type)
+            if (rFuncParam.kind == RFuncParameterKind::In)
             {
-                // 타입이 1) rFuncParam이 openType이라 constraint에 넣어야 하는 경우 2) 실제로 맞지 않는 경우
-                if (IsOpenType(rFuncParam.type))
-                    constraints.emplace_back(rFuncParam.type, locType);
-                else 
-                    return unexpected{MakePtr<Error_FuncMatch_MismatchBetweenParamTypeAndArgType>()};
-            }
+                DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag{};
+                auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+                RETURN_ON_ERROR(e_mLoc);
 
-            mArgs.push_back(MArgument_Ref{*e_mLoc});
+                auto* locType = (*e_mLoc)->GetType();
+                if (locType != rFuncParam.type)
+                {
+                    // 타입이 1) rFuncParam이 openType이라 constraint에 넣어야 하는 경우 2) 실제로 맞지 않는 경우
+                    if (IsOpenType(rFuncParam.type))
+                        constraints.emplace_back(rFuncParam.type, locType);
+                    else
+                        return unexpected{MakePtr<Error_FuncMatch_MismatchBetweenParamTypeAndArgType>()};
+                }
+
+                mArgs.push_back(MArgument_Ref{*e_mLoc});
+            }
+            else if (rFuncParam.kind == RFuncParameterKind::Normal)
+            {
+                DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag{};
+                auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bWrapExpAsLoc*/false, &designatedDiag, contexts);
+                RETURN_ON_ERROR(e_mLoc);
+
+                auto* locType = (*e_mLoc)->GetType();
+                if (locType != rFuncParam.type)
+                {
+                    // 타입이 1) rFuncParam이 openType이라 constraint에 넣어야 하는 경우 2) 실제로 맞지 않는 경우
+                    if (IsOpenType(rFuncParam.type))
+                        constraints.emplace_back(rFuncParam.type, locType);
+                    else
+                        return unexpected{MakePtr<Error_FuncMatch_MismatchBetweenParamTypeAndArgType>()};
+                }
+
+                mArgs.push_back(MArgument_Ref{*e_mLoc});
+            }
+            else assert(false);
         }
         else
         {

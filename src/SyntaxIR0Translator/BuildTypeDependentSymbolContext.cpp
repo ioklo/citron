@@ -8,6 +8,7 @@
 #include "RSymbol/RFactory.h"
 #include "NSymbol/NDecl.h"
 #include "CommonTranslation.h"
+#include "Misc.h"
 
 using namespace std;
 
@@ -62,10 +63,11 @@ tuple<vector<RFuncParameter>, bool> BuildTypeDependentSymbolContext::MakeParamet
     {
         auto& sParam = sParams[i];
 
+        auto rParamKind = MakeParamKind(sParam.o_modifier);
         auto type = this->MakeType(sParam.type, decl);
         if (!type) throw NotImplementedException{}; // 에러 처리
 
-        if (sParam.hasParams)
+        if (rParamKind == RFuncParameterKind::Params)
         {
             if (i == paramCount - 1)
             {
@@ -78,7 +80,7 @@ tuple<vector<RFuncParameter>, bool> BuildTypeDependentSymbolContext::MakeParamet
 
         }
 
-        rParams.emplace_back(sParam.hasOut, sParam.bRef, type, RName_Normal{sParam.name});
+        rParams.emplace_back(rParamKind, sParam.bRef, type, RName_Normal{sParam.name});
     }
 
     return make_tuple(move(rParams), bLastParamVariadic);

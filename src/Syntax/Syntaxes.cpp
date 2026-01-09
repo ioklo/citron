@@ -13,7 +13,7 @@ using namespace std;
 namespace Citron {
 
 SArgument::SArgument(SExp* exp)
-    : SArgument(false, false, exp)
+    : SArgument(nullopt, exp)
 {
 }
 

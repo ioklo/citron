@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <optional>
 #include <expected>
 
 #include "Logging/Diag.h"
@@ -14,7 +15,9 @@ class RTypeArguments;
 class MExp;
 class RType;
 struct TranslationContexts;
+enum class RFuncParameterKind;
 
+RFuncParameterKind MakeParamKind(std::optional<SParamModifier> o_modifier);
 std::expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContexts& contexts);
 std::expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContexts& contexts);
 

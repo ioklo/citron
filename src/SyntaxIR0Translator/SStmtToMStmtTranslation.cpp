@@ -509,9 +509,9 @@ public:
 
                     if (setRet->type != contexts.rFactory->MakeBoolType()) continue;
 
-                    // 인자는 out T*꼴이어야 한다
+                    // 인자는 out T&꼴이어야 한다
                     auto param = funcDecl->GetFuncParam(*typeArgs, 0);
-                    if (!param.bOut) continue;
+                    if (param.kind != RFuncParameterKind::Out) continue;
 
                     auto* ptrParamType = dynamic_cast<RType_Ptr*>(param.type);
                     if (!ptrParamType) continue;
@@ -580,7 +580,7 @@ public:
 
                     // 인자는 out T*꼴이어야 한다
                     auto param = funcDecl->GetFuncParam(*typeArgs, 0);
-                    if (!param.bOut) continue;
+                    if (param.kind != RFuncParameterKind::Out) continue;
 
                     auto* ptrParamType = dynamic_cast<RType_Ptr*>(param.type);
                     if (!ptrParamType) continue;
@@ -859,6 +859,8 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
     {
         auto& sParam = sParams[i];
 
+        auto rParamKind = MakeParamKind(sParam.o_paramModifier);
+
         // 파라미터에 Type이 명시되어있지 않으면 hintType기반으로 inference 해야 한다.
         if (!sParam.type)
             throw NotImplementedException{};
@@ -867,9 +869,9 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
         // RETURN_ON_ERROR(e_rParamType);
         assert(false); // TODO: expected리턴 하도록 수정
 
-        rParams.emplace_back(sParam.hasOut, /*bRef*/false, *e_rParamType, RName_Normal(sParam.name));
+        rParams.emplace_back(rParamKind, /*bRef*/false, *e_rParamType, RName_Normal(sParam.name));
 
-        if (sParam.hasParams)
+        if (rParamKind == RFuncParameterKind::Params)
         {
             if (i == sParamCount - 1)
             {

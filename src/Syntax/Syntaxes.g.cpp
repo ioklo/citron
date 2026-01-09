@@ -31,8 +31,8 @@ JsonItem SSyntax::ToJson()
     };
 }
 
-SArgument::SArgument(bool bOut, bool bParams, SExp* exp)
-    : bOut(move(bOut)), bParams(move(bParams)), exp(move(exp)) { }
+SArgument::SArgument(std::optional<SArgModifier> o_modifier, SExp* exp)
+    : o_modifier(move(o_modifier)), exp(move(exp)) { }
 
 SArgument::SArgument(SArgument&& other) noexcept = default;
 
@@ -44,8 +44,7 @@ JsonItem SArgument::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("SArgument") },
-        { "bOut", Citron::ToJson(bOut) },
-        { "bParams", Citron::ToJson(bParams) },
+        { "o_modifier", Citron::ToJson(o_modifier) },
         { "exp", Citron::ToJson(exp) },
     };
 }
@@ -67,8 +66,8 @@ JsonItem SArguments::ToJson()
     };
 }
 
-SLambdaExpParam::SLambdaExpParam(STypeExp* type, std::string name, bool hasOut, bool hasParams)
-    : type(move(type)), name(move(name)), hasOut(move(hasOut)), hasParams(move(hasParams)) { }
+SLambdaExpParam::SLambdaExpParam(std::optional<SParamModifier> o_paramModifier, STypeExp* type, std::string name)
+    : o_paramModifier(move(o_paramModifier)), type(move(type)), name(move(name)) { }
 
 SLambdaExpParam::SLambdaExpParam(SLambdaExpParam&& other) noexcept = default;
 
@@ -80,10 +79,9 @@ JsonItem SLambdaExpParam::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("SLambdaExpParam") },
+        { "o_paramModifier", Citron::ToJson(o_paramModifier) },
         { "type", Citron::ToJson(type) },
         { "name", Citron::ToJson(name) },
-        { "hasOut", Citron::ToJson(hasOut) },
-        { "hasParams", Citron::ToJson(hasParams) },
     };
 }
 
@@ -140,8 +138,8 @@ JsonItem STypeParam::ToJson()
     };
 }
 
-SFuncParam::SFuncParam(bool hasOut, bool hasParams, bool bRef, STypeExp* type, std::string name)
-    : hasOut(move(hasOut)), hasParams(move(hasParams)), bRef(move(bRef)), type(move(type)), name(move(name)) { }
+SFuncParam::SFuncParam(std::optional<SParamModifier> o_modifier, bool bRef, STypeExp* type, std::string name)
+    : o_modifier(move(o_modifier)), bRef(move(bRef)), type(move(type)), name(move(name)) { }
 
 SFuncParam::SFuncParam(SFuncParam&& other) noexcept = default;
 
@@ -153,8 +151,7 @@ JsonItem SFuncParam::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("SFuncParam") },
-        { "hasOut", Citron::ToJson(hasOut) },
-        { "hasParams", Citron::ToJson(hasParams) },
+        { "o_modifier", Citron::ToJson(o_modifier) },
         { "bRef", Citron::ToJson(bRef) },
         { "type", Citron::ToJson(type) },
         { "name", Citron::ToJson(name) },

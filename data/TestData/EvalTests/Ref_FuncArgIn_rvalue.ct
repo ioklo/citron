@@ -1,0 +1,14 @@
+//@ 23
+
+int G() { return 3; }
+
+void F([in]int& i)
+{
+    @$i
+}
+
+void Main()
+{    
+    F(2); // rvalue, literal
+    F(G()); // rvalue, func result
+}
