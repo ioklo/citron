@@ -144,17 +144,6 @@ LContext::LContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
 
 LContext::~LContext() = default;
 
-// TODO: 공통 라이브러리로 빼기
-string RNameToString2(const RName& name)
-{
-    return visit(overloaded{
-        [](const RName_Normal& n) { return n.text; },
-        [](const RName_Reserved& n) { return format("${}", n.text); },
-        [](const RName_Lambda& n) { return format("$$lambdaVar{}>", n.index); },
-        [](const RName_CtorParam& n) { return format("$$ctor_{}", n.paramText); }
-    }, name);
-}
-
 class LModuleContext
 {   
     using RuntimeFuncCtorContainer = array<llvm::Function* (LModuleContext::*)(llvm::Module&, LContextImpl&), (size_t)LRuntimeFuncKind::Count>;
@@ -833,7 +822,7 @@ public:
             lParamTypes.push_back(lParamType);
         }
 
-        std::string name = RNameToString2(qFuncBody.nFuncDecl->GetNDecl()->GetRDecl()->GetIdentifier().name);
+        std::string name = RNameToString(qFuncBody.nFuncDecl->GetNDecl()->GetRDecl()->GetIdentifier().name);
 
         llvm::FunctionType* lFuncType = llvm::FunctionType::get(lRetType, lParamTypes, /*isVarArg*/false);
         auto* lFunc = llvm::Function::Create(lFuncType, llvm::GlobalValue::LinkageTypes::ExternalLinkage, name, _module);

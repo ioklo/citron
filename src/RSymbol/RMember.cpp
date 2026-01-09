@@ -131,14 +131,15 @@ RMember_ThisVar::RMember_ThisVar(RType* type)
 
 vector<DeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs(RMember& member)
 {
-    return visit(overloaded{
-        [](RMember_GlobalFuncs& member) { return GetItems(member.items); },
-        [](RMember_ClassFuncs& member) { return GetItems(member.items); },
-        [](RMember_StructFuncs& member) { return GetItems(member.items); },
-        [](auto&&) { return vector<DeclWithOuterTypeArgs<RFuncDecl>>{}; },
+    return visit([](auto& member) -> vector<DeclWithOuterTypeArgs<RFuncDecl>> {
+        using T = remove_cvref_t<decltype(member)>;
+
+        if constexpr (same_as<T, RMember_GlobalFuncs>) { return GetItems(member.items); }
+        else if constexpr (same_as<T, RMember_ClassFuncs>) { return GetItems(member.items); }
+        else if constexpr (same_as<T, RMember_StructFuncs>) { return GetItems(member.items); }
+        else { return {}; }
+
     }, member);
 }
-
-
 
 } // namespace Citron

@@ -1,4 +1,7 @@
 #include "RNames.h"
+#include <format>
+
+using namespace std;
 
 namespace Citron {
 
@@ -11,5 +14,18 @@ RName RawItem;
 RName _this; // "this"
 
 } // RNames
+
+string RNameToString(const RName& name)
+{
+    return visit([](auto& name) {
+        using T = remove_cvref_t<decltype(name)>;
+        if constexpr (same_as<T, RName_Normal>) return name.text;
+        else if constexpr (same_as<T, RName_Reserved>) return format("${}", name.text);
+        else if constexpr (same_as<T, RName_Lambda>) return format("$$lambdaVar{}>", name.index);
+        else if constexpr (same_as<T, RName_CtorParam>) return format("$$ctor_{}", name.paramText);
+        else static_assert(false);
+    }, name);
+}
+
 
 } // Citron

@@ -52,13 +52,18 @@ CheckEndReturnResult CheckEndReturn(NFuncDecl* nFuncDecl, vector<MStmt*>& mStmts
     // 2. 시그니처가 void를 리턴하는지 확인
     bool signatureReturnVoid = [nFuncDecl, &rFactory] {
         auto rFuncReturn = nFuncDecl->GetUnboundFuncReturn();
-        return visit(overloaded{
-            [&rFactory](RFuncReturn_Set& rFuncReturn) {
+        return visit([&rFactory](auto& rFuncReturn) -> bool {
+            using T = remove_cvref_t<decltype(rFuncReturn)>;
+
+            if constexpr (same_as<T, RFuncReturn_Set>)
+            {
                 auto* rVoidType = rFactory.MakeVoidType();
                 return rFuncReturn.type == rVoidType;
-            },
-            [](RFuncReturn_ForCtor&) { return true; },
-            [](RFuncReturn_NotSet&) { return true; } // lambda에서 return으로 끝나지 않으면 리턴타입을 void로 보면 된다
+            }
+            else if constexpr (same_as<T, RFuncReturn_ForCtor>) return true;
+            else if constexpr (same_as<T, RFuncReturn_NotSet>) return true; // lambda에서 return으로 끝나지 않으면 리턴타입을 void로 보면 된다
+            else static_assert(false);
+
         }, rFuncReturn);
     }();
 

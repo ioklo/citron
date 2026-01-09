@@ -429,13 +429,19 @@ void DoTest(const string& code, const string& expected);
     
     for (auto& info : ReadCTFiles(testsPath))
     {
-        visit(overloaded{
-            [&oss, &succTempl, &info](CTInfoResult_Text& textResult) -> void {
-                oss << format(succTempl, info.category, info.name, info.code, textResult.text) << endl << endl;
-            },
-            [](CTInfoResult_Error& errorResult) -> void {
+        visit([&oss, &succTempl, &info](auto& result) {
+            using T = remove_cvref_t<decltype(result)>;
+
+            if constexpr (same_as<T, CTInfoResult_Text>)
+            {
+                oss << format(succTempl, info.category, info.name, info.code, result.text) << endl << endl;
+            }
+            else if constexpr (same_as<T, CTInfoResult_Error>)
+            {
                 // NotImplemented
             }
+            else static_assert(false);
+
         }, info.result);
     }
 

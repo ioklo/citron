@@ -87,9 +87,10 @@ size_t GetSize(QType* type, QFactory& qFactory)
 // Ptr타입의 값
 void* GetPtr(QArg_Input& src, Environment& env)
 {
-    return visit(overloaded{
-        [&env](QArg_Slot& slot) { return *(void**)env.curFrame->slots[slot.index]; },
-        [](auto&) -> void* { throw NotImplementedException{}; }
+    return visit([&env](auto& src) -> void* {
+        using T = remove_cvref_t<decltype(src)>;
+        if constexpr (same_as<T, QArg_Slot>) return *(void**)env.curFrame->slots[src.index];
+        else throw NotImplementedException{};
     }, src);
 }
 
@@ -117,10 +118,11 @@ void* GetLoc(QArg_Slot& slot, Environment& env)
 
 int GetInt(QArg_Input& arg, Environment& env)
 {
-    return visit(overloaded{
-        [](QArg_ConstInt32& ci) { return ci.value; },
-        [&env](QArg_Slot& s) { return *(int*)env.curFrame->slots[s.index]; },
-        [](auto&&) -> int { throw NotImplementedException{}; }
+    return visit([&env](auto& arg) -> int {
+        using T = remove_cvref_t<decltype(arg)>;
+        if constexpr (same_as<T, QArg_ConstInt32>) return arg.value;
+        else if constexpr (same_as<T, QArg_Slot>) return *(int*)env.curFrame->slots[arg.index];
+        else throw NotImplementedException{};
     }, arg);
 }
 
@@ -131,10 +133,11 @@ void SetInt(QArg_Slot& slot, int v, Environment& env)
 
 bool GetBool(QArg_Input& arg, Environment& env)
 {
-    return visit(overloaded{
-        [](QArg_ConstBool& cb) { return cb.value; },
-        [&env](QArg_Slot& s) { return *(bool*)env.curFrame->slots[s.index]; },
-        [](auto&&) -> bool { throw NotImplementedException{}; }
+    return visit([&env](auto& arg) -> bool {
+        using T = remove_cvref_t<decltype(arg)>;
+        if constexpr (same_as<T, QArg_ConstBool>) return arg.value;
+        else if constexpr (same_as<T, QArg_Slot>) return *(bool*)env.curFrame->slots[arg.index];
+        else throw NotImplementedException{};
     }, arg);
 }
 
@@ -156,9 +159,10 @@ string& GetStringRef(QArg_Slot& slot, Environment& env)
 
 string& GetStringRef(QArg_Input& arg, Environment& env)
 {
-    return visit(overloaded{        
-        [&env](QArg_Slot& s) -> string& { return *(string*)env.curFrame->slots[s.index]; },
-        [](auto&&) -> string& { unreachable(); }
+    return visit([&env](auto& arg) -> string& {        
+        using T = remove_cvref_t<decltype(arg)>;
+        if constexpr (same_as<T, QArg_Slot>) return *(string*)env.curFrame->slots[arg.index];
+        else unreachable();
     }, arg);
 }
 
@@ -197,12 +201,16 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         for (auto& arg : inst.args)
         {
             // string이라면, 크기가 8을 넘으므로
-            visit(overloaded{
-                [&env](QArg_Slot& slot) {
-                    auto* s = (string*)env.curFrame->slots[slot.index];
+            visit([&env](auto& arg) {
+
+                using T = remove_cvref_t<decltype(arg)>;
+
+                if constexpr (same_as<T, QArg_Slot>)
+                {
+                    auto* s = (string*)env.curFrame->slots[arg.index];
                     env.cmdHandler->Execute(*s);
-                },
-                [](auto&&) { assert(false);  }
+                }
+                else throw NotImplementedException{};
             }, arg);
         }
         return;

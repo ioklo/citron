@@ -104,14 +104,19 @@ public:
                 return QLocResult_PtrSlot{destSlotIndex};
             }
             else static_assert(false);
-
             
         }, *e_instanceResult);
     }
 
     ResultType Visit(MLoc_ClassVar* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_EnumElemVar* loc) { throw NotImplementedException{}; }
-    ResultType Visit(MLoc_This* loc) { throw NotImplementedException{}; }
+
+    ResultType Visit(MLoc_This* loc) 
+    {
+        // 현재 컨텍스트에서, 첫번째 인자
+        bodyContext.GetLocalInfo
+    }
+
     ResultType Visit(MLoc_PtrDeref* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_BoxDeref* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_NullableValue* loc) { throw NotImplementedException{}; }

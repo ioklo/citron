@@ -267,16 +267,6 @@ size_t QBodyContext::GetQTypeSize(QType* qType)
     throw NotImplementedException{};
 }
 
-string RNameToString(const RName& name)
-{
-    return visit(overloaded{
-        [](const RName_Normal& n) { return n.text; },
-        [](const RName_Reserved& n) { return format("${}", n.text); },
-        [](const RName_Lambda& n) { return format("$$lambdaVar{}>", n.index); },
-        [](const RName_CtorParam& n) { return format("$$ctor_{}", n.paramText); }
-    }, name);
-}
-
 QType* QBodyContext::GetQTypeFromRType(RType* rType)
 {
     // TODO: HARD CODED

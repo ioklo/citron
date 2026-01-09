@@ -55,6 +55,8 @@ RSYMBOL_API extern RName _this; // "this"
 
 } // namespace RNames
 
+std::string RNameToString(const RName& name);
+
 } // namespace Citron
 
 namespace std {
@@ -103,5 +105,7 @@ struct hash<Citron::RName_CtorParam>
         return s;
     }
 };
+
+
 
 } // namespace std
