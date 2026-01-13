@@ -11,5 +11,6 @@ std::unexpected<E> Unexpected(std::expected<V, E>&& e)
 }
 
 #define RETURN_ON_ERROR(e) { if (!e) return std::unexpected{std::move(e).error()}; }
+#define RETURN_ON_ERROR_REFDECL(e, ...) { if (!e) return std::unexpected{std::move(e).error()}; } auto& __VA_ARGS__ = (*e);
 
 }

@@ -17,7 +17,7 @@ class RType;
 struct TranslationContexts;
 enum class RFuncParameterKind;
 
-RFuncParameterKind MakeParamKind(std::optional<SParamModifier> o_modifier);
+std::expected<RFuncParameterKind, DiagPtr> MakeParamKind(std::optional<SParamModifier> o_modifier, bool bRef);
 std::expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContexts& contexts);
 std::expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContexts& contexts);
 

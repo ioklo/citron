@@ -11,7 +11,7 @@ namespace Citron {
 
 NClassFuncDecl::NClassFuncDecl(NClassDecl* _class, RAccessor accessor, RName&& name, bool bStatic, bool bSeqFunc)
     : _class{_class}, accessor{accessor}, name{move(name)}
-    , NCommonFuncDeclComponent{bStatic, bSeqFunc}
+    , NCommonFuncDeclComponent{bStatic ? RThisKind::None : RThisKind::Handle, bSeqFunc}
 {
 }
 

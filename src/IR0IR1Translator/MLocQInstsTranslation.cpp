@@ -113,8 +113,8 @@ public:
 
     ResultType Visit(MLoc_This* loc) 
     {
-        // 현재 컨텍스트에서, 첫번째 인자
-        bodyContext.GetLocalInfo
+        // 현재 컨텍스트에서, 첫번째 인자 slot 0번
+        return QLocResult_Slot{0};
     }
 
     ResultType Visit(MLoc_PtrDeref* loc) { throw NotImplementedException{}; }

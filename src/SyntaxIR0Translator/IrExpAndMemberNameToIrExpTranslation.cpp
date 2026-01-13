@@ -82,7 +82,7 @@ public:
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return contexts.srtFactory->MakeIrExp<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return contexts.srtFactory->MakeIrExp<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, member.decl, member.typeArgs));
     }
 
     expected<IrExp*, DiagPtr> Visit(RMember_Struct& member)
@@ -109,7 +109,7 @@ public:
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return contexts.srtFactory->MakeIrExp<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/ nullptr, member.decl, member.typeArgs));
+        return contexts.srtFactory->MakeIrExp<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, member.decl, member.typeArgs));
     }
 
     // E

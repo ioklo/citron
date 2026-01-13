@@ -13,6 +13,8 @@
 #include "PhaseManager.h"
 #include "TranslateBodyContext.h"
 
+using namespace std;
+
 namespace Citron {
 
 StructDtorTask::StructDtorTask(NStructDecl* nStruct, SStructDtorDecl* sStructDtor, const NFactoryPtr& nFactory)
@@ -20,12 +22,14 @@ StructDtorTask::StructDtorTask(NStructDecl* nStruct, SStructDtorDecl* sStructDto
 {
 }
 
-void StructDtorTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> StructDtorTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
     auto accessor = MakeAccessor(sStructDtor->accessModifier, AccessorContext::InsideStruct);
 
     // 굳이 type이 없어도 만들수는 있지만 그냥 여기서 만들자
     nStructDtor = nFactory->MakeNDecl<NStructDtorDecl>(accessor, nStruct);
+
+    return {};
 }
 
 std::expected<MFuncBody, DiagPtr> StructDtorTask::TranslateBody(TranslateBodyContext& context)

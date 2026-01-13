@@ -1,5 +1,7 @@
 #include "StructFuncTask.h"
 
+#include "Infra/Expected.h"
+
 #include "NSymbol/NStructDecl.h"
 #include "NSymbol/NStructFuncDecl.h"
 #include "NSymbol/NFactory.h"
@@ -22,7 +24,7 @@ void StructFuncTask::Register(NStructDecl* nStructDecl, SStructFuncDecl* syntax,
     phaseManager.AddTranslateBodyTask(task);
 }
 
-void StructFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> StructFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
     auto accessor = MakeAccessor(sStruct->accessModifier, AccessorContext::InsideStruct);
     nStructFunc = nFactory->MakeNDecl<NStructFuncDecl>(
@@ -36,8 +38,12 @@ void StructFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& c
 
     // symbol tree에 매달린 nStructFunc가 필요
     auto* rRetType = context.MakeType(sStruct->retType, nStructFunc);
-    auto [rParameters, bLastParamVariadic] = context.MakeParameters(nStructFunc, sStruct->parameters);
-    nStructFunc->InitFuncReturnAndParams(rRetType, move(rParameters), bLastParamVariadic);
+    
+    auto e_parameters = context.MakeParameters(nStructFunc, sStruct->parameters);
+    RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
+
+    nStructFunc->InitFuncReturnAndParams(rRetType, move(parameters), bLastParamVariadic);
+    return {};
 }
 
 expected<MFuncBody, DiagPtr> StructFuncTask::TranslateBody(TranslateBodyContext& context)

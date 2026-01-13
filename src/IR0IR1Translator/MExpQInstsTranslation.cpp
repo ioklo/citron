@@ -400,8 +400,14 @@ public:
                         else static_assert(false);
                     }, * e_locResult);
                 }
+                else if constexpr (same_as<T, MArgument_Move>)
+                {
+                    // TODO: [30] move구현
+                    throw NotImplementedException{};
+                }
                 else if constexpr (same_as<T, MArgument_Params>) // 파라미터를 여러개 받는 경우
                 {
+                    // TODO: [31] params 구현
                     throw NotImplementedException{};
                     return {};
                 }

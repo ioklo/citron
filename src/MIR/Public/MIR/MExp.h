@@ -26,6 +26,7 @@ class RLambdaDecl;
 
 class RTypeArguments;
 class RType_Func;
+class RType_EnumElem;
 
 class MExp_Load;
 class MExp_Assign;
@@ -812,11 +813,11 @@ class MExp_EnumIsEnumElem : public MExp
 {
 public:
     MExp* exp;
-    RType* enumElemType;
+    RType_EnumElem* enumElemType;
     RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_EnumIsEnumElem(MExp* exp, RType* enumElemType, const RFactoryPtr& rFactory);
+    MIR_API MExp_EnumIsEnumElem(MExp* exp, RType_EnumElem* enumElemType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -826,11 +827,11 @@ class MExp_EnumAsEnumElem : public MExp
 {
 public:
     MExp* exp;
-    RType* enumElemType;
+    RType_EnumElem* enumElemType;
     RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_EnumAsEnumElem(MExp* exp, RType* enumElemType, const RFactoryPtr& rFactory);
+    MIR_API MExp_EnumAsEnumElem(MExp* exp, RType_EnumElem* enumElemType, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }

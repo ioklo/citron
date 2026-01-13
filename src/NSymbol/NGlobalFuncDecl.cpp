@@ -12,7 +12,7 @@ NGlobalFuncDecl::NGlobalFuncDecl(NNamespaceDecl* outer, RAccessor accessor, bool
     : outer{outer}
     , accessor{accessor}
     , name{move(rName)}
-    , NCommonFuncDeclComponent(/*bStatic*/true, bSeqFunc)
+    , NCommonFuncDeclComponent{RThisKind::None, bSeqFunc}
 {   
 }
 

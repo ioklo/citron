@@ -13,6 +13,7 @@
 #include "Infra/Exceptions.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RDecl.h"
+#include "RSymbol/RFuncDecl.h"
 #include "NSymbol/NFuncDecl.h"
 
 #include "QIR/QFactory.h"
@@ -794,7 +795,7 @@ private:
 public:
     void Translate()
     {
-        auto rFuncReturn = qFuncBody.nFuncDecl->GetUnboundFuncReturn();
+        auto rFuncReturn = qFuncBody.nFuncDecl->GetRFuncDecl()->GetUnboundFuncReturn();
         auto* lRetType = visit([this](auto& ret) -> llvm::Type* {
             using T = remove_cvref_t<decltype(ret)>;
             if constexpr (same_as<T, RFuncReturn_ForCtor>)
@@ -816,7 +817,7 @@ public:
         }, rFuncReturn);
 
         vector<llvm::Type*> lParamTypes;
-        for (auto& rFuncParam : qFuncBody.nFuncDecl->GetUnboundFuncParams())
+        for (auto& rFuncParam : qFuncBody.nFuncDecl->GetRFuncDecl()->GetUnboundFuncParams())
         {
             auto* lParamType = lContextImpl.GetType(rFuncParam.type);
             lParamTypes.push_back(lParamType);

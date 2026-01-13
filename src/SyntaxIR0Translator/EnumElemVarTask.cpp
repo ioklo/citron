@@ -16,12 +16,14 @@ void EnumElemVarTask::Register(NEnumElemVarDecl* nEnumElemVar, SEnumElemVarDecl*
     phaseManager.AddBuildTypeDependentSymbolTask(task);
 }
 
-void EnumElemVarTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> EnumElemVarTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {   
     // enum 기준으로 타입을 만든다
     auto* rDeclType = context.MakeType(sEnumElemVar->type, nEnumElemVar->enumElem->_enum);
     nEnumElemVar->Init(rDeclType);
     nEnumElemVar->enumElem->AddVar(nEnumElemVar);
+
+    return {};
 }
 
 } // namespace Citron

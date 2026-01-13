@@ -9,54 +9,12 @@
 #include "CommonTranslation.h"
 #include "PhaseManager.h"
 #include "ResolveTypeHierarchyContext.h"
+#include "SynthesizeImplicitSymbolContext.h"
 #include "Misc.h"
 
 using namespace std;
 
 namespace Citron {
-
-namespace {
-// nStruct의 constructor중에 trivial constructor랑 모양이 같은 것이 있다면 만들지 않는다 (모양이 같은 함수가 trivial인지는 체크하지 않는다)
-bool HasConflictTrivialCtor(NStructDecl* nStruct, RStructCtorDecl* rBaseTrivialCtor)
-{
-    size_t baseParamCount = rBaseTrivialCtor ? rBaseTrivialCtor->GetParamCount() : 0;
-    size_t varCount = nStruct->GetVarCount();
-
-    for (auto* nCtor : nStruct->EnumerateUnboundCtors())
-    {
-        size_t paramCount = nCtor->GetParamCount();
-        if (varCount != paramCount) continue;
-
-        //// constructorDecl의 앞부분이 baseConstructor와 일치하는지를 봐야 한다
-        bool bMatch = true;
-        auto baseUnboundParams = rBaseTrivialCtor->GetUnboundFuncParams();
-        auto unboundParams = nCtor->GetUnboundFuncParams();
-        for (size_t i = 0; i < baseParamCount; i++)
-        {
-            auto& baseParameter = baseUnboundParams[i];
-            auto& parameter = unboundParams[i];
-
-            bMatch &= (baseParameter.type == parameter.type);
-        }
-
-        if (!bMatch) continue;
-
-        // baseParam을 제외한 뒷부분이 varType과 맞는지 봐야 한다
-        auto unboundFuncParams = nCtor->GetUnboundFuncParams();
-        for (size_t i = 0; i < paramCount; i++)
-        {
-            auto* structVar = nStruct->GetUnboundVar(i); // varCount == paramCount체크를 위에서 했다
-            auto& ctorParam = unboundFuncParams[i + baseParamCount];
-
-            bMatch &= (structVar->GetUnboundDeclType() == ctorParam.type);
-        }
-
-        if (bMatch) return true;
-    }
-
-    return false;
-}
-} // namespace 
 
 StructTask::StructTask(NStructDecl* nStructDecl, SStructDecl* syntax, AccessorContext accessorContext)
     : nStructDecl{nStructDecl}, syntax{syntax}, accessorContext {accessorContext}
@@ -76,32 +34,24 @@ void StructTask::ResolveTypeHierarchy(ResolveTypeHierarchyContext& context)
     RType_Struct* rBaseStruct = nullptr; // nullable
 
     // 나머지는 interface들이다
-    vector<RType_Interface*> rInterfaces;
+    vector<RType*> rInterfaces;
 
     for (auto* sType : syntax->baseTypes)
     {
         auto* rType = context.MakeType(sType, nStructDecl);
-        auto rTypeKind = rType->GetCustomTypeKind();
+        auto rTypeKind = rType->GetTypeKind();
 
-        if (rTypeKind == RCustomTypeKind::Struct)
+        if (auto* rStructType = dynamic_cast<RType_Struct*>(rType))
         {
             // 두개 이상의 struct를 상속받으려고 했다면, 에러 처리
             if (rBaseStruct != nullptr)
                 throw NotImplementedException{};
 
-            rBaseStruct = dynamic_cast<RType_Struct*>(rType);
-            assert(rBaseStruct); // CustomTypeKind가 Struct이면서 RType_Struct를 따르지 않는것이 뭐가 있을까
+            rBaseStruct = rStructType;
         }
-        else if (rTypeKind == RCustomTypeKind::Interface)
-        {
-            auto* rInterface = dynamic_cast<RType_Interface*>(rType);
-            if (!rInterface)
-            {
-                throw NotImplementedException{};
-            }
-
-            // func<>, 등도 interface type인데, 어떻게 할지
-            rInterfaces.push_back(rInterface);
+        else if (rTypeKind == RTypeKind::Interface)
+        {   
+            rInterfaces.push_back(rType);
         }
         else
         {
@@ -113,71 +63,41 @@ void StructTask::ResolveTypeHierarchy(ResolveTypeHierarchyContext& context)
     nStructDecl->InitBaseTypes(rBaseStruct, move(rInterfaces));
 }
 
-// base의 TrivialCtor가 다 만들어 졌을 때, 수행하는 작업
 void StructTask::SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& context)
 {
-    auto* rBaseStruct = nStructDecl->GetUnboundBaseStruct();
-    RStructCtorDecl* rBaseTrivialCtor = nullptr;
+    SynthesizeMemberwiseCtor(context);
+}
 
-    if (rBaseStruct)
+void GatherAllBaseVarDecls(vector<RFuncParameter>& params, RType_Struct* structType)
+{
+    // 먼저 base부터
+    if (auto* baseType = structType->decl->GetUnboundBaseStruct())
+        GatherAllBaseVarDecls(params, baseType);
+
+    // 그리고 자기 자신
+    for (auto* varDecl : structType->decl->GetRVars())
     {
-        rBaseTrivialCtor = rBaseStruct->GetUnboundTrivialCtor();
-
-        // 베이스가 있는데 Trivial이 없으면 안만든다
-        if (!rBaseTrivialCtor) return;
+        auto* declType = varDecl->GetDeclType(*structType->typeArgs);
+        RName_CtorParam name{params.size(), RNameToString(varDecl->GetIdentifier().name)};
+        params.emplace_back(RFuncParameterKind::Init, declType, move(name));
     }
+}
 
-    // 같은 파라미터가 있으면 안 만든다
-    if (HasConflictTrivialCtor(nStructDecl, rBaseTrivialCtor))
-        return;
+void StructTask::SynthesizeMemberwiseCtor(SynthesizeImplicitSymbolContext& context)
+{
+    // memberwise constructor, 시그니처만 만든다 (resolve identifier용)
+    vector<RFuncParameter> rParameters;
 
-    size_t varCount = nStructDecl->GetVarCount();
-    size_t totalParamCount = rBaseTrivialCtor
-        ? rBaseTrivialCtor->GetParamCount() + varCount
-        : varCount;
+    // 모든 base의 멤버 순회
+    if (auto* baseStruct = nStructDecl->GetUnboundBaseStruct())
+        GatherAllBaseVarDecls(rParameters, baseStruct);
 
-    vector<RFuncParameter> parameters;
+    for (auto* nVarDecl : nStructDecl->GetVars())
+        rParameters.emplace_back(RFuncParameterKind::Init, nVarDecl->GetUnboundDeclType(), RName_Normal{nVarDecl->name});
 
-    //// to prevent conflict between ctorParam names, using special name $'base'_<name>_index
-    //// class A { A(int x) {} }
-    //// class B : A { B(int $base_x0, int x) : base($base_x0) { } }
-    //// class C : B { C(int $base_x0, int $base_x1, int x) : base($base_x0, $base_x1) { } }
-    if (rBaseTrivialCtor)
-    {
-        size_t baseParamCount = rBaseTrivialCtor->GetParamCount();
-        parameters.reserve(baseParamCount + varCount);
-        auto baseUnboundParams = rBaseTrivialCtor->GetUnboundFuncParams();
-        for (size_t i = 0; i < baseParamCount; i++)
-        {
-            auto& baseParam = baseUnboundParams[i];
-            auto paramName = MakeBaseCtorParamName(i, baseParam.name);
-
-            // 이름 보정, base로 가는 파라미터들은 다 이름이 CtorParam이다.
-            // ctor에 out은 지원하지 않는다
-            // TODO: [27] enumElemDecl에 memberwise ctor 추가하기, memberwise ctor에서 직접 대입 처리
-            parameters.emplace_back(RFuncParameterKind::Init, /*bRef*/true, baseParam.type, move(paramName));
-        }
-
-        for (auto* var : nStructDecl->EnumerateUnboundVars())
-            // TODO: [27] enumElemDecl에 memberwise ctor 추가하기, memberwise ctor에서 직접 대입 처리
-            parameters.emplace_back(RFuncParameterKind::Init, /*bRef*/true, var->GetUnboundDeclType(), RName_Normal{var->name});
-    }
-    else
-    {
-        parameters.reserve(varCount);
-        for (auto* var : nStructDecl->EnumerateUnboundVars())
-            // TODO: [27] enumElemDecl에 memberwise ctor 추가하기, memberwise ctor에서 직접 대입 처리
-            parameters.emplace_back(RFuncParameterKind::Init, /*bRef*/false, var->GetUnboundDeclType(), RName_Normal{var->name});
-    }
-
-    throw NotImplementedException{};
-
-    // auto* nCtor = context.MakeNDecl<NStructCtorDecl>(nStruct, RAccessor::Public, /*bTrivial*/ true);
-    //
-    // nCtor->InitFuncParameters(parameters, /*bLastParameterVariadic*/ false);
-    // nCtor->InitBodyWillBeGenerated();
-    //
-    // nStruct->AddCtor(nCtor);
+    auto* nCtor = context.MakeNDecl<NStructCtorDecl>(nStructDecl, RAccessor::Public, RStructCtorKind::Memberwise);
+    nCtor->InitFuncParameters(move(rParameters), /*bLastParameterVariadic*/false);
+    nStructDecl->AddCtor(nCtor);
 }
 
 

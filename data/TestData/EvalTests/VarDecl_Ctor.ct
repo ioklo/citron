@@ -1,0 +1,8 @@
+//@ 4
+struct S { int x; }
+
+void Main()
+{
+    var s = S(2);
+    @${s.x}    
+}

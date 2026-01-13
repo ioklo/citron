@@ -20,7 +20,7 @@ struct TranslationContexts;
 std::expected<MExp*, DiagPtr> TranslateSNullLiteralExpToMExp(SExp_NullLiteral* exp, RType* hintType, TranslationContexts& contexts);
 std::expected<MExp*, DiagPtr> TranslateSBoolLiteralExpToMExp(SExp_BoolLiteral* exp, TranslationContexts& contexts);
 std::expected<MExp*, DiagPtr> TranslateSIntLiteralExpToMExp(SExp_IntLiteral* exp, TranslationContexts& contexts);
-std::expected<MExp_String*, DiagPtr> TranslateSStringExpToNStringExp(SExp_String* exp, TranslationContexts& contexts);
+std::expected<MExp_String*, DiagPtr> TranslateSStringExpToMStringExp(SExp_String* exp, TranslationContexts& contexts);
 std::expected<MExp*, DiagPtr> TranslateSIntUnaryAssignExpToMExp(SExp* operand, MInternalUnaryAssignOperator op, TranslationContexts& contexts);
 std::expected<MExp*, DiagPtr> TranslateSUnaryOpExpToMExpExceptDeref(SExp_UnaryOp* sExp, TranslationContexts& contexts);
 std::expected<MExp*, DiagPtr> TranslateSAssignBinaryOpExpToMExp(SExp_BinaryOp* exp, TranslationContexts& contexts);

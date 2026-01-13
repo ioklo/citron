@@ -118,7 +118,7 @@ expected<MExp_StringElem, DiagPtr> TranslateSStringExpElementToRStringExpElement
     unreachable();
 }
 
-expected<MExp_String*, DiagPtr> TranslateSStringExpToNStringExp(SExp_String* exp, TranslationContexts& contexts)
+expected<MExp_String*, DiagPtr> TranslateSStringExpToMStringExp(SExp_String* exp, TranslationContexts& contexts)
 {
     vector<DiagPtr> diags;
     vector<MExp_StringElem> builder;
@@ -168,7 +168,7 @@ expected<MExp*, DiagPtr> TranslateSUnaryOpExpToMExpExceptDeref(SExp_UnaryOp* sEx
     if (sExp->kind == SUnaryOpKind::Ref)
         return TranslateSExpRefToMExp(sExp->operand, contexts);
 
-    auto e_nOperand = TranslateSExpToMExp(sExp->operand, /*hintType*/ nullptr, contexts);
+    auto e_nOperand = TranslateSExpToMExp(sExp->operand, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_nOperand);
 
     switch(sExp->kind)
@@ -235,7 +235,7 @@ expected<MExp*, DiagPtr> TranslateSAssignBinaryOpExpToMExp(SExp_BinaryOp* exp, T
     }
 
     auto nDestLocType = (*e_nDestLoc)->GetType();
-    auto e_nSrcExp = TranslateSExpToMExp(exp->operand1, /*hintType*/ nDestLocType, contexts);
+    auto e_nSrcExp = TranslateSExpToMExp(exp->operand1, /*hintType*/nDestLocType, contexts);
     RETURN_ON_ERROR(e_nSrcExp);
 
     auto e_nWrappedSrcExp = CastMExp(*e_nSrcExp, nDestLocType, contexts);
@@ -252,10 +252,10 @@ expected<MExp*, DiagPtr> TranslateSBinaryOpExpToMExp(SExp_BinaryOp* exp, Transla
         return TranslateSAssignBinaryOpExpToMExp(exp, contexts);
     }
 
-    auto e_operand0 = TranslateSExpToMExp(exp->operand0, /*hintType*/ nullptr, contexts);
+    auto e_operand0 = TranslateSExpToMExp(exp->operand0, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_operand0);
 
-    auto e_operand1 = TranslateSExpToMExp(exp->operand1, /*hintType*/ nullptr, contexts);
+    auto e_operand1 = TranslateSExpToMExp(exp->operand1, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_operand1);
 
     // 2. NotEqual 처리
@@ -320,7 +320,7 @@ expected<MExp*, DiagPtr> TranslateSListExpToMExp(SExp_List* exp, TranslationCont
 
     for(auto& elem : exp->elements)
     {
-        auto e_nElem = TranslateSExpToMExp(elem, /*hintType*/ nullptr, contexts);
+        auto e_nElem = TranslateSExpToMExp(elem, /*hintType*/nullptr, contexts);
         RETURN_ON_ERROR(e_nElem);
 
         auto* rElemType = (*e_nElem)->GetType();
@@ -351,7 +351,7 @@ expected<MExp*, DiagPtr> TranslateSNewExpToMExp(SExp_New* exp, TranslationContex
     auto e_rType = contexts.scopeContext->TranslateSTypeExpToRType(exp->type);
     RETURN_ON_ERROR(e_rType);
 
-    if ((*e_rType)->GetCustomTypeKind() == RCustomTypeKind::Class)
+    if ((*e_rType)->GetTypeKind() == RTypeKind::Class)
     {
         return unexpected{MakePtr<Error_NewExp_TypeIsNotClass>()};
     }
@@ -392,42 +392,43 @@ expected<MExp*, DiagPtr> TranslateSBoxExpToMExp(SExp_Box* exp, RType* hintType, 
 
 expected<MExp*, DiagPtr> TranslateSIsExpToMExp(SExp_Is* exp, TranslationContexts& contexts)
 {
-    auto e_target = TranslateSExpToMExp(exp->exp, /*hintType*/ nullptr, contexts);
+    auto e_target = TranslateSExpToMExp(exp->exp, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_target);
 
-    auto targetType = (*e_target)->GetType();
-    auto targetTypeKind = targetType->GetCustomTypeKind();
+    auto* targetType = (*e_target)->GetType();
+    auto targetTypeKind = targetType->GetTypeKind();
 
     auto e_testType = contexts.scopeContext->TranslateSTypeExpToRType(exp->type);
     RETURN_ON_ERROR(e_testType);
 
-    auto testTypeKind = (*e_testType)->GetCustomTypeKind();
+    auto testTypeKind = (*e_testType)->GetTypeKind();
 
     // 5가지 케이스로 나뉜다
-    if (testTypeKind == RCustomTypeKind::Class)
+    if (testTypeKind == RTypeKind::Class)
     {
-        if (targetTypeKind == RCustomTypeKind::Class)
+        if (targetTypeKind == RTypeKind::Class)
             return contexts.mFactory->MakeMExp<MExp_ClassIsClass>(*e_target, *e_testType, contexts.rFactory);
-        else if (targetTypeKind == RCustomTypeKind::Interface)
+        else if (targetTypeKind == RTypeKind::Interface)
             return contexts.mFactory->MakeMExp<MExp_InterfaceIsClass>(*e_target, *e_testType, contexts.rFactory);
         else
             throw NotImplementedException{}; // 에러 처리
     }
-    else if (testTypeKind == RCustomTypeKind::Interface)
+    else if (testTypeKind == RTypeKind::Interface)
     {
-        if (targetTypeKind == RCustomTypeKind::Class)
+        if (targetTypeKind == RTypeKind::Class)
             return contexts.mFactory->MakeMExp<MExp_ClassIsInterface>(*e_target, *e_testType, contexts.rFactory);
-        else if (targetTypeKind == RCustomTypeKind::Interface)
+        else if (targetTypeKind == RTypeKind::Interface)
             return contexts.mFactory->MakeMExp<MExp_InterfaceIsInterface>(*e_target, *e_testType, contexts.rFactory);
         else
             throw NotImplementedException{}; // 에러 처리
     }
-    else if (testTypeKind == RCustomTypeKind::EnumElem)
+    else if (auto* enumElemTestType = dynamic_cast<RType_EnumElem*>(*e_testType))
     {
-        if (targetTypeKind == RCustomTypeKind::Enum)
-            return contexts.mFactory->MakeMExp<MExp_EnumIsEnumElem>(*e_target, *e_testType, contexts.rFactory);
+        if (dynamic_cast<RType_Enum*>(targetType))
+            return contexts.mFactory->MakeMExp<MExp_EnumIsEnumElem>(*e_target, enumElemTestType, contexts.rFactory);
         else
             throw NotImplementedException{}; // 에러 처리
+        
     }
     else
         throw NotImplementedException{}; // 에러 처리
@@ -480,7 +481,7 @@ public:
 
     ResultType Visit(SExp_String* exp)
     {
-        return TranslateSStringExpToNStringExp(exp, contexts);
+        return TranslateSStringExpToMStringExp(exp, contexts);
     }
 
     ResultType Visit(SExp_IntLiteral* exp)

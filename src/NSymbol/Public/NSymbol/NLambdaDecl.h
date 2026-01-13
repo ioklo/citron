@@ -43,8 +43,6 @@ public:
     NSYMBOL_API void Init(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
     NSYMBOL_API void InitVars(std::vector<NLambdaVarDecl*>&& vars);
 
-    using NCommonFuncDeclComponent::GetReturnType;
-
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
@@ -60,8 +58,7 @@ public:
     // from NFuncDecl
     // NDecl* GetNDecl() override { return this; }
     NFuncDeclOuter* GetNFuncDeclOuter() override { return outer; }
-    RFuncReturn GetUnboundFuncReturn() override { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
-    std::span<RFuncParameter> GetUnboundFuncParams() override { return NCommonFuncDeclComponent::GetUnboundFuncParams(); }
+    RFuncDecl* GetRFuncDecl() override { return this; }
     bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
     void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(this); }
 
@@ -83,13 +80,15 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RFuncDecl
-    bool IsStatic() override { return NCommonFuncDeclComponent::IsStatic(); }
+    // RDecl* GetRDecl() override { return this; }
+    RThisKind GetThisKind() override { return NCommonFuncDeclComponent::GetThisKind(); }
     // size_t GetTypeParamCount() override { return 0; }
     size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
     RType* GetReturnType(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs); }
     RFuncReturn GetFuncReturn(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs); }
     RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index); }
-    // std::span<RFuncParameter> GetUnboundFuncParams() override { return NCommonFuncDeclComponent::GetUnboundFuncParams(); }
+    RFuncReturn GetUnboundFuncReturn() override { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
+    std::span<RFuncParameter> GetUnboundFuncParams() override { return NCommonFuncDeclComponent::GetUnboundFuncParams(); }
 };
 
 }

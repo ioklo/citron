@@ -21,17 +21,35 @@ namespace Citron {
 
 class RTypeArguments;
 
-RFuncParameterKind MakeParamKind(optional<SParamModifier> o_modifier)
-{
-    if (!o_modifier) return RFuncParameterKind::Normal;
+expected<RFuncParameterKind, DiagPtr> MakeParamKind(optional<SParamModifier> o_modifier, bool bRef)
+{   
+    if (!o_modifier)
+    {
+        if (bRef) return RFuncParameterKind::Ref;
+        return RFuncParameterKind::Normal;
+    }
 
     switch (*o_modifier)
     {
-    case SParamModifier::In: return RFuncParameterKind::In;
-    case SParamModifier::Move: return RFuncParameterKind::Move;
-    case SParamModifier::Forward: return RFuncParameterKind::Forward;
-    case SParamModifier::Out: return RFuncParameterKind::Out;
-    case SParamModifier::Params: return RFuncParameterKind::Params;
+    case SParamModifier::In: 
+        if (!bRef) return unexpected{MakePtr<Error_FuncDecl_ParameterKindNeedRef>()};
+        return RFuncParameterKind::In;
+
+    case SParamModifier::Move: 
+        if (!bRef) return unexpected{MakePtr<Error_FuncDecl_ParameterKindNeedRef>()};
+        return RFuncParameterKind::Move;
+
+    case SParamModifier::Forward:
+        if (!bRef) return unexpected{MakePtr<Error_FuncDecl_ParameterKindNeedRef>()};
+        return RFuncParameterKind::Forward;
+
+    case SParamModifier::Out: 
+        if (!bRef) return unexpected{MakePtr<Error_FuncDecl_ParameterKindNeedRef>()};
+        return RFuncParameterKind::Out;
+
+    case SParamModifier::Params: 
+        return RFuncParameterKind::Params;
+        
     default: unreachable();
     }
 }
@@ -58,9 +76,9 @@ expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArg
 //    static_assert(false);
 //
 //    //auto expType = exp->GetType();
-//    //auto expTypeKind = expType->GetCustomTypeKind();
+//    //auto expTypeKind = expType->GetTypeKind();
 //
-//    //auto expectedTypeKind = expectedType->GetCustomTypeKind();
+//    //auto expectedTypeKind = expectedType->GetTypeKind();
 //
 //    //// 같으면 그대로 리턴
 //    //if (expectedType == expType)

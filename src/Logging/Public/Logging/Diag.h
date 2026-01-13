@@ -140,6 +140,8 @@ struct Error_FuncMatch_MismatchBetweenParamCountAndArgCount : Error {}; // A0403
 struct Error_FuncMatch_ParamsArgumentShouldBeTuple : Error {}; // A0404
 struct Error_FuncMatch_MismatchBetweenParamTypeAndArgType : Error {}; // A0405
 
+struct Error_FuncDecl_ParameterKindNeedRef : Error {}; // [in] [move] [forward] [out] 일 경우 타입에 &를 붙여야 한다
+
 struct Error_UnaryAssignOp_IntTypeIsAllowedOnly : Error { }; // A0601_UnaryAssignOp_IntTypeIsAllowedOnly
 struct Error_UnaryAssignOp_AssignableExpressionIsAllowedOnly : Error { }; // A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly
 struct Error_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly : Error { }; // A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly

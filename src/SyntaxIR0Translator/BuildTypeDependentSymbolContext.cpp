@@ -3,6 +3,7 @@
 #include "Syntax/Syntax.h"
 
 #include "Infra/Ptr.h"
+#include "Infra/Expected.h"
 #include "Infra/Exceptions.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFactory.h"
@@ -51,7 +52,7 @@ RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl
     return Accept(visitor, sTypeExp);
 }
 
-tuple<vector<RFuncParameter>, bool> BuildTypeDependentSymbolContext::MakeParameters(NDecl* decl, vector<SFuncParam>& sParams)
+expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildTypeDependentSymbolContext::MakeParameters(NDecl* decl, vector<SFuncParam>& sParams)
 {
     bool bLastParamVariadic = false;
 
@@ -63,7 +64,10 @@ tuple<vector<RFuncParameter>, bool> BuildTypeDependentSymbolContext::MakeParamet
     {
         auto& sParam = sParams[i];
 
-        auto rParamKind = MakeParamKind(sParam.o_modifier);
+        auto e_rParamKind = MakeParamKind(sParam.o_modifier, sParam.bRef);
+        RETURN_ON_ERROR(e_rParamKind);
+        auto& rParamKind = *e_rParamKind;
+
         auto type = this->MakeType(sParam.type, decl);
         if (!type) throw NotImplementedException{}; // 에러 처리
 
@@ -80,7 +84,7 @@ tuple<vector<RFuncParameter>, bool> BuildTypeDependentSymbolContext::MakeParamet
 
         }
 
-        rParams.emplace_back(rParamKind, sParam.bRef, type, RName_Normal{sParam.name});
+        rParams.emplace_back(rParamKind, type, RName_Normal{sParam.name});
     }
 
     return make_tuple(move(rParams), bLastParamVariadic);

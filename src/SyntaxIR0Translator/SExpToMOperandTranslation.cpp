@@ -1,20 +1,12 @@
-#include "SExpToReExpTranslation.h"
+#include "SExpToMOperandTranslation.h"
 
-#include <expected>
-
-#include "Infra/Ptr.h"
-#include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
-#include "Syntax/Syntax.h"
-#include "Logging/Diag.h"
-#include "MIR/MExp.h"
-
-#include "SExpToImExpTranslation.h"
-#include "ImExpToReExpTranslation.h"
-#include "ReExp.h"
+#include "Infra/Exceptions.h"
+#include "SExpToReExpTranslation.h"
+#include "ReExpToMOperandTranslation.h"
 #include "SExpToMExpTranslation.h"
-#include "TranslationContexts.h"
-#include "SRTFactory.h"
+
+#include "MIR/MExp.h"
 
 using namespace std;
 
@@ -22,39 +14,46 @@ namespace Citron {
 
 namespace {
 
-class SExpToReExpTranslator
+struct SExpToMOperandTranslator
 {
-public:
-    using ResultType = expected<ReExp*, DiagPtr>;
+    using ResultType = expected<MOperand, DiagPtr>;
 
-private:
     RType* hintType;
     TranslationContexts& contexts;
 
-public:
-    SExpToReExpTranslator(RType* hintType, TranslationContexts& contexts)
+    SExpToMOperandTranslator(RType* hintType, TranslationContexts& contexts)
         : hintType{hintType}, contexts{contexts}
     {
     }
 
-private:
-    ResultType HandleDefault(SExp* exp)
+    ResultType HandleDefault(SExp* sExp)
     {
-        auto e_imExp = TranslateSExpToImExp(exp, hintType, contexts);
-        RETURN_ON_ERROR(e_imExp);
+        auto e_reExp = TranslateSExpToReExp(sExp, hintType, contexts);
+        RETURN_ON_ERROR(e_reExp);
 
-        return TranslateImExpToReExp(*e_imExp, contexts);
+        return TranslateReExpToMOperand(*e_reExp, contexts);
     }
 
-    ResultType HandleExp(expected<MExp*, DiagPtr>&& eExp)
+    // fast track
+    template<typename TMExp> requires derived_from<TMExp, MExp>
+    ResultType HandleExp(expected<TMExp*, DiagPtr>&& e_mExp)
     {
-        if (!eExp)
-            return unexpected{move(eExp).error()};
-        else
-            return contexts.srtFactory->MakeReExp<ReExp_Else>(*eExp);
+        RETURN_ON_ERROR(e_mExp);
+        return MOperand_Exp{*e_mExp};
     }
 
-public:
+    template<typename TValue>
+    ResultType Error(expected<TValue, DiagPtr>&& e)
+    {
+        return unexpected{move(e).error()};
+    }
+
+    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
+    ResultType Error(TArgs&&... args)
+    {
+        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+    }
+
     ResultType Visit(SExp_Identifier* exp)
     {
         return HandleDefault(exp);
@@ -85,9 +84,9 @@ public:
         return HandleExp(TranslateSBinaryOpExpToMExp(exp, contexts));
     }
 
-    // int만 지원한다
     ResultType Visit(SExp_UnaryOp* exp)
     {
+        // Deref는 loc으로 변경되어야 한다
         if (exp->kind == SUnaryOpKind::Deref)
         {
             return HandleDefault(exp);
@@ -113,13 +112,12 @@ public:
         return HandleDefault(exp);
     }
 
-    // exp를 돌려주는 버전
-    // parent."x"<>
     ResultType Visit(SExp_Member* exp)
     {
         return HandleDefault(exp);
     }
 
+    // s->x
     ResultType Visit(SExp_IndirectMember* exp)
     {
         throw NotImplementedException{};
@@ -130,7 +128,6 @@ public:
         return HandleExp(TranslateSListExpToMExp(exp, contexts));
     }
 
-    // 'new C(...)'
     ResultType Visit(SExp_New* exp)
     {
         return HandleExp(TranslateSNewExpToMExp(exp, contexts));
@@ -154,10 +151,11 @@ public:
 
 } // namespace
 
-expected<ReExp*, DiagPtr> TranslateSExpToReExp(SExp* exp, RType* hintType, TranslationContexts& contexts)
+
+expected<MOperand, DiagPtr> TranslateSExpToMOperand(SExp* exp, RType* hintType, TranslationContexts& contexts)
 {
-    SExpToReExpTranslator translator{hintType, contexts};
+    SExpToMOperandTranslator translator{hintType, contexts};
     return Accept(translator, exp);
 }
 
-} // namesapce Citron::SyntaxIR0Translator
+} // namespace Citron

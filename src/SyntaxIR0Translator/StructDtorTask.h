@@ -23,7 +23,7 @@ class StructDtorTask
 
 public:
     StructDtorTask(NStructDecl* nStruct, SStructDtorDecl* sStructDtor, const NFactoryPtr& nFactory);
-    void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
+    std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 
 public:

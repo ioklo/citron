@@ -13,7 +13,7 @@ NStructFuncDecl::NStructFuncDecl(
     : _struct{_struct}
     , accessor{accessor}
     , name{name}
-    , NCommonFuncDeclComponent{bStatic, bSeqFunc}
+    , NCommonFuncDeclComponent{bStatic ? RThisKind::None : RThisKind::Ptr, bSeqFunc}
 {   
 }
 

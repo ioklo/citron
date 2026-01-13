@@ -31,7 +31,7 @@ class GlobalFuncTask
 public:
     static void Register(NNamespaceDecl* nOuter, SGlobalFuncDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
 
-    void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
+    std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 };
 

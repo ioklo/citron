@@ -17,7 +17,6 @@
 #include "QBodyContext.h"
 #include "ScopeGuard.h"
 
-
 using namespace std;
 
 namespace Citron {
@@ -61,6 +60,16 @@ public:
 
         if (stmt->initExp)
         {   
+            // LocalVarDecl
+            // var s = S();
+            // var s = s1; => var s = S(s1); 복사             
+            // rvalue 인데 두가지 경우로 나눠진다
+            // var s = move s2; => var s = S(move s2); 이동
+            // var s = F();
+            
+            // primitive의 경우
+            // var i = 1; => 1은 rvalue
+
             // var s = expr;
             // expr이 lvalue인 경우, 복사 (복사가 지원 가능할때)
             // expr이 rvalue인 경우, 이동 

@@ -55,7 +55,7 @@ private:
 
     ResultType HandleValue(SExp* exp)
     {
-        auto e_exp = TranslateSExpToMExp(exp, /*hintType*/ nullptr, contexts);
+        auto e_exp = TranslateSExpToMExp(exp, /*hintType*/nullptr, contexts);
         RETURN_ON_ERROR(e_exp);
         
         return contexts.srtFactory->MakeIrExp<IrExp_LocalValue>(*e_exp);
@@ -118,7 +118,7 @@ public:
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            auto e_loc = TranslateSExpToMLoc(exp, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+            auto e_loc = TranslateSExpToMLoc(exp, /*hintType*/nullptr, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_loc);
 
             return Value<IrExp_DerefedBoxValue>(*e_loc);

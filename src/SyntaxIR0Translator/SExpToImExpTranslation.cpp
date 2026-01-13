@@ -93,7 +93,7 @@ public:
 
     ResultType Visit(SExp_String* exp)
     {
-        return HandleExp(TranslateSStringExpToNStringExp(exp, contexts));
+        return HandleExp(TranslateSStringExpToMStringExp(exp, contexts));
     }
 
     ResultType Visit(SExp_IntLiteral* exp)
@@ -157,10 +157,10 @@ public:
 
     ResultType Visit(SExp_Indexer* exp)
     {
-        auto e_reObj = TranslateSExpToReExp(exp->obj, /*hintType*/ nullptr, contexts);
+        auto e_reObj = TranslateSExpToReExp(exp->obj, /*hintType*/nullptr, contexts);
         RETURN_ON_ERROR(e_reObj);
 
-        auto e_reIndex = TranslateSExpToReExp(exp->index, /*hintType*/ nullptr, contexts);
+        auto e_reIndex = TranslateSExpToReExp(exp->index, /*hintType*/nullptr, contexts);
         RETURN_ON_ERROR(e_reIndex);
 
         auto intType = contexts.rFactory->MakeIntType();
@@ -180,7 +180,7 @@ public:
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            auto e_nLoc = TranslateReExpToMLoc(*e_reIndex, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+            auto e_nLoc = TranslateReExpToMLoc(*e_reIndex, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_nLoc);
 
             nIndexLoc = *e_nLoc;

@@ -93,7 +93,7 @@ public:
 
     ResultType Visit(SExp_String* exp)
     {
-        auto e_nExp = TranslateSStringExpToNStringExp(exp, contexts);
+        auto e_nExp = TranslateSStringExpToMStringExp(exp, contexts);
         RETURN_ON_ERROR(e_nExp);
 
         return HandleExp(move(*e_nExp));
@@ -227,6 +227,5 @@ expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool b
     SExpToMLocTranslator translator{hintType, bWrapExpAsLoc, notLocationDiag, contexts};
     return Accept(translator, sExp);
 }
-
 
 } // namespace Citron

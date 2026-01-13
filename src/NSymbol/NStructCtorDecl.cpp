@@ -8,11 +8,11 @@ using namespace std;
 namespace Citron
 {
 
-NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, bool bTrivial)
+NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, RStructCtorKind kind)
     : _struct{_struct}
     , accessor{accessor}
-    , bTrivial{bTrivial}
-    , NCommonFuncDeclComponent(/*bStatic*/false, /*bSeqFunc*/false)
+    , kind{kind}
+    , NCommonFuncDeclComponent(RThisKind::Ptr, /*bSeqFunc*/false)
 {
     NGenericsComponent::InitTypeParams({});
 }

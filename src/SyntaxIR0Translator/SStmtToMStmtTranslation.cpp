@@ -111,7 +111,7 @@ public:
 
         for(auto* cmd : stmt->commands)
         {
-            auto e_nStringExp = TranslateSStringExpToNStringExp(cmd, contexts);
+            auto e_nStringExp = TranslateSStringExpToMStringExp(cmd, contexts);
             RETURN_ON_ERROR(e_nStringExp);
 
             builder.push_back(*e_nStringExp);
@@ -130,7 +130,7 @@ public:
     ResultType Visit(SStmt_If* stmt) 
     {
         // 순회
-        auto e_nCond = TranslateSExpToMExp(stmt->cond, /*hintType*/ contexts.rFactory->MakeBoolType(), contexts);
+        auto e_nCond = TranslateSExpToMExp(stmt->cond, /*hintType*/contexts.rFactory->MakeBoolType(), contexts);
         RETURN_ON_ERROR(e_nCond);
 
         // cast
@@ -158,11 +158,20 @@ public:
 
     ResultType Visit(SStmt_IfTest* stmt) 
     {
-        // if (Type varName = e) e_body         
+        // if (Type varName = e) e_body     
+        // TODO: if (e is Type(v)) e_body 꼴로 바꾸기
+        // case Class c:
+        // case E.First(v):
+        // 
+        // if (Class c = e)
+        // if (E.First(v) = e)
+        // 
+        // if (e is Class c)
+        // if (e is E.First(v))
         auto e_rTestType = contexts.scopeContext->TranslateSTypeExpToRType(stmt->testType);
         RETURN_ON_ERROR(e_rTestType);
 
-        auto e_nTarget = TranslateSExpToMExp(stmt->exp, /*hintType*/ nullptr, contexts);
+        auto e_nTarget = TranslateSExpToMExp(stmt->exp, /*hintType*/nullptr, contexts);
         RETURN_ON_ERROR(e_nTarget);
 
         auto bodyContext = MakeTranslationContexts_NestedScope(contexts);
@@ -186,10 +195,10 @@ public:
         auto e_nAsExp = MakeMExp_As(*e_nTarget, *e_rTestType, contexts);
         RETURN_ON_ERROR(e_nAsExp);
 
-        auto rTestTypeKind = (*e_rTestType)->GetCustomTypeKind();
-        if (rTestTypeKind == RCustomTypeKind::Class || rTestTypeKind == RCustomTypeKind::Interface)
+        auto rTestTypeKind = (*e_rTestType)->GetTypeKind();
+        if (rTestTypeKind == RTypeKind::Class || rTestTypeKind == RTypeKind::Interface)
             return Value<MStmt_IfNullableRefTest>(*e_rTestType, RName_Normal(stmt->varName), *e_nAsExp, move(*e_bodyStmts), move(elseStmts));
-        else if (rTestTypeKind == RCustomTypeKind::Enum)
+        else if (rTestTypeKind == RTypeKind::Value)
             return Value<MStmt_IfNullableValueTest>(*e_rTestType, RName_Normal(stmt->varName), *e_nAsExp, move(*e_bodyStmts), move(elseStmts));
         else
             throw NotImplementedException{}; // 에러
@@ -219,7 +228,7 @@ public:
         if (stmt->cond)
         {
             auto boolType = contexts.rFactory->MakeBoolType();
-            auto e_rawCond = TranslateSExpToMExp(stmt->cond, /*hintType*/ boolType, forStmtContexts);
+            auto e_rawCond = TranslateSExpToMExp(stmt->cond, /*hintType*/boolType, forStmtContexts);
             RETURN_ON_ERROR(e_rawCond);
 
             e_rawCond = CastMExp(*e_rawCond, boolType, contexts);
@@ -232,7 +241,7 @@ public:
         if (stmt->cont)
         {
             DesignatedDiagnostic<Error_ForStmt_ContinueExpShouldBeAssignOrCall> designatedDiag;
-            auto e_contResult = TranslateSExpAsTopLevelExpToMExp(stmt->cont, /*hintType*/ nullptr, &designatedDiag, forStmtContexts);
+            auto e_contResult = TranslateSExpAsTopLevelExpToMExp(stmt->cont, /*hintType*/nullptr, &designatedDiag, forStmtContexts);
             RETURN_ON_ERROR(e_contResult);
 
             continueExp = *e_contResult;
@@ -303,7 +312,7 @@ public:
                 {
                     // 리턴타입을 힌트로 사용한다
                     // 현재 함수 시그니처랑 맞춰서 같은지 확인한다
-                    auto e_retValue = TranslateSExpToMExp(stmt->value, /*hintType*/ funcRet.type, contexts);
+                    auto e_retValue = TranslateSExpToMExp(stmt->value, /*hintType*/funcRet.type, contexts);
                     RETURN_ON_ERROR(e_retValue);
 
                     auto castRetValue = CastMExp(*e_retValue, funcRet.type, contexts);
@@ -326,7 +335,7 @@ public:
                 else
                 {
                     // 힌트타입 없이 분석
-                    auto e_retValue = TranslateSExpToMExp(stmt->value, /*hintType*/ nullptr, contexts);
+                    auto e_retValue = TranslateSExpToMExp(stmt->value, /*hintType*/nullptr, contexts);
                     RETURN_ON_ERROR(e_retValue);
 
                     // 리턴값이 안 적혀 있었으므로 적는다
@@ -379,7 +388,7 @@ public:
     ResultType Visit(SStmt_Exp* stmt)
     {
         DesignatedDiagnostic<Error_ExpStmt_ExpressionShouldBeAssignOrCall> designatedDiag;
-        auto e_exp = TranslateSExpAsTopLevelExpToMExp(stmt->exp, /*hintType*/ nullptr, &designatedDiag, contexts);
+        auto e_exp = TranslateSExpAsTopLevelExpToMExp(stmt->exp, /*hintType*/nullptr, &designatedDiag, contexts);
         RETURN_ON_ERROR(e_exp);
 
         return Value<MStmt_Exp>(*e_exp);
@@ -432,12 +441,12 @@ public:
                 // TranslationResult<(Exp, IType)> Error() => TranslationResult.Error<(Exp, IType)>();
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-                auto e_nEnumerable = TranslateSExpToMLoc(sStmt->enumerable, /*hintType*/ nullptr, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+                auto e_nEnumerable = TranslateSExpToMLoc(sStmt->enumerable, /*hintType*/nullptr, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
                 RETURN_ON_ERROR(e_nEnumerable);
 
                 // GetEnumerator함수를 손으로 찾는다
                 auto rEnumerableType = (*e_nEnumerable)->GetType();
-                auto o_rMember = rEnumerableType->GetMember(RNames::GetEnumerator, /*explicitTypeArgsExceptOuterCount*/ 0);
+                auto o_rMember = rEnumerableType->GetMember(RNames::GetEnumerator, /*explicitTypeArgsExceptOuterCount*/0);
                 if (!o_rMember)
                 {
                     // TODO: [15] foreach 에러 처리
@@ -458,7 +467,7 @@ public:
                     if (funcDecl->GetTypeParamCount() != 0) continue;
 
                     // instance함수여야 한다
-                    if (funcDecl->IsStatic()) continue;
+                    if (funcDecl->GetThisKind() == RThisKind::None) continue;
 
                     candidates.push_back(funcDeclWithOuter);
                 }
@@ -485,7 +494,7 @@ public:
 
             expected<MExp*, DiagPtr> MakeNextExpAndInferItemVarType(RType* enumeratorType)
             {
-                auto o_rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
+                auto o_rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/0);
                 if (!o_rMember) return unexpected{MakePtr<Error_NotImplemented>()};
 
                 vector<MExp*> candidates;
@@ -555,7 +564,7 @@ public:
 
             expected<NextExpAndCastExp, DiagPtr> MakeNextExpAndCastExp(RType* enumeratorType, RType* itemTypeFromSyntax)
             {
-                auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/ 0);
+                auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/0);
                 if (!rMember) return unexpected{MakePtr<Error_NotImplemented>()};
 
                 vector<NextExpAndCastExp> candidates;
@@ -718,7 +727,7 @@ public:
         assert(setFuncRet); // 아닌 경우는 위에서 거른다 (sequence함수는 무조건 ret포함)
 
         // NOTICE: 리턴 타입을 힌트로 넣었다
-        auto e_retValue = TranslateSExpToMExp(stmt->value, /*hintType*/ setFuncRet->type, contexts);
+        auto e_retValue = TranslateSExpToMExp(stmt->value, /*hintType*/setFuncRet->type, contexts);
         RETURN_ON_ERROR(e_retValue);
 
         auto e_castRetValue = CastMExp(*e_retValue, setFuncRet->type, contexts);
@@ -737,7 +746,7 @@ public:
             }
 
             DesignatedDiagnostic<Error_StaticNotNullDirective_ArgumentMustBeLocation> designatedDiag;
-            auto e_arg = TranslateSExpToMLoc(stmt->args[0], /*hintType*/ nullptr, /*bWrapExpAsLoc*/ false, &designatedDiag, contexts);
+            auto e_arg = TranslateSExpToMLoc(stmt->args[0], /*hintType*/nullptr, /*bWrapExpAsLoc*/false, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_arg);
 
             return Value<MStmt_NotNullDirective>(*e_arg);
@@ -815,7 +824,7 @@ expected<vector<MStmt*>, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtI
         ResultType Visit(SForStmtInitializer_Exp* forInit)
         {
             DesignatedDiagnostic<Error_ForStmt_ExpInitializerShouldBeAssignOrCall> designatedDiag;
-            auto e_exp = TranslateSExpAsTopLevelExpToMExp(forInit->exp, /*hintType*/ nullptr, &designatedDiag, contexts);
+            auto e_exp = TranslateSExpAsTopLevelExpToMExp(forInit->exp, /*hintType*/nullptr, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_exp);
 
             return vector<MStmt*>{contexts.mFactory->MakeMStmt<MStmt_Exp>(*e_exp)};
@@ -848,7 +857,7 @@ expected<MExp*, DiagPtr> TranslateSExpAsTopLevelExpToMExp(SExp* sExp, RType* hin
     return e_nExp;
 }
 
-tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sParams, TranslationContexts& contexts)
+expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(vector<SLambdaExpParam>& sParams, TranslationContexts& contexts)
 {
     bool bLastParamVariadic = false;
     size_t sParamCount = sParams.size();
@@ -859,17 +868,18 @@ tuple<vector<RFuncParameter>, bool> MakeParameters(vector<SLambdaExpParam>& sPar
     {
         auto& sParam = sParams[i];
 
-        auto rParamKind = MakeParamKind(sParam.o_paramModifier);
+        // TODO: [28] lambda parameter에 reference들어오도록 추가
+        auto e_rParamKind = MakeParamKind(sParam.o_paramModifier, false); 
+        RETURN_ON_ERROR_REFDECL(e_rParamKind, rParamKind);
 
         // 파라미터에 Type이 명시되어있지 않으면 hintType기반으로 inference 해야 한다.
         if (!sParam.type)
             throw NotImplementedException{};
 
         auto e_rParamType = contexts.scopeContext->TranslateSTypeExpToRType(sParam.type);
-        // RETURN_ON_ERROR(e_rParamType);
-        assert(false); // TODO: expected리턴 하도록 수정
+        RETURN_ON_ERROR(e_rParamType);
 
-        rParams.emplace_back(rParamKind, /*bRef*/false, *e_rParamType, RName_Normal(sParam.name));
+        rParams.emplace_back(rParamKind, *e_rParamType, RName_Normal(sParam.name));
 
         if (rParamKind == RFuncParameterKind::Params)
         {
@@ -903,7 +913,8 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType
     // 람다 관련 정보는 여기서 수집한다
     RFuncReturn funcRet = retType ? (RFuncReturn)RFuncReturn_Set{retType} : RFuncReturn_NotSet();
 
-    auto [funcParams, bLastParamVariadic] = MakeParameters(sParams, contexts);
+    auto e_funcParamsInfo = MakeParameters(sParams, contexts);
+    RETURN_ON_ERROR_REFDECL(e_funcParamsInfo, [funcParams, bLastParamVariadic]);
 
     // Lambda를 만들고 context 인스턴스 안에 저장한다
     // DeclSymbol tree로의 Commit은 함수 백트래킹이 다 끝났을 때 (그냥 Translation이 끝났을때 해도 될거 같다)

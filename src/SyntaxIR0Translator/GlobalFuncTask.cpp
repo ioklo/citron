@@ -1,5 +1,6 @@
 #include "GlobalFuncTask.h"
 
+#include "Infra/Expected.h"
 #include "Syntax/Syntax.h"
 #include "NSymbol/NGlobalFuncDecl.h"
 #include "NSymbol/NNamespaceDecl.h"
@@ -22,7 +23,7 @@ void GlobalFuncTask::Register(NNamespaceDecl* outer, SGlobalFuncDecl* syntax, co
     phaseManager.AddTranslateBodyTask(task);
 }
 
-void GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
     auto accessor = MakeAccessor(syntax->accessModifier, AccessorContext::Global);    
     bool bSeqFunc = false; // TODO:
@@ -33,10 +34,13 @@ void GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& c
     nGFuncDecl->InitTypeParams(move(typeParams));
     
     auto* rRetType = context.MakeType(syntax->retType, nGFuncDecl);
-    auto [rParameters, bLastParamVariadic] = context.MakeParameters(nGFuncDecl, syntax->parameters);
+    auto e_parametersInfo = context.MakeParameters(nGFuncDecl, syntax->parameters);
+    RETURN_ON_ERROR_REFDECL(e_parametersInfo, [rParameters, bLastParamVariadic]);
 
     nGFuncDecl->InitFuncReturnAndParams(RFuncReturn_Set(rRetType), move(rParameters), bLastParamVariadic);
     nOuter->AddGlobalFuncDecl(nGFuncDecl);
+
+    return {};
 }
 
 expected<MFuncBody, DiagPtr> GlobalFuncTask::TranslateBody(TranslateBodyContext& context)

@@ -6,6 +6,7 @@
 #include "Infra/Variants.h"
 
 #include "RSymbol/RFactory.h"
+#include "RSymbol/RFuncDecl.h"
 #include "NSymbol/NFuncDecl.h"
 
 #include "MIR/MFuncBody.h"
@@ -51,7 +52,7 @@ CheckEndReturnResult CheckEndReturn(NFuncDecl* nFuncDecl, vector<MStmt*>& mStmts
 
     // 2. 시그니처가 void를 리턴하는지 확인
     bool signatureReturnVoid = [nFuncDecl, &rFactory] {
-        auto rFuncReturn = nFuncDecl->GetUnboundFuncReturn();
+        auto rFuncReturn = nFuncDecl->GetRFuncDecl()->GetUnboundFuncReturn();
         return visit([&rFactory](auto& rFuncReturn) -> bool {
             using T = remove_cvref_t<decltype(rFuncReturn)>;
 

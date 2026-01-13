@@ -26,7 +26,7 @@ private:
 
 public:
     static void Register(NStructDecl* nOuter, SStructVarDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
-    void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
+    std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
 };
 
 } // namespace Citron

@@ -51,7 +51,7 @@ struct QInst_MoveAssign_String
 // %dest = load [%src]
 struct QInst_Load
 {
-    QType *type;
+    QType* type;
     QArg_Slot dest;  // T slot
     QArg_Slot src;   // T* 나타내는 slot가능
 };

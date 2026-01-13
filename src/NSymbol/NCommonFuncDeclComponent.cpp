@@ -15,8 +15,8 @@ using namespace std;
 namespace Citron
 {
 
-NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc)
-    : bStatic{bStatic}
+NCommonFuncDeclComponent::NCommonFuncDeclComponent(RThisKind thisKind, bool bSeqFunc)
+    : thisKind{thisKind}
     , bSeqFunc{bSeqFunc}
 {
 }
@@ -101,7 +101,7 @@ optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(const RName& name,
     {
         if (param.name == name)
         {
-            if (param.bRef)
+            if (param.IsRef())
                 return RMember_LocalRef{param.type, param.name};
             else
                 return RMember_LocalVar{param.type, param.name};

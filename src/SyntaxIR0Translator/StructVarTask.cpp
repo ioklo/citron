@@ -19,7 +19,7 @@ void StructVarTask::Register(NStructDecl* nOuter, SStructVarDecl* syntax, const 
     phaseManager.AddBuildTypeDependentSymbolTask(task);
 }
 
-void StructVarTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> StructVarTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
     auto accessor = MakeAccessor(sStructVar->accessModifier, AccessorContext::InsideStruct);
     bool bStatic = false; // TODO: bStatic 지원
@@ -34,6 +34,8 @@ void StructVarTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& co
         symbols.push_back(symbol);
         nStruct->AddVar(symbol);
     }
+
+    return {};
 }
 
 } // namespace Citron

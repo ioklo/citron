@@ -18,8 +18,6 @@ class RGlobalFuncDecl
     , public RFuncDeclOuter
 {
 public:
-    virtual RType* GetReturnType(RTypeArguments& typeArgs) = 0;
-
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
     void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(this); }
     void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(this); }

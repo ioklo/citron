@@ -3,6 +3,7 @@
 #include <vector>
 #include <tuple>
 #include <functional>
+#include <expected>
 
 #include "Syntax/Syntax.h"
 #include "NSymbol/NFactory.h"
@@ -14,6 +15,7 @@ class RType;
 class NDecl;
 using RFactoryPtr = std::shared_ptr<RFactory>;
 using NFactoryPtr = std::shared_ptr<NFactory>;
+using DiagPtr = std::shared_ptr<struct Diag>;
 
 class TranslateBodyContext;
 
@@ -32,7 +34,7 @@ public:
     }
 
     RType* MakeType(STypeExp* sTypeExp, NDecl* decl);
-    std::tuple<std::vector<RFuncParameter>, bool> MakeParameters(NDecl* decl, std::vector<SFuncParam>& sParams);
+    std::expected<std::tuple<std::vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(NDecl* decl, std::vector<SFuncParam>& sParams);
 };
 
 } // namespace Citron

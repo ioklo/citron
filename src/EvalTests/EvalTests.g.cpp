@@ -2866,3 +2866,31 @@ void Main()
     DoTest(code, expected);
 }
 
+TEST(VarDecl, CopyCtor) 
+{
+    auto code = R"---(struct S { int x; }
+
+void Main()
+{
+    var s = S(2);
+    var s1 = s;
+})---";
+    string expected = R"---(4)---";
+
+    DoTest(code, expected);
+}
+
+TEST(VarDecl, Ctor) 
+{
+    auto code = R"---(struct S { int x; }
+
+void Main()
+{
+    var s = S(2);
+    @${s.x}    
+})---";
+    string expected = R"---(4)---";
+
+    DoTest(code, expected);
+}
+

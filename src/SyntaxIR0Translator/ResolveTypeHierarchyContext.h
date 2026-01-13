@@ -10,7 +10,6 @@ class ResolveTypeHierarchyContext
 {
 public:
     RType* MakeType(STypeExp* sType, NDecl* decl);
-
 };
 
 } // namespace Citron

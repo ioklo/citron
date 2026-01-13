@@ -7,6 +7,7 @@
 #include <string>
 
 #include "Infra/Hash.h"
+#include "Infra/Exceptions.h"
 
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
@@ -62,14 +63,11 @@ public:
     virtual void Visit(RType_Lambda* type) = 0;
 };
 
-enum class RCustomTypeKind
-{   
-    Struct,
-    Class,
-    Enum,
-    EnumElem,
-    Interface,
-    Others,
+enum class RTypeKind
+{
+    Value,     // enum, struct, ...
+    Class,     // class
+    Interface, // interface
 };
 
 class RType
@@ -77,7 +75,7 @@ class RType
 public:
     virtual ~RType() {}
     virtual RType* Apply(RTypeArguments& typeArgs) = 0;
-    virtual RCustomTypeKind GetCustomTypeKind() { return RCustomTypeKind::Others; }
+    virtual RTypeKind GetTypeKind() = 0;
     virtual std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) = 0;
 
     virtual void Accept(RTypeVisitor& visitor) = 0;
@@ -97,6 +95,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -113,6 +112,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RTypeKind GetTypeKind() override { return innerType->GetTypeKind(); }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -129,6 +129,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RTypeKind GetTypeKind() override { throw NotImplementedException{}; } // TypeVar종류따라 분화할 수 있다
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -141,6 +142,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; } // 크기가 0인 value type
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -161,7 +163,7 @@ public:
 
     // from RType
     RType* Apply(RTypeArguments& typeArgs) override { return this; } // no typeArgs
-    // RCustomTypeKind GetCustomTypeKind() { return RCustomTypeKind::Others; }
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override { return std::nullopt; }
 
     void Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
@@ -190,6 +192,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -221,7 +224,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
-    RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Interface; }
+    RTypeKind GetTypeKind() override { return RTypeKind::Interface; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -238,6 +241,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -254,6 +258,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -270,6 +275,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -291,7 +297,7 @@ public:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
-    RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Class; }
+    RTypeKind GetTypeKind() override { return RTypeKind::Class; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
@@ -314,7 +320,7 @@ public:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
-    RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Struct; }
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
@@ -333,7 +339,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
-    RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Enum; }
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
@@ -357,7 +363,7 @@ public:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
-    RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::EnumElem; }
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -376,7 +382,7 @@ private:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
-    RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Interface; }
+    RTypeKind GetTypeKind() override { return RTypeKind::Interface; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
@@ -398,7 +404,7 @@ public:
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
-    RCustomTypeKind GetCustomTypeKind() override { return RCustomTypeKind::Struct; }
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     RSYMBOL_API std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
     void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }

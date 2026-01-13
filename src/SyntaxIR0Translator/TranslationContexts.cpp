@@ -50,7 +50,7 @@ TranslationContexts MakeTranslationContexts_NestedLoop(TranslationContexts& cont
 
 TranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, vector<RFuncParameter>&& funcParams, bool bLastParamVariadic, TranslationContexts& contexts)
 {
-    auto newFuncContext = MakePtr<FuncContext_Lambda>(contexts.funcContext, contexts.scopeContext, /*bSeqFunc*/ false, move(funcRet), move(funcParams), bLastParamVariadic);
+    auto newFuncContext = MakePtr<FuncContext_Lambda>(contexts.funcContext, contexts.scopeContext, /*bSeqFunc*/false, move(funcRet), move(funcParams), bLastParamVariadic);
     auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, nullptr, 0, contexts.rFactory);
 
     return {contexts.globalContext, newFuncContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
@@ -59,33 +59,33 @@ TranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, vector
 expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType, TranslationContexts& contexts)
 {
     auto targetType = targetExp->GetType();
-    auto targetTypeKind = targetType->GetCustomTypeKind();
-    auto testTypeKind = testType->GetCustomTypeKind();
+    auto targetTypeKind = targetType->GetTypeKind();
+    auto testTypeKind = testType->GetTypeKind();
 
     // 5가지 케이스로 나뉜다
-    if (testTypeKind == RCustomTypeKind::Class)
+    if (testTypeKind == RTypeKind::Class)
     {
-        if (targetTypeKind == RCustomTypeKind::Class)
+        if (targetTypeKind == RTypeKind::Class)
             return contexts.mFactory->MakeMExp<MExp_ClassAsClass>(targetExp, testType, contexts.rFactory);
 
-        else if (targetTypeKind == RCustomTypeKind::Interface)
+        else if (targetTypeKind == RTypeKind::Interface)
             return contexts.mFactory->MakeMExp<MExp_InterfaceAsClass>(targetExp, testType, contexts.rFactory);
         else
             throw NotImplementedException{}; // 에러 처리
     }
-    else if (testTypeKind == RCustomTypeKind::Interface)
+    else if (testTypeKind == RTypeKind::Interface)
     {
-        if (targetTypeKind == RCustomTypeKind::Class)
+        if (targetTypeKind == RTypeKind::Class)
             return contexts.mFactory->MakeMExp<MExp_ClassAsInterface>(targetExp, testType, contexts.rFactory);
-        else if (targetTypeKind == RCustomTypeKind::Interface)
+        else if (targetTypeKind == RTypeKind::Interface)
             return contexts.mFactory->MakeMExp<MExp_InterfaceAsInterface>(targetExp, testType, contexts.rFactory);
         else
             throw NotImplementedException{}; // 에러 처리
     }
-    else if (testTypeKind == RCustomTypeKind::EnumElem)
+    else if (auto* enumElemTestType = dynamic_cast<RType_EnumElem*>(testType))
     {
-        if (targetTypeKind == RCustomTypeKind::Enum)
-            return contexts.mFactory->MakeMExp<MExp_EnumAsEnumElem>(targetExp, testType, contexts.rFactory);
+        if (dynamic_cast<RType_Enum*>(targetType))
+            return contexts.mFactory->MakeMExp<MExp_EnumAsEnumElem>(targetExp, enumElemTestType, contexts.rFactory);
         else
             throw NotImplementedException{}; // 에러 처리
     }
@@ -128,12 +128,12 @@ expected<ImExp*, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* t
         else if constexpr (same_as<T, RMember_StructVar>)
         {
             assert(typeArgs->GetCount() == 0); // ResolveIdentifier가 typeArgs가 있는데 *var를 돌려줬을리가 없다
-            return contexts.srtFactory->MakeImExp<ImExp_StructVar>(rMember.decl, rMember.typeArgs, /*hasExplicitInstance*/ false, /*explicitInstance*/ nullptr);
+            return contexts.srtFactory->MakeImExp<ImExp_StructVar>(rMember.decl, rMember.typeArgs, /*hasExplicitInstance*/false, /*explicitInstance*/nullptr);
         }
         else if constexpr (same_as<T, RMember_ClassVar>)
         {
             assert(typeArgs->GetCount() == 0);
-            return contexts.srtFactory->MakeImExp<ImExp_ClassVar>(rMember.decl, rMember.typeArgs, /*hasExplicitInstance*/ false, /*explicitInstance*/ nullptr);
+            return contexts.srtFactory->MakeImExp<ImExp_ClassVar>(rMember.decl, rMember.typeArgs, /*hasExplicitInstance*/false, /*explicitInstance*/nullptr);
         }
         else if constexpr (same_as<T, RMember_Struct>)
         {

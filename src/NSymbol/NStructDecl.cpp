@@ -16,9 +16,9 @@ NStructDecl::NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name
 {
 }
 
-void NStructDecl::InitBaseTypes(RType_Struct* baseStruct, vector<RType_Interface*>&& interfaces)
+void NStructDecl::InitBaseTypes(RType_Struct* baseStruct, vector<RType*>&& interfaces)
 {
-    o_baseTypes = BaseTypes{baseStruct, move(interfaces)};
+    o_baseTypes.emplace(baseStruct, move(interfaces));
 }
 
 void NStructDecl::AddCtor(NStructCtorDecl* decl)
@@ -42,12 +42,6 @@ NStructCtorDecl* NStructDecl::GetUnboundTrivialCtor_NStructCtorDecl()
 {
     if (trivialCtorIndex == -1) return nullptr;
     return ctors[trivialCtorIndex];
-}
-
-RType_Struct* NStructDecl::GetUnboundBaseStruct()
-{
-    assert(o_baseTypes);
-    return o_baseTypes->baseStruct;
 }
 
 NDecl* NStructDecl::GetNOuter()
@@ -115,6 +109,22 @@ optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t expli
         return o_member;
 
     return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+}
+
+RType_Struct* NStructDecl::GetUnboundBaseStruct()
+{
+    assert(o_baseTypes);
+    return o_baseTypes->baseStruct;
+}
+
+View<RStructVarDecl*> NStructDecl::GetRVars()
+{   
+    return View<RStructVarDecl*>(&vars, vars.size(),
+        [](void* context, size_t i) noexcept -> RStructVarDecl*
+        {
+            auto* vars = static_cast<std::vector<NStructVarDecl*>*>(context);
+            return (*vars)[i];
+        });
 }
 
 optional<RMember_StructVar> NStructDecl::GetVar(RTypeArguments* typeArgs, const RName& name)

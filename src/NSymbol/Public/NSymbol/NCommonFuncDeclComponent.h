@@ -21,6 +21,8 @@ class NLambdaVarDecl;
 class NLambdaDecl;
 class NTypeParamDecl;
 
+enum class RThisKind;
+
 class NCommonFuncDeclComponent
 {
     // lambda의 경우, funcReturn이 NeedInduction으로 주어진다.
@@ -32,7 +34,7 @@ class NCommonFuncDeclComponent
     };
 
 private:
-    bool bStatic;
+    RThisKind thisKind;
     bool bSeqFunc;
 
     // need initializations
@@ -40,13 +42,13 @@ private:
     std::vector<NLambdaDecl*> lambdaDecls;
 
 public:
-    NSYMBOL_API NCommonFuncDeclComponent(bool bStatic, bool bSeqFunc);
+    NSYMBOL_API NCommonFuncDeclComponent(RThisKind thisKind, bool bSeqFunc);
     NSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     NSYMBOL_API ~NCommonFuncDeclComponent();
 
     // internal?
-    bool IsStatic() { return bStatic; }
+    RThisKind GetThisKind() { return thisKind; }
     bool IsSeqFunc() { return bSeqFunc; }
 
     NSYMBOL_API size_t GetParamCount();

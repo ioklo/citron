@@ -27,7 +27,7 @@ class EnumElemVarTask
 
 public:
     static void Register(NEnumElemVarDecl* nEnumElemVar, SEnumElemVarDecl* sEnumElemVar, PhaseManager& phaseManager);
-    void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
+    std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
 };
 
 } // namespace Citron

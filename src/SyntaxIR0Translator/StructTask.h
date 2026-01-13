@@ -25,6 +25,12 @@ public:
     
     void ResolveTypeHierarchy(ResolveTypeHierarchyContext& context) override;
     void SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& context) override;
+    
+
+private:
+    void SynthesizeMemberwiseCtor(SynthesizeImplicitSymbolContext& context);
+
+    
 };
 
 } // namespace Citron

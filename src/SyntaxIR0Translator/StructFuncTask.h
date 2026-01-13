@@ -30,7 +30,7 @@ private:
 public:
     static void Register(NStructDecl* nStructDecl, SStructFuncDecl* sStructDecl, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
 
-    void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
+    std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 };
 

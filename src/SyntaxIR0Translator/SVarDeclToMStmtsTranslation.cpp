@@ -125,7 +125,7 @@ public:
                 return unexpected{MakePtr<Error_VarDecl_LocalVarDeclNeedInitializer>()};
 
             // var꼴로 나오는 경우 hintType은 없다
-            auto e_nInitExp = TranslateSExpToMExp(elem.initExp, /*hintType*/ nullptr, contexts);
+            auto e_nInitExp = TranslateSExpToMExp(elem.initExp, /*hintType*/nullptr, contexts);
             RETURN_ON_ERROR(e_nInitExp);
             
             auto* rInitExpType = (*e_nInitExp)->GetType();

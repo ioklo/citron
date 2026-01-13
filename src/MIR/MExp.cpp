@@ -478,7 +478,7 @@ RType* MExp_InterfaceAsInterface::GetType()
     return rFactory->MakeNullableRefType(interfaceType);
 }
 
-MExp_EnumIsEnumElem::MExp_EnumIsEnumElem(MExp* exp, RType* enumElemType, const RFactoryPtr& rFactory)
+MExp_EnumIsEnumElem::MExp_EnumIsEnumElem(MExp* exp, RType_EnumElem* enumElemType, const RFactoryPtr& rFactory)
     : exp{exp}, enumElemType{enumElemType}, rFactory{rFactory}
 {
 }
@@ -488,7 +488,7 @@ RType* MExp_EnumIsEnumElem::GetType()
     return rFactory->MakeBoolType();
 }
 
-MExp_EnumAsEnumElem::MExp_EnumAsEnumElem(MExp* exp, RType* enumElemType, const RFactoryPtr& rFactory)
+MExp_EnumAsEnumElem::MExp_EnumAsEnumElem(MExp* exp, RType_EnumElem* enumElemType, const RFactoryPtr& rFactory)
     : exp{exp}, enumElemType{enumElemType}, rFactory{rFactory}
 {
 }

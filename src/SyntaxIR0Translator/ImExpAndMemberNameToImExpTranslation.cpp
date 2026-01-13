@@ -79,7 +79,7 @@ public:
     // C.F
     expected<ImExp*, DiagPtr> Visit(RMember_ClassFuncs& member)
     {
-        return MakeImExp<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakeImExp<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, /*explicitInstance*/nullptr);
     }
 
     // C.x
@@ -98,7 +98,7 @@ public:
         // variable은 typeArgs가 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
 
-        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, /*explicitInstance*/nullptr);
     }
 
     // T.S
@@ -118,7 +118,7 @@ public:
     // S.F
     expected<ImExp*, DiagPtr> Visit(RMember_StructFuncs& member)
     {
-        return MakeImExp<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakeImExp<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, /*explicitInstance*/nullptr);
     }
 
     // S.x
@@ -136,7 +136,7 @@ public:
 
         // variable은 typeArgs가 없다
         assert(typeArgsExceptOuter->GetCount() == 0);
-        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, /*explicitInstance*/ nullptr);
+        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, /*explicitInstance*/nullptr);
     }
 
     // T.E
@@ -248,7 +248,7 @@ public:
     // exp.F
     expected<ImExp*, DiagPtr> Visit(RMember_ClassFuncs& member)
     {   
-        return MakeImExp<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
+        return MakeImExp<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, reInstExp);
     }
 
     // exp.x
@@ -266,7 +266,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
+        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, reInstExp);
     }
 
     // exp.S
@@ -278,7 +278,7 @@ public:
     // exp.F
     expected<ImExp*, DiagPtr> Visit(RMember_StructFuncs& member)
     {   
-        return MakeImExp<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/ true, reInstExp);
+        return MakeImExp<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, reInstExp);
     }
 
     // exp.x
@@ -296,7 +296,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/ true, reInstExp);
+        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, reInstExp);
     }
 
     // exp.E

@@ -11,6 +11,7 @@ class BuildTypeDependentSymbolContext;
 class SynthesizeImplicitSymbolContext;
 class TranslateBodyContext;
 
+// base struct / interface 관계를 resolve 하고 상속 트리를 확정하는 단계
 class IResolveTypeHierarchyTask
 {
 public:
@@ -22,7 +23,7 @@ class IBuildTypeDependentSymbolTask
 {
 public:
     ~IBuildTypeDependentSymbolTask() = default;
-    virtual void BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) = 0;
+    virtual std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) = 0;
 };
 
 class ISynthesizeImplicitSymbolTask

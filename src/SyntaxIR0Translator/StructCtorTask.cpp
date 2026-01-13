@@ -1,5 +1,6 @@
 #include "StructCtorTask.h"
 
+#include "Infra/Expected.h"
 #include "NSymbol/NStructDecl.h"
 #include "NSymbol/NStructCtorDecl.h"
 #include "MIR/MFuncBody.h"
@@ -22,19 +23,18 @@ void StructCtorTask::Register(NStructDecl* nStruct, SStructCtorDecl* sStructCtor
     phaseManager.AddTranslateBodyTask(task);
 }
 
-void StructCtorTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> StructCtorTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
     auto accessor = MakeAccessor(sStructCtor->accessModifier, AccessorContext::InsideStruct);
-    // TODO: 타이프 쳐서 만들어진 ctor는 'trivial' 표시를 하기 전까지는 trivial로 인식하지 않는다. 지금은 false로 표기
-    // 그리고 컴파일러가 trivial 조건을 체크해서 에러를 낼 수도 있다 (하위 타입의 trivial constructor가 이 constructor를 참조하지 않는다)
-    bool bTrivial = false;
-
-    nStructCtor = nFactory->MakeNDecl<NStructCtorDecl>(nStruct, accessor, bTrivial);
+    nStructCtor = nFactory->MakeNDecl<NStructCtorDecl>(nStruct, accessor, RStructCtorKind::Normal);
     nStruct->AddCtor(nStructCtor);
 
     // symbol tree에 매달린 nStructCtor가 필요
-    auto [parameters, bLastParamVariadic] = context.MakeParameters(nStructCtor, sStructCtor->parameters);
+    auto e_parameters = context.MakeParameters(nStructCtor, sStructCtor->parameters);
+    RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
+
     nStructCtor->InitFuncParameters(move(parameters), bLastParamVariadic);
+    return {};
 }
 
 expected<MFuncBody, DiagPtr> StructCtorTask::TranslateBody(TranslateBodyContext& context)

@@ -46,6 +46,9 @@
     <ClInclude Include="Public\Infra\Transaction.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\Infra\Views.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Json.cpp" />

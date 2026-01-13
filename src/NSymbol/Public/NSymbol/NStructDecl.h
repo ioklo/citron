@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 #include <optional>
-#include <ranges>
+#include <span>
 
 #include "RSymbol/RStructDecl.h"
 
@@ -22,7 +22,6 @@
 namespace Citron {
 
 class RType_Struct;
-class RType_Interface;
 class NStructDtorDecl;
 class NTypeParamDecl;
 
@@ -41,7 +40,7 @@ class NStructDecl
     struct BaseTypes
     {
         RType_Struct* baseStruct;
-        std::vector<RType_Interface*> interfaces;
+        std::vector<RType*> interfaces;
     };
 
     NTypeDeclOuter* outer;
@@ -61,7 +60,7 @@ class NStructDecl
 public:
     NSYMBOL_API NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, const RFactoryPtr& rFactory);
     using NGenericsComponent::InitTypeParams;
-    NSYMBOL_API void InitBaseTypes(RType_Struct* baseStruct, std::vector<RType_Interface*>&& interfaces);
+    NSYMBOL_API void InitBaseTypes(RType_Struct* baseStruct, std::vector<RType*>&& interfaces);
 
 public:
     using NTypeDeclContainerComponent::AddType;
@@ -70,14 +69,13 @@ public:
     NSYMBOL_API void AddFunc(NStructFuncDecl* decl) { NFuncDeclContainerComponent<NStructFuncDecl>::AddFunc(decl); }
     NSYMBOL_API void AddVar(NStructVarDecl* decl);
 
-    NSYMBOL_API auto EnumerateUnboundCtors() { return std::views::all(ctors); }
-    NSYMBOL_API auto EnumerateUnboundVars() { return std::views::all(vars); }
+    NSYMBOL_API std::span<NStructCtorDecl*> GetCtors() { return ctors; }
+    NSYMBOL_API std::span<NStructVarDecl*> GetVars() { return vars; }
     NSYMBOL_API NStructCtorDecl* GetUnboundTrivialCtor_NStructCtorDecl();
 
     NSYMBOL_API size_t GetVarCount() { return vars.size(); }
     NSYMBOL_API NStructVarDecl* GetUnboundVar(size_t index) { return vars[index]; }
 
-    NSYMBOL_API RType_Struct* GetUnboundBaseStruct();
     NTypeDeclOuter* GetNTypeDeclOuter() { return outer; }
 
 public:
@@ -120,6 +118,8 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RStructDecl
+    NSYMBOL_API RType_Struct* GetUnboundBaseStruct() override;
+    NSYMBOL_API View<RStructVarDecl*> GetRVars() override;
     NSYMBOL_API std::optional<RMember_StructVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
     NSYMBOL_API std::vector<RStructCtorDecl*> GetUnboundCtors() override;
     NSYMBOL_API RStructCtorDecl* GetUnboundTrivialCtor_RStructCtorDecl() override { return GetUnboundTrivialCtor_NStructCtorDecl(); }

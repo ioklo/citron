@@ -55,7 +55,7 @@ RSYMBOL_API extern RName _this; // "this"
 
 } // namespace RNames
 
-std::string RNameToString(const RName& name);
+RSYMBOL_API std::string RNameToString(const RName& name);
 
 } // namespace Citron
 

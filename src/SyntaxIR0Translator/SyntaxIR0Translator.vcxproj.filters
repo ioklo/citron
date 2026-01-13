@@ -99,6 +99,16 @@
     <ClCompile Include="FuncContext_Lambda.cpp">
       <Filter>Context</Filter>
     </ClCompile>
+    <ClCompile Include="SynthesizeImplicitSymbolContext.cpp" />
+    <ClCompile Include="MOperand.cpp">
+      <Filter>ExpTranslation\Structure</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToMOperandTranslation.cpp">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="ReExpToMOperandTranslation.cpp">
+      <Filter>ExpTranslation\ReExpTranslation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncContext.h">
@@ -204,6 +214,16 @@
     </ClInclude>
     <ClInclude Include="FuncContext_FuncDecl.h">
       <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="SynthesizeImplicitSymbolContext.h" />
+    <ClInclude Include="MOperand.h">
+      <Filter>ExpTranslation\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToMOperandTranslation.h">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="ReExpToMOperandTranslation.h">
+      <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

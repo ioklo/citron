@@ -9,6 +9,7 @@
 
 #include "RSymbol/RFuncParameter.h"
 #include "RSymbol/RFactory.h"
+#include "RSymbol/RFuncDecl.h"
 
 #include "NSymbol/NModule.h"
 #include "NSymbol/NFuncDecl.h"
@@ -29,7 +30,9 @@ namespace {
 expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
 {   
     // TODO: generics
-    auto rFuncReturn = mFuncBody.nFuncDecl->GetUnboundFuncReturn();
+    auto* rFuncDecl = mFuncBody.nFuncDecl->GetRFuncDecl();
+
+    auto rFuncReturn = rFuncDecl->GetUnboundFuncReturn();
     auto* rRetType = visit([&rFactory](auto& rFuncReturn) -> RType*
     {
         using T = remove_cvref_t<decltype(rFuncReturn)>;
@@ -47,24 +50,41 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     {
         ScopeGuard mainGuard{bodyContext};
 
+        size_t curArgSlotIndex = 0;
+        auto* rFuncDecl = mFuncBody.nFuncDecl->GetRFuncDecl();
+
+        // NOTICE: 인자 index는 parameter index랑 다르다
+        auto rThisKind = rFuncDecl->GetThisKind();
+        switch (rThisKind)
+        {
+        case RThisKind::None: break;
+        case RThisKind::Ptr:
+        {
+            QType* ptrQType = bodyContext.GetPtrQType();
+            size_t slotIndex = bodyContext.NewSlot(ptrQType, curArgSlotIndex++);
+            break;
+        }
+        case RThisKind::Handle:
+            throw NotImplementedException{};
+        }
+
         // parameter 세팅
         // TODO: 일단 generics없이 진행
-        auto unboundParams = mFuncBody.nFuncDecl->GetUnboundFuncParams();
+        auto unboundParams = rFuncDecl->GetUnboundFuncParams();
         for (size_t i = 0, count = unboundParams.size(); i < count; i++)
         {
             auto& unboundParam = unboundParams[i];
 
-            if (unboundParam.bRef)
+            if (unboundParam.IsRef())
             {   
-                // QType* qType = bodyContext.GetQTypeFromRType(unboundParam.type);
                 QType* ptrQType = bodyContext.GetPtrQType();
-                size_t slotIndex = bodyContext.NewSlot(ptrQType, i);
+                size_t slotIndex = bodyContext.NewSlot(ptrQType, curArgSlotIndex++);
                 bodyContext.AddLocalRef_Ptr(unboundParam.type, unboundParam.name, slotIndex);
             }
             else
             {
                 // 새 local 변수 추가
-                bodyContext.AddLocalVar(unboundParam.type, unboundParam.name, i);
+                bodyContext.AddLocalVar(unboundParam.type, unboundParam.name, curArgSlotIndex++);
             }
         }
 

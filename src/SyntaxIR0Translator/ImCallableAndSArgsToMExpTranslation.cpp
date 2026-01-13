@@ -85,7 +85,7 @@ private:
             return Error(move(e_reExp));
 
         DesignatedDiagnostic<Error_CallExp_CallableExpressionIsNotCallable> designatedDiag;
-        auto e_mCallable = TranslateReExpToMLoc(*e_reExp, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+        auto e_mCallable = TranslateReExpToMLoc(*e_reExp, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
 
         if (!e_mCallable)
             return Error(move(e_mCallable));
@@ -172,13 +172,13 @@ public:
         if (imExp->hasExplicitInstance) // x.F, C.F 등 인스턴스 부분이 명시적으로 정해졌다면
         {
             // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
-            if (match.funcDecl->IsStatic() && imExp->explicitInstance != nullptr)
+            if (match.funcDecl->GetThisKind() == RThisKind::None && imExp->explicitInstance != nullptr)
             {
                 return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
             }
 
             // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
-            if (!match.funcDecl->IsStatic() && imExp->explicitInstance == nullptr)
+            if (match.funcDecl->GetThisKind() == RThisKind::Handle && imExp->explicitInstance == nullptr)
             {
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
@@ -188,7 +188,7 @@ public:
             if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto e_nLoc = TranslateReExpToMLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+                auto e_nLoc = TranslateReExpToMLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
                 if (!e_nLoc) return Error(move(e_nLoc));
 
                 nInst = *e_nLoc;
@@ -198,7 +198,7 @@ public:
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
-            if (match.funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
+            if (match.funcDecl->GetThisKind() == RThisKind::None) // 정적함수이면 인스턴스에 null
             {
                 return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, nullptr, move(match.args));
             }
@@ -264,13 +264,13 @@ public:
         if (imExp->hasExplicitInstance)
         {
             // static this 체크
-            if (match.funcDecl->IsStatic() && imExp->explicitInstance)
+            if (match.funcDecl->GetThisKind() == RThisKind::None && imExp->explicitInstance)
             {
                 return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
             }
 
             // 반대의 경우도 체크
-            if (!match.funcDecl->IsStatic() && !imExp->explicitInstance)
+            if (match.funcDecl->GetThisKind() == RThisKind::Ptr && !imExp->explicitInstance)
             {
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
@@ -279,7 +279,7 @@ public:
             if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto e_instance = TranslateReExpToMLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/ true, &designatedDiag, contexts);
+                auto e_instance = TranslateReExpToMLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
                 if (!e_instance) return Error(move(e_instance));
 
                 instance = *e_instance;
@@ -289,7 +289,7 @@ public:
         }
         else
         {
-            if (match.funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
+            if (match.funcDecl->GetThisKind() == RThisKind::None) // 정적함수이면 인스턴스에 null
             {
                 return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, nullptr, move(match.args));
             }
@@ -335,7 +335,7 @@ public:
             auto* varDecl = enumElemDecl->GetVarDecl(index);
             auto* declType = varDecl->GetDeclType(*typeArgs);
             
-            return RFuncParameter{.kind = RFuncParameterKind::Init, .bRef = true, .type = declType, .name = varDecl->GetIdentifier().name };
+            return RFuncParameter{.kind = RFuncParameterKind::Init, .type = declType, .name = varDecl->GetIdentifier().name };
         }
     };
 

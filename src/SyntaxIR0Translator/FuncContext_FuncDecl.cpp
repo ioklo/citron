@@ -55,7 +55,7 @@ expected<optional<RMember>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(con
 
 RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()
 {
-    return nFuncDecl->GetUnboundFuncReturn();
+    return nFuncDecl->GetRFuncDecl()->GetUnboundFuncReturn();
 }
 
 void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
