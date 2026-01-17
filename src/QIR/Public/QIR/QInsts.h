@@ -7,6 +7,7 @@
 
 namespace Citron {
 
+class RType;
 class RFuncDecl;
 class QBlock;
 
@@ -51,7 +52,7 @@ struct QInst_MoveAssign_String
 // %dest = load [%src]
 struct QInst_Load
 {
-    QType* type;
+    RType* type;
     QArg_Slot dest;  // T slot
     QArg_Slot src;   // T* 나타내는 slot가능
 };
@@ -60,7 +61,7 @@ struct QInst_Load
 // loc은 ptr을 담고 있음
 struct QInst_Store
 {
-    QType* type;     // T
+    RType* type;     // T
     QArg_Slot dest;   // T*을 나타내는 slot
     QArg_Input src;   // T의 const, register 가능
 };
@@ -74,15 +75,15 @@ struct QInst_AddrOf
 
 struct QInst_FieldOf
 {
-    QArg_Slot dest;
-    QArg_Slot src;
+    QArg_Slot dest;    // ptr
+    QArg_Slot src;     // ptr
     size_t fieldIndex;
 };
 
 // %dest = <ty> %src
 struct QInst_Assign
 {
-    QType* type;
+    RType* type;
     QArg_Slot dest; // T slot 가능
     QArg_Input src;  // T const, slot가능
 };
@@ -97,7 +98,7 @@ struct QInst_Call
 
 struct QInst_ReturnValue
 {
-    QType* qType;
+    RType* type;
     QArg_Input value;
 };
 

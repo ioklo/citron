@@ -85,26 +85,6 @@ public:
         else throw NotImplementedException{};
     }
 
-    llvm::Type* GetType(QType* qType)
-    {
-        // TODO: HARD CODED
-        if (qType == qFactory->MakeVoidType())
-            return GetVoidType();
-
-        else if (qType == qFactory->MakeBoolType())
-            return GetBoolType();
-
-        else if (qType == qFactory->MakeIntType())
-            return GetInt32Type();
-
-        // string 을 무슨 타입으로 해야 하는지
-        // 1) 현재 VC++ 컴파일러 옵션으로 sizeof(string)를 갖고 있는 타입으로
-        else if (qType == qFactory->MakeStringType())
-            return GetStringType();
-        else throw NotImplementedException{};
-    }
-
-
     llvm::Type* GetVoidType()
     {
         return llvm::Type::getVoidTy(context);
@@ -307,9 +287,9 @@ private:
         builder.CreateStore(value, slotValues[slot.index]);
     }
 
-    llvm::Value* GetValue(QArg_Input& qInput, QType* qType)
+    llvm::Value* GetValue(QArg_Input& qInput, RType* rType)
     {
-        return visit([this, qType](auto& qInput) -> llvm::Value*
+        return visit([this, rType](auto& qInput) -> llvm::Value*
         {
             using T = remove_cvref_t<decltype(qInput)>;
             if constexpr (same_as<T, QArg_ConstBool>)
@@ -322,7 +302,7 @@ private:
             }
             else if constexpr (same_as<T, QArg_Slot>)
             {
-                auto* lValueType = lContextImpl.GetType(qType);
+                auto* lValueType = lContextImpl.GetType(rType);
                 return builder.CreateLoad(lValueType, slotValues[qInput.index]);
             }
             else static_assert(false);
@@ -764,7 +744,7 @@ private:
             }
             else
             {
-                auto* v = self.GetValue(qInst.o_value->value, qInst.o_value->qType);
+                auto* v = self.GetValue(qInst.o_value->value, qInst.o_value->type);
                 self.builder.CreateRet(v);
             }
         }
@@ -842,7 +822,7 @@ public:
             {
                 auto* lArg = lFunc->getArg(*qSlotInfo.o_argIndex);
                 lArg->setName(qSlotInfo.name.substr(1) + "_arg");
-                auto* lType = lContextImpl.GetType(qSlotInfo.qType);
+                auto* lType = lContextImpl.GetType(qSlotInfo.type);
                 auto* allocaInst = builder.CreateAlloca(lType, nullptr, qSlotInfo.name.substr(1));
 
                 builder.CreateStore(lArg, allocaInst);
@@ -851,7 +831,7 @@ public:
             else
             {
                 // 함수 초기에 할당
-                auto* lType = lContextImpl.GetType(qSlotInfo.qType);
+                auto* lType = lContextImpl.GetType(qSlotInfo.type);
                 auto* allocaInst = builder.CreateAlloca(lType, nullptr, qSlotInfo.name.substr(1));
                 slotValues.push_back(allocaInst);
             }

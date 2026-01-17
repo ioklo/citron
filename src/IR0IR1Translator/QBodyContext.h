@@ -41,7 +41,7 @@ struct QLocalInfo_RefPtr
 {
     size_t slotIndex; // ptr slot
     std::string name;
-    QType* qType; // 참조하는 타입
+    RType* type; // 참조하는 타입
 };
 
 using QLocalInfo = std::variant<QLocalInfo_Var, QLocalInfo_RefAlias, QLocalInfo_RefPtr>;
@@ -60,7 +60,7 @@ struct QScope
     QBlock* recentCleanUpForReturn = nullptr; // return시 정리 블록
 };
 
-struct QIntrinsicResultType_Slot { QType* qType; };
+struct QIntrinsicResultType_Slot { RType* type; };
 struct QIntrinsicKindResult_Void {};
 using QIntrinsicResultType = std::variant<
     QIntrinsicResultType_Slot,
@@ -94,7 +94,7 @@ private:
     std::expected<void, DiagPtr> EmitInstInternal(QInst&& inst);
 
 public:
-    template<typename TQInst, typename... TArgs> 
+    template<typename TQInst> 
         requires std::convertible_to<TQInst, QInst> 
             && (!std::same_as<TQInst, QInst_Intrinsic>)
             && (!std::convertible_to<TQInst, QTermInst>)
@@ -111,14 +111,13 @@ public:
     std::expected<void, DiagPtr> EmitJumpToCleanUpForReturnBlock();
 
 public:
-    QType* GetMExpQType(MExp* mExp);    
-    size_t GetQTypeSize(QType* qType);
-
-    QType* GetQTypeFromRType(RType* rType);
-    QType_Class* GetStringQType();
-    QType* GetBoolQType();
-    QType* GetIntQType();
-    QType* GetPtrQType();
+    size_t GetTypeSize(RType* type);
+    
+    RType* GetStringType();
+    RType* GetBoolType();
+    RType* GetIntType();
+    RType* GetPtrType();
+    RType* GetPtrType(RType* innerType);
 
     size_t GetRetSlotIndex();
 
@@ -128,15 +127,14 @@ public:
     void AddLocalRef_Alias(const RName& rName, size_t slotIndex);
     void AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex);
 
-    size_t NewSlot(QType* qType, std::optional<size_t> o_argIndex = std::nullopt);
+    size_t NewSlot(RType* rType, std::optional<size_t> o_argIndex = std::nullopt);
     std::span<QSlotInfo> GetStackSlotInfos() { return slotInfos; }
     std::span<QBlock*> GetBlocks() { return blocks; }
-
-    size_t NewSlotForMExp(MExp* exp);
+    RType* GetSlotType(size_t i) { return slotInfos[i].type; }
+    
     void VerifyBlocks();
 
-    QType* GetReturnQType(RFuncDecl* rFuncDecl, RTypeArguments& typeArgs);
-    bool IsVoidQType(QType* qType);
+    bool IsVoidType(RType* rType);
 
     void PushScope();
     void PopScope();

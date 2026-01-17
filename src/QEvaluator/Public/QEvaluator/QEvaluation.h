@@ -12,7 +12,7 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 class RModule;
 class QData;
 class NGlobalFuncDecl;
-using QFactoryPtr = std::shared_ptr<class QFactory>;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class IEvalQDataCommandHandler
 {
@@ -22,6 +22,6 @@ public:
 
 using IEvalQDataCommandHandlerPtr = std::shared_ptr<IEvalQDataCommandHandler>;
 
-QEVALUATOR_API std::expected<void, DiagPtr> EvaluateQData(std::span<RModule*> rModules, QData* qData, NGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, const QFactoryPtr& qFactory);
+QEVALUATOR_API std::expected<void, DiagPtr> EvaluateQData(std::span<RModule*> rModules, QData* qData, NGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, const RFactoryPtr& rFactory);
 
 } // namespace Citron

@@ -28,8 +28,8 @@ public:
     
     ResultType Visit(MLoc_Temp* loc) 
     { 
-        QType* qType = bodyContext.GetMExpQType(loc->exp);
-        size_t slotIndex = bodyContext.NewSlot(qType);
+        RType* rType = loc->GetType();
+        size_t slotIndex = bodyContext.NewSlot(rType);
         auto e_result = TranslateMExpToQInsts(loc->exp, slotIndex, bodyContext);
         RETURN_ON_ERROR(e_result);
 
@@ -81,12 +81,12 @@ public:
             if constexpr (same_as<T, QLocResult_Slot>) // slot이면
             {
                 // slot의 addrof를 하나 한다 ptr 타입
-                auto* qPtrType = bodyContext.GetPtrQType();
-                size_t instSlotIndex = bodyContext.NewSlot(qPtrType);
+                auto* rPtrType = bodyContext.GetPtrType();
+                size_t instSlotIndex = bodyContext.NewSlot(rPtrType);
                 auto e_addrResult = bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{instSlotIndex}, QArg_Slot{locResult.slotIndex}});
                 RETURN_ON_ERROR(e_addrResult);
 
-                size_t destSlotIndex = bodyContext.NewSlot(qPtrType);
+                size_t destSlotIndex = bodyContext.NewSlot(rPtrType);
                 auto e_fieldResult = bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{instSlotIndex}, loc->decl->GetIndex()});
                 RETURN_ON_ERROR(e_fieldResult);
 
@@ -95,9 +95,9 @@ public:
             else if constexpr(same_as<T, QLocResult_PtrSlot>)
             {
                 // slot의 addrof를 하나 한다 ptr 타입
-                auto* qPtrType = bodyContext.GetPtrQType();
+                auto* ptrType = bodyContext.GetPtrType();
 
-                size_t destSlotIndex = bodyContext.NewSlot(qPtrType);
+                size_t destSlotIndex = bodyContext.NewSlot(ptrType);
                 auto e_fieldResult = bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{locResult.slotIndex}, loc->decl->GetIndex()});
                 RETURN_ON_ERROR(e_fieldResult);
 

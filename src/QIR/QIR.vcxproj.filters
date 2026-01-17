@@ -26,9 +26,6 @@
     <ClInclude Include="Public\QIR\QIRConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Public\QIR\QTypes.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Public\QIR\QPrinter.h">
       <Filter>Public Headers</Filter>
     </ClInclude>

@@ -44,10 +44,9 @@ QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFact
 {
     scopes.emplace_back();
     curScope = &scopes.back();
-
-    auto* qRetType = GetQTypeFromRType(rRetType);
-    if (qRetType != qFactory->MakeVoidType())
-        o_retSlotIndex = NewSlot(qRetType);
+    
+    if (rRetType != rFactory->MakeVoidType())
+        o_retSlotIndex = NewSlot(rRetType);
 
     auto* firstBlock = AddBlock("entry");
     this->curBlock = firstBlock;
@@ -73,15 +72,15 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
     case QInst_IntrinsicKind::GetListIterator_List: throw NotImplementedException{};
 
     case QInst_IntrinsicKind::LogicalNot_Bool:
-        return QIntrinsicResultType_Slot{qFactory->MakeBoolType()};
+        return QIntrinsicResultType_Slot{rFactory->MakeBoolType()};
 
     case QInst_IntrinsicKind::UnaryMinus_Int:
-        return QIntrinsicResultType_Slot{qFactory->MakeIntType()};
+        return QIntrinsicResultType_Slot{rFactory->MakeIntType()};
 
     case QInst_IntrinsicKind::ToString_Bool:
     case QInst_IntrinsicKind::ToString_Int: 
     case QInst_IntrinsicKind::Add_String_String:
-        return QIntrinsicResultType_Slot{qFactory->MakeStringType()};
+        return QIntrinsicResultType_Slot{rFactory->MakeStringType()};
 
     case QInst_IntrinsicKind::PrefixInc_Int: 
     case QInst_IntrinsicKind::PrefixDec_Int:
@@ -93,7 +92,7 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
     case QInst_IntrinsicKind::Modulo_Int_Int:
     case QInst_IntrinsicKind::Add_Int_Int:
     case QInst_IntrinsicKind::Subtract_Int_Int:
-        return QIntrinsicResultType_Slot{qFactory->MakeIntType()};
+        return QIntrinsicResultType_Slot{rFactory->MakeIntType()};
     
     case QInst_IntrinsicKind::LessThan_Int_Int:
     case QInst_IntrinsicKind::LessThan_String_String:
@@ -106,7 +105,7 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
     case QInst_IntrinsicKind::Equal_Int_Int:
     case QInst_IntrinsicKind::Equal_Bool_Bool:
     case QInst_IntrinsicKind::Equal_String_String:
-        return QIntrinsicResultType_Slot{qFactory->MakeBoolType()};
+        return QIntrinsicResultType_Slot{rFactory->MakeBoolType()};
     }
 
     throw NotImplementedException{};
@@ -135,7 +134,7 @@ expected<void, DiagPtr> QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, op
 
         if constexpr (same_as<T, QIntrinsicResultType_Slot>)
         {
-            QArg_Slot resultSlot = oDest ? *oDest : QArg_Slot{NewSlot(resultType.qType)};
+            QArg_Slot resultSlot = oDest ? *oDest : QArg_Slot{NewSlot(resultType.type)};
 
             if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
             curBlock->EmitInst(QInst_Intrinsic{kind, resultSlot, move(args)});
@@ -177,7 +176,7 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
         for (size_t i = scope.coveredSlots, end = scope.slotIndices.size(); i < end; i++)
         {
             size_t slotIndex = scope.slotIndices[i];
-            if (slotInfos[slotIndex].qType == GetStringQType())
+            if (slotInfos[slotIndex].type == GetStringType())
             {
                 if (newCleanUpForRet == nullptr)
                     newCleanUpForRet = AddBlock("cleanUpForRet"); // TODO: 뒤에 디버그용 번호 붙이기
@@ -206,7 +205,7 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
                 else // 0이면?
                 {
                     if (o_retSlotIndex)
-                        newCleanUpForRet->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].qType, QArg_Slot{*o_retSlotIndex}}});
+                        newCleanUpForRet->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].type, QArg_Slot{*o_retSlotIndex}}});
                     else
                         newCleanUpForRet->EmitInst(QInst_Return{});
 
@@ -228,7 +227,7 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
         // 바로 리턴 블록 생성
         auto* retBlock = AddBlock("cleanUpForRet");
         if (o_retSlotIndex)
-            retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].qType, QArg_Slot{*o_retSlotIndex}}});
+            retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].type, QArg_Slot{*o_retSlotIndex}}});
         else
             retBlock->EmitInst(QInst_Return{});
         scope.recentCleanUpForReturn = retBlock;
@@ -247,62 +246,44 @@ expected<void, DiagPtr> QBodyContext::EmitJumpToCleanUpForReturnBlock()
     return {};
 }
 
-QType* QBodyContext::GetMExpQType(MExp* mExp)
-{
-    return GetQTypeFromRType(mExp->GetType());
-}
-
-size_t QBodyContext::GetQTypeSize(QType* qType)
+size_t QBodyContext::GetTypeSize(RType* type)
 {
     // TODO: HARD CODED
-    if (qType == qFactory->MakeBoolType())
+    if (type == rFactory->MakeBoolType())
         return 1;
 
-    if (qType == qFactory->MakeIntType())
+    if (type == rFactory->MakeIntType())
         return 4;
 
-    if (qType == qFactory->MakeStringType())
+    if (type == rFactory->MakeStringType())
         return sizeof(string);
 
     throw NotImplementedException{};
 }
 
-QType* QBodyContext::GetQTypeFromRType(RType* rType)
+RType* QBodyContext::GetStringType()
 {
-    // TODO: HARD CODED
-    if (rType == rFactory->MakeVoidType())
-        return qFactory->MakeVoidType();
-
-    if (rType == rFactory->MakeBoolType())
-        return qFactory->MakeBoolType();
-
-    if (rType == rFactory->MakeIntType())
-        return qFactory->MakeIntType();
-
-    if (rType == rFactory->MakeStringType())
-        return qFactory->MakeStringType();
-
-    throw NotImplementedException{};
+    return rFactory->MakeStringType();
 }
 
-QType_Class* QBodyContext::GetStringQType()
+RType* QBodyContext::GetBoolType()
 {
-    return qFactory->MakeStringType();
+    return rFactory->MakeBoolType();
 }
 
-QType* QBodyContext::GetBoolQType()
+RType* QBodyContext::GetIntType()
 {
-    return qFactory->MakeBoolType();
+    return rFactory->MakeIntType();
 }
 
-QType* QBodyContext::GetIntQType()
+RType* QBodyContext::GetPtrType()
 {
-    return qFactory->MakeIntType();
+    return rFactory->MakePtrType(rFactory->MakeVoidType());
 }
 
-QType* QBodyContext::GetPtrQType()
+RType* QBodyContext::GetPtrType(RType* innerType)
 {
-    return qFactory->MakePtrType();
+    return rFactory->MakePtrType(innerType);
 }
 
 size_t QBodyContext::GetRetSlotIndex()
@@ -326,10 +307,9 @@ size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size
 {   
     size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
     auto name = format("%s{}_{}", slotIndex, RNameToString(rName));
-    QType* qType = GetQTypeFromRType(rType);
 
     // 1. 함수 entry에서 할당할 목록에 추가
-    slotInfos.emplace_back(qType, name, oArgIndex);
+    slotInfos.emplace_back(rType, name, oArgIndex);
     
     // 2. 현재 스코프에 이름 추가
     curScope->localInfos[rName] = QLocalInfo_Var{slotIndex, name};
@@ -345,25 +325,18 @@ void QBodyContext::AddLocalRef_Alias(const RName& rName, size_t slotIndex)
 }
 
 void QBodyContext::AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex)
-{
-    QType* qType = GetQTypeFromRType(rType);
-    curScope->localInfos[rName] = QLocalInfo_RefPtr{slotIndex, RNameToString(rName), qType};
+{   
+    curScope->localInfos[rName] = QLocalInfo_RefPtr{slotIndex, RNameToString(rName), rType};
 }
 
-size_t QBodyContext::NewSlot(QType* qType, optional<size_t> o_argIndex)
+size_t QBodyContext::NewSlot(RType* rType, optional<size_t> o_argIndex)
 {
     size_t slotIndex = slotInfos.size();
     std::string s = format("%s{}", slotIndex);
-    slotInfos.emplace_back(qType, s, o_argIndex);
+    slotInfos.emplace_back(rType, s, o_argIndex);
 
     curScope->slotIndices.push_back(slotIndex);
     return slotIndex;
-}
-
-size_t QBodyContext::NewSlotForMExp(MExp* exp)
-{
-    auto* qType = GetMExpQType(exp);
-    return NewSlot(qType);
 }
 
 void QBodyContext::VerifyBlocks()
@@ -448,15 +421,9 @@ void QBodyContext::VerifyBlocks()
     assert(visited.size() == blocks.size()); // 모두 도달했어야
 }
 
-QType* QBodyContext::GetReturnQType(RFuncDecl* rFuncDecl, RTypeArguments& typeArgs)
+bool QBodyContext::IsVoidType(RType* rType)
 {
-    auto* rType = rFuncDecl->GetReturnType(typeArgs);
-    return GetQTypeFromRType(rType);
-}
-
-bool QBodyContext::IsVoidQType(QType* qType)
-{
-    return qType == qFactory->MakeVoidType();
+    return rType == rFactory->MakeVoidType();
 }
 
 void QBodyContext::PushScope()
@@ -484,7 +451,7 @@ void QBodyContext::CleanUpScope()
     {
         // 소멸자 호출
         // TODO: HARD CODED
-        if (slotInfos[slotIndex].qType == qFactory->MakeStringType())
+        if (slotInfos[slotIndex].type == rFactory->MakeStringType())
         {
             assert(curBlock);
             curBlock->EmitInst(QInst_Dtor_String{QArg_Slot{slotIndex}});

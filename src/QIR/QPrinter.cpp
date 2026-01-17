@@ -9,13 +9,13 @@
 
 #include "RSymbol/RDecl.h"
 #include "RSymbol/RFuncDecl.h"
+#include "RSymbol/RFactory.h"
 #include "NSymbol/NFuncDecl.h"
 
 #include "QData.h"
 #include "QFuncBody.h"
 #include "QBlock.h"
 #include "QArgs.h"
-#include "QFactory.h"
 
 using namespace std;
 
@@ -31,7 +31,7 @@ class QPrinter
 {
     IWriter& writer;
     QFuncBody& funcBody;
-    QFactory& qFactory;
+    RFactory& rFactory;
 
     struct ArgPrinter
     {
@@ -122,7 +122,7 @@ class QPrinter
             printer.PrintQArg_Slot(inst.dest);
             printer.Print(" = ");
             printer.Print("load ");
-            printer.PrintQType(inst.type);
+            printer.PrintRType(inst.type);
             printer.Print(", ");
             printer.PrintAddrQArg_Slot(inst.src);
             printer.PrintLine();
@@ -132,7 +132,7 @@ class QPrinter
         {
             // store <ty> [%lv], %v
             printer.Print("store ");
-            printer.PrintQType(inst.type);
+            printer.PrintRType(inst.type);
             printer.Print(", ");
             printer.PrintAddrQArg_Slot(inst.dest);
             printer.Print(", ");
@@ -165,7 +165,7 @@ class QPrinter
             // %dest = <ty> %src
             printer.PrintQArg_Slot(inst.dest);
             printer.Print(" = ");
-            printer.PrintQType(inst.type);
+            printer.PrintRType(inst.type);
             printer.Print(", ");
             printer.PrintQArg_Input(inst.src);
             printer.PrintLine();
@@ -237,7 +237,7 @@ class QPrinter
             {
                 printer.Print(" ");
 
-                printer.PrintQType(inst.o_value->qType);
+                printer.PrintRType(inst.o_value->type);
                 
                 printer.Print(", ");
 
@@ -249,8 +249,8 @@ class QPrinter
     };
 
 public:
-    QPrinter(IWriter& writer, QFuncBody& funcBody, QFactory& qFactory)
-        : writer{writer}, funcBody{funcBody}, qFactory{qFactory}
+    QPrinter(IWriter& writer, QFuncBody& funcBody, RFactory& rFactory)
+        : writer{writer}, funcBody{funcBody}, rFactory{rFactory}
     {
     }
 
@@ -347,24 +347,28 @@ public:
         writer.Write("]");
     }
 
-    void PrintQType(QType* type)
+    void PrintRType(RType* type)
     {
         // TODO: HARD CODED
-        if (type == qFactory.MakeVoidType())
+        if (type == rFactory.MakeVoidType())
         {
             writer.Write("void");
         }
-        if (type == qFactory.MakeBoolType())
+        if (type == rFactory.MakeBoolType())
         {
             writer.Write("bool");
         }
-        else if (type == qFactory.MakeIntType())
+        else if (type == rFactory.MakeIntType())
         {
             writer.Write("int");
         }
-        else if (type == qFactory.MakeStringType())
+        else if (type == rFactory.MakeStringType())
         {
             writer.Write("string");
+        }
+        else if (type == rFactory.MakePtrType(rFactory.MakeVoidType()))
+        {
+            writer.Write("ptr");
         }
         else
         {
@@ -382,7 +386,7 @@ public:
         for (auto& slotInfo : funcBody.slotInfos)
         {
             writer.Write(format("// slot {}: ", slotInfo.name));
-            PrintQType(slotInfo.qType);
+            PrintRType(slotInfo.type);
             writer.WriteLine();
         }
         
@@ -408,11 +412,11 @@ public:
     }
 };
 
-void PrintQData(QData* data, IWriter& writer, QFactory& qFactory)
+void PrintQData(QData* data, IWriter& writer, RFactory& rFactory)
 {
     for (auto& body : data->GetAllBodies())
     {
-        QPrinter printer{writer, body, qFactory};
+        QPrinter printer{writer, body, rFactory};
         printer.Print();
     }
 }

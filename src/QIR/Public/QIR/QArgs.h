@@ -4,8 +4,6 @@
 
 namespace Citron {
 
-struct QType;
-
 // 메모리 참조가 가능한 값에 대한 추상화
 struct QArg_Slot
 {

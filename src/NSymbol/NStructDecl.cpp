@@ -146,4 +146,15 @@ vector<RStructCtorDecl*> NStructDecl::GetUnboundCtors()
     return result;
 }
 
+RStructCtorDecl* NStructDecl::GetUnboundCopyCtor()
+{
+    for (auto& ctor : ctors)
+    {
+        if (ctor->kind == RStructCtorKind::Copy)
+            return ctor;
+    }
+
+    return nullptr;
+}
+
 } // namespace Citron

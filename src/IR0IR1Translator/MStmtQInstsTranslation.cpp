@@ -7,6 +7,7 @@
 #include "Logging/Diag.h"
 
 #include "MIR/MStmt.h"
+#include "MIR/MExp.h"
 #include "QIR/QFactory.h"
 #include "QIR/QBlock.h"
 #include "QIR/QInsts.h"
@@ -39,11 +40,11 @@ public:
     {
         ScopeGuard guard{bodyContext};
 
-        auto* qStringType = bodyContext.GetStringQType();
+        auto* stringType = bodyContext.GetStringType();
         vector<QArg_Input> values;
         for(auto* command : stmt->commands)
         {
-            size_t slotIndex = bodyContext.NewSlot(qStringType);
+            size_t slotIndex = bodyContext.NewSlot(stringType);
             auto e_result = TranslateMExp_StringToQInstsWithNewScope(command, slotIndex, bodyContext);
             RETURN_ON_ERROR(e_result);
 
@@ -114,7 +115,7 @@ public:
         {
             ScopeGuard mainGuard{bodyContext};
             // 최종 condSlot은 branch에 필요하기 때문에 정리하지 않음
-            auto condSlotIndex = bodyContext.NewSlot(bodyContext.GetBoolQType());
+            auto condSlotIndex = bodyContext.NewSlot(bodyContext.GetBoolType());
 
             // 1. stmt.cond
             auto e_condResult = TranslateMExpToQInstsWithNewScope(stmt->cond, condSlotIndex, bodyContext);
@@ -212,8 +213,7 @@ public:
     ResultType Visit(MStmt_Return* stmt)
     {
         if (stmt->exp)
-        {
-            auto* qType = bodyContext.GetMExpQType(stmt->exp);
+        {   
             auto e_result = TranslateMExpToQInstsWithNewScope(stmt->exp, bodyContext.GetRetSlotIndex(), bodyContext);
             RETURN_ON_ERROR(e_result);
 

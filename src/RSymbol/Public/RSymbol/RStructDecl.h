@@ -24,6 +24,7 @@ public:
     virtual View<RStructVarDecl*> GetRVars() = 0;
     virtual std::optional<RMember_StructVar> GetVar(RTypeArguments* typeArgs, const RName& name) = 0;
     virtual std::vector<RStructCtorDecl*> GetUnboundCtors() = 0;
+    virtual RStructCtorDecl* GetUnboundCopyCtor() = 0;
     virtual RStructCtorDecl* GetUnboundTrivialCtor_RStructCtorDecl() = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }

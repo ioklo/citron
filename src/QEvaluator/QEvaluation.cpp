@@ -12,12 +12,11 @@
 #include "Logging/Diag.h"
 
 #include "RSymbol/RModule.h"
+#include "RSymbol/RFactory.h"
 #include "NSymbol/NGlobalFuncDecl.h"
 #include "QIR/QData.h"
 #include "QIR/QFuncBody.h"
 #include "QIR/QBlock.h"
-#include "QIR/QFactory.h"
-
 
 using namespace std;
 
@@ -63,19 +62,19 @@ struct Environment
     vector<StackFrame> frames;
 };
 
-size_t GetSize(QType* type, QFactory& qFactory)
+size_t GetSize(RType* type, RFactory& rFactory)
 {   
     // TODO: HARD CODED
-    if (type == qFactory.MakePtrType())
+    if (dynamic_cast<RType_Ptr*>(type))
         return sizeof(void*);
 
-    if (type == qFactory.MakeBoolType())
+    if (type == rFactory.MakeBoolType())
         return 4;
 
-    if (type == qFactory.MakeIntType())
+    if (type == rFactory.MakeIntType())
         return 4;
 
-    if (type == qFactory.MakeStringType())
+    if (type == rFactory.MakeStringType())
         return sizeof(string); // TODO: 임시
     
     throw NotImplementedException{};
@@ -442,7 +441,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     }
 }
 
-StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<QArg_Slot> o_dest, span<QArg_Input> args, QFactory& qFactory)
+StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<QArg_Slot> o_dest, span<QArg_Input> args, RFactory& rFactory)
 {
     StackFrame frame;
 
@@ -481,11 +480,11 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
         }
         else
         {
-            size_t size = GetSize(slot.qType, qFactory);
+            size_t size = GetSize(slot.type, rFactory);
             frame.stackPointer -= size;
             frame.slots[i] = frame.stackPointer;
 
-            if (slot.qType == qFactory.MakeStringType())
+            if (slot.type == rFactory.MakeStringType())
             {
                 new (frame.slots[i]) string{};
             }
@@ -498,7 +497,7 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
 struct Evaluator
 {
     Environment& env;
-    QFactoryPtr qFactory;
+    RFactoryPtr rFactory;
 
     bool operator()(auto& inst) { return Eval(inst); }
 
@@ -556,7 +555,7 @@ struct Evaluator
         // src는 포인터 값을 갖고 있다
         void* dest = GetLoc(inst.dest, env);
         void* src = GetPtr(inst.src, env);
-        size_t size = GetSize(inst.type, *qFactory);
+        size_t size = GetSize(inst.type, *rFactory);
 
         memcpy(dest, src, size);
         return true;
@@ -567,7 +566,7 @@ struct Evaluator
         // *dest = value;
         void* dest = GetPtr(inst.dest, env);
 
-        visit([this, dest, qType = inst.type](auto& src)
+        visit([this, dest, type = inst.type](auto& src)
         {
             using T = remove_cvref_t<decltype(src)>;
             if constexpr (same_as<T, QArg_ConstBool>)
@@ -581,7 +580,7 @@ struct Evaluator
             else if constexpr (same_as<T, QArg_Slot>)
             {
                 void* pSrc = GetLoc(src, env);
-                size_t size = GetSize(qType, *qFactory);
+                size_t size = GetSize(type, *rFactory);
                 memcpy(dest, pSrc, size);
             }
             else static_assert(false);
@@ -609,7 +608,7 @@ struct Evaluator
 
         void* dest = GetLoc(inst.dest, env);
 
-        visit([this, dest, qType = inst.type](auto& src)
+        visit([this, dest, type = inst.type](auto& src)
         {
             using T = remove_cvref_t<decltype(src)>;
             if constexpr (same_as<T, QArg_ConstBool>)
@@ -623,7 +622,7 @@ struct Evaluator
             else if constexpr (same_as<T, QArg_Slot>)
             {
                 void* pSrc = GetLoc(src, env);
-                size_t size = GetSize(qType, *qFactory);
+                size_t size = GetSize(type, *rFactory);
                 memcpy(dest, pSrc, size);
             }
             else static_assert(false);
@@ -643,7 +642,7 @@ struct Evaluator
         auto i = ranges::find_if(bodies, [nFuncDecl](QFuncBody& body) { return body.nFuncDecl == nFuncDecl; });
         if (i == bodies.end()) throw NotImplementedException{};
 
-        auto frame = MakeStackFrame(&*i, *env.curFrame, inst.o_dest, inst.args, *qFactory);
+        auto frame = MakeStackFrame(&*i, *env.curFrame, inst.o_dest, inst.args, *rFactory);
         env.frames.push_back(move(frame));
         env.curFrame = &env.frames.back();
         return true;
@@ -674,7 +673,7 @@ struct Evaluator
                 else if constexpr (same_as<T, QArg_Slot>)
                 {
                     void* valueLoc = GetLoc(value, env);
-                    size_t size = GetSize(retValue.qType, *qFactory);
+                    size_t size = GetSize(retValue.type, *rFactory);
                     memcpy(env.curFrame->retSlot, valueLoc, size);
                 }
             }, inst.o_value->value);
@@ -705,13 +704,13 @@ struct Evaluator
     }
 };
 
-bool Evaluate(QInst& inst, Environment& env, const QFactoryPtr& qFactory)
+bool Evaluate(QInst& inst, Environment& env, const RFactoryPtr& rFactory)
 {
-    return visit(Evaluator{env, qFactory}, inst);
+    return visit(Evaluator{env, rFactory}, inst);
 }
 
 } // namespace 
-expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, const QFactoryPtr& qFactory)
+expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, const RFactoryPtr& rFactory)
 {
     auto bodies = qData->GetAllBodies();
     auto i = ranges::find_if(bodies, [nEntry](QFuncBody& body) { return body.nFuncDecl == nEntry; });
@@ -736,7 +735,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
     for (size_t j = 0, count = i->slotInfos.size(); j < count; j++)
     {
         auto& slot = i->slotInfos[j];
-        size_t size = GetSize(slot.qType, *qFactory);
+        size_t size = GetSize(slot.type, *rFactory);
         env.curFrame->stackPointer -= size;
         env.curFrame->slots[j] = env.curFrame->stackPointer;
     }
@@ -745,7 +744,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
     {
         auto& inst = env.curFrame->ip.block->GetInst(env.curFrame->ip.index++);
 
-        bool cont = Evaluate(inst, env, qFactory);
+        bool cont = Evaluate(inst, env, rFactory);
 
         if (!cont) break;
     }

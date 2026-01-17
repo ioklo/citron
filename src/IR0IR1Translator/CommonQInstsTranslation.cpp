@@ -49,15 +49,15 @@ expected<void, DiagPtr> TranslateMExp_StringToQInsts(MExp_String* exp, optional<
     }
     else
     {
-        auto* qStringType = bodyContext.GetStringQType();
+        auto* stringType = bodyContext.GetStringType();
 
         // "abc $x" => "abc " + x
-        auto curSlotIndex = bodyContext.NewSlot(qStringType);
+        auto curSlotIndex = bodyContext.NewSlot(stringType);
         auto e_resultFront = TranslateMExp_StringElemToQInsts(exp->elements.front(), curSlotIndex, bodyContext);
         RETURN_ON_ERROR(e_resultFront);
 
-        auto elemSlotIndex = bodyContext.NewSlot(qStringType);
-        auto newSlotIndex = bodyContext.NewSlot(qStringType);
+        auto elemSlotIndex = bodyContext.NewSlot(stringType);
+        auto newSlotIndex = bodyContext.NewSlot(stringType);
         for (size_t i = 1, end = exp->elements.size() - 1; i < end; i++)
         {   
             auto e_result = TranslateMExp_StringElemToQInsts(exp->elements[i], elemSlotIndex, bodyContext);

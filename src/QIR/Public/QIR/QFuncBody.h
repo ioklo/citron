@@ -7,12 +7,12 @@
 namespace Citron {
 
 class QBlock;
+class RType;
 class NFuncDecl;
-struct QType;
 
 struct QSlotInfo
 {   
-    QType* qType;
+    RType* type;
     std::string name;
     std::optional<size_t> o_argIndex;
 };

@@ -77,7 +77,7 @@ void DoTest(const string& code, const string& expected)
     auto* qData = *e_qData;
 
     StringWriter writer;
-    PrintQData(qData, writer, *qFactory);
+    PrintQData(qData, writer, *rFactory);
     auto out = writer.ToString();
 
     // LLVM
@@ -101,7 +101,7 @@ void DoTest(const string& code, const string& expected)
 
     auto commandHandler = MakePtr<CommandHandler>();
     vector<RModule*> rModules{nModule};
-    auto e_result = EvaluateQData(rModules, qData, nEntry, commandHandler, qFactory);
+    auto e_result = EvaluateQData(rModules, qData, nEntry, commandHandler, rFactory);
     ASSERT_TRUE(e_result);
 
     // 

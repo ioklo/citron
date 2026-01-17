@@ -60,8 +60,8 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
         case RThisKind::None: break;
         case RThisKind::Ptr:
         {
-            QType* ptrQType = bodyContext.GetPtrQType();
-            size_t slotIndex = bodyContext.NewSlot(ptrQType, curArgSlotIndex++);
+            RType* ptrType = bodyContext.GetPtrType();
+            size_t slotIndex = bodyContext.NewSlot(ptrType, curArgSlotIndex++);
             break;
         }
         case RThisKind::Handle:
@@ -77,8 +77,8 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
             if (unboundParam.IsRef())
             {   
-                QType* ptrQType = bodyContext.GetPtrQType();
-                size_t slotIndex = bodyContext.NewSlot(ptrQType, curArgSlotIndex++);
+                RType* ptrType = bodyContext.GetPtrType();
+                size_t slotIndex = bodyContext.NewSlot(ptrType, curArgSlotIndex++);
                 bodyContext.AddLocalRef_Ptr(unboundParam.type, unboundParam.name, slotIndex);
             }
             else

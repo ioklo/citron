@@ -122,6 +122,7 @@ public:
     NSYMBOL_API View<RStructVarDecl*> GetRVars() override;
     NSYMBOL_API std::optional<RMember_StructVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
     NSYMBOL_API std::vector<RStructCtorDecl*> GetUnboundCtors() override;
+    NSYMBOL_API RStructCtorDecl* GetUnboundCopyCtor() override;
     NSYMBOL_API RStructCtorDecl* GetUnboundTrivialCtor_RStructCtorDecl() override { return GetUnboundTrivialCtor_NStructCtorDecl(); }
 
 };
