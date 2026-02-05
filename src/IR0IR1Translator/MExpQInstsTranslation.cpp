@@ -25,6 +25,7 @@
 #include "QIR/QArgs.h"
 
 #include "MLocQInstsTranslation.h"
+#include "MStmtQInstsTranslation.h"
 #include "QBodyContext.h"
 #include "ScopeGuard.h"
 #include "CommonQInstsTranslation.h"
@@ -53,7 +54,8 @@ expected<void, DiagPtr> EmitInitLValue(size_t destPtrSlotIndex, size_t srcSlotIn
         assert(ctor);
 
         size_t srcPtrSlotIndex = bodyContext.NewSlot(bodyContext.GetPtrType(structType));
-        bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{srcPtrSlotIndex}, QArg_Slot{srcSlotIndex}});
+        auto e_result = bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{srcPtrSlotIndex}, QArg_Slot{srcSlotIndex}});
+        assert(e_result);
 
         vector<QArg_Input> args;
         args.push_back(QArg_Slot{destPtrSlotIndex}); // this ptr
@@ -190,6 +192,14 @@ public:
             else static_assert(false); // 나머지는 추후에
 
         }, *e_dest);
+    }
+
+    ResultType Visit(MExp_Stmt* exp)
+    {
+        auto e_result = TranslateMStmtsToQInsts(exp->stmts, bodyContext);
+        RETURN_ON_ERROR(e_result);
+
+        return TranslateMExpToQInsts(exp->finalExp, o_destSlotIndex, bodyContext);
     }
 
     // box 3;
@@ -534,7 +544,7 @@ public:
                     else if constexpr (same_as<T, MArgument_Ref>)
                     {
                         auto e_locResult = TranslateMLocToQInsts(arg.loc, bodyContext);
-                        RETURN_ON_ERROR(e_result);
+                        RETURN_ON_ERROR(e_locResult);
                         
                         return visit([this, rStructVarType, fieldPtrSlotIndex](auto& locResult) -> expected<void, DiagPtr>
                         {
@@ -552,9 +562,6 @@ public:
                     }
                     else static_assert(false);
                 }, exp->args[i]);
-
-                
-
             }
 
             return {};

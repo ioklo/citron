@@ -98,15 +98,22 @@ public:
     void Accept(MStmtVisitor& visitor) override { visitor.Visit(this); }
 };
 
+struct MStmt_LocalVarDeclInit_Uninit {};
+struct MStmt_LocalVarDeclInit_Exp { MExp* exp; };
+struct MStmt_LocalVarDeclInit_Stmt { MStmt* stmt; };
+
+using MStmt_LocalVarDeclInit = std::variant<MStmt_LocalVarDeclInit_Uninit, MStmt_LocalVarDeclInit_Exp, MStmt_LocalVarDeclInit_Stmt>;
+
 // 로컬 변수는 
 class MStmt_LocalVarDecl : public MStmt
 {
 public:
     RType* type;
     RName name;
-    MExp* initExp;
+    MStmt_LocalVarDeclInit init;
+
 public:
-    MIR_API MStmt_LocalVarDecl(RType* type, RName&& name, MExp* initExp);
+    MIR_API MStmt_LocalVarDecl(RType* type, RName&& name, MStmt_LocalVarDeclInit init);
     void Accept(MStmtVisitor& visitor) override { visitor.Visit(this); }
 };
 

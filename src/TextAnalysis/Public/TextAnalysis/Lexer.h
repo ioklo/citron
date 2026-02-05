@@ -47,5 +47,12 @@ struct LexResult
     Lexer lexer;
 };
 
+template<typename TToken>
+struct TLexResult
+{
+    TToken token;
+    Lexer lexer;
+};
+
 
 }

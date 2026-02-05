@@ -132,7 +132,11 @@ struct Error_VarDecl_UsingBoxVarAsDeclTypeButInitExpIsNotBox : Error { }; // A01
 struct Error_VarDecl_UsingPtrVarAsDeclTypeButInitExpIsNotPtr : Error { }; // A0119_VarDecl_UsingPtrVarAsDeclTypeButInitExpIsNotPtr
 struct Error_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable : Error { }; // A0120_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable
 struct Error_VarDecl_InitExpTypeMismatch : Error { }; // A0121_VarDecl_InitExpTypeMismatch
+struct Error_VarDecl_CantInferenceWithoutInitExpression : Error { }; 
+
 struct Error_Capturer_ReferencingLocalVariableIsNotAllowed : Error { }; // A0201_Capturer_ReferencingLocalVariableIsNotAllowed
+
+
 
 struct Error_FuncMatch_MultipleCandidates : Error {}; // A0401
 struct Error_FuncMatch_NotFound : Error {}; // A0402

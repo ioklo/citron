@@ -85,8 +85,36 @@ JsonItem SLambdaExpParam::ToJson()
     };
 }
 
-SVarDeclElement::SVarDeclElement(std::string varName, SExp* initExp)
-    : varName(move(varName)), initExp(move(initExp)) { }
+JsonItem SVarDeclElementInit_Uninit::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SVarDeclElementInit_Uninit") },
+    };
+}
+
+JsonItem SVarDeclElementInit_Exp::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SVarDeclElementInit_Exp") },
+        { "exp", Citron::ToJson(exp) },
+    };
+}
+
+JsonItem SVarDeclElementInit_Move::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SVarDeclElementInit_Move") },
+        { "exp", Citron::ToJson(exp) },
+    };
+}
+
+JsonItem ToJson(SVarDeclElementInit& init)
+{
+    return std::visit(ToJsonVisitor(), init);
+}
+
+SVarDeclElement::SVarDeclElement(std::string varName, SVarDeclElementInit init)
+    : varName(move(varName)), init(move(init)) { }
 
 SVarDeclElement::SVarDeclElement(SVarDeclElement&& other) noexcept = default;
 
@@ -99,7 +127,7 @@ JsonItem SVarDeclElement::ToJson()
     return JsonObject {
         { "$type", JsonString("SVarDeclElement") },
         { "varName", Citron::ToJson(varName) },
-        { "initExp", Citron::ToJson(initExp) },
+        { "init", Citron::ToJson(init) },
     };
 }
 

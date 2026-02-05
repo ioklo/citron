@@ -219,17 +219,17 @@ expected<MExp*, DiagPtr> TranslateSAssignBinaryOpExpToMExp(SExp_BinaryOp* exp, T
     RETURN_ON_ERROR(e_nDestLoc);
 
     // 안되는거 체크
-    auto* pNDestLoc = *e_nDestLoc;
-    if (dynamic_cast<MLoc_LambdaVar*>(pNDestLoc))
+    auto* nDestLoc = *e_nDestLoc;
+    if (dynamic_cast<MLoc_LambdaVar*>(nDestLoc))
     {
         // int x = 0; var l = () { x = 3; }, TODO: 이거 가능하도록
         return unexpected{MakePtr<Error_BinaryOp_LeftOperandIsNotAssignable>()};
     }
-    else if (dynamic_cast<MLoc_This*>(pNDestLoc))
+    else if (dynamic_cast<MLoc_This*>(nDestLoc))
     {
         return unexpected{MakePtr<Error_BinaryOp_LeftOperandIsNotAssignable>()};
     }
-    else if (dynamic_cast<MLoc_Temp*>(pNDestLoc))
+    else if (dynamic_cast<MLoc_Temp*>(nDestLoc))
     {
         return unexpected{MakePtr<Error_BinaryOp_LeftOperandIsNotAssignable>()};
     }

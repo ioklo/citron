@@ -296,13 +296,47 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
+struct SVarDeclElementInit_Uninit
+{
+    SVarDeclElementInit_Uninit() { }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+struct SVarDeclElementInit_Exp
+{
+    SExp* exp;
+
+    SVarDeclElementInit_Exp(SExp* exp)
+        : exp{exp} { }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+struct SVarDeclElementInit_Move
+{
+    SExp* exp;
+
+    SVarDeclElementInit_Move(SExp* exp)
+        : exp{exp} { }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+using SVarDeclElementInit = std::variant<
+    SVarDeclElementInit_Uninit,
+    SVarDeclElementInit_Exp,
+    SVarDeclElementInit_Move>;
+
+SYNTAX_API JsonItem ToJson(SVarDeclElementInit& init);
+
 class SVarDeclElement
 {
 public:
     std::string varName;
-    SExp* initExp;
+    SVarDeclElementInit init;
 
-    SYNTAX_API SVarDeclElement(std::string varName, SExp* initExp);
+    SYNTAX_API SVarDeclElement(std::string varName, SVarDeclElementInit init);
     SVarDeclElement(const SVarDeclElement&) = delete;
     SYNTAX_API SVarDeclElement(SVarDeclElement&&) noexcept;
     SYNTAX_API ~SVarDeclElement();

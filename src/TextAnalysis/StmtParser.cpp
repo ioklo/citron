@@ -126,20 +126,31 @@ optional<SVarDecl> ParseVarDecl(Lexer* lexer, SFactory& factory)
         if (!o_varIdToken)
             return nullopt;
 
-        SExp* initExp = nullptr;
+        if (!Accept<EqualToken>(&curLexer)) return nullopt;
+        
+        if (Accept<MoveToken>(&curLexer))
+        {
+            SExp* initExp = ParseExp(&curLexer, factory);
+            if (!initExp) return nullopt;
 
-        if (Accept<EqualToken>(&curLexer))
+            elems.push_back(SVarDeclElement{move(o_varIdToken->text), SVarDeclElementInit_Move{initExp}});
+        }
+        else if (auto o_initLexResult = Peek<IdentifierToken>(curLexer); o_initLexResult && o_initLexResult->token.text == "uninit")
+        {
+            Accept(&curLexer, *o_initLexResult);
+
+            elems.push_back(SVarDeclElement{move(o_varIdToken->text), SVarDeclElementInit_Uninit{}});
+        }
+        else
         {
             // TODO: ;나 ,가 나올때까지라는걸 명시해주면 좋겠다
-            initExp = ParseExp(&curLexer, factory);
-            if (!initExp)
-                return nullopt;
+            SExp* initExp = ParseExp(&curLexer, factory);
+            
+            // TODO: Error_VarDecl_LocalVarDeclNeedInitializer
+            if (!initExp) return nullopt;
+
+            elems.push_back(SVarDeclElement{move(o_varIdToken->text), SVarDeclElementInit_Exp{initExp}});
         }
-
-        // TODO: uninitialized 분석을 넣기 전까진 initExp가 무조건 있도록 함
-        assert(initExp);
-
-        elems.push_back(SVarDeclElement{move(o_varIdToken->text), initExp});
 
     } while (Accept<CommaToken>(&curLexer)); // ,가 나오면 계속한다
 

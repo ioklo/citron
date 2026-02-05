@@ -53,8 +53,11 @@ expected<vector<MStmt*>, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtI
 expected<MExp*, DiagPtr> TranslateSExpAsTopLevelExpToMExp(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContexts& contexts);
 expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmt*>& sBody, TranslationContexts& contexts);
 
-bool IsTopLevelRExp(MExp* exp)
+bool IsTopLevelMExp(MExp* exp)
 {
+    if (auto* stmtExp = dynamic_cast<MExp_Stmt*>(exp))
+        return IsTopLevelMExp(stmtExp->finalExp);
+
     return dynamic_cast<MExp_CallInternalUnaryAssignOperator*>(exp) != nullptr
         || dynamic_cast<MExp_Assign*>(exp) != nullptr
         || dynamic_cast<MExp_CallGlobalFunc*>(exp) != nullptr
@@ -846,15 +849,15 @@ expected<vector<MStmt*>, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtI
 
 expected<MExp*, DiagPtr> TranslateSExpAsTopLevelExpToMExp(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContexts& contexts)
 {
-    auto e_nExp = TranslateSExpToMExp(sExp, hintType, contexts);
-    RETURN_ON_ERROR(e_nExp);
+    auto e_mExp = TranslateSExpToMExp(sExp, hintType, contexts);
+    RETURN_ON_ERROR(e_mExp);
 
-    if (!IsTopLevelRExp(*e_nExp))
+    if (!IsTopLevelMExp(*e_mExp))
     {
         return unexpected{designatedDiag->MakeDiag()};
     }
 
-    return e_nExp;
+    return e_mExp;
 }
 
 expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(vector<SLambdaExpParam>& sParams, TranslationContexts& contexts)

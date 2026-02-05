@@ -41,6 +41,16 @@ RType* MExp_Assign::GetType()
     return dest->GetType();
 }
 
+MExp_Stmt::MExp_Stmt(std::vector<MStmt*>&& stmts, MExp* finalExp)
+    : stmts{move(stmts)}, finalExp{finalExp}
+{
+}
+
+MIR_API RType* MExp_Stmt::GetType()
+{
+    return finalExp->GetType();
+}
+
 MExp_Box::MExp_Box(MExp* innerExp, const RFactoryPtr& rFactory)
     : innerExp{innerExp}, rFactory{rFactory}
 {

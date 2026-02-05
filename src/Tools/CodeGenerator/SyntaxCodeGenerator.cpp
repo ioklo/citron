@@ -274,15 +274,46 @@ struct ToJsonVisitor {
             },
         },
 
-        // SVarDecl
+        StructInfo{
+            .name = "SVarDeclElementInit_Uninit",
+            .memberInfos{
+            },
+        },
+
+        StructInfo{
+            .name = "SVarDeclElementInit_Exp",
+            .memberInfos{
+                {.type = "SExp*", .name = "exp", .bUseMove = false},
+            },
+        },
+
+        StructInfo{ 
+            .name = "SVarDeclElementInit_Move",
+            .memberInfos{ 
+                {.type = "SExp*", .name = "exp", .bUseMove = false},
+            },
+        },
+
+        VariantInfo{
+            .name = "SVarDeclElementInit",
+            .argName = "init",
+            .memberNames {
+                "SVarDeclElementInit_Uninit",
+                "SVarDeclElementInit_Exp",
+                "SVarDeclElementInit_Move"
+            }
+        },
+
+        // SVarDeclElement
         ClassInfo {
             .name = "SVarDeclElement",
             .memberInfos {
                 {.type = "std::string", .memberVarName = "varName", .getterName = "GetVarName" },
-                {.type = "SExp*", .memberVarName = "initExp", .getterName = "GetInitExp" }
+                {.type = "SVarDeclElementInit", .memberVarName = "init", .getterName = "GetInit" }
             },
         },
 
+        // SVarDecl
         ClassInfo{
             .name = "SVarDecl",
             .memberInfos {

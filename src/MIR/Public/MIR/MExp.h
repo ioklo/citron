@@ -30,6 +30,7 @@ class RType_EnumElem;
 
 class MExp_Load;
 class MExp_Assign;
+class MExp_Stmt;
 class MExp_Box;
 class MExp_StaticBoxRef;
 class MExp_ClassMemberBoxRef;
@@ -86,6 +87,7 @@ public:
     virtual ~MExpVisitor() {}
     virtual void Visit(MExp_Load* exp) = 0;
     virtual void Visit(MExp_Assign* exp) = 0;
+    virtual void Visit(MExp_Stmt* exp) = 0;
     virtual void Visit(MExp_Box* exp) = 0;
     virtual void Visit(MExp_StaticBoxRef* exp) = 0;
     virtual void Visit(MExp_ClassMemberBoxRef* exp) = 0;
@@ -161,6 +163,19 @@ public:
 public:
     MIR_API MExp_Assign(MLoc* dest, MExp* src);
 
+    MIR_API RType* GetType() override;
+    void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
+};
+
+// { stmt1; stmt2; ...; finalExp; }
+class MExp_Stmt : public MExp
+{
+public:
+    std::vector<MStmt*> stmts;
+    MExp* finalExp;
+
+public:
+    MIR_API MExp_Stmt(std::vector<MStmt*>&& stmts, MExp* finalExp);
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -850,6 +865,7 @@ concept MExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 
     { v.Visit(std::declval<MExp_Load*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_Assign*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MExp_Stmt*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_Box*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_StaticBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_ClassMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
@@ -906,6 +922,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             Bridge(decltype(caller)& call) : call(call) {}
             void Visit(MExp_Load* mExp) override { call(mExp); }
             void Visit(MExp_Assign* mExp) override { call(mExp); }
+            void Visit(MExp_Stmt* mExp) override { call(mExp); }
             void Visit(MExp_Box* mExp) override { call(mExp); }
             void Visit(MExp_StaticBoxRef* mExp) override { call(mExp); }
             void Visit(MExp_ClassMemberBoxRef* mExp) override { call(mExp); }
@@ -959,6 +976,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
 
             void Visit(MExp_Load* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_Assign* mExp) override { result.emplace(call(mExp)); }
+            void Visit(MExp_Stmt* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_Box* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_StaticBoxRef* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_ClassMemberBoxRef* mExp) override { result.emplace(call(mExp)); }

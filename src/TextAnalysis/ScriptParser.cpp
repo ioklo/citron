@@ -100,7 +100,7 @@ SGlobalFuncDecl* ParseGlobalFuncDecl(Lexer* lexer, SFactory& factory)
     *lexer = move(curLexer);
 
     return factory.MakeSGlobalFuncDecl(
-        nullopt, // TODO: [7] 일단 null
+        nullopt, // TODO: [7] GlobalFuncDecl에 AccessModifier 추가
         bSequence,
         retType,
         move(o_funcName->text),

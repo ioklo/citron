@@ -22,6 +22,7 @@
 #include "Misc.h"
 #include "TranslationContexts.h"
 #include "DesignatedDiagnostic.h"
+#include "SExpToImExpTranslation.h"
 
 using namespace std;
 
@@ -118,22 +119,44 @@ public:
     {
         for (auto& elem : elems)
         {
-            if (contexts.scopeContext->DoesLocalNameExistInScope(RName_Normal{elem.varName}))
+            RName_Normal varName = {elem.varName};
+
+            if (contexts.scopeContext->DoesLocalNameExistInScope(varName))
                 return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
 
-            if (!elem.initExp)
-                return unexpected{MakePtr<Error_VarDecl_LocalVarDeclNeedInitializer>()};
+            visit([this, sVarDeclType, &varName](auto& sInit) {
+                using T = remove_cvref_t<decltype(sInit)>;
+                if constexpr (same_as<T, SVarDeclElementInit_Exp>)
+                {
+                    // try
+                    if (auto* sCallInitExp = dynamic_cast<SExp_Call*>(sInit.exp))
+                    {   
+                        auto e_callable = TranslateSExpToImExp(sCallInitExp->callable, /*hintType*/nullptr, contexts);
+                        MStmt_LocalVarDeclInit_Stmt{}
+                    }
 
-            // var꼴로 나오는 경우 hintType은 없다
-            auto e_nInitExp = TranslateSExpToMExp(elem.initExp, /*hintType*/nullptr, contexts);
-            RETURN_ON_ERROR(e_nInitExp);
-            
-            auto* rInitExpType = (*e_nInitExp)->GetType();
-            auto e_result = CheckVarConsistency(sVarDeclType->kind, rInitExpType);
-            RETURN_ON_ERROR(e_result);
+                    // var꼴로 나오는 경우 hintType은 없다
+                    auto e_nInitExp = TranslateSExpToMExp(sInit.exp, /*hintType*/nullptr, contexts);
+                    RETURN_ON_ERROR(e_nInitExp);
 
-            contexts.scopeContext->AddLocalVarInfo(rInitExpType, RName_Normal{elem.varName});
-            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rInitExpType, RName_Normal{elem.varName}, *e_nInitExp));
+                    auto* rInitExpType = (*e_nInitExp)->GetType();
+                    auto e_result = CheckVarConsistency(sVarDeclType->kind, rInitExpType);
+                    RETURN_ON_ERROR(e_result);
+
+                    contexts.scopeContext->AddLocalVarInfo(rInitExpType, varName);
+                    outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rInitExpType, varName, *e_nInitExp));
+                }
+                else if constexpr (same_as<T, SVarDeclElementInit_Move>)
+                {
+                    // TODO: [30] move구현
+                    throw NotImplementedException{};
+                }
+                else if constexpr (same_as<T, SVarDeclElementInit_Uninit>)
+                {
+                    return unexpected{MakePtr<Error_VarDecl_CantInferenceWithoutInitExpression>()};
+                }
+                else static_assert(false);
+            }, elem.init);
         }
 
         return {};

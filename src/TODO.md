@@ -1,4 +1,4 @@
-- [ ] // TODO: [7] 일단 null
+- [ ] // TODO: [7] GlobalFuncDecl에 AccessModifier 추가
 - [ ] // TODO: [10] box lambda이면 box로 판단해야 한다
 - [ ] // TODO: [15] foreach 에러 처리
 - [ ] // TODO: [16] TypeResolver적용
