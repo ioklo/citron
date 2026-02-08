@@ -77,7 +77,7 @@ expected<MExp_StringElem, DiagPtr> TranslateSStringExpElementToRStringExpElement
 
     if (auto* expElem = dynamic_cast<SStringExpElement_Exp*>(elem))
     {
-        auto e_reExp = TranslateSExpToReExp(expElem->exp, /* hintType */ nullptr, contexts);
+        auto e_reExp = TranslateSExpToReExp(expElem->exp, /*hintType*/nullptr, contexts);
         RETURN_ON_ERROR(e_reExp);
 
         auto reExpType = (*e_reExp)->GetType();

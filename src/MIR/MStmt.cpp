@@ -12,8 +12,8 @@ MStmt_Command::MStmt_Command(vector<MExp_String*>&& commands)
 {
 }
 
-MStmt_LocalVarDecl::MStmt_LocalVarDecl(RType* type, RName&& name, MStmt_LocalVarDeclInit init)
-    : type{type}, name{move(name)}, init{init}
+MStmt_LocalVarDecl::MStmt_LocalVarDecl(RType* type, const RName& name, MStmt_LocalVarDeclInit init)
+    : type{type}, name{name}, init{init}
 {
 
 }

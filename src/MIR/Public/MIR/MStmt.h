@@ -100,9 +100,9 @@ public:
 
 struct MStmt_LocalVarDeclInit_Uninit {};
 struct MStmt_LocalVarDeclInit_Exp { MExp* exp; };
-struct MStmt_LocalVarDeclInit_Stmt { MStmt* stmt; };
+struct MStmt_LocalVarDeclInit_StructInit { RStructCtorDecl* ctor; }; // typeArgs는 LocalVarDecl에서 알 수 있다
 
-using MStmt_LocalVarDeclInit = std::variant<MStmt_LocalVarDeclInit_Uninit, MStmt_LocalVarDeclInit_Exp, MStmt_LocalVarDeclInit_Stmt>;
+using MStmt_LocalVarDeclInit = std::variant<MStmt_LocalVarDeclInit_Uninit, MStmt_LocalVarDeclInit_Exp, MStmt_LocalVarDeclInit_StructInit>;
 
 // 로컬 변수는 
 class MStmt_LocalVarDecl : public MStmt
@@ -113,7 +113,7 @@ public:
     MStmt_LocalVarDeclInit init;
 
 public:
-    MIR_API MStmt_LocalVarDecl(RType* type, RName&& name, MStmt_LocalVarDeclInit init);
+    MIR_API MStmt_LocalVarDecl(RType* type, const RName& name, MStmt_LocalVarDeclInit init);
     void Accept(MStmtVisitor& visitor) override { visitor.Visit(this); }
 };
 

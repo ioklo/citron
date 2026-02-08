@@ -10,3 +10,4 @@
 - [ ] // TODO: [29] SArgModifier맞지 않았을때 Error 내도록
 - [ ] // TODO: [30] move구현
 - [ ] // TODO: [31] params 구현
+- [ ] // TODO: [32] RTypeArguments를 nested로 만들기
