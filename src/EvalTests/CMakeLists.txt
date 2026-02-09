@@ -23,14 +23,8 @@ target_link_libraries(EvalTests PRIVATE
         QIrLLVMTranslator
         GTest::gtest_main
 )
-target_sources(EvalTests
-        PRIVATE
-        EvalTests.g.cpp
 
-        PUBLIC FILE_SET headers
-        TYPE HEADERS
-        FILES
-)
+include(CMakeSources.g.txt)
 
 find_package(GTest CONFIG REQUIRED)
 

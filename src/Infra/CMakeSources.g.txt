@@ -1,0 +1,23 @@
+target_sources(Infra
+    PRIVATE
+        Json.cpp
+        StringWriter.cpp
+
+    PRIVATE FILE_SET headers TYPE HEADERS FILES
+        Public/Infra/Copy.h
+        Public/Infra/Defaults.h
+        Public/Infra/Exceptions.h
+        Public/Infra/Expected.h
+        Public/Infra/Hash.h
+        Public/Infra/IWriter.h
+        Public/Infra/Indirect.h
+        Public/Infra/InfraConfig.h
+        Public/Infra/Json.h
+        Public/Infra/Ptr.h
+        Public/Infra/StringWriter.h
+        Public/Infra/Transaction.h
+        Public/Infra/Unreachable.h
+        Public/Infra/Variants.h
+        Public/Infra/Views.h
+        Public/Infra/make_vector.h
+)

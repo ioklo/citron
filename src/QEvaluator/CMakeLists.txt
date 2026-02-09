@@ -16,14 +16,4 @@ target_link_libraries(QEvaluator PRIVATE
         QIR
 )
 
-target_sources(QEvaluator
-        PRIVATE
-        QEvaluation.cpp
-
-        PUBLIC FILE_SET headers
-        TYPE HEADERS
-        FILES
-        Public/QEvaluator/QEvaluation.h
-        Public/QEvaluator/QEvaluatorConfig.h
-)
-
+include(CMakeSources.g.txt)

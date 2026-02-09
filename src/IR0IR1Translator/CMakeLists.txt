@@ -18,25 +18,4 @@ target_link_libraries(IR0IR1Translator PRIVATE
         MIR
         QIR
 )
-target_sources(IR0IR1Translator
-        PRIVATE
-        CommonQInstsTranslation.cpp
-        IR0IR1Translator.cpp
-        MExpQInstsTranslation.cpp
-        MLocQInstsTranslation.cpp
-        MStmtQInstsTranslation.cpp
-        QBodyContext.cpp
-
-        PUBLIC FILE_SET headers
-        TYPE HEADERS
-        FILES
-        Public/IR0IR1Translator/IR0IR1Translator.h
-        Public/IR0IR1Translator/IR0IR1TranslatorConfig.h
-
-        CommonQInstsTranslation.h
-        MExpQInstsTranslation.h
-        MLocQInstsTranslation.h
-        MStmtQInstsTranslation.h
-        QBodyContext.h
-        ScopeGuard.h
-)
+include(CMakeSources.g.txt)

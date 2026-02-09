@@ -1,0 +1,6 @@
+target_sources(QEvaluator.Tests
+    PRIVATE
+        test.cpp
+
+    PRIVATE FILE_SET headers TYPE HEADERS FILES
+)

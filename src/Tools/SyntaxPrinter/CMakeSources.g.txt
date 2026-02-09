@@ -1,0 +1,6 @@
+target_sources(SyntaxPrinter
+    PRIVATE
+        SyntaxPrinter.cpp
+
+    PRIVATE FILE_SET headers TYPE HEADERS FILES
+)

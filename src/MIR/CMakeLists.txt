@@ -14,25 +14,5 @@ target_link_libraries(MIR PRIVATE
         RSymbol
         NSymbol
 )
-target_sources(MIR
-        PRIVATE
-        MData.cpp
-        MExp.cpp 
-        MFactory.cpp 
-        MLoc.cpp 
-        MStmt.cpp
 
-        PUBLIC FILE_SET headers
-        TYPE HEADERS
-        FILES
-        
-        Public/MIR/MArgument.h
-        Public/MIR/MData.h
-        Public/MIR/MExp.h
-        Public/MIR/MFactory.h
-        Public/MIR/MFuncBody.h
-        Public/MIR/MIRConfig.h
-        Public/MIR/MLoc.h
-        Public/MIR/MStmt.h
-
-)
+include(CMakeSources.g.txt)

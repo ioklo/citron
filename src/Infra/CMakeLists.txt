@@ -12,25 +12,4 @@ target_link_libraries(Infra PRIVATE
         Common
 )
 
-target_sources(Infra
-  PRIVATE
-    Json.cpp
-    StringWriter.cpp
-  PUBLIC FILE_SET headers
-    TYPE HEADERS
-    FILES
-      Public/Infra/Defaults.h
-      Public/Infra/InfraConfig.h
-      Public/Infra/Hash.h
-      Public/Infra/Copy.h
-      Public/Infra/Exceptions.h
-      Public/Infra/Expected.h
-      Public/Infra/Indirect.h
-      Public/Infra/IWriter.h
-      Public/Infra/Json.h
-      Public/Infra/make_vector.h
-      Public/Infra/Ptr.h
-      Public/Infra/StringWriter.h
-      Public/Infra/Unreachable.h
-      Public/Infra/Variants.h
-)
+include(CMakeSources.g.txt)

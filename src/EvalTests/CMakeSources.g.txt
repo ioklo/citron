@@ -1,0 +1,7 @@
+target_sources(EvalTests
+    PRIVATE
+        EvalTests.cpp
+        EvalTests.g.cpp
+
+    PRIVATE FILE_SET headers TYPE HEADERS FILES
+)

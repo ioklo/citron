@@ -7,7 +7,5 @@ target_link_libraries(SyntaxPrinter PRIVATE
         Syntax
         TextAnalysis
 )
-target_sources(SyntaxPrinter
-        PRIVATE
-        SyntaxPrinter.cpp
-)
+
+include(CMakeSources.g.txt)

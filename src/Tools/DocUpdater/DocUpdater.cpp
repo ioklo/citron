@@ -161,7 +161,7 @@ int wmain(int argc, wchar_t* argv[])
         return 1;
     }
 
-    auto basePath = absolute(argv[1]);
+    auto basePath = canonical(argv[1]);
     wcout << L"Base Directory: " << basePath << endl;
 
     // 모든 md를 가져온다

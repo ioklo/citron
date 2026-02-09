@@ -10,14 +10,4 @@ target_link_libraries(Builder PRIVATE
         Common
 )
 
-target_sources(Builder
-        PRIVATE
-        Builder.cpp
-
-        PUBLIC FILE_SET headers
-        TYPE HEADERS
-        FILES
-        Public/Builder/BuilderConfig.h
-        Public/Builder/Builder.h
-        Public/Builder/IFileSystem.h
-)
+include(CMakeSources.g.txt)

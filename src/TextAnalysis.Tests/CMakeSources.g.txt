@@ -1,0 +1,13 @@
+target_sources(TextAnalysis.Tests
+    PRIVATE
+        CommandLexerTests.cpp
+        ExpParserTests.g.cpp
+        LexerTests.cpp
+        ScriptParserTests.g.cpp
+        StmtParserTests.g.cpp
+        TestMisc.cpp
+        TypeExpParserTests.g.cpp
+
+    PRIVATE FILE_SET headers TYPE HEADERS FILES
+        TestMisc.h
+)

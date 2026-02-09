@@ -10,7 +10,4 @@ target_link_libraries(TestGenerator PRIVATE
         fmt::fmt
 )
 
-target_sources(TestGenerator
-        PRIVATE
-        TestGenerator.cpp
-)
+include(CMakeSources.g.txt)

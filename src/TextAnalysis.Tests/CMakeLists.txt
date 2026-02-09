@@ -13,21 +13,8 @@ target_link_libraries(TextAnalysis.Tests PRIVATE
         TextAnalysis
         GTest::gtest_main
 )
-target_sources(TextAnalysis.Tests
-        PRIVATE
-        CommandLexerTests.cpp
-        ExpParserTests.g.cpp
-        LexerTests.cpp
-        ScriptParserTests.g.cpp
-        StmtParserTests.g.cpp
-        TestMisc.cpp
-        TypeExpParserTests.g.cpp
 
-        PUBLIC FILE_SET headers
-        TYPE HEADERS
-        FILES
-        TestMisc.h
-)
+include(CMakeSources.g.txt)
 
 find_package(GTest CONFIG REQUIRED)
 

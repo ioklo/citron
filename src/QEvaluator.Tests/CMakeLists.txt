@@ -15,14 +15,8 @@ target_link_libraries(QEvaluator.Tests PRIVATE
         RSymbol
         GTest::gtest_main
 )
-target_sources(QEvaluator.Tests
-        PRIVATE
-        test.cpp
 
-        PUBLIC FILE_SET headers
-        TYPE HEADERS
-        FILES
-)
+include(CMakeSources.g.txt)
 
 find_package(GTest CONFIG REQUIRED)
 

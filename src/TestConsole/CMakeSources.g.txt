@@ -1,0 +1,8 @@
+target_sources(TestConsole
+    PRIVATE
+        TestConsole.cpp
+        pch.cpp
+
+    PRIVATE FILE_SET headers TYPE HEADERS FILES
+        pch.h
+)

@@ -10,15 +10,4 @@ target_link_libraries(Logging PRIVATE
         Common
 )
 
-target_sources(Logging
-        PRIVATE
-        Diag.cpp
-        Logger.cpp
-
-        PUBLIC FILE_SET headers
-        TYPE HEADERS
-        FILES
-        Public/Logging/LoggingConfig.h
-        Public/Logging/Diag.h
-        Public/Logging/Logger.h
-)
+include(CMakeSources.g.txt)

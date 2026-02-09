@@ -10,11 +10,8 @@ target_link_libraries(Builder.Tests PRIVATE
         Builder
         GTest::gtest_main
 )
-target_sources(Builder.Tests
-        PRIVATE
-        test.cpp
-)
 
+include(CMakeSources.g.txt)
 
 find_package(GTest CONFIG REQUIRED)
 

@@ -26,14 +26,4 @@ target_link_libraries(QIrLLVMTranslator PRIVATE
         ${LLVM_LIBS}
 )
 
-
-target_sources(QIrLLVMTranslator
-        PRIVATE
-        QIrLLVMTranslator.cpp
-
-        PUBLIC FILE_SET headers
-        TYPE HEADERS
-        FILES
-        Public/QIrLLVMTranslator/QIrLLVMTranslator.h
-        Public/QIrLLVMTranslator/QIrLLVMTranslatorConfig.h
-)
+include(CMakeSources.g.txt)

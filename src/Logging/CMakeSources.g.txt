@@ -1,0 +1,10 @@
+target_sources(Logging
+    PRIVATE
+        Diag.cpp
+        Logger.cpp
+
+    PRIVATE FILE_SET headers TYPE HEADERS FILES
+        Public/Logging/Diag.h
+        Public/Logging/Logger.h
+        Public/Logging/LoggingConfig.h
+)

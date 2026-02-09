@@ -1,0 +1,8 @@
+target_sources(QIrLLVMTranslator
+    PRIVATE
+        QIrLLVMTranslator.cpp
+
+    PRIVATE FILE_SET headers TYPE HEADERS FILES
+        Public/QIrLLVMTranslator/QIrLLVMTranslator.h
+        Public/QIrLLVMTranslator/QIrLLVMTranslatorConfig.h
+)

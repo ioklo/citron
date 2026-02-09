@@ -18,25 +18,5 @@ target_link_libraries(TextAnalysis PRIVATE
         ICU::uc
         ICU::i18n
 )
-target_sources(TextAnalysis
-        PRIVATE
-        Buffer.cpp
-        ExpParser.cpp
-        Lexer.cpp
-        ParserMisc.cpp
-        ScriptParser.cpp
-        StmtParser.cpp
-        TypeExpParser.cpp
 
-        PUBLIC FILE_SET headers
-        TYPE HEADERS
-        FILES
-        Public/TextAnalysis/Buffer.h
-        Public/TextAnalysis/ExpParser.h
-        Public/TextAnalysis/Lexer.h
-        Public/TextAnalysis/ParserMisc.h
-        Public/TextAnalysis/ScriptParser.h
-        Public/TextAnalysis/StmtParser.h
-        Public/TextAnalysis/TextAnalysisConfig.h
-        Public/TextAnalysis/TypeExpParser.h
-)
+include(CMakeSources.g.txt)
