@@ -11,7 +11,7 @@ class C
 
 void Main()
 {
-    C c = new C(i => {
+    C c = new C([](int i) {
         @$i
     });
 

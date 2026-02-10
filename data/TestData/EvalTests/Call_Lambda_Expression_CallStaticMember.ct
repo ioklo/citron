@@ -6,7 +6,7 @@ class C
 
 void Main()
 {
-    C.F = i => {
+    C.F = [](int i) {
         @$i
     };
 

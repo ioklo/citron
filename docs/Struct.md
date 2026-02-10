@@ -95,9 +95,11 @@ public struct S<T...> : B, I...
 
     // 5. copy assign (special)
     special void copy_assign([in] S& s) {...}
+    // void copy_assign([in]S& s) = default;
 
     // 6. move assign (special)
     // special void move_assign([move] S& s) {...}
+    // void move_assign([move]S& s) = default;
 
     // 7. destructor
     ~S() { ... };
@@ -233,9 +235,9 @@ struct S
 ## 대입 함수
 ### 복사 대입 연산자
 
- - 복사 대입 연산을 최적화하고 싶을 경우 작성합니다. 복사 대입이 일어날때 복사 대입 연산자가 없으면 소멸자를 호출하고 복사 생성자를 다시 부르는 방식으로 대체됩니다.
+ - 복사 대입 연산을 지원하고 싶을 경우 작성합니다.
  - 복사 대입을 가지고 있는 리소스를 해제하지 않고 재사용하면서 만들 수 있습니다.
- - ```= default``` 자동생성이 의미가 없어서 지원하지 않습니다.
+ - ```= default``` 을 쓰면 멤버별로 copy_assign을 시도합니다. 실패시 에러를 냅니다.
 ```cs
 special void copy_assign([in] S& s) {...}
 ```
@@ -257,9 +259,9 @@ struct S
 ``` 
 
 ### 이동 대입
- - 이동 대입연산을 최적화하고 싶을 경우 작성합니다. 이동 대입이 일어날 때 이동 대입 연산자가 없으면 소멸자를 호출하고 이동 생성자를 다시 부르는 방식으로 대체됩니다.
+ - 이동 대입연산을 지원 싶을 경우 작성합니다.
  - 이동 대입을 가지고 있는 리소스를 해제하지 않고 재사용하면서 만들 수 있습니다.
- - ```= default``` 자동생성이 의미가 없어서 지원하지 않습니다.
+ - ```= default``` 를 쓰면 멤버별로 move_assign을 호출하는 식으로 코드를 생성합니다. 
  - ```special``` 키워드는 복사 생성자의 경우와 같습니다
 
 # 사용
