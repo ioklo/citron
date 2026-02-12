@@ -166,7 +166,7 @@ public:
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
     std::optional<RMember> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override { return std::nullopt; }
 
-    void Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+    void Accept(RTypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
 struct RTupleVar

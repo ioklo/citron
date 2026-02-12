@@ -28,8 +28,8 @@ class RTypeArguments;
 class RType_Func;
 class RType_EnumElem;
 
-class MExp_Load;
-class MExp_Assign;
+class MExp_BitwiseCopy;
+class MExp_BitwiseAssign;
 class MExp_Stmt;
 class MExp_Box;
 class MExp_StaticBoxRef;
@@ -85,8 +85,8 @@ class MExpVisitor
 {
 public:
     virtual ~MExpVisitor() {}
-    virtual void Visit(MExp_Load* exp) = 0;
-    virtual void Visit(MExp_Assign* exp) = 0;
+    virtual void Visit(MExp_BitwiseCopy* exp) = 0;
+    virtual void Visit(MExp_BitwiseAssign* exp) = 0;
     virtual void Visit(MExp_Stmt* exp) = 0;
     virtual void Visit(MExp_Box* exp) = 0;
     virtual void Visit(MExp_StaticBoxRef* exp) = 0;
@@ -141,28 +141,30 @@ public:
 
 #pragma region Storage
 
-// Location의 Value를 resultValue에 복사한다
-class MExp_Load : public MExp
+// 주어진 Location의 값을 비트단위로 복사한다
+class MExp_BitwiseCopy : public MExp
 {
 public:
     MLoc* loc;
-
 public:
-    MIR_API MExp_Load(MLoc* loc);
+    MExp_BitwiseCopy(MLoc* loc)
+        : loc{loc}
+    {}
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
-// a = b
-class MExp_Assign : public MExp
+// 주어진 Exp를 값으로 계산해서 Location에 비트단위로 복사하고, 그 값을 나타낸다
+class MExp_BitwiseAssign : public MExp
 {
 public:
     MLoc* dest;
     MExp* src;
 public:
-    MIR_API MExp_Assign(MLoc* dest, MExp* src);
-
+    MExp_BitwiseAssign(MLoc* dest, MExp* src)
+        : dest{dest}, src{src}
+    {}
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
 };
@@ -863,8 +865,8 @@ concept MExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 {
     typename std::remove_cvref_t<TVisitor>::ResultType;
 
-    { v.Visit(std::declval<MExp_Load*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MExp_Assign*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MExp_BitwiseCopy*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MExp_BitwiseAssign*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_Stmt*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_Box*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_StaticBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
@@ -920,8 +922,8 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
         struct Bridge : MExpVisitor {
             decltype(caller)& call;
             Bridge(decltype(caller)& call) : call(call) {}
-            void Visit(MExp_Load* mExp) override { call(mExp); }
-            void Visit(MExp_Assign* mExp) override { call(mExp); }
+            void Visit(MExp_BitwiseCopy* mExp) override { call(mExp); }
+            void Visit(MExp_BitwiseAssign* mExp) override { call(mExp); }
             void Visit(MExp_Stmt* mExp) override { call(mExp); }
             void Visit(MExp_Box* mExp) override { call(mExp); }
             void Visit(MExp_StaticBoxRef* mExp) override { call(mExp); }
@@ -973,9 +975,8 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             decltype(caller)& call;
             std::optional<TResult> result{};
             Bridge(decltype(caller)& call) : call(call) {}
-
-            void Visit(MExp_Load* mExp) override { result.emplace(call(mExp)); }
-            void Visit(MExp_Assign* mExp) override { result.emplace(call(mExp)); }
+            void Visit(MExp_BitwiseCopy* mExp) override { result.emplace(call(mExp)); }
+            void Visit(MExp_BitwiseAssign* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_Stmt* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_Box* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_StaticBoxRef* mExp) override { result.emplace(call(mExp)); }

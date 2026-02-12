@@ -5,6 +5,7 @@
 #include <vector>
 #include <variant>
 #include <string>
+#include <memory>
 
 #include "RNames.h"
 
@@ -30,6 +31,27 @@ class REnumElemDecl;
 class REnumElemVarDecl;
 class RLambdaVarDecl;
 class RFuncDecl;
+
+using RMember = std::variant<
+    class RMember_Namespace,
+    class RMember_GlobalFuncs,
+    class RMember_Class,
+    class RMember_ClassFuncs,
+    class RMember_ClassVar,
+    class RMember_Struct,
+    class RMember_StructFuncs,
+    class RMember_StructVar,
+    class RMember_Enum,
+    class RMember_EnumElem,
+    class RMember_EnumElemVar,
+    class RMember_LambdaVar,
+    class RMember_TupleVar,
+    class RMember_TypeVar,
+    class RMember_LocalVar,
+    class RMember_LocalRef,
+    class RMember_NeedCapture, // 람다에서 캡쳐가 필요할때
+    class RMember_ThisVar
+>;
 
 class RMember_Namespace
 {
@@ -185,6 +207,13 @@ public:
     RSYMBOL_API RMember_LocalRef(RType* type, const RName& name);
 };
 
+class RMember_NeedCapture
+{
+public:
+    RName name;
+    std::unique_ptr<RMember> member;
+};
+
 class RMember_ThisVar
 {
 public:
@@ -193,27 +222,6 @@ public:
 public:
     RSYMBOL_API RMember_ThisVar(RType* type);
 };
-
-using RMember = std::variant<
-    RMember_Namespace,
-    RMember_GlobalFuncs,
-    RMember_Class,
-    RMember_ClassFuncs,
-    RMember_ClassVar,
-    RMember_Struct,
-    RMember_StructFuncs,
-    RMember_StructVar,
-    RMember_Enum,
-    RMember_EnumElem,
-    RMember_EnumElemVar,
-    RMember_LambdaVar,
-    RMember_TupleVar,
-    RMember_TypeVar,
-
-    RMember_LocalVar,
-    RMember_LocalRef,
-    RMember_ThisVar
->;
 
 RSYMBOL_API std::vector<DeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs(RMember& member);
 

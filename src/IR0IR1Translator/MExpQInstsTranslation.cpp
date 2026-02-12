@@ -108,7 +108,7 @@ public:
     }
 
     // load(loc),
-    ResultType Visit(MExp_Load* exp)
+    ResultType Visit(MExp_BitwiseCopy* exp)
     {
         // 이 translation으로 lv가 하나 나올 것이다
         auto e_srcLoc = TranslateMLocToQInsts(exp->loc, bodyContext); // ptr이 담긴 slot

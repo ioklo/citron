@@ -137,7 +137,11 @@ private:
 
         if (auto* rPrimType = dynamic_cast<RType_Primitive*>(rType))
         {
-            MExp_Assign
+            // 복사: var x = 2; var y = x; // 여기서 var y = x
+
+
+
+
         }
         else if (auto* rStructType = dynamic_cast<RType_Struct*>(rType))
         {

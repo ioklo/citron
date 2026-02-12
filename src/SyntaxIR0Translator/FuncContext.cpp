@@ -40,7 +40,7 @@ namespace Citron {
 
 FuncContext::FuncContext() = default;
 
-NLambdaVarDecl* FuncContext::StageLambdaVar(RType* type, const RName& name, MArgument_Exp&& arg)
+NLambdaVarDecl* FuncContext::StageLambdaVar(RType* type, const RName& name, MArgument&& arg)
 {
     auto* lambdaVar = nFactory->MakeNDecl<NLambdaVarDecl>(type, name);
     lambdaVarAndInitArgs.emplace_back(lambdaVar, move(arg));

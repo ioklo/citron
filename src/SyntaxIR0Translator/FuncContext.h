@@ -63,7 +63,7 @@ private: // transaction
 
 public:
     FuncContext();
-    NLambdaVarDecl* StageLambdaVar(RType* type, const RName& name, MArgument_Exp&& arg);
+    NLambdaVarDecl* StageLambdaVar(RType* type, const RName& name, MArgument&& arg);
 
     void BeginTransaction();
     void CommitTransaction();

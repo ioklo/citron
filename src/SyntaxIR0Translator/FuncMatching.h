@@ -84,7 +84,9 @@ std::expected<std::optional<FuncMatch<TFuncDecl>>, DiagPtr> MatchFunc(
     if (infos.size() == 1)
     {   
         auto& info = infos.front();
-        auto e_o_argMatch = MatchArguments(&RFuncDeclMatchArgumentsInput{info.decl}, info.outerTypeArgs, partialTypeArgsExceptOuter, sArgs, contexts);
+
+        RFuncDeclMatchArgumentsInput input{info.decl};
+        auto e_o_argMatch = MatchArguments(&input, info.outerTypeArgs, partialTypeArgsExceptOuter, sArgs, contexts);
         RETURN_ON_ERROR(e_o_argMatch);
 
         if (!*e_o_argMatch) return std::nullopt;
@@ -98,7 +100,8 @@ std::expected<std::optional<FuncMatch<TFuncDecl>>, DiagPtr> MatchFunc(
         auto& info = infos[i];
         Transaction transaction(*contexts.scopeContext);
 
-        auto e_o_argMatch = MatchArguments(&RFuncDeclMatchArgumentsInput{info.decl}, info.outerTypeArgs, partialTypeArgsExceptOuter, sArgs, contexts);
+        RFuncDeclMatchArgumentsInput input{info.decl};
+        auto e_o_argMatch = MatchArguments(&input, info.outerTypeArgs, partialTypeArgsExceptOuter, sArgs, contexts);
         RETURN_ON_ERROR(e_o_argMatch);
 
         if (*e_o_argMatch)
@@ -112,7 +115,9 @@ std::expected<std::optional<FuncMatch<TFuncDecl>>, DiagPtr> MatchFunc(
         return std::unexpected{MakePtr<Error_FuncMatch_MultipleCandidates>()};
 
     auto& info = infos[candidates.front()];
-    auto e_o_argMatch = MatchArguments(&RFuncDeclMatchArgumentsInput{info.decl}, info.outerTypeArgs, partialTypeArgsExceptOuter, sArgs, contexts);
+
+    RFuncDeclMatchArgumentsInput input{info.decl};
+    auto e_o_argMatch = MatchArguments(&input, info.outerTypeArgs, partialTypeArgsExceptOuter, sArgs, contexts);
     assert(e_o_argMatch);
     auto& argMatch = **e_o_argMatch;
     return FuncMatch<TFuncDecl>(info.decl, argMatch.typeArgs, std::move(argMatch.args));

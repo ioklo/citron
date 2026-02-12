@@ -28,11 +28,11 @@ public:
 public: // from NDecl
     RDecl* GetRDecl() override { return this; }
     NDecl* GetNOuter() override { return outer; }
-    void Accept(NDeclVisitor& visitor) { visitor.Visit(this); }
+    void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
 
 public: // from NTypeDecl
     NDecl* GetNDecl() override { return this; }
-    RTypeDecl* GetRTypeDecl() { return this; }
+    RTypeDecl* GetRTypeDecl() override { return this; }
     NSYMBOL_API RMember ToRMember(RTypeArguments* typeArgs) override;
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(this); }
 

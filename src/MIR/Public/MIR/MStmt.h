@@ -16,6 +16,7 @@ class RType;
 class RTypeArguments;
 
 class RClassCtorDecl;
+class RStructCtorDecl;
 
 class MExp_String;
 class NLambdaDecl;

@@ -21,22 +21,12 @@ using namespace std;
 
 namespace Citron {
 
-MExp_Load::MExp_Load(MLoc* loc)
-    : loc(loc)
-{
-}
-
-RType* MExp_Load::GetType()
+RType* MExp_BitwiseCopy::GetType()
 {
     return loc->GetType();
 }
 
-MExp_Assign::MExp_Assign(MLoc* dest, MExp* src)
-    : dest{dest}, src{src}
-{
-}
-
-RType* MExp_Assign::GetType()
+RType* MExp_BitwiseAssign::GetType()
 {
     return dest->GetType();
 }
@@ -46,7 +36,7 @@ MExp_Stmt::MExp_Stmt(std::vector<MStmt*>&& stmts, MExp* finalExp)
 {
 }
 
-MIR_API RType* MExp_Stmt::GetType()
+RType* MExp_Stmt::GetType()
 {
     return finalExp->GetType();
 }

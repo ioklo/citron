@@ -350,7 +350,8 @@ public:
         // EnumElem은 variadic도, typeArgs도 지원하지 않는다
         // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지
         // paramTypes으로 typeValues를 건네 줄것이면 적용해서 넣는게 나을 것 같은데, TypeResolver 동작때문에(?) 어떻게 될지 몰라서 일단 여기서는 적용하고 TypeEnv.None을 넘겨준다
-        auto e_o_match = MatchArguments(&EnumElemMatchArgumentsInput{imExp->decl}, imExp->typeArgs, /*partialTypeArgsExceptOuter*/contexts.rFactory->MakeTypeArguments({}), sArgs, contexts);
+        EnumElemMatchArgumentsInput input{imExp->decl};
+        auto e_o_match = MatchArguments(&input, imExp->typeArgs, /*partialTypeArgsExceptOuter*/contexts.rFactory->MakeTypeArguments({}), sArgs, contexts);
         RETURN_ON_ERROR(e_o_match);
 
         if (!*e_o_match)
