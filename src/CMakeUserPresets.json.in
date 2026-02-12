@@ -1,0 +1,23 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "x64-debug-local",
+      "displayName": "x64 Debug (Local)",
+      "description": "Target Windows (64-bit) with the Visual Studio development environment. (Debug)",
+      "inherits": "x64-debug",
+      "cacheVariables": {
+        "LLVM_DIR": "Z:\\Proj\\External\\llvm-project\\llvm\\out\\install\\x64-debug-static\\lib\\cmake\\llvm"
+      }
+    },
+    {
+      "name": "x64-release-local",
+      "displayName": "x64 Release (Local)",
+      "description": "Target Windows (64-bit) with the Visual Studio development environment. (RelWithDebInfo)",
+      "inherits": "x64-release",
+        "cacheVariables": {
+          "LLVM_DIR": "Z:\\Proj\\External\\llvm-project\\llvm\\out\\install\\x64-relWithDebInfo\\lib\\cmake\\llvm"
+        }
+    }
+  ]
+}

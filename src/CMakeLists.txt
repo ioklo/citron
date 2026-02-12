@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD 23)
 # 프로젝트 전체에 쓰일 option용 pseudo library
 add_library(Common INTERFACE)
 
-target_compile_options(Common INTERFACE -Wno-unqualified-std-cast-call)
+target_compile_options(Common INTERFACE $<$<CXX_COMPILER_ID:Clang>:-Wno-unqualified-std-cast-call>)
+target_compile_options(Common INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 
 add_subdirectory(Infra)
 add_subdirectory(Syntax)

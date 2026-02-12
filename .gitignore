@@ -399,3 +399,4 @@ FodyWeavers.xsd
 vcpkg_installed/
 /src/cmake-build-*
 /src/out/
+src/CMakeUserPresets.json
