@@ -1,6 +1,6 @@
 //@ hi
 void Main() 
 {
-    var f = () => { @{hi} };
+    var f = [] { @{hi} };
     f();
 }

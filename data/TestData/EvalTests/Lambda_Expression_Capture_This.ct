@@ -5,7 +5,7 @@ struct S
     
     void F()
     {
-        var l = () => this->x + 2; // this는 캡쳐대상 S*
+        var l = [&this]() => this->x + 2; // this는 명시 캡쳐대상 S*
         
         x = 3;
         

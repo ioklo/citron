@@ -1,7 +1,7 @@
 //@ 3
 void Main()
 {
-    var f = () => {
+    var f = [] {
         return 3;
     };
 
