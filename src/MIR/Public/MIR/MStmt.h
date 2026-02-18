@@ -100,8 +100,7 @@ public:
 };
 
 struct MStmt_LocalVarDeclInit_Uninit {};
-struct MStmt_LocalVarDeclInit_Exp { MExp* exp; };
-struct MStmt_LocalVarDeclInit_StructInit { RStructCtorDecl* ctor; }; // typeArgs는 LocalVarDecl에서 알 수 있다
+struct MStmt_LocalVarDeclInit_Create { MCreate create; };
 
 using MStmt_LocalVarDeclInit = std::variant<MStmt_LocalVarDeclInit_Uninit, MStmt_LocalVarDeclInit_Exp, MStmt_LocalVarDeclInit_StructInit>;
 
