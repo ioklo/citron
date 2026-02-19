@@ -45,15 +45,15 @@ optional<RMember> NClassDecl::GetMember(RTypeArguments* typeArgs, const RName& n
 
     // type
     if (auto o_type = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*o_type);
+        candidates.push_back(move(*o_type));
 
     // class member func
     if (auto o_func = NFuncDeclContainerComponent<NClassFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*o_func);
+        candidates.push_back(move(*o_func));
 
     if (explicitTypeParamsExceptOuterCount == 0)
         if (auto o_var = GetVar(typeArgs, name))
-            candidates.push_back(*o_var);
+            candidates.push_back(move(*o_var));
 
     if (candidates.empty()) return nullopt;
 
@@ -63,7 +63,7 @@ optional<RMember> NClassDecl::GetMember(RTypeArguments* typeArgs, const RName& n
         throw NotImplementedException();
     }
 
-    return candidates[1];
+    return move(candidates[1]);
 }
 
 optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)

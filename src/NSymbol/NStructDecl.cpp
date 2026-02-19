@@ -78,15 +78,15 @@ optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& 
 
     // type
     if (auto o_type = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*o_type);
+        candidates.push_back(move(*o_type));
 
     // struct member func
     if (auto o_func = NFuncDeclContainerComponent<NStructFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*o_func);
+        candidates.push_back(move(*o_func));
 
     if (explicitTypeParamsExceptOuterCount == 0)
         if (auto o_var = GetVar(typeArgs, name))
-            candidates.push_back(*o_var);
+            candidates.push_back(move(*o_var));
 
     if (candidates.empty()) return nullopt;
 
@@ -96,7 +96,7 @@ optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& 
         throw NotImplementedException();
     }
 
-    return candidates[0];
+    return move(candidates[0]);
 }
 
 optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)

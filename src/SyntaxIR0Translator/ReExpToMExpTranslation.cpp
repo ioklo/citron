@@ -5,7 +5,11 @@
 #include "Infra/Ptr.h"
 #include "Logging/Logger.h"
 #include "Logging/Diag.h"
+
+#include "RSymbol/RTypes.h"
+
 #include "MIR/MExp.h"
+#include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 
 #include "ReExp.h"
@@ -39,7 +43,26 @@ public:
         if (!eLoc)
             return unexpected{move(eLoc).error()};
         else
-            return contexts.mFactory->MakeMExp<MExp_Load>(*eLoc);
+        {
+            auto* locType = (*eLoc)->GetType();
+            if (dynamic_cast<RType_Primitive*>(locType))
+            {
+                // bitwise로 copy
+                return contexts.mFactory->MakeMExp<MExp_BitwiseCopy>(*eLoc);
+            }
+            else if (dynamic_cast<RType_Struct*>(locType))
+            {
+                // exp자체로는 copy ctor 호출을 못하는데
+                // 예를 들어
+
+                // var s = S();
+                // s
+
+
+                return contexts.mFactory->MakeMExp<MExp_Load>(*eLoc);
+
+            }
+        }
     }
 
     ResultType Visit(ReExp_ThisVar* exp)

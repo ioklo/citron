@@ -51,15 +51,15 @@ optional<RMember> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RNam
 
     // namespace 
     if (auto o_namespace = NNamespaceDeclContainerComponent::GetMemberNamespace(name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*o_namespace);
+        candidates.push_back(move(*o_namespace));
 
     // type
     if (auto o_type = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*o_type);
+        candidates.push_back(move(*o_type));
 
     // func
     if (auto o_func = NFuncDeclContainerComponent<NGlobalFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(*o_func);
+        candidates.push_back(move(*o_func));
 
     if (candidates.empty()) return nullopt;
 
@@ -69,7 +69,7 @@ optional<RMember> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RNam
         throw NotImplementedException();
     }
 
-    return candidates[0];
+    return move(candidates[0]);
 }
 
 optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)

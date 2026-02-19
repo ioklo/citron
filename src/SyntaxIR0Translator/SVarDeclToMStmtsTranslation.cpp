@@ -226,8 +226,6 @@ public:
                         else static_assert(false);
                     }, *e_mOperand);
 
-
-
                     // try
                     if (auto* sCallInitExp = dynamic_cast<SExp_Call*>(sInit.exp))
                     {   
