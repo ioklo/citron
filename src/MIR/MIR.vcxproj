@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Public\MIR\MCreate.h" />
     <ClInclude Include="Public\MIR\MFuncBody.h" />
     <ClInclude Include="Public\MIR\MData.h" />
     <ClInclude Include="Public\MIR\MIRConfig.h" />
@@ -26,6 +27,8 @@
     <ClInclude Include="Public\MIR\MExp.h" />
     <ClInclude Include="Public\MIR\MFactory.h" />
     <ClInclude Include="Public\MIR\MLoc.h" />
+    <ClInclude Include="Public\MIR\MMoveSource.h" />
+    <ClInclude Include="Public\MIR\MOperand.h" />
     <ClInclude Include="Public\MIR\MStmt.h" />
   </ItemGroup>
   <ItemGroup>
@@ -43,10 +46,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MCreate.cpp" />
     <ClCompile Include="MData.cpp" />
     <ClCompile Include="MExp.cpp" />
     <ClCompile Include="MFactory.cpp" />
     <ClCompile Include="MLoc.cpp" />
+    <ClCompile Include="MOperand.cpp" />
     <ClCompile Include="MStmt.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -12,14 +12,14 @@
 
 namespace Citron {
 
-MLoc_Temp::MLoc_Temp(MExp* exp)
-    : exp{exp}
+MLoc_Materialize::MLoc_Materialize(MCreate&& create)
+    : create{move(create)}
 {
 }
 
-RType* MLoc_Temp::GetType()
+RType* MLoc_Materialize::GetType()
 {
-    return exp->GetType();
+    return Citron::GetType(create);
 }
 
 MLoc_LocalVar::MLoc_LocalVar(const RName& name, RType* declType)

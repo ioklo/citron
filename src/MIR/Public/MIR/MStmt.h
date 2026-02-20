@@ -102,7 +102,7 @@ public:
 struct MStmt_LocalVarDeclInit_Uninit {};
 struct MStmt_LocalVarDeclInit_Create { MCreate create; };
 
-using MStmt_LocalVarDeclInit = std::variant<MStmt_LocalVarDeclInit_Uninit, MStmt_LocalVarDeclInit_Exp, MStmt_LocalVarDeclInit_StructInit>;
+using MStmt_LocalVarDeclInit = std::variant<MStmt_LocalVarDeclInit_Uninit, MStmt_LocalVarDeclInit_Create>;
 
 // 로컬 변수는 
 class MStmt_LocalVarDecl : public MStmt

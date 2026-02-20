@@ -9,6 +9,7 @@
 #include "RClassDecl.h"
 #include "REnumDecl.h"
 #include "REnumElemDecl.h"
+#include "REnumElemVarDecl.h"
 #include "RLambdaDecl.h"
 #include "RTypeParamDecl.h"
 
@@ -93,6 +94,15 @@ RType* RType_Tuple::Apply(RTypeArguments& typeArgs)
     }
 
     return factory->MakeTupleType(move(appliedVars));
+}
+
+bool RType_Tuple::IsBitwiseCopyable()
+{
+    for (auto& var : vars)
+        if (!var.declType->IsBitwiseCopyable()) // 하나라도 아니라면
+            return false;
+
+    return true;
 }
 
 optional<RMember> RType_Tuple::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -244,6 +254,12 @@ RType* RType_Enum::Apply(RTypeArguments& typeArgs)
     return factory->MakeEnumType(decl, appliedTypeArgs);
 }
 
+bool RType_Enum::IsBitwiseCopyable()
+{   
+    // TODO: [34] enum [BitwiseCopyable] 지원
+    throw NotImplementedException{};
+}
+
 optional<RMember> RType_Enum::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return decl->GetMember(typeArgs, name, explicitTypeArgsExceptOuterCount);
@@ -272,6 +288,19 @@ RType* RType_EnumElem::Apply(RTypeArguments& typeArgs)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
     return factory->MakeEnumElemType(decl, appliedTypeArgs);
+}
+
+bool RType_EnumElem::IsBitwiseCopyable()
+{
+    for(size_t i = 0, count = decl->GetVarCount(); i < count; i++)
+    {
+        auto* varDecl = decl->GetVarDecl(i);
+        auto* varType = varDecl->GetDeclType(*typeArgs);
+        if (!varType->IsBitwiseCopyable())
+            return false;
+    }
+
+    return true;
 }
 
 optional<RMember> RType_EnumElem::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -309,6 +338,12 @@ RType* RType_Lambda::Apply(RTypeArguments& typeArgs)
 {
     auto* appliedOuterTypeArgs = outerTypeArgs->Apply(typeArgs);
     return factory->MakeLambdaType(decl, appliedOuterTypeArgs);
+}
+
+bool RType_Lambda::IsBitwiseCopyable()
+{
+    // TODO: [35] lambda의 [BitwiseCopyable] 지원
+    throw NotImplementedException{};
 }
 
 optional<RMember> RType_Lambda::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)

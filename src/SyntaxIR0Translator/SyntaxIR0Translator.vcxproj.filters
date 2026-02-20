@@ -100,9 +100,6 @@
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="SynthesizeImplicitSymbolContext.cpp" />
-    <ClCompile Include="MOperand.cpp">
-      <Filter>ExpTranslation\Structure</Filter>
-    </ClCompile>
     <ClCompile Include="SExpToMOperandTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
@@ -216,9 +213,6 @@
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="SynthesizeImplicitSymbolContext.h" />
-    <ClInclude Include="MOperand.h">
-      <Filter>ExpTranslation\Structure</Filter>
-    </ClInclude>
     <ClInclude Include="SExpToMOperandTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>

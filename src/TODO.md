@@ -11,3 +11,6 @@
 - [ ] // TODO: [30] move구현
 - [ ] // TODO: [31] params 구현
 - [ ] // TODO: [32] RTypeArguments를 nested로 만들기
+- [ ] // TODO: [33] struct [BitwiseCopyable] 추가
+- [ ] // TODO: [34] enum [BitwiseCopyable] 지원
+- [ ] // TODO: [35] lambda의 [BitwiseCopyable] 지원

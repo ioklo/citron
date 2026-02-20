@@ -1,33 +1,18 @@
 #pragma once
 
 #include <variant>
+#include "MCreate.h"
 
 namespace Citron {
 
 class MExp;
 class MLoc;
 
-struct MArgument_Exp
-{
-    MExp* exp;
-};
+struct MArgument_Create { MCreate create; };
+struct MArgument_Loc { MLoc* loc; };
+struct MArgument_Move { MMoveSource src; };
+struct MArgument_Params { MExp* exp; int elemCount; };
 
-struct MArgument_Ref
-{
-    MLoc* loc;
-};
-
-struct MArgument_Move // 실제 move가 일어날때만. [move] 인자를 다른 [move] 파라미터로 보내는건 move를 명시하긴 하지만 move는 아니다
-{
-    MLoc* loc;
-};
-
-struct MArgument_Params
-{
-    MExp* exp;
-    int elemCount;
-};
-
-using MArgument = std::variant<MArgument_Exp, MArgument_Ref, MArgument_Move, MArgument_Params>;
+using MArgument = std::variant<MArgument_Create, MArgument_Loc, MArgument_Move, MArgument_Params>; 
 
 }

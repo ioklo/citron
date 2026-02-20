@@ -6,6 +6,7 @@
 #include <optional>
 
 #include "RSymbol/RNames.h"
+#include "MCreate.h"
 
 namespace Citron {
 
@@ -18,7 +19,7 @@ class RStructVarDecl;
 class RClassVarDecl;
 class REnumElemVarDecl;
 
-class MLoc_Temp;
+class MLoc_Materialize;
 class MLoc_LocalVar;
 class MLoc_LocalRef;
 class MLoc_LambdaVar;
@@ -39,7 +40,7 @@ class MLocVisitor
 {
 public:
     virtual ~MLocVisitor() {}
-    virtual void Visit(MLoc_Temp* loc) = 0;
+    virtual void Visit(MLoc_Materialize* loc) = 0;
     virtual void Visit(MLoc_LocalVar* loc) = 0;
     virtual void Visit(MLoc_LocalRef* loc) = 0;
     virtual void Visit(MLoc_LambdaVar* loc) = 0;
@@ -61,13 +62,13 @@ public:
     virtual RType* GetType() = 0;
 };
 
-class MLoc_Temp : public MLoc
+class MLoc_Materialize : public MLoc
 {
 public:
-    MExp* exp;
+    MCreate create;
 
 public:
-    MIR_API MLoc_Temp(MExp* exp);
+    MIR_API MLoc_Materialize(MCreate&& create);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
     MIR_API RType* GetType() override;
 };
@@ -217,7 +218,7 @@ concept MLocVisitable = requires(TVisitor && v, TVisitorArgs&&... args)
 {
     typename std::remove_cvref_t<TVisitor>::ResultType;
 
-    { v.Visit(std::declval<MLoc_Temp*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MLoc_Materialize*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MLoc_LocalVar*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MLoc_LocalRef*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MLoc_LambdaVar*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
@@ -245,7 +246,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MLoc* mL
             decltype(caller)& call;
             Bridge(decltype(caller)& call) : call(call) {}
 
-            void Visit(MLoc_Temp* loc) override { call(loc); }
+            void Visit(MLoc_Materialize* loc) override { call(loc); }
             void Visit(MLoc_LocalVar* loc) override { call(loc); }
             void Visit(MLoc_LocalRef* loc) override { call(loc); }
             void Visit(MLoc_LambdaVar* loc) override { call(loc); }
@@ -269,7 +270,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MLoc* mL
             std::optional<TResult> result{};
             Bridge(decltype(caller)& call) : call(call) {}
 
-            void Visit(MLoc_Temp* loc) override { result.emplace(call(loc)); }
+            void Visit(MLoc_Materialize* loc) override { result.emplace(call(loc)); }
             void Visit(MLoc_LocalVar* loc) override { result.emplace(call(loc)); }
             void Visit(MLoc_LocalRef* loc) override { result.emplace(call(loc)); }
             void Visit(MLoc_LambdaVar* loc) override { result.emplace(call(loc)); }
