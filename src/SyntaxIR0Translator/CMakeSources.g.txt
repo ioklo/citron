@@ -20,7 +20,6 @@ target_sources(SyntaxIR0Translator
         IrExp.cpp
         IrExpAndMemberNameToIrExpTranslation.cpp
         IrExpToMExpTranslation.cpp
-        MOperand.cpp
         Misc.cpp
         ModuleDecls.cpp
         PhaseManager.cpp
@@ -72,7 +71,6 @@ target_sources(SyntaxIR0Translator
         IrExp.h
         IrExpAndMemberNameToIrExpTranslation.h
         IrExpToMExpTranslation.h
-        MOperand.h
         Misc.h
         ModuleDecls.h
         PhaseManager.h

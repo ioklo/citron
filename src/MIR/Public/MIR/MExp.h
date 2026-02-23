@@ -33,10 +33,6 @@ class MExp_BitwiseCopy;
 class MExp_BitwiseAssign;
 class MExp_Stmt;
 class MExp_Shared;
-class MExp_StaticBoxRef;
-class MExp_ClassMemberBoxRef;
-class MExp_StructIndirectMemberBoxRef;
-class MExp_StructMemberBoxRef;
 class MExp_PtrRef;
 class MExp_BoolLiteral;
 class MExp_IntLiteral;
@@ -90,10 +86,6 @@ public:
     virtual void Visit(MExp_BitwiseAssign* exp) = 0;
     virtual void Visit(MExp_Stmt* exp) = 0;
     virtual void Visit(MExp_Shared* exp) = 0;
-    virtual void Visit(MExp_StaticBoxRef* exp) = 0;
-    virtual void Visit(MExp_ClassMemberBoxRef* exp) = 0;
-    virtual void Visit(MExp_StructIndirectMemberBoxRef* exp) = 0;
-    virtual void Visit(MExp_StructMemberBoxRef* exp) = 0;
     virtual void Visit(MExp_PtrRef* exp) = 0;
     virtual void Visit(MExp_BoolLiteral* exp) = 0;
     virtual void Visit(MExp_IntLiteral* exp) = 0;
@@ -192,69 +184,6 @@ public:
 
 public:
     MIR_API MExp_Shared(MCreate&& innerCreate, const RFactoryPtr& rFactory);
-
-    MIR_API RType* GetType() override;
-    void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
-};
-
-// &C.x
-class MExp_StaticBoxRef : public MExp
-{
-    RFactoryPtr rFactory;
-public:
-    MLoc* loc;
-public:
-    MIR_API MExp_StaticBoxRef(MLoc* loc, const RFactoryPtr& rFactory);
-
-    MIR_API RType* GetType() override;
-    void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
-};
-
-// &c.x => RClassMemberBoxRefExp(RLocalVar("c"), C::x)
-class MExp_ClassMemberBoxRef : public MExp
-{
-    RFactoryPtr rFactory;
-public:
-    MLoc* holder;
-    RClassVarDecl* decl;
-    RTypeArguments* typeArgs;
-
-public:
-    MIR_API MExp_ClassMemberBoxRef(MLoc* holder, RClassVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory);
-
-    MIR_API RType* GetType() override;
-    void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
-};
-
-// box S* pS;
-// &ps->x => RStructIndirectMemberBoxRefExp(RLocalVar("pS"), S::x)
-class MExp_StructIndirectMemberBoxRef : public MExp
-{
-    RFactoryPtr rFactory;
-public:
-    MLoc* holder;
-    RStructVarDecl* decl;
-    RTypeArguments* typeArgs;
-
-public:
-    MIR_API MExp_StructIndirectMemberBoxRef(MLoc* holder, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory);
-
-    MIR_API RType* GetType() override;
-    void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
-};
-
-// C c;
-// box A* a = &c.s.a; => RStructMemberBoxRefExp(RClassMemberBoxRefExp(RLocalVar("c"), C::s), A::a)
-class MExp_StructMemberBoxRef : public MExp
-{
-public:
-    MLoc* parent;
-    RStructVarDecl* decl;
-    RTypeArguments* typeArgs;
-    RFactoryPtr rFactory;
-
-public:
-    MIR_API MExp_StructMemberBoxRef(MLoc* parent, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -870,10 +799,6 @@ concept MExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MExp_BitwiseAssign*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_Stmt*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_Shared*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MExp_StaticBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MExp_ClassMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MExp_StructIndirectMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MExp_StructMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_PtrRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_BoolLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_IntLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
@@ -927,10 +852,6 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             void Visit(MExp_BitwiseAssign* mExp) override { call(mExp); }
             void Visit(MExp_Stmt* mExp) override { call(mExp); }
             void Visit(MExp_Shared* mExp) override { call(mExp); }
-            void Visit(MExp_StaticBoxRef* mExp) override { call(mExp); }
-            void Visit(MExp_ClassMemberBoxRef* mExp) override { call(mExp); }
-            void Visit(MExp_StructIndirectMemberBoxRef* mExp) override { call(mExp); }
-            void Visit(MExp_StructMemberBoxRef* mExp) override { call(mExp); }
             void Visit(MExp_PtrRef* mExp) override { call(mExp); }
             void Visit(MExp_BoolLiteral* mExp) override { call(mExp); }
             void Visit(MExp_IntLiteral* mExp) override { call(mExp); }
@@ -980,10 +901,6 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             void Visit(MExp_BitwiseAssign* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_Stmt* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_Shared* mExp) override { result.emplace(call(mExp)); }
-            void Visit(MExp_StaticBoxRef* mExp) override { result.emplace(call(mExp)); }
-            void Visit(MExp_ClassMemberBoxRef* mExp) override { result.emplace(call(mExp)); }
-            void Visit(MExp_StructIndirectMemberBoxRef* mExp) override { result.emplace(call(mExp)); }
-            void Visit(MExp_StructMemberBoxRef* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_PtrRef* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_BoolLiteral* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_IntLiteral* mExp) override { result.emplace(call(mExp)); }

@@ -224,12 +224,6 @@ public:
         //return *eQValue;
     }
 
-    // box*의 구조, {sentinel, offset}
-    ResultType Visit(MExp_StaticBoxRef* exp) { throw NotImplementedException{}; }
-    ResultType Visit(MExp_ClassMemberBoxRef* exp) { throw NotImplementedException{}; }
-    ResultType Visit(MExp_StructIndirectMemberBoxRef* exp) { throw NotImplementedException{}; }
-    ResultType Visit(MExp_StructMemberBoxRef* exp) { throw NotImplementedException{}; }
-
     // PtrRef (Loc)
     ResultType Visit(MExp_PtrRef* exp)
     {

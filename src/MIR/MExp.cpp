@@ -52,48 +52,6 @@ RType* MExp_Shared::GetType()
     return rFactory->MakeBoxType(innerType);
 }
 
-MExp_StaticBoxRef::MExp_StaticBoxRef(MLoc* loc, const RFactoryPtr& rFactory)
-    : loc{loc}, rFactory{rFactory}
-{
-}
-
-RType* MExp_StaticBoxRef::GetType()
-{
-    return rFactory->MakeBoxType(loc->GetType());
-}
-
-MExp_ClassMemberBoxRef::MExp_ClassMemberBoxRef(MLoc* holder, RClassVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
-    : holder(holder), decl(decl), typeArgs(typeArgs), rFactory{rFactory}
-{
-}
-
-RType* MExp_ClassMemberBoxRef::GetType()
-{
-    auto* declType = decl->GetDeclType(*typeArgs);
-    return rFactory->MakeBoxType(declType);
-}
-
-MExp_StructIndirectMemberBoxRef::MExp_StructIndirectMemberBoxRef(MLoc* holder, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
-    : holder{holder}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
-{
-}
-
-RType* MExp_StructIndirectMemberBoxRef::GetType()
-{
-    auto* declType = decl->GetDeclType(*typeArgs);
-    return rFactory->MakeBoxType(declType);
-}
-
-MExp_StructMemberBoxRef::MExp_StructMemberBoxRef(MLoc* parent, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
-    : parent{parent}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
-{
-}
-
-RType* MExp_StructMemberBoxRef::GetType()
-{
-    auto* declType = decl->GetDeclType(*typeArgs);
-    return rFactory->MakeBoxType(declType);
-}
 
 MExp_PtrRef::MExp_PtrRef(MLoc* innerLoc, const RFactoryPtr& rFactory)
     : innerLoc{innerLoc}, rFactory{rFactory}

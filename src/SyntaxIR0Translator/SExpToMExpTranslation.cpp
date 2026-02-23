@@ -166,7 +166,10 @@ expected<MExp*, DiagPtr> TranslateSUnaryOpExpToMExpExceptDeref(SExp_UnaryOp* sEx
 
     // ref 처리
     if (sExp->kind == SUnaryOpKind::Ref)
+    {
+        // hintType 따라서 분기를 한다
         return TranslateSExpRefToMExp(sExp->operand, contexts);
+    }
 
     auto e_nOperand = TranslateSExpToMExp(sExp->operand, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_nOperand);
