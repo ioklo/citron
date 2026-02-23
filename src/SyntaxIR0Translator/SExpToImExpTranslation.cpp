@@ -131,7 +131,7 @@ public:
                 throw NotImplementedException{}; // Value<ImExp_SharedDeref>(*e_target);
 
             if (dynamic_cast<RType_Box*>(targetType))
-                return Value<ImExp_BoxDeref>(*e_target);
+                return Value<ImExp_SharedDeref>(*e_target);
 
             if (dynamic_cast<RType_Ptr*>(targetType))
                 return Value<ImExp_PtrDeref>(*e_target);

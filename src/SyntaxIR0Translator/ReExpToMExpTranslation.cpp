@@ -45,22 +45,26 @@ public:
         else
         {
             auto* locType = (*eLoc)->GetType();
-            if (dynamic_cast<RType_Primitive*>(locType))
+
+            if (locType->IsBitwiseCopyable())
             {
                 // bitwise로 copy
                 return contexts.mFactory->MakeMExp<MExp_BitwiseCopy>(*eLoc);
             }
-            else if (dynamic_cast<RType_Struct*>(locType))
+            else
             {
-                // exp자체로는 copy ctor 호출을 못하는데
-                // 예를 들어
+                if (dynamic_cast<RType_Struct*>(locType))
+                {
+                    // exp자체로는 copy ctor 호출을 못하는데
+                    // 예를 들어
 
-                // var s = S();
-                // s
+                    // var s = S();
+                    // s
 
 
-                return contexts.mFactory->MakeMExp<MExp_Load>(*eLoc);
+                    return contexts.mFactory->MakeMExp<MExp_Load>(*eLoc);
 
+                }
             }
         }
     }

@@ -113,6 +113,7 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
             // SArgumentModifier 매칭
             if (sArgItem->o_modifier)
             {
+                // F(ref s)
                 if (*sArgItem->o_modifier == SArgModifier::Ref) // optional modifier, lvalue만 허용
                 {
                     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag{};
@@ -122,7 +123,7 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
                     auto e_result = CheckType(constraints, (*e_mLoc)->GetType(), rFuncParam.type);
                     RETURN_ON_ERROR(e_result);
 
-                    mArgs.push_back(MArgument_Ref{*e_mLoc});
+                    mArgs.push_back(MArgument_Loc{*e_mLoc});
                 }
                 else // 나머지는 다 에러
                 {
@@ -132,6 +133,8 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
             }
             else
             {
+
+
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag{};
                 auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
                 RETURN_ON_ERROR(e_mLoc);

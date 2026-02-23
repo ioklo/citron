@@ -26,14 +26,16 @@ public:
         : bodyContext{bodyContext} {
     }
     
-    ResultType Visit(MLoc_Temp* loc) 
+    ResultType Visit(MLoc_Materialize* loc) 
     { 
-        RType* rType = loc->GetType();
+        static_assert(false);
+
+        /*RType* rType = loc->GetType();
         size_t slotIndex = bodyContext.NewSlot(rType);
         auto e_result = TranslateMExpToQInsts(loc->exp, slotIndex, bodyContext);
         RETURN_ON_ERROR(e_result);
 
-        return QLocResult_Slot{slotIndex};
+        return QLocResult_Slot{slotIndex};*/
     }
 
     ResultType Visit(MLoc_LocalVar* loc)
@@ -118,7 +120,7 @@ public:
     }
 
     ResultType Visit(MLoc_PtrDeref* loc) { throw NotImplementedException{}; }
-    ResultType Visit(MLoc_BoxDeref* loc) { throw NotImplementedException{}; }
+    ResultType Visit(MLoc_SharedDeref* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_NullableValue* loc) { throw NotImplementedException{}; }
 };
 

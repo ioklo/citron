@@ -1,7 +1,7 @@
 #pragma once
 #include <expected>
 #include <memory>
-#include "MOperand.h"
+#include "MIR/MOperand.h"
 
 namespace Citron {
 

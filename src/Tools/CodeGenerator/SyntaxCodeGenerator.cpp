@@ -105,6 +105,7 @@ struct ToJsonVisitor {
                 "SExp_List",
                 "SExp_New",
                 "SExp_Box",
+                "SExp_Shared",
                 "SExp_Is",
                 "SExp_As",
             }
@@ -388,6 +389,7 @@ struct ToJsonVisitor {
                 "SExp_IndirectMember",
                 "SExp_List",
                 "SExp_New",
+                "SExp_Shared",
                 "SExp_Box",
                 "SExp_Is",
                 "SExp_As",

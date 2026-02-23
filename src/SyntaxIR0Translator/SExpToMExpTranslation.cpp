@@ -380,14 +380,15 @@ expected<MExp*, DiagPtr> TranslateSCallExpToMExp(SExp_Call* exp, RType* hintType
 
 expected<MExp*, DiagPtr> TranslateSBoxExpToMExp(SExp_Box* exp, RType* hintType, TranslationContexts& contexts)
 {
-    auto* hintBoxType = dynamic_cast<RType_Box*>(hintType);
-    auto* innerHintType = hintBoxType ? hintBoxType->innerType : nullptr;
+    throw NotImplementedException{};
+    //auto* hintBoxType = dynamic_cast<RType_Box*>(hintType);
+    //auto* innerHintType = hintBoxType ? hintBoxType->innerType : nullptr;
 
-    // hintType전수
-    auto e_mInnerExp = TranslateSExpToMExp(exp->innerExp, innerHintType, contexts);
-    RETURN_ON_ERROR(e_mInnerExp);
+    //// hintType전수
+    //auto e_mInnerExp = TranslateSExpToMExp(exp->innerExp, innerHintType, contexts);
+    //RETURN_ON_ERROR(e_mInnerExp);
 
-    return contexts.mFactory->MakeMExp<MExp_Box>(*e_mInnerExp, contexts.rFactory);
+    //return contexts.mFactory->MakeMExp<MExp_Box>(*e_mInnerExp, contexts.rFactory);
 }
 
 expected<MExp*, DiagPtr> TranslateSIsExpToMExp(SExp_Is* exp, TranslationContexts& contexts)

@@ -149,7 +149,7 @@ public:
     {
         return Value<ReExp_PtrDeref>(imExp->target);
     }
-    ResultType Visit(ImExp_BoxDeref* imExp)
+    ResultType Visit(ImExp_SharedDeref* imExp)
     {
         return Value<ReExp_BoxDeref>(imExp->target);
     }

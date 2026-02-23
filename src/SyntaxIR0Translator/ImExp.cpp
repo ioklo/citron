@@ -111,7 +111,7 @@ ImExp_PtrDeref::ImExp_PtrDeref(ReExp* target)
 
 }
 
-ImExp_BoxDeref::ImExp_BoxDeref(ReExp* target)
+ImExp_SharedDeref::ImExp_SharedDeref(ReExp* target)
     : target(target)
 {
 

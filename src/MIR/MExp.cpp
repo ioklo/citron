@@ -41,14 +41,14 @@ RType* MExp_Stmt::GetType()
     return finalExp->GetType();
 }
 
-MExp_Box::MExp_Box(MExp* innerExp, const RFactoryPtr& rFactory)
-    : innerExp{innerExp}, rFactory{rFactory}
+MExp_Shared::MExp_Shared(MCreate&& innerCreate, const RFactoryPtr& rFactory)
+    : innerCreate{move(innerCreate)}, rFactory{rFactory}
 {
 }
 
-RType* MExp_Box::GetType()
+RType* MExp_Shared::GetType()
 {
-    auto* innerType = innerExp->GetType();
+    auto* innerType = Citron::GetType(innerCreate);
     return rFactory->MakeBoxType(innerType);
 }
 

@@ -231,9 +231,7 @@ public:
                     {   
                         // callable인 경우, 
                         auto e_callable = TranslateSExpToImExp(sCallInitExp->callable, /*hintType*/nullptr, contexts);
-
-                        
-                        
+                        static_assert(false);
                     }
 
                     // var꼴로 나오는 경우 hintType은 없다

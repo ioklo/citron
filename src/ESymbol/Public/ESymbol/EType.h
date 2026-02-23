@@ -20,7 +20,7 @@ class EType_Void;     // builtin type
 class EType_Tuple;    // inline type
 class EType_Func;     // inline type, circular
 class EType_Ptr; // inline type
-class EType_Box;   // inline type
+class EType_Shared;   // inline type
 class EType_Instance;
 
 class ETypeVisitor
@@ -33,7 +33,7 @@ public:
     virtual void Visit(EType_Tuple* type) = 0;
     virtual void Visit(EType_Func* type) = 0;
     virtual void Visit(EType_Ptr* type) = 0;
-    virtual void Visit(EType_Box* type) = 0;
+    virtual void Visit(EType_Shared* type) = 0;
     virtual void Visit(EType_Instance* type) = 0;
 };
 
@@ -109,7 +109,7 @@ public:
     void Accept(ETypeVisitor& visitor) override { visitor.Visit(this); }
 };
 
-class EType_Box : public EType
+class EType_Shared : public EType
 {
     EType* innerType;
 public:

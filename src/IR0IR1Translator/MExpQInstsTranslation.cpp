@@ -202,11 +202,11 @@ public:
         return TranslateMExpToQInsts(exp->finalExp, o_destSlotIndex, bodyContext);
     }
 
-    // box 3;
+    // shared 3;
     // IR1에서 힙으로 값을 올리려면,
     // runtime 함수를 콜 하고,
     // 그 위치에 exp를 넣도록
-    ResultType Visit(MExp_Box* exp)
+    ResultType Visit(MExp_Shared* exp)
     {
         throw NotImplementedException{};
 

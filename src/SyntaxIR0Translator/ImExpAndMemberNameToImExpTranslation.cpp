@@ -494,7 +494,7 @@ public:
         return TranslateInstanceParent(imExp);
     }
 
-    ResultType Visit(ImExp_BoxDeref* imExp)
+    ResultType Visit(ImExp_SharedDeref* imExp)
     {
         return TranslateInstanceParent(imExp);
     }

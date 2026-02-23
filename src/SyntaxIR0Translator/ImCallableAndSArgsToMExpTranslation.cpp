@@ -407,7 +407,7 @@ public:
         return HandleLoc(imExp);
     }
 
-    ResultType Visit(ImExp_BoxDeref* imExp)
+    ResultType Visit(ImExp_SharedDeref* imExp)
     {
         return HandleLoc(imExp);
     }

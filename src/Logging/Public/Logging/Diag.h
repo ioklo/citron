@@ -71,7 +71,7 @@ struct AggregateDiag : Diag
 //LOGGING_API void Fatal_ResolveIdentifier_ExpressionIsNotLocation();            // A2015_ResolveIdentifier_ExpressionIsNotLocation    
 //LOGGING_API void Fatal_ResolveIdentifier_LambdaInstanceCantHaveMember();       // A2016_ResolveIdentifier_LambdaInstanceCantHaveMember
 //LOGGING_API void Fatal_ResolveIdentifier_PtrCantHaveMember();                  // A2017_ResolveIdentifier_PtrCantHaveMember
-//LOGGING_API void Fatal_ResolveIdentifier_BoxCantHaveMember();                  // A2018_ResolveIdentifier_BoxCantHaveMember
+//LOGGING_API void Fatal_ResolveIdentifier_SharedCantHaveMember();                  // A2018_ResolveIdentifier_BoxCantHaveMember
 //LOGGING_API void Fatal_ResolveIdentifier_FuncInstanceCantHaveMember();         // A2019_ResolveIdentifier_FuncInstanceCantHaveMember
 
 //LOGGING_API void Fatal_Cast_Failed();                   // A2201_Cast_Failed
@@ -194,8 +194,7 @@ struct Error_ResolveIdentifier_MultipleCandidatesForMember : Error { }; // A2014
 struct Error_ResolveIdentifier_ExpressionIsNotLocation : Error { }; // A2015_ResolveIdentifier_ExpressionIsNotLocation
 struct Error_ResolveIdentifier_LambdaInstanceCantHaveMember : Error { }; // A2016_ResolveIdentifier_LambdaInstanceCantHaveMember
 struct Error_ResolveIdentifier_PtrCantHaveMember : Error { }; // A2017_ResolveIdentifier_PtrCantHaveMember
-struct Error_ResolveIdentifier_SharedCantHaveMember : Error {}; 
-struct Error_ResolveIdentifier_BoxCantHaveMember : Error { }; // A2018_ResolveIdentifier_BoxCantHaveMember
+struct Error_ResolveIdentifier_SharedCantHaveMember : Error {}; // A2018_ResolveIdentifier_SharedCantHaveMember
 struct Error_ResolveIdentifier_FuncInstanceCantHaveMember : Error { }; // A2019_ResolveIdentifier_FuncInstanceCantHaveMember
 
 struct Error_Cast_Failed : Error { }; // A2201_Cast_Failed

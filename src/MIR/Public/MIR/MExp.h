@@ -7,6 +7,7 @@
 #include <optional>
 #include <memory>
 
+#include "MCreate.h"
 #include "MArgument.h"
 
 namespace Citron {
@@ -31,7 +32,7 @@ class RType_EnumElem;
 class MExp_BitwiseCopy;
 class MExp_BitwiseAssign;
 class MExp_Stmt;
-class MExp_Box;
+class MExp_Shared;
 class MExp_StaticBoxRef;
 class MExp_ClassMemberBoxRef;
 class MExp_StructIndirectMemberBoxRef;
@@ -88,7 +89,7 @@ public:
     virtual void Visit(MExp_BitwiseCopy* exp) = 0;
     virtual void Visit(MExp_BitwiseAssign* exp) = 0;
     virtual void Visit(MExp_Stmt* exp) = 0;
-    virtual void Visit(MExp_Box* exp) = 0;
+    virtual void Visit(MExp_Shared* exp) = 0;
     virtual void Visit(MExp_StaticBoxRef* exp) = 0;
     virtual void Visit(MExp_ClassMemberBoxRef* exp) = 0;
     virtual void Visit(MExp_StructIndirectMemberBoxRef* exp) = 0;
@@ -182,15 +183,15 @@ public:
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
-// box 3
-class MExp_Box : public MExp
+// box int i = box 3
+class MExp_Shared : public MExp
 {
 public:
-    MExp* innerExp;
+    MCreate innerCreate;
     RFactoryPtr rFactory;
 
 public:
-    MIR_API MExp_Box(MExp* innerExp, const RFactoryPtr& rFactory);
+    MIR_API MExp_Shared(MCreate&& innerCreate, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MExpVisitor& visitor) override { visitor.Visit(this); }
@@ -868,7 +869,7 @@ concept MExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MExp_BitwiseCopy*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_BitwiseAssign*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_Stmt*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MExp_Box*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MExp_Shared*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_StaticBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_ClassMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_StructIndirectMemberBoxRef*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
@@ -925,7 +926,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             void Visit(MExp_BitwiseCopy* mExp) override { call(mExp); }
             void Visit(MExp_BitwiseAssign* mExp) override { call(mExp); }
             void Visit(MExp_Stmt* mExp) override { call(mExp); }
-            void Visit(MExp_Box* mExp) override { call(mExp); }
+            void Visit(MExp_Shared* mExp) override { call(mExp); }
             void Visit(MExp_StaticBoxRef* mExp) override { call(mExp); }
             void Visit(MExp_ClassMemberBoxRef* mExp) override { call(mExp); }
             void Visit(MExp_StructIndirectMemberBoxRef* mExp) override { call(mExp); }
@@ -978,7 +979,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             void Visit(MExp_BitwiseCopy* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_BitwiseAssign* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_Stmt* mExp) override { result.emplace(call(mExp)); }
-            void Visit(MExp_Box* mExp) override { result.emplace(call(mExp)); }
+            void Visit(MExp_Shared* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_StaticBoxRef* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_ClassMemberBoxRef* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_StructIndirectMemberBoxRef* mExp) override { result.emplace(call(mExp)); }

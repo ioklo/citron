@@ -1,8 +1,10 @@
 #include "ReExpToMOperandTranslation.h"
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
+#include "RSymbol/RTypes.h"
 #include "ReExp.h"
 #include "ReExpToMLocTranslation.h"
+#include "TranslationContexts.h"
 
 using namespace std;
 
@@ -73,7 +75,15 @@ struct ReExpToMOperandTranslator
 
     ResultType Visit(ReExp_Else* exp)
     {
-        return MOperand_Exp{exp->mExp};
+        auto* expType = exp->GetType();
+        if (expType->IsBitwiseCopyable())
+        {
+            return MOperand_Exp{exp->mExp};
+        }
+        else
+        {
+            return MOperand_Loc{MLoc_Materialize{}};
+        }
     }
 };
 
