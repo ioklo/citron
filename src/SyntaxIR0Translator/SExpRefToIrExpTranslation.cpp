@@ -8,9 +8,10 @@
 #include "Syntax/Syntax.h"
 #include "Logging/Logger.h"
 #include "Logging/Diag.h"
+#include "RSymbol/RTypes.h"
+#include "MIR/MLoc.h"
 
 #include "IrExp.h"
-
 #include "SExpToMExpTranslation.h"
 #include "SExpToMLocTranslation.h"
 #include "SExpRefToMExpTranslation.h"
@@ -27,8 +28,8 @@ namespace Citron {
 
 namespace {
 
-// & exp syntax를 중간과정으로 번역해주는 역할
-// SExp -> IrExp
+// & exp syntax중에서 SExp_Member의 parent 부분을 번역해주는 역할
+// SExp_Member(SExp parent, name) -> IrExp(parent), name
 struct SExpRefToIrExpTranslator
 {
     using ResultType = expected<IrExp*, DiagPtr>;
@@ -62,6 +63,13 @@ private:
     }
 
 public:
+
+    // 기본 동작
+    ResultType Visit(SExp* exp)
+    {
+        return HandleValue(exp);
+    }
+
     // identifier에 &가 붙으면 어떻게 처리할 것인가
     ResultType Visit(SExp_Identifier* exp)
     {   
@@ -78,72 +86,25 @@ public:
         return *e_irExp;
     }
 
-    // string은 중간과정에서는 value로 평가하면 될 것 같다
-    ResultType Visit(SExp_String* exp)
-    {
-        return HandleValue(exp);
-    }
-
-    ResultType Visit(SExp_IntLiteral* exp)
-    {
-        return HandleValue(exp);
-    }
-
-    ResultType Visit(SExp_BoolLiteral* exp)
-    {
-        return HandleValue(exp);
-    }
-
-    ResultType Visit(SExp_NullLiteral* exp)
-    {
-        return HandleValue(exp);
-    }
-
-    ResultType Visit(SExp_BinaryOp* exp)
-    {
-        // assign 제외
-        return HandleValue(exp);
-    }
-
     ResultType Visit(SExp_UnaryOp* exp)
     {
-        if (exp->kind == SUnaryOpKind::Ref) // & &는 불가능
-        {
-            auto e_exp = TranslateSExpRefToMExp(exp->operand, contexts);
-            RETURN_ON_ERROR(e_exp);
-
-            return Value<IrExp_LocalValue>(*e_exp);
-        }
-        else if (exp->kind == SUnaryOpKind::Deref) // *pS
+        if (exp->kind == SUnaryOpKind::Deref) // *pS
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
             auto e_loc = TranslateSExpToMLoc(exp, /*hintType*/nullptr, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_loc);
 
-            return Value<IrExp_DerefedBoxValue>(*e_loc);
+            auto* sharedLocType = dynamic_cast<RType_Shared*>((*e_loc)->GetType());
+            if (!sharedLocType)
+                return Error<Error_SharedRefTranslation_MemberParentShouldBeShared>();
+
+            return Value<IrExp_SharedDeref>(*e_loc); // shared를 deref한것은 따로 표시를 해준다
         }
         else
         {
             return HandleValue(exp);
         }
-    }
-
-    ResultType Visit(SExp_Call* exp)
-    {
-        return HandleValue(exp);
-    }
-
-    ResultType Visit(SExp_Lambda* exp)
-    {
-        return HandleValue(exp);
-    }
-
-    // e[e] 꼴
-    ResultType Visit(SExp_Indexer* exp)
-    {
-        // location으로 쓰지 않고 value로 쓴다
-        return HandleValue(exp);
     }
 
     ResultType Visit(SExp_Member* exp)
@@ -159,31 +120,6 @@ public:
     ResultType Visit(SExp_IndirectMember* exp)
     {
         throw NotImplementedException{};
-    }
-
-    ResultType Visit(SExp_List* exp)
-    {
-        return HandleValue(exp);
-    }
-
-    ResultType Visit(SExp_New* exp)
-    {
-        return HandleValue(exp);
-    }
-
-    ResultType Visit(SExp_Box* exp)
-    {
-        return HandleValue(exp);
-    }
-
-    ResultType Visit(SExp_Is* exp)
-    {
-        return HandleValue(exp);
-    }
-
-    ResultType Visit(SExp_As* exp)
-    {
-        return HandleValue(exp);
     }
 };
 

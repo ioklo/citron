@@ -14,26 +14,30 @@ class MLoc;
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
+class MSharedExpVisitor;
+
 class MSharedExp_Static;
 class MSharedExp_ClassVar;
 class MSharedExp_SharedStructVar;
 class MSharedExp_StructVar;
 
-class MSharedExpVisitor
-{
-public:
-    virtual void Visit(MSharedExp_Static* sharedExp) = 0;
-    virtual void Visit(MSharedExp_ClassVar* sharedExp) = 0;
-    virtual void Visit(MSharedExp_SharedStructVar* sharedExp) = 0;
-    virtual void Visit(MSharedExp_StructVar* sharedExp) = 0;
-};
-
 // &연산으로 shared를 만들어내는 exp
 class MSharedExp
 {
 public:
+    virtual ~MSharedExp() {}
     virtual RType* GetType() = 0;
     virtual void Accept(MSharedExpVisitor& visitor) = 0;
+};
+
+class MSharedExpVisitor
+{
+public:
+    virtual ~MSharedExpVisitor() {}
+    virtual void Visit(MSharedExp_Static* sharedExp) = 0;
+    virtual void Visit(MSharedExp_ClassVar* sharedExp) = 0;
+    virtual void Visit(MSharedExp_SharedStructVar* sharedExp) = 0;
+    virtual void Visit(MSharedExp_StructVar* sharedExp) = 0;
 };
 
 // &C.x

@@ -34,6 +34,9 @@
     <ClInclude Include="Public\MIR\MOperand.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\MIR\MSharedExp.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MExp.cpp" />
@@ -43,6 +46,7 @@
     <ClCompile Include="MData.cpp" />
     <ClCompile Include="MCreate.cpp" />
     <ClCompile Include="MOperand.cpp" />
+    <ClCompile Include="MSharedExp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Headers">

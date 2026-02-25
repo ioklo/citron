@@ -194,8 +194,12 @@ struct Error_ResolveIdentifier_MultipleCandidatesForMember : Error { }; // A2014
 struct Error_ResolveIdentifier_ExpressionIsNotLocation : Error { }; // A2015_ResolveIdentifier_ExpressionIsNotLocation
 struct Error_ResolveIdentifier_LambdaInstanceCantHaveMember : Error { }; // A2016_ResolveIdentifier_LambdaInstanceCantHaveMember
 struct Error_ResolveIdentifier_PtrCantHaveMember : Error { }; // A2017_ResolveIdentifier_PtrCantHaveMember
-struct Error_ResolveIdentifier_SharedCantHaveMember : Error {}; // A2018_ResolveIdentifier_SharedCantHaveMember
-struct Error_ResolveIdentifier_FuncInstanceCantHaveMember : Error { }; // A2019_ResolveIdentifier_FuncInstanceCantHaveMember
+struct Error_ResolveIdentifier_BoxCantHaveMember : Error {}; // A2018_ResolveIdentifier_BoxCantHaveMember
+struct Error_ResolveIdentifier_SharedCantHaveMember : Error {}; // A2019_ResolveIdentifier_SharedCantHaveMember
+struct Error_ResolveIdentifier_FuncInstanceCantHaveMember : Error { }; // A2020_ResolveIdentifier_FuncInstanceCantHaveMember
+
+struct Error_SharedRefTranslation_DirectRefNotAllowed : Error {}; // shared<int> i = &c; 금지
+struct Error_SharedRefTranslation_MemberParentShouldBeShared : Error {}; // &s.x 금지 (s가 struct S일때)
 
 struct Error_Cast_Failed : Error { }; // A2201_Cast_Failed
 struct Error_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault : Error { }; // A2301_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault

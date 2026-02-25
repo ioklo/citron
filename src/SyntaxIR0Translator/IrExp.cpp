@@ -1,5 +1,6 @@
 #include "IrExp.h"
 
+#include <cassert>
 #include "Infra/Ptr.h"
 #include "RSymbol/RNamespaceDecl.h"
 #include "RSymbol/RTypes.h"
@@ -8,6 +9,7 @@
 
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
+#include "MIR/MSharedExp.h"
 
 #include "TranslationContexts.h"
 
@@ -51,47 +53,47 @@ IrExp_StaticRef::IrExp_StaticRef(MLoc* loc)
 {
 }
 
-IrExp_BoxRef_ClassMember::IrExp_BoxRef_ClassMember(MLoc* loc, RClassVarDecl* decl, RTypeArguments* typeArgs, const MFactoryPtr& mFactory)
+IrExp_SharedRef_ClassVar::IrExp_SharedRef_ClassVar(MLoc* loc, RClassVarDecl* decl, RTypeArguments* typeArgs, const MFactoryPtr& mFactory)
     : loc{loc}, decl{decl}, typeArgs{typeArgs}, mFactory{mFactory}
 {
 }
 
-RType* IrExp_BoxRef_ClassMember::GetTargetType()
+RType* IrExp_SharedRef_ClassVar::GetTargetType()
 {
     return decl->GetDeclType(*typeArgs);
 }
 
-MLoc* IrExp_BoxRef_ClassMember::MakeLoc()
+MLoc* IrExp_SharedRef_ClassVar::MakeLoc()
 {
     return mFactory->MakeMLoc<MLoc_ClassVar>(loc, decl, typeArgs);
 }
 
-IrExp_BoxRef_StructIndirectMember::IrExp_BoxRef_StructIndirectMember(MLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs, const MFactoryPtr& mFactory)
+IrExp_SharedRef_SharedStructVar::IrExp_SharedRef_SharedStructVar(MLoc* loc, RStructVarDecl* decl, RTypeArguments* typeArgs, const MFactoryPtr& mFactory)
     : loc{loc}, decl{decl}, typeArgs{typeArgs}, mFactory{mFactory}
 {
 }
 
-RType* IrExp_BoxRef_StructIndirectMember::GetTargetType()
+RType* IrExp_SharedRef_SharedStructVar::GetTargetType()
 {
     return decl->GetDeclType(*typeArgs);
 }
 
-MLoc* IrExp_BoxRef_StructIndirectMember::MakeLoc()
+MLoc* IrExp_SharedRef_SharedStructVar::MakeLoc()
 {
     return mFactory->MakeMLoc<MLoc_StructVar>(mFactory->MakeMLoc<MLoc_BoxDeref>(loc), decl, typeArgs);
 }
 
-IrExp_BoxRef_StructMember::IrExp_BoxRef_StructMember(IrExp_BoxRef* parent, RStructVarDecl* decl, RTypeArguments* typeArgs, const MFactoryPtr& mFactory)
+IrExp_SharedRef_StructVar::IrExp_SharedRef_StructVar(IrExp_SharedRef* parent, RStructVarDecl* decl, RTypeArguments* typeArgs, const MFactoryPtr& mFactory)
     : parent{parent}, decl{decl}, typeArgs{typeArgs}, mFactory{mFactory}
 {
 }
 
-RType* IrExp_BoxRef_StructMember::GetTargetType()
+RType* IrExp_SharedRef_StructVar::GetTargetType()
 {
     return decl->GetDeclType(*typeArgs);
 }
 
-MLoc* IrExp_BoxRef_StructMember::MakeLoc()
+MLoc* IrExp_SharedRef_StructVar::MakeLoc()
 {
     return mFactory->MakeMLoc<MLoc_StructVar>(parent->MakeLoc(), decl, typeArgs);
 }
@@ -107,9 +109,17 @@ IrExp_LocalValue::IrExp_LocalValue(MExp* exp)
 
 }
 
-IrExp_DerefedBoxValue::IrExp_DerefedBoxValue(MLoc* innerLoc)
+IrExp_SharedDeref::IrExp_SharedDeref(MLoc* innerLoc)
     : innerLoc{innerLoc}
 {
+}
+
+RType* IrExp_SharedRef::GetTargetType()
+{
+    auto* sharedExpType = dynamic_cast<RType_Shared*>(sharedExp->GetType());
+    assert(sharedExpType);
+
+    return sharedExpType->innerType;
 }
 
 } // Citron::SyntaxIR0Translator

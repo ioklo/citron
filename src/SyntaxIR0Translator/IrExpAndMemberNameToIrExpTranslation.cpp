@@ -25,7 +25,6 @@
 #include "TranslationContexts.h"
 #include "SRTFactory.h"
 
-
 using namespace std;
 
 namespace Citron {
@@ -291,7 +290,7 @@ public:
         }
 
         // 이제 BoxRef로 변경
-        return Value<IrExp_BoxRef_ClassMember>(parent->loc, var->decl, var->typeArgs, contexts.mFactory);
+        return Value<IrExp_SharedRef_ClassVar>(parent->loc, var->decl, var->typeArgs, contexts.mFactory);
     }
 
     // &C.s.id
@@ -353,7 +352,7 @@ class BoxRefTypeTranslator
 public:
     using ResultType = expected<IrExp*, DiagPtr>;
 
-    IrExp_BoxRef* parent;
+    IrExp_SharedRef* parent;
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
@@ -379,7 +378,7 @@ private:
     }
 
 public: 
-    BoxRefTypeTranslator(IrExp_BoxRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+    BoxRefTypeTranslator(IrExp_SharedRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
         : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
@@ -459,7 +458,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_BoxRef_ClassMember>(parent->MakeLoc(), var->decl, var->typeArgs, contexts.mFactory);
+        return Value<IrExp_SharedRef_ClassVar>(parent->MakeLoc(), var->decl, var->typeArgs, contexts.mFactory);
     }
 
     ResultType Visit(RType_Struct* type) 
@@ -476,7 +475,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_BoxRef_StructMember>(parent, var->decl, var->typeArgs, contexts.mFactory);
+        return Value<IrExp_SharedRef_StructVar>(parent, var->decl, var->typeArgs, contexts.mFactory);
     }
 
     ResultType Visit(RType_Enum* type) 
@@ -614,7 +613,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_BoxRef_ClassMember>(parent->loc, var->decl, var->typeArgs, contexts.mFactory);
+        return Value<IrExp_SharedRef_ClassVar>(parent->loc, var->decl, var->typeArgs, contexts.mFactory);
     }
 
     ResultType Visit(RType_Struct* type) 
@@ -677,7 +676,7 @@ public:
     using ResultType = expected<IrExp*, DiagPtr>;
 
 private:
-    IrExp_DerefedBoxValue* parent;
+    IrExp_SharedDeref* parent;
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
@@ -703,7 +702,7 @@ private:
     }
 
 public:
-    BoxValueTypeTranslator(IrExp_DerefedBoxValue* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+    BoxValueTypeTranslator(IrExp_SharedDeref* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
         : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
@@ -785,7 +784,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
 
-        return Value<IrExp_BoxRef_StructIndirectMember>(parent->innerLoc, var->decl, var->typeArgs, contexts.mFactory);
+        return Value<IrExp_SharedRef_SharedStructVar>(parent->innerLoc, var->decl, var->typeArgs, contexts.mFactory);
     }
 
     ResultType Visit(RType_Enum* type) 
@@ -927,7 +926,7 @@ public:
             return Error<Error_ResolveIdentifier_VarWithTypeArg>();
         }
         
-        return Value<IrExp_BoxRef_ClassMember>(contexts.funcContext->MakeThisLoc(), var->decl, var->typeArgs, contexts.mFactory);
+        return Value<IrExp_SharedRef_ClassVar>(contexts.funcContext->MakeThisLoc(), var->decl, var->typeArgs, contexts.mFactory);
     }
 
     ResultType Visit(RType_Struct* type) 
@@ -968,7 +967,6 @@ public:
     using ResultType = expected<IrExp*, DiagPtr>;
 
 private:
-    IrExp* irThis;
     RName name;
     RTypeArguments* typeArgsExceptOuter;
 
@@ -1056,36 +1054,22 @@ public:
         return Accept(binder, locType);
     }
 
-    ResultType Visit(IrExp_BoxRef* irExp) 
+    ResultType Visit(IrExp_SharedRef* irExp) 
     {
-        auto irBoxRefThis = dynamic_cast<IrExp_BoxRef*>(irThis);
-        assert(irBoxRefThis);
+        auto irSharedRefThis = dynamic_cast<IrExp_SharedRef*>(irThis);
+        assert(irSharedRefThis);
 
         auto* targetType = irExp->GetTargetType();
-        BoxRefTypeTranslator binder{irBoxRefThis, name, typeArgsExceptOuter, contexts};
+        BoxRefTypeTranslator binder{irSharedRefThis, name, typeArgsExceptOuter, contexts};
         return Accept(binder, targetType);
     }
 
-    ResultType Visit(IrExp_PtrRef* irExp)
-    {
-        auto* irPtrRefThis = dynamic_cast<IrExp_PtrRef*>(irThis);
-        assert(irPtrRefThis);
-
-        auto locType = irExp->loc->GetType();
-
-        PtrRefTypeTranslator binder{irPtrRefThis, name, typeArgsExceptOuter, contexts};
-        return Accept(binder, locType);
-    }
-
     // *pS, 오직 value type에만 작동을 하도록 보장해야 한다
-    ResultType Visit(IrExp_DerefedBoxValue* irExp) 
+    ResultType Visit(IrExp_SharedDeref* irExp) 
     {
-        auto* irDerefedBoxThis = dynamic_cast<IrExp_DerefedBoxValue*>(irThis);
-        assert(irDerefedBoxThis);
-
         auto innerType = irExp->innerLoc->GetType();
 
-        BoxValueTypeTranslator binder{irDerefedBoxThis, name, typeArgsExceptOuter, contexts};
+        BoxValueTypeTranslator binder{irExp, name, typeArgsExceptOuter, contexts};
         return Accept(binder, innerType);
     }
 

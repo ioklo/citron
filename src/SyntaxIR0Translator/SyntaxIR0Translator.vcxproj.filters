@@ -106,6 +106,15 @@
     <ClCompile Include="ReExpToMOperandTranslation.cpp">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClCompile>
+    <ClCompile Include="SExpRefToMSharedExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="TranslateIrExpToMSharedExp.cpp">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="IrExpAndMemberNameToMSharedExpTranslation.cpp">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncContext.h">
@@ -218,6 +227,15 @@
     </ClInclude>
     <ClInclude Include="ReExpToMOperandTranslation.h">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpRefToMSharedExpTranslation.h">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="TranslateIrExpToMSharedExp.h">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="IrExpAndMemberNameToMSharedExpTranslation.h">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

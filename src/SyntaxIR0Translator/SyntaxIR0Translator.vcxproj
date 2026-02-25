@@ -47,9 +47,11 @@
     <ClCompile Include="FuncContext_FuncDecl.cpp" />
     <ClCompile Include="FuncContext_Lambda.cpp" />
     <ClCompile Include="GlobalContext.cpp" />
+    <ClCompile Include="IrExpAndMemberNameToMSharedExpTranslation.cpp" />
     <ClCompile Include="PhaseManager.cpp" />
     <ClCompile Include="ReExpToMOperandTranslation.cpp" />
     <ClCompile Include="ResolveTypeHierarchyContext.cpp" />
+    <ClCompile Include="SExpRefToMSharedExpTranslation.cpp" />
     <ClCompile Include="SExpToMOperandTranslation.cpp" />
     <ClCompile Include="StructCtorTask.cpp" />
     <ClCompile Include="StructDtorTask.cpp" />
@@ -90,6 +92,7 @@
     <ClCompile Include="SyntaxIR0Translator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
+    <ClCompile Include="TranslateIrExpToMSharedExp.cpp" />
     <ClCompile Include="TranslationContexts.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -98,11 +101,13 @@
     <ClInclude Include="FuncContext_Lambda.h" />
     <ClInclude Include="GlobalContext.h" />
     <ClInclude Include="GlobalFuncTask.h" />
+    <ClInclude Include="IrExpAndMemberNameToMSharedExpTranslation.h" />
     <ClInclude Include="PhaseManager.h" />
     <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0Translator.h" />
     <ClInclude Include="BinOpQueryService.h" />
     <ClInclude Include="ReExpToMOperandTranslation.h" />
     <ClInclude Include="ResolveTypeHierarchyContext.h" />
+    <ClInclude Include="SExpRefToMSharedExpTranslation.h" />
     <ClInclude Include="SExpToMOperandTranslation.h" />
     <ClInclude Include="StructCtorTask.h" />
     <ClInclude Include="StructDtorTask.h" />
@@ -142,6 +147,7 @@
     <ClInclude Include="SStmtToMStmtTranslation.h" />
     <ClInclude Include="SVarDeclToMStmtsTranslation.h" />
     <ClInclude Include="SRTFactory.h" />
+    <ClInclude Include="TranslateIrExpToMSharedExp.h" />
     <ClInclude Include="TranslationContexts.h" />
     <ClInclude Include="TranslationTasks.h" />
   </ItemGroup>

@@ -8,6 +8,7 @@ namespace Citron {
 class MStmt;
 class MExp;
 class MLoc;
+class MSharedExp;
 class MData;
 struct MFuncBody;
 
@@ -16,6 +17,7 @@ class MFactory
     std::vector<std::unique_ptr<MData>> datas;
     std::vector<std::unique_ptr<MStmt>> stmts;
     std::vector<std::unique_ptr<MExp>> exps;
+    std::vector<std::unique_ptr<MSharedExp>> sharedExps;
     std::vector<std::unique_ptr<MLoc>> locs;
 
 public:
@@ -49,6 +51,15 @@ public:
         auto* pLoc = loc.get();
         locs.push_back(std::move(loc));
         return pLoc;
+    }
+
+    template<typename TMSharedExp, typename... TArgs> requires std::derived_from<TMSharedExp, MSharedExp>
+    TMSharedExp* MakeMSharedExp(TArgs&&... args)
+    {
+        auto sharedExp = std::make_unique<TMSharedExp>(std::forward<TArgs>(args)...);
+        auto* pSharedExp = sharedExp.get();
+        sharedExps.push_back(std::move(sharedExp));
+        return pSharedExp;
     }
 };
 

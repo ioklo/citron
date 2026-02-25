@@ -4,7 +4,7 @@
 
 namespace Citron {
 
-using DiagPtr = std::shared_ptr<class Diag>;
+using DiagPtr = std::shared_ptr<struct Diag>;
 class SExp;
 class MSharedExp;
 struct TranslationContexts;

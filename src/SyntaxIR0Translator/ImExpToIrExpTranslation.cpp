@@ -11,6 +11,7 @@
 #include "NSymbol/NLambdaVarDecl.h"
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
+#include "MIR/MSharedExp.h"
 #include "ImExp.h"
 #include "IrExp.h"
 #include "TranslationContexts.h"
@@ -109,7 +110,8 @@ public:
     // &id
     ResultType Visit(ImExp_LocalVar* imExp)
     {
-        return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_LocalVar>(imExp->name, imExp->type));
+        // IrExp
+        return Value<>(contexts.mFactory->MakeMLoc<MLoc_LocalVar>(imExp->name, imExp->type));
     }
 
     ResultType Visit(ImExp_LocalRef* imExp)
@@ -132,9 +134,12 @@ public:
             return Value<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_ClassVar>(nullptr, imExp->decl, imExp->typeArgs));
         }
         else // &this.x
-        {
+        {   
             // auto classType = imExp.decl->GetClassType(imExp.typeArgs, factory);
-            return Value<IrExp_BoxRef_ClassMember>(contexts.funcContext->MakeThisLoc(), imExp->decl, imExp->typeArgs, contexts.mFactory);
+            auto* sharedExp = contexts.mFactory->MakeMSharedExp<MSharedExp_ClassVar>(
+                contexts.funcContext->MakeThisLoc(), imExp->decl, imExp->typeArgs, contexts.mFactory);
+            
+            return Value<IrExp_SharedRef>(sharedExp);
         }
     }
 
@@ -146,11 +151,10 @@ public:
             return Value<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(nullptr, imExp->decl, imExp->typeArgs));
         }
         else
-        {
-            // this의 타입이 S&이다.
-            // TODO: [10] box함수이면 this를 box로 판단해야 한다
-            auto* nThisLoc = contexts.funcContext->MakeThisLoc();
-            return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(nThisLoc, imExp->decl, imExp->typeArgs));
+        {   
+            // TODO: [10] shared함수이면 this를 shared로 판단해야 한다
+            // 지금은 this의 타입이 S&이다.
+            return Error<Error_NotImplemented>();
         }
     }
 

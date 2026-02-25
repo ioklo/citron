@@ -49,20 +49,20 @@ public:
     { }
 
     // &c.x
-    ResultType Visit(IrExp_BoxRef_ClassMember* boxRef)
+    ResultType Visit(IrExp_SharedRef_ClassVar* boxRef)
     {
         return Value<MExp_ClassMemberBoxRef>(boxRef->loc, boxRef->decl, boxRef->typeArgs, contexts.rFactory);
     }
 
     // &(*pS).x
-    ResultType Visit(IrExp_BoxRef_StructIndirectMember* boxRef)
+    ResultType Visit(IrExp_SharedRef_SharedStructVar* boxRef)
     {
         return Value<MExp_StructIndirectMemberBoxRef>(boxRef->loc, boxRef->decl, boxRef->typeArgs, contexts.rFactory);
     }
 
     // &c.x.a
     // &(box S()).x.y
-    ResultType Visit(IrExp_BoxRef_StructMember* boxRef)
+    ResultType Visit(IrExp_SharedRef_StructVar* boxRef)
     {
         IrBoxRefExpToMExpTranslator parentTranslator{contexts};
         auto e_parent = Accept(parentTranslator, boxRef->parent);
@@ -144,7 +144,7 @@ public:
     }
 
     // &c.x
-    ResultType Visit(IrExp_BoxRef* irExp)
+    ResultType Visit(IrExp_SharedRef* irExp)
     {
         IrBoxRefExpToMExpTranslator translator{contexts};
         return Accept(translator, irExp);
@@ -158,7 +158,7 @@ public:
 
     // box S* pS = ...
     // &(*pS)
-    ResultType Visit(IrExp_DerefedBoxValue* irExp)
+    ResultType Visit(IrExp_SharedDeref* irExp)
     {
         return Error<Error_Reference_UselessDereferenceReferencedValue>();
     }
@@ -169,7 +169,6 @@ public:
         return Error<Error_Reference_CantReferenceTempValue>();
     }
 };
-
 
 } // namespace 
 

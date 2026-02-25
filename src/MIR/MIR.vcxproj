@@ -29,6 +29,7 @@
     <ClInclude Include="Public\MIR\MLoc.h" />
     <ClInclude Include="Public\MIR\MMoveSource.h" />
     <ClInclude Include="Public\MIR\MOperand.h" />
+    <ClInclude Include="Public\MIR\MSharedExp.h" />
     <ClInclude Include="Public\MIR\MStmt.h" />
   </ItemGroup>
   <ItemGroup>
@@ -52,6 +53,7 @@
     <ClCompile Include="MFactory.cpp" />
     <ClCompile Include="MLoc.cpp" />
     <ClCompile Include="MOperand.cpp" />
+    <ClCompile Include="MSharedExp.cpp" />
     <ClCompile Include="MStmt.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
