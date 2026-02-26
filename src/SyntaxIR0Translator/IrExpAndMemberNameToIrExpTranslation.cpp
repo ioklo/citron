@@ -113,9 +113,8 @@ public:
 
     // E
     expected<IrExp*, DiagPtr> Visit(RMember_Enum& member)
-    {   
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
-        return contexts.srtFactory->MakeIrExp<IrExp_Enum>(member.decl, typeArgs);
+    {
+        return Error<Error_SharedRefTranslation_MemberParentShouldBeShared>();
     }
 
     // &E.First.x
@@ -819,148 +818,6 @@ public:
     }
 };
 
-class ThisTypeTranslator
-{
-public:
-    using ResultType = expected<IrExp*, DiagPtr>;
-
-private:
-    RName name;
-    RTypeArguments* typeArgsExceptOuter;
-
-    TranslationContexts& contexts;
-
-private:
-    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
-    ResultType Value(TArgs&&... args)
-    {
-        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
-    }
-
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
-public:
-    ThisTypeTranslator(const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
-    {
-    }
-
-    ResultType Visit(RType_NullableValue* type) 
-    {
-        // NullableValue는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_NullableRef* type) 
-    {
-        // Nullable은 멤버함수를 가질 수 없다?
-        return Error<Error_NotImplemented>();
-    }
-
-    ResultType Visit(RType_TypeVar* type) 
-    {
-        // TypeVar는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Void* type) 
-    {
-        // void는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Primitive* type)
-    {
-        // &(*pI).x, 에러를 내고 종료
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Tuple* type) 
-    {
-        // Tuple은 멤버함수를 가질 수 없다
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Func* type) 
-    {
-        // Func가 멤버함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Ptr* type) 
-    {
-        return Error<Error_ResolveIdentifier_PtrCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Shared* type)
-    {   
-        return Error<Error_ResolveIdentifier_SharedCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Box* type) 
-    {
-        return Error<Error_ResolveIdentifier_BoxCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Class* type) 
-    {
-        // &this.x
-        auto var = type->GetVar(name);
-        if (!var)
-        {
-            return Error<Error_ResolveIdentifier_NotFound>();
-        }
-
-        if (typeArgsExceptOuter->GetCount() != 0)
-        {
-            return Error<Error_ResolveIdentifier_VarWithTypeArg>();
-        }
-        
-        return Value<IrExp_SharedRef_ClassVar>(contexts.funcContext->MakeThisLoc(), var->decl, var->typeArgs, contexts.mFactory);
-    }
-
-    ResultType Visit(RType_Struct* type) 
-    {
-        // &this.x
-        // TODO: [10] box함수인 경우 에러 메시지를 다르게 해야 한다
-        return Error<Error_ResolveIdentifier_PtrCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Enum* type) 
-    {
-        // Enum이 멤버 함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_EnumElem* type) 
-    {
-        // EnumElem이 멤버함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Interface* type) 
-    {
-        // Interface가 멤버함수를 갖기 전까진 여기 들어오지 않는다
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Lambda* type) 
-    {
-        // Lambda는 멤버함수를 가질 수 없다
-        throw RuntimeFatalException{};
-    }
-};
-
 class IrExpAndMemberNameToIrExpTranslator
 {
 public:
@@ -1028,18 +885,6 @@ public:
     ResultType Visit(IrExp_Struct* irExp) 
     {
         return HandleStaticParent(*irExp->decl, irExp->typeArgs);
-    }
-
-    ResultType Visit(IrExp_Enum* irExp) 
-    {
-        return HandleStaticParent(*irExp->decl, irExp->typeArgs);
-    }
-
-    ResultType Visit(IrExp_ThisVar* irExp) 
-    {
-        // this.id        
-        ThisTypeTranslator binder{name, typeArgsExceptOuter, contexts};
-        return Accept(binder, irExp->type);
     }
 
     ResultType Visit(IrExp_StaticRef* irExp) 

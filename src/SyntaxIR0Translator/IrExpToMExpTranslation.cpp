@@ -125,18 +125,6 @@ public:
         return Error<Error_Reference_CantMakeReference>();
     }
 
-    // &E
-    ResultType Visit(IrExp_Enum* irExp)
-    {
-        return Error<Error_Reference_CantMakeReference>();
-    }
-
-    // &this, this는 특수 키워드이고, local storage에 속하지 않는다. 에러를 내도록 한다
-    ResultType Visit(IrExp_ThisVar* irExp)
-    {   
-        return Error<Error_Reference_CantReferenceThis>();
-    }
-
     // &C.x
     ResultType Visit(IrExp_StaticRef* irExp)
     {   

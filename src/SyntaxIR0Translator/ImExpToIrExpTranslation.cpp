@@ -54,76 +54,55 @@ private:
     }
 
 public:
+    // 지원 불가능한 타입은 모아서 처리
+    ResultType Visit(ImExp* imExp)
+    {
+        return Error<Error_SharedRefTranslation_CantMakeSharedFromMemberParent>();
+    }
+
+    // &NS.C.x 를 지원해야 한다
     ResultType Visit(ImExp_Namespace* imExp)
     {
         return Value<IrExp_Namespace>(imExp->_namespace);
     }
 
-    ResultType Visit(ImExp_GlobalFuncs* imExp)
-    {
-        // Intermediate Exp -> Intermediate Ref Exp
-        return Error<Error_NotImplemented>();
-    }
-
-    ResultType Visit(ImExp_TypeVar* imExp)
-    {
-        return Value<IrExp_TypeVar>(imExp->type);
-    }
-
+    // &C.x 지원 용도
     ResultType Visit(ImExp_Class* imExp)
     {
         return Value<IrExp_Class>(imExp->classDecl, imExp->typeArgs);
     }
 
-    ResultType Visit(ImExp_ClassFuncs* imExp)
-    {
-        return Error<Error_NotImplemented>();
-    }
-
+    // &S.x 지원 용도
     ResultType Visit(ImExp_Struct* imExp)
     {
         return Value<IrExp_Struct>(imExp->structDecl, imExp->typeArgs);
     }
 
-    ResultType Visit(ImExp_StructFuncs* imExp)
-    {
-        return Error<Error_NotImplemented>();
-    }
-
-    ResultType Visit(ImExp_Enum* imExp)
-    {
-        return Value<IrExp_Enum>(imExp->decl, imExp->typeArgs);
-    }
-
-    ResultType Visit(ImExp_EnumElem* imExp)
-    {
-        return Error<Error_NotImplemented>();
-    }
-
-    // &this   -> invalid
-    // &this.a -> valid, box ptr
+    // &this.a
     ResultType Visit(ImExp_ThisVar* imExp)
     {
-        return Value<IrExp_ThisVar>(imExp->type);
+        return Value<IrExp_Loc>(contexts.mFactory->MakeMLoc<MLoc_This>(imExp->type));
     }
 
-    // &id
+    // &l.x
     ResultType Visit(ImExp_LocalVar* imExp)
     {
         // IrExp
-        return Value<>(contexts.mFactory->MakeMLoc<MLoc_LocalVar>(imExp->name, imExp->type));
+        return Value<IrExp_Loc>(contexts.mFactory->MakeMLoc<MLoc_LocalVar>(imExp->name, imExp->type));
     }
 
+    // shared<int>& s = ...;
+    // &s.x
     ResultType Visit(ImExp_LocalRef* imExp)
     {
-        return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_LocalRef>(imExp->name, imExp->type));
+        return Value<IrExp_Loc>(contexts.mFactory->MakeMLoc<MLoc_LocalRef>(imExp->name, imExp->type));
     }
 
-    // &x
+    // &lv.x
     ResultType Visit(ImExp_LambdaVar* imExp)
     {
         // TODO: [10] box lambda이면 box로 판단해야 한다
-        return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_LambdaVar>(imExp->decl, imExp->typeArgs));
+        return Value<IrExp_Loc>(contexts.mFactory->MakeMLoc<MLoc_LambdaVar>(imExp->decl, imExp->typeArgs));
     }
 
     // x (C.x, this.x)
@@ -131,13 +110,16 @@ public:
     {
         if (imExp->decl->IsStatic()) // &C.x
         {
-            return Value<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_ClassVar>(nullptr, imExp->decl, imExp->typeArgs));
+            auto* loc = contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, imExp->decl, imExp->typeArgs);
+            auto* sharedExp = contexts.mFactory->MakeMSharedExp<MSharedExp_Static>(loc, contexts.rFactory);
+
+            return Value<IrExp_SharedRef>(sharedExp);
         }
         else // &this.x
         {   
             // auto classType = imExp.decl->GetClassType(imExp.typeArgs, factory);
             auto* sharedExp = contexts.mFactory->MakeMSharedExp<MSharedExp_ClassVar>(
-                contexts.funcContext->MakeThisLoc(), imExp->decl, imExp->typeArgs, contexts.mFactory);
+                contexts.funcContext->MakeThisLoc(), imExp->decl, imExp->typeArgs, contexts.rFactory);
             
             return Value<IrExp_SharedRef>(sharedExp);
         }
@@ -148,7 +130,10 @@ public:
     {
         if (imExp->decl->IsStatic())
         {
-            return Value<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(nullptr, imExp->decl, imExp->typeArgs));
+            auto* loc = contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/, imExp->decl, imExp->typeArgs);
+            auto* sharedExp = contexts.mFactory->MakeMSharedExp<MSharedExp_Static>(loc, contexts.mFactory);
+
+            return Value<IrExp_SharedRef>(sharedExp);
         }
         else
         {   

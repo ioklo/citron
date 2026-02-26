@@ -51,25 +51,6 @@ public:
         return Error<Error_Reference_CantMakeReference>();
     }
 
-    // &E
-    ResultType Visit(IrExp_Enum* irExp)
-    {
-        return Error<Error_Reference_CantMakeReference>();
-    }
-    
-    // &this
-    // shared 버전의 함수에서 this타입은 shared<S>가 될 수 있지만, shared<S>를 멤버 참조 없이 바로 &하는건 허용되지 않는다
-    ResultType Visit(IrExp_ThisVar* irExp)
-    {
-        return Error<Error_Reference_CantReferenceThis>();
-    }
-
-    // &C.x
-    ResultType Visit(IrExp_StaticRef* irExp)
-    {
-        return contexts.mFactory->MakeMSharedExp<MSharedExp_Static>(irExp->loc, contexts.rFactory);
-    }
-
     // &c.x
     ResultType Visit(IrExp_SharedRef* irExp)
     {

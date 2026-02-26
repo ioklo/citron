@@ -200,6 +200,7 @@ struct Error_ResolveIdentifier_FuncInstanceCantHaveMember : Error { }; // A2020_
 
 struct Error_SharedRefTranslation_DirectRefNotAllowed : Error {}; // shared<int> i = &c; 금지
 struct Error_SharedRefTranslation_MemberParentShouldBeShared : Error {}; // &s.x 금지 (s가 struct S일때)
+struct Error_SharedRefTranslation_CantMakeSharedFromMemberParent : Error {}; // &e.x에서 e로 shared를 만들수 없을때
 
 struct Error_Cast_Failed : Error { }; // A2201_Cast_Failed
 struct Error_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault : Error { }; // A2301_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault

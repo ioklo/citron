@@ -19,6 +19,7 @@ target_sources(SyntaxIR0Translator
         ImExpToReExpTranslation.cpp
         IrExp.cpp
         IrExpAndMemberNameToIrExpTranslation.cpp
+        IrExpAndMemberNameToMSharedExpTranslation.cpp
         IrExpToMExpTranslation.cpp
         Misc.cpp
         ModuleDecls.cpp
@@ -31,6 +32,7 @@ target_sources(SyntaxIR0Translator
         ResolveTypeHierarchyContext.cpp
         SExpRefToIrExpTranslation.cpp
         SExpRefToMExpTranslation.cpp
+        SExpRefToMSharedExpTranslation.cpp
         SExpToImExpTranslation.cpp
         SExpToMExpTranslation.cpp
         SExpToMLocTranslation.cpp
@@ -48,6 +50,7 @@ target_sources(SyntaxIR0Translator
         SyntaxIR0Translator.cpp
         SynthesizeImplicitSymbolContext.cpp
         TranslateBodyContext.cpp
+        TranslateIrExpToMSharedExp.cpp
         TranslationContexts.cpp
 
     PRIVATE FILE_SET headers TYPE HEADERS FILES
@@ -70,6 +73,7 @@ target_sources(SyntaxIR0Translator
         ImExpToReExpTranslation.h
         IrExp.h
         IrExpAndMemberNameToIrExpTranslation.h
+        IrExpAndMemberNameToMSharedExpTranslation.h
         IrExpToMExpTranslation.h
         Misc.h
         ModuleDecls.h
@@ -82,6 +86,7 @@ target_sources(SyntaxIR0Translator
         ResolveTypeHierarchyContext.h
         SExpRefToIrExpTranslation.h
         SExpRefToMExpTranslation.h
+        SExpRefToMSharedExpTranslation.h
         SExpToImExpTranslation.h
         SExpToMExpTranslation.h
         SExpToMLocTranslation.h
@@ -98,6 +103,7 @@ target_sources(SyntaxIR0Translator
         StructVarTask.h
         SynthesizeImplicitSymbolContext.h
         TranslateBodyContext.h
+        TranslateIrExpToMSharedExp.h
         TranslationContexts.h
         TranslationTasks.h
         Public/SyntaxIR0Translator/SyntaxIR0Translator.h
