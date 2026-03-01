@@ -75,18 +75,6 @@ private:
     vector<MStmt*>* outStmts;
     TranslationContexts& contexts;
 
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, MStmt>
     ResultType Value(TArgs&&... args)
     {
@@ -138,7 +126,7 @@ public:
 
         // cast
         e_nCond = CastMExp(*e_nCond, contexts.rFactory->MakeBoolType(), contexts);
-        if (!e_nCond) return Error<Error_IfStmt_ConditionShouldBeBool>();
+        RETURN_ON_ERROR(e_nCond);
 
         auto nestedContext = MakeTranslationContexts_NestedScope(contexts);
         
@@ -187,12 +175,10 @@ public:
         if (stmt->elseBody)
         {
             auto elseContext = MakeTranslationContexts_NestedScope(contexts);            
-            auto elseResult = TranslateSEmbeddableStmtToMStmts(stmt->elseBody, elseContext);
+            auto e_elseResult = TranslateSEmbeddableStmtToMStmts(stmt->elseBody, elseContext);
+            RETURN_ON_ERROR(e_elseResult);
 
-            if (!elseResult)
-                return Error(move(elseResult));
-
-            elseStmts = move(*elseResult);
+            elseStmts = move(*e_elseResult);
         }
 
         auto e_nAsExp = MakeMExp_As(*e_nTarget, *e_rTestType, contexts);
@@ -444,7 +430,7 @@ public:
                 // TranslationResult<(Exp, IType)> Error() => TranslationResult.Error<(Exp, IType)>();
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-                auto e_nEnumerable = TranslateSExpToMLoc(sStmt->enumerable, /*hintType*/nullptr, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+                auto e_nEnumerable = TranslateSExpToMLoc(sStmt->enumerable, /*hintType*/nullptr, /*bMaterializeExp*/true, &designatedDiag, contexts);
                 RETURN_ON_ERROR(e_nEnumerable);
 
                 // GetEnumerator함수를 손으로 찾는다
@@ -749,7 +735,7 @@ public:
             }
 
             DesignatedDiagnostic<Error_StaticNotNullDirective_ArgumentMustBeLocation> designatedDiag;
-            auto e_arg = TranslateSExpToMLoc(stmt->args[0], /*hintType*/nullptr, /*bWrapExpAsLoc*/false, &designatedDiag, contexts);
+            auto e_arg = TranslateSExpToMLoc(stmt->args[0], /*hintType*/nullptr, /*bMaterializeExp*/false, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_arg);
 
             return Value<MStmt_NotNullDirective>(*e_arg);

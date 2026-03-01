@@ -117,7 +117,7 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
                 if (*sArgItem->o_modifier == SArgModifier::Ref) // optional modifier, lvalue만 허용
                 {
                     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag{};
-                    auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bWrapExpAsLoc*/false, &designatedDiag, contexts);
+                    auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bMaterializeExp*/false, &designatedDiag, contexts);
                     RETURN_ON_ERROR(e_mLoc);
 
                     auto e_result = CheckType(constraints, (*e_mLoc)->GetType(), rFuncParam.type);
@@ -136,7 +136,7 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
 
 
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag{};
-                auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+                auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bMaterializeExp*/true, &designatedDiag, contexts);
                 RETURN_ON_ERROR(e_mLoc);
 
                 auto e_result = CheckType(constraints, (*e_mLoc)->GetType(), rFuncParam.type);
@@ -185,7 +185,7 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
             {
                 // move expr
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag{};
-                auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bWrapExpAsLoc*/false, &designatedDiag, contexts);
+                auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bMaterializeExp*/false, &designatedDiag, contexts);
                 RETURN_ON_ERROR(e_mLoc);
 
                 auto e_result = CheckType(constraints, (*e_mLoc)->GetType(), rFuncParam.type);
@@ -202,7 +202,7 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
         else if (rFuncParam.kind == RFuncParameterKind::Ref)
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag{};
-            auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bWrapExpAsLoc*/false, &designatedDiag, contexts);
+            auto e_mLoc = TranslateSExpToMLoc(sArgItem->exp, rFuncParam.type, /*bMaterializeExp*/false, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_mLoc);
 
             auto* locType = (*e_mLoc)->GetType();

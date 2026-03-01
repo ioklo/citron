@@ -120,12 +120,12 @@ RType* MLoc_PtrDeref::GetType()
     throw NotImplementedException();
 }
 
-MLoc_BoxDeref::MLoc_BoxDeref(MLoc* innerLoc)
+MLoc_SharedDeref::MLoc_SharedDeref(MLoc* innerLoc)
     : innerLoc{innerLoc}
 {
 }
 
-RType* MLoc_BoxDeref::GetType()
+RType* MLoc_SharedDeref::GetType()
 {
     auto type = innerLoc->GetType();
 

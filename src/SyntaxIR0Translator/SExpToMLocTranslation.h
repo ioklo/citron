@@ -13,6 +13,6 @@ class MLoc;
 class IDesignatedDiagnostic;
 struct TranslationContexts;
 
-std::expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts);
+std::expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool bMaterializeExp, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts);
 
 } // namespace Citron

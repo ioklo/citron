@@ -5,6 +5,7 @@
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
 #include "Logging/Logger.h"
 #include "RSymbol/RMember.h"
 #include "RSymbol/RClassDecl.h"
@@ -18,12 +19,17 @@
 #include "RSymbol/RNamespaceDecl.h"
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
+#include "MIR/MSharedExp.h"
 
 #include "IrExp.h"
 #include "FuncContext.h"
 #include "ScopeContext.h"
 #include "TranslationContexts.h"
 #include "SRTFactory.h"
+#include "IrExpAndMemberNameTranslation.h"
+#include "Misc.h"
+#include "IrExpToMLocTranslation.h"
+#include "IrExpToMSharedExpTranslation.h"
 
 using namespace std;
 
@@ -52,7 +58,7 @@ public:
     // S.F
     expected<IrExp*, DiagPtr> Visit(RMember_GlobalFuncs& member)
     {   
-        return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
+        return Error<Error_Reference_CantMakeReference>();
     }
 
     expected<IrExp*, DiagPtr> Visit(RMember_Class& member)
@@ -64,7 +70,7 @@ public:
     // 에러,
     expected<IrExp*, DiagPtr> Visit(RMember_ClassFuncs& member)
     {
-        return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
+        return Error<Error_Reference_CantMakeReference>();
     }
 
     // C.x
@@ -72,16 +78,17 @@ public:
     {
         if (!member.decl->IsStatic())
         {
-            return unexpected{MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>()};
+            return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
         }
 
         if (!contexts.funcContext->CanAccess(member.decl))
         {
-            return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
+            return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return contexts.srtFactory->MakeIrExp<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, member.decl, member.typeArgs));
+        auto* loc = contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, member.decl, member.typeArgs);
+        return contexts.srtFactory->MakeIrExp<IrExp_Static>(loc, contexts.rFactory);
     }
 
     expected<IrExp*, DiagPtr> Visit(RMember_Struct& member)
@@ -92,35 +99,37 @@ public:
 
     expected<IrExp*, DiagPtr> Visit(RMember_StructFuncs& member)
     {
-        return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
+        return Error<Error_Reference_CantMakeReference>();
     }
 
     expected<IrExp*, DiagPtr> Visit(RMember_StructVar& member)
     {
         if (!member.decl->IsStatic())
         {
-            return unexpected{MakePtr<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>()};
+            return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
         }
 
         if (!contexts.funcContext->CanAccess(member.decl))
         {
-            return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
+            return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
 
         assert(member.typeArgs->GetCount() == 0);
-        return contexts.srtFactory->MakeIrExp<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, member.decl, member.typeArgs));
+
+        auto* loc = contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, member.decl, member.typeArgs);
+        return contexts.srtFactory->MakeIrExp<IrExp_Static>(loc, contexts.rFactory);
     }
 
     // E
     expected<IrExp*, DiagPtr> Visit(RMember_Enum& member)
     {
-        return Error<Error_SharedRefTranslation_MemberParentShouldBeShared>();
+        return Error<Error_SharedTranslation_MemberBaseShouldBeShared>();
     }
 
     // &E.First.x
     expected<IrExp*, DiagPtr> Visit(RMember_EnumElem& member)
     {   
-        return unexpected{MakePtr<Error_Reference_CantMakeReference>()};
+        return Error<Error_Reference_CantMakeReference>();
     }
 
     // &E.x
@@ -167,657 +176,6 @@ public:
     }*/
 };
 
-class StaticRefTypeTranslator
-{
-public:
-    using ResultType = expected<IrExp*, DiagPtr>;
-
-private:
-    IrExp_StaticRef* parent;
-    RName name;
-    RTypeArguments* typeArgsExceptOuter;
-
-    TranslationContexts& contexts;
-
-private:
-    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
-    ResultType Value(TArgs&&... args)
-    {
-        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
-    }
-
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
-public:
-    StaticRefTypeTranslator(IrExp_StaticRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
-    {
-    }
-
-    // &C.optS.id
-    ResultType Visit(RType_NullableValue* type) 
-    {
-        throw NotImplementedException{};
-    }
-
-    // &C.optS.id
-    ResultType Visit(RType_NullableRef* type) 
-    {
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_TypeVar* type) 
-    {
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Void* type) 
-    {
-        // void인 멤버가 나올 수 없으므로
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Primitive* type)
-    {
-        // primitive type에 멤버가 나올 수 없으므로 에러 내고 종료
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Tuple* type) 
-    {
-        // TupleMemberLoc이 없으므로 일단 보류
-        throw NotImplementedException{};
-        //int count = type.GetMemberVarCount();
-        //for (int i = 0; i < count; i++)
-        //{
-        //    var var = type.GetVar(i);
-        //    if (var.GetName().Equals(name))
-        //    {
-        //        return Valid(new IntermediateRefExp.StaticRef(new TupleMemberLoc parent.Loc)
-        //    }
-        //}
-
-        //return Fatal();
-    }
-
-    // &C.f.id
-    ResultType Visit(RType_Func* type)
-    {
-        return Error<Error_ResolveIdentifier_FuncInstanceCantHaveMember>();
-    }
-
-    // &C.pS.id;
-    ResultType Visit(RType_Ptr* type) 
-    {   
-        return Error<Error_ResolveIdentifier_PtrCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Shared* type)
-    {
-        // T& t = (C.x).a
-        return Error<Error_ResolveIdentifier_SharedCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Box* type) 
-    {
-        // T& t = (C.x).a
-        return Error<Error_ResolveIdentifier_BoxCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Class* type) 
-    {
-        auto var = type->GetVar(name);
-
-        if (!var)
-        {
-            return Error<Error_ResolveIdentifier_NotFound>();
-        }
-
-        if (typeArgsExceptOuter->GetCount() == 0)
-        {
-            return Error<Error_ResolveIdentifier_VarWithTypeArg>();
-        }
-
-        // 이제 BoxRef로 변경
-        return Value<IrExp_SharedRef_ClassVar>(parent->loc, var->decl, var->typeArgs, contexts.mFactory);
-    }
-
-    // &C.s.id
-    ResultType Visit(RType_Struct* type) 
-    {   
-        auto var = type->GetVar(name);
-
-        if (!var)
-        {
-            return Error<Error_ResolveIdentifier_NotFound>();
-        }
-
-        if (typeArgsExceptOuter->GetCount() != 0)
-        {
-            return Error<Error_ResolveIdentifier_VarWithTypeArg>();
-        }
-
-        return Value<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
-    }
-
-    // Enum자체는 member를 가져올 수 없다
-    ResultType Visit(RType_Enum* type) 
-    {
-        return Error<Error_ResolveIdentifier_NotFound>();
-    }
-
-    // e.x (E.Second.x)
-    ResultType Visit(RType_EnumElem* type) 
-    {   
-        auto var = type->GetVar(name);
-        if (!var)
-        {
-            return Error<Error_ResolveIdentifier_NotFound>();
-        }
-
-        if (typeArgsExceptOuter->GetCount() != 0)
-        {
-            return Error<Error_ResolveIdentifier_VarWithTypeArg>();
-        }
-
-        return Value<IrExp_StaticRef>(contexts.mFactory->MakeMLoc<MLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
-    }
-
-    // &C.i.id
-    ResultType Visit(RType_Interface* type) 
-    {   
-        throw NotImplementedException{};
-    }
-
-    // &C.l.id
-    ResultType Visit(RType_Lambda* type) 
-    {   
-        return Error<Error_ResolveIdentifier_LambdaInstanceCantHaveMember>();
-    }
-};
-
-class BoxRefTypeTranslator
-{
-public:
-    using ResultType = expected<IrExp*, DiagPtr>;
-
-    IrExp_SharedRef* parent;
-    RName name;
-    RTypeArguments* typeArgsExceptOuter;
-
-    TranslationContexts& contexts;
-
-private:
-    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
-    ResultType Value(TArgs&&... args)
-    {
-        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
-    }
-
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
-public: 
-    BoxRefTypeTranslator(IrExp_SharedRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
-    {
-    }
-
-    ResultType Visit(RType_NullableValue* type) 
-    {
-        // &c.optS.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_NullableRef* type) 
-    {
-        // &c.c.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_TypeVar* type) 
-    {
-        // &c.t.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Void* type) 
-    {
-        // &c.v
-        // void인 멤버가 나올 수 없으므로
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Primitive* type)
-    {
-        // &c.i.x, primitive type에 멤버는 없으므로 에러 내고 종료
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Tuple* type) 
-    {
-        // &c.t.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Func* type) 
-    {
-        // &c.f.x
-        return Error<Error_ResolveIdentifier_FuncInstanceCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Ptr* type) 
-    {
-        // &c.p.x
-        return Error<Error_ResolveIdentifier_PtrCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Shared* type)
-    {
-        // T& t = c.x.a
-        return Error<Error_ResolveIdentifier_SharedCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Box* type) 
-    {
-        // &c.p.x, 문법에러        
-        return Error<Error_ResolveIdentifier_BoxCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Class* type) 
-    {
-        // &c.c.x
-        auto var = type->GetVar(name);
-        if (!var)
-        {
-            return Error<Error_ResolveIdentifier_NotFound>();
-        }
-
-        if (typeArgsExceptOuter->GetCount() != 0)
-        {
-            return Error<Error_ResolveIdentifier_VarWithTypeArg>();
-        }
-
-        return Value<IrExp_SharedRef_ClassVar>(parent->MakeLoc(), var->decl, var->typeArgs, contexts.mFactory);
-    }
-
-    ResultType Visit(RType_Struct* type) 
-    {
-        // &c.s.x
-        auto var = type->GetVar(name);
-        if (!var)
-        {
-            return Error<Error_ResolveIdentifier_NotFound>();
-        }
-
-        if (typeArgsExceptOuter->GetCount() != 0)
-        {
-            return Error<Error_ResolveIdentifier_VarWithTypeArg>();
-        }
-
-        return Value<IrExp_SharedRef_StructVar>(parent, var->decl, var->typeArgs, contexts.mFactory);
-    }
-
-    ResultType Visit(RType_Enum* type) 
-    {
-        // &c.e.x
-        return Error<Error_ResolveIdentifier_EnumInstanceCantHaveMember>();
-    }
-
-    ResultType Visit(RType_EnumElem* type) 
-    {
-        // &c.e.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Interface* type) 
-    {
-        // &c.i.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Lambda* type) 
-    {
-        // &c.l.x
-        return Error<Error_ResolveIdentifier_LambdaInstanceCantHaveMember>();
-    }
-};
-
-class PtrRefTypeTranslator
-{
-public:
-    using ResultType = expected<IrExp*, DiagPtr>;
-
-    IrExp_PtrRef* parent;
-    RName name;
-    RTypeArguments* typeArgsExceptOuter;
-
-    TranslationContexts& contexts;
-
-private:
-    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
-    ResultType Value(TArgs&&... args)
-    {
-        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
-    }
-
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
-public:
-    PtrRefTypeTranslator(IrExp_PtrRef* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
-    {
-    }
-
-    ResultType Visit(RType_NullableValue* type) 
-    {
-        // &s.optS.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_NullableRef* type) 
-    {
-        // &s.c.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_TypeVar* type) 
-    {
-        // &s.t.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Void* type) 
-    {
-        // void에 멤버가 나올 수 없으므로, 에러 내고 종료
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Primitive* type)
-    {
-        // primitive type에 멤버는 없으므로, 에러 내고 종료
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Tuple* type) 
-    {
-        // &s.t.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Func* type) 
-    {
-        // &s.f.x
-        return Error<Error_ResolveIdentifier_FuncInstanceCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Ptr* type) 
-    {
-        // &s.p.x
-        return Error<Error_ResolveIdentifier_PtrCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Shared* type)
-    {
-        // T& t = s.p.x;
-        return Error<Error_ResolveIdentifier_SharedCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Box* type) 
-    {
-        // &s.p.x
-        return Error<Error_ResolveIdentifier_BoxCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Class* type) 
-    {
-        // &s.c.x
-        auto var = type->GetVar(name);
-        if (!var)
-        {
-            return Error<Error_ResolveIdentifier_NotFound>();
-        }
-
-        if (typeArgsExceptOuter->GetCount() != 0)
-        {
-            return Error<Error_ResolveIdentifier_VarWithTypeArg>();
-        }
-
-        return Value<IrExp_SharedRef_ClassVar>(parent->loc, var->decl, var->typeArgs, contexts.mFactory);
-    }
-
-    ResultType Visit(RType_Struct* type) 
-    {
-        // &s.s.x
-        auto var = type->GetVar(name);
-        if (!var)
-        {
-            return Error<Error_ResolveIdentifier_NotFound>();
-        }
-
-        if (typeArgsExceptOuter->GetCount() != 0)
-        {
-            return Error<Error_ResolveIdentifier_VarWithTypeArg>();
-        }
-
-        return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_StructVar>(parent->loc, var->decl, var->typeArgs));
-    }
-
-    ResultType Visit(RType_Enum* type) 
-    {
-        // &s.e.x
-        return Error<Error_ResolveIdentifier_EnumInstanceCantHaveMember>();
-    }
-
-    ResultType Visit(RType_EnumElem* type) 
-    {
-        // &s.e.x
-        auto var = type->GetVar(name);
-        if (!var)
-        {
-            return Error<Error_ResolveIdentifier_NotFound>();
-        }
-
-        if (typeArgsExceptOuter->GetCount() != 0)
-        {
-            return Error<Error_ResolveIdentifier_VarWithTypeArg>();
-        }
-
-        return Value<IrExp_PtrRef>(contexts.mFactory->MakeMLoc<MLoc_EnumElemVar>(parent->loc, var->decl, var->outerTypeArgs));
-    }
-
-    ResultType Visit(RType_Interface* type) 
-    {
-        // &s.i.x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Lambda* type) 
-    {
-        // &s.l.x
-        return Error<Error_ResolveIdentifier_LambdaInstanceCantHaveMember>();
-    }
-};
-
-// *pS, valueType일때만 여기를 거치도록 나머지는 value로 가게
-class BoxValueTypeTranslator
-{
-public:
-    using ResultType = expected<IrExp*, DiagPtr>;
-
-private:
-    IrExp_SharedDeref* parent;
-    RName name;
-    RTypeArguments* typeArgsExceptOuter;
-
-    TranslationContexts& contexts;
-
-private:
-    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
-    ResultType Value(TArgs&&... args)
-    {
-        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
-    }
-
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
-public:
-    BoxValueTypeTranslator(IrExp_SharedDeref* parent, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : parent{parent}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
-    {
-    }
-
-    ResultType Visit(RType_NullableValue* type) 
-    {
-        // &(*pOptS).x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_NullableRef* type) 
-    {
-        // &(*c).x ?
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_TypeVar* type) 
-    {
-        // &(*pT).x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Void* type) 
-    {
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Primitive* type)
-    {
-        // &(*pI).x, 에러를 내고 종료
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Tuple* type) 
-    {
-        // &(*pT).x
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(RType_Func* type) 
-    {
-        // box ref contained
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Ptr* type) 
-    {
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Shared* type)
-    {
-        // T& t = (C.x).a
-        return Error<Error_ResolveIdentifier_SharedCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Box* type) 
-    {
-        return Error<Error_ResolveIdentifier_BoxCantHaveMember>();
-    }
-
-    ResultType Visit(RType_Class* type) 
-    {
-        // &(*pC).x
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Struct* type) 
-    {
-        // &(*pS).x
-        auto var = type->GetVar(name);
-        if (!var)
-        {
-            return Error<Error_ResolveIdentifier_NotFound>();
-        }
-
-        if (typeArgsExceptOuter->GetCount() != 0)
-        {
-            return Error<Error_ResolveIdentifier_VarWithTypeArg>();
-        }
-
-        return Value<IrExp_SharedRef_SharedStructVar>(parent->innerLoc, var->decl, var->typeArgs, contexts.mFactory);
-    }
-
-    ResultType Visit(RType_Enum* type) 
-    {
-        // (*pE).x
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_EnumElem* type) 
-    {
-        // box E.Second* pE = ...
-        // &(*pE).x
-        throw NotImplementedException{};
-
-        //var var = type->Symbol.GetVar(name);
-        //if (var == null)
-        //    return Fatal();
-
-        //return Valid(new IntermediateRefExp.BoxRef.EnumMember(parent, var));
-    }
-
-    ResultType Visit(RType_Interface* type) 
-    {
-        // box ref contained
-        throw RuntimeFatalException{};
-    }
-
-    ResultType Visit(RType_Lambda* type) 
-    {
-        // doesn't have member variable
-        return Error<Error_ResolveIdentifier_LambdaInstanceCantHaveMember>();
-    }
-};
-
 class IrExpAndMemberNameToIrExpTranslator
 {
 public:
@@ -836,24 +194,12 @@ private:
         return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
     ResultType HandleStaticParent(RDecl& decl, RTypeArguments* typeArgs)
     {
         auto o_member = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
         if (!o_member)
         {
-            return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
+            return Error<Error_ResolveIdentifier_NotFound>();
         }
 
         StaticParentTranslator binder(typeArgsExceptOuter, contexts);
@@ -861,68 +207,158 @@ private:
     }
 
 public:
-    IrExpAndMemberNameToIrExpTranslator(IrExp* irThis, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : irThis{irThis}, name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
+    IrExpAndMemberNameToIrExpTranslator(const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+        : name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
     {
     }
 
-    ResultType Visit(IrExp_Namespace* irExp) 
+    ResultType Visit(IrExp_Namespace* irBaseExp) 
     {
-        return HandleStaticParent(*irExp->decl, contexts.rFactory->MakeTypeArguments({}));
+        return HandleStaticParent(*irBaseExp->decl, contexts.rFactory->MakeTypeArguments({}));
     }
 
-    ResultType Visit(IrExp_TypeVar* irExp) 
+    ResultType Visit(IrExp_Class* irBaseExp) 
     {
-        // 이건 진짜
-        throw NotImplementedException{};
+        return HandleStaticParent(*irBaseExp->decl, irBaseExp->typeArgs);
     }
 
-    ResultType Visit(IrExp_Class* irExp) 
+    ResultType Visit(IrExp_Struct* irBaseExp) 
     {
-        return HandleStaticParent(*irExp->decl, irExp->typeArgs);
+        return HandleStaticParent(*irBaseExp->decl, irBaseExp->typeArgs);
     }
 
-    ResultType Visit(IrExp_Struct* irExp) 
+    ResultType Visit(IrExp_Static* irBaseExp) 
     {
-        return HandleStaticParent(*irExp->decl, irExp->typeArgs);
+        // irBaseExp->loc이 class일때
+        auto* locType = irBaseExp->loc->GetType();
+
+        if (auto* classType = dynamic_cast<RType_Class*>(locType))
+        {
+            auto e_result = GetClassVar(classType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            RETURN_ON_ERROR_REFDECL(e_result, result);
+
+            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(
+                irBaseExp->loc, result.decl, result.typeArgs, contexts.rFactory);
+        }
+        else if (auto* structType = dynamic_cast<RType_Struct*>(locType))
+        {
+            auto e_result = GetStructVar(structType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            RETURN_ON_ERROR_REFDECL(e_result, result);
+
+            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(
+                irBaseExp, result.decl, result.typeArgs, contexts.rFactory);
+        }
+        else throw NotImplementedException{};
     }
 
-    ResultType Visit(IrExp_StaticRef* irExp) 
+    ResultType Visit(IrExp_ClassVar* irBaseExp)
     {
-        auto* irStaticRefThis = dynamic_cast<IrExp_StaticRef*>(irThis);
-        assert(irStaticRefThis);
+        auto* declType = irBaseExp->decl->GetDeclType(*irBaseExp->typeArgs);
 
-        auto* locType = irExp->loc->GetType();
+        if (auto* classType = dynamic_cast<RType_Class*>(declType))
+        {
+            auto e_result = GetClassVar(classType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            RETURN_ON_ERROR_REFDECL(e_result, result);
 
-        // static ref가 부모이면
-        StaticRefTypeTranslator binder{irExp, name, typeArgsExceptOuter, contexts};
-        return Accept(binder, locType);
+            auto* baseLoc = TranslateIrExp_ClassVarToMLoc(irBaseExp, contexts);
+            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs, contexts.rFactory);
+        }
+        else if (auto* structType = dynamic_cast<RType_Struct*>(declType))
+        {
+            auto e_result = GetStructVar(structType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            RETURN_ON_ERROR_REFDECL(e_result, result);
+
+            auto* baseSharedExp = TranslateIrExp_ClassVarToMSharedExp(irBaseExp, contexts);
+            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(baseSharedExp, result.decl, result.typeArgs, contexts.rFactory);
+        }
+        else throw NotImplementedException{};
     }
 
-    ResultType Visit(IrExp_SharedRef* irExp) 
+    ResultType Visit(IrExp_SharedStructVar* irBaseExp)
     {
-        auto irSharedRefThis = dynamic_cast<IrExp_SharedRef*>(irThis);
-        assert(irSharedRefThis);
+        auto* declType = irBaseExp->decl->GetDeclType(*irBaseExp->typeArgs);
 
-        auto* targetType = irExp->GetTargetType();
-        BoxRefTypeTranslator binder{irSharedRefThis, name, typeArgsExceptOuter, contexts};
-        return Accept(binder, targetType);
+        // &(pS->c).id 
+        // TranslateIrExpAndMemberNameToMSharedExp(IrExp_SharedStructVar(pS, S::c), id)
+        // => MSharedExp_ClassVar(pS->c, C::id)
+        if (auto* classType = dynamic_cast<RType_Class*>(declType))
+        {
+            auto e_result = GetClassVar(classType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            RETURN_ON_ERROR_REFDECL(e_result, result);
+
+            auto* baseLoc = TranslateIrExp_SharedStructVarToMLoc(irBaseExp, contexts);
+            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs, contexts.rFactory);
+        }
+        else if (auto* structType = dynamic_cast<RType_Struct*>(declType))
+        {
+            auto e_result = GetStructVar(structType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            RETURN_ON_ERROR_REFDECL(e_result, result);
+
+            auto baseSharedExp = TranslateIrExp_SharedStructVarToMSharedExp(irBaseExp, contexts);
+            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(baseSharedExp, result.decl, result.typeArgs, contexts.rFactory);
+        }
+        else throw NotImplementedException{};
     }
 
+    ResultType Visit(IrExp_StructVar* irBaseExp)
+    {
+        auto* declType = irBaseExp->decl->GetDeclType(*irBaseExp->typeArgs);
+
+        if (auto* classDeclType = dynamic_cast<RType_Class*>(declType))
+        {
+            auto e_result = GetClassVar(classDeclType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            RETURN_ON_ERROR_REFDECL(e_result, result);
+
+            auto e_baseLoc = TranslateIrExp_StructVarToMLoc(irBaseExp, contexts);
+            RETURN_ON_ERROR(e_baseLoc);
+
+            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(*e_baseLoc, result.decl, result.typeArgs, contexts.rFactory);
+        }
+        else if (auto* structDeclType = dynamic_cast<RType_Struct*>(declType))
+        {
+            auto e_result = GetStructVar(structDeclType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            RETURN_ON_ERROR_REFDECL(e_result, result);
+
+            auto e_baseSharedExp = TranslateIrExp_StructVarToMSharedExp(irBaseExp, contexts);
+            RETURN_ON_ERROR(e_baseSharedExp);
+
+            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(*e_baseSharedExp, result.decl, result.typeArgs, contexts.rFactory);
+        }
+        else throw NotImplementedException{};
+    }
+    
     // *pS, 오직 value type에만 작동을 하도록 보장해야 한다
-    ResultType Visit(IrExp_SharedDeref* irExp) 
+    ResultType Visit(IrExp_Deref* irBaseExp)
     {
-        auto innerType = irExp->innerLoc->GetType();
+        // if (!sharedLocType) return Error<Error_SharedTranslation_MemberBaseShouldBeShared>();
 
-        BoxValueTypeTranslator binder{irExp, name, typeArgsExceptOuter, contexts};
-        return Accept(binder, innerType);
+        // 1. *pS꼴이라면
+        if (auto* sharedLocType = dynamic_cast<RType_Shared*>(irBaseExp->innerLoc->GetType()))
+        {
+            // shared<S>
+            auto* structTargetLocType = dynamic_cast<RType_Struct*>(sharedLocType->innerType);
+            if (!structTargetLocType) return Error<Error_SharedTranslation_MemberBaseShouldBeShared>();
+
+            auto e_result = GetStructVar(structTargetLocType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            RETURN_ON_ERROR_REFDECL(e_result, result);
+
+            return contexts.srtFactory->MakeIrExp<IrExp_SharedStructVar>(irBaseExp->innerLoc, result.decl, result.typeArgs, contexts.rFactory);
+        }
+
+
     }
 
-    ResultType Visit(IrExp_LocalValue* irExp) 
+    ResultType Visit(IrExp_Exp* irExp) 
     {
         // exp.id
         // 함수 호출 인자 제외 temp 참조 불가
-        return Error<Error_Reference_CantReferenceTempValue>();
+        static_assert(false);
+    }
+
+    ResultType Visit(IrExp_Loc* irExp)
+    {
+        // loc.id
+        static_assert(false);
     }
 };
 
@@ -930,7 +366,7 @@ public:
 
 expected<IrExp*, DiagPtr> TranslateIrExpAndMemberNameToIrExp(IrExp* irExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
 {
-    IrExpAndMemberNameToIrExpTranslator binder{irExp, name, typeArgsExceptOuter, contexts};
+    IrExpAndMemberNameToIrExpTranslator binder{name, typeArgsExceptOuter, contexts};
     return Accept(binder, irExp);
 }
 

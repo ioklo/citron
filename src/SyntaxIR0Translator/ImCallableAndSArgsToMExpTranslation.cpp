@@ -30,7 +30,7 @@
 #include "ReExpToMLocTranslation.h"
 #include "FuncMatching.h"
 #include "FuncContext.h"
-
+#include "Misc.h"
 
 using namespace std;
 
@@ -65,30 +65,15 @@ private:
         return contexts.mFactory->MakeMExp<TMExp>(std::forward<TArgs>(args)...);
     }
     
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
     // CallExp 분석에서 Callable이 Lambda, func<>로 계산되는 경우
     ResultType HandleLoc(ImExp* imExp)
     {
         auto e_reExp = TranslateImExpToReExp(imExp, contexts);
-        if (!e_reExp)
-            return Error(move(e_reExp));
+        RETURN_ON_ERROR(e_reExp);
 
         DesignatedDiagnostic<Error_CallExp_CallableExpressionIsNotCallable> designatedDiag;
-        auto e_mCallable = TranslateReExpToMLoc(*e_reExp, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
-
-        if (!e_mCallable)
-            return Error(move(e_mCallable));
+        auto e_mCallable = TranslateReExpToMLoc(*e_reExp, /*bMaterializeExp*/true, &designatedDiag, contexts);
+        RETURN_ON_ERROR(e_mCallable);
 
         // TODO: Lambda말고 func<>도 있다
         auto* rCallableType = (*e_mCallable)->GetType();
@@ -188,8 +173,8 @@ public:
             if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto e_nLoc = TranslateReExpToMLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
-                if (!e_nLoc) return Error(move(e_nLoc));
+                auto e_nLoc = TranslateReExpToMLoc(imExp->explicitInstance, /*bMaterializeExp*/true, &designatedDiag, contexts);
+                RETURN_ON_ERROR(e_nLoc);
 
                 nInst = *e_nLoc;
             }
@@ -279,8 +264,8 @@ public:
             if (imExp->explicitInstance)
             {
                 DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto e_instance = TranslateReExpToMLoc(imExp->explicitInstance, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
-                if (!e_instance) return Error(move(e_instance));
+                auto e_instance = TranslateReExpToMLoc(imExp->explicitInstance, /*bMaterializeExp*/true, &designatedDiag, contexts);
+                RETURN_ON_ERROR(e_instance);
 
                 instance = *e_instance;
             }

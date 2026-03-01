@@ -274,7 +274,7 @@ public:
             assert(elem.initExp); // 이제 초기화 식이 반드시 있어야 한다. 초기화를 안할거면 명시적으로 uninit을 써주는걸로
 
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            auto e_mLoc = TranslateSExpToMLoc(elem.initExp, /*hintType*/nullptr, /*bWrapExpAsLoc*/false, &designatedDiag, contexts);
+            auto e_mLoc = TranslateSExpToMLoc(elem.initExp, /*hintType*/nullptr, /*bMaterializeExp*/false, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_mLoc);
 
             // mLoc의 타입을 그대로 쓴다
@@ -301,7 +301,7 @@ public:
             assert(elem.initExp); // 이제 초기화 식이 반드시 있어야 한다. 초기화를 안할거면 명시적으로 uninit을 써주는걸로
 
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            auto e_mLoc = TranslateSExpToMLoc(elem.initExp, *e_rDeclType, /*bWrapExpAsLoc*/false, &designatedDiag, contexts);
+            auto e_mLoc = TranslateSExpToMLoc(elem.initExp, *e_rDeclType, /*bMaterializeExp*/false, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_mLoc);
 
             // 둘이 타입이 mismatch되면 에러를 낸다

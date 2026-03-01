@@ -17,7 +17,6 @@ class RClassVarDecl;
 class RStructVarDecl;
 class MExp;
 class MLoc;
-class MSharedExp;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
 struct TranslationContexts;
 
@@ -27,9 +26,13 @@ struct TranslationContexts;
 class IrExp_Namespace;
 class IrExp_Class;
 class IrExp_Struct;
-class IrExp_SharedRef;
-class IrExp_SharedDeref;
-class IrExp_LocalValue;
+class IrExp_Static;
+class IrExp_ClassVar;
+class IrExp_SharedStructVar;
+class IrExp_StructVar;
+class IrExp_Deref;
+class IrExp_Exp;
+class IrExp_Loc;
 
 class IrExpVisitor;
 
@@ -47,9 +50,13 @@ public:
     virtual void Visit(IrExp_Namespace* irExp) = 0;
     virtual void Visit(IrExp_Class* irExp) = 0;
     virtual void Visit(IrExp_Struct* irExp) = 0;
-    virtual void Visit(IrExp_SharedRef* irExp) = 0;
-    virtual void Visit(IrExp_SharedDeref* irExp) = 0;
-    virtual void Visit(IrExp_LocalValue* irExp) = 0;
+    virtual void Visit(IrExp_Static* irExp) = 0;
+    virtual void Visit(IrExp_ClassVar* irExp) = 0;
+    virtual void Visit(IrExp_SharedStructVar* irExp) = 0;
+    virtual void Visit(IrExp_StructVar* irExp) = 0;
+    virtual void Visit(IrExp_Deref* irExp) = 0;
+    virtual void Visit(IrExp_Exp* irExp) = 0;
+    virtual void Visit(IrExp_Loc* irExp) = 0;
 };
 
 class IrExp_Namespace : public IrExp
@@ -84,38 +91,107 @@ public:
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
-class IrExp_SharedRef : public IrExp
+// &C.x
+class IrExp_Static : public IrExp
 {
+    RFactoryPtr rFactory;
 public:
-    MSharedExp* sharedExp;
+    MLoc* loc;
 
-    IrExp_SharedRef(MSharedExp* sharedExp) 
-        : sharedExp{sharedExp}
+public:
+    IrExp_Static(MLoc* loc, const RFactoryPtr& rFactory)
+        : loc{loc}, rFactory{rFactory}
     { }
-    
-    RType* GetTargetType();
-    void Accept(IrExpVisitor& visitor) final { visitor.Visit(this); }
-};
-
-// Value로 나오는 경우
-class IrExp_LocalValue : public IrExp
-{
-public:
-    MExp* exp;
-
-public:
-    IrExp_LocalValue(MExp* exp);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
-// *x
-class IrExp_SharedDeref : public IrExp
+// &c.x => IrExp_ClassVar(MLoc_LocalVar("c"), C::x)
+class IrExp_ClassVar : public IrExp
+{
+    RFactoryPtr rFactory;
+public:
+    MLoc* base;
+    RClassVarDecl* decl;
+    RTypeArguments* typeArgs;
+
+public:
+    IrExp_ClassVar(MLoc* base, RClassVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
+        : base{base}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
+    { }
+
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
+};
+
+// shared S pS;
+// &ps->x => IrExp_SharedStructVar(MLoc_LocalVar("pS"), S::x)
+// IrExp_SharedStructVar
+class IrExp_SharedStructVar : public IrExp
+{
+    RFactoryPtr rFactory;
+public:
+    MLoc* base;
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
+
+public:
+    IrExp_SharedStructVar(MLoc* base, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
+        : base{base}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
+    { }
+
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
+};
+
+// C c;
+// shared A a = &c.s.a; => IrExp_StructVar(IrExp_ClassVar(MLoc_LocalVar("c"), C::s), A::a)
+class IrExp_StructVar : public IrExp
+{
+public:
+    IrExp* base;
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
+
+private:
+    RFactoryPtr rFactory;
+
+public:
+    IrExp_StructVar(IrExp* base, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
+        : base{base}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
+    { }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
+};
+
+// (*pS).id 를 처리하기 위해서
+// *x 모양을 따로 들고 있는다. IrExp_Loc{MLoc_Deref}는 만들어지면 안된다
+class IrExp_Deref : public IrExp
 {
 public:
     MLoc* innerLoc;
 
 public:
-    IrExp_SharedDeref(MLoc* innerLoc);
+    IrExp_Deref(MLoc* innerLoc)
+        : innerLoc{innerLoc}
+    { }
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
+};
+
+// exp로 나오는 경우
+class IrExp_Exp : public IrExp
+{
+public:
+    MExp* exp;
+
+public:
+    IrExp_Exp(MExp* exp);
+    void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
+};
+
+class IrExp_Loc : public IrExp
+{
+public:
+    MLoc* loc;
+
+public:
+    IrExp_Loc(MLoc* loc);
     void Accept(IrExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
@@ -130,9 +206,13 @@ concept IrExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args) {
     { v.Visit(std::declval<IrExp_Namespace*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_Class*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_Struct*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<IrExp_SharedRef*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<IrExp_SharedDeref*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<IrExp_LocalValue*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_Static*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_ClassVar*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_SharedStructVar*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_StructVar*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_Deref*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_Exp*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_Loc*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires IrExpVisitable<TVisitor, TVisitorArgs...>
@@ -153,9 +233,13 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp* i
             void Visit(IrExp_Namespace* irExp) override { call(irExp); }
             void Visit(IrExp_Class* irExp) override { call(irExp); }
             void Visit(IrExp_Struct* irExp) override { call(irExp); }
-            void Visit(IrExp_SharedRef* irExp) override { call(irExp); }
-            void Visit(IrExp_SharedDeref* irExp) override { call(irExp); }
-            void Visit(IrExp_LocalValue* irExp) override { call(irExp); }
+            void Visit(IrExp_Static* irExp) override { call(irExp); }
+            void Visit(IrExp_ClassVar* irExp) override { call(irExp); }
+            void Visit(IrExp_SharedStructVar* irExp) override { call(irExp); }
+            void Visit(IrExp_StructVar* irExp) override { call(irExp); }
+            void Visit(IrExp_Deref* irExp) override { call(irExp); }
+            void Visit(IrExp_Exp* irExp) override { call(irExp); }
+            void Visit(IrExp_Loc* irExp) override { call(irExp); }
         };
 
         Bridge bridge{caller};
@@ -171,9 +255,13 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp* i
             void Visit(IrExp_Namespace* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_Class* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_Struct* irExp) override { result.emplace(call(irExp)); }
-            void Visit(IrExp_SharedRef* irExp) override { result.emplace(call(irExp)); }
-            void Visit(IrExp_SharedDeref* irExp) override { result.emplace(call(irExp)); }
-            void Visit(IrExp_LocalValue* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_Static* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_ClassVar* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_SharedStructVar* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_StructVar* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_Deref* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_Exp* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_Loc* irExp) override { result.emplace(call(irExp)); }
         };
 
         Bridge bridge{caller};

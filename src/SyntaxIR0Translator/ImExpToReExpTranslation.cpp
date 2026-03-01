@@ -16,6 +16,7 @@
 #include "ReExp.h"
 #include "TranslationContexts.h"
 #include "SRTFactory.h"
+#include "Misc.h"
 
 using namespace std;
 
@@ -42,18 +43,6 @@ private:
     ResultType Value(TArgs&&... args)
     {
         return contexts.srtFactory->MakeReExp<TValue>(forward<TArgs>(args)...);
-    }
-
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
     }
 
 public:

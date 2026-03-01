@@ -1,0 +1,24 @@
+#pragma once
+
+#include <expected>
+#include <memory>
+
+namespace Citron {
+
+using DiagPtr = std::shared_ptr<struct Diag>;
+
+class MLoc;
+
+class IrExp;
+class IrExp_ClassVar;
+class IrExp_SharedStructVar;
+class IrExp_StructVar;
+struct TranslationContexts;
+
+MLoc* TranslateIrExp_ClassVarToMLoc(IrExp_ClassVar* irExp, TranslationContexts& contexts);
+MLoc* TranslateIrExp_SharedStructVarToMLoc(IrExp_SharedStructVar* irExp, TranslationContexts& contexts);
+std::expected<MLoc*, DiagPtr> TranslateIrExp_StructVarToMLoc(IrExp_StructVar* irExp, TranslationContexts& contexts);
+
+std::expected<MLoc*, DiagPtr> TranslateIrExpToMLoc(IrExp* irExp, TranslationContexts& contexts);
+
+} // namespace 

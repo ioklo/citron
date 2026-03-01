@@ -33,7 +33,7 @@ expected<MLoc*, DiagPtr> TranslateReClassVarExpToMLoc(ReExp_ClassVar* reExp, Tra
         if (reExp->explicitInstance != nullptr)
         {   
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            auto e_instance = TranslateReExpToMLoc(reExp->explicitInstance, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+            auto e_instance = TranslateReExpToMLoc(reExp->explicitInstance, /*bMaterializeExp*/true, &designatedDiag, contexts);
 
             if (!e_instance)
                 return unexpected{move(e_instance).error()};
@@ -74,7 +74,7 @@ expected<MLoc*, DiagPtr> TranslateReStructVarExpToMLoc(ReExp_StructVar* reExp, T
         if (reExp->explicitInstance != nullptr)
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            auto e_instance = TranslateReExpToMLoc(reExp->explicitInstance, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+            auto e_instance = TranslateReExpToMLoc(reExp->explicitInstance, /*bMaterializeExp*/true, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_instance);
 
             instance = *e_instance;
@@ -94,7 +94,7 @@ expected<MLoc*, DiagPtr> TranslateReEnumElemVarExpToMLoc(ReExp_EnumElemVar* reEx
 {   
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto e_inst = TranslateReExpToMLoc(reExp->instance, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+    auto e_inst = TranslateReExpToMLoc(reExp->instance, /*bMaterializeExp*/true, &designatedDiag, contexts);
     RETURN_ON_ERROR(e_inst);
 
     return contexts.mFactory->MakeMLoc<MLoc_EnumElemVar>(*e_inst, reExp->decl, reExp->typeArgs);
@@ -104,10 +104,10 @@ expected<MLoc*, DiagPtr> TranslateReListIndexerExpToMLoc(ReExp_ListIndexer* reEx
 {
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto e_inst = TranslateReExpToMLoc(reExp->instance, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+    auto e_inst = TranslateReExpToMLoc(reExp->instance, /*bMaterializeExp*/true, &designatedDiag, contexts);
     RETURN_ON_ERROR(e_inst);
 
-    auto e_index = TranslateReExpToMLoc(reExp->index, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+    auto e_index = TranslateReExpToMLoc(reExp->index, /*bMaterializeExp*/true, &designatedDiag, contexts);
     RETURN_ON_ERROR(e_index);
 
     return contexts.mFactory->MakeMLoc<MLoc_ListIndexer>(*e_inst, *e_index, reExp->itemType);
@@ -118,7 +118,7 @@ expected<MLoc*, DiagPtr> TranslateReDerefExpToMLoc(ReExp_PtrDeref* reExp, Transl
     // *x, *G()
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto e_target = TranslateReExpToMLoc(reExp->target, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+    auto e_target = TranslateReExpToMLoc(reExp->target, /*bMaterializeExp*/true, &designatedDiag, contexts);
     RETURN_ON_ERROR(e_target);
 
     return contexts.mFactory->MakeMLoc<MLoc_PtrDeref>(*e_target);
@@ -129,7 +129,7 @@ expected<MLoc*, DiagPtr> TranslateReBoxDerefExpToMLoc(ReExp_BoxDeref* reExp, Tra
     // *x, *G()
     DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-    auto e_target = TranslateReExpToMLoc(reExp->target, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+    auto e_target = TranslateReExpToMLoc(reExp->target, /*bMaterializeExp*/true, &designatedDiag, contexts);
     RETURN_ON_ERROR(e_target);
 
     return contexts.mFactory->MakeMLoc<MLoc_BoxDeref>(*e_target);
@@ -143,13 +143,13 @@ public:
     using ResultType = expected<MLoc*, DiagPtr>;
 
 private:
-    bool bWrapExpAsLoc;
+    bool bMaterializeExp;
     IDesignatedDiagnostic* notLocationDiag;
     TranslationContexts& contexts;
 
 public:
-    ReExpToMLocTranslator(bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts)
-        : bWrapExpAsLoc(bWrapExpAsLoc), notLocationDiag(notLocationDiag), contexts{contexts}
+    ReExpToMLocTranslator(bool bMaterializeExp, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts)
+        : bMaterializeExp{bMaterializeExp}, notLocationDiag{notLocationDiag}, contexts{contexts}
     {
     }
 
@@ -205,7 +205,7 @@ public:
 
     ResultType Visit(ReExp_Else* exp)
     {
-        if (bWrapExpAsLoc)
+        if (bMaterializeExp)
         {
             return contexts.mFactory->MakeMLoc<MLoc_Temp>(exp->mExp);
         }
@@ -218,9 +218,9 @@ public:
 
 }
 
-expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp* reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts)
+expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp* reExp, bool bMaterializeExp, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts)
 {
-    ReExpToMLocTranslator translator{bWrapExpAsLoc, notLocationDiag, contexts};
+    ReExpToMLocTranslator translator{bMaterializeExp, notLocationDiag, contexts};
     return Accept(translator, reExp);
 }
 

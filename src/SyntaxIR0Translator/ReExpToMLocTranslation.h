@@ -35,6 +35,6 @@ std::expected<MLoc*, DiagPtr> TranslateReListIndexerExpToMLoc(ReExp_ListIndexer*
 std::expected<MLoc*, DiagPtr> TranslateReDerefExpToMLoc(ReExp_PtrDeref* reExp, TranslationContexts& contexts);
 std::expected<MLoc*, DiagPtr> TranslateReBoxDerefExpToMLoc(ReExp_BoxDeref* reExp, TranslationContexts& contexts);
 
-std::expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp* reExp, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts);
+std::expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp* reExp, bool bMaterializeExp, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts);
 
 } // namespace Citron

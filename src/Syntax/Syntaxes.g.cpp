@@ -232,6 +232,7 @@ struct SExpToJsonVisitor
     ResultType Visit(SExp_IndirectMember* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_List* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_New* exp) { return exp->ToJson(); }
+    ResultType Visit(SExp_Shared* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_Box* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_Is* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_As* exp) { return exp->ToJson(); }
@@ -616,8 +617,8 @@ JsonItem SExp_Indexer::ToJson()
     };
 }
 
-SExp_Member::SExp_Member(SExp* parent, std::string memberName, std::vector<STypeExp*> memberTypeArgs)
-    : parent(move(parent)), memberName(move(memberName)), memberTypeArgs(move(memberTypeArgs)) { }
+SExp_Member::SExp_Member(SExp* base, std::string memberName, std::vector<STypeExp*> memberTypeArgs)
+    : base(move(base)), memberName(move(memberName)), memberTypeArgs(move(memberTypeArgs)) { }
 
 SExp_Member::SExp_Member(SExp_Member&& other) noexcept = default;
 
@@ -629,7 +630,7 @@ JsonItem SExp_Member::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("SExp_Member") },
-        { "parent", Citron::ToJson(parent) },
+        { "base", Citron::ToJson(base) },
         { "memberName", Citron::ToJson(memberName) },
         { "memberTypeArgs", Citron::ToJson(memberTypeArgs) },
     };

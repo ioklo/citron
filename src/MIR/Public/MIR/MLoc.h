@@ -29,7 +29,7 @@ class MLoc_ClassVar;
 class MLoc_EnumElemVar;
 class MLoc_This;
 class MLoc_PtrDeref;
-class MLoc_BoxDeref;
+class MLoc_SharedDeref;
 class MLoc_NullableValue;
 
 class MExp;
@@ -50,7 +50,7 @@ public:
     virtual void Visit(MLoc_EnumElemVar* loc) = 0;
     virtual void Visit(MLoc_This* loc) = 0;
     virtual void Visit(MLoc_PtrDeref* loc) = 0;
-    virtual void Visit(MLoc_BoxDeref* loc) = 0;
+    virtual void Visit(MLoc_SharedDeref* loc) = 0;
     virtual void Visit(MLoc_NullableValue* loc) = 0;
 };
 
@@ -187,13 +187,13 @@ public:
 };
 
 // dereference box pointer, *
-class MLoc_BoxDeref : public MLoc
+class MLoc_SharedDeref : public MLoc
 {
 public:
     MLoc* innerLoc;
 
 public:
-    MIR_API MLoc_BoxDeref(MLoc* innerLoc);
+    MIR_API MLoc_SharedDeref(MLoc* innerLoc);
     void Accept(MLocVisitor& visitor) override { visitor.Visit(this); }
     MIR_API RType* GetType() override;
 };
@@ -228,7 +228,7 @@ concept MLocVisitable = requires(TVisitor && v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MLoc_EnumElemVar*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MLoc_This*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MLoc_PtrDeref*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MLoc_BoxDeref*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MLoc_SharedDeref*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MLoc_NullableValue*>(), std::forward<TVisitorArgs>(args)...) } -> MLocConvertibleToResultType<TVisitor>;
 };
 
@@ -256,7 +256,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MLoc* mL
             void Visit(MLoc_EnumElemVar* loc) override { call(loc); }
             void Visit(MLoc_This* loc) override { call(loc); }
             void Visit(MLoc_PtrDeref* loc) override { call(loc); }
-            void Visit(MLoc_BoxDeref* loc) override { call(loc); }
+            void Visit(MLoc_SharedDeref* loc) override { call(loc); }
             void Visit(MLoc_NullableValue* loc) override { call(loc); }
         };
 
@@ -280,7 +280,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MLoc* mL
             void Visit(MLoc_EnumElemVar* loc) override { result.emplace(call(loc)); }
             void Visit(MLoc_This* loc) override { result.emplace(call(loc)); }
             void Visit(MLoc_PtrDeref* loc) override { result.emplace(call(loc)); }
-            void Visit(MLoc_BoxDeref* loc) override { result.emplace(call(loc)); }
+            void Visit(MLoc_SharedDeref* loc) override { result.emplace(call(loc)); }
             void Visit(MLoc_NullableValue* loc) override { result.emplace(call(loc)); }
         };
 

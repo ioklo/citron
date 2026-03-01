@@ -638,12 +638,12 @@ struct ToJsonVisitor {
             .name = "SExp_Member",
             .variantInterfaces { "SExp" },
             .memberInfos {
-                {.type = "SExp*", .memberVarName = "parent", .getterName = "GetParent" },
+                {.type = "SExp*", .memberVarName = "base", .getterName = "GetBase" },
                 {.type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName" },
                 {.type = "std::vector<STypeExp*>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
             },
             .extraCtors {
-                "SYNTAX_API SExp_Member(SExp* parent, std::string&& memberName);"
+                "SYNTAX_API SExp_Member(SExp* base, std::string&& memberName);"
             }
         },
 

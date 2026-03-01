@@ -17,18 +17,12 @@ struct SExpRefToMSharedExpTranslator
 {
     using ResultType = expected<MSharedExp*, DiagPtr>;
     TranslationContexts& contexts;
-
-    template<typename TError, typename... TArgs>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TError>(forward<TArgs>(args)...)};
-    }
     
     // shared<int> i = &c;
     // shared<int> i = &&c; // 원래 불가인데, 단일 &는 허용 안되기 때문에, 따로 처리하지 않아도 된다
     ResultType Visit(SExp* exp)
     {   
-        return Error<Error_SharedRefTranslation_DirectRefNotAllowed>();
+        return Error<Error_SharedTranslation_SingleRefNotAllowed>();
     }
 
     ResultType Visit(SExp_Member* exp)

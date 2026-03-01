@@ -31,7 +31,7 @@ public:
 
 private:
     RType* hintType;
-    bool bWrapExpAsLoc;
+    bool bMaterializeExp;
 
     IDesignatedDiagnostic* notLocationDiag;
     TranslationContexts& contexts;
@@ -39,10 +39,10 @@ private:
 public:
     SExpToMLocTranslator(
         RType* hintType,
-        bool bWrapExpAsLoc,
+        bool bMaterializeExp,
         IDesignatedDiagnostic* notLocationDiag,
         TranslationContexts& contexts)
-        : hintType{hintType}, bWrapExpAsLoc{bWrapExpAsLoc}, notLocationDiag{notLocationDiag}, contexts{contexts}
+        : hintType{hintType}, bMaterializeExp{bMaterializeExp}, notLocationDiag{notLocationDiag}, contexts{contexts}
     {
     }
 
@@ -53,7 +53,7 @@ private:
         RETURN_ON_ERROR(e_reExp);
         
         DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-        return TranslateReExpToMLoc(*e_reExp, bWrapExpAsLoc, &designatedDiag, contexts);
+        return TranslateReExpToMLoc(*e_reExp, bMaterializeExp, &designatedDiag, contexts);
     }
 
     // fast track
@@ -63,7 +63,7 @@ private:
         {
             return unexpected{move(e_nExp).error()};
         }
-        else if (bWrapExpAsLoc)
+        else if (bMaterializeExp)
         {
             return contexts.mFactory->MakeMLoc<MLoc_Temp>(*e_nExp);
         }
@@ -72,19 +72,7 @@ private:
             return unexpected{notLocationDiag->MakeDiag()};
         }
     }
-
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
+    
 public:
     ResultType Visit(SExp_Identifier* exp)
     {
@@ -222,9 +210,9 @@ public:
 
 } // namespace 
 
-expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool bWrapExpAsLoc, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts)
+expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool bMaterializeExp, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts)
 {
-    SExpToMLocTranslator translator{hintType, bWrapExpAsLoc, notLocationDiag, contexts};
+    SExpToMLocTranslator translator{hintType, bMaterializeExp, notLocationDiag, contexts};
     return Accept(translator, sExp);
 }
 

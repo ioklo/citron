@@ -12,11 +12,13 @@
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 #include "MIR/MSharedExp.h"
+
 #include "ImExp.h"
 #include "IrExp.h"
 #include "TranslationContexts.h"
 #include "SRTFactory.h"
 #include "FuncContext.h"
+#include "Misc.h"
 
 using namespace std;
 
@@ -40,24 +42,12 @@ private:
     {
         return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
-
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
+    
 public:
     // 지원 불가능한 타입은 모아서 처리
     ResultType Visit(ImExp* imExp)
     {
-        return Error<Error_SharedRefTranslation_CantMakeSharedFromMemberParent>();
+        return Error<Error_SharedTranslation_CantMakeSharedFromBase>();
     }
 
     // &NS.C.x 를 지원해야 한다
@@ -111,17 +101,13 @@ public:
         if (imExp->decl->IsStatic()) // &C.x
         {
             auto* loc = contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, imExp->decl, imExp->typeArgs);
-            auto* sharedExp = contexts.mFactory->MakeMSharedExp<MSharedExp_Static>(loc, contexts.rFactory);
-
-            return Value<IrExp_SharedRef>(sharedExp);
+            return Value<IrExp_Static>(loc, contexts.rFactory);
         }
         else // &this.x
         {   
             // auto classType = imExp.decl->GetClassType(imExp.typeArgs, factory);
-            auto* sharedExp = contexts.mFactory->MakeMSharedExp<MSharedExp_ClassVar>(
+            return Value<IrExp_ClassVar>(
                 contexts.funcContext->MakeThisLoc(), imExp->decl, imExp->typeArgs, contexts.rFactory);
-            
-            return Value<IrExp_SharedRef>(sharedExp);
         }
     }
 
@@ -130,10 +116,8 @@ public:
     {
         if (imExp->decl->IsStatic())
         {
-            auto* loc = contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/, imExp->decl, imExp->typeArgs);
-            auto* sharedExp = contexts.mFactory->MakeMSharedExp<MSharedExp_Static>(loc, contexts.mFactory);
-
-            return Value<IrExp_SharedRef>(sharedExp);
+            auto* loc = contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, imExp->decl, imExp->typeArgs);
+            return Value<IrExp_Static>(loc, contexts.mFactory);
         }
         else
         {   

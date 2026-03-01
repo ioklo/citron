@@ -59,12 +59,12 @@ class MSharedExp_ClassVar : public MSharedExp
 {
     RFactoryPtr rFactory;
 public:
-    MLoc* holder;
+    MLoc* base;
     RClassVarDecl* decl;
     RTypeArguments* typeArgs;
 
 public:
-    MIR_API MSharedExp_ClassVar(MLoc* holder, RClassVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory);
+    MIR_API MSharedExp_ClassVar(MLoc* base, RClassVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MSharedExpVisitor& visitor) override { visitor.Visit(this); }
@@ -77,34 +77,32 @@ class MSharedExp_SharedStructVar : public MSharedExp
 {
     RFactoryPtr rFactory;
 public:
-    MLoc* holder;
+    MLoc* base;
     RStructVarDecl* decl;
     RTypeArguments* typeArgs;
 
 public:
-    MIR_API MSharedExp_SharedStructVar(MLoc* holder, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory);
+    MIR_API MSharedExp_SharedStructVar(MLoc* base, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MSharedExpVisitor& visitor) override { visitor.Visit(this); }
 };
 
 // C c;
-// box A* a = &c.s.a; => MSharedExp_StructVar(MSharedExp_ClassVar(MLoc_LocalVar("c"), C::s), A::a)
+// shared A a = &c.s.a; => MSharedExp_StructVar(MSharedExp_ClassVar(MLoc_LocalVar("c"), C::s), A::a)
 class MSharedExp_StructVar : public MSharedExp
 {
 public:
-    MSharedExp* parent;
+    MSharedExp* base;
     RStructVarDecl* decl;
     RTypeArguments* typeArgs;
     RFactoryPtr rFactory;
 
 public:
-    MIR_API MSharedExp_StructVar(MSharedExp* parent, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory);
+    MIR_API MSharedExp_StructVar(MSharedExp* base, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory);
 
     MIR_API RType* GetType() override;
     void Accept(MSharedExpVisitor& visitor) override { visitor.Visit(this); }
 };
-
-
 
 } // namespace Citron

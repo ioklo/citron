@@ -21,7 +21,6 @@
 #include "SExpToMLocTranslation.h"
 #include "SExpToReExpTranslation.h"
 #include "SExpToImExpTranslation.h"
-#include "SExpRefToMExpTranslation.h"
 
 #include "ReExpToMExpTranslation.h"
 #include "ReExpToMLocTranslation.h"
@@ -150,7 +149,7 @@ expected<MExp*, DiagPtr> TranslateSIntUnaryAssignExpToMExp(SExp* operand, MInter
     // throws NotLocationException
     
     DesignatedDiagnostic<Error_UnaryAssignOp_AssignableExpressionIsAllowedOnly> designatedDiag;
-    auto e_nOperand = TranslateSExpToMLoc(operand, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedDiag, contexts);
+    auto e_nOperand = TranslateSExpToMLoc(operand, /* hintType*/nullptr, /*bMaterializeExp*/false, &designatedDiag, contexts);
     RETURN_ON_ERROR(e_nOperand);
 
     // int type 검사, exact match
@@ -218,7 +217,7 @@ expected<MExp*, DiagPtr> TranslateSAssignBinaryOpExpToMExp(SExp_BinaryOp* exp, T
 {
     // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
     DesignatedDiagnostic<Error_BinaryOp_LeftOperandIsNotAssignable> designatedDiag;
-    auto e_nDestLoc = TranslateSExpToMLoc(exp->operand0, /* hintType */ nullptr, /* bWrapExpAsLoc */ false, &designatedDiag, contexts);
+    auto e_nDestLoc = TranslateSExpToMLoc(exp->operand0, /*hintType*/ nullptr, /*bMaterializeExp*/false, &designatedDiag, contexts);
     RETURN_ON_ERROR(e_nDestLoc);
 
     // 안되는거 체크

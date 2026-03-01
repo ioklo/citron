@@ -65,19 +65,7 @@ private:
     {
         return contexts.srtFactory->MakeImExp<TValue>(forward<TArgs>(args)...);
     }
-
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
+    
 public:
     // x
     ResultType Visit(SExp_Identifier* exp)
@@ -180,7 +168,7 @@ public:
         {
             DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
 
-            auto e_nLoc = TranslateReExpToMLoc(*e_reIndex, /*bWrapExpAsLoc*/true, &designatedDiag, contexts);
+            auto e_nLoc = TranslateReExpToMLoc(*e_reIndex, /*bMaterializeExp*/true, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_nLoc);
 
             nIndexLoc = *e_nLoc;

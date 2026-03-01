@@ -29,9 +29,6 @@
     <ClCompile Include="SExpToReExpTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SExpRefToMExpTranslation.cpp">
-      <Filter>ExpTranslation\SExpRefTranslation</Filter>
-    </ClCompile>
     <ClCompile Include="SExpRefToIrExpTranslation.cpp">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClCompile>
@@ -109,11 +106,23 @@
     <ClCompile Include="SExpRefToMSharedExpTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="TranslateIrExpToMSharedExp.cpp">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
-    </ClCompile>
     <ClCompile Include="IrExpAndMemberNameToMSharedExpTranslation.cpp">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="IrExpAndMemberNameTranslation.cpp">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="IrExpToMLocTranslation.cpp">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="IrExpToMSharedExpTranslation.cpp">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToMSharedExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpRefTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToIrExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -148,9 +157,6 @@
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="SExpRefToIrExpTranslation.h">
-      <Filter>ExpTranslation\SExpRefTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpRefToMExpTranslation.h">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClInclude>
     <ClInclude Include="SExpToImExpTranslation.h">
@@ -231,11 +237,23 @@
     <ClInclude Include="SExpRefToMSharedExpTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="TranslateIrExpToMSharedExp.h">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
-    </ClInclude>
     <ClInclude Include="IrExpAndMemberNameToMSharedExpTranslation.h">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="IrExpAndMemberNameTranslation.h">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="IrExpToMLocTranslation.h">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="IrExpToMSharedExpTranslation.h">
+      <Filter>ExpTranslation\IrExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToMSharedExpTranslation.h">
+      <Filter>ExpTranslation\SExpRefTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToIrExpTranslation.h">
+      <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

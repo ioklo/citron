@@ -22,12 +22,6 @@ IrExp_Namespace::IrExp_Namespace(RNamespaceDecl* decl)
 {
 }
 
-IrExp_TypeVar::IrExp_TypeVar(RType_TypeVar* type)
-    : type(type)
-{
-
-}
-
 IrExp_Class::IrExp_Class(RClassDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
@@ -38,23 +32,15 @@ IrExp_Struct::IrExp_Struct(RStructDecl* decl, RTypeArguments* typeArgs)
 {
 }
 
-IrExp_LocalValue::IrExp_LocalValue(MExp* exp)
+IrExp_Exp::IrExp_Exp(MExp* exp)
     : exp{exp}
 {
 
 }
 
-IrExp_SharedDeref::IrExp_SharedDeref(MLoc* innerLoc)
-    : innerLoc{innerLoc}
+IrExp_Loc::IrExp_Loc(MLoc* loc)
+    : loc{loc}
 {
 }
 
-RType* IrExp_SharedRef::GetTargetType()
-{
-    auto* sharedExpType = dynamic_cast<RType_Shared*>(sharedExp->GetType());
-    assert(sharedExpType);
-
-    return sharedExpType->innerType;
-}
-
-} // Citron::SyntaxIR0Translator
+} // namespace Citron

@@ -361,19 +361,7 @@ private:
     RTypeArguments* typeArgsExceptOuter;
 
     TranslationContexts& contexts;
-
-    template<typename TValue>
-    ResultType Error(expected<TValue, DiagPtr>&& e)
-    {
-        return unexpected{move(e).error()};
-    }
-
-    template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
-    ResultType Error(TArgs&&... args)
-    {
-        return unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
-    }
-
+    
     ResultType TranslateStaticParent(RDecl* decl, RTypeArguments* typeArgs)
     {
         auto o_member = decl->GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
