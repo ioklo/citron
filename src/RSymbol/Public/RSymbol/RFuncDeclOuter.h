@@ -49,5 +49,4 @@ class REFuncDeclOuter : public RFuncDeclOuter
     EFuncDeclOuter* outer;
 };
 
-
 } // namespace Citron

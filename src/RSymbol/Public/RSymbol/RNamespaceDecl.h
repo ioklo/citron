@@ -22,7 +22,7 @@ public:
 class RENamespaceDecl : public RNamespaceDecl
 {
     ENamespaceDecl* decl;
-    // std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    // std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 };
 
 } // namespace Citron

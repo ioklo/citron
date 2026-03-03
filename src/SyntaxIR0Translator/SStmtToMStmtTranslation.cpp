@@ -553,11 +553,11 @@ public:
 
             expected<NextExpAndCastExp, DiagPtr> MakeNextExpAndCastExp(RType* enumeratorType, RType* itemTypeFromSyntax)
             {
-                auto rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/0);
-                if (!rMember) return unexpected{MakePtr<Error_NotImplemented>()};
+                auto rDeclRes = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/0);
+                if (!rDeclRes) return unexpected{MakePtr<Error_NotImplemented>()};
 
                 vector<NextExpAndCastExp> candidates;
-                for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*rMember))
+                for (auto& funcDeclWithOuter : GetFuncDeclWithOuterTypeArgs(*rDeclRes))
                 {
                     auto* funcDecl = funcDeclWithOuter.decl;
                     if (funcDecl->GetParamCount() != 1) continue;

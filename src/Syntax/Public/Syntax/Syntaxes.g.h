@@ -1473,7 +1473,6 @@ public:
 
 };
 
-// TODO: [36] MExp_String을 MCreate_String으로 변경
 class SExp_String
     : public SExp
 {

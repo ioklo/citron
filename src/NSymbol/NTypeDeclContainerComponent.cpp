@@ -54,12 +54,12 @@ RTypeDecl* NTypeDeclContainerComponent::GetTypeMember(const RName& name, size_t 
 }
 
 // 첫번째 인자는 부모의 typeArgs
-optional<RMember> NTypeDeclContainerComponent::GetMemberType(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NTypeDeclContainerComponent::GetMemberType(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     auto i = typeDict.find({ name, explicitTypeParamsExceptOuterCount, {} });
     if (i == typeDict.end()) return nullopt;
 
-    return i->second->ToRMember(typeArgs);
+    return i->second->ToRDeclRes(typeArgs);
 }
 
 //bool ICyclicEqualityComparableStruct<TypeDeclSymbolComponent>.CyclicEquals(ref TypeDeclSymbolComponent other, ref CyclicEqualityCompareContext context)

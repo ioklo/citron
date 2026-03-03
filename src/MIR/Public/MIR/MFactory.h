@@ -6,7 +6,7 @@
 namespace Citron {
 
 class MStmt;
-class MExp;
+struct MExp;
 class MLoc;
 class MSharedExp;
 class MData;

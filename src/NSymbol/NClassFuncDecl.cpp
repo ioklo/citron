@@ -40,12 +40,12 @@ RTypeDecl* NClassFuncDecl::GetTypeMember(const RName& name, size_t typeParamCoun
     return NGenericsComponent::GetTypeMember(name, typeParamCount);
 }
 
-optional<RMember> NClassFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NClassFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
-std::optional<RMember> NClassFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+std::optional<RDeclRes> NClassFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;

@@ -108,7 +108,7 @@ public:
     }
 
     // load(loc),
-    ResultType Visit(MExp_BitwiseCopy* exp)
+    ResultType Visit(MExp_Load* exp)
     {
         // 이 translation으로 lv가 하나 나올 것이다
         auto e_srcLoc = TranslateMLocToQInsts(exp->loc, bodyContext); // ptr이 담긴 slot
@@ -579,12 +579,12 @@ public:
     ResultType Visit(MExp_CallStructFunc* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_NewEnumElem* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_CastEnumElemToEnum* exp) { throw NotImplementedException{}; }
-    ResultType Visit(MExp_NewNullable* exp) { throw NotImplementedException{}; }
+    ResultType Visit(MExp_NewNullableValue* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_NullableValueNullLiteral* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_NullableRefNullLiteral* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_Lambda* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_CallLambda* exp) { throw NotImplementedException{}; }
-    ResultType Visit(MExp_CastBoxedLambdaToFunc* exp) { throw NotImplementedException{}; }
+    ResultType Visit(MExp_CastSharedLambdaToFunc* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_InlineBlock* exp) { throw NotImplementedException{}; }
 
     ResultType Visit(MExp_ClassIsClass* exp) { throw NotImplementedException{}; }

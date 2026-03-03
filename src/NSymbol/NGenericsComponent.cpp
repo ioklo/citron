@@ -35,7 +35,7 @@ RTypeDecl* NGenericsComponent::GetTypeMember(const RName& name, size_t typeParam
     return nullptr;
 }
 
-optional<RMember> NGenericsComponent::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NGenericsComponent::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     assert(o_typeParams);
 
@@ -44,7 +44,7 @@ optional<RMember> NGenericsComponent::ResolveIdentifier(const RName& name, size_
     for (auto* typeParam : *o_typeParams)
     {
         if (typeParam->GetName() == name)
-            return RMember_TypeVar(typeParam);
+            return RDeclRes_TypeVar(typeParam);
     }
 
     return nullopt;

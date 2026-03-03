@@ -22,7 +22,7 @@ NNamespaceDecl* NNamespaceDeclContainerComponent::GetNamespace(const std::string
     return i->second;
 }
 
-optional<RMember> NNamespaceDeclContainerComponent::GetMemberNamespace(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NNamespaceDeclContainerComponent::GetMemberNamespace(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     auto* normalName = get_if<RName_Normal>(&name);
 
@@ -32,7 +32,7 @@ optional<RMember> NNamespaceDeclContainerComponent::GetMemberNamespace(const RNa
     auto i = namespaceDict.find(normalName->text);
     if (i == namespaceDict.end()) return nullopt;
 
-    return RMember_Namespace(i->second);
+    return RDeclRes_Namespace(i->second);
 }
 
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "RSymbolConfig.h"
+
 #include "RDecl.h"
 #include "RTypeDecl.h"
 
@@ -17,7 +18,7 @@ public: // from RDecl
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
 
 public: // from RTypeDecl
-    void Accept(RTypeDeclVisitor& visitor) final { visitor.Visit(this); }
+    RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
 };
 
 

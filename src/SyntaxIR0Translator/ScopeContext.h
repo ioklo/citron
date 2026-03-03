@@ -10,8 +10,9 @@
 #include "Logging/Diag.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RNames.h"
-#include "RSymbol/RMember.h"
 #include "RSymbol/RFuncReturn.h"
+
+#include "BodyRes.h"
 
 namespace Citron { 
 
@@ -85,7 +86,7 @@ public:
     size_t GetNestedLoopCount() { return nestedLoop; }
 
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
-    std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
+    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;

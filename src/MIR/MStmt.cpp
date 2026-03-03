@@ -1,11 +1,36 @@
 #include "MStmt.h"
-
 #include "MExp.h"
 
 using namespace std;
 
 namespace Citron {
 
+void MStmt_Command::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_LocalVarDecl::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_LocalRefDecl::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_If::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_IfNullableRefTest::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_IfNullableValueTest::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_For::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Continue::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Break::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Return::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Block::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Blank::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Exp::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Task::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Await::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Async::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Foreach::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_ForeachCast::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Yield::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_CallClassCtor::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_CallStructCtor::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_NullDirective::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_NotNullDirective::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_StaticNullDirective::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_StaticNotNullDirective::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_StaticUnknownNullDirective::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 
 MStmt_Command::MStmt_Command(vector<MExp_String*>&& commands)
     : commands(move(commands))

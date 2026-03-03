@@ -31,10 +31,28 @@
     <ClInclude Include="Public\MIR\MMoveSource.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Public\MIR\MOperand.h">
+    <ClInclude Include="Public\MIR\MRead.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="Public\MIR\MSharedExp.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\MIR\MInitExp.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\MIR\MExpVisitor.g.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\MIR\MLocVisitor.g.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\MIR\MStmtVisitor.g.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\MIR\MInitExpVisitor.g.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\MIR\MCallable.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -45,8 +63,10 @@
     <ClCompile Include="MStmt.cpp" />
     <ClCompile Include="MData.cpp" />
     <ClCompile Include="MCreate.cpp" />
-    <ClCompile Include="MOperand.cpp" />
+    <ClCompile Include="MRead.cpp" />
     <ClCompile Include="MSharedExp.cpp" />
+    <ClCompile Include="MInitExp.cpp" />
+    <ClCompile Include="MCallable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Headers">

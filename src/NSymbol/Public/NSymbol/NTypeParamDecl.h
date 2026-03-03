@@ -33,7 +33,7 @@ public: // from NDecl
 public: // from NTypeDecl
     NDecl* GetNDecl() override { return this; }
     RTypeDecl* GetRTypeDecl() override { return this; }
-    NSYMBOL_API RMember ToRMember(RTypeArguments* typeArgs) override;
+    NSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(this); }
 
 public: // from RTypeParamDecl
@@ -46,8 +46,8 @@ public: // from RDecl
     size_t GetTypeParamCount() override { return 0; }
     RTypeParamDecl* GetTypeParam(size_t index) override { return nullptr; }
     RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override { return nullptr; }
-    std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override { return std::nullopt; }
-    std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override { return std::nullopt; }
+    std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override { return std::nullopt; }
+    std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override { return std::nullopt; }
 
 public: // from RTypeDecl
     // RDecl* GetRDecl() override { return this; }

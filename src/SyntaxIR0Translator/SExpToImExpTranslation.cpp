@@ -116,9 +116,6 @@ public:
             auto* targetType = (*e_target)->GetType();
 
             if (dynamic_cast<RType_Shared*>(targetType))
-                throw NotImplementedException{}; // Value<ImExp_SharedDeref>(*e_target);
-
-            if (dynamic_cast<RType_Box*>(targetType))
                 return Value<ImExp_SharedDeref>(*e_target);
 
             if (dynamic_cast<RType_Ptr*>(targetType))

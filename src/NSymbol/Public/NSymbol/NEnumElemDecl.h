@@ -38,7 +38,7 @@ public:
     // from NTypeDecl
     NDecl* GetNDecl() override { return this; }
     RTypeDecl* GetRTypeDecl() override { return this; }
-    RMember ToRMember(RTypeArguments* typeArgs) override;
+    RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from RDecl
@@ -48,15 +48,15 @@ public:
     size_t GetTypeParamCount() override { return 0; }
     RTypeParamDecl* GetTypeParam(size_t index) override { return nullptr; }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
-    NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RTypeDecl
     // RDecl* GetRDecl() override { return this; }
 
     // from REnumElemDecl    
     NSYMBOL_API REnumDecl* GetBaseEnumDecl() override;
-    NSYMBOL_API std::optional<RMember_EnumElemVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
+    NSYMBOL_API std::optional<RDeclRes_EnumElemVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
     NSYMBOL_API REnumElemVarDecl* GetVarDecl(size_t index) override;
     NSYMBOL_API size_t GetVarCount() override;
     bool IsStandalone() override { return vars.empty(); }

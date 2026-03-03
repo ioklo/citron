@@ -11,10 +11,10 @@ NTypeParamDecl::NTypeParamDecl(NDecl* outer, RName&& name, size_t globalIndex)
 
 NTypeParamDecl::~NTypeParamDecl() = default;
 
-RMember NTypeParamDecl::ToRMember(RTypeArguments* typeArgs)
+RDeclRes NTypeParamDecl::ToRDeclRes(RTypeArguments* typeArgs)
 {
     assert(typeArgs->GetCount() == 0);
-    return RMember_TypeVar(this);
+    return RDeclRes_TypeVar(this);
 }
 
 

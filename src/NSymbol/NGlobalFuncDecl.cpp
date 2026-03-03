@@ -43,14 +43,14 @@ RTypeDecl* NGlobalFuncDecl::GetTypeMember(const RName& name, size_t typeParamCou
     return nullptr;
 }
 
-optional<RMember> NGlobalFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NGlobalFuncDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 람다는 검색시키지 않는다
     // 현재 함수에서 Declaration을 할 수 없기 때문에 
     return nullopt;
 }
 
-optional<RMember> NGlobalFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NGlobalFuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;

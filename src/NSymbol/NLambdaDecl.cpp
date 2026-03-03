@@ -47,22 +47,22 @@ RTypeDecl* NLambdaDecl::GetTypeMember(const RName& name, size_t typeParamCount)
     return NGenericsComponent::GetTypeMember(name, typeParamCount);
 }
 
-RMember NLambdaDecl::ToRMember(RTypeArguments* typeArgs)
+RDeclRes NLambdaDecl::ToRDeclRes(RTypeArguments* typeArgs)
 {
     throw RuntimeFatalException(); // 들어올수가 없다
 }
 
-optional<RMember> NLambdaDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NLambdaDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
     auto i = varsMap.find(name);
     if (i == varsMap.end()) return nullopt;
 
-    return RMember_LambdaVar(typeArgs, i->second);
+    return RDeclRes_LambdaVar(typeArgs, i->second);
 }
 
-optional<RMember> NLambdaDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NLambdaDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;

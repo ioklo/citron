@@ -115,6 +115,7 @@ class RFactory
     std::unique_ptr<RType> stringType;
 
     std::unique_ptr<RClassDecl> listDecl;
+    std::unique_ptr<RStructDecl> listIterDecl;
 
     // namespace group
     std::unordered_map<std::vector<std::string>, std::unique_ptr<RNamespaceDeclGroup>> nsGroupsMap;
@@ -150,6 +151,7 @@ public:
     RSYMBOL_API RType* MakeIntType();
     RSYMBOL_API RType* MakeStringType();
     RSYMBOL_API RType* MakeListType(RType* itemType);
+    RSYMBOL_API RType* MakeListIteratorType(RType* itemType);
 
     RSYMBOL_API bool IsListType(RType* type, RType** outItemType);
     

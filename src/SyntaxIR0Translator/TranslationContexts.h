@@ -4,14 +4,15 @@
 #include <expected>
 #include <vector>
 
-#include <RSymbol/RNames.h>
-#include <RSymbol/RFuncReturn.h>
+#include "RSymbol/RNames.h"
+#include "RSymbol/RFuncReturn.h"
+#include "BodyRes.h"
 
 namespace Citron {
 
 class NFuncDecl;
 class ImExp;
-class MExp;
+struct MExp;
 class RTypeArguments;
 class ITransactionable;
 struct RFuncParameter;
@@ -49,6 +50,6 @@ std::vector<ITransactionable*> BeginTransaction(TranslationContexts& contexts);
 
 std::expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType, TranslationContexts& contexts);
 
-std::expected<ImExp*, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* typeArgs, TranslationContexts& contexts);
+std::expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* typeArgs, TranslationContexts& contexts);
 
 } // namespace Citron

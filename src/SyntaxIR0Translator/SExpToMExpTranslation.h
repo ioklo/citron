@@ -12,7 +12,7 @@ namespace Citron {
 
 class RType;
 
-class MExp;
+struct MExp;
 class MExp_String;
 enum class MInternalUnaryAssignOperator;
 struct TranslationContexts;

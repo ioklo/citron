@@ -7,7 +7,7 @@
 
 namespace Citron {
 
-class MExp;
+struct MExp;
 class QBlock;
 class QFactory;
 struct Diag;

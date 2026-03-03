@@ -17,7 +17,7 @@ NDecl* NInterfaceDecl::GetNOuter()
     return outer->GetNDecl();
 }
 
-RMember NInterfaceDecl::ToRMember(RTypeArguments* typeArgs)
+RDeclRes NInterfaceDecl::ToRDeclRes(RTypeArguments* typeArgs)
 {
     throw NotImplementedException();
 }
@@ -37,12 +37,12 @@ RTypeDecl* NInterfaceDecl::GetTypeMember(const RName& name, size_t typeParamCoun
     return NGenericsComponent::GetTypeMember(name, typeParamCount);
 }
 
-optional<RMember> NInterfaceDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NInterfaceDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     throw NotImplementedException();
 }
 
-optional<RMember> NInterfaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NInterfaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;

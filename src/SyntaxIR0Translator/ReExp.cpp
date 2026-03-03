@@ -8,6 +8,18 @@
 
 namespace Citron {
 
+void ReExp_ThisVar::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+void ReExp_LocalVar::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+void ReExp_LocalRef::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+void ReExp_LambdaVar::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+void ReExp_ClassVar::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+void ReExp_StructVar::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+void ReExp_EnumElemVar::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+void ReExp_PtrDeref::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+void ReExp_BoxDeref::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+void ReExp_ListIndexer::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+void ReExp_Else::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
+
 ReExp_ThisVar::ReExp_ThisVar(RType* type)
     : type(type)
 {

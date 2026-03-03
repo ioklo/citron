@@ -49,13 +49,13 @@ RTypeDecl* NLambdaVarDecl::GetTypeMember(const RName& name, size_t typeParamCoun
     return nullptr;
 }
 
-optional<RMember> NLambdaVarDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NLambdaVarDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
 
-optional<RMember> NLambdaVarDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NLambdaVarDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // VarDecl 하위 declspace에서 identifier를 resolve할 일이 없다
     throw RuntimeFatalException();

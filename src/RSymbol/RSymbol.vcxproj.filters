@@ -11,7 +11,7 @@
     <ClInclude Include="Public\RSymbol\RFactory.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RMember.h">
+    <ClInclude Include="Public\RSymbol\RDeclRes.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RTypeArguments.h">
@@ -107,6 +107,12 @@
     <ClInclude Include="Public\RSymbol\RTypeParamDecl.h">
       <Filter>RDecls\11 Generics</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RFuncDeclVisitor.g.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">
@@ -153,7 +159,7 @@
     <ClCompile Include="RFactory.cpp">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
-    <ClCompile Include="RMember.cpp">
+    <ClCompile Include="RDeclRes.cpp">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
     <ClCompile Include="RTypeArguments.cpp">
@@ -179,6 +185,12 @@
     </ClCompile>
     <ClCompile Include="RTypeParamDecl.cpp">
       <Filter>RDecls\11 Generics</Filter>
+    </ClCompile>
+    <ClCompile Include="RFuncDecl.cpp">
+      <Filter>RDecls\03 Func</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypeDecl.cpp">
+      <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

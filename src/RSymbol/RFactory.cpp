@@ -290,8 +290,14 @@ RType* RFactory::MakeStringType()
 
 RType* RFactory::MakeListType(RType* itemType)
 {
-    auto typeArgs = MakeTypeArguments({ itemType });
+    auto* typeArgs = MakeTypeArguments({ itemType });
     return MakeClassType(listDecl.get(), typeArgs);
+}
+
+RType* RFactory::MakeListIteratorType(RType* itemType)
+{
+    auto* typeArgs = MakeTypeArguments({itemType});
+    return MakeStructType(listIterDecl.get(), typeArgs);
 }
 
 bool RFactory::IsListType(RType* type, RType** outItemType)

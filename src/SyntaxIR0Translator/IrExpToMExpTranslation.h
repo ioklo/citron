@@ -7,7 +7,7 @@
 //
 //namespace Citron {
 //
-//class MExp;
+//struct MExp;
 //class IrExp;
 //struct TranslationContexts;
 //

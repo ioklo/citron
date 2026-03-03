@@ -26,9 +26,9 @@ NDecl* NEnumDecl::GetNOuter()
     return outer->GetNDecl();
 }
 
-RMember NEnumDecl::ToRMember(RTypeArguments* typeArgs)
+RDeclRes NEnumDecl::ToRDeclRes(RTypeArguments* typeArgs)
 {   
-    return RMember_Enum(typeArgs, this);
+    return RDeclRes_Enum(typeArgs, this);
 }
 
 RDecl* NEnumDecl::GetROuter()
@@ -53,7 +53,7 @@ RTypeDecl* NEnumDecl::GetTypeMember(const RName& name, size_t typeParamCount)
     return nullptr;
 }
 
-optional<RMember> NEnumDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NEnumDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
@@ -61,11 +61,11 @@ optional<RMember> NEnumDecl::GetMember(RTypeArguments* typeArgs, const RName& na
     auto i = elemsMap.find(name);
     if (i == elemsMap.end()) return nullopt;
 
-    return RMember_EnumElem(typeArgs, i->second);
+    return RDeclRes_EnumElem(typeArgs, i->second);
 }
 
 
-optional<RMember> NEnumDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NEnumDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;

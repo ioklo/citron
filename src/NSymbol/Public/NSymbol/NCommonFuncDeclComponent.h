@@ -7,7 +7,7 @@
 #include <string>
 
 #include "RSymbol/RFuncReturn.h"
-#include "RSymbol/RMember.h"
+#include "RSymbol/RDeclRes.h"
 #include "RSymbol/RNames.h"
 
 namespace Citron {
@@ -60,7 +60,7 @@ public:
     NSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index);
 
     NSYMBOL_API std::vector<RType*> GetParamIds();
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
+    NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 }

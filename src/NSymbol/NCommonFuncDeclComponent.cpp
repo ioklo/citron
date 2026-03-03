@@ -94,7 +94,7 @@ vector<RType*> NCommonFuncDeclComponent::GetParamIds()
     return result;
 }
 
-optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NCommonFuncDeclComponent::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {   
     assert(funcReturnAndParams);
     for (auto& param : funcReturnAndParams->funcParameters)
@@ -102,9 +102,9 @@ optional<RMember> NCommonFuncDeclComponent::ResolveIdentifier(const RName& name,
         if (param.name == name)
         {
             if (param.IsRef())
-                return RMember_LocalRef{param.type, param.name};
+                return BodyRes_LocalRef{param.type, param.name};
             else
-                return RMember_LocalVar{param.type, param.name};
+                return BodyRes_LocalVar{param.type, param.name};
         }
     }
 

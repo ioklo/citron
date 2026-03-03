@@ -12,7 +12,7 @@ template<typename TNFuncDecl>
 class NFuncDeclContainerComponent
 {   
     using RDeclType = typename TNFuncDecl::RDeclType;
-    using RMemberType = typename TNFuncDecl::RMemberType;
+    using RDeclResType = typename TNFuncDecl::RDeclResType;
 
     std::vector<TNFuncDecl*> funcs;
     std::unordered_map<RIdentifier, TNFuncDecl*> idMap;
@@ -34,7 +34,7 @@ public:
         return idMap[identifier];
     }
 
-    std::optional<RMemberType> GetMemberFunc(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+    std::optional<RDeclResType> GetMemberFunc(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
     {
         std::vector<DeclWithOuterTypeArgs<RDeclType>> result;
 
@@ -45,7 +45,7 @@ public:
             if (explicitTypeParamsExceptOuterCount <= func->GetTypeParamCount())
                 result.push_back(DeclWithOuterTypeArgs<RDeclType>(func, typeArgs));
 
-        return RMemberType(std::move(result));
+        return RDeclResType(std::move(result));
 
     }
 

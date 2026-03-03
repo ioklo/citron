@@ -12,7 +12,7 @@ using namespace std;
 
 namespace Citron {
 
-expected<MOperand, DiagPtr> TranslateSExpToMOperand(SExp* sExp, RType* hintType, TranslationContexts& contexts)
+expected<MRead, DiagPtr> TranslateSExpToMOperand(SExp* sExp, RType* hintType, TranslationContexts& contexts)
 {
     auto e_reExp = TranslateSExpToReExp(sExp, hintType, contexts);
     RETURN_ON_ERROR(e_reExp);

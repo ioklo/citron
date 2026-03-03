@@ -23,7 +23,7 @@ public:
     NSYMBOL_API NNamespaceDecl* GetNamespace(const std::string& name);
 
     // internal
-    std::optional<RMember> GetMemberNamespace(const RName& name, size_t explicitTypeParamsExceptOuterCount);
+    std::optional<RDeclRes> GetMemberNamespace(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 
     //    public void AddType(ITypeDeclSymbol decl)
     //        = > typeComp.AddType(decl);

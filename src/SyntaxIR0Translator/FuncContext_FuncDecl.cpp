@@ -1,5 +1,7 @@
 #include "FuncContext_FuncDecl.h"
+
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
 #include "RSymbol/RDecl.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFactory.h"
@@ -8,7 +10,6 @@
 #include "NSymbol/NFuncDecl.h"
 #include "NSymbol/NFuncDeclOuter.h"
 #include "NSymbol/NStructDecl.h"
-
 #include "NSymbol/NNamespaceDecl.h"
 #include "NSymbol/NGlobalFuncDecl.h"
 #include "NSymbol/NClassDecl.h"
@@ -48,9 +49,12 @@ RTypeDecl* FuncContext_FuncDecl::ResolveTypeDecl(const RName& name, size_t expli
     return nullptr;
 }
 
-expected<optional<RMember>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+expected<optional<BodyRes>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    return nFuncDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    auto o_rDeclRes = nFuncDecl->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    if (!o_rDeclRes) return nullopt;
+
+    return BodyRes_RDeclRes{move(*o_rDeclRes)};
 }
 
 RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()

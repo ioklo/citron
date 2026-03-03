@@ -14,13 +14,13 @@ namespace {
 
 struct ReExpToMOperandTranslator
 {
-    using ResultType = expected<MOperand, DiagPtr>;
+    using ResultType = expected<MRead, DiagPtr>;
     TranslationContexts& contexts;
 
     ResultType HandleLoc(expected<MLoc*, DiagPtr>&& e_loc)
     {
         RETURN_ON_ERROR(e_loc);
-        return MOperand_Loc{*e_loc};
+        return MRead_Location{*e_loc};
     }
 
     ResultType Visit(ReExp_ThisVar* exp) 
@@ -78,18 +78,18 @@ struct ReExpToMOperandTranslator
         auto* expType = exp->GetType();
         if (expType->IsBitwiseCopyable())
         {
-            return MOperand_Exp{exp->mExp};
+            return MRead_Value{exp->mExp};
         }
         else
         {
-            return MOperand_Loc{MLoc_Materialize{}};
+            return MRead_Location{MLoc_Materialize{}};
         }
     }
 };
 
 } // namespace 
 
-expected<MOperand, DiagPtr> TranslateReExpToMOperand(ReExp* reExp, TranslationContexts& contexts)
+expected<MRead, DiagPtr> TranslateReExpToMOperand(ReExp* reExp, TranslationContexts& contexts)
 {
     ReExpToMOperandTranslator translator{contexts};
     return Accept(translator, reExp);

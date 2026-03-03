@@ -213,13 +213,13 @@ public:
                         using U = remove_cvref_t<decltype(mOperand)>;
 
                         // var x = l;
-                        if constexpr (same_as<U, MOperand_Loc>)
+                        if constexpr (same_as<U, MRead_Location>)
                         {
                             return Handle_Var_Loc();
                         }
                         // var x = F();
                         // var x = S(...);
-                        else if constexpr (same_as<U, MOperand_Exp>)
+                        else if constexpr (same_as<U, MRead_Value>)
                         {
                             return Handle_Var_Exp(varName, mOperand.exp);
                         }

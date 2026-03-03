@@ -25,7 +25,7 @@ expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, const 
     auto o_member = classType->GetMember(name, typeArgsExceptOuterCount);
     if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
 
-    auto* classVarMember = get_if<RMember_ClassVar>(&*o_member);
+    auto* classVarMember = get_if<RDeclRes_ClassVar>(&*o_member);
     if (!classVarMember) return Error<>();
 
     // static 성질이 다르면 에러    
@@ -42,7 +42,7 @@ expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, co
     auto o_member = structType->GetMember(name, typeArgsExceptOuterCount);
     if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
 
-    auto* structVarMember = get_if<RMember_StructVar>(&*o_member);
+    auto* structVarMember = get_if<RDeclRes_StructVar>(&*o_member);
     if (!structVarMember) return Error<>();
 
     // static 이면 에러

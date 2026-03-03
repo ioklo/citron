@@ -7,7 +7,7 @@
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
 #include "Logging/Logger.h"
-#include "RSymbol/RMember.h"
+#include "RSymbol/RDeclRes.h"
 #include "RSymbol/RClassDecl.h"
 #include "RSymbol/RClassVarDecl.h"
 #include "RSymbol/RStructDecl.h"
@@ -50,31 +50,31 @@ public:
 
     expected<IrExp*, DiagPtr> operator()(auto& member) { return Visit(member); }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_Namespace& member) 
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_Namespace& member) 
     {
         return contexts.srtFactory->MakeIrExp<IrExp_Namespace>(member.decl);
     }
 
     // S.F
-    expected<IrExp*, DiagPtr> Visit(RMember_GlobalFuncs& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_GlobalFuncs& member)
     {   
         return Error<Error_Reference_CantMakeReference>();
     }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_Class& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_Class& member)
     {
         auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
         return contexts.srtFactory->MakeIrExp<IrExp_Class>(member.decl, typeArgs);
     }
 
     // 에러,
-    expected<IrExp*, DiagPtr> Visit(RMember_ClassFuncs& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_ClassFuncs& member)
     {
         return Error<Error_Reference_CantMakeReference>();
     }
 
     // C.x
-    expected<IrExp*, DiagPtr> Visit(RMember_ClassVar& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_ClassVar& member)
     {
         if (!member.decl->IsStatic())
         {
@@ -91,18 +91,18 @@ public:
         return contexts.srtFactory->MakeIrExp<IrExp_Static>(loc, contexts.rFactory);
     }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_Struct& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_Struct& member)
     {
         auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
         return contexts.srtFactory->MakeIrExp<IrExp_Struct>(member.decl, typeArgs);
     }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_StructFuncs& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_StructFuncs& member)
     {
         return Error<Error_Reference_CantMakeReference>();
     }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_StructVar& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_StructVar& member)
     {
         if (!member.decl->IsStatic())
         {
@@ -121,50 +121,50 @@ public:
     }
 
     // E
-    expected<IrExp*, DiagPtr> Visit(RMember_Enum& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_Enum& member)
     {
         return Error<Error_SharedTranslation_MemberBaseShouldBeShared>();
     }
 
     // &E.First.x
-    expected<IrExp*, DiagPtr> Visit(RMember_EnumElem& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_EnumElem& member)
     {   
         return Error<Error_Reference_CantMakeReference>();
     }
 
     // &E.x
-    expected<IrExp*, DiagPtr> Visit(RMember_EnumElemVar& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_EnumElemVar& member)
     {
         // 표현 불가능
         throw RuntimeFatalException{};
     }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_LambdaVar& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_LambdaVar& member)
     {
         throw RuntimeFatalException{};
     }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_TupleVar& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_TupleVar& member)
     {
         throw RuntimeFatalException{};
     }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_TypeVar& member)
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_TypeVar& member)
     {
         throw NotImplementedException{};
     }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_LocalVar& member)
+    expected<IrExp*, DiagPtr> Visit(BodyRes_LocalVar& member)
     {
         throw NotImplementedException{};
     }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_LocalRef& member)
+    expected<IrExp*, DiagPtr> Visit(BodyRes_LocalRef& member)
     {
         throw NotImplementedException{};
     }
 
-    expected<IrExp*, DiagPtr> Visit(RMember_ThisVar& member)
+    expected<IrExp*, DiagPtr> Visit(BodyRes_ThisVar& member)
     {
         throw NotImplementedException{};
     }

@@ -93,7 +93,7 @@ expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType, Translati
         throw NotImplementedException{}; // 에러 처리
 }
 
-expected<ImExp*, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* typeArgs, TranslationContexts& contexts)
+expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* typeArgs, TranslationContexts& contexts)
 {
     // struct S<T>
     // {
@@ -104,47 +104,13 @@ expected<ImExp*, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* t
     //    }
     // }
 
-    auto e_o_rMember = contexts.scopeContext->ResolveIdentifier(name, typeArgs->GetCount());
-    RETURN_ON_ERROR(e_o_rMember)
+    auto e_o_bodyRes = contexts.scopeContext->ResolveIdentifier(name, typeArgs->GetCount());
+    RETURN_ON_ERROR(e_o_bodyRes);
 
-        if (!*e_o_rMember)
-            return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
+    if (!*e_o_bodyRes)
+        return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
 
-    return visit([&contexts, typeArgs](auto& rMember) -> ImExp* {
-        using T = remove_cvref_t<decltype(rMember)>;
-
-        if constexpr (same_as<T, RMember_LocalVar>)
-        {
-            return contexts.srtFactory->MakeImExp<ImExp_LocalVar>(rMember.type, rMember.name);
-        }
-        else if constexpr (same_as<T, RMember_LocalRef>)
-        {
-            return contexts.srtFactory->MakeImExp<ImExp_LocalRef>(rMember.type, rMember.name);
-        }
-        else if constexpr (same_as<T, RMember_GlobalFuncs>)
-        {
-            return contexts.srtFactory->MakeImExp<ImExp_GlobalFuncs>(rMember.items, typeArgs);
-        }
-        else if constexpr (same_as<T, RMember_StructVar>)
-        {
-            assert(typeArgs->GetCount() == 0); // ResolveIdentifier가 typeArgs가 있는데 *var를 돌려줬을리가 없다
-            return contexts.srtFactory->MakeImExp<ImExp_StructVar>(rMember.decl, rMember.typeArgs, /*hasExplicitInstance*/false, /*explicitInstance*/nullptr);
-        }
-        else if constexpr (same_as<T, RMember_ClassVar>)
-        {
-            assert(typeArgs->GetCount() == 0);
-            return contexts.srtFactory->MakeImExp<ImExp_ClassVar>(rMember.decl, rMember.typeArgs, /*hasExplicitInstance*/false, /*explicitInstance*/nullptr);
-        }
-        else if constexpr (same_as<T, RMember_Struct>)
-        {
-            auto* mergedTypeArgs = contexts.rFactory->MergeTypeArguments(*rMember.outerTypeArgs, *typeArgs);
-            return contexts.srtFactory->MakeImExp<ImExp_Struct>(rMember.decl, mergedTypeArgs);
-        }
-        else
-        {
-            throw NotImplementedException{};
-        }
-    }, **e_o_rMember);
+    return move(**e_o_bodyRes);
 }
 
 

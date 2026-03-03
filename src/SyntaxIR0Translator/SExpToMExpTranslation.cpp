@@ -68,7 +68,7 @@ expected<MExp*, DiagPtr> TranslateSIntLiteralExpToMExp(SExp_IntLiteral* exp, Tra
     return contexts.mFactory->MakeMExp<MExp_IntLiteral>(exp->value, contexts.rFactory);
 }
 
-expected<MExp_StringElem, DiagPtr> TranslateSStringExpElementToRStringExpElement(SStringExpElement* elem, TranslationContexts& contexts)
+expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToRStringExpElement(SStringExpElement* elem, TranslationContexts& contexts)
 {
     // TranslationResult<R.StringExpElement> Valid(R.StringExpElement elem) = > TranslationResult.Valid(elem);
     // TranslationResult<R.StringExpElement> Error() = > TranslationResult.Error<R.StringExpElement>();
@@ -87,21 +87,21 @@ expected<MExp_StringElem, DiagPtr> TranslateSStringExpElementToRStringExpElement
             auto e_nExp = TranslateReExpToMExp(*e_reExp, contexts);
             RETURN_ON_ERROR(e_nExp);
 
-            return MExp_StringElem_Exp{contexts.mFactory->MakeMExp<MExp_CallInternalUnaryOperator>(MInternalUnaryOperator::ToString_Int_String, *e_nExp, contexts.rFactory)};
+            return MInitExp_StringElem_Loc{contexts.mFactory->MakeMExp<MExp_CallInternalUnaryOperator>(MInternalUnaryOperator::ToString_Int_String, *e_nExp, contexts.rFactory)};
         }
         else if (reExpType == contexts.rFactory->MakeBoolType())
         {
             auto e_nExp = TranslateReExpToMExp(*e_reExp, contexts);
             RETURN_ON_ERROR(e_nExp);
 
-            return MExp_StringElem_Exp{contexts.mFactory->MakeMExp<MExp_CallInternalUnaryOperator>(MInternalUnaryOperator::ToString_Bool_String, *e_nExp, contexts.rFactory)};
+            return MInitExp_StringElem_Loc{contexts.mFactory->MakeMExp<MExp_CallInternalUnaryOperator>(MInternalUnaryOperator::ToString_Bool_String, *e_nExp, contexts.rFactory)};
         }
         else if (reExpType == contexts.rFactory->MakeStringType())
         {
             auto e_mExp = TranslateReExpToMExp(*e_reExp, contexts);
             RETURN_ON_ERROR(e_mExp);
 
-            return MExp_StringElem_Exp{*e_mExp};
+            return MInitExp_StringElem_Loc{*e_mExp};
         }
         else
         {
@@ -111,7 +111,7 @@ expected<MExp_StringElem, DiagPtr> TranslateSStringExpElementToRStringExpElement
     }
     else if (auto* textElem = dynamic_cast<SStringExpElement_Text*>(elem))
     {
-        return MExp_StringElem_Text(textElem->text);
+        return MInitExp_StringElem_Text(textElem->text);
     }
 
     unreachable();
@@ -120,7 +120,7 @@ expected<MExp_StringElem, DiagPtr> TranslateSStringExpElementToRStringExpElement
 expected<MExp_String*, DiagPtr> TranslateSStringExpToMStringExp(SExp_String* exp, TranslationContexts& contexts)
 {
     vector<DiagPtr> diags;
-    vector<MExp_StringElem> builder;
+    vector<MInitExp_StringElem> builder;
     for(auto& elem : exp->elements)
     {
         auto e_rStringExpElem = TranslateSStringExpElementToRStringExpElement(elem, contexts);

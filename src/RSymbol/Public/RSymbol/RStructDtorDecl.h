@@ -1,5 +1,6 @@
 #pragma once
 #include "RSymbolConfig.h"
+
 #include "RDecl.h"
 #include "RFuncDecl.h"
 #include "RFuncDeclOuter.h"
@@ -15,7 +16,7 @@ class RStructDtorDecl
 {
 public:
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
-    void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(this); }
+    RSYMBOL_API void Accept(RFuncDeclVisitor& visitor) final;
     void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(this); }
 };
 

@@ -56,17 +56,26 @@ public:
         return Value<IrExp_Namespace>(imExp->_namespace);
     }
 
+    // ResultType Visit(ImExp_GlobalFuncs* imExp);
+    // ResultType Visit(ImExp_TypeVar* imExp);
+
     // &C.x 지원 용도
     ResultType Visit(ImExp_Class* imExp)
     {
         return Value<IrExp_Class>(imExp->classDecl, imExp->typeArgs);
     }
 
+    // ResultType Visit(ImExp_ClassFuncs* imExp);
+    
     // &S.x 지원 용도
     ResultType Visit(ImExp_Struct* imExp)
     {
         return Value<IrExp_Struct>(imExp->structDecl, imExp->typeArgs);
     }
+
+    // ResultType Visit(ImExp_StructFuncs* imExp);
+    // ResultType Visit(ImExp_Enum* imExp);
+    // ResultType Visit(ImExp_EnumElem* imExp);
 
     // &this.a
     ResultType Visit(ImExp_ThisVar* imExp)
@@ -104,7 +113,7 @@ public:
             return Value<IrExp_Static>(loc, contexts.rFactory);
         }
         else // &this.x
-        {   
+        {
             // auto classType = imExp.decl->GetClassType(imExp.typeArgs, factory);
             return Value<IrExp_ClassVar>(
                 contexts.funcContext->MakeThisLoc(), imExp->decl, imExp->typeArgs, contexts.rFactory);
@@ -120,7 +129,7 @@ public:
             return Value<IrExp_Static>(loc, contexts.mFactory);
         }
         else
-        {   
+        {
             // TODO: [10] shared함수이면 this를 shared로 판단해야 한다
             // 지금은 this의 타입이 S&이다.
             return Error<Error_NotImplemented>();
@@ -134,12 +143,14 @@ public:
         throw RuntimeFatalException{};
     }
 
+    // &l[0]
     ResultType Visit(ImExp_ListIndexer* imExp)
     {
-        // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
+        // irExp는 identifier와 member base변환에만 관심이 있으므로, listIndex 형식으로는 만들어질 일이 없다
         throw RuntimeFatalException{};
     }
 
+    // *p
     ResultType Visit(ImExp_PtrDeref* imExp)
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다

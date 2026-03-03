@@ -12,6 +12,19 @@
 
 namespace Citron {
 
+void MLoc_Materialize::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_LocalVar::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_LocalRef::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_LambdaVar::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_ListIndexer::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_StructVar::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_ClassVar::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_EnumElemVar::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_This::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_PtrDeref::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_SharedDeref::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+void MLoc_NullableValue::Accept(MLocVisitor& visitor) { visitor.Visit(this); }
+
 MLoc_Materialize::MLoc_Materialize(MCreate&& create)
     : create{move(create)}
 {

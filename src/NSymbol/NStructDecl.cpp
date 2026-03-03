@@ -49,9 +49,9 @@ NDecl* NStructDecl::GetNOuter()
     return outer->GetNDecl();
 }
 
-RMember NStructDecl::ToRMember(RTypeArguments* typeArgs)
+RDeclRes NStructDecl::ToRDeclRes(RTypeArguments* typeArgs)
 {
-    return RMember_Struct(typeArgs, this);
+    return RDeclRes_Struct(typeArgs, this);
 }
 
 RDecl* NStructDecl::GetROuter()
@@ -72,9 +72,9 @@ RTypeDecl* NStructDecl::GetTypeMember(const RName& name, size_t typeParamCount)
     return NTypeDeclContainerComponent::GetTypeMember(name, typeParamCount);
 }
 
-optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    vector<RMember> candidates;
+    vector<RDeclRes> candidates;
 
     // type
     if (auto o_type = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
@@ -99,7 +99,7 @@ optional<RMember> NStructDecl::GetMember(RTypeArguments* typeArgs, const RName& 
     return move(candidates[0]);
 }
 
-optional<RMember> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NStructDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;
@@ -127,12 +127,12 @@ View<RStructVarDecl*> NStructDecl::GetRVars()
         });
 }
 
-optional<RMember_StructVar> NStructDecl::GetVar(RTypeArguments* typeArgs, const RName& name)
+optional<RDeclRes_StructVar> NStructDecl::GetVar(RTypeArguments* typeArgs, const RName& name)
 {
     auto i = varsMap.find(name);
     if (i == varsMap.end()) return nullopt;
 
-    return RMember_StructVar(i->second, typeArgs);
+    return RDeclRes_StructVar(i->second, typeArgs);
 }
 
 vector<RStructCtorDecl*> NStructDecl::GetUnboundCtors()

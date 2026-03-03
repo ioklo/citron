@@ -1,5 +1,4 @@
 #pragma once
-
 #include "NSymbolConfig.h"
 
 #include <vector>
@@ -87,7 +86,7 @@ public:
     // from NTypeDecl
     NDecl* GetNDecl() override { return this; }
     RTypeDecl* GetRTypeDecl() override { return this; }
-    RMember ToRMember(RTypeArguments* typeArgs) override;
+    RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NTypeDeclOuter
@@ -96,7 +95,7 @@ public:
 
     // from NFuncDeclOuter
     // NDecl* GetNDecl() override { return this; }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(this); }
+    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
 
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
@@ -105,8 +104,8 @@ public:
     size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
     RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
-    NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RTypeDecl
     // RDecl* GetRDecl() override { return this; }
@@ -120,7 +119,7 @@ public:
     // from RStructDecl
     NSYMBOL_API RType_Struct* GetUnboundBaseStruct() override;
     NSYMBOL_API View<RStructVarDecl*> GetRVars() override;
-    NSYMBOL_API std::optional<RMember_StructVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
+    NSYMBOL_API std::optional<RDeclRes_StructVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
     NSYMBOL_API std::vector<RStructCtorDecl*> GetUnboundCtors() override;
     NSYMBOL_API RStructCtorDecl* GetUnboundCopyCtor() override;
     NSYMBOL_API RStructCtorDecl* GetUnboundTrivialCtor_RStructCtorDecl() override { return GetUnboundTrivialCtor_NStructCtorDecl(); }

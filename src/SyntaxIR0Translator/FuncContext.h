@@ -10,7 +10,7 @@
 #include "MIR/MArgument.h"
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncReturn.h"
-#include "RSymbol/RMember.h"
+#include "BodyRes.h"
 
 namespace Citron {
 
@@ -75,7 +75,7 @@ public:
 
     virtual bool CanAccess(RDecl* target) = 0;
     virtual RTypeDecl* ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
-    virtual std::expected<std::optional<RMember>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
+    virtual std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
 
     // decl/body space의 return type을 리턴한다
     virtual RFuncReturn GetUnboundFuncReturn() = 0;

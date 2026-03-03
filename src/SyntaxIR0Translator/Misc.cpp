@@ -179,7 +179,7 @@ expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationCon
             return unexpected{MakePtr<Error_Cast_Failed>()};
 
         // B?로 변경
-        return contexts.mFactory->MakeMExp<MExp_NewNullable>(*e_castToInnerTypeExp, contexts.rFactory);
+        return contexts.mFactory->MakeMExp<MExp_NewNullableValue>(*e_castToInnerTypeExp, contexts.rFactory);
     }
 
     return unexpected{MakePtr<Error_Cast_Failed>()};

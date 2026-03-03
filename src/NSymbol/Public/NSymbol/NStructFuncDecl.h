@@ -1,6 +1,6 @@
 #pragma once
-
 #include "NSymbolConfig.h"
+
 #include <vector>
 #include <memory>
 
@@ -24,7 +24,7 @@ class NStructFuncDecl
 {
 public:
     using RDeclType = RStructFuncDecl;
-    using RMemberType = RMember_StructFuncs;
+    using RDeclResType = RDeclRes_StructFuncs;
 
 public:
     NStructDecl* _struct;
@@ -53,7 +53,7 @@ public:
 
     // from NFuncDeclOuter
     // NDecl* GetNDecl() override { return this; }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(this); }
+    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
 
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
@@ -62,8 +62,8 @@ public:
     size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
     RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
-    NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RFuncDecl
     // RDecl* GetRDecl() override { return this; }

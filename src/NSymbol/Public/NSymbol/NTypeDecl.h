@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RSymbol/RMember.h"
+#include "RSymbol/RDeclRes.h"
 #include "NDecl.h"
 
 namespace Citron {
@@ -26,7 +26,7 @@ public:
     virtual ~NTypeDecl() {}
     virtual NDecl* GetNDecl() = 0;
     virtual RTypeDecl* GetRTypeDecl() = 0;
-    virtual RMember ToRMember(RTypeArguments* typeArgs) = 0;
+    virtual RDeclRes ToRDeclRes(RTypeArguments* typeArgs) = 0;
     virtual void Accept(NTypeDeclVisitor& visitor) = 0;
 };
 

@@ -25,9 +25,9 @@ NDecl* NEnumElemDecl::GetNOuter()
     return _enum;
 }
 
-RMember NEnumElemDecl::ToRMember(RTypeArguments* typeArgs)
+RDeclRes NEnumElemDecl::ToRDeclRes(RTypeArguments* typeArgs)
 {
-    return RMember_EnumElem(typeArgs, this);
+    return RDeclRes_EnumElem(typeArgs, this);
 }
 
 RDecl* NEnumElemDecl::GetROuter()
@@ -45,14 +45,14 @@ RTypeDecl* NEnumElemDecl::GetTypeMember(const RName& name, size_t typeParamCount
     return nullptr;
 }
 
-optional<RMember> NEnumElemDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NEnumElemDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
     return GetVar(typeArgs, name);
 }
 
-optional<RMember> NEnumElemDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NEnumElemDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
     throw RuntimeFatalException();
@@ -63,12 +63,12 @@ REnumDecl* NEnumElemDecl::GetBaseEnumDecl()
     return _enum;
 }
 
-optional<RMember_EnumElemVar> NEnumElemDecl::GetVar(RTypeArguments* typeArgs, const RName& name)
+optional<RDeclRes_EnumElemVar> NEnumElemDecl::GetVar(RTypeArguments* typeArgs, const RName& name)
 {
     auto i = varsMap.find(name);
     if (i == varsMap.end()) return nullopt;
 
-    return RMember_EnumElemVar(typeArgs, i->second);
+    return RDeclRes_EnumElemVar(typeArgs, i->second);
 }
 
 REnumElemVarDecl* NEnumElemDecl::GetVarDecl(size_t index)

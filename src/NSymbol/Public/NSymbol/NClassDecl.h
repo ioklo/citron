@@ -63,7 +63,7 @@ public:
     // from NTypeDecl
     NDecl* GetNDecl() override { return this; }
     RTypeDecl* GetRTypeDecl() override { return this; }
-    NSYMBOL_API RMember ToRMember(RTypeArguments* typeArgs) override;
+    NSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
     void Accept(NTypeDeclVisitor& visitor) override { visitor.Visit(this); }
 
     // from NTypeDeclOuter
@@ -72,7 +72,7 @@ public:
 
     // from NFuncDeclOuter
     // NDecl* GetNDecl() override { return this; }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(this); }
+    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
 
     // from RDecl
     RAccessor GetAccessor() override { return accessor; }
@@ -81,14 +81,14 @@ public:
     size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
     RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
-    NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RFuncDeclOuter
     //RDecl* GetRDecl() override { return this; }
 
     // from RClassDecl
-    NSYMBOL_API std::optional<RMember_ClassVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
+    NSYMBOL_API std::optional<RDeclRes_ClassVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
 };
 
 }

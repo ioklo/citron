@@ -124,6 +124,9 @@
     <ClCompile Include="SExpToIrExpTranslation.cpp">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
     </ClCompile>
+    <ClCompile Include="BodyRes.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncContext.h">
@@ -254,6 +257,18 @@
     </ClInclude>
     <ClInclude Include="SExpToIrExpTranslation.h">
       <Filter>ExpTranslation\SExpRefTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="BodyRes.h">
+      <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="ImExpVisitor.g.h">
+      <Filter>ExpTranslation\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="IrExpVisitor.g.h">
+      <Filter>ExpTranslation\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="ReExpVisitor.g.h">
+      <Filter>ExpTranslation\Structure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -48,7 +48,7 @@ struct IrExpAndMemberNameToMSharedExpTranslator
         auto o_rMember = irBaseExp->decl->GetMember(irBaseExp->typeArgs, name, typeArgsExceptOuter->GetCount());
         if (!o_rMember) return Error<Error_ResolveIdentifier_NotFound>();
 
-        auto* rClassVarMember = get_if<RMember_ClassVar>(&*o_rMember);
+        auto* rClassVarMember = get_if<RDeclRes_ClassVar>(&*o_rMember);
         if (!rClassVarMember) return Error<Error_SharedTranslation_StaticSharedShouldBeVar>();
 
         // static만 가능
@@ -63,7 +63,7 @@ struct IrExpAndMemberNameToMSharedExpTranslator
         auto o_rMember = irBaseExp->decl->GetMember(irBaseExp->typeArgs, name, typeArgsExceptOuter->GetCount());
         if (!o_rMember) return Error<Error_ResolveIdentifier_NotFound>();
 
-        auto* rStructVarMember = get_if<RMember_StructVar>(&*o_rMember);
+        auto* rStructVarMember = get_if<RDeclRes_StructVar>(&*o_rMember);
         if (!rStructVarMember) return Error<Error_SharedTranslation_StaticSharedShouldBeVar>();
 
         // static만 가능

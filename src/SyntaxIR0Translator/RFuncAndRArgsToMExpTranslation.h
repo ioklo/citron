@@ -11,7 +11,7 @@ namespace Citron {
 
 class RFuncDecl;
 class RTypeArguments;
-class MExp;
+struct MExp;
 class MLoc;
 struct TranslationContexts;
 

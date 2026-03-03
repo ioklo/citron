@@ -16,7 +16,6 @@
 
 namespace Citron {
 
-class MExp;
 class RType;
 class RTypeArguments;
 struct QSlotInfo;

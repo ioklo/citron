@@ -1,29 +1,25 @@
 #include "MCreate.h"
 #include "RSymbol/RStructCtorDecl.h"
 #include "MExp.h"
+#include "MInitExp.h"
 
 using namespace std;
 
 namespace Citron {
 
-RType* GetType(MCreate& create)
+RType* GetType(MCreate& create, RFactory* rFactory)
 {
-    return visit([](auto& create) -> RType*
+    return visit([rFactory](auto& create) -> RType*
     {
         using T = remove_cvref_t<decltype(create)>;
 
         if constexpr (same_as<T, MCreate_Bitwise>)
         {
-            return create.exp->GetType();
+            return GetType(create.exp, rFactory);
         }
-        // MCreate_StructCopyCtor, MCreate_StructMoveCtor, MCreate_StructCtor, MCreate_RVO>;
-        else if constexpr (same_as<T, MCreate_StructCopyCtor> || same_as<T, MCreate_StructMoveCtor> || same_as<T, MCreate_StructCtor>)
+        else if constexpr (same_as<T, MCreate_Init>)
         {
-            return create.type;
-        }
-        else if constexpr (same_as<T, MCreate_RVO>)
-        {
-            return create.callExp->GetType();
+            return GetType(create.initExp, rFactory);
         }
         else static_assert(false);
 

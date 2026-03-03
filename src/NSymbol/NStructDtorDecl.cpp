@@ -32,12 +32,12 @@ RTypeDecl* NStructDtorDecl::GetTypeMember(const RName& name, size_t typeParamCou
     return nullptr;
 }
 
-optional<RMember> NStructDtorDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NStructDtorDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
-std::optional<RMember> NStructDtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+std::optional<RDeclRes> NStructDtorDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {   
     if (auto o_member = NCommonFuncDeclComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;

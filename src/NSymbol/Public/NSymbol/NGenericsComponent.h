@@ -3,7 +3,7 @@
 #include <vector>
 #include <optional>
 #include "RSymbol/RNames.h"
-#include "RSymbol/RMember.h"
+#include "RSymbol/RDeclRes.h"
 
 namespace Citron {
 
@@ -22,7 +22,7 @@ public:
     size_t GetTypeParamCount() { return o_typeParams->size(); }
     NSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index);
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount);
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
+    NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 

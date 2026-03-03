@@ -7,7 +7,7 @@
 
 namespace Citron {
 
-class MExp;
+struct MExp;
 class ReExp;
 struct TranslationContexts;
 

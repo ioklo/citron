@@ -1,5 +1,4 @@
 #pragma once
-
 #include "NSymbolConfig.h"
 
 #include <string>
@@ -32,7 +31,7 @@ class NNamespaceDecl
 {
 public:
     using RDeclType = RNamespaceDecl;
-    using RMemberType = RMember_Namespace;
+    using RDeclResType = RDeclRes_Namespace;
 
 private:
     NNamespaceDecl* outer;
@@ -70,7 +69,7 @@ public:
 
     // from NFuncDeclOuter
     // NDecl* GetNDecl() override { return this; }
-    void Accept(NFuncDeclOuterVisitor& visitor) override { visitor.Visit(this); }
+    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
 
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
@@ -79,8 +78,8 @@ public:
     RTypeParamDecl* GetTypeParam(size_t index) override { return nullptr; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
-    NSYMBOL_API std::optional<RMember> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    NSYMBOL_API std::optional<RMember> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RTypeDeclOuter
     // using RNamespaceDecl::Accept;

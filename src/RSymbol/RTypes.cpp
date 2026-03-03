@@ -17,6 +17,23 @@ using namespace std;
 
 namespace Citron {
 
+void RType_NullableValue::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_NullableRef::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_TypeVar::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Void::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Primitive::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Tuple::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Func::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Ptr::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Shared::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Box::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Class::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Struct::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Enum::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_EnumElem::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Interface::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Lambda::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+
 RType_NullableValue::RType_NullableValue(RType* innerType, RFactory* factory)
     : innerType{innerType}, factory{factory}
 {
@@ -28,7 +45,7 @@ RType* RType_NullableValue::Apply(RTypeArguments& typeArgs)
     return factory->MakeNullableValueType(appliedInnerType);
 }
 
-optional<RMember> RType_NullableValue::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_NullableValue::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     // 사용자가 검색해서 쓸 수 있는 멤버는 없다
     return nullopt;
@@ -44,7 +61,7 @@ RType* RType_NullableRef::Apply(RTypeArguments& typeArgs)
     return factory->MakeNullableRefType(innerType->Apply(typeArgs));
 }
 
-optional<RMember> RType_NullableRef::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_NullableRef::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return nullopt;
 }
@@ -60,7 +77,7 @@ RType* RType_TypeVar::Apply(RTypeArguments& typeArgs)
     return typeArgs.Get(globalIndex);
 }
 
-optional<RMember> RType_TypeVar::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_TypeVar::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return nullopt;
 }
@@ -74,7 +91,7 @@ RType* RType_Void::Apply(RTypeArguments& typeArgs)
     return this;
 }
 
-optional<RMember> RType_Void::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Void::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return nullopt;
 }
@@ -105,7 +122,7 @@ bool RType_Tuple::IsBitwiseCopyable()
     return true;
 }
 
-optional<RMember> RType_Tuple::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Tuple::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     throw NotImplementedException();
 }
@@ -131,7 +148,7 @@ RType* RType_Func::Apply(RTypeArguments& typeArgs)
     return factory->MakeFuncType(bLocal, appliedRetType, move(appliedParams));
 }
 
-optional<RMember> RType_Func::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Func::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return nullopt;
 }
@@ -153,7 +170,7 @@ RType* RType_Ptr::Apply(RTypeArguments& typeArgs)
     return factory->MakePtrType(appliedInnerType);
 }
 
-optional<RMember> RType_Ptr::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Ptr::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return nullopt;
 }
@@ -169,7 +186,7 @@ RType* RType_Shared::Apply(RTypeArguments& typeArgs)
     return factory->MakeSharedType(appliedInnerType);
 }
 
-std::optional<RMember> RType_Shared::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+std::optional<RDeclRes> RType_Shared::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return nullopt;
 }
@@ -186,7 +203,7 @@ RType* RType_Box::Apply(RTypeArguments& typeArgs)
     return factory->MakeBoxType(appliedInnerType);
 }
 
-optional<RMember> RType_Box::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Box::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return nullopt;
 }
@@ -196,7 +213,7 @@ RType_Class::RType_Class(RClassDecl* decl, RTypeArguments* typeArgs, RFactory* f
 {
 }
 
-std::optional<RMember_ClassVar> RType_Class::GetVar(const RName& name)
+std::optional<RDeclRes_ClassVar> RType_Class::GetVar(const RName& name)
 {
     return decl->GetVar(typeArgs, name);
 }
@@ -212,7 +229,7 @@ RType* RType_Class::Apply(RTypeArguments& typeArgs)
     return factory->MakeClassType(decl, appliedTypeArgs);
 }
 
-optional<RMember> RType_Class::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Class::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return decl->GetMember(typeArgs, name, explicitTypeArgsExceptOuterCount);
 }
@@ -222,7 +239,7 @@ RType_Struct::RType_Struct(RStructDecl* decl, RTypeArguments* typeArgs, RFactory
 {
 }
 
-std::optional<RMember_StructVar> RType_Struct::GetVar(const RName& name)
+std::optional<RDeclRes_StructVar> RType_Struct::GetVar(const RName& name)
 {
     return decl->GetVar(typeArgs, name);
 }
@@ -238,7 +255,7 @@ RType* RType_Struct::Apply(RTypeArguments& typeArgs)
     return factory->MakeStructType(decl, appliedTypeArgs);
 }
 
-optional<RMember> RType_Struct::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Struct::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return decl->GetMember(typeArgs, name, explicitTypeArgsExceptOuterCount);
 }
@@ -260,7 +277,7 @@ bool RType_Enum::IsBitwiseCopyable()
     throw NotImplementedException{};
 }
 
-optional<RMember> RType_Enum::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Enum::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return decl->GetMember(typeArgs, name, explicitTypeArgsExceptOuterCount);
 }
@@ -270,7 +287,7 @@ RType_EnumElem::RType_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs, RF
 {
 }
 
-std::optional<RMember_EnumElemVar> RType_EnumElem::GetVar(const RName& name)
+std::optional<RDeclRes_EnumElemVar> RType_EnumElem::GetVar(const RName& name)
 {
     return decl->GetVar(typeArgs, name);
 }
@@ -303,7 +320,7 @@ bool RType_EnumElem::IsBitwiseCopyable()
     return true;
 }
 
-optional<RMember> RType_EnumElem::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_EnumElem::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return decl->GetMember(typeArgs, name, explicitTypeArgsExceptOuterCount);
 }
@@ -319,7 +336,7 @@ RType* RType_Interface::Apply(RTypeArguments& typeArgs)
     return factory->MakeInterfaceType(decl, appliedTypeArgs, bLocal);
 }
 
-optional<RMember> RType_Interface::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Interface::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     throw NotImplementedException();
 }
@@ -346,7 +363,7 @@ bool RType_Lambda::IsBitwiseCopyable()
     throw NotImplementedException{};
 }
 
-optional<RMember> RType_Lambda::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Lambda::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return decl->GetMember(outerTypeArgs, name, explicitTypeArgsExceptOuterCount);
 }

@@ -34,14 +34,14 @@ RTypeDecl* NClassDecl::GetTypeMember(const RName& name, size_t typeParamCount)
     return NTypeDeclContainerComponent::GetTypeMember(name, typeParamCount);
 }
 
-RMember NClassDecl::ToRMember(RTypeArguments* typeArgs)
+RDeclRes NClassDecl::ToRDeclRes(RTypeArguments* typeArgs)
 {   
-    return RMember_Class(typeArgs, this);
+    return RDeclRes_Class(typeArgs, this);
 }
 
-optional<RMember> NClassDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NClassDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    vector<RMember> candidates;
+    vector<RDeclRes> candidates;
 
     // type
     if (auto o_type = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
@@ -66,7 +66,7 @@ optional<RMember> NClassDecl::GetMember(RTypeArguments* typeArgs, const RName& n
     return move(candidates[1]);
 }
 
-optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NClassDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (auto o_member = NGenericsComponent::ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
         return o_member;
@@ -75,15 +75,17 @@ optional<RMember> NClassDecl::ResolveIdentifier(const RName& name, size_t explic
     if (auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
+    // TODO: [37] class base에서도 검색하기
+
     return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
-optional<RMember_ClassVar> NClassDecl::GetVar(RTypeArguments* typeArgs, const RName& name)
+optional<RDeclRes_ClassVar> NClassDecl::GetVar(RTypeArguments* typeArgs, const RName& name)
 {
     auto i = varsMap.find(name);
     if (i == varsMap.end()) return nullopt;
 
-    return RMember_ClassVar(i->second, typeArgs);
+    return RDeclRes_ClassVar(i->second, typeArgs);
 }
 
 } // namespace Citron

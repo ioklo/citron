@@ -43,11 +43,11 @@ RTypeDecl* NNamespaceDecl::GetTypeMember(const RName& name, size_t typeParamCoun
 
 // NotFound, Valid는 리턴으로, Fatal은 exception으로
 // Fatal을 처리해서 복구하고 싶으면 catch로
-optional<RMember> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     assert(typeArgs->GetCount() == 0);
 
-    vector<RMember> candidates;
+    vector<RDeclRes> candidates;
 
     // namespace 
     if (auto o_namespace = NNamespaceDeclContainerComponent::GetMemberNamespace(name, explicitTypeParamsExceptOuterCount))
@@ -72,7 +72,7 @@ optional<RMember> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RNam
     return move(candidates[0]);
 }
 
-optional<RMember> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     auto typeArgs = rFactory->MakeTypeArguments({});
     if (auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))

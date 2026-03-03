@@ -10,6 +10,7 @@
 #include "Misc.h"
 #include "TranslationContexts.h"
 #include "SExpToMLocTranslation.h"
+#include "ImExpToIrExpTranslation.h"
 #include "DesignatedDiagnostic.h"
 
 using namespace std;

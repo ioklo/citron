@@ -90,6 +90,9 @@
     <ClInclude Include="Public\NSymbol\NGenericsComponent.h">
       <Filter>04 Components</Filter>
     </ClInclude>
+    <ClInclude Include="Public\NSymbol\NFuncDeclOuterVisitor.g.h">
+      <Filter>03 Func</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="10 Lambda">
@@ -202,6 +205,9 @@
     </ClCompile>
     <ClCompile Include="NGenericsComponent.cpp">
       <Filter>04 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="NFuncDeclOuter.cpp">
+      <Filter>03 Func</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

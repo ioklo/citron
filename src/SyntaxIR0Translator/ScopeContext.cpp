@@ -7,7 +7,7 @@
 
 #include "Syntax/Syntax.h"
 #include "RSymbol/RTypeArguments.h"
-#include "RSymbol/RMember.h"
+#include "RSymbol/RDeclRes.h"
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncParameter.h"
 #include "RSymbol/RFactory.h"
@@ -183,7 +183,7 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
     return Accept(visitor, sTypeExp);
 }
 
-expected<optional<RMember>, DiagPtr> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+expected<optional<BodyRes>, DiagPtr> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 로컬을 검색한다
     if (!transactionInfos.empty())
@@ -194,9 +194,9 @@ expected<optional<RMember>, DiagPtr> ScopeContext::ResolveIdentifier(const RName
             if (i != transactionInfo.deltaLocalInfos.end())
             {
                 if (i->second.kind == LocalInfoKind::Var)
-                    return RMember_LocalVar(i->second.type, name);
+                    return BodyRes_LocalVar{i->second.type, name};
                 else if (i->second.kind == LocalInfoKind::Ref)
-                    return RMember_LocalRef(i->second.type, name);
+                    return BodyRes_LocalRef(i->second.type, name);
                 else assert(false);
             }
         }
@@ -206,9 +206,9 @@ expected<optional<RMember>, DiagPtr> ScopeContext::ResolveIdentifier(const RName
     if (i != localInfos.end())
     {
         if (i->second.kind == LocalInfoKind::Var)
-            return RMember_LocalVar(i->second.type, name);
+            return BodyRes_LocalVar{i->second.type, name};
         else if (i->second.kind == LocalInfoKind::Ref)
-            return RMember_LocalRef(i->second.type, name);
+            return BodyRes_LocalRef{i->second.type, name};
         else assert(false);
     }
 

@@ -12,7 +12,7 @@
 namespace Citron {
 
 class RTypeArguments;
-class MExp;
+struct MExp;
 class RType;
 struct TranslationContexts;
 enum class RFuncParameterKind;

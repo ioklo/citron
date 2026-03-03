@@ -49,7 +49,7 @@ public:
             if (locType->IsBitwiseCopyable())
             {
                 // bitwise로 copy
-                return contexts.mFactory->MakeMExp<MExp_BitwiseCopy>(*eLoc);
+                return contexts.mFactory->MakeMExp<MExp_Load>(*eLoc);
             }
             else
             {
