@@ -44,7 +44,6 @@ public:
     virtual void Accept(RTypeVisitor& visitor) = 0;
 };
 
-
 // recursive types
 class RType_NullableValue : public RType
 {
@@ -388,6 +387,8 @@ public:
 
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
+
+RSYMBOL_API RType* Apply(RType* type, RTypeArguments* typeArgs, RFactory* rFactory);
 
 } // namespace Citron
 

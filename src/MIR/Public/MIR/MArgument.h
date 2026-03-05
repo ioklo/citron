@@ -6,7 +6,7 @@
 namespace Citron {
 
 struct MExp;
-class MLoc;
+struct MLoc;
 
 struct MArgument_Create { MCreate create; };
 struct MArgument_Loc { MLoc* loc; };

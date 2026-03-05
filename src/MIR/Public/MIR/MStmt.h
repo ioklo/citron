@@ -22,283 +22,306 @@ class MExp_String;
 class NLambdaDecl;
 class NStructCtorDecl;
 
-class MLoc;
+struct MLoc;
 
 struct MStmtVisitor;
-class MStmt
+struct MStmt
 {
-public:
     virtual ~MStmt() {}
     virtual void Accept(MStmtVisitor& visitor) = 0;
 };
 
-class MStmt_Command : public MStmt
+struct MStmt_Command : MStmt
 {
-public:
     std::vector<MExp_String*> commands;
+
 public:
-    MIR_API MStmt_Command(std::vector<MExp_String*>&& commands);
+    MStmt_Command(std::vector<MExp_String*>&& commands)
+        : commands{std::move(commands)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
 struct MStmt_LocalVarDeclInit_Uninit {};
 struct MStmt_LocalVarDeclInit_Create { MCreate create; };
-
 using MStmt_LocalVarDeclInit = std::variant<MStmt_LocalVarDeclInit_Uninit, MStmt_LocalVarDeclInit_Create>;
 
-// 로컬 변수는 
-class MStmt_LocalVarDecl : public MStmt
+struct MStmt_LocalVarDecl : MStmt
 {
-public:
     RType* type;
     RName name;
     MStmt_LocalVarDeclInit init;
 
 public:
-    MIR_API MStmt_LocalVarDecl(RType* type, const RName& name, MStmt_LocalVarDeclInit init);
+    MStmt_LocalVarDecl(RType* type, const RName& name, MStmt_LocalVarDeclInit init)
+        : type{type}, name{name}, init{init}
+    {}
+
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_LocalRefDecl : public MStmt
+struct MStmt_LocalRefDecl : MStmt
 {
-public:
     RType* type;
     RName name;
     MLoc* loc;
 
 public:
-    MIR_API MStmt_LocalRefDecl(RType* type, RName&& name, MLoc* loc);
+    MStmt_LocalRefDecl(RType* type, RName&& name, MLoc* loc)
+        : type{type}, name{std::move(name)}, loc{loc}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_If : public MStmt
+struct MStmt_If : MStmt
 {
-public:
-    MExp* cond;
+    MExp* cond; // BC
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
+
 public:
-    MIR_API MStmt_If(MExp* cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody);
+    MStmt_If(MExp* cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
+        : cond{cond}, body{std::move(body)}, elseBody{std::move(elseBody)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_IfNullableRefTest : public MStmt
+// if (exp is not_null(c)) 
+// IfTest_NullableInplace(exp, C, c, body, elseBody)
+// 
+// if (s is not_null(s))
+// IfTest_Nullable(exp, 
+// 
+// if (c is D(d)) { }
+
+using MPattern = std::variant<struct MPattern_NotNull, struct MPattern_Null, MPattern_TAlias>;
+
+// not_null(s)
+struct MPattern_NotNull { RName name; }; // talias
+
+// null
+struct MPattern_Null { };
+
+// C(c)
+struct MPattern_RefType { RType* type; RName name; };
+
+// if (target match pattern) { }
+struct MStmt_IfMatch : MStmt
 {
-public:
+    MRead target;
+    MPattern* pattern;
+    std::vector<MStmt*> body;
+    std::vector<MStmt*> elseBody;
+};
+
+struct MStmt_IfNullableRefTest : MStmt
+{
     RType* refType;
     RName varName;
     MExp* asExp;
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
-public:
-    MIR_API MStmt_IfNullableRefTest(RType* refType, RName&& varName, MExp* asExp, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody);
 
+public:
+    MStmt_IfNullableRefTest(RType* refType, RName&& varName, MExp* asExp, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
+        : refType{refType}, varName{std::move(varName)}, asExp{asExp}, body{std::move(body)}, elseBody{std::move(elseBody)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_IfNullableValueTest : public MStmt
+struct MStmt_IfNullableValueTest : MStmt
 {
-public:
     RType* type;
     RName varName;
     MExp* asExp;
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
+
 public:
-    MIR_API MStmt_IfNullableValueTest(RType* type, RName&& varName, MExp* asExp, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody);
+    MStmt_IfNullableValueTest(RType* type, RName&& varName, MExp* asExp, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
+        : type{type}, varName{std::move(varName)}, asExp{asExp}, body{std::move(body)}, elseBody{std::move(elseBody)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_For : public MStmt
+struct MStmt_For : MStmt
 {
-public:
     std::vector<MStmt*> initStmts;
     MExp* condExp;
     MExp* continueExp;
     std::vector<MStmt*> body;
+
 public:
-    MIR_API MStmt_For(std::vector<MStmt*>&& initStmts, MExp* condExp, MExp* continueExp, std::vector<MStmt*>&& body);
+    MStmt_For(std::vector<MStmt*>&& initStmts, MExp* condExp, MExp* continueExp, std::vector<MStmt*>&& body)
+        : initStmts{std::move(initStmts)}, condExp{condExp}, continueExp{continueExp}, body{std::move(body)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_Continue : public MStmt
+struct MStmt_Continue : MStmt
 {
-public:
-    MIR_API MStmt_Continue();
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_Break : public MStmt
+struct MStmt_Break : MStmt
 {
-public:
-    MIR_API MStmt_Break();
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_Return : public MStmt
+struct MStmt_Return : MStmt
 {
-public:
     MExp* exp;
+
 public:
-    MIR_API MStmt_Return(MExp* exp);
+    MStmt_Return(MExp* exp)
+        : exp{exp}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_Block : public MStmt
+struct MStmt_Block : MStmt
 {
-public:
     std::vector<MStmt*> stmts;
+
 public:
-    MIR_API MStmt_Block(std::vector<MStmt*>&& stmts);
+    MStmt_Block(std::vector<MStmt*>&& stmts)
+        : stmts(std::move(stmts))
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_Blank : public MStmt
+struct MStmt_Blank : MStmt
 {
-public:
-    MIR_API MStmt_Blank();
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_Exp : public MStmt
+struct MStmt_Exp : MStmt
 {
-public:
     MExp* exp;
+
 public:
-    MIR_API MStmt_Exp(MExp* exp);
+    MStmt_Exp(MExp* exp)
+        : exp{exp}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_Task : public MStmt
+struct MStmt_Task : MStmt
 {
-public:
     NLambdaDecl* lambdaDecl;
     std::vector<MArgument> captureArgs;
+
 public:
-    MIR_API MStmt_Task(NLambdaDecl* lambdaDecl, std::vector<MArgument>&& captureArgs);
+    MStmt_Task(NLambdaDecl* lambdaDecl, std::vector<MArgument>&& captureArgs)
+        : lambdaDecl{lambdaDecl}, captureArgs{std::move(captureArgs)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_Await : public MStmt
+struct MStmt_Await : MStmt
 {
-public:
     std::vector<MStmt*> body;
+
 public:
-    MIR_API MStmt_Await(std::vector<MStmt*>&& body);
+    MStmt_Await(std::vector<MStmt*>&& body)
+        : body{std::move(body)} 
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_Async : public MStmt
+struct MStmt_Async : MStmt
 {
-public:
     NLambdaDecl* lambdaDecl;
     std::vector<MArgument> captureArgs;
+
 public:
-    MIR_API MStmt_Async(NLambdaDecl* lambdaDecl, std::vector<MArgument>&& captureArgs);
+    MStmt_Async(NLambdaDecl* lambdaDecl, std::vector<MArgument>&& captureArgs)
+        : lambdaDecl{lambdaDecl}, captureArgs{std::move(captureArgs)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_Foreach : public MStmt
+// SYNTAX: foreach(TItem& item : list)
+// foreach(TListIter, iterName, iter = GetIterator(list), TItem, item, nextExp = GetNext) { body }
+struct MStmt_Foreach : MStmt
 {
-public:
-    MExp* enumeratorExp;
+    RType* iterType;
+    RName iterName;
+    MCreate iterCreate;
+
+    // talias
     RType* itemType;
-    RName varName;
-    MExp* nextExp;
+    RName itemName;
+    std::vector<MStmt*> nextItemStmts; // GetNext호출하고, null이면 종료, value면 itemName에 바인딩
+
     std::vector<MStmt*> body;
+
 public:
-    MIR_API MStmt_Foreach(MExp* enumeratorExp, RType* itemType, const RName& varName, MExp* nextExp, std::vector<MStmt*>&& body);
+    MStmt_Foreach(RType* iterType, const RName& iterName, MCreate iterCreate, RType* itemType, const RName& itemName, std::vector<MStmt*>&& nextItemStmts)
+        : iterType{iterType}, iterName{iterName}, iterCreate{iterCreate}, itemType{itemType}, itemName{itemName}, nextItemStmts{std::move(nextItemStmts)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_ForeachCast : public MStmt
+struct MStmt_Yield : MStmt
 {
-public:
-    MExp* enumeratorExp;
-    RType* itemType;
-    RName varName;
-    RType* rawItemType;
-    MExp* nextExp;
-    MExp* castExp;
-    std::vector<MStmt*> body;
-public:
-    MIR_API MStmt_ForeachCast(MExp* enumeratorExp, RType* itemType, const RName& varName, RType* rawItemType, MExp* nextExp, MExp* castExp, std::vector<MStmt*>&& body);
-    MIR_API void Accept(MStmtVisitor& visitor) override;
-};
+    MCreate valueCreate;
 
-class MStmt_Yield : public MStmt
-{
 public:
-    MExp* value;
-public:
-    MIR_API MStmt_Yield(MExp* value);
+    MStmt_Yield(MCreate&& valueCreate)
+        : valueCreate{valueCreate}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
 // Ctor 내에서 상위 Ctor 호출시 사용
-class MStmt_CallClassCtor : public MStmt
+struct MStmt_CallBaseClassCtor : MStmt
 {
-public:
     RClassCtorDecl* ctor;
     std::vector<MArgument> args;
+
 public:
-    MIR_API MStmt_CallClassCtor(RClassCtorDecl* ctor, std::vector<MArgument>&& args);
+    MStmt_CallBaseClassCtor(RClassCtorDecl* ctor, std::vector<MArgument>&& args)
+        : ctor{ctor}, args{std::move(args)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_CallStructCtor : public MStmt
+struct MStmt_CallBaseStructCtor : MStmt
 {
-public:
     NStructCtorDecl* ctor;
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
+
 public:
-    MIR_API MStmt_CallStructCtor(NStructCtorDecl* ctor, RTypeArguments* typeArgs, std::vector<MArgument>&& args);
+    MStmt_CallBaseStructCtor(NStructCtorDecl* ctor, RTypeArguments* typeArgs, std::vector<MArgument>&& args)
+        : ctor{ctor}, typeArgs{typeArgs}, args{std::move(args)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-class MStmt_NullDirective : public MStmt
-{
-public:
-    MLoc* loc;
-public:
-    MIR_API MStmt_NullDirective(MLoc* loc);
-    MIR_API void Accept(MStmtVisitor& visitor) override;
-};
+struct MDirective_NullDirective { MLoc* loc; };
+struct MDirective_NotNullDirective { MLoc* loc; };
+struct MDirective_StaticNullDirective { MLoc* loc; };
+struct MDirective_StaticNotNullDirective { MLoc* loc; };
+struct MDirective_StaticUnknownDirective { MLoc* loc; };
 
-class MStmt_NotNullDirective : public MStmt
-{
-public:
-    MLoc* loc;
-public:
-    MIR_API MStmt_NotNullDirective(MLoc* loc);
-    MIR_API void Accept(MStmtVisitor& visitor) override;
-};
+using MDirective = std::variant<
+    MDirective_NullDirective,
+    MDirective_NotNullDirective,
+    MDirective_StaticNullDirective,
+    MDirective_StaticNotNullDirective,
+    MDirective_StaticUnknownDirective>;
 
-class MStmt_StaticNullDirective : public MStmt
+struct MStmt_Directive : MStmt
 {
-public:
-    MLoc* loc;
-public:
-    MIR_API MStmt_StaticNullDirective(MLoc* loc);
-    MIR_API void Accept(MStmtVisitor& visitor) override;
-};
+    MDirective directive;
 
-class MStmt_StaticNotNullDirective : public MStmt
-{
 public:
-    MLoc* loc;
-public:
-    MIR_API MStmt_StaticNotNullDirective(MLoc* loc);
-    MIR_API void Accept(MStmtVisitor& visitor) override;
-};
+    MStmt_Directive(MDirective&& directive)
+        : directive{std::move(directive)}
+    { }
 
-class MStmt_StaticUnknownNullDirective : public MStmt
-{
-public:
-    MLoc* loc;
-public:
-    MIR_API MStmt_StaticUnknownNullDirective(MLoc* loc);
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 

@@ -7,7 +7,7 @@
 
 namespace Citron {
 
-class MLoc;
+struct MLoc;
 
 class IDesignatedDiagnostic;
 

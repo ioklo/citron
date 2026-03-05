@@ -21,8 +21,8 @@ class RStructCtorDecl;
 class REnumElemDecl;
 class RTypeArguments;
 
-class MLoc;
-class MStmt;
+struct MLoc;
+struct MStmt;
 class NLambdaDecl;
 
 struct MExpVisitor;

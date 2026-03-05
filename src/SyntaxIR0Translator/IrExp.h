@@ -16,7 +16,7 @@ class RFactory;
 class RClassVarDecl;
 class RStructVarDecl;
 struct MExp;
-class MLoc;
+struct MLoc;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
 struct TranslationContexts;
 

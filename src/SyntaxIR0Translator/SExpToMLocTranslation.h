@@ -9,7 +9,7 @@
 namespace Citron { 
 
 class RType;
-class MLoc;
+struct MLoc;
 class IDesignatedDiagnostic;
 struct TranslationContexts;
 

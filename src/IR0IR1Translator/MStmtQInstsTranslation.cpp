@@ -280,11 +280,11 @@ public:
     {
         throw NotImplementedException{};
     }
-    ResultType Visit(MStmt_CallClassCtor* stmt)
+    ResultType Visit(MStmt_CallBaseClassCtor* stmt)
     {
         throw NotImplementedException{};
     }
-    ResultType Visit(MStmt_CallStructCtor* stmt)
+    ResultType Visit(MStmt_CallBaseStructCtor* stmt)
     {
         throw NotImplementedException{};
     }

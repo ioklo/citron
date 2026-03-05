@@ -72,12 +72,12 @@ RType* GetType(MExp* exp, RFactory* rFactory)
         using ResultType = RType*;
         RFactory* rFactory;
 
-        ResultType Visit(MExp_Load* exp) { return exp->loc->GetType(); }
-        ResultType Visit(MExp_Store* exp) { return exp->dest->GetType(); }
+        ResultType Visit(MExp_Load* exp) { return GetType(exp->loc, rFactory); }
+        ResultType Visit(MExp_Store* exp) { return GetType(exp->dest, rFactory); }
         ResultType Visit(MExp_Stmt* exp) { return GetType(exp->finalExp, rFactory); }
         ResultType Visit(MExp_PtrRef* exp) 
         { 
-            auto* innerLocType = exp->innerLoc->GetType();
+            auto* innerLocType = GetType(exp->innerLoc, rFactory);
             return rFactory->MakePtrType(innerLocType);
         }
         ResultType Visit(MExp_BoolLiteral* exp) { return rFactory->MakeBoolType(); }

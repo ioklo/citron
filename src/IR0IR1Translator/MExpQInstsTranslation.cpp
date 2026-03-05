@@ -122,7 +122,7 @@ public:
             using T = remove_cvref_t<decltype(srcLoc)>;
             if constexpr (same_as<T, QLocResult_Slot>)
             {
-                auto* type = exp->GetType();
+                auto* type = GetType(exp, bodyContext.rFactory);
 
                 // TODO: String을 일반적인 struct로
                 if (type == bodyContext.GetStringType())

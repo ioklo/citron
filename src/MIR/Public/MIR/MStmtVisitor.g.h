@@ -23,15 +23,10 @@ struct MStmtVisitor
     virtual void Visit(MStmt_Await* mStmt) = 0;
     virtual void Visit(MStmt_Async* mStmt) = 0;
     virtual void Visit(MStmt_Foreach* mStmt) = 0;
-    virtual void Visit(MStmt_ForeachCast* mStmt) = 0;
     virtual void Visit(MStmt_Yield* mStmt) = 0;
-    virtual void Visit(MStmt_CallClassCtor* mStmt) = 0;
-    virtual void Visit(MStmt_CallStructCtor* mStmt) = 0;
-    virtual void Visit(MStmt_NullDirective* mStmt) = 0;
-    virtual void Visit(MStmt_NotNullDirective* mStmt) = 0;
-    virtual void Visit(MStmt_StaticNullDirective* mStmt) = 0;
-    virtual void Visit(MStmt_StaticNotNullDirective* mStmt) = 0;
-    virtual void Visit(MStmt_StaticUnknownNullDirective* mStmt) = 0;
+    virtual void Visit(MStmt_CallBaseClassCtor* mStmt) = 0;
+    virtual void Visit(MStmt_CallBaseStructCtor* mStmt) = 0;
+    virtual void Visit(MStmt_Directive* mStmt) = 0;
 };
 
 template<class TFrom, class TVisitor>
@@ -59,15 +54,10 @@ concept MStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MStmt_Await*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_Async*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_Foreach*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MStmt_ForeachCast*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_Yield*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MStmt_CallClassCtor*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MStmt_CallStructCtor*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MStmt_NullDirective*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MStmt_NotNullDirective*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MStmt_StaticNullDirective*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MStmt_StaticNotNullDirective*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MStmt_StaticUnknownNullDirective*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MStmt_CallBaseClassCtor*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MStmt_CallBaseStructCtor*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MStmt_Directive*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
 
 };
 
@@ -100,15 +90,10 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MStmt* m
             void Visit(MStmt_Await* mStmt) override { call(mStmt); }
             void Visit(MStmt_Async* mStmt) override { call(mStmt); }
             void Visit(MStmt_Foreach* mStmt) override { call(mStmt); }
-            void Visit(MStmt_ForeachCast* mStmt) override { call(mStmt); }
             void Visit(MStmt_Yield* mStmt) override { call(mStmt); }
-            void Visit(MStmt_CallClassCtor* mStmt) override { call(mStmt); }
-            void Visit(MStmt_CallStructCtor* mStmt) override { call(mStmt); }
-            void Visit(MStmt_NullDirective* mStmt) override { call(mStmt); }
-            void Visit(MStmt_NotNullDirective* mStmt) override { call(mStmt); }
-            void Visit(MStmt_StaticNullDirective* mStmt) override { call(mStmt); }
-            void Visit(MStmt_StaticNotNullDirective* mStmt) override { call(mStmt); }
-            void Visit(MStmt_StaticUnknownNullDirective* mStmt) override { call(mStmt); }
+            void Visit(MStmt_CallBaseClassCtor* mStmt) override { call(mStmt); }
+            void Visit(MStmt_CallBaseStructCtor* mStmt) override { call(mStmt); }
+            void Visit(MStmt_Directive* mStmt) override { call(mStmt); }
         };
 
         Bridge bridge{caller};
@@ -136,15 +121,10 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MStmt* m
             void Visit(MStmt_Await* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_Async* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_Foreach* mStmt) override { result.emplace(call(mStmt)); }
-            void Visit(MStmt_ForeachCast* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_Yield* mStmt) override { result.emplace(call(mStmt)); }
-            void Visit(MStmt_CallClassCtor* mStmt) override { result.emplace(call(mStmt)); }
-            void Visit(MStmt_CallStructCtor* mStmt) override { result.emplace(call(mStmt)); }
-            void Visit(MStmt_NullDirective* mStmt) override { result.emplace(call(mStmt)); }
-            void Visit(MStmt_NotNullDirective* mStmt) override { result.emplace(call(mStmt)); }
-            void Visit(MStmt_StaticNullDirective* mStmt) override { result.emplace(call(mStmt)); }
-            void Visit(MStmt_StaticNotNullDirective* mStmt) override { result.emplace(call(mStmt)); }
-            void Visit(MStmt_StaticUnknownNullDirective* mStmt) override { result.emplace(call(mStmt)); }
+            void Visit(MStmt_CallBaseClassCtor* mStmt) override { result.emplace(call(mStmt)); }
+            void Visit(MStmt_CallBaseStructCtor* mStmt) override { result.emplace(call(mStmt)); }
+            void Visit(MStmt_Directive* mStmt) override { result.emplace(call(mStmt)); }
         };
 
         Bridge bridge{caller};

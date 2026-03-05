@@ -27,6 +27,7 @@
     <ClInclude Include="Public\MIR\MMoveSource.h" />
     <ClInclude Include="Public\MIR\MRead.h" />
     <ClInclude Include="Public\MIR\MSharedExp.h" />
+    <ClInclude Include="Public\MIR\MSharedExpVisitor.g.h" />
     <ClInclude Include="Public\MIR\MStmt.h" />
     <ClInclude Include="Public\MIR\MStmtVisitor.g.h" />
   </ItemGroup>

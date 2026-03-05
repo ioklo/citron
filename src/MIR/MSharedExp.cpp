@@ -7,46 +7,40 @@
 
 namespace Citron {
 
-MSharedExp_Static::MSharedExp_Static(MLoc* loc, const RFactoryPtr& rFactory)
-    : loc{loc}, rFactory{rFactory}
+void MSharedExp_Static::Accept(MSharedExpVisitor& visitor) { visitor.Visit(this); }
+void MSharedExp_ClassVar::Accept(MSharedExpVisitor& visitor) { visitor.Visit(this); }
+void MSharedExp_SharedStructVar::Accept(MSharedExpVisitor& visitor) { visitor.Visit(this); }
+void MSharedExp_StructVar::Accept(MSharedExpVisitor& visitor) { visitor.Visit(this); }
+
+RType* GetType(MSharedExp* sharedExp, RFactory* rFactory)
 {
+    struct Visitor
+    {
+        using ResultType = RType*;
+        RFactory* rFactory;
+
+        ResultType Visit(MSharedExp_Static* sharedExp) { return rFactory->MakeSharedType(GetType(sharedExp, rFactory)); }
+
+        ResultType Visit(MSharedExp_ClassVar* sharedExp) 
+        { 
+            auto* declType = sharedExp->decl->GetDeclType(*sharedExp->typeArgs);
+            return rFactory->MakeSharedType(declType);
+        }
+
+        ResultType Visit(MSharedExp_SharedStructVar* sharedExp) 
+        { 
+            auto* declType = sharedExp->decl->GetDeclType(*sharedExp->typeArgs);
+            return rFactory->MakeSharedType(declType);
+        }
+
+        ResultType Visit(MSharedExp_StructVar* sharedExp) 
+        { 
+            auto* declType = sharedExp->decl->GetDeclType(*sharedExp->typeArgs);
+            return rFactory->MakeSharedType(declType);
+        }
+    };
+
+    return Accept(Visitor{rFactory}, sharedExp);
 }
 
-RType* MSharedExp_Static::GetType()
-{
-    return rFactory->MakeSharedType(loc->GetType());
-}
-
-MSharedExp_ClassVar::MSharedExp_ClassVar(MLoc* base, RClassVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
-    : base{base}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
-{
-}
-
-RType* MSharedExp_ClassVar::GetType()
-{
-    auto* declType = decl->GetDeclType(*typeArgs);
-    return rFactory->MakeSharedType(declType);
-}
-
-MSharedExp_SharedStructVar::MSharedExp_SharedStructVar(MLoc* base, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
-    : base{base}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
-{
-}
-
-RType* MSharedExp_SharedStructVar::GetType()
-{
-    auto* declType = decl->GetDeclType(*typeArgs);
-    return rFactory->MakeBoxType(declType);
-}
-
-MSharedExp_StructVar::MSharedExp_StructVar(MSharedExp* base, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
-    : base{base}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
-{
-}
-
-RType* MSharedExp_StructVar::GetType()
-{
-    auto* declType = decl->GetDeclType(*typeArgs);
-    return rFactory->MakeBoxType(declType);
-}
 } // namespace Citron

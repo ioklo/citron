@@ -7,7 +7,7 @@ namespace Citron {
 
 class MStmt;
 struct MExp;
-class MLoc;
+struct MLoc;
 class MSharedExp;
 class MData;
 struct MFuncBody;

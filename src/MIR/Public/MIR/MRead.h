@@ -4,7 +4,7 @@
 
 namespace Citron {
 
-class MLoc;
+struct MLoc;
 struct MExp;
 
 // BC/NBC 모두 지원하는 읽기

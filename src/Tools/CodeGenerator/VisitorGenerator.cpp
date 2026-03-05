@@ -170,6 +170,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
             .memberName = "mInitExp",
             .members {
                 "MInitExp_Shared",
+                "MInitExp_SharedRef",
                 "MInitExp_Stmt",
                 "MInitExp_String",
                 "MInitExp_List",
@@ -230,15 +231,22 @@ void GenerateVisitors(std::filesystem::path srcPath)
                 "MStmt_Await",
                 "MStmt_Async",
                 "MStmt_Foreach",
-                "MStmt_ForeachCast",
                 "MStmt_Yield",
-                "MStmt_CallClassCtor",
-                "MStmt_CallStructCtor",
-                "MStmt_NullDirective",
-                "MStmt_NotNullDirective",
-                "MStmt_StaticNullDirective",
-                "MStmt_StaticNotNullDirective",
-                "MStmt_StaticUnknownNullDirective",
+                "MStmt_CallBaseClassCtor",
+                "MStmt_CallBaseStructCtor",
+                "MStmt_Directive",
+            },
+        },
+
+        VisitorInfo{
+            .relPath = path("MIR") / "Public" / "MIR" / "MSharedExpVisitor.g.h",
+            .name = "MSharedExp",
+            .memberName = "sharedExp",
+            .members {
+                "MSharedExp_Static",
+                "MSharedExp_ClassVar",
+                "MSharedExp_SharedStructVar",
+                "MSharedExp_StructVar",
             },
         },
 

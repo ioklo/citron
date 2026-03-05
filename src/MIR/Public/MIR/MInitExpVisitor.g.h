@@ -7,6 +7,7 @@ struct MInitExpVisitor
 {
     virtual ~MInitExpVisitor() {}
     virtual void Visit(MInitExp_Shared* mInitExp) = 0;
+    virtual void Visit(MInitExp_SharedRef* mInitExp) = 0;
     virtual void Visit(MInitExp_Stmt* mInitExp) = 0;
     virtual void Visit(MInitExp_String* mInitExp) = 0;
     virtual void Visit(MInitExp_List* mInitExp) = 0;
@@ -33,6 +34,7 @@ concept MInitExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 {
     typename std::remove_cvref_t<TVisitor>::ResultType;
     { v.Visit(std::declval<MInitExp_Shared*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MInitExp_SharedRef*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MInitExp_Stmt*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MInitExp_String*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MInitExp_List*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
@@ -64,6 +66,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MInitExp
         struct Bridge : MInitExpVisitor {
             decltype(caller)& call;
             Bridge(decltype(caller)& call) : call(call) {}            void Visit(MInitExp_Shared* mInitExp) override { call(mInitExp); }
+            void Visit(MInitExp_SharedRef* mInitExp) override { call(mInitExp); }
             void Visit(MInitExp_Stmt* mInitExp) override { call(mInitExp); }
             void Visit(MInitExp_String* mInitExp) override { call(mInitExp); }
             void Visit(MInitExp_List* mInitExp) override { call(mInitExp); }
@@ -90,6 +93,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MInitExp
             decltype(caller)& call;
             std::optional<TResult> result{};
             Bridge(decltype(caller)& call) : call(call) {}            void Visit(MInitExp_Shared* mInitExp) override { result.emplace(call(mInitExp)); }
+            void Visit(MInitExp_SharedRef* mInitExp) override { result.emplace(call(mInitExp)); }
             void Visit(MInitExp_Stmt* mInitExp) override { result.emplace(call(mInitExp)); }
             void Visit(MInitExp_String* mInitExp) override { result.emplace(call(mInitExp)); }
             void Visit(MInitExp_List* mInitExp) override { result.emplace(call(mInitExp)); }

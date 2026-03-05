@@ -9,6 +9,7 @@
 namespace Citron {
 
 void MInitExp_Shared::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
+void MInitExp_SharedRef::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_Stmt::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_String::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_List::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }

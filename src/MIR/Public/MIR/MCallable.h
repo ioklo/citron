@@ -12,7 +12,7 @@ class RTypeArguments;
 class RClassFuncDecl;
 class RStructFuncDecl;
 class RLambdaDecl;
-class MLoc;
+struct MLoc;
 
 struct MCall_GlobalFunc { RGlobalFuncDecl* decl; RTypeArguments* typeArgs; }; // F();
 struct MCall_ClassFunc { RClassFuncDecl* decl; RTypeArguments* typeArgs; MLoc* instance; }; // c.F();

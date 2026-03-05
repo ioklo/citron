@@ -9,7 +9,7 @@ namespace Citron {
 struct Diag;
 using DiagPtr = std::shared_ptr<Diag>;
 
-class MLoc;
+struct MLoc;
 class QBlock;
 class QFactory;
 

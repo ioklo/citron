@@ -18,6 +18,7 @@ class NLambdaDecl;
 
 struct MInitExpVisitor;
 struct MStmt;
+struct MSharedExp;
 
 struct MInitExp
 {
@@ -27,6 +28,12 @@ struct MInitExp
 struct MInitExp_Shared : MInitExp 
 {   
     MCreate create; // BC, NBC 모두 생성가능
+    MIR_API void Accept(MInitExpVisitor& visitor) override;
+};
+
+struct MInitExp_SharedRef : MInitExp
+{
+    MSharedExp* sharedExp;
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
