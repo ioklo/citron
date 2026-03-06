@@ -94,8 +94,6 @@ public:
 // 
 // if (c is D(d)) { }
 
-using MPattern = std::variant<struct MPattern_NotNull, struct MPattern_Null, MPattern_TAlias>;
-
 // not_null(s)
 struct MPattern_NotNull { RName name; }; // talias
 
@@ -105,8 +103,10 @@ struct MPattern_Null { };
 // C(c)
 struct MPattern_RefType { RType* type; RName name; };
 
+using MPattern = std::variant<struct MPattern_NotNull, struct MPattern_Null, MPattern_RefType>;
+
 // if (target match pattern) { }
-struct MStmt_IfMatch : MStmt
+struct MStmt_IfTest : MStmt
 {
     MRead target;
     MPattern* pattern;
