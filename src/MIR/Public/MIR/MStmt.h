@@ -105,14 +105,14 @@ public:
 
 struct MStmt_For : MStmt
 {
-    std::vector<MStmt*> initStmts;
-    MExp* condExp;
-    MExp* continueExp;
+    std::vector<MStmt*> initStmts; // LocalVarDecl, LocalVarRef
+    MExp* condExp; // BC
+    MStmt* contStmt;
     std::vector<MStmt*> body;
 
 public:
-    MStmt_For(std::vector<MStmt*>&& initStmts, MExp* condExp, MExp* continueExp, std::vector<MStmt*>&& body)
-        : initStmts{std::move(initStmts)}, condExp{condExp}, continueExp{continueExp}, body{std::move(body)}
+    MStmt_For(std::vector<MStmt*>&& initStmts, MExp* condExp, MStmt* contStmt, std::vector<MStmt*>&& body)
+        : initStmts{std::move(initStmts)}, condExp{condExp}, contStmt{contStmt}, body{std::move(body)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -129,11 +129,11 @@ struct MStmt_Break : MStmt
 
 struct MStmt_Return : MStmt
 {
-    MExp* exp;
+    MCreate create;
 
 public:
-    MStmt_Return(MExp* exp)
-        : exp{exp}
+    MStmt_Return(MCreate&& create)
+        : create{std::move(create)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -154,13 +154,14 @@ struct MStmt_Blank : MStmt
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
+// 이름은 Exp지만, Exp, InitExp둘다 받는다
 struct MStmt_Exp : MStmt
 {
-    MExp* exp;
+    MCreate create;
 
 public:
-    MStmt_Exp(MExp* exp)
-        : exp{exp}
+    MStmt_Exp(MCreate&& create)
+        : create{std::move(create)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -289,7 +290,7 @@ struct MStmt_Call : MStmt
 {
     MCallable callable;
     std::vector<MArgument> args;
-    std::optional<MCatch> o_catch; // try F() catch_resume() { }이 붙었을 경우
+    std::optional<MCatch> o_catch; // try F() catch_* { }이 붙었을 경우
 
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };

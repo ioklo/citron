@@ -3,6 +3,7 @@
 
 #include <variant>
 #include <vector>
+#include <optional>
 
 #include "MCreate.h"
 #include "MRead.h"
@@ -228,14 +229,6 @@ struct MExp_As : MExp
     MExp_AsKind kind;
     MRead operand;
     RType* type;
-    MIR_API void Accept(MExpVisitor& visitor) override;
-};
-
-struct MExp_Try : MExp
-{
-    MExp* exp;
-    MCatch _catch; // 단일 catch만 가능하다
-
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 

@@ -226,14 +226,14 @@ public:
             condExp = *e_rawCond;
         }
 
-        MExp* continueExp = nullptr;
+        MExp* contStmt = nullptr;
         if (stmt->cont)
         {
             DesignatedDiagnostic<Error_ForStmt_ContinueExpShouldBeAssignOrCall> designatedDiag;
             auto e_contResult = TranslateSExpAsTopLevelExpToMExp(stmt->cont, /*hintType*/nullptr, &designatedDiag, forStmtContexts);
             RETURN_ON_ERROR(e_contResult);
 
-            continueExp = *e_contResult;
+            contStmt = *e_contResult;
         }
 
         auto bodyContext = MakeTranslationContexts_NestedLoop(forStmtContexts);
@@ -241,7 +241,7 @@ public:
         auto e_bodyStmts = TranslateSEmbeddableStmtToMStmts(stmt->body, bodyContext);
         RETURN_ON_ERROR(e_bodyStmts);
 
-        return Value<MStmt_For>(move(initStmts), condExp, continueExp, move(*e_bodyStmts));
+        return Value<MStmt_For>(move(initStmts), condExp, contStmt, move(*e_bodyStmts));
     }
 
     ResultType Visit(SStmt_Continue* stmt)

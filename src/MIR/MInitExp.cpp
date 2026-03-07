@@ -6,6 +6,8 @@
 #include "RSymbol/RStructCtorDecl.h"
 #include "NSymbol/NLambdaDecl.h"
 
+#include "MSharedExp.h"
+
 namespace Citron {
 
 void MInitExp_Shared::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
@@ -33,6 +35,7 @@ RType* GetType(MInitExp* initExp, RFactory* rFactory)
         RFactory* rFactory;
 
         ResultType Visit(MInitExp_Shared* initExp) { return GetType(initExp->create, rFactory); }
+        ResultType Visit(MInitExp_SharedRef* initExp) { return GetType(initExp->sharedExp, rFactory); }
         ResultType Visit(MInitExp_Stmt* initExp) { return GetType(initExp->finalExp, rFactory); }
         ResultType Visit(MInitExp_String* initExp) { return rFactory->MakeStringType(); }
         ResultType Visit(MInitExp_List* initExp) { return rFactory->MakeListType(initExp->itemType); }

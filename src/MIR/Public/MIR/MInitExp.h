@@ -2,11 +2,13 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "MCreate.h"
 #include "MRead.h"
 #include "MArgument.h"
 #include "MCallable.h"
+#include "MCatch.h"
 
 namespace Citron {
 
