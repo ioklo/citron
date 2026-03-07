@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\MIR\MCallable.h" />
+    <ClInclude Include="Public\MIR\MCatch.h" />
     <ClInclude Include="Public\MIR\MCreate.h" />
     <ClInclude Include="Public\MIR\MExpVisitor.g.h" />
     <ClInclude Include="Public\MIR\MFuncBody.h" />

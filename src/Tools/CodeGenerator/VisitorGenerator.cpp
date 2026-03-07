@@ -234,6 +234,8 @@ void GenerateVisitors(std::filesystem::path srcPath)
                 "MStmt_CallBaseClassCtor",
                 "MStmt_CallBaseStructCtor",
                 "MStmt_Directive",
+                "MStmt_Call",
+                "MStmt_Do",
             },
         },
 

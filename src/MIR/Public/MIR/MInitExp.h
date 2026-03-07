@@ -117,6 +117,7 @@ struct MInitExp_Call : MInitExp
 {
     MCallable callable;
     std::vector<MArgument> args;
+    std::optional<MCatch> o_catch; // try F() catch_* { }이 붙었을 경우
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 

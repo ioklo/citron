@@ -58,6 +58,9 @@
     <ClInclude Include="Public\MIR\MSharedExpVisitor.g.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\MIR\MCatch.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MExp.cpp" />

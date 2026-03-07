@@ -26,6 +26,8 @@ struct MStmtVisitor
     virtual void Visit(MStmt_CallBaseClassCtor* mStmt) = 0;
     virtual void Visit(MStmt_CallBaseStructCtor* mStmt) = 0;
     virtual void Visit(MStmt_Directive* mStmt) = 0;
+    virtual void Visit(MStmt_Call* mStmt) = 0;
+    virtual void Visit(MStmt_Do* mStmt) = 0;
 };
 
 template<class TFrom, class TVisitor>
@@ -56,6 +58,8 @@ concept MStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MStmt_CallBaseClassCtor*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_CallBaseStructCtor*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_Directive*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MStmt_Call*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MStmt_Do*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
 
 };
 
@@ -91,6 +95,8 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MStmt* m
             void Visit(MStmt_CallBaseClassCtor* mStmt) override { call(mStmt); }
             void Visit(MStmt_CallBaseStructCtor* mStmt) override { call(mStmt); }
             void Visit(MStmt_Directive* mStmt) override { call(mStmt); }
+            void Visit(MStmt_Call* mStmt) override { call(mStmt); }
+            void Visit(MStmt_Do* mStmt) override { call(mStmt); }
         };
 
         Bridge bridge{caller};
@@ -121,6 +127,8 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MStmt* m
             void Visit(MStmt_CallBaseClassCtor* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_CallBaseStructCtor* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_Directive* mStmt) override { result.emplace(call(mStmt)); }
+            void Visit(MStmt_Call* mStmt) override { result.emplace(call(mStmt)); }
+            void Visit(MStmt_Do* mStmt) override { result.emplace(call(mStmt)); }
         };
 
         Bridge bridge{caller};

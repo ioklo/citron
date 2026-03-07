@@ -32,6 +32,7 @@ void MExp_Lambda::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_InlineBlock::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_Is::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_As::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
+void MExp_Try::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 
 RType* GetType_CallIntrinsic(MExp_CallIntrinsic* exp, RFactory* rFactory)
 {

@@ -6,6 +6,7 @@
 
 #include "MCreate.h"
 #include "MRead.h"
+#include "MCatch.h"
 #include "MCallable.h"
 #include "MArgument.h"
 #include "RSymbol/RNames.h"
@@ -123,6 +124,8 @@ struct MExp_Call : MExp
 {
     MCallable callable;
     std::vector<MArgument> args;
+    std::optional<MCatch> o_catch; // try F() catch_* { }이 붙었을 경우
+
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -225,6 +228,14 @@ struct MExp_As : MExp
     MExp_AsKind kind;
     MRead operand;
     RType* type;
+    MIR_API void Accept(MExpVisitor& visitor) override;
+};
+
+struct MExp_Try : MExp
+{
+    MExp* exp;
+    MCatch _catch; // 단일 catch만 가능하다
+
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 

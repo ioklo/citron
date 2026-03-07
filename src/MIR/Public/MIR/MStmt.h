@@ -9,6 +9,8 @@
 
 #include "RSymbol/RNames.h"
 #include "MArgument.h"
+#include "MCallable.h"
+#include "MCatch.h"
 
 namespace Citron {
 
@@ -278,6 +280,25 @@ public:
     MStmt_Directive(MDirective&& directive)
         : directive{std::move(directive)}
     { }
+
+    MIR_API void Accept(MStmtVisitor& visitor) override;
+};
+
+// void return
+struct MStmt_Call : MStmt
+{
+    MCallable callable;
+    std::vector<MArgument> args;
+    std::optional<MCatch> o_catch; // try F() catch_resume() { }이 붙었을 경우
+
+    MIR_API void Accept(MStmtVisitor& visitor) override;
+};
+
+// do { ... } catch_...
+struct MStmt_Do : MStmt
+{
+    std::vector<MStmt*> stmts;
+    std::vector<MCatch> catches;
 
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
