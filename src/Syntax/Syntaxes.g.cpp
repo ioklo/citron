@@ -192,7 +192,7 @@ struct SStmtToJsonVisitor
     ResultType Visit(SStmt_Command* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_VarDecl* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_If* stmt) { return stmt->ToJson(); }
-    ResultType Visit(SStmt_IfTest* stmt) { return stmt->ToJson(); }
+    ResultType Visit(SStmt_IfBind* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_For* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_Continue* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_Break* stmt) { return stmt->ToJson(); }
@@ -1216,19 +1216,19 @@ JsonItem SStmt_If::ToJson()
     };
 }
 
-SStmt_IfTest::SStmt_IfTest(STypeExp* testType, std::string varName, SExp* exp, SEmbeddableStmt* body, SEmbeddableStmt* elseBody)
+SStmt_IfBind::SStmt_IfBind(STypeExp* testType, std::string varName, SExp* exp, SEmbeddableStmt* body, SEmbeddableStmt* elseBody)
     : testType(move(testType)), varName(move(varName)), exp(move(exp)), body(move(body)), elseBody(move(elseBody)) { }
 
-SStmt_IfTest::SStmt_IfTest(SStmt_IfTest&& other) noexcept = default;
+SStmt_IfBind::SStmt_IfBind(SStmt_IfBind&& other) noexcept = default;
 
-SStmt_IfTest::~SStmt_IfTest() = default;
+SStmt_IfBind::~SStmt_IfBind() = default;
 
-SStmt_IfTest& SStmt_IfTest::operator=(SStmt_IfTest&& other) noexcept = default;
+SStmt_IfBind& SStmt_IfBind::operator=(SStmt_IfBind&& other) noexcept = default;
 
-JsonItem SStmt_IfTest::ToJson()
+JsonItem SStmt_IfBind::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SStmt_IfTest") },
+        { "$type", JsonString("SStmt_IfBind") },
         { "testType", Citron::ToJson(testType) },
         { "varName", Citron::ToJson(varName) },
         { "exp", Citron::ToJson(exp) },

@@ -147,7 +147,7 @@ public:
         return Value<MStmt_If>(*e_nCond, move(*e_bodyStmts), move(elseStmts));
     }
 
-    ResultType Visit(SStmt_IfTest* stmt) 
+    ResultType Visit(SStmt_IfBind* stmt) 
     {
         // if (Type varName = e) e_body     
         // TODO: if (e is Type(v)) e_body 꼴로 바꾸기

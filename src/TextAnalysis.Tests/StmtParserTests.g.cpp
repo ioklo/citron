@@ -321,6 +321,54 @@ TEST(StmtParser, ParseForeachStmt)
     EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
+TEST(StmtParser, ParseIfBindStmtWithVarName)
+{
+    auto [buffer, lexer] = Prepare(UR"---(if (T t = b) {} else if (c) {} else {})---");
+    SFactory factory;
+
+    auto* stmt = ParseStmt(&lexer, factory);
+
+    auto expected = R"---({
+    "$type": "SStmt_IfBind",
+    "testType": {
+        "$type": "STypeExp_Id",
+        "name": "T",
+        "typeArgs": []
+    },
+    "varName": "t",
+    "exp": {
+        "$type": "SExp_Identifier",
+        "value": "b",
+        "typeArgs": []
+    },
+    "body": {
+        "$type": "SEmbeddableStmt_Block",
+        "stmts": []
+    },
+    "elseBody": {
+        "$type": "SEmbeddableStmt_Single",
+        "stmt": {
+            "$type": "SStmt_If",
+            "cond": {
+                "$type": "SExp_Identifier",
+                "value": "c",
+                "typeArgs": []
+            },
+            "body": {
+                "$type": "SEmbeddableStmt_Block",
+                "stmts": []
+            },
+            "elseBody": {
+                "$type": "SEmbeddableStmt_Block",
+                "stmts": []
+            }
+        }
+    }
+})---";
+
+    EXPECT_SYNTAX_EQ(stmt, expected);
+}
+
 TEST(StmtParser, ParseIfIsExpCondStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(if (b is T) {} else if (c) {} else {})---");
@@ -381,54 +429,6 @@ TEST(StmtParser, ParseIfStmt)
     auto expected = R"---({
     "$type": "SStmt_If",
     "cond": {
-        "$type": "SExp_Identifier",
-        "value": "b",
-        "typeArgs": []
-    },
-    "body": {
-        "$type": "SEmbeddableStmt_Block",
-        "stmts": []
-    },
-    "elseBody": {
-        "$type": "SEmbeddableStmt_Single",
-        "stmt": {
-            "$type": "SStmt_If",
-            "cond": {
-                "$type": "SExp_Identifier",
-                "value": "c",
-                "typeArgs": []
-            },
-            "body": {
-                "$type": "SEmbeddableStmt_Block",
-                "stmts": []
-            },
-            "elseBody": {
-                "$type": "SEmbeddableStmt_Block",
-                "stmts": []
-            }
-        }
-    }
-})---";
-
-    EXPECT_SYNTAX_EQ(stmt, expected);
-}
-
-TEST(StmtParser, ParseIfTestStmtWithVarName)
-{
-    auto [buffer, lexer] = Prepare(UR"---(if (T t = b) {} else if (c) {} else {})---");
-    SFactory factory;
-
-    auto* stmt = ParseStmt(&lexer, factory);
-
-    auto expected = R"---({
-    "$type": "SStmt_IfTest",
-    "testType": {
-        "$type": "STypeExp_Id",
-        "name": "T",
-        "typeArgs": []
-    },
-    "varName": "t",
-    "exp": {
         "$type": "SExp_Identifier",
         "value": "b",
         "typeArgs": []

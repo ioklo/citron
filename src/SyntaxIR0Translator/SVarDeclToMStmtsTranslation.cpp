@@ -69,10 +69,10 @@ private:
         if (dynamic_cast<RType_Ptr*>(initExpType))
             return unexpected{MakePtr<Error_VarDecl_UsingPtrVarInsteadOfVarWhenInitExpIsPtr>()};
 
-        if (dynamic_cast<RType_NullableValue*>(initExpType))
+        if (dynamic_cast<RType_Nullable*>(initExpType))
             return unexpected{MakePtr<Error_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr>()};
 
-        if (dynamic_cast<RType_NullableRef*>(initExpType))
+        if (dynamic_cast<RType_NullableInplace*>(initExpType))
             return unexpected{MakePtr<Error_VarDecl_UsingNullableVarInsteadOfVarWhenInitExpIsNullablePtr>()};
 
         return {};
@@ -108,7 +108,7 @@ private:
             return {};
 
         case SVarDeclType_VarKind::Nullable:
-            if (!dynamic_cast<RType_NullableRef*>(initExpType) || !dynamic_cast<RType_NullableValue*>(initExpType))
+            if (!dynamic_cast<RType_NullableInplace*>(initExpType) || !dynamic_cast<RType_Nullable*>(initExpType))
                 return unexpected{MakePtr<Error_VarDecl_UsingNullableVarAsDeclTypeButInitExpIsNotNullable>()};
             return {};
 

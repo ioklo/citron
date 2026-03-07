@@ -89,17 +89,17 @@ Type policy alignment
 - 제네릭 iterator의 `nullable<TItem>`은 기본적으로 tagged nullable 의미를 따른다.
 - 비제네릭 경계에서의 압축 nullable 최적화는 별도 최적화 규칙으로 다룬다.
 
-not_null talias safety policy
-- `if (exp is not_null(alias))` 형태를 지원한다.
+nullable some talias safety policy
+- `if (exp is some alias)` 형태를 지원한다.
 - `alias`에 `!`를 붙여 unchecked talias를 명시할 수 있다.
-  - 예: `if (a.s is not_null(s!))`
+  - 예: `if (a.s is some s!)`
 
 Rules
-- `not_null(alias)`:
+- `some alias`:
   - checked talias를 요청한다.
   - 로컬 대상(local var)은 checked 검사를 수행한다.
   - 비로컬 대상(field/indexer/deref 등)은 checked 보장을 할 수 없으므로 경고를 낸다.
-- `not_null(alias!)`:
+- `some alias!`:
   - unchecked talias를 강제한다.
   - 비로컬 대상에서는 경고 없이 허용한다.
   - 로컬 대상에서는 불필요한 unchecked 사용으로 경고를 낸다.
@@ -111,3 +111,8 @@ Diagnostics
 Notes
 - 이 정책은 포인터 연산과 유사하게, 안전성 완화(unchecked)를 문법으로 명시하게 한다.
 - v1에서는 완전한 전역 invalidation 추적 대신, local checked + non-local unchecked 명시 모델을 채택한다.
+
+
+
+
+

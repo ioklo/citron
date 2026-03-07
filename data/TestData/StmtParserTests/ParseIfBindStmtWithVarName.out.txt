@@ -1,5 +1,5 @@
 {
-    "$type": "SStmt_IfTest",
+    "$type": "SStmt_IfBind",
     "testType": {
         "$type": "STypeExp_Id",
         "name": "T",

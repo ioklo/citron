@@ -37,7 +37,7 @@ RFactory::~RFactory()
 
 }
 
-RType_NullableValue* RFactory::MakeNullableValueType(RType* innerType)
+RType_Nullable* RFactory::MakeNullableType(RType* innerType)
 {   
     auto i = nullableValueTypes.find(innerType);
 
@@ -45,14 +45,14 @@ RType_NullableValue* RFactory::MakeNullableValueType(RType* innerType)
         return i->second.get();
 
     auto* key = innerType;
-    unique_ptr<RType_NullableValue> newType{new RType_NullableValue(innerType, this)};
+    unique_ptr<RType_Nullable> newType{new RType_Nullable(innerType, this)};
     auto* pNewType = newType.get();
     nullableValueTypes.emplace(innerType, move(newType));
 
     return pNewType;
 }
 
-RType_NullableRef* RFactory::MakeNullableRefType(RType* innerType)
+RType_NullableInplace* RFactory::MakeNullableInplaceType(RType* innerType)
 {
     auto i = nullableRefTypes.find(innerType);
 
@@ -60,7 +60,7 @@ RType_NullableRef* RFactory::MakeNullableRefType(RType* innerType)
         return i->second.get();
 
     auto* key = innerType;
-    unique_ptr<RType_NullableRef> newType{new RType_NullableRef{innerType, this}};
+    unique_ptr<RType_NullableInplace> newType{new RType_NullableInplace{innerType, this}};
     auto pNewType = newType.get();
     nullableRefTypes.emplace(key, move(newType));
 

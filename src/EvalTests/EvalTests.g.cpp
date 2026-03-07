@@ -326,7 +326,7 @@ TEST(Call_Lambda_Expression, CallInstanceMember)
 
 void Main()
 {
-    C c = new C(i => {
+    C c = new C([](int i) {
         @$i
     });
 
@@ -347,7 +347,7 @@ TEST(Call_Lambda_Expression, CallStaticMember)
 
 void Main()
 {
-    C.F = i => {
+    C.F = [](int i) {
         @$i
     };
 
@@ -364,7 +364,7 @@ TEST(Call_Lambda_Expression, General)
 {
     auto code = R"---(void Main()
 {
-	var f = (int i, string s, bool b) => { 
+	var f = [](int i, string s, bool b) { 
 	    @$i $s $b
 	};
 	
@@ -417,7 +417,7 @@ TEST(Cast_Boxed_Lambda_To_Func_Expression, Basic)
 {
     auto code = R"---(void Main()
 {
-	var bf = box () => { return 3; }
+	var bf = box [] { return 3; }
 	func<int> f = bf; // CastBoxedLambdaToFuncExp(LoadExp(LocalVarLoc("bf")), func<int>)
 
 	@${f()}
@@ -1535,7 +1535,7 @@ TEST(Lambda_Expression, Basic)
 {
     auto code = R"---(void Main() 
 {
-    var f = () => { @{hi} };
+    var f = [] { @{hi} };
     f();
 }
 )---";
@@ -1607,7 +1607,7 @@ TEST(Lambda_Expression_Capture, This)
     
     void F()
     {
-        var l = () => this->x + 2; // this는 캡쳐대상 S*
+        var l = [&this]() => this->x + 2; // this는 명시 캡쳐대상 S*
         
         x = 3;
         
@@ -1675,7 +1675,7 @@ TEST(Lambda_Expression, Usage)
     auto code = R"---(void Main()
 {
     var l1 = (int x) => x + 1; // 본문 축약형
-    var l2 = (string s) => { return s; } // 완전한 본문
+    var l2 = [](string s) { return s; } // 완전한 본문
 
     var v1 = l1(2);
     var v2 = l2("hi");
@@ -2149,7 +2149,7 @@ TEST(Return_Statement, LambdaReturn)
 {
     auto code = R"---(void Main()
 {
-    var f = () => {
+    var f = [] {
         return 3;
     };
 

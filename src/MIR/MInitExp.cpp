@@ -18,9 +18,9 @@ void MInitExp_NewClass::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); 
 void MInitExp_StructCtor::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_Call::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_NewEnumElem::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
-void MInitExp_NewNullableValue::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
-void MInitExp_NullableValueNullLiteral::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
-void MInitExp_NullableRefNullLiteral::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
+void MInitExp_Nullable::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
+void MInitExp_NullableNullLiteral::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
+void MInitExp_NullableInplaceNullLiteral::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_Cast::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_Lambda::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_InlineBlock::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
@@ -54,13 +54,13 @@ RType* GetType(MInitExp* initExp, RFactory* rFactory)
         ResultType Visit(MInitExp_StructCtor* initExp) { return rFactory->MakeStructType(initExp->decl->GetStructDecl(), initExp->typeArgs); }
         ResultType Visit(MInitExp_Call* initExp) { return GetType(initExp->callable); }
         ResultType Visit(MInitExp_NewEnumElem* initExp) { return rFactory->MakeEnumElemType(initExp->enumElemDecl, initExp->typeArgs); }
-        ResultType Visit(MInitExp_NewNullableValue* initExp) 
+        ResultType Visit(MInitExp_Nullable* initExp) 
         {
             auto* innerType = GetType(initExp->initExp, rFactory);
-            return rFactory->MakeNullableValueType(innerType);
+            return rFactory->MakeNullableType(innerType);
         }
-        ResultType Visit(MInitExp_NullableValueNullLiteral* initExp) { return rFactory->MakeNullableValueType(initExp->innerType); }
-        ResultType Visit(MInitExp_NullableRefNullLiteral* initExp) { return rFactory->MakeNullableRefType(initExp->innerType); }
+        ResultType Visit(MInitExp_NullableNullLiteral* initExp) { return rFactory->MakeNullableType(initExp->innerType); }
+        ResultType Visit(MInitExp_NullableInplaceNullLiteral* initExp) { return rFactory->MakeNullableInplaceType(initExp->innerType); }
         ResultType Visit(MInitExp_Cast* initExp) { return initExp->targetType; }
         ResultType Visit(MInitExp_Lambda* initExp) { return initExp->lambdaDecl->GetReturnType(*initExp->typeArgs); }
         ResultType Visit(MInitExp_InlineBlock* initExp) { return initExp->returnType; }

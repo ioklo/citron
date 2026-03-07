@@ -9,8 +9,7 @@ void MStmt_Command::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_LocalVarDecl::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_LocalRefDecl::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_If::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
-void MStmt_IfNullableRefTest::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
-void MStmt_IfNullableValueTest::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_IfBind::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_For::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Continue::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Break::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }

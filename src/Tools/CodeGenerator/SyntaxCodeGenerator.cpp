@@ -69,7 +69,7 @@ struct ToJsonVisitor {
                 "SStmt_Command",
                 "SStmt_VarDecl",
                 "SStmt_If",
-                "SStmt_IfTest",
+                "SStmt_IfBind",
                 "SStmt_For",
                 "SStmt_Continue",
                 "SStmt_Break",
@@ -353,7 +353,7 @@ struct ToJsonVisitor {
                 "SStmt_Command",
                 "SStmt_VarDecl",
                 "SStmt_If",
-                "SStmt_IfTest",
+                "SStmt_IfBind",
                 "SStmt_For",
                 "SStmt_Continue",
                 "SStmt_Break",
@@ -974,9 +974,9 @@ struct ToJsonVisitor {
             },
         },
 
-        // SStmt_IfTest(STypeExp testTypeExp, std::string varName, SExp exp, SEmbeddableStmt* body, SEmbeddableStmt* elseBody);
+        // SStmt_IfBind(STypeExp testTypeExp, std::string varName, SExp exp, SEmbeddableStmt* body, SEmbeddableStmt* elseBody);
             ClassInfo {
-                .name = "SStmt_IfTest",
+                .name = "SStmt_IfBind",
                 .variantInterfaces { "SStmt" },
                 .memberInfos {
                     {.type = "STypeExp*", .memberVarName = "testType", .getterName = "GetTestType" },

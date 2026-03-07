@@ -6,8 +6,8 @@ namespace Citron {
 struct RTypeVisitor
 {
     virtual ~RTypeVisitor() {}
-    virtual void Visit(RType_NullableValue* rType) = 0;
-    virtual void Visit(RType_NullableRef* rType) = 0;
+    virtual void Visit(RType_Nullable* rType) = 0;
+    virtual void Visit(RType_NullableInplace* rType) = 0;
     virtual void Visit(RType_TypeVar* rType) = 0;
     virtual void Visit(RType_Void* rType) = 0;
     virtual void Visit(RType_Primitive* rType) = 0;
@@ -32,8 +32,8 @@ template<typename TVisitor, typename... TVisitorArgs>
 concept RTypeVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 {
     typename std::remove_cvref_t<TVisitor>::ResultType;
-    { v.Visit(std::declval<RType_NullableValue*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<RType_NullableRef*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<RType_Nullable*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<RType_NullableInplace*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_TypeVar*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Void*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Primitive*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
@@ -63,8 +63,8 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RType* r
     {
         struct Bridge : RTypeVisitor {
             decltype(caller)& call;
-            Bridge(decltype(caller)& call) : call(call) {}            void Visit(RType_NullableValue* rType) override { call(rType); }
-            void Visit(RType_NullableRef* rType) override { call(rType); }
+            Bridge(decltype(caller)& call) : call(call) {}            void Visit(RType_Nullable* rType) override { call(rType); }
+            void Visit(RType_NullableInplace* rType) override { call(rType); }
             void Visit(RType_TypeVar* rType) override { call(rType); }
             void Visit(RType_Void* rType) override { call(rType); }
             void Visit(RType_Primitive* rType) override { call(rType); }
@@ -89,8 +89,8 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RType* r
         struct Bridge : RTypeVisitor {
             decltype(caller)& call;
             std::optional<TResult> result{};
-            Bridge(decltype(caller)& call) : call(call) {}            void Visit(RType_NullableValue* rType) override { result.emplace(call(rType)); }
-            void Visit(RType_NullableRef* rType) override { result.emplace(call(rType)); }
+            Bridge(decltype(caller)& call) : call(call) {}            void Visit(RType_Nullable* rType) override { result.emplace(call(rType)); }
+            void Visit(RType_NullableInplace* rType) override { result.emplace(call(rType)); }
             void Visit(RType_TypeVar* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Void* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Primitive* rType) override { result.emplace(call(rType)); }

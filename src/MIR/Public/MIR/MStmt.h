@@ -86,61 +86,18 @@ public:
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-// if (exp is not_null(c)) 
-// IfTest_NullableInplace(exp, C, c, body, elseBody)
-// 
-// if (s is not_null(s))
-// IfTest_Nullable(exp, 
-// 
-// if (c is D(d)) { }
-
-// not_null(s)
-struct MPattern_NotNull { RName name; }; // talias
-
-// null
-struct MPattern_Null { };
-
-// C(c)
-struct MPattern_RefType { RType* type; RName name; };
-
-using MPattern = std::variant<struct MPattern_NotNull, struct MPattern_Null, MPattern_RefType>;
-
-// if (target match pattern) { }
-struct MStmt_IfTest : MStmt
+// cond내부에 alias가 생기는 경우
+struct MStmt_IfBind : MStmt
 {
-    MRead target;
-    MPattern* pattern;
-    std::vector<MStmt*> body;
-    std::vector<MStmt*> elseBody;
-};
-
-struct MStmt_IfNullableRefTest : MStmt
-{
-    RType* refType;
-    RName varName;
-    MExp* asExp;
+    MExp* cond;
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
 
 public:
-    MStmt_IfNullableRefTest(RType* refType, RName&& varName, MExp* asExp, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
-        : refType{refType}, varName{std::move(varName)}, asExp{asExp}, body{std::move(body)}, elseBody{std::move(elseBody)}
-    { }
-    MIR_API void Accept(MStmtVisitor& visitor) override;
-};
-
-struct MStmt_IfNullableValueTest : MStmt
-{
-    RType* type;
-    RName varName;
-    MExp* asExp;
-    std::vector<MStmt*> body;
-    std::vector<MStmt*> elseBody;
-
-public:
-    MStmt_IfNullableValueTest(RType* type, RName&& varName, MExp* asExp, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
-        : type{type}, varName{std::move(varName)}, asExp{asExp}, body{std::move(body)}, elseBody{std::move(elseBody)}
-    { }
+    MStmt_IfBind(MExp* cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
+        : cond{cond}, body{std::move(body)}, elseBody{std::move(elseBody)}
+    {
+    }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 

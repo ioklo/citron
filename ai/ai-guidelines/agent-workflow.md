@@ -7,5 +7,8 @@
 2. 테스트 포함: 변경 시 관련 단위 테스트를 추가하거나 기존 테스트를 업데이트하세요.
 3. 빌드 검증: `cmake --build` 및 `ctest --output-on-failure`를 실행해 결과를 PR에 첨부하세요.
 4. PR 설명 구성: 변경 목적, 영향 범위(파일 목록), 테스트 결과, 후속 작업을 명시하세요.
-5. 문서화: 아키텍처/설계 결정은 `ai/decisions/`에 ADR로 기록하세요.
+5. 문서화:
+- 논의 과정, 후보안, 실험 메모는 `ai/notes/`에 기록하세요.
+- 현재 유효한 언어 규칙은 `ai/specs/`에 반영하세요.
+- 컴파일러 내부 규약, lowering 방향, 작업 단위별 구현 스냅샷은 `ai/implementations/`에 반영하세요.
 6. 문서 임베드: `docs/*.md`의 `<!--BEGIN_EMBED(name)-->`/`<!--END_EMBED-->` 구간은 `DocUpdater`가 원본 테스트 파일(예: `data/TestData/**/*.ct`)에서 읽어 재생성합니다. 해당 구간을 직접 수정하지 말고, 원본 `.ct`를 수정한 뒤 `DocUpdater`로 갱신하세요.

@@ -7,7 +7,7 @@
 - 변경 범위 제한: 영향 단계 디렉터리 안에서 끝내기(예: 문법 변경 → `Syntax/`, `SyntaxIR0Translator/`).
 - `docs/` 보호: AI는 `docs/` 트리의 기존 문서를 수정하거나 생성하지 않는다(필요 시 사람에게 위임하거나 별도 승인을 받음).
 - 테스트 동반: 기능·버그 수정 시 관련 단위 테스트 추가/갱신.
-- 기록: 설계 판단은 `ai/decisions/`(ADR), 구현 흐름은 `ai/implementations/`, 실험/메모는 `ai/notes/`에 남김.
+- 기록: 회의/실험 메모는 `ai/notes/`, 현재 유효한 언어 규칙은 `ai/specs/`, 컴파일러 내부 규약과 구현 흐름은 `ai/implementations/`에 남김.
 - PR 설명: 목적, 영향 파일, 테스트 결과, 후속 작업을 명시.
 
 ## 2. 빌드·테스트 단축 스니펫(macOS 기준)
@@ -27,14 +27,15 @@ Text → Syntax → MIR(IR0) → QIR(IR1) → LLVM. 변환기는 단방향을 �
 - `RDecl`: 컴파일 단계 공통 인터페이스(런타임/중간 표현용).
 - `EDecl`: 외부 노출 선언, `REDecl`로 감싸 `RDecl` 인터페이스 구현.
 - `NDecl`: 소스에서 직접 생성, `RDecl`을 상속/구현.
-- 최근 결정: 런타임용 선언을 `RDecl`로 통일(참고: `docs/decisions/2026-02-05-use-rdecl-as-runtime-decl.md`).
+- 최근 결정: 런타임용 선언을 `RDecl`로 통일(참고: `ai/implementations/decl-model.md`).
 
 ## 5. 산출물 위치
-- ADR: `ai/decisions/` (`ai/templates/adr.md` 사용 가능).
-- 구현 가이드: `ai/implementations/`.
+- 회의/실험 노트: `ai/notes/`.
+- 언어 스펙 스냅샷: `ai/specs/`.
+- 컴파일러 내부 규약/구현 스냅샷: `ai/implementations/`.
 - 프로세스/체크리스트: `ai/process/`, `ai/ai-guidelines/`.
-- 실험/회의록: `ai/notes/`(`ai/templates/notes.md` 참고).
-- 언어 명세: `docs/` 아래 기존 문서 유지.
+- 문서 템플릿: `ai/templates/`.
+- 언어 명세 원문: `docs/` 아래 기존 문서 유지.
 
 ## 6. 스타일·명명 규칙(필수)
 - `src/RULES.md`를 우선 준수. 주요 예: `std::expected` 결과 변수 `e_`, `std::optional`은 `o_` 접두사.
@@ -44,7 +45,7 @@ Text → Syntax → MIR(IR0) → QIR(IR1) → LLVM. 변환기는 단방향을 �
 ## 7. 작업 흐름 체크리스트
 - [ ] 변경 범위와 영향 단계 명시.
 - [ ] 관련 테스트 추가/업데이트 후 `ctest --output-on-failure` 실행.
-- [ ] 문서 업데이트 여부 확인(ADR/구현/노트).
+- [ ] 문서 업데이트 여부 확인(`notes/specs/implementations`).
 - [ ] PR 설명에 목적·파일·테스트 결과·후속 작업 기재.
 
 ## 8. 참고 문서

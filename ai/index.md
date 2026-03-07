@@ -1,12 +1,17 @@
 # AI 문서 색인
 
-이 저장소의 AI 관련 문서 모음입니다. 아래 디렉터리에서 의사결정(ADR), 구현 가이드, 개발 절차, AI 에이전트 지침, 회의록 등을 찾을 수 있습니다.
+이 저장소의 AI 관련 문서 모음입니다. 회의/실험 기록은 `ai/notes`에 남기고, 현재 유효한 언어 규칙은 `ai/specs`, 컴파일러 내부 규약과 구현 스냅샷은 `ai/implementations`에 유지합니다.
 
-- `ai/decisions/` : 아키텍처 의사결정(ADR)
-- `ai/implementations/` : 모듈별 구현 가이드 및 호출 흐름
+- `ai/specs/` : 현재 유효한 언어 규칙 스냅샷
+- `ai/implementations/` : 컴파일러 내부 규약, 구현 전략, lowering 경로, 작업 단위별 스냅샷
 - `ai/process/` : 빌드/테스트/CI 관련 절차
 - `ai/ai-guidelines/` : AI 에이전트용 작업 규칙과 체크리스트
 - `ai/notes/` : 회의록 및 실험 노트
-- `ai/templates/` : 문서 템플릿(ADR, 구현 가이드)
+- `ai/templates/` : 스펙/구현 문서 템플릿
 
-빠른 시작: `ai/implementations/syntaxir0translator-implementation.md`와 `ai/decisions/2026-02-05-use-rdecl-as-runtime-decl.md`를 먼저 읽으세요.
+빠른 시작:
+- `ai/specs/index.md`
+- `ai/specs/language/functions-and-control-flow.md`
+- `ai/specs/language/types-and-ownership.md`
+- `ai/implementations/decl-model.md`
+- `ai/implementations/mir-value-model.md`

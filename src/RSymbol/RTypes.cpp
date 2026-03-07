@@ -17,8 +17,8 @@ using namespace std;
 
 namespace Citron {
 
-void RType_NullableValue::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
-void RType_NullableRef::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_Nullable::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
+void RType_NullableInplace::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
 void RType_TypeVar::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
 void RType_Void::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
 void RType_Primitive::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
@@ -34,34 +34,34 @@ void RType_EnumElem::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
 void RType_Interface::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
 void RType_Lambda::Accept(RTypeVisitor& visitor) { visitor.Visit(this); }
 
-RType_NullableValue::RType_NullableValue(RType* innerType, RFactory* factory)
+RType_Nullable::RType_Nullable(RType* innerType, RFactory* factory)
     : innerType{innerType}, factory{factory}
 {
 }
 
-RType* RType_NullableValue::Apply(RTypeArguments& typeArgs)
+RType* RType_Nullable::Apply(RTypeArguments& typeArgs)
 {
     auto* appliedInnerType = innerType->Apply(typeArgs);
-    return factory->MakeNullableValueType(appliedInnerType);
+    return factory->MakeNullableType(appliedInnerType);
 }
 
-optional<RDeclRes> RType_NullableValue::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_Nullable::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     // 사용자가 검색해서 쓸 수 있는 멤버는 없다
     return nullopt;
 }
 
-RType_NullableRef::RType_NullableRef(RType* innerType, RFactory* factory)
+RType_NullableInplace::RType_NullableInplace(RType* innerType, RFactory* factory)
     : innerType{innerType}, factory{factory}
 {
 }
 
-RType* RType_NullableRef::Apply(RTypeArguments& typeArgs)
+RType* RType_NullableInplace::Apply(RTypeArguments& typeArgs)
 {   
-    return factory->MakeNullableRefType(innerType->Apply(typeArgs));
+    return factory->MakeNullableInplaceType(innerType->Apply(typeArgs));
 }
 
-optional<RDeclRes> RType_NullableRef::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
+optional<RDeclRes> RType_NullableInplace::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
 {
     return nullopt;
 }

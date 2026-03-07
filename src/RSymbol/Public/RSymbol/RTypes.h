@@ -45,7 +45,7 @@ public:
 };
 
 // recursive types
-class RType_NullableValue : public RType
+class RType_Nullable : public RType
 {
 public:
     RType* innerType;
@@ -53,7 +53,7 @@ public:
 
 private:
     friend RFactory;
-    RType_NullableValue(RType* innerType, RFactory* factory);
+    RType_Nullable(RType* innerType, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
@@ -63,7 +63,7 @@ public:
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
 
-class RType_NullableRef : public RType
+class RType_NullableInplace : public RType
 {
 public:
     RType* innerType;
@@ -71,7 +71,7 @@ public:
 
 private:
     friend RFactory;
-    RType_NullableRef(RType* innerType, RFactory* factory);
+    RType_NullableInplace(RType* innerType, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;

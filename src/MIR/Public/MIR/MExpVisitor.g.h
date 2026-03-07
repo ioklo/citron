@@ -16,8 +16,8 @@ struct MExpVisitor
     virtual void Visit(MExp_Call* mExp) = 0;
     virtual void Visit(MExp_NewStruct* mExp) = 0;
     virtual void Visit(MExp_NewEnumElem* mExp) = 0;
-    virtual void Visit(MExp_NewNullableValue* mExp) = 0;
-    virtual void Visit(MExp_NullableValueNullLiteral* mExp) = 0;
+    virtual void Visit(MExp_Nullable* mExp) = 0;
+    virtual void Visit(MExp_NullableNullLiteral* mExp) = 0;
     virtual void Visit(MExp_Cast* mExp) = 0;
     virtual void Visit(MExp_Lambda* mExp) = 0;
     virtual void Visit(MExp_InlineBlock* mExp) = 0;
@@ -43,8 +43,8 @@ concept MExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MExp_Call*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_NewStruct*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_NewEnumElem*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MExp_NewNullableValue*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MExp_NullableValueNullLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MExp_Nullable*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MExp_NullableNullLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_Cast*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_Lambda*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_InlineBlock*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
@@ -75,8 +75,8 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             void Visit(MExp_Call* mExp) override { call(mExp); }
             void Visit(MExp_NewStruct* mExp) override { call(mExp); }
             void Visit(MExp_NewEnumElem* mExp) override { call(mExp); }
-            void Visit(MExp_NewNullableValue* mExp) override { call(mExp); }
-            void Visit(MExp_NullableValueNullLiteral* mExp) override { call(mExp); }
+            void Visit(MExp_Nullable* mExp) override { call(mExp); }
+            void Visit(MExp_NullableNullLiteral* mExp) override { call(mExp); }
             void Visit(MExp_Cast* mExp) override { call(mExp); }
             void Visit(MExp_Lambda* mExp) override { call(mExp); }
             void Visit(MExp_InlineBlock* mExp) override { call(mExp); }
@@ -102,8 +102,8 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             void Visit(MExp_Call* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_NewStruct* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_NewEnumElem* mExp) override { result.emplace(call(mExp)); }
-            void Visit(MExp_NewNullableValue* mExp) override { result.emplace(call(mExp)); }
-            void Visit(MExp_NullableValueNullLiteral* mExp) override { result.emplace(call(mExp)); }
+            void Visit(MExp_Nullable* mExp) override { result.emplace(call(mExp)); }
+            void Visit(MExp_NullableNullLiteral* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_Cast* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_Lambda* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_InlineBlock* mExp) override { result.emplace(call(mExp)); }

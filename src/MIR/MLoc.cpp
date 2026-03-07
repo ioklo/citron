@@ -59,7 +59,7 @@ RType* GetType(MLoc* loc, RFactory* rFactory)
 
         ResultType Visit(MLoc_NullableValue* loc) 
         { 
-            auto* innerType = dynamic_cast<RType_NullableValue*>(GetType(loc->loc, rFactory));
+            auto* innerType = dynamic_cast<RType_Nullable*>(GetType(loc->loc, rFactory));
             return innerType->innerType;
         }
     };

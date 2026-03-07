@@ -16,9 +16,9 @@ struct MInitExpVisitor
     virtual void Visit(MInitExp_StructCtor* mInitExp) = 0;
     virtual void Visit(MInitExp_Call* mInitExp) = 0;
     virtual void Visit(MInitExp_NewEnumElem* mInitExp) = 0;
-    virtual void Visit(MInitExp_NewNullableValue* mInitExp) = 0;
-    virtual void Visit(MInitExp_NullableValueNullLiteral* mInitExp) = 0;
-    virtual void Visit(MInitExp_NullableRefNullLiteral* mInitExp) = 0;
+    virtual void Visit(MInitExp_Nullable* mInitExp) = 0;
+    virtual void Visit(MInitExp_NullableNullLiteral* mInitExp) = 0;
+    virtual void Visit(MInitExp_NullableInplaceNullLiteral* mInitExp) = 0;
     virtual void Visit(MInitExp_Cast* mInitExp) = 0;
     virtual void Visit(MInitExp_Lambda* mInitExp) = 0;
     virtual void Visit(MInitExp_InlineBlock* mInitExp) = 0;
@@ -43,9 +43,9 @@ concept MInitExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MInitExp_StructCtor*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MInitExp_Call*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MInitExp_NewEnumElem*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MInitExp_NewNullableValue*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MInitExp_NullableValueNullLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MInitExp_NullableRefNullLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MInitExp_Nullable*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MInitExp_NullableNullLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MInitExp_NullableInplaceNullLiteral*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MInitExp_Cast*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MInitExp_Lambda*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MInitExp_InlineBlock*>(), std::forward<TVisitorArgs>(args)...) } -> MInitExpConvertibleToResultType<TVisitor>;
@@ -75,9 +75,9 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MInitExp
             void Visit(MInitExp_StructCtor* mInitExp) override { call(mInitExp); }
             void Visit(MInitExp_Call* mInitExp) override { call(mInitExp); }
             void Visit(MInitExp_NewEnumElem* mInitExp) override { call(mInitExp); }
-            void Visit(MInitExp_NewNullableValue* mInitExp) override { call(mInitExp); }
-            void Visit(MInitExp_NullableValueNullLiteral* mInitExp) override { call(mInitExp); }
-            void Visit(MInitExp_NullableRefNullLiteral* mInitExp) override { call(mInitExp); }
+            void Visit(MInitExp_Nullable* mInitExp) override { call(mInitExp); }
+            void Visit(MInitExp_NullableNullLiteral* mInitExp) override { call(mInitExp); }
+            void Visit(MInitExp_NullableInplaceNullLiteral* mInitExp) override { call(mInitExp); }
             void Visit(MInitExp_Cast* mInitExp) override { call(mInitExp); }
             void Visit(MInitExp_Lambda* mInitExp) override { call(mInitExp); }
             void Visit(MInitExp_InlineBlock* mInitExp) override { call(mInitExp); }
@@ -102,9 +102,9 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MInitExp
             void Visit(MInitExp_StructCtor* mInitExp) override { result.emplace(call(mInitExp)); }
             void Visit(MInitExp_Call* mInitExp) override { result.emplace(call(mInitExp)); }
             void Visit(MInitExp_NewEnumElem* mInitExp) override { result.emplace(call(mInitExp)); }
-            void Visit(MInitExp_NewNullableValue* mInitExp) override { result.emplace(call(mInitExp)); }
-            void Visit(MInitExp_NullableValueNullLiteral* mInitExp) override { result.emplace(call(mInitExp)); }
-            void Visit(MInitExp_NullableRefNullLiteral* mInitExp) override { result.emplace(call(mInitExp)); }
+            void Visit(MInitExp_Nullable* mInitExp) override { result.emplace(call(mInitExp)); }
+            void Visit(MInitExp_NullableNullLiteral* mInitExp) override { result.emplace(call(mInitExp)); }
+            void Visit(MInitExp_NullableInplaceNullLiteral* mInitExp) override { result.emplace(call(mInitExp)); }
             void Visit(MInitExp_Cast* mInitExp) override { result.emplace(call(mInitExp)); }
             void Visit(MInitExp_Lambda* mInitExp) override { result.emplace(call(mInitExp)); }
             void Visit(MInitExp_InlineBlock* mInitExp) override { result.emplace(call(mInitExp)); }

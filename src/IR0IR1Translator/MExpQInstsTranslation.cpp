@@ -579,8 +579,8 @@ public:
     ResultType Visit(MExp_CallStructFunc* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_NewEnumElem* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_CastEnumElemToEnum* exp) { throw NotImplementedException{}; }
-    ResultType Visit(MExp_NewNullableValue* exp) { throw NotImplementedException{}; }
-    ResultType Visit(MExp_NullableValueNullLiteral* exp) { throw NotImplementedException{}; }
+    ResultType Visit(MExp_Nullable* exp) { throw NotImplementedException{}; }
+    ResultType Visit(MExp_NullableNullLiteral* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_NullableRefNullLiteral* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_Lambda* exp) { throw NotImplementedException{}; }
     ResultType Visit(MExp_CallLambda* exp) { throw NotImplementedException{}; }

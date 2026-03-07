@@ -129,22 +129,22 @@ struct MInitExp_NewEnumElem : MInitExp
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
-// NBC value를 nullable로 만들 경우
-struct MInitExp_NewNullableValue : MInitExp
+// NBC value를 nullable(not inplace)로 만들 경우
+struct MInitExp_Nullable : MInitExp
 {
     MInitExp* initExp;
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
 // S? s = null;
-struct MInitExp_NullableValueNullLiteral : MInitExp
+struct MInitExp_NullableNullLiteral : MInitExp
 {
     RType* innerType;
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
 // C? c = null;
-struct MInitExp_NullableRefNullLiteral : MInitExp
+struct MInitExp_NullableInplaceNullLiteral : MInitExp
 {
     RType* innerType;
     MIR_API void Accept(MInitExpVisitor& visitor) override;

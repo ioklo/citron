@@ -16,7 +16,7 @@ class SStmt;
 class SStmt_Command;
 class SStmt_VarDecl;
 class SStmt_If;
-class SStmt_IfTest;
+class SStmt_IfBind;
 class SStmt_For;
 class SStmt_Continue;
 class SStmt_Break;
@@ -407,7 +407,7 @@ public:
     virtual void Visit(SStmt_Command* stmt) = 0;
     virtual void Visit(SStmt_VarDecl* stmt) = 0;
     virtual void Visit(SStmt_If* stmt) = 0;
-    virtual void Visit(SStmt_IfTest* stmt) = 0;
+    virtual void Visit(SStmt_IfBind* stmt) = 0;
     virtual void Visit(SStmt_For* stmt) = 0;
     virtual void Visit(SStmt_Continue* stmt) = 0;
     virtual void Visit(SStmt_Break* stmt) = 0;
@@ -445,7 +445,7 @@ concept SStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<SStmt_Command*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_VarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_If*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SStmt_IfTest*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_IfBind*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_For*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_Continue*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_Break*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
@@ -477,7 +477,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStmt* s
             void Visit(SStmt_Command* stmt) override { call(stmt); }
             void Visit(SStmt_VarDecl* stmt) override { call(stmt); }
             void Visit(SStmt_If* stmt) override { call(stmt); }
-            void Visit(SStmt_IfTest* stmt) override { call(stmt); }
+            void Visit(SStmt_IfBind* stmt) override { call(stmt); }
             void Visit(SStmt_For* stmt) override { call(stmt); }
             void Visit(SStmt_Continue* stmt) override { call(stmt); }
             void Visit(SStmt_Break* stmt) override { call(stmt); }
@@ -506,7 +506,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStmt* s
             void Visit(SStmt_Command* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_VarDecl* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_If* stmt) override { result.emplace(call(stmt)); }
-            void Visit(SStmt_IfTest* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_IfBind* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_For* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_Continue* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_Break* stmt) override { result.emplace(call(stmt)); }
@@ -2384,7 +2384,7 @@ public:
 
 };
 
-class SStmt_IfTest
+class SStmt_IfBind
     : public SStmt
 {
 public:
@@ -2394,13 +2394,13 @@ public:
     SEmbeddableStmt* body;
     SEmbeddableStmt* elseBody;
 
-    SYNTAX_API SStmt_IfTest(STypeExp* testType, std::string varName, SExp* exp, SEmbeddableStmt* body, SEmbeddableStmt* elseBody);
-    SStmt_IfTest(const SStmt_IfTest&) = delete;
-    SYNTAX_API SStmt_IfTest(SStmt_IfTest&&) noexcept;
-    SYNTAX_API virtual ~SStmt_IfTest();
+    SYNTAX_API SStmt_IfBind(STypeExp* testType, std::string varName, SExp* exp, SEmbeddableStmt* body, SEmbeddableStmt* elseBody);
+    SStmt_IfBind(const SStmt_IfBind&) = delete;
+    SYNTAX_API SStmt_IfBind(SStmt_IfBind&&) noexcept;
+    SYNTAX_API virtual ~SStmt_IfBind();
 
-    SStmt_IfTest& operator=(const SStmt_IfTest& other) = delete;
-    SYNTAX_API SStmt_IfTest& operator=(SStmt_IfTest&& other) noexcept;
+    SStmt_IfBind& operator=(const SStmt_IfBind& other) = delete;
+    SYNTAX_API SStmt_IfBind& operator=(SStmt_IfBind&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }

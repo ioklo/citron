@@ -21,7 +21,7 @@ namespace Citron {
 SEmbeddableStmt* ParseEmbeddableStmt(Lexer* lexer, SFactory& factory);
 
 // typeExp id = exp)
-SStmt_IfTest* ParseIfTestFragment(Lexer* lexer, SFactory& factory)
+SStmt_IfBind* ParseIfBindFragment(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
@@ -58,10 +58,10 @@ SStmt_IfTest* ParseIfTestFragment(Lexer* lexer, SFactory& factory)
     }
 
     *lexer = move(curLexer);
-    return factory.MakeSStmt_IfTest(testTypeExp, move(o_varNameToken->text), exp, body, elseBody);
+    return factory.MakeSStmt_IfBind(testTypeExp, move(o_varNameToken->text), exp, body, elseBody);
 }
 
-// 리턴은 SStmt_If와 SStmt_IfTest
+// 리턴은 SStmt_If와 SStmt_IfBind
 SStmt* ParseIfStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
@@ -78,7 +78,7 @@ SStmt* ParseIfStmt(Lexer* lexer, SFactory& factory)
         return nullptr;
 
     // typeExp varName = exp꼴인지 먼저 확인
-    if (auto* ifTestStmt = ParseIfTestFragment(&curLexer, factory))
+    if (auto* ifTestStmt = ParseIfBindFragment(&curLexer, factory))
     {
         *lexer = move(curLexer);
         return ifTestStmt;

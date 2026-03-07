@@ -45,11 +45,11 @@ expected<MExp*, DiagPtr> TranslateSNullLiteralExpToMExp(SExp_NullLiteral* exp, R
     if (hintType != nullptr)
     {
         // int? i = null;
-        if (dynamic_cast<RType_NullableValue*>(hintType))
-            return contexts.mFactory->MakeMExp<MExp_NullableValueNullLiteral>(hintType, contexts.rFactory);
+        if (dynamic_cast<RType_Nullable*>(hintType))
+            return contexts.mFactory->MakeMExp<MExp_NullableNullLiteral>(hintType, contexts.rFactory);
 
         // C? c = null;
-        if (dynamic_cast<RType_NullableRef*>(hintType))
+        if (dynamic_cast<RType_NullableInplace*>(hintType))
             return contexts.mFactory->MakeMExp<MExp_NullableRefNullLiteral>(hintType, contexts.rFactory);
     }
 

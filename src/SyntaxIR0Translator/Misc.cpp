@@ -171,7 +171,7 @@ expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationCon
     }
 
     // TODO: 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
-    if (auto* expectedNullableType = dynamic_cast<RType_NullableRef*>(expectedType))
+    if (auto* expectedNullableType = dynamic_cast<RType_NullableInplace*>(expectedType))
     {
         // Nullable<B>를 원한다면 C를 B로 변환해본다
         auto e_castToInnerTypeExp = CastMExp(exp, expectedNullableType->innerType, contexts);
@@ -179,7 +179,7 @@ expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationCon
             return unexpected{MakePtr<Error_Cast_Failed>()};
 
         // B?로 변경
-        return contexts.mFactory->MakeMExp<MExp_NewNullableValue>(*e_castToInnerTypeExp, contexts.rFactory);
+        return contexts.mFactory->MakeMExp<MExp_Nullable>(*e_castToInnerTypeExp, contexts.rFactory);
     }
 
     return unexpected{MakePtr<Error_Cast_Failed>()};

@@ -2,20 +2,19 @@
 #include "MIRConfig.h"
 
 #include <variant>
-#include <string>
 #include <vector>
-#include <optional>
-#include <memory>
 
 #include "MCreate.h"
 #include "MRead.h"
 #include "MCallable.h"
 #include "MArgument.h"
+#include "RSymbol/RNames.h"
 
 namespace Citron {
 
 class RType;
-class RType_Enum;
+class RType_Class;
+class RType_EnumElem;
 class RFactory;
 class RStructCtorDecl;
 class REnumElemDecl;
@@ -145,13 +144,13 @@ struct MExp_NewEnumElem : MExp
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
-struct MExp_NewNullableValue : MExp
+struct MExp_Nullable : MExp
 {
     MExp* innerExp;
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
-struct MExp_NullableValueNullLiteral : MExp
+struct MExp_NullableNullLiteral : MExp
 {
     RType* innerType;
     MIR_API void Accept(MExpVisitor& visitor) override;
@@ -191,19 +190,28 @@ struct MExp_InlineBlock : MExp
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
-enum class MExp_IsKind
-{
-    Class_Class,
-    Class_Interface,
-    Interface_Interface,
-    Enum_EnumElem
-};
+using MPatternLeaf = std::variant<struct MPattern_Alias, struct MPattern_Ignore>;
+using MTopLevelPattern = std::variant<struct MPattern_Ignore, struct MPattern_Null, struct MPattern_Some, struct MPattern_Class, struct MPattern_EnumElem>;
+using MPattern = std::variant<struct MPattern_Alias, struct MPattern_Ignore, struct MPattern_Null, struct MPattern_Some, struct MPattern_Class, struct MPattern_EnumElem>;
 
+struct MPattern_Alias { RName name; };
+struct MPattern_Ignore {};
+struct MPattern_Null {};
+struct MPattern_Some { MPatternLeaf pattern; }; // some _, some a
+struct MPattern_Class { RType_Class* type; MPatternLeaf pattern; }; // C _
+struct MPattern_EnumElem { RType_EnumElem* type; std::vector<MPattern> patterns; }; // E(C c, some s, a, _) 또는 E e
+
+// is pattern 
+// c is null
+// c is some
+// c is some s
+// c is D
+// c is D d
+// e is E.Second(x, _)
 struct MExp_Is : MExp
-{
-    MExp_IsKind kind;
+{   
     MRead operand; // BC/NBC를 모두 받을 수 있는 방법.
-    RType* type;
+    MTopLevelPattern pattern;
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 

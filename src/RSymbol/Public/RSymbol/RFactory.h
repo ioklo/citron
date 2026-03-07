@@ -86,8 +86,8 @@ struct RTypeArgumentsKeyHasher
 class RFactory
 {
     // inner type -> nullable type
-    std::unordered_map<RType*, std::unique_ptr<RType_NullableValue>> nullableValueTypes;
-    std::unordered_map<RType*, std::unique_ptr<RType_NullableRef>> nullableRefTypes;
+    std::unordered_map<RType*, std::unique_ptr<RType_Nullable>> nullableValueTypes;
+    std::unordered_map<RType*, std::unique_ptr<RType_NullableInplace>> nullableRefTypes;
     std::unordered_map<RTypeParamDecl*, std::unique_ptr<RType_TypeVar>> typeVarTypes;
     std::unique_ptr<RType_Void> voidType;
     std::unordered_map<std::vector<RTupleVar>, std::unique_ptr<RType_Tuple>> tupleTypes;
@@ -124,8 +124,8 @@ public:
     RSYMBOL_API RFactory();
     RSYMBOL_API ~RFactory();
 
-    RSYMBOL_API RType_NullableValue* MakeNullableValueType(RType* innerType);
-    RSYMBOL_API RType_NullableRef* MakeNullableRefType(RType* innerType);
+    RSYMBOL_API RType_Nullable* MakeNullableType(RType* innerType);
+    RSYMBOL_API RType_NullableInplace* MakeNullableInplaceType(RType* innerType);
     RSYMBOL_API RType_TypeVar* MakeTypeVarType(RTypeParamDecl* decl);
     RSYMBOL_API RType_Void* MakeVoidType();
     RSYMBOL_API RType_Tuple* MakeTupleType(std::vector<RTupleVar>&& vars);

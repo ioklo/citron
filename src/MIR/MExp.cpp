@@ -25,8 +25,8 @@ void MExp_CallIntrinsic::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_Call::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_NewStruct::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_NewEnumElem::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
-void MExp_NewNullableValue::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
-void MExp_NullableValueNullLiteral::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
+void MExp_Nullable::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
+void MExp_NullableNullLiteral::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_Cast::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_Lambda::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_InlineBlock::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
@@ -92,8 +92,8 @@ RType* GetType(MExp* exp, RFactory* rFactory)
         }
 
         ResultType Visit(MExp_NewEnumElem* exp) { return rFactory->MakeEnumElemType(exp->enumElemDecl, exp->typeArgs); }
-        ResultType Visit(MExp_NewNullableValue* exp) { return rFactory->MakeNullableValueType(GetType(exp->innerExp, rFactory)); }
-        ResultType Visit(MExp_NullableValueNullLiteral* exp) { return rFactory->MakeNullableValueType(exp->innerType); }
+        ResultType Visit(MExp_Nullable* exp) { return rFactory->MakeNullableType(GetType(exp->innerExp, rFactory)); }
+        ResultType Visit(MExp_NullableNullLiteral* exp) { return rFactory->MakeNullableType(exp->innerType); }
         ResultType Visit(MExp_Cast* exp) { return exp->targetType; }
         ResultType Visit(MExp_Lambda* exp) { return rFactory->MakeLambdaType(exp->lambdaDecl, exp->typeArgs); }
         ResultType Visit(MExp_InlineBlock* exp) { return exp->returnType; }
