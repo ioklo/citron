@@ -11,7 +11,7 @@
 namespace Citron {
 
 class NFuncDecl;
-class ImExp;
+struct ImExp;
 struct MExp;
 class RTypeArguments;
 class ITransactionable;

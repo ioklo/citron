@@ -7,8 +7,8 @@
 
 namespace Citron {
 
-class ReExp;
-class ImExp;
+struct ReExp;
+struct ImExp;
 struct TranslationContexts;
 
 std::expected<ReExp*, DiagPtr> TranslateImExpToReExp(ImExp* imExp, TranslationContexts& contexts);

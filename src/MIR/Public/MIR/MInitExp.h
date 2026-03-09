@@ -43,6 +43,7 @@ struct MInitExp_Stmt : MInitExp
 {
     std::vector<MStmt*> stmts;
     MInitExp* finalExp; // BC가 올 일은 없으므로, NBC전용 MInitExp
+                        // context dependent, READ인지, CREATE인지 알수 없다
 
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
@@ -54,7 +55,7 @@ struct MInitExp_StringElem_Text
 
 struct MInitExp_StringElem_Loc
 {
-    MLoc* loc;
+    MRead_Location loc;
 };
 
 using MInitExp_StringElem = std::variant<MInitExp_StringElem_Text, MInitExp_StringElem_Loc>;
@@ -99,16 +100,14 @@ struct MInitExp_NewClass : MInitExp
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
-struct MInitExp_StructCtorKind_Copy { MLoc* src; };
+struct MInitExp_StructCtorKind_Copy { MRead_Location src; };
 struct MInitExp_StructCtorKind_Move { MMoveSource src; };
-struct MInitExp_StructCtorKind_General { std::vector<MArgument> args; };
+struct MInitExp_StructCtorKind_General { RStructCtorDecl* decl; RTypeArguments* typeArgs; std::vector<MArgument> args; };
 
 using MInitExp_StructCtorKind = std::variant<MInitExp_StructCtorKind_Copy, MInitExp_StructCtorKind_Move, MInitExp_StructCtorKind_General>;
 
 struct MInitExp_StructCtor : MInitExp
 {   
-    RStructCtorDecl* decl; 
-    RTypeArguments* typeArgs; 
     MInitExp_StructCtorKind kind;
 
     MIR_API void Accept(MInitExpVisitor& visitor) override;    
@@ -135,7 +134,7 @@ struct MInitExp_NewEnumElem : MInitExp
 // NBC value를 nullable(not inplace)로 만들 경우
 struct MInitExp_Nullable : MInitExp
 {
-    MInitExp* initExp;
+    MCreate_Init initExp;
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 

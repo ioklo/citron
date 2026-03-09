@@ -37,9 +37,6 @@ using namespace std;
 
 namespace Citron {
 
-// Syntax Exp -> IR0 Exp로 바꿔주는 기본적인 코드
-// Deref를 적용하지 않는다. 따로 해주어야 한다
-
 expected<MExp*, DiagPtr> TranslateSNullLiteralExpToMExp(SExp_NullLiteral* exp, RType* hintType, TranslationContexts& contexts)
 {
     if (hintType != nullptr)
@@ -83,7 +80,7 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToRStringExpEle
 
         // 캐스팅이 필요하다면 
         if (reExpType == contexts.rFactory->MakeIntType())
-        {   
+        {
             auto e_nExp = TranslateReExpToMExp(*e_reExp, contexts);
             RETURN_ON_ERROR(e_nExp);
 
@@ -121,7 +118,7 @@ expected<MExp_String*, DiagPtr> TranslateSStringExpToMStringExp(SExp_String* exp
 {
     vector<DiagPtr> diags;
     vector<MInitExp_StringElem> builder;
-    for(auto& elem : exp->elements)
+    for (auto& elem : exp->elements)
     {
         auto e_rStringExpElem = TranslateSStringExpElementToRStringExpElement(elem, contexts);
 
@@ -130,7 +127,7 @@ expected<MExp_String*, DiagPtr> TranslateSStringExpToMStringExp(SExp_String* exp
             diags.push_back(e_rStringExpElem.error());
             continue;
         }
-        
+
         builder.push_back(move(*e_rStringExpElem));
     }
 
@@ -147,7 +144,7 @@ expected<MExp*, DiagPtr> TranslateSIntUnaryAssignExpToMExp(SExp* operand, MInter
     // F()++; (x)
     // var& x = i; x++; (o)
     // throws NotLocationException
-    
+
     DesignatedDiagnostic<Error_UnaryAssignOp_AssignableExpressionIsAllowedOnly> designatedDiag;
     auto e_nOperand = TranslateSExpToMLoc(operand, /* hintType*/nullptr, /*bMaterializeExp*/false, &designatedDiag, contexts);
     RETURN_ON_ERROR(e_nOperand);
@@ -173,13 +170,13 @@ expected<MExp*, DiagPtr> TranslateSUnaryOpExpToMExpExceptDeref(SExp_UnaryOp* sEx
     auto e_nOperand = TranslateSExpToMExp(sExp->operand, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_nOperand);
 
-    switch(sExp->kind)
+    switch (sExp->kind)
     {
     case SUnaryOpKind::LogicalNot:
     {
         // exact match
         if ((*e_nOperand)->GetType() != contexts.rFactory->MakeBoolType())
-        {   
+        {
             return unexpected{MakePtr<Error_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly>()};
         }
 
@@ -264,8 +261,8 @@ expected<MExp*, DiagPtr> TranslateSBinaryOpExpToMExp(SExp_BinaryOp* exp, Transla
     if (exp->kind == SBinaryOpKind::NotEqual)
     {
         const auto& equalInfos = contexts.binOpQueryService->GetInfos(SBinaryOpKind::Equal);
-        
-        for(auto& info : equalInfos)
+
+        for (auto& info : equalInfos)
         {
             auto castExp0 = CastMExp(*e_operand0, info.operandType0, contexts);
             if (!castExp0) continue;
@@ -281,7 +278,7 @@ expected<MExp*, DiagPtr> TranslateSBinaryOpExpToMExp(SExp_BinaryOp* exp, Transla
 
     // 3. InternalOperator에서 검색            
     auto matchedInfos = contexts.binOpQueryService->GetInfos(exp->kind);
-    for(auto& info : matchedInfos)
+    for (auto& info : matchedInfos)
     {
         auto castExp0 = CastMExp(*e_operand0, info.operandType0, contexts);
         if (!castExp0) continue;
@@ -302,7 +299,7 @@ expected<MExp*, DiagPtr> TranslateSLambdaExpToMExp(SExp_Lambda* sExp, Translatio
 {
     // TODO: 리턴 타입과 인자타입은 타입 힌트를 반영해야 한다
     //RType* retType = nullptr;
-    
+
     //auto o_lambdaInfo = TranslateLambda(retType, sExp->params, sExp->body, contexts);
 
     //if (!o_lambdaInfo)
@@ -320,7 +317,7 @@ expected<MExp*, DiagPtr> TranslateSListExpToMExp(SExp_List* exp, TranslationCont
     // TODO: 타입 힌트도 이용해야 할 것 같다
     RType* curElemType = nullptr;
 
-    for(auto& elem : exp->elements)
+    for (auto& elem : exp->elements)
     {
         auto e_nElem = TranslateSExpToMExp(elem, /*hintType*/nullptr, contexts);
         RETURN_ON_ERROR(e_nElem);
@@ -431,7 +428,7 @@ expected<MExp*, DiagPtr> TranslateSIsExpToMExp(SExp_Is* exp, TranslationContexts
             return contexts.mFactory->MakeMExp<MExp_EnumIsEnumElem>(*e_target, enumElemTestType, contexts.rFactory);
         else
             throw NotImplementedException{}; // 에러 처리
-        
+
     }
     else
         throw NotImplementedException{}; // 에러 처리
@@ -448,130 +445,12 @@ expected<MExp*, DiagPtr> TranslateSAsExpToMExp(SExp_As* exp, TranslationContexts
     return MakeMExp_As(*e_nTarget, *e_nTestType, contexts);
 }
 
-namespace {
-
-// SExp -> MExp
-class SExpToMExpTranslator
-{
-public:
-    using ResultType = expected<MExp*, DiagPtr>;
-
-private:
-    RType* hintType;
-    TranslationContexts& contexts;
-
-public:
-    SExpToMExpTranslator(RType* hintType, TranslationContexts& contexts)
-        : hintType{hintType}, contexts{contexts}
-    {
-    }
-
-private:
-    // S.Exp -> IntermediateExp -> ResolvedExp -> R.Exp
-    ResultType HandleDefault(SExp* exp)
-    {
-        auto e_reExp = TranslateSExpToReExp(exp, hintType, contexts);
-        RETURN_ON_ERROR(e_reExp);
-
-        return TranslateReExpToMExp(*e_reExp, contexts);
-    }
-    
-public:
-    ResultType Visit(SExp_Identifier* exp)
-    {
-        return HandleDefault(exp);
-    }
-
-    ResultType Visit(SExp_String* exp)
-    {
-        return TranslateSStringExpToMStringExp(exp, contexts);
-    }
-
-    ResultType Visit(SExp_IntLiteral* exp)
-    {
-        return TranslateSIntLiteralExpToMExp(exp, contexts);
-    }
-
-    ResultType Visit(SExp_BoolLiteral* exp)
-    {
-        return TranslateSBoolLiteralExpToMExp(exp, contexts);
-    }
-
-    ResultType Visit(SExp_NullLiteral* exp)
-    {
-        return TranslateSNullLiteralExpToMExp(exp, hintType, contexts);
-    }
-
-    ResultType Visit(SExp_BinaryOp* exp)
-    {
-        return TranslateSBinaryOpExpToMExp(exp, contexts);
-    }
-
-    ResultType Visit(SExp_UnaryOp* exp)
-    {
-        if (exp->kind == SUnaryOpKind::Deref)
-            return HandleDefault(exp);
-
-        return TranslateSUnaryOpExpToMExpExceptDeref(exp, contexts);
-    }
-
-    ResultType Visit(SExp_Call* exp)
-    {
-        return TranslateSCallExpToMExp(exp, hintType, contexts);
-    }
-
-    ResultType Visit(SExp_Lambda* exp)
-    {
-        return TranslateSLambdaExpToMExp(exp, contexts);
-    }
-
-    ResultType Visit(SExp_Indexer* exp)
-    {
-        return HandleDefault(exp);
-    }
-
-    ResultType Visit(SExp_Member* exp)
-    {
-        return HandleDefault(exp);
-    }
-
-    ResultType Visit(SExp_IndirectMember* exp)
-    {
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(SExp_List* exp)
-    {
-        return TranslateSListExpToMExp(exp, contexts);
-    }
-
-    ResultType Visit(SExp_New* exp)
-    {
-        return TranslateSNewExpToMExp(exp, contexts);
-    }
-
-    ResultType Visit(SExp_Box* exp)
-    {
-        return TranslateSBoxExpToMExp(exp, hintType, contexts);
-    }
-
-    ResultType Visit(SExp_Is* exp)
-    {
-        return TranslateSIsExpToMExp(exp, contexts);
-    }
-
-    ResultType Visit(SExp_As* exp)
-    {
-        return TranslateSAsExpToMExp(exp, contexts);
-    }
-};
-
-} // namespace 
-
 expected<MExp*, DiagPtr> TranslateSExpToMExp(SExp* exp, RType* hintType, TranslationContexts& contexts)
 {
-    SExpToMExpTranslator translator{hintType, contexts};
-    return Accept(translator, exp);
+    auto e_reExp = TranslateSExpToReExp(exp, hintType, contexts);
+    RETURN_ON_ERROR(e_reExp);
+
+    return TranslateReExpToMExp(*e_reExp, contexts);
 }
 
 }

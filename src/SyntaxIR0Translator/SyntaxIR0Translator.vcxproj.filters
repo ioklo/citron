@@ -35,9 +35,6 @@
     <ClCompile Include="ReExpToMLocTranslation.cpp">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ReExpToMExpTranslation.cpp">
-      <Filter>ExpTranslation\ReExpTranslation</Filter>
-    </ClCompile>
     <ClCompile Include="IrExpToMExpTranslation.cpp">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
     </ClCompile>
@@ -97,10 +94,10 @@
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="SynthesizeImplicitSymbolContext.cpp" />
-    <ClCompile Include="SExpToMOperandTranslation.cpp">
+    <ClCompile Include="SExpToMReadTranslation.cpp">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ReExpToMOperandTranslation.cpp">
+    <ClCompile Include="ReExpToMReadTranslation.cpp">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="SExpRefToMSharedExpTranslation.cpp">
@@ -127,6 +124,12 @@
     <ClCompile Include="BodyRes.cpp">
       <Filter>Context</Filter>
     </ClCompile>
+    <ClCompile Include="ReExpToMCreateTranslation.cpp">
+      <Filter>ExpTranslation\ReExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToMCreateTranslation.cpp">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncContext.h">
@@ -152,9 +155,6 @@
     </ClInclude>
     <ClInclude Include="IrExpToMExpTranslation.h">
       <Filter>ExpTranslation\IrExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="ReExpToMExpTranslation.h">
-      <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="ReExpToMLocTranslation.h">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
@@ -231,10 +231,10 @@
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="SynthesizeImplicitSymbolContext.h" />
-    <ClInclude Include="SExpToMOperandTranslation.h">
+    <ClInclude Include="SExpToMReadTranslation.h">
       <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ReExpToMOperandTranslation.h">
+    <ClInclude Include="ReExpToMReadTranslation.h">
       <Filter>ExpTranslation\ReExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="SExpRefToMSharedExpTranslation.h">
@@ -269,6 +269,12 @@
     </ClInclude>
     <ClInclude Include="ReExpVisitor.g.h">
       <Filter>ExpTranslation\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="ReExpToMCreateTranslation.h">
+      <Filter>ExpTranslation\ReExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToMCreateTranslation.h">
+      <Filter>ExpTranslation\SExpTranslation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

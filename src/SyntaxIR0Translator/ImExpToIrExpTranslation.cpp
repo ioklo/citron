@@ -107,6 +107,8 @@ public:
     // x (C.x, this.x)
     ResultType Visit(ImExp_ClassVar* imExp)
     {
+        static_assert(false); // imExp의 hasInstance를 안썼다
+
         if (imExp->decl->IsStatic()) // &C.x
         {
             auto* loc = contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, imExp->decl, imExp->typeArgs);
@@ -163,7 +165,7 @@ public:
         throw RuntimeFatalException{};
     }
 
-    ResultType Visit(ImExp_Else* imExp)
+    ResultType Visit(ImExp_Exp* imExp)
     {
         // 유일한 경로가 syntax id -> intermediateExp -> intermediateRefExp이기 때문에 불가능하다
         throw RuntimeFatalException{};

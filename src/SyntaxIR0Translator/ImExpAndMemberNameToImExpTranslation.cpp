@@ -17,6 +17,7 @@
 #include "RSymbol/REnumDecl.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFactory.h"
+#include "MIR/MLoc.h"
 
 #include "TranslationContexts.h"
 #include "SRTFactory.h"
@@ -25,6 +26,9 @@
 #include "ImExp.h"
 #include "ReExp.h"
 #include "ImExpToReExpTranslation.h"
+#include "ReExpToMLocTranslation.h"
+#include "DesignatedDiagnostic.h"
+#include "Misc.h"
 
 using namespace std;
 
@@ -201,11 +205,10 @@ public:
 
 };
 
-class InstanceParentTranslator
+struct InstanceParentTranslator
 {
-    ReExp* reInstExp;
+    MLoc* mInstLoc;
     RTypeArguments* typeArgsExceptOuter;
-
     TranslationContexts& contexts;
     
     /*TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
@@ -217,12 +220,6 @@ class InstanceParentTranslator
     TImExp* MakeImExp(TArgs&&... args)
     {
         return contexts.srtFactory->MakeImExp<TImExp>(std::forward<TArgs>(args)...);
-    }
-
-public:
-    InstanceParentTranslator(ReExp* reInstExp, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : reInstExp{reInstExp}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
-    {
     }
 
     expected<ImExp*, DiagPtr> operator()(auto& member) { return Visit(member); }
@@ -248,7 +245,7 @@ public:
     // exp.F
     expected<ImExp*, DiagPtr> Visit(RDeclRes_ClassFuncs& member)
     {   
-        return MakeImExp<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, reInstExp);
+        return MakeImExp<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, mInstLoc);
     }
 
     // exp.x
@@ -266,7 +263,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, reInstExp);
+        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, mInstLoc);
     }
 
     // exp.S
@@ -278,7 +275,7 @@ public:
     // exp.F
     expected<ImExp*, DiagPtr> Visit(RDeclRes_StructFuncs& member)
     {   
-        return MakeImExp<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, reInstExp);
+        return MakeImExp<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, mInstLoc);
     }
 
     // exp.x
@@ -296,7 +293,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, reInstExp);
+        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, mInstLoc);
     }
 
     // exp.E
@@ -314,7 +311,7 @@ public:
     // exp.firstX
     expected<ImExp*, DiagPtr> Visit(RDeclRes_EnumElemVar& member)
     {   
-        return MakeImExp<ImExp_EnumElemVar>(member.decl, member.outerTypeArgs, reInstExp);
+        return MakeImExp<ImExp_EnumElemVar>(member.decl, member.outerTypeArgs, mInstLoc);
     }
 
     // 표현 불가
@@ -369,19 +366,27 @@ private:
         return visit(binder, *o_member);
     }
 
-    ResultType TranslateInstanceParent(ImExp* imExp)
+    expected<MLoc*, DiagPtr> TranslateImExpToMLoc(ImExp* imExp)
     {
         auto e_reInstExp = TranslateImExpToReExp(imExp, contexts);
         RETURN_ON_ERROR(e_reInstExp);
 
-        auto type = (*e_reInstExp)->GetType();
+        DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> notLocationDiag;
+        return TranslateReExpToMLoc(*e_reInstExp, /*bMaterializeExp*/true, &notLocationDiag, contexts);
+    }
+
+    ResultType TranslateInstanceParent(ImExp* imExp)
+    {
+        auto e_loc = TranslateImExpToMLoc(imExp);
+        RETURN_ON_ERROR(e_loc);
+
+        auto* type = GetType(*e_loc, contexts.rFactory.get());
+
         auto o_member = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
         if (!o_member)
-        {
             return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
-        }
 
-        InstanceParentTranslator binder(*e_reInstExp, typeArgsExceptOuter, contexts);
+        InstanceParentTranslator binder(*e_loc, typeArgsExceptOuter, contexts);
         return visit(binder, *o_member);
     }
 
@@ -487,7 +492,7 @@ public:
         return TranslateInstanceParent(imExp);
     }
 
-    ResultType Visit(ImExp_Else* imExp)
+    ResultType Visit(ImExp_Exp* imExp)
     {
         return TranslateInstanceParent(imExp);
     }

@@ -12,16 +12,18 @@
 #include "RSymbol/RFactory.h"
 #include "MIR/MLoc.h"
 #include "MIR/MExp.h"
+#include "MIR/MRead.h"
 #include "MIR/MFactory.h"
 
 #include "ImExp.h"
 #include "ReExp.h"
 
 #include "SExpToMExpTranslation.h"
-#include "SExpToReExpTranslation.h"
-#include "ReExpToMExpTranslation.h"
+#include "SExpToMLocTranslation.h"
 #include "ReExpToMLocTranslation.h"
 #include "ImExpAndMemberNameToImExpTranslation.h"
+
+#include "SExpToMReadTranslation.h"
 
 #include "ScopeContext.h"
 #include "TranslationContexts.h"
@@ -57,7 +59,7 @@ private:
         if (!eExp)
             return unexpected{move(eExp).error()};
         else
-            return contexts.srtFactory->MakeImExp<ImExp_Else>(*eExp);
+            return contexts.srtFactory->MakeImExp<ImExp_Exp>(*eExp);
     }
 
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, ImExp>
@@ -110,10 +112,11 @@ public:
         // *d
         if (exp->kind == SUnaryOpKind::Deref)
         {
-            auto e_target = TranslateSExpToReExp(exp->operand, /*hintType*/nullptr, contexts);
+            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> notLocationDiag;
+            auto e_target = TranslateSExpToMLoc(exp->operand, /*hintType*/nullptr, /*bMaterializeExp*/true, &notLocationDiag, contexts);
             RETURN_ON_ERROR(e_target);
 
-            auto* targetType = (*e_target)->GetType();
+            auto* targetType = GetType(*e_target, &*contexts.rFactory);
 
             if (dynamic_cast<RType_Shared*>(targetType))
                 return Value<ImExp_SharedDeref>(*e_target);
@@ -142,44 +145,27 @@ public:
 
     ResultType Visit(SExp_Indexer* exp)
     {
-        auto e_reObj = TranslateSExpToReExp(exp->obj, /*hintType*/nullptr, contexts);
-        RETURN_ON_ERROR(e_reObj);
+        auto e_mObj = TranslateSExpToMRead(exp->obj, /*hintType*/nullptr, contexts);
+        RETURN_ON_ERROR(e_mObj);
 
-        auto e_reIndex = TranslateSExpToReExp(exp->index, /*hintType*/nullptr, contexts);
-        RETURN_ON_ERROR(e_reIndex);
-
-        auto intType = contexts.rFactory->MakeIntType();
-
-        MLoc* nIndexLoc;
-        if ((*e_reIndex)->GetType() != intType)
+        // 리스트 타입의 경우,
+        RType* itemType;
+        if (contexts.rFactory->IsListType(GetType(*e_mObj, &*contexts.rFactory), &itemType))
         {
-            auto e_nIndexExp = TranslateReExpToMExp(*e_reIndex, contexts);
-            RETURN_ON_ERROR(e_nIndexExp);
+            auto e_mIndex = TranslateSExpToMRead(exp->index, /*hintType*/nullptr, contexts);
+            RETURN_ON_ERROR(e_mIndex);
 
-            auto e_nCastIndex = CastMExp(*e_nIndexExp, intType, contexts);
-            RETURN_ON_ERROR(e_nCastIndex);
+            auto* intType = contexts.rFactory->MakeIntType();
+            if (GetType(*e_mIndex, &*contexts.rFactory) != intType)
+                throw NotImplementedException{};
 
-            nIndexLoc = contexts.mFactory->MakeMLoc<MLoc_Temp>(*e_nCastIndex);
-        }
-        else
-        {
-            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-
-            auto e_nLoc = TranslateReExpToMLoc(*e_reIndex, /*bMaterializeExp*/true, &designatedDiag, contexts);
-            RETURN_ON_ERROR(e_nLoc);
-
-            nIndexLoc = *e_nLoc;
+            return Value<ImExp_ListIndexer>(get<MRead_Location>(*e_mObj), get<MRead_Value>(*e_mIndex), itemType);
         }
 
         // TODO: custom indexer를 만들수 있으면 좋은가
         // var memberResult = objResult.TypeSymbol.QueryMember(new M.Name(M.SpecialName.IndexerGet, null), 0);
 
-        // 리스트 타입의 경우,
-        RType* itemType;
-        if (contexts.rFactory->IsListType((*e_reObj)->GetType(), &itemType))
-        {
-            return Value<ImExp_ListIndexer>(*e_reObj, *e_reIndex, itemType);
-        }
+       
 
         throw NotImplementedException{};
 

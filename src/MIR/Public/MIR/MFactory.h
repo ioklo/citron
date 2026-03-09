@@ -19,6 +19,7 @@ class MFactory
     std::vector<std::unique_ptr<MExp>> exps;
     std::vector<std::unique_ptr<MSharedExp>> sharedExps;
     std::vector<std::unique_ptr<MLoc>> locs;
+    std::vector<std::unique_ptr<MInitExp>> initExps;
 
 public:
     MIR_API MFactory();
@@ -51,6 +52,15 @@ public:
         auto* pLoc = loc.get();
         locs.push_back(std::move(loc));
         return pLoc;
+    }
+
+    template<typename TMInitExp, typename... TArgs> requires std::derived_from<TMInitExp, MInitExp>
+    TMInitExp* MakeMInitExp(TArgs&&... args)
+    {
+        auto initExp = std::make_unique<TMInitExp>(std::forward<TArgs>(args)...);
+        auto* pInitExp = initExp.get();
+        initExps.push_back(std::move(initExp));
+        return pInitExp;
     }
 
     template<typename TMSharedExp, typename... TArgs> requires std::derived_from<TMSharedExp, MSharedExp>

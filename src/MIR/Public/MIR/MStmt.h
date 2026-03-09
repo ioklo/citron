@@ -77,7 +77,7 @@ public:
 
 struct MStmt_If : MStmt
 {
-    MExp* cond; // BC
+    MRead_Value cond; // BC
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
 
@@ -91,7 +91,7 @@ public:
 // cond내부에 alias가 생기는 경우
 struct MStmt_IfBind : MStmt
 {
-    MExp* cond;
+    MRead_Value cond;
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
 
@@ -106,7 +106,7 @@ public:
 struct MStmt_For : MStmt
 {
     std::vector<MStmt*> initStmts; // LocalVarDecl, LocalVarRef
-    MExp* condExp; // BC
+    MRead_Value condExp; // BC
     MStmt* contStmt;
     std::vector<MStmt*> body;
 
@@ -260,11 +260,11 @@ public:
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-struct MDirective_NullDirective { MLoc* loc; };
-struct MDirective_NotNullDirective { MLoc* loc; };
-struct MDirective_StaticNullDirective { MLoc* loc; };
-struct MDirective_StaticNotNullDirective { MLoc* loc; };
-struct MDirective_StaticUnknownDirective { MLoc* loc; };
+struct MDirective_NullDirective { MRead loc; };
+struct MDirective_NotNullDirective { MRead loc; };
+struct MDirective_StaticNullDirective { MRead loc; };
+struct MDirective_StaticNotNullDirective { MRead loc; };
+struct MDirective_StaticUnknownDirective { MRead loc; };
 
 using MDirective = std::variant<
     MDirective_NullDirective,

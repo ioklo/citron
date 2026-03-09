@@ -56,8 +56,8 @@ struct MLoc_LambdaVar : MLoc
 // l[b], l is list
 struct MLoc_ListIndexer : MLoc
 {
-    MLoc* list;
-    MLoc* index;
+    MRead_Location list;
+    MRead_Value index;
     RType* itemType;
 
     MIR_API void Accept(MLocVisitor& visitor) override;

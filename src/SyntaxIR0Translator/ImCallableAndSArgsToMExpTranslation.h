@@ -10,7 +10,7 @@
 
 namespace Citron {
 
-class ImExp;
+struct ImExp;
 struct TranslationContexts;
 
 std::expected<MExp*, DiagPtr> TranslateImCallableAndSArgsToMExp(ImExp* imCallable, SExp* sCallable, SArguments* sArgs, TranslationContexts& contexts);

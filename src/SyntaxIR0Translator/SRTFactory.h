@@ -5,9 +5,9 @@
 
 namespace Citron {
 
-class ImExp;
+struct ImExp;
 class IrExp;
-class ReExp;
+struct ReExp;
 
 // ImExp, IrExp, ReExp
 class SRTFactory

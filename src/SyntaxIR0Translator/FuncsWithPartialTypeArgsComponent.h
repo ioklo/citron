@@ -19,7 +19,7 @@ public:
 
 public:
     FuncsWithPartialTypeArgsComponent(const std::vector<DeclWithOuterTypeArgs<TFuncDecl>> items, RTypeArguments* partialTypeArgsExceptOuter)
-        : items(items), partialTypeArgsExceptOuter(partialTypeArgsExceptOuter)
+        : items{items}, partialTypeArgsExceptOuter{partialTypeArgsExceptOuter}
     {
     }
 

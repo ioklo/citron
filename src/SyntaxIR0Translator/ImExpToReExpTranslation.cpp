@@ -7,9 +7,11 @@
 #include "Logging/Logger.h"
 
 #include "RSymbol/RFactory.h"
+#include "RSymbol/RClassVarDecl.h"
 #include "RSymbol/REnumElemDecl.h"
 #include "MIR/MArgument.h"
 #include "MIR/MExp.h"
+#include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 
 #include "ImExp.h"
@@ -17,6 +19,8 @@
 #include "TranslationContexts.h"
 #include "SRTFactory.h"
 #include "Misc.h"
+#include "FuncContext.h"
+#include "DesignatedDiagnostic.h"
 
 using namespace std;
 
@@ -39,10 +43,18 @@ public:
 
 private:
 
-    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, ReExp>
-    ResultType Value(TArgs&&... args)
+    template<typename TLoc, typename... TArgs> requires std::derived_from<TLoc, MLoc>
+    ResultType Loc(TArgs&&... args)
     {
-        return contexts.srtFactory->MakeReExp<TValue>(forward<TArgs>(args)...);
+        auto* loc = contexts.mFactory->MakeMLoc<TLoc>(forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeReExp<ReExp_Loc>(loc);
+    }
+
+    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, MExp>
+    ResultType Exp(TArgs&&... args)
+    {
+        auto* exp = contexts.mFactory->MakeMExp<TExp>(forward<TArgs>(args)...);
+        return contexts.srtFactory->MakeReExp<ReExp_Exp>(exp);
     }
 
 public:
@@ -94,8 +106,7 @@ public:
         // if standalone, 값으로 처리한다
         if (imExp->decl->GetVarCount() == 0)
         {
-            auto* newEnumElem = contexts.mFactory->MakeMExp<MExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<MArgument>{}, contexts.rFactory);
-            return Value<ReExp_Else>(newEnumElem);
+            return Exp<MExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<MArgument>{}, contexts.rFactory);
         }
 
         // lambda (boxed lambda)로 변환할 수 있다.
@@ -104,47 +115,58 @@ public:
     }
     ResultType Visit(ImExp_ThisVar* imExp)
     {
-        return Value<ReExp_ThisVar>(imExp->type);
+        return Loc<MLoc_This>(imExp->type);
     }
     ResultType Visit(ImExp_LocalVar* imExp)
     {
-        return Value<ReExp_LocalVar>(imExp->type, imExp->name);
+        return Loc<MLoc_LocalVar>(imExp->type, imExp->name);
     }
     ResultType Visit(ImExp_LocalRef* imExp)
     {
-        return Value<ReExp_LocalRef>(imExp->type, imExp->name);
+        return Loc<MLoc_LocalRef>(imExp->type, imExp->name);
     }
     ResultType Visit(ImExp_LambdaVar* imExp)
     {
-        return Value<ReExp_LambdaVar>(imExp->decl, imExp->typeArgs);
+        return Loc<MLoc_LambdaVar>(imExp->decl, imExp->typeArgs);
     }
+
     ResultType Visit(ImExp_ClassVar* imExp)
     {
-        return Value<ReExp_ClassVar>(imExp->decl, imExp->typeArgs, imExp->hasExplicitInstance, imExp->explicitInstance);
+        if (imExp->hasExplicitInstance) // c.x, C.x 둘다 해당
+        {
+            return Loc<MLoc_ClassVar>(imExp->explicitInstance, imExp->decl, imExp->typeArgs);
+        }
+        else // x, x (static) 둘다 해당
+        {
+            MLoc* mInstanceLoc = imExp->decl->IsStatic() ? nullptr : contexts.funcContext->MakeThisLoc();
+            return Loc<MLoc_ClassVar>(mInstanceLoc, imExp->decl, imExp->typeArgs);
+        }
+
+        return Loc<MLoc_ClassVar>(imExp->decl, imExp->typeArgs, imExp->hasExplicitInstance, imExp->explicitInstance);
     }
     ResultType Visit(ImExp_StructVar* imExp)
     {
-        return Value<ReExp_StructVar>(imExp->decl, imExp->typeArgs, imExp->hasExplicitInstance, imExp->explicitInstance);
+        return Loc<MLoc_StructVar>(imExp->decl, imExp->typeArgs, imExp->hasExplicitInstance, imExp->explicitInstance);
     }
     ResultType Visit(ImExp_EnumElemVar* imExp)
     {
-        return Value<ReExp_EnumElemVar>(imExp->decl, imExp->typeArgs, imExp->instance);
+        return Loc<MLoc_EnumElemVar>(imExp->decl, imExp->typeArgs, imExp->instance);
     }
     ResultType Visit(ImExp_ListIndexer* imExp)
     {
-        return Value<ReExp_ListIndexer>(imExp->instance, imExp->index, imExp->itemType);
+        return Loc<MLoc_ListIndexer>(imExp->instance, imExp->index, imExp->itemType);
     }
     ResultType Visit(ImExp_PtrDeref* imExp)
     {
-        return Value<ReExp_PtrDeref>(imExp->target);
+        return Loc<MLoc_PtrDeref>(imExp->target);
     }
     ResultType Visit(ImExp_SharedDeref* imExp)
     {
-        return Value<ReExp_BoxDeref>(imExp->target);
+        return Loc<MLoc_SharedDeref>(imExp->target);
     }
-    ResultType Visit(ImExp_Else* imExp)
+    ResultType Visit(ImExp_Exp* imExp)
     {
-        return Value<ReExp_Else>(imExp->exp);
+        return contexts.srtFactory->MakeReExp<ReExp_Exp>(imExp->exp);
     }
 };
 

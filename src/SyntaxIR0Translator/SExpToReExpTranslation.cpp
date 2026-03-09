@@ -51,7 +51,7 @@ private:
         if (!eExp)
             return unexpected{move(eExp).error()};
         else
-            return contexts.srtFactory->MakeReExp<ReExp_Else>(*eExp);
+            return contexts.srtFactory->MakeReExp<ReExp_Exp>(*eExp);
     }
 
 public:

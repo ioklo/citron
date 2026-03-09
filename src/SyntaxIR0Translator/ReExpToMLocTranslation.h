@@ -11,7 +11,7 @@ struct MLoc;
 
 class IDesignatedDiagnostic;
 
-class ReExp;
+struct ReExp;
 class ReExp_ThisVar;
 class ReExp_ClassVar;
 class ReExp_LocalVar;

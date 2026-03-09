@@ -6,17 +6,9 @@ namespace Citron {
 struct ReExpVisitor
 {
     virtual ~ReExpVisitor() {}
-    virtual void Visit(ReExp_ThisVar* reExp) = 0;
-    virtual void Visit(ReExp_LocalVar* reExp) = 0;
-    virtual void Visit(ReExp_LocalRef* reExp) = 0;
-    virtual void Visit(ReExp_LambdaVar* reExp) = 0;
-    virtual void Visit(ReExp_ClassVar* reExp) = 0;
-    virtual void Visit(ReExp_StructVar* reExp) = 0;
-    virtual void Visit(ReExp_EnumElemVar* reExp) = 0;
-    virtual void Visit(ReExp_PtrDeref* reExp) = 0;
-    virtual void Visit(ReExp_BoxDeref* reExp) = 0;
-    virtual void Visit(ReExp_ListIndexer* reExp) = 0;
-    virtual void Visit(ReExp_Else* reExp) = 0;
+    virtual void Visit(ReExp_Loc* reExp) = 0;
+    virtual void Visit(ReExp_Exp* reExp) = 0;
+    virtual void Visit(ReExp_InitExp* reExp) = 0;
 };
 
 template<class TFrom, class TVisitor>
@@ -27,17 +19,9 @@ template<typename TVisitor, typename... TVisitorArgs>
 concept ReExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 {
     typename std::remove_cvref_t<TVisitor>::ResultType;
-    { v.Visit(std::declval<ReExp_ThisVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_LocalVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_LocalRef*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_LambdaVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_ClassVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_StructVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_EnumElemVar*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_PtrDeref*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_BoxDeref*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_ListIndexer*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ReExp_Else*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<ReExp_Loc*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<ReExp_Exp*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<ReExp_InitExp*>(), std::forward<TVisitorArgs>(args)...) } -> ReExpConvertibleToResultType<TVisitor>;
 
 };
 
@@ -53,17 +37,9 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ReExp* r
     {
         struct Bridge : ReExpVisitor {
             decltype(caller)& call;
-            Bridge(decltype(caller)& call) : call(call) {}            void Visit(ReExp_ThisVar* reExp) override { call(reExp); }
-            void Visit(ReExp_LocalVar* reExp) override { call(reExp); }
-            void Visit(ReExp_LocalRef* reExp) override { call(reExp); }
-            void Visit(ReExp_LambdaVar* reExp) override { call(reExp); }
-            void Visit(ReExp_ClassVar* reExp) override { call(reExp); }
-            void Visit(ReExp_StructVar* reExp) override { call(reExp); }
-            void Visit(ReExp_EnumElemVar* reExp) override { call(reExp); }
-            void Visit(ReExp_PtrDeref* reExp) override { call(reExp); }
-            void Visit(ReExp_BoxDeref* reExp) override { call(reExp); }
-            void Visit(ReExp_ListIndexer* reExp) override { call(reExp); }
-            void Visit(ReExp_Else* reExp) override { call(reExp); }
+            Bridge(decltype(caller)& call) : call(call) {}            void Visit(ReExp_Loc* reExp) override { call(reExp); }
+            void Visit(ReExp_Exp* reExp) override { call(reExp); }
+            void Visit(ReExp_InitExp* reExp) override { call(reExp); }
         };
 
         Bridge bridge{caller};
@@ -74,17 +50,9 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ReExp* r
         struct Bridge : ReExpVisitor {
             decltype(caller)& call;
             std::optional<TResult> result{};
-            Bridge(decltype(caller)& call) : call(call) {}            void Visit(ReExp_ThisVar* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_LocalVar* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_LocalRef* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_LambdaVar* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_ClassVar* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_StructVar* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_EnumElemVar* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_PtrDeref* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_BoxDeref* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_ListIndexer* reExp) override { result.emplace(call(reExp)); }
-            void Visit(ReExp_Else* reExp) override { result.emplace(call(reExp)); }
+            Bridge(decltype(caller)& call) : call(call) {}            void Visit(ReExp_Loc* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_Exp* reExp) override { result.emplace(call(reExp)); }
+            void Visit(ReExp_InitExp* reExp) override { result.emplace(call(reExp)); }
         };
 
         Bridge bridge{caller};

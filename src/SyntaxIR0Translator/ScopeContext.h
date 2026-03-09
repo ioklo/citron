@@ -26,7 +26,7 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
 using FuncContextPtr = std::shared_ptr<class FuncContext>;
-class ImExp;
+struct ImExp;
 
 class CloneContext;
 class UpdateContext;

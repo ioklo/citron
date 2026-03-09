@@ -9,7 +9,7 @@
 namespace Citron {
 
 class RType;
-class ReExp;
+struct ReExp;
 struct TranslationContexts;
 
 std::expected<ReExp*, DiagPtr> TranslateSExpToReExp(SExp* exp, RType* hintType, TranslationContexts& contexts);

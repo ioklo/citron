@@ -76,7 +76,7 @@ private:
         RETURN_ON_ERROR(e_mCallable);
 
         // TODO: Lambda말고 func<>도 있다
-        auto* rCallableType = (*e_mCallable)->GetType();
+        auto* rCallableType = GetType(*e_mCallable, &*contexts.rFactory);
         auto* rLambdaType = dynamic_cast<RType_Lambda*>(rCallableType);
 
         if (!rLambdaType)
@@ -168,18 +168,7 @@ public:
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
 
-            // ResolvedExp -> RExp
-            MLoc* nInst = nullptr;
-            if (imExp->explicitInstance)
-            {
-                DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto e_nLoc = TranslateReExpToMLoc(imExp->explicitInstance, /*bMaterializeExp*/true, &designatedDiag, contexts);
-                RETURN_ON_ERROR(e_nLoc);
-
-                nInst = *e_nLoc;
-            }
-
-            return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, nInst, move(match.args));
+            return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, imExp->explicitInstance, move(match.args));
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
@@ -260,17 +249,7 @@ public:
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
 
-            MLoc* instance = nullptr;
-            if (imExp->explicitInstance)
-            {
-                DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-                auto e_instance = TranslateReExpToMLoc(imExp->explicitInstance, /*bMaterializeExp*/true, &designatedDiag, contexts);
-                RETURN_ON_ERROR(e_instance);
-
-                instance = *e_instance;
-            }
-
-            return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, instance, move(match.args));
+            return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, imExp->explicitInstance, move(match.args));
         }
         else
         {
@@ -397,7 +376,7 @@ public:
         return HandleLoc(imExp);
     }
 
-    ResultType Visit(ImExp_Else* imExp)
+    ResultType Visit(ImExp_Exp* imExp)
     {
         return HandleLoc(imExp);
     }

@@ -5,7 +5,6 @@
 #include <vector>
 #include <optional>
 
-#include "MCreate.h"
 #include "MRead.h"
 #include "MCatch.h"
 #include "MCallable.h"
@@ -38,7 +37,7 @@ public:
 // 주어진 Location의 값을 비트단위로 복사한다
 struct MExp_Load : MExp
 {
-    MLoc* loc;
+    MRead_Location loc;
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -46,7 +45,7 @@ struct MExp_Load : MExp
 struct MExp_Store : MExp
 {
     MLoc* dest;
-    MExp* src;
+    MCreate_Bitwise src;
 
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
@@ -55,7 +54,7 @@ struct MExp_Store : MExp
 struct MExp_Stmt : MExp
 {
     std::vector<MStmt*> stmts;
-    MExp* finalExp;
+    MExp* finalExp; // context dependent, READ인지, CREATE인지 알수 없다
     
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
@@ -150,7 +149,7 @@ struct MExp_NewEnumElem : MExp
 
 struct MExp_Nullable : MExp
 {
-    MExp* innerExp;
+    MCreate_Bitwise innerExp;
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
