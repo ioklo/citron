@@ -125,7 +125,7 @@ TEST(StmtParser, ParseBoxVarDeclStmt)
             {
                 "$type": "SVarDeclElement",
                 "varName": "p",
-                "initExp": null
+                "inner": null
             }
         ]
     }
@@ -521,7 +521,7 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
             {
                 "$type": "SVarDeclElement",
                 "varName": "p",
-                "initExp": null
+                "inner": null
             }
         ]
     }
@@ -553,7 +553,7 @@ TEST(StmtParser, ParsePtrVarDeclStmt)
             {
                 "$type": "SVarDeclElement",
                 "varName": "p",
-                "initExp": null
+                "inner": null
             }
         ]
     }
@@ -597,7 +597,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "a",
-                        "initExp": {
+                        "inner": {
                             "$type": "SExp_String",
                             "elements": [
                                 {
@@ -622,7 +622,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "b",
-                        "initExp": {
+                        "inner": {
                             "$type": "SExp_IntLiteral",
                             "value": 3
                         }
@@ -642,7 +642,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "c",
-                        "initExp": {
+                        "inner": {
                             "$type": "SExp_UnaryOp",
                             "kind": "Ref",
                             "operand": {
@@ -666,7 +666,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "d",
-                        "initExp": {
+                        "inner": {
                             "$type": "SExp_Identifier",
                             "value": "b",
                             "typeArgs": []
@@ -687,7 +687,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "e",
-                        "initExp": {
+                        "inner": {
                             "$type": "SExp_IntLiteral",
                             "value": 1
                         }
@@ -707,7 +707,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "f",
-                        "initExp": {
+                        "inner": {
                             "$type": "SExp_Call",
                             "callable": {
                                 "$type": "SExp_Identifier",
@@ -742,7 +742,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "g",
-                        "initExp": {
+                        "inner": {
                             "$type": "SExp_Identifier",
                             "value": "f",
                             "typeArgs": []
@@ -770,7 +770,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "h",
-                        "initExp": {
+                        "inner": {
                             "$type": "SExp_Identifier",
                             "value": "e",
                             "typeArgs": []

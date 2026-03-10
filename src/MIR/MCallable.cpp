@@ -13,21 +13,21 @@ RType* Citron::GetType(MCallable& call)
     return visit([](auto& call) -> RType* {
         using T = remove_cvref_t<decltype(call)>;
 
-        if constexpr (same_as<T, MCall_GlobalFunc>)
+        if constexpr (same_as<T, MCallable_GlobalFunc>)
         {
-            return call.decl->GetReturnType(*call.typeArgs);
+            return call.decl->GetReturnType(call.typeArgs);
         }
-        else if constexpr (same_as<T, MCall_ClassFunc>)
+        else if constexpr (same_as<T, MCallable_ClassFunc>)
         {
-            return call.decl->GetReturnType(*call.typeArgs);
+            return call.decl->GetReturnType(call.typeArgs);
         }
-        else if constexpr (same_as<T, MCall_StructFunc>)
+        else if constexpr (same_as<T, MCallable_StructFunc>)
         {
-            return call.decl->GetReturnType(*call.typeArgs);
+            return call.decl->GetReturnType(call.typeArgs);
         }
-        else if constexpr (same_as<T, MCall_Lambda>)
+        else if constexpr (same_as<T, MCallable_Lambda>)
         {
-            return call.decl->GetReturnType(*call.typeArgs);
+            return call.decl->GetReturnType(call.typeArgs);
         }
         else static_assert(false);
     }, call);

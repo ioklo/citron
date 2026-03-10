@@ -12,10 +12,14 @@ class RFactory;
 struct MExp;
 struct MInitExp;
 
-struct MCreate_Bitwise { MExp* exp; };
-struct MCreate_Init { MInitExp* initExp; };
+// 초기화 계획 중 Bitwise Copyable일 경우
+struct MCreate_BC { MExp* exp; };
 
-using MCreate = std::variant<MCreate_Bitwise, MCreate_Init>;
+// 초기화 계획 중 Non-bitwise Copyable일 경우
+struct MCreate_NBC { MInitExp* initExp; };
+
+// 초기화 계획
+using MCreate = std::variant<MCreate_BC, MCreate_NBC>;
 
 MIR_API RType* GetType(MCreate& create, RFactory* rFactory);
 

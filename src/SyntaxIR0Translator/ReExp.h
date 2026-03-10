@@ -13,47 +13,18 @@ struct MExp;
 struct MLoc;
 struct MInitExp;
 struct ReExpVisitor;
+struct MStmt_Call;
+struct MStmt_Assign;
 
-// NameResolvedExp 
-struct ReExp
-{
-    virtual ~ReExp() { }
-    virtual void Accept(ReExpVisitor& visitor) = 0;
-};
+// ResolvedExp 
+struct ReExp_Loc { MLoc* mLoc; };
+struct ReExp_Exp { MExp* mExp; };
+struct ReExp_InitExp { MInitExp* mInitExp; };
+struct ReExp_StmtCall { MStmt_Call* mCallStmt; };
+struct ReExp_StmtAssign { MStmt_Assign* mAssignStmt; };
 
-struct ReExp_Loc : ReExp
-{
-    MLoc* mLoc;
-    ReExp_Loc(MLoc* mLoc) : mLoc{mLoc}
-    { }
+using ReExp = std::variant<ReExp_Loc, ReExp_Exp, ReExp_InitExp, ReExp_StmtCall, ReExp_StmtAssign>;
 
-    void Accept(ReExpVisitor& visitor) override;
-};
-
-// 기타의 경우, Value
-struct ReExp_Exp : ReExp
-{
-    MExp* mExp;
-    
-    ReExp_Exp(MExp* mExp)
-        : mExp{mExp}
-    { }
-
-    void Accept(ReExpVisitor& visitor) override;
-};
-
-struct ReExp_InitExp : ReExp
-{
-    MInitExp* mInitExp;
-
-    ReExp_InitExp(MInitExp* mInitExp)
-        : mInitExp{mInitExp}
-    { }
-    void Accept(ReExpVisitor& visitor) override;
-};
-
-RType* GetType(ReExp* reExp, RFactory* rFactory);
+RType* GetType(ReExp& reExp, RFactory* rFactory);
 
 } // namespace Citron
-
-#include "ReExpVisitor.g.h"

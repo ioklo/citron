@@ -34,7 +34,7 @@ RDecl* NLambdaVarDecl::GetROuter()
     return lambda;
 }
 
-RType* NLambdaVarDecl::GetDeclType(RTypeArguments& typeArgs)
+RType* NLambdaVarDecl::GetDeclType(RTypeArguments* typeArgs)
 {
     return type->Apply(typeArgs);
 }

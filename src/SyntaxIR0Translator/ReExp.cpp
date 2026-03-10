@@ -1,31 +1,26 @@
 #include "ReExp.h"
 #include "RSymbol/RTypes.h"
-#include "NSymbol/NLambdaVarDecl.h"
-#include "NSymbol/NClassVarDecl.h"
-#include "NSymbol/NStructVarDecl.h"
-#include "NSymbol/NEnumElemVarDecl.h"
+#include "RSymbol/RFactory.h"
 #include "MIR/MExp.h"
 #include "MIR/MLoc.h"
 #include "MIR/MInitExp.h"
 
+using namespace std;
+
 namespace Citron {
 
-void ReExp_Loc::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
-void ReExp_Exp::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
-void ReExp_InitExp::Accept(ReExpVisitor& visitor) { visitor.Visit(this); }
-
-RType* GetType(ReExp* reExp, RFactory* rFactory)
+RType* GetType(ReExp& reExp, RFactory* rFactory)
 {
-    struct Visitor {
-        using ResultType = RType*;
-        RFactory* rFactory;
+    return visit([rFactory](auto& reExp) -> RType* {
+        using T = remove_cvref_t<decltype(reExp)>;
 
-        ResultType Visit(ReExp_Loc* reExp) { return GetType(reExp->mLoc, rFactory); }
-        ResultType Visit(ReExp_Exp* reExp) { return GetType(reExp->mExp, rFactory); }
-        ResultType Visit(ReExp_InitExp* reExp) { return GetType(reExp->mInitExp, rFactory); }
-    };
-
-    return Accept(Visitor{rFactory}, reExp);
+        if constexpr (same_as<T, ReExp_Loc>) { return GetType(reExp.mLoc, rFactory); }
+        else if constexpr (same_as<T, ReExp_Exp>) { return GetType(reExp.mExp, rFactory); }
+        else if constexpr (same_as<T, ReExp_InitExp>) { return GetType(reExp.mInitExp, rFactory); }
+        else if constexpr (same_as<T, ReExp_StmtCall>) { return rFactory->MakeVoidType(); }
+        else if constexpr (same_as<T, ReExp_StmtAssign>) { return rFactory->MakeVoidType(); }
+        else static_assert(false);
+    }, reExp);
 }
 
 }

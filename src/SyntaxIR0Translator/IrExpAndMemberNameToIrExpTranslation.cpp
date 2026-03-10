@@ -63,7 +63,7 @@ public:
 
     expected<IrExp*, DiagPtr> Visit(RDeclRes_Class& member)
     {
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, typeArgsExceptOuter);
         return contexts.srtFactory->MakeIrExp<IrExp_Class>(member.decl, typeArgs);
     }
 
@@ -93,7 +93,7 @@ public:
 
     expected<IrExp*, DiagPtr> Visit(RDeclRes_Struct& member)
     {
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, typeArgsExceptOuter);
         return contexts.srtFactory->MakeIrExp<IrExp_Struct>(member.decl, typeArgs);
     }
 
@@ -253,7 +253,7 @@ public:
 
     ResultType Visit(IrExp_ClassVar* irBaseExp)
     {
-        auto* declType = irBaseExp->decl->GetDeclType(*irBaseExp->typeArgs);
+        auto* declType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
 
         if (auto* classType = dynamic_cast<RType_Class*>(declType))
         {
@@ -276,7 +276,7 @@ public:
 
     ResultType Visit(IrExp_SharedStructVar* irBaseExp)
     {
-        auto* declType = irBaseExp->decl->GetDeclType(*irBaseExp->typeArgs);
+        auto* declType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
 
         // &(pS->c).id 
         // TranslateIrExpAndMemberNameToMSharedExp(IrExp_SharedStructVar(pS, S::c), id)
@@ -302,7 +302,7 @@ public:
 
     ResultType Visit(IrExp_StructVar* irBaseExp)
     {
-        auto* declType = irBaseExp->decl->GetDeclType(*irBaseExp->typeArgs);
+        auto* declType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
 
         if (auto* classDeclType = dynamic_cast<RType_Class*>(declType))
         {

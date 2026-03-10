@@ -8,6 +8,7 @@
 #include "Infra/Hash.h"
 #include "Infra/Exceptions.h"
 
+#include "RCopyStrategy.h"
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
 #include "RNames.h"
@@ -36,9 +37,9 @@ class RType
 {
 public:
     virtual ~RType() {}
-    virtual RType* Apply(RTypeArguments& typeArgs) = 0;
+    virtual RType* Apply(RTypeArguments* typeArgs) = 0;
     virtual RTypeKind GetTypeKind() = 0;
-    virtual bool IsBitwiseCopyable() = 0;
+    virtual RCopyStrategy GetCopyStrategy() = 0;
     virtual std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) = 0;
 
     virtual void Accept(RTypeVisitor& visitor) = 0;
@@ -56,9 +57,9 @@ private:
     RType_Nullable(RType* innerType, RFactory* factory);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
-    bool IsBitwiseCopyable() override { return innerType->IsBitwiseCopyable(); }
+    RCopyStrategy GetCopyStrategy() override { return innerType->GetCopyStrategy(); }
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
@@ -74,9 +75,9 @@ private:
     RType_NullableInplace(RType* innerType, RFactory* factory);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return innerType->GetTypeKind(); }
-    bool IsBitwiseCopyable() override { return innerType->IsBitwiseCopyable(); } // 보통 reference type은 BitwiseCopyable이지만, 나중에 어떻게 될지 모르기 때문에 innerType을 따르는 것으로 한다
+    RCopyStrategy GetCopyStrategy() override { return innerType->GetCopyStrategy(); } // 보통 reference type은 BitwiseCopyable이지만, 나중에 어떻게 될지 모르기 때문에 innerType을 따르는 것으로 한다
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
@@ -92,9 +93,9 @@ private:
     RType_TypeVar(RTypeParamDecl* decl);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { throw NotImplementedException{}; } // TypeVar종류따라 분화할 수 있다
-    bool IsBitwiseCopyable() override { throw NotImplementedException{}; } // TypeVar에 명확히 적어줘야 할 것이다
+    RCopyStrategy GetCopyStrategy() override { throw NotImplementedException{}; } // TypeVar에 명확히 적어줘야 할 것이다
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
@@ -106,9 +107,9 @@ private:
     RType_Void();
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Value; } // 크기가 0인 value type
-    bool IsBitwiseCopyable() override { return true; } // 크기가 0바이트이지만, 생성자, 소멸자를 따로 호출하지 않으므로 BitwiseCopyable이다
+    RCopyStrategy GetCopyStrategy() override { return RCopyStrategy::Void; }
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
@@ -128,9 +129,9 @@ public:
     { }
 
     // from RType
-    RType* Apply(RTypeArguments& typeArgs) override { return this; } // no typeArgs
+    RType* Apply(RTypeArguments* typeArgs) override { return this; } // no typeArgs
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
-    bool IsBitwiseCopyable() override { return true; } // 언제나 Bitwise Copyable
+    RCopyStrategy GetCopyStrategy() override { return RCopyStrategy::Bitwise; } // 언제나 Bitwise Copyable
     std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override { return std::nullopt; }
 
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
@@ -158,9 +159,9 @@ private:
     RType_Tuple(std::vector<RTupleVar>&& vars, RFactory* factory);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
-    RSYMBOL_API bool IsBitwiseCopyable() override;
+    RSYMBOL_API RCopyStrategy GetCopyStrategy() override;
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
@@ -191,9 +192,9 @@ private:
     RType_Func(bool bLocal, RType* retType, std::vector<Parameter>&& params, RFactory* factory);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Interface; }
-    bool IsBitwiseCopyable() override { return false; } // interface 계열이므로 shared pointer로 관리될 것이므로 bitwise copyable하지 않다
+    RCopyStrategy GetCopyStrategy() override { return RCopyStrategy::NonBitwise; } // interface 계열이므로 shared pointer로 관리될 것이므로 bitwise copyable하지 않다
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
@@ -209,9 +210,9 @@ private:
     RType_Ptr(RType* innerType, RFactory* factory);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
-    bool IsBitwiseCopyable() override { return true; } // 포인터는 항상 bitwise copyable이다
+    RCopyStrategy GetCopyStrategy() override { return RCopyStrategy::Bitwise; } // 포인터는 항상 bitwise copyable이다
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
@@ -227,9 +228,9 @@ private:
     RType_Shared(RType* innerType, RFactory* factory);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
-    bool IsBitwiseCopyable() override { return false; } // shared pointer는 생성/소멸 시점에 레퍼런스 카운팅을 할 의무가 있으므로 bitwise copyable이 아니다
+    RCopyStrategy GetCopyStrategy() override { return RCopyStrategy::NonBitwise; } // shared pointer는 생성/소멸 시점에 레퍼런스 카운팅을 할 의무가 있으므로 bitwise copyable이 아니다
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
@@ -245,9 +246,9 @@ private:
     RType_Box(RType* innerType, RFactory* factory);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
-    bool IsBitwiseCopyable() override { return false; } // box type은 이동 생성/이동 대입만 가능하므로, Bitwise copyable이 아니다
+    RCopyStrategy GetCopyStrategy() override { return RCopyStrategy::NonBitwise; } // box type은 이동 생성/이동 대입만 가능하므로, Bitwise copyable이 아니다
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
@@ -268,9 +269,9 @@ public:
     RSYMBOL_API bool IsBaseOf(RType_Class& derivedClass);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Class; }
-    bool IsBitwiseCopyable() override { return false; } // class type은 내부적으로 레퍼런스 카운트로 관리되므로 bitwise copyable이 아니다
+    RCopyStrategy GetCopyStrategy() override { return RCopyStrategy::NonBitwise; } // class type은 내부적으로 레퍼런스 카운트로 관리되므로 bitwise copyable이 아니다
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
@@ -292,9 +293,9 @@ public:
     RSYMBOL_API RStructCtorDecl* GetUnboundTrivialCtor();
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
-    bool IsBitwiseCopyable() override { return false; } // TODO: [33] struct [BitwiseCopyable] 추가
+    RCopyStrategy GetCopyStrategy() override { return RCopyStrategy::NonBitwise; } // TODO: [33] struct [BitwiseCopyable] 추가
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
@@ -312,9 +313,9 @@ private:
     RType_Enum(REnumDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
-    RSYMBOL_API bool IsBitwiseCopyable() override; // enum은 갖고 가능한 Elem의 ElemVar중 하나라도 BitwiseCopyable이 아니라면 BitwiseCopyable이 아니다
+    RSYMBOL_API RCopyStrategy GetCopyStrategy() override; // enum은 갖고 가능한 Elem의 ElemVar중 하나라도 BitwiseCopyable이 아니라면 BitwiseCopyable이 아니다
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
@@ -337,9 +338,9 @@ public:
     RSYMBOL_API RType_Enum* GetBaseEnumType();
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
-    RSYMBOL_API bool IsBitwiseCopyable() override;
+    RSYMBOL_API RCopyStrategy GetCopyStrategy() override;
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
@@ -357,9 +358,9 @@ private:
     RType_Interface(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal, RFactory* factory);
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Interface; }
-    bool IsBitwiseCopyable() override { return false; } // interface 계열도 shared pointer로 관리되기 때문에 bitwise copyable이 아니다
+    RCopyStrategy GetCopyStrategy() override { return RCopyStrategy::NonBitwise; } // interface 계열도 shared pointer로 관리되기 때문에 bitwise copyable이 아니다
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
@@ -380,9 +381,9 @@ public:
     RSYMBOL_API std::vector<RFuncParameter> GetPartiallyBoundParameters(); // outerTypeArgs까지만 bound되어 있는 상태
 
 public:
-    RSYMBOL_API RType* Apply(RTypeArguments& typeArgs) override;
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
     RTypeKind GetTypeKind() override { return RTypeKind::Value; }
-    RSYMBOL_API bool IsBitwiseCopyable() override; // LambdaType은 캡쳐한 variable의 bitwise copyable 여부에 따라 달라진다.
+    RSYMBOL_API RCopyStrategy GetCopyStrategy() override; // LambdaType은 캡쳐한 variable의 bitwise copyable 여부에 따라 달라진다.
     RSYMBOL_API std::optional<RDeclRes> GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount) override;
 
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;

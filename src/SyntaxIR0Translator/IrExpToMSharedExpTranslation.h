@@ -9,7 +9,7 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 
 class MSharedExp;
 
-class IrExp;
+struct IrExp;
 class IrExp_ClassVar;
 class IrExp_SharedStructVar;
 class IrExp_StructVar;

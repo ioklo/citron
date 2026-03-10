@@ -14,7 +14,7 @@ class RLambdaVarDecl
 public:
     virtual RName GetName() = 0;
     virtual RType* GetUnboundDeclType() = 0;
-    virtual RType* GetDeclType(RTypeArguments& typeArgs) = 0;
+    virtual RType* GetDeclType(RTypeArguments* typeArgs) = 0;
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
 };
 

@@ -13,7 +13,7 @@ class RClassVarDecl
     : public RDecl
 {
 public:
-    virtual RType* GetDeclType(RTypeArguments& typeArgs) = 0;
+    virtual RType* GetDeclType(RTypeArguments* typeArgs) = 0;
     virtual bool IsStatic() = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }

@@ -93,7 +93,7 @@ expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType, Translati
         throw NotImplementedException{}; // 에러 처리
 }
 
-expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* typeArgs, TranslationContexts& contexts)
+expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, size_t memberTypeArgsCount, TranslationContexts& contexts)
 {
     // struct S<T>
     // {
@@ -104,7 +104,7 @@ expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* 
     //    }
     // }
 
-    auto e_o_bodyRes = contexts.scopeContext->ResolveIdentifier(name, typeArgs->GetCount());
+    auto e_o_bodyRes = contexts.scopeContext->ResolveIdentifier(name, memberTypeArgsCount);
     RETURN_ON_ERROR(e_o_bodyRes);
 
     if (!*e_o_bodyRes)

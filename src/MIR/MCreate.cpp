@@ -13,11 +13,11 @@ RType* GetType(MCreate& create, RFactory* rFactory)
     {
         using T = remove_cvref_t<decltype(create)>;
 
-        if constexpr (same_as<T, MCreate_Bitwise>)
+        if constexpr (same_as<T, MCreate_BC>)
         {
             return GetType(create.exp, rFactory);
         }
-        else if constexpr (same_as<T, MCreate_Init>)
+        else if constexpr (same_as<T, MCreate_NBC>)
         {
             return GetType(create.initExp, rFactory);
         }

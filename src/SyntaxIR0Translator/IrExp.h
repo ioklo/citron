@@ -25,122 +25,98 @@ struct TranslationContexts;
 
 struct IrExpVisitor;
 
-class IrExp
+struct IrExp
 {
 public:
     virtual ~IrExp() {}
     virtual void Accept(IrExpVisitor& visitor) = 0;
 };
 
-class IrExp_Namespace : public IrExp
+struct IrExp_Namespace : IrExp
 {
-public:
     RNamespaceDecl* decl;
 
-public:
     IrExp_Namespace(RNamespaceDecl* decl);
     void Accept(IrExpVisitor& visitor) override;
 };
 
-class IrExp_Class : public IrExp
+struct IrExp_Class : IrExp
 {
-public:
     RClassDecl* decl;
     RTypeArguments* typeArgs;
 
-public:
     IrExp_Class(RClassDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrExpVisitor& visitor) override;
 };
 
-class IrExp_Struct : public IrExp
+struct IrExp_Struct : IrExp
 {
-public:
     RStructDecl* decl;
     RTypeArguments* typeArgs;
 
-public:
     IrExp_Struct(RStructDecl* decl, RTypeArguments* typeArgs);
     void Accept(IrExpVisitor& visitor) override;
 };
 
 // &C.x
-class IrExp_Static : public IrExp
+struct IrExp_Static : IrExp
 {
-    RFactoryPtr rFactory;
-public:
     MLoc* loc;
 
-public:
-    IrExp_Static(MLoc* loc, const RFactoryPtr& rFactory)
-        : loc{loc}, rFactory{rFactory}
+    IrExp_Static(MLoc* loc)
+        : loc{loc}
     { }
     void Accept(IrExpVisitor& visitor) override;
 };
 
 // &c.x => IrExp_ClassVar(MLoc_LocalVar("c"), C::x)
-class IrExp_ClassVar : public IrExp
+struct IrExp_ClassVar : IrExp
 {
-    RFactoryPtr rFactory;
-public:
     MLoc* base;
     RClassVarDecl* decl;
     RTypeArguments* typeArgs;
 
-public:
-    IrExp_ClassVar(MLoc* base, RClassVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
-        : base{base}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
+    IrExp_ClassVar(MLoc* base, RClassVarDecl* decl, RTypeArguments* typeArgs)
+        : base{base}, decl{decl}, typeArgs{typeArgs}
     { }
-
     void Accept(IrExpVisitor& visitor) override;
 };
 
 // shared S pS;
 // &ps->x => IrExp_SharedStructVar(MLoc_LocalVar("pS"), S::x)
 // IrExp_SharedStructVar
-class IrExp_SharedStructVar : public IrExp
+struct IrExp_SharedStructVar : IrExp
 {
-    RFactoryPtr rFactory;
-public:
     MLoc* base;
     RStructVarDecl* decl;
     RTypeArguments* typeArgs;
 
-public:
-    IrExp_SharedStructVar(MLoc* base, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
-        : base{base}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
+    IrExp_SharedStructVar(MLoc* base, RStructVarDecl* decl, RTypeArguments* typeArgs)
+        : base{base}, decl{decl}, typeArgs{typeArgs}
     { }
-
     void Accept(IrExpVisitor& visitor) override;
 };
 
 // C c;
 // shared A a = &c.s.a; => IrExp_StructVar(IrExp_ClassVar(MLoc_LocalVar("c"), C::s), A::a)
-class IrExp_StructVar : public IrExp
+struct IrExp_StructVar : IrExp
 {
-public:
     IrExp* base;
     RStructVarDecl* decl;
     RTypeArguments* typeArgs;
 
-private:
-    RFactoryPtr rFactory;
-
-public:
-    IrExp_StructVar(IrExp* base, RStructVarDecl* decl, RTypeArguments* typeArgs, const RFactoryPtr& rFactory)
-        : base{base}, decl{decl}, typeArgs{typeArgs}, rFactory{rFactory}
+    IrExp_StructVar(IrExp* base, RStructVarDecl* decl, RTypeArguments* typeArgs)
+        : base{base}, decl{decl}, typeArgs{typeArgs}
     { }
     void Accept(IrExpVisitor& visitor) override;
 };
 
 // (*pS).id 를 처리하기 위해서
 // *x 모양을 따로 들고 있는다. IrExp_Loc{MLoc_Deref}는 만들어지면 안된다
-class IrExp_Deref : public IrExp
+struct IrExp_Deref : IrExp
 {
-public:
     MLoc* innerLoc;
 
-public:
     IrExp_Deref(MLoc* innerLoc)
         : innerLoc{innerLoc}
     { }
@@ -148,22 +124,18 @@ public:
 };
 
 // exp로 나오는 경우
-class IrExp_Exp : public IrExp
+struct IrExp_Exp : IrExp
 {
-public:
     MExp* exp;
 
-public:
     IrExp_Exp(MExp* exp);
     void Accept(IrExpVisitor& visitor) override;
 };
 
-class IrExp_Loc : public IrExp
+struct IrExp_Loc : IrExp
 {
-public:
     MLoc* loc;
 
-public:
     IrExp_Loc(MLoc* loc);
     void Accept(IrExpVisitor& visitor) override;
 };

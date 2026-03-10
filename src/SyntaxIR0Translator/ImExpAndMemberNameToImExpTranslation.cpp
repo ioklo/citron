@@ -26,7 +26,7 @@
 #include "ImExp.h"
 #include "ReExp.h"
 #include "ImExpToReExpTranslation.h"
-#include "ReExpToMLocTranslation.h"
+#include "ReExpToMIRTranslation.h"
 #include "DesignatedDiagnostic.h"
 #include "Misc.h"
 
@@ -76,7 +76,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto* typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        auto* typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, typeArgsExceptOuter);
         return MakeImExp<ImExp_Class>(member.decl, typeArgs);
     }
 
@@ -114,7 +114,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, typeArgsExceptOuter);
 
         return MakeImExp<ImExp_Struct>(member.decl, typeArgs);
     }
@@ -152,7 +152,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(*member.outerTypeArgs, *typeArgsExceptOuter);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, typeArgsExceptOuter);
         return MakeImExp<ImExp_Enum>(member.decl, typeArgs);
     }
 
@@ -220,6 +220,12 @@ struct InstanceParentTranslator
     TImExp* MakeImExp(TArgs&&... args)
     {
         return contexts.srtFactory->MakeImExp<TImExp>(std::forward<TArgs>(args)...);
+    }
+
+    template<typename TMLoc, typename... TArgs> requires derived_from<TMLoc, MLoc>
+    TMLoc* MakeMLoc(TArgs&&... args)
+    {
+        return contexts.mFactory->MakeMLoc<TMLoc>(std::forward<TArgs>(args)...);
     }
 
     expected<ImExp*, DiagPtr> operator()(auto& member) { return Visit(member); }
@@ -311,7 +317,8 @@ struct InstanceParentTranslator
     // exp.firstX
     expected<ImExp*, DiagPtr> Visit(RDeclRes_EnumElemVar& member)
     {   
-        return MakeImExp<ImExp_EnumElemVar>(member.decl, member.outerTypeArgs, mInstLoc);
+        auto* loc = MakeMLoc<MLoc_EnumElemVar>(mInstLoc, member.decl, member.outerTypeArgs);
+        return MakeImExp<ImExp_Loc>(loc);
     }
 
     // 표현 불가
@@ -366,28 +373,28 @@ private:
         return visit(binder, *o_member);
     }
 
-    expected<MLoc*, DiagPtr> TranslateImExpToMLoc(ImExp* imExp)
+    ResultType TranslateInstanceParent(MLoc* mLoc)
     {
-        auto e_reInstExp = TranslateImExpToReExp(imExp, contexts);
-        RETURN_ON_ERROR(e_reInstExp);
-
-        DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> notLocationDiag;
-        return TranslateReExpToMLoc(*e_reInstExp, /*bMaterializeExp*/true, &notLocationDiag, contexts);
-    }
-
-    ResultType TranslateInstanceParent(ImExp* imExp)
-    {
-        auto e_loc = TranslateImExpToMLoc(imExp);
-        RETURN_ON_ERROR(e_loc);
-
-        auto* type = GetType(*e_loc, contexts.rFactory.get());
+        auto* type = GetType(mLoc, &*contexts.rFactory);
 
         auto o_member = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
         if (!o_member)
             return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
 
-        InstanceParentTranslator binder(*e_loc, typeArgsExceptOuter, contexts);
+        InstanceParentTranslator binder(mLoc, typeArgsExceptOuter, contexts);
         return visit(binder, *o_member);
+    }
+
+    ResultType TranslateInstanceParentAsLoc(ImExp* imExp)
+    {
+        auto e_reInstExp = TranslateImExpToReExp(imExp, contexts);
+        RETURN_ON_ERROR(e_reInstExp);
+
+        DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> notLocationDiag;
+        auto e_mInstLoc = TranslateReExpToMLoc(*e_reInstExp, /*bMaterializeExp*/true, &notLocationDiag, contexts);
+        RETURN_ON_ERROR(e_mInstLoc);
+
+        return TranslateInstanceParent(*e_mInstLoc);
     }
 
 public:
@@ -442,59 +449,24 @@ public:
         return Error<Error_ResolveIdentifier_EnumElemCantHaveMember>();
     }
 
-    ResultType Visit(ImExp_ThisVar* imExp)
-    {
-        return TranslateInstanceParent(imExp);
-    }
-
-    ResultType Visit(ImExp_LocalVar* imExp)
-    {
-        return TranslateInstanceParent(imExp);
-    }
-
-    ResultType Visit(ImExp_LocalRef* imExp)
-    {
-        return TranslateInstanceParent(imExp);
-    }
-
-    ResultType Visit(ImExp_LambdaVar* imExp)
-    {
-        return TranslateInstanceParent(imExp);
-    }
-
     ResultType Visit(ImExp_ClassVar* imExp)
     {
-        return TranslateInstanceParent(imExp);
+        return TranslateInstanceParentAsLoc(imExp);
     }
 
     ResultType Visit(ImExp_StructVar* imExp)
     {
-        return TranslateInstanceParent(imExp);
+        return TranslateInstanceParentAsLoc(imExp);
     }
 
-    ResultType Visit(ImExp_EnumElemVar* imExp)
+    ResultType Visit(ImExp_Loc* imExp)
     {
-        return TranslateInstanceParent(imExp);
-    }
-
-    ResultType Visit(ImExp_ListIndexer* imExp)
-    {
-        throw NotImplementedException{};
-    }
-
-    ResultType Visit(ImExp_PtrDeref* imExp)
-    {
-        return TranslateInstanceParent(imExp);
-    }
-
-    ResultType Visit(ImExp_SharedDeref* imExp)
-    {
-        return TranslateInstanceParent(imExp);
+        return TranslateInstanceParentAsLoc(imExp);
     }
 
     ResultType Visit(ImExp_Exp* imExp)
     {
-        return TranslateInstanceParent(imExp);
+        return TranslateInstanceParentAsLoc(imExp);
     }
 };
 

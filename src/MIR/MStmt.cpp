@@ -26,7 +26,7 @@ void MStmt_CallBaseClassCtor::Accept(MStmtVisitor& visitor) { visitor.Visit(this
 void MStmt_CallBaseStructCtor::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Directive::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Call::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Assign::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Do::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
-
 
 }

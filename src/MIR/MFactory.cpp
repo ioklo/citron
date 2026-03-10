@@ -1,6 +1,7 @@
 #include "MFactory.h"
 #include "MLoc.h"
 #include "MExp.h"
+#include "MInitExp.h"
 #include "MSharedExp.h"
 #include "MStmt.h"
 #include "MData.h"

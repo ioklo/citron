@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <variant>
 
 #include "MCreate.h"
 #include "MRead.h"
@@ -13,6 +14,7 @@
 namespace Citron {
 
 class RType_Func;
+class RType_Struct;
 class RClassCtorDecl;
 class RStructCtorDecl;
 class REnumElemDecl;
@@ -55,7 +57,7 @@ struct MInitExp_StringElem_Text
 
 struct MInitExp_StringElem_Loc
 {
-    MRead_Location loc;
+    MRead_NBC loc;
 };
 
 using MInitExp_StringElem = std::variant<MInitExp_StringElem_Text, MInitExp_StringElem_Loc>;
@@ -100,8 +102,8 @@ struct MInitExp_NewClass : MInitExp
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
-struct MInitExp_StructCtorKind_Copy { MRead_Location src; };
-struct MInitExp_StructCtorKind_Move { MMoveSource src; };
+struct MInitExp_StructCtorKind_Copy { RType_Struct* structType; MRead_NBC src; };
+struct MInitExp_StructCtorKind_Move { RType_Struct* structType; MMoveSource src; };
 struct MInitExp_StructCtorKind_General { RStructCtorDecl* decl; RTypeArguments* typeArgs; std::vector<MArgument> args; };
 
 using MInitExp_StructCtorKind = std::variant<MInitExp_StructCtorKind_Copy, MInitExp_StructCtorKind_Move, MInitExp_StructCtorKind_General>;
@@ -110,6 +112,9 @@ struct MInitExp_StructCtor : MInitExp
 {   
     MInitExp_StructCtorKind kind;
 
+    MInitExp_StructCtor(MInitExp_StructCtorKind kind)
+        : kind{kind}
+    { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;    
 };
 
@@ -119,6 +124,10 @@ struct MInitExp_Call : MInitExp
     MCallable callable;
     std::vector<MArgument> args;
     std::optional<MCatch> o_catch; // try F() catch_* { }이 붙었을 경우
+
+    MInitExp_Call(MCallable&& callable, std::vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
+        : callable{std::move(callable)}, args{std::move(args)}, o_catch{std::move(o_catch)}
+    { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
@@ -128,13 +137,17 @@ struct MInitExp_NewEnumElem : MInitExp
     REnumElemDecl* enumElemDecl;
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
+
+    MInitExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* typeArgs, std::vector<MArgument>&& args)
+        : enumElemDecl{enumElemDecl}, typeArgs{typeArgs}, args{std::move(args)}
+    { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
 // NBC value를 nullable(not inplace)로 만들 경우
 struct MInitExp_Nullable : MInitExp
 {
-    MCreate_Init initExp;
+    MCreate_NBC inner;
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
@@ -203,6 +216,7 @@ struct MInitExp_As : MInitExp
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
+MIR_API RType* GetType(MInitExp_StructCtorKind& ctorKind, RFactory* rFactory);
 MIR_API RType* GetType(MInitExp* initExp, RFactory* rFactory);
 
 } // namespace Citron

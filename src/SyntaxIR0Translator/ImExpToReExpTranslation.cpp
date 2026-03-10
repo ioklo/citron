@@ -28,11 +28,11 @@ namespace Citron {
 
 namespace {
 
-// expected<ReExp*, DiagPtr>을 돌려준다
+// expected<ReExp, DiagPtr>을 돌려준다
 struct ImExpToReExpTranslator
 {   
 public:
-    using ResultType = expected<ReExp*, DiagPtr>;
+    using ResultType = expected<ReExp, DiagPtr>;
 
     TranslationContexts& contexts;
 
@@ -47,14 +47,14 @@ private:
     ResultType Loc(TArgs&&... args)
     {
         auto* loc = contexts.mFactory->MakeMLoc<TLoc>(forward<TArgs>(args)...);
-        return contexts.srtFactory->MakeReExp<ReExp_Loc>(loc);
+        return ReExp_Loc{loc};
     }
 
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, MExp>
     ResultType Exp(TArgs&&... args)
     {
         auto* exp = contexts.mFactory->MakeMExp<TExp>(forward<TArgs>(args)...);
-        return contexts.srtFactory->MakeReExp<ReExp_Exp>(exp);
+        return ReExp_Exp{exp};
     }
 
 public:
@@ -113,22 +113,6 @@ public:
         throw NotImplementedException{};
 
     }
-    ResultType Visit(ImExp_ThisVar* imExp)
-    {
-        return Loc<MLoc_This>(imExp->type);
-    }
-    ResultType Visit(ImExp_LocalVar* imExp)
-    {
-        return Loc<MLoc_LocalVar>(imExp->type, imExp->name);
-    }
-    ResultType Visit(ImExp_LocalRef* imExp)
-    {
-        return Loc<MLoc_LocalRef>(imExp->type, imExp->name);
-    }
-    ResultType Visit(ImExp_LambdaVar* imExp)
-    {
-        return Loc<MLoc_LambdaVar>(imExp->decl, imExp->typeArgs);
-    }
 
     ResultType Visit(ImExp_ClassVar* imExp)
     {
@@ -144,36 +128,27 @@ public:
 
         return Loc<MLoc_ClassVar>(imExp->decl, imExp->typeArgs, imExp->hasExplicitInstance, imExp->explicitInstance);
     }
+
     ResultType Visit(ImExp_StructVar* imExp)
     {
         return Loc<MLoc_StructVar>(imExp->decl, imExp->typeArgs, imExp->hasExplicitInstance, imExp->explicitInstance);
     }
-    ResultType Visit(ImExp_EnumElemVar* imExp)
-    {
-        return Loc<MLoc_EnumElemVar>(imExp->decl, imExp->typeArgs, imExp->instance);
-    }
-    ResultType Visit(ImExp_ListIndexer* imExp)
-    {
-        return Loc<MLoc_ListIndexer>(imExp->instance, imExp->index, imExp->itemType);
-    }
-    ResultType Visit(ImExp_PtrDeref* imExp)
-    {
-        return Loc<MLoc_PtrDeref>(imExp->target);
-    }
-    ResultType Visit(ImExp_SharedDeref* imExp)
-    {
-        return Loc<MLoc_SharedDeref>(imExp->target);
-    }
+
     ResultType Visit(ImExp_Exp* imExp)
     {
-        return contexts.srtFactory->MakeReExp<ReExp_Exp>(imExp->exp);
+        return ReExp_Exp{imExp->exp};
+    }
+
+    ResultType Visit(ImExp_Loc* imExp)
+    {
+        return ReExp_Loc{imExp->loc};
     }
 };
 
 }
 
 // outermost로 변경
-expected<ReExp*, DiagPtr> TranslateImExpToReExp(ImExp* imExp, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateImExpToReExp(ImExp* imExp, TranslationContexts& contexts)
 {
     ImExpToReExpTranslator translator{contexts};
     return Accept(translator, imExp);

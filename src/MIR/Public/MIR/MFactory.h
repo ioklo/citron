@@ -5,10 +5,11 @@
 
 namespace Citron {
 
-class MStmt;
+struct MStmt;
 struct MExp;
 struct MLoc;
-class MSharedExp;
+struct MInitExp;
+struct MSharedExp;
 class MData;
 struct MFuncBody;
 

@@ -58,7 +58,7 @@ TEST(ScriptParser, ParseComplexScript)
                             {
                                 "$type": "SVarDeclElement",
                                 "varName": "sum",
-                                "initExp": {
+                                "inner": {
                                     "$type": "SExp_IntLiteral",
                                     "value": 0
                                 }
@@ -81,7 +81,7 @@ TEST(ScriptParser, ParseComplexScript)
                                 {
                                     "$type": "SVarDeclElement",
                                     "varName": "i",
-                                    "initExp": {
+                                    "inner": {
                                         "$type": "SExp_IntLiteral",
                                         "value": 0
                                     }
@@ -345,7 +345,7 @@ TEST(ScriptParser, ParseFuncDecl)
                             {
                                 "$type": "SVarDeclElement",
                                 "varName": "a",
-                                "initExp": {
+                                "inner": {
                                     "$type": "SExp_IntLiteral",
                                     "value": 0
                                 }

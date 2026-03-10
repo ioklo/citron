@@ -36,7 +36,7 @@ struct RFuncParameter
             || kind == RFuncParameterKind::Out; // Init은 뺀다        
     }       
 
-    RSYMBOL_API RFuncParameter Apply(RTypeArguments& typeArgs);
+    RSYMBOL_API RFuncParameter Apply(RTypeArguments* typeArgs);
 };
 
 

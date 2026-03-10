@@ -14,7 +14,7 @@ RTypeArguments::RTypeArguments(const std::vector<RType*>& items, RFactory* facto
 {
 }
 
-RTypeArguments* RTypeArguments::Apply(RTypeArguments& typeArgs)
+RTypeArguments* RTypeArguments::Apply(RTypeArguments* typeArgs)
 {
     vector<RType*> appliedItems;
     appliedItems.reserve(items.size());

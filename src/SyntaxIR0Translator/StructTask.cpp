@@ -77,7 +77,7 @@ void GatherAllBaseVarDecls(vector<RFuncParameter>& params, RType_Struct* structT
     // 그리고 자기 자신
     for (auto* varDecl : structType->decl->GetRVars())
     {
-        auto* declType = varDecl->GetDeclType(*structType->typeArgs);
+        auto* declType = varDecl->GetDeclType(structType->typeArgs);
         RName_CtorParam name{params.size(), RNameToString(varDecl->GetIdentifier().name)};
         params.emplace_back(RFuncParameterKind::Init, declType, move(name));
     }

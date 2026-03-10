@@ -1,5 +1,5 @@
 - [ ] // TODO: [7] GlobalFuncDecl에 AccessModifier 추가
-- [ ] // TODO: [10] box lambda이면 box로 판단해야 한다
+- [ ] // TODO: [10] shared lambda이면 shared로 판단해야 한다
 - [ ] // TODO: [15] foreach 에러 처리
 - [ ] // TODO: [16] TypeResolver적용
 - [ ] // TODO: [17] NextFunc가 여러개일때 처리
@@ -11,9 +11,13 @@
 - [ ] // TODO: [30] move구현
 - [ ] // TODO: [31] params 구현
 - [ ] // TODO: [32] RTypeArguments를 nested로 만들기
-- [ ] // TODO: [33] struct [BitwiseCopyable] 추가
+- [ ] // TODO: [33] struct [BitwiseCopyable] 추가,
 - [ ] // TODO: [34] enum [BitwiseCopyable] 지원
 - [ ] // TODO: [35] lambda의 [BitwiseCopyable] 지원
 - [ ] // TODO: [36] MExp_String을 MCreate_String으로 변경
 - [ ] // TODO: [37] class base에서도 검색하기
 - [ ] // TODO: [38] break/continue에 label 지원
+- [ ] // TODO: [39] SyntaxIR0Translator Eror 정리
+- [ ] // TODO: [40] MInitExp_StructCtorKind_*를 쓸때 Copy, Move가 가능한지 확인하고 fallback까지 하는 코드 작성
+- [ ] // TODO: [41] try catch 구현
+- [ ] // TODO: [42] BodyRes.NeedCapture구현

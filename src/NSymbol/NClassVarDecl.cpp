@@ -27,7 +27,7 @@ RTypeDecl* NClassVarDecl::GetTypeMember(const RName& name, size_t typeParamCount
     return nullptr;
 }
 
-RType* NClassVarDecl::GetDeclType(RTypeArguments& typeArgs)
+RType* NClassVarDecl::GetDeclType(RTypeArguments* typeArgs)
 {
     return declType->Apply(typeArgs);
 }

@@ -17,6 +17,7 @@
     <ClInclude Include="Public\RSymbol\RClassDecl.h" />
     <ClInclude Include="Public\RSymbol\RClassFuncDecl.h" />
     <ClInclude Include="Public\RSymbol\RClassVarDecl.h" />
+    <ClInclude Include="Public\RSymbol\RCopyStrategy.h" />
     <ClInclude Include="Public\RSymbol\RDecl.h" />
     <ClInclude Include="Public\RSymbol\REnumDecl.h" />
     <ClInclude Include="Public\RSymbol\REnumElemDecl.h" />

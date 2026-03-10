@@ -57,7 +57,7 @@ optional<Citron::RDeclRes> NStructVarDecl::ResolveIdentifier(const RName& name, 
     throw RuntimeFatalException();
 }
 
-RType* NStructVarDecl::GetDeclType(RTypeArguments& typeArgs)
+RType* NStructVarDecl::GetDeclType(RTypeArguments* typeArgs)
 {
     assert(declType != nullptr);
     return declType->Apply(typeArgs);

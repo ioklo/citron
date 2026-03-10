@@ -23,7 +23,7 @@
 #include "ReExpToMLocTranslation.h"
 #include "ImExpAndMemberNameToImExpTranslation.h"
 
-#include "SExpToMReadTranslation.h"
+#include "SExpToMIRTranslation.h"
 
 #include "ScopeContext.h"
 #include "TranslationContexts.h"
@@ -119,10 +119,16 @@ public:
             auto* targetType = GetType(*e_target, &*contexts.rFactory);
 
             if (dynamic_cast<RType_Shared*>(targetType))
-                return Value<ImExp_SharedDeref>(*e_target);
+            {
+                auto* loc = contexts.mFactory->MakeMLoc<MLoc_SharedDeref>(*e_target);
+                return Value<ImExp_Loc>(loc);
+            }
 
             if (dynamic_cast<RType_Ptr*>(targetType))
-                return Value<ImExp_PtrDeref>(*e_target);
+            {
+                auto* loc = contexts.mFactory->MakeMLoc<MLoc_PtrDeref>(*e_target);
+                return Value<ImExp_Loc>(loc);
+            }
 
             // 에러를 내야 할 것 같다
             throw NotImplementedException{};
@@ -159,7 +165,8 @@ public:
             if (GetType(*e_mIndex, &*contexts.rFactory) != intType)
                 throw NotImplementedException{};
 
-            return Value<ImExp_ListIndexer>(get<MRead_Location>(*e_mObj), get<MRead_Value>(*e_mIndex), itemType);
+            auto* loc = contexts.mFactory->MakeMLoc<MLoc_ListIndexer>(move(get<MRead_NBC>(*e_mObj)), move(get<MRead_BC>(*e_mIndex)), itemType);
+            return Value<ImExp_Loc>(loc);
         }
 
         // TODO: custom indexer를 만들수 있으면 좋은가

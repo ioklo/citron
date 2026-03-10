@@ -50,6 +50,6 @@ std::vector<ITransactionable*> BeginTransaction(TranslationContexts& contexts);
 
 std::expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType, TranslationContexts& contexts);
 
-std::expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, RTypeArguments* typeArgs, TranslationContexts& contexts);
+std::expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, size_t memberTypeArgs, TranslationContexts& contexts);
 
 } // namespace Citron

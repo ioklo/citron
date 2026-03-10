@@ -84,9 +84,9 @@ public:
     RThisKind GetThisKind() override { return NCommonFuncDeclComponent::GetThisKind(); }
     // size_t GetTypeParamCount() override { return 0; }
     size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
-    RType* GetReturnType(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs); }
-    RFuncReturn GetFuncReturn(RTypeArguments& typeArgs) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs); }
-    RFuncParameter GetFuncParam(RTypeArguments& typeArgs, size_t index) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index); }
+    RType* GetReturnType(RTypeArguments* typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs); }
+    RFuncReturn GetFuncReturn(RTypeArguments* typeArgs) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs); }
+    RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index); }
     RFuncReturn GetUnboundFuncReturn() override { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
     std::span<RFuncParameter> GetUnboundFuncParams() override { return NCommonFuncDeclComponent::GetUnboundFuncParams(); }
 };

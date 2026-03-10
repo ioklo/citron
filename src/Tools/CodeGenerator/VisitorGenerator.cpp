@@ -235,6 +235,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
                 "MStmt_CallBaseStructCtor",
                 "MStmt_Directive",
                 "MStmt_Call",
+                "MStmt_Assign",
                 "MStmt_Do",
             },
         },
@@ -337,16 +338,9 @@ void GenerateVisitors(std::filesystem::path srcPath)
                 "ImExp_StructFuncs",
                 "ImExp_Enum",
                 "ImExp_EnumElem",
-                "ImExp_ThisVar",
-                "ImExp_LocalVar",
-                "ImExp_LocalRef",
-                "ImExp_LambdaVar",
                 "ImExp_ClassVar",
                 "ImExp_StructVar",
-                "ImExp_EnumElemVar",
-                "ImExp_ListIndexer",
-                "ImExp_PtrDeref",
-                "ImExp_SharedDeref",
+                "ImExp_Loc",
                 "ImExp_Exp",
             },
         },
@@ -369,16 +363,6 @@ void GenerateVisitors(std::filesystem::path srcPath)
             },
         },
 
-        VisitorInfo {
-            .relPath = path("SyntaxIR0Translator") / "ReExpVisitor.g.h",
-            .name = "ReExp",
-            .memberName = "reExp",
-            .members {
-                "ReExp_Loc",
-                "ReExp_Exp",
-                "ReExp_InitExp",
-            },
-        },
     };
 
     for (auto& visitorInfo : visitorInfos)

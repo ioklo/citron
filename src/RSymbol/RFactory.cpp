@@ -208,10 +208,10 @@ RTypeArguments* RFactory::MakeTypeArguments(const vector<RType*>& items)
     return pv;
 }
 
-RTypeArguments* RFactory::MergeTypeArguments(RTypeArguments& typeArgs0, RTypeArguments& typeArgs1)
+RTypeArguments* RFactory::MergeTypeArguments(RTypeArguments* typeArgs0, RTypeArguments* typeArgs1)
 {
-    auto items = typeArgs0.items;
-    items.insert(items.end(), typeArgs1.items.begin(), typeArgs1.items.end());
+    auto items = typeArgs0->items; // 복사
+    items.insert(items.end(), typeArgs1->items.begin(), typeArgs1->items.end());
 
     RTypeArgumentsKey key{items};
     auto i = typeArgsMap.find(key);

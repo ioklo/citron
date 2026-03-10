@@ -42,7 +42,7 @@ public:
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RClassVarDecl
-    NSYMBOL_API RType* GetDeclType(RTypeArguments& typeArgs) override;
+    NSYMBOL_API RType* GetDeclType(RTypeArguments* typeArgs) override;
 };
 
 }

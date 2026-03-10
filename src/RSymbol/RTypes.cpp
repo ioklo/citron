@@ -39,7 +39,7 @@ RType_Nullable::RType_Nullable(RType* innerType, RFactory* factory)
 {
 }
 
-RType* RType_Nullable::Apply(RTypeArguments& typeArgs)
+RType* RType_Nullable::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedInnerType = innerType->Apply(typeArgs);
     return factory->MakeNullableType(appliedInnerType);
@@ -56,7 +56,7 @@ RType_NullableInplace::RType_NullableInplace(RType* innerType, RFactory* factory
 {
 }
 
-RType* RType_NullableInplace::Apply(RTypeArguments& typeArgs)
+RType* RType_NullableInplace::Apply(RTypeArguments* typeArgs)
 {   
     return factory->MakeNullableInplaceType(innerType->Apply(typeArgs));
 }
@@ -71,10 +71,10 @@ RType_TypeVar::RType_TypeVar(RTypeParamDecl* decl)
 {
 }
 
-RType* RType_TypeVar::Apply(RTypeArguments& typeArgs)
+RType* RType_TypeVar::Apply(RTypeArguments* typeArgs)
 {
     size_t globalIndex = decl->GetGlobalIndex();
-    return typeArgs.Get(globalIndex);
+    return typeArgs->Get(globalIndex);
 }
 
 optional<RDeclRes> RType_TypeVar::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -86,7 +86,7 @@ RType_Void::RType_Void()
 {
 }
 
-RType* RType_Void::Apply(RTypeArguments& typeArgs)
+RType* RType_Void::Apply(RTypeArguments* typeArgs)
 {
     return this;
 }
@@ -101,7 +101,7 @@ RType_Tuple::RType_Tuple(std::vector<RTupleVar>&& vars, RFactory* factory)
 {
 }
 
-RType* RType_Tuple::Apply(RTypeArguments& typeArgs)
+RType* RType_Tuple::Apply(RTypeArguments* typeArgs)
 {
     vector<RTupleVar> appliedVars;
     for (auto& var : vars)
@@ -113,13 +113,13 @@ RType* RType_Tuple::Apply(RTypeArguments& typeArgs)
     return factory->MakeTupleType(move(appliedVars));
 }
 
-bool RType_Tuple::IsBitwiseCopyable()
+RCopyStrategy RType_Tuple::GetCopyStrategy()
 {
     for (auto& var : vars)
-        if (!var.declType->IsBitwiseCopyable()) // 하나라도 아니라면
-            return false;
+        if (var.declType->GetCopyStrategy() == RCopyStrategy::NonBitwise) // 하나라도 아니라면
+            return RCopyStrategy::NonBitwise;
 
-    return true;
+    return RCopyStrategy::Bitwise;
 }
 
 optional<RDeclRes> RType_Tuple::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -132,7 +132,7 @@ RType_Func::RType_Func(bool bLocal, RType* retType, std::vector<Parameter>&& par
 {
 }
 
-RType* RType_Func::Apply(RTypeArguments& typeArgs)
+RType* RType_Func::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedRetType = retType->Apply(typeArgs);
 
@@ -164,7 +164,7 @@ RType_Ptr::RType_Ptr(RType* innerType, RFactory* factory)
 {
 }
 
-RType* RType_Ptr::Apply(RTypeArguments& typeArgs)
+RType* RType_Ptr::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedInnerType = innerType->Apply(typeArgs);
     return factory->MakePtrType(appliedInnerType);
@@ -180,7 +180,7 @@ RType_Shared::RType_Shared(RType* innerType, RFactory* factory)
 {
 }
 
-RType* RType_Shared::Apply(RTypeArguments& typeArgs)
+RType* RType_Shared::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedInnerType = innerType->Apply(typeArgs);
     return factory->MakeSharedType(appliedInnerType);
@@ -197,7 +197,7 @@ RType_Box::RType_Box(RType* innerType, RFactory* factory)
 
 }
 
-RType* RType_Box::Apply(RTypeArguments& typeArgs)
+RType* RType_Box::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedInnerType = innerType->Apply(typeArgs);
     return factory->MakeBoxType(appliedInnerType);
@@ -223,7 +223,7 @@ bool RType_Class::IsBaseOf(RType_Class& derivedClass)
     throw NotImplementedException();
 }
 
-RType* RType_Class::Apply(RTypeArguments& typeArgs)
+RType* RType_Class::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
     return factory->MakeClassType(decl, appliedTypeArgs);
@@ -249,7 +249,7 @@ RStructCtorDecl* RType_Struct::GetUnboundTrivialCtor()
     return decl->GetUnboundTrivialCtor_RStructCtorDecl();
 }
 
-RType* RType_Struct::Apply(RTypeArguments& typeArgs)
+RType* RType_Struct::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
     return factory->MakeStructType(decl, appliedTypeArgs);
@@ -265,13 +265,13 @@ RType_Enum::RType_Enum(REnumDecl* decl, RTypeArguments* typeArgs, RFactory* fact
 {   
 }
 
-RType* RType_Enum::Apply(RTypeArguments& typeArgs)
+RType* RType_Enum::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
     return factory->MakeEnumType(decl, appliedTypeArgs);
 }
 
-bool RType_Enum::IsBitwiseCopyable()
+RCopyStrategy RType_Enum::GetCopyStrategy()
 {   
     // TODO: [34] enum [BitwiseCopyable] 지원
     throw NotImplementedException{};
@@ -301,23 +301,23 @@ RType_Enum* RType_EnumElem::GetBaseEnumType()
 }
 
 
-RType* RType_EnumElem::Apply(RTypeArguments& typeArgs)
+RType* RType_EnumElem::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
     return factory->MakeEnumElemType(decl, appliedTypeArgs);
 }
 
-bool RType_EnumElem::IsBitwiseCopyable()
+RCopyStrategy RType_EnumElem::GetCopyStrategy()
 {
     for(size_t i = 0, count = decl->GetVarCount(); i < count; i++)
     {
         auto* varDecl = decl->GetVarDecl(i);
-        auto* varType = varDecl->GetDeclType(*typeArgs);
-        if (!varType->IsBitwiseCopyable())
-            return false;
+        auto* varType = varDecl->GetDeclType(typeArgs);
+        if (varType->GetCopyStrategy() == RCopyStrategy::NonBitwise)
+            return RCopyStrategy::NonBitwise;
     }
 
-    return true;
+    return RCopyStrategy::Bitwise;
 }
 
 optional<RDeclRes> RType_EnumElem::GetMember(const RName& name, size_t explicitTypeArgsExceptOuterCount)
@@ -330,7 +330,7 @@ RType_Interface::RType_Interface(RInterfaceDecl* decl, RTypeArguments* typeArgs,
 {
 }
 
-RType* RType_Interface::Apply(RTypeArguments& typeArgs)
+RType* RType_Interface::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
     return factory->MakeInterfaceType(decl, appliedTypeArgs, bLocal);
@@ -351,13 +351,13 @@ vector<RFuncParameter> RType_Lambda::GetPartiallyBoundParameters()
     throw NotImplementedException();
 }
 
-RType* RType_Lambda::Apply(RTypeArguments& typeArgs)
+RType* RType_Lambda::Apply(RTypeArguments* typeArgs)
 {
     auto* appliedOuterTypeArgs = outerTypeArgs->Apply(typeArgs);
     return factory->MakeLambdaType(decl, appliedOuterTypeArgs);
 }
 
-bool RType_Lambda::IsBitwiseCopyable()
+RCopyStrategy RType_Lambda::GetCopyStrategy()
 {
     // TODO: [35] lambda의 [BitwiseCopyable] 지원
     throw NotImplementedException{};

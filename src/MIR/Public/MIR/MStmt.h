@@ -11,6 +11,7 @@
 #include "MArgument.h"
 #include "MCallable.h"
 #include "MCatch.h"
+#include "MRead.h"
 
 namespace Citron {
 
@@ -77,7 +78,7 @@ public:
 
 struct MStmt_If : MStmt
 {
-    MRead_Value cond; // BC
+    MRead_BC cond; // BC
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
 
@@ -91,7 +92,7 @@ public:
 // cond내부에 alias가 생기는 경우
 struct MStmt_IfBind : MStmt
 {
-    MRead_Value cond;
+    MRead_BC cond;
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
 
@@ -106,7 +107,7 @@ public:
 struct MStmt_For : MStmt
 {
     std::vector<MStmt*> initStmts; // LocalVarDecl, LocalVarRef
-    MRead_Value condExp; // BC
+    MRead_BC condExp; // BC
     MStmt* contStmt;
     std::vector<MStmt*> body;
 
@@ -292,6 +293,28 @@ struct MStmt_Call : MStmt
     std::vector<MArgument> args;
     std::optional<MCatch> o_catch; // try F() catch_* { }이 붙었을 경우
 
+    MStmt_Call(MCallable&& callable, std::vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
+        : callable{std::move(callable)}, args{std::move(args)}, o_catch{std::move(o_catch)}
+    { }
+    MIR_API void Accept(MStmtVisitor& visitor) override;
+};
+
+enum class MStmt_AssignKind
+{
+    Copy,
+    Move
+};
+
+// NBC assign, void return assignment
+struct MStmt_Assign : MStmt
+{
+    MStmt_AssignKind kind;
+    MLoc* dest;
+    MRead_NBC src;
+
+    MStmt_Assign(MStmt_AssignKind kind, MLoc* dest, MRead_NBC&& src)
+        : kind{kind}, dest{dest}, src{std::move(src)}
+    { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
@@ -303,6 +326,8 @@ struct MStmt_Do : MStmt
 
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
+
+
 
 }
 

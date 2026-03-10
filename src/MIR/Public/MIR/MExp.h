@@ -37,7 +37,11 @@ public:
 // 주어진 Location의 값을 비트단위로 복사한다
 struct MExp_Load : MExp
 {
-    MRead_Location loc;
+    MRead_NBC loc;
+
+    MExp_Load(MRead_NBC&& loc)
+        : loc{std::move(loc)}
+    { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -45,8 +49,11 @@ struct MExp_Load : MExp
 struct MExp_Store : MExp
 {
     MLoc* dest;
-    MCreate_Bitwise src;
+    MCreate_BC src;
 
+    MExp_Store(MLoc* dest, MCreate_BC&& src)
+        : dest{dest}, src{std::move(src)}
+    { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -55,7 +62,10 @@ struct MExp_Stmt : MExp
 {
     std::vector<MStmt*> stmts;
     MExp* finalExp; // context dependent, READ인지, CREATE인지 알수 없다
-    
+
+    MExp_Stmt(std::vector<MStmt*>&& stmts, MExp* finalExp)
+        : stmts{std::move(stmts)}, finalExp{finalExp}
+    { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -126,6 +136,10 @@ struct MExp_Call : MExp
     std::vector<MArgument> args;
     std::optional<MCatch> o_catch; // try F() catch_* { }이 붙었을 경우
 
+    MExp_Call(MCallable&& callable, std::vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
+        : callable{std::move(callable)}, args{std::move(args)}, o_catch{std::move(o_catch)}
+    { }
+
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -135,6 +149,10 @@ struct MExp_NewStruct : MExp
     RStructCtorDecl* ctor;
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
+
+    MExp_NewStruct(RStructCtorDecl* ctor, RTypeArguments* typeArgs, std::vector<MArgument>&& args)
+        : ctor{ctor}, typeArgs{typeArgs}, args{std::move(args)}
+    { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -144,12 +162,16 @@ struct MExp_NewEnumElem : MExp
     REnumElemDecl* enumElemDecl;
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
+
+    MExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* typeArgs, std::vector<MArgument>&& args)
+        : enumElemDecl{enumElemDecl}, typeArgs{typeArgs}, args{std::move(args)}
+    { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
 struct MExp_Nullable : MExp
 {
-    MCreate_Bitwise innerExp;
+    MCreate_BC innerExp;
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 

@@ -28,7 +28,9 @@ RName_CtorParam MakeBaseCtorParamName(size_t index, RName baseParamName);
 template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
 std::unexpected<std::shared_ptr<Diag>> Error(TArgs&&... args)
 {
-    return std::unexpected{MakePtr<TDiag>(forward<TArgs>(args)...)};
+    std::shared_ptr<Diag> diag = MakePtr<TDiag>(forward<TArgs>(args)...);
+
+    return std::unexpected{std::move(diag)};
 }
 
 } // namespace Citron

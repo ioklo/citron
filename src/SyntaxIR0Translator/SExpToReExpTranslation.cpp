@@ -25,7 +25,7 @@ namespace {
 class SExpToReExpTranslator
 {
 public:
-    using ResultType = expected<ReExp*, DiagPtr>;
+    using ResultType = expected<ReExp, DiagPtr>;
 
 private:
     RType* hintType;
@@ -51,7 +51,7 @@ private:
         if (!eExp)
             return unexpected{move(eExp).error()};
         else
-            return contexts.srtFactory->MakeReExp<ReExp_Exp>(*eExp);
+            return ReExp_Exp{*eExp};
     }
 
 public:
@@ -154,7 +154,7 @@ public:
 
 } // namespace
 
-expected<ReExp*, DiagPtr> TranslateSExpToReExp(SExp* exp, RType* hintType, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateSExpToReExp(SExp* exp, RType* hintType, TranslationContexts& contexts)
 {
     SExpToReExpTranslator translator{hintType, contexts};
     return Accept(translator, exp);

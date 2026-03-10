@@ -55,7 +55,7 @@ RTypeArguments* MakeTypeArgs(IMatchArgumentsInput* input, RTypeArguments* outerT
     auto* args = rFactory.MakeTypeArguments(std::move(argsItems));
 
     // 이제 outer typeArgs와 합친다
-    return rFactory.MergeTypeArguments(*outerTypeArgs, *args);
+    return rFactory.MergeTypeArguments(outerTypeArgs, args);
 }
 
 struct TypeEqualConstraint
@@ -161,14 +161,14 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
 
                 auto e_mArg = visit([&constraints, type = rFuncParam.type](auto& mOperand) -> expected<MArgument, DiagPtr> {
                     using T = remove_cvref_t<decltype(mOperand)>;
-                    if constexpr (same_as<T, MRead_Location>)
+                    if constexpr (same_as<T, MRead_NBC>)
                     {
                         auto e_result = CheckType(constraints, mOperand.loc->GetType(), type);
                         RETURN_ON_ERROR(e_result);
 
                         return MArgument_Ref{mOperand.loc};
                     }
-                    else if constexpr (same_as<T, MRead_Value>)
+                    else if constexpr (same_as<T, MRead_BC>)
                     {
                         auto e_result = CheckType(constraints, mOperand.exp->GetType(), type);
                         RETURN_ON_ERROR(e_result);

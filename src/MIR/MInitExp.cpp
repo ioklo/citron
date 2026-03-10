@@ -8,6 +8,8 @@
 
 #include "MSharedExp.h"
 
+using namespace std;
+
 namespace Citron {
 
 void MInitExp_Shared::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
@@ -27,6 +29,22 @@ void MInitExp_Cast::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_Lambda::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_InlineBlock::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
 void MInitExp_As::Accept(MInitExpVisitor& visitor) { visitor.Visit(this); }
+
+RType* GetType(MInitExp_StructCtorKind& ctorKind, RFactory* rFactory)
+{
+    return visit([rFactory](auto& ctorKind) -> RType* {
+        using T = remove_cvref_t<decltype(ctorKind)>;
+
+        if constexpr (same_as<T, MInitExp_StructCtorKind_Copy>)
+            return ctorKind.structType;
+        else if constexpr (same_as<T, MInitExp_StructCtorKind_Move>)
+            return ctorKind.structType;
+        else if constexpr (same_as<T, MInitExp_StructCtorKind_General>)
+            return rFactory->MakeStructType(ctorKind.decl->GetStructDecl(), ctorKind.typeArgs);
+        else static_assert(false);
+        
+    }, ctorKind);
+}
 
 RType* GetType(MInitExp* initExp, RFactory* rFactory)
 {
@@ -54,12 +72,12 @@ RType* GetType(MInitExp* initExp, RFactory* rFactory)
         }
 
         ResultType Visit(MInitExp_NewClass* initExp) { return rFactory->MakeClassType(initExp->ctorDecl->GetClassDecl(), initExp->typeArgs); }
-        ResultType Visit(MInitExp_StructCtor* initExp) { return rFactory->MakeStructType(initExp->decl->GetStructDecl(), initExp->typeArgs); }
+        ResultType Visit(MInitExp_StructCtor* initExp) { return GetType(initExp->kind, rFactory); }
         ResultType Visit(MInitExp_Call* initExp) { return GetType(initExp->callable); }
         ResultType Visit(MInitExp_NewEnumElem* initExp) { return rFactory->MakeEnumElemType(initExp->enumElemDecl, initExp->typeArgs); }
         ResultType Visit(MInitExp_Nullable* initExp) 
         {
-            auto* innerType = GetType(initExp->initExp, rFactory);
+            auto* innerType = GetType(initExp->inner.initExp, rFactory);
             return rFactory->MakeNullableType(innerType);
         }
         ResultType Visit(MInitExp_NullableNullLiteral* initExp) { return rFactory->MakeNullableType(initExp->innerType); }

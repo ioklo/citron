@@ -24,7 +24,7 @@ class NLambdaVarDecl;
 
 using NFactoryPtr = std::shared_ptr<class NFactory>;
 
-class MLoc_This;
+struct MLoc_This;
 
 struct NLambdaVarAndArg
 {

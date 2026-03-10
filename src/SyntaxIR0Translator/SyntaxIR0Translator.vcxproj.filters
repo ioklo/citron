@@ -17,44 +17,20 @@
     </ClCompile>
     <ClCompile Include="DesignatedDiagnostic.cpp" />
     <ClCompile Include="Misc.cpp" />
-    <ClCompile Include="SExpToImExpTranslation.cpp">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpToMLocTranslation.cpp">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpToMExpTranslation.cpp">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpToReExpTranslation.cpp">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpRefToIrExpTranslation.cpp">
-      <Filter>ExpTranslation\SExpRefTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="ReExpToMLocTranslation.cpp">
-      <Filter>ExpTranslation\ReExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="IrExpToMExpTranslation.cpp">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
-    </ClCompile>
     <ClCompile Include="ImExpToReExpTranslation.cpp">
-      <Filter>ExpTranslation\ImExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="ImExpToIrExpTranslation.cpp">
-      <Filter>ExpTranslation\ImExpTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClCompile>
     <ClCompile Include="BinOpQueryService.cpp">
       <Filter>ExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="IrExpAndMemberNameToIrExpTranslation.cpp">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp">
-      <Filter>ExpTranslation\ImExpTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ImCallableAndSArgsToMExpTranslation.cpp">
-      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    <ClCompile Include="ImCallableAndSArgsToReExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClCompile>
     <ClCompile Include="RFuncAndRArgsToMExpTranslation.cpp" />
     <ClCompile Include="FuncMatching.cpp">
@@ -94,41 +70,53 @@
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="SynthesizeImplicitSymbolContext.cpp" />
-    <ClCompile Include="SExpToMReadTranslation.cpp">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="ReExpToMReadTranslation.cpp">
-      <Filter>ExpTranslation\ReExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpRefToMSharedExpTranslation.cpp">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="IrExpAndMemberNameToMSharedExpTranslation.cpp">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
-    </ClCompile>
     <ClCompile Include="IrExpAndMemberNameTranslation.cpp">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="IrExpToMLocTranslation.cpp">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="IrExpToMSharedExpTranslation.cpp">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpToMSharedExpTranslation.cpp">
-      <Filter>ExpTranslation\SExpRefTranslation</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpToIrExpTranslation.cpp">
-      <Filter>ExpTranslation\SExpRefTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
     </ClCompile>
     <ClCompile Include="BodyRes.cpp">
       <Filter>Context</Filter>
     </ClCompile>
-    <ClCompile Include="ReExpToMCreateTranslation.cpp">
-      <Filter>ExpTranslation\ReExpTranslation</Filter>
+    <ClCompile Include="IrExpToMExpTranslation.cpp">
+      <Filter>ExpTranslation\Delete</Filter>
     </ClCompile>
-    <ClCompile Include="SExpToMCreateTranslation.cpp">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
+    <ClCompile Include="SExpRefToIrExpTranslation.cpp">
+      <Filter>ExpTranslation\Delete</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpRefToMSharedExpTranslation.cpp">
+      <Filter>ExpTranslation\Delete</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToMExpTranslation.cpp">
+      <Filter>ExpTranslation\Delete</Filter>
+    </ClCompile>
+    <ClCompile Include="IrExpAndMemberNameToMSharedExpTranslation.cpp">
+      <Filter>ExpTranslation\Delete</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToMLocTranslation.cpp">
+      <Filter>ExpTranslation\Delete</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToIrExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="BodyResToIrExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToImExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToMIRTranslation.cpp">
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SExpToReExpTranslation.cpp">
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="ReExpToMIRTranslation.cpp">
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -138,41 +126,17 @@
     <ClInclude Include="ScopeContext.h">
       <Filter>Context</Filter>
     </ClInclude>
-    <ClInclude Include="ImCallableAndSArgsToMExpTranslation.h">
-      <Filter>ExpTranslation\ImExpTranslation</Filter>
+    <ClInclude Include="ImCallableAndSArgsToReExpTranslation.h">
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClInclude>
     <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h">
-      <Filter>ExpTranslation\ImExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="ImExpToIrExpTranslation.h">
-      <Filter>ExpTranslation\ImExpTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClInclude>
     <ClInclude Include="ImExpToReExpTranslation.h">
-      <Filter>ExpTranslation\ImExpTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClInclude>
     <ClInclude Include="IrExpAndMemberNameToIrExpTranslation.h">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="IrExpToMExpTranslation.h">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="ReExpToMLocTranslation.h">
-      <Filter>ExpTranslation\ReExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpRefToIrExpTranslation.h">
-      <Filter>ExpTranslation\SExpRefTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpToImExpTranslation.h">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpToMExpTranslation.h">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpToMLocTranslation.h">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpToReExpTranslation.h">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="ImExp.h">
       <Filter>ExpTranslation\Structure</Filter>
@@ -231,32 +195,14 @@
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="SynthesizeImplicitSymbolContext.h" />
-    <ClInclude Include="SExpToMReadTranslation.h">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="ReExpToMReadTranslation.h">
-      <Filter>ExpTranslation\ReExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpRefToMSharedExpTranslation.h">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="IrExpAndMemberNameToMSharedExpTranslation.h">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
-    </ClInclude>
     <ClInclude Include="IrExpAndMemberNameTranslation.h">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="IrExpToMLocTranslation.h">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="IrExpToMSharedExpTranslation.h">
-      <Filter>ExpTranslation\IrExpTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpToMSharedExpTranslation.h">
-      <Filter>ExpTranslation\SExpRefTranslation</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpToIrExpTranslation.h">
-      <Filter>ExpTranslation\SExpRefTranslation</Filter>
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
     </ClInclude>
     <ClInclude Include="BodyRes.h">
       <Filter>Context</Filter>
@@ -267,14 +213,41 @@
     <ClInclude Include="IrExpVisitor.g.h">
       <Filter>ExpTranslation\Structure</Filter>
     </ClInclude>
-    <ClInclude Include="ReExpVisitor.g.h">
-      <Filter>ExpTranslation\Structure</Filter>
+    <ClInclude Include="IrExpToMExpTranslation.h">
+      <Filter>ExpTranslation\Delete</Filter>
     </ClInclude>
-    <ClInclude Include="ReExpToMCreateTranslation.h">
-      <Filter>ExpTranslation\ReExpTranslation</Filter>
+    <ClInclude Include="SExpRefToIrExpTranslation.h">
+      <Filter>ExpTranslation\Delete</Filter>
     </ClInclude>
-    <ClInclude Include="SExpToMCreateTranslation.h">
-      <Filter>ExpTranslation\SExpTranslation</Filter>
+    <ClInclude Include="SExpRefToMSharedExpTranslation.h">
+      <Filter>ExpTranslation\Delete</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToMExpTranslation.h">
+      <Filter>ExpTranslation\Delete</Filter>
+    </ClInclude>
+    <ClInclude Include="IrExpAndMemberNameToMSharedExpTranslation.h">
+      <Filter>ExpTranslation\Delete</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToMLocTranslation.h">
+      <Filter>ExpTranslation\Delete</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToIrExpTranslation.h">
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="BodyResToIrExpTranslation.h">
+      <Filter>ExpTranslation\SExpToMSharedExpTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToImExpTranslation.h">
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToMIRTranslation.h">
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SExpToReExpTranslation.h">
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="ReExpToMIRTranslation.h">
+      <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -287,18 +260,6 @@
     <Filter Include="ExpTranslation\SExpTranslation">
       <UniqueIdentifier>{889fe72a-ee0f-4131-bd85-73b0af2e49aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ExpTranslation\SExpRefTranslation">
-      <UniqueIdentifier>{b1483fff-8170-47c5-b0b8-fd47414f150c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ExpTranslation\ReExpTranslation">
-      <UniqueIdentifier>{c05d8b10-e97b-4c71-ae3a-93f1a4f9c97b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ExpTranslation\IrExpTranslation">
-      <UniqueIdentifier>{24884e89-104d-4052-a062-7fb006e06a31}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ExpTranslation\ImExpTranslation">
-      <UniqueIdentifier>{b36f1fb1-f92b-4a42-9d35-8c5b7a81b468}</UniqueIdentifier>
-    </Filter>
     <Filter Include="StmtTranslation">
       <UniqueIdentifier>{1e07f995-fee8-46af-aca6-65775f5d7413}</UniqueIdentifier>
     </Filter>
@@ -307,6 +268,18 @@
     </Filter>
     <Filter Include="Public Headers">
       <UniqueIdentifier>{0a442679-8d7f-49a0-8403-92d752158c97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExpTranslation\Delete">
+      <UniqueIdentifier>{fd352164-c726-45d7-8ac2-db4b1bd12265}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExpTranslation\SExpToMSharedExpTranslation">
+      <UniqueIdentifier>{24884e89-104d-4052-a062-7fb006e06a31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExpTranslation\SExpToMIRTranslation">
+      <UniqueIdentifier>{b36f1fb1-f92b-4a42-9d35-8c5b7a81b468}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ExpTranslation\ImExpTranslation">
+      <UniqueIdentifier>{c05d8b10-e97b-4c71-ae3a-93f1a4f9c97b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

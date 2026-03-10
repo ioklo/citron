@@ -3,6 +3,7 @@
 
 #include "RSymbol/RNames.h"
 #include "MCreate.h"
+#include "MRead.h"
 
 namespace Citron {
 
@@ -27,6 +28,7 @@ public:
 struct MLoc_Materialize : MLoc
 {
     MCreate create;
+
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 
@@ -35,6 +37,9 @@ struct MLoc_LocalVar : MLoc
     RName name;
     RType* declType;
 
+    MLoc_LocalVar(const RName& name, RType* declType)
+        : name{name}, declType{declType}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 
@@ -42,6 +47,10 @@ struct MLoc_LocalRef : MLoc
 {
     RName name;
     RType* declType;
+
+    MLoc_LocalRef(const RName& name, RType* declType)
+        : name{name}, declType{declType}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 
@@ -56,10 +65,13 @@ struct MLoc_LambdaVar : MLoc
 // l[b], l is list
 struct MLoc_ListIndexer : MLoc
 {
-    MRead_Location list;
-    MRead_Value index;
+    MRead_NBC list;
+    MRead_BC index;
     RType* itemType;
 
+    MLoc_ListIndexer(MRead_NBC&& list, MRead_BC&& index, RType* itemType)
+        : list{std::move(list)}, index{std::move(index)}, itemType{itemType}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 
@@ -70,6 +82,9 @@ struct MLoc_StructVar : MLoc
     RStructVarDecl* decl;
     RTypeArguments* typeArgs;
 
+    MLoc_StructVar(MLoc* instance, RStructVarDecl* decl, RTypeArguments* typeArgs)
+        : instance{instance}, decl{decl}, typeArgs{typeArgs}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 
@@ -79,6 +94,9 @@ struct MLoc_ClassVar : MLoc
     RClassVarDecl* decl;
     RTypeArguments* typeArgs;
 
+    MLoc_ClassVar(MLoc* instance, RClassVarDecl* decl, RTypeArguments* typeArgs)
+        : instance{instance}, decl{decl}, typeArgs{typeArgs}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 
@@ -95,6 +113,9 @@ struct MLoc_This : MLoc
 {
     RType* type;
 
+    MLoc_This(RType* type)
+        : type{type}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 

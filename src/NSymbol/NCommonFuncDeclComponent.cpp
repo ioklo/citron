@@ -40,7 +40,7 @@ RFuncReturn NCommonFuncDeclComponent::GetUnboundFuncReturn()
     return funcReturnAndParams->funcReturn;
 }
 
-RType* NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs)
+RType* NCommonFuncDeclComponent::GetReturnType(RTypeArguments* typeArgs)
 {
     assert(funcReturnAndParams);
 
@@ -50,7 +50,7 @@ RType* NCommonFuncDeclComponent::GetReturnType(RTypeArguments& typeArgs)
     return setReturn->type->Apply(typeArgs);
 }
 
-RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments& typeArgs)
+RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments* typeArgs)
 {
     assert(funcReturnAndParams);
 
@@ -74,7 +74,7 @@ span<RFuncParameter> NCommonFuncDeclComponent::GetUnboundFuncParams()
     return funcReturnAndParams->funcParameters;
 }
 
-RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments& typeArgs, size_t index)
+RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments* typeArgs, size_t index)
 {
     assert(funcReturnAndParams);
 
@@ -97,16 +97,10 @@ vector<RType*> NCommonFuncDeclComponent::GetParamIds()
 optional<RDeclRes> NCommonFuncDeclComponent::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {   
     assert(funcReturnAndParams);
-    for (auto& param : funcReturnAndParams->funcParameters)
-    {
+    
+    for(auto& param : funcReturnAndParams->funcParameters)
         if (param.name == name)
-        {
-            if (param.IsRef())
-                return BodyRes_LocalRef{param.type, param.name};
-            else
-                return BodyRes_LocalVar{param.type, param.name};
-        }
-    }
+            return RDeclRes_FuncParam{param};
 
     return nullopt;
 } 

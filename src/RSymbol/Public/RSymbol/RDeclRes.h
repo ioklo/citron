@@ -6,8 +6,8 @@
 #include <variant>
 #include <string>
 #include <memory>
-
 #include "RNames.h"
+#include "RFuncParameter.h"
 
 namespace Citron {
 
@@ -47,7 +47,8 @@ using RDeclRes = std::variant<
     struct RDeclRes_EnumElemVar,
     struct RDeclRes_LambdaVar,
     struct RDeclRes_TupleVar,
-    struct RDeclRes_TypeVar
+    struct RDeclRes_TypeVar,
+    struct RDeclRes_FuncParam
 >;
 
 struct RDeclRes_Namespace { RNamespaceDecl* decl; };
@@ -88,6 +89,7 @@ struct RDeclRes_EnumElemVar { RTypeArguments* outerTypeArgs; REnumElemVarDecl* d
 struct RDeclRes_LambdaVar { RTypeArguments* outerTypeArgs; RLambdaVarDecl* decl; };
 struct RDeclRes_TupleVar {}; // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
 struct RDeclRes_TypeVar { RTypeParamDecl* decl; };
+struct RDeclRes_FuncParam { RFuncParameter funcParam; };
 
 RSYMBOL_API std::vector<DeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs(RDeclRes& member);
 

@@ -519,7 +519,7 @@ public:
             for (size_t i = 0; i < rStructVarCount; i++)
             {
                 auto* rStructVar = rStructVars[i];
-                auto* rStructVarType = rStructVar->GetDeclType(*exp->typeArgs);
+                auto* rStructVarType = rStructVar->GetDeclType(exp->typeArgs);
                 auto fieldPtrSlotIndex = bodyContext.NewSlot(bodyContext.GetPtrType(rStructVarType));
                 bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{fieldPtrSlotIndex}, QArg_Slot{destPtrSlotIndex}, i});
 

@@ -8,7 +8,7 @@
 //namespace Citron {
 //
 //struct MExp;
-//class IrExp;
+//struct IrExp;
 //struct TranslationContexts;
 //
 //std::expected<MExp*, DiagPtr> TranslateIrExpToMExp(IrExp* irExp, TranslationContexts& contexts);

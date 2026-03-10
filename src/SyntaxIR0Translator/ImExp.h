@@ -175,49 +175,6 @@ struct ImExp_EnumElem : ImExp
     void Accept(ImExpVisitor& visitor) override;
 };
 
-// exp로 사용할 수 있는
-struct ImExp_ThisVar : ImExp
-{
-    RType* type;
-
-    ImExp_ThisVar(RType* type) : type{type}
-    { }
-    void Accept(ImExpVisitor& visitor) override;
-};
-
-struct ImExp_LocalVar : ImExp
-{
-    RType* type;
-    RName name;
-
-    ImExp_LocalVar(RType* type, const RName& name)
-        : type{type}, name{name}
-    { }
-    void Accept(ImExpVisitor& visitor) override;
-};
-
-struct ImExp_LocalRef : ImExp
-{
-    RType* type;
-    RName name;
-
-    ImExp_LocalRef(RType* type, const RName& name)
-        : type{type}, name{name}
-    { }
-    void Accept(ImExpVisitor& visitor) override;
-};
-
-struct ImExp_LambdaVar : ImExp
-{
-    NLambdaVarDecl* decl;
-    RTypeArguments* typeArgs;
-
-    ImExp_LambdaVar(NLambdaVarDecl* decl, RTypeArguments* typeArgs)
-        : decl{decl}, typeArgs{typeArgs}
-    { }
-    void Accept(ImExpVisitor& visitor) override;
-};
-
 struct ImExp_ClassVar : ImExp
 {
     RClassVarDecl* decl;
@@ -247,46 +204,12 @@ struct ImExp_StructVar : ImExp
     void Accept(ImExpVisitor& visitor) override;
 };
 
-struct ImExp_EnumElemVar : ImExp
+struct ImExp_Loc : ImExp
 {
-    REnumElemVarDecl* decl;
-    RTypeArguments* typeArgs;
-    MLoc* instance;
+    MLoc* loc;
 
-    ImExp_EnumElemVar(REnumElemVarDecl* decl, RTypeArguments* typeArgs, MLoc* instance)
-        : decl(decl), typeArgs(typeArgs), instance(instance)
-    { }
-    void Accept(ImExpVisitor& visitor) override;
-};
-
-struct ImExp_ListIndexer : ImExp
-{
-    MRead_Location instance;
-    MRead_Value index;
-    RType* itemType;
-
-    ImExp_ListIndexer(MRead_Location&& instance, MRead_Value&& index, RType* itemType)
-        : instance{std::move(instance)}, index{std::move(index)}, itemType{itemType}
-    { }
-    void Accept(ImExpVisitor& visitor) override;
-};
-
-struct ImExp_PtrDeref : ImExp
-{
-    MLoc* target;
-
-    ImExp_PtrDeref(MLoc* target)
-        : target{target}
-    { }
-    void Accept(ImExpVisitor& visitor) override;
-};
-
-struct ImExp_SharedDeref : ImExp
-{
-    MLoc* target;
-
-    ImExp_SharedDeref(MLoc* target)
-        : target{target}
+    ImExp_Loc(MLoc* loc)
+        : loc{loc}
     { }
     void Accept(ImExpVisitor& visitor) override;
 };

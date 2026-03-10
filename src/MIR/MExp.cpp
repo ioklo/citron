@@ -72,7 +72,7 @@ RType* GetType(MExp* exp, RFactory* rFactory)
         using ResultType = RType*;
         RFactory* rFactory;
 
-        ResultType Visit(MExp_Load* exp) { return GetType(exp->loc, rFactory); }
+        ResultType Visit(MExp_Load* exp) { return GetType(exp->loc.loc, rFactory); }
         ResultType Visit(MExp_Store* exp) { return GetType(exp->dest, rFactory); }
         ResultType Visit(MExp_Stmt* exp) { return GetType(exp->finalExp, rFactory); }
         ResultType Visit(MExp_PtrRef* exp) 
@@ -92,7 +92,7 @@ RType* GetType(MExp* exp, RFactory* rFactory)
         }
 
         ResultType Visit(MExp_NewEnumElem* exp) { return rFactory->MakeEnumElemType(exp->enumElemDecl, exp->typeArgs); }
-        ResultType Visit(MExp_Nullable* exp) { return rFactory->MakeNullableType(GetType(exp->innerExp, rFactory)); }
+        ResultType Visit(MExp_Nullable* exp) { return rFactory->MakeNullableType(GetType(exp->innerExp.exp, rFactory)); }
         ResultType Visit(MExp_NullableNullLiteral* exp) { return rFactory->MakeNullableType(exp->innerType); }
         ResultType Visit(MExp_Cast* exp) { return exp->targetType; }
         ResultType Visit(MExp_Lambda* exp) { return rFactory->MakeLambdaType(exp->lambdaDecl, exp->typeArgs); }

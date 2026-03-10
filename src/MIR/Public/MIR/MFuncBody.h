@@ -4,7 +4,7 @@
 namespace Citron {
 
 class NFuncDecl;
-class MStmt;
+struct MStmt;
 
 struct MFuncBody
 {

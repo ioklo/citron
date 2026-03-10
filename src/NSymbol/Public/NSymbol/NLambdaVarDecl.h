@@ -28,7 +28,7 @@ public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NSYMBOL_API NDecl* GetNOuter() override;
-    NSYMBOL_API RType* GetDeclType(RTypeArguments& typeArgs) override;
+    NSYMBOL_API RType* GetDeclType(RTypeArguments* typeArgs) override;
 
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;

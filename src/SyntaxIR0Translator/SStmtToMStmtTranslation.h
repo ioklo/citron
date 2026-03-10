@@ -10,7 +10,7 @@
 
 namespace Citron {
 
-class MStmt;
+struct MStmt;
 struct TranslationContexts;
 
 std::expected<void, DiagPtr> TranslateSBodyToMStmts(std::vector<MStmt*>* outStmts, std::span<SStmt*> stmts, TranslationContexts& contexts);

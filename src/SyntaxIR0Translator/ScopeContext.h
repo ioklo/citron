@@ -20,7 +20,7 @@ struct RFuncParameter;
 class RType;
 class RFactory;
 
-class MLoc_This;
+struct MLoc_This;
 class NLambdaDecl;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 

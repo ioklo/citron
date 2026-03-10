@@ -6,15 +6,13 @@
 namespace Citron {
 
 struct ImExp;
-class IrExp;
-struct ReExp;
+struct IrExp;
 
-// ImExp, IrExp, ReExp
+// ImExp, IrExp
 class SRTFactory
 {
     std::vector<std::unique_ptr<ImExp>> imExps;
     std::vector<std::unique_ptr<IrExp>> irExps;
-    std::vector<std::unique_ptr<ReExp>> reExps;
 
 public:
     SRTFactory();
@@ -36,15 +34,6 @@ public:
         auto* pIrExp = irExp.get();
         irExps.push_back(std::move(irExp));
         return pIrExp;
-    }
-
-    template<typename TReExp, typename... TArgs> requires std::derived_from<TReExp, ReExp>
-    TReExp* MakeReExp(TArgs&&... args)
-    {
-        auto reExp = std::make_unique<TReExp>(std::forward<TArgs>(args)...);
-        auto* pReExp = reExp.get();
-        reExps.push_back(std::move(reExp));
-        return pReExp;
     }
 };
 

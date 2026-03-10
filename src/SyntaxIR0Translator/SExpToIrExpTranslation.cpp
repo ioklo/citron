@@ -3,6 +3,7 @@
 #include "Infra/Expected.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RTypes.h"
+#include "RSymbol/RTypeArguments.h"
 #include "MIR/MLoc.h"
 
 #include "IrExp.h"
@@ -32,13 +33,14 @@ struct SExpToIrExpTranslator
     ResultType Visit(SExp_Identifier* exp)
     {
         // identifier는 name<typeArgs>로 이뤄져 있다
-        auto e_rTypeArgs = MakeRTypeArgs(exp->typeArgs, contexts);
-        RETURN_ON_ERROR(e_rTypeArgs);
+        auto e_memberTypeArgs = MakeRTypeArgs(exp->typeArgs, contexts);
+        RETURN_ON_ERROR(e_memberTypeArgs);
 
-        auto e_imExp = ResolveIdentifier(RName_Normal{exp->value}, *e_rTypeArgs, contexts);
-        RETURN_ON_ERROR(e_imExp);
+        auto* memberTypeArgs = *e_memberTypeArgs;
+        auto e_bodyRes = ResolveIdentifier(RName_Normal{exp->value}, memberTypeArgs->GetCount(), contexts);
+        RETURN_ON_ERROR(e_bodyRes);
 
-        return TranslateImExpToIrExp(*e_imExp, contexts);
+        return TranslateBodyResAndMemberTypeArgsToIrExp(*e_bodyRes, memberTypeArgs, contexts);
     }
     
     // ResultType Visit(SExp_String* exp); // &"abc".id

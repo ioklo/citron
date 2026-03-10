@@ -1,4 +1,4 @@
-#include "ImCallableAndSArgsToMExpTranslation.h"
+#include "ImCallableAndSArgsToReExpTranslation.h"
 
 #include <expected>
 
@@ -8,6 +8,7 @@
 
 #include "Syntax/Syntax.h"
 #include "Logging/Logger.h"
+#include "Logging/Diag.h"
 #include "RSymbol/DeclWithOuterTypeArgs.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RTypes.h"
@@ -21,13 +22,16 @@
 #include "RSymbol/REnumElemVarDecl.h"
 #include "MIR/MExp.h"
 #include "MIR/MLoc.h"
+#include "MIR/MInitExp.h"
+#include "MIR/MStmt.h"
 #include "MIR/MFactory.h"
 
 #include "TranslationContexts.h"
 #include "ImExp.h"
+#include "ReExp.h"
 #include "DesignatedDiagnostic.h"
 #include "ImExpToReExpTranslation.h"
-#include "ReExpToMLocTranslation.h"
+#include "ReExpToMIRTranslation.h"
 #include "FuncMatching.h"
 #include "FuncContext.h"
 #include "Misc.h"
@@ -38,43 +42,27 @@ namespace Citron {
 
 namespace {
 // (IntermediateExp, Args) -> TranslationResult<IR0ExpResult>
-class ImCallableAndSArgsToMExpTranslator
+struct ImCallableAndSArgsToReExpTranslator
 {
-public:
-    using ResultType = expected<MExp*, DiagPtr>;
-
-private:
-    SExp* sCallable;
+    using ResultType = expected<ReExp, DiagPtr>;
     SArguments* sArgs;
-
     TranslationContexts& contexts;
-
-    // S.ISyntaxNode nodeForCallExpErrorReport;
-    // S.ISyntaxNode nodeForCallableErrorReport;
-
-public:
-    ImCallableAndSArgsToMExpTranslator(SExp* sCallable, SArguments* sArgs, TranslationContexts& contexts)
-        : sCallable{sCallable}, sArgs{sArgs}, contexts{contexts}
-    {
-    }
 
 private:
     template<typename TMExp, typename... TArgs> requires std::derived_from<TMExp, MExp>
     ResultType Exp(TArgs&&... args)
     {
-        return contexts.mFactory->MakeMExp<TMExp>(std::forward<TArgs>(args)...);
+        return ReExp_Exp{contexts.mFactory->MakeMExp<TMExp>(std::forward<TArgs>(args)...)};
     }
-    
-    // CallExp 분석에서 Callable이 Lambda, func<>로 계산되는 경우
-    ResultType HandleLoc(ImExp* imExp)
+
+    template<typename TMInitExp, typename... TArgs> requires std::derived_from<TMInitExp, MInitExp>
+    ResultType InitExp(TArgs&&... args)
     {
-        auto e_reExp = TranslateImExpToReExp(imExp, contexts);
-        RETURN_ON_ERROR(e_reExp);
+        return ReExp_InitExp{contexts.mFactory->MakeMInitExp<TMInitExp>(std::forward<TArgs>(args)...)};
+    }
 
-        DesignatedDiagnostic<Error_CallExp_CallableExpressionIsNotCallable> designatedDiag;
-        auto e_mCallable = TranslateReExpToMLoc(*e_reExp, /*bMaterializeExp*/true, &designatedDiag, contexts);
-        RETURN_ON_ERROR(e_mCallable);
-
+    ResultType HandleLoc(MLoc* loc)
+    {
         // TODO: Lambda말고 func<>도 있다
         auto* rCallableType = GetType(*e_mCallable, &*contexts.rFactory);
         auto* rLambdaType = dynamic_cast<RType_Lambda*>(rCallableType);
@@ -90,7 +78,6 @@ private:
 
         // partially bound된 파라미터
         auto rParams = rLambdaType->GetPartiallyBoundParameters();
-
         throw NotImplementedException{};
 
         // 
@@ -108,6 +95,44 @@ private:
         //}
     }
 
+    // CallExp 분석에서 Callable이 Lambda, func<>로 계산되는 경우
+    ResultType HandleAsLoc(ImExp* imExp)
+    {
+        auto e_reExp = TranslateImExpToReExp(imExp, contexts);
+        RETURN_ON_ERROR(e_reExp);
+
+        DesignatedDiagnostic<Error_CallExp_CallableExpressionIsNotCallable> designatedDiag;
+        auto e_mCallable = TranslateReExpToMLoc(*e_reExp, /*bMaterializeExp*/true, &designatedDiag, contexts);
+        RETURN_ON_ERROR(e_mCallable);
+
+        return HandleLoc(*e_mCallable);
+    }
+
+    ResultType Call(RCopyStrategy copyStrategy, MCallable&& call, vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
+    {
+        switch (copyStrategy)
+        {
+        case RCopyStrategy::Void:
+        {
+            // TODO: [41] try catch 구현
+            auto* callStmt = contexts.mFactory->MakeMStmt<MStmt_Call>(move(call), move(args), move(o_catch));
+            return ReExp_StmtCall{callStmt};
+        }
+
+        case RCopyStrategy::Bitwise:
+        {
+            auto* callExp = contexts.mFactory->MakeMExp<MExp_Call>(move(call), move(args), move(o_catch));
+            return ReExp_Exp{callExp};
+        }
+
+        case RCopyStrategy::NonBitwise:
+        {
+            auto* callInitExp = contexts.mFactory->MakeMInitExp<MInitExp_Call>(move(call), move(args), move(o_catch));
+            return ReExp_InitExp{callInitExp};
+        }
+        }
+    }
+
 public:
     ResultType Visit(ImExp_Namespace* imExp)
     {
@@ -116,19 +141,18 @@ public:
 
     ResultType Visit(ImExp_GlobalFuncs* imExp)
     {
-        auto e_o_Match = MatchFunc<RGlobalFuncDecl>(imExp->items, imExp->partialTypeArgsExceptOuter, sArgs, contexts);
-        RETURN_ON_ERROR(e_o_Match);
+        auto e_o_match = MatchFunc<RGlobalFuncDecl>(imExp->items, imExp->partialTypeArgsExceptOuter, sArgs, contexts);
+        RETURN_ON_ERROR(e_o_match);
 
-        auto& oMatch = *e_o_Match;
+        auto& o_match = *e_o_match;
+        if (!o_match)
+            throw NotImplementedException{}; // TODO: [39] SyntaxIR0Translator Eror 정리
 
-        if (!oMatch)
-        {
-            throw NotImplementedException{};
-        }
+        auto& match = *o_match;
+        auto* retType = match.funcDecl->GetReturnType(match.typeArgs);
 
-        auto& match = *oMatch;
-
-        return Exp<MExp_CallGlobalFunc>(match.funcDecl, match.typeArgs, match.args);
+        // TODO: [41] try catch 구현
+        return Call(retType->GetCopyStrategy(), MCallable_GlobalFunc{match.funcDecl, match.typeArgs}, move(match.args), /*o_catch*/nullopt);
     }
 
     ResultType Visit(ImExp_TypeVar* imExp)
@@ -146,13 +170,13 @@ public:
         auto e_o_match = MatchFunc<RClassFuncDecl>(imExp->items, imExp->partialTypeArgsExceptOuter, sArgs, contexts);
         RETURN_ON_ERROR(e_o_match);
 
-        auto& oMatch = *e_o_match;
-        if (!oMatch)
-        {
-            throw NotImplementedException{};
-        }
+        auto& o_match = *e_o_match;
+        if (!o_match)
+            throw NotImplementedException{}; // TODO: [39] SyntaxIR0Translator Eror 정리
 
-        auto& match = *oMatch;
+        auto& match = *o_match;
+        auto* retType = match.funcDecl->GetReturnType(match.typeArgs);
+        auto copyStrategy = retType->GetCopyStrategy();
 
         if (imExp->hasExplicitInstance) // x.F, C.F 등 인스턴스 부분이 명시적으로 정해졌다면
         {
@@ -168,17 +192,18 @@ public:
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
 
-            return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, imExp->explicitInstance, move(match.args));
+            // TODO: [41] try catch 구현
+            return Call(copyStrategy, MCallable_ClassFunc{match.funcDecl, match.typeArgs, imExp->explicitInstance}, move(match.args), /*o_catch*/nullopt);
         }
         else // F 로 인스턴스를 명시적으로 정하지 않았다면 
         {
             if (match.funcDecl->GetThisKind() == RThisKind::None) // 정적함수이면 인스턴스에 null
             {
-                return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, nullptr, move(match.args));
+                return Call(copyStrategy, MCallable_ClassFunc{match.funcDecl, match.typeArgs, /*instance*/nullptr}, move(match.args), /*o_catch*/nullopt);
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Exp<MExp_CallClassFunc>(match.funcDecl, match.typeArgs, contexts.funcContext->MakeThisLoc(), move(match.args));
+                return Call(copyStrategy, MCallable_ClassFunc{match.funcDecl, match.typeArgs, contexts.funcContext->MakeThisLoc()}, move(match.args), /*o_catch*/nullopt);
             }
         }
 
@@ -207,17 +232,62 @@ public:
         auto e_o_match = MatchFunc<RStructCtorDecl>(items, /*partialTypeArgsExceptOuter*/contexts.rFactory->MakeTypeArguments({}), sArgs, contexts);
         RETURN_ON_ERROR(e_o_match);
 
-        auto& oMatch = *e_o_match;
-        if (!oMatch)
-        {
-            // 매치에 실패했습니다. 에러
-            throw NotImplementedException{};
-            // *result = nullptr;
-            // return Error(MakePtr<>());
-        }
+        auto& o_match = *e_o_match;
+        if (!o_match)
+            throw NotImplementedException{}; // TODO: [39] SyntaxIR0Translator Eror 정리
 
-        auto& match = *oMatch;
-        return Exp<MExp_NewStruct>(match.funcDecl, match.typeArgs, move(match.args), contexts.rFactory);
+        auto& match = *o_match;
+        auto* structType = contexts.rFactory->MakeStructType(imExp->structDecl, imExp->typeArgs);
+        auto copyStrategy = structType->GetCopyStrategy();
+
+        if (copyStrategy == RCopyStrategy::Bitwise) // MExp로 
+        {
+            return ReExp_Exp{contexts.mFactory->MakeMExp<MExp_NewStruct>(match.funcDecl, match.typeArgs, move(match.args))};
+        }
+        else if (copyStrategy == RCopyStrategy::NonBitwise)
+        {
+            auto ctorKind = match.funcDecl->GetKind();
+
+            if (ctorKind == RStructCtorKind::Copy)
+            {
+                assert(match.args.size() == 1); // 한개이고
+                auto& locArg = get<MArgument_Loc>(match.args[0]); // location이고
+
+                return InitExp<MInitExp_StructCtor>(
+                    MInitExp_StructCtorKind_Copy{
+                        .structType = structType, 
+                        .src = MRead_NBC{.loc = locArg.loc}
+                    });
+            }
+            else if (ctorKind == RStructCtorKind::Move)
+            {
+                assert(match.args.size() == 1); // 한개이고
+                auto& moveArg = get<MArgument_Move>(match.args[0]); // move source고,
+
+                return InitExp<MInitExp_StructCtor>(
+                    MInitExp_StructCtorKind_Move{
+                        .structType = structType,
+                        .src = move(moveArg.src),
+                    });
+            }
+            else if (ctorKind == RStructCtorKind::Memberwise)
+            {
+                throw NotImplementedException{}; // TODO: [27] enumElemDecl에 memberwise ctor 추가하기, memberwise ctor에서 직접 대입 처리
+            }
+            else 
+            {
+                return InitExp<MInitExp_StructCtor>(
+                   MInitExp_StructCtorKind_General{
+                        .decl = match.funcDecl,
+                        .typeArgs = match.typeArgs,
+                        .args = move(match.args)
+                   });
+            }
+        }
+        else
+        {
+            unreachable();
+        }
     }
 
     ResultType Visit(ImExp_StructFuncs* imExp)
@@ -234,6 +304,9 @@ public:
         }
 
         auto& match = *oMatch;
+        auto* retType = match.funcDecl->GetReturnType(match.typeArgs);
+        auto copyStrategy = retType->GetCopyStrategy();
+
         // static 함수를 호출하는 위치가 선언한 타입 내부라면 체크하지 않고 넘어간다 (멤버 호출이 아닌 경우)
         if (imExp->hasExplicitInstance)
         {
@@ -249,17 +322,17 @@ public:
                 return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
             }
 
-            return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, imExp->explicitInstance, move(match.args));
+            return Call(copyStrategy, MCallable_StructFunc{.decl = match.funcDecl, .typeArgs = match.typeArgs, .instance = imExp->explicitInstance}, move(match.args), /*o_catch*/nullopt);
         }
         else
         {
             if (match.funcDecl->GetThisKind() == RThisKind::None) // 정적함수이면 인스턴스에 null
             {
-                return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, nullptr, move(match.args));
+                return Call(copyStrategy, MCallable_StructFunc{.decl = match.funcDecl, .typeArgs = match.typeArgs, .instance = nullptr}, move(match.args), /*o_catch*/nullopt);
             }
             else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
             {
-                return Exp<MExp_CallStructFunc>(match.funcDecl, match.typeArgs, contexts.funcContext->MakeThisLoc(), move(match.args));
+                return Call(copyStrategy, MCallable_StructFunc{.decl = match.funcDecl, .typeArgs = match.typeArgs, .instance = contexts.funcContext->MakeThisLoc()}, move(match.args), /*o_catch*/nullopt);
             }
         }
 
@@ -297,7 +370,7 @@ public:
         RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) override
         {
             auto* varDecl = enumElemDecl->GetVarDecl(index);
-            auto* declType = varDecl->GetDeclType(*typeArgs);
+            auto* declType = varDecl->GetDeclType(typeArgs);
             
             return RFuncParameter{.kind = RFuncParameterKind::Init, .type = declType, .name = varDecl->GetIdentifier().name };
         }
@@ -322,69 +395,46 @@ public:
             return Error<Error_FuncMatch_NotFound>();
 
         auto& match = **e_o_match;
-        return Exp<MExp_NewEnumElem>(imExp->decl, match.typeArgs, move(match.args), contexts.rFactory);
-    }
+        auto* enumElemType = contexts.rFactory->MakeEnumElemType(imExp->decl, imExp->typeArgs);
+        auto copyStrategy = enumElemType->GetCopyStrategy();
 
-    ResultType Visit(ImExp_ThisVar* imExp)
-    {
-        return Error<Error_CallExp_CallableExpressionIsNotCallable>();
-    }
+        switch (copyStrategy)
+        {
+        case RCopyStrategy::Void: throw RuntimeFatalException{};
+        case RCopyStrategy::Bitwise:
+            return Exp<MExp_NewEnumElem>(imExp->decl, match.typeArgs, move(match.args));
 
-    ResultType Visit(ImExp_LocalVar* imExp)
-    {
-        return HandleLoc(imExp);
-    }
+        case RCopyStrategy::NonBitwise:
+            return InitExp<MInitExp_NewEnumElem>(imExp->decl, match.typeArgs, move(match.args));
+        }
 
-    ResultType Visit(ImExp_LocalRef* imExp)
-    {
-        return HandleLoc(imExp);
-    }
-
-    ResultType Visit(ImExp_LambdaVar* imExp)
-    {
-        return HandleLoc(imExp);
+        unreachable();
     }
 
     ResultType Visit(ImExp_ClassVar* imExp)
     {
-        return HandleLoc(imExp);
+        return HandleAsLoc(imExp);
     }
 
     ResultType Visit(ImExp_StructVar* imExp)
     {
-        return HandleLoc(imExp);
+        return HandleAsLoc(imExp);
     }
 
-    ResultType Visit(ImExp_EnumElemVar* imExp)
-    {
-        return HandleLoc(imExp);
-    }
-
-    ResultType Visit(ImExp_ListIndexer* imExp)
-    {
-        // l[0]
-        return HandleLoc(imExp);
-    }
-
-    ResultType Visit(ImExp_PtrDeref* imExp)
-    {
-        return HandleLoc(imExp);
-    }
-
-    ResultType Visit(ImExp_SharedDeref* imExp)
-    {
-        return HandleLoc(imExp);
+    ResultType Visit(ImExp_Loc* imExp)
+    {   
+        return HandleLoc(imExp->loc);
     }
 
     ResultType Visit(ImExp_Exp* imExp)
     {
-        return HandleLoc(imExp);
+        return HandleAsLoc(imExp);
     }
 };
 
 } // namespace
 
-expected<MExp*, DiagPtr> TranslateImCallableAndSArgsToMExp(ImExp* imCallable, SExp* sCallable, SArguments* sArgs, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateImCallableAndSArgsToReExp(ImExp* imCallable, SArguments* sArgs, TranslationContexts& contexts)
 {
     // 여기서 분석해야 할 것은 
     // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다
@@ -395,7 +445,7 @@ expected<MExp*, DiagPtr> TranslateImCallableAndSArgsToMExp(ImExp* imCallable, SE
     // 함수 이름을 먼저 찾는가
     // Argument 타입을 먼저 알아내야 하는가
     // F(First); F(E.First); 가 되게 하려면 이름으로 먼저 찾고, 인자타입을 맞춰봐야 한다
-    ImCallableAndSArgsToMExpTranslator binder{sCallable, sArgs, contexts};
+    ImCallableAndSArgsToReExpTranslator binder{sArgs, contexts};
     return Accept(binder, imCallable);
 }
 

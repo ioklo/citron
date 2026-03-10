@@ -113,6 +113,9 @@
     <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RCopyStrategy.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">

@@ -51,7 +51,7 @@ std::optional<RDeclRes> NEnumElemVarDecl::ResolveIdentifier(const RName& name, s
     throw RuntimeFatalException();
 }
 
-RType* NEnumElemVarDecl::GetDeclType(RTypeArguments& typeArgs)
+RType* NEnumElemVarDecl::GetDeclType(RTypeArguments* typeArgs)
 {
     return declType->Apply(typeArgs);
 }
