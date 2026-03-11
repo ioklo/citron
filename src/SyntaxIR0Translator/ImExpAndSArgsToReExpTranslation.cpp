@@ -1,4 +1,4 @@
-#include "ImCallableAndSArgsToReExpTranslation.h"
+#include "ImExpAndSArgsToReExpTranslation.h"
 
 #include <expected>
 
@@ -64,7 +64,7 @@ private:
     ResultType HandleLoc(MLoc* loc)
     {
         // TODO: Lambda말고 func<>도 있다
-        auto* rCallableType = GetType(*e_mCallable, &*contexts.rFactory);
+        auto* rCallableType = GetType(loc, &*contexts.rFactory);
         auto* rLambdaType = dynamic_cast<RType_Lambda*>(rCallableType);
 
         if (!rLambdaType)
@@ -131,6 +131,8 @@ private:
             return ReExp_InitExp{callInitExp};
         }
         }
+
+        unreachable();
     }
 
 public:
@@ -434,7 +436,7 @@ public:
 
 } // namespace
 
-expected<ReExp, DiagPtr> TranslateImCallableAndSArgsToReExp(ImExp* imCallable, SArguments* sArgs, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateImExpAndSArgsToReExp(ImExp* imCallable, SArguments* sArgs, TranslationContexts& contexts)
 {
     // 여기서 분석해야 할 것은 
     // 1. 해당 Exp가 함수인지, 변수인지, 함수라면 FuncId를 넣어준다

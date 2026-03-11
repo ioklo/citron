@@ -59,7 +59,7 @@
     <ClCompile Include="TranslateBodyContext.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
-    <ClCompile Include="ImCallableAndSArgsToReExpTranslation.cpp" />
+    <ClCompile Include="ImExpAndSArgsToReExpTranslation.cpp" />
     <ClCompile Include="ImExp.cpp" />
     <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp" />
     <ClCompile Include="BodyResToIrExpTranslation.cpp" />
@@ -121,7 +121,7 @@
     <ClInclude Include="FuncContext.h" />
     <ClInclude Include="FuncMatching.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
-    <ClInclude Include="ImCallableAndSArgsToReExpTranslation.h" />
+    <ClInclude Include="ImExpAndSArgsToReExpTranslation.h" />
     <ClInclude Include="ImExp.h" />
     <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h" />
     <ClInclude Include="BodyResToIrExpTranslation.h" />

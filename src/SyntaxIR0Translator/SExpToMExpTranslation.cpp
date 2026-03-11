@@ -21,12 +21,7 @@
 #include "SExpToMLocTranslation.h"
 #include "SExpToReExpTranslation.h"
 #include "SExpToImExpTranslation.h"
-
-#include "ReExpToMExpTranslation.h"
-#include "ReExpToMLocTranslation.h"
-
-#include "ImCallableAndSArgsToMExpTranslation.h"
-
+#include "ImExpAndSArgsToReExpTranslation.h"
 #include "ScopeContext.h"
 #include "Misc.h"
 #include "BinOpQueryService.h"

@@ -461,7 +461,7 @@ public:
 
     ResultType Visit(ImExp_Loc* imExp)
     {
-        return TranslateInstanceParentAsLoc(imExp);
+        return TranslateInstanceParent(imExp->loc);
     }
 
     ResultType Visit(ImExp_Exp* imExp)

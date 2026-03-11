@@ -29,7 +29,7 @@
     <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp">
       <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ImCallableAndSArgsToReExpTranslation.cpp">
+    <ClCompile Include="ImExpAndSArgsToReExpTranslation.cpp">
       <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClCompile>
     <ClCompile Include="RFuncAndRArgsToMExpTranslation.cpp" />
@@ -126,7 +126,7 @@
     <ClInclude Include="ScopeContext.h">
       <Filter>Context</Filter>
     </ClInclude>
-    <ClInclude Include="ImCallableAndSArgsToReExpTranslation.h">
+    <ClInclude Include="ImExpAndSArgsToReExpTranslation.h">
       <Filter>ExpTranslation\SExpToMIRTranslation</Filter>
     </ClInclude>
     <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h">
