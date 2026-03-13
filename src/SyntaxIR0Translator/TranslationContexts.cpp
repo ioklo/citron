@@ -3,20 +3,18 @@
 #include "Infra/Expected.h"
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
-
 #include "RSymbol/RTypeArguments.h"
 #include "RSymbol/RFactory.h"
-
 #include "MIR/MExp.h"
+#include "MIR/MInitExp.h"
 #include "MIR/MFactory.h"
-
 #include "ImExp.h"
-
 #include "ScopeContext.h"
 #include "SRTFactory.h"
 #include "FuncContext_FuncDecl.h"
 #include "FuncContext_Lambda.h"
 #include "GlobalContext.h"
+#include "Misc.h"
 
 using namespace std;
 
@@ -56,41 +54,29 @@ TranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, vector
     return {contexts.globalContext, newFuncContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
 }
 
-expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType, TranslationContexts& contexts)
+expected<MInitExp_As*, DiagPtr> MakeMInitExp_As(MRead&& target, RType* testType, TranslationContexts& contexts)
 {
-    auto targetType = targetExp->GetType();
-    auto targetTypeKind = targetType->GetTypeKind();
-    auto testTypeKind = testType->GetTypeKind();
+    auto* targetType = GetType(target, &*contexts.rFactory);
+    auto o_kind = [targetType, testType]() -> optional<MInitExp_AsKind> {
+        auto targetTypeKind = targetType->GetTypeKind();
+        auto testTypeKind = testType->GetTypeKind();
 
-    // 5가지 케이스로 나뉜다
-    if (testTypeKind == RTypeKind::Class)
-    {
-        if (targetTypeKind == RTypeKind::Class)
-            return contexts.mFactory->MakeMExp<MExp_ClassAsClass>(targetExp, testType, contexts.rFactory);
+        if (testTypeKind == RTypeKind::Class)
+        {
+            if (targetTypeKind == RTypeKind::Class) return MInitExp_AsKind::Class_Class;
+            else if (targetTypeKind == RTypeKind::Interface) return MInitExp_AsKind::Interface_Class;                
+        }
+        else if (testTypeKind == RTypeKind::Interface)
+        {
+            if (targetTypeKind == RTypeKind::Class) return MInitExp_AsKind::Class_Interface;
+            else if (targetTypeKind == RTypeKind::Interface) return MInitExp_AsKind::Interface_Interface;
+        }
+        return nullopt;
+    }();
 
-        else if (targetTypeKind == RTypeKind::Interface)
-            return contexts.mFactory->MakeMExp<MExp_InterfaceAsClass>(targetExp, testType, contexts.rFactory);
-        else
-            throw NotImplementedException{}; // 에러 처리
-    }
-    else if (testTypeKind == RTypeKind::Interface)
-    {
-        if (targetTypeKind == RTypeKind::Class)
-            return contexts.mFactory->MakeMExp<MExp_ClassAsInterface>(targetExp, testType, contexts.rFactory);
-        else if (targetTypeKind == RTypeKind::Interface)
-            return contexts.mFactory->MakeMExp<MExp_InterfaceAsInterface>(targetExp, testType, contexts.rFactory);
-        else
-            throw NotImplementedException{}; // 에러 처리
-    }
-    else if (auto* enumElemTestType = dynamic_cast<RType_EnumElem*>(testType))
-    {
-        if (dynamic_cast<RType_Enum*>(targetType))
-            return contexts.mFactory->MakeMExp<MExp_EnumAsEnumElem>(targetExp, enumElemTestType, contexts.rFactory);
-        else
-            throw NotImplementedException{}; // 에러 처리
-    }
-    else
-        throw NotImplementedException{}; // 에러 처리
+    if (!o_kind) return Error<Error_As_NotSupported>();
+
+    return contexts.mFactory->MakeMInitExp<MInitExp_As>(MInitExp_AsKind::Class_Class, std::move(target), testType);
 }
 
 expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, size_t memberTypeArgsCount, TranslationContexts& contexts)

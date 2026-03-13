@@ -34,22 +34,25 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ImExpTranslations.cpp" />
+    <ClCompile Include="SExpTranslations.cpp" />
+    <ClCompile Include="SExp_CallToImExp.cpp" />
+    <ClCompile Include="SExp_IdentifierToImExp.cpp" />
     <ClCompile Include="EnumElemVarTask.cpp" />
     <ClCompile Include="FuncContext.cpp" />
     <ClCompile Include="FuncContext_FuncDecl.cpp" />
     <ClCompile Include="FuncContext_Lambda.cpp" />
     <ClCompile Include="GlobalContext.cpp" />
     <ClCompile Include="IrExpAndMemberNameToMSharedExpTranslation.cpp" />
-    <ClCompile Include="IrExpAndMemberNameTranslation.cpp" />
-    <ClCompile Include="IrExpToMLocTranslation.cpp" />
-    <ClCompile Include="IrExpToMSharedExpTranslation.cpp" />
+    <ClCompile Include="IrExpToMLoc.cpp" />
+    <ClCompile Include="IrExpToMSharedExp.cpp" />
     <ClCompile Include="BodyRes.cpp" />
     <ClCompile Include="PhaseManager.cpp" />
-    <ClCompile Include="ReExpToMIRTranslation.cpp" />
+    <ClCompile Include="ReExpToMIR.cpp" />
     <ClCompile Include="ResolveTypeHierarchyContext.cpp" />
     <ClCompile Include="SExpRefToMSharedExpTranslation.cpp" />
-    <ClCompile Include="SExpToIrExpTranslation.cpp" />
-    <ClCompile Include="SExpToMIRTranslation.cpp" />
+    <ClCompile Include="SExpToIrExp.cpp" />
+    <ClCompile Include="SExp_MemberToImExp.cpp" />
     <ClCompile Include="StructCtorTask.cpp" />
     <ClCompile Include="StructDtorTask.cpp" />
     <ClCompile Include="StructFuncTask.cpp" />
@@ -62,11 +65,11 @@
     <ClCompile Include="ImExpAndSArgsToReExpTranslation.cpp" />
     <ClCompile Include="ImExp.cpp" />
     <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp" />
-    <ClCompile Include="BodyResToIrExpTranslation.cpp" />
-    <ClCompile Include="ImExpToReExpTranslation.cpp" />
+    <ClCompile Include="SExp_IdentifierToIrExp.cpp" />
+    <ClCompile Include="ImExpToReExp.cpp" />
     <ClCompile Include="BinOpQueryService.cpp" />
     <ClCompile Include="IrExp.cpp" />
-    <ClCompile Include="IrExpAndMemberNameToIrExpTranslation.cpp" />
+    <ClCompile Include="SExp_MemberToIrExp.cpp" />
     <ClCompile Include="IrExpToMExpTranslation.cpp" />
     <ClCompile Include="GlobalFuncTask.cpp" />
     <ClCompile Include="BuildTypeDependentSymbolContext.cpp" />
@@ -77,8 +80,8 @@
     <ClCompile Include="RFuncAndRArgsToMExpTranslation.cpp" />
     <ClCompile Include="ScopeContext.cpp" />
     <ClCompile Include="SExpRefToIrExpTranslation.cpp" />
-    <ClCompile Include="SExpToImExpTranslation.cpp" />
-    <ClCompile Include="SExpToReExpTranslation.cpp" />
+    <ClCompile Include="SExpToImExp.cpp" />
+    <ClCompile Include="SExpToReExp.cpp" />
     <ClCompile Include="SExpToMExpTranslation.cpp" />
     <ClCompile Include="SExpToMLocTranslation.cpp" />
     <ClCompile Include="SStmtToMStmtTranslation.cpp" />
@@ -87,9 +90,14 @@
     <ClCompile Include="CommonTranslation.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
     <ClCompile Include="TranslationContexts.cpp" />
+    <ClCompile Include="Translations.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BodyRes.h" />
+    <ClInclude Include="ImExpTranslations.h" />
+    <ClInclude Include="SExpTranslations.h" />
+    <ClInclude Include="SExp_CallToImExp.h" />
+    <ClInclude Include="SExp_IdentifierToImExp.h" />
     <ClInclude Include="EnumElemVarTask.h" />
     <ClInclude Include="FuncContext_FuncDecl.h" />
     <ClInclude Include="FuncContext_Lambda.h" />
@@ -97,18 +105,17 @@
     <ClInclude Include="GlobalFuncTask.h" />
     <ClInclude Include="ImExpVisitor.g.h" />
     <ClInclude Include="IrExpAndMemberNameToMSharedExpTranslation.h" />
-    <ClInclude Include="IrExpAndMemberNameTranslation.h" />
-    <ClInclude Include="IrExpToMLocTranslation.h" />
-    <ClInclude Include="IrExpToMSharedExpTranslation.h" />
+    <ClInclude Include="IrExpToMLoc.h" />
+    <ClInclude Include="IrExpToMSharedExp.h" />
     <ClInclude Include="IrExpVisitor.g.h" />
     <ClInclude Include="PhaseManager.h" />
     <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0Translator.h" />
     <ClInclude Include="BinOpQueryService.h" />
-    <ClInclude Include="ReExpToMIRTranslation.h" />
+    <ClInclude Include="ReExpToMIR.h" />
     <ClInclude Include="ResolveTypeHierarchyContext.h" />
     <ClInclude Include="SExpRefToMSharedExpTranslation.h" />
-    <ClInclude Include="SExpToIrExpTranslation.h" />
-    <ClInclude Include="SExpToMIRTranslation.h" />
+    <ClInclude Include="SExpToIrExp.h" />
+    <ClInclude Include="SExp_MemberToImExp.h" />
     <ClInclude Include="StructCtorTask.h" />
     <ClInclude Include="StructDtorTask.h" />
     <ClInclude Include="StructFuncTask.h" />
@@ -124,10 +131,10 @@
     <ClInclude Include="ImExpAndSArgsToReExpTranslation.h" />
     <ClInclude Include="ImExp.h" />
     <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h" />
-    <ClInclude Include="BodyResToIrExpTranslation.h" />
-    <ClInclude Include="ImExpToReExpTranslation.h" />
+    <ClInclude Include="SExp_IdentifierToIrExp.h" />
+    <ClInclude Include="ImExpToReExp.h" />
     <ClInclude Include="IrExp.h" />
-    <ClInclude Include="IrExpAndMemberNameToIrExpTranslation.h" />
+    <ClInclude Include="SExp_MemberToIrExp.h" />
     <ClInclude Include="IrExpToMExpTranslation.h" />
     <ClInclude Include="BuildTypeDependentSymbolContext.h" />
     <ClInclude Include="Misc.h" />
@@ -137,14 +144,15 @@
     <ClInclude Include="RFuncAndRArgsToMExpTranslation.h" />
     <ClInclude Include="ScopeContext.h" />
     <ClInclude Include="SExpRefToIrExpTranslation.h" />
-    <ClInclude Include="SExpToImExpTranslation.h" />
+    <ClInclude Include="SExpToImExp.h" />
     <ClInclude Include="SExpToMExpTranslation.h" />
     <ClInclude Include="SExpToMLocTranslation.h" />
-    <ClInclude Include="SExpToReExpTranslation.h" />
+    <ClInclude Include="SExpToReExp.h" />
     <ClInclude Include="SStmtToMStmtTranslation.h" />
     <ClInclude Include="SVarDeclToMStmtsTranslation.h" />
     <ClInclude Include="SRTFactory.h" />
     <ClInclude Include="TranslationContexts.h" />
+    <ClInclude Include="Translations.h" />
     <ClInclude Include="TranslationTasks.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

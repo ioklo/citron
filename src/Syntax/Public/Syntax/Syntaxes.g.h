@@ -43,10 +43,8 @@ class SExp_Call;
 class SExp_Lambda;
 class SExp_Indexer;
 class SExp_Member;
-class SExp_IndirectMember;
 class SExp_List;
 class SExp_New;
-class SExp_Box;
 class SExp_Shared;
 class SExp_Is;
 class SExp_As;
@@ -545,11 +543,9 @@ public:
     virtual void Visit(SExp_Lambda* exp) = 0;
     virtual void Visit(SExp_Indexer* exp) = 0;
     virtual void Visit(SExp_Member* exp) = 0;
-    virtual void Visit(SExp_IndirectMember* exp) = 0;
     virtual void Visit(SExp_List* exp) = 0;
     virtual void Visit(SExp_New* exp) = 0;
     virtual void Visit(SExp_Shared* exp) = 0;
-    virtual void Visit(SExp_Box* exp) = 0;
     virtual void Visit(SExp_Is* exp) = 0;
     virtual void Visit(SExp_As* exp) = 0;
 };
@@ -584,11 +580,9 @@ concept SExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<SExp_Lambda*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SExp_Indexer*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SExp_Member*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SExp_IndirectMember*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SExp_List*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SExp_New*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SExp_Shared*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SExp_Box*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SExp_Is*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SExp_As*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
 };
@@ -617,11 +611,9 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SExp* ex
             void Visit(SExp_Lambda* exp) override { call(exp); }
             void Visit(SExp_Indexer* exp) override { call(exp); }
             void Visit(SExp_Member* exp) override { call(exp); }
-            void Visit(SExp_IndirectMember* exp) override { call(exp); }
             void Visit(SExp_List* exp) override { call(exp); }
             void Visit(SExp_New* exp) override { call(exp); }
             void Visit(SExp_Shared* exp) override { call(exp); }
-            void Visit(SExp_Box* exp) override { call(exp); }
             void Visit(SExp_Is* exp) override { call(exp); }
             void Visit(SExp_As* exp) override { call(exp); }
         };
@@ -647,11 +639,9 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SExp* ex
             void Visit(SExp_Lambda* exp) override { result.emplace(call(exp)); }
             void Visit(SExp_Indexer* exp) override { result.emplace(call(exp)); }
             void Visit(SExp_Member* exp) override { result.emplace(call(exp)); }
-            void Visit(SExp_IndirectMember* exp) override { result.emplace(call(exp)); }
             void Visit(SExp_List* exp) override { result.emplace(call(exp)); }
             void Visit(SExp_New* exp) override { result.emplace(call(exp)); }
             void Visit(SExp_Shared* exp) override { result.emplace(call(exp)); }
-            void Visit(SExp_Box* exp) override { result.emplace(call(exp)); }
             void Visit(SExp_Is* exp) override { result.emplace(call(exp)); }
             void Visit(SExp_As* exp) override { result.emplace(call(exp)); }
         };
@@ -1710,41 +1700,19 @@ public:
 
 };
 
-class SExp_IndirectMember
-    : public SExp
-{
-public:
-    SExp* parent;
-    std::string memberName;
-    std::vector<STypeExp*> memberTypeArgs;
-
-    SYNTAX_API SExp_IndirectMember(SExp* parent, std::string memberName, std::vector<STypeExp*> memberTypeArgs);
-    SYNTAX_API SExp_IndirectMember(SExp* parent, std::string&& memberName);
-    SExp_IndirectMember(const SExp_IndirectMember&) = delete;
-    SYNTAX_API SExp_IndirectMember(SExp_IndirectMember&&) noexcept;
-    SYNTAX_API virtual ~SExp_IndirectMember();
-
-    SExp_IndirectMember& operator=(const SExp_IndirectMember& other) = delete;
-    SYNTAX_API SExp_IndirectMember& operator=(SExp_IndirectMember&& other) noexcept;
-
-    SYNTAX_API JsonItem ToJson();
-    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
-
-};
-
-class SExp_Box
+class SExp_Shared
     : public SExp
 {
 public:
     SExp* innerExp;
 
-    SYNTAX_API SExp_Box(SExp* innerExp);
-    SExp_Box(const SExp_Box&) = delete;
-    SYNTAX_API SExp_Box(SExp_Box&&) noexcept;
-    SYNTAX_API virtual ~SExp_Box();
+    SYNTAX_API SExp_Shared(SExp* innerExp);
+    SExp_Shared(const SExp_Shared&) = delete;
+    SYNTAX_API SExp_Shared(SExp_Shared&&) noexcept;
+    SYNTAX_API virtual ~SExp_Shared();
 
-    SExp_Box& operator=(const SExp_Box& other) = delete;
-    SYNTAX_API SExp_Box& operator=(SExp_Box&& other) noexcept;
+    SExp_Shared& operator=(const SExp_Shared& other) = delete;
+    SYNTAX_API SExp_Shared& operator=(SExp_Shared&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }

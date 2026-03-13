@@ -645,7 +645,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                         "inner": {
                             "$type": "SExp_UnaryOp",
                             "kind": "Ref",
-                            "operand": {
+                            "target": {
                                 "$type": "SExp_Identifier",
                                 "value": "b",
                                 "typeArgs": []

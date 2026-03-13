@@ -37,10 +37,6 @@
 //        return TranslateIrExpAndMemberNameToMSharedExp(*e_irParent, RName_Normal(exp->memberName), *e_rTypeArgsExceptOuter, contexts);
 //    }
 //
-//    ResultType Visit(SExp_IndirectMember* exp)
-//    {
-//        throw NotImplementedException{};
-//    }
 //};
 //
 //expected<MSharedExp*, DiagPtr> TranslateSExpRefToMSharedExp(SExp* sExp, TranslationContexts& contexts)

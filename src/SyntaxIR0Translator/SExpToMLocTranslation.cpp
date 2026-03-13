@@ -161,12 +161,6 @@
 //        return HandleDefault(exp);
 //    }
 //
-//    // s->x
-//    ResultType Visit(SExp_IndirectMember* exp) 
-//    { 
-//        throw NotImplementedException{};
-//    }
-//
 //    ResultType Visit(SExp_List* exp)
 //    {
 //        auto e_nExp = TranslateSListExpToMExp(exp, contexts);

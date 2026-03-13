@@ -1,4 +1,4 @@
-#include "IrExpToMSharedExpTranslation.h"
+#include "IrExpToMSharedExp.h"
 
 #include "Infra/Expected.h"
 #include "MIR/MSharedExp.h"
@@ -72,4 +72,5 @@ expected<MSharedExp*, DiagPtr> TranslateIrExpToMSharedExp(IrExp* irExp, Translat
 {   
     return Accept(IrExpToMSharedExpTranslator{contexts}, irExp);
 }
+
 } // namespace 

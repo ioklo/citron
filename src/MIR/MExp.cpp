@@ -31,7 +31,6 @@ void MExp_Cast::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_Lambda::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_InlineBlock::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 void MExp_Is::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
-void MExp_As::Accept(MExpVisitor& visitor) { visitor.Visit(this); }
 
 RType* GetType_CallIntrinsic(MExp_CallIntrinsic* exp, RFactory* rFactory)
 {
@@ -72,7 +71,7 @@ RType* GetType(MExp* exp, RFactory* rFactory)
         using ResultType = RType*;
         RFactory* rFactory;
 
-        ResultType Visit(MExp_Load* exp) { return GetType(exp->loc.loc, rFactory); }
+        ResultType Visit(MExp_Load* exp) { return GetType(exp->loc, rFactory); }
         ResultType Visit(MExp_Store* exp) { return GetType(exp->dest, rFactory); }
         ResultType Visit(MExp_Stmt* exp) { return GetType(exp->finalExp, rFactory); }
         ResultType Visit(MExp_PtrRef* exp) 
@@ -98,7 +97,6 @@ RType* GetType(MExp* exp, RFactory* rFactory)
         ResultType Visit(MExp_Lambda* exp) { return rFactory->MakeLambdaType(exp->lambdaDecl, exp->typeArgs); }
         ResultType Visit(MExp_InlineBlock* exp) { return exp->returnType; }
         ResultType Visit(MExp_Is* exp) { return rFactory->MakeBoolType(); }
-        ResultType Visit(MExp_As* exp) { return exp->type; }
     };
 
     return Accept(GetTypeVisitor{rFactory}, exp);

@@ -1,9 +1,10 @@
-#include "BodyResToIrExpTranslation.h"
+#include "SExp_IdentifierToIrExp.h"
 
 #include <expected>
 
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
 #include "RSymbol/RNamespaceDecl.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFactory.h"
@@ -25,7 +26,7 @@ namespace Citron {
 
 namespace {
 
-struct DeclResAndMemberTypeArgsToIrExpTranslator
+struct DeclResTranslator
 {
     using ResultType = expected<IrExp*, DiagPtr>;
     RTypeArguments* memberTypeArgs;
@@ -128,7 +129,7 @@ struct DeclResAndMemberTypeArgsToIrExpTranslator
     }
 };
 
-struct BodyResAndMemberTypeArgsToIrExpTranslator
+struct BodyResTranslator
 {
     using ResultType = expected<IrExp*, DiagPtr>;
     RTypeArguments* memberTypeArgs;
@@ -147,7 +148,7 @@ public:
 
     ResultType Visit(BodyRes_RDeclRes& bodyRes) 
     { 
-        return visit(DeclResAndMemberTypeArgsToIrExpTranslator{memberTypeArgs, contexts}, bodyRes.declRes);
+        return visit(DeclResTranslator{memberTypeArgs, contexts}, bodyRes.declRes);
     }
 
     ResultType Visit(BodyRes_LocalVar& bodyRes) 
@@ -175,9 +176,17 @@ public:
 
 } // namespace 
 
-expected<IrExp*, DiagPtr> TranslateBaseResAndMemberTypeArgsToIrExp(BodyRes& bodyRes, RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
+expected<IrExp*, DiagPtr> TranslateSExp_IdentifierToIrExp(SExp_Identifier* sExp, TranslationContexts& contexts)
 {
-    return visit(BodyResAndMemberTypeArgsToIrExpTranslator{memberTypeArgs, contexts}, bodyRes);
+    // identifier는 name<typeArgs>로 이뤄져 있다
+    auto e_memberTypeArgs = MakeRTypeArgs(sExp->typeArgs, contexts);
+    RETURN_ON_ERROR(e_memberTypeArgs);
+
+    auto* memberTypeArgs = *e_memberTypeArgs;
+    auto e_bodyRes = ResolveIdentifier(RName_Normal{sExp->value}, memberTypeArgs->GetCount(), contexts);
+    RETURN_ON_ERROR(e_bodyRes);
+
+    return visit(BodyResTranslator{memberTypeArgs, contexts}, *e_bodyRes);
 }
 
 } // namespace Citron::SyntaxIR0Translation

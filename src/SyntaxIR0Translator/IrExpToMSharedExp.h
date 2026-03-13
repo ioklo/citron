@@ -7,12 +7,12 @@ namespace Citron {
 
 using DiagPtr = std::shared_ptr<struct Diag>;
 
-class MSharedExp;
+struct MSharedExp;
 
 struct IrExp;
-class IrExp_ClassVar;
-class IrExp_SharedStructVar;
-class IrExp_StructVar;
+struct IrExp_ClassVar;
+struct IrExp_SharedStructVar;
+struct IrExp_StructVar;
 struct TranslationContexts;
 
 MSharedExp* TranslateIrExp_ClassVarToMSharedExp(IrExp_ClassVar* irExp, TranslationContexts& contexts);

@@ -29,11 +29,11 @@
 //    using ResultType = expected<MSharedExp*, DiagPtr>;
 //
 //    const RName& name;
-//    RTypeArguments* typeArgsExceptOuter;
+//    RTypeArguments* memberTypeArgs;
 //    TranslationContexts& contexts;
 //
-//    IrExpAndMemberNameToMSharedExpTranslator(const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-//        : name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
+//    IrExpAndMemberNameToMSharedExpTranslator(const RName& name, RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
+//        : name{name}, memberTypeArgs{memberTypeArgs}, contexts{contexts}
 //    {}
 //
 //    // 단일 오브젝트는 shared로 만들수 없다. (&s 불가) 따라서, NS.x는 불가
@@ -45,7 +45,7 @@
 //    // &C.id
 //    ResultType Visit(IrExp_Class* irBaseExp) 
 //    {
-//        auto o_rMember = irBaseExp->decl->GetMember(irBaseExp->typeArgs, name, typeArgsExceptOuter->GetCount());
+//        auto o_rMember = irBaseExp->decl->GetMember(irBaseExp->typeArgs, name, memberTypeArgs->GetCount());
 //        if (!o_rMember) return Error<Error_ResolveIdentifier_NotFound>();
 //
 //        auto* rClassVarMember = get_if<RDeclRes_ClassVar>(&*o_rMember);
@@ -60,7 +60,7 @@
 //
 //    ResultType Visit(IrExp_Struct* irBaseExp)
 //    {
-//        auto o_rMember = irBaseExp->decl->GetMember(irBaseExp->typeArgs, name, typeArgsExceptOuter->GetCount());
+//        auto o_rMember = irBaseExp->decl->GetMember(irBaseExp->typeArgs, name, memberTypeArgs->GetCount());
 //        if (!o_rMember) return Error<Error_ResolveIdentifier_NotFound>();
 //
 //        auto* rStructVarMember = get_if<RDeclRes_StructVar>(&*o_rMember);
@@ -81,7 +81,7 @@
 //
 //        if (auto* classType = dynamic_cast<RType_Class*>(locType))
 //        {
-//            auto e_result = GetClassVar(classType, name, typeArgsExceptOuter, /*bExpectedStatic*/true);
+//            auto e_result = GetClassVar(classType, name, memberTypeArgs, /*bExpectedStatic*/true);
 //            RETURN_ON_ERROR_REFDECL(e_result, result);
 //
 //            return contexts.mFactory->MakeMSharedExp<MSharedExp_ClassVar>(
@@ -89,7 +89,7 @@
 //        }
 //        else if (auto* structType = dynamic_cast<RType_Struct*>(locType))
 //        {
-//            auto e_result = GetStructVar(structType, name, typeArgsExceptOuter, /*bExpectedStatic*/true);
+//            auto e_result = GetStructVar(structType, name, memberTypeArgs, /*bExpectedStatic*/true);
 //            RETURN_ON_ERROR_REFDECL(e_result, result);
 //
 //            auto* baseSharedExp = contexts.mFactory->MakeMSharedExp<MSharedExp_Static>(irBaseExp->loc, contexts.rFactory);
@@ -107,7 +107,7 @@
 //
 //        if (auto* classType = dynamic_cast<RType_Class*>(declType))
 //        {
-//            auto e_result = GetClassVar(classType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+//            auto e_result = GetClassVar(classType, name, memberTypeArgs, /*bExpectedStatic*/false);
 //            RETURN_ON_ERROR_REFDECL(e_result, result);
 //
 //            auto* baseLoc = TranslateIrExp_ClassVarToMLoc(irBaseExp, contexts);
@@ -115,7 +115,7 @@
 //        }
 //        else if (auto* structType = dynamic_cast<RType_Struct*>(declType))
 //        {
-//            auto e_result = GetStructVar(structType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+//            auto e_result = GetStructVar(structType, name, memberTypeArgs, /*bExpectedStatic*/false);
 //            RETURN_ON_ERROR_REFDECL(e_result, result);
 //
 //            auto* baseSharedExp = TranslateIrExp_ClassVarToMSharedExp(irBaseExp, contexts);
@@ -134,7 +134,7 @@
 //        // => MSharedExp_ClassVar(pS->c, C::id)
 //        if (auto* classType = dynamic_cast<RType_Class*>(declType))
 //        {
-//            auto e_result = GetClassVar(classType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+//            auto e_result = GetClassVar(classType, name, memberTypeArgs, /*bExpectedStatic*/false);
 //            RETURN_ON_ERROR_REFDECL(e_result, result);
 //
 //            auto* baseLoc = TranslateIrExp_SharedStructVarToMLoc(irBaseExp, contexts);
@@ -142,7 +142,7 @@
 //        }
 //        else if (auto* structType = dynamic_cast<RType_Struct*>(declType))
 //        {
-//            auto e_result = GetStructVar(structType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+//            auto e_result = GetStructVar(structType, name, memberTypeArgs, /*bExpectedStatic*/false);
 //            RETURN_ON_ERROR_REFDECL(e_result, result);
 //
 //            auto baseSharedExp = TranslateIrExp_SharedStructVarToMSharedExp(irBaseExp, contexts);
@@ -160,7 +160,7 @@
 //
 //        if (auto* classDeclType = dynamic_cast<RType_Class*>(declType))
 //        {
-//            auto e_result = GetClassVar(classDeclType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+//            auto e_result = GetClassVar(classDeclType, name, memberTypeArgs, /*bExpectedStatic*/false);
 //            RETURN_ON_ERROR_REFDECL(e_result, result);
 //
 //            auto e_baseLoc = TranslateIrExp_StructVarToMLoc(irBaseExp, contexts);
@@ -170,7 +170,7 @@
 //        }
 //        else if (auto* structDeclType = dynamic_cast<RType_Struct*>(declType))
 //        {
-//            auto e_result = GetStructVar(structDeclType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+//            auto e_result = GetStructVar(structDeclType, name, memberTypeArgs, /*bExpectedStatic*/false);
 //            RETURN_ON_ERROR_REFDECL(e_result, result);
 //
 //            auto e_baseSharedExp = TranslateIrExp_StructVarToMSharedExp(irBaseExp, contexts);
@@ -191,7 +191,7 @@
 //        auto* structTargetLocType = dynamic_cast<RType_Struct*>(sharedLocType->innerType);
 //        if (!structTargetLocType) return Error<Error_SharedTranslation_MemberBaseShouldBeShared>();
 //
-//        auto e_result = GetStructVar(structTargetLocType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+//        auto e_result = GetStructVar(structTargetLocType, name, memberTypeArgs, /*bExpectedStatic*/false);
 //        RETURN_ON_ERROR_REFDECL(e_result, result);
 //
 //        return contexts.mFactory->MakeMSharedExp<MSharedExp_SharedStructVar>(irBaseExp->innerLoc, result.decl, result.typeArgs, contexts.rFactory);
@@ -208,9 +208,9 @@
 //    }
 //};
 //
-//expected<MSharedExp*, DiagPtr> TranslateIrExpAndMemberNameToMSharedExp(IrExp* irBaseExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+//expected<MSharedExp*, DiagPtr> TranslateIrExpAndMemberNameToMSharedExp(IrExp* irBaseExp, const RName& name, RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
 //{
-//    IrExpAndMemberNameToMSharedExpTranslator translator{name, typeArgsExceptOuter, contexts};
+//    IrExpAndMemberNameToMSharedExpTranslator translator{name, memberTypeArgs, contexts};
 //    return Accept(translator, irBaseExp);
 //}
 //

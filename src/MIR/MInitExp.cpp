@@ -83,7 +83,7 @@ RType* GetType(MInitExp* initExp, RFactory* rFactory)
         ResultType Visit(MInitExp_NullableNullLiteral* initExp) { return rFactory->MakeNullableType(initExp->innerType); }
         ResultType Visit(MInitExp_NullableInplaceNullLiteral* initExp) { return rFactory->MakeNullableInplaceType(initExp->innerType); }
         ResultType Visit(MInitExp_Cast* initExp) { return initExp->targetType; }
-        ResultType Visit(MInitExp_Lambda* initExp) { return initExp->lambdaDecl->GetReturnType(*initExp->typeArgs); }
+        ResultType Visit(MInitExp_Lambda* initExp) { return initExp->lambdaDecl->GetReturnType(initExp->typeArgs); }
         ResultType Visit(MInitExp_InlineBlock* initExp) { return initExp->returnType; }
         ResultType Visit(MInitExp_As* initExp) { return initExp->type; }
     };

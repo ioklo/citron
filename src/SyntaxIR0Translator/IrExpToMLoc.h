@@ -10,9 +10,9 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 struct MLoc;
 
 struct IrExp;
-class IrExp_ClassVar;
-class IrExp_SharedStructVar;
-class IrExp_StructVar;
+struct IrExp_ClassVar;
+struct IrExp_SharedStructVar;
+struct IrExp_StructVar;
 struct TranslationContexts;
 
 MLoc* TranslateIrExp_ClassVarToMLoc(IrExp_ClassVar* irExp, TranslationContexts& contexts);

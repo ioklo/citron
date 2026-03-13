@@ -9,16 +9,21 @@ namespace Citron {
 
 class RFactory;
 class RType;
-enum class MInternalBinaryOperator;
+
+enum class MExp_CallIntrinsicKind;
+enum class MInitExp_CallIntrinsicKind;
+
+struct BinOp_Exp { MExp_CallIntrinsicKind kind; };
+struct BinOp_InitExp { MInitExp_CallIntrinsicKind kind; };
+
+using BinOp = std::variant<BinOp_Exp, BinOp_InitExp>;
 
 struct BinOpInfo
 {
     RType* operandType0;
     RType* operandType1;
     RType* resultType;
-    MInternalBinaryOperator rOperator;
-
-    BinOpInfo(RType* operandType0, RType* operandType1, RType* resultType, MInternalBinaryOperator rOperator);
+    BinOp _operator;
 };
 
 class BinOpQueryService

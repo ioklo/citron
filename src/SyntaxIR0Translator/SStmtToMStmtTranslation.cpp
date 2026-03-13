@@ -181,7 +181,7 @@ public:
             elseStmts = move(*e_elseResult);
         }
 
-        auto e_nAsExp = MakeMExp_As(*e_nTarget, *e_rTestType, contexts);
+        auto e_nAsExp = MakeAs(*e_nTarget, *e_rTestType, contexts);
         RETURN_ON_ERROR(e_nAsExp);
 
         auto rTestTypeKind = (*e_rTestType)->GetTypeKind();
@@ -435,7 +435,7 @@ public:
 
                 // GetEnumerator함수를 손으로 찾는다
                 auto rEnumerableType = (*e_nEnumerable)->GetType();
-                auto o_rMember = rEnumerableType->GetMember(RNames::GetEnumerator, /*explicitTypeArgsExceptOuterCount*/0);
+                auto o_rMember = rEnumerableType->GetMember(RNames::GetEnumerator, /*explicitMemberTypeArgsCount*/0);
                 if (!o_rMember)
                 {
                     // TODO: [15] foreach 에러 처리
@@ -483,7 +483,7 @@ public:
 
             expected<MExp*, DiagPtr> MakeNextExpAndInferItemVarType(RType* enumeratorType)
             {
-                auto o_rMember = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/0);
+                auto o_rMember = enumeratorType->GetMember(RNames::Next, /*explicitMemberTypeArgsCount*/0);
                 if (!o_rMember) return unexpected{MakePtr<Error_NotImplemented>()};
 
                 vector<MExp*> candidates;
@@ -553,7 +553,7 @@ public:
 
             expected<NextExpAndCastExp, DiagPtr> MakeNextExpAndCastExp(RType* enumeratorType, RType* itemTypeFromSyntax)
             {
-                auto rDeclRes = enumeratorType->GetMember(RNames::Next, /*explicitTypeArgsExceptOuterCount*/0);
+                auto rDeclRes = enumeratorType->GetMember(RNames::Next, /*explicitMemberTypeArgsCount*/0);
                 if (!rDeclRes) return unexpected{MakePtr<Error_NotImplemented>()};
 
                 vector<NextExpAndCastExp> candidates;

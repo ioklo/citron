@@ -110,10 +110,6 @@
 //        return TranslateIrExpAndMemberNameToIrExp(*e_irParent, RName_Normal(exp->memberName), *e_rTypeArgsExceptOuter, contexts);
 //    }
 //
-//    ResultType Visit(SExp_IndirectMember* exp)
-//    {
-//        throw NotImplementedException{};
-//    }
 //};
 //
 //} // namespace 

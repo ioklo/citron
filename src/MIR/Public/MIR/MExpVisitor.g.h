@@ -22,7 +22,6 @@ struct MExpVisitor
     virtual void Visit(MExp_Lambda* mExp) = 0;
     virtual void Visit(MExp_InlineBlock* mExp) = 0;
     virtual void Visit(MExp_Is* mExp) = 0;
-    virtual void Visit(MExp_As* mExp) = 0;
 };
 
 template<class TFrom, class TVisitor>
@@ -49,7 +48,6 @@ concept MExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MExp_Lambda*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_InlineBlock*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MExp_Is*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MExp_As*>(), std::forward<TVisitorArgs>(args)...) } -> MExpConvertibleToResultType<TVisitor>;
 
 };
 
@@ -81,7 +79,6 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             void Visit(MExp_Lambda* mExp) override { call(mExp); }
             void Visit(MExp_InlineBlock* mExp) override { call(mExp); }
             void Visit(MExp_Is* mExp) override { call(mExp); }
-            void Visit(MExp_As* mExp) override { call(mExp); }
         };
 
         Bridge bridge{caller};
@@ -108,7 +105,6 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MExp* mE
             void Visit(MExp_Lambda* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_InlineBlock* mExp) override { result.emplace(call(mExp)); }
             void Visit(MExp_Is* mExp) override { result.emplace(call(mExp)); }
-            void Visit(MExp_As* mExp) override { result.emplace(call(mExp)); }
         };
 
         Bridge bridge{caller};

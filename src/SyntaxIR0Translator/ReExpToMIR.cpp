@@ -1,4 +1,4 @@
-#include "ReExpToMIRTranslation.h"
+#include "ReExpToMIR.h"
 #include <cassert>
 #include "RSymbol/RTypes.h"
 #include "MIR/MExp.h"
@@ -28,7 +28,7 @@ expected<MCreate, DiagPtr> TranslateReExpToMCreate(ReExp& reExp, TranslationCont
 
             if (copyStrategy == RCopyStrategy::Bitwise) // BC
             {
-                auto* mExp = contexts.mFactory->MakeMExp<MExp_Load>(MRead_NBC{reExp.mLoc});
+                auto* mExp = contexts.mFactory->MakeMExp<MExp_Load>(reExp.mLoc);
                 return MCreate_BC{mExp};
             }
             else if (copyStrategy == RCopyStrategy::NonBitwise) // NBC
@@ -41,6 +41,8 @@ expected<MCreate, DiagPtr> TranslateReExpToMCreate(ReExp& reExp, TranslationCont
                 }
                 else throw NotImplementedException{};
             }
+
+            unreachable();
         }
         else if constexpr (same_as<T, ReExp_Exp>)
         {

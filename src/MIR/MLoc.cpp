@@ -43,7 +43,7 @@ RType* GetType(MLoc* loc, RFactory* rFactory)
         ResultType Visit(MLoc_This* loc) { return loc->type; }
         ResultType Visit(MLoc_PtrDeref* loc) 
         {  
-            auto* ptrType = dynamic_cast<RType_Ptr*>(GetType(loc->innerLoc, rFactory));
+            auto* ptrType = dynamic_cast<RType_Ptr*>(GetType(loc->srcPtr.exp, rFactory));
             assert(ptrType);
 
             return ptrType->innerType;
@@ -51,7 +51,7 @@ RType* GetType(MLoc* loc, RFactory* rFactory)
 
         ResultType Visit(MLoc_SharedDeref* loc) 
         { 
-            auto* sharedType = dynamic_cast<RType_Shared*>(GetType(loc->innerLoc, rFactory));
+            auto* sharedType = dynamic_cast<RType_Shared*>(GetType(loc->srcShared.loc, rFactory));
             assert(sharedType);
 
             return sharedType->innerType;

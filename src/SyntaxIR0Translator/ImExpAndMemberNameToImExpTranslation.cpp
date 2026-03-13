@@ -38,12 +38,12 @@ namespace {
 
 class StaticParentTranslator
 {
-    RTypeArguments* typeArgsExceptOuter; // outer 제외
+    RTypeArguments* memberTypeArgs; // outer 제외
     TranslationContexts& contexts;
 
 public:
-    StaticParentTranslator(RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
+    StaticParentTranslator(RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
+        : memberTypeArgs{memberTypeArgs}, contexts{contexts}
     {
     }
 
@@ -64,7 +64,7 @@ public:
     // NS.F
     expected<ImExp*, DiagPtr> Visit(RDeclRes_GlobalFuncs& member) 
     { 
-        return MakeImExp<ImExp_GlobalFuncs>(member.items, typeArgsExceptOuter);
+        return MakeImExp<ImExp_GlobalFuncs>(member.items, memberTypeArgs);
     }
 
     // T.C
@@ -76,14 +76,14 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto* typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, typeArgsExceptOuter);
+        auto* typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, memberTypeArgs);
         return MakeImExp<ImExp_Class>(member.decl, typeArgs);
     }
 
     // C.F
     expected<ImExp*, DiagPtr> Visit(RDeclRes_ClassFuncs& member)
     {
-        return MakeImExp<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, /*explicitInstance*/nullptr);
+        return MakeImExp<ImExp_ClassFuncs>(member.items, memberTypeArgs, ImExpInstanceKind_ExplicitStatic{});
     }
 
     // C.x
@@ -100,9 +100,9 @@ public:
         }
 
         // variable은 typeArgs가 없다
-        assert(typeArgsExceptOuter->GetCount() == 0);
+        assert(memberTypeArgs->GetCount() == 0);
 
-        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, /*explicitInstance*/nullptr);
+        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, ImExpInstanceKind_ExplicitStatic{});
     }
 
     // T.S
@@ -114,7 +114,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, typeArgsExceptOuter);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, memberTypeArgs);
 
         return MakeImExp<ImExp_Struct>(member.decl, typeArgs);
     }
@@ -122,7 +122,7 @@ public:
     // S.F
     expected<ImExp*, DiagPtr> Visit(RDeclRes_StructFuncs& member)
     {
-        return MakeImExp<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, /*explicitInstance*/nullptr);
+        return MakeImExp<ImExp_StructFuncs>(member.items, memberTypeArgs, ImExpInstanceKind_ExplicitStatic{});
     }
 
     // S.x
@@ -139,8 +139,8 @@ public:
         }
 
         // variable은 typeArgs가 없다
-        assert(typeArgsExceptOuter->GetCount() == 0);
-        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, /*explicitInstance*/nullptr);
+        assert(memberTypeArgs->GetCount() == 0);
+        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, ImExpInstanceKind_ExplicitStatic{});
     }
 
     // T.E
@@ -152,7 +152,7 @@ public:
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, typeArgsExceptOuter);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, memberTypeArgs);
         return MakeImExp<ImExp_Enum>(member.decl, typeArgs);
     }
 
@@ -160,7 +160,7 @@ public:
     expected<ImExp*, DiagPtr> Visit(RDeclRes_EnumElem& member)
     {
         // EnumElem은 TypeArgs를 가질 수 없다
-        assert(typeArgsExceptOuter->GetCount() == 0);
+        assert(memberTypeArgs->GetCount() == 0);
         return MakeImExp<ImExp_EnumElem>(member.decl, member.outerTypeArgs);
     }
 
@@ -208,7 +208,7 @@ public:
 struct InstanceParentTranslator
 {
     MLoc* mInstLoc;
-    RTypeArguments* typeArgsExceptOuter;
+    RTypeArguments* memberTypeArgs;
     TranslationContexts& contexts;
     
     /*TranslationResult<IntermediateExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateExp>>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
@@ -251,7 +251,7 @@ struct InstanceParentTranslator
     // exp.F
     expected<ImExp*, DiagPtr> Visit(RDeclRes_ClassFuncs& member)
     {   
-        return MakeImExp<ImExp_ClassFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, mInstLoc);
+        return MakeImExp<ImExp_ClassFuncs>(member.items, memberTypeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.x
@@ -269,7 +269,7 @@ struct InstanceParentTranslator
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, mInstLoc);
+        return MakeImExp<ImExp_ClassVar>(member.decl, member.typeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.S
@@ -281,7 +281,7 @@ struct InstanceParentTranslator
     // exp.F
     expected<ImExp*, DiagPtr> Visit(RDeclRes_StructFuncs& member)
     {   
-        return MakeImExp<ImExp_StructFuncs>(member.items, typeArgsExceptOuter, /*hasExplicitInstance*/true, mInstLoc);
+        return MakeImExp<ImExp_StructFuncs>(member.items, memberTypeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.x
@@ -299,7 +299,7 @@ struct InstanceParentTranslator
             return unexpected{MakePtr<Error_ResolveIdentifier_TryAccessingPrivateMember>()};
         }
 
-        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, /*hasExplicitInstance*/true, mInstLoc);
+        return MakeImExp<ImExp_StructVar>(member.decl, member.typeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.E
@@ -318,7 +318,7 @@ struct InstanceParentTranslator
     expected<ImExp*, DiagPtr> Visit(RDeclRes_EnumElemVar& member)
     {   
         auto* loc = MakeMLoc<MLoc_EnumElemVar>(mInstLoc, member.decl, member.outerTypeArgs);
-        return MakeImExp<ImExp_Loc>(loc);
+        return MakeImExp<ImExp_ReExp>(ReExp_Loc{loc});
     }
 
     // 표현 불가
@@ -362,26 +362,26 @@ public:
 
 private:
     string name;
-    RTypeArguments* typeArgsExceptOuter;
+    RTypeArguments* memberTypeArgs;
 
     TranslationContexts& contexts;
     
     ResultType TranslateStaticParent(RDecl* decl, RTypeArguments* typeArgs)
     {
-        auto o_member = decl->GetMember(typeArgs, RName_Normal(name), typeArgsExceptOuter->GetCount());
-        StaticParentTranslator binder{typeArgsExceptOuter, contexts};
+        auto o_member = decl->GetMember(typeArgs, RName_Normal(name), memberTypeArgs->GetCount());
+        StaticParentTranslator binder{memberTypeArgs, contexts};
         return visit(binder, *o_member);
     }
-
+    
     ResultType TranslateInstanceParent(MLoc* mLoc)
     {
         auto* type = GetType(mLoc, &*contexts.rFactory);
 
-        auto o_member = type->GetMember(RName_Normal(name), typeArgsExceptOuter->GetCount());
+        auto o_member = type->GetMember(RName_Normal(name), memberTypeArgs->GetCount());
         if (!o_member)
             return unexpected{MakePtr<Error_ResolveIdentifier_NotFound>()};
 
-        InstanceParentTranslator binder(mLoc, typeArgsExceptOuter, contexts);
+        InstanceParentTranslator binder(mLoc, memberTypeArgs, contexts);
         return visit(binder, *o_member);
     }
 
@@ -398,8 +398,8 @@ private:
     }
 
 public:
-    ImExpAndMemberNameToImExpTranslator(const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
+    ImExpAndMemberNameToImExpTranslator(const std::string& name, RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
+        : name{name}, memberTypeArgs{memberTypeArgs}, contexts{contexts}
     {
     }
 
@@ -459,22 +459,27 @@ public:
         return TranslateInstanceParentAsLoc(imExp);
     }
 
-    ResultType Visit(ImExp_Loc* imExp)
+    ResultType Visit(ImExp_ReExp* reExp)
     {
-        return TranslateInstanceParent(imExp->loc);
-    }
+        static_assert(false)
+        ResultType Visit(ImExp_Loc * imExp)
+        {
+            return TranslateInstanceParent(imExp->loc);
+        }
 
-    ResultType Visit(ImExp_Exp* imExp)
-    {
-        return TranslateInstanceParentAsLoc(imExp);
+        ResultType Visit(ImExp_Exp * imExp)
+        {
+            return TranslateInstanceParentAsLoc(imExp);
+        }
     }
+    
 };
 
 } // namespace
 
-expected<ImExp*, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp* imExp, const std::string& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+expected<ImExp*, DiagPtr> TranslateImExpAndMemberNameToImExp(ImExp* imExp, const std::string& name, RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
 {
-    ImExpAndMemberNameToImExpTranslator binder{name, typeArgsExceptOuter, contexts};
+    ImExpAndMemberNameToImExpTranslator binder{name, memberTypeArgs, contexts};
     return Accept(binder, imExp);
 }
 

@@ -229,11 +229,9 @@ struct SExpToJsonVisitor
     ResultType Visit(SExp_Lambda* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_Indexer* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_Member* exp) { return exp->ToJson(); }
-    ResultType Visit(SExp_IndirectMember* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_List* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_New* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_Shared* exp) { return exp->ToJson(); }
-    ResultType Visit(SExp_Box* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_Is* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_As* exp) { return exp->ToJson(); }
 };
@@ -636,38 +634,19 @@ JsonItem SExp_Member::ToJson()
     };
 }
 
-SExp_IndirectMember::SExp_IndirectMember(SExp* parent, std::string memberName, std::vector<STypeExp*> memberTypeArgs)
-    : parent(move(parent)), memberName(move(memberName)), memberTypeArgs(move(memberTypeArgs)) { }
-
-SExp_IndirectMember::SExp_IndirectMember(SExp_IndirectMember&& other) noexcept = default;
-
-SExp_IndirectMember::~SExp_IndirectMember() = default;
-
-SExp_IndirectMember& SExp_IndirectMember::operator=(SExp_IndirectMember&& other) noexcept = default;
-
-JsonItem SExp_IndirectMember::ToJson()
-{
-    return JsonObject {
-        { "$type", JsonString("SExp_IndirectMember") },
-        { "parent", Citron::ToJson(parent) },
-        { "memberName", Citron::ToJson(memberName) },
-        { "memberTypeArgs", Citron::ToJson(memberTypeArgs) },
-    };
-}
-
-SExp_Box::SExp_Box(SExp* innerExp)
+SExp_Shared::SExp_Shared(SExp* innerExp)
     : innerExp(move(innerExp)) { }
 
-SExp_Box::SExp_Box(SExp_Box&& other) noexcept = default;
+SExp_Shared::SExp_Shared(SExp_Shared&& other) noexcept = default;
 
-SExp_Box::~SExp_Box() = default;
+SExp_Shared::~SExp_Shared() = default;
 
-SExp_Box& SExp_Box::operator=(SExp_Box&& other) noexcept = default;
+SExp_Shared& SExp_Shared::operator=(SExp_Shared&& other) noexcept = default;
 
-JsonItem SExp_Box::ToJson()
+JsonItem SExp_Shared::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SExp_Box") },
+        { "$type", JsonString("SExp_Shared") },
         { "innerExp", Citron::ToJson(innerExp) },
     };
 }

@@ -40,10 +40,9 @@ class SExp_Call;
 class SExp_Lambda;
 class SExp_Indexer;
 class SExp_Member;
-class SExp_IndirectMember;
 class SExp_List;
 class SExp_New;
-class SExp_Box;
+class SExp_Shared;
 class SExp_Is;
 class SExp_As;
 
@@ -145,10 +144,9 @@ public:
     MAKE(SExp_Lambda)
     MAKE(SExp_Indexer)
     MAKE(SExp_Member)
-    MAKE(SExp_IndirectMember)
     MAKE(SExp_List)
     MAKE(SExp_New)
-    MAKE(SExp_Box)
+    MAKE(SExp_Shared)
     MAKE(SExp_Is)
     MAKE(SExp_As)
 

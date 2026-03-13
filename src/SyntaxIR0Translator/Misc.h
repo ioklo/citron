@@ -5,6 +5,7 @@
 #include <optional>
 #include <expected>
 
+#include "Infra/Ptr.h"
 #include "Logging/Diag.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RNames.h"

@@ -6,13 +6,16 @@
 
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncReturn.h"
+#include "MIR/MRead.h"
 #include "BodyRes.h"
+
 
 namespace Citron {
 
 class NFuncDecl;
 struct ImExp;
 struct MExp;
+struct MInitExp_As;
 class RTypeArguments;
 class ITransactionable;
 struct RFuncParameter;
@@ -48,7 +51,7 @@ TranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, std::v
 
 std::vector<ITransactionable*> BeginTransaction(TranslationContexts& contexts);
 
-std::expected<MExp*, DiagPtr> MakeMExp_As(MExp* targetExp, RType* testType, TranslationContexts& contexts);
+std::expected<MInitExp_As*, DiagPtr> MakeMInitExp_As(MRead&& target, RType* testType, TranslationContexts& contexts);
 
 std::expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, size_t memberTypeArgs, TranslationContexts& contexts);
 

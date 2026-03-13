@@ -101,10 +101,8 @@ struct ToJsonVisitor {
                 "SExp_Lambda",
                 "SExp_Indexer",
                 "SExp_Member",
-                "SExp_IndirectMember",
                 "SExp_List",
                 "SExp_New",
-                "SExp_Box",
                 "SExp_Shared",
                 "SExp_Is",
                 "SExp_As",
@@ -386,11 +384,9 @@ struct ToJsonVisitor {
                 "SExp_Lambda",
                 "SExp_Indexer",
                 "SExp_Member",
-                "SExp_IndirectMember",
                 "SExp_List",
                 "SExp_New",
                 "SExp_Shared",
-                "SExp_Box",
                 "SExp_Is",
                 "SExp_As",
             }
@@ -646,22 +642,9 @@ struct ToJsonVisitor {
                 "SYNTAX_API SExp_Member(SExp* base, std::string&& memberName);"
             }
         },
-
+        
         ClassInfo {
-            .name = "SExp_IndirectMember",
-            .variantInterfaces { "SExp" },
-            .memberInfos {
-                {.type = "SExp*", .memberVarName = "parent", .getterName = "GetParent" },
-                {.type = "std::string", .memberVarName = "memberName", .getterName = "GetMemberName" },
-                {.type = "std::vector<STypeExp*>", .memberVarName = "memberTypeArgs", .getterName = "GetMemberTypeArgs" },
-            },
-            .extraCtors {
-                "SYNTAX_API SExp_IndirectMember(SExp* parent, std::string&& memberName);"
-            }
-        },
-
-        ClassInfo {
-            .name = "SExp_Box",
+            .name = "SExp_Shared",
             .variantInterfaces { "SExp" },
             .memberInfos {
                 {.type = "SExp*", .memberVarName = "innerExp", .getterName = "GetInnerExp" },

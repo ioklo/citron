@@ -1,4 +1,4 @@
-#include "SExpToIrExpTranslation.h"
+#include "SExpToIrExp.h"
 
 #include "Infra/Expected.h"
 #include "Syntax/Syntax.h"
@@ -11,7 +11,8 @@
 #include "Misc.h"
 #include "TranslationContexts.h"
 #include "SExpToMLocTranslation.h"
-#include "ImExpToIrExpTranslation.h"
+#include "SExp_IdentifierToIrExp.h"
+#include "SExp_MemberToIrExp.h"
 #include "DesignatedDiagnostic.h"
 
 using namespace std;
@@ -32,15 +33,7 @@ struct SExpToIrExpTranslator
 
     ResultType Visit(SExp_Identifier* exp)
     {
-        // identifier는 name<typeArgs>로 이뤄져 있다
-        auto e_memberTypeArgs = MakeRTypeArgs(exp->typeArgs, contexts);
-        RETURN_ON_ERROR(e_memberTypeArgs);
-
-        auto* memberTypeArgs = *e_memberTypeArgs;
-        auto e_bodyRes = ResolveIdentifier(RName_Normal{exp->value}, memberTypeArgs->GetCount(), contexts);
-        RETURN_ON_ERROR(e_bodyRes);
-
-        return TranslateBodyResAndMemberTypeArgsToIrExp(*e_bodyRes, memberTypeArgs, contexts);
+        return TranslateSExp_IdentifierToIrExp(exp, contexts);
     }
     
     // ResultType Visit(SExp_String* exp); // &"abc".id
@@ -78,12 +71,13 @@ struct SExpToIrExpTranslator
     ResultType Visit(SExp_Call* exp);
     ResultType Visit(SExp_Lambda* exp);
     ResultType Visit(SExp_Indexer* exp);
-    ResultType Visit(SExp_Member* exp);
-    ResultType Visit(SExp_IndirectMember* exp);
+    ResultType Visit(SExp_Member* exp)
+    {
+        return TranslateSExp_MemberToIrExp(exp, contexts);
+    }
     ResultType Visit(SExp_List* exp);
     ResultType Visit(SExp_New* exp);
     ResultType Visit(SExp_Shared* exp);
-    ResultType Visit(SExp_Box* exp);
     ResultType Visit(SExp_Is* exp);
     ResultType Visit(SExp_As* exp);
 };

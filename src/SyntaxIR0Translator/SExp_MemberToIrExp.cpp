@@ -1,4 +1,4 @@
-#include "IrExpAndMemberNameToIrExpTranslation.h"
+#include "SExp_MemberToIrExp.h"
 
 #include <cassert>
 #include <expected>
@@ -21,15 +21,15 @@
 #include "MIR/MFactory.h"
 #include "MIR/MSharedExp.h"
 
+#include "SExpToIrExp.h"
 #include "IrExp.h"
 #include "FuncContext.h"
 #include "ScopeContext.h"
 #include "TranslationContexts.h"
 #include "SRTFactory.h"
-#include "IrExpAndMemberNameTranslation.h"
 #include "Misc.h"
-#include "IrExpToMLocTranslation.h"
-#include "IrExpToMSharedExpTranslation.h"
+#include "IrExpToMLoc.h"
+#include "IrExpToMSharedExp.h"
 
 using namespace std;
 
@@ -37,14 +37,59 @@ namespace Citron {
 
 namespace {
 
+struct Result_GetClassVar
+{
+    RClassVarDecl* decl;
+    RTypeArguments* typeArgs;
+};
+
+struct Result_GetStructVar
+{
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
+};
+
+expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, const RName& name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
+{
+    size_t memberTypeArgsCount = memberTypeArgs->GetCount();
+    auto o_member = classType->GetMember(name, memberTypeArgsCount);
+    if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
+
+    auto* classVarMember = get_if<RDeclRes_ClassVar>(&*o_member);
+    if (!classVarMember) return Error<>();
+
+    // static 성질이 다르면 에러    
+    if (classVarMember->decl->IsStatic() != bExpectedStatic) return Error<>();
+
+    // ClassVar이니까. classVarMember->typeArgs와 typeArgsExceptOuter를 합쳐서 쓰지 않고, classVarMember->typeArgs만 사용한다.
+    assert(memberTypeArgsCount == 0);
+    return Result_GetClassVar{classVarMember->decl, classVarMember->typeArgs};
+}
+
+expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, const RName& name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
+{
+    size_t memberTypeArgsCount = memberTypeArgs->GetCount();
+    auto o_member = structType->GetMember(name, memberTypeArgsCount);
+    if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
+
+    auto* structVarMember = get_if<RDeclRes_StructVar>(&*o_member);
+    if (!structVarMember) return Error<>();
+
+    // static 이면 에러
+    if (structVarMember->decl->IsStatic() == bExpectedStatic) return Error<>();
+    assert(memberTypeArgsCount == 0);
+
+    return Result_GetStructVar{structVarMember->decl, structVarMember->typeArgs};
+}
+
 class StaticParentTranslator
 {
-    RTypeArguments* typeArgsExceptOuter;
+    RTypeArguments* memberTypeArgs;
     TranslationContexts& contexts;
 
 public:
-    StaticParentTranslator(RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : typeArgsExceptOuter(typeArgsExceptOuter), contexts{contexts}
+    StaticParentTranslator(RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
+        : memberTypeArgs(memberTypeArgs), contexts{contexts}
     {
     }
 
@@ -63,7 +108,7 @@ public:
 
     expected<IrExp*, DiagPtr> Visit(RDeclRes_Class& member)
     {
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, typeArgsExceptOuter);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, memberTypeArgs);
         return contexts.srtFactory->MakeIrExp<IrExp_Class>(member.decl, typeArgs);
     }
 
@@ -93,7 +138,7 @@ public:
 
     expected<IrExp*, DiagPtr> Visit(RDeclRes_Struct& member)
     {
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, typeArgsExceptOuter);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, memberTypeArgs);
         return contexts.srtFactory->MakeIrExp<IrExp_Struct>(member.decl, typeArgs);
     }
 
@@ -176,14 +221,14 @@ public:
     }*/
 };
 
-class IrExpAndMemberNameToIrExpTranslator
+class Binder
 {
 public:
     using ResultType = expected<IrExp*, DiagPtr>;
 
 private:
     RName name;
-    RTypeArguments* typeArgsExceptOuter;
+    RTypeArguments* memberTypeArgs;
 
     TranslationContexts& contexts;
 
@@ -196,19 +241,19 @@ private:
 
     ResultType HandleStaticParent(RDecl& decl, RTypeArguments* typeArgs)
     {
-        auto o_member = decl.GetMember(typeArgs, name, typeArgsExceptOuter->GetCount());
+        auto o_member = decl.GetMember(typeArgs, name, memberTypeArgs->GetCount());
         if (!o_member)
         {
             return Error<Error_ResolveIdentifier_NotFound>();
         }
 
-        StaticParentTranslator binder(typeArgsExceptOuter, contexts);
+        StaticParentTranslator binder(memberTypeArgs, contexts);
         return visit(binder, *o_member);
     }
 
 public:
-    IrExpAndMemberNameToIrExpTranslator(const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
-        : name{name}, typeArgsExceptOuter{typeArgsExceptOuter}, contexts{contexts}
+    Binder(const RName& name, RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
+        : name{name}, memberTypeArgs{memberTypeArgs}, contexts{contexts}
     {
     }
 
@@ -234,7 +279,7 @@ public:
 
         if (auto* classType = dynamic_cast<RType_Class*>(locType))
         {
-            auto e_result = GetClassVar(classType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            auto e_result = GetClassVar(classType, name, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(
@@ -242,7 +287,7 @@ public:
         }
         else if (auto* structType = dynamic_cast<RType_Struct*>(locType))
         {
-            auto e_result = GetStructVar(structType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            auto e_result = GetStructVar(structType, name, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(
@@ -257,7 +302,7 @@ public:
 
         if (auto* classType = dynamic_cast<RType_Class*>(declType))
         {
-            auto e_result = GetClassVar(classType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            auto e_result = GetClassVar(classType, name, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto* baseLoc = TranslateIrExp_ClassVarToMLoc(irBaseExp, contexts);
@@ -265,7 +310,7 @@ public:
         }
         else if (auto* structType = dynamic_cast<RType_Struct*>(declType))
         {
-            auto e_result = GetStructVar(structType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            auto e_result = GetStructVar(structType, name, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto* baseSharedExp = TranslateIrExp_ClassVarToMSharedExp(irBaseExp, contexts);
@@ -283,7 +328,7 @@ public:
         // => MSharedExp_ClassVar(pS->c, C::id)
         if (auto* classType = dynamic_cast<RType_Class*>(declType))
         {
-            auto e_result = GetClassVar(classType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            auto e_result = GetClassVar(classType, name, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto* baseLoc = TranslateIrExp_SharedStructVarToMLoc(irBaseExp, contexts);
@@ -291,7 +336,7 @@ public:
         }
         else if (auto* structType = dynamic_cast<RType_Struct*>(declType))
         {
-            auto e_result = GetStructVar(structType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            auto e_result = GetStructVar(structType, name, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto baseSharedExp = TranslateIrExp_SharedStructVarToMSharedExp(irBaseExp, contexts);
@@ -306,7 +351,7 @@ public:
 
         if (auto* classDeclType = dynamic_cast<RType_Class*>(declType))
         {
-            auto e_result = GetClassVar(classDeclType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            auto e_result = GetClassVar(classDeclType, name, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto e_baseLoc = TranslateIrExp_StructVarToMLoc(irBaseExp, contexts);
@@ -316,7 +361,7 @@ public:
         }
         else if (auto* structDeclType = dynamic_cast<RType_Struct*>(declType))
         {
-            auto e_result = GetStructVar(structDeclType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            auto e_result = GetStructVar(structDeclType, name, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto e_baseSharedExp = TranslateIrExp_StructVarToMSharedExp(irBaseExp, contexts);
@@ -339,7 +384,7 @@ public:
             auto* structTargetLocType = dynamic_cast<RType_Struct*>(sharedLocType->innerType);
             if (!structTargetLocType) return Error<Error_SharedTranslation_MemberBaseShouldBeShared>();
 
-            auto e_result = GetStructVar(structTargetLocType, name, typeArgsExceptOuter, /*bExpectedStatic*/false);
+            auto e_result = GetStructVar(structTargetLocType, name, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             return contexts.srtFactory->MakeIrExp<IrExp_SharedStructVar>(irBaseExp->innerLoc, result.decl, result.typeArgs, contexts.rFactory);
@@ -364,10 +409,16 @@ public:
 
 } // namespace 
 
-expected<IrExp*, DiagPtr> TranslateIrExpAndMemberNameToIrExp(IrExp* irExp, const RName& name, RTypeArguments* typeArgsExceptOuter, TranslationContexts& contexts)
+expected<IrExp*, DiagPtr> TranslateSExp_MemberToIrExp(SExp_Member* sExp, TranslationContexts& contexts)
 {
-    IrExpAndMemberNameToIrExpTranslator binder{name, typeArgsExceptOuter, contexts};
-    return Accept(binder, irExp);
+    auto e_base = TranslateSExpToIrExp(sExp->base, contexts);
+    RETURN_ON_ERROR(e_base);
+
+    auto e_memberTypeArgs = MakeRTypeArgs(sExp->memberTypeArgs, contexts);
+    RETURN_ON_ERROR(e_memberTypeArgs);
+
+    Binder binder{RName_Normal{sExp->memberName}, *e_memberTypeArgs, contexts};
+    return Accept(binder, *e_base);
 }
 
 } // namespace Citron

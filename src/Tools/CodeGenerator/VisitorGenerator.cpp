@@ -160,7 +160,6 @@ void GenerateVisitors(std::filesystem::path srcPath)
                 "MExp_Lambda",
                 "MExp_InlineBlock",
                 "MExp_Is",
-                "MExp_As",
             },
         }, 
 
@@ -340,8 +339,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
                 "ImExp_EnumElem",
                 "ImExp_ClassVar",
                 "ImExp_StructVar",
-                "ImExp_Loc",
-                "ImExp_Exp",
+                "ImExp_ReExp",
             },
         },
 

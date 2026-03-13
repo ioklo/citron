@@ -67,7 +67,7 @@ public:
 std::expected<std::optional<ArgumentsMatch>, DiagPtr> MatchArguments(
     IMatchArgumentsInput* input,
     RTypeArguments* outerTypeArgs, 
-    RTypeArguments* partialTypeArgsExceptOuter, 
+    RTypeArguments* memberTypeArgs, 
     SArguments* sArgs,
     TranslationContexts& contexts);
 
@@ -75,7 +75,7 @@ std::expected<std::optional<ArgumentsMatch>, DiagPtr> MatchArguments(
 template<typename TFuncDecl> requires std::derived_from<TFuncDecl, RFuncDecl>
 std::expected<std::optional<FuncMatch<TFuncDecl>>, DiagPtr> MatchFunc(
     std::span<DeclWithOuterTypeArgs<TFuncDecl>> infos, // { S<>.U<>.F<,> ... }, [T1, T2] // open type
-    RTypeArguments* partialTypeArgsExceptOuter, // [int], closed type, T4는 확정 해야 함
+    RTypeArguments* memberTypeArgs, // [int], closed type, T4는 확정 해야 함
     SArguments* sArgs, 
     TranslationContexts& contexts)
 {
@@ -86,7 +86,7 @@ std::expected<std::optional<FuncMatch<TFuncDecl>>, DiagPtr> MatchFunc(
         auto& info = infos.front();
 
         RFuncDeclMatchArgumentsInput input{info.decl};
-        auto e_o_argMatch = MatchArguments(&input, info.outerTypeArgs, partialTypeArgsExceptOuter, sArgs, contexts);
+        auto e_o_argMatch = MatchArguments(&input, info.outerTypeArgs, memberTypeArgs, sArgs, contexts);
         RETURN_ON_ERROR(e_o_argMatch);
 
         if (!*e_o_argMatch) return std::nullopt;
@@ -101,7 +101,7 @@ std::expected<std::optional<FuncMatch<TFuncDecl>>, DiagPtr> MatchFunc(
         Transaction transaction(*contexts.scopeContext);
 
         RFuncDeclMatchArgumentsInput input{info.decl};
-        auto e_o_argMatch = MatchArguments(&input, info.outerTypeArgs, partialTypeArgsExceptOuter, sArgs, contexts);
+        auto e_o_argMatch = MatchArguments(&input, info.outerTypeArgs, memberTypeArgs, sArgs, contexts);
         RETURN_ON_ERROR(e_o_argMatch);
 
         if (*e_o_argMatch)
@@ -117,7 +117,7 @@ std::expected<std::optional<FuncMatch<TFuncDecl>>, DiagPtr> MatchFunc(
     auto& info = infos[candidates.front()];
 
     RFuncDeclMatchArgumentsInput input{info.decl};
-    auto e_o_argMatch = MatchArguments(&input, info.outerTypeArgs, partialTypeArgsExceptOuter, sArgs, contexts);
+    auto e_o_argMatch = MatchArguments(&input, info.outerTypeArgs, memberTypeArgs, sArgs, contexts);
     assert(e_o_argMatch);
     auto& argMatch = **e_o_argMatch;
     return FuncMatch<TFuncDecl>(info.decl, argMatch.typeArgs, std::move(argMatch.args));

@@ -37,10 +37,10 @@ public:
 // 주어진 Location의 값을 비트단위로 복사한다
 struct MExp_Load : MExp
 {
-    MRead_NBC loc;
+    MLoc* loc;
 
-    MExp_Load(MRead_NBC&& loc)
-        : loc{std::move(loc)}
+    MExp_Load(MLoc* loc)
+        : loc{loc}
     { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
@@ -49,9 +49,9 @@ struct MExp_Load : MExp
 struct MExp_Store : MExp
 {
     MLoc* dest;
-    MCreate_BC src;
+    MRead_BC src;
 
-    MExp_Store(MLoc* dest, MCreate_BC&& src)
+    MExp_Store(MLoc* dest, MRead_BC&& src)
         : dest{dest}, src{std::move(src)}
     { }
     MIR_API void Accept(MExpVisitor& visitor) override;
@@ -73,6 +73,10 @@ struct MExp_Stmt : MExp
 struct MExp_PtrRef : MExp
 {
     MLoc* innerLoc;
+
+    MExp_PtrRef(MLoc* innerLoc)
+        : innerLoc{innerLoc}
+    { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -80,6 +84,10 @@ struct MExp_PtrRef : MExp
 struct MExp_BoolLiteral : MExp
 {
     bool value;
+
+    MExp_BoolLiteral(bool value)
+        : value{value}
+    { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -87,6 +95,9 @@ struct MExp_BoolLiteral : MExp
 struct MExp_IntLiteral : MExp
 {
     int value;
+    MExp_IntLiteral(int value)
+        : value{value}
+    { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -127,6 +138,9 @@ struct MExp_CallIntrinsic : MExp
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
 
+    MExp_CallIntrinsic(MExp_CallIntrinsicKind kind, RTypeArguments* typeArgs, std::vector<MArgument>&& args)
+        : kind{kind}, typeArgs{typeArgs}, args{std::move(args)}
+    { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -178,6 +192,10 @@ struct MExp_Nullable : MExp
 struct MExp_NullableNullLiteral : MExp
 {
     RType* innerType;
+
+    MExp_NullableNullLiteral(RType* innerType)
+        : innerType{innerType}
+    { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 
@@ -237,19 +255,6 @@ struct MExp_Is : MExp
 {   
     MRead operand; // BC/NBC를 모두 받을 수 있는 방법.
     MTopLevelPattern pattern;
-    MIR_API void Accept(MExpVisitor& visitor) override;
-};
-
-enum class MExp_AsKind
-{
-    Enum_EnumElem,
-};
-
-struct MExp_As : MExp
-{
-    MExp_AsKind kind;
-    MRead operand;
-    RType* type;
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 

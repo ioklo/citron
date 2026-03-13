@@ -1,26 +1,19 @@
-#include "ImExpToReExpTranslation.h"
-
-#include <expected>
+#include "ImExpToReExp.h"
 
 #include "Infra/Exceptions.h"
-#include "Infra/Ptr.h"
-#include "Logging/Logger.h"
-
+#include "Logging/Diag.h"
 #include "RSymbol/RFactory.h"
-#include "RSymbol/RClassVarDecl.h"
 #include "RSymbol/REnumElemDecl.h"
 #include "MIR/MArgument.h"
 #include "MIR/MExp.h"
 #include "MIR/MLoc.h"
+#include "MIR/MInitExp.h"
 #include "MIR/MFactory.h"
-
 #include "ImExp.h"
 #include "ReExp.h"
 #include "TranslationContexts.h"
-#include "SRTFactory.h"
 #include "Misc.h"
-#include "FuncContext.h"
-#include "DesignatedDiagnostic.h"
+#include "ImExpTranslations.h"
 
 using namespace std;
 
@@ -31,9 +24,7 @@ namespace {
 // expected<ReExp, DiagPtr>을 돌려준다
 struct ImExpToReExpTranslator
 {   
-public:
     using ResultType = expected<ReExp, DiagPtr>;
-
     TranslationContexts& contexts;
 
     ImExpToReExpTranslator(TranslationContexts& contexts)
@@ -50,11 +41,18 @@ private:
         return ReExp_Loc{loc};
     }
 
-    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, MExp>
+    template<typename TMExp, typename... TArgs> requires std::derived_from<TMExp, MExp>
     ResultType Exp(TArgs&&... args)
     {
-        auto* exp = contexts.mFactory->MakeMExp<TExp>(forward<TArgs>(args)...);
+        auto* exp = contexts.mFactory->MakeMExp<TMExp>(forward<TArgs>(args)...);
         return ReExp_Exp{exp};
+    }
+
+    template<typename TMInitExp, typename... TArgs> requires std::derived_from<TMInitExp, MInitExp>
+    ResultType InitExp(TArgs&&... args)
+    {
+        auto* exp = contexts.mFactory->MakeMInitExp<TMInitExp>(forward<TArgs>(args)...);
+        return ReExp_InitExp{exp};
     }
 
 public:
@@ -62,10 +60,10 @@ public:
     {
         return Error<Error_ResolveIdentifier_CantUseNamespaceAsExpression>();
     }
-
-    // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
+    
     ResultType Visit(ImExp_GlobalFuncs* imExp)
     {
+        // TODO: [51] 단일 ClassFuncs, StructFuncs가 expression으로 쓰이면, Lambda로 쓰일수 있게 변환
         throw NotImplementedException{};
     }
 
@@ -81,7 +79,7 @@ public:
 
     ResultType Visit(ImExp_ClassFuncs* imExp)
     {
-        // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
+        // TODO: [51] 단일 ClassFuncs, StructFuncs가 expression으로 쓰이면, Lambda로 쓰일수 있게 변환
         throw NotImplementedException{};
     }
 
@@ -92,7 +90,7 @@ public:
 
     ResultType Visit(ImExp_StructFuncs* imExp)
     {
-        // funcs가 한개이면, lambda (boxed lambda)로 변환할 수 있다.
+        // TODO: [51] 단일 ClassFuncs, StructFuncs가 expression으로 쓰이면, Lambda로 쓰일수 있게 변환
         throw NotImplementedException{};
     }
 
@@ -106,42 +104,36 @@ public:
         // if standalone, 값으로 처리한다
         if (imExp->decl->GetVarCount() == 0)
         {
-            return Exp<MExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<MArgument>{}, contexts.rFactory);
+            auto* enumElemType = contexts.rFactory->MakeEnumElemType(imExp->decl, imExp->typeArgs);
+            switch (enumElemType->GetCopyStrategy())
+            {
+            case RCopyStrategy::Void: throw RuntimeFatalException{};
+            case RCopyStrategy::Bitwise:
+                return Exp<MExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<MArgument>{});
+            case RCopyStrategy::NonBitwise:
+                return InitExp<MInitExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<MArgument>{});
+            }
+
+            unreachable();
         }
 
-        // lambda (boxed lambda)로 변환할 수 있다.
+        // TODO: [51] 단일 ClassFuncs, StructFuncs 등이 expression으로 쓰이면, Lambda로 쓰일수 있게 변환
         throw NotImplementedException{};
-
     }
 
     ResultType Visit(ImExp_ClassVar* imExp)
     {
-        if (imExp->hasExplicitInstance) // c.x, C.x 둘다 해당
-        {
-            return Loc<MLoc_ClassVar>(imExp->explicitInstance, imExp->decl, imExp->typeArgs);
-        }
-        else // x, x (static) 둘다 해당
-        {
-            MLoc* mInstanceLoc = imExp->decl->IsStatic() ? nullptr : contexts.funcContext->MakeThisLoc();
-            return Loc<MLoc_ClassVar>(mInstanceLoc, imExp->decl, imExp->typeArgs);
-        }
-
-        return Loc<MLoc_ClassVar>(imExp->decl, imExp->typeArgs, imExp->hasExplicitInstance, imExp->explicitInstance);
+        return ReExp_Loc{TranslateImExp_ClassVarToMLoc_ClassVar(imExp, contexts)};
     }
 
     ResultType Visit(ImExp_StructVar* imExp)
     {
-        return Loc<MLoc_StructVar>(imExp->decl, imExp->typeArgs, imExp->hasExplicitInstance, imExp->explicitInstance);
+        return ReExp_Loc{TranslateImExp_StructVarToMLoc_StructVar(imExp, contexts)};
     }
 
-    ResultType Visit(ImExp_Exp* imExp)
+    ResultType Visit(ImExp_ReExp* imExp)
     {
-        return ReExp_Exp{imExp->exp};
-    }
-
-    ResultType Visit(ImExp_Loc* imExp)
-    {
-        return ReExp_Loc{imExp->loc};
+        return imExp->reExp;
     }
 };
 

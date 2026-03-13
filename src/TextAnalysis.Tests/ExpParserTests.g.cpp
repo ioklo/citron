@@ -79,13 +79,13 @@ TEST(ExpParser, ParseComplexExp)
                             "operand0": {
                                 "$type": "SExp_UnaryOp",
                                 "kind": "LogicalNot",
-                                "operand": {
+                                "target": {
                                     "$type": "SExp_UnaryOp",
                                     "kind": "LogicalNot",
-                                    "operand": {
+                                    "target": {
                                         "$type": "SExp_UnaryOp",
                                         "kind": "PostfixInc",
-                                        "operand": {
+                                        "target": {
                                             "$type": "SExp_BinaryOp",
                                             "kind": "Modulo",
                                             "operand0": {
@@ -479,7 +479,7 @@ TEST(ExpParser, ParsePrimaryExp)
     auto expected = R"---({
     "$type": "SExp_UnaryOp",
     "kind": "PostfixInc",
-    "operand": {
+    "target": {
         "$type": "SExp_BinaryOp",
         "kind": "Modulo",
         "operand0": {
@@ -487,7 +487,7 @@ TEST(ExpParser, ParsePrimaryExp)
             "callable": {
                 "$type": "SExp_UnaryOp",
                 "kind": "PostfixInc",
-                "operand": {
+                "target": {
                     "$type": "SExp_Identifier",
                     "value": "c",
                     "typeArgs": []

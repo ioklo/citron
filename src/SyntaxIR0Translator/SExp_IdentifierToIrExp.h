@@ -12,7 +12,8 @@ class RTypeArguments;
 struct ImExp;
 struct IrExp;
 struct TranslationContexts;
+class SExp_Identifier;
 
-std::expected<IrExp*, DiagPtr> TranslateBaseResAndMemberTypeArgsToIrExp(BodyRes& bodyRes, RTypeArguments* memberTypeArgs, TranslationContexts& contexts);
+std::expected<IrExp*, DiagPtr> TranslateSExp_IdentifierToIrExp(SExp_Identifier* sExp, TranslationContexts& contexts);
 
 } // namespace Citron

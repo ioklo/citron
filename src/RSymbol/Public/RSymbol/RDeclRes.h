@@ -8,15 +8,13 @@
 #include <memory>
 #include "RNames.h"
 #include "RFuncParameter.h"
+#include "DeclWithOuterTypeArgs.h"
 
 namespace Citron {
 
 class RTypeArguments;
 class RType;
 class RTypeParamDecl;
-
-template<typename TDecl>
-struct DeclWithOuterTypeArgs;
 
 class RNamespaceDecl;
 class RGlobalFuncDecl;

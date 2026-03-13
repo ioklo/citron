@@ -17,8 +17,7 @@ struct ImExpVisitor
     virtual void Visit(ImExp_EnumElem* imExp) = 0;
     virtual void Visit(ImExp_ClassVar* imExp) = 0;
     virtual void Visit(ImExp_StructVar* imExp) = 0;
-    virtual void Visit(ImExp_Loc* imExp) = 0;
-    virtual void Visit(ImExp_Exp* imExp) = 0;
+    virtual void Visit(ImExp_ReExp* imExp) = 0;
 };
 
 template<class TFrom, class TVisitor>
@@ -40,8 +39,7 @@ concept ImExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<ImExp_EnumElem*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ImExp_ClassVar*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ImExp_StructVar*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ImExp_Loc*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<ImExp_Exp*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<ImExp_ReExp*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
 
 };
 
@@ -68,8 +66,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ImExp* i
             void Visit(ImExp_EnumElem* imExp) override { call(imExp); }
             void Visit(ImExp_ClassVar* imExp) override { call(imExp); }
             void Visit(ImExp_StructVar* imExp) override { call(imExp); }
-            void Visit(ImExp_Loc* imExp) override { call(imExp); }
-            void Visit(ImExp_Exp* imExp) override { call(imExp); }
+            void Visit(ImExp_ReExp* imExp) override { call(imExp); }
         };
 
         Bridge bridge{caller};
@@ -91,8 +88,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ImExp* i
             void Visit(ImExp_EnumElem* imExp) override { result.emplace(call(imExp)); }
             void Visit(ImExp_ClassVar* imExp) override { result.emplace(call(imExp)); }
             void Visit(ImExp_StructVar* imExp) override { result.emplace(call(imExp)); }
-            void Visit(ImExp_Loc* imExp) override { result.emplace(call(imExp)); }
-            void Visit(ImExp_Exp* imExp) override { result.emplace(call(imExp)); }
+            void Visit(ImExp_ReExp* imExp) override { result.emplace(call(imExp)); }
         };
 
         Bridge bridge{caller};

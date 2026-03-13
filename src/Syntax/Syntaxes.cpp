@@ -27,12 +27,7 @@ SExp_String::SExp_String(std::string&& str, SFactory& factory)
 }
 
 SExp_Member::SExp_Member(SExp* base, std::string&& memberName)
-    : SExp_Member(parent, move(memberName), {})
-{
-}
-
-SExp_IndirectMember::SExp_IndirectMember(SExp* parent, std::string&& memberName)
-    : SExp_IndirectMember(parent, move(memberName), {})
+    : SExp_Member(base, move(memberName), {})
 {
 }
 

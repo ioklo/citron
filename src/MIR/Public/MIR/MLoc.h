@@ -28,7 +28,9 @@ public:
 struct MLoc_Materialize : MLoc
 {
     MCreate create;
-
+    MLoc_Materialize(MCreate&& create)
+        : create{std::move(create)}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 
@@ -59,6 +61,9 @@ struct MLoc_LambdaVar : MLoc
 {
     RLambdaVarDecl* decl;
     RTypeArguments* typeArgs;
+    MLoc_LambdaVar(RLambdaVarDecl* decl, RTypeArguments* typeArgs)
+        : decl{decl}, typeArgs{typeArgs}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 
@@ -106,6 +111,9 @@ struct MLoc_EnumElemVar : MLoc
     REnumElemVarDecl* decl;
     RTypeArguments* typeArgs;
 
+    MLoc_EnumElemVar(MLoc* instance, REnumElemVarDecl* decl, RTypeArguments* typeArgs)
+        : instance{instance}, decl{decl}, typeArgs{typeArgs}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 
@@ -122,16 +130,22 @@ struct MLoc_This : MLoc
 // dereference pointer, *
 struct MLoc_PtrDeref : MLoc
 {
-    MLoc* innerLoc;
+    MRead_BC srcPtr;
 
+    MLoc_PtrDeref(MRead_BC&& srcPtr)
+        : srcPtr{std::move(srcPtr)}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 
-// dereference box pointer, *
+// dereference shared pointer, *
 struct MLoc_SharedDeref : MLoc
 {
-    MLoc* innerLoc;
+    MRead_NBC srcShared;
 
+    MLoc_SharedDeref(MRead_NBC&& srcShared)
+        : srcShared{std::move(srcShared)}
+    { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
 

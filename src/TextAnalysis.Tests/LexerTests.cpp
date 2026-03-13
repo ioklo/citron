@@ -85,6 +85,7 @@ TEST(Lexer, LexSymbols)
         RefToken{},
         NullToken{},
         MoveToken{},
+        SharedToken{},
 
         PublicToken{},
         ProtectedToken{},

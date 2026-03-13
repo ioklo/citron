@@ -18,6 +18,15 @@
 - [ ] // TODO: [37] class base에서도 검색하기
 - [ ] // TODO: [38] break/continue에 label 지원
 - [ ] // TODO: [39] SyntaxIR0Translator Eror 정리
-- [ ] // TODO: [40] MInitExp_StructCtorKind_*를 쓸때 Copy, Move가 가능한지 확인하고 fallback까지 하는 코드 작성
+- [ ] // TODO: [40] MInitExp_StructCtorKind_*, MStmt_Assign를 쓸때 Copy, Move가 가능한지 확인하고 fallback까지 하는 코드 작성
 - [ ] // TODO: [41] try catch 구현
 - [ ] // TODO: [42] BodyRes.NeedCapture구현
+- [ ] // TODO: [43] ResolveIdentifier에서 AccessCheck를 할지, Verify패스를 따로 둘지 결정
+- [ ] // TODO: [44] Tuple 구현
+- [ ] // TODO: [45] custom ToString 구현
+- [ ] // TODO: [46] lambda capture에 reference들어올수 있도록
+- [ ] // TODO: [47] CastMExp의 리턴값 수정, NBC의 암시적 Cast구현하기
+- [ ] // TODO: [48] CastMExp등, 시도만 하고 포인터를 버리는 경우, 메모리 누수를 막기 위해서, 지역 pool을 만들어서 flush처리, 성공시 pool merge
+- [ ] // TODO: [49] Dictionary 추가, indexer도 dictionary지원
+- [ ] // TODO: [50] is에 pattern, alias binding추가
+- [ ] // TODO: [51] 단일 ClassFuncs, StructFuncs가 expression으로 쓰이면, Lambda로 쓰일수 있게 변환

@@ -28,7 +28,7 @@ expected<void, DiagPtr> TranslateMExp_StringElemToQInsts(MInitExp_StringElem& el
 
             return {};
         }
-        else if constexpr (same_as<T, MInitExp_StringElem_Loc>)
+        else if constexpr (same_as<T, MInitExp_StringElem_NBC>)
         {
             return TranslateMExpToQInsts(elem.mExp, o_destSlotIndex, bodyContext);
         }

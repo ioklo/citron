@@ -105,7 +105,7 @@ TEST(ScriptParser, ParseComplexScript)
                     "cont": {
                         "$type": "SExp_UnaryOp",
                         "kind": "PostfixInc",
-                        "operand": {
+                        "target": {
                             "$type": "SExp_Identifier",
                             "value": "i",
                             "typeArgs": []

@@ -64,6 +64,7 @@ TOKEN_DEF(AsToken, L"as")
 TOKEN_DEF(RefToken, L"ref")
 TOKEN_DEF(NullToken, L"null")
 TOKEN_DEF(MoveToken, L"move")
+TOKEN_DEF(SharedToken, L"shared")
 
 TOKEN_DEF(PublicToken, L"public")
 TOKEN_DEF(ProtectedToken, L"protected")
@@ -167,6 +168,7 @@ using Token = std::variant<
     RefToken,
     NullToken,
     MoveToken,
+    SharedToken,
 
     PublicToken,
     ProtectedToken,

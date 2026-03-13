@@ -4,7 +4,7 @@
 #include <string>
 #include "RSymbol/RGlobalFuncDecl.h"
 #include "MIR/MRead.h"
-
+#include "ReExp.h"
 #include "FuncsWithPartialTypeArgsComponent.h"
 
 namespace Citron {
@@ -22,10 +22,14 @@ class REnumElemDecl;
 class REnumElemVarDecl;
 class RType;
 struct MExp;
-
 class NLambdaVarDecl;
-
 struct ImExpVisitor;
+
+struct ImExpInstanceKind_ExplicitStatic { }; // C.F
+struct ImExpInstanceKind_ExplicitInstance { MLoc* mInstLoc; }; // x.F
+struct ImExpInstanceKind_Implicit {}; // F
+using ImExpInstanceKind = std::variant<ImExpInstanceKind_ExplicitStatic, ImExpInstanceKind_ExplicitInstance, ImExpInstanceKind_Implicit>;
+
 struct ImExp
 {
 public:
@@ -52,16 +56,16 @@ struct ImExp_GlobalFuncs
     using FuncComp = FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>;
 
     using FuncComp::items;
-    using FuncComp::partialTypeArgsExceptOuter;
+    using FuncComp::memberTypeArgs;
 
-    ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter)
-        : FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>{items, partialTypeArgsExceptOuter}
+    ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, RTypeArguments* memberTypeArgs)
+        : FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>{items, memberTypeArgs}
     { }
 
     using FuncComp::GetCount;
     using FuncComp::GetDecl;
     using FuncComp::GetOuterTypeArgs;
-    using FuncComp::GetPartialTypeArgsExceptOuter;
+    using FuncComp::GetMemberTypeArgs;
 
     void Accept(ImExpVisitor& visitor) override;
 };
@@ -89,28 +93,21 @@ struct ImExp_Class : ImExp
 struct ImExp_ClassFuncs 
     : ImExp
     , private FuncsWithPartialTypeArgsComponent<RClassFuncDecl>
-{
-    // HasExplicitInstance: x.F 처럼 x가 명시적으로 있는 경우 true, F 처럼 this.F 나 C.F 를 암시적으로 나타낸 경우라면 false, C.F는 명시적이지만 인스턴스가 아니므로 false
-    // ExplicitInstance: HasExplicitInstance가 true일때만 의미가 있다
-
-    // C.F => HasExplicitInstance: true, null
-    // x.F => HasExplicitInstance: true, "x"
-    // F   => HasExplicitInstance: false, null
+{   
     using FuncsWithPartialTypeArgsComponent::items;
-    using FuncsWithPartialTypeArgsComponent::partialTypeArgsExceptOuter;
-    bool hasExplicitInstance;
-    MLoc* explicitInstance;
+    using FuncsWithPartialTypeArgsComponent::memberTypeArgs;
+    ImExpInstanceKind instanceKind;
 
     using FuncComp = FuncsWithPartialTypeArgsComponent<RClassFuncDecl>;
 
-    ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, MLoc* explicitInstance)
-        : FuncsWithPartialTypeArgsComponent<RClassFuncDecl>{items, partialTypeArgsExceptOuter}, hasExplicitInstance{hasExplicitInstance}, explicitInstance{explicitInstance}
+    ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, RTypeArguments* memberTypeArgs, ImExpInstanceKind&& instanceKind)
+        : FuncsWithPartialTypeArgsComponent<RClassFuncDecl>{items, memberTypeArgs}, instanceKind{std::move(instanceKind)}
     { }
 
     using FuncComp::GetCount;
     using FuncComp::GetDecl;
     using FuncComp::GetOuterTypeArgs;
-    using FuncComp::GetPartialTypeArgsExceptOuter;
+    using FuncComp::GetMemberTypeArgs;
 
     void Accept(ImExpVisitor& visitor) override;
 };
@@ -134,19 +131,17 @@ struct ImExp_StructFuncs
     using FuncComp = FuncsWithPartialTypeArgsComponent<RStructFuncDecl>;
 
     using FuncComp::items;
-    using FuncComp::partialTypeArgsExceptOuter;
+    using FuncComp::memberTypeArgs;
+    ImExpInstanceKind instanceKind;
 
-    bool hasExplicitInstance;
-    MLoc* explicitInstance;
-
-    ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, RTypeArguments* partialTypeArgsExceptOuter, bool hasExplicitInstance, MLoc* explicitInstance)
-        : FuncsWithPartialTypeArgsComponent<RStructFuncDecl>{items, partialTypeArgsExceptOuter}, hasExplicitInstance{hasExplicitInstance}, explicitInstance{explicitInstance}
+    ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, RTypeArguments* memberTypeArgs, ImExpInstanceKind&& instanceKind)
+        : FuncsWithPartialTypeArgsComponent<RStructFuncDecl>{items, memberTypeArgs}, instanceKind{std::move(instanceKind)}
     { }
 
     using FuncComp::GetCount;
     using FuncComp::GetDecl;
     using FuncComp::GetOuterTypeArgs;
-    using FuncComp::GetPartialTypeArgsExceptOuter;
+    using FuncComp::GetMemberTypeArgs;
 
     void Accept(ImExpVisitor& visitor) override;
 };
@@ -179,12 +174,10 @@ struct ImExp_ClassVar : ImExp
 {
     RClassVarDecl* decl;
     RTypeArguments* typeArgs;
-    
-    bool hasExplicitInstance;
-    MLoc* explicitInstance;
+    ImExpInstanceKind instanceKind;
 
-    ImExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, MLoc* explicitInstance)
-        : decl{decl}, typeArgs{typeArgs}, hasExplicitInstance{hasExplicitInstance}, explicitInstance{explicitInstance}
+    ImExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, ImExpInstanceKind&& instanceKind)
+        : decl{decl}, typeArgs{typeArgs}, instanceKind{std::move(instanceKind)}
     { }
 
     void Accept(ImExpVisitor& visitor) override;
@@ -194,33 +187,20 @@ struct ImExp_StructVar : ImExp
 {
     RStructVarDecl* decl;
     RTypeArguments* typeArgs;
-    
-    bool hasExplicitInstance;
-    MLoc* explicitInstance;
+    ImExpInstanceKind instanceKind;
 
-    ImExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, bool hasExplicitInstance, MLoc* explicitInstance)
-        : decl{decl}, typeArgs{typeArgs}, hasExplicitInstance{hasExplicitInstance}, explicitInstance{explicitInstance}
+    ImExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, ImExpInstanceKind&& instanceKind)
+        : decl{decl}, typeArgs{typeArgs}, instanceKind{std::move(instanceKind)}
     { }
     void Accept(ImExpVisitor& visitor) override;
 };
 
-struct ImExp_Loc : ImExp
+struct ImExp_ReExp : ImExp
 {
-    MLoc* loc;
+    ReExp reExp;
 
-    ImExp_Loc(MLoc* loc)
-        : loc{loc}
-    { }
-    void Accept(ImExpVisitor& visitor) override;
-};
-
-// 기타의 경우
-struct ImExp_Exp : ImExp
-{
-    MExp* exp;
-
-    ImExp_Exp(MExp* exp)
-        : exp{exp}
+    ImExp_ReExp(ReExp&& reExp)
+        : reExp{std::move(reExp)}
     { }
     void Accept(ImExpVisitor& visitor) override;
 };

@@ -17,7 +17,6 @@ void ImExp_Enum::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
 void ImExp_EnumElem::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
 void ImExp_ClassVar::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
 void ImExp_StructVar::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
-void ImExp_Loc::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
-void ImExp_Exp::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
+void ImExp_ReExp::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
 
 } // namespace Citron

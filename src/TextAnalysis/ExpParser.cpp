@@ -437,11 +437,15 @@ Citron::SExp* ParsePrimaryExp(Lexer* lexer, SFactory& factory)
             auto o_typeArgs = ParseTypeArgs(&curLexer, factory);
             if (o_typeArgs)
             {   
-                curExp = factory.MakeSExp_IndirectMember(curExp, move(o_idToken->text), move(*o_typeArgs));
+                // (*exp).id로 변경
+                auto* deref = factory.MakeSExp_UnaryOp(SUnaryOpKind::Deref, curExp);
+                curExp = factory.MakeSExp_Member(deref, move(o_idToken->text), move(*o_typeArgs));
             }
             else
             {   
-                curExp = factory.MakeSExp_IndirectMember(curExp, move(o_idToken->text), vector<STypeExp*>{});
+                // (*exp).id로 변경
+                auto* deref = factory.MakeSExp_UnaryOp(SUnaryOpKind::Deref, curExp);
+                curExp = factory.MakeSExp_Member(deref, move(o_idToken->text), vector<STypeExp*>{});
             }
 
             continue;
@@ -464,8 +468,8 @@ Citron::SExp* ParsePrimaryExp(Lexer* lexer, SFactory& factory)
 
 SExp* ParseSingleExp(Lexer* lexer, SFactory& factory)
 {
-    /*if (auto* exp = ParseBoxExp(lexer, factory))
-        return exp;*/
+    if (auto* exp = ParseSharedExp(lexer, factory))
+        return exp;
         
     if (auto* exp = ParseNewExp(lexer, factory))
         return exp;
@@ -497,22 +501,21 @@ SExp* ParseSingleExp(Lexer* lexer, SFactory& factory)
     return nullptr;
 }
 
+SExp_Shared* ParseSharedExp(Lexer* lexer, SFactory& factory)
+{
+    // <SHARED> <EXP>
+    Lexer curLexer = *lexer;
+    
+    if (!Accept<SharedToken>(&curLexer))
+        return nullptr;
 
-//SExp_Box* ParseBoxExp(Lexer* lexer, SFactory& factory)
-//{
-//    // <BOX> <EXP>
-//    Lexer curLexer = *lexer;
-//
-//    if (!Accept<BoxToken>(&curLexer))
-//        return nullptr;
-//
-//    auto* innerExp = ParseExp(&curLexer, factory);
-//    if (!innerExp)
-//        return nullptr;
-//
-//    *lexer = move(curLexer);
-//    return factory.MakeSExp_Box(innerExp);
-//}
+    auto* innerExp = ParseExp(&curLexer, factory);
+    if (!innerExp)
+        return nullptr;
+
+    *lexer = move(curLexer);
+    return factory.MakeSExp_Shared(innerExp);
+}
 
 SExp_New* ParseNewExp(Lexer* lexer, SFactory& factory)
 {

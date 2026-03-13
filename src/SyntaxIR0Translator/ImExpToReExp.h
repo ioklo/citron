@@ -4,10 +4,9 @@
 #include <expected>
 #include "ReExp.h"
 
-#include "Logging/Diag.h"
-
 namespace Citron {
 
+using DiagPtr = std::shared_ptr<struct Diag>;
 struct ImExp;
 struct TranslationContexts;
 

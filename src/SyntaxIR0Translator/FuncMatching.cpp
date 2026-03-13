@@ -37,9 +37,9 @@ RFuncParameter RFuncDeclMatchArgumentsInput::GetFuncParam(RTypeArguments* typeAr
     return funcDecl->GetFuncParam(*typeArgs, index);
 }
 
-RTypeArguments* MakeTypeArgs(IMatchArgumentsInput* input, RTypeArguments* outerTypeArgs, RTypeArguments* partialTypeArgsExceptOuter, RFactory& rFactory)
+RTypeArguments* MakeTypeArgs(IMatchArgumentsInput* input, RTypeArguments* outerTypeArgs, RTypeArguments* memberTypeArgs, RFactory& rFactory)
 {
-    size_t partialArgCount = partialTypeArgsExceptOuter->GetCount();
+    size_t partialArgCount = memberTypeArgs->GetCount();
     size_t paramCount = input->GetTypeParamCount();
 
     // partial typeArgs를 open으로 꽉 채운다
@@ -49,7 +49,7 @@ RTypeArguments* MakeTypeArgs(IMatchArgumentsInput* input, RTypeArguments* outerT
     std::vector<RType*> argsItems;
     argsItems.reserve(paramCount);
     for (size_t i = 0; i < partialArgCount; ++i)
-        argsItems.push_back(partialTypeArgsExceptOuter->Get(i));
+        argsItems.push_back(memberTypeArgs->Get(i));
     for (size_t i = partialArgCount; i < paramCount; ++i)
         argsItems.push_back(rFactory.MakeTypeVarType(input->GetTypeParam(i)));
     auto* args = rFactory.MakeTypeArguments(std::move(argsItems));
@@ -86,11 +86,11 @@ expected<void, DiagPtr> CheckType(vector<TypeEqualConstraint>& constraints, RTyp
 expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
     IMatchArgumentsInput* input,
     RTypeArguments* outerTypeArgs, 
-    RTypeArguments* partialTypeArgsExceptOuter,
+    RTypeArguments* memberTypeArgs,
     SArguments* sArgs,
     TranslationContexts& contexts)
 {
-    auto* typeArgs = MakeTypeArgs(input, outerTypeArgs, partialTypeArgsExceptOuter, *contexts.rFactory);
+    auto* typeArgs = MakeTypeArgs(input, outerTypeArgs, memberTypeArgs, *contexts.rFactory);
 
     std::vector<TypeEqualConstraint> constraints;
 

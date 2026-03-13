@@ -32,12 +32,19 @@ struct MInitExp
 struct MInitExp_Shared : MInitExp 
 {   
     MCreate create; // BC, NBC 모두 생성가능
+    MInitExp_Shared(MCreate&& create)
+        : create{std::move(create)}
+    { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
 struct MInitExp_SharedRef : MInitExp
 {
     MSharedExp* sharedExp;
+
+    MInitExp_SharedRef(MSharedExp* sharedExp)
+        : sharedExp{sharedExp}
+    { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
@@ -55,17 +62,20 @@ struct MInitExp_StringElem_Text
     std::string text;
 };
 
-struct MInitExp_StringElem_Loc
+struct MInitExp_StringElem_NBC
 {
     MRead_NBC loc;
 };
 
-using MInitExp_StringElem = std::variant<MInitExp_StringElem_Text, MInitExp_StringElem_Loc>;
+using MInitExp_StringElem = std::variant<MInitExp_StringElem_Text, MInitExp_StringElem_NBC>;
 
 // "dskfjslkf $abc "
 struct MInitExp_String : MInitExp
 {
     std::vector<MInitExp_StringElem> elements;
+    MInitExp_String(std::vector<MInitExp_StringElem>&& elements)
+        : elements{std::move(elements)}
+    { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
@@ -74,6 +84,10 @@ struct MInitExp_List : MInitExp
 {
     std::vector<MCreate> elems;
     RType* itemType;
+
+    MInitExp_List(std::vector<MCreate>&& elems, RType* itemType)
+        : elems{std::move(elems)}, itemType{itemType}
+    { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
@@ -90,6 +104,9 @@ struct MInitExp_CallIntrinsic : MInitExp
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
 
+    MInitExp_CallIntrinsic(MInitExp_CallIntrinsicKind kind, RTypeArguments* typeArgs, std::vector<MArgument>&& args)
+        : kind{kind}, typeArgs{typeArgs}, args{std::move(args)}
+    { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
@@ -155,6 +172,10 @@ struct MInitExp_Nullable : MInitExp
 struct MInitExp_NullableNullLiteral : MInitExp
 {
     RType* innerType;
+
+    MInitExp_NullableNullLiteral(RType* innerType)
+        : innerType{innerType}
+    { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
@@ -162,6 +183,10 @@ struct MInitExp_NullableNullLiteral : MInitExp
 struct MInitExp_NullableInplaceNullLiteral : MInitExp
 {
     RType* innerType;
+
+    MInitExp_NullableInplaceNullLiteral(RType* innerType)
+        : innerType{innerType}
+    { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
@@ -203,15 +228,19 @@ enum class MInitExp_AsKind
 {
     Class_Class, 
     Class_Interface, 
-    Interface_Interface, 
-    Enum_EnumElem
+    Interface_Class,
+    Interface_Interface
 };
 
 struct MInitExp_As : MInitExp
 {
     MInitExp_AsKind kind;
-    MRead operand;
+    MRead target;
     RType* type;
+
+    MInitExp_As(MInitExp_AsKind kind, MRead&& target, RType* type)
+        : kind{kind}, target{std::move(target)}, type{type}
+    { }
 
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };

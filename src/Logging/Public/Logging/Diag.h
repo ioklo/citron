@@ -149,7 +149,10 @@ struct Error_FuncDecl_ParameterKindNeedRef : ErrorDiag {}; // [in] [move] [forwa
 struct Error_UnaryAssignOp_IntTypeIsAllowedOnly : ErrorDiag { }; // A0601_UnaryAssignOp_IntTypeIsAllowedOnly
 struct Error_UnaryAssignOp_AssignableExpressionIsAllowedOnly : ErrorDiag { }; // A0602_UnaryAssignOp_AssignableExpressionIsAllowedOnly
 struct Error_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly : ErrorDiag { }; // A0701_UnaryOp_LogicalNotOperatorIsAppliedToBoolTypeOperandOnly
-struct Error_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly : ErrorDiag { }; // A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly
+struct Error_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly : ErrorDiag {}; // A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly
+struct Error_UnaryOp_RefNeedHintType : ErrorDiag {}; // A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly
+struct Error_UnaryOp_RefHintTypeShouldBePtrOrShared : ErrorDiag { }; // A0702_UnaryOp_UnaryMinusOperatorIsAppliedToIntTypeOperandOnly
+
 struct Error_BinaryOp_OperatorNotFound : ErrorDiag { }; // A0802_BinaryOp_OperatorNotFound
 struct Error_BinaryOp_LeftOperandIsNotAssignable : ErrorDiag { }; // A0803_BinaryOp_LeftOperandIsNotAssignable
 struct Error_CallExp_MultipleCandidates : ErrorDiag { }; // A0901_CallExp_MultipleCandidates
@@ -197,6 +200,7 @@ struct Error_ResolveIdentifier_PtrCantHaveMember : ErrorDiag { }; // A2017_Resol
 struct Error_ResolveIdentifier_BoxCantHaveMember : ErrorDiag {}; // A2018_ResolveIdentifier_BoxCantHaveMember
 struct Error_ResolveIdentifier_SharedCantHaveMember : ErrorDiag {}; // A2019_ResolveIdentifier_SharedCantHaveMember
 struct Error_ResolveIdentifier_FuncInstanceCantHaveMember : ErrorDiag { }; // A2020_ResolveIdentifier_FuncInstanceCantHaveMember
+struct Error_ResolveIdentifier_MemberBaseCantBeLocation : ErrorDiag {};
 
 struct Error_SharedTranslation_SingleRefNotAllowed : ErrorDiag {}; // shared<int> i = &c; 금지
 struct Error_SharedTranslation_MemberBaseShouldBeShared : ErrorDiag {}; // &s.x 금지 (s가 struct S일때)
@@ -205,6 +209,11 @@ struct Error_SharedTranslation_StaticSharedShouldBeVar : ErrorDiag {}; // &C.x�
 
 struct Error_SharedTranslation_CantTranslateToLoc : ErrorDiag {};
 struct Error_SharedTranslation_CantTranslateToMSharedExp : ErrorDiag {};
+
+struct Error_Indexer_ObjectShouldBeListOrDictionary : ErrorDiag {};
+struct Error_Indexer_IndexTypeNotMatched : ErrorDiag {};
+
+struct Error_As_NotSupported : ErrorDiag {};
 
 struct Error_Cast_Failed : ErrorDiag { }; // A2201_Cast_Failed
 struct Error_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault : ErrorDiag { }; // A2301_RootDecl_CannotSetPrivateAccessExplicitlyBecauseItsDefault

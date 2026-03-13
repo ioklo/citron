@@ -1,13 +1,11 @@
-#include "SExpToMIRTranslation.h"
+#include "Translations.h"
 
 #include "Infra/Expected.h"
+#include "SExpToReExp.h"
+#include "ReExpToMIR.h"
+#include "SExpToIrExp.h"
+#include "IrExpToMSharedExp.h"
 
-#include "SExpToReExpTranslation.h"
-#include "SExpToIrExpTranslation.h"
-#include "IrExpToMSharedExpTranslation.h"
-#include "ReExpToMCreateTranslation.h"
-#include "ReExpToMReadTranslation.h"
-#include "ReExpToMLocTranslation.h"
 
 using namespace std;
 
