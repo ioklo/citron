@@ -28,7 +28,7 @@ namespace Citron {
 
 namespace {
 
-struct StaticParentTranslator
+struct StaticBaseTranslator
 {
     using ResultType = expected<ImExp*, DiagPtr>;
 
@@ -164,6 +164,7 @@ struct StaticParentTranslator
 
     ResultType Visit(RDeclRes_TypeVar& declRes)
     {
+        // TODO: [52] TypeVar정리
         throw NotImplementedException{};
     }
 };
@@ -304,7 +305,7 @@ struct MemberTranslator
     ResultType TranslateStaticParent(RDecl* decl, RTypeArguments* typeArgs)
     {
         auto o_declRes = decl->GetMember(typeArgs, memberName, memberTypeArgs->GetCount());
-        StaticParentTranslator binder{memberTypeArgs, contexts};
+        StaticBaseTranslator binder{memberTypeArgs, contexts};
         return visit(binder, *o_declRes);
     }
 
@@ -340,7 +341,7 @@ struct MemberTranslator
 
     ResultType Visit(ImExp_Namespace* imExp) 
     { 
-        return TranslateStaticParent(imExp->_namespace, contexts.rFactory->MakeTypeArguments({}));
+        return TranslateStaticParent(imExp->_namespace, contexts.rFactory->MakeEmptyTypeArguments());
     }
 
     ResultType Visit(ImExp_GlobalFuncs* imExp)

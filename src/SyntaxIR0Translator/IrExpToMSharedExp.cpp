@@ -12,22 +12,36 @@ using namespace std;
 
 namespace Citron {
 
-MSharedExp* TranslateIrExp_ClassVarToMSharedExp(IrExp_ClassVar* irExp, TranslationContexts& contexts)
-{
-    return contexts.mFactory->MakeMSharedExp<MSharedExp_ClassVar>(irExp->base, irExp->decl, irExp->typeArgs, contexts.rFactory);
-}
-
-MSharedExp* TranslateIrExp_SharedStructVarToMSharedExp(IrExp_SharedStructVar* irExp, TranslationContexts& contexts)
-{
-    return contexts.mFactory->MakeMSharedExp<MSharedExp_SharedStructVar>(irExp->base, irExp->decl, irExp->typeArgs, contexts.rFactory);
-}
-
 expected<MSharedExp*, DiagPtr> TranslateIrExp_StructVarToMSharedExp(IrExp_StructVar* irExp, TranslationContexts& contexts)
 {
     auto e_baseSharedExp = TranslateIrExpToMSharedExp(irExp->base, contexts);
     RETURN_ON_ERROR(e_baseSharedExp);
 
-    return contexts.mFactory->MakeMSharedExp<MSharedExp_StructVar>(*e_baseSharedExp, irExp->decl, irExp->typeArgs, contexts.rFactory);
+    struct Visitor
+    {
+        using ResultType = expected<MSharedExp*, DiagPtr>;
+        IrExp_StructVar* irExp;
+
+        ResultType Visit(MSharedExp_Static* sharedExp)
+        {
+            sharedExp->segments.emplace_back(irExp->decl, irExp->typeArgs);
+            return sharedExp;
+        }
+
+        ResultType Visit(MSharedExp_ClassVar* sharedExp)
+        {
+            sharedExp->segments.emplace_back(irExp->decl, irExp->typeArgs);
+            return sharedExp;
+        }
+
+        ResultType Visit(MSharedExp_SharedStructVar* sharedExp)
+        {
+            sharedExp->segments.emplace_back(irExp->decl, irExp->typeArgs);
+            return sharedExp;
+        }
+    };
+
+    return Accept(Visitor{irExp}, *e_baseSharedExp);
 }
 
 struct IrExpToMSharedExpTranslator
@@ -45,17 +59,17 @@ struct IrExpToMSharedExpTranslator
     // ResultType Visit(IrExp_Struct* irExp);
     ResultType Visit(IrExp_Static* irExp)
     {
-        return contexts.mFactory->MakeMSharedExp<MSharedExp_Static>(irExp->loc, contexts.rFactory);
+        return contexts.mFactory->MakeMSharedExp<MSharedExp_Static>(irExp->loc);
     }
 
     ResultType Visit(IrExp_ClassVar* irExp)
     {
-        return TranslateIrExp_ClassVarToMSharedExp(irExp, contexts);
+        return contexts.mFactory->MakeMSharedExp<MSharedExp_ClassVar>(irExp->base, irExp->decl, irExp->typeArgs);
     }
 
     ResultType Visit(IrExp_SharedStructVar* irExp)
     {
-        return TranslateIrExp_SharedStructVarToMSharedExp(irExp, contexts);
+        return contexts.mFactory->MakeMSharedExp<MSharedExp_SharedStructVar>(irExp->base, irExp->decl, irExp->typeArgs);
     }
 
     ResultType Visit(IrExp_StructVar* irExp)
@@ -64,8 +78,7 @@ struct IrExpToMSharedExpTranslator
     }
 
     // ResultType Visit(IrExp_SharedDeref* irExp);
-    ResultType Visit(IrExp_Exp* irExp) { throw NotImplementedException{}; }
-    ResultType Visit(IrExp_Loc* irExp) { throw NotImplementedException{}; }
+    // ResultType Visit(IrExp_Loc* irExp);
 };
 
 expected<MSharedExp*, DiagPtr> TranslateIrExpToMSharedExp(IrExp* irExp, TranslationContexts& contexts)

@@ -56,10 +56,10 @@ expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, const 
     if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
 
     auto* classVarMember = get_if<RDeclRes_ClassVar>(&*o_member);
-    if (!classVarMember) return Error<>();
+    if (!classVarMember) return Error<Error_SharedTranslation_CantTranslate>();
 
     // static 성질이 다르면 에러    
-    if (classVarMember->decl->IsStatic() != bExpectedStatic) return Error<>();
+    if (classVarMember->decl->IsStatic() != bExpectedStatic) return Error<Error_SharedTranslation_CantTranslate>();
 
     // ClassVar이니까. classVarMember->typeArgs와 typeArgsExceptOuter를 합쳐서 쓰지 않고, classVarMember->typeArgs만 사용한다.
     assert(memberTypeArgsCount == 0);
@@ -73,22 +73,23 @@ expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, co
     if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
 
     auto* structVarMember = get_if<RDeclRes_StructVar>(&*o_member);
-    if (!structVarMember) return Error<>();
+    if (!structVarMember) return Error<Error_SharedTranslation_CantTranslate>();
 
     // static 이면 에러
-    if (structVarMember->decl->IsStatic() == bExpectedStatic) return Error<>();
+    if (structVarMember->decl->IsStatic() == bExpectedStatic) return Error<Error_SharedTranslation_CantTranslate>();
     assert(memberTypeArgsCount == 0);
 
     return Result_GetStructVar{structVarMember->decl, structVarMember->typeArgs};
 }
 
-class StaticParentTranslator
+// NS, S, C로만 이뤄진 Base, GetMember한 결과물이므로 RDeclRes만 있다
+class StaticBaseTranslator
 {
     RTypeArguments* memberTypeArgs;
     TranslationContexts& contexts;
 
 public:
-    StaticParentTranslator(RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
+    StaticBaseTranslator(RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
         : memberTypeArgs(memberTypeArgs), contexts{contexts}
     {
     }
@@ -103,307 +104,301 @@ public:
     // S.F
     expected<IrExp*, DiagPtr> Visit(RDeclRes_GlobalFuncs& member)
     {   
-        return Error<Error_Reference_CantMakeReference>();
+        // ImExp와 다르게 IrExp는 Callable 자리에 들어가지 않기 때문에, 바로 에러
+        return Error<Error_SharedTranslation_CantTranslate>();
     }
 
+    // T.C
     expected<IrExp*, DiagPtr> Visit(RDeclRes_Class& member)
     {
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, memberTypeArgs);
+        // TODO: [43] Access Check
+        auto* typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, memberTypeArgs);
         return contexts.srtFactory->MakeIrExp<IrExp_Class>(member.decl, typeArgs);
     }
 
-    // 에러,
+    // IrExp는 Callable자리에 오지 않기때문에 지원하지 않는다
     expected<IrExp*, DiagPtr> Visit(RDeclRes_ClassFuncs& member)
     {
-        return Error<Error_Reference_CantMakeReference>();
+        return Error<Error_SharedTranslation_CantTranslate>();
     }
 
-    // C.x
+    // C.x, IrExp_Static으로 만듦
     expected<IrExp*, DiagPtr> Visit(RDeclRes_ClassVar& member)
     {
+        // C.x 형식인데, x가 static 변수가 아니라면 에러
         if (!member.decl->IsStatic())
-        {
             return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
-        }
 
+        // TODO: [43] Access Check
         if (!contexts.funcContext->CanAccess(member.decl))
-        {
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
-        }
 
         assert(member.typeArgs->GetCount() == 0);
         auto* loc = contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, member.decl, member.typeArgs);
-        return contexts.srtFactory->MakeIrExp<IrExp_Static>(loc, contexts.rFactory);
+        return contexts.srtFactory->MakeIrExp<IrExp_Static>(loc);
     }
 
     expected<IrExp*, DiagPtr> Visit(RDeclRes_Struct& member)
     {
+        // TODO: [43] Access Check
         auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerTypeArgs, memberTypeArgs);
         return contexts.srtFactory->MakeIrExp<IrExp_Struct>(member.decl, typeArgs);
     }
 
     expected<IrExp*, DiagPtr> Visit(RDeclRes_StructFuncs& member)
-    {
-        return Error<Error_Reference_CantMakeReference>();
+    {        
+        return Error<Error_SharedTranslation_CantTranslate>();
     }
 
     expected<IrExp*, DiagPtr> Visit(RDeclRes_StructVar& member)
     {
         if (!member.decl->IsStatic())
-        {
             return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
-        }
 
+        // TODO: [43] Access Check
         if (!contexts.funcContext->CanAccess(member.decl))
-        {
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
-        }
 
         assert(member.typeArgs->GetCount() == 0);
-
         auto* loc = contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, member.decl, member.typeArgs);
-        return contexts.srtFactory->MakeIrExp<IrExp_Static>(loc, contexts.rFactory);
+        return contexts.srtFactory->MakeIrExp<IrExp_Static>(loc);
     }
 
-    // E
+    // T.E
     expected<IrExp*, DiagPtr> Visit(RDeclRes_Enum& member)
     {
-        return Error<Error_SharedTranslation_MemberBaseShouldBeShared>();
+        // IrExp는 StaticBase와 MLoc/MSharedExp를 만드는데 관심이 있는데, 
+        // Enum은 StaticBase가 될수 없고, (nested type을 가질수 없고, static var를 가질 수도 없다)
+        // Enum은 MLoc/MSharedExp가 될수 없다
+        return Error<Error_SharedTranslation_CantTranslate>();
     }
 
-    // &E.First.x
+    // T.E.First
     expected<IrExp*, DiagPtr> Visit(RDeclRes_EnumElem& member)
     {   
-        return Error<Error_Reference_CantMakeReference>();
+        return Error<Error_SharedTranslation_CantTranslate>();
     }
 
-    // &E.x
+    // E.x
     expected<IrExp*, DiagPtr> Visit(RDeclRes_EnumElemVar& member)
     {
-        // 표현 불가능
+        // StaticBase로부터 EnumElemVar가 나올수 있는가, StaticBase에 EnumElem이 나올수 없으므로 불가능
         throw RuntimeFatalException{};
     }
 
+    // NS.x
     expected<IrExp*, DiagPtr> Visit(RDeclRes_LambdaVar& member)
     {
+        // 람다 var를 StaticBase로 참조할 방법은 없는거 같다
         throw RuntimeFatalException{};
     }
 
+    // NS.t
     expected<IrExp*, DiagPtr> Visit(RDeclRes_TupleVar& member)
     {
         throw RuntimeFatalException{};
     }
 
+    // NS.T
     expected<IrExp*, DiagPtr> Visit(RDeclRes_TypeVar& member)
     {
+        // TODO: [52] TypeVar정리
         throw NotImplementedException{};
     }
 
-    expected<IrExp*, DiagPtr> Visit(BodyRes_LocalVar& member)
+    // NS.x
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_FuncParam& member)
     {
-        throw NotImplementedException{};
+        throw RuntimeFatalException{};
     }
-
-    expected<IrExp*, DiagPtr> Visit(BodyRes_LocalRef& member)
-    {
-        throw NotImplementedException{};
-    }
-
-    expected<IrExp*, DiagPtr> Visit(BodyRes_ThisVar& member)
-    {
-        throw NotImplementedException{};
-    }
-
-
-    /*TranslationResult<IntermediateRefExp> ISymbolQueryResultVisitor<TranslationResult<IntermediateRefExp>>.VisitMultipleCandidatesError(SymbolQueryResult.MultipleCandidatesError result)
-    {
-        return Fatal(A2014_ResolveIdentifier_MultipleCandidatesForMember);
-    }*/
 };
 
-class Binder
+struct Binder
 {
-public:
     using ResultType = expected<IrExp*, DiagPtr>;
 
-private:
-    RName name;
+    RName memberName;
     RTypeArguments* memberTypeArgs;
-
     TranslationContexts& contexts;
-
-private:
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     ResultType Value(TArgs&&... args)
     {
         return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
-    ResultType HandleStaticParent(RDecl& decl, RTypeArguments* typeArgs)
+    ResultType HandleStaticBase(RDecl& decl, RTypeArguments* typeArgs)
     {
-        auto o_member = decl.GetMember(typeArgs, name, memberTypeArgs->GetCount());
+        auto o_member = decl.GetMember(typeArgs, memberName, memberTypeArgs->GetCount());
         if (!o_member)
-        {
             return Error<Error_ResolveIdentifier_NotFound>();
-        }
 
-        StaticParentTranslator binder(memberTypeArgs, contexts);
+        StaticBaseTranslator binder(memberTypeArgs, contexts);
         return visit(binder, *o_member);
-    }
-
-public:
-    Binder(const RName& name, RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
-        : name{name}, memberTypeArgs{memberTypeArgs}, contexts{contexts}
-    {
     }
 
     ResultType Visit(IrExp_Namespace* irBaseExp) 
     {
-        return HandleStaticParent(*irBaseExp->decl, contexts.rFactory->MakeTypeArguments({}));
+        return HandleStaticBase(*irBaseExp->decl, contexts.rFactory->MakeEmptyTypeArguments());
     }
 
     ResultType Visit(IrExp_Class* irBaseExp) 
     {
-        return HandleStaticParent(*irBaseExp->decl, irBaseExp->typeArgs);
+        return HandleStaticBase(*irBaseExp->decl, irBaseExp->typeArgs);
     }
 
     ResultType Visit(IrExp_Struct* irBaseExp) 
     {
-        return HandleStaticParent(*irBaseExp->decl, irBaseExp->typeArgs);
+        return HandleStaticBase(*irBaseExp->decl, irBaseExp->typeArgs);
     }
 
-    ResultType Visit(IrExp_Static* irBaseExp) 
-    {
-        // irBaseExp->loc이 class일때
-        auto* locType = irBaseExp->loc->GetType();
-
+    // C.x.y
+    ResultType Visit(IrExp_Static* irBaseExp)
+    {   
+        auto* locType = GetType(irBaseExp->loc, &*contexts.rFactory);
+        
+        // C.x가 class라면, x의 y ClassVar멤버를 가져온다. 없다면 에러.
+        // IrExp_ClassVar에서, ClassVar라는거는 base가 Class였고, name이 ClassVar라는 뜻이다
         if (auto* classType = dynamic_cast<RType_Class*>(locType))
         {
-            auto e_result = GetClassVar(classType, name, memberTypeArgs, /*bExpectedStatic*/false);
+            auto e_result = GetClassVar(classType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
-            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(
-                irBaseExp->loc, result.decl, result.typeArgs, contexts.rFactory);
+            // IrExp_Static은 분해해서 MLoc으로 참조하고, 보이지 않도록 한다
+            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(irBaseExp->loc, result.decl, result.typeArgs);
         }
         else if (auto* structType = dynamic_cast<RType_Struct*>(locType))
         {
-            auto e_result = GetStructVar(structType, name, memberTypeArgs, /*bExpectedStatic*/false);
+            auto e_result = GetStructVar(structType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
-            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(
-                irBaseExp, result.decl, result.typeArgs, contexts.rFactory);
+            // StructVar는 base로 IrExp를 참조하므로 IrExp_Static이 그대로 들어가게 한다
+            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
         }
-        else throw NotImplementedException{};
+        else return Error<Error_SharedTranslation_CantTranslate>();
     }
 
+    // c.x.y
     ResultType Visit(IrExp_ClassVar* irBaseExp)
     {
-        auto* declType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
+        // c.x가 base일 때
+        // base가 클래스라면, 분해한다 IrExp_ClassVar(MLoc(c), C::x), C::y => IrExp_ClassVar(MLoc_ClassVar(MLoc(c), C::x), C::y)
+        // base가 구조체라면, 감싼다   IrExp_ClassVar(MLoc(c), C::x), S::y => IrExp_StructVar(IrExp_ClassVar(MLoc(c), C::x), C::y)
 
-        if (auto* classType = dynamic_cast<RType_Class*>(declType))
+        auto* baseDeclType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
+
+        if (auto* classBaseDeclType = dynamic_cast<RType_Class*>(baseDeclType))
         {
-            auto e_result = GetClassVar(classType, name, memberTypeArgs, /*bExpectedStatic*/false);
+            auto e_result = GetClassVar(classBaseDeclType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto* baseLoc = TranslateIrExp_ClassVarToMLoc(irBaseExp, contexts);
-            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs, contexts.rFactory);
+            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs);
         }
-        else if (auto* structType = dynamic_cast<RType_Struct*>(declType))
+        else if (auto* structType = dynamic_cast<RType_Struct*>(baseDeclType))
         {
-            auto e_result = GetStructVar(structType, name, memberTypeArgs, /*bExpectedStatic*/false);
+            auto e_result = GetStructVar(structType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
-            auto* baseSharedExp = TranslateIrExp_ClassVarToMSharedExp(irBaseExp, contexts);
-            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(baseSharedExp, result.decl, result.typeArgs, contexts.rFactory);
+            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
         }
-        else throw NotImplementedException{};
+        else return Error<Error_SharedTranslation_CantTranslate>();
     }
 
+    // (*pS).x.y
     ResultType Visit(IrExp_SharedStructVar* irBaseExp)
     {
-        auto* declType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
-
-        // &(pS->c).id 
-        // TranslateIrExpAndMemberNameToMSharedExp(IrExp_SharedStructVar(pS, S::c), id)
-        // => MSharedExp_ClassVar(pS->c, C::id)
-        if (auto* classType = dynamic_cast<RType_Class*>(declType))
+        // ClassVar랑 비슷하게 처리한다
+        // (*pS).x가 base일 때
+        // base가 클래스라면, 분해한다 IrExp_SharedStructVar(MLoc(pS), S::x), C::y => IrExp_ClassVar(MLoc_StructVar(MLoc_SharedDeref(MLoc(pS)), S::x), C::y)
+        // base가 구조체라면, 감싼다   IrExp_SharedStructVar(MLoc(pS), S::x), S::y => IrExp_StructVar(IrExp_SharedStructVar(MLoc(pS), S::x), C::y)
+        auto* baseType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
+        
+        if (auto* classBaseType = dynamic_cast<RType_Class*>(baseType))
         {
-            auto e_result = GetClassVar(classType, name, memberTypeArgs, /*bExpectedStatic*/false);
+            auto e_result = GetClassVar(classBaseType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto* baseLoc = TranslateIrExp_SharedStructVarToMLoc(irBaseExp, contexts);
-            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs, contexts.rFactory);
+            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs);
         }
-        else if (auto* structType = dynamic_cast<RType_Struct*>(declType))
+        else if (auto* structBaseType = dynamic_cast<RType_Struct*>(baseType))
         {
-            auto e_result = GetStructVar(structType, name, memberTypeArgs, /*bExpectedStatic*/false);
+            auto e_result = GetStructVar(structBaseType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
-
-            auto baseSharedExp = TranslateIrExp_SharedStructVarToMSharedExp(irBaseExp, contexts);
-            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(baseSharedExp, result.decl, result.typeArgs, contexts.rFactory);
+            
+            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
         }
-        else throw NotImplementedException{};
+        else return Error<Error_SharedTranslation_CantTranslate>();
     }
 
+    // c.s.x.y
+    // C.s.x.y
     ResultType Visit(IrExp_StructVar* irBaseExp)
     {
-        auto* declType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
+        // base(c.s.x)가 struct var일 경우
+        // c.s.x의 타입이 class인 경우, 기존것을 loc으로 다 치환하고, 새 IrExp_ClassVar를 만든다
+        // IrExp_StructVar(IrExp_ClassVar(MLoc(c), C::s), S::x), C::y => IrExp_ClassVar(MLoc_StructVar(MLoc_ClassVar(MLoc(c), C::s), S::x), C::y)
+        // 
+        // c.s.x의 타입이 struct인 경우, 그대로 감싼다
+        // IrExp_StructVar(IrExp_ClassVar(MLoc(c), C::s), S::x), S::y => IrExp_StructVar(IrExp_StructVar(IrExp_ClassVar(MLoc(c), C::s), S::x), S::y)
+        auto* baseType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
 
-        if (auto* classDeclType = dynamic_cast<RType_Class*>(declType))
+        if (auto* classBaseType = dynamic_cast<RType_Class*>(baseType))
         {
-            auto e_result = GetClassVar(classDeclType, name, memberTypeArgs, /*bExpectedStatic*/false);
+            auto e_result = GetClassVar(classBaseType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto e_baseLoc = TranslateIrExp_StructVarToMLoc(irBaseExp, contexts);
             RETURN_ON_ERROR(e_baseLoc);
 
-            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(*e_baseLoc, result.decl, result.typeArgs, contexts.rFactory);
+            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(*e_baseLoc, result.decl, result.typeArgs);
         }
-        else if (auto* structDeclType = dynamic_cast<RType_Struct*>(declType))
+        else if (auto* structDeclType = dynamic_cast<RType_Struct*>(baseType))
         {
-            auto e_result = GetStructVar(structDeclType, name, memberTypeArgs, /*bExpectedStatic*/false);
+            auto e_result = GetStructVar(structDeclType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
-            auto e_baseSharedExp = TranslateIrExp_StructVarToMSharedExp(irBaseExp, contexts);
-            RETURN_ON_ERROR(e_baseSharedExp);
-
-            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(*e_baseSharedExp, result.decl, result.typeArgs, contexts.rFactory);
+            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
         }
-        else throw NotImplementedException{};
+        else return Error<Error_SharedTranslation_CantTranslate>();
     }
     
-    // *pS, 오직 value type에만 작동을 하도록 보장해야 한다
-    ResultType Visit(IrExp_Deref* irBaseExp)
+    // pS->x
+    ResultType Visit(IrExp_SharedDeref* irBaseExp)
     {
-        // if (!sharedLocType) return Error<Error_SharedTranslation_MemberBaseShouldBeShared>();
+        // IrExp_SharedDeref의 요구사항이다. IrExp_SharedDeref를 생성할때 체크한다
+        // innerLoc(pS)가 shared<S>일 것
+        auto* sharedType = dynamic_cast<RType_Shared*>(GetType(irBaseExp->loc, &*contexts.rFactory));
+        if (!sharedType) throw RuntimeFatalException{}; 
+        
+        auto* structTargetType = dynamic_cast<RType_Struct*>(sharedType->innerType);
+        if (!structTargetType) throw RuntimeFatalException{};
+        
+        auto e_result = GetStructVar(structTargetType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
+        RETURN_ON_ERROR_REFDECL(e_result, result);
 
-        // 1. *pS꼴이라면
-        if (auto* sharedLocType = dynamic_cast<RType_Shared*>(irBaseExp->innerLoc->GetType()))
-        {
-            // shared<S>
-            auto* structTargetLocType = dynamic_cast<RType_Struct*>(sharedLocType->innerType);
-            if (!structTargetLocType) return Error<Error_SharedTranslation_MemberBaseShouldBeShared>();
-
-            auto e_result = GetStructVar(structTargetLocType, name, memberTypeArgs, /*bExpectedStatic*/false);
-            RETURN_ON_ERROR_REFDECL(e_result, result);
-
-            return contexts.srtFactory->MakeIrExp<IrExp_SharedStructVar>(irBaseExp->innerLoc, result.decl, result.typeArgs, contexts.rFactory);
-        }
-
-
+        return contexts.srtFactory->MakeIrExp<IrExp_SharedStructVar>(irBaseExp->loc, result.decl, result.typeArgs);
     }
 
-    ResultType Visit(IrExp_Exp* irExp) 
-    {
-        // exp.id
-        // 함수 호출 인자 제외 temp 참조 불가
-        static_assert(false);
-    }
-
+    // 임의의 location으로부터
+    // loc.x
+    // this.x
+    // c.x
     ResultType Visit(IrExp_Loc* irExp)
     {
-        // loc.id
-        static_assert(false);
+        // loc이 class인 경우, ClassVar를 만든다. IrExp_Loc(MLoc(c)) C::x => IrExp_ClassVar(MLoc(c), C::x)
+        // loc이 class이외의 것들인 경우, 에러 
+        // loc이 MLoc_SharedDeref()인 경우는 IrExp_SharedDeref인 경우에서 걸러낼 것이기 때문에 여기로 들어오지 않게된다
+        auto* baseType = GetType(irExp->loc, &*contexts.rFactory);
+
+        if (auto* classBaseType = dynamic_cast<RType_Class*>(baseType))
+        {
+            auto e_result = GetClassVar(classBaseType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
+            RETURN_ON_ERROR_REFDECL(e_result, result);
+
+            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(irExp->loc, result.decl, result.typeArgs);
+        }
+        else return Error<Error_SharedTranslation_CantTranslate>();
     }
 };
 

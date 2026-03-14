@@ -14,10 +14,14 @@
 #include "SExp_IdentifierToIrExp.h"
 #include "SExp_MemberToIrExp.h"
 #include "DesignatedDiagnostic.h"
+#include "SExpTranslations.h"
+#include "Translations.h"
 
 using namespace std;
 
 namespace Citron {
+
+namespace {
 
 // SExp_Member의 base부분에 대한 translator
 struct SExpToIrExpTranslator
@@ -25,62 +29,79 @@ struct SExpToIrExpTranslator
     using ResultType = expected<IrExp*, DiagPtr>;
     TranslationContexts& contexts;
 
+    ResultType HandleDefault(SExp* exp)
+    {
+        DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> notLocationDiag;
+        auto e_loc = TranslateSExpToMLoc(exp, /*hintType*/nullptr, /*bMaterializeExp*/true, &notLocationDiag, contexts);
+        RETURN_ON_ERROR(e_loc);
+
+        return contexts.srtFactory->MakeIrExp<IrExp_Loc>(*e_loc);
+    }
+
     // 기본
     ResultType Visit(SExp* exp)
     {
-        return Error<Error_SharedTranslation_CantMakeSharedFromBase>();
+        return HandleDefault(exp);
     }
 
     ResultType Visit(SExp_Identifier* exp)
     {
         return TranslateSExp_IdentifierToIrExp(exp, contexts);
     }
-    
-    // ResultType Visit(SExp_String* exp); // &"abc".id
-    // ResultType Visit(SExp_IntLiteral* exp); // &1.id
-    // ResultType Visit(SExp_BoolLiteral* exp); // &true.id
-    // ResultType Visit(SExp_NullLiteral* exp); // &null.id
+
+    // Loc으로 최대한 만들어서, binding시점, MSharedExp변환 시점에 터트린다
+    // ResultType Visit(SExp_String* exp); "abc"
+    // ResultType Visit(SExp_IntLiteral* exp); 1
+    // ResultType Visit(SExp_BoolLiteral* exp); true
+    // ResultType Visit(SExp_NullLiteral* exp); null
     // ResultType Visit(SExp_BinaryOp* exp); // &(e0 + e1).id, &(e0 = e1).id
 
-    // &(*pS).id
-    ResultType Visit(SExp_UnaryOp* exp) 
+    optional<IrExp*> TryDeref(SExp* operand)
     {
-        if (exp->kind == SUnaryOpKind::Deref)
-        {
-            // 두가지 경우가 accept될 수 있는데
-            // 1. &(*pS).id : pS가 shared<S>일때 
-            // 2. &(*ptrC).id : ptrC가 C*일때 
+        // x가 shared<S>인 경우에만 IrExp_SharedDeref로 바꿔서 보존한다
+        DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> notLocationDiag;
 
-            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
+        auto e_mRead = TranslateSExpToMRead(operand, /*hintType*/nullptr, contexts);
+        if (!e_mRead) return nullopt;
 
-            auto e_loc = TranslateSExpToMLoc(exp->operand, /*hintType*/nullptr, /*bMaterializeExp*/true, &designatedDiag, contexts);
-            RETURN_ON_ERROR(e_loc);
+        auto* mReadNBC = get_if<MRead_NBC>(&*e_mRead);
+        if (!mReadNBC) return nullopt;
 
-            auto* locSharedType = dynamic_cast<RType_Shared*>((*e_loc)->GetType());
-            if (!locSharedType)
-                return Error<Error_SharedTranslation_MemberBaseShouldBeShared>();
+        auto* targetType = GetType(mReadNBC->loc, &*contexts.rFactory);
 
-            return contexts.srtFactory->MakeIrExp<IrExp_SharedDeref>(*e_loc);
-        }
-        else
-        {
-            return Error<Error_SharedTranslation_CantMakeSharedFromBase>();
-        }
+        // shared<S> 꼴인지 확인
+        if (auto* targetSharedType = dynamic_cast<RType_Shared*>(targetType))
+            if (dynamic_cast<RType_Struct*>(targetSharedType->innerType))
+                return contexts.srtFactory->MakeIrExp<IrExp_SharedDeref>(move(*mReadNBC));
+
+        return nullopt;
     }
 
-    ResultType Visit(SExp_Call* exp);
-    ResultType Visit(SExp_Lambda* exp);
-    ResultType Visit(SExp_Indexer* exp);
+    // *x
+    ResultType Visit(SExp_UnaryOp* exp)
+    {
+        if (exp->kind == SUnaryOpKind::Deref)
+            if (auto o_irExp = TryDeref(exp->operand))
+                return *o_irExp;
+
+        return HandleDefault(exp);
+    }
+
+    // ResultType Visit(SExp_Call* exp);
+    // ResultType Visit(SExp_Lambda* exp);
+    // ResultType Visit(SExp_Indexer* exp);
     ResultType Visit(SExp_Member* exp)
     {
         return TranslateSExp_MemberToIrExp(exp, contexts);
     }
-    ResultType Visit(SExp_List* exp);
-    ResultType Visit(SExp_New* exp);
-    ResultType Visit(SExp_Shared* exp);
-    ResultType Visit(SExp_Is* exp);
-    ResultType Visit(SExp_As* exp);
+    //ResultType Visit(SExp_List* exp);
+    //ResultType Visit(SExp_New* exp);
+    //ResultType Visit(SExp_Shared* exp);
+    //ResultType Visit(SExp_Is* exp);
+    //ResultType Visit(SExp_As* exp);
 };
+
+} // namespace 
 
 expected<IrExp*, DiagPtr> TranslateSExpToIrExp(SExp* sExp, TranslationContexts& contexts)
 {   

@@ -74,7 +74,7 @@ optional<RDeclRes> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RNa
 
 optional<RDeclRes> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto typeArgs = rFactory->MakeTypeArguments({});
+    auto typeArgs = rFactory->MakeEmptyTypeArguments();
     if (auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
         return o_member;
 

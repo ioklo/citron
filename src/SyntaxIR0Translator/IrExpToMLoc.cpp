@@ -70,11 +70,13 @@ struct IrExpToMLocTranslator
 
     ResultType Visit(IrExp_SharedDeref* irExp) 
     { 
-        return contexts.mFactory->MakeMLoc<MLoc_SharedDeref>(irExp->innerLoc);
+        return contexts.mFactory->MakeMLoc<MLoc_SharedDeref>(irExp->srcShared);
     }
 
-    ResultType Visit(IrExp_Exp* irExp) { throw NotImplementedException{}; }
-    ResultType Visit(IrExp_Loc* irExp) { throw NotImplementedException{}; }
+    ResultType Visit(IrExp_Loc* irExp)
+    {
+        return irExp->loc;
+    }
 };
 
 expected<MLoc*, DiagPtr> TranslateIrExpToMLoc(IrExp* irExp, TranslationContexts& contexts)

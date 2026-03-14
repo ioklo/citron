@@ -24,8 +24,7 @@ void IrExp_Static::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_ClassVar::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_SharedStructVar::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_StructVar::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
-void IrExp_Deref::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
-void IrExp_Exp::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
+void IrExp_SharedDeref::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_Loc::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 
 IrExp_Namespace::IrExp_Namespace(RNamespaceDecl* decl)
@@ -41,12 +40,6 @@ IrExp_Class::IrExp_Class(RClassDecl* decl, RTypeArguments* typeArgs)
 IrExp_Struct::IrExp_Struct(RStructDecl* decl, RTypeArguments* typeArgs)
     : decl(decl), typeArgs(typeArgs)
 {
-}
-
-IrExp_Exp::IrExp_Exp(MExp* exp)
-    : exp{exp}
-{
-
 }
 
 IrExp_Loc::IrExp_Loc(MLoc* loc)

@@ -38,10 +38,10 @@ TEST(ScriptParser, ParseComplexScript)
             "bSequence": false,
             "retType": {
                 "$type": "STypeExp_Id",
-                "name": "void",
+                "memberName": "void",
                 "typeArgs": []
             },
-            "name": "Main",
+            "memberName": "Main",
             "typeParams": [],
             "parameters": [],
             "body": [
@@ -51,7 +51,7 @@ TEST(ScriptParser, ParseComplexScript)
                         "$type": "SVarDecl",
                         "type": {
                             "$type": "STypeExp_Id",
-                            "name": "int",
+                            "memberName": "int",
                             "typeArgs": []
                         },
                         "elements": [
@@ -74,7 +74,7 @@ TEST(ScriptParser, ParseComplexScript)
                             "$type": "SVarDecl",
                             "type": {
                                 "$type": "STypeExp_Id",
-                                "name": "int",
+                                "memberName": "int",
                                 "typeArgs": []
                             },
                             "elements": [
@@ -239,32 +239,32 @@ TEST(ScriptParser, ParseEnumDecl)
         {
             "$type": "SEnumDecl",
             "accessModifier": null,
-            "name": "X",
+            "memberName": "X",
             "typeParams": [],
             "elements": [
                 {
                     "$type": "SEnumElemDecl",
-                    "name": "First",
+                    "memberName": "First",
                     "vars": []
                 },
                 {
                     "$type": "SEnumElemDecl",
-                    "name": "Second",
+                    "memberName": "Second",
                     "vars": [
                         {
                             "$type": "SEnumElemVarDecl",
                             "type": {
                                 "$type": "STypeExp_Id",
-                                "name": "int",
+                                "memberName": "int",
                                 "typeArgs": []
                             },
-                            "name": "i"
+                            "memberName": "i"
                         }
                     ]
                 },
                 {
                     "$type": "SEnumElemDecl",
-                    "name": "Third",
+                    "memberName": "Third",
                     "vars": []
                 }
             ]
@@ -291,10 +291,10 @@ TEST(ScriptParser, ParseFuncDecl)
             "bSequence": false,
             "retType": {
                 "$type": "STypeExp_Id",
-                "name": "void",
+                "memberName": "void",
                 "typeArgs": []
             },
-            "name": "Func",
+            "memberName": "Func",
             "typeParams": [],
             "parameters": [
                 {
@@ -303,10 +303,10 @@ TEST(ScriptParser, ParseFuncDecl)
                     "hasParams": false,
                     "type": {
                         "$type": "STypeExp_Id",
-                        "name": "int",
+                        "memberName": "int",
                         "typeArgs": []
                     },
-                    "name": "x"
+                    "memberName": "x"
                 },
                 {
                     "$type": "SFuncParam",
@@ -314,10 +314,10 @@ TEST(ScriptParser, ParseFuncDecl)
                     "hasParams": false,
                     "type": {
                         "$type": "STypeExp_Id",
-                        "name": "string",
+                        "memberName": "string",
                         "typeArgs": []
                     },
-                    "name": "y"
+                    "memberName": "y"
                 },
                 {
                     "$type": "SFuncParam",
@@ -325,10 +325,10 @@ TEST(ScriptParser, ParseFuncDecl)
                     "hasParams": true,
                     "type": {
                         "$type": "STypeExp_Id",
-                        "name": "int",
+                        "memberName": "int",
                         "typeArgs": []
                     },
-                    "name": "z"
+                    "memberName": "z"
                 }
             ],
             "body": [
@@ -338,7 +338,7 @@ TEST(ScriptParser, ParseFuncDecl)
                         "$type": "SVarDecl",
                         "type": {
                             "$type": "STypeExp_Id",
-                            "name": "int",
+                            "memberName": "int",
                             "typeArgs": []
                         },
                         "elements": [
@@ -399,10 +399,10 @@ TEST(ScriptParser, ParseNamespaceDecl)
                             "bSequence": false,
                             "retType": {
                                 "$type": "STypeExp_Id",
-                                "name": "void",
+                                "memberName": "void",
                                 "typeArgs": []
                             },
-                            "name": "F",
+                            "memberName": "F",
                             "typeParams": [],
                             "parameters": [],
                             "body": []
@@ -436,10 +436,10 @@ TEST(ScriptParser, ParseSimpleScript)
             "bSequence": false,
             "retType": {
                 "$type": "STypeExp_Id",
-                "name": "void",
+                "memberName": "void",
                 "typeArgs": []
             },
-            "name": "Main",
+            "memberName": "Main",
             "typeParams": [],
             "parameters": [],
             "body": [
@@ -489,22 +489,22 @@ TEST(ScriptParser, ParseStructDecl)
         {
             "$type": "SStructDecl",
             "accessModifier": "Public",
-            "name": "S",
+            "memberName": "S",
             "typeParams": [
                 {
                     "$type": "STypeParam",
-                    "name": "T"
+                    "memberName": "T"
                 }
             ],
             "baseTypes": [
                 {
                     "$type": "STypeExp_Id",
-                    "name": "B",
+                    "memberName": "B",
                     "typeArgs": []
                 },
                 {
                     "$type": "STypeExp_Id",
-                    "name": "I",
+                    "memberName": "I",
                     "typeArgs": []
                 }
             ],
@@ -514,7 +514,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "accessModifier": null,
                     "varType": {
                         "$type": "STypeExp_Id",
-                        "name": "int",
+                        "memberName": "int",
                         "typeArgs": []
                     },
                     "varNames": [
@@ -526,7 +526,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "accessModifier": "Public",
                     "varType": {
                         "$type": "STypeExp_Id",
-                        "name": "int",
+                        "memberName": "int",
                         "typeArgs": []
                     },
                     "varNames": [
@@ -538,7 +538,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "accessModifier": "Protected",
                     "varType": {
                         "$type": "STypeExp_Id",
-                        "name": "string",
+                        "memberName": "string",
                         "typeArgs": []
                     },
                     "varNames": [
@@ -550,7 +550,7 @@ TEST(ScriptParser, ParseStructDecl)
                     "accessModifier": "Private",
                     "varType": {
                         "$type": "STypeExp_Id",
-                        "name": "int",
+                        "memberName": "int",
                         "typeArgs": []
                     },
                     "varNames": [
@@ -560,22 +560,22 @@ TEST(ScriptParser, ParseStructDecl)
                 {
                     "$type": "SStructDecl",
                     "accessModifier": "Public",
-                    "name": "Nested",
+                    "memberName": "Nested",
                     "typeParams": [
                         {
                             "$type": "STypeParam",
-                            "name": "U"
+                            "memberName": "U"
                         }
                     ],
                     "baseTypes": [
                         {
                             "$type": "STypeExp_Id",
-                            "name": "B",
+                            "memberName": "B",
                             "typeArgs": []
                         },
                         {
                             "$type": "STypeExp_Id",
-                            "name": "I",
+                            "memberName": "I",
                             "typeArgs": []
                         }
                     ],
@@ -585,7 +585,7 @@ TEST(ScriptParser, ParseStructDecl)
                             "accessModifier": null,
                             "varType": {
                                 "$type": "STypeExp_Id",
-                                "name": "int",
+                                "memberName": "int",
                                 "typeArgs": []
                             },
                             "varNames": [
@@ -601,14 +601,14 @@ TEST(ScriptParser, ParseStructDecl)
                     "bSequence": false,
                     "retType": {
                         "$type": "STypeExp_Id",
-                        "name": "void",
+                        "memberName": "void",
                         "typeArgs": []
                     },
-                    "name": "Func",
+                    "memberName": "Func",
                     "typeParams": [
                         {
                             "$type": "STypeParam",
-                            "name": "X"
+                            "memberName": "X"
                         }
                     ],
                     "parameters": [
@@ -618,10 +618,10 @@ TEST(ScriptParser, ParseStructDecl)
                             "hasParams": false,
                             "type": {
                                 "$type": "STypeExp_Id",
-                                "name": "string",
+                                "memberName": "string",
                                 "typeArgs": []
                             },
-                            "name": "s"
+                            "memberName": "s"
                         }
                     ],
                     "body": []
@@ -633,14 +633,14 @@ TEST(ScriptParser, ParseStructDecl)
                     "bSequence": true,
                     "retType": {
                         "$type": "STypeExp_Id",
-                        "name": "int",
+                        "memberName": "int",
                         "typeArgs": []
                     },
-                    "name": "F2",
+                    "memberName": "F2",
                     "typeParams": [
                         {
                             "$type": "STypeParam",
-                            "name": "T"
+                            "memberName": "T"
                         }
                     ],
                     "parameters": [],

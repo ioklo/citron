@@ -67,24 +67,6 @@
     <ClCompile Include="BodyRes.cpp">
       <Filter>Context</Filter>
     </ClCompile>
-    <ClCompile Include="IrExpToMExpTranslation.cpp">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpRefToIrExpTranslation.cpp">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpRefToMSharedExpTranslation.cpp">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpToMExpTranslation.cpp">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClCompile>
-    <ClCompile Include="IrExpAndMemberNameToMSharedExpTranslation.cpp">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClCompile>
-    <ClCompile Include="SExpToMLocTranslation.cpp">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClCompile>
     <ClCompile Include="SExp_IdentifierToImExp.cpp">
       <Filter>ExpTranslation\SExpToMIR\0_SExpToReExp\0_SExpToImExp</Filter>
     </ClCompile>
@@ -96,12 +78,6 @@
     </ClCompile>
     <ClCompile Include="SExp_MemberToImExp.cpp">
       <Filter>ExpTranslation\SExpToMIR\0_SExpToReExp\0_SExpToImExp</Filter>
-    </ClCompile>
-    <ClCompile Include="ImExpAndMemberNameToImExpTranslation.cpp">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClCompile>
-    <ClCompile Include="ImExpAndSArgsToReExpTranslation.cpp">
-      <Filter>ExpTranslation\Delete</Filter>
     </ClCompile>
     <ClCompile Include="SExpToReExp.cpp">
       <Filter>ExpTranslation\SExpToMIR\0_SExpToReExp</Filter>
@@ -210,24 +186,6 @@
     <ClInclude Include="IrExpVisitor.g.h">
       <Filter>ExpTranslation\Structure</Filter>
     </ClInclude>
-    <ClInclude Include="IrExpToMExpTranslation.h">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpRefToIrExpTranslation.h">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpRefToMSharedExpTranslation.h">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpToMExpTranslation.h">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClInclude>
-    <ClInclude Include="IrExpAndMemberNameToMSharedExpTranslation.h">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClInclude>
-    <ClInclude Include="SExpToMLocTranslation.h">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClInclude>
     <ClInclude Include="SExp_IdentifierToImExp.h">
       <Filter>ExpTranslation\SExpToMIR\0_SExpToReExp\0_SExpToImExp</Filter>
     </ClInclude>
@@ -239,12 +197,6 @@
     </ClInclude>
     <ClInclude Include="SExp_MemberToImExp.h">
       <Filter>ExpTranslation\SExpToMIR\0_SExpToReExp\0_SExpToImExp</Filter>
-    </ClInclude>
-    <ClInclude Include="ImExpAndMemberNameToImExpTranslation.h">
-      <Filter>ExpTranslation\Delete</Filter>
-    </ClInclude>
-    <ClInclude Include="ImExpAndSArgsToReExpTranslation.h">
-      <Filter>ExpTranslation\Delete</Filter>
     </ClInclude>
     <ClInclude Include="SExpToReExp.h">
       <Filter>ExpTranslation\SExpToMIR\0_SExpToReExp</Filter>
@@ -289,9 +241,6 @@
     </Filter>
     <Filter Include="Public Headers">
       <UniqueIdentifier>{0a442679-8d7f-49a0-8403-92d752158c97}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ExpTranslation\Delete">
-      <UniqueIdentifier>{fd352164-c726-45d7-8ac2-db4b1bd12265}</UniqueIdentifier>
     </Filter>
     <Filter Include="ExpTranslation\SExpToMIR">
       <UniqueIdentifier>{b36f1fb1-f92b-4a42-9d35-8c5b7a81b468}</UniqueIdentifier>

@@ -282,9 +282,9 @@ class SLambdaExpParam
 public:
     std::optional<SParamModifier> o_paramModifier;
     STypeExp* type;
-    std::string name;
+    std::string memberName;
 
-    SYNTAX_API SLambdaExpParam(std::optional<SParamModifier> o_paramModifier, STypeExp* type, std::string name);
+    SYNTAX_API SLambdaExpParam(std::optional<SParamModifier> o_paramModifier, STypeExp* type, std::string memberName);
     SLambdaExpParam(const SLambdaExpParam&) = delete;
     SYNTAX_API SLambdaExpParam(SLambdaExpParam&&) noexcept;
     SYNTAX_API ~SLambdaExpParam();
@@ -366,9 +366,9 @@ public:
 class STypeParam
 {
 public:
-    std::string name;
+    std::string memberName;
 
-    SYNTAX_API STypeParam(std::string name);
+    SYNTAX_API STypeParam(std::string memberName);
     STypeParam(const STypeParam&) = delete;
     SYNTAX_API STypeParam(STypeParam&&) noexcept;
     SYNTAX_API ~STypeParam();
@@ -385,9 +385,9 @@ public:
     std::optional<SParamModifier> o_modifier;
     bool bRef;
     STypeExp* type;
-    std::string name;
+    std::string memberName;
 
-    SYNTAX_API SFuncParam(std::optional<SParamModifier> o_modifier, bool bRef, STypeExp* type, std::string name);
+    SYNTAX_API SFuncParam(std::optional<SParamModifier> o_modifier, bool bRef, STypeExp* type, std::string memberName);
     SFuncParam(const SFuncParam&) = delete;
     SYNTAX_API SFuncParam(SFuncParam&&) noexcept;
     SYNTAX_API ~SFuncParam();
@@ -1763,11 +1763,11 @@ class STypeExp_Id
     : public STypeExp
 {
 public:
-    std::string name;
+    std::string memberName;
     std::vector<STypeExp*> typeArgs;
 
-    SYNTAX_API STypeExp_Id(std::string name, std::vector<STypeExp*> typeArgs);
-    SYNTAX_API STypeExp_Id(std::string&& name);
+    SYNTAX_API STypeExp_Id(std::string memberName, std::vector<STypeExp*> typeArgs);
+    SYNTAX_API STypeExp_Id(std::string&& memberName);
     STypeExp_Id(const STypeExp_Id&) = delete;
     SYNTAX_API STypeExp_Id(STypeExp_Id&&) noexcept;
     SYNTAX_API virtual ~STypeExp_Id();
@@ -1785,10 +1785,10 @@ class STypeExp_Member
 {
 public:
     STypeExp* parentType;
-    std::string name;
+    std::string memberName;
     std::vector<STypeExp*> typeArgs;
 
-    SYNTAX_API STypeExp_Member(STypeExp* parentType, std::string name, std::vector<STypeExp*> typeArgs);
+    SYNTAX_API STypeExp_Member(STypeExp* parentType, std::string memberName, std::vector<STypeExp*> typeArgs);
     STypeExp_Member(const STypeExp_Member&) = delete;
     SYNTAX_API STypeExp_Member(STypeExp_Member&&) noexcept;
     SYNTAX_API virtual ~STypeExp_Member();
@@ -2315,10 +2315,10 @@ class SStmt_Directive
     : public SStmt
 {
 public:
-    std::string name;
+    std::string memberName;
     std::vector<SExp*> args;
 
-    SYNTAX_API SStmt_Directive(std::string name, std::vector<SExp*> args);
+    SYNTAX_API SStmt_Directive(std::string memberName, std::vector<SExp*> args);
     SStmt_Directive(const SStmt_Directive&) = delete;
     SYNTAX_API SStmt_Directive(SStmt_Directive&&) noexcept;
     SYNTAX_API virtual ~SStmt_Directive();
@@ -2484,12 +2484,12 @@ public:
     std::optional<SAccessModifier> accessModifier;
     bool bSequence;
     STypeExp* retType;
-    std::string name;
+    std::string memberName;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
     std::vector<SStmt*> body;
 
-    SYNTAX_API SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
+    SYNTAX_API SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExp* retType, std::string memberName, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SGlobalFuncDecl(const SGlobalFuncDecl&) = delete;
     SYNTAX_API SGlobalFuncDecl(SGlobalFuncDecl&&) noexcept;
     SYNTAX_API virtual ~SGlobalFuncDecl();
@@ -2511,12 +2511,12 @@ class SClassDecl
 {
 public:
     std::optional<SAccessModifier> accessModifier;
-    std::string name;
+    std::string memberName;
     std::vector<STypeParam> typeParams;
     std::vector<STypeExp*> baseTypes;
     std::vector<SClassMemberDecl*> memberDecls;
 
-    SYNTAX_API SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl*> memberDecls);
+    SYNTAX_API SClassDecl(std::optional<SAccessModifier> accessModifier, std::string memberName, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl*> memberDecls);
     SClassDecl(const SClassDecl&) = delete;
     SYNTAX_API SClassDecl(SClassDecl&&) noexcept;
     SYNTAX_API virtual ~SClassDecl();
@@ -2540,12 +2540,12 @@ public:
     bool bStatic;
     bool bSequence;
     STypeExp* retType;
-    std::string name;
+    std::string memberName;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
     std::vector<SStmt*> body;
 
-    SYNTAX_API SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
+    SYNTAX_API SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string memberName, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SClassFuncDecl(const SClassFuncDecl&) = delete;
     SYNTAX_API SClassFuncDecl(SClassFuncDecl&&) noexcept;
     SYNTAX_API virtual ~SClassFuncDecl();
@@ -2609,12 +2609,12 @@ class SStructDecl
 {
 public:
     std::optional<SAccessModifier> accessModifier;
-    std::string name;
+    std::string memberName;
     std::vector<STypeParam> typeParams;
     std::vector<STypeExp*> baseTypes;
     std::vector<SStructMemberDecl*> memberDecls;
 
-    SYNTAX_API SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl*> memberDecls);
+    SYNTAX_API SStructDecl(std::optional<SAccessModifier> accessModifier, std::string memberName, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl*> memberDecls);
     SStructDecl(const SStructDecl&) = delete;
     SYNTAX_API SStructDecl(SStructDecl&&) noexcept;
     SYNTAX_API virtual ~SStructDecl();
@@ -2638,12 +2638,12 @@ public:
     bool bStatic;
     bool bSequence;
     STypeExp* retType;
-    std::string name;
+    std::string memberName;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
     std::vector<SStmt*> body;
 
-    SYNTAX_API SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
+    SYNTAX_API SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string memberName, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SStructFuncDecl(const SStructFuncDecl&) = delete;
     SYNTAX_API SStructFuncDecl(SStructFuncDecl&&) noexcept;
     SYNTAX_API virtual ~SStructFuncDecl();
@@ -2723,9 +2723,9 @@ class SEnumElemVarDecl
 {
 public:
     STypeExp* type;
-    std::string name;
+    std::string memberName;
 
-    SYNTAX_API SEnumElemVarDecl(STypeExp* type, std::string name);
+    SYNTAX_API SEnumElemVarDecl(STypeExp* type, std::string memberName);
     SEnumElemVarDecl(const SEnumElemVarDecl&) = delete;
     SYNTAX_API SEnumElemVarDecl(SEnumElemVarDecl&&) noexcept;
     SYNTAX_API ~SEnumElemVarDecl();
@@ -2740,10 +2740,10 @@ class SEnumElemDecl
     : virtual public SSyntax
 {
 public:
-    std::string name;
+    std::string memberName;
     std::vector<SEnumElemVarDecl*> vars;
 
-    SYNTAX_API SEnumElemDecl(std::string name, std::vector<SEnumElemVarDecl*> vars);
+    SYNTAX_API SEnumElemDecl(std::string memberName, std::vector<SEnumElemVarDecl*> vars);
     SEnumElemDecl(const SEnumElemDecl&) = delete;
     SYNTAX_API SEnumElemDecl(SEnumElemDecl&&) noexcept;
     SYNTAX_API ~SEnumElemDecl();
@@ -2762,11 +2762,11 @@ class SEnumDecl
 {
 public:
     std::optional<SAccessModifier> accessModifier;
-    std::string name;
+    std::string memberName;
     std::vector<STypeParam> typeParams;
     std::vector<SEnumElemDecl*> elements;
 
-    SYNTAX_API SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl*> elements);
+    SYNTAX_API SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string memberName, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl*> elements);
     SEnumDecl(const SEnumDecl&) = delete;
     SYNTAX_API SEnumDecl(SEnumDecl&&) noexcept;
     SYNTAX_API virtual ~SEnumDecl();

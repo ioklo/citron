@@ -66,8 +66,8 @@ JsonItem SArguments::ToJson()
     };
 }
 
-SLambdaExpParam::SLambdaExpParam(std::optional<SParamModifier> o_paramModifier, STypeExp* type, std::string name)
-    : o_paramModifier(move(o_paramModifier)), type(move(type)), name(move(name)) { }
+SLambdaExpParam::SLambdaExpParam(std::optional<SParamModifier> o_paramModifier, STypeExp* type, std::string memberName)
+    : o_paramModifier(move(o_paramModifier)), type(move(type)), memberName(move(memberName)) { }
 
 SLambdaExpParam::SLambdaExpParam(SLambdaExpParam&& other) noexcept = default;
 
@@ -81,7 +81,7 @@ JsonItem SLambdaExpParam::ToJson()
         { "$type", JsonString("SLambdaExpParam") },
         { "o_paramModifier", Citron::ToJson(o_paramModifier) },
         { "type", Citron::ToJson(type) },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
     };
 }
 
@@ -149,8 +149,8 @@ JsonItem SVarDecl::ToJson()
     };
 }
 
-STypeParam::STypeParam(std::string name)
-    : name(move(name)) { }
+STypeParam::STypeParam(std::string memberName)
+    : memberName(move(memberName)) { }
 
 STypeParam::STypeParam(STypeParam&& other) noexcept = default;
 
@@ -162,12 +162,12 @@ JsonItem STypeParam::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("STypeParam") },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
     };
 }
 
-SFuncParam::SFuncParam(std::optional<SParamModifier> o_modifier, bool bRef, STypeExp* type, std::string name)
-    : o_modifier(move(o_modifier)), bRef(move(bRef)), type(move(type)), name(move(name)) { }
+SFuncParam::SFuncParam(std::optional<SParamModifier> o_modifier, bool bRef, STypeExp* type, std::string memberName)
+    : o_modifier(move(o_modifier)), bRef(move(bRef)), type(move(type)), memberName(move(memberName)) { }
 
 SFuncParam::SFuncParam(SFuncParam&& other) noexcept = default;
 
@@ -182,7 +182,7 @@ JsonItem SFuncParam::ToJson()
         { "o_modifier", Citron::ToJson(o_modifier) },
         { "bRef", Citron::ToJson(bRef) },
         { "type", Citron::ToJson(type) },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
     };
 }
 
@@ -687,8 +687,8 @@ JsonItem SExp_As::ToJson()
     };
 }
 
-STypeExp_Id::STypeExp_Id(std::string name, std::vector<STypeExp*> typeArgs)
-    : name(move(name)), typeArgs(move(typeArgs)) { }
+STypeExp_Id::STypeExp_Id(std::string memberName, std::vector<STypeExp*> typeArgs)
+    : memberName(move(memberName)), typeArgs(move(typeArgs)) { }
 
 STypeExp_Id::STypeExp_Id(STypeExp_Id&& other) noexcept = default;
 
@@ -700,13 +700,13 @@ JsonItem STypeExp_Id::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("STypeExp_Id") },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
         { "typeArgs", Citron::ToJson(typeArgs) },
     };
 }
 
-STypeExp_Member::STypeExp_Member(STypeExp* parentType, std::string name, std::vector<STypeExp*> typeArgs)
-    : parentType(move(parentType)), name(move(name)), typeArgs(move(typeArgs)) { }
+STypeExp_Member::STypeExp_Member(STypeExp* parentType, std::string memberName, std::vector<STypeExp*> typeArgs)
+    : parentType(move(parentType)), memberName(move(memberName)), typeArgs(move(typeArgs)) { }
 
 STypeExp_Member::STypeExp_Member(STypeExp_Member&& other) noexcept = default;
 
@@ -719,7 +719,7 @@ JsonItem STypeExp_Member::ToJson()
     return JsonObject {
         { "$type", JsonString("STypeExp_Member") },
         { "parentType", Citron::ToJson(parentType) },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
         { "typeArgs", Citron::ToJson(typeArgs) },
     };
 }
@@ -1158,8 +1158,8 @@ JsonItem SStmt_Async::ToJson()
     };
 }
 
-SStmt_Directive::SStmt_Directive(std::string name, std::vector<SExp*> args)
-    : name(move(name)), args(move(args)) { }
+SStmt_Directive::SStmt_Directive(std::string memberName, std::vector<SExp*> args)
+    : memberName(move(memberName)), args(move(args)) { }
 
 SStmt_Directive::SStmt_Directive(SStmt_Directive&& other) noexcept = default;
 
@@ -1171,7 +1171,7 @@ JsonItem SStmt_Directive::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("SStmt_Directive") },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
         { "args", Citron::ToJson(args) },
     };
 }
@@ -1307,8 +1307,8 @@ JsonItem SStmt_Yield::ToJson()
     };
 }
 
-SGlobalFuncDecl::SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
-    : accessModifier(move(accessModifier)), bSequence(move(bSequence)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
+SGlobalFuncDecl::SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExp* retType, std::string memberName, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
+    : accessModifier(move(accessModifier)), bSequence(move(bSequence)), retType(move(retType)), memberName(move(memberName)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
 SGlobalFuncDecl::SGlobalFuncDecl(SGlobalFuncDecl&& other) noexcept = default;
 
@@ -1323,15 +1323,15 @@ JsonItem SGlobalFuncDecl::ToJson()
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "bSequence", Citron::ToJson(bSequence) },
         { "retType", Citron::ToJson(retType) },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
         { "typeParams", Citron::ToJson(typeParams) },
         { "parameters", Citron::ToJson(parameters) },
         { "body", Citron::ToJson(body) },
     };
 }
 
-SClassDecl::SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl*> memberDecls)
-    : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
+SClassDecl::SClassDecl(std::optional<SAccessModifier> accessModifier, std::string memberName, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl*> memberDecls)
+    : accessModifier(move(accessModifier)), memberName(move(memberName)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
 
 SClassDecl::SClassDecl(SClassDecl&& other) noexcept = default;
 
@@ -1344,15 +1344,15 @@ JsonItem SClassDecl::ToJson()
     return JsonObject {
         { "$type", JsonString("SClassDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
         { "typeParams", Citron::ToJson(typeParams) },
         { "baseTypes", Citron::ToJson(baseTypes) },
         { "memberDecls", Citron::ToJson(memberDecls) },
     };
 }
 
-SClassFuncDecl::SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
-    : accessModifier(move(accessModifier)), bStatic(move(bStatic)), bSequence(move(bSequence)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
+SClassFuncDecl::SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string memberName, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
+    : accessModifier(move(accessModifier)), bStatic(move(bStatic)), bSequence(move(bSequence)), retType(move(retType)), memberName(move(memberName)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
 SClassFuncDecl::SClassFuncDecl(SClassFuncDecl&& other) noexcept = default;
 
@@ -1368,7 +1368,7 @@ JsonItem SClassFuncDecl::ToJson()
         { "bStatic", Citron::ToJson(bStatic) },
         { "bSequence", Citron::ToJson(bSequence) },
         { "retType", Citron::ToJson(retType) },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
         { "typeParams", Citron::ToJson(typeParams) },
         { "parameters", Citron::ToJson(parameters) },
         { "body", Citron::ToJson(body) },
@@ -1414,8 +1414,8 @@ JsonItem SClassVarDecl::ToJson()
     };
 }
 
-SStructDecl::SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl*> memberDecls)
-    : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
+SStructDecl::SStructDecl(std::optional<SAccessModifier> accessModifier, std::string memberName, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl*> memberDecls)
+    : accessModifier(move(accessModifier)), memberName(move(memberName)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
 
 SStructDecl::SStructDecl(SStructDecl&& other) noexcept = default;
 
@@ -1428,15 +1428,15 @@ JsonItem SStructDecl::ToJson()
     return JsonObject {
         { "$type", JsonString("SStructDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
         { "typeParams", Citron::ToJson(typeParams) },
         { "baseTypes", Citron::ToJson(baseTypes) },
         { "memberDecls", Citron::ToJson(memberDecls) },
     };
 }
 
-SStructFuncDecl::SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
-    : accessModifier(move(accessModifier)), bStatic(move(bStatic)), bSequence(move(bSequence)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
+SStructFuncDecl::SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string memberName, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
+    : accessModifier(move(accessModifier)), bStatic(move(bStatic)), bSequence(move(bSequence)), retType(move(retType)), memberName(move(memberName)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
 SStructFuncDecl::SStructFuncDecl(SStructFuncDecl&& other) noexcept = default;
 
@@ -1452,7 +1452,7 @@ JsonItem SStructFuncDecl::ToJson()
         { "bStatic", Citron::ToJson(bStatic) },
         { "bSequence", Citron::ToJson(bSequence) },
         { "retType", Citron::ToJson(retType) },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
         { "typeParams", Citron::ToJson(typeParams) },
         { "parameters", Citron::ToJson(parameters) },
         { "body", Citron::ToJson(body) },
@@ -1515,8 +1515,8 @@ JsonItem SStructVarDecl::ToJson()
     };
 }
 
-SEnumElemVarDecl::SEnumElemVarDecl(STypeExp* type, std::string name)
-    : type(move(type)), name(move(name)) { }
+SEnumElemVarDecl::SEnumElemVarDecl(STypeExp* type, std::string memberName)
+    : type(move(type)), memberName(move(memberName)) { }
 
 SEnumElemVarDecl::SEnumElemVarDecl(SEnumElemVarDecl&& other) noexcept = default;
 
@@ -1529,12 +1529,12 @@ JsonItem SEnumElemVarDecl::ToJson()
     return JsonObject {
         { "$type", JsonString("SEnumElemVarDecl") },
         { "type", Citron::ToJson(type) },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
     };
 }
 
-SEnumElemDecl::SEnumElemDecl(std::string name, std::vector<SEnumElemVarDecl*> vars)
-    : name(move(name)), vars(move(vars)) { }
+SEnumElemDecl::SEnumElemDecl(std::string memberName, std::vector<SEnumElemVarDecl*> vars)
+    : memberName(move(memberName)), vars(move(vars)) { }
 
 SEnumElemDecl::SEnumElemDecl(SEnumElemDecl&& other) noexcept = default;
 
@@ -1546,13 +1546,13 @@ JsonItem SEnumElemDecl::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("SEnumElemDecl") },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
         { "vars", Citron::ToJson(vars) },
     };
 }
 
-SEnumDecl::SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl*> elements)
-    : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), elements(move(elements)) { }
+SEnumDecl::SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string memberName, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl*> elements)
+    : accessModifier(move(accessModifier)), memberName(move(memberName)), typeParams(move(typeParams)), elements(move(elements)) { }
 
 SEnumDecl::SEnumDecl(SEnumDecl&& other) noexcept = default;
 
@@ -1565,7 +1565,7 @@ JsonItem SEnumDecl::ToJson()
     return JsonObject {
         { "$type", JsonString("SEnumDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
-        { "name", Citron::ToJson(name) },
+        { "memberName", Citron::ToJson(memberName) },
         { "typeParams", Citron::ToJson(typeParams) },
         { "elements", Citron::ToJson(elements) },
     };

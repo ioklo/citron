@@ -10,7 +10,6 @@ namespace Citron {
 void MSharedExp_Static::Accept(MSharedExpVisitor& visitor) { visitor.Visit(this); }
 void MSharedExp_ClassVar::Accept(MSharedExpVisitor& visitor) { visitor.Visit(this); }
 void MSharedExp_SharedStructVar::Accept(MSharedExpVisitor& visitor) { visitor.Visit(this); }
-void MSharedExp_StructVar::Accept(MSharedExpVisitor& visitor) { visitor.Visit(this); }
 
 RType* GetType(MSharedExp* sharedExp, RFactory* rFactory)
 {
@@ -28,12 +27,6 @@ RType* GetType(MSharedExp* sharedExp, RFactory* rFactory)
         }
 
         ResultType Visit(MSharedExp_SharedStructVar* sharedExp) 
-        { 
-            auto* declType = sharedExp->decl->GetDeclType(sharedExp->typeArgs);
-            return rFactory->MakeSharedType(declType);
-        }
-
-        ResultType Visit(MSharedExp_StructVar* sharedExp) 
         { 
             auto* declType = sharedExp->decl->GetDeclType(sharedExp->typeArgs);
             return rFactory->MakeSharedType(declType);

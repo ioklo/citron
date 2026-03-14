@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <memory>
+#include "MIR/MRead.h"
 
 namespace Citron {
 
@@ -61,7 +62,7 @@ struct IrExp_Struct : IrExp
 // &C.x
 struct IrExp_Static : IrExp
 {
-    MLoc* loc;
+    MLoc* loc; // MLoc_ClassVar 혹은 MLoc_StructVar였을 것
 
     IrExp_Static(MLoc* loc)
         : loc{loc}
@@ -112,23 +113,14 @@ struct IrExp_StructVar : IrExp
 };
 
 // (*pS).id 를 처리하기 위해서
-// *x 모양을 따로 들고 있는다. IrExp_Loc{MLoc_Deref}는 만들어지면 안된다
-struct IrExp_Deref : IrExp
+// *pS 모양을 따로 들고 있는다. IrExp_Loc{MLoc_SharedDeref}는 만들어지면 안된다
+struct IrExp_SharedDeref : IrExp
 {
-    MLoc* innerLoc;
+    MRead_NBC srcShared;
 
-    IrExp_Deref(MLoc* innerLoc)
-        : innerLoc{innerLoc}
+    IrExp_SharedDeref(MRead_NBC&& srcShared)
+        : srcShared{std::move(srcShared)}
     { }
-    void Accept(IrExpVisitor& visitor) override;
-};
-
-// exp로 나오는 경우
-struct IrExp_Exp : IrExp
-{
-    MExp* exp;
-
-    IrExp_Exp(MExp* exp);
     void Accept(IrExpVisitor& visitor) override;
 };
 

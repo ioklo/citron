@@ -117,7 +117,7 @@ vector<CTInfo> ReadCTFiles(path p)
         smatch match;
         if (!regex_match(stem, match, r))
         {
-            wcout << L"file name doesn't match TestCategory_Name.ct: " << ctFilePath << endl;
+            wcout << L"file memberName doesn't match TestCategory_Name.ct: " << ctFilePath << endl;
             continue;
         }
 

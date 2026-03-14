@@ -13,8 +13,7 @@ struct IrExpVisitor
     virtual void Visit(IrExp_ClassVar* irExp) = 0;
     virtual void Visit(IrExp_SharedStructVar* irExp) = 0;
     virtual void Visit(IrExp_StructVar* irExp) = 0;
-    virtual void Visit(IrExp_Deref* irExp) = 0;
-    virtual void Visit(IrExp_Exp* irExp) = 0;
+    virtual void Visit(IrExp_SharedDeref* irExp) = 0;
     virtual void Visit(IrExp_Loc* irExp) = 0;
 };
 
@@ -33,8 +32,7 @@ concept IrExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<IrExp_ClassVar*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_SharedStructVar*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_StructVar*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<IrExp_Deref*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<IrExp_Exp*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_SharedDeref*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_Loc*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
 
 };
@@ -58,8 +56,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp* i
             void Visit(IrExp_ClassVar* irExp) override { call(irExp); }
             void Visit(IrExp_SharedStructVar* irExp) override { call(irExp); }
             void Visit(IrExp_StructVar* irExp) override { call(irExp); }
-            void Visit(IrExp_Deref* irExp) override { call(irExp); }
-            void Visit(IrExp_Exp* irExp) override { call(irExp); }
+            void Visit(IrExp_SharedDeref* irExp) override { call(irExp); }
             void Visit(IrExp_Loc* irExp) override { call(irExp); }
         };
 
@@ -78,8 +75,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp* i
             void Visit(IrExp_ClassVar* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_SharedStructVar* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_StructVar* irExp) override { result.emplace(call(irExp)); }
-            void Visit(IrExp_Deref* irExp) override { result.emplace(call(irExp)); }
-            void Visit(IrExp_Exp* irExp) override { result.emplace(call(irExp)); }
+            void Visit(IrExp_SharedDeref* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_Loc* irExp) override { result.emplace(call(irExp)); }
         };
 

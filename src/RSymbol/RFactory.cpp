@@ -29,7 +29,7 @@ RFactory::RFactory()
     , intType{new RType_Primitive(RType_PrimitiveKind::Int32)}
 {
     // TODO: 아직 MakeStructType, MakeClassType과는 연결이 되지 않은 상태
-    stringType = unique_ptr<RType_Struct>(new RType_Struct(nullptr, MakeTypeArguments({}), this));
+    stringType = unique_ptr<RType_Struct>(new RType_Struct(nullptr, MakeEmptyTypeArguments(), this));
 }
 
 RFactory::~RFactory()
@@ -208,6 +208,21 @@ RTypeArguments* RFactory::MakeTypeArguments(const vector<RType*>& items)
     return pv;
 }
 
+RTypeArguments* RFactory::MakeEmptyTypeArguments()
+{
+    static std::vector<RType*> items;
+    static RTypeArgumentsKey key{items};
+
+    auto i = typeArgsMap.find(key);
+    if (i != typeArgsMap.end())
+        return i->second.get();
+
+    unique_ptr<RTypeArguments> v{new RTypeArguments{items, this}};
+    auto pv = v.get();
+    typeArgsMap.emplace(key, move(v));
+    return pv;
+}
+
 RTypeArguments* RFactory::MergeTypeArguments(RTypeArguments* typeArgs0, RTypeArguments* typeArgs1)
 {
     auto items = typeArgs0->items; // 복사
@@ -290,7 +305,7 @@ RType* RFactory::MakeStringType()
 
 RType* RFactory::MakeListType(RType* itemType)
 {
-    auto* typeArgs = MakeTypeArguments({ itemType });
+    auto* typeArgs = MakeTypeArguments({itemType});
     return MakeClassType(listDecl.get(), typeArgs);
 }
 

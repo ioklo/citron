@@ -142,9 +142,10 @@ struct MLoc_PtrDeref : MLoc
 struct MLoc_SharedDeref : MLoc
 {
     MRead_NBC srcShared;
-
-    MLoc_SharedDeref(MRead_NBC&& srcShared)
-        : srcShared{std::move(srcShared)}
+    
+    template<typename T>
+    MLoc_SharedDeref(T&& srcShared)
+        : srcShared{std::forward<T>(srcShared)}
     { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };

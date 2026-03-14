@@ -21,7 +21,7 @@
 - [ ] // TODO: [40] MInitExp_StructCtorKind_*, MStmt_Assign를 쓸때 Copy, Move가 가능한지 확인하고 fallback까지 하는 코드 작성
 - [ ] // TODO: [41] try catch 구현
 - [ ] // TODO: [42] BodyRes.NeedCapture구현
-- [ ] // TODO: [43] ResolveIdentifier에서 AccessCheck를 할지, Verify패스를 따로 둘지 결정
+- [ ] // TODO: [43] ResolveIdentifier에서 AccessCheck를 할지, Verify패스를 따로 둘지 결정 => Verify패스가 있는게 맞는거 같다
 - [ ] // TODO: [44] Tuple 구현
 - [ ] // TODO: [45] custom ToString 구현
 - [ ] // TODO: [46] lambda capture에 reference들어올수 있도록
@@ -30,3 +30,4 @@
 - [ ] // TODO: [49] Dictionary 추가, indexer도 dictionary지원
 - [ ] // TODO: [50] is에 pattern, alias binding추가
 - [ ] // TODO: [51] 단일 ClassFuncs, StructFuncs가 expression으로 쓰이면, Lambda로 쓰일수 있게 변환
+- [ ] // TODO: [52] TypeVar정리

@@ -9,7 +9,6 @@ struct MSharedExpVisitor
     virtual void Visit(MSharedExp_Static* sharedExp) = 0;
     virtual void Visit(MSharedExp_ClassVar* sharedExp) = 0;
     virtual void Visit(MSharedExp_SharedStructVar* sharedExp) = 0;
-    virtual void Visit(MSharedExp_StructVar* sharedExp) = 0;
 };
 
 template<class TFrom, class TVisitor>
@@ -23,7 +22,6 @@ concept MSharedExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MSharedExp_Static*>(), std::forward<TVisitorArgs>(args)...) } -> MSharedExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MSharedExp_ClassVar*>(), std::forward<TVisitorArgs>(args)...) } -> MSharedExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MSharedExp_SharedStructVar*>(), std::forward<TVisitorArgs>(args)...) } -> MSharedExpConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<MSharedExp_StructVar*>(), std::forward<TVisitorArgs>(args)...) } -> MSharedExpConvertibleToResultType<TVisitor>;
 
 };
 
@@ -42,7 +40,6 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MSharedE
             Bridge(decltype(caller)& call) : call(call) {}            void Visit(MSharedExp_Static* sharedExp) override { call(sharedExp); }
             void Visit(MSharedExp_ClassVar* sharedExp) override { call(sharedExp); }
             void Visit(MSharedExp_SharedStructVar* sharedExp) override { call(sharedExp); }
-            void Visit(MSharedExp_StructVar* sharedExp) override { call(sharedExp); }
         };
 
         Bridge bridge{caller};
@@ -56,7 +53,6 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MSharedE
             Bridge(decltype(caller)& call) : call(call) {}            void Visit(MSharedExp_Static* sharedExp) override { result.emplace(call(sharedExp)); }
             void Visit(MSharedExp_ClassVar* sharedExp) override { result.emplace(call(sharedExp)); }
             void Visit(MSharedExp_SharedStructVar* sharedExp) override { result.emplace(call(sharedExp)); }
-            void Visit(MSharedExp_StructVar* sharedExp) override { result.emplace(call(sharedExp)); }
         };
 
         Bridge bridge{caller};

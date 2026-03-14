@@ -2,6 +2,7 @@
 #include "MIRConfig.h"
 
 #include <memory>
+#include <vector>
 
 namespace Citron {
 
@@ -22,10 +23,20 @@ public:
     virtual void Accept(MSharedExpVisitor& visitor) = 0;
 };
 
+struct MSharedExpStructSegment
+{
+    RStructVarDecl* decl;
+    RTypeArguments* typeArgs;
+};
+
 // &C.x
 struct MSharedExp_Static : MSharedExp
-{   
+{
     MLoc* loc;
+    std::vector<MSharedExpStructSegment> segments;
+    MSharedExp_Static(MLoc* loc)
+        : loc{loc}, segments{}
+    { }
     MIR_API void Accept(MSharedExpVisitor& visitor) override;
 };
 
@@ -35,30 +46,27 @@ struct MSharedExp_ClassVar : MSharedExp
     MLoc* base;
     RClassVarDecl* decl;
     RTypeArguments* typeArgs;
+    std::vector<MSharedExpStructSegment> segments;
 
+    MSharedExp_ClassVar(MLoc* base, RClassVarDecl* decl, RTypeArguments* typeArgs)
+        : base{base}, decl{decl}, typeArgs{typeArgs}, segments{}
+    { }
     MIR_API void Accept(MSharedExpVisitor& visitor) override;
 };
 
-// box S* pS;
-// &ps->x => MSharedExp_SharedStructVar(MLoc_LocalVar("pS"), S::x)
-// MSharedExp_SharedStructVar
+// shared<S> pS;
+// &ps->x => MSharedExp_SharedStructVar(MLoc_LocalVar("pS"), S::x, [])
+// ps->x.y => MSharedExp_SharedStructVar(MLoc_LocalVar("pS"), S::x, [S::y])
 struct MSharedExp_SharedStructVar : MSharedExp
 {   
     MLoc* base;
     RStructVarDecl* decl;
     RTypeArguments* typeArgs;
-    
-    MIR_API void Accept(MSharedExpVisitor& visitor) override;
-};
+    std::vector<MSharedExpStructSegment> segments;
 
-// C c;
-// shared A a = &c.s.a; => MSharedExp_StructVar(MSharedExp_ClassVar(MLoc_LocalVar("c"), C::s), A::a)
-struct MSharedExp_StructVar : MSharedExp
-{
-    MSharedExp* base;
-    RStructVarDecl* decl;
-    RTypeArguments* typeArgs;
-    
+    MSharedExp_SharedStructVar(MLoc* base, RStructVarDecl* decl, RTypeArguments* typeArgs)
+        : base{base}, decl{decl}, typeArgs{typeArgs}, segments{}
+    { }
     MIR_API void Accept(MSharedExpVisitor& visitor) override;
 };
 

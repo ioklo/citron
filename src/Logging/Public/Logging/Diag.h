@@ -204,11 +204,14 @@ struct Error_ResolveIdentifier_MemberBaseCantBeLocation : ErrorDiag {};
 
 struct Error_SharedTranslation_SingleRefNotAllowed : ErrorDiag {}; // shared<int> i = &c; 금지
 struct Error_SharedTranslation_MemberBaseShouldBeShared : ErrorDiag {}; // &s.x 금지 (s가 struct S일때)
+
 struct Error_SharedTranslation_CantMakeSharedFromBase : ErrorDiag {}; // &e.x에서 e로 shared를 만들수 없을때
 struct Error_SharedTranslation_StaticSharedShouldBeVar : ErrorDiag {}; // &C.x에서 x가 var가 아닐때
 
 struct Error_SharedTranslation_CantTranslateToLoc : ErrorDiag {};
 struct Error_SharedTranslation_CantTranslateToMSharedExp : ErrorDiag {};
+
+struct Error_SharedTranslation_CantTranslate : ErrorDiag {};
 
 struct Error_Indexer_ObjectShouldBeListOrDictionary : ErrorDiag {};
 struct Error_Indexer_IndexTypeNotMatched : ErrorDiag {};
@@ -232,10 +235,11 @@ struct Error_NewExp_MultipleMatchedClassCtors : ErrorDiag { }; // A2603_NewExp_M
 struct Error_NullLiteralExp_CantInferNullableType : ErrorDiag { }; // A2701_NullLiteralExp_CantInferNullableType // null은 힌트와 쓰인다
 struct Error_StaticNotNullDirective_ShouldHaveOneArgument : ErrorDiag { }; // A2801_StaticNotNullDirective_ShouldHaveOneArgument
 struct Error_StaticNotNullDirective_ArgumentMustBeLocation : ErrorDiag { }; // A2802_StaticNotNullDirective_ArgumentMustBeLocation
-struct Error_Reference_CantMakeReference : ErrorDiag { }; // A3001_Reference_CantMakeReference
-struct Error_Reference_CantReferenceTempValue : ErrorDiag { }; // A3002_Reference_CantReferenceTempValue
-struct Error_Reference_UselessDereferenceReferencedValue : ErrorDiag { }; // A3003_Reference_UselessDereferenceReferencedValue
-struct Error_Reference_CantReferenceThis : ErrorDiag { }; // A3004_Reference_CantReferenceThis
+
+//struct Error_Reference_CantMakeReference : ErrorDiag { }; // A3001_Reference_CantMakeReference
+//struct Error_Reference_CantReferenceTempValue : ErrorDiag { }; // A3002_Reference_CantReferenceTempValue
+//struct Error_Reference_UselessDereferenceReferencedValue : ErrorDiag { }; // A3003_Reference_UselessDereferenceReferencedValue
+//struct Error_Reference_CantReferenceThis : ErrorDiag { }; // A3004_Reference_CantReferenceThis
 
 struct Error_NotSupported_LambdaParameterInference : ErrorDiag { }; // A9901_NotSupported_LambdaParameterInference
 struct Error_NotSupported_LambdaReturnTypeInference : ErrorDiag {}; // A9902_NotSupported_LambdaReturnTypeInference

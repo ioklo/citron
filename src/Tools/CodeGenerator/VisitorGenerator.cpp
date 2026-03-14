@@ -247,7 +247,6 @@ void GenerateVisitors(std::filesystem::path srcPath)
                 "MSharedExp_Static",
                 "MSharedExp_ClassVar",
                 "MSharedExp_SharedStructVar",
-                "MSharedExp_StructVar",
             },
         },
 
@@ -355,8 +354,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
                 "IrExp_ClassVar",
                 "IrExp_SharedStructVar",
                 "IrExp_StructVar",
-                "IrExp_Deref",
-                "IrExp_Exp",
+                "IrExp_SharedDeref",
                 "IrExp_Loc",
             },
         },

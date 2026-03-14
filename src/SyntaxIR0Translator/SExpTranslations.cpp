@@ -40,7 +40,7 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_Stri
 
             // int였으므로 무조건 BC
             auto& mCreateIntBC = get<MCreate_BC>(*e_mCreateInt);
-            auto* typeArgs = contexts.rFactory->MakeTypeArguments({});
+            auto* typeArgs = contexts.rFactory->MakeEmptyTypeArguments();
             std::vector<MArgument> args;
             args.push_back(MArgument_Create{move(mCreateIntBC)});
 
@@ -56,7 +56,7 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_Stri
             RETURN_ON_ERROR(e_mCreateBool);
 
             auto& mCreateBoolBC = get<MCreate_BC>(*e_mCreateBool);
-            auto* typeArgs = contexts.rFactory->MakeTypeArguments({});
+            auto* typeArgs = contexts.rFactory->MakeEmptyTypeArguments();
             std::vector<MArgument> args;
             args.push_back(MArgument_Create{move(mCreateBoolBC)});
 
@@ -298,7 +298,7 @@ optional<ReExp> TryMatchBinOp(ReExp& operand0, ReExp& operand1, RType* operandTy
     return visit([&contexts, &o_arg0, &o_arg1](auto& _operator) -> ReExp {
         using T = remove_cvref_t<decltype(_operator)>;
 
-        auto* typeArgs = contexts.rFactory->MakeTypeArguments({});
+        auto* typeArgs = contexts.rFactory->MakeEmptyTypeArguments();
         std::vector<MArgument> args;
         args.reserve(2);
         args.push_back(move(*o_arg0));
@@ -339,7 +339,7 @@ expected<ReExp, DiagPtr> TranslateSExp_BinaryOpToReExp(SExp_BinaryOp* sExp, Tran
             auto o_arg = TryMakeBinOpMArgument(*o_reExp, contexts);
             if (!o_arg) continue;
 
-            auto* typeArgs = contexts.rFactory->MakeTypeArguments({});
+            auto* typeArgs = contexts.rFactory->MakeEmptyTypeArguments();
             vector<MArgument> args;
             args.reserve(1);
             args.push_back(*o_arg);
@@ -383,7 +383,7 @@ expected<ReExp, DiagPtr> TranslateSExp_UnaryOp_AssignToReExp(ReExp& reOperand, M
         return Error<Error_UnaryAssignOp_AssignableExpressionIsAllowedOnly>();
 
     // 
-    auto* typeArgs = contexts.rFactory->MakeTypeArguments({});
+    auto* typeArgs = contexts.rFactory->MakeEmptyTypeArguments();
     vector<MArgument> args;
     args.reserve(1);
     args.push_back(MArgument_Loc{*e_mOperandLoc}); // location으로 넘겨주기
@@ -450,7 +450,7 @@ expected<ReExp, DiagPtr> TranslateSExp_UnaryOpToReExp(SExp_UnaryOp* sExp, RType*
     auto e_reOperand = TranslateSExpToReExp(sExp->operand, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_reOperand);
     auto* type = GetType(*e_reOperand, &*contexts.rFactory);
-    auto* typeArgs = contexts.rFactory->MakeTypeArguments({});
+    auto* typeArgs = contexts.rFactory->MakeEmptyTypeArguments();
 
     switch (sExp->kind)
     {

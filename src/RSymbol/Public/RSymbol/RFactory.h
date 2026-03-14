@@ -142,6 +142,7 @@ public:
     RSYMBOL_API RType_Lambda* MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeArgs);
 
     RSYMBOL_API RTypeArguments* MakeTypeArguments(const std::vector<RType*>& items);
+    RSYMBOL_API RTypeArguments* MakeEmptyTypeArguments();
     RSYMBOL_API RTypeArguments* MergeTypeArguments(RTypeArguments* typeArgs0, RTypeArguments* typeArgs1);
 
     RSYMBOL_API RType* MakeType(RTypeDecl* decl, RTypeArguments* typeArgs);
