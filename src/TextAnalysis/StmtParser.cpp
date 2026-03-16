@@ -20,69 +20,20 @@ namespace Citron {
 
 SEmbeddableStmt* ParseEmbeddableStmt(Lexer* lexer, SFactory& factory);
 
-// typeExp id = exp)
-SStmt_IfBind* ParseIfBindFragment(Lexer* lexer, SFactory& factory)
-{
-    Lexer curLexer = *lexer;
-
-    auto* testTypeExp = ParseTypeExp(&curLexer, factory);
-    if (!testTypeExp)
-        return nullptr;
-
-    auto o_varNameToken = Accept<IdentifierToken>(&curLexer);
-    if (!o_varNameToken)
-        return nullptr;
-
-    if (!Accept<EqualToken>(&curLexer))
-        return nullptr;
-
-    auto* exp = ParseExp(&curLexer, factory);
-    if (!exp)
-        return nullptr;
-
-    if (!Accept<RParenToken>(&curLexer))
-        return nullptr;
-    
-    // right assoc, conflict는 별다른 처리를 하지 않고 지나가면 될 것 같다
-    auto* body = ParseEmbeddableStmt(&curLexer, factory);
-    if (!body)
-        return nullptr;
-
-    SEmbeddableStmt* elseBody = nullptr;
-
-    if (Accept<ElseToken>(&curLexer))
-    {
-        elseBody = ParseEmbeddableStmt(&curLexer, factory);
-        if (!elseBody)
-            return nullptr;
-    }
-
-    *lexer = move(curLexer);
-    return factory.MakeSStmt_IfBind(testTypeExp, move(o_varNameToken->text), exp, body, elseBody);
-}
-
-// 리턴은 SStmt_If와 SStmt_IfBind
-SStmt* ParseIfStmt(Lexer* lexer, SFactory& factory)
+// 리턴은 SStmt_If
+SStmt_If* ParseIfStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
     // if (exp) stmt => If(exp, stmt, null)
     // if (exp) stmt0 else stmt1 => If(exp, stmt0, stmt1)
     // if (exp0) if (exp1) stmt1 else stmt2 => If(exp0, If(exp1, stmt1, stmt2))
-    // if (typeExp name = exp) => IfTestStmt(TypeExp, name, exp)
 
     if (!Accept<IfToken>(&curLexer))
         return nullptr;
 
     if (!Accept<LParenToken>(&curLexer))
         return nullptr;
-
-    // typeExp varName = exp꼴인지 먼저 확인
-    if (auto* ifTestStmt = ParseIfBindFragment(&curLexer, factory))
-    {
-        *lexer = move(curLexer);
-        return ifTestStmt;
-    }
 
     // 아니라면
     auto* cond = ParseExp(&curLexer, factory);

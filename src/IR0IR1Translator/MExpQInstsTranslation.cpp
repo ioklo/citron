@@ -136,7 +136,7 @@ public:
             }
             else if constexpr (same_as<T, QLocResult_PtrSlot>)
             {
-                auto* type = exp->GetType();
+                auto* type = GetType(exp, &*contexts.rFactory);
                 // ptr에서 로드하는 식으로
                 return bodyContext.EmitInst(QInst_Load{type, QArg_Slot{*o_destSlotIndex}, QArg_Slot{srcLoc.slotIndex}});
             }

@@ -1,4 +1,4 @@
-#include "SVarDeclToMStmtsTranslation.h"
+#include "SVarDeclToMStmts.h"
 
 #include <span>
 
@@ -20,9 +20,7 @@
 #include "MIR/MFactory.h"
 
 #include "ScopeContext.h"
-#include "SExpToMExpTranslation.h"
-#include "SExpToMLocTranslation.h"
-#include "SExpToMOperandTranslation.h"
+#include "SExpTranslations.h"
 #include "Misc.h"
 #include "TranslationContexts.h"
 #include "DesignatedDiagnostic.h"
@@ -133,7 +131,7 @@ private:
     ResultType Handle_Var_Loc(MLoc* mLoc)
     {
         // TODO: location이면 lvalue로, primitive면 그냥 bitwise copy, struct라면 copy ctor호출
-        auto* rType = mLoc->GetType();
+        auto* rType = GetType(mLoc, &*contexts.rFactory);
 
         if (auto* rPrimType = dynamic_cast<RType_Primitive*>(rType))
         {
@@ -167,7 +165,7 @@ private:
 
     ResultType Handle_Var_Exp(const RName& varName, MExp* mExp)
     {
-        auto* rType = mExp->GetType();
+        auto* rType = GetType(mExp, &*contexts.rFactory);
 
         // NewStruct일때만 따로 처리. StructInit
         // var x = S(1, 2, 3);
@@ -238,7 +236,7 @@ public:
                     auto e_nInitExp = TranslateSExpToMExp(sInit.exp, /*hintType*/nullptr, contexts);
                     RETURN_ON_ERROR(e_nInitExp);
 
-                    auto* rInitExpType = (*e_nInitExp)->GetType();
+                    auto* rInitExpType = GetType(*e_nInitExp, &*contexts.rFactory);
                     auto e_result = CheckVarConsistency(sVarDeclType->kind, rInitExpType);
                     RETURN_ON_ERROR(e_result);
 
@@ -278,7 +276,7 @@ public:
             RETURN_ON_ERROR(e_mLoc);
 
             // mLoc의 타입을 그대로 쓴다
-            auto* rDeclType = (*e_mLoc)->GetType();
+            auto* rDeclType = GetType(*e_mLoc, &*contexts.rFactory);
             auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalRefDecl>(rDeclType, RName_Normal{elem.varName}, *e_mLoc);
 
             return LocalRef(mStmt, rDeclType, RName_Normal{elem.varName});
@@ -305,7 +303,7 @@ public:
             RETURN_ON_ERROR(e_mLoc);
 
             // 둘이 타입이 mismatch되면 에러를 낸다
-            if ((*e_mLoc)->GetType() != *e_rDeclType)
+            if (GetType(*e_mLoc, &*contexts.rFactory) != *e_rDeclType)
                 return unexpected{MakePtr<Error_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType>()};
 
             return LocalRef

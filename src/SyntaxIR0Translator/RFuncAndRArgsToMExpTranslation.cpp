@@ -10,7 +10,10 @@
 #include "RSymbol/RFuncDecl.h"
 #include "RSymbol/RClassFuncDecl.h"
 #include "RSymbol/RStructFuncDecl.h"
+#include "RSymbol/RTypes.h"
 #include "MIR/MExp.h"
+#include "MIR/MInitExp.h"
+#include "MIR/MStmt.h"
 #include "MIR/MFactory.h"
 
 #include "TranslationContexts.h"
@@ -21,28 +24,41 @@ namespace Citron {
 
 namespace {
 
-class RFuncAndRArgsToMExpTranslator
+class RFuncAndRArgsToMStmtTranslator
 {
 public:
-    using ResultType = expected<MExp*, DiagPtr>;
+    using ResultType = expected<MStmt*, DiagPtr>;
     
     RTypeArguments* typeArgs;
     MLoc* instance;
     vector<MArgument> args;
-
     TranslationContexts& contexts;
 
-private:
-    template<typename TValue, typename... TArgs> requires std::derived_from<TValue, MExp>
-    ResultType Value(TArgs&&... args)
+    template<typename TRFuncDecl> requires std::derived_from<TRFuncDecl, RFuncDecl>
+    ResultType Call(TRFuncDecl* func, MCallable&& callable)
     {
-        return contexts.mFactory->MakeMExp<TValue>(forward<TArgs>(args)...);
-    }
+        auto* retType = func->GetReturnType(typeArgs);
 
-public:
-    RFuncAndRArgsToMExpTranslator(RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContexts& contexts)
-        : typeArgs{typeArgs}, instance{instance}, args{move(args)}, contexts{contexts}
-    {
+        switch (retType->GetCopyStrategy())
+        {
+        case RCopyStrategy::Void:
+            return contexts.mFactory->MakeMStmt<MStmt_Call>(move(callable), move(args), /*o_catch*/nullopt);
+
+        case RCopyStrategy::Bitwise:
+        {
+            auto* exp = contexts.mFactory->MakeMExp<MExp_Call>(move(callable), move(args), /*o_catch*/nullopt);
+            return contexts.mFactory->MakeMStmt<MStmt_Exp>(MCreate_BC{exp});
+        }
+
+        case RCopyStrategy::NonBitwise:
+        {
+            auto* initExp = contexts.mFactory->MakeMInitExp<MInitExp_Call>(move(callable), move(args), /*o_catch*/nullopt);
+            return contexts.mFactory->MakeMStmt<MStmt_Exp>(MCreate_NBC{initExp});
+        }
+
+        }
+
+        unreachable();
     }
 
     ResultType Visit(RGlobalFuncDecl* func) 
@@ -57,7 +73,7 @@ public:
 
     ResultType Visit(RClassFuncDecl* func) 
     {
-        return Value<MExp_CallClassFunc>(func, typeArgs, instance, move(args));
+        return Call(func, MCallable_ClassFunc{func, typeArgs, instance});
     }
 
     ResultType Visit(RStructCtorDecl* func) 
@@ -72,7 +88,7 @@ public:
 
     ResultType Visit(RStructFuncDecl* func) 
     {   
-        return Value<MExp_CallStructFunc>(func, typeArgs, instance, move(args));
+        return Call(func, MCallable_StructFunc{func, typeArgs, instance});
     }
 
     ResultType Visit(RLambdaDecl* func) 
@@ -83,9 +99,9 @@ public:
 
 } // namespace Citron
 
-expected<MExp*, DiagPtr> TranslateRFuncAndNArgsToMExp(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContexts& contexts)
+expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContexts& contexts)
 {
-    RFuncAndRArgsToMExpTranslator binder{typeArgs, instance, move(args), contexts};
+    RFuncAndRArgsToMStmtTranslator binder{typeArgs, instance, move(args), contexts};
     return Accept(binder, decl);
 }
 

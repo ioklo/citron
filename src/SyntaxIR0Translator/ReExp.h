@@ -27,4 +27,18 @@ using ReExp = std::variant<ReExp_Loc, ReExp_Exp, ReExp_InitExp, ReExp_StmtCall, 
 
 RType* GetType(ReExp& reExp, RFactory* rFactory);
 
+/*
+visit([](auto& reExp) -> ResultType {
+    using T = remove_cvref_t<decltype(reExp)>;
+
+    if constexpr (same_as<T, ReExp_Loc>) {}
+    else if constexpr (same_as<T, ReExp_Exp>) {}
+    else if constexpr (same_as<T, ReExp_InitExp>) {}
+    else if constexpr (same_as<T, ReExp_StmtCall>) {}
+    else if constexpr (same_as<T, ReExp_StmtAssign>) {}
+    else static_assert(false);
+
+}, reExp);
+*/
+
 } // namespace Citron

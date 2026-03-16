@@ -2,10 +2,14 @@
 #include <expected>
 #include <memory>
 #include "ReExp.h"
+#include "MIR/MCreate.h"
+#include "MIR/MRead.h"
 
 namespace Citron {
 
 using DiagPtr = std::shared_ptr<struct Diag>;
+class IDesignatedDiagnostic;
+class SExp;
 class SExp_String;
 class SExp_IntLiteral;
 class SExp_BoolLiteral;
@@ -28,6 +32,7 @@ struct MInitExp_String;
 struct MInitExp_NewClass;
 struct MInitExp_Shared;
 struct MInitExp_As;
+struct MSharedExp;
 struct TranslationContexts;
 
 std::expected<MInitExp_String*, DiagPtr> TranslateSExp_StringToMInitExp_String(SExp_String* sExp, TranslationContexts& contexts);
@@ -46,5 +51,12 @@ std::expected<MInitExp_Shared*, DiagPtr> TranslateSExp_SharedToMInitExp_Shared(S
 
 std::expected<MExp_Is*, DiagPtr> TranslateSExp_IsToMExp_Is(SExp_Is* sExp, TranslationContexts& contexts);
 std::expected<MInitExp_As*, DiagPtr> TranslateSExp_AsToMInitExp_As(SExp_As* sExp, TranslationContexts& contexts);
+
+std::expected<MCreate, DiagPtr> TranslateSExpToMCreate(SExp* sExp, RType* hintType, TranslationContexts& contexts);
+std::expected<MRead, DiagPtr> TranslateSExpToMRead(SExp* sExp, RType* hintType, TranslationContexts& contexts);
+std::expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool bMaterializeExp, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts);
+
+std::expected<MSharedExp*, DiagPtr> TranslateSExpToMSharedExp(SExp* sExp, TranslationContexts& contexts);
+
 
 } // namespace Citron

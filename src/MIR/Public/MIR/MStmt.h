@@ -21,7 +21,6 @@ class RTypeArguments;
 class RClassCtorDecl;
 class RStructCtorDecl;
 
-class MExp_String;
 class NLambdaDecl;
 class NStructCtorDecl;
 
@@ -36,10 +35,10 @@ struct MStmt
 
 struct MStmt_Command : MStmt
 {
-    std::vector<MExp_String*> commands;
+    std::vector<MRead_NBC> commands;
 
 public:
-    MStmt_Command(std::vector<MExp_String*>&& commands)
+    MStmt_Command(std::vector<MRead_NBC>&& commands)
         : commands{std::move(commands)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -82,9 +81,8 @@ struct MStmt_If : MStmt
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
 
-public:
-    MStmt_If(MExp* cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
-        : cond{cond}, body{std::move(body)}, elseBody{std::move(elseBody)}
+    MStmt_If(MRead_BC&& cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
+        : cond{std::move(cond)}, body{std::move(body)}, elseBody{std::move(elseBody)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -107,13 +105,13 @@ public:
 struct MStmt_For : MStmt
 {
     std::vector<MStmt*> initStmts; // LocalVarDecl, LocalVarRef
-    MRead_BC condExp; // BC
+    std::optional<MRead_BC> cond; // BC
     MStmt* contStmt;
     std::vector<MStmt*> body;
 
 public:
-    MStmt_For(std::vector<MStmt*>&& initStmts, MExp* condExp, MStmt* contStmt, std::vector<MStmt*>&& body)
-        : initStmts{std::move(initStmts)}, condExp{condExp}, contStmt{contStmt}, body{std::move(body)}
+    MStmt_For(std::vector<MStmt*>&& initStmts, std::optional<MRead_BC>&& condExp, MStmt* contStmt, std::vector<MStmt*>&& body)
+        : initStmts{std::move(initStmts)}, cond{std::move(condExp)}, contStmt{contStmt}, body{std::move(body)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -130,10 +128,10 @@ struct MStmt_Break : MStmt
 
 struct MStmt_Return : MStmt
 {
-    MCreate create;
+    std::optional<MCreate> create;
 
 public:
-    MStmt_Return(MCreate&& create)
+    MStmt_Return(std::optional<MCreate>&& create)
         : create{std::move(create)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;

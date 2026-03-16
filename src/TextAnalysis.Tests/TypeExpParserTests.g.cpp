@@ -21,7 +21,7 @@ TEST(TypeExpParser, FormalLocal_FormalLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -44,7 +44,7 @@ TEST(TypeExpParser, FormalLocal_FormalNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -67,7 +67,7 @@ TEST(TypeExpParser, FormalLocal_FormalPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -90,7 +90,7 @@ TEST(TypeExpParser, FormalLocal_FormalShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -117,22 +117,22 @@ TEST(TypeExpParser, FormalLocal_Id)
                 "$type": "STypeExp_Member",
                 "parentType": {
                     "$type": "STypeExp_Id",
-                    "memberName": "A",
+                    "name": "A",
                     "typeArgs": []
                 },
-                "memberName": "B",
+                "name": "B",
                 "typeArgs": []
             },
-            "memberName": "C",
+            "name": "C",
             "typeArgs": [
                 {
                     "$type": "STypeExp_Id",
-                    "memberName": "int",
+                    "name": "int",
                     "typeArgs": []
                 }
             ]
         },
-        "memberName": "D",
+        "name": "D",
         "typeArgs": []
     }
 })---";
@@ -154,7 +154,7 @@ TEST(TypeExpParser, FormalLocal_SugarLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -177,7 +177,7 @@ TEST(TypeExpParser, FormalLocal_SugarNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -200,7 +200,7 @@ TEST(TypeExpParser, FormalLocal_SugarPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -223,7 +223,7 @@ TEST(TypeExpParser, FormalLocal_SugarShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -246,7 +246,7 @@ TEST(TypeExpParser, FormalNullable_FormalLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -269,7 +269,7 @@ TEST(TypeExpParser, FormalNullable_FormalNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -292,7 +292,7 @@ TEST(TypeExpParser, FormalNullable_FormalPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -315,7 +315,7 @@ TEST(TypeExpParser, FormalNullable_FormalShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -342,22 +342,22 @@ TEST(TypeExpParser, FormalNullable_Id)
                 "$type": "STypeExp_Member",
                 "parentType": {
                     "$type": "STypeExp_Id",
-                    "memberName": "A",
+                    "name": "A",
                     "typeArgs": []
                 },
-                "memberName": "B",
+                "name": "B",
                 "typeArgs": []
             },
-            "memberName": "C",
+            "name": "C",
             "typeArgs": [
                 {
                     "$type": "STypeExp_Id",
-                    "memberName": "int",
+                    "name": "int",
                     "typeArgs": []
                 }
             ]
         },
-        "memberName": "D",
+        "name": "D",
         "typeArgs": []
     }
 })---";
@@ -379,7 +379,7 @@ TEST(TypeExpParser, FormalNullable_SugarLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -402,7 +402,7 @@ TEST(TypeExpParser, FormalNullable_SugarNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -425,7 +425,7 @@ TEST(TypeExpParser, FormalNullable_SugarPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -448,7 +448,7 @@ TEST(TypeExpParser, FormalNullable_SugarShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -471,7 +471,7 @@ TEST(TypeExpParser, FormalPtr_FormalLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -494,7 +494,7 @@ TEST(TypeExpParser, FormalPtr_FormalNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -517,7 +517,7 @@ TEST(TypeExpParser, FormalPtr_FormalPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -540,7 +540,7 @@ TEST(TypeExpParser, FormalPtr_FormalShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -567,22 +567,22 @@ TEST(TypeExpParser, FormalPtr_Id)
                 "$type": "STypeExp_Member",
                 "parentType": {
                     "$type": "STypeExp_Id",
-                    "memberName": "A",
+                    "name": "A",
                     "typeArgs": []
                 },
-                "memberName": "B",
+                "name": "B",
                 "typeArgs": []
             },
-            "memberName": "C",
+            "name": "C",
             "typeArgs": [
                 {
                     "$type": "STypeExp_Id",
-                    "memberName": "int",
+                    "name": "int",
                     "typeArgs": []
                 }
             ]
         },
-        "memberName": "D",
+        "name": "D",
         "typeArgs": []
     }
 })---";
@@ -604,7 +604,7 @@ TEST(TypeExpParser, FormalPtr_SugarLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -627,7 +627,7 @@ TEST(TypeExpParser, FormalPtr_SugarNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -650,7 +650,7 @@ TEST(TypeExpParser, FormalPtr_SugarPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -673,7 +673,7 @@ TEST(TypeExpParser, FormalPtr_SugarShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -696,7 +696,7 @@ TEST(TypeExpParser, FormalShared_FormalLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -719,7 +719,7 @@ TEST(TypeExpParser, FormalShared_FormalNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -742,7 +742,7 @@ TEST(TypeExpParser, FormalShared_FormalPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -765,7 +765,7 @@ TEST(TypeExpParser, FormalShared_FormalShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -792,22 +792,22 @@ TEST(TypeExpParser, FormalShared_Id)
                 "$type": "STypeExp_Member",
                 "parentType": {
                     "$type": "STypeExp_Id",
-                    "memberName": "A",
+                    "name": "A",
                     "typeArgs": []
                 },
-                "memberName": "B",
+                "name": "B",
                 "typeArgs": []
             },
-            "memberName": "C",
+            "name": "C",
             "typeArgs": [
                 {
                     "$type": "STypeExp_Id",
-                    "memberName": "int",
+                    "name": "int",
                     "typeArgs": []
                 }
             ]
         },
-        "memberName": "D",
+        "name": "D",
         "typeArgs": []
     }
 })---";
@@ -829,7 +829,7 @@ TEST(TypeExpParser, FormalShared_SugarLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -852,7 +852,7 @@ TEST(TypeExpParser, FormalShared_SugarNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -875,7 +875,7 @@ TEST(TypeExpParser, FormalShared_SugarPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -898,7 +898,7 @@ TEST(TypeExpParser, FormalShared_SugarShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -921,7 +921,7 @@ TEST(TypeExpParser, SugarNullable_FormalLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -944,7 +944,7 @@ TEST(TypeExpParser, SugarNullable_FormalNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -967,7 +967,7 @@ TEST(TypeExpParser, SugarNullable_FormalPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -990,7 +990,7 @@ TEST(TypeExpParser, SugarNullable_FormalShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -1017,22 +1017,22 @@ TEST(TypeExpParser, SugarNullable_Id)
                 "$type": "STypeExp_Member",
                 "parentType": {
                     "$type": "STypeExp_Id",
-                    "memberName": "A",
+                    "name": "A",
                     "typeArgs": []
                 },
-                "memberName": "B",
+                "name": "B",
                 "typeArgs": []
             },
-            "memberName": "C",
+            "name": "C",
             "typeArgs": [
                 {
                     "$type": "STypeExp_Id",
-                    "memberName": "int",
+                    "name": "int",
                     "typeArgs": []
                 }
             ]
         },
-        "memberName": "D",
+        "name": "D",
         "typeArgs": []
     }
 })---";
@@ -1094,7 +1094,7 @@ TEST(TypeExpParser, SugarPtr_FormalLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -1117,7 +1117,7 @@ TEST(TypeExpParser, SugarPtr_FormalNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -1140,7 +1140,7 @@ TEST(TypeExpParser, SugarPtr_FormalPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -1163,7 +1163,7 @@ TEST(TypeExpParser, SugarPtr_FormalShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -1190,22 +1190,22 @@ TEST(TypeExpParser, SugarPtr_Id)
                 "$type": "STypeExp_Member",
                 "parentType": {
                     "$type": "STypeExp_Id",
-                    "memberName": "A",
+                    "name": "A",
                     "typeArgs": []
                 },
-                "memberName": "B",
+                "name": "B",
                 "typeArgs": []
             },
-            "memberName": "C",
+            "name": "C",
             "typeArgs": [
                 {
                     "$type": "STypeExp_Id",
-                    "memberName": "int",
+                    "name": "int",
                     "typeArgs": []
                 }
             ]
         },
-        "memberName": "D",
+        "name": "D",
         "typeArgs": []
     }
 })---";
@@ -1247,7 +1247,7 @@ TEST(TypeExpParser, SugarPtr_SugarPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -1280,7 +1280,7 @@ TEST(TypeExpParser, SugarShared_FormalLocal)
         "$type": "STypeExp_Local",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "I",
+            "name": "I",
             "typeArgs": []
         }
     }
@@ -1303,7 +1303,7 @@ TEST(TypeExpParser, SugarShared_FormalNullable)
         "$type": "STypeExp_Nullable",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -1326,7 +1326,7 @@ TEST(TypeExpParser, SugarShared_FormalPtr)
         "$type": "STypeExp_Ptr",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -1349,7 +1349,7 @@ TEST(TypeExpParser, SugarShared_FormalShared)
         "$type": "STypeExp_Shared",
         "innerType": {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     }
@@ -1376,22 +1376,22 @@ TEST(TypeExpParser, SugarShared_Id)
                 "$type": "STypeExp_Member",
                 "parentType": {
                     "$type": "STypeExp_Id",
-                    "memberName": "A",
+                    "name": "A",
                     "typeArgs": []
                 },
-                "memberName": "B",
+                "name": "B",
                 "typeArgs": []
             },
-            "memberName": "C",
+            "name": "C",
             "typeArgs": [
                 {
                     "$type": "STypeExp_Id",
-                    "memberName": "int",
+                    "name": "int",
                     "typeArgs": []
                 }
             ]
         },
-        "memberName": "D",
+        "name": "D",
         "typeArgs": []
     }
 })---";
@@ -1473,19 +1473,19 @@ TEST(TypeExpParser, TopLevel_ParseIdChain)
         "$type": "STypeExp_Member",
         "parentType": {
             "$type": "STypeExp_Id",
-            "memberName": "A",
+            "name": "A",
             "typeArgs": []
         },
-        "memberName": "B",
+        "name": "B",
         "typeArgs": [
             {
                 "$type": "STypeExp_Id",
-                "memberName": "int",
+                "name": "int",
                 "typeArgs": []
             }
         ]
     },
-    "memberName": "C",
+    "name": "C",
     "typeArgs": []
 })---";
 

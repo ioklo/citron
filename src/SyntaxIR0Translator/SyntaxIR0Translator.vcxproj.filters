@@ -24,10 +24,10 @@
     <ClCompile Include="FuncMatching.cpp">
       <Filter>ExpTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SStmtToMStmtTranslation.cpp">
+    <ClCompile Include="SStmtToMStmt.cpp">
       <Filter>StmtTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="SVarDeclToMStmtsTranslation.cpp">
+    <ClCompile Include="SVarDeclToMStmts.cpp">
       <Filter>StmtTranslation</Filter>
     </ClCompile>
     <ClCompile Include="FuncContext.cpp">
@@ -100,9 +100,6 @@
     <ClCompile Include="ImExpTranslations.cpp">
       <Filter>ExpTranslation\SExpToMIR\0_SExpToReExp</Filter>
     </ClCompile>
-    <ClCompile Include="Translations.cpp">
-      <Filter>ExpTranslation\SExpToMIR</Filter>
-    </ClCompile>
     <ClCompile Include="SExpToIrExp.cpp">
       <Filter>ExpTranslation\SExpToMIR\2_SExpToMSharedExp\SExpToIrExp</Filter>
     </ClCompile>
@@ -129,10 +126,10 @@
     <ClInclude Include="FuncMatching.h">
       <Filter>ExpTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SStmtToMStmtTranslation.h">
+    <ClInclude Include="SStmtToMStmt.h">
       <Filter>StmtTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="SVarDeclToMStmtsTranslation.h">
+    <ClInclude Include="SVarDeclToMStmts.h">
       <Filter>StmtTranslation</Filter>
     </ClInclude>
     <ClInclude Include="TranslateBodyContext.h" />
@@ -218,9 +215,6 @@
     </ClInclude>
     <ClInclude Include="ImExpTranslations.h">
       <Filter>ExpTranslation\SExpToMIR\0_SExpToReExp</Filter>
-    </ClInclude>
-    <ClInclude Include="Translations.h">
-      <Filter>ExpTranslation\SExpToMIR</Filter>
     </ClInclude>
     <ClInclude Include="SExpToIrExp.h">
       <Filter>ExpTranslation\SExpToMIR\2_SExpToMSharedExp\SExpToIrExp</Filter>

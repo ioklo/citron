@@ -76,13 +76,12 @@
     <ClCompile Include="ScopeContext.cpp" />
     <ClCompile Include="SExpToImExp.cpp" />
     <ClCompile Include="SExpToReExp.cpp" />
-    <ClCompile Include="SStmtToMStmtTranslation.cpp" />
-    <ClCompile Include="SVarDeclToMStmtsTranslation.cpp" />
+    <ClCompile Include="SStmtToMStmt.cpp" />
+    <ClCompile Include="SVarDeclToMStmts.cpp" />
     <ClCompile Include="SyntaxIR0Translator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
     <ClCompile Include="TranslationContexts.cpp" />
-    <ClCompile Include="Translations.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BodyRes.h" />
@@ -132,11 +131,10 @@
     <ClInclude Include="ScopeContext.h" />
     <ClInclude Include="SExpToImExp.h" />
     <ClInclude Include="SExpToReExp.h" />
-    <ClInclude Include="SStmtToMStmtTranslation.h" />
-    <ClInclude Include="SVarDeclToMStmtsTranslation.h" />
+    <ClInclude Include="SStmtToMStmt.h" />
+    <ClInclude Include="SVarDeclToMStmts.h" />
     <ClInclude Include="SRTFactory.h" />
     <ClInclude Include="TranslationContexts.h" />
-    <ClInclude Include="Translations.h" />
     <ClInclude Include="TranslationTasks.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

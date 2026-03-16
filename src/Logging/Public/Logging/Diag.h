@@ -171,7 +171,9 @@ struct Error_ForStmt_ContinueExpShouldBeAssignOrCall : ErrorDiag { }; // A1103_F
 struct Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType : ErrorDiag { }; // A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType
 struct Error_ReturnStmt_SeqFuncShouldReturnVoid : ErrorDiag { }; // A1202_ReturnStmt_SeqFuncShouldReturnVoid
 struct Error_ReturnStmt_RefTargetIsNotLocation : ErrorDiag { }; // A1203_ReturnStmt_RefTargetIsNotLocation
+
 struct Error_ExpStmt_ExpressionShouldBeAssignOrCall : ErrorDiag { }; // A1301_ExpStmt_ExpressionShouldBeAssignOrCall
+
 struct Error_YieldStmt_YieldShouldBeInSeqFunc : ErrorDiag { }; // A1401_YieldStmt_YieldShouldBeInSeqFunc
 struct Error_ContinueStmt_ShouldUsedInLoop : ErrorDiag { }; // A1501_ContinueStmt_ShouldUsedInLoop
 struct Error_BreakStmt_ShouldUsedInLoop : ErrorDiag { }; // A1601_BreakStmt_ShouldUsedInLoop

@@ -133,57 +133,58 @@ expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArg
 //}
 
 // 값의 겉보기 타입을 변경한다
-expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContexts& contexts)
-{
-    auto* expType = exp->GetType();
-
-    // 같으면 그대로 리턴
-    if (expectedType == expType)
-        return exp;
-
-    // 1. enumElem인 경우, enum으로 변경할 수 있다
-    if (auto* expEnumElemType = dynamic_cast<RType_EnumElem*>(expType))
-    {
-        auto expEnumType = expEnumElemType->GetBaseEnumType();
-
-        if (expectedType == expEnumType)
-            return contexts.mFactory->MakeMExp<MExp_CastEnumElemToEnum>(exp, expectedType);
-
-        // 에러가 좀더 구체적으로 알려줬으면 좋겠다
-        throw NotImplementedException{};
-        return unexpected{MakePtr<Error_Cast_Failed>()};
-    }
-
-    // 2. exp is class type
-    if (auto* expClassType = dynamic_cast<RType_Class*>(expType))
-    {
-        if (auto* expectedClassType = dynamic_cast<RType_Class*>(expectedType))
-        {
-            if (expectedClassType->IsBaseOf(*expClassType))
-            {
-                return contexts.mFactory->MakeMExp<MExp_CastClass>(exp, expectedClassType);
-            }
-        }
-
-        return unexpected{MakePtr<Error_Cast_Failed>()};
-        // TODO: interface
-        // if (expectType is InterfaceTypeValue )
-    }
-
-    // TODO: 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
-    if (auto* expectedNullableType = dynamic_cast<RType_NullableInplace*>(expectedType))
-    {
-        // Nullable<B>를 원한다면 C를 B로 변환해본다
-        auto e_castToInnerTypeExp = CastMExp(exp, expectedNullableType->innerType, contexts);
-        if (!e_castToInnerTypeExp)
-            return unexpected{MakePtr<Error_Cast_Failed>()};
-
-        // B?로 변경
-        return contexts.mFactory->MakeMExp<MExp_Nullable>(*e_castToInnerTypeExp, contexts.rFactory);
-    }
-
-    return unexpected{MakePtr<Error_Cast_Failed>()};
-}
+// TODO: [47] CastMExp의 리턴값 수정, NBC의 암시적 Cast구현하기
+//expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContexts& contexts)
+//{
+//    auto* expType = exp->GetType();
+//
+//    // 같으면 그대로 리턴
+//    if (expectedType == expType)
+//        return exp;
+//
+//    // 1. enumElem인 경우, enum으로 변경할 수 있다
+//    if (auto* expEnumElemType = dynamic_cast<RType_EnumElem*>(expType))
+//    {
+//        auto expEnumType = expEnumElemType->GetBaseEnumType();
+//
+//        if (expectedType == expEnumType)
+//            return contexts.mFactory->MakeMExp<MExp_CastEnumElemToEnum>(exp, expectedType);
+//
+//        // 에러가 좀더 구체적으로 알려줬으면 좋겠다
+//        throw NotImplementedException{};
+//        return unexpected{MakePtr<Error_Cast_Failed>()};
+//    }
+//
+//    // 2. exp is class type
+//    if (auto* expClassType = dynamic_cast<RType_Class*>(expType))
+//    {
+//        if (auto* expectedClassType = dynamic_cast<RType_Class*>(expectedType))
+//        {
+//            if (expectedClassType->IsBaseOf(*expClassType))
+//            {
+//                return contexts.mFactory->MakeMExp<MExp_CastClass>(exp, expectedClassType);
+//            }
+//        }
+//
+//        return unexpected{MakePtr<Error_Cast_Failed>()};
+//        // TODO: interface
+//        // if (expectType is InterfaceTypeValue )
+//    }
+//
+//    // TODO: 3. C -> Nullable<C>, C -> B -> Nullable<B> 허용
+//    if (auto* expectedNullableType = dynamic_cast<RType_NullableInplace*>(expectedType))
+//    {
+//        // Nullable<B>를 원한다면 C를 B로 변환해본다
+//        auto e_castToInnerTypeExp = CastMExp(exp, expectedNullableType->innerType, contexts);
+//        if (!e_castToInnerTypeExp)
+//            return unexpected{MakePtr<Error_Cast_Failed>()};
+//
+//        // B?로 변경
+//        return contexts.mFactory->MakeMExp<MExp_Nullable>(*e_castToInnerTypeExp, contexts.rFactory);
+//    }
+//
+//    return unexpected{MakePtr<Error_Cast_Failed>()};
+//}
 
 bool IsVarType(STypeExp* typeExp)
 {

@@ -13,7 +13,7 @@
 #include "MIR/MStmt.h"
 #include "MIR/MFactory.h"
 
-#include "SStmtToMStmtTranslation.h"
+#include "SStmtToMStmt.h"
 #include "TranslationContexts.h"
 
 
@@ -88,7 +88,7 @@ expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(NFuncDecl* nFuncDec
     {
     case CheckEndReturnResult::PutReturnVoid:
     {
-        auto* mReturnStmt = mFactory->MakeMStmt<MStmt_Return>(nullptr);
+        auto* mReturnStmt = mFactory->MakeMStmt<MStmt_Return>(nullopt);
         e_mStmts->push_back(mReturnStmt);
         break;
     }

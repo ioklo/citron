@@ -10,12 +10,10 @@
 #include "SRTFactory.h"
 #include "Misc.h"
 #include "TranslationContexts.h"
-#include "SExpToMLocTranslation.h"
 #include "SExp_IdentifierToIrExp.h"
 #include "SExp_MemberToIrExp.h"
 #include "DesignatedDiagnostic.h"
 #include "SExpTranslations.h"
-#include "Translations.h"
 
 using namespace std;
 

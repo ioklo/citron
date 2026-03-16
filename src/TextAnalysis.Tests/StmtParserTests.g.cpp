@@ -117,7 +117,7 @@ TEST(StmtParser, ParseBoxVarDeclStmt)
             "$type": "STypeExp_Box",
             "innerType": {
                 "$type": "STypeExp_Id",
-                "memberName": "int",
+                "name": "int",
                 "typeArgs": []
             }
         },
@@ -171,7 +171,7 @@ TEST(StmtParser, ParseDirectiveStmt)
 
     auto expected = R"---({
     "$type": "SStmt_Directive",
-    "memberName": "notnull",
+    "name": "notnull",
     "args": [
         {
             "$type": "SExp_Identifier",
@@ -303,7 +303,7 @@ TEST(StmtParser, ParseForeachStmt)
     "$type": "SStmt_Foreach",
     "type": {
         "$type": "STypeExp_Id",
-        "memberName": "var",
+        "name": "var",
         "typeArgs": []
     },
     "varName": "x",
@@ -332,7 +332,7 @@ TEST(StmtParser, ParseIfBindStmtWithVarName)
     "$type": "SStmt_IfBind",
     "testType": {
         "$type": "STypeExp_Id",
-        "memberName": "T",
+        "name": "T",
         "typeArgs": []
     },
     "varName": "t",
@@ -387,7 +387,7 @@ TEST(StmtParser, ParseIfIsExpCondStmt)
         },
         "type": {
             "$type": "STypeExp_Id",
-            "memberName": "T",
+            "name": "T",
             "typeArgs": []
         }
     },
@@ -513,7 +513,7 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
             "$type": "STypeExp_Nullable",
             "innerType": {
                 "$type": "STypeExp_Id",
-                "memberName": "int",
+                "name": "int",
                 "typeArgs": []
             }
         },
@@ -545,7 +545,7 @@ TEST(StmtParser, ParsePtrVarDeclStmt)
             "$type": "STypeExp_Ptr",
             "innerType": {
                 "$type": "STypeExp_Id",
-                "memberName": "int",
+                "name": "int",
                 "typeArgs": []
             }
         },
@@ -589,7 +589,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                     "$type": "SVarDeclType_Normal",
                     "typeExp": {
                         "$type": "STypeExp_Id",
-                        "memberName": "string",
+                        "name": "string",
                         "typeArgs": []
                     }
                 },
@@ -733,7 +733,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                         "$type": "STypeExp_Shared",
                         "innerType": {
                             "$type": "STypeExp_Id",
-                            "memberName": "int",
+                            "name": "int",
                             "typeArgs": []
                         }
                     }
@@ -761,7 +761,7 @@ TEST(StmtParser, ParseVarDeclStmt)
                         "$type": "STypeExp_Nullable",
                         "innerType": {
                             "$type": "STypeExp_Id",
-                            "memberName": "int",
+                            "name": "int",
                             "typeArgs": []
                         }
                     }

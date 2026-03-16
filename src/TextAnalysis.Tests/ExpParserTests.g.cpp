@@ -174,23 +174,23 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
                     "value": "a",
                     "typeArgs": []
                 },
-                "memberName": "b",
+                "name": "b",
                 "memberTypeArgs": []
             },
-            "memberName": "c",
+            "name": "c",
             "memberTypeArgs": [
                 {
                     "$type": "STypeExp_Id",
-                    "memberName": "int",
+                    "name": "int",
                     "typeArgs": []
                 },
                 {
                     "$type": "STypeExp_Id",
-                    "memberName": "list",
+                    "name": "list",
                     "typeArgs": [
                         {
                             "$type": "STypeExp_Id",
-                            "memberName": "int",
+                            "name": "int",
                             "typeArgs": []
                         }
                     ]
@@ -226,7 +226,7 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
             ]
         }
     },
-    "memberName": "d",
+    "name": "d",
     "memberTypeArgs": []
 })---";
 
@@ -262,7 +262,7 @@ TEST(ExpParser, ParseIdentifierExpWithTypeArgs)
     "typeArgs": [
         {
             "$type": "STypeExp_Id",
-            "memberName": "T",
+            "name": "T",
             "typeArgs": []
         }
     ]
@@ -285,11 +285,11 @@ TEST(ExpParser, ParseIndirectMemberExp)
         "value": "a",
         "typeArgs": []
     },
-    "memberName": "b",
+    "name": "b",
     "memberTypeArgs": [
         {
             "$type": "STypeExp_Id",
-            "memberName": "int",
+            "name": "int",
             "typeArgs": []
         }
     ]
@@ -334,7 +334,7 @@ TEST(ExpParser, ParseLambdaExp)
             {
                 "$type": "SLambdaExpParam",
                 "type": null,
-                "memberName": "b",
+                "name": "b",
                 "hasOut": false,
                 "hasParams": false
             }
@@ -347,7 +347,7 @@ TEST(ExpParser, ParseLambdaExp)
                     {
                         "$type": "SLambdaExpParam",
                         "type": null,
-                        "memberName": "c",
+                        "name": "c",
                         "hasOut": false,
                         "hasParams": false
                     },
@@ -355,10 +355,10 @@ TEST(ExpParser, ParseLambdaExp)
                         "$type": "SLambdaExpParam",
                         "type": {
                             "$type": "STypeExp_Id",
-                            "memberName": "int",
+                            "name": "int",
                             "typeArgs": []
                         },
-                        "memberName": "d",
+                        "name": "d",
                         "hasOut": false,
                         "hasParams": false
                     }
@@ -418,11 +418,11 @@ TEST(ExpParser, ParseNewExp)
     "$type": "SExp_New",
     "type": {
         "$type": "STypeExp_Id",
-        "memberName": "MyType",
+        "name": "MyType",
         "typeArgs": [
             {
                 "$type": "STypeExp_Id",
-                "memberName": "X",
+                "name": "X",
                 "typeArgs": []
             }
         ]
@@ -603,11 +603,11 @@ TEST(ExpParser, ParseTestAndTypeTestExp)
             },
             "type": {
                 "$type": "STypeExp_Id",
-                "memberName": "X",
+                "name": "X",
                 "typeArgs": [
                     {
                         "$type": "STypeExp_Id",
-                        "memberName": "int",
+                        "name": "int",
                         "typeArgs": []
                     }
                 ]
@@ -629,7 +629,7 @@ TEST(ExpParser, ParseTestAndTypeTestExp)
     },
     "type": {
         "$type": "STypeExp_Id",
-        "memberName": "T",
+        "name": "T",
         "typeArgs": []
     }
 })---";

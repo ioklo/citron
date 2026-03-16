@@ -31,3 +31,7 @@
 - [ ] // TODO: [50] is에 pattern, alias binding추가
 - [ ] // TODO: [51] 단일 ClassFuncs, StructFuncs가 expression으로 쓰이면, Lambda로 쓰일수 있게 변환
 - [ ] // TODO: [52] TypeVar정리
+- [ ] // TODO: [53] foreach 구현
+- [ ] // TODO: [54] [out] ref parameter 지원
+- [ ] // TODO: [55] struct 이외의 Non-bitwisecopyable 처리
+- [ ] // TODO: [56] constraint resolver 구현

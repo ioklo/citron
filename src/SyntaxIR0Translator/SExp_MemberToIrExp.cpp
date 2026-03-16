@@ -368,7 +368,7 @@ struct Binder
     {
         // IrExp_SharedDeref의 요구사항이다. IrExp_SharedDeref를 생성할때 체크한다
         // innerLoc(pS)가 shared<S>일 것
-        auto* sharedType = dynamic_cast<RType_Shared*>(GetType(irBaseExp->loc, &*contexts.rFactory));
+        auto* sharedType = dynamic_cast<RType_Shared*>(GetType(irBaseExp->srcShared.loc, &*contexts.rFactory));
         if (!sharedType) throw RuntimeFatalException{}; 
         
         auto* structTargetType = dynamic_cast<RType_Struct*>(sharedType->innerType);
@@ -377,7 +377,7 @@ struct Binder
         auto e_result = GetStructVar(structTargetType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
         RETURN_ON_ERROR_REFDECL(e_result, result);
 
-        return contexts.srtFactory->MakeIrExp<IrExp_SharedStructVar>(irBaseExp->loc, result.decl, result.typeArgs);
+        return contexts.srtFactory->MakeIrExp<IrExp_SharedStructVar>(irBaseExp->srcShared.loc, result.decl, result.typeArgs);
     }
 
     // 임의의 location으로부터

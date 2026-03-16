@@ -11,10 +11,10 @@ namespace Citron {
 
 class RFuncDecl;
 class RTypeArguments;
-struct MExp;
+struct MStmt;
 struct MLoc;
 struct TranslationContexts;
 
-std::expected<MExp*, DiagPtr> TranslateRFuncAndNArgsToMExp(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, std::vector<MArgument>&& args, TranslationContexts& contexts);
+std::expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, std::vector<MArgument>&& args, TranslationContexts& contexts);
 
 } // namespace Citron

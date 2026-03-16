@@ -7,7 +7,6 @@
 namespace Citron {
 
 using DiagPtr = std::shared_ptr<struct Diag>;
-class MExp_String;
 
 class QBodyContext;
 

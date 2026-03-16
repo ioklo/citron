@@ -13,7 +13,6 @@ class SStmt;
 class SStmt_Command;
 class SStmt_VarDecl;
 class SStmt_If;
-class SStmt_IfBind;
 class SStmt_For;
 class SStmt_Continue;
 class SStmt_Break;
@@ -118,7 +117,6 @@ public:
     MAKE(SStmt_Command)
     MAKE(SStmt_VarDecl)
     MAKE(SStmt_If)
-    MAKE(SStmt_IfBind)
     MAKE(SStmt_For)
     MAKE(SStmt_Continue)
     MAKE(SStmt_Break)
