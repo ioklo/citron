@@ -28,8 +28,7 @@ struct NestedDiag : Diag
 struct AggregateDiag : Diag 
 {
     std::vector<DiagPtr> diags;
-
-    LOGGING_API AggregateDiag(std::vector<DiagPtr>&& diags) : diags(std::move(diags)) { }
+    AggregateDiag(std::vector<DiagPtr>&& diags) : diags(std::move(diags)) { }
 };
 
 //LOGGING_API void Fatal_Parameter_MismatchBetweenParamCountAndArgCount(); // A0401_Parameter_MismatchBetweenParamCountAndArgCount
@@ -242,6 +241,20 @@ struct Error_StaticNotNullDirective_ArgumentMustBeLocation : ErrorDiag { }; // A
 //struct Error_Reference_CantReferenceTempValue : ErrorDiag { }; // A3002_Reference_CantReferenceTempValue
 //struct Error_Reference_UselessDereferenceReferencedValue : ErrorDiag { }; // A3003_Reference_UselessDereferenceReferencedValue
 //struct Error_Reference_CantReferenceThis : ErrorDiag { }; // A3004_Reference_CantReferenceThis
+
+struct Error_Argument_Ref_ArgIsNotLoc : ErrorDiag {};
+struct Error_Argument_Ref_ParamIsNotRef : ErrorDiag {};
+struct Error_Argument_Move_ArgIsNotLoc : ErrorDiag {};
+struct Error_Argument_Move_ParamMismatch : ErrorDiag {}; // 함수의 파라미터가 [move], [params]일때만 가능
+struct Error_Argument_Forward_ArgShouldBeForwardArg : ErrorDiag {}; // [forward]가 붙은 argument만 [forward] T&에 매칭 가능 void F([forward]T& t) { G(forward t); }
+struct Error_Argument_Forward_ParamMismatch : ErrorDiag {}; // 함수의 파라미터가 [forward]일때만 가능 void G([forward]T& t); void F([forward]T& t) { G(forward t); }
+
+struct Error_Argument_Mismatch_NormalRef_Exp : ErrorDiag {}; // T& 인자로 Exp(BC)가 들어온 경우
+struct Error_Argument_Mismatch_NormalRef_InitExp : ErrorDiag {}; // T& 인자로 InitExp(NBC)가 들어온 경우
+struct Error_Argument_Mismatch_MoveRef_LocBC : ErrorDiag {}; // [move]T& 인자로 Loc(BC)가 들어온 경우
+struct Error_Argument_Mismatch_MoveRef_LocNBC : ErrorDiag {}; // [move]T& 인자로 Loc(NBC)가 들어온 경우
+struct Error_Argument_StmtCall : ErrorDiag {}; // 어떤 파라미터라도 void call을 argument로 받을 수 없다
+struct Error_Argument_StmtAssign : ErrorDiag {}; // 어떤 파라미터라도 NBC assign을 argument로 받을 수 없다
 
 struct Error_NotSupported_LambdaParameterInference : ErrorDiag { }; // A9901_NotSupported_LambdaParameterInference
 struct Error_NotSupported_LambdaReturnTypeInference : ErrorDiag {}; // A9902_NotSupported_LambdaReturnTypeInference

@@ -86,7 +86,7 @@ expected<void, DiagPtr> CheckType(vector<TypeEqualConstraint>& constraints, RTyp
     return unexpected{MakePtr<Error_FuncMatch_MismatchBetweenParamTypeAndArgType>()};
 }
 
-optional<MArgument> TryMakeMArgument_Exp(RFuncParameter& funcParam, MExp* exp, TranslationContexts& contexts)
+expected<MArgument, DiagPtr> MakeMArgument_Exp(RFuncParameter& funcParam, MExp* exp, TranslationContexts& contexts)
 {
     switch (funcParam.kind)
     {
@@ -94,7 +94,7 @@ optional<MArgument> TryMakeMArgument_Exp(RFuncParameter& funcParam, MExp* exp, T
         return MArgument_Create{MCreate_BC{exp}};
 
     case RFuncParameterKind::Ref:
-        return nullopt;
+        return Error<Error_Argument_Mismatch_NormalRef_Exp>();
 
     case RFuncParameterKind::In:
         return MArgument_Loc{
@@ -124,7 +124,7 @@ optional<MArgument> TryMakeMArgument_Exp(RFuncParameter& funcParam, MExp* exp, T
     unreachable();
 }
 
-optional<MArgument> TryMakeMArgument_InitExp(RFuncParameter& funcParam, MInitExp* initExp, TranslationContexts& contexts)
+expected<MArgument, DiagPtr> MakeMArgument_InitExp(RFuncParameter& funcParam, MInitExp* initExp, TranslationContexts& contexts)
 {
     switch (funcParam.kind)
     {
@@ -132,7 +132,7 @@ optional<MArgument> TryMakeMArgument_InitExp(RFuncParameter& funcParam, MInitExp
         return MArgument_Create{MCreate_NBC{initExp}};
 
     case RFuncParameterKind::Ref:
-        return nullopt;
+        return Error<Error_Argument_Mismatch_NormalRef_InitExp>();
 
     case RFuncParameterKind::In:
         return MArgument_Loc{
@@ -162,7 +162,7 @@ optional<MArgument> TryMakeMArgument_InitExp(RFuncParameter& funcParam, MInitExp
     unreachable();
 }
 
-optional<MArgument> TryMakeMArgument_LocBC(RFuncParameter& funcParam, MLoc* loc, TranslationContexts& contexts)
+expected<MArgument, DiagPtr> MakeMArgument_LocBC(RFuncParameter& funcParam, MLoc* loc, TranslationContexts& contexts)
 {
     switch (funcParam.kind)
     {
@@ -173,7 +173,7 @@ optional<MArgument> TryMakeMArgument_LocBC(RFuncParameter& funcParam, MLoc* loc,
     case RFuncParameterKind::In:
         return MArgument_Loc{loc};
     case RFuncParameterKind::Move:
-        return nullopt;
+        return Error<Error_Argument_Mismatch_MoveRef_LocBC>();
     case RFuncParameterKind::Forward:
         return MArgument_Forward{MArgument_Forward_LValue{loc}};
     case RFuncParameterKind::Out:
@@ -192,7 +192,7 @@ optional<MArgument> TryMakeMArgument_LocBC(RFuncParameter& funcParam, MLoc* loc,
     unreachable();
 }
 
-optional<MArgument> TryMakeMArgument_LocNBC(RFuncParameter& funcParam, MLoc* loc, RType* locType, TranslationContexts& contexts)
+expected<MArgument, DiagPtr> MakeMArgument_LocNBC(RFuncParameter& funcParam, MLoc* loc, RType* locType, TranslationContexts& contexts)
 {
     switch (funcParam.kind)
     {
@@ -219,7 +219,7 @@ optional<MArgument> TryMakeMArgument_LocNBC(RFuncParameter& funcParam, MLoc* loc
         return MArgument_Loc{loc};
 
     case RFuncParameterKind::Move:
-        return nullopt;
+        return Error<Error_Argument_Mismatch_MoveRef_LocNBC>();
 
     case RFuncParameterKind::Forward:
         return MArgument_Forward{MArgument_Forward_LValue{loc}};
@@ -240,74 +240,50 @@ optional<MArgument> TryMakeMArgument_LocNBC(RFuncParameter& funcParam, MLoc* loc
     unreachable();
 }
 
-optional<MArgument> TryMakeMArgument_LocNBC(RFuncParameter& funcParam, MLoc* loc, RType* locType, TranslationContexts& contexts)
-{
-    switch (funcParam.kind)
-    {
-    case RFuncParameterKind::Normal:
-    {
-        if (auto* structType = dynamic_cast<RType_Struct*>(locType))
-        {
-            // TODO: [40] MInitExp_StructCtorKind_*를 쓸때 Copy, Move가 가능한지 확인하고 fallback까지 하는 코드 작성
-            auto* initExp = contexts.mFactory->MakeMInitExp<MInitExp_StructCtor>(MInitExp_StructCtorKind_Copy{
-                .structType = structType,
-                .src = MRead_NBC{.loc = loc}});
-
-            return MArgument_Create{MCreate_NBC{initExp}};
-        }
-
-        // TODO: [55] struct 이외의 Non-bitwisecopyable 처리
-        throw NotImplementedException{};
-    }
-
-    case RFuncParameterKind::Ref:
-        return MArgument_Loc{loc};
-
-    case RFuncParameterKind::In:
-        return MArgument_Loc{loc};
-
-    case RFuncParameterKind::Move:
-        return nullopt;
-
-    case RFuncParameterKind::Forward:
-        return MArgument_Forward{MArgument_Forward_LValue{loc}};
-
-    case RFuncParameterKind::Out:
-        // TODO: [54] [out] ref parameter 지원
-        throw NotImplementedException{};
-
-    case RFuncParameterKind::Params:
-        // TODO: [31] params 구현
-        throw NotImplementedException{};
-
-    case RFuncParameterKind::Init:
-        // TODO: [27] enumElemDecl에 memberwise ctor 추가하기, memberwise ctor에서 직접 대입 처리
-        throw NotImplementedException{};
-    }
-
-    unreachable();
-}
-
-optional<MArgument> TryMakeMArgument(RFuncParameter& funcParam, SArgument* sArg, std::vector<TypeEqualConstraint>& constraints, TranslationContexts& contexts)
+expected<MArgument, DiagPtr> MakeMArgument(RFuncParameter& funcParam, SArgument* sArg, std::vector<TypeEqualConstraint>& constraints, TranslationContexts& contexts)
 {
     auto e_reArg = TranslateSExpToReExp(sArg->exp, funcParam.type, contexts);
-    if (!e_reArg) return nullopt;
+    RETURN_ON_ERROR(e_reArg);
 
+    // modifier 체크
     if (sArg->o_modifier)
     {
         switch (*sArg->o_modifier)
         {
-            case SArgModifier::Ref:
-            case SArgModifier::Move:
-                return TryMakeMArgument_Move(funcParam, *e_reArg, constraints, contexts);
+        case SArgModifier::Ref:
+            // ReExp_Loc이 아닌 경우, 에러
+            if (!holds_alternative<ReExp_Loc>(*e_reArg))
+                return Error<Error_Argument_Ref_ArgIsNotLoc>();
 
-            case SArgModifier::Forward:
-            case SArgModifier::Out:
-            case SArgModifier::Params:
+            if (!funcParam.IsRef())
+                return Error<Error_Argument_Ref_ParamIsNotRef>();
+
+            break;
+
+        case SArgModifier::Move:
+            if (!holds_alternative<ReExp_Loc>(*e_reArg))
+                return Error<Error_Argument_Move_ArgIsNotLoc>();
+
+            if (!(funcParam.kind == RFuncParameterKind::Move || funcParam.kind == RFuncParameterKind::Forward))
+                return Error<Error_Argument_Move_ParamMismatch>();
+
+            break;
+
+        case SArgModifier::Forward:
+            // TODO: [57] [forward] ref parameter 지원
+            throw NotImplementedException{};
+
+        case SArgModifier::Out:
+            // TODO: [54] [out] ref parameter 지원
+            throw NotImplementedException{};
+
+        case SArgModifier::Params:
+            // TODO: [31] params 구현
+            throw NotImplementedException{};
         }
     }
 
-    return visit([&funcParam, &contexts](auto& reArg) -> optional<MArgument> {
+    return visit([&funcParam, &contexts](auto& reArg) -> expected<MArgument, DiagPtr> {
         using T = remove_cvref_t<decltype(reArg)>;
 
         if constexpr (same_as<T, ReExp_Loc>)
@@ -317,30 +293,30 @@ optional<MArgument> TryMakeMArgument(RFuncParameter& funcParam, SArgument* sArg,
             switch (type->GetCopyStrategy())
             {
             case RCopyStrategy::Void: throw RuntimeFatalException{}; // loc을 리턴했는데 void인 경우는 없다
-            case RCopyStrategy::Bitwise: return TryMakeMArgument_LocBC(funcParam, reArg.mLoc, contexts);
-            case RCopyStrategy::NonBitwise: return TryMakeMArgument_LocNBC(funcParam, reArg.mLoc, type, contexts);
+            case RCopyStrategy::Bitwise: return MakeMArgument_LocBC(funcParam, reArg.mLoc, contexts);
+            case RCopyStrategy::NonBitwise: return MakeMArgument_LocNBC(funcParam, reArg.mLoc, type, contexts);
             }
 
             unreachable();
         }
         else if constexpr (same_as<T, ReExp_Exp>)
-            return TryMakeMArgument_Exp(funcParam, reArg.mExp, contexts);
+            return MakeMArgument_Exp(funcParam, reArg.mExp, contexts);
 
         else if constexpr (same_as<T, ReExp_InitExp>)
-            return TryMakeMArgument_InitExp(funcParam, reArg.mInitExp, contexts);
+            return MakeMArgument_InitExp(funcParam, reArg.mInitExp, contexts);
 
         else if constexpr (same_as<T, ReExp_StmtCall>)
-            return nullopt;
+            return Error<Error_Argument_StmtCall>();
 
         else if constexpr (same_as<T, ReExp_StmtAssign>)
-            return nullopt;
+            return Error<Error_Argument_StmtAssign>();
 
         else static_assert(false);
 
     }, *e_reArg);
 }
 
-expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
+expected<ArgumentsMatch, DiagPtr> MatchArguments(
     IMatchArgumentsInput* input,
     RTypeArguments* outerTypeArgs, 
     RTypeArguments* partialMemberTypeArgs,
@@ -364,10 +340,10 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
         auto* sArgItem = sArgs->items[i];
         auto rFuncParam = input->GetFuncParam(partialTypeArgs, i);
 
-        auto o_mArg = TryMakeMArgument(rFuncParam, sArgItem, constraints, contexts);
-        if (!o_mArg) return nullopt;
+        auto e_mArg = MakeMArgument(rFuncParam, sArgItem, constraints, contexts);
+        RETURN_ON_ERROR(e_mArg);
 
-        mArgs.push_back(move(*o_mArg));
+        mArgs.push_back(move(*e_mArg));
     }
 
     // TODO: [56] constraint resolver 구현
@@ -375,6 +351,5 @@ expected<optional<ArgumentsMatch>, DiagPtr> MatchArguments(
 
     return ArgumentsMatch{partialTypeArgs, std::move(mArgs)};
 }
-
 
 } // namespace Citron
