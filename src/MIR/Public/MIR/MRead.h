@@ -1,4 +1,5 @@
 #pragma once
+#include "MIRConfig.h"
 
 #include <variant>
 
@@ -16,6 +17,6 @@ struct MRead_NBC { MLoc* loc; };  // NBC 전용, rvalue가 있으면 MLoc_Materi
 
 using MRead = std::variant<MRead_BC, MRead_NBC>;
 
-RType* GetType(MRead& read, RFactory* rFactory);
+MIR_API RType* GetType(MRead& read, RFactory* rFactory);
 
 } // namespace Citron

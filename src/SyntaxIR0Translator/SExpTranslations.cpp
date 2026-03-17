@@ -200,10 +200,10 @@ expected<ReExp, DiagPtr> TranslateSExp_BinaryOp_AssignToReExp(SExp_BinaryOp* sEx
             if (rType != mDestLocType)
             {
                 // TODO: [47] CastMExp의 리턴값 수정, NBC의 암시적 Cast구현하기
-                auto e_mCastExp = CastMExp(mSrc.exp, mDestLocType, contexts);
-                RETURN_ON_ERROR(e_mCastExp);
+                /*auto e_mCastExp = CastMExp(mSrc.exp, mDestLocType, contexts);
+                RETURN_ON_ERROR(e_mCastExp);*/
 
-                return ReExp_Exp{contexts.mFactory->MakeMExp<MExp_Store>(mDestLoc, MRead_BC{*e_mCastExp})};
+                return ReExp_Exp{contexts.mFactory->MakeMExp<MExp_Store>(mDestLoc, MRead_BC{mSrc.exp})};
             }
             return ReExp_Exp{contexts.mFactory->MakeMExp<MExp_Store>(mDestLoc, move(mSrc))};
         }

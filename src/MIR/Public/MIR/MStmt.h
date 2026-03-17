@@ -69,8 +69,8 @@ struct MStmt_LocalRefDecl : MStmt
     MLoc* loc;
 
 public:
-    MStmt_LocalRefDecl(RType* type, RName&& name, MLoc* loc)
-        : type{type}, name{std::move(name)}, loc{loc}
+    MStmt_LocalRefDecl(RType* type, const RName& name, MLoc* loc)
+        : type{type}, name{name}, loc{loc}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };

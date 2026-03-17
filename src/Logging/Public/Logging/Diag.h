@@ -117,9 +117,13 @@ struct AggregateDiag : Diag
 struct Error_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType : ErrorDiag { }; // A0102_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType
 struct Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope : ErrorDiag { }; // A0103_VarDecl_LocalVarNameShouldBeUniqueWithinScope
 struct Error_VarDecl_GlobalVariableNameShouldBeUnique : ErrorDiag { }; // A0104_VarDecl_GlobalVariableNameShouldBeUnique
-struct Error_VarDecl_RefDeclNeedInitializer : ErrorDiag { }; // A0106_VarDecl_RefDeclNeedInitializer
+
+struct Error_VarDecl_RefDeclCantUsingMove : ErrorDiag { };
+struct Error_VarDecl_RefDeclNeedLocationInitializer : ErrorDiag {}; // A0112_VarDecl_RefDeclNeedLocationInitializer
+
+
 struct Error_VarDecl_LocalVarDeclNeedInitializer : ErrorDiag { }; // A0111_VarDecl_LocalVarDeclNeedInitializer
-struct Error_VarDecl_RefDeclNeedLocationInitializer : ErrorDiag { }; // A0112_VarDecl_RefDeclNeedLocationInitializer
+
 struct Error_VarDecl_UsingLocalVarInsteadOfVarWhenInitExpIsLocalInterface : ErrorDiag { }; // A0113_VarDecl_UsingLocalVarInsteadOfVarWhenInitExpIsLocalInterface
 struct Error_VarDecl_UsingSharedVarInsteadOfVarWhenInitExpIsShared : ErrorDiag {}; 
 struct Error_VarDecl_UsingBoxVarInsteadOfVarWhenInitExpIsBox : ErrorDiag { }; // A0114_VarDecl_UsingBoxVarInsteadOfVarWhenInitExpIsBox

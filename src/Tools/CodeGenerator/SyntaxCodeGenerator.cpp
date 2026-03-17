@@ -756,7 +756,8 @@ struct ToJsonVisitor {
         ClassInfo{
             .name = "SVarDeclType_VarRef",
             .variantInterfaces { "SVarDeclType" },
-            .memberInfos { },
+            .memberInfos { 
+            },
         },
 
         ClassInfo{

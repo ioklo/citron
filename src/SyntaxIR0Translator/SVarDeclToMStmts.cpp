@@ -31,21 +31,13 @@ namespace Citron {
 
 namespace {
 
-class VarDeclElemTranslator
+struct VarDeclElemTranslator
 {
     using ResultType = expected<void, DiagPtr>;
 
     vector<MStmt*>* outStmts;
     span<SVarDeclElement> elems;
     TranslationContexts& contexts;
-
-public:
-    VarDeclElemTranslator(vector<MStmt*>* outStmts, std::span<SVarDeclElement>&& elems, TranslationContexts& contexts)
-        : outStmts{outStmts}, elems{move(elems)}, contexts{contexts}
-    {
-    }
-
-private:
 
     expected<void, DiagPtr> CheckVarConsistencyPlainVar(RType* initExpType)
     {
@@ -115,78 +107,21 @@ private:
         }
     }
 
-    void AddLocalVar(MStmt* mStmt, RType* rType, const RName& name)
+    void AddLocalVar(RType* rType, const RName& name, MStmt_LocalVarDeclInit&& init)
     {
+        auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rType, name, move(init));
         contexts.scopeContext->AddLocalVarInfo(rType, name);
         outStmts->push_back(mStmt);
     }
 
-    void AddLocalRef(MStmt* mStmt, RType* rType, const RName& name)
-    {
+    void AddLocalRef(RType* rType, const RName& name, MLoc* mLoc)
+    {   
+        auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalRefDecl>(rType, name, mLoc);
+
         contexts.scopeContext->AddLocalRefInfo(rType, name);
         outStmts->push_back(mStmt);
     }
 
-    // 각 케이스별로 함수로 만들어 본다
-    ResultType Handle_Var_Loc(MLoc* mLoc)
-    {
-        // TODO: location이면 lvalue로, primitive면 그냥 bitwise copy, struct라면 copy ctor호출
-        auto* rType = GetType(mLoc, &*contexts.rFactory);
-
-        if (auto* rPrimType = dynamic_cast<RType_Primitive*>(rType))
-        {
-            // 복사: var x = 2; var y = x; // 여기서 var y = x
-
-
-
-
-        }
-        else if (auto* rStructType = dynamic_cast<RType_Struct*>(rType))
-        {
-            // struct일때는 copy ctor호출
-            throw NotImplementedException{};
-        }
-        else
-        {
-            throw NotImplementedException{};
-        }
-    }
-
-    bool AreTypeArgsOfMExp_NewStructAndRTypeSame(MExp_NewStruct* newStructExp, RType* rType)
-    {
-        // MExp_NewStruct의 typeArgs와 rType의 typeArgs가 일치해야 한다
-        auto* rStructType = dynamic_cast<RType_Struct*>(rType);
-        if (!rStructType) return false;
-
-        if (newStructExp->typeArgs != rStructType->typeArgs) return false;
-
-        return true;
-    }
-
-    ResultType Handle_Var_Exp(const RName& varName, MExp* mExp)
-    {
-        auto* rType = GetType(mExp, &*contexts.rFactory);
-
-        // NewStruct일때만 따로 처리. StructInit
-        // var x = S(1, 2, 3);
-        if (auto* newStructExp = dynamic_cast<MExp_NewStruct*>(mExp))
-        {
-            // MExp_NewStruct의 typeArgs와 rType의 typeArgs가 일치해야 한다
-            assert(AreTypeArgsOfMExp_NewStructAndRTypeSame(newStructExp, rType));
-            
-            auto* stmt = contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rType, varName, MStmt_LocalVarDeclInit_StructInit{newStructExp->ctor});
-            AddLocalVar(stmt, rType, varName);
-        }
-        else
-        {
-            auto* stmt = contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rType, varName, MStmt_LocalVarDeclInit_Exp{mExp});
-            AddLocalVar(stmt, rType, varName);
-        }
-
-        return {};
-    }
-    
-public:
     // var x = ...
     ResultType Visit(SVarDeclType_Var* sVarDeclType)
     {
@@ -195,53 +130,23 @@ public:
             RName_Normal varName = {elem.varName};
 
             if (contexts.scopeContext->DoesLocalNameExistInScope(varName))
-                return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
+                return Error<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>();
 
-            return visit([this, sVarDeclType, &varName](auto& sInit) -> ResultType {
+            auto e_result = visit([this, sVarDeclType, &varName](auto& sInit) -> ResultType {
                 using T = remove_cvref_t<decltype(sInit)>;
 
                 // var x = <expr>
                 if constexpr (same_as<T, SVarDeclElementInit_Exp>)
                 {
-                    // 오히려, sInit.exp를 MExp로 일단 바꾸고, MExp_NewStruct 라면, 변환을 하는게 맞는거 같다
-                    auto e_mOperand = TranslateSExpToMOperand(sInit.exp, /*hintType*/nullptr, contexts);
-                    RETURN_ON_ERROR(e_mOperand);
+                    auto e_mCreate = TranslateSExpToMCreate(sInit.exp, /*hintType*/nullptr, contexts);
+                    RETURN_ON_ERROR(e_mCreate);
 
-                    return visit([this, &varName](auto& mOperand) -> ResultType {
-                        using U = remove_cvref_t<decltype(mOperand)>;
-
-                        // var x = l;
-                        if constexpr (same_as<U, MRead_NBC>)
-                        {
-                            return Handle_Var_Loc();
-                        }
-                        // var x = F();
-                        // var x = S(...);
-                        else if constexpr (same_as<U, MRead_BC>)
-                        {
-                            return Handle_Var_Exp(varName, mOperand.exp);
-                        }
-                        else static_assert(false);
-                    }, *e_mOperand);
-
-                    // try
-                    if (auto* sCallInitExp = dynamic_cast<SExp_Call*>(sInit.exp))
-                    {   
-                        // callable인 경우, 
-                        auto e_callable = TranslateSExpToImExp(sCallInitExp->callable, /*hintType*/nullptr, contexts);
-                        static_assert(false);
-                    }
-
-                    // var꼴로 나오는 경우 hintType은 없다
-                    auto e_nInitExp = TranslateSExpToMExp(sInit.exp, /*hintType*/nullptr, contexts);
-                    RETURN_ON_ERROR(e_nInitExp);
-
-                    auto* rInitExpType = GetType(*e_nInitExp, &*contexts.rFactory);
-                    auto e_result = CheckVarConsistency(sVarDeclType->kind, rInitExpType);
+                    auto* initType = GetType(*e_mCreate, &*contexts.rFactory);
+                    auto e_result = CheckVarConsistency(sVarDeclType->kind, initType);
                     RETURN_ON_ERROR(e_result);
-
-                    auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rInitExpType, varName, *e_nInitExp);
-                    AddLocalVar(mStmt, rInitExpType, varName);
+                    
+                    AddLocalVar(initType, varName, MStmt_LocalVarDeclInit_Create{move(*e_mCreate)});
+                    return {};
                 }
                 // var x = move expr;
                 else if constexpr (same_as<T, SVarDeclElementInit_Move>)
@@ -256,6 +161,8 @@ public:
                 }
                 else static_assert(false);
             }, elem.init);
+
+            RETURN_ON_ERROR(e_result);
         }
 
         return {};
@@ -265,21 +172,40 @@ public:
     ResultType Visit(SVarDeclType_VarRef* sVarDeclType)
     {   
         for (auto& elem : elems)
-        {
-            if (contexts.scopeContext->DoesLocalNameExistInScope(RName_Normal{elem.varName}))
-                return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
+        {   
+            RName_Normal varName{elem.varName};
 
-            assert(elem.initExp); // 이제 초기화 식이 반드시 있어야 한다. 초기화를 안할거면 명시적으로 uninit을 써주는걸로
+            if (contexts.scopeContext->DoesLocalNameExistInScope(varName))
+                return Error<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>();
 
-            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            auto e_mLoc = TranslateSExpToMLoc(elem.initExp, /*hintType*/nullptr, /*bMaterializeExp*/false, &designatedDiag, contexts);
-            RETURN_ON_ERROR(e_mLoc);
+            auto e_result = visit([this, sVarDeclType, &varName](auto& sInit) -> ResultType {
+                using T = remove_cvref_t<decltype(sInit)>;
 
-            // mLoc의 타입을 그대로 쓴다
-            auto* rDeclType = GetType(*e_mLoc, &*contexts.rFactory);
-            auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalRefDecl>(rDeclType, RName_Normal{elem.varName}, *e_mLoc);
+                // var& x = <expr>
+                if constexpr (same_as<T, SVarDeclElementInit_Exp>)
+                {
+                    DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> notLocationDiag;
+                    auto e_mLoc = TranslateSExpToMLoc(sInit.exp, /*hintType*/nullptr, /*bMaterializeExp*/false, &notLocationDiag, contexts);
+                    RETURN_ON_ERROR(e_mLoc);
 
-            return LocalRef(mStmt, rDeclType, RName_Normal{elem.varName});
+                    auto* locType = GetType(*e_mLoc, &*contexts.rFactory);
+                    // var&는 단일로만 존재한다. var consistency 테스트를 하지 않는다 
+                    AddLocalRef(locType, varName, *e_mLoc);
+                    return {};
+                }
+                // var& x = move expr;
+                else if constexpr (same_as<T, SVarDeclElementInit_Move>)
+                {
+                    return Error<Error_VarDecl_RefDeclCantUsingMove>();
+                }
+                // var& x = uninit; 에러
+                else if constexpr (same_as<T, SVarDeclElementInit_Uninit>)
+                {
+                    return Error<Error_VarDecl_RefDeclNeedLocationInitializer>();
+                }
+                else static_assert(false);
+            }, elem.init);
+            RETURN_ON_ERROR(e_result);
         }
 
         return {};
@@ -288,27 +214,47 @@ public:
     // T& x = ...
     ResultType Visit(SVarDeclType_Ref* sVarDeclType)
     {
-        auto e_rDeclType = contexts.scopeContext->TranslateSTypeExpToRType(sVarDeclType->typeExp);
-        RETURN_ON_ERROR(e_rDeclType);
+        auto e_declType = contexts.scopeContext->TranslateSTypeExpToRType(sVarDeclType->typeExp);
+        RETURN_ON_ERROR(e_declType);
 
+        auto* declType = *e_declType;
         for (auto& elem : elems)
         {
-            if (contexts.scopeContext->DoesLocalNameExistInScope(RName_Normal{elem.varName}))
+            RName_Normal varName{elem.varName};
+
+            if (contexts.scopeContext->DoesLocalNameExistInScope(varName))
                 return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
 
-            assert(elem.initExp); // 이제 초기화 식이 반드시 있어야 한다. 초기화를 안할거면 명시적으로 uninit을 써주는걸로
+            auto e_result = visit([this, declType, &varName](auto& sInit) -> ResultType {
+                using T = remove_cvref_t<decltype(sInit)>;
 
-            DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> designatedDiag;
-            auto e_mLoc = TranslateSExpToMLoc(elem.initExp, *e_rDeclType, /*bMaterializeExp*/false, &designatedDiag, contexts);
-            RETURN_ON_ERROR(e_mLoc);
+                // T& x = <expr>
+                if constexpr (same_as<T, SVarDeclElementInit_Exp>)
+                {
+                    DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> notLocationDiag;
+                    auto e_mLoc = TranslateSExpToMLoc(sInit.exp, /*hintType*/declType, /*bMaterializeExp*/false, &notLocationDiag, contexts);
+                    RETURN_ON_ERROR(e_mLoc);
 
-            // 둘이 타입이 mismatch되면 에러를 낸다
-            if (GetType(*e_mLoc, &*contexts.rFactory) != *e_rDeclType)
-                return unexpected{MakePtr<Error_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType>()};
-
-            return LocalRef
-            contexts.scopeContext->AddLocalRefInfo(*e_rDeclType, RName_Normal{elem.varName});
-            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalRefDecl>(*e_rDeclType, RName_Normal{elem.varName}, *e_mLoc));
+                    auto* locType = GetType(*e_mLoc, &*contexts.rFactory);
+                    if (locType != declType)
+                        return Error<Error_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType>();
+                    
+                    AddLocalRef(declType, varName, *e_mLoc);
+                    return {};
+                }
+                // T& x = move expr;
+                else if constexpr (same_as<T, SVarDeclElementInit_Move>)
+                {
+                    return Error<Error_VarDecl_RefDeclCantUsingMove>();
+                }
+                // T& x = uninit; 에러
+                else if constexpr (same_as<T, SVarDeclElementInit_Uninit>)
+                {
+                    return Error<Error_VarDecl_RefDeclNeedLocationInitializer>();
+                }
+                else static_assert(false);
+            }, elem.init);
+            RETURN_ON_ERROR(e_result);
         }
 
         return {};
@@ -317,29 +263,48 @@ public:
     // T x = ...
     ResultType Visit(SVarDeclType_Normal* sVarDeclType)
     {   
-        auto e_rDeclType = contexts.scopeContext->TranslateSTypeExpToRType(sVarDeclType->typeExp);
-        RETURN_ON_ERROR(e_rDeclType);
-        auto* rDeclType = *e_rDeclType;
+        auto e_declType = contexts.scopeContext->TranslateSTypeExpToRType(sVarDeclType->typeExp);
+        RETURN_ON_ERROR(e_declType);
+        auto* declType = *e_declType;
 
         for (auto& elem : elems)
         {
-            if (contexts.scopeContext->DoesLocalNameExistInScope(RName_Normal{elem.varName}))
+            RName_Normal varName{elem.varName};
+
+            if (contexts.scopeContext->DoesLocalNameExistInScope(varName))
                 return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
 
-            MExp* nInitExp = nullptr;
-            if (elem.initExp)
-            {
-                auto e_nExp = TranslateSExpToMExp(elem.initExp, rDeclType, contexts);
-                RETURN_ON_ERROR(e_nExp);
+            auto e_result = visit([this, declType, &varName](auto& sInit) -> ResultType {
+                using T = remove_cvref_t<decltype(sInit)>;
 
-                e_nExp = CastMExp(*e_nExp, rDeclType, contexts);
-                if (!e_nExp) return unexpected{MakePtr<Error_VarDecl_InitExpTypeMismatch>()};
+                // T x = <expr>
+                if constexpr (same_as<T, SVarDeclElementInit_Exp>)
+                {
+                    auto e_mCreate = TranslateSExpToMCreate(sInit.exp, /*hintType*/declType, contexts);
+                    RETURN_ON_ERROR(e_mCreate);
 
-                nInitExp = *e_nExp;
-            }
+                    auto* initType = GetType(*e_mCreate, &*contexts.rFactory);
+                    if (initType != declType)
+                        return Error<Error_VarDecl_InitExpTypeMismatch>();
 
-            contexts.scopeContext->AddLocalVarInfo(rDeclType, RName_Normal{elem.varName});
-            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rDeclType, RName_Normal{elem.varName}, nInitExp));
+                    AddLocalVar(initType, varName, MStmt_LocalVarDeclInit_Create{move(*e_mCreate)});
+                    return {};
+                }
+                // var x = move expr;
+                else if constexpr (same_as<T, SVarDeclElementInit_Move>)
+                {
+                    // TODO: [30] move구현
+                    throw NotImplementedException{};
+                }
+                // var x = uninit; 에러
+                else if constexpr (same_as<T, SVarDeclElementInit_Uninit>)
+                {
+                    return unexpected{MakePtr<Error_VarDecl_CantInferenceWithoutInitExpression>()};
+                }
+                else static_assert(false);
+            }, elem.init);
+
+            RETURN_ON_ERROR(e_result);
         }
 
         return {};
@@ -351,10 +316,7 @@ public:
 expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>* outStmts, SVarDecl* varDecl, TranslationContexts& contexts)
 {
     VarDeclElemTranslator translator{outStmts, varDecl->elements, contexts};
-    auto e_result = Accept(translator, varDecl->type);
-    RETURN_ON_ERROR(e_result);
-
-    return {};
+    return Accept(translator, varDecl->type);
 }
 
 } // namespace Citron
