@@ -1,12 +1,12 @@
 {
     "$type": "SExp_Member",
-    "parent": {
+    "base": {
         "$type": "SExp_Call",
         "callable": {
             "$type": "SExp_Member",
-            "parent": {
+            "base": {
                 "$type": "SExp_Member",
-                "parent": {
+                "base": {
                     "$type": "SExp_Identifier",
                     "value": "a",
                     "typeArgs": []
@@ -39,8 +39,7 @@
             "items": [
                 {
                     "$type": "SArgument",
-                    "bOut": false,
-                    "bParams": false,
+                    "o_modifier": null,
                     "exp": {
                         "$type": "SExp_IntLiteral",
                         "value": 1
@@ -48,8 +47,7 @@
                 },
                 {
                     "$type": "SArgument",
-                    "bOut": false,
-                    "bParams": false,
+                    "o_modifier": null,
                     "exp": {
                         "$type": "SExp_String",
                         "elements": [

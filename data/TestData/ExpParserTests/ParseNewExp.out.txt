@@ -16,8 +16,7 @@
         "items": [
             {
                 "$type": "SArgument",
-                "bOut": false,
-                "bParams": false,
+                "o_modifier": null,
                 "exp": {
                     "$type": "SExp_IntLiteral",
                     "value": 2
@@ -25,8 +24,7 @@
             },
             {
                 "$type": "SArgument",
-                "bOut": false,
-                "bParams": false,
+                "o_modifier": null,
                 "exp": {
                     "$type": "SExp_BoolLiteral",
                     "value": false
@@ -34,8 +32,7 @@
             },
             {
                 "$type": "SArgument",
-                "bOut": false,
-                "bParams": false,
+                "o_modifier": null,
                 "exp": {
                     "$type": "SExp_String",
                     "elements": [

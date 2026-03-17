@@ -650,8 +650,8 @@ JsonItem SExp_Shared::ToJson()
     };
 }
 
-SExp_Is::SExp_Is(SExp* exp, STypeExp* type)
-    : exp(move(exp)), type(move(type)) { }
+SExp_Is::SExp_Is(SExp* exp, STypeExp* type, std::optional<std::string> bindName)
+    : exp(move(exp)), type(move(type)), bindName(move(bindName)) { }
 
 SExp_Is::SExp_Is(SExp_Is&& other) noexcept = default;
 
@@ -665,6 +665,7 @@ JsonItem SExp_Is::ToJson()
         { "$type", JsonString("SExp_Is") },
         { "exp", Citron::ToJson(exp) },
         { "type", Citron::ToJson(type) },
+        { "bindName", Citron::ToJson(bindName) },
     };
 }
 

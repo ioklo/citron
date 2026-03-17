@@ -14,7 +14,9 @@
             {
                 "$type": "SVarDeclElement",
                 "varName": "p",
-                "initExp": null
+                "init": {
+                    "$type": "SVarDeclElementInit_Uninit"
+                }
             }
         ]
     }

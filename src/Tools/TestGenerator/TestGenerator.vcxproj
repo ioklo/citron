@@ -131,8 +131,6 @@
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockCommandStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockStmt.in.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockStmt.out.txt" />
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxVarDeclStmt.in.txt" />
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxVarDeclStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBreakStmt.in.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBreakStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseContinueStmt.in.txt" />
@@ -145,6 +143,8 @@
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseForeachStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseForStmt.in.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseForStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfBindStmtWithVarName.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfBindStmtWithVarName.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfIsExpCondStmt.in.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfIsExpCondStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfStmt.in.txt" />
@@ -157,6 +157,8 @@
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParsePtrVarDeclStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseNullableVarDeclStmt.in.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseNullableVarDeclStmt.out.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseSharedVarDeclStmt.in.txt" />
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseSharedVarDeclStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseVarDeclStmt.in.txt" />
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseVarDeclStmt.out.txt" />
     <Text Include="..\..\..\data\TestData\TypeExpParserTests\FormalLocal_FormalLocal.in.txt" />

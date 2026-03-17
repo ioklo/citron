@@ -20,8 +20,7 @@
                 "items": [
                     {
                         "$type": "SArgument",
-                        "bOut": false,
-                        "bParams": false,
+                        "o_modifier": null,
                         "exp": {
                             "$type": "SExp_Identifier",
                             "value": "e",
@@ -30,8 +29,7 @@
                     },
                     {
                         "$type": "SArgument",
-                        "bOut": false,
-                        "bParams": false,
+                        "o_modifier": null,
                         "exp": {
                             "$type": "SExp_Identifier",
                             "value": "f",

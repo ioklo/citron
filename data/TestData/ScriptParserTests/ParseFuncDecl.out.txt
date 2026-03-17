@@ -15,8 +15,8 @@
             "parameters": [
                 {
                     "$type": "SFuncParam",
-                    "hasOut": false,
-                    "hasParams": false,
+                    "o_modifier": null,
+                    "bRef": false,
                     "type": {
                         "$type": "STypeExp_Id",
                         "name": "int",
@@ -26,8 +26,8 @@
                 },
                 {
                     "$type": "SFuncParam",
-                    "hasOut": false,
-                    "hasParams": false,
+                    "o_modifier": null,
+                    "bRef": false,
                     "type": {
                         "$type": "STypeExp_Id",
                         "name": "string",
@@ -37,8 +37,8 @@
                 },
                 {
                     "$type": "SFuncParam",
-                    "hasOut": false,
-                    "hasParams": true,
+                    "o_modifier": "Params",
+                    "bRef": false,
                     "type": {
                         "$type": "STypeExp_Id",
                         "name": "int",
@@ -53,17 +53,23 @@
                     "varDecl": {
                         "$type": "SVarDecl",
                         "type": {
-                            "$type": "STypeExp_Id",
-                            "name": "int",
-                            "typeArgs": []
+                            "$type": "SVarDeclType_Normal",
+                            "typeExp": {
+                                "$type": "STypeExp_Id",
+                                "name": "int",
+                                "typeArgs": []
+                            }
                         },
                         "elements": [
                             {
                                 "$type": "SVarDeclElement",
                                 "varName": "a",
-                                "initExp": {
-                                    "$type": "SExp_IntLiteral",
-                                    "value": 0
+                                "init": {
+                                    "$type": "SVarDeclElementInit_Exp",
+                                    "exp": {
+                                        "$type": "SExp_IntLiteral",
+                                        "value": 0
+                                    }
                                 }
                             }
                         ]

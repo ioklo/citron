@@ -17,14 +17,17 @@
                     {
                         "$type": "SVarDeclElement",
                         "varName": "a",
-                        "initExp": {
-                            "$type": "SExp_String",
-                            "elements": [
-                                {
-                                    "$type": "SStringExpElement_Text",
-                                    "text": "hello"
-                                }
-                            ]
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_String",
+                                "elements": [
+                                    {
+                                        "$type": "SStringExpElement_Text",
+                                        "text": "hello"
+                                    }
+                                ]
+                            }
                         }
                     }
                 ]
@@ -42,9 +45,12 @@
                     {
                         "$type": "SVarDeclElement",
                         "varName": "b",
-                        "initExp": {
-                            "$type": "SExp_IntLiteral",
-                            "value": 3
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_IntLiteral",
+                                "value": 3
+                            }
                         }
                     }
                 ]
@@ -62,13 +68,16 @@
                     {
                         "$type": "SVarDeclElement",
                         "varName": "c",
-                        "initExp": {
-                            "$type": "SExp_UnaryOp",
-                            "kind": "Ref",
-                            "operand": {
-                                "$type": "SExp_Identifier",
-                                "value": "b",
-                                "typeArgs": []
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_UnaryOp",
+                                "kind": "Ref",
+                                "operand": {
+                                    "$type": "SExp_Identifier",
+                                    "value": "b",
+                                    "typeArgs": []
+                                }
                             }
                         }
                     }
@@ -86,10 +95,13 @@
                     {
                         "$type": "SVarDeclElement",
                         "varName": "d",
-                        "initExp": {
-                            "$type": "SExp_Identifier",
-                            "value": "b",
-                            "typeArgs": []
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_Identifier",
+                                "value": "b",
+                                "typeArgs": []
+                            }
                         }
                     }
                 ]
@@ -107,9 +119,12 @@
                     {
                         "$type": "SVarDeclElement",
                         "varName": "e",
-                        "initExp": {
-                            "$type": "SExp_IntLiteral",
-                            "value": 1
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_IntLiteral",
+                                "value": 1
+                            }
                         }
                     }
                 ]
@@ -127,16 +142,19 @@
                     {
                         "$type": "SVarDeclElement",
                         "varName": "f",
-                        "initExp": {
-                            "$type": "SExp_Call",
-                            "callable": {
-                                "$type": "SExp_Identifier",
-                                "value": "F",
-                                "typeArgs": []
-                            },
-                            "args": {
-                                "$type": "SArguments",
-                                "items": []
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_Call",
+                                "callable": {
+                                    "$type": "SExp_Identifier",
+                                    "value": "F",
+                                    "typeArgs": []
+                                },
+                                "args": {
+                                    "$type": "SArguments",
+                                    "items": []
+                                }
                             }
                         }
                     }
@@ -162,10 +180,13 @@
                     {
                         "$type": "SVarDeclElement",
                         "varName": "g",
-                        "initExp": {
-                            "$type": "SExp_Identifier",
-                            "value": "f",
-                            "typeArgs": []
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_Identifier",
+                                "value": "f",
+                                "typeArgs": []
+                            }
                         }
                     }
                 ]
@@ -190,10 +211,13 @@
                     {
                         "$type": "SVarDeclElement",
                         "varName": "h",
-                        "initExp": {
-                            "$type": "SExp_Identifier",
-                            "value": "e",
-                            "typeArgs": []
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_Identifier",
+                                "value": "e",
+                                "typeArgs": []
+                            }
                         }
                     }
                 ]

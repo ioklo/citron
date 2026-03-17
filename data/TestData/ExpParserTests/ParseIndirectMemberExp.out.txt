@@ -1,9 +1,13 @@
 {
-    "$type": "SExp_IndirectMember",
-    "parent": {
-        "$type": "SExp_Identifier",
-        "value": "a",
-        "typeArgs": []
+    "$type": "SExp_Member",
+    "base": {
+        "$type": "SExp_UnaryOp",
+        "kind": "Deref",
+        "operand": {
+            "$type": "SExp_Identifier",
+            "value": "a",
+            "typeArgs": []
+        }
     },
     "memberName": "b",
     "memberTypeArgs": [

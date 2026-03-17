@@ -89,12 +89,6 @@
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBlockStmt.out.txt">
       <Filter>Inputs\StmtParserTests</Filter>
     </Text>
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxVarDeclStmt.in.txt">
-      <Filter>Inputs\StmtParserTests</Filter>
-    </Text>
-    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBoxVarDeclStmt.out.txt">
-      <Filter>Inputs\StmtParserTests</Filter>
-    </Text>
     <Text Include="..\..\..\data\TestData\StmtParserTests\ParseBreakStmt.in.txt">
       <Filter>Inputs\StmtParserTests</Filter>
     </Text>
@@ -664,6 +658,18 @@
     </Text>
     <Text Include="..\..\..\data\TestData\TypeExpParserTests\TopLevel_SharedOnly.in.txt">
       <Filter>Inputs\TypeExpParserTests</Filter>
+    </Text>
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfBindStmtWithVarName.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseIfBindStmtWithVarName.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseSharedVarDeclStmt.in.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
+    </Text>
+    <Text Include="..\..\..\data\TestData\StmtParserTests\ParseSharedVarDeclStmt.out.txt">
+      <Filter>Inputs\StmtParserTests</Filter>
     </Text>
   </ItemGroup>
 </Project>

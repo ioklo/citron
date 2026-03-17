@@ -19,17 +19,23 @@
                     "varDecl": {
                         "$type": "SVarDecl",
                         "type": {
-                            "$type": "STypeExp_Id",
-                            "name": "int",
-                            "typeArgs": []
+                            "$type": "SVarDeclType_Normal",
+                            "typeExp": {
+                                "$type": "STypeExp_Id",
+                                "name": "int",
+                                "typeArgs": []
+                            }
                         },
                         "elements": [
                             {
                                 "$type": "SVarDeclElement",
                                 "varName": "sum",
-                                "initExp": {
-                                    "$type": "SExp_IntLiteral",
-                                    "value": 0
+                                "init": {
+                                    "$type": "SVarDeclElementInit_Exp",
+                                    "exp": {
+                                        "$type": "SExp_IntLiteral",
+                                        "value": 0
+                                    }
                                 }
                             }
                         ]
@@ -42,17 +48,23 @@
                         "varDecl": {
                             "$type": "SVarDecl",
                             "type": {
-                                "$type": "STypeExp_Id",
-                                "name": "int",
-                                "typeArgs": []
+                                "$type": "SVarDeclType_Normal",
+                                "typeExp": {
+                                    "$type": "STypeExp_Id",
+                                    "name": "int",
+                                    "typeArgs": []
+                                }
                             },
                             "elements": [
                                 {
                                     "$type": "SVarDeclElement",
                                     "varName": "i",
-                                    "initExp": {
-                                        "$type": "SExp_IntLiteral",
-                                        "value": 0
+                                    "init": {
+                                        "$type": "SVarDeclElementInit_Exp",
+                                        "exp": {
+                                            "$type": "SExp_IntLiteral",
+                                            "value": 0
+                                        }
                                     }
                                 }
                             ]

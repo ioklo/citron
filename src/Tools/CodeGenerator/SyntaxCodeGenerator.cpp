@@ -655,6 +655,7 @@ struct ToJsonVisitor {
             .memberInfos {
                 {.type = "SExp*", .memberVarName = "exp", .getterName = "GetExp" },
                 {.type = "STypeExp*", .memberVarName = "type", .getterName = "GetType" },
+                {.type = "std::optional<std::string>", .memberVarName = "o_bindName", .getterName = "GetBindName" },
             },
         },
 

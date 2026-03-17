@@ -102,38 +102,6 @@ TEST(StmtParser, ParseBlockStmt)
     EXPECT_SYNTAX_EQ(stmt, expected);
 }
 
-TEST(StmtParser, ParseBoxVarDeclStmt)
-{
-    auto [buffer, lexer] = Prepare(UR"---(box int* p;)---");
-    SFactory factory;
-
-    auto* stmt = ParseStmt(&lexer, factory);
-
-    auto expected = R"---({
-    "$type": "SStmt_VarDecl",
-    "varDecl": {
-        "$type": "SVarDecl",
-        "type": {
-            "$type": "STypeExp_Box",
-            "innerType": {
-                "$type": "STypeExp_Id",
-                "name": "int",
-                "typeArgs": []
-            }
-        },
-        "elements": [
-            {
-                "$type": "SVarDeclElement",
-                "varName": "p",
-                "inner": null
-            }
-        ]
-    }
-})---";
-
-    EXPECT_SYNTAX_EQ(stmt, expected);
-}
-
 TEST(StmtParser, ParseBreakStmt)
 {
     auto [buffer, lexer] = Prepare(UR"---(break;)---");
@@ -221,8 +189,7 @@ TEST(StmtParser, ParseExpStmt)
                     "items": [
                         {
                             "$type": "SArgument",
-                            "bOut": false,
-                            "bParams": false,
+                            "o_modifier": null,
                             "exp": {
                                 "$type": "SExp_IntLiteral",
                                 "value": 1
@@ -323,23 +290,26 @@ TEST(StmtParser, ParseForeachStmt)
 
 TEST(StmtParser, ParseIfBindStmtWithVarName)
 {
-    auto [buffer, lexer] = Prepare(UR"---(if (T t = b) {} else if (c) {} else {})---");
+    auto [buffer, lexer] = Prepare(UR"---(if (b is T t) {} else if (c) {} else {})---");
     SFactory factory;
 
     auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
-    "$type": "SStmt_IfBind",
-    "testType": {
-        "$type": "STypeExp_Id",
-        "name": "T",
-        "typeArgs": []
-    },
-    "varName": "t",
-    "exp": {
-        "$type": "SExp_Identifier",
-        "value": "b",
-        "typeArgs": []
+    "$type": "SStmt_If",
+    "cond": {
+        "$type": "SExp_Is",
+        "exp": {
+            "$type": "SExp_Identifier",
+            "value": "b",
+            "typeArgs": []
+        },
+        "type": {
+            "$type": "STypeExp_Id",
+            "name": "T",
+            "typeArgs": []
+        },
+        "bindName": "t"
     },
     "body": {
         "$type": "SEmbeddableStmt_Block",
@@ -521,7 +491,9 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
             {
                 "$type": "SVarDeclElement",
                 "varName": "p",
-                "inner": null
+                "init": {
+                    "$type": "SVarDeclElementInit_Uninit"
+                }
             }
         ]
     }
@@ -553,7 +525,43 @@ TEST(StmtParser, ParsePtrVarDeclStmt)
             {
                 "$type": "SVarDeclElement",
                 "varName": "p",
-                "inner": null
+                "init": {
+                    "$type": "SVarDeclElementInit_Uninit"
+                }
+            }
+        ]
+    }
+})---";
+
+    EXPECT_SYNTAX_EQ(stmt, expected);
+}
+
+TEST(StmtParser, ParseSharedVarDeclStmt)
+{
+    auto [buffer, lexer] = Prepare(UR"---(shared int p;)---");
+    SFactory factory;
+
+    auto* stmt = ParseStmt(&lexer, factory);
+
+    auto expected = R"---({
+    "$type": "SStmt_VarDecl",
+    "varDecl": {
+        "$type": "SVarDecl",
+        "type": {
+            "$type": "STypeExp_Shared",
+            "innerType": {
+                "$type": "STypeExp_Id",
+                "name": "int",
+                "typeArgs": []
+            }
+        },
+        "elements": [
+            {
+                "$type": "SVarDeclElement",
+                "varName": "p",
+                "init": {
+                    "$type": "SVarDeclElementInit_Uninit"
+                }
             }
         ]
     }
@@ -597,14 +605,17 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "a",
-                        "inner": {
-                            "$type": "SExp_String",
-                            "elements": [
-                                {
-                                    "$type": "SStringExpElement_Text",
-                                    "text": "hello"
-                                }
-                            ]
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_String",
+                                "elements": [
+                                    {
+                                        "$type": "SStringExpElement_Text",
+                                        "text": "hello"
+                                    }
+                                ]
+                            }
                         }
                     }
                 ]
@@ -622,9 +633,12 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "b",
-                        "inner": {
-                            "$type": "SExp_IntLiteral",
-                            "value": 3
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_IntLiteral",
+                                "value": 3
+                            }
                         }
                     }
                 ]
@@ -642,13 +656,16 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "c",
-                        "inner": {
-                            "$type": "SExp_UnaryOp",
-                            "kind": "Ref",
-                            "target": {
-                                "$type": "SExp_Identifier",
-                                "value": "b",
-                                "typeArgs": []
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_UnaryOp",
+                                "kind": "Ref",
+                                "operand": {
+                                    "$type": "SExp_Identifier",
+                                    "value": "b",
+                                    "typeArgs": []
+                                }
                             }
                         }
                     }
@@ -666,10 +683,13 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "d",
-                        "inner": {
-                            "$type": "SExp_Identifier",
-                            "value": "b",
-                            "typeArgs": []
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_Identifier",
+                                "value": "b",
+                                "typeArgs": []
+                            }
                         }
                     }
                 ]
@@ -687,9 +707,12 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "e",
-                        "inner": {
-                            "$type": "SExp_IntLiteral",
-                            "value": 1
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_IntLiteral",
+                                "value": 1
+                            }
                         }
                     }
                 ]
@@ -707,16 +730,19 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "f",
-                        "inner": {
-                            "$type": "SExp_Call",
-                            "callable": {
-                                "$type": "SExp_Identifier",
-                                "value": "F",
-                                "typeArgs": []
-                            },
-                            "args": {
-                                "$type": "SArguments",
-                                "items": []
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_Call",
+                                "callable": {
+                                    "$type": "SExp_Identifier",
+                                    "value": "F",
+                                    "typeArgs": []
+                                },
+                                "args": {
+                                    "$type": "SArguments",
+                                    "items": []
+                                }
                             }
                         }
                     }
@@ -742,10 +768,13 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "g",
-                        "inner": {
-                            "$type": "SExp_Identifier",
-                            "value": "f",
-                            "typeArgs": []
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_Identifier",
+                                "value": "f",
+                                "typeArgs": []
+                            }
                         }
                     }
                 ]
@@ -770,10 +799,13 @@ TEST(StmtParser, ParseVarDeclStmt)
                     {
                         "$type": "SVarDeclElement",
                         "varName": "h",
-                        "inner": {
-                            "$type": "SExp_Identifier",
-                            "value": "e",
-                            "typeArgs": []
+                        "init": {
+                            "$type": "SVarDeclElementInit_Exp",
+                            "exp": {
+                                "$type": "SExp_Identifier",
+                                "value": "e",
+                                "typeArgs": []
+                            }
                         }
                     }
                 ]

@@ -248,10 +248,14 @@ SExp* ParseTestAndTypeTestExp(Lexer* lexer, SFactory& factory)
 
             auto* typeExp = ParseTypeExp(&curLexer, factory);
 
+            optional<string> o_bindName;
+            if (auto o_idToken = Accept<IdentifierToken>(&curLexer))
+                o_bindName = move(o_idToken->text);
+
             if (!typeExp)
                 return nullptr;
 
-            curExp = factory.MakeSExp_Is(curExp, typeExp);
+            curExp = factory.MakeSExp_Is(curExp, typeExp, move(o_bindName));
             continue;
         }
 

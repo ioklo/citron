@@ -3,7 +3,7 @@
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "STypeExp_Box",
+            "$type": "STypeExp_Shared",
             "innerType": {
                 "$type": "STypeExp_Id",
                 "name": "int",
@@ -14,7 +14,9 @@
             {
                 "$type": "SVarDeclElement",
                 "varName": "p",
-                "initExp": null
+                "init": {
+                    "$type": "SVarDeclElementInit_Uninit"
+                }
             }
         ]
     }

@@ -129,8 +129,8 @@
                     "parameters": [
                         {
                             "$type": "SFuncParam",
-                            "hasOut": false,
-                            "hasParams": false,
+                            "o_modifier": null,
+                            "bRef": false,
                             "type": {
                                 "$type": "STypeExp_Id",
                                 "name": "string",

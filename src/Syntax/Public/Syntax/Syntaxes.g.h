@@ -1720,8 +1720,9 @@ class SExp_Is
 public:
     SExp* exp;
     STypeExp* type;
+    std::optional<std::string> bindName;
 
-    SYNTAX_API SExp_Is(SExp* exp, STypeExp* type);
+    SYNTAX_API SExp_Is(SExp* exp, STypeExp* type, std::optional<std::string> bindName);
     SExp_Is(const SExp_Is&) = delete;
     SYNTAX_API SExp_Is(SExp_Is&&) noexcept;
     SYNTAX_API virtual ~SExp_Is();

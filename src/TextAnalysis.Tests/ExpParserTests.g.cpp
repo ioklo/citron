@@ -79,13 +79,13 @@ TEST(ExpParser, ParseComplexExp)
                             "operand0": {
                                 "$type": "SExp_UnaryOp",
                                 "kind": "LogicalNot",
-                                "target": {
+                                "operand": {
                                     "$type": "SExp_UnaryOp",
                                     "kind": "LogicalNot",
-                                    "target": {
+                                    "operand": {
                                         "$type": "SExp_UnaryOp",
                                         "kind": "PostfixInc",
-                                        "target": {
+                                        "operand": {
                                             "$type": "SExp_BinaryOp",
                                             "kind": "Modulo",
                                             "operand0": {
@@ -163,21 +163,21 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
 
     auto expected = R"---({
     "$type": "SExp_Member",
-    "parent": {
+    "base": {
         "$type": "SExp_Call",
         "callable": {
             "$type": "SExp_Member",
-            "parent": {
+            "base": {
                 "$type": "SExp_Member",
-                "parent": {
+                "base": {
                     "$type": "SExp_Identifier",
                     "value": "a",
                     "typeArgs": []
                 },
-                "name": "b",
+                "memberName": "b",
                 "memberTypeArgs": []
             },
-            "name": "c",
+            "memberName": "c",
             "memberTypeArgs": [
                 {
                     "$type": "STypeExp_Id",
@@ -202,8 +202,7 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
             "items": [
                 {
                     "$type": "SArgument",
-                    "bOut": false,
-                    "bParams": false,
+                    "o_modifier": null,
                     "exp": {
                         "$type": "SExp_IntLiteral",
                         "value": 1
@@ -211,8 +210,7 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
                 },
                 {
                     "$type": "SArgument",
-                    "bOut": false,
-                    "bParams": false,
+                    "o_modifier": null,
                     "exp": {
                         "$type": "SExp_String",
                         "elements": [
@@ -226,7 +224,7 @@ TEST(ExpParser, ParseComplexMemberExpSyntax)
             ]
         }
     },
-    "name": "d",
+    "memberName": "d",
     "memberTypeArgs": []
 })---";
 
@@ -279,13 +277,17 @@ TEST(ExpParser, ParseIndirectMemberExp)
     auto* exp = ParseExp(&lexer, factory);
 
     auto expected = R"---({
-    "$type": "SExp_IndirectMember",
-    "parent": {
-        "$type": "SExp_Identifier",
-        "value": "a",
-        "typeArgs": []
+    "$type": "SExp_Member",
+    "base": {
+        "$type": "SExp_UnaryOp",
+        "kind": "Deref",
+        "operand": {
+            "$type": "SExp_Identifier",
+            "value": "a",
+            "typeArgs": []
+        }
     },
-    "name": "b",
+    "memberName": "b",
     "memberTypeArgs": [
         {
             "$type": "STypeExp_Id",
@@ -333,10 +335,9 @@ TEST(ExpParser, ParseLambdaExp)
         "params": [
             {
                 "$type": "SLambdaExpParam",
+                "o_paramModifier": null,
                 "type": null,
-                "name": "b",
-                "hasOut": false,
-                "hasParams": false
+                "name": "b"
             }
         ],
         "body": {
@@ -346,21 +347,19 @@ TEST(ExpParser, ParseLambdaExp)
                 "params": [
                     {
                         "$type": "SLambdaExpParam",
+                        "o_paramModifier": null,
                         "type": null,
-                        "name": "c",
-                        "hasOut": false,
-                        "hasParams": false
+                        "name": "c"
                     },
                     {
                         "$type": "SLambdaExpParam",
+                        "o_paramModifier": null,
                         "type": {
                             "$type": "STypeExp_Id",
                             "name": "int",
                             "typeArgs": []
                         },
-                        "name": "d",
-                        "hasOut": false,
-                        "hasParams": false
+                        "name": "d"
                     }
                 ],
                 "body": {
@@ -432,8 +431,7 @@ TEST(ExpParser, ParseNewExp)
         "items": [
             {
                 "$type": "SArgument",
-                "bOut": false,
-                "bParams": false,
+                "o_modifier": null,
                 "exp": {
                     "$type": "SExp_IntLiteral",
                     "value": 2
@@ -441,8 +439,7 @@ TEST(ExpParser, ParseNewExp)
             },
             {
                 "$type": "SArgument",
-                "bOut": false,
-                "bParams": false,
+                "o_modifier": null,
                 "exp": {
                     "$type": "SExp_BoolLiteral",
                     "value": false
@@ -450,8 +447,7 @@ TEST(ExpParser, ParseNewExp)
             },
             {
                 "$type": "SArgument",
-                "bOut": false,
-                "bParams": false,
+                "o_modifier": null,
                 "exp": {
                     "$type": "SExp_String",
                     "elements": [
@@ -479,7 +475,7 @@ TEST(ExpParser, ParsePrimaryExp)
     auto expected = R"---({
     "$type": "SExp_UnaryOp",
     "kind": "PostfixInc",
-    "target": {
+    "operand": {
         "$type": "SExp_BinaryOp",
         "kind": "Modulo",
         "operand0": {
@@ -487,7 +483,7 @@ TEST(ExpParser, ParsePrimaryExp)
             "callable": {
                 "$type": "SExp_UnaryOp",
                 "kind": "PostfixInc",
-                "target": {
+                "operand": {
                     "$type": "SExp_Identifier",
                     "value": "c",
                     "typeArgs": []
@@ -498,8 +494,7 @@ TEST(ExpParser, ParsePrimaryExp)
                 "items": [
                     {
                         "$type": "SArgument",
-                        "bOut": false,
-                        "bParams": false,
+                        "o_modifier": null,
                         "exp": {
                             "$type": "SExp_Identifier",
                             "value": "e",
@@ -508,8 +503,7 @@ TEST(ExpParser, ParsePrimaryExp)
                     },
                     {
                         "$type": "SArgument",
-                        "bOut": false,
-                        "bParams": false,
+                        "o_modifier": null,
                         "exp": {
                             "$type": "SExp_Identifier",
                             "value": "f",

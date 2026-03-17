@@ -50,17 +50,23 @@ TEST(ScriptParser, ParseComplexScript)
                     "varDecl": {
                         "$type": "SVarDecl",
                         "type": {
-                            "$type": "STypeExp_Id",
-                            "name": "int",
-                            "typeArgs": []
+                            "$type": "SVarDeclType_Normal",
+                            "typeExp": {
+                                "$type": "STypeExp_Id",
+                                "name": "int",
+                                "typeArgs": []
+                            }
                         },
                         "elements": [
                             {
                                 "$type": "SVarDeclElement",
                                 "varName": "sum",
-                                "inner": {
-                                    "$type": "SExp_IntLiteral",
-                                    "value": 0
+                                "init": {
+                                    "$type": "SVarDeclElementInit_Exp",
+                                    "exp": {
+                                        "$type": "SExp_IntLiteral",
+                                        "value": 0
+                                    }
                                 }
                             }
                         ]
@@ -73,17 +79,23 @@ TEST(ScriptParser, ParseComplexScript)
                         "varDecl": {
                             "$type": "SVarDecl",
                             "type": {
-                                "$type": "STypeExp_Id",
-                                "name": "int",
-                                "typeArgs": []
+                                "$type": "SVarDeclType_Normal",
+                                "typeExp": {
+                                    "$type": "STypeExp_Id",
+                                    "name": "int",
+                                    "typeArgs": []
+                                }
                             },
                             "elements": [
                                 {
                                     "$type": "SVarDeclElement",
                                     "varName": "i",
-                                    "inner": {
-                                        "$type": "SExp_IntLiteral",
-                                        "value": 0
+                                    "init": {
+                                        "$type": "SVarDeclElementInit_Exp",
+                                        "exp": {
+                                            "$type": "SExp_IntLiteral",
+                                            "value": 0
+                                        }
                                     }
                                 }
                             ]
@@ -105,7 +117,7 @@ TEST(ScriptParser, ParseComplexScript)
                     "cont": {
                         "$type": "SExp_UnaryOp",
                         "kind": "PostfixInc",
-                        "target": {
+                        "operand": {
                             "$type": "SExp_Identifier",
                             "value": "i",
                             "typeArgs": []
@@ -277,7 +289,7 @@ TEST(ScriptParser, ParseEnumDecl)
 
 TEST(ScriptParser, ParseFuncDecl)
 {
-    auto [buffer, lexer] = Prepare(UR"---(void Func(int x, string y, params int z) { int a = 0; })---");
+    auto [buffer, lexer] = Prepare(UR"---(void Func(int x, string y, [params] int z) { int a = 0; })---");
     SFactory factory;
 
     auto* script = ParseScript(&lexer, factory);
@@ -299,8 +311,8 @@ TEST(ScriptParser, ParseFuncDecl)
             "parameters": [
                 {
                     "$type": "SFuncParam",
-                    "hasOut": false,
-                    "hasParams": false,
+                    "o_modifier": null,
+                    "bRef": false,
                     "type": {
                         "$type": "STypeExp_Id",
                         "name": "int",
@@ -310,8 +322,8 @@ TEST(ScriptParser, ParseFuncDecl)
                 },
                 {
                     "$type": "SFuncParam",
-                    "hasOut": false,
-                    "hasParams": false,
+                    "o_modifier": null,
+                    "bRef": false,
                     "type": {
                         "$type": "STypeExp_Id",
                         "name": "string",
@@ -321,8 +333,8 @@ TEST(ScriptParser, ParseFuncDecl)
                 },
                 {
                     "$type": "SFuncParam",
-                    "hasOut": false,
-                    "hasParams": true,
+                    "o_modifier": "Params",
+                    "bRef": false,
                     "type": {
                         "$type": "STypeExp_Id",
                         "name": "int",
@@ -337,17 +349,23 @@ TEST(ScriptParser, ParseFuncDecl)
                     "varDecl": {
                         "$type": "SVarDecl",
                         "type": {
-                            "$type": "STypeExp_Id",
-                            "name": "int",
-                            "typeArgs": []
+                            "$type": "SVarDeclType_Normal",
+                            "typeExp": {
+                                "$type": "STypeExp_Id",
+                                "name": "int",
+                                "typeArgs": []
+                            }
                         },
                         "elements": [
                             {
                                 "$type": "SVarDeclElement",
                                 "varName": "a",
-                                "inner": {
-                                    "$type": "SExp_IntLiteral",
-                                    "value": 0
+                                "init": {
+                                    "$type": "SVarDeclElementInit_Exp",
+                                    "exp": {
+                                        "$type": "SExp_IntLiteral",
+                                        "value": 0
+                                    }
                                 }
                             }
                         ]
@@ -614,8 +632,8 @@ TEST(ScriptParser, ParseStructDecl)
                     "parameters": [
                         {
                             "$type": "SFuncParam",
-                            "hasOut": false,
-                            "hasParams": false,
+                            "o_modifier": null,
+                            "bRef": false,
                             "type": {
                                 "$type": "STypeExp_Id",
                                 "name": "string",

@@ -11,10 +11,9 @@
         "params": [
             {
                 "$type": "SLambdaExpParam",
+                "o_paramModifier": null,
                 "type": null,
-                "name": "b",
-                "hasOut": false,
-                "hasParams": false
+                "name": "b"
             }
         ],
         "body": {
@@ -24,21 +23,19 @@
                 "params": [
                     {
                         "$type": "SLambdaExpParam",
+                        "o_paramModifier": null,
                         "type": null,
-                        "name": "c",
-                        "hasOut": false,
-                        "hasParams": false
+                        "name": "c"
                     },
                     {
                         "$type": "SLambdaExpParam",
+                        "o_paramModifier": null,
                         "type": {
                             "$type": "STypeExp_Id",
                             "name": "int",
                             "typeArgs": []
                         },
-                        "name": "d",
-                        "hasOut": false,
-                        "hasParams": false
+                        "name": "d"
                     }
                 ],
                 "body": {

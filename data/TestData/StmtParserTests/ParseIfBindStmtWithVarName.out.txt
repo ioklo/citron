@@ -1,15 +1,18 @@
 {
-    "$type": "SStmt_IfBind",
-    "testType": {
-        "$type": "STypeExp_Id",
-        "name": "T",
-        "typeArgs": []
-    },
-    "varName": "t",
-    "exp": {
-        "$type": "SExp_Identifier",
-        "value": "b",
-        "typeArgs": []
+    "$type": "SStmt_If",
+    "cond": {
+        "$type": "SExp_Is",
+        "exp": {
+            "$type": "SExp_Identifier",
+            "value": "b",
+            "typeArgs": []
+        },
+        "type": {
+            "$type": "STypeExp_Id",
+            "name": "T",
+            "typeArgs": []
+        },
+        "bindName": "t"
     },
     "body": {
         "$type": "SEmbeddableStmt_Block",
