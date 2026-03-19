@@ -4,10 +4,10 @@
 add_executable(CMakeSourcesGenerator)
 
 target_sources(CMakeSourcesGenerator
-        PRIVATE
+    PRIVATE
         CMakeSourcesGenerator.cpp
 
-        PRIVATE FILE_SET headers TYPE HEADERS
+    PRIVATE FILE_SET headers TYPE HEADERS
         FILES
 )
 

@@ -1,6 +1,7 @@
 target_sources(SyntaxIR0Translator
     PRIVATE
         BinOpQueryService.cpp
+        BodyRes.cpp
         BuildTypeDependentSymbolContext.cpp
         CommonTranslation.cpp
         DesignatedDiagnostic.cpp
@@ -12,35 +13,31 @@ target_sources(SyntaxIR0Translator
         FuncsWithPartialTypeArgsComponent.cpp
         GlobalContext.cpp
         GlobalFuncTask.cpp
-        ImCallableAndSArgsToMExpTranslation.cpp
         ImExp.cpp
-        ImExpAndMemberNameToImExpTranslation.cpp
-        ImExpToIrExpTranslation.cpp
-        ImExpToReExpTranslation.cpp
+        ImExpToReExp.cpp
+        ImExpTranslations.cpp
         IrExp.cpp
-        IrExpAndMemberNameToIrExpTranslation.cpp
-        IrExpAndMemberNameToMSharedExpTranslation.cpp
-        IrExpToMExpTranslation.cpp
+        IrExpToMLoc.cpp
+        IrExpToMSharedExp.cpp
         Misc.cpp
         ModuleDecls.cpp
         PhaseManager.cpp
         RFuncAndRArgsToMExpTranslation.cpp
         ReExp.cpp
-        ReExpToMExpTranslation.cpp
-        ReExpToMLocTranslation.cpp
-        ReExpToMOperandTranslation.cpp
+        ReExpToMIR.cpp
         ResolveTypeHierarchyContext.cpp
-        SExpRefToIrExpTranslation.cpp
-        SExpRefToMExpTranslation.cpp
-        SExpRefToMSharedExpTranslation.cpp
-        SExpToImExpTranslation.cpp
-        SExpToMExpTranslation.cpp
-        SExpToMLocTranslation.cpp
-        SExpToMOperandTranslation.cpp
-        SExpToReExpTranslation.cpp
+        SExpToImExp.cpp
+        SExpToIrExp.cpp
+        SExpToReExp.cpp
+        SExpTranslations.cpp
+        SExp_CallToImExp.cpp
+        SExp_IdentifierToImExp.cpp
+        SExp_IdentifierToIrExp.cpp
+        SExp_MemberToImExp.cpp
+        SExp_MemberToIrExp.cpp
         SRTFactory.cpp
-        SStmtToMStmtTranslation.cpp
-        SVarDeclToMStmtsTranslation.cpp
+        SStmtToMStmt.cpp
+        SVarDeclToMStmts.cpp
         ScopeContext.cpp
         StructCtorTask.cpp
         StructDtorTask.cpp
@@ -50,11 +47,11 @@ target_sources(SyntaxIR0Translator
         SyntaxIR0Translator.cpp
         SynthesizeImplicitSymbolContext.cpp
         TranslateBodyContext.cpp
-        TranslateIrExpToMSharedExp.cpp
         TranslationContexts.cpp
 
     PRIVATE FILE_SET headers TYPE HEADERS FILES
         BinOpQueryService.h
+        BodyRes.h
         BuildTypeDependentSymbolContext.h
         CommonTranslation.h
         DesignatedDiagnostic.h
@@ -66,35 +63,33 @@ target_sources(SyntaxIR0Translator
         FuncsWithPartialTypeArgsComponent.h
         GlobalContext.h
         GlobalFuncTask.h
-        ImCallableAndSArgsToMExpTranslation.h
         ImExp.h
-        ImExpAndMemberNameToImExpTranslation.h
-        ImExpToIrExpTranslation.h
-        ImExpToReExpTranslation.h
+        ImExpToReExp.h
+        ImExpTranslations.h
+        ImExpVisitor.g.h
         IrExp.h
-        IrExpAndMemberNameToIrExpTranslation.h
-        IrExpAndMemberNameToMSharedExpTranslation.h
-        IrExpToMExpTranslation.h
+        IrExpToMLoc.h
+        IrExpToMSharedExp.h
+        IrExpVisitor.g.h
         Misc.h
         ModuleDecls.h
         PhaseManager.h
         RFuncAndRArgsToMExpTranslation.h
         ReExp.h
-        ReExpToMExpTranslation.h
-        ReExpToMLocTranslation.h
-        ReExpToMOperandTranslation.h
+        ReExpToMIR.h
         ResolveTypeHierarchyContext.h
-        SExpRefToIrExpTranslation.h
-        SExpRefToMExpTranslation.h
-        SExpRefToMSharedExpTranslation.h
-        SExpToImExpTranslation.h
-        SExpToMExpTranslation.h
-        SExpToMLocTranslation.h
-        SExpToMOperandTranslation.h
-        SExpToReExpTranslation.h
+        SExpToImExp.h
+        SExpToIrExp.h
+        SExpToReExp.h
+        SExpTranslations.h
+        SExp_CallToImExp.h
+        SExp_IdentifierToImExp.h
+        SExp_IdentifierToIrExp.h
+        SExp_MemberToImExp.h
+        SExp_MemberToIrExp.h
         SRTFactory.h
-        SStmtToMStmtTranslation.h
-        SVarDeclToMStmtsTranslation.h
+        SStmtToMStmt.h
+        SVarDeclToMStmts.h
         ScopeContext.h
         StructCtorTask.h
         StructDtorTask.h
@@ -103,7 +98,6 @@ target_sources(SyntaxIR0Translator
         StructVarTask.h
         SynthesizeImplicitSymbolContext.h
         TranslateBodyContext.h
-        TranslateIrExpToMSharedExp.h
         TranslationContexts.h
         TranslationTasks.h
         Public/SyntaxIR0Translator/SyntaxIR0Translator.h

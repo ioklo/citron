@@ -10,6 +10,7 @@ target_sources(NSymbol
         NEnumElemDecl.cpp
         NEnumElemVarDecl.cpp
         NFactory.cpp
+        NFuncDeclOuter.cpp
         NGenericsComponent.cpp
         NGlobalFuncDecl.cpp
         NInterfaceDecl.cpp
@@ -40,6 +41,7 @@ target_sources(NSymbol
         Public/NSymbol/NFuncDecl.h
         Public/NSymbol/NFuncDeclContainerComponent.h
         Public/NSymbol/NFuncDeclOuter.h
+        Public/NSymbol/NFuncDeclOuterVisitor.g.h
         Public/NSymbol/NGenericsComponent.h
         Public/NSymbol/NGlobalFuncDecl.h
         Public/NSymbol/NInterfaceDecl.h

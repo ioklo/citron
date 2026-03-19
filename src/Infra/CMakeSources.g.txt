@@ -19,5 +19,6 @@ target_sources(Infra
         Public/Infra/Unreachable.h
         Public/Infra/Variants.h
         Public/Infra/Views.h
+        Public/Infra/Visitor.h
         Public/Infra/make_vector.h
 )
