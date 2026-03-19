@@ -570,7 +570,7 @@ TEST(ExpParser, ParseStringExp)
 
 TEST(ExpParser, ParseTestAndTypeTestExp)
 {
-    auto [buffer, lexer] = Prepare(UR"---(e + 1 is X<int> < d + 1 is T)---");
+    auto [buffer, lexer] = Prepare(UR"---(e + 1 is X<int> < d + 1 is T t)---");
     SFactory factory;
 
     auto* exp = ParseExp(&lexer, factory);
@@ -605,7 +605,8 @@ TEST(ExpParser, ParseTestAndTypeTestExp)
                         "typeArgs": []
                     }
                 ]
-            }
+            },
+            "bindName": null
         },
         "operand1": {
             "$type": "SExp_BinaryOp",
@@ -625,7 +626,8 @@ TEST(ExpParser, ParseTestAndTypeTestExp)
         "$type": "STypeExp_Id",
         "name": "T",
         "typeArgs": []
-    }
+    },
+    "bindName": "t"
 })---";
 
     EXPECT_SYNTAX_EQ(exp, expected);

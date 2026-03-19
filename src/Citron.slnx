@@ -1,0 +1,64 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/00_Core/">
+    <Project Path="Infra/Infra.vcxproj" Id="8e2a32db-279b-4c5c-96c0-bbede676efbf" />
+    <Project Path="Logging/Logging.vcxproj" Id="3bb70f45-01b2-474d-aa79-c1b78d3c37e4" />
+  </Folder>
+  <Folder Name="/01_Syntax/">
+    <Project Path="Syntax/Syntax.vcxproj" Id="74d0511c-d9ae-44b9-9741-007e3b012565" />
+  </Folder>
+  <Folder Name="/02_Symbol/">
+    <Project Path="ESymbol/ESymbol.vcxproj" Id="32d49f02-b752-4509-9988-6ba71be3a6fe" />
+    <Project Path="NSymbol/NSymbol.vcxproj" Id="56fa279c-712f-4c9b-ba1e-c8e983ea97e8" />
+    <Project Path="RSymbol/RSymbol.vcxproj" Id="42f5b624-3a9b-48b6-9e12-736206097339" />
+  </Folder>
+  <Folder Name="/03_IR0/">
+    <Project Path="MIR/MIR.vcxproj" Id="608246f1-30d1-4394-93be-300d67e25dfe" />
+  </Folder>
+  <Folder Name="/04_IR1/">
+    <Project Path="QEvaluator.Tests/QEvaluator.Tests.vcxproj" Id="73d2c372-6773-4593-908a-c24d53ae725c" />
+    <Project Path="QEvaluator/QEvaluator.vcxproj" Id="60f3db2d-944d-4842-8b31-7029f2e4ac23" />
+    <Project Path="QIR/QIR.vcxproj" Id="44d6e464-ed7e-48d2-ae84-f21b3ba9698f" />
+  </Folder>
+  <Folder Name="/05_TextAnalysis/">
+    <Project Path="TextAnalysis.Tests/TextAnalysis.Tests.vcxproj" Id="04a949c6-45fb-4f4b-81cb-9dad67f0bfea" />
+    <Project Path="TextAnalysis/TextAnalysis.vcxproj" Id="4ba9ba67-fc96-41bd-9938-3d61d05f89ee" />
+  </Folder>
+  <Folder Name="/06_SyntaxMIrTranslator/">
+    <Project Path="SyntaxIR0Translator/SyntaxIR0Translator.vcxproj" Id="73c7d15a-483a-4069-8719-0cccff2e5021" />
+  </Folder>
+  <Folder Name="/07_MIrQIrTranslator/">
+    <Project Path="IR0IR1Translator/IR0IR1Translator.vcxproj" Id="2c184d83-f1a3-45b7-a470-906d11b7de69" />
+  </Folder>
+  <Folder Name="/08_QIrLLVMTranslator/">
+    <Project Path="QIrLLVMTranslator/QIrLLVMTranslator.vcxproj" Id="8f0bfed0-0b7d-4bb8-90e7-84df06b50bd4" />
+  </Folder>
+  <Folder Name="/09_RuntimeLibrary/">
+    <Project Path="RuntimeLibrary/RuntimeLibrary.vcxproj" Id="c0c5e756-bb76-4223-a4ce-5fb8672c0f50" />
+  </Folder>
+  <Folder Name="/10_Builder/">
+    <Project Path="Builder.Tests/Builder.Tests.vcxproj" Id="69c64055-4f39-4c8b-9fb4-184399598e5e">
+      <Build Solution="Debug|*" Project="false" />
+    </Project>
+    <Project Path="Builder/Builder.vcxproj" Id="0eb656a8-c01d-45e4-a986-424a707d3943" />
+  </Folder>
+  <Folder Name="/11_Tools/">
+    <Project Path="Tools/SyntaxPrinter/SyntaxPrinter.vcxproj" Id="798d24ab-a89e-4805-9326-6bf4ebe905b2" />
+  </Folder>
+  <Folder Name="/12_EvalTests/">
+    <Project Path="EvalTests/EvalTests.vcxproj" Id="c38848d2-f567-44ca-85f5-de536a6a8536" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../docs/Citron_Concepts.md" />
+    <File Path="../docs/Citron_Core_Semantics_for_Codex.md" />
+    <File Path="Common.props" />
+    <File Path="RULES.md" />
+    <File Path="TODO.md" />
+    <File Path="vcpkg-configuration.json" />
+    <File Path="vcpkg.json" />
+  </Folder>
+  <Project Path="TestConsole/TestConsole.vcxproj" Id="a2a34fd8-f8c6-4b7d-a690-a53b170fed70" />
+</Solution>

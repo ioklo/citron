@@ -456,13 +456,13 @@ int wmain(int argc, wchar_t* argv[])
     // wcout << L"abc 안녕하세요 abc";
     if (argc < 2)
     {
-        wcout << L"Usage: " << argv[0] << ' ' << L"[Base Directory]" << endl;
+        wcout << L"Usage: " << argv[0] << ' ' << L"[Git Root Directory]" << endl;
         wcout << L"   ex: " << argv[0] << ' ' << L"..\\..\\..   (relative to working directory)" << endl;
         return 1;
     }
 
     auto basePath = canonical(argv[1]);
-    wcout << L"Base Directory: " << basePath << endl;
+    wcout << L"Git Root Directory: " << basePath << endl;
 
     auto inputsPath = basePath / "data" / "TestData";
     auto srcPath = basePath / "src";

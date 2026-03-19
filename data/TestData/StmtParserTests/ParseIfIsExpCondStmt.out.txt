@@ -11,7 +11,8 @@
             "$type": "STypeExp_Id",
             "name": "T",
             "typeArgs": []
-        }
+        },
+        "bindName": null
     },
     "body": {
         "$type": "SEmbeddableStmt_Block",

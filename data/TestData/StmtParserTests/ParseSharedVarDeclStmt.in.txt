@@ -1,1 +1,1 @@
-shared int p;
+shared int p = uninit;

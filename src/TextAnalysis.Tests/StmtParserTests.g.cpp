@@ -359,7 +359,8 @@ TEST(StmtParser, ParseIfIsExpCondStmt)
             "$type": "STypeExp_Id",
             "name": "T",
             "typeArgs": []
-        }
+        },
+        "bindName": null
     },
     "body": {
         "$type": "SEmbeddableStmt_Block",
@@ -470,7 +471,7 @@ TEST(StmtParser, ParseInlineCommandStmt)
 
 TEST(StmtParser, ParseNullableVarDeclStmt)
 {
-    auto [buffer, lexer] = Prepare(UR"---(int? p;)---");
+    auto [buffer, lexer] = Prepare(UR"---(int? p = uninit;)---");
     SFactory factory;
 
     auto* stmt = ParseStmt(&lexer, factory);
@@ -480,11 +481,14 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "STypeExp_Nullable",
-            "innerType": {
-                "$type": "STypeExp_Id",
-                "name": "int",
-                "typeArgs": []
+            "$type": "SVarDeclType_Normal",
+            "typeExp": {
+                "$type": "STypeExp_Nullable",
+                "innerType": {
+                    "$type": "STypeExp_Id",
+                    "name": "int",
+                    "typeArgs": []
+                }
             }
         },
         "elements": [
@@ -504,7 +508,7 @@ TEST(StmtParser, ParseNullableVarDeclStmt)
 
 TEST(StmtParser, ParsePtrVarDeclStmt)
 {
-    auto [buffer, lexer] = Prepare(UR"---(int* p;)---");
+    auto [buffer, lexer] = Prepare(UR"---(int* p = uninit;)---");
     SFactory factory;
 
     auto* stmt = ParseStmt(&lexer, factory);
@@ -514,11 +518,14 @@ TEST(StmtParser, ParsePtrVarDeclStmt)
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "STypeExp_Ptr",
-            "innerType": {
-                "$type": "STypeExp_Id",
-                "name": "int",
-                "typeArgs": []
+            "$type": "SVarDeclType_Normal",
+            "typeExp": {
+                "$type": "STypeExp_Ptr",
+                "innerType": {
+                    "$type": "STypeExp_Id",
+                    "name": "int",
+                    "typeArgs": []
+                }
             }
         },
         "elements": [
@@ -538,7 +545,7 @@ TEST(StmtParser, ParsePtrVarDeclStmt)
 
 TEST(StmtParser, ParseSharedVarDeclStmt)
 {
-    auto [buffer, lexer] = Prepare(UR"---(shared int p;)---");
+    auto [buffer, lexer] = Prepare(UR"---(shared int p = uninit;)---");
     SFactory factory;
 
     auto* stmt = ParseStmt(&lexer, factory);
@@ -548,11 +555,14 @@ TEST(StmtParser, ParseSharedVarDeclStmt)
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "STypeExp_Shared",
-            "innerType": {
-                "$type": "STypeExp_Id",
-                "name": "int",
-                "typeArgs": []
+            "$type": "SVarDeclType_Normal",
+            "typeExp": {
+                "$type": "STypeExp_Shared",
+                "innerType": {
+                    "$type": "STypeExp_Id",
+                    "name": "int",
+                    "typeArgs": []
+                }
             }
         },
         "elements": [

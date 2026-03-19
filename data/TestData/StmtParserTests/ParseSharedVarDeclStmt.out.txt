@@ -3,11 +3,14 @@
     "varDecl": {
         "$type": "SVarDecl",
         "type": {
-            "$type": "STypeExp_Shared",
-            "innerType": {
-                "$type": "STypeExp_Id",
-                "name": "int",
-                "typeArgs": []
+            "$type": "SVarDeclType_Normal",
+            "typeExp": {
+                "$type": "STypeExp_Shared",
+                "innerType": {
+                    "$type": "STypeExp_Id",
+                    "name": "int",
+                    "typeArgs": []
+                }
             }
         },
         "elements": [

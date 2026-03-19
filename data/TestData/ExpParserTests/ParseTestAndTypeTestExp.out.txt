@@ -28,7 +28,8 @@
                         "typeArgs": []
                     }
                 ]
-            }
+            },
+            "bindName": null
         },
         "operand1": {
             "$type": "SExp_BinaryOp",
@@ -48,5 +49,6 @@
         "$type": "STypeExp_Id",
         "name": "T",
         "typeArgs": []
-    }
+    },
+    "bindName": "t"
 }

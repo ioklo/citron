@@ -1,0 +1,8 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="CodeGenerator/CodeGenerator.vcxproj" Id="dbeb8bdb-e917-41e0-b2e5-0587d45b633e" />
+  <Project Path="DocUpdater/DocUpdater.vcxproj" Id="98c17b92-b2ec-4b82-a8ed-82c56337ef5c" />
+  <Project Path="TestGenerator/TestGenerator.vcxproj" Id="4d11ee86-4c63-437f-bf7e-737f1b4f1b67" />
+</Solution>
