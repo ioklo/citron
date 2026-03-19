@@ -24,7 +24,7 @@ struct DesignatedDiagnostic : public IDesignatedDiagnostic
     {
         // stack에 들고 있도록 한다
         ctor = [&]() {
-            return MakePtr<TDiag>(std::forward<TArgs>(args)...);
+            return std::shared_ptr<TDiag>(new TDiag(std::forward<TArgs>(args)...));
         };
     }
 

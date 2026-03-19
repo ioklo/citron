@@ -26,6 +26,7 @@ struct MSharedExp;
 
 struct MInitExp
 {
+    virtual ~MInitExp() { }
     virtual void Accept(MInitExpVisitor& visitor) = 0;
 };
 

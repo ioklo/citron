@@ -8,7 +8,7 @@ using namespace std;
 
 namespace Citron {
 
-RType* Citron::GetType(MCallable& call)
+RType* GetType(MCallable& call)
 {
     return visit([](auto& call) -> RType* {
         using T = remove_cvref_t<decltype(call)>;
