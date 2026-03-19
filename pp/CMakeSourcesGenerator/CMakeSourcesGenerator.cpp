@@ -124,10 +124,7 @@ int main(int argc, char* argv[])
         "src/QEvaluator.Tests",
         "src/EvalTests",
 
-        "src/Tools/CodeGenerator",
         "src/Tools/SyntaxPrinter",
-        "src/Tools/TestGenerator",
-        "src/Tools/DocUpdater",
     };
 
     for (auto& filePath : paths)

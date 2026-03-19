@@ -8,4 +8,9 @@ target_link_libraries(TestGenerator PRIVATE
         Boost::algorithm
 )
 
-include(CMakeSources.g.txt)
+target_sources(TestGenerator
+    PRIVATE
+        TestGenerator.cpp
+    
+    PRIVATE FILE_SET headers TYPE HEADERS FILES
+)

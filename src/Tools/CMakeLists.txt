@@ -1,5 +1,1 @@
-add_subdirectory(CMakeSourcesGenerator)
-add_subdirectory(CodeGenerator)
 add_subdirectory(SyntaxPrinter)
-add_subdirectory(TestGenerator)
-add_subdirectory(DocUpdater)

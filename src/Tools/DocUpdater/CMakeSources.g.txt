@@ -1,6 +1,0 @@
-target_sources(DocUpdater
-    PRIVATE
-        DocUpdater.cpp
-
-    PRIVATE FILE_SET headers TYPE HEADERS FILES
-)

@@ -1,6 +1,0 @@
-target_sources(TestGenerator
-    PRIVATE
-        TestGenerator.cpp
-
-    PRIVATE FILE_SET headers TYPE HEADERS FILES
-)
