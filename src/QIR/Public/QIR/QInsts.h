@@ -58,7 +58,7 @@ struct QInst_Load
 };
 
 // store [%dest], %src
-// loc은 ptr을 담고 있음
+// dest는 ptr을 담고 있음
 struct QInst_Store
 {
     RType* type;     // T

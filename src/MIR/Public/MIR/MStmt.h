@@ -35,10 +35,10 @@ struct MStmt
 
 struct MStmt_Command : MStmt
 {
-    std::vector<MRead_NBC> commands;
+    std::vector<MRead_Loc> commands;
 
 public:
-    MStmt_Command(std::vector<MRead_NBC>&& commands)
+    MStmt_Command(std::vector<MRead_Loc>&& commands)
         : commands{std::move(commands)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -77,11 +77,11 @@ public:
 
 struct MStmt_If : MStmt
 {
-    MRead_BC cond; // BC
+    MRead cond; // BC
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
 
-    MStmt_If(MRead_BC&& cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
+    MStmt_If(MRead&& cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
         : cond{std::move(cond)}, body{std::move(body)}, elseBody{std::move(elseBody)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -90,13 +90,13 @@ struct MStmt_If : MStmt
 // cond내부에 alias가 생기는 경우
 struct MStmt_IfBind : MStmt
 {
-    MRead_BC cond;
+    MRead cond; // BC
     std::vector<MStmt*> body;
     std::vector<MStmt*> elseBody;
 
 public:
-    MStmt_IfBind(MExp* cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
-        : cond{cond}, body{std::move(body)}, elseBody{std::move(elseBody)}
+    MStmt_IfBind(MRead&& cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
+        : cond{std::move(cond)}, body{std::move(body)}, elseBody{std::move(elseBody)}
     {
     }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -105,13 +105,13 @@ public:
 struct MStmt_For : MStmt
 {
     std::vector<MStmt*> initStmts; // LocalVarDecl, LocalVarRef
-    std::optional<MRead_BC> cond; // BC
+    std::optional<MRead> cond; // BC
     MStmt* contStmt;
     std::vector<MStmt*> body;
 
 public:
-    MStmt_For(std::vector<MStmt*>&& initStmts, std::optional<MRead_BC>&& condExp, MStmt* contStmt, std::vector<MStmt*>&& body)
-        : initStmts{std::move(initStmts)}, cond{std::move(condExp)}, contStmt{contStmt}, body{std::move(body)}
+    MStmt_For(std::vector<MStmt*>&& initStmts, std::optional<MRead>&& cond, MStmt* contStmt, std::vector<MStmt*>&& body)
+        : initStmts{std::move(initStmts)}, cond{std::move(cond)}, contStmt{contStmt}, body{std::move(body)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -308,9 +308,9 @@ struct MStmt_Assign : MStmt
 {
     MStmt_AssignKind kind;
     MLoc* dest;
-    MRead_NBC src;
+    MRead_Loc src; // NBC
 
-    MStmt_Assign(MStmt_AssignKind kind, MLoc* dest, MRead_NBC&& src)
+    MStmt_Assign(MStmt_AssignKind kind, MLoc* dest, MRead_Loc&& src)
         : kind{kind}, dest{dest}, src{std::move(src)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;

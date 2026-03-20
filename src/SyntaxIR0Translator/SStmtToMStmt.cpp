@@ -116,7 +116,7 @@ public:
 
     ResultType Visit(SStmt_Command* stmt) 
     {
-        vector<MRead_NBC> builder;
+        vector<MRead_Loc> builder;
 
         auto* stringType = contexts.rFactory->MakeStringType();
         for(auto* cmd : stmt->commands)
@@ -127,7 +127,7 @@ public:
             // cmd가 SExp_String을 translation하면 무조건 string type이 나오게 된다
             assert(GetType(*e_mCmdRead, &*contexts.rFactory) != stringType);
 
-            builder.push_back(move(get<MRead_NBC>(*e_mCmdRead)));
+            builder.push_back(move(get<MRead_Loc>(*e_mCmdRead)));
         }
 
         return Value<MStmt_Command>(move(builder));
@@ -156,7 +156,6 @@ public:
         auto* condType = GetType(*e_mCond, &*contexts.rFactory);
         if (condType == boolType)
             return Error<Error_IfStmt_ConditionShouldBeBool>();
-        auto& mCondBC = get<MRead_BC>(*e_mCond);
 
         auto nestedContext = MakeTranslationContexts_NestedScope(contexts);
         
@@ -174,7 +173,7 @@ public:
             elseStmts = move(*e_elseResult);
         }
 
-        return Value<MStmt_If>(move(mCondBC), move(*e_bodyStmts), move(elseStmts));
+        return Value<MStmt_If>(move(*e_mCond), move(*e_bodyStmts), move(elseStmts));
     }
     
     ResultType Visit(SStmt_For* stmt) 
@@ -197,7 +196,7 @@ public:
             initStmts = move(*e_initResult);
         }
 
-        optional<MRead_BC> mCond;
+        optional<MRead> mCond;
         if (stmt->cond)
         {
             auto boolType = contexts.rFactory->MakeBoolType();
@@ -207,7 +206,7 @@ public:
             if (GetType(*e_mCond, &*contexts.rFactory) != boolType)
                 return Error<Error_ForStmt_ConditionShouldBeBool>();
 
-            mCond = move(get<MRead_BC>(*e_mCond));
+            mCond = move(*e_mCond);
 
             // TODO: [47] CastMExp의 리턴값 수정, NBC의 암시적 Cast구현하기
             // e_rawCond = CastMExp(*e_rawCond, boolType, contexts);

@@ -11,11 +11,11 @@ RType* GetType(MRead& read, RFactory* rFactory)
     return visit([rFactory](auto& read) -> RType* {
         using T = remove_cvref_t<decltype(read)>;
 
-        if constexpr (same_as<T, MRead_BC>)
+        if constexpr (same_as<T, MRead_Exp>)
         {
             return GetType(read.exp, rFactory);
         }
-        else if constexpr (same_as<T, MRead_NBC>)
+        else if constexpr (same_as<T, MRead_Loc>)
         {
             return GetType(read.loc, rFactory);
         }

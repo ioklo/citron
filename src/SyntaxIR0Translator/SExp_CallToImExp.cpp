@@ -223,7 +223,7 @@ struct CallableTranslator
                 return MakeImExp_ReExp_InitExp<MInitExp_StructCtor>(
                     MInitExp_StructCtorKind_Copy{
                         .structType = structType,
-                        .src = MRead_NBC{.loc = locArg.loc}
+                        .src = MRead_Loc{.loc = locArg.loc}
                     });
             }
             else if (ctorKind == RStructCtorKind::Move)

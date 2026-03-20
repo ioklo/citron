@@ -49,9 +49,9 @@ struct MExp_Load : MExp
 struct MExp_Store : MExp
 {
     MLoc* dest;
-    MRead_BC src;
+    MRead src;  // BC
 
-    MExp_Store(MLoc* dest, MRead_BC&& src)
+    MExp_Store(MLoc* dest, MRead&& src)
         : dest{dest}, src{std::move(src)}
     { }
     MIR_API void Accept(MExpVisitor& visitor) override;

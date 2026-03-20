@@ -70,11 +70,11 @@ struct MLoc_LambdaVar : MLoc
 // l[b], l is list
 struct MLoc_ListIndexer : MLoc
 {
-    MRead_NBC list;
-    MRead_BC index;
+    MRead_Loc list; // NBC
+    MRead index; // BC
     RType* itemType;
 
-    MLoc_ListIndexer(MRead_NBC&& list, MRead_BC&& index, RType* itemType)
+    MLoc_ListIndexer(MRead_Loc&& list, MRead&& index, RType* itemType)
         : list{std::move(list)}, index{std::move(index)}, itemType{itemType}
     { }
     MIR_API void Accept(MLocVisitor& visitor) override;
@@ -130,9 +130,9 @@ struct MLoc_This : MLoc
 // dereference pointer, *
 struct MLoc_PtrDeref : MLoc
 {
-    MRead_BC srcPtr;
+    MRead srcPtr; // ptr이니까 BC
 
-    MLoc_PtrDeref(MRead_BC&& srcPtr)
+    MLoc_PtrDeref(MRead&& srcPtr)
         : srcPtr{std::move(srcPtr)}
     { }
     MIR_API void Accept(MLocVisitor& visitor) override;
@@ -141,7 +141,7 @@ struct MLoc_PtrDeref : MLoc
 // dereference shared pointer, *
 struct MLoc_SharedDeref : MLoc
 {
-    MRead_NBC srcShared;
+    MRead_Loc srcShared; // shared이니까 NBC
     
     template<typename T>
     MLoc_SharedDeref(T&& srcShared)

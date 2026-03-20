@@ -43,7 +43,7 @@ RType* GetType(MLoc* loc, RFactory* rFactory)
         ResultType Visit(MLoc_This* loc) { return loc->type; }
         ResultType Visit(MLoc_PtrDeref* loc) 
         {  
-            auto* ptrType = dynamic_cast<RType_Ptr*>(GetType(loc->srcPtr.exp, rFactory));
+            auto* ptrType = dynamic_cast<RType_Ptr*>(GetType(loc->srcPtr, rFactory));
             assert(ptrType);
 
             return ptrType->innerType;

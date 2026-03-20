@@ -203,7 +203,7 @@ expected<MArgument, DiagPtr> MakeMArgument_LocNBC(RFuncParameter& funcParam, MLo
             // TODO: [40] MInitExp_StructCtorKind_*를 쓸때 Copy, Move가 가능한지 확인하고 fallback까지 하는 코드 작성
             auto* initExp = contexts.mFactory->MakeMInitExp<MInitExp_StructCtor>(MInitExp_StructCtorKind_Copy{
                 .structType = structType,
-                .src = MRead_NBC{.loc = loc}});
+                .src = MRead_Loc{.loc = loc}});
 
             return MArgument_Create{MCreate_NBC{initExp}};
         }

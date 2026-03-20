@@ -49,7 +49,7 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_Stri
                 MInitExp_CallIntrinsicKind::ToString_Int_String, typeArgs, move(args));
 
             auto* loc = contexts.mFactory->MakeMLoc<MLoc_Materialize>(MCreate_NBC{initExp});
-            return MInitExp_StringElem_NBC{MRead_NBC{loc}};
+            return MInitExp_StringElem_Exp{MRead_Loc{loc}};
         }
         else if (reExpType == contexts.rFactory->MakeBoolType())
         {
@@ -65,7 +65,7 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_Stri
                 MInitExp_CallIntrinsicKind::ToString_Bool_String, typeArgs, move(args));
 
             auto* loc = contexts.mFactory->MakeMLoc<MLoc_Materialize>(MCreate_NBC{initExp});
-            return MInitExp_StringElem_NBC{MRead_NBC{loc}};
+            return MInitExp_StringElem_Exp{MRead_Loc{loc}};
         }
         else if (reExpType == contexts.rFactory->MakeStringType())
         {
@@ -73,9 +73,9 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_Stri
             RETURN_ON_ERROR(e_mRead);
 
             // string을 읽었으니, NBC가 나와야 한다
-            auto& mReadBC = get<MRead_NBC>(*e_mRead);
+            auto& mReadLoc = get<MRead_Loc>(*e_mRead);
 
-            return MInitExp_StringElem_NBC{move(mReadBC)};
+            return MInitExp_StringElem_Exp{move(mReadLoc)};
         }
         else
         {
@@ -194,7 +194,7 @@ expected<ReExp, DiagPtr> TranslateSExp_BinaryOp_AssignToReExp(SExp_BinaryOp* sEx
     return visit([&contexts, mDestLoc, mDestLocType](auto& mSrc) -> expected<ReExp, DiagPtr> {
         using T = remove_cvref_t<decltype(mSrc)>;
 
-        if constexpr (same_as<T, MRead_BC>)
+        if constexpr (same_as<T, MRead_Exp>)
         {
             auto* rType = GetType(mSrc.exp, &*contexts.rFactory);
             if (rType != mDestLocType)
@@ -203,11 +203,11 @@ expected<ReExp, DiagPtr> TranslateSExp_BinaryOp_AssignToReExp(SExp_BinaryOp* sEx
                 /*auto e_mCastExp = CastMExp(mSrc.exp, mDestLocType, contexts);
                 RETURN_ON_ERROR(e_mCastExp);*/
 
-                return ReExp_Exp{contexts.mFactory->MakeMExp<MExp_Store>(mDestLoc, MRead_BC{mSrc.exp})};
+                return ReExp_Exp{contexts.mFactory->MakeMExp<MExp_Store>(mDestLoc, MRead_Exp{mSrc.exp})};
             }
             return ReExp_Exp{contexts.mFactory->MakeMExp<MExp_Store>(mDestLoc, move(mSrc))};
         }
-        else if constexpr (same_as<T, MRead_NBC>)
+        else if constexpr (same_as<T, MRead_Loc>)
         {
             auto* rType = GetType(mSrc.loc, &*contexts.rFactory);
             if (rType != mDestLocType)
@@ -407,15 +407,16 @@ expected<ReExp, DiagPtr> TranslateSExp_UnaryOpToReExp(SExp_UnaryOp* sExp, RType*
             RETURN_ON_ERROR(e_srcPtr);
 
             // RType_Ptr인데, BC가 안나오면 이상한
-            return ReExp_Loc{contexts.mFactory->MakeMLoc<MLoc_PtrDeref>(move(get<MRead_BC>(*e_srcPtr)))};
+            return ReExp_Loc{contexts.mFactory->MakeMLoc<MLoc_PtrDeref>(move(*e_srcPtr))};
         }
         else if (dynamic_cast<RType_Shared*>(type))
         {
             auto e_srcShared = TranslateReExpToMRead(*e_reOperand, contexts);
             RETURN_ON_ERROR(e_srcShared);
 
-            // RType_Shared인데, NBC가 안나오면 이상한
-            return ReExp_Loc{contexts.mFactory->MakeMLoc<MLoc_SharedDeref>(move(get<MRead_NBC>(*e_srcShared)))};
+            // RType_Shared이므로, MRead_Loc으로 얻어올수 있다
+            auto& srcSharedLoc = get<MRead_Loc>(*e_srcShared);
+            return ReExp_Loc{contexts.mFactory->MakeMLoc<MLoc_SharedDeref>(move(srcSharedLoc))};
         }
     }
 
@@ -542,8 +543,11 @@ expected<MLoc_ListIndexer*, DiagPtr> TranslateSExp_IndexerToMLoc_ListIndexer(SEx
     if (indexType != intType)
         return Error<Error_Indexer_IndexTypeNotMatched>();
 
+    // ListType이라면 Loc으로 변환할 수 있다
+    MRead_Loc& mObjLoc = get<MRead_Loc>(*e_mObj);
+
     // 리스트 타입이라면 NBC, int타입이라면 BC가 확정이다
-    return contexts.mFactory->MakeMLoc<MLoc_ListIndexer>(move(get<MRead_NBC>(*e_mObj)), move(get<MRead_BC>(*e_mIndex)), itemType);
+    return contexts.mFactory->MakeMLoc<MLoc_ListIndexer>(move(mObjLoc), move(*e_mIndex), itemType);
 }
 
 expected<MInitExp*, DiagPtr> TranslateSExp_ListToMInitExp(SExp_List* sExp, RType* hintType, TranslationContexts& contexts)

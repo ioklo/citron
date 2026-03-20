@@ -36,7 +36,7 @@ expected<MCreate, DiagPtr> TranslateReExpToMCreate(ReExp& reExp, TranslationCont
                 if (auto* structType = dynamic_cast<RType_Struct*>(type))
                 {
                     // TODO: [40] MInitExp_StructCtorKind_*를 쓸때 Copy, Move가 가능한지 확인하고 fallback까지 하는 코드 작성
-                    auto* mInitExp = contexts.mFactory->MakeMInitExp<MInitExp_StructCtor>(MInitExp_StructCtorKind_Copy{structType, MRead_NBC{reExp.mLoc}});
+                    auto* mInitExp = contexts.mFactory->MakeMInitExp<MInitExp_StructCtor>(MInitExp_StructCtorKind_Copy{structType, MRead_Loc{reExp.mLoc}});
                     return MCreate_NBC{mInitExp};
                 }
                 else throw NotImplementedException{};
@@ -76,34 +76,20 @@ expected<MRead, DiagPtr> TranslateReExpToMRead(ReExp& reExp, TranslationContexts
         using T = remove_cvref_t<decltype(reExp)>;
         if constexpr (same_as<T, ReExp_Loc>) 
         {
-            auto* type = GetType(reExp.mLoc, &*contexts.rFactory);
-            auto copyStrategy = type->GetCopyStrategy();
-            assert(copyStrategy != RCopyStrategy::Void);
-
-            if (copyStrategy == RCopyStrategy::Bitwise)
-            {
-                auto* mExp = contexts.mFactory->MakeMExp<MExp_Load>(reExp.mLoc);
-                return MRead_BC{mExp};
-            }
-            else if (copyStrategy == RCopyStrategy::NonBitwise)
-            {
-                return MRead_NBC{reExp.mLoc};
-            }
-
-            unreachable();
+            return MRead_Loc{reExp.mLoc};
         }
         else if constexpr (same_as<T, ReExp_Exp>) 
         {
             assert(GetType(reExp.mExp, &*contexts.rFactory)->GetCopyStrategy() == RCopyStrategy::Bitwise);
 
-            return MRead_BC{reExp.mExp};
+            return MRead_Exp{reExp.mExp};
         }
         else if constexpr (same_as<T, ReExp_InitExp>) 
         {
             assert(GetType(reExp.mInitExp, &*contexts.rFactory)->GetCopyStrategy() == RCopyStrategy::NonBitwise);
 
             auto* mLoc = contexts.mFactory->MakeMLoc<MLoc_Materialize>(MCreate_NBC{reExp.mInitExp});
-            return MRead_NBC{mLoc};
+            return MRead_Loc{mLoc};
         }
         else if constexpr (same_as<T, ReExp_StmtCall>) 
         {

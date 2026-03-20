@@ -63,12 +63,12 @@ struct MInitExp_StringElem_Text
     std::string text;
 };
 
-struct MInitExp_StringElem_NBC
+struct MInitExp_StringElem_Exp
 {
-    MRead_NBC loc;
+    MRead_Loc loc; // string이니까 NBC Loc
 };
 
-using MInitExp_StringElem = std::variant<MInitExp_StringElem_Text, MInitExp_StringElem_NBC>;
+using MInitExp_StringElem = std::variant<MInitExp_StringElem_Text, MInitExp_StringElem_Exp>;
 
 // "dskfjslkf $abc "
 struct MInitExp_String : MInitExp
@@ -120,7 +120,7 @@ struct MInitExp_NewClass : MInitExp
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
-struct MInitExp_StructCtorKind_Copy { RType_Struct* structType; MRead_NBC src; };
+struct MInitExp_StructCtorKind_Copy { RType_Struct* structType; MRead_Loc src; };
 struct MInitExp_StructCtorKind_Move { RType_Struct* structType; MMoveSource src; };
 struct MInitExp_StructCtorKind_General { RStructCtorDecl* decl; RTypeArguments* typeArgs; std::vector<MArgument> args; };
 

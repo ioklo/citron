@@ -116,9 +116,9 @@ struct IrExp_StructVar : IrExp
 // *pS 모양을 따로 들고 있는다. IrExp_Loc{MLoc_SharedDeref}는 만들어지면 안된다
 struct IrExp_SharedDeref : IrExp
 {
-    MRead_NBC srcShared;
+    MRead_Loc srcShared;
 
-    IrExp_SharedDeref(MRead_NBC&& srcShared)
+    IrExp_SharedDeref(MRead_Loc&& srcShared)
         : srcShared{std::move(srcShared)}
     { }
     void Accept(IrExpVisitor& visitor) override;

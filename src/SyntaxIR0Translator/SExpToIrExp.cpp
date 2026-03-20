@@ -54,7 +54,7 @@ struct SExpToIrExpTranslator
     // ResultType Visit(SExp_NullLiteral* exp); null
     // ResultType Visit(SExp_BinaryOp* exp); // &(e0 + e1).id, &(e0 = e1).id
 
-    optional<IrExp*> TryDeref(SExp* operand)
+    optional<IrExp*> TrySharedDeref(SExp* operand)
     {
         // x가 shared<S>인 경우에만 IrExp_SharedDeref로 바꿔서 보존한다
         DesignatedDiagnostic<Error_ResolveIdentifier_ExpressionIsNotLocation> notLocationDiag;
@@ -62,15 +62,15 @@ struct SExpToIrExpTranslator
         auto e_mRead = TranslateSExpToMRead(operand, /*hintType*/nullptr, contexts);
         if (!e_mRead) return nullopt;
 
-        auto* mReadNBC = get_if<MRead_NBC>(&*e_mRead);
-        if (!mReadNBC) return nullopt;
+        auto* mReadLoc = get_if<MRead_Loc>(&*e_mRead);
+        if (!mReadLoc) return nullopt;
 
-        auto* targetType = GetType(mReadNBC->loc, &*contexts.rFactory);
+        auto* targetType = GetType(mReadLoc->loc, &*contexts.rFactory);
 
         // shared<S> 꼴인지 확인
         if (auto* targetSharedType = dynamic_cast<RType_Shared*>(targetType))
             if (dynamic_cast<RType_Struct*>(targetSharedType->innerType))
-                return contexts.srtFactory->MakeIrExp<IrExp_SharedDeref>(move(*mReadNBC));
+                return contexts.srtFactory->MakeIrExp<IrExp_SharedDeref>(move(*mReadLoc));
 
         return nullopt;
     }
@@ -79,7 +79,7 @@ struct SExpToIrExpTranslator
     ResultType Visit(SExp_UnaryOp* exp)
     {
         if (exp->kind == SUnaryOpKind::Deref)
-            if (auto o_irExp = TryDeref(exp->operand))
+            if (auto o_irExp = TrySharedDeref(exp->operand))
                 return *o_irExp;
 
         return HandleDefault(exp);
