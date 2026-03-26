@@ -69,12 +69,12 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
         return QIntrinsicKindResult_Void{};
 
     case QInst_IntrinsicKind::NewList_Items: throw NotImplementedException{};
-    case QInst_IntrinsicKind::GetListIterator_List: throw NotImplementedException{};
+    case QInst_IntrinsicKind::GetIterator_List_ListIterator: throw NotImplementedException{};
 
-    case QInst_IntrinsicKind::LogicalNot_Bool:
+    case QInst_IntrinsicKind::LogicalNot_Bool_Bool:
         return QIntrinsicResultType_Slot{rFactory->MakeBoolType()};
 
-    case QInst_IntrinsicKind::UnaryMinus_Int:
+    case QInst_IntrinsicKind::UnaryMinus_Int_Int:
         return QIntrinsicResultType_Slot{rFactory->MakeIntType()};
 
     case QInst_IntrinsicKind::ToString_Bool:
@@ -82,29 +82,29 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
     case QInst_IntrinsicKind::Add_String_String:
         return QIntrinsicResultType_Slot{rFactory->MakeStringType()};
 
-    case QInst_IntrinsicKind::PrefixInc_Int: 
-    case QInst_IntrinsicKind::PrefixDec_Int:
-    case QInst_IntrinsicKind::PostfixInc_Int:
-    case QInst_IntrinsicKind::PostfixDec_Int:
+    case QInst_IntrinsicKind::PrefixInc_Int_Int: 
+    case QInst_IntrinsicKind::PrefixDec_Int_Int:
+    case QInst_IntrinsicKind::PostfixInc_Int_Int:
+    case QInst_IntrinsicKind::PostfixDec_Int_Int:
 
-    case QInst_IntrinsicKind::Multiply_Int_Int:
-    case QInst_IntrinsicKind::Divide_Int_Int:
-    case QInst_IntrinsicKind::Modulo_Int_Int:
-    case QInst_IntrinsicKind::Add_Int_Int:
-    case QInst_IntrinsicKind::Subtract_Int_Int:
+    case QInst_IntrinsicKind::Multiply_Int_Int_Int:
+    case QInst_IntrinsicKind::Divide_Int_Int_Int:
+    case QInst_IntrinsicKind::Modulo_Int_Int_Int:
+    case QInst_IntrinsicKind::Add_Int_Int_Int:
+    case QInst_IntrinsicKind::Subtract_Int_Int_Int:
         return QIntrinsicResultType_Slot{rFactory->MakeIntType()};
     
-    case QInst_IntrinsicKind::LessThan_Int_Int:
-    case QInst_IntrinsicKind::LessThan_String_String:
-    case QInst_IntrinsicKind::GreaterThan_Int_Int:
-    case QInst_IntrinsicKind::GreaterThan_String_String:
-    case QInst_IntrinsicKind::LessThanOrEqual_Int_Int:
-    case QInst_IntrinsicKind::LessThanOrEqual_String_String:
-    case QInst_IntrinsicKind::GreaterThanOrEqual_Int_Int:
-    case QInst_IntrinsicKind::GreaterThanOrEqual_String_String:
-    case QInst_IntrinsicKind::Equal_Int_Int:
-    case QInst_IntrinsicKind::Equal_Bool_Bool:
-    case QInst_IntrinsicKind::Equal_String_String:
+    case QInst_IntrinsicKind::LessThan_Int_Int_Bool:
+    case QInst_IntrinsicKind::LessThan_String_String_Bool:
+    case QInst_IntrinsicKind::GreaterThan_Int_Int_Bool:
+    case QInst_IntrinsicKind::GreaterThan_String_String_Bool:
+    case QInst_IntrinsicKind::LessThanOrEqual_Int_Int_Bool:
+    case QInst_IntrinsicKind::LessThanOrEqual_String_String_Bool:
+    case QInst_IntrinsicKind::GreaterThanOrEqual_Int_Int_Bool:
+    case QInst_IntrinsicKind::GreaterThanOrEqual_String_String_Bool:
+    case QInst_IntrinsicKind::Equal_Int_Int_Bool:
+    case QInst_IntrinsicKind::Equal_Bool_Bool_Bool:
+    case QInst_IntrinsicKind::Equal_String_String_Bool:
         return QIntrinsicResultType_Slot{rFactory->MakeBoolType()};
     }
 
@@ -126,15 +126,15 @@ expected<void, DiagPtr> QBodyContext::EmitInstInternal(QInst&& inst)
     return {};
 }
 
-expected<void, DiagPtr> QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Slot> oDest, std::vector<QArg_Input>&& args)
+expected<void, DiagPtr> QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Slot> o_dest, std::vector<QArg_Input>&& args)
 {
     auto resultType = GetIntrinsicResultType(kind);
-    return visit([this, kind, &oDest, &args](auto& resultType) -> expected<void, DiagPtr>{
+    return visit([this, kind, &o_dest, &args](auto& resultType) -> expected<void, DiagPtr>{
         using T = remove_cvref_t<decltype(resultType)>;
 
         if constexpr (same_as<T, QIntrinsicResultType_Slot>)
         {
-            QArg_Slot resultSlot = oDest ? *oDest : QArg_Slot{NewSlot(resultType.type)};
+            QArg_Slot resultSlot = o_dest ? *o_dest : QArg_Slot{NewSlot(resultType.type)};
 
             if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
             curBlock->EmitInst(QInst_Intrinsic{kind, resultSlot, move(args)});
@@ -142,7 +142,7 @@ expected<void, DiagPtr> QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, op
         }
         else if constexpr (same_as<T, QIntrinsicKindResult_Void>)
         {
-            assert(!oDest);
+            assert(!o_dest);
 
             if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
             curBlock->EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
@@ -303,13 +303,13 @@ optional<QLocalInfo> QBodyContext::GetLocalInfo(const RName& name)
     return nullopt;
 }
 
-size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size_t> oArgIndex)
+size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size_t> o_argIndex)
 {   
     size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
     auto name = format("%s{}_{}", slotIndex, RNameToString(rName));
 
     // 1. 함수 entry에서 할당할 목록에 추가
-    slotInfos.emplace_back(rType, name, oArgIndex);
+    slotInfos.emplace_back(rType, name, o_argIndex);
     
     // 2. 현재 스코프에 이름 추가
     curScope->localInfos[rName] = QLocalInfo_Var{slotIndex, name};

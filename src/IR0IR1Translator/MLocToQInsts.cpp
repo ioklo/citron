@@ -1,4 +1,4 @@
-#include "MLocQInstsTranslation.h"
+#include "MLocToQInsts.h"
 
 #include <variant>
 
@@ -8,28 +8,20 @@
 #include "MIR/MLoc.h"
 
 #include "QBodyContext.h"
-#include "MExpQInstsTranslation.h"
+#include "QTranslationContexts.h"
 
 using namespace std;
 
 namespace Citron {
 
-// 메모리 주소를 value로 돌려주는 
-class MLocQInstsTranslator
+// MLoc이 가리키는 위치를 slot자체나, ptr를 돌려준다 (ptr이 들어간 slot을 리턴한다)
+struct MLocQInstsTranslator
 {
-public:
     using ResultType = expected<QLocResult, DiagPtr>;
-    QBodyContext& bodyContext;
-
-public:
-    MLocQInstsTranslator(QBodyContext& bodyContext)
-        : bodyContext{bodyContext} {
-    }
+    QTranslationContexts& contexts;
     
     ResultType Visit(MLoc_Materialize* loc) 
-    { 
-        static_assert(false);
-
+    {
         /*RType* rType = loc->GetType();
         size_t slotIndex = bodyContext.NewSlot(rType);
         auto e_result = TranslateMExpToQInsts(loc->exp, slotIndex, bodyContext);
@@ -40,7 +32,7 @@ public:
 
     ResultType Visit(MLoc_LocalVar* loc)
     {
-        auto o_localInfo = bodyContext.GetLocalInfo(loc->name);
+        auto o_localInfo = contexts.bodyContext.GetLocalInfo(loc->name);
         assert(o_localInfo);
 
         auto& varInfo = get<QLocalInfo_Var>(*o_localInfo);
@@ -49,7 +41,7 @@ public:
 
     ResultType Visit(MLoc_LocalRef* loc)
     {
-        auto o_localInfo = bodyContext.GetLocalInfo(loc->name);
+        auto o_localInfo = contexts.bodyContext.GetLocalInfo(loc->name);
         assert(o_localInfo);
 
         return visit([](auto& localInfo) -> ResultType
@@ -61,7 +53,7 @@ public:
             }
             else if constexpr (same_as<T, QLocalInfo_RefPtr>)
             {
-                return QLocResult_PtrSlot{localInfo.slotIndex};
+                return QLocResult_Ptr{localInfo.slotIndex};
             }
             else if constexpr (same_as<T, QLocalInfo_Var>)
             {   
@@ -75,7 +67,7 @@ public:
     ResultType Visit(MLoc_ListIndexer* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_StructVar* loc) 
     {
-        auto e_instanceResult = TranslateMLocToQInsts(loc->instance, bodyContext);
+        auto e_instanceResult = TranslateMLocToQInsts(loc->instance, contexts);
         RETURN_ON_ERROR(e_instanceResult);
 
         return visit([this, loc](auto& locResult) -> ResultType {
@@ -83,27 +75,27 @@ public:
             if constexpr (same_as<T, QLocResult_Slot>) // slot이면
             {
                 // slot의 addrof를 하나 한다 ptr 타입
-                auto* rPtrType = bodyContext.GetPtrType();
-                size_t instSlotIndex = bodyContext.NewSlot(rPtrType);
-                auto e_addrResult = bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{instSlotIndex}, QArg_Slot{locResult.slotIndex}});
+                auto* rPtrType = contexts.bodyContext.GetPtrType();
+                size_t instSlotIndex = contexts.bodyContext.NewSlot(rPtrType);
+                auto e_addrResult = contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{instSlotIndex}, QArg_Slot{locResult.slotIndex}});
                 RETURN_ON_ERROR(e_addrResult);
 
-                size_t destSlotIndex = bodyContext.NewSlot(rPtrType);
-                auto e_fieldResult = bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{instSlotIndex}, loc->decl->GetIndex()});
+                size_t destSlotIndex = contexts.bodyContext.NewSlot(rPtrType);
+                auto e_fieldResult = contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{instSlotIndex}, loc->decl->GetIndex()});
                 RETURN_ON_ERROR(e_fieldResult);
 
-                return QLocResult_PtrSlot{destSlotIndex};
+                return QLocResult_Ptr{destSlotIndex};
             }
-            else if constexpr(same_as<T, QLocResult_PtrSlot>)
+            else if constexpr(same_as<T, QLocResult_Ptr>)
             {
                 // slot의 addrof를 하나 한다 ptr 타입
-                auto* ptrType = bodyContext.GetPtrType();
+                auto* ptrType = contexts.bodyContext.GetPtrType();
 
-                size_t destSlotIndex = bodyContext.NewSlot(ptrType);
-                auto e_fieldResult = bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{locResult.slotIndex}, loc->decl->GetIndex()});
+                size_t destSlotIndex = contexts.bodyContext.NewSlot(ptrType);
+                auto e_fieldResult = contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{locResult.slotIndex}, loc->decl->GetIndex()});
                 RETURN_ON_ERROR(e_fieldResult);
 
-                return QLocResult_PtrSlot{destSlotIndex};
+                return QLocResult_Ptr{destSlotIndex};
             }
             else static_assert(false);
             
@@ -124,9 +116,9 @@ public:
     ResultType Visit(MLoc_NullableValue* loc) { throw NotImplementedException{}; }
 };
 
-expected<QLocResult, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QBodyContext& bodyContext)
+expected<QLocResult, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QTranslationContexts& contexts)
 {
-    MLocQInstsTranslator translator{bodyContext};
+    MLocQInstsTranslator translator{contexts};
     return Accept(translator, loc);
 }
 

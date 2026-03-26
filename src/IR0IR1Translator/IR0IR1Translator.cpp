@@ -18,7 +18,7 @@
 #include "QIR/QFactory.h"
 #include "QIR/QFuncBody.h"
 
-#include "MStmtQInstsTranslation.h"
+#include "MStmtToQInsts.h"
 #include "QBodyContext.h"
 #include "ScopeGuard.h"
 

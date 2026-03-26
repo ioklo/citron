@@ -427,9 +427,9 @@ private:
             case Alloc_Int: { throw NotImplementedException{}; }
             case Memcpy_Ptr_Ptr_Int: { throw NotImplementedException{}; }
             case NewList_Items: { throw NotImplementedException{}; }
-            case GetListIterator_List: { throw NotImplementedException{}; }
+            case GetIterator_List_ListIterator: { throw NotImplementedException{}; }
 
-            case LogicalNot_Bool: 
+            case LogicalNot_Bool_Bool: 
             { 
                 auto* boolValue = GetBool(qInst.args[0]);
                 auto* notValue = builder.CreateNot(boolValue);
@@ -437,7 +437,7 @@ private:
                 return;
             }
 
-            case UnaryMinus_Int:
+            case UnaryMinus_Int_Int:
             {
                 auto* intValue = GetInt(qInst.args[0]);
                 auto* negValue = builder.CreateNeg(intValue);
@@ -459,7 +459,7 @@ private:
                 return;
             }
 
-            case PrefixInc_Int: 
+            case PrefixInc_Int_Int: 
             { 
                 // int* p;
                 // p에서 값을 읽어들인다 => r
@@ -473,7 +473,7 @@ private:
                 return;
             }
 
-            case PrefixDec_Int:
+            case PrefixDec_Int_Int:
             {
                 auto* ptrValue = GetPtr(qInst.args[0]);
                 auto* loadedValue = builder.CreateLoad(lContextImpl.GetInt32Type(), ptrValue);
@@ -483,7 +483,7 @@ private:
                 return;
             }
 
-            case PostfixInc_Int: 
+            case PostfixInc_Int_Int: 
             { 
                 auto* ptrValue = GetPtr(qInst.args[0]);
                 auto* loadedValue = builder.CreateLoad(lContextImpl.GetInt32Type(), ptrValue);
@@ -493,7 +493,7 @@ private:
                 return;
             }
 
-            case PostfixDec_Int: 
+            case PostfixDec_Int_Int: 
             {
                 auto* ptrValue = GetPtr(qInst.args[0]);
                 auto* loadedValue = builder.CreateLoad(lContextImpl.GetInt32Type(), ptrValue);
@@ -503,7 +503,7 @@ private:
                 return;
             }
 
-            case Multiply_Int_Int: 
+            case Multiply_Int_Int_Int: 
             { 
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -512,7 +512,7 @@ private:
                 return;
             }
 
-            case Divide_Int_Int:
+            case Divide_Int_Int_Int:
             {
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -521,7 +521,7 @@ private:
                 return;
             }
 
-            case Modulo_Int_Int: 
+            case Modulo_Int_Int_Int: 
             { 
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -530,7 +530,7 @@ private:
                 return;
             }
 
-            case Add_Int_Int: 
+            case Add_Int_Int_Int: 
             { 
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -548,7 +548,7 @@ private:
                 return;
             }
             
-            case Subtract_Int_Int:
+            case Subtract_Int_Int_Int:
             {
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -557,7 +557,7 @@ private:
                 return;
             }
 
-            case LessThan_Int_Int: 
+            case LessThan_Int_Int_Bool: 
             {
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -566,7 +566,7 @@ private:
                 return;
             }
 
-            case LessThan_String_String: 
+            case LessThan_String_String_Bool: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -575,7 +575,7 @@ private:
                 return;
             }
 
-            case GreaterThan_Int_Int: 
+            case GreaterThan_Int_Int_Bool: 
             { 
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -584,7 +584,7 @@ private:
                 return;
             }
 
-            case GreaterThan_String_String: 
+            case GreaterThan_String_String_Bool: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -593,7 +593,7 @@ private:
                 return;
             }
 
-            case LessThanOrEqual_Int_Int: 
+            case LessThanOrEqual_Int_Int_Bool: 
             { 
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -602,7 +602,7 @@ private:
                 return;
             }
 
-            case LessThanOrEqual_String_String:
+            case LessThanOrEqual_String_String_Bool:
             {
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -611,7 +611,7 @@ private:
                 return;
             }
 
-            case GreaterThanOrEqual_Int_Int: 
+            case GreaterThanOrEqual_Int_Int_Bool: 
             { 
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -620,7 +620,7 @@ private:
                 return;
             }
 
-            case GreaterThanOrEqual_String_String: 
+            case GreaterThanOrEqual_String_String_Bool: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -629,7 +629,7 @@ private:
                 return;
             }
 
-            case Equal_Int_Int: 
+            case Equal_Int_Int_Bool: 
             {
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -638,7 +638,7 @@ private:
                 return;
             }
 
-            case Equal_Bool_Bool: 
+            case Equal_Bool_Bool_Bool: 
             { 
                 auto* operand0 = GetBool(qInst.args[0]);
                 auto* operand1 = GetBool(qInst.args[1]);
@@ -647,7 +647,7 @@ private:
                 return;
             }
 
-            case Equal_String_String:
+            case Equal_String_String_Bool:
             {
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                

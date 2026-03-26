@@ -12,20 +12,25 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CommonQInstsTranslation.h" />
-    <ClInclude Include="MExpQInstsTranslation.h" />
-    <ClInclude Include="MLocQInstsTranslation.h" />
-    <ClInclude Include="MStmtQInstsTranslation.h" />
+    <ClInclude Include="MCreateToQInsts.h" />
+    <ClInclude Include="MExpToQInsts.h" />
+    <ClInclude Include="MLocToQInsts.h" />
+    <ClInclude Include="MReadToQInsts.h" />
+    <ClInclude Include="MStmtToQInsts.h" />
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1Translator.h" />
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h" />
     <ClInclude Include="QBodyContext.h" />
+    <ClInclude Include="QTranslationContexts.h" />
     <ClInclude Include="ScopeGuard.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommonQInstsTranslation.cpp" />
     <ClCompile Include="IR0IR1Translator.cpp" />
-    <ClCompile Include="MExpQInstsTranslation.cpp" />
-    <ClCompile Include="MLocQInstsTranslation.cpp" />
-    <ClCompile Include="MStmtQInstsTranslation.cpp" />
+    <ClCompile Include="MCreateToQInsts.cpp" />
+    <ClCompile Include="MExpToQInsts.cpp" />
+    <ClCompile Include="MLocToQInsts.cpp" />
+    <ClCompile Include="MReadToQInsts.cpp" />
+    <ClCompile Include="MStmtToQInsts.cpp" />
     <ClCompile Include="QBodyContext.cpp" />
   </ItemGroup>
   <ItemGroup>

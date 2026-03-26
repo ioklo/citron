@@ -226,15 +226,15 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     }
 
     case NewList_Items: throw NotImplementedException{};
-    case GetListIterator_List: throw NotImplementedException{};
-    case LogicalNot_Bool:
+    case GetIterator_List_ListIterator: throw NotImplementedException{};
+    case LogicalNot_Bool_Bool:
     {
         auto b = GetBool(inst.args[0], env);
         SetBool(*inst.o_dest, !b, env);
         return;
     }
 
-    case UnaryMinus_Int:
+    case UnaryMinus_Int_Int:
     {
         auto i = GetInt(inst.args[0], env);
         SetInt(*inst.o_dest, -i, env);
@@ -256,7 +256,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case PrefixInc_Int:
+    case PrefixInc_Int_Int:
     {
         // ++i
 
@@ -266,7 +266,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case PrefixDec_Int:
+    case PrefixDec_Int_Int:
     {
         // --i
 
@@ -275,7 +275,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         SetInt(*inst.o_dest, --(*ptr), env);
         return;
     }
-    case PostfixInc_Int:
+    case PostfixInc_Int_Int:
     {
         // i++
 
@@ -284,7 +284,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         SetInt(*inst.o_dest, (*ptr)++, env);
         return;
     }
-    case PostfixDec_Int:
+    case PostfixDec_Int_Int:
     {
         // i--
         // 인자는 location
@@ -293,14 +293,14 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case Multiply_Int_Int:
+    case Multiply_Int_Int_Int:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
         SetInt(*inst.o_dest, i1 * i2, env);
         return;
     }
-    case Divide_Int_Int:
+    case Divide_Int_Int_Int:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
@@ -308,14 +308,14 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case Modulo_Int_Int:
+    case Modulo_Int_Int_Int:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
         SetInt(*inst.o_dest, i1 % i2, env);
         return;
     }
-    case Add_Int_Int:
+    case Add_Int_Int_Int:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
@@ -331,7 +331,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case Subtract_Int_Int:
+    case Subtract_Int_Int_Int:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
@@ -339,7 +339,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case LessThan_Int_Int:
+    case LessThan_Int_Int_Bool:
     {
         // const integer가 있으면,
         auto i1 = GetInt(inst.args[0], env);
@@ -349,7 +349,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case LessThan_String_String:
+    case LessThan_String_String_Bool:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
@@ -358,7 +358,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case GreaterThan_Int_Int:
+    case GreaterThan_Int_Int_Bool:
     {
         // const integer가 있으면,
         auto i1 = GetInt(inst.args[0], env);
@@ -368,7 +368,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case GreaterThan_String_String:
+    case GreaterThan_String_String_Bool:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
@@ -377,14 +377,14 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case LessThanOrEqual_Int_Int:
+    case LessThanOrEqual_Int_Int_Bool:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
         SetBool(*inst.o_dest, i1 <= i2, env);
         return;
     }
-    case LessThanOrEqual_String_String:
+    case LessThanOrEqual_String_String_Bool:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
@@ -393,7 +393,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case GreaterThanOrEqual_Int_Int:
+    case GreaterThanOrEqual_Int_Int_Bool:
     {
         auto i1 = GetInt(inst.args[0], env);
         auto i2 = GetInt(inst.args[1], env);
@@ -401,7 +401,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case GreaterThanOrEqual_String_String:
+    case GreaterThanOrEqual_String_String_Bool:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
@@ -410,7 +410,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case Equal_Int_Int:
+    case Equal_Int_Int_Bool:
     {
         // const integer가 있으면,
         auto i1 = GetInt(inst.args[0], env);
@@ -420,7 +420,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case Equal_Bool_Bool:
+    case Equal_Bool_Bool_Bool:
     {
         auto b1 = GetBool(inst.args[0], env);
         auto b2 = GetBool(inst.args[1], env);
@@ -429,7 +429,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case Equal_String_String:
+    case Equal_String_String_Bool:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);

@@ -12,6 +12,7 @@ class RTypeArguments;
 class RClassFuncDecl;
 class RStructFuncDecl;
 class RLambdaDecl;
+class RFuncDecl;
 struct MLoc;
 
 struct MCallable_GlobalFunc { RGlobalFuncDecl* decl; RTypeArguments* typeArgs; }; // F();
@@ -22,5 +23,6 @@ struct MCallable_Lambda { RLambdaDecl* decl; RTypeArguments* typeArgs; MLoc* cal
 using MCallable = std::variant<MCallable_GlobalFunc, MCallable_ClassFunc, MCallable_StructFunc, MCallable_Lambda>;
 
 MIR_API RType* GetType(MCallable& call);
+MIR_API RFuncDecl* GetRFuncDecl(MCallable& call);
 
 } // namespace Citron

@@ -33,4 +33,9 @@ RType* GetType(MCallable& call)
     }, call);
 }
 
+MIR_API RFuncDecl* GetRFuncDecl(MCallable& call)
+{
+    return visit([](auto& call) -> RFuncDecl* { return call.decl; }, call);
+}
+
 } // namespace Citron

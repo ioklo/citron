@@ -23,4 +23,12 @@ using MCreate = std::variant<MCreate_BC, MCreate_NBC>;
 
 MIR_API RType* GetType(MCreate& create, RFactory* rFactory);
 
+
+//visit([](auto& create) {
+//    using T = remove_cvref_t<decltype(create)>;
+//    if constexpr (same_as<T, MCreate_BC>)
+//    else if constexpr (same_as<T, MCreate_NBC>)
+//    else static_assert(false);
+//}, create)
+
 } // Citron

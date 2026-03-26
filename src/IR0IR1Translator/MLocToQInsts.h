@@ -13,13 +13,13 @@ struct MLoc;
 class QBlock;
 class QFactory;
 
-class QBodyContext;
+struct QTranslationContexts;
 
 struct QLocResult_Slot { size_t slotIndex; }; // local var
-struct QLocResult_PtrSlot { size_t slotIndex; }; // ptr
+struct QLocResult_Ptr { size_t slotIndex; }; // ptr
 
-using QLocResult = std::variant<QLocResult_Slot, QLocResult_PtrSlot>;
+using QLocResult = std::variant<QLocResult_Slot, QLocResult_Ptr>;
 
-std::expected<QLocResult, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QBodyContext& bodyContext);
+std::expected<QLocResult, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QTranslationContexts& contexts);
 
 } // namespace Citron
