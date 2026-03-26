@@ -4,6 +4,6 @@
 
 namespace Citron {
 
-void GenerateVisitors(std::filesystem::path srcPath);
+void GenerateVisitors(std::filesystem::path rootPath);
 
 } // namespace Citron

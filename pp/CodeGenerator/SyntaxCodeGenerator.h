@@ -2,6 +2,6 @@
 
 namespace Citron {
 
-void GenerateSyntax(std::filesystem::path srcPath);
+void GenerateSyntax(std::filesystem::path rootPath);
 
 }

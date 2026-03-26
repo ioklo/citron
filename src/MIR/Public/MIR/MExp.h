@@ -118,18 +118,18 @@ enum class MExp_CallIntrinsicKind
     
     Subtract_Int_Int_Int,
     LessThan_Int_Int_Bool,
-    LessThan_String_String_Bool, // [in]string&으로 받아야 한다
+    LessThan_StringPtr_StringPtr_Bool, // [in]string&으로 받아야 한다
     GreaterThan_Int_Int_Bool,
-    GreaterThan_String_String_Bool,
+    GreaterThan_StringPtr_StringPtr_Bool,
     LessThanOrEqual_Int_Int_Bool,
-    LessThanOrEqual_String_String_Bool,
+    LessThanOrEqual_StringPtr_StringPtr_Bool,
     GreaterThanOrEqual_Int_Int_Bool,
-    GreaterThanOrEqual_String_String_Bool,
+    GreaterThanOrEqual_StringPtr_StringPtr_Bool,
     Equal_Int_Int_Bool,
     Equal_Bool_Bool_Bool,
-    Equal_String_String_Bool,
+    Equal_StringPtr_StringPtr_Bool,
 
-    GetIterator_List_ListIterator, // 첫번째 타입 파라미터는 ItemType
+    GetIterator_ListPtr_ListIterator, // 첫번째 타입 파라미터는 ItemType
 };
 
 struct MExp_CallIntrinsic : MExp

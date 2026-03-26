@@ -21,20 +21,20 @@ int wmain(int argc, wchar_t* argv[])
 
     if (argc < 2)
     {
-        wcout << L"Usage: " << argv[0] << ' ' << L"[Source Directory]" << endl;
+        wcout << L"Usage: " << argv[0] << ' ' << L"[Git Root Directory]" << endl;
         wcout << L"   ex: " << argv[0] << ' ' << L"..\\..   (relative to working directory)" << endl;
         return 1;
     }
     
-    auto srcPath = absolute(argv[1]);
-    wcout << L"Source Directory: " << srcPath << endl;
+    auto rootPath = absolute(argv[1]);
+    wcout << L"Git Root Directory: " << rootPath << endl;
 
     // Syntax Generation
     // variant 만들기
-    GenerateSyntax(srcPath);
+    GenerateSyntax(rootPath);
 
     // 
-    GenerateVisitors(srcPath);
+    GenerateVisitors(rootPath);
 
     return 0;
 }

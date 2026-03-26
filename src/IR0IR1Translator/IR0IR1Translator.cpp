@@ -21,6 +21,7 @@
 #include "MStmtToQInsts.h"
 #include "QBodyContext.h"
 #include "ScopeGuard.h"
+#include "QTranslationContexts.h"
 
 using namespace std;
 
@@ -46,6 +47,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     }, rFuncReturn);
 
     QBodyContext bodyContext{rFactory, qFactory, rRetType};
+    QTranslationContexts contexts{rFactory, qFactory, bodyContext};
 
     {
         ScopeGuard mainGuard{bodyContext};
@@ -90,7 +92,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
         for (auto* mStmt : mFuncBody.stmts)
         {
-            auto e_result = TranslateMStmtToQInsts(mStmt, bodyContext);
+            auto e_result = TranslateMStmtToQInsts(mStmt, contexts);
             RETURN_ON_ERROR(e_result);
         }
     }

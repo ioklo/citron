@@ -42,8 +42,7 @@ struct MRead_ExpQInstsTranslator
             {
                 auto* type = GetType(exp, &*contexts.rFactory);
                 size_t destSlotIndex = contexts.bodyContext.NewSlot(type); 
-                auto e_result = contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Slot{destSlotIndex}, QArg_Slot{srcLoc.slotIndex}});
-                RETURN_ON_ERROR(e_result);
+                contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Slot{destSlotIndex}, QArg_Slot{srcLoc.slotIndex}});
 
                 return QReadResult_Slot{destSlotIndex};
             }
@@ -51,8 +50,7 @@ struct MRead_ExpQInstsTranslator
             {
                 auto* type = GetType(exp, &*contexts.rFactory);
                 size_t destSlotIndex = contexts.bodyContext.NewSlot(type);
-                auto e_result = contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Slot{destSlotIndex}, QArg_Slot{srcLoc.slotIndex}});
-                RETURN_ON_ERROR(e_result);
+                contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Slot{destSlotIndex}, QArg_Slot{srcLoc.slotIndex}});
 
                 return QReadResult_Slot{destSlotIndex};
             }
@@ -84,8 +82,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // <destSlot> = <srcSlot>
                 auto* type = contexts.bodyContext.GetSlotType(src.slotIndex);
-                auto e_emitResult = contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{src.slotIndex}});
-                RETURN_ON_ERROR(e_emitResult);
+                contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{src.slotIndex}});
 
                 return QReadResult_Slot{destLoc.slotIndex};
             }
@@ -94,8 +91,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // dest = *src
                 auto* type = contexts.bodyContext.GetSlotType(destLoc.slotIndex);
-                auto e_emitResult = contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{src.slotIndex}});
-                RETURN_ON_ERROR(e_emitResult);
+                contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{src.slotIndex}});
 
                 return QReadResult_Slot{destLoc.slotIndex};
             }
@@ -104,8 +100,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // dest = const
                 auto* boolType = contexts.bodyContext.GetBoolType();
-                auto e_emitResult = contexts.bodyContext.EmitInst(QInst_Assign{boolType, QArg_Slot{destLoc.slotIndex}, QArg_ConstBool{src.value}});
-                RETURN_ON_ERROR(e_emitResult);
+                contexts.bodyContext.EmitInst(QInst_Assign{boolType, QArg_Slot{destLoc.slotIndex}, QArg_ConstBool{src.value}});
                 return src; // const 그대로 리턴
             }
             // 1-4. destLoc: slot, srcLoc: const int32
@@ -113,8 +108,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // dest = const
                 auto* intType = contexts.bodyContext.GetIntType();
-                auto e_emitResult = contexts.bodyContext.EmitInst(QInst_Assign{intType, QArg_Slot{destLoc.slotIndex}, QArg_ConstInt32{src.value}});
-                RETURN_ON_ERROR(e_emitResult);
+                contexts.bodyContext.EmitInst(QInst_Assign{intType, QArg_Slot{destLoc.slotIndex}, QArg_ConstInt32{src.value}});
                 return src; // const 그대로 리턴
             }
 
@@ -123,8 +117,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // *dest = src
                 auto* type = contexts.bodyContext.GetSlotType(src.slotIndex);
-                auto e_emitResult = contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{src.slotIndex}});
-                RETURN_ON_ERROR(e_emitResult);
+                contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{src.slotIndex}});
 
                 return QReadResult_Slot{src.slotIndex}; // src slot을 그대로 리턴한다
             }
@@ -135,12 +128,10 @@ struct MRead_ExpQInstsTranslator
                 size_t resultSlotIndex = contexts.bodyContext.NewSlot(type);
 
                 // result = *src                            
-                auto e_emitResult = contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Slot{resultSlotIndex}, QArg_Slot{src.slotIndex}});
-                RETURN_ON_ERROR(e_emitResult);
+                contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Slot{resultSlotIndex}, QArg_Slot{src.slotIndex}});
 
                 // *dest = result
-                e_emitResult = contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{resultSlotIndex}});
-                RETURN_ON_ERROR(e_emitResult);
+                contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{resultSlotIndex}});
 
                 return QReadResult_Slot{resultSlotIndex}; // src에서 로드한 값을 리턴한다
             }
@@ -149,8 +140,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // dest = const
                 auto* boolType = contexts.bodyContext.GetBoolType();
-                auto e_emitResult = contexts.bodyContext.EmitInst(QInst_Store{boolType, QArg_Slot{destLoc.slotIndex}, QArg_ConstBool{src.value}});
-                RETURN_ON_ERROR(e_emitResult);
+                contexts.bodyContext.EmitInst(QInst_Store{boolType, QArg_Slot{destLoc.slotIndex}, QArg_ConstBool{src.value}});
                 return src; // const 그대로 리턴
             }
             // 2-4. destLoc: ptr, srcLoc: const int32
@@ -158,8 +148,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // dest = const
                 auto* intType = contexts.bodyContext.GetIntType();
-                auto e_emitResult = contexts.bodyContext.EmitInst(QInst_Store{intType, QArg_Slot{destLoc.slotIndex}, QArg_ConstInt32{src.value}});
-                RETURN_ON_ERROR(e_emitResult);
+                contexts.bodyContext.EmitInst(QInst_Store{intType, QArg_Slot{destLoc.slotIndex}, QArg_ConstInt32{src.value}});
                 return src; // const 그대로 리턴
             }
             else static_assert(false);
@@ -191,8 +180,7 @@ struct MRead_ExpQInstsTranslator
                 size_t resultSlotIndex = contexts.bodyContext.NewSlot(ptrType);
 
                 // slot의 addrof를 하나 한다 ptr 타입
-                auto e_addrResult = contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{resultSlotIndex}, QArg_Slot{loc.slotIndex}});
-                RETURN_ON_ERROR(e_addrResult);
+                contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{resultSlotIndex}, QArg_Slot{loc.slotIndex}});
 
                 return QReadResult_Slot{resultSlotIndex};
             }
@@ -202,8 +190,7 @@ struct MRead_ExpQInstsTranslator
                 size_t resultSlotIndex = contexts.bodyContext.NewSlot(ptrType);
 
                 // ptr이면, destSlotIndex에 복사해서 넣어준다. QReadResult_Ptr로 직접 전해주지 않도록 한다 (value로만 전달)
-                auto e_emitResult = contexts.bodyContext.EmitInst(QInst_Assign{ptrType, QArg_Slot{resultSlotIndex}, QArg_Slot{loc.slotIndex}});
-                RETURN_ON_ERROR(e_emitResult);
+                contexts.bodyContext.EmitInst(QInst_Assign{ptrType, QArg_Slot{resultSlotIndex}, QArg_Slot{loc.slotIndex}});
 
                 return QReadResult_Slot{resultSlotIndex};
             }
@@ -232,8 +219,7 @@ struct MRead_ExpQInstsTranslator
 
         // 여긴 MExp이므로 void type은 들어오지 않는다
         size_t resultSlotIndex = contexts.bodyContext.NewSlot(intrinsicInfo->type);
-        auto e_result = contexts.bodyContext.EmitIntrinsic(intrinsicInfo->kind, resultSlotIndex, move(*e_args));
-        RETURN_ON_ERROR(e_result);
+        contexts.bodyContext.EmitIntrinsic(intrinsicInfo->kind, resultSlotIndex, move(*e_args));
 
         return QReadResult_Slot{resultSlotIndex};
     }
@@ -252,8 +238,7 @@ struct MRead_ExpQInstsTranslator
         auto* rFuncDecl = GetRFuncDecl(exp->callable);
         auto* retType = GetType(exp->callable);
         size_t resultSlotIndex = contexts.bodyContext.NewSlot(retType);
-        auto e_emitResult = contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, QArg_Slot{resultSlotIndex}, move(*e_args)});
-        RETURN_ON_ERROR(e_emitResult);
+        contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, QArg_Slot{resultSlotIndex}, move(*e_args)});
 
         return QReadResult_Slot{resultSlotIndex};
     }

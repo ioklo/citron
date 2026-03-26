@@ -51,10 +51,10 @@ TEST(QEvaluator, CommandInst_DoingWell)
     blocks.push_back(qEntryBlock);
 
     vector<QSlotInfo> slotInfos;
-    slotInfos.push_back(QSlotInfo{qFactory->MakeStringType(), "s0", /*oArgIndex*/nullopt});
+    slotInfos.push_back(QSlotInfo{rFactory->MakeStringType(), "s0", /*oArgIndex*/nullopt});
 
     // 1을 문자열로 변환
-    QInst_Intrinsic toStringInst{QInst_IntrinsicKind::ToString_Int, QArg_Slot{0}, {QArg_ConstInt32{1}}};
+    QInst_Intrinsic toStringInst{QInst_IntrinsicKind::ToString_Int_String, QArg_Slot{0}, {QArg_ConstInt32{1}}};
     qEntryBlock->EmitInst(move(toStringInst));
 
     std::vector<QArg_Input> args{QArg_Slot{0}};
@@ -67,7 +67,7 @@ TEST(QEvaluator, CommandInst_DoingWell)
     funcBodies.emplace_back(nEntry, move(slotInfos), move(blocks));
     QData* qData = qFactory->MakeQData(move(funcBodies));
     
-    auto e_result = EvaluateQData({}, qData, nEntry, MakePtr<NullCommandHandler>(), qFactory);
+    auto e_result = EvaluateQData({}, qData, nEntry, MakePtr<NullCommandHandler>(), rFactory);
     EXPECT_TRUE(e_result);
 }
 

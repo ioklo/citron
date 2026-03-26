@@ -50,8 +50,7 @@ struct MStmtQInstsTranslator
                 if constexpr (same_as<T, QReadResult_Slot>)
                 {
                     size_t ptrSlotIndex = contexts.bodyContext.NewSlot(contexts.bodyContext.GetPtrType());
-                    auto e_emitResult = contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{readResult.slotIndex}});
-                    RETURN_ON_ERROR(e_emitResult);
+                    contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{readResult.slotIndex}});
                     values.push_back(QArg_Slot{readResult.slotIndex});
                     return {};
                 }
@@ -65,15 +64,13 @@ struct MStmtQInstsTranslator
             RETURN_ON_ERROR(e_result);
         }
 
-        auto e_emitResult = contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Items, nullopt, move(values));
-        RETURN_ON_ERROR(e_emitResult);
+        contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Items, nullopt, move(values));
 
         return {};
     }
 
     ResultType Visit(MStmt_LocalVarDecl* mStmt) 
-    { 
-        ScopeGuard guard{contexts.bodyContext};
+    {
         auto slotIndex = contexts.bodyContext.AddLocalVar(mStmt->type, mStmt->name, /*o_argIndex*/nullopt);
 
         return visit([this, slotIndex](auto& init) -> ResultType {
@@ -95,6 +92,7 @@ struct MStmtQInstsTranslator
                 // expr이 lvalue인 경우, 복사 (복사가 지원 가능할때)
                 // expr이 rvalue인 경우, 이동 
 
+                ScopeGuard guard{contexts.bodyContext};
                 auto e_initResult = TranslateMCreateToQInsts(init.create, slotIndex, contexts);
                 RETURN_ON_ERROR(e_initResult);
                 return {};
@@ -147,8 +145,7 @@ struct MStmtQInstsTranslator
             QBlock* endBlock = nullptr; // lazy init
 
             // 3. add conditional jump
-            auto e_emitResult = bodyContext.EmitTermInst(QInst_CondJump{condSlotIndex, trueBlock, falseBlock});
-            RETURN_ON_ERROR(e_emitResult);
+            bodyContext.EmitTermInst(QInst_CondJump{condSlotIndex, trueBlock, falseBlock});
 
             // 4. fill trueBlock
             bodyContext.SetCurBlock(trueBlock);
@@ -159,8 +156,7 @@ struct MStmtQInstsTranslator
             if (!contexts.bodyContext.IsUnreachable())
             {
                 if (!endBlock) endBlock = contexts.bodyContext.AddBlock("if_end");
-                auto e_emitTermInstResult = bodyContext.EmitTermInst(QInst_Jump{endBlock});
-                RETURN_ON_ERROR(e_emitTermInstResult);
+                bodyContext.EmitTermInst(QInst_Jump{endBlock});
             }
 
             // 5. fill falseBlock
@@ -172,8 +168,7 @@ struct MStmtQInstsTranslator
             if (!bodyContext.IsUnreachable())
             {
                 if (!endBlock) endBlock = bodyContext.AddBlock("if_end");
-                auto e_emitTermInstResult = bodyContext.EmitTermInst(QInst_Jump{endBlock});
-                RETURN_ON_ERROR(e_emitTermInstResult);
+                bodyContext.EmitTermInst(QInst_Jump{endBlock});
             }
 
             // 만약 endBlock이 없으면 unreachable상태이고, 그럼 그냥 둔다
@@ -187,8 +182,7 @@ struct MStmtQInstsTranslator
             auto* endBlock = bodyContext.AddBlock("if_end");
 
             // 3. add conditional jump
-            auto e_emitTermInstResult = bodyContext.EmitTermInst(QInst_CondJump{condSlotIndex, trueBlock, endBlock});
-            RETURN_ON_ERROR(e_emitTermInstResult);
+            bodyContext.EmitTermInst(QInst_CondJump{condSlotIndex, trueBlock, endBlock});
 
             // 4. fill trueBlock
             bodyContext.SetCurBlock(trueBlock);
@@ -197,8 +191,7 @@ struct MStmtQInstsTranslator
 
             if (!bodyContext.IsUnreachable())
             {
-                auto e_emitTermInstResult = bodyContext.EmitTermInst(QInst_Jump{endBlock});
-                RETURN_ON_ERROR(e_emitTermInstResult);
+                bodyContext.EmitTermInst(QInst_Jump{endBlock});
             }
 
             bodyContext.SetCurBlock(endBlock);
@@ -229,8 +222,7 @@ struct MStmtQInstsTranslator
                 {
                     auto* boolType = bodyContext.GetBoolType();
                     size_t newSlot = bodyContext.NewSlot(boolType);
-                    auto e_emitResult = bodyContext.EmitInst(QInst_Load{.type = boolType, .dest = newSlot, .src = condResult.slotIndex});
-                    RETURN_ON_ERROR(e_emitResult);
+                    bodyContext.EmitInst(QInst_Load{.type = boolType, .dest = newSlot, .src = condResult.slotIndex});
 
                     return HandleIf(mStmt, newSlot);
                 }
@@ -261,14 +253,56 @@ struct MStmtQInstsTranslator
         }
     }
 
-    // ResultType Visit(MStmt_IfBind* mStmt) { }
     // ResultType Visit(MStmt_For* mStmt) { }
     // ResultType Visit(MStmt_Continue* mStmt) { }
     // ResultType Visit(MStmt_Break* mStmt) { }
-    // ResultType Visit(MStmt_Return* mStmt) { }
-    // ResultType Visit(MStmt_Block* mStmt) { }
-    // ResultType Visit(MStmt_Blank* mStmt) { }
-    // ResultType Visit(MStmt_Exp* mStmt) { }
+    ResultType Visit(MStmt_Return* mStmt) 
+    { 
+        auto& bodyContext = contexts.bodyContext;
+
+        if (mStmt->create)
+        {
+            {
+                ScopeGuard guard{bodyContext};
+                auto e_result = TranslateMCreateToQInsts(*mStmt->create, bodyContext.GetRetSlotIndex(), contexts);
+                RETURN_ON_ERROR(e_result);
+            }
+
+            bodyContext.EmitJumpToCleanUpForReturnBlock();
+
+            bodyContext.MarkReturnHandledOnCurScope();
+        }
+        else
+        {
+            bodyContext.EmitJumpToCleanUpForReturnBlock();
+
+            bodyContext.MarkReturnHandledOnCurScope();
+        }
+
+        return {};
+    }
+    ResultType Visit(MStmt_Block* mStmt) 
+    { 
+        ScopeGuard mainGuard{contexts.bodyContext};
+
+        auto e_result = TranslateMStmtsToQInsts(mStmt->stmts, contexts);
+        RETURN_ON_ERROR(e_result);
+
+        return {};
+    }
+    ResultType Visit(MStmt_Blank* mStmt) 
+    { 
+        return {};
+    }
+    ResultType Visit(MStmt_Exp* mStmt) 
+    { 
+        ScopeGuard mainGuard{contexts.bodyContext};
+
+        auto e_result = TranslateMCreateToQInsts(mStmt->create, /*o_destSlotIndex*/nullopt, contexts);
+        RETURN_ON_ERROR(e_result);
+
+        return {};
+    }
     // ResultType Visit(MStmt_Task* mStmt) { }
     // ResultType Visit(MStmt_Await* mStmt) { }
     // ResultType Visit(MStmt_Async* mStmt) { }

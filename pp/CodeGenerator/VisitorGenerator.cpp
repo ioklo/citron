@@ -16,9 +16,9 @@ struct VisitorInfo
     vector<string> members; // MExp_IntLiteral, ...
 };
 
-void GenerateVisitor(std::filesystem::path srcPath, VisitorInfo& info)
+void GenerateVisitor(std::filesystem::path rootPath, VisitorInfo& info)
 {
-    path hPath = srcPath / info.relPath;
+    path hPath = rootPath / info.relPath;
     ostringstream oss;
 
     string convertibleToResultType = format("{}ConvertibleToResultType", info.name);
@@ -136,11 +136,11 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, {}* {}, 
     WriteAll(hPath, oss.str());
 }
 
-void GenerateVisitors(std::filesystem::path srcPath)
+void GenerateVisitors(std::filesystem::path rootPath)
 {
     vector<VisitorInfo> visitorInfos = {
         VisitorInfo {
-            .relPath = path("MIR") / "Public" / "MIR" / "MExpVisitor.g.h",
+            .relPath = path("src") / "MIR" / "Public" / "MIR" / "MExpVisitor.g.h",
             .name = "MExp",
             .memberName = "mExp",
             .members {
@@ -164,7 +164,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
         }, 
 
         VisitorInfo {
-            .relPath = path("MIR") / "Public" / "MIR" / "MInitExpVisitor.g.h",
+            .relPath = path("src") / "MIR" / "Public" / "MIR" / "MInitExpVisitor.g.h",
             .name = "MInitExp",
             .memberName = "mInitExp",
             .members {
@@ -189,7 +189,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
         },
 
         VisitorInfo {
-            .relPath = path("MIR") / "Public" / "MIR" / "MLocVisitor.g.h",
+            .relPath = path("src") / "MIR" / "Public" / "MIR" / "MLocVisitor.g.h",
             .name = "MLoc",
             .memberName = "mLoc",
             .members {
@@ -209,7 +209,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
         },
 
         VisitorInfo {
-            .relPath = path("MIR") / "Public" / "MIR" / "MStmtVisitor.g.h",
+            .relPath = path("src") / "MIR" / "Public" / "MIR" / "MStmtVisitor.g.h",
             .name = "MStmt",
             .memberName = "mStmt",
             .members {
@@ -217,7 +217,6 @@ void GenerateVisitors(std::filesystem::path srcPath)
                 "MStmt_LocalVarDecl",
                 "MStmt_LocalRefDecl",
                 "MStmt_If",
-                "MStmt_IfBind",
                 "MStmt_For",
                 "MStmt_Continue",
                 "MStmt_Break",
@@ -240,7 +239,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
         },
 
         VisitorInfo{
-            .relPath = path("MIR") / "Public" / "MIR" / "MSharedExpVisitor.g.h",
+            .relPath = path("src") / "MIR" / "Public" / "MIR" / "MSharedExpVisitor.g.h",
             .name = "MSharedExp",
             .memberName = "sharedExp",
             .members {
@@ -251,7 +250,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
         },
 
         VisitorInfo {
-            .relPath = path("NSymbol") / "Public" / "NSymbol" / "NFuncDeclOuterVisitor.g.h",
+            .relPath = path("src") / "NSymbol" / "Public" / "NSymbol" / "NFuncDeclOuterVisitor.g.h",
             .name = "NFuncDeclOuter",
             .memberName = "outer",
             .members {
@@ -269,7 +268,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
         },
 
         VisitorInfo {
-            .relPath = path("RSymbol") / "Public" / "RSymbol" / "RFuncDeclVisitor.g.h",
+            .relPath = path("src") / "RSymbol" / "Public" / "RSymbol" / "RFuncDeclVisitor.g.h",
             .name = "RFuncDecl",
             .memberName = "rFuncDecl",
             .members {
@@ -284,7 +283,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
         },
 
         VisitorInfo {
-            .relPath = path("RSymbol") / "Public" / "RSymbol" / "RTypeDeclVisitor.g.h",
+            .relPath = path("src") / "RSymbol" / "Public" / "RSymbol" / "RTypeDeclVisitor.g.h",
             .name = "RTypeDecl",
             .memberName = "rTypeDecl",
             .members {
@@ -299,7 +298,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
         },
 
         VisitorInfo{
-            .relPath = path("RSymbol") / "Public" / "RSymbol" / "RTypeVisitor.g.h",
+            .relPath = path("src") / "RSymbol" / "Public" / "RSymbol" / "RTypeVisitor.g.h",
             .name = "RType",
             .memberName = "rType",
             .members = {
@@ -323,7 +322,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
         },
 
         VisitorInfo {
-            .relPath = path("SyntaxIR0Translator") / "ImExpVisitor.g.h",
+            .relPath = path("src") / "SyntaxIR0Translator" / "ImExpVisitor.g.h",
             .name = "ImExp",
             .memberName = "imExp",
             .members {
@@ -343,7 +342,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
         },
 
         VisitorInfo {
-            .relPath = path("SyntaxIR0Translator") / "IrExpVisitor.g.h",
+            .relPath = path("src") / "SyntaxIR0Translator" / "IrExpVisitor.g.h",
             .name = "IrExp",
             .memberName = "irExp",
             .members {
@@ -362,7 +361,7 @@ void GenerateVisitors(std::filesystem::path srcPath)
     };
 
     for (auto& visitorInfo : visitorInfos)
-        GenerateVisitor(srcPath, visitorInfo);
+        GenerateVisitor(rootPath, visitorInfo);
 }
 
 } // namespace Citron

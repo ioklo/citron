@@ -87,21 +87,6 @@ struct MStmt_If : MStmt
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
-// cond내부에 alias가 생기는 경우
-struct MStmt_IfBind : MStmt
-{
-    MRead cond; // BC
-    std::vector<MStmt*> body;
-    std::vector<MStmt*> elseBody;
-
-public:
-    MStmt_IfBind(MRead&& cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
-        : cond{std::move(cond)}, body{std::move(body)}, elseBody{std::move(elseBody)}
-    {
-    }
-    MIR_API void Accept(MStmtVisitor& visitor) override;
-};
-
 struct MStmt_For : MStmt
 {
     std::vector<MStmt*> initStmts; // LocalVarDecl, LocalVarRef

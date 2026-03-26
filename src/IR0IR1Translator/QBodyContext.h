@@ -90,24 +90,24 @@ public:
     bool IsUnreachable() { return curBlock == nullptr; }
 
 private:
-    std::expected<void, DiagPtr> EmitInstInternal(QInst&& inst);
+    void EmitInstInternal(QInst&& inst);
 
 public:
     template<typename TQInst> 
         requires std::convertible_to<TQInst, QInst> 
             && (!std::same_as<TQInst, QInst_Intrinsic>)
             && (!std::convertible_to<TQInst, QTermInst>)
-    std::expected<void, DiagPtr> EmitInst(TQInst&& inst)
+    void EmitInst(TQInst&& inst)
     {   
         return EmitInstInternal(std::forward<TQInst>(inst));
     }
-    std::expected<void, DiagPtr> EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> o_dest, std::vector<QArg_Input>&& args);
-    std::expected<void, DiagPtr> EmitTermInst(QTermInst&& termInst);
+    void EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> o_dest, std::vector<QArg_Input>&& args);
+    void EmitTermInst(QTermInst&& termInst);
     
 private:
     QBlock* MakeCleanUpForReturnBlock(size_t scopeIndex);
 public:
-    std::expected<void, DiagPtr> EmitJumpToCleanUpForReturnBlock();
+    void EmitJumpToCleanUpForReturnBlock();
 
 public:
     size_t GetTypeSize(RType* type);

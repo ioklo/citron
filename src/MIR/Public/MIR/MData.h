@@ -11,9 +11,9 @@ class NFuncDecl;
 
 class MData
 {   
+public:
     std::vector<MFuncBody> funcBodies;
 
-public:
     MIR_API MData(std::vector<MFuncBody>&& funcBodies);
     std::span<MFuncBody> GetAllFuncBodies() { return funcBodies; }
 };

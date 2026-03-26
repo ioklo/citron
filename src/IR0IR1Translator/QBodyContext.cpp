@@ -69,7 +69,7 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
         return QIntrinsicKindResult_Void{};
 
     case QInst_IntrinsicKind::NewList_Items: throw NotImplementedException{};
-    case QInst_IntrinsicKind::GetIterator_List_ListIterator: throw NotImplementedException{};
+    case QInst_IntrinsicKind::GetIterator_ListPtr_ListIterator: throw NotImplementedException{};
 
     case QInst_IntrinsicKind::LogicalNot_Bool_Bool:
         return QIntrinsicResultType_Slot{rFactory->MakeBoolType()};
@@ -77,9 +77,9 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
     case QInst_IntrinsicKind::UnaryMinus_Int_Int:
         return QIntrinsicResultType_Slot{rFactory->MakeIntType()};
 
-    case QInst_IntrinsicKind::ToString_Bool:
-    case QInst_IntrinsicKind::ToString_Int: 
-    case QInst_IntrinsicKind::Add_String_String:
+    case QInst_IntrinsicKind::ToString_Bool_String:
+    case QInst_IntrinsicKind::ToString_Int_String: 
+    case QInst_IntrinsicKind::Add_StringPtr_StringPtr_String:
         return QIntrinsicResultType_Slot{rFactory->MakeStringType()};
 
     case QInst_IntrinsicKind::PrefixInc_Int_Int: 
@@ -95,16 +95,16 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
         return QIntrinsicResultType_Slot{rFactory->MakeIntType()};
     
     case QInst_IntrinsicKind::LessThan_Int_Int_Bool:
-    case QInst_IntrinsicKind::LessThan_String_String_Bool:
+    case QInst_IntrinsicKind::LessThan_StringPtr_StringPtr_Bool:
     case QInst_IntrinsicKind::GreaterThan_Int_Int_Bool:
-    case QInst_IntrinsicKind::GreaterThan_String_String_Bool:
+    case QInst_IntrinsicKind::GreaterThan_StringPtr_StringPtr_Bool:
     case QInst_IntrinsicKind::LessThanOrEqual_Int_Int_Bool:
-    case QInst_IntrinsicKind::LessThanOrEqual_String_String_Bool:
+    case QInst_IntrinsicKind::LessThanOrEqual_StringPtr_StringPtr_Bool:
     case QInst_IntrinsicKind::GreaterThanOrEqual_Int_Int_Bool:
-    case QInst_IntrinsicKind::GreaterThanOrEqual_String_String_Bool:
+    case QInst_IntrinsicKind::GreaterThanOrEqual_StringPtr_StringPtr_Bool:
     case QInst_IntrinsicKind::Equal_Int_Int_Bool:
     case QInst_IntrinsicKind::Equal_Bool_Bool_Bool:
-    case QInst_IntrinsicKind::Equal_String_String_Bool:
+    case QInst_IntrinsicKind::Equal_StringPtr_StringPtr_Bool:
         return QIntrinsicResultType_Slot{rFactory->MakeBoolType()};
     }
 
@@ -118,48 +118,43 @@ QBlock* QBodyContext::AddBlock(std::string&& debugText)
     return newBlock;
 }
 
-expected<void, DiagPtr> QBodyContext::EmitInstInternal(QInst&& inst)
+void QBodyContext::EmitInstInternal(QInst&& inst)
 {
-    if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
+    assert(curBlock);
 
     curBlock->EmitInst(std::move(inst));
-    return {};
 }
 
-expected<void, DiagPtr> QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Slot> o_dest, std::vector<QArg_Input>&& args)
+void QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Slot> o_dest, std::vector<QArg_Input>&& args)
 {
     auto resultType = GetIntrinsicResultType(kind);
-    return visit([this, kind, &o_dest, &args](auto& resultType) -> expected<void, DiagPtr>{
+    visit([this, kind, &o_dest, &args](auto& resultType) {
         using T = remove_cvref_t<decltype(resultType)>;
 
         if constexpr (same_as<T, QIntrinsicResultType_Slot>)
         {
             QArg_Slot resultSlot = o_dest ? *o_dest : QArg_Slot{NewSlot(resultType.type)};
 
-            if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
+            assert(curBlock);
             curBlock->EmitInst(QInst_Intrinsic{kind, resultSlot, move(args)});
-            return {};
         }
         else if constexpr (same_as<T, QIntrinsicKindResult_Void>)
         {
             assert(!o_dest);
-
-            if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
+            assert(curBlock);
             curBlock->EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
-            return {};
         }
         else static_assert(false);
         
     }, resultType);
 }
 
-std::expected<void, DiagPtr> QBodyContext::EmitTermInst(QTermInst&& termInst)
+void QBodyContext::EmitTermInst(QTermInst&& termInst)
 {
-    if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
+    assert(curBlock);
 
     curBlock->EmitInst(Cast<QInst>(termInst));
     curBlock = nullptr;
-    return {};
 }
 
 QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
@@ -235,15 +230,13 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
     }
 }
 
-expected<void, DiagPtr> QBodyContext::EmitJumpToCleanUpForReturnBlock()
+void QBodyContext::EmitJumpToCleanUpForReturnBlock()
 {
-    if (!curBlock) return unexpected{MakePtr<Error_Unreachable>()};
+    assert(curBlock);
 
     auto* cleanUpForRetBlock = MakeCleanUpForReturnBlock(scopes.size() - 1);
     curBlock->EmitInst(QInst_Jump{cleanUpForRetBlock});
     curBlock = nullptr;
-
-    return {};
 }
 
 size_t QBodyContext::GetTypeSize(RType* type)

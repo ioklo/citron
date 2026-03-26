@@ -48,17 +48,17 @@ RType* GetType_CallIntrinsic(MExp_CallIntrinsic* exp, RFactory* rFactory)
     case MExp_CallIntrinsicKind::Add_Int_Int_Int: return rFactory->MakeIntType();
     case MExp_CallIntrinsicKind::Subtract_Int_Int_Int: return rFactory->MakeIntType();
     case MExp_CallIntrinsicKind::LessThan_Int_Int_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::LessThan_String_String_Bool: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::LessThan_StringPtr_StringPtr_Bool: return rFactory->MakeBoolType();
     case MExp_CallIntrinsicKind::GreaterThan_Int_Int_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::GreaterThan_String_String_Bool: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::GreaterThan_StringPtr_StringPtr_Bool: return rFactory->MakeBoolType();
     case MExp_CallIntrinsicKind::LessThanOrEqual_Int_Int_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::LessThanOrEqual_String_String_Bool: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::LessThanOrEqual_StringPtr_StringPtr_Bool: return rFactory->MakeBoolType();
     case MExp_CallIntrinsicKind::GreaterThanOrEqual_Int_Int_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::GreaterThanOrEqual_String_String_Bool: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::GreaterThanOrEqual_StringPtr_StringPtr_Bool: return rFactory->MakeBoolType();
     case MExp_CallIntrinsicKind::Equal_Int_Int_Bool: return rFactory->MakeBoolType();
     case MExp_CallIntrinsicKind::Equal_Bool_Bool_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::Equal_String_String_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::GetIterator_List_ListIterator: return rFactory->MakeListIteratorType(exp->typeArgs->Get(0));
+    case MExp_CallIntrinsicKind::Equal_StringPtr_StringPtr_Bool: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::GetIterator_ListPtr_ListIterator: return rFactory->MakeListIteratorType(exp->typeArgs->Get(0));
     }
 
     unreachable();

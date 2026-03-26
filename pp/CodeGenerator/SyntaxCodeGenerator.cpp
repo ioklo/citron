@@ -10,14 +10,14 @@ using namespace std::filesystem;
 
 namespace Citron {
 
-void GenerateSyntax(path srcPath)
+void GenerateSyntax(path rootPath)
 {   
     // [src]/Syntax/Public/Syntax/Syntaxes.g.h
     // [src]/Syntax/Syntaxes.g.ixx
     // [src]/Syntax/Syntaxes.g.cpp
-    path hPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Public").append("Syntax").append("Syntaxes.g.h"); }();
-    // path ixxPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Syntaxes.g.ixx"); }();
-    path cppPath = [srcPath]() mutable { return srcPath.append("Syntax").append("Syntaxes.g.cpp"); }();
+    path hPath = [rootPath]() mutable { return rootPath.append("src").append("Syntax").append("Public").append("Syntax").append("Syntaxes.g.h"); }();
+    // path ixxPath = [rootPath]() mutable { return rootPath.append("src").append("Syntax").append("Syntaxes.g.ixx"); }();
+    path cppPath = [rootPath]() mutable { return rootPath.append("src").append("Syntax").append("Syntaxes.g.cpp"); }();
 
     ostringstream hStream, cppStream;
 

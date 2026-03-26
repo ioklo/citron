@@ -9,6 +9,7 @@
 
 #include "QBodyContext.h"
 #include "QTranslationContexts.h"
+#include "MCreateToQInsts.h"
 
 using namespace std;
 
@@ -22,12 +23,12 @@ struct MLocQInstsTranslator
     
     ResultType Visit(MLoc_Materialize* loc) 
     {
-        /*RType* rType = loc->GetType();
-        size_t slotIndex = bodyContext.NewSlot(rType);
-        auto e_result = TranslateMExpToQInsts(loc->exp, slotIndex, bodyContext);
+        RType* rType = GetType(loc->create, &*contexts.rFactory);
+        size_t slotIndex = contexts.bodyContext.NewSlot(rType);
+        auto e_result = TranslateMCreateToQInsts(loc->create, slotIndex, contexts);
         RETURN_ON_ERROR(e_result);
 
-        return QLocResult_Slot{slotIndex};*/
+        return QLocResult_Slot{slotIndex};
     }
 
     ResultType Visit(MLoc_LocalVar* loc)
@@ -77,12 +78,10 @@ struct MLocQInstsTranslator
                 // slot의 addrof를 하나 한다 ptr 타입
                 auto* rPtrType = contexts.bodyContext.GetPtrType();
                 size_t instSlotIndex = contexts.bodyContext.NewSlot(rPtrType);
-                auto e_addrResult = contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{instSlotIndex}, QArg_Slot{locResult.slotIndex}});
-                RETURN_ON_ERROR(e_addrResult);
+                contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{instSlotIndex}, QArg_Slot{locResult.slotIndex}});
 
                 size_t destSlotIndex = contexts.bodyContext.NewSlot(rPtrType);
-                auto e_fieldResult = contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{instSlotIndex}, loc->decl->GetIndex()});
-                RETURN_ON_ERROR(e_fieldResult);
+                contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{instSlotIndex}, loc->decl->GetIndex()});
 
                 return QLocResult_Ptr{destSlotIndex};
             }
@@ -92,8 +91,7 @@ struct MLocQInstsTranslator
                 auto* ptrType = contexts.bodyContext.GetPtrType();
 
                 size_t destSlotIndex = contexts.bodyContext.NewSlot(ptrType);
-                auto e_fieldResult = contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{locResult.slotIndex}, loc->decl->GetIndex()});
-                RETURN_ON_ERROR(e_fieldResult);
+                contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{locResult.slotIndex}, loc->decl->GetIndex()});
 
                 return QLocResult_Ptr{destSlotIndex};
             }

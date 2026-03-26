@@ -298,11 +298,11 @@ public:
         case Alloc_Int: return "Alloc_Int";
         case Memcpy_Ptr_Ptr_Int: return "Memcpy_Ptr_Ptr_Int";
         case NewList_Items: return "NewList_Items";
-        case GetIterator_List_ListIterator: return "GetIterator_List_ListIterator";
+        case GetIterator_ListPtr_ListIterator: return "GetIterator_ListPtr_ListIterator";
         case LogicalNot_Bool_Bool: return "LogicalNot_Bool_Bool";
         case UnaryMinus_Int_Int: return "UnaryMinus_Int_Int";
-        case ToString_Bool: return "ToString_Bool";
-        case ToString_Int: return "ToString_Int";
+        case ToString_Bool_String: return "ToString_Bool_String";
+        case ToString_Int_String: return "ToString_Int_String";
         case PrefixInc_Int_Int: return "PrefixInc_Int_Int";
         case PrefixDec_Int_Int: return "PrefixDec_Int_Int";
         case PostfixInc_Int_Int: return "PostfixInc_Int_Int";
@@ -311,19 +311,19 @@ public:
         case Divide_Int_Int_Int: return "Divide_Int_Int_Int";
         case Modulo_Int_Int_Int: return "Modulo_Int_Int_Int";
         case Add_Int_Int_Int: return "Add_Int_Int_Int";
-        case Add_String_String: return "Add_String_String";
+        case Add_StringPtr_StringPtr_String: return "Add_StringPtr_StringPtr_String";
         case Subtract_Int_Int_Int: return "Subtract_Int_Int_Int";
         case LessThan_Int_Int_Bool: return "LessThan_Int_Int_Bool";
-        case LessThan_String_String_Bool: return "LessThan_String_String_Bool";
+        case LessThan_StringPtr_StringPtr_Bool: return "LessThan_StringPtr_StringPtr_Bool";
         case GreaterThan_Int_Int_Bool: return "GreaterThan_Int_Int_Bool";
-        case GreaterThan_String_String_Bool: return "GreaterThan_String_String_Bool";
+        case GreaterThan_StringPtr_StringPtr_Bool: return "GreaterThan_StringPtr_StringPtr_Bool";
         case LessThanOrEqual_Int_Int_Bool: return "LessThanOrEqual_Int_Int_Bool";
-        case LessThanOrEqual_String_String_Bool: return "LessThanOrEqual_String_String_Bool";
+        case LessThanOrEqual_StringPtr_StringPtr_Bool: return "LessThanOrEqual_StringPtr_StringPtr_Bool";
         case GreaterThanOrEqual_Int_Int_Bool: return "GreaterThanOrEqual_Int_Int_Bool";
-        case GreaterThanOrEqual_String_String_Bool: return "GreaterThanOrEqual_String_String_Bool";
+        case GreaterThanOrEqual_StringPtr_StringPtr_Bool: return "GreaterThanOrEqual_StringPtr_StringPtr_Bool";
         case Equal_Int_Int_Bool: return "Equal_Int_Int_Bool";
         case Equal_Bool_Bool_Bool: return "Equal_Bool_Bool_Bool";
-        case Equal_String_String_Bool: return "Equal_String_String_Bool";
+        case Equal_StringPtr_StringPtr_Bool: return "Equal_StringPtr_StringPtr_Bool";
         default:
             unreachable();
         }

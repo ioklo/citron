@@ -27,28 +27,28 @@ BinOpQueryService::BinOpQueryService(RFactory& factory)
 
     infos.emplace(SBinaryOpKind::LessThan, vector<BinOpInfo>{
         {intType, intType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::LessThan_Int_Int_Bool}},
-        {stringType, stringType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::LessThan_String_String_Bool }}
+        {stringType, stringType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::LessThan_StringPtr_StringPtr_Bool }}
     });
 
         infos.emplace(SBinaryOpKind::GreaterThan, vector<BinOpInfo>{
             {intType, intType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::GreaterThan_Int_Int_Bool}},
-            {stringType, stringType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::GreaterThan_String_String_Bool}}
+            {stringType, stringType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::GreaterThan_StringPtr_StringPtr_Bool}}
     });
 
     infos.emplace(SBinaryOpKind::LessThanOrEqual, vector<BinOpInfo>{
         {intType, intType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::LessThanOrEqual_Int_Int_Bool}},
-        {stringType, stringType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::LessThanOrEqual_String_String_Bool}}
+        {stringType, stringType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::LessThanOrEqual_StringPtr_StringPtr_Bool}}
     });
 
     infos.emplace(SBinaryOpKind::GreaterThanOrEqual, vector<BinOpInfo>{
         { intType, intType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::GreaterThanOrEqual_Int_Int_Bool}},
-        {stringType, stringType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::GreaterThanOrEqual_String_String_Bool}}
+        {stringType, stringType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::GreaterThanOrEqual_StringPtr_StringPtr_Bool}}
         });
 
     infos.emplace(SBinaryOpKind::Equal, vector<BinOpInfo>{
         {intType, intType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::Equal_Int_Int_Bool}},
         {boolType, boolType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::Equal_Bool_Bool_Bool}},
-        {stringType, stringType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::Equal_String_String_Bool}}
+        {stringType, stringType, boolType, BinOp_Exp{MExp_CallIntrinsicKind::Equal_StringPtr_StringPtr_Bool}}
     });
 }
 

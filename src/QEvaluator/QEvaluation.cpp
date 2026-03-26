@@ -226,7 +226,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     }
 
     case NewList_Items: throw NotImplementedException{};
-    case GetIterator_List_ListIterator: throw NotImplementedException{};
+    case GetIterator_ListPtr_ListIterator: throw NotImplementedException{};
     case LogicalNot_Bool_Bool:
     {
         auto b = GetBool(inst.args[0], env);
@@ -241,7 +241,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case ToString_Bool:
+    case ToString_Bool_String:
     {
         auto b = GetBool(inst.args[0], env);
         SetString(*inst.o_dest, format("{}", b), env);
@@ -249,7 +249,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     }
 
 
-    case ToString_Int:
+    case ToString_Int_String:
     {
         auto i = GetInt(inst.args[0], env);
         SetString(*inst.o_dest, format("{}", i), env);
@@ -323,7 +323,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case Add_String_String:
+    case Add_StringPtr_StringPtr_String:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
@@ -349,7 +349,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case LessThan_String_String_Bool:
+    case LessThan_StringPtr_StringPtr_Bool:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
@@ -368,7 +368,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case GreaterThan_String_String_Bool:
+    case GreaterThan_StringPtr_StringPtr_Bool:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
@@ -384,7 +384,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         SetBool(*inst.o_dest, i1 <= i2, env);
         return;
     }
-    case LessThanOrEqual_String_String_Bool:
+    case LessThanOrEqual_StringPtr_StringPtr_Bool:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
@@ -401,7 +401,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case GreaterThanOrEqual_String_String_Bool:
+    case GreaterThanOrEqual_StringPtr_StringPtr_Bool:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);
@@ -429,7 +429,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-    case Equal_String_String_Bool:
+    case Equal_StringPtr_StringPtr_Bool:
     {
         auto& s1 = GetStringRef(inst.args[0], env);
         auto& s2 = GetStringRef(inst.args[1], env);

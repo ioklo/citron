@@ -427,7 +427,7 @@ private:
             case Alloc_Int: { throw NotImplementedException{}; }
             case Memcpy_Ptr_Ptr_Int: { throw NotImplementedException{}; }
             case NewList_Items: { throw NotImplementedException{}; }
-            case GetIterator_List_ListIterator: { throw NotImplementedException{}; }
+            case GetIterator_ListPtr_ListIterator: { throw NotImplementedException{}; }
 
             case LogicalNot_Bool_Bool: 
             { 
@@ -445,14 +445,14 @@ private:
                 return;
             }
 
-            case ToString_Bool: 
+            case ToString_Bool_String: 
             { 
                 auto* boolValue = GetBool(qInst.args[0]);
                 EmitRuntimeCall(LRuntimeFuncKind::BoolToString, {slotValues[qInst.o_dest->index], boolValue});
                 return;
             }
 
-            case ToString_Int:
+            case ToString_Int_String:
             {
                 auto* intValue = GetInt(qInst.args[0]);
                 EmitRuntimeCall(LRuntimeFuncKind::IntToString, {slotValues[qInst.o_dest->index], intValue});
@@ -539,7 +539,7 @@ private:
                 return;
             }
 
-            case Add_String_String: 
+            case Add_StringPtr_StringPtr_String: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);
@@ -566,7 +566,7 @@ private:
                 return;
             }
 
-            case LessThan_String_String_Bool: 
+            case LessThan_StringPtr_StringPtr_Bool: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -584,7 +584,7 @@ private:
                 return;
             }
 
-            case GreaterThan_String_String_Bool: 
+            case GreaterThan_StringPtr_StringPtr_Bool: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -602,7 +602,7 @@ private:
                 return;
             }
 
-            case LessThanOrEqual_String_String_Bool:
+            case LessThanOrEqual_StringPtr_StringPtr_Bool:
             {
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -620,7 +620,7 @@ private:
                 return;
             }
 
-            case GreaterThanOrEqual_String_String_Bool: 
+            case GreaterThanOrEqual_StringPtr_StringPtr_Bool: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -647,7 +647,7 @@ private:
                 return;
             }
 
-            case Equal_String_String_Bool:
+            case Equal_StringPtr_StringPtr_Bool:
             {
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                

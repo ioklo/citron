@@ -125,7 +125,7 @@ public:
             RETURN_ON_ERROR(e_mCmdRead);
 
             // cmd가 SExp_String을 translation하면 무조건 string type이 나오게 된다
-            assert(GetType(*e_mCmdRead, &*contexts.rFactory) != stringType);
+            assert(GetType(*e_mCmdRead, &*contexts.rFactory) == stringType);
 
             builder.push_back(move(get<MRead_Loc>(*e_mCmdRead)));
         }
@@ -140,7 +140,6 @@ public:
         return TranslateSVarDeclToMStmts(outStmts, &stmt->varDecl, contexts);
     }
 
-    // 여기서 Bind가 발생하면 MStmt_IfBind
     ResultType Visit(SStmt_If* stmt) 
     {
         // 순회

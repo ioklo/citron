@@ -21,20 +21,73 @@ namespace Citron {
 
 namespace {
 
-expected<void, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp_StringElem& elem, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
+expected<size_t, DiagPtr> MakePtrSlot(QReadResult_Place& readResult, QTranslationContexts& contexts)
 {
-    return visit([&contexts, &o_destSlotIndex](auto& elem) -> expected<void, DiagPtr> {
+    return visit([&contexts](auto& readResult)-> expected<size_t, DiagPtr> {
+        auto& bodyContext = contexts.bodyContext;
+        using T = remove_cvref_t<decltype(readResult)>;
+        if constexpr (same_as<T, QReadResult_Slot>)
+        {
+            auto* stringType = bodyContext.GetStringType();
+            auto* stringPtrType = bodyContext.GetPtrType(stringType);
+            auto destSlotIndex = bodyContext.NewSlot(stringPtrType);
+            bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{destSlotIndex}, QArg_Slot{readResult.slotIndex}});
+            
+            return destSlotIndex;
+        }
+        else if constexpr (same_as<T, QReadResult_Ptr>) return readResult.slotIndex;
+        else static_assert(false);
+    }, readResult);
+}
+
+// ptr slot만 반환하도록 한다
+expected<QReadResult_Ptr, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp_StringElem& elem, QTranslationContexts& contexts)
+{
+    return visit([&contexts](auto& elem) -> expected<QReadResult_Ptr, DiagPtr> {
+        auto& bodyContext = contexts.bodyContext;
         using T = remove_cvref_t<decltype(elem)>;
         if constexpr (same_as<T, MInitExp_StringElem_Text>)
         {
-            if (o_destSlotIndex)
-                return contexts.bodyContext.EmitInst(QInst_Ctor_String{QArg_Slot{*o_destSlotIndex}, elem.text});
+            auto* stringType = contexts.rFactory->MakeStringType();
+            auto* stringPtrType = contexts.rFactory->MakePtrType(stringType);
 
-            return {};
+            size_t slotIndex = bodyContext.NewSlot(stringType);
+            size_t ptrSlotIndex = bodyContext.NewSlot(stringPtrType);
+
+            bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{slotIndex}});
+            bodyContext.EmitInst(QInst_Ctor_String{QArg_Slot{ptrSlotIndex}, elem.text});
+
+            return QReadResult_Ptr{ptrSlotIndex};
         }
         else if constexpr (same_as<T, MInitExp_StringElem_Exp>)
         {
-            return TranslateMRead_LocToQInsts(elem.loc, o_destSlotIndex, contexts);
+            auto e_readResult = TranslateMRead_LocToQInsts(elem.loc, contexts);
+            RETURN_ON_ERROR(e_readResult);
+
+            auto e_ptrSlotIndex = MakePtrSlot(*e_readResult, contexts);
+            RETURN_ON_ERROR(e_ptrSlotIndex);
+
+            return QReadResult_Ptr{*e_ptrSlotIndex};
+        }
+        else static_assert(false);
+    }, elem);
+}
+
+expected<QReadResult_Place, DiagPtr> TranslateMInitExp_StringElemToQInstsForCreate(MInitExp_StringElem& elem, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
+{
+    return visit([&contexts](auto& elem) -> expected<QReadResult_Place, DiagPtr> {
+        using T = remove_cvref_t<decltype(elem)>;
+        if constexpr (same_as<T, MInitExp_StringElem_Text>)
+        {
+            auto* stringType = contexts.rFactory->MakeStringType();
+            size_t slotIndex = contexts.bodyContext.NewSlot(stringType);
+
+            contexts.bodyContext.EmitInst(QInst_Ctor_String{QArg_Slot{slotIndex}, elem.text});
+            return QReadResult_Slot{slotIndex};
+        }
+        else if constexpr (same_as<T, MInitExp_StringElem_Exp>)
+        {
+            return TranslateMRead_LocToQInsts(elem.loc, contexts);
         }
         else static_assert(false);
     }, elem);
@@ -70,9 +123,8 @@ expected<QArg_Input, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QTransl
                     // slot이면 addrOf를 써서 ptr로 만든다
                     auto* rPtrType = contexts.bodyContext.GetPtrType();
                     auto ptrSlotIndex = contexts.bodyContext.NewSlot(rPtrType);
-                    auto e_emitAddrResult = contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{locResult.slotIndex}});
-                    RETURN_ON_ERROR(e_emitAddrResult);
 
+                    contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{locResult.slotIndex}});
                     return QArg_Slot{ptrSlotIndex};
                 }
                 else if constexpr (same_as<U, QLocResult_Ptr>)
@@ -137,17 +189,17 @@ QIntrinsicInfo* GetIntrinsicInfo(MExp_CallIntrinsicKind kind, QTranslationContex
             {MExp_CallIntrinsicKind::Add_Int_Int_Int, {.kind = QInst_IntrinsicKind::Add_Int_Int_Int, .type = intType}},
             {MExp_CallIntrinsicKind::Subtract_Int_Int_Int, {.kind = QInst_IntrinsicKind::Subtract_Int_Int_Int, .type = intType}},
             {MExp_CallIntrinsicKind::LessThan_Int_Int_Bool, {.kind = QInst_IntrinsicKind::LessThan_Int_Int_Bool, .type = boolType}},
-            {MExp_CallIntrinsicKind::LessThan_String_String_Bool, {.kind = QInst_IntrinsicKind::LessThan_String_String_Bool, .type = boolType}},
+            {MExp_CallIntrinsicKind::LessThan_StringPtr_StringPtr_Bool, {.kind = QInst_IntrinsicKind::LessThan_StringPtr_StringPtr_Bool, .type = boolType}},
             {MExp_CallIntrinsicKind::GreaterThan_Int_Int_Bool, {.kind = QInst_IntrinsicKind::GreaterThan_Int_Int_Bool, .type = boolType}},
-            {MExp_CallIntrinsicKind::GreaterThan_String_String_Bool, {.kind = QInst_IntrinsicKind::GreaterThan_String_String_Bool, .type = boolType}},
+            {MExp_CallIntrinsicKind::GreaterThan_StringPtr_StringPtr_Bool, {.kind = QInst_IntrinsicKind::GreaterThan_StringPtr_StringPtr_Bool, .type = boolType}},
             {MExp_CallIntrinsicKind::LessThanOrEqual_Int_Int_Bool, {.kind = QInst_IntrinsicKind::LessThanOrEqual_Int_Int_Bool, .type = boolType}},
-            {MExp_CallIntrinsicKind::LessThanOrEqual_String_String_Bool, {.kind = QInst_IntrinsicKind::LessThanOrEqual_String_String_Bool, .type = boolType}},
+            {MExp_CallIntrinsicKind::LessThanOrEqual_StringPtr_StringPtr_Bool, {.kind = QInst_IntrinsicKind::LessThanOrEqual_StringPtr_StringPtr_Bool, .type = boolType}},
             {MExp_CallIntrinsicKind::GreaterThanOrEqual_Int_Int_Bool, {.kind = QInst_IntrinsicKind::GreaterThanOrEqual_Int_Int_Bool, .type = boolType}},
-            {MExp_CallIntrinsicKind::GreaterThanOrEqual_String_String_Bool, {.kind = QInst_IntrinsicKind::GreaterThanOrEqual_String_String_Bool, .type = boolType}},
+            {MExp_CallIntrinsicKind::GreaterThanOrEqual_StringPtr_StringPtr_Bool, {.kind = QInst_IntrinsicKind::GreaterThanOrEqual_StringPtr_StringPtr_Bool, .type = boolType}},
             {MExp_CallIntrinsicKind::Equal_Int_Int_Bool, {.kind = QInst_IntrinsicKind::Equal_Int_Int_Bool, .type = boolType}},
             {MExp_CallIntrinsicKind::Equal_Bool_Bool_Bool, {.kind = QInst_IntrinsicKind::Equal_Bool_Bool_Bool, .type = boolType}},
-            {MExp_CallIntrinsicKind::Equal_String_String_Bool, {.kind = QInst_IntrinsicKind::Equal_String_String_Bool, .type = boolType}},
-            {MExp_CallIntrinsicKind::GetIterator_List_ListIterator, {.kind = QInst_IntrinsicKind::GetIterator_List_ListIterator, .type = nullptr}} // TODO:
+            {MExp_CallIntrinsicKind::Equal_StringPtr_StringPtr_Bool, {.kind = QInst_IntrinsicKind::Equal_StringPtr_StringPtr_Bool, .type = boolType}},
+            {MExp_CallIntrinsicKind::GetIterator_ListPtr_ListIterator, {.kind = QInst_IntrinsicKind::GetIterator_ListPtr_ListIterator, .type = nullptr}} // TODO:
         };
         }();
 
@@ -157,46 +209,76 @@ QIntrinsicInfo* GetIntrinsicInfo(MExp_CallIntrinsicKind kind, QTranslationContex
     return &i->second;
 }
 
-
-expected<void, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, optional<size_t> destSlotIndex, QTranslationContexts& contexts)
+QIntrinsicInfo* GetIntrinsicInfo(MInitExp_CallIntrinsicKind kind, QTranslationContexts& contexts)
 {
+    static unordered_map<MInitExp_CallIntrinsicKind, QIntrinsicInfo> m = [&contexts]() {
+        auto* boolType = contexts.rFactory->MakeBoolType();
+        auto* intType = contexts.rFactory->MakeIntType();
+        auto* stringType = contexts.rFactory->MakeStringType();
+
+        return unordered_map<MInitExp_CallIntrinsicKind, QIntrinsicInfo>{
+            {MInitExp_CallIntrinsicKind::ToString_Bool_String, {.kind= QInst_IntrinsicKind::ToString_Bool_String, .type = stringType}},
+            {MInitExp_CallIntrinsicKind::ToString_Int_String, {.kind= QInst_IntrinsicKind::ToString_Int_String, .type = stringType}},
+            {MInitExp_CallIntrinsicKind::Add_String_String_String, {.kind= QInst_IntrinsicKind::Add_StringPtr_StringPtr_String, .type = stringType}},
+        };
+    }();
+
+    auto i = m.find(kind);
+    if (i == m.end()) return nullptr;
+
+    return &i->second;
+}
+
+
+
+
+expected<void, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
+{
+    auto& bodyContext = contexts.bodyContext;
     assert(!exp->elements.empty());
 
     // 원소가 한개라면, dest에 직접 넣는다
     if (exp->elements.size() == 1)
     {
-        auto e_result = TranslateMInitExp_StringElemToQInsts(exp->elements.front(), destSlotIndex, contexts);
+        auto e_result = TranslateMInitExp_StringElemToQInstsForCreate(exp->elements.front(), o_destSlotIndex, contexts);
         RETURN_ON_ERROR(e_result);
     }
     else
     {
-        auto* stringType = contexts.bodyContext.GetStringType();
+        auto* stringType = bodyContext.GetStringType();
+        auto* stringPtrType = bodyContext.GetPtrType(stringType);
+
 
         // "abc $x" => "abc " + x
-        auto curSlotIndex = contexts.bodyContext.NewSlot(stringType);
-        auto e_resultFront = TranslateMInitExp_StringElemToQInsts(exp->elements.front(), curSlotIndex, contexts);
-        RETURN_ON_ERROR(e_resultFront);
+        auto e_frontPtr = TranslateMInitExp_StringElemToQInsts(exp->elements.front(), contexts);
+        RETURN_ON_ERROR(e_frontPtr);
 
-        auto elemSlotIndex = contexts.bodyContext.NewSlot(stringType);
-        auto newSlotIndex = contexts.bodyContext.NewSlot(stringType);
+        size_t curPtrSlotIndex = e_frontPtr->slotIndex;
         for (size_t i = 1, end = exp->elements.size() - 1; i < end; i++)
         {   
-            auto e_result = TranslateMInitExp_StringElemToQInsts(exp->elements[i], elemSlotIndex, contexts);
-            RETURN_ON_ERROR(e_result);
-            
-            auto e_emitResult = contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_String_String, QArg_Slot{newSlotIndex}, {QArg_Slot{curSlotIndex}, QArg_Slot{elemSlotIndex}});
-            RETURN_ON_ERROR(e_emitResult);
+            auto e_elemPtr = TranslateMInitExp_StringElemToQInsts(exp->elements[i], contexts);
+            RETURN_ON_ERROR(e_elemPtr);
+            size_t elemPtrSlotIndex = e_elemPtr->slotIndex;
 
-            swap(curSlotIndex, newSlotIndex);
+            auto newSlotIndex = bodyContext.NewSlot(stringType);
+            bodyContext.EmitIntrinsic(
+                QInst_IntrinsicKind::Add_StringPtr_StringPtr_String, 
+                QArg_Slot{newSlotIndex}, 
+                {QArg_Slot{curPtrSlotIndex}, QArg_Slot{elemPtrSlotIndex}});
+
+            auto newPtrSlotIndex = bodyContext.NewSlot(stringPtrType);
+            bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{newPtrSlotIndex}, QArg_Slot{newSlotIndex}});
+
+            curPtrSlotIndex = newPtrSlotIndex;
         }
         
-        auto e_resultBack = TranslateMInitExp_StringElemToQInsts(exp->elements.back(), elemSlotIndex, contexts);
-        RETURN_ON_ERROR(e_resultBack);
+        auto e_backPtr = TranslateMInitExp_StringElemToQInsts(exp->elements.back(), contexts);
+        RETURN_ON_ERROR(e_backPtr);
 
-        if (destSlotIndex)
+        if (o_destSlotIndex)
         {
-            auto e_emitResult = contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_String_String, QArg_Slot{*destSlotIndex}, {QArg_Slot{curSlotIndex}, QArg_Slot{elemSlotIndex}});
-            RETURN_ON_ERROR(e_emitResult);
+            contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_StringPtr_StringPtr_String, 
+                QArg_Slot{*o_destSlotIndex}, {QArg_Slot{curPtrSlotIndex}, QArg_Slot{e_backPtr->slotIndex}});
         }
     }
 
