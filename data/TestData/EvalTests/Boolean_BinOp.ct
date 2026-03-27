@@ -1,7 +1,7 @@
 //@ false true true true false false true false true true false
 void Main()
 {
-    bool b;
+    bool b = uninit;
     
     b = false; // assignment
     

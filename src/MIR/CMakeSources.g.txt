@@ -3,6 +3,7 @@ target_sources(MIR
         MCallable.cpp
         MCreate.cpp
         MData.cpp
+        MPrinter.cpp
         MExp.cpp
         MFactory.cpp
         MInitExp.cpp
@@ -17,6 +18,7 @@ target_sources(MIR
         Public/MIR/MCatch.h
         Public/MIR/MCreate.h
         Public/MIR/MData.h
+        Public/MIR/MPrinter.h
         Public/MIR/MExp.h
         Public/MIR/MExpVisitor.g.h
         Public/MIR/MFactory.h

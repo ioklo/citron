@@ -21,12 +21,12 @@ namespace Citron {
 
 namespace {
 
-expected<size_t, DiagPtr> MakePtrSlot(QReadResult_Place& readResult, QTranslationContexts& contexts)
+size_t MakePtrSlot(QLocResult& locResult, QTranslationContexts& contexts)
 {
-    return visit([&contexts](auto& readResult)-> expected<size_t, DiagPtr> {
+    return visit([&contexts](auto& readResult)-> size_t {
         auto& bodyContext = contexts.bodyContext;
         using T = remove_cvref_t<decltype(readResult)>;
-        if constexpr (same_as<T, QReadResult_Slot>)
+        if constexpr (same_as<T, QLocResult_Slot>)
         {
             auto* stringType = bodyContext.GetStringType();
             auto* stringPtrType = bodyContext.GetPtrType(stringType);
@@ -35,9 +35,9 @@ expected<size_t, DiagPtr> MakePtrSlot(QReadResult_Place& readResult, QTranslatio
             
             return destSlotIndex;
         }
-        else if constexpr (same_as<T, QReadResult_Ptr>) return readResult.slotIndex;
+        else if constexpr (same_as<T, QLocResult_Ptr>) return readResult.slotIndex;
         else static_assert(false);
-    }, readResult);
+    }, locResult);
 }
 
 // ptr slot만 반환하도록 한다
@@ -59,35 +59,62 @@ expected<QReadResult_Ptr, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp
 
             return QReadResult_Ptr{ptrSlotIndex};
         }
-        else if constexpr (same_as<T, MInitExp_StringElem_Exp>)
+        else if constexpr (same_as<T, MInitExp_StringElem_InitExp>)
         {
-            auto e_readResult = TranslateMRead_LocToQInsts(elem.loc, contexts);
-            RETURN_ON_ERROR(e_readResult);
+            auto* stringType = bodyContext.GetStringType();
+            size_t slotIndex = bodyContext.NewSlot(stringType);
+            auto e_result = TranslateMCreate_NBCToQInsts(elem.initExp, slotIndex, contexts);
+            RETURN_ON_ERROR(e_result);
 
-            auto e_ptrSlotIndex = MakePtrSlot(*e_readResult, contexts);
-            RETURN_ON_ERROR(e_ptrSlotIndex);
+            auto* stringPtrType = bodyContext.GetPtrType(stringType);
+            size_t ptrSlotIndex = bodyContext.NewSlot(stringPtrType);
+            bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{slotIndex}});
 
-            return QReadResult_Ptr{*e_ptrSlotIndex};
+            return QReadResult_Ptr{ptrSlotIndex};
         }
+        else if constexpr (same_as<T, MInitExp_StringElem_Loc>)
+        {
+            auto e_locResult = TranslateMLocToQInsts(elem.loc, contexts);
+            RETURN_ON_ERROR(e_locResult);
+
+            auto ptrSlotIndex = MakePtrSlot(*e_locResult, contexts);
+            return QReadResult_Ptr{ptrSlotIndex};
+        }
+        
         else static_assert(false);
     }, elem);
 }
 
-expected<QReadResult_Place, DiagPtr> TranslateMInitExp_StringElemToQInstsForCreate(MInitExp_StringElem& elem, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
+expected<void, DiagPtr> TranslateMInitExp_StringElemToQInstsForCreate(MInitExp_StringElem& elem, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
 {
-    return visit([&contexts](auto& elem) -> expected<QReadResult_Place, DiagPtr> {
+    if (!o_destSlotIndex) return {};
+
+    return visit([&o_destSlotIndex, &contexts](auto& elem) -> expected<void, DiagPtr> {
         using T = remove_cvref_t<decltype(elem)>;
         if constexpr (same_as<T, MInitExp_StringElem_Text>)
         {
-            auto* stringType = contexts.rFactory->MakeStringType();
-            size_t slotIndex = contexts.bodyContext.NewSlot(stringType);
-
-            contexts.bodyContext.EmitInst(QInst_Ctor_String{QArg_Slot{slotIndex}, elem.text});
-            return QReadResult_Slot{slotIndex};
+            contexts.bodyContext.EmitInst(QInst_Ctor_String{QArg_Slot{*o_destSlotIndex}, elem.text});
+            return {};
         }
-        else if constexpr (same_as<T, MInitExp_StringElem_Exp>)
+        else if constexpr (same_as<T, MInitExp_StringElem_InitExp>)
+        {   
+            auto e_result = TranslateMCreate_NBCToQInsts(elem.initExp, o_destSlotIndex, contexts);
+            RETURN_ON_ERROR(e_result);
+            return {};
+        }
+        else if constexpr (same_as<T, MInitExp_StringElem_Loc>)
         {
-            return TranslateMRead_LocToQInsts(elem.loc, contexts);
+            auto e_locResult = TranslateMLocToQInsts(elem.loc, contexts);
+            RETURN_ON_ERROR(e_locResult);
+
+            size_t ptrSlotIndex = MakePtrSlot(*e_locResult, contexts);
+
+            contexts.bodyContext.EmitIntrinsic(
+                QInst_IntrinsicKind::CopyCtor_StringPtr_StringPtr_Void, 
+                nullopt, 
+                {QArg_Slot{*o_destSlotIndex}, QArg_Slot{ptrSlotIndex}});
+
+            return {};
         }
         else static_assert(false);
     }, elem);
@@ -228,9 +255,6 @@ QIntrinsicInfo* GetIntrinsicInfo(MInitExp_CallIntrinsicKind kind, QTranslationCo
 
     return &i->second;
 }
-
-
-
 
 expected<void, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
 {

@@ -14,39 +14,8 @@ class QBlock;
 // construct <string>, %slot, "hello"
 struct QInst_Ctor_String
 {
-    QArg_Slot slot;
+    QArg_Slot thisSlot;
     std::string text; // TODO: ptr이 들어가는 slot으로 바꾸고, Global Ptr을 넣는 방식으로 바꾼 다음, Intrinsic으로 넣기. QData에는 GlobalString을 넣고, index로 참조하기
-};
-
-struct QInst_CopyCtor_String
-{
-    QArg_Slot slot;
-    QArg_Slot src;
-};
-
-struct QInst_MoveCtor_String
-{
-    QArg_Slot slot;
-    QArg_Slot src;
-};
-
-struct QInst_Dtor_String
-{
-    QArg_Slot slot; // 
-};
-
-// copy assign
-struct QInst_CopyAssign_String
-{
-    QArg_Slot dest;
-    QArg_Slot src;
-};
-
-// move assign
-struct QInst_MoveAssign_String
-{
-    QArg_Slot dest;
-    QArg_Slot src;
 };
 
 // %dest = load [%src]
@@ -142,6 +111,12 @@ enum struct QInst_IntrinsicKind
     Equal_Int_Int_Bool,
     Equal_Bool_Bool_Bool,
     Equal_StringPtr_StringPtr_Bool,
+
+    CopyCtor_StringPtr_StringPtr_Void,
+    MoveCtor_StringPtr_StringPtr_Void,
+    Dtor_StringPtr_Void,
+    CopyAssign_StringPtr_StringPtr_Void,
+    MoveAssign_StringPtr_StringPtr_Void,
 };
 
 struct QInst_Intrinsic
@@ -170,11 +145,6 @@ struct QInst_Jump
 
 using QInst = std::variant<
     QInst_Ctor_String,
-    QInst_CopyCtor_String,
-    QInst_MoveCtor_String,
-    QInst_CopyAssign_String,
-    QInst_MoveAssign_String,
-    QInst_Dtor_String,
     QInst_Load,
     QInst_Store,
     QInst_AddrOf,

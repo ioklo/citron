@@ -299,7 +299,11 @@ struct VarDeclElemTranslator
                 // var x = uninit; 에러
                 else if constexpr (same_as<T, SVarDeclElementInit_Uninit>)
                 {
-                    return unexpected{MakePtr<Error_VarDecl_CantInferenceWithoutInitExpression>()};
+                    // TODO: [59] uninitialized 분석
+                    auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(declType, varName, MStmt_LocalVarDeclInit_Uninit{});
+                    contexts.scopeContext->AddLocalVarInfo(declType, varName);
+                    outStmts->push_back(mStmt);
+                    return {};
                 }
                 else static_assert(false);
             }, elem.init);

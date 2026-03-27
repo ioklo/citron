@@ -218,7 +218,7 @@ public:
         {
             // for(;;i++)
             DesignatedDiagnostic<Error_ForStmt_ContinueExpShouldBeAssignOrCall> designatedDiag;
-            auto e_contResult = TranslateSExpToMStmt(stmt->cont, /*hintType*/nullptr, &designatedDiag, contexts);
+            auto e_contResult = TranslateSExpToMStmt(stmt->cont, /*hintType*/nullptr, &designatedDiag, forStmtContexts);
             RETURN_ON_ERROR(e_contResult);
 
             contStmt = *e_contResult;
@@ -829,6 +829,7 @@ expected<vector<MStmt*>, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtI
 expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContexts& contexts)
 {
     auto e_reExp = TranslateSExpToReExp(sExp, hintType, contexts);
+    RETURN_ON_ERROR(e_reExp);
 
     return visit([&contexts](auto& reExp) -> expected<MStmt*, DiagPtr> {
         using T = remove_cvref_t<decltype(reExp)>;

@@ -100,7 +100,7 @@ TEST(Boolean, BinOp)
 {
     auto code = R"---(void Main()
 {
-    bool b;
+    bool b = uninit;
     
     b = false; // assignment
     

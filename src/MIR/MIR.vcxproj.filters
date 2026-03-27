@@ -61,6 +61,9 @@
     <ClInclude Include="Public\MIR\MCatch.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\MIR\MPrinter.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MExp.cpp" />
@@ -73,6 +76,7 @@
     <ClCompile Include="MSharedExp.cpp" />
     <ClCompile Include="MInitExp.cpp" />
     <ClCompile Include="MCallable.cpp" />
+    <ClCompile Include="MPrinter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Public Headers">

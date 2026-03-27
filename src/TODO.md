@@ -37,3 +37,4 @@
 - [ ] // TODO: [56] constraint resolver 구현
 - [ ] // TODO: [57] [forward] ref parameter 지원
 - [ ] // TODO: [58] FuncMatcher 에러 개선
+- [ ] // TODO: [59] uninitialized 분석

@@ -47,9 +47,8 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_Stri
 
             auto* initExp = contexts.mFactory->MakeMInitExp<MInitExp_CallIntrinsic>(
                 MInitExp_CallIntrinsicKind::ToString_Int_String, typeArgs, move(args));
-
-            auto* loc = contexts.mFactory->MakeMLoc<MLoc_Materialize>(MCreate_NBC{initExp});
-            return MInitExp_StringElem_Exp{MRead_Loc{loc}};
+            
+            return MInitExp_StringElem_InitExp{initExp};
         }
         else if (reExpType == contexts.rFactory->MakeBoolType())
         {
@@ -64,18 +63,21 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_Stri
             auto* initExp = contexts.mFactory->MakeMInitExp<MInitExp_CallIntrinsic>(
                 MInitExp_CallIntrinsicKind::ToString_Bool_String, typeArgs, move(args));
 
-            auto* loc = contexts.mFactory->MakeMLoc<MLoc_Materialize>(MCreate_NBC{initExp});
-            return MInitExp_StringElem_Exp{MRead_Loc{loc}};
+            return MInitExp_StringElem_InitExp{initExp};
         }
         else if (reExpType == contexts.rFactory->MakeStringType())
-        {
-            auto e_mRead = TranslateReExpToMRead(*e_reExp, contexts);
-            RETURN_ON_ERROR(e_mRead);
+        {   
+            return visit([](auto& reExp) -> expected<MInitExp_StringElem, DiagPtr> {
+                using T = remove_cvref_t<decltype(reExp)>;
 
-            // string을 읽었으니, NBC가 나와야 한다
-            auto& mReadLoc = get<MRead_Loc>(*e_mRead);
+                if constexpr (same_as<T, ReExp_Loc>) return MInitExp_StringElem_Loc{reExp.mLoc};
+                else if constexpr (same_as<T, ReExp_Exp>) throw RuntimeFatalException{};
+                else if constexpr (same_as<T, ReExp_InitExp>) return MInitExp_StringElem_InitExp{reExp.mInitExp};
+                else if constexpr (same_as<T, ReExp_StmtCall>) throw RuntimeFatalException{};
+                else if constexpr (same_as<T, ReExp_StmtAssign>) throw RuntimeFatalException{};
+                else static_assert(false);
 
-            return MInitExp_StringElem_Exp{move(mReadLoc)};
+            }, *e_reExp);
         }
         else
         {

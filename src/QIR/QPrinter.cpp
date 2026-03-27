@@ -62,60 +62,12 @@ class QPrinter
         {
             // construct_string %a, "hello"            
             printer.Print("construct_string");
-            printer.PrintQArg_Slot(inst.slot);
+            printer.PrintQArg_Slot(inst.thisSlot);
             printer.Print(", ");
             printer.PrintStringLiteral(inst.text);
             printer.PrintLine();
         }
-
-        void Print(QInst_CopyCtor_String& inst)
-        {
-            // copy_construct_string %dest, %src
-            printer.Print("copy_construct_string ");
-            printer.PrintQArg_Slot(inst.slot);
-            printer.Print(", ");
-            printer.PrintQArg_Slot(inst.src);
-            printer.PrintLine();
-        }
-
-        void Print(QInst_MoveCtor_String& inst)
-        {
-            // move_construct_string %dest, %src
-            printer.Print("move_construct_string ");
-            printer.PrintQArg_Slot(inst.slot);
-            printer.Print(", ");
-            printer.PrintQArg_Slot(inst.src);
-            printer.PrintLine();
-        }
-
-        void Print(QInst_CopyAssign_String& inst)
-        {
-            // copy_assign_string %a
-            printer.Print("copy_assign_string ");
-            printer.PrintQArg_Slot(inst.dest);
-            printer.Print(", ");
-            printer.PrintQArg_Slot(inst.src);
-            printer.PrintLine();
-        }
-
-        void Print(QInst_MoveAssign_String& inst)
-        {
-            // move_assign_string %a
-            printer.Print("move_assign_string ");
-            printer.PrintQArg_Slot(inst.dest);
-            printer.Print(", ");
-            printer.PrintQArg_Slot(inst.src);
-            printer.PrintLine();
-        }
-
-        void Print(QInst_Dtor_String& inst)
-        {
-            // destruct_string %a
-            printer.Print("destruct_string ");
-            printer.PrintQArg_Slot(inst.slot);
-            printer.PrintLine();
-        }
-
+        
         void Print(QInst_Load& inst)
         {
             // %v = load [%lv]
@@ -324,9 +276,14 @@ public:
         case Equal_Int_Int_Bool: return "Equal_Int_Int_Bool";
         case Equal_Bool_Bool_Bool: return "Equal_Bool_Bool_Bool";
         case Equal_StringPtr_StringPtr_Bool: return "Equal_StringPtr_StringPtr_Bool";
-        default:
-            unreachable();
+        case CopyCtor_StringPtr_StringPtr_Void: return "CopyCtor_StringPtr_StringPtr_Void";
+        case MoveCtor_StringPtr_StringPtr_Void: return "MoveCtor_StringPtr_StringPtr_Void";
+        case Dtor_StringPtr_Void: return "Dtor_StringPtr_Void";
+        case CopyAssign_StringPtr_StringPtr_Void: return "CopyAssign_StringPtr_StringPtr_Void";
+        case MoveAssign_StringPtr_StringPtr_Void: return "MoveAssign_StringPtr_StringPtr_Void";
         }
+
+        unreachable();
     }
 
     void PrintInstructionKind(QInst_IntrinsicKind kind)

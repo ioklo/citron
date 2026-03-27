@@ -106,6 +106,13 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
     case QInst_IntrinsicKind::Equal_Bool_Bool_Bool:
     case QInst_IntrinsicKind::Equal_StringPtr_StringPtr_Bool:
         return QIntrinsicResultType_Slot{rFactory->MakeBoolType()};
+
+    case QInst_IntrinsicKind::CopyCtor_StringPtr_StringPtr_Void:
+    case QInst_IntrinsicKind::MoveCtor_StringPtr_StringPtr_Void:
+    case QInst_IntrinsicKind::Dtor_StringPtr_Void:
+    case QInst_IntrinsicKind::CopyAssign_StringPtr_StringPtr_Void:
+    case QInst_IntrinsicKind::MoveAssign_StringPtr_StringPtr_Void:
+        return QIntrinsicResultType_Slot{rFactory->MakeVoidType()};
     }
 
     throw NotImplementedException{};
@@ -176,7 +183,9 @@ QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
                 if (newCleanUpForRet == nullptr)
                     newCleanUpForRet = AddBlock("cleanUpForRet"); // TODO: 뒤에 디버그용 번호 붙이기
 
-                newCleanUpForRet->EmitInst(QInst_Dtor_String{QArg_Slot{slotIndex}});
+                auto ptrSlotIndex = NewSlot(GetStringType());
+                newCleanUpForRet->EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{slotIndex}});
+                newCleanUpForRet->EmitInst(QInst_Intrinsic{QInst_IntrinsicKind::Dtor_StringPtr_Void, nullopt, {QArg_Slot{ptrSlotIndex}}});
             }
         }
 
@@ -439,16 +448,28 @@ void QBodyContext::PopScope()
 // 일반적인 CleanUp
 void QBodyContext::CleanUpScope()
 {
+    vector<size_t> slotsNeedingDtor;
+
     // 순서는 거꾸로
     for (auto slotIndex : curScope->slotIndices | views::reverse)
+    {   
+        if (slotInfos[slotIndex].type == rFactory->MakeStringType())
+            slotsNeedingDtor.push_back(slotIndex);
+    }
+
+    auto* stringType = GetStringType();
+    auto* stringPtrType = GetPtrType(stringType);
+
+    for (auto slotIndex : slotsNeedingDtor)
     {
+        auto ptrSlotIndex = NewSlot(stringPtrType);
+
         // 소멸자 호출
         // TODO: HARD CODED
-        if (slotInfos[slotIndex].type == rFactory->MakeStringType())
-        {
-            assert(curBlock);
-            curBlock->EmitInst(QInst_Dtor_String{QArg_Slot{slotIndex}});
-        }
+
+        assert(curBlock);
+        curBlock->EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{slotIndex}});
+        curBlock->EmitInst(QInst_Intrinsic{QInst_IntrinsicKind::Dtor_StringPtr_Void, nullopt, {QArg_Slot{ptrSlotIndex}}});
     }
 }
 

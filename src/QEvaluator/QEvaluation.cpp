@@ -151,20 +151,6 @@ void SetBool(QArg_Slot& slot, bool v, Environment& env)
     *(bool*)env.curFrame->slots[slot.index] = v;
 }
 
-string& GetStringRef(QArg_Slot& slot, Environment& env)
-{
-    return *(string*)env.curFrame->slots[slot.index];
-}
-
-string& GetStringRef(QArg_Input& arg, Environment& env)
-{
-    return visit([&env](auto& arg) -> string& {        
-        using T = remove_cvref_t<decltype(arg)>;
-        if constexpr (same_as<T, QArg_Slot>) return *(string*)env.curFrame->slots[arg.index];
-        else unreachable();
-    }, arg);
-}
-
 void SetString(QArg_Slot& slot, string&& s, Environment& env)
 {   
     *(string*)env.curFrame->slots[slot.index] = move(s);
@@ -248,7 +234,6 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         return;
     }
 
-
     case ToString_Int_String:
     {
         auto i = GetInt(inst.args[0], env);
@@ -325,9 +310,9 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
     case Add_StringPtr_StringPtr_String:
     {
-        auto& s1 = GetStringRef(inst.args[0], env);
-        auto& s2 = GetStringRef(inst.args[1], env);
-        SetString(*inst.o_dest, s1 + s2, env);
+        auto* s1 = (string*)GetPtr(inst.args[0], env);
+        auto* s2 = (string*)GetPtr(inst.args[1], env);
+        SetString(*inst.o_dest, *s1 + *s2, env);
         return;
     }
 
@@ -351,10 +336,10 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
     case LessThan_StringPtr_StringPtr_Bool:
     {
-        auto& s1 = GetStringRef(inst.args[0], env);
-        auto& s2 = GetStringRef(inst.args[1], env);
+        auto* s1 = (string*)GetPtr(inst.args[0], env);
+        auto* s2 = (string*)GetPtr(inst.args[1], env);
 
-        SetBool(*inst.o_dest, s1 < s2, env);
+        SetBool(*inst.o_dest, *s1 < *s2, env);
         return;
     }
 
@@ -370,8 +355,8 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
     case GreaterThan_StringPtr_StringPtr_Bool:
     {
-        auto& s1 = GetStringRef(inst.args[0], env);
-        auto& s2 = GetStringRef(inst.args[1], env);
+        auto* s1 = (string*)GetPtr(inst.args[0], env);
+        auto* s2 = (string*)GetPtr(inst.args[1], env);
 
         SetBool(*inst.o_dest, s1 > s2, env);
         return;
@@ -386,10 +371,10 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     }
     case LessThanOrEqual_StringPtr_StringPtr_Bool:
     {
-        auto& s1 = GetStringRef(inst.args[0], env);
-        auto& s2 = GetStringRef(inst.args[1], env);
+        auto* s1 = (string*)GetPtr(inst.args[0], env);
+        auto* s2 = (string*)GetPtr(inst.args[1], env);
 
-        SetBool(*inst.o_dest, s1 <= s2, env);
+        SetBool(*inst.o_dest, *s1 <= *s2, env);
         return;
     }
 
@@ -403,10 +388,10 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
     case GreaterThanOrEqual_StringPtr_StringPtr_Bool:
     {
-        auto& s1 = GetStringRef(inst.args[0], env);
-        auto& s2 = GetStringRef(inst.args[1], env);
+        auto* s1 = (string*)GetPtr(inst.args[0], env);
+        auto* s2 = (string*)GetPtr(inst.args[1], env);
 
-        SetBool(*inst.o_dest, s1 >= s2, env);
+        SetBool(*inst.o_dest, *s1 >= *s2, env);
         return;
     }
 
@@ -431,14 +416,55 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
     case Equal_StringPtr_StringPtr_Bool:
     {
-        auto& s1 = GetStringRef(inst.args[0], env);
-        auto& s2 = GetStringRef(inst.args[1], env);
-        SetBool(*inst.o_dest, s1 == s2, env);
+        auto* s1 = (string*)GetPtr(inst.args[0], env);
+        auto* s2 = (string*)GetPtr(inst.args[1], env);
+        SetBool(*inst.o_dest, *s1 == *s2, env);
         return;
     }
 
-    default: throw NotImplementedException{};
+    case QInst_IntrinsicKind::CopyCtor_StringPtr_StringPtr_Void:
+    {
+        auto* thisPtr = GetPtr(inst.args[0], env);
+        string* otherPtr = (string*)GetPtr(inst.args[1], env);
+
+        new (thisPtr) string{*otherPtr};
+        return;
     }
+
+    case QInst_IntrinsicKind::MoveCtor_StringPtr_StringPtr_Void:
+    {
+        auto* thisPtr = GetPtr(inst.args[0], env);
+        string* otherPtr = (string*)GetPtr(inst.args[1], env);
+
+        new (thisPtr) string{std::move(*otherPtr)};
+        return;
+    }
+    
+    case QInst_IntrinsicKind::Dtor_StringPtr_Void:
+    {
+        string* thisPtr = (string*)GetPtr(inst.args[0], env);
+        (*thisPtr).~string();
+        return;
+    }
+
+    case QInst_IntrinsicKind::CopyAssign_StringPtr_StringPtr_Void:
+    {
+        string* destPtr = (string*)GetPtr(inst.args[0], env);
+        string* srcPtr = (string*)GetPtr(inst.args[1], env);
+        *destPtr = *srcPtr;
+        return;
+    }
+
+    case QInst_IntrinsicKind::MoveAssign_StringPtr_StringPtr_Void:
+    {
+        string* destPtr = (string*)GetPtr(inst.args[0], env);
+        string* srcPtr = (string*)GetPtr(inst.args[1], env);
+        *destPtr = std::move(*srcPtr);
+        return;
+    }
+    }
+
+    unreachable();
 }
 
 StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<QArg_Slot> o_dest, span<QArg_Input> args, RFactory& rFactory)
@@ -503,48 +529,8 @@ struct Evaluator
 
     bool Eval(QInst_Ctor_String& inst)
     {
-        auto* buf = env.curFrame->slots[inst.slot.index];
+        auto* buf = GetPtr(inst.thisSlot, env);
         new (buf) string{inst.text};
-        return true;
-    }
-
-    bool Eval(QInst_CopyCtor_String& inst)
-    {
-        auto* buf = env.curFrame->slots[inst.slot.index];
-        auto& srcStr = GetStringRef(inst.src, env);
-        new (buf) string{srcStr};
-        return true;
-    }
-
-    bool Eval(QInst_MoveCtor_String& inst)
-    {
-        auto* buf = env.curFrame->slots[inst.slot.index];
-        auto& srcStr = GetStringRef(inst.src, env);
-        new (buf) string{std::move(srcStr)};
-        return true;
-    }
-
-    bool Eval(QInst_CopyAssign_String& inst)
-    {
-        auto& destStr = GetStringRef(inst.dest, env);
-        auto& srcStr = GetStringRef(inst.src, env);
-        destStr = srcStr;
-        return true;
-    }
-
-    bool Eval(QInst_MoveAssign_String& inst)
-    {
-        auto& destStr = GetStringRef(inst.dest, env);
-        auto& srcStr = GetStringRef(inst.src, env);
-        destStr = move(srcStr);
-        return true;
-    }
-
-    bool Eval(QInst_Dtor_String& inst)
-    {
-        auto* buf = env.curFrame->slots[inst.slot.index];
-        auto* str = (string*)buf;
-        str->~string();
         return true;
     }
 

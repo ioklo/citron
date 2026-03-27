@@ -253,7 +253,10 @@ struct MStmtQInstsTranslator
         }
     }
 
-    // ResultType Visit(MStmt_For* mStmt) { }
+    ResultType Visit(MStmt_For* mStmt)
+    { 
+        throw NotImplementedException{};
+    }
     // ResultType Visit(MStmt_Continue* mStmt) { }
     // ResultType Visit(MStmt_Break* mStmt) { }
     ResultType Visit(MStmt_Return* mStmt) 

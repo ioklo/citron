@@ -11,6 +11,7 @@
 
 #include "Infra/Variants.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Unreachable.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RDecl.h"
 #include "RSymbol/RFuncDecl.h"
@@ -656,8 +657,47 @@ private:
                 return;
             }
 
-            default: assert(false);
+            case CopyCtor_StringPtr_StringPtr_Void:
+            {
+                auto* thisPtr = GetPtr(qInst.args[0]);
+                auto* otherPtr = GetPtr(qInst.args[1]);
+                EmitRuntimeCall(LRuntimeFuncKind::StringCopyCtor, {thisPtr, otherPtr});
+                return;
+            }
+
+            case MoveCtor_StringPtr_StringPtr_Void:
+            {
+                auto* thisPtr = GetPtr(qInst.args[0]);
+                auto* otherPtr = GetPtr(qInst.args[1]);
+                EmitRuntimeCall(LRuntimeFuncKind::StringMoveCtor, {thisPtr, otherPtr});
+                return;
+            }
+
+            case Dtor_StringPtr_Void:
+            {
+                auto* thisPtr = GetPtr(qInst.args[0]);
+                EmitRuntimeCall(LRuntimeFuncKind::StringMoveCtor, {thisPtr});
+                return;
+            }
+
+            case CopyAssign_StringPtr_StringPtr_Void:
+            {
+                auto* thisPtr = GetPtr(qInst.args[0]);
+                auto* otherPtr = GetPtr(qInst.args[1]);
+                EmitRuntimeCall(LRuntimeFuncKind::StringCopyAssign, {thisPtr, otherPtr});
+                return;
+            }
+
+            case MoveAssign_StringPtr_StringPtr_Void:                
+            {
+                auto* thisPtr = GetPtr(qInst.args[0]);
+                auto* otherPtr = GetPtr(qInst.args[1]);
+                EmitRuntimeCall(LRuntimeFuncKind::StringMoveAssign, {thisPtr, otherPtr});
+                return;
+            }
         }
+
+        unreachable();
     }
 
     struct Emitter
@@ -669,34 +709,9 @@ private:
         void Emit(QInst_Ctor_String& qInst)
         {
             auto* textPtr = self.builder.CreateGlobalString(qInst.text);
-            self.EmitRuntimeCall(LRuntimeFuncKind::StringCtor, {self.slotValues[qInst.slot.index], textPtr});
+            self.EmitRuntimeCall(LRuntimeFuncKind::StringCtor, {self.slotValues[qInst.thisSlot.index], textPtr});
         }
-
-        void Emit(QInst_CopyCtor_String& qInst)
-        {
-            self.EmitRuntimeCall(LRuntimeFuncKind::StringCopyCtor, {self.slotValues[qInst.slot.index], self.slotValues[qInst.src.index]});
-        }
-
-        void Emit(QInst_MoveCtor_String& qInst)
-        {
-            self.EmitRuntimeCall(LRuntimeFuncKind::StringMoveCtor, {self.slotValues[qInst.slot.index], self.slotValues[qInst.src.index]});
-        }
-
-        void Emit(QInst_CopyAssign_String& qInst)
-        {
-            self.EmitRuntimeCall(LRuntimeFuncKind::StringCopyAssign, {self.slotValues[qInst.dest.index], self.slotValues[qInst.src.index]});
-        }
-
-        void Emit(QInst_MoveAssign_String& qInst)
-        {
-            self.EmitRuntimeCall(LRuntimeFuncKind::StringMoveAssign, {self.slotValues[qInst.dest.index], self.slotValues[qInst.src.index]});
-        }
-
-        void Emit(QInst_Dtor_String& qInst)
-        {
-            self.EmitRuntimeCall(LRuntimeFuncKind::StringDtor, {self.slotValues[qInst.slot.index]});
-        }
-
+        
         void Emit(QInst_Load& qInst)
         {
             auto* lPtrValueType = self.lContextImpl.GetPtrType();

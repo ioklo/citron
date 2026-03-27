@@ -58,17 +58,11 @@ struct MInitExp_Stmt : MInitExp
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
 
-struct MInitExp_StringElem_Text
-{
-    std::string text;
-};
+struct MInitExp_StringElem_Text { std::string text; };
+struct MInitExp_StringElem_InitExp { MInitExp* initExp; };
+struct MInitExp_StringElem_Loc { MLoc* loc; };
 
-struct MInitExp_StringElem_Exp
-{
-    MRead_Loc loc; // string이니까 NBC Loc
-};
-
-using MInitExp_StringElem = std::variant<MInitExp_StringElem_Text, MInitExp_StringElem_Exp>;
+using MInitExp_StringElem = std::variant<MInitExp_StringElem_Text, MInitExp_StringElem_InitExp, MInitExp_StringElem_Loc>;
 
 // "dskfjslkf $abc "
 struct MInitExp_String : MInitExp

@@ -373,6 +373,11 @@ struct MCreate_NBCQInstsTranslator
     // ResultType Visit(MInitExp_As* mInitExp) { }
 };
 
+expected<void, DiagPtr> TranslateMCreate_NBCToQInsts(MInitExp* mInitExp, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
+{
+    return Accept(MCreate_NBCQInstsTranslator{o_destSlotIndex, contexts}, mInitExp);
+}
+
 expected<void, DiagPtr> TranslateMCreateToQInsts(MCreate& mCreate, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
 {
     return visit([&o_destSlotIndex, &contexts](auto& mCreate) -> expected<void, DiagPtr> {

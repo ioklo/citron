@@ -129,7 +129,7 @@ struct CallableTranslator
     // ResultType Visit(ImExp_Namespace* imExp);
     ResultType Visit(ImExp_GlobalFuncs* imExp) 
     { 
-        assert(imExp->items.empty());
+        assert(!imExp->items.empty());
 
         auto e_match = MatchFunc<RGlobalFuncDecl>(imExp->items, imExp->memberTypeArgs, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);

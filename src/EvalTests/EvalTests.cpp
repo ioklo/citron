@@ -23,6 +23,7 @@
 #include "NSymbol/NGlobalFuncDecl.h"
 
 #include "MIR/MFactory.h"
+#include "MIR/MPrinter.h"
 
 #include "QIR/QFactory.h"
 #include "QIR/QBlock.h"
@@ -71,14 +72,18 @@ void DoTest(const string& code, const string& expected)
     ASSERT_TRUE(e_nModuleMData);
     auto& [nModule, mData] = *e_nModuleMData;
 
+    StringWriter mWriter;
+    PrintMData(mData, mWriter, *rFactory);
+    auto mOut = mWriter.ToString();
+
     QFactoryPtr qFactory = MakePtr<QFactory>();
     auto e_qData = TranslateMDataToQData(mData, rFactory, qFactory);
     ASSERT_TRUE(e_qData);
     auto* qData = *e_qData;
 
-    StringWriter writer;
-    PrintQData(qData, writer, *rFactory);
-    auto out = writer.ToString();
+    StringWriter qWriter;
+    PrintQData(qData, qWriter, *rFactory);
+    auto qOut = qWriter.ToString();
 
     // LLVM
     /*Citron::LContext lContext{rFactory, qFactory};
