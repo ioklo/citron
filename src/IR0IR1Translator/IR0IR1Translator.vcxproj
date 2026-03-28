@@ -13,7 +13,6 @@
   <ItemGroup>
     <ClInclude Include="CommonQInstsTranslation.h" />
     <ClInclude Include="MCreateToQInsts.h" />
-    <ClInclude Include="MExpToQInsts.h" />
     <ClInclude Include="MLocToQInsts.h" />
     <ClInclude Include="MReadToQInsts.h" />
     <ClInclude Include="MStmtToQInsts.h" />
@@ -27,7 +26,6 @@
     <ClCompile Include="CommonQInstsTranslation.cpp" />
     <ClCompile Include="IR0IR1Translator.cpp" />
     <ClCompile Include="MCreateToQInsts.cpp" />
-    <ClCompile Include="MExpToQInsts.cpp" />
     <ClCompile Include="MLocToQInsts.cpp" />
     <ClCompile Include="MReadToQInsts.cpp" />
     <ClCompile Include="MStmtToQInsts.cpp" />

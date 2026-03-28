@@ -12,7 +12,6 @@
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="MExpToQInsts.h" />
     <ClInclude Include="MLocToQInsts.h" />
     <ClInclude Include="MStmtToQInsts.h" />
     <ClInclude Include="QBodyContext.h" />
@@ -24,7 +23,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IR0IR1Translator.cpp" />
-    <ClCompile Include="MExpToQInsts.cpp" />
     <ClCompile Include="MLocToQInsts.cpp" />
     <ClCompile Include="MStmtToQInsts.cpp" />
     <ClCompile Include="QBodyContext.cpp" />

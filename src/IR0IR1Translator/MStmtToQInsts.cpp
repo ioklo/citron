@@ -253,9 +253,87 @@ struct MStmtQInstsTranslator
         }
     }
 
+    // for(initStmts; cond; contStmt) body
     ResultType Visit(MStmt_For* mStmt)
-    { 
-        throw NotImplementedException{};
+    {
+        QBodyContext& bodyContext = contexts.bodyContext;
+
+        {
+            ScopeGuard mainGuard{bodyContext};
+
+            // QBlock* initBlock = bodyContext.AddBlock("for_init");
+            QBlock* bodyBlock = bodyContext.AddBlock("for_body");
+            QBlock* contBlock = bodyContext.AddBlock("for_cont");
+            QBlock* exitBlock = bodyContext.AddBlock("for_exit");
+            // bodyContext.SetCurBlock(initBlock);
+
+            for (auto* mInitStmt : mStmt->initStmts)
+            {
+                auto e_result = TranslateMStmtToQInsts(mInitStmt, contexts);
+                RETURN_ON_ERROR(e_result);
+            }
+
+            QBlock* condBlock;
+            // cond와 body가 모두 들어가는
+            if (mStmt->cond)
+            {
+                condBlock = bodyContext.AddBlock("for_cond");
+                bodyContext.EmitTermInst(QInst_Jump{condBlock});
+                bodyContext.SetCurBlock(condBlock);
+
+                auto e_condResult = TranslateMReadToQInstsWithNewScope(*mStmt->cond);
+                RETURN_ON_ERROR(e_condResult);
+                
+                visit([this, mStmt, bodyBlock, exitBlock](auto& condResult) {
+                    auto& bodyContext = contexts.bodyContext;
+                    using T = remove_cvref_t<decltype(condResult)>;
+                    if constexpr (same_as<T, QReadResult_Slot>)
+                    {
+                        bodyContext.EmitTermInst(QInst_CondJump{condResult.slotIndex, bodyBlock, exitBlock});
+                    }
+                    else if constexpr (same_as<T, QReadResult_Ptr>)
+                    {
+                        auto* boolType = bodyContext.GetBoolType();
+                        size_t newSlot = bodyContext.NewSlot(boolType);
+                        bodyContext.EmitInst(QInst_Load{.type = boolType, .dest = newSlot, .src = condResult.slotIndex});
+                        bodyContext.EmitTermInst(QInst_CondJump{newSlot, bodyBlock, exitBlock});
+                    }
+                    else if constexpr (same_as<T, QReadResult_ConstBool>)
+                    {
+                        if (condResult.value)
+                            bodyContext.EmitTermInst(QInst_Jump{bodyBlock});
+                        else
+                            bodyContext.EmitTermInst(QInst_Jump{exitBlock});
+                    }
+                    else if constexpr (same_as<T, QReadResult_ConstInt32>)
+                        throw RuntimeFatalException{}; // SyntaxIR0 Translation에서 이미 체크가 되었어야 한다
+                    else static_assert(false);
+                }, *e_condResult);
+            }
+            else
+            {
+                condBlock = bodyBlock;
+                // cond가 없으면 무조건 jump한다
+                bodyContext.EmitTermInst(QInst_Jump{bodyBlock});
+            }
+
+            bodyContext.SetCurBlock(bodyBlock);
+
+            // continue는 contBlock, break는 exitBlock으로 지정해준다
+            auto e_bodyResult = TranslateMStmtsToQInsts(mStmt->body, contexts);
+            RETURN_ON_ERROR(e_bodyResult);
+
+            bodyContext.EmitTermInst(QInst_Jump{contBlock});
+
+            bodyContext.SetCurBlock(contBlock);
+            auto e_contResult = TranslateMStmtToQInsts(mStmt->contStmt, contexts);
+            RETURN_ON_ERROR(e_contResult);
+
+            bodyContext.EmitTermInst(QInst_Jump{condBlock});
+            bodyContext.SetCurBlock(exitBlock);
+        }
+
+        return {};
     }
     // ResultType Visit(MStmt_Continue* mStmt) { }
     // ResultType Visit(MStmt_Break* mStmt) { }
@@ -331,7 +409,7 @@ expected<void, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, QTr
     return {};
 }
 
-std::expected<void, DiagPtr> TranslateMStmtsToQInstsWithNewScope(std::vector<MStmt*>& mStmts, QTranslationContexts& contexts)
+expected<void, DiagPtr> TranslateMStmtsToQInstsWithNewScope(std::vector<MStmt*>& mStmts, QTranslationContexts& contexts)
 {
     ScopeGuard guard{contexts.bodyContext};
     return TranslateMStmtsToQInsts(mStmts, contexts);
