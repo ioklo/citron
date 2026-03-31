@@ -40,14 +40,13 @@ class MPrinter {
 public:
     MPrinter(IWriter& writer, RFactory& rFactory) : writer(writer), rFactory(rFactory) {}
 
-    void PrintFuncBody(MFuncBody& body)
+    void PrintFuncBody(MFuncBody& funcBody)
     {
         writer.Write("Func ");
-        PrintRName(body.nFuncDecl->GetNDecl()->GetRDecl()->GetIdentifier().name);
+        PrintRName(funcBody.nFuncDecl->GetNDecl()->GetRDecl()->GetIdentifier().name);
         writer.WriteLine();
         writer.AddIndent();
-        for (auto* stmt : body.stmts)
-            PrintStmt(stmt);
+        PrintStmt(funcBody.body);
         writer.RemoveIndent();
     }
 
@@ -281,34 +280,33 @@ private:
         if (auto* x = dynamic_cast<MStmt_If*>(stmt))
         {
             writer.Write(format("if {}", ReadText(x->cond)));
-            PrintStmtBlock(x->body);
-            if (!x->elseBody.empty())
+            PrintStmt(x->trueBody);
+            if (x->falseBody)
             {
                 writer.Write("else");
-                PrintStmtBlock(x->elseBody);
+                PrintStmt(x->falseBody);
             }
             return;
         }
         if (auto* x = dynamic_cast<MStmt_For*>(stmt))
         {
             writer.Write("for"); writer.WriteLine(); writer.AddIndent();
-            writer.Write("init:"); PrintStmtBlock(x->initStmts);
             PrintLine(x->cond ? format("cond: {}", ReadText(*x->cond)) : string("cond: <none>"));
             if (x->contStmt) { writer.Write("cont:"); writer.WriteLine(); writer.AddIndent(); PrintStmt(x->contStmt); writer.RemoveIndent(); }
-            writer.Write("body:"); PrintStmtBlock(x->body);
+            writer.Write("body:"); PrintStmt(x->body);
             writer.RemoveIndent();
             return;
         }
         if (dynamic_cast<MStmt_Continue*>(stmt)) return PrintLine("continue");
         if (dynamic_cast<MStmt_Break*>(stmt)) return PrintLine("break");
         if (auto* x = dynamic_cast<MStmt_Return*>(stmt)) return PrintLine(x->create ? format("return {}", CreateText(*x->create)) : string("return"));
-        if (auto* x = dynamic_cast<MStmt_Block*>(stmt)) { writer.Write("block"); PrintStmtBlock(x->stmts); return; }
+        if (auto* x = dynamic_cast<MStmt_Scope*>(stmt)) { writer.Write("scope"); PrintStmtBlock(x->stmts); return; }
         if (dynamic_cast<MStmt_Blank*>(stmt)) return PrintLine("blank");
         if (auto* x = dynamic_cast<MStmt_Exp*>(stmt)) return PrintLine(CreateText(x->create));
         if (auto* x = dynamic_cast<MStmt_Task*>(stmt)) return PrintLine(format("task({})", ArgsText(x->captureArgs)));
-        if (auto* x = dynamic_cast<MStmt_Await*>(stmt)) { writer.Write("await"); PrintStmtBlock(x->body); return; }
+        if (auto* x = dynamic_cast<MStmt_Await*>(stmt)) { writer.Write("await"); PrintStmt(x->body); return; }
         if (auto* x = dynamic_cast<MStmt_Async*>(stmt)) return PrintLine(format("async({})", ArgsText(x->captureArgs)));
-        if (auto* x = dynamic_cast<MStmt_Foreach*>(stmt)) { writer.Write(format("foreach {}", CreateText(x->iterCreate))); PrintStmtBlock(x->body); return; }
+        if (auto* x = dynamic_cast<MStmt_Foreach*>(stmt)) { writer.Write(format("foreach {}", CreateText(x->iterCreate))); PrintStmt(x->body); return; }
         if (auto* x = dynamic_cast<MStmt_Yield*>(stmt)) return PrintLine(format("yield {}", CreateText(x->valueCreate)));
         if (auto* x = dynamic_cast<MStmt_CallBaseClassCtor*>(stmt)) return PrintLine(format("base_class_ctor {}({})", DeclText(x->ctor), ArgsText(x->args)));
         if (auto* x = dynamic_cast<MStmt_CallBaseStructCtor*>(stmt)) return PrintLine(format("base_struct_ctor({})", ArgsText(x->args)));
@@ -317,7 +315,7 @@ private:
         if (auto* x = dynamic_cast<MStmt_Assign*>(stmt)) return PrintLine(format("assign {} = {}", LocText(x->dest), LocText(x->src.loc)));
         if (auto* x = dynamic_cast<MStmt_Do*>(stmt))
         {
-            writer.Write("do"); PrintStmtBlock(x->stmts);
+            writer.Write("do"); PrintStmt(x->body);
             for (auto& c : x->catches) PrintLine(CatchText(c));
             return;
         }

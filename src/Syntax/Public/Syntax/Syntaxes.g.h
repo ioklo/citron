@@ -17,6 +17,8 @@ class SStmt_Command;
 class SStmt_VarDecl;
 class SStmt_If;
 class SStmt_For;
+class SStmt_While;
+class SStmt_Switch;
 class SStmt_Continue;
 class SStmt_Break;
 class SStmt_Return;
@@ -405,6 +407,8 @@ public:
     virtual void Visit(SStmt_VarDecl* stmt) = 0;
     virtual void Visit(SStmt_If* stmt) = 0;
     virtual void Visit(SStmt_For* stmt) = 0;
+    virtual void Visit(SStmt_While* stmt) = 0;
+    virtual void Visit(SStmt_Switch* stmt) = 0;
     virtual void Visit(SStmt_Continue* stmt) = 0;
     virtual void Visit(SStmt_Break* stmt) = 0;
     virtual void Visit(SStmt_Return* stmt) = 0;
@@ -442,6 +446,8 @@ concept SStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<SStmt_VarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_If*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_For*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_While*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Switch*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_Continue*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_Break*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_Return*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
@@ -473,6 +479,8 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStmt* s
             void Visit(SStmt_VarDecl* stmt) override { call(stmt); }
             void Visit(SStmt_If* stmt) override { call(stmt); }
             void Visit(SStmt_For* stmt) override { call(stmt); }
+            void Visit(SStmt_While* stmt) override { call(stmt); }
+            void Visit(SStmt_Switch* stmt) override { call(stmt); }
             void Visit(SStmt_Continue* stmt) override { call(stmt); }
             void Visit(SStmt_Break* stmt) override { call(stmt); }
             void Visit(SStmt_Return* stmt) override { call(stmt); }
@@ -501,6 +509,8 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStmt* s
             void Visit(SStmt_VarDecl* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_If* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_For* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_While* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Switch* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_Continue* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_Break* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_Return* stmt) override { result.emplace(call(stmt)); }
@@ -2352,18 +2362,60 @@ class SStmt_For
     : public SStmt
 {
 public:
+    std::optional<std::string> o_label;
     SForStmtInitializer* initializer;
     SExp* cond;
     SExp* cont;
     SEmbeddableStmt* body;
 
-    SYNTAX_API SStmt_For(SForStmtInitializer* initializer, SExp* cond, SExp* cont, SEmbeddableStmt* body);
+    SYNTAX_API SStmt_For(std::optional<std::string> o_label, SForStmtInitializer* initializer, SExp* cond, SExp* cont, SEmbeddableStmt* body);
     SStmt_For(const SStmt_For&) = delete;
     SYNTAX_API SStmt_For(SStmt_For&&) noexcept;
     SYNTAX_API virtual ~SStmt_For();
 
     SStmt_For& operator=(const SStmt_For& other) = delete;
     SYNTAX_API SStmt_For& operator=(SStmt_For&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
+
+};
+
+class SStmt_While
+    : public SStmt
+{
+public:
+    std::optional<std::string> o_label;
+    SExp* cond;
+    SEmbeddableStmt* body;
+
+    SYNTAX_API SStmt_While(std::optional<std::string> o_label, SExp* cond, SEmbeddableStmt* body);
+    SStmt_While(const SStmt_While&) = delete;
+    SYNTAX_API SStmt_While(SStmt_While&&) noexcept;
+    SYNTAX_API virtual ~SStmt_While();
+
+    SStmt_While& operator=(const SStmt_While& other) = delete;
+    SYNTAX_API SStmt_While& operator=(SStmt_While&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
+
+};
+
+class SStmt_Switch
+    : public SStmt
+{
+public:
+    std::optional<std::string> o_label;
+    SExp* value;
+
+    SYNTAX_API SStmt_Switch(std::optional<std::string> o_label, SExp* value);
+    SStmt_Switch(const SStmt_Switch&) = delete;
+    SYNTAX_API SStmt_Switch(SStmt_Switch&&) noexcept;
+    SYNTAX_API virtual ~SStmt_Switch();
+
+    SStmt_Switch& operator=(const SStmt_Switch& other) = delete;
+    SYNTAX_API SStmt_Switch& operator=(SStmt_Switch&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }

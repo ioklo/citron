@@ -5,6 +5,7 @@
 #include <optional>
 #include <expected>
 
+#include "Infra/SmallMap.h"
 #include "Logging/Diag.h"
 
 #include "MIR/MArgument.h"
@@ -60,6 +61,8 @@ private: // transaction
         size_t prevLambdaDeclsCount;
     };
     std::vector<TransactionInfo> transactionInfos;
+    SmallMap<std::string, size_t> namedLabels;
+    size_t labelCount;
 
 public:
     FuncContext();
@@ -68,6 +71,8 @@ public:
     void BeginTransaction();
     void CommitTransaction();
     void RollbackTransaction();
+
+    size_t AddNewLabelCore(std::optional<std::string>& o_label);
 
     virtual void BeginTransaction_FuncContext() = 0;
     virtual void CommitTransaction_FuncContext() = 0;

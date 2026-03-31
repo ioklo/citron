@@ -38,7 +38,10 @@ using namespace std;
 
 namespace Citron {
 
-FuncContext::FuncContext() = default;
+FuncContext::FuncContext()
+    : labelCount{0}
+{
+}
 
 NLambdaVarDecl* FuncContext::StageLambdaVar(RType* type, const RName& name, MArgument&& arg)
 {
@@ -69,6 +72,16 @@ void FuncContext::RollbackTransaction()
     transactionInfos.pop_back();
 
     RollbackTransaction_FuncContext();
+}
+
+size_t FuncContext::AddNewLabelCore(std::optional<std::string>& o_label)
+{
+    size_t newId = labelCount++;
+
+    if (o_label)
+        namedLabels.Add(*o_label, newId);
+
+    return newId;
 }
 
 //public void CommitLambdasToDeclSymbolTree()

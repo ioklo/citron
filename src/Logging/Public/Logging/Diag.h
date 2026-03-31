@@ -171,6 +171,7 @@ struct Error_IfTestStmt_CantDowncast : ErrorDiag { }; // A2301_IfTestStmt_CantDo
 struct Error_ForStmt_ConditionShouldBeBool : ErrorDiag { }; // A1101_ForStmt_ConditionShouldBeBool
 struct Error_ForStmt_ExpInitializerShouldBeAssignOrCall : ErrorDiag { }; // A1102_ForStmt_ExpInitializerShouldBeAssignOrCall
 struct Error_ForStmt_ContinueExpShouldBeAssignOrCall : ErrorDiag { }; // A1103_ForStmt_ContinueExpShouldBeAssignOrCall
+struct Error_WhileStmt_ConditionShouldBeBool : ErrorDiag { };
 struct Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType : ErrorDiag { }; // A1201_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType
 struct Error_ReturnStmt_SeqFuncShouldReturnVoid : ErrorDiag { }; // A1202_ReturnStmt_SeqFuncShouldReturnVoid
 struct Error_ReturnStmt_RefTargetIsNotLocation : ErrorDiag { }; // A1203_ReturnStmt_RefTargetIsNotLocation

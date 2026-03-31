@@ -193,6 +193,8 @@ struct SStmtToJsonVisitor
     ResultType Visit(SStmt_VarDecl* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_If* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_For* stmt) { return stmt->ToJson(); }
+    ResultType Visit(SStmt_While* stmt) { return stmt->ToJson(); }
+    ResultType Visit(SStmt_Switch* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_Continue* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_Break* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_Return* stmt) { return stmt->ToJson(); }
@@ -1195,8 +1197,8 @@ JsonItem SStmt_If::ToJson()
     };
 }
 
-SStmt_For::SStmt_For(SForStmtInitializer* initializer, SExp* cond, SExp* cont, SEmbeddableStmt* body)
-    : initializer(move(initializer)), cond(move(cond)), cont(move(cont)), body(move(body)) { }
+SStmt_For::SStmt_For(std::optional<std::string> o_label, SForStmtInitializer* initializer, SExp* cond, SExp* cont, SEmbeddableStmt* body)
+    : o_label(move(o_label)), initializer(move(initializer)), cond(move(cond)), cont(move(cont)), body(move(body)) { }
 
 SStmt_For::SStmt_For(SStmt_For&& other) noexcept = default;
 
@@ -1208,10 +1210,48 @@ JsonItem SStmt_For::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("SStmt_For") },
+        { "o_label", Citron::ToJson(o_label) },
         { "initializer", Citron::ToJson(initializer) },
         { "cond", Citron::ToJson(cond) },
         { "cont", Citron::ToJson(cont) },
         { "body", Citron::ToJson(body) },
+    };
+}
+
+SStmt_While::SStmt_While(std::optional<std::string> o_label, SExp* cond, SEmbeddableStmt* body)
+    : o_label(move(o_label)), cond(move(cond)), body(move(body)) { }
+
+SStmt_While::SStmt_While(SStmt_While&& other) noexcept = default;
+
+SStmt_While::~SStmt_While() = default;
+
+SStmt_While& SStmt_While::operator=(SStmt_While&& other) noexcept = default;
+
+JsonItem SStmt_While::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SStmt_While") },
+        { "o_label", Citron::ToJson(o_label) },
+        { "cond", Citron::ToJson(cond) },
+        { "body", Citron::ToJson(body) },
+    };
+}
+
+SStmt_Switch::SStmt_Switch(std::optional<std::string> o_label, SExp* value)
+    : o_label(move(o_label)), value(move(value)) { }
+
+SStmt_Switch::SStmt_Switch(SStmt_Switch&& other) noexcept = default;
+
+SStmt_Switch::~SStmt_Switch() = default;
+
+SStmt_Switch& SStmt_Switch::operator=(SStmt_Switch&& other) noexcept = default;
+
+JsonItem SStmt_Switch::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SStmt_Switch") },
+        { "o_label", Citron::ToJson(o_label) },
+        { "value", Citron::ToJson(value) },
     };
 }
 

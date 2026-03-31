@@ -4,12 +4,12 @@
 namespace Citron {
 
 class NFuncDecl;
-struct MStmt;
+struct MStmt_Scope;
 
 struct MFuncBody
 {
     NFuncDecl* nFuncDecl;
-    std::vector<MStmt*> stmts;
+    MStmt_Scope* body;
 };
 
 } // namespace Citron

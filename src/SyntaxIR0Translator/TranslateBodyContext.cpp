@@ -78,18 +78,20 @@ CheckEndReturnResult CheckEndReturn(NFuncDecl* nFuncDecl, vector<MStmt*>& mStmts
 expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(NFuncDecl* nFuncDecl, std::span<SStmt*> sStmts)
 {   
     auto tContext = MakeTranslationContexts(nFuncDecl, logger, rFactory, mFactory, srtFactory, binOpQueryService);
-    auto e_mStmts = TranslateSBodyToMStmts(sStmts, tContext);
-    RETURN_ON_ERROR(e_mStmts);
+    auto e_scope = TranslateScopedSStmtsToMStmt_Scope(sStmts, tContext);
+    RETURN_ON_ERROR(e_scope);
+
+    auto* scope = *e_scope;
 
     // 함수가 return이나 never를 리턴하는 함수로 끝맺지 않았을 경우, 리턴인자가 void인 경우 Return을 추가한다. 나머지는 에러
-    auto checkEndReturnResult = CheckEndReturn(nFuncDecl, *e_mStmts, *rFactory);
+    auto checkEndReturnResult = CheckEndReturn(nFuncDecl, scope->stmts, *rFactory);
 
     switch(checkEndReturnResult)
     {
     case CheckEndReturnResult::PutReturnVoid:
     {
         auto* mReturnStmt = mFactory->MakeMStmt<MStmt_Return>(nullopt);
-        e_mStmts->push_back(mReturnStmt);
+        scope->stmts.push_back(mReturnStmt);
         break;
     }
 
@@ -100,7 +102,7 @@ expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(NFuncDecl* nFuncDec
         break;
     }
 
-    return MFuncBody{nFuncDecl, *e_mStmts};
+    return MFuncBody{nFuncDecl, scope};
 }
 
 void TranslateBodyContext::MarkFailed()

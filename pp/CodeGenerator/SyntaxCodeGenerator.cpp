@@ -70,6 +70,8 @@ struct ToJsonVisitor {
                 "SStmt_VarDecl",
                 "SStmt_If",
                 "SStmt_For",
+                "SStmt_While",
+                "SStmt_Switch",
                 "SStmt_Continue",
                 "SStmt_Break",
                 "SStmt_Return",
@@ -351,6 +353,8 @@ struct ToJsonVisitor {
                 "SStmt_VarDecl",
                 "SStmt_If",
                 "SStmt_For",
+                "SStmt_While",
+                "SStmt_Switch",
                 "SStmt_Continue",
                 "SStmt_Break",
                 "SStmt_Return",
@@ -651,8 +655,8 @@ struct ToJsonVisitor {
 
         ClassInfo {
             .name = "SExp_Is",
-            .variantInterfaces { "SExp" },
-            .memberInfos {
+            .variantInterfaces{ "SExp" },
+            .memberInfos{
                 {.type = "SExp*", .memberVarName = "exp", .getterName = "GetExp" },
                 {.type = "STypeExp*", .memberVarName = "type", .getterName = "GetType" },
                 {.type = "std::optional<std::string>", .memberVarName = "o_bindName", .getterName = "GetBindName" },
@@ -662,7 +666,7 @@ struct ToJsonVisitor {
         ClassInfo {
             .name = "SExp_As",
             .variantInterfaces { "SExp" },
-            .memberInfos {
+            .memberInfos{
                 {.type = "SExp*", .memberVarName = "exp", .getterName = "GetExp" },
                 {.type = "STypeExp*", .memberVarName = "type", .getterName = "GetType" },
             },
@@ -965,10 +969,30 @@ struct ToJsonVisitor {
             .name = "SStmt_For",
             .variantInterfaces { "SStmt" },
             .memberInfos {
+                {.type = "std::optional<std::string>", .memberVarName = "o_label", .getterName = "GetLabel" },
                 {.type = "SForStmtInitializer*", .memberVarName = "initializer", .getterName = "GetInitializer" },
                 {.type = "SExp*", .memberVarName = "cond", .getterName = "GetCond" },
                 {.type = "SExp*", .memberVarName = "cont", .getterName = "GetCont" },
                 {.type = "SEmbeddableStmt*", .memberVarName = "body", .getterName = "GetBody" },
+            },
+        },
+
+        ClassInfo{
+            .name = "SStmt_While",
+            .variantInterfaces { "SStmt" },
+            .memberInfos {
+                {.type = "std::optional<std::string>", .memberVarName = "o_label", .getterName = "GetLabel" },
+                {.type = "SExp*", .memberVarName = "cond", .getterName = "GetCond" },
+                {.type = "SEmbeddableStmt*", .memberVarName = "body", .getterName = "GetBody" },
+            },
+        },
+
+        ClassInfo{
+            .name = "SStmt_Switch",
+            .variantInterfaces { "SStmt" },
+            .memberInfos {
+                {.type = "std::optional<std::string>", .memberVarName = "o_label", .getterName = "GetLabel" },
+                {.type = "SExp*", .memberVarName = "value", .getterName = "GetValue" }
             },
         },
 

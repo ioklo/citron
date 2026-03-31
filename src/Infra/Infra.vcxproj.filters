@@ -52,6 +52,9 @@
     <ClInclude Include="Public\Infra\Visitor.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Public\Infra\SmallMap.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Json.cpp" />

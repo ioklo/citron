@@ -8,6 +8,7 @@
 #include <expected>
 #include <cassert>
 
+#include "Infra/SmallMap.h"
 #include "RSymbol/RNames.h"
 
 #include "QIR/QFactory.h"
@@ -21,6 +22,7 @@ class RTypeArguments;
 struct QSlotInfo;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using DiagPtr = std::shared_ptr<struct Diag>;
+class QBodyContext;
 
 enum class QInst_IntrinsicKind;
 
@@ -45,18 +47,33 @@ struct QLocalInfo_RefPtr
 
 using QLocalInfo = std::variant<QLocalInfo_Var, QLocalInfo_RefAlias, QLocalInfo_RefPtr>;
 
+struct QCleanUpInfoKey_Return {};
+struct QCleanUpInfoKey_Continue { size_t labelId; };
+struct QCleanUpInfoKey_Break { size_t labelId; };
+
+using QCleanUpKind = std::variant<
+    QCleanUpInfoKey_Return,
+    QCleanUpInfoKey_Continue,
+    QCleanUpInfoKey_Break>;
+
+struct QCleanUpInfo
+{
+    size_t coveredSlots = 0; // 어느 슬롯까지 커버했는지 count, slots의 인덱스이다 [0, slots.size())
+    QBlock* recentCleanUpBlock = nullptr; // return시 정리 블록
+};
+
 struct QScope
 {
     bool childHasReturn = false; // 이 스코프의 child가 return을 갖고 있는가
     bool handleReturn = false;   // 이 스코프에서 return을 처리했다. 더이상 명령어가 나오면 안된다
 
+    std::optional<size_t> labelId; // continue, break에 필요하다
+
     // "a_16" -> slotIndex
     std::unordered_map<RName, QLocalInfo> localInfos;
     std::vector<size_t> slotIndices; // 이 스코프가 관리하는 slot
 
-    // 최근 return용 cleanUp블록
-    size_t coveredSlots = 0; // 어느 슬롯까지 커버했는지 count, slots의 인덱스이다 [0, slots.size())
-    QBlock* recentCleanUpForReturn = nullptr; // return시 정리 블록
+    SmallMap<QCleanUpKind, QCleanUpInfo> cleanUpInfos; // 이 스코프에서 관리하는 cleanUp 정보들. return/continue/break마다 하나씩 필요할 수 있다
 };
 
 struct QIntrinsicResultType_Slot { RType* type; };
@@ -64,6 +81,18 @@ struct QIntrinsicKindResult_Void {};
 using QIntrinsicResultType = std::variant<
     QIntrinsicResultType_Slot,
     QIntrinsicKindResult_Void>;
+
+// TODO: [38] break/continue에 label 지원
+struct QJumpBlockInfo_Loop { QBlock* contBlock; QBlock* breakBlock; };
+struct QJumpBlockInfo_Switch { QBlock* breakBlock; };
+using QJumpBlockInfo = std::variant<QJumpBlockInfo_Loop, QJumpBlockInfo_Switch>;
+
+struct QJumpBlockScopeGuard
+{
+    QBodyContext& context;
+    QJumpBlockScopeGuard(QJumpBlockInfo&& info, QBodyContext& context);
+    ~QJumpBlockScopeGuard();
+};
 
 class QBodyContext
 {
@@ -78,6 +107,8 @@ class QBodyContext
 
     QBlock* curBlock;
     std::vector<QBlock*> blocks;
+    std::vector<QJumpBlockInfo> jumpBlockInfos; // break, continue할 때 필요한 블록 정보들. 스코프가 바뀔 때마다 push/pop한다.
+    SmallMap<std::string, size_t> labelIds;
 
 public:
     QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType);
@@ -103,11 +134,13 @@ public:
     }
     void EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> o_dest, std::vector<QArg_Input>&& args);
     void EmitTermInst(QTermInst&& termInst);
-    
+
 private:
-    QBlock* MakeCleanUpForReturnBlock(size_t scopeIndex);
+    bool IsFinalBlock(QCleanUpKind kind, size_t scopeIndex);
+    QBlock* MakeCleanUpBlock(QCleanUpKind infoFor, size_t scopeIndex);
+    QBlock* MakeCleanUpForContinueBlock(size_t scopeIndex);
 public:
-    void EmitJumpToCleanUpForReturnBlock();
+    void EmitJumpToCleanUpBlock(QCleanUpKind kind);
 
 public:
     size_t GetTypeSize(RType* type);
@@ -138,6 +171,9 @@ public:
     void PushScope();
     void PopScope();
     void CleanUpScope();
+
+    void PushJumpBlockInfo(QJumpBlockInfo&& info) { jumpBlockInfos.push_back(std::move(info)); }
+    void PopJumpBlockInfo() { jumpBlockInfos.pop_back(); }
 
     void MarkReturnHandledOnCurScope();
     bool IsReturnHandledOnCurScope();

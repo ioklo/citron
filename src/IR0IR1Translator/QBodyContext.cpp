@@ -38,6 +38,17 @@ inline bool IsTerminator(QInst& inst)
 
 }
 
+QJumpBlockScopeGuard::QJumpBlockScopeGuard(QJumpBlockInfo&& info, QBodyContext& context)
+    : context{context}
+{
+    context.PushJumpBlockInfo(std::move(info));
+}
+
+QJumpBlockScopeGuard::~QJumpBlockScopeGuard()
+{
+    context.PopJumpBlockInfo();
+}
+
 QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType)
     : rFactory{rFactory}
     , qFactory{qFactory}
@@ -164,87 +175,104 @@ void QBodyContext::EmitTermInst(QTermInst&& termInst)
     curBlock = nullptr;
 }
 
-QBlock* QBodyContext::MakeCleanUpForReturnBlock(size_t scopeIndex)
+bool QBodyContext::IsFinalBlock(QCleanUpKind kind, size_t scopeIndex)
+{
+    return visit([this, scopeIndex](auto& kind) -> bool {
+        using T = remove_cvref_t<decltype(kind)>;
+        if constexpr (same_as<T, QCleanUpInfoKey_Return>)
+            return scopeIndex == 0;
+        else if constexpr (same_as<T, QCleanUpInfoKey_Continue>)
+            return scopes[scopeIndex].scopeLabelId == kind.labelId;
+        else if constexpr (same_as<T, QCleanUpInfoKey_Break>)
+            return scopes[scopeIndex].scopeLabelId == kind.labelId;
+        else static_assert(false);
+
+    }, kind);
+
+}
+
+QBlock* QBodyContext::MakeCleanUpBlock(QCleanUpKind kind, size_t scopeIndex)
 {
     auto& scope = scopes[scopeIndex];
+    auto& cleanUpInfo = scope.cleanUpInfos.FindOrAdd(kind);
 
     // 지금 처리해야 할 slots의 갯수가 크다면, scope.recentCleanUpForReturn 업데이트
-    if (scope.coveredSlots < scope.slotIndices.size())
+    if (cleanUpInfo.coveredSlots < scope.slotIndices.size())
     {
         // 1. cleanUp블록이 필요하지 않으면, 그냥 coveredSlots만 맞춰주고 리턴
 
         // TODO: String을 세는게 아니라, 각 타입의 소멸자가 있는지 검사
-        QBlock* newCleanUpForRet = nullptr;
-        for (size_t i = scope.coveredSlots, end = scope.slotIndices.size(); i < end; i++)
+        QBlock* newCleanUpBlock = nullptr;
+        for (size_t i = cleanUpInfo.coveredSlots, end = scope.slotIndices.size(); i < end; i++)
         {
             size_t slotIndex = scope.slotIndices[i];
             if (slotInfos[slotIndex].type == GetStringType())
             {
-                if (newCleanUpForRet == nullptr)
-                    newCleanUpForRet = AddBlock("cleanUpForRet"); // TODO: 뒤에 디버그용 번호 붙이기
+                if (newCleanUpBlock == nullptr)
+                    newCleanUpBlock = AddBlock("cleanUp"); // TODO: 뒤에 디버그용 번호 붙이기
 
                 auto ptrSlotIndex = NewSlot(GetStringType());
-                newCleanUpForRet->EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{slotIndex}});
-                newCleanUpForRet->EmitInst(QInst_Intrinsic{QInst_IntrinsicKind::Dtor_StringPtr_Void, nullopt, {QArg_Slot{ptrSlotIndex}}});
+                newCleanUpBlock->EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{slotIndex}});
+                newCleanUpBlock->EmitInst(QInst_Intrinsic{QInst_IntrinsicKind::Dtor_StringPtr_Void, nullopt, {QArg_Slot{ptrSlotIndex}}});
             }
         }
 
-        scope.coveredSlots = scope.slotIndices.size();
+        cleanUpInfo.coveredSlots = scope.slotIndices.size();
 
-        if (newCleanUpForRet)
+        if (newCleanUpBlock)
         {
-            if (scope.recentCleanUpForReturn)
+            if (cleanUpInfo.recentCleanUpBlock)
             {
-                newCleanUpForRet->EmitInst(QInst_Jump{scope.recentCleanUpForReturn});
-                scope.recentCleanUpForReturn = newCleanUpForRet;
+                newCleanUpBlock->EmitInst(QInst_Jump{cleanUpInfo.recentCleanUpBlock});
+                cleanUpInfo.recentCleanUpBlock = newCleanUpBlock;
             }
             else
             {
-                if (scopeIndex != 0)
+                if (!IsFinalBlock(kind, scopeIndex))
                 {
-                    auto* parentCleanUpForRet = MakeCleanUpForReturnBlock(scopeIndex - 1);
-                    newCleanUpForRet->EmitInst(QInst_Jump{parentCleanUpForRet});
-                    scope.recentCleanUpForReturn = newCleanUpForRet;
+                    auto* parentCleanUpForRet = MakeCleanUpBlock(kind, scopeIndex - 1);
+                    newCleanUpBlock->EmitInst(QInst_Jump{parentCleanUpForRet});
+                    cleanUpInfo.recentCleanUpBlock = newCleanUpBlock;
                 }
                 else // 0이면?
                 {
                     if (o_retSlotIndex)
-                        newCleanUpForRet->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].type, QArg_Slot{*o_retSlotIndex}}});
+                        newCleanUpBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].type, QArg_Slot{*o_retSlotIndex}}});
                     else
-                        newCleanUpForRet->EmitInst(QInst_Return{});
+                        newCleanUpBlock->EmitInst(QInst_Return{});
 
-                    scope.recentCleanUpForReturn = newCleanUpForRet;
+                    cleanUpInfo.recentCleanUpBlock = newCleanUpBlock;
                 }
             }
         }
     }
-    
-    if (scope.recentCleanUpForReturn)
-        return scope.recentCleanUpForReturn;
 
-    if (scopeIndex != 0)
+    if (cleanUpInfo.recentCleanUpBlock)
+        return cleanUpInfo.recentCleanUpBlock;
+
+    if (!IsFinalBlock(kind, scopeIndex))
     {
-        return MakeCleanUpForReturnBlock(scopeIndex - 1);
+        return MakeCleanUpBlock(kind, scopeIndex - 1);
     }
     else // 0이면?
     {
         // 바로 리턴 블록 생성
-        auto* retBlock = AddBlock("cleanUpForRet");
+        auto* retBlock = AddBlock("cleanUp");
         if (o_retSlotIndex)
             retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].type, QArg_Slot{*o_retSlotIndex}}});
         else
             retBlock->EmitInst(QInst_Return{});
-        scope.recentCleanUpForReturn = retBlock;
+        cleanUpInfo.recentCleanUpBlock = retBlock;
         return retBlock;
     }
 }
 
-void QBodyContext::EmitJumpToCleanUpForReturnBlock()
+void QBodyContext::EmitJumpToCleanUpBlock(QCleanUpKind kind)
 {
     assert(curBlock);
 
-    auto* cleanUpForRetBlock = MakeCleanUpForReturnBlock(scopes.size() - 1);
-    curBlock->EmitInst(QInst_Jump{cleanUpForRetBlock});
+    auto* cleanUpBlock = MakeCleanUpBlock(kind, scopes.size() - 1);
+    curBlock->EmitInst(QInst_Jump{cleanUpBlock});
     curBlock = nullptr;
 }
 

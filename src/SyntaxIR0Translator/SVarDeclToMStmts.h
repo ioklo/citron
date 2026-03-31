@@ -13,6 +13,6 @@ namespace Citron {
 struct MStmt;
 struct TranslationContexts;
 
-std::expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>* outStmts, SVarDecl* varDecl, TranslationContexts& contexts);
+std::expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>& outStmts, SVarDecl* varDecl, TranslationContexts& contexts);
 
 } // namespace Citron

@@ -48,10 +48,10 @@ struct NLambdaDeclAndArgs
     std::vector<MArgument> args;   // ctor args
 };
 
-expected<void, DiagPtr> TranslateSStmtToMStmts(std::vector<MStmt*>* outStmts, SStmt* sStmt, TranslationContexts& contexts);
-expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(std::vector<MStmt*>* outStmts, SEmbeddableStmt* embedStmt, TranslationContexts& contexts);
-expected<vector<MStmt*>, DiagPtr> TranslateSEmbeddableStmtToMStmts(SEmbeddableStmt* embedStmt, TranslationContexts& contexts);
-expected<vector<MStmt*>, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, TranslationContexts& contexts);
+expected<void, DiagPtr> TranslateSStmtToMStmts(std::vector<MStmt*>& outStmts, SStmt* sStmt, TranslationContexts& contexts);
+expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmbeddableStmt* embedStmt, TranslationContexts& contexts);
+expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(std::vector<MStmt*>& outStmts, SEmbeddableStmt* embedStmt, TranslationContexts& contexts);
+expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, vector<MStmt*>& outStmts, TranslationContexts& contexts);
 expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContexts& contexts);
 expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmt*>& sBody, TranslationContexts& contexts);
 
@@ -80,38 +80,30 @@ bool IsTopLevelInitExp(MInitExp* initExp)
     return dynamic_cast<MInitExp_Call*>(initExp) != nullptr;
 }
 
-class SStmtToMStmtsTranslator
+struct SStmtToMStmtsTranslator
 {
-public:
     using ResultType = expected<void, DiagPtr>;
 
-private:
-    vector<MStmt*>* outStmts;
+    vector<MStmt*>& outStmts;
     TranslationContexts& contexts;
 
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, MStmt>
     ResultType Value(TArgs&&... args)
     {
-        outStmts->push_back(contexts.mFactory->MakeMStmt<TValue>(forward<TArgs>(args)...));
+        outStmts.push_back(contexts.mFactory->MakeMStmt<TValue>(forward<TArgs>(args)...));
         return {};
     }
 
     ResultType Value(MStmt* stmt)
     {
-        outStmts->push_back(stmt);
+        outStmts.push_back(stmt);
         return {};
     }
 
     ResultType Values(vector<MStmt*>&& stmts)
     {
-        outStmts->insert(outStmts->end(), make_move_iterator(stmts.begin()), make_move_iterator(stmts.end()));
+        outStmts.insert(outStmts.end(), make_move_iterator(stmts.begin()), make_move_iterator(stmts.end()));
         return {};
-    }
-
-public:
-    SStmtToMStmtsTranslator(vector<MStmt*>* outStmts, TranslationContexts& contexts)
-        : outStmts{outStmts}, contexts{contexts}
-    {
     }
 
     ResultType Visit(SStmt_Command* stmt) 
@@ -156,50 +148,28 @@ public:
         if (condType == boolType)
             return Error<Error_IfStmt_ConditionShouldBeBool>();
 
-        auto nestedContext = MakeTranslationContexts_NestedScope(contexts);
+        auto e_trueBody = TranslateScopedSEmbeddableStmtToMStmt_Scope(stmt->body, contexts);
+        RETURN_ON_ERROR(e_trueBody);
         
-        auto e_bodyStmts = TranslateSEmbeddableStmtToMStmts(stmt->body, nestedContext);
-        RETURN_ON_ERROR(e_bodyStmts);
-
-        vector<MStmt*> elseStmts;
         if (stmt->elseBody != nullptr)
-        {
-            auto elseContext = MakeTranslationContexts_NestedScope(contexts);
-            
-            auto e_elseResult = TranslateSEmbeddableStmtToMStmts(stmt->elseBody, elseContext);
-            RETURN_ON_ERROR(e_elseResult);
-
-            elseStmts = move(*e_elseResult);
+        {   
+            auto e_falseBody = TranslateScopedSEmbeddableStmtToMStmt_Scope(stmt->elseBody, contexts);
+            RETURN_ON_ERROR(e_falseBody);
+            return Value<MStmt_If>(move(*e_mCond), *e_trueBody, *e_falseBody);
         }
-
-        return Value<MStmt_If>(move(*e_mCond), move(*e_bodyStmts), move(elseStmts));
+        else
+        {
+            return Value<MStmt_If>(move(*e_mCond), *e_trueBody, /*falseBody*/nullptr);
+        }
     }
     
-    ResultType Visit(SStmt_For* stmt) 
+    expected<MStmt_For*, DiagPtr> MakeInnerFor(SStmt_For* stmt, TranslationContexts& forOuterContexts)
     {
-        // for(
-        //     int i = 0; <- forStmtContexts 
-        //     i < 20; <- condition
-        //     i++)
-        // {
-        // 
-        // }
-        auto forStmtContexts = MakeTranslationContexts_NestedScope(contexts); // prelude는 loop가 아니다
-
-        vector<MStmt*> initStmts;
-        if (stmt->initializer)
-        {   
-            auto e_initResult = TranslateSForStmtInitializerToMStmts(stmt->initializer, forStmtContexts);
-            RETURN_ON_ERROR(e_initResult);
-
-            initStmts = move(*e_initResult);
-        }
-
         optional<MRead> mCond;
         if (stmt->cond)
         {
             auto boolType = contexts.rFactory->MakeBoolType();
-            auto e_mCond = TranslateSExpToMRead(stmt->cond, /*hintType*/boolType, forStmtContexts);
+            auto e_mCond = TranslateSExpToMRead(stmt->cond, /*hintType*/boolType, forOuterContexts);
             RETURN_ON_ERROR(e_mCond);
 
             if (GetType(*e_mCond, &*contexts.rFactory) != boolType)
@@ -218,18 +188,98 @@ public:
         {
             // for(;;i++)
             DesignatedDiagnostic<Error_ForStmt_ContinueExpShouldBeAssignOrCall> designatedDiag;
-            auto e_contResult = TranslateSExpToMStmt(stmt->cont, /*hintType*/nullptr, &designatedDiag, forStmtContexts);
+            auto e_contResult = TranslateSExpToMStmt(stmt->cont, /*hintType*/nullptr, &designatedDiag, forOuterContexts);
             RETURN_ON_ERROR(e_contResult);
 
             contStmt = *e_contResult;
         }
 
-        auto bodyContext = MakeTranslationContexts_NestedLoop(forStmtContexts);
-        
-        auto e_bodyStmts = TranslateSEmbeddableStmtToMStmts(stmt->body, bodyContext);
+        auto forInnerContexts = MakeTranslationContexts_NestedLoop(forOuterContexts);
+
+        // TODO: label
+        auto e_bodyStmts = TranslateScopedSEmbeddableStmtToMStmt_Scope(stmt->body, forInnerContexts);
         RETURN_ON_ERROR(e_bodyStmts);
 
-        return Value<MStmt_For>(move(initStmts), move(mCond), contStmt, move(*e_bodyStmts));
+        return forOuterContexts.mFactory->MakeMStmt<MStmt_For>(move(mCond), contStmt, move(*e_bodyStmts));
+    }
+    
+    ResultType Visit(SStmt_For* stmt) 
+    {
+        // label: for(int i = 0; i < 20; i++) { }
+        // label은 for에 대한 label이라기 보다, for 본문에 대한 label이다.
+        // scope는 다음과 같다 
+        // {
+        //     int i;
+        //     { // <- label scope (
+        //         i < 20;
+        //         body    
+        //         i++;
+        //     }
+        // }
+
+        // for(
+        //     int i = 0; <- forStmtContexts 
+        //     i < 20; <- condition
+        //     i++)
+        // {
+        // 
+        // }
+        if (stmt->initializer)
+        {
+            vector<MStmt*> outerStmts;
+            auto forOuterContexts = MakeTranslationContexts_NestedScope(contexts);
+            
+            auto e_initResult = TranslateSForStmtInitializerToMStmts(stmt->initializer, outerStmts, forOuterContexts);
+            RETURN_ON_ERROR(e_initResult);
+
+            auto e_innerFor = MakeInnerFor(stmt, forOuterContexts);
+            RETURN_ON_ERROR(e_innerFor);
+            
+            outerStmts.push_back(*e_innerFor);
+            return Value<MStmt_Scope>(move(outerStmts));
+        }
+        else
+        {
+            auto e_innerFor = MakeInnerFor(stmt, contexts);
+            RETURN_ON_ERROR(e_innerFor);
+
+            return Value(*e_innerFor);
+        }
+    }
+
+    ResultType Visit(SStmt_While* stmt) 
+    {
+        optional<MRead> mCond;
+        if (stmt->cond)
+        {
+            auto boolType = contexts.rFactory->MakeBoolType();
+            auto e_mCond = TranslateSExpToMRead(stmt->cond, /*hintType*/boolType, contexts);
+            RETURN_ON_ERROR(e_mCond);
+
+            if (GetType(*e_mCond, &*contexts.rFactory) != boolType)
+                return Error<Error_WhileStmt_ConditionShouldBeBool>();
+
+            mCond = move(*e_mCond);
+
+            // TODO: [47] CastMExp의 리턴값 수정, NBC의 암시적 Cast구현하기
+            // e_rawCond = CastMExp(*e_rawCond, boolType, contexts);
+            // RETURN_ON_ERROR(e_rawCond);
+            // condExp = *e_rawCond;
+        }
+        
+        auto whileInnerContexts = MakeTranslationContexts_NestedLoop(contexts);
+
+        // TODO: label
+        auto e_bodyStmts = TranslateScopedSEmbeddableStmtToMStmt_Scope(stmt->body, whileInnerContexts);
+        RETURN_ON_ERROR(e_bodyStmts);
+
+        return Value<MStmt_While>(move(mCond), move(*e_bodyStmts));
+    }
+
+    ResultType Visit(SStmt_Switch* stmt)
+    {
+        // TODO: [60] switch 구현
+        throw NotImplementedException{};
     }
 
     ResultType Visit(SStmt_Continue* stmt)
@@ -347,7 +397,7 @@ public:
         vector<MStmt*> builder;
         for(auto* stmt : stmt->stmts)
         {
-            auto e_stmtResult = TranslateSStmtToMStmts(&builder, stmt, blockContext);
+            auto e_stmtResult = TranslateSStmtToMStmts(builder, stmt, blockContext);
             if (!e_stmtResult)
             {
                 diags.push_back(move(e_stmtResult).error());
@@ -356,7 +406,7 @@ public:
         }
         
         if (!diags.empty()) return Error<AggregateDiag>(move(diags));
-        return Value<MStmt_Block>(move(builder));
+        return Value<MStmt_Scope>(move(builder));
     }
 
     ResultType Visit(SStmt_Blank* stmt) 
@@ -383,12 +433,11 @@ public:
     }
 
     ResultType Visit(SStmt_Await* stmt) 
-    {
-        auto newContext = MakeTranslationContexts_NestedScope(contexts);
-        auto e_body = TranslateSBodyToMStmts(stmt->body, newContext);
+    {   
+        auto e_body = TranslateScopedSStmtsToMStmt_Scope(stmt->body, contexts);
         RETURN_ON_ERROR(e_body);
 
-        return Value<MStmt_Await>(move(*e_body));
+        return Value<MStmt_Await>(*e_body);
     }
 
     ResultType Visit(SStmt_Async* stmt) 
@@ -665,12 +714,12 @@ public:
 
         //            if (!oCastInfo)
         //            {
-        //                outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_Foreach>(*e_enumerator, *e_itemType, RName_Normal(sStmt->varName), nextExp, move(*e_body)));
+        //                outStmts.push_back(contexts.mFactory->MakeMStmt<MStmt_Foreach>(*e_enumerator, *e_itemType, RName_Normal(sStmt->varName), nextExp, move(*e_body)));
         //            }
         //            else
         //            {
         //                auto& [rawItemType, castExp] = *oCastInfo;
-        //                outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_ForeachCast>(*e_enumerator, *e_itemType, RName_Normal(sStmt->varName), rawItemType, nextExp, castExp, move(*e_body)));
+        //                outStmts.push_back(contexts.mFactory->MakeMStmt<MStmt_ForeachCast>(*e_enumerator, *e_itemType, RName_Normal(sStmt->varName), rawItemType, nextExp, castExp, move(*e_body)));
         //            }
         //        }
         //        else // var 일 경우
@@ -683,7 +732,7 @@ public:
         //            auto e_body = MakeBody(itemVarType);
         //            RETURN_ON_ERROR(e_body);
 
-        //            outStmts->push_back(contexts.mFactory->MakeMStmt<MStmt_Foreach>(*e_enumerator, itemVarType, RName_Normal(sStmt->varName), *e_nextExp, move(*e_body)));
+        //            outStmts.push_back(contexts.mFactory->MakeMStmt<MStmt_Foreach>(*e_enumerator, itemVarType, RName_Normal(sStmt->varName), *e_nextExp, move(*e_body)));
         //        }
 
         //        return {};
@@ -738,29 +787,22 @@ public:
     }
 };
 
-expected<void, DiagPtr> TranslateSStmtToMStmts(vector<MStmt*>* outStmts, SStmt* sStmt, TranslationContexts& contexts)
+expected<void, DiagPtr> TranslateSStmtToMStmts(vector<MStmt*>& outStmts, SStmt* sStmt, TranslationContexts& contexts)
 {
     SStmtToMStmtsTranslator translator{outStmts, contexts};
     return Accept(translator, sStmt);
 }
 
-expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(vector<MStmt*>* outStmts, SEmbeddableStmt* embedStmt, TranslationContexts& contexts)
+expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(vector<MStmt*>& outStmts, SEmbeddableStmt* embedStmt, TranslationContexts& contexts)
 {
     // if (...) 'stmt'
     // if (...) '{ stmt... }' 를 받는다
-    class EmbeddableStmtTranslator
+    struct EmbeddableStmtTranslator
     {
-    public:
         using ResultType = expected<void, DiagPtr>;
-        vector<MStmt*>* outStmts;
+        vector<MStmt*>& outStmts;
         TranslationContexts& contexts;
-
-    public:
-        EmbeddableStmtTranslator(vector<MStmt*>* outStmts, TranslationContexts& contexts)
-            : outStmts{outStmts}, contexts{contexts}
-        {
-        }
-
+    
         ResultType Visit(SEmbeddableStmt_Single* stmt)
         {
             // TODO: VarDecl은 등장하면 에러를 내도록 한다
@@ -771,7 +813,7 @@ expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(vector<MStmt*>* outStmt
 
         ResultType Visit(SEmbeddableStmt_Block* stmt)
         {
-            return TranslateSBodyToMStmts(outStmts, stmt->stmts, contexts);
+            return TranslateSStmtsToMStmts(outStmts, stmt->stmts, contexts);
         }
     };
 
@@ -779,29 +821,25 @@ expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(vector<MStmt*>* outStmt
     return Accept(translator, embedStmt);
 }
 
-expected<vector<MStmt*>, DiagPtr> TranslateSEmbeddableStmtToMStmts(SEmbeddableStmt* embedStmt, TranslationContexts& contexts)
+expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmbeddableStmt* embedStmt, TranslationContexts& contexts)
 {
+    auto newContexts = MakeTranslationContexts_NestedScope(contexts);
+
     vector<MStmt*> stmts;
-    auto e_result = TranslateSEmbeddableStmtToMStmts(&stmts, embedStmt, contexts);
+    auto e_result = TranslateSEmbeddableStmtToMStmts(stmts, embedStmt, newContexts);
     RETURN_ON_ERROR(e_result);
-    return stmts;
+
+    return newContexts.mFactory->MakeMStmt<MStmt_Scope>(move(stmts));
 }
 
-expected<vector<MStmt*>, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, TranslationContexts& contexts)
+expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, vector<MStmt*>& outStmts, TranslationContexts& contexts)
 {
-    class ForInitTranslator
+    struct ForInitTranslator
     {
-    public:
-        using ResultType = expected<vector<MStmt*>, DiagPtr>;
+        using ResultType = expected<void, DiagPtr>;
 
-    private:
+        vector<MStmt*>& outStmts;
         TranslationContexts& contexts;
-
-    public:
-        ForInitTranslator(TranslationContexts& contexts)
-            : contexts{contexts}
-        {
-        }
 
         ResultType Visit(SForStmtInitializer_Exp* forInit)
         {
@@ -809,20 +847,20 @@ expected<vector<MStmt*>, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtI
             auto e_stmt = TranslateSExpToMStmt(forInit->exp, /*hintType*/nullptr, &designatedDiag, contexts);
             RETURN_ON_ERROR(e_stmt);
 
-            return vector<MStmt*>{*e_stmt};
+            outStmts.push_back(*e_stmt);
+            return {};
         }
 
         ResultType Visit(SForStmtInitializer_VarDecl* forInit)
         {   
-            vector<MStmt*> stmts;
-            auto e_stmtsResult = TranslateSVarDeclToMStmts(&stmts, &forInit->varDecl, contexts);
+            auto e_stmtsResult = TranslateSVarDeclToMStmts(outStmts, &forInit->varDecl, contexts);
             RETURN_ON_ERROR(e_stmtsResult);
 
-            return std::move(stmts); // for making ResultType
+            return {};
         }
     };
 
-    ForInitTranslator translator{contexts};
+    ForInitTranslator translator{outStmts, contexts};
     return Accept(translator, forInit);
 }
 
@@ -944,7 +982,7 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType
     }
 
     vector<MStmt*> rBody;
-    auto e_rBodyResult = TranslateSBodyToMStmts(&rBody, sBody, newContexts);
+    auto e_rBodyResult = TranslateSStmtsToMStmts(rBody, sBody, newContexts);
     RETURN_ON_ERROR(e_rBodyResult);
 
     // body분석을 했던것을 토대로 캡쳐한 변수들을 LambdaVarDecl로 만들고, 현재 context에서 전달할 argument로 만든다
@@ -953,25 +991,25 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType
 
 } // namespace 
 
-expected<void, DiagPtr> TranslateSBodyToMStmts(vector<MStmt*>* outBody, span<SStmt*> sStmts, TranslationContexts& contexts)
+expected<void, DiagPtr> TranslateSStmtsToMStmts(vector<MStmt*>& outBody, span<SStmt*> sStmts, TranslationContexts& contexts)
 {
     for(auto* sStmt : sStmts)
     {
-        SStmtToMStmtsTranslator translator{outBody, contexts};
-        auto e_result = Accept(translator, sStmt);
+        auto e_result = TranslateSStmtToMStmts(outBody, sStmt, contexts);
         RETURN_ON_ERROR(e_result);
     }
 
     return {};
 }
 
-expected<vector<MStmt*>, DiagPtr> TranslateSBodyToMStmts(span<SStmt*> sStmts, TranslationContexts& contexts)
+expected<MStmt_Scope*, DiagPtr> TranslateScopedSStmtsToMStmt_Scope(span<SStmt*> sStmts, TranslationContexts& contexts)
 {
-    vector<MStmt*> body;
-    auto e_result = TranslateSBodyToMStmts(&body, sStmts, contexts);
+    auto innerContexts = MakeTranslationContexts_NestedScope(contexts);
+    vector<MStmt*> mStmts;
+    auto e_result = TranslateSStmtsToMStmts(mStmts, sStmts, innerContexts);
     RETURN_ON_ERROR(e_result);
-    return body;
-}
 
+    return contexts.mFactory->MakeMStmt<MStmt_Scope>(move(mStmts));
+}
 
 }

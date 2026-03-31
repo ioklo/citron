@@ -92,7 +92,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
         for (auto* mStmt : mFuncBody.stmts)
         {
-            auto e_result = TranslateMStmtToQInsts(mStmt, contexts);
+            auto e_result = TranslateMStmt_ScopeToQInsts(mStmt, contexts);
             RETURN_ON_ERROR(e_result);
         }
     }

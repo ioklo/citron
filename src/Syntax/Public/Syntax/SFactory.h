@@ -118,6 +118,8 @@ public:
     MAKE(SStmt_VarDecl)
     MAKE(SStmt_If)
     MAKE(SStmt_For)
+    MAKE(SStmt_While)
+    MAKE(SStmt_Switch)
     MAKE(SStmt_Continue)
     MAKE(SStmt_Break)
     MAKE(SStmt_Return)

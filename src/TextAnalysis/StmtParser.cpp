@@ -7,6 +7,7 @@
 #include <unicode/uchar.h>
 
 #include "Infra/Ptr.h"
+#include "Infra/Exceptions.h"
 #include "Syntax/Syntax.h"
 #include "Syntax/Tokens.h"
 #include "Lexer.h"
@@ -136,9 +137,24 @@ SForStmtInitializer* ParseForStmtInitializer(Lexer* lexer, SFactory& factory)
     return nullptr;
 }
 
+optional<string> ParseLabel(Lexer* lexer)
+{
+    Lexer curLexer{*lexer};
+
+    auto o_labelToken = Accept<IdentifierToken>(&curLexer);
+    if (!o_labelToken) return nullopt;
+    if (!Accept<ColonToken>(&curLexer)) return nullopt;
+
+    *lexer = move(curLexer);
+    return o_labelToken->text;
+}
+
 SStmt_For* ParseForStmt(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
+
+    // optional label
+    auto o_label = ParseLabel(&curLexer);
 
     if (!Accept<ForToken>(&curLexer))
         return nullptr;
@@ -169,7 +185,53 @@ SStmt_For* ParseForStmt(Lexer* lexer, SFactory& factory)
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSStmt_For(initializer, cond, cont, bodyStmt);
+    return factory.MakeSStmt_For(o_label, initializer, cond, cont, bodyStmt);
+}
+
+SStmt_While* ParseWhileStmt(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer = *lexer;
+
+    // optional label
+    auto o_label = ParseLabel(&curLexer);
+
+    if (!Accept<WhileToken>(&curLexer))
+        return nullptr;
+
+    if (!Accept<LParenToken>(&curLexer))
+        return nullptr;
+
+    // TODO: 이 CondExp의 끝은 ';' 이다
+    auto* cond = ParseExp(&curLexer, factory);
+
+    if (!Accept<RParenToken>(&curLexer))
+        return nullptr;
+
+    auto* bodyStmt = ParseEmbeddableStmt(&curLexer, factory);
+    if (!bodyStmt)
+        return nullptr;
+
+    *lexer = move(curLexer);
+    return factory.MakeSStmt_While(o_label, cond, bodyStmt);
+}
+
+// switch(exp) { case pattern: single-stmt; case pattern: { stmts; } default: {} }
+SStmt_Switch* ParseSwitchStmt(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer = *lexer;
+
+    auto o_label = ParseLabel(&curLexer);
+
+    if (!Accept<SwitchToken>(&curLexer))
+        return nullptr;
+
+    if (!Accept<LParenToken>(&curLexer))
+        return nullptr;
+
+    auto* target = ParseExp(&curLexer, factory);
+
+    // TODO: [60] switch 구현
+    throw NotImplementedException{};
 }
 
 SStmt_Continue* ParseContinueStmt(Lexer* lexer, SFactory& factory)

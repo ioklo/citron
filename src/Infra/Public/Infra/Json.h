@@ -137,7 +137,7 @@ inline JsonItem ToJson(std::string& s)
 template<typename T>
 JsonItem ToJson(T&& t)
 {
-    return ToJson(t);
+    return ToJson(std::forward<T>(t));
 }
 
 template<typename TElem>

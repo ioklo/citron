@@ -35,7 +35,7 @@ struct VarDeclElemTranslator
 {
     using ResultType = expected<void, DiagPtr>;
 
-    vector<MStmt*>* outStmts;
+    vector<MStmt*>& outStmts;
     span<SVarDeclElement> elems;
     TranslationContexts& contexts;
 
@@ -111,7 +111,7 @@ struct VarDeclElemTranslator
     {
         auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rType, name, move(init));
         contexts.scopeContext->AddLocalVarInfo(rType, name);
-        outStmts->push_back(mStmt);
+        outStmts.push_back(mStmt);
     }
 
     void AddLocalRef(RType* rType, const RName& name, MLoc* mLoc)
@@ -119,7 +119,7 @@ struct VarDeclElemTranslator
         auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalRefDecl>(rType, name, mLoc);
 
         contexts.scopeContext->AddLocalRefInfo(rType, name);
-        outStmts->push_back(mStmt);
+        outStmts.push_back(mStmt);
     }
 
     // var x = ...
@@ -302,7 +302,7 @@ struct VarDeclElemTranslator
                     // TODO: [59] uninitialized 분석
                     auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(declType, varName, MStmt_LocalVarDeclInit_Uninit{});
                     contexts.scopeContext->AddLocalVarInfo(declType, varName);
-                    outStmts->push_back(mStmt);
+                    outStmts.push_back(mStmt);
                     return {};
                 }
                 else static_assert(false);
@@ -317,7 +317,7 @@ struct VarDeclElemTranslator
 
 } // namespace
 
-expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>* outStmts, SVarDecl* varDecl, TranslationContexts& contexts)
+expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>& outStmts, SVarDecl* varDecl, TranslationContexts& contexts)
 {
     VarDeclElemTranslator translator{outStmts, varDecl->elements, contexts};
     return Accept(translator, varDecl->type);

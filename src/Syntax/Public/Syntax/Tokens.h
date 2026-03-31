@@ -44,6 +44,9 @@ TOKEN_DEF(TildeToken, L"~") // ~
 TOKEN_DEF(IfToken, L"if")
 TOKEN_DEF(ElseToken, L"else")
 TOKEN_DEF(ForToken, L"for")
+TOKEN_DEF(WhileToken, L"while")
+TOKEN_DEF(SwitchToken, L"switch")
+TOKEN_DEF(CaseToken, L"case")
 TOKEN_DEF(ContinueToken, L"continue")
 TOKEN_DEF(BreakToken, L"break")
 TOKEN_DEF(TaskToken, L"task")
@@ -148,6 +151,9 @@ using Token = std::variant<
     IfToken,
     ElseToken,
     ForToken,
+    WhileToken,
+    SwitchToken,
+    CaseToken,
     ContinueToken,
     BreakToken,
     TaskToken,

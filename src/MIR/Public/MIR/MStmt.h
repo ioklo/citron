@@ -27,10 +27,23 @@ class NStructCtorDecl;
 struct MLoc;
 
 struct MStmtVisitor;
+
 struct MStmt
 {
     virtual ~MStmt() {}
     virtual void Accept(MStmtVisitor& visitor) = 0;
+};
+
+struct MStmt_Scope : MStmt
+{
+    std::vector<MStmt*> stmts;
+
+public:
+    MStmt_Scope(std::vector<MStmt*>&& stmts)
+        : stmts{std::move(stmts)}
+    {
+    }
+    MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
 struct MStmt_Command : MStmt
@@ -75,29 +88,42 @@ public:
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
+// 
 struct MStmt_If : MStmt
 {
     MRead cond; // BC
-    std::vector<MStmt*> body;
-    std::vector<MStmt*> elseBody;
 
-    MStmt_If(MRead&& cond, std::vector<MStmt*>&& body, std::vector<MStmt*>&& elseBody)
-        : cond{std::move(cond)}, body{std::move(body)}, elseBody{std::move(elseBody)}
+    MStmt_Scope* trueBody;
+    MStmt_Scope* falseBody;
+
+    MStmt_If(MRead&& cond, MStmt_Scope* trueBody, MStmt_Scope* falseBody)
+        : cond{std::move(cond)}, trueBody{trueBody}, falseBody{falseBody}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
 struct MStmt_For : MStmt
-{
-    std::vector<MStmt*> initStmts; // LocalVarDecl, LocalVarRef
+{   
     std::optional<MRead> cond; // BC
     MStmt* contStmt;
-    std::vector<MStmt*> body;
+    MStmt_Scope* body;
 
 public:
-    MStmt_For(std::vector<MStmt*>&& initStmts, std::optional<MRead>&& cond, MStmt* contStmt, std::vector<MStmt*>&& body)
-        : initStmts{std::move(initStmts)}, cond{std::move(cond)}, contStmt{contStmt}, body{std::move(body)}
+    MStmt_For(std::optional<MRead>&& cond, MStmt* contStmt, MStmt_Scope* body)
+        : cond{std::move(cond)}, contStmt{contStmt}, body{body}
     { }
+    MIR_API void Accept(MStmtVisitor& visitor) override;
+};
+
+struct MStmt_While : MStmt
+{
+    std::optional<MRead> cond; // BC
+    MStmt_Scope* body;
+
+    MStmt_While(std::optional<MRead>&& cond, MStmt_Scope* body)
+        : cond{std::move(cond)}, body{body}
+    {
+    }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
@@ -118,17 +144,6 @@ struct MStmt_Return : MStmt
 public:
     MStmt_Return(std::optional<MCreate>&& create)
         : create{std::move(create)}
-    { }
-    MIR_API void Accept(MStmtVisitor& visitor) override;
-};
-
-struct MStmt_Block : MStmt
-{
-    std::vector<MStmt*> stmts;
-
-public:
-    MStmt_Block(std::vector<MStmt*>&& stmts)
-        : stmts(std::move(stmts))
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -164,11 +179,11 @@ public:
 
 struct MStmt_Await : MStmt
 {
-    std::vector<MStmt*> body;
+    MStmt_Scope* body;
 
 public:
-    MStmt_Await(std::vector<MStmt*>&& body)
-        : body{std::move(body)} 
+    MStmt_Await(MStmt_Scope* body)
+        : body{body}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -196,13 +211,13 @@ struct MStmt_Foreach : MStmt
     // talias
     RType* itemType;
     RName itemName;
-    std::vector<MStmt*> nextItemStmts; // GetNext호출하고, null이면 종료, value면 itemName에 바인딩
+    // std::vector<MStmt*> nextItemStmts; // GetNext호출하고, null이면 종료, value면 itemName에 바인딩, outer scope에 넣는다
 
-    std::vector<MStmt*> body;
+    MStmt_Scope* body;
 
 public:
-    MStmt_Foreach(RType* iterType, const RName& iterName, MCreate iterCreate, RType* itemType, const RName& itemName, std::vector<MStmt*>&& nextItemStmts)
-        : iterType{iterType}, iterName{iterName}, iterCreate{iterCreate}, itemType{itemType}, itemName{itemName}, nextItemStmts{std::move(nextItemStmts)}
+    MStmt_Foreach(RType* iterType, const RName& iterName, MCreate iterCreate, RType* itemType, const RName& itemName, MStmt_Scope* body)
+        : iterType{iterType}, iterName{iterName}, iterCreate{iterCreate}, itemType{itemType}, itemName{itemName}, body{body}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -304,13 +319,11 @@ struct MStmt_Assign : MStmt
 // do { ... } catch_...
 struct MStmt_Do : MStmt
 {
-    std::vector<MStmt*> stmts;
+    MStmt_Scope* body;
     std::vector<MCatch> catches;
 
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
-
-
 
 }
 

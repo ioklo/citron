@@ -8,12 +8,13 @@ struct Diag;
 using DiagPtr = std::shared_ptr<Diag>;
 
 struct MStmt;
+struct MStmt_Scope;
 class QBlock;
 using QFactoryPtr = std::shared_ptr<class QFactory>;
 
 struct QTranslationContexts;
 
 std::expected<void, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, QTranslationContexts& context);
-std::expected<void, DiagPtr> TranslateMStmtsToQInstsWithNewScope(std::vector<MStmt*>& mStmts, QTranslationContexts& context);
+std::expected<void, DiagPtr> TranslateMStmt_ScopeToQInsts(MStmt_Scope* scope, QTranslationContexts& context);
 std::expected<void, DiagPtr> TranslateMStmtToQInsts(MStmt* mStmt, QTranslationContexts& qBodyContext);
 } // namespace Citron

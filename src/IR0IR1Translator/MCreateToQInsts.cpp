@@ -13,6 +13,7 @@
 #include "QTranslationContexts.h"
 #include "MReadToQInsts.h"
 #include "CommonQInstsTranslation.h"
+#include "ScopeGuard.h"
 
 using namespace std;
 

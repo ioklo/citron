@@ -52,7 +52,7 @@ vector<Token> ProcessString(Lexer* lexer)
 
 TEST(Lexer, LexSymbols)
 {
-    auto [buffer, lexer] = Prepare(U"if else for continue break task params out return async await foreach in yield seq"
+    auto [buffer, lexer] = Prepare(U"if else for while switch case continue break task params out return async await foreach in yield seq"
         " enum struct class is as ref"
         " null move shared public protected private static"
         " new namespace"
@@ -65,6 +65,9 @@ TEST(Lexer, LexSymbols)
         IfToken{},
         ElseToken{},
         ForToken{},
+        WhileToken{},
+        SwitchToken{},
+        CaseToken{},
         ContinueToken{},
         BreakToken{},
         TaskToken{},

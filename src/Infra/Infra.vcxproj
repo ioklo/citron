@@ -93,6 +93,7 @@
     <ClInclude Include="Public\Infra\Json.h" />
     <ClInclude Include="Public\Infra\make_vector.h" />
     <ClInclude Include="Public\Infra\Ptr.h" />
+    <ClInclude Include="Public\Infra\SmallMap.h" />
     <ClInclude Include="Public\Infra\Views.h" />
     <ClInclude Include="Public\Infra\StringWriter.h" />
     <ClInclude Include="Public\Infra\Transaction.h" />
