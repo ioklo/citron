@@ -90,11 +90,8 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
             }
         }
 
-        for (auto* mStmt : mFuncBody.stmts)
-        {
-            auto e_result = TranslateMStmt_ScopeToQInsts(mStmt, contexts);
-            RETURN_ON_ERROR(e_result);
-        }
+        auto e_bodyResult = TranslateMStmt_ScopeToQInsts(mFuncBody.body, contexts);
+        RETURN_ON_ERROR(e_bodyResult);
     }
 
     bodyContext.VerifyBlocks();

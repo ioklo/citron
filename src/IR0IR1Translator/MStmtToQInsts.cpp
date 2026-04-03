@@ -38,10 +38,10 @@ struct MStmtQInstsTranslator
         return TranslateMStmt_ScopeToQInsts(mStmt, contexts);
     }
 
-    ResultType Visit(MStmt_Command* mStmt) 
-    {  
+    ResultType HandleCommand(MTopLevel_Command& topLevelCommand)
+    {
         vector<QArg_Input> values;
-        for (auto& mCommand : mStmt->commands)
+        for (auto& mCommand : topLevelCommand.commands)
         {
             // Read니까. 이미 있는 slot을 돌려 받는다.
             auto e_readResult = TranslateMRead_LocToQInsts(mCommand, contexts);
@@ -63,13 +63,18 @@ struct MStmtQInstsTranslator
                     return {};
                 }
                 else static_assert(false);
-            }, * e_readResult);
+            }, *e_readResult);
             RETURN_ON_ERROR(e_result);
         }
 
         contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Items, nullopt, move(values));
-
         return {};
+    }
+    
+    ResultType Visit(MStmt_Command* mStmt) 
+    {  
+        ScopeGuard guard{contexts.bodyContext}; // for MTopLevel_Command
+        return HandleCommand(mStmt->command);
     }
 
     ResultType Visit(MStmt_LocalVarDecl* mStmt) 
@@ -94,7 +99,7 @@ struct MStmtQInstsTranslator
                 // var s = expr;
                 // expr이 lvalue인 경우, 복사 (복사가 지원 가능할때)
                 // expr이 rvalue인 경우, 이동 
-                auto e_initResult = TranslateMCreateToQInstsWithNewScope(init.create, slotIndex, contexts);
+                auto e_initResult = TranslateMTopLevel_CreateToQInsts(init.create, slotIndex);
                 RETURN_ON_ERROR(e_initResult);
                 return {};
             }
@@ -106,7 +111,7 @@ struct MStmtQInstsTranslator
     ResultType Visit(MStmt_LocalRefDecl* mStmt) 
     {
         // auto slotIndex = bodyContext.AddLocalRef(stmt->type, stmt->name, nullopt);
-        auto e_locResult = TranslateMLocToQInsts(mStmt->loc, contexts);
+        auto e_locResult = TranslateMTopLevel_LocToQInsts(mStmt->loc);
         RETURN_ON_ERROR(e_locResult);
 
         visit([this, mStmt](auto& locResult) {
@@ -128,16 +133,22 @@ struct MStmtQInstsTranslator
         return {};
     }
 
-    expected<QReadResult, DiagPtr> TranslateMReadToQInstsWithNewScope(MRead& mRead)
+    expected<QReadResult, DiagPtr> TranslateMTopLevel_ReadToQInsts(MTopLevel_Read& mTopLevelRead)
     {
         ScopeGuard guard{contexts.bodyContext};
-        return TranslateMReadToQInsts(mRead, contexts);
+        return TranslateMReadToQInsts(mTopLevelRead.read, contexts);
     }
 
-    expected<void, DiagPtr> TranslateMCreateToQInstsWithNewScope(MCreate& mCreate, optional<size_t> o_destSlotIndex)
+    expected<void, DiagPtr> TranslateMTopLevel_CreateToQInsts(MTopLevel_Create& mTopLevelCreate, optional<size_t> o_destSlotIndex)
     {
         ScopeGuard scopeGuard{contexts.bodyContext};
-        return TranslateMCreateToQInsts(mCreate, o_destSlotIndex, contexts);
+        return TranslateMCreateToQInsts(mTopLevelCreate.create, o_destSlotIndex, contexts);
+    }
+
+    expected<QLocResult, DiagPtr> TranslateMTopLevel_LocToQInsts(MTopLevel_Loc& mTopLevelLoc)
+    {
+        ScopeGuard scopeGuard{contexts.bodyContext};
+        return TranslateMLocToQInsts(mTopLevelLoc.loc, contexts);
     }
 
     ResultType HandleIf(MStmt_If* mStmt, size_t condSlotIndex)
@@ -210,7 +221,7 @@ struct MStmtQInstsTranslator
     ResultType Visit(MStmt_If* mStmt) 
     {
         // 1. stmt.cond
-        auto e_condResult = TranslateMReadToQInstsWithNewScope(mStmt->cond);
+        auto e_condResult = TranslateMTopLevel_ReadToQInsts(mStmt->cond);
         RETURN_ON_ERROR(e_condResult);
 
         // readResult to slotIndex
@@ -275,7 +286,7 @@ struct MStmtQInstsTranslator
             bodyContext.EmitTermInst(QInst_Jump{condBlock});
             bodyContext.SetCurBlock(condBlock);
 
-            auto e_condResult = TranslateMReadToQInstsWithNewScope(*mStmt->cond);
+            auto e_condResult = TranslateMTopLevel_ReadToQInsts(*mStmt->cond);
             RETURN_ON_ERROR(e_condResult);
                 
             visit([this, mStmt, bodyBlock, exitBlock](auto& condResult) {
@@ -316,8 +327,9 @@ struct MStmtQInstsTranslator
         // continue는 contBlock, break는 exitBlock으로 지정해준다            
         {
             // TODO: [38] break/continue에 label 지원
-            auto e_bodyResult = TranslateMStmt_ScopeToQInsts(mStmt->body, QJumpBlockInfo_Loop{.contBlock = contBlock, .breakBlock = exitBlock}, contexts);
-            RETURN_ON_ERROR(e_bodyResult);
+            /*auto e_bodyResult = TranslateMStmt_ScopeToQInsts(mStmt->body, QJumpBlockInfo_Loop{.contBlock = contBlock, .breakBlock = exitBlock}, contexts);
+            RETURN_ON_ERROR(e_bodyResult);*/
+            throw NotImplementedException{};
         }
 
         bodyContext.EmitTermInst(QInst_Jump{contBlock});
@@ -334,8 +346,9 @@ struct MStmtQInstsTranslator
 
     ResultType Visit(MStmt_Continue* mStmt) 
     {
-        auto* contBlock = contexts.bodyContext.();
-        contexts.bodyContext.EmitTermInst(QInst_Jump{contBlock});
+        /*auto* contBlock = contexts.bodyContext.();
+        contexts.bodyContext.EmitTermInst(QInst_Jump{contBlock});*/
+        throw NotImplementedException{};
     }
 
     // ResultType Visit(MStmt_Break* mStmt) { }
@@ -345,7 +358,7 @@ struct MStmtQInstsTranslator
 
         if (mStmt->create)
         {
-            auto e_result = TranslateMCreateToQInsts(*mStmt->create, bodyContext.GetRetSlotIndex(), contexts);
+            auto e_result = TranslateMTopLevel_CreateToQInsts(*mStmt->create, bodyContext.GetRetSlotIndex());
             RETURN_ON_ERROR(e_result);
 
             bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Return{});
@@ -367,7 +380,7 @@ struct MStmtQInstsTranslator
 
     ResultType Visit(MStmt_Exp* mStmt) 
     {
-        auto e_result = TranslateMCreateToQInsts(mStmt->create, /*o_destSlotIndex*/nullopt, contexts);
+        auto e_result = TranslateMTopLevel_CreateToQInsts(mStmt->create, /*o_destSlotIndex*/nullopt);
         RETURN_ON_ERROR(e_result);
 
         return {};
@@ -377,8 +390,6 @@ struct MStmtQInstsTranslator
     // ResultType Visit(MStmt_Async* mStmt) { }
     // ResultType Visit(MStmt_Foreach* mStmt) { }
     // ResultType Visit(MStmt_Yield* mStmt) { }
-    // ResultType Visit(MStmt_CallBaseClassCtor* mStmt) { }
-    // ResultType Visit(MStmt_CallBaseStructCtor* mStmt) { }
     // ResultType Visit(MStmt_Directive* mStmt) { }
     // ResultType Visit(MStmt_Call* mStmt) { }
     // ResultType Visit(MStmt_Assign* mStmt) { }

@@ -28,6 +28,21 @@ struct MLoc;
 
 struct MStmtVisitor;
 
+enum class MStmt_AssignKind
+{
+    Copy,
+    Move
+};
+
+// MTopLevel 계열
+struct MTopLevel_Read { MRead read; };
+struct MTopLevel_Create { MCreate create; };
+struct MTopLevel_Loc { MLoc* loc; };
+struct MTopLevel_Command { std::vector<MRead_Loc> commands; }; 
+struct MTopLevel_Assign { MStmt_AssignKind kind;  MLoc* dest; MRead_Loc src; };
+// o_catch는 try F() catch_* { }이 붙었을 경우, try F()는 에러가 compatible할때 try F() catch_error(error) { error } 로 변환된다
+struct MTopLevel_Call { MCallable callable; std::vector<MArgument> args; std::optional<MCatch> o_catch; }; 
+
 struct MStmt
 {
     virtual ~MStmt() {}
@@ -48,17 +63,17 @@ public:
 
 struct MStmt_Command : MStmt
 {
-    std::vector<MRead_Loc> commands;
+    MTopLevel_Command command;    
 
 public:
-    MStmt_Command(std::vector<MRead_Loc>&& commands)
-        : commands{std::move(commands)}
+    MStmt_Command(MTopLevel_Command&& command)
+        : command{std::move(command)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
 struct MStmt_LocalVarDeclInit_Uninit {};
-struct MStmt_LocalVarDeclInit_Create { MCreate create; };
+struct MStmt_LocalVarDeclInit_Create { MTopLevel_Create create; };
 using MStmt_LocalVarDeclInit = std::variant<MStmt_LocalVarDeclInit_Uninit, MStmt_LocalVarDeclInit_Create>;
 
 struct MStmt_LocalVarDecl : MStmt
@@ -79,11 +94,11 @@ struct MStmt_LocalRefDecl : MStmt
 {
     RType* type;
     RName name;
-    MLoc* loc;
+    MTopLevel_Loc loc;
 
 public:
-    MStmt_LocalRefDecl(RType* type, const RName& name, MLoc* loc)
-        : type{type}, name{name}, loc{loc}
+    MStmt_LocalRefDecl(RType* type, const RName& name, MTopLevel_Loc&& loc)
+        : type{type}, name{name}, loc{std::move(loc)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -91,12 +106,12 @@ public:
 // 
 struct MStmt_If : MStmt
 {
-    MRead cond; // BC
+    MTopLevel_Read cond; // BC
 
     MStmt_Scope* trueBody;
     MStmt_Scope* falseBody;
 
-    MStmt_If(MRead&& cond, MStmt_Scope* trueBody, MStmt_Scope* falseBody)
+    MStmt_If(MTopLevel_Read&& cond, MStmt_Scope* trueBody, MStmt_Scope* falseBody)
         : cond{std::move(cond)}, trueBody{trueBody}, falseBody{falseBody}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -104,7 +119,7 @@ struct MStmt_If : MStmt
 
 struct MStmt_For : MStmt
 {   
-    std::optional<MRead> cond; // BC
+    std::optional<MTopLevel_Read> cond; // BC
     MStmt* contStmt;
     MStmt_Scope* body;
 
@@ -139,10 +154,10 @@ struct MStmt_Break : MStmt
 
 struct MStmt_Return : MStmt
 {
-    std::optional<MCreate> create;
+    std::optional<MTopLevel_Create> create;
 
 public:
-    MStmt_Return(std::optional<MCreate>&& create)
+    MStmt_Return(std::optional<MTopLevel_Create>&& create)
         : create{std::move(create)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -156,10 +171,10 @@ struct MStmt_Blank : MStmt
 // 이름은 Exp지만, Exp, InitExp둘다 받는다
 struct MStmt_Exp : MStmt
 {
-    MCreate create;
+    MTopLevel_Create create;
 
 public:
-    MStmt_Exp(MCreate&& create)
+    MStmt_Exp(MTopLevel_Create&& create)
         : create{std::move(create)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -206,7 +221,7 @@ struct MStmt_Foreach : MStmt
 {
     RType* iterType;
     RName iterName;
-    MCreate iterCreate;
+    MTopLevel_Create iterCreate;
 
     // talias
     RType* itemType;
@@ -216,45 +231,19 @@ struct MStmt_Foreach : MStmt
     MStmt_Scope* body;
 
 public:
-    MStmt_Foreach(RType* iterType, const RName& iterName, MCreate iterCreate, RType* itemType, const RName& itemName, MStmt_Scope* body)
-        : iterType{iterType}, iterName{iterName}, iterCreate{iterCreate}, itemType{itemType}, itemName{itemName}, body{body}
+    MStmt_Foreach(RType* iterType, const RName& iterName, MTopLevel_Create&& iterCreate, RType* itemType, const RName& itemName, MStmt_Scope* body)
+        : iterType{iterType}, iterName{iterName}, iterCreate{std::move(iterCreate)}, itemType{itemType}, itemName{itemName}, body{body}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
 struct MStmt_Yield : MStmt
 {
-    MCreate valueCreate;
+    MTopLevel_Create valueCreate;
 
 public:
-    MStmt_Yield(MCreate&& valueCreate)
-        : valueCreate{valueCreate}
-    { }
-    MIR_API void Accept(MStmtVisitor& visitor) override;
-};
-
-// Ctor 내에서 상위 Ctor 호출시 사용
-struct MStmt_CallBaseClassCtor : MStmt
-{
-    RClassCtorDecl* ctor;
-    std::vector<MArgument> args;
-
-public:
-    MStmt_CallBaseClassCtor(RClassCtorDecl* ctor, std::vector<MArgument>&& args)
-        : ctor{ctor}, args{std::move(args)}
-    { }
-    MIR_API void Accept(MStmtVisitor& visitor) override;
-};
-
-struct MStmt_CallBaseStructCtor : MStmt
-{
-    NStructCtorDecl* ctor;
-    RTypeArguments* typeArgs;
-    std::vector<MArgument> args;
-
-public:
-    MStmt_CallBaseStructCtor(NStructCtorDecl* ctor, RTypeArguments* typeArgs, std::vector<MArgument>&& args)
-        : ctor{ctor}, typeArgs{typeArgs}, args{std::move(args)}
+    MStmt_Yield(MTopLevel_Create&& valueCreate)
+        : valueCreate{std::move(valueCreate)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -287,31 +276,21 @@ public:
 // void return
 struct MStmt_Call : MStmt
 {
-    MCallable callable;
-    std::vector<MArgument> args;
-    std::optional<MCatch> o_catch; // try F() catch_* { }이 붙었을 경우
-
-    MStmt_Call(MCallable&& callable, std::vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
-        : callable{std::move(callable)}, args{std::move(args)}, o_catch{std::move(o_catch)}
+    MTopLevel_Call call;
+    
+    MStmt_Call(MTopLevel_Call&& call)
+        : call{std::move(call)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
-};
-
-enum class MStmt_AssignKind
-{
-    Copy,
-    Move
 };
 
 // NBC assign, void return assignment
 struct MStmt_Assign : MStmt
 {
-    MStmt_AssignKind kind;
-    MLoc* dest;
-    MRead_Loc src; // NBC
+    MTopLevel_Assign assign;
 
-    MStmt_Assign(MStmt_AssignKind kind, MLoc* dest, MRead_Loc&& src)
-        : kind{kind}, dest{dest}, src{std::move(src)}
+    MStmt_Assign(MTopLevel_Assign&& assign)
+        : assign{std::move(assign)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };

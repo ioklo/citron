@@ -122,7 +122,7 @@ struct SStmtToMStmtsTranslator
             builder.push_back(move(get<MRead_Loc>(*e_mCmdRead)));
         }
 
-        return Value<MStmt_Command>(move(builder));
+        return Value<MStmt_Command>(MTopLevel_Command{move(builder)});
     }
 
     ResultType Visit(SStmt_VarDecl* stmt) 
@@ -155,11 +155,11 @@ struct SStmtToMStmtsTranslator
         {   
             auto e_falseBody = TranslateScopedSEmbeddableStmtToMStmt_Scope(stmt->elseBody, contexts);
             RETURN_ON_ERROR(e_falseBody);
-            return Value<MStmt_If>(move(*e_mCond), *e_trueBody, *e_falseBody);
+            return Value<MStmt_If>(MTopLevel_Read{move(*e_mCond)}, *e_trueBody, *e_falseBody);
         }
         else
         {
-            return Value<MStmt_If>(move(*e_mCond), *e_trueBody, /*falseBody*/nullptr);
+            return Value<MStmt_If>(MTopLevel_Read{move(*e_mCond)}, *e_trueBody, /*falseBody*/nullptr);
         }
     }
     
@@ -349,7 +349,7 @@ struct SStmtToMStmtsTranslator
                     //if (!castRetValue)
                     //    return Error<Error_ReturnStmt_MismatchBetweenReturnValueAndFuncReturnType>();
 
-                    return Value<MStmt_Return>(move(*e_retValue));
+                    return Value<MStmt_Return>(MTopLevel_Create{move(*e_retValue)});
                 }
             }
             else if constexpr (same_as<T, RFuncReturn_NotSet>)
@@ -369,7 +369,7 @@ struct SStmtToMStmtsTranslator
                     // 리턴값이 안 적혀 있었으므로 적는다
                     auto retValueType = GetType(*e_retValue, &*contexts.rFactory);
                     contexts.funcContext->SetOpenFuncReturn(retValueType);
-                    return Value<MStmt_Return>(move(*e_retValue));
+                    return Value<MStmt_Return>(MTopLevel_Create{move(*e_retValue)});
                 }
             }
             else if constexpr (same_as<T, RFuncReturn_ForCtor>)
@@ -765,7 +765,7 @@ struct SStmtToMStmtsTranslator
         // auto e_castRetValue = CastMExp(*e_retValue, setFuncRet->type, contexts);
         // RETURN_ON_ERROR(e_castRetValue);
 
-        return Value<MStmt_Yield>(move(*e_retValue));
+        return Value<MStmt_Yield>(MTopLevel_Create{move(*e_retValue)});
     }
 
     ResultType Visit(SStmt_Directive* stmt) 
@@ -881,14 +881,14 @@ expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDes
             if (!IsTopLevelExp(reExp.mExp))
                 return Error<Error_ExpStmt_ExpressionShouldBeAssignOrCall>();
 
-            return contexts.mFactory->MakeMStmt<MStmt_Exp>(MCreate_BC{reExp.mExp});
+            return contexts.mFactory->MakeMStmt<MStmt_Exp>(MTopLevel_Create{MCreate_BC{reExp.mExp}});
         }
         else if constexpr (same_as<T, ReExp_InitExp>) 
         {
             if (!IsTopLevelInitExp(reExp.mInitExp))
                 return Error<Error_ExpStmt_ExpressionShouldBeAssignOrCall>();
 
-            return contexts.mFactory->MakeMStmt<MStmt_Exp>(MCreate_NBC{reExp.mInitExp});
+            return contexts.mFactory->MakeMStmt<MStmt_Exp>(MTopLevel_Create{MCreate_NBC{reExp.mInitExp}});
         }
         else if constexpr (same_as<T, ReExp_StmtCall>) 
         {

@@ -89,6 +89,10 @@ private:
         }, read);
     }
 
+    string TopLevelReadText(MTopLevel_Read& read)
+    {
+        return ReadText(read.read);
+    }
     string CreateText(MCreate& create)
     {
         return visit([this](auto& create) -> string {
@@ -98,6 +102,19 @@ private:
         }, create);
     }
 
+    string TopLevelCreateText(MTopLevel_Create& create)
+    {
+        return CreateText(create.create);
+    }
+    string TopLevelLocText(MTopLevel_Loc& loc)
+    {
+        return LocText(loc.loc);
+    }
+    string TopLevelAssignText(MTopLevel_Assign& assign)
+    {
+        auto kindText = assign.kind == MStmt_AssignKind::Copy ? "assign_copy" : "assign_move";
+        return format("{} {} = {}", kindText, LocText(assign.dest), LocText(assign.src.loc));
+    }
     string MoveSourceText(MMoveSource& src)
     {
         return visit([this](auto& src) -> string {
@@ -145,6 +162,12 @@ private:
         }, callable);
     }
 
+    string TopLevelCallText(MTopLevel_Call& call)
+    {
+        auto text = format("{}({})", CallableText(call.callable), ArgsText(call.args));
+        if (call.o_catch) text += format(" {}", CatchText(*call.o_catch));
+        return text;
+    }
     string PatternLeafText(MPatternLeaf& pattern)
     {
         return visit([this](auto& p) -> string {
@@ -259,10 +282,10 @@ private:
         if (auto* x = dynamic_cast<MStmt_Command*>(stmt))
         {
             string line = "command ";
-            for (size_t i = 0; i < x->commands.size(); i++)
+            for (size_t i = 0; i < x->command.commands.size(); i++)
             {
                 if (i != 0) line += ", ";
-                line += LocText(x->commands[i].loc);
+                line += LocText(x->command.commands[i].loc);
             }
             return PrintLine(line);
         }
@@ -272,14 +295,14 @@ private:
             if (auto* n = get_if<RName_Normal>(&x->name)) line += n->text; else line += "var";
             visit([&](auto& init) {
                 using T = remove_cvref_t<decltype(init)>;
-                if constexpr (same_as<T, MStmt_LocalVarDeclInit_Create>) line += format(" = {}", CreateText(init.create));
+                if constexpr (same_as<T, MStmt_LocalVarDeclInit_Create>) line += format(" = {}", TopLevelCreateText(init.create));
             }, x->init);
             return PrintLine(line);
         }
-        if (auto* x = dynamic_cast<MStmt_LocalRefDecl*>(stmt)) return PrintLine(format("ref {} {} = {}", TypeText(x->type), get_if<RName_Normal>(&x->name) ? get<RName_Normal>(x->name).text : string("ref"), LocText(x->loc)));
+        if (auto* x = dynamic_cast<MStmt_LocalRefDecl*>(stmt)) return PrintLine(format("ref {} {} = {}", TypeText(x->type), get_if<RName_Normal>(&x->name) ? get<RName_Normal>(x->name).text : string("ref"), TopLevelLocText(x->loc)));
         if (auto* x = dynamic_cast<MStmt_If*>(stmt))
         {
-            writer.Write(format("if {}", ReadText(x->cond)));
+            writer.Write(format("if {}", TopLevelReadText(x->cond)));
             PrintStmt(x->trueBody);
             if (x->falseBody)
             {
@@ -291,7 +314,7 @@ private:
         if (auto* x = dynamic_cast<MStmt_For*>(stmt))
         {
             writer.Write("for"); writer.WriteLine(); writer.AddIndent();
-            PrintLine(x->cond ? format("cond: {}", ReadText(*x->cond)) : string("cond: <none>"));
+            PrintLine(x->cond ? format("cond: {}", TopLevelReadText(*x->cond)) : string("cond: <none>"));
             if (x->contStmt) { writer.Write("cont:"); writer.WriteLine(); writer.AddIndent(); PrintStmt(x->contStmt); writer.RemoveIndent(); }
             writer.Write("body:"); PrintStmt(x->body);
             writer.RemoveIndent();
@@ -299,20 +322,18 @@ private:
         }
         if (dynamic_cast<MStmt_Continue*>(stmt)) return PrintLine("continue");
         if (dynamic_cast<MStmt_Break*>(stmt)) return PrintLine("break");
-        if (auto* x = dynamic_cast<MStmt_Return*>(stmt)) return PrintLine(x->create ? format("return {}", CreateText(*x->create)) : string("return"));
+        if (auto* x = dynamic_cast<MStmt_Return*>(stmt)) return PrintLine(x->create ? format("return {}", TopLevelCreateText(*x->create)) : string("return"));
         if (auto* x = dynamic_cast<MStmt_Scope*>(stmt)) { writer.Write("scope"); PrintStmtBlock(x->stmts); return; }
         if (dynamic_cast<MStmt_Blank*>(stmt)) return PrintLine("blank");
-        if (auto* x = dynamic_cast<MStmt_Exp*>(stmt)) return PrintLine(CreateText(x->create));
+        if (auto* x = dynamic_cast<MStmt_Exp*>(stmt)) return PrintLine(TopLevelCreateText(x->create));
         if (auto* x = dynamic_cast<MStmt_Task*>(stmt)) return PrintLine(format("task({})", ArgsText(x->captureArgs)));
         if (auto* x = dynamic_cast<MStmt_Await*>(stmt)) { writer.Write("await"); PrintStmt(x->body); return; }
         if (auto* x = dynamic_cast<MStmt_Async*>(stmt)) return PrintLine(format("async({})", ArgsText(x->captureArgs)));
-        if (auto* x = dynamic_cast<MStmt_Foreach*>(stmt)) { writer.Write(format("foreach {}", CreateText(x->iterCreate))); PrintStmt(x->body); return; }
-        if (auto* x = dynamic_cast<MStmt_Yield*>(stmt)) return PrintLine(format("yield {}", CreateText(x->valueCreate)));
-        if (auto* x = dynamic_cast<MStmt_CallBaseClassCtor*>(stmt)) return PrintLine(format("base_class_ctor {}({})", DeclText(x->ctor), ArgsText(x->args)));
-        if (auto* x = dynamic_cast<MStmt_CallBaseStructCtor*>(stmt)) return PrintLine(format("base_struct_ctor({})", ArgsText(x->args)));
+        if (auto* x = dynamic_cast<MStmt_Foreach*>(stmt)) { writer.Write(format("foreach {}", TopLevelCreateText(x->iterCreate))); PrintStmt(x->body); return; }
+        if (auto* x = dynamic_cast<MStmt_Yield*>(stmt)) return PrintLine(format("yield {}", TopLevelCreateText(x->valueCreate)));
         if (dynamic_cast<MStmt_Directive*>(stmt)) return PrintLine("directive(...)");
-        if (auto* x = dynamic_cast<MStmt_Call*>(stmt)) return PrintLine(format("{}({})", CallableText(x->callable), ArgsText(x->args)));
-        if (auto* x = dynamic_cast<MStmt_Assign*>(stmt)) return PrintLine(format("assign {} = {}", LocText(x->dest), LocText(x->src.loc)));
+        if (auto* x = dynamic_cast<MStmt_Call*>(stmt)) return PrintLine(TopLevelCallText(x->call));
+        if (auto* x = dynamic_cast<MStmt_Assign*>(stmt)) return PrintLine(TopLevelAssignText(x->assign));
         if (auto* x = dynamic_cast<MStmt_Do*>(stmt))
         {
             writer.Write("do"); PrintStmt(x->body);
@@ -336,5 +357,8 @@ void PrintMData(MData* data, IWriter& writer, RFactory& rFactory)
 }
 
 } // namespace Citron
+
+
+
 
 

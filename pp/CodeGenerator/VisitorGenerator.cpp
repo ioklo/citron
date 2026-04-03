@@ -230,8 +230,6 @@ void GenerateVisitors(std::filesystem::path rootPath)
                 "MStmt_Async",
                 "MStmt_Foreach",
                 "MStmt_Yield",
-                "MStmt_CallBaseClassCtor",
-                "MStmt_CallBaseStructCtor",
                 "MStmt_Directive",
                 "MStmt_Call",
                 "MStmt_Assign",

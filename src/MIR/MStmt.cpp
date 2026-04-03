@@ -22,8 +22,6 @@ void MStmt_Await::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Async::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Foreach::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Yield::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
-void MStmt_CallBaseClassCtor::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
-void MStmt_CallBaseStructCtor::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Directive::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Call::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Assign::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }

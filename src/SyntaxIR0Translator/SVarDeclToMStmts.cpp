@@ -114,9 +114,9 @@ struct VarDeclElemTranslator
         outStmts.push_back(mStmt);
     }
 
-    void AddLocalRef(RType* rType, const RName& name, MLoc* mLoc)
+    void AddLocalRef(RType* rType, const RName& name, MTopLevel_Loc&& mTopLevelLoc)
     {   
-        auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalRefDecl>(rType, name, mLoc);
+        auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalRefDecl>(rType, name, move(mTopLevelLoc));
 
         contexts.scopeContext->AddLocalRefInfo(rType, name);
         outStmts.push_back(mStmt);
@@ -145,7 +145,7 @@ struct VarDeclElemTranslator
                     auto e_result = CheckVarConsistency(sVarDeclType->kind, initType);
                     RETURN_ON_ERROR(e_result);
                     
-                    AddLocalVar(initType, varName, MStmt_LocalVarDeclInit_Create{move(*e_mCreate)});
+                    AddLocalVar(initType, varName, MStmt_LocalVarDeclInit_Create{MTopLevel_Create{move(*e_mCreate)}});
                     return {};
                 }
                 // var x = move expr;
@@ -190,7 +190,7 @@ struct VarDeclElemTranslator
 
                     auto* locType = GetType(*e_mLoc, &*contexts.rFactory);
                     // var&는 단일로만 존재한다. var consistency 테스트를 하지 않는다 
-                    AddLocalRef(locType, varName, *e_mLoc);
+                    AddLocalRef(locType, varName, MTopLevel_Loc{*e_mLoc});
                     return {};
                 }
                 // var& x = move expr;
@@ -239,7 +239,7 @@ struct VarDeclElemTranslator
                     if (locType != declType)
                         return Error<Error_VarDecl_MismatchBetweenRefDeclTypeAndRefInitType>();
                     
-                    AddLocalRef(declType, varName, *e_mLoc);
+                    AddLocalRef(declType, varName, MTopLevel_Loc{*e_mLoc});
                     return {};
                 }
                 // T& x = move expr;
@@ -287,7 +287,7 @@ struct VarDeclElemTranslator
                     if (initType != declType)
                         return Error<Error_VarDecl_InitExpTypeMismatch>();
 
-                    AddLocalVar(initType, varName, MStmt_LocalVarDeclInit_Create{move(*e_mCreate)});
+                    AddLocalVar(initType, varName, MStmt_LocalVarDeclInit_Create{MTopLevel_Create{move(*e_mCreate)}});
                     return {};
                 }
                 // var x = move expr;

@@ -42,18 +42,18 @@ public:
         switch (retType->GetCopyStrategy())
         {
         case RCopyStrategy::Void:
-            return contexts.mFactory->MakeMStmt<MStmt_Call>(move(callable), move(args), /*o_catch*/nullopt);
+            return contexts.mFactory->MakeMStmt<MStmt_Call>(MTopLevel_Call{move(callable), move(args), /*o_catch*/nullopt});
 
         case RCopyStrategy::Bitwise:
         {
             auto* exp = contexts.mFactory->MakeMExp<MExp_Call>(move(callable), move(args), /*o_catch*/nullopt);
-            return contexts.mFactory->MakeMStmt<MStmt_Exp>(MCreate_BC{exp});
+            return contexts.mFactory->MakeMStmt<MStmt_Exp>(MTopLevel_Create{MCreate_BC{exp}});
         }
 
         case RCopyStrategy::NonBitwise:
         {
             auto* initExp = contexts.mFactory->MakeMInitExp<MInitExp_Call>(move(callable), move(args), /*o_catch*/nullopt);
-            return contexts.mFactory->MakeMStmt<MStmt_Exp>(MCreate_NBC{initExp});
+            return contexts.mFactory->MakeMStmt<MStmt_Exp>(MTopLevel_Create{MCreate_NBC{initExp}});
         }
 
         }

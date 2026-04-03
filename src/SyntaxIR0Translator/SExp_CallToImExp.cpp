@@ -64,7 +64,7 @@ struct CallableTranslator
         case RCopyStrategy::Void:
         {
             // TODO: [41] try catch 구현
-            auto* callStmt = contexts.mFactory->MakeMStmt<MStmt_Call>(move(call), move(args), move(o_catch));
+            auto* callStmt = contexts.mFactory->MakeMStmt<MStmt_Call>(MTopLevel_Call{move(call), move(args), move(o_catch)});
             return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_StmtCall{callStmt});
         }
 
