@@ -11,7 +11,7 @@
 #include "Syntax/Syntax.h"
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncReturn.h"
-
+#include "MIR/MScopeKind.h"
 #include "BodyRes.h"
 
 namespace Citron { 
@@ -36,7 +36,11 @@ class ScopeContext
 private: // transaction에 영향 받지 않는 변수들 (인자로 들어온)
     FuncContextPtr funcContext;
     ScopeContextPtr parentContext;
-    size_t nestedLoop;
+
+    MScopeKind scopeKind;
+    // cached
+    std::optional<size_t> curContinueLabelId;
+    std::optional<size_t> curBreakLabelId;
 
 private: // dependency
     RFactoryPtr rFactory;
@@ -62,7 +66,7 @@ private: // for transaction
     std::vector<TransactionInfo> transactionInfos;
 
 public:
-    ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, size_t nestedLoop, const RFactoryPtr& rFactory);
+    ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, MScopeKind&& scopeKind, std::optional<size_t> curContinueLabelId, std::optional<size_t> curBreakLabelId, const RFactoryPtr& rFactory);
 
     void BeginTransaction();
     void CommitTransaction();
@@ -71,10 +75,6 @@ public:
 public:
     void SetFlowEndsCompletely();
 
-    std::shared_ptr<ScopeContext> MakeTranslationContexts_NestedScope(std::shared_ptr<ScopeContext> sharedThis);
-    std::shared_ptr<ScopeContext> MakeLoopNestedScopeContext(std::shared_ptr<ScopeContext> sharedThis);
-    std::tuple<ScopeContextPtr, NLambdaDecl> MakeTranslationContexts_Lambda(const RFuncReturn& ret, std::vector<RFuncParameter> params, bool bLastParamVariadic);
-
     void AddLocalVarInfo(RType* type, const RName& name);
     void AddLocalRefInfo(RType* type, const RName& name);
     // std::optional<LocalVarInfo> GetLocalVarInfo(const RName& name);
@@ -82,8 +82,9 @@ public:
     bool DoesLocalNameExistInScope(const RName& name);
 
     bool IsFailed();
-    bool IsInLoop() { return nestedLoop != 0; }
-    size_t GetNestedLoopCount() { return nestedLoop; }
+    std::optional<size_t> GetCurContinueLabelId() { return curContinueLabelId; }
+    std::optional<size_t> GetCurBreakLabelId() { return curBreakLabelId; }
+    std::optional<MScopeKind> GetReachableScopeKind(size_t labelId);
 
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
     std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);

@@ -36,6 +36,23 @@ inline bool IsTerminator(QInst& inst)
         || holds_alternative<QInst_Return>(inst);
 }
 
+bool operator==(QCleanUpKind x, QCleanUpKind y)
+{
+    return visit([](auto& xInfo, auto& yInfo) -> bool
+    {
+        using T = remove_cvref_t<decltype(xInfo)>;
+        using U = remove_cvref_t<decltype(yInfo)>;
+        if constexpr (same_as<T, QCleanUpInfoKey_Return> && same_as<U, QCleanUpInfoKey_Return>)
+            return true;
+        else if constexpr (same_as<T, QCleanUpInfoKey_Continue> && same_as<U, QCleanUpInfoKey_Continue>)
+            return xInfo.labelId == yInfo.labelId;
+        else if constexpr (same_as<T, QCleanUpInfoKey_Break> && same_as<U, QCleanUpInfoKey_Break>)
+            return xInfo.labelId == yInfo.labelId;
+        else
+            return false;
+    }, x, y);
+}
+
 }
 
 QJumpBlockScopeGuard::QJumpBlockScopeGuard(QJumpBlockInfo&& info, QBodyContext& context)
@@ -182,9 +199,9 @@ bool QBodyContext::IsFinalBlock(QCleanUpKind kind, size_t scopeIndex)
         if constexpr (same_as<T, QCleanUpInfoKey_Return>)
             return scopeIndex == 0;
         else if constexpr (same_as<T, QCleanUpInfoKey_Continue>)
-            return scopes[scopeIndex].scopeLabelId == kind.labelId;
+            return scopes[scopeIndex].labelId == kind.labelId;
         else if constexpr (same_as<T, QCleanUpInfoKey_Break>)
-            return scopes[scopeIndex].scopeLabelId == kind.labelId;
+            return scopes[scopeIndex].labelId == kind.labelId;
         else static_assert(false);
 
     }, kind);
@@ -194,7 +211,12 @@ bool QBodyContext::IsFinalBlock(QCleanUpKind kind, size_t scopeIndex)
 QBlock* QBodyContext::MakeCleanUpBlock(QCleanUpKind kind, size_t scopeIndex)
 {
     auto& scope = scopes[scopeIndex];
-    auto& cleanUpInfo = scope.cleanUpInfos.FindOrAdd(kind);
+    auto& cleanUpInfo = [&kind, &scope]() -> QCleanUpInfo& {
+        if (auto* value = scope.cleanUpInfos.Find(kind))
+            return *value;
+        else
+            return scope.cleanUpInfos.Add(kind, QCleanUpInfo{});
+    }();
 
     // 지금 처리해야 할 slots의 갯수가 크다면, scope.recentCleanUpForReturn 업데이트
     if (cleanUpInfo.coveredSlots < scope.slotIndices.size())

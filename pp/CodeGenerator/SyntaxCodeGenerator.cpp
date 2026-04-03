@@ -886,15 +886,19 @@ struct ToJsonVisitor {
         // SStmt_Continue
         ClassInfo {
             .name = "SStmt_Continue",
-            .variantInterfaces { "SStmt" },
-            .memberInfos {},
+            .variantInterfaces { "SStmt" },            
+            .memberInfos {
+                {.type = "std::optional<std::string>", .memberVarName = "o_label", .getterName = "GetLabel" },
+            },
         },
 
         // SStmt_Break
         ClassInfo {
             .name = "SStmt_Break",
             .variantInterfaces { "SStmt" },
-            .memberInfos {},
+            .memberInfos {
+                {.type = "std::optional<std::string>", .memberVarName = "o_label", .getterName = "GetLabel" },
+            },
         },
 
         // SStmt_Block(std::vector<SStmt*> stmts)

@@ -72,7 +72,9 @@ public:
     void CommitTransaction();
     void RollbackTransaction();
 
-    size_t AddNewLabelCore(std::optional<std::string>& o_label);
+    size_t AddNewLabelId(std::optional<std::string>& o_label);
+    std::optional<size_t> GetLabelId(const std::string& label);
+    
 
     virtual void BeginTransaction_FuncContext() = 0;
     virtual void CommitTransaction_FuncContext() = 0;

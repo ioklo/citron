@@ -2194,7 +2194,9 @@ class SStmt_Continue
     : public SStmt
 {
 public:
-    SYNTAX_API SStmt_Continue();
+    std::optional<std::string> o_label;
+
+    SYNTAX_API SStmt_Continue(std::optional<std::string> o_label);
     SStmt_Continue(const SStmt_Continue&) = delete;
     SYNTAX_API SStmt_Continue(SStmt_Continue&&) noexcept;
     SYNTAX_API virtual ~SStmt_Continue();
@@ -2211,7 +2213,9 @@ class SStmt_Break
     : public SStmt
 {
 public:
-    SYNTAX_API SStmt_Break();
+    std::optional<std::string> o_label;
+
+    SYNTAX_API SStmt_Break(std::optional<std::string> o_label);
     SStmt_Break(const SStmt_Break&) = delete;
     SYNTAX_API SStmt_Break(SStmt_Break&&) noexcept;
     SYNTAX_API virtual ~SStmt_Break();

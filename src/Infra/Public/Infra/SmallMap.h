@@ -17,15 +17,17 @@ class SmallMap
 
 public:
     template<typename TTKey, typename TTValue>
-    void Add(TTKey&& key, TTValue&& value)
+    TTValue& Add(TTKey&& key, TTValue&& value)
     {
-        data.emplace_back(std::forward<TTKey>(key), std::forward<TTValue>(value));
+        auto& pair = data.emplace_back(std::forward<TTKey>(key), std::forward<TTValue>(value));
+        return pair.second;
     }
 
-    TValue* Find(auto& key) 
-    { 
-        auto it = find_if(data.begin(), data.end(), [&key](const auto& entry) { return entry.first == key; });
-        return it != data.end() ? &(*it) : nullptr;
+    template<typename TTKey>
+    TValue* Find(TTKey&& key) 
+    {   
+        auto it = find_if(data.begin(), data.end(), [&key](auto& entry) { return entry.first == key; });
+        return it != data.end() ? &it->second : nullptr;
     }
 
     TValue& FindOrAdd(auto&& key, auto&&... args)

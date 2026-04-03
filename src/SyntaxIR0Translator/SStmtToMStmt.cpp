@@ -50,6 +50,7 @@ struct NLambdaDeclAndArgs
 
 expected<void, DiagPtr> TranslateSStmtToMStmts(std::vector<MStmt*>& outStmts, SStmt* sStmt, TranslationContexts& contexts);
 expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmbeddableStmt* embedStmt, TranslationContexts& contexts);
+expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::optional<std::string>& o_label, SEmbeddableStmt* sEmbedStmt, TranslationContexts& contexts);
 expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(std::vector<MStmt*>& outStmts, SEmbeddableStmt* embedStmt, TranslationContexts& contexts);
 expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, vector<MStmt*>& outStmts, TranslationContexts& contexts);
 expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContexts& contexts);
@@ -145,7 +146,7 @@ struct SStmtToMStmtsTranslator
         auto* boolType = contexts.rFactory->MakeBoolType();
 
         auto* condType = GetType(*e_mCond, &*contexts.rFactory);
-        if (condType == boolType)
+        if (condType != boolType)
             return Error<Error_IfStmt_ConditionShouldBeBool>();
 
         auto e_trueBody = TranslateScopedSEmbeddableStmtToMStmt_Scope(stmt->body, contexts);
@@ -194,13 +195,10 @@ struct SStmtToMStmtsTranslator
             contStmt = *e_contResult;
         }
 
-        auto forInnerContexts = MakeTranslationContexts_NestedLoop(forOuterContexts);
+        auto e_body = TranslateLoopSEmbeddableStmtToMStmt_Scope(stmt->o_label, stmt->body, forOuterContexts);
+        RETURN_ON_ERROR(e_body);
 
-        // TODO: label
-        auto e_bodyStmts = TranslateScopedSEmbeddableStmtToMStmt_Scope(stmt->body, forInnerContexts);
-        RETURN_ON_ERROR(e_bodyStmts);
-
-        return forOuterContexts.mFactory->MakeMStmt<MStmt_For>(move(mCond), contStmt, move(*e_bodyStmts));
+        return forOuterContexts.mFactory->MakeMStmt<MStmt_For>(move(mCond), contStmt, *e_body);
     }
     
     ResultType Visit(SStmt_For* stmt) 
@@ -227,7 +225,7 @@ struct SStmtToMStmtsTranslator
         if (stmt->initializer)
         {
             vector<MStmt*> outerStmts;
-            auto forOuterContexts = MakeTranslationContexts_NestedScope(contexts);
+            auto forOuterContexts = MakeTranslationContexts_DefaultScope(contexts);
             
             auto e_initResult = TranslateSForStmtInitializerToMStmts(stmt->initializer, outerStmts, forOuterContexts);
             RETURN_ON_ERROR(e_initResult);
@@ -236,7 +234,7 @@ struct SStmtToMStmtsTranslator
             RETURN_ON_ERROR(e_innerFor);
             
             outerStmts.push_back(*e_innerFor);
-            return Value<MStmt_Scope>(move(outerStmts));
+            return Value<MStmt_Scope>(MScopeKind_Default{}, move(outerStmts));
         }
         else
         {
@@ -266,40 +264,69 @@ struct SStmtToMStmtsTranslator
             // RETURN_ON_ERROR(e_rawCond);
             // condExp = *e_rawCond;
         }
-        
-        auto whileInnerContexts = MakeTranslationContexts_NestedLoop(contexts);
 
-        // TODO: label
-        auto e_bodyStmts = TranslateScopedSEmbeddableStmtToMStmt_Scope(stmt->body, whileInnerContexts);
-        RETURN_ON_ERROR(e_bodyStmts);
+        auto e_body = TranslateLoopSEmbeddableStmtToMStmt_Scope(stmt->o_label, stmt->body, contexts);
+        RETURN_ON_ERROR(e_body);
 
-        return Value<MStmt_While>(move(mCond), move(*e_bodyStmts));
+        return Value<MStmt_While>(move(mCond), move(*e_body));
     }
 
     ResultType Visit(SStmt_Switch* stmt)
     {
         // TODO: [60] switch 구현
+        // MakeTranslationContexts_SwitchScope
         throw NotImplementedException{};
     }
 
     ResultType Visit(SStmt_Continue* stmt)
     {
-        if (!contexts.scopeContext->IsInLoop())
+        if (stmt->o_label)
         {
-            return Error<Error_ContinueStmt_ShouldUsedInLoop>();
-        }
+            auto o_labelId = contexts.funcContext->GetLabelId(*stmt->o_label);
+            if (!o_labelId) return Error<Error_ContinueStmt_LabelNotFound>();
 
-        return Value<MStmt_Continue>();
+            auto o_scopeKind = contexts.scopeContext->GetReachableScopeKind(*o_labelId);
+            if (!o_scopeKind) return Error<Error_ContinueStmt_LabelNotReachable>();
+
+            if (!holds_alternative<MScopeKind_Loop>(*o_scopeKind))
+                return Error<Error_ContinueStmt_LabelNotCompatible>();
+
+            return Value<MStmt_Continue>(*o_labelId);
+        }
+        else
+        {
+            auto o_labelId = contexts.scopeContext->GetCurContinueLabelId();
+            if (!o_labelId)
+                return Error<Error_ContinueStmt_ShouldUsedInLoop>();
+
+            return Value<MStmt_Continue>(*o_labelId);
+        }
     }
 
     ResultType Visit(SStmt_Break* stmt)
     {
-        if (!contexts.scopeContext->IsInLoop())
+        if (stmt->o_label)
         {
-            return Error<Error_BreakStmt_ShouldUsedInLoop>();
-        }
+            auto o_labelId = contexts.funcContext->GetLabelId(*stmt->o_label);
+            if (!o_labelId) return Error<Error_BreakStmt_LabelNotFound>();
 
-        return Value<MStmt_Break>();
+            auto o_scopeKind = contexts.scopeContext->GetReachableScopeKind(*o_labelId);
+            if (!o_scopeKind) return Error<Error_BreakStmt_LabelNotReachable>();
+
+            if (!holds_alternative<MScopeKind_Loop>(*o_scopeKind) && 
+                !holds_alternative<MScopeKind_Switch>(*o_scopeKind))
+                return Error<Error_BreakStmt_LabelNotCompatible>();
+
+            return Value<MStmt_Break>(*o_labelId);
+        }
+        else
+        {
+            auto o_labelId = contexts.scopeContext->GetCurBreakLabelId();
+            if (!o_labelId)
+                return Error<Error_BreakStmt_ShouldUsedInLoop>();
+
+            return Value<MStmt_Break>(*o_labelId);
+        }
     }
 
     ResultType Visit(SStmt_Return* stmt) 
@@ -392,7 +419,7 @@ struct SStmtToMStmtsTranslator
     {
         // { }
         vector<DiagPtr> diags;
-        auto blockContext = MakeTranslationContexts_NestedScope(contexts);
+        auto blockContext = MakeTranslationContexts_DefaultScope(contexts);
 
         vector<MStmt*> builder;
         for(auto* stmt : stmt->stmts)
@@ -406,7 +433,7 @@ struct SStmtToMStmtsTranslator
         }
         
         if (!diags.empty()) return Error<AggregateDiag>(move(diags));
-        return Value<MStmt_Scope>(move(builder));
+        return Value<MStmt_Scope>(MScopeKind_Default{}, move(builder));
     }
 
     ResultType Visit(SStmt_Blank* stmt) 
@@ -682,7 +709,7 @@ struct SStmtToMStmtsTranslator
         //    expected<vector<MStmt*>, DiagPtr> MakeBody(RType* itemVarType)
         //    {
         //        // 루프 컨텍스트를 하나 열고
-        //        auto bodyContext = MakeTranslationContexts_NestedLoop(contexts);
+        //        auto bodyContext = UsingLoopScope(stmt->o_label, contexts);
 
         //        // 루프 컨텍스트에 로컬을 하나 추가하고 (enumerator는 추가해야 할까)
         //        bodyContext.scopeContext->AddLocalVarInfo(itemVarType, RName_Normal{sStmt->varName});
@@ -823,14 +850,29 @@ expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(vector<MStmt*>& outStmt
 
 expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmbeddableStmt* embedStmt, TranslationContexts& contexts)
 {
-    auto newContexts = MakeTranslationContexts_NestedScope(contexts);
+    auto newContexts = MakeTranslationContexts_DefaultScope(contexts);
 
     vector<MStmt*> stmts;
     auto e_result = TranslateSEmbeddableStmtToMStmts(stmts, embedStmt, newContexts);
     RETURN_ON_ERROR(e_result);
 
-    return newContexts.mFactory->MakeMStmt<MStmt_Scope>(move(stmts));
+    return contexts.mFactory->MakeMStmt<MStmt_Scope>(MScopeKind_Default{}, move(stmts));
 }
+
+expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::optional<std::string>& o_label, SEmbeddableStmt* sEmbedStmt, TranslationContexts& contexts)
+{
+    size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
+
+    // loop는 continue, break 둘 다 갱신한다
+    auto newContexts = MakeTranslationContexts_LoopScope(labelId, contexts);
+
+    vector<MStmt*> stmts;
+    auto e_result = TranslateSEmbeddableStmtToMStmts(stmts, sEmbedStmt, newContexts);
+    RETURN_ON_ERROR(e_result);
+
+    return contexts.mFactory->MakeMStmt<MStmt_Scope>(MScopeKind_Loop{labelId}, move(stmts));
+}
+
 
 expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, vector<MStmt*>& outStmts, TranslationContexts& contexts)
 {
@@ -1004,12 +1046,12 @@ expected<void, DiagPtr> TranslateSStmtsToMStmts(vector<MStmt*>& outBody, span<SS
 
 expected<MStmt_Scope*, DiagPtr> TranslateScopedSStmtsToMStmt_Scope(span<SStmt*> sStmts, TranslationContexts& contexts)
 {
-    auto innerContexts = MakeTranslationContexts_NestedScope(contexts);
+    auto innerContexts = MakeTranslationContexts_DefaultScope(contexts);
     vector<MStmt*> mStmts;
     auto e_result = TranslateSStmtsToMStmts(mStmts, sStmts, innerContexts);
     RETURN_ON_ERROR(e_result);
 
-    return contexts.mFactory->MakeMStmt<MStmt_Scope>(move(mStmts));
+    return contexts.mFactory->MakeMStmt<MStmt_Scope>(MScopeKind_Default{}, move(mStmts));
 }
 
 }

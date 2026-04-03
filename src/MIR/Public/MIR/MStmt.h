@@ -12,6 +12,7 @@
 #include "MCallable.h"
 #include "MCatch.h"
 #include "MRead.h"
+#include "MScopeKind.h"
 
 namespace Citron {
 
@@ -51,11 +52,11 @@ struct MStmt
 
 struct MStmt_Scope : MStmt
 {
+    MScopeKind scopeKind;
     std::vector<MStmt*> stmts;
 
-public:
-    MStmt_Scope(std::vector<MStmt*>&& stmts)
-        : stmts{std::move(stmts)}
+    MStmt_Scope(MScopeKind&& scopeKind, std::vector<MStmt*>&& stmts)
+        : scopeKind{std::move(scopeKind)}, stmts{std::move(stmts)}
     {
     }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -144,11 +145,23 @@ struct MStmt_While : MStmt
 
 struct MStmt_Continue : MStmt
 {
+    size_t labelId;
+
+    MStmt_Continue(size_t labelId)
+        : labelId{labelId}
+    {
+    }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
 struct MStmt_Break : MStmt
 {
+    size_t labelId;
+
+    MStmt_Break(size_t labelId)
+        : labelId{labelId}
+    {
+    }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 

@@ -74,7 +74,7 @@ void FuncContext::RollbackTransaction()
     RollbackTransaction_FuncContext();
 }
 
-size_t FuncContext::AddNewLabelCore(std::optional<std::string>& o_label)
+size_t FuncContext::AddNewLabelId(std::optional<std::string>& o_label)
 {
     size_t newId = labelCount++;
 
@@ -82,6 +82,14 @@ size_t FuncContext::AddNewLabelCore(std::optional<std::string>& o_label)
         namedLabels.Add(*o_label, newId);
 
     return newId;
+}
+
+std::optional<size_t> FuncContext::GetLabelId(const std::string& label)
+{
+    if (auto* id = namedLabels.Find(label))
+        return *id;
+    else
+        return std::nullopt;
 }
 
 //public void CommitLambdasToDeclSymbolTree()

@@ -179,8 +179,14 @@ struct Error_ReturnStmt_RefTargetIsNotLocation : ErrorDiag { }; // A1203_ReturnS
 struct Error_ExpStmt_ExpressionShouldBeAssignOrCall : ErrorDiag { }; // A1301_ExpStmt_ExpressionShouldBeAssignOrCall
 
 struct Error_YieldStmt_YieldShouldBeInSeqFunc : ErrorDiag { }; // A1401_YieldStmt_YieldShouldBeInSeqFunc
-struct Error_ContinueStmt_ShouldUsedInLoop : ErrorDiag { }; // A1501_ContinueStmt_ShouldUsedInLoop
-struct Error_BreakStmt_ShouldUsedInLoop : ErrorDiag { }; // A1601_BreakStmt_ShouldUsedInLoop
+struct Error_ContinueStmt_ShouldUsedInLoop : ErrorDiag {}; // A1501_ContinueStmt_ShouldUsedInLoop
+struct Error_ContinueStmt_LabelNotFound : ErrorDiag {}; // A1502_ContinueStmt_LabelNotFound
+struct Error_ContinueStmt_LabelNotReachable : ErrorDiag {}; // A1503_ContinueStmt_LabelNotReachable
+struct Error_ContinueStmt_LabelNotCompatible : ErrorDiag { }; // A1504_ContinueStmt_LabelNotCompatible
+struct Error_BreakStmt_ShouldUsedInLoop : ErrorDiag {}; // A1601_BreakStmt_ShouldUsedInLoop
+struct Error_BreakStmt_LabelNotFound : ErrorDiag { }; // A1602_BreakStmt_LabelNotFound
+struct Error_BreakStmt_LabelNotReachable : ErrorDiag {}; // A1603_BreakStmt_LabelNotReachable
+struct Error_BreakStmt_LabelNotCompatible : ErrorDiag {}; // A1604_BreakStmt_LabelNotCompatible
 struct Error_ListExp_CantInferElementTypeWithEmptyElement : ErrorDiag { }; // A1701_ListExp_CantInferElementTypeWithEmptyElement
 struct Error_ListExp_MismatchBetweenElementTypes : ErrorDiag { }; // A1702_ListExp_MismatchBetweenElementTypes
 struct Error_ForeachStmt_IteratorShouldBeListOrEnumerable : ErrorDiag { }; // A1801_ForeachStmt_IteratorShouldBeListOrEnumerable // TODO: 추후에 더 일반적으로 바뀌어야 한다

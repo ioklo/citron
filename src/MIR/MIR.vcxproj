@@ -28,6 +28,7 @@
     <ClInclude Include="Public\MIR\MMoveSource.h" />
     <ClInclude Include="Public\MIR\MPrinter.h" />
     <ClInclude Include="Public\MIR\MRead.h" />
+    <ClInclude Include="Public\MIR\MScopeKind.h" />
     <ClInclude Include="Public\MIR\MSharedExp.h" />
     <ClInclude Include="Public\MIR\MSharedExpVisitor.g.h" />
     <ClInclude Include="Public\MIR\MStmt.h" />

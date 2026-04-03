@@ -241,11 +241,13 @@ SStmt_Continue* ParseContinueStmt(Lexer* lexer, SFactory& factory)
     if (!Accept<ContinueToken>(&curLexer))
         return nullptr;
 
+    auto o_labelToken = Accept<IdentifierToken>(&curLexer);
+
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSStmt_Continue();
+    return factory.MakeSStmt_Continue(o_labelToken ? optional<string>{o_labelToken->text} : nullopt);
 }
 
 SStmt_Break* ParseBreakStmt(Lexer* lexer, SFactory& factory)
@@ -255,11 +257,13 @@ SStmt_Break* ParseBreakStmt(Lexer* lexer, SFactory& factory)
     if (!Accept<BreakToken>(&curLexer))
         return nullptr;
 
+    auto o_labelToken = Accept<IdentifierToken>(&curLexer);
+
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSStmt_Break();
+    return factory.MakeSStmt_Break(o_labelToken ? optional<string>{o_labelToken->text} : nullopt);
 }
 
 SStmt_Return* ParseReturnStmt(Lexer* lexer, SFactory& factory)

@@ -19,8 +19,8 @@ using namespace std;
 
 namespace Citron {
 
-ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, size_t nestedLoop, const RFactoryPtr& rFactory)
-    : funcContext{funcContext}, parentContext{parentContext}, nestedLoop{nestedLoop}, rFactory{rFactory}
+ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, MScopeKind&& scopeKind, std::optional<size_t> curContinueLabelId, std::optional<size_t> curBreakLabelId, const RFactoryPtr& rFactory)
+    : funcContext{funcContext}, parentContext{parentContext}, scopeKind{std::move(scopeKind)}, curContinueLabelId{curContinueLabelId}, curBreakLabelId{curBreakLabelId}, rFactory{rFactory}
 {
 }
 
@@ -73,21 +73,6 @@ void ScopeContext::SetFlowEndsCompletely()
     throw NotImplementedException{};
 }
 
-shared_ptr<ScopeContext> ScopeContext::MakeTranslationContexts_NestedScope(shared_ptr<ScopeContext> sharedThis)
-{
-    throw NotImplementedException{};
-}
-
-shared_ptr<ScopeContext> ScopeContext::MakeLoopNestedScopeContext(shared_ptr<ScopeContext> sharedThis)
-{
-    throw NotImplementedException{};
-}
-
-tuple<ScopeContextPtr, NLambdaDecl> ScopeContext::MakeTranslationContexts_Lambda(const RFuncReturn& ret, vector<RFuncParameter> params, bool bLastParamVariadic)
-{
-    throw NotImplementedException{};
-}
-
 void ScopeContext::AddLocalVarInfo(RType* type, const RName& name)
 {
     if (transactionInfos.empty())
@@ -135,6 +120,28 @@ bool ScopeContext::DoesLocalNameExistInScope(const RName& name)
 bool ScopeContext::IsFailed() 
 {
     throw NotImplementedException{};
+}
+
+std::optional<MScopeKind> ScopeContext::GetReachableScopeKind(size_t labelId)
+{
+    return visit([this, labelId](auto& scopeKind) -> optional<MScopeKind> {
+        using T = remove_cvref_t<decltype(scopeKind)>;
+        if constexpr (is_same_v<T, MScopeKind_Default>)
+        {
+        }   
+        else if constexpr (is_same_v<T, MScopeKind_Loop>)
+        {
+            if (scopeKind.labelId == labelId) return scopeKind;
+        }
+        else if constexpr (is_same_v<T, MScopeKind_Switch>)
+        {
+            if (scopeKind.labelId == labelId) return scopeKind;
+        }
+        else
+            static_assert(false);
+
+        return parentContext ? parentContext->GetReachableScopeKind(labelId) : nullopt;
+    }, scopeKind);
 }
 
 expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sTypeExp)

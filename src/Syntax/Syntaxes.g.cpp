@@ -1047,8 +1047,9 @@ JsonItem SStmt_VarDecl::ToJson()
     };
 }
 
-SStmt_Continue::SStmt_Continue()
-{ }
+SStmt_Continue::SStmt_Continue(std::optional<std::string> o_label)
+    : o_label(move(o_label)) { }
+
 SStmt_Continue::SStmt_Continue(SStmt_Continue&& other) noexcept = default;
 
 SStmt_Continue::~SStmt_Continue() = default;
@@ -1059,11 +1060,13 @@ JsonItem SStmt_Continue::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("SStmt_Continue") },
+        { "o_label", Citron::ToJson(o_label) },
     };
 }
 
-SStmt_Break::SStmt_Break()
-{ }
+SStmt_Break::SStmt_Break(std::optional<std::string> o_label)
+    : o_label(move(o_label)) { }
+
 SStmt_Break::SStmt_Break(SStmt_Break&& other) noexcept = default;
 
 SStmt_Break::~SStmt_Break() = default;
@@ -1074,6 +1077,7 @@ JsonItem SStmt_Break::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("SStmt_Break") },
+        { "o_label", Citron::ToJson(o_label) },
     };
 }
 
