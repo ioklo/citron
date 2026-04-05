@@ -35,35 +35,17 @@ inline bool IsTerminator(QInst& inst)
         || holds_alternative<QInst_CondJump>(inst)
         || holds_alternative<QInst_Return>(inst);
 }
-
-bool operator==(QCleanUpKind x, QCleanUpKind y)
-{
-    return visit([](auto& xInfo, auto& yInfo) -> bool
-    {
-        using T = remove_cvref_t<decltype(xInfo)>;
-        using U = remove_cvref_t<decltype(yInfo)>;
-        if constexpr (same_as<T, QCleanUpInfoKey_Return> && same_as<U, QCleanUpInfoKey_Return>)
-            return true;
-        else if constexpr (same_as<T, QCleanUpInfoKey_Continue> && same_as<U, QCleanUpInfoKey_Continue>)
-            return xInfo.labelId == yInfo.labelId;
-        else if constexpr (same_as<T, QCleanUpInfoKey_Break> && same_as<U, QCleanUpInfoKey_Break>)
-            return xInfo.labelId == yInfo.labelId;
-        else
-            return false;
-    }, x, y);
 }
 
-}
-
-QJumpBlockScopeGuard::QJumpBlockScopeGuard(QJumpBlockInfo&& info, QBodyContext& context)
-    : context{context}
+QJumpBlockScopeGuard::QJumpBlockScopeGuard(QJumpBlockInfo&& info, QBodyContext& bodyContext)
+    : bodyContext{bodyContext}
 {
-    context.PushJumpBlockInfo(std::move(info));
+    bodyContext.PushJumpBlockInfo(std::move(info));
 }
 
 QJumpBlockScopeGuard::~QJumpBlockScopeGuard()
 {
-    context.PopJumpBlockInfo();
+    bodyContext.PopJumpBlockInfo();
 }
 
 QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType)
@@ -153,6 +135,37 @@ QBlock* QBodyContext::AddBlock(std::string&& debugText)
     return newBlock;
 }
 
+QBlock* QBodyContext::GetContinueBlock(size_t labelId)
+{
+    for(auto& info : jumpBlockInfos | views::reverse)
+    {
+        if (auto* loopInfo = get_if<QJumpBlockInfo_Loop>(&info))
+            if (loopInfo->labelId == labelId)
+                return loopInfo->contBlock;
+    }
+
+    return nullptr;
+}
+
+QBlock* QBodyContext::GetBreakBlock(size_t labelId)
+{
+    for (auto& info : jumpBlockInfos | views::reverse)
+    {
+        if (auto* loopInfo = get_if<QJumpBlockInfo_Loop>(&info))
+        {
+            if (loopInfo->labelId == labelId)
+                return loopInfo->breakBlock;
+        }
+        else if (auto* switchInfo = get_if<QJumpBlockInfo_Switch>(&info))
+        {
+            if (switchInfo->labelId == labelId)
+                return loopInfo->breakBlock;
+        }
+    }
+
+    return nullptr;
+}
+
 void QBodyContext::EmitInstInternal(QInst&& inst)
 {
     assert(curBlock);
@@ -199,9 +212,9 @@ bool QBodyContext::IsFinalBlock(QCleanUpKind kind, size_t scopeIndex)
         if constexpr (same_as<T, QCleanUpInfoKey_Return>)
             return scopeIndex == 0;
         else if constexpr (same_as<T, QCleanUpInfoKey_Continue>)
-            return scopes[scopeIndex].labelId == kind.labelId;
+            return scopes[scopeIndex].o_labelId == kind.labelId;
         else if constexpr (same_as<T, QCleanUpInfoKey_Break>)
-            return scopes[scopeIndex].labelId == kind.labelId;
+            return scopes[scopeIndex].o_labelId == kind.labelId;
         else static_assert(false);
 
     }, kind);
@@ -276,16 +289,44 @@ QBlock* QBodyContext::MakeCleanUpBlock(QCleanUpKind kind, size_t scopeIndex)
     {
         return MakeCleanUpBlock(kind, scopeIndex - 1);
     }
-    else // 0이면?
+    else // final block이면?
     {
-        // 바로 리턴 블록 생성
-        auto* retBlock = AddBlock("cleanUp");
-        if (o_retSlotIndex)
-            retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].type, QArg_Slot{*o_retSlotIndex}}});
-        else
-            retBlock->EmitInst(QInst_Return{});
-        cleanUpInfo.recentCleanUpBlock = retBlock;
-        return retBlock;
+        // TODO: cleanUp작업을 집어넣어야 한다. 위에 부분에 겹치는 부분도 있다. 다시 정리해서, 함수로 빼자
+        static_assert(false);
+
+        return visit([this, &cleanUpInfo](auto& kind) -> QBlock* {
+            using T = remove_cvref_t<decltype(kind)>;
+            if constexpr (same_as<T, QCleanUpInfoKey_Return>)
+            {
+                // 바로 리턴 블록 생성
+                auto* retBlock = AddBlock("cleanUp");
+                if (o_retSlotIndex)
+                    retBlock->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].type, QArg_Slot{*o_retSlotIndex}}});
+                else
+                    retBlock->EmitInst(QInst_Return{});
+                cleanUpInfo.recentCleanUpBlock = retBlock;
+                return retBlock;
+            }
+            else if constexpr (same_as<T, QCleanUpInfoKey_Continue>)
+            {   
+                auto* contCleanUpBlock = AddBlock("cleanUp");
+                auto* contBlock = GetContinueBlock(kind.labelId);
+
+                contCleanUpBlock->EmitInst(QInst_Jump{contBlock});
+                cleanUpInfo.recentCleanUpBlock = contCleanUpBlock;
+                return contBlock;
+            }
+            else if constexpr (same_as<T, QCleanUpInfoKey_Break>)
+            {
+                auto* breakCleanUpBlock = AddBlock("cleanUp");
+                auto* breakBlock = GetBreakBlock(kind.labelId);
+
+                breakCleanUpBlock->EmitInst(QInst_Jump{breakBlock});
+                cleanUpInfo.recentCleanUpBlock = breakCleanUpBlock;
+                return breakCleanUpBlock;
+            }   
+            else static_assert(false);
+        }, kind);
     }
 }
 
@@ -478,9 +519,9 @@ bool QBodyContext::IsVoidType(RType* rType)
     return rType == rFactory->MakeVoidType();
 }
 
-void QBodyContext::PushScope()
+void QBodyContext::PushScope(std::optional<size_t> o_labelId)
 {
-    scopes.push_back(QScope{});
+    scopes.push_back(QScope{.o_labelId = o_labelId});
     curScope = &scopes.back();
 }
 

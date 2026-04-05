@@ -16,10 +16,13 @@
     <ClInclude Include="MStmtToQInsts.h" />
     <ClInclude Include="QBodyContext.h" />
     <ClInclude Include="CommonQInstsTranslation.h" />
-    <ClInclude Include="ScopeGuard.h" />
+    <ClInclude Include="QScopeGuard.h" />
     <ClInclude Include="MReadToQInsts.h" />
     <ClInclude Include="MCreateToQInsts.h" />
     <ClInclude Include="QTranslationContexts.h" />
+    <ClInclude Include="QEmitState.h" />
+    <ClInclude Include="QJumpBlockInfo.h" />
+    <ClInclude Include="QMisc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IR0IR1Translator.cpp" />
@@ -29,5 +32,6 @@
     <ClCompile Include="CommonQInstsTranslation.cpp" />
     <ClCompile Include="MReadToQInsts.cpp" />
     <ClCompile Include="MCreateToQInsts.cpp" />
+    <ClCompile Include="QEmitState.cpp" />
   </ItemGroup>
 </Project>

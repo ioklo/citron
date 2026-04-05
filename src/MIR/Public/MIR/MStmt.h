@@ -118,6 +118,7 @@ struct MStmt_If : MStmt
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 
+// init은 For문 위에 따로 존재한다
 struct MStmt_For : MStmt
 {   
     std::optional<MTopLevel_Read> cond; // BC
@@ -145,10 +146,10 @@ struct MStmt_While : MStmt
 
 struct MStmt_Continue : MStmt
 {
-    size_t labelId;
+    size_t o_labelId;
 
-    MStmt_Continue(size_t labelId)
-        : labelId{labelId}
+    MStmt_Continue(size_t o_labelId)
+        : o_labelId{o_labelId}
     {
     }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -156,10 +157,10 @@ struct MStmt_Continue : MStmt
 
 struct MStmt_Break : MStmt
 {
-    size_t labelId;
+    size_t o_labelId;
 
-    MStmt_Break(size_t labelId)
-        : labelId{labelId}
+    MStmt_Break(size_t o_labelId)
+        : o_labelId{o_labelId}
     {
     }
     MIR_API void Accept(MStmtVisitor& visitor) override;

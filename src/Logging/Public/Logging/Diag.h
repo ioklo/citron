@@ -1,7 +1,7 @@
 #pragma once
 #include "LoggingConfig.h"
 
-#include <variant>
+#include <expected>
 #include <memory>
 #include <vector>
 
@@ -267,7 +267,18 @@ struct Error_Argument_Mismatch_MoveRef_LocNBC : ErrorDiag {}; // [move]T& 인자
 struct Error_Argument_StmtCall : ErrorDiag {}; // 어떤 파라미터라도 void call을 argument로 받을 수 없다
 struct Error_Argument_StmtAssign : ErrorDiag {}; // 어떤 파라미터라도 NBC assign을 argument로 받을 수 없다
 
+struct Error_FuncBody_ShouldEndWithReturn : ErrorDiag {}; // A2901_BodyShouldReturn, // 리턴 타입이 있는 본문에 리턴이 없다
+
 struct Error_NotSupported_LambdaParameterInference : ErrorDiag { }; // A9901_NotSupported_LambdaParameterInference
 struct Error_NotSupported_LambdaReturnTypeInference : ErrorDiag {}; // A9902_NotSupported_LambdaReturnTypeInference
+
+
+template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>
+std::unexpected<std::shared_ptr<Diag>> Error(TArgs&&... args)
+{
+    std::shared_ptr<Diag> diag{new TDiag(forward<TArgs>(args)...)};
+
+    return std::unexpected{std::move(diag)};
+}
 
 } // namespace Citron

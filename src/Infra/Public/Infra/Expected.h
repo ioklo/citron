@@ -10,7 +10,7 @@ std::unexpected<E> Unexpected(std::expected<V, E>&& e)
     return std::unexpected{std::move(e).error()};
 }
 
-#define RETURN_ON_ERROR(e) { if (!e) return std::unexpected{std::move(e).error()}; }
-#define RETURN_ON_ERROR_REFDECL(e, ...) { if (!e) return std::unexpected{std::move(e).error()}; } auto& __VA_ARGS__ = (*e);
+#define RETURN_ON_ERROR(e) do { if (!e) return std::unexpected{std::move(e).error()}; } while(0)
+#define RETURN_ON_ERROR_REFDECL(e, ...) do { if (!e) return std::unexpected{std::move(e).error()}; } while(0); auto& __VA_ARGS__ = (*e)
 
 }

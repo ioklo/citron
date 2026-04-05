@@ -10,6 +10,7 @@
 #include "QBodyContext.h"
 #include "QTranslationContexts.h"
 #include "MCreateToQInsts.h"
+#include "QEmitState.h"
 
 using namespace std;
 
@@ -18,15 +19,15 @@ namespace Citron {
 // MLoc이 가리키는 위치를 slot자체나, ptr를 돌려준다 (ptr이 들어간 slot을 리턴한다)
 struct MLocQInstsTranslator
 {
-    using ResultType = expected<QLocResult, DiagPtr>;
+    using ResultType = expected<QEmitState<QLocResult>, DiagPtr>;
     QTranslationContexts& contexts;
     
     ResultType Visit(MLoc_Materialize* loc) 
     {
         RType* rType = GetType(loc->create, &*contexts.rFactory);
         size_t slotIndex = contexts.bodyContext.NewSlot(rType);
-        auto e_result = TranslateMCreateToQInsts(loc->create, slotIndex, contexts);
-        RETURN_ON_ERROR(e_result);
+        auto e_s_result = TranslateMCreateToQInsts(loc->create, slotIndex, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_result);
 
         return QLocResult_Slot{slotIndex};
     }
@@ -68,8 +69,8 @@ struct MLocQInstsTranslator
     ResultType Visit(MLoc_ListIndexer* loc) { throw NotImplementedException{}; }
     ResultType Visit(MLoc_StructVar* loc) 
     {
-        auto e_instanceResult = TranslateMLocToQInsts(loc->instance, contexts);
-        RETURN_ON_ERROR(e_instanceResult);
+        auto e_s_instanceResult = TranslateMLocToQInsts(loc->instance, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_instanceResult);
 
         return visit([this, loc](auto& locResult) -> ResultType {
             using T = remove_cvref_t<decltype(locResult)>;
@@ -97,7 +98,7 @@ struct MLocQInstsTranslator
             }
             else static_assert(false);
             
-        }, *e_instanceResult);
+        }, **e_s_instanceResult);
     }
 
     ResultType Visit(MLoc_ClassVar* loc) { throw NotImplementedException{}; }
@@ -114,7 +115,7 @@ struct MLocQInstsTranslator
     ResultType Visit(MLoc_NullableValue* loc) { throw NotImplementedException{}; }
 };
 
-expected<QLocResult, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QTranslationContexts& contexts)
+expected<QEmitState<QLocResult>, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QTranslationContexts& contexts)
 {
     MLocQInstsTranslator translator{contexts};
     return Accept(translator, loc);

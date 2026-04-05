@@ -861,16 +861,16 @@ expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmb
 
 expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::optional<std::string>& o_label, SEmbeddableStmt* sEmbedStmt, TranslationContexts& contexts)
 {
-    size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
+    size_t o_labelId = contexts.funcContext->AddNewLabelId(o_label);
 
     // loop는 continue, break 둘 다 갱신한다
-    auto newContexts = MakeTranslationContexts_LoopScope(labelId, contexts);
+    auto newContexts = MakeTranslationContexts_LoopScope(o_labelId, contexts);
 
     vector<MStmt*> stmts;
     auto e_result = TranslateSEmbeddableStmtToMStmts(stmts, sEmbedStmt, newContexts);
     RETURN_ON_ERROR(e_result);
 
-    return contexts.mFactory->MakeMStmt<MStmt_Scope>(MScopeKind_Loop{labelId}, move(stmts));
+    return contexts.mFactory->MakeMStmt<MStmt_Scope>(MScopeKind_Loop{o_labelId}, move(stmts));
 }
 
 

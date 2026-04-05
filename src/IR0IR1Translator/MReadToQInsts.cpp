@@ -11,7 +11,9 @@
 #include "MStmtToQInsts.h"
 #include "QBodyContext.h"
 #include "QTranslationContexts.h"
+#include "QEmitState.h"
 #include "CommonQInstsTranslation.h"
+#include "QEmitState.h"
 
 using namespace std;
 
@@ -20,7 +22,7 @@ namespace Citron {
 // slot을 하나 만들어서 리턴한다
 struct MRead_ExpQInstsTranslator
 {
-    using ResultType = expected<QReadResult_Value, DiagPtr>;
+    using ResultType = expected<QEmitState<QReadResult_Value>, DiagPtr>;
     QTranslationContexts& contexts;
 
     ResultType Visit(MExp* exp)
@@ -32,8 +34,8 @@ struct MRead_ExpQInstsTranslator
     ResultType Visit(MExp_Load* exp)
     {
         // 이 translation으로 lv(slot/ptr)가 하나 나올 것이다
-        auto e_srcLoc = TranslateMLocToQInsts(exp->loc, contexts);
-        RETURN_ON_ERROR(e_srcLoc);
+        auto e_s_srcLoc = TranslateMLocToQInsts(exp->loc, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_srcLoc);
 
         return visit([this, exp](auto& srcLoc) -> ResultType
         {
@@ -56,7 +58,7 @@ struct MRead_ExpQInstsTranslator
             }
             else static_assert(false);
 
-        }, *e_srcLoc);
+        }, **e_s_srcLoc);
     }
 
     // Assign(loc dest, src exp), Store
@@ -64,14 +66,14 @@ struct MRead_ExpQInstsTranslator
     ResultType Visit(MExp_Store* exp)
     {
         // dest를 먼저 계산한다
-        auto e_dest = TranslateMLocToQInsts(exp->dest, contexts);
-        RETURN_ON_ERROR(e_dest);
+        auto e_s_dest = TranslateMLocToQInsts(exp->dest, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_dest);
 
         // src를 translation 하면, slot 또는 ptr이 나올 것이다
         // exp->src가 MRead_Exp라고 하더라도, 별도로 exp로 계산해서 dest에 바로 넣지 않도록 한다
         // a = F(a) 꼴이 나오면, F(a)를 완전히 다 계산하고 난 뒤에 a에 넣는게 안전하다
-        auto e_src = TranslateMReadToQInsts(exp->src, contexts);
-        RETURN_ON_ERROR(e_src);
+        auto e_s_src = TranslateMReadToQInsts(exp->src, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_src);
 
         return visit([this](auto& destLoc, auto& src) -> ResultType {
             using T = remove_cvref_t<decltype(destLoc)>;
@@ -153,13 +155,13 @@ struct MRead_ExpQInstsTranslator
             }
             else static_assert(false);
 
-        }, *e_dest, *e_src);
+        }, **e_s_dest, **e_s_src);
     }
 
     ResultType Visit(MExp_Stmt* exp)
     {
-        auto e_result = TranslateMStmtsToQInsts(exp->stmts, contexts);
-        RETURN_ON_ERROR(e_result);
+        auto e_s_result = TranslateMStmtsToQInsts(exp->stmts, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_result);
 
         // exp->finalExp는 context dependent하다. 여기는 MRead_Exp를 Translation하기 위한 곳이므로, finalExp를 MRead로 간주하고 Translate한다
         return Accept(MRead_ExpQInstsTranslator{contexts}, exp->finalExp);
@@ -168,8 +170,8 @@ struct MRead_ExpQInstsTranslator
     // &x
     ResultType Visit(MExp_PtrRef* exp)
     {
-        auto e_loc = TranslateMLocToQInsts(exp->innerLoc, contexts);
-        RETURN_ON_ERROR(e_loc);
+        auto e_s_loc = TranslateMLocToQInsts(exp->innerLoc, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_loc);
 
         return visit([this](auto& loc) -> ResultType {
             using T = remove_cvref_t<decltype(loc)>;
@@ -196,8 +198,7 @@ struct MRead_ExpQInstsTranslator
             }
             else static_assert(false);
 
-            return {};
-        }, *e_loc);
+        }, **e_s_loc);
     }
 
     ResultType Visit(MExp_BoolLiteral* exp) 
@@ -215,11 +216,12 @@ struct MRead_ExpQInstsTranslator
         auto* intrinsicInfo = GetIntrinsicInfo(exp->kind, contexts);
         assert(intrinsicInfo);
 
-        auto e_args = TranslateMArgumentsToQInsts(exp->args, contexts);
+        auto e_s_args = TranslateMArgumentsToQInsts(exp->args, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_args);
 
         // 여긴 MExp이므로 void type은 들어오지 않는다
         size_t resultSlotIndex = contexts.bodyContext.NewSlot(intrinsicInfo->type);
-        contexts.bodyContext.EmitIntrinsic(intrinsicInfo->kind, resultSlotIndex, move(*e_args));
+        contexts.bodyContext.EmitIntrinsic(intrinsicInfo->kind, resultSlotIndex, move(**e_s_args));
 
         return QReadResult_Slot{resultSlotIndex};
     }
@@ -231,14 +233,14 @@ struct MRead_ExpQInstsTranslator
         // Generics는 T에 관한 정보를 더 넘겨준다 (크기 등)
         // 따라서 이 함수는 t, {F함수에 대한 constraint table} 두 인자를 받는다
         // 그리고 t는 항상 stack pointer를 가리키게 된다 (callee쪽에서 크기를 정확히 알 수 없으므로)
-        auto e_args = TranslateMArgumentsToQInsts(exp->args, contexts);
-        RETURN_ON_ERROR(e_args);
+        auto e_s_args = TranslateMArgumentsToQInsts(exp->args, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_args);
 
         // 2. Emit처리
         auto* rFuncDecl = GetRFuncDecl(exp->callable);
         auto* retType = GetType(exp->callable);
         size_t resultSlotIndex = contexts.bodyContext.NewSlot(retType);
-        contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, QArg_Slot{resultSlotIndex}, move(*e_args)});
+        contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, QArg_Slot{resultSlotIndex}, move(**e_s_args)});
 
         return QReadResult_Slot{resultSlotIndex};
     }
@@ -265,42 +267,42 @@ struct MRead_ExpQInstsTranslator
    
 };
 
-expected<QReadResult_Place, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, QTranslationContexts& contexts)
+expected<QEmitState<QReadResult_Place>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, QTranslationContexts& contexts)
 {
     // 이건 MLoc을 그대로 써본다
-    auto e_locResult = TranslateMLocToQInsts(mReadLoc.loc, contexts);
-    RETURN_ON_ERROR(e_locResult);
+    auto e_s_locResult = TranslateMLocToQInsts(mReadLoc.loc, contexts);
+    RETURN_ON_ERROR_OR_DONE(e_s_locResult);
 
-    return visit([](auto& locResult) -> QReadResult_Place {
+    return visit([](auto& locResult) -> QEmitState<QReadResult_Place> {
         using T = remove_cvref_t<decltype(locResult)>;
         if constexpr (same_as<T, QLocResult_Slot>) return QReadResult_Slot{locResult.slotIndex};
         else if constexpr (same_as<T, QLocResult_Ptr>) return QReadResult_Ptr{locResult.slotIndex};
         else static_assert(false);
-    }, *e_locResult);
+    }, **e_s_locResult);
 }
 
-expected<QReadResult_Value, DiagPtr> TranslateMRead_ExpToQInsts(MRead_Exp& mReadExp, QTranslationContexts& contexts)
+expected<QEmitState<QReadResult_Value>, DiagPtr> TranslateMRead_ExpToQInsts(MRead_Exp& mReadExp, QTranslationContexts& contexts)
 {
     return Accept(MRead_ExpQInstsTranslator{contexts}, mReadExp.exp);
 }
 
-expected<QReadResult, DiagPtr> TranslateMReadToQInsts(MRead& mRead, QTranslationContexts& contexts)
+expected<QEmitState<QReadResult>, DiagPtr> TranslateMReadToQInsts(MRead& mRead, QTranslationContexts& contexts)
 {
-    return visit([&contexts](auto& mRead) -> expected<QReadResult, DiagPtr> {
+    return visit([&contexts](auto& mRead) -> expected<QEmitState<QReadResult>, DiagPtr> {
         using T = remove_cvref_t<decltype(mRead)>;
         if constexpr (same_as<T, MRead_Loc>)
         {
-            auto e_result = TranslateMRead_LocToQInsts(mRead, contexts);
-            RETURN_ON_ERROR(e_result);
+            auto e_s_result = TranslateMRead_LocToQInsts(mRead, contexts);
+            RETURN_ON_ERROR_OR_DONE(e_s_result);
 
-            return visit([](auto& result) -> QReadResult { return result; }, *e_result);
+            return visit([](auto& result) -> QReadResult { return result; }, **e_s_result);
         }
         else if constexpr (same_as<T, MRead_Exp>)
         {
-            auto e_result = TranslateMRead_ExpToQInsts(mRead, contexts);
-            RETURN_ON_ERROR(e_result);
+            auto e_s_result = TranslateMRead_ExpToQInsts(mRead, contexts);
+            RETURN_ON_ERROR_OR_DONE(e_s_result);
 
-            return visit([](auto& result) -> QReadResult { return result; }, *e_result);
+            return visit([](auto& result) -> QReadResult { return result; }, **e_s_result);
         }
         else static_assert(false);
     }, mRead);

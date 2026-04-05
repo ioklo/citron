@@ -10,10 +10,11 @@
 #include "MIR/MInitExp.h"
 #include "QTranslationContexts.h"
 #include "QBodyContext.h"
-#include "ScopeGuard.h"
+#include "QScopeGuard.h"
 #include "MLocToQInsts.h"
 #include "MCreateToQInsts.h"
 #include "MReadToQInsts.h"
+#include "QEmitState.h"
 
 using namespace std;
 
@@ -41,9 +42,9 @@ size_t MakePtrSlot(QLocResult& locResult, QTranslationContexts& contexts)
 }
 
 // ptr slot만 반환하도록 한다
-expected<QReadResult_Ptr, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp_StringElem& elem, QTranslationContexts& contexts)
+expected<QEmitState<QReadResult_Ptr>, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp_StringElem& elem, QTranslationContexts& contexts)
 {
-    return visit([&contexts](auto& elem) -> expected<QReadResult_Ptr, DiagPtr> {
+    return visit([&contexts](auto& elem) -> expected<QEmitState<QReadResult_Ptr>, DiagPtr> {
         auto& bodyContext = contexts.bodyContext;
         using T = remove_cvref_t<decltype(elem)>;
         if constexpr (same_as<T, MInitExp_StringElem_Text>)
@@ -63,8 +64,8 @@ expected<QReadResult_Ptr, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp
         {
             auto* stringType = bodyContext.GetStringType();
             size_t slotIndex = bodyContext.NewSlot(stringType);
-            auto e_result = TranslateMCreate_NBCToQInsts(elem.initExp, slotIndex, contexts);
-            RETURN_ON_ERROR(e_result);
+            auto e_s_result = TranslateMCreate_NBCToQInsts(elem.initExp, slotIndex, contexts);
+            RETURN_ON_ERROR_OR_DONE(e_s_result);
 
             auto* stringPtrType = bodyContext.GetPtrType(stringType);
             size_t ptrSlotIndex = bodyContext.NewSlot(stringPtrType);
@@ -74,10 +75,10 @@ expected<QReadResult_Ptr, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp
         }
         else if constexpr (same_as<T, MInitExp_StringElem_Loc>)
         {
-            auto e_locResult = TranslateMLocToQInsts(elem.loc, contexts);
-            RETURN_ON_ERROR(e_locResult);
+            auto e_s_locResult = TranslateMLocToQInsts(elem.loc, contexts);
+            RETURN_ON_ERROR_OR_DONE(e_s_locResult);
 
-            auto ptrSlotIndex = MakePtrSlot(*e_locResult, contexts);
+            auto ptrSlotIndex = MakePtrSlot(**e_s_locResult, contexts);
             return QReadResult_Ptr{ptrSlotIndex};
         }
         
@@ -85,45 +86,49 @@ expected<QReadResult_Ptr, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp
     }, elem);
 }
 
-expected<void, DiagPtr> TranslateMInitExp_StringElemToQInstsForCreate(MInitExp_StringElem& elem, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
+expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringElemToQInstsForCreate(MInitExp_StringElem& elem, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
 {
-    if (!o_destSlotIndex) return {};
+    if (!o_destSlotIndex) return QEmitState_Ready{};
 
-    return visit([&o_destSlotIndex, &contexts](auto& elem) -> expected<void, DiagPtr> {
+    return visit([&o_destSlotIndex, &contexts](auto& elem) -> expected<QEmitState<void>, DiagPtr> {
         using T = remove_cvref_t<decltype(elem)>;
         if constexpr (same_as<T, MInitExp_StringElem_Text>)
         {
-            contexts.bodyContext.EmitInst(QInst_Ctor_String{QArg_Slot{*o_destSlotIndex}, elem.text});
-            return {};
+            auto& bodyContext = contexts.bodyContext;
+
+            size_t ptrSlotIndex = bodyContext.NewSlot(bodyContext.GetPtrType(bodyContext.GetStringType())); // string slot하나 만들어서 ctor의 this로 쓴다
+            bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{*o_destSlotIndex}});
+            bodyContext.EmitInst(QInst_Ctor_String{QArg_Slot{ptrSlotIndex}, elem.text});
+            return QEmitState_Ready{};
         }
         else if constexpr (same_as<T, MInitExp_StringElem_InitExp>)
         {   
-            auto e_result = TranslateMCreate_NBCToQInsts(elem.initExp, o_destSlotIndex, contexts);
-            RETURN_ON_ERROR(e_result);
-            return {};
+            auto e_s_result = TranslateMCreate_NBCToQInsts(elem.initExp, o_destSlotIndex, contexts);
+            RETURN_ON_ERROR_OR_DONE(e_s_result);
+            return QEmitState_Ready{};
         }
         else if constexpr (same_as<T, MInitExp_StringElem_Loc>)
         {
-            auto e_locResult = TranslateMLocToQInsts(elem.loc, contexts);
-            RETURN_ON_ERROR(e_locResult);
+            auto e_s_locResult = TranslateMLocToQInsts(elem.loc, contexts);
+            RETURN_ON_ERROR_OR_DONE(e_s_locResult);
 
-            size_t ptrSlotIndex = MakePtrSlot(*e_locResult, contexts);
+            size_t ptrSlotIndex = MakePtrSlot(**e_s_locResult, contexts);
 
             contexts.bodyContext.EmitIntrinsic(
                 QInst_IntrinsicKind::CopyCtor_StringPtr_StringPtr_Void, 
                 nullopt, 
                 {QArg_Slot{*o_destSlotIndex}, QArg_Slot{ptrSlotIndex}});
 
-            return {};
+            return QEmitState_Ready{};
         }
         else static_assert(false);
     }, elem);
 }
 } // namespace 
 
-expected<QArg_Input, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QTranslationContexts& contexts)
+expected<QEmitState<QArg_Input>, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QTranslationContexts& contexts)
 {
-    return visit([&contexts](auto& arg) -> expected<QArg_Input, DiagPtr> {
+    return visit([&contexts](auto& arg) -> expected<QEmitState<QArg_Input>, DiagPtr> {
         using T = remove_cvref_t<decltype(arg)>;
 
         if constexpr (same_as<T, MArgument_Create>)
@@ -132,17 +137,17 @@ expected<QArg_Input, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QTransl
             auto* argType = GetType(arg.create, &*contexts.rFactory);
             auto argSlotIndex = contexts.bodyContext.NewSlot(argType);
 
-            auto e_result = TranslateMCreateToQInsts(arg.create, argSlotIndex, contexts);
-            RETURN_ON_ERROR(e_result);
+            auto e_s_result = TranslateMCreateToQInsts(arg.create, argSlotIndex, contexts);
+            RETURN_ON_ERROR_OR_DONE(e_s_result);
 
             return QArg_Slot{argSlotIndex};
         }
-        else if constexpr (same_as <T, MArgument_Loc>) // loc은 pointer로 넘긴다
+        else if constexpr (same_as<T, MArgument_Loc>) // loc은 pointer로 넘긴다
         {
-            auto e_locResult = TranslateMLocToQInsts(arg.loc, contexts);
-            RETURN_ON_ERROR(e_locResult);
+            auto e_s_locResult = TranslateMLocToQInsts(arg.loc, contexts);
+            RETURN_ON_ERROR_OR_DONE(e_s_locResult);
 
-            return visit([&contexts](auto& locResult) -> expected<QArg_Input, DiagPtr> {
+            return visit([&contexts](auto& locResult) -> expected<QEmitState<QArg_Input>, DiagPtr> {
                 using U = remove_cvref_t<decltype(locResult)>;
 
                 if constexpr (same_as<U, QLocResult_Slot>)
@@ -160,7 +165,7 @@ expected<QArg_Input, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QTransl
                     return QArg_Slot{locResult.slotIndex};
                 }
                 else static_assert(false);
-            }, *e_locResult);
+            }, **e_s_locResult);
         }
         else if constexpr (same_as<T, MArgument_Move>)
         {
@@ -181,17 +186,17 @@ expected<QArg_Input, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QTransl
     }, arg);
 }
 
-expected<vector<QArg_Input>, DiagPtr> TranslateMArgumentsToQInsts(vector<MArgument>& mArgs, QTranslationContexts& contexts)
+expected<QEmitState<vector<QArg_Input>>, DiagPtr> TranslateMArgumentsToQInsts(vector<MArgument>& mArgs, QTranslationContexts& contexts)
 {
     vector<QArg_Input> qArgs;
     qArgs.reserve(mArgs.size());
 
     for (auto& mArg : mArgs)
     {
-        auto e_qArg = TranslateMArgumentToQInsts(mArg, contexts);
-        RETURN_ON_ERROR(e_qArg);
+        auto e_s_qArg = TranslateMArgumentToQInsts(mArg, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_qArg);
 
-        qArgs.push_back(move(*e_qArg));
+        qArgs.push_back(move(**e_s_qArg));
     }
 
     return move(qArgs);
@@ -256,7 +261,7 @@ QIntrinsicInfo* GetIntrinsicInfo(MInitExp_CallIntrinsicKind kind, QTranslationCo
     return &i->second;
 }
 
-expected<void, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
+expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
 {
     auto& bodyContext = contexts.bodyContext;
     assert(!exp->elements.empty());
@@ -264,8 +269,8 @@ expected<void, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, o
     // 원소가 한개라면, dest에 직접 넣는다
     if (exp->elements.size() == 1)
     {
-        auto e_result = TranslateMInitExp_StringElemToQInstsForCreate(exp->elements.front(), o_destSlotIndex, contexts);
-        RETURN_ON_ERROR(e_result);
+        auto e_s_result = TranslateMInitExp_StringElemToQInstsForCreate(exp->elements.front(), o_destSlotIndex, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_result);
     }
     else
     {
@@ -274,15 +279,15 @@ expected<void, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, o
 
 
         // "abc $x" => "abc " + x
-        auto e_frontPtr = TranslateMInitExp_StringElemToQInsts(exp->elements.front(), contexts);
-        RETURN_ON_ERROR(e_frontPtr);
+        auto e_s_frontPtr = TranslateMInitExp_StringElemToQInsts(exp->elements.front(), contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_frontPtr);
 
-        size_t curPtrSlotIndex = e_frontPtr->slotIndex;
+        size_t curPtrSlotIndex = (*e_s_frontPtr)->slotIndex;
         for (size_t i = 1, end = exp->elements.size() - 1; i < end; i++)
         {   
-            auto e_elemPtr = TranslateMInitExp_StringElemToQInsts(exp->elements[i], contexts);
-            RETURN_ON_ERROR(e_elemPtr);
-            size_t elemPtrSlotIndex = e_elemPtr->slotIndex;
+            auto e_s_elemPtr = TranslateMInitExp_StringElemToQInsts(exp->elements[i], contexts);
+            RETURN_ON_ERROR_OR_DONE(e_s_elemPtr);
+            size_t elemPtrSlotIndex = (*e_s_elemPtr)->slotIndex;
 
             auto newSlotIndex = bodyContext.NewSlot(stringType);
             bodyContext.EmitIntrinsic(
@@ -296,23 +301,17 @@ expected<void, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, o
             curPtrSlotIndex = newPtrSlotIndex;
         }
         
-        auto e_backPtr = TranslateMInitExp_StringElemToQInsts(exp->elements.back(), contexts);
-        RETURN_ON_ERROR(e_backPtr);
+        auto e_s_backPtr = TranslateMInitExp_StringElemToQInsts(exp->elements.back(), contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_backPtr);
 
         if (o_destSlotIndex)
         {
             contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Add_StringPtr_StringPtr_String, 
-                QArg_Slot{*o_destSlotIndex}, {QArg_Slot{curPtrSlotIndex}, QArg_Slot{e_backPtr->slotIndex}});
+                QArg_Slot{*o_destSlotIndex}, {QArg_Slot{curPtrSlotIndex}, QArg_Slot{(*e_s_backPtr)->slotIndex}});
         }
     }
 
-    return {};
-}
-
-std::expected<void, DiagPtr> TranslateMInitExp_StringToQInstsWithNewScope(MInitExp_String* exp, std::optional<size_t> destSlot, QTranslationContexts& contexts)
-{
-    ScopeGuard guard{contexts.bodyContext};
-    return TranslateMInitExp_StringToQInsts(exp, destSlot, contexts);
+    return QEmitState_Ready{};
 }
 
 } // namespace Citron

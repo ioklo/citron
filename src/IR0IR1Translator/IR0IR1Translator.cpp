@@ -20,8 +20,9 @@
 
 #include "MStmtToQInsts.h"
 #include "QBodyContext.h"
-#include "ScopeGuard.h"
+#include "QScopeGuard.h"
 #include "QTranslationContexts.h"
+#include "QEmitState.h"
 
 using namespace std;
 
@@ -50,7 +51,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     QTranslationContexts contexts{rFactory, qFactory, bodyContext};
 
     {
-        ScopeGuard mainGuard{bodyContext};
+        QScopeGuard mainGuard{std::nullopt, bodyContext};
 
         size_t curArgSlotIndex = 0;
         auto* rFuncDecl = mFuncBody.nFuncDecl->GetRFuncDecl();
@@ -90,8 +91,17 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
             }
         }
 
-        auto e_bodyResult = TranslateMStmt_ScopeToQInsts(mFuncBody.body, contexts);
-        RETURN_ON_ERROR(e_bodyResult);
+        auto e_s_bodyResult = TranslateMStmt_ScopeToQInsts_Default(mFuncBody.body, contexts);
+        RETURN_ON_ERROR(e_s_bodyResult);
+
+        // Done으로 끝나는지 검사하고, 아니라면 void라면 return
+        if (*e_s_bodyResult) // Ready 상태라면
+        {
+            if (bodyContext.IsVoidType(rRetType))
+                bodyContext.EmitTermInst(QInst_Return{});
+            else
+                return Error<Error_FuncBody_ShouldEndWithReturn>();
+        }
     }
 
     bodyContext.VerifyBlocks();

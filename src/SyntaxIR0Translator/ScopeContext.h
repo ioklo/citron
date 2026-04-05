@@ -84,7 +84,7 @@ public:
     bool IsFailed();
     std::optional<size_t> GetCurContinueLabelId() { return curContinueLabelId; }
     std::optional<size_t> GetCurBreakLabelId() { return curBreakLabelId; }
-    std::optional<MScopeKind> GetReachableScopeKind(size_t labelId);
+    std::optional<MScopeKind> GetReachableScopeKind(size_t o_labelId);
 
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
     std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);

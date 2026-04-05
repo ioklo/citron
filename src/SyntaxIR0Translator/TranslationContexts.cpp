@@ -40,17 +40,17 @@ TranslationContexts MakeTranslationContexts_DefaultScope(TranslationContexts& co
     return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
 }
 
-TranslationContexts MakeTranslationContexts_LoopScope(size_t labelId, TranslationContexts& contexts)
+TranslationContexts MakeTranslationContexts_LoopScope(size_t o_labelId, TranslationContexts& contexts)
 {
-    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Loop{labelId}, labelId, labelId, contexts.rFactory);
+    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Loop{o_labelId}, o_labelId, o_labelId, contexts.rFactory);
     return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
 }
 
 TranslationContexts MakeTranslationContexts_SwitchScope(optional<string> o_label, TranslationContexts& contexts)
 {
-    size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
+    size_t o_labelId = contexts.funcContext->AddNewLabelId(o_label);
     // switch는 break만 갱신한다
-    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Switch{labelId}, contexts.scopeContext->GetCurContinueLabelId(), labelId, contexts.rFactory);
+    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Switch{o_labelId}, contexts.scopeContext->GetCurContinueLabelId(), o_labelId, contexts.rFactory);
     return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
 }
 

@@ -52,7 +52,7 @@ struct TranslationContexts
 TranslationContexts MakeTranslationContexts(NFuncDecl* nFuncDecl, const LoggerPtr& logger, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService);
 
 TranslationContexts MakeTranslationContexts_DefaultScope(TranslationContexts& contexts);
-TranslationContexts MakeTranslationContexts_LoopScope(size_t labelId, TranslationContexts& contexts);
+TranslationContexts MakeTranslationContexts_LoopScope(size_t o_labelId, TranslationContexts& contexts);
 TranslationContexts MakeTranslationContexts_SwitchScope(std::optional<std::string> o_label, TranslationContexts& contexts);
 TranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic, TranslationContexts& contexts);
 

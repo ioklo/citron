@@ -19,8 +19,11 @@ using QReadResult = std::variant<QReadResult_Slot, QReadResult_Ptr, QReadResult_
 using QReadResult_Value = std::variant<QReadResult_Slot, QReadResult_ConstBool, QReadResult_ConstInt32>;
 using QReadResult_Place = std::variant<QReadResult_Slot, QReadResult_Ptr>;
 
-std::expected<QReadResult_Place, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, QTranslationContexts& contexts);
-std::expected<QReadResult, DiagPtr> TranslateMReadToQInsts(MRead& mRead, QTranslationContexts& contexts);
+template<typename T>
+struct QEmitState;
+
+std::expected<QEmitState<QReadResult_Place>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, QTranslationContexts& contexts);
+std::expected<QEmitState<QReadResult>, DiagPtr> TranslateMReadToQInsts(MRead& mRead, QTranslationContexts& contexts);
 
 //visit([](auto& result) -> ResultType {
 //    using T = remove_cvref_t<decltype(result)>;

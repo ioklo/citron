@@ -4,8 +4,7 @@
 #include <vector>
 
 namespace Citron {
-struct Diag;
-using DiagPtr = std::shared_ptr<Diag>;
+using DiagPtr = std::shared_ptr<struct Diag>;
 
 struct MStmt;
 struct MStmt_Scope;
@@ -14,7 +13,13 @@ using QFactoryPtr = std::shared_ptr<class QFactory>;
 
 struct QTranslationContexts;
 
-std::expected<void, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, QTranslationContexts& context);
-std::expected<void, DiagPtr> TranslateMStmt_ScopeToQInsts(MStmt_Scope* scope, QTranslationContexts& context);
-std::expected<void, DiagPtr> TranslateMStmtToQInsts(MStmt* mStmt, QTranslationContexts& qBodyContext);
+template<typename T>
+struct QEmitState;
+
+std::expected<QEmitState<void>, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, QTranslationContexts& contexts);
+std::expected<QEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Default(MStmt_Scope* scope, QTranslationContexts& contexts);
+std::expected<QEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Loop(MStmt_Scope* scope, QBlock* contBlock, QBlock* breakBlock, QTranslationContexts& contexts);
+std::expected<QEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Switch(MStmt_Scope* scope, QBlock* breakBlock, QTranslationContexts& contexts);
+
+std::expected<QEmitState<void>, DiagPtr> TranslateMStmtToQInsts(MStmt* mStmt, QTranslationContexts& contexts);
 } // namespace Citron

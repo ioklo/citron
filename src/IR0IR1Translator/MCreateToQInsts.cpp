@@ -13,7 +13,8 @@
 #include "QTranslationContexts.h"
 #include "MReadToQInsts.h"
 #include "CommonQInstsTranslation.h"
-#include "ScopeGuard.h"
+#include "QScopeGuard.h"
+#include "QEmitState.h"
 
 using namespace std;
 
@@ -21,7 +22,7 @@ namespace Citron {
 
 struct MCreate_BCQInstsTranslator
 {
-    using ResultType = expected<void, DiagPtr>;
+    using ResultType = expected<QEmitState<void>, DiagPtr>;
     optional<size_t> o_destSlotIndex;
     QTranslationContexts& contexts;
 
@@ -34,10 +35,10 @@ struct MCreate_BCQInstsTranslator
     ResultType Visit(MExp_Load* exp)
     {
         // 이 translation으로 lv(slot/ptr)가 하나 나올 것이다
-        auto e_srcLoc = TranslateMLocToQInsts(exp->loc, contexts);
-        RETURN_ON_ERROR(e_srcLoc);
+        auto e_s_srcLoc = TranslateMLocToQInsts(exp->loc, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_srcLoc);
 
-        if (!o_destSlotIndex) return {};
+        if (!o_destSlotIndex) return QEmitState_Ready{};
 
         visit([this, exp](auto& srcLoc) {
             using T = remove_cvref_t<decltype(srcLoc)>;
@@ -52,9 +53,9 @@ struct MCreate_BCQInstsTranslator
                 contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Slot{*o_destSlotIndex}, QArg_Slot{srcLoc.slotIndex}});
             }
             else static_assert(false);
-        }, *e_srcLoc);
+        }, **e_s_srcLoc);
 
-        return {};
+        return QEmitState_Ready{};
     }
 
     // MExp_Store(MLoc* dest, MRead src)
@@ -62,14 +63,14 @@ struct MCreate_BCQInstsTranslator
     ResultType Visit(MExp_Store* exp)
     {
         // dest를 먼저 계산한다
-        auto e_dest = TranslateMLocToQInsts(exp->dest, contexts);
-        RETURN_ON_ERROR(e_dest);
+        auto e_s_dest = TranslateMLocToQInsts(exp->dest, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_dest);
 
         // src를 translation 하면, slot 또는 ptr이 나올 것이다
         // exp->src가 MRead_Exp라고 하더라도, 별도로 exp로 계산해서 dest에 바로 넣지 않도록 한다
         // a = F(a) 꼴이 나오면, F(a)를 완전히 다 계산하고 난 뒤에 a에 넣는게 안전하다
-        auto e_src = TranslateMReadToQInsts(exp->src, contexts);
-        RETURN_ON_ERROR(e_src);
+        auto e_s_src = TranslateMReadToQInsts(exp->src, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_src);
 
         return visit([this](auto& destLoc, auto& src) -> ResultType {
             using T = remove_cvref_t<decltype(destLoc)>;
@@ -88,7 +89,7 @@ struct MCreate_BCQInstsTranslator
                     contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Slot{*o_destSlotIndex}, QArg_Slot{destLoc.slotIndex}});
                 }
 
-                return {};
+                return QEmitState_Ready{};
             }
             // 1-2. destLoc: slot, srcLoc: ptr
             else if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_Ptr>)
@@ -103,7 +104,7 @@ struct MCreate_BCQInstsTranslator
                     contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Slot{*o_destSlotIndex}, QArg_Slot{destLoc.slotIndex}});
                 }
 
-                return {};
+                return QEmitState_Ready{};
             }
             // 1-3. destLoc: slot, srcLoc: const bool
             else if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_ConstBool>)
@@ -119,7 +120,7 @@ struct MCreate_BCQInstsTranslator
                     contexts.bodyContext.EmitInst(QInst_Assign{boolType, QArg_Slot{*o_destSlotIndex}, QArg_ConstBool{src.value}});
                 }
 
-                return {};
+                return QEmitState_Ready{};
             }
 
             // 1-4. destLoc: slot, srcLoc: const int
@@ -136,7 +137,7 @@ struct MCreate_BCQInstsTranslator
                     contexts.bodyContext.EmitInst(QInst_Assign{intType, QArg_Slot{*o_destSlotIndex}, QArg_ConstInt32{src.value}});
                 }
 
-                return {};
+                return QEmitState_Ready{};
             }
 
             // 2-1. destLoc: ptr, srcLoc: slot
@@ -152,7 +153,7 @@ struct MCreate_BCQInstsTranslator
                     contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Slot{*o_destSlotIndex}, QArg_Slot{src.slotIndex}});
                 }
 
-                return {};
+                return QEmitState_Ready{};
             }
             // 2-2. destLoc: ptr, srcLoc: ptr
             else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_Ptr>)
@@ -176,7 +177,7 @@ struct MCreate_BCQInstsTranslator
                     contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{*o_destSlotIndex}});
                 }
 
-                return {};
+                return QEmitState_Ready{};
             }
 
             // 2-3. destLoc: ptr, srcLoc: const bool
@@ -193,8 +194,8 @@ struct MCreate_BCQInstsTranslator
                     contexts.bodyContext.EmitInst(QInst_Store{boolType, QArg_Slot{*o_destSlotIndex}, QArg_ConstBool{src.value}});
                 }
 
-                return {};
-                }
+                return QEmitState_Ready{};
+            }
 
             // 2-4. destLoc: ptr, srcLoc: const int
             else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_ConstInt32>)
@@ -210,17 +211,17 @@ struct MCreate_BCQInstsTranslator
                     contexts.bodyContext.EmitInst(QInst_Store{intType, QArg_Slot{*o_destSlotIndex}, QArg_ConstInt32{src.value}});
                 }
 
-                return {};
+                return QEmitState_Ready{};
             }
             else static_assert(false);
 
-        }, *e_dest, *e_src);
+        }, **e_s_dest, **e_s_src);
     }
 
     ResultType Visit(MExp_Stmt* exp) 
     {
-        auto e_result = TranslateMStmtsToQInsts(exp->stmts, contexts);
-        RETURN_ON_ERROR(e_result);
+        auto e_s_result = TranslateMStmtsToQInsts(exp->stmts, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_result);
 
         // exp->finalExp는 context dependent하다. 여기는 MCreate_BC를 Translation하기 위한 곳이므로, finalExp를 MCreate로 간주하고 Translate한다
         return Accept(MCreate_BCQInstsTranslator{o_destSlotIndex, contexts}, exp->finalExp);
@@ -229,10 +230,10 @@ struct MCreate_BCQInstsTranslator
     // &x
     ResultType Visit(MExp_PtrRef* exp)
     {
-        auto e_loc = TranslateMLocToQInsts(exp->innerLoc, contexts);
-        RETURN_ON_ERROR(e_loc);
+        auto e_s_loc = TranslateMLocToQInsts(exp->innerLoc, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_loc);
 
-        if (!o_destSlotIndex) return {};
+        if (!o_destSlotIndex) return QEmitState_Ready{};
 
         return visit([this](auto& loc) -> ResultType {
             using T = remove_cvref_t<decltype(loc)>;
@@ -250,26 +251,24 @@ struct MCreate_BCQInstsTranslator
             }
             else static_assert(false);
 
-            return {};
-        }, *e_loc);
+            return QEmitState_Ready{};
+        }, **e_s_loc);
     }
 
     ResultType Visit(MExp_BoolLiteral* exp) 
     {
-        if (!o_destSlotIndex) return {}; // nested가 없으니 바로 리턴한다
+        if (!o_destSlotIndex) return QEmitState_Ready{}; // nested가 없으니 바로 리턴한다
 
         contexts.bodyContext.EmitInst(QInst_Assign{contexts.bodyContext.GetBoolType(), *o_destSlotIndex, QArg_ConstBool{exp->value}});
-
-        return {};
+        return QEmitState_Ready{};
     }
 
     ResultType Visit(MExp_IntLiteral* exp) 
     { 
-        if (!o_destSlotIndex) return {}; // nested가 없으니 바로 리턴한다
+        if (!o_destSlotIndex) return QEmitState_Ready{}; // nested가 없으니 바로 리턴한다
 
         contexts.bodyContext.EmitInst(QInst_Assign{contexts.bodyContext.GetIntType(), *o_destSlotIndex, QArg_ConstInt32{exp->value}});
-
-        return {};
+        return QEmitState_Ready{};
     }
 
     ResultType Visit(MExp_CallIntrinsic* exp) 
@@ -277,13 +276,14 @@ struct MCreate_BCQInstsTranslator
         auto* intrinsicInfo = GetIntrinsicInfo(exp->kind, contexts);
         assert(intrinsicInfo);
 
-        auto e_args = TranslateMArgumentsToQInsts(exp->args, contexts);
+        auto e_s_args = TranslateMArgumentsToQInsts(exp->args, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_args);
 
         // 여긴 MExp이므로 void type은 들어오지 않는다
         size_t resultSlotIndex = o_destSlotIndex ? *o_destSlotIndex : contexts.bodyContext.NewSlot(intrinsicInfo->type);
-        contexts.bodyContext.EmitIntrinsic(intrinsicInfo->kind, resultSlotIndex, move(*e_args));
+        contexts.bodyContext.EmitIntrinsic(intrinsicInfo->kind, resultSlotIndex, move(**e_s_args));
 
-        return {};
+        return QEmitState_Ready{};
     }
 
     ResultType Visit(MExp_Call* exp) 
@@ -296,16 +296,16 @@ struct MCreate_BCQInstsTranslator
         vector<QArg_Input> args;
 
         // 1. 인자를 args에 넣는다
-        auto e_args = TranslateMArgumentsToQInsts(exp->args, contexts);
-        RETURN_ON_ERROR(e_args);
+        auto e_s_args = TranslateMArgumentsToQInsts(exp->args, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_args);
 
         // 2. Emit처리
         auto* rFuncDecl = GetRFuncDecl(exp->callable);
         auto* retType = GetType(exp->callable);
         size_t resultSlotIndex = o_destSlotIndex ? *o_destSlotIndex : contexts.bodyContext.NewSlot(retType);
-        contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, QArg_Slot{resultSlotIndex}, move(*e_args)});
+        contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, QArg_Slot{resultSlotIndex}, move(**e_s_args)});
 
-        return {};
+        return QEmitState_Ready{};
     }
 
     // BC용 Struct
@@ -331,7 +331,7 @@ struct MCreate_BCQInstsTranslator
 
 struct MCreate_NBCQInstsTranslator
 {
-    using ResultType = expected<void, DiagPtr>;
+    using ResultType = expected<QEmitState<void>, DiagPtr>;
     optional<size_t> o_destSlotIndex;
     QTranslationContexts& contexts;
 
@@ -353,13 +353,14 @@ struct MCreate_NBCQInstsTranslator
         auto* intrinsicInfo = GetIntrinsicInfo(mInitExp->kind, contexts);
         assert(intrinsicInfo);
 
-        auto e_args = TranslateMArgumentsToQInsts(mInitExp->args, contexts);
+        auto e_s_args = TranslateMArgumentsToQInsts(mInitExp->args, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_args);
 
         // 여긴 MExp이므로 void type은 들어오지 않는다
         size_t resultSlotIndex = o_destSlotIndex ? *o_destSlotIndex : contexts.bodyContext.NewSlot(intrinsicInfo->type);
-        contexts.bodyContext.EmitIntrinsic(intrinsicInfo->kind, resultSlotIndex, move(*e_args));
+        contexts.bodyContext.EmitIntrinsic(intrinsicInfo->kind, resultSlotIndex, move(**e_s_args));
 
-        return {};
+        return QEmitState_Ready{};
     }
     // ResultType Visit(MInitExp_NewClass* mInitExp) { }
     // ResultType Visit(MInitExp_StructCtor* mInitExp) { }
@@ -374,14 +375,14 @@ struct MCreate_NBCQInstsTranslator
     // ResultType Visit(MInitExp_As* mInitExp) { }
 };
 
-expected<void, DiagPtr> TranslateMCreate_NBCToQInsts(MInitExp* mInitExp, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
+expected<QEmitState<void>, DiagPtr> TranslateMCreate_NBCToQInsts(MInitExp* mInitExp, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
 {
     return Accept(MCreate_NBCQInstsTranslator{o_destSlotIndex, contexts}, mInitExp);
 }
 
-expected<void, DiagPtr> TranslateMCreateToQInsts(MCreate& mCreate, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
+expected<QEmitState<void>, DiagPtr> TranslateMCreateToQInsts(MCreate& mCreate, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
 {
-    return visit([&o_destSlotIndex, &contexts](auto& mCreate) -> expected<void, DiagPtr> {
+    return visit([&o_destSlotIndex, &contexts](auto& mCreate) -> expected<QEmitState<void>, DiagPtr> {
         using T = remove_cvref_t<decltype(mCreate)>;
 
         if constexpr (same_as<T, MCreate_BC>)

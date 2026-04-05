@@ -15,6 +15,8 @@
 #include "QIR/QBlock.h"
 #include "QIR/QFuncBody.h"
 
+#include "QJumpBlockInfo.h"
+
 namespace Citron {
 
 class RType;
@@ -51,6 +53,10 @@ struct QCleanUpInfoKey_Return {};
 struct QCleanUpInfoKey_Continue { size_t labelId; };
 struct QCleanUpInfoKey_Break { size_t labelId; };
 
+inline bool operator==(QCleanUpInfoKey_Return const& x, QCleanUpInfoKey_Return const& y) { return true; }
+inline bool operator==(QCleanUpInfoKey_Continue const& x, QCleanUpInfoKey_Continue const& y) { return x.labelId == y.labelId; }
+inline bool operator==(QCleanUpInfoKey_Break const& x, QCleanUpInfoKey_Break const& y) { return x.labelId == y.labelId; }
+
 using QCleanUpKind = std::variant<
     QCleanUpInfoKey_Return,
     QCleanUpInfoKey_Continue,
@@ -67,7 +73,7 @@ struct QScope
     bool childHasReturn = false; // 이 스코프의 child가 return을 갖고 있는가
     bool handleReturn = false;   // 이 스코프에서 return을 처리했다. 더이상 명령어가 나오면 안된다
 
-    std::optional<size_t> labelId; // continue, break에 필요하다
+    std::optional<size_t> o_labelId; // continue, break에 필요하다
 
     // "a_16" -> slotIndex
     std::unordered_map<RName, QLocalInfo> localInfos;
@@ -82,15 +88,10 @@ using QIntrinsicResultType = std::variant<
     QIntrinsicResultType_Slot,
     QIntrinsicKindResult_Void>;
 
-// TODO: [38] break/continue에 label 지원
-struct QJumpBlockInfo_Loop { QBlock* contBlock; QBlock* breakBlock; };
-struct QJumpBlockInfo_Switch { QBlock* breakBlock; };
-using QJumpBlockInfo = std::variant<QJumpBlockInfo_Loop, QJumpBlockInfo_Switch>;
-
 struct QJumpBlockScopeGuard
 {
-    QBodyContext& context;
-    QJumpBlockScopeGuard(QJumpBlockInfo&& info, QBodyContext& context);
+    QBodyContext& bodyContext;
+    QJumpBlockScopeGuard(QJumpBlockInfo&& info, QBodyContext& bodyContext);
     ~QJumpBlockScopeGuard();
 };
 
@@ -118,7 +119,9 @@ public:
     QBlock* AddBlock(std::string&& debugText);
     void SetCurBlock(QBlock* block) { assert(block); curBlock = block; } // SetCurBlock으로 Unreachable 상태를 만들지 않도록 한다
     QBlock* GetCurBlock() { return curBlock; }
-    bool IsUnreachable() { return curBlock == nullptr; }
+
+    QBlock* GetContinueBlock(size_t labelId);
+    QBlock* GetBreakBlock(size_t labelId);
 
 private:
     void EmitInstInternal(QInst&& inst);
@@ -168,7 +171,7 @@ public:
 
     bool IsVoidType(RType* rType);
 
-    void PushScope();
+    void PushScope(std::optional<size_t> o_labelId);
     void PopScope();
     void CleanUpScope();
 

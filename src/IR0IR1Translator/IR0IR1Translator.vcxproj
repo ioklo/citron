@@ -19,8 +19,11 @@
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1Translator.h" />
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h" />
     <ClInclude Include="QBodyContext.h" />
+    <ClInclude Include="QJumpBlockInfo.h" />
+    <ClInclude Include="QMisc.h" />
     <ClInclude Include="QTranslationContexts.h" />
-    <ClInclude Include="ScopeGuard.h" />
+    <ClInclude Include="QScopeGuard.h" />
+    <ClInclude Include="QEmitState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommonQInstsTranslation.cpp" />
@@ -30,6 +33,7 @@
     <ClCompile Include="MReadToQInsts.cpp" />
     <ClCompile Include="MStmtToQInsts.cpp" />
     <ClCompile Include="QBodyContext.cpp" />
+    <ClCompile Include="QEmitState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">
