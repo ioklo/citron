@@ -318,10 +318,30 @@ struct MStmtQInstsTranslator
             // cond가 없으면 무조건 jump한다
             bodyContext.EmitTermInst(QInst_Jump{bodyBlock});
         }
+        
+        // cont block 만들기
+        QBlock* contBlock; 
+        if (mStmt->contStmt)
+        {
+            contBlock = bodyContext.AddBlock("for_cont");
+            bodyContext.SetCurBlock(contBlock);
+            auto e_s_contResult = TranslateMStmtToQInsts(mStmt->contStmt, contexts);
+            RETURN_ON_ERROR(e_s_contResult);
 
-        QBlock* contBlock = bodyContext.AddBlock("for_cont");
+            if (!*e_s_contResult)
+            {
+                bodyContext.SetCurBlock(exitBlock);
+                return QEmitState_Ready{};
+            }
+
+            bodyContext.EmitTermInst(QInst_Jump{condBlock});
+        }
+        else
+            contBlock = condBlock;
+
+        // body block 채우기
         bodyContext.SetCurBlock(bodyBlock);
-        // continue는 contBlock, break는 exitBlock으로 지정해준다            
+        // continue는 contBlock, break는 exitBlock으로 지정해준다
         auto e_s_bodyResult = TranslateMStmt_ScopeToQInsts_Loop(mStmt->body, contBlock, exitBlock, contexts);
         RETURN_ON_ERROR(e_s_bodyResult);
 
@@ -332,22 +352,10 @@ struct MStmtQInstsTranslator
             bodyContext.SetCurBlock(exitBlock);
             return QEmitState_Ready{};
         }
-
+                
         bodyContext.EmitTermInst(QInst_Jump{contBlock});
 
-        bodyContext.SetCurBlock(contBlock);
-        auto e_s_contResult = TranslateMStmtToQInsts(mStmt->contStmt, contexts);
-        RETURN_ON_ERROR(e_s_contResult);
-
-        if (!*e_s_bodyResult)
-        {
-            bodyContext.SetCurBlock(exitBlock);
-            return QEmitState_Ready{};
-        }
-
-        bodyContext.EmitTermInst(QInst_Jump{condBlock});
         bodyContext.SetCurBlock(exitBlock);
-
         return QEmitState_Ready{};
     }
 
