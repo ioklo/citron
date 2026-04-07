@@ -193,6 +193,24 @@ TEST(Break_Statement, Foreach)
     DoTest(code, expected);
 }
 
+TEST(Break_Statement, LabeledFor) 
+{
+    auto code = R"---(void Main()
+{
+    outer: for(int i = 0; i < 5; i++)
+        for(int j = 0; j < 5; j++)
+        {
+            if (j == 3) break outer;
+            @$i$j
+            
+        }
+}
+)---";
+    string expected = R"---(000102)---";
+
+    DoTest(code, expected);
+}
+
 TEST(Break_Statement, NestedFor) 
 {
     auto code = R"---(void Main()
@@ -753,6 +771,23 @@ TEST(Continue_Statement, Foreach)
     DoTest(code, expected);
 }
 
+TEST(Continue_Statement, LabeledFor) 
+{
+    auto code = R"---(void Main()
+{
+    outer: for(int i = 0; i < 5; i++)
+        for(int j = 0; j < 5; j++)
+        {
+            if (i < j) continue outer;
+            @$i$j
+        }
+}
+)---";
+    string expected = R"---(001011202122303132334041424344)---";
+
+    DoTest(code, expected);
+}
+
 TEST(Continue_Statement, NestedFor) 
 {
     auto code = R"---(void Main()
@@ -1118,7 +1153,7 @@ TEST(For_Statement, EmptyContinueExp)
     }
 }
 )---";
-    string expected = R"---(01234 )---";
+    string expected = R"---(01234)---";
 
     DoTest(code, expected);
 }

@@ -407,7 +407,29 @@ struct MStmtQInstsTranslator
     // ResultType Visit(MStmt_Foreach* mStmt) { }
     // ResultType Visit(MStmt_Yield* mStmt) { }
     // ResultType Visit(MStmt_Directive* mStmt) { }
-    // ResultType Visit(MStmt_Call* mStmt) { }
+
+    ResultType HandleCall(MTopLevel_Call& call)
+    {
+        vector<QArg_Input> args;
+
+        // 1. 인자를 args에 넣는다
+        auto e_s_args = TranslateMArgumentsToQInsts(call.args, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_args);
+
+        // 2. Emit처리
+        auto* rFuncDecl = GetRFuncDecl(call.callable);
+        auto* retType = GetType(call.callable);
+        contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, nullopt, move(**e_s_args)});
+
+        return QEmitState_Ready{};
+    }
+
+
+    ResultType Visit(MStmt_Call* mStmt) 
+    {
+        QScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
+        return HandleCall(mStmt->call);
+    }
     // ResultType Visit(MStmt_Assign* mStmt) { }
     // ResultType Visit(MStmt_Do* mStmt) { }
 };
