@@ -64,7 +64,7 @@ using QCleanUpKind = std::variant<
 
 struct QCleanUpInfo
 {
-    size_t coveredSlots = 0; // 어느 슬롯까지 커버했는지 count, slots의 인덱스이다 [0, slots.size())
+    size_t managedCoveredSlots = 0; // 어느 슬롯까지 커버했는지 count, slots의 인덱스이다 [0, slots.size())
     QBlock* recentCleanUpBlock = nullptr; // return시 정리 블록
 };
 
@@ -77,7 +77,7 @@ struct QScope
 
     // "a_16" -> slotIndex
     std::unordered_map<RName, QLocalInfo> localInfos;
-    std::vector<size_t> slotIndices; // 이 스코프가 관리하는 slot
+    std::vector<size_t> managedSlotIndices; // 이 스코프가 관리하는 slot
 
     SmallMap<QCleanUpKind, QCleanUpInfo> cleanUpInfos; // 이 스코프에서 관리하는 cleanUp 정보들. return/continue/break마다 하나씩 필요할 수 있다
 
@@ -142,7 +142,7 @@ public:
 
 private:
     bool IsFinalScope(QCleanUpKind kind, size_t scopeIndex);
-    QBlock* TryMakeCleanUpBlockWithoutFinalize(std::span<size_t> slotIndices);
+    QBlock* MakeCleanUpBlockWithoutFinalize(std::span<size_t> managedSlotIndices);
     void FinalizeCleanupBlock(QBlock* block, QCleanUpKind kind);
     QBlock* GetCleanUpBlock(QCleanUpKind kind, size_t scopeIndex);
 
@@ -167,10 +167,11 @@ public:
     void AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex);
 
     size_t NewSlot(RType* rType, std::optional<size_t> o_argIndex = std::nullopt);
+    size_t NewTempSlot(RType* rType);
     std::span<QSlotInfo> GetStackSlotInfos() { return slotInfos; }
     std::span<QBlock*> GetBlocks() { return blocks; }
     RType* GetSlotType(size_t i) { return slotInfos[i].type; }
-    
+
     void VerifyBlocks();
 
     bool IsVoidType(RType* rType);

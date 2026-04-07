@@ -228,30 +228,19 @@ bool QBodyContext::IsFinalScope(QCleanUpKind kind, size_t scopeIndex)
     }, kind);
 }
 
-QBlock* QBodyContext::TryMakeCleanUpBlockWithoutFinalize(span<size_t> slotIndices)
+QBlock* QBodyContext::MakeCleanUpBlockWithoutFinalize(span<size_t> managedSlotIndices)
 {
-    QBlock* newBlock = nullptr;
+    assert(!managedSlotIndices.empty());
+
+    QBlock* newBlock = AddBlock("cleanUp");
     RType* stringType = GetStringType();
-
-    size_t i = 0, count = slotIndices.size();
-    for (; i < count; i++)
-    {
-        size_t slotIndex = slotIndices[i];
-        if (slotInfos[slotIndex].type == stringType)
-        {
-            newBlock = AddBlock("cleanUp"); // TODO: 뒤에 디버그용 번호 붙이기
-            break;
-        }
-    }
-    if (!newBlock) return nullptr;
-
     RType* ptrStringType = GetPtrType(stringType);
-    for (; i < count; i++)
+
+    for (auto& slotIndex : managedSlotIndices)
     {   
-        size_t slotIndex = slotIndices[i];
         if (slotInfos[slotIndex].type == stringType)
         {
-            auto ptrSlotIndex = NewSlot(ptrStringType);
+            auto ptrSlotIndex = NewTempSlot(ptrStringType);
             newBlock->EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{slotIndex}});
             newBlock->EmitInst(QInst_Intrinsic{QInst_IntrinsicKind::Dtor_StringPtr_Void, nullopt, {QArg_Slot{ptrSlotIndex}}});
         }
@@ -296,57 +285,57 @@ QBlock* QBodyContext::GetCleanUpBlock(QCleanUpKind kind, size_t scopeIndex)
     {
         if (IsFinalScope(kind, scopeIndex))
         {
-            if (QBlock* block = TryMakeCleanUpBlockWithoutFinalize(scope.slotIndices))
+            if (!scope.managedSlotIndices.empty())
             {
+                QBlock* block = MakeCleanUpBlockWithoutFinalize(scope.managedSlotIndices);
                 FinalizeCleanupBlock(block, kind);
-                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.slotIndices.size(), block});
+                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.managedSlotIndices.size(), block});
                 return block;
             }
             else
             {
-                block = AddBlock("cleanUp");
+                QBlock* block = AddBlock("cleanUp");
                 FinalizeCleanupBlock(block, kind);
-                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.slotIndices.size(), block});
+                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.managedSlotIndices.size(), block});
                 return block;
             }
         }
         else
         {
-            if (QBlock* block = TryMakeCleanUpBlockWithoutFinalize(scope.slotIndices))
+            if (!scope.managedSlotIndices.empty())
             {
+                QBlock* block = MakeCleanUpBlockWithoutFinalize(scope.managedSlotIndices);
                 auto* parentCleanUpBlock = GetCleanUpBlock(kind, scopeIndex - 1);
                 block->EmitInst(QInst_Jump{parentCleanUpBlock});
-                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.slotIndices.size(), block});
+                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.managedSlotIndices.size(), block});
                 return block;
             }
             else
             {
                 auto* parentCleanUpBlock = GetCleanUpBlock(kind, scopeIndex - 1);
-                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.slotIndices.size(), parentCleanUpBlock});
+                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.managedSlotIndices.size(), parentCleanUpBlock});
                 return parentCleanUpBlock;
             }
         }
     }
     else
     {
-        if (cleanUpInfo->coveredSlots == scope.slotIndices.size())
+        if (cleanUpInfo->managedCoveredSlots == scope.managedSlotIndices.size())
         {
             return cleanUpInfo->recentCleanUpBlock;
         }
         else
         {
-            if (QBlock* block = TryMakeCleanUpBlockWithoutFinalize(span<size_t>{scope.slotIndices.data() + cleanUpInfo->coveredSlots, scope.slotIndices.size() - cleanUpInfo->coveredSlots}))
-            {
-                block->EmitInst(QInst_Jump{cleanUpInfo->recentCleanUpBlock});
-                cleanUpInfo->recentCleanUpBlock = block;
-                cleanUpInfo->coveredSlots = scope.slotIndices.size();
-                return block;
-            }
-            else
-            {
-                cleanUpInfo->coveredSlots = scope.slotIndices.size();
-                return cleanUpInfo->recentCleanUpBlock;
-            }
+            span<size_t> managedSlotIndices{
+                scope.managedSlotIndices.data() + cleanUpInfo->managedCoveredSlots, 
+                scope.managedSlotIndices.size() - cleanUpInfo->managedCoveredSlots
+            };
+
+            QBlock* block = MakeCleanUpBlockWithoutFinalize(managedSlotIndices);
+            block->EmitInst(QInst_Jump{cleanUpInfo->recentCleanUpBlock});
+            cleanUpInfo->recentCleanUpBlock = block;
+            cleanUpInfo->managedCoveredSlots = scope.managedSlotIndices.size();
+            return block;
         }
     }
 }
@@ -427,7 +416,7 @@ size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size
     
     // 2. 현재 스코프에 이름 추가
     curScope->localInfos[rName] = QLocalInfo_Var{slotIndex, name};
-    curScope->slotIndices.push_back(slotIndex);
+    curScope->managedSlotIndices.push_back(slotIndex);
 
     return slotIndex;
 }
@@ -449,7 +438,22 @@ size_t QBodyContext::NewSlot(RType* rType, optional<size_t> o_argIndex)
     std::string s = format("%s{}", slotIndex);
     slotInfos.emplace_back(rType, s, o_argIndex);
 
-    curScope->slotIndices.push_back(slotIndex);
+    if (rType->GetCopyStrategy() == RCopyStrategy::NonBitwise)
+        curScope->managedSlotIndices.push_back(slotIndex);
+
+    return slotIndex;
+}
+
+// 어느 scope에도 속하지 않는 임시 슬롯
+size_t QBodyContext::NewTempSlot(RType* rType)
+{
+    // 임시 슬롯은 BC타입이어야 한다
+    assert(rType->GetCopyStrategy() == RCopyStrategy::Bitwise); 
+
+    size_t slotIndex = slotInfos.size();
+    std::string s = format("%s{}", slotIndex);
+    slotInfos.emplace_back(rType, s, nullopt);
+
     return slotIndex;
 }
 
@@ -563,7 +567,7 @@ void QBodyContext::CleanUpScope()
     vector<size_t> slotsNeedingDtor;
 
     // 순서는 거꾸로
-    for (auto slotIndex : curScope->slotIndices | views::reverse)
+    for (auto slotIndex : curScope->managedSlotIndices | views::reverse)
     {   
         if (slotInfos[slotIndex].type == rFactory->MakeStringType())
             slotsNeedingDtor.push_back(slotIndex);
@@ -574,7 +578,7 @@ void QBodyContext::CleanUpScope()
 
     for (auto slotIndex : slotsNeedingDtor)
     {
-        auto ptrSlotIndex = NewSlot(stringPtrType);
+        auto ptrSlotIndex = NewTempSlot(stringPtrType);
 
         // 소멸자 호출
         // TODO: HARD CODED
