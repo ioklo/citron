@@ -80,6 +80,8 @@ struct QScope
     std::vector<size_t> slotIndices; // 이 스코프가 관리하는 slot
 
     SmallMap<QCleanUpKind, QCleanUpInfo> cleanUpInfos; // 이 스코프에서 관리하는 cleanUp 정보들. return/continue/break마다 하나씩 필요할 수 있다
+
+    QCleanUpInfo& GetOrAddCleanUpInfo(QCleanUpKind kind);
 };
 
 struct QIntrinsicResultType_Slot { RType* type; };
@@ -139,9 +141,11 @@ public:
     void EmitTermInst(QTermInst&& termInst);
 
 private:
-    bool IsFinalBlock(QCleanUpKind kind, size_t scopeIndex);
-    QBlock* MakeCleanUpBlock(QCleanUpKind infoFor, size_t scopeIndex);
-    QBlock* MakeCleanUpForContinueBlock(size_t scopeIndex);
+    bool IsFinalScope(QCleanUpKind kind, size_t scopeIndex);
+    QBlock* TryMakeCleanUpBlockWithoutFinalize(std::span<size_t> slotIndices);
+    void FinalizeCleanupBlock(QBlock* block, QCleanUpKind kind);
+    QBlock* GetCleanUpBlock(QCleanUpKind kind, size_t scopeIndex);
+
 public:
     void EmitJumpToCleanUpBlock(QCleanUpKind kind);
 
