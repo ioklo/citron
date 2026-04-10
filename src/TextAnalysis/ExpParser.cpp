@@ -472,6 +472,9 @@ Citron::SExp* ParsePrimaryExp(Lexer* lexer, SFactory& factory)
 
 SExp* ParseSingleExp(Lexer* lexer, SFactory& factory)
 {
+    if (auto* exp = ParseInlineExp(lexer, factory))
+        return exp;
+
     if (auto* exp = ParseSharedExp(lexer, factory))
         return exp;
         
@@ -503,6 +506,49 @@ SExp* ParseSingleExp(Lexer* lexer, SFactory& factory)
         return exp;
         
     return nullptr;
+}
+
+struct SExpBlock
+{
+    vector<SStmt*> stmts;
+    SExp* o_finalExp;
+};
+
+optional<SExpBlock> ParseExpBlock(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer{*lexer};
+
+    if (!Accept<LBraceToken>(&curLexer))
+        return nullopt;
+
+    vector<SStmt*> stmts;
+    auto* firstStmt = ParseStmt(&curLexer, factory);
+    if (!firstStmt) return nullopt; // 하나는 무조건 있어야 함
+    stmts.push_back(firstStmt);
+    
+    while (auto* stmt = ParseStmt(&curLexer, factory))
+        stmts.push_back(stmt);
+
+    SExp* o_finalExp = ParseExp(&curLexer, factory); // optional final exp
+    if (!Accept<RBraceToken>(&curLexer)) return nullopt;
+
+    *lexer = move(curLexer);
+    return SExpBlock{move(stmts), o_finalExp};
+}
+
+SExp_Inline* ParseInlineExp(Lexer* lexer, SFactory& factory)
+{
+    // <INLINE> <LBRACE> <STMT>+ <EXP>? <RBRACE>
+    Lexer curLexer = *lexer;
+    
+    if (!Accept<InlineToken>(&curLexer))
+        return nullptr;
+
+    auto o_expBlock = ParseExpBlock(&curLexer, factory);
+    if (!o_expBlock) return nullptr;
+
+    *lexer = move(curLexer);
+    return factory.Make<SExp_Inline>(move(o_expBlock->stmts), o_expBlock->o_finalExp);
 }
 
 SExp_Shared* ParseSharedExp(Lexer* lexer, SFactory& factory)

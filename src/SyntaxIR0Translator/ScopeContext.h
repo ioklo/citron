@@ -31,6 +31,16 @@ struct ImExp;
 class CloneContext;
 class UpdateContext;
 
+// 인라인 스코프 
+struct InlineScopeContext
+{
+    size_t labelId;
+    RType* o_inlineScopeType;
+    InlineScopeContext(size_t labelId, RType* o_inlineScopeType)
+        : labelId{labelId}, o_inlineScopeType{o_inlineScopeType}
+    { }
+};
+
 class ScopeContext
 {
 private: // transaction에 영향 받지 않는 변수들 (인자로 들어온)
@@ -41,6 +51,8 @@ private: // transaction에 영향 받지 않는 변수들 (인자로 들어온)
     // cached
     std::optional<size_t> curContinueLabelId;
     std::optional<size_t> curBreakLabelId;
+
+    std::shared_ptr<InlineScopeContext> inlineScopeContext;
 
 private: // dependency
     RFactoryPtr rFactory;
@@ -66,7 +78,14 @@ private: // for transaction
     std::vector<TransactionInfo> transactionInfos;
 
 public:
-    ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, MScopeKind&& scopeKind, std::optional<size_t> curContinueLabelId, std::optional<size_t> curBreakLabelId, const RFactoryPtr& rFactory);
+    ScopeContext(
+        const FuncContextPtr& funcContext, 
+        const ScopeContextPtr& parentContext, 
+        MScopeKind&& scopeKind, 
+        std::optional<size_t> curContinueLabelId, 
+        std::optional<size_t> curBreakLabelId, 
+        std::shared_ptr<InlineScopeContext> inlineScopeContext,
+        const RFactoryPtr& rFactory);
 
     void BeginTransaction();
     void CommitTransaction();
@@ -84,10 +103,15 @@ public:
     bool IsFailed();
     std::optional<size_t> GetCurContinueLabelId() { return curContinueLabelId; }
     std::optional<size_t> GetCurBreakLabelId() { return curBreakLabelId; }
-    std::optional<MScopeKind> GetReachableScopeKind(size_t o_labelId);
+    std::optional<size_t> GetCurLeaveLabelId() { return inlineScopeContext ? std::optional<size_t>{inlineScopeContext->labelId} : std::nullopt; }
+    std::optional<MScopeKind> GetReachableScopeKind(size_t labelId);
 
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
     std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
+
+    std::shared_ptr<InlineScopeContext> GetInlineScopeContext() { return inlineScopeContext; }
+    RType* GetInlineScopeType() { return inlineScopeContext->o_inlineScopeType; }
+    void SetInlineScopeType(RType* type) { inlineScopeContext->o_inlineScopeType = type; }
 };
 
 using ScopeContextPtr = std::shared_ptr<ScopeContext>;

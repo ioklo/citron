@@ -248,6 +248,16 @@ struct Error_NullLiteralExp_CantInferNullableType : ErrorDiag { }; // A2701_Null
 struct Error_StaticNotNullDirective_ShouldHaveOneArgument : ErrorDiag { }; // A2801_StaticNotNullDirective_ShouldHaveOneArgument
 struct Error_StaticNotNullDirective_ArgumentMustBeLocation : ErrorDiag { }; // A2802_StaticNotNullDirective_ArgumentMustBeLocation
 
+struct Error_InlineExp_CantDecideType : ErrorDiag {};
+struct Error_InlineExp_TypeMismatch : ErrorDiag {};
+struct Error_InlineExp_DoesntAllowVoid : ErrorDiag {};
+struct Error_InlineExp_ShouldLeaveWithValue : ErrorDiag {};
+struct Error_LeaveStmt_LabelNotFound : ErrorDiag {};
+struct Error_LeaveStmt_LabelNotReachable : ErrorDiag {};
+struct Error_LeaveStmt_LabelNotCompatible : ErrorDiag {};
+struct Error_LeaveStmt_TypeMismatch : ErrorDiag {};
+struct Error_LeaveStmt_ShouldUsedInInlineScope : ErrorDiag {};
+
 //struct Error_Reference_CantMakeReference : ErrorDiag { }; // A3001_Reference_CantMakeReference
 //struct Error_Reference_CantReferenceTempValue : ErrorDiag { }; // A3002_Reference_CantReferenceTempValue
 //struct Error_Reference_UselessDereferenceReferencedValue : ErrorDiag { }; // A3003_Reference_UselessDereferenceReferencedValue

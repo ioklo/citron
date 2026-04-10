@@ -1,4 +1,4 @@
-//@ 3
+//@ hi3
 void F(int x)
 {
 	@$x
@@ -6,5 +6,5 @@ void F(int x)
 
 void Main()
 {
-	F(inline { return 3; });
+	F(inline { @{hi} 3 });
 }

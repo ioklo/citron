@@ -137,13 +137,14 @@ SForStmtInitializer* ParseForStmtInitializer(Lexer* lexer, SFactory& factory)
     return nullptr;
 }
 
+// :label을 파싱한다
 optional<string> ParseLabel(Lexer* lexer)
 {
     Lexer curLexer{*lexer};
 
+    if (!Accept<ColonToken>(&curLexer)) return nullopt;
     auto o_labelToken = Accept<IdentifierToken>(&curLexer);
     if (!o_labelToken) return nullopt;
-    if (!Accept<ColonToken>(&curLexer)) return nullopt;
 
     *lexer = move(curLexer);
     return o_labelToken->text;
@@ -241,13 +242,13 @@ SStmt_Continue* ParseContinueStmt(Lexer* lexer, SFactory& factory)
     if (!Accept<ContinueToken>(&curLexer))
         return nullptr;
 
-    auto o_labelToken = Accept<IdentifierToken>(&curLexer);
+    auto o_labelToken = ParseLabel(&curLexer);
 
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSStmt_Continue(o_labelToken ? optional<string>{o_labelToken->text} : nullopt);
+    return factory.MakeSStmt_Continue(o_labelToken);
 }
 
 SStmt_Break* ParseBreakStmt(Lexer* lexer, SFactory& factory)
@@ -257,13 +258,30 @@ SStmt_Break* ParseBreakStmt(Lexer* lexer, SFactory& factory)
     if (!Accept<BreakToken>(&curLexer))
         return nullptr;
 
-    auto o_labelToken = Accept<IdentifierToken>(&curLexer);
+    auto o_labelToken = ParseLabel(&curLexer);
 
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
 
     *lexer = move(curLexer);
-    return factory.MakeSStmt_Break(o_labelToken ? optional<string>{o_labelToken->text} : nullopt);
+    return factory.MakeSStmt_Break(o_labelToken);
+}
+
+SStmt_Leave* ParseLeaveStmt(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer = *lexer;
+    if (!Accept<LeaveToken>(&curLexer)) return nullptr;
+
+    // optional
+    auto o_labelToken = ParseLabel(&curLexer);
+
+    auto* o_exp = ParseExp(&curLexer, factory);
+    if (!o_exp) return nullptr;
+
+    if (!Accept<SemiColonToken>(&curLexer)) return nullptr;
+    *lexer = move(curLexer);
+
+    return factory.Make<SStmt_Leave>(o_labelToken, o_exp);
 }
 
 SStmt_Return* ParseReturnStmt(Lexer* lexer, SFactory& factory)
@@ -672,6 +690,9 @@ SStmt* ParseStmt(Lexer* lexer, SFactory& factory)
         return stmt;
 
     if (auto* stmt = ParseBreakStmt(lexer, factory))
+        return stmt;
+
+    if (auto* stmt = ParseLeaveStmt(lexer, factory))
         return stmt;
 
     if (auto* stmt = ParseReturnStmt(lexer, factory))

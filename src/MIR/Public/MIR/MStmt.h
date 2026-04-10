@@ -121,13 +121,13 @@ struct MStmt_If : MStmt
 // init은 For문 위에 따로 존재한다
 struct MStmt_For : MStmt
 {   
-    std::optional<MTopLevel_Read> cond; // BC
+    std::optional<MTopLevel_Read> o_cond; // BC
     MStmt* contStmt;
     MStmt_Scope* body;
 
 public:
-    MStmt_For(std::optional<MRead>&& cond, MStmt* contStmt, MStmt_Scope* body)
-        : cond{std::move(cond)}, contStmt{contStmt}, body{body}
+    MStmt_For(std::optional<MTopLevel_Read>&& o_cond, MStmt* contStmt, MStmt_Scope* body)
+        : o_cond{std::move(o_cond)}, contStmt{contStmt}, body{body}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -146,10 +146,10 @@ struct MStmt_While : MStmt
 
 struct MStmt_Continue : MStmt
 {
-    size_t o_labelId;
+    size_t labelId;
 
-    MStmt_Continue(size_t o_labelId)
-        : o_labelId{o_labelId}
+    MStmt_Continue(size_t labelId)
+        : labelId{labelId}
     {
     }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -157,12 +157,25 @@ struct MStmt_Continue : MStmt
 
 struct MStmt_Break : MStmt
 {
-    size_t o_labelId;
+    size_t labelId;
 
-    MStmt_Break(size_t o_labelId)
-        : o_labelId{o_labelId}
+    MStmt_Break(size_t labelId)
+        : labelId{labelId}
     {
     }
+    MIR_API void Accept(MStmtVisitor& visitor) override;
+};
+
+struct MStmt_Leave : MStmt
+{
+    size_t labelId;
+    MTopLevel_Create create;
+
+    MStmt_Leave(size_t labelId, MTopLevel_Create&& create)
+        : labelId{labelId}, create{std::move(create)}
+    {
+    }
+
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
 

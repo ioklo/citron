@@ -28,7 +28,7 @@ TranslationContexts MakeTranslationContexts(
 {
     auto globalContext = MakePtr<GlobalContext>();
     auto funcContext = MakePtr<FuncContext_FuncDecl>(nFuncDecl, rFactory, mFactory);
-    auto scopeContext = MakePtr<ScopeContext>(funcContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, rFactory);
+    auto scopeContext = MakePtr<ScopeContext>(funcContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, rFactory);
 
     return {globalContext, funcContext, scopeContext, logger, mFactory, rFactory, srtFactory, binOpQueryService};
 }
@@ -36,28 +36,47 @@ TranslationContexts MakeTranslationContexts(
 TranslationContexts MakeTranslationContexts_DefaultScope(TranslationContexts& contexts)
 {
     // continue, break 라벨을 갱신하지 않고, 상위 scope의 라벨을 그대로 사용한다
-    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Default{}, contexts.scopeContext->GetCurContinueLabelId(), contexts.scopeContext->GetCurBreakLabelId(), contexts.rFactory);
+    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Default{}, 
+        contexts.scopeContext->GetCurContinueLabelId(), contexts.scopeContext->GetCurBreakLabelId(), 
+        contexts.scopeContext->GetInlineScopeContext(), contexts.rFactory);
+
     return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
 }
 
-TranslationContexts MakeTranslationContexts_LoopScope(size_t o_labelId, TranslationContexts& contexts)
+TranslationContexts MakeTranslationContexts_LoopScope(size_t labelId, TranslationContexts& contexts)
 {
-    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Loop{o_labelId}, o_labelId, o_labelId, contexts.rFactory);
+    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Loop{labelId}, labelId, labelId, contexts.scopeContext->GetInlineScopeContext(), contexts.rFactory);
     return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
 }
 
-TranslationContexts MakeTranslationContexts_SwitchScope(optional<string> o_label, TranslationContexts& contexts)
+TranslationContexts MakeTranslationContexts_SwitchScope(optional<string>& o_label, TranslationContexts& contexts)
 {
-    size_t o_labelId = contexts.funcContext->AddNewLabelId(o_label);
+    size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
     // switch는 break만 갱신한다
-    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Switch{o_labelId}, contexts.scopeContext->GetCurContinueLabelId(), o_labelId, contexts.rFactory);
+    auto newScopeContext = MakePtr<ScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Switch{labelId}, contexts.scopeContext->GetCurContinueLabelId(), labelId, contexts.scopeContext->GetInlineScopeContext(), contexts.rFactory);
     return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
+}
+
+tuple<size_t, TranslationContexts> MakeTranslationContexts_InlineScope(std::optional<std::string> o_label, RType* hintType, TranslationContexts& contexts)
+{
+    size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
+
+    auto newScopeContext = MakePtr<ScopeContext>(
+        contexts.funcContext,
+        contexts.scopeContext,
+        MScopeKind_Inline{labelId},
+        contexts.scopeContext->GetCurContinueLabelId(),
+        contexts.scopeContext->GetCurBreakLabelId(),
+        MakePtr<InlineScopeContext>(labelId, hintType),
+        contexts.rFactory);
+
+    return {labelId, {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService}};
 }
 
 TranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, vector<RFuncParameter>&& funcParams, bool bLastParamVariadic, TranslationContexts& contexts)
 {
     auto newFuncContext = MakePtr<FuncContext_Lambda>(contexts.funcContext, contexts.scopeContext, /*bSeqFunc*/false, move(funcRet), move(funcParams), bLastParamVariadic);
-    auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, contexts.rFactory);
+    auto newScopeContext = MakePtr<ScopeContext>(newFuncContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, contexts.rFactory);
 
     return {contexts.globalContext, newFuncContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
 }

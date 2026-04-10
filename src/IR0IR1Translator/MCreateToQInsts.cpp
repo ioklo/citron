@@ -13,7 +13,6 @@
 #include "QTranslationContexts.h"
 #include "MReadToQInsts.h"
 #include "CommonQInstsTranslation.h"
-#include "QScopeGuard.h"
 #include "QEmitState.h"
 
 using namespace std;
@@ -325,7 +324,10 @@ struct MCreate_BCQInstsTranslator
     // ResultType Visit(MExp_NullableNullLiteral* exp) { }
     // ResultType Visit(MExp_Cast* exp) { }
     // ResultType Visit(MExp_Lambda* exp) { }
-    // ResultType Visit(MExp_InlineBlock* exp) { }
+    ResultType Visit(MExp_InlineBlock* exp) 
+    {
+        return HandleInlineBlock(exp->scope, o_destSlotIndex, contexts);
+    }
     // ResultType Visit(MExp_Is* exp) {}
 };
 
@@ -371,7 +373,10 @@ struct MCreate_NBCQInstsTranslator
     // ResultType Visit(MInitExp_NullableInplaceNullLiteral* mInitExp) { }
     // ResultType Visit(MInitExp_Cast* mInitExp) { }
     // ResultType Visit(MInitExp_Lambda* mInitExp) { }
-    // ResultType Visit(MInitExp_InlineBlock* mInitExp) { }
+    ResultType Visit(MInitExp_InlineBlock* mInitExp) 
+    { 
+        return HandleInlineBlock(mInitExp->scope, o_destSlotIndex, contexts);
+    }
     // ResultType Visit(MInitExp_As* mInitExp) { }
 };
 

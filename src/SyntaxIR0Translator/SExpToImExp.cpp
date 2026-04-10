@@ -161,6 +161,14 @@ struct SExpToImExpTranslator
 
         return MakeImExp_ReExp_InitExp(*e_mInitExp);
     }
+
+    ResultType Visit(SExp_Inline* sExp)
+    {
+        auto e_reExp = TranslateSExp_InlineToReExp(sExp, hintType, contexts);
+        RETURN_ON_ERROR(e_reExp);
+
+        return MakeImExp_ReExp(move(*e_reExp));
+    }
 };
 
 expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp* sExp, RType* hintType, TranslationContexts& contexts)

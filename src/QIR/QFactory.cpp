@@ -17,7 +17,7 @@ QData* QFactory::MakeQData(std::vector<QFuncBody>&& body)
     return pData;
 }
 
-QBlock* QFactory::MakeQBlock(size_t index, std::string&& debugText)
+QBlock* QFactory::MakeQBlock(std::string&& debugText)
 {
     auto block = make_unique<QBlock>(std::move(debugText));
     auto* pBlock = block.get();

@@ -52,15 +52,18 @@ using QLocalInfo = std::variant<QLocalInfo_Var, QLocalInfo_RefAlias, QLocalInfo_
 struct QCleanUpInfoKey_Return {};
 struct QCleanUpInfoKey_Continue { size_t labelId; };
 struct QCleanUpInfoKey_Break { size_t labelId; };
+struct QCleanUpInfoKey_Leave { size_t labelId; };
 
 inline bool operator==(QCleanUpInfoKey_Return const& x, QCleanUpInfoKey_Return const& y) { return true; }
 inline bool operator==(QCleanUpInfoKey_Continue const& x, QCleanUpInfoKey_Continue const& y) { return x.labelId == y.labelId; }
 inline bool operator==(QCleanUpInfoKey_Break const& x, QCleanUpInfoKey_Break const& y) { return x.labelId == y.labelId; }
+inline bool operator==(QCleanUpInfoKey_Leave const& x, QCleanUpInfoKey_Leave const& y) { return x.labelId == y.labelId; }
 
 using QCleanUpKind = std::variant<
     QCleanUpInfoKey_Return,
     QCleanUpInfoKey_Continue,
-    QCleanUpInfoKey_Break>;
+    QCleanUpInfoKey_Break,
+    QCleanUpInfoKey_Leave>;
 
 struct QCleanUpInfo
 {
@@ -124,6 +127,7 @@ public:
 
     QBlock* GetContinueBlock(size_t labelId);
     QBlock* GetBreakBlock(size_t labelId);
+    QBlock* GetLeaveBlock(size_t labelId);
 
 private:
     void EmitInstInternal(QInst&& inst);
@@ -159,6 +163,7 @@ public:
     RType* GetPtrType(RType* innerType);
 
     size_t GetRetSlotIndex();
+    std::optional<size_t> GetLeaveSlotIndex(size_t labelId);
 
     std::optional<QLocalInfo> GetLocalInfo(const RName& name);
     size_t AddLocalVar(RType* type, const RName& name, std::optional<size_t> o_argIndex);

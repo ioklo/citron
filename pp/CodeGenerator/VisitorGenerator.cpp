@@ -222,6 +222,7 @@ void GenerateVisitors(std::filesystem::path rootPath)
                 "MStmt_While",
                 "MStmt_Continue",
                 "MStmt_Break",
+                "MStmt_Leave",
                 "MStmt_Return",
                 "MStmt_Blank",
                 "MStmt_Exp",

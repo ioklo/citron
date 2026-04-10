@@ -103,6 +103,15 @@ class SFactory
 public:
     SYNTAX_API SFactory();
     SYNTAX_API ~SFactory();
+
+    template<typename TSyntax, typename... TArgs> 
+    TSyntax* Make(TArgs&&... args)
+    { 
+        auto elem = std::make_unique<TSyntax>(std::forward<TArgs>(args)...); 
+        auto* pElem = elem.get(); 
+        syntaxes.push_back(std::move(elem)); 
+        return pElem; 
+    }
     
 #define MAKE(ITEM) \
     template<typename... TArgs> \

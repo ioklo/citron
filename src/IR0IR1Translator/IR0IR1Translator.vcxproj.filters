@@ -23,6 +23,7 @@
     <ClInclude Include="QEmitState.h" />
     <ClInclude Include="QJumpBlockInfo.h" />
     <ClInclude Include="QMisc.h" />
+    <ClInclude Include="QLazyBlock.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IR0IR1Translator.cpp" />
@@ -33,5 +34,6 @@
     <ClCompile Include="MReadToQInsts.cpp" />
     <ClCompile Include="MCreateToQInsts.cpp" />
     <ClCompile Include="QEmitState.cpp" />
+    <ClCompile Include="QLazyBlock.cpp" />
   </ItemGroup>
 </Project>

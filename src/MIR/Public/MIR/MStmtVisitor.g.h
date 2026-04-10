@@ -15,6 +15,7 @@ struct MStmtVisitor
     virtual void Visit(MStmt_While* mStmt) = 0;
     virtual void Visit(MStmt_Continue* mStmt) = 0;
     virtual void Visit(MStmt_Break* mStmt) = 0;
+    virtual void Visit(MStmt_Leave* mStmt) = 0;
     virtual void Visit(MStmt_Return* mStmt) = 0;
     virtual void Visit(MStmt_Blank* mStmt) = 0;
     virtual void Visit(MStmt_Exp* mStmt) = 0;
@@ -46,6 +47,7 @@ concept MStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<MStmt_While*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_Continue*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_Break*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<MStmt_Leave*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_Return*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_Blank*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<MStmt_Exp*>(), std::forward<TVisitorArgs>(args)...) } -> MStmtConvertibleToResultType<TVisitor>;
@@ -82,6 +84,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MStmt* m
             void Visit(MStmt_While* mStmt) override { call(mStmt); }
             void Visit(MStmt_Continue* mStmt) override { call(mStmt); }
             void Visit(MStmt_Break* mStmt) override { call(mStmt); }
+            void Visit(MStmt_Leave* mStmt) override { call(mStmt); }
             void Visit(MStmt_Return* mStmt) override { call(mStmt); }
             void Visit(MStmt_Blank* mStmt) override { call(mStmt); }
             void Visit(MStmt_Exp* mStmt) override { call(mStmt); }
@@ -113,6 +116,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, MStmt* m
             void Visit(MStmt_While* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_Continue* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_Break* mStmt) override { result.emplace(call(mStmt)); }
+            void Visit(MStmt_Leave* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_Return* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_Blank* mStmt) override { result.emplace(call(mStmt)); }
             void Visit(MStmt_Exp* mStmt) override { result.emplace(call(mStmt)); }

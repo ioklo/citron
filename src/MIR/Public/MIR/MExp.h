@@ -23,6 +23,7 @@ class RTypeArguments;
 
 struct MLoc;
 struct MStmt;
+struct MStmt_Scope;
 class NLambdaDecl;
 
 struct MExpVisitor;
@@ -228,8 +229,14 @@ struct MExp_Lambda : MExp
 
 struct MExp_InlineBlock : MExp
 {
-    std::vector<MStmt*> stmts;
+    MStmt_Scope* scope;
     RType* returnType;
+
+    MExp_InlineBlock(MStmt_Scope* scope, RType* returnType)
+        : scope{scope}, returnType{returnType}
+    {
+    }
+
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
 

@@ -262,7 +262,14 @@ struct MRead_ExpQInstsTranslator
     // ResultType Visit(MExp_NullableNullLiteral* exp) { }
     // ResultType Visit(MExp_Cast* exp) { }
     // ResultType Visit(MExp_Lambda* exp) { }
-    // ResultType Visit(MExp_InlineBlock* exp) { }
+    ResultType Visit(MExp_InlineBlock* exp) 
+    { 
+        size_t leaveSlotIndex = contexts.bodyContext.NewSlot(exp->returnType);
+        auto e_s_result = HandleInlineBlock(exp->scope, leaveSlotIndex, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_result);
+
+        return QReadResult_Slot{leaveSlotIndex};
+    }
     // ResultType Visit(MExp_Is* exp) {}
    
 };

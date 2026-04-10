@@ -197,6 +197,7 @@ struct SStmtToJsonVisitor
     ResultType Visit(SStmt_Switch* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_Continue* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_Break* stmt) { return stmt->ToJson(); }
+    ResultType Visit(SStmt_Leave* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_Return* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_Block* stmt) { return stmt->ToJson(); }
     ResultType Visit(SStmt_Blank* stmt) { return stmt->ToJson(); }
@@ -235,6 +236,7 @@ struct SExpToJsonVisitor
     ResultType Visit(SExp_Shared* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_Is* exp) { return exp->ToJson(); }
     ResultType Visit(SExp_As* exp) { return exp->ToJson(); }
+    ResultType Visit(SExp_Inline* exp) { return exp->ToJson(); }
 };
 
 JsonItem ToJson(SExp* exp)
@@ -686,6 +688,24 @@ JsonItem SExp_As::ToJson()
         { "$type", JsonString("SExp_As") },
         { "exp", Citron::ToJson(exp) },
         { "type", Citron::ToJson(type) },
+    };
+}
+
+SExp_Inline::SExp_Inline(std::vector<SStmt*> stmts, SExp* o_finalExp)
+    : stmts(move(stmts)), o_finalExp(move(o_finalExp)) { }
+
+SExp_Inline::SExp_Inline(SExp_Inline&& other) noexcept = default;
+
+SExp_Inline::~SExp_Inline() = default;
+
+SExp_Inline& SExp_Inline::operator=(SExp_Inline&& other) noexcept = default;
+
+JsonItem SExp_Inline::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SExp_Inline") },
+        { "stmts", Citron::ToJson(stmts) },
+        { "o_finalExp", Citron::ToJson(o_finalExp) },
     };
 }
 
@@ -1254,6 +1274,24 @@ JsonItem SStmt_Switch::ToJson()
 {
     return JsonObject {
         { "$type", JsonString("SStmt_Switch") },
+        { "o_label", Citron::ToJson(o_label) },
+        { "value", Citron::ToJson(value) },
+    };
+}
+
+SStmt_Leave::SStmt_Leave(std::optional<std::string> o_label, SExp* value)
+    : o_label(move(o_label)), value(move(value)) { }
+
+SStmt_Leave::SStmt_Leave(SStmt_Leave&& other) noexcept = default;
+
+SStmt_Leave::~SStmt_Leave() = default;
+
+SStmt_Leave& SStmt_Leave::operator=(SStmt_Leave&& other) noexcept = default;
+
+JsonItem SStmt_Leave::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SStmt_Leave") },
         { "o_label", Citron::ToJson(o_label) },
         { "value", Citron::ToJson(value) },
     };

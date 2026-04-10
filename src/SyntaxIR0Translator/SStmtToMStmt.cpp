@@ -166,7 +166,7 @@ struct SStmtToMStmtsTranslator
     
     expected<MStmt_For*, DiagPtr> MakeInnerFor(SStmt_For* stmt, TranslationContexts& forOuterContexts)
     {
-        optional<MRead> mCond;
+        optional<MTopLevel_Read> mCond;
         if (stmt->cond)
         {
             auto boolType = contexts.rFactory->MakeBoolType();
@@ -176,7 +176,7 @@ struct SStmtToMStmtsTranslator
             if (GetType(*e_mCond, &*contexts.rFactory) != boolType)
                 return Error<Error_ForStmt_ConditionShouldBeBool>();
 
-            mCond = move(*e_mCond);
+            mCond = MTopLevel_Read{move(*e_mCond)};
 
             // TODO: [47] CastMExp의 리턴값 수정, NBC의 암시적 Cast구현하기
             // e_rawCond = CastMExp(*e_rawCond, boolType, contexts);
@@ -327,6 +327,49 @@ struct SStmtToMStmtsTranslator
 
             return Value<MStmt_Break>(*o_labelId);
         }
+    }
+
+    ResultType Visit(SStmt_Leave* stmt)
+    {
+        size_t labelId;
+        if (stmt->o_label)
+        {
+            auto o_labelId = contexts.funcContext->GetLabelId(*stmt->o_label);
+            if (!o_labelId) return Error<Error_LeaveStmt_LabelNotFound>();
+
+            auto o_scopeKind = contexts.scopeContext->GetReachableScopeKind(*o_labelId);
+            if (!o_scopeKind) return Error<Error_LeaveStmt_LabelNotReachable>();
+
+            if (!holds_alternative<MScopeKind_Inline>(*o_scopeKind))
+                return Error<Error_LeaveStmt_LabelNotCompatible>();
+
+            labelId = *o_labelId;
+        }
+        else
+        {
+            auto o_labelId = contexts.scopeContext->GetCurLeaveLabelId();
+            if (!o_labelId) return Error<Error_LeaveStmt_ShouldUsedInInlineScope>();
+
+            labelId = *o_labelId;
+        }
+       
+        auto* o_inlineScopeType = contexts.scopeContext->GetInlineScopeType();
+        auto e_create = TranslateSExpToMCreate(stmt->value, o_inlineScopeType, contexts);
+        RETURN_ON_ERROR(e_create);
+
+        auto* createType = GetType(*e_create, &*contexts.rFactory);
+        auto* o_newInlineScopeType = contexts.scopeContext->GetInlineScopeType();
+        if (!o_newInlineScopeType)
+        {
+            contexts.scopeContext->SetInlineScopeType(createType);
+        }
+        else
+        {
+            if (createType != o_newInlineScopeType)
+                return Error<Error_LeaveStmt_TypeMismatch>();
+        }
+
+        return Value<MStmt_Leave>(labelId, MTopLevel_Create{move(*e_create)});
     }
 
     ResultType Visit(SStmt_Return* stmt) 
@@ -861,16 +904,16 @@ expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmb
 
 expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::optional<std::string>& o_label, SEmbeddableStmt* sEmbedStmt, TranslationContexts& contexts)
 {
-    size_t o_labelId = contexts.funcContext->AddNewLabelId(o_label);
+    size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
 
     // loop는 continue, break 둘 다 갱신한다
-    auto newContexts = MakeTranslationContexts_LoopScope(o_labelId, contexts);
+    auto newContexts = MakeTranslationContexts_LoopScope(labelId, contexts);
 
     vector<MStmt*> stmts;
     auto e_result = TranslateSEmbeddableStmtToMStmts(stmts, sEmbedStmt, newContexts);
     RETURN_ON_ERROR(e_result);
 
-    return contexts.mFactory->MakeMStmt<MStmt_Scope>(MScopeKind_Loop{o_labelId}, move(stmts));
+    return contexts.mFactory->MakeMStmt<MStmt_Scope>(MScopeKind_Loop{labelId}, move(stmts));
 }
 
 

@@ -1,0 +1,11 @@
+//@ 4
+int F()
+{
+	bool b = inline { return 4; };
+}
+
+void Main()
+{
+	var x = F();
+	@$x
+}

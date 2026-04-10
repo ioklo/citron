@@ -1,9 +1,10 @@
-//@ 3
+//@ hi3
 void Main()
 {
     int s = 2;
     int x = inline {
-        leave (s + 4) / 2;
+        @hi
+        (s + 4) / 2
     };
 
     @$x

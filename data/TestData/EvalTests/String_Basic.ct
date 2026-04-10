@@ -6,7 +6,7 @@ void Main()
     
     s = "hello"; // 
     
-    @$t $s ${s = "world"} $s
+    @$t $s ${s = "world"; s} $s
     
     string t2 = "${"h"}${"i"}";
     @ ${t == t2} ${s == "world"} ${t != t2} ${s != "world"}

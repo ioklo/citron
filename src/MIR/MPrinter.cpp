@@ -314,7 +314,7 @@ private:
         if (auto* x = dynamic_cast<MStmt_For*>(stmt))
         {
             writer.Write("for"); writer.WriteLine(); writer.AddIndent();
-            PrintLine(x->cond ? format("cond: {}", TopLevelReadText(*x->cond)) : string("cond: <none>"));
+            PrintLine(x->o_cond ? format("cond: {}", TopLevelReadText(*x->o_cond)) : string("cond: <none>"));
             if (x->contStmt) { writer.Write("cont:"); writer.WriteLine(); writer.AddIndent(); PrintStmt(x->contStmt); writer.RemoveIndent(); }
             writer.Write("body:"); PrintStmt(x->body);
             writer.RemoveIndent();

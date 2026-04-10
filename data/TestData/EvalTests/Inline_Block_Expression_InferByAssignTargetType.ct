@@ -1,7 +1,7 @@
 //@ 3
 void Main()
 {
-	int x;
-	x = inline { return 3; };
+	int x = uninit;
+	x = inline { leave 3; };
 	@$x
 }

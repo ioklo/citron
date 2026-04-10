@@ -21,6 +21,7 @@ class SStmt_While;
 class SStmt_Switch;
 class SStmt_Continue;
 class SStmt_Break;
+class SStmt_Leave;
 class SStmt_Return;
 class SStmt_Block;
 class SStmt_Blank;
@@ -49,6 +50,7 @@ class SExp_New;
 class SExp_Shared;
 class SExp_Is;
 class SExp_As;
+class SExp_Inline;
 
 class SVarDeclType;
 class SVarDeclType_Var;
@@ -411,6 +413,7 @@ public:
     virtual void Visit(SStmt_Switch* stmt) = 0;
     virtual void Visit(SStmt_Continue* stmt) = 0;
     virtual void Visit(SStmt_Break* stmt) = 0;
+    virtual void Visit(SStmt_Leave* stmt) = 0;
     virtual void Visit(SStmt_Return* stmt) = 0;
     virtual void Visit(SStmt_Block* stmt) = 0;
     virtual void Visit(SStmt_Blank* stmt) = 0;
@@ -450,6 +453,7 @@ concept SStmtVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<SStmt_Switch*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_Continue*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_Break*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SStmt_Leave*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_Return*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_Block*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SStmt_Blank*>(), std::forward<TVisitorArgs>(args)...) } -> SStmtConvertibleToResultType<TVisitor>;
@@ -483,6 +487,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStmt* s
             void Visit(SStmt_Switch* stmt) override { call(stmt); }
             void Visit(SStmt_Continue* stmt) override { call(stmt); }
             void Visit(SStmt_Break* stmt) override { call(stmt); }
+            void Visit(SStmt_Leave* stmt) override { call(stmt); }
             void Visit(SStmt_Return* stmt) override { call(stmt); }
             void Visit(SStmt_Block* stmt) override { call(stmt); }
             void Visit(SStmt_Blank* stmt) override { call(stmt); }
@@ -513,6 +518,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStmt* s
             void Visit(SStmt_Switch* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_Continue* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_Break* stmt) override { result.emplace(call(stmt)); }
+            void Visit(SStmt_Leave* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_Return* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_Block* stmt) override { result.emplace(call(stmt)); }
             void Visit(SStmt_Blank* stmt) override { result.emplace(call(stmt)); }
@@ -553,6 +559,7 @@ public:
     virtual void Visit(SExp_Shared* exp) = 0;
     virtual void Visit(SExp_Is* exp) = 0;
     virtual void Visit(SExp_As* exp) = 0;
+    virtual void Visit(SExp_Inline* exp) = 0;
 };
 
 class SExp : virtual public SSyntax
@@ -590,6 +597,7 @@ concept SExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<SExp_Shared*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SExp_Is*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<SExp_As*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<SExp_Inline*>(), std::forward<TVisitorArgs>(args)...) } -> SExpConvertibleToResultType<TVisitor>;
 };
 
 template<typename TVisitor, typename... TVisitorArgs> requires SExpVisitable<TVisitor, TVisitorArgs...>
@@ -621,6 +629,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SExp* ex
             void Visit(SExp_Shared* exp) override { call(exp); }
             void Visit(SExp_Is* exp) override { call(exp); }
             void Visit(SExp_As* exp) override { call(exp); }
+            void Visit(SExp_Inline* exp) override { call(exp); }
         };
 
         Bridge bridge{caller};
@@ -649,6 +658,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SExp* ex
             void Visit(SExp_Shared* exp) override { result.emplace(call(exp)); }
             void Visit(SExp_Is* exp) override { result.emplace(call(exp)); }
             void Visit(SExp_As* exp) override { result.emplace(call(exp)); }
+            void Visit(SExp_Inline* exp) override { result.emplace(call(exp)); }
         };
 
         Bridge bridge{caller};
@@ -1765,6 +1775,26 @@ public:
 
 };
 
+class SExp_Inline
+    : public SExp
+{
+public:
+    std::vector<SStmt*> stmts;
+    SExp* o_finalExp;
+
+    SYNTAX_API SExp_Inline(std::vector<SStmt*> stmts, SExp* o_finalExp);
+    SExp_Inline(const SExp_Inline&) = delete;
+    SYNTAX_API SExp_Inline(SExp_Inline&&) noexcept;
+    SYNTAX_API virtual ~SExp_Inline();
+
+    SExp_Inline& operator=(const SExp_Inline& other) = delete;
+    SYNTAX_API SExp_Inline& operator=(SExp_Inline&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SExpVisitor& visitor) override { visitor.Visit(this); }
+
+};
+
 class STypeExp_Id
     : public STypeExp
 {
@@ -2420,6 +2450,26 @@ public:
 
     SStmt_Switch& operator=(const SStmt_Switch& other) = delete;
     SYNTAX_API SStmt_Switch& operator=(SStmt_Switch&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+    void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }
+
+};
+
+class SStmt_Leave
+    : public SStmt
+{
+public:
+    std::optional<std::string> o_label;
+    SExp* value;
+
+    SYNTAX_API SStmt_Leave(std::optional<std::string> o_label, SExp* value);
+    SStmt_Leave(const SStmt_Leave&) = delete;
+    SYNTAX_API SStmt_Leave(SStmt_Leave&&) noexcept;
+    SYNTAX_API virtual ~SStmt_Leave();
+
+    SStmt_Leave& operator=(const SStmt_Leave& other) = delete;
+    SYNTAX_API SStmt_Leave& operator=(SStmt_Leave&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
     void Accept(SStmtVisitor& visitor) override { visitor.Visit(this); }

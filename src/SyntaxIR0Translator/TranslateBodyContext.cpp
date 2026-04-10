@@ -40,6 +40,44 @@ enum class CheckEndReturnResult
     Error
 };
 
+CheckEndReturnResult CheckEndReturn(MStmt* stmt, RFactory* rFactory)
+{
+    struct Checker
+    {
+        using ResultType = CheckEndReturnResult;
+        RFactory* rFactory;
+
+        ResultType Visit(MStmt_Scope* stmt)
+        {
+            CheckEndReturn(stmt->stmts.back(), rFactory);
+        }
+
+        ResultType Visit(MStmt_Command* stmt) { }
+        ResultType Visit(MStmt_LocalVarDecl* stmt) { }
+        ResultType Visit(MStmt_LocalRefDecl* stmt) { }
+        ResultType Visit(MStmt_If* stmt) { }
+        ResultType Visit(MStmt_For* stmt) { }
+        ResultType Visit(MStmt_While* stmt) { }
+        ResultType Visit(MStmt_Continue* stmt) { }
+        ResultType Visit(MStmt_Break* stmt) { }
+        ResultType Visit(MStmt_Leave* stmt) { }
+        ResultType Visit(MStmt_Return* stmt) { }
+        ResultType Visit(MStmt_Blank* stmt) { }
+        ResultType Visit(MStmt_Exp* stmt) { }
+        ResultType Visit(MStmt_Task* stmt) { }
+        ResultType Visit(MStmt_Await* stmt) { }
+        ResultType Visit(MStmt_Async* stmt) { }
+        ResultType Visit(MStmt_Foreach* stmt) { }
+        ResultType Visit(MStmt_Yield* stmt) { }
+        ResultType Visit(MStmt_Directive* stmt) { }
+        ResultType Visit(MStmt_Call* stmt) { }
+        ResultType Visit(MStmt_Assign* stmt) { }
+        ResultType Visit(MStmt_Do* stmt) { }
+    };
+
+    return Accept(Checker{rFactory}, stmt);
+}
+
 CheckEndReturnResult CheckEndReturn(NFuncDecl* nFuncDecl, vector<MStmt*>& mStmts, RFactory& rFactory)
 {
     // 1. 함수에 Body가 있고, return으로 끝날때

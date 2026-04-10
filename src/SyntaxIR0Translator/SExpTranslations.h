@@ -23,6 +23,7 @@ class SExp_New;
 class SExp_Shared;
 class SExp_Is;
 class SExp_As;
+class SExp_Inline;
 class RType;
 struct MExp_IntLiteral;
 struct MExp_BoolLiteral;
@@ -51,6 +52,7 @@ std::expected<MInitExp_Shared*, DiagPtr> TranslateSExp_SharedToMInitExp_Shared(S
 
 std::expected<MExp_Is*, DiagPtr> TranslateSExp_IsToMExp_Is(SExp_Is* sExp, TranslationContexts& contexts);
 std::expected<MInitExp_As*, DiagPtr> TranslateSExp_AsToMInitExp_As(SExp_As* sExp, TranslationContexts& contexts);
+std::expected<ReExp, DiagPtr> TranslateSExp_InlineToReExp(SExp_Inline* sExp, RType* hintType, TranslationContexts& contexts);
 
 std::expected<MCreate, DiagPtr> TranslateSExpToMCreate(SExp* sExp, RType* hintType, TranslationContexts& contexts);
 std::expected<MRead, DiagPtr> TranslateSExpToMRead(SExp* sExp, RType* hintType, TranslationContexts& contexts);

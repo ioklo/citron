@@ -197,10 +197,10 @@ TEST(Break_Statement, LabeledFor)
 {
     auto code = R"---(void Main()
 {
-    outer: for(int i = 0; i < 5; i++)
+    :outer for(int i = 0; i < 5; i++)
         for(int j = 0; j < 5; j++)
         {
-            if (j == 3) break outer;
+            if (j == 3) break :outer;
             @$i$j
             
         }
@@ -775,10 +775,10 @@ TEST(Continue_Statement, LabeledFor)
 {
     auto code = R"---(void Main()
 {
-    outer: for(int i = 0; i < 5; i++)
+    :outer for(int i = 0; i < 5; i++)
         for(int j = 0; j < 5; j++)
         {
-            if (i < j) continue outer;
+            if (i < j) continue :outer;
             @$i$j
         }
 }
@@ -1424,14 +1424,33 @@ TEST(Inline_Block_Expression, Basic)
 {
     int s = 2;
     int x = inline {
-        return (s + 4) / 2;
+        leave (s + 4) / 2;
     };
 
-    @$x;
+    @$x
 }
 
 )---";
     string expected = R"---(3)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Inline_Block_Expression, BasicEndsWithExp) 
+{
+    auto code = R"---(void Main()
+{
+    int s = 2;
+    int x = inline {
+        @hi
+        (s + 4) / 2
+    };
+
+    @$x
+}
+
+)---";
+    string expected = R"---(hi3)---";
 
     DoTest(code, expected);
 }
@@ -1465,8 +1484,8 @@ TEST(Inline_Block_Expression, InferByAssignTargetType)
 {
     auto code = R"---(void Main()
 {
-	int x;
-	x = inline { return 3; };
+	int x = uninit;
+	x = inline { leave 3; };
 	@$x
 }
 )---";
@@ -1484,10 +1503,10 @@ TEST(Inline_Block_Expression, InferByFunctionParameter)
 
 void Main()
 {
-	F(inline { return 3; });
+	F(inline { @{hi} 3 });
 }
 )---";
-    string expected = R"---(3)---";
+    string expected = R"---(hi3)---";
 
     DoTest(code, expected);
 }
@@ -1496,7 +1515,7 @@ TEST(Inline_Block_Expression, InferByReturnType)
 {
     auto code = R"---(void Main()
 {
-	var x = inline { return 3; };
+	var x = inline { leave 3; };
 	@$x
 }
 )---";
@@ -1505,11 +1524,31 @@ TEST(Inline_Block_Expression, InferByReturnType)
     DoTest(code, expected);
 }
 
+TEST(Inline_Block_Expression, Return) 
+{
+    auto code = R"---(int F()
+{
+	bool b = inline { return 4; };
+
+	return 2;
+}
+
+void Main()
+{
+	var x = F();
+	@$x
+}
+)---";
+    string expected = R"---(4)---";
+
+    DoTest(code, expected);
+}
+
 TEST(Integer, BinaryOperation) 
 {
     auto code = R"---(void Main()
 {
-    int i;
+    int i = uninit;
     
     i = -3; // assignment
     
@@ -2272,7 +2311,7 @@ TEST(String, Basic)
     
     s = "hello"; // 
     
-    @$t $s ${s = "world"} $s
+    @$t $s ${s = "world"; s} $s
     
     string t2 = "${"h"}${"i"}";
     @ ${t == t2} ${s == "world"} ${t != t2} ${s != "world"}

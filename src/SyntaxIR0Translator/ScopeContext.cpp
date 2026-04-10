@@ -19,8 +19,21 @@ using namespace std;
 
 namespace Citron {
 
-ScopeContext::ScopeContext(const FuncContextPtr& funcContext, const ScopeContextPtr& parentContext, MScopeKind&& scopeKind, std::optional<size_t> curContinueLabelId, std::optional<size_t> curBreakLabelId, const RFactoryPtr& rFactory)
-    : funcContext{funcContext}, parentContext{parentContext}, scopeKind{std::move(scopeKind)}, curContinueLabelId{curContinueLabelId}, curBreakLabelId{curBreakLabelId}, rFactory{rFactory}
+ScopeContext::ScopeContext(
+    const FuncContextPtr& funcContext, 
+    const ScopeContextPtr& parentContext, 
+    MScopeKind&& scopeKind, 
+    optional<size_t> curContinueLabelId, 
+    optional<size_t> curBreakLabelId, 
+    shared_ptr<InlineScopeContext> inlineScopeContext,
+    const RFactoryPtr& rFactory)
+    : funcContext{funcContext}
+    , parentContext{parentContext}
+    , scopeKind{std::move(scopeKind)}
+    , curContinueLabelId{curContinueLabelId}
+    , curBreakLabelId{curBreakLabelId}
+    , inlineScopeContext{move(inlineScopeContext)}
+    , rFactory {rFactory}
 {
 }
 
@@ -126,14 +139,18 @@ std::optional<MScopeKind> ScopeContext::GetReachableScopeKind(size_t labelId)
 {
     return visit([this, labelId](auto& scopeKind) -> optional<MScopeKind> {
         using T = remove_cvref_t<decltype(scopeKind)>;
-        if constexpr (is_same_v<T, MScopeKind_Default>)
+        if constexpr (same_as<T, MScopeKind_Default>)
         {
         }   
-        else if constexpr (is_same_v<T, MScopeKind_Loop>)
+        else if constexpr (same_as<T, MScopeKind_Loop>)
         {
             if (scopeKind.labelId == labelId) return scopeKind;
         }
-        else if constexpr (is_same_v<T, MScopeKind_Switch>)
+        else if constexpr (same_as<T, MScopeKind_Switch>)
+        {
+            if (scopeKind.labelId == labelId) return scopeKind;
+        }
+        else if constexpr (same_as<T, MScopeKind_Inline>)
         {
             if (scopeKind.labelId == labelId) return scopeKind;
         }

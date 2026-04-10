@@ -14,6 +14,7 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 enum class MExp_CallIntrinsicKind;
 enum class MInitExp_CallIntrinsicKind;
 
+struct MStmt_Scope;
 struct MInitExp_String;
 struct QTranslationContexts;
 
@@ -33,5 +34,7 @@ QIntrinsicInfo* GetIntrinsicInfo(MExp_CallIntrinsicKind kind, QTranslationContex
 QIntrinsicInfo* GetIntrinsicInfo(MInitExp_CallIntrinsicKind kind, QTranslationContexts& contexts);
 
 std::expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, std::optional<size_t> destSlot, QTranslationContexts& contexts);
+
+std::expected<QEmitState<void>, DiagPtr> HandleInlineBlock(MStmt_Scope* scope, std::optional<size_t> o_destSlotIndex, QTranslationContexts& contexts);
 
 } // namespace Citron

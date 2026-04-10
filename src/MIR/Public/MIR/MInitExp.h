@@ -22,6 +22,7 @@ class NLambdaDecl;
 
 struct MInitExpVisitor;
 struct MStmt;
+struct MStmt_Scope;
 struct MSharedExp;
 
 struct MInitExp
@@ -213,8 +214,13 @@ struct MInitExp_Lambda : MInitExp
 
 struct MInitExp_InlineBlock : MInitExp
 {
-    std::vector<MStmt*> stmts;
+    MStmt_Scope* scope;
     RType* returnType;
+
+    MInitExp_InlineBlock(MStmt_Scope* scope, RType* returnType)
+        : scope{scope}, returnType{returnType}
+    {
+    }
 
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };

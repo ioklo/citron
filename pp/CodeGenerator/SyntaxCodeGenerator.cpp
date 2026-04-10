@@ -74,6 +74,7 @@ struct ToJsonVisitor {
                 "SStmt_Switch",
                 "SStmt_Continue",
                 "SStmt_Break",
+                "SStmt_Leave",
                 "SStmt_Return",
                 "SStmt_Block",
                 "SStmt_Blank",
@@ -107,6 +108,7 @@ struct ToJsonVisitor {
                 "SExp_Shared",
                 "SExp_Is",
                 "SExp_As",
+                "SExp_Inline",
             }
         },
 
@@ -357,6 +359,7 @@ struct ToJsonVisitor {
                 "SStmt_Switch",
                 "SStmt_Continue",
                 "SStmt_Break",
+                "SStmt_Leave",
                 "SStmt_Return",
                 "SStmt_Block",
                 "SStmt_Blank",
@@ -391,6 +394,7 @@ struct ToJsonVisitor {
                 "SExp_Shared",
                 "SExp_Is",
                 "SExp_As",
+                "SExp_Inline",
             }
         },
 
@@ -669,6 +673,15 @@ struct ToJsonVisitor {
             .memberInfos{
                 {.type = "SExp*", .memberVarName = "exp", .getterName = "GetExp" },
                 {.type = "STypeExp*", .memberVarName = "type", .getterName = "GetType" },
+            },
+        },
+
+        ClassInfo{
+            .name = "SExp_Inline",
+            .variantInterfaces { "SExp" },
+            .memberInfos {
+                {.type = "std::vector<SStmt*>", .memberVarName = "stmts", .getterName = "GetStmts" },
+                {.type = "SExp*", .memberVarName = "o_finalExp", .getterName = "GetFinalExp" },
             },
         },
 
@@ -997,6 +1010,15 @@ struct ToJsonVisitor {
             .memberInfos {
                 {.type = "std::optional<std::string>", .memberVarName = "o_label", .getterName = "GetLabel" },
                 {.type = "SExp*", .memberVarName = "value", .getterName = "GetValue" }
+            },
+        },
+
+        ClassInfo{
+            .name = "SStmt_Leave",
+            .variantInterfaces { "SStmt" },
+            .memberInfos {
+                {.type = "std::optional<std::string>", .memberVarName = "o_label", .getterName = "GetLabel" },
+                {.type = "SExp*", .memberVarName = "value", .getterName = "GetValue" },
             },
         },
 

@@ -90,6 +90,8 @@ unordered_map<u32string, Token> keywordInfos{
     { U"null"s, NullToken() },
     { U"move"s, MoveToken() },
     { U"shared"s, SharedToken() },
+    { U"inline"s, InlineToken() },
+    { U"leave"s, LeaveToken() },
     { U"public"s, PublicToken() },
     { U"protected"s, ProtectedToken() },
     { U"private"s, PrivateToken() },

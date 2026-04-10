@@ -5,6 +5,7 @@
 #include <vector>
 #include <optional>
 #include <string>
+#include <tuple>
 
 #include "Infra/Ptr.h"
 #include "RSymbol/RNames.h"
@@ -53,7 +54,22 @@ TranslationContexts MakeTranslationContexts(NFuncDecl* nFuncDecl, const LoggerPt
 
 TranslationContexts MakeTranslationContexts_DefaultScope(TranslationContexts& contexts);
 TranslationContexts MakeTranslationContexts_LoopScope(size_t o_labelId, TranslationContexts& contexts);
-TranslationContexts MakeTranslationContexts_SwitchScope(std::optional<std::string> o_label, TranslationContexts& contexts);
+TranslationContexts MakeTranslationContexts_SwitchScope(std::optional<std::string>& o_label, TranslationContexts& contexts);
+std::tuple<size_t, TranslationContexts> MakeTranslationContexts_InlineScope(std::optional<std::string> o_label, RType* hintType, TranslationContexts& contexts);
+
+template<typename TFunc>
+concept UsingTranslationContexts_InlineScopeFunc = requires(TFunc&& func, MScopeKind_Inline scopeKind, TranslationContexts& contexts)
+{
+    { func(std::move(scopeKind), contexts) }; // 리턴 타입은 체크 안함
+};
+
+template<typename TFunc> requires UsingTranslationContexts_InlineScopeFunc<TFunc>
+auto UsingTranslationContexts_InlineScope(std::optional<std::string> o_label, RType* hintType, TranslationContexts& contexts, TFunc&& func)
+{
+    auto [labelId, newContexts] = MakeTranslationContexts_InlineScope(o_label, hintType, contexts);
+    return func(MScopeKind_Inline{labelId}, newContexts);
+}
+
 TranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic, TranslationContexts& contexts);
 
 std::vector<ITransactionable*> BeginTransaction(TranslationContexts& contexts);

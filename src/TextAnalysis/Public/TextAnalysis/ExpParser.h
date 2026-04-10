@@ -39,6 +39,7 @@ SExp* ParsePrimaryExp(Lexer* lexer, SFactory& factory);
 SExp* ParseSingleExp(Lexer* lexer, SFactory& factory);
 
 // 기타
+SExp_Inline* ParseInlineExp(Lexer* lexer, SFactory& factory);
 SExp_Shared* ParseSharedExp(Lexer* lexer, SFactory& factory);
 SExp_New* ParseNewExp(Lexer* lexer, SFactory& factory);
 

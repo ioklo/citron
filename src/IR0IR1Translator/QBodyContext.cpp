@@ -23,6 +23,8 @@
 #include "QIR/QArgs.h"
 #include "QIR/QFactory.h"
 
+#include "QLazyBlock.h"
+
 using namespace std;
 
 namespace Citron {
@@ -138,7 +140,7 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
 
 QBlock* QBodyContext::AddBlock(std::string&& debugText)
 {
-    auto* newBlock = qFactory->MakeQBlock(blocks.size(), format("b{}_{}", blocks.size(), move(debugText)));
+    auto* newBlock = qFactory->MakeQBlock(format("b{}_{}", blocks.size(), move(debugText)));
     blocks.push_back(newBlock);
     return newBlock;
 }
@@ -173,6 +175,19 @@ QBlock* QBodyContext::GetBreakBlock(size_t labelId)
 
     return nullptr;
 }
+
+QBlock* QBodyContext::GetLeaveBlock(size_t labelId)
+{
+    for (auto& info : jumpBlockInfos | views::reverse)
+    {
+        if (auto* leaveInfo = get_if<QJumpBlockInfo_Inline>(&info))
+            if (leaveInfo->labelId == labelId)
+                return leaveInfo->lazyLeaveBlock->GetBlock(this);
+    }
+
+    return nullptr;
+}
+
 
 void QBodyContext::EmitInstInternal(QInst&& inst)
 {
@@ -223,6 +238,8 @@ bool QBodyContext::IsFinalScope(QCleanUpKind kind, size_t scopeIndex)
             return scopes[scopeIndex].o_labelId == kind.labelId;
         else if constexpr (same_as<T, QCleanUpInfoKey_Break>)
             return scopes[scopeIndex].o_labelId == kind.labelId;
+        else if constexpr (same_as<T, QCleanUpInfoKey_Leave>)
+            return scopes[scopeIndex].o_labelId == kind.labelId;
         else static_assert(false);
 
     }, kind);
@@ -270,6 +287,11 @@ void QBodyContext::FinalizeCleanupBlock(QBlock* block, QCleanUpKind kind)
         {   
             auto* breakBlock = GetBreakBlock(kind.labelId);
             block->EmitInst(QInst_Jump{breakBlock});
+        }
+        else if constexpr (same_as<T, QCleanUpInfoKey_Leave>)
+        {
+            auto* leaveBlock = GetLeaveBlock(kind.labelId);
+            block->EmitInst(QInst_Jump{leaveBlock});
         }
         else static_assert(false);
     }, kind);
@@ -392,6 +414,20 @@ RType* QBodyContext::GetPtrType(RType* innerType)
 size_t QBodyContext::GetRetSlotIndex()
 {
     return *o_retSlotIndex;
+}
+
+optional<size_t> QBodyContext::GetLeaveSlotIndex(size_t labelId)
+{
+    for (auto& jumpBlockInfo : jumpBlockInfos | views::reverse)
+    {
+        if (auto* inlineInfo = get_if<QJumpBlockInfo_Inline>(&jumpBlockInfo))
+        {
+            if (inlineInfo->labelId == labelId)
+                return inlineInfo->leaveSlotIndex;
+        }
+    }
+
+    return nullopt;
 }
 
 optional<QLocalInfo> QBodyContext::GetLocalInfo(const RName& name)

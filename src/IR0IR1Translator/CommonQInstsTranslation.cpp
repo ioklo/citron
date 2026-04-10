@@ -5,16 +5,20 @@
 
 #include "Infra/Variants.h"
 #include "Infra/Expected.h"
+#include "Infra/Ptr.h"
+#include "Logging/Diag.h"
 #include "RSymbol/RFactory.h"
 #include "MIR/MExp.h"
 #include "MIR/MInitExp.h"
-#include "QTranslationContexts.h"
-#include "QBodyContext.h"
-#include "QScopeGuard.h"
 #include "MLocToQInsts.h"
 #include "MCreateToQInsts.h"
 #include "MReadToQInsts.h"
+#include "MStmtToQInsts.h"
+#include "QTranslationContexts.h"
+#include "QBodyContext.h"
+#include "QScopeGuard.h"
 #include "QEmitState.h"
+#include "QLazyBlock.h"
 
 using namespace std;
 
@@ -312,6 +316,34 @@ expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_St
     }
 
     return QEmitState_Ready{};
+}
+
+expected<QEmitState<void>, DiagPtr> HandleInlineBlock(MStmt_Scope* scope, optional<size_t> o_destSlotIndex, QTranslationContexts& contexts)
+{
+    // inlineBlock을 destSlot없이 호출할 일이 없도록 해야한다. 
+    // 보통은 MStmt_Exp에서 호출될텐데, 여기는 Call, Assign만 가능하므로 괜찮다
+    if (!o_destSlotIndex) throw RuntimeFatalException{};
+
+    // 지금 블록 말고 leaveBlock을 하나 더 만들어야 할거 같다
+    auto lazyExitBlock = MakePtr<QLazyBlock>("inline_exit");
+    auto e_s_result = TranslateMStmt_ScopeToQInsts_Inline(scope, lazyExitBlock, *o_destSlotIndex, contexts);
+    RETURN_ON_ERROR(e_s_result);
+
+    // inline block이 Ready면 이상한거다
+    if (*e_s_result)
+        return Error<Error_InlineExp_ShouldLeaveWithValue>();
+
+    // 내부에서 exitBlock을 쓰지 않았다면 Done이다
+    if (!lazyExitBlock->HasBlock())
+    {
+        return QEmitState_Done{};
+    }
+    else
+    {
+        auto* exitBlock = lazyExitBlock->GetBlock(&contexts.bodyContext);
+        contexts.bodyContext.SetCurBlock(exitBlock);
+        return QEmitState_Ready{};
+    }
 }
 
 } // namespace Citron

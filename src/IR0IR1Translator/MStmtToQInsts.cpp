@@ -21,6 +21,7 @@
 #include "MCreateToQInsts.h"
 #include "QEmitState.h"
 #include "QJumpBlockInfo.h"
+#include "QLazyBlock.h"
 
 using namespace std;
 
@@ -222,7 +223,7 @@ struct MStmtQInstsTranslator
 
     ResultType Visit(MStmt_If* mStmt) 
     {
-        // 1. stmt.cond
+        // 1. stmt.o_cond
         auto e_s_condResult = TranslateMTopLevel_ReadToQInsts(mStmt->cond);
         RETURN_ON_ERROR_OR_DONE(e_s_condResult);
         
@@ -267,7 +268,7 @@ struct MStmtQInstsTranslator
         }, **e_s_condResult);
     }
 
-    // label: for(initStmts; cond; contStmt) body
+    // label: for(initStmts; o_cond; contStmt) body
     ResultType Visit(MStmt_For* mStmt) // init이 빠진 형태. init은 MStmt_For가 있는 scope에 따로 있고, 여기에는 cond, cont, body만 있다
     {
         QBodyContext& bodyContext = contexts.bodyContext;
@@ -277,13 +278,13 @@ struct MStmtQInstsTranslator
 
         // cond용 block
         QBlock* condBlock;
-        if (mStmt->cond)
+        if (mStmt->o_cond)
         {
             condBlock = bodyContext.AddBlock("for_cond");
             bodyContext.EmitTermInst(QInst_Jump{condBlock});
             bodyContext.SetCurBlock(condBlock);
 
-            auto e_s_condResult = TranslateMTopLevel_ReadToQInsts(*mStmt->cond);
+            auto e_s_condResult = TranslateMTopLevel_ReadToQInsts(*mStmt->o_cond);
             RETURN_ON_ERROR_OR_DONE(e_s_condResult);
                 
             visit([this, mStmt, bodyBlock, exitBlock](auto& condResult) {
@@ -361,13 +362,24 @@ struct MStmtQInstsTranslator
 
     ResultType Visit(MStmt_Continue* mStmt) 
     {
-        contexts.bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Continue{mStmt->o_labelId});
+        contexts.bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Continue{mStmt->labelId});
         return QEmitState_Done{};
     }
 
     ResultType Visit(MStmt_Break* mStmt)
     {
-        contexts.bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Break{mStmt->o_labelId});
+        contexts.bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Break{mStmt->labelId});
+        return QEmitState_Done{};
+    }
+
+    ResultType Visit(MStmt_Leave* mStmt) 
+    {
+        auto& bodyContext = contexts.bodyContext;
+        
+        auto e_s_result = TranslateMTopLevel_CreateToQInsts(mStmt->create, bodyContext.GetLeaveSlotIndex(mStmt->labelId));
+        RETURN_ON_ERROR_OR_DONE(e_s_result);
+
+        bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Leave{mStmt->labelId});
         return QEmitState_Done{};
     }
 
@@ -465,6 +477,14 @@ expected<QEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Switch(MStmt_Sc
     auto& scopeKind = get<MScopeKind_Switch>(scope->scopeKind);
     QScopeGuard guard{scopeKind.labelId, contexts.bodyContext};
     QJumpBlockScopeGuard jumpBlockGuard{QJumpBlockInfo_Switch{scopeKind.labelId, breakBlock}, contexts.bodyContext};
+    return TranslateMStmtsToQInsts(scope->stmts, contexts);
+}
+
+expected<QEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Inline(MStmt_Scope* scope, const QLazyBlockPtr& leaveBlock, size_t destSlotIndex, QTranslationContexts& contexts)
+{
+    auto& scopeKind = get<MScopeKind_Inline>(scope->scopeKind);
+    QScopeGuard guard{scopeKind.labelId, contexts.bodyContext};
+    QJumpBlockScopeGuard jumpBlockGuard{QJumpBlockInfo_Inline{scopeKind.labelId, leaveBlock, destSlotIndex}, contexts.bodyContext};
     return TranslateMStmtsToQInsts(scope->stmts, contexts);
 }
 

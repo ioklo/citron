@@ -20,6 +20,7 @@
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h" />
     <ClInclude Include="QBodyContext.h" />
     <ClInclude Include="QJumpBlockInfo.h" />
+    <ClInclude Include="QLazyBlock.h" />
     <ClInclude Include="QMisc.h" />
     <ClInclude Include="QTranslationContexts.h" />
     <ClInclude Include="QScopeGuard.h" />
@@ -34,6 +35,7 @@
     <ClCompile Include="MStmtToQInsts.cpp" />
     <ClCompile Include="QBodyContext.cpp" />
     <ClCompile Include="QEmitState.cpp" />
+    <ClCompile Include="QLazyBlock.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">

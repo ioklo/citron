@@ -19,6 +19,7 @@
 #include "DesignatedDiagnostic.h"
 #include "BinOpQueryService.h"
 #include "Misc.h"
+#include "SStmtToMStmt.h"
 
 using namespace std;
 
@@ -677,6 +678,63 @@ expected<MInitExp_As*, DiagPtr> TranslateSExp_AsToMInitExp_As(SExp_As* sExp, Tra
     return MakeMInitExp_As(move(*e_mTarget), *e_rTestType, contexts);
 }
 
+expected<ReExp, DiagPtr> TranslateSExp_InlineToReExp(SExp_Inline* sExp, RType* hintType, TranslationContexts& contexts)
+{
+    return UsingTranslationContexts_InlineScope(nullopt, hintType, contexts, [sExp, hintType](MScopeKind_Inline scopeKind, TranslationContexts& contexts) -> expected<ReExp, DiagPtr> {
+
+        // leave return type
+        vector<MStmt*> mStmts;
+        auto e_result = TranslateSStmtsToMStmts(mStmts, sExp->stmts, contexts);
+        RETURN_ON_ERROR(e_result);
+
+        if (sExp->o_finalExp)
+        {
+            auto* o_rHintType = contexts.scopeContext->GetInlineScopeType();
+            auto e_create = TranslateSExpToMCreate(sExp->o_finalExp, o_rHintType, contexts);
+            RETURN_ON_ERROR(e_create);
+
+            auto* leaveType = GetType(*e_create, &*contexts.rFactory);
+
+            // Translate 하다가 바뀌었을 수도 있으니
+            auto* o_rType = contexts.scopeContext->GetInlineScopeType();
+            if (!o_rType)
+            {   
+                contexts.scopeContext->SetInlineScopeType(leaveType);
+                o_rType = leaveType;
+            }
+            else
+            {
+                // 타입 체크
+                if (o_rType != leaveType)
+                    return Error<Error_InlineExp_TypeMismatch>();
+            }
+
+            auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_Leave>(scopeKind.labelId, MTopLevel_Create{move(*e_create)});
+            mStmts.push_back(mStmt);
+        }
+
+        auto* o_rType = contexts.scopeContext->GetInlineScopeType();
+        if (!o_rType) return Error<Error_InlineExp_CantDecideType>();
+
+        switch (o_rType->GetCopyStrategy())
+        {
+        case RCopyStrategy::Void: return Error<Error_InlineExp_DoesntAllowVoid>();
+        case RCopyStrategy::Bitwise:
+        {
+            auto* mScope = contexts.mFactory->MakeMStmt<MStmt_Scope>(move(scopeKind), move(mStmts));
+            auto* mExp = contexts.mFactory->MakeMExp<MExp_InlineBlock>(mScope, o_rType);
+            return ReExp_Exp{mExp};
+        }
+        case RCopyStrategy::NonBitwise:
+        {
+            auto* mScope = contexts.mFactory->MakeMStmt<MStmt_Scope>(move(scopeKind), move(mStmts));
+            auto* mInitExp = contexts.mFactory->MakeMInitExp<MInitExp_InlineBlock>(mScope, o_rType);
+            return ReExp_InitExp{mInitExp};
+        }
+        }
+        unreachable();
+    });
+}
 
 expected<MCreate, DiagPtr> TranslateSExpToMCreate(SExp* sExp, RType* hintType, TranslationContexts& contexts)
 {

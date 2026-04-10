@@ -14,6 +14,7 @@ void MStmt_For::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_While::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Continue::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Break::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
+void MStmt_Leave::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Return::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Blank::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
 void MStmt_Exp::Accept(MStmtVisitor& visitor) { visitor.Visit(this); }
