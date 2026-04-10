@@ -21,11 +21,16 @@ struct QTranslationContexts;
 template<typename T>
 struct QEmitState;
 
+using QLocResult = std::variant<struct QLocResult_Slot, struct QLocResult_Ptr>;
+
 struct QIntrinsicInfo
 {
     QInst_IntrinsicKind kind;
     RType* type;
 };
+
+size_t MakePtrSlot(QLocResult& locResult, QTranslationContexts& contexts);
+size_t MakePtrSlot(size_t slotIndex, QTranslationContexts& contexts);
 
 std::expected<QEmitState<QArg_Input>, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QTranslationContexts& contexts);
 std::expected<QEmitState<std::vector<QArg_Input>>, DiagPtr> TranslateMArgumentsToQInsts(std::vector<MArgument>& mArgs, QTranslationContexts& contexts);

@@ -365,8 +365,76 @@ struct MCreate_NBCQInstsTranslator
         return QEmitState_Ready{};
     }
     // ResultType Visit(MInitExp_NewClass* mInitExp) { }
-    // ResultType Visit(MInitExp_StructCtor* mInitExp) { }
-    // ResultType Visit(MInitExp_Call* mInitExp) { }
+    ResultType Visit(MInitExp_StructCtor* mInitExp) 
+    {
+        // TODO: [61] 일반적인 struct ctor, dtor, copy/move ctor, copy/move assign 구현
+        auto* type = GetType(mInitExp, &*contexts.rFactory);
+        if (type != contexts.bodyContext.GetStringType())
+            throw NotImplementedException{};
+
+        size_t destPtrSlotIndex;
+        if (o_destSlotIndex)
+        {
+            destPtrSlotIndex = MakePtrSlot(*o_destSlotIndex, contexts);
+        }
+        else
+        {
+            size_t slotIndex = contexts.bodyContext.NewSlot(type);
+            destPtrSlotIndex = MakePtrSlot(slotIndex, contexts);
+        }
+
+        return visit([this, destPtrSlotIndex](auto& kind) -> ResultType {
+            using T = remove_cvref_t<decltype(kind)>;
+            if constexpr (same_as<T, MInitExp_StructCtorKind_Copy>)
+            {
+                auto e_s_srcResult = TranslateMLocToQInsts(kind.src.loc, contexts);
+                RETURN_ON_ERROR_OR_DONE(e_s_srcResult);
+
+                size_t srcPtrSlotIndex = MakePtrSlot(**e_s_srcResult, contexts);
+
+                contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::CopyCtor_StringPtr_StringPtr_Void, nullopt, {
+                    QArg_Slot{destPtrSlotIndex}, 
+                    QArg_Slot{srcPtrSlotIndex}
+                });
+
+                return QEmitState_Ready{};
+            }
+            else if constexpr (same_as<T, MInitExp_StructCtorKind_Move>)
+            {
+                // TODO: [30] move구현
+                throw NotImplementedException{};
+            }
+            else if constexpr (same_as<T, MInitExp_StructCtorKind_General>)
+            {
+                // TODO: [61] 일반적인 struct ctor, dtor, copy/move ctor, copy/move assign 구현
+                throw NotImplementedException{};
+            }
+            else static_assert(false);
+
+        }, mInitExp->kind);
+    }
+
+    ResultType Visit(MInitExp_Call* mInitExp)
+    { 
+        // generics는 어떻게 하나요
+        // T F<T>(T t) { return t; }
+        // Generics는 T에 관한 정보를 더 넘겨준다 (크기 등)
+        // 따라서 이 함수는 t, {F함수에 대한 constraint table} 두 인자를 받는다
+        // 그리고 t는 항상 stack pointer를 가리키게 된다 (callee쪽에서 크기를 정확히 알 수 없으므로)
+        vector<QArg_Input> args;
+
+        // 1. 인자를 args에 넣는다
+        auto e_s_args = TranslateMArgumentsToQInsts(mInitExp->args, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_args);
+
+        // 2. Emit처리
+        auto* rFuncDecl = GetRFuncDecl(mInitExp->callable);
+        auto* retType = GetType(mInitExp->callable);
+        size_t resultSlotIndex = o_destSlotIndex ? *o_destSlotIndex : contexts.bodyContext.NewSlot(retType);
+        contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, QArg_Slot{resultSlotIndex}, move(**e_s_args)});
+
+        return QEmitState_Ready{};
+    }
     // ResultType Visit(MInitExp_NewEnumElem* mInitExp) { }
     // ResultType Visit(MInitExp_Nullable* mInitExp) { }
     // ResultType Visit(MInitExp_NullableNullLiteral* mInitExp) { }

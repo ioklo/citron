@@ -245,6 +245,13 @@ expected<MArgument, DiagPtr> MakeMArgument(RFuncParameter& funcParam, SArgument*
     auto e_reArg = TranslateSExpToReExp(sArg->exp, funcParam.type, contexts);
     RETURN_ON_ERROR(e_reArg);
 
+    // out 체크
+    if (funcParam.kind == RFuncParameterKind::Out)
+    {
+        if (sArg->o_modifier && sArg->o_modifier != SArgModifier::Out)
+            return Error<Error_Argument_Out_ModifierMismatch>();
+    }   
+    
     // modifier 체크
     if (sArg->o_modifier)
     {

@@ -122,7 +122,7 @@ struct MInitExp_StructCtorKind_General { RStructCtorDecl* decl; RTypeArguments* 
 using MInitExp_StructCtorKind = std::variant<MInitExp_StructCtorKind_Copy, MInitExp_StructCtorKind_Move, MInitExp_StructCtorKind_General>;
 
 struct MInitExp_StructCtor : MInitExp
-{   
+{
     MInitExp_StructCtorKind kind;
 
     MInitExp_StructCtor(MInitExp_StructCtorKind kind)

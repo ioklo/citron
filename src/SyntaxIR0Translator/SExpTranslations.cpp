@@ -220,7 +220,7 @@ expected<ReExp, DiagPtr> TranslateSExp_BinaryOp_AssignToReExp(SExp_BinaryOp* sEx
             }
 
             // TODO: [40] MInitExp_StructCtorKind_*, MStmt_Assign를 쓸때 Copy, Move가 가능한지 확인하고 fallback까지 하는 코드 작성
-            return ReExp_StmtAssign{contexts.mFactory->MakeMStmt<MStmt_Assign>(MTopLevel_Assign{MStmt_AssignKind::Copy, mDestLoc, move(mSrc)})};
+            return ReExp_StmtAssign{contexts.mFactory->MakeMStmt<MStmt_Assign>(MTopLevel_Assign{mDestLoc, MStmt_AssignKind_Copy{move(mSrc)}})};
         }
         else static_assert(false);
     }, *e_mSrc);

@@ -112,8 +112,14 @@ private:
     }
     string TopLevelAssignText(MTopLevel_Assign& assign)
     {
-        auto kindText = assign.kind == MStmt_AssignKind::Copy ? "assign_copy" : "assign_move";
-        return format("{} {} = {}", kindText, LocText(assign.dest), LocText(assign.src.loc));
+        return visit([this, &assign](auto& assignKind) {
+            using T = remove_cvref_t<decltype(assignKind)>;
+            if constexpr (same_as<T, MStmt_AssignKind_Copy>) 
+                return format("{} = {}", LocText(assign.dest), LocText(assignKind.src.loc));
+            else if constexpr (same_as<T, MStmt_AssignKind_Move>)
+                return format("{} = {}", LocText(assign.dest), MoveSourceText(assignKind.src));
+            else static_assert(false);
+        }, assign.kind);
     }
     string MoveSourceText(MMoveSource& src)
     {

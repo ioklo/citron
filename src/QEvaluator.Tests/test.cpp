@@ -47,7 +47,7 @@ TEST(QEvaluator, CommandInst_DoingWell)
     nEntry->InitTypeParams({});
 
     vector<QBlock*> blocks;
-    auto* qEntryBlock = qFactory->MakeQBlock(blocks.size(), "entry");
+    auto* qEntryBlock = qFactory->MakeQBlock("entry");
     blocks.push_back(qEntryBlock);
 
     vector<QSlotInfo> slotInfos;

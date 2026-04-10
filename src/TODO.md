@@ -39,3 +39,4 @@
 - [ ] // TODO: [58] FuncMatcher 에러 개선
 - [ ] // TODO: [59] uninitialized 분석
 - [ ] // TODO: [60] switch 구현
+- [ ] // TODO: [61] 일반적인 struct ctor, dtor, copy/move ctor, copy/move assign 구현

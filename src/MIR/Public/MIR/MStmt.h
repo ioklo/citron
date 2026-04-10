@@ -29,18 +29,16 @@ struct MLoc;
 
 struct MStmtVisitor;
 
-enum class MStmt_AssignKind
-{
-    Copy,
-    Move
-};
+struct MStmt_AssignKind_Copy { MRead_Loc src; };
+struct MStmt_AssignKind_Move { MMoveSource src; };
+using MStmt_AssignKind = std::variant<MStmt_AssignKind_Copy, MStmt_AssignKind_Move>;
 
 // MTopLevel 계열
 struct MTopLevel_Read { MRead read; };
 struct MTopLevel_Create { MCreate create; };
 struct MTopLevel_Loc { MLoc* loc; };
 struct MTopLevel_Command { std::vector<MRead_Loc> commands; }; 
-struct MTopLevel_Assign { MStmt_AssignKind kind;  MLoc* dest; MRead_Loc src; };
+struct MTopLevel_Assign { MLoc* dest; MStmt_AssignKind kind; };
 // o_catch는 try F() catch_* { }이 붙었을 경우, try F()는 에러가 compatible할때 try F() catch_error(error) { error } 로 변환된다
 struct MTopLevel_Call { MCallable callable; std::vector<MArgument> args; std::optional<MCatch> o_catch; }; 
 

@@ -19,6 +19,7 @@
 #include "QScopeGuard.h"
 #include "QEmitState.h"
 #include "QLazyBlock.h"
+#include "MLocToQInsts.h"
 
 using namespace std;
 
@@ -26,24 +27,6 @@ namespace Citron {
 
 namespace {
 
-size_t MakePtrSlot(QLocResult& locResult, QTranslationContexts& contexts)
-{
-    return visit([&contexts](auto& readResult)-> size_t {
-        auto& bodyContext = contexts.bodyContext;
-        using T = remove_cvref_t<decltype(readResult)>;
-        if constexpr (same_as<T, QLocResult_Slot>)
-        {
-            auto* stringType = bodyContext.GetStringType();
-            auto* stringPtrType = bodyContext.GetPtrType(stringType);
-            auto destSlotIndex = bodyContext.NewSlot(stringPtrType);
-            bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{destSlotIndex}, QArg_Slot{readResult.slotIndex}});
-            
-            return destSlotIndex;
-        }
-        else if constexpr (same_as<T, QLocResult_Ptr>) return readResult.slotIndex;
-        else static_assert(false);
-    }, locResult);
-}
 
 // ptr slot만 반환하도록 한다
 expected<QEmitState<QReadResult_Ptr>, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp_StringElem& elem, QTranslationContexts& contexts)
@@ -129,6 +112,37 @@ expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringElemToQInstsForCreat
     }, elem);
 }
 } // namespace 
+
+size_t MakePtrSlot(QLocResult& locResult, QTranslationContexts& contexts)
+{
+    return visit([&contexts](auto& readResult)-> size_t {
+        auto& bodyContext = contexts.bodyContext;
+        using T = remove_cvref_t<decltype(readResult)>;
+        if constexpr (same_as<T, QLocResult_Slot>)
+        {
+            auto* stringType = bodyContext.GetStringType();
+            auto* stringPtrType = bodyContext.GetPtrType(stringType);
+            auto destSlotIndex = bodyContext.NewSlot(stringPtrType);
+            bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{destSlotIndex}, QArg_Slot{readResult.slotIndex}});
+
+            return destSlotIndex;
+        }
+        else if constexpr (same_as<T, QLocResult_Ptr>) return readResult.slotIndex;
+        else static_assert(false);
+    }, locResult);
+}
+
+size_t MakePtrSlot(size_t slotIndex, QTranslationContexts& contexts)
+{
+    auto& bodyContext = contexts.bodyContext;
+    auto* slotType = bodyContext.GetSlotType(slotIndex);
+    auto* ptrSlotType = bodyContext.GetPtrType(slotType);
+    auto ptrSlotIndex = bodyContext.NewSlot(ptrSlotType);
+
+    bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{slotIndex}});
+    return ptrSlotIndex;
+}
+
 
 expected<QEmitState<QArg_Input>, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QTranslationContexts& contexts)
 {

@@ -269,6 +269,7 @@ struct Error_Argument_Move_ArgIsNotLoc : ErrorDiag {};
 struct Error_Argument_Move_ParamMismatch : ErrorDiag {}; // 함수의 파라미터가 [move], [params]일때만 가능
 struct Error_Argument_Forward_ArgShouldBeForwardArg : ErrorDiag {}; // [forward]가 붙은 argument만 [forward] T&에 매칭 가능 void F([forward]T& t) { G(forward t); }
 struct Error_Argument_Forward_ParamMismatch : ErrorDiag {}; // 함수의 파라미터가 [forward]일때만 가능 void G([forward]T& t); void F([forward]T& t) { G(forward t); }
+struct Error_Argument_Out_ModifierMismatch : ErrorDiag {}; // [out]이 붙은 argument는 [out] T&에 매칭 가능 void F([out]T& t) { G(out t); }
 
 struct Error_Argument_Mismatch_NormalRef_Exp : ErrorDiag {}; // T& 인자로 Exp(BC)가 들어온 경우
 struct Error_Argument_Mismatch_NormalRef_InitExp : ErrorDiag {}; // T& 인자로 InitExp(NBC)가 들어온 경우

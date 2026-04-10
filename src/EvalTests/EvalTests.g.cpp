@@ -1217,13 +1217,16 @@ TEST(Function, Out)
 {
     auto code = R"---(void F([out] int& i)
 {
-    *i = 2;
+    i = 2;
 }
 
-int j = 3;
-F(out j); // out을 반드시 써줘야 합니다
+void Main()
+{
+    int j = 3;
+    F(out j); // out을 반드시 써줘야 합니다
 
-@$j
+    @$j
+}
 )---";
     string expected = R"---(2)---";
 
@@ -1529,8 +1532,6 @@ TEST(Inline_Block_Expression, Return)
     auto code = R"---(int F()
 {
 	bool b = inline { return 4; };
-
-	return 2;
 }
 
 void Main()
@@ -2214,7 +2215,7 @@ void Main()
 }
 
 )---";
-    string expected = R"---(F)---";
+    string expected = R"---(F)---";
 
     DoTest(code, expected);
 }
@@ -2304,14 +2305,20 @@ void Main()
 
 TEST(String, Basic) 
 {
-    auto code = R"---(void Main()
+    auto code = R"---(string F(string& s)
+{
+    s = "world";
+    return s;
+}
+
+void Main()
 {
     string s = "hi";
     string t = s;
     
     s = "hello"; // 
     
-    @$t $s ${s = "world"; s} $s
+    @$t $s ${F(s)} $s
     
     string t2 = "${"h"}${"i"}";
     @ ${t == t2} ${s == "world"} ${t != t2} ${s != "world"}

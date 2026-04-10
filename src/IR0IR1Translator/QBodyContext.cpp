@@ -132,7 +132,7 @@ QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind ki
     case QInst_IntrinsicKind::Dtor_StringPtr_Void:
     case QInst_IntrinsicKind::CopyAssign_StringPtr_StringPtr_Void:
     case QInst_IntrinsicKind::MoveAssign_StringPtr_StringPtr_Void:
-        return QIntrinsicResultType_Slot{rFactory->MakeVoidType()};
+        return QIntrinsicKindResult_Void{};
     }
 
     throw NotImplementedException{};
@@ -470,6 +470,8 @@ void QBodyContext::AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slot
 
 size_t QBodyContext::NewSlot(RType* rType, optional<size_t> o_argIndex)
 {
+    assert(rType != rFactory->MakeVoidType()); // void 타입은 slot으로 만들 수 없다
+
     size_t slotIndex = slotInfos.size();
     std::string s = format("%s{}", slotIndex);
     slotInfos.emplace_back(rType, s, o_argIndex);

@@ -29,7 +29,7 @@ RFactory::RFactory()
     , intType{new RType_Primitive(RType_PrimitiveKind::Int32)}
 {
     // TODO: 아직 MakeStructType, MakeClassType과는 연결이 되지 않은 상태
-    stringType = unique_ptr<RType_Struct>(new RType_Struct(nullptr, MakeEmptyTypeArguments(), this));
+    stringType = MakeStructType(nullptr, MakeEmptyTypeArguments());
 }
 
 RFactory::~RFactory()
@@ -300,7 +300,7 @@ RType* RFactory::MakeIntType()
 
 RType* RFactory::MakeStringType()
 {
-    return stringType.get();
+    return stringType;
 }
 
 RType* RFactory::MakeListType(RType* itemType)

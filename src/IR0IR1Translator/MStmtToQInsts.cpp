@@ -8,6 +8,7 @@
 
 #include "MIR/MStmt.h"
 #include "MIR/MExp.h"
+#include "MIR/MLoc.h"
 #include "QIR/QFactory.h"
 #include "QIR/QBlock.h"
 #include "QIR/QInsts.h"
@@ -436,13 +437,48 @@ struct MStmtQInstsTranslator
         return QEmitState_Ready{};
     }
 
-
     ResultType Visit(MStmt_Call* mStmt) 
     {
         QScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
         return HandleCall(mStmt->call);
     }
-    // ResultType Visit(MStmt_Assign* mStmt) { }
+
+    ResultType HandleAssign(MTopLevel_Assign& assign)
+    {   
+        // TODO: [61] 일반적인 struct ctor, dtor, copy/move ctor, copy/move assign 구현
+        auto* type = GetType(assign.dest, &*contexts.rFactory);
+        if (type != contexts.bodyContext.GetStringType())
+            throw NotImplementedException{};
+
+        auto e_s_dest = TranslateMLocToQInsts(assign.dest, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_dest);
+        size_t destPtrSlotIndex = MakePtrSlot(**e_s_dest, contexts);
+
+        return visit([this, destPtrSlotIndex](auto& assignKind) -> ResultType {
+            using T = remove_cvref_t<decltype(assignKind)>;
+            if constexpr (same_as<T, MStmt_AssignKind_Copy>)
+            {
+                auto e_s_src = TranslateMLocToQInsts(assignKind.src.loc, contexts);
+                RETURN_ON_ERROR_OR_DONE(e_s_src);
+
+                size_t srcPtrSlotIndex = MakePtrSlot(**e_s_src, contexts);
+                contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::CopyAssign_StringPtr_StringPtr_Void, nullopt, {QArg_Slot{destPtrSlotIndex}, QArg_Slot{srcPtrSlotIndex}});
+
+                return QEmitState_Ready{};
+            }
+            else if constexpr (same_as<T, MStmt_AssignKind_Move>)
+            {
+                throw NotImplementedException{};
+            }
+            else static_assert(false);
+        }, assign.kind);
+    }
+
+    ResultType Visit(MStmt_Assign* mStmt) 
+    {
+        QScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
+        return HandleAssign(mStmt->assign);
+    }
     // ResultType Visit(MStmt_Do* mStmt) { }
 };
 

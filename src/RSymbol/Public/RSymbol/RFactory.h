@@ -112,7 +112,7 @@ class RFactory
     std::unique_ptr<RType> boolType;
     std::unique_ptr<RType> intType;
 
-    std::unique_ptr<RType> stringType;
+    RType* stringType;
 
     std::unique_ptr<RClassDecl> listDecl;
     std::unique_ptr<RStructDecl> listIterDecl;
