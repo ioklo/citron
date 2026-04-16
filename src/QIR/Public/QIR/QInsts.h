@@ -61,8 +61,9 @@ struct QInst_Assign
 struct QInst_Call
 {   
     RFuncDecl* rFuncDecl;
-    std::optional<QArg_Slot> o_dest;      // void인 경우 nullopt, 나머지는 slot
-    std::vector<QArg_Input> args;         // 
+    std::optional<QArg_Slot> o_dest;      // Return Passing Mode가 direct인 경우 사용한다. 리턴값이 void거나 indirect인 경우에는 nullopt
+    std::vector<QArg_Input> args;         // param Passing Mode에 따라서 Direct인 경우 값에 해당하는 Slot, const가 들어가고, Indirect인 경우 포인터에 해당하는 Slot이 들어간다.
+                                          // 순서대로 indirect return, this, 나머지 인자들이 들어간다
 };
 
 struct QInst_ReturnValue

@@ -4,6 +4,7 @@
 
 #include "Infra/Expected.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Ptr.h"
 
 #include "Logging/Diag.h"
 
@@ -23,6 +24,7 @@
 #include "QScopeGuard.h"
 #include "QTranslationContexts.h"
 #include "QEmitState.h"
+#include "QAbi_Citron_X64.h"
 
 using namespace std;
 
@@ -48,7 +50,8 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     }, rFuncReturn);
 
     QBodyContext bodyContext{rFactory, qFactory, rRetType};
-    QTranslationContexts contexts{rFactory, qFactory, bodyContext};
+    QAbiPtr qAbi = MakePtr<QAbi_Citron_X64>(rFactory);
+    QTranslationContexts contexts{rFactory, qFactory, qAbi, bodyContext};
 
     {
         QScopeGuard mainGuard{std::nullopt, bodyContext};

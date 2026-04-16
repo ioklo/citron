@@ -192,7 +192,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
                 if constexpr (same_as<T, QArg_Slot>)
                 {
-                    auto* s = (string*)env.curFrame->slots[arg.index];
+                    auto* s = (string*)GetPtr(arg, env);
                     env.cmdHandler->Execute(*s);
                 }
                 else throw NotImplementedException{};

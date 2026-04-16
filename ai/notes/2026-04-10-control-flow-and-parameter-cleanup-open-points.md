@@ -156,3 +156,54 @@ Action Items
 - [ ] `MStmt_Return` 또는 stmt/block에 source/synthetic origin marker가 필요한지 검토
 - [ ] by-value parameter의 Citron internal construct/destroy convention을 다음 논의에서 확정
 - [ ] Citron internal convention과 외부 C++ ABI adapter 전략을 분리해서 정리
+
+Update: 2026-04-11
+
+Follow-up decision
+## 4) Citron internal ABI를 먼저 고정하고, 외부 함수 경계에서 ABI별 lowering을 적용한다
+- 후속 논의에서는 QIR 자체를 특정 외부 C++ ABI에 직접 종속시키기보다, **Citron만의 internal ABI를 하나 정하고** 이를 기본 lowering 규약으로 사용하는 방향을 우선 선호한다.
+- 즉, 프로젝트 전체가 단일 external ABI를 강제로 따른다고 보기보다:
+  - Citron 내부 함수 호출/정의는 `Citron internal ABI`로 lowering
+  - 외부 인터페이스 함수(`extern`, DLL import, foreign C++ symbol 등)는 선언/심볼에 연결된 ABI 정책에 따라 별도 lowering 또는 adapter/thunk를 사용
+- 이 방식이면 MIR은 계속 ABI-neutral하게 유지하고, QIR lowering 단계에서만 ABI policy를 입력으로 받아 필요한 차이를 반영할 수 있다.
+
+정리:
+- internal call: 항상 Citron ABI
+- external boundary call: 대상 ABI(MSVC, Itanium 등)에 맞는 call lowering
+- 필요 시 wrapper/thunk를 생성하여 internal ABI와 external ABI를 연결
+
+Rationale
+- QIR 전체를 ABI dialect별로 분기시키면 verifier, optimization, reasoning surface가 target마다 갈라질 수 있다.
+- 반대로 internal ABI를 먼저 하나 고정하면 QIR의 기본 shape를 안정적으로 유지할 수 있다.
+- 외부 ABI 차이는 주로 호출 경계에서 드러난다.
+  - by-value parameter construct/destroy owner
+  - indirect return/sret 여부
+  - hidden parameter shape
+  - member call / ctor / dtor signature details
+- 따라서 이 차이를 외부 인터페이스 lowering 또는 adapter 계층으로 국소화하는 편이 전체 구조를 단순하게 만든다.
+
+Expected impact on QIR
+- QIR lowering API는 ABI policy를 입력으로 받는다.
+- 다만 QIR 타입/노드 자체는 가능한 한 공통 모델을 유지한다.
+- ABI 차이는 "어떤 cleanup owner를 선택하는가", "return을 direct/sret 중 무엇으로 lower하는가" 같은 정책 결정으로 주입한다.
+- 가능하면 `MSVC 전용 QIR`, `Itanium 전용 QIR`처럼 IR dialect를 늘리기보다, 공통 QIR + ABI-aware lowering 형태를 유지한다.
+
+Recommended layering
+1. MIR
+- ABI-neutral
+- language semantics 중심
+
+2. QIR lowering
+- 입력: MIR + ABI policy
+- 기본 정책: Citron internal ABI
+- 외부 선언 호출 시: 선언에 연결된 foreign ABI policy 사용
+
+3. LLVM / backend boundary
+- 실제 target calling convention, symbol lowering, thunk emission 반영
+
+Open points after follow-up
+- Citron internal ABI의 by-value parameter destroy owner를 caller/callee 중 어느 쪽으로 확정할지
+- internal ABI에서 caller-destroy를 택한다면 cleanup 시점을 `call 직후`와 `MTopLevel_Call 종료 시점` 중 어디로 둘지
+- 외부 함수 선언에 ABI 속성을 어떻게 부여할지(`extern(msvc)`, `extern(itanium)` 등)
+- thunk를 항상 명시적으로 둘지, QIR lowering이 직접 foreign ABI call을 뱉도록 할지
+- class layout, mangling, RTTI, exception 같은 "type/module ABI" 문제를 call ABI와 어디까지 분리할지

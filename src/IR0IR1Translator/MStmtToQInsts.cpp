@@ -75,7 +75,7 @@ struct MStmtQInstsTranslator
                 {
                     size_t ptrSlotIndex = contexts.bodyContext.NewSlot(contexts.bodyContext.GetPtrType());
                     contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{readResult.slotIndex}});
-                    values.push_back(QArg_Slot{readResult.slotIndex});
+                    values.push_back(QArg_Slot{ptrSlotIndex});
                 }
                 else if constexpr (same_as<T, QReadResult_Ptr>)
                 {

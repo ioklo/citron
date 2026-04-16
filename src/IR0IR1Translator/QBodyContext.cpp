@@ -371,21 +371,6 @@ void QBodyContext::EmitJumpToCleanUpBlock(QCleanUpKind kind)
     curBlock = nullptr;
 }
 
-size_t QBodyContext::GetTypeSize(RType* type)
-{
-    // TODO: HARD CODED
-    if (type == rFactory->MakeBoolType())
-        return 1;
-
-    if (type == rFactory->MakeIntType())
-        return 4;
-
-    if (type == rFactory->MakeStringType())
-        return sizeof(string);
-
-    throw NotImplementedException{};
-}
-
 RType* QBodyContext::GetStringType()
 {
     return rFactory->MakeStringType();

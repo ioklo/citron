@@ -18,7 +18,10 @@
     <ClInclude Include="MStmtToQInsts.h" />
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1Translator.h" />
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h" />
+    <ClInclude Include="QAbi.h" />
+    <ClInclude Include="QAbi_Citron_X64.h" />
     <ClInclude Include="QBodyContext.h" />
+    <ClInclude Include="QFuncInfo.h" />
     <ClInclude Include="QJumpBlockInfo.h" />
     <ClInclude Include="QLazyBlock.h" />
     <ClInclude Include="QMisc.h" />
@@ -33,6 +36,7 @@
     <ClCompile Include="MLocToQInsts.cpp" />
     <ClCompile Include="MReadToQInsts.cpp" />
     <ClCompile Include="MStmtToQInsts.cpp" />
+    <ClCompile Include="QAbi_Citron_X64.cpp" />
     <ClCompile Include="QBodyContext.cpp" />
     <ClCompile Include="QEmitState.cpp" />
     <ClCompile Include="QLazyBlock.cpp" />

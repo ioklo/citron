@@ -14,6 +14,7 @@
 #include "MReadToQInsts.h"
 #include "CommonQInstsTranslation.h"
 #include "QEmitState.h"
+#include "QAbi.h"
 
 using namespace std;
 
@@ -161,7 +162,7 @@ struct MCreate_BCQInstsTranslator
 
                 if (!o_destSlotIndex)
                 {
-                    size_t size = contexts.bodyContext.GetTypeSize(type);
+                    size_t size = contexts.qAbi->GetTypeSize(type);
                     contexts.bodyContext.EmitIntrinsic(
                         QInst_IntrinsicKind::Memcpy_Ptr_Ptr_Int, 
                         /*o_dest*/nullopt,
@@ -294,12 +295,16 @@ struct MCreate_BCQInstsTranslator
         // 그리고 t는 항상 stack pointer를 가리키게 된다 (callee쪽에서 크기를 정확히 알 수 없으므로)
         vector<QArg_Input> args;
 
+        auto* rFuncDecl = GetRFuncDecl(exp->callable);
+        contexts.qAbi->GetFuncInfo(rFuncDecl, exp->callable.typeArgs); // TODO: [62] Generics 구현
+
+
         // 1. 인자를 args에 넣는다
         auto e_s_args = TranslateMArgumentsToQInsts(exp->args, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_args);
 
         // 2. Emit처리
-        auto* rFuncDecl = GetRFuncDecl(exp->callable);
+        
         auto* retType = GetType(exp->callable);
         size_t resultSlotIndex = o_destSlotIndex ? *o_destSlotIndex : contexts.bodyContext.NewSlot(retType);
         contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, QArg_Slot{resultSlotIndex}, move(**e_s_args)});

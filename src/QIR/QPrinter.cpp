@@ -61,7 +61,7 @@ class QPrinter
         void Print(QInst_Ctor_String& inst)
         {
             // construct_string %a, "hello"            
-            printer.Print("construct_string");
+            printer.Print("construct_string ");
             printer.PrintQArg_Slot(inst.thisSlot);
             printer.Print(", ");
             printer.PrintStringLiteral(inst.text);

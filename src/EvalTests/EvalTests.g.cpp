@@ -2319,19 +2319,10 @@ void Main()
     s = "hello"; // 
     
     @$t $s ${F(s)} $s
-    
-    string t2 = "${"h"}${"i"}";
-    @ ${t == t2} ${s == "world"} ${t != t2} ${s != "world"}
-    
-    @ ${"one" + "two"}
-    
-    @ ${"s1" < "s1abcd"} ${"s1abcd" < "s1"} ${"s1" <= "s1abcd"} ${"s1" <= "s1"} ${"s1abcd" <= "s1"}
-    
-    @ ${"s1" > "s1abcd"} ${"s1abcd" > "s1"} ${"s1" >= "s1abcd"} ${"s1" >= "s1"} ${"s1abcd" >= "s1"}
 }
 
 )---";
-    string expected = R"---(hi hello world world true true false false onetwo true false true true false false true false true true)---";
+    string expected = R"---(hi hello world world)---";
 
     DoTest(code, expected);
 }

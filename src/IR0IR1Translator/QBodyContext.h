@@ -154,8 +154,6 @@ public:
     void EmitJumpToCleanUpBlock(QCleanUpKind kind);
 
 public:
-    size_t GetTypeSize(RType* type);
-    
     RType* GetStringType();
     RType* GetBoolType();
     RType* GetIntType();
