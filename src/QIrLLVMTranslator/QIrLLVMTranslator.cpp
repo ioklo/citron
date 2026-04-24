@@ -288,20 +288,20 @@ private:
         builder.CreateStore(value, slotValues[slot.index]);
     }
 
-    llvm::Value* GetValue(QArg_Input& qInput, RType* rType)
+    llvm::Value* GetValue(QArg_Value& qInput, RType* rType)
     {
         return visit([this, rType](auto& qInput) -> llvm::Value*
         {
             using T = remove_cvref_t<decltype(qInput)>;
-            if constexpr (same_as<T, QArg_ConstBool>)
+            if constexpr (same_as<T, QArg_Value_ConstBool>)
             {
                 return llvm::ConstantInt::getBool(lContextImpl.context, qInput.value);
             }
-            else if constexpr (same_as<T, QArg_ConstInt32>)
+            else if constexpr (same_as<T, QArg_Value_ConstInt32>)
             {   
                 return llvm::ConstantInt::get(lContextImpl.GetInt32Type(), qInput.value);
             }
-            else if constexpr (same_as<T, QArg_Slot>)
+            else if constexpr (same_as<T, QArg_Value_Slot>)
             {
                 auto* lValueType = lContextImpl.GetType(rType);
                 return builder.CreateLoad(lValueType, slotValues[qInput.index]);
@@ -310,16 +310,20 @@ private:
         }, qInput);
     }
 
-    llvm::Value* GetBool(QArg_Input& input)
+    llvm::Value* GetBool(QArg_CallArg& input)
     {
         return visit([this](auto& input) -> llvm::Value*
         {
             using T = remove_cvref_t<decltype(input)>;
-            if constexpr (same_as<T, QArg_ConstBool>)
+            if constexpr (same_as<T, QArg_CallArg_ConstBool>)
             {
                 return llvm::ConstantInt::getBool(lContextImpl.context, input.value);
             }
-            else if constexpr (same_as<T, QArg_Slot>)
+            else if constexpr (same_as<T, QArg_CallArg_Slot>)
+            {
+                return builder.CreateLoad(lContextImpl.GetBoolType(), slotValues[input.index]);
+            }
+            else if constexpr (same_as<T, QArg_CallArg_AddrOfSlot>)
             {
                 return builder.CreateLoad(lContextImpl.GetBoolType(), slotValues[input.index]);
             }
@@ -331,20 +335,41 @@ private:
         }, input);
     }
 
-    llvm::Value* GetInt(QArg_Input& input)
+    llvm::Value* GetBool(QArg_Value& input)
     {
         return visit([this](auto& input) -> llvm::Value*
         {
             using T = remove_cvref_t<decltype(input)>;
-            if constexpr (same_as<T, QArg_ConstInt32>)
+            if constexpr (same_as<T, QArg_Value_ConstBool>)
+            {
+                return llvm::ConstantInt::getBool(lContextImpl.context, input.value);
+            }
+            else if constexpr (same_as<T, QArg_Value_Slot>)
+            {
+                return builder.CreateLoad(lContextImpl.GetBoolType(), slotValues[input.index]);
+            }
+            else
+            {
+                assert(false);
+                return nullptr;
+            }
+        }, input);
+    }
+
+    llvm::Value* GetInt(QArg_Value& input)
+    {
+        return visit([this](auto& input) -> llvm::Value*
+        {
+            using T = remove_cvref_t<decltype(input)>;
+            if constexpr (same_as<T, QArg_Value_ConstInt32>)
             {
                 return llvm::ConstantInt::get(lContextImpl.GetInt32Type(), input.value);
             }
-            else if constexpr (same_as<T, QArg_Slot>)
+            else if constexpr (same_as<T, QArg_Value_Slot>)
             {
                 return builder.CreateLoad(lContextImpl.GetInt32Type(), slotValues[input.index]);
             }
-            else if constexpr (same_as<T, QArg_ConstBool>)
+            else if constexpr (same_as<T, QArg_Value_ConstBool>)
             {
                 assert(false);
                 return nullptr;
@@ -353,22 +378,22 @@ private:
         }, input);
     }
 
-    llvm::Value* GetPtr(QArg_Input& input)
+    llvm::Value* GetPtr(QArg_Value& input)
     {
         return visit([this](auto& input) -> llvm::Value*
         {
             using T = remove_cvref_t<decltype(input)>;
 
-            if constexpr (same_as<T, QArg_Slot>)
+            if constexpr (same_as<T, QArg_Value_Slot>)
             {
                 return builder.CreateLoad(lContextImpl.GetPtrType(), slotValues[input.index]);
             }
-            else if constexpr (same_as<T, QArg_ConstBool>)
+            else if constexpr (same_as<T, QArg_Value_ConstBool>)
             {
                 assert(false);
                 return nullptr;
             }
-            else if constexpr (same_as<T, QArg_ConstInt32>)
+            else if constexpr (same_as<T, QArg_Value_ConstInt32>)
             {
                 assert(false);
                 return nullptr;
@@ -378,21 +403,21 @@ private:
         }, input);
     }
 
-    llvm::Value* GetStringRef(QArg_Input& input)
+    llvm::Value* GetStringRef(QArg_Value& input)
     {
         return visit([this](auto& input) -> llvm::Value*
         {
             using T = remove_cvref_t<decltype(input)>;
-            if constexpr (same_as<T, QArg_Slot>)
+            if constexpr (same_as<T, QArg_Value_Slot>)
             {
                 return slotValues[input.index];
             }
-            else if constexpr (same_as<T, QArg_ConstBool>)
+            else if constexpr (same_as<T, QArg_Value_ConstBool>)
             {
                 assert(false);
                 return nullptr;
             }
-            else if constexpr (same_as<T, QArg_ConstInt32>)
+            else if constexpr (same_as<T, QArg_Value_ConstInt32>)
             {
                 assert(false);
                 return nullptr;
@@ -413,12 +438,12 @@ private:
         {   
             using enum QInst_IntrinsicKind;
 
-            case Command_Items: 
+            case Command_Item: 
             {   
                 for (size_t i = 0, count = qInst.args.size(); i < count; i++)
                 {
                     // command에는 slot만 오게 된다
-                    size_t slotIndex = get<QArg_Slot>(qInst.args[i]).index;
+                    size_t slotIndex = get<QArg_CallArg_Slot>(qInst.args[i]).index; // TODO: QArg_CallArg_AddrOfSlot도 올 수 있다. 이 경우에는 slot의 주소를 넘겨주면 된다
                     EmitRuntimeCall(LRuntimeFuncKind::Command, {slotValues[slotIndex]});
                 }
 
@@ -426,7 +451,7 @@ private:
             }
 
             case Alloc_Int: { throw NotImplementedException{}; }
-            case Memcpy_Ptr_Ptr_Int: { throw NotImplementedException{}; }
+            case Memcpy_Void_Ptr_Ptr_Int: { throw NotImplementedException{}; }
             case NewList_Items: { throw NotImplementedException{}; }
             case GetIterator_ListPtr_ListIterator: { throw NotImplementedException{}; }
 
@@ -446,14 +471,14 @@ private:
                 return;
             }
 
-            case ToString_Bool_String: 
+            case ToString_String_Bool: 
             { 
                 auto* boolValue = GetBool(qInst.args[0]);
                 EmitRuntimeCall(LRuntimeFuncKind::BoolToString, {slotValues[qInst.o_dest->index], boolValue});
                 return;
             }
 
-            case ToString_Int_String:
+            case ToString_String_Int:
             {
                 auto* intValue = GetInt(qInst.args[0]);
                 EmitRuntimeCall(LRuntimeFuncKind::IntToString, {slotValues[qInst.o_dest->index], intValue});
@@ -540,7 +565,7 @@ private:
                 return;
             }
 
-            case Add_StringPtr_StringPtr_String: 
+            case Add_String_StringInRef_StringInRef: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);
@@ -558,7 +583,7 @@ private:
                 return;
             }
 
-            case LessThan_Int_Int_Bool: 
+            case LessThan_Bool_Int_Int: 
             {
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -567,7 +592,7 @@ private:
                 return;
             }
 
-            case LessThan_StringPtr_StringPtr_Bool: 
+            case LessThan_Bool_StringInRef_StringInRef: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -576,7 +601,7 @@ private:
                 return;
             }
 
-            case GreaterThan_Int_Int_Bool: 
+            case GreaterThan_Bool_Int_Int: 
             { 
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -585,7 +610,7 @@ private:
                 return;
             }
 
-            case GreaterThan_StringPtr_StringPtr_Bool: 
+            case GreaterThan_Bool_StringInRef_StringInRef: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -594,7 +619,7 @@ private:
                 return;
             }
 
-            case LessThanOrEqual_Int_Int_Bool: 
+            case LessThanOrEqual_Bool_Int_Int: 
             { 
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -603,7 +628,7 @@ private:
                 return;
             }
 
-            case LessThanOrEqual_StringPtr_StringPtr_Bool:
+            case LessThanOrEqual_Bool_StringInRef_StringInRef:
             {
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -612,7 +637,7 @@ private:
                 return;
             }
 
-            case GreaterThanOrEqual_Int_Int_Bool: 
+            case GreaterThanOrEqual_Bool_Int_Int: 
             { 
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -621,7 +646,7 @@ private:
                 return;
             }
 
-            case GreaterThanOrEqual_StringPtr_StringPtr_Bool: 
+            case GreaterThanOrEqual_Bool_StringInRef_StringInRef: 
             { 
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -630,7 +655,7 @@ private:
                 return;
             }
 
-            case Equal_Int_Int_Bool: 
+            case Equal_Bool_Int_Int: 
             {
                 auto* operand0 = GetInt(qInst.args[0]);
                 auto* operand1 = GetInt(qInst.args[1]);
@@ -648,7 +673,7 @@ private:
                 return;
             }
 
-            case Equal_StringPtr_StringPtr_Bool:
+            case Equal_Bool_StringInRef_StringInRef:
             {
                 auto* str0 = GetStringRef(qInst.args[0]);
                 auto* str1 = GetStringRef(qInst.args[1]);                
@@ -657,7 +682,7 @@ private:
                 return;
             }
 
-            case CopyCtor_StringPtr_StringPtr_Void:
+            case CopyCtor_Void_StringRef_StringInRef:
             {
                 auto* thisPtr = GetPtr(qInst.args[0]);
                 auto* otherPtr = GetPtr(qInst.args[1]);
@@ -665,7 +690,7 @@ private:
                 return;
             }
 
-            case MoveCtor_StringPtr_StringPtr_Void:
+            case MoveCtor_Void_StringRef_StringMoveRef:
             {
                 auto* thisPtr = GetPtr(qInst.args[0]);
                 auto* otherPtr = GetPtr(qInst.args[1]);
@@ -673,14 +698,14 @@ private:
                 return;
             }
 
-            case Dtor_StringPtr_Void:
+            case Dtor_Void_StringRef:
             {
                 auto* thisPtr = GetPtr(qInst.args[0]);
                 EmitRuntimeCall(LRuntimeFuncKind::StringMoveCtor, {thisPtr});
                 return;
             }
 
-            case CopyAssign_StringPtr_StringPtr_Void:
+            case CopyAssign_Void_StringRef_StringInRef:
             {
                 auto* thisPtr = GetPtr(qInst.args[0]);
                 auto* otherPtr = GetPtr(qInst.args[1]);
@@ -688,7 +713,7 @@ private:
                 return;
             }
 
-            case MoveAssign_StringPtr_StringPtr_Void:                
+            case MoveAssign_Void_StringRef_StringInRef:                
             {
                 auto* thisPtr = GetPtr(qInst.args[0]);
                 auto* otherPtr = GetPtr(qInst.args[1]);

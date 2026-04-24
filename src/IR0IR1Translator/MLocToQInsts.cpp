@@ -78,11 +78,8 @@ struct MLocQInstsTranslator
             {
                 // slot의 addrof를 하나 한다 ptr 타입
                 auto* rPtrType = contexts.bodyContext.GetPtrType();
-                size_t instSlotIndex = contexts.bodyContext.NewSlot(rPtrType);
-                contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{instSlotIndex}, QArg_Slot{locResult.slotIndex}});
-
                 size_t destSlotIndex = contexts.bodyContext.NewSlot(rPtrType);
-                contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{instSlotIndex}, loc->decl->GetIndex()});
+                contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Dest{destSlotIndex}, QArg_Addr_OfSlot{locResult.slotIndex}, loc->decl->GetIndex()});
 
                 return QLocResult_Ptr{destSlotIndex};
             }
@@ -90,9 +87,8 @@ struct MLocQInstsTranslator
             {
                 // slot의 addrof를 하나 한다 ptr 타입
                 auto* ptrType = contexts.bodyContext.GetPtrType();
-
                 size_t destSlotIndex = contexts.bodyContext.NewSlot(ptrType);
-                contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Slot{destSlotIndex}, QArg_Slot{locResult.slotIndex}, loc->decl->GetIndex()});
+                contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Dest{destSlotIndex}, QArg_Addr_PtrSlot{locResult.slotIndex}, loc->decl->GetIndex()});
 
                 return QLocResult_Ptr{destSlotIndex};
             }

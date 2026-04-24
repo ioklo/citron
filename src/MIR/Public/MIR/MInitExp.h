@@ -89,9 +89,9 @@ struct MInitExp_List : MInitExp
 
 enum class MInitExp_CallIntrinsicKind
 {
-    ToString_Bool_String,
-    ToString_Int_String,
-    Add_String_String_String,
+    ToString_String_Bool,
+    ToString_String_Int,
+    Add_String_StringInRef_StringInRef,
 };
 
 struct MInitExp_CallIntrinsic : MInitExp 

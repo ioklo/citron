@@ -107,10 +107,10 @@ enum class MExp_CallIntrinsicKind
     LogicalNot_Bool_Bool,
     UnaryMinus_Int_Int,
 
-    PrefixInc_Int_Int,
-    PrefixDec_Int_Int,
-    PostfixInc_Int_Int,
-    PostfixDec_Int_Int,
+    PrefixInc_Int_IntRef,
+    PrefixDec_Int_IntRef,
+    PostfixInc_Int_IntRef,
+    PostfixDec_Int_IntRef,
 
     Multiply_Int_Int_Int,
     Divide_Int_Int_Int,
@@ -118,17 +118,17 @@ enum class MExp_CallIntrinsicKind
     Add_Int_Int_Int,
     
     Subtract_Int_Int_Int,
-    LessThan_Int_Int_Bool,
-    LessThan_StringPtr_StringPtr_Bool, // [in]string&으로 받아야 한다
-    GreaterThan_Int_Int_Bool,
-    GreaterThan_StringPtr_StringPtr_Bool,
-    LessThanOrEqual_Int_Int_Bool,
-    LessThanOrEqual_StringPtr_StringPtr_Bool,
-    GreaterThanOrEqual_Int_Int_Bool,
-    GreaterThanOrEqual_StringPtr_StringPtr_Bool,
-    Equal_Int_Int_Bool,
+    LessThan_Bool_Int_Int,
+    LessThan_Bool_StringInRef_StringInRef, // [in]string&으로 받아야 한다
+    GreaterThan_Bool_Int_Int,
+    GreaterThan_Bool_StringInRef_StringInRef,
+    LessThanOrEqual_Bool_Int_Int,
+    LessThanOrEqual_Bool_StringInRef_StringInRef,
+    GreaterThanOrEqual_Bool_Int_Int,
+    GreaterThanOrEqual_Bool_StringInRef_StringInRef,
+    Equal_Bool_Int_Int,
     Equal_Bool_Bool_Bool,
-    Equal_StringPtr_StringPtr_Bool,
+    Equal_Bool_StringInRef_StringInRef,
 
     GetIterator_ListPtr_ListIterator, // 첫번째 타입 파라미터는 ItemType
 };

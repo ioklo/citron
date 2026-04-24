@@ -87,12 +87,6 @@ struct QScope
     QCleanUpInfo& GetOrAddCleanUpInfo(QCleanUpKind kind);
 };
 
-struct QIntrinsicResultType_Slot { RType* type; };
-struct QIntrinsicKindResult_Void {};
-using QIntrinsicResultType = std::variant<
-    QIntrinsicResultType_Slot,
-    QIntrinsicKindResult_Void>;
-
 struct QJumpBlockScopeGuard
 {
     QBodyContext& bodyContext;
@@ -111,6 +105,8 @@ class QBodyContext
     std::vector<QScope> scopes;
     std::optional<size_t> o_retSlotIndex; // 함수의 반환값 slot
 
+    
+
     QBlock* curBlock;
     std::vector<QBlock*> blocks;
     std::vector<QJumpBlockInfo> jumpBlockInfos; // break, continue할 때 필요한 블록 정보들. 스코프가 바뀔 때마다 push/pop한다.
@@ -118,8 +114,6 @@ class QBodyContext
 
 public:
     QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType);
-
-    QIntrinsicResultType GetIntrinsicResultType(QInst_IntrinsicKind kind);
 
     QBlock* AddBlock(std::string&& debugText);
     void SetCurBlock(QBlock* block) { assert(block); curBlock = block; } // SetCurBlock으로 Unreachable 상태를 만들지 않도록 한다
@@ -141,7 +135,7 @@ public:
     {   
         return EmitInstInternal(std::forward<TQInst>(inst));
     }
-    void EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Slot> o_dest, std::vector<QArg_Input>&& args);
+    void EmitIntrinsic(QInst_IntrinsicKind kind, std::optional<QArg_Dest> o_dest, std::vector<QArg_CallArg>&& args);
     void EmitTermInst(QTermInst&& termInst);
 
 private:

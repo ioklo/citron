@@ -63,10 +63,10 @@ bool IsTopLevelExp(MExp* exp)
 
     if (auto* callIntrinsicExp = dynamic_cast<MExp_CallIntrinsic*>(exp))
     {
-        return callIntrinsicExp->kind == MExp_CallIntrinsicKind::PrefixInc_Int_Int
-            || callIntrinsicExp->kind == MExp_CallIntrinsicKind::PrefixDec_Int_Int
-            || callIntrinsicExp->kind == MExp_CallIntrinsicKind::PostfixInc_Int_Int
-            || callIntrinsicExp->kind == MExp_CallIntrinsicKind::PostfixDec_Int_Int;
+        return callIntrinsicExp->kind == MExp_CallIntrinsicKind::PrefixInc_Int_IntRef
+            || callIntrinsicExp->kind == MExp_CallIntrinsicKind::PrefixDec_Int_IntRef
+            || callIntrinsicExp->kind == MExp_CallIntrinsicKind::PostfixInc_Int_IntRef
+            || callIntrinsicExp->kind == MExp_CallIntrinsicKind::PostfixDec_Int_IntRef;
     }
 
     return dynamic_cast<MExp_Store*>(exp) != nullptr

@@ -7,6 +7,9 @@
     <Filter Include="QAbi">
       <UniqueIdentifier>{d5433f95-1896-43aa-a18a-594bc27da441}</UniqueIdentifier>
     </Filter>
+    <Filter Include="QIntrinsic">
+      <UniqueIdentifier>{fd84025d-bd14-4ebb-a1ef-2c5dd3739cf3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1Translator.h">
@@ -36,6 +39,9 @@
     <ClInclude Include="QAbi_Citron_X64.h">
       <Filter>QAbi</Filter>
     </ClInclude>
+    <ClInclude Include="QIntrinsicInfo.h">
+      <Filter>QIntrinsic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IR0IR1Translator.cpp" />
@@ -50,5 +56,9 @@
     <ClCompile Include="QAbi_Citron_X64.cpp">
       <Filter>QAbi</Filter>
     </ClCompile>
+    <ClCompile Include="QIntrinsicInfo.cpp">
+      <Filter>QIntrinsic</Filter>
+    </ClCompile>
+    <ClCompile Include="QTranslationContexts.cpp" />
   </ItemGroup>
 </Project>

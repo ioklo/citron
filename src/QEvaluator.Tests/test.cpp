@@ -52,16 +52,17 @@ TEST(QEvaluator, CommandInst_DoingWell)
 
     vector<QSlotInfo> slotInfos;
     slotInfos.push_back(QSlotInfo{rFactory->MakeStringType(), "s0", /*oArgIndex*/nullopt});
-    slotInfos.push_back(QSlotInfo{rFactory->MakePtrType(rFactory->MakeStringType()), "s1", /*oArgIndex*/nullopt});
+    // slotInfos.push_back(QSlotInfo{rFactory->MakePtrType(rFactory->MakeStringType()), "s1", /*oArgIndex*/nullopt});
 
     // 1을 문자열로 변환
-    QInst_Intrinsic toStringInst{QInst_IntrinsicKind::ToString_Int_String, QArg_Slot{0}, {QArg_ConstInt32{1}}};
+    QInst_Intrinsic toStringInst{
+        QInst_IntrinsicKind::ToString_String_Int, 
+        nullopt,
+        {QArg_CallArg_AddrOfSlot{0}, QArg_CallArg_ConstInt32{1}}};
     qEntryBlock->EmitInst(move(toStringInst));
-    
-    qEntryBlock->EmitInst(QInst_AddrOf{QArg_Slot{1}, QArg_Slot{0}});
 
-    std::vector<QArg_Input> args{QArg_Slot{0}};
-    QInst_Intrinsic inst{QInst_IntrinsicKind::Command_Items, nullopt, move(args)};
+    std::vector<QArg_CallArg> args{QArg_CallArg_AddrOfSlot{0}};
+    QInst_Intrinsic inst{QInst_IntrinsicKind::Command_Item, nullopt, move(args)};
     qEntryBlock->EmitInst(move(inst));
 
     qEntryBlock->EmitInst(QInst_Return{nullopt});

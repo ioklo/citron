@@ -3,6 +3,8 @@
 #include "RSymbol/RFuncDecl.h"
 #include "RSymbol/RFactory.h"
 #include "QFuncInfo.h"
+#include "CommonQInstsTranslation.h"
+#include "QIntrinsicInfo.h"
 
 using namespace std;
 
@@ -30,18 +32,20 @@ size_t QAbi_Citron_X64::GetTypeSize(RType* type)
     throw NotImplementedException{};
 }
 
-QFuncInfo QAbi_Citron_X64::GetFuncInfo(MCallable& callable)
+QFuncInfo QAbi_Citron_X64::GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs)
 {
     size_t curArgIndex = 0;
     auto returnPassingMode = GetReturnPassingMode(rFuncDecl->GetFuncReturn(typeArgs), &curArgIndex);
 
-    optional<size_t> thisIndex;
-    switch (rFuncDecl->GetThisKind())
-    {
-    case RThisKind::None: thisIndex = nullopt; break;
-    case RThisKind::Handle: thisIndex = curArgIndex++; break;
-    case RThisKind::Ptr: thisIndex = curArgIndex++; break;
-    }
+    auto thisPassingMode = [rFuncDecl, &curArgIndex]() -> QThisPassingMode {
+        switch (rFuncDecl->GetThisKind())
+        {
+        case RThisKind::None: return QThisPassingMode_None{};
+        case RThisKind::Handle: return QThisPassingMode_Handle{curArgIndex++};
+        case RThisKind::Ptr: return QThisPassingMode_Ptr{curArgIndex++};
+        }
+        unreachable();
+    }();
 
     size_t explicitArgStartIndex = curArgIndex;
     vector<QParamPassingMode> paramPassingModes;
@@ -57,7 +61,7 @@ QFuncInfo QAbi_Citron_X64::GetFuncInfo(MCallable& callable)
             switch (param.type->GetCopyStrategy())
             {
             case RCopyStrategy::Void:
-                throw RuntimeFatalException{};
+                throw RuntimeFatalException{}; // 파라미터에는 void가 올 수 없다ㄴ
 
             case RCopyStrategy::Bitwise:
             {
@@ -78,13 +82,60 @@ QFuncInfo QAbi_Citron_X64::GetFuncInfo(MCallable& callable)
 
     return QFuncInfo{
         .returnPassingMode = returnPassingMode,
-        .thisIndex = thisIndex,
+        .thisPassingMode = thisPassingMode,
         .explicitArgStartIndex = explicitArgStartIndex,
         .paramPassingModes = move(paramPassingModes)
     };
 }
 
-QReturnPassingMode QAbi_Citron_X64::GetReturnPassingMode(RFuncReturn&& funcRet, size_t* outCurArgIndex)
+QFuncInfo QAbi_Citron_X64::GetFuncInfo(QIntrinsicInfo* intrinsicInfo, RTypeArguments* typeArgs)
+{
+    size_t curArgIndex = 0;
+    auto returnPassingMode = GetReturnPassingMode(intrinsicInfo->funcRet, &curArgIndex);
+
+    size_t explicitArgStartIndex = curArgIndex;
+    vector<QParamPassingMode> paramPassingModes;
+    size_t count = intrinsicInfo->funcParams.size();
+    paramPassingModes.reserve(count);
+    for (size_t i = 0; i < count; i++)
+    {
+        auto appliedFuncParam = intrinsicInfo->funcParams[i].Apply(typeArgs); // TODO: intrinsic에 typeArgs 적용.
+
+        if (appliedFuncParam.IsRef())
+            paramPassingModes.push_back(QParamPassingMode::Ref);
+        else
+        {
+            switch (appliedFuncParam.type->GetCopyStrategy())
+            {
+            case RCopyStrategy::Void:
+                throw RuntimeFatalException{}; // 파라미터에는 void가 올 수 없다
+
+            case RCopyStrategy::Bitwise:
+            {
+                size_t typeSize = GetTypeSize(appliedFuncParam.type);
+                if (typeSize <= 8)
+                    paramPassingModes.push_back(QParamPassingMode::Direct);
+                else
+                    paramPassingModes.push_back(QParamPassingMode::Indirect);
+                break;
+            }
+
+            case RCopyStrategy::NonBitwise:
+                paramPassingModes.push_back(QParamPassingMode::Indirect);
+                break;
+            }
+        }
+    }
+
+    return QFuncInfo{
+        .returnPassingMode = returnPassingMode,
+        .thisPassingMode = QThisPassingMode_None{},
+        .explicitArgStartIndex = explicitArgStartIndex,
+        .paramPassingModes = move(paramPassingModes)
+    };
+}
+
+QReturnPassingMode QAbi_Citron_X64::GetReturnPassingMode(RFuncReturn funcRet, size_t* outCurArgIndex)
 {
     return visit([this, outCurArgIndex](auto& funcRet) -> QReturnPassingMode
     {

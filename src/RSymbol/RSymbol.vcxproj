@@ -52,6 +52,7 @@
     <ClInclude Include="Public\RSymbol\RSymbolConfig.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Public\RSymbol\RFuncReturn.cpp" />
     <ClCompile Include="RDecl.cpp" />
     <ClCompile Include="RFactory.cpp" />
     <ClCompile Include="RFuncDecl.cpp" />

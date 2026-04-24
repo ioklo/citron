@@ -63,9 +63,9 @@ RType* GetType(MInitExp* initExp, RFactory* rFactory)
 
             switch (initExp->kind)
             {
-            case ToString_Bool_String: return rFactory->MakeStringType();
-            case ToString_Int_String: return rFactory->MakeStringType();
-            case Add_String_String_String: return rFactory->MakeStringType();
+            case ToString_String_Bool: return rFactory->MakeStringType();
+            case ToString_String_Int: return rFactory->MakeStringType();
+            case Add_String_StringInRef_StringInRef: return rFactory->MakeStringType();
             }
 
             unreachable();
@@ -73,7 +73,7 @@ RType* GetType(MInitExp* initExp, RFactory* rFactory)
 
         ResultType Visit(MInitExp_NewClass* initExp) { return rFactory->MakeClassType(initExp->ctorDecl->GetClassDecl(), initExp->typeArgs); }
         ResultType Visit(MInitExp_StructCtor* initExp) { return GetType(initExp->kind, rFactory); }
-        ResultType Visit(MInitExp_Call* initExp) { return GetType(initExp->callable); }
+        ResultType Visit(MInitExp_Call* initExp) { return initExp->callable.decl->GetReturnType(initExp->callable.typeArgs); }
         ResultType Visit(MInitExp_NewEnumElem* initExp) { return rFactory->MakeEnumElemType(initExp->enumElemDecl, initExp->typeArgs); }
         ResultType Visit(MInitExp_Nullable* initExp) 
         {

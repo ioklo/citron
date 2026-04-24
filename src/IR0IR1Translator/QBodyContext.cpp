@@ -24,6 +24,7 @@
 #include "QIR/QFactory.h"
 
 #include "QLazyBlock.h"
+#include "QIntrinsicInfo.h"
 
 using namespace std;
 
@@ -70,72 +71,6 @@ QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFact
 
     auto* firstBlock = AddBlock("entry");
     this->curBlock = firstBlock;
-}
-
-// GetIntrinsicResultType
-// 1. result = intrinsic kind, args, ...
-// 2. intrinsic kind, &result, args, ...
-// 3. intrinsic kind, args, ... (void)
-QIntrinsicResultType QBodyContext::GetIntrinsicResultType(QInst_IntrinsicKind kind)
-{
-    switch (kind)
-    {
-    case QInst_IntrinsicKind::Command_Items: 
-        return QIntrinsicKindResult_Void{};
-
-    case QInst_IntrinsicKind::Alloc_Int: throw NotImplementedException{};
-
-    case QInst_IntrinsicKind::Memcpy_Ptr_Ptr_Int:
-        return QIntrinsicKindResult_Void{};
-
-    case QInst_IntrinsicKind::NewList_Items: throw NotImplementedException{};
-    case QInst_IntrinsicKind::GetIterator_ListPtr_ListIterator: throw NotImplementedException{};
-
-    case QInst_IntrinsicKind::LogicalNot_Bool_Bool:
-        return QIntrinsicResultType_Slot{rFactory->MakeBoolType()};
-
-    case QInst_IntrinsicKind::UnaryMinus_Int_Int:
-        return QIntrinsicResultType_Slot{rFactory->MakeIntType()};
-
-    case QInst_IntrinsicKind::ToString_Bool_String:
-    case QInst_IntrinsicKind::ToString_Int_String: 
-    case QInst_IntrinsicKind::Add_StringPtr_StringPtr_String:
-        return QIntrinsicResultType_Slot{rFactory->MakeStringType()};
-
-    case QInst_IntrinsicKind::PrefixInc_Int_Int: 
-    case QInst_IntrinsicKind::PrefixDec_Int_Int:
-    case QInst_IntrinsicKind::PostfixInc_Int_Int:
-    case QInst_IntrinsicKind::PostfixDec_Int_Int:
-
-    case QInst_IntrinsicKind::Multiply_Int_Int_Int:
-    case QInst_IntrinsicKind::Divide_Int_Int_Int:
-    case QInst_IntrinsicKind::Modulo_Int_Int_Int:
-    case QInst_IntrinsicKind::Add_Int_Int_Int:
-    case QInst_IntrinsicKind::Subtract_Int_Int_Int:
-        return QIntrinsicResultType_Slot{rFactory->MakeIntType()};
-    
-    case QInst_IntrinsicKind::LessThan_Int_Int_Bool:
-    case QInst_IntrinsicKind::LessThan_StringPtr_StringPtr_Bool:
-    case QInst_IntrinsicKind::GreaterThan_Int_Int_Bool:
-    case QInst_IntrinsicKind::GreaterThan_StringPtr_StringPtr_Bool:
-    case QInst_IntrinsicKind::LessThanOrEqual_Int_Int_Bool:
-    case QInst_IntrinsicKind::LessThanOrEqual_StringPtr_StringPtr_Bool:
-    case QInst_IntrinsicKind::GreaterThanOrEqual_Int_Int_Bool:
-    case QInst_IntrinsicKind::GreaterThanOrEqual_StringPtr_StringPtr_Bool:
-    case QInst_IntrinsicKind::Equal_Int_Int_Bool:
-    case QInst_IntrinsicKind::Equal_Bool_Bool_Bool:
-    case QInst_IntrinsicKind::Equal_StringPtr_StringPtr_Bool:
-        return QIntrinsicResultType_Slot{rFactory->MakeBoolType()};
-
-    case QInst_IntrinsicKind::CopyCtor_StringPtr_StringPtr_Void:
-    case QInst_IntrinsicKind::MoveCtor_StringPtr_StringPtr_Void:
-    case QInst_IntrinsicKind::Dtor_StringPtr_Void:
-    case QInst_IntrinsicKind::CopyAssign_StringPtr_StringPtr_Void:
-    case QInst_IntrinsicKind::MoveAssign_StringPtr_StringPtr_Void:
-        return QIntrinsicKindResult_Void{};
-    }
-
-    throw NotImplementedException{};
 }
 
 QBlock* QBodyContext::AddBlock(std::string&& debugText)
@@ -196,28 +131,27 @@ void QBodyContext::EmitInstInternal(QInst&& inst)
     curBlock->EmitInst(std::move(inst));
 }
 
-void QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Slot> o_dest, std::vector<QArg_Input>&& args)
+void QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Dest> o_dest, std::vector<QArg_CallArg>&& args)
 {
-    auto resultType = GetIntrinsicResultType(kind);
-    visit([this, kind, &o_dest, &args](auto& resultType) {
-        using T = remove_cvref_t<decltype(resultType)>;
+    assert(curBlock);
+    curBlock->EmitInst(QInst_Intrinsic{kind, move(o_dest), move(args)});
 
-        if constexpr (same_as<T, QIntrinsicResultType_Slot>)
-        {
-            QArg_Slot resultSlot = o_dest ? *o_dest : QArg_Slot{NewSlot(resultType.type)};
+    /*auto* intrinsicInfo = GetIntrinsicInfo(kind, &*rFactory);
+    auto* retType = GetType(intrinsicInfo->funcRet, &*rFactory);
 
-            assert(curBlock);
-            curBlock->EmitInst(QInst_Intrinsic{kind, resultSlot, move(args)});
-        }
-        else if constexpr (same_as<T, QIntrinsicKindResult_Void>)
-        {
-            assert(!o_dest);
-            assert(curBlock);
-            curBlock->EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
-        }
-        else static_assert(false);
-        
-    }, resultType);
+    if (retType == rFactory->MakeVoidType())
+    {
+        assert(!o_dest);
+        assert(curBlock);
+        curBlock->EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
+    }
+    else
+    {
+        size_t resultSlotIndex = o_dest ? o_dest->index : NewSlot(retType, nullopt);
+
+        assert(curBlock);
+        curBlock->EmitInst(QInst_Intrinsic{kind, QArg_Dest{resultSlotIndex}, move(args)});
+    }*/
 }
 
 void QBodyContext::EmitTermInst(QTermInst&& termInst)
@@ -257,9 +191,7 @@ QBlock* QBodyContext::MakeCleanUpBlockWithoutFinalize(span<size_t> managedSlotIn
     {   
         if (slotInfos[slotIndex].type == stringType)
         {
-            auto ptrSlotIndex = NewTempSlot(ptrStringType);
-            newBlock->EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{slotIndex}});
-            newBlock->EmitInst(QInst_Intrinsic{QInst_IntrinsicKind::Dtor_StringPtr_Void, nullopt, {QArg_Slot{ptrSlotIndex}}});
+            newBlock->EmitInst(QInst_Intrinsic{QInst_IntrinsicKind::Dtor_Void_StringRef, nullopt, {QArg_CallArg_AddrOfSlot{slotIndex}}});
         }
     }
 
@@ -274,7 +206,7 @@ void QBodyContext::FinalizeCleanupBlock(QBlock* block, QCleanUpKind kind)
         {
             // 바로 리턴 블록 생성
             if (o_retSlotIndex)
-                block->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].type, QArg_Slot{*o_retSlotIndex}}});
+                block->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].type, QArg_Value_Slot{*o_retSlotIndex}}});
             else
                 block->EmitInst(QInst_Return{});
         }
@@ -601,14 +533,11 @@ void QBodyContext::CleanUpScope()
 
     for (auto slotIndex : slotsNeedingDtor)
     {
-        auto ptrSlotIndex = NewTempSlot(stringPtrType);
-
         // 소멸자 호출
         // TODO: HARD CODED
 
         assert(curBlock);
-        curBlock->EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{slotIndex}});
-        curBlock->EmitInst(QInst_Intrinsic{QInst_IntrinsicKind::Dtor_StringPtr_Void, nullopt, {QArg_Slot{ptrSlotIndex}}});
+        curBlock->EmitInst(QInst_Intrinsic{QInst_IntrinsicKind::Dtor_Void_StringRef, nullopt, {QArg_CallArg_AddrOfSlot{slotIndex}}});
     }
 }
 

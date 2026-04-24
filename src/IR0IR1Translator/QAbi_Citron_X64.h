@@ -16,10 +16,11 @@ public:
     QAbi_Citron_X64(const RFactoryPtr& rFactory);
 
     size_t GetTypeSize(RType* type) override;    
-    QFuncInfo GetFuncInfo(MCallable& callable) override;
+    QFuncInfo GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs) override;
+    QFuncInfo GetFuncInfo(QIntrinsicInfo* intrinsicInfo, RTypeArguments* typeArgs) override;
 
 private:
-    QReturnPassingMode GetReturnPassingMode(RFuncReturn&& funcRet, size_t* outCurArgIndex);
+    QReturnPassingMode GetReturnPassingMode(RFuncReturn funcRet, size_t* outCurArgIndex);
 };
 
 } // namespace Citron

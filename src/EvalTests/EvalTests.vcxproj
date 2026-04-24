@@ -82,9 +82,6 @@
     <ProjectReference Include="..\QEvaluator\QEvaluator.vcxproj">
       <Project>{60f3db2d-944d-4842-8b31-7029f2e4ac23}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\QIrLLVMTranslator\QIrLLVMTranslator.vcxproj">
-      <Project>{8f0bfed0-0b7d-4bb8-90e7-84df06b50bd4}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\QIR\QIR.vcxproj">
       <Project>{44d6e464-ed7e-48d2-ae84-f21b3ba9698f}</Project>
     </ProjectReference>

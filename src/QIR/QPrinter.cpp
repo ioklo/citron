@@ -33,25 +33,57 @@ class QPrinter
     QFuncBody& funcBody;
     RFactory& rFactory;
 
-    struct ArgPrinter
+    struct QArg_ValuePrinter
     {
         QPrinter& printer;
-        
-        void operator()(QArg_Slot& arg)
+        void operator()(QArg_Value_Slot& arg)
         {
-            printer.PrintQArg_Slot(arg);
+            printer.PrintSlot(arg.index);
         }
-
-        void operator()(QArg_ConstBool& arg)
+        void operator()(QArg_Value_ConstBool& arg)
         {
             printer.writer.Write(arg.value ? "true" : "false");
         }
-
-        void operator()(QArg_ConstInt32& arg)
+        void operator()(QArg_Value_ConstInt32& arg)
         {
             printer.writer.Write(to_string(arg.value));
         }
     };
+
+    struct QArg_CallArgPrinter
+    {
+        QPrinter& printer;
+        void operator()(QArg_CallArg_Slot& arg)
+        {
+            printer.PrintSlot(arg.index);
+        }
+        void operator()(QArg_CallArg_ConstBool& arg)
+        {
+            printer.writer.Write(arg.value ? "true" : "false");
+        }
+        void operator()(QArg_CallArg_ConstInt32& arg)
+        {
+            printer.writer.Write(to_string(arg.value));
+        }
+        void operator()(QArg_CallArg_AddrOfSlot& arg)
+        {
+            printer.PrintAddrOfSlot(arg.index);
+        }
+    };
+
+    struct QArg_AddrPrinter
+    {
+        QPrinter& printer;
+        void operator()(QArg_Addr_OfSlot& arg)
+        {
+            printer.PrintAddrOfSlot(arg.index);
+        }
+        void operator()(QArg_Addr_PtrSlot& arg)
+        {
+            printer.PrintSlot(arg.index);
+        }
+    };
+
 
     struct InstPrinter
     {
@@ -62,7 +94,7 @@ class QPrinter
         {
             // construct_string %a, "hello"            
             printer.Print("construct_string ");
-            printer.PrintQArg_Slot(inst.thisSlot);
+            printer.PrintQArg_Addr(inst._this);
             printer.Print(", ");
             printer.PrintStringLiteral(inst.text);
             printer.PrintLine();
@@ -71,12 +103,12 @@ class QPrinter
         void Print(QInst_Load& inst)
         {
             // %v = load [%lv]
-            printer.PrintQArg_Slot(inst.dest);
+            printer.PrintQArg_Dest(inst.dest);
             printer.Print(" = ");
             printer.Print("load ");
             printer.PrintRType(inst.type);
             printer.Print(", ");
-            printer.PrintAddrQArg_Slot(inst.src);
+            printer.PrintQArg_Addr_PtrSlot(inst.src);
             printer.PrintLine();
         }
 
@@ -86,27 +118,27 @@ class QPrinter
             printer.Print("store ");
             printer.PrintRType(inst.type);
             printer.Print(", ");
-            printer.PrintAddrQArg_Slot(inst.dest);
+            printer.PrintQArg_Addr_PtrSlot(inst.dest);
             printer.Print(", ");
-            printer.PrintQArg_Input(inst.src);
+            printer.PrintQArg_Value(inst.src);
             printer.PrintLine();
         }
 
         void Print(QInst_AddrOf& inst)
         {
             // %v = addr_of [%s]
-            printer.PrintQArg_Slot(inst.dest);
+            printer.PrintQArg_Dest(inst.dest);
             printer.Print(" = addr_of ");
-            printer.PrintAddrQArg_Slot(inst.slot);
+            printer.PrintSlot(inst.slot);
             printer.PrintLine();
         }
 
         void Print(QInst_FieldOf& inst)
         {
             // %dest = field_of [%src], fieldIndex
-            printer.PrintQArg_Slot(inst.dest);
+            printer.PrintQArg_Dest(inst.dest);
             printer.Print(" = field_of ");
-            printer.PrintAddrQArg_Slot(inst.src);
+            printer.PrintQArg_Addr(inst.src);
             printer.Print(", ");
             printer.Print(to_string(inst.fieldIndex));
             printer.PrintLine();
@@ -115,11 +147,11 @@ class QPrinter
         void Print(QInst_Assign& inst)
         {
             // %dest = <ty> %src
-            printer.PrintQArg_Slot(inst.dest);
+            printer.PrintQArg_Dest(inst.dest);
             printer.Print(" = ");
             printer.PrintRType(inst.type);
             printer.Print(", ");
-            printer.PrintQArg_Input(inst.src);
+            printer.PrintQArg_Value(inst.src);
             printer.PrintLine();
         }
 
@@ -128,7 +160,7 @@ class QPrinter
             // %s = call @F, %s2
             if (inst.o_dest)
             {
-                printer.PrintQArg_Slot(*inst.o_dest);
+                printer.PrintQArg_Dest(*inst.o_dest);
                 printer.Print(" = ");
             }
 
@@ -138,7 +170,7 @@ class QPrinter
             for (size_t i = 0; i < inst.args.size(); i++)
             {   
                 printer.Print(", ");
-                printer.PrintQArg_Input(inst.args[i]);
+                printer.PrintQArg_CallArg(inst.args[i]);
             }
             printer.PrintLine();            
         }
@@ -147,7 +179,7 @@ class QPrinter
         {
             if (inst.o_dest)
             {
-                printer.PrintQArg_Slot(*inst.o_dest);
+                printer.PrintQArg_Dest(*inst.o_dest);
                 printer.Print(" = ");
             }
 
@@ -157,7 +189,7 @@ class QPrinter
             for (auto& arg : inst.args)
             {
                 printer.Print(", ");
-                printer.PrintQArg_Input(arg);
+                printer.PrintQArg_CallArg(arg);
             }
 
             printer.PrintLine();
@@ -166,7 +198,7 @@ class QPrinter
         void Print(QInst_CondJump& inst)
         {
             printer.Print("condjump ");
-            printer.PrintQArg_Slot(inst.cond);
+            printer.PrintQArg_Value_Slot(inst.cond);
             printer.Print(", ");
             printer.PrintBlockLabel(inst.trueBlock);
             printer.Print(", ");
@@ -193,7 +225,7 @@ class QPrinter
                 
                 printer.Print(", ");
 
-                printer.PrintQArg_Input(inst.o_value->value);
+                printer.PrintQArg_Value(inst.o_value->value);
             }
 
             printer.PrintLine();
@@ -221,14 +253,39 @@ public:
         writer.Write(str);
     }
 
-    void PrintQArg_Input(QArg_Input& arg)
+    void PrintQArg_Value(QArg_Value& arg)
     {
-        visit(ArgPrinter{*this}, arg);
+        visit(QArg_ValuePrinter{*this}, arg);
     }
 
-    void PrintQArg_Slot(QArg_Slot& arg)
+    void PrintQArg_CallArg(QArg_CallArg& arg)
     {
-        writer.Write(funcBody.slotInfos[arg.index].name);
+        visit(QArg_CallArgPrinter{*this}, arg);
+    }
+
+    void PrintQArg_Addr(QArg_Addr& arg)
+    {
+        visit(QArg_AddrPrinter{*this}, arg);
+    }
+
+    void PrintQArg_Addr_PtrSlot(QArg_Addr_PtrSlot& arg)
+    {
+        PrintSlot(arg.index);
+    }
+
+    void PrintQArg_Value_Slot(QArg_Value_Slot& arg)
+    {
+        PrintSlot(arg.index);
+    }
+
+    void PrintQArg_Dest(QArg_Dest& arg)
+    {
+        PrintSlot(arg.index);
+    }
+
+    void PrintSlot(size_t index)
+    {
+        writer.Write(funcBody.slotInfos[index].name);
     }
 
     void PrintRName(RName& name)
@@ -246,41 +303,41 @@ public:
 
         switch (kind)
         {
-        case Command_Items: return "Command_Items";
+        case Command_Item: return "Command_Item";
         case Alloc_Int: return "Alloc_Int";
-        case Memcpy_Ptr_Ptr_Int: return "Memcpy_Ptr_Ptr_Int";
+        case Memcpy_Void_Ptr_Ptr_Int: return "Memcpy_Void_Ptr_Ptr_Int";
         case NewList_Items: return "NewList_Items";
         case GetIterator_ListPtr_ListIterator: return "GetIterator_ListPtr_ListIterator";
         case LogicalNot_Bool_Bool: return "LogicalNot_Bool_Bool";
         case UnaryMinus_Int_Int: return "UnaryMinus_Int_Int";
-        case ToString_Bool_String: return "ToString_Bool_String";
-        case ToString_Int_String: return "ToString_Int_String";
-        case PrefixInc_Int_Int: return "PrefixInc_Int_Int";
-        case PrefixDec_Int_Int: return "PrefixDec_Int_Int";
-        case PostfixInc_Int_Int: return "PostfixInc_Int_Int";
-        case PostfixDec_Int_Int: return "PostfixDec_Int_Int";
+        case ToString_String_Bool: return "ToString_String_Bool";
+        case ToString_String_Int: return "ToString_String_Int";
+        case PrefixInc_Int_IntRef: return "PrefixInc_Int_IntRef";
+        case PrefixDec_Int_IntRef: return "PrefixDec_Int_IntRef";
+        case PostfixInc_Int_IntRef: return "PostfixInc_Int_IntRef";
+        case PostfixDec_Int_IntRef: return "PostfixDec_Int_IntRef";
         case Multiply_Int_Int_Int: return "Multiply_Int_Int_Int";
         case Divide_Int_Int_Int: return "Divide_Int_Int_Int";
         case Modulo_Int_Int_Int: return "Modulo_Int_Int_Int";
         case Add_Int_Int_Int: return "Add_Int_Int_Int";
-        case Add_StringPtr_StringPtr_String: return "Add_StringPtr_StringPtr_String";
+        case Add_String_StringInRef_StringInRef: return "Add_String_StringInRef_StringInRef";
         case Subtract_Int_Int_Int: return "Subtract_Int_Int_Int";
-        case LessThan_Int_Int_Bool: return "LessThan_Int_Int_Bool";
-        case LessThan_StringPtr_StringPtr_Bool: return "LessThan_StringPtr_StringPtr_Bool";
-        case GreaterThan_Int_Int_Bool: return "GreaterThan_Int_Int_Bool";
-        case GreaterThan_StringPtr_StringPtr_Bool: return "GreaterThan_StringPtr_StringPtr_Bool";
-        case LessThanOrEqual_Int_Int_Bool: return "LessThanOrEqual_Int_Int_Bool";
-        case LessThanOrEqual_StringPtr_StringPtr_Bool: return "LessThanOrEqual_StringPtr_StringPtr_Bool";
-        case GreaterThanOrEqual_Int_Int_Bool: return "GreaterThanOrEqual_Int_Int_Bool";
-        case GreaterThanOrEqual_StringPtr_StringPtr_Bool: return "GreaterThanOrEqual_StringPtr_StringPtr_Bool";
-        case Equal_Int_Int_Bool: return "Equal_Int_Int_Bool";
+        case LessThan_Bool_Int_Int: return "LessThan_Bool_Int_Int";
+        case LessThan_Bool_StringInRef_StringInRef: return "LessThan_Bool_StringInRef_StringInRef";
+        case GreaterThan_Bool_Int_Int: return "GreaterThan_Bool_Int_Int";
+        case GreaterThan_Bool_StringInRef_StringInRef: return "GreaterThan_Bool_StringInRef_StringInRef";
+        case LessThanOrEqual_Bool_Int_Int: return "LessThanOrEqual_Bool_Int_Int";
+        case LessThanOrEqual_Bool_StringInRef_StringInRef: return "LessThanOrEqual_Bool_StringInRef_StringInRef";
+        case GreaterThanOrEqual_Bool_Int_Int: return "GreaterThanOrEqual_Bool_Int_Int";
+        case GreaterThanOrEqual_Bool_StringInRef_StringInRef: return "GreaterThanOrEqual_Bool_StringInRef_StringInRef";
+        case Equal_Bool_Int_Int: return "Equal_Bool_Int_Int";
         case Equal_Bool_Bool_Bool: return "Equal_Bool_Bool_Bool";
-        case Equal_StringPtr_StringPtr_Bool: return "Equal_StringPtr_StringPtr_Bool";
-        case CopyCtor_StringPtr_StringPtr_Void: return "CopyCtor_StringPtr_StringPtr_Void";
-        case MoveCtor_StringPtr_StringPtr_Void: return "MoveCtor_StringPtr_StringPtr_Void";
-        case Dtor_StringPtr_Void: return "Dtor_StringPtr_Void";
-        case CopyAssign_StringPtr_StringPtr_Void: return "CopyAssign_StringPtr_StringPtr_Void";
-        case MoveAssign_StringPtr_StringPtr_Void: return "MoveAssign_StringPtr_StringPtr_Void";
+        case Equal_Bool_StringInRef_StringInRef: return "Equal_Bool_StringInRef_StringInRef";
+        case CopyCtor_Void_StringRef_StringInRef: return "CopyCtor_Void_StringRef_StringInRef";
+        case MoveCtor_Void_StringRef_StringMoveRef: return "MoveCtor_Void_StringRef_StringMoveRef";
+        case Dtor_Void_StringRef: return "Dtor_Void_StringRef";
+        case CopyAssign_Void_StringRef_StringInRef: return "CopyAssign_Void_StringRef_StringInRef";
+        case MoveAssign_Void_StringRef_StringMoveRef: return "MoveAssign_Void_StringRef_StringMoveRef";
         }
 
         unreachable();
@@ -297,10 +354,10 @@ public:
         writer.Write(":");
     }
 
-    void PrintAddrQArg_Slot(QArg_Slot& slot)
+    void PrintAddrOfSlot(size_t index)
     {
         writer.Write("[");
-        PrintQArg_Slot(slot);
+        PrintSlot(index);
         writer.Write("]");
     }
 

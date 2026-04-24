@@ -1,8 +1,10 @@
 #pragma once
 #include <expected>
 #include <memory>
+#include <vector>
 #include <optional>
 
+#include "RSymbol/RFuncParameter.h"
 #include "MIR/MArgument.h"
 #include "QIR/QArgs.h"
 #include "QIR/QInsts.h"
@@ -14,29 +16,28 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 enum class MExp_CallIntrinsicKind;
 enum class MInitExp_CallIntrinsicKind;
 
+class RFuncDecl;
+class RTypeArguments;
+
 struct MStmt_Scope;
 struct MInitExp_String;
 struct QTranslationContexts;
 
 template<typename T>
 struct QEmitState;
-
+enum class QParamPassingMode;
+struct QFuncInfo;
+struct QIntrinsicInfo;
 using QLocResult = std::variant<struct QLocResult_Slot, struct QLocResult_Ptr>;
 
-struct QIntrinsicInfo
-{
-    QInst_IntrinsicKind kind;
-    RType* type;
-};
+std::expected<QEmitState<std::optional<size_t>>, DiagPtr> HandleIntrinsicCall(QIntrinsicInfo* intrinsicInfo, std::optional<size_t> o_destSlotIndex, RTypeArguments* typeArgs, std::vector<MArgument>& mArgs, QTranslationContexts& contexts);
+std::expected<QEmitState<std::optional<size_t>>, DiagPtr> HandleCall(RFuncDecl* decl, RTypeArguments* typeArgs, std::optional<size_t> o_destSlotIndex, MLoc* o_instance, std::vector<MArgument>& mArgs, QTranslationContexts& contexts);
 
+QArg_CallArg MakeAddrCallArg(QLocResult& locResult, QTranslationContexts& contexts);
 size_t MakePtrSlot(QLocResult& locResult, QTranslationContexts& contexts);
-size_t MakePtrSlot(size_t slotIndex, QTranslationContexts& contexts);
 
-std::expected<QEmitState<QArg_Input>, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QTranslationContexts& contexts);
-std::expected<QEmitState<std::vector<QArg_Input>>, DiagPtr> TranslateMArgumentsToQInsts(std::vector<MArgument>& mArgs, QTranslationContexts& contexts);
-
-QIntrinsicInfo* GetIntrinsicInfo(MExp_CallIntrinsicKind kind, QTranslationContexts& contexts);
-QIntrinsicInfo* GetIntrinsicInfo(MInitExp_CallIntrinsicKind kind, QTranslationContexts& contexts);
+std::expected<QEmitState<QArg_CallArg>, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QParamPassingMode passingMode, QTranslationContexts& contexts);
+std::expected<QEmitState<void>, DiagPtr> TranslateMArgumentsToQInsts(std::vector<QArg_CallArg>& qArgs, std::vector<MArgument>& mArgs, QFuncInfo& funcInfo, QTranslationContexts& contexts);
 
 std::expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, std::optional<size_t> destSlot, QTranslationContexts& contexts);
 

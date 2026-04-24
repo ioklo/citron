@@ -33,26 +33,25 @@ public:
     MLoc* instance;
     vector<MArgument> args;
     TranslationContexts& contexts;
-
-    template<typename TRFuncDecl> requires std::derived_from<TRFuncDecl, RFuncDecl>
-    ResultType Call(TRFuncDecl* func, MCallable&& callable)
+    
+    ResultType Call(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance)
     {
-        auto* retType = func->GetReturnType(typeArgs);
+        auto* retType = rFuncDecl->GetReturnType(typeArgs);
 
         switch (retType->GetCopyStrategy())
         {
         case RCopyStrategy::Void:
-            return contexts.mFactory->MakeMStmt<MStmt_Call>(MTopLevel_Call{move(callable), move(args), /*o_catch*/nullopt});
+            return contexts.mFactory->MakeMStmt<MStmt_Call>(MTopLevel_Call{MCallable{rFuncDecl, typeArgs, o_instance}, move(args), /*o_catch*/nullopt});
 
         case RCopyStrategy::Bitwise:
         {
-            auto* exp = contexts.mFactory->MakeMExp<MExp_Call>(move(callable), move(args), /*o_catch*/nullopt);
+            auto* exp = contexts.mFactory->MakeMExp<MExp_Call>(MCallable{rFuncDecl, typeArgs, o_instance}, move(args), /*o_catch*/nullopt);
             return contexts.mFactory->MakeMStmt<MStmt_Exp>(MTopLevel_Create{MCreate_BC{exp}});
         }
 
         case RCopyStrategy::NonBitwise:
         {
-            auto* initExp = contexts.mFactory->MakeMInitExp<MInitExp_Call>(move(callable), move(args), /*o_catch*/nullopt);
+            auto* initExp = contexts.mFactory->MakeMInitExp<MInitExp_Call>(MCallable{rFuncDecl, typeArgs, o_instance}, move(args), /*o_catch*/nullopt);
             return contexts.mFactory->MakeMStmt<MStmt_Exp>(MTopLevel_Create{MCreate_NBC{initExp}});
         }
 
@@ -73,7 +72,7 @@ public:
 
     ResultType Visit(RClassFuncDecl* func) 
     {
-        return Call(func, MCallable_ClassFunc{func, typeArgs, instance});
+        return Call(func, typeArgs, instance);
     }
 
     ResultType Visit(RStructCtorDecl* func) 
@@ -88,7 +87,7 @@ public:
 
     ResultType Visit(RStructFuncDecl* func) 
     {   
-        return Call(func, MCallable_StructFunc{func, typeArgs, instance});
+        return Call(func, typeArgs, instance);
     }
 
     ResultType Visit(RLambdaDecl* func) 

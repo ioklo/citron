@@ -47,7 +47,7 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_Stri
             args.push_back(MArgument_Create{move(mCreateIntBC)});
 
             auto* initExp = contexts.mFactory->MakeMInitExp<MInitExp_CallIntrinsic>(
-                MInitExp_CallIntrinsicKind::ToString_Int_String, typeArgs, move(args));
+                MInitExp_CallIntrinsicKind::ToString_String_Int, typeArgs, move(args));
             
             return MInitExp_StringElem_InitExp{initExp};
         }
@@ -62,7 +62,7 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_Stri
             args.push_back(MArgument_Create{move(mCreateBoolBC)});
 
             auto* initExp = contexts.mFactory->MakeMInitExp<MInitExp_CallIntrinsic>(
-                MInitExp_CallIntrinsicKind::ToString_Bool_String, typeArgs, move(args));
+                MInitExp_CallIntrinsicKind::ToString_String_Bool, typeArgs, move(args));
 
             return MInitExp_StringElem_InitExp{initExp};
         }
@@ -495,16 +495,16 @@ expected<ReExp, DiagPtr> TranslateSExp_UnaryOpToReExp(SExp_UnaryOp* sExp, RType*
     }
 
     case SUnaryOpKind::PostfixInc: // e.m++ 등
-        return TranslateSExp_UnaryOp_AssignToReExp(*e_reOperand, MExp_CallIntrinsicKind::PostfixInc_Int_Int, contexts);
+        return TranslateSExp_UnaryOp_AssignToReExp(*e_reOperand, MExp_CallIntrinsicKind::PostfixInc_Int_IntRef, contexts);
 
     case SUnaryOpKind::PostfixDec:
-        return TranslateSExp_UnaryOp_AssignToReExp(*e_reOperand, MExp_CallIntrinsicKind::PostfixDec_Int_Int, contexts);
+        return TranslateSExp_UnaryOp_AssignToReExp(*e_reOperand, MExp_CallIntrinsicKind::PostfixDec_Int_IntRef, contexts);
 
     case SUnaryOpKind::PrefixInc:
-        return TranslateSExp_UnaryOp_AssignToReExp(*e_reOperand, MExp_CallIntrinsicKind::PrefixInc_Int_Int, contexts);
+        return TranslateSExp_UnaryOp_AssignToReExp(*e_reOperand, MExp_CallIntrinsicKind::PrefixInc_Int_IntRef, contexts);
 
     case SUnaryOpKind::PrefixDec:
-        return TranslateSExp_UnaryOp_AssignToReExp(*e_reOperand, MExp_CallIntrinsicKind::PrefixDec_Int_Int, contexts);
+        return TranslateSExp_UnaryOp_AssignToReExp(*e_reOperand, MExp_CallIntrinsicKind::PrefixDec_Int_IntRef, contexts);
     }
 
     unreachable();

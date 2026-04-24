@@ -14,6 +14,7 @@
 #include "QEmitState.h"
 #include "CommonQInstsTranslation.h"
 #include "QEmitState.h"
+#include "QIntrinsicInfo.h"
 
 using namespace std;
 
@@ -44,7 +45,7 @@ struct MRead_ExpQInstsTranslator
             {
                 auto* type = GetType(exp, &*contexts.rFactory);
                 size_t destSlotIndex = contexts.bodyContext.NewSlot(type); 
-                contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Slot{destSlotIndex}, QArg_Slot{srcLoc.slotIndex}});
+                contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Dest{destSlotIndex}, QArg_Value_Slot{srcLoc.slotIndex}});
 
                 return QReadResult_Slot{destSlotIndex};
             }
@@ -52,7 +53,7 @@ struct MRead_ExpQInstsTranslator
             {
                 auto* type = GetType(exp, &*contexts.rFactory);
                 size_t destSlotIndex = contexts.bodyContext.NewSlot(type);
-                contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Slot{destSlotIndex}, QArg_Slot{srcLoc.slotIndex}});
+                contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Dest{destSlotIndex}, QArg_Addr_PtrSlot{srcLoc.slotIndex}});
 
                 return QReadResult_Slot{destSlotIndex};
             }
@@ -84,7 +85,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // <destSlot> = <srcSlot>
                 auto* type = contexts.bodyContext.GetSlotType(src.slotIndex);
-                contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{src.slotIndex}});
+                contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Dest{destLoc.slotIndex}, QArg_Value_Slot{src.slotIndex}});
 
                 return QReadResult_Slot{destLoc.slotIndex};
             }
@@ -93,7 +94,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // dest = *src
                 auto* type = contexts.bodyContext.GetSlotType(destLoc.slotIndex);
-                contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{src.slotIndex}});
+                contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Dest{destLoc.slotIndex}, QArg_Addr_PtrSlot{src.slotIndex}});
 
                 return QReadResult_Slot{destLoc.slotIndex};
             }
@@ -102,7 +103,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // dest = const
                 auto* boolType = contexts.bodyContext.GetBoolType();
-                contexts.bodyContext.EmitInst(QInst_Assign{boolType, QArg_Slot{destLoc.slotIndex}, QArg_ConstBool{src.value}});
+                contexts.bodyContext.EmitInst(QInst_Assign{boolType, QArg_Dest{destLoc.slotIndex}, QArg_Value_ConstBool{src.value}});
                 return src; // const 그대로 리턴
             }
             // 1-4. destLoc: slot, srcLoc: const int32
@@ -110,7 +111,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // dest = const
                 auto* intType = contexts.bodyContext.GetIntType();
-                contexts.bodyContext.EmitInst(QInst_Assign{intType, QArg_Slot{destLoc.slotIndex}, QArg_ConstInt32{src.value}});
+                contexts.bodyContext.EmitInst(QInst_Assign{intType, QArg_Dest{destLoc.slotIndex}, QArg_Value_ConstInt32{src.value}});
                 return src; // const 그대로 리턴
             }
 
@@ -119,7 +120,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // *dest = src
                 auto* type = contexts.bodyContext.GetSlotType(src.slotIndex);
-                contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{src.slotIndex}});
+                contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Addr_PtrSlot{destLoc.slotIndex}, QArg_Value_Slot{src.slotIndex}});
 
                 return QReadResult_Slot{src.slotIndex}; // src slot을 그대로 리턴한다
             }
@@ -130,10 +131,10 @@ struct MRead_ExpQInstsTranslator
                 size_t resultSlotIndex = contexts.bodyContext.NewSlot(type);
 
                 // result = *src                            
-                contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Slot{resultSlotIndex}, QArg_Slot{src.slotIndex}});
+                contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Dest{resultSlotIndex}, QArg_Addr_PtrSlot{src.slotIndex}});
 
                 // *dest = result
-                contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Slot{destLoc.slotIndex}, QArg_Slot{resultSlotIndex}});
+                contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Addr_PtrSlot{destLoc.slotIndex}, QArg_Value_Slot{resultSlotIndex}});
 
                 return QReadResult_Slot{resultSlotIndex}; // src에서 로드한 값을 리턴한다
             }
@@ -142,7 +143,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // dest = const
                 auto* boolType = contexts.bodyContext.GetBoolType();
-                contexts.bodyContext.EmitInst(QInst_Store{boolType, QArg_Slot{destLoc.slotIndex}, QArg_ConstBool{src.value}});
+                contexts.bodyContext.EmitInst(QInst_Store{boolType, QArg_Addr_PtrSlot{destLoc.slotIndex}, QArg_Value_ConstBool{src.value}});
                 return src; // const 그대로 리턴
             }
             // 2-4. destLoc: ptr, srcLoc: const int32
@@ -150,7 +151,7 @@ struct MRead_ExpQInstsTranslator
             {
                 // dest = const
                 auto* intType = contexts.bodyContext.GetIntType();
-                contexts.bodyContext.EmitInst(QInst_Store{intType, QArg_Slot{destLoc.slotIndex}, QArg_ConstInt32{src.value}});
+                contexts.bodyContext.EmitInst(QInst_Store{intType, QArg_Addr_PtrSlot{destLoc.slotIndex}, QArg_Value_ConstInt32{src.value}});
                 return src; // const 그대로 리턴
             }
             else static_assert(false);
@@ -182,7 +183,7 @@ struct MRead_ExpQInstsTranslator
                 size_t resultSlotIndex = contexts.bodyContext.NewSlot(ptrType);
 
                 // slot의 addrof를 하나 한다 ptr 타입
-                contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{resultSlotIndex}, QArg_Slot{loc.slotIndex}});
+                contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Dest{resultSlotIndex}, loc.slotIndex});
 
                 return QReadResult_Slot{resultSlotIndex};
             }
@@ -192,7 +193,7 @@ struct MRead_ExpQInstsTranslator
                 size_t resultSlotIndex = contexts.bodyContext.NewSlot(ptrType);
 
                 // ptr이면, destSlotIndex에 복사해서 넣어준다. QReadResult_Ptr로 직접 전해주지 않도록 한다 (value로만 전달)
-                contexts.bodyContext.EmitInst(QInst_Assign{ptrType, QArg_Slot{resultSlotIndex}, QArg_Slot{loc.slotIndex}});
+                contexts.bodyContext.EmitInst(QInst_Assign{ptrType, QArg_Dest{resultSlotIndex}, QArg_Value_Slot{loc.slotIndex}});
 
                 return QReadResult_Slot{resultSlotIndex};
             }
@@ -213,36 +214,21 @@ struct MRead_ExpQInstsTranslator
 
     ResultType Visit(MExp_CallIntrinsic* exp) 
     {
-        auto* intrinsicInfo = GetIntrinsicInfo(exp->kind, contexts);
-        assert(intrinsicInfo);
+        auto* intrinsicInfo = GetIntrinsicInfo(exp->kind, &*contexts.rFactory);
+        auto e_s_o_retSlotIndex = HandleIntrinsicCall(intrinsicInfo, nullopt, exp->typeArgs, exp->args, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_o_retSlotIndex);
 
-        auto e_s_args = TranslateMArgumentsToQInsts(exp->args, contexts);
-        RETURN_ON_ERROR_OR_DONE(e_s_args);
-
-        // 여긴 MExp이므로 void type은 들어오지 않는다
-        size_t resultSlotIndex = contexts.bodyContext.NewSlot(intrinsicInfo->type);
-        contexts.bodyContext.EmitIntrinsic(intrinsicInfo->kind, resultSlotIndex, move(**e_s_args));
-
-        return QReadResult_Slot{resultSlotIndex};
+        assert(**e_s_o_retSlotIndex); // void가 아닌 intrinsic이므로, 항상 slot이 나와야 한다
+        return QReadResult_Slot{***e_s_o_retSlotIndex};
     }
 
     ResultType Visit(MExp_Call* exp) 
     {
-        // generics는 어떻게 하나요
-        // T F<T>(T t) { return t; }
-        // Generics는 T에 관한 정보를 더 넘겨준다 (크기 등)
-        // 따라서 이 함수는 t, {F함수에 대한 constraint table} 두 인자를 받는다
-        // 그리고 t는 항상 stack pointer를 가리키게 된다 (callee쪽에서 크기를 정확히 알 수 없으므로)
-        auto e_s_args = TranslateMArgumentsToQInsts(exp->args, contexts);
-        RETURN_ON_ERROR_OR_DONE(e_s_args);
+        auto e_s_o_retSlotIndex = HandleCall(exp->callable.decl, exp->callable.typeArgs, nullopt, exp->callable.o_instance, exp->args, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_o_retSlotIndex);
 
-        // 2. Emit처리
-        auto* rFuncDecl = GetRFuncDecl(exp->callable);
-        auto* retType = GetType(exp->callable);
-        size_t resultSlotIndex = contexts.bodyContext.NewSlot(retType);
-        contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, QArg_Slot{resultSlotIndex}, move(**e_s_args)});
-
-        return QReadResult_Slot{resultSlotIndex};
+        assert(**e_s_o_retSlotIndex); // void가 아닌 함수이므로, 항상 slot이 나와야 한다
+        return QReadResult_Slot{***e_s_o_retSlotIndex};
     }
 
     // BC용 Struct

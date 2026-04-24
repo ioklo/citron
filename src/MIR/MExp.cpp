@@ -38,26 +38,26 @@ RType* GetType_CallIntrinsic(MExp_CallIntrinsic* exp, RFactory* rFactory)
     {
     case MExp_CallIntrinsicKind::LogicalNot_Bool_Bool: return rFactory->MakeBoolType();
     case MExp_CallIntrinsicKind::UnaryMinus_Int_Int: return rFactory->MakeIntType();
-    case MExp_CallIntrinsicKind::PrefixInc_Int_Int: return rFactory->MakeIntType();
-    case MExp_CallIntrinsicKind::PrefixDec_Int_Int: return rFactory->MakeIntType();
-    case MExp_CallIntrinsicKind::PostfixInc_Int_Int: return rFactory->MakeIntType();
-    case MExp_CallIntrinsicKind::PostfixDec_Int_Int: return rFactory->MakeIntType();
+    case MExp_CallIntrinsicKind::PrefixInc_Int_IntRef: return rFactory->MakeIntType();
+    case MExp_CallIntrinsicKind::PrefixDec_Int_IntRef: return rFactory->MakeIntType();
+    case MExp_CallIntrinsicKind::PostfixInc_Int_IntRef: return rFactory->MakeIntType();
+    case MExp_CallIntrinsicKind::PostfixDec_Int_IntRef: return rFactory->MakeIntType();
     case MExp_CallIntrinsicKind::Multiply_Int_Int_Int: return rFactory->MakeIntType();
     case MExp_CallIntrinsicKind::Divide_Int_Int_Int: return rFactory->MakeIntType();
     case MExp_CallIntrinsicKind::Modulo_Int_Int_Int: return rFactory->MakeIntType();
     case MExp_CallIntrinsicKind::Add_Int_Int_Int: return rFactory->MakeIntType();
     case MExp_CallIntrinsicKind::Subtract_Int_Int_Int: return rFactory->MakeIntType();
-    case MExp_CallIntrinsicKind::LessThan_Int_Int_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::LessThan_StringPtr_StringPtr_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::GreaterThan_Int_Int_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::GreaterThan_StringPtr_StringPtr_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::LessThanOrEqual_Int_Int_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::LessThanOrEqual_StringPtr_StringPtr_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::GreaterThanOrEqual_Int_Int_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::GreaterThanOrEqual_StringPtr_StringPtr_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::Equal_Int_Int_Bool: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::LessThan_Bool_Int_Int: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::LessThan_Bool_StringInRef_StringInRef: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::GreaterThan_Bool_Int_Int: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::GreaterThan_Bool_StringInRef_StringInRef: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::LessThanOrEqual_Bool_Int_Int: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::LessThanOrEqual_Bool_StringInRef_StringInRef: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::GreaterThanOrEqual_Bool_Int_Int: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::GreaterThanOrEqual_Bool_StringInRef_StringInRef: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::Equal_Bool_Int_Int: return rFactory->MakeBoolType();
     case MExp_CallIntrinsicKind::Equal_Bool_Bool_Bool: return rFactory->MakeBoolType();
-    case MExp_CallIntrinsicKind::Equal_StringPtr_StringPtr_Bool: return rFactory->MakeBoolType();
+    case MExp_CallIntrinsicKind::Equal_Bool_StringInRef_StringInRef: return rFactory->MakeBoolType();
     case MExp_CallIntrinsicKind::GetIterator_ListPtr_ListIterator: return rFactory->MakeListIteratorType(exp->typeArgs->Get(0));
     }
 
@@ -83,7 +83,7 @@ RType* GetType(MExp* exp, RFactory* rFactory)
         ResultType Visit(MExp_IntLiteral* exp) { return rFactory->MakeIntType(); }
         ResultType Visit(MExp_CallIntrinsic* exp) { return GetType_CallIntrinsic(exp, rFactory); }
 
-        ResultType Visit(MExp_Call* exp) { return GetType(exp->callable); }
+        ResultType Visit(MExp_Call* exp) { return exp->callable.decl->GetReturnType(exp->callable.typeArgs); }
         ResultType Visit(MExp_NewStruct* exp) 
         { 
             auto structDecl = exp->ctor->GetStructDecl();

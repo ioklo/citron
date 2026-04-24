@@ -38,7 +38,8 @@ Text → Syntax → MIR(IR0) → QIR(IR1) → LLVM. 변환기는 단방향을 �
 - 언어 명세 원문: `docs/` 아래 기존 문서 유지.
 
 ## 6. 스타일·명명 규칙(필수)
-- `src/RULES.md`를 우선 준수. 주요 예: `std::expected` 결과 변수 `e_`, `std::optional`은 `o_` 접두사.
+- src/RULES.md를 우선 준수. 주요 예: std::expected 결과 변수 _, std::optional은 o_ 접두사.
+- 기존 파일의 줄 끝 형식을 유지한다. 특히 Windows 소스 파일은 기존이 CRLF이면 수정 후에도 CRLF를 유지한다.
 - 새 모듈/패스 추가 시 `src/CMakeLists.txt`에 타깃 등록.
 - 번역기 변경은 해당 단계 테스트를 함께 갱신.
 
@@ -49,6 +50,7 @@ Text → Syntax → MIR(IR0) → QIR(IR1) → LLVM. 변환기는 단방향을 �
 - [ ] PR 설명에 목적·파일·테스트 결과·후속 작업 기재.
 
 ## 8. 참고 문서
-- Copilot 안내(비교용): `.github/copilot-instructions.md`.
-- AI 문서 색인: `ai/index.md`.
-- 에이전트 작업 규칙: `ai/ai-guidelines/agent-workflow.md`.
+- Copilot 안내(비교용): .github/copilot-instructions.md
+- AI 문서 색인: ai/index.md
+- 에이전트 작업 규칙: ai/ai-guidelines/agent-workflow.md
+- Windows 빌드/테스트/생성 규칙: ai/process/build-test-and-generation-windows.md

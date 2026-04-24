@@ -57,26 +57,29 @@ struct CallableTranslator
         return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{initExp});
     }
 
-    ResultType Call(RCopyStrategy copyStrategy, MCallable&& call, vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
+    ResultType Call(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance, vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
     {
+        auto* retType = rFuncDecl->GetReturnType(typeArgs);
+        auto copyStrategy = retType->GetCopyStrategy();
+
         switch (copyStrategy)
         {
         case RCopyStrategy::Void:
         {
             // TODO: [41] try catch 구현
-            auto* callStmt = contexts.mFactory->MakeMStmt<MStmt_Call>(MTopLevel_Call{move(call), move(args), move(o_catch)});
+            auto* callStmt = contexts.mFactory->MakeMStmt<MStmt_Call>(MTopLevel_Call{MCallable{rFuncDecl, typeArgs, o_instance}, move(args), move(o_catch)});
             return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_StmtCall{callStmt});
         }
 
         case RCopyStrategy::Bitwise:
         {
-            auto* callExp = contexts.mFactory->MakeMExp<MExp_Call>(move(call), move(args), move(o_catch));
+            auto* callExp = contexts.mFactory->MakeMExp<MExp_Call>(MCallable{rFuncDecl, typeArgs, o_instance}, move(args), move(o_catch));
             return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_Exp{callExp});
         }
 
         case RCopyStrategy::NonBitwise:
         {
-            auto* callInitExp = contexts.mFactory->MakeMInitExp<MInitExp_Call>(move(call), move(args), move(o_catch));
+            auto* callInitExp = contexts.mFactory->MakeMInitExp<MInitExp_Call>(MCallable{rFuncDecl, typeArgs, o_instance}, move(args), move(o_catch));
             return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{callInitExp});
         }
         }
@@ -134,10 +137,8 @@ struct CallableTranslator
         auto e_match = MatchFunc<RGlobalFuncDecl>(imExp->items, imExp->memberTypeArgs, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);
 
-        auto* retType = match.funcDecl->GetReturnType(match.typeArgs);
-
         // TODO: [41] try catch 구현
-        return Call(retType->GetCopyStrategy(), MCallable_GlobalFunc{match.funcDecl, match.typeArgs}, move(match.args), /*o_catch*/nullopt);
+        return Call(match.funcDecl, match.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);
     }
 
     // ResultType Visit(ImExp_TypeVar* imExp);
@@ -149,10 +150,7 @@ struct CallableTranslator
         auto e_match = MatchFunc<RClassFuncDecl>(imExp->items, imExp->memberTypeArgs, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);
 
-        auto* retType = match.funcDecl->GetReturnType(match.typeArgs);
-        auto copyStrategy = retType->GetCopyStrategy();
-
-        return visit([&match, copyStrategy, this](auto& instanceKind) -> ResultType
+        return visit([&match, this](auto& instanceKind) -> ResultType
         {
             using T = remove_cvref_t<decltype(instanceKind)>;
 
@@ -163,7 +161,7 @@ struct CallableTranslator
                     return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
 
                 // TODO: [41] try catch 구현
-                return Call(copyStrategy, MCallable_ClassFunc{match.funcDecl, match.typeArgs, /*instance*/nullptr}, move(match.args), /*o_catch*/nullopt);
+                return Call(match.funcDecl, match.typeArgs, /*instance*/nullptr, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_ExplicitInstance>)
             {
@@ -171,19 +169,19 @@ struct CallableTranslator
                 if (match.funcDecl->GetThisKind() == RThisKind::None)
                     return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
 
-                return Call(copyStrategy, MCallable_ClassFunc{match.funcDecl, match.typeArgs, /*instance*/instanceKind.mInstLoc}, move(match.args), /*o_catch*/nullopt);
+                return Call(match.funcDecl, match.typeArgs, /*instance*/instanceKind.mInstLoc, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_Implicit>) // F 로 인스턴스를 명시적으로 정하지 않았다면 
             {
                 if (match.funcDecl->GetThisKind() == RThisKind::None) // 정적함수이면 인스턴스에 null
                 {
                     // TODO: [41] try catch 구현
-                    return Call(copyStrategy, MCallable_ClassFunc{match.funcDecl, match.typeArgs, /*instance*/nullptr}, move(match.args), /*o_catch*/nullopt);
+                    return Call(match.funcDecl, match.typeArgs, /*instance*/nullptr, move(match.args), /*o_catch*/nullopt);
                 }
                 else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
                 {
                     // TODO: [41] try catch 구현
-                    return Call(copyStrategy, MCallable_ClassFunc{match.funcDecl, match.typeArgs, contexts.funcContext->MakeThisLoc()}, move(match.args), /*o_catch*/nullopt);
+                    return Call(match.funcDecl, match.typeArgs, contexts.funcContext->MakeThisLoc(), move(match.args), /*o_catch*/nullopt);
                 }
             }
             else static_assert(false);
@@ -262,10 +260,7 @@ struct CallableTranslator
         auto e_match = MatchFunc<RStructFuncDecl>(imExp->items, imExp->memberTypeArgs, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);
 
-        auto* retType = match.funcDecl->GetReturnType(match.typeArgs);
-        auto copyStrategy = retType->GetCopyStrategy();
-
-        return visit([&match, copyStrategy, this](auto& instanceKind) -> ResultType
+        return visit([&match, this](auto& instanceKind) -> ResultType
         {
             using T = remove_cvref_t<decltype(instanceKind)>;
 
@@ -276,7 +271,7 @@ struct CallableTranslator
                     return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
 
                 // TODO: [41] try catch 구현
-                return Call(copyStrategy, MCallable_StructFunc{.decl = match.funcDecl, .typeArgs = match.typeArgs, .instance = nullptr}, move(match.args), /*o_catch*/nullopt);
+                return Call(match.funcDecl, match.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_ExplicitInstance>)
             {
@@ -284,19 +279,19 @@ struct CallableTranslator
                 if (match.funcDecl->GetThisKind() == RThisKind::None)
                     return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
                 
-                return Call(copyStrategy, MCallable_StructFunc{.decl = match.funcDecl, .typeArgs = match.typeArgs, .instance = instanceKind.mInstLoc}, move(match.args), /*o_catch*/nullopt);
+                return Call(match.funcDecl, match.typeArgs, /*o_instance*/instanceKind.mInstLoc, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_Implicit>) // F 로 인스턴스를 명시적으로 정하지 않았다면 
             {
                 if (match.funcDecl->GetThisKind() == RThisKind::None) // 정적함수이면 인스턴스에 null
                 {   
                     // TODO: [41] try catch 구현
-                    return Call(copyStrategy, MCallable_StructFunc{.decl = match.funcDecl, .typeArgs = match.typeArgs, .instance = nullptr}, move(match.args), /*o_catch*/nullopt);
+                    return Call(match.funcDecl, match.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);
                 }
                 else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
                 {
                     // TODO: [41] try catch 구현
-                    return Call(copyStrategy, MCallable_StructFunc{.decl = match.funcDecl, .typeArgs = match.typeArgs, .instance = contexts.funcContext->MakeThisLoc()}, move(match.args), /*o_catch*/nullopt);
+                    return Call(match.funcDecl, match.typeArgs, /*o_instance*/contexts.funcContext->MakeThisLoc(), move(match.args), /*o_catch*/nullopt);
                 }
             }
             else static_assert(false);

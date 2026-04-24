@@ -195,5 +195,6 @@
     <ClCompile Include="RTypeDecl.cpp">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
+    <ClCompile Include="Public\RSymbol\RFuncReturn.cpp" />
   </ItemGroup>
 </Project>

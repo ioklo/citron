@@ -22,6 +22,7 @@
     <ClInclude Include="QAbi_Citron_X64.h" />
     <ClInclude Include="QBodyContext.h" />
     <ClInclude Include="QFuncInfo.h" />
+    <ClInclude Include="QIntrinsicInfo.h" />
     <ClInclude Include="QJumpBlockInfo.h" />
     <ClInclude Include="QLazyBlock.h" />
     <ClInclude Include="QMisc.h" />
@@ -39,7 +40,9 @@
     <ClCompile Include="QAbi_Citron_X64.cpp" />
     <ClCompile Include="QBodyContext.cpp" />
     <ClCompile Include="QEmitState.cpp" />
+    <ClCompile Include="QIntrinsicInfo.cpp" />
     <ClCompile Include="QLazyBlock.cpp" />
+    <ClCompile Include="QTranslationContexts.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">

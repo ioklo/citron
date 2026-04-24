@@ -37,13 +37,29 @@ struct InstructionPointer
     }
 };
 
+struct Slot
+{
+    void* ptr;
+
+    template<typename T>
+    T& Get() { return *(T*)ptr; }
+
+    template<typename T>
+    void Set(T& t) { *(T*)ptr = t; }
+
+    template<typename T>
+    void Set(T&& t) { *(T*)ptr = std::forward<T>(t); }
+
+    void* GetAddr() { return ptr; }
+};
+
 struct StackFrame
 {
     QFuncBody* qFuncBody;
     InstructionPointer ip;
-    std::vector<void*> slots; // 스택에 저장하는 공간
+    std::vector<Slot> slots; // 스택에 저장하는 공간, stackPointer위의 어디를 가리킨다
     byte* stackPointer;
-    void* retSlot; // 리턴용 저장공간
+    Slot retSlot; // 리턴용 저장공간
 
     StackFrame()
         : qFuncBody{nullptr}, ip{}, stackPointer{nullptr}, retSlot{nullptr}
@@ -83,97 +99,87 @@ size_t GetSize(RType* type, RFactory& rFactory)
 // GetLoc은 value자체의 메모리 상의 위치를 
 // GetPtr은 value가 갖고 있는 값이 ptr인 경우에 그 값을 반환
 
-// Ptr타입의 값
-void* GetPtr(QArg_Input& src, Environment& env)
+// QArg_Addr
+// QArg_Value
+// QArg_CallArg
+// QArg_Dest
+// size_t 
+
+template<typename T> requires std::is_pointer_v<T>
+T Get(QArg_Addr& arg, Environment& env)
 {
-    return visit([&env](auto& src) -> void* {
-        using T = remove_cvref_t<decltype(src)>;
-        if constexpr (same_as<T, QArg_Slot>) return *(void**)env.curFrame->slots[src.index];
-        else throw NotImplementedException{};
-    }, src);
+    return visit([&env](auto& arg) -> T {
+        using U = remove_cvref_t<decltype(arg)>;
+        if constexpr (same_as<U, QArg_Addr_OfSlot>) return (T)env.curFrame->slots[arg.index].GetAddr();
+        else if constexpr (same_as<U, QArg_Addr_PtrSlot>) return env.curFrame->slots[arg.index].Get<T>();
+        else static_assert(false);
+    }, arg);
 }
 
-void* GetPtr(QArg_Slot& slot, Environment& env)
+template<typename T>
+T Get(QArg_Value& arg, Environment& env)
 {
-    return *(void**)env.curFrame->slots[slot.index];
-}
-
-// slot이 가리키고 있는 값의 위치
-void* GetLoc(QArg_Slot& slot, Environment& env)
-{
-    return env.curFrame->slots[slot.index];
-}
-
-// inplace 값의 위치를 나타내는
-//void* GetLoc(QArg& arg, Environment& env)
-//{
-//    return visit(overloaded{
-//        [&env](QArg_StackSlot& slot) { return env.slots[slot.index]; },
-//        [&env](QArg_ConstBool& cb) { return (void*)&cb.value; },
-//        [&env](QArg_ConstInt32& ci) { return (void*)&ci.value; },
-//        [](auto&&) -> void* { throw NotImplementedException{}; }
-//    }, arg);
-//}
-
-int GetInt(QArg_Input& arg, Environment& env)
-{
-    return visit([&env](auto& arg) -> int {
-        using T = remove_cvref_t<decltype(arg)>;
-        if constexpr (same_as<T, QArg_ConstInt32>) return arg.value;
-        else if constexpr (same_as<T, QArg_Slot>) return *(int*)env.curFrame->slots[arg.index];
+    return visit([&env](auto& arg) -> T {
+        using U = remove_cvref_t<decltype(arg)>;
+        if constexpr (same_as<U, QArg_Value_ConstInt32>)
+        {
+            if constexpr (same_as<T, int>) return arg.value;
+            else throw RuntimeFatalException{};
+        }
+        else if constexpr (same_as<U, QArg_Value_ConstBool>)
+        {
+            if constexpr (same_as<T, bool>) return arg.value;
+            else throw RuntimeFatalException{};
+        }
+        else if constexpr (same_as<U, QArg_Value_Slot>) return env.curFrame->slots[arg.index].Get<T>();
         else throw NotImplementedException{};
     }, arg);
 }
 
-void SetInt(QArg_Slot& slot, int v, Environment& env)
+template<typename T>
+T Get(QArg_CallArg& arg, Environment& env)
 {
-    *(int*)env.curFrame->slots[slot.index] = v;
-}
-
-bool GetBool(QArg_Input& arg, Environment& env)
-{
-    return visit([&env](auto& arg) -> bool {
-        using T = remove_cvref_t<decltype(arg)>;
-        if constexpr (same_as<T, QArg_ConstBool>) return arg.value;
-        else if constexpr (same_as<T, QArg_Slot>) return *(bool*)env.curFrame->slots[arg.index];
-        else throw NotImplementedException{};
+    return visit([&env](auto& arg) -> T {
+        using U = remove_cvref_t<decltype(arg)>;
+        if constexpr (same_as<U, QArg_CallArg_ConstInt32>)
+        {
+            if constexpr (same_as<T, int>) return arg.value;
+            else throw RuntimeFatalException{};
+        }
+        else if constexpr (same_as<U, QArg_CallArg_ConstBool>)
+        {
+            if constexpr (same_as<T, bool>) return arg.value;
+            else throw RuntimeFatalException{};
+        }
+        else if constexpr (same_as<U, QArg_CallArg_Slot>)
+            return env.curFrame->slots[arg.index].Get<T>();
+        else if constexpr (same_as<U, QArg_CallArg_AddrOfSlot>)
+        {
+            if constexpr (is_pointer_v<T>)
+                return (T)env.curFrame->slots[arg.index].GetAddr();
+            else
+                throw RuntimeFatalException{};
+        }
+        else static_assert(false);
     }, arg);
 }
 
-bool GetBool(QArg_Slot& slot, Environment& env)
+template<typename T>
+T Get(size_t index, Environment& env)
 {
-    return *(bool*)env.curFrame->slots[slot.index];
+    return env.curFrame->slots[index].Get<T>();
 }
 
-//
-void SetBool(QArg_Slot& slot, bool v, Environment& env)
+template<typename T, typename U>
+void Set(QArg_Dest& dest, U&& value, Environment& env)
 {
-    *(bool*)env.curFrame->slots[slot.index] = v;
+    env.curFrame->slots[dest.index].Set(std::forward<U>(value));
 }
 
-void SetString(QArg_Slot& slot, string&& s, Environment& env)
-{   
-    *(string*)env.curFrame->slots[slot.index] = move(s);
+Slot GetSlot(QArg_Dest& dest, Environment& env)
+{
+    return env.curFrame->slots[dest.index];
 }
-
-//
-//RawValue GetRawValue(QValue& value, Environment& env)
-//{
-//    return visit<RawValue>(overloaded{
-//        [&env](QValue_Named& named) { return env.namedValues[named.name]; },
-//        [&env](QValue_ConstBool& cb) { return RawValue_Bool{cb.value}; },
-//        [&env](QValue_ConstInteger& ci) { return RawValue_Int{ci.value}; },
-//        [&env](QValue_String& s) { throw NotImplementedException{}; return RawValue_Int{0}; }
-//    }, value);
-//}
-//
-//void SetRawValue(QValue& value, RawValue& rawValue, Environment& env)
-//{
-//    return visit(overloaded{
-//        [&env, &rawValue](QValue_Named& named) { env.namedValues[named.name] = rawValue; },
-//        [](auto&) { throw NotImplementedException{}; }
-//    }, value);
-//}
 
 void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 {
@@ -181,32 +187,21 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
 
     switch (inst.kind)
     {
-    case Command_Items:
-    {
-        for (auto& arg : inst.args)
-        {
-            // string이라면, 크기가 8을 넘으므로
-            visit([&env](auto& arg) {
-
-                using T = remove_cvref_t<decltype(arg)>;
-
-                if constexpr (same_as<T, QArg_Slot>)
-                {
-                    auto* s = (string*)GetPtr(arg, env);
-                    env.cmdHandler->Execute(*s);
-                }
-                else throw NotImplementedException{};
-            }, arg);
-        }
+    case Command_Item:
+    {   
+        auto* s = Get<string*>(inst.args[0], env);
+        env.cmdHandler->Execute(*s);
         return;
     }
 
     case Alloc_Int: throw NotImplementedException{};
-    case Memcpy_Ptr_Ptr_Int:
+
+    // 여기가 GetPtr인지
+    case Memcpy_Void_Ptr_Ptr_Int:
     {
-        auto* dest = GetPtr(inst.args[0], env);
-        auto* src = GetPtr(inst.args[1], env);
-        auto size = GetInt(inst.args[2], env);
+        auto* dest = Get<void*>(inst.args[0], env);
+        auto* src = Get<void*>(inst.args[1], env);
+        auto size = Get<int>(inst.args[2], env);
         memcpy(dest, src, size);
         return;
     }
@@ -215,250 +210,254 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     case GetIterator_ListPtr_ListIterator: throw NotImplementedException{};
     case LogicalNot_Bool_Bool:
     {
-        auto b = GetBool(inst.args[0], env);
-        SetBool(*inst.o_dest, !b, env);
+        auto b = Get<bool>(inst.args[0], env);
+        Set<bool>(*inst.o_dest, !b, env);
         return;
     }
 
     case UnaryMinus_Int_Int:
     {
-        auto i = GetInt(inst.args[0], env);
-        SetInt(*inst.o_dest, -i, env);
+        auto i = Get<int>(inst.args[0], env);
+        Set<int>(*inst.o_dest, -i, env);
         return;
     }
 
-    case ToString_Bool_String:
+    case ToString_String_Bool:
     {
-        auto b = GetBool(inst.args[0], env);
-        SetString(*inst.o_dest, format("{}", b), env);
+        string* ret = Get<string*>(inst.args[0], env);
+        auto b = Get<bool>(inst.args[1], env);
+        *ret = format("{}", b);
         return;
     }
 
-    case ToString_Int_String:
+    case ToString_String_Int:
     {
-        auto i = GetInt(inst.args[0], env);
-        SetString(*inst.o_dest, format("{}", i), env);
+        string* ret = Get<string*>(inst.args[0], env);
+        auto i = Get<int>(inst.args[1], env);
+        *ret = format("{}", i);
         return;
     }
 
-    case PrefixInc_Int_Int:
+    case PrefixInc_Int_IntRef:
     {
         // ++i
 
         // 인자는 location
-        int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.o_dest, ++(*ptr), env);
+        int* ptr = Get<int*>(inst.args[0], env);
+        Set<int>(*inst.o_dest, ++(*ptr), env);
         return;
     }
 
-    case PrefixDec_Int_Int:
+    case PrefixDec_Int_IntRef:
     {
         // --i
 
         // 인자는 location
-        int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.o_dest, --(*ptr), env);
+        int* ptr = Get<int*>(inst.args[0], env);
+        Set<int>(*inst.o_dest, --(*ptr), env);
         return;
     }
-    case PostfixInc_Int_Int:
+
+    case PostfixInc_Int_IntRef:
     {
         // i++
 
         // 인자는 location
-        int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.o_dest, (*ptr)++, env);
+        int* ptr = Get<int*>(inst.args[0], env);
+        Set<int>(*inst.o_dest, (*ptr)++, env);
         return;
     }
-    case PostfixDec_Int_Int:
+    case PostfixDec_Int_IntRef:
     {
         // i--
         // 인자는 location
-        int* ptr = (int*)GetPtr(inst.args[0], env);
-        SetInt(*inst.o_dest, (*ptr)--, env);
+        int* ptr = Get<int*>(inst.args[0], env);
+        Set<int>(*inst.o_dest, (*ptr)--, env);
         return;
     }
 
     case Multiply_Int_Int_Int:
     {
-        auto i1 = GetInt(inst.args[0], env);
-        auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.o_dest, i1 * i2, env);
+        auto i1 = Get<int>(inst.args[0], env);
+        auto i2 = Get<int>(inst.args[1], env);
+        Set<int>(*inst.o_dest, i1 * i2, env);
         return;
     }
     case Divide_Int_Int_Int:
     {
-        auto i1 = GetInt(inst.args[0], env);
-        auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.o_dest, i1 / i2, env);
+        auto i1 = Get<int>(inst.args[0], env);
+        auto i2 = Get<int>(inst.args[1], env);
+        Set<int>(*inst.o_dest, i1 / i2, env);
         return;
     }
 
     case Modulo_Int_Int_Int:
     {
-        auto i1 = GetInt(inst.args[0], env);
-        auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.o_dest, i1 % i2, env);
-        return;
-    }
-    case Add_Int_Int_Int:
-    {
-        auto i1 = GetInt(inst.args[0], env);
-        auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.o_dest, i1 + i2, env);
+        auto i1 = Get<int>(inst.args[0], env);
+        auto i2 = Get<int>(inst.args[1], env);
+        Set<int>(*inst.o_dest, i1 % i2, env);
         return;
     }
 
-    case Add_StringPtr_StringPtr_String:
+    case Add_Int_Int_Int:
     {
-        auto* s1 = (string*)GetPtr(inst.args[0], env);
-        auto* s2 = (string*)GetPtr(inst.args[1], env);
-        SetString(*inst.o_dest, *s1 + *s2, env);
+        auto i1 = Get<int>(inst.args[0], env);
+        auto i2 = Get<int>(inst.args[1], env);
+        Set<int>(*inst.o_dest, i1 + i2, env);
+        return;
+    }
+
+    case Add_String_StringInRef_StringInRef:
+    {
+        auto* ret = Get<string*>(inst.args[0], env);
+        auto* s1 = Get<string*>(inst.args[1], env);
+        auto* s2 = Get<string*>(inst.args[2], env);
+        *ret = *s1 + *s2;
         return;
     }
 
     case Subtract_Int_Int_Int:
     {
-        auto i1 = GetInt(inst.args[0], env);
-        auto i2 = GetInt(inst.args[1], env);
-        SetInt(*inst.o_dest, i1 - i2, env);
+        auto i1 = Get<int>(inst.args[0], env);
+        auto i2 = Get<int>(inst.args[1], env);
+        Set<int>(*inst.o_dest, i1 - i2, env);
         return;
     }
 
-    case LessThan_Int_Int_Bool:
+    case LessThan_Bool_Int_Int:
     {
         // const integer가 있으면,
-        auto i1 = GetInt(inst.args[0], env);
-        auto i2 = GetInt(inst.args[1], env);
+        auto i1 = Get<int>(inst.args[0], env);
+        auto i2 = Get<int>(inst.args[1], env);
 
-        SetBool(*inst.o_dest, i1 < i2, env);
+        Set<bool>(*inst.o_dest, i1 < i2, env);
         return;
     }
 
-    case LessThan_StringPtr_StringPtr_Bool:
+    case LessThan_Bool_StringInRef_StringInRef:
     {
-        auto* s1 = (string*)GetPtr(inst.args[0], env);
-        auto* s2 = (string*)GetPtr(inst.args[1], env);
+        auto* s1 = Get<string*>(inst.args[0], env);
+        auto* s2 = Get<string*>(inst.args[1], env);
 
-        SetBool(*inst.o_dest, *s1 < *s2, env);
+        Set<bool>(*inst.o_dest, *s1 < *s2, env);
         return;
     }
 
-    case GreaterThan_Int_Int_Bool:
-    {
-        // const integer가 있으면,
-        auto i1 = GetInt(inst.args[0], env);
-        auto i2 = GetInt(inst.args[1], env);
-
-        SetBool(*inst.o_dest, i1 > i2, env);
-        return;
-    }
-
-    case GreaterThan_StringPtr_StringPtr_Bool:
-    {
-        auto* s1 = (string*)GetPtr(inst.args[0], env);
-        auto* s2 = (string*)GetPtr(inst.args[1], env);
-
-        SetBool(*inst.o_dest, s1 > s2, env);
-        return;
-    }
-
-    case LessThanOrEqual_Int_Int_Bool:
-    {
-        auto i1 = GetInt(inst.args[0], env);
-        auto i2 = GetInt(inst.args[1], env);
-        SetBool(*inst.o_dest, i1 <= i2, env);
-        return;
-    }
-    case LessThanOrEqual_StringPtr_StringPtr_Bool:
-    {
-        auto* s1 = (string*)GetPtr(inst.args[0], env);
-        auto* s2 = (string*)GetPtr(inst.args[1], env);
-
-        SetBool(*inst.o_dest, *s1 <= *s2, env);
-        return;
-    }
-
-    case GreaterThanOrEqual_Int_Int_Bool:
-    {
-        auto i1 = GetInt(inst.args[0], env);
-        auto i2 = GetInt(inst.args[1], env);
-        SetBool(*inst.o_dest, i1 >= i2, env);
-        return;
-    }
-
-    case GreaterThanOrEqual_StringPtr_StringPtr_Bool:
-    {
-        auto* s1 = (string*)GetPtr(inst.args[0], env);
-        auto* s2 = (string*)GetPtr(inst.args[1], env);
-
-        SetBool(*inst.o_dest, *s1 >= *s2, env);
-        return;
-    }
-
-    case Equal_Int_Int_Bool:
+    case GreaterThan_Bool_Int_Int:
     {
         // const integer가 있으면,
-        auto i1 = GetInt(inst.args[0], env);
-        auto i2 = GetInt(inst.args[1], env);
+        auto i1 = Get<int>(inst.args[0], env);
+        auto i2 = Get<int>(inst.args[1], env);
+        Set<bool>(*inst.o_dest, i1 > i2, env);
+        return;
+    }
 
-        SetBool(*inst.o_dest, i1 == i2, env);
+    case GreaterThan_Bool_StringInRef_StringInRef:
+    {
+        auto* s1 = Get<string*>(inst.args[0], env);
+        auto* s2 = Get<string*>(inst.args[1], env);
+
+        Set<bool>(*inst.o_dest, *s1 > *s2, env);
+        return;
+    }
+
+    case LessThanOrEqual_Bool_Int_Int:
+    {
+        auto i1 = Get<int>(inst.args[0], env);
+        auto i2 = Get<int>(inst.args[1], env);
+        Set<bool>(*inst.o_dest, i1 <= i2, env);
+        return;
+    }
+    case LessThanOrEqual_Bool_StringInRef_StringInRef:
+    {
+        auto* s1 = Get<string*>(inst.args[0], env);
+        auto* s2 = Get<string*>(inst.args[1], env);
+
+        Set<bool>(*inst.o_dest, *s1 <= *s2, env);
+        return;
+    }
+
+    case GreaterThanOrEqual_Bool_Int_Int:
+    {
+        auto i1 = Get<int>(inst.args[0], env);
+        auto i2 = Get<int>(inst.args[1], env);
+        Set<bool>(*inst.o_dest, i1 >= i2, env);
+        return;
+    }
+
+    case GreaterThanOrEqual_Bool_StringInRef_StringInRef:
+    {
+        auto* s1 = Get<string*>(inst.args[0], env);
+        auto* s2 = Get<string*>(inst.args[1], env);
+
+        Set<bool>(*inst.o_dest, *s1 >= *s2, env);
+        return;
+    }
+
+    case Equal_Bool_Int_Int:
+    {
+        // const integer가 있으면,
+        auto i1 = Get<int>(inst.args[0], env);
+        auto i2 = Get<int>(inst.args[1], env);
+
+        Set<bool>(*inst.o_dest, i1 == i2, env);
         return;
     }
 
     case Equal_Bool_Bool_Bool:
     {
-        auto b1 = GetBool(inst.args[0], env);
-        auto b2 = GetBool(inst.args[1], env);
+        auto b1 = Get<bool>(inst.args[0], env);
+        auto b2 = Get<bool>(inst.args[1], env);
 
-        SetBool(*inst.o_dest, b1 == b2, env);
+        Set<bool>(*inst.o_dest, b1 == b2, env);
         return;
     }
 
-    case Equal_StringPtr_StringPtr_Bool:
+    case Equal_Bool_StringInRef_StringInRef:
     {
-        auto* s1 = (string*)GetPtr(inst.args[0], env);
-        auto* s2 = (string*)GetPtr(inst.args[1], env);
-        SetBool(*inst.o_dest, *s1 == *s2, env);
+        auto* s1 = Get<string*>(inst.args[0], env);
+        auto* s2 = Get<string*>(inst.args[1], env);
+        Set<bool>(*inst.o_dest, *s1 == *s2, env);
         return;
     }
 
-    case QInst_IntrinsicKind::CopyCtor_StringPtr_StringPtr_Void:
+    case QInst_IntrinsicKind::CopyCtor_Void_StringRef_StringInRef:
     {
-        auto* thisPtr = GetPtr(inst.args[0], env);
-        string* otherPtr = (string*)GetPtr(inst.args[1], env);
+        auto* thisPtr = Get<string*>(inst.args[0], env);
+        string* otherPtr = Get<string*>(inst.args[1], env);
 
         new (thisPtr) string{*otherPtr};
         return;
     }
 
-    case QInst_IntrinsicKind::MoveCtor_StringPtr_StringPtr_Void:
+    case QInst_IntrinsicKind::MoveCtor_Void_StringRef_StringMoveRef:
     {
-        auto* thisPtr = GetPtr(inst.args[0], env);
-        string* otherPtr = (string*)GetPtr(inst.args[1], env);
+        auto* thisPtr = Get<string*>(inst.args[0], env);
+        string* otherPtr = Get<string*>(inst.args[1], env);
 
         new (thisPtr) string{std::move(*otherPtr)};
         return;
     }
     
-    case QInst_IntrinsicKind::Dtor_StringPtr_Void:
+    case QInst_IntrinsicKind::Dtor_Void_StringRef:
     {
-        string* thisPtr = (string*)GetPtr(inst.args[0], env);
+        string* thisPtr = Get<string*>(inst.args[0], env);
         (*thisPtr).~string();
         return;
     }
 
-    case QInst_IntrinsicKind::CopyAssign_StringPtr_StringPtr_Void:
+    case QInst_IntrinsicKind::CopyAssign_Void_StringRef_StringInRef:
     {
-        string* destPtr = (string*)GetPtr(inst.args[0], env);
-        string* srcPtr = (string*)GetPtr(inst.args[1], env);
+        string* destPtr = Get<string*>(inst.args[0], env);
+        string* srcPtr = Get<string*>(inst.args[1], env);
         *destPtr = *srcPtr;
         return;
     }
 
-    case QInst_IntrinsicKind::MoveAssign_StringPtr_StringPtr_Void:
+    case QInst_IntrinsicKind::MoveAssign_Void_StringRef_StringMoveRef:
     {
-        string* destPtr = (string*)GetPtr(inst.args[0], env);
-        string* srcPtr = (string*)GetPtr(inst.args[1], env);
+        string* destPtr = Get<string*>(inst.args[0], env);
+        string* srcPtr = Get<string*>(inst.args[1], env);
         *destPtr = std::move(*srcPtr);
         return;
     }
@@ -467,7 +466,7 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
     unreachable();
 }
 
-StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<QArg_Slot> o_dest, span<QArg_Input> args, RFactory& rFactory)
+StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<QArg_Dest> o_dest, span<QArg_CallArg> args, RFactory& rFactory)
 {
     StackFrame frame;
 
@@ -488,17 +487,21 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
         {
             visit([i, &frame, &curFrame](auto& arg) {
                 using T = remove_cvref_t<decltype(arg)>;
-                if constexpr (same_as<T, QArg_Slot>)
+                if constexpr (same_as<T, QArg_CallArg_Slot>)
                 {
                     frame.slots[i] = curFrame.slots[arg.index];
                 }
-                else if constexpr (same_as<T, QArg_ConstBool>)
+                else if constexpr (same_as<T, QArg_CallArg_ConstBool>)
                 {
-                    *(bool*)frame.slots[i] = arg.value;
+                    frame.slots[i].Set<bool>(arg.value);
                 }
-                else if constexpr (same_as<T, QArg_ConstInt32>)
+                else if constexpr (same_as<T, QArg_CallArg_ConstInt32>)
                 {
-                    *(int*)frame.slots[i] = arg.value;
+                    frame.slots[i].Set<int>(arg.value);
+                }
+                else if constexpr (same_as<T, QArg_CallArg_AddrOfSlot>)
+                {
+                    frame.slots[i].Set<void*>(curFrame.slots[arg.index].GetAddr());
                 }
                 else static_assert(false);
             }, args[*slot.o_argIndex]);
@@ -508,11 +511,11 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
         {
             size_t size = GetSize(slot.type, rFactory);
             frame.stackPointer -= size;
-            frame.slots[i] = frame.stackPointer;
+            frame.slots[i].ptr = frame.stackPointer;
 
             if (slot.type == rFactory.MakeStringType())
             {
-                new (frame.slots[i]) string{};
+                new (frame.slots[i].ptr) string{};
             }
         }
     }
@@ -529,7 +532,7 @@ struct Evaluator
 
     bool Eval(QInst_Ctor_String& inst)
     {
-        auto* buf = GetPtr(inst.thisSlot, env);
+        auto* buf = Get<string*>(inst._this, env);
         new (buf) string{inst.text};
         return true;
     }
@@ -539,33 +542,34 @@ struct Evaluator
         // dest <- *src;
 
         // src는 포인터 값을 갖고 있다
-        void* dest = GetLoc(inst.dest, env);
-        void* src = GetPtr(inst.src, env);
+               
+        auto destSlot = GetSlot(inst.dest, env);
+        void* src = Get<void*>(inst.src.index, env);
         size_t size = GetSize(inst.type, *rFactory);
 
-        memcpy(dest, src, size);
+        memcpy(destSlot.GetAddr(), src, size);
         return true;
     }
 
     bool Eval(QInst_Store& inst)
     {
         // *dest = value;
-        void* dest = GetPtr(inst.dest, env);
+        void* dest = Get<void*>(inst.dest.index, env);
 
         visit([this, dest, type = inst.type](auto& src)
         {
             using T = remove_cvref_t<decltype(src)>;
-            if constexpr (same_as<T, QArg_ConstBool>)
+            if constexpr (same_as<T, QArg_Value_ConstBool>)
             {
                 *(bool*)dest = src.value;
             }
-            else if constexpr (same_as < T, QArg_ConstInt32>)
+            else if constexpr (same_as <T, QArg_Value_ConstInt32>)
             {
                 *(int*)dest = src.value;
             }
-            else if constexpr (same_as<T, QArg_Slot>)
+            else if constexpr (same_as<T, QArg_Value_Slot>)
             {
-                void* pSrc = GetLoc(src, env);
+                void* pSrc = env.curFrame->slots[src.index].GetAddr();
                 size_t size = GetSize(type, *rFactory);
                 memcpy(dest, pSrc, size);
             }
@@ -576,8 +580,9 @@ struct Evaluator
     }
 
     bool Eval(QInst_AddrOf& inst)
-    {   
-        *(void**)env.curFrame->slots[inst.dest.index] = env.curFrame->slots[inst.slot.index];
+    {
+        void* addr = env.curFrame->slots[inst.slot].GetAddr();
+        Set<void*>(inst.dest, addr, env);
         return true;
     }
 
@@ -592,22 +597,21 @@ struct Evaluator
         // %r2 = %r1: memcpy(&regValues[r1.index], &regValues[r2.index], size) // void* 복사, size는 8보다 작을 것이다
         // %s2 = %s1: memcpy(slots[s1.index], slots[s2.index], size)
 
-        void* dest = GetLoc(inst.dest, env);
+        void* dest = env.curFrame->slots[inst.dest.index].ptr;
 
-        visit([this, dest, type = inst.type](auto& src)
-        {
+        visit([this, dest, type = inst.type](auto& src) {
             using T = remove_cvref_t<decltype(src)>;
-            if constexpr (same_as<T, QArg_ConstBool>)
+            if constexpr (same_as<T, QArg_Value_ConstBool>)
             {
                 *(bool*)dest = src.value;
             }
-            else if constexpr (same_as < T, QArg_ConstInt32>)
+            else if constexpr (same_as < T, QArg_Value_ConstInt32>)
             {
                 *(int*)dest = src.value;
             }
-            else if constexpr (same_as<T, QArg_Slot>)
+            else if constexpr (same_as<T, QArg_Value_Slot>)
             {
-                void* pSrc = GetLoc(src, env);
+                void* pSrc = env.curFrame->slots[src.index].ptr;
                 size_t size = GetSize(type, *rFactory);
                 memcpy(dest, pSrc, size);
             }
@@ -648,19 +652,19 @@ struct Evaluator
             {
                 using T = remove_cvref_t<decltype(value)>;
 
-                if constexpr (same_as<T, QArg_ConstInt32>)
+                if constexpr (same_as<T, QArg_Value_ConstInt32>)
                 {   
-                    *(int*)env.curFrame->retSlot = value.value;
+                    env.curFrame->retSlot.Set<int>(value.value);
                 }
-                else if constexpr (same_as<T, QArg_ConstBool>)
+                else if constexpr (same_as<T, QArg_Value_ConstBool>)
                 {
-                    *(bool*)env.curFrame->retSlot = value.value;
+                    env.curFrame->retSlot.Set<bool>(value.value);
                 }
-                else if constexpr (same_as<T, QArg_Slot>)
+                else if constexpr (same_as<T, QArg_Value_Slot>)
                 {
-                    void* valueLoc = GetLoc(value, env);
+                    void* valueLoc = env.curFrame->slots[value.index].ptr;
                     size_t size = GetSize(retValue.type, *rFactory);
-                    memcpy(env.curFrame->retSlot, valueLoc, size);
+                    memcpy(env.curFrame->retSlot.ptr, valueLoc, size);
                 }
             }, inst.o_value->value);
         }
@@ -673,7 +677,7 @@ struct Evaluator
 
     bool Eval(QInst_CondJump& condJump)
     {
-        bool cond = GetBool(condJump.cond, env);
+        bool cond = Get<bool>(condJump.cond.index, env);
 
         if (cond)
             env.curFrame->ip = InstructionPointer{condJump.trueBlock, 0};
@@ -723,7 +727,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
         auto& slot = i->slotInfos[j];
         size_t size = GetSize(slot.type, *rFactory);
         env.curFrame->stackPointer -= size;
-        env.curFrame->slots[j] = env.curFrame->stackPointer;
+        env.curFrame->slots[j].ptr = env.curFrame->stackPointer;
     }
 
     while(true)

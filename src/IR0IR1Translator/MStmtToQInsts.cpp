@@ -60,8 +60,7 @@ struct MStmtQInstsTranslator
     }
 
     ResultType HandleCommand(MTopLevel_Command& topLevelCommand)
-    {
-        vector<QArg_Input> values;
+    {   
         for (auto& mCommand : topLevelCommand.commands)
         {
             // Read니까. 이미 있는 slot을 돌려 받는다.
@@ -69,17 +68,15 @@ struct MStmtQInstsTranslator
             RETURN_ON_ERROR_OR_DONE(e_s_readResult);
 
             // NBC이기 때문에 (string) 인자로 넘겨줄 때는 pointer가 되어야 한다
-            visit([this, &values](auto& readResult){
+            visit([this](auto& readResult){
                 using T = remove_cvref_t<decltype(readResult)>;
                 if constexpr (same_as<T, QReadResult_Slot>)
-                {
-                    size_t ptrSlotIndex = contexts.bodyContext.NewSlot(contexts.bodyContext.GetPtrType());
-                    contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Slot{ptrSlotIndex}, QArg_Slot{readResult.slotIndex}});
-                    values.push_back(QArg_Slot{ptrSlotIndex});
+                {   
+                    contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Item, nullopt, {QArg_CallArg_AddrOfSlot{readResult.slotIndex}});
                 }
                 else if constexpr (same_as<T, QReadResult_Ptr>)
                 {
-                    values.push_back(QArg_Slot{readResult.slotIndex});
+                    contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Item, nullopt, {QArg_CallArg_Slot{readResult.slotIndex}});
                 }
                 else if constexpr (same_as<T, QReadResult_ConstInt32>) throw RuntimeFatalException{};
                 else if constexpr (same_as<T, QReadResult_ConstBool>) throw RuntimeFatalException{};
@@ -87,7 +84,7 @@ struct MStmtQInstsTranslator
             }, **e_s_readResult);
         }
 
-        contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Items, nullopt, move(values));
+        
         return QEmitState_Ready{};
     }
     
@@ -423,17 +420,10 @@ struct MStmtQInstsTranslator
 
     ResultType HandleCall(MTopLevel_Call& call)
     {
-        vector<QArg_Input> args;
+        auto e_s_o_retSlotIndex = Citron::HandleCall(call.callable.decl, call.callable.typeArgs, /*o_destSlotIndex*/nullopt, call.callable.o_instance, call.args, contexts);
+        RETURN_ON_ERROR_OR_DONE(e_s_o_retSlotIndex);
 
-        // 1. 인자를 args에 넣는다
-        auto e_s_args = TranslateMArgumentsToQInsts(call.args, contexts);
-        RETURN_ON_ERROR_OR_DONE(e_s_args);
-
-        // 2. Emit처리
-        auto* rFuncDecl = GetRFuncDecl(call.callable);
-        auto* retType = GetType(call.callable);
-        contexts.bodyContext.EmitInst(QInst_Call{rFuncDecl, nullopt, move(**e_s_args)});
-
+        assert(!**e_s_o_retSlotIndex); // void 함수이므로, slot이 나와서는 안 된다
         return QEmitState_Ready{};
     }
 
@@ -452,17 +442,17 @@ struct MStmtQInstsTranslator
 
         auto e_s_dest = TranslateMLocToQInsts(assign.dest, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_dest);
-        size_t destPtrSlotIndex = MakePtrSlot(**e_s_dest, contexts);
 
-        return visit([this, destPtrSlotIndex](auto& assignKind) -> ResultType {
+        auto destArg = MakeAddrCallArg(**e_s_dest, contexts);
+        return visit([this, destArg](auto& assignKind) -> ResultType {
             using T = remove_cvref_t<decltype(assignKind)>;
             if constexpr (same_as<T, MStmt_AssignKind_Copy>)
             {
                 auto e_s_src = TranslateMLocToQInsts(assignKind.src.loc, contexts);
                 RETURN_ON_ERROR_OR_DONE(e_s_src);
 
-                size_t srcPtrSlotIndex = MakePtrSlot(**e_s_src, contexts);
-                contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::CopyAssign_StringPtr_StringPtr_Void, nullopt, {QArg_Slot{destPtrSlotIndex}, QArg_Slot{srcPtrSlotIndex}});
+                auto srcArg = MakeAddrCallArg(**e_s_src, contexts);
+                contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::CopyAssign_Void_StringRef_StringInRef, nullopt, {destArg, srcArg});
 
                 return QEmitState_Ready{};
             }
