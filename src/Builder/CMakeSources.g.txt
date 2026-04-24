@@ -3,7 +3,7 @@ target_sources(Builder
         Builder.cpp
 
     PRIVATE FILE_SET headers TYPE HEADERS FILES
-        Public/Builder/Builder.h
-        Public/Builder/BuilderConfig.h
-        Public/Builder/IFileSystem.h
+        Public\Builder\Builder.h
+        Public\Builder\BuilderConfig.h
+        Public\Builder\IFileSystem.h
 )

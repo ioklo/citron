@@ -3,6 +3,6 @@ target_sources(QEvaluator
         QEvaluation.cpp
 
     PRIVATE FILE_SET headers TYPE HEADERS FILES
-        Public/QEvaluator/QEvaluation.h
-        Public/QEvaluator/QEvaluatorConfig.h
+        Public\QEvaluator\QEvaluation.h
+        Public\QEvaluator\QEvaluatorConfig.h
 )

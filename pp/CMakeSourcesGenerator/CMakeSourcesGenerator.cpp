@@ -5,6 +5,7 @@
 #include <vector>
 #include <format>
 #include <algorithm>
+#include <string>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -136,7 +137,7 @@ int main(int argc, char* argv[])
             continue;
         }
 
-        string projName = projPath.filename();
+        string projName = projPath.filename().string();
         cout << format("[{}]", projName) << endl;
 
         vector<fs::path> cppPaths, hPaths;

@@ -2,18 +2,34 @@ target_sources(IR0IR1Translator
     PRIVATE
         CommonQInstsTranslation.cpp
         IR0IR1Translator.cpp
-        MExpQInstsTranslation.cpp
-        MLocQInstsTranslation.cpp
-        MStmtQInstsTranslation.cpp
+        MCreateToQInsts.cpp
+        MLocToQInsts.cpp
+        MReadToQInsts.cpp
+        MStmtToQInsts.cpp
+        QAbi_Citron_X64.cpp
         QBodyContext.cpp
+        QEmitState.cpp
+        QIntrinsicInfo.cpp
+        QLazyBlock.cpp
+        QTranslationContexts.cpp
 
     PRIVATE FILE_SET headers TYPE HEADERS FILES
         CommonQInstsTranslation.h
-        MExpQInstsTranslation.h
-        MLocQInstsTranslation.h
-        MStmtQInstsTranslation.h
+        MCreateToQInsts.h
+        MLocToQInsts.h
+        MReadToQInsts.h
+        MStmtToQInsts.h
+        QAbi.h
+        QAbi_Citron_X64.h
         QBodyContext.h
-        ScopeGuard.h
-        Public/IR0IR1Translator/IR0IR1Translator.h
-        Public/IR0IR1Translator/IR0IR1TranslatorConfig.h
+        QEmitState.h
+        QFuncInfo.h
+        QIntrinsicInfo.h
+        QJumpBlockInfo.h
+        QLazyBlock.h
+        QMisc.h
+        QScopeGuard.h
+        QTranslationContexts.h
+        Public\IR0IR1Translator\IR0IR1Translator.h
+        Public\IR0IR1Translator\IR0IR1TranslatorConfig.h
 )

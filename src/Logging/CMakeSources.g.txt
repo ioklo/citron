@@ -4,7 +4,7 @@ target_sources(Logging
         Logger.cpp
 
     PRIVATE FILE_SET headers TYPE HEADERS FILES
-        Public/Logging/Diag.h
-        Public/Logging/Logger.h
-        Public/Logging/LoggingConfig.h
+        Public\Logging\Diag.h
+        Public\Logging\Logger.h
+        Public\Logging\LoggingConfig.h
 )
