@@ -10,6 +10,10 @@ using namespace std;
 namespace fs = std::filesystem;
 
 
+// vcxproj
+
+
+
 // u8string
 std::string ReadAll(fs::path filePath)
 {

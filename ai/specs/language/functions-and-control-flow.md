@@ -1,12 +1,22 @@
 # 함수/제어흐름 스펙
 
-Updated: 2026-03-06
+Updated: 2026-04-26
 Status: current
 
 RVO Policy
 - 반환은 기본적으로 RVO 경로를 요구한다.
 - 예외적으로 `[non-rvo]`로 비-RVO 경로를 허용한다.
-- 표면 함수 시그니처는 유지하고, lowering에서는 반환 슬롯(sret/out-parameter) 모델을 사용한다.
+- 표면 함수 시그니처는 유지한다.
+- 내부 lowering에서는 caller-provided return storage를 사용할 수 있다.
+- NBC 반환 call은 기본적으로 dest-passing/RVO 경로로 취급한다.
+- `return G();`처럼 반환 결과를 다시 반환하는 형태는 가능한 경우 caller-provided return storage를 전파하는 lowering 대상이다.
+
+Call Result Categories
+- 호출은 반환 종류에 따라 의미 범주를 나눈다.
+  - BC 반환 call: 값으로 관찰 가능한 결과를 만든다.
+  - NBC 반환 call: caller-provided place에 object를 생성한다.
+  - `void` 반환 call: 값이나 object result를 만들지 않고 side effect만 가질 수 있다.
+- 이 분류는 표면 함수 시그니처를 바꾸지 않는다.
 
 Error Channel
 - 함수는 최대 하나의 에러 타입을 `throws`로 선언한다.
@@ -23,6 +33,11 @@ Try and Catch
 Tail Expression
 - tail expression은 `inline {}` 및 `catch_*` 블록에서만 허용한다.
 - 일반 블록은 마지막 expression 자동 반환을 하지 않는다.
+
+Return Completeness
+- non-void 함수는 모든 정상 fallthrough 경로가 반환값을 제공해야 한다.
+- `inline`, `leave`, labeled control flow, `try`/`catch`가 섞인 복합 경로의 최종 판정은 compiler lowering/CFG 단계에서 수행할 수 있다.
+- `void` 함수는 명시 `return;`이 없어도 함수 끝에서 정상 종료할 수 있다.
 
 Labeled Control Flow
 - 다중 break/continue는 `label: for (...)` 문법을 사용한다.
