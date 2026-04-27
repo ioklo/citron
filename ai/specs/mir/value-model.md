@@ -1,11 +1,13 @@
 # MIR 값 모델 스펙
 
-Updated: 2026-03-06
+Updated: 2026-04-26
 Status: current
 
 Summary
+- MIR은 표면 문법의 모호함을 제거한 Citron의 canonical semantics다.
 - MIR은 bitwise-copyable(BC) 값과 non-bitwise-copyable(NBC) 값의 의미 이벤트를 분리해 표현한다.
 - 읽기(`MRead`)와 생성(`MCreate`)을 구분하고, NBC 값은 `MInitExp`와 `MLoc_Materialize`를 통해 다룬다.
+- BC copy 횟수는 observable behavior가 아니지만, NBC lifetime operation은 observable event로 보존해야 한다.
 
 BC vs NBC
 - BC 값은 값으로 들고 다녀도 의미 손실이 없는 타입이다.
@@ -27,7 +29,8 @@ Core Rules
   - BC 생성: `MCreate_Bitwise(...)`
   - NBC 생성: `MCreate_Init(...)`
 - rvalue가 place로 필요할 때는 `MLoc_Materialize`를 사용한다.
-- NBC 반환 call은 항상 sret(dest-passing) 규약으로 lowering한다.
+- NBC 반환 call은 caller-provided storage를 채우는 dest-passing/RVO 규약으로 lowering한다.
+- MIR은 return destination이 QIR에서 hidden frame field인지 hidden first slot인지를 직접 고정하지 않는다.
 
 Bitwise Policy
 - bitwise-copyable 타입만 bitwise copy/assign 경로를 사용한다.
@@ -39,6 +42,7 @@ Construction and Assign
 - 초기화와 대입은 MIR에서 구분한다.
 - NBC 초기화는 ctor/copy/move/RVO 의미 이벤트를 명시적으로 드러낸다.
 - ctor/call RHS를 기존 초기화된 dest에 대입할 때는 materialize 후 assign 경로를 사용한다.
+- NBC object의 construct/copy/move/assign/destroy 순서는 observable event trace에 포함된다.
 
 FollowUp
 - verifier 또는 생성 시점 검사로 BC/NBC 불변식을 강제한다.
