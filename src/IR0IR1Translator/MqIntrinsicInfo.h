@@ -12,15 +12,11 @@ enum class MInitExp_CallIntrinsicKind;
 class RFactory;
 struct QTranslationContexts;
 
-struct QIntrinsicInfo
+struct MqIntrinsicInfo
 {
     QInst_IntrinsicKind kind;
     RFuncReturn funcRet;
     std::vector<RFuncParameter> funcParams;
 };
-
-QIntrinsicInfo* GetIntrinsicInfo(MExp_CallIntrinsicKind kind, RFactory* rFactory);
-QIntrinsicInfo* GetIntrinsicInfo(MInitExp_CallIntrinsicKind kind, RFactory* rFactory);
-QIntrinsicInfo* GetIntrinsicInfo(QInst_IntrinsicKind kind, RFactory* rFactory);
 
 } // namespace Citron

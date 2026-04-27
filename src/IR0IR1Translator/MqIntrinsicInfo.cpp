@@ -24,9 +24,11 @@ RFuncParameter StringParam()
 //}
 }
 
-QIntrinsicInfo* GetIntrinsicInfo(QInst_IntrinsicKind kind, RFactory* rFactory)
+MqIntrinsicInfo* GetIntrinsicInfo(QInst_IntrinsicKind kind, RFactory* rFactory)
 {
-    static QIntrinsicInfo intrinsicInfos[(size_t)QInst_IntrinsicKind::MoveAssign_Void_StringRef_StringMoveRef + 1];
+    // TODO: [63] QIntrinsicInfo를 QFactory에 넣기.
+    // static으로 두면, 테스트 실행시 RFactory가 삭제될때 같이 사라지지 않아서, 두번째 테스트 실행할때, 포인터들이 해제된 메모리를 가리키게 된다
+    static MqIntrinsicInfo intrinsicInfos[(size_t)QInst_IntrinsicKind::MoveAssign_Void_StringRef_StringMoveRef + 1];
     static bool bInit = [rFactory]() {
         using enum QInst_IntrinsicKind;
 
@@ -95,9 +97,9 @@ QIntrinsicInfo* GetIntrinsicInfo(QInst_IntrinsicKind kind, RFactory* rFactory)
     return &intrinsicInfos[(size_t)kind];
 }
 
-QIntrinsicInfo* GetIntrinsicInfo(MExp_CallIntrinsicKind kind, RFactory* rFactory)
+MqIntrinsicInfo* GetIntrinsicInfo(MExp_CallIntrinsicKind kind, RFactory* rFactory)
 {
-    static unordered_map<MExp_CallIntrinsicKind, QIntrinsicInfo*> m{
+    static unordered_map<MExp_CallIntrinsicKind, MqIntrinsicInfo*> m{
         {MExp_CallIntrinsicKind::LogicalNot_Bool_Bool, GetIntrinsicInfo(QInst_IntrinsicKind::LogicalNot_Bool_Bool, rFactory)},
         {MExp_CallIntrinsicKind::UnaryMinus_Int_Int, GetIntrinsicInfo(QInst_IntrinsicKind::UnaryMinus_Int_Int, rFactory)},
         {MExp_CallIntrinsicKind::PrefixInc_Int_IntRef, GetIntrinsicInfo(QInst_IntrinsicKind::PrefixInc_Int_IntRef, rFactory)},
@@ -129,9 +131,9 @@ QIntrinsicInfo* GetIntrinsicInfo(MExp_CallIntrinsicKind kind, RFactory* rFactory
     return i->second;
 }
 
-QIntrinsicInfo* GetIntrinsicInfo(MInitExp_CallIntrinsicKind kind, RFactory* rFactory)
+MqIntrinsicInfo* GetIntrinsicInfo(MInitExp_CallIntrinsicKind kind, RFactory* rFactory)
 {
-    static unordered_map<MInitExp_CallIntrinsicKind, QIntrinsicInfo*> m = {
+    static unordered_map<MInitExp_CallIntrinsicKind, MqIntrinsicInfo*> m = {
         {MInitExp_CallIntrinsicKind::ToString_String_Bool, GetIntrinsicInfo(QInst_IntrinsicKind::ToString_String_Bool, rFactory)},
         {MInitExp_CallIntrinsicKind::ToString_String_Int, GetIntrinsicInfo(QInst_IntrinsicKind::ToString_String_Int, rFactory)},
         {MInitExp_CallIntrinsicKind::Add_String_StringInRef_StringInRef, GetIntrinsicInfo(QInst_IntrinsicKind::Add_String_StringInRef_StringInRef, rFactory)},
