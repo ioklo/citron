@@ -107,7 +107,7 @@
     <None Include="..\..\data\TestData\EvalTests\Boolean_BinOp.ct" />
     <None Include="..\..\data\TestData\EvalTests\Boolean_Literal_Expression_Literal.ct" />
     <None Include="..\..\data\TestData\EvalTests\Boolean_UnaryOperation.ct" />
-    <None Include="..\..\data\TestData\EvalTests\Box_Expression_Basic.ct" />
+    <None Include="..\..\data\TestData\EvalTests\Shared_Expression_Basic.ct" />
     <None Include="..\..\data\TestData\EvalTests\Break_Statement_For.ct" />
     <None Include="..\..\data\TestData\EvalTests\Break_Statement_Foreach.ct" />
     <None Include="..\..\data\TestData\EvalTests\Break_Statement_NestedFor.ct" />

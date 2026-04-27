@@ -18,10 +18,10 @@ void Main()
 {
     int s = 2;
     int x = inline {
-        return (s + 4) / 2;
+        leave (s + 4) / 2;
     };
 
-    @$x;
+    @$x
 }
 
 ```
@@ -32,7 +32,7 @@ void Main()
 //@ 3
 void Main()
 {
-	var x = inline { return 3; };
+	var x = inline { leave 3; };
 	@$x
 }
 ```
@@ -43,8 +43,8 @@ void Main()
 //@ 3
 void Main()
 {
-	int x;
-	x = inline { return 3; };
+	int x = uninit;
+	x = inline { leave 3; };
 	@$x
 }
 ```
@@ -52,7 +52,7 @@ void Main()
 
 <!--BEGIN_EMBED(Inline_Block_Expression_InferByFunctionParameter)-->
 ```cs
-//@ 3
+//@ hi3
 void F(int x)
 {
 	@$x
@@ -60,7 +60,7 @@ void F(int x)
 
 void Main()
 {
-	F(inline { return 3; });
+	F(inline { @{hi} 3 });
 }
 ```
 <!--END_EMBED-->

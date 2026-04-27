@@ -92,6 +92,7 @@ enum class MInitExp_CallIntrinsicKind
     ToString_String_Bool,
     ToString_String_Int,
     Add_String_StringInRef_StringInRef,
+    Max,
 };
 
 struct MInitExp_CallIntrinsic : MInitExp 

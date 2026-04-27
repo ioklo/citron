@@ -461,6 +461,9 @@ void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
         *destPtr = std::move(*srcPtr);
         return;
     }
+
+    case QInst_IntrinsicKind::Max: unreachable();
+
     }
 
     unreachable();
@@ -485,7 +488,7 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
 
         if (slot.o_argIndex) // argument로부터 복사
         {
-            visit([i, &frame, &curFrame](auto& arg) {
+            visit([i, &frame, &curFrame, &rFactory](auto& arg) {
                 using T = remove_cvref_t<decltype(arg)>;
                 if constexpr (same_as<T, QArg_CallArg_Slot>)
                 {
@@ -493,14 +496,26 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
                 }
                 else if constexpr (same_as<T, QArg_CallArg_ConstBool>)
                 {
+                    size_t size = GetSize(rFactory.MakeBoolType(), rFactory);
+                    frame.stackPointer -= size;
+                    frame.slots[i].ptr = frame.stackPointer;
+
                     frame.slots[i].Set<bool>(arg.value);
                 }
                 else if constexpr (same_as<T, QArg_CallArg_ConstInt32>)
                 {
+                    size_t size = GetSize(rFactory.MakeIntType(), rFactory);
+                    frame.stackPointer -= size;
+                    frame.slots[i].ptr = frame.stackPointer;
+
                     frame.slots[i].Set<int>(arg.value);
                 }
                 else if constexpr (same_as<T, QArg_CallArg_AddrOfSlot>)
                 {
+                    size_t size = GetSize(rFactory.MakePtrType(rFactory.MakeVoidType()), rFactory);
+                    frame.stackPointer -= size;
+                    frame.slots[i].ptr = frame.stackPointer;
+
                     frame.slots[i].Set<void*>(curFrame.slots[arg.index].GetAddr());
                 }
                 else static_assert(false);

@@ -7,10 +7,6 @@
 namespace Citron {
 
 enum class QInst_IntrinsicKind;
-enum class MExp_CallIntrinsicKind;
-enum class MInitExp_CallIntrinsicKind;
-class RFactory;
-struct QTranslationContexts;
 
 struct MqIntrinsicInfo
 {

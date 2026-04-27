@@ -66,6 +66,7 @@ RType* GetType(MInitExp* initExp, RFactory* rFactory)
             case ToString_String_Bool: return rFactory->MakeStringType();
             case ToString_String_Int: return rFactory->MakeStringType();
             case Add_String_StringInRef_StringInRef: return rFactory->MakeStringType();
+            case Max: unreachable();
             }
 
             unreachable();

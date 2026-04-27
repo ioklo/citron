@@ -338,6 +338,7 @@ public:
         case Dtor_Void_StringRef: return "Dtor_Void_StringRef";
         case CopyAssign_Void_StringRef_StringInRef: return "CopyAssign_Void_StringRef_StringInRef";
         case MoveAssign_Void_StringRef_StringMoveRef: return "MoveAssign_Void_StringRef_StringMoveRef";
+        case Max: unreachable();
         }
 
         unreachable();

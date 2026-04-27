@@ -14,6 +14,8 @@
     <ClInclude Include="CommonQInstsTranslation.h" />
     <ClInclude Include="MCreateToQInsts.h" />
     <ClInclude Include="MLocToQInsts.h" />
+    <ClInclude Include="MqFactory.h" />
+    <ClInclude Include="MqIntrinsicInfo.h" />
     <ClInclude Include="MReadToQInsts.h" />
     <ClInclude Include="MStmtToQInsts.h" />
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1Translator.h" />
@@ -22,7 +24,6 @@
     <ClInclude Include="QAbi_Citron_X64.h" />
     <ClInclude Include="QBodyContext.h" />
     <ClInclude Include="QFuncInfo.h" />
-    <ClInclude Include="QIntrinsicInfo.h" />
     <ClInclude Include="QJumpBlockInfo.h" />
     <ClInclude Include="QLazyBlock.h" />
     <ClInclude Include="QMisc.h" />
@@ -35,12 +36,13 @@
     <ClCompile Include="IR0IR1Translator.cpp" />
     <ClCompile Include="MCreateToQInsts.cpp" />
     <ClCompile Include="MLocToQInsts.cpp" />
+    <ClCompile Include="MqFactory.cpp" />
+    <ClCompile Include="MqIntrinsicInfo.cpp" />
     <ClCompile Include="MReadToQInsts.cpp" />
     <ClCompile Include="MStmtToQInsts.cpp" />
     <ClCompile Include="QAbi_Citron_X64.cpp" />
     <ClCompile Include="QBodyContext.cpp" />
     <ClCompile Include="QEmitState.cpp" />
-    <ClCompile Include="QIntrinsicInfo.cpp" />
     <ClCompile Include="QLazyBlock.cpp" />
     <ClCompile Include="QTranslationContexts.cpp" />
   </ItemGroup>

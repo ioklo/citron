@@ -24,7 +24,7 @@
 #include "QIR/QFactory.h"
 
 #include "QLazyBlock.h"
-#include "QIntrinsicInfo.h"
+#include "MqIntrinsicInfo.h"
 
 using namespace std;
 
@@ -127,7 +127,6 @@ QBlock* QBodyContext::GetLeaveBlock(size_t labelId)
 void QBodyContext::EmitInstInternal(QInst&& inst)
 {
     assert(curBlock);
-
     curBlock->EmitInst(std::move(inst));
 }
 
@@ -135,23 +134,6 @@ void QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Dest> o
 {
     assert(curBlock);
     curBlock->EmitInst(QInst_Intrinsic{kind, move(o_dest), move(args)});
-
-    /*auto* intrinsicInfo = GetIntrinsicInfo(kind, &*rFactory);
-    auto* retType = GetType(intrinsicInfo->funcRet, &*rFactory);
-
-    if (retType == rFactory->MakeVoidType())
-    {
-        assert(!o_dest);
-        assert(curBlock);
-        curBlock->EmitInst(QInst_Intrinsic{kind, nullopt, move(args)});
-    }
-    else
-    {
-        size_t resultSlotIndex = o_dest ? o_dest->index : NewSlot(retType, nullopt);
-
-        assert(curBlock);
-        curBlock->EmitInst(QInst_Intrinsic{kind, QArg_Dest{resultSlotIndex}, move(args)});
-    }*/
 }
 
 void QBodyContext::EmitTermInst(QTermInst&& termInst)

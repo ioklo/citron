@@ -11,7 +11,7 @@ CallLambdaExp(LambdaSymbol symbol, Loc callable, [Argument] args)
 //@ 1 3 true
 void Main()
 {
-	var f = (int i, string s, bool b) => { 
+	var f = [](int i, string s, bool b) { 
 	    @$i $s $b
 	};
 	
@@ -35,7 +35,7 @@ class C
 
 void Main()
 {
-    C c = new C(i => {
+    C c = new C([](int i) {
         @$i
     });
 
@@ -54,7 +54,7 @@ class C
 
 void Main()
 {
-    C.F = i => {
+    C.F = [](int i) {
         @$i
     };
 

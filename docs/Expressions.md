@@ -4,7 +4,7 @@ Expression은 런타임에 실행환경이 가리키는 result에 계산된 값�
 
 [Load_Expression](Load_Expression.md)
 [Assign_Expression](Assign_Expression.md)
-[Box_Expression](Box_Expression.md)
+[Shared_Expression](Shared_Expression.md)
 [Static_Box_Reference_Expression](Static_Box_Reference_Expression.md)
 [Class_Member_Box_Reference_Expression](Class_Member_Box_Reference_Expression.md)
 [Struct_Indirect_Member_Box_Reference_Expression](Struct_Indirect_Member_Box_Reference_Expression.md)

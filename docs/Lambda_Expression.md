@@ -22,7 +22,7 @@ args는 캡쳐할 변수
 //@ hi
 void Main() 
 {
-    var f = () => { @{hi} };
+    var f = [] { @{hi} };
     f();
 }
 ```
@@ -36,7 +36,7 @@ void Main()
 void Main()
 {
     var l1 = (int x) => x + 1; // 본문 축약형
-    var l2 = (string s) => { return s; } // 완전한 본문
+    var l2 = [](string s) { return s; } // 완전한 본문
 
     var v1 = l1(2);
     var v2 = l2("hi");
@@ -156,7 +156,7 @@ struct S
     
     void F()
     {
-        var l = () => this->x + 2; // this는 캡쳐대상 S*
+        var l = [&this]() => this->x + 2; // this는 명시 캡쳐대상 S*
         
         x = 3;
         

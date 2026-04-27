@@ -24,7 +24,8 @@
 #include "MLocToQInsts.h"
 #include "QFuncInfo.h"
 #include "QAbi.h"
-#include "QIntrinsicInfo.h"
+#include "MqIntrinsicInfo.h"
+#include "MqFactory.h"
 
 using namespace std;
 
@@ -225,21 +226,19 @@ expected<QEmitState<optional<size_t>>, DiagPtr> HandleCallCore(
 } // namespace 
 
 expected<QEmitState<optional<size_t>>, DiagPtr> HandleIntrinsicCall(
-    QIntrinsicInfo* intrinsicInfo,
+    MqIntrinsicInfo& intrinsicInfo,
     optional<size_t> o_destSlotIndex,
     RTypeArguments* typeArgs,
     vector<MArgument>& mArgs,
     QTranslationContexts& contexts)
 {
-    assert(intrinsicInfo);
-
     auto funcInfo = contexts.qAbi->GetFuncInfo(intrinsicInfo, typeArgs);
-    auto* retType = GetType(intrinsicInfo->funcRet, &*contexts.rFactory);
+    auto* retType = GetType(intrinsicInfo.funcRet, &*contexts.rFactory);
     HandleCallContext callContext{};
     auto e_s_o_retSlotIndex = HandleCallCore(retType, funcInfo, o_destSlotIndex, nullptr, mArgs, callContext, contexts);
     RETURN_ON_ERROR_OR_DONE(e_s_o_retSlotIndex);
 
-    contexts.bodyContext.EmitIntrinsic(intrinsicInfo->kind, callContext.o_dest, move(callContext.args));
+    contexts.bodyContext.EmitIntrinsic(intrinsicInfo.kind, callContext.o_dest, move(callContext.args));
     return **e_s_o_retSlotIndex;
 }
 
@@ -425,7 +424,7 @@ expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_St
         auto e_s_front = TranslateMInitExp_StringElemToQInsts(exp->elements.front(), contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_front);
 
-        auto* addIntrinsicInfo = GetIntrinsicInfo(QInst_IntrinsicKind::Add_String_StringInRef_StringInRef, &*contexts.rFactory);
+        auto& addIntrinsicInfo = contexts.mqFactory->GetIntrinsicInfo(QInst_IntrinsicKind::Add_String_StringInRef_StringInRef);
         auto addFuncInfo = contexts.qAbi->GetFuncInfo(addIntrinsicInfo, contexts.rFactory->MakeEmptyTypeArguments());
 
         vector<QArg_CallArg> args;

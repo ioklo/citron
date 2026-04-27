@@ -13,26 +13,26 @@ target_sources(MIR
         MStmt.cpp
 
     PRIVATE FILE_SET headers TYPE HEADERS FILES
-        Public\MIR\MArgument.h
-        Public\MIR\MCallable.h
-        Public\MIR\MCatch.h
-        Public\MIR\MCreate.h
-        Public\MIR\MData.h
-        Public\MIR\MExp.h
-        Public\MIR\MExpVisitor.g.h
-        Public\MIR\MFactory.h
-        Public\MIR\MFuncBody.h
-        Public\MIR\MIRConfig.h
-        Public\MIR\MInitExp.h
-        Public\MIR\MInitExpVisitor.g.h
-        Public\MIR\MLoc.h
-        Public\MIR\MLocVisitor.g.h
-        Public\MIR\MMoveSource.h
-        Public\MIR\MPrinter.h
-        Public\MIR\MRead.h
-        Public\MIR\MScopeKind.h
-        Public\MIR\MSharedExp.h
-        Public\MIR\MSharedExpVisitor.g.h
-        Public\MIR\MStmt.h
-        Public\MIR\MStmtVisitor.g.h
+        Public/MIR/MArgument.h
+        Public/MIR/MCallable.h
+        Public/MIR/MCatch.h
+        Public/MIR/MCreate.h
+        Public/MIR/MData.h
+        Public/MIR/MExp.h
+        Public/MIR/MExpVisitor.g.h
+        Public/MIR/MFactory.h
+        Public/MIR/MFuncBody.h
+        Public/MIR/MIRConfig.h
+        Public/MIR/MInitExp.h
+        Public/MIR/MInitExpVisitor.g.h
+        Public/MIR/MLoc.h
+        Public/MIR/MLocVisitor.g.h
+        Public/MIR/MMoveSource.h
+        Public/MIR/MPrinter.h
+        Public/MIR/MRead.h
+        Public/MIR/MScopeKind.h
+        Public/MIR/MSharedExp.h
+        Public/MIR/MSharedExpVisitor.g.h
+        Public/MIR/MStmt.h
+        Public/MIR/MStmtVisitor.g.h
 )

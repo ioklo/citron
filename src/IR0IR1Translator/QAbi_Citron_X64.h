@@ -17,7 +17,7 @@ public:
 
     size_t GetTypeSize(RType* type) override;    
     QFuncInfo GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs) override;
-    QFuncInfo GetFuncInfo(QIntrinsicInfo* intrinsicInfo, RTypeArguments* typeArgs) override;
+    QFuncInfo GetFuncInfo(MqIntrinsicInfo& intrinsicInfo, RTypeArguments* typeArgs) override;
 
 private:
     QReturnPassingMode GetReturnPassingMode(RFuncReturn funcRet, size_t* outCurArgIndex);

@@ -2,7 +2,7 @@
 #include <cassert>
 #include "RSymbol/RFactory.h"
 #include "QIR/QInsts.h"
-#include "QIntrinsicInfo.h"
+#include "MqIntrinsicInfo.h"
 #include "QTranslationContexts.h"
 
 using namespace std;

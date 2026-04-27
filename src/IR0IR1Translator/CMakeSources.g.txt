@@ -6,10 +6,11 @@ target_sources(IR0IR1Translator
         MLocToQInsts.cpp
         MReadToQInsts.cpp
         MStmtToQInsts.cpp
+        MqFactory.cpp
+        MqIntrinsicInfo.cpp
         QAbi_Citron_X64.cpp
         QBodyContext.cpp
         QEmitState.cpp
-        QIntrinsicInfo.cpp
         QLazyBlock.cpp
         QTranslationContexts.cpp
 
@@ -19,17 +20,18 @@ target_sources(IR0IR1Translator
         MLocToQInsts.h
         MReadToQInsts.h
         MStmtToQInsts.h
+        MqFactory.h
+        MqIntrinsicInfo.h
         QAbi.h
         QAbi_Citron_X64.h
         QBodyContext.h
         QEmitState.h
         QFuncInfo.h
-        QIntrinsicInfo.h
         QJumpBlockInfo.h
         QLazyBlock.h
         QMisc.h
         QScopeGuard.h
         QTranslationContexts.h
-        Public\IR0IR1Translator\IR0IR1Translator.h
-        Public\IR0IR1Translator\IR0IR1TranslatorConfig.h
+        Public/IR0IR1Translator/IR0IR1Translator.h
+        Public/IR0IR1Translator/IR0IR1TranslatorConfig.h
 )

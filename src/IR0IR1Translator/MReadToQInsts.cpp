@@ -14,7 +14,8 @@
 #include "QEmitState.h"
 #include "CommonQInstsTranslation.h"
 #include "QEmitState.h"
-#include "QIntrinsicInfo.h"
+#include "MqIntrinsicInfo.h"
+#include "MqFactory.h"
 
 using namespace std;
 
@@ -214,7 +215,7 @@ struct MRead_ExpQInstsTranslator
 
     ResultType Visit(MExp_CallIntrinsic* exp) 
     {
-        auto* intrinsicInfo = GetIntrinsicInfo(exp->kind, &*contexts.rFactory);
+        auto& intrinsicInfo = contexts.mqFactory->GetIntrinsicInfo(exp->kind);
         auto e_s_o_retSlotIndex = HandleIntrinsicCall(intrinsicInfo, nullopt, exp->typeArgs, exp->args, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_o_retSlotIndex);
 

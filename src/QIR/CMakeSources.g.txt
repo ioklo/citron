@@ -7,12 +7,12 @@ target_sources(QIR
         QPrinter.cpp
 
     PRIVATE FILE_SET headers TYPE HEADERS FILES
-        Public\QIR\QArgs.h
-        Public\QIR\QBlock.h
-        Public\QIR\QData.h
-        Public\QIR\QFactory.h
-        Public\QIR\QFuncBody.h
-        Public\QIR\QIRConfig.h
-        Public\QIR\QInsts.h
-        Public\QIR\QPrinter.h
+        Public/QIR/QArgs.h
+        Public/QIR/QBlock.h
+        Public/QIR/QData.h
+        Public/QIR/QFactory.h
+        Public/QIR/QFuncBody.h
+        Public/QIR/QIRConfig.h
+        Public/QIR/QInsts.h
+        Public/QIR/QPrinter.h
 )

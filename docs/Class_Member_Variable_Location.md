@@ -19,7 +19,7 @@ void Main()
 <!--BEGIN_EMBED(Class_Member_Variable_Location_Static)-->
 ```cs
 //@ 11
-// 11
+
 class C
 {
     public static int x = 0;

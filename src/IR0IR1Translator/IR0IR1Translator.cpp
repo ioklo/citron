@@ -25,6 +25,7 @@
 #include "QTranslationContexts.h"
 #include "QEmitState.h"
 #include "QAbi_Citron_X64.h"
+#include "MqFactory.h"
 
 using namespace std;
 
@@ -50,8 +51,9 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     }, rFuncReturn);
 
     QBodyContext bodyContext{rFactory, qFactory, rRetType};
+    MqFactoryPtr mqFactory = MakePtr<MqFactory>(rFactory);
     QAbiPtr qAbi = MakePtr<QAbi_Citron_X64>(rFactory);
-    QTranslationContexts contexts{rFactory, qFactory, qAbi, bodyContext};
+    QTranslationContexts contexts{rFactory, qFactory, mqFactory, qAbi, bodyContext};
 
     {
         QScopeGuard mainGuard{std::nullopt, bodyContext};

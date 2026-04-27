@@ -146,13 +146,13 @@ int main(int argc, char* argv[])
         ostringstream cppStream;
         for (auto& cppPath : cppPaths)
         {
-            cppStream << "        " << cppPath.string() << endl;
+            cppStream << "        " << cppPath.generic_string() << endl; // /를 사용하도록 generic_string을 씀
         }
 
         ostringstream hStream;
         for (auto& hPath : hPaths)
         {
-            hStream << "        " << hPath.string() << endl;
+            hStream << "        " << hPath.generic_string() << endl; // /를 사용하도록 generic_string을 씀
         }
 
         string contents = format(R"---(target_sources({}

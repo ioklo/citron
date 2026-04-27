@@ -1,6 +1,6 @@
 <!--BEGIN_EMBED(Return_Statement_ControlFlow)-->
 ```cs
-//@ F
+//@ F
 void F()
 {    
     @F
@@ -42,7 +42,7 @@ void Main()
 //@ 3
 void Main()
 {
-    var f = () => {
+    var f = [] {
         return 3;
     };
 

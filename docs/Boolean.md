@@ -32,7 +32,7 @@ bool형 간에는 두 값이 같은지 비교할 수 있습니다.
 //@ false true true true false false true false true true false
 void Main()
 {
-    bool b;
+    bool b = uninit;
     
     b = false; // assignment
     

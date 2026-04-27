@@ -15,6 +15,12 @@
 <!--BEGIN_EMBED(String_Basic)-->
 ```cs
 //@ hi hello world world true true false false onetwo true false true true false false true false true true
+string F(string& s)
+{
+    s = "world";
+    return s;
+}
+
 void Main()
 {
     string s = "hi";
@@ -22,7 +28,7 @@ void Main()
     
     s = "hello"; // 
     
-    @$t $s ${s = "world"} $s
+    @$t $s ${F(s)} $s
     
     string t2 = "${"h"}${"i"}";
     @ ${t == t2} ${s == "world"} ${t != t2} ${s != "world"}

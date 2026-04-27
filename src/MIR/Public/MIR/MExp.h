@@ -131,6 +131,7 @@ enum class MExp_CallIntrinsicKind
     Equal_Bool_StringInRef_StringInRef,
 
     GetIterator_ListPtr_ListIterator, // 첫번째 타입 파라미터는 ItemType
+    Max,
 };
 
 struct MExp_CallIntrinsic : MExp

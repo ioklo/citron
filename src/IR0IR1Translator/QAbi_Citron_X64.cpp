@@ -4,7 +4,7 @@
 #include "RSymbol/RFactory.h"
 #include "QFuncInfo.h"
 #include "CommonQInstsTranslation.h"
-#include "QIntrinsicInfo.h"
+#include "MqIntrinsicInfo.h"
 
 using namespace std;
 
@@ -88,18 +88,18 @@ QFuncInfo QAbi_Citron_X64::GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typ
     };
 }
 
-QFuncInfo QAbi_Citron_X64::GetFuncInfo(QIntrinsicInfo* intrinsicInfo, RTypeArguments* typeArgs)
+QFuncInfo QAbi_Citron_X64::GetFuncInfo(MqIntrinsicInfo& intrinsicInfo, RTypeArguments* typeArgs)
 {
     size_t curArgIndex = 0;
-    auto returnPassingMode = GetReturnPassingMode(intrinsicInfo->funcRet, &curArgIndex);
+    auto returnPassingMode = GetReturnPassingMode(intrinsicInfo.funcRet, &curArgIndex);
 
     size_t explicitArgStartIndex = curArgIndex;
     vector<QParamPassingMode> paramPassingModes;
-    size_t count = intrinsicInfo->funcParams.size();
+    size_t count = intrinsicInfo.funcParams.size();
     paramPassingModes.reserve(count);
     for (size_t i = 0; i < count; i++)
     {
-        auto appliedFuncParam = intrinsicInfo->funcParams[i].Apply(typeArgs); // TODO: intrinsic에 typeArgs 적용.
+        auto appliedFuncParam = intrinsicInfo.funcParams[i].Apply(typeArgs); // TODO: intrinsic에 typeArgs 적용.
 
         if (appliedFuncParam.IsRef())
             paramPassingModes.push_back(QParamPassingMode::Ref);

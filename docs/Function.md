@@ -33,12 +33,15 @@ print(2, "hi", false); // template<int, (string, bool)> print(2, ("hi, false));
 //@ 2
 void F([out] int& i)
 {
-    *i = 2;
+    i = 2;
 }
 
-int j = 3;
-F(out j); // out을 반드시 써줘야 합니다
+void Main()
+{
+    int j = 3;
+    F(out j); // out을 반드시 써줘야 합니다
 
-@$j
+    @$j
+}
 ```
 <!--END_EMBED-->

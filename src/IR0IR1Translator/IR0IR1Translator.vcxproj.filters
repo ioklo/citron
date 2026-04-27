@@ -39,7 +39,8 @@
     <ClInclude Include="QAbi_Citron_X64.h">
       <Filter>QAbi</Filter>
     </ClInclude>
-    <ClInclude Include="QIntrinsicInfo.h">
+    <ClInclude Include="MqFactory.h" />
+    <ClInclude Include="MqIntrinsicInfo.h">
       <Filter>QIntrinsic</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,9 +57,10 @@
     <ClCompile Include="QAbi_Citron_X64.cpp">
       <Filter>QAbi</Filter>
     </ClCompile>
-    <ClCompile Include="QIntrinsicInfo.cpp">
+    <ClCompile Include="QTranslationContexts.cpp" />
+    <ClCompile Include="MqFactory.cpp" />
+    <ClCompile Include="MqIntrinsicInfo.cpp">
       <Filter>QIntrinsic</Filter>
     </ClCompile>
-    <ClCompile Include="QTranslationContexts.cpp" />
   </ItemGroup>
 </Project>

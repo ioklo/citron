@@ -17,7 +17,8 @@
 #include "QEmitState.h"
 #include "QAbi.h"
 #include "QFuncInfo.h"
-#include "QIntrinsicInfo.h"
+#include "MqIntrinsicInfo.h"
+#include "MqFactory.h"
 
 using namespace std;
 
@@ -276,7 +277,7 @@ struct MCreate_BCQInstsTranslator
 
     ResultType Visit(MExp_CallIntrinsic* exp) 
     {
-        auto* intrinsicInfo = GetIntrinsicInfo(exp->kind, &*contexts.rFactory);
+        auto& intrinsicInfo = contexts.mqFactory->GetIntrinsicInfo(exp->kind);
         auto e_s_o_retSlotIndex = HandleIntrinsicCall(intrinsicInfo, o_destSlotIndex, exp->typeArgs, exp->args, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_o_retSlotIndex);
         return QEmitState_Ready{};
@@ -335,7 +336,7 @@ struct MCreate_NBCQInstsTranslator
     // ResultType Visit(MInitExp_List* mInitExp) { }
     ResultType Visit(MInitExp_CallIntrinsic* mInitExp) 
     { 
-        auto* intrinsicInfo = GetIntrinsicInfo(mInitExp->kind, &*contexts.rFactory);
+        auto& intrinsicInfo = contexts.mqFactory->GetIntrinsicInfo(mInitExp->kind);
         auto e_s_o_retSlotIndex = HandleIntrinsicCall(intrinsicInfo, o_destSlotIndex, mInitExp->typeArgs, mInitExp->args, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_o_retSlotIndex);
         return QEmitState_Ready{};

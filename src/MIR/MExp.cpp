@@ -59,6 +59,7 @@ RType* GetType_CallIntrinsic(MExp_CallIntrinsic* exp, RFactory* rFactory)
     case MExp_CallIntrinsicKind::Equal_Bool_Bool_Bool: return rFactory->MakeBoolType();
     case MExp_CallIntrinsicKind::Equal_Bool_StringInRef_StringInRef: return rFactory->MakeBoolType();
     case MExp_CallIntrinsicKind::GetIterator_ListPtr_ListIterator: return rFactory->MakeListIteratorType(exp->typeArgs->Get(0));
+    case MExp_CallIntrinsicKind::Max: unreachable();
     }
 
     unreachable();

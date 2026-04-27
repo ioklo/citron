@@ -76,7 +76,7 @@ void Main()
 
 <!--BEGIN_EMBED(For_Statement_EmptyContinueExp)-->
 ```cs
-//@ 01234 
+//@ 01234
 void Main()
 {
     for(int i = 0; i < 5;)

@@ -41,7 +41,7 @@ void Main()
 //@ -3 4 4 false true true -4 -6 -26 2 3 true false true true false false true false true true
 void Main()
 {
-    int i;
+    int i = uninit;
     
     i = -3; // assignment
     

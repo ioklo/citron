@@ -27,10 +27,10 @@ template<typename T>
 struct QEmitState;
 enum class QParamPassingMode;
 struct QFuncInfo;
-struct QIntrinsicInfo;
+struct MqIntrinsicInfo;
 using QLocResult = std::variant<struct QLocResult_Slot, struct QLocResult_Ptr>;
 
-std::expected<QEmitState<std::optional<size_t>>, DiagPtr> HandleIntrinsicCall(QIntrinsicInfo* intrinsicInfo, std::optional<size_t> o_destSlotIndex, RTypeArguments* typeArgs, std::vector<MArgument>& mArgs, QTranslationContexts& contexts);
+std::expected<QEmitState<std::optional<size_t>>, DiagPtr> HandleIntrinsicCall(MqIntrinsicInfo& intrinsicInfo, std::optional<size_t> o_destSlotIndex, RTypeArguments* typeArgs, std::vector<MArgument>& mArgs, QTranslationContexts& contexts);
 std::expected<QEmitState<std::optional<size_t>>, DiagPtr> HandleCall(RFuncDecl* decl, RTypeArguments* typeArgs, std::optional<size_t> o_destSlotIndex, MLoc* o_instance, std::vector<MArgument>& mArgs, QTranslationContexts& contexts);
 
 QArg_CallArg MakeAddrCallArg(QLocResult& locResult, QTranslationContexts& contexts);

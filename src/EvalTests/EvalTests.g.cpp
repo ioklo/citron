@@ -145,18 +145,6 @@ TEST(Boolean, UnaryOperation)
     DoTest(code, expected);
 }
 
-TEST(Box_Expression, Basic) 
-{
-    auto code = R"---(void Main()
-{
-	@${*(box 5)}
-}
-)---";
-    string expected = R"---(5)---";
-
-    DoTest(code, expected);
-}
-
 TEST(Break_Statement, For) 
 {
     auto code = R"---(void Main()
@@ -2281,6 +2269,18 @@ void Main()
     DoTest(code, expected);
 }
 
+TEST(Shared_Expression, Basic) 
+{
+    auto code = R"---(void Main()
+{
+	@${*(shared 5)}
+}
+)---";
+    string expected = R"---(5)---";
+
+    DoTest(code, expected);
+}
+
 TEST(Static_Box_Reference_Expression, Basic) 
 {
     auto code = R"---(struct C
@@ -2319,10 +2319,19 @@ void Main()
     s = "hello"; // 
     
     @$t $s ${F(s)} $s
+    
+    string t2 = "${"h"}${"i"}";
+    @ ${t == t2} ${s == "world"} ${t != t2} ${s != "world"}
+    
+    @ ${"one" + "two"}
+    
+    @ ${"s1" < "s1abcd"} ${"s1abcd" < "s1"} ${"s1" <= "s1abcd"} ${"s1" <= "s1"} ${"s1abcd" <= "s1"}
+    
+    @ ${"s1" > "s1abcd"} ${"s1abcd" > "s1"} ${"s1" >= "s1abcd"} ${"s1" >= "s1"} ${"s1abcd" >= "s1"}
 }
 
 )---";
-    string expected = R"---(hi hello world world)---";
+    string expected = R"---(hi hello world world true true false false onetwo true false true true false false true false true true)---";
 
     DoTest(code, expected);
 }

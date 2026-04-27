@@ -1,5 +1,5 @@
 //@ 5
 void Main()
 {
-	@${*(box 5)}
+	@${*(shared 5)}
 }

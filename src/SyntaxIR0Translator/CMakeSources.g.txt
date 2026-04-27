@@ -100,6 +100,6 @@ target_sources(SyntaxIR0Translator
         TranslateBodyContext.h
         TranslationContexts.h
         TranslationTasks.h
-        Public\SyntaxIR0Translator\SyntaxIR0Translator.h
-        Public\SyntaxIR0Translator\SyntaxIR0TranslatorConfig.h
+        Public/SyntaxIR0Translator/SyntaxIR0Translator.h
+        Public/SyntaxIR0Translator/SyntaxIR0TranslatorConfig.h
 )

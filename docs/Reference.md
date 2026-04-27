@@ -52,7 +52,7 @@ void Main()
 {
     int i = 2;
     F(i);
-    @$i;
+    @$i
 }
 ```
 <!--END_EMBED-->

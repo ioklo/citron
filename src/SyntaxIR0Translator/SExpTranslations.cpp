@@ -357,7 +357,7 @@ expected<ReExp, DiagPtr> TranslateSExp_BinaryOpToReExp(SExp_BinaryOp* sExp, Tran
     auto matchedInfos = contexts.binOpQueryService->GetInfos(sExp->kind);
     for (auto& info : matchedInfos)
     {
-        auto o_reExp = TryMatchBinOp(*e_reOperand0, *e_reOperand1, info.operandType0, info.operandType1, info, contexts);
+        auto o_reExp = TryMatchBinOp(*e_reOperand0, *e_reOperand1, operandType0, operandType1, info, contexts);
         if (!o_reExp) continue;
 
         // NOTICE: 우선순위별로 정렬되어 있기 때문에 먼저 매칭되는 것을 선택한다

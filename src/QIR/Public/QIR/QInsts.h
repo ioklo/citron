@@ -118,6 +118,8 @@ enum struct QInst_IntrinsicKind
     Dtor_Void_StringRef,
     CopyAssign_Void_StringRef_StringInRef,
     MoveAssign_Void_StringRef_StringMoveRef,
+
+    Max
 };
 
 struct QInst_Intrinsic
