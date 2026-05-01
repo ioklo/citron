@@ -18,7 +18,7 @@ target_link_libraries(EvalTests PRIVATE
         QIR
         TextAnalysis
         SyntaxIR0Translator
-        IR0IR1Translator
+        MqTranslator
         QEvaluator
 #        QIrLLVMTranslator
         GTest::gtest_main

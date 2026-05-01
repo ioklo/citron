@@ -26,11 +26,11 @@
     <Project Path="TextAnalysis.Tests/TextAnalysis.Tests.vcxproj" Id="04a949c6-45fb-4f4b-81cb-9dad67f0bfea" />
     <Project Path="TextAnalysis/TextAnalysis.vcxproj" Id="4ba9ba67-fc96-41bd-9938-3d61d05f89ee" />
   </Folder>
-  <Folder Name="/06_SyntaxMIrTranslator/">
+  <Folder Name="/06_SmTranslator/">
     <Project Path="SyntaxIR0Translator/SyntaxIR0Translator.vcxproj" Id="73c7d15a-483a-4069-8719-0cccff2e5021" />
   </Folder>
-  <Folder Name="/07_MIrQIrTranslator/">
-    <Project Path="IR0IR1Translator/IR0IR1Translator.vcxproj" Id="2c184d83-f1a3-45b7-a470-906d11b7de69" />
+  <Folder Name="/07_MqTranslator/">
+    <Project Path="MqTranslator/MqTranslator.vcxproj" Id="2c184d83-f1a3-45b7-a470-906d11b7de69" />
   </Folder>
   <Folder Name="/08_QIrLLVMTranslator/">
     <Project Path="QIrLLVMTranslator/QIrLLVMTranslator.vcxproj" Id="8f0bfed0-0b7d-4bb8-90e7-84df06b50bd4" />

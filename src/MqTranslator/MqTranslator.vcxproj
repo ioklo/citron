@@ -19,8 +19,8 @@
     <ClInclude Include="MqIntrinsicInfo.h" />
     <ClInclude Include="MReadToQInsts.h" />
     <ClInclude Include="MStmtToQInsts.h" />
-    <ClInclude Include="Public\IR0IR1Translator\IR0IR1Translator.h" />
-    <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h" />
+    <ClInclude Include="Public\MqTranslator\MqTranslator.h" />
+    <ClInclude Include="Public\MqTranslator\MqTranslatorConfig.h" />
     <ClInclude Include="MqAbi.h" />
     <ClInclude Include="MqAbi_Citron_X64.h" />
     <ClInclude Include="MqBodyContext.h" />
@@ -34,7 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommonQInstsTranslation.cpp" />
-    <ClCompile Include="IR0IR1Translator.cpp" />
+    <ClCompile Include="MqTranslator.cpp" />
     <ClCompile Include="MCreateToQInsts.cpp" />
     <ClCompile Include="MLocToQInsts.cpp" />
     <ClCompile Include="MqFactory.cpp" />
@@ -73,6 +73,7 @@
     <ProjectGuid>{2c184d83-f1a3-45b7-a470-906d11b7de69}</ProjectGuid>
     <RootNamespace>IR0IR1Translator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>MqTranslator</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -106,7 +107,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;IR0IR1TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;MQTRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -122,7 +123,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;IR0IR1TRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;MQTRANSLATOR_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>

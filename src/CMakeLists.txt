@@ -22,7 +22,7 @@ add_subdirectory(MIR)
 add_subdirectory(QIR)
 add_subdirectory(TextAnalysis)
 add_subdirectory(SyntaxIR0Translator)
-add_subdirectory(IR0IR1Translator)
+add_subdirectory(MqTranslator)
 add_subdirectory(QIrLLVMTranslator)
 add_subdirectory(QEvaluator)
 

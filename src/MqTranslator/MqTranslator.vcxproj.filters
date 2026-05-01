@@ -12,10 +12,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Public\IR0IR1Translator\IR0IR1Translator.h">
+    <ClInclude Include="Public\MqTranslator\MqTranslator.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h">
+    <ClInclude Include="Public\MqTranslator\MqTranslatorConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="MLocToQInsts.h" />
@@ -46,7 +46,7 @@
     <ClInclude Include="MqCreateTarget.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="IR0IR1Translator.cpp" />
+    <ClCompile Include="MqTranslator.cpp" />
     <ClCompile Include="MLocToQInsts.cpp" />
     <ClCompile Include="MStmtToQInsts.cpp" />
     <ClCompile Include="MqBodyContext.cpp" />

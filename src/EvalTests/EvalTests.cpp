@@ -11,7 +11,7 @@
 #include "TextAnalysis/Buffer.h"
 
 #include "SyntaxIR0Translator/SyntaxIR0Translator.h"
-#include "IR0IR1Translator/IR0IR1Translator.h"
+#include "MqTranslator/MqTranslator.h"
 
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RDecl.h"

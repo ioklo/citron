@@ -67,7 +67,7 @@
     <ProjectReference Include="..\Infra\Infra.vcxproj">
       <Project>{8e2a32db-279b-4c5c-96c0-bbede676efbf}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\IR0IR1Translator\IR0IR1Translator.vcxproj">
+    <ProjectReference Include="..\MqTranslator\MqTranslator.vcxproj">
       <Project>{2c184d83-f1a3-45b7-a470-906d11b7de69}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Logging\Logging.vcxproj">
