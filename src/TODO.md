@@ -16,7 +16,7 @@
 - [ ] // TODO: [35] lambda의 [BitwiseCopyable] 지원
 - [ ] // TODO: [36] MExp_String을 MCreate_String으로 변경
 - [ ] // TODO: [37] class base에서도 검색하기
-- [ ] // TODO: [38] break/continue에 label 지원
+- [v] // TODO: [38] break/continue에 label 지원
 - [ ] // TODO: [39] SyntaxIR0Translator Eror 정리
 - [ ] // TODO: [40] MInitExp_StructCtorKind_*, MStmt_Assign를 쓸때 Copy, Move가 가능한지 확인하고 fallback까지 하는 코드 작성
 - [ ] // TODO: [41] try catch 구현

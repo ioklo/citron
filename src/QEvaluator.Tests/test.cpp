@@ -51,7 +51,7 @@ TEST(QEvaluator, CommandInst_DoingWell)
     blocks.push_back(qEntryBlock);
 
     vector<QSlotInfo> slotInfos;
-    slotInfos.push_back(QSlotInfo{rFactory->MakeStringType(), "s0", /*oArgIndex*/nullopt});
+    slotInfos.push_back(QSlotInfo{rFactory->MakeStringType(), 0, QSlotRole_Temp{"to_string"}});
     // slotInfos.push_back(QSlotInfo{rFactory->MakePtrType(rFactory->MakeStringType()), "s1", /*oArgIndex*/nullopt});
 
     // 1을 문자열로 변환

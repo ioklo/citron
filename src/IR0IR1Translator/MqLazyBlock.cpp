@@ -1,9 +1,9 @@
-#include "QLazyBlock.h"
-#include "QBodyContext.h"
+#include "MqLazyBlock.h"
+#include "MqBodyContext.h"
 
 namespace Citron {
 
-QBlock* QLazyBlock::GetBlock(QBodyContext* context)
+QBlock* MqLazyBlock::GetBlock(MqBodyContext* context)
 {
     if (!o_block) 
         o_block = context->AddBlock(std::string{debugName});

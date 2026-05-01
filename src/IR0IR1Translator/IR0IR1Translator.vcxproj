@@ -21,16 +21,16 @@
     <ClInclude Include="MStmtToQInsts.h" />
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1Translator.h" />
     <ClInclude Include="Public\IR0IR1Translator\IR0IR1TranslatorConfig.h" />
-    <ClInclude Include="QAbi.h" />
-    <ClInclude Include="QAbi_Citron_X64.h" />
-    <ClInclude Include="QBodyContext.h" />
-    <ClInclude Include="QFuncInfo.h" />
-    <ClInclude Include="QJumpBlockInfo.h" />
-    <ClInclude Include="QLazyBlock.h" />
-    <ClInclude Include="QMisc.h" />
-    <ClInclude Include="QTranslationContexts.h" />
-    <ClInclude Include="QScopeGuard.h" />
-    <ClInclude Include="QEmitState.h" />
+    <ClInclude Include="MqAbi.h" />
+    <ClInclude Include="MqAbi_Citron_X64.h" />
+    <ClInclude Include="MqBodyContext.h" />
+    <ClInclude Include="MqFuncInfo.h" />
+    <ClInclude Include="MqJumpBlockInfo.h" />
+    <ClInclude Include="MqLazyBlock.h" />
+    <ClInclude Include="MqMisc.h" />
+    <ClInclude Include="MqTranslationContexts.h" />
+    <ClInclude Include="MqScopeGuard.h" />
+    <ClInclude Include="MqEmitState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommonQInstsTranslation.cpp" />
@@ -41,11 +41,11 @@
     <ClCompile Include="MqIntrinsicInfo.cpp" />
     <ClCompile Include="MReadToQInsts.cpp" />
     <ClCompile Include="MStmtToQInsts.cpp" />
-    <ClCompile Include="QAbi_Citron_X64.cpp" />
-    <ClCompile Include="QBodyContext.cpp" />
-    <ClCompile Include="QEmitState.cpp" />
-    <ClCompile Include="QLazyBlock.cpp" />
-    <ClCompile Include="QTranslationContexts.cpp" />
+    <ClCompile Include="MqAbi_Citron_X64.cpp" />
+    <ClCompile Include="MqBodyContext.cpp" />
+    <ClCompile Include="MqEmitState.cpp" />
+    <ClCompile Include="MqLazyBlock.cpp" />
+    <ClCompile Include="MqTranslationContexts.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infra\Infra.vcxproj">

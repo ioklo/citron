@@ -16,14 +16,14 @@
 #include "MCreateToQInsts.h"
 #include "MReadToQInsts.h"
 #include "MStmtToQInsts.h"
-#include "QTranslationContexts.h"
-#include "QBodyContext.h"
-#include "QScopeGuard.h"
-#include "QEmitState.h"
-#include "QLazyBlock.h"
+#include "MqTranslationContexts.h"
+#include "MqBodyContext.h"
+#include "MqScopeGuard.h"
+#include "MqEmitState.h"
+#include "MqLazyBlock.h"
 #include "MLocToQInsts.h"
-#include "QFuncInfo.h"
-#include "QAbi.h"
+#include "MqFuncInfo.h"
+#include "MqAbi.h"
 #include "MqIntrinsicInfo.h"
 #include "MqFactory.h"
 #include "MqCreateTarget.h"
@@ -33,9 +33,9 @@ using namespace std;
 namespace Citron {
 
 namespace {
-expected<QEmitState<QLocResult>, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp_StringElem& elem, QTranslationContexts& contexts)
+expected<MqEmitState<QLocResult>, DiagPtr> TranslateMInitExp_StringElemToQInsts(MInitExp_StringElem& elem, MqTranslationContexts& contexts)
 {
-    return visit([&contexts](auto& elem) -> expected<QEmitState<QLocResult>, DiagPtr> {
+    return visit([&contexts](auto& elem) -> expected<MqEmitState<QLocResult>, DiagPtr> {
         auto& bodyContext = contexts.bodyContext;
         using T = remove_cvref_t<decltype(elem)>;
         if constexpr (same_as<T, MInitExp_StringElem_Text>)
@@ -66,9 +66,9 @@ expected<QEmitState<QLocResult>, DiagPtr> TranslateMInitExp_StringElemToQInsts(M
     }, elem);
 }
 
-expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringElemToQInstsForCreate(MInitExp_StringElem& elem, MqCreateTarget createTarget, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> TranslateMInitExp_StringElemToQInstsForCreate(MInitExp_StringElem& elem, MqCreateTarget createTarget, MqTranslationContexts& contexts)
 {
-    return visit([&createTarget, &contexts](auto& elem) -> expected<QEmitState<void>, DiagPtr> {
+    return visit([&createTarget, &contexts](auto& elem) -> expected<MqEmitState<void>, DiagPtr> {
 
         using T = remove_cvref_t<decltype(elem)>;
         if constexpr (same_as<T, MInitExp_StringElem_Text>)
@@ -78,13 +78,13 @@ expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringElemToQInstsForCreat
                 auto& bodyContext = contexts.bodyContext;
                 bodyContext.EmitInst(QInst_Ctor_String{*o_qArgAddr, elem.text});
             }
-            return QEmitState_Ready{};
+            return MqEmitState_Ready{};
         }
         else if constexpr (same_as<T, MInitExp_StringElem_InitExp>)
         {
             auto e_s_result = TranslateMCreate_NBCToQInsts(elem.initExp, createTarget, contexts);
             RETURN_ON_ERROR_OR_DONE(e_s_result);
-            return QEmitState_Ready{};
+            return MqEmitState_Ready{};
         }
         else if constexpr (same_as<T, MInitExp_StringElem_Loc>)
         {
@@ -101,7 +101,7 @@ expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringElemToQInstsForCreat
                     {*o_createTargetAddrArg, locArg});
             }
 
-            return QEmitState_Ready{};
+            return MqEmitState_Ready{};
         }
         else static_assert(false);
     }, elem);
@@ -120,16 +120,16 @@ struct HandleCallContext
 
 // indirect return 값에 해당하는 slotIndex (direct, indirect 둘다 동일하게)
 // 이 함수의 리턴은 MRead로써 Call을 할 경우, 결괏값의 위치를 나타낸다. QLocResult는 DirectReturn을 가리킬 수 없으므로, DirectReturn인 경우에는 nullopt을 반환한다
-optional<QLocResult> HandleReturn(RType* retType, QReturnPassingMode& retPassingMode, MqCreateTarget createTarget, HandleCallContext& callContext, QBodyContext& bodyContext)
+optional<QLocResult> HandleReturn(RType* retType, MqReturnPassingMode& retPassingMode, MqCreateTarget createTarget, HandleCallContext& callContext, MqBodyContext& bodyContext)
 {
     return visit([retType, createTarget, &callContext, &bodyContext](auto& returnPassingMode) -> optional<QLocResult> {
         using T = remove_cvref_t<decltype(returnPassingMode)>;
-        if constexpr (same_as<T, QReturnPassingMode_Void>)
+        if constexpr (same_as<T, MqReturnPassingMode_Void>)
         {
             callContext.o_dest = nullopt;
             return nullopt;
         }
-        else if constexpr (same_as<T, QReturnPassingMode_Direct>)
+        else if constexpr (same_as<T, MqReturnPassingMode_Direct>)
         {
             return visit([retType, &callContext, &bodyContext](auto& createTarget) -> optional<QLocResult> {
                 using U = remove_cvref_t<decltype(createTarget)>;
@@ -158,7 +158,7 @@ optional<QLocResult> HandleReturn(RType* retType, QReturnPassingMode& retPassing
                 }
             }, createTarget);
         }
-        else if constexpr (same_as<T, QReturnPassingMode_Indirect>)
+        else if constexpr (same_as<T, MqReturnPassingMode_Indirect>)
         {
             return visit([retType, &returnPassingMode, &callContext, &bodyContext](auto& createTarget) -> optional<QLocResult> {
                 using U = remove_cvref_t<decltype(createTarget)>;
@@ -204,15 +204,15 @@ optional<QLocResult> HandleReturn(RType* retType, QReturnPassingMode& retPassing
 
 // o_instance: exp->callable.o_instance
 // thisPassingMode: funcInfo.thisPassingMode
-expected<QEmitState<void>, DiagPtr> HandleThis(MLoc* o_instance, QThisPassingMode& thisPassingMode, vector<QArg_CallArg>& args, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> HandleThis(MLoc* o_instance, MqThisPassingMode& thisPassingMode, vector<QArg_CallArg>& args, MqTranslationContexts& contexts)
 {
-    return visit([o_instance, &args, &contexts](auto& thisPassingMode) -> expected<QEmitState<void>, DiagPtr> {
+    return visit([o_instance, &args, &contexts](auto& thisPassingMode) -> expected<MqEmitState<void>, DiagPtr> {
         using T = remove_cvref_t<decltype(thisPassingMode)>;
-        if constexpr (same_as<T, QThisPassingMode_None>)
+        if constexpr (same_as<T, MqThisPassingMode_None>)
         {
-            return QEmitState_Ready{};
+            return MqEmitState_Ready{};
         }
-        else if constexpr (same_as<T, QThisPassingMode_Handle>)
+        else if constexpr (same_as<T, MqThisPassingMode_Handle>)
         {
             assert(o_instance);
 
@@ -220,13 +220,13 @@ expected<QEmitState<void>, DiagPtr> HandleThis(MLoc* o_instance, QThisPassingMod
             auto e_s_loc = TranslateMLocToQInsts(o_instance, contexts);
             RETURN_ON_ERROR_OR_DONE(e_s_loc);
 
-            return visit([o_instance, &args, &contexts](auto& loc) -> expected<QEmitState<void>, DiagPtr> {
+            return visit([o_instance, &args, &contexts](auto& loc) -> expected<MqEmitState<void>, DiagPtr> {
                 using U = remove_cvref_t<decltype(loc)>;
                 if constexpr (same_as<U, QLocResult_Slot>)
                 {
                     // this는 slot에 들어있다
                     args.push_back(QArg_CallArg_Slot{loc.slotIndex});
-                    return QEmitState_Ready{};
+                    return MqEmitState_Ready{};
                 }
                 else if constexpr (same_as<U, QLocResult_Ptr>)
                 {
@@ -236,12 +236,12 @@ expected<QEmitState<void>, DiagPtr> HandleThis(MLoc* o_instance, QThisPassingMod
                     size_t thisSlotIndex = contexts.bodyContext.AddTemp(type, "this");
                     contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Dest_Slot{thisSlotIndex}, QArg_Addr_PtrSlot{loc.slotIndex}});
                     args.push_back(QArg_CallArg_Slot{thisSlotIndex});
-                    return QEmitState_Ready{};
+                    return MqEmitState_Ready{};
                 }
                 else static_assert(false);
             }, **e_s_loc);
         }
-        else if constexpr (same_as<T, QThisPassingMode_Ptr>)
+        else if constexpr (same_as<T, MqThisPassingMode_Ptr>)
         {
             assert(o_instance);
 
@@ -251,20 +251,20 @@ expected<QEmitState<void>, DiagPtr> HandleThis(MLoc* o_instance, QThisPassingMod
 
             auto locArg = MakeAddrCallArg(**e_s_loc, contexts);
             args.push_back(locArg);
-            return QEmitState_Ready{};
+            return MqEmitState_Ready{};
         }
         else static_assert(false);
     }, thisPassingMode);
 }
 
-expected<QEmitState<optional<QLocResult>>, DiagPtr> HandleCallCore(
+expected<MqEmitState<optional<QLocResult>>, DiagPtr> HandleCallCore(
     RType* retType,
-    QFuncInfo& funcInfo,
+    MqFuncInfo& funcInfo,
     MqCreateTarget createTarget,
     MLoc* o_instance,
     vector<MArgument>& mArgs,
     HandleCallContext& callContext,
-    QTranslationContexts& contexts)
+    MqTranslationContexts& contexts)
 {
     // 1. Return 처리
     auto o_retLocResult = HandleReturn(retType, funcInfo.returnPassingMode, createTarget, callContext, contexts.bodyContext);
@@ -283,12 +283,12 @@ expected<QEmitState<optional<QLocResult>>, DiagPtr> HandleCallCore(
 
 } // namespace 
 
-expected<QEmitState<optional<QLocResult>>, DiagPtr> HandleIntrinsicCall(
+expected<MqEmitState<optional<QLocResult>>, DiagPtr> HandleIntrinsicCall(
     MqIntrinsicInfo& intrinsicInfo,
     MqCreateTarget createTarget,
     RTypeArguments* typeArgs,
     vector<MArgument>& mArgs,
-    QTranslationContexts& contexts)
+    MqTranslationContexts& contexts)
 {
     auto funcInfo = contexts.qAbi->GetFuncInfo(intrinsicInfo, typeArgs);
     auto* retType = GetType(intrinsicInfo.funcRet, &*contexts.rFactory);
@@ -303,13 +303,13 @@ expected<QEmitState<optional<QLocResult>>, DiagPtr> HandleIntrinsicCall(
     return **e_s_o_retLocResult;
 }
 
-expected<QEmitState<optional<QLocResult>>, DiagPtr> HandleCall(
+expected<MqEmitState<optional<QLocResult>>, DiagPtr> HandleCall(
     RFuncDecl* decl,
     RTypeArguments* typeArgs,
     MqCreateTarget createTarget,
     MLoc* o_instance,
     vector<MArgument>& mArgs,
-    QTranslationContexts& contexts)
+    MqTranslationContexts& contexts)
 {
     // generics는 어떻게 하나요
     // T F<T>(T t) { return t; }
@@ -330,7 +330,7 @@ expected<QEmitState<optional<QLocResult>>, DiagPtr> HandleCall(
     return **e_s_o_retLocResult;
 }
 
-QArg_CallArg MakeAddrCallArg(QLocResult& locResult, QTranslationContexts& contexts)
+QArg_CallArg MakeAddrCallArg(QLocResult& locResult, MqTranslationContexts& contexts)
 {
     return visit([](auto& locResult) -> QArg_CallArg {
         using T = remove_cvref_t<decltype(locResult)>;
@@ -341,7 +341,7 @@ QArg_CallArg MakeAddrCallArg(QLocResult& locResult, QTranslationContexts& contex
 }
 
 // NBC일때만 가능
-optional<QArg_CallArg> MakeAddrCallArg(MqCreateTarget& createTarget, QTranslationContexts& contexts)
+optional<QArg_CallArg> MakeAddrCallArg(MqCreateTarget& createTarget, MqTranslationContexts& contexts)
 {
     return visit([](auto& createTarget) -> optional<QArg_CallArg> {
         using T = remove_cvref_t<decltype(createTarget)>;
@@ -358,7 +358,7 @@ optional<QArg_CallArg> MakeAddrCallArg(MqCreateTarget& createTarget, QTranslatio
 }
 
 // NBC일때만 가능
-optional<QArg_Addr> MakeQArg_Addr(MqCreateTarget& createTarget, QTranslationContexts& contexts)
+optional<QArg_Addr> MakeQArg_Addr(MqCreateTarget& createTarget, MqTranslationContexts& contexts)
 {
     return visit([](auto& createTarget) -> optional<QArg_Addr> {
         using T = remove_cvref_t<decltype(createTarget)>;
@@ -374,14 +374,14 @@ optional<QArg_Addr> MakeQArg_Addr(MqCreateTarget& createTarget, QTranslationCont
     }, createTarget);
 }
 
-expected<QEmitState<QArg_CallArg>, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, QParamPassingMode passingMode, QTranslationContexts& contexts)
+expected<MqEmitState<QArg_CallArg>, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, MqParamPassingMode passingMode, MqTranslationContexts& contexts)
 {
-    return visit([passingMode, &contexts](auto& arg) -> expected<QEmitState<QArg_CallArg>, DiagPtr> {
+    return visit([passingMode, &contexts](auto& arg) -> expected<MqEmitState<QArg_CallArg>, DiagPtr> {
         using T = remove_cvref_t<decltype(arg)>;
 
         if constexpr (same_as<T, MArgument_Create>)
         {
-            if (passingMode == QParamPassingMode::Direct)
+            if (passingMode == MqParamPassingMode::Direct)
             {
                 // argument를 위한 slot을 하나 마련한다
                 auto* argType = GetType(arg.create, &*contexts.rFactory);
@@ -392,7 +392,7 @@ expected<QEmitState<QArg_CallArg>, DiagPtr> TranslateMArgumentToQInsts(MArgument
 
                 return QArg_CallArg_Slot{argSlotIndex};
             }
-            else if (passingMode == QParamPassingMode::Indirect)
+            else if (passingMode == MqParamPassingMode::Indirect)
             {
                 // argument를 위한 slot을 하나 마련한다
                 auto* argType = GetType(arg.create, &*contexts.rFactory);
@@ -406,7 +406,7 @@ expected<QEmitState<QArg_CallArg>, DiagPtr> TranslateMArgumentToQInsts(MArgument
         }
         else if constexpr (same_as<T, MArgument_Loc>) // loc은 pointer로 넘긴다
         {
-            assert(passingMode == QParamPassingMode::Ref);
+            assert(passingMode == MqParamPassingMode::Ref);
 
             auto e_s_locResult = TranslateMLocToQInsts(arg.loc, contexts);
             RETURN_ON_ERROR_OR_DONE(e_s_locResult);
@@ -415,21 +415,21 @@ expected<QEmitState<QArg_CallArg>, DiagPtr> TranslateMArgumentToQInsts(MArgument
         }
         else if constexpr (same_as<T, MArgument_Move>)
         {
-            assert(passingMode == QParamPassingMode::Ref);
+            assert(passingMode == MqParamPassingMode::Ref);
 
             // TODO: [30] move구현
             throw NotImplementedException{};
         }
         else if constexpr (same_as<T, MArgument_Forward>)
         {
-            assert(passingMode == QParamPassingMode::Forward);
+            assert(passingMode == MqParamPassingMode::Forward);
 
             // TODO: [57] [forward] ref parameter 지원
             throw NotImplementedException{};
         }
         else if constexpr (same_as<T, MArgument_Params>) // 파라미터를 여러개 받는 경우
         {
-            assert(passingMode == QParamPassingMode::Params);
+            assert(passingMode == MqParamPassingMode::Params);
             // TODO: [31] params 구현
             throw NotImplementedException{};
         }
@@ -437,7 +437,7 @@ expected<QEmitState<QArg_CallArg>, DiagPtr> TranslateMArgumentToQInsts(MArgument
     }, arg);
 }
 
-expected<QEmitState<void>, DiagPtr> TranslateMArgumentsToQInsts(vector<QArg_CallArg>& qArgs, vector<MArgument>& mArgs, QFuncInfo& funcInfo, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> TranslateMArgumentsToQInsts(vector<QArg_CallArg>& qArgs, vector<MArgument>& mArgs, MqFuncInfo& funcInfo, MqTranslationContexts& contexts)
 {
     assert(qArgs.size() == funcInfo.explicitArgStartIndex);
     assert(mArgs.size() == funcInfo.paramPassingModes.size());
@@ -452,10 +452,10 @@ expected<QEmitState<void>, DiagPtr> TranslateMArgumentsToQInsts(vector<QArg_Call
         qArgs.push_back(move(**e_s_qArg));
     }
 
-    return QEmitState_Ready{};
+    return MqEmitState_Ready{};
 }
 
-expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, MqCreateTarget createTarget, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_String* exp, MqCreateTarget createTarget, MqTranslationContexts& contexts)
 {
     auto& bodyContext = contexts.bodyContext;
     assert(!exp->elements.empty());
@@ -480,7 +480,7 @@ expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_St
 
         vector<QArg_CallArg> args;
         QArg_CallArg curArg = MakeAddrCallArg(**e_s_front, contexts);
-        assert(holds_alternative<QThisPassingMode_None>(addFuncInfo.thisPassingMode));
+        assert(holds_alternative<MqThisPassingMode_None>(addFuncInfo.thisPassingMode));
 
         for (size_t i = 1, end = exp->elements.size() - 1; i < end; i++)
         {   
@@ -517,17 +517,17 @@ expected<QEmitState<void>, DiagPtr> TranslateMInitExp_StringToQInsts(MInitExp_St
         }
     }
 
-    return QEmitState_Ready{};
+    return MqEmitState_Ready{};
 }
 
-expected<QEmitState<void>, DiagPtr> HandleInlineBlock(MStmt_Scope* scope, MqCreateTarget createTarget, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> HandleInlineBlock(MStmt_Scope* scope, MqCreateTarget createTarget, MqTranslationContexts& contexts)
 {
     // inlineBlock을 destSlot없이 호출할 일이 없도록 해야한다. 
     // 보통은 MStmt_Exp에서 호출될텐데, 여기는 Call, Assign만 가능하므로 괜찮다
     assert(holds_alternative<MqCreateTarget_Slot>(createTarget));
 
     // 지금 블록 말고 leaveBlock을 하나 더 만들어야 할거 같다
-    auto lazyExitBlock = MakePtr<QLazyBlock>("inline_exit");
+    auto lazyExitBlock = MakePtr<MqLazyBlock>("inline_exit");
     auto e_s_result = TranslateMStmt_ScopeToQInsts_Inline(scope, lazyExitBlock, get<MqCreateTarget_Slot>(createTarget).slotIndex, contexts);
     RETURN_ON_ERROR(e_s_result);
 
@@ -538,17 +538,17 @@ expected<QEmitState<void>, DiagPtr> HandleInlineBlock(MStmt_Scope* scope, MqCrea
     // 내부에서 exitBlock을 쓰지 않았다면 Done이다
     if (!lazyExitBlock->HasBlock())
     {
-        return QEmitState_Done{};
+        return MqEmitState_Done{};
     }
     else
     {
         auto* exitBlock = lazyExitBlock->GetBlock(&contexts.bodyContext);
         contexts.bodyContext.SetCurBlock(exitBlock);
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 }
 
-void UpdateCreateTarget_Value(RType* type, size_t slotIndex, MqCreateTarget createTarget, QTranslationContexts& contexts)
+void UpdateCreateTarget_Value(RType* type, size_t slotIndex, MqCreateTarget createTarget, MqTranslationContexts& contexts)
 {
     visit([type, slotIndex, &contexts](auto& createTarget) {
         using T = remove_cvref_t<decltype(createTarget)>;
@@ -574,7 +574,7 @@ void UpdateCreateTarget_Value(RType* type, size_t slotIndex, MqCreateTarget crea
     }, createTarget);
 }
 
-void UpdateCreateTarget_Ptr(RType* type, size_t ptrSlotIndex, MqCreateTarget createTarget, QTranslationContexts& contexts)
+void UpdateCreateTarget_Ptr(RType* type, size_t ptrSlotIndex, MqCreateTarget createTarget, MqTranslationContexts& contexts)
 {
     visit([type, ptrSlotIndex, &contexts](auto& createTarget) {
         using T = remove_cvref_t<decltype(createTarget)>;
@@ -606,7 +606,7 @@ void UpdateCreateTarget_Ptr(RType* type, size_t ptrSlotIndex, MqCreateTarget cre
    }, createTarget);
 }
 
-void UpdateCreateTarget_AddrOf(size_t slotIndex, MqCreateTarget createTarget, QTranslationContexts& contexts)
+void UpdateCreateTarget_AddrOf(size_t slotIndex, MqCreateTarget createTarget, MqTranslationContexts& contexts)
 {
     auto* type = contexts.bodyContext.GetSlotType(slotIndex);
     auto* ptrType = contexts.bodyContext.GetPtrType(type);
@@ -635,7 +635,7 @@ void UpdateCreateTarget_AddrOf(size_t slotIndex, MqCreateTarget createTarget, QT
     }, createTarget);
 }
 
-void UpdateCreateTarget(RType* type, QArg_Value&& v, MqCreateTarget createTarget, QTranslationContexts& contexts)
+void UpdateCreateTarget(RType* type, QArg_Value&& v, MqCreateTarget createTarget, MqTranslationContexts& contexts)
 {
     visit([type, &v, &contexts](auto& createTarget) {
         using T = remove_cvref_t<decltype(createTarget)>;

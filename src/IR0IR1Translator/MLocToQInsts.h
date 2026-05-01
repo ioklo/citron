@@ -13,15 +13,15 @@ struct MLoc;
 class QBlock;
 class QFactory;
 template<typename T>
-struct QEmitState;
+struct MqEmitState;
 
-struct QTranslationContexts;
+struct MqTranslationContexts;
 
 struct QLocResult_Slot { size_t slotIndex; }; // local var
 struct QLocResult_Ptr { size_t slotIndex; }; // ptr
 
 using QLocResult = std::variant<QLocResult_Slot, QLocResult_Ptr>;
 
-std::expected<QEmitState<QLocResult>, DiagPtr> TranslateMLocToQInsts(MLoc* loc, QTranslationContexts& contexts);
+std::expected<MqEmitState<QLocResult>, DiagPtr> TranslateMLocToQInsts(MLoc* loc, MqTranslationContexts& contexts);
 
 } // namespace Citron

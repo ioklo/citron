@@ -5,7 +5,7 @@
 #include "MIR/MExp.h"
 #include "MIR/MInitExp.h"
 #include "QIR/QInsts.h"
-#include "QTranslationContexts.h"
+#include "MqTranslationContexts.h"
 
 using namespace std;
 

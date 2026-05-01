@@ -20,11 +20,11 @@
 #include "QIR/QFuncBody.h"
 
 #include "MStmtToQInsts.h"
-#include "QBodyContext.h"
-#include "QScopeGuard.h"
-#include "QTranslationContexts.h"
-#include "QEmitState.h"
-#include "QAbi_Citron_X64.h"
+#include "MqBodyContext.h"
+#include "MqScopeGuard.h"
+#include "MqTranslationContexts.h"
+#include "MqEmitState.h"
+#include "MqAbi_Citron_X64.h"
 #include "MqFactory.h"
 
 using namespace std;
@@ -50,13 +50,13 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
         else static_assert(false);
     }, rFuncReturn);
 
-    QBodyContext bodyContext{rFactory, qFactory, rRetType};
+    MqBodyContext bodyContext{rFactory, qFactory, rRetType};
     MqFactoryPtr mqFactory = MakePtr<MqFactory>(rFactory);
-    QAbiPtr qAbi = MakePtr<QAbi_Citron_X64>(rFactory);
-    QTranslationContexts contexts{rFactory, qFactory, mqFactory, qAbi, bodyContext};
+    QAbiPtr qAbi = MakePtr<MqAbi_Citron_X64>(rFactory);
+    MqTranslationContexts contexts{rFactory, qFactory, mqFactory, qAbi, bodyContext};
 
     {
-        QScopeGuard mainGuard{std::nullopt, bodyContext};
+        MqScopeGuard mainGuard{std::nullopt, bodyContext};
 
         auto* rFuncDecl = mFuncBody.nFuncDecl->GetRFuncDecl();
         auto funcInfo = qAbi->GetFuncInfo(rFuncDecl, rFuncDecl->GetRDecl()->MakeOpenTypeArgs(*rFactory));
@@ -69,7 +69,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
         case RThisKind::Ptr:
         {
             RType* ptrType = bodyContext.GetPtrType();
-            size_t slotIndex = bodyContext.AddThis(ptrType);
+            size_t slotIndex = bodyContext.AddThis(ptrType); 
             break;
         }
         case RThisKind::Handle:
@@ -104,7 +104,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
         {
             if (bodyContext.IsVoidType(rRetType))
             {
-                bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Return{});
+                bodyContext.EmitJumpToCleanUpBlock(MqCleanUpKind_Return{});
                 mainGuard.SetDontNeedCleanUp();
             }
             else

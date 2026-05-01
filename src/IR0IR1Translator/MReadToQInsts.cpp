@@ -9,11 +9,11 @@
 #include "MLocToQInsts.h"
 #include "MCreateToQInsts.h"
 #include "MStmtToQInsts.h"
-#include "QBodyContext.h"
-#include "QTranslationContexts.h"
-#include "QEmitState.h"
+#include "MqBodyContext.h"
+#include "MqTranslationContexts.h"
+#include "MqEmitState.h"
 #include "CommonQInstsTranslation.h"
-#include "QEmitState.h"
+#include "MqEmitState.h"
 #include "MqIntrinsicInfo.h"
 #include "MqFactory.h"
 
@@ -36,8 +36,8 @@ QReadResult ToReadResult(QLocResult& locResult)
 // slot을 하나 만들어서 리턴한다
 struct MRead_ExpQInstsTranslator
 {
-    using ResultType = expected<QEmitState<QReadResult>, DiagPtr>;
-    QTranslationContexts& contexts;
+    using ResultType = expected<MqEmitState<QReadResult>, DiagPtr>;
+    MqTranslationContexts& contexts;
 
     ResultType Visit(MExp* exp)
     {
@@ -276,7 +276,7 @@ struct MRead_ExpQInstsTranslator
    
 };
 
-expected<QEmitState<QReadResult>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, QTranslationContexts& contexts)
+expected<MqEmitState<QReadResult>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, MqTranslationContexts& contexts)
 {
     // 이건 MLoc을 그대로 써본다
     auto e_s_locResult = TranslateMLocToQInsts(mReadLoc.loc, contexts);
@@ -285,14 +285,14 @@ expected<QEmitState<QReadResult>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc&
     return ToReadResult(**e_s_locResult);
 }
 
-expected<QEmitState<QReadResult>, DiagPtr> TranslateMRead_ExpToQInsts(MRead_Exp& mReadExp, QTranslationContexts& contexts)
+expected<MqEmitState<QReadResult>, DiagPtr> TranslateMRead_ExpToQInsts(MRead_Exp& mReadExp, MqTranslationContexts& contexts)
 {
     return Accept(MRead_ExpQInstsTranslator{contexts}, mReadExp.exp);
 }
 
-expected<QEmitState<QReadResult>, DiagPtr> TranslateMReadToQInsts(MRead& mRead, QTranslationContexts& contexts)
+expected<MqEmitState<QReadResult>, DiagPtr> TranslateMReadToQInsts(MRead& mRead, MqTranslationContexts& contexts)
 {
-    return visit([&contexts](auto& mRead) -> expected<QEmitState<QReadResult>, DiagPtr> {
+    return visit([&contexts](auto& mRead) -> expected<MqEmitState<QReadResult>, DiagPtr> {
         using T = remove_cvref_t<decltype(mRead)>;
         if constexpr (same_as<T, MRead_Loc>)
         {

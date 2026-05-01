@@ -5,19 +5,19 @@
 namespace Citron {
 
 class QBlock;
-class QBodyContext;
+class MqBodyContext;
 
-class QLazyBlock
+class MqLazyBlock
 {   
     std::string debugName;
     QBlock* o_block;
 
 public:
-    QLazyBlock(const std::string& debugName) : debugName{debugName}, o_block{nullptr} {}
+    MqLazyBlock(const std::string& debugName) : debugName{debugName}, o_block{nullptr} {}
     bool HasBlock() { return o_block != nullptr; }
-    QBlock* GetBlock(QBodyContext* context);
+    QBlock* GetBlock(MqBodyContext* context);
 };
 
-using QLazyBlockPtr = std::shared_ptr<QLazyBlock>;
+using MqLazyBlockPtr = std::shared_ptr<MqLazyBlock>;
 
 } // namespace Citron

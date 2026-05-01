@@ -1,8 +1,8 @@
-#include "QAbi_Citron_X64.h"
+#include "MqAbi_Citron_X64.h"
 #include "Infra/Exceptions.h"
 #include "RSymbol/RFuncDecl.h"
 #include "RSymbol/RFactory.h"
-#include "QFuncInfo.h"
+#include "MqFuncInfo.h"
 #include "CommonQInstsTranslation.h"
 #include "MqIntrinsicInfo.h"
 
@@ -10,12 +10,12 @@ using namespace std;
 
 namespace Citron {
 
-QAbi_Citron_X64::QAbi_Citron_X64(const RFactoryPtr& rFactory)
+MqAbi_Citron_X64::MqAbi_Citron_X64(const RFactoryPtr& rFactory)
     : rFactory{rFactory}
 {
 }
 
-size_t QAbi_Citron_X64::GetTypeSize(RType* type)
+size_t MqAbi_Citron_X64::GetTypeSize(RType* type)
 {
     if (dynamic_cast<RType_Ptr*>(type))
         return 8; // 포인터는 64bit로 간주한다
@@ -32,30 +32,30 @@ size_t QAbi_Citron_X64::GetTypeSize(RType* type)
     throw NotImplementedException{};
 }
 
-QFuncInfo QAbi_Citron_X64::GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs)
+MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs)
 {
     size_t curArgIndex = 0;
     auto returnPassingMode = GetReturnPassingMode(rFuncDecl->GetFuncReturn(typeArgs), &curArgIndex);
 
-    auto thisPassingMode = [rFuncDecl, &curArgIndex]() -> QThisPassingMode {
+    auto thisPassingMode = [rFuncDecl, &curArgIndex]() -> MqThisPassingMode {
         switch (rFuncDecl->GetThisKind())
         {
-        case RThisKind::None: return QThisPassingMode_None{};
-        case RThisKind::Handle: return QThisPassingMode_Handle{curArgIndex++};
-        case RThisKind::Ptr: return QThisPassingMode_Ptr{curArgIndex++};
+        case RThisKind::None: return MqThisPassingMode_None{};
+        case RThisKind::Handle: return MqThisPassingMode_Handle{curArgIndex++};
+        case RThisKind::Ptr: return MqThisPassingMode_Ptr{curArgIndex++};
         }
         unreachable();
     }();
 
     size_t explicitArgStartIndex = curArgIndex;
-    vector<QParamPassingMode> paramPassingModes;
+    vector<MqParamPassingMode> paramPassingModes;
     size_t count = rFuncDecl->GetParamCount();
     paramPassingModes.reserve(count);
     for (size_t i = 0; i < count; i++)
     {
         auto param = rFuncDecl->GetFuncParam(typeArgs, i);
         if (param.IsRef())
-            paramPassingModes.push_back(QParamPassingMode::Ref);
+            paramPassingModes.push_back(MqParamPassingMode::Ref);
         else
         {
             switch (param.type->GetCopyStrategy())
@@ -67,20 +67,20 @@ QFuncInfo QAbi_Citron_X64::GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typ
             {
                 size_t typeSize = GetTypeSize(param.type);
                 if (typeSize <= 8)
-                    paramPassingModes.push_back(QParamPassingMode::Direct);
+                    paramPassingModes.push_back(MqParamPassingMode::Direct);
                 else
-                    paramPassingModes.push_back(QParamPassingMode::Indirect);
+                    paramPassingModes.push_back(MqParamPassingMode::Indirect);
                 break;
             }
 
             case RCopyStrategy::NonBitwise:
-                paramPassingModes.push_back(QParamPassingMode::Indirect);
+                paramPassingModes.push_back(MqParamPassingMode::Indirect);
                 break;
             }
         }
     }
 
-    return QFuncInfo{
+    return MqFuncInfo{
         .returnPassingMode = returnPassingMode,
         .thisPassingMode = thisPassingMode,
         .explicitArgStartIndex = explicitArgStartIndex,
@@ -88,13 +88,13 @@ QFuncInfo QAbi_Citron_X64::GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typ
     };
 }
 
-QFuncInfo QAbi_Citron_X64::GetFuncInfo(MqIntrinsicInfo& intrinsicInfo, RTypeArguments* typeArgs)
+MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(MqIntrinsicInfo& intrinsicInfo, RTypeArguments* typeArgs)
 {
     size_t curArgIndex = 0;
     auto returnPassingMode = GetReturnPassingMode(intrinsicInfo.funcRet, &curArgIndex);
 
     size_t explicitArgStartIndex = curArgIndex;
-    vector<QParamPassingMode> paramPassingModes;
+    vector<MqParamPassingMode> paramPassingModes;
     size_t count = intrinsicInfo.funcParams.size();
     paramPassingModes.reserve(count);
     for (size_t i = 0; i < count; i++)
@@ -102,7 +102,7 @@ QFuncInfo QAbi_Citron_X64::GetFuncInfo(MqIntrinsicInfo& intrinsicInfo, RTypeArgu
         auto appliedFuncParam = intrinsicInfo.funcParams[i].Apply(typeArgs); // TODO: intrinsic에 typeArgs 적용.
 
         if (appliedFuncParam.IsRef())
-            paramPassingModes.push_back(QParamPassingMode::Ref);
+            paramPassingModes.push_back(MqParamPassingMode::Ref);
         else
         {
             switch (appliedFuncParam.type->GetCopyStrategy())
@@ -114,35 +114,35 @@ QFuncInfo QAbi_Citron_X64::GetFuncInfo(MqIntrinsicInfo& intrinsicInfo, RTypeArgu
             {
                 size_t typeSize = GetTypeSize(appliedFuncParam.type);
                 if (typeSize <= 8)
-                    paramPassingModes.push_back(QParamPassingMode::Direct);
+                    paramPassingModes.push_back(MqParamPassingMode::Direct);
                 else
-                    paramPassingModes.push_back(QParamPassingMode::Indirect);
+                    paramPassingModes.push_back(MqParamPassingMode::Indirect);
                 break;
             }
 
             case RCopyStrategy::NonBitwise:
-                paramPassingModes.push_back(QParamPassingMode::Indirect);
+                paramPassingModes.push_back(MqParamPassingMode::Indirect);
                 break;
             }
         }
     }
 
-    return QFuncInfo{
+    return MqFuncInfo{
         .returnPassingMode = returnPassingMode,
-        .thisPassingMode = QThisPassingMode_None{},
+        .thisPassingMode = MqThisPassingMode_None{},
         .explicitArgStartIndex = explicitArgStartIndex,
         .paramPassingModes = move(paramPassingModes)
     };
 }
 
-QReturnPassingMode QAbi_Citron_X64::GetReturnPassingMode(RFuncReturn funcRet, size_t* outCurArgIndex)
+MqReturnPassingMode MqAbi_Citron_X64::GetReturnPassingMode(RFuncReturn funcRet, size_t* outCurArgIndex)
 {
-    return visit([this, outCurArgIndex](auto& funcRet) -> QReturnPassingMode
+    return visit([this, outCurArgIndex](auto& funcRet) -> MqReturnPassingMode
     {
         using T = remove_cvref_t<decltype(funcRet)>;
         if constexpr (same_as<T, RFuncReturn_ForCtor>)
         {
-            return QReturnPassingMode_Void{};
+            return MqReturnPassingMode_Void{};
         }
         else if constexpr (same_as<T, RFuncReturn_Set>)
         {
@@ -150,20 +150,20 @@ QReturnPassingMode QAbi_Citron_X64::GetReturnPassingMode(RFuncReturn funcRet, si
             switch (rType->GetCopyStrategy())
             {
             case RCopyStrategy::Void:
-                return QReturnPassingMode_Void{};
+                return MqReturnPassingMode_Void{};
 
             case RCopyStrategy::Bitwise:
             {
                 // X64면 rType사이즈가 64bit보다 작으면 Direct, 크면 Indirect
                 size_t typeSize = GetTypeSize(rType);
                 if (typeSize <= 8)
-                    return QReturnPassingMode_Direct{};
+                    return MqReturnPassingMode_Direct{};
                 else
-                    return QReturnPassingMode_Indirect{(*outCurArgIndex)++};
+                    return MqReturnPassingMode_Indirect{(*outCurArgIndex)++};
             }
 
             case RCopyStrategy::NonBitwise:
-                return QReturnPassingMode_Indirect{(*outCurArgIndex)++};
+                return MqReturnPassingMode_Indirect{(*outCurArgIndex)++};
             }
 
             unreachable();

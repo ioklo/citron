@@ -4,11 +4,11 @@
     <Filter Include="Public Headers">
       <UniqueIdentifier>{f7d062b3-085a-4c7e-b17c-6a51dd4b3c71}</UniqueIdentifier>
     </Filter>
-    <Filter Include="QAbi">
-      <UniqueIdentifier>{d5433f95-1896-43aa-a18a-594bc27da441}</UniqueIdentifier>
-    </Filter>
     <Filter Include="QIntrinsic">
       <UniqueIdentifier>{fd84025d-bd14-4ebb-a1ef-2c5dd3739cf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Abi">
+      <UniqueIdentifier>{d5433f95-1896-43aa-a18a-594bc27da441}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -20,24 +20,24 @@
     </ClInclude>
     <ClInclude Include="MLocToQInsts.h" />
     <ClInclude Include="MStmtToQInsts.h" />
-    <ClInclude Include="QBodyContext.h" />
+    <ClInclude Include="MqBodyContext.h" />
     <ClInclude Include="CommonQInstsTranslation.h" />
-    <ClInclude Include="QScopeGuard.h" />
+    <ClInclude Include="MqScopeGuard.h" />
     <ClInclude Include="MReadToQInsts.h" />
     <ClInclude Include="MCreateToQInsts.h" />
-    <ClInclude Include="QTranslationContexts.h" />
-    <ClInclude Include="QEmitState.h" />
-    <ClInclude Include="QJumpBlockInfo.h" />
-    <ClInclude Include="QMisc.h" />
-    <ClInclude Include="QLazyBlock.h" />
-    <ClInclude Include="QAbi.h">
-      <Filter>QAbi</Filter>
+    <ClInclude Include="MqTranslationContexts.h" />
+    <ClInclude Include="MqEmitState.h" />
+    <ClInclude Include="MqJumpBlockInfo.h" />
+    <ClInclude Include="MqMisc.h" />
+    <ClInclude Include="MqLazyBlock.h" />
+    <ClInclude Include="MqAbi.h">
+      <Filter>Abi</Filter>
     </ClInclude>
-    <ClInclude Include="QFuncInfo.h">
-      <Filter>QAbi</Filter>
+    <ClInclude Include="MqFuncInfo.h">
+      <Filter>Abi</Filter>
     </ClInclude>
-    <ClInclude Include="QAbi_Citron_X64.h">
-      <Filter>QAbi</Filter>
+    <ClInclude Include="MqAbi_Citron_X64.h">
+      <Filter>Abi</Filter>
     </ClInclude>
     <ClInclude Include="MqFactory.h" />
     <ClInclude Include="MqIntrinsicInfo.h">
@@ -49,16 +49,16 @@
     <ClCompile Include="IR0IR1Translator.cpp" />
     <ClCompile Include="MLocToQInsts.cpp" />
     <ClCompile Include="MStmtToQInsts.cpp" />
-    <ClCompile Include="QBodyContext.cpp" />
+    <ClCompile Include="MqBodyContext.cpp" />
     <ClCompile Include="CommonQInstsTranslation.cpp" />
     <ClCompile Include="MReadToQInsts.cpp" />
     <ClCompile Include="MCreateToQInsts.cpp" />
-    <ClCompile Include="QEmitState.cpp" />
-    <ClCompile Include="QLazyBlock.cpp" />
-    <ClCompile Include="QAbi_Citron_X64.cpp">
-      <Filter>QAbi</Filter>
+    <ClCompile Include="MqEmitState.cpp" />
+    <ClCompile Include="MqLazyBlock.cpp" />
+    <ClCompile Include="MqAbi_Citron_X64.cpp">
+      <Filter>Abi</Filter>
     </ClCompile>
-    <ClCompile Include="QTranslationContexts.cpp" />
+    <ClCompile Include="MqTranslationContexts.cpp" />
     <ClCompile Include="MqFactory.cpp" />
     <ClCompile Include="MqIntrinsicInfo.cpp">
       <Filter>QIntrinsic</Filter>

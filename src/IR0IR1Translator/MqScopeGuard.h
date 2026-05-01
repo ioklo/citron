@@ -1,13 +1,13 @@
 #pragma once
-#include "QBodyContext.h"
+#include "MqBodyContext.h"
 namespace Citron {
 
-struct QScopeGuard
+struct MqScopeGuard
 {
-    QBodyContext& bodyContext;
+    MqBodyContext& bodyContext;
     bool needCleanUp;
 
-    QScopeGuard(std::optional<size_t> o_labelId, QBodyContext& bodyContext)
+    MqScopeGuard(std::optional<size_t> o_labelId, MqBodyContext& bodyContext)
         : bodyContext{bodyContext}
         , needCleanUp{true}
     {
@@ -16,7 +16,7 @@ struct QScopeGuard
 
     void SetDontNeedCleanUp() { needCleanUp = false; }
 
-    ~QScopeGuard()
+    ~MqScopeGuard()
     {   
         if (needCleanUp)
             bodyContext.CleanUpScope();

@@ -16,14 +16,14 @@
 
 #include "CommonQInstsTranslation.h"
 #include "MLocToQInsts.h"
-#include "QBodyContext.h"
-#include "QScopeGuard.h"
+#include "MqBodyContext.h"
+#include "MqScopeGuard.h"
 #include "MReadToQInsts.h"
-#include "QTranslationContexts.h"
+#include "MqTranslationContexts.h"
 #include "MCreateToQInsts.h"
-#include "QEmitState.h"
-#include "QJumpBlockInfo.h"
-#include "QLazyBlock.h"
+#include "MqEmitState.h"
+#include "MqJumpBlockInfo.h"
+#include "MqLazyBlock.h"
 
 using namespace std;
 
@@ -31,25 +31,25 @@ namespace Citron {
 
 struct MStmtQInstsTranslator
 {
-    using ResultType = expected<QEmitState<void>, DiagPtr>;
+    using ResultType = expected<MqEmitState<void>, DiagPtr>;
     
-    QTranslationContexts& contexts;
+    MqTranslationContexts& contexts;
 
-    expected<QEmitState<QReadResult>, DiagPtr> TranslateMTopLevel_ReadToQInsts(MTopLevel_Read& mTopLevelRead)
+    expected<MqEmitState<QReadResult>, DiagPtr> TranslateMTopLevel_ReadToQInsts(MTopLevel_Read& mTopLevelRead)
     {
-        QScopeGuard guard{std::nullopt, contexts.bodyContext};
+        MqScopeGuard guard{std::nullopt, contexts.bodyContext};
         return TranslateMReadToQInsts(mTopLevelRead.read, contexts);
     }
 
-    expected<QEmitState<void>, DiagPtr> TranslateMTopLevel_CreateToQInsts(MTopLevel_Create& mTopLevelCreate, MqCreateTarget createTarget)
+    expected<MqEmitState<void>, DiagPtr> TranslateMTopLevel_CreateToQInsts(MTopLevel_Create& mTopLevelCreate, MqCreateTarget createTarget)
     {
-        QScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
+        MqScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
         return TranslateMCreateToQInsts(mTopLevelCreate.create, createTarget, contexts);
     }
 
-    expected<QEmitState<QLocResult>, DiagPtr> TranslateMTopLevel_LocToQInsts(MTopLevel_Loc& mTopLevelLoc)
+    expected<MqEmitState<QLocResult>, DiagPtr> TranslateMTopLevel_LocToQInsts(MTopLevel_Loc& mTopLevelLoc)
     {
-        QScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
+        MqScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
         return TranslateMLocToQInsts(mTopLevelLoc.loc, contexts);
     }
 
@@ -86,12 +86,12 @@ struct MStmtQInstsTranslator
         }
 
         
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
     
     ResultType Visit(MStmt_Command* mStmt) 
     {  
-        QScopeGuard guard{std::nullopt, contexts.bodyContext}; // for MTopLevel_Command
+        MqScopeGuard guard{std::nullopt, contexts.bodyContext}; // for MTopLevel_Command
         return HandleCommand(mStmt->command);
     }
 
@@ -101,7 +101,7 @@ struct MStmtQInstsTranslator
 
         return visit([this, slotIndex](auto& init) -> ResultType {
             using T = remove_cvref_t<decltype(init)>;
-            if constexpr (same_as<T, MStmt_LocalVarDeclInit_Uninit>) { return QEmitState_Ready{}; }
+            if constexpr (same_as<T, MStmt_LocalVarDeclInit_Uninit>) { return MqEmitState_Ready{}; }
             else if constexpr (same_as<T, MStmt_LocalVarDeclInit_Create>)
             {
                 // LocalVarDecl
@@ -146,7 +146,7 @@ struct MStmtQInstsTranslator
             else static_assert(false);
         }, **e_s_locResult);
 
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
     
     ResultType HandleIf(MStmt_If* mStmt, size_t condSlotIndex)
@@ -191,11 +191,11 @@ struct MStmtQInstsTranslator
             if (endBlock)
             {
                 bodyContext.SetCurBlock(endBlock);
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
             else
             {
-                return QEmitState_Done{};
+                return MqEmitState_Done{};
             }
         }
         else
@@ -216,7 +216,7 @@ struct MStmtQInstsTranslator
                 bodyContext.EmitTermInst(QInst_Jump{endBlock});
 
             bodyContext.SetCurBlock(endBlock);
-            return QEmitState_Ready{};
+            return MqEmitState_Ready{};
         }
     }
 
@@ -259,7 +259,7 @@ struct MStmtQInstsTranslator
                     }
                 }
 
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
             else if constexpr (same_as<T, QReadResult_ConstInt32>)
                 throw RuntimeFatalException{}; // SyntaxIR0 Translation에서 이미 체크가 되었어야 한다
@@ -270,7 +270,7 @@ struct MStmtQInstsTranslator
     // label: for(initStmts; o_cond; contStmt) body
     ResultType Visit(MStmt_For* mStmt) // init이 빠진 형태. init은 MStmt_For가 있는 scope에 따로 있고, 여기에는 cond, cont, body만 있다
     {
-        QBodyContext& bodyContext = contexts.bodyContext;
+        MqBodyContext& bodyContext = contexts.bodyContext;
         
         QBlock* bodyBlock = bodyContext.AddBlock("for_body");
         QBlock* exitBlock = bodyContext.AddBlock("for_exit");
@@ -331,7 +331,7 @@ struct MStmtQInstsTranslator
             if (!*e_s_contResult)
             {
                 bodyContext.SetCurBlock(exitBlock);
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
 
             bodyContext.EmitTermInst(QInst_Jump{condBlock});
@@ -350,25 +350,25 @@ struct MStmtQInstsTranslator
         if (!*e_s_bodyResult)
         {
             bodyContext.SetCurBlock(exitBlock);
-            return QEmitState_Ready{};
+            return MqEmitState_Ready{};
         }
                 
         bodyContext.EmitTermInst(QInst_Jump{contBlock});
 
         bodyContext.SetCurBlock(exitBlock);
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 
     ResultType Visit(MStmt_Continue* mStmt) 
     {
-        contexts.bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Continue{mStmt->labelId});
-        return QEmitState_Done{};
+        contexts.bodyContext.EmitJumpToCleanUpBlock(MqCleanUpKind_Continue{mStmt->labelId});
+        return MqEmitState_Done{};
     }
 
     ResultType Visit(MStmt_Break* mStmt)
     {
-        contexts.bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Break{mStmt->labelId});
-        return QEmitState_Done{};
+        contexts.bodyContext.EmitJumpToCleanUpBlock(MqCleanUpKind_Break{mStmt->labelId});
+        return MqEmitState_Done{};
     }
 
     ResultType Visit(MStmt_Leave* mStmt) 
@@ -380,8 +380,8 @@ struct MStmtQInstsTranslator
         auto e_s_result = TranslateMTopLevel_CreateToQInsts(mStmt->create, std::move(createTarget));
         RETURN_ON_ERROR_OR_DONE(e_s_result);
 
-        bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Leave{mStmt->labelId});
-        return QEmitState_Done{};
+        bodyContext.EmitJumpToCleanUpBlock(MqCleanUpKind_Leave{mStmt->labelId});
+        return MqEmitState_Done{};
     }
 
     ResultType Visit(MStmt_Return* mStmt) 
@@ -411,19 +411,19 @@ struct MStmtQInstsTranslator
             }
             }
 
-            bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Return{});
-            return QEmitState_Done{};
+            bodyContext.EmitJumpToCleanUpBlock(MqCleanUpKind_Return{});
+            return MqEmitState_Done{};
         }
         else
         {
-            bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Return{});
-            return QEmitState_Done{};
+            bodyContext.EmitJumpToCleanUpBlock(MqCleanUpKind_Return{});
+            return MqEmitState_Done{};
         }
     }
     
     ResultType Visit(MStmt_Blank* mStmt) 
     { 
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 
     ResultType Visit(MStmt_Exp* mStmt) 
@@ -443,12 +443,12 @@ struct MStmtQInstsTranslator
         RETURN_ON_ERROR_OR_DONE(e_s_o_retSlotIndex);
 
         assert(!**e_s_o_retSlotIndex); // void 함수이므로, slot이 나와서는 안 된다
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 
     ResultType Visit(MStmt_Call* mStmt) 
     {
-        QScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
+        MqScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
         return HandleCall(mStmt->call);
     }
 
@@ -473,7 +473,7 @@ struct MStmtQInstsTranslator
                 auto srcArg = MakeAddrCallArg(**e_s_src, contexts);
                 contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::CopyAssign_Void_StringRef_StringInRef, nullopt, {destArg, srcArg});
 
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
             else if constexpr (same_as<T, MStmt_AssignKind_Move>)
             {
@@ -485,13 +485,13 @@ struct MStmtQInstsTranslator
 
     ResultType Visit(MStmt_Assign* mStmt) 
     {
-        QScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
+        MqScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
         return HandleAssign(mStmt->assign);
     }
     // ResultType Visit(MStmt_Do* mStmt) { }
 };
 
-expected<QEmitState<void>, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, QTranslationContexts& bodyContext)
+expected<MqEmitState<void>, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>& mStmts, MqTranslationContexts& bodyContext)
 {   
     for(auto* mStmt : mStmts)
     {
@@ -500,40 +500,40 @@ expected<QEmitState<void>, DiagPtr> TranslateMStmtsToQInsts(std::vector<MStmt*>&
         RETURN_ON_ERROR_OR_DONE(e_s_result);
     }
 
-    return QEmitState_Ready{};
+    return MqEmitState_Ready{};
 }
 
-expected<QEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Default(MStmt_Scope* scope, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Default(MStmt_Scope* scope, MqTranslationContexts& contexts)
 {
-    QScopeGuard guard{std::nullopt, contexts.bodyContext};
+    MqScopeGuard guard{std::nullopt, contexts.bodyContext};
     return TranslateMStmtsToQInsts(scope->stmts, contexts);
 }
 
-expected<QEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Loop(MStmt_Scope* scope, QBlock* contBlock, QBlock* breakBlock, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Loop(MStmt_Scope* scope, QBlock* contBlock, QBlock* breakBlock, MqTranslationContexts& contexts)
 {
     auto& scopeKind = get<MScopeKind_Loop>(scope->scopeKind);
-    QScopeGuard guard{scopeKind.labelId, contexts.bodyContext};
-    QJumpBlockScopeGuard jumpBlockGuard{QJumpBlockInfo_Loop{scopeKind.labelId, contBlock, breakBlock}, contexts.bodyContext};
+    MqScopeGuard guard{scopeKind.labelId, contexts.bodyContext};
+    MqJumpBlockScopeGuard jumpBlockGuard{MqJumpBlockInfo_Loop{scopeKind.labelId, contBlock, breakBlock}, contexts.bodyContext};
     return TranslateMStmtsToQInsts(scope->stmts, contexts);
 }
 
-expected<QEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Switch(MStmt_Scope* scope, QBlock* breakBlock, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Switch(MStmt_Scope* scope, QBlock* breakBlock, MqTranslationContexts& contexts)
 {
     auto& scopeKind = get<MScopeKind_Switch>(scope->scopeKind);
-    QScopeGuard guard{scopeKind.labelId, contexts.bodyContext};
-    QJumpBlockScopeGuard jumpBlockGuard{QJumpBlockInfo_Switch{scopeKind.labelId, breakBlock}, contexts.bodyContext};
+    MqScopeGuard guard{scopeKind.labelId, contexts.bodyContext};
+    MqJumpBlockScopeGuard jumpBlockGuard{MqJumpBlockInfo_Switch{scopeKind.labelId, breakBlock}, contexts.bodyContext};
     return TranslateMStmtsToQInsts(scope->stmts, contexts);
 }
 
-expected<QEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Inline(MStmt_Scope* scope, const QLazyBlockPtr& leaveBlock, size_t destSlotIndex, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> TranslateMStmt_ScopeToQInsts_Inline(MStmt_Scope* scope, const MqLazyBlockPtr& leaveBlock, size_t destSlotIndex, MqTranslationContexts& contexts)
 {
     auto& scopeKind = get<MScopeKind_Inline>(scope->scopeKind);
-    QScopeGuard guard{scopeKind.labelId, contexts.bodyContext};
-    QJumpBlockScopeGuard jumpBlockGuard{QJumpBlockInfo_Inline{scopeKind.labelId, leaveBlock, destSlotIndex}, contexts.bodyContext};
+    MqScopeGuard guard{scopeKind.labelId, contexts.bodyContext};
+    MqJumpBlockScopeGuard jumpBlockGuard{MqJumpBlockInfo_Inline{scopeKind.labelId, leaveBlock, destSlotIndex}, contexts.bodyContext};
     return TranslateMStmtsToQInsts(scope->stmts, contexts);
 }
 
-expected<QEmitState<void>, DiagPtr> TranslateMStmtToQInsts(MStmt* mStmt, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> TranslateMStmtToQInsts(MStmt* mStmt, MqTranslationContexts& contexts)
 {
     MStmtQInstsTranslator translator{contexts};
     return Accept(translator, mStmt);

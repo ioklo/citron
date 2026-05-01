@@ -10,13 +10,13 @@
 #include "QIR/QInsts.h"
 #include "MLocToQInsts.h"
 #include "MStmtToQInsts.h"
-#include "QBodyContext.h"
-#include "QTranslationContexts.h"
+#include "MqBodyContext.h"
+#include "MqTranslationContexts.h"
 #include "MReadToQInsts.h"
 #include "CommonQInstsTranslation.h"
-#include "QEmitState.h"
-#include "QAbi.h"
-#include "QFuncInfo.h"
+#include "MqEmitState.h"
+#include "MqAbi.h"
+#include "MqFuncInfo.h"
 #include "MqIntrinsicInfo.h"
 #include "MqFactory.h"
 
@@ -26,9 +26,9 @@ namespace Citron {
 
 struct MCreate_BCQInstsTranslator
 {
-    using ResultType = expected<QEmitState<void>, DiagPtr>;
+    using ResultType = expected<MqEmitState<void>, DiagPtr>;
     MqCreateTarget createTarget;
-    QTranslationContexts& contexts;
+    MqTranslationContexts& contexts;
 
     ResultType Visit(MExp* exp)
     {
@@ -57,7 +57,7 @@ struct MCreate_BCQInstsTranslator
             else static_assert(false);
         }, **e_s_srcLoc);
 
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 
     // MExp_Store(MLoc* dest, MRead src)
@@ -86,7 +86,7 @@ struct MCreate_BCQInstsTranslator
                 contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Dest_Slot{destLoc.slotIndex}, QArg_Value_Slot{src.slotIndex}});
 
                 UpdateCreateTarget_Value(type, destLoc.slotIndex, createTarget, contexts);
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
             // 1-2. destLoc: slot, srcLoc: ptr
             else if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_Ptr>)
@@ -96,7 +96,7 @@ struct MCreate_BCQInstsTranslator
                 contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Dest_Slot{destLoc.slotIndex}, QArg_Addr_PtrSlot{src.slotIndex}});
 
                 UpdateCreateTarget_Value(type, destLoc.slotIndex, createTarget, contexts);
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
             // 1-3. destLoc: slot, srcLoc: const bool
             else if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_ConstBool>)
@@ -106,7 +106,7 @@ struct MCreate_BCQInstsTranslator
                 // dest = const
                 contexts.bodyContext.EmitInst(QInst_Assign{boolType, QArg_Dest_Slot{destLoc.slotIndex}, QArg_Value_ConstBool{src.value}});
                 UpdateCreateTarget(boolType, QArg_Value_ConstBool{src.value}, createTarget, contexts);
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
 
             // 1-4. destLoc: slot, srcLoc: const int
@@ -117,7 +117,7 @@ struct MCreate_BCQInstsTranslator
                 // dest = const
                 contexts.bodyContext.EmitInst(QInst_Assign{intType, QArg_Dest_Slot{destLoc.slotIndex}, QArg_Value_ConstInt32{src.value}});
                 UpdateCreateTarget(intType, QArg_Value_ConstInt32{src.value}, createTarget, contexts);
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
 
             // 2-1. destLoc: ptr, srcLoc: slot
@@ -127,7 +127,7 @@ struct MCreate_BCQInstsTranslator
                 auto* type = contexts.bodyContext.GetSlotType(src.slotIndex);
                 contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Addr_PtrSlot{destLoc.slotIndex}, QArg_Value_Slot{src.slotIndex}});
                 UpdateCreateTarget_Value(type, src.slotIndex, createTarget, contexts);
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
             // 2-2. destLoc: ptr, srcLoc: ptr
             else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_Ptr>)
@@ -140,7 +140,7 @@ struct MCreate_BCQInstsTranslator
                     {QArg_CallArg_Slot{destLoc.slotIndex}, QArg_CallArg_Slot{src.slotIndex}, QArg_CallArg_ConstInt32{(int)size}});
 
                 UpdateCreateTarget_Ptr(type, src.slotIndex, createTarget, contexts);
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
 
             // 2-3. destLoc: ptr, srcLoc: const bool
@@ -151,7 +151,7 @@ struct MCreate_BCQInstsTranslator
                 // dest = const
                 contexts.bodyContext.EmitInst(QInst_Store{boolType, QArg_Addr_PtrSlot{destLoc.slotIndex}, QArg_Value_ConstBool{src.value}});
                 UpdateCreateTarget(boolType, QArg_Value_ConstBool{src.value}, createTarget, contexts);
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
 
             // 2-4. destLoc: ptr, srcLoc: const int
@@ -162,7 +162,7 @@ struct MCreate_BCQInstsTranslator
                 // dest = const
                 contexts.bodyContext.EmitInst(QInst_Store{intType, QArg_Addr_PtrSlot{destLoc.slotIndex}, QArg_Value_ConstInt32{src.value}});
                 UpdateCreateTarget(intType, QArg_Value_ConstInt32{src.value}, createTarget, contexts);
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
             else static_assert(false);
 
@@ -199,19 +199,19 @@ struct MCreate_BCQInstsTranslator
             else static_assert(false);
         }, **e_s_loc);
 
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 
     ResultType Visit(MExp_BoolLiteral* exp) 
     {
         UpdateCreateTarget(contexts.bodyContext.GetBoolType(), QArg_Value_ConstBool{exp->value}, createTarget, contexts);
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 
     ResultType Visit(MExp_IntLiteral* exp) 
     { 
         UpdateCreateTarget(contexts.bodyContext.GetIntType(), QArg_Value_ConstInt32{exp->value}, createTarget, contexts);
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 
     ResultType Visit(MExp_CallIntrinsic* exp) 
@@ -219,7 +219,7 @@ struct MCreate_BCQInstsTranslator
         auto& intrinsicInfo = contexts.mqFactory->GetIntrinsicInfo(exp->kind);
         auto e_s_o_retLocResult = HandleIntrinsicCall(intrinsicInfo, createTarget, exp->typeArgs, exp->args, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_o_retLocResult);
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 
     ResultType Visit(MExp_Call* exp) 
@@ -227,7 +227,7 @@ struct MCreate_BCQInstsTranslator
         auto e_s_o_retLocResult = HandleCall(exp->callable.decl, exp->callable.typeArgs, createTarget, exp->callable.o_instance, exp->args, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_o_retLocResult);
 
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 
     // BC용 Struct
@@ -256,9 +256,9 @@ struct MCreate_BCQInstsTranslator
 
 struct MCreate_NBCQInstsTranslator
 {
-    using ResultType = expected<QEmitState<void>, DiagPtr>;
+    using ResultType = expected<MqEmitState<void>, DiagPtr>;
     MqCreateTarget createTarget;
-    QTranslationContexts& contexts;
+    MqTranslationContexts& contexts;
 
     ResultType Visit(MInitExp* initExp)
     {
@@ -278,7 +278,7 @@ struct MCreate_NBCQInstsTranslator
         auto& intrinsicInfo = contexts.mqFactory->GetIntrinsicInfo(mInitExp->kind);
         auto e_s_o_retLocResult = HandleIntrinsicCall(intrinsicInfo, createTarget, mInitExp->typeArgs, mInitExp->args, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_o_retLocResult);
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
     // ResultType Visit(MInitExp_NewClass* mInitExp) { }
     ResultType Visit(MInitExp_StructCtor* mInitExp) 
@@ -302,7 +302,7 @@ struct MCreate_NBCQInstsTranslator
                         {*o_createTargetArg, srcArg});
                 }
 
-                return QEmitState_Ready{};
+                return MqEmitState_Ready{};
             }
             else if constexpr (same_as<U, MInitExp_StructCtorKind_Move>)
             {
@@ -323,7 +323,7 @@ struct MCreate_NBCQInstsTranslator
         auto e_s_o_retLocResult = HandleCall(mInitExp->callable.decl, mInitExp->callable.typeArgs, createTarget, mInitExp->callable.o_instance, mInitExp->args, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_o_retLocResult);
 
-        return QEmitState_Ready{};
+        return MqEmitState_Ready{};
     }
 
     // ResultType Visit(MInitExp_NewEnumElem* mInitExp) { }
@@ -339,14 +339,14 @@ struct MCreate_NBCQInstsTranslator
     // ResultType Visit(MInitExp_As* mInitExp) { }
 };
 
-expected<QEmitState<void>, DiagPtr> TranslateMCreate_NBCToQInsts(MInitExp* mInitExp, MqCreateTarget createTarget, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> TranslateMCreate_NBCToQInsts(MInitExp* mInitExp, MqCreateTarget createTarget, MqTranslationContexts& contexts)
 {
     return Accept(MCreate_NBCQInstsTranslator{createTarget, contexts}, mInitExp);
 }
 
-expected<QEmitState<void>, DiagPtr> TranslateMCreateToQInsts(MCreate& mCreate, MqCreateTarget createTarget, QTranslationContexts& contexts)
+expected<MqEmitState<void>, DiagPtr> TranslateMCreateToQInsts(MCreate& mCreate, MqCreateTarget createTarget, MqTranslationContexts& contexts)
 {
-    return visit([createTarget, &contexts](auto& mCreate) -> expected<QEmitState<void>, DiagPtr> {
+    return visit([createTarget, &contexts](auto& mCreate) -> expected<MqEmitState<void>, DiagPtr> {
         using T = remove_cvref_t<decltype(mCreate)>;
 
         if constexpr (same_as<T, MCreate_BC>)

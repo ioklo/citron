@@ -1,4 +1,4 @@
-#include "QBodyContext.h"
+#include "MqBodyContext.h"
 
 #include <variant>
 #include <format>
@@ -23,9 +23,9 @@
 #include "QIR/QArgs.h"
 #include "QIR/QFactory.h"
 
-#include "QLazyBlock.h"
+#include "MqLazyBlock.h"
 #include "MqIntrinsicInfo.h"
-#include "QAbi_Citron_X64.h"
+#include "MqAbi_Citron_X64.h"
 
 using namespace std;
 
@@ -41,26 +41,26 @@ inline bool IsTerminator(QInst& inst)
 }
 }
 
-QCleanUpInfo& QScope::GetOrAddCleanUpInfo(QCleanUpKind kind)
+MqCleanUpInfo& MqScope::GetOrAddCleanUpInfo(MqCleanUpKind kind)
 {
     if (auto* value = cleanUpInfos.Find(kind))
         return *value;
 
-    return cleanUpInfos.Add(kind, QCleanUpInfo{});
+    return cleanUpInfos.Add(kind, MqCleanUpInfo{});
 }
 
-QJumpBlockScopeGuard::QJumpBlockScopeGuard(QJumpBlockInfo&& info, QBodyContext& bodyContext)
+MqJumpBlockScopeGuard::MqJumpBlockScopeGuard(MqJumpBlockInfo&& info, MqBodyContext& bodyContext)
     : bodyContext{bodyContext}
 {
     bodyContext.PushJumpBlockInfo(std::move(info));
 }
 
-QJumpBlockScopeGuard::~QJumpBlockScopeGuard()
+MqJumpBlockScopeGuard::~MqJumpBlockScopeGuard()
 {
     bodyContext.PopJumpBlockInfo();
 }
 
-QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType)
+MqBodyContext::MqBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType)
     : rFactory{rFactory}
     , qFactory{qFactory}
 {
@@ -71,18 +71,18 @@ QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFact
     this->curBlock = firstBlock;
 }
 
-QBlock* QBodyContext::AddBlock(std::string&& debugText)
+QBlock* MqBodyContext::AddBlock(std::string&& debugText)
 {
     auto* newBlock = qFactory->MakeQBlock(format("b{}_{}", blocks.size(), move(debugText)));
     blocks.push_back(newBlock);
     return newBlock;
 }
 
-QBlock* QBodyContext::GetContinueBlock(size_t labelId)
+QBlock* MqBodyContext::GetContinueBlock(size_t labelId)
 {
     for(auto& info : jumpBlockInfos | views::reverse)
     {
-        if (auto* loopInfo = get_if<QJumpBlockInfo_Loop>(&info))
+        if (auto* loopInfo = get_if<MqJumpBlockInfo_Loop>(&info))
             if (loopInfo->labelId == labelId)
                 return loopInfo->contBlock;
     }
@@ -90,16 +90,16 @@ QBlock* QBodyContext::GetContinueBlock(size_t labelId)
     return nullptr;
 }
 
-QBlock* QBodyContext::GetBreakBlock(size_t labelId)
+QBlock* MqBodyContext::GetBreakBlock(size_t labelId)
 {
     for (auto& info : jumpBlockInfos | views::reverse)
     {
-        if (auto* loopInfo = get_if<QJumpBlockInfo_Loop>(&info))
+        if (auto* loopInfo = get_if<MqJumpBlockInfo_Loop>(&info))
         {
             if (loopInfo->labelId == labelId)
                 return loopInfo->breakBlock;
         }
-        else if (auto* switchInfo = get_if<QJumpBlockInfo_Switch>(&info))
+        else if (auto* switchInfo = get_if<MqJumpBlockInfo_Switch>(&info))
         {
             if (switchInfo->labelId == labelId)
                 return loopInfo->breakBlock;
@@ -109,11 +109,11 @@ QBlock* QBodyContext::GetBreakBlock(size_t labelId)
     return nullptr;
 }
 
-QBlock* QBodyContext::GetLeaveBlock(size_t labelId)
+QBlock* MqBodyContext::GetLeaveBlock(size_t labelId)
 {
     for (auto& info : jumpBlockInfos | views::reverse)
     {
-        if (auto* leaveInfo = get_if<QJumpBlockInfo_Inline>(&info))
+        if (auto* leaveInfo = get_if<MqJumpBlockInfo_Inline>(&info))
             if (leaveInfo->labelId == labelId)
                 return leaveInfo->lazyLeaveBlock->GetBlock(this);
     }
@@ -122,19 +122,19 @@ QBlock* QBodyContext::GetLeaveBlock(size_t labelId)
 }
 
 
-void QBodyContext::EmitInstInternal(QInst&& inst)
+void MqBodyContext::EmitInstInternal(QInst&& inst)
 {
     assert(curBlock);
     curBlock->EmitInst(std::move(inst));
 }
 
-void QBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Dest> o_dest, std::vector<QArg_CallArg>&& args)
+void MqBodyContext::EmitIntrinsic(QInst_IntrinsicKind kind, optional<QArg_Dest> o_dest, std::vector<QArg_CallArg>&& args)
 {
     assert(curBlock);
     curBlock->EmitInst(QInst_Intrinsic{kind, move(o_dest), move(args)});
 }
 
-void QBodyContext::EmitTermInst(QTermInst&& termInst)
+void MqBodyContext::EmitTermInst(QTermInst&& termInst)
 {
     assert(curBlock);
 
@@ -142,24 +142,24 @@ void QBodyContext::EmitTermInst(QTermInst&& termInst)
     curBlock = nullptr;
 }
 
-bool QBodyContext::IsFinalScope(QCleanUpKind kind, size_t scopeIndex)
+bool MqBodyContext::IsFinalScope(MqCleanUpKind kind, size_t scopeIndex)
 {
     return visit([this, scopeIndex](auto& kind) -> bool {
         using T = remove_cvref_t<decltype(kind)>;
-        if constexpr (same_as<T, QCleanUpKind_Return>)
+        if constexpr (same_as<T, MqCleanUpKind_Return>)
             return scopeIndex == 0;
-        else if constexpr (same_as<T, QCleanUpKind_Continue>)
+        else if constexpr (same_as<T, MqCleanUpKind_Continue>)
             return scopes[scopeIndex].o_labelId == kind.labelId;
-        else if constexpr (same_as<T, QCleanUpKind_Break>)
+        else if constexpr (same_as<T, MqCleanUpKind_Break>)
             return scopes[scopeIndex].o_labelId == kind.labelId;
-        else if constexpr (same_as<T, QCleanUpKind_Leave>)
+        else if constexpr (same_as<T, MqCleanUpKind_Leave>)
             return scopes[scopeIndex].o_labelId == kind.labelId;
         else static_assert(false);
 
     }, kind);
 }
 
-QBlock* QBodyContext::MakeCleanUpBlockWithoutFinalize(span<size_t> managedSlotIndices)
+QBlock* MqBodyContext::MakeCleanUpBlockWithoutFinalize(span<size_t> managedSlotIndices)
 {
     assert(!managedSlotIndices.empty());
 
@@ -178,26 +178,26 @@ QBlock* QBodyContext::MakeCleanUpBlockWithoutFinalize(span<size_t> managedSlotIn
     return newBlock;
 }
 
-void QBodyContext::FinalizeCleanupBlock(QBlock* block, QCleanUpKind kind)
+void MqBodyContext::FinalizeCleanupBlock(QBlock* block, MqCleanUpKind kind)
 {
     visit([this, block](auto& kind) {
         using T = remove_cvref_t<decltype(kind)>;
-        if constexpr (same_as<T, QCleanUpKind_Return>)
+        if constexpr (same_as<T, MqCleanUpKind_Return>)
         {
             // 바로 리턴 블록 생성
             block->EmitInst(QInst_Return{});
         }
-        else if constexpr (same_as<T, QCleanUpKind_Continue>)
+        else if constexpr (same_as<T, MqCleanUpKind_Continue>)
         {   
             auto* contBlock = GetContinueBlock(kind.labelId);
             block->EmitInst(QInst_Jump{contBlock});
         }
-        else if constexpr (same_as<T, QCleanUpKind_Break>)
+        else if constexpr (same_as<T, MqCleanUpKind_Break>)
         {   
             auto* breakBlock = GetBreakBlock(kind.labelId);
             block->EmitInst(QInst_Jump{breakBlock});
         }
-        else if constexpr (same_as<T, QCleanUpKind_Leave>)
+        else if constexpr (same_as<T, MqCleanUpKind_Leave>)
         {
             auto* leaveBlock = GetLeaveBlock(kind.labelId);
             block->EmitInst(QInst_Jump{leaveBlock});
@@ -207,9 +207,9 @@ void QBodyContext::FinalizeCleanupBlock(QBlock* block, QCleanUpKind kind)
 }
 
 // FinalScope를 먼저 보지 않는 버전
-QBlock* QBodyContext::GetCleanUpBlock(QCleanUpKind kind, size_t scopeIndex)
+QBlock* MqBodyContext::GetCleanUpBlock(MqCleanUpKind kind, size_t scopeIndex)
 {
-    QScope& scope = scopes[scopeIndex];
+    MqScope& scope = scopes[scopeIndex];
     auto* cleanUpInfo = scope.cleanUpInfos.Find(kind);
 
     if (!cleanUpInfo)
@@ -220,14 +220,14 @@ QBlock* QBodyContext::GetCleanUpBlock(QCleanUpKind kind, size_t scopeIndex)
             {
                 QBlock* block = MakeCleanUpBlockWithoutFinalize(scope.managedSlotIndices);
                 FinalizeCleanupBlock(block, kind);
-                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.managedSlotIndices.size(), block});
+                scope.cleanUpInfos.Add(kind, MqCleanUpInfo{scope.managedSlotIndices.size(), block});
                 return block;
             }
             else
             {
                 QBlock* block = AddBlock("cleanUp");
                 FinalizeCleanupBlock(block, kind);
-                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.managedSlotIndices.size(), block});
+                scope.cleanUpInfos.Add(kind, MqCleanUpInfo{scope.managedSlotIndices.size(), block});
                 return block;
             }
         }
@@ -238,13 +238,13 @@ QBlock* QBodyContext::GetCleanUpBlock(QCleanUpKind kind, size_t scopeIndex)
                 QBlock* block = MakeCleanUpBlockWithoutFinalize(scope.managedSlotIndices);
                 auto* parentCleanUpBlock = GetCleanUpBlock(kind, scopeIndex - 1);
                 block->EmitInst(QInst_Jump{parentCleanUpBlock});
-                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.managedSlotIndices.size(), block});
+                scope.cleanUpInfos.Add(kind, MqCleanUpInfo{scope.managedSlotIndices.size(), block});
                 return block;
             }
             else
             {
                 auto* parentCleanUpBlock = GetCleanUpBlock(kind, scopeIndex - 1);
-                scope.cleanUpInfos.Add(kind, QCleanUpInfo{scope.managedSlotIndices.size(), parentCleanUpBlock});
+                scope.cleanUpInfos.Add(kind, MqCleanUpInfo{scope.managedSlotIndices.size(), parentCleanUpBlock});
                 return parentCleanUpBlock;
             }
         }
@@ -271,7 +271,7 @@ QBlock* QBodyContext::GetCleanUpBlock(QCleanUpKind kind, size_t scopeIndex)
     }
 }
 
-void QBodyContext::EmitJumpToCleanUpBlock(QCleanUpKind kind)
+void MqBodyContext::EmitJumpToCleanUpBlock(MqCleanUpKind kind)
 {
     assert(curBlock);
 
@@ -280,36 +280,36 @@ void QBodyContext::EmitJumpToCleanUpBlock(QCleanUpKind kind)
     curBlock = nullptr;
 }
 
-RType* QBodyContext::GetStringType()
+RType* MqBodyContext::GetStringType()
 {
     return rFactory->MakeStringType();
 }
 
-RType* QBodyContext::GetBoolType()
+RType* MqBodyContext::GetBoolType()
 {
     return rFactory->MakeBoolType();
 }
 
-RType* QBodyContext::GetIntType()
+RType* MqBodyContext::GetIntType()
 {
     return rFactory->MakeIntType();
 }
 
-RType* QBodyContext::GetPtrType()
+RType* MqBodyContext::GetPtrType()
 {
     return rFactory->MakePtrType(rFactory->MakeVoidType());
 }
 
-RType* QBodyContext::GetPtrType(RType* innerType)
+RType* MqBodyContext::GetPtrType(RType* innerType)
 {
     return rFactory->MakePtrType(innerType);
 }
 
-optional<size_t> QBodyContext::GetLeaveSlotIndex(size_t labelId)
+optional<size_t> MqBodyContext::GetLeaveSlotIndex(size_t labelId)
 {
     for (auto& jumpBlockInfo : jumpBlockInfos | views::reverse)
     {
-        if (auto* inlineInfo = get_if<QJumpBlockInfo_Inline>(&jumpBlockInfo))
+        if (auto* inlineInfo = get_if<MqJumpBlockInfo_Inline>(&jumpBlockInfo))
         {
             if (inlineInfo->labelId == labelId)
                 return inlineInfo->leaveSlotIndex;
@@ -319,7 +319,7 @@ optional<size_t> QBodyContext::GetLeaveSlotIndex(size_t labelId)
     return nullopt;
 }
 
-optional<QLocalInfo> QBodyContext::GetLocalInfo(const RName& name)
+optional<MqLocalInfo> MqBodyContext::GetLocalInfo(const RName& name)
 {
     for (auto& scope : scopes | views::reverse)
     {
@@ -331,7 +331,7 @@ optional<QLocalInfo> QBodyContext::GetLocalInfo(const RName& name)
     return nullopt;
 }
 
-size_t QBodyContext::AddLocalVar(RType* type, const RName& rName)
+size_t MqBodyContext::AddLocalVar(RType* type, const RName& rName)
 {   
     size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
 
@@ -339,7 +339,7 @@ size_t QBodyContext::AddLocalVar(RType* type, const RName& rName)
     slotInfos.emplace_back(type, slotIndex, QSlotRole_Local{rName});
     
     // 2. 현재 스코프에 이름 추가
-    curScope->localInfos[rName] = QLocalInfo_Var{slotIndex, rName};
+    curScope->localInfos[rName] = MqLocalInfo_Var{slotIndex, rName};
 
     // 3. managedSlot에 추가
     if (type->GetCopyStrategy() == RCopyStrategy::NonBitwise)
@@ -348,7 +348,7 @@ size_t QBodyContext::AddLocalVar(RType* type, const RName& rName)
     return slotIndex;
 }
 
-size_t QBodyContext::AddArgument(RType* type, const RName& rName, size_t index)
+size_t MqBodyContext::AddArgument(RType* type, const RName& rName, size_t index)
 {
     size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
 
@@ -356,7 +356,7 @@ size_t QBodyContext::AddArgument(RType* type, const RName& rName, size_t index)
     slotInfos.emplace_back(type, slotIndex, QSlotRole_Argument{rName, index});
 
     // 2. 현재 스코프에 이름 추가
-    curScope->localInfos[rName] = QLocalInfo_Var{slotIndex, rName};
+    curScope->localInfos[rName] = MqLocalInfo_Var{slotIndex, rName};
     if (type->GetCopyStrategy() == RCopyStrategy::NonBitwise)
         curScope->managedSlotIndices.push_back(slotIndex);
 
@@ -364,7 +364,7 @@ size_t QBodyContext::AddArgument(RType* type, const RName& rName, size_t index)
 }
 
 // ptr을 갖고 있게 된다
-void QBodyContext::AddRefArgument(RType* type, const RName& rName, size_t index)
+void MqBodyContext::AddRefArgument(RType* type, const RName& rName, size_t index)
 {
     size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
 
@@ -374,23 +374,23 @@ void QBodyContext::AddRefArgument(RType* type, const RName& rName, size_t index)
     slotInfos.emplace_back(ptrType, slotIndex, QSlotRole_Argument{rName, index});
 
     // 2. 현재 스코프에 이름 추가
-    curScope->localInfos[rName] = QLocalInfo_RefPtr{slotIndex, rName};
+    curScope->localInfos[rName] = MqLocalInfo_RefPtr{slotIndex, rName};
 
     // 3. managedSlot에 추가하지 않는다
 }
 
-void QBodyContext::AddLocalRef_Alias(const RName& rName, size_t slotIndex)
+void MqBodyContext::AddLocalRef_Alias(const RName& rName, size_t slotIndex)
 {
-    curScope->localInfos[rName] = QLocalInfo_RefAlias{slotIndex, rName};
+    curScope->localInfos[rName] = MqLocalInfo_RefAlias{slotIndex, rName};
     // 레퍼런스는 수명을 관리하지 않기 때문에 slotIndices에 추가하지 않는다
 }
 
-void QBodyContext::AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex)
+void MqBodyContext::AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex)
 {   
-    curScope->localInfos[rName] = QLocalInfo_RefPtr{slotIndex, rName, rType};
+    curScope->localInfos[rName] = MqLocalInfo_RefPtr{slotIndex, rName, rType};
 }
 
-size_t QBodyContext::AddParameter(RType* type, QAbi* abi)
+size_t MqBodyContext::AddParameter(RType* type, MqAbi* abi)
 {
     size_t slotIndex = slotInfos.size();
 
@@ -400,13 +400,13 @@ size_t QBodyContext::AddParameter(RType* type, QAbi* abi)
     // 2. 스코프에 이름은 추가하지 않고
 
     // 3. managedSlot에 추가하지 않기 (Citron X64 동작)
-    assert(dynamic_cast<QAbi_Citron_X64*>(abi));
+    assert(dynamic_cast<MqAbi_Citron_X64*>(abi));
     // x64에서는 dtor를 callee가 호출한다
 
     return slotIndex;
 }
 
-size_t QBodyContext::AddTemp(RType* type, std::string&& debugText)
+size_t MqBodyContext::AddTemp(RType* type, std::string&& debugText)
 {
     size_t slotIndex = slotInfos.size();
 
@@ -422,14 +422,14 @@ size_t QBodyContext::AddTemp(RType* type, std::string&& debugText)
     return slotIndex;
 }
 
-size_t QBodyContext::AddThis(RType* type)
+size_t MqBodyContext::AddThis(RType* type)
 {
     size_t slotIndex = slotInfos.size();
     slotInfos.emplace_back(type, slotIndex, QSlotRole_This{});
     return slotIndex;
 }
 
-void QBodyContext::VerifyBlocks()
+void MqBodyContext::VerifyBlocks()
 {
     // blocks의 모든 block에 대해서
     // 1. 모두 terminator로 끝나는지, block들이 비어있진 않은지 (terminator로 끝나면 비진 않았으니)
@@ -511,25 +511,25 @@ void QBodyContext::VerifyBlocks()
     assert(visited.size() == blocks.size()); // 모두 도달했어야
 }
 
-bool QBodyContext::IsVoidType(RType* rType)
+bool MqBodyContext::IsVoidType(RType* rType)
 {
     return rType == rFactory->MakeVoidType();
 }
 
-void QBodyContext::PushScope(std::optional<size_t> o_labelId)
+void MqBodyContext::PushScope(std::optional<size_t> o_labelId)
 {
-    scopes.push_back(QScope{.o_labelId = o_labelId});
+    scopes.push_back(MqScope{.o_labelId = o_labelId});
     curScope = &scopes.back();
 }
 
-void QBodyContext::PopScope()
+void MqBodyContext::PopScope()
 {
     scopes.pop_back();
     curScope = (!scopes.empty()) ? &scopes.back() : nullptr;
 }
 
 // 일반적인 CleanUp
-void QBodyContext::CleanUpScope()
+void MqBodyContext::CleanUpScope()
 {
     vector<size_t> slotsNeedingDtor;
 
