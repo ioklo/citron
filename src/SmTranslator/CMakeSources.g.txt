@@ -1,4 +1,4 @@
-target_sources(SyntaxIR0Translator
+target_sources(SmTranslator
     PRIVATE
         BinOpQueryService.cpp
         BodyRes.cpp
@@ -39,12 +39,12 @@ target_sources(SyntaxIR0Translator
         SStmtToMStmt.cpp
         SVarDeclToMStmts.cpp
         ScopeContext.cpp
+        SmTranslator.cpp
         StructCtorTask.cpp
         StructDtorTask.cpp
         StructFuncTask.cpp
         StructTask.cpp
         StructVarTask.cpp
-        SyntaxIR0Translator.cpp
         SynthesizeImplicitSymbolContext.cpp
         TranslateBodyContext.cpp
         TranslationContexts.cpp
@@ -100,6 +100,6 @@ target_sources(SyntaxIR0Translator
         TranslateBodyContext.h
         TranslationContexts.h
         TranslationTasks.h
-        Public/SyntaxIR0Translator/SyntaxIR0Translator.h
-        Public/SyntaxIR0Translator/SyntaxIR0TranslatorConfig.h
+        Public/SmTranslator/SmTranslator.h
+        Public/SmTranslator/SmTranslatorConfig.h
 )
