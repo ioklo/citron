@@ -1,5 +1,5 @@
 #pragma once
-#include "QIrLLVMTranslatorConfig.h"
+#include "QlTranslatorConfig.h"
 
 #include <memory>
 #include <string>
@@ -16,7 +16,7 @@ struct LData
 {
     std::unique_ptr<LDataImpl> impl;
     std::string debugOutput;
-    QIRLLVMTRANSLATOR_API ~LData();
+    QLTRANSLATOR_API ~LData();
 };
 
 struct LContext
@@ -24,10 +24,10 @@ struct LContext
     std::unique_ptr<LContextImpl> impl;
 
 public:
-    QIRLLVMTRANSLATOR_API LContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory);
-    QIRLLVMTRANSLATOR_API ~LContext();
+    QLTRANSLATOR_API LContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory);
+    QLTRANSLATOR_API ~LContext();
 };
 
-QIRLLVMTRANSLATOR_API LData TranslateQDataToLData(QData* qData, LContext& context);
+QLTRANSLATOR_API LData TranslateQDataToLData(QData* qData, LContext& context);
 
 }

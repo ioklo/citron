@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
         "src/TextAnalysis",
         "src/SmTranslator",
         "src/MqTranslator",
-        "src/QIrLLVMTranslator",
+        "src/QlTranslator",
         "src/QEvaluator",
         "src/Builder",
         "src/RuntimeLibrary",

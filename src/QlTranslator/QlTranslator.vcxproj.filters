@@ -6,12 +6,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Public\QIrLLVMTranslator\QIrLLVMTranslator.h">
+    <ClInclude Include="Public\QlTranslator\QlTranslator.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Public\QIrLLVMTranslator\QIrLLVMTranslatorConfig.h" />
+    <ClInclude Include="Public\QlTranslator\QlTranslatorConfig.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="QIrLLVMTranslator.cpp" />
+    <ClCompile Include="QlTranslator.cpp" />
   </ItemGroup>
 </Project>

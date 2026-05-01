@@ -20,7 +20,7 @@ target_link_libraries(EvalTests PRIVATE
         SmTranslator
         MqTranslator
         QEvaluator
-#        QIrLLVMTranslator
+#        QlTranslator
         GTest::gtest_main
 )
 

@@ -1,5 +1,5 @@
 #pragma warning(disable:4244 4722 4267 4146 4624)
-#include "QIrLLVMTranslator.h"
+#include "QlTranslator.h"
 
 #include <format>
 

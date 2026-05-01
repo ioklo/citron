@@ -30,7 +30,7 @@
 #include "QIR/QPrinter.h"
 
 #include "QEvaluator/QEvaluation.h"
-// #include "QIrLLVMTranslator/QIrLLVMTranslator.h"
+// #include "QlTranslator/QlTranslator.h"
 
 using namespace std;
 using namespace Citron;

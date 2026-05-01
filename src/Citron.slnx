@@ -32,8 +32,8 @@
   <Folder Name="/07_MqTranslator/">
     <Project Path="MqTranslator/MqTranslator.vcxproj" Id="2c184d83-f1a3-45b7-a470-906d11b7de69" />
   </Folder>
-  <Folder Name="/08_QIrLLVMTranslator/">
-    <Project Path="QIrLLVMTranslator/QIrLLVMTranslator.vcxproj" Id="8f0bfed0-0b7d-4bb8-90e7-84df06b50bd4" />
+  <Folder Name="/08_QlTranslator/">
+    <Project Path="QlTranslator/QlTranslator.vcxproj" Id="8f0bfed0-0b7d-4bb8-90e7-84df06b50bd4" />
   </Folder>
   <Folder Name="/09_RuntimeLibrary/">
     <Project Path="RuntimeLibrary/RuntimeLibrary.vcxproj" Id="c0c5e756-bb76-4223-a4ce-5fb8672c0f50" />

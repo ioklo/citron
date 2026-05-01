@@ -1,0 +1,8 @@
+target_sources(QlTranslator
+    PRIVATE
+        QlTranslator.cpp
+
+    PRIVATE FILE_SET headers TYPE HEADERS FILES
+        Public/QlTranslator/QlTranslator.h
+        Public/QlTranslator/QlTranslatorConfig.h
+)
