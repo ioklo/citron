@@ -63,4 +63,4 @@ const std::vector<BinOpInfo>& BinOpQueryService::GetInfos(SBinaryOpKind kind)
     return empty;
 }
 
-} // Citron::SyntaxIR0Translator
+} // namespace Citron

@@ -56,12 +56,12 @@ expected<MCreate, DiagPtr> TranslateReExpToMCreate(ReExp& reExp, TranslationCont
         }
         else if constexpr (same_as<T, ReExp_StmtCall> )
         {
-            // TODO: [39] SyntaxIR0Translator Error 정리
+            // TODO: [39] SmTranslator Error 정리
             throw NotImplementedException{}; // expression's type is void, can't compatible with value
         }
         else if constexpr (same_as<T, ReExp_StmtAssign>)
         {
-            // TODO: [39] SyntaxIR0Translator Error 정리
+            // TODO: [39] SmTranslator Error 정리
             throw NotImplementedException{}; // expression's type is void, can't compatible with value
         }
         else static_assert(false);
@@ -93,12 +93,12 @@ expected<MRead, DiagPtr> TranslateReExpToMRead(ReExp& reExp, TranslationContexts
         }
         else if constexpr (same_as<T, ReExp_StmtCall>) 
         {
-            // TODO: [39] SyntaxIR0Translator Error 정리
+            // TODO: [39] SmTranslator Error 정리
             throw NotImplementedException{}; // expression's type is void, can't compatible with value
         }
         else if constexpr (same_as<T, ReExp_StmtAssign>) 
         {
-            // TODO: [39] SyntaxIR0Translator Error 정리
+            // TODO: [39] SmTranslator Error 정리
             throw NotImplementedException{}; // expression's type is void, can't compatible with value
         }
         else static_assert(false);
@@ -126,12 +126,12 @@ expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp& reExp, bool bMaterializeExp
         }
         else if constexpr (same_as<T, ReExp_StmtCall>) 
         {
-            // TODO: [39] SyntaxIR0Translator Error 정리
+            // TODO: [39] SmTranslator Error 정리
             throw NotImplementedException{}; // expression's type is void, can't compatible with value
         }
         else if constexpr (same_as<T, ReExp_StmtAssign>) 
         {
-            // TODO: [39] SyntaxIR0Translator Error 정리
+            // TODO: [39] SmTranslator Error 정리
             throw NotImplementedException{}; // expression's type is void, can't compatible with value
         }
         else static_assert(false);

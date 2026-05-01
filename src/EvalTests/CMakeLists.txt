@@ -17,7 +17,7 @@ target_link_libraries(EvalTests PRIVATE
         MIR
         QIR
         TextAnalysis
-        SyntaxIR0Translator
+        SmTranslator
         MqTranslator
         QEvaluator
 #        QIrLLVMTranslator

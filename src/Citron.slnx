@@ -27,7 +27,7 @@
     <Project Path="TextAnalysis/TextAnalysis.vcxproj" Id="4ba9ba67-fc96-41bd-9938-3d61d05f89ee" />
   </Folder>
   <Folder Name="/06_SmTranslator/">
-    <Project Path="SyntaxIR0Translator/SyntaxIR0Translator.vcxproj" Id="73c7d15a-483a-4069-8719-0cccff2e5021" />
+    <Project Path="SmTranslator/SmTranslator.vcxproj" Id="73c7d15a-483a-4069-8719-0cccff2e5021" />
   </Folder>
   <Folder Name="/07_MqTranslator/">
     <Project Path="MqTranslator/MqTranslator.vcxproj" Id="2c184d83-f1a3-45b7-a470-906d11b7de69" />

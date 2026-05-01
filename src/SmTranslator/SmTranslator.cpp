@@ -1,4 +1,4 @@
-#include "SyntaxIR0Translator.h"
+#include "SmTranslator.h"
 
 #include <stdexcept>
 #include <memory>

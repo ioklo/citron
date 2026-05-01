@@ -88,7 +88,7 @@
     <ProjectReference Include="..\RSymbol\RSymbol.vcxproj">
       <Project>{42f5b624-3a9b-48b6-9e12-736206097339}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\SyntaxIR0Translator\SyntaxIR0Translator.vcxproj">
+    <ProjectReference Include="..\SmTranslator\SmTranslator.vcxproj">
       <Project>{73c7d15a-483a-4069-8719-0cccff2e5021}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Syntax\Syntax.vcxproj">

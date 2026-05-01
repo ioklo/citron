@@ -10,7 +10,7 @@
 #include "TextAnalysis/ScriptParser.h"
 #include "TextAnalysis/Buffer.h"
 
-#include "SyntaxIR0Translator/SyntaxIR0Translator.h"
+#include "SmTranslator/SmTranslator.h"
 #include "MqTranslator/MqTranslator.h"
 
 #include "RSymbol/RFactory.h"

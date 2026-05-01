@@ -101,4 +101,4 @@ void StructTask::SynthesizeMemberwiseCtor(SynthesizeImplicitSymbolContext& conte
 }
 
 
-} // Citron::SyntaxIR0Translator
+} // namespace Citron

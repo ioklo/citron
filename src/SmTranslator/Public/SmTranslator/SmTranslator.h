@@ -1,5 +1,5 @@
 #pragma once
-#include "SyntaxIR0TranslatorConfig.h"
+#include "SmTranslatorConfig.h"
 
 #include <optional>
 #include <memory>
@@ -27,7 +27,7 @@ struct NModuleMData
     MData* mData;
 };
 
-SYNTAXIR0TRANSLATOR_API
+SMTRANSLATOR_API
 std::expected<NModuleMData, DiagPtr> TranslateSyntaxToNModuleMData(
     std::string moduleName,
     const std::vector<SScript*>& scripts, // translation units

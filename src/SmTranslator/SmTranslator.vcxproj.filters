@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="SyntaxIR0Translator.cpp" />
+    <ClCompile Include="SmTranslator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
     <ClCompile Include="BuildTypeDependentSymbolContext.cpp" />
     <ClCompile Include="TranslateBodyContext.cpp" />
@@ -141,10 +141,10 @@
     <ClInclude Include="ModuleDecls.h" />
     <ClInclude Include="RFuncAndRArgsToMExpTranslation.h" />
     <ClInclude Include="SRTFactory.h" />
-    <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0Translator.h">
+    <ClInclude Include="Public\SmTranslator\SmTranslator.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Public\SyntaxIR0Translator\SyntaxIR0TranslatorConfig.h">
+    <ClInclude Include="Public\SmTranslator\SmTranslatorConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="GlobalFuncTask.h" />

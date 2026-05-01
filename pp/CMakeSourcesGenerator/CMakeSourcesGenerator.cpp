@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
         "src/MIR",
         "src/QIR",
         "src/TextAnalysis",
-        "src/SyntaxIR0Translator",
+        "src/SmTranslator",
         "src/MqTranslator",
         "src/QIrLLVMTranslator",
         "src/QEvaluator",

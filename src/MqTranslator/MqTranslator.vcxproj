@@ -71,7 +71,7 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{2c184d83-f1a3-45b7-a470-906d11b7de69}</ProjectGuid>
-    <RootNamespace>IR0IR1Translator</RootNamespace>
+    <RootNamespace>MqTranslator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>MqTranslator</ProjectName>
   </PropertyGroup>

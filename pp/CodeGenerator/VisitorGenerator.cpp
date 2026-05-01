@@ -322,7 +322,7 @@ void GenerateVisitors(std::filesystem::path rootPath)
         },
 
         VisitorInfo {
-            .relPath = path("src") / "SyntaxIR0Translator" / "ImExpVisitor.g.h",
+            .relPath = path("src") / "SmTranslator" / "ImExpVisitor.g.h",
             .name = "ImExp",
             .memberName = "imExp",
             .members {
@@ -342,7 +342,7 @@ void GenerateVisitors(std::filesystem::path rootPath)
         },
 
         VisitorInfo {
-            .relPath = path("src") / "SyntaxIR0Translator" / "IrExpVisitor.g.h",
+            .relPath = path("src") / "SmTranslator" / "IrExpVisitor.g.h",
             .name = "IrExp",
             .memberName = "irExp",
             .members {

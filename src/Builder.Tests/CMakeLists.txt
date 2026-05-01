@@ -6,7 +6,7 @@ target_link_libraries(Builder.Tests PRIVATE
         Infra
         Syntax
         TextAnalysis
-        SyntaxIR0Translator
+        SmTranslator
         Builder
         GTest::gtest_main
 )
