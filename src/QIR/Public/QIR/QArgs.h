@@ -19,6 +19,9 @@ struct QArg_CallArg_ConstInt32 { int value; };
 struct QArg_CallArg_AddrOfSlot { size_t index; };
 using QArg_CallArg = std::variant<QArg_CallArg_Slot, QArg_CallArg_ConstBool, QArg_CallArg_ConstInt32, QArg_CallArg_AddrOfSlot>;
 
-struct QArg_Dest { size_t index; };
+struct QArg_Dest_Slot { size_t index; };
+struct QArg_Dest_DirectReturn {};
+
+using QArg_Dest = std::variant<QArg_Dest_Slot, QArg_Dest_DirectReturn>;
 
 } // Citron

@@ -59,10 +59,10 @@ struct StackFrame
     InstructionPointer ip;
     std::vector<Slot> slots; // 스택에 저장하는 공간, stackPointer위의 어디를 가리킨다
     byte* stackPointer;
-    Slot retSlot; // 리턴용 저장공간
+    std::optional<Slot> o_retSlot; // 리턴용 저장공간
 
     StackFrame()
-        : qFuncBody{nullptr}, ip{}, stackPointer{nullptr}, retSlot{nullptr}
+        : qFuncBody{nullptr}, ip{}, stackPointer{nullptr}, o_retSlot{nullopt}
     { }
     StackFrame(StackFrame&& other) = default;
 };
@@ -173,12 +173,26 @@ T Get(size_t index, Environment& env)
 template<typename T, typename U>
 void Set(QArg_Dest& dest, U&& value, Environment& env)
 {
-    env.curFrame->slots[dest.index].Set(std::forward<U>(value));
+    visit([&env, &value](auto& dest) {
+        using T = remove_cvref_t<decltype(dest)>;
+        if constexpr (same_as<T, QArg_Dest_Slot>) env.curFrame->slots[dest.index].Set(std::forward<U>(value));
+        else if constexpr (same_as<T, QArg_Dest_DirectReturn>) env.curFrame->o_retSlot->Set(std::forward<U>(value));
+        else static_assert(false);
+    }, dest);
 }
 
 Slot GetSlot(QArg_Dest& dest, Environment& env)
 {
-    return env.curFrame->slots[dest.index];
+    return visit([&env](auto& dest) -> Slot {
+        using T = remove_cvref_t<decltype(dest)>;
+        if constexpr (same_as<T, QArg_Dest_Slot>) return env.curFrame->slots[dest.index];
+        else if constexpr (same_as<T, QArg_Dest_DirectReturn>)
+        {
+            assert(env.curFrame->o_retSlot);
+            return *env.curFrame->o_retSlot;
+        }
+        else static_assert(false);
+    }, dest);
 }
 
 void EvalIntrinsic(QInst_Intrinsic& inst, Environment& env)
@@ -478,60 +492,82 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
     frame.stackPointer = curFrame.stackPointer;
     frame.slots.resize(qFuncBody->slotInfos.size());
 
-    // oRetSlotIndex 위치 담기
     if (o_dest)
-        frame.retSlot = curFrame.slots[o_dest->index];
+    {
+        visit([&curFrame, &frame](auto& dest) {
+            using T = remove_cvref_t<decltype(dest)>;
+            if constexpr (same_as<T, QArg_Dest_Slot>)
+            {
+                frame.o_retSlot = curFrame.slots[dest.index];
+            }
+            else if constexpr (same_as<T, QArg_Dest_DirectReturn>)
+            {
+                frame.o_retSlot = curFrame.o_retSlot;
+            }
+        }, *o_dest);
+    }
+    else
+    {
+        frame.o_retSlot = nullopt;
+    }
     
-    for (size_t i = 0, count = qFuncBody->slotInfos.size(); i < count; i++)
+    // 그냥 0번부터 쭉 argument 복사하면 된다
+    size_t argCount = args.size();
+    for (size_t i = 0; i < argCount; i++)
+    {
+        visit([i, qFuncBody, &curFrame, &frame, &rFactory](auto& arg) {
+            using T = remove_cvref_t<decltype(arg)>;
+            if constexpr (same_as<T, QArg_CallArg_Slot>)
+            {
+                // 타입정보는 qFunc로부터
+                size_t size = GetSize(qFuncBody->slotInfos[i].type, rFactory);
+
+                frame.stackPointer -= size;
+                frame.slots[i] = Slot{frame.stackPointer};
+
+                // 복사
+                memcpy(frame.slots[i].GetAddr(), curFrame.slots[arg.index].GetAddr(), size);
+            }
+            else if constexpr (same_as<T, QArg_CallArg_ConstBool>)
+            {
+                size_t size = GetSize(rFactory.MakeBoolType(), rFactory);
+                frame.stackPointer -= size;
+                frame.slots[i] = Slot{frame.stackPointer};
+    
+                frame.slots[i].Set<bool>(arg.value);
+            }
+            else if constexpr (same_as<T, QArg_CallArg_ConstInt32>)
+            {
+                size_t size = GetSize(rFactory.MakeIntType(), rFactory);
+                frame.stackPointer -= size;
+                frame.slots[i] = Slot{frame.stackPointer};
+    
+                frame.slots[i].Set<int>(arg.value);
+            }
+            else if constexpr (same_as<T, QArg_CallArg_AddrOfSlot>)
+            {
+                size_t size = GetSize(rFactory.MakePtrType(rFactory.MakeVoidType()), rFactory);
+                frame.stackPointer -= size;
+                frame.slots[i] = Slot{frame.stackPointer};
+    
+                frame.slots[i].Set<void*>(curFrame.slots[arg.index].GetAddr());
+            }
+            else static_assert(false);
+        }, args[i]);
+    }
+    
+    for (size_t i = argCount, slotCount = qFuncBody->slotInfos.size(); i < slotCount; i++)
     {
         auto& slot = qFuncBody->slotInfos[i];
 
-        if (slot.o_argIndex) // argument로부터 복사
+        size_t size = GetSize(slot.type, rFactory);
+        frame.stackPointer -= size;
+        frame.slots[i].ptr = frame.stackPointer;
+
+        // TODO: [61] 일반적인 struct ctor, dtor, copy/move ctor, copy/move assign 구현
+        if (slot.type == rFactory.MakeStringType())
         {
-            visit([i, &frame, &curFrame, &rFactory](auto& arg) {
-                using T = remove_cvref_t<decltype(arg)>;
-                if constexpr (same_as<T, QArg_CallArg_Slot>)
-                {
-                    frame.slots[i] = curFrame.slots[arg.index];
-                }
-                else if constexpr (same_as<T, QArg_CallArg_ConstBool>)
-                {
-                    size_t size = GetSize(rFactory.MakeBoolType(), rFactory);
-                    frame.stackPointer -= size;
-                    frame.slots[i].ptr = frame.stackPointer;
-
-                    frame.slots[i].Set<bool>(arg.value);
-                }
-                else if constexpr (same_as<T, QArg_CallArg_ConstInt32>)
-                {
-                    size_t size = GetSize(rFactory.MakeIntType(), rFactory);
-                    frame.stackPointer -= size;
-                    frame.slots[i].ptr = frame.stackPointer;
-
-                    frame.slots[i].Set<int>(arg.value);
-                }
-                else if constexpr (same_as<T, QArg_CallArg_AddrOfSlot>)
-                {
-                    size_t size = GetSize(rFactory.MakePtrType(rFactory.MakeVoidType()), rFactory);
-                    frame.stackPointer -= size;
-                    frame.slots[i].ptr = frame.stackPointer;
-
-                    frame.slots[i].Set<void*>(curFrame.slots[arg.index].GetAddr());
-                }
-                else static_assert(false);
-            }, args[*slot.o_argIndex]);
-
-        }
-        else
-        {
-            size_t size = GetSize(slot.type, rFactory);
-            frame.stackPointer -= size;
-            frame.slots[i].ptr = frame.stackPointer;
-
-            if (slot.type == rFactory.MakeStringType())
-            {
-                new (frame.slots[i].ptr) string{};
-            }
+            new (frame.slots[i].ptr) string{};
         }
     }
 
@@ -612,23 +648,33 @@ struct Evaluator
         // %r2 = %r1: memcpy(&regValues[r1.index], &regValues[r2.index], size) // void* 복사, size는 8보다 작을 것이다
         // %s2 = %s1: memcpy(slots[s1.index], slots[s2.index], size)
 
-        void* dest = env.curFrame->slots[inst.dest.index].ptr;
+        Slot& destSlot = visit([this](auto& dest) -> Slot& {
+            using T = remove_cvref_t<decltype(dest)>;
+            if constexpr (same_as<T, QArg_Dest_Slot>)
+            {
+                return env.curFrame->slots[dest.index];
+            }
+            else if constexpr (same_as<T, QArg_Dest_DirectReturn>)
+            {
+                return *env.curFrame->o_retSlot;
+            }
+            else static_assert(false);
+        }, inst.dest);
 
-        visit([this, dest, type = inst.type](auto& src) {
+        visit([this, &destSlot, type = inst.type](auto& src) {
             using T = remove_cvref_t<decltype(src)>;
             if constexpr (same_as<T, QArg_Value_ConstBool>)
             {
-                *(bool*)dest = src.value;
+                destSlot.Set<bool>(src.value);
             }
             else if constexpr (same_as < T, QArg_Value_ConstInt32>)
             {
-                *(int*)dest = src.value;
+                destSlot.Set<int>(src.value);
             }
             else if constexpr (same_as<T, QArg_Value_Slot>)
-            {
-                void* pSrc = env.curFrame->slots[src.index].ptr;
+            {   
                 size_t size = GetSize(type, *rFactory);
-                memcpy(dest, pSrc, size);
+                memcpy(destSlot.GetAddr(), env.curFrame->slots[src.index].GetAddr(), size);
             }
             else static_assert(false);
         }, inst.src);
@@ -660,30 +706,7 @@ struct Evaluator
     }
      
     bool Eval(QInst_Return& inst) 
-    {
-        if (inst.o_value)
-        {
-            visit([this, &retValue = *inst.o_value](auto& value) 
-            {
-                using T = remove_cvref_t<decltype(value)>;
-
-                if constexpr (same_as<T, QArg_Value_ConstInt32>)
-                {   
-                    env.curFrame->retSlot.Set<int>(value.value);
-                }
-                else if constexpr (same_as<T, QArg_Value_ConstBool>)
-                {
-                    env.curFrame->retSlot.Set<bool>(value.value);
-                }
-                else if constexpr (same_as<T, QArg_Value_Slot>)
-                {
-                    void* valueLoc = env.curFrame->slots[value.index].ptr;
-                    size_t size = GetSize(retValue.type, *rFactory);
-                    memcpy(env.curFrame->retSlot.ptr, valueLoc, size);
-                }
-            }, inst.o_value->value);
-        }
-
+    {   
         env.frames.pop_back();
         if (env.frames.empty()) return false;
         env.curFrame = &env.frames.back();
@@ -733,9 +756,11 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
     env.frames.push_back(StackFrame{});
     env.curFrame = &env.frames.back();
 
+
     env.curFrame->qFuncBody = &*i;
     env.curFrame->ip = InstructionPointer{i->blocks.front(), 0},
     env.curFrame->stackPointer = env.stack.data() + env.stack.size();
+    env.curFrame->o_retSlot = nullopt;
     env.curFrame->slots.resize(i->slotInfos.size());
     for (size_t j = 0, count = i->slotInfos.size(); j < count; j++)
     {

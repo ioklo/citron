@@ -5,10 +5,11 @@
 #include "Infra/Variants.h"
 
 #include "Logging/Diag.h"
-
+#include "RSymbol/RTypes.h"
 #include "MIR/MStmt.h"
 #include "MIR/MExp.h"
 #include "MIR/MLoc.h"
+#include "MIR/MCreate.h"
 #include "QIR/QFactory.h"
 #include "QIR/QBlock.h"
 #include "QIR/QInsts.h"
@@ -40,10 +41,10 @@ struct MStmtQInstsTranslator
         return TranslateMReadToQInsts(mTopLevelRead.read, contexts);
     }
 
-    expected<QEmitState<void>, DiagPtr> TranslateMTopLevel_CreateToQInsts(MTopLevel_Create& mTopLevelCreate, optional<size_t> o_destSlotIndex)
+    expected<QEmitState<void>, DiagPtr> TranslateMTopLevel_CreateToQInsts(MTopLevel_Create& mTopLevelCreate, MqCreateTarget createTarget)
     {
         QScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
-        return TranslateMCreateToQInsts(mTopLevelCreate.create, o_destSlotIndex, contexts);
+        return TranslateMCreateToQInsts(mTopLevelCreate.create, createTarget, contexts);
     }
 
     expected<QEmitState<QLocResult>, DiagPtr> TranslateMTopLevel_LocToQInsts(MTopLevel_Loc& mTopLevelLoc)
@@ -96,7 +97,7 @@ struct MStmtQInstsTranslator
 
     ResultType Visit(MStmt_LocalVarDecl* mStmt) 
     {
-        auto slotIndex = contexts.bodyContext.AddLocalVar(mStmt->type, mStmt->name, /*o_argIndex*/nullopt);
+        auto slotIndex = contexts.bodyContext.AddLocalVar(mStmt->type, mStmt->name);
 
         return visit([this, slotIndex](auto& init) -> ResultType {
             using T = remove_cvref_t<decltype(init)>;
@@ -116,7 +117,7 @@ struct MStmtQInstsTranslator
                 // var s = expr;
                 // expr이 lvalue인 경우, 복사 (복사가 지원 가능할때)
                 // expr이 rvalue인 경우, 이동 
-                return TranslateMTopLevel_CreateToQInsts(init.create, slotIndex);
+                return TranslateMTopLevel_CreateToQInsts(init.create, MqCreateTarget_Slot{slotIndex});
             }
             else static_assert(false);
 
@@ -237,8 +238,8 @@ struct MStmtQInstsTranslator
             else if constexpr (same_as<T, QReadResult_Ptr>)
             {
                 auto* boolType = bodyContext.GetBoolType();
-                size_t newSlot = bodyContext.NewSlot(boolType);
-                bodyContext.EmitInst(QInst_Load{.type = boolType, .dest = newSlot, .src = condResult.slotIndex});
+                size_t newSlot = bodyContext.AddTemp(boolType, "if_cond");
+                bodyContext.EmitInst(QInst_Load{.type = boolType, .dest = QArg_Dest_Slot{newSlot}, .src = condResult.slotIndex});
 
                 return HandleIf(mStmt, newSlot);
             }
@@ -295,8 +296,8 @@ struct MStmtQInstsTranslator
                 else if constexpr (same_as<T, QReadResult_Ptr>)
                 {
                     auto* boolType = bodyContext.GetBoolType();
-                    size_t newSlot = bodyContext.NewSlot(boolType);
-                    bodyContext.EmitInst(QInst_Load{.type = boolType, .dest = newSlot, .src = condResult.slotIndex});
+                    size_t newSlot = bodyContext.AddTemp(boolType, "if_cond");
+                    bodyContext.EmitInst(QInst_Load{.type = boolType, .dest = QArg_Dest_Slot{newSlot}, .src = condResult.slotIndex});
                     bodyContext.EmitTermInst(QInst_CondJump{newSlot, bodyBlock, exitBlock});
                 }
                 else if constexpr (same_as<T, QReadResult_ConstBool>)
@@ -360,13 +361,13 @@ struct MStmtQInstsTranslator
 
     ResultType Visit(MStmt_Continue* mStmt) 
     {
-        contexts.bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Continue{mStmt->labelId});
+        contexts.bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Continue{mStmt->labelId});
         return QEmitState_Done{};
     }
 
     ResultType Visit(MStmt_Break* mStmt)
     {
-        contexts.bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Break{mStmt->labelId});
+        contexts.bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Break{mStmt->labelId});
         return QEmitState_Done{};
     }
 
@@ -374,10 +375,12 @@ struct MStmtQInstsTranslator
     {
         auto& bodyContext = contexts.bodyContext;
         
-        auto e_s_result = TranslateMTopLevel_CreateToQInsts(mStmt->create, bodyContext.GetLeaveSlotIndex(mStmt->labelId));
+        auto o_leaveSlotIndex = bodyContext.GetLeaveSlotIndex(mStmt->labelId);
+        auto createTarget = o_leaveSlotIndex ? MqCreateTarget{MqCreateTarget_Slot{*o_leaveSlotIndex}} : MqCreateTarget_Discard{};
+        auto e_s_result = TranslateMTopLevel_CreateToQInsts(mStmt->create, std::move(createTarget));
         RETURN_ON_ERROR_OR_DONE(e_s_result);
 
-        bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Leave{mStmt->labelId});
+        bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Leave{mStmt->labelId});
         return QEmitState_Done{};
     }
 
@@ -387,17 +390,33 @@ struct MStmtQInstsTranslator
 
         if (mStmt->create)
         {
-            auto e_s_result = TranslateMTopLevel_CreateToQInsts(*mStmt->create, bodyContext.GetRetSlotIndex());
-            RETURN_ON_ERROR_OR_DONE(e_s_result);
+            auto* createType = GetType(mStmt->create->create, &*contexts.rFactory);
 
-            bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Return{});
-            bodyContext.MarkReturnHandledOnCurScope();
+            switch (createType->GetCopyStrategy())
+            {
+            case RCopyStrategy::Void: assert(false);
+            case RCopyStrategy::Bitwise:
+            {
+                auto e_s_result = TranslateMTopLevel_CreateToQInsts(*mStmt->create, MqCreateTarget_DirectReturn{});
+                RETURN_ON_ERROR_OR_DONE(e_s_result);
+                break;
+            }
+            case RCopyStrategy::NonBitwise:
+            {
+                assert(std::holds_alternative<QSlotRole_IndirectReturn>(bodyContext.GetSlotRole(0)));
+
+                auto e_s_result = TranslateMTopLevel_CreateToQInsts(*mStmt->create, MqCreateTarget_Slot{0});
+                RETURN_ON_ERROR_OR_DONE(e_s_result);
+                break;
+            }
+            }
+
+            bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Return{});
             return QEmitState_Done{};
         }
         else
         {
-            bodyContext.EmitJumpToCleanUpBlock(QCleanUpInfoKey_Return{});
-            bodyContext.MarkReturnHandledOnCurScope();
+            bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Return{});
             return QEmitState_Done{};
         }
     }
@@ -409,7 +428,7 @@ struct MStmtQInstsTranslator
 
     ResultType Visit(MStmt_Exp* mStmt) 
     {
-        return TranslateMTopLevel_CreateToQInsts(mStmt->create, /*o_destSlotIndex*/nullopt);
+        return TranslateMTopLevel_CreateToQInsts(mStmt->create, MqCreateTarget_Discard{});
     }
     // ResultType Visit(MStmt_Task* mStmt) { }
     // ResultType Visit(MStmt_Await* mStmt) { }
@@ -420,7 +439,7 @@ struct MStmtQInstsTranslator
 
     ResultType HandleCall(MTopLevel_Call& call)
     {
-        auto e_s_o_retSlotIndex = Citron::HandleCall(call.callable.decl, call.callable.typeArgs, /*o_destSlotIndex*/nullopt, call.callable.o_instance, call.args, contexts);
+        auto e_s_o_retSlotIndex = Citron::HandleCall(call.callable.decl, call.callable.typeArgs, MqCreateTarget_Discard{}, call.callable.o_instance, call.args, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_o_retSlotIndex);
 
         assert(!**e_s_o_retSlotIndex); // void 함수이므로, slot이 나와서는 안 된다

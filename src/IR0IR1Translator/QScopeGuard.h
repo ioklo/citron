@@ -5,16 +5,20 @@ namespace Citron {
 struct QScopeGuard
 {
     QBodyContext& bodyContext;
+    bool needCleanUp;
+
     QScopeGuard(std::optional<size_t> o_labelId, QBodyContext& bodyContext)
         : bodyContext{bodyContext}
+        , needCleanUp{true}
     {
         bodyContext.PushScope(o_labelId);
     }
 
+    void SetDontNeedCleanUp() { needCleanUp = false; }
+
     ~QScopeGuard()
-    {
-        // 이 스코프에서 리턴을 처리했다면 (다음으로 진행이 되지 않는다면)
-        if (!bodyContext.IsReturnHandledOnCurScope())
+    {   
+        if (needCleanUp)
             bodyContext.CleanUpScope();
         
         bodyContext.PopScope();

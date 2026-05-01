@@ -25,6 +25,7 @@
 
 #include "QLazyBlock.h"
 #include "MqIntrinsicInfo.h"
+#include "QAbi_Citron_X64.h"
 
 using namespace std;
 
@@ -65,9 +66,6 @@ QBodyContext::QBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFact
 {
     scopes.emplace_back();
     curScope = &scopes.back();
-    
-    if (rRetType != rFactory->MakeVoidType())
-        o_retSlotIndex = NewSlot(rRetType);
 
     auto* firstBlock = AddBlock("entry");
     this->curBlock = firstBlock;
@@ -148,13 +146,13 @@ bool QBodyContext::IsFinalScope(QCleanUpKind kind, size_t scopeIndex)
 {
     return visit([this, scopeIndex](auto& kind) -> bool {
         using T = remove_cvref_t<decltype(kind)>;
-        if constexpr (same_as<T, QCleanUpInfoKey_Return>)
+        if constexpr (same_as<T, QCleanUpKind_Return>)
             return scopeIndex == 0;
-        else if constexpr (same_as<T, QCleanUpInfoKey_Continue>)
+        else if constexpr (same_as<T, QCleanUpKind_Continue>)
             return scopes[scopeIndex].o_labelId == kind.labelId;
-        else if constexpr (same_as<T, QCleanUpInfoKey_Break>)
+        else if constexpr (same_as<T, QCleanUpKind_Break>)
             return scopes[scopeIndex].o_labelId == kind.labelId;
-        else if constexpr (same_as<T, QCleanUpInfoKey_Leave>)
+        else if constexpr (same_as<T, QCleanUpKind_Leave>)
             return scopes[scopeIndex].o_labelId == kind.labelId;
         else static_assert(false);
 
@@ -184,25 +182,22 @@ void QBodyContext::FinalizeCleanupBlock(QBlock* block, QCleanUpKind kind)
 {
     visit([this, block](auto& kind) {
         using T = remove_cvref_t<decltype(kind)>;
-        if constexpr (same_as<T, QCleanUpInfoKey_Return>)
+        if constexpr (same_as<T, QCleanUpKind_Return>)
         {
             // 바로 리턴 블록 생성
-            if (o_retSlotIndex)
-                block->EmitInst(QInst_Return{QInst_ReturnValue{slotInfos[*o_retSlotIndex].type, QArg_Value_Slot{*o_retSlotIndex}}});
-            else
-                block->EmitInst(QInst_Return{});
+            block->EmitInst(QInst_Return{});
         }
-        else if constexpr (same_as<T, QCleanUpInfoKey_Continue>)
+        else if constexpr (same_as<T, QCleanUpKind_Continue>)
         {   
             auto* contBlock = GetContinueBlock(kind.labelId);
             block->EmitInst(QInst_Jump{contBlock});
         }
-        else if constexpr (same_as<T, QCleanUpInfoKey_Break>)
+        else if constexpr (same_as<T, QCleanUpKind_Break>)
         {   
             auto* breakBlock = GetBreakBlock(kind.labelId);
             block->EmitInst(QInst_Jump{breakBlock});
         }
-        else if constexpr (same_as<T, QCleanUpInfoKey_Leave>)
+        else if constexpr (same_as<T, QCleanUpKind_Leave>)
         {
             auto* leaveBlock = GetLeaveBlock(kind.labelId);
             block->EmitInst(QInst_Jump{leaveBlock});
@@ -310,11 +305,6 @@ RType* QBodyContext::GetPtrType(RType* innerType)
     return rFactory->MakePtrType(innerType);
 }
 
-size_t QBodyContext::GetRetSlotIndex()
-{
-    return *o_retSlotIndex;
-}
-
 optional<size_t> QBodyContext::GetLeaveSlotIndex(size_t labelId)
 {
     for (auto& jumpBlockInfo : jumpBlockInfos | views::reverse)
@@ -341,56 +331,101 @@ optional<QLocalInfo> QBodyContext::GetLocalInfo(const RName& name)
     return nullopt;
 }
 
-size_t QBodyContext::AddLocalVar(RType* rType, const RName& rName, optional<size_t> o_argIndex)
+size_t QBodyContext::AddLocalVar(RType* type, const RName& rName)
 {   
     size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
-    auto name = format("%s{}_{}", slotIndex, RNameToString(rName));
 
     // 1. 함수 entry에서 할당할 목록에 추가
-    slotInfos.emplace_back(rType, name, o_argIndex);
+    slotInfos.emplace_back(type, slotIndex, QSlotRole_Local{rName});
     
     // 2. 현재 스코프에 이름 추가
-    curScope->localInfos[rName] = QLocalInfo_Var{slotIndex, name};
-    curScope->managedSlotIndices.push_back(slotIndex);
+    curScope->localInfos[rName] = QLocalInfo_Var{slotIndex, rName};
 
-    return slotIndex;
-}
-
-void QBodyContext::AddLocalRef_Alias(const RName& rName, size_t slotIndex)
-{
-    curScope->localInfos[rName] = QLocalInfo_RefAlias{slotIndex, RNameToString(rName)};
-    // 레퍼런스는 수명을 관리하지 않기 때문에 slotIndices에 추가하지 않는다
-}
-
-void QBodyContext::AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex)
-{   
-    curScope->localInfos[rName] = QLocalInfo_RefPtr{slotIndex, RNameToString(rName), rType};
-}
-
-size_t QBodyContext::NewSlot(RType* rType, optional<size_t> o_argIndex)
-{
-    assert(rType != rFactory->MakeVoidType()); // void 타입은 slot으로 만들 수 없다
-
-    size_t slotIndex = slotInfos.size();
-    std::string s = format("%s{}", slotIndex);
-    slotInfos.emplace_back(rType, s, o_argIndex);
-
-    if (rType->GetCopyStrategy() == RCopyStrategy::NonBitwise)
+    // 3. managedSlot에 추가
+    if (type->GetCopyStrategy() == RCopyStrategy::NonBitwise)
         curScope->managedSlotIndices.push_back(slotIndex);
 
     return slotIndex;
 }
 
-// 어느 scope에도 속하지 않는 임시 슬롯
-size_t QBodyContext::NewTempSlot(RType* rType)
+size_t QBodyContext::AddArgument(RType* type, const RName& rName, size_t index)
 {
-    // 임시 슬롯은 BC타입이어야 한다
-    assert(rType->GetCopyStrategy() == RCopyStrategy::Bitwise); 
+    size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
 
+    // 1. 함수 entry에서 할당할 목록에 추가
+    slotInfos.emplace_back(type, slotIndex, QSlotRole_Argument{rName, index});
+
+    // 2. 현재 스코프에 이름 추가
+    curScope->localInfos[rName] = QLocalInfo_Var{slotIndex, rName};
+    if (type->GetCopyStrategy() == RCopyStrategy::NonBitwise)
+        curScope->managedSlotIndices.push_back(slotIndex);
+
+    return slotIndex;
+}
+
+// ptr을 갖고 있게 된다
+void QBodyContext::AddRefArgument(RType* type, const RName& rName, size_t index)
+{
+    size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
+
+    auto* ptrType = GetPtrType(type);
+
+    // 1. 함수 entry에서 할당할 목록에 추가
+    slotInfos.emplace_back(ptrType, slotIndex, QSlotRole_Argument{rName, index});
+
+    // 2. 현재 스코프에 이름 추가
+    curScope->localInfos[rName] = QLocalInfo_RefPtr{slotIndex, rName};
+
+    // 3. managedSlot에 추가하지 않는다
+}
+
+void QBodyContext::AddLocalRef_Alias(const RName& rName, size_t slotIndex)
+{
+    curScope->localInfos[rName] = QLocalInfo_RefAlias{slotIndex, rName};
+    // 레퍼런스는 수명을 관리하지 않기 때문에 slotIndices에 추가하지 않는다
+}
+
+void QBodyContext::AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex)
+{   
+    curScope->localInfos[rName] = QLocalInfo_RefPtr{slotIndex, rName, rType};
+}
+
+size_t QBodyContext::AddParameter(RType* type, QAbi* abi)
+{
     size_t slotIndex = slotInfos.size();
-    std::string s = format("%s{}", slotIndex);
-    slotInfos.emplace_back(rType, s, nullopt);
 
+    // 1. 함수 entry에서 할당할 목록에 추가
+    slotInfos.emplace_back(type, slotIndex, QSlotRole_Parameter{});
+
+    // 2. 스코프에 이름은 추가하지 않고
+
+    // 3. managedSlot에 추가하지 않기 (Citron X64 동작)
+    assert(dynamic_cast<QAbi_Citron_X64*>(abi));
+    // x64에서는 dtor를 callee가 호출한다
+
+    return slotIndex;
+}
+
+size_t QBodyContext::AddTemp(RType* type, std::string&& debugText)
+{
+    size_t slotIndex = slotInfos.size();
+
+    // 1. 함수 entry에서 할당할 목록에 추가
+    slotInfos.emplace_back(type, slotIndex, QSlotRole_Temp{move(debugText)});
+
+    // 2. 스코프에 이름은 추가하지 않고
+
+    // 3. managedSlot에 추가
+    if (type->GetCopyStrategy() == RCopyStrategy::NonBitwise)
+        curScope->managedSlotIndices.push_back(slotIndex);
+
+    return slotIndex;
+}
+
+size_t QBodyContext::AddThis(RType* type)
+{
+    size_t slotIndex = slotInfos.size();
+    slotInfos.emplace_back(type, slotIndex, QSlotRole_This{});
     return slotIndex;
 }
 
@@ -489,13 +524,8 @@ void QBodyContext::PushScope(std::optional<size_t> o_labelId)
 
 void QBodyContext::PopScope()
 {
-    bool childHasReturn = scopes.back().childHasReturn;
     scopes.pop_back();
-
     curScope = (!scopes.empty()) ? &scopes.back() : nullptr;
-
-    if (curScope)
-        curScope->childHasReturn |= childHasReturn;
 }
 
 // 일반적인 CleanUp
@@ -521,17 +551,6 @@ void QBodyContext::CleanUpScope()
         assert(curBlock);
         curBlock->EmitInst(QInst_Intrinsic{QInst_IntrinsicKind::Dtor_Void_StringRef, nullopt, {QArg_CallArg_AddrOfSlot{slotIndex}}});
     }
-}
-
-void QBodyContext::MarkReturnHandledOnCurScope()
-{
-    assert(!curScope->handleReturn);
-    curScope->handleReturn = true;
-}
-
-bool QBodyContext::IsReturnHandledOnCurScope()
-{
-    return curScope->handleReturn;
 }
 
 } // Citron

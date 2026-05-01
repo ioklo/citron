@@ -11,18 +11,16 @@ struct MRead_Exp;
 struct QTranslationContexts;
 
 struct QReadResult_Slot { size_t slotIndex; }; // local var
-struct QReadResult_Ptr { size_t slotIndex; }; // ptr
+struct QReadResult_Ptr { size_t slotIndex; };  // ptr
 struct QReadResult_ConstBool { bool value; };
 struct QReadResult_ConstInt32 { int value; };
 
 using QReadResult = std::variant<QReadResult_Slot, QReadResult_Ptr, QReadResult_ConstBool, QReadResult_ConstInt32>;
-using QReadResult_Value = std::variant<QReadResult_Slot, QReadResult_ConstBool, QReadResult_ConstInt32>;
-using QReadResult_Place = std::variant<QReadResult_Slot, QReadResult_Ptr>;
 
 template<typename T>
 struct QEmitState;
 
-std::expected<QEmitState<QReadResult_Place>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, QTranslationContexts& contexts);
+std::expected<QEmitState<QReadResult>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, QTranslationContexts& contexts);
 std::expected<QEmitState<QReadResult>, DiagPtr> TranslateMReadToQInsts(MRead& mRead, QTranslationContexts& contexts);
 
 //visit([](auto& result) -> ResultType {

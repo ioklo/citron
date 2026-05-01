@@ -58,8 +58,8 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     {
         QScopeGuard mainGuard{std::nullopt, bodyContext};
 
-        size_t curArgSlotIndex = 0;
         auto* rFuncDecl = mFuncBody.nFuncDecl->GetRFuncDecl();
+        auto funcInfo = qAbi->GetFuncInfo(rFuncDecl, rFuncDecl->GetRDecl()->MakeOpenTypeArgs(*rFactory));
 
         // NOTICE: 인자 index는 parameter index랑 다르다
         auto rThisKind = rFuncDecl->GetThisKind();
@@ -69,7 +69,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
         case RThisKind::Ptr:
         {
             RType* ptrType = bodyContext.GetPtrType();
-            size_t slotIndex = bodyContext.NewSlot(ptrType, curArgSlotIndex++);
+            size_t slotIndex = bodyContext.AddThis(ptrType);
             break;
         }
         case RThisKind::Handle:
@@ -85,14 +85,14 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
             if (unboundParam.IsRef())
             {   
-                RType* ptrType = bodyContext.GetPtrType();
-                size_t slotIndex = bodyContext.NewSlot(ptrType, curArgSlotIndex++);
-                bodyContext.AddLocalRef_Ptr(unboundParam.type, unboundParam.name, slotIndex);
+                bodyContext.AddRefArgument(unboundParam.type, unboundParam.name, i);
             }
             else
             {
+                
+
                 // 새 local 변수 추가
-                bodyContext.AddLocalVar(unboundParam.type, unboundParam.name, curArgSlotIndex++);
+                bodyContext.AddArgument(unboundParam.type, unboundParam.name, i);
             }
         }
 
@@ -103,9 +103,16 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
         if (*e_s_bodyResult) // Ready 상태라면
         {
             if (bodyContext.IsVoidType(rRetType))
-                bodyContext.EmitTermInst(QInst_Return{});
+            {
+                bodyContext.EmitJumpToCleanUpBlock(QCleanUpKind_Return{});
+                mainGuard.SetDontNeedCleanUp();
+            }
             else
                 return Error<Error_FuncBody_ShouldEndWithReturn>();
+        }
+        else // Done 상태라면, guard 해제
+        { 
+            mainGuard.SetDontNeedCleanUp();
         }
     }
 

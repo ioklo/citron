@@ -3,6 +3,7 @@
 #include <memory>
 #include <optional>
 #include "MIR/MCreate.h"
+#include "MqCreateTarget.h"
 
 namespace Citron {
 
@@ -12,7 +13,7 @@ struct QTranslationContexts;
 template<typename T>
 struct QEmitState;
 
-std::expected<QEmitState<void>, DiagPtr> TranslateMCreate_NBCToQInsts(MInitExp* mInitExp, std::optional<size_t> o_destSlotIndex, QTranslationContexts& contexts);
-std::expected<QEmitState<void>, DiagPtr> TranslateMCreateToQInsts(MCreate& mCreate, std::optional<size_t> o_destSlotIndex, QTranslationContexts& contexts);
+std::expected<QEmitState<void>, DiagPtr> TranslateMCreate_NBCToQInsts(MInitExp* mInitExp, MqCreateTarget createTarget, QTranslationContexts& contexts);
+std::expected<QEmitState<void>, DiagPtr> TranslateMCreateToQInsts(MCreate& mCreate, MqCreateTarget createTarget, QTranslationContexts& contexts);
 
 } // namespace Citron

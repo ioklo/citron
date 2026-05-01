@@ -43,6 +43,7 @@
     <ClInclude Include="MqIntrinsicInfo.h">
       <Filter>QIntrinsic</Filter>
     </ClInclude>
+    <ClInclude Include="MqCreateTarget.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="IR0IR1Translator.cpp" />

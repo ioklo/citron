@@ -25,45 +25,46 @@ struct QSlotInfo;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using DiagPtr = std::shared_ptr<struct Diag>;
 class QBodyContext;
+class QAbi;
 
 enum class QInst_IntrinsicKind;
 
 struct QLocalInfo_Var
 {
     size_t slotIndex;
-    std::string name;
+    RName name;
 };
 
 struct QLocalInfo_RefAlias
 {
     size_t slotIndex; // slotIndex를 다른 var와 공유
-    std::string name;
+    RName name;
 };
 
 struct QLocalInfo_RefPtr
 {
     size_t slotIndex; // ptr slot
-    std::string name;
+    RName name;
     RType* type; // 참조하는 타입
 };
 
 using QLocalInfo = std::variant<QLocalInfo_Var, QLocalInfo_RefAlias, QLocalInfo_RefPtr>;
 
-struct QCleanUpInfoKey_Return {};
-struct QCleanUpInfoKey_Continue { size_t labelId; };
-struct QCleanUpInfoKey_Break { size_t labelId; };
-struct QCleanUpInfoKey_Leave { size_t labelId; };
+struct QCleanUpKind_Return {};
+struct QCleanUpKind_Continue { size_t labelId; };
+struct QCleanUpKind_Break { size_t labelId; };
+struct QCleanUpKind_Leave { size_t labelId; };
 
-inline bool operator==(QCleanUpInfoKey_Return const& x, QCleanUpInfoKey_Return const& y) { return true; }
-inline bool operator==(QCleanUpInfoKey_Continue const& x, QCleanUpInfoKey_Continue const& y) { return x.labelId == y.labelId; }
-inline bool operator==(QCleanUpInfoKey_Break const& x, QCleanUpInfoKey_Break const& y) { return x.labelId == y.labelId; }
-inline bool operator==(QCleanUpInfoKey_Leave const& x, QCleanUpInfoKey_Leave const& y) { return x.labelId == y.labelId; }
+inline bool operator==(QCleanUpKind_Return const& x, QCleanUpKind_Return const& y) { return true; }
+inline bool operator==(QCleanUpKind_Continue const& x, QCleanUpKind_Continue const& y) { return x.labelId == y.labelId; }
+inline bool operator==(QCleanUpKind_Break const& x, QCleanUpKind_Break const& y) { return x.labelId == y.labelId; }
+inline bool operator==(QCleanUpKind_Leave const& x, QCleanUpKind_Leave const& y) { return x.labelId == y.labelId; }
 
 using QCleanUpKind = std::variant<
-    QCleanUpInfoKey_Return,
-    QCleanUpInfoKey_Continue,
-    QCleanUpInfoKey_Break,
-    QCleanUpInfoKey_Leave>;
+    QCleanUpKind_Return,
+    QCleanUpKind_Continue,
+    QCleanUpKind_Break,
+    QCleanUpKind_Leave>;
 
 struct QCleanUpInfo
 {
@@ -73,9 +74,6 @@ struct QCleanUpInfo
 
 struct QScope
 {
-    bool childHasReturn = false; // 이 스코프의 child가 return을 갖고 있는가
-    bool handleReturn = false;   // 이 스코프에서 return을 처리했다. 더이상 명령어가 나오면 안된다
-
     std::optional<size_t> o_labelId; // continue, break에 필요하다
 
     // "a_16" -> slotIndex
@@ -103,10 +101,7 @@ class QBodyContext
     QScope* curScope;
     std::vector<QSlotInfo> slotInfos;
     std::vector<QScope> scopes;
-    std::optional<size_t> o_retSlotIndex; // 함수의 반환값 slot
-
     
-
     QBlock* curBlock;
     std::vector<QBlock*> blocks;
     std::vector<QJumpBlockInfo> jumpBlockInfos; // break, continue할 때 필요한 블록 정보들. 스코프가 바뀔 때마다 push/pop한다.
@@ -154,20 +149,24 @@ public:
     RType* GetPtrType();
     RType* GetPtrType(RType* innerType);
 
-    size_t GetRetSlotIndex();
     std::optional<size_t> GetLeaveSlotIndex(size_t labelId);
 
     std::optional<QLocalInfo> GetLocalInfo(const RName& name);
-    size_t AddLocalVar(RType* type, const RName& name, std::optional<size_t> o_argIndex);
+
+    size_t AddLocalVar(RType* type, const RName& name);
+    size_t AddArgument(RType* type, const RName& name, size_t index);
+    void AddRefArgument(RType* type, const RName& name, size_t index);
 
     void AddLocalRef_Alias(const RName& rName, size_t slotIndex);
     void AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex);
 
-    size_t NewSlot(RType* rType, std::optional<size_t> o_argIndex = std::nullopt);
-    size_t NewTempSlot(RType* rType);
+    size_t AddParameter(RType* type, QAbi* abi);
+    size_t AddTemp(RType* type, std::string&& debugText);
+    size_t AddThis(RType* type);
     std::span<QSlotInfo> GetStackSlotInfos() { return slotInfos; }
     std::span<QBlock*> GetBlocks() { return blocks; }
     RType* GetSlotType(size_t i) { return slotInfos[i].type; }
+    QSlotRole& GetSlotRole(size_t i) { return slotInfos[i].role; }
 
     void VerifyBlocks();
 

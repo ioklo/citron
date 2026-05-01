@@ -65,7 +65,7 @@ TEST(QEvaluator, CommandInst_DoingWell)
     QInst_Intrinsic inst{QInst_IntrinsicKind::Command_Item, nullopt, move(args)};
     qEntryBlock->EmitInst(move(inst));
 
-    qEntryBlock->EmitInst(QInst_Return{nullopt});
+    qEntryBlock->EmitInst(QInst_Return{});
 
     std::vector<QFuncBody> funcBodies;
     funcBodies.emplace_back(nEntry, move(slotInfos), move(blocks));

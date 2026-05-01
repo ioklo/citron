@@ -66,15 +66,8 @@ struct QInst_Call
                                           // 순서대로 indirect return, this, 나머지 인자들이 들어간다
 };
 
-struct QInst_ReturnValue
-{
-    RType* type;
-    QArg_Value value;
-};
-
 struct QInst_Return
-{
-    std::optional<QInst_ReturnValue> o_value; // void면 없음
+{   
 };
 
 enum struct QInst_IntrinsicKind

@@ -25,8 +25,8 @@ struct MLocQInstsTranslator
     ResultType Visit(MLoc_Materialize* loc) 
     {
         RType* rType = GetType(loc->create, &*contexts.rFactory);
-        size_t slotIndex = contexts.bodyContext.NewSlot(rType);
-        auto e_s_result = TranslateMCreateToQInsts(loc->create, slotIndex, contexts);
+        size_t slotIndex = contexts.bodyContext.AddTemp(rType, "materialize");
+        auto e_s_result = TranslateMCreateToQInsts(loc->create, MqCreateTarget_Slot{slotIndex}, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_result);
 
         return QLocResult_Slot{slotIndex};
@@ -78,8 +78,8 @@ struct MLocQInstsTranslator
             {
                 // slot의 addrof를 하나 한다 ptr 타입
                 auto* rPtrType = contexts.bodyContext.GetPtrType();
-                size_t destSlotIndex = contexts.bodyContext.NewSlot(rPtrType);
-                contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Dest{destSlotIndex}, QArg_Addr_OfSlot{locResult.slotIndex}, loc->decl->GetIndex()});
+                size_t destSlotIndex = contexts.bodyContext.AddTemp(rPtrType, "struct_field");
+                contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Dest_Slot{destSlotIndex}, QArg_Addr_OfSlot{locResult.slotIndex}, loc->decl->GetIndex()});
 
                 return QLocResult_Ptr{destSlotIndex};
             }
@@ -87,8 +87,8 @@ struct MLocQInstsTranslator
             {
                 // slot의 addrof를 하나 한다 ptr 타입
                 auto* ptrType = contexts.bodyContext.GetPtrType();
-                size_t destSlotIndex = contexts.bodyContext.NewSlot(ptrType);
-                contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Dest{destSlotIndex}, QArg_Addr_PtrSlot{locResult.slotIndex}, loc->decl->GetIndex()});
+                size_t destSlotIndex = contexts.bodyContext.AddTemp(ptrType, "struct_field");
+                contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Dest_Slot{destSlotIndex}, QArg_Addr_PtrSlot{locResult.slotIndex}, loc->decl->GetIndex()});
 
                 return QLocResult_Ptr{destSlotIndex};
             }

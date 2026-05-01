@@ -14,6 +14,7 @@
     <ClInclude Include="CommonQInstsTranslation.h" />
     <ClInclude Include="MCreateToQInsts.h" />
     <ClInclude Include="MLocToQInsts.h" />
+    <ClInclude Include="MqCreateTarget.h" />
     <ClInclude Include="MqFactory.h" />
     <ClInclude Include="MqIntrinsicInfo.h" />
     <ClInclude Include="MReadToQInsts.h" />

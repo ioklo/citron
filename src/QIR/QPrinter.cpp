@@ -216,18 +216,6 @@ class QPrinter
         void Print(QInst_Return& inst)
         {
             printer.Print("return");
-
-            if (inst.o_value)
-            {
-                printer.Print(" ");
-
-                printer.PrintRType(inst.o_value->type);
-                
-                printer.Print(", ");
-
-                printer.PrintQArg_Value(inst.o_value->value);
-            }
-
             printer.PrintLine();
         }
     };
@@ -280,12 +268,19 @@ public:
 
     void PrintQArg_Dest(QArg_Dest& arg)
     {
-        PrintSlot(arg.index);
+        visit([this](auto& dest) {
+            using T = remove_cvref_t<decltype(dest)>;
+            if constexpr (same_as<T, QArg_Dest_Slot>)
+                PrintSlot(dest.index);
+            else if constexpr (same_as<T, QArg_Dest_DirectReturn>)
+                writer.Write("$ret");
+        }, arg);
     }
 
     void PrintSlot(size_t index)
     {
-        writer.Write(funcBody.slotInfos[index].name);
+        // 단일 slot 이름 출력 s{index} 까지만 쓰면 될거 같다
+        writer.Write(format("s{}", index));
     }
 
     void PrintRName(RName& name)
@@ -390,6 +385,36 @@ public:
             writer.Write(format("#{}", *(int*)&type));
         }
     }
+
+    void PrintSlotRole(QSlotRole role)
+    {
+        visit([this](auto& role) {
+            using T = remove_cvref_t<decltype(role)>;
+            if constexpr (same_as<T, QSlotRole_IndirectReturn>)
+                writer.Write("$indirect_return");
+            else if constexpr (same_as<T, QSlotRole_This>)
+                writer.Write("$this");
+            else if constexpr (same_as<T, QSlotRole_Argument>)
+            {
+                writer.Write(format("$arg{} ", role.index));
+                PrintRName(role.name);
+            }
+            else if constexpr (same_as<T, QSlotRole_Local>)
+            {
+                writer.Write("$local ");
+                PrintRName(role.name);
+            }
+            else if constexpr (same_as<T, QSlotRole_Temp>)
+            {
+                writer.Write(format("$temp {}", role.debugText));
+            }
+            else if constexpr (same_as<T, QSlotRole_Parameter>)
+            {
+                writer.Write("$param");
+            }
+            else static_assert(false);
+        }, role);
+    }
     
     // entry
     void Print()
@@ -400,8 +425,10 @@ public:
         
         for (auto& slotInfo : funcBody.slotInfos)
         {
-            writer.Write(format("// slot {}: ", slotInfo.name));
+            writer.Write(format("// slot s{}: ", slotInfo.slotIndex));
             PrintRType(slotInfo.type);
+            writer.Write(" ");
+            PrintSlotRole(slotInfo.role);
             writer.WriteLine();
         }
         
