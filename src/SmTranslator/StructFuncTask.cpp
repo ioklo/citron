@@ -17,9 +17,9 @@ using namespace std;
 
 namespace Citron {
 
-void StructFuncTask::Register(NStructDecl* nStructDecl, SStructFuncDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void StructFuncTask::Register(NStructDecl* nStructDecl, SStructFuncDecl* syntax, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<StructFuncTask> task{new StructFuncTask(nStructDecl, syntax, nFactory)};
+    shared_ptr<StructFuncTask> task{new StructFuncTask(nStructDecl, syntax, rFactory, nFactory)};
     phaseManager.AddBuildTypeDependentSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
@@ -31,7 +31,7 @@ expected<void, DiagPtr> StructFuncTask::BuildTypeDependentSymbol(BuildTypeDepend
         nStruct, accessor, sStruct->bStatic, sStruct->bSequence,
         sStruct->name);
 
-    auto typeParams = MakeTypeParams(nStructFunc, sStruct->typeParams, *nFactory);
+    auto typeParams = MakeTypeParams(nStructFunc, sStruct->typeParams, rFactory, *nFactory);
     nStructFunc->InitTypeParams(move(typeParams));
 
     nStruct->AddFunc(nStructFunc);

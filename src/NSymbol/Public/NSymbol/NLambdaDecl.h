@@ -40,7 +40,7 @@ class NLambdaDecl
 
 public:
     NSYMBOL_API NLambdaDecl(NFuncDeclOuter* outer, RName&& name);
-    NSYMBOL_API void Init(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    NSYMBOL_API void Init(RFuncReturn&& funcReturn, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
     NSYMBOL_API void InitVars(std::vector<NLambdaVarDecl*>&& vars);
 
 public:
@@ -75,6 +75,9 @@ public:
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+
+    // from RTypeDecl
+    RType* GetOpenType() override;
 
     // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }

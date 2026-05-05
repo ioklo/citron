@@ -50,4 +50,9 @@ optional<RDeclRes> NInterfaceDecl::ResolveIdentifier(const RName& name, size_t e
     throw NotImplementedException();
 }
 
+RType* NInterfaceDecl::GetOpenType()
+{
+    throw NotImplementedException{};
+}
+
 } // namespace Citron

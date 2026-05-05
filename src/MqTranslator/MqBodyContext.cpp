@@ -348,15 +348,54 @@ size_t MqBodyContext::AddLocalVar(RType* type, const RName& rName)
     return slotIndex;
 }
 
-size_t MqBodyContext::AddArgument(RType* type, const RName& rName, size_t index)
+size_t MqBodyContext::AddIndirectReturn(RType* type)
+{
+    size_t slotIndex = slotInfos.size();
+    assert(slotIndex == 0);
+
+    auto* ptrType = GetPtrType(type);
+
+    // 1. 함수 entry에서 할당할 목록에 추가
+    slotInfos.emplace_back(ptrType, slotIndex, QSlotRole_IndirectReturn{});
+
+    // 2. 현재 스코프에 이름 추가 x
+
+    // 3. managedSlot에 추가 x
+    // indirect return은 caller에서 소멸자 처리한다
+
+    return slotIndex;
+}
+
+size_t MqBodyContext::AddArgument_Direct(RType* type, const RName& rName, size_t index)
 {
     size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
 
     // 1. 함수 entry에서 할당할 목록에 추가
-    slotInfos.emplace_back(type, slotIndex, QSlotRole_Argument{rName, index});
+    slotInfos.emplace_back(type, slotIndex, QSlotRole_Argument{rName, index, QSlotRole_ArgumentKind::Direct});
 
     // 2. 현재 스코프에 이름 추가
     curScope->localInfos[rName] = MqLocalInfo_Var{slotIndex, rName};
+
+    // 3. direct는 BC이므로 managedSlot에 추가하지 않는다
+    assert(type->GetCopyStrategy() == RCopyStrategy::Bitwise);
+
+    return slotIndex;
+}
+
+size_t MqBodyContext::AddArgument_Indirect(RType* type, const RName& rName, size_t index, MqAbi* abi)
+{
+    size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
+    auto* ptrType = GetPtrType(type);
+
+    // 1. 함수 entry에서 할당할 목록에 추가
+    slotInfos.emplace_back(ptrType, slotIndex, QSlotRole_Argument{rName, index, QSlotRole_ArgumentKind::Indirect});
+
+    // 2. 현재 스코프에 이름 추가
+    curScope->localInfos[rName] = MqLocalInfo_RefPtr{slotIndex, rName, type};
+
+    // 3. managedSlot에 추가한다.
+    // Citron_X64에서는 callee에서 해제하도록 managedSlot에 추가한다. 다른 ABI에서 다른 처리가 필요해지면 이 부분을 수정한다.
+    assert(dynamic_cast<MqAbi_Citron_X64*>(abi)); 
     if (type->GetCopyStrategy() == RCopyStrategy::NonBitwise)
         curScope->managedSlotIndices.push_back(slotIndex);
 
@@ -364,7 +403,7 @@ size_t MqBodyContext::AddArgument(RType* type, const RName& rName, size_t index)
 }
 
 // ptr을 갖고 있게 된다
-void MqBodyContext::AddRefArgument(RType* type, const RName& rName, size_t index)
+void MqBodyContext::AddArgument_Ref(RType* type, const RName& rName, size_t index)
 {
     size_t slotIndex = slotInfos.size(); // 여기서의 index는 모든 named 변수의 index (local vars가 어디 들어있는지는 별개)
 
@@ -388,22 +427,6 @@ void MqBodyContext::AddLocalRef_Alias(const RName& rName, size_t slotIndex)
 void MqBodyContext::AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex)
 {   
     curScope->localInfos[rName] = MqLocalInfo_RefPtr{slotIndex, rName, rType};
-}
-
-size_t MqBodyContext::AddParameter(RType* type, MqAbi* abi)
-{
-    size_t slotIndex = slotInfos.size();
-
-    // 1. 함수 entry에서 할당할 목록에 추가
-    slotInfos.emplace_back(type, slotIndex, QSlotRole_Parameter{});
-
-    // 2. 스코프에 이름은 추가하지 않고
-
-    // 3. managedSlot에 추가하지 않기 (Citron X64 동작)
-    assert(dynamic_cast<MqAbi_Citron_X64*>(abi));
-    // x64에서는 dtor를 callee가 호출한다
-
-    return slotIndex;
 }
 
 size_t MqBodyContext::AddTemp(RType* type, std::string&& debugText)

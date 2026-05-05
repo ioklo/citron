@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "Infra/Exceptions.h"
+#include "RSymbol/RFactory.h"
 #include "NTypeParamDecl.h"
 
 using namespace std;
@@ -109,6 +110,11 @@ optional<RDeclRes> NStructDecl::ResolveIdentifier(const RName& name, size_t expl
         return o_member;
 
     return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+}
+
+RType* NStructDecl::GetOpenType()
+{
+    return rFactory->MakeStructType(this, MakeOpenTypeArgs(*rFactory));
 }
 
 RType_Struct* NStructDecl::GetUnboundBaseStruct()

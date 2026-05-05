@@ -4,6 +4,7 @@
 #include <ranges>
 
 #include "Infra/Exceptions.h"
+#include "RSymbol/RFactory.h"
 #include "NClassFuncDecl.h"
 #include "NTypeParamDecl.h"
 
@@ -78,6 +79,11 @@ optional<RDeclRes> NClassDecl::ResolveIdentifier(const RName& name, size_t expli
     // TODO: [37] class base에서도 검색하기
 
     return outer->GetNDecl()->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+}
+
+RType* NClassDecl::GetOpenType()
+{
+    return rFactory->MakeClassType(this, MakeOpenTypeArgs(*rFactory));
 }
 
 optional<RDeclRes_ClassVar> NClassDecl::GetVar(RTypeArguments* typeArgs, const RName& name)

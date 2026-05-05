@@ -9,14 +9,14 @@ namespace Citron {
 NLambdaDecl::NLambdaDecl(NFuncDeclOuter* outer, RName&& name)
     : outer{outer}
     , name{move(name)}
-    , NCommonFuncDeclComponent{RThisKind::Ptr, /*bSeqFunc*/false} // TODO: Ptr을 instance로 넣지 않는 최적화 가능
+    , NCommonFuncDeclComponent{/*bSeqFunc*/false} // TODO: Ptr을 instance로 넣지 않는 최적화 가능
 {   
     NGenericsComponent::InitTypeParams({});
 }
 
-void NLambdaDecl::Init(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void NLambdaDecl::Init(RFuncReturn&& funcReturn, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {   
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcReturn), move(funcParameters), bLastParameterVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcReturn), move(thisKind), move(funcParameters), bLastParameterVariadic);
 }
 
 void NLambdaDecl::InitVars(std::vector<NLambdaVarDecl*>&& vars)
@@ -69,6 +69,11 @@ optional<RDeclRes> NLambdaDecl::ResolveIdentifier(const RName& name, size_t expl
 
     // Lambda에서 검색하지 않고, FuncContext에서 검색한다
     throw RuntimeFatalException();
+}
+
+RType* NLambdaDecl::GetOpenType()
+{
+    throw NotImplementedException{};
 }
 
 } // namespace Citron

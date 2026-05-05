@@ -12,6 +12,7 @@ enum class RAccessor;
 class NTypeParamDecl;
 class NFactory;
 class NDecl;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 enum class AccessorContext
 {
@@ -22,6 +23,6 @@ enum class AccessorContext
 
 RAccessor MakeAccessor(std::optional<SAccessModifier> modifier, AccessorContext context);
 
-std::vector<NTypeParamDecl*> MakeTypeParams(NDecl* outer, const std::vector<STypeParam>& sTypeParams, NFactory& nFactory);
+std::vector<NTypeParamDecl*> MakeTypeParams(NDecl* outer, const std::vector<STypeParam>& sTypeParams, const RFactoryPtr& rFactory, NFactory& nFactory);
 
 } // namespace Citron

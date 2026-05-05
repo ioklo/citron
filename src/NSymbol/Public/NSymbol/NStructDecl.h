@@ -109,6 +109,7 @@ public:
 
     // from RTypeDecl
     // RDecl* GetRDecl() override { return this; }
+    RType* GetOpenType() override;
 
     // from RTypeDeclOuter
     // RDecl* GetRDecl() override { return this; }

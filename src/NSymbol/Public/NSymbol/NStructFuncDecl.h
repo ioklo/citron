@@ -30,6 +30,7 @@ public:
     NStructDecl* _struct;
     RAccessor accessor;
     std::string name;
+    bool _static;
 
 public:
     NSYMBOL_API NStructFuncDecl(

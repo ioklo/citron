@@ -44,12 +44,12 @@ struct MCreate_BCQInstsTranslator
 
         visit([this, exp](auto& srcLoc) {
             using T = remove_cvref_t<decltype(srcLoc)>;
-            if constexpr (same_as<T, QLocResult_Slot>)
+            if constexpr (same_as<T, MqLocResult_Slot>)
             {
                 auto* type = GetType(exp->loc, &*contexts.rFactory);
                 UpdateCreateTarget_Value(type, srcLoc.slotIndex, createTarget, contexts);
             }
-            else if constexpr (same_as<T, QLocResult_Ptr>)
+            else if constexpr (same_as<T, MqLocResult_Ptr>)
             {   
                 auto* type = GetType(exp->loc, &*contexts.rFactory);
                 UpdateCreateTarget_Ptr(type, srcLoc.slotIndex, createTarget, contexts);
@@ -79,7 +79,7 @@ struct MCreate_BCQInstsTranslator
             using U = remove_cvref_t<decltype(src)>;
 
             // 1-1. destLoc: slot, srcLoc: slot
-            if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_Slot>)
+            if constexpr (same_as<T, MqLocResult_Slot> && same_as<U, MqReadResult_Slot>)
             {
                 // <destSlot> = <srcSlot>
                 auto* type = contexts.bodyContext.GetSlotType(src.slotIndex);
@@ -89,7 +89,7 @@ struct MCreate_BCQInstsTranslator
                 return MqEmitState_Ready{};
             }
             // 1-2. destLoc: slot, srcLoc: ptr
-            else if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_Ptr>)
+            else if constexpr (same_as<T, MqLocResult_Slot> && same_as<U, MqReadResult_Ptr>)
             {
                 // dest = *src
                 auto* type = contexts.bodyContext.GetSlotType(destLoc.slotIndex);
@@ -99,7 +99,7 @@ struct MCreate_BCQInstsTranslator
                 return MqEmitState_Ready{};
             }
             // 1-3. destLoc: slot, srcLoc: const bool
-            else if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_ConstBool>)
+            else if constexpr (same_as<T, MqLocResult_Slot> && same_as<U, MqReadResult_ConstBool>)
             {
                 auto* boolType = contexts.bodyContext.GetBoolType();
 
@@ -110,7 +110,7 @@ struct MCreate_BCQInstsTranslator
             }
 
             // 1-4. destLoc: slot, srcLoc: const int
-            else if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_ConstInt32>)
+            else if constexpr (same_as<T, MqLocResult_Slot> && same_as<U, MqReadResult_ConstInt32>)
             {
                 auto* intType = contexts.bodyContext.GetIntType();
 
@@ -121,7 +121,7 @@ struct MCreate_BCQInstsTranslator
             }
 
             // 2-1. destLoc: ptr, srcLoc: slot
-            else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_Slot>)
+            else if constexpr (same_as<T, MqLocResult_Ptr> && same_as<U, MqReadResult_Slot>)
             {
                 // *dest = src
                 auto* type = contexts.bodyContext.GetSlotType(src.slotIndex);
@@ -130,10 +130,10 @@ struct MCreate_BCQInstsTranslator
                 return MqEmitState_Ready{};
             }
             // 2-2. destLoc: ptr, srcLoc: ptr
-            else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_Ptr>)
+            else if constexpr (same_as<T, MqLocResult_Ptr> && same_as<U, MqReadResult_Ptr>)
             {   
                 auto* type = contexts.bodyContext.GetSlotType(destLoc.slotIndex);
-                size_t size = contexts.qAbi->GetTypeSize(type);
+                size_t size = contexts.abi->GetTypeSize(type);
                 contexts.bodyContext.EmitIntrinsic(
                     QInst_IntrinsicKind::Memcpy_Void_Ptr_Ptr_Int,
                     /*o_dest*/nullopt,
@@ -144,7 +144,7 @@ struct MCreate_BCQInstsTranslator
             }
 
             // 2-3. destLoc: ptr, srcLoc: const bool
-            else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_ConstBool>)
+            else if constexpr (same_as<T, MqLocResult_Ptr> && same_as<U, MqReadResult_ConstBool>)
             {
                 auto* boolType = contexts.bodyContext.GetBoolType();
 
@@ -155,7 +155,7 @@ struct MCreate_BCQInstsTranslator
             }
 
             // 2-4. destLoc: ptr, srcLoc: const int
-            else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_ConstInt32>)
+            else if constexpr (same_as<T, MqLocResult_Ptr> && same_as<U, MqReadResult_ConstInt32>)
             {
                 auto* intType = contexts.bodyContext.GetIntType();
 
@@ -187,11 +187,11 @@ struct MCreate_BCQInstsTranslator
         visit([this](auto& loc) {
             using T = remove_cvref_t<decltype(loc)>;
 
-            if constexpr (same_as<T, QLocResult_Slot>)
+            if constexpr (same_as<T, MqLocResult_Slot>)
             {   
                 UpdateCreateTarget_AddrOf(loc.slotIndex, createTarget, contexts);
             }
-            else if constexpr (same_as<T, QLocResult_Ptr>)
+            else if constexpr (same_as<T, MqLocResult_Ptr>)
             {
                 auto* ptrType = contexts.bodyContext.GetSlotType(loc.slotIndex);
                 UpdateCreateTarget_Value(ptrType, loc.slotIndex, createTarget, contexts);

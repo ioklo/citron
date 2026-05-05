@@ -12,14 +12,14 @@ NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, RStru
     : _struct{_struct}
     , accessor{accessor}
     , kind{kind}
-    , NCommonFuncDeclComponent(RThisKind::Ptr, /*bSeqFunc*/false)
+    , NCommonFuncDeclComponent{/*bSeqFunc*/false}
 {
     NGenericsComponent::InitTypeParams({});
 }
 
 void NStructCtorDecl::InitFuncParameters(vector<RFuncParameter>&& parameters, bool bLastParameterVariadic)
 {
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor(), move(parameters), bLastParameterVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor(), RThisKind_Ref{_struct->GetOpenType()}, move(parameters), bLastParameterVariadic);
 }
 
 NStructCtorDecl::~NStructCtorDecl() = default;

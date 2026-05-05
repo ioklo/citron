@@ -19,7 +19,7 @@ namespace Citron {
 // MLoc이 가리키는 위치를 slot자체나, ptr를 돌려준다 (ptr이 들어간 slot을 리턴한다)
 struct MLocQInstsTranslator
 {
-    using ResultType = expected<MqEmitState<QLocResult>, DiagPtr>;
+    using ResultType = expected<MqEmitState<MqLocResult>, DiagPtr>;
     MqTranslationContexts& contexts;
     
     ResultType Visit(MLoc_Materialize* loc) 
@@ -29,7 +29,7 @@ struct MLocQInstsTranslator
         auto e_s_result = TranslateMCreateToQInsts(loc->create, MqCreateTarget_Slot{slotIndex}, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_result);
 
-        return QLocResult_Slot{slotIndex};
+        return MqLocResult_Slot{slotIndex};
     }
 
     ResultType Visit(MLoc_LocalVar* loc)
@@ -38,7 +38,7 @@ struct MLocQInstsTranslator
         assert(o_localInfo);
 
         auto& varInfo = get<MqLocalInfo_Var>(*o_localInfo);
-        return QLocResult_Slot{varInfo.slotIndex};
+        return MqLocResult_Slot{varInfo.slotIndex};
     }
 
     ResultType Visit(MLoc_LocalRef* loc)
@@ -51,11 +51,11 @@ struct MLocQInstsTranslator
             using T = remove_cvref_t<decltype(localInfo)>;
             if constexpr (same_as<T, MqLocalInfo_RefAlias>)
             {
-                return QLocResult_Slot{localInfo.slotIndex};
+                return MqLocResult_Slot{localInfo.slotIndex};
             }
             else if constexpr (same_as<T, MqLocalInfo_RefPtr>)
             {
-                return QLocResult_Ptr{localInfo.slotIndex};
+                return MqLocResult_Ptr{localInfo.slotIndex};
             }
             else if constexpr (same_as<T, MqLocalInfo_Var>)
             {   
@@ -74,23 +74,23 @@ struct MLocQInstsTranslator
 
         return visit([this, loc](auto& locResult) -> ResultType {
             using T = remove_cvref_t<decltype(locResult)>;
-            if constexpr (same_as<T, QLocResult_Slot>) // slot이면
+            if constexpr (same_as<T, MqLocResult_Slot>) // slot이면
             {
                 // slot의 addrof를 하나 한다 ptr 타입
                 auto* rPtrType = contexts.bodyContext.GetPtrType();
                 size_t destSlotIndex = contexts.bodyContext.AddTemp(rPtrType, "struct_field");
                 contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Dest_Slot{destSlotIndex}, QArg_Addr_OfSlot{locResult.slotIndex}, loc->decl->GetIndex()});
 
-                return QLocResult_Ptr{destSlotIndex};
+                return MqLocResult_Ptr{destSlotIndex};
             }
-            else if constexpr(same_as<T, QLocResult_Ptr>)
+            else if constexpr(same_as<T, MqLocResult_Ptr>)
             {
                 // slot의 addrof를 하나 한다 ptr 타입
                 auto* ptrType = contexts.bodyContext.GetPtrType();
                 size_t destSlotIndex = contexts.bodyContext.AddTemp(ptrType, "struct_field");
                 contexts.bodyContext.EmitInst(QInst_FieldOf{QArg_Dest_Slot{destSlotIndex}, QArg_Addr_PtrSlot{locResult.slotIndex}, loc->decl->GetIndex()});
 
-                return QLocResult_Ptr{destSlotIndex};
+                return MqLocResult_Ptr{destSlotIndex};
             }
             else static_assert(false);
             
@@ -103,7 +103,7 @@ struct MLocQInstsTranslator
     ResultType Visit(MLoc_This* loc) 
     {
         // 현재 컨텍스트에서, 첫번째 인자 slot 0번
-        return QLocResult_Slot{0};
+        return MqLocResult_Slot{0};
     }
 
     ResultType Visit(MLoc_PtrDeref* loc) { throw NotImplementedException{}; }
@@ -111,7 +111,7 @@ struct MLocQInstsTranslator
     ResultType Visit(MLoc_NullableValue* loc) { throw NotImplementedException{}; }
 };
 
-expected<MqEmitState<QLocResult>, DiagPtr> TranslateMLocToQInsts(MLoc* loc, MqTranslationContexts& contexts)
+expected<MqEmitState<MqLocResult>, DiagPtr> TranslateMLocToQInsts(MLoc* loc, MqTranslationContexts& contexts)
 {
     MLocQInstsTranslator translator{contexts};
     return Accept(translator, loc);

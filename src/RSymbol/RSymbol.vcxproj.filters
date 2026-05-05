@@ -116,6 +116,9 @@
     <ClInclude Include="Public\RSymbol\RCopyStrategy.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RThisKind.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">

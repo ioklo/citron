@@ -43,6 +43,7 @@
     <ClInclude Include="Public\RSymbol\RStructDtorDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructFuncDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructVarDecl.h" />
+    <ClInclude Include="Public\RSymbol\RThisKind.h" />
     <ClInclude Include="Public\RSymbol\RTypeArguments.h" />
     <ClInclude Include="Public\RSymbol\RTypeDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclOuter.h" />

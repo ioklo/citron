@@ -7,9 +7,9 @@ namespace Citron {
 
 NStructDtorDecl::NStructDtorDecl(RAccessor accessor, NStructDecl* _struct)
     : accessor{accessor}, _struct{_struct}
-    , NCommonFuncDeclComponent{RThisKind::Ptr, /*bSeqFunc*/false}
+    , NCommonFuncDeclComponent{/*bSeqFunc*/false}
 {
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor{}, {}, /*bLastParamVariadic*/false);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor{}, RThisKind_Ref{_struct->GetOpenType()}, /*funcParameters*/{}, /*bLastParamVariadic*/false);
 }
 
 NDecl* NStructDtorDecl::GetNOuter()

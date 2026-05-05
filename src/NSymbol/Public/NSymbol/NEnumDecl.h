@@ -33,9 +33,10 @@ class NEnumDecl
     std::unordered_map<RName, NEnumElemDecl*> elemsMap;
 
     // std::unordered_map<std::string, int> elemsByName;
+    RFactoryPtr rFactory;
 
 public:
-    NSYMBOL_API NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, const RName& name);
+    NSYMBOL_API NEnumDecl(NTypeDeclOuter* outer, RAccessor accessor, const RName& name, const RFactoryPtr& rFactory);
     using NGenericsComponent::InitTypeParams;
     NSYMBOL_API void AddElem(NEnumElemDecl* elem);
 
@@ -63,6 +64,7 @@ public:
 
     // from RTypeDecl
     // RDecl* GetRDecl() override { return this; }
+    RType* GetOpenType() override;
 };
 
 }

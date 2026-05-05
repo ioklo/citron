@@ -12,8 +12,13 @@ NGlobalFuncDecl::NGlobalFuncDecl(NNamespaceDecl* outer, RAccessor accessor, bool
     : outer{outer}
     , accessor{accessor}
     , name{move(rName)}
-    , NCommonFuncDeclComponent{RThisKind::None, bSeqFunc}
+    , NCommonFuncDeclComponent{bSeqFunc}
 {   
+}
+
+void NGlobalFuncDecl::InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+{
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcReturn), RThisKind_Static{}, move(funcParameters), bLastParameterVariadic);
 }
 
 NDecl* NGlobalFuncDecl::GetNOuter()

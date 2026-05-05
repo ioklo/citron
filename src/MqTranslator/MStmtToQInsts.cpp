@@ -35,7 +35,7 @@ struct MStmtQInstsTranslator
     
     MqTranslationContexts& contexts;
 
-    expected<MqEmitState<QReadResult>, DiagPtr> TranslateMTopLevel_ReadToQInsts(MTopLevel_Read& mTopLevelRead)
+    expected<MqEmitState<MqReadResult>, DiagPtr> TranslateMTopLevel_ReadToQInsts(MTopLevel_Read& mTopLevelRead)
     {
         MqScopeGuard guard{std::nullopt, contexts.bodyContext};
         return TranslateMReadToQInsts(mTopLevelRead.read, contexts);
@@ -47,7 +47,7 @@ struct MStmtQInstsTranslator
         return TranslateMCreateToQInsts(mTopLevelCreate.create, createTarget, contexts);
     }
 
-    expected<MqEmitState<QLocResult>, DiagPtr> TranslateMTopLevel_LocToQInsts(MTopLevel_Loc& mTopLevelLoc)
+    expected<MqEmitState<MqLocResult>, DiagPtr> TranslateMTopLevel_LocToQInsts(MTopLevel_Loc& mTopLevelLoc)
     {
         MqScopeGuard scopeGuard{std::nullopt, contexts.bodyContext};
         return TranslateMLocToQInsts(mTopLevelLoc.loc, contexts);
@@ -71,16 +71,16 @@ struct MStmtQInstsTranslator
             // NBC이기 때문에 (string) 인자로 넘겨줄 때는 pointer가 되어야 한다
             visit([this](auto& readResult){
                 using T = remove_cvref_t<decltype(readResult)>;
-                if constexpr (same_as<T, QReadResult_Slot>)
+                if constexpr (same_as<T, MqReadResult_Slot>)
                 {   
                     contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Item, nullopt, {QArg_CallArg_AddrOfSlot{readResult.slotIndex}});
                 }
-                else if constexpr (same_as<T, QReadResult_Ptr>)
+                else if constexpr (same_as<T, MqReadResult_Ptr>)
                 {
                     contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Item, nullopt, {QArg_CallArg_Slot{readResult.slotIndex}});
                 }
-                else if constexpr (same_as<T, QReadResult_ConstInt32>) throw RuntimeFatalException{};
-                else if constexpr (same_as<T, QReadResult_ConstBool>) throw RuntimeFatalException{};
+                else if constexpr (same_as<T, MqReadResult_ConstInt32>) throw RuntimeFatalException{};
+                else if constexpr (same_as<T, MqReadResult_ConstBool>) throw RuntimeFatalException{};
                 else static_assert(false);
             }, **e_s_readResult);
         }
@@ -134,11 +134,11 @@ struct MStmtQInstsTranslator
 
             using T = remove_cvref_t<decltype(locResult)>;
 
-            if constexpr (same_as<T, QLocResult_Slot>)
+            if constexpr (same_as<T, MqLocResult_Slot>)
             {
                 contexts.bodyContext.AddLocalRef_Alias(mStmt->name, locResult.slotIndex);
             }
-            else if constexpr (same_as<T, QLocResult_Ptr>)
+            else if constexpr (same_as<T, MqLocResult_Ptr>)
             {
                 // ptr slot을 로컬 ref로 선언
                 contexts.bodyContext.AddLocalRef_Ptr(mStmt->type, mStmt->name, locResult.slotIndex);
@@ -231,11 +231,11 @@ struct MStmtQInstsTranslator
             using T = remove_cvref_t<decltype(condResult)>;
 
             auto& bodyContext = contexts.bodyContext;
-            if constexpr (same_as<T, QReadResult_Slot>)
+            if constexpr (same_as<T, MqReadResult_Slot>)
             {
                 return HandleIf(mStmt, condResult.slotIndex);
             }
-            else if constexpr (same_as<T, QReadResult_Ptr>)
+            else if constexpr (same_as<T, MqReadResult_Ptr>)
             {
                 auto* boolType = bodyContext.GetBoolType();
                 size_t newSlot = bodyContext.AddTemp(boolType, "if_cond");
@@ -243,7 +243,7 @@ struct MStmtQInstsTranslator
 
                 return HandleIf(mStmt, newSlot);
             }
-            else if constexpr (same_as<T, QReadResult_ConstBool>)
+            else if constexpr (same_as<T, MqReadResult_ConstBool>)
             {
                 if (condResult.value)
                 {
@@ -261,7 +261,7 @@ struct MStmtQInstsTranslator
 
                 return MqEmitState_Ready{};
             }
-            else if constexpr (same_as<T, QReadResult_ConstInt32>)
+            else if constexpr (same_as<T, MqReadResult_ConstInt32>)
                 throw RuntimeFatalException{}; // SyntaxIR0 Translation에서 이미 체크가 되었어야 한다
             else static_assert(false);
         }, **e_s_condResult);
@@ -289,25 +289,25 @@ struct MStmtQInstsTranslator
             visit([this, mStmt, bodyBlock, exitBlock](auto& condResult) {
                 auto& bodyContext = contexts.bodyContext;
                 using T = remove_cvref_t<decltype(condResult)>;
-                if constexpr (same_as<T, QReadResult_Slot>)
+                if constexpr (same_as<T, MqReadResult_Slot>)
                 {
                     bodyContext.EmitTermInst(QInst_CondJump{condResult.slotIndex, bodyBlock, exitBlock});
                 }
-                else if constexpr (same_as<T, QReadResult_Ptr>)
+                else if constexpr (same_as<T, MqReadResult_Ptr>)
                 {
                     auto* boolType = bodyContext.GetBoolType();
                     size_t newSlot = bodyContext.AddTemp(boolType, "if_cond");
                     bodyContext.EmitInst(QInst_Load{.type = boolType, .dest = QArg_Dest_Slot{newSlot}, .src = condResult.slotIndex});
                     bodyContext.EmitTermInst(QInst_CondJump{newSlot, bodyBlock, exitBlock});
                 }
-                else if constexpr (same_as<T, QReadResult_ConstBool>)
+                else if constexpr (same_as<T, MqReadResult_ConstBool>)
                 {
                     if (condResult.value)
                         bodyContext.EmitTermInst(QInst_Jump{bodyBlock});
                     else
                         bodyContext.EmitTermInst(QInst_Jump{exitBlock});
                 }
-                else if constexpr (same_as<T, QReadResult_ConstInt32>)
+                else if constexpr (same_as<T, MqReadResult_ConstInt32>)
                     throw RuntimeFatalException{}; // SyntaxIR0 Translation에서 이미 체크가 되었어야 한다
                 else static_assert(false);
             }, **e_s_condResult);

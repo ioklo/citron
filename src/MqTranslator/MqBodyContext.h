@@ -154,13 +154,17 @@ public:
     std::optional<MqLocalInfo> GetLocalInfo(const RName& name);
 
     size_t AddLocalVar(RType* type, const RName& name);
-    size_t AddArgument(RType* type, const RName& name, size_t index);
-    void AddRefArgument(RType* type, const RName& name, size_t index);
+    size_t AddIndirectReturn(RType* type);
+
+    // Argument는 세가지 종류가 있다. 모두 겉보기 타입은 value type이다
+    // 1. Direct(value), 2. Indirect(ptr, caller나 callee에서 소멸자 처리), 3. Ref(ptr, 소멸자 x)
+    size_t AddArgument_Direct(RType* type, const RName& name, size_t index);
+    size_t AddArgument_Indirect(RType* type, const RName& name, size_t index, MqAbi* abi);
+    void AddArgument_Ref(RType* type, const RName& name, size_t index);
 
     void AddLocalRef_Alias(const RName& rName, size_t slotIndex);
     void AddLocalRef_Ptr(RType* rType, const RName& rName, size_t slotIndex);
 
-    size_t AddParameter(RType* type, MqAbi* abi);
     size_t AddTemp(RType* type, std::string&& debugText);
     size_t AddThis(RType* type);
     std::span<QSlotInfo> GetStackSlotInfos() { return slotInfos; }
@@ -178,10 +182,6 @@ public:
 
     void PushJumpBlockInfo(MqJumpBlockInfo&& info) { jumpBlockInfos.push_back(std::move(info)); }
     void PopJumpBlockInfo() { jumpBlockInfos.pop_back(); }
-
-    void MarkReturnHandledOnCurScope();
-    bool IsReturnHandledOnCurScope();
-    
 };
 
 

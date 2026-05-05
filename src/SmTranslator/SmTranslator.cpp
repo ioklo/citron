@@ -121,9 +121,9 @@ public:
     void Visit(SEnumDecl* elem) override;
 };
 
-void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, NNamespaceDecl* outer, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, NNamespaceDecl* outer, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {   
-    GlobalFuncTask::Register(outer, sGFuncDecl, nFactory, phaseManager);
+    GlobalFuncTask::Register(outer, sGFuncDecl, rFactory, nFactory, phaseManager);
 }
 
 template<typename TNOuter>
@@ -132,7 +132,7 @@ void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorCo
     auto accessor = MakeAccessor(syntax->accessModifier, accessorContext);
     auto* nStructDecl = nFactory->MakeNDecl<NStructDecl>(outer, accessor, RName_Normal(syntax->name), rFactory);
 
-    auto typeParams = MakeTypeParams(nStructDecl, syntax->typeParams, *nFactory);
+    auto typeParams = MakeTypeParams(nStructDecl, syntax->typeParams, rFactory, *nFactory);
     nStructDecl->InitTypeParams(move(typeParams));
     
     outer->AddType(nStructDecl);
@@ -148,12 +148,12 @@ void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorCo
 }
 
 template<typename TNOuter>
-void VisitEnum(TNOuter* outer, SEnumDecl* sEnum, AccessorContext accessorContext, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void VisitEnum(TNOuter* outer, SEnumDecl* sEnum, AccessorContext accessorContext, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {   
     auto accessor = MakeAccessor(sEnum->accessModifier, accessorContext);    
-    auto* nEnum = nFactory->MakeNDecl<NEnumDecl>(outer, accessor, RName_Normal{sEnum->name});
+    auto* nEnum = nFactory->MakeNDecl<NEnumDecl>(outer, accessor, RName_Normal{sEnum->name}, rFactory);
 
-    auto typeParams = MakeTypeParams(nEnum, sEnum->typeParams, *nFactory);
+    auto typeParams = MakeTypeParams(nEnum, sEnum->typeParams, rFactory, *nFactory);
     nEnum->InitTypeParams(move(typeParams));
     
     outer->AddType(nEnum);
@@ -161,7 +161,7 @@ void VisitEnum(TNOuter* outer, SEnumDecl* sEnum, AccessorContext accessorContext
     // EnumElem
     for (auto* sEnumElem : sEnum->elements)
     {
-        auto* nEnumElem = nFactory->MakeNDecl<NEnumElemDecl>(nEnum, RName_Normal{sEnumElem->name});
+        auto* nEnumElem = nFactory->MakeNDecl<NEnumElemDecl>(nEnum, RName_Normal{sEnumElem->name}, rFactory);
         nEnum->AddElem(nEnumElem);
 
         // EnumElemVar
@@ -185,12 +185,12 @@ void StructElemVisitor::Visit(SStructDecl* decl)
 
 void StructElemVisitor::Visit(SEnumDecl* decl)
 {
-    VisitEnum(nStruct, decl, AccessorContext::InsideStruct, nFactory, phaseManager);
+    VisitEnum(nStruct, decl, AccessorContext::InsideStruct, rFactory, nFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructFuncDecl* decl)
 {   
-    StructFuncTask::Register(nStruct, decl, nFactory, phaseManager);
+    StructFuncTask::Register(nStruct, decl, rFactory, nFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructCtorDecl* decl)
@@ -220,7 +220,7 @@ void ClassElemVisitor::Visit(SStructDecl* decl)
 
 void ClassElemVisitor::Visit(SEnumDecl* decl)
 {
-    VisitEnum(outer, decl, AccessorContext::InsideClass, nFactory, phaseManager);
+    VisitEnum(outer, decl, AccessorContext::InsideClass, rFactory, nFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(SClassFuncDecl* decl)
@@ -241,7 +241,7 @@ void ClassElemVisitor::Visit(SClassVarDecl* decl)
 // Inherited via SNamespaceDeclElementVisitor
 void NamespaceElemVisitor::Visit(SGlobalFuncDecl* elem)
 {
-    VisitGlobalFunc(elem, curDecl, nFactory, phaseManager);
+    VisitGlobalFunc(elem, curDecl, rFactory, nFactory, phaseManager);
 }
 
 void NamespaceElemVisitor::Visit(SNamespaceDecl* elem)
@@ -280,7 +280,7 @@ void NamespaceElemVisitor::Visit(SStructDecl* elem)
 
 void NamespaceElemVisitor::Visit(SEnumDecl* elem)
 {
-    VisitEnum(curDecl, elem, AccessorContext::Global, nFactory, phaseManager);
+    VisitEnum(curDecl, elem, AccessorContext::Global, rFactory, nFactory, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
@@ -320,7 +320,7 @@ void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
 
 void ScriptElemVisitor::Visit(SGlobalFuncDecl* elem)
 {
-    VisitGlobalFunc(elem, rootNamespace, nFactory, phaseManager);
+    VisitGlobalFunc(elem, rootNamespace, rFactory, nFactory, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(SClassDecl* elem)
@@ -335,7 +335,7 @@ void ScriptElemVisitor::Visit(SStructDecl* elem)
 
 void ScriptElemVisitor::Visit(SEnumDecl* elem)
 {
-    VisitEnum(rootNamespace, elem, AccessorContext::Global, nFactory, phaseManager);
+    VisitEnum(rootNamespace, elem, AccessorContext::Global, rFactory, nFactory, phaseManager);
 }
 
 } // unnamed namespace 

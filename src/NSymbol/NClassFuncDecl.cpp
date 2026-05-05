@@ -10,9 +10,18 @@ using namespace std;
 namespace Citron {
 
 NClassFuncDecl::NClassFuncDecl(NClassDecl* _class, RAccessor accessor, RName&& name, bool bStatic, bool bSeqFunc)
-    : _class{_class}, accessor{accessor}, name{move(name)}
-    , NCommonFuncDeclComponent{bStatic ? RThisKind::None : RThisKind::Handle, bSeqFunc}
+    : _class{_class}, accessor{accessor}, name{move(name)}, _static{bStatic}
+    , NCommonFuncDeclComponent{bSeqFunc}
 {
+}
+
+void NClassFuncDecl::Init(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+{
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(
+        move(funcReturn), 
+        _static ? (RThisKind)RThisKind_Static{} : RThisKind_Handle{_class->GetOpenType()}, 
+        move(funcParameters), 
+        bLastParameterVariadic);
 }
 
 NDecl* NClassFuncDecl::GetNOuter()

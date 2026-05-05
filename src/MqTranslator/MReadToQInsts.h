@@ -10,25 +10,25 @@ struct MRead_Loc;
 struct MRead_Exp;
 struct MqTranslationContexts;
 
-struct QReadResult_Slot { size_t slotIndex; }; // local var
-struct QReadResult_Ptr { size_t slotIndex; };  // ptr
-struct QReadResult_ConstBool { bool value; };
-struct QReadResult_ConstInt32 { int value; };
+struct MqReadResult_Slot { size_t slotIndex; }; // local var
+struct MqReadResult_Ptr { size_t slotIndex; };  // ptr
+struct MqReadResult_ConstBool { bool value; };
+struct MqReadResult_ConstInt32 { int value; };
 
-using QReadResult = std::variant<QReadResult_Slot, QReadResult_Ptr, QReadResult_ConstBool, QReadResult_ConstInt32>;
+using MqReadResult = std::variant<MqReadResult_Slot, MqReadResult_Ptr, MqReadResult_ConstBool, MqReadResult_ConstInt32>;
 
 template<typename T>
 struct MqEmitState;
 
-std::expected<MqEmitState<QReadResult>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, MqTranslationContexts& contexts);
-std::expected<MqEmitState<QReadResult>, DiagPtr> TranslateMReadToQInsts(MRead& mRead, MqTranslationContexts& contexts);
+std::expected<MqEmitState<MqReadResult>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, MqTranslationContexts& contexts);
+std::expected<MqEmitState<MqReadResult>, DiagPtr> TranslateMReadToQInsts(MRead& mRead, MqTranslationContexts& contexts);
 
 //visit([](auto& result) -> ResultType {
 //    using T = remove_cvref_t<decltype(result)>;
-//    if constexpr (same_as<T, QReadResult_Slot>)
-//    else if constexpr (same_as<T, QReadResult_Ptr>)
-//    else if constexpr (same_as<T, QReadResult_ConstBool>)
-//    else if constexpr (same_as<T, QReadResult_ConstInt32>)
+//    if constexpr (same_as<T, MqReadResult_Slot>)
+//    else if constexpr (same_as<T, MqReadResult_Ptr>)
+//    else if constexpr (same_as<T, MqReadResult_ConstBool>)
+//    else if constexpr (same_as<T, MqReadResult_ConstInt32>)
 //    else static_assert(false)
 //}, *e_result);
 

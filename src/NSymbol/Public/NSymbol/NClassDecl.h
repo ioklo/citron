@@ -84,6 +84,9 @@ public:
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
+    // from RTypeDecl
+    RType* GetOpenType() override;
+    
     // from RFuncDeclOuter
     //RDecl* GetRDecl() override { return this; }
 

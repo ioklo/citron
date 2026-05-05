@@ -36,7 +36,8 @@ public:
 public:
     NSYMBOL_API NGlobalFuncDecl(NNamespaceDecl* outer, RAccessor accessor, bool bSeqFunc, RName&& name);
     using NGenericsComponent::InitTypeParams;
-    using NCommonFuncDeclComponent::InitFuncReturnAndParams;
+    void InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    
 
     // from NDecl
     RDecl* GetRDecl() override { return this; }

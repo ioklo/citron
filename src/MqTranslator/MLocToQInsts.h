@@ -17,11 +17,11 @@ struct MqEmitState;
 
 struct MqTranslationContexts;
 
-struct QLocResult_Slot { size_t slotIndex; }; // local var
-struct QLocResult_Ptr { size_t slotIndex; }; // ptr
+struct MqLocResult_Slot { size_t slotIndex; }; // local var
+struct MqLocResult_Ptr { size_t slotIndex; }; // ptr
 
-using QLocResult = std::variant<QLocResult_Slot, QLocResult_Ptr>;
+using MqLocResult = std::variant<MqLocResult_Slot, MqLocResult_Ptr>;
 
-std::expected<MqEmitState<QLocResult>, DiagPtr> TranslateMLocToQInsts(MLoc* loc, MqTranslationContexts& contexts);
+std::expected<MqEmitState<MqLocResult>, DiagPtr> TranslateMLocToQInsts(MLoc* loc, MqTranslationContexts& contexts);
 
 } // namespace Citron

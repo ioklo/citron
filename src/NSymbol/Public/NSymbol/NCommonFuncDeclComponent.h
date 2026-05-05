@@ -9,6 +9,7 @@
 #include "RSymbol/RFuncReturn.h"
 #include "RSymbol/RDeclRes.h"
 #include "RSymbol/RNames.h"
+#include "RSymbol/RThisKind.h"
 
 namespace Citron {
 
@@ -21,20 +22,18 @@ class NLambdaVarDecl;
 class NLambdaDecl;
 class NTypeParamDecl;
 
-enum class RThisKind;
-
 class NCommonFuncDeclComponent
 {
     // lambda의 경우, funcReturn이 NeedInduction으로 주어진다.
     struct FuncReturnAndParams
     {
         RFuncReturn funcReturn; // ctor는 RReturn_ForCtor를 씁니다
+        RThisKind thisKind;
         std::vector<RFuncParameter> funcParameters;
         bool bLastParameterVariadic;
     };
 
 private:
-    RThisKind thisKind;
     bool bSeqFunc;
 
     // need initializations
@@ -42,13 +41,13 @@ private:
     std::vector<NLambdaDecl*> lambdaDecls;
 
 public:
-    NSYMBOL_API NCommonFuncDeclComponent(RThisKind thisKind, bool bSeqFunc);
-    NSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    NSYMBOL_API NCommonFuncDeclComponent(bool bSeqFunc);
+    NSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     NSYMBOL_API ~NCommonFuncDeclComponent();
 
     // internal?
-    RThisKind GetThisKind() { return thisKind; }
+    NSYMBOL_API RThisKind GetThisKind();
     bool IsSeqFunc() { return bSeqFunc; }
 
     NSYMBOL_API size_t GetParamCount();

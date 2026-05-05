@@ -8,6 +8,8 @@
 
 namespace Citron {
 
+using RFactoryPtr = std::shared_ptr<class RFactory>;
+
 // N'TypeParam'Decl
 class NTypeParamDecl 
     : public NDecl
@@ -18,9 +20,10 @@ class NTypeParamDecl
     NDecl* outer;
     RName name;
     size_t globalIndex;
+    RFactoryPtr rFactory;
 
 public:
-    NSYMBOL_API NTypeParamDecl(NDecl* outer, RName&& name, size_t globalIndex);
+    NSYMBOL_API NTypeParamDecl(NDecl* outer, RName&& name, size_t globalIndex, const RFactoryPtr& rFactory);
     NSYMBOL_API ~NTypeParamDecl();
 
     const RName& GetName() { return name; }
@@ -51,6 +54,7 @@ public: // from RDecl
 
 public: // from RTypeDecl
     // RDecl* GetRDecl() override { return this; }
+    RType* GetOpenType() override;
 };
 
 

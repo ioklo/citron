@@ -8,22 +8,14 @@
 #include "RDecl.h"
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
+#include "RThisKind.h"
 
 namespace Citron {
 
 class RType;
-class RFactory;
-
 struct RFuncDeclVisitor;
 
 class EFuncDecl;
-
-enum class RThisKind
-{
-    None,   // static
-    Ptr,    // ref
-    Handle, // class  
-};
 
 class RFuncDecl
 {

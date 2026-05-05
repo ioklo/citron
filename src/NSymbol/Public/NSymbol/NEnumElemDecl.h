@@ -11,8 +11,9 @@
 #include "NTypeDecl.h"
 #include "NEnumElemVarDecl.h"
 
-namespace Citron
-{
+namespace Citron {
+
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class NEnumElemDecl
     : public NDecl
@@ -24,9 +25,10 @@ public:
     RName name;
     std::vector<NEnumElemVarDecl*> vars; // lazy
     std::unordered_map<RName, NEnumElemVarDecl*> varsMap;
+    RFactoryPtr rFactory;
 
 public:
-    NSYMBOL_API NEnumElemDecl(NEnumDecl* _enum, const RName& name);
+    NSYMBOL_API NEnumElemDecl(NEnumDecl* _enum, const RName& name, const RFactoryPtr& rFactory);
     NSYMBOL_API void AddVar(NEnumElemVarDecl* var);
 
 public:
@@ -53,6 +55,7 @@ public:
 
     // from RTypeDecl
     // RDecl* GetRDecl() override { return this; }
+    RType* GetOpenType() override;
 
     // from REnumElemDecl    
     NSYMBOL_API REnumDecl* GetBaseEnumDecl() override;

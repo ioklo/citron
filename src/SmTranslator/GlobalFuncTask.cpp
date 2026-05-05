@@ -16,9 +16,9 @@ using namespace std;
 
 namespace Citron {
 
-void GlobalFuncTask::Register(NNamespaceDecl* outer, SGlobalFuncDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void GlobalFuncTask::Register(NNamespaceDecl* outer, SGlobalFuncDecl* syntax, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<GlobalFuncTask> task{new GlobalFuncTask(outer, syntax, nFactory)};
+    shared_ptr<GlobalFuncTask> task{new GlobalFuncTask(outer, syntax, rFactory, nFactory)};
     phaseManager.AddBuildTypeDependentSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
@@ -30,7 +30,7 @@ expected<void, DiagPtr> GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDepend
     nGFuncDecl = nFactory->MakeNDecl<NGlobalFuncDecl>(
         nOuter, accessor, bSeqFunc, RName_Normal(syntax->name));
 
-    auto typeParams = MakeTypeParams(nGFuncDecl, syntax->typeParams, *nFactory);
+    auto typeParams = MakeTypeParams(nGFuncDecl, syntax->typeParams, rFactory, *nFactory);
     nGFuncDecl->InitTypeParams(move(typeParams));
     
     auto* rRetType = context.MakeType(syntax->retType, nGFuncDecl);

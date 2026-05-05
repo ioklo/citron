@@ -11,14 +11,15 @@ class QBlock;
 class RType;
 class NFuncDecl;
 
+enum QSlotRole_ArgumentKind { Direct, Indirect, Ref };
+
 struct QSlotRole_IndirectReturn {};
 struct QSlotRole_This {};
-struct QSlotRole_Argument { RName name; size_t index; };
+struct QSlotRole_Argument { RName name; size_t index; QSlotRole_ArgumentKind kind; };
 struct QSlotRole_Local { RName name; };
 struct QSlotRole_Temp { std::string debugText; };
 struct QSlotRole_Parameter {};
 using QSlotRole = std::variant<QSlotRole_IndirectReturn, QSlotRole_This, QSlotRole_Argument, QSlotRole_Local, QSlotRole_Temp, QSlotRole_Parameter>;
-
 struct QSlotInfo
 {   
     RType* type;

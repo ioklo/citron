@@ -15,18 +15,23 @@ using namespace std;
 namespace Citron
 {
 
-NCommonFuncDeclComponent::NCommonFuncDeclComponent(RThisKind thisKind, bool bSeqFunc)
-    : thisKind{thisKind}
-    , bSeqFunc{bSeqFunc}
+NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bSeqFunc)
+    : bSeqFunc{bSeqFunc}
 {
 }
 
-void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcReturn, RThisKind&& thisKind, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
-    funcReturnAndParams = FuncReturnAndParams{move(funcReturn), move(funcParameters), bLastParameterVariadic};
+    funcReturnAndParams = FuncReturnAndParams{move(funcReturn), move(thisKind), move(funcParameters), bLastParameterVariadic};
 }
 
 NCommonFuncDeclComponent::~NCommonFuncDeclComponent() = default;
+
+RThisKind NCommonFuncDeclComponent::GetThisKind()
+{
+    assert(funcReturnAndParams);
+    return funcReturnAndParams->thisKind;
+}
 
 size_t NCommonFuncDeclComponent::GetParamCount()
 {

@@ -37,15 +37,16 @@ MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* t
     size_t curArgIndex = 0;
     auto returnPassingMode = GetReturnPassingMode(rFuncDecl->GetFuncReturn(typeArgs), &curArgIndex);
 
-    auto thisPassingMode = [rFuncDecl, &curArgIndex]() -> MqThisPassingMode {
-        switch (rFuncDecl->GetThisKind())
-        {
-        case RThisKind::None: return MqThisPassingMode_None{};
-        case RThisKind::Handle: return MqThisPassingMode_Handle{curArgIndex++};
-        case RThisKind::Ptr: return MqThisPassingMode_Ptr{curArgIndex++};
-        }
-        unreachable();
-    }();
+    auto thisPassingMode = visit([&curArgIndex](auto&& thisKind) -> MqThisPassingMode {
+        using T = remove_cvref_t<decltype(thisKind)>;
+        if constexpr (same_as<T, RThisKind_Static>)
+            return MqThisPassingMode_None{};
+        else if constexpr (same_as<T, RThisKind_Handle>)
+            return MqThisPassingMode_Handle{curArgIndex++};
+        else if constexpr (same_as<T, RThisKind_Ref>)
+            return MqThisPassingMode_Ptr{curArgIndex++};
+        else static_assert(false);
+    }, rFuncDecl->GetThisKind());
 
     size_t explicitArgStartIndex = curArgIndex;
     vector<MqParamPassingMode> paramPassingModes;

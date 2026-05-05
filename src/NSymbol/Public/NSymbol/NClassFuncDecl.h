@@ -29,10 +29,12 @@ public:
     NClassDecl* _class;
     RAccessor accessor;
     RName name;
+    bool _static;
 
 public:
     NClassFuncDecl(NClassDecl* _class, RAccessor accessor, RName&& name, bool bStatic, bool bSeqFunc);
     using NGenericsComponent::InitTypeParams;
+    void Init(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     // from NDecl
     RDecl* GetRDecl() override { return this; }

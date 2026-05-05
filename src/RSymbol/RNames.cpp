@@ -11,7 +11,8 @@ RName Enumerator;
 RName GetEnumerator = RName_Normal("GetEnumerator");
 RName Next = RName_Normal("Next");
 RName RawItem;
-RName _this; // "this"
+RName _this = RName_Reserved("this"); // "this"
+RName _return = RName_Reserved("return");
 
 } // RNames
 

@@ -15,6 +15,7 @@ public:
     virtual ~RTypeDecl() {}
 
     virtual RDecl* GetRDecl() = 0;
+    virtual RType* GetOpenType() = 0;
     virtual void Accept(RTypeDeclVisitor& visitor) = 0;
 };
 

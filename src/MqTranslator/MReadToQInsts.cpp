@@ -22,12 +22,12 @@ using namespace std;
 namespace Citron {
 
 namespace {
-QReadResult ToReadResult(QLocResult& locResult)
+MqReadResult ToReadResult(MqLocResult& locResult)
 {
-    return visit([](auto& loc) -> QReadResult {
+    return visit([](auto& loc) -> MqReadResult {
         using T = remove_cvref_t<decltype(loc)>;
-        if constexpr (same_as<T, QLocResult_Slot>) return QReadResult_Slot{loc.slotIndex};
-        else if constexpr (same_as<T, QLocResult_Ptr>) return QReadResult_Ptr{loc.slotIndex};
+        if constexpr (same_as<T, MqLocResult_Slot>) return MqReadResult_Slot{loc.slotIndex};
+        else if constexpr (same_as<T, MqLocResult_Ptr>) return MqReadResult_Ptr{loc.slotIndex};
         else static_assert(false);
     }, locResult);
 }
@@ -36,7 +36,7 @@ QReadResult ToReadResult(QLocResult& locResult)
 // slot을 하나 만들어서 리턴한다
 struct MRead_ExpQInstsTranslator
 {
-    using ResultType = expected<MqEmitState<QReadResult>, DiagPtr>;
+    using ResultType = expected<MqEmitState<MqReadResult>, DiagPtr>;
     MqTranslationContexts& contexts;
 
     ResultType Visit(MExp* exp)
@@ -57,21 +57,21 @@ struct MRead_ExpQInstsTranslator
         /*return visit([this, exp](auto& srcLoc) -> ResultType
         {
             using T = remove_cvref_t<decltype(srcLoc)>;
-            if constexpr (same_as<T, QLocResult_Slot>)
+            if constexpr (same_as<T, MqLocResult_Slot>)
             {
                 auto* type = GetType(exp, &*contexts.rFactory);
                 size_t destSlotIndex = contexts.bodyContext.AddTemp(type, "load"); 
                 contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Dest_Slot{destSlotIndex}, QArg_Value_Slot{srcLoc.slotIndex}});
 
-                return QReadResult_Slot{destSlotIndex};
+                return MqReadResult_Slot{destSlotIndex};
             }
-            else if constexpr (same_as<T, QLocResult_Ptr>)
+            else if constexpr (same_as<T, MqLocResult_Ptr>)
             {
                 auto* type = GetType(exp, &*contexts.rFactory);
                 size_t destSlotIndex = contexts.bodyContext.AddTemp(type, "load");
                 contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Dest_Slot{destSlotIndex}, QArg_Addr_PtrSlot{srcLoc.slotIndex}});
 
-                return QReadResult_Slot{destSlotIndex};
+                return MqReadResult_Slot{destSlotIndex};
             }
             else static_assert(false);
 
@@ -97,25 +97,25 @@ struct MRead_ExpQInstsTranslator
             using U = remove_cvref_t<decltype(src)>;
 
             // 1-1. destLoc: slot, srcLoc: slot
-            if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_Slot>)
+            if constexpr (same_as<T, MqLocResult_Slot> && same_as<U, MqReadResult_Slot>)
             {
                 // <destSlot> = <srcSlot>
                 auto* type = contexts.bodyContext.GetSlotType(src.slotIndex);
                 contexts.bodyContext.EmitInst(QInst_Assign{type, QArg_Dest_Slot{destLoc.slotIndex}, QArg_Value_Slot{src.slotIndex}});
 
-                return QReadResult_Slot{destLoc.slotIndex};
+                return MqReadResult_Slot{destLoc.slotIndex};
             }
             // 1-2. destLoc: slot, srcLoc: ptr
-            else if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_Ptr>)
+            else if constexpr (same_as<T, MqLocResult_Slot> && same_as<U, MqReadResult_Ptr>)
             {
                 // dest = *src
                 auto* type = contexts.bodyContext.GetSlotType(destLoc.slotIndex);
                 contexts.bodyContext.EmitInst(QInst_Load{type, QArg_Dest_Slot{destLoc.slotIndex}, QArg_Addr_PtrSlot{src.slotIndex}});
 
-                return QReadResult_Slot{destLoc.slotIndex};
+                return MqReadResult_Slot{destLoc.slotIndex};
             }
             // 1-3. destLoc: slot, srcLoc: const bool
-            else if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_ConstBool>)
+            else if constexpr (same_as<T, MqLocResult_Slot> && same_as<U, MqReadResult_ConstBool>)
             {
                 // dest = const
                 auto* boolType = contexts.bodyContext.GetBoolType();
@@ -123,7 +123,7 @@ struct MRead_ExpQInstsTranslator
                 return src; // const 그대로 리턴
             }
             // 1-4. destLoc: slot, srcLoc: const int32
-            else if constexpr (same_as<T, QLocResult_Slot> && same_as<U, QReadResult_ConstInt32>)
+            else if constexpr (same_as<T, MqLocResult_Slot> && same_as<U, MqReadResult_ConstInt32>)
             {
                 // dest = const
                 auto* intType = contexts.bodyContext.GetIntType();
@@ -132,16 +132,16 @@ struct MRead_ExpQInstsTranslator
             }
 
             // 2-1. destLoc: ptr, srcLoc: slot
-            else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_Slot>)
+            else if constexpr (same_as<T, MqLocResult_Ptr> && same_as<U, MqReadResult_Slot>)
             {
                 // *dest = src
                 auto* type = contexts.bodyContext.GetSlotType(src.slotIndex);
                 contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Addr_PtrSlot{destLoc.slotIndex}, QArg_Value_Slot{src.slotIndex}});
 
-                return QReadResult_Slot{src.slotIndex}; // src slot을 그대로 리턴한다
+                return MqReadResult_Slot{src.slotIndex}; // src slot을 그대로 리턴한다
             }
             // 2-2. destLoc: ptr, srcLoc: ptr
-            else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_Ptr>)
+            else if constexpr (same_as<T, MqLocResult_Ptr> && same_as<U, MqReadResult_Ptr>)
             {
                 auto* type = contexts.bodyContext.GetSlotType(destLoc.slotIndex);
                 size_t resultSlotIndex = contexts.bodyContext.AddTemp(type, "load");
@@ -152,10 +152,10 @@ struct MRead_ExpQInstsTranslator
                 // *dest = result
                 contexts.bodyContext.EmitInst(QInst_Store{type, QArg_Addr_PtrSlot{destLoc.slotIndex}, QArg_Value_Slot{resultSlotIndex}});
 
-                return QReadResult_Slot{resultSlotIndex}; // src에서 로드한 값을 리턴한다
+                return MqReadResult_Slot{resultSlotIndex}; // src에서 로드한 값을 리턴한다
             }
             // 2-3. destLoc: ptr, srcLoc: const bool
-            else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_ConstBool>)
+            else if constexpr (same_as<T, MqLocResult_Ptr> && same_as<U, MqReadResult_ConstBool>)
             {
                 // dest = const
                 auto* boolType = contexts.bodyContext.GetBoolType();
@@ -163,7 +163,7 @@ struct MRead_ExpQInstsTranslator
                 return src; // const 그대로 리턴
             }
             // 2-4. destLoc: ptr, srcLoc: const int32
-            else if constexpr (same_as<T, QLocResult_Ptr> && same_as<U, QReadResult_ConstInt32>)
+            else if constexpr (same_as<T, MqLocResult_Ptr> && same_as<U, MqReadResult_ConstInt32>)
             {
                 // dest = const
                 auto* intType = contexts.bodyContext.GetIntType();
@@ -193,7 +193,7 @@ struct MRead_ExpQInstsTranslator
         return visit([this](auto& loc) -> ResultType {
             using T = remove_cvref_t<decltype(loc)>;
 
-            if constexpr (same_as<T, QLocResult_Slot>)
+            if constexpr (same_as<T, MqLocResult_Slot>)
             {
                 auto* ptrType = contexts.bodyContext.GetPtrType();
                 size_t resultSlotIndex = contexts.bodyContext.AddTemp(ptrType, "ptr_ref");
@@ -201,9 +201,9 @@ struct MRead_ExpQInstsTranslator
                 // slot의 addrof를 하나 한다 ptr 타입
                 contexts.bodyContext.EmitInst(QInst_AddrOf{QArg_Dest_Slot{resultSlotIndex}, loc.slotIndex});
 
-                return QReadResult_Slot{resultSlotIndex};
+                return MqReadResult_Slot{resultSlotIndex};
             }
-            else if constexpr (same_as<T, QLocResult_Ptr>)
+            else if constexpr (same_as<T, MqLocResult_Ptr>)
             {
                 auto* ptrType = contexts.bodyContext.GetPtrType();
                 size_t resultSlotIndex = contexts.bodyContext.AddTemp(ptrType, "ptr_ref");
@@ -211,7 +211,7 @@ struct MRead_ExpQInstsTranslator
                 // ptr이면, resultSlotIndex에 복사해서 넣어준다. QReadResult_Ptr로 직접 전해주지 않도록 한다 (value로만 전달)
                 contexts.bodyContext.EmitInst(QInst_Assign{ptrType, QArg_Dest_Slot{resultSlotIndex}, QArg_Value_Slot{loc.slotIndex}});
 
-                return QReadResult_Slot{resultSlotIndex};
+                return MqReadResult_Slot{resultSlotIndex};
             }
             else static_assert(false);
 
@@ -220,12 +220,12 @@ struct MRead_ExpQInstsTranslator
 
     ResultType Visit(MExp_BoolLiteral* exp) 
     {
-        return QReadResult_ConstBool{exp->value};
+        return MqReadResult_ConstBool{exp->value};
     }
 
     ResultType Visit(MExp_IntLiteral* exp) 
     {
-        return QReadResult_ConstInt32{exp->value};
+        return MqReadResult_ConstInt32{exp->value};
     }
 
     ResultType Visit(MExp_CallIntrinsic* exp) 
@@ -270,13 +270,13 @@ struct MRead_ExpQInstsTranslator
         auto e_s_result = HandleInlineBlock(exp->scope, MqCreateTarget_Slot{leaveSlotIndex}, contexts);
         RETURN_ON_ERROR_OR_DONE(e_s_result);
 
-        return QReadResult_Slot{leaveSlotIndex};
+        return MqReadResult_Slot{leaveSlotIndex};
     }
     // ResultType Visit(MExp_Is* exp) {}
    
 };
 
-expected<MqEmitState<QReadResult>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, MqTranslationContexts& contexts)
+expected<MqEmitState<MqReadResult>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc& mReadLoc, MqTranslationContexts& contexts)
 {
     // 이건 MLoc을 그대로 써본다
     auto e_s_locResult = TranslateMLocToQInsts(mReadLoc.loc, contexts);
@@ -285,14 +285,14 @@ expected<MqEmitState<QReadResult>, DiagPtr> TranslateMRead_LocToQInsts(MRead_Loc
     return ToReadResult(**e_s_locResult);
 }
 
-expected<MqEmitState<QReadResult>, DiagPtr> TranslateMRead_ExpToQInsts(MRead_Exp& mReadExp, MqTranslationContexts& contexts)
+expected<MqEmitState<MqReadResult>, DiagPtr> TranslateMRead_ExpToQInsts(MRead_Exp& mReadExp, MqTranslationContexts& contexts)
 {
     return Accept(MRead_ExpQInstsTranslator{contexts}, mReadExp.exp);
 }
 
-expected<MqEmitState<QReadResult>, DiagPtr> TranslateMReadToQInsts(MRead& mRead, MqTranslationContexts& contexts)
+expected<MqEmitState<MqReadResult>, DiagPtr> TranslateMReadToQInsts(MRead& mRead, MqTranslationContexts& contexts)
 {
-    return visit([&contexts](auto& mRead) -> expected<MqEmitState<QReadResult>, DiagPtr> {
+    return visit([&contexts](auto& mRead) -> expected<MqEmitState<MqReadResult>, DiagPtr> {
         using T = remove_cvref_t<decltype(mRead)>;
         if constexpr (same_as<T, MRead_Loc>)
         {

@@ -2,15 +2,17 @@
 
 #include "Infra/Exceptions.h"
 #include "RSymbol/RFuncParameter.h"
+#include "RSymbol/RFactory.h"
 #include "NEnumDecl.h"
 
 using namespace std;
 
 namespace Citron {
 
-NEnumElemDecl::NEnumElemDecl(NEnumDecl* _enum, const RName& name)
+NEnumElemDecl::NEnumElemDecl(NEnumDecl* _enum, const RName& name, const RFactoryPtr& rFactory)
     : _enum{_enum}
     , name{name}
+    , rFactory{rFactory}
 {
 }
 
@@ -56,6 +58,11 @@ optional<RDeclRes> NEnumElemDecl::ResolveIdentifier(const RName& name, size_t ex
 {
     // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
     throw RuntimeFatalException();
+}
+
+RType* NEnumElemDecl::GetOpenType()
+{
+    return rFactory->MakeEnumElemType(this, MakeOpenTypeArgs(*rFactory));
 }
 
 REnumDecl* NEnumElemDecl::GetBaseEnumDecl()

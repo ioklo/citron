@@ -52,29 +52,54 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
     MqBodyContext bodyContext{rFactory, qFactory, rRetType};
     MqFactoryPtr mqFactory = MakePtr<MqFactory>(rFactory);
-    QAbiPtr qAbi = MakePtr<MqAbi_Citron_X64>(rFactory);
-    MqTranslationContexts contexts{rFactory, qFactory, mqFactory, qAbi, bodyContext};
+    MqAbiPtr abi = MakePtr<MqAbi_Citron_X64>(rFactory);
+    MqTranslationContexts contexts{rFactory, qFactory, mqFactory, abi, bodyContext};
 
     {
         MqScopeGuard mainGuard{std::nullopt, bodyContext};
 
         auto* rFuncDecl = mFuncBody.nFuncDecl->GetRFuncDecl();
-        auto funcInfo = qAbi->GetFuncInfo(rFuncDecl, rFuncDecl->GetRDecl()->MakeOpenTypeArgs(*rFactory));
+        auto funcInfo = abi->GetFuncInfo(rFuncDecl, rFuncDecl->GetRDecl()->MakeOpenTypeArgs(*rFactory));
+        auto thisKind = rFuncDecl->GetThisKind();
 
-        // NOTICE: 인자 index는 parameter index랑 다르다
-        auto rThisKind = rFuncDecl->GetThisKind();
-        switch (rThisKind)
-        {
-        case RThisKind::None: break;
-        case RThisKind::Ptr:
-        {
-            RType* ptrType = bodyContext.GetPtrType();
-            size_t slotIndex = bodyContext.AddThis(ptrType); 
-            break;
-        }
-        case RThisKind::Handle:
-            throw NotImplementedException{};
-        }
+        visit([rRetType, &bodyContext](auto& returnPassingMode) {
+            using T = remove_cvref_t<decltype(returnPassingMode)>;
+            if constexpr (same_as<T, MqReturnPassingMode_Void>)
+            {
+                // 리턴값이 없으므로 아무것도 세팅할 필요 없음
+            }
+            else if constexpr (same_as<T, MqReturnPassingMode_Direct>)
+            {
+                // Direct도 딱히 할건 없다
+            }
+            else if constexpr (same_as<T, MqReturnPassingMode_Indirect>)
+            {
+                bodyContext.AddIndirectReturn(rRetType);
+            }
+            else static_assert(false);
+
+        }, funcInfo.returnPassingMode);
+
+        // this 세팅
+        visit([&thisKind, &bodyContext](auto& thisPassingMode) {
+            using T = remove_cvref_t<decltype(thisPassingMode)>;
+            if constexpr (same_as<T, MqThisPassingMode_None>)
+            {
+                // this가 없으므로 아무것도 세팅할 필요 없음
+            }
+            else if constexpr(same_as<T, MqThisPassingMode_Handle>)
+            {
+                auto* thisType = get<RThisKind_Handle>(thisKind).type;
+                bodyContext.AddThis(thisType);
+            }
+            else if constexpr (same_as<T, MqThisPassingMode_Ptr>)
+            {
+                auto* thisType = get<RThisKind_Ref>(thisKind).type;
+                auto* ptrThisType = bodyContext.GetPtrType(thisType);
+
+                bodyContext.AddThis(ptrThisType);
+            }
+        }, funcInfo.thisPassingMode);
 
         // parameter 세팅
         // TODO: 일단 generics없이 진행
@@ -85,14 +110,27 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
             if (unboundParam.IsRef())
             {   
-                bodyContext.AddRefArgument(unboundParam.type, unboundParam.name, i);
+                bodyContext.AddArgument_Ref(unboundParam.type, unboundParam.name, i);
             }
             else
             {
-                
+                switch (funcInfo.paramPassingModes[i])
+                {
+                    case MqParamPassingMode::Direct:
+                        bodyContext.AddArgument_Direct(unboundParam.type, unboundParam.name, i);
+                        break;
+                    case MqParamPassingMode::Indirect:
+                        bodyContext.AddArgument_Indirect(unboundParam.type, unboundParam.name, i, &*abi);
+                        break;
+                    case MqParamPassingMode::Ref:
+                        assert(false);
 
-                // 새 local 변수 추가
-                bodyContext.AddArgument(unboundParam.type, unboundParam.name, i);
+                    case MqParamPassingMode::Forward:
+                        throw NotImplementedException{};
+
+                    case MqParamPassingMode::Params:
+                        throw NotImplementedException{};
+                }
             }
         }
 

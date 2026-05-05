@@ -13,13 +13,14 @@ NStructFuncDecl::NStructFuncDecl(
     : _struct{_struct}
     , accessor{accessor}
     , name{name}
-    , NCommonFuncDeclComponent{bStatic ? RThisKind::None : RThisKind::Ptr, bSeqFunc}
+    , _static{bStatic}
+    , NCommonFuncDeclComponent{bSeqFunc}
 {   
 }
 
 void NStructFuncDecl::InitFuncReturnAndParams(RType* funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
 {
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(funcReturn), move(funcParameters), bLastParameterVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Set(funcReturn), _static ? (RThisKind)RThisKind_Static{} : RThisKind_Ref{_struct->GetOpenType()}, move(funcParameters), bLastParameterVariadic);
 }
 
 NDecl* NStructFuncDecl::GetNOuter()

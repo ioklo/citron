@@ -52,6 +52,7 @@ RSYMBOL_API extern RName GetEnumerator;
 RSYMBOL_API extern RName Next;
 RSYMBOL_API extern RName RawItem;
 RSYMBOL_API extern RName _this; // "this"
+RSYMBOL_API extern RName _return; // "return"
 
 } // namespace RNames
 
