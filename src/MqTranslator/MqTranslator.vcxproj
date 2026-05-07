@@ -13,10 +13,14 @@
   <ItemGroup>
     <ClInclude Include="CommonQInstsTranslation.h" />
     <ClInclude Include="MCreateToQInsts.h" />
+    <ClInclude Include="MInitExpToQInsts.h" />
+    <ClInclude Include="MExpToQInsts.h" />
     <ClInclude Include="MLocToQInsts.h" />
     <ClInclude Include="MqCreateTarget.h" />
     <ClInclude Include="MqFactory.h" />
     <ClInclude Include="MqIntrinsicInfo.h" />
+    <ClInclude Include="MqLocResult.h" />
+    <ClInclude Include="MqReadResult.h" />
     <ClInclude Include="MReadToQInsts.h" />
     <ClInclude Include="MStmtToQInsts.h" />
     <ClInclude Include="Public\MqTranslator\MqTranslator.h" />
@@ -34,8 +38,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommonQInstsTranslation.cpp" />
-    <ClCompile Include="MqTranslator.cpp" />
     <ClCompile Include="MCreateToQInsts.cpp" />
+    <ClCompile Include="MExpToQInsts.cpp" />
+    <ClCompile Include="MqReadResult.cpp" />
+    <ClCompile Include="MqTranslator.cpp" />
+    <ClCompile Include="MInitExpToQInsts.cpp" />
     <ClCompile Include="MLocToQInsts.cpp" />
     <ClCompile Include="MqFactory.cpp" />
     <ClCompile Include="MqIntrinsicInfo.cpp" />

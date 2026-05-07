@@ -57,6 +57,10 @@ class QPrinter
         {
             printer.PrintSlot(arg.index);
         }
+        void operator()(QArg_CallArg_DerefPtrSlot& arg)
+        {
+            printer.PrintPtrSlot(arg.index);
+        }
         void operator()(QArg_CallArg_ConstBool& arg)
         {
             printer.writer.Write(arg.value ? "true" : "false");
@@ -280,7 +284,13 @@ public:
     void PrintSlot(size_t index)
     {
         // 단일 slot 이름 출력 s{index} 까지만 쓰면 될거 같다
-        writer.Write(format("s{}", index));
+        writer.Write(format("%s{}", index));
+    }
+
+    void PrintPtrSlot(size_t index)
+    {
+        // 단일 slot 이름 출력 s{index} 까지만 쓰면 될거 같다
+        writer.Write(format("*%s{}", index));
     }
 
     void PrintRName(RName& name)

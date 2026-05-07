@@ -12,6 +12,8 @@ Summary
 - `MCreate_BC`는 create-context payload로는 유지하되, translation에서는 본질적으로 read/value 경로로 처리한다.
 - `MCreate_NBC`는 계속 destination-aware init 경로로 처리한다.
 - 따라서 현재 변경 방향은 “`MCreate` 제거”가 아니라, “`MCreate`를 일괄 lowering하던 부분에서 `MCreate_BC`를 분리하여 read primitive를 타게 하는 것”이다.
+- call argument lowering에서는 `Direct/Indirect` passing 분기를 MIR이 아니라 `MqAbi`를 아는 MIR -> QIR 단계에서 결정한다.
+- `MRead_Exp` / `MRead_Loc`는 MIR의 읽기 표현 축이고, `Direct/Indirect`는 QIR/ABI의 전달 방식 축이므로 서로 다른 개념으로 분리해서 본다.
 
 Context
 - 최근 논의에서 다음 방향이 유력해졌다.
@@ -81,6 +83,34 @@ Decision
 - 다만 `MArgument_Create(MCreate_BC{...})`는 lowering에서 `TranslateMExp` 또는 BC read/value 경로를 사용해 처리한다.
 - 이것은 by-value 전달 semantics를 바꾸는 것이 아니라, BC payload의 구현 primitive만 read/value 쪽으로 정리하는 것이다.
 
+## 7) `MArgument_Create`의 direct/indirect 분기는 ABI가 결정한다
+- `Direct/Indirect`는 MIR 개념이 아니라 QIR/ABI 개념이다.
+- 따라서 `MArgument_Create`를 MIR 단계에서 `DirectCreate` / `IndirectCreate`처럼 분리하지 않는다.
+- 대신 MIR -> QIR lowering에서 `MqAbi`를 보고, 현재 parameter passing mode가 direct인지 indirect인지 결정한 뒤 그에 맞는 lowering 경로를 선택한다.
+
+권장 규칙:
+- `MArgument_Create(MCreate_BC)` + ABI `Direct`
+  - `MExp`를 read/value로 읽는다
+  - 결과를 `QArg_CallArg`로 바로 만든다
+  - 예: slot이면 `QArg_CallArg_Slot`, const int면 `QArg_CallArg_ConstInt32`, const bool이면 `QArg_CallArg_ConstBool`
+- `MArgument_Create(MCreate_BC)` + ABI `Indirect`
+  - 기존처럼 slot/storage를 하나 마련한다
+  - `MCreate_BC`를 그 target에 채운다
+  - 결과는 주소 형태의 `QArg_CallArg`로 만든다
+- `MArgument_Create(MCreate_NBC)`
+  - 계속 indirect/create 경로로 처리한다
+  - NBC는 value read 경로로 직접 call arg를 만드는 대상으로 보지 않는다
+
+이 규칙의 의도:
+- 작은 BC 값은 direct by-value로 보낼 수 있게 한다
+- 큰 BC 값은 ABI 정책에 따라 indirect by-value로 보낼 수 있게 한다
+- NBC는 기존의 place/init 중심 경로를 유지한다
+
+주의:
+- `Direct`는 `BC`와 같은 뜻이 아니다
+- 일반적으로는 “작은 BC -> direct, 큰 BC + NBC -> indirect”가 되지만, 이것은 ABI 정책이지 MIR 타입 규칙이 아니다
+- 따라서 direct/indirect는 `BC/NBC`, `Exp/Loc`와 분리된 별도의 축으로 관리한다
+
 Implications
 ## `MStmt_Return`
 - 계속 `MCreate` consumer로 둔다.
@@ -113,6 +143,26 @@ Implications
   - `MRead_Loc` -> `TranslateMLoc`
 - 즉 `MRead`는 lowering primitive라기보다 read-context adapter 성격이 강해진다.
 
+## `MRead` vs `Direct/Indirect`
+- `MRead_Exp` / `MRead_Loc`는 MIR 내부의 읽기 표현 축이다.
+  - `MRead_Exp`: BC exp 형태의 read
+  - `MRead_Loc`: loc 형태의 read (`BC/NBC` 모두 가능)
+- `Direct/Indirect`는 call boundary에서 ABI가 선택하는 전달 방식 축이다.
+  - direct: 값으로 전달
+  - indirect: storage/address를 통해 전달
+- 따라서 둘은 서로 대응되는 rename 관계가 아니다.
+
+예:
+- `MRead_Exp`라고 해서 항상 direct 전달인 것은 아니다
+  - 큰 BC 값이면 ABI가 indirect passing을 고를 수 있다
+- `MRead_Loc`라고 해서 항상 indirect 전달인 것도 아니다
+  - BC loc read를 load해서 direct 값 전달로 바꿀 수 있다
+
+즉 판단 순서는 다음처럼 본다.
+1. MIR source shape를 본다 (`MRead_Exp`, `MRead_Loc`, `MCreate_BC`, `MCreate_NBC`)
+2. ABI가 call edge에서 `Direct/Indirect`를 결정한다
+3. translator가 두 정보를 조합해 QIR argument/result shape를 만든다
+
 Rationale
 - `MCreate`를 MIR에서 없애지 않으면 consumer field churn을 줄일 수 있다.
 - 반면 lowering primitive를 `MExp` / `MLoc` / `MInitExp(dest)`로 분리하면, BC/NBC의 계산 모델 차이를 더 자연스럽게 반영할 수 있다.
@@ -120,6 +170,8 @@ Rationale
   - BC: value-driven
   - NBC: destination-driven
 - `MCreate_BC`는 이 차이를 지우는 “대칭적인 create primitive”라기보다, create-context에 BC payload를 태우는 adapter로 보는 것이 더 자연스럽다.
+- call argument의 direct/indirect 분기를 ABI 단계로 미루면, MIR에 ABI 개념을 스며들게 하지 않으면서도 const fast path와 큰 BC indirect passing을 모두 수용할 수 있다.
+- 또한 `MRead`와 `Direct/Indirect`를 분리해 두면, MIR 표현 축과 ABI 전달 축이 다시 섞이는 것을 막을 수 있다.
 
 Non-goals for this change
 - 이번 단계에서 `MCreate` 자체를 제거하지 않는다.
@@ -139,3 +191,4 @@ Open points
 - `MStmt_Exp`의 BC discard 경로에서 별도 result slot을 항상 둘지, expression kind별 fast path를 허용할지 결정 필요
 - `MArgument_Create(MCreate_BC)` lowering에서 call argument slot materialization 정책을 공통 helper로 둘지 검토 필요
 - `TranslateMCreate` 이름을 남길 경우, public helper인지 translator-private dispatch인지 역할을 명확히 할 필요가 있음
+- ABI direct passing에서 허용할 BC fast path 범위를 literal const까지만 둘지, 일반 `MExp` 전반으로 둘지 추가 검토 필요

@@ -157,7 +157,7 @@ struct CallableTranslator
             if constexpr (same_as<T, ImExpInstanceKind_ExplicitStatic>)
             {
                 // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
-                if (match.funcDecl->GetThisKind() == RThisKind::Handle)
+                if (!holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind()))
                     return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
 
                 // TODO: [41] try catch 구현
@@ -166,14 +166,14 @@ struct CallableTranslator
             else if constexpr (same_as<T, ImExpInstanceKind_ExplicitInstance>)
             {
                 // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
-                if (match.funcDecl->GetThisKind() == RThisKind::None)
+                if (holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind()))
                     return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
 
                 return Call(match.funcDecl, match.typeArgs, /*instance*/instanceKind.mInstLoc, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_Implicit>) // F 로 인스턴스를 명시적으로 정하지 않았다면 
             {
-                if (match.funcDecl->GetThisKind() == RThisKind::None) // 정적함수이면 인스턴스에 null
+                if (holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind())) // 정적함수이면 인스턴스에 null
                 {
                     // TODO: [41] try catch 구현
                     return Call(match.funcDecl, match.typeArgs, /*instance*/nullptr, move(match.args), /*o_catch*/nullopt);
@@ -267,7 +267,7 @@ struct CallableTranslator
             if constexpr (same_as<T, ImExpInstanceKind_ExplicitStatic>)
             {
                 // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
-                if (match.funcDecl->GetThisKind() == RThisKind::Handle)
+                if (!holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind()))
                     return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
 
                 // TODO: [41] try catch 구현
@@ -276,14 +276,14 @@ struct CallableTranslator
             else if constexpr (same_as<T, ImExpInstanceKind_ExplicitInstance>)
             {
                 // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
-                if (match.funcDecl->GetThisKind() == RThisKind::None)
+                if (holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind()))
                     return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
                 
                 return Call(match.funcDecl, match.typeArgs, /*o_instance*/instanceKind.mInstLoc, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_Implicit>) // F 로 인스턴스를 명시적으로 정하지 않았다면 
             {
-                if (match.funcDecl->GetThisKind() == RThisKind::None) // 정적함수이면 인스턴스에 null
+                if (holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind())) // 정적함수이면 인스턴스에 null
                 {   
                     // TODO: [41] try catch 구현
                     return Call(match.funcDecl, match.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);

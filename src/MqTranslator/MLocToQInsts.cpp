@@ -5,12 +5,18 @@
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
 #include "RSymbol/RStructVarDecl.h"
+#include "RSymbol/RFactory.h"
 #include "MIR/MLoc.h"
+#include "MIR/MInitExp.h"
 
 #include "MqBodyContext.h"
 #include "MqTranslationContexts.h"
-#include "MCreateToQInsts.h"
 #include "MqEmitState.h"
+#include "MqReadResult.h"
+#include "MqCreateTarget.h"
+#include "MExpToQInsts.h"
+#include "MInitExpToQInsts.h"
+#include "CommonQInstsTranslation.h"
 
 using namespace std;
 
@@ -24,12 +30,7 @@ struct MLocQInstsTranslator
     
     ResultType Visit(MLoc_Materialize* loc) 
     {
-        RType* rType = GetType(loc->create, &*contexts.rFactory);
-        size_t slotIndex = contexts.bodyContext.AddTemp(rType, "materialize");
-        auto e_s_result = TranslateMCreateToQInsts(loc->create, MqCreateTarget_Slot{slotIndex}, contexts);
-        RETURN_ON_ERROR_OR_DONE(e_s_result);
-
-        return MqLocResult_Slot{slotIndex};
+        return Materialize(loc->create, contexts);
     }
 
     ResultType Visit(MLoc_LocalVar* loc)
@@ -37,8 +38,16 @@ struct MLocQInstsTranslator
         auto o_localInfo = contexts.bodyContext.GetLocalInfo(loc->name);
         assert(o_localInfo);
 
-        auto& varInfo = get<MqLocalInfo_Var>(*o_localInfo);
-        return MqLocResult_Slot{varInfo.slotIndex};
+        return visit([](auto& localInfo) -> ResultType
+        {
+            using T = remove_cvref_t<decltype(localInfo)>;
+            if constexpr (same_as<T, MqLocalInfo_Var>)
+                return MqLocResult_Slot{localInfo.slotIndex};
+            else if constexpr (same_as<T, MqLocalInfo_RefAlias>)
+                throw RuntimeFatalException{};
+            else if constexpr (same_as<T, MqLocalInfo_RefPtr>)
+                return MqLocResult_Ptr{localInfo.slotIndex};
+        }, * o_localInfo);
     }
 
     ResultType Visit(MLoc_LocalRef* loc)

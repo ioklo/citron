@@ -20,10 +20,11 @@
 #include "MqScopeGuard.h"
 #include "MReadToQInsts.h"
 #include "MqTranslationContexts.h"
-#include "MCreateToQInsts.h"
+#include "MInitExpToQInsts.h"
 #include "MqEmitState.h"
 #include "MqJumpBlockInfo.h"
 #include "MqLazyBlock.h"
+#include "MCreateToQInsts.h"
 
 using namespace std;
 
@@ -65,22 +66,20 @@ struct MStmtQInstsTranslator
         for (auto& mCommand : topLevelCommand.commands)
         {
             // Read니까. 이미 있는 slot을 돌려 받는다.
-            auto e_s_readResult = TranslateMRead_LocToQInsts(mCommand, contexts);
+            auto e_s_readResult = TranslateMLocToQInsts(mCommand.loc, contexts);
             RETURN_ON_ERROR_OR_DONE(e_s_readResult);
 
             // NBC이기 때문에 (string) 인자로 넘겨줄 때는 pointer가 되어야 한다
             visit([this](auto& readResult){
                 using T = remove_cvref_t<decltype(readResult)>;
-                if constexpr (same_as<T, MqReadResult_Slot>)
+                if constexpr (same_as<T, MqLocResult_Slot>)
                 {   
                     contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Item, nullopt, {QArg_CallArg_AddrOfSlot{readResult.slotIndex}});
                 }
-                else if constexpr (same_as<T, MqReadResult_Ptr>)
+                else if constexpr (same_as<T, MqLocResult_Ptr>)
                 {
                     contexts.bodyContext.EmitIntrinsic(QInst_IntrinsicKind::Command_Item, nullopt, {QArg_CallArg_Slot{readResult.slotIndex}});
                 }
-                else if constexpr (same_as<T, MqReadResult_ConstInt32>) throw RuntimeFatalException{};
-                else if constexpr (same_as<T, MqReadResult_ConstBool>) throw RuntimeFatalException{};
                 else static_assert(false);
             }, **e_s_readResult);
         }

@@ -24,7 +24,7 @@
     <ClInclude Include="CommonQInstsTranslation.h" />
     <ClInclude Include="MqScopeGuard.h" />
     <ClInclude Include="MReadToQInsts.h" />
-    <ClInclude Include="MCreateToQInsts.h" />
+    <ClInclude Include="MInitExpToQInsts.h" />
     <ClInclude Include="MqTranslationContexts.h" />
     <ClInclude Include="MqEmitState.h" />
     <ClInclude Include="MqJumpBlockInfo.h" />
@@ -44,6 +44,10 @@
       <Filter>QIntrinsic</Filter>
     </ClInclude>
     <ClInclude Include="MqCreateTarget.h" />
+    <ClInclude Include="MExpToQInsts.h" />
+    <ClInclude Include="MqReadResult.h" />
+    <ClInclude Include="MqLocResult.h" />
+    <ClInclude Include="MCreateToQInsts.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MqTranslator.cpp" />
@@ -52,7 +56,7 @@
     <ClCompile Include="MqBodyContext.cpp" />
     <ClCompile Include="CommonQInstsTranslation.cpp" />
     <ClCompile Include="MReadToQInsts.cpp" />
-    <ClCompile Include="MCreateToQInsts.cpp" />
+    <ClCompile Include="MInitExpToQInsts.cpp" />
     <ClCompile Include="MqEmitState.cpp" />
     <ClCompile Include="MqLazyBlock.cpp" />
     <ClCompile Include="MqAbi_Citron_X64.cpp">
@@ -63,5 +67,8 @@
     <ClCompile Include="MqIntrinsicInfo.cpp">
       <Filter>QIntrinsic</Filter>
     </ClCompile>
+    <ClCompile Include="MExpToQInsts.cpp" />
+    <ClCompile Include="MqReadResult.cpp" />
+    <ClCompile Include="MCreateToQInsts.cpp" />
   </ItemGroup>
 </Project>

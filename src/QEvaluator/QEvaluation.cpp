@@ -153,6 +153,8 @@ T Get(QArg_CallArg& arg, Environment& env)
         }
         else if constexpr (same_as<U, QArg_CallArg_Slot>)
             return env.curFrame->slots[arg.index].Get<T>();
+        else if constexpr (same_as<U, QArg_CallArg_DerefPtrSlot>)
+            return *env.curFrame->slots[arg.index].Get<T*>();
         else if constexpr (same_as<U, QArg_CallArg_AddrOfSlot>)
         {
             if constexpr (is_pointer_v<T>)
@@ -527,6 +529,15 @@ StackFrame MakeStackFrame(QFuncBody* qFuncBody, StackFrame& curFrame, optional<Q
 
                 // 복사
                 memcpy(frame.slots[i].GetAddr(), curFrame.slots[arg.index].GetAddr(), size);
+            }
+            else if constexpr (same_as<T, QArg_CallArg_DerefPtrSlot>)
+            {
+                size_t size = GetSize(qFuncBody->slotInfos[i].type, rFactory);
+                frame.stackPointer -= size;
+                frame.slots[i] = Slot{frame.stackPointer};
+
+                void* pSrc = curFrame.slots[arg.index].Get<void*>();
+                memcpy(frame.slots[i].GetAddr(), pSrc, size);
             }
             else if constexpr (same_as<T, QArg_CallArg_ConstBool>)
             {

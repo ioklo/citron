@@ -53,5 +53,8 @@ void UpdateCreateTarget_AddrOf(size_t slotIndex, MqCreateTarget createTarget, Mq
 
 void UpdateCreateTarget(RType* type, QArg_Value&& v, MqCreateTarget createTarget, MqTranslationContexts& contexts);
 
+std::expected<MqEmitState<MqLocResult>, DiagPtr> Materialize(MExp* exp, MqTranslationContexts& contexts);
+std::expected<MqEmitState<MqLocResult>, DiagPtr> Materialize(MCreate& create, MqTranslationContexts& contexts);
+
 
 } // namespace Citron

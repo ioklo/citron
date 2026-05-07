@@ -13,7 +13,6 @@
 #include "MIR/MInitExp.h"
 #include "MIR/MLoc.h"
 #include "MLocToQInsts.h"
-#include "MCreateToQInsts.h"
 #include "MReadToQInsts.h"
 #include "MStmtToQInsts.h"
 #include "MqTranslationContexts.h"
@@ -27,6 +26,9 @@
 #include "MqIntrinsicInfo.h"
 #include "MqFactory.h"
 #include "MqCreateTarget.h"
+#include "MExpToQInsts.h"
+#include "MCreateToQInsts.h"
+#include "MInitExpToQInsts.h"
 
 using namespace std;
 
@@ -50,7 +52,7 @@ expected<MqEmitState<MqLocResult>, DiagPtr> TranslateMInitExp_StringElemToQInsts
         {
             auto* stringType = bodyContext.GetStringType();
             size_t slotIndex = bodyContext.AddTemp(stringType, "stringElem");
-            auto e_s_result = TranslateMCreate_NBCToQInsts(elem.initExp, MqCreateTarget_Slot{slotIndex}, contexts);
+            auto e_s_result = TranslateMInitExpToQInsts(elem.initExp, MqCreateTarget_Slot{slotIndex}, contexts);
             RETURN_ON_ERROR_OR_DONE(e_s_result);
 
             return MqLocResult_Slot{slotIndex};
@@ -82,7 +84,7 @@ expected<MqEmitState<void>, DiagPtr> TranslateMInitExp_StringElemToQInstsForCrea
         }
         else if constexpr (same_as<T, MInitExp_StringElem_InitExp>)
         {
-            auto e_s_result = TranslateMCreate_NBCToQInsts(elem.initExp, createTarget, contexts);
+            auto e_s_result = TranslateMInitExpToQInsts(elem.initExp, createTarget, contexts);
             RETURN_ON_ERROR_OR_DONE(e_s_result);
             return MqEmitState_Ready{};
         }
@@ -374,6 +376,26 @@ optional<QArg_Addr> MakeQArg_Addr(MqCreateTarget& createTarget, MqTranslationCon
     }, createTarget);
 }
 
+// exp를 read로 읽고, CallArg로 변환한다
+expected<MqEmitState<QArg_CallArg>, DiagPtr> TranslateMArgumentToQInsts_Direct(MExp* mExp, MqTranslationContexts& contexts)
+{   
+    auto e_s_readResult = TranslateMExpToQInstsForRead(mExp, contexts);
+    RETURN_ON_ERROR_OR_DONE(e_s_readResult);
+
+    return visit([](auto& readResult) -> QArg_CallArg {
+        using T = remove_cvref_t<decltype(readResult)>;
+        if constexpr (same_as<T, MqReadResult_Slot>)
+            return QArg_CallArg_Slot{readResult.slotIndex};
+        else if constexpr (same_as<T, MqReadResult_Ptr>)
+            return QArg_CallArg_DerefPtrSlot{readResult.slotIndex};
+        else if constexpr (same_as<T, MqReadResult_ConstInt32>)
+            return QArg_CallArg_ConstInt32{readResult.value};
+        else if constexpr (same_as<T, MqReadResult_ConstBool>)
+            return QArg_CallArg_ConstBool{readResult.value};
+        else static_assert(false);
+    }, ** e_s_readResult);
+}
+
 expected<MqEmitState<QArg_CallArg>, DiagPtr> TranslateMArgumentToQInsts(MArgument& arg, MqParamPassingMode passingMode, MqTranslationContexts& contexts)
 {
     return visit([passingMode, &contexts](auto& arg) -> expected<MqEmitState<QArg_CallArg>, DiagPtr> {
@@ -381,26 +403,21 @@ expected<MqEmitState<QArg_CallArg>, DiagPtr> TranslateMArgumentToQInsts(MArgumen
 
         if constexpr (same_as<T, MArgument_Create>)
         {
+            // passing mode가 direct 이면, exp는 read로 읽고
             if (passingMode == MqParamPassingMode::Direct)
             {
-                // argument를 위한 slot을 하나 마련한다
-                auto* argType = GetType(arg.create, &*contexts.rFactory);
-                auto argSlotIndex = contexts.bodyContext.AddTemp(argType, "temp");
-
-                auto e_s_result = TranslateMCreateToQInsts(arg.create, MqCreateTarget_Slot{argSlotIndex}, contexts);
-                RETURN_ON_ERROR_OR_DONE(e_s_result);
-
-                return QArg_CallArg_Slot{argSlotIndex};
+                auto& createBC = get<MCreate_BC>(arg.create);
+                return TranslateMArgumentToQInsts_Direct(createBC.exp, contexts);
             }
             else if (passingMode == MqParamPassingMode::Indirect)
             {
-                // argument를 위한 slot을 하나 마련한다
-                auto* argType = GetType(arg.create, &*contexts.rFactory);
-                auto argSlotIndex = contexts.bodyContext.AddTemp(argType, "temp");
-                auto e_s_result = TranslateMCreateToQInsts(arg.create, MqCreateTarget_Slot{argSlotIndex}, contexts);
+                auto* type = GetType(arg.create, &*contexts.rFactory);
+                size_t tempSlotIndex = contexts.bodyContext.AddTemp(type, "create");
+
+                auto e_s_result = TranslateMCreateToQInsts(arg.create, MqCreateTarget_Slot{tempSlotIndex}, contexts);
                 RETURN_ON_ERROR_OR_DONE(e_s_result);
-                
-                return QArg_CallArg_AddrOfSlot{argSlotIndex};
+
+                return QArg_CallArg_AddrOfSlot{tempSlotIndex};
             }
             else throw NotImplementedException{};
         }
@@ -658,5 +675,64 @@ void UpdateCreateTarget(RType* type, QArg_Value&& v, MqCreateTarget createTarget
         else static_assert(false);
     }, createTarget);
 }
+
+expected<MqEmitState<MqLocResult>, DiagPtr> Materialize(MExp* exp, MqTranslationContexts& contexts)
+{
+    using ResultType = expected<MqEmitState<MqLocResult>, DiagPtr>;
+
+    auto e_s_readResult = TranslateMExpToQInstsForRead(exp, contexts);
+    RETURN_ON_ERROR_OR_DONE(e_s_readResult);
+
+    return visit([&contexts](auto& readResult) -> ResultType {
+        using T = remove_cvref_t<decltype(readResult)>;
+        if constexpr (same_as<T, MqReadResult_Slot>)
+        {
+            return MqLocResult_Slot{readResult.slotIndex};
+        }
+        else if constexpr (same_as<T, MqReadResult_Ptr>)
+        {
+            return MqLocResult_Ptr{readResult.slotIndex};
+        }
+        else if constexpr (same_as<T, MqReadResult_ConstBool>)
+        {
+            auto* boolType = contexts.rFactory->MakeBoolType();
+            size_t slotIndex = contexts.bodyContext.AddTemp(boolType, "materialize");
+            contexts.bodyContext.EmitInst(QInst_Assign{boolType, QArg_Dest_Slot{slotIndex}, QArg_Value_ConstBool{readResult.value}});
+            return MqLocResult_Slot{slotIndex};
+        }
+        else if constexpr (same_as<T, MqReadResult_ConstInt32>)
+        {
+            auto* intType = contexts.rFactory->MakeIntType();
+            size_t slotIndex = contexts.bodyContext.AddTemp(intType, "materialize");
+            contexts.bodyContext.EmitInst(QInst_Assign{intType, QArg_Dest_Slot{slotIndex}, QArg_Value_ConstInt32{readResult.value}});
+            return MqLocResult_Slot{slotIndex};
+        }
+        else static_assert(false);
+    }, **e_s_readResult);
+}
+
+expected<MqEmitState<MqLocResult>, DiagPtr> Materialize(MCreate& create, MqTranslationContexts& contexts)
+{
+    using ResultType = expected<MqEmitState<MqLocResult>, DiagPtr>;
+
+    return visit([&contexts](auto& create) -> ResultType {
+        using T = remove_cvref_t<decltype(create)>;
+        if constexpr (same_as<T, MCreate_BC>)
+        {
+            return Materialize(create.exp, contexts);
+        }
+        else if constexpr (same_as<T, MCreate_NBC>)
+        {
+            RType* type = GetType(create.initExp, &*contexts.rFactory);
+            size_t slotIndex = contexts.bodyContext.AddTemp(type, "materialize");
+            auto e_s_result = TranslateMInitExpToQInsts(create.initExp, MqCreateTarget_Slot{slotIndex}, contexts);
+            RETURN_ON_ERROR_OR_DONE(e_s_result);
+
+            return MqLocResult_Slot{slotIndex};
+        }
+        else static_assert(false);
+    }, create);
+}
+
 
 } // namespace Citron

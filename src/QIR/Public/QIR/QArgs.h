@@ -13,11 +13,12 @@ struct QArg_Addr_OfSlot { size_t index; }; // slot의 주소
 struct QArg_Addr_PtrSlot { size_t index; }; // slot에 주소가 들어있다
 using QArg_Addr = std::variant<QArg_Addr_OfSlot, QArg_Addr_PtrSlot>;
 
-struct QArg_CallArg_Slot { size_t index; };
-struct QArg_CallArg_ConstBool { bool value; };
-struct QArg_CallArg_ConstInt32 { int value; };
-struct QArg_CallArg_AddrOfSlot { size_t index; };
-using QArg_CallArg = std::variant<QArg_CallArg_Slot, QArg_CallArg_ConstBool, QArg_CallArg_ConstInt32, QArg_CallArg_AddrOfSlot>;
+struct QArg_CallArg_Slot { size_t index; }; // s
+struct QArg_CallArg_DerefPtrSlot { size_t index; }; // *s
+struct QArg_CallArg_ConstBool { bool value; }; // true
+struct QArg_CallArg_ConstInt32 { int value; }; // 123
+struct QArg_CallArg_AddrOfSlot { size_t index; }; // &s
+using QArg_CallArg = std::variant<QArg_CallArg_Slot, QArg_CallArg_DerefPtrSlot, QArg_CallArg_ConstBool, QArg_CallArg_ConstInt32, QArg_CallArg_AddrOfSlot>;
 
 struct QArg_Dest_Slot { size_t index; };
 struct QArg_Dest_DirectReturn {};
