@@ -1,5 +1,6 @@
 <Solution>
   <Configurations>
+    <Platform Name="ARM64" />
     <Platform Name="x64" />
   </Configurations>
   <Folder Name="/00_Core/">
@@ -14,10 +15,10 @@
     <Project Path="NSymbol/NSymbol.vcxproj" Id="56fa279c-712f-4c9b-ba1e-c8e983ea97e8" />
     <Project Path="RSymbol/RSymbol.vcxproj" Id="42f5b624-3a9b-48b6-9e12-736206097339" />
   </Folder>
-  <Folder Name="/03_IR0/">
+  <Folder Name="/03_MIR/">
     <Project Path="MIR/MIR.vcxproj" Id="608246f1-30d1-4394-93be-300d67e25dfe" />
   </Folder>
-  <Folder Name="/04_IR1/">
+  <Folder Name="/04_QIR/">
     <Project Path="QEvaluator.Tests/QEvaluator.Tests.vcxproj" Id="73d2c372-6773-4593-908a-c24d53ae725c" />
     <Project Path="QEvaluator/QEvaluator.vcxproj" Id="60f3db2d-944d-4842-8b31-7029f2e4ac23" />
     <Project Path="QIR/QIR.vcxproj" Id="44d6e464-ed7e-48d2-ae84-f21b3ba9698f" />
@@ -40,7 +41,8 @@
   </Folder>
   <Folder Name="/10_Builder/">
     <Project Path="Builder.Tests/Builder.Tests.vcxproj" Id="69c64055-4f39-4c8b-9fb4-184399598e5e">
-      <Build Solution="Debug|*" Project="false" />
+      <Build Solution="*|ARM64" Project="false" />
+      <Build Solution="Debug|x64" Project="false" />
     </Project>
     <Project Path="Builder/Builder.vcxproj" Id="0eb656a8-c01d-45e4-a986-424a707d3943" />
   </Folder>
