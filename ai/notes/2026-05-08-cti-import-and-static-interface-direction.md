@@ -250,12 +250,43 @@ Open point:
 - 따라서 rebuild 전파 기준은 source text diff보다 normalized `cti` diff에 가깝다.
 
 Implications
+## declaration surface 분류는 `fdecl` / `decl` / `impl` 3단계로 본다
+- declaration 관련 표면 모델은 우선 세 단계로 단순화하는 방향을 선호한다.
+- `fdecl`
+  - identity만 소개하거나 relation existence만 소개하는 단계
+  - 예: `class C;`, `class C : B;`, `extend C : I;`
+- `decl`
+  - complete surface를 소개하는 단계
+  - 예: layout, base/interface 목록, member signature, interface requirement
+- `impl`
+  - 기존 `decl` 또는 `fdecl`이 약속한 entity/relation에 body를 제공하는 단계
+  - 예: 함수 body, interface requirement witness body
+
+의도:
+- `class C : B;`와 `extend C : I;`를 둘 다 relation `fdecl`로 다룰 수 있다.
+- body 이전 단계에서 수집해야 하는 정보를 identity/relation/surface로 정리할 수 있다.
+- 이후 body/typecheck/lowering은 `impl` 단계에서 처리한다.
+
+## incomplete relation `fdecl`도 허용하는 방향을 선호한다
+- `class C : B;`는 base relation `fdecl`로 본다.
+- `extend C : I;`는 conformance relation `fdecl`로 본다.
+- 이때 `C`, `B`, `I`가 그 시점에 incomplete여도 우선 허용하는 방향을 선호한다.
+- 다만 이 선언은 complete declaration이 아니다.
+  - layout
+  - base offset
+  - requirement satisfaction
+  - witness completeness
+  - static consumer 사용 가능성
+  는 아직 확정하지 않는다.
+- declaration collection이 끝난 뒤 별도 completeness/consistency check에서 나중에 검증한다.
+
 ## `cti` / `ctm` 구현 형태
 - split mode에서는 `cti`가 canonical declaration source가 된다.
-- `ctm`은 implementation-only unit으로 본다.
+- `ctm`은 implementation-only body fragment unit으로 본다.
 - 현재 선호 방향:
   - `cti`에 선언한 complete declaration은 `ctm`에서 다시 `struct A { ... }` 형태로 반복하지 않는다
-  - 대신 `void A::Func() { ... }` 같은 out-of-line definition 형태를 사용한다
+  - `ctm`은 `impl` 블록만 제공한다
+  - `impl` 블록은 기존 declaration surface를 넓히지 않는다
 - forward declaration은 정의 의무 대상이 아니다.
 
 예:
@@ -263,25 +294,131 @@ Implications
 ```citron
 struct A
 {
-    void Func();
+    int x;
+    void F();
 }
+
+extend A : I;
 ```
 - `A.ctm`
 ```citron
-void A::Func() { ... }
+impl A
+{
+    void F() { ... }
+}
+
+impl A : I
+{
+    void M() { ... }
+}
 ```
 
 이유:
 - split mode에서 declaration ownership을 `cti`에 고정한다
 - `ctm`이 declaration surface를 몰래 바꾸지 않게 한다
 - implicit `cti` 생성 모델과 수동 `cti` 모델을 맞춘다
+- member implementation과 interface conformance implementation의 문법 계열을 맞춘다
 
-## `ctm` 내부 helper member
-- implementation-only helper member가 필요할 때는 `cti`에 public/import surface로 올리는 대신, `ctm` 쪽 local augmentation 기법을 둘 여지가 있다.
-- 예시 후보:
-  - `extend A { void G() { ... } }`
-- 이 경우 그 `extend`는 export/import 대상이 아닌 implementation-local augmentation으로 보는 방향을 선호한다.
-- 반면 declaration 없이 `void A::G() { ... }`를 바로 허용하면 `cti`가 canonical declaration source라는 규칙이 약해질 수 있으므로 주의가 필요하다.
+## `impl` 블록의 의미
+- `impl S { ... }`
+  - `S`의 declared member body를 제공한다
+- `impl S : I { ... }`
+  - `S : I` conformance의 requirement witness body를 제공한다
+- `impl` 안에는 surface member declaration을 두지 않는다.
+  - 즉 `cti`에 새 public/import declaration을 추가하지 않는다.
+- `impl`은 declaration-introducing block이 아니라 body fragment block이다.
+
+## `impl` 내부 helper는 implementation-local body fragment symbol로 본다
+- implementation 편의를 위해 `impl` 안에 declaration surface에 없는 helper function을 둘 수 있는 방향을 선호한다.
+- 다만 이것은 exported member declaration이 아니라 implementation-local helper symbol로 본다.
+- 예:
+```citron
+impl S
+{
+    void F() { G(); }
+
+    void G() { ... } // implementation-local helper
+}
+```
+- 이 `G`는:
+  - `cti`에 실리지 않는다
+  - import/name lookup/member lookup 대상이 아니다
+  - complete declaration surface를 넓히지 않는다
+  - 해당 implementation group 안에서만 보인다
+
+## 하나의 `cti`에 여러 `ctm` body fragment가 붙을 수 있다
+- `1 cti : 1 ctm`으로 고정하지 않고, `1 cti : N ctm`을 허용하는 방향을 선호한다.
+- 예:
+  - `a.cti`
+  - `a_main.ctm`
+  - `a_interface1.ctm`
+  - `a_interface2.ctm`
+- 이 경우 여러 `ctm`의 합을 하나의 logical implementation group으로 본다.
+- implementation-local helper visibility도 file별이 아니라 group별로 공유할 수 있게 하는 방향을 선호한다.
+
+## `cti -> {ctm...}` 매핑은 source 문법이 아니라 builder input이 제공한다
+- 어떤 `ctm`이 어떤 `cti`에 속하는지는 source 규칙으로 추론하지 않는 쪽을 선호한다.
+- 이 관계는 builder input이 직접 제공한다.
+- 기본 convenience 규칙은 둘 수 있다.
+  - 예: `a.ctm`만 입력되면 기본적으로 `a.cti`를 같이 찾는다
+- 하지만 여러 `ctm`을 하나의 `cti`에 묶는 고급 케이스는 builder input이 명시적으로
+  - `a.cti -> { a_main.ctm, a_interface1.ctm, a_interface2.ctm }`
+  같은 관계를 준다.
+
+Implication:
+- implementation group은 언어 문법이 아니라 build orchestration이 결정한다.
+- helper 공유 범위도 같은 `cti`에 바인딩된 `ctm` 집합 기준으로 설명할 수 있다.
+
+## `cti`에 나가는 타입은 body-independent surface type이거나 opaque contract여야 한다
+- `cti`는 body보다 먼저 compile되므로, exported signature에 적히는 타입은 body를 보지 않고 해석 가능해야 한다.
+- 따라서 body 안에서만 concrete identity가 정해지는 anonymous helper type / closure concrete type / hidden generator concrete type은 `cti`에 직접 적을 수 없다.
+- 대신 `cti`는 다음 부류를 구분할 수 있어야 한다.
+  - named/normal surface type
+  - erased contract type
+    - 예: `func<int>`, `seq<int>`
+  - opaque contract type
+    - 예: `some seq<int>`
+
+즉:
+- body-dependent concrete type 자체는 `cti`에 직접 실리지 않는다.
+- 필요하면 erased form 또는 opaque form으로 간접 노출한다.
+
+예:
+```citron
+func<int> F();
+func<int> F() { shared i = shared 3; return shared [i]() { return *i; }; }
+```
+
+반면 다음처럼 closure concrete type이 body에 의해 결정되는 형태를 그대로 `cti`에 적는 것은 현재 방향과 맞지 않는다.
+```citron
+lambda<int> F(); // 여기서 lambda<int>가 anonymous concrete closure type 의미라면 부적합
+```
+
+## `seq<int>`와 `some seq<int>`는 구분되는 surface category다
+- `seq<int>`
+  - erased sequence contract type
+  - concrete generator identity를 surface에서 지운다
+- `some seq<int>`
+  - opaque concrete sequence result type
+  - concrete generator identity는 숨기지만, 구현이 고른 하나의 concrete 타입으로 고정된다
+
+따라서 둘은 같은 것이 아니다.
+- `seq<int>`는 erased boundary를 뜻한다.
+- `some seq<int>`는 hidden-but-stable concrete identity boundary를 뜻한다.
+
+## `yield` 함수와 `seq` surface
+- `seq int F() { ... }` 같은 generator function form은 body에서 `yield`를 허용하는 별도 함수 kind로 볼 수 있다.
+- declaration surface 관점에서는 이 함수가 외부에 무엇을 반환하는지를 별도로 정해야 한다.
+- 후보는 두 가지다.
+  - `seq<int>`로 erase해서 surface에 노출
+  - `some seq<int>`로 opaque concrete generator를 surface에 노출
+- 장기적으로는 generator function이 semantic하게는 `some seq<int>`에 더 가까울 수 있다.
+  - body마다 compiler-generated concrete state machine type이 생기기 때문이다.
+- 다만 초기 구현은 `seq<int>` erase boundary로 시작할 수도 있다.
+
+Implication:
+- `cti` 모델은 장기적으로 `seq<int>`와 `some seq<int>`를 구분할 수 있어야 한다.
+- 지금 당장 일반 `some`을 구현하지 않더라도, opaque result slot 개념을 수용할 여지는 남겨두는 편이 좋다.
 
 ## import의 의미
 - `using module` / `using unit`은 구현 파일 탐색이 아니라 declaration contract / declaration world visibility를 여는 동작이다.
@@ -318,10 +455,15 @@ void A::Func() { ... }
 Open Points
 - `ct`, `cti`, `ctm` 파일이 home module / unit identity를 어떻게 얻는지
 - `cti` 문법이 `ct`의 declaration-only subset인지, 별도 문법 요소를 둘지
+- `fdecl` / `decl` / `impl` 구분을 parser/symbol model에 어떻게 반영할지
 - 수동 `cti`가 있을 때 implicit `cti`와 어떤 검증 관계를 둘지
 - `extend` declaration과 requirement implementation body를 `cti`/`ct` 사이에 어떻게 분리할지
-- split mode에서 `ctm` 내부 helper member를 위한 local augmentation 문법을 둘지
+- `impl` 내부 helper를 member로 보지 않는 implementation-local symbol로 둘 때, overload/name lookup을 어디까지 허용할지
+- 같은 implementation group에 속한 여러 `ctm` 사이 helper visibility와 duplicate detection을 어떻게 고정할지
+- builder input이 `cti -> {ctm...}` 매핑을 어떤 형태로 제공할지
 - interface requirement 중 constructor/static member exposure를 현재 [docs/Interface.md] 방향처럼 그대로 유지할지
+- `cti`에서 erased contract type과 opaque contract type을 syntax/symbol level에서 어떻게 구분할지
+- `seq int F() { yield ... }`의 declaration surface를 `seq<int>`와 `some seq<int>` 중 무엇으로 볼지
 - `Next + YieldValue` 중 최종 iterator contract shape를 어떻게 고정할지
 - incomplete conformance declaration을 허용할 경우, 어느 시점에 completeness를 강제할지
 - `from unit` / `from module` 문법을 그대로 둘지, 향후 더 짧은 표기를 추가할지
@@ -337,7 +479,12 @@ Recommended implementation order
 
 Action Items
 - [ ] `cti` 최소 surface 항목 목록(type/interface/function/extern/extend/forward decl) 초안 작성
+- [ ] `fdecl` / `decl` / `impl` 분류와 예시를 별도 규칙 문서로 승격할지 검토
 - [ ] implicit `cti` 생성 규칙과 수동 `cti` 우선순위 규칙 정리
 - [ ] import resolution이 `cti` world를 어떻게 구성하는지 compile phase 관점에서 정리
 - [ ] `extend S : I` declaration/definition 분리 모델 초안 작성
+- [ ] `impl S` / `impl S : I` body fragment와 implementation-local helper visibility 규칙 초안 작성
+- [ ] builder input의 `cti -> {ctm...}` mapping shape 초안 작성
+- [ ] `cti` surface type categories(named / erased / opaque) 초안 작성
+- [ ] `seq<int>`와 `some seq<int>`를 generator/lambda 반환 타입 관점에서 어떻게 사용할지 정리
 - [ ] `foreach` iterator contract를 `T* Next()` vs `bool Next(); T* YieldValue()` 중 하나로 좁히기
