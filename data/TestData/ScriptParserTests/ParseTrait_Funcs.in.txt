@@ -1,0 +1,6 @@
+trait MyTrait
+{
+    ctor(int x);
+    static void F1();
+    void F2();
+}

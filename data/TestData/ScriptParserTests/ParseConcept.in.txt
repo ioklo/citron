@@ -1,0 +1,1 @@
+concept C<T> { T : RefEnumerable; T.Item == int; T.Item : class; T.Item : Base; }

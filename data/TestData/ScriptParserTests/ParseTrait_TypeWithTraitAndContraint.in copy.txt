@@ -1,0 +1,1 @@
+trait T { type Enumerator : RefEnumerator where This.Item == Enumerator.Item; }

@@ -1,0 +1,7 @@
+trait GenericTrait<T>
+{
+    type Item;
+
+    static T Make(Item item);
+    T Convert(Item item);
+}
