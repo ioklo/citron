@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "process/windows-build-and-test.md",
+                "file": "compiler/qevaluator.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "windows-build-and-test"
+              "title": "qevaluator"
             }
           }
         ]
@@ -185,17 +185,26 @@
   },
   "active": "c5a48a5dd658149a",
   "lastOpenFiles": [
-    "process/index.md",
-    "process/generated-files.md",
-    "language/some-opaque-result.md",
-    "language/nested-declarations.md",
-    "language/nullable-type.md",
-    "language/index.md",
     "compiler/mir-value-model.md",
-    "compiler/compile-pipeline.md",
+    "compiler/mir-observable-behavior.md",
+    "compiler/if-is-lowering.md",
     "compiler/declaration-model.md",
+    "compiler/compile-pipeline.md",
+    "language/visibility-and-reachability.md",
+    "language/types-and-references.md",
+    "language/trait-and-interface.md",
+    "language/some-opaque-result.md",
+    "language/nullable-type.md",
+    "language/module-and-cti.md",
+    "language/index.md",
+    "language/if-is-binding.md",
     "language/functions.md",
     "language/enumerable-and-foreach.md",
-    "language/control-flow.md"
+    "language/control-flow.md",
+    "language/concepts-and-constraints.md",
+    "process/windows-build-and-test.md",
+    "process/index.md",
+    "process/generated-files.md",
+    "language/nested-declarations.md"
   ]
 }
