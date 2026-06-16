@@ -10,15 +10,17 @@ Area: language
 - `trait-and-interface.md` : static trait, dynamic interface, callable `func<>`
 - `module-and-cti.md` : module/unit, `cti`, import surface, `rcti` 재검토
 - `types-and-references.md` : value/pointer/reference surface, `T&` 제한
+- `nullable-type.md` : nullable representation and nullable pattern
+- `enumerable-and-foreach.md` : RefEnumerable / ValueEnumerable / foreach direction
+- `functions.md` : function calls, RVO, error channel, lambda capture summary
+- `control-flow.md` : try/catch, tail expression, return completeness, labels
+- `if-is-binding.md` : `is` expression and conditional binding rules
+- `concepts-and-constraints.md` : concept and associated type constraints
+- `visibility-and-reachability.md` : name visibility vs compiler reachability
+- `nested-declarations.md` : nested type/trait identity and conformance
 
 ## Topics To Add
-- nullable type
-- function declaration and overload
 - class / struct defaults
-- visibility and reachability
-- nested declaration identity
-- concept and constraints
-- enumerable and foreach
 - lambda and closure capture
 - `seq` / generator
 

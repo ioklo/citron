@@ -48,3 +48,6 @@ Consumer-facing `rcti`는 현재 모델에서 없어질 수 있다.
 - same-module unit dependency를 implicit으로 둘지, `using unit`을 재도입할지
 - body compile cache와 official import artifact를 어떻게 구분할지
 - public opaque backing 변경이 downstream rebuild에 어떤 영향을 주는지
+
+## History
+- `ai/implementations/compiler-lowering-snapshot.md`

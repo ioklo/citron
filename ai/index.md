@@ -5,6 +5,8 @@
 처음 읽을 것:
 - `ai/wiki/home.md`
 - `ai/wiki/current-decisions.md`
+- `ai/wiki/migration-plan.md`
+- `ai/wiki/archive-plan.md`
 - `ai/wiki/language/index.md`
 - `ai/wiki/compiler/index.md`
 

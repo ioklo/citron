@@ -6,8 +6,11 @@ Area: process
 빌드, 테스트, 생성 파일 규칙의 wiki 입구다.
 
 ## Current References
-- `ai/process/build-test-and-generation-windows.md`
+- `ai/wiki/process/windows-build-and-test.md`
+- `ai/wiki/process/generated-files.md`
 - `ai/ai-guidelines/agent-workflow.md`
+Deprecated source reference:
+- `ai/process/build-test-and-generation-windows.md`
 
 ## Current Rules
 - Windows 빌드/테스트는 Visual Studio Dev Shell 환경에서 실행한다.

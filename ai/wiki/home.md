@@ -8,9 +8,11 @@ Status: current entry point
 처음 복귀하거나 새 agent가 들어오면 아래 순서로 읽는다.
 
 1. `ai/wiki/current-decisions.md`
-2. `ai/wiki/language/index.md`
-3. `ai/wiki/compiler/index.md`
-4. 작업 주제에 해당하는 topic page
+2. `ai/wiki/migration-plan.md`
+3. `ai/wiki/archive-plan.md`
+4. `ai/wiki/language/index.md`
+5. `ai/wiki/compiler/index.md`
+6. 작업 주제에 해당하는 topic page
 
 ## Areas
 - `language/` : 사용자가 보는 언어 규칙, 타입, trait/interface, module/cti

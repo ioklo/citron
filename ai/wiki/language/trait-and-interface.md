@@ -48,6 +48,8 @@ extend SEnumerator : RefEnumerator
 
 Associated type inference는 v1에서 제외한다.
 
+Associated type constraint와 concept는 `concepts-and-constraints.md`를 본다.
+
 ## Interface
 `interface`는 runtime dynamic dispatch contract다. Associated type과 `This`를 가진 trait를 자동으로 dynamic object로 바꾸지 않는다.
 
