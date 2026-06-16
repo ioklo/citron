@@ -34,5 +34,5 @@ if (a is D d || cond)
 - `src/MIR/`
 
 ## History
-- `ai/specs/language/if-and-is.md`
-- `ai/implementations/if-is-binding-snapshot.md`
+- `git history: ai/specs/language/if-and-is.md`
+- `git history: ai/implementations/if-is-binding-snapshot.md`

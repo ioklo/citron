@@ -7,7 +7,7 @@ Status: current snapshot
 ## Documentation
 - 현재 기준 지식은 `ai/wiki/`에 둔다.
 - `ai/notes/`는 history로 유지한다.
-- `ai/specs/`와 `ai/implementations/`는 deprecated reference이며, wiki가 채워진 뒤 archive로 옮긴다.
+- 기존 specs/implementations 내용은 wiki로 옮긴 뒤 active tree에는 유지하지 않는다. 필요하면 `git history: ai/specs/`와 `git history: ai/implementations/`를 확인한다.
 
 ## Language
 - `some Trait`는 함수 return position 전용 opaque result marker다. 일반 type expression이 아니며 변수/인자/generic argument 위치에는 쓰지 않는다.

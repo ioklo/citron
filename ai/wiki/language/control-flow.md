@@ -37,5 +37,5 @@ outer: for (...)
 ```
 
 ## History
-- `ai/specs/language/functions-and-control-flow.md`
+- `git history: ai/specs/language/functions-and-control-flow.md`
 - `ai/notes/2026-04-10-control-flow-and-parameter-cleanup-open-points.md`

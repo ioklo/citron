@@ -9,10 +9,9 @@ Status: current entry point
 
 1. `ai/wiki/current-decisions.md`
 2. `ai/wiki/migration-plan.md`
-3. `ai/wiki/archive-plan.md`
-4. `ai/wiki/language/index.md`
-5. `ai/wiki/compiler/index.md`
-6. 작업 주제에 해당하는 topic page
+3. `ai/wiki/language/index.md`
+4. `ai/wiki/compiler/index.md`
+5. 작업 주제에 해당하는 topic page
 
 ## Areas
 - `language/` : 사용자가 보는 언어 규칙, 타입, trait/interface, module/cti
@@ -22,7 +21,7 @@ Status: current entry point
 ## Document Policy
 - 새 기준 지식은 `ai/wiki/`에 쓴다.
 - 시간순 논의와 실험 기록은 `ai/notes/`에 쓴다.
-- `ai/specs/`와 `ai/implementations/`는 deprecated reference다. 새 기준 내용을 추가하지 않는다.
+- 기존 `specs`와 `implementations` 내용은 active tree에 유지하지 않는다. 필요하면 git history에서 확인한다.
 - `docs/`는 AI가 직접 수정하지 않는다.
 
 ## Topic Page Shape

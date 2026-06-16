@@ -52,4 +52,4 @@ These are not observable by themselves:
 - Optimizations may remove call boundaries or temporary storage, but must not change observable event trace.
 
 ## History
-- `ai/specs/mir/observable-behavior.md`
+- `git history: ai/specs/mir/observable-behavior.md`

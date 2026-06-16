@@ -45,6 +45,6 @@ void return call
 Lambda와 closure capture는 이후 별도 `lambda-and-closures.md`로 더 자세히 나눌 수 있다.
 
 ## History
-- `ai/specs/language/functions-and-control-flow.md`
+- `git history: ai/specs/language/functions-and-control-flow.md`
 - `ai/notes/2026-02-08-rvo-nrvo-design-discussion.md`
 - `ai/notes/2026-02-09-lambda-capture-policy.md`

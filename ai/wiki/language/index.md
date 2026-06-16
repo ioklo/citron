@@ -24,6 +24,6 @@ Area: language
 - lambda and closure capture
 - `seq` / generator
 
-## Deprecated References
-- `ai/specs/language/`
+## Removed Source References
+- `git history: ai/specs/language/`
 - `ai/notes/`

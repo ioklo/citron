@@ -108,6 +108,6 @@ BC/NBC and direct/indirect representation remain separate axes:
 - How to display unmanaged pointer slots such as ref parameters.
 
 ## History
-- `ai/implementations/qir-call-abi-and-evaluator.md`
+- `git history: ai/implementations/qir-call-abi-and-evaluator.md`
 - `ai/notes/2026-04-26-qir-call-slots-and-observable-behavior.md`
 - `ai/notes/2026-04-30-qir-slot-managed-ptr-direction.md`

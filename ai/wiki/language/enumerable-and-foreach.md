@@ -93,6 +93,6 @@ nullable<TItem> GetNext() TError;
 이 lowering 세부는 compiler wiki로 이관할 예정이다.
 
 ## History
-- `ai/specs/language/nullable-and-iteration.md`
+- `git history: ai/specs/language/nullable-and-iteration.md`
 - `ai/notes/2026-05-14-trait-refenumerable-foreach-direction.md`
 - `ai/notes/2026-05-15-trait-concept-associated-type-design.md`

@@ -112,4 +112,4 @@ Decision order:
 
 ## History
 - `ai/notes/2026-05-05-mcreate-surface-and-translation-split.md`
-- `ai/specs/mir/value-model.md`
+- `git history: ai/specs/mir/value-model.md`

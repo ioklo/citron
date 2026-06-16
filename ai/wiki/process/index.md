@@ -9,7 +9,8 @@ Area: process
 - `ai/wiki/process/windows-build-and-test.md`
 - `ai/wiki/process/generated-files.md`
 - `ai/ai-guidelines/agent-workflow.md`
-Deprecated source reference:
+
+Legacy process reference:
 - `ai/process/build-test-and-generation-windows.md`
 
 ## Current Rules

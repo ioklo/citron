@@ -66,5 +66,5 @@ NBC:
 - Move remaining `MOperand`-based code toward `MRead`.
 
 ## History
-- `ai/specs/mir/value-model.md`
+- `git history: ai/specs/mir/value-model.md`
 - `ai/notes/2026-05-05-mcreate-surface-and-translation-split.md`

@@ -53,5 +53,5 @@ if (exp is some value)
 - Nullable pattern과 general `is` binding page의 책임 분리
 
 ## History
-- `ai/specs/language/nullable-and-iteration.md`
-- `ai/specs/language/if-and-is.md`
+- `git history: ai/specs/language/nullable-and-iteration.md`
+- `git history: ai/specs/language/if-and-is.md`

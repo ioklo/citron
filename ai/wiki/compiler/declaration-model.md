@@ -26,5 +26,5 @@ Keywords: RDecl, NDecl, EDecl, REDecl, declaration, skeleton, fdecl
 - How opaque result identity for `some` return attaches to declaration identity.
 
 ## History
-- `ai/implementations/decl-model.md`
+- `git history: ai/implementations/decl-model.md`
 - `ai/notes/2026-05-12-module-visibility-and-internal-fdecl-direction.md`

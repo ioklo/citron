@@ -89,5 +89,5 @@ var& y = x;
 - `return T&`는 허용 가능하지만, dangling 가능성은 언어 모델 일부로 받아들인다.
 
 ## History
-- `ai/specs/language/types-and-ownership.md`
+- `git history: ai/specs/language/types-and-ownership.md`
 - `ai/notes/2026-05-14-reference-and-memory-safety-policy.md`

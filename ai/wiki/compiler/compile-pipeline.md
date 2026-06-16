@@ -50,4 +50,4 @@ Consumer-facing `rcti`는 현재 모델에서 없어질 수 있다.
 - public opaque backing 변경이 downstream rebuild에 어떤 영향을 주는지
 
 ## History
-- `ai/implementations/compiler-lowering-snapshot.md`
+- `git history: ai/implementations/compiler-lowering-snapshot.md`

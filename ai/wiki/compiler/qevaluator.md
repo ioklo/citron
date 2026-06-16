@@ -52,5 +52,5 @@ QEvaluator tests should focus on:
 - managed pointer cleanup behavior.
 
 ## History
-- `ai/implementations/qir-call-abi-and-evaluator.md`
+- `git history: ai/implementations/qir-call-abi-and-evaluator.md`
 - `ai/notes/2026-04-26-qir-call-slots-and-observable-behavior.md`

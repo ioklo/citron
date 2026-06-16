@@ -36,4 +36,4 @@ Main responsibilities:
 - Translator changes should add/update focused tests in `TextAnalysis.Tests` or relevant module tests.
 
 ## History
-- `ai/implementations/syntaxir0translator-implementation.md`
+- `git history: ai/implementations/syntaxir0translator-implementation.md`

@@ -23,6 +23,6 @@ Citron compiler 내부 모델과 lowering 지식의 wiki 입구다.
 - opaque sret call lowering
 - incremental build dependency
 
-## Deprecated References
-- `ai/implementations/`
-- `ai/specs/mir/`
+## Removed Source References
+- `git history: ai/implementations/`
+- `git history: ai/specs/mir/`

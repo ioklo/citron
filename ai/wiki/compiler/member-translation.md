@@ -31,4 +31,4 @@ These helpers should perform common member interpretation work while allowing ea
 - `src/R...`
 
 ## History
-- `ai/implementations/member-translation-snapshot.md`
+- `git history: ai/implementations/member-translation-snapshot.md`
