@@ -7,6 +7,7 @@ Keywords: some, opaque result, value witness, trait witness, sret, cti
 ## Current Rules
 - `some Trait`는 함수 return position 전용 opaque result marker다.
 - `some Trait`는 일반 type expression이 아니다.
+- 표면 표기는 `some T`를 사용하고, `some<T>`는 허용하지 않는다.
 - 변수, 인자, field, generic argument 위치에 `some Trait`를 쓰지 않는다.
 - 호출자는 `some` 결과를 항상 `var`로 받는다.
 - source-level에서는 declared `Trait` surface만 사용할 수 있고, backing concrete type의 member는 사용할 수 없다.
@@ -28,6 +29,7 @@ x.TraitMethod();
 some MyTrait x;
 void G(some MyTrait x);
 List<some MyTrait> values;
+some<MyTrait> H();
 x.ConcreteOnlyMethod();
 ```
 
@@ -46,6 +48,8 @@ interface/any:
 ```
 
 서로 다른 `some MyTrait` 함수는 backing type이 같더라도 서로 다른 opaque result identity를 가진다.
+
+`some`은 `nullable<T>` / `ptr<T>` 같은 일반 prefix type constructor가 아니라, return position에서만 쓰는 특수 marker다.
 
 ## Compiler Model
 `some MyTrait F()` 호출은 개념적으로 아래처럼 낮춘다.

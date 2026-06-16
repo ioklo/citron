@@ -2,7 +2,7 @@
 
 Status: draft current
 Area: language, type system
-Keywords: nullable, null, optional, some bind, nullable inplace
+Keywords: nullable, null, optional, not_null bind, nullable inplace
 
 ## Current Rules
 - Nested nullable은 의미적으로 병합하지 않는다.
@@ -28,19 +28,19 @@ nullable<nullable<T>>
 ```
 
 ## Nullable Pattern
-Nullable 값 검사와 binding은 `is some` pattern을 사용한다.
+Nullable 값 검사와 binding은 `is not_null` pattern을 사용한다.
 
 ```citron
-if (exp is some value)
+if (exp is not_null value)
 {
     use(value);
 }
 ```
 
 현재 규칙:
-- `some alias`는 checked bind를 뜻한다.
+- `not_null alias`는 checked bind를 뜻한다.
 - `alias!`는 unchecked type alias / target alias를 명시하는 표기다.
-- `some alias!`는 unchecked bind를 뜻한다.
+- `not_null alias!`는 unchecked bind를 뜻한다.
 - Checked target alias는 local target에서만 보장한다.
 - Non-local target에 대해 `alias!` 없는 checked request를 하면 경고를 낸다.
 
@@ -49,7 +49,7 @@ if (exp is some value)
 ## Open Points
 - `C?`가 정확히 어떤 type kind에 대해 `NullableInplace<C>`가 되는지
 - `Nullable<T>` / `NullableInplace<T>`의 standard library surface
-- `some alias` / `alias!`의 최종 parser spelling
+- `not_null alias` / `alias!`의 최종 parser spelling
 - Nullable pattern과 general `is` binding page의 책임 분리
 
 ## History

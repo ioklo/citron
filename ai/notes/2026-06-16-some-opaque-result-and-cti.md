@@ -9,6 +9,7 @@ Status
 Summary
 - Citron의 `some Trait`는 Swift식 opaque result에 가깝게 본다.
 - `some Trait`는 일반 type expression이 아니라 함수 return position 전용 표기다.
+- opaque result 표면 표기는 우선 `some T` 형태를 기본으로 본다.
 - `some Trait` 결과는 호출자가 concrete backing type을 알지 못하며, 항상 `var`로만 받는다.
 - 호출자는 함수별 opaque result metadata accessor를 통해 크기/정렬/값 연산 정보를 얻고, 그 크기만큼 local storage를 할당한 뒤 sret 방식으로 호출한다.
 - `some Trait` 값은 source-level에서 concrete type 기능을 사용할 수 없고, 선언된 `Trait` surface만 사용할 수 있다.
@@ -19,11 +20,15 @@ Context
 - 이 경우 unit 간 dependency ordering, same-module cycle, public raw `some` export, incremental rebuild 전파가 복잡해졌다.
 - Swift의 `some P`는 opaque result type이며, caller가 backing concrete type을 직접 알기보다 opaque result metadata/value witness를 통해 값을 다룰 수 있다.
 - Citron도 이 방향을 따르면 `some`을 public API로 노출할 수 있으면서, source-level로 concrete type을 숨기는 의미를 더 강하게 유지할 수 있다.
+- 최근 후속 논의에서는 nullable pattern 쪽 spelling은 `not_null`로 다시 분리하고, opaque result marker 쪽에 `some`을 남기는 쪽이 더 낫다는 쪽으로 기울었다.
+- 또한 `nullable T` / `ptr T` 같은 prefix type sugar와 달리, `some`은 일반 type expression이 아니라 return position marker이므로 `some<T>`를 기본 표기로 볼 필요는 적다는 점을 확인했다.
 
 Decisions / Current Preferences
 ## 1) `some Trait`는 return position 전용 opaque result marker다
 - `some Trait`는 일반 type expression이 아니다.
 - 함수 return type을 표현할 때만 쓴다.
+- 기본 표기는 `some T`로 둔다.
+- `some<T>` 표기는 허용하지 않는다.
 
 허용:
 ```citron
@@ -39,6 +44,11 @@ some MyTrait x;             // error
 void G(some MyTrait x);     // error
 List<some MyTrait> values;  // error
 ```
+
+추가 메모:
+- `some`은 `nullable<T>` / `ptr<T>` 같은 일반 type constructor가 아니다.
+- 따라서 `some<T>`를 허용하면 type expression처럼 오해를 키울 수 있다.
+- 구현/문서 기준 표기는 `some T`로 통일한다.
 
 ## 2) 호출자는 `some` 결과를 항상 `var`로 받는다
 - source code에서 opaque result type 이름을 직접 쓸 수 없다.
@@ -140,12 +150,51 @@ ct.o
 - public API surface는 concrete type이 아니라 opaque result identity와 trait constraint다.
 - backing type이 바뀌어도 source-level API는 `F.result : Trait` 형태로 유지될 수 있다.
 
+## 9) trait의 첫 consumer로 `some T` return을 우선 구현하는 것이 현실적일 수 있다
+- trait를 검증하기 위한 첫 consumer로 `foreach`를 잡으면 associated type, enumerator contract, loop lowering까지 한 번에 엮인다.
+- generic constraint 기반 `Run<T> where T : Trait`도 좋은 consumer지만, 현재는 generics 자체의 open point가 많다.
+- 반면 `some T` return은 trait surface 호출을 직접 검증하면서도 generic 설계 전체를 선행 조건으로 만들지 않는다.
+
+최소 smoke test 방향:
+```citron
+trait Printable
+{
+    void Print();
+}
+
+struct S
+{
+    void Print() { @S; }
+}
+
+some Printable Make()
+{
+    return S();
+}
+
+void Main()
+{
+    var x = Make();
+    x.Print();
+}
+```
+
+이 경로에서 먼저 확인하고 싶은 것:
+- `some T` return declaration이 파싱/이름해석 되는지
+- body의 concrete return type이 declared trait를 만족하는지
+- caller가 결과를 `var`로 받고 trait surface만 호출할 수 있는지
+- concrete member 접근은 막히는지
+- opaque metadata + trait witness 경로로 lowering 가능한지
+
 Rationale
 - `some`의 목적은 concrete type을 숨기되, 구현이 고른 하나의 concrete result type으로 고정하는 것이다.
 - consumer에게 backing type을 알려주는 방식은 구현은 단순하지만, hidden type이 사실상 downstream compiler artifact에 새어 나간다.
 - opaque metadata 방식은 구현 부담이 있지만, `some`의 source-level 의미와 module boundary abstraction을 더 잘 보존한다.
 - Citron의 NBC/destination-passing 모델과 sret 기반 opaque result 호출은 방향이 잘 맞는다.
 - `some Trait`를 일반 type expression으로 열지 않으면 사용자 모델과 parser/type system 범위를 좁게 유지할 수 있다.
+- `some T`는 타입처럼 보이지만 실제로는 return position marker라는 점을 명확히 유지해야, generic/type constructor와의 의미 혼선을 줄일 수 있다.
+- nullable binding pattern과 opaque result가 같은 `some`을 공유하면 의미 충돌이 커질 수 있으므로, nullable 쪽은 `not_null`로 분리하는 편이 현재 판단에 더 잘 맞는다.
+- `some<T>`를 열지 않으면 `some`이 일반 prefix type form처럼 퍼지는 것을 막고, return marker라는 성격을 더 분명히 유지할 수 있다.
 
 Open Points
 - dynamic stack allocation을 MIR/QIR에서 어떤 node로 표현할지

@@ -11,6 +11,7 @@ Status: current snapshot
 
 ## Language
 - `some Trait`는 함수 return position 전용 opaque result marker다. 일반 type expression이 아니며 변수/인자/generic argument 위치에는 쓰지 않는다.
+- opaque return 표기는 `some T`를 사용하며 `some<T>`는 허용하지 않는다.
 - `some Trait` 결과는 `var`로만 받으며, source-level에서는 declared trait surface만 사용할 수 있다.
 - `trait`는 static contract다. `interface`는 dynamic/runtime dispatch contract로 따로 둔다.
 - `func<R, Params...>`는 callable static contract type expression이다. `lambda<>` type expression은 두지 않는다.
@@ -19,6 +20,7 @@ Status: current snapshot
 - `concept`는 초기에는 반복되는 `where` constraint 묶음으로 본다.
 - `T&`는 일반 first-class type constructor가 아니라 parameter/return/local alias/implicit this 같은 제한된 surface slot의 reference 표기다.
 - Nested nullable은 flatten하지 않는다. `C?`는 compressed nullable representation, 일반 `T?`는 tagged nullable representation으로 본다.
+- nullable binding pattern은 `if (x is not_null v)` 형태를 사용한다.
 - 초기 `foreach`는 `RefEnumerable` / `RefEnumerator` 위의 `foreach(var& x in e)`를 우선한다. `foreach(var x in e)`의 `RefEnumerable` fallback은 두지 않는다.
 - `void`는 `tuple<>`와 별도 타입이다. `T = void` generic argument는 허용하되 내부에는 `__VoidSubst`를 사용할 수 있다.
 - BC/NBC value semantics는 observable behavior 기준으로 구분한다. NBC lifetime operation은 보존해야 한다.
