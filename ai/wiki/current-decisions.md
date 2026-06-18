@@ -12,6 +12,7 @@ Status: current snapshot
 ## Language
 - `some Trait`는 함수 return position 전용 opaque result marker다. 일반 type expression이 아니며 변수/인자/generic argument 위치에는 쓰지 않는다.
 - opaque return 표기는 `some T`를 사용하며 `some<T>`는 허용하지 않는다.
+- `some`은 일반 type parser가 아니라 함수 declaration의 return 자리에서만 특별히 읽는 쪽을 선호한다.
 - `some Trait` 결과는 `var`로만 받으며, source-level에서는 declared trait surface만 사용할 수 있다.
 - `trait`는 static contract다. `interface`는 dynamic/runtime dispatch contract로 따로 둔다.
 - `func<R, Params...>`는 callable static contract type expression이다. `lambda<>` type expression은 두지 않는다.

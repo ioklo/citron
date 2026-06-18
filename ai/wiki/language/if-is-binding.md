@@ -18,7 +18,7 @@ Keywords: if, is, binding, nullable, pattern, IfBind
 c is null
 c is D
 c is D d
-o_c is some c
+o_c is not_null c
 e is E.Second(x, _)
 ```
 

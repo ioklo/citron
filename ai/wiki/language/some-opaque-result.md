@@ -8,6 +8,7 @@ Keywords: some, opaque result, value witness, trait witness, sret, cti
 - `some Trait`는 함수 return position 전용 opaque result marker다.
 - `some Trait`는 일반 type expression이 아니다.
 - 표면 표기는 `some T`를 사용하고, `some<T>`는 허용하지 않는다.
+- parser에서도 `some`은 일반 type parser가 아니라 함수 declaration의 return 자리에서만 특별히 읽는 쪽을 선호한다.
 - 변수, 인자, field, generic argument 위치에 `some Trait`를 쓰지 않는다.
 - 호출자는 `some` 결과를 항상 `var`로 받는다.
 - source-level에서는 declared `Trait` surface만 사용할 수 있고, backing concrete type의 member는 사용할 수 없다.

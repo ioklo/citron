@@ -77,7 +77,7 @@ vector<tuple<string, path, bool, path>> GetFiles(path p)
             continue;
         }
 
-        wcout << inFilePath << L": neither .out.txt nor .fail.txt exists";
+        wcout << inFilePath << L": neither .out.txt nor .fail.txt exists" << endl;
     }
 
     sort(results.begin(), results.end(), [](auto& x, auto& y) { return get<0>(x) < get<0>(y); });
