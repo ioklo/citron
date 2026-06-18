@@ -79,9 +79,6 @@ class SStructFuncDecl;
 class SStructCtorDecl;
 class SStructVarDecl;
 
-class SNamespaceDeclElement;
-class SScriptElement;
-
 class SClassDecl;
 class SStructDecl;
 class SEnumDecl;
@@ -195,7 +192,6 @@ public:
     MAKE(SStructVarDecl)
 
     MAKE(SNamespaceDeclElement)
-    MAKE(SScriptElement)
     MAKE(SClassDecl)
     MAKE(SStructDecl)
     MAKE(SEnumDecl)
@@ -204,6 +200,15 @@ public:
     MAKE(SGlobalFuncDecl)
     MAKE(SNamespaceDecl)
     MAKE(SScript)
+
+    template<typename TSSyntax, typename... TArgs> requires std::derived_from<TSSyntax, SSyntax>
+    TSSyntax* Make(TArgs&&... args)
+    {
+        auto elem = std::make_unique<TSSyntax>(std::forward<TArgs>(args)...);
+        auto* pElem = elem.get();
+        syntaxes.push_back(std::move(elem));
+        return pElem;
+    }
 
     template<typename... TArgs> 
     SArgument* MakeSArgument(TArgs&&... args)

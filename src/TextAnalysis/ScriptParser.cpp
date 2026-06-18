@@ -20,6 +20,7 @@ namespace Citron {
 SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory);
 SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory);
 SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory);
+STraitDecl* ParseTraitDecl(Lexer* lexer, SFactory& factory);
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer);
 SNamespaceDecl* ParseNamespaceDecl(Lexer* lexer, SFactory& factory);
 
@@ -139,7 +140,26 @@ optional<vector<STypeParam>> ParseTypeParams(Lexer* lexer, SFactory& factory)
 }
 
 template<typename TMemberDeclSyntax>
-TMemberDeclSyntax* ParseTypeDecl(Lexer* lexer, SFactory& factory)
+optional<TMemberDeclSyntax> ParseTypeDecl(Lexer* lexer, SFactory& factory)
+{
+    if (auto* enumDecl = ParseEnumDecl(lexer, factory))
+        return enumDecl;
+
+    if (auto* structDecl = ParseStructDecl(lexer, factory))
+        return structDecl;
+
+    if (auto* classDecl = ParseClassDecl(lexer, factory))
+        return classDecl;
+
+    if (auto* traitDecl = ParseTraitDecl(lexer, factory))
+        return traitDecl;
+
+    return nullopt;
+}
+
+// deprecated version
+template<typename TMemberDeclSyntax>
+TMemberDeclSyntax* ParseTypeDecl2(Lexer* lexer, SFactory& factory)
 {
     if (auto* enumDecl = ParseEnumDecl(lexer, factory))
         return enumDecl;
@@ -212,6 +232,51 @@ SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory)
 
     *lexer = move(curLexer);
     return factory.MakeSEnumDecl(o_accessModifier, move(o_enumName->text), move(*o_typeParams), move(elems));
+}
+
+STraitFuncDecl* ParseTraitFuncDecl(Lexer* lexer, SFactory& factory)
+{
+    return nullptr;
+}
+
+optional<STraitMemberDecl> ParseTraitMemberDecl(Lexer* lexer, SFactory& factory)
+{
+    if (auto* decl = ParseTraitFuncDecl(lexer, factory))
+        return decl;
+
+    return nullopt;
+}
+
+// trait TraitName<T, U> { ... }
+STraitDecl* ParseTraitDecl(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer = *lexer;
+    if (!Accept<TraitToken>(&curLexer))
+        return nullptr;
+
+    auto o_name = Accept<IdentifierToken>(&curLexer);
+    if (!o_name)
+        return nullptr;
+
+    auto o_typeParams = ParseTypeParams(&curLexer, factory);
+    if (!o_typeParams)
+        return nullptr;
+
+    if (!Accept<LBraceToken>(&curLexer))
+        return nullptr;
+
+    vector<STraitMemberDecl> elems;
+    while (!Accept<RBraceToken>(&curLexer))
+    {
+        auto o_memberDecl = ParseTraitMemberDecl(&curLexer, factory);
+        if (!o_memberDecl)
+            return nullptr;
+
+        elems.push_back(move(*o_memberDecl));
+    }
+
+    *lexer = move(curLexer);
+    return factory.Make<STraitDecl>(move(o_name->text), move(*o_typeParams), move(elems));
 }
 
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer)
@@ -362,7 +427,7 @@ SStructDtorDecl* ParseStructDtorDecl(const string& structName, Lexer* lexer, SFa
 
 SStructMemberDecl* ParseStructMemberDecl(const string& structName, Lexer* lexer, SFactory& factory)
 {
-    if (auto* memberDecl = ParseTypeDecl<SStructMemberDecl>(lexer, factory))
+    if (auto* memberDecl = ParseTypeDecl2<SStructMemberDecl>(lexer, factory))
         return memberDecl;
 
     if (auto* memberDecl = ParseStructFuncDecl(lexer, factory))
@@ -567,7 +632,7 @@ SClassVarDecl* ParseClassVarDecl(Lexer* lexer, SFactory& factory)
 
 SClassMemberDecl* ParseClassMemberDecl(string& className, Lexer* lexer, SFactory& factory)
 {
-    if (auto* memberDecl = ParseTypeDecl<SClassMemberDecl>(lexer, factory))
+    if (auto* memberDecl = ParseTypeDecl2<SClassMemberDecl>(lexer, factory))
         return memberDecl;
 
     if (auto* memberDecl = ParseClassFuncDecl(lexer, factory))
@@ -649,18 +714,18 @@ SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory)
     );
 }
 
-SNamespaceDeclElement* ParseNamespaceElement(Lexer* lexer, SFactory& factory)
+optional<SNamespaceDeclElement> ParseNamespaceElement(Lexer* lexer, SFactory& factory)
 {
     if (auto* decl = ParseNamespaceDecl(lexer, factory))
         return decl;
     
-    if (auto* decl = ParseTypeDecl<SNamespaceDeclElement>(lexer, factory))
-        return decl;
+    if (auto o_elem = ParseTypeDecl<SNamespaceDeclElement>(lexer, factory))
+        return *o_elem;
 
     if (auto* decl = ParseGlobalFuncDecl(lexer, factory))
         return decl;
 
-    return nullptr;
+    return nullopt;
 }
 
 SNamespaceDecl* ParseNamespaceDecl(Lexer* lexer, SFactory& factory)
@@ -697,48 +762,48 @@ SNamespaceDecl* ParseNamespaceDecl(Lexer* lexer, SFactory& factory)
     if (!Accept<LBraceToken>(&curLexer))
         return nullptr;
 
-    vector<SNamespaceDeclElement*> elems;
+    vector<SNamespaceDeclElement> elems;
     // } 가 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto* elem = ParseNamespaceElement(&curLexer, factory);
-        if (!elem)
+        auto o_elem = ParseNamespaceElement(&curLexer, factory);
+        if (!o_elem)
             return nullptr;
 
-        elems.push_back(elem);
+        elems.push_back(*o_elem);
     }
 
     *lexer = move(curLexer);
     return factory.MakeSNamespaceDecl(move(nsNames), move(elems));
 }
 
-SScriptElement* ParseScriptElement(Lexer* lexer, SFactory& factory)
+optional<SScriptElement> ParseScriptElement(Lexer* lexer, SFactory& factory)
 {
     if (auto* decl = ParseNamespaceDecl(lexer, factory))
         return decl;
 
-    if (auto* decl = ParseTypeDecl<SScriptElement>(lexer, factory))
-        return decl;
+    if (auto o_elem = ParseTypeDecl<SScriptElement>(lexer, factory))
+        return *o_elem;
 
     if (auto* decl = ParseGlobalFuncDecl(lexer, factory))
         return decl;
 
-    return nullptr;
+    return nullopt;
 }
 
 SScript* ParseScript(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    vector<SScriptElement*> elems;
+    vector<SScriptElement> elems;
     while (!Accept<EndOfFileToken>(&curLexer))
     {
-        auto* scriptElem = ParseScriptElement(&curLexer, factory);
+        auto o_scriptElem = ParseScriptElement(&curLexer, factory);
 
-        if (!scriptElem)
+        if (!o_scriptElem)
             return nullptr;
 
-        elems.push_back(scriptElem);
+        elems.push_back(*o_scriptElem);
     }
 
     return factory.MakeSScript(move(elems));

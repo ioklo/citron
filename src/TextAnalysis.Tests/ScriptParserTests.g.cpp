@@ -680,3 +680,25 @@ TEST(ScriptParser, ParseStructDecl)
     EXPECT_SYNTAX_EQ(script, expected);
 }
 
+TEST(ScriptParser, ParseTrait_Empty)
+{
+    auto [buffer, lexer] = Prepare(UR"---(trait Empty { })---");
+    SFactory factory;
+
+    auto* script = ParseScript(&lexer, factory);
+
+    auto expected = R"---({
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STraitDecl",
+            "name": "Empty",
+            "typeParams": [],
+            "memberDecls": []
+        }
+    ]
+})---";
+
+    EXPECT_SYNTAX_EQ(script, expected);
+}
+

@@ -358,40 +358,16 @@ JsonItem ToJson(SStructMemberDecl* decl)
     SStructMemberDeclToJsonVisitor visitor;
     return Accept(visitor, decl);
 }
-struct SNamespaceDeclElementToJsonVisitor
+JsonItem ToJson(SNamespaceDeclElement& elem)
 {
-    using ResultType = JsonItem;
-    ResultType Visit(SGlobalFuncDecl* elem) { return elem->ToJson(); }
-    ResultType Visit(SNamespaceDecl* elem) { return elem->ToJson(); }
-    ResultType Visit(SClassDecl* elem) { return elem->ToJson(); }
-    ResultType Visit(SStructDecl* elem) { return elem->ToJson(); }
-    ResultType Visit(SEnumDecl* elem) { return elem->ToJson(); }
-};
-
-JsonItem ToJson(SNamespaceDeclElement* elem)
-{
-    if (!elem) return JsonNull();
-
-    SNamespaceDeclElementToJsonVisitor visitor;
-    return Accept(visitor, elem);
+    return std::visit(ToJsonVisitor(), elem);
 }
-struct SScriptElementToJsonVisitor
-{
-    using ResultType = JsonItem;
-    ResultType Visit(SNamespaceDecl* elem) { return elem->ToJson(); }
-    ResultType Visit(SGlobalFuncDecl* elem) { return elem->ToJson(); }
-    ResultType Visit(SClassDecl* elem) { return elem->ToJson(); }
-    ResultType Visit(SStructDecl* elem) { return elem->ToJson(); }
-    ResultType Visit(SEnumDecl* elem) { return elem->ToJson(); }
-};
 
-JsonItem ToJson(SScriptElement* elem)
+JsonItem ToJson(SScriptElement& elem)
 {
-    if (!elem) return JsonNull();
-
-    SScriptElementToJsonVisitor visitor;
-    return Accept(visitor, elem);
+    return std::visit(ToJsonVisitor(), elem);
 }
+
 struct SVarDeclTypeToJsonVisitor
 {
     using ResultType = JsonItem;
@@ -1632,7 +1608,97 @@ JsonItem SEnumDecl::ToJson()
     };
 }
 
-SNamespaceDecl::SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElement*> elements)
+STraitFuncDecl::STraitFuncDecl(bool bStatic, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters)
+    : bStatic(move(bStatic)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)) { }
+
+STraitFuncDecl::STraitFuncDecl(STraitFuncDecl&& other) noexcept = default;
+
+STraitFuncDecl::~STraitFuncDecl() = default;
+
+STraitFuncDecl& STraitFuncDecl::operator=(STraitFuncDecl&& other) noexcept = default;
+
+JsonItem STraitFuncDecl::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("STraitFuncDecl") },
+        { "bStatic", Citron::ToJson(bStatic) },
+        { "retType", Citron::ToJson(retType) },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "parameters", Citron::ToJson(parameters) },
+    };
+}
+
+JsonItem ToJson(STraitMemberDecl& memberDecl)
+{
+    return std::visit(ToJsonVisitor(), memberDecl);
+}
+
+STraitDecl::STraitDecl(std::string name, std::vector<STypeParam> typeParams, std::vector<STraitMemberDecl> memberDecls)
+    : name(move(name)), typeParams(move(typeParams)), memberDecls(move(memberDecls)) { }
+
+STraitDecl::STraitDecl(STraitDecl&& other) noexcept = default;
+
+STraitDecl::~STraitDecl() = default;
+
+STraitDecl& STraitDecl::operator=(STraitDecl&& other) noexcept = default;
+
+JsonItem STraitDecl::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("STraitDecl") },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "memberDecls", Citron::ToJson(memberDecls) },
+    };
+}
+
+SExtendFuncDecl::SExtendFuncDecl(bool bStatic, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters)
+    : bStatic(move(bStatic)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)) { }
+
+SExtendFuncDecl::SExtendFuncDecl(SExtendFuncDecl&& other) noexcept = default;
+
+SExtendFuncDecl::~SExtendFuncDecl() = default;
+
+SExtendFuncDecl& SExtendFuncDecl::operator=(SExtendFuncDecl&& other) noexcept = default;
+
+JsonItem SExtendFuncDecl::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SExtendFuncDecl") },
+        { "bStatic", Citron::ToJson(bStatic) },
+        { "retType", Citron::ToJson(retType) },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "parameters", Citron::ToJson(parameters) },
+    };
+}
+
+JsonItem ToJson(SExtendMemberDecl& memberDecl)
+{
+    return std::visit(ToJsonVisitor(), memberDecl);
+}
+
+SExtendDecl::SExtendDecl(std::string name, std::vector<STypeParam> typeParams, std::vector<SExtendMemberDecl> memberDecls)
+    : name(move(name)), typeParams(move(typeParams)), memberDecls(move(memberDecls)) { }
+
+SExtendDecl::SExtendDecl(SExtendDecl&& other) noexcept = default;
+
+SExtendDecl::~SExtendDecl() = default;
+
+SExtendDecl& SExtendDecl::operator=(SExtendDecl&& other) noexcept = default;
+
+JsonItem SExtendDecl::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("SExtendDecl") },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "memberDecls", Citron::ToJson(memberDecls) },
+    };
+}
+
+SNamespaceDecl::SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElement> elements)
     : names(move(names)), elements(move(elements)) { }
 
 SNamespaceDecl::SNamespaceDecl(SNamespaceDecl&& other) noexcept = default;
@@ -1650,7 +1716,7 @@ JsonItem SNamespaceDecl::ToJson()
     };
 }
 
-SScript::SScript(std::vector<SScriptElement*> elements)
+SScript::SScript(std::vector<SScriptElement> elements)
     : elements(move(elements)) { }
 
 SScript::SScript(SScript&& other) noexcept = default;

@@ -94,12 +94,11 @@ class SStructCtorDecl;
 class SStructDtorDecl;
 class SStructVarDecl;
 
-class SNamespaceDeclElement;
-class SScriptElement;
-
 class SClassDecl;
 class SStructDecl;
 class SEnumDecl;
+class STraitDecl;
+class SExtendDecl;
 class SGlobalFuncDecl;
 class SNamespaceDecl;
 class SScript;
@@ -1215,169 +1214,27 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStructM
 
 SYNTAX_API JsonItem ToJson(SStructMemberDecl* decl);
 
-class SNamespaceDeclElementVisitor
-{
-public:
-    virtual ~SNamespaceDeclElementVisitor() = default;
-    virtual void Visit(SGlobalFuncDecl* elem) = 0;
-    virtual void Visit(SNamespaceDecl* elem) = 0;
-    virtual void Visit(SClassDecl* elem) = 0;
-    virtual void Visit(SStructDecl* elem) = 0;
-    virtual void Visit(SEnumDecl* elem) = 0;
-};
+using SNamespaceDeclElement = std::variant<
+    SGlobalFuncDecl*,
+    SNamespaceDecl*,
+    SClassDecl*,
+    SStructDecl*,
+    SEnumDecl*,
+    STraitDecl*,
+    SExtendDecl*>;
 
-class SNamespaceDeclElement : virtual public SSyntax
-{
-public:
-    SNamespaceDeclElement() = default;
-    SNamespaceDeclElement(const SNamespaceDeclElement&) = delete;
-    SNamespaceDeclElement(SNamespaceDeclElement&&) = default;
-    virtual ~SNamespaceDeclElement() { }
-    SNamespaceDeclElement& operator=(const SNamespaceDeclElement& other) = delete;
-    SNamespaceDeclElement& operator=(SNamespaceDeclElement&& other) noexcept = default;
-    virtual void Accept(SNamespaceDeclElementVisitor& visitor) = 0;
-};
+SYNTAX_API JsonItem ToJson(SNamespaceDeclElement& elem);
 
-template<class TFrom, class TVisitor>
-concept SNamespaceDeclElementConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
-// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
-template<typename TVisitor, typename... TVisitorArgs>
-concept SNamespaceDeclElementVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
-{
-    typename std::remove_cvref_t<TVisitor>::ResultType;
-    { v.Visit(std::declval<SGlobalFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SNamespaceDeclElementConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SNamespaceDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SNamespaceDeclElementConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SClassDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SNamespaceDeclElementConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SStructDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SNamespaceDeclElementConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SEnumDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SNamespaceDeclElementConvertibleToResultType<TVisitor>;
-};
+using SScriptElement = std::variant<
+    SNamespaceDecl*,
+    SGlobalFuncDecl*,
+    SClassDecl*,
+    SStructDecl*,
+    SEnumDecl*,
+    STraitDecl*,
+    SExtendDecl*>;
 
-template<typename TVisitor, typename... TVisitorArgs> requires SNamespaceDeclElementVisitable<TVisitor, TVisitorArgs...>
-typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SNamespaceDeclElement* elem, TVisitorArgs&&... args)
-{
-    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
-
-    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
-    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
-
-    if constexpr (std::is_void_v<TResult>)
-    {
-        struct Bridge : SNamespaceDeclElementVisitor {
-            decltype(caller)& call;
-            Bridge(decltype(caller)& call) : call(call) {}
-            void Visit(SGlobalFuncDecl* elem) override { call(elem); }
-            void Visit(SNamespaceDecl* elem) override { call(elem); }
-            void Visit(SClassDecl* elem) override { call(elem); }
-            void Visit(SStructDecl* elem) override { call(elem); }
-            void Visit(SEnumDecl* elem) override { call(elem); }
-        };
-
-        Bridge bridge{caller};
-        elem->Accept(bridge);
-    }
-    else
-    {
-        struct Bridge : SNamespaceDeclElementVisitor {
-            decltype(caller)& call;
-            std::optional<TResult> result{};
-            Bridge(decltype(caller)& call) : call(call) {}
-
-            void Visit(SGlobalFuncDecl* elem) override { result.emplace(call(elem)); }
-            void Visit(SNamespaceDecl* elem) override { result.emplace(call(elem)); }
-            void Visit(SClassDecl* elem) override { result.emplace(call(elem)); }
-            void Visit(SStructDecl* elem) override { result.emplace(call(elem)); }
-            void Visit(SEnumDecl* elem) override { result.emplace(call(elem)); }
-        };
-
-        Bridge bridge{caller};
-        elem->Accept(bridge);
-        return *bridge.result;
-    }
-}
-
-SYNTAX_API JsonItem ToJson(SNamespaceDeclElement* elem);
-
-class SScriptElementVisitor
-{
-public:
-    virtual ~SScriptElementVisitor() = default;
-    virtual void Visit(SNamespaceDecl* elem) = 0;
-    virtual void Visit(SGlobalFuncDecl* elem) = 0;
-    virtual void Visit(SClassDecl* elem) = 0;
-    virtual void Visit(SStructDecl* elem) = 0;
-    virtual void Visit(SEnumDecl* elem) = 0;
-};
-
-class SScriptElement : virtual public SSyntax
-{
-public:
-    SScriptElement() = default;
-    SScriptElement(const SScriptElement&) = delete;
-    SScriptElement(SScriptElement&&) = default;
-    virtual ~SScriptElement() { }
-    SScriptElement& operator=(const SScriptElement& other) = delete;
-    SScriptElement& operator=(SScriptElement&& other) noexcept = default;
-    virtual void Accept(SScriptElementVisitor& visitor) = 0;
-};
-
-template<class TFrom, class TVisitor>
-concept SScriptElementConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
-// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
-template<typename TVisitor, typename... TVisitorArgs>
-concept SScriptElementVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
-{
-    typename std::remove_cvref_t<TVisitor>::ResultType;
-    { v.Visit(std::declval<SNamespaceDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SScriptElementConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SGlobalFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SScriptElementConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SClassDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SScriptElementConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SStructDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SScriptElementConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SEnumDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SScriptElementConvertibleToResultType<TVisitor>;
-};
-
-template<typename TVisitor, typename... TVisitorArgs> requires SScriptElementVisitable<TVisitor, TVisitorArgs...>
-typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SScriptElement* elem, TVisitorArgs&&... args)
-{
-    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
-
-    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
-    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
-
-    if constexpr (std::is_void_v<TResult>)
-    {
-        struct Bridge : SScriptElementVisitor {
-            decltype(caller)& call;
-            Bridge(decltype(caller)& call) : call(call) {}
-            void Visit(SNamespaceDecl* elem) override { call(elem); }
-            void Visit(SGlobalFuncDecl* elem) override { call(elem); }
-            void Visit(SClassDecl* elem) override { call(elem); }
-            void Visit(SStructDecl* elem) override { call(elem); }
-            void Visit(SEnumDecl* elem) override { call(elem); }
-        };
-
-        Bridge bridge{caller};
-        elem->Accept(bridge);
-    }
-    else
-    {
-        struct Bridge : SScriptElementVisitor {
-            decltype(caller)& call;
-            std::optional<TResult> result{};
-            Bridge(decltype(caller)& call) : call(call) {}
-
-            void Visit(SNamespaceDecl* elem) override { result.emplace(call(elem)); }
-            void Visit(SGlobalFuncDecl* elem) override { result.emplace(call(elem)); }
-            void Visit(SClassDecl* elem) override { result.emplace(call(elem)); }
-            void Visit(SStructDecl* elem) override { result.emplace(call(elem)); }
-            void Visit(SEnumDecl* elem) override { result.emplace(call(elem)); }
-        };
-
-        Bridge bridge{caller};
-        elem->Accept(bridge);
-        return *bridge.result;
-    }
-}
-
-SYNTAX_API JsonItem ToJson(SScriptElement* elem);
+SYNTAX_API JsonItem ToJson(SScriptElement& elem);
 
 class SVarDeclTypeVisitor
 {
@@ -2556,8 +2413,7 @@ public:
 };
 
 class SGlobalFuncDecl
-    : public SNamespaceDeclElement
-    , public SScriptElement
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2571,22 +2427,17 @@ public:
     SYNTAX_API SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SGlobalFuncDecl(const SGlobalFuncDecl&) = delete;
     SYNTAX_API SGlobalFuncDecl(SGlobalFuncDecl&&) noexcept;
-    SYNTAX_API virtual ~SGlobalFuncDecl();
+    SYNTAX_API ~SGlobalFuncDecl();
 
     SGlobalFuncDecl& operator=(const SGlobalFuncDecl& other) = delete;
     SYNTAX_API SGlobalFuncDecl& operator=(SGlobalFuncDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SClassDecl
     : public SClassMemberDecl
     , public SStructMemberDecl
-    , public SNamespaceDeclElement
-    , public SScriptElement
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2606,8 +2457,6 @@ public:
     SYNTAX_API JsonItem ToJson();
     void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
     void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -2683,8 +2532,6 @@ public:
 class SStructDecl
     : public SClassMemberDecl
     , public SStructMemberDecl
-    , public SNamespaceDeclElement
-    , public SScriptElement
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2704,8 +2551,6 @@ public:
     SYNTAX_API JsonItem ToJson();
     void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
     void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
@@ -2836,8 +2681,6 @@ public:
 class SEnumDecl
     : public SClassMemberDecl
     , public SStructMemberDecl
-    , public SNamespaceDeclElement
-    , public SScriptElement
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2856,40 +2699,124 @@ public:
     SYNTAX_API JsonItem ToJson();
     void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
     void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(this); }
 
 };
 
+class STraitFuncDecl
+    : virtual public SSyntax
+{
+public:
+    bool bStatic;
+    STypeExp* retType;
+    std::string name;
+    std::vector<STypeParam> typeParams;
+    std::vector<SFuncParam> parameters;
+
+    SYNTAX_API STraitFuncDecl(bool bStatic, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters);
+    STraitFuncDecl(const STraitFuncDecl&) = delete;
+    SYNTAX_API STraitFuncDecl(STraitFuncDecl&&) noexcept;
+    SYNTAX_API ~STraitFuncDecl();
+
+    STraitFuncDecl& operator=(const STraitFuncDecl& other) = delete;
+    SYNTAX_API STraitFuncDecl& operator=(STraitFuncDecl&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+using STraitMemberDecl = std::variant<
+    STraitFuncDecl*>;
+
+SYNTAX_API JsonItem ToJson(STraitMemberDecl& memberDecl);
+
+class STraitDecl
+    : virtual public SSyntax
+{
+public:
+    std::string name;
+    std::vector<STypeParam> typeParams;
+    std::vector<STraitMemberDecl> memberDecls;
+
+    SYNTAX_API STraitDecl(std::string name, std::vector<STypeParam> typeParams, std::vector<STraitMemberDecl> memberDecls);
+    STraitDecl(const STraitDecl&) = delete;
+    SYNTAX_API STraitDecl(STraitDecl&&) noexcept;
+    SYNTAX_API ~STraitDecl();
+
+    STraitDecl& operator=(const STraitDecl& other) = delete;
+    SYNTAX_API STraitDecl& operator=(STraitDecl&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class SExtendFuncDecl
+    : virtual public SSyntax
+{
+public:
+    bool bStatic;
+    STypeExp* retType;
+    std::string name;
+    std::vector<STypeParam> typeParams;
+    std::vector<SFuncParam> parameters;
+
+    SYNTAX_API SExtendFuncDecl(bool bStatic, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters);
+    SExtendFuncDecl(const SExtendFuncDecl&) = delete;
+    SYNTAX_API SExtendFuncDecl(SExtendFuncDecl&&) noexcept;
+    SYNTAX_API ~SExtendFuncDecl();
+
+    SExtendFuncDecl& operator=(const SExtendFuncDecl& other) = delete;
+    SYNTAX_API SExtendFuncDecl& operator=(SExtendFuncDecl&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+using SExtendMemberDecl = std::variant<
+    SExtendFuncDecl*>;
+
+SYNTAX_API JsonItem ToJson(SExtendMemberDecl& memberDecl);
+
+class SExtendDecl
+    : virtual public SSyntax
+{
+public:
+    std::string name;
+    std::vector<STypeParam> typeParams;
+    std::vector<SExtendMemberDecl> memberDecls;
+
+    SYNTAX_API SExtendDecl(std::string name, std::vector<STypeParam> typeParams, std::vector<SExtendMemberDecl> memberDecls);
+    SExtendDecl(const SExtendDecl&) = delete;
+    SYNTAX_API SExtendDecl(SExtendDecl&&) noexcept;
+    SYNTAX_API ~SExtendDecl();
+
+    SExtendDecl& operator=(const SExtendDecl& other) = delete;
+    SYNTAX_API SExtendDecl& operator=(SExtendDecl&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+};
+
 class SNamespaceDecl
-    : public SNamespaceDeclElement
-    , public SScriptElement
+    : virtual public SSyntax
 {
 public:
     std::vector<std::string> names;
-    std::vector<SNamespaceDeclElement*> elements;
+    std::vector<SNamespaceDeclElement> elements;
 
-    SYNTAX_API SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElement*> elements);
+    SYNTAX_API SNamespaceDecl(std::vector<std::string> names, std::vector<SNamespaceDeclElement> elements);
     SNamespaceDecl(const SNamespaceDecl&) = delete;
     SYNTAX_API SNamespaceDecl(SNamespaceDecl&&) noexcept;
-    SYNTAX_API virtual ~SNamespaceDecl();
+    SYNTAX_API ~SNamespaceDecl();
 
     SNamespaceDecl& operator=(const SNamespaceDecl& other) = delete;
     SYNTAX_API SNamespaceDecl& operator=(SNamespaceDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SNamespaceDeclElementVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SScriptElementVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SScript
     : virtual public SSyntax
 {
 public:
-    std::vector<SScriptElement*> elements;
+    std::vector<SScriptElement> elements;
 
-    SYNTAX_API SScript(std::vector<SScriptElement*> elements);
+    SYNTAX_API SScript(std::vector<SScriptElement> elements);
     SScript(const SScript&) = delete;
     SYNTAX_API SScript(SScript&&) noexcept;
     SYNTAX_API ~SScript();

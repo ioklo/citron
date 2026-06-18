@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <memory>
 #include <cassert>
+#include <variant>
 #include <ranges>
 
 #include "Infra/Unreachable.h"
@@ -101,7 +102,7 @@ public:
     void Visit(SEnumDecl* elem) override;
 };
 
-class ScriptElemVisitor : public SScriptElementVisitor
+class ScriptElemVisitor
 {
     NNamespaceDecl* rootNamespace;
     RFactoryPtr rFactory;
@@ -114,11 +115,13 @@ public:
     {
     }
 
-    void Visit(SNamespaceDecl* elem) override;
-    void Visit(SGlobalFuncDecl* elem) override;
-    void Visit(SClassDecl* elem) override;
-    void Visit(SStructDecl* elem) override;
-    void Visit(SEnumDecl* elem) override;
+    void operator()(auto* elem) { Visit(elem); }
+
+    void Visit(SNamespaceDecl* elem);
+    void Visit(SGlobalFuncDecl* elem);
+    void Visit(SClassDecl* elem);
+    void Visit(SStructDecl* elem);
+    void Visit(SEnumDecl* elem);
 };
 
 void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, NNamespaceDecl* outer, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
@@ -362,10 +365,10 @@ expected<NModuleMData, DiagPtr> TranslateSyntaxToNModuleMData(
     {
         auto* rootNamespace = nFactory->MakeRootNamespaceDecl();
 
-        for (auto* elem : script->elements)
+        for (auto& elem : script->elements)
         {
             ScriptElemVisitor visitor{rootNamespace, rFactory, nFactory, phaseManager};
-            elem->Accept(visitor);
+            visit(visitor, elem);
         }
     }
 

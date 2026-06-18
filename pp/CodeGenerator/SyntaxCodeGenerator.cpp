@@ -187,19 +187,14 @@ struct ToJsonVisitor {
                 "SStructVarDecl",
             }
         },
-
-        ForwardClassDeclsInfo {
-            .names {
-                "SNamespaceDeclElement",
-                "SScriptElement",
-            }
-        },
-
+        
         ForwardClassDeclsInfo {
             .names {
                 "SClassDecl",
                 "SStructDecl",
                 "SEnumDecl",
+                "STraitDecl",
+                "SExtendDecl",
                 "SGlobalFuncDecl",
                 "SNamespaceDecl",
                 "SScript",
@@ -484,31 +479,31 @@ struct ToJsonVisitor {
             }
         },
 
-        // SNamespaceDeclElement
-        VariantInterfaceInfo {
+        VariantInfo{
             .name = "SNamespaceDeclElement",
-            .virtualBases { "SSyntax" },
             .argName = "elem",
-            .members {
-                "SGlobalFuncDecl",
-                "SNamespaceDecl",
-                "SClassDecl",
-                "SStructDecl",
-                "SEnumDecl",
+            .memberNames {
+                "SGlobalFuncDecl*",
+                "SNamespaceDecl*",
+                "SClassDecl*",
+                "SStructDecl*",
+                "SEnumDecl*",
+                "STraitDecl*",
+                "SExtendDecl*",
             }
         },
 
-        // SScriptElement
-        VariantInterfaceInfo {
+        VariantInfo{
             .name = "SScriptElement",
-            .virtualBases { "SSyntax" },
             .argName = "elem",
-            .members {
-                "SNamespaceDecl",
-                "SGlobalFuncDecl",
-                "SClassDecl",
-                "SStructDecl",
-                "SEnumDecl",
+            .memberNames {
+                "SNamespaceDecl*",
+                "SGlobalFuncDecl*",
+                "SClassDecl*",
+                "SStructDecl*",
+                "SEnumDecl*",
+                "STraitDecl*",
+                "SExtendDecl*",
             }
         },
 
@@ -1065,7 +1060,7 @@ struct ToJsonVisitor {
         // SGlobalFuncDecl
         ClassInfo {
             .name = "SGlobalFuncDecl",
-            .variantInterfaces { "SNamespaceDeclElement", "SScriptElement" },
+            .virtualBases { "SSyntax" },
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" }, // seq 함수인가        
@@ -1081,7 +1076,7 @@ struct ToJsonVisitor {
         // SClassDecl
         ClassInfo {
             .name = "SClassDecl",
-            .variantInterfaces { "SClassMemberDecl", "SStructMemberDecl", "SNamespaceDeclElement", "SScriptElement" },
+            .variantInterfaces { "SClassMemberDecl", "SStructMemberDecl" },
             .memberInfos {
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -1137,7 +1132,7 @@ struct ToJsonVisitor {
         // SStructDecl
         ClassInfo {
             .name = "SStructDecl",
-            .variantInterfaces { "SClassMemberDecl", "SStructMemberDecl", "SNamespaceDeclElement", "SScriptElement" },
+            .variantInterfaces { "SClassMemberDecl", "SStructMemberDecl" },
             .memberInfos {
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -1221,7 +1216,7 @@ struct ToJsonVisitor {
         // SEnumDecl
         ClassInfo {
             .name = "SEnumDecl",
-            .variantInterfaces { "SClassMemberDecl", "SStructMemberDecl", "SNamespaceDeclElement", "SScriptElement" },
+            .variantInterfaces { "SClassMemberDecl", "SStructMemberDecl" },
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -1231,14 +1226,78 @@ struct ToJsonVisitor {
         },
 
         #pragma endregion SEnumDecl
+
+        #pragma region STraitDecl
+
+        ClassInfo {
+            .name = "STraitFuncDecl",
+            .virtualBases { "SSyntax" },
+            .memberInfos {
+                { .type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
+                { .type = "STypeExp*", .memberVarName = "retType", .getterName = "GetRetType" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
+            },
+        },
+
+        VariantInfo{
+            .name = "STraitMemberDecl",
+            .argName = "memberDecl",
+            .memberNames { "STraitFuncDecl*" }
+        },
+
+        ClassInfo{
+            .name = "STraitDecl",
+            .virtualBases { "SSyntax" },
+            .memberInfos{
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                {.type = "std::vector<STraitMemberDecl>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
+            },
+        },
+
+        #pragma endregion STraitDecl
+
+        #pragma region SExtendDecl
+
+        ClassInfo{
+            .name = "SExtendFuncDecl",
+            .virtualBases { "SSyntax" },
+            .memberInfos {
+                {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
+                {.type = "STypeExp*", .memberVarName = "retType", .getterName = "GetRetType" },
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                {.type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
+            },
+        },
+
+        VariantInfo{
+            .name = "SExtendMemberDecl",
+            .argName = "memberDecl",
+            .memberNames { "SExtendFuncDecl*" }
+        },
+
+        ClassInfo{
+            .name = "SExtendDecl",
+            .virtualBases { "SSyntax" },
+            .memberInfos{
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                {.type = "std::vector<SExtendMemberDecl>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
+            },
+        },
+
+        #pragma endregion SExtendDecl
         
         // SNamespaceDecl
         ClassInfo {
             .name = "SNamespaceDecl",
-            .variantInterfaces { "SNamespaceDeclElement", "SScriptElement" },
-            .memberInfos {
+            .virtualBases{ "SSyntax" },
+            .memberInfos{
                 { .type = "std::vector<std::string>", .memberVarName = "names", .getterName = "GetNames" },
-                { .type = "std::vector<SNamespaceDeclElement*>", .memberVarName = "elements", .getterName = "GetElements" }
+                { .type = "std::vector<SNamespaceDeclElement>", .memberVarName = "elements", .getterName = "GetElements" }
             },
         },
         
@@ -1247,7 +1306,7 @@ struct ToJsonVisitor {
             .name = "SScript",
             .virtualBases { "SSyntax" },
             .memberInfos {
-                { .type = "std::vector<SScriptElement*>", .memberVarName = "elements", .getterName = "GetElements" },
+                { .type = "std::vector<SScriptElement>", .memberVarName = "elements", .getterName = "GetElements" },
             },
         },
     };

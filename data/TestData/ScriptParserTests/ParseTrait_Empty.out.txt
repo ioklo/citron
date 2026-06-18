@@ -1,0 +1,11 @@
+{
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STraitDecl",
+            "name": "Empty",
+            "typeParams": [],
+            "memberDecls": []
+        }
+    ]
+}
