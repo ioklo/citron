@@ -181,12 +181,10 @@ public:
     MAKE(SForStmtInitializer_VarDecl)
 
     MAKE(SClassMemberDecl)
-    MAKE(SClassFuncDecl)
     MAKE(SClassCtorDecl)
     MAKE(SClassVarDecl)
 
     MAKE(SStructMemberDecl)
-    MAKE(SStructFuncDecl)
     MAKE(SStructCtorDecl)
     MAKE(SStructDtorDecl)
     MAKE(SStructVarDecl)
@@ -197,7 +195,6 @@ public:
     MAKE(SEnumDecl)
     MAKE(SEnumElemDecl)
     MAKE(SEnumElemVarDecl)
-    MAKE(SGlobalFuncDecl)
     MAKE(SNamespaceDecl)
     MAKE(SScript)
 

@@ -338,6 +338,29 @@ struct ToJsonVisitor {
             },
         },
 
+        // SFuncReturn
+        StructInfo{
+            .name = "SFuncReturn_Normal",
+            .memberInfos{
+                {.type = "STypeExp*", .name = "type", .bUseMove = false},
+            },
+        },
+
+        StructInfo{
+            .name = "SFuncReturn_Opaque",
+            .memberInfos{
+                {.type = "STypeExp*", .name = "type", .bUseMove = false},
+            },
+        },
+
+        VariantInfo{
+            .name = "SFuncReturn",
+            .argName = "funcRet",
+            .memberNames {
+                "SFuncReturn_Normal",
+                "SFuncReturn_Opaque"
+            }
+        },
 
         // Variants 
         #pragma region VariantInterfaceInfo
@@ -1058,17 +1081,17 @@ struct ToJsonVisitor {
         #pragma endregion SStmts
         
         // SGlobalFuncDecl
-        ClassInfo {
+        ClassInfo{
             .name = "SGlobalFuncDecl",
-            .virtualBases { "SSyntax" },
-            .memberInfos {
-                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
-                { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" }, // seq 함수인가        
-                { .type = "STypeExp*", .memberVarName = "retType", .getterName = "GetRetType" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
-                { .type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody" },
+            .virtualBases{"SSyntax"},
+            .memberInfos{
+                {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier"},
+                {.type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence"}, // seq 함수인가
+                {.type = "SFuncReturn", .memberVarName = "funcRet", .getterName = "GetFuncReturn"},
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName"},
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams"},
+                {.type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters"},
+                {.type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody"},
             },
         },
 
@@ -1091,14 +1114,14 @@ struct ToJsonVisitor {
             .name = "SClassFuncDecl",
             .variantInterfaces { "SClassMemberDecl" },
             .memberInfos {
-                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
-                { .type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
-                { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" },
-                { .type = "STypeExp*", .memberVarName = "retType", .getterName = "GetRetType" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
-                { .type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody" },
+                {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier"},
+                {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic"},
+                {.type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence"},
+                {.type = "SFuncReturn", .memberVarName = "funcRet", .getterName = "GetFuncReturn"},
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName"},
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams"},
+                {.type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters"},
+                {.type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody"},
             },
         },
 
@@ -1147,14 +1170,14 @@ struct ToJsonVisitor {
             .name = "SStructFuncDecl",
             .variantInterfaces { "SStructMemberDecl" },
             .memberInfos {
-                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAcessModifier" },
-                { .type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
-                { .type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" }, // seq 함수인가  
-                { .type = "STypeExp*", .memberVarName = "retType", .getterName = "GetRetType" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
-                { .type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody" },
+                {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAcessModifier"},
+                {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic"},
+                {.type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence"}, // seq 함수인  
+                {.type = "SFuncReturn", .memberVarName = "funcRet", .getterName = "GetFuncReturn"},
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName"},
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams"},
+                {.type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters"},
+                {.type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody"},
             },
         },
 
@@ -1233,11 +1256,11 @@ struct ToJsonVisitor {
             .name = "STraitFuncDecl",
             .virtualBases { "SSyntax" },
             .memberInfos {
-                { .type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
-                { .type = "STypeExp*", .memberVarName = "retType", .getterName = "GetRetType" },
-                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                { .type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic"},
+                {.type = "SFuncReturn", .memberVarName = "funcRet", .getterName = "GetFuncReturn"},
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName"},
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams"},
+                {.type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters"},
             },
         },
 
@@ -1251,6 +1274,7 @@ struct ToJsonVisitor {
             .name = "STraitDecl",
             .virtualBases { "SSyntax" },
             .memberInfos{
+                {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
                 {.type = "std::vector<STraitMemberDecl>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
@@ -1283,6 +1307,7 @@ struct ToJsonVisitor {
             .name = "SExtendDecl",
             .virtualBases { "SSyntax" },
             .memberInfos{
+                {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
                 {.type = "std::vector<SExtendMemberDecl>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },

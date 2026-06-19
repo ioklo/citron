@@ -400,6 +400,32 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
+struct SFuncReturn_Normal
+{
+    STypeExp* type;
+
+    SFuncReturn_Normal(STypeExp* type)
+        : type{type} { }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+struct SFuncReturn_Opaque
+{
+    STypeExp* type;
+
+    SFuncReturn_Opaque(STypeExp* type)
+        : type{type} { }
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+using SFuncReturn = std::variant<
+    SFuncReturn_Normal,
+    SFuncReturn_Opaque>;
+
+SYNTAX_API JsonItem ToJson(SFuncReturn& funcRet);
+
 class SStmtVisitor
 {
 public:
@@ -2418,13 +2444,13 @@ class SGlobalFuncDecl
 public:
     std::optional<SAccessModifier> accessModifier;
     bool bSequence;
-    STypeExp* retType;
+    SFuncReturn funcRet;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
     std::vector<SStmt*> body;
 
-    SYNTAX_API SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
+    SYNTAX_API SGlobalFuncDecl(std::optional<SAccessModifier> accessModifier, bool bSequence, SFuncReturn funcRet, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SGlobalFuncDecl(const SGlobalFuncDecl&) = delete;
     SYNTAX_API SGlobalFuncDecl(SGlobalFuncDecl&&) noexcept;
     SYNTAX_API ~SGlobalFuncDecl();
@@ -2467,13 +2493,13 @@ public:
     std::optional<SAccessModifier> accessModifier;
     bool bStatic;
     bool bSequence;
-    STypeExp* retType;
+    SFuncReturn funcRet;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
     std::vector<SStmt*> body;
 
-    SYNTAX_API SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
+    SYNTAX_API SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, SFuncReturn funcRet, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SClassFuncDecl(const SClassFuncDecl&) = delete;
     SYNTAX_API SClassFuncDecl(SClassFuncDecl&&) noexcept;
     SYNTAX_API virtual ~SClassFuncDecl();
@@ -2561,13 +2587,13 @@ public:
     std::optional<SAccessModifier> accessModifier;
     bool bStatic;
     bool bSequence;
-    STypeExp* retType;
+    SFuncReturn funcRet;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
     std::vector<SStmt*> body;
 
-    SYNTAX_API SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
+    SYNTAX_API SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, SFuncReturn funcRet, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SStructFuncDecl(const SStructFuncDecl&) = delete;
     SYNTAX_API SStructFuncDecl(SStructFuncDecl&&) noexcept;
     SYNTAX_API virtual ~SStructFuncDecl();
@@ -2707,12 +2733,12 @@ class STraitFuncDecl
 {
 public:
     bool bStatic;
-    STypeExp* retType;
+    SFuncReturn funcRet;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
 
-    SYNTAX_API STraitFuncDecl(bool bStatic, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters);
+    SYNTAX_API STraitFuncDecl(bool bStatic, SFuncReturn funcRet, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters);
     STraitFuncDecl(const STraitFuncDecl&) = delete;
     SYNTAX_API STraitFuncDecl(STraitFuncDecl&&) noexcept;
     SYNTAX_API ~STraitFuncDecl();
@@ -2732,11 +2758,12 @@ class STraitDecl
     : virtual public SSyntax
 {
 public:
+    std::optional<SAccessModifier> accessModifier;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<STraitMemberDecl> memberDecls;
 
-    SYNTAX_API STraitDecl(std::string name, std::vector<STypeParam> typeParams, std::vector<STraitMemberDecl> memberDecls);
+    SYNTAX_API STraitDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STraitMemberDecl> memberDecls);
     STraitDecl(const STraitDecl&) = delete;
     SYNTAX_API STraitDecl(STraitDecl&&) noexcept;
     SYNTAX_API ~STraitDecl();
@@ -2777,11 +2804,12 @@ class SExtendDecl
     : virtual public SSyntax
 {
 public:
+    std::optional<SAccessModifier> accessModifier;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<SExtendMemberDecl> memberDecls;
 
-    SYNTAX_API SExtendDecl(std::string name, std::vector<STypeParam> typeParams, std::vector<SExtendMemberDecl> memberDecls);
+    SYNTAX_API SExtendDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SExtendMemberDecl> memberDecls);
     SExtendDecl(const SExtendDecl&) = delete;
     SYNTAX_API SExtendDecl(SExtendDecl&&) noexcept;
     SYNTAX_API ~SExtendDecl();

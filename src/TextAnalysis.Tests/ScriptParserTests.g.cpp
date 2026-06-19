@@ -36,10 +36,13 @@ TEST(ScriptParser, ParseComplexScript)
             "$type": "SGlobalFuncDecl",
             "accessModifier": null,
             "bSequence": false,
-            "retType": {
-                "$type": "STypeExp_Id",
-                "name": "void",
-                "typeArgs": []
+            "funcRet": {
+                "$type": "SFuncReturn_Normal",
+                "type": {
+                    "$type": "STypeExp_Id",
+                    "name": "void",
+                    "typeArgs": []
+                }
             },
             "name": "Main",
             "typeParams": [],
@@ -301,10 +304,13 @@ TEST(ScriptParser, ParseFuncDecl)
             "$type": "SGlobalFuncDecl",
             "accessModifier": null,
             "bSequence": false,
-            "retType": {
-                "$type": "STypeExp_Id",
-                "name": "void",
-                "typeArgs": []
+            "funcRet": {
+                "$type": "SFuncReturn_Normal",
+                "type": {
+                    "$type": "STypeExp_Id",
+                    "name": "void",
+                    "typeArgs": []
+                }
             },
             "name": "Func",
             "typeParams": [],
@@ -415,10 +421,13 @@ TEST(ScriptParser, ParseNamespaceDecl)
                             "$type": "SGlobalFuncDecl",
                             "accessModifier": null,
                             "bSequence": false,
-                            "retType": {
-                                "$type": "STypeExp_Id",
-                                "name": "void",
-                                "typeArgs": []
+                            "funcRet": {
+                                "$type": "SFuncReturn_Normal",
+                                "type": {
+                                    "$type": "STypeExp_Id",
+                                    "name": "void",
+                                    "typeArgs": []
+                                }
                             },
                             "name": "F",
                             "typeParams": [],
@@ -452,10 +461,13 @@ TEST(ScriptParser, ParseSimpleScript)
             "$type": "SGlobalFuncDecl",
             "accessModifier": null,
             "bSequence": false,
-            "retType": {
-                "$type": "STypeExp_Id",
-                "name": "void",
-                "typeArgs": []
+            "funcRet": {
+                "$type": "SFuncReturn_Normal",
+                "type": {
+                    "$type": "STypeExp_Id",
+                    "name": "void",
+                    "typeArgs": []
+                }
             },
             "name": "Main",
             "typeParams": [],
@@ -617,10 +629,13 @@ TEST(ScriptParser, ParseStructDecl)
                     "accessModifier": null,
                     "bStatic": true,
                     "bSequence": false,
-                    "retType": {
-                        "$type": "STypeExp_Id",
-                        "name": "void",
-                        "typeArgs": []
+                    "funcRet": {
+                        "$type": "SFuncReturn_Normal",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "void",
+                            "typeArgs": []
+                        }
                     },
                     "name": "Func",
                     "typeParams": [
@@ -649,10 +664,13 @@ TEST(ScriptParser, ParseStructDecl)
                     "accessModifier": "Private",
                     "bStatic": false,
                     "bSequence": true,
-                    "retType": {
-                        "$type": "STypeExp_Id",
-                        "name": "int",
-                        "typeArgs": []
+                    "funcRet": {
+                        "$type": "SFuncReturn_Normal",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "int",
+                            "typeArgs": []
+                        }
                     },
                     "name": "F2",
                     "typeParams": [
@@ -680,6 +698,113 @@ TEST(ScriptParser, ParseStructDecl)
     EXPECT_SYNTAX_EQ(script, expected);
 }
 
+TEST(ScriptParser, ParseTrait_Basic)
+{
+    auto [buffer, lexer] = Prepare(UR"---(trait MyTrait
+{
+    void Func();
+})---");
+    SFactory factory;
+
+    auto* script = ParseScript(&lexer, factory);
+
+    auto expected = R"---({
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STraitDecl",
+            "accessModifier": null,
+            "name": "MyTrait",
+            "typeParams": [],
+            "memberDecls": [
+                {
+                    "$type": "STraitFuncDecl",
+                    "bStatic": false,
+                    "funcRet": {
+                        "$type": "SFuncReturn_Normal",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "void",
+                            "typeArgs": []
+                        }
+                    },
+                    "name": "Func",
+                    "typeParams": [],
+                    "parameters": []
+                }
+            ]
+        }
+    ]
+})---";
+
+    EXPECT_SYNTAX_EQ(script, expected);
+}
+
+TEST(ScriptParser, ParseTrait_Complex)
+{
+    auto [buffer, lexer] = Prepare(UR"---(
+trait MyTrait<T, U>
+{
+    some T Func([in]U& u);
+}
+)---");
+    SFactory factory;
+
+    auto* script = ParseScript(&lexer, factory);
+
+    auto expected = R"---({
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STraitDecl",
+            "accessModifier": null,
+            "name": "MyTrait",
+            "typeParams": [
+                {
+                    "$type": "STypeParam",
+                    "name": "T"
+                },
+                {
+                    "$type": "STypeParam",
+                    "name": "U"
+                }
+            ],
+            "memberDecls": [
+                {
+                    "$type": "STraitFuncDecl",
+                    "bStatic": false,
+                    "funcRet": {
+                        "$type": "SFuncReturn_Opaque",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "T",
+                            "typeArgs": []
+                        }
+                    },
+                    "name": "Func",
+                    "typeParams": [],
+                    "parameters": [
+                        {
+                            "$type": "SFuncParam",
+                            "o_modifier": "In",
+                            "bRef": true,
+                            "type": {
+                                "$type": "STypeExp_Id",
+                                "name": "U",
+                                "typeArgs": []
+                            },
+                            "name": "u"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+})---";
+
+    EXPECT_SYNTAX_EQ(script, expected);
+}
+
 TEST(ScriptParser, ParseTrait_Empty)
 {
     auto [buffer, lexer] = Prepare(UR"---(trait Empty { })---");
@@ -692,6 +817,7 @@ TEST(ScriptParser, ParseTrait_Empty)
     "elements": [
         {
             "$type": "STraitDecl",
+            "accessModifier": null,
             "name": "Empty",
             "typeParams": [],
             "memberDecls": []

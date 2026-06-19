@@ -1,0 +1,28 @@
+{
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STraitDecl",
+            "accessModifier": null,
+            "name": "MyTrait",
+            "typeParams": [],
+            "memberDecls": [
+                {
+                    "$type": "STraitFuncDecl",
+                    "bStatic": false,
+                    "funcRet": {
+                        "$type": "SFuncReturn_Normal",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "void",
+                            "typeArgs": []
+                        }
+                    },
+                    "name": "Func",
+                    "typeParams": [],
+                    "parameters": []
+                }
+            ]
+        }
+    ]
+}

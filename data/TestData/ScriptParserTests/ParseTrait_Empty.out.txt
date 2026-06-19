@@ -3,6 +3,7 @@
     "elements": [
         {
             "$type": "STraitDecl",
+            "accessModifier": null,
             "name": "Empty",
             "typeParams": [],
             "memberDecls": []
