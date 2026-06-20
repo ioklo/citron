@@ -1675,8 +1675,8 @@ JsonItem STraitDecl::ToJson()
     };
 }
 
-SExtendFuncDecl::SExtendFuncDecl(bool bStatic, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters)
-    : bStatic(move(bStatic)), retType(move(retType)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)) { }
+SExtendFuncDecl::SExtendFuncDecl(bool bStatic, SFuncReturn funcReturn, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
+    : bStatic(move(bStatic)), funcReturn(move(funcReturn)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
 SExtendFuncDecl::SExtendFuncDecl(SExtendFuncDecl&& other) noexcept = default;
 
@@ -1689,10 +1689,11 @@ JsonItem SExtendFuncDecl::ToJson()
     return JsonObject {
         { "$type", JsonString("SExtendFuncDecl") },
         { "bStatic", Citron::ToJson(bStatic) },
-        { "retType", Citron::ToJson(retType) },
+        { "funcReturn", Citron::ToJson(funcReturn) },
         { "name", Citron::ToJson(name) },
         { "typeParams", Citron::ToJson(typeParams) },
         { "parameters", Citron::ToJson(parameters) },
+        { "body", Citron::ToJson(body) },
     };
 }
 
@@ -1701,8 +1702,8 @@ JsonItem ToJson(SExtendMemberDecl& memberDecl)
     return std::visit(ToJsonVisitor(), memberDecl);
 }
 
-SExtendDecl::SExtendDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SExtendMemberDecl> memberDecls)
-    : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), memberDecls(move(memberDecls)) { }
+SExtendDecl::SExtendDecl(std::optional<SAccessModifier> accessModifier, std::string name, STypeExp* trait, std::vector<SExtendMemberDecl> memberDecls)
+    : accessModifier(move(accessModifier)), name(move(name)), trait(move(trait)), memberDecls(move(memberDecls)) { }
 
 SExtendDecl::SExtendDecl(SExtendDecl&& other) noexcept = default;
 
@@ -1716,7 +1717,7 @@ JsonItem SExtendDecl::ToJson()
         { "$type", JsonString("SExtendDecl") },
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "name", Citron::ToJson(name) },
-        { "typeParams", Citron::ToJson(typeParams) },
+        { "trait", Citron::ToJson(trait) },
         { "memberDecls", Citron::ToJson(memberDecls) },
     };
 }

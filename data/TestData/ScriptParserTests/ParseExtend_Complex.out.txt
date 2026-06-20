@@ -1,0 +1,56 @@
+{
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "SExtendDecl",
+            "accessModifier": "Public",
+            "name": "S",
+            "trait": {
+                "$type": "STypeExp_Id",
+                "name": "MyTrait",
+                "typeArgs": [
+                    {
+                        "$type": "STypeExp_Id",
+                        "name": "T",
+                        "typeArgs": []
+                    },
+                    {
+                        "$type": "STypeExp_Id",
+                        "name": "U",
+                        "typeArgs": []
+                    }
+                ]
+            },
+            "memberDecls": [
+                {
+                    "$type": "SExtendFuncDecl",
+                    "bStatic": false,
+                    "funcReturn": {
+                        "$type": "SFuncReturn_Opaque",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "T",
+                            "typeArgs": []
+                        }
+                    },
+                    "name": "Func",
+                    "typeParams": [],
+                    "parameters": [
+                        {
+                            "$type": "SFuncParam",
+                            "o_modifier": "In",
+                            "bRef": true,
+                            "type": {
+                                "$type": "STypeExp_Id",
+                                "name": "U",
+                                "typeArgs": []
+                            },
+                            "name": "u"
+                        }
+                    ],
+                    "body": []
+                }
+            ]
+        }
+    ]
+}

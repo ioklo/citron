@@ -1,4 +1,4 @@
-extend S : MyTrait<T, U>
+public extend S : MyTrait<T, U>
 {
     some T Func([in]U& u)
     {

@@ -1,0 +1,33 @@
+{
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "SExtendDecl",
+            "accessModifier": null,
+            "name": "S",
+            "trait": {
+                "$type": "STypeExp_Id",
+                "name": "MyTrait",
+                "typeArgs": []
+            },
+            "memberDecls": [
+                {
+                    "$type": "SExtendFuncDecl",
+                    "bStatic": false,
+                    "funcReturn": {
+                        "$type": "SFuncReturn_Normal",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "void",
+                            "typeArgs": []
+                        }
+                    },
+                    "name": "Func",
+                    "typeParams": [],
+                    "parameters": [],
+                    "body": []
+                }
+            ]
+        }
+    ]
+}

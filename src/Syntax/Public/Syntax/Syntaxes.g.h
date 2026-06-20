@@ -2779,12 +2779,13 @@ class SExtendFuncDecl
 {
 public:
     bool bStatic;
-    STypeExp* retType;
+    SFuncReturn funcReturn;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
+    std::vector<SStmt*> body;
 
-    SYNTAX_API SExtendFuncDecl(bool bStatic, STypeExp* retType, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters);
+    SYNTAX_API SExtendFuncDecl(bool bStatic, SFuncReturn funcReturn, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SExtendFuncDecl(const SExtendFuncDecl&) = delete;
     SYNTAX_API SExtendFuncDecl(SExtendFuncDecl&&) noexcept;
     SYNTAX_API ~SExtendFuncDecl();
@@ -2806,10 +2807,10 @@ class SExtendDecl
 public:
     std::optional<SAccessModifier> accessModifier;
     std::string name;
-    std::vector<STypeParam> typeParams;
+    STypeExp* trait;
     std::vector<SExtendMemberDecl> memberDecls;
 
-    SYNTAX_API SExtendDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SExtendMemberDecl> memberDecls);
+    SYNTAX_API SExtendDecl(std::optional<SAccessModifier> accessModifier, std::string name, STypeExp* trait, std::vector<SExtendMemberDecl> memberDecls);
     SExtendDecl(const SExtendDecl&) = delete;
     SYNTAX_API SExtendDecl(SExtendDecl&&) noexcept;
     SYNTAX_API ~SExtendDecl();

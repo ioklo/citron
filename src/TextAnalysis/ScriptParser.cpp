@@ -27,6 +27,7 @@ SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory);
 SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory);
 SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory);
 STraitDecl* ParseTraitDecl(Lexer* lexer, SFactory& factory);
+SExtendDecl* ParseExtendDecl(Lexer* lexer, SFactory& factory);
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer);
 SNamespaceDecl* ParseNamespaceDecl(Lexer* lexer, SFactory& factory);
 
@@ -176,6 +177,9 @@ optional<TMemberDeclSyntax> ParseTypeDecl(Lexer* lexer, SFactory& factory)
     if (auto* traitDecl = ParseTraitDecl(lexer, factory))
         return traitDecl;
 
+    if (auto* extendDecl = ParseExtendDecl(lexer, factory))
+        return extendDecl;
+
     return nullopt;
 }
 
@@ -285,13 +289,12 @@ STraitFuncDecl* ParseTraitFuncDecl(Lexer* lexer, SFactory& factory)
     if (!Accept<SemiColonToken>(&curLexer))
         return nullptr;
     
-    *lexer = move(curLexer);
-    return factory.Make<STraitFuncDecl>(
+    RETURN_ACCEPT(factory.Make<STraitFuncDecl>(
         bStatic,
         move(*o_funcRet),
         move(o_funcName->text),
         move(*o_typeParams),
-        move(*o_parameters));
+        move(*o_parameters)));
 }
 
 optional<STraitMemberDecl> ParseTraitMemberDecl(Lexer* lexer, SFactory& factory)
@@ -333,8 +336,94 @@ STraitDecl* ParseTraitDecl(Lexer* lexer, SFactory& factory)
         elems.push_back(move(*o_memberDecl));
     }
 
-    *lexer = move(curLexer);
-    return factory.Make<STraitDecl>(o_accessModifier, move(o_name->text), move(*o_typeParams), move(elems));
+    RETURN_ACCEPT(factory.Make<STraitDecl>(o_accessModifier, move(o_name->text), move(*o_typeParams), move(elems)));
+}
+
+SExtendFuncDecl* ParseExtendFuncDecl(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer = *lexer;
+
+    bool bStatic = Accept<StaticToken>(&curLexer).has_value();
+
+    // return type용 some
+    auto o_funcRet = ParseFuncReturn(&curLexer, factory);
+    if (!o_funcRet)
+        return nullptr;
+
+    // ex) F
+    auto o_funcName = Accept<IdentifierToken>(&curLexer);
+    if (!o_funcName)
+        return nullptr;
+
+    // ex) <T1, T2>
+    auto o_typeParams = ParseTypeParams(&curLexer, factory);
+    if (!o_typeParams)
+        return nullptr;
+
+    // ex) (int i, int a)
+    auto o_parameters = ParseFuncDeclParams(&curLexer, factory);
+    if (!o_parameters)
+        return nullptr;
+
+    // ex) { ... }
+    auto o_body = ParseBody(&curLexer, factory);
+    if (!o_body) return nullptr;
+
+    RETURN_ACCEPT(factory.Make<SExtendFuncDecl>(
+        bStatic,
+        move(*o_funcRet),
+        move(o_funcName->text),
+        move(*o_typeParams),
+        move(*o_parameters),
+        move(*o_body)));
+}
+
+optional<SExtendMemberDecl> ParseExtendMemberDecl(Lexer* lexer, SFactory& factory)
+{
+    if (auto* decl = ParseExtendFuncDecl(lexer, factory))
+        return decl;
+
+    return nullopt;
+}
+
+// extend S : Trait { }
+SExtendDecl* ParseExtendDecl(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer = *lexer;
+
+    // access modifier
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
+
+    // extend
+    if (!Accept<ExtendToken>(&curLexer))
+        return nullptr;
+
+    // name
+    auto o_name = Accept<IdentifierToken>(&curLexer);
+    if (!o_name) return nullptr;
+
+    // : 
+    if (!Accept<ColonToken>(&curLexer)) 
+        return nullptr;
+
+    // trait<>
+    auto* trait = ParseTypeExp(&curLexer, factory);
+    if (!trait) return nullptr;
+
+    // {
+    if (!Accept<LBraceToken>(&curLexer))
+        return nullptr;
+
+    vector<SExtendMemberDecl> memberDecls;
+    while (!Accept<RBraceToken>(&curLexer))
+    {
+        auto o_memberDecl = ParseExtendMemberDecl(&curLexer, factory);
+        if (!o_memberDecl) return nullptr;
+
+        memberDecls.push_back(move(*o_memberDecl));
+    }
+
+    RETURN_ACCEPT(factory.Make<SExtendDecl>(o_accessModifier, move(o_name->text), trait, move(memberDecls)));
 }
 
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer)

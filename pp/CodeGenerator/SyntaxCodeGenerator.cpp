@@ -1290,10 +1290,11 @@ struct ToJsonVisitor {
             .virtualBases { "SSyntax" },
             .memberInfos {
                 {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
-                {.type = "STypeExp*", .memberVarName = "retType", .getterName = "GetRetType" },
+                {.type = "SFuncReturn", .memberVarName = "funcReturn", .getterName = "GetFuncReturn" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
                 {.type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
+                {.type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody"},
             },
         },
 
@@ -1309,7 +1310,7 @@ struct ToJsonVisitor {
             .memberInfos{
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
-                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
+                {.type = "STypeExp*", .memberVarName = "trait", .getterName = "GetTrait" },
                 {.type = "std::vector<SExtendMemberDecl>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
             },
         },
