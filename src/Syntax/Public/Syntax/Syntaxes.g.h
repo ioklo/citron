@@ -449,7 +449,7 @@ public:
     virtual void Visit(SStmt_Directive* stmt) = 0;
 };
 
-class SStmt : virtual public SSyntax
+class SStmt : public SSyntax
 {
 public:
     SStmt() = default;
@@ -585,7 +585,7 @@ public:
     virtual void Visit(SExp_Inline* exp) = 0;
 };
 
-class SExp : virtual public SSyntax
+class SExp : public SSyntax
 {
 public:
     SExp() = default;
@@ -705,7 +705,7 @@ public:
     virtual void Visit(STypeExp_Local* typeExp) = 0;
 };
 
-class STypeExp : virtual public SSyntax
+class STypeExp : public SSyntax
 {
 public:
     STypeExp() = default;
@@ -790,7 +790,7 @@ public:
     virtual void Visit(SStringExpElement_Exp* elem) = 0;
 };
 
-class SStringExpElement : virtual public SSyntax
+class SStringExpElement : public SSyntax
 {
 public:
     SStringExpElement() = default;
@@ -860,7 +860,7 @@ public:
     virtual void Visit(SLambdaExpBody_Exp* body) = 0;
 };
 
-class SLambdaExpBody : virtual public SSyntax
+class SLambdaExpBody : public SSyntax
 {
 public:
     SLambdaExpBody() = default;
@@ -930,7 +930,7 @@ public:
     virtual void Visit(SEmbeddableStmt_Block* stmt) = 0;
 };
 
-class SEmbeddableStmt : virtual public SSyntax
+class SEmbeddableStmt : public SSyntax
 {
 public:
     SEmbeddableStmt() = default;
@@ -1000,7 +1000,7 @@ public:
     virtual void Visit(SForStmtInitializer_VarDecl* initializer) = 0;
 };
 
-class SForStmtInitializer : virtual public SSyntax
+class SForStmtInitializer : public SSyntax
 {
 public:
     SForStmtInitializer() = default;
@@ -1119,7 +1119,7 @@ public:
     virtual void Visit(SVarDeclType_Normal* type) = 0;
 };
 
-class SVarDeclType : virtual public SSyntax
+class SVarDeclType : public SSyntax
 {
 public:
     SVarDeclType() = default;
@@ -2285,8 +2285,7 @@ public:
 
 };
 
-class SGlobalFuncDecl
-    : virtual public SSyntax
+class SGlobalFuncDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2308,8 +2307,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SClassDecl
-    : virtual public SSyntax
+class SClassDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2329,8 +2327,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SClassFuncDecl
-    : virtual public SSyntax
+class SClassFuncDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2353,8 +2350,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SClassCtorDecl
-    : virtual public SSyntax
+class SClassCtorDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2373,8 +2369,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SClassVarDecl
-    : virtual public SSyntax
+class SClassVarDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2392,8 +2387,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SStructDecl
-    : virtual public SSyntax
+class SStructDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2413,8 +2407,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SStructFuncDecl
-    : virtual public SSyntax
+class SStructFuncDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2437,8 +2430,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SStructCtorDecl
-    : virtual public SSyntax
+class SStructCtorDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2456,8 +2448,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SStructDtorDecl
-    : virtual public SSyntax
+class SStructDtorDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2474,8 +2465,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SStructVarDecl
-    : virtual public SSyntax
+class SStructVarDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2493,8 +2483,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SEnumElemVarDecl
-    : virtual public SSyntax
+class SEnumElemVarDecl : public SSyntax
 {
 public:
     STypeExp* type;
@@ -2511,8 +2500,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SEnumElemDecl
-    : virtual public SSyntax
+class SEnumElemDecl : public SSyntax
 {
 public:
     std::string name;
@@ -2529,8 +2517,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SEnumDecl
-    : virtual public SSyntax
+class SEnumDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2549,8 +2536,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class STraitFuncDecl
-    : virtual public SSyntax
+class STraitFuncDecl : public SSyntax
 {
 public:
     bool bStatic;
@@ -2575,8 +2561,7 @@ using STraitMemberDecl = std::variant<
 
 SYNTAX_API JsonItem ToJson(STraitMemberDecl& memberDecl);
 
-class STraitDecl
-    : virtual public SSyntax
+class STraitDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2595,8 +2580,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SExtendFuncDecl
-    : virtual public SSyntax
+class SExtendFuncDecl : public SSyntax
 {
 public:
     bool bStatic;
@@ -2622,8 +2606,7 @@ using SExtendMemberDecl = std::variant<
 
 SYNTAX_API JsonItem ToJson(SExtendMemberDecl& memberDecl);
 
-class SExtendDecl
-    : virtual public SSyntax
+class SExtendDecl : public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2642,8 +2625,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SNamespaceDecl
-    : virtual public SSyntax
+class SNamespaceDecl : public SSyntax
 {
 public:
     std::vector<std::string> names;
@@ -2660,8 +2642,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SScript
-    : virtual public SSyntax
+class SScript : public SSyntax
 {
 public:
     std::vector<SScriptElement> elements;

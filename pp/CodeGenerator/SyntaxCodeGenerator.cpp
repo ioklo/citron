@@ -364,7 +364,7 @@ struct ToJsonVisitor {
         #pragma region VariantInterfaceInfo
         VariantInterfaceInfo {
             .name = "SStmt",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .argName = "stmt",
             .members {
                 "SStmt_Command",
@@ -391,7 +391,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "SExp",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .argName = "exp",
             .members {
                 "SExp_Identifier",
@@ -416,7 +416,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "STypeExp",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .argName = "typeExp",
             .members {
                 "STypeExp_Id",
@@ -431,7 +431,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "SStringExpElement",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .argName = "elem",
             .members {
                 "SStringExpElement_Text",
@@ -441,7 +441,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "SLambdaExpBody",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .argName = "body",
             .members {
                 "SLambdaExpBody_Stmts",
@@ -451,7 +451,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "SEmbeddableStmt",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .argName = "stmt",
             .members {
                 "SEmbeddableStmt_Single",
@@ -461,7 +461,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo {
             .name = "SForStmtInitializer",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .argName = "initializer",
             .members {
                 "SForStmtInitializer_Exp",
@@ -531,7 +531,7 @@ struct ToJsonVisitor {
 
         VariantInterfaceInfo{
             .name = "SVarDeclType",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .argName = "type",
             .members {
                 "SVarDeclType_Var",
@@ -1082,7 +1082,7 @@ struct ToJsonVisitor {
         // SGlobalFuncDecl
         ClassInfo{
             .name = "SGlobalFuncDecl",
-            .virtualBases{"SSyntax"},
+            .o_base = "SSyntax",
             .memberInfos{
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier"},
                 {.type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence"}, // seq 함수인가
@@ -1098,7 +1098,7 @@ struct ToJsonVisitor {
         // SClassDecl
         ClassInfo {
             .name = "SClassDecl",
-            .virtualBases{"SSyntax"},
+            .o_base = "SSyntax",
             .memberInfos {
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -1111,7 +1111,7 @@ struct ToJsonVisitor {
         // SClassFuncDecl
         ClassInfo {
             .name = "SClassFuncDecl",
-            .virtualBases{"SSyntax"},
+            .o_base = "SSyntax",
             .memberInfos {
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier"},
                 {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic"},
@@ -1127,7 +1127,7 @@ struct ToJsonVisitor {
         // SClassCtorDecl
         ClassInfo {
             .name = "SClassCtorDecl",
-            .virtualBases{"SSyntax"},
+            .o_base = "SSyntax",
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
@@ -1139,7 +1139,7 @@ struct ToJsonVisitor {
         // SClassVarDecl
         ClassInfo {
             .name = "SClassVarDecl",
-            .virtualBases{"SSyntax"},
+            .o_base = "SSyntax",
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "STypeExp*", .memberVarName = "varType", .getterName = "GetVarType" },
@@ -1154,7 +1154,7 @@ struct ToJsonVisitor {
         // SStructDecl
         ClassInfo {
             .name = "SStructDecl",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos {
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -1167,7 +1167,7 @@ struct ToJsonVisitor {
         // SStructFuncDecl
         ClassInfo {
             .name = "SStructFuncDecl",
-            .virtualBases{ "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos {
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAcessModifier"},
                 {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic"},
@@ -1183,7 +1183,7 @@ struct ToJsonVisitor {
         // SStructCtorDecl
         ClassInfo {
             .name = "SStructCtorDecl",
-            .virtualBases{ "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters" },
@@ -1193,7 +1193,7 @@ struct ToJsonVisitor {
 
         ClassInfo{
             .name = "SStructDtorDecl",
-            .virtualBases{ "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos {
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody" },
@@ -1203,7 +1203,7 @@ struct ToJsonVisitor {
         // SStructVarDecl
         ClassInfo {
             .name = "SStructVarDecl",
-            .virtualBases{ "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "STypeExp*", .memberVarName = "varType", .getterName = "GetVarType" },
@@ -1218,7 +1218,7 @@ struct ToJsonVisitor {
         // SEnumElemVarDecl
         ClassInfo {
             .name = "SEnumElemVarDecl",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos {
                 { .type = "STypeExp*", .memberVarName = "type", .getterName = "GetType" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -1228,7 +1228,7 @@ struct ToJsonVisitor {
         // SEnumElemDecl
         ClassInfo {
             .name = "SEnumElemDecl",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos {
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 { .type = "std::vector<SEnumElemVarDecl*>", .memberVarName = "vars", .getterName = "GetVars" },
@@ -1238,7 +1238,7 @@ struct ToJsonVisitor {
         // SEnumDecl
         ClassInfo {
             .name = "SEnumDecl",
-            .virtualBases{"SSyntax"},
+            .o_base = "SSyntax",
             .memberInfos {
                 { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -1253,7 +1253,7 @@ struct ToJsonVisitor {
 
         ClassInfo {
             .name = "STraitFuncDecl",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos {
                 {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic"},
                 {.type = "SFuncReturn", .memberVarName = "funcRet", .getterName = "GetFuncReturn"},
@@ -1271,7 +1271,7 @@ struct ToJsonVisitor {
 
         ClassInfo{
             .name = "STraitDecl",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos{
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -1286,7 +1286,7 @@ struct ToJsonVisitor {
 
         ClassInfo{
             .name = "SExtendFuncDecl",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos {
                 {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
                 {.type = "SFuncReturn", .memberVarName = "funcReturn", .getterName = "GetFuncReturn" },
@@ -1305,7 +1305,7 @@ struct ToJsonVisitor {
 
         ClassInfo{
             .name = "SExtendDecl",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos{
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
@@ -1319,7 +1319,7 @@ struct ToJsonVisitor {
         // SNamespaceDecl
         ClassInfo {
             .name = "SNamespaceDecl",
-            .virtualBases{ "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos{
                 { .type = "std::vector<std::string>", .memberVarName = "names", .getterName = "GetNames" },
                 { .type = "std::vector<SNamespaceDeclElement>", .memberVarName = "elements", .getterName = "GetElements" }
@@ -1329,7 +1329,7 @@ struct ToJsonVisitor {
         // Script
         ClassInfo {
             .name = "SScript",
-            .virtualBases { "SSyntax" },
+            .o_base = "SSyntax",
             .memberInfos {
                 { .type = "std::vector<SScriptElement>", .memberVarName = "elements", .getterName = "GetElements" },
             },

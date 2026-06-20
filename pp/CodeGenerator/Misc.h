@@ -21,7 +21,7 @@ struct ClassMemberInfo
 struct ClassInfo
 {
     std::string name;
-    std::vector<std::string> virtualBases;      // virtual public SSyntax
+    std::optional<std::string> o_base;      // public SSyntax
     std::vector<std::string> variantInterfaces; // public SStmt
     // void Accept(SStmtVisitor& visitor) override { visitor.Visit(*this); }
     std::vector<ClassMemberInfo> memberInfos;
@@ -58,7 +58,7 @@ struct ForwardClassDeclsInfo
 struct VariantInterfaceInfo
 {
     std::string name;
-    std::vector<std::string> virtualBases;
+    std::optional<std::string> o_base;
     std::string argName;
     std::vector<std::string> members;
 };
