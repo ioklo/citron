@@ -163,7 +163,7 @@ optional<vector<STypeParam>> ParseTypeParams(Lexer* lexer, SFactory& factory)
 }
 
 template<typename TMemberDeclSyntax>
-optional<TMemberDeclSyntax> ParseTypeDecl(Lexer* lexer, SFactory& factory)
+optional<TMemberDeclSyntax> ParseMemberDecl(Lexer* lexer, SFactory& factory)
 {
     if (auto* enumDecl = ParseEnumDecl(lexer, factory))
         return enumDecl;
@@ -181,22 +181,6 @@ optional<TMemberDeclSyntax> ParseTypeDecl(Lexer* lexer, SFactory& factory)
         return extendDecl;
 
     return nullopt;
-}
-
-// deprecated version
-template<typename TMemberDeclSyntax>
-TMemberDeclSyntax* ParseTypeDecl2(Lexer* lexer, SFactory& factory)
-{
-    if (auto* enumDecl = ParseEnumDecl(lexer, factory))
-        return enumDecl;
-
-    if (auto* structDecl = ParseStructDecl(lexer, factory))
-        return structDecl;
-
-    if (auto* classDecl = ParseClassDecl(lexer, factory))
-        return classDecl;
-
-    return nullptr;
 }
 
 SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory)
@@ -566,10 +550,10 @@ SStructDtorDecl* ParseStructDtorDecl(const string& structName, Lexer* lexer, SFa
     return factory.MakeSStructDtorDecl(o_accessModifier, move(*o_body));
 }
 
-SStructMemberDecl* ParseStructMemberDecl(const string& structName, Lexer* lexer, SFactory& factory)
+optional<SStructMemberDecl> ParseStructMemberDecl(const string& structName, Lexer* lexer, SFactory& factory)
 {
-    if (auto* memberDecl = ParseTypeDecl2<SStructMemberDecl>(lexer, factory))
-        return memberDecl;
+    if (auto o_memberDecl = ParseMemberDecl<SStructMemberDecl>(lexer, factory))
+        return *o_memberDecl;
 
     if (auto* memberDecl = ParseStructFuncDecl(lexer, factory))
         return memberDecl;
@@ -583,7 +567,7 @@ SStructMemberDecl* ParseStructMemberDecl(const string& structName, Lexer* lexer,
     if (auto* memberDecl = ParseStructVarDecl(lexer, factory))
         return memberDecl;
 
-    return nullptr;
+    return nullopt;
 }
 
 SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory)
@@ -624,7 +608,7 @@ SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory)
         }
     }
 
-    vector<SStructMemberDecl*> elems;
+    vector<SStructMemberDecl> elems;
 
     // {
     if (!Accept<LBraceToken>(&curLexer))
@@ -633,11 +617,10 @@ SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory)
     // } 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto* elem = ParseStructMemberDecl(o_structName->text, &curLexer, factory);
-        if (!elem)
-            return nullptr;
+        auto o_elem = ParseStructMemberDecl(o_structName->text, &curLexer, factory);
+        if (!o_elem) return nullptr;
 
-        elems.push_back(elem);
+        elems.push_back(move(*o_elem));
     }
     
     *lexer = move(curLexer);
@@ -765,10 +748,10 @@ SClassVarDecl* ParseClassVarDecl(Lexer* lexer, SFactory& factory)
     return factory.MakeSClassVarDecl(o_accessModifier, varType, move(varNames));
 }
 
-SClassMemberDecl* ParseClassMemberDecl(string& className, Lexer* lexer, SFactory& factory)
+optional<SClassMemberDecl> ParseClassMemberDecl(string& className, Lexer* lexer, SFactory& factory)
 {
-    if (auto* memberDecl = ParseTypeDecl2<SClassMemberDecl>(lexer, factory))
-        return memberDecl;
+    if (auto o_memberDecl = ParseMemberDecl<SClassMemberDecl>(lexer, factory))
+        return *o_memberDecl;
 
     if (auto* memberDecl = ParseClassFuncDecl(lexer, factory))
         return memberDecl;
@@ -779,7 +762,7 @@ SClassMemberDecl* ParseClassMemberDecl(string& className, Lexer* lexer, SFactory
     if (auto* memberDecl = ParseClassVarDecl(lexer, factory))
         return memberDecl;
 
-    return nullptr;
+    return nullopt;
 }
 
 SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory)
@@ -823,7 +806,7 @@ SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory)
         }
     }
 
-    vector<SClassMemberDecl*> members;
+    vector<SClassMemberDecl> members;
 
     // {
     if (!Accept<LBraceToken>(&curLexer))
@@ -832,11 +815,10 @@ SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory)
     // } 나올때까지
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto* elem = ParseClassMemberDecl(o_className->text, &curLexer, factory);
-        if (!elem)
-            return nullptr;
+        auto o_elem = ParseClassMemberDecl(o_className->text, &curLexer, factory);
+        if (!o_elem) return nullptr;
 
-        members.push_back(elem);
+        members.push_back(move(*o_elem));
     }
 
     *lexer = move(curLexer);
@@ -854,7 +836,7 @@ optional<SNamespaceDeclElement> ParseNamespaceElement(Lexer* lexer, SFactory& fa
     if (auto* decl = ParseNamespaceDecl(lexer, factory))
         return decl;
     
-    if (auto o_elem = ParseTypeDecl<SNamespaceDeclElement>(lexer, factory))
+    if (auto o_elem = ParseMemberDecl<SNamespaceDeclElement>(lexer, factory))
         return *o_elem;
 
     if (auto* decl = ParseGlobalFuncDecl(lexer, factory))
@@ -917,7 +899,7 @@ optional<SScriptElement> ParseScriptElement(Lexer* lexer, SFactory& factory)
     if (auto* decl = ParseNamespaceDecl(lexer, factory))
         return decl;
 
-    if (auto o_elem = ParseTypeDecl<SScriptElement>(lexer, factory))
+    if (auto o_elem = ParseMemberDecl<SScriptElement>(lexer, factory))
         return *o_elem;
 
     if (auto* decl = ParseGlobalFuncDecl(lexer, factory))

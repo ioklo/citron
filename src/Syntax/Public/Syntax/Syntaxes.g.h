@@ -83,12 +83,10 @@ class SForStmtInitializer;
 class SForStmtInitializer_Exp;
 class SForStmtInitializer_VarDecl;
 
-class SClassMemberDecl;
 class SClassFuncDecl;
 class SClassCtorDecl;
 class SClassVarDecl;
 
-class SStructMemberDecl;
 class SStructFuncDecl;
 class SStructCtorDecl;
 class SStructDtorDecl;
@@ -1064,181 +1062,30 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SForStmt
 
 SYNTAX_API JsonItem ToJson(SForStmtInitializer* initializer);
 
-class SClassMemberDeclVisitor
-{
-public:
-    virtual ~SClassMemberDeclVisitor() = default;
-    virtual void Visit(SClassDecl* decl) = 0;
-    virtual void Visit(SStructDecl* decl) = 0;
-    virtual void Visit(SEnumDecl* decl) = 0;
-    virtual void Visit(SClassFuncDecl* decl) = 0;
-    virtual void Visit(SClassCtorDecl* decl) = 0;
-    virtual void Visit(SClassVarDecl* decl) = 0;
-};
+using SClassMemberDecl = std::variant<
+    SClassDecl*,
+    SStructDecl*,
+    SEnumDecl*,
+    STraitDecl*,
+    SExtendDecl*,
+    SClassFuncDecl*,
+    SClassCtorDecl*,
+    SClassVarDecl*>;
 
-class SClassMemberDecl : virtual public SSyntax
-{
-public:
-    SClassMemberDecl() = default;
-    SClassMemberDecl(const SClassMemberDecl&) = delete;
-    SClassMemberDecl(SClassMemberDecl&&) = default;
-    virtual ~SClassMemberDecl() { }
-    SClassMemberDecl& operator=(const SClassMemberDecl& other) = delete;
-    SClassMemberDecl& operator=(SClassMemberDecl&& other) noexcept = default;
-    virtual void Accept(SClassMemberDeclVisitor& visitor) = 0;
-};
+SYNTAX_API JsonItem ToJson(SClassMemberDecl& decl);
 
-template<class TFrom, class TVisitor>
-concept SClassMemberDeclConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
-// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
-template<typename TVisitor, typename... TVisitorArgs>
-concept SClassMemberDeclVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
-{
-    typename std::remove_cvref_t<TVisitor>::ResultType;
-    { v.Visit(std::declval<SClassDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SStructDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SEnumDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SClassFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SClassCtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SClassVarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SClassMemberDeclConvertibleToResultType<TVisitor>;
-};
+using SStructMemberDecl = std::variant<
+    SClassDecl*,
+    SStructDecl*,
+    SEnumDecl*,
+    STraitDecl*,
+    SExtendDecl*,
+    SStructFuncDecl*,
+    SStructCtorDecl*,
+    SStructDtorDecl*,
+    SStructVarDecl*>;
 
-template<typename TVisitor, typename... TVisitorArgs> requires SClassMemberDeclVisitable<TVisitor, TVisitorArgs...>
-typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SClassMemberDecl* decl, TVisitorArgs&&... args)
-{
-    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
-
-    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
-    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
-
-    if constexpr (std::is_void_v<TResult>)
-    {
-        struct Bridge : SClassMemberDeclVisitor {
-            decltype(caller)& call;
-            Bridge(decltype(caller)& call) : call(call) {}
-            void Visit(SClassDecl* decl) override { call(decl); }
-            void Visit(SStructDecl* decl) override { call(decl); }
-            void Visit(SEnumDecl* decl) override { call(decl); }
-            void Visit(SClassFuncDecl* decl) override { call(decl); }
-            void Visit(SClassCtorDecl* decl) override { call(decl); }
-            void Visit(SClassVarDecl* decl) override { call(decl); }
-        };
-
-        Bridge bridge{caller};
-        decl->Accept(bridge);
-    }
-    else
-    {
-        struct Bridge : SClassMemberDeclVisitor {
-            decltype(caller)& call;
-            std::optional<TResult> result{};
-            Bridge(decltype(caller)& call) : call(call) {}
-
-            void Visit(SClassDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SStructDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SEnumDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SClassFuncDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SClassCtorDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SClassVarDecl* decl) override { result.emplace(call(decl)); }
-        };
-
-        Bridge bridge{caller};
-        decl->Accept(bridge);
-        return *bridge.result;
-    }
-}
-
-SYNTAX_API JsonItem ToJson(SClassMemberDecl* decl);
-
-class SStructMemberDeclVisitor
-{
-public:
-    virtual ~SStructMemberDeclVisitor() = default;
-    virtual void Visit(SClassDecl* decl) = 0;
-    virtual void Visit(SStructDecl* decl) = 0;
-    virtual void Visit(SEnumDecl* decl) = 0;
-    virtual void Visit(SStructFuncDecl* decl) = 0;
-    virtual void Visit(SStructCtorDecl* decl) = 0;
-    virtual void Visit(SStructDtorDecl* decl) = 0;
-    virtual void Visit(SStructVarDecl* decl) = 0;
-};
-
-class SStructMemberDecl : virtual public SSyntax
-{
-public:
-    SStructMemberDecl() = default;
-    SStructMemberDecl(const SStructMemberDecl&) = delete;
-    SStructMemberDecl(SStructMemberDecl&&) = default;
-    virtual ~SStructMemberDecl() { }
-    SStructMemberDecl& operator=(const SStructMemberDecl& other) = delete;
-    SStructMemberDecl& operator=(SStructMemberDecl&& other) noexcept = default;
-    virtual void Accept(SStructMemberDeclVisitor& visitor) = 0;
-};
-
-template<class TFrom, class TVisitor>
-concept SStructMemberDeclConvertibleToResultType = std::convertible_to<TFrom, typename std::remove_cvref_t<TVisitor>::ResultType>;
-// ResultType은 &가 안되므로, reference_wrapper<TResult>를 쓰도록 합니다
-template<typename TVisitor, typename... TVisitorArgs>
-concept SStructMemberDeclVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
-{
-    typename std::remove_cvref_t<TVisitor>::ResultType;
-    { v.Visit(std::declval<SClassDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SStructDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SEnumDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SStructFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SStructCtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SStructDtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
-    { v.Visit(std::declval<SStructVarDecl*>(), std::forward<TVisitorArgs>(args)...) } -> SStructMemberDeclConvertibleToResultType<TVisitor>;
-};
-
-template<typename TVisitor, typename... TVisitorArgs> requires SStructMemberDeclVisitable<TVisitor, TVisitorArgs...>
-typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SStructMemberDecl* decl, TVisitorArgs&&... args)
-{
-    using TResult = typename std::remove_cvref_t<TVisitor>::ResultType;
-
-    // 계약 타입으로 변환(값/참조 정책을 Visit 시그니처가 결정)
-    auto caller = [&](auto* e) { return v.Visit(e, std::forward<TVisitorArgs>(args)...); };
-
-    if constexpr (std::is_void_v<TResult>)
-    {
-        struct Bridge : SStructMemberDeclVisitor {
-            decltype(caller)& call;
-            Bridge(decltype(caller)& call) : call(call) {}
-            void Visit(SClassDecl* decl) override { call(decl); }
-            void Visit(SStructDecl* decl) override { call(decl); }
-            void Visit(SEnumDecl* decl) override { call(decl); }
-            void Visit(SStructFuncDecl* decl) override { call(decl); }
-            void Visit(SStructCtorDecl* decl) override { call(decl); }
-            void Visit(SStructDtorDecl* decl) override { call(decl); }
-            void Visit(SStructVarDecl* decl) override { call(decl); }
-        };
-
-        Bridge bridge{caller};
-        decl->Accept(bridge);
-    }
-    else
-    {
-        struct Bridge : SStructMemberDeclVisitor {
-            decltype(caller)& call;
-            std::optional<TResult> result{};
-            Bridge(decltype(caller)& call) : call(call) {}
-
-            void Visit(SClassDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SStructDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SEnumDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SStructFuncDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SStructCtorDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SStructDtorDecl* decl) override { result.emplace(call(decl)); }
-            void Visit(SStructVarDecl* decl) override { result.emplace(call(decl)); }
-        };
-
-        Bridge bridge{caller};
-        decl->Accept(bridge);
-        return *bridge.result;
-    }
-}
-
-SYNTAX_API JsonItem ToJson(SStructMemberDecl* decl);
+SYNTAX_API JsonItem ToJson(SStructMemberDecl& decl);
 
 using SNamespaceDeclElement = std::variant<
     SGlobalFuncDecl*,
@@ -2462,32 +2309,28 @@ public:
 };
 
 class SClassDecl
-    : public SClassMemberDecl
-    , public SStructMemberDecl
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<STypeExp*> baseTypes;
-    std::vector<SClassMemberDecl*> memberDecls;
+    std::vector<SClassMemberDecl> memberDecls;
 
-    SYNTAX_API SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl*> memberDecls);
+    SYNTAX_API SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl> memberDecls);
     SClassDecl(const SClassDecl&) = delete;
     SYNTAX_API SClassDecl(SClassDecl&&) noexcept;
-    SYNTAX_API virtual ~SClassDecl();
+    SYNTAX_API ~SClassDecl();
 
     SClassDecl& operator=(const SClassDecl& other) = delete;
     SYNTAX_API SClassDecl& operator=(SClassDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SClassFuncDecl
-    : public SClassMemberDecl
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2502,18 +2345,16 @@ public:
     SYNTAX_API SClassFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, SFuncReturn funcRet, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SClassFuncDecl(const SClassFuncDecl&) = delete;
     SYNTAX_API SClassFuncDecl(SClassFuncDecl&&) noexcept;
-    SYNTAX_API virtual ~SClassFuncDecl();
+    SYNTAX_API ~SClassFuncDecl();
 
     SClassFuncDecl& operator=(const SClassFuncDecl& other) = delete;
     SYNTAX_API SClassFuncDecl& operator=(SClassFuncDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SClassCtorDecl
-    : public SClassMemberDecl
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2524,18 +2365,16 @@ public:
     SYNTAX_API SClassCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, SArguments* baseArgs, std::vector<SStmt*> body);
     SClassCtorDecl(const SClassCtorDecl&) = delete;
     SYNTAX_API SClassCtorDecl(SClassCtorDecl&&) noexcept;
-    SYNTAX_API virtual ~SClassCtorDecl();
+    SYNTAX_API ~SClassCtorDecl();
 
     SClassCtorDecl& operator=(const SClassCtorDecl& other) = delete;
     SYNTAX_API SClassCtorDecl& operator=(SClassCtorDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SClassVarDecl
-    : public SClassMemberDecl
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2545,43 +2384,37 @@ public:
     SYNTAX_API SClassVarDecl(std::optional<SAccessModifier> accessModifier, STypeExp* varType, std::vector<std::string> varNames);
     SClassVarDecl(const SClassVarDecl&) = delete;
     SYNTAX_API SClassVarDecl(SClassVarDecl&&) noexcept;
-    SYNTAX_API virtual ~SClassVarDecl();
+    SYNTAX_API ~SClassVarDecl();
 
     SClassVarDecl& operator=(const SClassVarDecl& other) = delete;
     SYNTAX_API SClassVarDecl& operator=(SClassVarDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SStructDecl
-    : public SClassMemberDecl
-    , public SStructMemberDecl
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<STypeExp*> baseTypes;
-    std::vector<SStructMemberDecl*> memberDecls;
+    std::vector<SStructMemberDecl> memberDecls;
 
-    SYNTAX_API SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl*> memberDecls);
+    SYNTAX_API SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl> memberDecls);
     SStructDecl(const SStructDecl&) = delete;
     SYNTAX_API SStructDecl(SStructDecl&&) noexcept;
-    SYNTAX_API virtual ~SStructDecl();
+    SYNTAX_API ~SStructDecl();
 
     SStructDecl& operator=(const SStructDecl& other) = delete;
     SYNTAX_API SStructDecl& operator=(SStructDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SStructFuncDecl
-    : public SStructMemberDecl
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2596,18 +2429,16 @@ public:
     SYNTAX_API SStructFuncDecl(std::optional<SAccessModifier> accessModifier, bool bStatic, bool bSequence, SFuncReturn funcRet, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SStructFuncDecl(const SStructFuncDecl&) = delete;
     SYNTAX_API SStructFuncDecl(SStructFuncDecl&&) noexcept;
-    SYNTAX_API virtual ~SStructFuncDecl();
+    SYNTAX_API ~SStructFuncDecl();
 
     SStructFuncDecl& operator=(const SStructFuncDecl& other) = delete;
     SYNTAX_API SStructFuncDecl& operator=(SStructFuncDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SStructCtorDecl
-    : public SStructMemberDecl
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2617,18 +2448,16 @@ public:
     SYNTAX_API SStructCtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
     SStructCtorDecl(const SStructCtorDecl&) = delete;
     SYNTAX_API SStructCtorDecl(SStructCtorDecl&&) noexcept;
-    SYNTAX_API virtual ~SStructCtorDecl();
+    SYNTAX_API ~SStructCtorDecl();
 
     SStructCtorDecl& operator=(const SStructCtorDecl& other) = delete;
     SYNTAX_API SStructCtorDecl& operator=(SStructCtorDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SStructDtorDecl
-    : public SStructMemberDecl
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2637,18 +2466,16 @@ public:
     SYNTAX_API SStructDtorDecl(std::optional<SAccessModifier> accessModifier, std::vector<SStmt*> body);
     SStructDtorDecl(const SStructDtorDecl&) = delete;
     SYNTAX_API SStructDtorDecl(SStructDtorDecl&&) noexcept;
-    SYNTAX_API virtual ~SStructDtorDecl();
+    SYNTAX_API ~SStructDtorDecl();
 
     SStructDtorDecl& operator=(const SStructDtorDecl& other) = delete;
     SYNTAX_API SStructDtorDecl& operator=(SStructDtorDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SStructVarDecl
-    : public SStructMemberDecl
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2658,14 +2485,12 @@ public:
     SYNTAX_API SStructVarDecl(std::optional<SAccessModifier> accessModifier, STypeExp* varType, std::vector<std::string> varNames);
     SStructVarDecl(const SStructVarDecl&) = delete;
     SYNTAX_API SStructVarDecl(SStructVarDecl&&) noexcept;
-    SYNTAX_API virtual ~SStructVarDecl();
+    SYNTAX_API ~SStructVarDecl();
 
     SStructVarDecl& operator=(const SStructVarDecl& other) = delete;
     SYNTAX_API SStructVarDecl& operator=(SStructVarDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class SEnumElemVarDecl
@@ -2705,8 +2530,7 @@ public:
 };
 
 class SEnumDecl
-    : public SClassMemberDecl
-    , public SStructMemberDecl
+    : virtual public SSyntax
 {
 public:
     std::optional<SAccessModifier> accessModifier;
@@ -2717,15 +2541,12 @@ public:
     SYNTAX_API SEnumDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<SEnumElemDecl*> elements);
     SEnumDecl(const SEnumDecl&) = delete;
     SYNTAX_API SEnumDecl(SEnumDecl&&) noexcept;
-    SYNTAX_API virtual ~SEnumDecl();
+    SYNTAX_API ~SEnumDecl();
 
     SEnumDecl& operator=(const SEnumDecl& other) = delete;
     SYNTAX_API SEnumDecl& operator=(SEnumDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
-    void Accept(SClassMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-    void Accept(SStructMemberDeclVisitor& visitor) override { visitor.Visit(this); }
-
 };
 
 class STraitFuncDecl

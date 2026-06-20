@@ -342,43 +342,16 @@ JsonItem ToJson(SForStmtInitializer* initializer)
     SForStmtInitializerToJsonVisitor visitor;
     return Accept(visitor, initializer);
 }
-struct SClassMemberDeclToJsonVisitor
+JsonItem ToJson(SClassMemberDecl& decl)
 {
-    using ResultType = JsonItem;
-    ResultType Visit(SClassDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SStructDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SEnumDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SClassFuncDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SClassCtorDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SClassVarDecl* decl) { return decl->ToJson(); }
-};
-
-JsonItem ToJson(SClassMemberDecl* decl)
-{
-    if (!decl) return JsonNull();
-
-    SClassMemberDeclToJsonVisitor visitor;
-    return Accept(visitor, decl);
+    return std::visit(ToJsonVisitor(), decl);
 }
-struct SStructMemberDeclToJsonVisitor
-{
-    using ResultType = JsonItem;
-    ResultType Visit(SClassDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SStructDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SEnumDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SStructFuncDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SStructCtorDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SStructDtorDecl* decl) { return decl->ToJson(); }
-    ResultType Visit(SStructVarDecl* decl) { return decl->ToJson(); }
-};
 
-JsonItem ToJson(SStructMemberDecl* decl)
+JsonItem ToJson(SStructMemberDecl& decl)
 {
-    if (!decl) return JsonNull();
-
-    SStructMemberDeclToJsonVisitor visitor;
-    return Accept(visitor, decl);
+    return std::visit(ToJsonVisitor(), decl);
 }
+
 JsonItem ToJson(SNamespaceDeclElement& elem)
 {
     return std::visit(ToJsonVisitor(), elem);
@@ -1388,7 +1361,7 @@ JsonItem SGlobalFuncDecl::ToJson()
     };
 }
 
-SClassDecl::SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl*> memberDecls)
+SClassDecl::SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl> memberDecls)
     : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
 
 SClassDecl::SClassDecl(SClassDecl&& other) noexcept = default;
@@ -1472,7 +1445,7 @@ JsonItem SClassVarDecl::ToJson()
     };
 }
 
-SStructDecl::SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl*> memberDecls)
+SStructDecl::SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl> memberDecls)
     : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
 
 SStructDecl::SStructDecl(SStructDecl&& other) noexcept = default;

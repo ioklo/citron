@@ -69,12 +69,10 @@ class SForStmtInitializer;
 class SForStmtInitializer_Exp;
 class SForStmtInitializer_VarDecl;
 
-class SClassMemberDecl;
 class SClassFuncDecl;
 class SClassCtorDecl;
 class SClassVarDecl;
 
-class SStructMemberDecl;
 class SStructFuncDecl;
 class SStructCtorDecl;
 class SStructVarDecl;
@@ -180,11 +178,9 @@ public:
     MAKE(SForStmtInitializer_Exp)
     MAKE(SForStmtInitializer_VarDecl)
 
-    MAKE(SClassMemberDecl)
     MAKE(SClassCtorDecl)
     MAKE(SClassVarDecl)
 
-    MAKE(SStructMemberDecl)
     MAKE(SStructCtorDecl)
     MAKE(SStructDtorDecl)
     MAKE(SStructVarDecl)
