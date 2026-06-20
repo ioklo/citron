@@ -29,6 +29,8 @@ Status: current snapshot
 - Binding을 만드는 `is`는 일반 expression context에서 금지하고, `if` condition의 top-level에서만 허용한다.
 - `visibility`는 source name lookup rule이고, `reachability`는 compiler가 semantic information을 알 수 있는지의 문제로 분리한다.
 - Nested declaration은 논리적으로 허용 가능하지만, v1 허용 범위는 implementation scope와 design stability에 따라 결정한다.
+- Nested generic declaration identity는 outer type arguments를 포함한다. 예: `C<int>.Trait`와 `C<string>.Trait`는 다르다.
+- trait conformance block의 surface keyword는 현재 `extend`를 사용한다. 이름 변경 가능성은 열어 둔다.
 
 ## Modules And CTI
 - `cti`는 declaration/import boundary다.
