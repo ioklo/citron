@@ -141,11 +141,11 @@ MqReturnPassingMode MqAbi_Citron_X64::GetReturnPassingMode(RFuncReturn funcRet, 
     return visit([this, outCurArgIndex](auto& funcRet) -> MqReturnPassingMode
     {
         using T = remove_cvref_t<decltype(funcRet)>;
-        if constexpr (same_as<T, RFuncReturn_ForCtor>)
+        if constexpr (same_as<T, RFuncReturn_None>)
         {
             return MqReturnPassingMode_Void{};
         }
-        else if constexpr (same_as<T, RFuncReturn_Set>)
+        else if constexpr (same_as<T, RFuncReturn_Normal>)
         {
             auto* rType = funcRet.type;
             switch (rType->GetCopyStrategy())

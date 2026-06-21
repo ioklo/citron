@@ -25,11 +25,11 @@ void MqFactory::MakeIntrinsicInfo() noexcept
 
     auto* voidPtrType = rFactory->MakePtrType(voidType);
 
-    RFuncReturn retVoid = RFuncReturn_Set{voidType};
-    RFuncReturn retVoidPtr = RFuncReturn_Set{voidPtrType};
-    RFuncReturn retBool = RFuncReturn_Set{boolType};
-    RFuncReturn retInt = RFuncReturn_Set{intType};
-    RFuncReturn retStr = RFuncReturn_Set{stringType};
+    RFuncReturn retVoid = RFuncReturn_Normal{voidType};
+    RFuncReturn retVoidPtr = RFuncReturn_Normal{voidPtrType};
+    RFuncReturn retBool = RFuncReturn_Normal{boolType};
+    RFuncReturn retInt = RFuncReturn_Normal{intType};
+    RFuncReturn retStr = RFuncReturn_Normal{stringType};
 
     auto srp = [stringType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Ref, stringType, RName_Normal{name}}; };
     auto sip = [stringType](const string& name) -> RFuncParameter { return {RFuncParameterKind::In, stringType, RName_Normal{name}}; };

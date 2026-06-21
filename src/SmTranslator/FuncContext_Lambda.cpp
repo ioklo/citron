@@ -153,7 +153,7 @@ RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
 void FuncContext_Lambda::SetOpenFuncReturn(RType* retType)
 {
     assert(holds_alternative<RFuncReturn_NotSet>(funcReturn));
-    funcReturn = RFuncReturn_Set{retType};
+    funcReturn = RFuncReturn_Normal{retType};
 }
 
 RTypeArguments* FuncContext_Lambda::MakeOpenTypeArgs()

@@ -37,7 +37,7 @@ expected<void, DiagPtr> GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDepend
     auto e_parametersInfo = context.MakeParameters(nGFuncDecl, syntax->parameters);
     RETURN_ON_ERROR_REFDECL(e_parametersInfo, [rParameters, bLastParamVariadic]);
 
-    nGFuncDecl->InitFuncReturnAndParams(RFuncReturn_Set(rRetType), move(rParameters), bLastParamVariadic);
+    nGFuncDecl->InitFuncReturnAndParams(RFuncReturn_Normal(rRetType), move(rParameters), bLastParamVariadic);
     nOuter->AddGlobalFuncDecl(nGFuncDecl);
 
     return {};

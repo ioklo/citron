@@ -41,9 +41,9 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     auto* rRetType = visit([&rFactory](auto& rFuncReturn) -> RType*
     {
         using T = remove_cvref_t<decltype(rFuncReturn)>;
-        if constexpr (same_as<T, RFuncReturn_Set>)
+        if constexpr (same_as<T, RFuncReturn_Normal>)
             return rFuncReturn.type;
-        else if constexpr (same_as<T, RFuncReturn_ForCtor>)
+        else if constexpr (same_as<T, RFuncReturn_None>)
             return rFactory->MakeVoidType();
         else if constexpr (same_as<T, RFuncReturn_NotSet>)
             throw NotImplementedException{};

@@ -18,7 +18,7 @@ NClassCtorDecl::NClassCtorDecl(NClassDecl* _class, RAccessor accessor, bool bTri
 
 void NClassCtorDecl::Init(vector<RFuncParameter>&& parameters, bool bLastParamVariadic)
 {   
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor{}, RThisKind_Handle{_class->GetOpenType()}, move(parameters), bLastParamVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_None{}, RThisKind_Handle{_class->GetOpenType()}, move(parameters), bLastParamVariadic);
 }
 
 

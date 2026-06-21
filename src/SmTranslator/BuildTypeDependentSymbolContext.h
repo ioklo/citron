@@ -34,6 +34,7 @@ public:
     }
 
     RType* MakeType(STypeExp* sTypeExp, NDecl* decl);
+    RFuncReturn MakeFuncReturn(SFuncReturn& funcRet, NDecl* decl);
     std::expected<std::tuple<std::vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(NDecl* decl, std::vector<SFuncParam>& sParams);
 };
 

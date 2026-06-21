@@ -1,4 +1,5 @@
 #include "BuildTypeDependentSymbolContext.h"
+#include <variant>
 
 #include "Syntax/Syntax.h"
 
@@ -50,6 +51,27 @@ RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl
     } visitor{rFactory.get()};
 
     return Accept(visitor, sTypeExp);
+}
+
+RFuncReturn BuildTypeDependentSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, NDecl* decl)
+{
+    return visit([this, decl](auto& funcRet) {
+        using T = remove_cvref_t<decltype(funcRet)>;
+
+        if constexpr (same_as<T, SFuncReturn_Normal>)
+        {
+            auto* rType = MakeType(funcRet.type, decl);
+            return RFuncReturn_Normal(rType);
+        }
+        else if constexpr (same_as<T, SFuncReturn_Opaque>)
+        {
+            // rType이 맞는걸까
+            auto* rType = MakeType(funcRet.trait, decl);
+            return RFuncReturn_Opaque{rType};
+        }
+        else static_assert(false);
+
+    }, funcRet);
 }
 
 expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildTypeDependentSymbolContext::MakeParameters(NDecl* decl, vector<SFuncParam>& sParams)

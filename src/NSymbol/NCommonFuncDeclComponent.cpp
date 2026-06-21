@@ -49,7 +49,7 @@ RType* NCommonFuncDeclComponent::GetReturnType(RTypeArguments* typeArgs)
 {
     assert(funcReturnAndParams);
 
-    auto* setReturn = get_if<RFuncReturn_Set>(&funcReturnAndParams->funcReturn);
+    auto* setReturn = get_if<RFuncReturn_Normal>(&funcReturnAndParams->funcReturn);
     assert(setReturn);
 
     return setReturn->type->Apply(typeArgs);
@@ -62,10 +62,10 @@ RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments* typeArgs)
     return visit([&typeArgs](auto& funcReturn) -> RFuncReturn {
         using T = remove_cvref_t<decltype(funcReturn)>;
 
-        if constexpr (same_as<T, RFuncReturn_ForCtor>) 
-            return RFuncReturn_ForCtor{};
-        else if constexpr (same_as<T, RFuncReturn_Set>)
-            return RFuncReturn_Set{funcReturn.type->Apply(typeArgs)};
+        if constexpr (same_as<T, RFuncReturn_None>) 
+            return RFuncReturn_None{};
+        else if constexpr (same_as<T, RFuncReturn_Normal>)
+            return RFuncReturn_Normal{funcReturn.type->Apply(typeArgs)};
         else if constexpr (same_as<T, RFuncReturn_NotSet>)
             return RFuncReturn_NotSet{};
         else static_assert(false);
