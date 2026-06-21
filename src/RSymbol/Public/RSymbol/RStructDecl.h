@@ -4,7 +4,6 @@
 #include "Infra/Views.h"
 
 #include "RDecl.h"
-#include "RFuncDeclOuter.h"
 #include "RTypeDecl.h"
 #include "RTypeDeclOuter.h"
 
@@ -16,7 +15,6 @@ class RTypeArguments;
 
 class RStructDecl
     : public RDecl
-    , public RFuncDeclOuter
     , public RTypeDecl
     , public RTypeDeclOuter
 {
@@ -29,7 +27,6 @@ public:
     virtual RStructCtorDecl* GetUnboundTrivialCtor_RStructCtorDecl() = 0;
 
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
-    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(this); }
     RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
     void Accept(RTypeDeclOuterVisitor& visitor) final { visitor.Visit(this); }
 };

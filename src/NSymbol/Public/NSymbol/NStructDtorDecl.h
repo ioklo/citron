@@ -6,8 +6,7 @@
 
 #include "RSymbol/RStructDtorDecl.h"
 
-#include "NFuncDecl.h"
-#include "NFuncDeclOuter.h"
+#include "NDecl.h"
 #include "NCommonFuncDeclComponent.h"
 
 namespace Citron {
@@ -16,32 +15,21 @@ class NStructDecl;
 
 class NStructDtorDecl
     : public NDecl
-    , public NFuncDecl
-    , public NFuncDeclOuter
     , public RStructDtorDecl
     , private NCommonFuncDeclComponent
 {
+public:
     RAccessor accessor;
     NStructDecl* _struct;
 
 public:
     NSYMBOL_API NStructDtorDecl(RAccessor accessor, NStructDecl* structDecl);
+    using NCommonFuncDeclComponent::IsSeqFunc;
 
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NSYMBOL_API NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
-
-    // from NFuncDecl
-    NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API NFuncDeclOuter* GetNFuncDeclOuter() override;
-    RFuncDecl* GetRFuncDecl() override { return this; }
-    bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
-    void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(this); }
-
-    // from NFuncDeclOuter
-    // NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
 
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;

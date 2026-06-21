@@ -13,7 +13,6 @@
 #include "RSymbol/RFuncDecl.h"
 
 #include "NSymbol/NModule.h"
-#include "NSymbol/NFuncDecl.h"
 
 #include "MIR/MData.h"
 #include "QIR/QFactory.h"

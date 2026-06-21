@@ -19,17 +19,12 @@ NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, RStru
 
 void NStructCtorDecl::InitFuncParameters(vector<RFuncParameter>&& parameters, bool bLastParameterVariadic)
 {
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_None(), RThisKind_Ref{_struct->GetOpenType()}, move(parameters), bLastParameterVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_None{}, RThisKind_Ref{_struct->GetOpenType()}, move(parameters), bLastParameterVariadic);
 }
 
 NStructCtorDecl::~NStructCtorDecl() = default;
 
 NDecl* NStructCtorDecl::GetNOuter()
-{
-    return _struct;
-}
-
-NFuncDeclOuter* NStructCtorDecl::GetNFuncDeclOuter()
 {
     return _struct;
 }

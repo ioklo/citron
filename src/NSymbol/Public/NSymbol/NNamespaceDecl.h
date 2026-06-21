@@ -23,7 +23,6 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 class NNamespaceDecl
     : public NDecl
     , public NTypeDeclOuter
-    , public NFuncDeclOuter
     , public RNamespaceDecl
     , private NNamespaceDeclContainerComponent
     , private NTypeDeclContainerComponent
@@ -67,10 +66,6 @@ public:
     NDecl* GetNDecl() override { return this; }
     void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
-    // from NFuncDeclOuter
-    // NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
-
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
@@ -82,10 +77,6 @@ public:
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RTypeDeclOuter
-    // using RNamespaceDecl::Accept;
-    // RDecl* GetRDecl() override { return this; }
-
-    // from RFuncDeclOuter
     // using RNamespaceDecl::Accept;
     // RDecl* GetRDecl() override { return this; }
 };

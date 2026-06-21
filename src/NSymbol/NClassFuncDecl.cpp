@@ -29,11 +29,6 @@ NDecl* NClassFuncDecl::GetNOuter()
     return _class;
 }
 
-NFuncDeclOuter* NClassFuncDecl::GetNFuncDeclOuter()
-{
-    return _class;
-}
-
 RDecl* NClassFuncDecl::GetROuter()
 {
     return _class;

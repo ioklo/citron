@@ -18,17 +18,12 @@ NStructFuncDecl::NStructFuncDecl(
 {   
 }
 
-void NStructFuncDecl::InitFuncReturnAndParams(RType* funcReturn, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
+void NStructFuncDecl::InitFuncReturnAndParams(RFuncReturn&& funcRet, std::vector<RFuncParameter> funcParameters, bool bLastParameterVariadic)
 {
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_Normal{funcReturn}, _static ? (RThisKind)RThisKind_Static {} : RThisKind_Ref{_struct->GetOpenType()}, move(funcParameters), bLastParameterVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcRet), _static ? (RThisKind)RThisKind_Static {} : RThisKind_Ref{_struct->GetOpenType()}, move(funcParameters), bLastParameterVariadic);
 }
 
 NDecl* NStructFuncDecl::GetNOuter()
-{
-    return _struct;
-}
-
-NFuncDeclOuter* NStructFuncDecl::GetNFuncDeclOuter()
 {
     return _struct;
 }

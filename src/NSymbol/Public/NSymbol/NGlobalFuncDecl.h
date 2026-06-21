@@ -7,8 +7,6 @@
 #include <string>
 
 #include "NDecl.h"
-#include "NFuncDecl.h"
-#include "NFuncDeclOuter.h"
 #include "NGenericsComponent.h"
 #include "NCommonFuncDeclComponent.h"
 
@@ -18,8 +16,6 @@ namespace Citron {
 
 class NGlobalFuncDecl
     : public NDecl
-    , public NFuncDecl
-    , public NFuncDeclOuter
     , public RGlobalFuncDecl
     , private NGenericsComponent
     , private NCommonFuncDeclComponent
@@ -36,24 +32,14 @@ public:
 public:
     NSYMBOL_API NGlobalFuncDecl(NNamespaceDecl* outer, RAccessor accessor, bool bSeqFunc, RName&& name);
     using NGenericsComponent::InitTypeParams;
-    NSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    NSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    using NCommonFuncDeclComponent::IsSeqFunc;
     
 
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NSYMBOL_API NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
-
-    // from NFuncDecl
-    NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API NFuncDeclOuter* GetNFuncDeclOuter() override;
-    RFuncDecl* GetRFuncDecl() override { return this; }
-    bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
-    void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(this); }
-
-    // from NFuncDeclOuter
-    // NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
 
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
@@ -75,9 +61,6 @@ public:
     RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index); }
     RFuncReturn GetUnboundFuncReturn() override { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
     std::span<RFuncParameter> GetUnboundFuncParams() override { return NCommonFuncDeclComponent::GetUnboundFuncParams(); }
-
-    // from RFuncDeclOuter
-    // RDecl* GetRDecl() override { return this; }
 };
 
 }

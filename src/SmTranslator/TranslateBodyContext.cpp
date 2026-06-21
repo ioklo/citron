@@ -78,7 +78,7 @@ CheckEndReturnResult CheckEndReturn(MStmt* stmt, RFactory* rFactory)
     return Accept(Checker{rFactory}, stmt);
 }
 
-CheckEndReturnResult CheckEndReturn(NFuncDecl* nFuncDecl, vector<MStmt*>& mStmts, RFactory& rFactory)
+CheckEndReturnResult CheckEndReturn(NFuncDecl& nFuncDecl, vector<MStmt*>& mStmts, RFactory& rFactory)
 {
     // 1. 함수에 Body가 있고, return으로 끝날때
     bool stmtEndsWithReturn = [&mStmts]{
@@ -89,8 +89,8 @@ CheckEndReturnResult CheckEndReturn(NFuncDecl* nFuncDecl, vector<MStmt*>& mStmts
     if (stmtEndsWithReturn) return CheckEndReturnResult::Valid;
 
     // 2. 시그니처가 void를 리턴하는지 확인
-    bool signatureReturnVoid = [nFuncDecl, &rFactory] {
-        auto rFuncReturn = nFuncDecl->GetRFuncDecl()->GetUnboundFuncReturn();
+    bool signatureReturnVoid = [&nFuncDecl, &rFactory] {
+        auto rFuncReturn = GetRFuncDecl(nFuncDecl)->GetUnboundFuncReturn();
         return visit([&rFactory](auto& rFuncReturn) -> bool {
             using T = remove_cvref_t<decltype(rFuncReturn)>;
 
@@ -113,7 +113,7 @@ CheckEndReturnResult CheckEndReturn(NFuncDecl* nFuncDecl, vector<MStmt*>& mStmts
 
 }
 
-expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(NFuncDecl* nFuncDecl, std::span<SStmt*> sStmts)
+expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(NFuncDecl nFuncDecl, std::span<SStmt*> sStmts)
 {   
     auto tContext = MakeTranslationContexts(nFuncDecl, logger, rFactory, mFactory, srtFactory, binOpQueryService);
     auto e_scope = TranslateScopedSStmtsToMStmt_Scope(sStmts, tContext);

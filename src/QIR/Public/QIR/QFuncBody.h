@@ -4,12 +4,12 @@
 #include <variant>
 #include <optional>
 #include "RSymbol/RNames.h"
+#include "NSymbol/NFuncDecl.h"
 
 namespace Citron {
 
 class QBlock;
 class RType;
-class NFuncDecl;
 
 enum QSlotRole_ArgumentKind { Direct, Indirect, Ref };
 
@@ -29,7 +29,7 @@ struct QSlotInfo
 
 struct QFuncBody
 {   
-    NFuncDecl* nFuncDecl;
+    NFuncDecl nFuncDecl;
     std::vector<QSlotInfo> slotInfos;
     std::vector<QBlock*> blocks;
 };

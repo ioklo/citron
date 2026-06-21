@@ -32,12 +32,14 @@ expected<void, DiagPtr> GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDepend
 
     auto typeParams = MakeTypeParams(nGFuncDecl, syntax->typeParams, rFactory, *nFactory);
     nGFuncDecl->InitTypeParams(move(typeParams));
+
+    auto e_funcRet = context.MakeFuncReturn(syntax->funcRet, nGFuncDecl);
+    RETURN_ON_ERROR(e_funcRet);
     
-    auto* rRetType = context.MakeType(syntax->retType, nGFuncDecl);
     auto e_parametersInfo = context.MakeParameters(nGFuncDecl, syntax->parameters);
     RETURN_ON_ERROR_REFDECL(e_parametersInfo, [rParameters, bLastParamVariadic]);
 
-    nGFuncDecl->InitFuncReturnAndParams(RFuncReturn_Normal(rRetType), move(rParameters), bLastParamVariadic);
+    nGFuncDecl->InitFuncReturnAndParams(move(*e_funcRet), move(rParameters), bLastParamVariadic);
     nOuter->AddGlobalFuncDecl(nGFuncDecl);
 
     return {};

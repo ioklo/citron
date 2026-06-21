@@ -37,12 +37,13 @@ expected<void, DiagPtr> StructFuncTask::BuildTypeDependentSymbol(BuildTypeDepend
     nStruct->AddFunc(nStructFunc);
 
     // symbol tree에 매달린 nStructFunc가 필요
-    auto* rRetType = context.MakeType(sStruct->retType, nStructFunc);
-    
+    auto e_funcRet = context.MakeFuncReturn(sStruct->funcRet, nStructFunc);
+    RETURN_ON_ERROR(e_funcRet);
+
     auto e_parameters = context.MakeParameters(nStructFunc, sStruct->parameters);
     RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
 
-    nStructFunc->InitFuncReturnAndParams(rRetType, move(parameters), bLastParamVariadic);
+    nStructFunc->InitFuncReturnAndParams(move(*e_funcRet), move(parameters), bLastParamVariadic);
     return {};
 }
 

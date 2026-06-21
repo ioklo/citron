@@ -42,7 +42,7 @@ private:
 
 public:
     NSYMBOL_API NCommonFuncDeclComponent(bool bSeqFunc);
-    NSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcReturn, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    NSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcRet, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     NSYMBOL_API ~NCommonFuncDeclComponent();
 

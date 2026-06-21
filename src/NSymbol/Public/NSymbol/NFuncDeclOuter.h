@@ -1,24 +1,10 @@
 #pragma once
-
+#include "NSymbolConfig.h"
 #include <variant>
 
 namespace Citron {
 
 class NDecl;
-struct NFuncDeclOuterVisitor;
-
-class NFuncDeclOuter
-{
-public:
-    virtual ~NFuncDeclOuter() {}
-    virtual NDecl* GetNDecl() = 0;
-    virtual void Accept(NFuncDeclOuterVisitor& visitor) = 0;
-};
-
-}
-
-// for visitor
-namespace Citron {
 class NNamespaceDecl;
 class NGlobalFuncDecl;
 class NClassDecl;
@@ -29,6 +15,19 @@ class NStructCtorDecl;
 class NStructDtorDecl;
 class NStructFuncDecl;
 class NLambdaDecl;
-}
 
-#include "NFuncDeclOuterVisitor.g.h"
+using NFuncDeclOuter = std::variant<
+    NNamespaceDecl*,
+    NGlobalFuncDecl*,
+    NClassDecl*,
+    NClassCtorDecl*,
+    NClassFuncDecl*,
+    NStructDecl*,
+    NStructCtorDecl*,
+    NStructDtorDecl*,
+    NStructFuncDecl*,
+    NLambdaDecl*>;
+
+NSYMBOL_API NDecl* GetNDecl(NFuncDeclOuter& outer);
+
+}

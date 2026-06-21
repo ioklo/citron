@@ -1,39 +1,30 @@
 #pragma once
+#include "NSymbolConfig.h"
 
 #include <span>
 
 #include "RSymbol/RFuncReturn.h"
 #include "NDecl.h"
+#include "NFuncDeclOuter.h"
 
 namespace Citron
 {
 struct RFuncParameter;
-class NFuncDeclOuter;
 class RFuncDecl;
 
-class NFuncDeclVisitor
-{
-public:
-    virtual ~NFuncDeclVisitor() {}
-    virtual void Visit(NGlobalFuncDecl* func) = 0;
-    virtual void Visit(NClassCtorDecl* func) = 0;
-    virtual void Visit(NClassFuncDecl* func) = 0; 
-    virtual void Visit(NStructCtorDecl* func) = 0;
-    virtual void Visit(NStructDtorDecl* func) = 0;
-    virtual void Visit(NStructFuncDecl* func) = 0;
-    virtual void Visit(NLambdaDecl* func) = 0;
-};
+using NFuncDecl = std::variant<
+    NGlobalFuncDecl*,
+    NClassCtorDecl*,
+    NClassFuncDecl*,
+    NStructCtorDecl*,
+    NStructDtorDecl*,
+    NStructFuncDecl*,
+    NLambdaDecl*>;
 
 // RFuncDecl과 겹치는게 있으면 지우자
-class NFuncDecl
-{
-public:
-    virtual ~NFuncDecl() {}
-    virtual NDecl* GetNDecl() = 0;
-    virtual NFuncDeclOuter* GetNFuncDeclOuter() = 0;
-    virtual RFuncDecl* GetRFuncDecl() = 0;
-    virtual bool IsSeqFunc() = 0;
-    virtual void Accept(NFuncDeclVisitor& visitor) = 0;
-};
+NSYMBOL_API NDecl* GetNDecl(NFuncDecl& funcDecl);
+NSYMBOL_API RFuncDecl* GetRFuncDecl(NFuncDecl& funcDecl);
+NSYMBOL_API bool IsSeqFunc(NFuncDecl& funcDecl);
+NSYMBOL_API NFuncDeclOuter GetNFuncDeclOuter(NFuncDecl& funcDecl);
 
 }

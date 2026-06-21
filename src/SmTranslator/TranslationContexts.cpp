@@ -21,7 +21,7 @@ using namespace std;
 namespace Citron {
 
 TranslationContexts MakeTranslationContexts(
-    NFuncDecl* nFuncDecl,
+    NFuncDecl& nFuncDecl,
     const LoggerPtr& logger,
     const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory,
     const BinOpQueryServicePtr& binOpQueryService)

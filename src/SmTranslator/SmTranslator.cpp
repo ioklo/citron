@@ -39,7 +39,7 @@ namespace Citron {
 
 namespace {
 
-class StructElemVisitor : public SStructMemberDeclVisitor
+class StructElemVisitor
 {
     NStructDecl* nStruct;
     RFactoryPtr rFactory;
@@ -51,16 +51,20 @@ public:
         : nStruct{nStruct}, rFactory{rFactory}, nFactory{nFactory}, phaseManager{phaseManager}
     {}
 
-    void Visit(SClassDecl* decl) override;
-    void Visit(SStructDecl* decl) override;
-    void Visit(SEnumDecl* decl) override;
-    void Visit(SStructFuncDecl* decl) override;
-    void Visit(SStructCtorDecl* decl) override;
-    void Visit(SStructDtorDecl* decl) override;
-    void Visit(SStructVarDecl* decl) override;
+    void operator()(auto* decl) { Visit(decl); }
+
+    void Visit(SClassDecl* decl);
+    void Visit(SStructDecl* decl);
+    void Visit(SEnumDecl* decl);
+    void Visit(STraitDecl* decl);
+    void Visit(SExtendDecl* decl);
+    void Visit(SStructFuncDecl* decl);
+    void Visit(SStructCtorDecl* decl);
+    void Visit(SStructDtorDecl* decl);
+    void Visit(SStructVarDecl* decl);
 };
 
-class ClassElemVisitor : public SClassMemberDeclVisitor
+class ClassElemVisitor
 {
     NClassDecl* outer;
     RFactoryPtr rFactory;
@@ -72,16 +76,18 @@ public:
         : outer{outer}, rFactory{rFactory}, nFactory{nFactory}, phaseManager{phaseManager}
     {}
 
-    void Visit(SClassDecl* decl) override;
-    void Visit(SStructDecl* decl) override;
-    void Visit(SEnumDecl* decl) override;
-    void Visit(SClassFuncDecl* decl) override;
-    void Visit(SClassCtorDecl* decl) override;
-    void Visit(SClassVarDecl* decl) override;
+    void operator()(auto* decl) { Visit(decl); }
+
+    void Visit(SClassDecl* decl);
+    void Visit(SStructDecl* decl);
+    void Visit(SEnumDecl* decl);
+    void Visit(SClassFuncDecl* decl);
+    void Visit(SClassCtorDecl* decl);
+    void Visit(SClassVarDecl* decl);
 };
 
 // prepare task
-class NamespaceElemVisitor : public SNamespaceDeclElementVisitor
+class NamespaceElemVisitor
 {
     NNamespaceDecl* curDecl;
     RFactoryPtr rFactory;
@@ -94,12 +100,15 @@ public:
     {
     }
 
-    // Inherited via SNamespaceDeclElementVisitor
-    void Visit(SGlobalFuncDecl* elem) override;
-    void Visit(SNamespaceDecl* elem) override;
-    void Visit(SClassDecl* elem) override;
-    void Visit(SStructDecl* elem) override;
-    void Visit(SEnumDecl* elem) override;
+    void operator()(auto* elem) { Visit(elem); }
+
+    void Visit(SGlobalFuncDecl* elem);
+    void Visit(SNamespaceDecl* elem);
+    void Visit(SClassDecl* elem);
+    void Visit(SStructDecl* elem);
+    void Visit(SEnumDecl* elem);
+    void Visit(STraitDecl* elem);
+    void Visit(SExtendDecl* elem);
 };
 
 class ScriptElemVisitor
@@ -122,6 +131,8 @@ public:
     void Visit(SClassDecl* elem);
     void Visit(SStructDecl* elem);
     void Visit(SEnumDecl* elem);
+    void Visit(STraitDecl* elem);
+    void Visit(SExtendDecl* elem);
 };
 
 void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, NNamespaceDecl* outer, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
@@ -143,10 +154,9 @@ void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorCo
     StructTask::Register(nStructDecl, syntax, accessorContext, phaseManager);
 
     // child     
-    for (auto* memberDecl : syntax->memberDecls)
+    for (auto& memberDecl : syntax->memberDecls)
     {
-        StructElemVisitor visitor{nStructDecl, rFactory, nFactory, phaseManager};
-        memberDecl->Accept(visitor);
+        visit(StructElemVisitor{nStructDecl, rFactory, nFactory, phaseManager}, memberDecl);
     }
 }
 
@@ -241,7 +251,6 @@ void ClassElemVisitor::Visit(SClassVarDecl* decl)
     throw NotImplementedException{};
 }
 
-// Inherited via SNamespaceDeclElementVisitor
 void NamespaceElemVisitor::Visit(SGlobalFuncDecl* elem)
 {
     VisitGlobalFunc(elem, curDecl, rFactory, nFactory, phaseManager);
@@ -264,10 +273,9 @@ void NamespaceElemVisitor::Visit(SNamespaceDecl* elem)
         curNamespace = childNamespace;
     }
 
-    for (auto* nsElem : elem->elements)
+    for (auto& nsElem : elem->elements)
     {
-        NamespaceElemVisitor visitor{curNamespace, rFactory, nFactory, phaseManager};
-        nsElem->Accept(visitor);
+        visit(NamespaceElemVisitor{curNamespace, rFactory, nFactory, phaseManager}, nsElem);
     }
 }
 
@@ -314,10 +322,9 @@ void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
         curNamespace = childNamespace;
     }
 
-    for (auto* nsElem : elem->elements)
+    for (auto& nsElem : elem->elements)
     {
-        NamespaceElemVisitor visitor{curNamespace, rFactory, nFactory, phaseManager};
-        nsElem->Accept(visitor);
+        visit(NamespaceElemVisitor{curNamespace, rFactory, nFactory, phaseManager}, nsElem);
     }
 }
 

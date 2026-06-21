@@ -53,9 +53,9 @@ RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl
     return Accept(visitor, sTypeExp);
 }
 
-RFuncReturn BuildTypeDependentSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, NDecl* decl)
+expected<RFuncReturn, DiagPtr> BuildTypeDependentSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, NDecl* decl)
 {
-    return visit([this, decl](auto& funcRet) {
+    return visit([this, decl](auto& funcRet) -> expected<RFuncReturn, DiagPtr> {
         using T = remove_cvref_t<decltype(funcRet)>;
 
         if constexpr (same_as<T, SFuncReturn_Normal>)
@@ -66,8 +66,17 @@ RFuncReturn BuildTypeDependentSymbolContext::MakeFuncReturn(SFuncReturn& funcRet
         else if constexpr (same_as<T, SFuncReturn_Opaque>)
         {
             // rType이 맞는걸까
-            auto* rType = MakeType(funcRet.trait, decl);
-            return RFuncReturn_Opaque{rType};
+            throw NotImplementedException{};
+            //auto* rType = MakeType(funcRet.trait, decl);
+            //if (auto* rOpaqueType = dynamic_cast<RType_Opaque*>(rType))
+            //{
+            //    return RFuncReturn_Normal{rType};
+            //}
+            //else
+            //{
+            //    // TODO: 리턴값을 expected로 바꿔야 한다
+            //    throw NotImplementedException{};
+            //}
         }
         else static_assert(false);
 

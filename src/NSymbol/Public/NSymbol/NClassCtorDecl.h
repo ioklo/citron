@@ -9,7 +9,6 @@
 
 #include "NDecl.h"
 #include "NFuncDeclOuter.h"
-#include "NFuncDecl.h"
 #include "NGenericsComponent.h"
 #include "NCommonFuncDeclComponent.h"
 
@@ -18,8 +17,6 @@ namespace Citron
 
 class NClassCtorDecl
     : public NDecl
-    , public NFuncDecl
-    , public NFuncDeclOuter
     , public RClassCtorDecl
     , private NGenericsComponent
     , private NCommonFuncDeclComponent
@@ -32,23 +29,13 @@ public:
 public:
     NSYMBOL_API NClassCtorDecl(NClassDecl* _class, RAccessor accessor, bool bTrivial);
     NSYMBOL_API void Init(std::vector<RFuncParameter>&& parameters, bool bLastParamVariadic);
+    using NCommonFuncDeclComponent::IsSeqFunc;
 
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NSYMBOL_API NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
-
-    // from NFuncDecl
-    NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API NFuncDeclOuter* GetNFuncDeclOuter() override;
-    RFuncDecl* GetRFuncDecl() override { return this; }
-    bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
-    void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(this); }
-
-    // from NFuncDeclOuter
-    // NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
 
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
@@ -59,9 +46,6 @@ public:
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-
-    // from RFuncDeclOuter
-    // RDecl* GetRDecl() override { return this; }
 
     // from RFuncDecl
     // RDecl* GetRDecl() override { return this; }

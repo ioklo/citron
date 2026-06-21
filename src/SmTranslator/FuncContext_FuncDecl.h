@@ -1,21 +1,21 @@
 #pragma once
 #include "FuncContext.h"
+#include "NSymbol/NFuncDecl.h"
 
 namespace Citron {
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
-class NFuncDecl;
 
 // FuncDecl인 경우
 class FuncContext_FuncDecl : public FuncContext
 {
-    NFuncDecl* nFuncDecl;
+    NFuncDecl nFuncDecl;
     RFactoryPtr rFactory;
     MFactoryPtr mFactory;
 
 public:
-    FuncContext_FuncDecl(NFuncDecl* funcDecl, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory);
+    FuncContext_FuncDecl(NFuncDecl funcDecl, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory);
 
 public: // from FuncContext
     void BeginTransaction_FuncContext() override { }

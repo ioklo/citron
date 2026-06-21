@@ -17,11 +17,6 @@ NDecl* NStructDtorDecl::GetNOuter()
     return _struct;
 }
 
-NFuncDeclOuter* NStructDtorDecl::GetNFuncDeclOuter()
-{
-    return _struct;
-}
-
 RDecl* NStructDtorDecl::GetROuter()
 {
     return _struct;

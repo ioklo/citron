@@ -18,7 +18,6 @@
 #include "RSymbol/RModule.h"
 
 #include "NSymbol/NFactory.h"
-#include "NSymbol/NFuncDecl.h"
 #include "NSymbol/NModule.h"
 #include "NSymbol/NGlobalFuncDecl.h"
 

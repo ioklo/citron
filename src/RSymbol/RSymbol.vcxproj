@@ -52,6 +52,8 @@
     <ClInclude Include="Public\RSymbol\RStructFuncDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructVarDecl.h" />
     <ClInclude Include="Public\RSymbol\RThisKind.h" />
+    <ClInclude Include="Public\RSymbol\RTraitDecl.h" />
+    <ClInclude Include="Public\RSymbol\RTraitFuncDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeArguments.h" />
     <ClInclude Include="Public\RSymbol\RTypeDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclOuter.h" />
@@ -61,11 +63,12 @@
     <ClInclude Include="Public\RSymbol\RSymbolConfig.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Public\RSymbol\RFuncReturn.cpp" />
     <ClCompile Include="RDecl.cpp" />
     <ClCompile Include="RFactory.cpp" />
     <ClCompile Include="RFuncDecl.cpp" />
+    <ClCompile Include="RFuncDeclOuter.cpp" />
     <ClCompile Include="RFuncParameter.cpp" />
+    <ClCompile Include="RFuncReturn.cpp" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
     <ClCompile Include="RDeclRes.cpp" />
     <ClCompile Include="RModule.cpp" />
