@@ -11,7 +11,7 @@ NClassCtorDecl::NClassCtorDecl(NClassDecl* _class, RAccessor accessor, bool bTri
     : _class{_class}
     , accessor{accessor}
     , bTrivial{bTrivial}
-    , NCommonFuncDeclComponent{/*bSeqFunc*/false}
+    , NFuncDeclImpl_UsingNCommonFuncDeclComponent<RClassCtorDecl>{/*bSeqFunc*/false}
 {   
     NGenericsComponent::InitTypeParams({});
 }

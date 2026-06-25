@@ -306,7 +306,7 @@ expected<MqEmitState<optional<MqLocResult>>, DiagPtr> HandleIntrinsicCall(
 }
 
 expected<MqEmitState<optional<MqLocResult>>, DiagPtr> HandleCall(
-    RFuncDecl* decl,
+    RFuncDecl& decl,
     RTypeArguments* typeArgs,
     MqCreateTarget createTarget,
     MLoc* o_instance,
@@ -320,7 +320,7 @@ expected<MqEmitState<optional<MqLocResult>>, DiagPtr> HandleCall(
     // 그리고 t는 항상 stack pointer를 가리키게 된다 (callee쪽에서 크기를 정확히 알 수 없으므로)
 
     auto funcInfo = contexts.abi->GetFuncInfo(decl, typeArgs); // TODO: [62] Generics 구현
-    auto* retType = decl->GetReturnType(typeArgs);
+    auto* retType = GetReturnType(decl, typeArgs);
 
     HandleCallContext callContext{};
     auto e_s_o_retLocResult = HandleCallCore(retType, funcInfo, createTarget, o_instance, mArgs, callContext, contexts);

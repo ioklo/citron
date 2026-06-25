@@ -107,9 +107,6 @@
     <ClInclude Include="Public\RSymbol\RTypeParamDecl.h">
       <Filter>RDecls\12 Generics</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RFuncDeclVisitor.g.h">
-      <Filter>RDecls\03 Func</Filter>
-    </ClInclude>
     <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
@@ -124,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RTraitDecl.h">
       <Filter>RDecls\10 Trait</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RFuncDeclBase.h">
+      <Filter>RDecls\03 Func</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

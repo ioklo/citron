@@ -8,6 +8,7 @@
 #include <memory>
 #include "RNames.h"
 #include "RFuncParameter.h"
+#include "RFuncDecl.h"
 #include "DeclWithOuterTypeArgs.h"
 
 namespace Citron {
@@ -28,7 +29,6 @@ class REnumDecl;
 class REnumElemDecl;
 class REnumElemVarDecl;
 class RLambdaVarDecl;
-class RFuncDecl;
 
 // RDeclSpaceResolvedResult
 using RDeclRes = std::variant<
@@ -52,18 +52,18 @@ using RDeclRes = std::variant<
 struct RDeclRes_Namespace { RNamespaceDecl* decl; };
 struct RDeclRes_GlobalFuncs 
 { 
-    std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>> items;
+    std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl*>> items;
 
-    RSYMBOL_API RDeclRes_GlobalFuncs(std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>&& items);
+    RSYMBOL_API RDeclRes_GlobalFuncs(std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl*>>&& items);
     RSYMBOL_API RDeclRes_GlobalFuncs(const RDeclRes_GlobalFuncs&);
     RSYMBOL_API ~RDeclRes_GlobalFuncs();
 };
 struct RDeclRes_Class { RTypeArguments* outerTypeArgs; RClassDecl* decl; };
 struct RDeclRes_ClassFuncs 
 {
-    std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>> items;
+    std::vector<DeclWithOuterTypeArgs<RClassFuncDecl*>> items;
 
-    RSYMBOL_API RDeclRes_ClassFuncs(std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>&& items);
+    RSYMBOL_API RDeclRes_ClassFuncs(std::vector<DeclWithOuterTypeArgs<RClassFuncDecl*>>&& items);
     RSYMBOL_API RDeclRes_ClassFuncs(const RDeclRes_ClassFuncs&);
     RSYMBOL_API ~RDeclRes_ClassFuncs();
 };
@@ -73,9 +73,9 @@ struct RDeclRes_Struct { RTypeArguments* outerTypeArgs; RStructDecl* decl; };
 
 struct RDeclRes_StructFuncs
 {
-    std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>> items;
+    std::vector<DeclWithOuterTypeArgs<RStructFuncDecl*>> items;
 
-    RSYMBOL_API RDeclRes_StructFuncs(std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>&& items);
+    RSYMBOL_API RDeclRes_StructFuncs(std::vector<DeclWithOuterTypeArgs<RStructFuncDecl*>>&& items);
     RSYMBOL_API RDeclRes_StructFuncs(const RDeclRes_StructFuncs&);
     RSYMBOL_API ~RDeclRes_StructFuncs();
 };

@@ -14,7 +14,7 @@ NStructFuncDecl::NStructFuncDecl(
     , accessor{accessor}
     , name{name}
     , _static{bStatic}
-    , NCommonFuncDeclComponent{bSeqFunc}
+    , NFuncDeclImpl_UsingNCommonFuncDeclComponent<RStructFuncDecl>{bSeqFunc}
 {   
 }
 

@@ -250,21 +250,6 @@ void GenerateVisitors(std::filesystem::path rootPath)
         },
 
         VisitorInfo {
-            .relPath = path("src") / "RSymbol" / "Public" / "RSymbol" / "RFuncDeclVisitor.g.h",
-            .name = "RFuncDecl",
-            .memberName = "rFuncDecl",
-            .members {
-                "RGlobalFuncDecl",
-                "RClassCtorDecl",
-                "RClassFuncDecl",
-                "RStructCtorDecl",
-                "RStructDtorDecl",
-                "RStructFuncDecl",
-                "RLambdaDecl",
-            }
-        },
-
-        VisitorInfo {
             .relPath = path("src") / "RSymbol" / "Public" / "RSymbol" / "RTypeDeclVisitor.g.h",
             .name = "RTypeDecl",
             .memberName = "rTypeDecl",

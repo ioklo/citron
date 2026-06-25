@@ -7,7 +7,7 @@ class RTypeArguments;
 template<typename TDecl>
 struct DeclWithOuterTypeArgs
 {
-    TDecl* decl;
+    TDecl decl;
     RTypeArguments* outerTypeArgs;
 };
 

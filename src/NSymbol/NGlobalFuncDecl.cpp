@@ -1,8 +1,8 @@
 #include "NGlobalFuncDecl.h"
 #include <cassert>
 
-#include "NNamespaceDecl.h"
 #include "Infra/Exceptions.h"
+#include "NNamespaceDecl.h"
 
 using namespace std;
 
@@ -12,7 +12,7 @@ NGlobalFuncDecl::NGlobalFuncDecl(NNamespaceDecl* outer, RAccessor accessor, bool
     : outer{outer}
     , accessor{accessor}
     , name{move(rName)}
-    , NCommonFuncDeclComponent{bSeqFunc}
+    , NFuncDeclImpl_UsingNCommonFuncDeclComponent<RGlobalFuncDecl>{/*bSeqFunc*/bSeqFunc}
 {   
 }
 

@@ -53,10 +53,10 @@ public:
 
 class RFuncDeclMatchArgumentsInput : public IMatchArgumentsInput
 {
-    RFuncDecl* funcDecl;
+    RFuncDecl funcDecl;
 
 public:
-    RFuncDeclMatchArgumentsInput(RFuncDecl* funcDecl) : funcDecl{funcDecl} {}
+    RFuncDeclMatchArgumentsInput(RFuncDecl funcDecl) : funcDecl{std::move(funcDecl)} {}
     virtual size_t GetTypeParamCount() override;
     virtual RTypeParamDecl* GetTypeParam(size_t index) override;
 

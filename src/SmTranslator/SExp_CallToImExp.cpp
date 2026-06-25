@@ -57,9 +57,9 @@ struct CallableTranslator
         return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{initExp});
     }
 
-    ResultType Call(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance, vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
+    ResultType Call(RFuncDecl& rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance, vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
     {
-        auto* retType = rFuncDecl->GetReturnType(typeArgs);
+        auto* retType = GetReturnType(rFuncDecl, typeArgs);
         auto copyStrategy = retType->GetCopyStrategy();
 
         switch (copyStrategy)

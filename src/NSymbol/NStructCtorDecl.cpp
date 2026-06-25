@@ -12,7 +12,7 @@ NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, RStru
     : _struct{_struct}
     , accessor{accessor}
     , kind{kind}
-    , NCommonFuncDeclComponent{/*bSeqFunc*/false}
+    , NFuncDeclImpl_UsingNCommonFuncDeclComponent<RStructCtorDecl>{/*bSeqFunc*/false}
 {
     NGenericsComponent::InitTypeParams({});
 }

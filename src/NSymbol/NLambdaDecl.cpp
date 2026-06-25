@@ -9,7 +9,7 @@ namespace Citron {
 NLambdaDecl::NLambdaDecl(NFuncDeclOuter&& outer, RName&& name)
     : outer{move(outer)}
     , name{move(name)}
-    , NCommonFuncDeclComponent{/*bSeqFunc*/false} // TODO: Ptr을 instance로 넣지 않는 최적화 가능
+    , NFuncDeclImpl_UsingNCommonFuncDeclComponent<RLambdaDecl>{/*bSeqFunc*/false} // TODO: Ptr을 instance로 넣지 않는 최적화 가능
 {   
     NGenericsComponent::InitTypeParams({});
 }

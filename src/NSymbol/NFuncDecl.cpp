@@ -16,6 +16,11 @@ NDecl* GetNDecl(NFuncDecl& funcDecl)
     return visit([](auto* funcDecl) -> NDecl* { return funcDecl; }, funcDecl);
 }
 
+RFuncDecl GetRFuncDecl(NFuncDecl& funcDecl)
+{
+    return visit([](auto* nFuncDecl) -> RFuncDecl { return nFuncDecl; }, funcDecl);
+}
+
 bool IsSeqFunc(NFuncDecl& funcDecl)
 {
     return visit([](auto* funcDecl) -> bool { return funcDecl->IsSeqFunc(); }, funcDecl);

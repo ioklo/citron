@@ -31,6 +31,7 @@
     <ClInclude Include="Public\NSymbol\NFactory.h" />
     <ClInclude Include="Public\NSymbol\NFuncDecl.h" />
     <ClInclude Include="Public\NSymbol\NFuncDeclContainerComponent.h" />
+    <ClInclude Include="Public\NSymbol\NFuncDeclImpl_UsingNCommonFuncDeclComponent.h" />
     <ClInclude Include="Public\NSymbol\NFuncDeclOuter.h" />
     <ClInclude Include="Public\NSymbol\NGenericsComponent.h" />
     <ClInclude Include="Public\NSymbol\NGlobalFuncDecl.h" />

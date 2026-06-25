@@ -22,7 +22,7 @@ NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bSeqFunc)
 
 void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcRet, RThisKind&& thisKind, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
-    funcReturnAndParams = FuncReturnAndParams{move(funcRet), move(thisKind), move(funcParameters), bLastParameterVariadic};
+    funcReturnAndParams.emplace(move(funcRet), move(thisKind), move(funcParameters), bLastParameterVariadic);
 }
 
 NCommonFuncDeclComponent::~NCommonFuncDeclComponent() = default;

@@ -36,14 +36,14 @@ public:
 
     std::optional<RDeclResType> GetMemberFunc(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
     {
-        std::vector<DeclWithOuterTypeArgs<RDeclType>> result;
+        std::vector<DeclWithOuterTypeArgs<RDeclType*>> result;
 
         auto i = nameMap.find(name);
         if (i == nameMap.end()) return {};
 
         for (auto& func : i->second)
             if (explicitTypeParamsExceptOuterCount <= func->GetTypeParamCount())
-                result.push_back(DeclWithOuterTypeArgs<RDeclType>(func, typeArgs));
+                result.push_back(DeclWithOuterTypeArgs<RDeclType*>{func, typeArgs});
 
         return RDeclResType(std::move(result));
 

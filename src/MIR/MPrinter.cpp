@@ -102,10 +102,9 @@ private:
         return format("decl#{}", reinterpret_cast<uintptr_t>(decl));
     }
 
-    string FuncDeclText(RFuncDecl* decl)
+    string FuncDeclText(RFuncDecl& decl)
     {
-        if (!decl) return "<null-func-decl>";
-        return DeclText(decl->GetRDecl());
+        return DeclText(GetRDecl(decl));
     }
 
     string LambdaDeclText(NLambdaDecl* decl)

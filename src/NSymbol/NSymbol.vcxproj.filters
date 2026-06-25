@@ -90,6 +90,9 @@
     <ClInclude Include="Public\NSymbol\NGenericsComponent.h">
       <Filter>04 Components</Filter>
     </ClInclude>
+    <ClInclude Include="Public\NSymbol\NFuncDeclImpl_UsingNCommonFuncDeclComponent.h">
+      <Filter>03 Func</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="10 Lambda">

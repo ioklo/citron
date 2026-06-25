@@ -1,17 +1,10 @@
 #pragma once
-#include "RSymbolConfig.h"
-
-#include "RTypeDecl.h"
-#include "RFuncDeclBase.h"
+#include "RDecl.h"
 
 namespace Citron {
 
-class RType;
-class RFactory;
-
-class RLambdaDecl
-    : public RFuncDeclBase
-    , public RTypeDecl
+// 일반적인 RFuncDeclBase
+class RFuncDeclBase : public RDecl
 {
 public:
     virtual RThisKind GetThisKind() = 0;
@@ -21,11 +14,6 @@ public:
     virtual RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) = 0;
     virtual RFuncReturn GetUnboundFuncReturn() = 0;
     virtual std::span<RFuncParameter> GetUnboundFuncParams() = 0;
-
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
-    RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
 };
-
-// M버전이 없다
 
 } // namespace Citron

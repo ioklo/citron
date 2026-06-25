@@ -32,8 +32,8 @@
     <ClInclude Include="Public\RSymbol\REnumElemVarDecl.h" />
     <ClInclude Include="Public\RSymbol\RFactory.h" />
     <ClInclude Include="Public\RSymbol\RFuncDecl.h" />
+    <ClInclude Include="Public\RSymbol\RFuncDeclBase.h" />
     <ClInclude Include="Public\RSymbol\RFuncDeclOuter.h" />
-    <ClInclude Include="Public\RSymbol\RFuncDeclVisitor.g.h" />
     <ClInclude Include="Public\RSymbol\RFuncParameter.h" />
     <ClInclude Include="Public\RSymbol\RFuncReturn.h" />
     <ClInclude Include="Public\RSymbol\RGlobalFuncDecl.h" />

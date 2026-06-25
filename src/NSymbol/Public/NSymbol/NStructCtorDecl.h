@@ -9,15 +9,14 @@
 
 #include "NDecl.h"
 #include "NGenericsComponent.h"
-#include "NCommonFuncDeclComponent.h"
+#include "NFuncDeclImpl_UsingNCommonFuncDeclComponent.h"
 
 namespace Citron {
 
 class NStructCtorDecl
     : public NDecl
-    , public RStructCtorDecl
     , private NGenericsComponent
-    , private NCommonFuncDeclComponent
+    , public NFuncDeclImpl_UsingNCommonFuncDeclComponent<RStructCtorDecl>
 {
 public:
     NStructDecl* _struct;
@@ -29,7 +28,7 @@ public:
     NSYMBOL_API void InitFuncParameters(std::vector<RFuncParameter>&& parameters, bool bLastParameterVariadic);
     NSYMBOL_API ~NStructCtorDecl();
     using NCommonFuncDeclComponent::IsSeqFunc;
-
+    
 public:
     // from NDecl
     RDecl* GetRDecl() override { return this; }
@@ -45,17 +44,6 @@ public:
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-
-    // from RFuncDecl
-    // RDecl* GetRDecl() override;
-    RThisKind GetThisKind() override { return NCommonFuncDeclComponent::GetThisKind(); }
-    // size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
-    size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
-    RType* GetReturnType(RTypeArguments* typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs); }
-    RFuncReturn GetFuncReturn(RTypeArguments* typeArgs) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs); }
-    RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index); }
-    RFuncReturn GetUnboundFuncReturn() override { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
-    std::span<RFuncParameter> GetUnboundFuncParams() override { return NCommonFuncDeclComponent::GetUnboundFuncParams(); }
 
     // from RStructCtorDecl
     NSYMBOL_API RStructDecl* GetStructDecl() override;

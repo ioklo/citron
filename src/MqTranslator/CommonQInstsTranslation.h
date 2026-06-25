@@ -17,7 +17,6 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 enum class MExp_CallIntrinsicKind;
 enum class MInitExp_CallIntrinsicKind;
 
-class RFuncDecl;
 class RTypeArguments;
 
 struct MStmt_Scope;
@@ -32,7 +31,7 @@ struct MqIntrinsicInfo;
 using MqLocResult = std::variant<struct MqLocResult_Slot, struct MqLocResult_Ptr>;
 
 std::expected<MqEmitState<std::optional<MqLocResult>>, DiagPtr> HandleIntrinsicCall(MqIntrinsicInfo& intrinsicInfo, MqCreateTarget createTarget, RTypeArguments* typeArgs, std::vector<MArgument>& mArgs, MqTranslationContexts& contexts);
-std::expected<MqEmitState<std::optional<MqLocResult>>, DiagPtr> HandleCall(RFuncDecl* decl, RTypeArguments* typeArgs, MqCreateTarget createTarget, MLoc* o_instance, std::vector<MArgument>& mArgs, MqTranslationContexts& contexts);
+std::expected<MqEmitState<std::optional<MqLocResult>>, DiagPtr> HandleCall(RFuncDecl& decl, RTypeArguments* typeArgs, MqCreateTarget createTarget, MLoc* o_instance, std::vector<MArgument>& mArgs, MqTranslationContexts& contexts);
 
 QArg_CallArg MakeAddrCallArg(MqLocResult& locResult, MqTranslationContexts& contexts);
 std::optional<QArg_CallArg> MakeAddrCallArg(MqCreateTarget& createTarget, MqTranslationContexts& contexts);
