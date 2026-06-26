@@ -169,7 +169,7 @@ class QPrinter
             }
 
             printer.Print("call ");
-            auto rId = GetRDecl(inst.rFuncDecl)->GetIdentifier();
+            auto rId = inst.rFuncDecl.GetRDecl()->GetIdentifier();
             printer.PrintRName(rId.name);
             for (size_t i = 0; i < inst.args.size(); i++)
             {   

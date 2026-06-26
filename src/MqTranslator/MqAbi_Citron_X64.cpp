@@ -35,7 +35,8 @@ size_t MqAbi_Citron_X64::GetTypeSize(RType* type)
 MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(RFuncDecl& rFuncDecl, RTypeArguments* typeArgs)
 {
     size_t curArgIndex = 0;
-    auto returnPassingMode = GetReturnPassingMode(GetFuncReturn(rFuncDecl, typeArgs), &curArgIndex);
+
+    auto returnPassingMode = GetReturnPassingMode(rFuncDecl.GetFuncReturn(typeArgs), &curArgIndex);
 
     auto thisPassingMode = visit([&curArgIndex](auto&& thisKind) -> MqThisPassingMode {
         using T = remove_cvref_t<decltype(thisKind)>;
@@ -46,15 +47,15 @@ MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(RFuncDecl& rFuncDecl, RTypeArguments* t
         else if constexpr (same_as<T, RThisKind_Ref>)
             return MqThisPassingMode_Ptr{curArgIndex++};
         else static_assert(false);
-    }, GetThisKind(rFuncDecl));
+    }, rFuncDecl.GetThisKind());
 
     size_t explicitArgStartIndex = curArgIndex;
     vector<MqParamPassingMode> paramPassingModes;
-    size_t count = GetParamCount(rFuncDecl);
+    size_t count = rFuncDecl.GetParamCount();
     paramPassingModes.reserve(count);
     for (size_t i = 0; i < count; i++)
     {
-        auto param = GetFuncParam(rFuncDecl, typeArgs, i);
+        auto param = rFuncDecl.GetFuncParam(typeArgs, i);
         if (param.IsRef())
             paramPassingModes.push_back(MqParamPassingMode::Ref);
         else

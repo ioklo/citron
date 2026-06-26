@@ -34,9 +34,9 @@ namespace {
 expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
 {   
     // TODO: generics
-    auto rFuncDecl = GetRFuncDecl(mFuncBody.nFuncDecl);
+    auto rFuncDecl = mFuncBody.nFuncDecl.GetRFuncDecl();
 
-    auto rFuncReturn = GetUnboundFuncReturn(rFuncDecl);
+    auto rFuncReturn = rFuncDecl.GetUnboundFuncReturn();
     auto* rRetType = visit([&rFactory](auto& rFuncReturn) -> RType*
     {
         using T = remove_cvref_t<decltype(rFuncReturn)>;
@@ -57,9 +57,9 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     {
         MqScopeGuard mainGuard{std::nullopt, bodyContext};
 
-        auto rFuncDecl = GetRFuncDecl(mFuncBody.nFuncDecl);
-        auto funcInfo = abi->GetFuncInfo(rFuncDecl, GetRDecl(rFuncDecl)->MakeOpenTypeArgs(*rFactory));
-        auto thisKind = GetThisKind(rFuncDecl);
+        auto rFuncDecl = mFuncBody.nFuncDecl.GetRFuncDecl();
+        auto funcInfo = abi->GetFuncInfo(rFuncDecl, rFuncDecl.GetRDecl()->MakeOpenTypeArgs(*rFactory));
+        auto thisKind = rFuncDecl.GetThisKind();
 
         visit([rRetType, &bodyContext](auto& returnPassingMode) {
             using T = remove_cvref_t<decltype(returnPassingMode)>;
@@ -102,7 +102,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
         // parameter 세팅
         // TODO: 일단 generics없이 진행
-        auto unboundParams = rFuncDecl->GetUnboundFuncParams();
+        auto unboundParams = rFuncDecl.GetUnboundFuncParams();
         for (size_t i = 0, count = unboundParams.size(); i < count; i++)
         {
             auto& unboundParam = unboundParams[i];

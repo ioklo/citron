@@ -33,8 +33,13 @@ public:
     NSYMBOL_API bool IsSeqFunc();
     NSYMBOL_API NFuncDeclOuter GetNFuncDeclOuter();
 
+    bool operator==(const NFuncDecl& other) const { return v == other.v; }
+
     template<typename... TArgs>
     auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
+
+    template<typename T>
+    T* GetIf() { return std::get_if<T>(&v); }
 };
 
 }

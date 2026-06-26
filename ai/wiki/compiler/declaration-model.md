@@ -8,6 +8,8 @@ Keywords: RDecl, NDecl, EDecl, REDecl, declaration, skeleton, fdecl
 - Runtime/intermediate declaration interface is unified as `RDecl`.
 - Source declarations and externally exposed declarations remain distinct as `NDecl` and `EDecl`.
 - Compilation phases use `RDecl` as the common interface.
+- Common declaration-related sum types such as `RFuncDecl`, `NFuncDecl`, `RDeclRes`, and `BodyRes` use thin wrapper classes over `std::variant` rather than public type aliases.
+- Prefer domain methods on those wrappers (`GetRDecl()`, `GetRFuncDecl()`, `GetFuncDeclWithOuterTypeArgs()`, etc.) over scattering free helper functions at call sites.
 
 ## Declaration Kinds
 - `NDecl` is created directly from source.
@@ -19,6 +21,7 @@ Keywords: RDecl, NDecl, EDecl, REDecl, declaration, skeleton, fdecl
 - Later phases, including `SyntaxIR0Translator`, create/register required declarations through `RDecl`.
 - External declarations and source declarations can be handled through one runtime-facing interface.
 - Skeleton/fdecl collection can establish stable declaration identity before complete surface/body is known.
+- Wrapper-based sum types keep declaration-specific operations close to the type while still allowing internal `Visit(...)` dispatch where a real sum-type branch is needed.
 
 ## Related Open Points
 - Exact fields filled at fdecl / decl / impl states for each declaration kind.

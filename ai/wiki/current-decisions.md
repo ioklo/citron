@@ -42,6 +42,7 @@ Status: current snapshot
 - `some` opaque result call은 metadata accessor, value witness, trait witness, opaque sret로 낮춘다.
 - value witness는 size/align/copy/move/destroy 같은 값 기본 연산 테이블이다.
 - trait witness는 trait requirement를 backing type 구현으로 연결하는 테이블이다.
+- declaration/body resolution 주변의 공용 sum type은 raw public `std::variant` alias보다 얇은 wrapper class를 선호하고, 호출부에는 free helper보다 member API를 우선 둔다.
 - MIR 값 모델은 BC/NBC, read/create/init destination을 분리하는 방향을 유지한다.
 - `MCreate`는 MIR surface에 유지하되, lowering 중심 primitive는 `TranslateMExp`, `TranslateMLoc`, `TranslateMInitExp`로 분리한다.
 - QIR call lowering은 logical slot model과 passing mode를 사용하고, physical ABI 선택은 후속 lowering에 맡긴다.

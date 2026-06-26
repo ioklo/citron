@@ -94,11 +94,11 @@ void DoTest(const string& code, const string& expected)
     NGlobalFuncDecl* nEntry = nullptr;
     for (auto& body : qData->GetAllBodies())
     {
-        if (NGlobalFuncDecl* globalFuncDecl = dynamic_cast<NGlobalFuncDecl*>(body.nFuncDecl))
-        {
-            auto id = body.nFuncDecl.GetNDecl().GetRDecl()->GetIdentifier();
+        if (auto** globalFuncDecl = body.nFuncDecl.GetIf<NGlobalFuncDecl*>())
+        {   
+            auto id = body.nFuncDecl.GetNDecl()->GetRDecl()->GetIdentifier();
             if (id == RIdentifier{RName_Normal("Main"), 0, {}})
-                nEntry = globalFuncDecl;
+                nEntry = *globalFuncDecl;
         }
     }
     ASSERT_TRUE(nEntry);

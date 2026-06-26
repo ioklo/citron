@@ -81,6 +81,8 @@ public:
     void Visit(SClassDecl* decl);
     void Visit(SStructDecl* decl);
     void Visit(SEnumDecl* decl);
+    void Visit(STraitDecl* decl);
+    void Visit(SExtendDecl* decl);
     void Visit(SClassFuncDecl* decl);
     void Visit(SClassCtorDecl* decl);
     void Visit(SClassVarDecl* decl);
@@ -186,6 +188,16 @@ void VisitEnum(TNOuter* outer, SEnumDecl* sEnum, AccessorContext accessorContext
     }
 }
 
+void VisitTrait()
+{
+    throw NotImplementedException{};
+}
+
+void VisitExtend()
+{
+    throw NotImplementedException{};
+}
+
 void StructElemVisitor::Visit(SClassDecl* decl)
 {
     throw NotImplementedException{};
@@ -199,6 +211,16 @@ void StructElemVisitor::Visit(SStructDecl* decl)
 void StructElemVisitor::Visit(SEnumDecl* decl)
 {
     VisitEnum(nStruct, decl, AccessorContext::InsideStruct, rFactory, nFactory, phaseManager);
+}
+
+void StructElemVisitor::Visit(STraitDecl* decl)
+{
+    VisitTrait();
+}
+
+void StructElemVisitor::Visit(SExtendDecl* decl)
+{
+    VisitExtend();
 }
 
 void StructElemVisitor::Visit(SStructFuncDecl* decl)
@@ -235,6 +257,17 @@ void ClassElemVisitor::Visit(SEnumDecl* decl)
 {
     VisitEnum(outer, decl, AccessorContext::InsideClass, rFactory, nFactory, phaseManager);
 }
+
+void ClassElemVisitor::Visit(STraitDecl* decl)
+{
+    VisitTrait();
+}
+
+void ClassElemVisitor::Visit(SExtendDecl* decl)
+{
+    VisitExtend();
+}
+
 
 void ClassElemVisitor::Visit(SClassFuncDecl* decl)
 {
@@ -294,6 +327,16 @@ void NamespaceElemVisitor::Visit(SEnumDecl* elem)
     VisitEnum(curDecl, elem, AccessorContext::Global, rFactory, nFactory, phaseManager);
 }
 
+void NamespaceElemVisitor::Visit(STraitDecl* decl)
+{
+    VisitTrait();
+}
+
+void NamespaceElemVisitor::Visit(SExtendDecl* decl)
+{
+    VisitExtend();
+}
+
 void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
 {
     // A.B.C가 있을 경우, 하위 네임스페이스를 찾는다. 없으면 만들어 나간다
@@ -347,6 +390,17 @@ void ScriptElemVisitor::Visit(SEnumDecl* elem)
 {
     VisitEnum(rootNamespace, elem, AccessorContext::Global, rFactory, nFactory, phaseManager);
 }
+
+void ScriptElemVisitor::Visit(STraitDecl* decl)
+{
+    VisitTrait();
+}
+
+void ScriptElemVisitor::Visit(SExtendDecl* decl)
+{
+    VisitExtend();
+}
+
 
 } // unnamed namespace 
 
