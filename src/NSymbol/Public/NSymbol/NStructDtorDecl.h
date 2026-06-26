@@ -6,9 +6,8 @@
 
 #include "RSymbol/RStructDtorDecl.h"
 
-#include "NFuncDecl.h"
-#include "NFuncDeclOuter.h"
-#include "NCommonFuncDeclComponent.h"
+#include "NDecl.h"
+#include "NFuncDeclImpl_UsingNCommonFuncDeclComponent.h"
 
 namespace Citron {
 
@@ -16,32 +15,20 @@ class NStructDecl;
 
 class NStructDtorDecl
     : public NDecl
-    , public NFuncDecl
-    , public NFuncDeclOuter
-    , public RStructDtorDecl
-    , private NCommonFuncDeclComponent
+    , public NFuncDeclImpl_UsingNCommonFuncDeclComponent<RStructDtorDecl>
 {
+public:
     RAccessor accessor;
     NStructDecl* _struct;
 
 public:
     NSYMBOL_API NStructDtorDecl(RAccessor accessor, NStructDecl* structDecl);
+    using NCommonFuncDeclComponent::IsSeqFunc;
 
     // from NDecl
     RDecl* GetRDecl() override { return this; }
     NSYMBOL_API NDecl* GetNOuter() override;
     void Accept(NDeclVisitor& visitor) override { visitor.Visit(this); }
-
-    // from NFuncDecl
-    NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API NFuncDeclOuter* GetNFuncDeclOuter() override;
-    RFuncDecl* GetRFuncDecl() override { return this; }
-    bool IsSeqFunc() override { return NCommonFuncDeclComponent::IsSeqFunc(); }
-    void Accept(NFuncDeclVisitor& visitor) override { visitor.Visit(this); }
-
-    // from NFuncDeclOuter
-    // NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
 
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
@@ -52,17 +39,6 @@ public:
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-
-    // from RFuncDecl
-    // RDecl* GetRDecl() override { return this; }
-    RThisKind GetThisKind() override { return NCommonFuncDeclComponent::GetThisKind(); }
-    // size_t GetTypeParamCount() override { return 0; }
-    size_t GetParamCount() override { return NCommonFuncDeclComponent::GetParamCount(); }
-    RType* GetReturnType(RTypeArguments* typeArgs) override { return NCommonFuncDeclComponent::GetReturnType(typeArgs); }
-    RFuncReturn GetFuncReturn(RTypeArguments* typeArgs) override { return NCommonFuncDeclComponent::GetFuncReturn(typeArgs); }
-    RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) override { return NCommonFuncDeclComponent::GetFuncParam(typeArgs, index); }
-    RFuncReturn GetUnboundFuncReturn() override { return NCommonFuncDeclComponent::GetUnboundFuncReturn(); }
-    std::span<RFuncParameter> GetUnboundFuncParams() override { return NCommonFuncDeclComponent::GetUnboundFuncParams(); }
 };
 
 

@@ -57,9 +57,9 @@ struct CallableTranslator
         return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{initExp});
     }
 
-    ResultType Call(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance, vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
+    ResultType Call(RFuncDecl rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance, vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
     {
-        auto* retType = rFuncDecl->GetReturnType(typeArgs);
+        auto* retType = rFuncDecl.GetReturnType(typeArgs);
         auto copyStrategy = retType->GetCopyStrategy();
 
         switch (copyStrategy)
@@ -193,7 +193,7 @@ struct CallableTranslator
     { 
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
-        std::vector<DeclWithOuterTypeArgs<RStructCtorDecl>> items;
+        std::vector<TDeclWithOuterTypeArgs<RStructCtorDecl>> items;
         for (auto* ctor : imExp->structDecl->GetUnboundCtors())
         {
             items.emplace_back(ctor, imExp->typeArgs);

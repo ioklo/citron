@@ -11,8 +11,8 @@ RType* GetType(RFuncReturn& funcRet, RFactory* rFactory)
 {
     return visit([rFactory](auto& funcRet) -> RType* {
         using T = remove_cvref_t<decltype(funcRet)>;
-        if constexpr (same_as<T, RFuncReturn_ForCtor>) return rFactory->MakeVoidType();
-        else if constexpr (same_as<T, RFuncReturn_Set>)
+        if constexpr (same_as<T, RFuncReturn_None>) return rFactory->MakeVoidType();
+        else if constexpr (same_as<T, RFuncReturn_Normal>)
             return funcRet.type;
         else if constexpr (same_as<T, RFuncReturn_NotSet>)
             throw RuntimeFatalException{};

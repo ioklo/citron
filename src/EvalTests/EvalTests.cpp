@@ -18,7 +18,6 @@
 #include "RSymbol/RModule.h"
 
 #include "NSymbol/NFactory.h"
-#include "NSymbol/NFuncDecl.h"
 #include "NSymbol/NModule.h"
 #include "NSymbol/NGlobalFuncDecl.h"
 
@@ -97,7 +96,7 @@ void DoTest(const string& code, const string& expected)
     {
         if (NGlobalFuncDecl* globalFuncDecl = dynamic_cast<NGlobalFuncDecl*>(body.nFuncDecl))
         {
-            auto id = body.nFuncDecl->GetNDecl()->GetRDecl()->GetIdentifier();
+            auto id = body.nFuncDecl.GetNDecl().GetRDecl()->GetIdentifier();
             if (id == RIdentifier{RName_Normal("Main"), 0, {}})
                 nEntry = globalFuncDecl;
         }

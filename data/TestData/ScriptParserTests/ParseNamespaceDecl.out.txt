@@ -18,10 +18,13 @@
                             "$type": "SGlobalFuncDecl",
                             "accessModifier": null,
                             "bSequence": false,
-                            "retType": {
-                                "$type": "STypeExp_Id",
-                                "name": "void",
-                                "typeArgs": []
+                            "funcRet": {
+                                "$type": "SFuncReturn_Normal",
+                                "type": {
+                                    "$type": "STypeExp_Id",
+                                    "name": "void",
+                                    "typeArgs": []
+                                }
                             },
                             "name": "F",
                             "typeParams": [],

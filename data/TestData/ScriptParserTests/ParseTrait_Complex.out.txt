@@ -1,0 +1,49 @@
+{
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STraitDecl",
+            "accessModifier": null,
+            "name": "MyTrait",
+            "typeParams": [
+                {
+                    "$type": "STypeParam",
+                    "name": "T"
+                },
+                {
+                    "$type": "STypeParam",
+                    "name": "U"
+                }
+            ],
+            "memberDecls": [
+                {
+                    "$type": "STraitFuncDecl",
+                    "bStatic": false,
+                    "funcRet": {
+                        "$type": "SFuncReturn_Opaque",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "T",
+                            "typeArgs": []
+                        }
+                    },
+                    "name": "Func",
+                    "typeParams": [],
+                    "parameters": [
+                        {
+                            "$type": "SFuncParam",
+                            "o_modifier": "In",
+                            "bRef": true,
+                            "type": {
+                                "$type": "STypeExp_Id",
+                                "name": "U",
+                                "typeArgs": []
+                            },
+                            "name": "u"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

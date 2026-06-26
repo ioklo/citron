@@ -140,21 +140,13 @@ void GenerateStruct(CommonInfo& commonInfo, StructInfo structInfo, ostringstream
 void GenerateClass(CommonInfo& commonInfo, ClassInfo& classInfo, ostringstream& hStream, ostringstream& cppStream)
 {
     // class begin
-    hStream << "class " << classInfo.name << endl;
+    hStream << "class " << classInfo.name;
     bool bFirst = true;
 
-    for (auto& virtualBase : classInfo.virtualBases)
-    {
-        if (bFirst)
-        {
-            hStream << "    : virtual public " << virtualBase << endl;
-            bFirst = false;
-        }
-        else
-        {
-            hStream << "    , virtual public " << virtualBase << endl;
-        }
-    }
+    if (classInfo.o_base)
+        hStream << " : public " << *classInfo.o_base;
+
+    hStream << endl;
 
     for (auto& variantInterface : classInfo.variantInterfaces)
     {
@@ -420,7 +412,7 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
     //     virtual void Visit(C* c) = 0;
     // };
     // 
-    // class 'name' : 'virtualBases...'
+    // class 'name' : 'bases...'
     // {
     // public:
     //     virtual ~'name'() = default
@@ -437,16 +429,9 @@ void GenerateVariantInterface(CommonInfo& commonInfo, VariantInterfaceInfo& info
 
     hStream << "class " << info.name;
 
-    if (!info.virtualBases.empty())
-    {
-        bool bFirst = true;
-        for (auto& virtualBase : info.virtualBases)
-        {
-            if (bFirst)
-                hStream << " : virtual public " << virtualBase;
-            else
-                hStream << ", virtual public " << virtualBase;
-        }
+    if (info.o_base)
+    {   
+        hStream << " : public " << *info.o_base;
     }
 
     hStream << endl;

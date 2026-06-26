@@ -1,7 +1,6 @@
 #include "NClassFuncDecl.h"
 
 #include <cassert>
-#include "Infra/Exceptions.h"
 
 #include "NClassDecl.h"
 
@@ -11,7 +10,7 @@ namespace Citron {
 
 NClassFuncDecl::NClassFuncDecl(NClassDecl* _class, RAccessor accessor, RName&& name, bool bStatic, bool bSeqFunc)
     : _class{_class}, accessor{accessor}, name{move(name)}, _static{bStatic}
-    , NCommonFuncDeclComponent{bSeqFunc}
+    , NFuncDeclImpl_UsingNCommonFuncDeclComponent<RClassFuncDecl>{bSeqFunc}
 {
 }
 
@@ -25,11 +24,6 @@ void NClassFuncDecl::Init(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&
 }
 
 NDecl* NClassFuncDecl::GetNOuter()
-{
-    return _class;
-}
-
-NFuncDeclOuter* NClassFuncDecl::GetNFuncDeclOuter()
 {
     return _class;
 }

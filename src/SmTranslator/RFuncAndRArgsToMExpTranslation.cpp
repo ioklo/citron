@@ -33,10 +33,12 @@ public:
     MLoc* instance;
     vector<MArgument> args;
     TranslationContexts& contexts;
+
+    ResultType operator()(auto* funcDecl) { return Visit(funcDecl); }
     
-    ResultType Call(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance)
+    ResultType Call(RFuncDecl rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance)
     {
-        auto* retType = rFuncDecl->GetReturnType(typeArgs);
+        auto* retType = rFuncDecl.GetReturnType(typeArgs);
 
         switch (retType->GetCopyStrategy())
         {
@@ -98,10 +100,9 @@ public:
 
 } // namespace Citron
 
-expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContexts& contexts)
+expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl& decl, RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContexts& contexts)
 {
-    RFuncAndRArgsToMStmtTranslator binder{typeArgs, instance, move(args), contexts};
-    return Accept(binder, decl);
+    return decl.Visit(RFuncAndRArgsToMStmtTranslator{typeArgs, instance, move(args), contexts});
 }
 
 }

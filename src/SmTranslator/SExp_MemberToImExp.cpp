@@ -306,7 +306,7 @@ struct MemberTranslator
     {
         auto o_declRes = decl->GetMember(typeArgs, memberName, memberTypeArgs->GetCount());
         StaticBaseTranslator binder{memberTypeArgs, contexts};
-        return visit(binder, *o_declRes);
+        return o_declRes->Visit(binder);
     }
 
     ResultType TranslateInstanceParent(ReExp& reExp)
@@ -336,7 +336,7 @@ struct MemberTranslator
             return Error<Error_ResolveIdentifier_NotFound>();
 
         InstanceParentTranslator binder{*e_mLoc, memberTypeArgs, contexts};
-        return visit(binder, *o_declRes);
+        return o_declRes->Visit(binder);
     }
 
     ResultType Visit(ImExp_Namespace* imExp) 

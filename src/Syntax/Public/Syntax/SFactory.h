@@ -69,18 +69,13 @@ class SForStmtInitializer;
 class SForStmtInitializer_Exp;
 class SForStmtInitializer_VarDecl;
 
-class SClassMemberDecl;
 class SClassFuncDecl;
 class SClassCtorDecl;
 class SClassVarDecl;
 
-class SStructMemberDecl;
 class SStructFuncDecl;
 class SStructCtorDecl;
 class SStructVarDecl;
-
-class SNamespaceDeclElement;
-class SScriptElement;
 
 class SClassDecl;
 class SStructDecl;
@@ -183,27 +178,30 @@ public:
     MAKE(SForStmtInitializer_Exp)
     MAKE(SForStmtInitializer_VarDecl)
 
-    MAKE(SClassMemberDecl)
-    MAKE(SClassFuncDecl)
     MAKE(SClassCtorDecl)
     MAKE(SClassVarDecl)
 
-    MAKE(SStructMemberDecl)
-    MAKE(SStructFuncDecl)
     MAKE(SStructCtorDecl)
     MAKE(SStructDtorDecl)
     MAKE(SStructVarDecl)
 
     MAKE(SNamespaceDeclElement)
-    MAKE(SScriptElement)
     MAKE(SClassDecl)
     MAKE(SStructDecl)
     MAKE(SEnumDecl)
     MAKE(SEnumElemDecl)
     MAKE(SEnumElemVarDecl)
-    MAKE(SGlobalFuncDecl)
     MAKE(SNamespaceDecl)
     MAKE(SScript)
+
+    template<typename TSSyntax, typename... TArgs> requires std::derived_from<TSSyntax, SSyntax>
+    TSSyntax* Make(TArgs&&... args)
+    {
+        auto elem = std::make_unique<TSSyntax>(std::forward<TArgs>(args)...);
+        auto* pElem = elem.get();
+        syntaxes.push_back(std::move(elem));
+        return pElem;
+    }
 
     template<typename... TArgs> 
     SArgument* MakeSArgument(TArgs&&... args)

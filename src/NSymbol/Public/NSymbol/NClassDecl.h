@@ -27,7 +27,6 @@ class NClassDecl
     : public NDecl
     , public NTypeDecl
     , public NTypeDeclOuter
-    , public NFuncDeclOuter
     , public RClassDecl
     , private NGenericsComponent
     , private NTypeDeclContainerComponent
@@ -70,10 +69,6 @@ public:
     // NDecl* GetNDecl() override { return this; }
     void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
-    // from NFuncDeclOuter
-    // NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
-
     // from RDecl
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RDecl* GetROuter() override;
@@ -87,9 +82,6 @@ public:
     // from RTypeDecl
     RType* GetOpenType() override;
     
-    // from RFuncDeclOuter
-    //RDecl* GetRDecl() override { return this; }
-
     // from RClassDecl
     NSYMBOL_API std::optional<RDeclRes_ClassVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
 };

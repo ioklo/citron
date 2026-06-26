@@ -1,4 +1,5 @@
 #include "BuildTypeDependentSymbolContext.h"
+#include <variant>
 
 #include "Syntax/Syntax.h"
 
@@ -50,6 +51,36 @@ RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl
     } visitor{rFactory.get()};
 
     return Accept(visitor, sTypeExp);
+}
+
+expected<RFuncReturn, DiagPtr> BuildTypeDependentSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, NDecl* decl)
+{
+    return visit([this, decl](auto& funcRet) -> expected<RFuncReturn, DiagPtr> {
+        using T = remove_cvref_t<decltype(funcRet)>;
+
+        if constexpr (same_as<T, SFuncReturn_Normal>)
+        {
+            auto* rType = MakeType(funcRet.type, decl);
+            return RFuncReturn_Normal(rType);
+        }
+        else if constexpr (same_as<T, SFuncReturn_Opaque>)
+        {
+            // rType이 맞는걸까
+            throw NotImplementedException{};
+            //auto* rType = MakeType(funcRet.trait, decl);
+            //if (auto* rOpaqueType = dynamic_cast<RType_Opaque*>(rType))
+            //{
+            //    return RFuncReturn_Normal{rType};
+            //}
+            //else
+            //{
+            //    // TODO: 리턴값을 expected로 바꿔야 한다
+            //    throw NotImplementedException{};
+            //}
+        }
+        else static_assert(false);
+
+    }, funcRet);
 }
 
 expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildTypeDependentSymbolContext::MakeParameters(NDecl* decl, vector<SFuncParam>& sParams)

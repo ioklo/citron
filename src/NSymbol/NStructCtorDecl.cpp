@@ -12,24 +12,19 @@ NStructCtorDecl::NStructCtorDecl(NStructDecl* _struct, RAccessor accessor, RStru
     : _struct{_struct}
     , accessor{accessor}
     , kind{kind}
-    , NCommonFuncDeclComponent{/*bSeqFunc*/false}
+    , NFuncDeclImpl_UsingNCommonFuncDeclComponent<RStructCtorDecl>{/*bSeqFunc*/false}
 {
     NGenericsComponent::InitTypeParams({});
 }
 
 void NStructCtorDecl::InitFuncParameters(vector<RFuncParameter>&& parameters, bool bLastParameterVariadic)
 {
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor(), RThisKind_Ref{_struct->GetOpenType()}, move(parameters), bLastParameterVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_None{}, RThisKind_Ref{_struct->GetOpenType()}, move(parameters), bLastParameterVariadic);
 }
 
 NStructCtorDecl::~NStructCtorDecl() = default;
 
 NDecl* NStructCtorDecl::GetNOuter()
-{
-    return _struct;
-}
-
-NFuncDeclOuter* NStructCtorDecl::GetNFuncDeclOuter()
 {
     return _struct;
 }

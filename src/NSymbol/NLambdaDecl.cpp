@@ -6,17 +6,17 @@ using namespace std;
 
 namespace Citron {
 
-NLambdaDecl::NLambdaDecl(NFuncDeclOuter* outer, RName&& name)
-    : outer{outer}
+NLambdaDecl::NLambdaDecl(NFuncDeclOuter&& outer, RName&& name)
+    : outer{move(outer)}
     , name{move(name)}
-    , NCommonFuncDeclComponent{/*bSeqFunc*/false} // TODO: Ptr을 instance로 넣지 않는 최적화 가능
+    , NFuncDeclImpl_UsingNCommonFuncDeclComponent<RLambdaDecl>{/*bSeqFunc*/false} // TODO: Ptr을 instance로 넣지 않는 최적화 가능
 {   
     NGenericsComponent::InitTypeParams({});
 }
 
-void NLambdaDecl::Init(RFuncReturn&& funcReturn, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void NLambdaDecl::Init(RFuncReturn&& funcRet, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {   
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcReturn), move(thisKind), move(funcParameters), bLastParameterVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcRet), move(thisKind), move(funcParameters), bLastParameterVariadic);
 }
 
 void NLambdaDecl::InitVars(std::vector<NLambdaVarDecl*>&& vars)
@@ -29,12 +29,12 @@ void NLambdaDecl::InitVars(std::vector<NLambdaVarDecl*>&& vars)
 
 NDecl* NLambdaDecl::GetNOuter()
 {
-    return outer->GetNDecl();
+    return outer.GetNDecl();
 }
 
 RDecl* NLambdaDecl::GetROuter()
 {
-    return outer->GetNDecl()->GetRDecl();
+    return outer.GetNDecl()->GetRDecl();
 }
 
 RIdentifier NLambdaDecl::GetIdentifier()

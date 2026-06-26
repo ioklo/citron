@@ -1,8 +1,8 @@
 #include "NGlobalFuncDecl.h"
 #include <cassert>
 
-#include "NNamespaceDecl.h"
 #include "Infra/Exceptions.h"
+#include "NNamespaceDecl.h"
 
 using namespace std;
 
@@ -12,21 +12,16 @@ NGlobalFuncDecl::NGlobalFuncDecl(NNamespaceDecl* outer, RAccessor accessor, bool
     : outer{outer}
     , accessor{accessor}
     , name{move(rName)}
-    , NCommonFuncDeclComponent{bSeqFunc}
+    , NFuncDeclImpl_UsingNCommonFuncDeclComponent<RGlobalFuncDecl>{/*bSeqFunc*/bSeqFunc}
 {   
 }
 
-void NGlobalFuncDecl::InitFuncReturnAndParams(RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void NGlobalFuncDecl::InitFuncReturnAndParams(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcReturn), RThisKind_Static{}, move(funcParameters), bLastParameterVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(move(funcRet), RThisKind_Static{}, move(funcParameters), bLastParameterVariadic);
 }
 
 NDecl* NGlobalFuncDecl::GetNOuter()
-{
-    return outer;
-}
-
-NFuncDeclOuter* NGlobalFuncDecl::GetNFuncDeclOuter()
 {
     return outer;
 }

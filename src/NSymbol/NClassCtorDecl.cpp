@@ -11,23 +11,18 @@ NClassCtorDecl::NClassCtorDecl(NClassDecl* _class, RAccessor accessor, bool bTri
     : _class{_class}
     , accessor{accessor}
     , bTrivial{bTrivial}
-    , NCommonFuncDeclComponent{/*bSeqFunc*/false}
+    , NFuncDeclImpl_UsingNCommonFuncDeclComponent<RClassCtorDecl>{/*bSeqFunc*/false}
 {   
     NGenericsComponent::InitTypeParams({});
 }
 
 void NClassCtorDecl::Init(vector<RFuncParameter>&& parameters, bool bLastParamVariadic)
 {   
-    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_ForCtor{}, RThisKind_Handle{_class->GetOpenType()}, move(parameters), bLastParamVariadic);
+    NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_None{}, RThisKind_Handle{_class->GetOpenType()}, move(parameters), bLastParamVariadic);
 }
 
 
 NDecl* NClassCtorDecl::GetNOuter()
-{
-    return _class;
-}
-
-NFuncDeclOuter* NClassCtorDecl::GetNFuncDeclOuter()
 {
     return _class;
 }

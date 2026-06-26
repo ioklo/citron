@@ -393,7 +393,7 @@ struct SStmtToMStmtsTranslator
         {
             using T = remove_cvref_t<decltype(funcRet)>;
 
-            if constexpr (same_as<T, RFuncReturn_Set>)
+            if constexpr (same_as<T, RFuncReturn_Normal>)
             {
                 if (!stmt->value)
                 {
@@ -442,7 +442,7 @@ struct SStmtToMStmtsTranslator
                     return Value<MStmt_Return>(MTopLevel_Create{move(*e_retValue)});
                 }
             }
-            else if constexpr (same_as<T, RFuncReturn_ForCtor>)
+            else if constexpr (same_as<T, RFuncReturn_None>)
             {
                 if (!stmt->value)
                 {
@@ -614,7 +614,7 @@ struct SStmtToMStmtsTranslator
 
         //            // 리턴 타입은 bool
         //            auto ret = funcDecl->GetFuncReturn(*typeArgs);
-        //            auto* setRet = get_if<RFuncReturn_Set>(&ret);
+        //            auto* setRet = get_if<RFuncReturn_Normal>(&ret);
         //            assert(setRet);
 
         //            if (setRet->type != contexts.rFactory->MakeBoolType()) continue;
@@ -678,7 +678,7 @@ struct SStmtToMStmtsTranslator
 
         //            // 리턴 타입은 bool
         //            auto ret = funcDecl->GetFuncReturn(*typeArgs);
-        //            auto* setRet = get_if<RFuncReturn_Set>(&ret);
+        //            auto* setRet = get_if<RFuncReturn_Normal>(&ret);
         //            assert(setRet);
 
         //            if (setRet->type != contexts.rFactory->MakeBoolType()) continue;
@@ -823,7 +823,7 @@ struct SStmtToMStmtsTranslator
 
         // yield에서는 retType이 명시되는 경우만 있을 것이다
         auto funcRet = contexts.funcContext->GetUnboundFuncReturn();
-        auto* setFuncRet = get_if<RFuncReturn_Set>(&funcRet);
+        auto* setFuncRet = get_if<RFuncReturn_Normal>(&funcRet);
 
         assert(setFuncRet); // 아닌 경우는 위에서 거른다 (sequence함수는 무조건 ret포함)
 
@@ -1042,7 +1042,7 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType
     // var newLambdaBodyContext = funcContext.NewLambdaBodyContext(localContext); // new FuncContext(lambdaDeclHolder, bodyContext.GetThisType(), bSeqFunc: false, localContext);
 
     // 람다 관련 정보는 여기서 수집한다
-    RFuncReturn funcRet = retType ? (RFuncReturn)RFuncReturn_Set{retType} : RFuncReturn_NotSet();
+    RFuncReturn funcRet = retType ? (RFuncReturn)RFuncReturn_Normal{retType} : RFuncReturn_NotSet();
 
     auto e_funcParamsInfo = MakeParameters(sParams, contexts);
     RETURN_ON_ERROR_REFDECL(e_funcParamsInfo, [funcParams, bLastParamVariadic]);

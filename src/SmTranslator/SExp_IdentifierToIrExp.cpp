@@ -148,7 +148,7 @@ public:
 
     ResultType Visit(BodyRes_RDeclRes& bodyRes) 
     { 
-        return visit(DeclResTranslator{memberTypeArgs, contexts}, bodyRes.declRes);
+        return bodyRes.declRes.Visit(DeclResTranslator{memberTypeArgs, contexts});
     }
 
     ResultType Visit(BodyRes_LocalVar& bodyRes) 
@@ -186,7 +186,7 @@ expected<IrExp*, DiagPtr> TranslateSExp_IdentifierToIrExp(SExp_Identifier* sExp,
     auto e_bodyRes = ResolveIdentifier(RName_Normal{sExp->value}, memberTypeArgs->GetCount(), contexts);
     RETURN_ON_ERROR(e_bodyRes);
 
-    return visit(BodyResTranslator{memberTypeArgs, contexts}, *e_bodyRes);
+    return e_bodyRes->Visit(BodyResTranslator{memberTypeArgs, contexts});
 }
 
 } // namespace Citron::SyntaxIR0Translation

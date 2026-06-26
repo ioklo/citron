@@ -43,6 +43,7 @@ void Main()
 - `cti` 저장/불러오기
 - `foreach`
 - generics
+- `struct S`의 기존 메서드와 `extend S : Trait` 메서드가 같은 이름/인자를 가질 때의 호출 규칙
 
 다음 주는:
 - 이번 주 끝나고, 어디까지 됐는지 보고 다시 정한다

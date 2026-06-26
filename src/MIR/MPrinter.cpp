@@ -44,7 +44,7 @@ public:
     void PrintFuncBody(MFuncBody& funcBody)
     {
         writer.Write("Func ");
-        PrintRName(funcBody.nFuncDecl->GetNDecl()->GetRDecl()->GetIdentifier().name);
+        PrintRName(funcBody.nFuncDecl.GetRFuncDecl().GetRDecl()->GetIdentifier().name);
         writer.WriteLine();
         writer.AddIndent();
         PrintStmt(funcBody.body);
@@ -102,10 +102,9 @@ private:
         return format("decl#{}", reinterpret_cast<uintptr_t>(decl));
     }
 
-    string FuncDeclText(RFuncDecl* decl)
+    string FuncDeclText(RFuncDecl& decl)
     {
-        if (!decl) return "<null-func-decl>";
-        return DeclText(decl->GetRDecl());
+        return DeclText(decl.GetRDecl());
     }
 
     string LambdaDeclText(NLambdaDecl* decl)

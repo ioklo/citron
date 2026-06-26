@@ -1,0 +1,4 @@
+void Main()
+{
+    some MyTrait t = uninit; // 파싱 단계에서 에러
+}

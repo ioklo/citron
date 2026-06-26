@@ -7,6 +7,7 @@
 
 #include "Syntax/Syntax.h"
 #include "NSymbol/NFactory.h"
+#include "RSymbol/RFuncReturn.h"
 
 namespace Citron {
 
@@ -34,6 +35,7 @@ public:
     }
 
     RType* MakeType(STypeExp* sTypeExp, NDecl* decl);
+    std::expected<RFuncReturn, DiagPtr> MakeFuncReturn(SFuncReturn& funcRet, NDecl* decl);
     std::expected<std::tuple<std::vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(NDecl* decl, std::vector<SFuncParam>& sParams);
 };
 

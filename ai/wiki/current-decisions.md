@@ -12,6 +12,7 @@ Status: current snapshot
 ## Language
 - `some Trait`는 함수 return position 전용 opaque result marker다. 일반 type expression이 아니며 변수/인자/generic argument 위치에는 쓰지 않는다.
 - opaque return 표기는 `some T`를 사용하며 `some<T>`는 허용하지 않는다.
+- `some`은 일반 type parser가 아니라 함수 declaration의 return 자리에서만 특별히 읽는 쪽을 선호한다.
 - `some Trait` 결과는 `var`로만 받으며, source-level에서는 declared trait surface만 사용할 수 있다.
 - `trait`는 static contract다. `interface`는 dynamic/runtime dispatch contract로 따로 둔다.
 - `func<R, Params...>`는 callable static contract type expression이다. `lambda<>` type expression은 두지 않는다.
@@ -28,6 +29,8 @@ Status: current snapshot
 - Binding을 만드는 `is`는 일반 expression context에서 금지하고, `if` condition의 top-level에서만 허용한다.
 - `visibility`는 source name lookup rule이고, `reachability`는 compiler가 semantic information을 알 수 있는지의 문제로 분리한다.
 - Nested declaration은 논리적으로 허용 가능하지만, v1 허용 범위는 implementation scope와 design stability에 따라 결정한다.
+- Nested generic declaration identity는 outer type arguments를 포함한다. 예: `C<int>.Trait`와 `C<string>.Trait`는 다르다.
+- trait conformance block의 surface keyword는 현재 `extend`를 사용한다. 이름 변경 가능성은 열어 둔다.
 
 ## Modules And CTI
 - `cti`는 declaration/import boundary다.

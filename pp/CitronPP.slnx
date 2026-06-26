@@ -1,5 +1,6 @@
 <Solution>
   <Configurations>
+    <Platform Name="ARM64" />
     <Platform Name="x64" />
   </Configurations>
   <Project Path="CodeGenerator/CodeGenerator.vcxproj" Id="dbeb8bdb-e917-41e0-b2e5-0587d45b633e" />

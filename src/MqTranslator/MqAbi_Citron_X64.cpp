@@ -32,10 +32,10 @@ size_t MqAbi_Citron_X64::GetTypeSize(RType* type)
     throw NotImplementedException{};
 }
 
-MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs)
+MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(RFuncDecl& rFuncDecl, RTypeArguments* typeArgs)
 {
     size_t curArgIndex = 0;
-    auto returnPassingMode = GetReturnPassingMode(rFuncDecl->GetFuncReturn(typeArgs), &curArgIndex);
+    auto returnPassingMode = GetReturnPassingMode(GetFuncReturn(rFuncDecl, typeArgs), &curArgIndex);
 
     auto thisPassingMode = visit([&curArgIndex](auto&& thisKind) -> MqThisPassingMode {
         using T = remove_cvref_t<decltype(thisKind)>;
@@ -46,15 +46,15 @@ MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* t
         else if constexpr (same_as<T, RThisKind_Ref>)
             return MqThisPassingMode_Ptr{curArgIndex++};
         else static_assert(false);
-    }, rFuncDecl->GetThisKind());
+    }, GetThisKind(rFuncDecl));
 
     size_t explicitArgStartIndex = curArgIndex;
     vector<MqParamPassingMode> paramPassingModes;
-    size_t count = rFuncDecl->GetParamCount();
+    size_t count = GetParamCount(rFuncDecl);
     paramPassingModes.reserve(count);
     for (size_t i = 0; i < count; i++)
     {
-        auto param = rFuncDecl->GetFuncParam(typeArgs, i);
+        auto param = GetFuncParam(rFuncDecl, typeArgs, i);
         if (param.IsRef())
             paramPassingModes.push_back(MqParamPassingMode::Ref);
         else
@@ -141,11 +141,11 @@ MqReturnPassingMode MqAbi_Citron_X64::GetReturnPassingMode(RFuncReturn funcRet, 
     return visit([this, outCurArgIndex](auto& funcRet) -> MqReturnPassingMode
     {
         using T = remove_cvref_t<decltype(funcRet)>;
-        if constexpr (same_as<T, RFuncReturn_ForCtor>)
+        if constexpr (same_as<T, RFuncReturn_None>)
         {
             return MqReturnPassingMode_Void{};
         }
-        else if constexpr (same_as<T, RFuncReturn_Set>)
+        else if constexpr (same_as<T, RFuncReturn_Normal>)
         {
             auto* rType = funcRet.type;
             switch (rType->GetCopyStrategy())

@@ -6,9 +6,11 @@ Keywords: nested class, nested struct, nested trait, generic identity, conforman
 
 ## Current Direction
 - Nested `class`, `struct`, `trait`는 논리적으로 가능하다.
+- Nested `extend`도 함께 성립 가능하다.
 - 금지하거나 미루는 이유가 있다면 "말이 안 된다"가 아니라 v1 implementation scope와 design stability다.
 - Generic outer type 안 nested declaration은 outer generic parameter capture 문제를 만든다.
 - 이 문제는 nested trait뿐 아니라 nested class/struct에도 동일하게 적용된다.
+- `C<int>.Trait`와 `C<string>.Trait`는 다른 nested declaration identity로 본다.
 
 ## Nested Generic Identity
 Outer generic parameter capture를 허용한다면 nested trait/type identity는 아래 요소를 포함한다.
@@ -35,6 +37,14 @@ C<int, short>.R<bool>
 ```
 
 는 `C<T, U>`의 `T = int`, `U = short`, `R<V>`의 `V = bool` specialization이다.
+
+같은 원리로:
+
+```text
+C<int>.Trait != C<string>.Trait
+```
+
+로 본다.
 
 ## Nested Generic Conformance
 Nested generic type conformance는 family-level conformance로 해석한다.
@@ -80,6 +90,7 @@ public extend S<U> : R<T>
 
 ## Open Points
 - Nested class/struct/trait를 v1에서 허용할지
+- Nested extend를 v1에서 허용할지
 - Generic outer parameter capture를 모든 nested declaration에 허용할지
 - Specialized extend를 허용할지
 - Generic conformance overlap을 언제 어떻게 진단할지

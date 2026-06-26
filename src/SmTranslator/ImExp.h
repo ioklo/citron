@@ -3,6 +3,8 @@
 #include <memory>
 #include <string>
 #include "RSymbol/RGlobalFuncDecl.h"
+#include "RSymbol/RClassFuncDecl.h"
+#include "RSymbol/RStructFuncDecl.h"
 #include "MIR/MRead.h"
 #include "ReExp.h"
 #include "FuncsWithPartialTypeArgsComponent.h"
@@ -58,7 +60,7 @@ struct ImExp_GlobalFuncs
     using FuncComp::items;
     using FuncComp::memberTypeArgs;
 
-    ImExp_GlobalFuncs(const std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, RTypeArguments* memberTypeArgs)
+    ImExp_GlobalFuncs(const std::vector<TDeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, RTypeArguments* memberTypeArgs)
         : FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>{items, memberTypeArgs}
     { }
 
@@ -100,7 +102,7 @@ struct ImExp_ClassFuncs
 
     using FuncComp = FuncsWithPartialTypeArgsComponent<RClassFuncDecl>;
 
-    ImExp_ClassFuncs(const std::vector<DeclWithOuterTypeArgs<RClassFuncDecl>>& items, RTypeArguments* memberTypeArgs, ImExpInstanceKind&& instanceKind)
+    ImExp_ClassFuncs(const std::vector<TDeclWithOuterTypeArgs<RClassFuncDecl>>& items, RTypeArguments* memberTypeArgs, ImExpInstanceKind&& instanceKind)
         : FuncsWithPartialTypeArgsComponent<RClassFuncDecl>{items, memberTypeArgs}, instanceKind{std::move(instanceKind)}
     { }
 
@@ -134,7 +136,7 @@ struct ImExp_StructFuncs
     using FuncComp::memberTypeArgs;
     ImExpInstanceKind instanceKind;
 
-    ImExp_StructFuncs(const std::vector<DeclWithOuterTypeArgs<RStructFuncDecl>>& items, RTypeArguments* memberTypeArgs, ImExpInstanceKind&& instanceKind)
+    ImExp_StructFuncs(const std::vector<TDeclWithOuterTypeArgs<RStructFuncDecl>>& items, RTypeArguments* memberTypeArgs, ImExpInstanceKind&& instanceKind)
         : FuncsWithPartialTypeArgsComponent<RStructFuncDecl>{items, memberTypeArgs}, instanceKind{std::move(instanceKind)}
     { }
 

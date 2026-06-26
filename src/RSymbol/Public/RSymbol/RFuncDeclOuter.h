@@ -1,5 +1,7 @@
 #pragma once
+#include "RSymbolConfig.h"
 
+#include <variant>
 
 namespace Citron {
 
@@ -17,36 +19,32 @@ class RStructDtorDecl;
 class RStructFuncDecl;
 class RLambdaDecl;
 
-class RFuncDeclOuterVisitor;
-
 class RFuncDeclOuter
 {
+    using Variant = std::variant<
+        RNamespaceDecl*,
+        RGlobalFuncDecl*,
+        RClassDecl*,
+        RClassCtorDecl*,
+        RClassFuncDecl*,
+        RStructDecl*,
+        RStructCtorDecl*,
+        RStructDtorDecl*,
+        RStructFuncDecl*,
+        RLambdaDecl*>;
+    
+    Variant v;
+
 public:
-    virtual ~RFuncDeclOuter() {}
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RFuncDeclOuter>) && std::constructible_from<Variant, T&&>
+    RFuncDeclOuter(T&& funcDecl) : v{std::forward<T>(funcDecl)} {}
 
-    virtual RDecl* GetRDecl() = 0;
-    virtual void Accept(RFuncDeclOuterVisitor& visitor) = 0;
+    RSYMBOL_API RDecl* GetRDecl();
+
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
 };
 
-class RFuncDeclOuterVisitor
-{
-public:
-    virtual ~RFuncDeclOuterVisitor() {}
-    virtual void Visit(RNamespaceDecl* outer) = 0;
-    virtual void Visit(RGlobalFuncDecl* outer) = 0;
-    virtual void Visit(RClassDecl* outer) = 0;
-    virtual void Visit(RClassCtorDecl* outer) = 0;
-    virtual void Visit(RClassFuncDecl* outer) = 0;
-    virtual void Visit(RStructDecl* outer) = 0;
-    virtual void Visit(RStructCtorDecl* outer) = 0;
-    virtual void Visit(RStructDtorDecl* outer) = 0;
-    virtual void Visit(RStructFuncDecl* outer) = 0;
-    virtual void Visit(RLambdaDecl* outer) = 0;
-};
 
-class REFuncDeclOuter : public RFuncDeclOuter
-{
-    EFuncDeclOuter* outer;
-};
 
 } // namespace Citron

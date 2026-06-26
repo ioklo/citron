@@ -818,12 +818,12 @@ public:
         auto rFuncReturn = qFuncBody.nFuncDecl->GetRFuncDecl()->GetUnboundFuncReturn();
         auto* lRetType = visit([this](auto& ret) -> llvm::Type* {
             using T = remove_cvref_t<decltype(ret)>;
-            if constexpr (same_as<T, RFuncReturn_ForCtor>)
+            if constexpr (same_as<T, RFuncReturn_None>)
             {
                 // void
                 return lContextImpl.GetVoidType();
             }
-            else if constexpr (same_as<T, RFuncReturn_Set>)
+            else if constexpr (same_as<T, RFuncReturn_Normal>)
             {
                 return lContextImpl.GetType(ret.type);
             }

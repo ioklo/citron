@@ -1,0 +1,30 @@
+//@ 3 
+
+trait MyTrait
+{
+    void Func();
+}
+
+struct S
+{
+    int x;
+}
+
+extend S : MyTrait
+{
+    void Func()
+    {
+        @$x
+    }
+}
+
+some MyTrait GetTrait()
+{
+    return S(3);
+}
+
+void Main()
+{
+    var x = GetTrait();
+    x.Func();
+}

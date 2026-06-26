@@ -13,7 +13,6 @@
 #include "RSymbol/RFuncDecl.h"
 
 #include "NSymbol/NModule.h"
-#include "NSymbol/NFuncDecl.h"
 
 #include "MIR/MData.h"
 #include "QIR/QFactory.h"
@@ -35,15 +34,15 @@ namespace {
 expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
 {   
     // TODO: generics
-    auto* rFuncDecl = mFuncBody.nFuncDecl->GetRFuncDecl();
+    auto rFuncDecl = GetRFuncDecl(mFuncBody.nFuncDecl);
 
-    auto rFuncReturn = rFuncDecl->GetUnboundFuncReturn();
+    auto rFuncReturn = GetUnboundFuncReturn(rFuncDecl);
     auto* rRetType = visit([&rFactory](auto& rFuncReturn) -> RType*
     {
         using T = remove_cvref_t<decltype(rFuncReturn)>;
-        if constexpr (same_as<T, RFuncReturn_Set>)
+        if constexpr (same_as<T, RFuncReturn_Normal>)
             return rFuncReturn.type;
-        else if constexpr (same_as<T, RFuncReturn_ForCtor>)
+        else if constexpr (same_as<T, RFuncReturn_None>)
             return rFactory->MakeVoidType();
         else if constexpr (same_as<T, RFuncReturn_NotSet>)
             throw NotImplementedException{};
@@ -58,9 +57,9 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
     {
         MqScopeGuard mainGuard{std::nullopt, bodyContext};
 
-        auto* rFuncDecl = mFuncBody.nFuncDecl->GetRFuncDecl();
-        auto funcInfo = abi->GetFuncInfo(rFuncDecl, rFuncDecl->GetRDecl()->MakeOpenTypeArgs(*rFactory));
-        auto thisKind = rFuncDecl->GetThisKind();
+        auto rFuncDecl = GetRFuncDecl(mFuncBody.nFuncDecl);
+        auto funcInfo = abi->GetFuncInfo(rFuncDecl, GetRDecl(rFuncDecl)->MakeOpenTypeArgs(*rFactory));
+        auto thisKind = GetThisKind(rFuncDecl);
 
         visit([rRetType, &bodyContext](auto& returnPassingMode) {
             using T = remove_cvref_t<decltype(returnPassingMode)>;

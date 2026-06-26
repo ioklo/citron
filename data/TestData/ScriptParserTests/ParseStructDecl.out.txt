@@ -114,10 +114,13 @@
                     "accessModifier": null,
                     "bStatic": true,
                     "bSequence": false,
-                    "retType": {
-                        "$type": "STypeExp_Id",
-                        "name": "void",
-                        "typeArgs": []
+                    "funcRet": {
+                        "$type": "SFuncReturn_Normal",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "void",
+                            "typeArgs": []
+                        }
                     },
                     "name": "Func",
                     "typeParams": [
@@ -146,10 +149,13 @@
                     "accessModifier": "Private",
                     "bStatic": false,
                     "bSequence": true,
-                    "retType": {
-                        "$type": "STypeExp_Id",
-                        "name": "int",
-                        "typeArgs": []
+                    "funcRet": {
+                        "$type": "SFuncReturn_Normal",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "int",
+                            "typeArgs": []
+                        }
                     },
                     "name": "F2",
                     "typeParams": [

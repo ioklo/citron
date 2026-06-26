@@ -90,7 +90,7 @@
     <ClInclude Include="Public\NSymbol\NGenericsComponent.h">
       <Filter>04 Components</Filter>
     </ClInclude>
-    <ClInclude Include="Public\NSymbol\NFuncDeclOuterVisitor.g.h">
+    <ClInclude Include="Public\NSymbol\NFuncDeclImpl_UsingNCommonFuncDeclComponent.h">
       <Filter>03 Func</Filter>
     </ClInclude>
   </ItemGroup>
@@ -207,6 +207,9 @@
       <Filter>04 Components</Filter>
     </ClCompile>
     <ClCompile Include="NFuncDeclOuter.cpp">
+      <Filter>03 Func</Filter>
+    </ClCompile>
+    <ClCompile Include="NFuncDecl.cpp">
       <Filter>03 Func</Filter>
     </ClCompile>
   </ItemGroup>

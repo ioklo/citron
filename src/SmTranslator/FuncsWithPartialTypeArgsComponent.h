@@ -6,19 +6,19 @@
 namespace Citron {
 
 template<typename TDecl>
-struct DeclWithOuterTypeArgs;
+struct TDeclWithOuterTypeArgs;
 
 class RTypeArguments;
 
-template<typename TFuncDecl>
+template<typename TFuncDecl> requires std::derived_from<TFuncDecl, RFuncDeclBase>
 class FuncsWithPartialTypeArgsComponent
 {
 public:
-    std::vector<DeclWithOuterTypeArgs<TFuncDecl>> items;
+    std::vector<TDeclWithOuterTypeArgs<TFuncDecl>> items;
     RTypeArguments* memberTypeArgs; // outer부분을 제외한 typeArgs면서 완전하지 않을수도 있는 typeArgs
 
 public:
-    FuncsWithPartialTypeArgsComponent(const std::vector<DeclWithOuterTypeArgs<TFuncDecl>> items, RTypeArguments* memberTypeArgs)
+    FuncsWithPartialTypeArgsComponent(const std::vector<TDeclWithOuterTypeArgs<TFuncDecl>> items, RTypeArguments* memberTypeArgs)
         : items{items}, memberTypeArgs{memberTypeArgs}
     {
     }

@@ -30,7 +30,6 @@ class NStructDecl
     : public NDecl
     , public NTypeDecl
     , public NTypeDeclOuter
-    , public NFuncDeclOuter
     , public RStructDecl
     , private NGenericsComponent
     , private NTypeDeclContainerComponent
@@ -93,10 +92,6 @@ public:
     // NDecl* GetNDecl() override { return this; }
     void Accept(NTypeDeclOuterVisitor& visitor) override { visitor.Visit(this); }
 
-    // from NFuncDeclOuter
-    // NDecl* GetNDecl() override { return this; }
-    NSYMBOL_API void Accept(NFuncDeclOuterVisitor& visitor) override;
-
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
@@ -112,9 +107,6 @@ public:
     RType* GetOpenType() override;
 
     // from RTypeDeclOuter
-    // RDecl* GetRDecl() override { return this; }
-
-    // from RFuncDeclOuter
     // RDecl* GetRDecl() override { return this; }
 
     // from RStructDecl

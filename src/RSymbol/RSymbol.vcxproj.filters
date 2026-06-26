@@ -96,19 +96,16 @@
       <Filter>RDecls\09 Interface</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RLambdaDecl.h">
-      <Filter>RDecls\10 Lambda</Filter>
+      <Filter>RDecls\11 Lambda</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RLambdaVarDecl.h">
-      <Filter>RDecls\10 Lambda</Filter>
+      <Filter>RDecls\11 Lambda</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RStructDtorDecl.h">
       <Filter>RDecls\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RTypeParamDecl.h">
-      <Filter>RDecls\11 Generics</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\RSymbol\RFuncDeclVisitor.g.h">
-      <Filter>RDecls\03 Func</Filter>
+      <Filter>RDecls\12 Generics</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h">
       <Filter>RDecls\00 Abstraction</Filter>
@@ -117,6 +114,15 @@
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RThisKind.h">
+      <Filter>RDecls\03 Func</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTraitFuncDecl.h">
+      <Filter>RDecls\10 Trait</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTraitDecl.h">
+      <Filter>RDecls\10 Trait</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RFuncDeclBase.h">
       <Filter>RDecls\03 Func</Filter>
     </ClInclude>
   </ItemGroup>
@@ -151,10 +157,13 @@
     <Filter Include="RDecls\09 Interface">
       <UniqueIdentifier>{6557ab76-f679-4e60-9d79-81fc44f894a4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RDecls\10 Lambda">
+    <Filter Include="RDecls\10 Trait">
+      <UniqueIdentifier>{82ab8326-c832-4683-893f-a4a50ae5cae4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\11 Lambda">
       <UniqueIdentifier>{7667c2ab-9529-41c8-8493-f19857ae9008}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RDecls\11 Generics">
+    <Filter Include="RDecls\12 Generics">
       <UniqueIdentifier>{d504e20d-8c04-4bbb-a0c1-e07c716fce1f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -190,7 +199,7 @@
       <Filter>RDecls\05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="RTypeParamDecl.cpp">
-      <Filter>RDecls\11 Generics</Filter>
+      <Filter>RDecls\12 Generics</Filter>
     </ClCompile>
     <ClCompile Include="RFuncDecl.cpp">
       <Filter>RDecls\03 Func</Filter>
@@ -198,6 +207,11 @@
     <ClCompile Include="RTypeDecl.cpp">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
-    <ClCompile Include="Public\RSymbol\RFuncReturn.cpp" />
+    <ClCompile Include="RFuncReturn.cpp">
+      <Filter>RDecls\03 Func</Filter>
+    </ClCompile>
+    <ClCompile Include="RFuncDeclOuter.cpp">
+      <Filter>RDecls\03 Func</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

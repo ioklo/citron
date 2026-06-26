@@ -1,23 +1,15 @@
 #pragma once
-#include "RSymbolConfig.h"
 
-#include "RDecl.h"
-#include "RFuncDecl.h"
-#include "RFuncDeclOuter.h"
+#include "RFuncDeclBase.h"
 
 namespace Citron {
 
 class EStructDtorDecl;
 
-class RStructDtorDecl
-    : public RDecl
-    , public RFuncDecl
-    , public RFuncDeclOuter
+class RStructDtorDecl : public RFuncDeclBase
 {
 public:
     void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
-    RSYMBOL_API void Accept(RFuncDeclVisitor& visitor) final;
-    void Accept(RFuncDeclOuterVisitor& visitor) final { visitor.Visit(this); }
 };
 
 class REStructDtorDecl : public RStructDtorDecl

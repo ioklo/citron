@@ -1,45 +1,59 @@
 #pragma once
-
 #include "RSymbolConfig.h"
 
-#include <optional>
 #include <span>
 
-#include "RDecl.h"
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
 #include "RThisKind.h"
 
 namespace Citron {
 
+class RDecl;
 class RType;
-struct RFuncDeclVisitor;
+class RTypeArguments;
+class RTypeParamDecl;
 
-class EFuncDecl;
+class RGlobalFuncDecl;
+class RClassCtorDecl;
+class RClassFuncDecl;
+class RStructCtorDecl;
+class RStructDtorDecl;
+class RStructFuncDecl;
+class RLambdaDecl;
 
 class RFuncDecl
 {
+    using Variant = std::variant<
+        RGlobalFuncDecl*,
+        RClassCtorDecl*,
+        RClassFuncDecl*,
+        RStructCtorDecl*,
+        RStructDtorDecl*,
+        RStructFuncDecl*,
+        RLambdaDecl*
+    >;
+
+    Variant v;
+
 public:
-    virtual ~RFuncDecl() {}
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RFuncDecl>) && std::constructible_from<Variant, T&&>
+    RFuncDecl(T&& funcDecl) : v{std::forward<T>(funcDecl)} {}
 
-    virtual RDecl* GetRDecl() = 0;
-    virtual RThisKind GetThisKind() = 0;
-    virtual size_t GetTypeParamCount() = 0;
-    virtual RTypeParamDecl* GetTypeParam(size_t index) = 0;
-    virtual size_t GetParamCount() = 0;
-    virtual RType* GetReturnType(RTypeArguments* typeArgs) = 0;
-    virtual RFuncReturn GetFuncReturn(RTypeArguments* typeArgs) = 0;
-    virtual RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) = 0;
-    virtual RFuncReturn GetUnboundFuncReturn() = 0;
-    virtual std::span<RFuncParameter> GetUnboundFuncParams() = 0;
-    virtual void Accept(RFuncDeclVisitor& visitor) = 0;
-};
+    RSYMBOL_API RDecl* GetRDecl();
+    RSYMBOL_API RThisKind GetThisKind();
+    RSYMBOL_API size_t GetTypeParamCount();
+    RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index);
+    RSYMBOL_API size_t GetParamCount();
+    RSYMBOL_API RType* GetReturnType(RTypeArguments* typeArgs);
+    RSYMBOL_API RFuncReturn GetFuncReturn(RTypeArguments* typeArgs);
+    RSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index);
+    RSYMBOL_API RFuncReturn GetUnboundFuncReturn();
+    RSYMBOL_API std::span<RFuncParameter> GetUnboundFuncParams();
 
-class REFuncDecl : public RFuncDecl
-{
-    EFuncDecl* funcDecl;
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
 };
 
 } // namespace Citron
 
-#include "RFuncDeclVisitor.g.h"

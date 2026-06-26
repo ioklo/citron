@@ -6,15 +6,15 @@
 
 #include "Logging/Diag.h"
 #include "MIR/MArgument.h"
+#include "RSymbol/RFuncDecl.h"
 
 namespace Citron {
 
-class RFuncDecl;
 class RTypeArguments;
 struct MStmt;
 struct MLoc;
 struct TranslationContexts;
 
-std::expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, std::vector<MArgument>&& args, TranslationContexts& contexts);
+std::expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl& decl, RTypeArguments* typeArgs, MLoc* instance, std::vector<MArgument>&& args, TranslationContexts& contexts);
 
 } // namespace Citron

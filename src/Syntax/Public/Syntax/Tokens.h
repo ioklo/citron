@@ -77,6 +77,9 @@ TOKEN_DEF(PrivateToken, L"private")
 TOKEN_DEF(StaticToken, L"static")
 TOKEN_DEF(NewToken, L"new")
 TOKEN_DEF(NamespaceToken, L"namespace")
+TOKEN_DEF(TraitToken, L"trait")
+TOKEN_DEF(SomeToken, L"some")
+TOKEN_DEF(ExtendToken, L"extend")
 
 TOKEN_DEF(ColonToken, L":")
 TOKEN_DEF(BacktickToken, L"`")
@@ -186,6 +189,9 @@ using Token = std::variant<
     StaticToken,
     NewToken,
     NamespaceToken,
+    TraitToken,
+    SomeToken,
+    ExtendToken,
 
     ColonToken,
     BacktickToken,

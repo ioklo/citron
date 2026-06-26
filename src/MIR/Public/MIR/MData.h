@@ -7,8 +7,6 @@
 
 namespace Citron {
 
-class NFuncDecl;
-
 class MData
 {   
 public:

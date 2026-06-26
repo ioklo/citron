@@ -10,6 +10,7 @@
 #include "Infra/Ptr.h"
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncReturn.h"
+#include "NSymbol/NFuncDecl.h"
 #include "MIR/MRead.h"
 #include "MIR/MScopeKind.h"
 #include "BodyRes.h"
@@ -17,7 +18,6 @@
 
 namespace Citron {
 
-class NFuncDecl;
 struct ImExp;
 struct MExp;
 struct MInitExp_As;
@@ -50,7 +50,7 @@ struct TranslationContexts
     BinOpQueryServicePtr binOpQueryService;
 };
 
-TranslationContexts MakeTranslationContexts(NFuncDecl* nFuncDecl, const LoggerPtr& logger, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService);
+TranslationContexts MakeTranslationContexts(NFuncDecl& nFuncDecl, const LoggerPtr& logger, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService);
 
 TranslationContexts MakeTranslationContexts_DefaultScope(TranslationContexts& contexts);
 TranslationContexts MakeTranslationContexts_LoopScope(size_t o_labelId, TranslationContexts& contexts);

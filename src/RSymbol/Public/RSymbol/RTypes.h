@@ -23,6 +23,7 @@ class RStructCtorDecl;
 class RInterfaceDecl;
 class RLambdaDecl;
 class RTypeParamDecl;
+class RTraitDecl;
 
 struct RTypeVisitor;
 
@@ -390,6 +391,17 @@ public:
 };
 
 RSYMBOL_API RType* Apply(RType* type, RTypeArguments* typeArgs, RFactory* rFactory);
+
+// some Trait 타입
+class RType_Opaque : public RType
+{
+    RTraitDecl* traitDecl;
+    RTypeArguments* typeArgs;
+
+private:
+    friend RFactory;
+    RType_Opaque(RTraitDecl* traitDecl, RTypeArguments* typeArgs);
+};
 
 } // namespace Citron
 

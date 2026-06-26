@@ -2,7 +2,6 @@
 
 
 #include "RDecl.h"
-#include "RFuncDeclOuter.h"
 #include "RTypeDeclOuter.h"
 
 namespace Citron {

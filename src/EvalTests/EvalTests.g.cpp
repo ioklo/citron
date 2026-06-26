@@ -2947,6 +2947,43 @@ void Main()
     DoTest(code, expected);
 }
 
+TEST(Trait, Basic) 
+{
+    auto code = R"---(
+trait MyTrait
+{
+    void Func();
+}
+
+struct S
+{
+    int x;
+}
+
+extend S : MyTrait
+{
+    void Func()
+    {
+        @$x
+    }
+}
+
+some MyTrait GetTrait()
+{
+    return S(3);
+}
+
+void Main()
+{
+    var x = GetTrait();
+    x.Func();
+}
+)---";
+    string expected = R"---(3 )---";
+
+    DoTest(code, expected);
+}
+
 TEST(VarDecl, CopyCtor) 
 {
     auto code = R"---(struct S { int x; }
