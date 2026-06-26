@@ -15,9 +15,9 @@ using namespace std;
 
 namespace Citron {
 
-NDecl* GetNDecl(NFuncDeclOuter& outer)
+NDecl* NFuncDeclOuter::GetNDecl()
 {
-    return visit([](auto* decl) -> NDecl* { return decl; }, outer);
+    return visit([](auto* decl) -> NDecl* { return decl; }, v);
 }
 
 } // namespace Citron

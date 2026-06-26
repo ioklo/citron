@@ -10,6 +10,7 @@
 #include "Infra/Ptr.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RFuncDecl.h"
+#include "RSymbol/RFuncDeclBase.h"
 #include "MIR/MArgument.h"
 #include "SExpTranslations.h"
 #include "DesignatedDiagnostic.h"
@@ -20,7 +21,7 @@
 namespace Citron {
 
 template<typename TDecl>
-struct DeclWithOuterTypeArgs;
+struct TDeclWithOuterTypeArgs;
 
 class RTypeArguments;
 struct RFuncParameter;
@@ -74,9 +75,9 @@ std::expected<ArgumentsMatch, DiagPtr> MatchArguments(
 // infos는 한개 이상이어야 한다
 // 한개
 // struct S<T1> { struct U<T2> { void F<T3, T4>(); void F<T3, T4>(int); } } 환경에서 F<int>(...) 호출시
-template<typename TFuncDecl> requires std::derived_from<TFuncDecl, RFuncDecl>
+template<typename TFuncDecl> requires std::derived_from<TFuncDecl, RFuncDeclBase>
 std::expected<FuncMatch<TFuncDecl>, DiagPtr> MatchFunc(
-    std::span<DeclWithOuterTypeArgs<TFuncDecl>> infos, // { S<>.U<>.F<,> ... }, [T1, T2] // open type
+    std::span<TDeclWithOuterTypeArgs<TFuncDecl>> infos, // { S<>.U<>.F<,> ... }, [T1, T2] // open type
     RTypeArguments* partialMemberTypeArgs, // [int], closed type, T4는 확정 해야 함
     SArguments* sArgs, 
     TranslationContexts& contexts)

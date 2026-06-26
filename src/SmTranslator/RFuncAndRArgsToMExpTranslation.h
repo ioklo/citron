@@ -6,6 +6,7 @@
 
 #include "Logging/Diag.h"
 #include "MIR/MArgument.h"
+#include "RSymbol/RFuncDecl.h"
 
 namespace Citron {
 

@@ -19,18 +19,32 @@ class RStructDtorDecl;
 class RStructFuncDecl;
 class RLambdaDecl;
 
-using RFuncDeclOuter = std::variant<
-    RNamespaceDecl*,
-    RGlobalFuncDecl*,
-    RClassDecl*,
-    RClassCtorDecl*,
-    RClassFuncDecl*,
-    RStructDecl*,
-    RStructCtorDecl*,
-    RStructDtorDecl*,
-    RStructFuncDecl*,
-    RLambdaDecl*>;
+class RFuncDeclOuter
+{
+    using Variant = std::variant<
+        RNamespaceDecl*,
+        RGlobalFuncDecl*,
+        RClassDecl*,
+        RClassCtorDecl*,
+        RClassFuncDecl*,
+        RStructDecl*,
+        RStructCtorDecl*,
+        RStructDtorDecl*,
+        RStructFuncDecl*,
+        RLambdaDecl*>;
+    
+    Variant v;
 
-RSYMBOL_API RDecl* GetRDecl(RFuncDeclOuter& outer);
+public:
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RFuncDeclOuter>) && std::constructible_from<Variant, T&&>
+    RFuncDeclOuter(T&& funcDecl) : v{std::forward<T>(funcDecl)} {}
+
+    RSYMBOL_API RDecl* GetRDecl();
+
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
+};
+
+
 
 } // namespace Citron

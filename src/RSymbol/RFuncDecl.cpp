@@ -14,54 +14,54 @@ using namespace std;
 
 namespace Citron {
 
-RDecl* GetRDecl(RFuncDecl& funcDecl)
+RDecl* RFuncDecl::GetRDecl()
 {
-    return visit([](auto* funcDecl) -> RDecl* { return funcDecl; }, funcDecl);
+    return visit([](auto* funcDecl) -> RDecl* { return funcDecl; }, v);
 }
 
-RThisKind GetThisKind(RFuncDecl& funcDecl)
+RThisKind RFuncDecl::GetThisKind()
 {
-    return visit([](auto* funcDecl) -> RThisKind { return funcDecl->GetThisKind(); }, funcDecl);
+    return visit([](auto* funcDecl) -> RThisKind { return funcDecl->GetThisKind(); }, v);
 }
 
-size_t GetTypeParamCount(RFuncDecl& funcDecl)
+size_t RFuncDecl::GetTypeParamCount()
 {
-    return visit([](auto* funcDecl) -> size_t { return funcDecl->GetTypeParamCount(); }, funcDecl);
+    return visit([](auto* funcDecl) -> size_t { return funcDecl->GetTypeParamCount(); }, v);
 }
 
-RTypeParamDecl* GetTypeParam(RFuncDecl& funcDecl, size_t index)
+RTypeParamDecl* RFuncDecl::GetTypeParam(size_t index)
 {
-    return visit([index](auto* funcDecl) -> RTypeParamDecl* { return funcDecl->GetTypeParam(index); }, funcDecl);
+    return visit([index](auto* funcDecl) -> RTypeParamDecl* { return funcDecl->GetTypeParam(index); }, v);
 }
 
-size_t GetParamCount(RFuncDecl& funcDecl)
+size_t RFuncDecl::GetParamCount()
 {
-    return visit([](auto* funcDecl) -> size_t { return funcDecl->GetParamCount(); }, funcDecl);
+    return visit([](auto* funcDecl) -> size_t { return funcDecl->GetParamCount(); }, v);
 }
 
-RType* GetReturnType(RFuncDecl& funcDecl, RTypeArguments* typeArgs)
+RType* RFuncDecl::GetReturnType(RTypeArguments* typeArgs)
 {
-    return visit([typeArgs](auto* funcDecl) -> RType* { return funcDecl->GetReturnType(typeArgs); }, funcDecl);
+    return visit([typeArgs](auto* funcDecl) -> RType* { return funcDecl->GetReturnType(typeArgs); }, v);
 }
 
-RFuncReturn GetFuncReturn(RFuncDecl& funcDecl, RTypeArguments* typeArgs)
+RFuncReturn RFuncDecl::GetFuncReturn(RTypeArguments* typeArgs)
 {
-    return visit([typeArgs](auto* funcDecl) -> RFuncReturn { return funcDecl->GetFuncReturn(typeArgs); }, funcDecl);
+    return visit([typeArgs](auto* funcDecl) -> RFuncReturn { return funcDecl->GetFuncReturn(typeArgs); }, v);
 }
 
-RFuncParameter GetFuncParam(RFuncDecl& funcDecl, RTypeArguments* typeArgs, size_t index)
+RFuncParameter RFuncDecl::GetFuncParam(RTypeArguments* typeArgs, size_t index)
 {
-    return visit([typeArgs, index](auto* funcDecl) -> RFuncParameter { return funcDecl->GetFuncParam(typeArgs, index); }, funcDecl);
+    return visit([typeArgs, index](auto* funcDecl) -> RFuncParameter { return funcDecl->GetFuncParam(typeArgs, index); }, v);
 }
 
-RFuncReturn GetUnboundFuncReturn(RFuncDecl& funcDecl)
+RFuncReturn RFuncDecl::GetUnboundFuncReturn()
 {
-    return visit([](auto* funcDecl) -> RFuncReturn { return funcDecl->GetUnboundFuncReturn(); }, funcDecl);
+    return visit([](auto* funcDecl) -> RFuncReturn { return funcDecl->GetUnboundFuncReturn(); }, v);
 }
 
-std::span<RFuncParameter> GetUnboundFuncParams(RFuncDecl& funcDecl)
+std::span<RFuncParameter> RFuncDecl::GetUnboundFuncParams()
 {
-    return visit([](auto* funcDecl) -> std::span<RFuncParameter> { return funcDecl->GetUnboundFuncParams(); }, funcDecl);
+    return visit([](auto* funcDecl) -> std::span<RFuncParameter> { return funcDecl->GetUnboundFuncParams(); }, v);
 }
 
 } // namespace Citron

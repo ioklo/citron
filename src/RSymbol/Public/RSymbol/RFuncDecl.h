@@ -22,26 +22,38 @@ class RStructDtorDecl;
 class RStructFuncDecl;
 class RLambdaDecl;
 
-using RFuncDecl = std::variant<
-    RGlobalFuncDecl*,
-    RClassCtorDecl*,
-    RClassFuncDecl*,
-    RStructCtorDecl*,
-    RStructDtorDecl*,
-    RStructFuncDecl*,
-    RLambdaDecl*
->;
+class RFuncDecl
+{
+    using Variant = std::variant<
+        RGlobalFuncDecl*,
+        RClassCtorDecl*,
+        RClassFuncDecl*,
+        RStructCtorDecl*,
+        RStructDtorDecl*,
+        RStructFuncDecl*,
+        RLambdaDecl*
+    >;
 
-RSYMBOL_API RDecl* GetRDecl(RFuncDecl& funcDecl);
-RSYMBOL_API RThisKind GetThisKind(RFuncDecl& funcDecl);
-RSYMBOL_API size_t GetTypeParamCount(RFuncDecl& funcDecl);
-RSYMBOL_API RTypeParamDecl* GetTypeParam(RFuncDecl& funcDecl, size_t index);
-RSYMBOL_API size_t GetParamCount(RFuncDecl& funcDecl);
-RSYMBOL_API RType* GetReturnType(RFuncDecl& funcDecl, RTypeArguments* typeArgs);
-RSYMBOL_API RFuncReturn GetFuncReturn(RFuncDecl& funcDecl, RTypeArguments* typeArgs);
-RSYMBOL_API RFuncParameter GetFuncParam(RFuncDecl& funcDecl, RTypeArguments* typeArgs, size_t index);
-RSYMBOL_API RFuncReturn GetUnboundFuncReturn(RFuncDecl& funcDecl);
-RSYMBOL_API std::span<RFuncParameter> GetUnboundFuncParams(RFuncDecl& funcDecl);
+    Variant v;
+
+public:
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RFuncDecl>) && std::constructible_from<Variant, T&&>
+    RFuncDecl(T&& funcDecl) : v{std::forward<T>(funcDecl)} {}
+
+    RSYMBOL_API RDecl* GetRDecl();
+    RSYMBOL_API RThisKind GetThisKind();
+    RSYMBOL_API size_t GetTypeParamCount();
+    RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index);
+    RSYMBOL_API size_t GetParamCount();
+    RSYMBOL_API RType* GetReturnType(RTypeArguments* typeArgs);
+    RSYMBOL_API RFuncReturn GetFuncReturn(RTypeArguments* typeArgs);
+    RSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index);
+    RSYMBOL_API RFuncReturn GetUnboundFuncReturn();
+    RSYMBOL_API std::span<RFuncParameter> GetUnboundFuncParams();
+
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
+};
 
 } // namespace Citron
 

@@ -29,12 +29,12 @@ void NLambdaDecl::InitVars(std::vector<NLambdaVarDecl*>&& vars)
 
 NDecl* NLambdaDecl::GetNOuter()
 {
-    return Citron::GetNDecl(outer);
+    return outer.GetNDecl();
 }
 
 RDecl* NLambdaDecl::GetROuter()
 {
-    return Citron::GetNDecl(outer)->GetRDecl();
+    return outer.GetNDecl()->GetRDecl();
 }
 
 RIdentifier NLambdaDecl::GetIdentifier()

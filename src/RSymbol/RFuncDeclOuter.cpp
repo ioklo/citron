@@ -14,9 +14,9 @@ using namespace std;
 
 namespace Citron {
 
-RDecl* GetRDecl(RFuncDeclOuter& outer)
+RDecl* RFuncDeclOuter::GetRDecl()
 {
-    return visit([](auto* outer) -> RDecl* { return outer; }, outer);
+    return visit([](auto* outer) -> RDecl* { return outer; }, v);
 }
 
 } // namespace Citron

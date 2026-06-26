@@ -22,22 +22,22 @@ namespace Citron {
 
 size_t RFuncDeclMatchArgumentsInput::GetTypeParamCount()
 {
-    return funcDecl->GetTypeParamCount();
+    return funcDecl.GetTypeParamCount();
 }
 
 RTypeParamDecl* RFuncDeclMatchArgumentsInput::GetTypeParam(size_t index)
 {
-    return funcDecl->GetTypeParam(index);
+    return funcDecl.GetTypeParam(index);
 }
 
 size_t RFuncDeclMatchArgumentsInput::GetFuncParamCount()
 {
-    return funcDecl->GetUnboundFuncParams().size();
+    return funcDecl.GetUnboundFuncParams().size();
 }
 
 RFuncParameter RFuncDeclMatchArgumentsInput::GetFuncParam(RTypeArguments* typeArgs, size_t index)
 {
-    return funcDecl->GetFuncParam(typeArgs, index);
+    return funcDecl.GetFuncParam(typeArgs, index);
 }
 
 RTypeArguments* MakeTypeArgs(IMatchArgumentsInput* input, RTypeArguments* outerTypeArgs, RTypeArguments* memberTypeArgs, RFactory& rFactory)

@@ -64,7 +64,7 @@ expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
     // var l = () { var l2 = () => x; }
     // RDeclRes_NeedCapture("x", RDeclRes_NeedCapture("x", BodyRes_LocalVar(x))))
     // nested 깊이는 상위 funcContext의 깊이 만큼임을 보장한다
-    return visit([this, &name](auto& bodyRes) -> BodyRes
+    return o_bodyRes->Visit([this, &name](auto& bodyRes) -> BodyRes
     {
         using T = remove_cvref_t<decltype(bodyRes)>;
 
@@ -108,7 +108,7 @@ expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
         else if constexpr (same_as<T, BodyRes_RDeclRes>)
         {
             // rDeclRes는 consexpr분기용, bodyRes는 move할때 씁니다. (rDeclRes를 bodyRes move이후에 참조하지 않도록 주의)
-            return visit([this, &name, &bodyRes](auto& rDeclRes) -> BodyRes {
+            return bodyRes.declRes.Visit([this, &name, &bodyRes](auto& rDeclRes) -> BodyRes {
                 using U = remove_cvref_t<decltype(rDeclRes)>;
 
                 if constexpr (same_as<U, RDeclRes_LambdaVar>)
@@ -139,10 +139,10 @@ expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
                 else 
                     return bodyRes;
 
-            }, bodyRes.declRes);
+            });
         }
         else return bodyRes; // 나머지는 그대로 리턴
-    }, *o_bodyRes);
+    });
 }
 
 RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()

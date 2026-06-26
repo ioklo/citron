@@ -158,7 +158,7 @@ struct BodyResTranslator
 
     ResultType Visit(BodyRes_RDeclRes& bodyRes)
     {
-        return visit(RDeclResTranslator{memberTypeArgs, contexts}, bodyRes.declRes);
+        return bodyRes.declRes.Visit(RDeclResTranslator{memberTypeArgs, contexts});
     }
 
     ResultType Visit(BodyRes_LocalVar& bodyRes)
@@ -196,7 +196,7 @@ expected<ImExp*, DiagPtr> TranslateSExp_IdentifierToImExp(SExp_Identifier* sExp,
     auto e_bodyRes = ResolveIdentifier(RName_Normal(sExp->value), (*e_rMemberTypeArgs)->GetCount(), contexts);
     RETURN_ON_ERROR(e_bodyRes);
 
-    return visit(BodyResTranslator{*e_rMemberTypeArgs, contexts}, *e_bodyRes);
+    return e_bodyRes->Visit(BodyResTranslator{*e_rMemberTypeArgs, contexts});
 }
 
 } // namespace Citron

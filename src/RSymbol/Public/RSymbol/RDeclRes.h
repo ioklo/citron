@@ -29,41 +29,24 @@ class REnumDecl;
 class REnumElemDecl;
 class REnumElemVarDecl;
 class RLambdaVarDecl;
+class RFuncDeclBase;
 
 // RDeclSpaceResolvedResult
-using RDeclRes = std::variant<
-    struct RDeclRes_Namespace,
-    struct RDeclRes_GlobalFuncs,
-    struct RDeclRes_Class,
-    struct RDeclRes_ClassFuncs,
-    struct RDeclRes_ClassVar,
-    struct RDeclRes_Struct,
-    struct RDeclRes_StructFuncs,
-    struct RDeclRes_StructVar,
-    struct RDeclRes_Enum,
-    struct RDeclRes_EnumElem,
-    struct RDeclRes_EnumElemVar,
-    struct RDeclRes_LambdaVar,
-    struct RDeclRes_TupleVar,
-    struct RDeclRes_TypeVar,
-    struct RDeclRes_FuncParam
->;
-
 struct RDeclRes_Namespace { RNamespaceDecl* decl; };
 struct RDeclRes_GlobalFuncs 
 { 
-    std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl*>> items;
+    std::vector<TDeclWithOuterTypeArgs<RGlobalFuncDecl>> items;
 
-    RSYMBOL_API RDeclRes_GlobalFuncs(std::vector<DeclWithOuterTypeArgs<RGlobalFuncDecl*>>&& items);
+    RSYMBOL_API RDeclRes_GlobalFuncs(std::vector<TDeclWithOuterTypeArgs<RGlobalFuncDecl>>&& items);
     RSYMBOL_API RDeclRes_GlobalFuncs(const RDeclRes_GlobalFuncs&);
     RSYMBOL_API ~RDeclRes_GlobalFuncs();
 };
 struct RDeclRes_Class { RTypeArguments* outerTypeArgs; RClassDecl* decl; };
 struct RDeclRes_ClassFuncs 
 {
-    std::vector<DeclWithOuterTypeArgs<RClassFuncDecl*>> items;
+    std::vector<TDeclWithOuterTypeArgs<RClassFuncDecl>> items;
 
-    RSYMBOL_API RDeclRes_ClassFuncs(std::vector<DeclWithOuterTypeArgs<RClassFuncDecl*>>&& items);
+    RSYMBOL_API RDeclRes_ClassFuncs(std::vector<TDeclWithOuterTypeArgs<RClassFuncDecl>>&& items);
     RSYMBOL_API RDeclRes_ClassFuncs(const RDeclRes_ClassFuncs&);
     RSYMBOL_API ~RDeclRes_ClassFuncs();
 };
@@ -73,9 +56,9 @@ struct RDeclRes_Struct { RTypeArguments* outerTypeArgs; RStructDecl* decl; };
 
 struct RDeclRes_StructFuncs
 {
-    std::vector<DeclWithOuterTypeArgs<RStructFuncDecl*>> items;
+    std::vector<TDeclWithOuterTypeArgs<RStructFuncDecl>> items;
 
-    RSYMBOL_API RDeclRes_StructFuncs(std::vector<DeclWithOuterTypeArgs<RStructFuncDecl*>>&& items);
+    RSYMBOL_API RDeclRes_StructFuncs(std::vector<TDeclWithOuterTypeArgs<RStructFuncDecl>>&& items);
     RSYMBOL_API RDeclRes_StructFuncs(const RDeclRes_StructFuncs&);
     RSYMBOL_API ~RDeclRes_StructFuncs();
 };
@@ -89,7 +72,42 @@ struct RDeclRes_TupleVar {}; // 어떻게 쓰일지 몰라서, 실제로 만들�
 struct RDeclRes_TypeVar { RTypeParamDecl* decl; };
 struct RDeclRes_FuncParam { RFuncParameter funcParam; };
 
-RSYMBOL_API std::vector<DeclWithOuterTypeArgs<RFuncDecl>> GetFuncDeclWithOuterTypeArgs(RDeclRes& member);
+class RDeclRes
+{
+    using Variant = std::variant<
+        struct RDeclRes_Namespace,
+        struct RDeclRes_GlobalFuncs,
+        struct RDeclRes_Class,
+        struct RDeclRes_ClassFuncs,
+        struct RDeclRes_ClassVar,
+        struct RDeclRes_Struct,
+        struct RDeclRes_StructFuncs,
+        struct RDeclRes_StructVar,
+        struct RDeclRes_Enum,
+        struct RDeclRes_EnumElem,
+        struct RDeclRes_EnumElemVar,
+        struct RDeclRes_LambdaVar,
+        struct RDeclRes_TupleVar,
+        struct RDeclRes_TypeVar,
+        struct RDeclRes_FuncParam
+    >;
+
+    Variant v;
+
+public:
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RDeclRes>) && std::constructible_from<Variant, T&&>
+    RDeclRes(T&& res) : v{std::forward<T>(res)} {}
+
+    RSYMBOL_API std::vector<DeclWithOuterTypeArgs> GetFuncDeclWithOuterTypeArgs();
+
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
+
+    template<typename T>
+    T* GetIf() { return std::get_if<T>(&v); }
+};
+
+
 
 } // namespace Citron
 

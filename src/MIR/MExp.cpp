@@ -84,7 +84,7 @@ RType* GetType(MExp* exp, RFactory* rFactory)
         ResultType Visit(MExp_IntLiteral* exp) { return rFactory->MakeIntType(); }
         ResultType Visit(MExp_CallIntrinsic* exp) { return GetType_CallIntrinsic(exp, rFactory); }
 
-        ResultType Visit(MExp_Call* exp) { return GetReturnType(exp->callable.decl, exp->callable.typeArgs); }
+        ResultType Visit(MExp_Call* exp) { return exp->callable.decl.GetReturnType(exp->callable.typeArgs); }
         ResultType Visit(MExp_NewStruct* exp) 
         { 
             auto structDecl = exp->ctor->GetStructDecl();

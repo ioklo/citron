@@ -55,7 +55,7 @@ expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, const 
     auto o_member = classType->GetMember(name, memberTypeArgsCount);
     if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
 
-    auto* classVarMember = get_if<RDeclRes_ClassVar>(&*o_member);
+    auto* classVarMember = o_member->GetIf<RDeclRes_ClassVar>();
     if (!classVarMember) return Error<Error_SharedTranslation_CantTranslate>();
 
     // static 성질이 다르면 에러    
@@ -72,7 +72,7 @@ expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, co
     auto o_member = structType->GetMember(name, memberTypeArgsCount);
     if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
 
-    auto* structVarMember = get_if<RDeclRes_StructVar>(&*o_member);
+    auto* structVarMember = o_member->GetIf<RDeclRes_StructVar>();
     if (!structVarMember) return Error<Error_SharedTranslation_CantTranslate>();
 
     // static 이면 에러
@@ -233,7 +233,7 @@ struct Binder
             return Error<Error_ResolveIdentifier_NotFound>();
 
         StaticBaseTranslator binder(memberTypeArgs, contexts);
-        return visit(binder, *o_member);
+        return o_member->Visit(binder);
     }
 
     ResultType Visit(IrExp_Namespace* irBaseExp) 

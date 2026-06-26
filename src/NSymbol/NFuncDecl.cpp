@@ -1,4 +1,5 @@
 #include "NFuncDecl.h"
+#include "RSymbol/RFuncDecl.h"
 #include "NGlobalFuncDecl.h"
 #include "NClassCtorDecl.h"
 #include "NClassFuncDecl.h"
@@ -11,22 +12,22 @@ using namespace std;
 
 namespace Citron {
 
-NDecl* GetNDecl(NFuncDecl& funcDecl)
+NDecl* NFuncDecl::GetNDecl()
 {
-    return visit([](auto* funcDecl) -> NDecl* { return funcDecl; }, funcDecl);
+    return visit([](auto* funcDecl) -> NDecl* { return funcDecl; }, v);
 }
 
-RFuncDecl GetRFuncDecl(NFuncDecl& funcDecl)
+RFuncDecl NFuncDecl::GetRFuncDecl()
 {
-    return visit([](auto* nFuncDecl) -> RFuncDecl { return nFuncDecl; }, funcDecl);
+    return visit([](auto* nFuncDecl) -> RFuncDecl { return nFuncDecl; }, v);
 }
 
-bool IsSeqFunc(NFuncDecl& funcDecl)
+bool NFuncDecl::IsSeqFunc()
 {
-    return visit([](auto* funcDecl) -> bool { return funcDecl->IsSeqFunc(); }, funcDecl);
+    return visit([](auto* funcDecl) -> bool { return funcDecl->IsSeqFunc(); }, v);
 }
 
-NFuncDeclOuter GetNFuncDeclOuter(NFuncDecl& funcDecl)
+NFuncDeclOuter NFuncDecl::GetNFuncDeclOuter()
 {
     return visit([](auto* funcDecl) -> NFuncDeclOuter {
         using T = remove_cvref_t<decltype(funcDecl)>;
@@ -46,7 +47,7 @@ NFuncDeclOuter GetNFuncDeclOuter(NFuncDecl& funcDecl)
         else if constexpr (same_as<T, NLambdaDecl*>)
             return funcDecl->outer;
         else static_assert(false);
-    }, funcDecl);
+    }, v);
 }
 
 } // namespace Citron

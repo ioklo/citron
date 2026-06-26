@@ -2,12 +2,19 @@
 
 namespace Citron {
 
+class RFuncDeclBase;
 class RTypeArguments;
 
-template<typename TDecl>
 struct DeclWithOuterTypeArgs
 {
-    TDecl decl;
+    RFuncDeclBase* funcDecl;
+    RTypeArguments* outerTypeArgs;
+};
+
+template<typename TDecl>
+struct TDeclWithOuterTypeArgs
+{
+    TDecl* decl;
     RTypeArguments* outerTypeArgs;
 };
 

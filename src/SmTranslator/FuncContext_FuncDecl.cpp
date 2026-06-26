@@ -31,12 +31,12 @@ FuncContext_FuncDecl::FuncContext_FuncDecl(NFuncDecl nFuncDecl, const RFactoryPt
 
 bool FuncContext_FuncDecl::CanAccess(RDecl* target)
 {
-    return GetNDecl(nFuncDecl)->GetRDecl()->CanAccess(target);
+    return nFuncDecl.GetRFuncDecl().GetRDecl()->CanAccess(target);
 }
 
 RTypeDecl* FuncContext_FuncDecl::ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    RDecl* curDecl = GetNDecl(nFuncDecl)->GetRDecl();
+    RDecl* curDecl = nFuncDecl.GetRFuncDecl().GetRDecl();
 
     while (curDecl)
     {
@@ -51,7 +51,7 @@ RTypeDecl* FuncContext_FuncDecl::ResolveTypeDecl(const RName& name, size_t expli
 
 expected<optional<BodyRes>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    auto o_rDeclRes = GetNDecl(nFuncDecl)->GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    auto o_rDeclRes = nFuncDecl.GetRFuncDecl().GetRDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
     if (!o_rDeclRes) return nullopt;
 
     return BodyRes_RDeclRes{move(*o_rDeclRes)};
@@ -59,7 +59,7 @@ expected<optional<BodyRes>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(con
 
 RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()
 {
-    return GetRFuncDecl(nFuncDecl)->GetUnboundFuncReturn();
+    return nFuncDecl.GetRFuncDecl().GetUnboundFuncReturn();
 }
 
 void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
@@ -69,12 +69,12 @@ void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
 
 RTypeArguments* FuncContext_FuncDecl::MakeOpenTypeArgs()
 {
-    return GetNDecl(nFuncDecl)->GetRDecl()->MakeOpenTypeArgs(*rFactory);
+    return nFuncDecl.GetRFuncDecl().GetRDecl()->MakeOpenTypeArgs(*rFactory);
 }
 
 bool FuncContext_FuncDecl::IsSeqFunc()
 {
-    return Citron::IsSeqFunc(nFuncDecl);
+    return nFuncDecl.IsSeqFunc();
 }
 
 struct GetThisTypeFunctor
@@ -101,7 +101,7 @@ MLoc_This* FuncContext_FuncDecl::MakeThisLoc()
     // class C에서는 this가 C 타입
     // lambda에서는 this가 lambda를 선언한 함수의 this타입
 
-    auto* rThisType = visit(GetThisTypeFunctor{rFactory}, GetNFuncDeclOuter(nFuncDecl));
+    auto* rThisType = nFuncDecl.GetNFuncDeclOuter().Visit(GetThisTypeFunctor{rFactory});
     return mFactory->MakeMLoc<MLoc_This>(rThisType);
 }
 

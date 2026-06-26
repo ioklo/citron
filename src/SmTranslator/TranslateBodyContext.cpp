@@ -90,7 +90,7 @@ CheckEndReturnResult CheckEndReturn(NFuncDecl& nFuncDecl, vector<MStmt*>& mStmts
 
     // 2. 시그니처가 void를 리턴하는지 확인
     bool signatureReturnVoid = [&nFuncDecl, &rFactory] {
-        auto rFuncReturn = GetRFuncDecl(nFuncDecl)->GetUnboundFuncReturn();
+        auto rFuncReturn = nFuncDecl.GetRFuncDecl().GetUnboundFuncReturn();
         return visit([&rFactory](auto& rFuncReturn) -> bool {
             using T = remove_cvref_t<decltype(rFuncReturn)>;
 

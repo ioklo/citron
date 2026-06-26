@@ -10,19 +10,31 @@ namespace Citron
 {
 struct RFuncParameter;
 
-using NFuncDecl = std::variant<
-    NGlobalFuncDecl*,
-    NClassCtorDecl*,
-    NClassFuncDecl*,
-    NStructCtorDecl*,
-    NStructDtorDecl*,
-    NStructFuncDecl*,
-    NLambdaDecl*>;
+class NFuncDecl
+{
+    using Variant = std::variant<
+        NGlobalFuncDecl*,
+        NClassCtorDecl*,
+        NClassFuncDecl*,
+        NStructCtorDecl*,
+        NStructDtorDecl*,
+        NStructFuncDecl*,
+        NLambdaDecl*>;
 
-// RFuncDecl과 겹치는게 있으면 지우자
-NSYMBOL_API NDecl* GetNDecl(NFuncDecl& funcDecl);
-NSYMBOL_API RFuncDecl GetRFuncDecl(NFuncDecl& funcDecl);
-NSYMBOL_API bool IsSeqFunc(NFuncDecl& funcDecl);
-NSYMBOL_API NFuncDeclOuter GetNFuncDeclOuter(NFuncDecl& funcDecl);
+    Variant v;
+
+public:
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, NFuncDecl>) && std::constructible_from<Variant, T&&>
+    NFuncDecl(T&& funcDecl) : v{std::forward<T>(funcDecl)} {}
+
+    // RFuncDecl과 겹치는게 있으면 지우자
+    NSYMBOL_API NDecl* GetNDecl();
+    NSYMBOL_API RFuncDecl GetRFuncDecl();
+    NSYMBOL_API bool IsSeqFunc();
+    NSYMBOL_API NFuncDeclOuter GetNFuncDeclOuter();
+
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
+};
 
 }
