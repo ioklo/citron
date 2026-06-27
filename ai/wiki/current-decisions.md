@@ -43,6 +43,15 @@ Status: current snapshot
 - value witness는 size/align/copy/move/destroy 같은 값 기본 연산 테이블이다.
 - trait witness는 trait requirement를 backing type 구현으로 연결하는 테이블이다.
 - declaration/body resolution 주변의 공용 sum type은 raw public `std::variant` alias보다 얇은 wrapper class를 선호하고, 호출부에는 free helper보다 member API를 우선 둔다.
+- declaration tree 축은 category view와 provenance payload에서 분리하는 쪽을 선호한다. 현재 leaning은 semantic tree node를 별도 `RNode` 모델로 세우고, `RTypeDecl` / `RFuncDecl`는 category view로 보는 것이다.
+- `RNode`는 우선 `RName` 중심의 lightweight tree node로 두고, generic arity나 callable parameter identity 같은 richer declaration identity는 별도 metadata로 둔다.
+- `GetMember`는 "해당 scope에서 이름으로 접근 가능한 member" 전반을 다루는 넓은 API로 보고, type parameter도 필요하면 member로 노출할 수 있다.
+- `GetTypeMember` / type-only resolution은 일반 member lookup과 shadowing 규칙이 다르므로 별도 resolver 단계에서 처리하는 쪽을 선호한다.
+- `ResolveIdentifier`는 declaration node API보다 resolver / lexical scope algorithm 책임으로 보는 쪽을 선호한다.
+- symbol/declaration 문맥에서는 containing tree edge를 `outer`, inheritance edge를 `base`로 부르고, `parent`는 쓰지 않는 쪽을 선호한다.
+- type declaration은 C++처럼 same-name generic arity overloading을 허용하지 않는 쪽을 선호하고, C#류 arity distinction은 interop/import layer에서 해소하는 방향을 선호한다.
+- semantic tree는 먼저 tree 모델로 안정화하고, path map 중심 모델은 그 뒤에 재검토한다.
+- accessibility는 단일 tree-only `CanAccess`보다, module/namespace member 정책과 type-member/inheritance 정책을 분리한 별도 checker/policy layer로 두는 쪽을 선호한다.
 - MIR 값 모델은 BC/NBC, read/create/init destination을 분리하는 방향을 유지한다.
 - `MCreate`는 MIR surface에 유지하되, lowering 중심 primitive는 `TranslateMExp`, `TranslateMLoc`, `TranslateMInitExp`로 분리한다.
 - QIR call lowering은 logical slot model과 passing mode를 사용하고, physical ABI 선택은 후속 lowering에 맡긴다.

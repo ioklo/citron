@@ -26,3 +26,6 @@ Citron compiler 내부 모델과 lowering 지식의 wiki 입구다.
 ## Removed Source References
 - `git history: ai/implementations/`
 - `git history: ai/specs/mir/`
+
+## Recent History Notes
+- `../notes/2026-06-27-rdecl-rnode-and-lookup-direction.md` : `RDecl` / `NDecl` / `RNode` split, member lookup, resolver responsibility
