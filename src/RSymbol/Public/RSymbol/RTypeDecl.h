@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "RDecl.h"
 
 namespace Citron {

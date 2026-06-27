@@ -188,9 +188,11 @@ void VisitEnum(TNOuter* outer, SEnumDecl* sEnum, AccessorContext accessorContext
     }
 }
 
-void VisitTrait()
+template<typename TNOuter>
+void VisitTrait(TNOuter* outer, STraitDecl* sTrait, AccessorContext accessorContext, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
 {
-    throw NotImplementedException{};
+    auto accessor = MakeAccessor(sTrait->accessModifier, accessorContext);
+    auto* nTrait = nFactory->MakeNDecl<NTraitDecl>(outer, accessor, RName_Normal{sTrait->name}, rFactory);
 }
 
 void VisitExtend()

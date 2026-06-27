@@ -75,17 +75,17 @@
       <Filter>09 Interface</Filter>
     </ClInclude>
     <ClInclude Include="Public\NSymbol\NLambdaDecl.h">
-      <Filter>10 Lambda</Filter>
+      <Filter>11 Lambda</Filter>
     </ClInclude>
     <ClInclude Include="Public\NSymbol\NLambdaVarDecl.h">
-      <Filter>10 Lambda</Filter>
+      <Filter>11 Lambda</Filter>
     </ClInclude>
     <ClInclude Include="Public\NSymbol\NFactory.h" />
     <ClInclude Include="Public\NSymbol\NStructDtorDecl.h">
       <Filter>07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\NSymbol\NTypeParamDecl.h">
-      <Filter>11 Generics</Filter>
+      <Filter>12 Generics</Filter>
     </ClInclude>
     <ClInclude Include="Public\NSymbol\NGenericsComponent.h">
       <Filter>04 Components</Filter>
@@ -93,11 +93,11 @@
     <ClInclude Include="Public\NSymbol\NFuncDeclImpl_UsingNCommonFuncDeclComponent.h">
       <Filter>03 Func</Filter>
     </ClInclude>
+    <ClInclude Include="Public\NSymbol\NTraitDecl.h">
+      <Filter>10 Trait</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="10 Lambda">
-      <UniqueIdentifier>{d66538e4-443d-4466-809a-8f81047042ed}</UniqueIdentifier>
-    </Filter>
     <Filter Include="00 Abstraction">
       <UniqueIdentifier>{9390ef1c-0504-4dbe-aa5a-2b1470e3f249}</UniqueIdentifier>
     </Filter>
@@ -128,7 +128,13 @@
     <Filter Include="09 Interface">
       <UniqueIdentifier>{c4a3b135-daf8-48ec-bf76-acbb1ac04586}</UniqueIdentifier>
     </Filter>
-    <Filter Include="11 Generics">
+    <Filter Include="10 Trait">
+      <UniqueIdentifier>{312ce943-1c14-486d-a40a-0f28a976cb24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="11 Lambda">
+      <UniqueIdentifier>{d66538e4-443d-4466-809a-8f81047042ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="12 Generics">
       <UniqueIdentifier>{d2a9230d-1f79-4c83-94c2-e760c1fc9c09}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -168,10 +174,10 @@
       <Filter>09 Interface</Filter>
     </ClCompile>
     <ClCompile Include="NLambdaDecl.cpp">
-      <Filter>10 Lambda</Filter>
+      <Filter>11 Lambda</Filter>
     </ClCompile>
     <ClCompile Include="NLambdaVarDecl.cpp">
-      <Filter>10 Lambda</Filter>
+      <Filter>11 Lambda</Filter>
     </ClCompile>
     <ClCompile Include="NModule.cpp">
       <Filter>05 TopLevel</Filter>
@@ -201,7 +207,7 @@
       <Filter>07 Struct</Filter>
     </ClCompile>
     <ClCompile Include="NTypeParamDecl.cpp">
-      <Filter>11 Generics</Filter>
+      <Filter>12 Generics</Filter>
     </ClCompile>
     <ClCompile Include="NGenericsComponent.cpp">
       <Filter>04 Components</Filter>
@@ -211,6 +217,9 @@
     </ClCompile>
     <ClCompile Include="NFuncDecl.cpp">
       <Filter>03 Func</Filter>
+    </ClCompile>
+    <ClCompile Include="NTraitDecl.cpp">
+      <Filter>10 Trait</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

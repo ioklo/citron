@@ -46,6 +46,7 @@
     <ClInclude Include="Public\NSymbol\NStructDtorDecl.h" />
     <ClInclude Include="Public\NSymbol\NStructFuncDecl.h" />
     <ClInclude Include="Public\NSymbol\NStructVarDecl.h" />
+    <ClInclude Include="Public\NSymbol\NTraitDecl.h" />
     <ClInclude Include="Public\NSymbol\NTypeDecl.h" />
     <ClInclude Include="Public\NSymbol\NTypeDeclContainerComponent.h" />
     <ClInclude Include="Public\NSymbol\NTypeDeclOuter.h" />
@@ -78,6 +79,7 @@
     <ClCompile Include="NStructDtorDecl.cpp" />
     <ClCompile Include="NStructFuncDecl.cpp" />
     <ClCompile Include="NStructVarDecl.cpp" />
+    <ClCompile Include="NTraitDecl.cpp" />
     <ClCompile Include="NTypeDeclContainerComponent.cpp" />
     <ClCompile Include="NTypeParamDecl.cpp" />
   </ItemGroup>
