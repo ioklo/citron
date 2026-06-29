@@ -25,6 +25,45 @@ trait Cloneable
 
 `This`는 associated type이 아니라 trait body에서 현재 구현 concrete type을 가리키는 special self type이다.
 
+## Conformance Declaration And Implementation
+
+타입의 원본 module은 타입 선언부에 canonical trait conformance를 선언한다. Struct는 concrete struct를 상속하지 않으므로 `:` 뒤에는 trait만 올 수 있다.
+
+```citron
+struct S : Trait1, Trait2
+{
+}
+
+impl S : Trait1 { }
+impl S : Trait2 { }
+```
+
+각 `(type, trait)` declaration에는 같은 module 안에 정확히 하나의 `impl` block이 필요하다.
+
+외부 module은 이름 있는 `extension` bundle로 conformance를 선언한다.
+
+```citron
+public extension MyBundle for S : Trait3, Trait4;
+
+impl MyBundle for S : Trait3 { }
+impl MyBundle for S : Trait4 { }
+```
+
+- `extension`의 accessor가 bundle의 accessibility를 결정한다.
+- `impl`에는 accessor를 붙이지 않는다.
+- 한 module은 같은 target에 여러 이름의 bundle을 선언할 수 있다.
+- 원본 module이 이미 선언한 canonical `(S, Trait)`는 외부 bundle이 재선언할 수 없다.
+- external extension implementation은 target의 private member에 접근할 수 있는 trusted augmentation으로 본다.
+
+외부 conformance는 import만으로 자동 활성화되지 않는다. 소비 파일에서 target과 필요한 trait를 모두 명시한다.
+
+```citron
+extend ExtModule.MyBundle for S : Trait3;
+extend ExtModule.MyBundle for S : Trait3, Trait4;
+```
+
+`extend` directive는 file-local이며 bundle provider는 소비 module의 직접 dependency여야 한다. 동일한 concrete `(type, trait)`에 둘 이상의 활성 bundle이 매칭되면 conformance 사용 지점에서 ambiguity error를 낸다. Target 또는 trait 목록 생략형은 v1에서 허용하지 않는다.
+
 ## Associated Type
 trait body의 `type X;`는 associated type requirement다.
 
@@ -39,7 +78,7 @@ trait RefEnumerator
 구현체는 `using` 또는 nested type으로 requirement를 충족한다.
 
 ```citron
-extend SEnumerator : RefEnumerator
+impl SEnumerator : RefEnumerator
 {
     using Item = int;
     int* Next() { ... }
@@ -84,3 +123,4 @@ Dynamic callable이 필요하면 별도 interface 또는 interface type expressi
 - `ai/notes/2026-05-14-trait-refenumerable-foreach-direction.md`
 - `ai/notes/2026-05-15-trait-concept-associated-type-design.md`
 - `ai/notes/2026-06-16-some-opaque-result-and-cti.md`
+- `ai/notes/2026-06-29-accessibility-struct-trait-extension-direction.md`

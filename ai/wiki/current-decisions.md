@@ -30,13 +30,20 @@ Status: current snapshot
 - `visibility`는 source name lookup rule이고, `reachability`는 compiler가 semantic information을 알 수 있는지의 문제로 분리한다.
 - Nested declaration은 논리적으로 허용 가능하지만, v1 허용 범위는 implementation scope와 design stability에 따라 결정한다.
 - Nested generic declaration identity는 outer type arguments를 포함한다. 예: `C<int>.Trait`와 `C<string>.Trait`는 다르다.
-- trait conformance block의 surface keyword는 현재 `extend`를 사용한다. 이름 변경 가능성은 열어 둔다.
+- Struct는 concrete struct를 상속하지 않는다. Struct의 `:` 뒤에는 trait conformance만 올 수 있고 struct member에는 `protected`를 허용하지 않는다.
+- 원본 module은 `struct S : Trait`로 canonical conformance를 선언하고 `impl S : Trait {}`로 구현한다.
+- 외부 module은 `extension Bundle for S : Trait;`로 이름 있는 conformance bundle을 선언하고 `impl Bundle for S : Trait {}`로 구현한다.
+- 외부 bundle은 자동 활성화하지 않는다. 소비 file에서 `extend Module.Bundle for S : Trait;`로 target과 trait를 명시해 활성화한다.
+- `extension`은 bundle declaration, `impl`은 witness implementation, `extend`는 file-local activation 역할로 구분한다.
+- 외부 extension은 target의 private member에 접근 가능한 trusted augmentation이다. Private 정보는 extension compiler에 reachable할 수 있지만 일반 lookup에는 visible하지 않다.
+- namespace accessibility가 외부 접근과 export 여부를 함께 결정하며 별도 export modifier는 두지 않는다.
 
 ## Modules And CTI
 - `cti`는 declaration/import boundary다.
 - Swift식 opaque result metadata 모델을 택하면 consumer-facing `rcti`는 없어질 수 있다.
 - `cti`는 `some` opaque result identity, metadata accessor symbol, opaque sret ABI contract를 담을 수 있어야 한다.
 - 같은 module 안 unit 상호참조와 `using unit` 부활 여부는 아직 재검토 중이다.
+- public extension bundle의 target/trait 목록과 witness identity는 module declaration surface 및 dependency metadata에 포함한다.
 
 ## Compiler
 - `some` opaque result call은 metadata accessor, value witness, trait witness, opaque sret로 낮춘다.

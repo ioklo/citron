@@ -9,6 +9,24 @@ Keywords: visibility, reachability, private, internal, public, var, cti
 - `reachability`는 compiler가 typecheck, ABI, conformance, lowering을 위해 semantic information을 알 수 있는지로 분리한다.
 - Private / not-visible type도 public API를 통해 값으로 흐를 수 있다.
 - 사용자는 not-visible concrete type의 값을 `var`로 받을 수 있다.
+- namespace 수준 accessibility가 외부 접근과 export 여부를 함께 결정하며 별도 export modifier는 두지 않는다.
+
+## Accessibility By Outer Kind
+
+Accessibility는 declaration의 immediate outer 종류에 따라 해석한다.
+
+| outer | 허용 accessibility |
+|---|---|
+| namespace/module | `public`, `private` |
+| class | `public`, `protected`, `private` |
+| struct | `public`, `private` |
+
+- Struct는 concrete struct를 상속하지 않으므로 struct member에 `protected`를 허용하지 않는다.
+- Nested type은 자신의 종류와 무관하게 containing outer의 member accessibility 규칙을 따른다.
+- `protected`는 symbol containment뿐 아니라 class inheritance와 receiver type을 함께 검사해야 한다.
+- Effective accessibility는 declaration path에 있는 enclosing declaration의 accessibility와 member accessibility를 모두 만족해야 한다.
+
+외부 `extension` implementation은 예외적으로 target의 private member에 접근할 수 있는 trusted augmentation이다. Private semantic/ABI 정보는 extension compilation에 reachable할 수 있지만 일반 source name lookup에는 visible하지 않다.
 
 ## Visibility
 Visibility는 name lookup rule이다.
@@ -75,3 +93,4 @@ func GetEnumerator()
 ## History
 - `ai/notes/2026-05-22-nested-decl-visibility-and-resolved-cti.md`
 - `ai/notes/2026-05-12-module-visibility-and-internal-fdecl-direction.md`
+- `ai/notes/2026-06-29-accessibility-struct-trait-extension-direction.md`

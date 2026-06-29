@@ -125,6 +125,12 @@
     <ClInclude Include="Public\RSymbol\RFuncDeclBase.h">
       <Filter>RDecls\03 Func</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RNode.h">
+      <Filter>RDecls\00 Abstraction\Node</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RNodeDecl.h">
+      <Filter>RDecls\00 Abstraction\Node</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">
@@ -165,6 +171,9 @@
     </Filter>
     <Filter Include="RDecls\12 Generics">
       <UniqueIdentifier>{d504e20d-8c04-4bbb-a0c1-e07c716fce1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\00 Abstraction\Node">
+      <UniqueIdentifier>{f3abaf68-510c-4b89-b763-7592f822b321}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -213,5 +222,6 @@
     <ClCompile Include="RFuncDeclOuter.cpp">
       <Filter>RDecls\03 Func</Filter>
     </ClCompile>
+    <ClCompile Include="Public\RSymbol\RNode.cpp" />
   </ItemGroup>
 </Project>
