@@ -6,7 +6,7 @@ class C : B, I { }
 void Main()
 {
 	var b = new C();
-	if (I i = b)
+	if (b is I i)
 	{
 		@true
 	}

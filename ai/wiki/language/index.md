@@ -9,6 +9,7 @@ Area: language
 - `some-opaque-result.md` : `some Trait` opaque result
 - `trait-and-interface.md` : static trait, dynamic interface, callable `func<>`
 - `module-and-cti.md` : module/unit, `cti`, import surface, `rcti` 재검토
+- `type-aliases.md` : module import, unit-local `using` alias와 declaration-level `type` alias
 - `types-and-references.md` : value/pointer/reference surface, `T&` 제한
 - `nullable-type.md` : nullable representation and nullable pattern
 - `enumerable-and-foreach.md` : RefEnumerable / ValueEnumerable / foreach direction

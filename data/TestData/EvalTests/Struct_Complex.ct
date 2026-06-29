@@ -1,11 +1,7 @@
 //@ 2 3 6 1
-public struct B
+struct S
 {
     int a;
-}
-
-struct S : B
-{
     int x; // default public
     private int y;
 

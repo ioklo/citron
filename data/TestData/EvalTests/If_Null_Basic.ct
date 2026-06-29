@@ -1,0 +1,10 @@
+//@ null
+void Main()
+{
+    int? o_value = null;
+
+    if (o_value is null)
+    {
+        @null
+    }
+}

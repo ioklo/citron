@@ -1,0 +1,3 @@
+import ExtensionModule;
+
+extend MyBundle for S : Trait1, Trait2;

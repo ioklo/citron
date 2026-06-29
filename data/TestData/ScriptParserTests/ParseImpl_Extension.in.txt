@@ -1,0 +1,6 @@
+impl MyBundle for S : Trait1
+{
+    void Func()
+    {
+    }
+}

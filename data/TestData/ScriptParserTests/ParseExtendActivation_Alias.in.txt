@@ -1,0 +1,3 @@
+import ExtensionModule as Ext;
+
+extend Ext.MyBundle for S : Trait1;

@@ -116,8 +116,10 @@ impl MyBundle for S : Trait4
 외부 extension은 module import만으로 자동 활성화하지 않는다. 소비 source file이 필요한 bundle 항목을 명시한다.
 
 ```citron
-extend ExtModule.MyBundle for S : Trait3;
-extend ExtModule.MyBundle for S : Trait3, Trait4;
+import ExtModule;
+
+extend MyBundle for S : Trait3;
+extend MyBundle for S : Trait3, Trait4;
 ```
 
 규칙:
@@ -130,7 +132,63 @@ extend ExtModule.MyBundle for S : Trait3, Trait4;
 - 동일한 concrete `(type, trait)`에 둘 이상의 활성 bundle이 매칭되면 실제 conformance가 필요한 사용 지점에서 ambiguity error를 낸다.
 - target/trait 생략형과 bundle 전체 wildcard 활성화는 후속 버전으로 미룬다.
 
-## 6. Keyword 역할
+## 6. Import, using alias와 type alias
+
+외부 module의 declaration world는 `import`로 현재 unit에 연다.
+
+```citron
+import A;
+import A as MyA;
+```
+
+규칙:
+
+- `import A;`는 A의 declaration world를 현재 unit에 연다.
+- `import A as MyA;`는 같은 동작을 수행하면서 unit-local module alias `MyA`를 추가한다.
+- `import`와 `using`은 선언 unit 밖으로 export되지 않는다.
+- `import unit` / `using unit`은 두지 않는다. 같은 module의 모든 unit declaration을 body보다 먼저 자동 수집해 forward reference를 해결한다.
+- module qualification은 `import`를 대체하지 않는다. `A.Name` 또는 `global::A.Name`을 쓰더라도 먼저 A를 import해야 한다.
+- `A.Name`은 lexical lookup의 영향을 받을 수 있고, `global::A.Name`은 root module name을 명시한다.
+
+기본적으로 imported declaration은 unqualified lookup한다.
+
+```citron
+import ExtModule;
+extend MyBundle for S : Trait3;
+```
+
+이름 충돌이 있으면 alias 또는 explicit qualification을 사용한다.
+
+```citron
+import ExtModule as Ext;
+extend Ext.MyBundle for S : Trait3;
+```
+
+`using`은 unit-local convenience alias에 사용한다.
+
+```citron
+using Items = Dictionary<string, List<int>>;
+```
+
+- `using` alias는 symbol tree의 정식 declaration 또는 module export surface가 아니다.
+- accessibility modifier를 붙이지 않고 선언 unit 밖에서 접근할 수 없다.
+
+`type`은 type-decl-space에 들어가는 정식 transparent type alias declaration이다.
+
+```citron
+public type UserId = int;
+
+class C
+{
+    public type V = int;
+}
+```
+
+- `type` declaration은 namespace/class/struct member가 될 수 있다.
+- enclosing declaration 및 자신의 accessibility에 따라 다른 unit/module에서 접근할 수 있다.
+- trait associated type requirement와 witness도 `type Item;` / `type Item = int;` 형태를 사용한다.
+
+## 7. Keyword 역할
 
 최종적으로 세 keyword의 역할을 분리한다.
 
@@ -147,3 +205,4 @@ extend ExtModule.MyBundle for S : Trait3, Trait4;
 - private extension surface의 artifact format, ABI compatibility와 versioning
 - `extend` directive가 참조한 provider dependency를 incremental build metadata에 기록하는 방법
 - target/trait 생략형 또는 wildcard activation을 후속 버전에 추가할지
+- generic type alias surface와 alias cycle 진단 규칙

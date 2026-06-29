@@ -1,0 +1,7 @@
+public type UserId = int;
+
+class C
+{
+    public type V = int;
+    private type State = int;
+}

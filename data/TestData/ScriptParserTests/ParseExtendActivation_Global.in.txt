@@ -1,0 +1,3 @@
+import ExtensionModule;
+
+extend global::ExtensionModule.MyBundle for S : Trait1;

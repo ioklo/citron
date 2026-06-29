@@ -5,12 +5,12 @@ trait MyTrait
     void Func();
 }
 
-struct S
+struct S : MyTrait
 {
     int x;
 }
 
-extend S : MyTrait
+impl S : MyTrait
 {
     void Func()
     {

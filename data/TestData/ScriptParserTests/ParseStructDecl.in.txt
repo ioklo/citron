@@ -1,11 +1,11 @@
-public struct S<T> : B, I
+public struct S<T> : Trait1, Trait2
 {
     int x1;
     public int x2;
-    protected string y;
+    public string y;
     private int z;
 
-    public struct Nested<U> : B, I { int x; }
+    public struct Nested<U> : Trait1, Trait2 { int x; }
 
     static void Func<X>(string s) { }
     private seq int F2<T>() { yield 4; }

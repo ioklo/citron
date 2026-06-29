@@ -9,12 +9,28 @@ Keywords: module, unit, cti, rcti, using, skeleton, fdecl
 - 사용자 기본 작성 모델은 `ct` 하나다.
 - `cti/ctm` split은 기본 작성 모델로 강제하지 않고, build artifact 또는 외부 선언 전용 형태로 축소하는 방향이다.
 - `some` opaque result metadata 모델을 택하면 consumer-facing `rcti`는 없어질 수 있다.
-- 같은 module 안 unit들이 자동 상호참조할지, `using unit`을 부활시킬지는 재검토 중이다.
+- 같은 module의 unit declaration은 body보다 먼저 자동 수집하며 `using unit`은 두지 않는다.
 
 ## Unit And Module
 - `module`은 외부 import/export와 공개 declaration world의 단위다.
 - `unit`은 translation unit에 가까운 source 입력 단위다.
 - 외부 module consumer는 provider module의 unit 구조를 직접 보지 않는 방향을 선호한다.
+
+## Import Module
+
+외부 module의 declaration world는 source unit에서 명시적으로 연다.
+
+```citron
+import A;
+import A as MyA;
+```
+
+- `import A;`는 A의 공개 declaration을 unqualified lookup 대상으로 만든다.
+- `import A as MyA;`는 동일하게 declaration world를 열고 unit-local qualification alias를 추가한다.
+- `import`와 `using` alias는 선언 unit 밖으로 export되지 않는다.
+- `import unit` / `using unit`은 두지 않는다. 같은 module의 unit declaration은 body compilation 전에 자동으로 함께 수집한다.
+- `A.Name`, `global::A.Name` 같은 qualification은 `import A;`를 대체하지 않는다.
+- 이름 충돌 시 module alias qualification을 우선 사용하고, `global::A.Name`은 root module name을 직접 지정해야 할 때 사용한다.
 
 ## CTI
 `cti`는 body보다 먼저 사용할 수 있는 declaration surface다.
@@ -36,7 +52,7 @@ public extension MyBundle for S : Trait1, Trait2;
 ```
 
 - public extension bundle의 이름, target과 trait 목록은 provider module의 declaration surface에 포함한다.
-- import만으로 bundle을 활성화하지 않는다. 직접 dependency인 provider의 bundle을 소비 file이 `extend Module.Bundle for S : Trait;`로 선택한다.
+- module world를 여는 것만으로 bundle을 활성화하지 않는다. 소비 file이 `import Provider;` 뒤 `extend Bundle for S : Trait;`로 필요한 bundle 항목을 선택한다.
 - 선택된 bundle/witness identity는 code generation과 dependency metadata에 명시적으로 남아야 한다.
 - external extension implementation은 target private member에 접근할 수 있으므로, provider artifact는 extension compiler용 private semantic/ABI surface를 제공할 수 있어야 한다.
 - private extension surface는 일반 consumer name lookup에는 노출하지 않는다.
@@ -52,7 +68,6 @@ public extension MyBundle for S : Trait1, Trait2;
 - implementation-only resolved metadata
 
 ## Open Points
-- same-module unit visibility를 implicit world로 둘지, `using unit`을 다시 명시할지
 - `cti` format에 opaque result ABI contract를 어떻게 표현할지
 - declaration-level dependency hash와 `.deps` artifact shape
 - manual `cti`와 implicit `cti`의 검증 관계

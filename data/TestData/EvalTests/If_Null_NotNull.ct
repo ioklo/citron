@@ -1,0 +1,14 @@
+//@ not_null
+void Main()
+{
+    int? o_value = 3;
+
+    if (o_value is null)
+    {
+        @null
+    }
+    else
+    {
+        @not_null
+    }
+}

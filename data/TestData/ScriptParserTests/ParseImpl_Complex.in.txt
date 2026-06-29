@@ -1,4 +1,4 @@
-public extend S : MyTrait<T, U>
+impl MyBundle for S : MyTrait<T, U>
 {
     some T Func([in]U& u)
     {

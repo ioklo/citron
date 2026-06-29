@@ -8,7 +8,7 @@ void Main()
 {
 	I1 i = new C();
 
-	if (I2 i2 = i)
+	if (i is I2 i2)
 	{
 		@true
 	}

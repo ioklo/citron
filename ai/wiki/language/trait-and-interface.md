@@ -58,8 +58,10 @@ impl MyBundle for S : Trait4 { }
 외부 conformance는 import만으로 자동 활성화되지 않는다. 소비 파일에서 target과 필요한 trait를 모두 명시한다.
 
 ```citron
-extend ExtModule.MyBundle for S : Trait3;
-extend ExtModule.MyBundle for S : Trait3, Trait4;
+import ExtModule;
+
+extend MyBundle for S : Trait3;
+extend MyBundle for S : Trait3, Trait4;
 ```
 
 `extend` directive는 file-local이며 bundle provider는 소비 module의 직접 dependency여야 한다. 동일한 concrete `(type, trait)`에 둘 이상의 활성 bundle이 매칭되면 conformance 사용 지점에서 ambiguity error를 낸다. Target 또는 trait 목록 생략형은 v1에서 허용하지 않는다.
@@ -80,7 +82,7 @@ trait RefEnumerator
 ```citron
 impl SEnumerator : RefEnumerator
 {
-    using Item = int;
+    type Item = int;
     int* Next() { ... }
 }
 ```

@@ -17,7 +17,7 @@ Status: current snapshot
 - `trait`는 static contract다. `interface`는 dynamic/runtime dispatch contract로 따로 둔다.
 - `func<R, Params...>`는 callable static contract type expression이다. `lambda<>` type expression은 두지 않는다.
 - 일반 `dyn trait`는 도입하지 않는다. dynamic dispatch가 필요하면 명시적 `interface`를 설계한다.
-- associated type inference는 v1에서 제외한다. trait 구현체는 `using` 또는 nested type으로 associated type requirement를 명시적으로 충족한다.
+- associated type inference는 v1에서 제외한다. trait 구현체는 `type Item = T;` 또는 nested type으로 associated type requirement를 명시적으로 충족한다.
 - `concept`는 초기에는 반복되는 `where` constraint 묶음으로 본다.
 - `T&`는 일반 first-class type constructor가 아니라 parameter/return/local alias/implicit this 같은 제한된 surface slot의 reference 표기다.
 - Nested nullable은 flatten하지 않는다. `C?`는 compressed nullable representation, 일반 `T?`는 tagged nullable representation으로 본다.
@@ -33,7 +33,7 @@ Status: current snapshot
 - Struct는 concrete struct를 상속하지 않는다. Struct의 `:` 뒤에는 trait conformance만 올 수 있고 struct member에는 `protected`를 허용하지 않는다.
 - 원본 module은 `struct S : Trait`로 canonical conformance를 선언하고 `impl S : Trait {}`로 구현한다.
 - 외부 module은 `extension Bundle for S : Trait;`로 이름 있는 conformance bundle을 선언하고 `impl Bundle for S : Trait {}`로 구현한다.
-- 외부 bundle은 자동 활성화하지 않는다. 소비 file에서 `extend Module.Bundle for S : Trait;`로 target과 trait를 명시해 활성화한다.
+- 외부 bundle은 자동 활성화하지 않는다. 소비 file에서 `import Provider;`로 declaration world를 연 뒤 `extend Bundle for S : Trait;`로 target과 trait를 명시해 활성화한다.
 - `extension`은 bundle declaration, `impl`은 witness implementation, `extend`는 file-local activation 역할로 구분한다.
 - 외부 extension은 target의 private member에 접근 가능한 trusted augmentation이다. Private 정보는 extension compiler에 reachable할 수 있지만 일반 lookup에는 visible하지 않다.
 - namespace accessibility가 외부 접근과 export 여부를 함께 결정하며 별도 export modifier는 두지 않는다.
@@ -42,7 +42,11 @@ Status: current snapshot
 - `cti`는 declaration/import boundary다.
 - Swift식 opaque result metadata 모델을 택하면 consumer-facing `rcti`는 없어질 수 있다.
 - `cti`는 `some` opaque result identity, metadata accessor symbol, opaque sret ABI contract를 담을 수 있어야 한다.
-- 같은 module 안 unit 상호참조와 `using unit` 부활 여부는 아직 재검토 중이다.
+- 외부 module은 `import A;`로 열고, alias가 필요하면 `import A as X;`를 사용한다.
+- Module qualification은 import를 대신하지 않으며, `A.Name`이나 `global::A.Name`을 사용해도 `import A;`가 먼저 필요하다.
+- `import`와 `using` alias는 unit-local이며 export되지 않는다. `using X = T;`는 unit-local convenience alias다.
+- `type X = T;`는 type-decl-space에 들어가는 정식 transparent type alias declaration이며 accessibility에 따라 다른 unit/module에서 접근할 수 있다.
+- `import unit` / `using unit`은 두지 않는다. 같은 module의 모든 unit declaration을 body보다 먼저 자동 수집해 forward reference를 해결한다.
 - public extension bundle의 target/trait 목록과 witness identity는 module declaration surface 및 dependency metadata에 포함한다.
 
 ## Compiler

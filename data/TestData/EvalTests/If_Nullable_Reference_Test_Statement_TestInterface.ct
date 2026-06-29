@@ -6,5 +6,5 @@ void Main()
 {
 	I i = new C();
 
-	if (C c = i) @true
+	if (i is C c) @true
 }

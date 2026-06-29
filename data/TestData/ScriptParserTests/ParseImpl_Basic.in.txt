@@ -1,4 +1,4 @@
-extend S : MyTrait
+impl S : MyTrait
 {
     void Func()
     {

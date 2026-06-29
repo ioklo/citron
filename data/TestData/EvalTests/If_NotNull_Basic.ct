@@ -1,0 +1,10 @@
+//@ 3
+void Main()
+{
+    int? o_value = 3;
+
+    if (o_value is not_null value)
+    {
+        @${value}
+    }
+}
