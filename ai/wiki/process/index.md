@@ -2,8 +2,14 @@
 
 Status: current index
 Area: process
+Keywords: process, build, test, generated files, generator, windows, workflow
 
-빌드, 테스트, 생성 파일 규칙의 wiki 입구다.
+빌드, 테스트, 생성 파일 규칙을 agent가 빠르게 찾기 위한 index다.
+
+## Routing Hints
+- Windows 빌드/테스트 절차와 Dev Shell 사용은 `windows-build-and-test.md`
+- `.g.cpp`, `.g.h`와 generator 수정 규칙은 `generated-files.md`
+- 일반 agent 작업 흐름은 `ai/ai-guidelines/agent-workflow.md`
 
 ## Current References
 - `ai/wiki/process/windows-build-and-test.md`

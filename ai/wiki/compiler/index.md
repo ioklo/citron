@@ -2,13 +2,22 @@
 
 Status: current index
 Area: compiler
+Keywords: compiler, RNode, declaration model, resolver, MIR, QIR, lowering, witness, translator
 
-Citron compiler 내부 모델과 lowering 지식의 wiki 입구다.
+Citron compiler 내부 모델과 lowering 지식을 agent가 빠르게 찾기 위한 index다.
+
+## Routing Hints
+- `RNode`, declaration tree, resolver 책임, `RDecl` 이행은 `declaration-model.md`
+- phase 구분, skeleton/cti/body 흐름은 `compile-pipeline.md`
+- MIR value semantics와 create/read/init 축은 `mir-value-model.md`, `mcreate-and-translation-axes.md`
+- witness, ABI, call lowering은 `value-and-trait-witness.md`, `qir-call-abi.md`
+- syntax to MIR(IR0) translator는 `syntax-ir0-translator.md`
+- member lookup helper와 conditional binding lowering은 `member-translation.md`, `if-is-lowering.md`
 
 ## Core Topics
 - `compile-pipeline.md` : skeleton/cti/body/lowering phase 개요
 - `value-and-trait-witness.md` : value witness와 trait witness
-- `declaration-model.md` : RDecl / NDecl / EDecl model
+- `declaration-model.md` : `RDecl`에서 `RNode`로 가는 declaration / symbol model
 - `syntax-ir0-translator.md` : Syntax to MIR(IR0) translator overview
 - `mir-value-model.md` : BC/NBC, MExp/MRead/MCreate/MInitExp
 - `mir-observable-behavior.md` : observable event model
@@ -17,11 +26,6 @@ Citron compiler 내부 모델과 lowering 지식의 wiki 입구다.
 - `qevaluator.md` : QIR semantic reference executor
 - `member-translation.md` : member lookup/translation helper direction
 - `if-is-lowering.md` : conditional binding lowering and lifetime
-
-## Topics To Add
-- unknown-size local storage
-- opaque sret call lowering
-- incremental build dependency
 
 ## Removed Source References
 - `git history: ai/implementations/`
