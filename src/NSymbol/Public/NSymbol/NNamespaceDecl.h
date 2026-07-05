@@ -7,8 +7,6 @@
 
 #include "RSymbol/RNamespaceDecl.h"
 
-#include "NDecl.h"
-#include "NTypeDeclOuter.h"
 #include "NNamespaceDeclContainerComponent.h"
 #include "NTypeDeclContainerComponent.h"
 #include "NFuncDeclContainerComponent.h"
@@ -21,10 +19,7 @@ class RNamespaceDeclGroup;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class NNamespaceDecl
-    : public NDecl
-    , public NTypeDeclOuter
-    , public RNamespaceDecl
-    , private NNamespaceDeclContainerComponent
+    : public RNamespaceDecl
     , private NTypeDeclContainerComponent
     , private NFuncDeclContainerComponent<NGlobalFuncDecl>
 {
@@ -38,22 +33,17 @@ private:
     RNamespaceDeclGroup* group;
     RFactoryPtr rFactory;
 
-public:
-    NSYMBOL_API static NNamespaceDecl* MakeRoot(RFactory& factory);
-    NSYMBOL_API static NNamespaceDecl* MakeChild(NNamespaceDecl* outer, const std::string& name, RFactory& factory);
-
 private:
     friend class NFactory;
     NNamespaceDecl(NNamespaceDecl* outer, const std::string& name, RNamespaceDeclGroup* group, const RFactoryPtr& rFactory);
 
 public:
-    const std::string& GetName() { return name; }
+    /*const std::string& GetName() { return name; }
 
     using NNamespaceDeclContainerComponent::AddNamespace;
-    using NNamespaceDeclContainerComponent::GetNamespace;
+    using NNamespaceDeclContainerComponent::GetNamespace;*/
 
     using NTypeDeclContainerComponent::AddType;
-
     void AddGlobalFuncDecl(NGlobalFuncDecl* func) { NFuncDeclContainerComponent<NGlobalFuncDecl>::AddFunc(func); }
 
 public:
@@ -69,8 +59,6 @@ public:
     // from RDecl
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
-    size_t GetTypeParamCount() override { return 0; }
-    RTypeParamDecl* GetTypeParam(size_t index) override { return nullptr; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

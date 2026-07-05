@@ -5,16 +5,12 @@
 
 #include "RSymbol/RClassDecl.h"
 
-#include "NDecl.h"
-#include "NTypeDecl.h"
-#include "NTypeDeclOuter.h"
 #include "NClassCtorDecl.h"
 #include "NClassFuncDecl.h"
 #include "NClassVarDecl.h"
 #include "NGenericsComponent.h"
 #include "NTypeDeclContainerComponent.h"
 #include "NFuncDeclContainerComponent.h"
-#include "NTypeDeclOuter.h"
 
 namespace Citron
 {
@@ -24,10 +20,7 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 class NTypeParamDecl;
 
 class NClassDecl
-    : public NDecl
-    , public NTypeDecl
-    , public NTypeDeclOuter
-    , public RClassDecl
+    : public RClassDecl
     , private NGenericsComponent
     , private NTypeDeclContainerComponent
     , private NFuncDeclContainerComponent<NClassFuncDecl>
@@ -73,8 +66,6 @@ public:
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RDecl* GetROuter() override;
     NSYMBOL_API RIdentifier GetIdentifier() override;
-    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
-    RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
@@ -83,6 +74,8 @@ public:
     RType* GetOpenType() override;
     
     // from RClassDecl
+    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
+    AnyPtrSizedRange<RTypeParamDecl*> GetTypeParams() override { return NGenericsComponent::GetTypeParams(); }
     NSYMBOL_API std::optional<RDeclRes_ClassVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
 };
 

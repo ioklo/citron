@@ -6,16 +6,14 @@
 #include <memory>
 
 #include "RSymbol/RStructCtorDecl.h"
-
-#include "NDecl.h"
+ 
 #include "NGenericsComponent.h"
 #include "NFuncDeclImpl_UsingNCommonFuncDeclComponent.h"
 
 namespace Citron {
 
 class NStructCtorDecl
-    : public NDecl
-    , private NGenericsComponent
+    : private NGenericsComponent
     , public NFuncDeclImpl_UsingNCommonFuncDeclComponent<RStructCtorDecl>
 {
 public:
@@ -39,13 +37,13 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
-    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
-    RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
 
     // from RStructCtorDecl
+    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
+    AnyPtrSizedRange<RTypeParamDecl*> GetTypeParams() override { return NGenericsComponent::GetTypeParams(); }
     NSYMBOL_API RStructDecl* GetStructDecl() override;
     RStructCtorKind GetKind() override { return kind; }
 };

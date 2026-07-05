@@ -107,9 +107,6 @@
     <ClInclude Include="Public\RSymbol\RTypeParamDecl.h">
       <Filter>RDecls\12 Generics</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\RSymbol\RCopyStrategy.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
@@ -122,14 +119,26 @@
     <ClInclude Include="Public\RSymbol\RTraitDecl.h">
       <Filter>RDecls\10 Trait</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RFuncDeclBase.h">
-      <Filter>RDecls\03 Func</Filter>
+    <ClInclude Include="Public\RSymbol\RNamespaceDeclContainerComponent.h">
+      <Filter>RDecls\13 Components</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RNode.h">
-      <Filter>RDecls\00 Abstraction\Node</Filter>
+    <ClInclude Include="Public\RSymbol\RFuncDeclContainerComponent.h">
+      <Filter>RDecls\13 Components</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RNodeDecl.h">
-      <Filter>RDecls\00 Abstraction\Node</Filter>
+    <ClInclude Include="Public\RSymbol\RTypeDeclContainerComponent.h">
+      <Filter>RDecls\13 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RCommonFuncDeclComponent.h">
+      <Filter>RDecls\13 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RGenericsComponent.h">
+      <Filter>RDecls\13 Components</Filter>
+    </ClInclude>
+    <ClInclude Include="RNamespaceMemberAccessor.h">
+      <Filter>RDecls\02 Properties</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\ImplRFuncDeclUsingCommonComponents.h">
+      <Filter>RDecls\13 Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -172,8 +181,8 @@
     <Filter Include="RDecls\12 Generics">
       <UniqueIdentifier>{d504e20d-8c04-4bbb-a0c1-e07c716fce1f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RDecls\00 Abstraction\Node">
-      <UniqueIdentifier>{f3abaf68-510c-4b89-b763-7592f822b321}</UniqueIdentifier>
+    <Filter Include="RDecls\13 Components">
+      <UniqueIdentifier>{b4173c84-4412-445d-b15e-c01d9d29ffbd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -213,15 +222,42 @@
     <ClCompile Include="RFuncDecl.cpp">
       <Filter>RDecls\03 Func</Filter>
     </ClCompile>
-    <ClCompile Include="RTypeDecl.cpp">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClCompile>
     <ClCompile Include="RFuncReturn.cpp">
       <Filter>RDecls\03 Func</Filter>
     </ClCompile>
     <ClCompile Include="RFuncDeclOuter.cpp">
       <Filter>RDecls\03 Func</Filter>
     </ClCompile>
-    <ClCompile Include="Public\RSymbol\RNode.cpp" />
+    <ClCompile Include="RNamespaceDeclContainerComponent.cpp">
+      <Filter>RDecls\13 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypeDeclContainerComponent.cpp">
+      <Filter>RDecls\13 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RCommonFuncDeclComponent.cpp">
+      <Filter>RDecls\13 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RGenericsComponent.cpp">
+      <Filter>RDecls\13 Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\RSymbol\RStructDecl.cpp">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="RNamespaceDecl.cpp">
+      <Filter>RDecls\05 TopLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypeDeclOuter.cpp">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RStructCtorDecl.cpp">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="RStructDtorDecl.cpp">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\RSymbol\RStructFuncDecl.cpp" />
+    <ClCompile Include="RStructVarDecl.cpp">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

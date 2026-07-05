@@ -46,13 +46,25 @@
     <ClInclude Include="Public\Infra\Transaction.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="Public\Infra\Views.h">
-      <Filter>Public Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Public\Infra\Visitor.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
     <ClInclude Include="Public\Infra\SmallMap.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Infra\USpan.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Infra\AnyRange.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Infra\AnyPtrView.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Infra\AnyPtrSizedRange.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\Infra\Ref.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
   </ItemGroup>

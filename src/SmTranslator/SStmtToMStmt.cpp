@@ -13,7 +13,6 @@
 
 #include "Syntax/Syntax.h"
 #include "Logging/Logger.h"
-#include "RSymbol/DeclWithOuterTypeArgs.h"
 #include "RSymbol/RFuncReturn.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFuncDecl.h"

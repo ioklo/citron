@@ -6,9 +6,6 @@
 #include <unordered_map>
 
 #include "RSymbol/REnumElemDecl.h"
-
-#include "NDecl.h"
-#include "NTypeDecl.h"
 #include "NEnumElemVarDecl.h"
 
 namespace Citron {
@@ -16,9 +13,7 @@ namespace Citron {
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class NEnumElemDecl
-    : public NDecl
-    , public NTypeDecl
-    , public REnumElemDecl
+    : public REnumElemDecl
 {
 public:
     NEnumDecl* _enum;
@@ -47,8 +42,6 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return RAccessor::Public; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
-    size_t GetTypeParamCount() override { return 0; }
-    RTypeParamDecl* GetTypeParam(size_t index) override { return nullptr; }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

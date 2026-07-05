@@ -3,7 +3,6 @@
 
 #include "RSymbol/RFuncReturn.h"
 #include "RSymbol/RFuncDecl.h"
-#include "NDecl.h"
 #include "NFuncDeclOuter.h"
 
 namespace Citron

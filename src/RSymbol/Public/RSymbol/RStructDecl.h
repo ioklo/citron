@@ -1,41 +1,76 @@
 #pragma once
 #include "RSymbolConfig.h"
 
-#include "Infra/Views.h"
-
+#include "Infra/Ref.h"
+#include "RTypeDeclOuter.h"
+#include "RGenericsComponent.h"
+#include "RTypeDeclContainerComponent.h"
+#include "RFuncDeclContainerComponent.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
-#include "RTypeDeclOuter.h"
+#include "RStructFuncDecl.h"
 
 namespace Citron {
 
-class EStructDecl;
-class RType_Struct;
+class RType_Trait;
 class RTypeArguments;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-class RStructDecl
-    : public RDecl
-    , public RTypeDecl
-    , public RTypeDeclOuter
+class RStructCtorDecl;
+class RStructDtorDecl;
+class RStructFuncDecl;
+class RStructVarDecl;
+
+class RStructDecl : public RDecl, public RTypeDecl
 {
+    RTypeDeclOuter outer; // outer with accessor
+    RName name;
+
+    std::vector<RStructCtorDecl*> ctors;
+    RStructDtorDecl* dtor;
+    int trivialCtorIndex; // can be -1
+
+    std::vector<RStructVarDecl*> vars;
+    std::optional<std::vector<RType_Trait*>> o_traits;
+    std::unordered_map<RName, RStructVarDecl*> varsMap;
+
+    RGenericsComponent genericsComp;
+    RTypeDeclContainerComponent typeDeclContainerComp;
+    RFuncDeclContainerComponent<RStructFuncDecl> funcDeclContainerComp;
+    RFactoryPtr rFactory;
+
 public:
-    virtual RType_Struct* GetUnboundBaseStruct() = 0;
-    virtual View<RStructVarDecl*> GetRVars() = 0;
-    virtual std::optional<RDeclRes_StructVar> GetVar(RTypeArguments* typeArgs, const RName& name) = 0;
-    virtual std::vector<RStructCtorDecl*> GetUnboundCtors() = 0;
-    virtual RStructCtorDecl* GetUnboundCopyCtor() = 0;
-    virtual RStructCtorDecl* GetUnboundTrivialCtor_RStructCtorDecl() = 0;
+    RSYMBOL_API RStructDecl(RTypeDeclOuter outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory);
+    void InitTypeParams(std::vector<RTypeParamDecl*>&& typeParams) { return genericsComp.InitTypeParams(std::move(typeParams)); }
+    RSYMBOL_API void InitTraits(std::vector<RType_Trait*>&& traits);
 
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
-    RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
-    void Accept(RTypeDeclOuterVisitor& visitor) final { visitor.Visit(this); }
+    void AddType(RTypeDecl* typeDecl) { typeDeclContainerComp.AddType(typeDecl); }
+    RSYMBOL_API void AddCtor(RStructCtorDecl* decl);
+    RSYMBOL_API void AddDtor(RStructDtorDecl* decl);
+    RSYMBOL_API void AddFunc(RStructFuncDecl* decl) { funcDeclContainerComp.AddFunc(decl); }
+    RSYMBOL_API void AddVar(RStructVarDecl* decl);
+
+    std::span<RStructCtorDecl*> GetUnboundCtors() { return ctors; }
+    std::span<RStructVarDecl*> GetUnboundVars() { return vars; }
+    RSYMBOL_API RStructVarDecl* GetUnboundVar(InRef<RName> name);
+    RStructCtorDecl* GetUnboundTrivialCtor() { return trivialCtorIndex == -1 ? nullptr : ctors[trivialCtorIndex]; }
+    RSYMBOL_API RStructCtorDecl* GetUnboundCopyCtor();
+
+public: // from RDecl
+    RSYMBOL_API RDecl* GetOuter() override;
+    RSYMBOL_API RIdentifier GetIdentifier() override;
+    RSYMBOL_API size_t GetTypeParamCount() override;
+    RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
+    RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name, size_t typeParamCount) override;
+    RSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
+    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
+
+public: // from RTypeDecl
+    // RSYMBOL_API RIdentifier GetIdentifier() override;
+    RSYMBOL_API RDecl* GetDecl() override;
+    RSYMBOL_API RType* GetOpenType() override;
+    RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
 };
-
-class REStructDecl : public RStructDecl
-{
-    EStructDecl* decl;
-};
-
 
 } // namespace Citron
 

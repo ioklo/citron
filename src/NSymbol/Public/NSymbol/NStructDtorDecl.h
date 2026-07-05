@@ -6,7 +6,6 @@
 
 #include "RSymbol/RStructDtorDecl.h"
 
-#include "NDecl.h"
 #include "NFuncDeclImpl_UsingNCommonFuncDeclComponent.h"
 
 namespace Citron {
@@ -14,8 +13,7 @@ namespace Citron {
 class NStructDecl;
 
 class NStructDtorDecl
-    : public NDecl
-    , public NFuncDeclImpl_UsingNCommonFuncDeclComponent<RStructDtorDecl>
+    : public NFuncDeclImpl_UsingNCommonFuncDeclComponent<RStructDtorDecl>
 {
 public:
     RAccessor accessor;
@@ -34,8 +32,6 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     RIdentifier GetIdentifier() override { return RIdentifier{RName_Reserved("Dtor"), 0, {}}; }
-    size_t GetTypeParamCount() override { return 0; }
-    RTypeParamDecl* GetTypeParam(size_t index) override { return nullptr; }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;

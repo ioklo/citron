@@ -1,21 +1,36 @@
 #pragma once
-
-#include "RFuncDeclBase.h"
+#include "RSymbolConfig.h"
+#include "RDecl.h"
+#include "ImplRFuncDeclUsingCommonComponents.h"
+#include "RCommonFuncDeclComponent.h"
 
 namespace Citron {
 
-class EStructDtorDecl;
+class RStructDecl;
+enum class RStructMemberAccessor;
 
-class RStructDtorDecl : public RFuncDeclBase
+class RStructDtorDecl : public RDecl, public ImplRFuncDeclUsingCommonComponents<RStructDtorDecl>
 {
+    friend class ImplRFuncDeclUsingCommonComponents<RStructDtorDecl>;
+
+    RStructDecl* _struct;
+    RStructMemberAccessor accessor;
+    
+    RCommonFuncDeclComponent commonFuncDeclComp;
+
 public:
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
-};
+    RSYMBOL_API RStructDtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor);
+    RStructDecl* GetStructDecl() { return _struct; }
+    RStructMemberAccessor GetAccessor() { return accessor; }
 
-class REStructDtorDecl : public RStructDtorDecl
-{
-    EStructDtorDecl* decl;
+public: // from RDecl
+    RSYMBOL_API RDecl* GetOuter() override;
+    RSYMBOL_API RIdentifier GetIdentifier() override;
+    RSYMBOL_API size_t GetTypeParamCount() override;
+    RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
+    RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name, size_t typeParamCount) override;
+    RSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
+    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
 };
-
 
 } // namespace Citron

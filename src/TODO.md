@@ -42,3 +42,4 @@
 - [ ] // TODO: [61] 일반적인 struct ctor, dtor, copy/move ctor, copy/move assign 구현
 - [ ] // TODO: [62] Generics 구현
 - [v] // TODO: [63] QIntrinsicInfo를 QFactory에 넣기
+- [ ] // TODO: [64] 2026-06-30, RAccessor namespace, class, struct 따라 나누기 

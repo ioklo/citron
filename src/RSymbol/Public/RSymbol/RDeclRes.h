@@ -98,8 +98,6 @@ public:
     template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RDeclRes>) && std::constructible_from<Variant, T&&>
     RDeclRes(T&& res) : v{std::forward<T>(res)} {}
 
-    RSYMBOL_API std::vector<DeclWithOuterTypeArgs> GetFuncDeclWithOuterTypeArgs();
-
     template<typename... TArgs>
     auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
 

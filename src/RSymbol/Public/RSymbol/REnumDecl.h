@@ -1,26 +1,23 @@
 #pragma once
 #include "RSymbolConfig.h"
 
+#include "Infra/AnyPtrSizedRange.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
 
 namespace Citron {
 
-class EEnumDecl;
-
-class REnumDecl
-    : public RDecl
-    , public RTypeDecl
+class REnumDecl : public RDecl, public RTypeDecl
 {
 public:
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
-    RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
-};
+    virtual size_t GetTypeParamCount() = 0;
+    virtual AnyPtrSizedRange<RTypeParamDecl*> GetTypeParams() = 0;
 
-class REEnumDecl : public REnumDecl
-{
-    EEnumDecl* decl;
+public: // from RTypeDecl
+    RSYMBOL_API RIdentifier GetIdentifier() override;
+    RSYMBOL_API RDecl* GetDecl() override;
+    RSYMBOL_API RType* GetOpenType() override;
+    RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
 };
-
 
 } // namespace Citron

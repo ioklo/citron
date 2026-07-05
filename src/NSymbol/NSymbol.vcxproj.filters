@@ -2,35 +2,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="Public\NSymbol\NSymbolConfig.h" />
-    <ClInclude Include="Public\NSymbol\NDecl.h">
-      <Filter>00 Abstraction</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\NSymbol\NTypeDecl.h">
-      <Filter>00 Abstraction</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\NSymbol\NTypeDeclOuter.h">
-      <Filter>00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\NSymbol\NFuncDecl.h">
       <Filter>03 Func</Filter>
     </ClInclude>
     <ClInclude Include="Public\NSymbol\NFuncDeclOuter.h">
       <Filter>03 Func</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\NSymbol\NCommonFuncDeclComponent.h">
-      <Filter>04 Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\NSymbol\NFuncDeclContainerComponent.h">
-      <Filter>04 Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\NSymbol\NNamespaceDeclContainerComponent.h">
-      <Filter>04 Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\NSymbol\NTypeDeclContainerComponent.h">
-      <Filter>04 Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\NSymbol\NGlobalFuncDecl.h">
-      <Filter>05 TopLevel</Filter>
     </ClInclude>
     <ClInclude Include="Public\NSymbol\NModule.h">
       <Filter>05 TopLevel</Filter>
@@ -86,9 +62,6 @@
     </ClInclude>
     <ClInclude Include="Public\NSymbol\NTypeParamDecl.h">
       <Filter>12 Generics</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\NSymbol\NGenericsComponent.h">
-      <Filter>04 Components</Filter>
     </ClInclude>
     <ClInclude Include="Public\NSymbol\NFuncDeclImpl_UsingNCommonFuncDeclComponent.h">
       <Filter>03 Func</Filter>
@@ -152,12 +125,6 @@
     <ClCompile Include="NClassVarDecl.cpp">
       <Filter>06 Class</Filter>
     </ClCompile>
-    <ClCompile Include="NCommonFuncDeclComponent.cpp">
-      <Filter>04 Components</Filter>
-    </ClCompile>
-    <ClCompile Include="NDecl.cpp">
-      <Filter>00 Abstraction</Filter>
-    </ClCompile>
     <ClCompile Include="NEnumDecl.cpp">
       <Filter>08 Enum</Filter>
     </ClCompile>
@@ -166,9 +133,6 @@
     </ClCompile>
     <ClCompile Include="NEnumElemVarDecl.cpp">
       <Filter>08 Enum</Filter>
-    </ClCompile>
-    <ClCompile Include="NGlobalFuncDecl.cpp">
-      <Filter>05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="NInterfaceDecl.cpp">
       <Filter>09 Interface</Filter>
@@ -185,9 +149,6 @@
     <ClCompile Include="NNamespaceDecl.cpp">
       <Filter>05 TopLevel</Filter>
     </ClCompile>
-    <ClCompile Include="NNamespaceDeclContainerComponent.cpp">
-      <Filter>04 Components</Filter>
-    </ClCompile>
     <ClCompile Include="NStructCtorDecl.cpp">
       <Filter>07 Struct</Filter>
     </ClCompile>
@@ -200,17 +161,11 @@
     <ClCompile Include="NStructVarDecl.cpp">
       <Filter>07 Struct</Filter>
     </ClCompile>
-    <ClCompile Include="NTypeDeclContainerComponent.cpp">
-      <Filter>04 Components</Filter>
-    </ClCompile>
     <ClCompile Include="NStructDtorDecl.cpp">
       <Filter>07 Struct</Filter>
     </ClCompile>
     <ClCompile Include="NTypeParamDecl.cpp">
       <Filter>12 Generics</Filter>
-    </ClCompile>
-    <ClCompile Include="NGenericsComponent.cpp">
-      <Filter>04 Components</Filter>
     </ClCompile>
     <ClCompile Include="NFuncDeclOuter.cpp">
       <Filter>03 Func</Filter>

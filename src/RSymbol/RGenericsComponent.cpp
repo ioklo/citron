@@ -1,27 +1,29 @@
-#include "NGenericsComponent.h"
+#include "RGenericsComponent.h"
+
 #include <cassert>
-#include "NTypeParamDecl.h"
+#include "Infra/Ref.h"
+#include "RTypeParamDecl.h"
 
 using namespace std;
 
 namespace Citron {
 
-NGenericsComponent::NGenericsComponent()
+RGenericsComponent::RGenericsComponent()
 {
 }
 
-void NGenericsComponent::InitTypeParams(vector<NTypeParamDecl*>&& typeParams)
+void RGenericsComponent::InitTypeParams(vector<RTypeParamDecl*>&& typeParams)
 {
     this->o_typeParams = move(typeParams);
 }
 
-RTypeParamDecl* NGenericsComponent::GetTypeParam(size_t index)
+RTypeParamDecl* RGenericsComponent::GetTypeParam(size_t index)
 {
     assert(o_typeParams);
     return (*o_typeParams)[index];
 }
 
-RTypeDecl* NGenericsComponent::GetTypeMember(const RName& name, size_t typeParamCount)
+RTypeDecl* RGenericsComponent::GetTypeMember(InRef<RName> name, size_t typeParamCount)
 {
     assert(o_typeParams);
 
@@ -29,13 +31,13 @@ RTypeDecl* NGenericsComponent::GetTypeMember(const RName& name, size_t typeParam
 
     for (auto* typeParam : *o_typeParams)
     {
-        if (typeParam->GetName() == name)
+        if (typeParam->GetName() == *name)
             return typeParam;
     }
     return nullptr;
 }
 
-optional<RDeclRes> NGenericsComponent::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RGenericsComponent::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     assert(o_typeParams);
 
@@ -43,7 +45,7 @@ optional<RDeclRes> NGenericsComponent::ResolveIdentifier(const RName& name, size
 
     for (auto* typeParam : *o_typeParams)
     {
-        if (typeParam->GetName() == name)
+        if (typeParam->GetName() == *name)
             return RDeclRes_TypeVar(typeParam);
     }
 

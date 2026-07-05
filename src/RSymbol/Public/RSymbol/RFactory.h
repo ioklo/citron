@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <memory>
+#include <deque>
 
 #include "RTypes.h" // for RFuncType::Parameter
 
@@ -85,6 +86,8 @@ struct RTypeArgumentsKeyHasher
 // flyweight
 class RFactory
 {
+    std::deque<std::unique_ptr<RDecl>> decls;
+    
     // inner type -> nullable type
     std::unordered_map<RType*, std::unique_ptr<RType_Nullable>> nullableValueTypes;
     std::unordered_map<RType*, std::unique_ptr<RType_NullableInplace>> nullableRefTypes;
@@ -123,6 +126,15 @@ class RFactory
 public:
     RSYMBOL_API RFactory();
     RSYMBOL_API ~RFactory();
+
+    template<typename TDecl>
+    TDecl* MakeDecl(auto&&... args)
+    {   
+        auto decl = std::make_unique<TDecl>(std::forward<decltype(args)>(args)...);
+        auto* pDecl = decl.get();
+        decls.push_back(std::move(decl));
+        return pDecl;
+    }
 
     RSYMBOL_API RType_Nullable* MakeNullableType(RType* innerType);
     RSYMBOL_API RType_NullableInplace* MakeNullableInplaceType(RType* innerType);

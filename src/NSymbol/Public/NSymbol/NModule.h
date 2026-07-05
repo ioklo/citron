@@ -4,7 +4,6 @@
 #include <string>
 
 #include "RSymbol/RModule.h"
-#include "NDecl.h"
 
 namespace Citron {
 

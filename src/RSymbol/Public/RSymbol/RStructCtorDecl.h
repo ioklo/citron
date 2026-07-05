@@ -1,11 +1,16 @@
 #pragma once
 #include "RSymbolConfig.h"
 
-#include "RFuncDeclBase.h"
+#include "Infra/AnyPtrSizedRange.h"
+#include "RDecl.h"
+#include "RFuncDecl.h"
+#include "RGenericsComponent.h"
+#include "RCommonFuncDeclComponent.h"
+#include "ImplRFuncDeclUsingCommonComponents.h"
 
 namespace Citron {
 
-class EStructCtorDecl;
+enum class RStructMemberAccessor;
 
 enum class RStructCtorKind
 {
@@ -15,18 +20,32 @@ enum class RStructCtorKind
     Move,
 };
 
-class RStructCtorDecl : public RFuncDeclBase
+class RStructCtorDecl : public RDecl, public ImplRFuncDeclUsingCommonComponents<RStructCtorDecl>
 {
-public:
-    virtual RStructDecl* GetStructDecl() = 0;
-    virtual RStructCtorKind GetKind() = 0;
-    
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
-};
+    friend class ImplRFuncDeclUsingCommonComponents<RStructCtorDecl>;
 
-class REStructCtorDecl : public RStructCtorDecl
-{
-    EStructCtorDecl* decl;
+    RStructDecl* _struct;
+    RStructMemberAccessor accessor;
+    RStructCtorKind kind;
+
+    RGenericsComponent genericsComp;
+    RCommonFuncDeclComponent commonFuncDeclComp;
+
+public:
+    RSYMBOL_API RStructCtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind);
+
+    RStructDecl* GetStructDecl() { return _struct; }
+    RStructMemberAccessor GetAccessor() { return accessor; }
+    RStructCtorKind GetKind() { return kind; }
+
+public: // from RDecl
+    RSYMBOL_API RDecl* GetOuter() final;
+    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API size_t GetTypeParamCount() final;
+    RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) final;
+    RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name, size_t typeParamCount) final;
+    RSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) final;
+    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) final;
 };
 
 } // namespace Citron

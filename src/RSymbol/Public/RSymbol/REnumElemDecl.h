@@ -1,21 +1,16 @@
 #pragma once
 #include "RSymbolConfig.h"
 #include <optional>
-
 #include "RDecl.h"
 #include "RTypeDecl.h"
 
 namespace Citron {
 
-class EEnumElemDecl;
-
 struct RFuncParameter;
 
 class RTypeArguments;
 
-class REnumElemDecl
-    : public RDecl
-    , public RTypeDecl
+class REnumElemDecl : public RDecl, public RTypeDecl
 {
 public:
     virtual REnumDecl* GetBaseEnumDecl() = 0;
@@ -24,14 +19,11 @@ public:
     virtual size_t GetVarCount() = 0;
     virtual bool IsStandalone() = 0;
 
-    void Accept(RDeclVisitor& visitor) final { visitor.Visit(this); }
-    RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
+public: // from RTypeDecl
+    RSYMBOL_API RIdentifier GetIdentifier() override;
+    RSYMBOL_API RDecl* GetDecl() override;
+    RSYMBOL_API RType* GetOpenType() override;
+    RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
 };
-
-class REEnumElemDecl : public REnumElemDecl
-{
-    EEnumElemDecl* decl;
-};
-
 
 } // namespace Citron

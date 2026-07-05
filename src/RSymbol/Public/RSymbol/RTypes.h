@@ -6,10 +6,10 @@
 #include <string>
 
 #include "Infra/Hash.h"
+#include "Infra/Ref.h"
 #include "Infra/Exceptions.h"
 
 #include "RCopyStrategy.h"
-#include "RFuncReturn.h"
 #include "RFuncParameter.h"
 #include "RNames.h"
 #include "RDeclRes.h"
@@ -290,7 +290,7 @@ private:
     RType_Struct(RStructDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
 
 public:
-    RSYMBOL_API std::optional<RDeclRes_StructVar> GetVar(const RName& name);
+    RSYMBOL_API std::optional<RDeclRes_StructVar> GetVar(InRef<RName> name);
     RSYMBOL_API RStructCtorDecl* GetUnboundTrivialCtor();
 
 public:

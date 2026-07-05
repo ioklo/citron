@@ -10,9 +10,9 @@ namespace Citron {
 class RType;
 class RTypeArguments;
 
-template<typename TRFuncDeclBase> requires std::derived_from<TRFuncDeclBase, RFuncDeclBase>
+template<typename TRFuncDecl>
 class NFuncDeclImpl_UsingNCommonFuncDeclComponent
-    : public TRFuncDeclBase
+    : public TRFuncDecl
     , protected NCommonFuncDeclComponent
 {
 public:

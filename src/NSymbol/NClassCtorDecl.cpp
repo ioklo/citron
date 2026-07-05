@@ -21,7 +21,6 @@ void NClassCtorDecl::Init(vector<RFuncParameter>&& parameters, bool bLastParamVa
     NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn_None{}, RThisKind_Handle{_class->GetOpenType()}, move(parameters), bLastParamVariadic);
 }
 
-
 NDecl* NClassCtorDecl::GetNOuter()
 {
     return _class;

@@ -10,9 +10,18 @@ class RFactory;
 struct RFuncReturn_None {}; // for ctor, dtor
 struct RFuncReturn_Normal { RType* type; };
 struct RFuncReturn_NotSet {}; // need inference
-using RFuncReturn = std::variant<RFuncReturn_None, RFuncReturn_Normal, RFuncReturn_NotSet>;
 
-RSYMBOL_API RType* GetType(RFuncReturn& funcRet, RFactory* rFactory);
+class RFuncReturn
+{
+    using Variant = std::variant<RFuncReturn_None, RFuncReturn_Normal, RFuncReturn_NotSet>;
+    Variant v;
+
+public:
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RFuncReturn>) && std::constructible_from<Variant, T&&>
+    RFuncReturn(T&& t) : v{std::forward<T>(t)} {}
+
+    RSYMBOL_API RType* GetType(RFactory* rFactory);
+};
 
 }
 

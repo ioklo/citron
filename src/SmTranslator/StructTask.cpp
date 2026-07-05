@@ -68,34 +68,17 @@ void StructTask::SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& conte
     SynthesizeMemberwiseCtor(context);
 }
 
-void GatherAllBaseVarDecls(vector<RFuncParameter>& params, RType_Struct* structType)
-{
-    // 먼저 base부터
-    if (auto* baseType = structType->decl->GetUnboundBaseStruct())
-        GatherAllBaseVarDecls(params, baseType);
-
-    // 그리고 자기 자신
-    for (auto* varDecl : structType->decl->GetRVars())
-    {
-        auto* declType = varDecl->GetDeclType(structType->typeArgs);
-        RName_CtorParam name{params.size(), RNameToString(varDecl->GetIdentifier().name)};
-        params.emplace_back(RFuncParameterKind::Init, declType, move(name));
-    }
-}
-
 void StructTask::SynthesizeMemberwiseCtor(SynthesizeImplicitSymbolContext& context)
 {
     // memberwise constructor, 시그니처만 만든다 (resolve identifier용)
     vector<RFuncParameter> rParameters;
-
-    // 모든 base의 멤버 순회
-    if (auto* baseStruct = nStructDecl->GetUnboundBaseStruct())
-        GatherAllBaseVarDecls(rParameters, baseStruct);
-
+    
     for (auto* nVarDecl : nStructDecl->GetVars())
         rParameters.emplace_back(RFuncParameterKind::Init, nVarDecl->GetUnboundDeclType(), RName_Normal{nVarDecl->name});
 
-    auto* nCtor = context.MakeNDecl<NStructCtorDecl>(nStructDecl, RAccessor::Public, RStructCtorKind::Memberwise);
+    
+
+    auto* nCtor = context.MakeRDecl<RStructCtorDecl>(nStructDecl, RAccessor::Public, RStructCtorKind::Memberwise);
     nCtor->InitFuncParameters(move(rParameters), /*bLastParameterVariadic*/false);
     nStructDecl->AddCtor(nCtor);
 }

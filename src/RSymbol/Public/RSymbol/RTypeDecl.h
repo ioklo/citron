@@ -1,28 +1,22 @@
 #pragma once
 
-#include "RDecl.h"
-
 namespace Citron {
 
-class ETypeDecl;
-
-struct RTypeDeclVisitor;
+struct RIdentifier;
+class RDecl;
+class RType;
+class RDeclRes;
+class RTypeArguments;
 
 class RTypeDecl
 {
 public:
-    virtual ~RTypeDecl() {}
+    virtual ~RTypeDecl() = default;
 
-    virtual RDecl* GetRDecl() = 0;
+    virtual RIdentifier GetIdentifier() = 0;
+    virtual RDecl* GetDecl() = 0;
     virtual RType* GetOpenType() = 0;
-    virtual void Accept(RTypeDeclVisitor& visitor) = 0;
-};
-
-class RETypeDecl : public RTypeDecl
-{
-    ETypeDecl* typeDecl;
+    virtual RDeclRes ToRDeclRes(RTypeArguments* typeArgs) = 0;
 };
 
 } // namespace Citron
-
-#include "RTypeDeclVisitor.g.h"

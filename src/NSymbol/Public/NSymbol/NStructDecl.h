@@ -8,15 +8,11 @@
 
 #include "RSymbol/RStructDecl.h"
 
-#include "NDecl.h"
-#include "NTypeDecl.h"
-#include "NTypeDeclOuter.h"
 #include "NStructCtorDecl.h"
 #include "NStructFuncDecl.h"
 #include "NStructVarDecl.h"
 #include "NTypeDeclContainerComponent.h"
 #include "NFuncDeclContainerComponent.h"
-#include "NTypeDeclOuter.h"
 
 namespace Citron {
 
@@ -27,33 +23,9 @@ class NTypeParamDecl;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class NStructDecl
-    : public NDecl
-    , public NTypeDecl
-    , public NTypeDeclOuter
-    , public RStructDecl
-    , private NGenericsComponent
-    , private NTypeDeclContainerComponent
-    , private NFuncDeclContainerComponent<NStructFuncDecl>
+    : public RStructDecl
 {
-    struct BaseTypes
-    {
-        RType_Struct* baseStruct;
-        std::vector<RType*> interfaces;
-    };
-
-    NTypeDeclOuter* outer;
-    RAccessor accessor;
-
-    RName name;
-    RFactoryPtr rFactory;
-
-    std::vector<NStructCtorDecl*> ctors;
-    NStructDtorDecl* dtor;
-    int trivialCtorIndex; // can be -1
-
-    std::vector<NStructVarDecl*> vars;
-    std::optional<BaseTypes> o_baseTypes;
-    std::unordered_map<RName, NStructVarDecl*> varsMap;
+    
 
 public:
     NSYMBOL_API NStructDecl(NTypeDeclOuter* outer, RAccessor accessor, RName&& name, const RFactoryPtr& rFactory);
@@ -96,8 +68,6 @@ public:
     NSYMBOL_API RDecl* GetROuter() override;
     RAccessor GetAccessor() override { return accessor; }
     NSYMBOL_API RIdentifier GetIdentifier() override;
-    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
-    RTypeParamDecl* GetTypeParam(size_t index) override { return NGenericsComponent::GetTypeParam(index); }
     NSYMBOL_API RTypeDecl* GetTypeMember(const RName& name, size_t typeParamCount) override;
     NSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
     NSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
@@ -110,8 +80,10 @@ public:
     // RDecl* GetRDecl() override { return this; }
 
     // from RStructDecl
+    size_t GetTypeParamCount() override { return NGenericsComponent::GetTypeParamCount(); }
+    AnyPtrSizedRange<RTypeParamDecl*> GetTypeParams() override { return NGenericsComponent::GetTypeParams(); }
     NSYMBOL_API RType_Struct* GetUnboundBaseStruct() override;
-    NSYMBOL_API View<RStructVarDecl*> GetRVars() override;
+    NSYMBOL_API AnyPtrSizedRange<RStructVarDecl*> GetRVars() override;
     NSYMBOL_API std::optional<RDeclRes_StructVar> GetVar(RTypeArguments* typeArgs, const RName& name) override;
     NSYMBOL_API std::vector<RStructCtorDecl*> GetUnboundCtors() override;
     NSYMBOL_API RStructCtorDecl* GetUnboundCopyCtor() override;

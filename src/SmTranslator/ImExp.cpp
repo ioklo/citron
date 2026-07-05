@@ -1,5 +1,4 @@
 #include "ImExp.h"
-#include "RSymbol/DeclWithOuterTypeArgs.h"
 #include "RSymbol/RStructFuncDecl.h"
 
 using namespace std;

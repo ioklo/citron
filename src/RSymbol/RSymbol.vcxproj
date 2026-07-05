@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM64">
@@ -20,6 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\RSymbol\DeclWithOuterTypeArgs.h" />
+    <ClInclude Include="Public\RSymbol\ImplRFuncDeclUsingCommonComponents.h" />
+    <ClInclude Include="Public\RSymbol\RCommonFuncDeclComponent.h" />
+    <ClInclude Include="Public\RSymbol\RFuncDeclContainerComponent.h" />
     <ClInclude Include="Public\RSymbol\RAccessor.h" />
     <ClInclude Include="Public\RSymbol\RClassCtorDecl.h" />
     <ClInclude Include="Public\RSymbol\RClassDecl.h" />
@@ -32,10 +35,10 @@
     <ClInclude Include="Public\RSymbol\REnumElemVarDecl.h" />
     <ClInclude Include="Public\RSymbol\RFactory.h" />
     <ClInclude Include="Public\RSymbol\RFuncDecl.h" />
-    <ClInclude Include="Public\RSymbol\RFuncDeclBase.h" />
     <ClInclude Include="Public\RSymbol\RFuncDeclOuter.h" />
     <ClInclude Include="Public\RSymbol\RFuncParameter.h" />
     <ClInclude Include="Public\RSymbol\RFuncReturn.h" />
+    <ClInclude Include="Public\RSymbol\RGenericsComponent.h" />
     <ClInclude Include="Public\RSymbol\RGlobalFuncDecl.h" />
     <ClInclude Include="Public\RSymbol\RIdentifier.h" />
     <ClInclude Include="Public\RSymbol\RInterfaceDecl.h" />
@@ -45,9 +48,8 @@
     <ClInclude Include="Public\RSymbol\RModule.h" />
     <ClInclude Include="Public\RSymbol\RNames.h" />
     <ClInclude Include="Public\RSymbol\RNamespaceDecl.h" />
+    <ClInclude Include="Public\RSymbol\RNamespaceDeclContainerComponent.h" />
     <ClInclude Include="Public\RSymbol\RNamespaceDeclGroup.h" />
-    <ClInclude Include="Public\RSymbol\RNode.h" />
-    <ClInclude Include="Public\RSymbol\RNodeDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructCtorDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructDtorDecl.h" />
@@ -58,27 +60,37 @@
     <ClInclude Include="Public\RSymbol\RTraitFuncDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeArguments.h" />
     <ClInclude Include="Public\RSymbol\RTypeDecl.h" />
+    <ClInclude Include="Public\RSymbol\RTypeDeclContainerComponent.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclOuter.h" />
-    <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h" />
     <ClInclude Include="Public\RSymbol\RTypeParamDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypes.h" />
     <ClInclude Include="Public\RSymbol\RSymbolConfig.h" />
+    <ClInclude Include="RNamespaceMemberAccessor.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Public\RSymbol\RNode.cpp" />
+    <ClCompile Include="Public\RSymbol\RStructDecl.cpp" />
+    <ClCompile Include="Public\RSymbol\RStructFuncDecl.cpp" />
+    <ClCompile Include="RCommonFuncDeclComponent.cpp" />
     <ClCompile Include="RDecl.cpp" />
     <ClCompile Include="RFactory.cpp" />
     <ClCompile Include="RFuncDecl.cpp" />
     <ClCompile Include="RFuncDeclOuter.cpp" />
     <ClCompile Include="RFuncParameter.cpp" />
     <ClCompile Include="RFuncReturn.cpp" />
+    <ClCompile Include="RGenericsComponent.cpp" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
     <ClCompile Include="RDeclRes.cpp" />
     <ClCompile Include="RModule.cpp" />
     <ClCompile Include="RNames.cpp" />
+    <ClCompile Include="RNamespaceDecl.cpp" />
+    <ClCompile Include="RNamespaceDeclContainerComponent.cpp" />
     <ClCompile Include="RNamespaceDeclGroup.cpp" />
+    <ClCompile Include="RStructCtorDecl.cpp" />
+    <ClCompile Include="RStructDtorDecl.cpp" />
+    <ClCompile Include="RStructVarDecl.cpp" />
     <ClCompile Include="RTypeArguments.cpp" />
-    <ClCompile Include="RTypeDecl.cpp" />
+    <ClCompile Include="RTypeDeclContainerComponent.cpp" />
+    <ClCompile Include="RTypeDeclOuter.cpp" />
     <ClCompile Include="RTypeParamDecl.cpp" />
     <ClCompile Include="RTypes.cpp" />
   </ItemGroup>

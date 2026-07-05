@@ -1,51 +1,49 @@
-#include "NCommonFuncDeclComponent.h"
+#include "RCommonFuncDeclComponent.h"
 
-#include <variant>
 #include <cassert>
 
 #include "Infra/Variants.h"
+#include "RTypes.h"
 
-#include "RSymbol/RTypes.h"
-
-#include "NLambdaDecl.h"
-#include "NTypeParamDecl.h"
+#include "RLambdaDecl.h"
+#include "RTypeParamDecl.h"
 
 using namespace std;
 
 namespace Citron
 {
 
-NCommonFuncDeclComponent::NCommonFuncDeclComponent(bool bSeqFunc)
-    : bSeqFunc{bSeqFunc}
+RCommonFuncDeclComponent::RCommonFuncDeclComponent(bool bStatic, bool bSeqFunc)
+    : bStatic{bStatic}, bSeqFunc{bSeqFunc}
 {
 }
 
-void NCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcRet, RThisKind&& thisKind, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void RCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcRet, RThisKind&& thisKind, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
     funcReturnAndParams.emplace(move(funcRet), move(thisKind), move(funcParameters), bLastParameterVariadic);
 }
 
-NCommonFuncDeclComponent::~NCommonFuncDeclComponent() = default;
+RCommonFuncDeclComponent::~RCommonFuncDeclComponent() = default;
 
-RThisKind NCommonFuncDeclComponent::GetThisKind()
+RThisKind RCommonFuncDeclComponent::GetThisKind()
 {
     assert(funcReturnAndParams);
     return funcReturnAndParams->thisKind;
 }
 
-size_t NCommonFuncDeclComponent::GetParamCount()
+size_t RCommonFuncDeclComponent::GetParamCount()
 {
     assert(funcReturnAndParams);
     return funcReturnAndParams->funcParameters.size();
 }
 
-RFuncReturn NCommonFuncDeclComponent::GetUnboundFuncReturn()
+RFuncReturn RCommonFuncDeclComponent::GetUnboundFuncReturn()
 {
     assert(funcReturnAndParams);
     return funcReturnAndParams->funcReturn;
 }
 
-RType* NCommonFuncDeclComponent::GetReturnType(RTypeArguments* typeArgs)
+RType* RCommonFuncDeclComponent::GetReturnType(RTypeArguments* typeArgs)
 {
     assert(funcReturnAndParams);
 
@@ -55,14 +53,14 @@ RType* NCommonFuncDeclComponent::GetReturnType(RTypeArguments* typeArgs)
     return setReturn->type->Apply(typeArgs);
 }
 
-RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments* typeArgs)
+RFuncReturn RCommonFuncDeclComponent::GetFuncReturn(RTypeArguments* typeArgs)
 {
     assert(funcReturnAndParams);
 
     return visit([&typeArgs](auto& funcReturn) -> RFuncReturn {
         using T = remove_cvref_t<decltype(funcReturn)>;
 
-        if constexpr (same_as<T, RFuncReturn_None>) 
+        if constexpr (same_as<T, RFuncReturn_None>)
             return RFuncReturn_None{};
         else if constexpr (same_as<T, RFuncReturn_Normal>)
             return RFuncReturn_Normal{funcReturn.type->Apply(typeArgs)};
@@ -73,13 +71,13 @@ RFuncReturn NCommonFuncDeclComponent::GetFuncReturn(RTypeArguments* typeArgs)
     }, funcReturnAndParams->funcReturn);
 }
 
-span<RFuncParameter> NCommonFuncDeclComponent::GetUnboundFuncParams()
+span<RFuncParameter> RCommonFuncDeclComponent::GetUnboundFuncParams()
 {
     assert(funcReturnAndParams);
     return funcReturnAndParams->funcParameters;
 }
 
-RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments* typeArgs, size_t index)
+RFuncParameter RCommonFuncDeclComponent::GetFuncParam(RTypeArguments* typeArgs, size_t index)
 {
     assert(funcReturnAndParams);
 
@@ -88,7 +86,7 @@ RFuncParameter NCommonFuncDeclComponent::GetFuncParam(RTypeArguments* typeArgs, 
 }
 
 
-vector<RType*> NCommonFuncDeclComponent::GetParamIds()
+vector<RType*> RCommonFuncDeclComponent::GetParamIds()
 {
     assert(funcReturnAndParams);
 
@@ -99,15 +97,15 @@ vector<RType*> NCommonFuncDeclComponent::GetParamIds()
     return result;
 }
 
-optional<RDeclRes> NCommonFuncDeclComponent::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
-{   
+optional<RDeclRes> RCommonFuncDeclComponent::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+{
     assert(funcReturnAndParams);
-    
-    for(auto& param : funcReturnAndParams->funcParameters)
-        if (param.name == name)
+
+    for (auto& param : funcReturnAndParams->funcParameters)
+        if (param.name == *name)
             return RDeclRes_FuncParam{param};
 
     return nullopt;
-} 
+}
 
 }

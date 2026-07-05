@@ -239,9 +239,12 @@ RType_Struct::RType_Struct(RStructDecl* decl, RTypeArguments* typeArgs, RFactory
 {
 }
 
-std::optional<RDeclRes_StructVar> RType_Struct::GetVar(const RName& name)
+std::optional<RDeclRes_StructVar> RType_Struct::GetVar(InRef<RName> name)
 {
-    return decl->GetVar(typeArgs, name);
+    auto* structVar = decl->GetUnboundVar(name);
+    if (!structVar) return nullopt;
+
+    return RDeclRes_StructVar(structVar, typeArgs);
 }
 
 RStructCtorDecl* RType_Struct::GetUnboundTrivialCtor()

@@ -123,14 +123,9 @@ RType_Struct* NStructDecl::GetUnboundBaseStruct()
     return o_baseTypes->baseStruct;
 }
 
-View<RStructVarDecl*> NStructDecl::GetRVars()
+AnyPtrSizedRange<RStructVarDecl*> NStructDecl::GetRVars()
 {   
-    return View<RStructVarDecl*>(&vars, vars.size(),
-        [](void* context, size_t i) noexcept -> RStructVarDecl*
-        {
-            auto* vars = static_cast<std::vector<NStructVarDecl*>*>(context);
-            return (*vars)[i];
-        });
+    return vars;
 }
 
 optional<RDeclRes_StructVar> NStructDecl::GetVar(RTypeArguments* typeArgs, const RName& name)

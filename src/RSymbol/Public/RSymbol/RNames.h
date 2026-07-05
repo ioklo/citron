@@ -36,12 +36,32 @@ struct RName_CtorParam
     bool operator==(const RName_CtorParam& other) const noexcept = default;
 };
 
-using RName = std::variant<
-    RName_Normal,
-    RName_Reserved,
-    RName_Lambda,
-    RName_CtorParam
->;
+class RName
+{
+    using Variant = std::variant<
+        RName_Normal,
+        RName_Reserved,
+        RName_Lambda,
+        RName_CtorParam>;
+
+    Variant v;
+
+public: 
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RName>) && std::constructible_from<Variant, T&&>
+    RName(T&& t) : v{std::forward<T>(t)} {}
+    
+    bool operator==(const RName& name) const noexcept
+    {
+        return v == name.v;
+    }
+
+    RSYMBOL_API std::string ToString(const RName& name);
+
+    void hash_combine(std::size_t& seed) const noexcept
+    {
+        Citron::hash_combine(seed, v);
+    }
+};
 
 RSYMBOL_API RName Copy(const RName& name);
 
@@ -55,8 +75,6 @@ RSYMBOL_API extern RName _this; // "this"
 RSYMBOL_API extern RName _return; // "return"
 
 } // namespace RNames
-
-RSYMBOL_API std::string RNameToString(const RName& name);
 
 } // namespace Citron
 
@@ -107,6 +125,15 @@ struct hash<Citron::RName_CtorParam>
     }
 };
 
-
+template<>
+struct hash<Citron::RName>
+{
+    std::size_t operator()(const Citron::RName& name) const noexcept
+    {
+        size_t s = 0;
+        name.hash_combine(s);
+        return s;
+    }
+};
 
 } // namespace std

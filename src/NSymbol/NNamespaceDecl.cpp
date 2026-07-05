@@ -45,31 +45,7 @@ RTypeDecl* NNamespaceDecl::GetTypeMember(const RName& name, size_t typeParamCoun
 // Fatal을 처리해서 복구하고 싶으면 catch로
 optional<RDeclRes> NNamespaceDecl::GetMember(RTypeArguments* typeArgs, const RName& name, size_t explicitTypeParamsExceptOuterCount)
 {
-    assert(typeArgs->GetCount() == 0);
-
-    vector<RDeclRes> candidates;
-
-    // namespace 
-    if (auto o_namespace = NNamespaceDeclContainerComponent::GetMemberNamespace(name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(move(*o_namespace));
-
-    // type
-    if (auto o_type = NTypeDeclContainerComponent::GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(move(*o_type));
-
-    // func
-    if (auto o_func = NFuncDeclContainerComponent<NGlobalFuncDecl>::GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(move(*o_func));
-
-    if (candidates.empty()) return nullopt;
-
-    if (1 < candidates.size())
-    {
-        // TODO: 여러 candidate가 있다고 로깅하고 FatalException던지기
-        throw NotImplementedException();
-    }
-
-    return move(candidates[0]);
+    
 }
 
 optional<RDeclRes> NNamespaceDecl::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)

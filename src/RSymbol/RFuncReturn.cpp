@@ -7,7 +7,7 @@ using namespace std;
 
 namespace Citron {
 
-RType* GetType(RFuncReturn& funcRet, RFactory* rFactory)
+RType* RFuncReturn::GetType(RFactory* rFactory)
 {
     return visit([rFactory](auto& funcRet) -> RType* {
         using T = remove_cvref_t<decltype(funcRet)>;
@@ -17,7 +17,7 @@ RType* GetType(RFuncReturn& funcRet, RFactory* rFactory)
         else if constexpr (same_as<T, RFuncReturn_NotSet>)
             throw RuntimeFatalException{};
         else static_assert(false);
-    }, funcRet);
+    }, v);
 }
 
 } // namespace Citron

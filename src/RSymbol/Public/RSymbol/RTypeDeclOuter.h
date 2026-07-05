@@ -1,10 +1,8 @@
 #pragma once
-
-
+#include <variant>
+#include <concepts>
 
 namespace Citron {
-
-class ETypeDeclOuter;
 
 class RDecl;
 class RNamespaceDecl;
@@ -13,28 +11,31 @@ class RStructDecl;
 
 class RTypeDeclOuterVisitor;
 
+enum class RNamespaceMemberAccessor;
+enum class RClassMemberAccessor;
+enum class RStructMemberAccessor;
+
+struct RTypeDeclOuter_Namespace { RNamespaceDecl* decl; RNamespaceMemberAccessor accessor; };
+struct RTypeDeclOuter_Class { RClassDecl* decl; RClassMemberAccessor accessor; };
+struct RTypeDeclOuter_Struct { RStructDecl* decl; RStructMemberAccessor accessor; };
+
+// RTypeDeclOuter with accessor
 class RTypeDeclOuter
 {
+    using Variant = std::variant<
+        RTypeDeclOuter_Namespace,
+        RTypeDeclOuter_Class,
+        RTypeDeclOuter_Struct>;
+
+    Variant v;
+
 public:
-    virtual ~RTypeDeclOuter() {}
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RTypeDeclOuter>)
+    RTypeDeclOuter(T&& t) : v{std::forward<T>(t)}
+    {
+    }
 
-    virtual RDecl* GetRDecl() = 0;
-    virtual void Accept(RTypeDeclOuterVisitor& visitor) = 0;
+    RDecl* GetDecl();
 };
-
-class RTypeDeclOuterVisitor
-{
-public:
-    virtual ~RTypeDeclOuterVisitor() {}
-    virtual void Visit(RNamespaceDecl* outer) = 0;
-    virtual void Visit(RClassDecl* outer) = 0;
-    virtual void Visit(RStructDecl* outer) = 0;
-};
-
-class RETypeDeclOuter : public RTypeDeclOuter
-{
-    ETypeDeclOuter* outer;
-};
-
 
 } // namespace Citron
