@@ -1,5 +1,4 @@
 #pragma once
-#include "Infra/AnyPtrSizedRange.h"
 #include "RDecl.h"
 #include "ImplRFuncDeclUsingCommonComponents.h"
 #include "RGenericsComponent.h"
@@ -10,13 +9,8 @@ namespace Citron {
 class RType;
 class RFactory;
 
-class RStructFuncDecl : public RDecl, public ImplRFuncDeclUsingCommonComponents<RStructFuncDecl>
+class RStructFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents
 {
-public:
-    friend class ImplRFuncDeclUsingCommonComponents<RStructFuncDecl>;
-    using RDeclResType = RDeclRes_StructFuncs;
-
-private:
     RStructDecl* _struct;
     RStructMemberAccessor accessor;
 

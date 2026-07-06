@@ -9,10 +9,8 @@ namespace Citron {
 class RStructDecl;
 enum class RStructMemberAccessor;
 
-class RStructDtorDecl : public RDecl, public ImplRFuncDeclUsingCommonComponents<RStructDtorDecl>
+class RStructDtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents
 {
-    friend class ImplRFuncDeclUsingCommonComponents<RStructDtorDecl>;
-
     RStructDecl* _struct;
     RStructMemberAccessor accessor;
     

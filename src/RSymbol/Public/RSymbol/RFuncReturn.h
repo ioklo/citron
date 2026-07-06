@@ -21,6 +21,9 @@ public:
     RFuncReturn(T&& t) : v{std::forward<T>(t)} {}
 
     RSYMBOL_API RType* GetType(RFactory* rFactory);
+
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
 };
 
 }

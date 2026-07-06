@@ -1,7 +1,6 @@
 #pragma once
 #include "RSymbolConfig.h"
 
-#include "Infra/AnyPtrSizedRange.h"
 #include "RDecl.h"
 #include "RFuncDecl.h"
 #include "RGenericsComponent.h"
@@ -20,10 +19,8 @@ enum class RStructCtorKind
     Move,
 };
 
-class RStructCtorDecl : public RDecl, public ImplRFuncDeclUsingCommonComponents<RStructCtorDecl>
+class RStructCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents
 {
-    friend class ImplRFuncDeclUsingCommonComponents<RStructCtorDecl>;
-
     RStructDecl* _struct;
     RStructMemberAccessor accessor;
     RStructCtorKind kind;

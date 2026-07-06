@@ -9,6 +9,7 @@ RStructFuncDecl::RStructFuncDecl(RStructDecl* _struct, RStructMemberAccessor acc
     : _struct{_struct}, accessor{accessor}, name{name.Take()}
     , genericsComp{}
     , commonFuncDeclComp{bSeqFunc}
+    , ImplRFuncDeclUsingCommonComponents{this, commonFuncDeclComp}
 {
 }
 
@@ -50,10 +51,10 @@ optional<RDeclRes> RStructFuncDecl::GetMember(RTypeArguments* typeArgs, InRef<RN
 
 optional<RDeclRes> RStructFuncDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = genericsComp.ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = genericsComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
-    if (auto o_member = commonFuncDeclComp.ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = commonFuncDeclComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);

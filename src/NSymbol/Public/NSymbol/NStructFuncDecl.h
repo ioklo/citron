@@ -15,10 +15,6 @@ class NStructFuncDecl
     , public NFuncDeclImpl_UsingNCommonFuncDeclComponent<RStructFuncDecl>
 {
 public:
-    using RDeclType = RStructFuncDecl;
-    using RDeclResType = RDeclRes_StructFuncs;
-
-public:
     NStructDecl* _struct;
     RAccessor accessor;
     std::string name;

@@ -7,7 +7,7 @@ namespace Citron {
 class RType;
 class RFactory;
 
-class RStructVarDecl : public RDecl
+class RStructVarDecl final : public RDecl
 {
     RStructDecl* _struct;
     RStructMemberAccessor accessor;

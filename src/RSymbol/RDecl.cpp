@@ -18,6 +18,31 @@ bool RDecl::IsDescendantOf(RDecl* container)
     return outer->IsDescendantOf(container);
 }
 
+void MakeOpenTypeArgsCore(RDecl* decl, vector<RType*>& typeArgItems, size_t totalSize, RFactory& rFactory)
+{
+    size_t typeParamCount = decl->GetTypeParamCount();
+
+    auto* outer = decl->GetOuter();
+    if (!outer)
+        typeArgItems.reserve(totalSize); // base case
+    else
+        MakeOpenTypeArgsCore(outer, typeArgItems, totalSize + typeParamCount, rFactory);
+
+    for (size_t i = 0; i < typeParamCount; i++)
+    {
+        auto* typeParam = decl->GetTypeParam(i);
+        auto* typeVar = rFactory.MakeTypeVarType(typeParam);
+        typeArgItems.push_back(typeVar);
+    }
+}
+
+RTypeArguments* RDecl::MakeOpenTypeArgs(RFactory& factory)
+{
+    vector<RType*> typeArgItems;
+    MakeOpenTypeArgsCore(this, typeArgItems, 0, factory);
+    return factory.MakeTypeArguments(typeArgItems);
+}
+
 //bool RDecl::CanAccess(RDecl* target)
 //{
 //    auto accessModifier = target->GetAccessor();

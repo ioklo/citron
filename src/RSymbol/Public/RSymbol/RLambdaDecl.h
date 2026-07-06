@@ -1,48 +1,56 @@
 #pragma once
 #include "RSymbolConfig.h"
-
-#include "Infra/AnyPtrSizedRange.h"
+#include <optional>
+#include <unordered_map>
+#include <memory>
+#include "Infra/Ref.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
 #include "RFuncDecl.h"
+#include "RGenericsComponent.h"
+#include "RCommonFuncDeclComponent.h"
+#include "ImplRFuncDeclUsingCommonComponents.h"
 
 namespace Citron {
 
 class RType;
-class RFactory;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-class RLambdaDecl : public RDecl, public RTypeDecl, public RFuncDecl
+// TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
+class RLambdaDecl final : public RDecl, public RTypeDecl, public ImplRFuncDeclUsingCommonComponents
 {
+    RFuncDecl* outer;
+    RName name;
+
+    // 가지고 있어야 할 멤버 변수들, type, name, ref 여부
+    std::optional<std::vector<RLambdaVarDecl*>> vars;
+    std::unordered_map<RName, RLambdaVarDecl*> varsMap;
+
+    RGenericsComponent genericsComp;
+    RCommonFuncDeclComponent commonFuncDeclComp;
+
+    RFactoryPtr rFactory;
+
 public:
-    virtual size_t GetTypeParamCount() = 0;
-    virtual AnyPtrSizedRange<RTypeParamDecl*> GetTypeParams() = 0;
+    RSYMBOL_API RLambdaDecl(RFuncDecl* outer, RName&& name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API void InitFuncReturnAndParameters(RFuncReturn&& funcReturn, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    RSYMBOL_API void InitVars(std::vector<RLambdaVarDecl*>&& vars);
+    bool IsSeqFunc() { return commonFuncDeclComp.IsSeqFunc(); }
 
-    virtual RThisKind GetThisKind() = 0;
-    virtual size_t GetParamCount() = 0;
-    virtual RType* GetReturnType(RTypeArguments* typeArgs) = 0;
-    virtual RFuncReturn GetFuncReturn(RTypeArguments* typeArgs) = 0;
-    virtual RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) = 0;
-    virtual RFuncReturn GetUnboundFuncReturn() = 0;
-    virtual std::span<RFuncParameter> GetUnboundFuncParams() = 0;    
-
-public: // from RTypeDecl
+public: // from RDecl
+    RSYMBOL_API RDecl* GetOuter() override;
     RSYMBOL_API RIdentifier GetIdentifier() override;
-    RSYMBOL_API RDecl* GetDecl() override;
-    RSYMBOL_API RType* GetOpenType() override;
-    RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
-
-public: // from RFuncDecl
-    RSYMBOL_API RDecl* GetDecl() override;
-    RSYMBOL_API RThisKind GetThisKind() override;
     RSYMBOL_API size_t GetTypeParamCount() override;
     RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
-    RSYMBOL_API size_t GetParamCount() override;
-    RSYMBOL_API RType* GetReturnType(RTypeArguments* typeArgs) override;
-    RSYMBOL_API RFuncReturn GetFuncReturn(RTypeArguments* typeArgs) override;
-    RSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) override;
-    RSYMBOL_API RFuncReturn GetUnboundFuncReturn() override;
-    RSYMBOL_API std::span<RFuncParameter> GetUnboundFuncParams() override;
+    RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name, size_t typeParamCount) override;
+    RSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
+    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
 
+public: // from RTypeDecl
+    RSYMBOL_API RDecl* RTypeDecl_GetDecl() override;
+    RSYMBOL_API RType* GetOpenType() override;
+    RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
+    RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) override;
 };
 
 // M버전이 없다

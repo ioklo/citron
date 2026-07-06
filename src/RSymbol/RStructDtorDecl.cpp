@@ -7,6 +7,7 @@ namespace Citron {
 
 RStructDtorDecl::RStructDtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor)
     : _struct{_struct}, accessor{accessor}, commonFuncDeclComp{/*bSeqFunc*/false}
+    , ImplRFuncDeclUsingCommonComponents{this, commonFuncDeclComp}
 {
 }
 
@@ -18,7 +19,7 @@ RDecl* RStructDtorDecl::GetOuter()
 
 RIdentifier RStructDtorDecl::GetIdentifier()
 {
-    return RIdentifier{RName_Reserved("Dtor"), 0, {}};
+    return RIdentifier{RName_Reserved{RName_ReservedName::Dtor}, 0, {}};
 }
 
 size_t RStructDtorDecl::GetTypeParamCount()
@@ -43,7 +44,7 @@ optional<RDeclRes> RStructDtorDecl::GetMember(RTypeArguments* typeArgs, InRef<RN
 
 optional<RDeclRes> RStructDtorDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = commonFuncDeclComp.ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = commonFuncDeclComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);

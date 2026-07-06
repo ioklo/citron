@@ -57,7 +57,7 @@ public:
     RSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index);
 
     RSYMBOL_API std::vector<RType*> GetParamIds();
-    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
+    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifierCore(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 }

@@ -3,8 +3,7 @@
 
 namespace Citron {
 
-class RTraitDecl
-    : public RTypeDecl
+class RTraitDecl : public RTypeDecl
 {
 
 };

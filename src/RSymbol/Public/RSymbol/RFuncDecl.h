@@ -19,10 +19,8 @@ class RFuncDecl
 public:
     virtual ~RFuncDecl() = default;
     
-    virtual RDecl* GetDecl() = 0;
+    virtual RDecl* RFuncDecl_GetDecl() = 0;
     virtual RThisKind GetThisKind() = 0;
-    // virtual size_t GetTypeParamCount() = 0;
-    // virtual RTypeParamDecl* GetTypeParam(size_t index) = 0;
     virtual size_t GetParamCount() = 0;
     virtual RType* GetReturnType(RTypeArguments* typeArgs) = 0;
     virtual RFuncReturn GetFuncReturn(RTypeArguments* typeArgs) = 0;

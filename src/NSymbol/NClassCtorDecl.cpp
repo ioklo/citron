@@ -33,7 +33,7 @@ RDecl* NClassCtorDecl::GetROuter()
 
 RIdentifier NClassCtorDecl::GetIdentifier()
 {
-    return RIdentifier{RName_Reserved("Ctor"), 0, NCommonFuncDeclComponent::GetParamIds()};
+    return RIdentifier{RName_Reserved{RName_ReservedName::Ctor}, 0, NCommonFuncDeclComponent::GetParamIds()};
 }
 
 RTypeDecl* NClassCtorDecl::GetTypeMember(const RName& name, size_t typeParamCount)

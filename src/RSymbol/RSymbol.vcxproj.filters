@@ -140,6 +140,9 @@
     <ClInclude Include="Public\RSymbol\ImplRFuncDeclUsingCommonComponents.h">
       <Filter>RDecls\13 Components</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">
@@ -219,9 +222,6 @@
     <ClCompile Include="RTypeParamDecl.cpp">
       <Filter>RDecls\12 Generics</Filter>
     </ClCompile>
-    <ClCompile Include="RFuncDecl.cpp">
-      <Filter>RDecls\03 Func</Filter>
-    </ClCompile>
     <ClCompile Include="RFuncReturn.cpp">
       <Filter>RDecls\03 Func</Filter>
     </ClCompile>
@@ -255,9 +255,41 @@
     <ClCompile Include="RStructDtorDecl.cpp">
       <Filter>RDecls\07 Struct</Filter>
     </ClCompile>
-    <ClCompile Include="Public\RSymbol\RStructFuncDecl.cpp" />
     <ClCompile Include="RStructVarDecl.cpp">
       <Filter>RDecls\07 Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="RClassFuncDecl.cpp">
+      <Filter>RDecls\06 Class</Filter>
+    </ClCompile>
+    <ClCompile Include="RClassVarDecl.cpp">
+      <Filter>RDecls\06 Class</Filter>
+    </ClCompile>
+    <ClCompile Include="RStructFuncDecl.cpp">
+      <Filter>RDecls\07 Struct</Filter>
+    </ClCompile>
+    <ClCompile Include="RClassCtorDecl.cpp">
+      <Filter>RDecls\06 Class</Filter>
+    </ClCompile>
+    <ClCompile Include="RClassDecl.cpp">
+      <Filter>RDecls\06 Class</Filter>
+    </ClCompile>
+    <ClCompile Include="REnumDecl.cpp">
+      <Filter>RDecls\08 Enum</Filter>
+    </ClCompile>
+    <ClCompile Include="REnumElemDecl.cpp">
+      <Filter>RDecls\08 Enum</Filter>
+    </ClCompile>
+    <ClCompile Include="REnumElemVarDecl.cpp">
+      <Filter>RDecls\08 Enum</Filter>
+    </ClCompile>
+    <ClCompile Include="RLambdaDecl.cpp">
+      <Filter>RDecls\11 Lambda</Filter>
+    </ClCompile>
+    <ClCompile Include="RLambdaVarDecl.cpp">
+      <Filter>RDecls\11 Lambda</Filter>
+    </ClCompile>
+    <ClCompile Include="RInterfaceDecl.cpp">
+      <Filter>RDecls\09 Interface</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

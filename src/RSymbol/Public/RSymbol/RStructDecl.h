@@ -9,6 +9,7 @@
 #include "RDecl.h"
 #include "RTypeDecl.h"
 #include "RStructFuncDecl.h"
+#include "RDeclRes.h"
 
 namespace Citron {
 
@@ -21,7 +22,7 @@ class RStructDtorDecl;
 class RStructFuncDecl;
 class RStructVarDecl;
 
-class RStructDecl : public RDecl, public RTypeDecl
+class RStructDecl final : public RDecl, public RTypeDecl
 {
     RTypeDeclOuter outer; // outer with accessor
     RName name;
@@ -36,7 +37,7 @@ class RStructDecl : public RDecl, public RTypeDecl
 
     RGenericsComponent genericsComp;
     RTypeDeclContainerComponent typeDeclContainerComp;
-    RFuncDeclContainerComponent<RStructFuncDecl> funcDeclContainerComp;
+    RFuncDeclContainerComponent<RStructFuncDecl, RDeclRes_StructFuncs> funcDeclContainerComp;
     RFactoryPtr rFactory;
 
 public:
@@ -66,10 +67,10 @@ public: // from RDecl
     RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
 
 public: // from RTypeDecl
-    // RSYMBOL_API RIdentifier GetIdentifier() override;
-    RSYMBOL_API RDecl* GetDecl() override;
+    RSYMBOL_API RDecl* RTypeDecl_GetDecl() override;
     RSYMBOL_API RType* GetOpenType() override;
     RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
+    RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) override;
 };
 
 } // namespace Citron

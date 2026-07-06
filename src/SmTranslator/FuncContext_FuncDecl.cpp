@@ -101,8 +101,10 @@ MLoc_This* FuncContext_FuncDecl::MakeThisLoc()
     // class C에서는 this가 C 타입
     // lambda에서는 this가 lambda를 선언한 함수의 this타입
 
-    auto* rThisType = nFuncDecl.GetNFuncDeclOuter().Visit(GetThisTypeFunctor{rFactory});
-    return mFactory->MakeMLoc<MLoc_This>(rThisType);
+    auto thisTypeKind = rFuncDecl->GetThisKind().GetThisType();
+
+    // auto* rThisType = nFuncDecl.GetNFuncDeclOuter().Visit(GetThisTypeFunctor{rFactory});
+    // return mFactory->MakeMLoc<MLoc_This>(rThisType);
 }
 
 } // namespace Citron

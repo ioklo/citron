@@ -62,6 +62,7 @@
     <ClInclude Include="Public\RSymbol\RTypeDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclContainerComponent.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclOuter.h" />
+    <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h" />
     <ClInclude Include="Public\RSymbol\RTypeParamDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypes.h" />
     <ClInclude Include="Public\RSymbol\RSymbolConfig.h" />
@@ -69,17 +70,25 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Public\RSymbol\RStructDecl.cpp" />
-    <ClCompile Include="Public\RSymbol\RStructFuncDecl.cpp" />
+    <ClCompile Include="RClassCtorDecl.cpp" />
+    <ClCompile Include="RClassDecl.cpp" />
+    <ClCompile Include="RClassFuncDecl.cpp" />
+    <ClCompile Include="RClassVarDecl.cpp" />
     <ClCompile Include="RCommonFuncDeclComponent.cpp" />
     <ClCompile Include="RDecl.cpp" />
+    <ClCompile Include="REnumDecl.cpp" />
+    <ClCompile Include="REnumElemDecl.cpp" />
+    <ClCompile Include="REnumElemVarDecl.cpp" />
     <ClCompile Include="RFactory.cpp" />
-    <ClCompile Include="RFuncDecl.cpp" />
     <ClCompile Include="RFuncDeclOuter.cpp" />
     <ClCompile Include="RFuncParameter.cpp" />
     <ClCompile Include="RFuncReturn.cpp" />
     <ClCompile Include="RGenericsComponent.cpp" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
     <ClCompile Include="RDeclRes.cpp" />
+    <ClCompile Include="RInterfaceDecl.cpp" />
+    <ClCompile Include="RLambdaDecl.cpp" />
+    <ClCompile Include="RLambdaVarDecl.cpp" />
     <ClCompile Include="RModule.cpp" />
     <ClCompile Include="RNames.cpp" />
     <ClCompile Include="RNamespaceDecl.cpp" />
@@ -87,6 +96,7 @@
     <ClCompile Include="RNamespaceDeclGroup.cpp" />
     <ClCompile Include="RStructCtorDecl.cpp" />
     <ClCompile Include="RStructDtorDecl.cpp" />
+    <ClCompile Include="RStructFuncDecl.cpp" />
     <ClCompile Include="RStructVarDecl.cpp" />
     <ClCompile Include="RTypeArguments.cpp" />
     <ClCompile Include="RTypeDeclContainerComponent.cpp" />

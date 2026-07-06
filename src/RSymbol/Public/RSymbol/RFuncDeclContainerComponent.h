@@ -8,11 +8,9 @@
 
 namespace Citron {
 
-template<typename TRFuncDecl>
+template<typename TRFuncDecl, typename RDeclResType>
 class RFuncDeclContainerComponent
 {
-    using RDeclResType = typename TRFuncDecl::RDeclResType;
-
     std::vector<TRFuncDecl*> funcs;
     std::unordered_map<RIdentifier, TRFuncDecl*> idMap;
     std::unordered_map<RName, std::vector<TRFuncDecl*>> nameMap;
@@ -41,7 +39,7 @@ public:
         if (i == nameMap.end()) return {};
 
         for (auto& func : i->second)
-            if (explicitTypeParamsExceptOuterCount <= func->GetTypeParamCount())
+            if (explicitTypeParamsExceptOuterCount <= func->RFuncDecl_GetDecl()->GetTypeParamCount())
                 result.push_back(TDeclWithOuterTypeArgs<TRFuncDecl>{func, typeArgs});
 
         return RDeclResType{std::move(result)};

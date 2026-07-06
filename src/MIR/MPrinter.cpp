@@ -6,6 +6,7 @@
 #include <span>
 
 #include "Infra/Exceptions.h"
+#include "Infra/Ref.h"
 #include "Infra/IWriter.h"
 #include "NSymbol/NLambdaDecl.h"
 #include "RSymbol/RDecl.h"
@@ -39,28 +40,28 @@ class MPrinterImpl {
     RFactory& rFactory;
 
 public:
-    MPrinterImpl(IWriter& writer, RFactory& rFactory) : writer(writer), rFactory(rFactory) {}
+    MPrinterImpl(InRef<IWriter> writer, InRef<RFactory> rFactory) : writer(*writer), rFactory(*rFactory) {}
 
-    void PrintFuncBody(MFuncBody& funcBody)
+    void PrintFuncBody(InRef<MFuncBody> funcBody)
     {
         writer.Write("Func ");
-        PrintRName(funcBody.nFuncDecl.GetRFuncDecl().GetRDecl()->GetIdentifier().name);
+        PrintRName(funcBody->nFuncDecl.GetRFuncDecl().GetRDecl()->GetIdentifier().name);
         writer.WriteLine();
         writer.AddIndent();
-        PrintStmt(funcBody.body);
+        PrintStmt(funcBody->body);
         writer.RemoveIndent();
     }
 
 private:
-    void PrintLine(const string& line) { writer.Write(line); writer.WriteLine(); }
+    void PrintLine(InRef<string> line) { writer.Write(*line); writer.WriteLine(); }
 
-    static string Join(const vector<string>& items, string_view sep = ", ")
+    static string Join(InRef<vector<string>> items, string_view sep = ", ")
     {
         string s;
-        for (size_t i = 0; i < items.size(); ++i)
+        for (size_t i = 0; i < items->size(); ++i)
         {
             if (i != 0) s += sep;
-            s += items[i];
+            s += (*items)[i];
         }
         return s;
     }
@@ -70,18 +71,21 @@ private:
         return format("\"{}\"", text);
     }
 
-    void PrintRName(const RName& name)
+    void PrintRName(InRef<RName> name)
     {
         writer.Write(RNameText(name));
     }
 
-    string RNameText(const RName& name)
+    string RNameText(InRef<RName> name)
     {
-        if (auto* normal = get_if<RName_Normal>(&name)) return normal->text;
-        if (auto* reserved = get_if<RName_Reserved>(&name)) return format("${}", reserved->text);
-        if (auto* ctorParam = get_if<RName_CtorParam>(&name)) return format("$ctor.{}", ctorParam->index);
-        if (auto* lambda = get_if<RName_Lambda>(&name)) return format("$lambda.{}", lambda->index);
-        throw NotImplementedException{};
+        return name->Visit([this](auto& name) -> string {
+            using T = remove_cvref_t<decltype(name)>;
+            if constexpr (same_as<T, RName_Normal>) return name.text;
+            else if constexpr (same_as<T, RName_Reserved>) return format("${}", RName_ReservedNameToString(name));
+            else if constexpr (same_as<T, RName_CtorParam>) return format("$ctor.{}", name.index);
+            else if constexpr (same_as<T, RName_Lambda>) return format("$lambda.{}", name.index);
+            else static_assert(false);
+        });
     }
 
     string TypeText(RType* type)
@@ -98,13 +102,16 @@ private:
     {
         if (!decl) return "<null-decl>";
         auto id = decl->GetIdentifier();
-        if (auto* normal = get_if<RName_Normal>(&id.name)) return normal->text;
-        return format("decl#{}", reinterpret_cast<uintptr_t>(decl));
+        return id.name.Visit([decl](auto& name) -> string {
+            using T = remove_cvref_t<decltype(name)>;
+            if constexpr (same_as<T, RName_Normal>) return name.text;
+            else return format("decl#{}", reinterpret_cast<uintptr_t>(decl));
+        });
     }
 
-    string FuncDeclText(RFuncDecl& decl)
+    string FuncDeclText(InRef<RFuncDecl> decl)
     {
-        return DeclText(decl.GetRDecl());
+        return DeclText(decl->GetRDecl());
     }
 
     string LambdaDeclText(NLambdaDecl* decl)
@@ -113,7 +120,7 @@ private:
         return DeclText(decl->GetRDecl());
     }
 
-    string ScopeKindText(MScopeKind& scopeKind)
+    string ScopeKindText(InRef<MScopeKind> scopeKind)
     {
         return visit([](auto& kind) -> string {
             using T = remove_cvref_t<decltype(kind)>;
@@ -121,64 +128,64 @@ private:
             else if constexpr (same_as<T, MScopeKind_Loop>) return format("loop:{}", kind.labelId);
             else if constexpr (same_as<T, MScopeKind_Switch>) return format("switch:{}", kind.labelId);
             else return format("inline:{}", kind.labelId);
-        }, scopeKind);
+        }, *scopeKind);
     }
 
-    string ReadText(MRead& read)
+    string ReadText(InRef<MRead> read)
     {
         return visit([this](auto& read) -> string {
             using T = remove_cvref_t<decltype(read)>;
             if constexpr (same_as<T, MRead_Exp>) return format("read_exp({})", ExpText(read.exp));
             else return format("read_loc({})", LocText(read.loc));
-        }, read);
+        }, *read);
     }
 
-    string TopLevelReadText(MTopLevel_Read& read)
+    string TopLevelReadText(InRef<MTopLevel_Read> read)
     {
-        return ReadText(read.read);
+        return ReadText(read->read);
     }
 
-    string CreateText(MCreate& create)
+    string CreateText(InRef<MCreate> create)
     {
         return visit([this](auto& create) -> string {
             using T = remove_cvref_t<decltype(create)>;
             if constexpr (same_as<T, MCreate_BC>) return format("create_bc({})", ExpText(create.exp));
             else return format("create_nbc({})", InitExpText(create.initExp));
-        }, create);
+        }, *create);
     }
 
-    string TopLevelCreateText(MTopLevel_Create& create)
+    string TopLevelCreateText(InRef<MTopLevel_Create> create)
     {
-        return CreateText(create.create);
+        return CreateText(create->create);
     }
 
-    string TopLevelLocText(MTopLevel_Loc& loc)
+    string TopLevelLocText(InRef<MTopLevel_Loc> loc)
     {
-        return LocText(loc.loc);
+        return LocText(loc->loc);
     }
 
-    string TopLevelAssignText(MTopLevel_Assign& assign)
+    string TopLevelAssignText(InRef<MTopLevel_Assign> assign)
     {
         return visit([this, &assign](auto& assignKind) -> string {
             using T = remove_cvref_t<decltype(assignKind)>;
             if constexpr (same_as<T, MStmt_AssignKind_Copy>)
-                return format("{} = {}", LocText(assign.dest), LocText(assignKind.src.loc));
+                return format("{} = {}", LocText(assign->dest), LocText(assignKind.src.loc));
             else if constexpr (same_as<T, MStmt_AssignKind_Move>)
-                return format("{} = {}", LocText(assign.dest), MoveSourceText(assignKind.src));
+                return format("{} = {}", LocText(assign->dest), MoveSourceText(assignKind.src));
             else static_assert(false);
-        }, assign.kind);
+        }, assign->kind);
     }
 
-    string MoveSourceText(MMoveSource& src)
+    string MoveSourceText(InRef<MMoveSource> src)
     {
         return visit([this](auto& src) -> string {
             using T = remove_cvref_t<decltype(src)>;
             if constexpr (same_as<T, MMoveSource_MovedLoc>) return format("move({})", LocText(src.loc));
             else return format("move_materialized({})", LocText(src.loc));
-        }, src);
+        }, *src);
     }
 
-    string ArgumentText(MArgument& arg)
+    string ArgumentText(InRef<MArgument> arg)
     {
         return visit([this](auto& arg) -> string {
             using T = remove_cvref_t<decltype(arg)>;
@@ -191,7 +198,7 @@ private:
                 else return format("forward_rvalue({})", MoveSourceText(x.src));
             }, arg);
             else return format("params({}, {})", ExpText(arg.exp), arg.elemCount);
-        }, arg);
+        }, *arg);
     }
 
     string ArgsText(span<MArgument> args)
@@ -203,51 +210,51 @@ private:
         return Join(items);
     }
 
-    string CallableText(MCallable& callable)
+    string CallableText(InRef<MCallable> callable)
     {
-        if (callable.o_instance)
-            return format("{}.{}", LocText(callable.o_instance), FuncDeclText(callable.decl));
-        return FuncDeclText(callable.decl);
+        if (callable->o_instance)
+            return format("{}.{}", LocText(callable->o_instance), FuncDeclText(callable->decl));
+        return FuncDeclText(callable->decl);
     }
 
-    string TopLevelCallText(MTopLevel_Call& call)
+    string TopLevelCallText(InRef<MTopLevel_Call> call)
     {
-        auto text = format("{}({})", CallableText(call.callable), ArgsText(call.args));
-        if (call.o_catch) text += format(" {}", CatchText(*call.o_catch));
+        auto text = format("{}({})", CallableText(call->callable), ArgsText(call->args));
+        if (call->o_catch) text += format(" {}", CatchText(*call->o_catch));
         return text;
     }
 
-    string PatternLeafText(MPatternLeaf& pattern)
+    string PatternLeafText(InRef<MPatternLeaf> pattern)
     {
         return visit([this](auto& p) -> string {
             using T = remove_cvref_t<decltype(p)>;
             if constexpr (same_as<T, MPattern_Alias>) return RNameText(p.name);
             else return "_";
-        }, pattern);
+        }, *pattern);
     }
 
-    string PatternText(MPattern& pattern)
+    string PatternText(InRef<MPattern> pattern)
     {
-        return visit([this](auto& p) -> string { return PatternTextImpl(p); }, pattern);
+        return visit([this](auto& p) -> string { return PatternTextImpl(p); }, *pattern);
     }
 
-    string TopLevelPatternText(MTopLevelPattern& pattern)
+    string TopLevelPatternText(InRef<MTopLevelPattern> pattern)
     {
-        return visit([this](auto& p) -> string { return PatternTextImpl(p); }, pattern);
+        return visit([this](auto& p) -> string { return PatternTextImpl(p); }, *pattern);
     }
 
-    string PatternTextImpl(MPattern_Alias& p) { return RNameText(p.name); }
-    string PatternTextImpl(MPattern_Ignore&) { return "_"; }
-    string PatternTextImpl(MPattern_Null&) { return "null"; }
-    string PatternTextImpl(MPattern_Some& p) { return format("some {}", PatternLeafText(p.pattern)); }
-    string PatternTextImpl(MPattern_Class& p) { return format("{} {}", TypeText(p.type), PatternLeafText(p.pattern)); }
-    string PatternTextImpl(MPattern_EnumElem& p)
+    string PatternTextImpl(InRef<MPattern_Alias> p) { return RNameText(p->name); }
+    string PatternTextImpl(InRef<MPattern_Ignore>) { return "_"; }
+    string PatternTextImpl(InRef<MPattern_Null>) { return "null"; }
+    string PatternTextImpl(InRef<MPattern_Some> p) { return format("some {}", PatternLeafText(p->pattern)); }
+    string PatternTextImpl(InRef<MPattern_Class> p) { return format("{} {}", TypeText(p->type), PatternLeafText(p->pattern)); }
+    string PatternTextImpl(InRef<MPattern_EnumElem> p)
     {
         vector<string> elems;
-        elems.reserve(p.patterns.size());
-        for (auto& pattern : p.patterns)
+        elems.reserve(p->patterns.size());
+        for (auto& pattern : p->patterns)
             elems.push_back(PatternText(pattern));
-        return format("{}({})", TypeText(p.type), Join(elems));
+        return format("{}({})", TypeText(p->type), Join(elems));
     }
 
     struct LocTextVisitor {
@@ -310,17 +317,17 @@ private:
         return Accept(SharedExpTextVisitor{*this}, sharedExp);
     }
 
-    string StringElemText(MInitExp_StringElem& elem)
+    string StringElemText(InRef<MInitExp_StringElem> elem)
     {
         return visit([this](auto& elem) -> string {
             using T = remove_cvref_t<decltype(elem)>;
             if constexpr (same_as<T, MInitExp_StringElem_Text>) return Quote(elem.text);
             else if constexpr (same_as<T, MInitExp_StringElem_InitExp>) return InitExpText(elem.initExp);
             else return LocText(elem.loc);
-        }, elem);
+        }, *elem);
     }
 
-    string StructCtorKindText(MInitExp_StructCtorKind& kind)
+    string StructCtorKindText(InRef<MInitExp_StructCtorKind> kind)
     {
         return visit([this](auto& kind) -> string {
             using T = remove_cvref_t<decltype(kind)>;
@@ -330,7 +337,7 @@ private:
                 return format("struct_ctor_move(type={}, src={})", TypeText(kind.structType), MoveSourceText(kind.src));
             else
                 return format("struct_ctor_general({}, {})", DeclText(kind.decl), ArgsText(kind.args));
-        }, kind);
+        }, *kind);
     }
 
     struct ExpTextVisitor {
@@ -434,7 +441,16 @@ private:
         writer.RemoveIndent();
     }
 
-    string CatchText(MCatch& mCatch)
+    string LocalVarDeclInitText(InRef<MStmt_LocalVarDeclInit> init)
+    {
+        return visit([this](auto& init) -> string {
+            using T = remove_cvref_t<decltype(init)>;
+            if constexpr (same_as<T, MStmt_LocalVarDeclInit_Uninit>) return "<uninit>";
+            else return TopLevelCreateText(init.create);
+        }, *init);
+    }
+
+    string CatchText(InRef<MCatch> mCatch)
     {
         return visit([this](auto& mCatch) -> string {
             using T = remove_cvref_t<decltype(mCatch)>;
@@ -443,10 +459,10 @@ private:
             else if constexpr (same_as<T, MCatch_Error>) return format("catch_error({})", TypeText(mCatch.errorType));
             else if constexpr (same_as<T, MCatch_Break>) return "catch_break";
             else return "catch_continue";
-        }, mCatch);
+        }, *mCatch);
     }
 
-    string DirectiveText(MDirective& directive)
+    string DirectiveText(InRef<MDirective> directive)
     {
         return visit([this](auto& directive) -> string {
             using T = remove_cvref_t<decltype(directive)>;
@@ -455,7 +471,7 @@ private:
             else if constexpr (same_as<T, MDirective_StaticNullDirective>) return format("static_null_directive({})", ReadText(directive.loc));
             else if constexpr (same_as<T, MDirective_StaticNotNullDirective>) return format("static_not_null_directive({})", ReadText(directive.loc));
             else return format("static_unknown_directive({})", ReadText(directive.loc));
-        }, directive);
+        }, *directive);
     }
 
     struct StmtInlineVisitor {
@@ -473,12 +489,7 @@ private:
         }
         string Visit(MStmt_LocalVarDecl* stmt)
         {
-            auto initText = visit([&](auto& init) -> string {
-                using T = remove_cvref_t<decltype(init)>;
-                if constexpr (same_as<T, MStmt_LocalVarDeclInit_Uninit>) return "<uninit>";
-                else return p.TopLevelCreateText(init.create);
-            }, stmt->init);
-            return format("var {} {} = {}", p.TypeText(stmt->type), p.RNameText(stmt->name), initText);
+            return format("var {} {} = {}", p.TypeText(stmt->type), p.RNameText(stmt->name), p.LocalVarDeclInitText(stmt->init));
         }
         string Visit(MStmt_LocalRefDecl* stmt) { return format("ref {} {} = {}", p.TypeText(stmt->type), p.RNameText(stmt->name), p.TopLevelLocText(stmt->loc)); }
         string Visit(MStmt_If* stmt) { return format("if {}", p.TopLevelReadText(stmt->cond)); }
@@ -534,12 +545,7 @@ private:
 
         void Visit(MStmt_LocalVarDecl* stmt)
         {
-            auto initText = visit([&](auto& init) -> string {
-                using T = remove_cvref_t<decltype(init)>;
-                if constexpr (same_as<T, MStmt_LocalVarDeclInit_Uninit>) return "<uninit>";
-                else return p.TopLevelCreateText(init.create);
-            }, stmt->init);
-            p.PrintLine(format("var {} {} = {}", p.TypeText(stmt->type), p.RNameText(stmt->name), initText));
+            p.PrintLine(format("var {} {} = {}", p.TypeText(stmt->type), p.RNameText(stmt->name), p.LocalVarDeclInitText(stmt->init)));
         }
 
         void Visit(MStmt_LocalRefDecl* stmt)
@@ -587,7 +593,7 @@ private:
         void Visit(MStmt_Break* stmt) { p.PrintLine(format("break {}", stmt->labelId)); }
         void Visit(MStmt_Leave* stmt) { p.PrintLine(format("leave {} {}", stmt->labelId, p.TopLevelCreateText(stmt->create))); }
         void Visit(MStmt_Return* stmt) { p.PrintLine(stmt->create ? format("return {}", p.TopLevelCreateText(*stmt->create)) : string("return")); }
-        void Visit(MStmt_Blank*) { p.PrintLine("blank"); }
+        void Visit(MStmt_Blank*) { p.PrintLine(string("blank")); }
         void Visit(MStmt_Exp* stmt) { p.PrintLine(p.TopLevelCreateText(stmt->create)); }
         void Visit(MStmt_Task* stmt) { p.PrintLine(format("task {} captures({})", p.LambdaDeclText(stmt->lambdaDecl), p.ArgsText(stmt->captureArgs))); }
 

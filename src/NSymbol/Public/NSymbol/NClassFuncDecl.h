@@ -15,10 +15,6 @@ class NClassFuncDecl
     , private NGenericsComponent
 {
 public:
-    using RDeclType = RClassFuncDecl;
-    using RDeclResType = RDeclRes_ClassFuncs;
-
-public:
     NClassDecl* _class;
     RAccessor accessor;
     RName name;

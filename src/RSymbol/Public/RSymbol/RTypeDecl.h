@@ -7,16 +7,26 @@ class RDecl;
 class RType;
 class RDeclRes;
 class RTypeArguments;
+class RClassDecl;
+class RStructDecl;
+class REnumDecl;
+class REnumElemDecl;
+class RInterfaceDecl;
+class RLambdaDecl;
+class RTypeParamDecl;
+struct RTypeDeclVisitor;
 
 class RTypeDecl
 {
 public:
     virtual ~RTypeDecl() = default;
-
-    virtual RIdentifier GetIdentifier() = 0;
-    virtual RDecl* GetDecl() = 0;
+    
+    virtual RDecl* RTypeDecl_GetDecl() = 0;
     virtual RType* GetOpenType() = 0;
     virtual RDeclRes ToRDeclRes(RTypeArguments* typeArgs) = 0;
+    virtual void Accept(RTypeDeclVisitor& visitor) = 0;
 };
 
 } // namespace Citron
+
+#include "RTypeDeclVisitor.g.h"

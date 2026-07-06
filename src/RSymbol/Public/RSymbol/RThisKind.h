@@ -18,6 +18,19 @@ public:
     template<typename T> 
         requires (!std::same_as<std::remove_cvref_t<T>, RThisKind>) && std::constructible_from<Variant, T&&>
     RThisKind(T&& t) : v{std::forward<T>(t)} {}
+
+    RType* GetThisType()
+    {
+        return std::visit([](auto&& arg) -> RType* {
+            using T = std::remove_cvref_t<decltype(arg)>;
+            if constexpr (std::same_as<T, RThisKind_Static>)
+                return nullptr;
+            else if constexpr (std::same_as<T, RThisKind_Handle>)
+                return arg.type;
+            else if constexpr (std::same_as<T, RThisKind_Ref>)
+                return arg.type;
+        }, v);
+    }
 };
 
 } // namespace Citron

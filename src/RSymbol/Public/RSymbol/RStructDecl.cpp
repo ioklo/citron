@@ -99,7 +99,7 @@ std::optional<RDeclRes> RStructDecl::GetMember(RTypeArguments* typeArgs, InRef<R
 
 std::optional<RDeclRes> RStructDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = genericsComp.ResolveIdentifier(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = genericsComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     auto typeArgs = MakeOpenTypeArgs(*rFactory);
@@ -110,7 +110,7 @@ std::optional<RDeclRes> RStructDecl::ResolveIdentifier(InRef<RName> name, size_t
 }
 
 // from RTypeDecl 
-RDecl* RStructDecl::GetDecl() { return this; }
+RDecl* RStructDecl::RTypeDecl_GetDecl() { return this; }
 RType* RStructDecl::GetOpenType()
 {
     return rFactory->MakeStructType(this, MakeOpenTypeArgs(*rFactory));
@@ -119,6 +119,11 @@ RType* RStructDecl::GetOpenType()
 RDeclRes RStructDecl::ToRDeclRes(RTypeArguments* typeArgs)
 {
     return RDeclRes_Struct(typeArgs, this);
+}
+
+void RStructDecl::Accept(RTypeDeclVisitor& visitor)
+{
+    visitor.Visit(this);
 }
 
 } // namespace Citron

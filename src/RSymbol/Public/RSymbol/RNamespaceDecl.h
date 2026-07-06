@@ -8,6 +8,7 @@
 #include "RNames.h"
 #include "RDecl.h"
 #include "RGlobalFuncDecl.h"
+#include "RDeclRes.h"
 
 namespace Citron {
 
@@ -17,7 +18,7 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 class NNamespaceDecl;
 class ENamespaceDecl;
 
-class RNamespaceDecl : public RDecl
+class RNamespaceDecl final : public RDecl
 {
     RNamespaceDecl* outer;
     RName name;
@@ -26,7 +27,7 @@ class RNamespaceDecl : public RDecl
 
     RNamespaceDeclContainerComponent namespaceDeclContainerComp;
     RTypeDeclContainerComponent typeDeclContainerComp;
-    RFuncDeclContainerComponent<RGlobalFuncDecl> funcDeclContainerComp;
+    RFuncDeclContainerComponent<RGlobalFuncDecl, RDeclRes_GlobalFuncs> funcDeclContainerComp;
     RFactoryPtr rFactory;
     
 public:
@@ -46,6 +47,8 @@ public:
 public: // from RDecl
     RSYMBOL_API RDecl* GetOuter() override;
     RSYMBOL_API RIdentifier GetIdentifier() override;
+    RSYMBOL_API size_t GetTypeParamCount() override;
+    RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
     RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name, size_t typeParamCount) override;
     RSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
     RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;

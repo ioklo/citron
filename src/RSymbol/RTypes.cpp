@@ -45,7 +45,7 @@ RType* RType_Nullable::Apply(RTypeArguments* typeArgs)
     return factory->MakeNullableType(appliedInnerType);
 }
 
-optional<RDeclRes> RType_Nullable::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Nullable::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     // 사용자가 검색해서 쓸 수 있는 멤버는 없다
     return nullopt;
@@ -61,7 +61,7 @@ RType* RType_NullableInplace::Apply(RTypeArguments* typeArgs)
     return factory->MakeNullableInplaceType(innerType->Apply(typeArgs));
 }
 
-optional<RDeclRes> RType_NullableInplace::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_NullableInplace::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -77,7 +77,7 @@ RType* RType_TypeVar::Apply(RTypeArguments* typeArgs)
     return typeArgs->Get(globalIndex);
 }
 
-optional<RDeclRes> RType_TypeVar::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_TypeVar::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -91,7 +91,7 @@ RType* RType_Void::Apply(RTypeArguments* typeArgs)
     return this;
 }
 
-optional<RDeclRes> RType_Void::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Void::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -122,7 +122,7 @@ RCopyStrategy RType_Tuple::GetCopyStrategy()
     return RCopyStrategy::Bitwise;
 }
 
-optional<RDeclRes> RType_Tuple::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Tuple::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     throw NotImplementedException();
 }
@@ -148,7 +148,7 @@ RType* RType_Func::Apply(RTypeArguments* typeArgs)
     return factory->MakeFuncType(bLocal, appliedRetType, move(appliedParams));
 }
 
-optional<RDeclRes> RType_Func::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Func::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -170,7 +170,7 @@ RType* RType_Ptr::Apply(RTypeArguments* typeArgs)
     return factory->MakePtrType(appliedInnerType);
 }
 
-optional<RDeclRes> RType_Ptr::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Ptr::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -186,7 +186,7 @@ RType* RType_Shared::Apply(RTypeArguments* typeArgs)
     return factory->MakeSharedType(appliedInnerType);
 }
 
-std::optional<RDeclRes> RType_Shared::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+std::optional<RDeclRes> RType_Shared::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -203,7 +203,7 @@ RType* RType_Box::Apply(RTypeArguments* typeArgs)
     return factory->MakeBoxType(appliedInnerType);
 }
 
-optional<RDeclRes> RType_Box::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Box::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -213,9 +213,9 @@ RType_Class::RType_Class(RClassDecl* decl, RTypeArguments* typeArgs, RFactory* f
 {
 }
 
-std::optional<RDeclRes_ClassVar> RType_Class::GetVar(const RName& name)
+std::optional<RDeclRes_ClassVar> RType_Class::ResolveVar(InRef<RName> name)
 {
-    return decl->GetVar(typeArgs, name);
+    return decl->ResolveVar(typeArgs, name);
 }
 
 bool RType_Class::IsBaseOf(RType_Class& derivedClass)
@@ -229,7 +229,7 @@ RType* RType_Class::Apply(RTypeArguments* typeArgs)
     return factory->MakeClassType(decl, appliedTypeArgs);
 }
 
-optional<RDeclRes> RType_Class::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Class::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return decl->GetMember(typeArgs, name, explicitMemberTypeArgsCount);
 }
@@ -249,7 +249,7 @@ std::optional<RDeclRes_StructVar> RType_Struct::GetVar(InRef<RName> name)
 
 RStructCtorDecl* RType_Struct::GetUnboundTrivialCtor()
 {
-    return decl->GetUnboundTrivialCtor_RStructCtorDecl();
+    return decl->GetUnboundTrivialCtor();
 }
 
 RType* RType_Struct::Apply(RTypeArguments* typeArgs)
@@ -258,7 +258,7 @@ RType* RType_Struct::Apply(RTypeArguments* typeArgs)
     return factory->MakeStructType(decl, appliedTypeArgs);
 }
 
-optional<RDeclRes> RType_Struct::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Struct::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return decl->GetMember(typeArgs, name, explicitMemberTypeArgsCount);
 }
@@ -280,7 +280,7 @@ RCopyStrategy RType_Enum::GetCopyStrategy()
     throw NotImplementedException{};
 }
 
-optional<RDeclRes> RType_Enum::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Enum::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return decl->GetMember(typeArgs, name, explicitMemberTypeArgsCount);
 }
@@ -290,14 +290,14 @@ RType_EnumElem::RType_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs, RF
 {
 }
 
-std::optional<RDeclRes_EnumElemVar> RType_EnumElem::GetVar(const RName& name)
+std::optional<RDeclRes_EnumElemVar> RType_EnumElem::GetVar(InRef<RName> name)
 {
-    return decl->GetVar(typeArgs, name);
+    return decl->ResolveVar(typeArgs, name);
 }
 
-RType_Enum* RType_EnumElem::GetBaseEnumType()
+RType_Enum* RType_EnumElem::GetEnumType()
 {
-    auto enumDecl = decl->GetBaseEnumDecl();
+    auto enumDecl = decl->GetEnum();
 
     // enumElem은 typeArgs를 추가로 받지 않기 때문에 그냥 써도 괜찮을 것 같다
     return factory->MakeEnumType(enumDecl, typeArgs);
@@ -314,8 +314,8 @@ RCopyStrategy RType_EnumElem::GetCopyStrategy()
 {
     for(size_t i = 0, count = decl->GetVarCount(); i < count; i++)
     {
-        auto* varDecl = decl->GetVarDecl(i);
-        auto* varType = varDecl->GetDeclType(typeArgs);
+        auto* varDecl = decl->GetUnboundVar(i);
+        auto* varType = varDecl->GetUnboundDeclType()->Apply(typeArgs);
         if (varType->GetCopyStrategy() == RCopyStrategy::NonBitwise)
             return RCopyStrategy::NonBitwise;
     }
@@ -323,7 +323,7 @@ RCopyStrategy RType_EnumElem::GetCopyStrategy()
     return RCopyStrategy::Bitwise;
 }
 
-optional<RDeclRes> RType_EnumElem::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_EnumElem::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return decl->GetMember(typeArgs, name, explicitMemberTypeArgsCount);
 }
@@ -339,7 +339,7 @@ RType* RType_Interface::Apply(RTypeArguments* typeArgs)
     return factory->MakeInterfaceType(decl, appliedTypeArgs, bLocal);
 }
 
-optional<RDeclRes> RType_Interface::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Interface::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     throw NotImplementedException();
 }
@@ -366,7 +366,7 @@ RCopyStrategy RType_Lambda::GetCopyStrategy()
     throw NotImplementedException{};
 }
 
-optional<RDeclRes> RType_Lambda::GetMember(const RName& name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Lambda::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return decl->GetMember(outerTypeArgs, name, explicitMemberTypeArgsCount);
 }

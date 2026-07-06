@@ -1,6 +1,7 @@
 #pragma once
-
 #include "RSymbolConfig.h"
+
+#include "Infra/Ref.h"
 
 #include <string>
 #include <variant>
@@ -17,9 +18,21 @@ struct RName_Normal
     bool operator==(const RName_Normal& other) const noexcept = default;
 };
 
+enum class RName_ReservedName
+{
+    Enumerator,
+    GetEnumerator,
+    Next,
+    RawItem,
+    This,
+    Return,
+    Ctor,
+    Dtor,
+};
+
 struct RName_Reserved
 {
-    std::string text;
+    RName_ReservedName name;
     bool operator==(const RName_Reserved& other) const noexcept = default;
 };
 
@@ -61,9 +74,12 @@ public:
     {
         Citron::hash_combine(seed, v);
     }
+
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
 };
 
-RSYMBOL_API RName Copy(const RName& name);
+RSYMBOL_API std::string RName_ReservedNameToString(InRef<RName_ReservedName> name);
 
 namespace RNames {
 
@@ -97,7 +113,7 @@ struct hash<Citron::RName_Reserved>
     std::size_t operator()(const Citron::RName_Reserved& name) const noexcept
     {
         size_t s = 0;
-        Citron::hash_combine(s, name.text);
+        Citron::hash_combine(s, name.name);
         return s;
     }
 };

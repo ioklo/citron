@@ -1,7 +1,6 @@
 #pragma once
 #include "RSymbolConfig.h"
 
-#include "Infra/AnyPtrSizedRange.h"
 #include "Infra/Ref.h"
 #include "RFuncParameter.h"
 #include "RCommonFuncDeclComponent.h"
@@ -20,13 +19,8 @@ class RTypeArguments;
 class RFuncReturn;
 enum class RNamespaceMemberAccessor;
 
-class RGlobalFuncDecl : public RDecl, public ImplRFuncDeclUsingCommonComponents<RGlobalFuncDecl>
+class RGlobalFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents
 {
-public:
-    using RDeclResType = RDeclRes_GlobalFuncs;
-    friend class ImplRFuncDeclUsingCommonComponents<RGlobalFuncDecl>;
-
-private:
     RNamespaceDecl* outer;
     RNamespaceMemberAccessor accessor;
     RName name;

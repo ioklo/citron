@@ -1,6 +1,6 @@
 #include "RTypeDeclContainerComponent.h"
-
 #include <optional>
+#include "RDecl.h"
 
 using namespace std;
 
@@ -30,7 +30,7 @@ RTypeDecl* RTypeDeclContainerComponent::GetType(const RIdentifier& identifier)
 void RTypeDeclContainerComponent::AddType(RTypeDecl* typeDecl)
 {
     types.push_back(typeDecl);
-    typeDict.insert_or_assign(typeDecl->GetIdentifier(), typeDecl);
+    typeDict.insert_or_assign(typeDecl->RTypeDecl_GetDecl()->GetIdentifier(), typeDecl);
 }
 
 RTypeDecl* RTypeDeclContainerComponent::GetTypeMember(InRef<RName> name, size_t typeParamCount)

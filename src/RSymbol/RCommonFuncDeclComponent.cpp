@@ -13,8 +13,8 @@ using namespace std;
 namespace Citron
 {
 
-RCommonFuncDeclComponent::RCommonFuncDeclComponent(bool bStatic, bool bSeqFunc)
-    : bStatic{bStatic}, bSeqFunc{bSeqFunc}
+RCommonFuncDeclComponent::RCommonFuncDeclComponent(bool bSeqFunc)
+    : bSeqFunc{bSeqFunc}
 {
 }
 
@@ -46,18 +46,20 @@ RFuncReturn RCommonFuncDeclComponent::GetUnboundFuncReturn()
 RType* RCommonFuncDeclComponent::GetReturnType(RTypeArguments* typeArgs)
 {
     assert(funcReturnAndParams);
-
-    auto* setReturn = get_if<RFuncReturn_Normal>(&funcReturnAndParams->funcReturn);
-    assert(setReturn);
-
-    return setReturn->type->Apply(typeArgs);
+    return funcReturnAndParams->funcReturn.Visit([typeArgs](auto& funcReturn) -> RType*{
+        using T = remove_cvref_t<decltype(funcReturn)>;
+        if constexpr (same_as<T, RFuncReturn_None>) return nullptr;
+        else if constexpr (same_as<T, RFuncReturn_Normal>) return funcReturn.type->Apply(typeArgs);
+        else if constexpr (same_as<T, RFuncReturn_NotSet>) return nullptr;
+        else static_assert(false);
+    });
 }
 
 RFuncReturn RCommonFuncDeclComponent::GetFuncReturn(RTypeArguments* typeArgs)
 {
     assert(funcReturnAndParams);
 
-    return visit([&typeArgs](auto& funcReturn) -> RFuncReturn {
+    return funcReturnAndParams->funcReturn.Visit([&typeArgs](auto& funcReturn) -> RFuncReturn {
         using T = remove_cvref_t<decltype(funcReturn)>;
 
         if constexpr (same_as<T, RFuncReturn_None>)
@@ -68,7 +70,7 @@ RFuncReturn RCommonFuncDeclComponent::GetFuncReturn(RTypeArguments* typeArgs)
             return RFuncReturn_NotSet{};
         else static_assert(false);
 
-    }, funcReturnAndParams->funcReturn);
+    });
 }
 
 span<RFuncParameter> RCommonFuncDeclComponent::GetUnboundFuncParams()
@@ -97,7 +99,7 @@ vector<RType*> RCommonFuncDeclComponent::GetParamIds()
     return result;
 }
 
-optional<RDeclRes> RCommonFuncDeclComponent::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RCommonFuncDeclComponent::ResolveIdentifierCore(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     assert(funcReturnAndParams);
 

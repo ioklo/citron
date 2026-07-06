@@ -59,6 +59,16 @@ RIdentifier RNamespaceDecl::GetIdentifier()
     return RIdentifier{name, 0, {}};
 }
 
+size_t RNamespaceDecl::GetTypeParamCount()
+{
+    return 0;
+}
+
+RTypeParamDecl* RNamespaceDecl::GetTypeParam(size_t index)
+{
+    return nullptr;
+}
+
 RTypeDecl* RNamespaceDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
 {
     return typeDeclContainerComp.GetTypeMember(name, typeParamCount);

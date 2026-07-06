@@ -23,10 +23,6 @@ class NNamespaceDecl
     , private NTypeDeclContainerComponent
     , private NFuncDeclContainerComponent<NGlobalFuncDecl>
 {
-public:
-    using RDeclType = RNamespaceDecl;
-    using RDeclResType = RDeclRes_Namespace;
-
 private:
     NNamespaceDecl* outer;
     std::string name;
