@@ -60,6 +60,7 @@ Status: current snapshot
 - `GetTypeMember` / type-only resolution은 일반 member lookup과 shadowing 규칙이 다르므로 별도 resolver 단계에서 처리하는 쪽을 선호한다.
 - `ResolveIdentifier`는 declaration node API보다 resolver / lexical scope algorithm 책임으로 보는 쪽을 선호한다.
 - symbol/declaration 문맥에서는 containing tree edge를 `outer`, inheritance edge를 `base`로 부르고, `parent`는 쓰지 않는 쪽을 선호한다.
+- symbol/declaration/resolver 구현에서 `RDeclRes`를 리턴하는 lookup 함수는 `Resolve`로 시작하는 쪽을 선호한다.
 - type declaration은 C++처럼 same-name generic arity overloading을 허용하지 않는 쪽을 선호하고, C#류 arity distinction은 interop/import layer에서 해소하는 방향을 선호한다.
 - semantic tree는 먼저 tree 모델로 안정화하고, path map 중심 모델은 그 뒤에 재검토한다.
 - accessibility는 단일 tree-only `CanAccess`보다, module/namespace member 정책과 type-member/inheritance 정책을 분리한 별도 checker/policy layer로 두는 쪽을 선호한다.
