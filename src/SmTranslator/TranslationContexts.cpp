@@ -21,16 +21,16 @@ using namespace std;
 namespace Citron {
 
 TranslationContexts MakeTranslationContexts(
-    NFuncDecl& nFuncDecl,
-    const LoggerPtr& logger,
-    const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory,
-    const BinOpQueryServicePtr& binOpQueryService)
+    RFuncDecl* rFuncDecl,
+    TakeRef<LoggerPtr> logger,
+    TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SRTFactoryPtr> srtFactory,
+    TakeRef<BinOpQueryServicePtr> binOpQueryService)
 {
     auto globalContext = MakePtr<GlobalContext>();
-    auto funcContext = MakePtr<FuncContext_FuncDecl>(nFuncDecl, rFactory, mFactory);
-    auto scopeContext = MakePtr<ScopeContext>(funcContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, rFactory);
+    auto funcContext = MakePtr<FuncContext_FuncDecl>(rFuncDecl, *rFactory, *mFactory);
+    auto scopeContext = MakePtr<ScopeContext>(funcContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, *rFactory);
 
-    return {globalContext, funcContext, scopeContext, logger, mFactory, rFactory, srtFactory, binOpQueryService};
+    return {globalContext, funcContext, scopeContext, logger.Take(), mFactory.Take(), rFactory.Take(), srtFactory.Take(), binOpQueryService.Take()};
 }
 
 TranslationContexts MakeTranslationContexts_DefaultScope(TranslationContexts& contexts)
@@ -107,7 +107,7 @@ expected<MInitExp_As*, DiagPtr> MakeMInitExp_As(MRead&& target, RType* testType,
     return contexts.mFactory->MakeMInitExp<MInitExp_As>(MInitExp_AsKind::Class_Class, std::move(target), testType);
 }
 
-expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, size_t memberTypeArgsCount, TranslationContexts& contexts)
+expected<BodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t memberTypeArgsCount, TranslationContexts& contexts)
 {
     // struct S<T>
     // {

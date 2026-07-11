@@ -7,7 +7,7 @@
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RStructCtorDecl.h"
 #include "RSymbol/RTypeArguments.h"
-#include "NSymbol/NLambdaDecl.h"
+#include "RSymbol/RLambdaDecl.h"
 
 #include "MLoc.h"
 
@@ -84,7 +84,7 @@ RType* GetType(MExp* exp, RFactory* rFactory)
         ResultType Visit(MExp_IntLiteral* exp) { return rFactory->MakeIntType(); }
         ResultType Visit(MExp_CallIntrinsic* exp) { return GetType_CallIntrinsic(exp, rFactory); }
 
-        ResultType Visit(MExp_Call* exp) { return exp->callable.decl.GetReturnType(exp->callable.typeArgs); }
+        ResultType Visit(MExp_Call* exp) { return exp->callable.decl->GetReturnType(exp->callable.typeArgs); }
         ResultType Visit(MExp_NewStruct* exp) 
         { 
             auto structDecl = exp->ctor->GetStructDecl();

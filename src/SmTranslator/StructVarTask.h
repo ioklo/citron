@@ -1,31 +1,32 @@
 #pragma once
 #include <memory>
-
+#include "Infra/Ref.h"
 #include "TranslationTasks.h"
 
 namespace Citron {
 
-class NStructDecl;
-class NStructVarDecl;
+class RStructDecl;
+class RStructVarDecl;
 class SStructVarDecl;
-using NFactoryPtr = std::shared_ptr<class NFactory>;
 
 class PhaseManager;
+
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class StructVarTask
     : public IBuildTypeDependentSymbolTask
 {
-    NStructDecl* nStruct;
+    RStructDecl* rStruct;
     SStructVarDecl* sStructVar;
-    NFactoryPtr nFactory;
+    RFactoryPtr rFactory;
 
 private:
-    StructVarTask(NStructDecl* nStruct, SStructVarDecl* sStructVar, const NFactoryPtr& nFactory)
-        : nStruct{nStruct}, sStructVar{sStructVar}, nFactory{nFactory}
+    StructVarTask(RStructDecl* rStruct, SStructVarDecl* sStructVar, TakeRef<RFactoryPtr> rFactory)
+        : rStruct{rStruct}, sStructVar{sStructVar}, rFactory{rFactory.Take()}
     {}
 
 public:
-    static void Register(NStructDecl* nOuter, SStructVarDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
+    static void Register(RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
     std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
 };
 

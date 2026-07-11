@@ -19,54 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Public\NSymbol\NClassCtorDecl.h" />
-    <ClInclude Include="Public\NSymbol\NClassDecl.h" />
-    <ClInclude Include="Public\NSymbol\NClassFuncDecl.h" />
-    <ClInclude Include="Public\NSymbol\NClassVarDecl.h" />
-    <ClInclude Include="Public\NSymbol\NEnumDecl.h" />
-    <ClInclude Include="Public\NSymbol\NEnumElemDecl.h" />
-    <ClInclude Include="Public\NSymbol\NEnumElemVarDecl.h" />
     <ClInclude Include="Public\NSymbol\NFactory.h" />
-    <ClInclude Include="Public\NSymbol\NFuncDecl.h" />
-    <ClInclude Include="Public\NSymbol\NFuncDeclImpl_UsingNCommonFuncDeclComponent.h" />
-    <ClInclude Include="Public\NSymbol\NFuncDeclOuter.h" />
-    <ClInclude Include="Public\NSymbol\NInterfaceDecl.h" />
-    <ClInclude Include="Public\NSymbol\NLambdaDecl.h" />
-    <ClInclude Include="Public\NSymbol\NLambdaVarDecl.h" />
-    <ClInclude Include="Public\NSymbol\NModule.h" />
-    <ClInclude Include="Public\NSymbol\NNamespaceDecl.h" />
-    <ClInclude Include="Public\NSymbol\NStructCtorDecl.h" />
-    <ClInclude Include="Public\NSymbol\NStructDecl.h" />
-    <ClInclude Include="Public\NSymbol\NStructDtorDecl.h" />
-    <ClInclude Include="Public\NSymbol\NStructFuncDecl.h" />
-    <ClInclude Include="Public\NSymbol\NStructVarDecl.h" />
-    <ClInclude Include="Public\NSymbol\NTraitDecl.h" />
     <ClInclude Include="Public\NSymbol\NSymbolConfig.h" />
-    <ClInclude Include="Public\NSymbol\NTypeParamDecl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NClassCtorDecl.cpp" />
-    <ClCompile Include="NClassDecl.cpp" />
-    <ClCompile Include="NClassFuncDecl.cpp" />
-    <ClCompile Include="NClassVarDecl.cpp" />
-    <ClCompile Include="NEnumDecl.cpp" />
-    <ClCompile Include="NEnumElemDecl.cpp" />
-    <ClCompile Include="NEnumElemVarDecl.cpp" />
     <ClCompile Include="NFactory.cpp" />
-    <ClCompile Include="NFuncDecl.cpp" />
-    <ClCompile Include="NFuncDeclOuter.cpp" />
-    <ClCompile Include="NInterfaceDecl.cpp" />
-    <ClCompile Include="NLambdaDecl.cpp" />
-    <ClCompile Include="NLambdaVarDecl.cpp" />
-    <ClCompile Include="NModule.cpp" />
-    <ClCompile Include="NNamespaceDecl.cpp" />
-    <ClCompile Include="NStructCtorDecl.cpp" />
-    <ClCompile Include="NStructDecl.cpp" />
-    <ClCompile Include="NStructDtorDecl.cpp" />
-    <ClCompile Include="NStructFuncDecl.cpp" />
-    <ClCompile Include="NStructVarDecl.cpp" />
-    <ClCompile Include="NTraitDecl.cpp" />
-    <ClCompile Include="NTypeParamDecl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ESymbol\ESymbol.vcxproj">

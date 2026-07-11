@@ -48,6 +48,9 @@ public:
 
     RSYMBOL_API std::optional<RDeclRes_ClassVar> ResolveVar(RTypeArguments* typeArgs, InRef<RName> name);
 
+public: // for RTypeDeclOuter
+    RSYMBOL_API void AddType(RTypeDecl* typeDecl) { typeDeclContainerComp.AddType(typeDecl); }
+
 public: // from RDecl
     RSYMBOL_API RDecl* GetOuter() override;
     RSYMBOL_API RIdentifier GetIdentifier() override;

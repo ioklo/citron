@@ -2,9 +2,9 @@
 #include "Infra/Ptr.h"
 
 #include "Syntax/Syntaxes.g.h"
-#include "NSymbol/NStructDecl.h"
-#include "NSymbol/NStructDtorDecl.h"
-#include "NSymbol/NFactory.h"
+#include "RSymbol/RStructDecl.h"
+#include "RSymbol/RStructDtorDecl.h"
+#include "RSymbol/RFactory.h"
 
 #include "MIR/MFuncBody.h"
 
@@ -17,29 +17,30 @@ using namespace std;
 
 namespace Citron {
 
-StructDtorTask::StructDtorTask(NStructDecl* nStruct, SStructDtorDecl* sStructDtor, const NFactoryPtr& nFactory)
-    : nStruct{nStruct}, sStructDtor {sStructDtor}, nFactory{nFactory}, nStructDtor{nullptr}
+StructDtorTask::StructDtorTask(RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory)
+    : rStruct{rStruct}, sStructDtor {sStructDtor}, rFactory{rFactory.Take()}, rStructDtor{nullptr}
 {
 }
 
 expected<void, DiagPtr> StructDtorTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
-    auto accessor = MakeAccessor(sStructDtor->accessModifier, AccessorContext::InsideStruct);
+    auto accessor = MakeStructMemberAccessor(sStructDtor->accessModifier);
 
     // 굳이 type이 없어도 만들수는 있지만 그냥 여기서 만들자
-    nStructDtor = nFactory->MakeNDecl<NStructDtorDecl>(accessor, nStruct);
+    rStructDtor = rFactory->MakeDecl<RStructDtorDecl>(rStruct, accessor);
+
 
     return {};
 }
 
 std::expected<MFuncBody, DiagPtr> StructDtorTask::TranslateBody(TranslateBodyContext& context)
 {
-    return context.Translate(nStructDtor, sStructDtor->body);
+    return context.Translate(rStructDtor, sStructDtor->body);
 }
 
-void StructDtorTask::Register(NStructDecl* nStruct, SStructDtorDecl* sStructDtor, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void StructDtorTask::Register(RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    auto task = MakePtr<StructDtorTask>(nStruct, sStructDtor, nFactory);
+    auto task = MakePtr<StructDtorTask>(rStruct, sStructDtor, move(rFactory));
 
     phaseManager.AddBuildTypeDependentSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);

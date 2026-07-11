@@ -31,6 +31,11 @@ public:
                 return arg.type;
         }, v);
     }
+
+    bool IsStatic()
+    {
+        return std::holds_alternative<RThisKind_Static>(v);
+    }
 };
 
 } // namespace Citron

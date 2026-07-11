@@ -22,8 +22,8 @@ class RTypeArguments;
 class RClassCtorDecl;
 class RStructCtorDecl;
 
-class NLambdaDecl;
-class NStructCtorDecl;
+class RLambdaDecl;
+class RStructCtorDecl;
 
 struct MLoc;
 
@@ -82,8 +82,8 @@ struct MStmt_LocalVarDecl : MStmt
     MStmt_LocalVarDeclInit init;
 
 public:
-    MStmt_LocalVarDecl(RType* type, const RName& name, MStmt_LocalVarDeclInit init)
-        : type{type}, name{name}, init{init}
+    MStmt_LocalVarDecl(RType* type, TakeRef<RName> name, MStmt_LocalVarDeclInit init)
+        : type{type}, name{name.Take()}, init{init}
     {}
 
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -96,8 +96,8 @@ struct MStmt_LocalRefDecl : MStmt
     MTopLevel_Loc loc;
 
 public:
-    MStmt_LocalRefDecl(RType* type, const RName& name, MTopLevel_Loc&& loc)
-        : type{type}, name{name}, loc{std::move(loc)}
+    MStmt_LocalRefDecl(RType* type, TakeRef<RName> name, MTopLevel_Loc&& loc)
+        : type{type}, name{name.Take()}, loc{std::move(loc)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };
@@ -207,11 +207,11 @@ public:
 
 struct MStmt_Task : MStmt
 {
-    NLambdaDecl* lambdaDecl;
+    RLambdaDecl* lambdaDecl;
     std::vector<MArgument> captureArgs;
 
 public:
-    MStmt_Task(NLambdaDecl* lambdaDecl, std::vector<MArgument>&& captureArgs)
+    MStmt_Task(RLambdaDecl* lambdaDecl, std::vector<MArgument>&& captureArgs)
         : lambdaDecl{lambdaDecl}, captureArgs{std::move(captureArgs)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -230,11 +230,11 @@ public:
 
 struct MStmt_Async : MStmt
 {
-    NLambdaDecl* lambdaDecl;
+    RLambdaDecl* lambdaDecl;
     std::vector<MArgument> captureArgs;
 
 public:
-    MStmt_Async(NLambdaDecl* lambdaDecl, std::vector<MArgument>&& captureArgs)
+    MStmt_Async(RLambdaDecl* lambdaDecl, std::vector<MArgument>&& captureArgs)
         : lambdaDecl{lambdaDecl}, captureArgs{std::move(captureArgs)}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
@@ -256,8 +256,8 @@ struct MStmt_Foreach : MStmt
     MStmt_Scope* body;
 
 public:
-    MStmt_Foreach(RType* iterType, const RName& iterName, MTopLevel_Create&& iterCreate, RType* itemType, const RName& itemName, MStmt_Scope* body)
-        : iterType{iterType}, iterName{iterName}, iterCreate{std::move(iterCreate)}, itemType{itemType}, itemName{itemName}, body{body}
+    MStmt_Foreach(RType* iterType, TakeRef<RName> iterName, MTopLevel_Create&& iterCreate, RType* itemType, TakeRef<RName> itemName, MStmt_Scope* body)
+        : iterType{iterType}, iterName{iterName.Take()}, iterCreate{std::move(iterCreate)}, itemType{itemType}, itemName{itemName.Take()}, body{body}
     { }
     MIR_API void Accept(MStmtVisitor& visitor) override;
 };

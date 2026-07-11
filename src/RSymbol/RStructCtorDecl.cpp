@@ -13,6 +13,11 @@ RStructCtorDecl::RStructCtorDecl(RStructDecl* _struct, RStructMemberAccessor acc
 {
 }
 
+void RStructCtorDecl::InitFuncParameters(std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+{
+    commonFuncDeclComp.InitFuncReturnAndParams(RFuncReturn_None{}, RThisKind_Static{}, std::move(funcParameters), bLastParameterVariadic);
+}
+
 // from RDecl
 RDecl* RStructCtorDecl::GetOuter()
 {

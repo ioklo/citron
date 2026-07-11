@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 #include <expected>
-
+#include "Infra/Ref.h"
 #include "TranslationTasks.h"
 
 namespace Citron {
@@ -13,7 +13,6 @@ using LoggerPtr = std::shared_ptr<class Logger>;
 using DiagPtr = std::shared_ptr<struct Diag>;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
-using NFactoryPtr = std::shared_ptr<class NFactory>;
 
 using SRTFactoryPtr = std::shared_ptr<class SRTFactory>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
@@ -27,7 +26,6 @@ class PhaseManager
 {   
     LoggerPtr logger;
     RFactoryPtr rFactory;
-    NFactoryPtr nFactory;
     MFactoryPtr mFactory;
 
     SRTFactoryPtr srtFactory;
@@ -40,9 +38,9 @@ class PhaseManager
 
 public:
     PhaseManager(
-        const LoggerPtr& logger, 
-        const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, const MFactoryPtr& mFactory,
-        const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService);
+        TakeRef<LoggerPtr> logger, 
+        TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
+        TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
     ~PhaseManager(); 
 
     void AddResolveTypeHierarchyTask(std::shared_ptr<IResolveTypeHierarchyTask>&& task);

@@ -17,7 +17,7 @@ class RType;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
-class RLambdaDecl final : public RDecl, public RTypeDecl, public ImplRFuncDeclUsingCommonComponents
+class RLambdaDecl final : public RDecl, public RTypeDecl, public ImplRFuncDeclUsingCommonComponents<RLambdaDecl>
 {
     RFuncDecl* outer;
     RName name;

@@ -107,16 +107,16 @@ struct VarDeclElemTranslator
         }
     }
 
-    void AddLocalVar(RType* rType, const RName& name, MStmt_LocalVarDeclInit&& init)
+    void AddLocalVar(RType* rType, InRef<RName> name, MStmt_LocalVarDeclInit&& init)
     {
-        auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rType, name, move(init));
+        auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalVarDecl>(rType, *name, move(init));
         contexts.scopeContext->AddLocalVarInfo(rType, name);
         outStmts.push_back(mStmt);
     }
 
-    void AddLocalRef(RType* rType, const RName& name, MTopLevel_Loc&& mTopLevelLoc)
+    void AddLocalRef(RType* rType, InRef<RName> name, MTopLevel_Loc&& mTopLevelLoc)
     {   
-        auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalRefDecl>(rType, name, move(mTopLevelLoc));
+        auto* mStmt = contexts.mFactory->MakeMStmt<MStmt_LocalRefDecl>(rType, *name, move(mTopLevelLoc));
 
         contexts.scopeContext->AddLocalRefInfo(rType, name);
         outStmts.push_back(mStmt);
@@ -127,7 +127,7 @@ struct VarDeclElemTranslator
     {
         for (auto& elem : elems)
         {
-            RName_Normal varName = {elem.varName};
+            RName varName = RName_Normal{elem.varName};
 
             if (contexts.scopeContext->DoesLocalNameExistInScope(varName))
                 return Error<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>();
@@ -173,7 +173,7 @@ struct VarDeclElemTranslator
     {   
         for (auto& elem : elems)
         {   
-            RName_Normal varName{elem.varName};
+            RName varName = RName_Normal{elem.varName};
 
             if (contexts.scopeContext->DoesLocalNameExistInScope(varName))
                 return Error<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>();
@@ -220,7 +220,7 @@ struct VarDeclElemTranslator
         auto* declType = *e_declType;
         for (auto& elem : elems)
         {
-            RName_Normal varName{elem.varName};
+            RName varName = RName_Normal{elem.varName};
 
             if (contexts.scopeContext->DoesLocalNameExistInScope(varName))
                 return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};
@@ -269,7 +269,7 @@ struct VarDeclElemTranslator
 
         for (auto& elem : elems)
         {
-            RName_Normal varName{elem.varName};
+            RName varName = RName_Normal{elem.varName};
 
             if (contexts.scopeContext->DoesLocalNameExistInScope(varName))
                 return unexpected{MakePtr<Error_VarDecl_LocalVarNameShouldBeUniqueWithinScope>()};

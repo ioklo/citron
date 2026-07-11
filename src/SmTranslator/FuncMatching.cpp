@@ -14,7 +14,6 @@
 #include "TranslationContexts.h"
 #include "SExpTranslations.h"
 #include "SExpToReExp.h"
-#include "Misc.h"
 
 using namespace std;
 
@@ -22,22 +21,22 @@ namespace Citron {
 
 size_t RFuncDeclMatchArgumentsInput::GetTypeParamCount()
 {
-    return funcDecl.GetTypeParamCount();
+    return funcDecl->RFuncDecl_GetDecl()->GetTypeParamCount();
 }
 
 RTypeParamDecl* RFuncDeclMatchArgumentsInput::GetTypeParam(size_t index)
 {
-    return funcDecl.GetTypeParam(index);
+    return funcDecl->RFuncDecl_GetDecl()->GetTypeParam(index);
 }
 
 size_t RFuncDeclMatchArgumentsInput::GetFuncParamCount()
 {
-    return funcDecl.GetUnboundFuncParams().size();
+    return funcDecl->GetUnboundFuncParams().size();
 }
 
 RFuncParameter RFuncDeclMatchArgumentsInput::GetFuncParam(RTypeArguments* typeArgs, size_t index)
 {
-    return funcDecl.GetFuncParam(typeArgs, index);
+    return funcDecl->GetFuncParam(typeArgs, index);
 }
 
 RTypeArguments* MakeTypeArgs(IMatchArgumentsInput* input, RTypeArguments* outerTypeArgs, RTypeArguments* memberTypeArgs, RFactory& rFactory)
@@ -57,7 +56,7 @@ RTypeArguments* MakeTypeArgs(IMatchArgumentsInput* input, RTypeArguments* outerT
         argsItems.push_back(rFactory.MakeTypeVarType(input->GetTypeParam(i)));
     auto* args = rFactory.MakeTypeArguments(std::move(argsItems));
 
-    // 이제 outer typeArgs와 합친다
+    // 이제 rClass typeArgs와 합친다
     return rFactory.MergeTypeArguments(outerTypeArgs, args);
 }
 

@@ -8,9 +8,9 @@ class SEnumDecl;
 class SEnumElemDecl;
 class SEnumElemVarDecl;
 
-class NEnumDecl;
-class NEnumElemDecl;
-class NEnumElemVarDecl;
+class REnumDecl;
+class REnumElemDecl;
+class REnumElemVarDecl;
 
 class PhaseManager;
 enum class AccessorContext;
@@ -18,15 +18,15 @@ enum class AccessorContext;
 class EnumElemVarTask
     : public IBuildTypeDependentSymbolTask
 {
-    NEnumElemVarDecl* nEnumElemVar;
+    REnumElemVarDecl* rEnumElemVar;
     SEnumElemVarDecl* sEnumElemVar;
-    EnumElemVarTask(NEnumElemVarDecl* nEnumElemVar, SEnumElemVarDecl* sEnumElemVar)
-        : nEnumElemVar{nEnumElemVar}, sEnumElemVar{sEnumElemVar}
+    EnumElemVarTask(REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar)
+        : rEnumElemVar{rEnumElemVar}, sEnumElemVar{sEnumElemVar}
     {
     }
 
 public:
-    static void Register(NEnumElemVarDecl* nEnumElemVar, SEnumElemVarDecl* sEnumElemVar, PhaseManager& phaseManager);
+    static void Register(REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, PhaseManager& phaseManager);
     std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
 };
 

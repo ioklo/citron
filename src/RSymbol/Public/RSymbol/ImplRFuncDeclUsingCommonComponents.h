@@ -14,6 +14,7 @@ struct RFuncParameter;
 class RCommonFuncDeclComponent;
 class RGenericsComponent;
 
+template<typename TRFuncDecl>
 class ImplRFuncDeclUsingCommonComponents : public RFuncDecl
 {
     RDecl* decl; 
@@ -31,6 +32,8 @@ public:
     RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) final { return commonFuncDeclComp.GetFuncParam(typeArgs, index); }
     RFuncReturn GetUnboundFuncReturn() final { return commonFuncDeclComp.GetUnboundFuncReturn(); }
     std::span<RFuncParameter> GetUnboundFuncParams() final { return commonFuncDeclComp.GetUnboundFuncParams(); }
+
+    void Accept(RFuncDeclVisitor& visitor) final { visitor.Visit(static_cast<TRFuncDecl*>(this)); }
 };
 
 } // namespace Citron

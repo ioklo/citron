@@ -19,7 +19,7 @@ class RTypeArguments;
 class RFuncReturn;
 enum class RNamespaceMemberAccessor;
 
-class RGlobalFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents
+class RGlobalFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents<RGlobalFuncDecl>
 {
     RNamespaceDecl* outer;
     RNamespaceMemberAccessor accessor;

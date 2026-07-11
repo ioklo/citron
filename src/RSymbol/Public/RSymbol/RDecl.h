@@ -34,8 +34,9 @@ public:
 
 public:
     RSYMBOL_API bool IsDescendantOf(RDecl* container);
-    // RSYMBOL_API bool CanAccess(RDecl* target);
+    RSYMBOL_API bool CanAccess(RDecl* target);
     RSYMBOL_API RTypeArguments* MakeOpenTypeArgs(RFactory& factory);
+    RSYMBOL_API size_t GetAllTypeParamCount();
 
 public:
     virtual RDecl* GetOuter() = 0;

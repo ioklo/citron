@@ -2,7 +2,6 @@
 
 namespace Citron {
 
-class RFuncDeclBase;
 class RTypeArguments;
 
 template<typename TDecl>

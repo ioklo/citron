@@ -2,7 +2,7 @@
 #include <span>
 #include <memory>
 #include <expected>
-#include "NSymbol/NFuncDecl.h"
+#include "RSymbol/RFuncDecl.h"
 
 namespace Citron {
 
@@ -31,7 +31,7 @@ public:
         const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService);
     ~TranslateBodyContext();
 
-    std::expected<MFuncBody, DiagPtr> Translate(NFuncDecl funcDecl, std::span<SStmt*> mStmts);
+    std::expected<MFuncBody, DiagPtr> Translate(RFuncDecl* funcDecl, std::span<SStmt*> mStmts);
     void MarkFailed();
 };
 

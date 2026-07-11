@@ -8,19 +8,20 @@ namespace Citron {
 namespace RNames {
 
 RName Enumerator = RName_Normal{"Enumerator"};
-RName GetEnumerator = RName_Normal("GetEnumerator");
-RName Next = RName_Normal("Next");
+RName GetEnumerator = RName_Normal{"GetEnumerator"};
+RName Next = RName_Normal{"Next"};
 RName RawItem = RName_Normal{"RawItem"};
 RName _this = RName_Reserved{RName_ReservedName::This}; // "this"
 RName _return = RName_Reserved{RName_ReservedName::Return};
 
 } // RNames
 
-string RName::ToString(const RName& name)
+string RName::ToString()
 {
-    return visit([](auto& name) {
+    return visit([](auto& name) -> string {
         using T = remove_cvref_t<decltype(name)>;
-        if constexpr (same_as<T, RName_Normal>) return name.text;
+        if constexpr (same_as<T, RName_None>) return "(None)";
+        else if constexpr (same_as<T, RName_Normal>) return name.text;
         else if constexpr (same_as<T, RName_Reserved>) return format("${}", static_cast<int>(name.name));
         else if constexpr (same_as<T, RName_Lambda>) return format("$$lambdaVar{}>", name.index);
         else if constexpr (same_as<T, RName_CtorParam>) return format("$$ctor_{}", name.paramText);

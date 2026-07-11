@@ -2,8 +2,8 @@
 
 namespace Citron {
 
-SynthesizeImplicitSymbolContext::SynthesizeImplicitSymbolContext(const NFactoryPtr& nFactory)
-    : nFactory{nFactory}
+SynthesizeImplicitSymbolContext::SynthesizeImplicitSymbolContext(TakeRef<RFactoryPtr> rFactory)
+    : rFactory{rFactory.Take()}
 {
 }
 

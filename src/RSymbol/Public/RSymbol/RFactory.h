@@ -1,18 +1,19 @@
 #pragma once
 #include "RSymbolConfig.h"
-
 #include <unordered_map>
 #include <memory>
 #include <deque>
-
+#include "Infra/Ref.h"
 #include "RTypes.h" // for RFuncType::Parameter
 
 namespace Citron {
 
+class RModule;
 class RNamespaceDeclGroup;
 class RTypeArguments;
 class RFactory;
 class RTypeDecl;
+using RFactoryPtr = std::shared_ptr<RFactory>;
 
 struct RFuncTypeKey
 {
@@ -82,10 +83,13 @@ struct RTypeArgumentsKeyHasher
     }
 };
 
+struct RFactoryPrivateData;
+
 // TODO: weak처리
 // flyweight
 class RFactory
 {
+    std::unique_ptr<RFactoryPrivateData> privateData;
     std::deque<std::unique_ptr<RDecl>> decls;
     
     // inner type -> nullable type
@@ -121,7 +125,7 @@ class RFactory
     std::unique_ptr<RStructDecl> listIterDecl;
 
     // namespace group
-    std::unordered_map<std::vector<std::string>, std::unique_ptr<RNamespaceDeclGroup>> nsGroupsMap;
+    std::unordered_map<std::vector<RName>, std::unique_ptr<RNamespaceDeclGroup>> nsGroupsMap;
 
 public:
     RSYMBOL_API RFactory();
@@ -169,7 +173,11 @@ public:
     RSYMBOL_API bool IsListType(RType* type, RType** outItemType);
     
     // Reference Module까지 아우를 수 있는 DeclGroup
-    RSYMBOL_API RNamespaceDeclGroup* GetNamespaceDeclGroup(const std::vector<std::string>& name);
+    RSYMBOL_API RNamespaceDeclGroup* GetNamespaceDeclGroup(InRef<std::vector<RName>> name);
+    RSYMBOL_API RNamespaceDecl* MakeRootNamespaceDecl(TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RNamespaceDecl* MakeChildNamespaceDecl(RNamespaceDecl* outer, InRef<std::string> name, TakeRef<RFactoryPtr> rFactory);
+
+    RSYMBOL_API RModule* MakeModule(RName&& name);
     
 private:
     template<typename TDecl, typename TType, typename... TArgs>

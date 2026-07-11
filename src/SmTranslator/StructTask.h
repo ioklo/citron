@@ -4,7 +4,7 @@
 namespace Citron {
 
 class SStructDecl;
-class NStructDecl;
+class RStructDecl;
 
 class PhaseManager;
 enum class AccessorContext;
@@ -13,15 +13,14 @@ class StructTask
     : public IResolveTypeHierarchyTask
     , public ISynthesizeImplicitSymbolTask
 {   
-    NStructDecl* nStructDecl;
+    RStructDecl* rStructDecl;
     SStructDecl* syntax;
-    AccessorContext accessorContext;
 
 private:
-    StructTask(NStructDecl* nStructDecl, SStructDecl* syntax, AccessorContext accessorContext);
+    StructTask(RStructDecl* rStructDecl, SStructDecl* syntax);
 
 public:
-    static void Register(NStructDecl* nStructDecl, SStructDecl* syntax, AccessorContext accessorContext, PhaseManager& phaseManager);
+    static void Register(RStructDecl* rStructDecl, SStructDecl* syntax, PhaseManager& phaseManager);
     
     void ResolveTypeHierarchy(ResolveTypeHierarchyContext& context) override;
     void SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& context) override;

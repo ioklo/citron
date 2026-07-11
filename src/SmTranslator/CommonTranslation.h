@@ -4,25 +4,26 @@
 #include <string>
 #include <optional>
 
+#include "Infra/Ref.h"
 #include "Syntax/Syntax.h"
 
 namespace Citron {
 
 enum class RAccessor;
-class NTypeParamDecl;
-class NFactory;
-class NDecl;
+class RTypeParamDecl;
+class RDecl;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
+class NFactory;
 
-enum class AccessorContext
-{
-    Global,
-    InsideStruct,
-    InsideClass,
-};
+enum class RNamespaceMemberAccessor;
+enum class RStructMemberAccessor;
+enum class RClassMemberAccessor;
 
-RAccessor MakeAccessor(std::optional<SAccessModifier> modifier, AccessorContext context);
+// RAccessor MakeAccessor(std::optional<SAccessModifier> modifier, AccessorContext context);
+RNamespaceMemberAccessor MakeNamespaceMemberAccessor(std::optional<SAccessModifier> modifier);
+RStructMemberAccessor MakeStructMemberAccessor(std::optional<SAccessModifier> modifier);
+RClassMemberAccessor MakeClassMemberAccessor(std::optional<SAccessModifier> modifier);
 
-std::vector<NTypeParamDecl*> MakeTypeParams(NDecl* outer, const std::vector<STypeParam>& sTypeParams, const RFactoryPtr& rFactory, NFactory& nFactory);
+std::vector<RTypeParamDecl*> MakeTypeParams(RDecl* outer, const std::vector<STypeParam>& sTypeParams, InRef<RFactoryPtr> rFactory);
 
 } // namespace Citron

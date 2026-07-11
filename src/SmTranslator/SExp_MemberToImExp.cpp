@@ -32,7 +32,7 @@ struct StaticBaseTranslator
 {
     using ResultType = expected<ImExp*, DiagPtr>;
 
-    RTypeArguments* memberTypeArgs; // outer 제외
+    RTypeArguments* memberTypeArgs; // rClass 제외
     TranslationContexts& contexts;
 
     ResultType operator()(auto& declRes) { return Visit(declRes); }

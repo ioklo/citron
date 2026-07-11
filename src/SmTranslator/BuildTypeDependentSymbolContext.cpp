@@ -8,7 +8,7 @@
 #include "Infra/Exceptions.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFactory.h"
-#include "NSymbol/NDecl.h"
+#include "RSymbol/RDecl.h"
 #include "CommonTranslation.h"
 #include "Misc.h"
 
@@ -16,12 +16,12 @@ using namespace std;
 
 namespace Citron {
 
-BuildTypeDependentSymbolContext::BuildTypeDependentSymbolContext(const RFactoryPtr& rFactory, const NFactoryPtr& nFactory)
-    : rFactory{rFactory}, nFactory{nFactory}
+BuildTypeDependentSymbolContext::BuildTypeDependentSymbolContext(TakeRef<RFactoryPtr> rFactory)
+    : rFactory{rFactory.Take()}
 {
 }
 
-RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl)
+RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, RDecl* decl)
 {
     // TODO: ScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
     struct Visitor
@@ -53,7 +53,7 @@ RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, NDecl* decl
     return Accept(visitor, sTypeExp);
 }
 
-expected<RFuncReturn, DiagPtr> BuildTypeDependentSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, NDecl* decl)
+expected<RFuncReturn, DiagPtr> BuildTypeDependentSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, RDecl* decl)
 {
     return visit([this, decl](auto& funcRet) -> expected<RFuncReturn, DiagPtr> {
         using T = remove_cvref_t<decltype(funcRet)>;
@@ -83,7 +83,7 @@ expected<RFuncReturn, DiagPtr> BuildTypeDependentSymbolContext::MakeFuncReturn(S
     }, funcRet);
 }
 
-expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildTypeDependentSymbolContext::MakeParameters(NDecl* decl, vector<SFuncParam>& sParams)
+expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildTypeDependentSymbolContext::MakeParameters(RDecl* decl, vector<SFuncParam>& sParams)
 {
     bool bLastParamVariadic = false;
 

@@ -10,7 +10,7 @@ struct TDeclWithOuterTypeArgs;
 
 class RTypeArguments;
 
-template<typename TFuncDecl> requires std::derived_from<TFuncDecl, RFuncDeclBase>
+template<typename TFuncDecl> requires std::derived_from<TFuncDecl, RFuncDecl>
 class FuncsWithPartialTypeArgsComponent
 {
 public:

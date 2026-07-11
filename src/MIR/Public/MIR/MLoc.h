@@ -39,8 +39,8 @@ struct MLoc_LocalVar : MLoc
     RName name;
     RType* declType;
 
-    MLoc_LocalVar(const RName& name, RType* declType)
-        : name{name}, declType{declType}
+    MLoc_LocalVar(TakeRef<RName> name, RType* declType)
+        : name{name.Take()}, declType{declType}
     { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
@@ -50,8 +50,8 @@ struct MLoc_LocalRef : MLoc
     RName name;
     RType* declType;
 
-    MLoc_LocalRef(const RName& name, RType* declType)
-        : name{name}, declType{declType}
+    MLoc_LocalRef(TakeRef<RName> name, RType* declType)
+        : name{name.Take()}, declType{declType}
     { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };

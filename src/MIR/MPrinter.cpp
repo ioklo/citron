@@ -8,7 +8,6 @@
 #include "Infra/Exceptions.h"
 #include "Infra/Ref.h"
 #include "Infra/IWriter.h"
-#include "NSymbol/NLambdaDecl.h"
 #include "RSymbol/RDecl.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RTypes.h"
@@ -45,7 +44,7 @@ public:
     void PrintFuncBody(InRef<MFuncBody> funcBody)
     {
         writer.Write("Func ");
-        PrintRName(funcBody->nFuncDecl.GetRFuncDecl().GetRDecl()->GetIdentifier().name);
+        PrintRName(funcBody->nFuncDecl->RFuncDecl_GetDecl()->GetIdentifier().name);
         writer.WriteLine();
         writer.AddIndent();
         PrintStmt(funcBody->body);
@@ -80,8 +79,10 @@ private:
     {
         return name->Visit([this](auto& name) -> string {
             using T = remove_cvref_t<decltype(name)>;
-            if constexpr (same_as<T, RName_Normal>) return name.text;
-            else if constexpr (same_as<T, RName_Reserved>) return format("${}", RName_ReservedNameToString(name));
+
+            if constexpr (same_as<T, RName_None>) return "<none>";
+            else if constexpr (same_as<T, RName_Normal>) return name.text;
+            else if constexpr (same_as<T, RName_Reserved>) return format("${}", RName_ReservedNameToString(name.name));
             else if constexpr (same_as<T, RName_CtorParam>) return format("$ctor.{}", name.index);
             else if constexpr (same_as<T, RName_Lambda>) return format("$lambda.{}", name.index);
             else static_assert(false);
@@ -109,15 +110,15 @@ private:
         });
     }
 
-    string FuncDeclText(InRef<RFuncDecl> decl)
+    string FuncDeclText(RFuncDecl* funcDecl)
     {
-        return DeclText(decl->GetRDecl());
+        return DeclText(funcDecl->RFuncDecl_GetDecl());
     }
 
-    string LambdaDeclText(NLambdaDecl* decl)
+    string LambdaDeclText(RLambdaDecl* decl)
     {
         if (!decl) return "<null-lambda-decl>";
-        return DeclText(decl->GetRDecl());
+        return DeclText(decl->RFuncDecl_GetDecl());
     }
 
     string ScopeKindText(InRef<MScopeKind> scopeKind)

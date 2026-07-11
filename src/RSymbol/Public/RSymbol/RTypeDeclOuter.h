@@ -1,4 +1,5 @@
 #pragma once
+#include "RSymbolConfig.h"
 #include <variant>
 #include <concepts>
 
@@ -8,6 +9,7 @@ class RDecl;
 class RNamespaceDecl;
 class RClassDecl;
 class RStructDecl;
+class RTypeDecl;
 
 class RTypeDeclOuterVisitor;
 
@@ -35,7 +37,9 @@ public:
     {
     }
 
-    RDecl* GetDecl();
+    RSYMBOL_API RDecl* GetDecl();
+
+    RSYMBOL_API void AddType(RTypeDecl* typeDecl);
 };
 
 } // namespace Citron

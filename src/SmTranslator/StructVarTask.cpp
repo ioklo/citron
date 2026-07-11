@@ -3,7 +3,9 @@
 #include <vector>
 
 #include "Syntax/Syntax.h"
-#include "NSymbol/NStructDecl.h"
+#include "RSymbol/RStructDecl.h"
+#include "RSymbol/RStructVarDecl.h"
+#include "RSymbol/RFactory.h"
 
 #include "BuildTypeDependentSymbolContext.h"
 #include "CommonTranslation.h"
@@ -13,26 +15,26 @@ using namespace std;
 
 namespace Citron {
 
-void StructVarTask::Register(NStructDecl* nOuter, SStructVarDecl* syntax, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void StructVarTask::Register(RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<StructVarTask> task{new StructVarTask(nOuter, syntax, nFactory)};
+    shared_ptr<StructVarTask> task{new StructVarTask(rOuter, syntax, move(rFactory))};
     phaseManager.AddBuildTypeDependentSymbolTask(task);
 }
 
 expected<void, DiagPtr> StructVarTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
-    auto accessor = MakeAccessor(sStructVar->accessModifier, AccessorContext::InsideStruct);
+    auto accessor = MakeStructMemberAccessor(sStructVar->accessModifier);
     bool bStatic = false; // TODO: bStatic 지원
-    auto* declType = context.MakeType(sStructVar->varType, nStruct); // decl부분에 자기 자신 대신 outer struct가 들어간다
+    auto* declType = context.MakeType(sStructVar->varType, rStruct); // decl부분에 자기 자신 대신 outer struct가 들어간다
 
-    vector<NStructVarDecl*> symbols;
+    vector<RStructVarDecl*> symbols;
     symbols.reserve(sStructVar->varNames.size());
 
     for (auto& varName : sStructVar->varNames)
     {
-        auto* symbol = nFactory->MakeNDecl<NStructVarDecl>(nStruct, accessor, bStatic, varName, declType, nStruct->GetVarCount());
+        auto* symbol = rFactory->MakeDecl<RStructVarDecl>(rStruct, accessor, bStatic, declType, RName::Normal(varName), rStruct->GetVarCount());
         symbols.push_back(symbol);
-        nStruct->AddVar(symbol);
+        rStruct->AddVar(symbol);
     }
 
     return {};

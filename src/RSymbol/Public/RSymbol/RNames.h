@@ -10,6 +10,11 @@
 
 namespace Citron {
 
+struct RName_None 
+{
+    bool operator==(const RName_None& other) const noexcept = default;
+};
+
 // 통합 Identifier 세 부분으로 구성된다
 // 이름 name, 타입 파라미터 개수 type parameter count, func parameterIds
 struct RName_Normal
@@ -52,6 +57,7 @@ struct RName_CtorParam
 class RName
 {
     using Variant = std::variant<
+        RName_None, // for Root Namespace
         RName_Normal,
         RName_Reserved,
         RName_Lambda,
@@ -60,6 +66,8 @@ class RName
     Variant v;
 
 public: 
+    static RName Normal(std::string text) { return RName{RName_Normal{std::move(text)}}; }
+
     template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RName>) && std::constructible_from<Variant, T&&>
     RName(T&& t) : v{std::forward<T>(t)} {}
     
@@ -68,7 +76,7 @@ public:
         return v == name.v;
     }
 
-    RSYMBOL_API std::string ToString(const RName& name);
+    RSYMBOL_API std::string ToString();
 
     void hash_combine(std::size_t& seed) const noexcept
     {
@@ -95,6 +103,16 @@ RSYMBOL_API extern RName _return; // "return"
 } // namespace Citron
 
 namespace std {
+
+template<>
+struct hash<Citron::RName_None>
+{
+    std::size_t operator()(const Citron::RName_None& name) const noexcept
+    {
+        return 0;
+    }
+};
+
 
 template<>
 struct hash<Citron::RName_Normal>

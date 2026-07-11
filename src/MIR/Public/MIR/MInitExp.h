@@ -18,7 +18,7 @@ class RType_Struct;
 class RClassCtorDecl;
 class RStructCtorDecl;
 class REnumElemDecl;
-class NLambdaDecl;
+class RLambdaDecl;
 
 struct MInitExpVisitor;
 struct MStmt;
@@ -206,7 +206,7 @@ struct MInitExp_Cast : MInitExp
 
 struct MInitExp_Lambda : MInitExp
 {
-    NLambdaDecl* lambdaDecl;
+    RLambdaDecl* lambdaDecl;
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
 

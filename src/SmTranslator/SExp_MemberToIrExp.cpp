@@ -49,10 +49,10 @@ struct Result_GetStructVar
     RTypeArguments* typeArgs;
 };
 
-expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, const RName& name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
+expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, InRef<RName> name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
 {
     size_t memberTypeArgsCount = memberTypeArgs->GetCount();
-    auto o_member = classType->GetMember(name, memberTypeArgsCount);
+    auto o_member = classType->GetMember(*name, memberTypeArgsCount);
     if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
 
     auto* classVarMember = o_member->GetIf<RDeclRes_ClassVar>();
@@ -66,10 +66,10 @@ expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, const 
     return Result_GetClassVar{classVarMember->decl, classVarMember->typeArgs};
 }
 
-expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, const RName& name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
+expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, InRef<RName> name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
 {
     size_t memberTypeArgsCount = memberTypeArgs->GetCount();
-    auto o_member = structType->GetMember(name, memberTypeArgsCount);
+    auto o_member = structType->GetMember(*name, memberTypeArgsCount);
     if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
 
     auto* structVarMember = o_member->GetIf<RDeclRes_StructVar>();
@@ -284,7 +284,7 @@ struct Binder
         // base가 클래스라면, 분해한다 IrExp_ClassVar(MLoc(c), C::x), C::y => IrExp_ClassVar(MLoc_ClassVar(MLoc(c), C::x), C::y)
         // base가 구조체라면, 감싼다   IrExp_ClassVar(MLoc(c), C::x), S::y => IrExp_StructVar(IrExp_ClassVar(MLoc(c), C::x), C::y)
 
-        auto* baseDeclType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
+        auto* baseDeclType = irBaseExp->decl->GetUnboundDeclType()->Apply(irBaseExp->typeArgs);
 
         if (auto* classBaseDeclType = dynamic_cast<RType_Class*>(baseDeclType))
         {
@@ -311,7 +311,7 @@ struct Binder
         // (*pS).x가 base일 때
         // base가 클래스라면, 분해한다 IrExp_SharedStructVar(MLoc(pS), S::x), C::y => IrExp_ClassVar(MLoc_StructVar(MLoc_SharedDeref(MLoc(pS)), S::x), C::y)
         // base가 구조체라면, 감싼다   IrExp_SharedStructVar(MLoc(pS), S::x), S::y => IrExp_StructVar(IrExp_SharedStructVar(MLoc(pS), S::x), C::y)
-        auto* baseType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
+        auto* baseType = irBaseExp->decl->GetUnboundDeclType()->Apply(irBaseExp->typeArgs);
         
         if (auto* classBaseType = dynamic_cast<RType_Class*>(baseType))
         {
@@ -341,7 +341,7 @@ struct Binder
         // 
         // c.s.x의 타입이 struct인 경우, 그대로 감싼다
         // IrExp_StructVar(IrExp_ClassVar(MLoc(c), C::s), S::x), S::y => IrExp_StructVar(IrExp_StructVar(IrExp_ClassVar(MLoc(c), C::s), S::x), S::y)
-        auto* baseType = irBaseExp->decl->GetDeclType(irBaseExp->typeArgs);
+        auto* baseType = irBaseExp->decl->GetUnboundDeclType()->Apply(irBaseExp->typeArgs);
 
         if (auto* classBaseType = dynamic_cast<RType_Class*>(baseType))
         {

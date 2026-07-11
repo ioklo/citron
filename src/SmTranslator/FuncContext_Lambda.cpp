@@ -3,7 +3,7 @@
 #include "Infra/Exceptions.h"
 #include "RSymbol/RDeclRes.h"
 #include "RSymbol/RTypes.h"
-#include "NSymbol/NLambdaVarDecl.h"
+#include "RSymbol/RLambdaVarDecl.h"
 #include "MIR/MFactory.h"
 #include "MIR/MLoc.h"
 #include "MIR/MExp.h"
@@ -13,8 +13,8 @@ using namespace std;
 
 namespace Citron {
 
-FuncContext_Lambda::FuncContext_Lambda(const FuncContextPtr& outerFunc, const ScopeContextPtr& outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
-    : outerFunc{outerFunc}, outerScope{outerScope}, bSeqFunc{bSeqFunc}, funcReturn{move(funcReturn)}, funcParams{move(funcParams)}, bLastParamVariadic{bLastParamVariadic}
+FuncContext_Lambda::FuncContext_Lambda(TakeRef<FuncContextPtr> outerFunc, TakeRef<ScopeContextPtr> outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
+    : outerFunc{outerFunc.Take()}, outerScope{outerScope.Take()}, bSeqFunc{bSeqFunc}, funcReturn{move(funcReturn)}, funcParams{move(funcParams)}, bLastParamVariadic{bLastParamVariadic}
 {
 }
 
@@ -23,7 +23,7 @@ bool FuncContext_Lambda::CanAccess(RDecl* target)
     return outerFunc->CanAccess(target);
 }
 
-RTypeDecl* FuncContext_Lambda::ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+RTypeDecl* FuncContext_Lambda::ResolveTypeDecl(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     return outerFunc->ResolveTypeDecl(name, explicitTypeParamsExceptOuterCount);
 }
@@ -41,7 +41,7 @@ RTypeDecl* FuncContext_Lambda::ResolveTypeDecl(const RName& name, size_t explici
 //         }
 //     }
 // } }
-expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 1. lambdaVar 검색
     throw NotImplementedException{};
@@ -70,7 +70,7 @@ expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
 
         if constexpr (same_as<T, BodyRes_NeedCapture>)
         {
-            return BodyRes_NeedCapture{name, make_unique<BodyRes>(move(bodyRes))};
+            return BodyRes_NeedCapture{*name, make_unique<BodyRes>(move(bodyRes))};
         }
         else if constexpr(same_as<T, BodyRes_LocalVar>)
         {
@@ -78,7 +78,7 @@ expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
             // 나머지는 capture list에 명시적으로 적어주는 것으로 (복사, ref)
             if (dynamic_cast<RType_Primitive*>(bodyRes.type))
             {
-                return BodyRes_NeedCapture{name, make_unique<BodyRes>(move(bodyRes))};
+                return BodyRes_NeedCapture{*name, make_unique<BodyRes>(move(bodyRes))};
             }
             else
             {
@@ -90,7 +90,7 @@ expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
         {
             if (dynamic_cast<RType_Primitive*>(bodyRes.type))
             {
-                return BodyRes_NeedCapture{name, make_unique<BodyRes>(move(bodyRes))};
+                return BodyRes_NeedCapture{*name, make_unique<BodyRes>(move(bodyRes))};
             }
             else
             {
@@ -118,7 +118,7 @@ expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(const
 
                     if (dynamic_cast<RType_Primitive*>(declType))
                     {
-                        return BodyRes_NeedCapture{name, make_unique<BodyRes>(move(bodyRes))};
+                        return BodyRes_NeedCapture{*name, make_unique<BodyRes>(move(bodyRes))};
                     }
                     else
                     {
@@ -152,7 +152,7 @@ RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
 
 void FuncContext_Lambda::SetOpenFuncReturn(RType* retType)
 {
-    assert(holds_alternative<RFuncReturn_NotSet>(funcReturn));
+    assert(funcReturn.IsNotSet());
     funcReturn = RFuncReturn_Normal{retType};
 }
 

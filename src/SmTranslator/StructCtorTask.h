@@ -1,34 +1,34 @@
 #pragma once
 #include <memory>
-
+#include "Infra/Ref.h"
 #include "TranslationTasks.h"
 
 namespace Citron {
 
-class NStructDecl;
-class NStructCtorDecl;
+class RStructDecl;
+class RStructCtorDecl;
 class SStructCtorDecl;
-using NFactoryPtr = std::shared_ptr<class NFactory>;
-
 class PhaseManager;
+
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class StructCtorTask
     : public IBuildTypeDependentSymbolTask
     , public ITranslateBodyTask
 {
-    NStructDecl* nStruct;
+    RStructDecl* rStruct;
     SStructCtorDecl* sStructCtor;
-    NFactoryPtr nFactory;
 
-    NStructCtorDecl* nStructCtor;
+    RStructCtorDecl* rStructCtor;
+    RFactoryPtr rFactory;
 
 private:
-    StructCtorTask(NStructDecl* nStruct, SStructCtorDecl* sStructCtor, const NFactoryPtr& nFactory)
-        : nStruct{nStruct}, sStructCtor{sStructCtor}, nFactory{nFactory}
+    StructCtorTask(RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory)
+        : rStruct{rStruct}, sStructCtor{sStructCtor}, rStructCtor{nullptr}, rFactory{rFactory.Take()}
     {}
 
 public:
-    static void Register(NStructDecl* nStruct, SStructCtorDecl* sStructCtor, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
+    static void Register(RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
     std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 

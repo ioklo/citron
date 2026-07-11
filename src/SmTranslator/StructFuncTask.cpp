@@ -1,10 +1,9 @@
 #include "StructFuncTask.h"
 
 #include "Infra/Expected.h"
-
-#include "NSymbol/NStructDecl.h"
-#include "NSymbol/NStructFuncDecl.h"
-#include "NSymbol/NFactory.h"
+#include "RSymbol/RStructDecl.h"
+#include "RSymbol/RStructFuncDecl.h"
+#include "RSymbol/RFactory.h"
 
 #include "MIR/MFuncBody.h"
 
@@ -17,39 +16,38 @@ using namespace std;
 
 namespace Citron {
 
-void StructFuncTask::Register(NStructDecl* nStructDecl, SStructFuncDecl* syntax, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void StructFuncTask::Register(RStructDecl* rStructDecl, SStructFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<StructFuncTask> task{new StructFuncTask(nStructDecl, syntax, rFactory, nFactory)};
+    shared_ptr<StructFuncTask> task{new StructFuncTask(rStructDecl, syntax, std::move(rFactory))};
     phaseManager.AddBuildTypeDependentSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
 
 expected<void, DiagPtr> StructFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
-    auto accessor = MakeAccessor(sStruct->accessModifier, AccessorContext::InsideStruct);
-    nStructFunc = nFactory->MakeNDecl<NStructFuncDecl>(
-        nStruct, accessor, sStruct->bStatic, sStruct->bSequence,
-        sStruct->name);
+    auto accessor = MakeStructMemberAccessor(sStructFunc->accessModifier);
+    rStructFunc = rFactory->MakeDecl<RStructFuncDecl>(
+        rStruct, accessor, RName::Normal(sStructFunc->name), sStructFunc->bSequence);
 
-    auto typeParams = MakeTypeParams(nStructFunc, sStruct->typeParams, rFactory, *nFactory);
-    nStructFunc->InitTypeParams(move(typeParams));
+    auto typeParams = MakeTypeParams(rStructFunc, sStructFunc->typeParams, rFactory);
+    rStructFunc->InitTypeParams(move(typeParams));
 
-    nStruct->AddFunc(nStructFunc);
+    rStruct->AddFunc(rStructFunc);
 
-    // symbol tree에 매달린 nStructFunc가 필요
-    auto e_funcRet = context.MakeFuncReturn(sStruct->funcRet, nStructFunc);
+    // symbol tree에 매달린 rStructFunc가 필요
+    auto e_funcRet = context.MakeFuncReturn(sStructFunc->funcRet, rStructFunc);
     RETURN_ON_ERROR(e_funcRet);
 
-    auto e_parameters = context.MakeParameters(nStructFunc, sStruct->parameters);
+    auto e_parameters = context.MakeParameters(rStructFunc, sStructFunc->parameters);
     RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
 
-    nStructFunc->InitFuncReturnAndParams(move(*e_funcRet), move(parameters), bLastParamVariadic);
+    rStructFunc->InitFuncReturnAndParams(sStructFunc->bStatic, move(*e_funcRet), move(parameters), bLastParamVariadic);
     return {};
 }
 
 expected<MFuncBody, DiagPtr> StructFuncTask::TranslateBody(TranslateBodyContext& context)
 {
-    return context.Translate(nStructFunc, sStruct->body);
+    return context.Translate(rStructFunc, sStructFunc->body);
 }
 
 

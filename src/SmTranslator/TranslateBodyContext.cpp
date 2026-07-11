@@ -7,7 +7,6 @@
 
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RFuncDecl.h"
-#include "NSymbol/NFuncDecl.h"
 
 #include "MIR/MFuncBody.h"
 #include "MIR/MStmt.h"
@@ -78,7 +77,7 @@ CheckEndReturnResult CheckEndReturn(MStmt* stmt, RFactory* rFactory)
     return Accept(Checker{rFactory}, stmt);
 }
 
-CheckEndReturnResult CheckEndReturn(NFuncDecl& nFuncDecl, vector<MStmt*>& mStmts, RFactory& rFactory)
+CheckEndReturnResult CheckEndReturn(RFuncDecl* rFuncDecl, vector<MStmt*>& mStmts, RFactory& rFactory)
 {
     // 1. 함수에 Body가 있고, return으로 끝날때
     bool stmtEndsWithReturn = [&mStmts]{
@@ -89,9 +88,9 @@ CheckEndReturnResult CheckEndReturn(NFuncDecl& nFuncDecl, vector<MStmt*>& mStmts
     if (stmtEndsWithReturn) return CheckEndReturnResult::Valid;
 
     // 2. 시그니처가 void를 리턴하는지 확인
-    bool signatureReturnVoid = [&nFuncDecl, &rFactory] {
-        auto rFuncReturn = nFuncDecl.GetRFuncDecl().GetUnboundFuncReturn();
-        return visit([&rFactory](auto& rFuncReturn) -> bool {
+    bool signatureReturnVoid = [&rFuncDecl, &rFactory] {
+        auto rFuncReturn = rFuncDecl->GetUnboundFuncReturn();
+        return rFuncReturn.Visit([&rFactory](auto& rFuncReturn) -> bool {
             using T = remove_cvref_t<decltype(rFuncReturn)>;
 
             if constexpr (same_as<T, RFuncReturn_Normal>)
@@ -103,7 +102,7 @@ CheckEndReturnResult CheckEndReturn(NFuncDecl& nFuncDecl, vector<MStmt*>& mStmts
             else if constexpr (same_as<T, RFuncReturn_NotSet>) return true; // lambda에서 return으로 끝나지 않으면 리턴타입을 void로 보면 된다
             else static_assert(false);
 
-        }, rFuncReturn);
+        });
     }();
 
     return signatureReturnVoid 
@@ -113,16 +112,16 @@ CheckEndReturnResult CheckEndReturn(NFuncDecl& nFuncDecl, vector<MStmt*>& mStmts
 
 }
 
-expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(NFuncDecl nFuncDecl, std::span<SStmt*> sStmts)
+expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(RFuncDecl* rFuncDecl, std::span<SStmt*> sStmts)
 {   
-    auto tContext = MakeTranslationContexts(nFuncDecl, logger, rFactory, mFactory, srtFactory, binOpQueryService);
+    auto tContext = MakeTranslationContexts(rFuncDecl, logger, rFactory, mFactory, srtFactory, binOpQueryService);
     auto e_scope = TranslateScopedSStmtsToMStmt_Scope(sStmts, tContext);
     RETURN_ON_ERROR(e_scope);
 
     auto* scope = *e_scope;
 
     // 함수가 return이나 never를 리턴하는 함수로 끝맺지 않았을 경우, 리턴인자가 void인 경우 Return을 추가한다. 나머지는 에러
-    auto checkEndReturnResult = CheckEndReturn(nFuncDecl, scope->stmts, *rFactory);
+    auto checkEndReturnResult = CheckEndReturn(rFuncDecl, scope->stmts, *rFactory);
 
     switch(checkEndReturnResult)
     {
@@ -140,7 +139,7 @@ expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(NFuncDecl nFuncDecl
         break;
     }
 
-    return MFuncBody{nFuncDecl, scope};
+    return MFuncBody{rFuncDecl, scope};
 }
 
 void TranslateBodyContext::MarkFailed()

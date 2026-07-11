@@ -11,11 +11,14 @@
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
 
-#include "NSymbol/NNamespaceDecl.h"
-#include "NSymbol/NStructDecl.h"
-#include "NSymbol/NEnumDecl.h"
-#include "NSymbol/NModule.h"
-#include "NSymbol/NClassDecl.h"
+#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RStructDecl.h"
+#include "RSymbol/REnumDecl.h"
+#include "RSymbol/REnumElemDecl.h"
+#include "RSymbol/REnumElemVarDecl.h"
+#include "RSymbol/RModule.h"
+#include "RSymbol/RClassDecl.h"
+#include "RSymbol/RFactory.h"
 #include "MIR/MFuncBody.h"
 #include "MIR/MFactory.h"
 
@@ -41,14 +44,13 @@ namespace {
 
 class StructElemVisitor
 {
-    NStructDecl* nStruct;
+    RStructDecl* rStruct;
     RFactoryPtr rFactory;
-    NFactoryPtr nFactory;
     PhaseManager& phaseManager;
 
 public:
-    StructElemVisitor(NStructDecl* nStruct, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
-        : nStruct{nStruct}, rFactory{rFactory}, nFactory{nFactory}, phaseManager{phaseManager}
+    StructElemVisitor(RStructDecl* rStruct, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+        : rStruct{rStruct}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
     {}
 
     void operator()(auto* decl) { Visit(decl); }
@@ -66,14 +68,13 @@ public:
 
 class ClassElemVisitor
 {
-    NClassDecl* outer;
+    RClassDecl* rClass;
     RFactoryPtr rFactory;
-    NFactoryPtr nFactory;
     PhaseManager& phaseManager;
 
 public:
-    ClassElemVisitor(NClassDecl* outer, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
-        : outer{outer}, rFactory{rFactory}, nFactory{nFactory}, phaseManager{phaseManager}
+    ClassElemVisitor(RClassDecl* outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+        : rClass{outer}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
     {}
 
     void operator()(auto* decl) { Visit(decl); }
@@ -91,14 +92,13 @@ public:
 // prepare task
 class NamespaceElemVisitor
 {
-    NNamespaceDecl* curDecl;
+    RNamespaceDecl* curDecl;
     RFactoryPtr rFactory;
-    NFactoryPtr nFactory;
     PhaseManager& phaseManager;
 
 public:
-    NamespaceElemVisitor(NNamespaceDecl* curDecl, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
-        : curDecl{curDecl}, rFactory{rFactory}, nFactory{nFactory}, phaseManager{phaseManager}
+    NamespaceElemVisitor(RNamespaceDecl* curDecl, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+        : curDecl{curDecl}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
     {
     }
 
@@ -115,14 +115,13 @@ public:
 
 class ScriptElemVisitor
 {
-    NNamespaceDecl* rootNamespace;
+    RNamespaceDecl* rootNamespace;
     RFactoryPtr rFactory;
-    NFactoryPtr nFactory;
     PhaseManager& phaseManager;
 
 public:
-    ScriptElemVisitor(NNamespaceDecl* rootNamespace, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
-        : rootNamespace{rootNamespace}, rFactory{rFactory}, nFactory{nFactory}, phaseManager{phaseManager}
+    ScriptElemVisitor(RNamespaceDecl* rootNamespace, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+        : rootNamespace{rootNamespace}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
     {
     }
 
@@ -137,66 +136,64 @@ public:
     void Visit(SExtendDecl* elem);
 };
 
-void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, NNamespaceDecl* outer, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, RNamespaceDecl* outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {   
-    GlobalFuncTask::Register(outer, sGFuncDecl, rFactory, nFactory, phaseManager);
+    GlobalFuncTask::Register(outer, sGFuncDecl, move(rFactory), phaseManager);
 }
 
-template<typename TNOuter>
-void VisitStruct(TNOuter* outer, SStructDecl* syntax, AccessorContext accessorContext, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void VisitStruct(RTypeDeclOuter outer, SStructDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {   
-    auto accessor = MakeAccessor(syntax->accessModifier, accessorContext);
-    auto* nStructDecl = nFactory->MakeNDecl<NStructDecl>(outer, accessor, RName_Normal(syntax->name), rFactory);
+    auto* rStructDecl = (*rFactory)->MakeDecl<RStructDecl>(outer, RName::Normal(syntax->name), *rFactory);
 
-    auto typeParams = MakeTypeParams(nStructDecl, syntax->typeParams, rFactory, *nFactory);
-    nStructDecl->InitTypeParams(move(typeParams));
+    auto typeParams = MakeTypeParams(rStructDecl, syntax->typeParams, *rFactory);
+    rStructDecl->InitTypeParams(move(typeParams));
     
-    outer->AddType(nStructDecl);
+    outer.AddType(rStructDecl);
 
-    StructTask::Register(nStructDecl, syntax, accessorContext, phaseManager);
+    StructTask::Register(rStructDecl, syntax, phaseManager);
 
     // child     
     for (auto& memberDecl : syntax->memberDecls)
     {
-        visit(StructElemVisitor{nStructDecl, rFactory, nFactory, phaseManager}, memberDecl);
+        visit(StructElemVisitor{rStructDecl, *rFactory, phaseManager}, memberDecl);
     }
 }
 
-template<typename TNOuter>
-void VisitEnum(TNOuter* outer, SEnumDecl* sEnum, AccessorContext accessorContext, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void VisitEnum(RTypeDeclOuter outer, SEnumDecl* sEnum, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {   
-    auto accessor = MakeAccessor(sEnum->accessModifier, accessorContext);    
-    auto* nEnum = nFactory->MakeNDecl<NEnumDecl>(outer, accessor, RName_Normal{sEnum->name}, rFactory);
+    auto* rEnum = (*rFactory)->MakeDecl<REnumDecl>(outer, RName::Normal(sEnum->name), *rFactory);
 
-    auto typeParams = MakeTypeParams(nEnum, sEnum->typeParams, rFactory, *nFactory);
-    nEnum->InitTypeParams(move(typeParams));
+    auto typeParams = MakeTypeParams(rEnum, sEnum->typeParams, *rFactory);
+    rEnum->InitTypeParams(move(typeParams));
     
-    outer->AddType(nEnum);
+    outer.AddType(rEnum);
 
     // EnumElem
     for (auto* sEnumElem : sEnum->elements)
     {
-        auto* nEnumElem = nFactory->MakeNDecl<NEnumElemDecl>(nEnum, RName_Normal{sEnumElem->name}, rFactory);
-        nEnum->AddElem(nEnumElem);
+        auto* rEnumElem = (*rFactory)->MakeDecl<REnumElemDecl>(rEnum, RName::Normal(sEnumElem->name), *rFactory);
+        rEnum->AddElem(rEnumElem);
 
         // EnumElemVar
         for (auto* sEnumElemVar : sEnumElem->vars)
         {
-            auto* nEnumElemVar = nFactory->MakeNDecl<NEnumElemVarDecl>(nEnumElem, RName_Normal{sEnumElemVar->name});
-            EnumElemVarTask::Register(nEnumElemVar, sEnumElemVar, phaseManager);
+            auto* rEnumElemVar = (*rFactory)->MakeDecl<REnumElemVarDecl>(rEnumElem, RName::Normal(sEnumElemVar->name));
+            EnumElemVarTask::Register(rEnumElemVar, sEnumElemVar, phaseManager);
         }
     }
 }
 
-template<typename TNOuter>
-void VisitTrait(TNOuter* outer, STraitDecl* sTrait, AccessorContext accessorContext, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
-{
-    auto accessor = MakeAccessor(sTrait->accessModifier, accessorContext);
-    auto* nTrait = nFactory->MakeNDecl<NTraitDecl>(outer, accessor, RName_Normal{sTrait->name}, rFactory);
-}
+// TODO: [66] 2026-07-09, Trait, Extend 구현
+//template<typename TNOuter>
+//void VisitTrait(TNOuter* rClass, STraitDecl* sTrait, AccessorContext accessorContext, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+//{
+//    auto accessor = MakeAccessor(sTrait->accessModifier, accessorContext);
+//    auto* nTrait = (*rFactory)->MakeDecl<NTraitDecl>(rClass, accessor, RName_Normal{sTrait->name}, rFactory);
+//}
 
 void VisitExtend()
 {
+    // TODO: [66] 2026-07-09, Trait, Extend 구현
     throw NotImplementedException{};
 }
 
@@ -207,17 +204,23 @@ void StructElemVisitor::Visit(SClassDecl* decl)
 
 void StructElemVisitor::Visit(SStructDecl* decl)
 {
-    VisitStruct(nStruct, decl, AccessorContext::InsideStruct, rFactory, nFactory, phaseManager);
+    auto accessor = MakeStructMemberAccessor(decl->accessModifier);
+    RTypeDeclOuter_Struct outer{rStruct, accessor};
+    VisitStruct(outer, decl, rFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SEnumDecl* decl)
 {
-    VisitEnum(nStruct, decl, AccessorContext::InsideStruct, rFactory, nFactory, phaseManager);
+    auto accessor = MakeStructMemberAccessor(decl->accessModifier);
+    RTypeDeclOuter_Struct outer{rStruct, accessor};
+    VisitEnum(outer, decl, rFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(STraitDecl* decl)
 {
-    VisitTrait();
+    // TODO: [66] 2026-07-09, Trait 구현
+    throw NotImplementedException{};
+    // VisitTrait();
 }
 
 void StructElemVisitor::Visit(SExtendDecl* decl)
@@ -227,22 +230,22 @@ void StructElemVisitor::Visit(SExtendDecl* decl)
 
 void StructElemVisitor::Visit(SStructFuncDecl* decl)
 {   
-    StructFuncTask::Register(nStruct, decl, rFactory, nFactory, phaseManager);
+    StructFuncTask::Register(rStruct, decl, rFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructCtorDecl* decl)
 {
-    StructCtorTask::Register(nStruct, decl, nFactory, phaseManager);
+    StructCtorTask::Register(rStruct, decl, rFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructDtorDecl* decl)
 {
-    StructDtorTask::Register(nStruct, decl, nFactory, phaseManager);
+    StructDtorTask::Register(rStruct, decl, rFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructVarDecl* decl)
 {   
-    StructVarTask::Register(nStruct, decl, nFactory, phaseManager);
+    StructVarTask::Register(rStruct, decl, rFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(SClassDecl* decl)
@@ -252,21 +255,27 @@ void ClassElemVisitor::Visit(SClassDecl* decl)
 
 void ClassElemVisitor::Visit(SStructDecl* decl)
 {
-    VisitStruct(outer, decl, AccessorContext::InsideClass, rFactory, nFactory, phaseManager);
+    auto accessor = MakeClassMemberAccessor(decl->accessModifier);
+    RTypeDeclOuter_Class outer{rClass, accessor};
+    VisitStruct(outer, decl, rFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(SEnumDecl* decl)
 {
-    VisitEnum(outer, decl, AccessorContext::InsideClass, rFactory, nFactory, phaseManager);
+    auto accessor = MakeClassMemberAccessor(decl->accessModifier);
+    RTypeDeclOuter_Class outer{rClass, accessor};
+    VisitEnum(outer, decl, rFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(STraitDecl* decl)
 {
-    VisitTrait();
+    // TODO: [66] 2026-07-09, Trait 구현
+    // VisitTrait();
+    throw NotImplementedException{};
 }
 
 void ClassElemVisitor::Visit(SExtendDecl* decl)
-{
+{    
     VisitExtend();
 }
 
@@ -288,20 +297,20 @@ void ClassElemVisitor::Visit(SClassVarDecl* decl)
 
 void NamespaceElemVisitor::Visit(SGlobalFuncDecl* elem)
 {
-    VisitGlobalFunc(elem, curDecl, rFactory, nFactory, phaseManager);
+    VisitGlobalFunc(elem, curDecl, rFactory, phaseManager);
 }
 
 void NamespaceElemVisitor::Visit(SNamespaceDecl* elem)
 {
-    NNamespaceDecl* curNamespace = curDecl;
+    RNamespaceDecl* curNamespace = curDecl;
     for (size_t i = 0, size = elem->names.size(); i < size; i++)
     {
         auto& name = elem->names[i];
 
-        NNamespaceDecl* childNamespace = curNamespace->GetNamespace(name);
+        RNamespaceDecl* childNamespace = curNamespace->GetNamespace(RName::Normal(name));
         if (!childNamespace)
         {
-            childNamespace = nFactory->MakeChildNamespaceDecl(curNamespace, name);
+            childNamespace = rFactory->MakeChildNamespaceDecl(curNamespace, name, rFactory);
             curNamespace->AddNamespace(childNamespace);
         }
 
@@ -310,7 +319,7 @@ void NamespaceElemVisitor::Visit(SNamespaceDecl* elem)
 
     for (auto& nsElem : elem->elements)
     {
-        visit(NamespaceElemVisitor{curNamespace, rFactory, nFactory, phaseManager}, nsElem);
+        visit(NamespaceElemVisitor{curNamespace, rFactory, phaseManager}, nsElem);
     }
 }
 
@@ -321,17 +330,23 @@ void NamespaceElemVisitor::Visit(SClassDecl* elem)
 
 void NamespaceElemVisitor::Visit(SStructDecl* elem)
 {
-    VisitStruct(curDecl, elem, AccessorContext::Global, rFactory, nFactory, phaseManager);
+    auto accessor = MakeNamespaceMemberAccessor(elem->accessModifier);
+    RTypeDeclOuter_Namespace outer{curDecl, accessor};
+
+    VisitStruct(outer, elem, rFactory, phaseManager);
 }
 
 void NamespaceElemVisitor::Visit(SEnumDecl* elem)
 {
-    VisitEnum(curDecl, elem, AccessorContext::Global, rFactory, nFactory, phaseManager);
+    auto accessor = MakeNamespaceMemberAccessor(elem->accessModifier);
+    RTypeDeclOuter_Namespace outer{curDecl, accessor};
+    VisitEnum(outer, elem, rFactory, phaseManager);
 }
 
 void NamespaceElemVisitor::Visit(STraitDecl* decl)
 {
-    VisitTrait();
+    // TODO: [66] 2026-07-09, Trait 구현
+    // VisitTrait();
 }
 
 void NamespaceElemVisitor::Visit(SExtendDecl* decl)
@@ -346,10 +361,10 @@ void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
     // 첫번째는 모듈에서 찾는다
     assert(1 <= elem->names.size());
 
-    auto curNamespace = rootNamespace->GetNamespace(elem->names[0]);
+    auto curNamespace = rootNamespace->GetNamespace(RName::Normal(elem->names[0]));
     if (!curNamespace)
     {
-        curNamespace = nFactory->MakeChildNamespaceDecl(rootNamespace, elem->names[0]);
+        curNamespace = rFactory->MakeChildNamespaceDecl(rootNamespace, elem->names[0], rFactory);
         rootNamespace->AddNamespace(curNamespace);
     }
 
@@ -357,10 +372,10 @@ void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
     {
         auto& name = elem->names[i];
 
-        auto childNamespace = curNamespace->GetNamespace(name);
+        auto childNamespace = curNamespace->GetNamespace(RName::Normal(name));
         if (!childNamespace)
         {
-            childNamespace = nFactory->MakeChildNamespaceDecl(curNamespace, name);
+            childNamespace = rFactory->MakeChildNamespaceDecl(curNamespace, name, rFactory);
             curNamespace->AddNamespace(childNamespace);
         }
 
@@ -369,13 +384,13 @@ void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
 
     for (auto& nsElem : elem->elements)
     {
-        visit(NamespaceElemVisitor{curNamespace, rFactory, nFactory, phaseManager}, nsElem);
+        visit(NamespaceElemVisitor{curNamespace, rFactory, phaseManager}, nsElem);
     }
 }
 
 void ScriptElemVisitor::Visit(SGlobalFuncDecl* elem)
 {
-    VisitGlobalFunc(elem, rootNamespace, rFactory, nFactory, phaseManager);
+    VisitGlobalFunc(elem, rootNamespace, rFactory, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(SClassDecl* elem)
@@ -385,17 +400,22 @@ void ScriptElemVisitor::Visit(SClassDecl* elem)
 
 void ScriptElemVisitor::Visit(SStructDecl* elem)
 {
-    VisitStruct(rootNamespace, elem, AccessorContext::Global, rFactory, nFactory, phaseManager);
+    auto accessor = MakeNamespaceMemberAccessor(elem->accessModifier);
+    RTypeDeclOuter_Namespace outer{rootNamespace, accessor};
+    VisitStruct(outer, elem, rFactory, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(SEnumDecl* elem)
 {
-    VisitEnum(rootNamespace, elem, AccessorContext::Global, rFactory, nFactory, phaseManager);
+    auto accessor = MakeNamespaceMemberAccessor(elem->accessModifier);
+    RTypeDeclOuter_Namespace outer{rootNamespace, accessor};
+    VisitEnum(outer, elem, rFactory, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(STraitDecl* decl)
 {
-    VisitTrait();
+    // TODO: [66] 2026-07-09, Trait 구현
+    // VisitTrait();
 }
 
 void ScriptElemVisitor::Visit(SExtendDecl* decl)
@@ -406,31 +426,30 @@ void ScriptElemVisitor::Visit(SExtendDecl* decl)
 
 } // unnamed namespace 
 
-expected<NModuleMData, DiagPtr> TranslateSyntaxToNModuleMData(
+expected<SmTranslationResult, DiagPtr> TranslateSyntax(
     string moduleName,
     const vector<SScript*>& scripts, // translation units
     const vector<EModule*>& referenceModules,
-    const LoggerPtr& logger,
-    const RFactoryPtr& rFactory,
-    const NFactoryPtr& nFactory,
-    const MFactoryPtr& mFactory)
+    TakeRef<LoggerPtr> logger,
+    TakeRef<RFactoryPtr> rFactory,
+    TakeRef<MFactoryPtr> mFactory)
 {
     // TODO: NewRootNamespaceDecl이 아니라 RootNamespaceGroupDecl이어야 할것 같고, 모듈은 rootNamespaceDeclGroup을 가져야 할 것 같다
 
-    // NNamespaceDecl은 각 TranslationUnit별로 별개로 가지는데,
-    auto* nModule = nFactory->MakeNModule(move(moduleName));
+    // RNamespaceDecl은 각 TranslationUnit별로 별개로 가지는데,
+    auto* nModule = (*rFactory)->MakeModule(RName::Normal(moduleName));
 
     auto srtFactory = MakePtr<SRTFactory>();
-    auto binOpQueryService = MakePtr<BinOpQueryService>(*rFactory);
+    auto binOpQueryService = MakePtr<BinOpQueryService>(**rFactory);
     
-    PhaseManager phaseManager{logger, rFactory, nFactory, mFactory, srtFactory, binOpQueryService};
+    PhaseManager phaseManager{*logger, *rFactory, *mFactory, srtFactory, binOpQueryService};
     for (auto* script : scripts) // translation units
     {
-        auto* rootNamespace = nFactory->MakeRootNamespaceDecl();
+        auto* rootNamespace = (*rFactory)->MakeRootNamespaceDecl(*rFactory);
 
         for (auto& elem : script->elements)
         {
-            ScriptElemVisitor visitor{rootNamespace, rFactory, nFactory, phaseManager};
+            ScriptElemVisitor visitor{rootNamespace, *rFactory, phaseManager};
             visit(visitor, elem);
         }
     }
@@ -438,8 +457,8 @@ expected<NModuleMData, DiagPtr> TranslateSyntaxToNModuleMData(
     auto e_funcBodies = phaseManager.Run();
     RETURN_ON_ERROR(e_funcBodies);
 
-    auto* mData = mFactory->MakeMData(move(*e_funcBodies));
-    return NModuleMData{nModule, mData};
+    auto* mData = (*mFactory)->MakeMData(move(*e_funcBodies));
+    return SmTranslationResult{nModule, mData};
 
     // return {nModule, };
 

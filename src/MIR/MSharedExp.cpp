@@ -22,13 +22,13 @@ RType* GetType(MSharedExp* sharedExp, RFactory* rFactory)
 
         ResultType Visit(MSharedExp_ClassVar* sharedExp) 
         { 
-            auto* declType = sharedExp->decl->GetDeclType(sharedExp->typeArgs);
+            auto* declType = sharedExp->decl->GetUnboundDeclType()->Apply(sharedExp->typeArgs);
             return rFactory->MakeSharedType(declType);
         }
 
         ResultType Visit(MSharedExp_SharedStructVar* sharedExp) 
         { 
-            auto* declType = sharedExp->decl->GetDeclType(sharedExp->typeArgs);
+            auto* declType = sharedExp->decl->GetUnboundDeclType()->Apply(sharedExp->typeArgs);
             return rFactory->MakeSharedType(declType);
         }
     };

@@ -1,13 +1,13 @@
 #pragma once
-#include "NSymbol/NFuncDecl.h"
 
 namespace Citron {
 
 struct MStmt_Scope;
+class RFuncDecl;
 
 struct MFuncBody
 {
-    NFuncDecl nFuncDecl;
+    RFuncDecl* nFuncDecl;
     MStmt_Scope* body;
 };
 

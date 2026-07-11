@@ -2,8 +2,9 @@
 
 #include "Infra/Expected.h"
 #include "Syntax/Syntax.h"
-#include "NSymbol/NGlobalFuncDecl.h"
-#include "NSymbol/NNamespaceDecl.h"
+#include "RSymbol/RGlobalFuncDecl.h"
+#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RFactory.h"
 
 #include "MIR/MFuncBody.h"
 
@@ -16,38 +17,38 @@ using namespace std;
 
 namespace Citron {
 
-void GlobalFuncTask::Register(NNamespaceDecl* outer, SGlobalFuncDecl* syntax, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void GlobalFuncTask::Register(RNamespaceDecl* outer, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<GlobalFuncTask> task{new GlobalFuncTask(outer, syntax, rFactory, nFactory)};
+    shared_ptr<GlobalFuncTask> task{new GlobalFuncTask(outer, syntax, move(rFactory))};
     phaseManager.AddBuildTypeDependentSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
 
 expected<void, DiagPtr> GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
-    auto accessor = MakeAccessor(syntax->accessModifier, AccessorContext::Global);    
+    auto accessor = MakeNamespaceMemberAccessor(syntax->accessModifier);
     bool bSeqFunc = false; // TODO:
-    nGFuncDecl = nFactory->MakeNDecl<NGlobalFuncDecl>(
-        nOuter, accessor, bSeqFunc, RName_Normal(syntax->name));
+    rFuncDecl = rFactory->MakeDecl<RGlobalFuncDecl>(
+        rOuter, accessor, RName::Normal(syntax->name), bSeqFunc);
 
-    auto typeParams = MakeTypeParams(nGFuncDecl, syntax->typeParams, rFactory, *nFactory);
-    nGFuncDecl->InitTypeParams(move(typeParams));
+    auto typeParams = MakeTypeParams(rFuncDecl, syntax->typeParams, rFactory);
+    rFuncDecl->InitTypeParams(move(typeParams));
 
-    auto e_funcRet = context.MakeFuncReturn(syntax->funcRet, nGFuncDecl);
+    auto e_funcRet = context.MakeFuncReturn(syntax->funcRet, rFuncDecl);
     RETURN_ON_ERROR(e_funcRet);
     
-    auto e_parametersInfo = context.MakeParameters(nGFuncDecl, syntax->parameters);
+    auto e_parametersInfo = context.MakeParameters(rFuncDecl, syntax->parameters);
     RETURN_ON_ERROR_REFDECL(e_parametersInfo, [rParameters, bLastParamVariadic]);
 
-    nGFuncDecl->InitFuncReturnAndParams(move(*e_funcRet), move(rParameters), bLastParamVariadic);
-    nOuter->AddGlobalFuncDecl(nGFuncDecl);
+    rFuncDecl->InitFuncReturnAndParams(move(*e_funcRet), move(rParameters), bLastParamVariadic);
+    rOuter->AddGlobalFuncDecl(rFuncDecl);
 
     return {};
 }
 
 expected<MFuncBody, DiagPtr> GlobalFuncTask::TranslateBody(TranslateBodyContext& context)
 {
-    return context.Translate(nGFuncDecl, syntax->body);
+    return context.Translate(rFuncDecl, syntax->body);
 }
 
 } // namespace Citron

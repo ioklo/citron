@@ -6,21 +6,20 @@
 #include "RSymbol/RAccessor.h"
 #include "RSymbol/RDecl.h"
 
-#include "NSymbol/NFactory.h"
-#include "NSymbol/NDecl.h"
-#include "NSymbol/NTypeParamDecl.h"
+#include "RSymbol/RFactory.h"
+#include "RSymbol/RTypeParamDecl.h"
 
 using namespace std;
 
 namespace Citron {
 
-RAccessor MakeGlobalMemberAccessor(optional<SAccessModifier> modifier)
+RNamespaceMemberAccessor MakeNamespaceMemberAccessor(optional<SAccessModifier> modifier)
 {
-    if (!modifier) return RAccessor::Private;
+    if (!modifier) return RNamespaceMemberAccessor::Private;
 
     switch (*modifier)
     {
-    case SAccessModifier::Public: return RAccessor::Public;
+    case SAccessModifier::Public: return RNamespaceMemberAccessor::Public;
     case SAccessModifier::Private: throw NotImplementedException{};
     case SAccessModifier::Protected: throw NotImplementedException{};
     }
@@ -28,13 +27,13 @@ RAccessor MakeGlobalMemberAccessor(optional<SAccessModifier> modifier)
     unreachable();
 }
 
-RAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessModifier) // throws FatalException
+RStructMemberAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessModifier) // throws FatalException
 {
-    if (!accessModifier) return RAccessor::Public;
+    if (!accessModifier) return RStructMemberAccessor::Public;
 
     switch (*accessModifier)
     {
-    case SAccessModifier::Private: return RAccessor::Private;
+    case SAccessModifier::Private: return RStructMemberAccessor::Private;
     case SAccessModifier::Protected: throw NotImplementedException{};
     case SAccessModifier::Public: throw NotImplementedException{};
     }
@@ -42,31 +41,19 @@ RAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessModifier) // 
     unreachable();
 }
 
-RAccessor MakeAccessor(optional<SAccessModifier> modifier, AccessorContext context)
+vector<RTypeParamDecl*> MakeTypeParams(RDecl* rDecl, const vector<STypeParam>& sTypeParams, InRef<RFactoryPtr> rFactory)
 {
-    switch(context)
-    {
-    case AccessorContext::Global: return MakeGlobalMemberAccessor(modifier);
-    case AccessorContext::InsideClass: throw NotImplementedException{};
-    case AccessorContext::InsideStruct: return MakeStructMemberAccessor(modifier);
-    }
-
-    unreachable();
-}
-
-vector<NTypeParamDecl*> MakeTypeParams(NDecl* nDecl, const vector<STypeParam>& sTypeParams, const RFactoryPtr& rFactory, NFactory& nFactory)
-{
-    assert(nDecl);
-    auto* rOuter = nDecl->GetRDecl()->GetROuter();
+    assert(rDecl);
+    auto* rOuter = rDecl->GetOuter();
     size_t baseIndex = rOuter ? rOuter->GetAllTypeParamCount() : 0;
 
-    vector<NTypeParamDecl*> nTypeParams;
+    vector<RTypeParamDecl*> nTypeParams;
     size_t count = sTypeParams.size();
     nTypeParams.reserve(count);
     for (size_t i = 0; i < count; i++)
     {
         auto& sTypeParam = sTypeParams[i];
-        auto* nTypeParam = nFactory.MakeNDecl<NTypeParamDecl>(nDecl, RName_Normal{sTypeParam.name}, baseIndex + i, rFactory);
+        auto* nTypeParam = (*rFactory)->MakeDecl<RTypeParamDecl>(rDecl, RName_Normal{sTypeParam.name}, baseIndex + i, *rFactory);
         nTypeParams.push_back(nTypeParam);
     }
 

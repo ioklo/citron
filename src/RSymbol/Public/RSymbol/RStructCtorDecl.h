@@ -19,7 +19,7 @@ enum class RStructCtorKind
     Move,
 };
 
-class RStructCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents
+class RStructCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents<RStructCtorDecl>
 {
     RStructDecl* _struct;
     RStructMemberAccessor accessor;
@@ -30,6 +30,7 @@ class RStructCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonCompo
 
 public:
     RSYMBOL_API RStructCtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind);
+    RSYMBOL_API void InitFuncParameters(std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     RStructDecl* GetStructDecl() { return _struct; }
     RStructMemberAccessor GetAccessor() { return accessor; }

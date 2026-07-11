@@ -39,11 +39,13 @@ using namespace std;
 
 namespace Citron {
 
+class RLambdaDecl;
+
 namespace {
 
-struct NLambdaDeclAndArgs
+struct RLambdaDeclAndArgs
 {
-    NLambdaDecl* decl;
+    RLambdaDecl* decl;
     std::vector<MArgument> args;   // ctor args
 };
 
@@ -53,7 +55,7 @@ expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::o
 expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(std::vector<MStmt*>& outStmts, SEmbeddableStmt* embedStmt, TranslationContexts& contexts);
 expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, vector<MStmt*>& outStmts, TranslationContexts& contexts);
 expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContexts& contexts);
-expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmt*>& sBody, TranslationContexts& contexts);
+expected<RLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToRLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmt*>& sBody, TranslationContexts& contexts);
 
 bool IsTopLevelExp(MExp* exp)
 {
@@ -388,7 +390,7 @@ struct SStmtToMStmtsTranslator
         
         auto funcRet = contexts.funcContext->GetUnboundFuncReturn();
 
-        return visit([this, &stmt](auto& funcRet) -> ResultType
+        return funcRet.Visit([this, &stmt](auto& funcRet) -> ResultType
         {
             using T = remove_cvref_t<decltype(funcRet)>;
 
@@ -454,7 +456,7 @@ struct SStmtToMStmtsTranslator
                 }
             }
             else static_assert(false);
-        }, funcRet);
+        });
     }
 
     ResultType Visit(SStmt_Block* stmt) 
@@ -495,7 +497,7 @@ struct SStmtToMStmtsTranslator
     ResultType Visit(SStmt_Task* stmt) 
     {
         vector<SLambdaExpParam> emptyParams;
-        auto e_lambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(contexts.rFactory->MakeVoidType(), emptyParams, stmt->body, contexts);
+        auto e_lambdaAndArgs = TranslateSLambdaBodyToRLambdaAndArgs(contexts.rFactory->MakeVoidType(), emptyParams, stmt->body, contexts);
         RETURN_ON_ERROR(e_lambdaAndArgs);
 
         return Value<MStmt_Task>(e_lambdaAndArgs->decl, move(e_lambdaAndArgs->args));
@@ -512,7 +514,7 @@ struct SStmtToMStmtsTranslator
     ResultType Visit(SStmt_Async* stmt) 
     {
         vector<SLambdaExpParam> emptyParams;
-        auto e_lambdaAndArgs = TranslateSLambdaBodyToNLambdaAndArgs(contexts.rFactory->MakeVoidType(), emptyParams, stmt->body, contexts);
+        auto e_lambdaAndArgs = TranslateSLambdaBodyToRLambdaAndArgs(contexts.rFactory->MakeVoidType(), emptyParams, stmt->body, contexts);
         RETURN_ON_ERROR(e_lambdaAndArgs);
 
         return Value<MStmt_Async>(e_lambdaAndArgs->decl, move(e_lambdaAndArgs->args));
@@ -627,7 +629,7 @@ struct SStmtToMStmtsTranslator
 
         //            // $enumerator.GetNext(&i);
         //            auto* nEnumerator = contexts.mFactory->MakeMLoc<MLoc_LocalVar>(RNames::Enumerator, enumeratorType);
-        //            auto* mLocalVar = contexts.mFactory->MakeMLoc<MLoc_LocalVar>(RName_Normal(sStmt->varName), ptrParamType->innerType);
+        //            auto* mLocalVar = contexts.mFactory->MakeMLoc<MLoc_LocalVar>(RName::Normal(sStmt->varName), ptrParamType->innerType);
         //            auto* mLocalRef = contexts.mFactory->MakeMExp<MExp_PtrRef>(mLocalVar, contexts.rFactory);
         //            auto e_nextExp = TranslateRFuncAndNArgsToMStmt(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, {MArgument_Exp(mLocalRef)}, contexts);
         //            RETURN_ON_ERROR(e_nextExp);
@@ -685,7 +687,7 @@ struct SStmtToMStmtsTranslator
         //            // TODO: [16] TypeResolver적용
         //            if (funcDecl->GetTypeParamCount() != 0) continue;
 
-        //            // var symbol = (IFuncSymbol)contexts.InstantiateSymbol(outer, declSymbol, typeArgs: default);
+        //            // var symbol = (IFuncSymbol)contexts.InstantiateSymbol(rClass, declSymbol, typeArgs: default);
 
         //            // 인자는 out T*꼴이어야 한다
         //            auto param = funcDecl->GetFuncParam(*typeArgs, 0);
@@ -700,7 +702,7 @@ struct SStmtToMStmtsTranslator
         //            {
         //                // $enumerator.GetNext(&i);
         //                auto* nEnumerator = contexts.mFactory->MakeMLoc<MLoc_LocalVar>(RNames::Enumerator, enumeratorType);
-        //                auto* mLocalVar = contexts.mFactory->MakeMLoc<MLoc_LocalVar>(RName_Normal(sStmt->varName), itemTypeFromNextParam);
+        //                auto* mLocalVar = contexts.mFactory->MakeMLoc<MLoc_LocalVar>(RName::Normal(sStmt->varName), itemTypeFromNextParam);
         //                auto* mLocalRef = contexts.mFactory->MakeMExp<MExp_PtrRef>(mLocalVar, contexts.rFactory);
         //                auto nNext = TranslateRFuncAndNArgsToMStmt(funcDeclWithOuter.decl, funcDeclWithOuter.outerTypeArgs, nEnumerator, {MArgument_Exp{mLocalRef}}, contexts);
 
@@ -783,12 +785,12 @@ struct SStmtToMStmtsTranslator
 
         //            if (!oCastInfo)
         //            {
-        //                outStmts.push_back(contexts.mFactory->MakeMStmt<MStmt_Foreach>(*e_enumerator, *e_itemType, RName_Normal(sStmt->varName), nextExp, move(*e_body)));
+        //                outStmts.push_back(contexts.mFactory->MakeMStmt<MStmt_Foreach>(*e_enumerator, *e_itemType, RName::Normal(sStmt->varName), nextExp, move(*e_body)));
         //            }
         //            else
         //            {
         //                auto& [rawItemType, castExp] = *oCastInfo;
-        //                outStmts.push_back(contexts.mFactory->MakeMStmt<MStmt_ForeachCast>(*e_enumerator, *e_itemType, RName_Normal(sStmt->varName), rawItemType, nextExp, castExp, move(*e_body)));
+        //                outStmts.push_back(contexts.mFactory->MakeMStmt<MStmt_ForeachCast>(*e_enumerator, *e_itemType, RName::Normal(sStmt->varName), rawItemType, nextExp, castExp, move(*e_body)));
         //            }
         //        }
         //        else // var 일 경우
@@ -801,7 +803,7 @@ struct SStmtToMStmtsTranslator
         //            auto e_body = MakeBody(itemVarType);
         //            RETURN_ON_ERROR(e_body);
 
-        //            outStmts.push_back(contexts.mFactory->MakeMStmt<MStmt_Foreach>(*e_enumerator, itemVarType, RName_Normal(sStmt->varName), *e_nextExp, move(*e_body)));
+        //            outStmts.push_back(contexts.mFactory->MakeMStmt<MStmt_Foreach>(*e_enumerator, itemVarType, RName::Normal(sStmt->varName), *e_nextExp, move(*e_body)));
         //        }
 
         //        return {};
@@ -822,8 +824,7 @@ struct SStmtToMStmtsTranslator
 
         // yield에서는 retType이 명시되는 경우만 있을 것이다
         auto funcRet = contexts.funcContext->GetUnboundFuncReturn();
-        auto* setFuncRet = get_if<RFuncReturn_Normal>(&funcRet);
-
+        auto* setFuncRet = funcRet.TryGetNormal();
         assert(setFuncRet); // 아닌 경우는 위에서 거른다 (sequence함수는 무조건 ret포함)
 
         // NOTICE: 리턴 타입을 힌트로 넣었다
@@ -1009,7 +1010,7 @@ expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(vector<SLa
         auto e_rParamType = contexts.scopeContext->TranslateSTypeExpToRType(sParam.type);
         RETURN_ON_ERROR(e_rParamType);
 
-        rParams.emplace_back(rParamKind, *e_rParamType, RName_Normal(sParam.name));
+        rParams.emplace_back(rParamKind, *e_rParamType, RName::Normal(sParam.name));
 
         if (rParamKind == RFuncParameterKind::Params)
         {
@@ -1027,12 +1028,12 @@ expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(vector<SLa
     return make_tuple(move(rParams), bLastParamVariadic);
 }
 
-NLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<MStmt*>&& body, TranslationContexts& contexts)
+RLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<MStmt*>&& body, TranslationContexts& contexts)
 {
     throw NotImplementedException{};
 }
 
-expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmt*>& sBody, TranslationContexts& contexts)
+expected<RLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToRLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmt*>& sBody, TranslationContexts& contexts)
 {
     // 람다를 분석합니다
     // [int x = x](int p) => { return 3; }
@@ -1062,7 +1063,7 @@ expected<NLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToNLambdaAndArgs(RType
         auto e_rParamType = contexts.scopeContext->TranslateSTypeExpToRType(sParam.type);
         RETURN_ON_ERROR(e_rParamType);
 
-        newContexts.scopeContext->AddLocalVarInfo(*e_rParamType, RName_Normal{sParam.name});
+        newContexts.scopeContext->AddLocalVarInfo(*e_rParamType, RName::Normal(sParam.name));
     }
 
     vector<MStmt*> rBody;

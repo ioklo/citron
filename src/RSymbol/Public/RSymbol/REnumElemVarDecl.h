@@ -15,7 +15,9 @@ class REnumElemVarDecl final : public RDecl
 public:
     RSYMBOL_API REnumElemVarDecl(REnumElemDecl* outer, TakeRef<RName> name);
     void InitDeclType(RType* declType) { this->declType = declType; }
-
+    
+    REnumElemDecl* GetEnumElem() { return enumElem; }
+    RName& GetName() { return name; }
     RType* GetUnboundDeclType() { return declType; }
 
 public: // from RDecl

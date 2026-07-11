@@ -29,7 +29,6 @@ class REnumDecl;
 class REnumElemDecl;
 class REnumElemVarDecl;
 class RLambdaVarDecl;
-class RFuncDeclBase;
 
 // RDeclSpaceResolvedResult
 struct RDeclRes_Namespace { RNamespaceDecl* decl; };

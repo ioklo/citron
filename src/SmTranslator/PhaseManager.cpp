@@ -28,12 +28,12 @@ using namespace std;
 namespace Citron {
 
 PhaseManager::PhaseManager(
-    const LoggerPtr& logger, 
-    const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, const MFactoryPtr& mFactory,
-    const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService)
-    : logger{logger}
-    , rFactory{rFactory}, nFactory{nFactory}, mFactory{mFactory}, srtFactory{srtFactory}
-    , binOpQueryService{binOpQueryService}
+    TakeRef<LoggerPtr> logger, 
+    TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
+    TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService)
+    : logger{logger.Take()}
+    , rFactory{rFactory.Take()}, mFactory{mFactory.Take()}, srtFactory{srtFactory.Take()}
+    , binOpQueryService{binOpQueryService.Take()}
 {}
 
 PhaseManager::~PhaseManager() = default;
@@ -66,7 +66,7 @@ expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
         task->ResolveTypeHierarchy(rthContext);
 
     // 2. BuildTypeDependentSymbol
-    BuildTypeDependentSymbolContext fvContext{rFactory, nFactory};
+    BuildTypeDependentSymbolContext fvContext{rFactory};
     for (auto& task : buildTypeDependentSymbolTasks)
     {
         auto e_result = task->BuildTypeDependentSymbol(fvContext);
@@ -74,7 +74,7 @@ expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
     }
 
     // 3. SynthesizeImplicitSymbol
-    SynthesizeImplicitSymbolContext sisContext{nFactory};
+    SynthesizeImplicitSymbolContext sisContext{rFactory};
     for (auto& task : synthesizeImplicitSymbolTask)
         task->SynthesizeImplicitSymbol(sisContext);
 

@@ -4,8 +4,8 @@
 #include "Infra/Ptr.h"
 #include "RSymbol/RNamespaceDecl.h"
 #include "RSymbol/RTypes.h"
-#include "NSymbol/NClassVarDecl.h"
-#include "NSymbol/NStructVarDecl.h"
+#include "RSymbol/RClassVarDecl.h"
+#include "RSymbol/RStructVarDecl.h"
 
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"

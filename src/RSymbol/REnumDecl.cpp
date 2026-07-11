@@ -6,6 +6,11 @@ using namespace std;
 
 namespace Citron {
 
+REnumDecl::REnumDecl(RTypeDeclOuter outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory)
+    : outer{outer}, name{name.Take()}, rFactory{rFactory.Take()}
+{
+}
+
 void REnumDecl::AddElem(REnumElemDecl* elem)
 {
     elems.push_back(elem);

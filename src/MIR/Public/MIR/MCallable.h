@@ -11,7 +11,7 @@ struct MLoc;
 
 struct MCallable
 {
-    RFuncDecl decl;
+    RFuncDecl* decl;
     RTypeArguments* typeArgs;
     MLoc* o_instance;
 };

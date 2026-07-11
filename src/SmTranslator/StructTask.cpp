@@ -4,7 +4,9 @@
 
 #include "Syntax/Syntax.h"
 #include "RSymbol/RTypes.h"
-#include "NSymbol/NStructDecl.h"
+#include "RSymbol/RStructDecl.h"
+#include "RSymbol/RStructVarDecl.h"
+#include "RSymbol/RStructCtorDecl.h"
 
 #include "CommonTranslation.h"
 #include "PhaseManager.h"
@@ -16,51 +18,53 @@ using namespace std;
 
 namespace Citron {
 
-StructTask::StructTask(NStructDecl* nStructDecl, SStructDecl* syntax, AccessorContext accessorContext)
-    : nStructDecl{nStructDecl}, syntax{syntax}, accessorContext {accessorContext}
+StructTask::StructTask(RStructDecl* nStructDecl, SStructDecl* syntax)
+    : rStructDecl{nStructDecl}, syntax{syntax}
 {
 }
 
-void StructTask::Register(NStructDecl* nStructDecl, SStructDecl* syntax, AccessorContext accessorContext, PhaseManager& phaseManager)
+void StructTask::Register(RStructDecl* rStructDecl, SStructDecl* syntax, PhaseManager& phaseManager)
 {
-    shared_ptr<StructTask> task{new StructTask(nStructDecl, syntax, accessorContext)};
+    shared_ptr<StructTask> task{new StructTask(rStructDecl, syntax)};
     phaseManager.AddResolveTypeHierarchyTask(task);
     phaseManager.AddSynthesizeImplicitSymbolTask(task);
 }
 
 void StructTask::ResolveTypeHierarchy(ResolveTypeHierarchyContext& context)
 {
-    // 유일한 베이스 타입은 struct인데, 외부에서 선언된 struct일수도 있고, 조합 타입일 수도 있다 (사실 조합타입이 될 가능성은 거의 없어보인다)
-    RType_Struct* rBaseStruct = nullptr; // nullable
+    // TODO: [66] 2026-07-09, Trait, Extend 구현
 
-    // 나머지는 interface들이다
-    vector<RType*> rInterfaces;
+    //// 유일한 베이스 타입은 struct인데, 외부에서 선언된 struct일수도 있고, 조합 타입일 수도 있다 (사실 조합타입이 될 가능성은 거의 없어보인다)
+    //RType_Struct* rBaseStruct = nullptr; // nullable
 
-    for (auto* sType : syntax->baseTypes)
-    {
-        auto* rType = context.MakeType(sType, nStructDecl);
-        auto rTypeKind = rType->GetTypeKind();
+    //// 나머지는 interface들이다
+    //vector<RType*> rInterfaces;
 
-        if (auto* rStructType = dynamic_cast<RType_Struct*>(rType))
-        {
-            // 두개 이상의 struct를 상속받으려고 했다면, 에러 처리
-            if (rBaseStruct != nullptr)
-                throw NotImplementedException{};
+    //for (auto* sType : syntax->baseTypes)
+    //{
+    //    auto* rType = context.MakeType(sType, rStructDecl);
+    //    auto rTypeKind = rType->GetTypeKind();
 
-            rBaseStruct = rStructType;
-        }
-        else if (rTypeKind == RTypeKind::Interface)
-        {   
-            rInterfaces.push_back(rType);
-        }
-        else
-        {
-            // 다른 타입은 struct의 basetype자리에 올 수 없습니다 에러 출력
-            throw NotImplementedException{};
-        }
-    }
+    //    if (auto* rStructType = dynamic_cast<RType_Struct*>(rType))
+    //    {
+    //        // 두개 이상의 struct를 상속받으려고 했다면, 에러 처리
+    //        if (rBaseStruct != nullptr)
+    //            throw NotImplementedException{};
 
-    nStructDecl->InitBaseTypes(rBaseStruct, move(rInterfaces));
+    //        rBaseStruct = rStructType;
+    //    }
+    //    else if (rTypeKind == RTypeKind::Interface)
+    //    {   
+    //        rInterfaces.push_back(rType);
+    //    }
+    //    else
+    //    {
+    //        // 다른 타입은 struct의 basetype자리에 올 수 없습니다 에러 출력
+    //        throw NotImplementedException{};
+    //    }
+    //}
+
+    //rStructDecl->InitBaseTypes(rBaseStruct, move(rInterfaces));
 }
 
 void StructTask::SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& context)
@@ -73,15 +77,12 @@ void StructTask::SynthesizeMemberwiseCtor(SynthesizeImplicitSymbolContext& conte
     // memberwise constructor, 시그니처만 만든다 (resolve identifier용)
     vector<RFuncParameter> rParameters;
     
-    for (auto* nVarDecl : nStructDecl->GetVars())
-        rParameters.emplace_back(RFuncParameterKind::Init, nVarDecl->GetUnboundDeclType(), RName_Normal{nVarDecl->name});
+    for (auto* rVarDecl : rStructDecl->GetUnboundVars())
+        rParameters.emplace_back(RFuncParameterKind::Init, rVarDecl->GetUnboundDeclType(), rVarDecl->GetName());
 
-    
-
-    auto* nCtor = context.MakeRDecl<RStructCtorDecl>(nStructDecl, RAccessor::Public, RStructCtorKind::Memberwise);
-    nCtor->InitFuncParameters(move(rParameters), /*bLastParameterVariadic*/false);
-    nStructDecl->AddCtor(nCtor);
+    auto* rCtor = context.MakeRDecl<RStructCtorDecl>(rStructDecl, RStructMemberAccessor::Public, RStructCtorKind::Memberwise);
+    rCtor->InitFuncParameters(move(rParameters), /*bLastParameterVariadic*/false);
+    rStructDecl->AddCtor(rCtor);
 }
-
 
 } // namespace Citron

@@ -21,7 +21,7 @@ class FuncContext_Lambda : public FuncContext
     MFactoryPtr mFactory;
 
 public:
-    FuncContext_Lambda(const FuncContextPtr& outerFunc, const ScopeContextPtr& outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
+    FuncContext_Lambda(TakeRef<FuncContextPtr> outerFunc, TakeRef<ScopeContextPtr> outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
 public: // from FuncContext
     void BeginTransaction_FuncContext() override {}
@@ -29,8 +29,8 @@ public: // from FuncContext
     void RollbackTransaction_FuncContext() override {}
 
     bool CanAccess(RDecl* target) override;
-    RTypeDecl* ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    RTypeDecl* ResolveTypeDecl(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
+    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RType* retType) override;

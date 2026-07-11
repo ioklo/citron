@@ -20,11 +20,11 @@ class RFactory;
 class RStructCtorDecl;
 class REnumElemDecl;
 class RTypeArguments;
+class RLambdaDecl;
 
 struct MLoc;
 struct MStmt;
 struct MStmt_Scope;
-class NLambdaDecl;
 
 struct MExpVisitor;
 
@@ -222,7 +222,7 @@ struct MExp_Cast : MExp
 // Lambda(lambda_type_0, x); // with captured variable
 struct MExp_Lambda : MExp
 {
-    NLambdaDecl* lambdaDecl;
+    RLambdaDecl* lambdaDecl;
     RTypeArguments* typeArgs;
     std::vector<MArgument> args;
     MIR_API void Accept(MExpVisitor& visitor) override;

@@ -193,7 +193,7 @@ expected<ImExp*, DiagPtr> TranslateSExp_IdentifierToImExp(SExp_Identifier* sExp,
     auto e_rMemberTypeArgs = MakeRTypeArgs(sExp->typeArgs, contexts);
     RETURN_ON_ERROR(e_rMemberTypeArgs);
 
-    auto e_bodyRes = ResolveIdentifier(RName_Normal(sExp->value), (*e_rMemberTypeArgs)->GetCount(), contexts);
+    auto e_bodyRes = ResolveIdentifier(RName::Normal(sExp->value), (*e_rMemberTypeArgs)->GetCount(), contexts);
     RETURN_ON_ERROR(e_bodyRes);
 
     return e_bodyRes->Visit(BodyResTranslator{*e_rMemberTypeArgs, contexts});

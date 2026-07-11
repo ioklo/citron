@@ -11,7 +11,7 @@
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncParameter.h"
 #include "RSymbol/RFactory.h"
-#include "NSymbol/NLambdaDecl.h"
+#include "RSymbol/RLambdaDecl.h"
 
 #include "FuncContext.h"
 
@@ -86,47 +86,47 @@ void ScopeContext::SetFlowEndsCompletely()
     throw NotImplementedException{};
 }
 
-void ScopeContext::AddLocalVarInfo(RType* type, const RName& name)
+void ScopeContext::AddLocalVarInfo(RType* type, InRef<RName> name)
 {
     if (transactionInfos.empty())
     {
-        auto [i, b] = localInfos.try_emplace(name, LocalInfo{LocalInfoKind::Var, type});
+        auto [i, b] = localInfos.try_emplace(*name, LocalInfo{LocalInfoKind::Var, type});
         assert(b);
     }
     else
     {
         assert(!DoesLocalNameExistInScope(name));
-        transactionInfos.back().deltaLocalInfos.emplace(name, LocalInfo{LocalInfoKind::Var, type});
+        transactionInfos.back().deltaLocalInfos.emplace(*name, LocalInfo{LocalInfoKind::Var, type});
     }
 }
 
-void ScopeContext::AddLocalRefInfo(RType* type, const RName& name)
+void ScopeContext::AddLocalRefInfo(RType* type, InRef<RName> name)
 {
     if (transactionInfos.empty())
     {
-        auto [i, b] = localInfos.try_emplace(name, LocalInfo{LocalInfoKind::Ref, type});
+        auto [i, b] = localInfos.try_emplace(*name, LocalInfo{LocalInfoKind::Ref, type});
         assert(b);
     }
     else
     {
         assert(!DoesLocalNameExistInScope(name));
-        transactionInfos.back().deltaLocalInfos.emplace(name, LocalInfo{LocalInfoKind::Ref, type});
+        transactionInfos.back().deltaLocalInfos.emplace(*name, LocalInfo{LocalInfoKind::Ref, type});
     }
 }
 
-bool ScopeContext::DoesLocalNameExistInScope(const RName& name)
+bool ScopeContext::DoesLocalNameExistInScope(InRef<RName> name)
 {
     if (!transactionInfos.empty())
     {
         for (auto& transactionInfo : transactionInfos | views::reverse)
         {
-            auto i = transactionInfo.deltaLocalInfos.find(name);
+            auto i = transactionInfo.deltaLocalInfos.find(*name);
             if (i != transactionInfo.deltaLocalInfos.end())
                 return true;
         }
     }
 
-    auto i = localInfos.find(name);
+    auto i = localInfos.find(*name);
     return i != localInfos.end();
 }
 
@@ -183,7 +183,7 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
             else if (idExp->name == "string" && idExp->typeArgs.empty())
                 return rFactory->MakeStringType();
 
-            auto* rTypeDecl = scopeContext.funcContext->ResolveTypeDecl(RName_Normal{idExp->name}, idExp->typeArgs.size());
+            auto* rTypeDecl = scopeContext.funcContext->ResolveTypeDecl(RName::Normal(idExp->name), idExp->typeArgs.size());
             if (!rTypeDecl) return nullptr;
 
             vector<RType*> rTypeArgVector;
@@ -207,32 +207,32 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
     return Accept(visitor, sTypeExp);
 }
 
-expected<optional<BodyRes>, DiagPtr> ScopeContext::ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount)
+expected<optional<BodyRes>, DiagPtr> ScopeContext::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 로컬을 검색한다
     if (!transactionInfos.empty())
     {
         for (auto& transactionInfo : transactionInfos | views::reverse)
         {
-            auto i = transactionInfo.deltaLocalInfos.find(name);
+            auto i = transactionInfo.deltaLocalInfos.find(*name);
             if (i != transactionInfo.deltaLocalInfos.end())
             {
                 if (i->second.kind == LocalInfoKind::Var)
-                    return BodyRes_LocalVar{i->second.type, name};
+                    return BodyRes_LocalVar{i->second.type, *name};
                 else if (i->second.kind == LocalInfoKind::Ref)
-                    return BodyRes_LocalRef(i->second.type, name);
+                    return BodyRes_LocalRef(i->second.type, *name);
                 else assert(false);
             }
         }
     }
     
-    auto i = localInfos.find(name);
+    auto i = localInfos.find(*name);
     if (i != localInfos.end())
     {
         if (i->second.kind == LocalInfoKind::Var)
-            return BodyRes_LocalVar{i->second.type, name};
+            return BodyRes_LocalVar{i->second.type, *name};
         else if (i->second.kind == LocalInfoKind::Ref)
-            return BodyRes_LocalRef{i->second.type, name};
+            return BodyRes_LocalRef{i->second.type, *name};
         else assert(false);
     }
 

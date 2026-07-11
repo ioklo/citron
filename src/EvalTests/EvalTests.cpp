@@ -97,7 +97,7 @@ void DoTest(const string& code, const string& expected)
         if (auto** globalFuncDecl = body.nFuncDecl.GetIf<NGlobalFuncDecl*>())
         {   
             auto id = body.nFuncDecl.GetNDecl()->GetRDecl()->GetIdentifier();
-            if (id == RIdentifier{RName_Normal("Main"), 0, {}})
+            if (id == RIdentifier{RName::Normal("Main"), 0, {}})
                 nEntry = *globalFuncDecl;
         }
     }

@@ -57,9 +57,9 @@ struct CallableTranslator
         return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{initExp});
     }
 
-    ResultType Call(RFuncDecl rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance, vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
+    ResultType Call(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance, vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
     {
-        auto* retType = rFuncDecl.GetReturnType(typeArgs);
+        auto* retType = rFuncDecl->GetReturnType(typeArgs);
         auto copyStrategy = retType->GetCopyStrategy();
 
         switch (copyStrategy)
@@ -157,7 +157,7 @@ struct CallableTranslator
             if constexpr (same_as<T, ImExpInstanceKind_ExplicitStatic>)
             {
                 // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
-                if (!holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind()))
+                if (!match.funcDecl->IsStatic())
                     return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
 
                 // TODO: [41] try catch 구현
@@ -166,14 +166,14 @@ struct CallableTranslator
             else if constexpr (same_as<T, ImExpInstanceKind_ExplicitInstance>)
             {
                 // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
-                if (holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind()))
+                if (match.funcDecl->IsStatic())
                     return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
 
                 return Call(match.funcDecl, match.typeArgs, /*instance*/instanceKind.mInstLoc, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_Implicit>) // F 로 인스턴스를 명시적으로 정하지 않았다면 
             {
-                if (holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind())) // 정적함수이면 인스턴스에 null
+                if (match.funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
                 {
                     // TODO: [41] try catch 구현
                     return Call(match.funcDecl, match.typeArgs, /*instance*/nullptr, move(match.args), /*o_catch*/nullopt);
@@ -267,7 +267,7 @@ struct CallableTranslator
             if constexpr (same_as<T, ImExpInstanceKind_ExplicitStatic>)
             {
                 // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
-                if (!holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind()))
+                if (!match.funcDecl->IsStatic())
                     return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
 
                 // TODO: [41] try catch 구현
@@ -276,14 +276,14 @@ struct CallableTranslator
             else if constexpr (same_as<T, ImExpInstanceKind_ExplicitInstance>)
             {
                 // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
-                if (holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind()))
+                if (match.funcDecl->IsStatic())
                     return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
                 
                 return Call(match.funcDecl, match.typeArgs, /*o_instance*/instanceKind.mInstLoc, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_Implicit>) // F 로 인스턴스를 명시적으로 정하지 않았다면 
             {
-                if (holds_alternative<RThisKind_Static>(match.funcDecl->GetThisKind())) // 정적함수이면 인스턴스에 null
+                if (match.funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
                 {   
                     // TODO: [41] try catch 구현
                     return Call(match.funcDecl, match.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);
@@ -317,8 +317,8 @@ struct CallableTranslator
         size_t GetFuncParamCount() override { return enumElemDecl->GetVarCount(); }
         RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) override
         {
-            auto* varDecl = enumElemDecl->GetVarDecl(index);
-            auto* declType = varDecl->GetDeclType(typeArgs);
+            auto* varDecl = enumElemDecl->GetUnboundVar(index);
+            auto* declType = varDecl->GetUnboundDeclType()->Apply(typeArgs);
 
             return RFuncParameter{.kind = RFuncParameterKind::Init, .type = declType, .name = varDecl->GetIdentifier().name};
         }

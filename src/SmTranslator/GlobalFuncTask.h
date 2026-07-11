@@ -2,15 +2,15 @@
 #include <memory>
 #include <expected>
 
+#include "Infra/Ref.h"
 #include "TranslationTasks.h"
 
 namespace Citron {
 
-class NNamespaceDecl;
+class RNamespaceDecl;
 class SGlobalFuncDecl;
-class NGlobalFuncDecl;
+class RGlobalFuncDecl;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
-using NFactoryPtr = std::shared_ptr<class NFactory>;
 
 class PhaseManager;
 
@@ -18,22 +18,19 @@ class GlobalFuncTask
     : public IBuildTypeDependentSymbolTask
     , public ITranslateBodyTask
 {
-    NNamespaceDecl* nOuter;    
+    RNamespaceDecl* rOuter;    
     SGlobalFuncDecl* syntax;
     RFactoryPtr rFactory;
-    NFactoryPtr nFactory;
 
-    NGlobalFuncDecl* nGFuncDecl;
+    RGlobalFuncDecl* rFuncDecl;
 
-    GlobalFuncTask(NNamespaceDecl* nOuter, SGlobalFuncDecl* syntax, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory)
-        : nOuter{nOuter}, syntax{syntax}, rFactory{rFactory}, nFactory {
-        nFactory
-    }, nGFuncDecl{nullptr}
+    GlobalFuncTask(RNamespaceDecl* rOuter, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory)
+        : rOuter{rOuter}, syntax{syntax}, rFactory{rFactory.Take()}, rFuncDecl{nullptr}
     {
     }
 
 public:
-    static void Register(NNamespaceDecl* nOuter, SGlobalFuncDecl* syntax, const RFactoryPtr& rFactory, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
+    static void Register(RNamespaceDecl* rOuter, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
 
     std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;

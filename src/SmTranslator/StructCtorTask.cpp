@@ -1,8 +1,8 @@
 #include "StructCtorTask.h"
 
 #include "Infra/Expected.h"
-#include "NSymbol/NStructDecl.h"
-#include "NSymbol/NStructCtorDecl.h"
+#include "RSymbol/RStructDecl.h"
+#include "RSymbol/RStructCtorDecl.h"
 #include "MIR/MFuncBody.h"
 
 #include "CommonTranslation.h"
@@ -15,9 +15,9 @@ using namespace std;
 namespace Citron
 {
 
-void StructCtorTask::Register(NStructDecl* nStruct, SStructCtorDecl* sStructCtor, const NFactoryPtr& nFactory, PhaseManager& phaseManager)
+void StructCtorTask::Register(RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<StructCtorTask> task{new StructCtorTask{nStruct, sStructCtor, nFactory}};
+    shared_ptr<StructCtorTask> task{new StructCtorTask{rStruct, sStructCtor, std::move(rFactory)}};
 
     phaseManager.AddBuildTypeDependentSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
@@ -25,21 +25,21 @@ void StructCtorTask::Register(NStructDecl* nStruct, SStructCtorDecl* sStructCtor
 
 expected<void, DiagPtr> StructCtorTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
 {
-    auto accessor = MakeAccessor(sStructCtor->accessModifier, AccessorContext::InsideStruct);
-    nStructCtor = nFactory->MakeNDecl<NStructCtorDecl>(nStruct, accessor, RStructCtorKind::Normal);
-    nStruct->AddCtor(nStructCtor);
+    auto accessor = MakeStructMemberAccessor(sStructCtor->accessModifier);
+    rStructCtor = rFactory->MakeDecl<RStructCtorDecl>(rStruct, accessor, RStructCtorKind::Normal);
+    rStruct->AddCtor(rStructCtor);
 
-    // symbol tree에 매달린 nStructCtor가 필요
-    auto e_parameters = context.MakeParameters(nStructCtor, sStructCtor->parameters);
+    // symbol tree에 매달린 rStructCtor가 필요
+    auto e_parameters = context.MakeParameters(rStructCtor, sStructCtor->parameters);
     RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
 
-    nStructCtor->InitFuncParameters(move(parameters), bLastParamVariadic);
+    rStructCtor->InitFuncParameters(move(parameters), bLastParamVariadic);
     return {};
 }
 
 expected<MFuncBody, DiagPtr> StructCtorTask::TranslateBody(TranslateBodyContext& context)
 {
-    return context.Translate(nStructCtor, sStructCtor->body);
+    return context.Translate(rStructCtor, sStructCtor->body);
 }
 
 

@@ -53,6 +53,7 @@ public:
 
     std::span<RStructCtorDecl*> GetUnboundCtors() { return ctors; }
     std::span<RStructVarDecl*> GetUnboundVars() { return vars; }
+    size_t GetVarCount() { return vars.size(); }
     RSYMBOL_API RStructVarDecl* GetUnboundVar(InRef<RName> name);
     RStructCtorDecl* GetUnboundTrivialCtor() { return trivialCtorIndex == -1 ? nullptr : ctors[trivialCtorIndex]; }
     RSYMBOL_API RStructCtorDecl* GetUnboundCopyCtor();

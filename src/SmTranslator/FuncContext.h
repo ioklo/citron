@@ -20,16 +20,16 @@ class RDecl;
 class RTypeDecl;
 class RTypeArguments;
 
-class NLambdaDecl;
-class NLambdaVarDecl;
+class RLambdaDecl;
+class RLambdaVarDecl;
 
-using NFactoryPtr = std::shared_ptr<class NFactory>;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 struct MLoc_This;
 
-struct NLambdaVarAndArg
+struct RLambdaVarAndArg
 {
-    NLambdaVarDecl* var;
+    RLambdaVarDecl* var;
     MArgument arg;
 };
 
@@ -48,11 +48,11 @@ class FuncContext
 {
     // 람다 관련, funcDecl을 clone시키지 않으려고 funcDecl에 넣을 lambdaDecls들을 따로 보관하다가 마지막에 집어넣는다 (검색도 여기를 통해서 하기로 한다)
     // 이 함수가 람다일때 캡쳐할 멤버 변수에 대한 것
-    std::vector<NLambdaVarAndArg> lambdaVarAndInitArgs;
+    std::vector<RLambdaVarAndArg> lambdaVarAndInitArgs;
 
     // 이 함수가 갖고 있는 자식 lambda에 대한 것. lambda syntax를 처리한 후에 lambda에 해당하는 FuncContext를 통해 만들어 진다
-    std::vector<NLambdaDecl*> lambdaDecls;
-    NFactoryPtr nFactory;
+    std::vector<RLambdaDecl*> lambdaDecls;
+    RFactoryPtr rFactory;
 
 private: // transaction
     struct TransactionInfo
@@ -66,7 +66,7 @@ private: // transaction
 
 public:
     FuncContext();
-    NLambdaVarDecl* StageLambdaVar(RType* type, const RName& name, MArgument&& arg);
+    RLambdaVarDecl* StageLambdaVar(RType* type, TakeRef<RName> name, MArgument&& arg);
 
     void BeginTransaction();
     void CommitTransaction();
@@ -81,8 +81,8 @@ public:
     virtual void RollbackTransaction_FuncContext() = 0;
 
     virtual bool CanAccess(RDecl* target) = 0;
-    virtual RTypeDecl* ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
-    virtual std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) = 0;
+    virtual RTypeDecl* ResolveTypeDecl(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) = 0;
+    virtual std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) = 0;
 
     // decl/body space의 return type을 리턴한다
     virtual RFuncReturn GetUnboundFuncReturn() = 0;

@@ -10,7 +10,7 @@
 #include "Infra/Ptr.h"
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncReturn.h"
-#include "NSymbol/NFuncDecl.h"
+#include "RSymbol/RFuncDecl.h"
 #include "MIR/MRead.h"
 #include "MIR/MScopeKind.h"
 #include "BodyRes.h"
@@ -50,7 +50,7 @@ struct TranslationContexts
     BinOpQueryServicePtr binOpQueryService;
 };
 
-TranslationContexts MakeTranslationContexts(NFuncDecl& nFuncDecl, const LoggerPtr& logger, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory, const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService);
+TranslationContexts MakeTranslationContexts(RFuncDecl* rFuncDecl, TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
 
 TranslationContexts MakeTranslationContexts_DefaultScope(TranslationContexts& contexts);
 TranslationContexts MakeTranslationContexts_LoopScope(size_t o_labelId, TranslationContexts& contexts);
@@ -76,7 +76,7 @@ std::vector<ITransactionable*> BeginTransaction(TranslationContexts& contexts);
 
 std::expected<MInitExp_As*, DiagPtr> MakeMInitExp_As(MRead&& target, RType* testType, TranslationContexts& contexts);
 
-std::expected<BodyRes, DiagPtr> ResolveIdentifier(const RName& name, size_t memberTypeArgs, TranslationContexts& contexts);
+std::expected<BodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t memberTypeArgs, TranslationContexts& contexts);
 
 
 } // namespace Citron

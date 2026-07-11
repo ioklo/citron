@@ -11,7 +11,7 @@ namespace Citron {
 class RClassDecl;
 enum class RClassMemberAccessor;
 
-class RClassCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents
+class RClassCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents<RClassCtorDecl>
 {
     RClassDecl* _class;
     RClassMemberAccessor accessor;

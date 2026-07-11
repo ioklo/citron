@@ -31,13 +31,13 @@ void MqFactory::MakeIntrinsicInfo() noexcept
     RFuncReturn retInt = RFuncReturn_Normal{intType};
     RFuncReturn retStr = RFuncReturn_Normal{stringType};
 
-    auto srp = [stringType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Ref, stringType, RName_Normal{name}}; };
-    auto sip = [stringType](const string& name) -> RFuncParameter { return {RFuncParameterKind::In, stringType, RName_Normal{name}}; };
-    auto smp = [stringType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Move, stringType, RName_Normal{name}}; };
-    auto ip = [intType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Normal, intType, RName_Normal{name}}; };
-    auto irp = [intType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Ref, intType, RName_Normal{name}}; };
-    auto bp = [boolType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Normal, boolType, RName_Normal{name}}; };
-    auto vpp = [voidPtrType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Normal, voidPtrType, RName_Normal{name}}; };
+    auto srp = [stringType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Ref, stringType, RName::Normal(name)}; };
+    auto sip = [stringType](const string& name) -> RFuncParameter { return {RFuncParameterKind::In, stringType, RName::Normal(name)}; };
+    auto smp = [stringType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Move, stringType, RName::Normal(name)}; };
+    auto ip = [intType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Normal, intType, RName::Normal(name)}; };
+    auto irp = [intType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Ref, intType, RName::Normal(name)}; };
+    auto bp = [boolType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Normal, boolType, RName::Normal(name)}; };
+    auto vpp = [voidPtrType](const string& name) -> RFuncParameter { return {RFuncParameterKind::Normal, voidPtrType, RName::Normal(name)}; };
 
     intrinsicInfos[(size_t)Command_Item] = {Command_Item, retVoid, {sip("item")}};
     intrinsicInfos[(size_t)Alloc_Int] = {Alloc_Int, retVoidPtr, {ip("size")}};

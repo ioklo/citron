@@ -31,11 +31,12 @@ class RNamespaceDecl final : public RDecl
     RFactoryPtr rFactory;
     
 public:
-    RNamespaceDecl(RNamespaceDecl* outer, RName&& name, RNamespaceDeclGroup* group, const RFactoryPtr& rFactory)
-        : outer{outer}, name{std::move(name)}, group{group}, rFactory{rFactory} 
+    RNamespaceDecl(RNamespaceDecl* outer, RName&& name, RNamespaceDeclGroup* group, TakeRef<RFactoryPtr> rFactory)
+        : outer{outer}, name{std::move(name)}, group{group}, rFactory{rFactory.Take()} 
     {}
     void InitInfo(NNamespaceDecl* decl) { info = decl; }
 
+    RNamespaceDecl* GetOuterNamespace() { return outer; }
     RName& GetName() { return name; }
     
     void AddNamespace(RNamespaceDecl* _namespace) { namespaceDeclContainerComp.AddNamespace(_namespace); }

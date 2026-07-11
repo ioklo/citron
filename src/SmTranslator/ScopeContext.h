@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <expected>
 
+#include "Infra/Ref.h"
 #include "Logging/Diag.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RNames.h"
@@ -94,11 +95,11 @@ public:
 public:
     void SetFlowEndsCompletely();
 
-    void AddLocalVarInfo(RType* type, const RName& name);
-    void AddLocalRefInfo(RType* type, const RName& name);
-    // std::optional<LocalVarInfo> GetLocalVarInfo(const RName& name);
+    void AddLocalVarInfo(RType* type, InRef<RName> name);
+    void AddLocalRefInfo(RType* type, InRef<RName> name);
+    // std::optional<LocalVarInfo> GetLocalVarInfo(InRef<RName> name);
 
-    bool DoesLocalNameExistInScope(const RName& name);
+    bool DoesLocalNameExistInScope(InRef<RName> name);
 
     bool IsFailed();
     std::optional<size_t> GetCurContinueLabelId() { return curContinueLabelId; }
@@ -107,7 +108,7 @@ public:
     std::optional<MScopeKind> GetReachableScopeKind(size_t labelId);
 
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
-    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount);
+    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
 
     std::shared_ptr<InlineScopeContext> GetInlineScopeContext() { return inlineScopeContext; }
     RType* GetInlineScopeType() { return inlineScopeContext->o_inlineScopeType; }

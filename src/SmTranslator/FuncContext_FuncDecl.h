@@ -1,8 +1,9 @@
 #pragma once
 #include "FuncContext.h"
-#include "NSymbol/NFuncDecl.h"
 
 namespace Citron {
+
+class RFuncDecl;
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
@@ -10,12 +11,12 @@ using MFactoryPtr = std::shared_ptr<class MFactory>;
 // FuncDecl인 경우
 class FuncContext_FuncDecl : public FuncContext
 {
-    NFuncDecl nFuncDecl;
+    RFuncDecl* rFuncDecl;
     RFactoryPtr rFactory;
     MFactoryPtr mFactory;
 
 public:
-    FuncContext_FuncDecl(NFuncDecl funcDecl, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory);
+    FuncContext_FuncDecl(RFuncDecl* rFuncDecl, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory);
 
 public: // from FuncContext
     void BeginTransaction_FuncContext() override { }
@@ -23,8 +24,8 @@ public: // from FuncContext
     void RollbackTransaction_FuncContext() override { }
 
     bool CanAccess(RDecl* target) override;
-    RTypeDecl* ResolveTypeDecl(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
-    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(const RName& name, size_t explicitTypeParamsExceptOuterCount) override;
+    RTypeDecl* ResolveTypeDecl(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
+    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RType* retType) override;

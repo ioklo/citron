@@ -24,6 +24,9 @@ public:
 
     template<typename... TArgs>
     auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
+
+    bool IsNotSet() { return std::holds_alternative<RFuncReturn_NotSet>(v); }
+    RFuncReturn_Normal* TryGetNormal() { return std::get_if<RFuncReturn_Normal>(&v); }
 };
 
 }

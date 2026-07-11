@@ -43,29 +43,40 @@ RTypeArguments* RDecl::MakeOpenTypeArgs(RFactory& factory)
     return factory.MakeTypeArguments(typeArgItems);
 }
 
-//bool RDecl::CanAccess(RDecl* target)
-//{
-//    auto accessModifier = target->GetAccessor();
-//    auto* targetOuter = target->GetROuter();
-//    if (targetOuter == nullptr)
-//        return false;
-//
-//    switch (accessModifier)
-//    {
-//    case RAccessor::Public: return true;
-//    case RAccessor::Protected: throw NotImplementedException();
-//    case RAccessor::Private:
-//    {
-//        // 같은 경우는 허용
-//        if (this == targetOuter)
-//            return true;
-//
-//        // base클래스가 아니라 container에 속하는지를 본다
-//        return IsDescendantOf(targetOuter);
-//    }
-//
-//    default: unreachable();
-//    }
-//}
+size_t RDecl::GetAllTypeParamCount()
+{
+    auto* outer = GetOuter();
+    if (!outer) return GetTypeParamCount();
+
+    return outer->GetAllTypeParamCount() + GetTypeParamCount();
+}
+
+bool RDecl::CanAccess(RDecl* target)
+{
+    // TODO: [67] 2026-07-10, NSymbol, RSymbol 정리하면서 생긴 문제들 해결
+    throw NotImplementedException{};
+
+    //auto accessModifier = target->GetAccessor();
+    //auto* targetOuter = target->GetROuter();
+    //if (targetOuter == nullptr)
+    //    return false;
+
+    //switch (accessModifier)
+    //{
+    //case RAccessor::Public: return true;
+    //case RAccessor::Protected: throw NotImplementedException();
+    //case RAccessor::Private:
+    //{
+    //    // 같은 경우는 허용
+    //    if (this == targetOuter)
+    //        return true;
+
+    //    // base클래스가 아니라 container에 속하는지를 본다
+    //    return IsDescendantOf(targetOuter);
+    //}
+
+    //default: unreachable();
+    //}
+}
 
 }

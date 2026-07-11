@@ -1,33 +1,33 @@
 #pragma once
 #include <memory>
+#include "Infra/Ref.h"
 #include "TranslationTasks.h"
 
 namespace Citron {
 
-class NStructDecl;
-class NStructDtorDecl;
+class RStructDecl;
+class RStructDtorDecl;
 class SStructDtorDecl;
-
-using NFactoryPtr = std::shared_ptr<class NFactory>;
 class PhaseManager;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class StructDtorTask
     : public IBuildTypeDependentSymbolTask
     , public ITranslateBodyTask
 {
-    NStructDecl* nStruct;
+    RStructDecl* rStruct;
     SStructDtorDecl* sStructDtor;
-    NFactoryPtr nFactory;
+    RFactoryPtr rFactory;
 
-    NStructDtorDecl* nStructDtor;
+    RStructDtorDecl* rStructDtor;
 
 public:
-    StructDtorTask(NStructDecl* nStruct, SStructDtorDecl* sStructDtor, const NFactoryPtr& nFactory);
+    StructDtorTask(RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory);
     std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 
 public:
-    static void Register(NStructDecl* nStruct, SStructDtorDecl* sStructDtor, const NFactoryPtr& nFactory, PhaseManager& phaseManager);
+    static void Register(RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
 };
 
 } // namespace Citron

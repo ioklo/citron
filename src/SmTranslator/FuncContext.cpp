@@ -12,19 +12,19 @@
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RTypes.h"
 
-#include "NSymbol/NLambdaDecl.h"
-#include "NSymbol/NFactory.h"
-
-#include "NSymbol/NStructDecl.h"
-#include "NSymbol/NStructCtorDecl.h"
-#include "NSymbol/NStructDtorDecl.h"
-#include "NSymbol/NStructFuncDecl.h"
-#include "NSymbol/NNamespaceDecl.h"
-#include "NSymbol/NGlobalFuncDecl.h"
-#include "NSymbol/NClassDecl.h"
-#include "NSymbol/NClassCtorDecl.h"
-#include "NSymbol/NClassFuncDecl.h"
-#include "NSymbol/NFuncDeclOuter.h"
+#include "RSymbol/RLambdaDecl.h"
+#include "RSymbol/RLambdaVarDecl.h"
+#include "RSymbol/RFactory.h"
+#include "RSymbol/RStructDecl.h"
+#include "RSymbol/RStructCtorDecl.h"
+#include "RSymbol/RStructDtorDecl.h"
+#include "RSymbol/RStructFuncDecl.h"
+#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RGlobalFuncDecl.h"
+#include "RSymbol/RClassDecl.h"
+#include "RSymbol/RClassCtorDecl.h"
+#include "RSymbol/RClassFuncDecl.h"
+#include "RSymbol/RFuncDeclOuter.h"
 
 #include "MIR/MExp.h"
 #include "MIR/MArgument.h"
@@ -43,9 +43,9 @@ FuncContext::FuncContext()
 {
 }
 
-NLambdaVarDecl* FuncContext::StageLambdaVar(RType* type, const RName& name, MArgument&& arg)
+RLambdaVarDecl* FuncContext::StageLambdaVar(RType* type, TakeRef<RName> name, MArgument&& arg)
 {
-    auto* lambdaVar = nFactory->MakeNDecl<NLambdaVarDecl>(type, name);
+    auto* lambdaVar = rFactory->MakeDecl<RLambdaVarDecl>(type, move(name));
     lambdaVarAndInitArgs.emplace_back(lambdaVar, move(arg));
     return lambdaVar;
 }

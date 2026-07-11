@@ -1,6 +1,7 @@
 #include "REnumElemDecl.h"
 #include "Infra/Exceptions.h"
 #include "REnumDecl.h"
+#include "REnumElemVarDecl.h"
 #include "RFactory.h"
 
 using namespace std;
@@ -10,6 +11,12 @@ namespace Citron {
 REnumElemDecl::REnumElemDecl(REnumDecl* _enum, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory)
     : _enum{_enum}, name{name.Take()}, rFactory{rFactory.Take()}
 {
+}
+
+void REnumElemDecl::AddVar(REnumElemVarDecl* var)
+{
+    vars.push_back(var);
+    varsMap.emplace(var->GetName(), var);
 }
 
 optional<RDeclRes_EnumElemVar> REnumElemDecl::ResolveVar(RTypeArguments* typeArgs, InRef<RName> name)

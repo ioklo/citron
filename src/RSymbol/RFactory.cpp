@@ -6,6 +6,9 @@
 #include "Infra/Hash.h"
 #include "Infra/Ptr.h"
 
+#include "RNamespaceDecl.h"
+
+#include "RModule.h"
 #include "RTypes.h"
 #include "RTypeDecl.h"
 #include "RStructDecl.h"
@@ -23,10 +26,16 @@ using namespace std;
 
 namespace Citron {
 
+struct RFactoryPrivateData
+{
+    std::deque<RModule> modules;
+};
+
 RFactory::RFactory()
     : voidType{new RType_Void()}
     , boolType{new RType_Primitive(RType_PrimitiveKind::Bool)}
     , intType{new RType_Primitive(RType_PrimitiveKind::Int32)}
+    , privateData{new RFactoryPrivateData()}
 {
     // TODO: 아직 MakeStructType, MakeClassType과는 연결이 되지 않은 상태
     stringType = MakeStructType(nullptr, MakeEmptyTypeArguments());
@@ -327,16 +336,71 @@ bool RFactory::IsListType(RType* type, RType** outItemType)
     return true;
 }
 
-RNamespaceDeclGroup* RFactory::GetNamespaceDeclGroup(const std::vector<std::string>& name)
+RNamespaceDeclGroup* RFactory::GetNamespaceDeclGroup(InRef<std::vector<RName>> name)
 {
-    auto i = nsGroupsMap.find(name);
+    auto i = nsGroupsMap.find(*name);
     if (i != nsGroupsMap.end())
         return i->second.get();
     
     auto newGroup = make_unique<RNamespaceDeclGroup>();
     auto pNewGroup = newGroup.get();
-    nsGroupsMap.emplace(name, move(newGroup));
+    nsGroupsMap.emplace(*name, move(newGroup));
     return pNewGroup;
 }
+
+RNamespaceDecl* RFactory::MakeRootNamespaceDecl(TakeRef<RFactoryPtr> rFactory)
+{
+    // root namespace면 
+    auto* group = GetNamespaceDeclGroup(std::vector<RName>{});
+    unique_ptr<RNamespaceDecl> newDecl{new RNamespaceDecl{nullptr, RName_None{}, group, rFactory.Take()}};
+    auto pNewDecl = newDecl.get();
+    decls.push_back(move(newDecl));
+
+    group->Add(pNewDecl);
+    return pNewDecl;
+}
+
+RNamespaceDecl* RFactory::MakeChildNamespaceDecl(RNamespaceDecl* outer, InRef<std::string> name, TakeRef<RFactoryPtr> rFactory)
+{
+    assert(outer && !name->empty());
+
+    // root namespace면 
+    vector<RName> ids;
+
+    ids.push_back(RName_Normal{*name});
+    auto curNS = outer;
+
+    while (curNS)
+    {
+        auto curOuter = curNS->GetOuterNamespace();
+
+        if (!curOuter)
+        {
+            // root 라면 그만둔다
+            assert(curNS->GetName() == RName_None{});
+            break;
+        }
+
+        ids.push_back(curNS->GetName());
+        curNS = curOuter;
+    }
+
+    reverse(ids.begin(), ids.end());
+
+    auto group = GetNamespaceDeclGroup(ids);
+    unique_ptr<RNamespaceDecl> newDecl{new RNamespaceDecl{outer, RName_None{}, group, rFactory.Take()}};
+    auto pNewDecl = newDecl.get();
+    decls.push_back(move(newDecl));
+
+    group->Add(pNewDecl);
+    return pNewDecl;
+}
+
+RModule* RFactory::MakeModule(RName&& name)
+{
+    privateData->modules.push_back(RModule{move(name)});
+    return &privateData->modules.back();
+}
+
 
 } // Citron

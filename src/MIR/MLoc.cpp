@@ -6,7 +6,7 @@
 #include "RSymbol/RClassVarDecl.h"
 #include "RSymbol/REnumElemVarDecl.h"
 #include "RSymbol/RTypes.h"
-#include "NSymbol/NLambdaVarDecl.h"
+#include "RSymbol/RLambdaVarDecl.h"
 
 #include "MExp.h"
 
@@ -35,11 +35,11 @@ RType* GetType(MLoc* loc, RFactory* rFactory)
         ResultType Visit(MLoc_Materialize* loc) { return GetType(loc->create, rFactory); }
         ResultType Visit(MLoc_LocalVar* loc) { return loc->declType; }
         ResultType Visit(MLoc_LocalRef* loc) { return loc->declType; }
-        ResultType Visit(MLoc_LambdaVar* loc) { return loc->decl->GetDeclType(loc->typeArgs); }
+        ResultType Visit(MLoc_LambdaVar* loc) { return loc->decl->GetUnboundDeclType()->Apply(loc->typeArgs); }
         ResultType Visit(MLoc_ListIndexer* loc) { return loc->itemType; }
-        ResultType Visit(MLoc_StructVar* loc) { return loc->decl->GetDeclType(loc->typeArgs); }
-        ResultType Visit(MLoc_ClassVar* loc) { return loc->decl->GetDeclType(loc->typeArgs); }
-        ResultType Visit(MLoc_EnumElemVar* loc) { return loc->decl->GetDeclType(loc->typeArgs); }
+        ResultType Visit(MLoc_StructVar* loc) { return loc->decl->GetUnboundDeclType()->Apply(loc->typeArgs); }
+        ResultType Visit(MLoc_ClassVar* loc) { return loc->decl->GetUnboundDeclType()->Apply(loc->typeArgs); }
+        ResultType Visit(MLoc_EnumElemVar* loc) { return loc->decl->GetUnboundDeclType()->Apply(loc->typeArgs); }
         ResultType Visit(MLoc_This* loc) { return loc->type; }
         ResultType Visit(MLoc_PtrDeref* loc) 
         {  
