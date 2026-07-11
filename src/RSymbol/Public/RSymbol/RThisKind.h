@@ -15,7 +15,7 @@ class RThisKind
     Variant v;
 
 public:
-    template<typename T> 
+    template<typename T>
         requires (!std::same_as<std::remove_cvref_t<T>, RThisKind>) && std::constructible_from<Variant, T&&>
     RThisKind(T&& t) : v{std::forward<T>(t)} {}
 
@@ -36,6 +36,19 @@ public:
     {
         return std::holds_alternative<RThisKind_Static>(v);
     }
+
+    RThisKind_Handle* TryGetHandle()
+    {
+        return std::get_if<RThisKind_Handle>(&v);
+    }
+
+    RThisKind_Ref* TryGetRef()
+    {
+        return std::get_if<RThisKind_Ref>(&v);
+    }
+
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
 };
 
 } // namespace Citron

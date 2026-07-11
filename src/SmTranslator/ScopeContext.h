@@ -86,7 +86,7 @@ public:
         std::optional<size_t> curContinueLabelId, 
         std::optional<size_t> curBreakLabelId, 
         std::shared_ptr<InlineScopeContext> inlineScopeContext,
-        const RFactoryPtr& rFactory);
+        TakeRef<RFactoryPtr> rFactory);
 
     void BeginTransaction();
     void CommitTransaction();

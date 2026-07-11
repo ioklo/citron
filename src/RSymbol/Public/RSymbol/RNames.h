@@ -68,6 +68,8 @@ class RName
 public: 
     static RName Normal(std::string text) { return RName{RName_Normal{std::move(text)}}; }
 
+    RName() : v{RName_None{}} {}
+
     template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RName>) && std::constructible_from<Variant, T&&>
     RName(T&& t) : v{std::forward<T>(t)} {}
     
@@ -77,6 +79,7 @@ public:
     }
 
     RSYMBOL_API std::string ToString();
+    RName_Normal* TryGetNormal() { return std::get_if<RName_Normal>(&v); }
 
     void hash_combine(std::size_t& seed) const noexcept
     {

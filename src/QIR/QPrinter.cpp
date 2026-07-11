@@ -10,7 +10,7 @@
 #include "RSymbol/RDecl.h"
 #include "RSymbol/RFuncDecl.h"
 #include "RSymbol/RFactory.h"
-#include "NSymbol/NFuncDecl.h"
+#include "RSymbol/RFuncDecl.h"
 
 #include "QData.h"
 #include "QFuncBody.h"
@@ -169,7 +169,7 @@ class QPrinter
             }
 
             printer.Print("call ");
-            auto rId = inst.rFuncDecl.GetRDecl()->GetIdentifier();
+            auto rId = inst.rFuncDecl->RFuncDecl_GetDecl()->GetIdentifier();
             printer.PrintRName(rId.name);
             for (size_t i = 0; i < inst.args.size(); i++)
             {   
@@ -295,7 +295,7 @@ public:
 
     void PrintRName(RName& name)
     {
-        if (auto* normalName = get_if<RName_Normal>(&name))
+        if (auto* normalName = name.TryGetNormal())
         {
             writer.Write(normalName->text);
         }

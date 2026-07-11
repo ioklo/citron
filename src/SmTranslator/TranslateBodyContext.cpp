@@ -21,10 +21,10 @@ using namespace std;
 namespace Citron {
 
 TranslateBodyContext::TranslateBodyContext(
-    const LoggerPtr& logger, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory,
-    const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService)
-    : logger{logger}, rFactory{rFactory}, mFactory{mFactory}
-    , srtFactory{srtFactory}, binOpQueryService{binOpQueryService}
+    TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
+    TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService)
+    : logger{logger.Take()}, rFactory{rFactory.Take()}, mFactory{mFactory.Take()}
+    , srtFactory{srtFactory.Take()}, binOpQueryService{binOpQueryService.Take()}
 {
 }
 

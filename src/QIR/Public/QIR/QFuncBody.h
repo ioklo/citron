@@ -4,7 +4,7 @@
 #include <variant>
 #include <optional>
 #include "RSymbol/RNames.h"
-#include "NSymbol/NFuncDecl.h"
+#include "RSymbol/RFuncDecl.h"
 
 namespace Citron {
 
@@ -29,10 +29,9 @@ struct QSlotInfo
 
 struct QFuncBody
 {   
-    NFuncDecl nFuncDecl;
+    RFuncDecl* rFuncDecl;
     std::vector<QSlotInfo> slotInfos;
     std::vector<QBlock*> blocks;
 };
-
 
 } // namespace Citron

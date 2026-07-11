@@ -44,7 +44,7 @@ public:
     void PrintFuncBody(InRef<MFuncBody> funcBody)
     {
         writer.Write("Func ");
-        PrintRName(funcBody->nFuncDecl->RFuncDecl_GetDecl()->GetIdentifier().name);
+        PrintRName(funcBody->rFuncDecl->RFuncDecl_GetDecl()->GetIdentifier().name);
         writer.WriteLine();
         writer.AddIndent();
         PrintStmt(funcBody->body);

@@ -62,8 +62,8 @@ private:
     llvm::Type* stringType;
 
 public:
-    LContextImpl(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
-        : rFactory{rFactory}, qFactory{qFactory}
+    LContextImpl(TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory)
+        : rFactory{rFactory.Take()}, qFactory{qFactory.Take()}
     {
     }
     
@@ -119,7 +119,7 @@ public:
 
 LData::~LData() = default;
 
-LContext::LContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
+LContext::LContext(TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory)
 {
     impl = make_unique<LContextImpl>(rFactory, qFactory);
 }

@@ -7,7 +7,7 @@ class RFuncDecl;
 
 struct MFuncBody
 {
-    RFuncDecl* nFuncDecl;
+    RFuncDecl* rFuncDecl;
     MStmt_Scope* body;
 };
 

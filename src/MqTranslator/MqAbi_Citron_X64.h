@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include "Infra/Ref.h"
 #include "RSymbol/RFuncReturn.h"
 #include "MqAbi.h"
 #include "MqFuncInfo.h"
@@ -13,10 +14,10 @@ class MqAbi_Citron_X64 : public MqAbi
     RFactoryPtr rFactory;
 
 public:
-    MqAbi_Citron_X64(const RFactoryPtr& rFactory);
+    MqAbi_Citron_X64(TakeRef<RFactoryPtr> rFactory);
 
     size_t GetTypeSize(RType* type) override;    
-    MqFuncInfo GetFuncInfo(RFuncDecl& rFuncDecl, RTypeArguments* typeArgs) override;
+    MqFuncInfo GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs) override;
     MqFuncInfo GetFuncInfo(MqIntrinsicInfo& intrinsicInfo, RTypeArguments* typeArgs) override;
 
 private:

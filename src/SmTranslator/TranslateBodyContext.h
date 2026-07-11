@@ -27,8 +27,8 @@ class TranslateBodyContext
 
 public:
     TranslateBodyContext(
-        const LoggerPtr& logger, const RFactoryPtr& rFactory, const MFactoryPtr& mFactory,
-        const SRTFactoryPtr& srtFactory, const BinOpQueryServicePtr& binOpQueryService);
+        TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
+        TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
     ~TranslateBodyContext();
 
     std::expected<MFuncBody, DiagPtr> Translate(RFuncDecl* funcDecl, std::span<SStmt*> mStmts);

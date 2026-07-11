@@ -11,8 +11,9 @@
 #include "RSymbol/RFuncParameter.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RFuncDecl.h"
+#include "RSymbol/RDecl.h"
 
-#include "NSymbol/NModule.h"
+#include "RSymbol/RModule.h"
 
 #include "MIR/MData.h"
 #include "QIR/QFactory.h"
@@ -31,35 +32,32 @@ using namespace std;
 namespace Citron {
 namespace {
 
-expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
+expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory)
 {   
     // TODO: generics
-    auto rFuncDecl = mFuncBody.nFuncDecl.GetRFuncDecl();
-
-    auto rFuncReturn = rFuncDecl.GetUnboundFuncReturn();
-    auto* rRetType = visit([&rFactory](auto& rFuncReturn) -> RType*
+    auto rFuncReturn = mFuncBody.rFuncDecl->GetUnboundFuncReturn();
+    auto* rRetType = rFuncReturn.Visit([&rFactory](auto& rFuncReturn) -> RType*
     {
         using T = remove_cvref_t<decltype(rFuncReturn)>;
         if constexpr (same_as<T, RFuncReturn_Normal>)
             return rFuncReturn.type;
         else if constexpr (same_as<T, RFuncReturn_None>)
-            return rFactory->MakeVoidType();
+            return (*rFactory)->MakeVoidType();
         else if constexpr (same_as<T, RFuncReturn_NotSet>)
             throw NotImplementedException{};
         else static_assert(false);
-    }, rFuncReturn);
+    });
 
-    MqBodyContext bodyContext{rFactory, qFactory, rRetType};
-    MqFactoryPtr mqFactory = MakePtr<MqFactory>(rFactory);
-    MqAbiPtr abi = MakePtr<MqAbi_Citron_X64>(rFactory);
-    MqTranslationContexts contexts{rFactory, qFactory, mqFactory, abi, bodyContext};
+    MqBodyContext bodyContext{*rFactory, *qFactory, rRetType};
+    MqFactoryPtr mqFactory = MakePtr<MqFactory>(*rFactory);
+    MqAbiPtr abi = MakePtr<MqAbi_Citron_X64>(*rFactory);
+    MqTranslationContexts contexts{*rFactory, *qFactory, mqFactory, abi, bodyContext};
 
     {
         MqScopeGuard mainGuard{std::nullopt, bodyContext};
 
-        auto rFuncDecl = mFuncBody.nFuncDecl.GetRFuncDecl();
-        auto funcInfo = abi->GetFuncInfo(rFuncDecl, rFuncDecl.GetRDecl()->MakeOpenTypeArgs(*rFactory));
-        auto thisKind = rFuncDecl.GetThisKind();
+        auto funcInfo = abi->GetFuncInfo(mFuncBody.rFuncDecl, mFuncBody.rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(**rFactory));
+        auto thisKind = mFuncBody.rFuncDecl->GetThisKind();
 
         visit([rRetType, &bodyContext](auto& returnPassingMode) {
             using T = remove_cvref_t<decltype(returnPassingMode)>;
@@ -88,12 +86,16 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
             }
             else if constexpr(same_as<T, MqThisPassingMode_Handle>)
             {
-                auto* thisType = get<RThisKind_Handle>(thisKind).type;
-                bodyContext.AddThis(thisType);
+                auto* thisType_handle = thisKind.TryGetHandle();
+                assert(thisType_handle);
+
+                bodyContext.AddThis(thisType_handle->type);
             }
             else if constexpr (same_as<T, MqThisPassingMode_Ptr>)
             {
-                auto* thisType = get<RThisKind_Ref>(thisKind).type;
+                auto* thisType_ref = thisKind.TryGetRef();
+                assert(thisType_ref);
+                auto* thisType = thisType_ref->type;
                 auto* ptrThisType = bodyContext.GetPtrType(thisType);
 
                 bodyContext.AddThis(ptrThisType);
@@ -102,7 +104,7 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
         // parameter 세팅
         // TODO: 일단 generics없이 진행
-        auto unboundParams = rFuncDecl.GetUnboundFuncParams();
+        auto unboundParams = mFuncBody.rFuncDecl->GetUnboundFuncParams();
         for (size_t i = 0, count = unboundParams.size(); i < count; i++)
         {
             auto& unboundParam = unboundParams[i];
@@ -155,14 +157,14 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
 
     bodyContext.VerifyBlocks();
     return QFuncBody{
-        mFuncBody.nFuncDecl, 
+        mFuncBody.rFuncDecl, 
         bodyContext.GetStackSlotInfos() | ranges::to<vector>(), 
         bodyContext.GetBlocks() | ranges::to<vector>() };
 }
 
 } // namespace
 
-expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, const RFactoryPtr& rFactory, const QFactoryPtr& qFactory)
+expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory)
 {
     std::vector<QFuncBody> qFuncBodies;
     auto mFuncBodies = mData->GetAllFuncBodies();
@@ -170,13 +172,13 @@ expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, const RFactoryPtr&
     qFuncBodies.reserve(mFuncBodies.size());
     for (auto& mFuncBody : mFuncBodies)
     {
-        auto e_qFuncBody = TranslateMFuncBodyToQFuncBody(mFuncBody, rFactory, qFactory);
+        auto e_qFuncBody = TranslateMFuncBodyToQFuncBody(mFuncBody, *rFactory, *qFactory);
         RETURN_ON_ERROR(e_qFuncBody);
 
         qFuncBodies.push_back(move(*e_qFuncBody));
     }
 
-    return qFactory->MakeQData(move(qFuncBodies));
+    return (*qFactory)->MakeQData(move(qFuncBodies));
 }
 
 } // namespace Citron

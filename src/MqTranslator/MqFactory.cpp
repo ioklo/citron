@@ -8,8 +8,8 @@ using namespace std;
 
 namespace Citron {
 
-MqFactory::MqFactory(const RFactoryPtr& rFactory)
-    : rFactory{rFactory}
+MqFactory::MqFactory(TakeRef<RFactoryPtr> rFactory)
+    : rFactory{rFactory.Take()}
 {
     MakeIntrinsicInfo();
 }
@@ -43,7 +43,7 @@ void MqFactory::MakeIntrinsicInfo() noexcept
     intrinsicInfos[(size_t)Alloc_Int] = {Alloc_Int, retVoidPtr, {ip("size")}};
     intrinsicInfos[(size_t)Memcpy_Void_Ptr_Ptr_Int] = {Memcpy_Void_Ptr_Ptr_Int, retVoid, {vpp("dest"), vpp("src"), ip("size")}};
     // intrinsicInfos[(size_t)NewList_Items] = {NewList_Items,};
-    intrinsicInfos[(size_t)GetIterator_ListPtr_ListIterator] = {GetIterator_ListPtr_ListIterator,};
+    // intrinsicInfos[(size_t)GetIterator_ListPtr_ListIterator] = {GetIterator_ListPtr_ListIterator, , {}};
 
     intrinsicInfos[(size_t)LogicalNot_Bool_Bool] = {LogicalNot_Bool_Bool, retBool, {bp("x")}};
     intrinsicInfos[(size_t)UnaryMinus_Int_Int] = {UnaryMinus_Int_Int, retInt, {ip("x")}};

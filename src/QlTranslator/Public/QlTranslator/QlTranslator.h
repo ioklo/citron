@@ -24,7 +24,7 @@ struct LContext
     std::unique_ptr<LContextImpl> impl;
 
 public:
-    QLTRANSLATOR_API LContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory);
+    QLTRANSLATOR_API LContext(TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory);
     QLTRANSLATOR_API ~LContext();
 };
 

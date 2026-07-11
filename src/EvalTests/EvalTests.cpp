@@ -18,8 +18,7 @@
 #include "RSymbol/RModule.h"
 
 #include "NSymbol/NFactory.h"
-#include "NSymbol/NModule.h"
-#include "NSymbol/NGlobalFuncDecl.h"
+#include "RSymbol/RGlobalFuncDecl.h"
 
 #include "MIR/MFactory.h"
 #include "MIR/MPrinter.h"
@@ -67,9 +66,9 @@ void DoTest(const string& code, const string& expected)
     auto logger = MakePtr<Logger>();
     auto mFactory = MakePtr<MFactory>();
 
-    auto e_nModuleMData = TranslateSyntaxToNModuleMData(moduleName, {sScript}, {}, logger, rFactory, nFactory, mFactory);
-    ASSERT_TRUE(e_nModuleMData);
-    auto& [nModule, mData] = *e_nModuleMData;
+    auto e_rModuleMData = TranslateSyntax(moduleName, {sScript}, {}, logger, rFactory, mFactory);
+    ASSERT_TRUE(e_rModuleMData);
+    auto& [rModule, mData] = *e_rModuleMData;
 
     StringWriter mWriter;
     PrintMData(mData, mWriter, *rFactory);
@@ -91,26 +90,23 @@ void DoTest(const string& code, const string& expected)
     // 실행
 
     // "Main" 찾기
-    NGlobalFuncDecl* nEntry = nullptr;
+    RGlobalFuncDecl* rEntry = nullptr;
     for (auto& body : qData->GetAllBodies())
     {
-        if (auto** globalFuncDecl = body.nFuncDecl.GetIf<NGlobalFuncDecl*>())
+        if (auto* rGlobalFuncDecl = dynamic_cast<RGlobalFuncDecl*>(body.rFuncDecl))
         {   
-            auto id = body.nFuncDecl.GetNDecl()->GetRDecl()->GetIdentifier();
+            auto id = body.rFuncDecl->RFuncDecl_GetDecl()->GetIdentifier();
             if (id == RIdentifier{RName::Normal("Main"), 0, {}})
-                nEntry = *globalFuncDecl;
+                rEntry = rGlobalFuncDecl;
         }
     }
-    ASSERT_TRUE(nEntry);
+    ASSERT_TRUE(rEntry);
 
     auto commandHandler = MakePtr<CommandHandler>();
-    vector<RModule*> rModules{nModule};
-    auto e_result = EvaluateQData(rModules, qData, nEntry, commandHandler, rFactory);
+    vector<RModule*> rModules{rModule};
+    auto e_result = EvaluateQData(rModules, qData, rEntry, commandHandler, rFactory);
     ASSERT_TRUE(e_result);
 
     // 
-    ASSERT_EQ(commandHandler->GetOutput(), expected);
-
-
-    // 
+    ASSERT_EQ(commandHandler->GetOutput(), expected); 
 }

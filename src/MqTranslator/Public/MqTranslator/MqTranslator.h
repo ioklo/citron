@@ -14,6 +14,6 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 using QFactoryPtr = std::shared_ptr<class QFactory>;
 using DiagPtr = std::shared_ptr<struct Diag>;
 
-MQTRANSLATOR_API std::expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, const RFactoryPtr& rFactory, const QFactoryPtr& qFactory);
+MQTRANSLATOR_API std::expected<QData*, DiagPtr> TranslateMDataToQData(MData* mData, TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory);
 
 }

@@ -17,6 +17,8 @@ class RFuncReturn
     Variant v;
 
 public:
+    RFuncReturn() : v{RFuncReturn_None{}} {}
+
     template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RFuncReturn>) && std::constructible_from<Variant, T&&>
     RFuncReturn(T&& t) : v{std::forward<T>(t)} {}
 

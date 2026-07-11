@@ -13,13 +13,13 @@
 
 #include "RSymbol/RModule.h"
 #include "RSymbol/RFactory.h"
-#include "NSymbol/NGlobalFuncDecl.h"
-#include "NSymbol/NClassCtorDecl.h"
-#include "NSymbol/NClassFuncDecl.h"
-#include "NSymbol/NStructCtorDecl.h"
-#include "NSymbol/NStructDtorDecl.h"
-#include "NSymbol/NStructFuncDecl.h"
-#include "NSymbol/NLambdaDecl.h"
+#include "RSymbol/RGlobalFuncDecl.h"
+#include "RSymbol/RClassCtorDecl.h"
+#include "RSymbol/RClassFuncDecl.h"
+#include "RSymbol/RStructCtorDecl.h"
+#include "RSymbol/RStructDtorDecl.h"
+#include "RSymbol/RStructFuncDecl.h"
+#include "RSymbol/RLambdaDecl.h"
 
 #include "QIR/QData.h"
 #include "QIR/QFuncBody.h"
@@ -700,39 +700,14 @@ struct Evaluator
         return true;
     }
 
-    template<typename TNFuncDecl, typename TRFuncDecl>
-    static NFuncDecl ToNFuncDecl(TRFuncDecl* rFuncDecl)
-    {
-        auto* nFuncDecl = dynamic_cast<TNFuncDecl*>(rFuncDecl);
-        assert(nFuncDecl);
-
-        return NFuncDecl{nFuncDecl};
-    }
-
-    static NFuncDecl ToNFuncDecl(RFuncDecl& rFuncDecl)
-    {   
-        return rFuncDecl.Visit([](auto* rFuncDecl) -> NFuncDecl {
-            using T = remove_cvref_t<decltype(rFuncDecl)>;
-            if constexpr (same_as<T, RGlobalFuncDecl*>) return ToNFuncDecl<NGlobalFuncDecl>(rFuncDecl);
-            else if constexpr (same_as<T, RClassCtorDecl*>) return ToNFuncDecl<NClassCtorDecl>(rFuncDecl);
-            else if constexpr (same_as<T, RClassFuncDecl*>) return ToNFuncDecl<NClassFuncDecl>(rFuncDecl);
-            else if constexpr (same_as<T, RStructCtorDecl*>) return ToNFuncDecl<NStructCtorDecl>(rFuncDecl);
-            else if constexpr (same_as<T, RStructDtorDecl*>) return ToNFuncDecl<NStructDtorDecl>(rFuncDecl);
-            else if constexpr (same_as<T, RStructFuncDecl*>) return ToNFuncDecl<NStructFuncDecl>(rFuncDecl);
-            else if constexpr (same_as<T, RLambdaDecl*>) return ToNFuncDecl<NLambdaDecl>(rFuncDecl);
-            else static_assert(false);
-        });
-    }
-
     bool Eval(QInst_Call& inst)
     {
         // TODO: linker가 미리 어떻게 할지 알렸어야 한다
 
         // 여기서는 RFuncDecl이 NFuncDecl이고
         // RFuncDecl -> RGlobalFuncDecl -> NGlobalFuncDecl
-        auto nFuncDecl = ToNFuncDecl(inst.rFuncDecl); // dynamic_cast<NFuncDecl*>(inst.rFuncDecl);
         auto bodies = env.qData->GetAllBodies();
-        auto i = ranges::find_if(bodies, [&nFuncDecl](QFuncBody& body) { return body.nFuncDecl == nFuncDecl; });
+        auto i = ranges::find_if(bodies, [&inst](QFuncBody& body) { return body.rFuncDecl == inst.rFuncDecl; });
         if (i == bodies.end()) throw NotImplementedException{};
 
         auto frame = MakeStackFrame(&*i, *env.curFrame, inst.o_dest, inst.args, *rFactory);
@@ -774,16 +749,16 @@ struct Evaluator
     }
 };
 
-bool Evaluate(QInst& inst, Environment& env, const RFactoryPtr& rFactory)
+bool Evaluate(QInst& inst, Environment& env, TakeRef<RFactoryPtr> rFactory)
 {
-    return visit(Evaluator{env, rFactory}, inst);
+    return visit(Evaluator{env, rFactory.Take()}, inst);
 }
 
 } // namespace 
-expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, const RFactoryPtr& rFactory)
+expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, RGlobalFuncDecl* nEntry, IEvalQDataCommandHandlerPtr&& cmdHandler, InRef<RFactoryPtr> rFactory)
 {
     auto bodies = qData->GetAllBodies();
-    auto i = ranges::find_if(bodies, [nEntry](QFuncBody& body) { return body.nFuncDecl == nEntry; });
+    auto i = ranges::find_if(bodies, [nEntry](QFuncBody& body) { return body.rFuncDecl == nEntry; });
     if (i == bodies.end())
     {
         throw NotImplementedException{}; // 에러 처리
@@ -807,7 +782,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
     for (size_t j = 0, count = i->slotInfos.size(); j < count; j++)
     {
         auto& slot = i->slotInfos[j];
-        size_t size = GetSize(slot.type, *rFactory);
+        size_t size = GetSize(slot.type, **rFactory);
         env.curFrame->stackPointer -= size;
         env.curFrame->slots[j].ptr = env.curFrame->stackPointer;
     }
@@ -816,7 +791,7 @@ expected<void, DiagPtr> EvaluateQData(span<RModule*> rModules, QData* qData, NGl
     {
         auto& inst = env.curFrame->ip.block->GetInst(env.curFrame->ip.index++);
 
-        bool cont = Evaluate(inst, env, rFactory);
+        bool cont = Evaluate(inst, env, *rFactory);
 
         if (!cont) break;
     }

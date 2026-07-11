@@ -10,8 +10,8 @@ using namespace std;
 
 namespace Citron {
 
-MqAbi_Citron_X64::MqAbi_Citron_X64(const RFactoryPtr& rFactory)
-    : rFactory{rFactory}
+MqAbi_Citron_X64::MqAbi_Citron_X64(TakeRef<RFactoryPtr> rFactory)
+    : rFactory{rFactory.Take()}
 {
 }
 
@@ -32,13 +32,13 @@ size_t MqAbi_Citron_X64::GetTypeSize(RType* type)
     throw NotImplementedException{};
 }
 
-MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(RFuncDecl& rFuncDecl, RTypeArguments* typeArgs)
+MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs)
 {
     size_t curArgIndex = 0;
 
-    auto returnPassingMode = GetReturnPassingMode(rFuncDecl.GetFuncReturn(typeArgs), &curArgIndex);
+    auto returnPassingMode = GetReturnPassingMode(rFuncDecl->GetFuncReturn(typeArgs), &curArgIndex);
 
-    auto thisPassingMode = visit([&curArgIndex](auto&& thisKind) -> MqThisPassingMode {
+    auto thisPassingMode = rFuncDecl->GetThisKind().Visit([&curArgIndex](auto&& thisKind) -> MqThisPassingMode {
         using T = remove_cvref_t<decltype(thisKind)>;
         if constexpr (same_as<T, RThisKind_Static>)
             return MqThisPassingMode_None{};
@@ -47,15 +47,15 @@ MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(RFuncDecl& rFuncDecl, RTypeArguments* t
         else if constexpr (same_as<T, RThisKind_Ref>)
             return MqThisPassingMode_Ptr{curArgIndex++};
         else static_assert(false);
-    }, rFuncDecl.GetThisKind());
+    });
 
     size_t explicitArgStartIndex = curArgIndex;
     vector<MqParamPassingMode> paramPassingModes;
-    size_t count = rFuncDecl.GetParamCount();
+    size_t count = rFuncDecl->GetParamCount();
     paramPassingModes.reserve(count);
     for (size_t i = 0; i < count; i++)
     {
-        auto param = rFuncDecl.GetFuncParam(typeArgs, i);
+        auto param = rFuncDecl->GetFuncParam(typeArgs, i);
         if (param.IsRef())
             paramPassingModes.push_back(MqParamPassingMode::Ref);
         else
@@ -139,7 +139,7 @@ MqFuncInfo MqAbi_Citron_X64::GetFuncInfo(MqIntrinsicInfo& intrinsicInfo, RTypeAr
 
 MqReturnPassingMode MqAbi_Citron_X64::GetReturnPassingMode(RFuncReturn funcRet, size_t* outCurArgIndex)
 {
-    return visit([this, outCurArgIndex](auto& funcRet) -> MqReturnPassingMode
+    return funcRet.Visit([this, outCurArgIndex](auto& funcRet) -> MqReturnPassingMode
     {
         using T = remove_cvref_t<decltype(funcRet)>;
         if constexpr (same_as<T, RFuncReturn_None>)
@@ -174,7 +174,7 @@ MqReturnPassingMode MqAbi_Citron_X64::GetReturnPassingMode(RFuncReturn funcRet, 
         {
             throw RuntimeFatalException{};
         }
-    }, funcRet);
+    });
 }
 
 } // namespace Citron

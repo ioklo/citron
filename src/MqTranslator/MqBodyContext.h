@@ -109,7 +109,7 @@ class MqBodyContext
     SmallMap<std::string, size_t> labelIds;
 
 public:
-    MqBodyContext(const RFactoryPtr& rFactory, const QFactoryPtr& qFactory, RType* rRetType);
+    MqBodyContext(TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory, RType* rRetType);
 
     QBlock* AddBlock(std::string&& debugText);
     void SetCurBlock(QBlock* block) { assert(block); curBlock = block; } // SetCurBlock으로 Unreachable 상태를 만들지 않도록 한다

@@ -26,14 +26,14 @@ ScopeContext::ScopeContext(
     optional<size_t> curContinueLabelId, 
     optional<size_t> curBreakLabelId, 
     shared_ptr<InlineScopeContext> inlineScopeContext,
-    const RFactoryPtr& rFactory)
+    TakeRef<RFactoryPtr> rFactory)
     : funcContext{funcContext}
     , parentContext{parentContext}
     , scopeKind{std::move(scopeKind)}
     , curContinueLabelId{curContinueLabelId}
     , curBreakLabelId{curBreakLabelId}
     , inlineScopeContext{move(inlineScopeContext)}
-    , rFactory {rFactory}
+    , rFactory{rFactory.Take()}
 {
 }
 

@@ -21,7 +21,7 @@ class MqFactory
     RFactoryPtr rFactory;
 
 public:
-    MqFactory(const RFactoryPtr& rFactory);
+    MqFactory(TakeRef<RFactoryPtr> rFactory);
 
 private:
     void MakeIntrinsicInfo() noexcept;
