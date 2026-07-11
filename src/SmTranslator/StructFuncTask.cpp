@@ -47,7 +47,7 @@ expected<void, DiagPtr> StructFuncTask::BuildTypeDependentSymbol(BuildTypeDepend
 
 expected<MFuncBody, DiagPtr> StructFuncTask::TranslateBody(TranslateBodyContext& context)
 {
-    return context.Translate(rStructFunc, sStructFunc->body);
+    return context.Translate(rStructFunc, sStructFunc->bSequence, sStructFunc->body);
 }
 
 

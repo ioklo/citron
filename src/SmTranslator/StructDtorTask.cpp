@@ -35,7 +35,7 @@ expected<void, DiagPtr> StructDtorTask::BuildTypeDependentSymbol(BuildTypeDepend
 
 std::expected<MFuncBody, DiagPtr> StructDtorTask::TranslateBody(TranslateBodyContext& context)
 {
-    return context.Translate(rStructDtor, sStructDtor->body);
+    return context.Translate(rStructDtor, /*bSeqFunc*/false, sStructDtor->body);
 }
 
 void StructDtorTask::Register(RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)

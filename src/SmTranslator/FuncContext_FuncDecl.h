@@ -12,11 +12,12 @@ using MFactoryPtr = std::shared_ptr<class MFactory>;
 class FuncContext_FuncDecl : public FuncContext
 {
     RFuncDecl* rFuncDecl;
+    bool bSeqFunc;
     RFactoryPtr rFactory;
     MFactoryPtr mFactory;
 
 public:
-    FuncContext_FuncDecl(RFuncDecl* rFuncDecl, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory);
+    FuncContext_FuncDecl(RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory);
 
 public: // from FuncContext
     void BeginTransaction_FuncContext() override { }

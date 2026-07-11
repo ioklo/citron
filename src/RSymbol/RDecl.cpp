@@ -53,8 +53,8 @@ size_t RDecl::GetAllTypeParamCount()
 
 bool RDecl::CanAccess(RDecl* target)
 {
-    // TODO: [67] 2026-07-10, NSymbol, RSymbol 정리하면서 생긴 문제들 해결
-    throw NotImplementedException{};
+    // TODO: [68] 2026-07-11, CanAccess 제대로 구현
+    return true;
 
     //auto accessModifier = target->GetAccessor();
     //auto* targetOuter = target->GetROuter();

@@ -112,9 +112,9 @@ CheckEndReturnResult CheckEndReturn(RFuncDecl* rFuncDecl, vector<MStmt*>& mStmts
 
 }
 
-expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(RFuncDecl* rFuncDecl, std::span<SStmt*> sStmts)
+expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(RFuncDecl* rFuncDecl, bool bSeqFunc, std::span<SStmt*> sStmts)
 {   
-    auto tContext = MakeTranslationContexts(rFuncDecl, logger, rFactory, mFactory, srtFactory, binOpQueryService);
+    auto tContext = MakeTranslationContexts(rFuncDecl, bSeqFunc, logger, rFactory, mFactory, srtFactory, binOpQueryService);
     auto e_scope = TranslateScopedSStmtsToMStmt_Scope(sStmts, tContext);
     RETURN_ON_ERROR(e_scope);
 

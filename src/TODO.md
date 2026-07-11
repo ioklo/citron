@@ -45,4 +45,5 @@
 - [v] // TODO: [64] 2026-06-30, RAccessor namespace, class, struct 따라 나누기 
 - [ ] // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
 - [ ] // TODO: [66] 2026-07-09, Trait, Extend 구현
-- [ ] // TODO: [67] 2026-07-10, NSymbol, RSymbol 정리하면서 생긴 문제들 해결
+- [v] // TODO: [67] 2026-07-10, NSymbol, RSymbol 정리하면서 생긴 문제들 해결
+- [ ] // TODO: [68] 2026-07-11, CanAccess 제대로 구현

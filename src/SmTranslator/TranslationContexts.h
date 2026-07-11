@@ -50,7 +50,7 @@ struct TranslationContexts
     BinOpQueryServicePtr binOpQueryService;
 };
 
-TranslationContexts MakeTranslationContexts(RFuncDecl* rFuncDecl, TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
+TranslationContexts MakeTranslationContexts(RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
 
 TranslationContexts MakeTranslationContexts_DefaultScope(TranslationContexts& contexts);
 TranslationContexts MakeTranslationContexts_LoopScope(size_t o_labelId, TranslationContexts& contexts);

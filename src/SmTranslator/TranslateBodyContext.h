@@ -31,7 +31,7 @@ public:
         TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
     ~TranslateBodyContext();
 
-    std::expected<MFuncBody, DiagPtr> Translate(RFuncDecl* funcDecl, std::span<SStmt*> mStmts);
+    std::expected<MFuncBody, DiagPtr> Translate(RFuncDecl* funcDecl, bool bSeqFunc, std::span<SStmt*> mStmts);
     void MarkFailed();
 };
 

@@ -48,7 +48,7 @@ expected<void, DiagPtr> GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDepend
 
 expected<MFuncBody, DiagPtr> GlobalFuncTask::TranslateBody(TranslateBodyContext& context)
 {
-    return context.Translate(rFuncDecl, syntax->body);
+    return context.Translate(rFuncDecl, syntax->bSequence, syntax->body);
 }
 
 } // namespace Citron

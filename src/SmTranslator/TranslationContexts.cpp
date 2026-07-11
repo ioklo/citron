@@ -22,12 +22,13 @@ namespace Citron {
 
 TranslationContexts MakeTranslationContexts(
     RFuncDecl* rFuncDecl,
+    bool bSeqFunc,
     TakeRef<LoggerPtr> logger,
     TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SRTFactoryPtr> srtFactory,
     TakeRef<BinOpQueryServicePtr> binOpQueryService)
 {
     auto globalContext = MakePtr<GlobalContext>();
-    auto funcContext = MakePtr<FuncContext_FuncDecl>(rFuncDecl, *rFactory, *mFactory);
+    auto funcContext = MakePtr<FuncContext_FuncDecl>(rFuncDecl, bSeqFunc, *rFactory, *mFactory);
     auto scopeContext = MakePtr<ScopeContext>(funcContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, *rFactory);
 
     return {globalContext, funcContext, scopeContext, logger.Take(), mFactory.Take(), rFactory.Take(), srtFactory.Take(), binOpQueryService.Take()};

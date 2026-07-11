@@ -24,8 +24,8 @@ using namespace std;
 
 namespace Citron {
 
-FuncContext_FuncDecl::FuncContext_FuncDecl(RFuncDecl* rFuncDecl, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory)
-    : rFuncDecl{rFuncDecl}, rFactory{rFactory.Take()}, mFactory{mFactory.Take()}
+FuncContext_FuncDecl::FuncContext_FuncDecl(RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory)
+    : rFuncDecl{rFuncDecl}, bSeqFunc{bSeqFunc}, rFactory{rFactory.Take()}, mFactory{mFactory.Take()}
 {
 }
 
@@ -74,43 +74,19 @@ RTypeArguments* FuncContext_FuncDecl::MakeOpenTypeArgs()
 
 bool FuncContext_FuncDecl::IsSeqFunc()
 {
-    // RFuncDecl은 seq int F(); 를 모른다. 내부 분석용으로 seq를 알고 싶은 용도라면, N*Decl을 호출해야 한다
-    // TODO: [67] 2026-07-10, NSymbol, RSymbol 정리하면서 생긴 문제들 해결
-    throw NotImplementedException{};
-    // return rFuncDecl->IsSeqFunc();
+    // RFuncDecl은 외부 시그니처라서 seq int F(); 를 모른다
+    // FuncContext_FuncDecl 생성시에 syntax로부터 seq여부를 전달받아서 리턴한다
+    return bSeqFunc;
 }
-
-struct GetThisTypeFunctor
-{
-    RFactoryPtr rFactory;
-
-    RType* operator()(auto* nDecl) { return Visit(nDecl); }
-
-    RType* Visit(RStructDecl* rDecl)
-    {
-        auto* typeArgs = rDecl->MakeOpenTypeArgs(*rFactory);
-        return rFactory->MakeStructType(rDecl, typeArgs);
-    }
-
-    RType* Visit(RDecl* nDecl)
-    {
-        // TODO: [67] 2026-07-10, NSymbol, RSymbol 정리하면서 생긴 문제들 해결
-        throw NotImplementedException{};
-    }
-};
 
 MLoc_This* FuncContext_FuncDecl::MakeThisLoc()
 {
-    // struct S에서는 this가 S 타입
+    // struct S에서는 this가 S& 타입
     // class C에서는 this가 C 타입
     // lambda에서는 this가 lambda를 선언한 함수의 this타입
 
-    auto thisTypeKind = rFuncDecl->GetThisKind().GetThisType();
-
-    // auto* rThisType = rFuncDecl.GetNFuncDeclOuter().Visit(GetThisTypeFunctor{rFactory});
-    // return mFactory->MakeMLoc<MLoc_This>(rThisType
-    // TODO: [67] 2026-07-10, NSymbol, RSymbol 정리하면서 생긴 문제들 해결
-    throw NotImplementedException{};
+    auto* thisType = rFuncDecl->GetThisKind().GetThisType();
+    return mFactory->MakeMLoc<MLoc_This>(thisType);
 }
 
 } // namespace Citron
