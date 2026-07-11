@@ -8,6 +8,7 @@ Citron compiler 내부 모델과 lowering 지식을 agent가 빠르게 찾기 �
 
 ## Routing Hints
 - `RNode`, declaration tree, resolver 책임, `RDecl` 이행은 `declaration-model.md`
+- 현재 `NSymbol`에서 `RSymbol`로의 declaration 구현 이행 상태와 잔재는 `nsymbol-rsymbol-migration.md`
 - declaration / symbol / resolver 구현 네이밍은 `implementation-naming.md`
 - phase 구분, skeleton/cti/body 흐름은 `compile-pipeline.md`
 - MIR value semantics와 create/read/init 축은 `mir-value-model.md`, `mcreate-and-translation-axes.md`
@@ -19,6 +20,7 @@ Citron compiler 내부 모델과 lowering 지식을 agent가 빠르게 찾기 �
 - `compile-pipeline.md` : skeleton/cti/body/lowering phase 개요
 - `value-and-trait-witness.md` : value witness와 trait witness
 - `declaration-model.md` : `RDecl`에서 `RNode`로 가는 declaration / symbol model
+- `nsymbol-rsymbol-migration.md` : `NSymbol` declaration 구현을 `RSymbol`로 옮긴 범위와 후속 정리
 - `implementation-naming.md` : declaration / symbol / resolver implementation naming
 - `syntax-ir0-translator.md` : Syntax to MIR(IR0) translator overview
 - `mir-value-model.md` : BC/NBC, MExp/MRead/MCreate/MInitExp

@@ -297,7 +297,8 @@ TEST(ScriptParser, ParseExtend_Basic)
     void Func()
     {
     }
-})---");
+}
+)---");
     SFactory factory;
 
     auto* script = ParseScript(&lexer, factory);
@@ -650,18 +651,19 @@ TEST(ScriptParser, ParseSimpleScript)
 
 TEST(ScriptParser, ParseStructDecl)
 {
-    auto [buffer, lexer] = Prepare(UR"---(public struct S<T> : B, I
+    auto [buffer, lexer] = Prepare(UR"---(public struct S<T> : Trait1, Trait2
 {
     int x1;
     public int x2;
-    protected string y;
+    public string y;
     private int z;
 
-    public struct Nested<U> : B, I { int x; }
+    public struct Nested<U> : Trait1, Trait2 { int x; }
 
     static void Func<X>(string s) { }
     private seq int F2<T>() { yield 4; }
-})---");
+}
+)---");
     SFactory factory;
 
     auto* script = ParseScript(&lexer, factory);

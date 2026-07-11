@@ -1283,6 +1283,44 @@ void Main()
     DoTest(code, expected);
 }
 
+TEST(If_NotNull, Basic) 
+{
+    auto code = R"---(void Main()
+{
+    int? o_value = 3;
+
+    if (o_value is not_null value)
+    {
+        @${value}
+    }
+}
+)---";
+    string expected = R"---(3)---";
+
+    DoTest(code, expected);
+}
+
+TEST(If_NotNull, Null) 
+{
+    auto code = R"---(void Main()
+{
+    int? o_value = null;
+
+    if (o_value is not_null value)
+    {
+        @not_null
+    }
+    else
+    {
+        @null
+    }
+}
+)---";
+    string expected = R"---(null)---";
+
+    DoTest(code, expected);
+}
+
 TEST(If_Nullable_Reference_Test_Statement, Basic) 
 {
     auto code = R"---(class B { }
@@ -1291,7 +1329,7 @@ class C : B { }
 void Main()
 {
     B b = new C();
-    if (C c = b)
+    if (b is C c)
     {
         @succeed
     }
@@ -1311,7 +1349,7 @@ class C : B, I { }
 void Main()
 {
 	var b = new C();
-	if (I i = b)
+	if (b is I i)
 	{
 		@true
 	}
@@ -1331,7 +1369,7 @@ void Main()
 {
 	I i = new C();
 
-	if (C c = i) @true
+	if (i is C c) @true
 }
 )---";
     string expected = R"---(true)---";
@@ -1350,7 +1388,7 @@ void Main()
 {
 	I1 i = new C();
 
-	if (I2 i2 = i)
+	if (i is I2 i2)
 	{
 		@true
 	}
@@ -1359,6 +1397,44 @@ void Main()
 
 )---";
     string expected = R"---(true)---";
+
+    DoTest(code, expected);
+}
+
+TEST(If_Null, Basic) 
+{
+    auto code = R"---(void Main()
+{
+    int? o_value = null;
+
+    if (o_value is null)
+    {
+        @null
+    }
+}
+)---";
+    string expected = R"---(null)---";
+
+    DoTest(code, expected);
+}
+
+TEST(If_Null, NotNull) 
+{
+    auto code = R"---(void Main()
+{
+    int? o_value = 3;
+
+    if (o_value is null)
+    {
+        @null
+    }
+    else
+    {
+        @not_null
+    }
+}
+)---";
+    string expected = R"---(not_null)---";
 
     DoTest(code, expected);
 }
@@ -2415,13 +2491,9 @@ void Main()
 
 TEST(Struct, Complex) 
 {
-    auto code = R"---(public struct B
+    auto code = R"---(struct S
 {
     int a;
-}
-
-struct S : B
-{
     int x; // default public
     private int y;
 
@@ -2458,7 +2530,8 @@ void Main()
 	
 	@${*s3.a}
 	s2 = *s3;                 // 복사 대입
-})---";
+}
+)---";
     string expected = R"---(2 3 6 1)---";
 
     DoTest(code, expected);
@@ -2955,12 +3028,12 @@ trait MyTrait
     void Func();
 }
 
-struct S
+struct S : MyTrait
 {
     int x;
 }
 
-extend S : MyTrait
+impl S : MyTrait
 {
     void Func()
     {

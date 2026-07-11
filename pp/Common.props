@@ -3,6 +3,9 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
+    <CitronRepoRoot>$(MSBuildThisFileDirectory)..\</CitronRepoRoot>
+    <OutDir>$(CitronRepoRoot)bin\$(Platform)-$(Configuration)\</OutDir>
+    <IntDir>$(CitronRepoRoot)obj\$(Platform)-$(Configuration)\$(ProjectName)\</IntDir>
     <PublicIncludeDirectories>$(ProjectDir)Public;$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <IncludePath>$(ProjectDir)Public\$(ProjectName);$(IncludePath)</IncludePath>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>

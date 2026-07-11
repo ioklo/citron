@@ -1,0 +1,6 @@
+extend S : MyTrait
+{
+    void Func()
+    {
+    }
+}

@@ -9,6 +9,12 @@
 - 기존 `RDecl` 계층은 점진적으로 역할을 잃게 만들고, 충분히 이행되면 제거한다.
 - declaration category, richer metadata, accessibility policy는 `RNode` 본체보다 별도 payload / checker / policy 계층으로 두는 방향을 우선 검토한다.
 
+## Current Refactoring State
+- declaration 구현과 주 번역 경로는 `NSymbol`에서 `RSymbol`로 이행됐다. `RFactory`가 `RDecl`을 소유·생성한다.
+- `NSymbol`에는 현재 `NFactory` wrapper와 일부 비주력 target/test의 old API 참조가 남아 있다.
+- trait/extend는 parser/AST까지만 연결돼 있으며, `RTraitDecl`, trait type/factory, SmTranslator visitor/task는 아직 구현 대상이다.
+- 자세한 이행 범위와 잔재는 `ai/wiki/compiler/nsymbol-rsymbol-migration.md`를 본다.
+
 ## Recently Discussed Points
 - namespace 수준의 `public/private`는 별도 export 키워드가 아니라 accessibility를 통해 export 의미를 포함한다.
 - class member는 `public/protected/private`를 갖고, struct member는 `public/private`만 갖는다.
