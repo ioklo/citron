@@ -14,7 +14,7 @@ namespace Citron {
 using RFactoryPtr = std::shared_ptr<RFactory>;
 
 // public trait MyTrait { void Func(); }
-class RTraitDecl : public RDecl, public RTypeDecl
+class RTraitDecl : public RDecl
 {
     RTypeDeclOuter outer;
     RName name;
@@ -36,12 +36,6 @@ public: // from RDecl
     RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name, size_t typeParamCount) final;
     RSYMBOL_API std::optional<RDeclRes> ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) final;
     RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) final;
-
-public: // from RTypeDecl
-    RSYMBOL_API RDecl* RTypeDecl_GetDecl() final;
-    RSYMBOL_API RType* GetOpenType() final;
-    RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) final;
-    RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
 };
 
 } // namespace Citron

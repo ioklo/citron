@@ -84,24 +84,4 @@ std::optional<RDeclRes> RTraitDecl::ResolveIdentifier(InRef<RName> name, size_t 
     return outer.GetDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
-RDecl* RTraitDecl::RTypeDecl_GetDecl()
-{
-    return this;
-}
-
-RType* RTraitDecl::GetOpenType()
-{
-    return rFactory->MakeTraitType(this, MakeOpenTypeArgs(*rFactory));
-}
-
-RDeclRes RTraitDecl::ToRDeclRes(RTypeArguments* typeArgs)
-{
-    return RSYMBOL_API RDeclRes();
-}
-
-RSYMBOL_API void RTraitDecl::Accept(RTypeDeclVisitor& visitor)
-{
-    return RSYMBOL_API void();
-}
-
 } // namespace Citron

@@ -143,6 +143,9 @@
     <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTraitMemberDecl.h">
+      <Filter>RDecls\10 Trait</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">
@@ -290,6 +293,13 @@
     </ClCompile>
     <ClCompile Include="RInterfaceDecl.cpp">
       <Filter>RDecls\09 Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Public\RSymbol\RTraitDecl.cpp" />
+    <ClCompile Include="RTraitMemberDecl.cpp">
+      <Filter>RDecls\10 Trait</Filter>
+    </ClCompile>
+    <ClCompile Include="RTraitFuncDecl.cpp">
+      <Filter>RDecls\10 Trait</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

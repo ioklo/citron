@@ -3,4 +3,4 @@ version = 1
 name = "citron"
 
 [setup]
-script = ""
+script = "C:/Program Files/Git/bin/bash.exe -lc 'git submodule update --init --recursive'"

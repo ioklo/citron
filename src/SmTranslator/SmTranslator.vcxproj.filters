@@ -38,16 +38,9 @@
     </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
-    <ClCompile Include="GlobalFuncTask.cpp" />
     <ClCompile Include="PhaseManager.cpp" />
-    <ClCompile Include="StructTask.cpp" />
     <ClCompile Include="ResolveTypeHierarchyContext.cpp" />
-    <ClCompile Include="StructFuncTask.cpp" />
-    <ClCompile Include="StructCtorTask.cpp" />
-    <ClCompile Include="StructVarTask.cpp" />
-    <ClCompile Include="EnumElemVarTask.cpp" />
     <ClCompile Include="GlobalContext.cpp" />
-    <ClCompile Include="StructDtorTask.cpp" />
     <ClCompile Include="TranslationContexts.cpp">
       <Filter>Context</Filter>
     </ClCompile>
@@ -103,6 +96,28 @@
     <ClCompile Include="SExpToIrExp.cpp">
       <Filter>ExpTranslation\SExpToMIR\2_SExpToMSharedExp\SExpToIrExp</Filter>
     </ClCompile>
+    <ClCompile Include="GlobalFuncTask.cpp">
+      <Filter>DeclTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="EnumElemVarTask.cpp">
+      <Filter>DeclTranslation\EnumTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="StructCtorTask.cpp">
+      <Filter>DeclTranslation\StructTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="StructDtorTask.cpp">
+      <Filter>DeclTranslation\StructTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="StructFuncTask.cpp">
+      <Filter>DeclTranslation\StructTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="StructTask.cpp">
+      <Filter>DeclTranslation\StructTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="StructVarTask.cpp">
+      <Filter>DeclTranslation\StructTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="TraitFuncTask.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncContext.h">
@@ -147,17 +162,10 @@
     <ClInclude Include="Public\SmTranslator\SmTranslatorConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="GlobalFuncTask.h" />
     <ClInclude Include="PhaseManager.h" />
-    <ClInclude Include="StructTask.h" />
     <ClInclude Include="TranslationTasks.h" />
     <ClInclude Include="ResolveTypeHierarchyContext.h" />
-    <ClInclude Include="StructFuncTask.h" />
-    <ClInclude Include="StructCtorTask.h" />
-    <ClInclude Include="StructVarTask.h" />
-    <ClInclude Include="EnumElemVarTask.h" />
     <ClInclude Include="GlobalContext.h" />
-    <ClInclude Include="StructDtorTask.h" />
     <ClInclude Include="TranslationContexts.h">
       <Filter>Context</Filter>
     </ClInclude>
@@ -219,6 +227,30 @@
     <ClInclude Include="SExpToIrExp.h">
       <Filter>ExpTranslation\SExpToMIR\2_SExpToMSharedExp\SExpToIrExp</Filter>
     </ClInclude>
+    <ClInclude Include="GlobalFuncTask.h">
+      <Filter>DeclTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumElemVarTask.h">
+      <Filter>DeclTranslation\EnumTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="StructCtorTask.h">
+      <Filter>DeclTranslation\StructTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="StructDtorTask.h">
+      <Filter>DeclTranslation\StructTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="StructFuncTask.h">
+      <Filter>DeclTranslation\StructTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="StructTask.h">
+      <Filter>DeclTranslation\StructTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="StructVarTask.h">
+      <Filter>DeclTranslation\StructTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="TraitFuncTask.h">
+      <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">
@@ -256,6 +288,18 @@
     </Filter>
     <Filter Include="ExpTranslation\SExpToMIR\2_SExpToMSharedExp\SExpToIrExp">
       <UniqueIdentifier>{589ff53a-07d1-4120-ab18-f609f2022af5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DeclTranslation">
+      <UniqueIdentifier>{a60175b9-403e-4234-950c-b56cb7640e38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DeclTranslation\EnumTranslation">
+      <UniqueIdentifier>{dbee34c0-3ea5-4ba7-ab09-dc00111b809a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DeclTranslation\StructTranslation">
+      <UniqueIdentifier>{74544549-a892-408a-87b4-a426a8a40637}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DeclTranslation\TraitTranslation">
+      <UniqueIdentifier>{8f16f12e-07f4-4ca3-8fbd-25da5df37534}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

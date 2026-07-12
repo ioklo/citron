@@ -31,8 +31,8 @@ std::expected<SmTranslationResult, DiagPtr> TranslateSyntax(
     std::string moduleName,
     const std::vector<SScript*>& scripts, // translation units
     const std::vector<EModule*>& referenceModules,
-    TakeRef<LoggerPtr> logger,
-    TakeRef<RFactoryPtr> rFactory,
-    TakeRef<MFactoryPtr> mFactory);
+    InRef<LoggerPtr> logger,
+    InRef<RFactoryPtr> rFactory,
+    InRef<MFactoryPtr> mFactory);
 
 } // namespace Citron

@@ -65,6 +65,7 @@
     <ClCompile Include="StructTask.cpp" />
     <ClCompile Include="StructVarTask.cpp" />
     <ClCompile Include="SynthesizeImplicitSymbolContext.cpp" />
+    <ClCompile Include="TraitFuncTask.cpp" />
     <ClCompile Include="TranslateBodyContext.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
@@ -119,6 +120,7 @@
     <ClInclude Include="StructTask.h" />
     <ClInclude Include="StructVarTask.h" />
     <ClInclude Include="SynthesizeImplicitSymbolContext.h" />
+    <ClInclude Include="TraitFuncTask.h" />
     <ClInclude Include="TranslateBodyContext.h" />
     <ClInclude Include="CommonTranslation.h" />
     <ClInclude Include="DesignatedDiagnostic.h" />

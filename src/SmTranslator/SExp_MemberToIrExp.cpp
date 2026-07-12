@@ -52,7 +52,7 @@ struct Result_GetStructVar
 expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, InRef<RName> name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
 {
     size_t memberTypeArgsCount = memberTypeArgs->GetCount();
-    auto o_member = classType->GetMember(*name, memberTypeArgsCount);
+    auto o_member = classType->ResolveMember(*name, memberTypeArgsCount);
     if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
 
     auto* classVarMember = o_member->GetIf<RDeclRes_ClassVar>();
@@ -69,7 +69,7 @@ expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, InRef<
 expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, InRef<RName> name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
 {
     size_t memberTypeArgsCount = memberTypeArgs->GetCount();
-    auto o_member = structType->GetMember(*name, memberTypeArgsCount);
+    auto o_member = structType->ResolveMember(*name, memberTypeArgsCount);
     if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
 
     auto* structVarMember = o_member->GetIf<RDeclRes_StructVar>();
@@ -211,6 +211,16 @@ public:
     {
         throw RuntimeFatalException{};
     }
+
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_Trait& member)
+    {
+        return Error<Error_SharedTranslation_CantUseTraitAsExpression>();
+    }
+
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_TraitFuncs& member)
+    {
+        return Error<Error_SharedTranslation_CantUseTraitFuncAsExpression>();
+    }
 };
 
 struct Binder
@@ -228,7 +238,7 @@ struct Binder
 
     ResultType HandleStaticBase(RDecl& decl, RTypeArguments* typeArgs)
     {
-        auto o_member = decl.GetMember(typeArgs, memberName, memberTypeArgs->GetCount());
+        auto o_member = decl.ResolveMember(typeArgs, memberName, memberTypeArgs->GetCount());
         if (!o_member)
             return Error<Error_ResolveIdentifier_NotFound>();
 

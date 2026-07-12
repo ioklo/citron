@@ -24,7 +24,6 @@ class REnumElemDecl;
 class REnumElemVarDecl;
 class RType;
 struct MExp;
-class NLambdaVarDecl;
 struct ImExpVisitor;
 
 struct ImExpInstanceKind_ExplicitStatic { }; // C.F

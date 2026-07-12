@@ -156,8 +156,6 @@ public:
     RSYMBOL_API RType_EnumElem* MakeEnumElemType(REnumElemDecl* decl, RTypeArguments* typeArgs);
     RSYMBOL_API RType_Interface* MakeInterfaceType(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal);
     RSYMBOL_API RType_Lambda* MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeArgs);
-    RSYMBOL_API RType_Trait* MakeTraitType(RTraitDecl* decl, RTypeArguments* typeArgs);
-
 
     RSYMBOL_API RTypeArguments* MakeTypeArguments(const std::vector<RType*>& items);
     RSYMBOL_API RTypeArguments* MakeEmptyTypeArguments();

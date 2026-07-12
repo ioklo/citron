@@ -19,6 +19,7 @@
 #include "RSymbol/RModule.h"
 #include "RSymbol/RClassDecl.h"
 #include "RSymbol/RFactory.h"
+#include "RSymbol/RTraitDecl.h"
 #include "MIR/MFuncBody.h"
 #include "MIR/MFactory.h"
 
@@ -31,6 +32,7 @@
 #include "StructDtorTask.h"
 #include "StructVarTask.h"
 #include "EnumElemVarTask.h"
+#include "TraitFuncTask.h"
 #include "PhaseManager.h"
 #include "CommonTranslation.h"
 #include "BinOpQueryService.h"
@@ -159,7 +161,7 @@ void VisitStruct(RTypeDeclOuter outer, SStructDecl* syntax, TakeRef<RFactoryPtr>
     }
 }
 
-void VisitEnum(RTypeDeclOuter outer, SEnumDecl* sEnum, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitEnum(RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {   
     auto* rEnum = (*rFactory)->MakeDecl<REnumDecl>(outer, RName::Normal(sEnum->name), *rFactory);
 
@@ -184,12 +186,26 @@ void VisitEnum(RTypeDeclOuter outer, SEnumDecl* sEnum, TakeRef<RFactoryPtr> rFac
 }
 
 // TODO: [66] 2026-07-09, Trait, Extend 구현
-//template<typename TNOuter>
-//void VisitTrait(TNOuter* rClass, STraitDecl* sTrait, AccessorContext accessorContext, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
-//{
-//    auto accessor = MakeAccessor(sTrait->accessModifier, accessorContext);
-//    auto* nTrait = (*rFactory)->MakeDecl<NTraitDecl>(rClass, accessor, RName_Normal{sTrait->name}, rFactory);
-//}
+void VisitTrait(RTypeDeclOuter outer, STraitDecl* sTrait, AccessorContext accessorContext, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+{
+    auto* rTrait = (*rFactory)->MakeDecl<RTraitDecl>(outer, RName::Normal(sTrait->name), *rFactory);
+
+    for (auto& memberDecl : sTrait->memberDecls)
+    {
+        visit([rTrait, &phaseManager](auto* memberDecl) {
+            using T = remove_cvref_t<decltype(memberDecl)>;
+
+            if constexpr (same_as<T, STraitFuncDecl*>)
+            {
+                TraitFuncTask::Register(rTrait, memberDecl, phaseManager);
+            }
+            else static_assert(false);
+
+        }, memberDecl);
+    }
+
+
+}
 
 void VisitExtend()
 {
@@ -430,9 +446,9 @@ expected<SmTranslationResult, DiagPtr> TranslateSyntax(
     string moduleName,
     const vector<SScript*>& scripts, // translation units
     const vector<EModule*>& referenceModules,
-    TakeRef<LoggerPtr> logger,
-    TakeRef<RFactoryPtr> rFactory,
-    TakeRef<MFactoryPtr> mFactory)
+    InRef<LoggerPtr> logger,
+    InRef<RFactoryPtr> rFactory,
+    InRef<MFactoryPtr> mFactory)
 {
     // TODO: NewRootNamespaceDecl이 아니라 RootNamespaceGroupDecl이어야 할것 같고, 모듈은 rootNamespaceDeclGroup을 가져야 할 것 같다
 

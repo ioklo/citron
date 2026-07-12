@@ -139,6 +139,16 @@ struct RDeclResTranslator
         else
             return MakeImExp_ReExp_Loc<MLoc_LocalVar>(declRes.funcParam.name, declRes.funcParam.type);
     }
+
+    ResultType Visit(RDeclRes_Trait& declRes)
+    {
+        return Error<Error_ResolveIdentifier_CantUseTraitAsExpression>();
+    }
+
+    ResultType Visit(RDeclRes_TraitFuncs& declRes)
+    {
+        return Error<Error_ResolveIdentifier_CantUseTraitFuncAsExpression>();
+    }
 };
 
 struct BodyResTranslator

@@ -403,24 +403,6 @@ private:
     RType_Opaque(RTraitDecl* traitDecl, RTypeArguments* typeArgs);
 };
 
-// Trait 타입
-class RType_Trait : public RType
-{
-    RTraitDecl* traitDecl;
-    RTypeArguments* typeArgs;
-
-private:
-    friend RFactory;
-    RType_Trait(RTraitDecl* traitDecl, RTypeArguments* typeArgs);
-
-public: // from RType
-    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
-    RTypeKind GetTypeKind() override { return RTypeKind::Interface; }
-    RCopyStrategy GetCopyStrategy() override { return RCopyStrategy::NonBitwise; } // Trait 타입은 shared pointer로 관리되기 때문에 bitwise copyable이 아니다
-    RSYMBOL_API std::optional<RDeclRes> ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount) override;
-    RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
-};
-
 } // namespace Citron
 
 namespace std {

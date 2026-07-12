@@ -58,6 +58,7 @@
     <ClInclude Include="Public\RSymbol\RThisKind.h" />
     <ClInclude Include="Public\RSymbol\RTraitDecl.h" />
     <ClInclude Include="Public\RSymbol\RTraitFuncDecl.h" />
+    <ClInclude Include="Public\RSymbol\RTraitMemberDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeArguments.h" />
     <ClInclude Include="Public\RSymbol\RTypeDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclContainerComponent.h" />
@@ -70,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Public\RSymbol\RStructDecl.cpp" />
+    <ClCompile Include="Public\RSymbol\RTraitDecl.cpp" />
     <ClCompile Include="RClassCtorDecl.cpp" />
     <ClCompile Include="RClassDecl.cpp" />
     <ClCompile Include="RClassFuncDecl.cpp" />
@@ -98,6 +100,8 @@
     <ClCompile Include="RStructDtorDecl.cpp" />
     <ClCompile Include="RStructFuncDecl.cpp" />
     <ClCompile Include="RStructVarDecl.cpp" />
+    <ClCompile Include="RTraitFuncDecl.cpp" />
+    <ClCompile Include="RTraitMemberDecl.cpp" />
     <ClCompile Include="RTypeArguments.cpp" />
     <ClCompile Include="RTypeDeclContainerComponent.cpp" />
     <ClCompile Include="RTypeDeclOuter.cpp" />

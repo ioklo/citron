@@ -100,7 +100,7 @@ class RDeclRes
         struct RDeclRes_TypeVar,
         struct RDeclRes_FuncParam,
         struct RDeclRes_Trait,
-        struct RDeclRes_TraitFuncs,
+        struct RDeclRes_TraitFuncs
     >;
 
     Variant v;

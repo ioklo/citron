@@ -213,6 +213,10 @@ struct Error_ResolveIdentifier_BoxCantHaveMember : ErrorDiag {}; // A2018_Resolv
 struct Error_ResolveIdentifier_SharedCantHaveMember : ErrorDiag {}; // A2019_ResolveIdentifier_SharedCantHaveMember
 struct Error_ResolveIdentifier_FuncInstanceCantHaveMember : ErrorDiag { }; // A2020_ResolveIdentifier_FuncInstanceCantHaveMember
 struct Error_ResolveIdentifier_MemberBaseCantBeLocation : ErrorDiag {};
+struct Error_ResolveIdentifier_CantUseTraitAsExpression : ErrorDiag {};
+struct Error_ResolveIdentifier_CantUseTraitFuncAsExpression : ErrorDiag {};
+
+
 
 struct Error_SharedTranslation_SingleRefNotAllowed : ErrorDiag {}; // shared<int> i = &c; 금지
 struct Error_SharedTranslation_MemberBaseShouldBeShared : ErrorDiag {}; // &s.x 금지 (s가 struct S일때)
@@ -224,6 +228,10 @@ struct Error_SharedTranslation_CantTranslateToLoc : ErrorDiag {};
 struct Error_SharedTranslation_CantTranslateToMSharedExp : ErrorDiag {};
 
 struct Error_SharedTranslation_CantTranslate : ErrorDiag {};
+
+struct Error_SharedTranslation_CantUseTraitAsExpression : ErrorDiag {};
+struct Error_SharedTranslation_CantUseTraitFuncAsExpression : ErrorDiag {};
+
 
 struct Error_Indexer_ObjectShouldBeListOrDictionary : ErrorDiag {};
 struct Error_Indexer_IndexTypeNotMatched : ErrorDiag {};

@@ -304,7 +304,7 @@ struct MemberTranslator
 
     ResultType TranslateStaticParent(RDecl* decl, RTypeArguments* typeArgs)
     {
-        auto o_declRes = decl->GetMember(typeArgs, memberName, memberTypeArgs->GetCount());
+        auto o_declRes = decl->ResolveMember(typeArgs, memberName, memberTypeArgs->GetCount());
         StaticBaseTranslator binder{memberTypeArgs, contexts};
         return o_declRes->Visit(binder);
     }
@@ -331,7 +331,7 @@ struct MemberTranslator
 
         auto* type = GetType(*e_mLoc, &*contexts.rFactory);
 
-        auto o_declRes = type->GetMember(memberName, memberTypeArgs->GetCount());
+        auto o_declRes = type->ResolveMember(memberName, memberTypeArgs->GetCount());
         if (!o_declRes)
             return Error<Error_ResolveIdentifier_NotFound>();
 
