@@ -52,7 +52,7 @@ RTypeDecl* REnumElemDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount
     return nullptr;
 }
 
-optional<RDeclRes> REnumElemDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> REnumElemDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 

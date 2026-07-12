@@ -8,18 +8,18 @@ using namespace std;
 
 namespace Citron {
 
-optional<RDeclRes> RNamespaceDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RNamespaceDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     assert(typeArgs->GetCount() == 0);
 
     vector<RDeclRes> candidates;
 
     // namespace 
-    if (auto o_namespace = namespaceDeclContainerComp.GetMemberNamespace(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_namespace = namespaceDeclContainerComp.ResolveNamespaceMember(name, explicitTypeParamsExceptOuterCount))
         candidates.push_back(move(*o_namespace));
 
     // type
-    if (auto o_type = typeDeclContainerComp.GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
+    if (auto o_type = typeDeclContainerComp.ResolveTypeMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
         candidates.push_back(move(*o_type));
 
     // func
@@ -40,7 +40,7 @@ optional<RDeclRes> RNamespaceDecl::GetMember(RTypeArguments* typeArgs, InRef<RNa
 optional<RDeclRes> RNamespaceDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     auto typeArgs = rFactory->MakeEmptyTypeArguments();
-    if (auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = ResolveMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     if (outer)

@@ -48,12 +48,12 @@ RTypeDecl* RClassDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
     return typeDeclContainerComp.GetTypeMember(name, typeParamCount);
 }
 
-optional<RDeclRes> RClassDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RClassDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     vector<RDeclRes> candidates;
 
     // type
-    if (auto o_type = typeDeclContainerComp.GetMemberType(typeArgs, name, explicitTypeParamsExceptOuterCount))
+    if (auto o_type = typeDeclContainerComp.ResolveTypeMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
         candidates.push_back(move(*o_type));
 
     // class member func
@@ -77,11 +77,11 @@ optional<RDeclRes> RClassDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> 
 
 optional<RDeclRes> RClassDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = genericsComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     auto* typeArgs = MakeOpenTypeArgs(*rFactory);
-    if (auto o_member = GetMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = ResolveMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     // TODO: [37] class base에서도 검색하기

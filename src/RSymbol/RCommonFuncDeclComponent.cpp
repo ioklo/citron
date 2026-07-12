@@ -99,7 +99,7 @@ vector<RType*> RCommonFuncDeclComponent::GetParamIds()
     return result;
 }
 
-optional<RDeclRes> RCommonFuncDeclComponent::ResolveIdentifierCore(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RCommonFuncDeclComponent::ResolveFuncParam(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     assert(funcReturnAndParams);
 

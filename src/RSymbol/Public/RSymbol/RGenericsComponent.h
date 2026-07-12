@@ -22,7 +22,7 @@ public:
     size_t GetTypeParamCount() { return o_typeParams->size(); }
     RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index);
     RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name, size_t typeParamCount);
-    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifierCore(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
+    RSYMBOL_API std::optional<RDeclRes> ResolveTypeParam(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 

@@ -22,7 +22,7 @@ RNamespaceDecl* RNamespaceDeclContainerComponent::GetNamespace(InRef<RName> name
     return i->second;
 }
 
-optional<RDeclRes> RNamespaceDeclContainerComponent::GetMemberNamespace(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RNamespaceDeclContainerComponent::ResolveNamespaceMember(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {   
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 

@@ -1,6 +1,6 @@
 # Declaration Model
 
-Status: draft current
+Status: implemented current
 Area: compiler, symbol
 Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symbol tree
 
@@ -10,7 +10,7 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - Compilation phases use `RDecl` as the common interface.
 - Common declaration-related sum types such as `RFuncDecl`, `NFuncDecl`, `RDeclRes`, and `BodyRes` use thin wrapper classes over `std::variant` rather than public type aliases.
 - Prefer domain methods on those wrappers (`GetRDecl()`, `GetRFuncDecl()`, `GetFuncDeclWithOuterTypeArgs()`, etc.) over scattering free helper functions at call sites.
-- Ongoing direction: treat the semantic declaration tree as a dedicated node model (`RNode`) rather than letting category views and source payload types also act as tree APIs.
+- The semantic declaration tree reconfiguration around `RNode` is complete; it is no longer an active migration task.
 - `RTypeDecl`, `RFuncDecl`, `RTypeDeclOuter`, and `RFuncDeclOuter` are better understood as category views over semantic declarations than as the tree node abstraction itself.
 - Terminology: use `outer` for the containing element in the symbol tree, `base` for inheritance relationships, and avoid `parent` because it is ambiguous between those axes.
 - Current leaning: `RNode` should be a lightweight tree/name carrier first. Richer declaration identity such as generic arity and callable signature belongs in declaration/category metadata rather than the node name key itself.
@@ -34,7 +34,6 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - Accessibility policy is likely to split between module/namespace member rules and type-member/inheritance rules, so `RNode` should not assume a single tree-only access algorithm.
 
 ## Related Open Points
-- Exact `RNode` shape and migration path from current `RDecl`.
 - Exact fields filled at fdecl / decl / impl states for each declaration kind.
 - How `cti` generated declaration surface maps into `EDecl` / `REDecl`.
 - How opaque result identity for `some` return attaches to declaration identity.

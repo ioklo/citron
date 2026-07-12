@@ -29,6 +29,8 @@ class REnumDecl;
 class REnumElemDecl;
 class REnumElemVarDecl;
 class RLambdaVarDecl;
+class RTraitDecl;
+class RTraitFuncDecl;
 
 // RDeclSpaceResolvedResult
 struct RDeclRes_Namespace { RNamespaceDecl* decl; };
@@ -70,6 +72,14 @@ struct RDeclRes_LambdaVar { RTypeArguments* outerTypeArgs; RLambdaVarDecl* decl;
 struct RDeclRes_TupleVar {}; // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
 struct RDeclRes_TypeVar { RTypeParamDecl* decl; };
 struct RDeclRes_FuncParam { RFuncParameter funcParam; };
+struct RDeclRes_Trait { RTraitDecl* decl; };
+struct RDeclRes_TraitFuncs 
+{
+    std::vector<TDeclWithOuterTypeArgs<RTraitFuncDecl>> items;
+    RSYMBOL_API RDeclRes_TraitFuncs(std::vector<TDeclWithOuterTypeArgs<RTraitFuncDecl>>&& items);
+    RSYMBOL_API RDeclRes_TraitFuncs(const RDeclRes_TraitFuncs&);
+    RSYMBOL_API ~RDeclRes_TraitFuncs();
+};
 
 class RDeclRes
 {
@@ -88,7 +98,9 @@ class RDeclRes
         struct RDeclRes_LambdaVar,
         struct RDeclRes_TupleVar,
         struct RDeclRes_TypeVar,
-        struct RDeclRes_FuncParam
+        struct RDeclRes_FuncParam,
+        struct RDeclRes_Trait,
+        struct RDeclRes_TraitFuncs,
     >;
 
     Variant v;
@@ -103,8 +115,6 @@ public:
     template<typename T>
     T* GetIf() { return std::get_if<T>(&v); }
 };
-
-
 
 } // namespace Citron
 

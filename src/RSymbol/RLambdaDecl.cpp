@@ -57,7 +57,7 @@ RTypeDecl* RLambdaDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
     return genericsComp.GetTypeMember(name, typeParamCount);
 }
 
-optional<RDeclRes> RLambdaDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RLambdaDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
@@ -69,7 +69,7 @@ optional<RDeclRes> RLambdaDecl::GetMember(RTypeArguments* typeArgs, InRef<RName>
 
 optional<RDeclRes> RLambdaDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = genericsComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     // Lambda에서 검색하지 않고, FuncContext에서 검색한다

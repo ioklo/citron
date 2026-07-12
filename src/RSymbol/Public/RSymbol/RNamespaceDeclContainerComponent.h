@@ -25,7 +25,7 @@ public:
     RSYMBOL_API RNamespaceDecl* GetNamespace(InRef<RName> name);
 
     // internal
-    std::optional<RDeclRes> GetMemberNamespace(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
+    std::optional<RDeclRes> ResolveNamespaceMember(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 }

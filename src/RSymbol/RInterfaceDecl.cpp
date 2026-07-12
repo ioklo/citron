@@ -39,14 +39,14 @@ RTypeDecl* RInterfaceDecl::GetTypeMember(InRef<RName> name, size_t typeParamCoun
     return genericsComp.GetTypeMember(name, typeParamCount);
 }
 
-optional<RDeclRes> RInterfaceDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RInterfaceDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     throw NotImplementedException();
 }
 
 optional<RDeclRes> RInterfaceDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = genericsComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     throw NotImplementedException();

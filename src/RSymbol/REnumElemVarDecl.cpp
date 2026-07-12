@@ -36,7 +36,7 @@ RTypeDecl* REnumElemVarDecl::GetTypeMember(InRef<RName> name, size_t typeParamCo
     return nullptr;
 }
 
-optional<RDeclRes> REnumElemVarDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> REnumElemVarDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }

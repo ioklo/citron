@@ -45,7 +45,7 @@ RType* RType_Nullable::Apply(RTypeArguments* typeArgs)
     return factory->MakeNullableType(appliedInnerType);
 }
 
-optional<RDeclRes> RType_Nullable::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Nullable::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     // 사용자가 검색해서 쓸 수 있는 멤버는 없다
     return nullopt;
@@ -61,7 +61,7 @@ RType* RType_NullableInplace::Apply(RTypeArguments* typeArgs)
     return factory->MakeNullableInplaceType(innerType->Apply(typeArgs));
 }
 
-optional<RDeclRes> RType_NullableInplace::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_NullableInplace::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -77,7 +77,7 @@ RType* RType_TypeVar::Apply(RTypeArguments* typeArgs)
     return typeArgs->Get(globalIndex);
 }
 
-optional<RDeclRes> RType_TypeVar::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_TypeVar::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -91,7 +91,7 @@ RType* RType_Void::Apply(RTypeArguments* typeArgs)
     return this;
 }
 
-optional<RDeclRes> RType_Void::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Void::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -122,7 +122,7 @@ RCopyStrategy RType_Tuple::GetCopyStrategy()
     return RCopyStrategy::Bitwise;
 }
 
-optional<RDeclRes> RType_Tuple::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Tuple::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     throw NotImplementedException();
 }
@@ -148,7 +148,7 @@ RType* RType_Func::Apply(RTypeArguments* typeArgs)
     return factory->MakeFuncType(bLocal, appliedRetType, move(appliedParams));
 }
 
-optional<RDeclRes> RType_Func::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Func::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -170,7 +170,7 @@ RType* RType_Ptr::Apply(RTypeArguments* typeArgs)
     return factory->MakePtrType(appliedInnerType);
 }
 
-optional<RDeclRes> RType_Ptr::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Ptr::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -186,7 +186,7 @@ RType* RType_Shared::Apply(RTypeArguments* typeArgs)
     return factory->MakeSharedType(appliedInnerType);
 }
 
-std::optional<RDeclRes> RType_Shared::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+std::optional<RDeclRes> RType_Shared::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -203,7 +203,7 @@ RType* RType_Box::Apply(RTypeArguments* typeArgs)
     return factory->MakeBoxType(appliedInnerType);
 }
 
-optional<RDeclRes> RType_Box::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Box::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -229,9 +229,9 @@ RType* RType_Class::Apply(RTypeArguments* typeArgs)
     return factory->MakeClassType(decl, appliedTypeArgs);
 }
 
-optional<RDeclRes> RType_Class::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Class::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
-    return decl->GetMember(typeArgs, name, explicitMemberTypeArgsCount);
+    return decl->ResolveMember(typeArgs, name, explicitMemberTypeArgsCount);
 }
 
 RType_Struct::RType_Struct(RStructDecl* decl, RTypeArguments* typeArgs, RFactory* factory)
@@ -258,9 +258,9 @@ RType* RType_Struct::Apply(RTypeArguments* typeArgs)
     return factory->MakeStructType(decl, appliedTypeArgs);
 }
 
-optional<RDeclRes> RType_Struct::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Struct::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
-    return decl->GetMember(typeArgs, name, explicitMemberTypeArgsCount);
+    return decl->ResolveMember(typeArgs, name, explicitMemberTypeArgsCount);
 }
 
 RType_Enum::RType_Enum(REnumDecl* decl, RTypeArguments* typeArgs, RFactory* factory)
@@ -280,9 +280,9 @@ RCopyStrategy RType_Enum::GetCopyStrategy()
     throw NotImplementedException{};
 }
 
-optional<RDeclRes> RType_Enum::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Enum::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
-    return decl->GetMember(typeArgs, name, explicitMemberTypeArgsCount);
+    return decl->ResolveMember(typeArgs, name, explicitMemberTypeArgsCount);
 }
 
 RType_EnumElem::RType_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs, RFactory* factory)
@@ -323,9 +323,9 @@ RCopyStrategy RType_EnumElem::GetCopyStrategy()
     return RCopyStrategy::Bitwise;
 }
 
-optional<RDeclRes> RType_EnumElem::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_EnumElem::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
-    return decl->GetMember(typeArgs, name, explicitMemberTypeArgsCount);
+    return decl->ResolveMember(typeArgs, name, explicitMemberTypeArgsCount);
 }
 
 RType_Interface::RType_Interface(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal, RFactory* factory)
@@ -339,7 +339,7 @@ RType* RType_Interface::Apply(RTypeArguments* typeArgs)
     return factory->MakeInterfaceType(decl, appliedTypeArgs, bLocal);
 }
 
-optional<RDeclRes> RType_Interface::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Interface::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     throw NotImplementedException();
 }
@@ -366,9 +366,9 @@ RCopyStrategy RType_Lambda::GetCopyStrategy()
     throw NotImplementedException{};
 }
 
-optional<RDeclRes> RType_Lambda::GetMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Lambda::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
-    return decl->GetMember(outerTypeArgs, name, explicitMemberTypeArgsCount);
+    return decl->ResolveMember(outerTypeArgs, name, explicitMemberTypeArgsCount);
 }
 
 } // Citron

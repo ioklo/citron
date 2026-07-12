@@ -37,7 +37,7 @@ RTypeDecl* RStructVarDecl::GetTypeMember(InRef<RName> name, size_t typeParamCoun
     return nullptr;
 }
 
-optional<RDeclRes> RStructVarDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RStructVarDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }

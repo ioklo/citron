@@ -31,6 +31,7 @@ class RStructCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonCompo
 public:
     RSYMBOL_API RStructCtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind);
     RSYMBOL_API void InitFuncParameters(std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    RSYMBOL_API void InitTypeParams(std::vector<RTypeParamDecl*>&& typeParams);
 
     RStructDecl* GetStructDecl() { return _struct; }
     RStructMemberAccessor GetAccessor() { return accessor; }
@@ -42,7 +43,7 @@ public: // from RDecl
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name, size_t typeParamCount) final;
-    RSYMBOL_API std::optional<RDeclRes> GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) final;
+    RSYMBOL_API std::optional<RDeclRes> ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) final;
     RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) final;
 };
 

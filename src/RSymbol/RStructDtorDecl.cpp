@@ -37,14 +37,14 @@ RTypeDecl* RStructDtorDecl::GetTypeMember(InRef<RName> name, size_t typeParamCou
     return nullptr;
 }
 
-optional<RDeclRes> RStructDtorDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RStructDtorDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
 optional<RDeclRes> RStructDtorDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = commonFuncDeclComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = commonFuncDeclComp.ResolveFuncParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);

@@ -40,7 +40,7 @@ RTypeDecl* RClassVarDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount
     return nullptr;
 }
 
-optional<RDeclRes> RClassVarDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RClassVarDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }

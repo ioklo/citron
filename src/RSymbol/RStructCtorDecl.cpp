@@ -18,6 +18,11 @@ void RStructCtorDecl::InitFuncParameters(std::vector<RFuncParameter>&& funcParam
     commonFuncDeclComp.InitFuncReturnAndParams(RFuncReturn_None{}, RThisKind_Static{}, std::move(funcParameters), bLastParameterVariadic);
 }
 
+void RStructCtorDecl::InitTypeParams(std::vector<RTypeParamDecl*>&& typeParams)
+{
+    return genericsComp.InitTypeParams(move(typeParams));
+}
+
 // from RDecl
 RDecl* RStructCtorDecl::GetOuter()
 {
@@ -44,17 +49,17 @@ RTypeDecl* RStructCtorDecl::GetTypeMember(InRef<RName> name, size_t typeParamCou
     return genericsComp.GetTypeMember(name, typeParamCount);
 }
 
-optional<RDeclRes> RStructCtorDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RStructCtorDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
 optional<RDeclRes> RStructCtorDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = genericsComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
-    if (auto o_member = commonFuncDeclComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = commonFuncDeclComp.ResolveFuncParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);

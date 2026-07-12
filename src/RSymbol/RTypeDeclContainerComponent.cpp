@@ -42,7 +42,7 @@ RTypeDecl* RTypeDeclContainerComponent::GetTypeMember(InRef<RName> name, size_t 
 }
 
 // 첫번째 인자는 부모의 typeArgs
-optional<RDeclRes> RTypeDeclContainerComponent::GetMemberType(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RTypeDeclContainerComponent::ResolveTypeMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     auto i = typeDict.find({*name, explicitTypeParamsExceptOuterCount, {}});
     if (i == typeDict.end()) return nullopt;

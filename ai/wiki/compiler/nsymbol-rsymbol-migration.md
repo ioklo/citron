@@ -9,7 +9,7 @@ Keywords: NSymbol, RSymbol, RDecl, RFactory, migration, trait
 - 주 컴파일 경로의 declaration 구현과 생성 책임은 `NSymbol`에서 `RSymbol`로 옮겨졌다.
 - `RFactory`가 `RDecl`의 소유자이며 `MakeDecl<TDecl>(...)`로 source-origin declaration을 생성한다.
 - `SmTranslator`, MIR, QIR, QEvaluator와 EvalTests의 정상 경로는 `RDecl`, `RTypeDecl`, `RFuncDecl` 및 구체 `R*Decl`을 사용한다.
-- 이행은 `RNode` 중심 semantic tree 재구성과는 별개의 과도기 단계다. 현재 `R*Decl`은 여전히 tree, category, source payload 책임을 함께 갖고 있으며, 장기적으로는 `RNode`와 payload/category 계층으로 분리한다.
+- `RNode` 중심 semantic tree 재구성은 완료됐다. 이후 작업은 이 이행 자체가 아니라 trait/impl semantic model 구현에 집중한다.
 
 ## Completed Migration Scope
 
@@ -56,7 +56,6 @@ trait와 extend의 parser/AST는 존재하지만 `RSymbol` semantic 구현은 �
 2. Trait requirement와 conformance/witness declaration을 symbol 단계에 표현한다.
 3. `STraitDecl`과 `SExtendDecl`을 SmTranslator skeleton/task 단계로 연결한다.
 4. `NSymbol` 잔재 target, test, generated build-source 목록을 별도 정리한다.
-5. 이후 `RDecl`의 tree 책임을 `RNode`로 점진적으로 이행한다.
 
 ## Related Documents
 

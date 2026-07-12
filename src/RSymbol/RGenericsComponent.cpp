@@ -37,7 +37,7 @@ RTypeDecl* RGenericsComponent::GetTypeMember(InRef<RName> name, size_t typeParam
     return nullptr;
 }
 
-optional<RDeclRes> RGenericsComponent::ResolveIdentifierCore(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RGenericsComponent::ResolveTypeParam(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     assert(o_typeParams);
 

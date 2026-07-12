@@ -44,7 +44,7 @@ RTypeDecl* RLambdaVarDecl::GetTypeMember(InRef<RName> name, size_t typeParamCoun
     return nullptr;
 }
 
-optional<RDeclRes> RLambdaVarDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RLambdaVarDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }

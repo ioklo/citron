@@ -41,7 +41,7 @@ RTypeParamDecl* RGlobalFuncDecl::GetTypeParam(size_t index)
 }
 
 RTypeDecl* RGlobalFuncDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount) { return genericsComp.GetTypeMember(name, typeParamCount); }
-optional<RDeclRes> RGlobalFuncDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> RGlobalFuncDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 람다는 검색시키지 않는다
     // 현재 함수에서 Declaration을 할 수 없기 때문에 
@@ -50,10 +50,10 @@ optional<RDeclRes> RGlobalFuncDecl::GetMember(RTypeArguments* typeArgs, InRef<RN
 
 optional<RDeclRes> RGlobalFuncDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = genericsComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
-    if (auto o_member = commonFuncDeclComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = commonFuncDeclComp.ResolveFuncParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);

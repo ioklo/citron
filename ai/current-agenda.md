@@ -1,18 +1,18 @@
 # Current Agenda
 
 ## Topic
-`RDecl` 제거와 `RNode` 기반 semantic tree 재구성
+canonical trait conformance와 `impl` 구현
 
 ## Current Direction
-- semantic tree의 중심은 `RNode`로 옮긴다.
-- `RNode`는 우선 tree / name / member relation을 담당하는 lightweight node로 유지한다.
-- 기존 `RDecl` 계층은 점진적으로 역할을 잃게 만들고, 충분히 이행되면 제거한다.
-- declaration category, richer metadata, accessibility policy는 `RNode` 본체보다 별도 payload / checker / policy 계층으로 두는 방향을 우선 검토한다.
+- `RDecl`/`RNode` 정리는 완료했다. semantic tree 재구성은 현재 작업 주제가 아니다.
+- 첫 trait 구현 범위는 원본 module의 canonical conformance로 제한한다: `struct S : Trait`와 대응 `impl S : Trait`.
+- 먼저 trait declaration/type, struct trait 목록, witness `impl` declaration을 RSymbol과 SmTranslator skeleton 단계에 연결한다.
+- 이름 있는 외부 `extension` bundle, 소비자 `extend` activation, overlap/ambiguity 처리는 후속 단계다.
 
 ## Current Refactoring State
 - declaration 구현과 주 번역 경로는 `NSymbol`에서 `RSymbol`로 이행됐다. `RFactory`가 `RDecl`을 소유·생성한다.
 - `NSymbol`에는 현재 `NFactory` wrapper와 일부 비주력 target/test의 old API 참조가 남아 있다.
-- trait/extend는 parser/AST까지만 연결돼 있으며, `RTraitDecl`, trait type/factory, SmTranslator visitor/task는 아직 구현 대상이다.
+- trait/impl은 parser/AST까지만 연결돼 있으며, `RTraitDecl`, trait type/factory, SmTranslator visitor/task는 아직 구현 대상이다.
 - 자세한 이행 범위와 잔재는 `ai/wiki/compiler/nsymbol-rsymbol-migration.md`를 본다.
 
 ## Recently Discussed Points

@@ -36,4 +36,12 @@ RDeclRes_StructFuncs::RDeclRes_StructFuncs(vector<TDeclWithOuterTypeArgs<RStruct
 RDeclRes_StructFuncs::RDeclRes_StructFuncs(const RDeclRes_StructFuncs&) = default;
 RDeclRes_StructFuncs::~RDeclRes_StructFuncs() = default;
 
+RDeclRes_TraitFuncs::RDeclRes_TraitFuncs(std::vector<TDeclWithOuterTypeArgs<RTraitFuncDecl>>&& items)
+    : items{std::move(items)}
+{
+}
+
+RDeclRes_TraitFuncs::RDeclRes_TraitFuncs(const RDeclRes_TraitFuncs&) = default;
+RDeclRes_TraitFuncs::~RDeclRes_TraitFuncs() = default;
+
 } // namespace Citron

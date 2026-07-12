@@ -49,7 +49,7 @@ RTypeDecl* REnumDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
     return nullptr;
 }
 
-optional<RDeclRes> REnumDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RDeclRes> REnumDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
 
@@ -62,7 +62,7 @@ optional<RDeclRes> REnumDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> n
 
 optional<RDeclRes> REnumDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = genericsComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     return nullopt;

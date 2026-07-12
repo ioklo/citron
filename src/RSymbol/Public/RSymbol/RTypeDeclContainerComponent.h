@@ -27,7 +27,7 @@ public:
     RSYMBOL_API void AddType(RTypeDecl* typeDecl);
 
     RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name, size_t typeParamCount);
-    RSYMBOL_API std::optional<RDeclRes> GetMemberType(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
+    RSYMBOL_API std::optional<RDeclRes> ResolveTypeMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 }

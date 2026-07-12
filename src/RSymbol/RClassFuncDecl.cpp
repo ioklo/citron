@@ -52,17 +52,17 @@ RTypeDecl* RClassFuncDecl::GetTypeMember(InRef<RName> name, size_t typeParamCoun
     return genericsComp.GetTypeMember(name, typeParamCount);
 }
 
-std::optional<RDeclRes> RClassFuncDecl::GetMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+std::optional<RDeclRes> RClassFuncDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     return nullopt;
 }
 
 std::optional<RDeclRes> RClassFuncDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto o_member = genericsComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
-    if (auto o_member = commonFuncDeclComp.ResolveIdentifierCore(name, explicitTypeParamsExceptOuterCount))
+    if (auto o_member = commonFuncDeclComp.ResolveFuncParam(name, explicitTypeParamsExceptOuterCount))
         return o_member;
 
     return _class->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);

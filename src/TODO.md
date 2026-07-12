@@ -1,3 +1,4 @@
+
 - [ ] // TODO: [7] GlobalFuncDecl에 AccessModifier 추가
 - [ ] // TODO: [10] shared lambda이면 shared로 판단해야 한다
 - [ ] // TODO: [15] foreach 에러 처리
@@ -47,3 +48,4 @@
 - [ ] // TODO: [66] 2026-07-09, Trait, Extend 구현
 - [v] // TODO: [67] 2026-07-10, NSymbol, RSymbol 정리하면서 생긴 문제들 해결
 - [ ] // TODO: [68] 2026-07-11, CanAccess 제대로 구현
+- [ ] // TODO: [69] 2026-07-12, ResolveMember에서 Generics도 제대로 리턴하도록, RCommonFuncDeclComponent에서 ResolveFuncParam제거 (RDeclRes -> BodyRes로)
