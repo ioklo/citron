@@ -29,6 +29,8 @@ trait Cloneable
 
 타입의 원본 module은 타입 선언부에 canonical trait conformance를 선언한다. Struct는 concrete struct를 상속하지 않으므로 `:` 뒤에는 trait만 올 수 있다.
 
+v1에서 `impl` target은 `struct`로 한정한다. `class`, `enum`, tuple/nullable/pointer/ownership wrapper 같은 다른 type category의 conformance는 후속 설계에서 단계적으로 검토한다.
+
 ```citron
 struct S : Trait1, Trait2
 {

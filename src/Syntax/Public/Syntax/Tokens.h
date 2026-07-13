@@ -80,6 +80,7 @@ TOKEN_DEF(NamespaceToken, L"namespace")
 TOKEN_DEF(TraitToken, L"trait")
 TOKEN_DEF(SomeToken, L"some")
 TOKEN_DEF(ExtendToken, L"extend")
+TOKEN_DEF(ImplToken, L"impl")
 
 TOKEN_DEF(ColonToken, L":")
 TOKEN_DEF(BacktickToken, L"`")
@@ -192,6 +193,7 @@ using Token = std::variant<
     TraitToken,
     SomeToken,
     ExtendToken,
+    ImplToken,
 
     ColonToken,
     BacktickToken,

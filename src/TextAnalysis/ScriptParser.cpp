@@ -370,7 +370,7 @@ optional<SExtendMemberDecl> ParseExtendMemberDecl(Lexer* lexer, SFactory& factor
     return nullopt;
 }
 
-// extend S : Trait { }
+// impl S : Trait { }
 SExtendDecl* ParseExtendDecl(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;

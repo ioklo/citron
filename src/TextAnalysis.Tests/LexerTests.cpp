@@ -103,6 +103,7 @@ TEST(Lexer, LexSymbols)
         TraitToken{},
         SomeToken{},
         ExtendToken{},
+        ImplToken{},
 
         PlusPlusToken{},
         MinusMinusToken{},

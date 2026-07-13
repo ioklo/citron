@@ -32,6 +32,7 @@ Status: current snapshot
 - Nested generic declaration identity는 outer type arguments를 포함한다. 예: `C<int>.Trait`와 `C<string>.Trait`는 다르다.
 - Struct는 concrete struct를 상속하지 않는다. Struct의 `:` 뒤에는 trait conformance만 올 수 있고 struct member에는 `protected`를 허용하지 않는다.
 - 원본 module은 `struct S : Trait`로 canonical conformance를 선언하고 `impl S : Trait {}`로 구현한다.
+- v1에서 `impl` target은 `struct`로 한정한다. `class`, `enum`, structural type 등 다른 target category는 후속 설계에서 단계적으로 검토한다.
 - 외부 module은 `extension Bundle for S : Trait;`로 이름 있는 conformance bundle을 선언하고 `impl Bundle for S : Trait {}`로 구현한다.
 - 외부 bundle은 자동 활성화하지 않는다. 소비 file에서 `import Provider;`로 declaration world를 연 뒤 `extend Bundle for S : Trait;`로 target과 trait를 명시해 활성화한다.
 - `extension`은 bundle declaration, `impl`은 witness implementation, `extend`는 file-local activation 역할로 구분한다.
