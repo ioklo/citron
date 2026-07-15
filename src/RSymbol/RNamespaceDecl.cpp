@@ -56,7 +56,7 @@ RDecl* RNamespaceDecl::GetOuter()
 
 RIdentifier RNamespaceDecl::GetIdentifier()
 {
-    return RIdentifier{name, 0, {}};
+    return RIdentifier{name, {}};
 }
 
 size_t RNamespaceDecl::GetTypeParamCount()
@@ -69,9 +69,9 @@ RTypeParamDecl* RNamespaceDecl::GetTypeParam(size_t index)
     return nullptr;
 }
 
-RTypeDecl* RNamespaceDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RNamespaceDecl::GetTypeMember(InRef<RName> name)
 {
-    return typeDeclContainerComp.GetTypeMember(name, typeParamCount);
+    return typeDeclContainerComp.GetTypeMember(name);
 }
 
 } // namespace Citron

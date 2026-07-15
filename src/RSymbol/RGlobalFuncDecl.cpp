@@ -27,7 +27,7 @@ void RGlobalFuncDecl::InitFuncReturnAndParams(RFuncReturn&& funcRet, std::vector
 RDecl* RGlobalFuncDecl::GetOuter() { return outer; }
 RIdentifier RGlobalFuncDecl::GetIdentifier()
 {
-    return RIdentifier{name, genericsComp.GetTypeParamCount(), commonFuncDeclComp.GetParamIds()};
+    return RIdentifier{name, commonFuncDeclComp.GetParamIds()};
 }
 
 size_t RGlobalFuncDecl::GetTypeParamCount()
@@ -40,7 +40,7 @@ RTypeParamDecl* RGlobalFuncDecl::GetTypeParam(size_t index)
     return genericsComp.GetTypeParam(index);
 }
 
-RTypeDecl* RGlobalFuncDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount) { return genericsComp.GetTypeMember(name, typeParamCount); }
+RTypeDecl* RGlobalFuncDecl::GetTypeMember(InRef<RName> name) { return genericsComp.GetTypeMember(name); }
 optional<RDeclRes> RGlobalFuncDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
     // 람다는 검색시키지 않는다

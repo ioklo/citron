@@ -22,7 +22,7 @@ RDecl* RClassVarDecl::GetOuter()
 
 RIdentifier RClassVarDecl::GetIdentifier()
 {
-    return RIdentifier{name, 0, {}};
+    return RIdentifier{name, {}};
 }
 
 size_t RClassVarDecl::GetTypeParamCount()
@@ -35,7 +35,7 @@ RTypeParamDecl* RClassVarDecl::GetTypeParam(size_t index)
     return 0;
 }
 
-RTypeDecl* RClassVarDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RClassVarDecl::GetTypeMember(InRef<RName> name)
 {
     return nullptr;
 }

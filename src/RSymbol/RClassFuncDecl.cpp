@@ -34,7 +34,7 @@ RDecl* RClassFuncDecl::GetOuter()
 
 RIdentifier RClassFuncDecl::GetIdentifier()
 {
-    return RIdentifier{name, genericsComp.GetTypeParamCount(), commonFuncDeclComp.GetParamIds()};
+    return RIdentifier{name, commonFuncDeclComp.GetParamIds()};
 }
 
 size_t RClassFuncDecl::GetTypeParamCount()
@@ -47,9 +47,9 @@ RTypeParamDecl* RClassFuncDecl::GetTypeParam(size_t index)
     return genericsComp.GetTypeParam(index);
 }
 
-RTypeDecl* RClassFuncDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RClassFuncDecl::GetTypeMember(InRef<RName> name)
 {
-    return genericsComp.GetTypeMember(name, typeParamCount);
+    return genericsComp.GetTypeMember(name);
 }
 
 std::optional<RDeclRes> RClassFuncDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)

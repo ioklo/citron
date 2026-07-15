@@ -18,7 +18,7 @@ RDecl* REnumElemVarDecl::GetOuter()
 
 RIdentifier REnumElemVarDecl::GetIdentifier()
 {
-    return RIdentifier{name, 0, {}};
+    return RIdentifier{name, {}};
 }
 
 size_t REnumElemVarDecl::GetTypeParamCount()
@@ -31,7 +31,7 @@ RTypeParamDecl* REnumElemVarDecl::GetTypeParam(size_t index)
     return nullptr;
 }
 
-RTypeDecl* REnumElemVarDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* REnumElemVarDecl::GetTypeMember(InRef<RName> name)
 {
     return nullptr;
 }

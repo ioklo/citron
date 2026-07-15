@@ -23,8 +23,8 @@ std::expected<void, DiagPtr> ImplTask::PostBuildNonTypeSymbol(PostBuildNonTypeSy
     // impl S : TraitName
 
     // impl의 name은 다른 부분과 다르게 현재 scope에 있는 struct/class/enum 이름이다
-    outer->
-
+    auto* rTypeDecl = rOuter->GetTypeMember(RName::Normal(sImplDecl->name));
+    
 
     return {};
 }

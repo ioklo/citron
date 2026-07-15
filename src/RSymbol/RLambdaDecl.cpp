@@ -39,7 +39,7 @@ RDecl* RLambdaDecl::GetOuter()
 
 RIdentifier RLambdaDecl::GetIdentifier()
 {
-    return RIdentifier{name, 0, {}};
+    return RIdentifier{name, {}};
 }
 
 size_t RLambdaDecl::GetTypeParamCount()
@@ -52,9 +52,9 @@ RTypeParamDecl* RLambdaDecl::GetTypeParam(size_t index)
     return genericsComp.GetTypeParam(index);
 }
 
-RTypeDecl* RLambdaDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RLambdaDecl::GetTypeMember(InRef<RName> name)
 {
-    return genericsComp.GetTypeMember(name, typeParamCount);
+    return genericsComp.GetTypeMember(name);
 }
 
 optional<RDeclRes> RLambdaDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)

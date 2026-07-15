@@ -24,7 +24,7 @@ RDecl* REnumDecl::GetOuter()
 
 RIdentifier REnumDecl::GetIdentifier()
 {
-    return RIdentifier{name, genericsComp.GetTypeParamCount(), {}};
+    return RIdentifier{name, {}};
 }
 
 size_t REnumDecl::GetTypeParamCount()
@@ -37,9 +37,9 @@ RTypeParamDecl* REnumDecl::GetTypeParam(size_t index)
     return genericsComp.GetTypeParam(index);
 }
 
-RTypeDecl* REnumDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* REnumDecl::GetTypeMember(InRef<RName> name)
 {
-    if (RTypeDecl* typeDecl = genericsComp.GetTypeMember(name, typeParamCount))
+    if (RTypeDecl* typeDecl = genericsComp.GetTypeMember(name))
         return typeDecl;
 
     auto i = elemsMap.find(*name);

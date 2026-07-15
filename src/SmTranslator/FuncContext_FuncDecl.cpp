@@ -40,7 +40,7 @@ RTypeDecl* FuncContext_FuncDecl::ResolveTypeDecl(InRef<RName> name, size_t expli
 
     while (curDecl)
     {
-        if (RTypeDecl* typeDecl = curDecl->GetTypeMember(name, explicitTypeParamsExceptOuterCount))
+        if (RTypeDecl* typeDecl = curDecl->GetTypeMember(name))
             return typeDecl;
 
         curDecl = curDecl->GetOuter();

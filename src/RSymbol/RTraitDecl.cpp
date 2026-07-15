@@ -24,7 +24,7 @@ RDecl* RTraitDecl::GetOuter()
 
 RIdentifier RTraitDecl::GetIdentifier()
 {
-    return RIdentifier{name, genericsComp.GetTypeParamCount(), {}};
+    return RIdentifier{name, {}};
 }
 
 size_t RTraitDecl::GetTypeParamCount()
@@ -37,9 +37,9 @@ RTypeParamDecl* RTraitDecl::GetTypeParam(size_t index)
     return genericsComp.GetTypeParam(index);
 }
 
-RTypeDecl* RTraitDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RTraitDecl::GetTypeMember(InRef<RName> name)
 {
-    return genericsComp.GetTypeMember(name, typeParamCount);
+    return genericsComp.GetTypeMember(name);
 }
 
 optional<RDeclRes> RTraitDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)

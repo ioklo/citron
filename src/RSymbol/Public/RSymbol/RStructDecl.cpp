@@ -59,15 +59,15 @@ RStructCtorDecl* RStructDecl::GetUnboundCopyCtor()
 
 // from RDecl
 RDecl* RStructDecl::GetOuter() { return outer.GetDecl(); }
-RIdentifier RStructDecl::GetIdentifier() { return RIdentifier{name, genericsComp.GetTypeParamCount(), {}}; }
+RIdentifier RStructDecl::GetIdentifier() { return RIdentifier{name, {}}; }
 size_t RStructDecl::GetTypeParamCount() { return genericsComp.GetTypeParamCount(); }
 RTypeParamDecl* RStructDecl::GetTypeParam(size_t index) { return genericsComp.GetTypeParam(index); }
-RTypeDecl* RStructDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RStructDecl::GetTypeMember(InRef<RName> name)
 {
-    if (auto* typeDecl = genericsComp.GetTypeMember(name, typeParamCount))
+    if (auto* typeDecl = genericsComp.GetTypeMember(name))
         return typeDecl;
 
-    return typeDeclContainerComp.GetTypeMember(name, typeParamCount);
+    return typeDeclContainerComp.GetTypeMember(name);
 }
 
 std::optional<RDeclRes> RStructDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)

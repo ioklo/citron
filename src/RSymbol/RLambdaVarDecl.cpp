@@ -26,7 +26,7 @@ RDecl* RLambdaVarDecl::GetOuter()
 
 RIdentifier RLambdaVarDecl::GetIdentifier()
 {
-    return RIdentifier{name, 0, {}};
+    return RIdentifier{name, {}};
 }
 
 size_t RLambdaVarDecl::GetTypeParamCount()
@@ -39,7 +39,7 @@ RTypeParamDecl* RLambdaVarDecl::GetTypeParam(size_t index)
     return nullptr;
 }
 
-RTypeDecl* RLambdaVarDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RLambdaVarDecl::GetTypeMember(InRef<RName> name)
 {
     return nullptr;
 }

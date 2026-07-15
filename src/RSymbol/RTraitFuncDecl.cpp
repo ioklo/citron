@@ -22,7 +22,7 @@ RIdentifier RTraitFuncDecl::GetIdentifier()
     for (auto& param : funcParameters)
         paramIds.push_back(param.type);
 
-    return RIdentifier{name, genericsComp.GetTypeParamCount(), move(paramIds)};
+    return RIdentifier{name, move(paramIds)};
 }
 
 size_t RTraitFuncDecl::GetTypeParamCount()
@@ -35,14 +35,14 @@ RTypeParamDecl* RTraitFuncDecl::GetTypeParam(size_t index)
     return genericsComp.GetTypeParam(index);
 }
 
-RTypeDecl* RTraitFuncDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RTraitFuncDecl::GetTypeMember(InRef<RName> name)
 {
-    return genericsComp.GetTypeMember(name, typeParamCount);
+    return genericsComp.GetTypeMember(name);
 }
 
 optional<RDeclRes> RTraitFuncDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
 {
-    if (auto* typeDecl = genericsComp.GetTypeMember(name, explicitTypeParamsExceptOuterCount))
+    if (auto* typeDecl = genericsComp.GetTypeMember(name))
         return typeDecl->ToRDeclRes(typeArgs);
 
     return nullopt;

@@ -96,7 +96,7 @@ void DoTest(const string& code, const string& expected)
         if (auto* rGlobalFuncDecl = dynamic_cast<RGlobalFuncDecl*>(body.rFuncDecl))
         {   
             auto id = body.rFuncDecl->RFuncDecl_GetDecl()->GetIdentifier();
-            if (id == RIdentifier{RName::Normal("Main"), 0, {}})
+            if (id == RIdentifier{RName::Normal("Main"), {}})
                 rEntry = rGlobalFuncDecl;
         }
     }

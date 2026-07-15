@@ -13,7 +13,6 @@ class RType;
 struct RIdentifier
 {
     RName name;
-    size_t typeParamCount;
     std::vector<RType*> paramIds;
 
     bool operator==(const RIdentifier& other) const = default;
@@ -30,7 +29,6 @@ struct hash<Citron::RIdentifier>
     {
         size_t s = 0;
         Citron::hash_combine(s, identifier.name);
-        Citron::hash_combine(s, identifier.typeParamCount);
         Citron::hash_combine(s, identifier.paramIds);
         return s;
     }

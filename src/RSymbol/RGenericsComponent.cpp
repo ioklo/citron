@@ -23,11 +23,9 @@ RTypeParamDecl* RGenericsComponent::GetTypeParam(size_t index)
     return (*o_typeParams)[index];
 }
 
-RTypeDecl* RGenericsComponent::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RGenericsComponent::GetTypeMember(InRef<RName> name)
 {
     assert(o_typeParams);
-
-    if (typeParamCount != 0) return nullptr;
 
     for (auto* typeParam : *o_typeParams)
     {

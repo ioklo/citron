@@ -31,7 +31,7 @@ RDecl* RStructCtorDecl::GetOuter()
 
 RIdentifier RStructCtorDecl::GetIdentifier()
 {
-    return RIdentifier{RName_Reserved{RName_ReservedName::Ctor}, 0, commonFuncDeclComp.GetParamIds()};
+    return RIdentifier{RName_Reserved{RName_ReservedName::Ctor}, commonFuncDeclComp.GetParamIds()};
 }
 
 size_t RStructCtorDecl::GetTypeParamCount()
@@ -44,9 +44,9 @@ RTypeParamDecl* RStructCtorDecl::GetTypeParam(size_t index)
     return genericsComp.GetTypeParam(index);
 }
 
-RTypeDecl* RStructCtorDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RStructCtorDecl::GetTypeMember(InRef<RName> name)
 {
-    return genericsComp.GetTypeMember(name, typeParamCount);
+    return genericsComp.GetTypeMember(name);
 }
 
 optional<RDeclRes> RStructCtorDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)

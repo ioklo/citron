@@ -19,7 +19,7 @@ RDecl* RStructDtorDecl::GetOuter()
 
 RIdentifier RStructDtorDecl::GetIdentifier()
 {
-    return RIdentifier{RName_Reserved{RName_ReservedName::Dtor}, 0, {}};
+    return RIdentifier{RName_Reserved{RName_ReservedName::Dtor}, {}};
 }
 
 size_t RStructDtorDecl::GetTypeParamCount()
@@ -32,7 +32,7 @@ RTypeParamDecl* RStructDtorDecl::GetTypeParam(size_t index)
     return nullptr;
 }
 
-RTypeDecl* RStructDtorDecl::GetTypeMember(InRef<RName> name, size_t typeParamCount)
+RTypeDecl* RStructDtorDecl::GetTypeMember(InRef<RName> name)
 {
     return nullptr;
 }

@@ -12,12 +12,12 @@ class ImplTask
     : public IPostBuildNonTypeSymbolTask
     , public ITranslateBodyTask
 {
-    SImplDecl* implDecl;
-    RDecl* outer;
+    SImplDecl* sImplDecl;
+    RDecl* rOuter;
 
 public:
-    static void Register(SImplDecl* implDecl, RDecl* outer, PhaseManager& phaseManager);
-    ImplTask(SImplDecl* implDecl, RDecl* outer) : implDecl{implDecl}, outer{outer} {}
+    static void Register(SImplDecl* sImplDecl, RDecl* rOuter, PhaseManager& phaseManager);
+    ImplTask(SImplDecl* sImplDecl, RDecl* rOuter) : sImplDecl{sImplDecl}, rOuter{rOuter} {}
 
 public: // from IPostBuildNonTypeSymbolTask
     std::expected<void, DiagPtr> PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContext& context) final;
