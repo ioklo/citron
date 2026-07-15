@@ -10,7 +10,7 @@
 
 #include "CommonTranslation.h"
 #include "PhaseManager.h"
-#include "BuildTypeDependentSymbolContext.h"
+#include "BuildNonTypeSymbolContext.h"
 #include "TranslateBodyContext.h"
 
 using namespace std;
@@ -20,11 +20,11 @@ namespace Citron {
 void GlobalFuncTask::Register(RNamespaceDecl* outer, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
     shared_ptr<GlobalFuncTask> task{new GlobalFuncTask(outer, syntax, move(rFactory))};
-    phaseManager.AddBuildTypeDependentSymbolTask(task);
+    phaseManager.AddBuildNonTypeSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
 
-expected<void, DiagPtr> GlobalFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> GlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto accessor = MakeNamespaceMemberAccessor(syntax->accessModifier);
     bool bSeqFunc = false; // TODO:

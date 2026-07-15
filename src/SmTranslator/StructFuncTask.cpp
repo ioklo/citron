@@ -7,7 +7,7 @@
 
 #include "MIR/MFuncBody.h"
 
-#include "BuildTypeDependentSymbolContext.h"
+#include "BuildNonTypeSymbolContext.h"
 #include "TranslateBodyContext.h"
 #include "CommonTranslation.h"
 #include "PhaseManager.h"
@@ -19,11 +19,11 @@ namespace Citron {
 void StructFuncTask::Register(RStructDecl* rStructDecl, SStructFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
     shared_ptr<StructFuncTask> task{new StructFuncTask(rStructDecl, syntax, std::move(rFactory))};
-    phaseManager.AddBuildTypeDependentSymbolTask(task);
+    phaseManager.AddBuildNonTypeSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
 
-expected<void, DiagPtr> StructFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto accessor = MakeStructMemberAccessor(sStructFunc->accessModifier);
     rStructFunc = rFactory->MakeDecl<RStructFuncDecl>(

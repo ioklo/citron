@@ -6,7 +6,7 @@
 #include "MIR/MFuncBody.h"
 
 #include "CommonTranslation.h"
-#include "BuildTypeDependentSymbolContext.h"
+#include "BuildNonTypeSymbolContext.h"
 #include "TranslateBodyContext.h"
 #include "PhaseManager.h"
 
@@ -19,11 +19,11 @@ void StructCtorTask::Register(RStructDecl* rStruct, SStructCtorDecl* sStructCtor
 {
     shared_ptr<StructCtorTask> task{new StructCtorTask{rStruct, sStructCtor, std::move(rFactory)}};
 
-    phaseManager.AddBuildTypeDependentSymbolTask(task);
+    phaseManager.AddBuildNonTypeSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
 
-expected<void, DiagPtr> StructCtorTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> StructCtorTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto accessor = MakeStructMemberAccessor(sStructCtor->accessModifier);
     rStructCtor = rFactory->MakeDecl<RStructCtorDecl>(rStruct, accessor, RStructCtorKind::Normal);

@@ -22,7 +22,7 @@ StructDtorTask::StructDtorTask(RStructDecl* rStruct, SStructDtorDecl* sStructDto
 {
 }
 
-expected<void, DiagPtr> StructDtorTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> StructDtorTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto accessor = MakeStructMemberAccessor(sStructDtor->accessModifier);
 
@@ -42,7 +42,7 @@ void StructDtorTask::Register(RStructDecl* rStruct, SStructDtorDecl* sStructDtor
 {
     auto task = MakePtr<StructDtorTask>(rStruct, sStructDtor, move(rFactory));
 
-    phaseManager.AddBuildTypeDependentSymbolTask(task);
+    phaseManager.AddBuildNonTypeSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
 

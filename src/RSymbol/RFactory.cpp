@@ -292,6 +292,13 @@ RType* RFactory::MakeType(RTypeDecl* decl, RTypeArguments* typeArgs)
             assert(typeArgs->GetCount() == 0);
             return factory.MakeTypeVarType(typeParamDecl);
         }
+
+        RType* Visit(RTraitDecl* traitDecl)
+        {
+            // TODO: [66] 2026-07-09, Trait, Extend 구현
+            // 에러, Trait로 타입을 만들 수 없습니다
+            throw NotImplementedException{};
+        }
     };
 
     return Accept(Visitor{*this, typeArgs}, decl);

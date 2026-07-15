@@ -3,6 +3,9 @@
   <ItemGroup>
     <ClInclude Include="Public\NSymbol\NSymbolConfig.h" />
     <ClInclude Include="Public\NSymbol\NFactory.h" />
+    <ClInclude Include="Public\NSymbol\NStructInfo.h">
+      <Filter>07 Struct</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="00 Abstraction">

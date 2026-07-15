@@ -22,6 +22,8 @@ class RStructDtorDecl;
 class RStructFuncDecl;
 class RStructVarDecl;
 
+class NStructInfo;
+
 class RStructDecl final : public RDecl, public RTypeDecl
 {
     RTypeDeclOuter outer; // outer with accessor
@@ -34,6 +36,7 @@ class RStructDecl final : public RDecl, public RTypeDecl
     std::vector<RStructVarDecl*> vars;
     std::optional<std::vector<RType_Trait*>> o_traits;
     std::unordered_map<RName, RStructVarDecl*> varsMap;
+    NStructInfo* structInfo;
 
     RGenericsComponent genericsComp;
     RTypeDeclContainerComponent typeDeclContainerComp;

@@ -14,6 +14,7 @@ class REnumElemDecl;
 class RInterfaceDecl;
 class RLambdaDecl;
 class RTypeParamDecl;
+class RTraitDecl;
 struct RTypeDeclVisitor;
 
 class RTypeDecl

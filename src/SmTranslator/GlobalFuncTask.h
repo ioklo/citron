@@ -15,7 +15,7 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 class PhaseManager;
 
 class GlobalFuncTask 
-    : public IBuildTypeDependentSymbolTask
+    : public IBuildNonTypeSymbolTask
     , public ITranslateBodyTask
 {
     RNamespaceDecl* rOuter;    
@@ -32,7 +32,7 @@ class GlobalFuncTask
 public:
     static void Register(RNamespaceDecl* rOuter, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
 
-    std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
+    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 };
 

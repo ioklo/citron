@@ -13,7 +13,7 @@ class PhaseManager;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class StructCtorTask
-    : public IBuildTypeDependentSymbolTask
+    : public IBuildNonTypeSymbolTask
     , public ITranslateBodyTask
 {
     RStructDecl* rStruct;
@@ -29,7 +29,7 @@ private:
 
 public:
     static void Register(RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
-    std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
+    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 
 };

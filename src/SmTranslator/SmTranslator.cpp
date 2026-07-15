@@ -23,7 +23,7 @@
 #include "MIR/MFuncBody.h"
 #include "MIR/MFactory.h"
 
-#include "BuildTypeDependentSymbolContext.h"
+#include "BuildNonTypeSymbolContext.h"
 #include "SRTFactory.h"
 #include "GlobalFuncTask.h"
 #include "StructTask.h"
@@ -33,6 +33,7 @@
 #include "StructVarTask.h"
 #include "EnumElemVarTask.h"
 #include "TraitFuncTask.h"
+#include "ImplTask.h"
 #include "PhaseManager.h"
 #include "CommonTranslation.h"
 #include "BinOpQueryService.h"
@@ -61,7 +62,7 @@ public:
     void Visit(SStructDecl* decl);
     void Visit(SEnumDecl* decl);
     void Visit(STraitDecl* decl);
-    void Visit(SExtendDecl* decl);
+    void Visit(SImplDecl* decl);
     void Visit(SStructFuncDecl* decl);
     void Visit(SStructCtorDecl* decl);
     void Visit(SStructDtorDecl* decl);
@@ -85,7 +86,7 @@ public:
     void Visit(SStructDecl* decl);
     void Visit(SEnumDecl* decl);
     void Visit(STraitDecl* decl);
-    void Visit(SExtendDecl* decl);
+    void Visit(SImplDecl* decl);
     void Visit(SClassFuncDecl* decl);
     void Visit(SClassCtorDecl* decl);
     void Visit(SClassVarDecl* decl);
@@ -112,7 +113,7 @@ public:
     void Visit(SStructDecl* elem);
     void Visit(SEnumDecl* elem);
     void Visit(STraitDecl* elem);
-    void Visit(SExtendDecl* elem);
+    void Visit(SImplDecl* elem);
 };
 
 class ScriptElemVisitor
@@ -135,7 +136,7 @@ public:
     void Visit(SStructDecl* elem);
     void Visit(SEnumDecl* elem);
     void Visit(STraitDecl* elem);
-    void Visit(SExtendDecl* elem);
+    void Visit(SImplDecl* elem);
 };
 
 void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, RNamespaceDecl* outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
@@ -186,7 +187,7 @@ void VisitEnum(RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFacto
 }
 
 // TODO: [66] 2026-07-09, Trait, Extend 구현
-void VisitTrait(RTypeDeclOuter outer, STraitDecl* sTrait, AccessorContext accessorContext, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitTrait(RTypeDeclOuter outer, STraitDecl* sTrait, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
     auto* rTrait = (*rFactory)->MakeDecl<RTraitDecl>(outer, RName::Normal(sTrait->name), *rFactory);
 
@@ -203,14 +204,12 @@ void VisitTrait(RTypeDeclOuter outer, STraitDecl* sTrait, AccessorContext access
 
         }, memberDecl);
     }
-
-
 }
 
-void VisitExtend()
+// Impl을 만드려고 하면은, trait, struct 등이 살아있어야 한다.
+void VisitImpl(SImplDecl* decl, RDecl* outer, PhaseManager& phaseManager)
 {
-    // TODO: [66] 2026-07-09, Trait, Extend 구현
-    throw NotImplementedException{};
+    ImplTask::Register(decl, outer, phaseManager);
 }
 
 void StructElemVisitor::Visit(SClassDecl* decl)
@@ -234,14 +233,13 @@ void StructElemVisitor::Visit(SEnumDecl* decl)
 
 void StructElemVisitor::Visit(STraitDecl* decl)
 {
-    // TODO: [66] 2026-07-09, Trait 구현
-    throw NotImplementedException{};
-    // VisitTrait();
+    RTypeDeclOuter_Struct outer{rStruct, MakeStructMemberAccessor(decl->accessModifier)};
+    VisitTrait(outer, decl, rFactory, phaseManager);
 }
 
-void StructElemVisitor::Visit(SExtendDecl* decl)
-{
-    VisitExtend();
+void StructElemVisitor::Visit(SImplDecl* decl)
+{   
+    VisitImpl(decl, rStruct, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructFuncDecl* decl)
@@ -285,16 +283,14 @@ void ClassElemVisitor::Visit(SEnumDecl* decl)
 
 void ClassElemVisitor::Visit(STraitDecl* decl)
 {
-    // TODO: [66] 2026-07-09, Trait 구현
-    // VisitTrait();
-    throw NotImplementedException{};
+    RTypeDeclOuter_Class outer{rClass, MakeClassMemberAccessor(decl->accessModifier)};
+    VisitTrait(outer, decl, rFactory, phaseManager);
 }
 
-void ClassElemVisitor::Visit(SExtendDecl* decl)
+void ClassElemVisitor::Visit(SImplDecl* decl)
 {    
-    VisitExtend();
+    VisitImpl(decl, rClass, phaseManager);
 }
-
 
 void ClassElemVisitor::Visit(SClassFuncDecl* decl)
 {
@@ -361,13 +357,13 @@ void NamespaceElemVisitor::Visit(SEnumDecl* elem)
 
 void NamespaceElemVisitor::Visit(STraitDecl* decl)
 {
-    // TODO: [66] 2026-07-09, Trait 구현
-    // VisitTrait();
+    RTypeDeclOuter_Namespace outer{curDecl, MakeNamespaceMemberAccessor(decl->accessModifier)};
+    VisitTrait(outer, decl, rFactory, phaseManager);
 }
 
-void NamespaceElemVisitor::Visit(SExtendDecl* decl)
+void NamespaceElemVisitor::Visit(SImplDecl* decl)
 {
-    VisitExtend();
+    VisitImpl(decl, curDecl, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
@@ -430,15 +426,14 @@ void ScriptElemVisitor::Visit(SEnumDecl* elem)
 
 void ScriptElemVisitor::Visit(STraitDecl* decl)
 {
-    // TODO: [66] 2026-07-09, Trait 구현
-    // VisitTrait();
+    RTypeDeclOuter_Namespace outer{rootNamespace, MakeNamespaceMemberAccessor(decl->accessModifier)};
+    VisitTrait(outer, decl, rFactory, phaseManager);
 }
 
-void ScriptElemVisitor::Visit(SExtendDecl* decl)
+void ScriptElemVisitor::Visit(SImplDecl* decl)
 {
-    VisitExtend();
+    VisitImpl(decl, rootNamespace, phaseManager);
 }
-
 
 } // unnamed namespace 
 

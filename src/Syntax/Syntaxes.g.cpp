@@ -1648,19 +1648,19 @@ JsonItem STraitDecl::ToJson()
     };
 }
 
-SExtendFuncDecl::SExtendFuncDecl(bool bStatic, SFuncReturn funcReturn, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
+SImplFuncDecl::SImplFuncDecl(bool bStatic, SFuncReturn funcReturn, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
     : bStatic(move(bStatic)), funcReturn(move(funcReturn)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
-SExtendFuncDecl::SExtendFuncDecl(SExtendFuncDecl&& other) noexcept = default;
+SImplFuncDecl::SImplFuncDecl(SImplFuncDecl&& other) noexcept = default;
 
-SExtendFuncDecl::~SExtendFuncDecl() = default;
+SImplFuncDecl::~SImplFuncDecl() = default;
 
-SExtendFuncDecl& SExtendFuncDecl::operator=(SExtendFuncDecl&& other) noexcept = default;
+SImplFuncDecl& SImplFuncDecl::operator=(SImplFuncDecl&& other) noexcept = default;
 
-JsonItem SExtendFuncDecl::ToJson()
+JsonItem SImplFuncDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SExtendFuncDecl") },
+        { "$type", JsonString("SImplFuncDecl") },
         { "bStatic", Citron::ToJson(bStatic) },
         { "funcReturn", Citron::ToJson(funcReturn) },
         { "name", Citron::ToJson(name) },
@@ -1670,25 +1670,24 @@ JsonItem SExtendFuncDecl::ToJson()
     };
 }
 
-JsonItem ToJson(SExtendMemberDecl& memberDecl)
+JsonItem ToJson(SImplMemberDecl& memberDecl)
 {
     return std::visit(ToJsonVisitor(), memberDecl);
 }
 
-SExtendDecl::SExtendDecl(std::optional<SAccessModifier> accessModifier, std::string name, STypeExp* trait, std::vector<SExtendMemberDecl> memberDecls)
-    : accessModifier(move(accessModifier)), name(move(name)), trait(move(trait)), memberDecls(move(memberDecls)) { }
+SImplDecl::SImplDecl(std::string name, STypeExp* trait, std::vector<SImplMemberDecl> memberDecls)
+    : name(move(name)), trait(move(trait)), memberDecls(move(memberDecls)) { }
 
-SExtendDecl::SExtendDecl(SExtendDecl&& other) noexcept = default;
+SImplDecl::SImplDecl(SImplDecl&& other) noexcept = default;
 
-SExtendDecl::~SExtendDecl() = default;
+SImplDecl::~SImplDecl() = default;
 
-SExtendDecl& SExtendDecl::operator=(SExtendDecl&& other) noexcept = default;
+SImplDecl& SImplDecl::operator=(SImplDecl&& other) noexcept = default;
 
-JsonItem SExtendDecl::ToJson()
+JsonItem SImplDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SExtendDecl") },
-        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "$type", JsonString("SImplDecl") },
         { "name", Citron::ToJson(name) },
         { "trait", Citron::ToJson(trait) },
         { "memberDecls", Citron::ToJson(memberDecls) },

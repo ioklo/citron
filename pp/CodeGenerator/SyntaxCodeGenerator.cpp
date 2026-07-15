@@ -192,7 +192,7 @@ struct ToJsonVisitor {
                 "SStructDecl",
                 "SEnumDecl",
                 "STraitDecl",
-                "SExtendDecl",
+                "SImplDecl",
                 "SGlobalFuncDecl",
                 "SNamespaceDecl",
                 "SScript",
@@ -478,7 +478,7 @@ struct ToJsonVisitor {
                 "SStructDecl*",
                 "SEnumDecl*",
                 "STraitDecl*",
-                "SExtendDecl*",
+                "SImplDecl*",
                 "SClassFuncDecl*",
                 "SClassCtorDecl*",
                 "SClassVarDecl*",
@@ -493,7 +493,7 @@ struct ToJsonVisitor {
                 "SStructDecl*",
                 "SEnumDecl*",
                 "STraitDecl*",
-                "SExtendDecl*",
+                "SImplDecl*",
                 "SStructFuncDecl*",
                 "SStructCtorDecl*",
                 "SStructDtorDecl*",
@@ -511,7 +511,7 @@ struct ToJsonVisitor {
                 "SStructDecl*",
                 "SEnumDecl*",
                 "STraitDecl*",
-                "SExtendDecl*",
+                "SImplDecl*",
             }
         },
 
@@ -525,7 +525,7 @@ struct ToJsonVisitor {
                 "SStructDecl*",
                 "SEnumDecl*",
                 "STraitDecl*",
-                "SExtendDecl*",
+                "SImplDecl*",
             }
         },
 
@@ -1282,10 +1282,10 @@ struct ToJsonVisitor {
 
         #pragma endregion STraitDecl
 
-        #pragma region SExtendDecl
+        #pragma region SImplDecl
 
         ClassInfo{
-            .name = "SExtendFuncDecl",
+            .name = "SImplFuncDecl",
             .o_base = "SSyntax",
             .memberInfos {
                 {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
@@ -1298,23 +1298,22 @@ struct ToJsonVisitor {
         },
 
         VariantInfo{
-            .name = "SExtendMemberDecl",
+            .name = "SImplMemberDecl",
             .argName = "memberDecl",
-            .memberNames { "SExtendFuncDecl*" }
+            .memberNames { "SImplFuncDecl*" }
         },
 
         ClassInfo{
-            .name = "SExtendDecl",
+            .name = "SImplDecl",
             .o_base = "SSyntax",
             .memberInfos{
-                {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 {.type = "STypeExp*", .memberVarName = "trait", .getterName = "GetTrait" },
-                {.type = "std::vector<SExtendMemberDecl>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
+                {.type = "std::vector<SImplMemberDecl>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
             },
         },
 
-        #pragma endregion SExtendDecl
+        #pragma endregion SImplDecl
         
         // SNamespaceDecl
         ClassInfo {

@@ -5,17 +5,17 @@
 
 #include "MIR/MFuncBody.h"
 
-#include "ResolveTypeHierarchyContext.h"
-#include "BuildTypeDependentSymbolContext.h"
-#include "SynthesizeImplicitSymbolContext.h"
+#include "BuildTypeHierarchyContext.h"
+#include "BuildNonTypeSymbolContext.h"
+#include "BuildImplicitSymbolContext.h"
 #include "TranslateBodyContext.h"
 
-//class BuildTypeDependentSymbolContext;
+//class BuildNonTypeSymbolContext;
 //class SynthesizeImplicitContext;
 //class TranslatingBodyPhaseContext;
 
 //// 2. 함수, 커스텀 타입의 변수들을 트리에 추가한다 (함수들은 인자/리턴 타입을 알아야 만들수 있고, 변수도 타입을 알아야 한다)
-//virtual expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) {}
+//virtual expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) {}
 //
 //// 3. struct와 class에 trivial constructor를 추가한다.constructor의 body도 TranslatingBodyPhase에서 만들도록 한다
 //virtual void SynthesizeImplicit(SynthesizeImplicitContext& context) {}
@@ -38,19 +38,24 @@ PhaseManager::PhaseManager(
 
 PhaseManager::~PhaseManager() = default;
 
-void PhaseManager::AddResolveTypeHierarchyTask(std::shared_ptr<IResolveTypeHierarchyTask>&& task)
+void PhaseManager::AddBuildTypeHierarchyTask(std::shared_ptr<IBuildTypeHierarchyTask>&& task)
 {
-    resolveTypeHierarchyTasks.push_back(move(task));
+    buildTypeHierarchyTasks.push_back(move(task));
 }
 
-void PhaseManager::AddBuildTypeDependentSymbolTask(std::shared_ptr<IBuildTypeDependentSymbolTask>&& task)
+void PhaseManager::AddBuildNonTypeSymbolTask(std::shared_ptr<IBuildNonTypeSymbolTask>&& task)
 {
-    buildTypeDependentSymbolTasks.push_back(move(task));
+    buildNonTypeSymbolTasks.push_back(move(task));
 }
 
-void PhaseManager::AddSynthesizeImplicitSymbolTask(std::shared_ptr<ISynthesizeImplicitSymbolTask>&& task)
+void PhaseManager::AddPostBuildNonTypeSymbolTask(std::shared_ptr<IPostBuildNonTypeSymbolTask>&& task)
 {
-    synthesizeImplicitSymbolTask.push_back(move(task));
+    postBuildNonTypeSymbolTasks.push_back(move(task));
+}
+
+void PhaseManager::AddBuildImplicitSymbolTask(std::shared_ptr<IBuildImplicitSymbolTask>&& task)
+{
+    buildImplicitSymbolTasks.push_back(move(task));
 }
 
 void PhaseManager::AddTranslateBodyTask(std::shared_ptr<ITranslateBodyTask>&& task)
@@ -60,23 +65,23 @@ void PhaseManager::AddTranslateBodyTask(std::shared_ptr<ITranslateBodyTask>&& ta
 
 expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
 {
-    // 1. ResolveTypeHierarchy
-    ResolveTypeHierarchyContext rthContext{};
-    for (auto& task : resolveTypeHierarchyTasks)
-        task->ResolveTypeHierarchy(rthContext);
+    // 1. BuildTypeHierarchy
+    BuildTypeHierarchyContext rthContext{};
+    for (auto& task : buildTypeHierarchyTasks)
+        task->BuildTypeHierarchy(rthContext);
 
-    // 2. BuildTypeDependentSymbol
-    BuildTypeDependentSymbolContext fvContext{rFactory};
-    for (auto& task : buildTypeDependentSymbolTasks)
+    // 2. BuildNonTypeSymbol
+    BuildNonTypeSymbolContext fvContext{rFactory};
+    for (auto& task : buildNonTypeSymbolTasks)
     {
-        auto e_result = task->BuildTypeDependentSymbol(fvContext);
+        auto e_result = task->BuildNonTypeSymbol(fvContext);
         RETURN_ON_ERROR(e_result);
     }
 
-    // 3. SynthesizeImplicitSymbol
-    SynthesizeImplicitSymbolContext sisContext{rFactory};
-    for (auto& task : synthesizeImplicitSymbolTask)
-        task->SynthesizeImplicitSymbol(sisContext);
+    // 3. BuildImplicitSymbol
+    BuildImplicitSymbolContext sisContext{rFactory};
+    for (auto& task : buildImplicitSymbolTasks)
+        task->BuildImplicitSymbol(sisContext);
 
     // 4. TranslateBody
     vector<MFuncBody> funcBodies;

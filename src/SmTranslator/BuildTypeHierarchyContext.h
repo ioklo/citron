@@ -6,7 +6,7 @@ class STypeExp;
 class RType;
 class NDecl;
 
-class ResolveTypeHierarchyContext
+class BuildTypeHierarchyContext
 {
 public:
     RType* MakeType(STypeExp* sType, NDecl* decl);

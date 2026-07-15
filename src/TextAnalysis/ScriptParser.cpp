@@ -27,7 +27,7 @@ SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory);
 SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory);
 SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory);
 STraitDecl* ParseTraitDecl(Lexer* lexer, SFactory& factory);
-SExtendDecl* ParseExtendDecl(Lexer* lexer, SFactory& factory);
+SImplDecl* ParseImplDecl(Lexer* lexer, SFactory& factory);
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer);
 SNamespaceDecl* ParseNamespaceDecl(Lexer* lexer, SFactory& factory);
 
@@ -154,7 +154,7 @@ optional<vector<STypeParam>> ParseTypeParams(Lexer* lexer, SFactory& factory)
             if (!o_typeParam)
                 return nullopt;
 
-            typeParams.push_back(STypeParam{ o_typeParam->text });
+            typeParams.push_back(STypeParam{o_typeParam->text});
         }
     }
 
@@ -177,8 +177,8 @@ optional<TMemberDeclSyntax> ParseMemberDecl(Lexer* lexer, SFactory& factory)
     if (auto* traitDecl = ParseTraitDecl(lexer, factory))
         return traitDecl;
 
-    if (auto* extendDecl = ParseExtendDecl(lexer, factory))
-        return extendDecl;
+    if (auto* implDecl = ParseImplDecl(lexer, factory))
+        return implDecl;
 
     return nullopt;
 }
@@ -323,7 +323,7 @@ STraitDecl* ParseTraitDecl(Lexer* lexer, SFactory& factory)
     RETURN_ACCEPT(factory.Make<STraitDecl>(o_accessModifier, move(o_name->text), move(*o_typeParams), move(elems)));
 }
 
-SExtendFuncDecl* ParseExtendFuncDecl(Lexer* lexer, SFactory& factory)
+SImplFuncDecl* ParseImplFuncDecl(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
@@ -353,7 +353,7 @@ SExtendFuncDecl* ParseExtendFuncDecl(Lexer* lexer, SFactory& factory)
     auto o_body = ParseBody(&curLexer, factory);
     if (!o_body) return nullptr;
 
-    RETURN_ACCEPT(factory.Make<SExtendFuncDecl>(
+    RETURN_ACCEPT(factory.Make<SImplFuncDecl>(
         bStatic,
         move(*o_funcRet),
         move(o_funcName->text),
@@ -362,24 +362,21 @@ SExtendFuncDecl* ParseExtendFuncDecl(Lexer* lexer, SFactory& factory)
         move(*o_body)));
 }
 
-optional<SExtendMemberDecl> ParseExtendMemberDecl(Lexer* lexer, SFactory& factory)
+optional<SImplMemberDecl> ParseImplMemberDecl(Lexer* lexer, SFactory& factory)
 {
-    if (auto* decl = ParseExtendFuncDecl(lexer, factory))
+    if (auto* decl = ParseImplFuncDecl(lexer, factory))
         return decl;
 
     return nullopt;
 }
 
 // impl S : Trait { }
-SExtendDecl* ParseExtendDecl(Lexer* lexer, SFactory& factory)
+SImplDecl* ParseImplDecl(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
 
-    // access modifier
-    auto o_accessModifier = ParseAccessModifier(&curLexer);
-
-    // extend
-    if (!Accept<ExtendToken>(&curLexer))
+    // impl
+    if (!Accept<ImplToken>(&curLexer))
         return nullptr;
 
     // name
@@ -398,16 +395,16 @@ SExtendDecl* ParseExtendDecl(Lexer* lexer, SFactory& factory)
     if (!Accept<LBraceToken>(&curLexer))
         return nullptr;
 
-    vector<SExtendMemberDecl> memberDecls;
+    vector<SImplMemberDecl> memberDecls;
     while (!Accept<RBraceToken>(&curLexer))
     {
-        auto o_memberDecl = ParseExtendMemberDecl(&curLexer, factory);
+        auto o_memberDecl = ParseImplMemberDecl(&curLexer, factory);
         if (!o_memberDecl) return nullptr;
 
         memberDecls.push_back(move(*o_memberDecl));
     }
 
-    RETURN_ACCEPT(factory.Make<SExtendDecl>(o_accessModifier, move(o_name->text), trait, move(memberDecls)));
+    RETURN_ACCEPT(factory.Make<SImplDecl>(move(o_name->text), trait, move(memberDecls)));
 }
 
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer)

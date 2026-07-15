@@ -15,16 +15,12 @@ namespace Citron {
 class RNamespaceDeclGroup;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-class NNamespaceDecl;
-class ENamespaceDecl;
-
 class RNamespaceDecl final : public RDecl
 {
     RNamespaceDecl* outer;
     RName name;
     RNamespaceDeclGroup* group;
-    std::variant<NNamespaceDecl*, ENamespaceDecl*> info;
-
+    
     RNamespaceDeclContainerComponent namespaceDeclContainerComp;
     RTypeDeclContainerComponent typeDeclContainerComp;
     RFuncDeclContainerComponent<RGlobalFuncDecl, RDeclRes_GlobalFuncs> funcDeclContainerComp;
@@ -34,7 +30,6 @@ public:
     RNamespaceDecl(RNamespaceDecl* outer, RName&& name, RNamespaceDeclGroup* group, TakeRef<RFactoryPtr> rFactory)
         : outer{outer}, name{std::move(name)}, group{group}, rFactory{rFactory.Take()} 
     {}
-    void InitInfo(NNamespaceDecl* decl) { info = decl; }
 
     RNamespaceDecl* GetOuterNamespace() { return outer; }
     RName& GetName() { return name; }

@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\NSymbol\NFactory.h" />
+    <ClInclude Include="Public\NSymbol\NStructInfo.h" />
     <ClInclude Include="Public\NSymbol\NSymbolConfig.h" />
   </ItemGroup>
   <ItemGroup>

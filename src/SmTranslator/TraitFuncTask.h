@@ -8,7 +8,7 @@ class STraitFuncDecl;
 class PhaseManager;
 
 class TraitFuncTask
-    : public IBuildTypeDependentSymbolTask
+    : public IBuildNonTypeSymbolTask
 {
     RTraitDecl* rTraitDecl;
     STraitFuncDecl* sTraitFuncDecl;
@@ -19,10 +19,9 @@ public:
 private:
     TraitFuncTask(RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl);
 
-public: // from IBuildTypeDependentSymbolTask
-    std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
+public: // from IBuildNonTypeSymbolTask
+    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
 
 };
-
 
 } // namespace Citron

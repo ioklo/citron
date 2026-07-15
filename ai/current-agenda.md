@@ -6,8 +6,12 @@ canonical trait conformance와 `impl` 구현
 ## Current Direction
 - `RDecl`/`RNode` 정리는 완료했다. semantic tree 재구성은 현재 작업 주제가 아니다.
 - 첫 trait 구현 범위는 원본 module의 canonical conformance로 제한한다: `struct S : Trait`와 대응 `impl S : Trait`.
+- generic canonical impl은 우선 `impl S : Trait` 생략형으로 구현한다. generic `S`는 전체 arity의 implicit parameter를 가진 universal target으로 정규화한다.
+- `where`를 가진 full generic impl과 direct specialization은 초기 범위에서 제외한다. specialization/conditional conformance는 named extension bundle과 `extend` activation 경로로 둔다.
 - 먼저 trait declaration/type, struct trait 목록, witness `impl` declaration을 RSymbol과 SmTranslator skeleton 단계에 연결한다.
 - 이름 있는 외부 `extension` bundle, 소비자 `extend` activation, overlap/ambiguity 처리는 후속 단계다.
+- `impl`은 named `RDecl`이 아니라 struct/extension의 typed internal `N*Info` payload로 두고, public conformance header만 RSymbol surface에 남기는 방향이다.
+- SmTranslator는 unit 간에는 global phase barrier를 유지하고, unit 내부의 세밀한 선행 조건은 order가 있는 task dependency로 표현하는 방향을 검토한다.
 
 ## Current Refactoring State
 - declaration 구현과 주 번역 경로는 `NSymbol`에서 `RSymbol`로 이행됐다. `RFactory`가 `RDecl`을 소유·생성한다.
@@ -26,6 +30,9 @@ canonical trait conformance와 `impl` 구현
 - accessor를 정확히 어느 계층에 둘지: declaration payload, category view, 별도 metadata 중 어디가 가장 자연스러운지
 - lookup / resolver 책임과 `RNode` 책임의 경계를 어디까지 나눌지
 - nested type의 accessibility를 tree membership과 declaration accessibility 사이에서 어떻게 모델링할지
+- generic conformance header의 generic signature, self type-argument pattern, trait type arguments, constraint를 어느 RSymbol API로 노출할지
+- `impl S` 생략형에서 implicit generic parameter를 impl body의 source name으로 노출할지 여부
+- unit-local task graph의 freeze 시점, task order enum, failure propagation 규칙
 
 ## Update Rule
 - 현재 주제가 바뀌면 이 파일을 먼저 갱신한다.

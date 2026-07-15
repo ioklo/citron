@@ -4,7 +4,7 @@
 #include "RSymbol/RTraitDecl.h"
 #include "RSymbol/RTraitFuncDecl.h"
 #include "RSymbol/RTraitMemberDecl.h"
-#include "BuildTypeDependentSymbolContext.h"
+#include "BuildNonTypeSymbolContext.h"
 #include "PhaseManager.h"
 
 using namespace std;
@@ -15,7 +15,7 @@ void TraitFuncTask::Register(RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncD
 {
     shared_ptr<TraitFuncTask> task{new TraitFuncTask{rTraitDecl, sTraitFuncDecl}};
 
-    phaseManager.AddBuildTypeDependentSymbolTask(task);
+    phaseManager.AddBuildNonTypeSymbolTask(task);
 }
 
 TraitFuncTask::TraitFuncTask(RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl)
@@ -23,7 +23,7 @@ TraitFuncTask::TraitFuncTask(RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncD
 {
 }
 
-expected<void, DiagPtr> TraitFuncTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> TraitFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto e_funcRet = context.MakeFuncReturn(sTraitFuncDecl->funcRet, rTraitDecl);
     RETURN_ON_ERROR(e_funcRet);

@@ -3,8 +3,6 @@
   <ItemGroup>
     <ClCompile Include="SmTranslator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
-    <ClCompile Include="BuildTypeDependentSymbolContext.cpp" />
-    <ClCompile Include="TranslateBodyContext.cpp" />
     <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
     <ClCompile Include="ImExp.cpp">
       <Filter>ExpTranslation\Structure</Filter>
@@ -38,8 +36,6 @@
     </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
-    <ClCompile Include="PhaseManager.cpp" />
-    <ClCompile Include="ResolveTypeHierarchyContext.cpp" />
     <ClCompile Include="GlobalContext.cpp" />
     <ClCompile Include="TranslationContexts.cpp">
       <Filter>Context</Filter>
@@ -50,7 +46,6 @@
     <ClCompile Include="FuncContext_Lambda.cpp">
       <Filter>Context</Filter>
     </ClCompile>
-    <ClCompile Include="SynthesizeImplicitSymbolContext.cpp" />
     <ClCompile Include="IrExpToMLoc.cpp">
       <Filter>ExpTranslation\SExpToMIR\2_SExpToMSharedExp</Filter>
     </ClCompile>
@@ -117,7 +112,30 @@
     <ClCompile Include="StructVarTask.cpp">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="TraitFuncTask.cpp" />
+    <ClCompile Include="TraitFuncTask.cpp">
+      <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplTask.cpp">
+      <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="BuildNonTypeSymbolContext.cpp">
+      <Filter>TranslationPhase</Filter>
+    </ClCompile>
+    <ClCompile Include="BuildTypeHierarchyContext.cpp">
+      <Filter>TranslationPhase</Filter>
+    </ClCompile>
+    <ClCompile Include="BuildImplicitSymbolContext.cpp">
+      <Filter>TranslationPhase</Filter>
+    </ClCompile>
+    <ClCompile Include="TranslateBodyContext.cpp">
+      <Filter>TranslationPhase</Filter>
+    </ClCompile>
+    <ClCompile Include="PostBuildNonTypeSymbolContext.cpp">
+      <Filter>TranslationPhase</Filter>
+    </ClCompile>
+    <ClCompile Include="PhaseManager.cpp">
+      <Filter>TranslationPhase</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FuncContext.h">
@@ -147,11 +165,9 @@
     <ClInclude Include="SVarDeclToMStmts.h">
       <Filter>StmtTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="TranslateBodyContext.h" />
     <ClInclude Include="CommonTranslation.h" />
     <ClInclude Include="DesignatedDiagnostic.h" />
     <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
-    <ClInclude Include="BuildTypeDependentSymbolContext.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ModuleDecls.h" />
     <ClInclude Include="RFuncAndRArgsToMExpTranslation.h" />
@@ -162,9 +178,6 @@
     <ClInclude Include="Public\SmTranslator\SmTranslatorConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="PhaseManager.h" />
-    <ClInclude Include="TranslationTasks.h" />
-    <ClInclude Include="ResolveTypeHierarchyContext.h" />
     <ClInclude Include="GlobalContext.h" />
     <ClInclude Include="TranslationContexts.h">
       <Filter>Context</Filter>
@@ -175,7 +188,6 @@
     <ClInclude Include="FuncContext_FuncDecl.h">
       <Filter>Context</Filter>
     </ClInclude>
-    <ClInclude Include="SynthesizeImplicitSymbolContext.h" />
     <ClInclude Include="IrExpToMLoc.h">
       <Filter>ExpTranslation\SExpToMIR\2_SExpToMSharedExp</Filter>
     </ClInclude>
@@ -251,6 +263,30 @@
     <ClInclude Include="TraitFuncTask.h">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClInclude>
+    <ClInclude Include="ImplTask.h">
+      <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="BuildNonTypeSymbolContext.h">
+      <Filter>TranslationPhase</Filter>
+    </ClInclude>
+    <ClInclude Include="BuildTypeHierarchyContext.h">
+      <Filter>TranslationPhase</Filter>
+    </ClInclude>
+    <ClInclude Include="BuildImplicitSymbolContext.h">
+      <Filter>TranslationPhase</Filter>
+    </ClInclude>
+    <ClInclude Include="TranslationTasks.h">
+      <Filter>TranslationPhase</Filter>
+    </ClInclude>
+    <ClInclude Include="TranslateBodyContext.h">
+      <Filter>TranslationPhase</Filter>
+    </ClInclude>
+    <ClInclude Include="PostBuildNonTypeSymbolContext.h">
+      <Filter>TranslationPhase</Filter>
+    </ClInclude>
+    <ClInclude Include="PhaseManager.h">
+      <Filter>TranslationPhase</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">
@@ -300,6 +336,9 @@
     </Filter>
     <Filter Include="DeclTranslation\TraitTranslation">
       <UniqueIdentifier>{8f16f12e-07f4-4ca3-8fbd-25da5df37534}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TranslationPhase">
+      <UniqueIdentifier>{11376f38-45a6-4739-91ad-da399b4abe25}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

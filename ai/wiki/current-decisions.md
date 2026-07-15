@@ -32,6 +32,9 @@ Status: current snapshot
 - Nested generic declaration identity는 outer type arguments를 포함한다. 예: `C<int>.Trait`와 `C<string>.Trait`는 다르다.
 - Struct는 concrete struct를 상속하지 않는다. Struct의 `:` 뒤에는 trait conformance만 올 수 있고 struct member에는 `protected`를 허용하지 않는다.
 - 원본 module은 `struct S : Trait`로 canonical conformance를 선언하고 `impl S : Trait {}`로 구현한다.
+- generic struct의 `impl S : Trait {}`는 full generic arity를 implicit하게 바인딩하는 canonical shorthand다. `struct S<T> : Trait`는 모든 well-formed `S<T>`에 대한 conformance를 선언하며, shorthand impl은 그 전체 범위를 구현한다.
+- `where` constraint가 있는 generic impl은 후속 full form `impl<T> S<T> : Trait where T : OtherTrait {}`로 명시한다. 생략형 `impl S : Trait`에는 `where`를 붙이지 않는다.
+- specialization/conditional conformance는 direct canonical impl이 아니라 `extension Bundle for S<int> : Trait;`와 대응 `impl Bundle for S<int> : Trait {}` 같은 named bundle로 선언한다. bundle conformance는 소비 file의 `extend`로 활성화한다.
 - v1에서 `impl` target은 `struct`로 한정한다. `class`, `enum`, structural type 등 다른 target category는 후속 설계에서 단계적으로 검토한다.
 - 외부 module은 `extension Bundle for S : Trait;`로 이름 있는 conformance bundle을 선언하고 `impl Bundle for S : Trait {}`로 구현한다.
 - 외부 bundle은 자동 활성화하지 않는다. 소비 file에서 `import Provider;`로 declaration world를 연 뒤 `extend Bundle for S : Trait;`로 target과 trait를 명시해 활성화한다.
@@ -54,6 +57,7 @@ Status: current snapshot
 - `some` opaque result call은 metadata accessor, value witness, trait witness, opaque sret로 낮춘다.
 - value witness는 size/align/copy/move/destroy 같은 값 기본 연산 테이블이다.
 - trait witness는 trait requirement를 backing type 구현으로 연결하는 테이블이다.
+- generic conformance header는 generic signature, self type-argument pattern, trait type arguments, constraint를 포함한다. canonical witness는 `NStructInfo`, bundle witness는 `NExtensionInfo`에 두고, public header는 RSymbol declaration surface에 남긴다.
 - declaration/body resolution 주변의 공용 sum type은 raw public `std::variant` alias보다 얇은 wrapper class를 선호하고, 호출부에는 free helper보다 member API를 우선 둔다.
 - declaration tree 축은 category view와 provenance payload에서 분리하는 쪽을 선호한다. 현재 leaning은 semantic tree node를 별도 `RNode` 모델로 세우고, `RTypeDecl` / `RFuncDecl`는 category view로 보는 것이다.
 - `RNode`는 우선 `RName` 중심의 lightweight tree node로 두고, generic arity나 callable parameter identity 같은 richer declaration identity는 별도 metadata로 둔다.

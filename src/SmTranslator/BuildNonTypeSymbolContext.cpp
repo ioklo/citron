@@ -1,4 +1,4 @@
-#include "BuildTypeDependentSymbolContext.h"
+#include "BuildNonTypeSymbolContext.h"
 #include <variant>
 
 #include "Syntax/Syntax.h"
@@ -16,12 +16,12 @@ using namespace std;
 
 namespace Citron {
 
-BuildTypeDependentSymbolContext::BuildTypeDependentSymbolContext(TakeRef<RFactoryPtr> rFactory)
+BuildNonTypeSymbolContext::BuildNonTypeSymbolContext(TakeRef<RFactoryPtr> rFactory)
     : rFactory{rFactory.Take()}
 {
 }
 
-RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, RDecl* decl)
+RType* BuildNonTypeSymbolContext::MakeType(STypeExp* sTypeExp, RDecl* decl)
 {
     // TODO: ScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
     struct Visitor
@@ -53,7 +53,7 @@ RType* BuildTypeDependentSymbolContext::MakeType(STypeExp* sTypeExp, RDecl* decl
     return Accept(visitor, sTypeExp);
 }
 
-expected<RFuncReturn, DiagPtr> BuildTypeDependentSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, RDecl* decl)
+expected<RFuncReturn, DiagPtr> BuildNonTypeSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, RDecl* decl)
 {
     return visit([this, decl](auto& funcRet) -> expected<RFuncReturn, DiagPtr> {
         using T = remove_cvref_t<decltype(funcRet)>;
@@ -83,7 +83,7 @@ expected<RFuncReturn, DiagPtr> BuildTypeDependentSymbolContext::MakeFuncReturn(S
     }, funcRet);
 }
 
-expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildTypeDependentSymbolContext::MakeParameters(RDecl* decl, vector<SFuncParam>& sParams)
+expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildNonTypeSymbolContext::MakeParameters(RDecl* decl, vector<SFuncParam>& sParams)
 {
     bool bLastParamVariadic = false;
 

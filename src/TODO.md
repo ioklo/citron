@@ -15,7 +15,7 @@
 - [ ] // TODO: [33] struct [BitwiseCopyable] 추가,
 - [ ] // TODO: [34] enum [BitwiseCopyable] 지원
 - [ ] // TODO: [35] lambda의 [BitwiseCopyable] 지원
-- [ ] // TODO: [36] MExp_String을 MCreate_String으로 변경
+- [v] // TODO: [36] MExp_String을 MCreate_String으로 변경
 - [ ] // TODO: [37] class base에서도 검색하기
 - [v] // TODO: [38] break/continue에 label 지원
 - [ ] // TODO: [39] SyntaxIR0Translator Eror 정리

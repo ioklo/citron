@@ -19,12 +19,12 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 
 class TranslateBodyContext;
 
-class BuildTypeDependentSymbolContext
+class BuildNonTypeSymbolContext
 {
     RFactoryPtr rFactory;
 
 public:
-    BuildTypeDependentSymbolContext(TakeRef<RFactoryPtr> rFactory);
+    BuildNonTypeSymbolContext(TakeRef<RFactoryPtr> rFactory);
 
     template<typename TRDecl, typename... TArgs> requires std::derived_from<TRDecl, RDecl>
     TRDecl* MakeRDecl(TArgs&&... args)

@@ -294,11 +294,13 @@
     <ClCompile Include="RInterfaceDecl.cpp">
       <Filter>RDecls\09 Interface</Filter>
     </ClCompile>
-    <ClCompile Include="Public\RSymbol\RTraitDecl.cpp" />
     <ClCompile Include="RTraitMemberDecl.cpp">
       <Filter>RDecls\10 Trait</Filter>
     </ClCompile>
     <ClCompile Include="RTraitFuncDecl.cpp">
+      <Filter>RDecls\10 Trait</Filter>
+    </ClCompile>
+    <ClCompile Include="RTraitDecl.cpp">
       <Filter>RDecls\10 Trait</Filter>
     </ClCompile>
   </ItemGroup>

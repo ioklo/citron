@@ -101,6 +101,7 @@ unordered_map<u32string, Token> keywordInfos{
     { U"trait"s, TraitToken{} },
     { U"some"s, SomeToken{} },
     { U"extend"s, ExtendToken{} },
+    { U"extension"s, ExtensionToken{} },
     { U"impl"s, ImplToken{} },
 };
 

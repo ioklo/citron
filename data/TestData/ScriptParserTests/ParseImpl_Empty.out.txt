@@ -1,0 +1,15 @@
+{
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "SImplDecl",
+            "name": "S",
+            "trait": {
+                "$type": "STypeExp_Id",
+                "name": "MyTrait",
+                "typeArgs": []
+            },
+            "memberDecls": []
+        }
+    ]
+}

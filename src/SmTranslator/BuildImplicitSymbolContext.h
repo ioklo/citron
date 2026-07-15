@@ -7,12 +7,12 @@ namespace Citron {
 
 class NDecl;
 
-class SynthesizeImplicitSymbolContext
+class BuildImplicitSymbolContext
 {
     RFactoryPtr rFactory;
 
 public:
-    SynthesizeImplicitSymbolContext(TakeRef<RFactoryPtr> rFactory);
+    BuildImplicitSymbolContext(TakeRef<RFactoryPtr> rFactory);
 
     template<typename TRDecl, typename... TArgs>
     TRDecl* MakeRDecl(TArgs&&... args)

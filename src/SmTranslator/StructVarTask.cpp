@@ -7,7 +7,7 @@
 #include "RSymbol/RStructVarDecl.h"
 #include "RSymbol/RFactory.h"
 
-#include "BuildTypeDependentSymbolContext.h"
+#include "BuildNonTypeSymbolContext.h"
 #include "CommonTranslation.h"
 #include "PhaseManager.h"
 
@@ -18,10 +18,10 @@ namespace Citron {
 void StructVarTask::Register(RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
     shared_ptr<StructVarTask> task{new StructVarTask(rOuter, syntax, move(rFactory))};
-    phaseManager.AddBuildTypeDependentSymbolTask(task);
+    phaseManager.AddBuildNonTypeSymbolTask(task);
 }
 
-expected<void, DiagPtr> StructVarTask::BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context)
+expected<void, DiagPtr> StructVarTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto accessor = MakeStructMemberAccessor(sStructVar->accessModifier);
     bool bStatic = false; // TODO: bStatic 지원

@@ -96,7 +96,7 @@ class SClassDecl;
 class SStructDecl;
 class SEnumDecl;
 class STraitDecl;
-class SExtendDecl;
+class SImplDecl;
 class SGlobalFuncDecl;
 class SNamespaceDecl;
 class SScript;
@@ -1067,7 +1067,7 @@ using SClassMemberDecl = std::variant<
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
-    SExtendDecl*,
+    SImplDecl*,
     SClassFuncDecl*,
     SClassCtorDecl*,
     SClassVarDecl*>;
@@ -1079,7 +1079,7 @@ using SStructMemberDecl = std::variant<
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
-    SExtendDecl*,
+    SImplDecl*,
     SStructFuncDecl*,
     SStructCtorDecl*,
     SStructDtorDecl*,
@@ -1094,7 +1094,7 @@ using SNamespaceDeclElement = std::variant<
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
-    SExtendDecl*>;
+    SImplDecl*>;
 
 SYNTAX_API JsonItem ToJson(SNamespaceDeclElement& elem);
 
@@ -1105,7 +1105,7 @@ using SScriptElement = std::variant<
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
-    SExtendDecl*>;
+    SImplDecl*>;
 
 SYNTAX_API JsonItem ToJson(SScriptElement& elem);
 
@@ -2580,7 +2580,7 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SExtendFuncDecl : public SSyntax
+class SImplFuncDecl : public SSyntax
 {
 public:
     bool bStatic;
@@ -2590,37 +2590,36 @@ public:
     std::vector<SFuncParam> parameters;
     std::vector<SStmt*> body;
 
-    SYNTAX_API SExtendFuncDecl(bool bStatic, SFuncReturn funcReturn, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
-    SExtendFuncDecl(const SExtendFuncDecl&) = delete;
-    SYNTAX_API SExtendFuncDecl(SExtendFuncDecl&&) noexcept;
-    SYNTAX_API ~SExtendFuncDecl();
+    SYNTAX_API SImplFuncDecl(bool bStatic, SFuncReturn funcReturn, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
+    SImplFuncDecl(const SImplFuncDecl&) = delete;
+    SYNTAX_API SImplFuncDecl(SImplFuncDecl&&) noexcept;
+    SYNTAX_API ~SImplFuncDecl();
 
-    SExtendFuncDecl& operator=(const SExtendFuncDecl& other) = delete;
-    SYNTAX_API SExtendFuncDecl& operator=(SExtendFuncDecl&& other) noexcept;
+    SImplFuncDecl& operator=(const SImplFuncDecl& other) = delete;
+    SYNTAX_API SImplFuncDecl& operator=(SImplFuncDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };
 
-using SExtendMemberDecl = std::variant<
-    SExtendFuncDecl*>;
+using SImplMemberDecl = std::variant<
+    SImplFuncDecl*>;
 
-SYNTAX_API JsonItem ToJson(SExtendMemberDecl& memberDecl);
+SYNTAX_API JsonItem ToJson(SImplMemberDecl& memberDecl);
 
-class SExtendDecl : public SSyntax
+class SImplDecl : public SSyntax
 {
 public:
-    std::optional<SAccessModifier> accessModifier;
     std::string name;
     STypeExp* trait;
-    std::vector<SExtendMemberDecl> memberDecls;
+    std::vector<SImplMemberDecl> memberDecls;
 
-    SYNTAX_API SExtendDecl(std::optional<SAccessModifier> accessModifier, std::string name, STypeExp* trait, std::vector<SExtendMemberDecl> memberDecls);
-    SExtendDecl(const SExtendDecl&) = delete;
-    SYNTAX_API SExtendDecl(SExtendDecl&&) noexcept;
-    SYNTAX_API ~SExtendDecl();
+    SYNTAX_API SImplDecl(std::string name, STypeExp* trait, std::vector<SImplMemberDecl> memberDecls);
+    SImplDecl(const SImplDecl&) = delete;
+    SYNTAX_API SImplDecl(SImplDecl&&) noexcept;
+    SYNTAX_API ~SImplDecl();
 
-    SExtendDecl& operator=(const SExtendDecl& other) = delete;
-    SYNTAX_API SExtendDecl& operator=(SExtendDecl&& other) noexcept;
+    SImplDecl& operator=(const SImplDecl& other) = delete;
+    SYNTAX_API SImplDecl& operator=(SImplDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };

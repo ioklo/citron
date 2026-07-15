@@ -17,10 +17,12 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 using SRTFactoryPtr = std::shared_ptr<class SRTFactory>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 
-// Phase 1 : ResolveTypeHierarchyPhase 
-// Phase 2 : BuildTypeDependentSymbolPhase 
-// Phase 3 : SynthesizeImplicitPhase 
-// Phase 4 : TranslateBodyPhase
+// Phase 1 : BuildTypeSymbolPhase (body-space에서 만들어지는 lambda 제외)
+// Phase 2 : BuildTypeHierarchyPhase (inheritance)
+// Phase 3 : BuildNonTypeSymbolPhase (func, var)
+//           PostBuildNonTypeSymbolPhase (impl ...)
+// Phase 4 : SynthesizeImplicitPhase (memberwise-ctor)
+// Phase 5 : TranslateBodyPhase 
 
 class PhaseManager
 {   
@@ -31,9 +33,10 @@ class PhaseManager
     SRTFactoryPtr srtFactory;
     BinOpQueryServicePtr binOpQueryService;
 
-    std::vector<std::shared_ptr<IResolveTypeHierarchyTask>> resolveTypeHierarchyTasks;
-    std::vector<std::shared_ptr<IBuildTypeDependentSymbolTask>> buildTypeDependentSymbolTasks;
-    std::vector<std::shared_ptr<ISynthesizeImplicitSymbolTask>> synthesizeImplicitSymbolTask;
+    std::vector<std::shared_ptr<IBuildTypeHierarchyTask>> buildTypeHierarchyTasks;
+    std::vector<std::shared_ptr<IBuildNonTypeSymbolTask>> buildNonTypeSymbolTasks;
+    std::vector<std::shared_ptr<IPostBuildNonTypeSymbolTask>> postBuildNonTypeSymbolTasks;
+    std::vector<std::shared_ptr<IBuildImplicitSymbolTask>> buildImplicitSymbolTasks;
     std::vector<std::shared_ptr<ITranslateBodyTask>> translatingBodyTasks;
 
 public:
@@ -43,9 +46,10 @@ public:
         TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
     ~PhaseManager(); 
 
-    void AddResolveTypeHierarchyTask(std::shared_ptr<IResolveTypeHierarchyTask>&& task);
-    void AddBuildTypeDependentSymbolTask(std::shared_ptr<IBuildTypeDependentSymbolTask>&& task);
-    void AddSynthesizeImplicitSymbolTask(std::shared_ptr<ISynthesizeImplicitSymbolTask>&& task);
+    void AddBuildTypeHierarchyTask(std::shared_ptr<IBuildTypeHierarchyTask>&& task);
+    void AddBuildNonTypeSymbolTask(std::shared_ptr<IBuildNonTypeSymbolTask>&& task);
+    void AddPostBuildNonTypeSymbolTask(std::shared_ptr<IPostBuildNonTypeSymbolTask>&& task);
+    void AddBuildImplicitSymbolTask(std::shared_ptr<IBuildImplicitSymbolTask>&& task);
     void AddTranslateBodyTask(std::shared_ptr<ITranslateBodyTask>&& task);
 
     std::expected<std::vector<MFuncBody>, DiagPtr> Run();

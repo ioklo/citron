@@ -1,9 +1,9 @@
-#include "ResolveTypeHierarchyContext.h"
+#include "BuildTypeHierarchyContext.h"
 #include "Infra/Exceptions.h"
 
 namespace Citron {
 
-RType* ResolveTypeHierarchyContext::MakeType(STypeExp* sType, NDecl* decl)
+RType* BuildTypeHierarchyContext::MakeType(STypeExp* sType, NDecl* decl)
 {
     throw NotImplementedException{};
 }

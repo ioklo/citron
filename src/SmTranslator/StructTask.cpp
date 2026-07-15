@@ -10,28 +10,31 @@
 
 #include "CommonTranslation.h"
 #include "PhaseManager.h"
-#include "ResolveTypeHierarchyContext.h"
-#include "SynthesizeImplicitSymbolContext.h"
+#include "BuildTypeHierarchyContext.h"
+#include "BuildImplicitSymbolContext.h"
 #include "Misc.h"
 
 using namespace std;
 
 namespace Citron {
 
-StructTask::StructTask(RStructDecl* nStructDecl, SStructDecl* syntax)
-    : rStructDecl{nStructDecl}, syntax{syntax}
+StructTask::StructTask(RStructDecl* rStructDecl, SStructDecl* syntax)
+    : rStructDecl{rStructDecl}, syntax{syntax}
 {
 }
 
 void StructTask::Register(RStructDecl* rStructDecl, SStructDecl* syntax, PhaseManager& phaseManager)
 {
     shared_ptr<StructTask> task{new StructTask(rStructDecl, syntax)};
-    phaseManager.AddResolveTypeHierarchyTask(task);
-    phaseManager.AddSynthesizeImplicitSymbolTask(task);
+    phaseManager.AddBuildTypeHierarchyTask(task);
+    phaseManager.AddBuildImplicitSymbolTask(task);
 }
 
-void StructTask::ResolveTypeHierarchy(ResolveTypeHierarchyContext& context)
+void StructTask::BuildTypeHierarchy(BuildTypeHierarchyContext& context)
 {
+    // NOTICE: struct, class의 base부분을 볼때는 base 전용 type lookup을 해야한다 
+    // (type parameter는 검색이 되지만, {멤버 타입/base타입의 멤버타입}은 검색이 안되게)
+
     // TODO: [66] 2026-07-09, Trait, Extend 구현
 
     //// 유일한 베이스 타입은 struct인데, 외부에서 선언된 struct일수도 있고, 조합 타입일 수도 있다 (사실 조합타입이 될 가능성은 거의 없어보인다)
@@ -67,12 +70,12 @@ void StructTask::ResolveTypeHierarchy(ResolveTypeHierarchyContext& context)
     //rStructDecl->InitBaseTypes(rBaseStruct, move(rInterfaces));
 }
 
-void StructTask::SynthesizeImplicitSymbol(SynthesizeImplicitSymbolContext& context)
+void StructTask::BuildImplicitSymbol(BuildImplicitSymbolContext& context)
 {
     SynthesizeMemberwiseCtor(context);
 }
 
-void StructTask::SynthesizeMemberwiseCtor(SynthesizeImplicitSymbolContext& context)
+void StructTask::SynthesizeMemberwiseCtor(BuildImplicitSymbolContext& context)
 {
     // memberwise constructor, 시그니처만 만든다 (resolve identifier용)
     vector<RFuncParameter> rParameters;

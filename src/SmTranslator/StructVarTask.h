@@ -14,7 +14,7 @@ class PhaseManager;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class StructVarTask
-    : public IBuildTypeDependentSymbolTask
+    : public IBuildNonTypeSymbolTask
 {
     RStructDecl* rStruct;
     SStructVarDecl* sStructVar;
@@ -27,7 +27,7 @@ private:
 
 public:
     static void Register(RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
-    std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
+    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
 };
 
 } // namespace Citron

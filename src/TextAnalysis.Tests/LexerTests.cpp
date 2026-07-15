@@ -55,7 +55,7 @@ TEST(Lexer, LexSymbols)
     auto [buffer, lexer] = Prepare(U"if else for while switch case continue break task params out return async await foreach in yield seq"
         " enum struct class is as ref"
         " null move shared inline leave public protected private static"
-        " new namespace trait some extend"
+        " new namespace trait some extend extension impl"
         " ++ -- <= >= => == != ->"
         " @ < > ; , = { } ( ) [ ] + - * / % ! . ? & ~ : `");
 
@@ -103,6 +103,7 @@ TEST(Lexer, LexSymbols)
         TraitToken{},
         SomeToken{},
         ExtendToken{},
+        ExtensionToken{},
         ImplToken{},
 
         PlusPlusToken{},

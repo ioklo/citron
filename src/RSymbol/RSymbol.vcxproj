@@ -71,7 +71,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Public\RSymbol\RStructDecl.cpp" />
-    <ClCompile Include="Public\RSymbol\RTraitDecl.cpp" />
     <ClCompile Include="RClassCtorDecl.cpp" />
     <ClCompile Include="RClassDecl.cpp" />
     <ClCompile Include="RClassFuncDecl.cpp" />
@@ -100,6 +99,7 @@
     <ClCompile Include="RStructDtorDecl.cpp" />
     <ClCompile Include="RStructFuncDecl.cpp" />
     <ClCompile Include="RStructVarDecl.cpp" />
+    <ClCompile Include="RTraitDecl.cpp" />
     <ClCompile Include="RTraitFuncDecl.cpp" />
     <ClCompile Include="RTraitMemberDecl.cpp" />
     <ClCompile Include="RTypeArguments.cpp" />

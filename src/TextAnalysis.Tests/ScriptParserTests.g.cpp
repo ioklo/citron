@@ -385,6 +385,84 @@ TEST(ScriptParser, ParseFuncDecl)
     EXPECT_SYNTAX_EQ(script, expected);
 }
 
+TEST(ScriptParser, ParseImpl_Basic)
+{
+    auto [buffer, lexer] = Prepare(UR"---(impl S : MyTrait
+{
+    void Func()
+    {
+    }
+}
+)---");
+    SFactory factory;
+
+    auto* script = ParseScript(&lexer, factory);
+
+    auto expected = R"---({
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "SImplDecl",
+            "name": "S",
+            "trait": {
+                "$type": "STypeExp_Id",
+                "name": "MyTrait",
+                "typeArgs": []
+            },
+            "memberDecls": [
+                {
+                    "$type": "SImplFuncDecl",
+                    "bStatic": false,
+                    "funcReturn": {
+                        "$type": "SFuncReturn_Normal",
+                        "type": {
+                            "$type": "STypeExp_Id",
+                            "name": "void",
+                            "typeArgs": []
+                        }
+                    },
+                    "name": "Func",
+                    "typeParams": [],
+                    "parameters": [],
+                    "body": []
+                }
+            ]
+        }
+    ]
+})---";
+
+    EXPECT_SYNTAX_EQ(script, expected);
+}
+
+TEST(ScriptParser, ParseImpl_Empty)
+{
+    auto [buffer, lexer] = Prepare(UR"---(impl S : MyTrait
+{
+}
+)---");
+    SFactory factory;
+
+    auto* script = ParseScript(&lexer, factory);
+
+    auto expected = R"---({
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "SImplDecl",
+            "name": "S",
+            "trait": {
+                "$type": "STypeExp_Id",
+                "name": "MyTrait",
+                "typeArgs": []
+            },
+            "memberDecls": []
+        }
+    ]
+})---";
+
+    EXPECT_SYNTAX_EQ(script, expected);
+}
+
 TEST(ScriptParser, ParseNamespaceDecl)
 {
     auto [buffer, lexer] = Prepare(UR"---(namespace NS1

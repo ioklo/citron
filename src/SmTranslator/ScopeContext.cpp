@@ -163,7 +163,7 @@ std::optional<MScopeKind> ScopeContext::GetReachableScopeKind(size_t labelId)
 
 expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sTypeExp)
 {
-    // TODO: BuildTypeDependentSymbolContext::MakeType 에도 같은 코드가 있다
+    // TODO: BuildNonTypeSymbolContext::MakeType 에도 같은 코드가 있다
     struct Visitor
     {
         using ResultType = RType*;

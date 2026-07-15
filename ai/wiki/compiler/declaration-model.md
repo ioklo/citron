@@ -33,6 +33,16 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - `GetMember` is leaning toward a broad "everything name-visible in this scope" surface, while type-only resolution is a separate resolver concern rather than a narrower declaration storage model.
 - Accessibility policy is likely to split between module/namespace member rules and type-member/inheritance rules, so `RNode` should not assume a single tree-only access algorithm.
 
+## Impl Payload Direction
+
+- `impl`은 이름을 바인딩하지 않으므로 `RDecl` tree child로 만들지 않는다.
+- `RStructDecl`과 `RExtensionDecl`은 external declaration surface를 나타내는 named symbol로 유지한다.
+- canonical impl의 실제 witness implementation은 `NStructInfo`, extension impl의 실제 witness implementation은 `NExtensionInfo` 같은 typed internal payload에 둔다.
+- public conformance header와 witness identity는 external module consumer가 알아야 하므로 declaration surface에 남긴다.
+- category-specific `N*Info`는 `RDecl` base의 universal tag보다 concrete `R*Decl`에 typed하게 붙이는 쪽을 선호한다.
+- generic conformance header는 단순 `(trait, traitTypeArgs)`가 아니라 generic signature, owner struct의 formal parameter에 적용하는 self type-argument pattern, trait type arguments, constraint를 함께 나타내야 한다. 예를 들어 `impl<T> S<T> : Trait`의 self pattern은 `[T]`이고, `impl Bundle for S<int> : Trait`의 self pattern은 `[int]`다.
+- canonical conformance의 witness는 `NStructInfo`에, specialized/conditional bundle conformance의 witness는 `NExtensionInfo`에 둔다. specialized bundle의 public header는 `RExtensionDecl` surface가 소유하며 conformance resolver가 활성화된 bundle과 canonical header를 함께 조회한다.
+
 ## Related Open Points
 - Exact fields filled at fdecl / decl / impl states for each declaration kind.
 - How `cti` generated declaration surface maps into `EDecl` / `REDecl`.
@@ -42,3 +52,4 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - `git history: ai/implementations/decl-model.md`
 - `ai/notes/2026-06-27-rdecl-rnode-and-lookup-direction.md`
 - `ai/notes/2026-05-12-module-visibility-and-internal-fdecl-direction.md`
+- `ai/notes/2026-07-15-generic-impl-and-specialized-conformance.md`

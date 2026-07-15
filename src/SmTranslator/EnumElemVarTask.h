@@ -16,7 +16,7 @@ class PhaseManager;
 enum class AccessorContext;
 
 class EnumElemVarTask
-    : public IBuildTypeDependentSymbolTask
+    : public IBuildNonTypeSymbolTask
 {
     REnumElemVarDecl* rEnumElemVar;
     SEnumElemVarDecl* sEnumElemVar;
@@ -27,7 +27,7 @@ class EnumElemVarTask
 
 public:
     static void Register(REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, PhaseManager& phaseManager);
-    std::expected<void, DiagPtr> BuildTypeDependentSymbol(BuildTypeDependentSymbolContext& context) override;
+    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
 };
 
 } // namespace Citron

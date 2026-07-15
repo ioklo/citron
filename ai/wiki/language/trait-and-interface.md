@@ -42,6 +42,35 @@ impl S : Trait2 { }
 
 각 `(type, trait)` declaration에는 같은 module 안에 정확히 하나의 `impl` block이 필요하다.
 
+### Generic Canonical Conformance
+
+generic struct의 canonical conformance도 원본 module의 struct header와 대응 `impl`으로 선언한다.
+
+```citron
+struct S<T> : Trait
+{
+}
+
+impl S : Trait { }
+```
+
+`impl S : Trait`는 source-level 생략형이다. `S`가 generic struct이면 compiler는 struct의 전체 generic arity에 맞춘 fresh type parameter를 도입해, 개념적으로 `impl<T> S<T> : Trait`와 같은 universal conformance schema로 정규화한다. 같은 이름을 generic arity만 다르게 overload하지 않으므로 이 생략형의 target arity는 type resolution으로 정해진다.
+
+- `struct S<T> : Trait`는 모든 well-formed `S<T>`가 `Trait`를 구현한다는 canonical 약속이다.
+- 대응 canonical `impl S : Trait`은 그 전체 범위를 덮어야 하며, `S<int>`처럼 일부 specialization만 구현해서는 충족되지 않는다.
+- 초기 구현은 이 생략형을 먼저 지원한다. full generic impl 표기와 `where` constraint는 후속 단계로 둔다.
+- full form은 `impl<T> S<T> : Trait where T : OtherTrait { }`처럼 generic signature와 target type expression을 명시한다. `where`가 필요한 impl에는 생략형을 쓰지 않는다.
+
+specialization 또는 조건부 conformance는 canonical `impl`의 변형으로 직접 쓰지 않고, 이름 있는 extension bundle로 선언한다.
+
+```citron
+extension IntTrait for S<int> : Trait;
+
+impl IntTrait for S<int> : Trait { }
+```
+
+따라서 `struct S<T> : Trait`는 universal canonical conformance에만 쓰고, `S<int> : Trait`처럼 적용 범위를 좁히는 관계는 bundle header가 public declaration surface로 제공한다.
+
 외부 module은 이름 있는 `extension` bundle로 conformance를 선언한다.
 
 ```citron
@@ -128,3 +157,4 @@ Dynamic callable이 필요하면 별도 interface 또는 interface type expressi
 - `ai/notes/2026-05-15-trait-concept-associated-type-design.md`
 - `ai/notes/2026-06-16-some-opaque-result-and-cti.md`
 - `ai/notes/2026-06-29-accessibility-struct-trait-extension-direction.md`
+- `ai/notes/2026-07-15-generic-impl-and-specialized-conformance.md`
