@@ -5,12 +5,13 @@
 namespace Citron {
 
 class RTraitDecl;
+class RTraitFuncDecl;
 class RTypeArguments;
 
 // ImplementedTraitFunc
 struct NImplTraitFunc
 {
-    std::vector<>;
+    RTraitFuncDecl* traitFuncDecl;
 };
 
 class NImplTraitMember

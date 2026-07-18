@@ -84,23 +84,23 @@ struct RDeclRes_TraitFuncs
 class RDeclRes
 {
     using Variant = std::variant<
-        struct RDeclRes_Namespace,
-        struct RDeclRes_GlobalFuncs,
-        struct RDeclRes_Class,
-        struct RDeclRes_ClassFuncs,
-        struct RDeclRes_ClassVar,
-        struct RDeclRes_Struct,
-        struct RDeclRes_StructFuncs,
-        struct RDeclRes_StructVar,
-        struct RDeclRes_Enum,
-        struct RDeclRes_EnumElem,
-        struct RDeclRes_EnumElemVar,
-        struct RDeclRes_LambdaVar,
-        struct RDeclRes_TupleVar,
-        struct RDeclRes_TypeVar,
-        struct RDeclRes_FuncParam,
-        struct RDeclRes_Trait,
-        struct RDeclRes_TraitFuncs
+        RDeclRes_Namespace,
+        RDeclRes_GlobalFuncs,
+        RDeclRes_Class,
+        RDeclRes_ClassFuncs,
+        RDeclRes_ClassVar,
+        RDeclRes_Struct,
+        RDeclRes_StructFuncs,
+        RDeclRes_StructVar,
+        RDeclRes_Enum,
+        RDeclRes_EnumElem,
+        RDeclRes_EnumElemVar,
+        RDeclRes_LambdaVar,
+        RDeclRes_TupleVar,
+        RDeclRes_TypeVar,
+        RDeclRes_FuncParam,
+        RDeclRes_Trait,
+        RDeclRes_TraitFuncs
     >;
 
     Variant v;

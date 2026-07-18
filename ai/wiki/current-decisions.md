@@ -32,12 +32,14 @@ Status: current snapshot
 - Nested generic declaration identity는 outer type arguments를 포함한다. 예: `C<int>.Trait`와 `C<string>.Trait`는 다르다.
 - Struct는 concrete struct를 상속하지 않는다. Struct의 `:` 뒤에는 trait conformance만 올 수 있고 struct member에는 `protected`를 허용하지 않는다.
 - 원본 module은 `struct S : Trait`로 canonical conformance를 선언하고 `impl S : Trait {}`로 구현한다.
-- generic struct의 `impl S : Trait {}`는 full generic arity를 implicit하게 바인딩하는 canonical shorthand다. `struct S<T> : Trait`는 모든 well-formed `S<T>`에 대한 conformance를 선언하며, shorthand impl은 그 전체 범위를 구현한다.
-- `where` constraint가 있는 generic impl은 후속 full form `impl<T> S<T> : Trait where T : OtherTrait {}`로 명시한다. 생략형 `impl S : Trait`에는 `where`를 붙이지 않는다.
+- generic struct의 canonical impl header는 `impl S<U> : Trait<U> {}`처럼 target pattern에 parameter를 드러낸다. `U`는 impl header가 도입하며, `struct S<T> : Trait<T>`의 `T`와 alpha-equivalent하다. `struct S<T> : Trait<T>`는 모든 well-formed `S<T>`에 대한 conformance를 선언하고 impl header는 그 전체 범위를 구현한다.
+- `where` constraint가 있는 generic impl도 `impl S<U> : Trait<U> where U : OtherTrait {}`처럼 target-pattern parameter를 사용한다.
 - specialization/conditional conformance는 direct canonical impl이 아니라 `extension Bundle for S<int> : Trait;`와 대응 `impl Bundle for S<int> : Trait {}` 같은 named bundle로 선언한다. bundle conformance는 소비 file의 `extend`로 활성화한다.
 - v1에서 `impl` target은 `struct`로 한정한다. `class`, `enum`, structural type 등 다른 target category는 후속 설계에서 단계적으로 검토한다.
 - 외부 module은 `extension Bundle for S : Trait;`로 이름 있는 conformance bundle을 선언하고 `impl Bundle for S : Trait {}`로 구현한다.
-- 외부 bundle은 자동 활성화하지 않는다. 소비 file에서 `import Provider;`로 declaration world를 연 뒤 `extend Bundle for S : Trait;`로 target과 trait를 명시해 활성화한다.
+- generic bundle은 `extension Bundle<T> for S<T> : Trait<T>;`로 선언한다. declaration-name slot의 `T`는 bundle parameter이고, 대응 `impl Bundle<U> for S<U> : Trait<U>`의 `U`는 impl target-pattern parameter다.
+- 외부 bundle은 자동 활성화하지 않는다. 소비 file에서 `import Provider;`로 declaration world를 연 뒤 `extend Bundle;`로 bundle family 전체를 활성화한다. `extend Bundle<int>;`는 concrete instantiation만 활성화하고, generic 또는 trait-selective activation은 `extend<U> Bundle<U> : Trait<U>;`처럼 explicit parameter clause와 trait selector를 사용한다. nested declaration에서는 parameter clause 없이 lexical generic context의 parameter를 capture할 수 있다. bundle header가 target mapping을 가지므로 `extend`에서 `for` target은 생략한다.
+- bundle의 trait entry별 activation selection은 유지한다. 활성화된 bundle entry들의 conformance pattern이 겹치면 같은 file에서 동시 활성화를 금지하며, overlap은 conformance 사용 지점이 아니라 activation 시점에 진단한다. 이 규칙은 사용 편의보다 explicit activation을 우선한다.
 - `extension`은 bundle declaration, `impl`은 witness implementation, `extend`는 file-local activation 역할로 구분한다.
 - 외부 extension은 target의 private member에 접근 가능한 trusted augmentation이다. Private 정보는 extension compiler에 reachable할 수 있지만 일반 lookup에는 visible하지 않다.
 - namespace accessibility가 외부 접근과 export 여부를 함께 결정하며 별도 export modifier는 두지 않는다.

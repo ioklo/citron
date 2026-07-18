@@ -47,26 +47,25 @@ impl S : Trait2 { }
 generic struct의 canonical conformance도 원본 module의 struct header와 대응 `impl`으로 선언한다.
 
 ```citron
-struct S<T> : Trait
+struct S<T> : Trait<T>
 {
 }
 
-impl S : Trait { }
+impl S<U> : Trait<U> { }
 ```
 
-`impl S : Trait`는 source-level 생략형이다. `S`가 generic struct이면 compiler는 struct의 전체 generic arity에 맞춘 fresh type parameter를 도입해, 개념적으로 `impl<T> S<T> : Trait`와 같은 universal conformance schema로 정규화한다. 같은 이름을 generic arity만 다르게 overload하지 않으므로 이 생략형의 target arity는 type resolution으로 정해진다.
+generic canonical impl의 `S<U>`는 일반 type expression이 아니라 generic conformance target pattern이다. `U`는 impl header가 도입하는 fresh type parameter이고, `struct S<T>`의 `T`와 이름만 다른 alpha-equivalent parameter다. 같은 이름을 generic arity만 다르게 overload하지 않으므로 target arity는 type resolution으로 정해진다.
 
-- `struct S<T> : Trait`는 모든 well-formed `S<T>`가 `Trait`를 구현한다는 canonical 약속이다.
-- 대응 canonical `impl S : Trait`은 그 전체 범위를 덮어야 하며, `S<int>`처럼 일부 specialization만 구현해서는 충족되지 않는다.
-- 초기 구현은 이 생략형을 먼저 지원한다. full generic impl 표기와 `where` constraint는 후속 단계로 둔다.
-- full form은 `impl<T> S<T> : Trait where T : OtherTrait { }`처럼 generic signature와 target type expression을 명시한다. `where`가 필요한 impl에는 생략형을 쓰지 않는다.
+- `struct S<T> : Trait<T>`는 모든 well-formed `S<T>`가 `Trait<T>`를 구현한다는 canonical 약속이다.
+- 대응 canonical `impl S<U> : Trait<U>`은 그 전체 범위를 덮어야 하며, `S<int>`처럼 일부 specialization만 구현해서는 충족되지 않는다.
+- `where` constraint는 `impl S<U> : Trait<U> where U : OtherTrait { }`처럼 target-pattern parameter를 사용한다.
 
 specialization 또는 조건부 conformance는 canonical `impl`의 변형으로 직접 쓰지 않고, 이름 있는 extension bundle로 선언한다.
 
 ```citron
-extension IntTrait for S<int> : Trait;
+extension IntTrait for S<int> : Trait<int>;
 
-impl IntTrait for S<int> : Trait { }
+impl IntTrait for S<int> : Trait<int> { }
 ```
 
 따라서 `struct S<T> : Trait`는 universal canonical conformance에만 쓰고, `S<int> : Trait`처럼 적용 범위를 좁히는 관계는 bundle header가 public declaration surface로 제공한다.
@@ -78,6 +77,9 @@ public extension MyBundle for S : Trait3, Trait4;
 
 impl MyBundle for S : Trait3 { }
 impl MyBundle for S : Trait4 { }
+
+extension GenericBundle<T> for S<T> : Trait<T>;
+impl GenericBundle<U> for S<U> : Trait<U> { }
 ```
 
 - `extension`의 accessor가 bundle의 accessibility를 결정한다.
@@ -86,16 +88,34 @@ impl MyBundle for S : Trait4 { }
 - 원본 module이 이미 선언한 canonical `(S, Trait)`는 외부 bundle이 재선언할 수 없다.
 - external extension implementation은 target의 private member에 접근할 수 있는 trusted augmentation으로 본다.
 
-외부 conformance는 import만으로 자동 활성화되지 않는다. 소비 파일에서 target과 필요한 trait를 모두 명시한다.
+외부 conformance는 import만으로 자동 활성화되지 않는다. 소비 파일은 bundle을 명시적으로 활성화한다. bundle header가 target mapping을 이미 갖고 있으므로, 기본 activation은 bundle 이름만 쓴다.
 
 ```citron
 import ExtModule;
 
-extend MyBundle for S : Trait3;
-extend MyBundle for S : Trait3, Trait4;
+extend MyBundle;
 ```
 
-`extend` directive는 file-local이며 bundle provider는 소비 module의 직접 dependency여야 한다. 동일한 concrete `(type, trait)`에 둘 이상의 활성 bundle이 매칭되면 conformance 사용 지점에서 ambiguity error를 낸다. Target 또는 trait 목록 생략형은 v1에서 허용하지 않는다.
+generic bundle과 선택 activation은 다음처럼 쓴다.
+
+```citron
+extension Bundle<T> for S<T> : Trait<T>, Trait2<T>;
+
+extend Bundle;                       // 모든 instantiation, 모든 trait entry
+extend Bundle<int>;                  // `int` instantiation의 모든 trait entry
+extend<U> Bundle<U> : Trait<U>;      // 모든 U에 대한 Trait<U> entry만 선택
+```
+
+- `extend Bundle;`는 bundle family 전체 activation이다.
+- `extend Bundle<int>;`의 `int`는 concrete type argument다.
+- generic activation pattern은 `extend<U>`에서 parameter를 명시적으로 도입한다. 뒤의 `Bundle<U>`와 trait selector는 그 parameter를 type argument로 적용한다.
+- nested declaration에서는 parameter clause 없이 lexical generic context의 parameter를 capture할 수 있다. 예: `class C<U> { extend Bundle<U>; }`의 `U`는 outer `C<U>`의 parameter다.
+- `for S<...>` target은 bundle header에서 결정되므로 activation에서 쓰지 않는다.
+- trait selector가 없으면 bundle의 모든 trait entry를 활성화한다.
+
+trait entry별 activation selection은 유지한다. 예를 들어 `extend<U> Bundle<U> : Trait<U>;`는 `Trait<U>` entry만 활성화한다.
+
+`extend` directive는 file-local이며 bundle provider는 소비 module의 직접 dependency여야 한다. 활성화된 bundle entry들이 같은 concrete `(type, trait)`에 매칭될 수 있으면 동시 활성화를 금지한다. 이 overlap은 conformance 사용 지점까지 미루지 않고 activation 시점에 error로 진단한다. 사용 편의보다 explicit activation을 우선하므로, 필요한 trait entry만 selector로 명시해 활성화해야 한다. generic pattern의 `where` constraint를 포함한 정확한 overlap 판정은 후속 설계 항목이다.
 
 ## Associated Type
 trait body의 `type X;`는 associated type requirement다.

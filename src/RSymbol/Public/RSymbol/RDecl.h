@@ -43,6 +43,7 @@ public:
     virtual RIdentifier GetIdentifier() = 0;
     virtual size_t GetTypeParamCount() = 0;
     virtual RTypeParamDecl* GetTypeParam(size_t index) = 0;
+
     virtual RTypeDecl* GetTypeMember(InRef<RName> name) = 0; // type-space search
 
     // typeArgs는 RDecl의 typeArgs이다

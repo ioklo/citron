@@ -3,6 +3,7 @@
 #include "Infra/Exceptions.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RDecl.h"
+#include "RSymbol/RStructDecl.h"
 #include "MIR/MFuncBody.h"
 #include "PhaseManager.h"
 
@@ -24,7 +25,18 @@ std::expected<void, DiagPtr> ImplTask::PostBuildNonTypeSymbol(PostBuildNonTypeSy
 
     // impl의 name은 다른 부분과 다르게 현재 scope에 있는 struct/class/enum 이름이다
     auto* rTypeDecl = rOuter->GetTypeMember(RName::Normal(sImplDecl->name));
-    
+
+    // trait부분은 TypeExp이고, 
+    //rOuter->ResolveTypeHeader
+    //context.MakeTrait(sImplDecl->trait, rTypeDecl);
+
+    //// TODO: [70] 2026-07-15, struct 이외에 class, enum에도 impl 넣기
+    //if (auto* rStructDecl = dynamic_cast<RStructDecl*>(rTypeDecl))
+    //{
+    //    auto* nStructInfo = rStructDecl->GetNStructInfo();
+    //}
+    //else throw NotImplementedException{};
+    throw NotImplementedException{};
 
     return {};
 }

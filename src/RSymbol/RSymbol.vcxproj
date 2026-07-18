@@ -63,6 +63,7 @@
     <ClInclude Include="Public\RSymbol\RTypeDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclContainerComponent.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclOuter.h" />
+    <ClInclude Include="Public\RSymbol\RTypeDeclRes.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h" />
     <ClInclude Include="Public\RSymbol\RTypeParamDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypes.h" />

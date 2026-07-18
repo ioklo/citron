@@ -54,6 +54,8 @@ public:
     RSYMBOL_API void AddFunc(RStructFuncDecl* decl) { funcDeclContainerComp.AddFunc(decl); }
     RSYMBOL_API void AddVar(RStructVarDecl* decl);
 
+    NStructInfo* GetNStructInfo() { return structInfo; }
+
     std::span<RStructCtorDecl*> GetUnboundCtors() { return ctors; }
     std::span<RStructVarDecl*> GetUnboundVars() { return vars; }
     size_t GetVarCount() { return vars.size(); }

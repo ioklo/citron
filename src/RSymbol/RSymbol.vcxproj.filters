@@ -146,6 +146,9 @@
     <ClInclude Include="Public\RSymbol\RTraitMemberDecl.h">
       <Filter>RDecls\10 Trait</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTypeDeclRes.h">
+      <Filter>RDecls\00 Abstraction</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">
