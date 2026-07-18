@@ -6,7 +6,7 @@
 #include "RTypes.h"
 
 #include "RLambdaDecl.h"
-#include "RTypeParamDecl.h"
+#include "RTypeParam.h"
 
 using namespace std;
 

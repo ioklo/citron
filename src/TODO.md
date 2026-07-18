@@ -16,7 +16,7 @@
 - [ ] // TODO: [34] enum [BitwiseCopyable] 지원
 - [ ] // TODO: [35] lambda의 [BitwiseCopyable] 지원
 - [v] // TODO: [36] MExp_String을 MCreate_String으로 변경
-- [ ] // TODO: [37] class base에서도 검색하기
+- [v] // TODO: [37] class base에서도 검색하기
 - [v] // TODO: [38] break/continue에 label 지원
 - [ ] // TODO: [39] SyntaxIR0Translator Eror 정리
 - [ ] // TODO: [40] MInitExp_StructCtorKind_*, MStmt_Assign를 쓸때 Copy, Move가 가능한지 확인하고 fallback까지 하는 코드 작성
@@ -50,3 +50,4 @@
 - [ ] // TODO: [68] 2026-07-11, CanAccess 제대로 구현
 - [ ] // TODO: [69] 2026-07-12, ResolveMember에서 Generics도 제대로 리턴하도록, RCommonFuncDeclComponent에서 ResolveFuncParam제거 (RDeclRes -> BodyRes로), RDeclRes_FuncParam제거
 - [ ] // TODO: [70] 2026-07-15, struct 이외에 class, enum에도 impl 넣기
+- [ ] // TODO: [71] 2026-07-18, interface 구현

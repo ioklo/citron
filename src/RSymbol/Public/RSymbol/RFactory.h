@@ -1,6 +1,7 @@
 #pragma once
 #include "RSymbolConfig.h"
 #include <unordered_map>
+#include <span>
 #include <memory>
 #include <deque>
 #include "Infra/Ref.h"
@@ -73,15 +74,75 @@ struct RTypeArgumentsKey
     }
 };
 
+struct RTypeArgumentsKeyView
+{
+    std::span<RType*> items;
+};
+
 struct RTypeArgumentsKeyHasher
 {
+    using is_transparent = void;
+
     size_t operator()(const RTypeArgumentsKey& key) const noexcept
     {
+        return Hash(key.items);
+    }
+
+    size_t operator()(RTypeArgumentsKeyView key) const noexcept
+    {
+        return Hash(key.items);
+    }
+
+private:
+    template<typename TItems>
+    static size_t Hash(const TItems& items) noexcept
+    {
         size_t s = 0;
-        Citron::hash_combine(s, key.items);
+
+        for (auto* item : items)
+            Citron::hash_combine(s, item);
+
         return s;
     }
 };
+
+struct RTypeArgumentsKeyEqual
+{
+    using is_transparent = void;
+
+    bool operator()(
+        const RTypeArgumentsKey& x,
+        const RTypeArgumentsKey& y) const noexcept
+    {
+        return x.items == y.items;
+    }
+
+    bool operator()(
+        const RTypeArgumentsKey& x,
+        RTypeArgumentsKeyView y) const noexcept
+    {
+        return Equal(x.items, y.items);
+    }
+
+    bool operator()(
+        RTypeArgumentsKeyView x,
+        const RTypeArgumentsKey& y) const noexcept
+    {
+        return Equal(y.items, x.items);
+    }
+
+private:
+    static bool Equal(
+        const std::vector<RType*>& x,
+        std::span<RType*> y) noexcept
+    {
+        if (x.size() != y.size())
+            return false;
+
+        return std::equal(x.begin(), x.end(), y.begin());
+    }
+};
+
 
 struct RFactoryPrivateData;
 
@@ -95,7 +156,7 @@ class RFactory
     // inner type -> nullable type
     std::unordered_map<RType*, std::unique_ptr<RType_Nullable>> nullableValueTypes;
     std::unordered_map<RType*, std::unique_ptr<RType_NullableInplace>> nullableRefTypes;
-    std::unordered_map<RTypeParamDecl*, std::unique_ptr<RType_TypeVar>> typeVarTypes;
+    std::unordered_map<RTypeParam*, std::unique_ptr<RType_TypeVar>> typeVarTypes;
     std::unique_ptr<RType_Void> voidType;
     std::unordered_map<std::vector<RTupleVar>, std::unique_ptr<RType_Tuple>> tupleTypes;
     std::unordered_map<RFuncTypeKey, std::unique_ptr<RType_Func>, RFuncTypeKeyHasher> funcTypes;
@@ -113,7 +174,7 @@ class RFactory
     InstanceTypeKeyUnorderedMap<RInterfaceDecl, RType_Interface> interfaceTypes;
     InstanceTypeKeyUnorderedMap<RLambdaDecl, RType_Lambda> lambdaTypes;
 
-    std::unordered_map<RTypeArgumentsKey, std::unique_ptr<RTypeArguments>, RTypeArgumentsKeyHasher> typeArgsMap;
+    std::unordered_map<RTypeArgumentsKey, std::unique_ptr<RTypeArguments>, RTypeArgumentsKeyHasher, RTypeArgumentsKeyEqual> typeArgsMap;
 
     // 기본 타입
     std::unique_ptr<RType> boolType;
@@ -142,7 +203,7 @@ public:
 
     RSYMBOL_API RType_Nullable* MakeNullableType(RType* innerType);
     RSYMBOL_API RType_NullableInplace* MakeNullableInplaceType(RType* innerType);
-    RSYMBOL_API RType_TypeVar* MakeTypeVarType(RTypeParamDecl* decl);
+    RSYMBOL_API RType_TypeVar* MakeTypeVarType(RTypeParam* decl);
     RSYMBOL_API RType_Void* MakeVoidType();
     RSYMBOL_API RType_Tuple* MakeTupleType(std::vector<RTupleVar>&& vars);
     RSYMBOL_API RType_Func* MakeFuncType(bool bLocal, RType* retType, std::vector<RType_Func::Parameter>&& params);
@@ -157,7 +218,7 @@ public:
     RSYMBOL_API RType_Interface* MakeInterfaceType(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal);
     RSYMBOL_API RType_Lambda* MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeArgs);
 
-    RSYMBOL_API RTypeArguments* MakeTypeArguments(const std::vector<RType*>& items);
+    RSYMBOL_API RTypeArguments* MakeTypeArguments(std::span<RType*> items);
     RSYMBOL_API RTypeArguments* MakeEmptyTypeArguments();
     RSYMBOL_API RTypeArguments* MergeTypeArguments(RTypeArguments* typeArgs0, RTypeArguments* typeArgs1);
 

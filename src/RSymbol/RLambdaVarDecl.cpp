@@ -1,6 +1,7 @@
 #include "RLambdaVarDecl.h"
 #include "Infra/Exceptions.h"
 #include "RLambdaDecl.h"
+#include "RMember.h"
 
 using namespace std;
 
@@ -34,7 +35,12 @@ size_t RLambdaVarDecl::GetTypeParamCount()
     return 0;
 }
 
-RTypeParamDecl* RLambdaVarDecl::GetTypeParam(size_t index)
+RTypeParam* RLambdaVarDecl::GetTypeParam(size_t index)
+{
+    return nullptr;
+}
+
+RTypeParam* RLambdaVarDecl::GetTypeParam(InRef<RName> name)
 {
     return nullptr;
 }
@@ -44,15 +50,9 @@ RTypeDecl* RLambdaVarDecl::GetTypeMember(InRef<RName> name)
     return nullptr;
 }
 
-optional<RDeclRes> RLambdaVarDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> RLambdaVarDecl::GetMember(InRef<RName> name)
 {
     return nullopt;
-}
-
-optional<RDeclRes> RLambdaVarDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    // VarDecl 하위 declspace에서 identifier를 resolve할 일이 없다
-    throw RuntimeFatalException();
 }
 
 } // namespace Citron

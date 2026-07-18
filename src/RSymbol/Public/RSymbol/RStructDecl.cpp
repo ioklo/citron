@@ -3,6 +3,8 @@
 #include "RFactory.h"
 #include "RStructCtorDecl.h"
 #include "RStructVarDecl.h"
+#include "RTypeRes.h"
+#include "RDeclRes.h"
 
 using namespace std;
 
@@ -61,52 +63,33 @@ RStructCtorDecl* RStructDecl::GetUnboundCopyCtor()
 RDecl* RStructDecl::GetOuter() { return outer.GetDecl(); }
 RIdentifier RStructDecl::GetIdentifier() { return RIdentifier{name, {}}; }
 size_t RStructDecl::GetTypeParamCount() { return genericsComp.GetTypeParamCount(); }
-RTypeParamDecl* RStructDecl::GetTypeParam(size_t index) { return genericsComp.GetTypeParam(index); }
+RTypeParam* RStructDecl::GetTypeParam(size_t index) { return genericsComp.GetTypeParam(index); }
+
+RTypeParam* RStructDecl::GetTypeParam(InRef<RName> name)
+{
+    return genericsComp.GetTypeParam(name);
+}
+
 RTypeDecl* RStructDecl::GetTypeMember(InRef<RName> name)
 {
-    if (auto* typeDecl = genericsComp.GetTypeMember(name))
-        return typeDecl;
-
     return typeDeclContainerComp.GetTypeMember(name);
 }
 
-std::optional<RDeclRes> RStructDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+std::optional<RMember> RStructDecl::GetMember(InRef<RName> name)
 {
-    vector<RDeclRes> candidates;
+    // 1. type
+    if (auto* typeDecl = typeDeclContainerComp.GetTypeMember(name))
+        return ToRMember(typeDecl);
 
-    // type
-    if (auto o_type = typeDeclContainerComp.ResolveTypeMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(move(*o_type));
+    // 2. func
+    if (auto o_func = funcDeclContainerComp.GetFuncs(name))
+        return move(*o_func);
 
-    // struct member func
-    if (auto o_func = funcDeclContainerComp.GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(move(*o_func));
+    // 3. var
+    if (auto* var = GetUnboundVar(name))
+        return RMember_StructVar{var};
 
-    if (explicitTypeParamsExceptOuterCount == 0)
-        if (auto* var = GetUnboundVar(name))
-            candidates.push_back(RDeclRes_StructVar(var, typeArgs));
-
-    if (candidates.empty()) return nullopt;
-
-    if (1 < candidates.size())
-    {
-        // TODO: 여러 candidate가 있다고 로깅하고 FatalException던지기
-        throw NotImplementedException();
-    }
-
-    return move(candidates[0]);
-}
-
-std::optional<RDeclRes> RStructDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    auto typeArgs = MakeOpenTypeArgs(*rFactory);
-    if (auto o_member = ResolveMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    return outer.GetDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    return nullopt;
 }
 
 // from RTypeDecl 
@@ -114,6 +97,11 @@ RDecl* RStructDecl::RTypeDecl_GetDecl() { return this; }
 RType* RStructDecl::GetOpenType()
 {
     return rFactory->MakeStructType(this, MakeOpenTypeArgs(*rFactory));
+}
+
+RTypeRes RStructDecl::ToRTypeRes(RTypeArguments* typeArgs)
+{
+    return RTypeRes_Struct(typeArgs, this);
 }
 
 RDeclRes RStructDecl::ToRDeclRes(RTypeArguments* typeArgs)

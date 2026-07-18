@@ -1,5 +1,4 @@
 #pragma once
-
 #include "RSymbolConfig.h"
 
 #include <vector>
@@ -15,7 +14,7 @@ namespace Citron {
 
 class RTypeArguments;
 class RType;
-class RTypeParamDecl;
+class RTypeParam;
 
 class RNamespaceDecl;
 class RGlobalFuncDecl;
@@ -28,58 +27,33 @@ class RStructVarDecl;
 class REnumDecl;
 class REnumElemDecl;
 class REnumElemVarDecl;
+class RLambdaDecl;
 class RLambdaVarDecl;
+class RInterfaceDecl;
 class RTraitDecl;
 class RTraitFuncDecl;
+class RMember;
 
 // RDeclSpaceResolvedResult
 struct RDeclRes_Namespace { RNamespaceDecl* decl; };
-struct RDeclRes_GlobalFuncs 
-{ 
-    std::vector<TDeclWithOuterTypeArgs<RGlobalFuncDecl>> items;
-
-    RSYMBOL_API RDeclRes_GlobalFuncs(std::vector<TDeclWithOuterTypeArgs<RGlobalFuncDecl>>&& items);
-    RSYMBOL_API RDeclRes_GlobalFuncs(const RDeclRes_GlobalFuncs&);
-    RSYMBOL_API ~RDeclRes_GlobalFuncs();
-};
+struct RDeclRes_GlobalFuncs { RTypeArguments* outerTypeArgs; std::vector<RGlobalFuncDecl*> items; };
 struct RDeclRes_Class { RTypeArguments* outerTypeArgs; RClassDecl* decl; };
-struct RDeclRes_ClassFuncs 
-{
-    std::vector<TDeclWithOuterTypeArgs<RClassFuncDecl>> items;
-
-    RSYMBOL_API RDeclRes_ClassFuncs(std::vector<TDeclWithOuterTypeArgs<RClassFuncDecl>>&& items);
-    RSYMBOL_API RDeclRes_ClassFuncs(const RDeclRes_ClassFuncs&);
-    RSYMBOL_API ~RDeclRes_ClassFuncs();
-};
-
+struct RDeclRes_ClassFuncs { RTypeArguments* outerTypeArgs; std::vector<RClassFuncDecl*> items; };
 struct RDeclRes_ClassVar { RClassVarDecl* decl; RTypeArguments* typeArgs; };
 struct RDeclRes_Struct { RTypeArguments* outerTypeArgs; RStructDecl* decl; };
-
-struct RDeclRes_StructFuncs
-{
-    std::vector<TDeclWithOuterTypeArgs<RStructFuncDecl>> items;
-
-    RSYMBOL_API RDeclRes_StructFuncs(std::vector<TDeclWithOuterTypeArgs<RStructFuncDecl>>&& items);
-    RSYMBOL_API RDeclRes_StructFuncs(const RDeclRes_StructFuncs&);
-    RSYMBOL_API ~RDeclRes_StructFuncs();
-};
-
+struct RDeclRes_StructFuncs { RTypeArguments* outerTypeArgs; std::vector<RStructFuncDecl*> items; };
 struct RDeclRes_StructVar { RStructVarDecl* decl; RTypeArguments* typeArgs; };
 struct RDeclRes_Enum { RTypeArguments* outerTypeArgs; REnumDecl* decl; };
 struct RDeclRes_EnumElem { RTypeArguments* outerTypeArgs; REnumElemDecl* decl; };
 struct RDeclRes_EnumElemVar { RTypeArguments* outerTypeArgs; REnumElemVarDecl* decl; };
+struct RDeclRes_Lambda { RTypeArguments* outerTypeArgs; RLambdaDecl* decl; };
 struct RDeclRes_LambdaVar { RTypeArguments* outerTypeArgs; RLambdaVarDecl* decl; };
+struct RDeclRes_Interface { RTypeArguments* outerTypeArgs; RInterfaceDecl* decl; };
 struct RDeclRes_TupleVar {}; // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
-struct RDeclRes_TypeVar { RTypeParamDecl* decl; };
+struct RDeclRes_TypeVar { RTypeParam* decl; };
 struct RDeclRes_FuncParam { RFuncParameter funcParam; };
-struct RDeclRes_Trait { RTraitDecl* decl; };
-struct RDeclRes_TraitFuncs 
-{
-    std::vector<TDeclWithOuterTypeArgs<RTraitFuncDecl>> items;
-    RSYMBOL_API RDeclRes_TraitFuncs(std::vector<TDeclWithOuterTypeArgs<RTraitFuncDecl>>&& items);
-    RSYMBOL_API RDeclRes_TraitFuncs(const RDeclRes_TraitFuncs&);
-    RSYMBOL_API ~RDeclRes_TraitFuncs();
-};
+struct RDeclRes_Trait { RTypeArguments* outerTypeArgs; RTraitDecl* decl; };
+struct RDeclRes_TraitFuncs { RTypeArguments* outerTypeArgs; std::vector<RTraitFuncDecl*> items; };
 
 class RDeclRes
 {
@@ -95,7 +69,9 @@ class RDeclRes
         RDeclRes_Enum,
         RDeclRes_EnumElem,
         RDeclRes_EnumElemVar,
+        RDeclRes_Lambda,
         RDeclRes_LambdaVar,
+        RDeclRes_Interface,
         RDeclRes_TupleVar,
         RDeclRes_TypeVar,
         RDeclRes_FuncParam,
@@ -115,6 +91,8 @@ public:
     template<typename T>
     T* GetIf() { return std::get_if<T>(&v); }
 };
+
+RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* outerTypeArgs, RMember member);
 
 } // namespace Citron
 

@@ -9,9 +9,14 @@ using namespace std;
 
 namespace Citron {
 
-RTypeArguments::RTypeArguments(const std::vector<RType*>& items, RFactory* factory)
-    : items{items}, factory{factory}
+RTypeArguments::RTypeArguments(std::vector<RType*>&& items, RFactory* factory)
+    : items{move(items)}, factory{factory}
 {
+}
+
+RTypeArguments* RTypeArguments::Remove(size_t count)
+{
+    return factory->MakeTypeArguments(span<RType*>(items.data() + count, items.size() - count));
 }
 
 RTypeArguments* RTypeArguments::Apply(RTypeArguments* typeArgs)

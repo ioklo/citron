@@ -33,21 +33,4 @@ void RTypeDeclContainerComponent::AddType(RTypeDecl* typeDecl)
     typeDict.insert_or_assign(typeDecl->RTypeDecl_GetDecl()->GetIdentifier(), typeDecl);
 }
 
-RTypeDecl* RTypeDeclContainerComponent::GetTypeMember(InRef<RName> name)
-{
-    auto i = typeDict.find({*name, {}});
-    if (i == typeDict.end()) return nullptr;
-
-    return i->second;
-}
-
-// 첫번째 인자는 부모의 typeArgs
-optional<RDeclRes> RTypeDeclContainerComponent::ResolveTypeMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    auto i = typeDict.find({*name, {}});
-    if (i == typeDict.end()) return nullopt;
-
-    return i->second->ToRDeclRes(typeArgs);
-}
-
 } // namespace Citron

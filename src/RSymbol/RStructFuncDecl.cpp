@@ -13,9 +13,9 @@ RStructFuncDecl::RStructFuncDecl(RStructDecl* _struct, RStructMemberAccessor acc
 {
 }
 
-void RStructFuncDecl::InitFuncReturnAndParams(bool bStatic, RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void RStructFuncDecl::InitFuncReturnAndParams(bool bStatic, RFuncReturn&& funcRet, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
-    commonFuncDeclComp.InitFuncReturnAndParams(std::move(funcRet), bStatic ? (RThisKind)RThisKind_Static {} : RThisKind_Ref{_struct->GetOpenType()}, std::move(funcParameters), bLastParameterVariadic);
+    commonFuncDeclComp.InitFuncReturnAndParams(move(funcRet), bStatic ? (RThisKind)RThisKind_Static {} : RThisKind_Ref{_struct->GetOpenType()}, move(funcParameters), bLastParameterVariadic);
 }
 
 // from RDecl
@@ -34,33 +34,24 @@ size_t RStructFuncDecl::GetTypeParamCount()
     return genericsComp.GetTypeParamCount();
 }
 
-RTypeParamDecl* RStructFuncDecl::GetTypeParam(size_t index)
+RTypeParam* RStructFuncDecl::GetTypeParam(size_t index)
 {
     return genericsComp.GetTypeParam(index);
 }
 
-RTypeDecl* RStructFuncDecl::GetTypeMember(InRef<RName> name)
+RTypeParam* RStructFuncDecl::GetTypeParam(InRef<RName> name)
 {
-    return genericsComp.GetTypeMember(name);
+    return genericsComp.GetTypeParam(name);
 }
 
-optional<RDeclRes> RStructFuncDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+RTypeDecl* RStructFuncDecl::GetTypeMember(InRef<RName> name)
+{
+    return nullptr;
+}
+
+optional<RMember> RStructFuncDecl::GetMember(InRef<RName> name)
 {
     return nullopt;
 }
-
-optional<RDeclRes> RStructFuncDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    if (auto o_member = commonFuncDeclComp.ResolveFuncParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
-}
-
-
-
 
 } // namespace Citron

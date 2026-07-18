@@ -7,7 +7,7 @@
 #include "RSymbol/RDecl.h"
 
 #include "RSymbol/RFactory.h"
-#include "RSymbol/RTypeParamDecl.h"
+#include "RSymbol/RTypeParam.h"
 
 using namespace std;
 

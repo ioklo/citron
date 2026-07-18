@@ -153,6 +153,86 @@ member tree를 유지한다면 목적은 단순 tree search가 아니다.
 
 이 경계를 따르면 `RNode`는 lightweight containment/member tree이고, generic signature와 type parameter는 declaration payload/binder scope다. resolver는 member tree를 기계적으로 따라가기만 하는 것이 아니라, current declaration의 generic signature를 확인한 뒤 문맥별 규칙에 따라 member/outer lookup을 수행한다.
 
+## Inheritance Lookup과 Resolver Hook
+
+class의 base class를 통한 lookup은 member tree의 outer/containment 관계와 별개다. base class는 generic instantiation을 동반하므로 bare `RDecl*`를 반환하는 `GetBaseDecl()`만으로 모델링하면 type argument application 정보를 잃는다.
+
+당분간 `RDecl`의 좁은 virtual hook으로 다음을 두는 방향을 검토한다.
+
+```text
+ResolveInheritedTypeMember(typeArgs, name)
+ResolveInheritedMember(typeArgs, name)
+```
+
+일반 resolver는 local direct member lookup과 outer lexical lookup 사이에서 이 hook을 호출한다. hook의 계약은 다음으로 제한한다.
+
+- current declaration의 direct member는 다시 보지 않는다.
+- outer lexical scope로 올라가지 않는다.
+- base/inheritance chain만 따라간다.
+- base edge의 type arguments를 current `typeArgs`에 적용한 뒤, 찾은 declaration result에 그 applied arguments를 붙인다.
+
+`ResolveIdentifierExtra`처럼 일반적인 이름의 hook은 확장 여지를 남기지만 lookup 순서와 책임이 불명확해지기 쉽다. 현재 목적이 inheritance라면 위처럼 `Inherited`를 명시하는 이름이 더 낫다. 장기적으로는 resolver가 declaration category별 inheritance/conformance policy를 직접 다루고, `RDecl` hook은 줄이는 방향을 우선 검토한다.
+
+타 언어의 nested type 상속은 일관되지 않다. C++의 unqualified lookup 및 C#/Java의 member inheritance는 base의 nested type을 볼 수 있는 모델과 친하지만, Swift는 nested type을 일반 inherited member surface로 두지 않고 Rust에는 class inheritance가 없다. Citron이 base class의 type member를 상속시키려면 C#/Java 계열처럼 명시적인 언어 규칙으로 채택해야 한다.
+
+## `Get`과 `Resolve`의 의미
+
+`RDeclRes`를 반환한다는 사실만으로 API를 `Resolve`라고 부르지는 않는다. 결과 object는 declaration에 lexical/outer type arguments, overload candidate group 같은 문맥을 붙이는 표현 형식일 뿐이다.
+
+- `Get...`: 해당 container의 direct/local item을 찾고 필요하면 result context로 감싼다.
+- `Resolve...`: generic binder, inherited member, outer lexical scope, overload/shadowing/ambiguity 같은 lookup policy를 적용한다.
+- `ToR...Res`: 이미 찾은 raw declaration에 type-argument context를 결합하는 conversion이다.
+
+따라서 `RType`의 `ResolveVar`가 자기 type의 direct variable map만 보고 `outerTypeArgs`를 붙이는 동작이라면 `GetVar`가 더 맞다. 반대로 다른 scope까지 진행하면 `Resolve`다.
+
+## Generic Argument Binding State
+
+type argument 상태는 한 축으로 합치지 않는다.
+
+1. **결합 범위**
+   - `unbound`: generic definition/decl만 있고 self type argument가 없다.
+   - `outer-applied`: nested/member declaration에 enclosing type arguments만 적용됐다. self type argument는 아직 없다.
+   - `fully-applied`: enclosing 및 self type arguments가 모두 적용됐다.
+2. **인자의 closure**
+   - open: 적용된 argument 안에 type parameter/type variable이 남아 있다.
+   - closed: 모든 argument가 concrete/closed type이다.
+
+Citron에서는 첫 상태를 `RType`으로 들고 다니지 않는다. generic definition은 `RTypeDecl`/`RDecl`이고, `RType`은 항상 arguments가 채워진 constructed type이다.
+
+```text
+S        -> generic definition declaration (RTypeDecl), not RType
+S<T>     -> bound RType, open constructed type
+S<int>   -> bound RType, closed constructed type
+```
+
+그러므로 `RDeclRes` 안에서 self argument가 없는 상태는 unbound *type*이 아니라 member/overload lookup 중의 declaration context다. `RType`으로 승격하지 않는다. C#은 `S<>`를 unbound generic type이라는 별도 type form으로 다루지만, Citron에 `typeof(S<>)`, generic type constructor, higher-kinded/partial application 같은 기능이 없다면 이를 별도 `RType`으로 도입할 실익은 없다.
+
+공개 용어는 보통 `open/closed type` 또는 `open/closed constructed type`이다. `open/closed type arguments`는 구현상 `RTypeArguments::IsClosed()` 같은 query 이름으로는 자연스럽지만, 모델 설명에서는 arguments 자체보다 그것으로 구성된 type/decl의 성질로 설명한다.
+
+## Declaration Result 표현 후보
+
+`RDeclRes` 전체를 하나의 applied-declaration wrapper로 대체하지는 않는다. declaration을 담는 각 variant payload에만 결합 범위를 명시하는 wrapper를 둔다.
+
+```cpp
+template <typename TDecl>
+struct ROuterAppliedDecl
+{
+    TDecl* decl;
+    RTypeArguments* outerTypeArgs;
+};
+
+template <typename TDecl>
+struct ROuterAppliedDeclGroup
+{
+    RTypeArguments* outerTypeArgs;
+    std::vector<TDecl*> items;
+};
+```
+
+단일 class variable/function 같은 result는 `ROuterAppliedDecl<TDecl>`로, 같은 enclosing type arguments를 공유하는 overload group은 `ROuterAppliedDeclGroup<TDecl>`로 표현한다. overload마다 동일한 `outerTypeArgs`를 반복해 `vector<ROuterAppliedDecl<TDecl>>`로 만들 필요는 없다.
+
+`RBoundDecl`보다 `RAppliedDecl`/`ROuterAppliedDecl`이 더 정확하다. `bound`는 open/closed constructed type의 의미와 혼동될 수 있기 때문이다.
+
 ## Open Points
 
 - generic binder와 nested type member가 공유하는 type-name namespace의 정확한 duplicate/shadowing 진단 규칙
@@ -160,4 +240,5 @@ member tree를 유지한다면 목적은 단순 tree search가 아니다.
 - resolver result wrapper의 shape: `TypeDecl | TypeParam`을 별도 type-resolution result로 둘지, 넓은 declaration result에 둘지
 - `RTypeParamDecl`의 `RDecl` 및 `RTypeDecl` 상속을 어떤 순서로 제거/대체할지
 - `ResolveType...` API의 최종 명명과 resolver 계층 배치
-
+- inherited type/member lookup을 `RDecl` virtual hook으로 둘 기간과, 장기 resolver policy로 옮길 시점
+- `RDeclRes` variant별 `ROuterAppliedDecl`/overload-group wrapper 도입 범위와 fully-applied declaration result가 실제로 필요한 지점

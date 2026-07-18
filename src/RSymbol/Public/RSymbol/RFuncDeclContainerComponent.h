@@ -1,14 +1,17 @@
 #pragma once
-
 #include <vector>
+#include <optional>
 #include <unordered_map>
 #include <optional>
 #include "Infra/Ref.h"
 #include "DeclWithOuterTypeArgs.h"
+#include "RMember.h"
 
 namespace Citron {
 
-template<typename TRFuncDecl, typename RDeclResType>
+class RMember;
+
+template<typename TRFuncDecl, typename RMemberType>
 class RFuncDeclContainerComponent
 {
     std::vector<TRFuncDecl*> funcs;
@@ -31,7 +34,20 @@ public:
         return idMap[identifier];
     }
 
-    std::optional<RDeclResType> GetMemberFunc(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+    std::optional<RMember> GetFuncs(InRef<RName> name)
+    {
+        std::vector<TRFuncDecl*> funcs;
+
+        auto i = nameMap.find(*name);
+        if (i == nameMap.end()) return std::nullopt;
+
+        for (auto& func : i->second)
+            funcs.push_back(func);
+
+        return RMemberType{std::move(funcs)};
+    }
+
+    /*std::optional<RDeclResType> GetMemberFunc(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
     {
         std::vector<TDeclWithOuterTypeArgs<TRFuncDecl>> result;
 
@@ -44,7 +60,7 @@ public:
 
         return RDeclResType{std::move(result)};
 
-    }
+    }*/
 
 };
 

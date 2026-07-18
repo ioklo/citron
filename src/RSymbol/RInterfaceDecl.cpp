@@ -1,6 +1,9 @@
 #include "RInterfaceDecl.h"
 #include "Infra/Exceptions.h"
 #include "RFactory.h"
+#include "RTypeRes.h"
+#include "RDeclRes.h"
+#include "RMember.h"
 
 using namespace std;
 
@@ -29,27 +32,25 @@ size_t RInterfaceDecl::GetTypeParamCount()
     return genericsComp.GetTypeParamCount();
 }
 
-RTypeParamDecl* RInterfaceDecl::GetTypeParam(size_t index)
+RTypeParam* RInterfaceDecl::GetTypeParam(size_t index)
 {
     return genericsComp.GetTypeParam(index);
 }
 
+RTypeParam* RInterfaceDecl::GetTypeParam(InRef<RName> name)
+{
+    return genericsComp.GetTypeParam(name);
+}
+
 RTypeDecl* RInterfaceDecl::GetTypeMember(InRef<RName> name)
 {
-    return genericsComp.GetTypeMember(name);
+    return nullptr;
 }
 
-optional<RDeclRes> RInterfaceDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> RInterfaceDecl::GetMember(InRef<RName> name)
 {
-    throw NotImplementedException();
-}
-
-optional<RDeclRes> RInterfaceDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    throw NotImplementedException();
+    // TODO: [71] 2026-07-18, interface 구현
+    throw NotImplementedException{};
 }
 
 RDecl* RInterfaceDecl::RTypeDecl_GetDecl()
@@ -62,6 +63,11 @@ RType* RInterfaceDecl::GetOpenType()
     // bLocal 처리를 못해서 (왠지 빼야 할 것 같다) 일단 NotImplementedException 처리.
     // return rFactory->MakeInterfaceType(this, MakeOpenTypeArgs(*rFactory));
     throw NotImplementedException{};
+}
+
+RTypeRes RInterfaceDecl::ToRTypeRes(RTypeArguments* typeArgs)
+{
+    return RTypeRes_Interface(typeArgs, this);
 }
 
 RDeclRes RInterfaceDecl::ToRDeclRes(RTypeArguments* typeArgs)

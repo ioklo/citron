@@ -1,6 +1,7 @@
 #include "REnumElemVarDecl.h"
 #include "Infra/Exceptions.h"
 #include "REnumElemDecl.h"
+#include "RMember.h"
 
 using namespace std;
 
@@ -26,7 +27,12 @@ size_t REnumElemVarDecl::GetTypeParamCount()
     return 0;
 }
 
-RTypeParamDecl* REnumElemVarDecl::GetTypeParam(size_t index)
+RTypeParam* REnumElemVarDecl::GetTypeParam(size_t index)
+{
+    return nullptr;
+}
+
+RTypeParam* REnumElemVarDecl::GetTypeParam(InRef<RName> name)
 {
     return nullptr;
 }
@@ -36,15 +42,9 @@ RTypeDecl* REnumElemVarDecl::GetTypeMember(InRef<RName> name)
     return nullptr;
 }
 
-optional<RDeclRes> REnumElemVarDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> REnumElemVarDecl::GetMember(InRef<RName> name)
 {
     return nullopt;
-}
-
-optional<RDeclRes> REnumElemVarDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
-    throw RuntimeFatalException();
 }
 
 } // namespace Citron

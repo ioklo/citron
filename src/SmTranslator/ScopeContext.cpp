@@ -183,6 +183,7 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
             else if (idExp->name == "string" && idExp->typeArgs.empty())
                 return rFactory->MakeStringType();
 
+            // NOTICE: 부모 TypeArgs처리를 하지 않았다
             auto* rTypeDecl = scopeContext.funcContext->ResolveTypeDecl(RName::Normal(idExp->name), idExp->typeArgs.size());
             if (!rTypeDecl) return nullptr;
 

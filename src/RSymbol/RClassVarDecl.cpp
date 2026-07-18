@@ -30,9 +30,14 @@ size_t RClassVarDecl::GetTypeParamCount()
     return size_t();
 }
 
-RTypeParamDecl* RClassVarDecl::GetTypeParam(size_t index)
+RTypeParam* RClassVarDecl::GetTypeParam(size_t index)
 {
     return 0;
+}
+
+RTypeParam* RClassVarDecl::GetTypeParam(InRef<RName> name)
+{
+    return nullptr;
 }
 
 RTypeDecl* RClassVarDecl::GetTypeMember(InRef<RName> name)
@@ -40,15 +45,9 @@ RTypeDecl* RClassVarDecl::GetTypeMember(InRef<RName> name)
     return nullptr;
 }
 
-optional<RDeclRes> RClassVarDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> RClassVarDecl::GetMember(InRef<RName> name)
 {
     return nullopt;
-}
-
-optional<RDeclRes> RClassVarDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
-    throw RuntimeFatalException();
 }
 
 } // namespace Citron

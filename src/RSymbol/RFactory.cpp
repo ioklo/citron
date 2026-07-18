@@ -76,7 +76,7 @@ RType_NullableInplace* RFactory::MakeNullableInplaceType(RType* innerType)
     return pNewType;
 }
 
-RType_TypeVar* RFactory::MakeTypeVarType(RTypeParamDecl* decl)
+RType_TypeVar* RFactory::MakeTypeVarType(RTypeParam* decl)
 {
     auto i = typeVarTypes.find(decl);
     if (i != typeVarTypes.end())
@@ -203,48 +203,49 @@ RType_Lambda* RFactory::MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeAr
     return MakeInstanceType(lambdaTypes, decl, typeArgs);
 }
 
-RTypeArguments* RFactory::MakeTypeArguments(const vector<RType*>& items)
+RTypeArguments* RFactory::MakeTypeArguments(span<RType*> items)
 {
-    RTypeArgumentsKey key{items};
+    RTypeArgumentsKeyView key{items};
 
     auto i = typeArgsMap.find(key);
     if (i != typeArgsMap.end())
         return i->second.get();
 
-    unique_ptr<RTypeArguments> v{new RTypeArguments{items, this}};
+    // TODO: vector 두벌 생성
+    unique_ptr<RTypeArguments> v{new RTypeArguments{vector<RType*>{items.begin(), items.end()}, this}};
     auto pv = v.get();
-    typeArgsMap.emplace(key, move(v));
+    typeArgsMap.emplace(vector<RType*>{items.begin(), items.end()}, move(v));
     return pv;
 }
 
 RTypeArguments* RFactory::MakeEmptyTypeArguments()
 {
-    static std::vector<RType*> items;
-    static RTypeArgumentsKey key{items};
+    // static std::vector<RType*> items;
+    static RTypeArgumentsKeyView key{{}};
 
     auto i = typeArgsMap.find(key);
     if (i != typeArgsMap.end())
         return i->second.get();
 
-    unique_ptr<RTypeArguments> v{new RTypeArguments{items, this}};
+    unique_ptr<RTypeArguments> v{new RTypeArguments{{}, this}};
     auto pv = v.get();
-    typeArgsMap.emplace(key, move(v));
+    typeArgsMap.emplace(vector<RType*>{}, move(v));
     return pv;
 }
 
 RTypeArguments* RFactory::MergeTypeArguments(RTypeArguments* typeArgs0, RTypeArguments* typeArgs1)
 {
-    auto items = typeArgs0->items; // 복사
+    vector<RType*> items{typeArgs0->items}; // 복사
     items.insert(items.end(), typeArgs1->items.begin(), typeArgs1->items.end());
 
-    RTypeArgumentsKey key{items};
+    RTypeArgumentsKeyView key{items};
     auto i = typeArgsMap.find(key);
     if (i != typeArgsMap.end())
         return i->second.get();
 
     unique_ptr<RTypeArguments> v{new RTypeArguments{move(items), this}};
     auto pv = v.get();
-    typeArgsMap.emplace(key, move(v));
+    typeArgsMap.emplace(vector<RType*>{pv->items.begin(), pv->items.end()}, move(v));
     return pv;
 }
 
@@ -287,7 +288,7 @@ RType* RFactory::MakeType(RTypeDecl* decl, RTypeArguments* typeArgs)
             return factory.MakeLambdaType(lambdaDecl, typeArgs);
         }
 
-        RType* Visit(RTypeParamDecl* typeParamDecl)
+        RType* Visit(RTypeParam* typeParamDecl)
         {
             assert(typeArgs->GetCount() == 0);
             return factory.MakeTypeVarType(typeParamDecl);
@@ -321,13 +322,13 @@ RType* RFactory::MakeStringType()
 
 RType* RFactory::MakeListType(RType* itemType)
 {
-    auto* typeArgs = MakeTypeArguments({itemType});
+    auto* typeArgs = MakeTypeArguments({&itemType, 1});
     return MakeClassType(listDecl.get(), typeArgs);
 }
 
 RType* RFactory::MakeListIteratorType(RType* itemType)
 {
-    auto* typeArgs = MakeTypeArguments({itemType});
+    auto* typeArgs = MakeTypeArguments({&itemType, 1});
     return MakeStructType(listIterDecl.get(), typeArgs);
 }
 

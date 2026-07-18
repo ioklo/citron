@@ -1,6 +1,9 @@
 #include "REnumDecl.h"
 #include "REnumElemDecl.h"
 #include "RFactory.h"
+#include "RTypeRes.h"
+#include "RDeclRes.h"
+#include "RMember.h"
 
 using namespace std;
 
@@ -32,16 +35,19 @@ size_t REnumDecl::GetTypeParamCount()
     return genericsComp.GetTypeParamCount();
 }
 
-RTypeParamDecl* REnumDecl::GetTypeParam(size_t index)
+RTypeParam* REnumDecl::GetTypeParam(size_t index)
 {
     return genericsComp.GetTypeParam(index);
 }
 
+RTypeParam* REnumDecl::GetTypeParam(InRef<RName> name)
+{
+    return genericsComp.GetTypeParam(name);
+}
+
 RTypeDecl* REnumDecl::GetTypeMember(InRef<RName> name)
 {
-    if (RTypeDecl* typeDecl = genericsComp.GetTypeMember(name))
-        return typeDecl;
-
+    // enumElem에서 검색, 같은 이름은 
     auto i = elemsMap.find(*name);
     if (i != elemsMap.end())
         return i->second;
@@ -49,21 +55,11 @@ RTypeDecl* REnumDecl::GetTypeMember(InRef<RName> name)
     return nullptr;
 }
 
-optional<RDeclRes> REnumDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> REnumDecl::GetMember(InRef<RName> name)
 {
-    if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
-
-    // enumElem에서 검색, 같은 이름은 
     auto i = elemsMap.find(*name);
-    if (i == elemsMap.end()) return nullopt;
-
-    return RDeclRes_EnumElem(typeArgs, i->second);
-}
-
-optional<RDeclRes> REnumDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
+    if (i != elemsMap.end())
+        return RMember_EnumElem{i->second};
 
     return nullopt;
 }
@@ -76,6 +72,11 @@ RDecl* REnumDecl::RTypeDecl_GetDecl()
 RType* REnumDecl::GetOpenType()
 {
     return rFactory->MakeEnumType(this, MakeOpenTypeArgs(*rFactory));
+}
+
+RTypeRes REnumDecl::ToRTypeRes(RTypeArguments* typeArgs)
+{
+    return RTypeRes_Enum(typeArgs, this);
 }
 
 RDeclRes REnumDecl::ToRDeclRes(RTypeArguments* typeArgs)

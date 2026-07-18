@@ -22,17 +22,17 @@ class RClassCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonCompon
 
 public:
     RSYMBOL_API RClassCtorDecl(RClassDecl* _class, RClassMemberAccessor accessor, bool bTrivial);
-    RSYMBOL_API void InitTypeParams(std::vector<RTypeParamDecl*>&& typeParams);
+    RSYMBOL_API void InitTypeParams(std::vector<RTypeParam*>&& typeParams);
     RClassDecl* GetClassDecl() { return _class; }
 
 public: // from RDecl
-    RSYMBOL_API RDecl* GetOuter() override;
-    RSYMBOL_API RIdentifier GetIdentifier() override;
-    RSYMBOL_API size_t GetTypeParamCount() override;
-    RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
-    RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name) override;
-    RSYMBOL_API std::optional<RDeclRes> ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
-    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
+    RSYMBOL_API RDecl* GetOuter() final;
+    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API size_t GetTypeParamCount() final;
+    RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
+    RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;
+    RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name) final;
+    RSYMBOL_API std::optional<RMember> GetMember(InRef<RName> name) final;
 };
 
 } // namespace Citron

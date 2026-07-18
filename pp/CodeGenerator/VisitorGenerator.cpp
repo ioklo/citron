@@ -260,7 +260,6 @@ void GenerateVisitors(std::filesystem::path rootPath)
                 "REnumElemDecl",
                 "RInterfaceDecl",
                 "RLambdaDecl",
-                "RTypeParamDecl",
                 "RTraitDecl",
             },
         },

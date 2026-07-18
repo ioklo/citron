@@ -1,6 +1,9 @@
 #include "RClassDecl.h"
 #include "Infra/Exceptions.h"
 #include "RFactory.h"
+#include "RTypeRes.h"
+#include "RDeclRes.h"
+#include "RTypeArguments.h"
 
 using namespace std;
 
@@ -10,6 +13,14 @@ RClassDecl::RClassDecl(RTypeDeclOuter outer, TakeRef<RName> name, TakeRef<RFacto
     : outer{outer}, name{name.Take()}, rFactory{rFactory.Take()}, trivialCtorIndex{-1}
     , genericsComp{}, typeDeclContainerComp{}
 {
+}
+
+RClassVarDecl* RClassDecl::GetUnboundVar(InRef<RName> name)
+{
+    auto i = varsMap.find(*name);
+    if (i == varsMap.end()) return nullptr;
+
+    return i->second;
 }
 
 optional<RDeclRes_ClassVar> RClassDecl::ResolveVar(RTypeArguments* typeArgs, InRef<RName> name)
@@ -35,57 +46,72 @@ size_t RClassDecl::GetTypeParamCount()
     return genericsComp.GetTypeParamCount();
 }
 
-RTypeParamDecl* RClassDecl::GetTypeParam(size_t index)
+RTypeParam* RClassDecl::GetTypeParam(size_t index)
 {
     return genericsComp.GetTypeParam(index);
 }
 
+RTypeParam* RClassDecl::GetTypeParam(InRef<RName> name)
+{
+    return genericsComp.GetTypeParam(name);
+}
+
 RTypeDecl* RClassDecl::GetTypeMember(InRef<RName> name)
 {
-    if (auto* typeDecl = genericsComp.GetTypeMember(name))
-        return typeDecl;
-
     return typeDeclContainerComp.GetTypeMember(name);
 }
 
-optional<RDeclRes> RClassDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> RClassDecl::GetMember(InRef<RName> name)
 {
-    vector<RDeclRes> candidates;
+    // 1. type
+    if (auto* typeDecl = typeDeclContainerComp.GetTypeMember(name))
+        return ToRMember(typeDecl);
 
-    // type
-    if (auto o_type = typeDeclContainerComp.ResolveTypeMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(move(*o_type));
+    // 2. func
+    if (auto o_func = funcDeclContainerComp.GetFuncs(name))
+        return move(*o_func);
 
-    // class member func
-    if (auto o_func = funcDeclContainerComp.GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(move(*o_func));
+    // 3. var
+    if (auto* var = GetUnboundVar(name))
+        return RMember_ClassVar{var};
 
-    if (explicitTypeParamsExceptOuterCount == 0)
-        if (auto o_var = ResolveVar(typeArgs, name))
-            candidates.push_back(move(*o_var));
-
-    if (candidates.empty()) return nullopt;
-
-    if (1 < candidates.size())
-    {
-        // TODO: 여러 candidate가 있다고 로깅하고 FatalException던지기
-        throw NotImplementedException();
-    }
-
-    return move(candidates[0]);
+    return nullopt;
 }
 
-optional<RDeclRes> RClassDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RTypeRes> RClassDecl::ResolveInheritedTypeMember(RTypeArguments* typeArgs, InRef<RName> name)
 {
-    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
+    assert(o_baseTypes);
 
-    auto* typeArgs = MakeOpenTypeArgs(*rFactory);
-    if (auto o_member = ResolveMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        return o_member;
+    // baseClass가 있다면
+    if (o_baseTypes->baseClass)
+    {
+        auto* baseClassTypeArgs = o_baseTypes->baseClass->typeArgs->Apply(typeArgs);
 
-    // TODO: [37] class base에서도 검색하기
-    return outer.GetDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+        if (auto* baseTypeMember = o_baseTypes->baseClass->decl->GetTypeMember(name))
+            return Citron::ToRTypeRes(baseClassTypeArgs, baseTypeMember);
+
+        return o_baseTypes->baseClass->decl->ResolveInheritedTypeMember(baseClassTypeArgs, name);
+    }
+
+    return nullopt;
+}
+
+optional<RDeclRes> RClassDecl::ResolveInheritedMember(RTypeArguments* typeArgs, InRef<RName> name)
+{
+    assert(o_baseTypes);
+
+    // baseClass가 있다면
+    if (o_baseTypes->baseClass)
+    {
+        auto* baseClassTypeArgs = o_baseTypes->baseClass->typeArgs->Apply(typeArgs);
+
+        if (auto o_baseMember = o_baseTypes->baseClass->decl->GetMember(name))
+            return Citron::ToRDeclRes(baseClassTypeArgs, *o_baseMember);
+
+        return o_baseTypes->baseClass->decl->ResolveInheritedMember(baseClassTypeArgs, name);
+    }
+
+    return nullopt;
 }
 
 RDecl* RClassDecl::RTypeDecl_GetDecl()
@@ -98,9 +124,14 @@ RType* RClassDecl::GetOpenType()
     return rFactory->MakeClassType(this, MakeOpenTypeArgs(*rFactory));
 }
 
+RTypeRes RClassDecl::ToRTypeRes(RTypeArguments* typeArgs)
+{
+    return RTypeRes_Class{typeArgs, this};
+}
+
 RDeclRes RClassDecl::ToRDeclRes(RTypeArguments* typeArgs)
 {
-    return RDeclRes_Class(typeArgs, this);
+    return RDeclRes_Class{typeArgs, this};
 }
 
 void RClassDecl::Accept(RTypeDeclVisitor& visitor)

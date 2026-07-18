@@ -27,7 +27,7 @@ Status: current snapshot
 - BC/NBC value semantics는 observable behavior 기준으로 구분한다. NBC lifetime operation은 보존해야 한다.
 - Return은 기본적으로 RVO path를 요구하고, NBC return call은 dest-passing / caller-provided storage를 기본 lowering으로 본다.
 - Binding을 만드는 `is`는 일반 expression context에서 금지하고, `if` condition의 top-level에서만 허용한다.
-- `visibility`는 source name lookup rule이고, `reachability`는 compiler가 semantic information을 알 수 있는지의 문제로 분리한다.
+- import된 module의 모든 declaration name은 lookup candidate가 될 수 있으며, `public`/`private`/`protected`는 resolution 뒤 accessibility checker가 use permission을 판정한다. inaccessible candidate도 lexical shadowing에 참여하고 access failure 때문에 outer candidate로 fallback하지 않는다. declaration metadata reachability는 public API/ABI 또는 linker export와 별개다.
 - Nested declaration은 논리적으로 허용 가능하지만, v1 허용 범위는 implementation scope와 design stability에 따라 결정한다.
 - Nested generic declaration identity는 outer type arguments를 포함한다. 예: `C<int>.Trait`와 `C<string>.Trait`는 다르다.
 - Struct는 concrete struct를 상속하지 않는다. Struct의 `:` 뒤에는 trait conformance만 올 수 있고 struct member에는 `protected`를 허용하지 않는다.
@@ -41,8 +41,8 @@ Status: current snapshot
 - 외부 bundle은 자동 활성화하지 않는다. 소비 file에서 `import Provider;`로 declaration world를 연 뒤 `extend Bundle;`로 bundle family 전체를 활성화한다. `extend Bundle<int>;`는 concrete instantiation만 활성화하고, generic 또는 trait-selective activation은 `extend<U> Bundle<U> : Trait<U>;`처럼 explicit parameter clause와 trait selector를 사용한다. nested declaration에서는 parameter clause 없이 lexical generic context의 parameter를 capture할 수 있다. bundle header가 target mapping을 가지므로 `extend`에서 `for` target은 생략한다.
 - bundle의 trait entry별 activation selection은 유지한다. 활성화된 bundle entry들의 conformance pattern이 겹치면 같은 file에서 동시 활성화를 금지하며, overlap은 conformance 사용 지점이 아니라 activation 시점에 진단한다. 이 규칙은 사용 편의보다 explicit activation을 우선한다.
 - `extension`은 bundle declaration, `impl`은 witness implementation, `extend`는 file-local activation 역할로 구분한다.
-- 외부 extension은 target의 private member에 접근 가능한 trusted augmentation이다. Private 정보는 extension compiler에 reachable할 수 있지만 일반 lookup에는 visible하지 않다.
-- namespace accessibility가 외부 접근과 export 여부를 함께 결정하며 별도 export modifier는 두지 않는다.
+- 외부 extension은 target의 private member에 접근 가능한 trusted augmentation이다. ordinary consumer와 extension compiler 모두 private declaration을 lookup candidate로 얻을 수 있지만, extension context만 target private member access를 통과한다.
+- 별도 export modifier는 두지 않는다. accessibility는 name lookup surface가 아니라 use permission을 정하며, declaration metadata reachability와 public API/ABI export는 분리한다.
 
 ## Modules And CTI
 - `cti`는 declaration/import boundary다.
@@ -63,9 +63,10 @@ Status: current snapshot
 - declaration/body resolution 주변의 공용 sum type은 raw public `std::variant` alias보다 얇은 wrapper class를 선호하고, 호출부에는 free helper보다 member API를 우선 둔다.
 - declaration tree 축은 category view와 provenance payload에서 분리하는 쪽을 선호한다. 현재 leaning은 semantic tree node를 별도 `RNode` 모델로 세우고, `RTypeDecl` / `RFuncDecl`는 category view로 보는 것이다.
 - `RNode`는 우선 `RName` 중심의 lightweight tree node로 두고, generic arity나 callable parameter identity 같은 richer declaration identity는 별도 metadata로 둔다.
-- `GetMember`는 "해당 scope에서 이름으로 접근 가능한 member" 전반을 다루는 넓은 API로 보고, type parameter도 필요하면 member로 노출할 수 있다.
-- `GetTypeMember` / type-only resolution은 일반 member lookup과 shadowing 규칙이 다르므로 별도 resolver 단계에서 처리하는 쪽을 선호한다.
-- `ResolveIdentifier`는 declaration node API보다 resolver / lexical scope algorithm 책임으로 보는 쪽을 선호한다.
+- `RDecl`의 `GetTypeParam`, `GetTypeMember`, `GetMember`는 현재 declaration scope만 조회한다. 각각 generic binder, qualified type child, type parameter를 제외한 named member를 찾는다.
+- `GetMember`의 결과는 single declaration과 function overload group을 표현할 수 있는 `RMember`로 둔다. `RMember`는 type parameter를 포함하지 않으며 `RDeclRes`로 변환할 수 있다.
+- `RDecl`의 `ResolveTypeIdentifier`, `ResolveTypeIdentifierInHeader`, `ResolveIdentifier`는 현재 scope의 `Get*` 결과를 확인한 뒤 miss일 때만 outer lexical scope로 재귀한다. type parameter는 `ResolveTypeIdentifier`와 `ResolveIdentifier`에서 lexical binder로 검색되지만 qualified member surface에는 참여하지 않는다.
+- `ResolveTypeIdentifierInHeader`는 현재 declaration의 type parameter만 확인하고, outer에는 일반 `ResolveTypeIdentifier`로 진행한다. 따라서 header는 자기 member를 보지 않되 outer declaration의 정상 type lookup은 사용한다.
 - symbol/declaration 문맥에서는 containing tree edge를 `outer`, inheritance edge를 `base`로 부르고, `parent`는 쓰지 않는 쪽을 선호한다.
 - symbol/declaration/resolver 구현에서 `RDeclRes`를 리턴하는 lookup 함수는 `Resolve`로 시작하는 쪽을 선호한다.
 - type declaration은 C++처럼 same-name generic arity overloading을 허용하지 않는 쪽을 선호하고, C#류 arity distinction은 interop/import layer에서 해소하는 방향을 선호한다.

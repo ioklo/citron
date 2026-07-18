@@ -45,6 +45,7 @@
     <ClInclude Include="Public\RSymbol\RLambdaDecl.h" />
     <ClInclude Include="Public\RSymbol\RLambdaVarDecl.h" />
     <ClInclude Include="Public\RSymbol\RDeclRes.h" />
+    <ClInclude Include="Public\RSymbol\RMember.h" />
     <ClInclude Include="Public\RSymbol\RModule.h" />
     <ClInclude Include="Public\RSymbol\RNames.h" />
     <ClInclude Include="Public\RSymbol\RNamespaceDecl.h" />
@@ -63,9 +64,9 @@
     <ClInclude Include="Public\RSymbol\RTypeDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclContainerComponent.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclOuter.h" />
-    <ClInclude Include="Public\RSymbol\RTypeDeclRes.h" />
+    <ClInclude Include="Public\RSymbol\RTypeRes.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h" />
-    <ClInclude Include="Public\RSymbol\RTypeParamDecl.h" />
+    <ClInclude Include="Public\RSymbol\RTypeParam.h" />
     <ClInclude Include="Public\RSymbol\RTypes.h" />
     <ClInclude Include="Public\RSymbol\RSymbolConfig.h" />
     <ClInclude Include="RNamespaceMemberAccessor.h" />
@@ -91,6 +92,7 @@
     <ClCompile Include="RInterfaceDecl.cpp" />
     <ClCompile Include="RLambdaDecl.cpp" />
     <ClCompile Include="RLambdaVarDecl.cpp" />
+    <ClCompile Include="RMember.cpp" />
     <ClCompile Include="RModule.cpp" />
     <ClCompile Include="RNames.cpp" />
     <ClCompile Include="RNamespaceDecl.cpp" />
@@ -106,7 +108,8 @@
     <ClCompile Include="RTypeArguments.cpp" />
     <ClCompile Include="RTypeDeclContainerComponent.cpp" />
     <ClCompile Include="RTypeDeclOuter.cpp" />
-    <ClCompile Include="RTypeParamDecl.cpp" />
+    <ClCompile Include="RTypeParam.cpp" />
+    <ClCompile Include="RTypeRes.cpp" />
     <ClCompile Include="RTypes.cpp" />
   </ItemGroup>
   <ItemGroup>

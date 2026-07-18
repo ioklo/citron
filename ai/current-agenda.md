@@ -25,6 +25,9 @@ canonical trait conformance와 `impl` 구현
 - struct는 현재 상속 불가 방향으로 정리되어 있으므로 struct `protected`는 두지 않는다.
 - accessor는 namespace/class/struct에서 이름이 겹치더라도 의미 공간이 다르므로, 단일 universal accessor보다 context별 accessor 분리가 더 자연스럽다는 쪽으로 기울어 있다.
 - 다만 이 accessor를 `RNode` 본체에 직접 넣기보다, declaration payload나 별도 accessibility policy 계층에 두는 쪽이 현재 `RNode` 방향과 더 잘 맞는다.
+- generic type parameter는 declaration이 소유하는 lexical binder이며 qualified member tree의 child가 아니다. 따라서 member body의 `T` substitution은 지원하되 `S<int>.T` projection은 제공하지 않는 방향을 검토 중이다.
+- type lookup은 current header의 binder만 보는 경우와 normal member lookup을 구분한다. inheritance lookup은 outer lookup과 별개이며, `ResolveInheritedTypeMember`/`ResolveInheritedMember`처럼 applied base type arguments를 유지하는 좁은 hook 후보를 검토 중이다.
+- Citron은 generic definition을 `RTypeDecl`로 두고 unbound `RType`은 만들지 않는다. `RType`은 `S<T>`(open) 또는 `S<int>`(closed)처럼 arguments가 적용된 type만 나타낸다. `RDeclRes`의 outer-applied 상태는 type이 아니라 lookup declaration context다.
 
 ## Open Questions
 - accessor를 정확히 어느 계층에 둘지: declaration payload, category view, 별도 metadata 중 어디가 가장 자연스러운지
@@ -34,6 +37,8 @@ canonical trait conformance와 `impl` 구현
 - generic bundle pattern의 overlap을 `where` constraint까지 포함해 activation 시점에 어떻게 판정할지
 - trait별 independent witness/conformance identity를 유지하면서 관련 trait 구현의 공용 helper/member를 bundle-private scope나 별도 mechanism으로 어떻게 제공할지. impl block에 trait requirement 밖 member를 허용할지 여부
 - unit-local task graph의 freeze 시점, task order enum, failure propagation 규칙
+- type-parameter binder/type member의 namespace collision 및 shadowing 규칙, header/body/inherited/outer type lookup의 정확한 우선순위
+- `RTypeParam`의 `RDecl`/`RTypeDecl` 분리 뒤 type-name lookup result를 어떤 union/result shape로 나타낼지
 
 ## Update Rule
 - 현재 주제가 바뀌면 이 파일을 먼저 갱신한다.

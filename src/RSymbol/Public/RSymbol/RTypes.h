@@ -22,7 +22,7 @@ class RFactory;
 class RStructCtorDecl;
 class RInterfaceDecl;
 class RLambdaDecl;
-class RTypeParamDecl;
+class RTypeParam;
 class RTraitDecl;
 
 struct RTypeVisitor;
@@ -87,11 +87,11 @@ public:
 class RType_TypeVar : public RType
 {
 public:
-    RTypeParamDecl* decl;
+    RTypeParam* decl;
 
 private:
     friend RFactory;
-    RType_TypeVar(RTypeParamDecl* decl);
+    RType_TypeVar(RTypeParam* decl);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
@@ -335,7 +335,7 @@ private:
     RType_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
 
 public:
-    RSYMBOL_API std::optional<RDeclRes_EnumElemVar> GetVar(InRef<RName> name);
+    RSYMBOL_API std::optional<RDeclRes_EnumElemVar> ResolveVar(InRef<RName> name);
     RSYMBOL_API RType_Enum* GetEnumType();
 
 public:

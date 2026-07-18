@@ -28,9 +28,10 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - External declarations and source declarations can be handled through one runtime-facing interface.
 - Skeleton/fdecl collection can establish stable declaration identity before complete surface/body is known.
 - Wrapper-based sum types keep declaration-specific operations close to the type while still allowing internal `Visit(...)` dispatch where a real sum-type branch is needed.
-- Member lookup (`GetMember`, `GetTypeMember`) is a candidate to migrate toward semantic tree-node storage and shared child-based lookup logic.
-- Identifier resolution is increasingly viewed as a resolver/scope responsibility rather than an intrinsic declaration-node method.
-- `GetMember` is leaning toward a broad "everything name-visible in this scope" surface, while type-only resolution is a separate resolver concern rather than a narrower declaration storage model.
+- `RDecl`의 `GetTypeParam`, `GetTypeMember`, `GetMember`는 outer recursion 없이 현재 declaration scope만 조회하는 공통 API다. type parameter는 `GetTypeParam`으로만 얻고, `GetMember`에는 넣지 않는다.
+- `GetMember`는 single declaration과 function overload group을 나타낼 수 있는 `RMember`를 반환한다. `RMember`는 현재 scope의 named member lookup result이며 declaration tree node나 generic binder가 아니다.
+- `RDecl`의 `ResolveTypeIdentifier`, `ResolveTypeIdentifierInHeader`, `ResolveIdentifier`는 `Get*`을 사용해 current scope를 조회한 뒤 outer lexical scope로 재귀한다. `ResolveIdentifier`은 type parameter를 `RDeclRes_TypeVar`로 반환할 수 있다.
+- type parameter는 lexical type-name/identifier lookup에는 참여하지만 qualified member surface에는 참여하지 않는다. 따라서 `S<int>.T` 같은 projection은 허용하지 않는다.
 - Accessibility policy is likely to split between module/namespace member rules and type-member/inheritance rules, so `RNode` should not assume a single tree-only access algorithm.
 
 ## Impl Payload Direction

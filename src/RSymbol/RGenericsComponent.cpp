@@ -2,7 +2,9 @@
 
 #include <cassert>
 #include "Infra/Ref.h"
-#include "RTypeParamDecl.h"
+#include "RTypeParam.h"
+#include "RTypeRes.h"
+#include "RDeclRes.h"
 
 using namespace std;
 
@@ -12,18 +14,18 @@ RGenericsComponent::RGenericsComponent()
 {
 }
 
-void RGenericsComponent::InitTypeParams(vector<RTypeParamDecl*>&& typeParams)
+void RGenericsComponent::InitTypeParams(vector<RTypeParam*>&& typeParams)
 {
     this->o_typeParams = move(typeParams);
 }
 
-RTypeParamDecl* RGenericsComponent::GetTypeParam(size_t index)
+RTypeParam* RGenericsComponent::GetTypeParam(size_t index)
 {
     assert(o_typeParams);
     return (*o_typeParams)[index];
 }
 
-RTypeDecl* RGenericsComponent::GetTypeMember(InRef<RName> name)
+RTypeParam* RGenericsComponent::GetTypeParam(InRef<RName> name)
 {
     assert(o_typeParams);
 
@@ -32,6 +34,7 @@ RTypeDecl* RGenericsComponent::GetTypeMember(InRef<RName> name)
         if (typeParam->GetName() == *name)
             return typeParam;
     }
+
     return nullptr;
 }
 

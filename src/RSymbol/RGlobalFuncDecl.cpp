@@ -35,28 +35,24 @@ size_t RGlobalFuncDecl::GetTypeParamCount()
     return genericsComp.GetTypeParamCount();
 }
 
-RTypeParamDecl* RGlobalFuncDecl::GetTypeParam(size_t index)
+RTypeParam* RGlobalFuncDecl::GetTypeParam(size_t index)
 {
     return genericsComp.GetTypeParam(index);
 }
 
-RTypeDecl* RGlobalFuncDecl::GetTypeMember(InRef<RName> name) { return genericsComp.GetTypeMember(name); }
-optional<RDeclRes> RGlobalFuncDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+RTypeParam* RGlobalFuncDecl::GetTypeParam(InRef<RName> name)
 {
-    // 람다는 검색시키지 않는다
-    // 현재 함수에서 Declaration을 할 수 없기 때문에 
-    return nullopt;
+    return genericsComp.GetTypeParam(name);
 }
 
-optional<RDeclRes> RGlobalFuncDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+RTypeDecl* RGlobalFuncDecl::GetTypeMember(InRef<RName> name)
 {
-    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
+    return nullptr;
+}
 
-    if (auto o_member = commonFuncDeclComp.ResolveFuncParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+optional<RMember> RGlobalFuncDecl::GetMember(InRef<RName> name)
+{
+    return nullopt;
 }
 
 } // namespace Citron

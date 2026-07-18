@@ -3,6 +3,9 @@
 #include "REnumDecl.h"
 #include "REnumElemVarDecl.h"
 #include "RFactory.h"
+#include "RTypeRes.h"
+#include "RDeclRes.h"
+#include "RMember.h"
 
 using namespace std;
 
@@ -19,12 +22,13 @@ void REnumElemDecl::AddVar(REnumElemVarDecl* var)
     varsMap.emplace(var->GetName(), var);
 }
 
-optional<RDeclRes_EnumElemVar> REnumElemDecl::ResolveVar(RTypeArguments* typeArgs, InRef<RName> name)
+REnumElemVarDecl* REnumElemDecl::GetUnboundVar(InRef<RName> name)
 {
     auto i = varsMap.find(*name);
-    if (i == varsMap.end()) return nullopt;
+    if (i != varsMap.end()) 
+        return i->second;
 
-    return RDeclRes_EnumElemVar(typeArgs, i->second);
+    return nullptr;
 }
 
 RDecl* REnumElemDecl::GetOuter()
@@ -42,7 +46,12 @@ size_t REnumElemDecl::GetTypeParamCount()
     return 0;
 }
 
-RTypeParamDecl* REnumElemDecl::GetTypeParam(size_t index)
+RTypeParam* REnumElemDecl::GetTypeParam(size_t index)
+{
+    return nullptr;
+}
+
+RTypeParam* REnumElemDecl::GetTypeParam(InRef<RName> name)
 {
     return nullptr;
 }
@@ -52,16 +61,12 @@ RTypeDecl* REnumElemDecl::GetTypeMember(InRef<RName> name)
     return nullptr;
 }
 
-optional<RDeclRes> REnumElemDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> REnumElemDecl::GetMember(InRef<RName> name)
 {
-    if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
+    if (auto* var = GetUnboundVar(name))
+        return RMember_EnumElemVar{var};
 
-    return ResolveVar(typeArgs, name);
-}
-
-optional<RDeclRes> REnumElemDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    return optional<RDeclRes>();
+    return nullopt;
 }
 
 RDecl* REnumElemDecl::RTypeDecl_GetDecl()
@@ -73,6 +78,11 @@ RDecl* REnumElemDecl::RTypeDecl_GetDecl()
 RType* REnumElemDecl::GetOpenType()
 {
     return rFactory->MakeEnumElemType(this, MakeOpenTypeArgs(*rFactory));
+}
+
+RTypeRes REnumElemDecl::ToRTypeRes(RTypeArguments* typeArgs)
+{
+    return RTypeRes_EnumElem{typeArgs, this};
 }
 
 RDeclRes REnumElemDecl::ToRDeclRes(RTypeArguments* typeArgs)

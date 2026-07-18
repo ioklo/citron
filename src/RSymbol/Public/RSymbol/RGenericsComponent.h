@@ -5,23 +5,24 @@
 
 #include "Infra/Ref.h"
 #include "RNames.h"
-#include "RDeclRes.h"
 
 namespace Citron {
 
-class RTypeParamDecl;
+class RTypeParam;
 class RTypeDecl;
+class RTypeRes;
+class RDeclRes;
 
 class RGenericsComponent
 {
-    std::optional<std::vector<RTypeParamDecl*>> o_typeParams;
+    std::optional<std::vector<RTypeParam*>> o_typeParams;
 
 public:
     RSYMBOL_API RGenericsComponent();
-    RSYMBOL_API void InitTypeParams(std::vector<RTypeParamDecl*>&& typeParams);
+    RSYMBOL_API void InitTypeParams(std::vector<RTypeParam*>&& typeParams);
     size_t GetTypeParamCount() { return o_typeParams->size(); }
-    RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index);
-    RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name);
+    RSYMBOL_API RTypeParam* GetTypeParam(size_t index);
+    RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name);
     RSYMBOL_API std::optional<RDeclRes> ResolveTypeParam(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
 };
 

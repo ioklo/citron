@@ -13,7 +13,7 @@ namespace Citron {
 
 struct RFuncParameter;
 class RTypeArguments;
-class RTypeParamDecl;
+class RTypeParam;
 class RTypeDecl;
 
 class RLambdaVarDecl;

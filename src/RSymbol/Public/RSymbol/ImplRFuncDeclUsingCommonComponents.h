@@ -8,7 +8,7 @@
 namespace Citron {
 
 class RDecl;
-class RTypeParamDecl;
+class RTypeParam;
 class RTypeArguments;
 struct RFuncParameter;
 class RCommonFuncDeclComponent;

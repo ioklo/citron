@@ -38,19 +38,20 @@ public:
     bool IsSeqFunc() { return commonFuncDeclComp.IsSeqFunc(); }
 
 public: // from RDecl
-    RSYMBOL_API RDecl* GetOuter() override;
-    RSYMBOL_API RIdentifier GetIdentifier() override;
-    RSYMBOL_API size_t GetTypeParamCount() override;
-    RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) override;
-    RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name) override;
-    RSYMBOL_API std::optional<RDeclRes> ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
-    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
+    RSYMBOL_API RDecl* GetOuter() final;
+    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API size_t GetTypeParamCount() final;
+    RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
+    RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;
+    RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name) final;
+    RSYMBOL_API std::optional<RMember> GetMember(InRef<RName> name) final;
 
 public: // from RTypeDecl
-    RSYMBOL_API RDecl* RTypeDecl_GetDecl() override;
-    RSYMBOL_API RType* GetOpenType() override;
-    RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) override;
-    RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) override;
+    RSYMBOL_API RDecl* RTypeDecl_GetDecl() final;
+    RSYMBOL_API RType* GetOpenType() final;
+    RSYMBOL_API RTypeRes ToRTypeRes(RTypeArguments* typeArgs) final;
+    RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) final;
+    RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
 };
 
 // M버전이 없다

@@ -25,17 +25,17 @@ class RTraitDecl : public RDecl
 
 public:
     RSYMBOL_API RTraitDecl(RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory);
-    RSYMBOL_API void InitTypeParams(std::vector<RTypeParamDecl*>&& typeParams);
+    RSYMBOL_API void InitTypeParams(std::vector<RTypeParam*>&& typeParams);
     void AddMember(RTraitMemberDecl&& decl) { members.push_back(std::move(decl)); }
 
 public: // from RDecl
     RSYMBOL_API RDecl* GetOuter() final;
     RSYMBOL_API RIdentifier GetIdentifier() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
-    RSYMBOL_API RTypeParamDecl* GetTypeParam(size_t index) final;
+    RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
+    RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;
     RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name) final;
-    RSYMBOL_API std::optional<RDeclRes> ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) final;
-    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) final;
+    RSYMBOL_API std::optional<RMember> GetMember(InRef<RName> name) final;
 };
 
 } // namespace Citron

@@ -11,7 +11,7 @@
 #include "REnumElemDecl.h"
 #include "REnumElemVarDecl.h"
 #include "RLambdaDecl.h"
-#include "RTypeParamDecl.h"
+#include "RTypeParam.h"
 
 using namespace std;
 
@@ -66,7 +66,7 @@ optional<RDeclRes> RType_NullableInplace::ResolveMember(InRef<RName> name, size_
     return nullopt;
 }
 
-RType_TypeVar::RType_TypeVar(RTypeParamDecl* decl)
+RType_TypeVar::RType_TypeVar(RTypeParam* decl)
     : decl{decl}
 {
 }
@@ -96,7 +96,7 @@ optional<RDeclRes> RType_Void::ResolveMember(InRef<RName> name, size_t explicitM
     return nullopt;
 }
 
-RType_Tuple::RType_Tuple(std::vector<RTupleVar>&& vars, RFactory* factory)
+RType_Tuple::RType_Tuple(vector<RTupleVar>&& vars, RFactory* factory)
     : vars{move(vars)}, factory{factory}
 {
 }
@@ -127,7 +127,7 @@ optional<RDeclRes> RType_Tuple::ResolveMember(InRef<RName> name, size_t explicit
     throw NotImplementedException();
 }
 
-RType_Func::RType_Func(bool bLocal, RType* retType, std::vector<Parameter>&& params, RFactory* factory)
+RType_Func::RType_Func(bool bLocal, RType* retType, vector<Parameter>&& params, RFactory* factory)
     : bLocal{bLocal}, retType{retType}, params{move(params)}, factory{factory}
 {
 }
@@ -186,7 +186,7 @@ RType* RType_Shared::Apply(RTypeArguments* typeArgs)
     return factory->MakeSharedType(appliedInnerType);
 }
 
-std::optional<RDeclRes> RType_Shared::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
+optional<RDeclRes> RType_Shared::ResolveMember(InRef<RName> name, size_t explicitMemberTypeArgsCount)
 {
     return nullopt;
 }
@@ -213,7 +213,7 @@ RType_Class::RType_Class(RClassDecl* decl, RTypeArguments* typeArgs, RFactory* f
 {
 }
 
-std::optional<RDeclRes_ClassVar> RType_Class::ResolveVar(InRef<RName> name)
+optional<RDeclRes_ClassVar> RType_Class::ResolveVar(InRef<RName> name)
 {
     return decl->ResolveVar(typeArgs, name);
 }
@@ -239,7 +239,7 @@ RType_Struct::RType_Struct(RStructDecl* decl, RTypeArguments* typeArgs, RFactory
 {
 }
 
-std::optional<RDeclRes_StructVar> RType_Struct::GetVar(InRef<RName> name)
+optional<RDeclRes_StructVar> RType_Struct::GetVar(InRef<RName> name)
 {
     auto* structVar = decl->GetUnboundVar(name);
     if (!structVar) return nullopt;
@@ -290,9 +290,12 @@ RType_EnumElem::RType_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs, RF
 {
 }
 
-std::optional<RDeclRes_EnumElemVar> RType_EnumElem::GetVar(InRef<RName> name)
+optional<RDeclRes_EnumElemVar> RType_EnumElem::ResolveVar(InRef<RName> name)
 {
-    return decl->ResolveVar(typeArgs, name);
+    if (auto* var = decl->GetUnboundVar(name))
+        return RDeclRes_EnumElemVar(typeArgs, var);
+
+    return nullopt;
 }
 
 RType_Enum* RType_EnumElem::GetEnumType()

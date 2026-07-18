@@ -3,51 +3,11 @@
 #include "Infra/Exceptions.h"
 #include "RTypeArguments.h"
 #include "RFactory.h"
+#include "RMember.h"
 
 using namespace std;
 
 namespace Citron {
-
-optional<RDeclRes> RNamespaceDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    assert(typeArgs->GetCount() == 0);
-
-    vector<RDeclRes> candidates;
-
-    // namespace 
-    if (auto o_namespace = namespaceDeclContainerComp.ResolveNamespaceMember(name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(move(*o_namespace));
-
-    // type
-    if (auto o_type = typeDeclContainerComp.ResolveTypeMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(move(*o_type));
-
-    // func
-    if (auto o_func = funcDeclContainerComp.GetMemberFunc(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        candidates.push_back(move(*o_func));
-
-    if (candidates.empty()) return nullopt;
-
-    if (1 < candidates.size())
-    {
-        // TODO: 여러 candidate가 있다고 로깅하고 FatalException던지기
-        throw NotImplementedException();
-    }
-
-    return move(candidates[0]);
-}
-
-optional<RDeclRes> RNamespaceDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    auto typeArgs = rFactory->MakeEmptyTypeArguments();
-    if (auto o_member = ResolveMember(typeArgs, name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    if (outer)
-        return outer->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
-
-    return nullopt;
-}
 
 RDecl* RNamespaceDecl::GetOuter()
 {
@@ -64,7 +24,12 @@ size_t RNamespaceDecl::GetTypeParamCount()
     return 0;
 }
 
-RTypeParamDecl* RNamespaceDecl::GetTypeParam(size_t index)
+RTypeParam* RNamespaceDecl::GetTypeParam(size_t index)
+{
+    return nullptr;
+}
+
+RTypeParam* RNamespaceDecl::GetTypeParam(InRef<RName> name)
 {
     return nullptr;
 }
@@ -72,6 +37,20 @@ RTypeParamDecl* RNamespaceDecl::GetTypeParam(size_t index)
 RTypeDecl* RNamespaceDecl::GetTypeMember(InRef<RName> name)
 {
     return typeDeclContainerComp.GetTypeMember(name);
+}
+
+optional<RMember> RNamespaceDecl::GetMember(InRef<RName> name)
+{
+    if (auto* namespaceDecl = namespaceDeclContainerComp.GetNamespace(name))
+        return RMember_Namespace{namespaceDecl};
+
+    if (auto* typeDecl = typeDeclContainerComp.GetTypeMember(name))
+        return ToRMember(typeDecl);
+
+    if (auto o_funcMember = funcDeclContainerComp.GetFuncs(name))
+        return o_funcMember;
+
+    return nullopt;
 }
 
 } // namespace Citron

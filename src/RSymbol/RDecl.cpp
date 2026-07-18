@@ -4,6 +4,9 @@
 #include "Infra/Unreachable.h"
 
 #include "RFactory.h"
+#include "RTypeRes.h"
+#include "RTypeArguments.h"
+#include "RMember.h"
 
 using namespace std;
 
@@ -51,6 +54,65 @@ size_t RDecl::GetAllTypeParamCount()
     return outer->GetAllTypeParamCount() + GetTypeParamCount();
 }
 
+RTypeArguments* GetOuterTypeArgs(RDecl* decl, RTypeArguments* typeArgs)
+{
+    return typeArgs->Remove(decl->GetTypeParamCount());
+}
+
+optional<RTypeRes> RDecl::ResolveTypeIdentifier(RTypeArguments* typeArgs, InRef<RName> name)
+{
+    if (auto* typeParam = GetTypeParam(name))
+        return RTypeRes_TypeVar(typeParam);
+
+    if (auto* typeDecl = GetTypeMember(name))
+        return ToRTypeRes(typeArgs, typeDecl);
+
+    if (auto o_member = ResolveInheritedTypeMember(typeArgs, name))
+        return o_member;
+
+    if (auto* outer = GetOuter())
+    {
+        auto* outerTypeArgs = GetOuterTypeArgs(this, typeArgs);
+        return outer->ResolveTypeIdentifier(outerTypeArgs, name);
+    }
+
+    return nullopt;
+}
+
+optional<RTypeRes> RDecl::ResolveTypeIdentifierInHeader(RTypeArguments* typeArgs, InRef<RName> name)
+{
+    if (auto* typeParam = GetTypeParam(name))
+        return RTypeRes_TypeVar(typeParam);
+
+    if (auto* outer = GetOuter())
+    {
+        auto* outerTypeArgs = GetOuterTypeArgs(this, typeArgs);
+        return outer->ResolveTypeIdentifier(outerTypeArgs, name); // 자식을 지나치는건 처음에만, 그 후로는 ResolveTypeIdentifier방식을 따른다
+    }
+
+    return nullopt;
+}
+
+optional<RDeclRes> RDecl::ResolveIdentifier(RTypeArguments* typeArgs, InRef<RName> name)
+{
+    if (auto* typeParam = GetTypeParam(name))
+        return RDeclRes_TypeVar(typeParam);
+
+    if (auto o_member = GetMember(name))
+        return ToRDeclRes(typeArgs, *o_member);
+
+    if (auto o_member = ResolveInheritedMember(typeArgs, name))
+        return o_member;
+
+    if (auto* outer = GetOuter())
+    {
+        auto* outerTypeArgs = GetOuterTypeArgs(this, typeArgs);
+        return outer->ResolveIdentifier(outerTypeArgs, name);
+    }
+
+    return nullopt;
+}
+
 bool RDecl::CanAccess(RDecl* target)
 {
     // TODO: [68] 2026-07-11, CanAccess 제대로 구현
@@ -77,6 +139,16 @@ bool RDecl::CanAccess(RDecl* target)
 
     //default: unreachable();
     //}
+}
+
+optional<RTypeRes> RDecl::ResolveInheritedTypeMember(RTypeArguments* typeArgs, InRef<RName> name)
+{
+    return nullopt;
+}
+
+optional<RDeclRes> RDecl::ResolveInheritedMember(RTypeArguments* typeArgs, InRef<RName> name)
+{
+    return nullopt;
 }
 
 }

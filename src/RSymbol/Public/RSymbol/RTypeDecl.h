@@ -13,8 +13,9 @@ class REnumDecl;
 class REnumElemDecl;
 class RInterfaceDecl;
 class RLambdaDecl;
-class RTypeParamDecl;
+class RTypeParam;
 class RTraitDecl;
+class RTypeRes;
 struct RTypeDeclVisitor;
 
 class RTypeDecl
@@ -24,6 +25,7 @@ public:
     
     virtual RDecl* RTypeDecl_GetDecl() = 0;
     virtual RType* GetOpenType() = 0;
+    virtual RTypeRes ToRTypeRes(RTypeArguments* typeArgs) = 0;
     virtual RDeclRes ToRDeclRes(RTypeArguments* typeArgs) = 0;
     virtual void Accept(RTypeDeclVisitor& visitor) = 0;
 };

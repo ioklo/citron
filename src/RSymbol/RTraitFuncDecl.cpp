@@ -1,5 +1,6 @@
 #include "RTraitFuncDecl.h"
 #include "RTraitDecl.h"
+#include "RMember.h"
 
 using namespace std;
 
@@ -30,30 +31,24 @@ size_t RTraitFuncDecl::GetTypeParamCount()
     return genericsComp.GetTypeParamCount();
 }
 
-RTypeParamDecl* RTraitFuncDecl::GetTypeParam(size_t index)
+RTypeParam* RTraitFuncDecl::GetTypeParam(size_t index)
 {
     return genericsComp.GetTypeParam(index);
 }
 
+RTypeParam* RTraitFuncDecl::GetTypeParam(InRef<RName> name)
+{
+    return genericsComp.GetTypeParam(name);
+}
+
 RTypeDecl* RTraitFuncDecl::GetTypeMember(InRef<RName> name)
 {
-    return genericsComp.GetTypeMember(name);
+    return nullptr;
 }
 
-optional<RDeclRes> RTraitFuncDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> RTraitFuncDecl::GetMember(InRef<RName> name)
 {
-    if (auto* typeDecl = genericsComp.GetTypeMember(name))
-        return typeDecl->ToRDeclRes(typeArgs);
-
     return nullopt;
-}
-
-optional<RDeclRes> RTraitFuncDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    return trait->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 } // namespace Citron

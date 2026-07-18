@@ -12,7 +12,7 @@ class RDecl;
 class RThisKind;
 class RType;
 class RTypeArguments;
-class RTypeParamDecl;
+class RTypeParam;
 class RFuncReturn;
 
 class RGlobalFuncDecl;

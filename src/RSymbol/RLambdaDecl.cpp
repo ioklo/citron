@@ -2,6 +2,9 @@
 #include "Infra/Exceptions.h"
 #include "RLambdaVarDecl.h"
 #include "RFactory.h"
+#include "RTypeRes.h"
+#include "RDeclRes.h"
+#include "RMember.h"
 
 using namespace std;
 
@@ -47,33 +50,25 @@ size_t RLambdaDecl::GetTypeParamCount()
     return genericsComp.GetTypeParamCount();
 }
 
-RTypeParamDecl* RLambdaDecl::GetTypeParam(size_t index)
+RTypeParam* RLambdaDecl::GetTypeParam(size_t index)
 {
     return genericsComp.GetTypeParam(index);
 }
 
+RTypeParam* RLambdaDecl::GetTypeParam(InRef<RName> name)
+{
+    return genericsComp.GetTypeParam(name);
+}
+
 RTypeDecl* RLambdaDecl::GetTypeMember(InRef<RName> name)
 {
-    return genericsComp.GetTypeMember(name);
+    return nullptr;
 }
 
-optional<RDeclRes> RLambdaDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> RLambdaDecl::GetMember(InRef<RName> name)
 {
-    if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
-
-    auto i = varsMap.find(*name);
-    if (i == varsMap.end()) return nullopt;
-
-    return RDeclRes_LambdaVar(typeArgs, i->second);
-}
-
-optional<RDeclRes> RLambdaDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    // Lambda에서 검색하지 않고, FuncContext에서 검색한다
-    throw RuntimeFatalException();
+    // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
+    throw NotImplementedException{};
 }
 
 RDecl* RLambdaDecl::RTypeDecl_GetDecl()
@@ -84,6 +79,11 @@ RDecl* RLambdaDecl::RTypeDecl_GetDecl()
 RType* RLambdaDecl::GetOpenType()
 {
     return rFactory->MakeLambdaType(this, MakeOpenTypeArgs(*rFactory));
+}
+
+RTypeRes RLambdaDecl::ToRTypeRes(RTypeArguments* typeArgs)
+{
+    throw RuntimeFatalException{};
 }
 
 RDeclRes RLambdaDecl::ToRDeclRes(RTypeArguments* typeArgs)

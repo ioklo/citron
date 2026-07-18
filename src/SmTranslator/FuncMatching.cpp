@@ -10,7 +10,7 @@
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RTypeArguments.h"
 #include "RSymbol/RFuncDecl.h"
-#include "RSymbol/RTypeParamDecl.h"
+#include "RSymbol/RTypeParam.h"
 #include "TranslationContexts.h"
 #include "SExpTranslations.h"
 #include "SExpToReExp.h"

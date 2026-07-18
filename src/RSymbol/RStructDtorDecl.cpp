@@ -27,7 +27,12 @@ size_t RStructDtorDecl::GetTypeParamCount()
     return 0;
 }
 
-RTypeParamDecl* RStructDtorDecl::GetTypeParam(size_t index)
+RTypeParam* RStructDtorDecl::GetTypeParam(size_t index)
+{
+    return nullptr;
+}
+
+RTypeParam* RStructDtorDecl::GetTypeParam(InRef<RName> name)
 {
     return nullptr;
 }
@@ -37,17 +42,9 @@ RTypeDecl* RStructDtorDecl::GetTypeMember(InRef<RName> name)
     return nullptr;
 }
 
-optional<RDeclRes> RStructDtorDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> RStructDtorDecl::GetMember(InRef<RName> name)
 {
     return nullopt;
-}
-
-optional<RDeclRes> RStructDtorDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    if (auto o_member = commonFuncDeclComp.ResolveFuncParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    return _struct->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 } // namespace Citron

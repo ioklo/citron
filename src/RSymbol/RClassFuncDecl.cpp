@@ -16,7 +16,7 @@ RClassFuncDecl::RClassFuncDecl(RClassDecl* _class, RClassMemberAccessor accessor
 {
 }
 
-void RClassFuncDecl::InitFuncReturnAndParams(bool bStatic, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void RClassFuncDecl::InitFuncReturnAndParams(bool bStatic, RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
     commonFuncDeclComp.InitFuncReturnAndParams(
         move(funcReturn),
@@ -42,30 +42,24 @@ size_t RClassFuncDecl::GetTypeParamCount()
     return genericsComp.GetTypeParamCount();
 }
 
-RTypeParamDecl* RClassFuncDecl::GetTypeParam(size_t index)
+RTypeParam* RClassFuncDecl::GetTypeParam(size_t index)
 {
     return genericsComp.GetTypeParam(index);
 }
 
+RTypeParam* RClassFuncDecl::GetTypeParam(InRef<RName> name)
+{
+    return genericsComp.GetTypeParam(name);
+}
+
 RTypeDecl* RClassFuncDecl::GetTypeMember(InRef<RName> name)
 {
-    return genericsComp.GetTypeMember(name);
+    return nullptr;
 }
 
-std::optional<RDeclRes> RClassFuncDecl::ResolveMember(RTypeArguments* typeArgs, InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+optional<RMember> RClassFuncDecl::GetMember(InRef<RName> name)
 {
     return nullopt;
-}
-
-std::optional<RDeclRes> RClassFuncDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    if (auto o_member = genericsComp.ResolveTypeParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    if (auto o_member = commonFuncDeclComp.ResolveFuncParam(name, explicitTypeParamsExceptOuterCount))
-        return o_member;
-
-    return _class->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
 }
 
 } // namespace Citron
