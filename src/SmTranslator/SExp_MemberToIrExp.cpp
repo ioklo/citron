@@ -51,11 +51,12 @@ struct Result_GetStructVar
 
 expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, InRef<RName> name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
 {
+    // GetVar로 바로 얻으면, name conflict 처리를 하지 못하기 때문에 GetMember로 얻은 후 캐스팅을 한다
     size_t memberTypeArgsCount = memberTypeArgs->GetCount();
-    auto o_member = classType->ResolveMember(*name, memberTypeArgsCount);
-    if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
+    auto o_declRes = classType->GetMember(*name);
+    if (!o_declRes) return Error<Error_ResolveIdentifier_NotFound>();
 
-    auto* classVarMember = o_member->GetIf<RDeclRes_ClassVar>();
+    auto* classVarMember = o_declRes->GetIf<RDeclRes_ClassVar>();
     if (!classVarMember) return Error<Error_SharedTranslation_CantTranslate>();
 
     // static 성질이 다르면 에러    
@@ -68,11 +69,12 @@ expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, InRef<
 
 expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, InRef<RName> name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
 {
+    // GetVar로 바로 얻으면, name conflict 처리를 하지 못하기 때문에 GetMember로 얻은 후 캐스팅을 한다
     size_t memberTypeArgsCount = memberTypeArgs->GetCount();
-    auto o_member = structType->ResolveMember(*name, memberTypeArgsCount);
-    if (!o_member) return Error<Error_ResolveIdentifier_NotFound>();
+    auto o_declRes = structType->GetMember(*name);
+    if (!o_declRes) return Error<Error_ResolveIdentifier_NotFound>();
 
-    auto* structVarMember = o_member->GetIf<RDeclRes_StructVar>();
+    auto* structVarMember = o_declRes->GetIf<RDeclRes_StructVar>();
     if (!structVarMember) return Error<Error_SharedTranslation_CantTranslate>();
 
     // static 이면 에러
@@ -186,11 +188,23 @@ public:
         throw RuntimeFatalException{};
     }
 
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_Lambda& declRes)
+    {
+        // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
+        throw NotImplementedException{};
+    }
+
     // NS.x
     expected<IrExp*, DiagPtr> Visit(RDeclRes_LambdaVar& member)
     {
         // 람다 var를 StaticBase로 참조할 방법은 없는거 같다
         throw RuntimeFatalException{};
+    }
+
+    expected<IrExp*, DiagPtr> Visit(RDeclRes_Interface& member)
+    {
+        // TODO: [71] 2026-07-18, interface 구현
+        throw NotImplementedException{};
     }
 
     // NS.t
@@ -238,12 +252,14 @@ struct Binder
 
     ResultType HandleStaticBase(RDecl& decl, RTypeArguments* typeArgs)
     {
-        auto o_member = decl.ResolveMember(typeArgs, memberName, memberTypeArgs->GetCount());
+        auto o_member = decl.GetMember(memberName);
         if (!o_member)
             return Error<Error_ResolveIdentifier_NotFound>();
 
+        auto declRes = ToRDeclRes(typeArgs, *o_member);
+
         StaticBaseTranslator binder(memberTypeArgs, contexts);
-        return o_member->Visit(binder);
+        return declRes.Visit(binder);
     }
 
     ResultType Visit(IrExp_Namespace* irBaseExp) 

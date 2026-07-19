@@ -65,16 +65,6 @@ RType* RInterfaceDecl::GetOpenType()
     throw NotImplementedException{};
 }
 
-RTypeRes RInterfaceDecl::ToRTypeRes(RTypeArguments* typeArgs)
-{
-    return RTypeRes_Interface(typeArgs, this);
-}
-
-RDeclRes RInterfaceDecl::ToRDeclRes(RTypeArguments* typeArgs)
-{
-    throw NotImplementedException{};
-}
-
 void RInterfaceDecl::Accept(RTypeDeclVisitor& visitor)
 {
     visitor.Visit(this);

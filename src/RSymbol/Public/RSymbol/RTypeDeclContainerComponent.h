@@ -16,14 +16,13 @@ class RTypeDeclContainerComponent
 {
 public:
     std::vector<RTypeDecl*> types;
-    std::unordered_map<RIdentifier, RTypeDecl*> typeDict;
+    std::unordered_map<RName, RTypeDecl*> typeDict;
 
 public:
     RSYMBOL_API RTypeDeclContainerComponent();
 
     RSYMBOL_API size_t GetTypeCount();
     RSYMBOL_API RTypeDecl* GetType(int index);
-    RSYMBOL_API RTypeDecl* GetType(const RIdentifier& identifier);
     RSYMBOL_API void AddType(RTypeDecl* typeDecl);
 
     RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name);

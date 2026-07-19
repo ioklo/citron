@@ -81,16 +81,6 @@ RType* RLambdaDecl::GetOpenType()
     return rFactory->MakeLambdaType(this, MakeOpenTypeArgs(*rFactory));
 }
 
-RTypeRes RLambdaDecl::ToRTypeRes(RTypeArguments* typeArgs)
-{
-    throw RuntimeFatalException{};
-}
-
-RDeclRes RLambdaDecl::ToRDeclRes(RTypeArguments* typeArgs)
-{
-    throw RuntimeFatalException(); // 들어올수가 없다
-}
-
 void RLambdaDecl::Accept(RTypeDeclVisitor& visitor)
 {
     visitor.Visit(this);

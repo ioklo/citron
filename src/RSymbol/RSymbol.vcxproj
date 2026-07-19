@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Public\RSymbol\DeclWithOuterTypeArgs.h" />
     <ClInclude Include="Public\RSymbol\ImplRFuncDeclUsingCommonComponents.h" />
+    <ClInclude Include="Public\RSymbol\RAppliedDecl.h" />
     <ClInclude Include="Public\RSymbol\RCommonFuncDeclComponent.h" />
     <ClInclude Include="Public\RSymbol\RFuncDeclContainerComponent.h" />
     <ClInclude Include="Public\RSymbol\RAccessor.h" />
@@ -51,6 +51,7 @@
     <ClInclude Include="Public\RSymbol\RNamespaceDecl.h" />
     <ClInclude Include="Public\RSymbol\RNamespaceDeclContainerComponent.h" />
     <ClInclude Include="Public\RSymbol\RNamespaceDeclGroup.h" />
+    <ClInclude Include="Public\RSymbol\ROuterAppliedDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructCtorDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructDtorDecl.h" />

@@ -76,7 +76,7 @@ std::vector<ITransactionable*> BeginTransaction(TranslationContexts& contexts);
 
 std::expected<MInitExp_As*, DiagPtr> MakeMInitExp_As(MRead&& target, RType* testType, TranslationContexts& contexts);
 
-std::expected<BodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t memberTypeArgs, TranslationContexts& contexts);
+std::expected<BodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, TranslationContexts& contexts);
 
 
 } // namespace Citron

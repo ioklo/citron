@@ -132,9 +132,9 @@ struct CallableTranslator
     // ResultType Visit(ImExp_Namespace* imExp);
     ResultType Visit(ImExp_GlobalFuncs* imExp) 
     { 
-        assert(!imExp->items.empty());
+        assert(!imExp->funcDeclGroup.decls.empty());
 
-        auto e_match = MatchFunc<RGlobalFuncDecl>(imExp->items, imExp->memberTypeArgs, sArgs, contexts);
+        auto e_match = MatchFunc<RGlobalFuncDecl>(imExp->funcDeclGroup, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);
 
         // TODO: [41] try catch 구현
@@ -145,9 +145,9 @@ struct CallableTranslator
     // ResultType Visit(ImExp_Class* imExp);
     ResultType Visit(ImExp_ClassFuncs* imExp)
     { 
-        assert(imExp->items.empty());
+        assert(!imExp->funcDeclGroup.decls.empty());
 
-        auto e_match = MatchFunc<RClassFuncDecl>(imExp->items, imExp->memberTypeArgs, sArgs, contexts);
+        auto e_match = MatchFunc<RClassFuncDecl>(imExp->funcDeclGroup, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);
 
         return visit([&match, this](auto& instanceKind) -> ResultType
@@ -193,13 +193,11 @@ struct CallableTranslator
     { 
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
-        std::vector<TDeclWithOuterTypeArgs<RStructCtorDecl>> items;
-        for (auto* ctor : imExp->structDecl->GetUnboundCtors())
-        {
-            items.emplace_back(ctor, imExp->typeArgs);
-        }
+        auto ctors = imExp->structDecl->GetUnboundCtors();
+        auto* emptyTypeArgs = contexts.rFactory->MakeEmptyTypeArguments();
+        SmPartiallyAppliedFuncDeclGroup<RStructCtorDecl> ctorDeclGroup{imExp->typeArgs, vector<RStructCtorDecl*>{ctors.begin(), ctors.end()}, emptyTypeArgs};
 
-        auto e_match = MatchFunc<RStructCtorDecl>(items, /*memberTypeArgs*/contexts.rFactory->MakeEmptyTypeArguments(), sArgs, contexts);
+        auto e_match = MatchFunc<RStructCtorDecl>(ctorDeclGroup, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);
 
         auto* structType = contexts.rFactory->MakeStructType(imExp->structDecl, imExp->typeArgs);
@@ -256,8 +254,8 @@ struct CallableTranslator
     }
 
     ResultType Visit(ImExp_StructFuncs* imExp)
-    { 
-        auto e_match = MatchFunc<RStructFuncDecl>(imExp->items, imExp->memberTypeArgs, sArgs, contexts);
+    {
+        auto e_match = MatchFunc<RStructFuncDecl>(imExp->funcDeclGroup, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);
 
         return visit([&match, this](auto& instanceKind) -> ResultType
@@ -313,7 +311,7 @@ struct CallableTranslator
 
         // from IMatchArgumentsInput
         size_t GetTypeParamCount() override { return 0; }
-        RTypeParamDecl* GetTypeParam(size_t index) override { return nullptr; }
+        RTypeParam* GetTypeParam(size_t index) override { return nullptr; }
         size_t GetFuncParamCount() override { return enumElemDecl->GetVarCount(); }
         RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) override
         {

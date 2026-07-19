@@ -1,6 +1,7 @@
 #pragma once
 #include "RSymbolConfig.h"
 #include <variant>
+#include "ROuterAppliedDecl.h"
 
 namespace Citron {
 
@@ -18,14 +19,14 @@ class RLambdaDecl;
 
 // 이름을 찾고
 struct RTypeRes_Namespace { RNamespaceDecl * decl; };
-struct RTypeRes_Class { RTypeArguments* outerTypeArgs; RClassDecl* decl; };
-struct RTypeRes_Struct { RTypeArguments* outerTypeArgs; RStructDecl* decl; };
-struct RTypeRes_Enum { RTypeArguments* outerTypeArgs; REnumDecl* decl; };
-struct RTypeRes_EnumElem { RTypeArguments* outerTypeArgs; REnumElemDecl* decl; };
-struct RTypeRes_Interface { RTypeArguments* outerTypeArgs; RInterfaceDecl* decl; };
-struct RTypeRes_Lambda { RTypeArguments* outerTypeArgs; RLambdaDecl* decl; };
+struct RTypeRes_Class : ROuterAppliedDecl<RClassDecl> { };
+struct RTypeRes_Struct : ROuterAppliedDecl<RStructDecl> { };
+struct RTypeRes_Enum : ROuterAppliedDecl<REnumDecl> { };
+struct RTypeRes_EnumElem : ROuterAppliedDecl<REnumElemDecl> { };
+struct RTypeRes_Interface : ROuterAppliedDecl<RInterfaceDecl> { };
+struct RTypeRes_Lambda : ROuterAppliedDecl<RLambdaDecl> { };
 struct RTypeRes_TypeVar { RTypeParam* decl; };
-struct RTypeRes_Trait { RTypeArguments* outerTypeArgs; RTraitDecl* decl; };
+struct RTypeRes_Trait : ROuterAppliedDecl<RTraitDecl> { };
 
 class RTypeRes
 {

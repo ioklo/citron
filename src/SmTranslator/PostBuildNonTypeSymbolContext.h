@@ -7,6 +7,7 @@ namespace Citron {
 class STypeExp;
 class RTraitDecl;
 class RTypeArguments;
+class RTypeDecl;
 
 class PostBuildNonTypeSymbolContext
 {

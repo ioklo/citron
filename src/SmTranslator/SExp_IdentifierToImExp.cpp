@@ -49,7 +49,7 @@ struct RDeclResTranslator
 
     ResultType Visit(RDeclRes_GlobalFuncs& declRes)
     {
-        return MakeImExp<ImExp_GlobalFuncs>(declRes.items, memberTypeArgs);
+        return MakeImExp<ImExp_GlobalFuncs>(declRes, memberTypeArgs);
     }
 
     ResultType Visit(RDeclRes_Class& declRes)
@@ -61,7 +61,7 @@ struct RDeclResTranslator
     ResultType Visit(RDeclRes_ClassFuncs& declRes)
     {
         // BodyRes_RDeclRes는 SExp_Identifier에서 ResolveIdentifier를 통해서 얻게 되므로, ExplicitInstance가 없다
-        return MakeImExp<ImExp_ClassFuncs>(declRes.items, memberTypeArgs, ImExpInstanceKind_Implicit{});
+        return MakeImExp<ImExp_ClassFuncs>(declRes, memberTypeArgs, ImExpInstanceKind_Implicit{});
     }
 
     ResultType Visit(RDeclRes_ClassVar& declRes)
@@ -80,7 +80,7 @@ struct RDeclResTranslator
     ResultType Visit(RDeclRes_StructFuncs& declRes)
     {
         // BodyRes_RDeclRes는 SExp_Identifier에서 ResolveIdentifier를 통해서 얻게 되므로, ExplicitInstance가 없다
-        return MakeImExp<ImExp_StructFuncs>(declRes.items, memberTypeArgs, ImExpInstanceKind_Implicit{});
+        return MakeImExp<ImExp_StructFuncs>(declRes, memberTypeArgs, ImExpInstanceKind_Implicit{});
     }
 
     ResultType Visit(RDeclRes_StructVar& declRes)
@@ -109,10 +109,22 @@ struct RDeclResTranslator
         throw RuntimeFatalException{};
     }
 
+    ResultType Visit(RDeclRes_Lambda& declRes)
+    {
+        // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
+        throw NotImplementedException{};
+    }
+
     ResultType Visit(RDeclRes_LambdaVar& declRes)
     {
         assert(memberTypeArgs->GetCount() == 0); // var에 typeArgs가 있을 수 없다
         return MakeImExp_ReExp_Loc<MLoc_LambdaVar>(declRes.decl, declRes.outerTypeArgs);
+    }
+
+    ResultType Visit(RDeclRes_Interface& declRes)
+    {
+        // TODO: [71] 2026-07-18, interface 구현
+        throw NotImplementedException{};
     }
 
     ResultType Visit(RDeclRes_TupleVar& declRes)
@@ -203,7 +215,7 @@ expected<ImExp*, DiagPtr> TranslateSExp_IdentifierToImExp(SExp_Identifier* sExp,
     auto e_rMemberTypeArgs = MakeRTypeArgs(sExp->typeArgs, contexts);
     RETURN_ON_ERROR(e_rMemberTypeArgs);
 
-    auto e_bodyRes = ResolveIdentifier(RName::Normal(sExp->value), (*e_rMemberTypeArgs)->GetCount(), contexts);
+    auto e_bodyRes = ResolveIdentifier(RName::Normal(sExp->value), contexts);
     RETURN_ON_ERROR(e_bodyRes);
 
     return e_bodyRes->Visit(BodyResTranslator{*e_rMemberTypeArgs, contexts});

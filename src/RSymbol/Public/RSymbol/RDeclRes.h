@@ -8,7 +8,8 @@
 #include "RNames.h"
 #include "RFuncParameter.h"
 #include "RFuncDecl.h"
-#include "DeclWithOuterTypeArgs.h"
+#include "ROuterAppliedDecl.h"
+#include "RAppliedDecl.h"
 
 namespace Citron {
 
@@ -36,24 +37,24 @@ class RMember;
 
 // RDeclSpaceResolvedResult
 struct RDeclRes_Namespace { RNamespaceDecl* decl; };
-struct RDeclRes_GlobalFuncs { RTypeArguments* outerTypeArgs; std::vector<RGlobalFuncDecl*> items; };
-struct RDeclRes_Class { RTypeArguments* outerTypeArgs; RClassDecl* decl; };
-struct RDeclRes_ClassFuncs { RTypeArguments* outerTypeArgs; std::vector<RClassFuncDecl*> items; };
-struct RDeclRes_ClassVar { RClassVarDecl* decl; RTypeArguments* typeArgs; };
-struct RDeclRes_Struct { RTypeArguments* outerTypeArgs; RStructDecl* decl; };
-struct RDeclRes_StructFuncs { RTypeArguments* outerTypeArgs; std::vector<RStructFuncDecl*> items; };
-struct RDeclRes_StructVar { RStructVarDecl* decl; RTypeArguments* typeArgs; };
-struct RDeclRes_Enum { RTypeArguments* outerTypeArgs; REnumDecl* decl; };
-struct RDeclRes_EnumElem { RTypeArguments* outerTypeArgs; REnumElemDecl* decl; };
-struct RDeclRes_EnumElemVar { RTypeArguments* outerTypeArgs; REnumElemVarDecl* decl; };
-struct RDeclRes_Lambda { RTypeArguments* outerTypeArgs; RLambdaDecl* decl; };
-struct RDeclRes_LambdaVar { RTypeArguments* outerTypeArgs; RLambdaVarDecl* decl; };
-struct RDeclRes_Interface { RTypeArguments* outerTypeArgs; RInterfaceDecl* decl; };
+struct RDeclRes_GlobalFuncs : ROuterAppliedFuncDeclGroup<RGlobalFuncDecl> { };
+struct RDeclRes_Class : ROuterAppliedDecl<RClassDecl> { };
+struct RDeclRes_ClassFuncs : ROuterAppliedFuncDeclGroup<RClassFuncDecl> { };
+struct RDeclRes_ClassVar : RAppliedDecl<RClassVarDecl> { };
+struct RDeclRes_Struct : ROuterAppliedDecl<RStructDecl> { };
+struct RDeclRes_StructFuncs : ROuterAppliedFuncDeclGroup<RStructFuncDecl> { };
+struct RDeclRes_StructVar : RAppliedDecl<RStructVarDecl> { };
+struct RDeclRes_Enum : ROuterAppliedDecl<REnumDecl> { };
+struct RDeclRes_EnumElem : ROuterAppliedDecl<REnumElemDecl> { };
+struct RDeclRes_EnumElemVar : ROuterAppliedDecl<REnumElemVarDecl> { };
+struct RDeclRes_Lambda : ROuterAppliedDecl<RLambdaDecl> { };
+struct RDeclRes_LambdaVar : ROuterAppliedDecl<RLambdaVarDecl> { };
+struct RDeclRes_Interface : ROuterAppliedDecl<RInterfaceDecl> { };
 struct RDeclRes_TupleVar {}; // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
 struct RDeclRes_TypeVar { RTypeParam* decl; };
 struct RDeclRes_FuncParam { RFuncParameter funcParam; };
-struct RDeclRes_Trait { RTypeArguments* outerTypeArgs; RTraitDecl* decl; };
-struct RDeclRes_TraitFuncs { RTypeArguments* outerTypeArgs; std::vector<RTraitFuncDecl*> items; };
+struct RDeclRes_Trait : ROuterAppliedDecl<RTraitDecl> { };
+struct RDeclRes_TraitFuncs : ROuterAppliedFuncDeclGroup<RTraitFuncDecl> { };
 
 class RDeclRes
 {

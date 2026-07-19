@@ -108,7 +108,7 @@ public:
     std::optional<MScopeKind> GetReachableScopeKind(size_t labelId);
 
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
-    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
+    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name);
 
     std::shared_ptr<InlineScopeContext> GetInlineScopeContext() { return inlineScopeContext; }
     RType* GetInlineScopeType() { return inlineScopeContext->o_inlineScopeType; }

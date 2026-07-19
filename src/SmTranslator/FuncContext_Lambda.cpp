@@ -41,13 +41,13 @@ RTypeDecl* FuncContext_Lambda::ResolveTypeDecl(InRef<RName> name, size_t explici
 //         }
 //     }
 // } }
-expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(InRef<RName> name)
 {
     // 1. lambdaVar 검색
     throw NotImplementedException{};
 
     // 2. lambdaVar가 없으면 outer에서 검색
-    auto e_o_bodyRes = outerScope->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    auto e_o_bodyRes = outerScope->ResolveIdentifier(name);
     RETURN_ON_ERROR(e_o_bodyRes);
 
     auto& o_bodyRes = *e_o_bodyRes;

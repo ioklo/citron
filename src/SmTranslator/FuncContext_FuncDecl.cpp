@@ -49,9 +49,11 @@ RTypeDecl* FuncContext_FuncDecl::ResolveTypeDecl(InRef<RName> name, size_t expli
     return nullptr;
 }
 
-expected<optional<BodyRes>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+expected<optional<BodyRes>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(InRef<RName> name)
 {
-    auto o_rDeclRes = rFuncDecl->RFuncDecl_GetDecl()->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    auto* openTypeArgs = rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(*rFactory); // typeArgs를 만들어서 rFuncDecl에 넣어준다
+
+    auto o_rDeclRes = rFuncDecl->RFuncDecl_GetDecl()->ResolveIdentifier(openTypeArgs, name);
     if (!o_rDeclRes) return nullopt;
 
     return BodyRes_RDeclRes{move(*o_rDeclRes)};

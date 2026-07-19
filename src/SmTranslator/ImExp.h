@@ -7,7 +7,7 @@
 #include "RSymbol/RStructFuncDecl.h"
 #include "MIR/MRead.h"
 #include "ReExp.h"
-#include "FuncsWithPartialTypeArgsComponent.h"
+#include "SmPartiallyAppliedFuncDeclGroup.h"
 
 namespace Citron {
 
@@ -50,23 +50,15 @@ public:
 };
 
 // 
-struct ImExp_GlobalFuncs
-    : ImExp
-    , private FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>
+struct ImExp_GlobalFuncs : ImExp
 {
-    using FuncComp = FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>;
+    SmPartiallyAppliedFuncDeclGroup<RGlobalFuncDecl> funcDeclGroup;
 
-    using FuncComp::items;
-    using FuncComp::memberTypeArgs;
-
-    ImExp_GlobalFuncs(const std::vector<TDeclWithOuterTypeArgs<RGlobalFuncDecl>>& items, RTypeArguments* memberTypeArgs)
-        : FuncsWithPartialTypeArgsComponent<RGlobalFuncDecl>{items, memberTypeArgs}
-    { }
-
-    using FuncComp::GetCount;
-    using FuncComp::GetDecl;
-    using FuncComp::GetOuterTypeArgs;
-    using FuncComp::GetMemberTypeArgs;
+public:
+    ImExp_GlobalFuncs(ROuterAppliedFuncDeclGroup<RGlobalFuncDecl>& funcDeclGroup, RTypeArguments* memberTypeArgs)
+        : funcDeclGroup{funcDeclGroup.outerTypeArgs, funcDeclGroup.decls, memberTypeArgs}
+    {
+    }
 
     void Accept(ImExpVisitor& visitor) override;
 };
@@ -91,24 +83,16 @@ struct ImExp_Class : ImExp
     void Accept(ImExpVisitor& visitor) override;
 };
 
-struct ImExp_ClassFuncs 
-    : ImExp
-    , private FuncsWithPartialTypeArgsComponent<RClassFuncDecl>
+struct ImExp_ClassFuncs : ImExp
 {   
-    using FuncsWithPartialTypeArgsComponent::items;
-    using FuncsWithPartialTypeArgsComponent::memberTypeArgs;
+    SmPartiallyAppliedFuncDeclGroup<RClassFuncDecl> funcDeclGroup;
     ImExpInstanceKind instanceKind;
 
-    using FuncComp = FuncsWithPartialTypeArgsComponent<RClassFuncDecl>;
-
-    ImExp_ClassFuncs(const std::vector<TDeclWithOuterTypeArgs<RClassFuncDecl>>& items, RTypeArguments* memberTypeArgs, ImExpInstanceKind&& instanceKind)
-        : FuncsWithPartialTypeArgsComponent<RClassFuncDecl>{items, memberTypeArgs}, instanceKind{std::move(instanceKind)}
-    { }
-
-    using FuncComp::GetCount;
-    using FuncComp::GetDecl;
-    using FuncComp::GetOuterTypeArgs;
-    using FuncComp::GetMemberTypeArgs;
+public:
+    ImExp_ClassFuncs(ROuterAppliedFuncDeclGroup<RClassFuncDecl>& funcDeclGroup, RTypeArguments* memberTypeArgs, ImExpInstanceKind&& instanceKind)
+        : funcDeclGroup{funcDeclGroup.outerTypeArgs, funcDeclGroup.decls, memberTypeArgs}, instanceKind{std::move(instanceKind)}
+    {
+    }
 
     void Accept(ImExpVisitor& visitor) override;
 };
@@ -125,24 +109,14 @@ struct ImExp_Struct : ImExp
     void Accept(ImExpVisitor& visitor) override;
 };
 
-struct ImExp_StructFuncs 
-    : ImExp
-    , private FuncsWithPartialTypeArgsComponent<RStructFuncDecl>
+struct ImExp_StructFuncs : ImExp
 {
-    using FuncComp = FuncsWithPartialTypeArgsComponent<RStructFuncDecl>;
-
-    using FuncComp::items;
-    using FuncComp::memberTypeArgs;
+    SmPartiallyAppliedFuncDeclGroup<RStructFuncDecl> funcDeclGroup;
     ImExpInstanceKind instanceKind;
 
-    ImExp_StructFuncs(const std::vector<TDeclWithOuterTypeArgs<RStructFuncDecl>>& items, RTypeArguments* memberTypeArgs, ImExpInstanceKind&& instanceKind)
-        : FuncsWithPartialTypeArgsComponent<RStructFuncDecl>{items, memberTypeArgs}, instanceKind{std::move(instanceKind)}
+    ImExp_StructFuncs(ROuterAppliedFuncDeclGroup<RStructFuncDecl>& funcDeclGroup, RTypeArguments* memberTypeArgs, ImExpInstanceKind&& instanceKind)
+        : funcDeclGroup{funcDeclGroup.outerTypeArgs, funcDeclGroup.decls, memberTypeArgs}, instanceKind{std::move(instanceKind)}
     { }
-
-    using FuncComp::GetCount;
-    using FuncComp::GetDecl;
-    using FuncComp::GetOuterTypeArgs;
-    using FuncComp::GetMemberTypeArgs;
 
     void Accept(ImExpVisitor& visitor) override;
 };

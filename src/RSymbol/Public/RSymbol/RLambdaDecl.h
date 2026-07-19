@@ -49,8 +49,6 @@ public: // from RDecl
 public: // from RTypeDecl
     RSYMBOL_API RDecl* RTypeDecl_GetDecl() final;
     RSYMBOL_API RType* GetOpenType() final;
-    RSYMBOL_API RTypeRes ToRTypeRes(RTypeArguments* typeArgs) final;
-    RSYMBOL_API RDeclRes ToRDeclRes(RTypeArguments* typeArgs) final;
     RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
 };
 

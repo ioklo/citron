@@ -30,7 +30,7 @@ public: // from FuncContext
 
     bool CanAccess(RDecl* target) override;
     RTypeDecl* ResolveTypeDecl(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
-    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
+    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RType* retType) override;

@@ -74,16 +74,6 @@ RType* REnumDecl::GetOpenType()
     return rFactory->MakeEnumType(this, MakeOpenTypeArgs(*rFactory));
 }
 
-RTypeRes REnumDecl::ToRTypeRes(RTypeArguments* typeArgs)
-{
-    return RTypeRes_Enum(typeArgs, this);
-}
-
-RDeclRes REnumDecl::ToRDeclRes(RTypeArguments* typeArgs)
-{
-    return RDeclRes_Enum(typeArgs, this);
-}
-
 void REnumDecl::Accept(RTypeDeclVisitor& visitor)
 {
     visitor.Visit(this);

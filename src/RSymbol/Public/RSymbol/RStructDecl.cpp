@@ -99,16 +99,6 @@ RType* RStructDecl::GetOpenType()
     return rFactory->MakeStructType(this, MakeOpenTypeArgs(*rFactory));
 }
 
-RTypeRes RStructDecl::ToRTypeRes(RTypeArguments* typeArgs)
-{
-    return RTypeRes_Struct(typeArgs, this);
-}
-
-RDeclRes RStructDecl::ToRDeclRes(RTypeArguments* typeArgs)
-{
-    return RDeclRes_Struct(typeArgs, this);
-}
-
 void RStructDecl::Accept(RTypeDeclVisitor& visitor)
 {
     visitor.Visit(this);

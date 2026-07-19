@@ -70,7 +70,6 @@
     <ClCompile Include="TraitFuncTask.cpp" />
     <ClCompile Include="TranslateBodyContext.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
-    <ClCompile Include="FuncsWithPartialTypeArgsComponent.cpp" />
     <ClCompile Include="ImExp.cpp" />
     <ClCompile Include="SExp_IdentifierToIrExp.cpp" />
     <ClCompile Include="ImExpToReExp.cpp" />
@@ -130,7 +129,7 @@
     <ClInclude Include="DesignatedDiagnostic.h" />
     <ClInclude Include="FuncContext.h" />
     <ClInclude Include="FuncMatching.h" />
-    <ClInclude Include="FuncsWithPartialTypeArgsComponent.h" />
+    <ClInclude Include="SmPartiallyAppliedFuncDeclGroup.h" />
     <ClInclude Include="ImExp.h" />
     <ClInclude Include="SExp_IdentifierToIrExp.h" />
     <ClInclude Include="ImExpToReExp.h" />

@@ -28,7 +28,7 @@ optional<RDeclRes_ClassVar> RClassDecl::ResolveVar(RTypeArguments* typeArgs, InR
     auto i = varsMap.find(*name);
     if (i == varsMap.end()) return nullopt;
 
-    return RDeclRes_ClassVar(i->second, typeArgs);
+    return RDeclRes_ClassVar{i->second, typeArgs};
 }
 
 RDecl* RClassDecl::GetOuter()
@@ -88,7 +88,7 @@ optional<RTypeRes> RClassDecl::ResolveInheritedTypeMember(RTypeArguments* typeAr
         auto* baseClassTypeArgs = o_baseTypes->baseClass->typeArgs->Apply(typeArgs);
 
         if (auto* baseTypeMember = o_baseTypes->baseClass->decl->GetTypeMember(name))
-            return Citron::ToRTypeRes(baseClassTypeArgs, baseTypeMember);
+            return ToRTypeRes(baseClassTypeArgs, baseTypeMember);
 
         return o_baseTypes->baseClass->decl->ResolveInheritedTypeMember(baseClassTypeArgs, name);
     }
@@ -106,7 +106,7 @@ optional<RDeclRes> RClassDecl::ResolveInheritedMember(RTypeArguments* typeArgs, 
         auto* baseClassTypeArgs = o_baseTypes->baseClass->typeArgs->Apply(typeArgs);
 
         if (auto o_baseMember = o_baseTypes->baseClass->decl->GetMember(name))
-            return Citron::ToRDeclRes(baseClassTypeArgs, *o_baseMember);
+            return ToRDeclRes(baseClassTypeArgs, *o_baseMember);
 
         return o_baseTypes->baseClass->decl->ResolveInheritedMember(baseClassTypeArgs, name);
     }
@@ -122,16 +122,6 @@ RDecl* RClassDecl::RTypeDecl_GetDecl()
 RType* RClassDecl::GetOpenType()
 {
     return rFactory->MakeClassType(this, MakeOpenTypeArgs(*rFactory));
-}
-
-RTypeRes RClassDecl::ToRTypeRes(RTypeArguments* typeArgs)
-{
-    return RTypeRes_Class{typeArgs, this};
-}
-
-RDeclRes RClassDecl::ToRDeclRes(RTypeArguments* typeArgs)
-{
-    return RDeclRes_Class{typeArgs, this};
 }
 
 void RClassDecl::Accept(RTypeDeclVisitor& visitor)

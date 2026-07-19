@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <optional>
 #include "Infra/Ref.h"
-#include "DeclWithOuterTypeArgs.h"
 #include "RMember.h"
 
 namespace Citron {

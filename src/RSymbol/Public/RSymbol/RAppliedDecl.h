@@ -4,11 +4,12 @@ namespace Citron {
 
 class RTypeArguments;
 
+// fully applied decl
 template<typename TDecl>
-struct TDeclWithOuterTypeArgs
+struct RAppliedDecl
 {
     TDecl* decl;
-    RTypeArguments* outerTypeArgs;
+    RTypeArguments* typeArgs;
 };
 
 } // namespace Citron

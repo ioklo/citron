@@ -20,6 +20,7 @@
 
 #include "RNamespaceDeclGroup.h"
 #include "RTypeArguments.h"
+#include "RTypeParam.h"
 
 
 using namespace std;
@@ -29,6 +30,7 @@ namespace Citron {
 struct RFactoryPrivateData
 {
     std::deque<RModule> modules;
+    std::deque<RTypeParam> typeParams;
 };
 
 RFactory::RFactory()
@@ -43,7 +45,12 @@ RFactory::RFactory()
 
 RFactory::~RFactory()
 {
+}
 
+RTypeParam* RFactory::MakeTypeParam(RDecl* rDecl, RName&& name, size_t index, TakeRef<RFactoryPtr> rFactory)
+{
+    privateData->typeParams.emplace_back(rDecl, move(name), index, move(rFactory));
+    return &privateData->typeParams.back(); 
 }
 
 RType_Nullable* RFactory::MakeNullableType(RType* innerType)
@@ -215,6 +222,20 @@ RTypeArguments* RFactory::MakeTypeArguments(span<RType*> items)
     unique_ptr<RTypeArguments> v{new RTypeArguments{vector<RType*>{items.begin(), items.end()}, this}};
     auto pv = v.get();
     typeArgsMap.emplace(vector<RType*>{items.begin(), items.end()}, move(v));
+    return pv;
+}
+
+RTypeArguments* RFactory::MakeTypeArguments(std::vector<RType*>&& items)
+{
+    RTypeArgumentsKeyView key{items};
+    auto i = typeArgsMap.find(key);
+    if (i != typeArgsMap.end())
+        return i->second.get();
+
+    // TODO: vector 두벌 생성
+    unique_ptr<RTypeArguments> v{new RTypeArguments{vector<RType*>{items}, this}};
+    auto pv = v.get();
+    typeArgsMap.emplace(move(items), move(v));
     return pv;
 }
 

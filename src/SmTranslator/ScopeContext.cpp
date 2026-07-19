@@ -208,7 +208,7 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
     return Accept(visitor, sTypeExp);
 }
 
-expected<optional<BodyRes>, DiagPtr> ScopeContext::ResolveIdentifier(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+expected<optional<BodyRes>, DiagPtr> ScopeContext::ResolveIdentifier(InRef<RName> name)
 {
     // 로컬을 검색한다
     if (!transactionInfos.empty())
@@ -239,10 +239,10 @@ expected<optional<BodyRes>, DiagPtr> ScopeContext::ResolveIdentifier(InRef<RName
 
     // 상위 스코프가 있으면 그곳을 검색한다
     if (parentContext)
-        return parentContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+        return parentContext->ResolveIdentifier(name);
 
     // 상위 스코프가 없으면 scope가 속해있는 함수 컨텍스트를 검색한다
-    return funcContext->ResolveIdentifier(name, explicitTypeParamsExceptOuterCount);
+    return funcContext->ResolveIdentifier(name);
 }
 
 };

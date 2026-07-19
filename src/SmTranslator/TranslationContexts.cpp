@@ -108,7 +108,7 @@ expected<MInitExp_As*, DiagPtr> MakeMInitExp_As(MRead&& target, RType* testType,
     return contexts.mFactory->MakeMInitExp<MInitExp_As>(MInitExp_AsKind::Class_Class, std::move(target), testType);
 }
 
-expected<BodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t memberTypeArgsCount, TranslationContexts& contexts)
+expected<BodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, TranslationContexts& contexts)
 {
     // struct S<T>
     // {
@@ -119,7 +119,7 @@ expected<BodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, size_t memberTyp
     //    }
     // }
 
-    auto e_o_bodyRes = contexts.scopeContext->ResolveIdentifier(name, memberTypeArgsCount);
+    auto e_o_bodyRes = contexts.scopeContext->ResolveIdentifier(name);
     RETURN_ON_ERROR(e_o_bodyRes);
 
     if (!*e_o_bodyRes)

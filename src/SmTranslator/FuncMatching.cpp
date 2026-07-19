@@ -19,22 +19,22 @@ using namespace std;
 
 namespace Citron {
 
-size_t RFuncDeclMatchArgumentsInput::GetTypeParamCount()
+size_t SmFuncDeclMatchArgumentsInput::GetTypeParamCount()
 {
     return funcDecl->RFuncDecl_GetDecl()->GetTypeParamCount();
 }
 
-RTypeParamDecl* RFuncDeclMatchArgumentsInput::GetTypeParam(size_t index)
+RTypeParam* SmFuncDeclMatchArgumentsInput::GetTypeParam(size_t index)
 {
     return funcDecl->RFuncDecl_GetDecl()->GetTypeParam(index);
 }
 
-size_t RFuncDeclMatchArgumentsInput::GetFuncParamCount()
+size_t SmFuncDeclMatchArgumentsInput::GetFuncParamCount()
 {
     return funcDecl->GetUnboundFuncParams().size();
 }
 
-RFuncParameter RFuncDeclMatchArgumentsInput::GetFuncParam(RTypeArguments* typeArgs, size_t index)
+RFuncParameter SmFuncDeclMatchArgumentsInput::GetFuncParam(RTypeArguments* typeArgs, size_t index)
 {
     return funcDecl->GetFuncParam(typeArgs, index);
 }
@@ -54,7 +54,7 @@ RTypeArguments* MakeTypeArgs(IMatchArgumentsInput* input, RTypeArguments* outerT
         argsItems.push_back(memberTypeArgs->Get(i));
     for (size_t i = partialArgCount; i < paramCount; ++i)
         argsItems.push_back(rFactory.MakeTypeVarType(input->GetTypeParam(i)));
-    auto* args = rFactory.MakeTypeArguments(std::move(argsItems));
+    auto* args = rFactory.MakeTypeArguments(move(argsItems));
 
     // 이제 rClass typeArgs와 합친다
     return rFactory.MergeTypeArguments(outerTypeArgs, args);
@@ -322,7 +322,7 @@ expected<MArgument, DiagPtr> MakeMArgument(RFuncParameter& funcParam, SArgument*
     }, *e_reArg);
 }
 
-expected<ArgumentsMatch, DiagPtr> MatchArguments(
+expected<SmArgumentsMatch, DiagPtr> MatchArguments(
     IMatchArgumentsInput* input,
     RTypeArguments* outerTypeArgs, 
     RTypeArguments* partialMemberTypeArgs,
@@ -355,7 +355,7 @@ expected<ArgumentsMatch, DiagPtr> MatchArguments(
     // TODO: [56] constraint resolver 구현
     assert(constraints.empty());
 
-    return ArgumentsMatch{partialTypeArgs, std::move(mArgs)};
+    return SmArgumentsMatch{partialTypeArgs, std::move(mArgs)};
 }
 
 } // namespace Citron

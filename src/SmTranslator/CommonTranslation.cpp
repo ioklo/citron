@@ -41,19 +41,19 @@ RStructMemberAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessM
     unreachable();
 }
 
-vector<RTypeParamDecl*> MakeTypeParams(RDecl* rDecl, const vector<STypeParam>& sTypeParams, InRef<RFactoryPtr> rFactory)
+vector<RTypeParam*> MakeTypeParams(RDecl* rDecl, const vector<STypeParam>& sTypeParams, InRef<RFactoryPtr> rFactory)
 {
     assert(rDecl);
     auto* rOuter = rDecl->GetOuter();
     size_t baseIndex = rOuter ? rOuter->GetAllTypeParamCount() : 0;
 
-    vector<RTypeParamDecl*> nTypeParams;
+    vector<RTypeParam*> nTypeParams;
     size_t count = sTypeParams.size();
     nTypeParams.reserve(count);
     for (size_t i = 0; i < count; i++)
     {
         auto& sTypeParam = sTypeParams[i];
-        auto* nTypeParam = (*rFactory)->MakeDecl<RTypeParamDecl>(rDecl, RName_Normal{sTypeParam.name}, baseIndex + i, *rFactory);
+        auto* nTypeParam = (*rFactory)->MakeTypeParam(rDecl, RName_Normal{sTypeParam.name}, baseIndex + i, *rFactory);
         nTypeParams.push_back(nTypeParam);
     }
 

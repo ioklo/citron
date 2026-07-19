@@ -58,7 +58,7 @@ struct StaticBaseTranslator
     // NS.F
     ResultType Visit(RDeclRes_GlobalFuncs& declRes)
     {
-        return MakeImExp<ImExp_GlobalFuncs>(declRes.items, memberTypeArgs);
+        return MakeImExp<ImExp_GlobalFuncs>(declRes, memberTypeArgs);
     }
 
     // T.C
@@ -77,7 +77,7 @@ struct StaticBaseTranslator
     // C.F
     ResultType Visit(RDeclRes_ClassFuncs& declRes)
     {
-        return MakeImExp<ImExp_ClassFuncs>(declRes.items, memberTypeArgs, ImExpInstanceKind_ExplicitStatic{});
+        return MakeImExp<ImExp_ClassFuncs>(declRes, memberTypeArgs, ImExpInstanceKind_ExplicitStatic{});
     }
 
     // C.x
@@ -116,7 +116,7 @@ struct StaticBaseTranslator
     // S.F
     ResultType Visit(RDeclRes_StructFuncs& declRes)
     {
-        return MakeImExp<ImExp_StructFuncs>(declRes.items, memberTypeArgs, ImExpInstanceKind_ExplicitStatic{});
+        return MakeImExp<ImExp_StructFuncs>(declRes, memberTypeArgs, ImExpInstanceKind_ExplicitStatic{});
     }
 
     // S.x
@@ -209,7 +209,7 @@ struct InstanceParentTranslator
     // exp.F
     ResultType Visit(RDeclRes_ClassFuncs& declRes)
     {
-        return MakeImExp<ImExp_ClassFuncs>(declRes.items, memberTypeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
+        return MakeImExp<ImExp_ClassFuncs>(declRes, memberTypeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.x
@@ -239,7 +239,7 @@ struct InstanceParentTranslator
     // exp.F
     ResultType Visit(RDeclRes_StructFuncs& declRes)
     {
-        return MakeImExp<ImExp_StructFuncs>(declRes.items, memberTypeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
+        return MakeImExp<ImExp_StructFuncs>(declRes, memberTypeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.x
@@ -304,9 +304,15 @@ struct MemberTranslator
 
     ResultType TranslateStaticParent(RDecl* decl, RTypeArguments* typeArgs)
     {
-        auto o_declRes = decl->ResolveMember(typeArgs, memberName, memberTypeArgs->GetCount());
+        auto o_member = decl->GetMember(memberName);
+        if (!o_member)
+            return Error<Error_ResolveIdentifier_NotFound>();
+
+        // member의 typeArgs개수가 
+        auto declRes = ToRDeclRes(typeArgs, *o_member);
+
         StaticBaseTranslator binder{memberTypeArgs, contexts};
-        return o_declRes->Visit(binder);
+        return declRes.Visit(binder);
     }
 
     ResultType TranslateInstanceParent(ReExp& reExp)
@@ -331,7 +337,7 @@ struct MemberTranslator
 
         auto* type = GetType(*e_mLoc, &*contexts.rFactory);
 
-        auto o_declRes = type->ResolveMember(memberName, memberTypeArgs->GetCount());
+        auto o_declRes = type->GetMember(memberName);
         if (!o_declRes)
             return Error<Error_ResolveIdentifier_NotFound>();
 

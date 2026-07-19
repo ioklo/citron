@@ -113,7 +113,9 @@ struct DeclResTranslator
     // ResultType Visit(RDeclRes_Enum& declRes);
     // ResultType Visit(RDeclRes_EnumElem& declRes);
     // ResultType Visit(RDeclRes_EnumElemVar& declRes);
+    // ResultType Visit(RDeclRes_Lambda& declRes);
     // ResultType Visit(RDeclRes_LambdaVar& declRes);
+    // ResultType Visit(RDeclRes_Interface& declRes);
     // ResultType Visit(RDeclRes_TupleVar& declRes);
     // ResultType Visit(RDeclRes_TypeVar& declRes);
     ResultType Visit(RDeclRes_FuncParam& declRes) 
@@ -183,7 +185,7 @@ expected<IrExp*, DiagPtr> TranslateSExp_IdentifierToIrExp(SExp_Identifier* sExp,
     RETURN_ON_ERROR(e_memberTypeArgs);
 
     auto* memberTypeArgs = *e_memberTypeArgs;
-    auto e_bodyRes = ResolveIdentifier(RName::Normal(sExp->value), memberTypeArgs->GetCount(), contexts);
+    auto e_bodyRes = ResolveIdentifier(RName::Normal(sExp->value), contexts);
     RETURN_ON_ERROR(e_bodyRes);
 
     return e_bodyRes->Visit(BodyResTranslator{memberTypeArgs, contexts});

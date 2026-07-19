@@ -10,30 +10,29 @@
 #include "Infra/Ptr.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RFuncDecl.h"
+#include "RSymbol/ROuterAppliedDecl.h"
 #include "MIR/MArgument.h"
 #include "SExpTranslations.h"
 #include "DesignatedDiagnostic.h"
 #include "TranslationContexts.h"
 #include "ScopeContext.h"
 #include "Misc.h"
+#include "SmPartiallyAppliedFuncDeclGroup.h"
 
 namespace Citron {
-
-template<typename TDecl>
-struct TDeclWithOuterTypeArgs;
 
 class RTypeArguments;
 struct RFuncParameter;
 
 template<typename TFuncDecl>
-struct FuncMatch
+struct SmFuncMatch
 {
     TFuncDecl* funcDecl;
     RTypeArguments* typeArgs;    // 전체 typeArgs (rClass(open) + func(closed))
     std::vector<MArgument> args;
 };
 
-struct ArgumentsMatch
+struct SmArgumentsMatch
 {
     RTypeArguments* typeArgs; // 전체 typeArgs (rClass(open) + func(closed))
     std::vector<MArgument> args;
@@ -45,26 +44,26 @@ public:
     ~IMatchArgumentsInput() = default;
 
     virtual size_t GetTypeParamCount() = 0;
-    virtual RTypeParamDecl* GetTypeParam(size_t index) = 0;
+    virtual RTypeParam* GetTypeParam(size_t index) = 0;
 
     virtual size_t GetFuncParamCount() = 0;
     virtual RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) = 0;
 };
 
-class RFuncDeclMatchArgumentsInput : public IMatchArgumentsInput
+class SmFuncDeclMatchArgumentsInput : public IMatchArgumentsInput
 {
     RFuncDecl* funcDecl;
 
 public:
-    RFuncDeclMatchArgumentsInput(RFuncDecl* funcDecl) : funcDecl{funcDecl} {}
+    SmFuncDeclMatchArgumentsInput(RFuncDecl* funcDecl) : funcDecl{funcDecl} {}
     virtual size_t GetTypeParamCount() override;
-    virtual RTypeParamDecl* GetTypeParam(size_t index) override;
+    virtual RTypeParam* GetTypeParam(size_t index) override;
 
     virtual size_t GetFuncParamCount() override;
     virtual RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index) override;
 };
 
-std::expected<ArgumentsMatch, DiagPtr> MatchArguments(
+std::expected<SmArgumentsMatch, DiagPtr> MatchArguments(
     IMatchArgumentsInput* input,
     RTypeArguments* outerTypeArgs, 
     RTypeArguments* partialMemberTypeArgs,
@@ -75,34 +74,33 @@ std::expected<ArgumentsMatch, DiagPtr> MatchArguments(
 // 한개
 // struct S<T1> { struct U<T2> { void F<T3, T4>(); void F<T3, T4>(int); } } 환경에서 F<int>(...) 호출시
 template<typename TFuncDecl> requires std::derived_from<TFuncDecl, RFuncDecl>
-std::expected<FuncMatch<TFuncDecl>, DiagPtr> MatchFunc(
-    std::span<TDeclWithOuterTypeArgs<TFuncDecl>> infos, // { S<>.U<>.F<,> ... }, [T1, T2] // open type
-    RTypeArguments* partialMemberTypeArgs, // [int], closed type, T4는 확정 해야 함
+std::expected<SmFuncMatch<TFuncDecl>, DiagPtr> MatchFunc(
+    SmPartiallyAppliedFuncDeclGroup<TFuncDecl>& group, // { F<,> ... }, [T1, T2] // open type 과 [int], closed type, T4는 확정 해야 함
     SArguments* sArgs, 
     TranslationContexts& contexts)
 {
-    assert(!infos.empty());    
+    assert(!group.decls.empty());    
     
-    if (infos.size() == 1)
+    if (group.decls.size() == 1)
     {   
-        auto& info = infos.front();
+        auto* decl = group.decls.front();
 
-        RFuncDeclMatchArgumentsInput input{info.decl};
-        auto e_argMatch = MatchArguments(&input, info.outerTypeArgs, partialMemberTypeArgs, sArgs, contexts);
+        SmFuncDeclMatchArgumentsInput input{decl};
+        auto e_argMatch = MatchArguments(&input, group.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_argMatch, argMatch); // argument mismatch인 경우
         
-        return FuncMatch<TFuncDecl>(info.decl, argMatch.typeArgs, std::move(argMatch.args));
+        return SmFuncMatch<TFuncDecl>(decl, argMatch.typeArgs, std::move(argMatch.args));
     }
 
     std::vector<size_t> candidates;
     std::vector<DiagPtr> diags;
-    for (size_t i = 0, count = infos.size(); i < count; i++)
+    for (size_t i = 0, count = group.decls.size(); i < count; i++)
     {
-        auto& info = infos[i];
+        auto* decl = group.decls[i];
         Transaction transaction(*contexts.scopeContext);
 
-        RFuncDeclMatchArgumentsInput input{info.decl};
-        auto e_argMatch = MatchArguments(&input, info.outerTypeArgs, partialMemberTypeArgs, sArgs, contexts);
+        SmFuncDeclMatchArgumentsInput input{decl};
+        auto e_argMatch = MatchArguments(&input, group.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
 
         // TODO: [58] FuncMatcher 에러 개선
         if (!e_argMatch)
@@ -120,11 +118,11 @@ std::expected<FuncMatch<TFuncDecl>, DiagPtr> MatchFunc(
         return Error<Error_FuncMatch_MultipleCandidates>();
 
     // 롤백했기 때문에 다시 계산
-    auto& info = infos[candidates.front()];
-    RFuncDeclMatchArgumentsInput input{info.decl};
-    auto e_argMatch = MatchArguments(&input, info.outerTypeArgs, partialMemberTypeArgs, sArgs, contexts);
+    auto* decl = group.decls[candidates.front()];
+    SmFuncDeclMatchArgumentsInput input{decl};
+    auto e_argMatch = MatchArguments(&input, group.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
     assert(e_argMatch);
-    return FuncMatch<TFuncDecl>(info.decl, e_argMatch->typeArgs, std::move(e_argMatch->args));
+    return SmFuncMatch<TFuncDecl>(decl, e_argMatch->typeArgs, std::move(e_argMatch->args));
 }
 
 } // namespace Citron

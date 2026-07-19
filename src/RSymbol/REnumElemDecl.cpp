@@ -80,16 +80,6 @@ RType* REnumElemDecl::GetOpenType()
     return rFactory->MakeEnumElemType(this, MakeOpenTypeArgs(*rFactory));
 }
 
-RTypeRes REnumElemDecl::ToRTypeRes(RTypeArguments* typeArgs)
-{
-    return RTypeRes_EnumElem{typeArgs, this};
-}
-
-RDeclRes REnumElemDecl::ToRDeclRes(RTypeArguments* typeArgs)
-{
-    return RDeclRes_EnumElem(typeArgs, this);
-}
-
 void REnumElemDecl::Accept(RTypeDeclVisitor& visitor)
 {
     visitor.Visit(this);
