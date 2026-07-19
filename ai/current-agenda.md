@@ -28,6 +28,7 @@ canonical trait conformance와 `impl` 구현
 - generic type parameter는 declaration이 소유하는 lexical binder이며 qualified member tree의 child가 아니다. 따라서 member body의 `T` substitution은 지원하되 `S<int>.T` projection은 제공하지 않는 방향을 검토 중이다.
 - type lookup은 current header의 binder만 보는 경우와 normal member lookup을 구분한다. inheritance lookup은 outer lookup과 별개이며, `ResolveInheritedTypeMember`/`ResolveInheritedMember`처럼 applied base type arguments를 유지하는 좁은 hook 후보를 검토 중이다.
 - Citron은 generic definition을 `RTypeDecl`로 두고 unbound `RType`은 만들지 않는다. `RType`은 `S<T>`(open) 또는 `S<int>`(closed)처럼 arguments가 적용된 type만 나타낸다. `RDeclRes`의 outer-applied 상태는 type이 아니라 lookup declaration context다.
+- `RDeclRes` 반환 여부가 아니라 탐색 범위로 `Get`/`Resolve`를 구분하도록 적용했다. direct lookup 결과는 `ROuterAppliedDecl`/`RAppliedDecl`로 표현하고, 함수의 explicit type argument prefix는 RSymbol result가 아니라 SmTranslator의 `SmPartiallyAppliedFuncDeclGroup`에 둔다.
 
 ## Open Questions
 - accessor를 정확히 어느 계층에 둘지: declaration payload, category view, 별도 metadata 중 어디가 가장 자연스러운지

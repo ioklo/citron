@@ -233,6 +233,87 @@ struct ROuterAppliedDeclGroup
 
 `RBoundDecl`보다 `RAppliedDecl`/`ROuterAppliedDecl`이 더 정확하다. `bound`는 open/closed constructed type의 의미와 혼동될 수 있기 때문이다.
 
+## 2026-07-19 적용 결과: Applied Declaration과 함수 호출 경계
+
+커밋 `e028f227`은 위 논의를 다음 형태로 적용했다.
+
+```cpp
+template <typename TDecl>
+struct ROuterAppliedDecl
+{
+    RTypeArguments* outerTypeArgs;
+    TDecl* decl;
+};
+
+template <typename TFuncDecl>
+struct ROuterAppliedFuncDeclGroup
+{
+    RTypeArguments* outerTypeArgs;
+    std::vector<TFuncDecl*> decls;
+};
+
+template <typename TDecl>
+struct RAppliedDecl
+{
+    TDecl* decl;
+    RTypeArguments* typeArgs;
+};
+```
+
+- `ROuterAppliedDecl`: nested type declaration처럼 enclosing generic arguments만 적용되고 self arguments는 아직 없는 declaration result다.
+- `ROuterAppliedFuncDeclGroup`: overload 후보가 하나의 `outerTypeArgs`를 공유하는 함수 lookup result다. `RDeclRes`의 global/class/struct/trait 함수 variants가 이를 사용한다.
+- `RAppliedDecl`: self generic layer가 없는 variable처럼 `typeArgs` 전체가 이미 적용된 declaration이다. class/struct/enum element variable lookup과 그 직접 `GetVar` API에 사용한다.
+
+여기서 함수의 explicit type arguments는 **`RDeclRes`에 넣지 않는다.**
+
+```citron
+struct S<X>
+{
+    void F<T, U, V>(U u, V v) { }
+    void G() { F<int>(2, false); }
+}
+```
+
+`F`의 identifier/member lookup 결과는 `S`의 applied outer arguments와 `F` overload group뿐이다. `<int>`는 호출 expression이 보유하는 member type arguments다. overload마다 type parameter arity와 slot이 다를 수 있으므로, `RDeclRes` 단계에서 group 전체에 `[X, int]`를 부착하면 안 된다.
+
+SmTranslator는 identifier/member를 callable intermediate expression으로 바꿀 때 다음을 만든다.
+
+```cpp
+template <typename TFuncDecl>
+struct SmPartiallyAppliedFuncDeclGroup
+    : ROuterAppliedFuncDeclGroup<TFuncDecl>
+{
+    RTypeArguments* memberTypeArgs;
+};
+```
+
+`memberTypeArgs`는 outer를 제외한 source-level explicit function type argument prefix이며, 아직 완전하지 않아도 된다. `MatchFunc`/`MatchArguments`는 candidate별로 이 prefix 뒤의 type parameters를 open type variables로 채운 full argument vector를 만들고, value argument matching 및 inference constraint를 수행한다. 이 단계가 성공하면 `SmFuncMatch`의 full `typeArgs`를 얻는다.
+
+따라서 상태별 책임은 다음과 같다.
+
+```text
+RDeclRes / RTypeRes
+  declaration/type name lookup + outer generic environment
+
+SmPartiallyAppliedFuncDeclGroup
+  lookup result + source의 explicit member/function type arguments
+
+SmFuncMatch
+  candidate 선택 및 inference 뒤의 full type arguments
+```
+
+이 구분은 function overload group에 type arguments를 중복 저장하지 않고, explicit argument 개수/내용이 candidate별 유효성 판정에 미치는 영향을 call matching 단계에 남긴다.
+
+## 2026-07-19 적용 결과: `Get`과 `Resolve` 명명
+
+`RDeclRes`를 반환한다는 이유만으로 `Resolve`를 쓰지 않기로 확정했다.
+
+- `GetMember`, `GetVar`: 현재 type/declaration의 direct member table만 보고, 필요하면 applied declaration result로 감싼다.
+- `ResolveTypeIdentifier`, `ResolveTypeIdentifierInHeader`, `ResolveIdentifier`: current scope의 binder/member 확인 후 inherited 및 outer lexical scope까지 진행하는 lookup policy다.
+- `ResolveInheritedTypeMember`, `ResolveInheritedMember`: class base chain만 진행하는 좁은 policy hook이다. base type arguments는 current/derived arguments에 apply한 뒤 result에 붙인다.
+
+그에 따라 이전 `RType::ResolveMember`는 `GetMember`로, direct variable lookup의 `ResolveVar`는 `GetVar`로 변경됐다. 결과 형식과 lookup 범위를 분리해 이름에서 실제 탐색 범위를 드러내는 것이 목적이다.
+
 ## Open Points
 
 - generic binder와 nested type member가 공유하는 type-name namespace의 정확한 duplicate/shadowing 진단 규칙
@@ -241,4 +322,4 @@ struct ROuterAppliedDeclGroup
 - `RTypeParamDecl`의 `RDecl` 및 `RTypeDecl` 상속을 어떤 순서로 제거/대체할지
 - `ResolveType...` API의 최종 명명과 resolver 계층 배치
 - inherited type/member lookup을 `RDecl` virtual hook으로 둘 기간과, 장기 resolver policy로 옮길 시점
-- `RDeclRes` variant별 `ROuterAppliedDecl`/overload-group wrapper 도입 범위와 fully-applied declaration result가 실제로 필요한 지점
+- `RTypeArguments`의 open/closed query 및 inference constraint가 fully-applied `SmFuncMatch`까지 완료된 뒤의 closure 판정을 어떻게 제공할지

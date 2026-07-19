@@ -67,8 +67,12 @@ Status: current snapshot
 - `GetMember`의 결과는 single declaration과 function overload group을 표현할 수 있는 `RMember`로 둔다. `RMember`는 type parameter를 포함하지 않으며 `RDeclRes`로 변환할 수 있다.
 - `RDecl`의 `ResolveTypeIdentifier`, `ResolveTypeIdentifierInHeader`, `ResolveIdentifier`는 현재 scope의 `Get*` 결과를 확인한 뒤 miss일 때만 outer lexical scope로 재귀한다. type parameter는 `ResolveTypeIdentifier`와 `ResolveIdentifier`에서 lexical binder로 검색되지만 qualified member surface에는 참여하지 않는다.
 - `ResolveTypeIdentifierInHeader`는 현재 declaration의 type parameter만 확인하고, outer에는 일반 `ResolveTypeIdentifier`로 진행한다. 따라서 header는 자기 member를 보지 않되 outer declaration의 정상 type lookup은 사용한다.
+- class의 inherited lookup은 `ResolveInheritedTypeMember`/`ResolveInheritedMember`가 담당한다. 이 hook은 base chain만 탐색하며 outer lexical scope로 진행하지 않는다. base generic arguments는 derived/current arguments에 apply한 뒤 찾은 result에 보존한다.
 - symbol/declaration 문맥에서는 containing tree edge를 `outer`, inheritance edge를 `base`로 부르고, `parent`는 쓰지 않는 쪽을 선호한다.
-- symbol/declaration/resolver 구현에서 `RDeclRes`를 리턴하는 lookup 함수는 `Resolve`로 시작하는 쪽을 선호한다.
+- `Get`/`Resolve`의 이름은 result 형식이 아니라 탐색 범위로 정한다. `GetMember`/`GetVar`는 현재 object의 direct table만 조회하고 applied result를 만들 수 있다. `ResolveTypeIdentifier`/`ResolveIdentifier`는 generic binder, inherited member, outer lexical scope 등 lookup policy를 적용한다.
+- `ROuterAppliedDecl<T>`은 outer type arguments만 적용된 declaration이고, `RAppliedDecl<T>`은 필요한 type arguments가 모두 적용된 declaration이다. `RDeclRes`/`RTypeRes`의 nested type variants는 전자를, direct variable variants는 후자를 사용한다.
+- 함수 overload lookup result는 `ROuterAppliedFuncDeclGroup<TFuncDecl>`으로 표현한다. source의 explicit function type arguments는 RSymbol lookup result에 결합하지 않고 SmTranslator의 `SmPartiallyAppliedFuncDeclGroup<TFuncDecl>::memberTypeArgs`에 둔다. candidate matching은 이 prefix와 outer arguments를 합쳐 남은 function type parameters를 inference한 뒤 full type arguments를 만든다.
+- Citron에서 generic definition은 `RTypeDecl`이고 unbound `RType`은 만들지 않는다. `RType`은 arguments가 적용된 constructed type만 나타낸다. `S<T>`는 open constructed type, `S<int>`는 closed constructed type이다.
 - type declaration은 C++처럼 same-name generic arity overloading을 허용하지 않는 쪽을 선호하고, C#류 arity distinction은 interop/import layer에서 해소하는 방향을 선호한다.
 - semantic tree는 먼저 tree 모델로 안정화하고, path map 중심 모델은 그 뒤에 재검토한다.
 - accessibility는 단일 tree-only `CanAccess`보다, module/namespace member 정책과 type-member/inheritance 정책을 분리한 별도 checker/policy layer로 두는 쪽을 선호한다.
