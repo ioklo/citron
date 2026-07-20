@@ -12,6 +12,12 @@
 #include "RSymbol/RFuncParameter.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RLambdaDecl.h"
+#include "RSymbol/RTypeRes.h"
+#include "RSymbol/RClassDecl.h"
+#include "RSymbol/RStructDecl.h"
+#include "RSymbol/REnumDecl.h"
+#include "RSymbol/REnumElemDecl.h"
+#include "RSymbol/RTraitDecl.h"
 
 #include "FuncContext.h"
 
@@ -161,17 +167,84 @@ std::optional<MScopeKind> ScopeContext::GetReachableScopeKind(size_t labelId)
     }, scopeKind);
 }
 
+expected<RType*, DiagPtr> MakeType(RTypeRes& typeRes, RTypeArguments* memberTypeArgs, RFactory* rFactory)
+{
+    return typeRes.Visit([memberTypeArgs, rFactory](auto& typeRes) -> expected<RType*, DiagPtr> {
+        using T = remove_cvref_t<decltype(typeRes)>;
+
+        if constexpr (same_as<T, RTypeRes_Namespace>) 
+        {
+            return Error<Error_ResolveIdentifier_CantUseNamespaceAsType>();
+        }
+        else if constexpr (same_as<T, RTypeRes_Class>) 
+        {
+            // 타입 인자 검사
+            if (typeRes.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
+                return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
+
+            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerTypeArgs, memberTypeArgs);
+            return rFactory->MakeClassType(typeRes.decl, typeArgs);
+        }
+        else if constexpr (same_as<T, RTypeRes_Struct>) 
+        {
+            // 타입 인자 검사
+            if (typeRes.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
+                return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
+
+            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerTypeArgs, memberTypeArgs);
+            return rFactory->MakeStructType(typeRes.decl, typeArgs);
+        }
+        else if constexpr (same_as<T, RTypeRes_Enum>) 
+        {
+            // 타입 인자 검사
+            if (typeRes.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
+                return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
+
+            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerTypeArgs, memberTypeArgs);
+            return rFactory->MakeEnumType(typeRes.decl, typeArgs);
+        }
+        else if constexpr (same_as<T, RTypeRes_EnumElem>) 
+        {
+            // 타입 인자 검사
+            if (typeRes.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
+                return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
+
+            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerTypeArgs, memberTypeArgs);
+            return rFactory->MakeEnumElemType(typeRes.decl, typeArgs);
+        }
+        else if constexpr (same_as<T, RTypeRes_Interface>) 
+        {
+            // TODO: [71] 2026-07-18, interface 구현
+            throw NotImplementedException{};
+        }
+        else if constexpr (same_as<T, RTypeRes_Lambda>) 
+        {
+            // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
+            throw NotImplementedException{};
+        }
+        else if constexpr (same_as<T, RTypeRes_TypeVar>) 
+        {
+            return rFactory->MakeTypeVarType(typeRes.decl);
+        }
+        else if constexpr (same_as<T, RTypeRes_Trait>) 
+        {
+            return Error<Error_ResolveIdentifier_CantUseTraitAsType>();
+        }
+        else static_assert(false);
+    });
+}
+
 expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sTypeExp)
 {
     // TODO: BuildNonTypeSymbolContext::MakeType 에도 같은 코드가 있다
     struct Visitor
     {
-        using ResultType = RType*;
+        using ResultType = expected<RType*, DiagPtr>;
 
         RFactory* rFactory;
         ScopeContext& scopeContext;
 
-        RType* Visit(STypeExp_Id* idExp)
+        expected<RType*, DiagPtr> Visit(STypeExp_Id* idExp)
         {
             // 예약어 처리
             if (idExp->name == "void" && idExp->typeArgs.empty())
@@ -183,26 +256,26 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
             else if (idExp->name == "string" && idExp->typeArgs.empty())
                 return rFactory->MakeStringType();
 
-            // NOTICE: 부모 TypeArgs처리를 하지 않았다
-            auto* rTypeDecl = scopeContext.funcContext->ResolveTypeDecl(RName::Normal(idExp->name), idExp->typeArgs.size());
-            if (!rTypeDecl) return nullptr;
+            auto o_rTypeRes = scopeContext.funcContext->ResolveTypeIdentifier(RName::Normal(idExp->name));
+            if (!o_rTypeRes) return nullptr;
 
-            vector<RType*> rTypeArgVector;
-            rTypeArgVector.reserve(idExp->typeArgs.size());
+            vector<RType*> memberTypeArgsVector;
+            memberTypeArgsVector.reserve(idExp->typeArgs.size());
             for (auto* sTypeArg : idExp->typeArgs)
             {
                 auto e_rTypeArg = scopeContext.TranslateSTypeExpToRType(sTypeArg);
                 if (!e_rTypeArg) return nullptr;
-                rTypeArgVector.push_back(*e_rTypeArg);
+                memberTypeArgsVector.push_back(*e_rTypeArg);
             }
-            auto* rTypeArgs = rFactory->MakeTypeArguments(rTypeArgVector);
-            return rFactory->MakeType(rTypeDecl, rTypeArgs);
+            auto* memberTypeArgs = rFactory->MakeTypeArguments(memberTypeArgsVector);
+            return MakeType(*o_rTypeRes, memberTypeArgs, rFactory);
         }
 
-        RType* Visit(STypeExp* e)
+        expected<RType*, DiagPtr> Visit(STypeExp* e)
         {
             throw NotImplementedException{};
         }
+
     } visitor{rFactory.get(), *this};
 
     return Accept(visitor, sTypeExp);

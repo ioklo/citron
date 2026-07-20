@@ -4,6 +4,7 @@
 #include "RSymbol/RDeclRes.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RLambdaVarDecl.h"
+#include "RSymbol/RTypeRes.h"
 #include "MIR/MFactory.h"
 #include "MIR/MLoc.h"
 #include "MIR/MExp.h"
@@ -23,9 +24,9 @@ bool FuncContext_Lambda::CanAccess(RDecl* target)
     return outerFunc->CanAccess(target);
 }
 
-RTypeDecl* FuncContext_Lambda::ResolveTypeDecl(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+std::optional<RTypeRes> FuncContext_Lambda::ResolveTypeIdentifier(InRef<RName> name)
 {
-    return outerFunc->ResolveTypeDecl(name, explicitTypeParamsExceptOuterCount);
+    return outerFunc->ResolveTypeIdentifier(name);
 }
 
 // class C<T> { void F<S> {

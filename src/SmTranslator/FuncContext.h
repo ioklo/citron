@@ -22,6 +22,7 @@ class RTypeArguments;
 
 class RLambdaDecl;
 class RLambdaVarDecl;
+class RTypeRes;
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
@@ -80,7 +81,7 @@ public:
     virtual void RollbackTransaction_FuncContext() = 0;
 
     virtual bool CanAccess(RDecl* target) = 0;
-    virtual RTypeDecl* ResolveTypeDecl(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) = 0;
+    virtual std::optional<RTypeRes> ResolveTypeIdentifier(InRef<RName> name) = 0;
     virtual std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name) = 0;
 
     // decl/body space의 return type을 리턴한다

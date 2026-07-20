@@ -19,6 +19,7 @@
 #include "RSymbol/RStructDtorDecl.h"
 #include "RSymbol/RStructFuncDecl.h"
 #include "RSymbol/RLambdaDecl.h"
+#include "RSymbol/RTypeRes.h"
 
 using namespace std;
 
@@ -34,19 +35,10 @@ bool FuncContext_FuncDecl::CanAccess(RDecl* target)
     return rFuncDecl->RFuncDecl_GetDecl()->CanAccess(target);
 }
 
-RTypeDecl* FuncContext_FuncDecl::ResolveTypeDecl(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
+std::optional<RTypeRes> FuncContext_FuncDecl::ResolveTypeIdentifier(InRef<RName> name)
 {
-    RDecl* curDecl = rFuncDecl->RFuncDecl_GetDecl();
-
-    while (curDecl)
-    {
-        if (RTypeDecl* typeDecl = curDecl->GetTypeMember(name))
-            return typeDecl;
-
-        curDecl = curDecl->GetOuter();
-    }
-
-    return nullptr;
+    auto* openTypeArgs = rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(*rFactory); // typeArgs를 만들어서 rFuncDecl에 넣어준다
+    return rFuncDecl->RFuncDecl_GetDecl()->ResolveTypeIdentifier(openTypeArgs, name);
 }
 
 expected<optional<BodyRes>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(InRef<RName> name)

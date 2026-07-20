@@ -204,7 +204,8 @@ struct Error_ResolveIdentifier_EnumElemCantHaveMember : ErrorDiag { }; // A2009_
 struct Error_ResolveIdentifier_ThisIsNotInTheContext : ErrorDiag { }; // A2010_ResolveIdentifier_ThisIsNotInTheContext   // 
 struct Error_ResolveIdentifier_TryAccessingPrivateMember : ErrorDiag { }; // A2011_ResolveIdentifier_TryAccessingPrivateMember
 struct Error_ResolveIdentifier_EnumInstanceCantHaveMember : ErrorDiag { }; // A2013_ResolveIdentifier_EnumInstanceCantHaveMember
-struct Error_ResolveIdentifier_CantUseNamespaceAsExpression : ErrorDiag { }; // A2013_ResolveIdentifier_CantUseNamespaceAsExpression // 네임스페이스를 exp로 쓸 수 없습니다        
+struct Error_ResolveIdentifier_CantUseNamespaceAsExpression : ErrorDiag {}; // A2013_ResolveIdentifier_CantUseNamespaceAsExpression // 네임스페이스를 exp로 쓸 수 없습니다        
+struct Error_ResolveIdentifier_CantUseNamespaceAsType : ErrorDiag { };
 struct Error_ResolveIdentifier_MultipleCandidatesForMember : ErrorDiag { }; // A2014_ResolveIdentifier_MultipleCandidatesForMember
 struct Error_ResolveIdentifier_ExpressionIsNotLocation : ErrorDiag { }; // A2015_ResolveIdentifier_ExpressionIsNotLocation
 struct Error_ResolveIdentifier_LambdaInstanceCantHaveMember : ErrorDiag { }; // A2016_ResolveIdentifier_LambdaInstanceCantHaveMember
@@ -215,7 +216,8 @@ struct Error_ResolveIdentifier_FuncInstanceCantHaveMember : ErrorDiag { }; // A2
 struct Error_ResolveIdentifier_MemberBaseCantBeLocation : ErrorDiag {};
 struct Error_ResolveIdentifier_CantUseTraitAsExpression : ErrorDiag {};
 struct Error_ResolveIdentifier_CantUseTraitFuncAsExpression : ErrorDiag {};
-
+struct Error_ResolveIdentifier_TypeParamCountMismatch : ErrorDiag {};
+struct Error_ResolveIdentifier_CantUseTraitAsType : ErrorDiag {};
 
 
 struct Error_SharedTranslation_SingleRefNotAllowed : ErrorDiag {}; // shared<int> i = &c; 금지
@@ -290,6 +292,8 @@ struct Error_FuncBody_ShouldEndWithReturn : ErrorDiag {}; // A2901_BodyShouldRet
 
 struct Error_NotSupported_LambdaParameterInference : ErrorDiag { }; // A9901_NotSupported_LambdaParameterInference
 struct Error_NotSupported_LambdaReturnTypeInference : ErrorDiag {}; // A9902_NotSupported_LambdaReturnTypeInference
+
+
 
 
 template<typename TDiag, typename... TArgs> requires std::derived_from<TDiag, Diag>

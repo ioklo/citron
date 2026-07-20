@@ -29,7 +29,7 @@ public: // from FuncContext
     void RollbackTransaction_FuncContext() override {}
 
     bool CanAccess(RDecl* target) override;
-    RTypeDecl* ResolveTypeDecl(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount) override;
+    std::optional<RTypeRes> ResolveTypeIdentifier(InRef<RName> name) override;
     std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
