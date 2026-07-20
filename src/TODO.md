@@ -48,6 +48,6 @@
 - [ ] // TODO: [66] 2026-07-09, Trait, Extend 구현
 - [v] // TODO: [67] 2026-07-10, NSymbol, RSymbol 정리하면서 생긴 문제들 해결
 - [ ] // TODO: [68] 2026-07-11, CanAccess 제대로 구현
-- [ ] // TODO: [69] 2026-07-12, ResolveMember에서 Generics도 제대로 리턴하도록, RCommonFuncDeclComponent에서 ResolveFuncParam제거 (RDeclRes -> BodyRes로), RDeclRes_FuncParam제거
+- [v] // TODO: [69] 2026-07-12, ResolveMember에서 Generics리턴하지 않도록, RCommonFuncDeclComponent에서 ResolveFuncParam제거 (RDeclRes -> BodyRes로), RDeclRes_FuncParam제거
 - [ ] // TODO: [70] 2026-07-15, struct 이외에 class, enum에도 impl 넣기
 - [ ] // TODO: [71] 2026-07-18, interface 구현

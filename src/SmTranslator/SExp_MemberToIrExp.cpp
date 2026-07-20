@@ -219,13 +219,7 @@ public:
         // TODO: [52] TypeVar정리
         throw NotImplementedException{};
     }
-
-    // NS.x
-    expected<IrExp*, DiagPtr> Visit(RDeclRes_FuncParam& member)
-    {
-        throw RuntimeFatalException{};
-    }
-
+    
     expected<IrExp*, DiagPtr> Visit(RDeclRes_Trait& member)
     {
         return Error<Error_SharedTranslation_CantUseTraitAsExpression>();

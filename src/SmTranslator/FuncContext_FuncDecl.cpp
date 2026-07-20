@@ -51,6 +51,8 @@ RTypeDecl* FuncContext_FuncDecl::ResolveTypeDecl(InRef<RName> name, size_t expli
 
 expected<optional<BodyRes>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(InRef<RName> name)
 {
+    // 함수 인자는 최상위 ScopeContext에서 관리한다
+
     auto* openTypeArgs = rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(*rFactory); // typeArgs를 만들어서 rFuncDecl에 넣어준다
 
     auto o_rDeclRes = rFuncDecl->RFuncDecl_GetDecl()->ResolveIdentifier(openTypeArgs, name);

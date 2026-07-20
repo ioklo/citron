@@ -56,9 +56,6 @@ public:
     RSYMBOL_API RFuncParameter GetFuncParam(RTypeArguments* typeArgs, size_t index);
 
     RSYMBOL_API std::vector<RType*> GetParamIds();
-
-    // TODO: [69] 2026-07-12, ResolveMember에서 Generics도 제대로 리턴하도록, RCommonFuncDeclComponent에서 ResolveFuncParam제거 (RDeclRes -> BodyRes로)
-    RSYMBOL_API std::optional<RDeclRes> ResolveFuncParam(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 }

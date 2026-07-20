@@ -99,15 +99,4 @@ vector<RType*> RCommonFuncDeclComponent::GetParamIds()
     return result;
 }
 
-optional<RDeclRes> RCommonFuncDeclComponent::ResolveFuncParam(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    assert(funcReturnAndParams);
-
-    for (auto& param : funcReturnAndParams->funcParameters)
-        if (param.name == *name)
-            return RDeclRes_FuncParam{param};
-
-    return nullopt;
-}
-
 }

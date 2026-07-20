@@ -52,7 +52,6 @@ struct RDeclRes_LambdaVar : ROuterAppliedDecl<RLambdaVarDecl> { };
 struct RDeclRes_Interface : ROuterAppliedDecl<RInterfaceDecl> { };
 struct RDeclRes_TupleVar {}; // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
 struct RDeclRes_TypeVar { RTypeParam* decl; };
-struct RDeclRes_FuncParam { RFuncParameter funcParam; };
 struct RDeclRes_Trait : ROuterAppliedDecl<RTraitDecl> { };
 struct RDeclRes_TraitFuncs : ROuterAppliedFuncDeclGroup<RTraitFuncDecl> { };
 
@@ -75,7 +74,6 @@ class RDeclRes
         RDeclRes_Interface,
         RDeclRes_TupleVar,
         RDeclRes_TypeVar,
-        RDeclRes_FuncParam,
         RDeclRes_Trait,
         RDeclRes_TraitFuncs
     >;

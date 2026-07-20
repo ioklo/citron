@@ -118,17 +118,6 @@ struct DeclResTranslator
     // ResultType Visit(RDeclRes_Interface& declRes);
     // ResultType Visit(RDeclRes_TupleVar& declRes);
     // ResultType Visit(RDeclRes_TypeVar& declRes);
-    ResultType Visit(RDeclRes_FuncParam& declRes) 
-    {
-        MLoc* loc;
-        if (declRes.funcParam.IsRef())
-            loc = MakeMLoc<MLoc_LocalRef>(declRes.funcParam.name, declRes.funcParam.type);
-        else
-            loc = MakeMLoc<MLoc_LocalVar>(declRes.funcParam.name, declRes.funcParam.type);
-
-        // IrExp자체는 Loc에 관심이 없다. (SharedDeref 빼고)
-        return MakeIrExp<IrExp_Loc>(loc);
-    }
 };
 
 struct BodyResTranslator

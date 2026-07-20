@@ -31,6 +31,22 @@ TranslationContexts MakeTranslationContexts(
     auto funcContext = MakePtr<FuncContext_FuncDecl>(rFuncDecl, bSeqFunc, *rFactory, *mFactory);
     auto scopeContext = MakePtr<ScopeContext>(funcContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, *rFactory);
 
+    // scopeContext에 함수 인자를 넣는다
+    auto* openTypeArgs = rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(**rFactory);
+    for (auto& funcParam : rFuncDecl->GetUnboundFuncParams())
+    {
+        if (funcParam.IsRef())
+        {
+            auto* paramType = funcParam.type->Apply(openTypeArgs);
+            scopeContext->AddLocalRefInfo(paramType, funcParam.name);
+        }
+        else
+        {
+            auto* paramType = funcParam.type->Apply(openTypeArgs);
+            scopeContext->AddLocalVarInfo(paramType, funcParam.name);
+        }
+    }
+
     return {globalContext, funcContext, scopeContext, logger.Take(), mFactory.Take(), rFactory.Take(), srtFactory.Take(), binOpQueryService.Take()};
 }
 

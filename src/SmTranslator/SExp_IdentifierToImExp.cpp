@@ -141,17 +141,7 @@ struct RDeclResTranslator
         auto* typeVar = contexts.rFactory->MakeTypeVarType(declRes.decl);
         return MakeImExp<ImExp_TypeVar>(typeVar);
     }
-
-    ResultType Visit(RDeclRes_FuncParam& declRes)
-    {
-        assert(memberTypeArgs->GetCount() == 0);
-
-        if (declRes.funcParam.IsRef())
-            return MakeImExp_ReExp_Loc<MLoc_LocalRef>(declRes.funcParam.name, declRes.funcParam.type);
-        else
-            return MakeImExp_ReExp_Loc<MLoc_LocalVar>(declRes.funcParam.name, declRes.funcParam.type);
-    }
-
+    
     ResultType Visit(RDeclRes_Trait& declRes)
     {
         return Error<Error_ResolveIdentifier_CantUseTraitAsExpression>();
