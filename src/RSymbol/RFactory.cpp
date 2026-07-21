@@ -49,8 +49,8 @@ RFactory::~RFactory()
 
 RTypeParam* RFactory::MakeTypeParam(RDecl* rDecl, RName&& name, size_t index, TakeRef<RFactoryPtr> rFactory)
 {
-    privateData->typeParams.emplace_back(rDecl, move(name), index, move(rFactory));
-    return &privateData->typeParams.back(); 
+    auto& typeParam = privateData->typeParams.emplace_back(rDecl, move(name), index, move(rFactory));
+    return &typeParam;
 }
 
 RType_Nullable* RFactory::MakeNullableType(RType* innerType)
@@ -427,8 +427,8 @@ RNamespaceDecl* RFactory::MakeChildNamespaceDecl(RNamespaceDecl* outer, InRef<st
 
 RModule* RFactory::MakeModule(RName&& name)
 {
-    privateData->modules.push_back(RModule{move(name)});
-    return &privateData->modules.back();
+    auto& module = privateData->modules.emplace_back(RModule{move(name)});
+    return &module;
 }
 
 

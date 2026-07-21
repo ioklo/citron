@@ -22,6 +22,8 @@
 #include "RSymbol/REnumElemVarDecl.h"
 #include "RSymbol/RLambdaDecl.h"
 #include "RSymbol/RLambdaVarDecl.h"
+#include "RSymbol/RTraitFuncDecl.h"
+#include "NSymbol/NImplTraitFunc.h"
 #include "MData.h"
 #include "MStmt.h"
 #include "MExp.h"
@@ -41,14 +43,34 @@ class MPrinterImpl {
 public:
     MPrinterImpl(InRef<IWriter> writer, InRef<RFactory> rFactory) : writer(*writer), rFactory(*rFactory) {}
 
-    void PrintFuncBody(InRef<MFuncBody> funcBody)
+    void PrintFuncBody_Decl(InRef<MFuncBody_Decl> funcBody)
     {
-        writer.Write("Func ");
+        writer.Write("FuncDecl ");
         PrintRName(funcBody->rFuncDecl->RFuncDecl_GetDecl()->GetIdentifier().name);
         writer.WriteLine();
         writer.AddIndent();
         PrintStmt(funcBody->body);
         writer.RemoveIndent();
+    }
+
+    void PrintFuncBody_ImplTrait(InRef<MFuncBody_ImplTrait> funcBody)
+    {
+        writer.Write("FuncImplTrait ");
+        PrintRName(funcBody->nImplTraitFunc->traitFuncDecl->GetIdentifier().name);
+        writer.WriteLine();
+        writer.AddIndent();
+        PrintStmt(funcBody->body);
+        writer.RemoveIndent();
+    }
+
+    void PrintFuncBody(InRef<MFuncBody> funcBody)
+    {
+        funcBody->Visit([this](auto& funcBody) {
+            using T = remove_cvref_t<decltype(funcBody)>;
+            if constexpr (same_as<T, MFuncBody_Decl>) return PrintFuncBody_Decl(funcBody);
+            else if constexpr (same_as<T, MFuncBody_ImplTrait>) return PrintFuncBody_ImplTrait(funcBody);
+            else static_assert(false);
+        });
     }
 
 private:

@@ -93,16 +93,16 @@
       <Filter>RDecls\09 Interface</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RLambdaDecl.h">
-      <Filter>RDecls\11 Lambda</Filter>
+      <Filter>RDecls\12 Lambda</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RLambdaVarDecl.h">
-      <Filter>RDecls\11 Lambda</Filter>
+      <Filter>RDecls\12 Lambda</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RStructDtorDecl.h">
       <Filter>RDecls\07 Struct</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RTypeParam.h">
-      <Filter>RDecls\12 Generics</Filter>
+      <Filter>RDecls\13 Generics</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RCopyStrategy.h">
       <Filter>RDecls\00 Abstraction</Filter>
@@ -155,6 +155,15 @@
     <ClInclude Include="Public\RSymbol\RAppliedDecl.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RImplTraitDecl.h">
+      <Filter>RDecls\11 Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RImplTraitMemberDecl.h">
+      <Filter>RDecls\11 Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RImplTraitFuncDecl.h">
+      <Filter>RDecls\11 Impl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">
@@ -190,14 +199,17 @@
     <Filter Include="RDecls\10 Trait">
       <UniqueIdentifier>{82ab8326-c832-4683-893f-a4a50ae5cae4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RDecls\11 Lambda">
-      <UniqueIdentifier>{7667c2ab-9529-41c8-8493-f19857ae9008}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="RDecls\12 Generics">
-      <UniqueIdentifier>{d504e20d-8c04-4bbb-a0c1-e07c716fce1f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="RDecls\13 Components">
       <UniqueIdentifier>{b4173c84-4412-445d-b15e-c01d9d29ffbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\11 Impl">
+      <UniqueIdentifier>{f4445cb0-c1b2-4b1f-9cc6-8b11e9e1a9bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\12 Lambda">
+      <UniqueIdentifier>{7667c2ab-9529-41c8-8493-f19857ae9008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RDecls\13 Generics">
+      <UniqueIdentifier>{d504e20d-8c04-4bbb-a0c1-e07c716fce1f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -232,7 +244,7 @@
       <Filter>RDecls\05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="RTypeParam.cpp">
-      <Filter>RDecls\12 Generics</Filter>
+      <Filter>RDecls\13 Generics</Filter>
     </ClCompile>
     <ClCompile Include="RFuncReturn.cpp">
       <Filter>RDecls\03 Func</Filter>
@@ -295,10 +307,10 @@
       <Filter>RDecls\08 Enum</Filter>
     </ClCompile>
     <ClCompile Include="RLambdaDecl.cpp">
-      <Filter>RDecls\11 Lambda</Filter>
+      <Filter>RDecls\12 Lambda</Filter>
     </ClCompile>
     <ClCompile Include="RLambdaVarDecl.cpp">
-      <Filter>RDecls\11 Lambda</Filter>
+      <Filter>RDecls\12 Lambda</Filter>
     </ClCompile>
     <ClCompile Include="RInterfaceDecl.cpp">
       <Filter>RDecls\09 Interface</Filter>
@@ -317,6 +329,12 @@
     </ClCompile>
     <ClCompile Include="RTypeRes.cpp">
       <Filter>RDecls\00 Abstraction</Filter>
+    </ClCompile>
+    <ClCompile Include="RImplTraitDecl.cpp">
+      <Filter>RDecls\11 Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="RImplTraitFuncDecl.cpp">
+      <Filter>RDecls\11 Impl</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

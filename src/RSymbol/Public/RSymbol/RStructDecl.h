@@ -22,7 +22,7 @@ class RStructDtorDecl;
 class RStructFuncDecl;
 class RStructVarDecl;
 
-class NStructInfo;
+struct NStructInfo;
 
 class RStructDecl final : public RDecl, public RTypeDecl
 {

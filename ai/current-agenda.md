@@ -10,7 +10,9 @@ canonical trait conformance와 `impl` 구현
 - `where`를 가진 full generic impl과 direct specialization은 초기 범위에서 제외한다. specialization/conditional conformance는 named extension bundle과 `extend` activation 경로로 둔다.
 - 먼저 trait declaration/type, struct trait 목록, witness `impl` declaration을 RSymbol과 SmTranslator skeleton 단계에 연결한다.
 - 이름 있는 외부 `extension` bundle, 소비자 `extend` activation, overlap/ambiguity 처리는 후속 단계다.
-- `impl`은 named `RDecl`이 아니라 struct/extension의 typed internal `N*Info` payload로 두고, public conformance header만 RSymbol surface에 남기는 방향이다.
+- `impl`은 ordinary source name을 바인딩하지 않지만, lexical symbol tree의 internal `RImplTraitDecl` subtree로 둔다. `RName_Impl(index)`는 compiler-private identifier이며 ordinary lookup/overload group/CTI에는 노출하지 않는다.
+- `RImplTraitDecl`의 child는 `RImplTraitMemberDecl`, 함수 requirement 구현은 `RImplTraitFuncDecl`이다. 이 함수는 `RFuncDecl`이므로 existing MIR body/ABI/QIR direct-call 경로를 사용한다.
+- `NStructInfo`/`NImplTrait*`는 기존 witness payload 모델의 잔재가 되며, conformance header entry와 `RImplTraitDecl*` 연결로 대체하는 방향이다.
 - SmTranslator는 unit 간에는 global phase barrier를 유지하고, unit 내부의 세밀한 선행 조건은 order가 있는 task dependency로 표현하는 방향을 검토한다.
 
 ## Current Refactoring State
@@ -29,6 +31,9 @@ canonical trait conformance와 `impl` 구현
 - type lookup은 current header의 binder만 보는 경우와 normal member lookup을 구분한다. inheritance lookup은 outer lookup과 별개이며, `ResolveInheritedTypeMember`/`ResolveInheritedMember`처럼 applied base type arguments를 유지하는 좁은 hook 후보를 검토 중이다.
 - Citron은 generic definition을 `RTypeDecl`로 두고 unbound `RType`은 만들지 않는다. `RType`은 `S<T>`(open) 또는 `S<int>`(closed)처럼 arguments가 적용된 type만 나타낸다. `RDeclRes`의 outer-applied 상태는 type이 아니라 lookup declaration context다.
 - `RDeclRes` 반환 여부가 아니라 탐색 범위로 `Get`/`Resolve`를 구분하도록 적용했다. direct lookup 결과는 `ROuterAppliedDecl`/`RAppliedDecl`로 표현하고, 함수의 explicit type argument prefix는 RSymbol result가 아니라 SmTranslator의 `SmPartiallyAppliedFuncDeclGroup`에 둔다.
+- trait call은 call-site에서 source-local `NImplTraitFunc`를 보관하지 않는다. semantic `Trait` call은 `RTraitFuncDecl`과 applied trait identity를 보관하고, lowering이 concrete conformance에는 direct impl call을, generic constraint와 `some Trait` opaque value에는 trait table call을 선택한다.
+- `RImplTraitDecl` subtree는 impl syntax의 lexical outer에 둔다. target struct와 matched conformance header는 typed relation으로 따로 둔다.
+- extension은 trait impl subtree에 `RImplTrait*` 계열을 재사용하는 쪽을 우선 검토한다. `RExtensionFuncDecl`은 bundle-private helper로 별도 계열이다.
 
 ## Open Questions
 - accessor를 정확히 어느 계층에 둘지: declaration payload, category view, 별도 metadata 중 어디가 가장 자연스러운지
@@ -40,6 +45,8 @@ canonical trait conformance와 `impl` 구현
 - unit-local task graph의 freeze 시점, task order enum, failure propagation 규칙
 - type-parameter binder/type member의 namespace collision 및 shadowing 규칙, header/body/inherited/outer type lookup의 정확한 우선순위
 - `RTypeParam`의 `RDecl`/`RTypeDecl` 분리 뒤 type-name lookup result를 어떤 union/result shape로 나타낼지
+- `MCallable`을 semantic `Trait` call로 유지할지, 어느 IR stage에서 `Direct`/`TraitTable`/`Virtual` call target으로 분해할지
+- trait table call의 ABI shape: generic constraint dictionary, opaque metadata의 witness entry, direct conformance symbol의 관계
 
 ## Update Rule
 - 현재 주제가 바뀌면 이 파일을 먼저 갱신한다.

@@ -34,18 +34,22 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - type parameter는 lexical type-name/identifier lookup에는 참여하지만 qualified member surface에는 참여하지 않는다. 따라서 `S<int>.T` 같은 projection은 허용하지 않는다.
 - Accessibility policy is likely to split between module/namespace member rules and type-member/inheritance rules, so `RNode` should not assume a single tree-only access algorithm.
 
-## Impl Payload Direction
+## Impl Trait Declaration Direction
 
-- `impl`은 이름을 바인딩하지 않으므로 `RDecl` tree child로 만들지 않는다.
-- `RStructDecl`과 `RExtensionDecl`은 external declaration surface를 나타내는 named symbol로 유지한다.
-- canonical impl의 실제 witness implementation은 `NStructInfo`, extension impl의 실제 witness implementation은 `NExtensionInfo` 같은 typed internal payload에 둔다.
-- public conformance header와 witness identity는 external module consumer가 알아야 하므로 declaration surface에 남긴다.
-- category-specific `N*Info`는 `RDecl` base의 universal tag보다 concrete `R*Decl`에 typed하게 붙이는 쪽을 선호한다.
-- generic conformance header는 단순 `(trait, traitTypeArgs)`가 아니라 generic signature, owner struct의 formal parameter에 적용하는 self type-argument pattern, trait type arguments, constraint를 함께 나타내야 한다. 예를 들어 `impl<T> S<T> : Trait`의 self pattern은 `[T]`이고, `impl Bundle for S<int> : Trait`의 self pattern은 `[int]`다.
-- canonical conformance의 witness는 `NStructInfo`에, specialized/conditional bundle conformance의 witness는 `NExtensionInfo`에 둔다. specialized bundle의 public header는 `RExtensionDecl` surface가 소유하며 conformance resolver가 활성화된 bundle과 canonical header를 함께 조회한다.
+- `impl`은 ordinary source name을 바인딩하지 않지만, body/generic scope/callable identity를 표현하기 위해 lexical symbol tree의 internal `RImplTraitDecl` subtree로 둔다.
+- `RImplTraitDecl`은 compiler-private `RName_Impl(index)`를 identifier로 사용한다. 이 identifier와 declaration은 ordinary `GetMember(RName_Normal)` lookup, ordinary function overload group, CTI surface에 노출하지 않는다.
+- `RImplTraitDecl`은 syntax의 lexical outer를 tree outer로 두고, target struct 및 matched conformance header를 typed field로 둔다. target struct member lookup과 `this`는 impl-specific body lookup policy로 처리한다. target struct를 lexical outer로 사용하지 않는다.
+- trait requirement implementation member는 `RImplTraitMemberDecl`으로 나타내며, 함수 requirement의 구현은 `RImplTraitFuncDecl : RImplTraitMemberDecl + RFuncDecl`로 둔다. 따라서 일반 함수와 같은 `RFuncDecl`/`MFuncBody`/ABI/QIR 경로를 사용할 수 있다.
+- `NStructInfo`, `NImplTrait`, `NImplTraitFunc`는 witness implementation의 authoritative owner가 아니다. 현재 `NStructInfo`가 `implTraits`만 보관하므로, 이 설계로 이행하면 제거한다.
+- canonical conformance header는 `RStructDecl`의 conformance entry가 소유하고, bind 후 해당 entry가 `RImplTraitDecl*`를 연결한다. public header와 witness identity는 declaration surface에 남기되 CTI에는 synthetic tree name을 기록하지 않는다.
+- generic conformance header는 단순 `(trait, traitTypeArgs)`가 아니라 generic signature, owner struct의 formal parameter에 적용하는 self type-argument pattern, trait type arguments, constraint를 함께 나타낸다. 예를 들어 `impl<T> S<T> : Trait`의 self pattern은 `[T]`이고, `impl Bundle for S<int> : Trait`의 self pattern은 `[int]`다.
+- extension bundle도 trait requirement implementation 자체는 동일한 `RImplTraitDecl` / `RImplTraitMemberDecl` / `RImplTraitFuncDecl` 계열을 재사용하는 방향이다. `RExtensionFuncDecl`은 bundle-private 공용 helper로 별도 계열이며 trait requirement member가 아니다.
 
 ## Related Open Points
 - Exact fields filled at fdecl / decl / impl states for each declaration kind.
+- `RImplTraitDecl`의 target struct member lookup, impl generic binder, lexical outer lookup을 body context에서 어떤 우선순위로 결합할지.
+- `RName_Impl(index)`의 owner-local ordinal 발급 시점과 diagnostic/debug display 규칙.
+- extension declaration과 separate `impl Bundle ...` syntax가 있을 때 `RImplTraitDecl`의 tree outer 및 `RExtensionDecl` conformance entry 연결 방식.
 - How `cti` generated declaration surface maps into `EDecl` / `REDecl`.
 - How opaque result identity for `some` return attaches to declaration identity.
 

@@ -59,7 +59,7 @@ Status: current snapshot
 - `some` opaque result call은 metadata accessor, value witness, trait witness, opaque sret로 낮춘다.
 - value witness는 size/align/copy/move/destroy 같은 값 기본 연산 테이블이다.
 - trait witness는 trait requirement를 backing type 구현으로 연결하는 테이블이다.
-- generic conformance header는 generic signature, self type-argument pattern, trait type arguments, constraint를 포함한다. canonical witness는 `NStructInfo`, bundle witness는 `NExtensionInfo`에 두고, public header는 RSymbol declaration surface에 남긴다.
+- generic conformance header는 generic signature, self type-argument pattern, trait type arguments, constraint를 포함한다. canonical/bundle conformance의 implementation은 lexical symbol tree의 internal `RImplTraitDecl` subtree로 나타낸다. `RImplTraitDecl`은 source lookup member가 아니며 `RName_Impl(index)` 같은 compiler-private identifier를 사용한다. public header는 RSymbol declaration surface에 남기고, CTI에는 synthetic tree name이 아니라 conformance/witness identity만 남긴다.
 - declaration/body resolution 주변의 공용 sum type은 raw public `std::variant` alias보다 얇은 wrapper class를 선호하고, 호출부에는 free helper보다 member API를 우선 둔다.
 - declaration tree 축은 category view와 provenance payload에서 분리하는 쪽을 선호한다. 현재 leaning은 semantic tree node를 별도 `RNode` 모델로 세우고, `RTypeDecl` / `RFuncDecl`는 category view로 보는 것이다.
 - `RNode`는 우선 `RName` 중심의 lightweight tree node로 두고, generic arity나 callable parameter identity 같은 richer declaration identity는 별도 metadata로 둔다.

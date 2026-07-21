@@ -54,6 +54,7 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />
+    <File Path="../AGENTS.md" />
     <File Path="../docs/Citron_Concepts.md" />
     <File Path="../docs/Citron_Core_Semantics_for_Codex.md" />
     <File Path="Common.props" />

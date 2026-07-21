@@ -3,7 +3,7 @@
 #include <expected>
 
 namespace Citron {
-struct MFuncBody;
+class MFuncBody;
 using DiagPtr = std::shared_ptr<struct Diag>;
 
 class BuildTypeHierarchyContext;

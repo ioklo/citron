@@ -7,7 +7,7 @@
 
 namespace Citron {
 
-struct MFuncBody;
+class MFuncBody;
 
 using LoggerPtr = std::shared_ptr<class Logger>;
 using DiagPtr = std::shared_ptr<struct Diag>;

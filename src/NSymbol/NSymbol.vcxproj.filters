@@ -6,6 +6,15 @@
     <ClInclude Include="Public\NSymbol\NStructInfo.h">
       <Filter>07 Struct</Filter>
     </ClInclude>
+    <ClInclude Include="Public\NSymbol\NImplTrait.h">
+      <Filter>10 Trait</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\NSymbol\NImplTraitFunc.h">
+      <Filter>10 Trait</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\NSymbol\NImplTraitMember.h">
+      <Filter>10 Trait</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="00 Abstraction">
@@ -50,5 +59,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NFactory.cpp" />
+    <ClCompile Include="NImplTrait.cpp">
+      <Filter>10 Trait</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

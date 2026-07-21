@@ -139,7 +139,7 @@ expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(RFuncDecl* rFuncDec
         break;
     }
 
-    return MFuncBody{rFuncDecl, scope};
+    return MFuncBody_Decl{rFuncDecl, scope};
 }
 
 void TranslateBodyContext::MarkFailed()
