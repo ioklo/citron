@@ -11,12 +11,25 @@ namespace Citron {
 
 RDecl* RNamespaceDecl::GetOuter()
 {
-    return outer;
+    return outer.Visit([](auto* outer) -> RDecl* {
+
+        using T = remove_cvref_t<decltype(outer)>;
+
+        if constexpr (same_as<T, RModule*>)
+        {
+            return nullptr;
+        }
+        else if constexpr (same_as<T, RNamespaceDecl*>)
+        {
+            return outer;
+        }
+        else static_assert(false);
+    });
 }
 
 RIdentifier RNamespaceDecl::GetIdentifier()
 {
-    return RIdentifier{name, {}};
+    return RIdentifier{EncodeRName(name)};
 }
 
 size_t RNamespaceDecl::GetTypeParamCount()

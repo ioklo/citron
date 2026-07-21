@@ -12,7 +12,7 @@ class NImplTraitMember
     Variant v;
 
 public:
-    template<typename T> requires (!std::same_as<T, NImplTraitMember>) && std::constructible_from<Variant, T&&>
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, NImplTraitMember>) && std::constructible_from<Variant, T&&>
     NImplTraitMember(T&& value) : v{std::forward<T>(value)} {}
 };
 

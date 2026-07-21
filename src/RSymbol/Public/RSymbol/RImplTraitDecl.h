@@ -18,7 +18,7 @@ class RImplTraitDecl final : public RDecl
     RTraitDecl* trait;
     RTypeArguments* typeArgs;
 
-    RName_Impl name;
+    RName_ImplTrait name;
     std::vector<RImplTraitMemberDecl> members;
 
     RGenericsComponent genericsComp;

@@ -12,12 +12,25 @@
 
 namespace Citron {
 
+class RModule;
 class RNamespaceDeclGroup;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
+class RNamespaceDeclOuter
+{
+    using Variant = std::variant<RModule*, RNamespaceDecl*>;
+    Variant v;
+
+public:
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RNamespaceDeclOuter>) && std::constructible_from<Variant, T&&>
+    RNamespaceDeclOuter(T&& t) : v(std::forward<T>(t)) {}
+
+    auto Visit(auto&& visitor) { return std::visit(std::forward<decltype(visitor)>(visitor), v); }
+};
+
 class RNamespaceDecl final : public RDecl
 {
-    RNamespaceDecl* outer;
+    RNamespaceDeclOuter outer;
     RName name;
     RNamespaceDeclGroup* group;
     
@@ -27,11 +40,11 @@ class RNamespaceDecl final : public RDecl
     RFactoryPtr rFactory;
     
 public:
-    RNamespaceDecl(RNamespaceDecl* outer, RName&& name, RNamespaceDeclGroup* group, TakeRef<RFactoryPtr> rFactory)
-        : outer{outer}, name{std::move(name)}, group{group}, rFactory{rFactory.Take()} 
+    RNamespaceDecl(RNamespaceDeclOuter outer, RName&& name, RNamespaceDeclGroup* group, TakeRef<RFactoryPtr> rFactory)
+        : outer{std::move(outer)}, name{std::move(name)}, group{group}, rFactory{rFactory.Take()} 
     {}
 
-    RNamespaceDecl* GetOuterNamespace() { return outer; }
+    RNamespaceDeclOuter GetRNamespaceDeclOuter() { return outer; }
     RName& GetName() { return name; }
     
     void AddNamespace(RNamespaceDecl* _namespace) { namespaceDeclContainerComp.AddNamespace(_namespace); }

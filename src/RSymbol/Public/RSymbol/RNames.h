@@ -1,12 +1,11 @@
 #pragma once
 #include "RSymbolConfig.h"
-
-#include "Infra/Ref.h"
-
 #include <string>
 #include <variant>
-
+#include "Infra/Ref.h"
 #include "Infra/Hash.h"
+#include "RIdentifier.h"
+#include "RGlobalTypeIdentifier.h"
 
 namespace Citron {
 
@@ -54,6 +53,12 @@ struct RName_CtorParam
     bool operator==(const RName_CtorParam& other) const noexcept = default;
 };
 
+struct RName_ImplTrait
+{
+    RIdentifier declId;
+    RGlobalTypeIdentifier traitId;
+};
+
 class RName
 {
     using Variant = std::variant<
@@ -61,7 +66,9 @@ class RName
         RName_Normal,
         RName_Reserved,
         RName_Lambda,
-        RName_CtorParam>;
+        RName_CtorParam,
+        RName_ImplTrait
+    >;
 
     Variant v;
 

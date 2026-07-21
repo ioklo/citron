@@ -401,17 +401,26 @@ RNamespaceDecl* RFactory::MakeChildNamespaceDecl(RNamespaceDecl* outer, InRef<st
 
     while (curNS)
     {
-        auto curOuter = curNS->GetOuterNamespace();
+        auto curOuter = curNS->GetRNamespaceDeclOuter();
+        bool bContinue = curOuter.Visit([&ids, &curNS](auto* outer) -> bool {
 
-        if (!curOuter)
-        {
-            // root 라면 그만둔다
-            assert(curNS->GetName() == RName_None{});
-            break;
-        }
+            using T = remove_cvref_t<decltype(outer)>;
 
-        ids.push_back(curNS->GetName());
-        curNS = curOuter;
+            if constexpr (same_as<T, RModule*>)
+            {
+                return false;
+            }
+            else if constexpr (same_as<T, RNamespaceDecl*>)
+            {
+                // namespace이면 계속 올라간다
+                ids.push_back(curNS->GetName());
+                curNS = outer;
+                return true;
+            }
+            else static_assert(false);
+        });
+
+        if (!bContinue) break;
     }
 
     reverse(ids.begin(), ids.end());

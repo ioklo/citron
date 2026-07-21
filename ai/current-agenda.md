@@ -1,7 +1,7 @@
 # Current Agenda
 
 ## Topic
-canonical trait conformance와 `impl` 구현
+canonical trait conformance, `impl`, global identifier
 
 ## Current Direction
 - `RDecl`/`RNode` 정리는 완료했다. semantic tree 재구성은 현재 작업 주제가 아니다.
@@ -10,7 +10,9 @@ canonical trait conformance와 `impl` 구현
 - `where`를 가진 full generic impl과 direct specialization은 초기 범위에서 제외한다. specialization/conditional conformance는 named extension bundle과 `extend` activation 경로로 둔다.
 - 먼저 trait declaration/type, struct trait 목록, witness `impl` declaration을 RSymbol과 SmTranslator skeleton 단계에 연결한다.
 - 이름 있는 외부 `extension` bundle, 소비자 `extend` activation, overlap/ambiguity 처리는 후속 단계다.
-- `impl`은 ordinary source name을 바인딩하지 않지만, lexical symbol tree의 internal `RImplTraitDecl` subtree로 둔다. `RName_Impl(index)`는 compiler-private identifier이며 ordinary lookup/overload group/CTI에는 노출하지 않는다.
+- `impl`은 ordinary source name을 바인딩하지 않지만, lexical symbol tree의 internal `RImplTraitDecl` subtree로 둔다. internal tree name은 canonical `RName_ImplTrait`이며 ordinary lookup/overload group에는 노출하지 않는다.
+- external symbol lookup을 위해 `RName`(lookup key), `RIdentifier`(same-outer exact declaration key), `GlobalDeclIdentifier`(module prefix + identifier path), `GlobalTypeIdentifier`(canonical type expression)를 구분한다. identifier는 parser 없이 equality/hash에 쓸 canonical string으로 우선 구현한다.
+- `RName`은 lookup key로만 축소하지 않고, local/parameter/reserved/compiler name을 포함하는 구조화 semantic name value로 유지한다. exact declaration identity는 `RIdentifier`가 담당한다. `RIdentifier`의 structure와 serialized-string layer 분리는 재논의 대상이다.
 - `RImplTraitDecl`의 child는 `RImplTraitMemberDecl`, 함수 requirement 구현은 `RImplTraitFuncDecl`이다. 이 함수는 `RFuncDecl`이므로 existing MIR body/ABI/QIR direct-call 경로를 사용한다.
 - `NStructInfo`/`NImplTrait*`는 기존 witness payload 모델의 잔재가 되며, conformance header entry와 `RImplTraitDecl*` 연결로 대체하는 방향이다.
 - SmTranslator는 unit 간에는 global phase barrier를 유지하고, unit 내부의 세밀한 선행 조건은 order가 있는 task dependency로 표현하는 방향을 검토한다.
@@ -47,6 +49,8 @@ canonical trait conformance와 `impl` 구현
 - `RTypeParam`의 `RDecl`/`RTypeDecl` 분리 뒤 type-name lookup result를 어떤 union/result shape로 나타낼지
 - `MCallable`을 semantic `Trait` call로 유지할지, 어느 IR stage에서 `Direct`/`TraitTable`/`Virtual` call target으로 분해할지
 - trait table call의 ABI shape: generic constraint dictionary, opaque metadata의 witness entry, direct conformance symbol의 관계
+- `$T0` binder slot numbering, passing kind/function generic signature의 overload identity, alias normalization API
+- `RIdentifier`의 structured form 대 string form, category 간 same-name collision, exact identifier seal/register 시점
 
 ## Update Rule
 - 현재 주제가 바뀌면 이 파일을 먼저 갱신한다.

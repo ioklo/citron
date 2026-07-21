@@ -88,11 +88,11 @@ public:
 class RType_TypeVar : public RType
 {
 public:
-    RTypeParam* decl;
+    RTypeParam* typeParam;
 
 private:
     friend RFactory;
-    RType_TypeVar(RTypeParam* decl);
+    RType_TypeVar(RTypeParam* typeParam);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
@@ -129,6 +129,8 @@ class RType_Primitive : public RType
 public:
     RType_Primitive(RType_PrimitiveKind kind) : kind{kind}
     { }
+
+    RType_PrimitiveKind GetPrimitiveKind() { return kind; }
 
     // from RType
     RType* Apply(RTypeArguments* typeArgs) override { return this; } // no typeArgs

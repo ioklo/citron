@@ -164,6 +164,12 @@
     <ClInclude Include="Public\RSymbol\RImplTraitFuncDecl.h">
       <Filter>RDecls\11 Impl</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RGlobalIdentifier.h">
+      <Filter>RDecls\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RGlobalTypeIdentifier.h">
+      <Filter>RDecls\01 Identifier</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">
@@ -335,6 +341,12 @@
     </ClCompile>
     <ClCompile Include="RImplTraitFuncDecl.cpp">
       <Filter>RDecls\11 Impl</Filter>
+    </ClCompile>
+    <ClCompile Include="RIdentifier.cpp">
+      <Filter>RDecls\01 Identifier</Filter>
+    </ClCompile>
+    <ClCompile Include="RGlobalIdentifier.cpp">
+      <Filter>RDecls\01 Identifier</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

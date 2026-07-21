@@ -30,6 +30,7 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - Wrapper-based sum types keep declaration-specific operations close to the type while still allowing internal `Visit(...)` dispatch where a real sum-type branch is needed.
 - `RDecl`의 `GetTypeParam`, `GetTypeMember`, `GetMember`는 outer recursion 없이 현재 declaration scope만 조회하는 공통 API다. type parameter는 `GetTypeParam`으로만 얻고, `GetMember`에는 넣지 않는다.
 - `GetMember`는 single declaration과 function overload group을 나타낼 수 있는 `RMember`를 반환한다. `RMember`는 현재 scope의 named member lookup result이며 declaration tree node나 generic binder가 아니다.
+- `RName`은 lookup-only plain string이 아니라 local variable, function parameter, reserved compiler name 등 RSymbol 전반에서 쓰이는 구조화 semantic name value다. `RName_CtorParam`처럼 declaration identity에 포함되지 않는 provenance/name value도 `RName`에 둔다. `RIdentifier`는 same-outer에서 declaration 하나를 가리키는 exact key로 `RName`과 분리한다.
 - `RDecl`의 `ResolveTypeIdentifier`, `ResolveTypeIdentifierInHeader`, `ResolveIdentifier`는 `Get*`을 사용해 current scope를 조회한 뒤 outer lexical scope로 재귀한다. `ResolveIdentifier`은 type parameter를 `RDeclRes_TypeVar`로 반환할 수 있다.
 - type parameter는 lexical type-name/identifier lookup에는 참여하지만 qualified member surface에는 참여하지 않는다. 따라서 `S<int>.T` 같은 projection은 허용하지 않는다.
 - Accessibility policy is likely to split between module/namespace member rules and type-member/inheritance rules, so `RNode` should not assume a single tree-only access algorithm.
@@ -37,7 +38,7 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 ## Impl Trait Declaration Direction
 
 - `impl`은 ordinary source name을 바인딩하지 않지만, body/generic scope/callable identity를 표현하기 위해 lexical symbol tree의 internal `RImplTraitDecl` subtree로 둔다.
-- `RImplTraitDecl`은 compiler-private `RName_Impl(index)`를 identifier로 사용한다. 이 identifier와 declaration은 ordinary `GetMember(RName_Normal)` lookup, ordinary function overload group, CTI surface에 노출하지 않는다.
+- `RImplTraitDecl`은 canonical internal `RName_ImplTrait`를 identifier로 사용한다. 이 identifier와 declaration은 ordinary `GetMember(RName_Normal)` lookup과 ordinary function overload group에는 노출하지 않는다. `RName_ImplTrait`는 `$I(TargetRIdentifier,TraitGlobalTypeIdentifier)`로 encode한다. target은 current lexical outer의 direct type member로 제한하므로 local `RIdentifier`만 쓰고, trait type은 같은 module인 경우에도 module prefix를 포함한 `GlobalTypeIdentifier`를 쓴다.
 - `RImplTraitDecl`은 syntax의 lexical outer를 tree outer로 두고, target struct 및 matched conformance header를 typed field로 둔다. target struct member lookup과 `this`는 impl-specific body lookup policy로 처리한다. target struct를 lexical outer로 사용하지 않는다.
 - trait requirement implementation member는 `RImplTraitMemberDecl`으로 나타내며, 함수 requirement의 구현은 `RImplTraitFuncDecl : RImplTraitMemberDecl + RFuncDecl`로 둔다. 따라서 일반 함수와 같은 `RFuncDecl`/`MFuncBody`/ABI/QIR 경로를 사용할 수 있다.
 - `NStructInfo`, `NImplTrait`, `NImplTraitFunc`는 witness implementation의 authoritative owner가 아니다. 현재 `NStructInfo`가 `implTraits`만 보관하므로, 이 설계로 이행하면 제거한다.
@@ -48,7 +49,7 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 ## Related Open Points
 - Exact fields filled at fdecl / decl / impl states for each declaration kind.
 - `RImplTraitDecl`의 target struct member lookup, impl generic binder, lexical outer lookup을 body context에서 어떤 우선순위로 결합할지.
-- `RName_Impl(index)`의 owner-local ordinal 발급 시점과 diagnostic/debug display 규칙.
+- global identifier의 `$T0` binder-slot numbering, alias normalization, future extension/specialized target pattern identity.
 - extension declaration과 separate `impl Bundle ...` syntax가 있을 때 `RImplTraitDecl`의 tree outer 및 `RExtensionDecl` conformance entry 연결 방식.
 - How `cti` generated declaration surface maps into `EDecl` / `REDecl`.
 - How opaque result identity for `some` return attaches to declaration identity.

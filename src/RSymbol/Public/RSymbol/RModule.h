@@ -5,10 +5,12 @@
 namespace Citron {
 
 class RModule
-{   RName name;
+{   
+    RName name;
+    RNamespaceDecl* rootNamespace;
 
 public:
-    RSYMBOL_API RModule(RName&& name);
+    RSYMBOL_API RModule(RName&& name, RNamespaceDecl* rootNamespace);
     RName& GetName() { return name; }
 };
 

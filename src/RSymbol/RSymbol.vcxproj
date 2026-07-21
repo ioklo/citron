@@ -40,6 +40,8 @@
     <ClInclude Include="Public\RSymbol\RFuncReturn.h" />
     <ClInclude Include="Public\RSymbol\RGenericsComponent.h" />
     <ClInclude Include="Public\RSymbol\RGlobalFuncDecl.h" />
+    <ClInclude Include="Public\RSymbol\RGlobalIdentifier.h" />
+    <ClInclude Include="Public\RSymbol\RGlobalTypeIdentifier.h" />
     <ClInclude Include="Public\RSymbol\RIdentifier.h" />
     <ClInclude Include="Public\RSymbol\RImplTraitDecl.h" />
     <ClInclude Include="Public\RSymbol\RImplTraitFuncDecl.h" />
@@ -93,6 +95,8 @@
     <ClCompile Include="RGenericsComponent.cpp" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
     <ClCompile Include="RDeclRes.cpp" />
+    <ClCompile Include="RGlobalIdentifier.cpp" />
+    <ClCompile Include="RIdentifier.cpp" />
     <ClCompile Include="RImplTraitDecl.cpp" />
     <ClCompile Include="RImplTraitFuncDecl.cpp" />
     <ClCompile Include="RInterfaceDecl.cpp" />

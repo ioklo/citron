@@ -66,14 +66,14 @@ optional<RDeclRes> RType_NullableInplace::GetMember(InRef<RName> name)
     return nullopt;
 }
 
-RType_TypeVar::RType_TypeVar(RTypeParam* decl)
-    : decl{decl}
+RType_TypeVar::RType_TypeVar(RTypeParam* typeParam)
+    : typeParam{typeParam}
 {
 }
 
 RType* RType_TypeVar::Apply(RTypeArguments* typeArgs)
 {
-    size_t globalIndex = decl->GetGlobalIndex();
+    size_t globalIndex = typeParam->GetGlobalIndex();
     return typeArgs->Get(globalIndex);
 }
 

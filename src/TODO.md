@@ -51,3 +51,4 @@
 - [v] // TODO: [69] 2026-07-12, ResolveMember에서 Generics리턴하지 않도록, RCommonFuncDeclComponent에서 ResolveFuncParam제거 (RDeclRes -> BodyRes로), RDeclRes_FuncParam제거
 - [ ] // TODO: [70] 2026-07-15, struct 이외에 class, enum에도 impl 넣기
 - [ ] // TODO: [71] 2026-07-18, interface 구현
+- [ ] // TODO: [72] 2026-07-21, func<> 타입 구현

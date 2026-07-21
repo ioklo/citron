@@ -66,13 +66,13 @@ class RMember
         RMember_Trait,
         RMember_TraitFuncs,
         RMember_ImplTrait,
-        RMember_ImplTraitFuncs,
+        RMember_ImplTraitFuncs
     >;
 
     Variant v;
 
 public:
-    template<typename T> requires (!std::same_as<T, RMember>) && std::constructible_from<Variant, T&&>
+    template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RMember>) && std::constructible_from<Variant, T&&>
     RMember(T&& t) : v{std::forward<T>(t)} {}
 
     auto Visit(auto&&... args) { return std::visit(std::forward<decltype(args)>(args)..., v); }

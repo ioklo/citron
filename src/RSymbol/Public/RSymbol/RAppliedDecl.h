@@ -4,7 +4,7 @@ namespace Citron {
 
 class RTypeArguments;
 
-// fully applied decl
+// fully applied typeParam
 template<typename TDecl>
 struct RAppliedDecl
 {
