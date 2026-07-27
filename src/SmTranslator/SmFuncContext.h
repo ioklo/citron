@@ -11,7 +11,7 @@
 #include "MIR/MArgument.h"
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncReturn.h"
-#include "BodyRes.h"
+#include "SmBodyRes.h"
 
 namespace Citron {
 
@@ -22,10 +22,11 @@ class RTypeArguments;
 
 class RLambdaDecl;
 class RLambdaVarDecl;
-
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 struct MLoc_This;
+
+class SmTypeRes;
 
 struct RLambdaVarAndArg
 {
@@ -80,8 +81,8 @@ public:
     virtual void RollbackTransaction_FuncContext() = 0;
 
     virtual bool CanAccess(RDecl* target) = 0;
-    virtual std::optional<RTypeRes> ResolveTypeIdentifier(InRef<RName> name) = 0;
-    virtual std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name) = 0;
+    virtual std::optional<SmTypeRes> ResolveTypeIdentifier(InRef<RName> name) = 0;
+    virtual std::expected<std::optional<SmBodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name) = 0;
 
     // decl/body space의 return type을 리턴한다
     virtual RFuncReturn GetUnboundFuncReturn() = 0;

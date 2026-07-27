@@ -1,7 +1,6 @@
 #include "RInterfaceDecl.h"
 #include "Infra/Exceptions.h"
 #include "RFactory.h"
-#include "RTypeRes.h"
 #include "RMember.h"
 
 using namespace std;
@@ -16,9 +15,20 @@ RInterfaceDecl::RInterfaceDecl(RTypeDeclOuter outer, RName&& name, TakeRef<RFact
 
 }
 
+RDeclKey& RInterfaceDecl::GetDeclKey()
+{
+    // TODO: [71] 2026-07-18, interface 구현
+    throw NotImplementedException{};
+}
+
 RDecl* RInterfaceDecl::GetOuter()
 {
     return outer.GetDecl();
+}
+
+RName* RInterfaceDecl::TryGetName()
+{
+    return &name;
 }
 
 size_t RInterfaceDecl::GetTypeParamCount()

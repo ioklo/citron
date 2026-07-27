@@ -21,6 +21,8 @@
 #include "SmFuncContext.h"
 #include "Misc.h"
 #include "ImExpTranslations.h"
+#include "SmTypeUtil.h"
+#include "SmDeclRes.h"
 
 using namespace std;
 
@@ -337,7 +339,7 @@ struct MemberTranslator
 
         auto* type = GetType(*e_mLoc, &*contexts.rFactory);
 
-        auto o_declRes = type->GetMember(memberName);
+        auto o_declRes = GetMember(type, memberName);
         if (!o_declRes)
             return Error<Error_ResolveIdentifier_NotFound>();
 

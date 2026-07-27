@@ -1,5 +1,6 @@
 #pragma once
 #include "RSymbolConfig.h"
+#include <memory>
 
 #include "Infra/Ref.h"
 #include "RTypeDeclOuter.h"

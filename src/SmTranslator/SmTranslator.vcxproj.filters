@@ -51,7 +51,7 @@
     <ClCompile Include="IrExpToMSharedExp.cpp">
       <Filter>ExpTranslation\SExpToMIR\2_SExpToMSharedExp</Filter>
     </ClCompile>
-    <ClCompile Include="BodyRes.cpp">
+    <ClCompile Include="SmBodyRes.cpp">
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="SExp_IdentifierToImExp.cpp">
@@ -147,6 +147,9 @@
     <ClCompile Include="SmDeclContext_ClassDecl.cpp">
       <Filter>Context</Filter>
     </ClCompile>
+    <ClCompile Include="SmTypeUtil.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmFuncContext.h">
@@ -204,7 +207,7 @@
     <ClInclude Include="IrExpToMSharedExp.h">
       <Filter>ExpTranslation\SExpToMIR\2_SExpToMSharedExp</Filter>
     </ClInclude>
-    <ClInclude Include="BodyRes.h">
+    <ClInclude Include="SmBodyRes.h">
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="ImExpVisitor.g.h">
@@ -313,6 +316,9 @@
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="SmDeclContext_ClassDecl.h">
+      <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="SmTypeUtil.h">
       <Filter>Context</Filter>
     </ClInclude>
   </ItemGroup>

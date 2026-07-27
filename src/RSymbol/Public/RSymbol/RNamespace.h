@@ -13,7 +13,6 @@
 namespace Citron {
 
 class RModule;
-class RNamespaceDeclGroup;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 struct RNamespaceKind_Root { RModule* _module; };

@@ -13,7 +13,7 @@
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncReturn.h"
 #include "MIR/MScopeKind.h"
-#include "BodyRes.h"
+#include "SmBodyRes.h"
 
 namespace Citron { 
 
@@ -108,7 +108,7 @@ public:
     std::optional<MScopeKind> GetReachableScopeKind(size_t labelId);
 
     std::expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp);
-    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name);
+    std::expected<std::optional<SmBodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name);
 
     std::shared_ptr<InlineScopeContext> GetInlineScopeContext() { return inlineScopeContext; }
     RType* GetInlineScopeType() { return inlineScopeContext->o_inlineScopeType; }

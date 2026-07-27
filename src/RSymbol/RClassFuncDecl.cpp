@@ -29,9 +29,20 @@ void RClassFuncDecl::Init(RDeclKey&& key, bool bStatic, RFuncReturn&& funcReturn
 
 // from RDecl
 
+RDeclKey& RClassFuncDecl::GetDeclKey()
+{
+    assert(o_key);
+    return *o_key;
+}
+
 RDecl* RClassFuncDecl::GetOuter()
 {
     return _class;
+}
+
+RName* RClassFuncDecl::TryGetName()
+{
+    return &name;
 }
 
 size_t RClassFuncDecl::GetTypeParamCount()

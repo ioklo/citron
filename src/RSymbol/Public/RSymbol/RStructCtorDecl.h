@@ -10,6 +10,7 @@
 
 namespace Citron {
 
+class RStructDecl;
 enum class RStructMemberAccessor;
 
 enum class RStructCtorKind

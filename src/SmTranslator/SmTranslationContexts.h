@@ -13,7 +13,7 @@
 #include "RSymbol/RFuncDecl.h"
 #include "MIR/MRead.h"
 #include "MIR/MScopeKind.h"
-#include "BodyRes.h"
+#include "SmBodyRes.h"
 #include "SmFuncContext.h"
 
 namespace Citron {
@@ -76,7 +76,7 @@ std::vector<ITransactionable*> BeginTransaction(SmTranslationContexts& contexts)
 
 std::expected<MInitExp_As*, DiagPtr> MakeMInitExp_As(MRead&& target, RType* testType, SmTranslationContexts& contexts);
 
-std::expected<BodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, SmTranslationContexts& contexts);
+std::expected<SmBodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, SmTranslationContexts& contexts);
 
 
 } // namespace Citron

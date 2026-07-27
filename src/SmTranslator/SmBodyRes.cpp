@@ -1,4 +1,4 @@
-#include "BodyRes.h"
+#include "SmBodyRes.h"
 
 namespace Citron {
 

@@ -137,29 +137,29 @@ private:
 public:
     ResultType operator()(auto& bodyRes) { return Visit(bodyRes); }
 
-    ResultType Visit(BodyRes_RDeclRes& bodyRes) 
+    ResultType Visit(SmBodyRes_DeclRes& bodyRes) 
     { 
         return bodyRes.declRes.Visit(DeclResTranslator{memberTypeArgs, contexts});
     }
 
-    ResultType Visit(BodyRes_LocalVar& bodyRes) 
+    ResultType Visit(SmBodyRes_LocalVar& bodyRes) 
     {
         return Loc<MLoc_LocalVar>(bodyRes.name, bodyRes.type);
     }
 
-    ResultType Visit(BodyRes_LocalRef& bodyRes) 
+    ResultType Visit(SmBodyRes_LocalRef& bodyRes) 
     { 
         return Loc<MLoc_LocalRef>(bodyRes.name, bodyRes.type);
     }
 
     // 어떤 경로로 NeedCapture가 나오는가
-    ResultType Visit(BodyRes_NeedCapture& bodyRes) 
+    ResultType Visit(SmBodyRes_NeedCapture& bodyRes) 
     {
-        // TODO: [42] BodyRes.NeedCapture구현
+        // TODO: [42] SmBodyRes.NeedCapture구현
         throw NotImplementedException{};
     }
 
-    ResultType Visit(BodyRes_ThisVar& bodyRes) 
+    ResultType Visit(SmBodyRes_ThisVar& bodyRes) 
     {
         return Loc<MLoc_This>(bodyRes.type);
     }

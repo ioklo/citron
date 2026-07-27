@@ -3,7 +3,6 @@
 #include <cassert>
 #include "Infra/Ref.h"
 #include "RTypeParam.h"
-#include "RTypeRes.h"
 #include "RNames.h"
 
 using namespace std;
@@ -36,21 +35,6 @@ RTypeParam* RGenericsComponent::GetTypeParam(InRef<RName> name)
     }
 
     return nullptr;
-}
-
-optional<RDeclRes> RGenericsComponent::ResolveTypeParam(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount)
-{
-    assert(o_typeParams);
-
-    if (explicitTypeParamsExceptOuterCount != 0) return nullopt;
-
-    for (auto* typeParam : *o_typeParams)
-    {
-        if (typeParam->GetName() == *name)
-            return RDeclRes_TypeVar(typeParam);
-    }
-
-    return nullopt;
 }
 
 } // namespace Citron

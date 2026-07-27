@@ -3,7 +3,7 @@
 #include <memory>
 #include <expected> 
 
-#include "BodyRes.h"
+#include "SmBodyRes.h"
 
 namespace Citron {
 

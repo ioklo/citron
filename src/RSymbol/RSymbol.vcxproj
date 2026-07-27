@@ -73,6 +73,7 @@
     <ClInclude Include="Public\RSymbol\RTypeParam.h" />
     <ClInclude Include="Public\RSymbol\RTypes.h" />
     <ClInclude Include="Public\RSymbol\RSymbolConfig.h" />
+    <ClInclude Include="Public\RSymbol\RTypeVisitor.g.h" />
     <ClInclude Include="RNamespaceMemberAccessor.h" />
   </ItemGroup>
   <ItemGroup>

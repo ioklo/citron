@@ -9,6 +9,7 @@
 
 namespace Citron {
 
+class RTraitFuncDecl;
 class RImplTraitDecl;
 
 class RImplTraitFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents<RImplTraitFuncDecl>

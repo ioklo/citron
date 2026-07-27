@@ -1,6 +1,7 @@
 #pragma once
 #include "RSymbolConfig.h"
 #include <vector>
+#include <memory>
 #include <unordered_map>
 #include "Infra/Ref.h"
 #include "RNames.h"

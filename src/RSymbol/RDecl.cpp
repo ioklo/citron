@@ -4,7 +4,6 @@
 #include "Infra/Unreachable.h"
 
 #include "RFactory.h"
-#include "RTypeRes.h"
 #include "RTypeArguments.h"
 #include "RMember.h"
 #include "RDeclKey.h"

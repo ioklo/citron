@@ -1,7 +1,6 @@
 #include "RClassDecl.h"
 #include "Infra/Exceptions.h"
 #include "RFactory.h"
-#include "RTypeRes.h"
 #include "RTypeArguments.h"
 
 using namespace std;

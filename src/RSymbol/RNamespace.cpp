@@ -32,6 +32,22 @@ RDecl* RNamespace::GetOuter()
     });
 }
 
+RName* RNamespace::TryGetName()
+{
+    return kind.Visit([](auto& kind) -> RName* {
+        using T = remove_cvref_t<decltype(kind)>;
+        if constexpr (same_as<T, RNamespaceKind_Root>)
+        {
+            return nullptr;
+        }
+        else if constexpr (same_as<T, RNamespaceKind_Normal>)
+        {
+            return &kind.name;
+        }
+        else static_assert(false);
+    });
+}
+
 size_t RNamespace::GetTypeParamCount()
 {
     return 0;

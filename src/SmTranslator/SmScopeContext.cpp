@@ -281,7 +281,7 @@ expected<RType*, DiagPtr> SmScopeContext::TranslateSTypeExpToRType(STypeExp* sTy
     return Accept(visitor, sTypeExp);
 }
 
-expected<optional<BodyRes>, DiagPtr> SmScopeContext::ResolveIdentifier(InRef<RName> name)
+expected<optional<SmBodyRes>, DiagPtr> SmScopeContext::ResolveIdentifier(InRef<RName> name)
 {
     // 로컬을 검색한다
     if (!transactionInfos.empty())
@@ -292,9 +292,9 @@ expected<optional<BodyRes>, DiagPtr> SmScopeContext::ResolveIdentifier(InRef<RNa
             if (i != transactionInfo.deltaLocalInfos.end())
             {
                 if (i->second.kind == LocalInfoKind::Var)
-                    return BodyRes_LocalVar{i->second.type, *name};
+                    return SmBodyRes_LocalVar{i->second.type, *name};
                 else if (i->second.kind == LocalInfoKind::Ref)
-                    return BodyRes_LocalRef(i->second.type, *name);
+                    return SmBodyRes_LocalRef(i->second.type, *name);
                 else assert(false);
             }
         }
@@ -304,9 +304,9 @@ expected<optional<BodyRes>, DiagPtr> SmScopeContext::ResolveIdentifier(InRef<RNa
     if (i != localInfos.end())
     {
         if (i->second.kind == LocalInfoKind::Var)
-            return BodyRes_LocalVar{i->second.type, *name};
+            return SmBodyRes_LocalVar{i->second.type, *name};
         else if (i->second.kind == LocalInfoKind::Ref)
-            return BodyRes_LocalRef{i->second.type, *name};
+            return SmBodyRes_LocalRef{i->second.type, *name};
         else assert(false);
     }
 

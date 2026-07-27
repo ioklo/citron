@@ -124,7 +124,7 @@ expected<MInitExp_As*, DiagPtr> MakeMInitExp_As(MRead&& target, RType* testType,
     return contexts.mFactory->MakeMInitExp<MInitExp_As>(MInitExp_AsKind::Class_Class, std::move(target), testType);
 }
 
-expected<BodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, SmTranslationContexts& contexts)
+expected<SmBodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, SmTranslationContexts& contexts)
 {
     // struct S<T>
     // {

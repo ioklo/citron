@@ -42,7 +42,7 @@ std::optional<RTypeRes> SmFuncContext_Lambda::ResolveTypeIdentifier(InRef<RName>
 //         }
 //     }
 // } }
-expected<optional<BodyRes>, DiagPtr> SmFuncContext_Lambda::ResolveIdentifier(InRef<RName> name)
+expected<optional<SmBodyRes>, DiagPtr> SmFuncContext_Lambda::ResolveIdentifier(InRef<RName> name)
 {
     // 1. lambdaVar 검색
     throw NotImplementedException{};
@@ -57,29 +57,29 @@ expected<optional<BodyRes>, DiagPtr> SmFuncContext_Lambda::ResolveIdentifier(InR
     // 로컬 var가 들어오면, LambdaVar로 만든다
     // var x = 1;
     // var l = () => x; // x는 처음엔 localVar, 그다음엔 lambdaVar
-    // RDeclRes_NeedCapture("x", BodyRes_LocalVar(x))) 람다 l에 상위 funcContext의 localvar x를 캡쳐한다
+    // RDeclRes_NeedCapture("x", SmBodyRes_LocalVar(x))) 람다 l에 상위 funcContext의 localvar x를 캡쳐한다
 
     // 그냥 RDeclRes가 localVar를 승격시키라는 명령만 내보내면 좋을거 같은데,
     // 문제는 nested인 경우 승격을 어떻게 표현하는가
     // var x = 1;
     // var l = () { var l2 = () => x; }
-    // RDeclRes_NeedCapture("x", RDeclRes_NeedCapture("x", BodyRes_LocalVar(x))))
+    // RDeclRes_NeedCapture("x", RDeclRes_NeedCapture("x", SmBodyRes_LocalVar(x))))
     // nested 깊이는 상위 funcContext의 깊이 만큼임을 보장한다
-    return o_bodyRes->Visit([this, &name](auto& bodyRes) -> BodyRes
+    return o_bodyRes->Visit([this, &name](auto& bodyRes) -> SmBodyRes
     {
         using T = remove_cvref_t<decltype(bodyRes)>;
 
-        if constexpr (same_as<T, BodyRes_NeedCapture>)
+        if constexpr (same_as<T, SmBodyRes_NeedCapture>)
         {
-            return BodyRes_NeedCapture{*name, make_unique<BodyRes>(move(bodyRes))};
+            return SmBodyRes_NeedCapture{*name, make_unique<SmBodyRes>(move(bodyRes))};
         }
-        else if constexpr(same_as<T, BodyRes_LocalVar>)
+        else if constexpr(same_as<T, SmBodyRes_LocalVar>)
         {
             // 로컬 var 중에서도 primitive만 암시적으로 복사 형식으로 capture를 합니다
             // 나머지는 capture list에 명시적으로 적어주는 것으로 (복사, ref)
             if (dynamic_cast<RType_Primitive*>(bodyRes.type))
             {
-                return BodyRes_NeedCapture{*name, make_unique<BodyRes>(move(bodyRes))};
+                return SmBodyRes_NeedCapture{*name, make_unique<SmBodyRes>(move(bodyRes))};
             }
             else
             {
@@ -87,11 +87,11 @@ expected<optional<BodyRes>, DiagPtr> SmFuncContext_Lambda::ResolveIdentifier(InR
                 throw NotImplementedException{};
             }
         }
-        else if constexpr (same_as<T, BodyRes_LocalRef>)
+        else if constexpr (same_as<T, SmBodyRes_LocalRef>)
         {
             if (dynamic_cast<RType_Primitive*>(bodyRes.type))
             {
-                return BodyRes_NeedCapture{*name, make_unique<BodyRes>(move(bodyRes))};
+                return SmBodyRes_NeedCapture{*name, make_unique<SmBodyRes>(move(bodyRes))};
             }
             else
             {
@@ -99,17 +99,17 @@ expected<optional<BodyRes>, DiagPtr> SmFuncContext_Lambda::ResolveIdentifier(InR
                 throw NotImplementedException{};
             }
         }
-        else if constexpr (same_as<T, BodyRes_ThisVar>)
+        else if constexpr (same_as<T, SmBodyRes_ThisVar>)
         {
             // this는 명시적으로 써줘야 하기 때문에, 자동 캡쳐하지 않습니다
             // 캡쳐에 명시적으로 써져 있었다면, RDeclRes_LambdaVar로 들어왔을 겁니다
             // 에러 처리
             throw NotImplementedException{};
         }
-        else if constexpr (same_as<T, BodyRes_RDeclRes>)
+        else if constexpr (same_as<T, SmBodyRes_DeclRes>)
         {
             // rDeclRes는 consexpr분기용, bodyRes는 move할때 씁니다. (rDeclRes를 bodyRes move이후에 참조하지 않도록 주의)
-            return bodyRes.declRes.Visit([this, &name, &bodyRes](auto& rDeclRes) -> BodyRes {
+            return bodyRes.declRes.Visit([this, &name, &bodyRes](auto& rDeclRes) -> SmBodyRes {
                 using U = remove_cvref_t<decltype(rDeclRes)>;
 
                 if constexpr (same_as<U, RDeclRes_LambdaVar>)
@@ -119,7 +119,7 @@ expected<optional<BodyRes>, DiagPtr> SmFuncContext_Lambda::ResolveIdentifier(InR
 
                     if (dynamic_cast<RType_Primitive*>(declType))
                     {
-                        return BodyRes_NeedCapture{*name, make_unique<BodyRes>(move(bodyRes))};
+                        return SmBodyRes_NeedCapture{*name, make_unique<SmBodyRes>(move(bodyRes))};
                     }
                     else
                     {

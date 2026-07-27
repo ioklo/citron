@@ -8,7 +8,7 @@
 #include "SmTranslationContexts.h"
 #include "SRTFactory.h"
 #include "ImExp.h"
-#include "BodyRes.h"
+#include "SmBodyRes.h"
 #include "Misc.h"
 
 using namespace std;
@@ -168,30 +168,30 @@ struct BodyResTranslator
 
     ResultType operator()(auto& bodyRes) { return Visit(bodyRes); }
 
-    ResultType Visit(BodyRes_RDeclRes& bodyRes)
+    ResultType Visit(SmBodyRes_DeclRes& bodyRes)
     {
         return bodyRes.declRes.Visit(RDeclResTranslator{memberTypeArgs, contexts});
     }
 
-    ResultType Visit(BodyRes_LocalVar& bodyRes)
+    ResultType Visit(SmBodyRes_LocalVar& bodyRes)
     {
         assert(memberTypeArgs->GetCount() == 0);
         return MakeImExp_ReExp_Loc<MLoc_LocalVar>(bodyRes.name, bodyRes.type);
     }
 
-    ResultType Visit(BodyRes_LocalRef& bodyRes)
+    ResultType Visit(SmBodyRes_LocalRef& bodyRes)
     {
         assert(memberTypeArgs->GetCount() == 0);
         return MakeImExp_ReExp_Loc<MLoc_LocalRef>(bodyRes.name, bodyRes.type);
     }
 
-    ResultType Visit(BodyRes_NeedCapture& bodyRes)
+    ResultType Visit(SmBodyRes_NeedCapture& bodyRes)
     {
-        // TODO: [42] BodyRes.NeedCapture구현
+        // TODO: [42] SmBodyRes.NeedCapture구현
         throw NotImplementedException{};
     }
 
-    ResultType Visit(BodyRes_ThisVar& bodyRes)
+    ResultType Visit(SmBodyRes_ThisVar& bodyRes)
     {
         assert(memberTypeArgs->GetCount() == 0);
         return MakeImExp_ReExp_Loc<MLoc_This>(bodyRes.type);

@@ -12,6 +12,7 @@ namespace Citron {
 
 class RType;
 class RFactory;
+class RClassDecl;
 
 class RClassFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents<RClassFuncDecl>
 {

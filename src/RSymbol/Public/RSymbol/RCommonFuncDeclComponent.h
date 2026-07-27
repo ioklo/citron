@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <vector>
+#include <span>
 #include "Infra/Ref.h"
 #include "RFuncReturn.h"
 #include "RNames.h"

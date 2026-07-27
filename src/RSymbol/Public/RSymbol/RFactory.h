@@ -11,6 +11,7 @@
 
 namespace Citron {
 
+class RDecl;
 class RModule;
 class RTypeArguments;
 class RFactory;

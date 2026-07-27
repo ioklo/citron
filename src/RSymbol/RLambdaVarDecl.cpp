@@ -19,10 +19,22 @@ void RLambdaVarDecl::InitLambda(RLambdaDecl* lambda)
     this->lambda = lambda;
 }
 
+RDeclKey& RLambdaVarDecl::GetDeclKey()
+{
+    // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
+    throw NotImplementedException{};
+}
+
 RDecl* RLambdaVarDecl::GetOuter()
 {
     assert(lambda);
     return lambda;
+}
+
+RName* RLambdaVarDecl::TryGetName()
+{
+    // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
+    throw NotImplementedException{};
 }
 
 size_t RLambdaVarDecl::GetTypeParamCount()

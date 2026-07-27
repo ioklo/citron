@@ -2,7 +2,6 @@
 #include "Infra/Exceptions.h"
 #include "RLambdaVarDecl.h"
 #include "RFactory.h"
-#include "RTypeRes.h"
 #include "RMember.h"
 
 using namespace std;
@@ -34,9 +33,21 @@ void RLambdaDecl::InitVars(vector<RLambdaVarDecl*>&& vars)
     this->vars = move(vars);
 }
 
+RDeclKey& RLambdaDecl::GetDeclKey()
+{
+    // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
+    throw NotImplementedException{};
+}
+
 RDecl* RLambdaDecl::GetOuter()
 {
     return outer->RFuncDecl_GetDecl();
+}
+
+RName* RLambdaDecl::TryGetName()
+{
+    // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
+    throw NotImplementedException{};
 }
 
 size_t RLambdaDecl::GetTypeParamCount()

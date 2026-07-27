@@ -46,7 +46,7 @@ std::optional<RTypeRes> SmFuncContext_FuncDecl::ResolveTypeIdentifier(InRef<RNam
 
 
 
-expected<optional<BodyRes>, DiagPtr> SmFuncContext_FuncDecl::ResolveIdentifier(InRef<RName> name)
+expected<optional<SmBodyRes>, DiagPtr> SmFuncContext_FuncDecl::ResolveIdentifier(InRef<RName> name)
 {
     // 함수 인자는 최상위 ScopeContext에서 관리한다
 
@@ -55,7 +55,7 @@ expected<optional<BodyRes>, DiagPtr> SmFuncContext_FuncDecl::ResolveIdentifier(I
     auto o_rDeclRes = rFuncDecl->RFuncDecl_GetDecl()->ResolveIdentifier(openTypeArgs, name);
     if (!o_rDeclRes) return nullopt;
 
-    return BodyRes_RDeclRes{move(*o_rDeclRes)};
+    return SmBodyRes_DeclRes{move(*o_rDeclRes)};
 }
 
 RFuncReturn SmFuncContext_FuncDecl::GetUnboundFuncReturn()

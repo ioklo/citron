@@ -18,6 +18,7 @@ class RFactory;
 class RTypeParam;
 class RTypeArguments;
 class RFuncReturn;
+class RNamespace;
 enum class RNamespaceMemberAccessor;
 
 class RGlobalFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents<RGlobalFuncDecl>

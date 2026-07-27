@@ -284,4 +284,38 @@ string EncodeFuncName(InRef<RName> name, span<RFuncParameter> funcParams)
     return buffer;
 }
 
+RDeclKey RDeclKey::Normal(InRef<RName> name)
+{
+    // TODO: [73] 2026-07-27, DeclKey구현
+    throw NotImplementedException{};
+    return RDeclKey{EncodeRName(name)};
+}
+
+RDeclKey RDeclKey::Func(InRef<RName> name, std::span<RFuncParameter> funcParams)
+{
+    // TODO: [73] 2026-07-27, DeclKey구현
+    throw NotImplementedException{};
+    return RDeclKey{EncodeFuncName(name, funcParams)};
+}
+
+RDeclKey RDeclKey::Ctor(std::span<RFuncParameter> funcParams)
+{
+    // TODO: [73] 2026-07-27, DeclKey구현
+    throw NotImplementedException{};
+}
+
+RDeclKey RDeclKey::Dtor()
+{
+    // TODO: [73] 2026-07-27, DeclKey구현
+    throw NotImplementedException{};
+}
+
+RDeclKey RDeclKey::ImplTrait(RDecl* decl, RTraitDecl* traitDecl, RTypeArguments* traitTypeArgs)
+{
+    // TODO: [73] 2026-07-27, DeclKey구현
+    throw NotImplementedException{};
+}
+
+
+
 } // namespace Citron

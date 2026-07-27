@@ -57,7 +57,7 @@
     <ClCompile Include="SmGlobalContext.cpp" />
     <ClCompile Include="IrExpToMLoc.cpp" />
     <ClCompile Include="IrExpToMSharedExp.cpp" />
-    <ClCompile Include="BodyRes.cpp" />
+    <ClCompile Include="SmBodyRes.cpp" />
     <ClCompile Include="PhaseManager.cpp" />
     <ClCompile Include="ReExpToMIR.cpp" />
     <ClCompile Include="BuildTypeHierarchyContext.cpp" />
@@ -65,6 +65,7 @@
     <ClCompile Include="SExp_MemberToImExp.cpp" />
     <ClCompile Include="SmDeclRes.cpp" />
     <ClCompile Include="SmTypeRes.cpp" />
+    <ClCompile Include="SmTypeUtil.cpp" />
     <ClCompile Include="StructCtorTask.cpp" />
     <ClCompile Include="StructDtorTask.cpp" />
     <ClCompile Include="StructFuncTask.cpp" />
@@ -98,7 +99,7 @@
     <ClCompile Include="SmTranslationContexts.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BodyRes.h" />
+    <ClInclude Include="SmBodyRes.h" />
     <ClInclude Include="ImExpTranslations.h" />
     <ClInclude Include="ImplTask.h" />
     <ClInclude Include="PostBuildNonTypeSymbolContext.h" />
@@ -126,6 +127,7 @@
     <ClInclude Include="SExp_MemberToImExp.h" />
     <ClInclude Include="SmDeclRes.h" />
     <ClInclude Include="SmTypeRes.h" />
+    <ClInclude Include="SmTypeUtil.h" />
     <ClInclude Include="StructCtorTask.h" />
     <ClInclude Include="StructDtorTask.h" />
     <ClInclude Include="StructFuncTask.h" />

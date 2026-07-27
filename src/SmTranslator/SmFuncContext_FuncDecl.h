@@ -25,8 +25,8 @@ public: // from SmFuncContext
     void RollbackTransaction_FuncContext() override { }
 
     bool CanAccess(RDecl* target) override;
-    std::optional<RTypeRes> ResolveTypeIdentifier(InRef<RName> name) override;
-    std::expected<std::optional<BodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name) override;
+    std::optional<SmTypeRes> ResolveTypeIdentifier(InRef<RName> name) override;
+    std::expected<std::optional<SmBodyRes>, DiagPtr> ResolveIdentifier(InRef<RName> name) override;
 
     RFuncReturn GetUnboundFuncReturn() override;
     void SetOpenFuncReturn(RType* retType) override;

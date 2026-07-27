@@ -1,7 +1,6 @@
 #include "REnumDecl.h"
 #include "REnumElemDecl.h"
 #include "RFactory.h"
-#include "RTypeRes.h"
 #include "RMember.h"
 
 using namespace std;

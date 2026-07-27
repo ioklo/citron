@@ -3,7 +3,6 @@
 #include "RFactory.h"
 #include "RStructCtorDecl.h"
 #include "RStructVarDecl.h"
-#include "RTypeRes.h"
 
 using namespace std;
 
