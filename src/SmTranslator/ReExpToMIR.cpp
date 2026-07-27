@@ -6,14 +6,14 @@
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 #include "ReExp.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "DesignatedDiagnostic.h"
 
 using namespace std;
 
 namespace Citron {
 
-expected<MCreate, DiagPtr> TranslateReExpToMCreate(ReExp& reExp, TranslationContexts& contexts)
+expected<MCreate, DiagPtr> TranslateReExpToMCreate(ReExp& reExp, SmTranslationContexts& contexts)
 {
     return visit([&contexts](auto& reExp) -> expected<MCreate, DiagPtr> {
 
@@ -69,7 +69,7 @@ expected<MCreate, DiagPtr> TranslateReExpToMCreate(ReExp& reExp, TranslationCont
     }, reExp);
 }
 
-expected<MRead, DiagPtr> TranslateReExpToMRead(ReExp& reExp, TranslationContexts& contexts)
+expected<MRead, DiagPtr> TranslateReExpToMRead(ReExp& reExp, SmTranslationContexts& contexts)
 {
     return visit([&contexts](auto& reExp) -> expected<MRead, DiagPtr> {
 
@@ -106,7 +106,7 @@ expected<MRead, DiagPtr> TranslateReExpToMRead(ReExp& reExp, TranslationContexts
     }, reExp);
 }
 
-expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp& reExp, bool bMaterializeExp, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts)
+expected<MLoc*, DiagPtr> TranslateReExpToMLoc(ReExp& reExp, bool bMaterializeExp, IDesignatedDiagnostic* notLocationDiag, SmTranslationContexts& contexts)
 {
     return visit([bMaterializeExp, notLocationDiag, &contexts](auto& reExp) -> expected<MLoc*, DiagPtr> {
 

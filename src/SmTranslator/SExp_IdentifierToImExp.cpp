@@ -5,7 +5,7 @@
 #include "RSymbol/RTypeArguments.h"
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "SRTFactory.h"
 #include "ImExp.h"
 #include "BodyRes.h"
@@ -20,7 +20,7 @@ struct RDeclResTranslator
 {
     using ResultType = expected<ImExp*, DiagPtr>;
     RTypeArguments* memberTypeArgs;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     template<typename TImExp, typename... TArgs> requires derived_from<TImExp, ImExp>
     ImExp* MakeImExp(TArgs&&... args)
@@ -157,7 +157,7 @@ struct BodyResTranslator
 {
     using ResultType = expected<ImExp*, DiagPtr>;
     RTypeArguments* memberTypeArgs;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     template<typename TMLoc, typename... TArgs> requires derived_from<TMLoc, MLoc>
     ImExp* MakeImExp_ReExp_Loc(TArgs&&... args)
@@ -200,7 +200,7 @@ struct BodyResTranslator
 
 } // namespace 
 
-expected<ImExp*, DiagPtr> TranslateSExp_IdentifierToImExp(SExp_Identifier* sExp, TranslationContexts& contexts)
+expected<ImExp*, DiagPtr> TranslateSExp_IdentifierToImExp(SExp_Identifier* sExp, SmTranslationContexts& contexts)
 {
     auto e_rMemberTypeArgs = MakeRTypeArgs(sExp->typeArgs, contexts);
     RETURN_ON_ERROR(e_rMemberTypeArgs);

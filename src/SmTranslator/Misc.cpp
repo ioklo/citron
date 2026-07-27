@@ -12,8 +12,8 @@
 #include "MIR/MFactory.h"
 #include "RSymbol/RTypes.h"
 
-#include "ScopeContext.h"
-#include "TranslationContexts.h"
+#include "SmScopeContext.h"
+#include "SmTranslationContexts.h"
 
 using namespace std;
 
@@ -54,7 +54,7 @@ expected<RFuncParameterKind, DiagPtr> MakeParamKind(optional<SParamModifier> o_m
     }
 }
 
-expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, TranslationContexts& contexts)
+expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, SmTranslationContexts& contexts)
 {
     std::vector<RType*> items;
     items.reserve(typeArgs.size());
@@ -71,7 +71,7 @@ expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArg
 }
 
 // TODO: implementation을 CastNExp로 옮긴다
-//MExp* TryCastRExp(MExp* exp, RType* expectedType, TranslationContexts& contexts) // nothrow
+//MExp* TryCastRExp(MExp* exp, RType* expectedType, SmTranslationContexts& contexts) // nothrow
 //{
 //    static_assert(false);
 //
@@ -134,7 +134,7 @@ expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArg
 
 // 값의 겉보기 타입을 변경한다
 // TODO: [47] CastMExp의 리턴값 수정, NBC의 암시적 Cast구현하기
-//expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, TranslationContexts& contexts)
+//expected<MExp*, DiagPtr> CastMExp(MExp* exp, RType* expectedType, SmTranslationContexts& contexts)
 //{
 //    auto* expType = exp->GetType();
 //

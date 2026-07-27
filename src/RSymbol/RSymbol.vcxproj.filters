@@ -8,9 +8,6 @@
     <ClInclude Include="Public\RSymbol\RFactory.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RDeclRes.h">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\RSymbol\RTypeArguments.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
@@ -140,9 +137,6 @@
     <ClInclude Include="Public\RSymbol\RTraitMemberDecl.h">
       <Filter>RDecls\10 Trait</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RTypeRes.h">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClInclude>
     <ClInclude Include="Public\RSymbol\RMember.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
@@ -223,9 +217,6 @@
       <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
     <ClCompile Include="RFactory.cpp">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="RDeclRes.cpp">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
     <ClCompile Include="RTypeArguments.cpp">
@@ -328,9 +319,6 @@
       <Filter>RDecls\10 Trait</Filter>
     </ClCompile>
     <ClCompile Include="RMember.cpp">
-      <Filter>RDecls\00 Abstraction</Filter>
-    </ClCompile>
-    <ClCompile Include="RTypeRes.cpp">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClCompile>
     <ClCompile Include="RImplTraitDecl.cpp">

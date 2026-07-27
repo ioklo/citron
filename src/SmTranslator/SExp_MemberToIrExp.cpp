@@ -23,9 +23,9 @@
 
 #include "SExpToIrExp.h"
 #include "IrExp.h"
-#include "FuncContext.h"
-#include "ScopeContext.h"
-#include "TranslationContexts.h"
+#include "SmFuncContext.h"
+#include "SmScopeContext.h"
+#include "SmTranslationContexts.h"
 #include "SRTFactory.h"
 #include "Misc.h"
 #include "IrExpToMLoc.h"
@@ -88,10 +88,10 @@ expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, In
 class StaticBaseTranslator
 {
     RTypeArguments* memberTypeArgs;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
 public:
-    StaticBaseTranslator(RTypeArguments* memberTypeArgs, TranslationContexts& contexts)
+    StaticBaseTranslator(RTypeArguments* memberTypeArgs, SmTranslationContexts& contexts)
         : memberTypeArgs(memberTypeArgs), contexts{contexts}
     {
     }
@@ -237,7 +237,7 @@ struct Binder
 
     RName memberName;
     RTypeArguments* memberTypeArgs;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     ResultType Value(TArgs&&... args)
     {
@@ -424,7 +424,7 @@ struct Binder
 
 } // namespace 
 
-expected<IrExp*, DiagPtr> TranslateSExp_MemberToIrExp(SExp_Member* sExp, TranslationContexts& contexts)
+expected<IrExp*, DiagPtr> TranslateSExp_MemberToIrExp(SExp_Member* sExp, SmTranslationContexts& contexts)
 {
     auto e_base = TranslateSExpToIrExp(sExp->base, contexts);
     RETURN_ON_ERROR(e_base);

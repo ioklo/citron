@@ -1,18 +1,18 @@
 #pragma once
-#include "FuncContext.h"
+#include "SmFuncContext.h"
 
 namespace Citron {
 
 struct RFuncParameter;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
-using FuncContextPtr = std::shared_ptr<class FuncContext>;
-using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
+using SmFuncContextPtr = std::shared_ptr<class SmFuncContext>;
+using SmScopeContextPtr = std::shared_ptr<class SmScopeContext>;
 
 // 람다인 경우
-class FuncContext_Lambda : public FuncContext
+class SmFuncContext_Lambda : public SmFuncContext
 {
-    FuncContextPtr outerFunc;
-    ScopeContextPtr outerScope;
+    SmFuncContextPtr outerFunc;
+    SmScopeContextPtr outerScope;
     bool bSeqFunc; // reserved
     RFuncReturn funcReturn;
     std::vector<RFuncParameter> funcParams;
@@ -21,9 +21,9 @@ class FuncContext_Lambda : public FuncContext
     MFactoryPtr mFactory;
 
 public:
-    FuncContext_Lambda(TakeRef<FuncContextPtr> outerFunc, TakeRef<ScopeContextPtr> outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
+    SmFuncContext_Lambda(TakeRef<SmFuncContextPtr> outerFunc, TakeRef<SmScopeContextPtr> outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic);
 
-public: // from FuncContext
+public: // from SmFuncContext
     void BeginTransaction_FuncContext() override {}
     void CommitTransaction_FuncContext() override {}
     void RollbackTransaction_FuncContext() override {}

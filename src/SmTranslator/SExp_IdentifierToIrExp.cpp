@@ -15,9 +15,9 @@
 #include "MIR/MFactory.h"
 
 #include "IrExp.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "SRTFactory.h"
-#include "FuncContext.h"
+#include "SmFuncContext.h"
 #include "Misc.h"
 
 using namespace std;
@@ -30,7 +30,7 @@ struct DeclResTranslator
 {
     using ResultType = expected<IrExp*, DiagPtr>;
     RTypeArguments* memberTypeArgs;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     template<typename TIrExp, typename... TArgs> requires derived_from<TIrExp, IrExp>
     IrExp* MakeIrExp(TArgs&&... args)
@@ -124,7 +124,7 @@ struct BodyResTranslator
 {
     using ResultType = expected<IrExp*, DiagPtr>;
     RTypeArguments* memberTypeArgs;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
     
 private:
     template<typename TMLoc, typename... TArgs> requires std::derived_from<TMLoc, MLoc>
@@ -167,7 +167,7 @@ public:
 
 } // namespace 
 
-expected<IrExp*, DiagPtr> TranslateSExp_IdentifierToIrExp(SExp_Identifier* sExp, TranslationContexts& contexts)
+expected<IrExp*, DiagPtr> TranslateSExp_IdentifierToIrExp(SExp_Identifier* sExp, SmTranslationContexts& contexts)
 {
     // identifier는 name<typeArgs>로 이뤄져 있다
     auto e_memberTypeArgs = MakeRTypeArgs(sExp->typeArgs, contexts);

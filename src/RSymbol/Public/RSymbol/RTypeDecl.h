@@ -5,7 +5,6 @@ namespace Citron {
 struct RIdentifier;
 class RDecl;
 class RType;
-class RDeclRes;
 class RTypeArguments;
 class RClassDecl;
 class RStructDecl;
@@ -15,7 +14,6 @@ class RInterfaceDecl;
 class RLambdaDecl;
 class RTypeParam;
 class RTraitDecl;
-class RTypeRes;
 struct RTypeDeclVisitor;
 
 class RTypeDecl

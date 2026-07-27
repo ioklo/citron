@@ -1,4 +1,4 @@
-#include "ScopeContext.h"
+#include "SmScopeContext.h"
 
 #include <ranges>
 
@@ -19,15 +19,15 @@
 #include "RSymbol/REnumElemDecl.h"
 #include "RSymbol/RTraitDecl.h"
 
-#include "FuncContext.h"
+#include "SmFuncContext.h"
 
 using namespace std;
 
 namespace Citron {
 
-ScopeContext::ScopeContext(
-    const FuncContextPtr& funcContext, 
-    const ScopeContextPtr& parentContext, 
+SmScopeContext::SmScopeContext(
+    const SmFuncContextPtr& funcContext, 
+    const SmScopeContextPtr& parentContext, 
     MScopeKind&& scopeKind, 
     optional<size_t> curContinueLabelId, 
     optional<size_t> curBreakLabelId, 
@@ -43,7 +43,7 @@ ScopeContext::ScopeContext(
 {
 }
 
-void ScopeContext::BeginTransaction()
+void SmScopeContext::BeginTransaction()
 {
     transactionInfos.emplace_back();
 
@@ -53,7 +53,7 @@ void ScopeContext::BeginTransaction()
     funcContext->BeginTransaction();
 }
 
-void ScopeContext::CommitTransaction()
+void SmScopeContext::CommitTransaction()
 {
     auto& transactionInfo = transactionInfos.back();
 
@@ -77,7 +77,7 @@ void ScopeContext::CommitTransaction()
     return funcContext->CommitTransaction();
 }
 
-void ScopeContext::RollbackTransaction()
+void SmScopeContext::RollbackTransaction()
 {
     transactionInfos.pop_back();
 
@@ -87,12 +87,12 @@ void ScopeContext::RollbackTransaction()
     return funcContext->RollbackTransaction();
 }
 
-void ScopeContext::SetFlowEndsCompletely()
+void SmScopeContext::SetFlowEndsCompletely()
 {
     throw NotImplementedException{};
 }
 
-void ScopeContext::AddLocalVarInfo(RType* type, InRef<RName> name)
+void SmScopeContext::AddLocalVarInfo(RType* type, InRef<RName> name)
 {
     if (transactionInfos.empty())
     {
@@ -106,7 +106,7 @@ void ScopeContext::AddLocalVarInfo(RType* type, InRef<RName> name)
     }
 }
 
-void ScopeContext::AddLocalRefInfo(RType* type, InRef<RName> name)
+void SmScopeContext::AddLocalRefInfo(RType* type, InRef<RName> name)
 {
     if (transactionInfos.empty())
     {
@@ -120,7 +120,7 @@ void ScopeContext::AddLocalRefInfo(RType* type, InRef<RName> name)
     }
 }
 
-bool ScopeContext::DoesLocalNameExistInScope(InRef<RName> name)
+bool SmScopeContext::DoesLocalNameExistInScope(InRef<RName> name)
 {
     if (!transactionInfos.empty())
     {
@@ -136,12 +136,12 @@ bool ScopeContext::DoesLocalNameExistInScope(InRef<RName> name)
     return i != localInfos.end();
 }
 
-bool ScopeContext::IsFailed() 
+bool SmScopeContext::IsFailed() 
 {
     throw NotImplementedException{};
 }
 
-std::optional<MScopeKind> ScopeContext::GetReachableScopeKind(size_t labelId)
+std::optional<MScopeKind> SmScopeContext::GetReachableScopeKind(size_t labelId)
 {
     return visit([this, labelId](auto& scopeKind) -> optional<MScopeKind> {
         using T = remove_cvref_t<decltype(scopeKind)>;
@@ -234,7 +234,7 @@ expected<RType*, DiagPtr> MakeType(RTypeRes& typeRes, RTypeArguments* memberType
     });
 }
 
-expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sTypeExp)
+expected<RType*, DiagPtr> SmScopeContext::TranslateSTypeExpToRType(STypeExp* sTypeExp)
 {
     // TODO: BuildNonTypeSymbolContext::MakeType 에도 같은 코드가 있다
     struct Visitor
@@ -242,7 +242,7 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
         using ResultType = expected<RType*, DiagPtr>;
 
         RFactory* rFactory;
-        ScopeContext& scopeContext;
+        SmScopeContext& scopeContext;
 
         expected<RType*, DiagPtr> Visit(STypeExp_Id* idExp)
         {
@@ -281,7 +281,7 @@ expected<RType*, DiagPtr> ScopeContext::TranslateSTypeExpToRType(STypeExp* sType
     return Accept(visitor, sTypeExp);
 }
 
-expected<optional<BodyRes>, DiagPtr> ScopeContext::ResolveIdentifier(InRef<RName> name)
+expected<optional<BodyRes>, DiagPtr> SmScopeContext::ResolveIdentifier(InRef<RName> name)
 {
     // 로컬을 검색한다
     if (!transactionInfos.empty())

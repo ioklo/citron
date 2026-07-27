@@ -4,7 +4,6 @@
 #include "Infra/Ref.h"
 #include "RTypeParam.h"
 #include "RTypeRes.h"
-#include "RDeclRes.h"
 #include "RNames.h"
 
 using namespace std;

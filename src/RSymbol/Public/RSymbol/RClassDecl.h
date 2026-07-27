@@ -10,9 +10,9 @@
 #include "RGenericsComponent.h"
 #include "RTypeDeclContainerComponent.h"
 #include "RFuncDeclContainerComponent.h"
-#include "RDeclRes.h"
 #include "RClassFuncDecl.h"
 #include "RDeclKey.h"
+#include "RAppliedDecl.h"
 
 namespace Citron {
 
@@ -25,8 +25,8 @@ class RClassDecl final : public RDecl, public RTypeDecl
 {
     struct BaseTypes
     {
-        RType_Class* baseClass;
-        std::vector<RType_Interface> interfaces;
+        std::optional<RAppliedDecl<RClassDecl>> o_baseClass;
+        std::vector<RAppliedDecl<RInterfaceDecl>> interfaces;
     };
 
     RDeclKey key;
@@ -48,12 +48,12 @@ public:
     RSYMBOL_API RClassDecl(RDeclKey&& key, RTypeDeclOuter&& outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory);
     void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { return genericsComp.InitTypeParams(std::move(typeParams)); }
 
+    RSYMBOL_API std::optional<RAppliedDecl<RClassDecl>> GetUnboundBaseClass();
     RSYMBOL_API RClassVarDecl* GetUnboundVar(InRef<RName> name);
-    RSYMBOL_API std::optional<RDeclRes_ClassVar> ResolveVar(RTypeArguments* typeArgs, InRef<RName> name);
-
     RSYMBOL_API void AddType(RTypeDecl* typeDecl) { typeDeclContainerComp.AddType(typeDecl); }
 
     RType* GetOpenType();
+    
 
 public: // from RDecl
     RSYMBOL_API RDeclKey& GetDeclKey() final; 
@@ -64,8 +64,6 @@ public: // from RDecl
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;
     RSYMBOL_API RTypeDecl* GetTypeMember(InRef<RName> name) final;
     RSYMBOL_API std::optional<RMember> GetMember(InRef<RName> name) final;
-    RSYMBOL_API std::optional<RTypeRes> ResolveInheritedTypeMember(RTypeArguments* typeArgs, InRef<RName> name) final;
-    RSYMBOL_API std::optional<RDeclRes> ResolveInheritedMember(RTypeArguments* typeArgs, InRef<RName> name) final;
 
 public: // from RTypeDecl
     RSYMBOL_API RDecl* RTypeDecl_GetDecl() final;

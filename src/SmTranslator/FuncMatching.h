@@ -14,8 +14,8 @@
 #include "MIR/MArgument.h"
 #include "SExpTranslations.h"
 #include "DesignatedDiagnostic.h"
-#include "TranslationContexts.h"
-#include "ScopeContext.h"
+#include "SmTranslationContexts.h"
+#include "SmScopeContext.h"
 #include "Misc.h"
 #include "SmPartiallyAppliedFuncDeclGroup.h"
 
@@ -68,7 +68,7 @@ std::expected<SmArgumentsMatch, DiagPtr> MatchArguments(
     RTypeArguments* outerTypeArgs, 
     RTypeArguments* partialMemberTypeArgs,
     SArguments* sArgs,
-    TranslationContexts& contexts);
+    SmTranslationContexts& contexts);
 
 // infos는 한개 이상이어야 한다
 // 한개
@@ -77,7 +77,7 @@ template<typename TFuncDecl> requires std::derived_from<TFuncDecl, RFuncDecl>
 std::expected<SmFuncMatch<TFuncDecl>, DiagPtr> MatchFunc(
     SmPartiallyAppliedFuncDeclGroup<TFuncDecl>& group, // { F<,> ... }, [T1, T2] // open type 과 [int], closed type, T4는 확정 해야 함
     SArguments* sArgs, 
-    TranslationContexts& contexts)
+    SmTranslationContexts& contexts)
 {
     assert(!group.decls.empty());    
     

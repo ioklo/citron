@@ -22,7 +22,6 @@ class RTypeArguments;
 
 class RLambdaDecl;
 class RLambdaVarDecl;
-class RTypeRes;
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
@@ -45,7 +44,7 @@ struct RLambdaVarAndArg
 // funcContext에서 funcDecl을 미리 생성시키지 말고(일반 함수는 이미 생성되었겠지만 lambda의 경우는 생성되지 않았다), 마지막에 모은 정보로 만들도록 하자
 // outer를 갖고 있는 방향으로 가는 것이 낫겠다
 // 람다라면 outer는 scopeContext이고, funcDecl이었다면 RDecl일것이다
-class FuncContext
+class SmFuncContext
 {
     // 람다 관련, funcDecl을 clone시키지 않으려고 funcDecl에 넣을 lambdaDecls들을 따로 보관하다가 마지막에 집어넣는다 (검색도 여기를 통해서 하기로 한다)
     // 이 함수가 람다일때 캡쳐할 멤버 변수에 대한 것
@@ -66,7 +65,7 @@ private: // transaction
     size_t labelCount;
 
 public:
-    FuncContext();
+    SmFuncContext();
     RLambdaVarDecl* StageLambdaVar(RType* type, TakeRef<RName> name, MArgument&& arg);
 
     void BeginTransaction();

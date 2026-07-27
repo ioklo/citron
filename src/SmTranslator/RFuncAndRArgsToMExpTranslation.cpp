@@ -16,7 +16,7 @@
 #include "MIR/MStmt.h"
 #include "MIR/MFactory.h"
 
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 
 using namespace std;
 
@@ -32,7 +32,7 @@ public:
     RTypeArguments* typeArgs;
     MLoc* instance;
     vector<MArgument> args;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     ResultType operator()(auto* funcDecl) { return Visit(funcDecl); }
     
@@ -100,7 +100,7 @@ public:
 
 } // namespace Citron
 
-expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, TranslationContexts& contexts)
+expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, vector<MArgument>&& args, SmTranslationContexts& contexts)
 {
     return Accept(RFuncAndRArgsToMStmtTranslator{typeArgs, instance, move(args), contexts}, decl);
 }

@@ -13,7 +13,7 @@
 #include "MIR/MFactory.h"
 
 #include "SStmtToMStmt.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 
 
 using namespace std;

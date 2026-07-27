@@ -12,7 +12,6 @@
 #include "RCopyStrategy.h"
 #include "RFuncParameter.h"
 #include "RNames.h"
-#include "RDeclRes.h"
 #include "RAppliedDecl.h"
 
 namespace Citron

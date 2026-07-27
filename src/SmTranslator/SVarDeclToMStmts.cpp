@@ -19,10 +19,10 @@
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 
-#include "ScopeContext.h"
+#include "SmScopeContext.h"
 #include "SExpTranslations.h"
 #include "Misc.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "DesignatedDiagnostic.h"
 
 using namespace std;
@@ -37,7 +37,7 @@ struct VarDeclElemTranslator
 
     vector<MStmt*>& outStmts;
     span<SVarDeclElement> elems;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     expected<void, DiagPtr> CheckVarConsistencyPlainVar(RType* initExpType)
     {
@@ -317,7 +317,7 @@ struct VarDeclElemTranslator
 
 } // namespace
 
-expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>& outStmts, SVarDecl* varDecl, TranslationContexts& contexts)
+expected<void, DiagPtr> TranslateSVarDeclToMStmts(std::vector<MStmt*>& outStmts, SVarDecl* varDecl, SmTranslationContexts& contexts)
 {
     VarDeclElemTranslator translator{outStmts, varDecl->elements, contexts};
     return Accept(translator, varDecl->type);

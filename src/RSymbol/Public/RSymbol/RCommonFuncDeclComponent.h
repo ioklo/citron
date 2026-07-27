@@ -5,7 +5,6 @@
 #include <vector>
 #include "Infra/Ref.h"
 #include "RFuncReturn.h"
-#include "RDeclRes.h"
 #include "RNames.h"
 #include "RThisKind.h"
 

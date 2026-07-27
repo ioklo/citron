@@ -25,8 +25,6 @@ class RTypeParam;
 class RDeclVisitor;
 class RMember;
 class RTypeDecl;
-class RTypeRes;
-class RDeclRes;
 class RDeclKey;
 class RName;
 
@@ -41,11 +39,6 @@ public:
     RSYMBOL_API RTypeArguments* MakeOpenTypeArgs(RFactory& factory);
     RSYMBOL_API size_t GetAllTypeParamCount();
     RSYMBOL_API RIdentifier GetIdentifier();
-
-    // Resolve류 함수, 현재 범위에서 검색하고 못 찾으면 부모를 검색한다
-    RSYMBOL_API std::optional<RTypeRes> ResolveTypeIdentifier(RTypeArguments* typeArgs, InRef<RName> name);
-    RSYMBOL_API std::optional<RTypeRes> ResolveTypeIdentifierInHeader(RTypeArguments* typeArgs, InRef<RName> name);
-    RSYMBOL_API std::optional<RDeclRes> ResolveIdentifier(RTypeArguments* typeArgs, InRef<RName> name);
 
 public:
     virtual RDeclKey& GetDeclKey() = 0;
@@ -63,12 +56,6 @@ public:
     virtual RTypeParam* GetTypeParam(InRef<RName> name) = 0;
     virtual RTypeDecl* GetTypeMember(InRef<RName> name) = 0;
     virtual std::optional<RMember> GetMember(InRef<RName> name) = 0;
-
-    // Resolve류 abstract 함수, ResolveTypeIdentifier와 ResolveIdentifier에서 쓰인다
-    // 여기서 인자로 넘어가는 typeArgs는 derived의 typeArgs이다. base의 typeArgs는 derived typeArgs를 Apply해서 얻을 수 있다
-    // class decl에서만 쓰이므로, 기본 구현을 만들어 놓고, class decl에서 override해서 쓰도록 한다
-    RSYMBOL_API virtual std::optional<RTypeRes> ResolveInheritedTypeMember(RTypeArguments* typeArgs, InRef<RName> name);
-    RSYMBOL_API virtual std::optional<RDeclRes> ResolveInheritedMember(RTypeArguments* typeArgs, InRef<RName> name);
 
 private:
     // 내부 구현용 virtual, RModule에서만 override한다

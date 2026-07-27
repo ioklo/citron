@@ -12,9 +12,9 @@ namespace Citron {
 
 struct MStmt;
 struct MStmt_Scope;
-struct TranslationContexts;
+struct SmTranslationContexts;
 
-std::expected<void, DiagPtr> TranslateSStmtsToMStmts(std::vector<MStmt*>& outStmts, std::span<SStmt*> stmts, TranslationContexts& contexts);
-std::expected<MStmt_Scope*, DiagPtr> TranslateScopedSStmtsToMStmt_Scope(std::span<SStmt*> stmts, TranslationContexts& contexts);
+std::expected<void, DiagPtr> TranslateSStmtsToMStmts(std::vector<MStmt*>& outStmts, std::span<SStmt*> stmts, SmTranslationContexts& contexts);
+std::expected<MStmt_Scope*, DiagPtr> TranslateScopedSStmtsToMStmt_Scope(std::span<SStmt*> stmts, SmTranslationContexts& contexts);
 
 } // namespace Citron

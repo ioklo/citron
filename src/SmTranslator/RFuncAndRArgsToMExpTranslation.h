@@ -13,8 +13,8 @@ namespace Citron {
 class RTypeArguments;
 struct MStmt;
 struct MLoc;
-struct TranslationContexts;
+struct SmTranslationContexts;
 
-std::expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, std::vector<MArgument>&& args, TranslationContexts& contexts);
+std::expected<MStmt*, DiagPtr> TranslateRFuncAndNArgsToMStmt(RFuncDecl* decl, RTypeArguments* typeArgs, MLoc* instance, std::vector<MArgument>&& args, SmTranslationContexts& contexts);
 
 } // namespace Citron

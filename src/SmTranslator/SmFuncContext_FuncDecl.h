@@ -1,5 +1,5 @@
 #pragma once
-#include "FuncContext.h"
+#include "SmFuncContext.h"
 
 namespace Citron {
 
@@ -9,7 +9,7 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
 
 // FuncDecl인 경우
-class FuncContext_FuncDecl : public FuncContext
+class SmFuncContext_FuncDecl : public SmFuncContext
 {
     RFuncDecl* rFuncDecl;
     bool bSeqFunc;
@@ -17,9 +17,9 @@ class FuncContext_FuncDecl : public FuncContext
     MFactoryPtr mFactory;
 
 public:
-    FuncContext_FuncDecl(RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory);
+    SmFuncContext_FuncDecl(RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory);
 
-public: // from FuncContext
+public: // from SmFuncContext
     void BeginTransaction_FuncContext() override { }
     void CommitTransaction_FuncContext() override { }
     void RollbackTransaction_FuncContext() override { }

@@ -27,22 +27,22 @@
     <ClCompile Include="SVarDeclToMStmts.cpp">
       <Filter>StmtTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="FuncContext.cpp">
+    <ClCompile Include="SmFuncContext.cpp">
       <Filter>Context</Filter>
     </ClCompile>
-    <ClCompile Include="ScopeContext.cpp">
+    <ClCompile Include="SmScopeContext.cpp">
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
-    <ClCompile Include="GlobalContext.cpp" />
-    <ClCompile Include="TranslationContexts.cpp">
+    <ClCompile Include="SmGlobalContext.cpp" />
+    <ClCompile Include="SmTranslationContexts.cpp">
       <Filter>Context</Filter>
     </ClCompile>
-    <ClCompile Include="FuncContext_FuncDecl.cpp">
+    <ClCompile Include="SmFuncContext_FuncDecl.cpp">
       <Filter>Context</Filter>
     </ClCompile>
-    <ClCompile Include="FuncContext_Lambda.cpp">
+    <ClCompile Include="SmFuncContext_Lambda.cpp">
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="IrExpToMLoc.cpp">
@@ -135,12 +135,24 @@
     <ClCompile Include="PhaseManager.cpp">
       <Filter>TranslationPhase</Filter>
     </ClCompile>
+    <ClCompile Include="SmDeclRes.cpp">
+      <Filter>00_Structure</Filter>
+    </ClCompile>
+    <ClCompile Include="SmTypeRes.cpp">
+      <Filter>00_Structure</Filter>
+    </ClCompile>
+    <ClCompile Include="SmDeclContext.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
+    <ClCompile Include="SmDeclContext_ClassDecl.cpp">
+      <Filter>Context</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FuncContext.h">
+    <ClInclude Include="SmFuncContext.h">
       <Filter>Context</Filter>
     </ClInclude>
-    <ClInclude Include="ScopeContext.h">
+    <ClInclude Include="SmScopeContext.h">
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="ImExp.h">
@@ -166,7 +178,6 @@
     </ClInclude>
     <ClInclude Include="CommonTranslation.h" />
     <ClInclude Include="DesignatedDiagnostic.h" />
-    <ClInclude Include="SmPartiallyAppliedFuncDeclGroup.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ModuleDecls.h" />
     <ClInclude Include="RFuncAndRArgsToMExpTranslation.h" />
@@ -177,14 +188,14 @@
     <ClInclude Include="Public\SmTranslator\SmTranslatorConfig.h">
       <Filter>Public Headers</Filter>
     </ClInclude>
-    <ClInclude Include="GlobalContext.h" />
-    <ClInclude Include="TranslationContexts.h">
+    <ClInclude Include="SmGlobalContext.h" />
+    <ClInclude Include="SmTranslationContexts.h">
       <Filter>Context</Filter>
     </ClInclude>
-    <ClInclude Include="FuncContext_Lambda.h">
+    <ClInclude Include="SmFuncContext_Lambda.h">
       <Filter>Context</Filter>
     </ClInclude>
-    <ClInclude Include="FuncContext_FuncDecl.h">
+    <ClInclude Include="SmFuncContext_FuncDecl.h">
       <Filter>Context</Filter>
     </ClInclude>
     <ClInclude Include="IrExpToMLoc.h">
@@ -286,6 +297,24 @@
     <ClInclude Include="PhaseManager.h">
       <Filter>TranslationPhase</Filter>
     </ClInclude>
+    <ClInclude Include="SmPartiallyAppliedFuncDeclGroup.h">
+      <Filter>00_Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="SmDeclRes.h">
+      <Filter>00_Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="SmTypeRes.h">
+      <Filter>00_Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="SmDeclContext.h">
+      <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="SmDeclContext_Decl.h">
+      <Filter>Context</Filter>
+    </ClInclude>
+    <ClInclude Include="SmDeclContext_ClassDecl.h">
+      <Filter>Context</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">
@@ -338,6 +367,9 @@
     </Filter>
     <Filter Include="TranslationPhase">
       <UniqueIdentifier>{11376f38-45a6-4739-91ad-da399b4abe25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00_Structure">
+      <UniqueIdentifier>{297d702c-2490-4225-9bdc-548546d4514b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

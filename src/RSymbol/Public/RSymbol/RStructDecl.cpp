@@ -4,7 +4,6 @@
 #include "RStructCtorDecl.h"
 #include "RStructVarDecl.h"
 #include "RTypeRes.h"
-#include "RDeclRes.h"
 
 using namespace std;
 

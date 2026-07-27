@@ -1,4 +1,4 @@
-#include "FuncContext.h"
+#include "SmFuncContext.h"
 
 #include <variant>
 #include <cassert>
@@ -31,32 +31,32 @@
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 
-#include "ScopeContext.h"
+#include "SmScopeContext.h"
 #include "ImExp.h"
 
 using namespace std;
 
 namespace Citron {
 
-FuncContext::FuncContext()
+SmFuncContext::SmFuncContext()
     : labelCount{0}
 {
 }
 
-RLambdaVarDecl* FuncContext::StageLambdaVar(RType* type, TakeRef<RName> name, MArgument&& arg)
+RLambdaVarDecl* SmFuncContext::StageLambdaVar(RType* type, TakeRef<RName> name, MArgument&& arg)
 {
     auto* lambdaVar = rFactory->MakeDecl<RLambdaVarDecl>(type, move(name));
     lambdaVarAndInitArgs.emplace_back(lambdaVar, move(arg));
     return lambdaVar;
 }
 
-void FuncContext::BeginTransaction()
+void SmFuncContext::BeginTransaction()
 {
     transactionInfos.emplace_back(lambdaVarAndInitArgs.size(), lambdaDecls.size());
     BeginTransaction_FuncContext();
 }
 
-void FuncContext::CommitTransaction()
+void SmFuncContext::CommitTransaction()
 {
     // prev 마킹 방식은 그대로 두면 된다
     transactionInfos.pop_back();
@@ -64,7 +64,7 @@ void FuncContext::CommitTransaction()
     CommitTransaction_FuncContext();
 }
 
-void FuncContext::RollbackTransaction()
+void SmFuncContext::RollbackTransaction()
 {
     auto& transactionInfo = transactionInfos.back();
     lambdaVarAndInitArgs.resize(transactionInfo.prevLambdaVarAndInitArgsCount);
@@ -74,7 +74,7 @@ void FuncContext::RollbackTransaction()
     RollbackTransaction_FuncContext();
 }
 
-size_t FuncContext::AddNewLabelId(std::optional<std::string>& o_label)
+size_t SmFuncContext::AddNewLabelId(std::optional<std::string>& o_label)
 {
     size_t newId = labelCount++;
 
@@ -84,7 +84,7 @@ size_t FuncContext::AddNewLabelId(std::optional<std::string>& o_label)
     return newId;
 }
 
-std::optional<size_t> FuncContext::GetLabelId(const std::string& label)
+std::optional<size_t> SmFuncContext::GetLabelId(const std::string& label)
 {
     if (auto* id = namedLabels.Find(label))
         return *id;

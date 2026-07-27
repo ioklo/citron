@@ -5,14 +5,14 @@
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 #include "ImExp.h"
-#include "FuncContext.h"
-#include "TranslationContexts.h"
+#include "SmFuncContext.h"
+#include "SmTranslationContexts.h"
 
 using namespace std;
 
 namespace Citron {
 
-MLoc_ClassVar* TranslateImExp_ClassVarToMLoc_ClassVar(ImExp_ClassVar* imExp, TranslationContexts& contexts)
+MLoc_ClassVar* TranslateImExp_ClassVarToMLoc_ClassVar(ImExp_ClassVar* imExp, SmTranslationContexts& contexts)
 {
     return visit([imExp, &contexts](auto& instanceKind) -> MLoc_ClassVar* {
         using T = remove_cvref_t<decltype(instanceKind)>;
@@ -30,7 +30,7 @@ MLoc_ClassVar* TranslateImExp_ClassVarToMLoc_ClassVar(ImExp_ClassVar* imExp, Tra
     }, imExp->instanceKind);
 }
 
-MLoc_StructVar* TranslateImExp_StructVarToMLoc_StructVar(ImExp_StructVar* imExp, TranslationContexts& contexts)
+MLoc_StructVar* TranslateImExp_StructVarToMLoc_StructVar(ImExp_StructVar* imExp, SmTranslationContexts& contexts)
 {
     return visit([imExp, &contexts](auto& instanceKind) -> MLoc_StructVar* {
         using T = remove_cvref_t<decltype(instanceKind)>;

@@ -19,7 +19,7 @@ class RStructVarDecl;
 struct MExp;
 struct MLoc;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
-struct TranslationContexts;
+struct SmTranslationContexts;
 
 // Intermediate SharedRef Exp, 일반 ptr변환은 여기를 거치지 않도록 한다
 // Syntax가 &exp 꼴일 경우 IrExp를 거쳐서 ReExp(ResolvedExp)로 변환한다

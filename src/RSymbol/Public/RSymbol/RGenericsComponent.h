@@ -9,8 +9,6 @@ namespace Citron {
 
 class RTypeParam;
 class RTypeDecl;
-class RTypeRes;
-class RDeclRes;
 class RName;
 
 class RGenericsComponent
@@ -23,7 +21,6 @@ public:
     size_t GetTypeParamCount() { return o_typeParams->size(); }
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index);
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name);
-    RSYMBOL_API std::optional<RDeclRes> ResolveTypeParam(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
 };
 
 

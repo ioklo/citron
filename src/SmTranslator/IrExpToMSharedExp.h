@@ -13,8 +13,8 @@ struct IrExp;
 struct IrExp_ClassVar;
 struct IrExp_SharedStructVar;
 struct IrExp_StructVar;
-struct TranslationContexts;
+struct SmTranslationContexts;
 
-std::expected<MSharedExp*, DiagPtr> TranslateIrExpToMSharedExp(IrExp* irExp, TranslationContexts& contexts);
+std::expected<MSharedExp*, DiagPtr> TranslateIrExpToMSharedExp(IrExp* irExp, SmTranslationContexts& contexts);
 
 } // namespace 

@@ -1,4 +1,4 @@
-#include "FuncContext_Lambda.h"
+#include "SmFuncContext_Lambda.h"
 #include "Infra/Expected.h"
 #include "Infra/Exceptions.h"
 #include "RSymbol/RDeclRes.h"
@@ -8,23 +8,23 @@
 #include "MIR/MFactory.h"
 #include "MIR/MLoc.h"
 #include "MIR/MExp.h"
-#include "ScopeContext.h"
+#include "SmScopeContext.h"
 
 using namespace std;
 
 namespace Citron {
 
-FuncContext_Lambda::FuncContext_Lambda(TakeRef<FuncContextPtr> outerFunc, TakeRef<ScopeContextPtr> outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
+SmFuncContext_Lambda::SmFuncContext_Lambda(TakeRef<SmFuncContextPtr> outerFunc, TakeRef<SmScopeContextPtr> outerScope, bool bSeqFunc, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
     : outerFunc{outerFunc.Take()}, outerScope{outerScope.Take()}, bSeqFunc{bSeqFunc}, funcReturn{move(funcReturn)}, funcParams{move(funcParams)}, bLastParamVariadic{bLastParamVariadic}
 {
 }
 
-bool FuncContext_Lambda::CanAccess(RDecl* target)
+bool SmFuncContext_Lambda::CanAccess(RDecl* target)
 {
     return outerFunc->CanAccess(target);
 }
 
-std::optional<RTypeRes> FuncContext_Lambda::ResolveTypeIdentifier(InRef<RName> name)
+std::optional<RTypeRes> SmFuncContext_Lambda::ResolveTypeIdentifier(InRef<RName> name)
 {
     return outerFunc->ResolveTypeIdentifier(name);
 }
@@ -42,7 +42,7 @@ std::optional<RTypeRes> FuncContext_Lambda::ResolveTypeIdentifier(InRef<RName> n
 //         }
 //     }
 // } }
-expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(InRef<RName> name)
+expected<optional<BodyRes>, DiagPtr> SmFuncContext_Lambda::ResolveIdentifier(InRef<RName> name)
 {
     // 1. lambdaVar 검색
     throw NotImplementedException{};
@@ -146,28 +146,28 @@ expected<optional<BodyRes>, DiagPtr> FuncContext_Lambda::ResolveIdentifier(InRef
     });
 }
 
-RFuncReturn FuncContext_Lambda::GetUnboundFuncReturn()
+RFuncReturn SmFuncContext_Lambda::GetUnboundFuncReturn()
 {
     return funcReturn;
 }
 
-void FuncContext_Lambda::SetOpenFuncReturn(RType* retType)
+void SmFuncContext_Lambda::SetOpenFuncReturn(RType* retType)
 {
     assert(funcReturn.IsNotSet());
     funcReturn = RFuncReturn_Normal{retType};
 }
 
-RTypeArguments* FuncContext_Lambda::MakeOpenTypeArgs()
+RTypeArguments* SmFuncContext_Lambda::MakeOpenTypeArgs()
 {
     return outerFunc->MakeOpenTypeArgs();
 }
 
-bool FuncContext_Lambda::IsSeqFunc()
+bool SmFuncContext_Lambda::IsSeqFunc()
 {
     return bSeqFunc;
 }
 
-MLoc_This* FuncContext_Lambda::MakeThisLoc()
+MLoc_This* SmFuncContext_Lambda::MakeThisLoc()
 {
     return outerFunc->MakeThisLoc();
 }

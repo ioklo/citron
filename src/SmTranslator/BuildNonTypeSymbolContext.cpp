@@ -26,7 +26,7 @@ RType* BuildNonTypeSymbolContext::MakeType(STypeExp* sTypeExp, RDecl* scope)
 {
     // 1. type parameter 
 
-    // TODO: ScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
+    // TODO: SmScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
     struct Visitor
     {
         using ResultType = RType*;
@@ -60,7 +60,7 @@ RType* BuildNonTypeSymbolContext::MakeType(STypeExp* sTypeExp, InRef<SmFuncHeade
 {
     // 1. type parameter 
 
-    // TODO: ScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
+    // TODO: SmScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
     struct Visitor
     {
         using ResultType = RType*;

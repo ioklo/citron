@@ -11,7 +11,7 @@
 #include "RSymbol/RTypeArguments.h"
 #include "RSymbol/RFuncDecl.h"
 #include "RSymbol/RTypeParam.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "SExpTranslations.h"
 #include "SExpToReExp.h"
 
@@ -85,7 +85,7 @@ expected<void, DiagPtr> CheckType(vector<TypeEqualConstraint>& constraints, RTyp
     return unexpected{MakePtr<Error_FuncMatch_MismatchBetweenParamTypeAndArgType>()};
 }
 
-expected<MArgument, DiagPtr> MakeMArgument_Exp(RFuncParameter& funcParam, MExp* exp, TranslationContexts& contexts)
+expected<MArgument, DiagPtr> MakeMArgument_Exp(RFuncParameter& funcParam, MExp* exp, SmTranslationContexts& contexts)
 {
     switch (funcParam.kind)
     {
@@ -123,7 +123,7 @@ expected<MArgument, DiagPtr> MakeMArgument_Exp(RFuncParameter& funcParam, MExp* 
     unreachable();
 }
 
-expected<MArgument, DiagPtr> MakeMArgument_InitExp(RFuncParameter& funcParam, MInitExp* initExp, TranslationContexts& contexts)
+expected<MArgument, DiagPtr> MakeMArgument_InitExp(RFuncParameter& funcParam, MInitExp* initExp, SmTranslationContexts& contexts)
 {
     switch (funcParam.kind)
     {
@@ -161,7 +161,7 @@ expected<MArgument, DiagPtr> MakeMArgument_InitExp(RFuncParameter& funcParam, MI
     unreachable();
 }
 
-expected<MArgument, DiagPtr> MakeMArgument_LocBC(RFuncParameter& funcParam, MLoc* loc, TranslationContexts& contexts)
+expected<MArgument, DiagPtr> MakeMArgument_LocBC(RFuncParameter& funcParam, MLoc* loc, SmTranslationContexts& contexts)
 {
     switch (funcParam.kind)
     {
@@ -191,7 +191,7 @@ expected<MArgument, DiagPtr> MakeMArgument_LocBC(RFuncParameter& funcParam, MLoc
     unreachable();
 }
 
-expected<MArgument, DiagPtr> MakeMArgument_LocNBC(RFuncParameter& funcParam, MLoc* loc, RType* locType, TranslationContexts& contexts)
+expected<MArgument, DiagPtr> MakeMArgument_LocNBC(RFuncParameter& funcParam, MLoc* loc, RType* locType, SmTranslationContexts& contexts)
 {
     switch (funcParam.kind)
     {
@@ -239,7 +239,7 @@ expected<MArgument, DiagPtr> MakeMArgument_LocNBC(RFuncParameter& funcParam, MLo
     unreachable();
 }
 
-expected<MArgument, DiagPtr> MakeMArgument(RFuncParameter& funcParam, SArgument* sArg, std::vector<TypeEqualConstraint>& constraints, TranslationContexts& contexts)
+expected<MArgument, DiagPtr> MakeMArgument(RFuncParameter& funcParam, SArgument* sArg, std::vector<TypeEqualConstraint>& constraints, SmTranslationContexts& contexts)
 {
     auto e_reArg = TranslateSExpToReExp(sArg->exp, funcParam.type, contexts);
     RETURN_ON_ERROR(e_reArg);
@@ -327,7 +327,7 @@ expected<SmArgumentsMatch, DiagPtr> MatchArguments(
     RTypeArguments* outerTypeArgs, 
     RTypeArguments* partialMemberTypeArgs,
     SArguments* sArgs,
-    TranslationContexts& contexts)
+    SmTranslationContexts& contexts)
 {
     auto* partialTypeArgs = MakeTypeArgs(input, outerTypeArgs, partialMemberTypeArgs, *contexts.rFactory);
 

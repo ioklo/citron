@@ -8,24 +8,24 @@
 
 #include "IrExp.h"
 #include "Misc.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 
 using namespace std;
 
 namespace Citron {
 
-MLoc* TranslateIrExp_ClassVarToMLoc(IrExp_ClassVar* irExp, TranslationContexts& contexts)
+MLoc* TranslateIrExp_ClassVarToMLoc(IrExp_ClassVar* irExp, SmTranslationContexts& contexts)
 {
     return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(irExp->base, irExp->decl, irExp->typeArgs);
 }
 
-MLoc* TranslateIrExp_SharedStructVarToMLoc(IrExp_SharedStructVar* irExp, TranslationContexts& contexts)
+MLoc* TranslateIrExp_SharedStructVarToMLoc(IrExp_SharedStructVar* irExp, SmTranslationContexts& contexts)
 {
     auto* mDerefLoc = contexts.mFactory->MakeMLoc<MLoc_SharedDeref>(irExp->base);
     return contexts.mFactory->MakeMLoc<MLoc_StructVar>(mDerefLoc, irExp->decl, irExp->typeArgs);
 }
 
-expected<MLoc*, DiagPtr> TranslateIrExp_StructVarToMLoc(IrExp_StructVar* irExp, TranslationContexts& contexts)
+expected<MLoc*, DiagPtr> TranslateIrExp_StructVarToMLoc(IrExp_StructVar* irExp, SmTranslationContexts& contexts)
 {
     auto e_baseLoc = TranslateIrExpToMLoc(irExp->base, contexts);
     RETURN_ON_ERROR(e_baseLoc);
@@ -36,7 +36,7 @@ expected<MLoc*, DiagPtr> TranslateIrExp_StructVarToMLoc(IrExp_StructVar* irExp, 
 struct IrExpToMLocTranslator
 {
     using ResultType = expected<MLoc*, DiagPtr>;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     // 기본
     ResultType Visit(IrExp* irExp)
@@ -79,7 +79,7 @@ struct IrExpToMLocTranslator
     }
 };
 
-expected<MLoc*, DiagPtr> TranslateIrExpToMLoc(IrExp* irExp, TranslationContexts& contexts)
+expected<MLoc*, DiagPtr> TranslateIrExpToMLoc(IrExp* irExp, SmTranslationContexts& contexts)
 {
     return Accept(IrExpToMLocTranslator{contexts}, irExp);
 }

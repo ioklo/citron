@@ -7,7 +7,7 @@
 #include "ImExp.h"
 #include "ReExp.h"
 #include "SRTFactory.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "SExp_IdentifierToImExp.h"
 #include "SExp_CallToImExp.h"
 #include "SExp_MemberToImExp.h"
@@ -21,7 +21,7 @@ struct SExpToImExpTranslator
 {
     using ResultType = expected<ImExp*, DiagPtr>;
     RType* hintType;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     ImExp* MakeImExp_ReExp(ReExp&& reExp)
     {
@@ -171,7 +171,7 @@ struct SExpToImExpTranslator
     }
 };
 
-expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp* sExp, RType* hintType, TranslationContexts& contexts)
+expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp* sExp, RType* hintType, SmTranslationContexts& contexts)
 {
     return Accept(SExpToImExpTranslator{hintType, contexts}, sExp);
 }

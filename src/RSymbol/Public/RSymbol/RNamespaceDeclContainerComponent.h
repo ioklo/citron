@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include "Infra/Ref.h"
 #include "RNames.h"
-#include "RDeclRes.h"
 
 namespace Citron {
 

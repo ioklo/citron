@@ -2,7 +2,6 @@
 #include "Infra/Exceptions.h"
 #include "RFactory.h"
 #include "RTypeRes.h"
-#include "RDeclRes.h"
 #include "RTypeArguments.h"
 
 using namespace std;
@@ -15,20 +14,18 @@ RClassDecl::RClassDecl(RDeclKey&& key, RTypeDeclOuter&& outer, TakeRef<RName> na
 {
 }
 
+optional<RAppliedDecl<RClassDecl>> RClassDecl::GetUnboundBaseClass()
+{
+    assert(o_baseTypes);
+    return o_baseTypes->o_baseClass;
+}
+
 RClassVarDecl* RClassDecl::GetUnboundVar(InRef<RName> name)
 {
     auto i = varsMap.find(*name);
     if (i == varsMap.end()) return nullptr;
 
     return i->second;
-}
-
-optional<RDeclRes_ClassVar> RClassDecl::ResolveVar(RTypeArguments* typeArgs, InRef<RName> name)
-{
-    auto i = varsMap.find(*name);
-    if (i == varsMap.end()) return nullopt;
-
-    return RDeclRes_ClassVar{i->second, typeArgs};
 }
 
 // from RDecl
@@ -86,42 +83,6 @@ optional<RMember> RClassDecl::GetMember(InRef<RName> name)
     // 3. var
     if (auto* var = GetUnboundVar(name))
         return RMember_ClassVar{var};
-
-    return nullopt;
-}
-
-optional<RTypeRes> RClassDecl::ResolveInheritedTypeMember(RTypeArguments* typeArgs, InRef<RName> name)
-{
-    assert(o_baseTypes);
-
-    // baseClass가 있다면
-    if (o_baseTypes->baseClass)
-    {
-        auto* baseClassTypeArgs = o_baseTypes->baseClass->typeArgs->Apply(typeArgs);
-
-        if (auto* baseTypeMember = o_baseTypes->baseClass->decl->GetTypeMember(name))
-            return ToRTypeRes(baseClassTypeArgs, baseTypeMember);
-
-        return o_baseTypes->baseClass->decl->ResolveInheritedTypeMember(baseClassTypeArgs, name);
-    }
-
-    return nullopt;
-}
-
-optional<RDeclRes> RClassDecl::ResolveInheritedMember(RTypeArguments* typeArgs, InRef<RName> name)
-{
-    assert(o_baseTypes);
-
-    // baseClass가 있다면
-    if (o_baseTypes->baseClass)
-    {
-        auto* baseClassTypeArgs = o_baseTypes->baseClass->typeArgs->Apply(typeArgs);
-
-        if (auto o_baseMember = o_baseTypes->baseClass->decl->GetMember(name))
-            return ToRDeclRes(baseClassTypeArgs, *o_baseMember);
-
-        return o_baseTypes->baseClass->decl->ResolveInheritedMember(baseClassTypeArgs, name);
-    }
 
     return nullopt;
 }

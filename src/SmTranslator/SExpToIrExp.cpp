@@ -9,7 +9,7 @@
 #include "IrExp.h"
 #include "SRTFactory.h"
 #include "Misc.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "SExp_IdentifierToIrExp.h"
 #include "SExp_MemberToIrExp.h"
 #include "DesignatedDiagnostic.h"
@@ -25,7 +25,7 @@ namespace {
 struct SExpToIrExpTranslator
 {
     using ResultType = expected<IrExp*, DiagPtr>;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     ResultType HandleDefault(SExp* exp)
     {
@@ -101,7 +101,7 @@ struct SExpToIrExpTranslator
 
 } // namespace 
 
-expected<IrExp*, DiagPtr> TranslateSExpToIrExp(SExp* sExp, TranslationContexts& contexts)
+expected<IrExp*, DiagPtr> TranslateSExpToIrExp(SExp* sExp, SmTranslationContexts& contexts)
 {   
     return Accept(SExpToIrExpTranslator{contexts}, sExp);
 }

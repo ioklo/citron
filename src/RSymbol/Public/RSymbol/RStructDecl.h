@@ -9,7 +9,6 @@
 #include "RDecl.h"
 #include "RTypeDecl.h"
 #include "RStructFuncDecl.h"
-#include "RDeclRes.h"
 #include "RDeclKey.h"
 
 namespace Citron {

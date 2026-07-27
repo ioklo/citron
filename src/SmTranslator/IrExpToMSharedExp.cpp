@@ -4,7 +4,7 @@
 #include "MIR/MSharedExp.h"
 #include "MIR/MFactory.h"
 
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "IrExp.h"
 #include "Misc.h"
 
@@ -12,7 +12,7 @@ using namespace std;
 
 namespace Citron {
 
-expected<MSharedExp*, DiagPtr> TranslateIrExp_StructVarToMSharedExp(IrExp_StructVar* irExp, TranslationContexts& contexts)
+expected<MSharedExp*, DiagPtr> TranslateIrExp_StructVarToMSharedExp(IrExp_StructVar* irExp, SmTranslationContexts& contexts)
 {
     auto e_baseSharedExp = TranslateIrExpToMSharedExp(irExp->base, contexts);
     RETURN_ON_ERROR(e_baseSharedExp);
@@ -47,7 +47,7 @@ expected<MSharedExp*, DiagPtr> TranslateIrExp_StructVarToMSharedExp(IrExp_Struct
 struct IrExpToMSharedExpTranslator
 {
     using ResultType = expected<MSharedExp*, DiagPtr>;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     ResultType Visit(IrExp* irExp)
     {
@@ -81,7 +81,7 @@ struct IrExpToMSharedExpTranslator
     // ResultType Visit(IrExp_Loc* irExp);
 };
 
-expected<MSharedExp*, DiagPtr> TranslateIrExpToMSharedExp(IrExp* irExp, TranslationContexts& contexts)
+expected<MSharedExp*, DiagPtr> TranslateIrExpToMSharedExp(IrExp* irExp, SmTranslationContexts& contexts)
 {   
     return Accept(IrExpToMSharedExpTranslator{contexts}, irExp);
 }

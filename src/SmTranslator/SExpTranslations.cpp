@@ -14,8 +14,8 @@
 #include "ReExpToMIR.h"
 #include "SExpToIrExp.h"
 #include "IrExpToMSharedExp.h"
-#include "TranslationContexts.h"
-#include "ScopeContext.h"
+#include "SmTranslationContexts.h"
+#include "SmScopeContext.h"
 #include "DesignatedDiagnostic.h"
 #include "BinOpQueryService.h"
 #include "Misc.h"
@@ -25,7 +25,7 @@ using namespace std;
 
 namespace Citron {
 
-expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_StringElem(SStringExpElement* elem, TranslationContexts& contexts)
+expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_StringElem(SStringExpElement* elem, SmTranslationContexts& contexts)
 {
     if (auto* expElem = dynamic_cast<SStringExpElement_Exp*>(elem))
     {
@@ -94,7 +94,7 @@ expected<MInitExp_StringElem, DiagPtr> TranslateSStringExpElementToMInitExp_Stri
     unreachable();
 }
 
-expected<MInitExp_String*, DiagPtr> TranslateSExp_StringToMInitExp_String(SExp_String* sExp, TranslationContexts& contexts)
+expected<MInitExp_String*, DiagPtr> TranslateSExp_StringToMInitExp_String(SExp_String* sExp, SmTranslationContexts& contexts)
 {
     vector<DiagPtr> diags;
     vector<MInitExp_StringElem> mElems;
@@ -117,17 +117,17 @@ expected<MInitExp_String*, DiagPtr> TranslateSExp_StringToMInitExp_String(SExp_S
     return contexts.mFactory->MakeMInitExp<MInitExp_String>(move(mElems));
 }
 
-expected<MExp_IntLiteral*, DiagPtr> TranslateSExp_IntLiteralToMExp_IntLiteral(SExp_IntLiteral* sExp, TranslationContexts& contexts)
+expected<MExp_IntLiteral*, DiagPtr> TranslateSExp_IntLiteralToMExp_IntLiteral(SExp_IntLiteral* sExp, SmTranslationContexts& contexts)
 {
     return contexts.mFactory->MakeMExp<MExp_IntLiteral>(sExp->value);
 }
 
-expected<MExp_BoolLiteral*, DiagPtr> TranslateSExp_BoolLiteralToMExp_BoolLiteral(SExp_BoolLiteral* sExp, TranslationContexts& contexts)
+expected<MExp_BoolLiteral*, DiagPtr> TranslateSExp_BoolLiteralToMExp_BoolLiteral(SExp_BoolLiteral* sExp, SmTranslationContexts& contexts)
 {
     return contexts.mFactory->MakeMExp<MExp_BoolLiteral>(sExp->value);
 }
 
-expected<ReExp, DiagPtr> TranslateSExp_NullLiteralToReExp(SExp_NullLiteral* sExp, RType* hintType, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateSExp_NullLiteralToReExp(SExp_NullLiteral* sExp, RType* hintType, SmTranslationContexts& contexts)
 {
     // hintType이 없으면 null을 만들수가 없다
     // var a = null; (x)
@@ -165,7 +165,7 @@ expected<ReExp, DiagPtr> TranslateSExp_NullLiteralToReExp(SExp_NullLiteral* sExp
     unreachable();
 }
 
-expected<ReExp, DiagPtr> TranslateSExp_BinaryOp_AssignToReExp(SExp_BinaryOp* sExp, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateSExp_BinaryOp_AssignToReExp(SExp_BinaryOp* sExp, SmTranslationContexts& contexts)
 {
     // syntax 에서는 exp로 보이지만, R로 변환할 경우 Location 명령이어야 한다
     DesignatedDiagnostic<Error_BinaryOp_LeftOperandIsNotAssignable> designatedDiag;
@@ -226,7 +226,7 @@ expected<ReExp, DiagPtr> TranslateSExp_BinaryOp_AssignToReExp(SExp_BinaryOp* sEx
     }, *e_mSrc);
 }
 
-optional<MArgument> TryMakeBinOpMArgument(ReExp& reExp, TranslationContexts& contexts)
+optional<MArgument> TryMakeBinOpMArgument(ReExp& reExp, SmTranslationContexts& contexts)
 {
     RType* type = GetType(reExp, &*contexts.rFactory);
 
@@ -275,7 +275,7 @@ optional<MArgument> TryMakeBinOpMArgument(ReExp& reExp, TranslationContexts& con
     unreachable();
 }
 
-optional<ReExp> TryMatchBinOp(ReExp& operand0, ReExp& operand1, RType* operandType0, RType* operandType1, const BinOpInfo& info, TranslationContexts& contexts)
+optional<ReExp> TryMatchBinOp(ReExp& operand0, ReExp& operand1, RType* operandType0, RType* operandType1, const BinOpInfo& info, SmTranslationContexts& contexts)
 {
     // TODO: [48] CastMExp등, 시도만 하고 포인터를 버리는 경우, 메모리 누수를 막기 위해서, 지역 pool을 만들어서 flush처리, 성공시 pool merge
     // TODO: [47] CastMExp의 리턴값 수정, NBC의 암시적 Cast구현하기
@@ -316,7 +316,7 @@ optional<ReExp> TryMatchBinOp(ReExp& operand0, ReExp& operand1, RType* operandTy
     }, info._operator);
 }
 
-expected<ReExp, DiagPtr> TranslateSExp_BinaryOpToReExp(SExp_BinaryOp* sExp, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateSExp_BinaryOpToReExp(SExp_BinaryOp* sExp, SmTranslationContexts& contexts)
 {
     // 1. Assign 먼저 처리
     if (sExp->kind == SBinaryOpKind::Assign)
@@ -370,7 +370,7 @@ expected<ReExp, DiagPtr> TranslateSExp_BinaryOpToReExp(SExp_BinaryOp* sExp, Tran
 
 
 // int만 지원한다
-expected<ReExp, DiagPtr> TranslateSExp_UnaryOp_AssignToReExp(ReExp& reOperand, MExp_CallIntrinsicKind op, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateSExp_UnaryOp_AssignToReExp(ReExp& reOperand, MExp_CallIntrinsicKind op, SmTranslationContexts& contexts)
 {
     // exp를 loc으로 변환하는 일을 하면 안되지만, ref는 풀어야 한다
     // F()++; (x)
@@ -395,7 +395,7 @@ expected<ReExp, DiagPtr> TranslateSExp_UnaryOp_AssignToReExp(ReExp& reOperand, M
     return ReExp_Exp{mExp};
 }
 
-expected<ReExp, DiagPtr> TranslateSExp_UnaryOpToReExp(SExp_UnaryOp* sExp, RType* hintType, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateSExp_UnaryOpToReExp(SExp_UnaryOp* sExp, RType* hintType, SmTranslationContexts& contexts)
 {
     // *x
     if (sExp->kind == SUnaryOpKind::Deref)
@@ -510,7 +510,7 @@ expected<ReExp, DiagPtr> TranslateSExp_UnaryOpToReExp(SExp_UnaryOp* sExp, RType*
     unreachable();
 }
 
-expected<ReExp, DiagPtr> TranslateSExp_LambdaToReExp(SExp_Lambda* sExp, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateSExp_LambdaToReExp(SExp_Lambda* sExp, SmTranslationContexts& contexts)
 {
     // TODO: 리턴 타입과 인자타입은 타입 힌트를 반영해야 한다
     //RType* retType = nullptr;
@@ -524,7 +524,7 @@ expected<ReExp, DiagPtr> TranslateSExp_LambdaToReExp(SExp_Lambda* sExp, Translat
     throw NotImplementedException{};
 }
 
-expected<MLoc_ListIndexer*, DiagPtr> TranslateSExp_IndexerToMLoc_ListIndexer(SExp_Indexer* sExp, TranslationContexts& contexts)
+expected<MLoc_ListIndexer*, DiagPtr> TranslateSExp_IndexerToMLoc_ListIndexer(SExp_Indexer* sExp, SmTranslationContexts& contexts)
 {
     auto e_mObj = TranslateSExpToMRead(sExp->obj, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_mObj);
@@ -553,7 +553,7 @@ expected<MLoc_ListIndexer*, DiagPtr> TranslateSExp_IndexerToMLoc_ListIndexer(SEx
     return contexts.mFactory->MakeMLoc<MLoc_ListIndexer>(move(mObjLoc), move(*e_mIndex), itemType);
 }
 
-expected<MInitExp*, DiagPtr> TranslateSExp_ListToMInitExp(SExp_List* sExp, RType* hintType, TranslationContexts& contexts)
+expected<MInitExp*, DiagPtr> TranslateSExp_ListToMInitExp(SExp_List* sExp, RType* hintType, SmTranslationContexts& contexts)
 {
     vector<MCreate> elems;
     elems.reserve(sExp->elements.size());
@@ -585,7 +585,7 @@ expected<MInitExp*, DiagPtr> TranslateSExp_ListToMInitExp(SExp_List* sExp, RType
 }
 
 // 클래스 만들기
-expected<MInitExp_NewClass*, DiagPtr> TranslateSExp_NewToMInitExp_NewClass(SExp_New* sExp, TranslationContexts& contexts)
+expected<MInitExp_NewClass*, DiagPtr> TranslateSExp_NewToMInitExp_NewClass(SExp_New* sExp, SmTranslationContexts& contexts)
 {
     auto e_rType = contexts.scopeContext->TranslateSTypeExpToRType(sExp->type);
     RETURN_ON_ERROR(e_rType);
@@ -607,7 +607,7 @@ expected<MInitExp_NewClass*, DiagPtr> TranslateSExp_NewToMInitExp_NewClass(SExp_
     //return Valid(new IR0ExpResult(new R.NewClassExp(constructor, args), new ClassType(classSymbol)));
 }
 
-expected<MInitExp_Shared*, DiagPtr> TranslateSExp_SharedToMInitExp_Shared(SExp_Shared* sExp, RType* hintType, TranslationContexts& contexts)
+expected<MInitExp_Shared*, DiagPtr> TranslateSExp_SharedToMInitExp_Shared(SExp_Shared* sExp, RType* hintType, SmTranslationContexts& contexts)
 {
     auto* hintSharedType = dynamic_cast<RType_Shared*>(hintType);
     auto* innerHintType = hintSharedType ? hintSharedType->innerType : nullptr;
@@ -620,7 +620,7 @@ expected<MInitExp_Shared*, DiagPtr> TranslateSExp_SharedToMInitExp_Shared(SExp_S
 }
 
 // a is B
-expected<MExp_Is*, DiagPtr> TranslateSExp_IsToMExp_Is(SExp_Is* sExp, TranslationContexts& contexts)
+expected<MExp_Is*, DiagPtr> TranslateSExp_IsToMExp_Is(SExp_Is* sExp, SmTranslationContexts& contexts)
 {
     // TODO: [50] is에 pattern, alias binding추가
     throw NotImplementedException{};
@@ -666,7 +666,7 @@ expected<MExp_Is*, DiagPtr> TranslateSExp_IsToMExp_Is(SExp_Is* sExp, Translation
     //    throw NotImplementedException{}; // 에러 처리
 }
 
-expected<MInitExp_As*, DiagPtr> TranslateSExp_AsToMInitExp_As(SExp_As* sExp, TranslationContexts& contexts)
+expected<MInitExp_As*, DiagPtr> TranslateSExp_AsToMInitExp_As(SExp_As* sExp, SmTranslationContexts& contexts)
 {
     // MInitExp_AsKind::
     auto e_mTarget = TranslateSExpToMRead(sExp->exp, /* hintType */ nullptr, contexts);
@@ -678,9 +678,9 @@ expected<MInitExp_As*, DiagPtr> TranslateSExp_AsToMInitExp_As(SExp_As* sExp, Tra
     return MakeMInitExp_As(move(*e_mTarget), *e_rTestType, contexts);
 }
 
-expected<ReExp, DiagPtr> TranslateSExp_InlineToReExp(SExp_Inline* sExp, RType* hintType, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateSExp_InlineToReExp(SExp_Inline* sExp, RType* hintType, SmTranslationContexts& contexts)
 {
-    return UsingTranslationContexts_InlineScope(nullopt, hintType, contexts, [sExp, hintType](MScopeKind_Inline scopeKind, TranslationContexts& contexts) -> expected<ReExp, DiagPtr> {
+    return UsingTranslationContexts_InlineScope(nullopt, hintType, contexts, [sExp, hintType](MScopeKind_Inline scopeKind, SmTranslationContexts& contexts) -> expected<ReExp, DiagPtr> {
 
         // leave return type
         vector<MStmt*> mStmts;
@@ -736,7 +736,7 @@ expected<ReExp, DiagPtr> TranslateSExp_InlineToReExp(SExp_Inline* sExp, RType* h
     });
 }
 
-expected<MCreate, DiagPtr> TranslateSExpToMCreate(SExp* sExp, RType* hintType, TranslationContexts& contexts)
+expected<MCreate, DiagPtr> TranslateSExpToMCreate(SExp* sExp, RType* hintType, SmTranslationContexts& contexts)
 {
     auto e_reExp = TranslateSExpToReExp(sExp, hintType, contexts);
     RETURN_ON_ERROR(e_reExp);
@@ -744,7 +744,7 @@ expected<MCreate, DiagPtr> TranslateSExpToMCreate(SExp* sExp, RType* hintType, T
     return TranslateReExpToMCreate(*e_reExp, contexts);
 }
 
-expected<MRead, DiagPtr> TranslateSExpToMRead(SExp* sExp, RType* hintType, TranslationContexts& contexts)
+expected<MRead, DiagPtr> TranslateSExpToMRead(SExp* sExp, RType* hintType, SmTranslationContexts& contexts)
 {
     auto e_reExp = TranslateSExpToReExp(sExp, hintType, contexts);
     RETURN_ON_ERROR(e_reExp);
@@ -752,7 +752,7 @@ expected<MRead, DiagPtr> TranslateSExpToMRead(SExp* sExp, RType* hintType, Trans
     return TranslateReExpToMRead(*e_reExp, contexts);
 }
 
-expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool bMaterializeExp, IDesignatedDiagnostic* notLocationDiag, TranslationContexts& contexts)
+expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool bMaterializeExp, IDesignatedDiagnostic* notLocationDiag, SmTranslationContexts& contexts)
 {
     auto e_reExp = TranslateSExpToReExp(sExp, hintType, contexts);
     RETURN_ON_ERROR(e_reExp);
@@ -760,7 +760,7 @@ expected<MLoc*, DiagPtr> TranslateSExpToMLoc(SExp* sExp, RType* hintType, bool b
     return TranslateReExpToMLoc(*e_reExp, bMaterializeExp, notLocationDiag, contexts);
 }
 
-expected<MSharedExp*, DiagPtr> TranslateSExpToMSharedExp(SExp* sExp, TranslationContexts& contexts)
+expected<MSharedExp*, DiagPtr> TranslateSExpToMSharedExp(SExp* sExp, SmTranslationContexts& contexts)
 {
     auto e_irExp = TranslateSExpToIrExp(sExp, contexts);
     RETURN_ON_ERROR(e_irExp);

@@ -50,7 +50,6 @@
     <ClInclude Include="Public\RSymbol\RInterfaceDecl.h" />
     <ClInclude Include="Public\RSymbol\RLambdaDecl.h" />
     <ClInclude Include="Public\RSymbol\RLambdaVarDecl.h" />
-    <ClInclude Include="Public\RSymbol\RDeclRes.h" />
     <ClInclude Include="Public\RSymbol\RMember.h" />
     <ClInclude Include="Public\RSymbol\RModule.h" />
     <ClInclude Include="Public\RSymbol\RNames.h" />
@@ -70,7 +69,6 @@
     <ClInclude Include="Public\RSymbol\RTypeDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclContainerComponent.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclOuter.h" />
-    <ClInclude Include="Public\RSymbol\RTypeRes.h" />
     <ClInclude Include="Public\RSymbol\RTypeDeclVisitor.g.h" />
     <ClInclude Include="Public\RSymbol\RTypeParam.h" />
     <ClInclude Include="Public\RSymbol\RTypes.h" />
@@ -95,7 +93,6 @@
     <ClCompile Include="RFuncReturn.cpp" />
     <ClCompile Include="RGenericsComponent.cpp" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
-    <ClCompile Include="RDeclRes.cpp" />
     <ClCompile Include="RIdentifier.cpp" />
     <ClCompile Include="RImplTraitDecl.cpp" />
     <ClCompile Include="RImplTraitFuncDecl.cpp" />
@@ -118,7 +115,6 @@
     <ClCompile Include="RTypeDeclContainerComponent.cpp" />
     <ClCompile Include="RTypeDeclOuter.cpp" />
     <ClCompile Include="RTypeParam.cpp" />
-    <ClCompile Include="RTypeRes.cpp" />
     <ClCompile Include="RTypes.cpp" />
   </ItemGroup>
   <ItemGroup>

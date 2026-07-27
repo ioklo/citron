@@ -11,7 +11,7 @@
 #include "MIR/MFactory.h"
 #include "MIR/MSharedExp.h"
 
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 
 using namespace std;
 

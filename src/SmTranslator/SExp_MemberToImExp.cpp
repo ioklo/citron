@@ -17,8 +17,8 @@
 #include "ImExp.h"
 #include "SExpToImExp.h"
 #include "ImExpToReExp.h"
-#include "TranslationContexts.h"
-#include "FuncContext.h"
+#include "SmTranslationContexts.h"
+#include "SmFuncContext.h"
 #include "Misc.h"
 #include "ImExpTranslations.h"
 
@@ -33,7 +33,7 @@ struct StaticBaseTranslator
     using ResultType = expected<ImExp*, DiagPtr>;
 
     RTypeArguments* memberTypeArgs; // rClass 제외
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     ResultType operator()(auto& declRes) { return Visit(declRes); }
 
@@ -173,7 +173,7 @@ struct InstanceParentTranslator
 {
     MLoc* mInstLoc;
     RTypeArguments* memberTypeArgs;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     using ResultType = expected<ImExp*, DiagPtr>;
 
@@ -300,7 +300,7 @@ struct MemberTranslator
     using ResultType = expected<ImExp*, DiagPtr>;
     RName memberName;
     RTypeArguments* memberTypeArgs;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     ResultType TranslateStaticParent(RDecl* decl, RTypeArguments* typeArgs)
     {
@@ -411,7 +411,7 @@ struct MemberTranslator
 
 } // 
 
-expected<ImExp*, DiagPtr> TranslateSExp_MemberToImExp(SExp_Member* sExp, TranslationContexts& contexts)
+expected<ImExp*, DiagPtr> TranslateSExp_MemberToImExp(SExp_Member* sExp, SmTranslationContexts& contexts)
 {
     auto e_imBase = TranslateSExpToImExp(sExp->base, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_imBase);

@@ -25,8 +25,8 @@ struct MLoc_This;
 class NLambdaDecl;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-using ScopeContextPtr = std::shared_ptr<class ScopeContext>;
-using FuncContextPtr = std::shared_ptr<class FuncContext>;
+using SmScopeContextPtr = std::shared_ptr<class SmScopeContext>;
+using SmFuncContextPtr = std::shared_ptr<class SmFuncContext>;
 struct ImExp;
 
 class CloneContext;
@@ -42,11 +42,11 @@ struct InlineScopeContext
     { }
 };
 
-class ScopeContext
+class SmScopeContext
 {
 private: // transaction에 영향 받지 않는 변수들 (인자로 들어온)
-    FuncContextPtr funcContext;
-    ScopeContextPtr parentContext;
+    SmFuncContextPtr funcContext;
+    SmScopeContextPtr parentContext;
 
     MScopeKind scopeKind;
     // cached
@@ -79,9 +79,9 @@ private: // for transaction
     std::vector<TransactionInfo> transactionInfos;
 
 public:
-    ScopeContext(
-        const FuncContextPtr& funcContext, 
-        const ScopeContextPtr& parentContext, 
+    SmScopeContext(
+        const SmFuncContextPtr& funcContext, 
+        const SmScopeContextPtr& parentContext, 
         MScopeKind&& scopeKind, 
         std::optional<size_t> curContinueLabelId, 
         std::optional<size_t> curBreakLabelId, 
@@ -115,6 +115,6 @@ public:
     void SetInlineScopeType(RType* type) { inlineScopeContext->o_inlineScopeType = type; }
 };
 
-using ScopeContextPtr = std::shared_ptr<ScopeContext>;
+using SmScopeContextPtr = std::shared_ptr<SmScopeContext>;
 
 } // namespace Citron

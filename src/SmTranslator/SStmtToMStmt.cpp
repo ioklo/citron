@@ -26,12 +26,12 @@
 #include "ReExp.h"
 #include "SVarDeclToMStmts.h"
 
-#include "ScopeContext.h"
-#include "FuncContext.h"
+#include "SmScopeContext.h"
+#include "SmFuncContext.h"
 #include "DesignatedDiagnostic.h"
 #include "Misc.h"
 #include "RFuncAndRArgsToMExpTranslation.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "SExpTranslations.h"
 #include "SExpToReExp.h"
 
@@ -49,13 +49,13 @@ struct RLambdaDeclAndArgs
     std::vector<MArgument> args;   // ctor args
 };
 
-expected<void, DiagPtr> TranslateSStmtToMStmts(std::vector<MStmt*>& outStmts, SStmt* sStmt, TranslationContexts& contexts);
-expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmbeddableStmt* embedStmt, TranslationContexts& contexts);
-expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::optional<std::string>& o_label, SEmbeddableStmt* sEmbedStmt, TranslationContexts& contexts);
-expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(std::vector<MStmt*>& outStmts, SEmbeddableStmt* embedStmt, TranslationContexts& contexts);
-expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, vector<MStmt*>& outStmts, TranslationContexts& contexts);
-expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContexts& contexts);
-expected<RLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToRLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmt*>& sBody, TranslationContexts& contexts);
+expected<void, DiagPtr> TranslateSStmtToMStmts(std::vector<MStmt*>& outStmts, SStmt* sStmt, SmTranslationContexts& contexts);
+expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmbeddableStmt* embedStmt, SmTranslationContexts& contexts);
+expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::optional<std::string>& o_label, SEmbeddableStmt* sEmbedStmt, SmTranslationContexts& contexts);
+expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(std::vector<MStmt*>& outStmts, SEmbeddableStmt* embedStmt, SmTranslationContexts& contexts);
+expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, vector<MStmt*>& outStmts, SmTranslationContexts& contexts);
+expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, SmTranslationContexts& contexts);
+expected<RLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToRLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmt*>& sBody, SmTranslationContexts& contexts);
 
 bool IsTopLevelExp(MExp* exp)
 {
@@ -87,7 +87,7 @@ struct SStmtToMStmtsTranslator
     using ResultType = expected<void, DiagPtr>;
 
     vector<MStmt*>& outStmts;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, MStmt>
     ResultType Value(TArgs&&... args)
@@ -165,7 +165,7 @@ struct SStmtToMStmtsTranslator
         }
     }
     
-    expected<MStmt_For*, DiagPtr> MakeInnerFor(SStmt_For* stmt, TranslationContexts& forOuterContexts)
+    expected<MStmt_For*, DiagPtr> MakeInnerFor(SStmt_For* stmt, SmTranslationContexts& forOuterContexts)
     {
         optional<MTopLevel_Read> mCond;
         if (stmt->cond)
@@ -529,10 +529,10 @@ struct SStmtToMStmtsTranslator
         //{
         //    vector<MStmt*>* outStmts;
         //    SStmt_Foreach* sStmt;
-        //    TranslationContexts& contexts;
+        //    SmTranslationContexts& contexts;
 
         //public:
-        //    ForeachStmtTranslator(vector<MStmt*>* outStmts, SStmt_Foreach* sStmt, TranslationContexts& contexts)
+        //    ForeachStmtTranslator(vector<MStmt*>* outStmts, SStmt_Foreach* sStmt, SmTranslationContexts& contexts)
         //        : outStmts{outStmts}, sStmt{sStmt}, contexts{contexts}
         //    {
         //    }
@@ -857,13 +857,13 @@ struct SStmtToMStmtsTranslator
     }
 };
 
-expected<void, DiagPtr> TranslateSStmtToMStmts(vector<MStmt*>& outStmts, SStmt* sStmt, TranslationContexts& contexts)
+expected<void, DiagPtr> TranslateSStmtToMStmts(vector<MStmt*>& outStmts, SStmt* sStmt, SmTranslationContexts& contexts)
 {
     SStmtToMStmtsTranslator translator{outStmts, contexts};
     return Accept(translator, sStmt);
 }
 
-expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(vector<MStmt*>& outStmts, SEmbeddableStmt* embedStmt, TranslationContexts& contexts)
+expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(vector<MStmt*>& outStmts, SEmbeddableStmt* embedStmt, SmTranslationContexts& contexts)
 {
     // if (...) 'stmt'
     // if (...) '{ stmt... }' 를 받는다
@@ -871,7 +871,7 @@ expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(vector<MStmt*>& outStmt
     {
         using ResultType = expected<void, DiagPtr>;
         vector<MStmt*>& outStmts;
-        TranslationContexts& contexts;
+        SmTranslationContexts& contexts;
     
         ResultType Visit(SEmbeddableStmt_Single* stmt)
         {
@@ -891,7 +891,7 @@ expected<void, DiagPtr> TranslateSEmbeddableStmtToMStmts(vector<MStmt*>& outStmt
     return Accept(translator, embedStmt);
 }
 
-expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmbeddableStmt* embedStmt, TranslationContexts& contexts)
+expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmbeddableStmt* embedStmt, SmTranslationContexts& contexts)
 {
     auto newContexts = MakeTranslationContexts_DefaultScope(contexts);
 
@@ -902,7 +902,7 @@ expected<MStmt_Scope*, DiagPtr> TranslateScopedSEmbeddableStmtToMStmt_Scope(SEmb
     return contexts.mFactory->MakeMStmt<MStmt_Scope>(MScopeKind_Default{}, move(stmts));
 }
 
-expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::optional<std::string>& o_label, SEmbeddableStmt* sEmbedStmt, TranslationContexts& contexts)
+expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::optional<std::string>& o_label, SEmbeddableStmt* sEmbedStmt, SmTranslationContexts& contexts)
 {
     size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
 
@@ -917,14 +917,14 @@ expected<MStmt_Scope*, DiagPtr> TranslateLoopSEmbeddableStmtToMStmt_Scope(std::o
 }
 
 
-expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, vector<MStmt*>& outStmts, TranslationContexts& contexts)
+expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer* forInit, vector<MStmt*>& outStmts, SmTranslationContexts& contexts)
 {
     struct ForInitTranslator
     {
         using ResultType = expected<void, DiagPtr>;
 
         vector<MStmt*>& outStmts;
-        TranslationContexts& contexts;
+        SmTranslationContexts& contexts;
 
         ResultType Visit(SForStmtInitializer_Exp* forInit)
         {
@@ -949,7 +949,7 @@ expected<void, DiagPtr> TranslateSForStmtInitializerToMStmts(SForStmtInitializer
     return Accept(translator, forInit);
 }
 
-expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, TranslationContexts& contexts)
+expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDesignatedDiagnostic* designatedDiag, SmTranslationContexts& contexts)
 {
     auto e_reExp = TranslateSExpToReExp(sExp, hintType, contexts);
     RETURN_ON_ERROR(e_reExp);
@@ -988,7 +988,7 @@ expected<MStmt*, DiagPtr> TranslateSExpToMStmt(SExp* sExp, RType* hintType, IDes
     }, *e_reExp);
 }
 
-expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(vector<SLambdaExpParam>& sParams, TranslationContexts& contexts)
+expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(vector<SLambdaExpParam>& sParams, SmTranslationContexts& contexts)
 {
     bool bLastParamVariadic = false;
     size_t sParamCount = sParams.size();
@@ -1028,18 +1028,18 @@ expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(vector<SLa
     return make_tuple(move(rParams), bLastParamVariadic);
 }
 
-RLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<MStmt*>&& body, TranslationContexts& contexts)
+RLambdaDeclAndArgs MakeLambdaDeclAndArgs(std::vector<MStmt*>&& body, SmTranslationContexts& contexts)
 {
     throw NotImplementedException{};
 }
 
-expected<RLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToRLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmt*>& sBody, TranslationContexts& contexts)
+expected<RLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToRLambdaAndArgs(RType* retType, vector<SLambdaExpParam>& sParams, vector<SStmt*>& sBody, SmTranslationContexts& contexts)
 {
     // 람다를 분석합니다
     // [int x = x](int p) => { return 3; }
 
     // 파라미터는 람다 함수의 지역변수로 취급한다
-    // var newLambdaBodyContext = funcContext.NewLambdaBodyContext(localContext); // new FuncContext(lambdaDeclHolder, bodyContext.GetThisType(), bSeqFunc: false, localContext);
+    // var newLambdaBodyContext = funcContext.NewLambdaBodyContext(localContext); // new SmFuncContext(lambdaDeclHolder, bodyContext.GetThisType(), bSeqFunc: false, localContext);
 
     // 람다 관련 정보는 여기서 수집한다
     RFuncReturn funcRet = retType ? (RFuncReturn)RFuncReturn_Normal{retType} : RFuncReturn_NotSet();
@@ -1076,7 +1076,7 @@ expected<RLambdaDeclAndArgs, DiagPtr> TranslateSLambdaBodyToRLambdaAndArgs(RType
 
 } // namespace 
 
-expected<void, DiagPtr> TranslateSStmtsToMStmts(vector<MStmt*>& outBody, span<SStmt*> sStmts, TranslationContexts& contexts)
+expected<void, DiagPtr> TranslateSStmtsToMStmts(vector<MStmt*>& outBody, span<SStmt*> sStmts, SmTranslationContexts& contexts)
 {
     for(auto* sStmt : sStmts)
     {
@@ -1087,7 +1087,7 @@ expected<void, DiagPtr> TranslateSStmtsToMStmts(vector<MStmt*>& outBody, span<SS
     return {};
 }
 
-expected<MStmt_Scope*, DiagPtr> TranslateScopedSStmtsToMStmt_Scope(span<SStmt*> sStmts, TranslationContexts& contexts)
+expected<MStmt_Scope*, DiagPtr> TranslateScopedSStmtsToMStmt_Scope(span<SStmt*> sStmts, SmTranslationContexts& contexts)
 {
     auto innerContexts = MakeTranslationContexts_DefaultScope(contexts);
     vector<MStmt*> mStmts;

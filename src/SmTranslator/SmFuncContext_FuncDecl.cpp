@@ -1,4 +1,4 @@
-#include "FuncContext_FuncDecl.h"
+#include "SmFuncContext_FuncDecl.h"
 
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
@@ -25,23 +25,28 @@ using namespace std;
 
 namespace Citron {
 
-FuncContext_FuncDecl::FuncContext_FuncDecl(RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory)
+SmFuncContext_FuncDecl::SmFuncContext_FuncDecl(RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory)
     : rFuncDecl{rFuncDecl}, bSeqFunc{bSeqFunc}, rFactory{rFactory.Take()}, mFactory{mFactory.Take()}
 {
 }
 
-bool FuncContext_FuncDecl::CanAccess(RDecl* target)
+bool SmFuncContext_FuncDecl::CanAccess(RDecl* target)
 {
     return rFuncDecl->RFuncDecl_GetDecl()->CanAccess(target);
 }
 
-std::optional<RTypeRes> FuncContext_FuncDecl::ResolveTypeIdentifier(InRef<RName> name)
+std::optional<RTypeRes> SmFuncContext_FuncDecl::ResolveTypeIdentifier(InRef<RName> name)
 {
     auto* openTypeArgs = rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(*rFactory); // typeArgs를 만들어서 rFuncDecl에 넣어준다
     return rFuncDecl->RFuncDecl_GetDecl()->ResolveTypeIdentifier(openTypeArgs, name);
 }
 
-expected<optional<BodyRes>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(InRef<RName> name)
+
+
+
+
+
+expected<optional<BodyRes>, DiagPtr> SmFuncContext_FuncDecl::ResolveIdentifier(InRef<RName> name)
 {
     // 함수 인자는 최상위 ScopeContext에서 관리한다
 
@@ -53,29 +58,29 @@ expected<optional<BodyRes>, DiagPtr> FuncContext_FuncDecl::ResolveIdentifier(InR
     return BodyRes_RDeclRes{move(*o_rDeclRes)};
 }
 
-RFuncReturn FuncContext_FuncDecl::GetUnboundFuncReturn()
+RFuncReturn SmFuncContext_FuncDecl::GetUnboundFuncReturn()
 {
     return rFuncDecl->GetUnboundFuncReturn();
 }
 
-void FuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
+void SmFuncContext_FuncDecl::SetOpenFuncReturn(RType* retType)
 {
     throw RuntimeFatalException{};
 }
 
-RTypeArguments* FuncContext_FuncDecl::MakeOpenTypeArgs()
+RTypeArguments* SmFuncContext_FuncDecl::MakeOpenTypeArgs()
 {
     return rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(*rFactory);
 }
 
-bool FuncContext_FuncDecl::IsSeqFunc()
+bool SmFuncContext_FuncDecl::IsSeqFunc()
 {
     // RFuncDecl은 외부 시그니처라서 seq int F(); 를 모른다
-    // FuncContext_FuncDecl 생성시에 syntax로부터 seq여부를 전달받아서 리턴한다
+    // SmFuncContext_FuncDecl 생성시에 syntax로부터 seq여부를 전달받아서 리턴한다
     return bSeqFunc;
 }
 
-MLoc_This* FuncContext_FuncDecl::MakeThisLoc()
+MLoc_This* SmFuncContext_FuncDecl::MakeThisLoc()
 {
     // struct S에서는 this가 S& 타입
     // class C에서는 this가 C 타입

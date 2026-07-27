@@ -10,8 +10,8 @@
 namespace Citron {
 
 class RType;
-struct TranslationContexts;
+struct SmTranslationContexts;
 
-std::expected<ReExp, DiagPtr> TranslateSExpToReExp(SExp* exp, RType* hintType, TranslationContexts& contexts);
+std::expected<ReExp, DiagPtr> TranslateSExpToReExp(SExp* exp, RType* hintType, SmTranslationContexts& contexts);
 
 } // namespace Citron

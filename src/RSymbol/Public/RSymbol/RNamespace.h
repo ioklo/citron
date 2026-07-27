@@ -7,7 +7,6 @@
 #include "RFuncDeclContainerComponent.h"
 #include "RNames.h"
 #include "RDecl.h"
-#include "RDeclRes.h"
 #include "RDeclKey.h"
 #include "RGlobalFuncDecl.h"
 

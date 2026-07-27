@@ -8,7 +8,7 @@ using namespace std;
 
 namespace Citron {
 
-expected<ReExp, DiagPtr> TranslateSExpToReExp(SExp* exp, RType* hintType, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateSExpToReExp(SExp* exp, RType* hintType, SmTranslationContexts& contexts)
 {
     auto e_imExp = TranslateSExpToImExp(exp, hintType, contexts);
     RETURN_ON_ERROR(e_imExp);

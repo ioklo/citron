@@ -9,8 +9,8 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 class SExp;
 class RType;
 struct ImExp;
-struct TranslationContexts;
+struct SmTranslationContexts;
 
-std::expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp* sExp, RType* hintType, TranslationContexts& contexts);
+std::expected<ImExp*, DiagPtr> TranslateSExpToImExp(SExp* sExp, RType* hintType, SmTranslationContexts& contexts);
 
 } // namespace Citron

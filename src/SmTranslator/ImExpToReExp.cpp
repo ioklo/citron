@@ -11,7 +11,7 @@
 #include "MIR/MFactory.h"
 #include "ImExp.h"
 #include "ReExp.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "Misc.h"
 #include "ImExpTranslations.h"
 
@@ -25,9 +25,9 @@ namespace {
 struct ImExpToReExpTranslator
 {   
     using ResultType = expected<ReExp, DiagPtr>;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
-    ImExpToReExpTranslator(TranslationContexts& contexts)
+    ImExpToReExpTranslator(SmTranslationContexts& contexts)
         : contexts{contexts}
     {
     }
@@ -140,7 +140,7 @@ public:
 }
 
 // outermost로 변경
-expected<ReExp, DiagPtr> TranslateImExpToReExp(ImExp* imExp, TranslationContexts& contexts)
+expected<ReExp, DiagPtr> TranslateImExpToReExp(ImExp* imExp, SmTranslationContexts& contexts)
 {
     ImExpToReExpTranslator translator{contexts};
     return Accept(translator, imExp);

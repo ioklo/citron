@@ -528,7 +528,7 @@ expected<SmTranslationResult, DiagPtr> TranslateSyntax(
     //    buildingMemberDeclPhaseContext.BuildTrivialConstructor();
     //
     //    // 4. BuildingBodyPhase
-    //    var globalContext = new GlobalContext(factory, moduleDecls, logger);
+    //    var globalContext = new SmGlobalContext(factory, moduleDecls, logger);
     //    var buildingBodyPhaseContext = new BuildingBodyPhaseContext(globalContext);
     //    if (!buildingMemberDeclPhaseContext.BuildBody(buildingBodyPhaseContext))
     //        return null;

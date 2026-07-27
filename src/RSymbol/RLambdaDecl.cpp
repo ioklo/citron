@@ -3,7 +3,6 @@
 #include "RLambdaVarDecl.h"
 #include "RFactory.h"
 #include "RTypeRes.h"
-#include "RDeclRes.h"
 #include "RMember.h"
 
 using namespace std;

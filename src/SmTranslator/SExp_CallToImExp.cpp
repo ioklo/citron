@@ -25,9 +25,9 @@
 #include "ImExpToReExp.h"
 #include "ImExp.h"
 #include "FuncMatching.h"
-#include "FuncContext.h"
+#include "SmFuncContext.h"
 #include "Misc.h"
-#include "TranslationContexts.h"
+#include "SmTranslationContexts.h"
 #include "SRTFactory.h"
 #include "ImExpTranslations.h"
 
@@ -41,7 +41,7 @@ struct CallableTranslator
 {
     using ResultType = expected<ImExp*, DiagPtr>;
     SArguments* sArgs;
-    TranslationContexts& contexts;
+    SmTranslationContexts& contexts;
 
     template<typename TMExp, typename... TArgs> requires derived_from<TMExp, MExp>
     ImExp* MakeImExp_ReExp_Exp(TArgs&&... args)
@@ -374,7 +374,7 @@ struct CallableTranslator
 
 } // namespace
 
-expected<ImExp*, DiagPtr> TranslateSExp_CallToImExp(SExp_Call* sExp, TranslationContexts& contexts)
+expected<ImExp*, DiagPtr> TranslateSExp_CallToImExp(SExp_Call* sExp, SmTranslationContexts& contexts)
 {
     auto e_imCallable = TranslateSExpToImExp(sExp->callable, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_imCallable);

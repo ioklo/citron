@@ -49,10 +49,12 @@
     <ClCompile Include="SExp_CallToImExp.cpp" />
     <ClCompile Include="SExp_IdentifierToImExp.cpp" />
     <ClCompile Include="EnumElemVarTask.cpp" />
-    <ClCompile Include="FuncContext.cpp" />
-    <ClCompile Include="FuncContext_FuncDecl.cpp" />
-    <ClCompile Include="FuncContext_Lambda.cpp" />
-    <ClCompile Include="GlobalContext.cpp" />
+    <ClCompile Include="SmDeclContext.cpp" />
+    <ClCompile Include="SmDeclContext_ClassDecl.cpp" />
+    <ClCompile Include="SmFuncContext.cpp" />
+    <ClCompile Include="SmFuncContext_FuncDecl.cpp" />
+    <ClCompile Include="SmFuncContext_Lambda.cpp" />
+    <ClCompile Include="SmGlobalContext.cpp" />
     <ClCompile Include="IrExpToMLoc.cpp" />
     <ClCompile Include="IrExpToMSharedExp.cpp" />
     <ClCompile Include="BodyRes.cpp" />
@@ -61,6 +63,8 @@
     <ClCompile Include="BuildTypeHierarchyContext.cpp" />
     <ClCompile Include="SExpToIrExp.cpp" />
     <ClCompile Include="SExp_MemberToImExp.cpp" />
+    <ClCompile Include="SmDeclRes.cpp" />
+    <ClCompile Include="SmTypeRes.cpp" />
     <ClCompile Include="StructCtorTask.cpp" />
     <ClCompile Include="StructDtorTask.cpp" />
     <ClCompile Include="StructFuncTask.cpp" />
@@ -83,7 +87,7 @@
     <ClCompile Include="ModuleDecls.cpp" />
     <ClCompile Include="ReExp.cpp" />
     <ClCompile Include="RFuncAndRArgsToMExpTranslation.cpp" />
-    <ClCompile Include="ScopeContext.cpp" />
+    <ClCompile Include="SmScopeContext.cpp" />
     <ClCompile Include="SExpToImExp.cpp" />
     <ClCompile Include="SExpToReExp.cpp" />
     <ClCompile Include="SStmtToMStmt.cpp" />
@@ -91,7 +95,7 @@
     <ClCompile Include="SmTranslator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
     <ClCompile Include="SRTFactory.cpp" />
-    <ClCompile Include="TranslationContexts.cpp" />
+    <ClCompile Include="SmTranslationContexts.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BodyRes.h" />
@@ -102,9 +106,12 @@
     <ClInclude Include="SExp_CallToImExp.h" />
     <ClInclude Include="SExp_IdentifierToImExp.h" />
     <ClInclude Include="EnumElemVarTask.h" />
-    <ClInclude Include="FuncContext_FuncDecl.h" />
-    <ClInclude Include="FuncContext_Lambda.h" />
-    <ClInclude Include="GlobalContext.h" />
+    <ClInclude Include="SmDeclContext.h" />
+    <ClInclude Include="SmDeclContext_ClassDecl.h" />
+    <ClInclude Include="SmDeclContext_Decl.h" />
+    <ClInclude Include="SmFuncContext_FuncDecl.h" />
+    <ClInclude Include="SmFuncContext_Lambda.h" />
+    <ClInclude Include="SmGlobalContext.h" />
     <ClInclude Include="GlobalFuncTask.h" />
     <ClInclude Include="ImExpVisitor.g.h" />
     <ClInclude Include="IrExpToMLoc.h" />
@@ -117,6 +124,8 @@
     <ClInclude Include="BuildTypeHierarchyContext.h" />
     <ClInclude Include="SExpToIrExp.h" />
     <ClInclude Include="SExp_MemberToImExp.h" />
+    <ClInclude Include="SmDeclRes.h" />
+    <ClInclude Include="SmTypeRes.h" />
     <ClInclude Include="StructCtorTask.h" />
     <ClInclude Include="StructDtorTask.h" />
     <ClInclude Include="StructFuncTask.h" />
@@ -127,7 +136,7 @@
     <ClInclude Include="TranslateBodyContext.h" />
     <ClInclude Include="CommonTranslation.h" />
     <ClInclude Include="DesignatedDiagnostic.h" />
-    <ClInclude Include="FuncContext.h" />
+    <ClInclude Include="SmFuncContext.h" />
     <ClInclude Include="FuncMatching.h" />
     <ClInclude Include="SmPartiallyAppliedFuncDeclGroup.h" />
     <ClInclude Include="ImExp.h" />
@@ -141,13 +150,13 @@
     <ClInclude Include="Public\SmTranslator\SmTranslatorConfig.h" />
     <ClInclude Include="ReExp.h" />
     <ClInclude Include="RFuncAndRArgsToMExpTranslation.h" />
-    <ClInclude Include="ScopeContext.h" />
+    <ClInclude Include="SmScopeContext.h" />
     <ClInclude Include="SExpToImExp.h" />
     <ClInclude Include="SExpToReExp.h" />
     <ClInclude Include="SStmtToMStmt.h" />
     <ClInclude Include="SVarDeclToMStmts.h" />
     <ClInclude Include="SRTFactory.h" />
-    <ClInclude Include="TranslationContexts.h" />
+    <ClInclude Include="SmTranslationContexts.h" />
     <ClInclude Include="TranslationTasks.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

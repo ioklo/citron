@@ -8,9 +8,9 @@ namespace Citron {
 using DiagPtr = std::shared_ptr<struct Diag>;
 
 struct IrExp;
-struct TranslationContexts;
+struct SmTranslationContexts;
 class SExp_Member;
 
-std::expected<IrExp*, DiagPtr> TranslateSExp_MemberToIrExp(SExp_Member* sExp, TranslationContexts& contexts);
+std::expected<IrExp*, DiagPtr> TranslateSExp_MemberToIrExp(SExp_Member* sExp, SmTranslationContexts& contexts);
 
 } // namespace Citron
