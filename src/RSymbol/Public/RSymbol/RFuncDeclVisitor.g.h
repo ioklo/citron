@@ -13,6 +13,7 @@ struct RFuncDeclVisitor
     virtual void Visit(RClassCtorDecl* rFuncDecl) = 0;
     virtual void Visit(RClassFuncDecl* rFuncDecl) = 0;
     virtual void Visit(RLambdaDecl* rFuncDecl) = 0;
+    virtual void Visit(RImplTraitFuncDecl* rFuncDecl) = 0;
 };
 
 template<class TFrom, class TVisitor>
@@ -30,6 +31,7 @@ concept RFuncDeclVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<RClassCtorDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RFuncDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RClassFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RFuncDeclConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RLambdaDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RFuncDeclConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<RImplTraitFuncDecl*>(), std::forward<TVisitorArgs>(args)...) } -> RFuncDeclConvertibleToResultType<TVisitor>;
 
 };
 
@@ -52,6 +54,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RFuncDec
             void Visit(RClassCtorDecl* rFuncDecl) override { call(rFuncDecl); }
             void Visit(RClassFuncDecl* rFuncDecl) override { call(rFuncDecl); }
             void Visit(RLambdaDecl* rFuncDecl) override { call(rFuncDecl); }
+            void Visit(RImplTraitFuncDecl* rFuncDecl) override { call(rFuncDecl); }
         };
 
         Bridge bridge{caller};
@@ -69,6 +72,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RFuncDec
             void Visit(RClassCtorDecl* rFuncDecl) override { result.emplace(call(rFuncDecl)); }
             void Visit(RClassFuncDecl* rFuncDecl) override { result.emplace(call(rFuncDecl)); }
             void Visit(RLambdaDecl* rFuncDecl) override { result.emplace(call(rFuncDecl)); }
+            void Visit(RImplTraitFuncDecl* rFuncDecl) override { result.emplace(call(rFuncDecl)); }
         };
 
         Bridge bridge{caller};

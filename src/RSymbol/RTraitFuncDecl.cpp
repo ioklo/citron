@@ -6,10 +6,21 @@ using namespace std;
 
 namespace Citron {
 
-RTraitFuncDecl::RTraitFuncDecl(RTraitDecl* trait, bool bStatic, RFuncReturn&& funcReturn, RName&& name, vector<RFuncParameter>&& funcParameters, bool bLastParamVariadic)
-    : trait{trait}, bStatic{bStatic}, funcReturn{move(funcReturn)}, name{move(name)}, funcParameters{move(funcParameters)}, bLastParamVariadic{bLastParamVariadic}
+RTraitFuncDecl::RTraitFuncDecl(RTraitDecl* trait, bool bStatic, RName&& name)
+    : trait{trait}, bStatic{bStatic}, name{std::move(name)}
     , genericsComp{}
 {
+}
+
+void RTraitFuncDecl::Init(RDeclKey&& key, vector<RTypeParam*>&& typeParams, RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParamVariadic)
+{
+    o_lazyInit.emplace(std::move(key), move(typeParams), move(funcReturn), move(funcParameters), bLastParamVariadic);
+}
+
+RDeclKey& RTraitFuncDecl::GetDeclKey()
+{
+    assert(o_lazyInit);
+    return o_lazyInit->key;
 }
 
 RDecl* RTraitFuncDecl::GetOuter()
@@ -17,13 +28,9 @@ RDecl* RTraitFuncDecl::GetOuter()
     return trait;
 }
 
-RIdentifier RTraitFuncDecl::GetIdentifier()
+RName* RTraitFuncDecl::TryGetName()
 {
-    vector<RType*> paramIds;
-    for (auto& param : funcParameters)
-        paramIds.push_back(param.type);
-
-    return RIdentifier{name, move(paramIds)};
+    return &name;
 }
 
 size_t RTraitFuncDecl::GetTypeParamCount()

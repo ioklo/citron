@@ -8,7 +8,7 @@
 
 namespace Citron {
 
-class MFuncBody;
+struct MFuncBody;
 class MData;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using QFactoryPtr = std::shared_ptr<class QFactory>;

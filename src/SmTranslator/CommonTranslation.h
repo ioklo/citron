@@ -14,6 +14,7 @@ class RTypeParam;
 class RDecl;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 class NFactory;
+class RTypeDeclOuter;
 
 enum class RNamespaceMemberAccessor;
 enum class RStructMemberAccessor;
@@ -24,6 +25,6 @@ RNamespaceMemberAccessor MakeNamespaceMemberAccessor(std::optional<SAccessModifi
 RStructMemberAccessor MakeStructMemberAccessor(std::optional<SAccessModifier> modifier);
 RClassMemberAccessor MakeClassMemberAccessor(std::optional<SAccessModifier> modifier);
 
-std::vector<RTypeParam*> MakeTypeParams(RDecl* outer, const std::vector<STypeParam>& sTypeParams, InRef<RFactoryPtr> rFactory);
+std::vector<RTypeParam*> MakeTypeParams(size_t baseIndex, RDecl* rDecl, const std::vector<STypeParam>& sTypeParams, InRef<RFactoryPtr> rFactory);
 
 } // namespace Citron

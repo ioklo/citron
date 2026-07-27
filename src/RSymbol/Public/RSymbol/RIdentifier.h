@@ -12,7 +12,7 @@ struct RIdentifier
     bool operator==(const RIdentifier& other) const = default;
 };
 
-}
+} // namespace Citron
 
 namespace std {
 
@@ -27,4 +27,4 @@ struct hash<Citron::RIdentifier>
     }
 };
 
-}
+} // namespace std

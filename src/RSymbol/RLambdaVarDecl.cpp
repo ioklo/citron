@@ -25,11 +25,6 @@ RDecl* RLambdaVarDecl::GetOuter()
     return lambda;
 }
 
-RIdentifier RLambdaVarDecl::GetIdentifier()
-{
-    return RIdentifier{name, {}};
-}
-
 size_t RLambdaVarDecl::GetTypeParamCount()
 {
     return 0;

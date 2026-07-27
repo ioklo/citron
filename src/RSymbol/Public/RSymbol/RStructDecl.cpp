@@ -10,9 +10,10 @@ using namespace std;
 
 namespace Citron {
 
-RStructDecl::RStructDecl(RTypeDeclOuter outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory)
-    : outer{outer}
-    , name{name.Take()}
+RStructDecl::RStructDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory)
+    : key{std::move(key)}
+    , outer{outer}
+    , name{std::move(name)}
     , trivialCtorIndex{-1}
     , rFactory{rFactory.Take()}
 {
@@ -59,9 +60,22 @@ RStructCtorDecl* RStructDecl::GetUnboundCopyCtor()
     return nullptr;
 }
 
+RType* RStructDecl::GetOpenType()
+{
+    return rFactory->MakeStructType(this, MakeOpenTypeArgs(*rFactory));
+}
+
 // from RDecl
+RDeclKey& RStructDecl::GetDeclKey()
+{
+    return key;
+}
+
 RDecl* RStructDecl::GetOuter() { return outer.GetDecl(); }
-RIdentifier RStructDecl::GetIdentifier() { return RIdentifier{name, {}}; }
+RName* RStructDecl::TryGetName()
+{
+    return &name;
+}
 size_t RStructDecl::GetTypeParamCount() { return genericsComp.GetTypeParamCount(); }
 RTypeParam* RStructDecl::GetTypeParam(size_t index) { return genericsComp.GetTypeParam(index); }
 
@@ -94,10 +108,6 @@ std::optional<RMember> RStructDecl::GetMember(InRef<RName> name)
 
 // from RTypeDecl 
 RDecl* RStructDecl::RTypeDecl_GetDecl() { return this; }
-RType* RStructDecl::GetOpenType()
-{
-    return rFactory->MakeStructType(this, MakeOpenTypeArgs(*rFactory));
-}
 
 void RStructDecl::Accept(RTypeDeclVisitor& visitor)
 {

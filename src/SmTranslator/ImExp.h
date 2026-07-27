@@ -11,7 +11,7 @@
 
 namespace Citron {
 
-class RNamespaceDecl;
+class RNamespace;
 class RType_TypeVar;
 class RClassDecl;
 class RClassFuncDecl;
@@ -38,13 +38,13 @@ public:
     virtual void Accept(ImExpVisitor& visitor) = 0;
 };
 
-struct ImExp_Namespace : ImExp
+struct ImExp_Namespaces : ImExp
 {
-    RNamespaceDecl* _namespace; // namespace를 뭘로 저장하고 있어야 하나
+    RNamespaceGroup nsGroup; // namespace를 뭘로 저장하고 있어야 하나
 
 public:
-    ImExp_Namespace(RNamespaceDecl* _namespace)
-        : _namespace{_namespace}
+    ImExp_Namespaces(RNamespaceGroup&& nsGroup)
+        : nsGroup{std::move(nsGroup)}
     { }
     void Accept(ImExpVisitor& visitor) override;
 };

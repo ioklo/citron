@@ -5,12 +5,13 @@
 #include <memory>
 #include <deque>
 #include "Infra/Ref.h"
+#include "Infra/Hash.h"
 #include "RTypes.h" // for RFuncType::Parameter
+#include "RModule.h"
 
 namespace Citron {
 
 class RModule;
-class RNamespaceDeclGroup;
 class RTypeArguments;
 class RFactory;
 class RTypeDecl;
@@ -185,9 +186,7 @@ class RFactory
     std::unique_ptr<RClassDecl> listDecl;
     std::unique_ptr<RStructDecl> listIterDecl;
 
-    // namespace group
-    std::unordered_map<std::vector<RName>, std::unique_ptr<RNamespaceDeclGroup>> nsGroupsMap;
-
+    
 public:
     RSYMBOL_API RFactory();
     RSYMBOL_API ~RFactory();
@@ -237,12 +236,10 @@ public:
 
     RSYMBOL_API bool IsListType(RType* type, RType** outItemType);
     
-    // Reference Module까지 아우를 수 있는 DeclGroup
-    RSYMBOL_API RNamespaceDeclGroup* GetNamespaceDeclGroup(InRef<std::vector<RName>> name);
-    RSYMBOL_API RNamespaceDecl* MakeRootNamespaceDecl(TakeRef<RFactoryPtr> rFactory);
-    RSYMBOL_API RNamespaceDecl* MakeChildNamespaceDecl(RNamespaceDecl* outer, InRef<std::string> name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RNamespace* MakeRootNamespaceDecl(RModule* module, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RNamespace* MakeChildNamespaceDecl(RNamespace* outer, std::string_view name, TakeRef<RFactoryPtr> rFactory);
 
-    RSYMBOL_API RModule* MakeModule(RName&& name);
+    RSYMBOL_API RModule* MakeModule(RModuleName&& name);
     
 private:
     template<typename TDecl, typename TType, typename... TArgs>

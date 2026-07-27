@@ -1,5 +1,5 @@
 #include "RTypeDeclOuter.h"
-#include "RNamespaceDecl.h"
+#include "RNamespace.h"
 #include "RClassDecl.h"
 #include "RStructDecl.h"
 

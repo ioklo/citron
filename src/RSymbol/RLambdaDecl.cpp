@@ -24,7 +24,7 @@ RLambdaDecl::RLambdaDecl(RFuncDecl* outer, RName&& name, TakeRef<RFactoryPtr> rF
 
 void RLambdaDecl::InitFuncReturnAndParameters(RFuncReturn&& funcReturn, RThisKind&& thisKind, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
-    commonFuncDeclComp.InitFuncReturnAndParams(move(funcReturn), move(thisKind), move(funcParameters), bLastParameterVariadic);
+    commonFuncDeclComp.InitFuncSignature(move(funcReturn), move(thisKind), move(funcParameters), bLastParameterVariadic);
 }
 
 void RLambdaDecl::InitVars(vector<RLambdaVarDecl*>&& vars)
@@ -38,11 +38,6 @@ void RLambdaDecl::InitVars(vector<RLambdaVarDecl*>&& vars)
 RDecl* RLambdaDecl::GetOuter()
 {
     return outer->RFuncDecl_GetDecl();
-}
-
-RIdentifier RLambdaDecl::GetIdentifier()
-{
-    return RIdentifier{name, {}};
 }
 
 size_t RLambdaDecl::GetTypeParamCount()
@@ -74,11 +69,6 @@ optional<RMember> RLambdaDecl::GetMember(InRef<RName> name)
 RDecl* RLambdaDecl::RTypeDecl_GetDecl()
 {
     return this;
-}
-
-RType* RLambdaDecl::GetOpenType()
-{
-    return rFactory->MakeLambdaType(this, MakeOpenTypeArgs(*rFactory));
 }
 
 void RLambdaDecl::Accept(RTypeDeclVisitor& visitor)

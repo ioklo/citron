@@ -7,6 +7,7 @@
 #include "RGenericsComponent.h"
 #include "RDecl.h"
 #include "ImplRFuncDeclUsingCommonComponents.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
@@ -21,7 +22,8 @@ enum class RNamespaceMemberAccessor;
 
 class RGlobalFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents<RGlobalFuncDecl>
 {
-    RNamespaceDecl* outer;
+    std::optional<RDeclKey> o_key;
+    RNamespace* outer;
     RNamespaceMemberAccessor accessor;
     RName name;
 
@@ -29,14 +31,14 @@ class RGlobalFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonCompo
     RGenericsComponent genericsComp;
 
 public:
-    RSYMBOL_API RGlobalFuncDecl(RNamespaceDecl* outer, RNamespaceMemberAccessor accessor, TakeRef<RName> name, bool bSeqFunc);
-    void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { genericsComp.InitTypeParams(std::move(typeParams)); }
-    RSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    RSYMBOL_API RGlobalFuncDecl(RNamespace* outer, RNamespaceMemberAccessor accessor, TakeRef<RName> name, bool bSeqFunc);
+    RSYMBOL_API void Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
     bool IsSeqFunc() { return commonFuncDeclComp.IsSeqFunc(); }
 
 public: // from RDecl
+    RSYMBOL_API RDeclKey& GetDeclKey() final;
     RSYMBOL_API RDecl* GetOuter() final;
-    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API RName* TryGetName() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;

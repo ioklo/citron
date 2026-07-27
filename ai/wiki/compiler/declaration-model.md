@@ -5,6 +5,8 @@ Area: compiler, symbol
 Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symbol tree
 
 ## Current Rules
+- Declaration/symbol tree ownership is per `RModule`: all units of one module contribute to its one canonical tree.  A translation unit has no independent symbol tree; its syntax declaration pointers, imports/aliases, task state and incremental contribution are held in a separate unit context.  A compiler-wide module registry contains multiple module trees rather than one merged declaration tree.
+- `RNode` is the common declaration-space tree base. `RDecl : RNode` represents an actual declaration; `RNamespace : RNode` is a canonical named namespace scope and is not an actual declaration. `RModule` owns root `RNamespace` but is not an `RNode`. Namespace syntax gets or creates the one node for its module/path and adds children to it; `RNamespaceDeclGroup` is not used.
 - Runtime/intermediate declaration interface is unified as `RDecl`.
 - Source declarations and externally exposed declarations remain distinct as `NDecl` and `EDecl`.
 - Compilation phases use `RDecl` as the common interface.
@@ -30,16 +32,17 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - Wrapper-based sum types keep declaration-specific operations close to the type while still allowing internal `Visit(...)` dispatch where a real sum-type branch is needed.
 - `RDecl`의 `GetTypeParam`, `GetTypeMember`, `GetMember`는 outer recursion 없이 현재 declaration scope만 조회하는 공통 API다. type parameter는 `GetTypeParam`으로만 얻고, `GetMember`에는 넣지 않는다.
 - `GetMember`는 single declaration과 function overload group을 나타낼 수 있는 `RMember`를 반환한다. `RMember`는 현재 scope의 named member lookup result이며 declaration tree node나 generic binder가 아니다.
-- `RName`은 lookup-only plain string이 아니라 local variable, function parameter, reserved compiler name 등 RSymbol 전반에서 쓰이는 구조화 semantic name value다. `RName_CtorParam`처럼 declaration identity에 포함되지 않는 provenance/name value도 `RName`에 둔다. `RIdentifier`는 same-outer에서 declaration 하나를 가리키는 exact key로 `RName`과 분리한다.
-- `RDecl`의 `ResolveTypeIdentifier`, `ResolveTypeIdentifierInHeader`, `ResolveIdentifier`는 `Get*`을 사용해 current scope를 조회한 뒤 outer lexical scope로 재귀한다. `ResolveIdentifier`은 type parameter를 `RDeclRes_TypeVar`로 반환할 수 있다.
+- `RName`은 normal source name, type parameter, local variable, function parameter, reserved compiler name 등 RSymbol 전반에서 쓰이는 구조화 lookup key다. `RName_CtorParam`처럼 source-spellable하지 않은 compiler-generated name도 body lookup에 참여할 수 있다. `RDecl`은 lookup surface가 필요한 경우에만 `RName`을 가지며 별도 `RDeclName` abstraction은 현재 두지 않는다. `RNodeKey`는 same-outer에서 tree child 하나를 가리키는 exact key로 `RName`과 분리한다. module부터 node path를 따라 tree node 하나를 가리키는 global identity는 `RIdentifier`다.
+- `RNode`의 `ResolveTypeIdentifier`, `ResolveTypeIdentifierInHeader`, `ResolveIdentifier`는 `Get*`을 사용해 current scope를 조회한 뒤 outer lexical scope로 재귀한다. `ResolveIdentifier`은 type parameter를 `RDeclRes_TypeVar`로 반환할 수 있다. class base-chain only hook인 `ResolveInheritedTypeMember`/`ResolveInheritedMember`는 RNode의 protected virtual default이며 RClassDecl이 override한다.
 - type parameter는 lexical type-name/identifier lookup에는 참여하지만 qualified member surface에는 참여하지 않는다. 따라서 `S<int>.T` 같은 projection은 허용하지 않는다.
 - Accessibility policy is likely to split between module/namespace member rules and type-member/inheritance rules, so `RNode` should not assume a single tree-only access algorithm.
 
 ## Impl Trait Declaration Direction
 
 - `impl`은 ordinary source name을 바인딩하지 않지만, body/generic scope/callable identity를 표현하기 위해 lexical symbol tree의 internal `RImplTraitDecl` subtree로 둔다.
-- `RImplTraitDecl`은 canonical internal `RName_ImplTrait`를 identifier로 사용한다. 이 identifier와 declaration은 ordinary `GetMember(RName_Normal)` lookup과 ordinary function overload group에는 노출하지 않는다. `RName_ImplTrait`는 `$I(TargetRIdentifier,TraitGlobalTypeIdentifier)`로 encode한다. target은 current lexical outer의 direct type member로 제한하므로 local `RIdentifier`만 쓰고, trait type은 같은 module인 경우에도 module prefix를 포함한 `GlobalTypeIdentifier`를 쓴다.
+- `RImplTraitDecl`은 canonical internal node key를 사용한다. 이 key와 declaration은 ordinary `GetMember(RName_Normal)` lookup과 ordinary function overload group에는 노출하지 않는다. impl key는 `$I(TargetRNodeKey,TraitRTypeIdentifier)`로 encode한다. target은 current lexical outer의 direct type member로 제한하므로 local `RNodeKey`만 쓰고, trait type은 같은 module인 경우에도 module prefix를 포함한 `RTypeIdentifier`를 쓴다.
 - `RImplTraitDecl`은 syntax의 lexical outer를 tree outer로 두고, target struct 및 matched conformance header를 typed field로 둔다. target struct member lookup과 `this`는 impl-specific body lookup policy로 처리한다. target struct를 lexical outer로 사용하지 않는다.
+- `RImplTraitDecl`은 ordinary `GetMember(RName)` lookup scope가 아니다. trait requirement implementation은 `RTraitFuncDecl`과 대응 `RImplTraitFuncDecl`의 typed relation으로 찾는다. future extension/private-helper scope가 unqualified helper call을 지원할 때만 별도 member name index를 검토한다.
 - trait requirement implementation member는 `RImplTraitMemberDecl`으로 나타내며, 함수 requirement의 구현은 `RImplTraitFuncDecl : RImplTraitMemberDecl + RFuncDecl`로 둔다. 따라서 일반 함수와 같은 `RFuncDecl`/`MFuncBody`/ABI/QIR 경로를 사용할 수 있다.
 - `NStructInfo`, `NImplTrait`, `NImplTraitFunc`는 witness implementation의 authoritative owner가 아니다. 현재 `NStructInfo`가 `implTraits`만 보관하므로, 이 설계로 이행하면 제거한다.
 - canonical conformance header는 `RStructDecl`의 conformance entry가 소유하고, bind 후 해당 entry가 `RImplTraitDecl*`를 연결한다. public header와 witness identity는 declaration surface에 남기되 CTI에는 synthetic tree name을 기록하지 않는다.

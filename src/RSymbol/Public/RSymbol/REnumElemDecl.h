@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include "RDecl.h"
 #include "RTypeDecl.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
@@ -18,6 +19,7 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class REnumElemDecl final : public RDecl, public RTypeDecl
 {
+    RDeclKey key;
     REnumDecl* _enum;
     RName name;
     std::vector<REnumElemVarDecl*> vars; // lazy
@@ -25,7 +27,7 @@ class REnumElemDecl final : public RDecl, public RTypeDecl
     RFactoryPtr rFactory;
 
 public:
-    RSYMBOL_API REnumElemDecl(REnumDecl* _enum, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API REnumElemDecl(RDeclKey&& key, REnumDecl* _enum, RName&& name, TakeRef<RFactoryPtr> rFactory);
     RSYMBOL_API void AddVar(REnumElemVarDecl* var);
 
 public:
@@ -37,8 +39,9 @@ public:
     bool IsStandalone() { return vars.empty(); }
 
 public: // from RDecl
+    RSYMBOL_API RDeclKey& GetDeclKey() final;
     RSYMBOL_API RDecl* GetOuter() final;
-    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API RName* TryGetName() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;
@@ -47,7 +50,6 @@ public: // from RDecl
 
 public: // from RTypeDecl
     RSYMBOL_API RDecl* RTypeDecl_GetDecl() final;
-    RSYMBOL_API RType* GetOpenType() final;
     RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
 };
 

@@ -11,7 +11,7 @@ RDeclRes ToRDeclRes(RTypeArguments* outerTypeArgs, RMember member)
     {
         RTypeArguments* outerTypeArgs;
 
-        RDeclRes operator()(RMember_Namespace& member) { return RDeclRes_Namespace{member.decl}; }
+        RDeclRes operator()(RMember_Namespace& member) { return RDeclRes_Namespaces{member.namespaces}; }
         RDeclRes operator()(RMember_GlobalFuncs& member) { return RDeclRes_GlobalFuncs{outerTypeArgs, member.items}; }
         RDeclRes operator()(RMember_Class& member) { return RDeclRes_Class{outerTypeArgs, member.decl}; }
         RDeclRes operator()(RMember_ClassFuncs& member) { return RDeclRes_ClassFuncs{outerTypeArgs, member.items}; }

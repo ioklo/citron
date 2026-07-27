@@ -1,6 +1,7 @@
 #pragma once
 #include "RSymbolConfig.h"
 #include "RDecl.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
@@ -10,6 +11,7 @@ class RTypeArguments;
 
 class RClassVarDecl final : public RDecl
 {
+    RDeclKey key;
     RClassDecl* _class;
 
     RClassMemberAccessor accessor;
@@ -18,14 +20,15 @@ class RClassVarDecl final : public RDecl
     RName name;
 
 public:
-    RSYMBOL_API RClassVarDecl(RClassDecl* _class, RClassMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name);
+    RSYMBOL_API RClassVarDecl(RDeclKey&& key, RClassDecl* _class, RClassMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name);
 
     RType* GetUnboundDeclType() { return declType; }
     bool IsStatic() { return bStatic; }
 
 public: // from RDecl
+    RSYMBOL_API RDeclKey& GetDeclKey() final;
     RSYMBOL_API RDecl* GetOuter() final;
-    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API RName* TryGetName() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;

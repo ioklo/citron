@@ -19,7 +19,7 @@
 #include "RSymbol/RStructCtorDecl.h"
 #include "RSymbol/RStructDtorDecl.h"
 #include "RSymbol/RStructFuncDecl.h"
-#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RNamespace.h"
 #include "RSymbol/RGlobalFuncDecl.h"
 #include "RSymbol/RClassDecl.h"
 #include "RSymbol/RClassCtorDecl.h"

@@ -6,6 +6,7 @@
 #include "RGenericsComponent.h"
 #include "RCommonFuncDeclComponent.h"
 #include "ImplRFuncDeclUsingCommonComponents.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
@@ -21,6 +22,7 @@ enum class RStructCtorKind
 
 class RStructCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents<RStructCtorDecl>
 {
+    RDeclKey key;
     RStructDecl* _struct;
     RStructMemberAccessor accessor;
     RStructCtorKind kind;
@@ -29,17 +31,17 @@ class RStructCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonCompo
     RCommonFuncDeclComponent commonFuncDeclComp;
 
 public:
-    RSYMBOL_API RStructCtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind);
-    RSYMBOL_API void InitFuncParameters(std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
-    RSYMBOL_API void InitTypeParams(std::vector<RTypeParam*>&& typeParams);
+    RSYMBOL_API RStructCtorDecl(RDeclKey&& key, RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind, 
+        std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     RStructDecl* GetStructDecl() { return _struct; }
     RStructMemberAccessor GetAccessor() { return accessor; }
     RStructCtorKind GetKind() { return kind; }
 
 public: // from RDecl
+    RSYMBOL_API RDeclKey& GetDeclKey() final;
     RSYMBOL_API RDecl* GetOuter() final;
-    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API RName* TryGetName() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;

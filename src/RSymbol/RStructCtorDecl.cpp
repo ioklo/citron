@@ -5,22 +5,20 @@ using namespace std;
 
 namespace Citron {
 
-RStructCtorDecl::RStructCtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind)
-    : _struct{_struct}, accessor{accessor}, kind{kind}
+RStructCtorDecl::RStructCtorDecl(RDeclKey&& key, RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind, 
+    std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+    : key{std::move(key)}, _struct{_struct}, accessor{accessor}, kind{kind}
     , genericsComp{}
     , commonFuncDeclComp{/*bSeqFunc*/false}
     , ImplRFuncDeclUsingCommonComponents{this, commonFuncDeclComp}
 {
+    genericsComp.InitTypeParams(move(typeParams));
+    commonFuncDeclComp.InitFuncSignature(RFuncReturn_None{}, RThisKind_Static{}, move(funcParameters), bLastParameterVariadic);
 }
 
-void RStructCtorDecl::InitFuncParameters(vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+RDeclKey& RStructCtorDecl::GetDeclKey()
 {
-    commonFuncDeclComp.InitFuncReturnAndParams(RFuncReturn_None{}, RThisKind_Static{}, move(funcParameters), bLastParameterVariadic);
-}
-
-void RStructCtorDecl::InitTypeParams(vector<RTypeParam*>&& typeParams)
-{
-    return genericsComp.InitTypeParams(move(typeParams));
+    return key;
 }
 
 // from RDecl
@@ -29,9 +27,9 @@ RDecl* RStructCtorDecl::GetOuter()
     return this;
 }
 
-RIdentifier RStructCtorDecl::GetIdentifier()
+RName* RStructCtorDecl::TryGetName()
 {
-    return RIdentifier{RName_Reserved{RName_ReservedName::Ctor}, commonFuncDeclComp.GetParamIds()};
+    return nullptr;
 }
 
 size_t RStructCtorDecl::GetTypeParamCount()

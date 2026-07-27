@@ -12,6 +12,7 @@
 #include "RFuncDeclContainerComponent.h"
 #include "RDeclRes.h"
 #include "RClassFuncDecl.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
@@ -28,6 +29,7 @@ class RClassDecl final : public RDecl, public RTypeDecl
         std::vector<RType_Interface> interfaces;
     };
 
+    RDeclKey key;
     RTypeDeclOuter outer;
     RName name;    
 
@@ -43,18 +45,20 @@ class RClassDecl final : public RDecl, public RTypeDecl
     RFactoryPtr rFactory;
 
 public:
-    RSYMBOL_API RClassDecl(RTypeDeclOuter outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RClassDecl(RDeclKey&& key, RTypeDeclOuter&& outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory);
     void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { return genericsComp.InitTypeParams(std::move(typeParams)); }
 
     RSYMBOL_API RClassVarDecl* GetUnboundVar(InRef<RName> name);
     RSYMBOL_API std::optional<RDeclRes_ClassVar> ResolveVar(RTypeArguments* typeArgs, InRef<RName> name);
 
-public: // for RTypeDeclOuter
     RSYMBOL_API void AddType(RTypeDecl* typeDecl) { typeDeclContainerComp.AddType(typeDecl); }
 
+    RType* GetOpenType();
+
 public: // from RDecl
+    RSYMBOL_API RDeclKey& GetDeclKey() final; 
     RSYMBOL_API RDecl* GetOuter() final;
-    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API RName* TryGetName() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;
@@ -65,7 +69,6 @@ public: // from RDecl
 
 public: // from RTypeDecl
     RSYMBOL_API RDecl* RTypeDecl_GetDecl() final;
-    RSYMBOL_API RType* GetOpenType() final;
     RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
 };
 

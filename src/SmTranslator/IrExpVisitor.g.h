@@ -6,7 +6,7 @@ namespace Citron {
 struct IrExpVisitor
 {
     virtual ~IrExpVisitor() {}
-    virtual void Visit(IrExp_Namespace* irExp) = 0;
+    virtual void Visit(IrExp_Namespaces* irExp) = 0;
     virtual void Visit(IrExp_Class* irExp) = 0;
     virtual void Visit(IrExp_Struct* irExp) = 0;
     virtual void Visit(IrExp_Static* irExp) = 0;
@@ -25,7 +25,7 @@ template<typename TVisitor, typename... TVisitorArgs>
 concept IrExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 {
     typename std::remove_cvref_t<TVisitor>::ResultType;
-    { v.Visit(std::declval<IrExp_Namespace*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<IrExp_Namespaces*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_Class*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_Struct*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<IrExp_Static*>(), std::forward<TVisitorArgs>(args)...) } -> IrExpConvertibleToResultType<TVisitor>;
@@ -49,7 +49,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp* i
     {
         struct Bridge : IrExpVisitor {
             decltype(caller)& call;
-            Bridge(decltype(caller)& call) : call(call) {}            void Visit(IrExp_Namespace* irExp) override { call(irExp); }
+            Bridge(decltype(caller)& call) : call(call) {}            void Visit(IrExp_Namespaces* irExp) override { call(irExp); }
             void Visit(IrExp_Class* irExp) override { call(irExp); }
             void Visit(IrExp_Struct* irExp) override { call(irExp); }
             void Visit(IrExp_Static* irExp) override { call(irExp); }
@@ -68,7 +68,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, IrExp* i
         struct Bridge : IrExpVisitor {
             decltype(caller)& call;
             std::optional<TResult> result{};
-            Bridge(decltype(caller)& call) : call(call) {}            void Visit(IrExp_Namespace* irExp) override { result.emplace(call(irExp)); }
+            Bridge(decltype(caller)& call) : call(call) {}            void Visit(IrExp_Namespaces* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_Class* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_Struct* irExp) override { result.emplace(call(irExp)); }
             void Visit(IrExp_Static* irExp) override { result.emplace(call(irExp)); }

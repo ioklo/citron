@@ -2,6 +2,8 @@
 
 #include <type_traits>
 #include <vector>
+#include <string>
+#include <string_view>
 
 namespace std {
 
@@ -30,4 +32,11 @@ void hash_combine(std::size_t& seed, const T& v)
     seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
-}
+struct transparent_string_hash : std::hash<std::string>, std::hash<std::string_view>
+{
+    using is_transparent = void;
+    using std::hash<std::string>::operator();
+    using std::hash<std::string_view>::operator();
+};
+
+} // namespace Citron

@@ -9,6 +9,7 @@
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RDecl.h"
+#include "RSymbol/RTypeParam.h"
 #include "CommonTranslation.h"
 #include "Misc.h"
 
@@ -21,13 +22,14 @@ BuildNonTypeSymbolContext::BuildNonTypeSymbolContext(TakeRef<RFactoryPtr> rFacto
 {
 }
 
-RType* BuildNonTypeSymbolContext::MakeType(STypeExp* sTypeExp, RDecl* decl)
+RType* BuildNonTypeSymbolContext::MakeType(STypeExp* sTypeExp, RDecl* scope)
 {
+    // 1. type parameter 
+
     // TODO: ScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
     struct Visitor
     {
         using ResultType = RType*;
-
         RFactory* rFactory;
 
         RType* Visit(STypeExp_Id* idExp)
@@ -48,19 +50,65 @@ RType* BuildNonTypeSymbolContext::MakeType(STypeExp* sTypeExp, RDecl* decl)
         {
             throw NotImplementedException{};
         }
+
     } visitor{rFactory.get()};
 
     return Accept(visitor, sTypeExp);
 }
 
-expected<RFuncReturn, DiagPtr> BuildNonTypeSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, RDecl* decl)
+RType* BuildNonTypeSymbolContext::MakeType(STypeExp* sTypeExp, InRef<SmFuncHeaderResolveScope> scope)
 {
-    return visit([this, decl](auto& funcRet) -> expected<RFuncReturn, DiagPtr> {
+    // 1. type parameter 
+
+    // TODO: ScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
+    struct Visitor
+    {
+        using ResultType = RType*;
+
+        InRef<SmFuncHeaderResolveScope> scope;
+        RFactory* rFactory;
+
+        RType* Visit(STypeExp_Id* idExp)
+        {
+            if (idExp->name == "void")
+                return rFactory->MakeVoidType();
+            else if (idExp->name == "int")
+                return rFactory->MakeIntType();
+            else if (idExp->name == "string")
+                return rFactory->MakeStringType();
+            else if (idExp->name == "bool")
+                return rFactory->MakeBoolType();
+
+            RName name{RName_Normal{idExp->name}};
+            for(auto* typeParam : scope->typeParams)
+            {
+                if (typeParam->GetName() == name)
+                {
+                    return rFactory->MakeTypeVarType(typeParam);
+                }
+            }
+
+            throw NotImplementedException{};
+        }
+
+        RType* Visit(STypeExp* e)
+        {
+            throw NotImplementedException{};
+        }
+
+    } visitor{scope, rFactory.get()};
+
+    return Accept(visitor, sTypeExp);
+}
+
+expected<RFuncReturn, DiagPtr> BuildNonTypeSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, InRef<SmFuncHeaderResolveScope> scope)
+{
+    return visit([this, scope](auto& funcRet) -> expected<RFuncReturn, DiagPtr> {
         using T = remove_cvref_t<decltype(funcRet)>;
 
         if constexpr (same_as<T, SFuncReturn_Normal>)
         {
-            auto* rType = MakeType(funcRet.type, decl);
+            auto* rType = MakeType(funcRet.type, scope);
             return RFuncReturn_Normal(rType);
         }
         else if constexpr (same_as<T, SFuncReturn_Opaque>)
@@ -83,7 +131,7 @@ expected<RFuncReturn, DiagPtr> BuildNonTypeSymbolContext::MakeFuncReturn(SFuncRe
     }, funcRet);
 }
 
-expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildNonTypeSymbolContext::MakeParameters(RDecl* decl, vector<SFuncParam>& sParams)
+expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildNonTypeSymbolContext::MakeParameters(vector<SFuncParam>& sParams, InRef<SmFuncHeaderResolveScope> scope)
 {
     bool bLastParamVariadic = false;
 
@@ -99,7 +147,7 @@ expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildNonTypeSymbolContext
         RETURN_ON_ERROR(e_rParamKind);
         auto& rParamKind = *e_rParamKind;
 
-        auto type = this->MakeType(sParam.type, decl);
+        auto type = this->MakeType(sParam.type, scope);
         if (!type) throw NotImplementedException{}; // 에러 처리
 
         if (rParamKind == RFuncParameterKind::Params)

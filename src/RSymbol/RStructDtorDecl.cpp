@@ -5,10 +5,15 @@ using namespace std;
 
 namespace Citron {
 
-RStructDtorDecl::RStructDtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor)
-    : _struct{_struct}, accessor{accessor}, commonFuncDeclComp{/*bSeqFunc*/false}
+RStructDtorDecl::RStructDtorDecl(RDeclKey&& key, RStructDecl* _struct, RStructMemberAccessor accessor)
+    : key{std::move(key)}, _struct{_struct}, accessor{accessor}, commonFuncDeclComp{/*bSeqFunc*/false}
     , ImplRFuncDeclUsingCommonComponents{this, commonFuncDeclComp}
 {
+}
+
+RDeclKey& RStructDtorDecl::GetDeclKey()
+{
+    return key;
 }
 
 // from RDecl
@@ -17,9 +22,9 @@ RDecl* RStructDtorDecl::GetOuter()
     return this;
 }
 
-RIdentifier RStructDtorDecl::GetIdentifier()
+RName* RStructDtorDecl::TryGetName()
 {
-    return RIdentifier{RName_Reserved{RName_ReservedName::Dtor}, {}};
+    return nullptr;
 }
 
 size_t RStructDtorDecl::GetTypeParamCount()

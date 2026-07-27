@@ -25,11 +25,7 @@ StructDtorTask::StructDtorTask(RStructDecl* rStruct, SStructDtorDecl* sStructDto
 expected<void, DiagPtr> StructDtorTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto accessor = MakeStructMemberAccessor(sStructDtor->accessModifier);
-
-    // 굳이 type이 없어도 만들수는 있지만 그냥 여기서 만들자
-    rStructDtor = rFactory->MakeDecl<RStructDtorDecl>(rStruct, accessor);
-
-
+    rStructDtor = rFactory->MakeDecl<RStructDtorDecl>(RDeclKey::Dtor(), rStruct, accessor);
     return {};
 }
 

@@ -6,7 +6,7 @@
 #include "Infra/Hash.h"
 #include "Infra/Ptr.h"
 
-#include "RNamespaceDecl.h"
+#include "RNamespace.h"
 
 #include "RModule.h"
 #include "RTypes.h"
@@ -18,7 +18,6 @@
 #include "RInterfaceDecl.h"
 #include "RLambdaDecl.h"
 
-#include "RNamespaceDeclGroup.h"
 #include "RTypeArguments.h"
 #include "RTypeParam.h"
 
@@ -365,76 +364,37 @@ bool RFactory::IsListType(RType* type, RType** outItemType)
     return true;
 }
 
-RNamespaceDeclGroup* RFactory::GetNamespaceDeclGroup(InRef<std::vector<RName>> name)
+RNamespace* RFactory::MakeRootNamespaceDecl(RModule* module, TakeRef<RFactoryPtr> rFactory)
 {
-    auto i = nsGroupsMap.find(*name);
-    if (i != nsGroupsMap.end())
-        return i->second.get();
-    
-    auto newGroup = make_unique<RNamespaceDeclGroup>();
-    auto pNewGroup = newGroup.get();
-    nsGroupsMap.emplace(*name, move(newGroup));
-    return pNewGroup;
-}
-
-RNamespaceDecl* RFactory::MakeRootNamespaceDecl(TakeRef<RFactoryPtr> rFactory)
-{
-    // root namespace면 
-    auto* group = GetNamespaceDeclGroup(std::vector<RName>{});
-    unique_ptr<RNamespaceDecl> newDecl{new RNamespaceDecl{nullptr, RName_None{}, group, rFactory.Take()}};
+    // root namespace면
+    unique_ptr<RNamespace> newDecl{new RNamespace{RDeclKey::RootNamespace(), RNamespaceKind_Root{module}, rFactory.Take()}};
     auto pNewDecl = newDecl.get();
     decls.push_back(move(newDecl));
-
-    group->Add(pNewDecl);
     return pNewDecl;
 }
 
-RNamespaceDecl* RFactory::MakeChildNamespaceDecl(RNamespaceDecl* outer, InRef<std::string> name, TakeRef<RFactoryPtr> rFactory)
+void FillIdentifierWithoutModule(RDecl* decl, string& buffer)
 {
-    assert(outer && !name->empty());
+    auto& key = decl->GetDeclKey();
 
-    // root namespace면 
-    vector<RName> ids;
+    if (key == RDeclKey::RootNamespace()) return;
 
-    ids.push_back(RName_Normal{*name});
-    auto curNS = outer;
+    FillIdentifierWithoutModule(decl->GetOuter(), buffer);
+    buffer += ".";
+    buffer += key.GetValue();
+}
 
-    while (curNS)
-    {
-        auto curOuter = curNS->GetRNamespaceDeclOuter();
-        bool bContinue = curOuter.Visit([&ids, &curNS](auto* outer) -> bool {
+RNamespace* RFactory::MakeChildNamespaceDecl(RNamespace* outer, string_view name, TakeRef<RFactoryPtr> rFactory)
+{
+    assert(outer && !name.empty());
 
-            using T = remove_cvref_t<decltype(outer)>;
-
-            if constexpr (same_as<T, RModule*>)
-            {
-                return false;
-            }
-            else if constexpr (same_as<T, RNamespaceDecl*>)
-            {
-                // namespace이면 계속 올라간다
-                ids.push_back(curNS->GetName());
-                curNS = outer;
-                return true;
-            }
-            else static_assert(false);
-        });
-
-        if (!bContinue) break;
-    }
-
-    reverse(ids.begin(), ids.end());
-
-    auto group = GetNamespaceDeclGroup(ids);
-    unique_ptr<RNamespaceDecl> newDecl{new RNamespaceDecl{outer, RName_None{}, group, rFactory.Take()}};
+    unique_ptr<RNamespace> newDecl{new RNamespace{RDeclKey::Normal(RName::Normal(string{name})), RNamespaceKind_Normal{outer, RName_Normal{string{name}}}, rFactory.Take()}};
     auto pNewDecl = newDecl.get();
     decls.push_back(move(newDecl));
-
-    group->Add(pNewDecl);
     return pNewDecl;
 }
 
-RModule* RFactory::MakeModule(RName&& name)
+RModule* RFactory::MakeModule(RModuleName&& name)
 {
     auto& module = privateData->modules.emplace_back(RModule{move(name)});
     return &module;

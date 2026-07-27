@@ -5,7 +5,7 @@
 #include "Infra/Exceptions.h"
 #include "RSymbol/RAccessor.h"
 #include "RSymbol/RDecl.h"
-
+#include "RSymbol/RTypeDeclOuter.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RTypeParam.h"
 
@@ -41,11 +41,10 @@ RStructMemberAccessor MakeStructMemberAccessor(optional<SAccessModifier> accessM
     unreachable();
 }
 
-vector<RTypeParam*> MakeTypeParams(RDecl* rDecl, const vector<STypeParam>& sTypeParams, InRef<RFactoryPtr> rFactory)
+// rDecl이 아직 tree에 매달려있지 않아도 되고, 대신 baseIndex를 따로 계산할것을 요구한다
+vector<RTypeParam*> MakeTypeParams(size_t baseIndex, RDecl* rDecl, const vector<STypeParam>& sTypeParams, InRef<RFactoryPtr> rFactory)
 {
     assert(rDecl);
-    auto* rOuter = rDecl->GetOuter();
-    size_t baseIndex = rOuter ? rOuter->GetAllTypeParamCount() : 0;
 
     vector<RTypeParam*> nTypeParams;
     size_t count = sTypeParams.size();

@@ -4,7 +4,6 @@
 #include <algorithm>
 
 #include "RSymbol/RFactory.h"
-#include "RSymbol/RNamespaceDeclGroup.h"
 #include "NStructInfo.h"
 #include "NImplTraitFunc.h"
 

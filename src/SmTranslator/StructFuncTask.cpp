@@ -26,22 +26,26 @@ void StructFuncTask::Register(RStructDecl* rStructDecl, SStructFuncDecl* syntax,
 expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto accessor = MakeStructMemberAccessor(sStructFunc->accessModifier);
+
     rStructFunc = rFactory->MakeDecl<RStructFuncDecl>(
         rStruct, accessor, RName::Normal(sStructFunc->name), sStructFunc->bSequence);
 
-    auto typeParams = MakeTypeParams(rStructFunc, sStructFunc->typeParams, rFactory);
-    rStructFunc->InitTypeParams(move(typeParams));
+    // typeParam을 만들땐 rStructFunc가 필요하다 (rStructFunc는 tree에 매달려있지 않은 상태라도 상관없다)
+    auto typeParams = MakeTypeParams(rStruct, rStructFunc, sStructFunc->typeParams, rFactory);
 
-    rStruct->AddFunc(rStructFunc);
-
-    // symbol tree에 매달린 rStructFunc가 필요
-    auto e_funcRet = context.MakeFuncReturn(sStructFunc->funcRet, rStructFunc);
+    // 만들어진 typeParam도 검색대상이다
+    SmFuncHeaderResolveScope scope{rStruct, typeParams};
+    auto e_funcRet = context.MakeFuncReturn(sStructFunc->funcRet, scope);
     RETURN_ON_ERROR(e_funcRet);
 
-    auto e_parameters = context.MakeParameters(rStructFunc, sStructFunc->parameters);
+    auto e_parameters = context.MakeParameters(sStructFunc->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
 
-    rStructFunc->InitFuncReturnAndParams(sStructFunc->bStatic, move(*e_funcRet), move(parameters), bLastParamVariadic);
+    // init
+    rStructFunc->Init(RDeclKey::Func(RName::Normal(sStructFunc->name), parameters), sStructFunc->bStatic, move(*e_funcRet), move(typeParams), move(parameters), bLastParamVariadic));
+
+    // AddFunc할땐 declKey가 필요하다. declKey는 FuncParamter가 필요하다
+    rStruct->AddFunc(rStructFunc);
     return {};
 }
 

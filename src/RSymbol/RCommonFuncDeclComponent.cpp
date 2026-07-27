@@ -18,7 +18,7 @@ RCommonFuncDeclComponent::RCommonFuncDeclComponent(bool bSeqFunc)
 {
 }
 
-void RCommonFuncDeclComponent::InitFuncReturnAndParams(RFuncReturn&& funcRet, RThisKind&& thisKind, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void RCommonFuncDeclComponent::InitFuncSignature(RFuncReturn&& funcRet, RThisKind&& thisKind, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
     funcReturnAndParams.emplace(move(funcRet), move(thisKind), move(funcParameters), bLastParameterVariadic);
 }

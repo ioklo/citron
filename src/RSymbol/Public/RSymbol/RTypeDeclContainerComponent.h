@@ -9,6 +9,7 @@
 #include "RIdentifier.h"
 #include "RTypeDecl.h"
 #include "RDeclRes.h"
+#include "RNames.h"
 
 namespace Citron {
 

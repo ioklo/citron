@@ -10,6 +10,7 @@
 #include "RTypeDecl.h"
 #include "RStructFuncDecl.h"
 #include "RDeclRes.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
@@ -26,6 +27,7 @@ struct NStructInfo;
 
 class RStructDecl final : public RDecl, public RTypeDecl
 {
+    RDeclKey key;
     RTypeDeclOuter outer; // owner with accessor
     RName name;
 
@@ -44,7 +46,7 @@ class RStructDecl final : public RDecl, public RTypeDecl
     RFactoryPtr rFactory;
 
 public:
-    RSYMBOL_API RStructDecl(RTypeDeclOuter outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RStructDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory);
     void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { return genericsComp.InitTypeParams(std::move(typeParams)); }
     RSYMBOL_API void InitTraits(std::vector<RType_Trait*>&& traits);
 
@@ -63,9 +65,12 @@ public:
     RStructCtorDecl* GetUnboundTrivialCtor() { return trivialCtorIndex == -1 ? nullptr : ctors[trivialCtorIndex]; }
     RSYMBOL_API RStructCtorDecl* GetUnboundCopyCtor();
 
+    RType* GetOpenType();
+
 public: // from RDecl
+    RSYMBOL_API RDeclKey& GetDeclKey() final;
     RSYMBOL_API RDecl* GetOuter() final;
-    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API RName* TryGetName() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;
@@ -74,7 +79,6 @@ public: // from RDecl
 
 public: // from RTypeDecl
     RSYMBOL_API RDecl* RTypeDecl_GetDecl() final;
-    RSYMBOL_API RType* GetOpenType() final;
     RSYMBOL_API void Accept(RTypeDeclVisitor& visitor) final;
 };
 

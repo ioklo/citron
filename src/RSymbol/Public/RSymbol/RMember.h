@@ -2,10 +2,11 @@
 #include "RSymbolConfig.h"
 #include <variant>
 #include <vector>
+#include "RNamespaceGroup.h"
 
 namespace Citron {
 
-class RNamespaceDecl;
+class RNamespace;
 class RGlobalFuncDecl;
 class RClassDecl;
 class RClassFuncDecl;
@@ -25,7 +26,7 @@ class RTypeDecl;
 class RImplTraitDecl;
 class RImplTraitFuncDecl;
 
-struct RMember_Namespace { RNamespaceDecl* decl; };
+struct RMember_Namespace { RNamespace* _namespace; };
 struct RMember_GlobalFuncs { std::vector<RGlobalFuncDecl*> items; };
 struct RMember_Class { RClassDecl* decl; };
 struct RMember_ClassFuncs { std::vector<RClassFuncDecl*> items; };
@@ -42,8 +43,6 @@ struct RMember_LambdaVar { RLambdaVarDecl* decl; };
 struct RMember_TupleVar {}; // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
 struct RMember_Trait { RTraitDecl* decl; };
 struct RMember_TraitFuncs { std::vector<RTraitFuncDecl*> items; };
-struct RMember_ImplTrait { RImplTraitDecl* decl; };
-struct RMember_ImplTraitFuncs { std::vector<RImplTraitFuncDecl*> items; };
 
 class RMember
 {
@@ -64,9 +63,7 @@ class RMember
         RMember_LambdaVar,
         RMember_TupleVar,
         RMember_Trait,
-        RMember_TraitFuncs,
-        RMember_ImplTrait,
-        RMember_ImplTraitFuncs
+        RMember_TraitFuncs
     >;
 
     Variant v;

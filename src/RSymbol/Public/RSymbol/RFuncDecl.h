@@ -22,6 +22,7 @@ class RStructFuncDecl;
 class RClassCtorDecl;
 class RClassFuncDecl;
 class RLambdaDecl;
+class RImplTraitFuncDecl;
 struct RFuncDeclVisitor;
 
 class RFuncDecl

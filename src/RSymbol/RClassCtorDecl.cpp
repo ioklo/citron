@@ -5,8 +5,9 @@ using namespace std;
 
 namespace Citron {
 
-RClassCtorDecl::RClassCtorDecl(RClassDecl* _class, RClassMemberAccessor accessor, bool bTrivial)
-    : _class{_class}
+RClassCtorDecl::RClassCtorDecl(RDeclKey&& key, RClassDecl* _class, RClassMemberAccessor accessor, bool bTrivial)
+    : key{std::move(key)}
+    , _class{_class}
     , accessor{accessor}
     , bTrivial{bTrivial}
     , genericsComp{}
@@ -20,14 +21,20 @@ void RClassCtorDecl::InitTypeParams(vector<RTypeParam*>&& typeParams)
     return genericsComp.InitTypeParams(move(typeParams));
 }
 
+// from RDecl
+RDeclKey& RClassCtorDecl::GetDeclKey()
+{
+    return key;
+}
+
 RDecl* RClassCtorDecl::GetOuter()
 {
     return _class;
 }
 
-RIdentifier RClassCtorDecl::GetIdentifier()
+RName* RClassCtorDecl::TryGetName()
 {
-    return RIdentifier{RName_Reserved{RName_ReservedName::Ctor}, commonFuncDeclComp.GetParamIds()};
+    return nullptr;
 }
 
 size_t RClassCtorDecl::GetTypeParamCount()

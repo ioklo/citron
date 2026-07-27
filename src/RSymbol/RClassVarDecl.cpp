@@ -6,8 +6,9 @@ using namespace std;
 
 namespace Citron {
 
-RClassVarDecl::RClassVarDecl(RClassDecl* _class, RClassMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name)
-    : _class{_class}
+RClassVarDecl::RClassVarDecl(RDeclKey&& key, RClassDecl* _class, RClassMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name)
+    : key{std::move(key)}
+    , _class{_class}
     , accessor{accessor}
     , bStatic{bStatic}
     , declType{declType}
@@ -15,14 +16,21 @@ RClassVarDecl::RClassVarDecl(RClassDecl* _class, RClassMemberAccessor accessor, 
 {
 }
 
+// from RDecl
+
+RDeclKey& RClassVarDecl::GetDeclKey()
+{
+    return key;
+}
+
 RDecl* RClassVarDecl::GetOuter()
 {
     return _class;
 }
 
-RIdentifier RClassVarDecl::GetIdentifier()
+RName* RClassVarDecl::TryGetName()
 {
-    return RIdentifier{name, {}};
+    return &name;
 }
 
 size_t RClassVarDecl::GetTypeParamCount()

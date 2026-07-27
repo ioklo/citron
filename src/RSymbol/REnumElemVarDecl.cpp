@@ -7,9 +7,14 @@ using namespace std;
 
 namespace Citron {
 
-REnumElemVarDecl::REnumElemVarDecl(REnumElemDecl* outer, TakeRef<RName> name)
-    : enumElem{outer}, name{name.Take()}, declType{nullptr}
+REnumElemVarDecl::REnumElemVarDecl(RDeclKey&& key, REnumElemDecl* outer, RName&& name)
+    : key{std::move(key)}, enumElem{outer}, name{std::move(name)}, declType{nullptr}
 {
+}
+
+RDeclKey& REnumElemVarDecl::GetDeclKey()
+{
+    return key;
 }
 
 RDecl* REnumElemVarDecl::GetOuter()
@@ -17,9 +22,9 @@ RDecl* REnumElemVarDecl::GetOuter()
     return enumElem;
 }
 
-RIdentifier REnumElemVarDecl::GetIdentifier()
+RName* REnumElemVarDecl::TryGetName()
 {
-    return RIdentifier{name, {}};
+    return &name;;
 }
 
 size_t REnumElemVarDecl::GetTypeParamCount()

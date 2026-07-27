@@ -22,6 +22,7 @@
     <ClInclude Include="Public\RSymbol\ImplRFuncDeclUsingCommonComponents.h" />
     <ClInclude Include="Public\RSymbol\RAppliedDecl.h" />
     <ClInclude Include="Public\RSymbol\RCommonFuncDeclComponent.h" />
+    <ClInclude Include="Public\RSymbol\RDeclKey.h" />
     <ClInclude Include="Public\RSymbol\RFuncDeclContainerComponent.h" />
     <ClInclude Include="Public\RSymbol\RAccessor.h" />
     <ClInclude Include="Public\RSymbol\RClassCtorDecl.h" />
@@ -40,8 +41,8 @@
     <ClInclude Include="Public\RSymbol\RFuncReturn.h" />
     <ClInclude Include="Public\RSymbol\RGenericsComponent.h" />
     <ClInclude Include="Public\RSymbol\RGlobalFuncDecl.h" />
-    <ClInclude Include="Public\RSymbol\RGlobalIdentifier.h" />
-    <ClInclude Include="Public\RSymbol\RGlobalTypeIdentifier.h" />
+    <ClInclude Include="Public\RSymbol\RNamespaceGroup.h" />
+    <ClInclude Include="Public\RSymbol\RTypeIdentifier.h" />
     <ClInclude Include="Public\RSymbol\RIdentifier.h" />
     <ClInclude Include="Public\RSymbol\RImplTraitDecl.h" />
     <ClInclude Include="Public\RSymbol\RImplTraitFuncDecl.h" />
@@ -53,9 +54,8 @@
     <ClInclude Include="Public\RSymbol\RMember.h" />
     <ClInclude Include="Public\RSymbol\RModule.h" />
     <ClInclude Include="Public\RSymbol\RNames.h" />
-    <ClInclude Include="Public\RSymbol\RNamespaceDecl.h" />
+    <ClInclude Include="Public\RSymbol\RNamespace.h" />
     <ClInclude Include="Public\RSymbol\RNamespaceDeclContainerComponent.h" />
-    <ClInclude Include="Public\RSymbol\RNamespaceDeclGroup.h" />
     <ClInclude Include="Public\RSymbol\ROuterAppliedDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructCtorDecl.h" />
     <ClInclude Include="Public\RSymbol\RStructDecl.h" />
@@ -85,6 +85,7 @@
     <ClCompile Include="RClassVarDecl.cpp" />
     <ClCompile Include="RCommonFuncDeclComponent.cpp" />
     <ClCompile Include="RDecl.cpp" />
+    <ClCompile Include="RDeclKey.cpp" />
     <ClCompile Include="REnumDecl.cpp" />
     <ClCompile Include="REnumElemDecl.cpp" />
     <ClCompile Include="REnumElemVarDecl.cpp" />
@@ -95,7 +96,6 @@
     <ClCompile Include="RGenericsComponent.cpp" />
     <ClCompile Include="RGlobalFuncDecl.cpp" />
     <ClCompile Include="RDeclRes.cpp" />
-    <ClCompile Include="RGlobalIdentifier.cpp" />
     <ClCompile Include="RIdentifier.cpp" />
     <ClCompile Include="RImplTraitDecl.cpp" />
     <ClCompile Include="RImplTraitFuncDecl.cpp" />
@@ -105,9 +105,8 @@
     <ClCompile Include="RMember.cpp" />
     <ClCompile Include="RModule.cpp" />
     <ClCompile Include="RNames.cpp" />
-    <ClCompile Include="RNamespaceDecl.cpp" />
+    <ClCompile Include="RNamespace.cpp" />
     <ClCompile Include="RNamespaceDeclContainerComponent.cpp" />
-    <ClCompile Include="RNamespaceDeclGroup.cpp" />
     <ClCompile Include="RStructCtorDecl.cpp" />
     <ClCompile Include="RStructDtorDecl.cpp" />
     <ClCompile Include="RStructFuncDecl.cpp" />

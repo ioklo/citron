@@ -9,8 +9,8 @@ using namespace std;
 
 namespace Citron {
 
-REnumDecl::REnumDecl(RTypeDeclOuter outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory)
-    : outer{outer}, name{name.Take()}, rFactory{rFactory.Take()}
+REnumDecl::REnumDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory)
+    : key{std::move(key)}, outer{outer}, name{std::move(name)}, rFactory{rFactory.Take()}
 {
 }
 
@@ -20,14 +20,19 @@ void REnumDecl::AddElem(REnumElemDecl* elem)
     elemsMap.emplace(elem->GetName(), elem);
 }
 
+RDeclKey& REnumDecl::GetDeclKey()
+{
+    return key;
+}
+
 RDecl* REnumDecl::GetOuter()
 {
     return outer.GetDecl();
 }
 
-RIdentifier REnumDecl::GetIdentifier()
+RName* REnumDecl::TryGetName()
 {
-    return RIdentifier{name, {}};
+    return &name;
 }
 
 size_t REnumDecl::GetTypeParamCount()
@@ -67,11 +72,6 @@ optional<RMember> REnumDecl::GetMember(InRef<RName> name)
 RDecl* REnumDecl::RTypeDecl_GetDecl()
 {
     return this;
-}
-
-RType* REnumDecl::GetOpenType()
-{
-    return rFactory->MakeEnumType(this, MakeOpenTypeArgs(*rFactory));
 }
 
 void REnumDecl::Accept(RTypeDeclVisitor& visitor)

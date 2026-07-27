@@ -2,7 +2,7 @@
 
 ## Status
 
-`GlobalDeclIdentifier` / `GlobalTypeIdentifier`의 canonical 문자열 형식을 정리했다. 이 문서는 상세 문법과 보류 항목을 기록한다. 현재 유효한 요약 규칙은 `ai/wiki/compiler/declaration-model.md`와 `ai/wiki/current-decisions.md`에 둔다.
+`RIdentifier` / `RTypeIdentifier`의 canonical 문자열 형식을 정리했다. 이 문서는 상세 문법과 보류 항목을 기록한다. 현재 유효한 요약 규칙은 `ai/wiki/compiler/declaration-model.md`와 `ai/wiki/current-decisions.md`에 둔다.
 
 ## Goal
 
@@ -14,20 +14,20 @@
 
 ```text
 RName                 lookup surface / overload family key
-RIdentifier           same outer 안의 exact declaration key
-GlobalDeclIdentifier  module prefix + RIdentifier path
-GlobalTypeIdentifier  canonical type expression
+RDeclKey               same outer 안의 exact declaration key
+RIdentifier            module prefix + RDeclKey path
+RTypeIdentifier        canonical type expression
 ```
 
 예:
 
 ```text
 RName:                 F
-RIdentifier:           F(N$pi)
-GlobalDeclIdentifier:  Core::N.S.F(N$pi)
+RDeclKey:       F(N$pi)
+RIdentifier:    Core::N.S.F(N$pi)
 ```
 
-`RIdentifier`는 canonical string을 보관하는 얇은 value wrapper로 둘 수 있다. `RName`은 lookup용으로 유지한다.
+`RDeclKey`와 `RIdentifier`는 canonical string을 보관하는 얇은 value wrapper로 둘 수 있다. `RName`은 lookup용으로 유지한다.
 
 ## General Encoding Rules
 
@@ -46,12 +46,12 @@ Foo                RName_Normal("Foo")
 $RE                reserved name (E는 Enumerator 같은 fixed code)
 $L30               RName_Lambda(30)
 $C(20,x)           RName_CtorParam(20, "x")
-$I(S,Core::Tr<$T0>) RName_ImplTrait
+$I(S,Core::Tr<$T0>) impl declaration key
 ```
 
 reserved-name code의 정확한 문자 mapping은 안정적으로 고정해야 하며 C++ enum ordinal에 의존하지 않는다.
 
-`RName_ImplTrait`의 첫 argument는 current lexical outer의 direct target type member여야 하는 `TargetRIdentifier`다. 두 번째 argument는 항상 module prefix를 포함한 `TraitGlobalTypeIdentifier`다. 따라서 같은 module trait에도 prefix를 생략하지 않는다.
+impl declaration key의 첫 argument는 current lexical outer의 direct target type member여야 하는 `TargetRDeclKey`다. 두 번째 argument는 항상 module prefix를 포함한 `TraitRTypeIdentifier`다. 따라서 같은 module trait에도 prefix를 생략하지 않는다.
 
 ```text
 Core::N.$I(S,Core::N.Tr<$T0>)
@@ -114,7 +114,7 @@ tuple label은 type identity에 포함하지 않는다. 현 `RType_Tuple` intern
 
 ## Remaining Questions
 
-- `GlobalDeclIdentifier`의 module prefix는 우선 one-segment `ModuleName::`로 둔다. module name이 compilation/import universe에서 유일하지 않게 되면 package/registry identity를 `ModuleIdentifier` 규칙으로 확장한다.
+- `RIdentifier`의 module prefix는 우선 one-segment `ModuleName::`로 둔다. module name이 compilation/import universe에서 유일하지 않게 되면 package/registry identity를 `ModuleIdentifier` 규칙으로 확장한다.
 - `$T0`의 canonical binder-slot numbering과 impl-header alpha-equivalence 규칙.
 - transparent type alias를 normalize한 뒤 type ID를 생성하는 정확한 resolver API.
 - function generic signature 및 passing kind의 overload identity 정책.

@@ -6,7 +6,7 @@
 namespace Citron {
 
 class RDecl;
-class RNamespaceDecl;
+class RNamespace;
 class RClassDecl;
 class RStructDecl;
 class RTypeDecl;
@@ -17,7 +17,7 @@ enum class RNamespaceMemberAccessor;
 enum class RClassMemberAccessor;
 enum class RStructMemberAccessor;
 
-struct RTypeDeclOuter_Namespace { RNamespaceDecl* decl; RNamespaceMemberAccessor accessor; };
+struct RTypeDeclOuter_Namespace { RNamespace* decl; RNamespaceMemberAccessor accessor; };
 struct RTypeDeclOuter_Class { RClassDecl* decl; RClassMemberAccessor accessor; };
 struct RTypeDeclOuter_Struct { RStructDecl* decl; RStructMemberAccessor accessor; };
 
@@ -38,7 +38,6 @@ public:
     }
 
     RSYMBOL_API RDecl* GetDecl();
-
     RSYMBOL_API void AddType(RTypeDecl* typeDecl);
 };
 

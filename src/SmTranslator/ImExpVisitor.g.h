@@ -6,7 +6,7 @@ namespace Citron {
 struct ImExpVisitor
 {
     virtual ~ImExpVisitor() {}
-    virtual void Visit(ImExp_Namespace* imExp) = 0;
+    virtual void Visit(ImExp_Namespaces* imExp) = 0;
     virtual void Visit(ImExp_GlobalFuncs* imExp) = 0;
     virtual void Visit(ImExp_TypeVar* imExp) = 0;
     virtual void Visit(ImExp_Class* imExp) = 0;
@@ -28,7 +28,7 @@ template<typename TVisitor, typename... TVisitorArgs>
 concept ImExpVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
 {
     typename std::remove_cvref_t<TVisitor>::ResultType;
-    { v.Visit(std::declval<ImExp_Namespace*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<ImExp_Namespaces*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ImExp_GlobalFuncs*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ImExp_TypeVar*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<ImExp_Class*>(), std::forward<TVisitorArgs>(args)...) } -> ImExpConvertibleToResultType<TVisitor>;
@@ -55,7 +55,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ImExp* i
     {
         struct Bridge : ImExpVisitor {
             decltype(caller)& call;
-            Bridge(decltype(caller)& call) : call(call) {}            void Visit(ImExp_Namespace* imExp) override { call(imExp); }
+            Bridge(decltype(caller)& call) : call(call) {}            void Visit(ImExp_Namespaces* imExp) override { call(imExp); }
             void Visit(ImExp_GlobalFuncs* imExp) override { call(imExp); }
             void Visit(ImExp_TypeVar* imExp) override { call(imExp); }
             void Visit(ImExp_Class* imExp) override { call(imExp); }
@@ -77,7 +77,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, ImExp* i
         struct Bridge : ImExpVisitor {
             decltype(caller)& call;
             std::optional<TResult> result{};
-            Bridge(decltype(caller)& call) : call(call) {}            void Visit(ImExp_Namespace* imExp) override { result.emplace(call(imExp)); }
+            Bridge(decltype(caller)& call) : call(call) {}            void Visit(ImExp_Namespaces* imExp) override { result.emplace(call(imExp)); }
             void Visit(ImExp_GlobalFuncs* imExp) override { result.emplace(call(imExp)); }
             void Visit(ImExp_TypeVar* imExp) override { result.emplace(call(imExp)); }
             void Visit(ImExp_Class* imExp) override { result.emplace(call(imExp)); }

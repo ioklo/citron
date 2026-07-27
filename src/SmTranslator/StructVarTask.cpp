@@ -25,14 +25,14 @@ expected<void, DiagPtr> StructVarTask::BuildNonTypeSymbol(BuildNonTypeSymbolCont
 {
     auto accessor = MakeStructMemberAccessor(sStructVar->accessModifier);
     bool bStatic = false; // TODO: bStatic 지원
-    auto* declType = context.MakeType(sStructVar->varType, rStruct); // decl부분에 자기 자신 대신 outer struct가 들어간다
+    auto* declType = context.MakeType(sStructVar->varType, /*scope*/rStruct); // decl부분에 자기 자신 대신 outer struct가 들어간다
 
     vector<RStructVarDecl*> symbols;
     symbols.reserve(sStructVar->varNames.size());
 
     for (auto& varName : sStructVar->varNames)
     {
-        auto* symbol = rFactory->MakeDecl<RStructVarDecl>(rStruct, accessor, bStatic, declType, RName::Normal(varName), rStruct->GetVarCount());
+        auto* symbol = rFactory->MakeDecl<RStructVarDecl>(RDeclKey::Normal(RName::Normal(varName)), rStruct, accessor, bStatic, declType, RName::Normal(varName), rStruct->GetVarCount());
         symbols.push_back(symbol);
         rStruct->AddVar(symbol);
     }

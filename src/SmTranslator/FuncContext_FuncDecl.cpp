@@ -10,7 +10,7 @@
 #include "RSymbol/RFuncDecl.h"
 #include "RSymbol/RFuncDeclOuter.h"
 #include "RSymbol/RStructDecl.h"
-#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RNamespace.h"
 #include "RSymbol/RGlobalFuncDecl.h"
 #include "RSymbol/RClassDecl.h"
 #include "RSymbol/RClassCtorDecl.h"

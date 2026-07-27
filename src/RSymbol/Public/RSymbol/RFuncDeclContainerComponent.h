@@ -5,6 +5,8 @@
 #include <optional>
 #include "Infra/Ref.h"
 #include "RMember.h"
+#include "RDeclKey.h"
+#include "RNames.h"
 
 namespace Citron {
 
@@ -14,7 +16,7 @@ template<typename TRFuncDecl, typename RMemberType>
 class RFuncDeclContainerComponent
 {
     std::vector<TRFuncDecl*> funcs;
-    std::unordered_map<RIdentifier, TRFuncDecl*> idMap;
+    std::unordered_map<RDeclKey, TRFuncDecl*> idMap;
     std::unordered_map<RName, std::vector<TRFuncDecl*>> nameMap;
 
 public:
@@ -22,10 +24,11 @@ public:
     {
         funcs.push_back(func);
 
-        auto identifier = func->GetIdentifier();
-        idMap.insert_or_assign(identifier, func);
+        auto& declKey = func->RFuncDecl_GetDecl()->GetDeclKey();
+        idMap.insert_or_assign(declKey, func);
 
-        nameMap[identifier.name].push_back(func);
+        if (auto* declName = func->RFuncDecl_GetDecl()->TryGetName())
+            nameMap[*declName].push_back(func);
     }
 
     TRFuncDecl* GetFunc(RIdentifier& identifier)

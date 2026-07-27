@@ -39,7 +39,7 @@ private:
 
 public:
     RSYMBOL_API RCommonFuncDeclComponent(bool bSeqFunc);
-    RSYMBOL_API void InitFuncReturnAndParams(RFuncReturn&& funcRet, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    RSYMBOL_API void InitFuncSignature(RFuncReturn&& funcRet, RThisKind&& thisKind, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     RSYMBOL_API ~RCommonFuncDeclComponent();
 

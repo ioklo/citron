@@ -11,7 +11,7 @@
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
 
-#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RNamespace.h"
 #include "RSymbol/RStructDecl.h"
 #include "RSymbol/REnumDecl.h"
 #include "RSymbol/REnumElemDecl.h"
@@ -95,13 +95,13 @@ public:
 // prepare task
 class NamespaceElemVisitor
 {
-    RNamespaceDecl* curDecl;
+    RNamespace* curNS;
     RFactoryPtr rFactory;
     PhaseManager& phaseManager;
 
 public:
-    NamespaceElemVisitor(RNamespaceDecl* curDecl, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
-        : curDecl{curDecl}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
+    NamespaceElemVisitor(RNamespace* curNS, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+        : curNS{curNS}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
     {
     }
 
@@ -118,12 +118,12 @@ public:
 
 class ScriptElemVisitor
 {
-    RNamespaceDecl* rootNamespace;
+    RNamespace* rootNamespace;
     RFactoryPtr rFactory;
     PhaseManager& phaseManager;
 
 public:
-    ScriptElemVisitor(RNamespaceDecl* rootNamespace, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+    ScriptElemVisitor(RNamespace* rootNamespace, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
         : rootNamespace{rootNamespace}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
     {
     }
@@ -139,18 +139,19 @@ public:
     void Visit(SImplDecl* elem);
 };
 
-void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, RNamespaceDecl* outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitGlobalFunc(SGlobalFuncDecl* sGFuncDecl, RNamespace* outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {   
     GlobalFuncTask::Register(outer, sGFuncDecl, move(rFactory), phaseManager);
 }
 
 void VisitStruct(RTypeDeclOuter outer, SStructDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {   
-    auto* rStructDecl = (*rFactory)->MakeDecl<RStructDecl>(outer, RName::Normal(syntax->name), *rFactory);
+    RName name{RName::Normal(syntax->name)};
+    auto* rStructDecl = (*rFactory)->MakeDecl<RStructDecl>(RDeclKey::Normal(name), outer, move(name), *rFactory);
 
-    auto typeParams = MakeTypeParams(rStructDecl, syntax->typeParams, *rFactory);
+    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rStructDecl, syntax->typeParams, *rFactory);
     rStructDecl->InitTypeParams(move(typeParams));
-    
+
     outer.AddType(rStructDecl);
 
     StructTask::Register(rStructDecl, syntax, phaseManager);
@@ -164,23 +165,25 @@ void VisitStruct(RTypeDeclOuter outer, SStructDecl* syntax, TakeRef<RFactoryPtr>
 
 void VisitEnum(RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {   
-    auto* rEnum = (*rFactory)->MakeDecl<REnumDecl>(outer, RName::Normal(sEnum->name), *rFactory);
+    RName enumName{RName::Normal(sEnum->name)};
 
-    auto typeParams = MakeTypeParams(rEnum, sEnum->typeParams, *rFactory);
+    auto* rEnum = (*rFactory)->MakeDecl<REnumDecl>(RDeclKey::Normal(enumName), outer, move(enumName), *rFactory);
+    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rEnum, sEnum->typeParams, *rFactory);
     rEnum->InitTypeParams(move(typeParams));
-    
     outer.AddType(rEnum);
 
     // EnumElem
     for (auto* sEnumElem : sEnum->elements)
     {
-        auto* rEnumElem = (*rFactory)->MakeDecl<REnumElemDecl>(rEnum, RName::Normal(sEnumElem->name), *rFactory);
+        RName elemName{RName::Normal(sEnumElem->name)};
+        auto* rEnumElem = (*rFactory)->MakeDecl<REnumElemDecl>(RDeclKey::Normal(elemName), rEnum, move(elemName), *rFactory);
         rEnum->AddElem(rEnumElem);
 
         // EnumElemVar
         for (auto* sEnumElemVar : sEnumElem->vars)
         {
-            auto* rEnumElemVar = (*rFactory)->MakeDecl<REnumElemVarDecl>(rEnumElem, RName::Normal(sEnumElemVar->name));
+            RName elemVarName{RName::Normal(sEnumElemVar->name)};
+            auto* rEnumElemVar = (*rFactory)->MakeDecl<REnumElemVarDecl>(RDeclKey::Normal(elemVarName), rEnumElem, move(elemVarName), *rFactory);
             EnumElemVarTask::Register(rEnumElemVar, sEnumElemVar, phaseManager);
         }
     }
@@ -189,16 +192,22 @@ void VisitEnum(RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFacto
 // TODO: [66] 2026-07-09, Trait, Extend 구현
 void VisitTrait(RTypeDeclOuter outer, STraitDecl* sTrait, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    auto* rTrait = (*rFactory)->MakeDecl<RTraitDecl>(outer, RName::Normal(sTrait->name), *rFactory);
+    RName traitName{RName::Normal(sTrait->name)};
+    auto* rTraitDecl = (*rFactory)->MakeDecl<RTraitDecl>(RDeclKey::Normal(traitName), outer, move(traitName), *rFactory);
+
+    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rTraitDecl, sTrait->typeParams, *rFactory);
+    rTraitDecl->InitTypeParams(move(typeParams));
+
+    outer.AddType(rTraitDecl);
 
     for (auto& memberDecl : sTrait->memberDecls)
     {
-        visit([rTrait, &phaseManager](auto* memberDecl) {
+        visit([rTraitDecl, &rFactory, &phaseManager](auto* memberDecl) {
             using T = remove_cvref_t<decltype(memberDecl)>;
 
             if constexpr (same_as<T, STraitFuncDecl*>)
             {
-                TraitFuncTask::Register(rTrait, memberDecl, phaseManager);
+                TraitFuncTask::Register(rTraitDecl, memberDecl, *rFactory, phaseManager);
             }
             else static_assert(false);
 
@@ -309,17 +318,17 @@ void ClassElemVisitor::Visit(SClassVarDecl* decl)
 
 void NamespaceElemVisitor::Visit(SGlobalFuncDecl* elem)
 {
-    VisitGlobalFunc(elem, curDecl, rFactory, phaseManager);
+    VisitGlobalFunc(elem, curNS, rFactory, phaseManager);
 }
 
 void NamespaceElemVisitor::Visit(SNamespaceDecl* elem)
 {
-    RNamespaceDecl* curNamespace = curDecl;
+    RNamespace* curNamespace = curNS;
     for (size_t i = 0, size = elem->names.size(); i < size; i++)
     {
         auto& name = elem->names[i];
 
-        RNamespaceDecl* childNamespace = curNamespace->GetNamespace(RName::Normal(name));
+        RNamespace* childNamespace = curNamespace->GetNamespace(RName::Normal(name));
         if (!childNamespace)
         {
             childNamespace = rFactory->MakeChildNamespaceDecl(curNamespace, name, rFactory);
@@ -343,7 +352,7 @@ void NamespaceElemVisitor::Visit(SClassDecl* elem)
 void NamespaceElemVisitor::Visit(SStructDecl* elem)
 {
     auto accessor = MakeNamespaceMemberAccessor(elem->accessModifier);
-    RTypeDeclOuter_Namespace outer{curDecl, accessor};
+    RTypeDeclOuter_Namespace outer{curNS, accessor};
 
     VisitStruct(outer, elem, rFactory, phaseManager);
 }
@@ -351,19 +360,19 @@ void NamespaceElemVisitor::Visit(SStructDecl* elem)
 void NamespaceElemVisitor::Visit(SEnumDecl* elem)
 {
     auto accessor = MakeNamespaceMemberAccessor(elem->accessModifier);
-    RTypeDeclOuter_Namespace outer{curDecl, accessor};
+    RTypeDeclOuter_Namespace outer{curNS, accessor};
     VisitEnum(outer, elem, rFactory, phaseManager);
 }
 
 void NamespaceElemVisitor::Visit(STraitDecl* decl)
 {
-    RTypeDeclOuter_Namespace outer{curDecl, MakeNamespaceMemberAccessor(decl->accessModifier)};
+    RTypeDeclOuter_Namespace outer{curNS, MakeNamespaceMemberAccessor(decl->accessModifier)};
     VisitTrait(outer, decl, rFactory, phaseManager);
 }
 
 void NamespaceElemVisitor::Visit(SImplDecl* decl)
 {
-    VisitImpl(decl, curDecl, phaseManager);
+    VisitImpl(decl, curNS, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
@@ -447,8 +456,11 @@ expected<SmTranslationResult, DiagPtr> TranslateSyntax(
 {
     // TODO: NewRootNamespaceDecl이 아니라 RootNamespaceGroupDecl이어야 할것 같고, 모듈은 rootNamespaceDeclGroup을 가져야 할 것 같다
 
-    // RNamespaceDecl은 각 TranslationUnit별로 별개로 가지는데,
-    auto* nModule = (*rFactory)->MakeModule(RName::Normal(moduleName));
+
+    // 모듈은 모든 translation unit에 대해 하나만 갖는다. symbol tree도 하나고, namespace도 하나다
+    auto* rModule = (*rFactory)->MakeModule(std::move(moduleName));
+    auto* rRootNamespace = (*rFactory)->MakeRootNamespaceDecl(rModule, *rFactory);
+    rModule->InitRootNamespace(rRootNamespace);
 
     auto srtFactory = MakePtr<SRTFactory>();
     auto binOpQueryService = MakePtr<BinOpQueryService>(**rFactory);
@@ -456,7 +468,7 @@ expected<SmTranslationResult, DiagPtr> TranslateSyntax(
     PhaseManager phaseManager{*logger, *rFactory, *mFactory, srtFactory, binOpQueryService};
     for (auto* script : scripts) // translation units
     {
-        auto* rootNamespace = (*rFactory)->MakeRootNamespaceDecl(*rFactory);
+        auto* rootNamespace = (*rFactory)->MakeRootNamespaceDecl(rModule, *rFactory);
 
         for (auto& elem : script->elements)
         {
@@ -469,9 +481,9 @@ expected<SmTranslationResult, DiagPtr> TranslateSyntax(
     RETURN_ON_ERROR(e_funcBodies);
 
     auto* mData = (*mFactory)->MakeMData(move(*e_funcBodies));
-    return SmTranslationResult{nModule, mData};
+    return SmTranslationResult{rModule, mData};
 
-    // return {nModule, };
+    // return {rModule, };
 
     //    var moduleDecl = new ModuleDeclSymbol(moduleName, bReference: false);
     //

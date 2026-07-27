@@ -101,12 +101,7 @@ private:
     {
         return name->Visit([this](auto& name) -> string {
             using T = remove_cvref_t<decltype(name)>;
-
-            if constexpr (same_as<T, RName_None>) return "<none>";
-            else if constexpr (same_as<T, RName_Normal>) return name.text;
-            else if constexpr (same_as<T, RName_Reserved>) return format("${}", RName_ReservedNameToString(name.name));
-            else if constexpr (same_as<T, RName_CtorParam>) return format("$ctor.{}", name.index);
-            else if constexpr (same_as<T, RName_Lambda>) return format("$lambda.{}", name.index);
+            if constexpr (same_as<T, RName_Normal>) return name.text;
             else static_assert(false);
         });
     }

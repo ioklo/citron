@@ -7,7 +7,7 @@
 
 namespace Citron {
 
-class RNamespaceDecl;
+class RNamespace;
 class SGlobalFuncDecl;
 class RGlobalFuncDecl;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
@@ -18,19 +18,19 @@ class GlobalFuncTask
     : public IBuildNonTypeSymbolTask
     , public ITranslateBodyTask
 {
-    RNamespaceDecl* rOuter;    
+    RNamespace* rOuter;    
     SGlobalFuncDecl* syntax;
     RFactoryPtr rFactory;
 
     RGlobalFuncDecl* rFuncDecl;
 
-    GlobalFuncTask(RNamespaceDecl* rOuter, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory)
+    GlobalFuncTask(RNamespace* rOuter, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory)
         : rOuter{rOuter}, syntax{syntax}, rFactory{rFactory.Take()}, rFuncDecl{nullptr}
     {
     }
 
 public:
-    static void Register(RNamespaceDecl* rOuter, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(RNamespace* rOuter, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
 
     std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;

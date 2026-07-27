@@ -11,7 +11,7 @@ struct MLoc;
 struct MInitExp;
 struct MSharedExp;
 class MData;
-class MFuncBody;
+struct MFuncBody;
 
 class MFactory
 {

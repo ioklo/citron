@@ -22,11 +22,6 @@ RDecl* RInterfaceDecl::GetOuter()
     return outer.GetDecl();
 }
 
-RIdentifier RInterfaceDecl::GetIdentifier()
-{
-    return RIdentifier{name, {}};
-}
-
 size_t RInterfaceDecl::GetTypeParamCount()
 {
     return genericsComp.GetTypeParamCount();
@@ -56,13 +51,6 @@ optional<RMember> RInterfaceDecl::GetMember(InRef<RName> name)
 RDecl* RInterfaceDecl::RTypeDecl_GetDecl()
 {
     return this;
-}
-
-RType* RInterfaceDecl::GetOpenType()
-{   
-    // bLocal 처리를 못해서 (왠지 빼야 할 것 같다) 일단 NotImplementedException 처리.
-    // return rFactory->MakeInterfaceType(this, MakeOpenTypeArgs(*rFactory));
-    throw NotImplementedException{};
 }
 
 void RInterfaceDecl::Accept(RTypeDeclVisitor& visitor)

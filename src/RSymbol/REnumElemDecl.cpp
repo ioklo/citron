@@ -11,8 +11,8 @@ using namespace std;
 
 namespace Citron {
 
-REnumElemDecl::REnumElemDecl(REnumDecl* _enum, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory)
-    : _enum{_enum}, name{name.Take()}, rFactory{rFactory.Take()}
+REnumElemDecl::REnumElemDecl(RDeclKey&& key,REnumDecl* _enum, RName&& name, TakeRef<RFactoryPtr> rFactory)
+    : key{move(key)}, _enum{_enum}, name{move(name)}, rFactory{rFactory.Take()}
 {
 }
 
@@ -31,14 +31,19 @@ REnumElemVarDecl* REnumElemDecl::GetUnboundVar(InRef<RName> name)
     return nullptr;
 }
 
+RDeclKey& REnumElemDecl::GetDeclKey()
+{
+    return key;
+}
+
 RDecl* REnumElemDecl::GetOuter()
 {
     return _enum;
 }
 
-RIdentifier REnumElemDecl::GetIdentifier()
+RName* REnumElemDecl::TryGetName()
 {
-    return RIdentifier{name, {}};
+    return &name;
 }
 
 size_t REnumElemDecl::GetTypeParamCount()
@@ -73,11 +78,6 @@ RDecl* REnumElemDecl::RTypeDecl_GetDecl()
 {
     // VarDecl의 자식이 ResolveIdentifier를 호출할 수 없고, bodyspace도 아니기 때문에 직접 호출할 일이 없다
     throw RuntimeFatalException();
-}
-
-RType* REnumElemDecl::GetOpenType()
-{
-    return rFactory->MakeEnumElemType(this, MakeOpenTypeArgs(*rFactory));
 }
 
 void REnumElemDecl::Accept(RTypeDeclVisitor& visitor)

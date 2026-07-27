@@ -9,8 +9,8 @@ using namespace std;
 
 namespace Citron {
 
-RClassDecl::RClassDecl(RTypeDeclOuter outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory)
-    : outer{outer}, name{name.Take()}, rFactory{rFactory.Take()}, trivialCtorIndex{-1}
+RClassDecl::RClassDecl(RDeclKey&& key, RTypeDeclOuter&& outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory)
+    : key{std::move(key)}, outer{std::move(outer)}, name{name.Take()}, rFactory{rFactory.Take()}, trivialCtorIndex{-1}
     , genericsComp{}, typeDeclContainerComp{}
 {
 }
@@ -31,14 +31,26 @@ optional<RDeclRes_ClassVar> RClassDecl::ResolveVar(RTypeArguments* typeArgs, InR
     return RDeclRes_ClassVar{i->second, typeArgs};
 }
 
+// from RDecl
+
+RType* RClassDecl::GetOpenType()
+{
+    return rFactory->MakeClassType(this, MakeOpenTypeArgs(*rFactory));
+}
+
+RDeclKey& RClassDecl::GetDeclKey()
+{
+    return key;
+}
+
 RDecl* RClassDecl::GetOuter()
 {
     return outer.GetDecl();
 }
 
-RIdentifier RClassDecl::GetIdentifier()
+RName* RClassDecl::TryGetName()
 {
-    return RIdentifier{name, {}};
+    return &name;
 }
 
 size_t RClassDecl::GetTypeParamCount()
@@ -117,11 +129,6 @@ optional<RDeclRes> RClassDecl::ResolveInheritedMember(RTypeArguments* typeArgs, 
 RDecl* RClassDecl::RTypeDecl_GetDecl()
 {
     return this;
-}
-
-RType* RClassDecl::GetOpenType()
-{
-    return rFactory->MakeClassType(this, MakeOpenTypeArgs(*rFactory));
 }
 
 void RClassDecl::Accept(RTypeDeclVisitor& visitor)

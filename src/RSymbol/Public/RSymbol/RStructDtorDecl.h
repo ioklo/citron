@@ -3,6 +3,7 @@
 #include "RDecl.h"
 #include "ImplRFuncDeclUsingCommonComponents.h"
 #include "RCommonFuncDeclComponent.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
@@ -11,19 +12,21 @@ enum class RStructMemberAccessor;
 
 class RStructDtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents<RStructDtorDecl>
 {
+    RDeclKey key;
     RStructDecl* _struct;
     RStructMemberAccessor accessor;
     
     RCommonFuncDeclComponent commonFuncDeclComp;
 
 public:
-    RSYMBOL_API RStructDtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor);
+    RSYMBOL_API RStructDtorDecl(RDeclKey&& key, RStructDecl* _struct, RStructMemberAccessor accessor);
     RStructDecl* GetStructDecl() { return _struct; }
     RStructMemberAccessor GetAccessor() { return accessor; }
 
 public: // from RDecl
+    RSYMBOL_API RDeclKey& GetDeclKey() final;
     RSYMBOL_API RDecl* GetOuter() final;
-    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API RName* TryGetName() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;

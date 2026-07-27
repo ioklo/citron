@@ -16,7 +16,7 @@
 #include "RSymbol/RTypeArguments.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFactory.h"
-#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RNamespace.h"
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 #include "MIR/MSharedExp.h"

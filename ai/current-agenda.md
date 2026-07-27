@@ -11,8 +11,11 @@ canonical trait conformance, `impl`, global identifier
 - 먼저 trait declaration/type, struct trait 목록, witness `impl` declaration을 RSymbol과 SmTranslator skeleton 단계에 연결한다.
 - 이름 있는 외부 `extension` bundle, 소비자 `extend` activation, overlap/ambiguity 처리는 후속 단계다.
 - `impl`은 ordinary source name을 바인딩하지 않지만, lexical symbol tree의 internal `RImplTraitDecl` subtree로 둔다. internal tree name은 canonical `RName_ImplTrait`이며 ordinary lookup/overload group에는 노출하지 않는다.
-- external symbol lookup을 위해 `RName`(lookup key), `RIdentifier`(same-outer exact declaration key), `GlobalDeclIdentifier`(module prefix + identifier path), `GlobalTypeIdentifier`(canonical type expression)를 구분한다. identifier는 parser 없이 equality/hash에 쓸 canonical string으로 우선 구현한다.
-- `RName`은 lookup key로만 축소하지 않고, local/parameter/reserved/compiler name을 포함하는 구조화 semantic name value로 유지한다. exact declaration identity는 `RIdentifier`가 담당한다. `RIdentifier`의 structure와 serialized-string layer 분리는 재논의 대상이다.
+- external symbol lookup을 위해 `RName`(common structured lookup key), `RNodeKey`(same-outer exact tree-child key), `RIdentifier`(module prefix + node-key path), `RTypeIdentifier`(canonical type expression)를 구분한다. identifier는 parser 없이 equality/hash에 쓸 canonical string으로 우선 구현한다.
+- `RName`은 normal source name뿐 아니라 type parameter, local/parameter, reserved/compiler name을 포함하는 lookup key다. `RName_CtorParam`처럼 source-spellable하지 않은 generated name도 body lookup에 참여한다. 따라서 현재 `RDeclName` 별도 abstraction은 두지 않으며, exact tree identity는 `RNodeKey`가 담당한다.
+- `RNode`를 declaration-space symbol tree의 공통 base로 두고, actual declaration은 `RDecl : RNode`, canonical namespace scope는 `RNamespace : RNode`로 분리한다. `RModule`은 root namespace를 소유하지만 RNode는 아니다. `RNodeKey`/`GetNodeKey()`는 기존 `RDeclKey`를 일반화하며 `RIdentifier`는 global tree-node path가 된다.
+- `RNode::GetIdentifier()`는 최종 value API이고, internal virtual append가 하나의 string buffer에 module prefix와 node path를 직접 쓴다. root namespace만 module boundary를 처리한다. RNode는 declaration-space lookup API도 직접 제공하고, class-only inherited lookup은 protected virtual hook으로 둔다.
+- symbol tree는 `RModule`마다 하나의 canonical tree를 둔다. compiler-wide module registry는 여러 module tree를 찾기만 하며 declaration을 하나의 global tree에 병합하지 않는다. unit은 tree를 갖지 않고 syntax decl pointer, import/alias overlay, task/cache contribution을 가진 별도 context로 둔다. namespace syntax는 module/path당 하나인 canonical `RNamespace`를 GetOrAdd하여 child declaration을 추가한다. `RNamespaceDeclGroup`은 제거한다.
 - `RImplTraitDecl`의 child는 `RImplTraitMemberDecl`, 함수 requirement 구현은 `RImplTraitFuncDecl`이다. 이 함수는 `RFuncDecl`이므로 existing MIR body/ABI/QIR direct-call 경로를 사용한다.
 - `NStructInfo`/`NImplTrait*`는 기존 witness payload 모델의 잔재가 되며, conformance header entry와 `RImplTraitDecl*` 연결로 대체하는 방향이다.
 - SmTranslator는 unit 간에는 global phase barrier를 유지하고, unit 내부의 세밀한 선행 조건은 order가 있는 task dependency로 표현하는 방향을 검토한다.
@@ -35,6 +38,7 @@ canonical trait conformance, `impl`, global identifier
 - `RDeclRes` 반환 여부가 아니라 탐색 범위로 `Get`/`Resolve`를 구분하도록 적용했다. direct lookup 결과는 `ROuterAppliedDecl`/`RAppliedDecl`로 표현하고, 함수의 explicit type argument prefix는 RSymbol result가 아니라 SmTranslator의 `SmPartiallyAppliedFuncDeclGroup`에 둔다.
 - trait call은 call-site에서 source-local `NImplTraitFunc`를 보관하지 않는다. semantic `Trait` call은 `RTraitFuncDecl`과 applied trait identity를 보관하고, lowering이 concrete conformance에는 direct impl call을, generic constraint와 `some Trait` opaque value에는 trait table call을 선택한다.
 - `RImplTraitDecl` subtree는 impl syntax의 lexical outer에 둔다. target struct와 matched conformance header는 typed relation으로 따로 둔다.
+- `RImplTraitDecl`은 ordinary `RName` member lookup scope가 아니다. trait requirement implementation은 `RTraitFuncDecl -> RImplTraitFuncDecl` relation으로 찾으며, future extension-private helper scope에만 별도 name index 필요성을 재검토한다.
 - extension은 trait impl subtree에 `RImplTrait*` 계열을 재사용하는 쪽을 우선 검토한다. `RExtensionFuncDecl`은 bundle-private helper로 별도 계열이다.
 
 ## Open Questions
@@ -50,7 +54,8 @@ canonical trait conformance, `impl`, global identifier
 - `MCallable`을 semantic `Trait` call로 유지할지, 어느 IR stage에서 `Direct`/`TraitTable`/`Virtual` call target으로 분해할지
 - trait table call의 ABI shape: generic constraint dictionary, opaque metadata의 witness entry, direct conformance symbol의 관계
 - `$T0` binder slot numbering, passing kind/function generic signature의 overload identity, alias normalization API
-- `RIdentifier`의 structured form 대 string form, category 간 same-name collision, exact identifier seal/register 시점
+- `RNodeKey`의 structured form 대 string form, category 간 same-name collision, exact key seal/register 시점
+- `RNode` API 추출 순서와 existing `RDecl` users의 migration 범위
 
 ## Update Rule
 - 현재 주제가 바뀌면 이 파일을 먼저 갱신한다.

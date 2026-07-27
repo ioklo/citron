@@ -6,20 +6,25 @@ using namespace std;
 
 namespace Citron {
 
-RStructVarDecl::RStructVarDecl(RStructDecl* _struct, RStructMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name, size_t index)
-    : _struct{_struct}, accessor{accessor}, bStatic{bStatic}, declType{declType}, name{name.Take()}, index{index}
+RStructVarDecl::RStructVarDecl(RDeclKey&& key, RStructDecl* _struct, RStructMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name, size_t index)
+    : key{move(key)}, _struct{_struct}, accessor{accessor}, bStatic{bStatic}, declType{declType}, name{name.Take()}, index{index}
 {
 }
 
 // from RDecl
+RDeclKey& RStructVarDecl::GetDeclKey()
+{
+    return key;
+}
+
 RDecl* RStructVarDecl::GetOuter()
 {
     return _struct;
 }
 
-RIdentifier RStructVarDecl::GetIdentifier()
+RName* RStructVarDecl::TryGetName()
 {
-    return RIdentifier{name, {}};
+    return &name;
 }
 
 size_t RStructVarDecl::GetTypeParamCount()

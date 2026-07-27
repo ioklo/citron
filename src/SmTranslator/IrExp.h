@@ -6,7 +6,7 @@
 
 namespace Citron {
 
-class RNamespaceDecl;
+class RNamespace;
 class RType_TypeVar;
 class RClassDecl;
 class RTypeArguments;
@@ -33,11 +33,11 @@ public:
     virtual void Accept(IrExpVisitor& visitor) = 0;
 };
 
-struct IrExp_Namespace : IrExp
+struct IrExp_Namespaces : IrExp
 {
-    RNamespaceDecl* decl;
+    RNamespaceGroup namespaces;
 
-    IrExp_Namespace(RNamespaceDecl* decl);
+    IrExp_Namespaces(RNamespaceGroup&& namespaces);
     void Accept(IrExpVisitor& visitor) override;
 };
 

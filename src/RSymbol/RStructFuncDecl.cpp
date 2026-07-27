@@ -5,17 +5,25 @@ using namespace std;
 
 namespace Citron {
 
-RStructFuncDecl::RStructFuncDecl(RStructDecl* _struct, RStructMemberAccessor accessor, TakeRef<RName> name, bool bSeqFunc)
-    : _struct{_struct}, accessor{accessor}, name{name.Take()}
+RStructFuncDecl::RStructFuncDecl(RStructDecl* _struct, RStructMemberAccessor accessor, RName&& name, bool bSeqFunc)
+    : _struct{_struct}, accessor{accessor}, name{move(name)}
     , genericsComp{}
     , commonFuncDeclComp{bSeqFunc}
     , ImplRFuncDeclUsingCommonComponents{this, commonFuncDeclComp}
 {
 }
 
-void RStructFuncDecl::InitFuncReturnAndParams(bool bStatic, RFuncReturn&& funcRet, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void RStructFuncDecl::Init(RDeclKey&& key, bool bStatic, RFuncReturn&& funcRet, std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
-    commonFuncDeclComp.InitFuncReturnAndParams(move(funcRet), bStatic ? (RThisKind)RThisKind_Static {} : RThisKind_Ref{_struct->GetOpenType()}, move(funcParameters), bLastParameterVariadic);
+    o_key = std::move(key);
+    genericsComp.InitTypeParams(move(typeParams));
+    commonFuncDeclComp.InitFuncSignature(move(funcRet), bStatic ? (RThisKind)RThisKind_Static {} : RThisKind_Ref{_struct->GetOpenType()}, move(funcParameters), bLastParameterVariadic);
+}
+
+RDeclKey& RStructFuncDecl::GetDeclKey()
+{
+    assert(o_key);
+    return *o_key;
 }
 
 // from RDecl
@@ -24,9 +32,9 @@ RDecl* RStructFuncDecl::GetOuter()
     return _struct;
 }
 
-RIdentifier RStructFuncDecl::GetIdentifier()
+RName* RStructFuncDecl::TryGetName()
 {
-    return RIdentifier{name, commonFuncDeclComp.GetParamIds()};
+    return &name;
 }
 
 size_t RStructFuncDecl::GetTypeParamCount()

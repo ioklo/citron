@@ -1,5 +1,6 @@
 #pragma once
 #include "RDecl.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
@@ -9,12 +10,13 @@ class REnumElemDecl;
 
 class REnumElemVarDecl final : public RDecl
 {
+    RDeclKey key;
     REnumElemDecl* enumElem;
     RName name;
     RType* declType; // lazy-init
 
 public:
-    RSYMBOL_API REnumElemVarDecl(REnumElemDecl* outer, TakeRef<RName> name);
+    RSYMBOL_API REnumElemVarDecl(RDeclKey&& key, REnumElemDecl* outer, RName&& name);
     void InitDeclType(RType* declType) { this->declType = declType; }
     
     REnumElemDecl* GetEnumElem() { return enumElem; }
@@ -22,8 +24,9 @@ public:
     RType* GetUnboundDeclType() { return declType; }
 
 public: // from RDecl
+    RSYMBOL_API RDeclKey& GetDeclKey() final;
     RSYMBOL_API RDecl* GetOuter() final;
-    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API RName* TryGetName() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;

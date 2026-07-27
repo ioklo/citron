@@ -22,7 +22,11 @@ RTypeDecl* RTypeDeclContainerComponent::GetType(int index)
 void RTypeDeclContainerComponent::AddType(RTypeDecl* typeDecl)
 {
     types.push_back(typeDecl);
-    typeDict.insert_or_assign(typeDecl->RTypeDecl_GetDecl()->GetIdentifier().name, typeDecl);
+
+    auto* name = typeDecl->RTypeDecl_GetDecl()->TryGetName();
+    assert(name); // typeDecl은 항상 이름이 있다
+
+    typeDict.insert_or_assign(*name, typeDecl);
 }
 
 RTypeDecl* RTypeDeclContainerComponent::GetTypeMember(InRef<RName> name)

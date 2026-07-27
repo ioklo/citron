@@ -1,5 +1,5 @@
 #include "RFuncDeclOuter.h"
-#include "RNamespaceDecl.h"
+#include "RNamespace.h"
 #include "RGlobalFuncDecl.h"
 #include "RClassDecl.h"
 #include "RClassCtorDecl.h"

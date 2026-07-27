@@ -8,7 +8,7 @@ namespace Citron {
 class EFuncDeclOuter;
 
 class RDecl;
-class RNamespaceDecl;
+class RNamespace;
 class RGlobalFuncDecl;
 class RClassDecl;
 class RClassCtorDecl;
@@ -22,7 +22,7 @@ class RLambdaDecl;
 class RFuncDeclOuter
 {
     using Variant = std::variant<
-        RNamespaceDecl*,
+        RNamespace*,
         RGlobalFuncDecl*,
         RClassDecl*,
         RClassCtorDecl*,

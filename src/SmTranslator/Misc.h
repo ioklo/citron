@@ -25,6 +25,4 @@ std::expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& ty
 
 bool IsVarType(STypeExp* typeExp);
 
-RName_CtorParam MakeBaseCtorParamName(size_t index, RName baseParamName);
-
 } // namespace Citron

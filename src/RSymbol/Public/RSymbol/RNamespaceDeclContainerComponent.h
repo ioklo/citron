@@ -10,22 +10,19 @@
 
 namespace Citron {
 
-class RNamespaceDecl;
+class RNamespace;
 
 class RNamespaceDeclContainerComponent
 {
 public:
-    std::vector<RNamespaceDecl*> namespaceDecls; // preserve order
-    std::unordered_map<RName, RNamespaceDecl*> namespaceDict;
+    std::vector<RNamespace*> namespaces; // preserve order
+    std::unordered_map<RName, RNamespace*> namespaceDict;
 
 public:
     RNamespaceDeclContainerComponent();
 
-    RSYMBOL_API void AddNamespace(RNamespaceDecl* _namespace);
-    RSYMBOL_API RNamespaceDecl* GetNamespace(InRef<RName> name);
-
-    // internal
-    std::optional<RDeclRes> ResolveNamespaceMember(InRef<RName> name, size_t explicitTypeParamsExceptOuterCount);
+    RSYMBOL_API void AddNamespace(RNamespace* _namespace);
+    RSYMBOL_API RNamespace* GetNamespace(InRef<RName> name);
 };
 
 }

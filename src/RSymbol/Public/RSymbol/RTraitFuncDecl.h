@@ -4,6 +4,7 @@
 #include "RFuncReturn.h"
 #include "RFuncParameter.h"
 #include "RGenericsComponent.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
@@ -11,22 +12,30 @@ class RTraitDecl;
 
 class RTraitFuncDecl : public RDecl
 {
-    RTraitDecl* trait;
+    struct LazyInit
+    {
+        RDeclKey key;
+        std::vector<RTypeParam*> typeParams;
+        RFuncReturn funcReturn;
+        std::vector<RFuncParameter> funcParameters;
+        bool bLastParamVariadic;
+    };
 
+    std::optional<LazyInit> o_lazyInit;
+    RTraitDecl* trait;
     bool bStatic;
-    RFuncReturn funcReturn;
     RName name;
-    std::vector<RFuncParameter> funcParameters;
-    bool bLastParamVariadic;
 
     RGenericsComponent genericsComp;
 
 public:
-    RSYMBOL_API RTraitFuncDecl(RTraitDecl* trait, bool bStatic, RFuncReturn&& funcReturn, RName&& name, std::vector<RFuncParameter>&& funcParameters, bool bLastParamVariadic);
+    RSYMBOL_API RTraitFuncDecl(RTraitDecl* trait, bool bStatic, RName&& name);
+    RSYMBOL_API void Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParamVariadic);
 
 public: // from RDecl
+    RSYMBOL_API RDeclKey& GetDeclKey() final;
     RSYMBOL_API RDecl* GetOuter() final;
-    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API RName* TryGetName() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;

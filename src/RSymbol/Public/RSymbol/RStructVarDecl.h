@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RDecl.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
@@ -10,6 +11,7 @@ class RFactory;
 
 class RStructVarDecl final : public RDecl
 {
+    RDeclKey key;
     RStructDecl* _struct;
     RStructMemberAccessor accessor;
     bool bStatic;
@@ -18,7 +20,7 @@ class RStructVarDecl final : public RDecl
     size_t index;
 
 public:
-    RSYMBOL_API RStructVarDecl(RStructDecl* _struct, RStructMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name, size_t index);
+    RSYMBOL_API RStructVarDecl(RDeclKey&& key,RStructDecl* _struct, RStructMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name, size_t index);
 
     bool IsStatic() { return bStatic; }
     RType* GetUnboundDeclType() { assert(declType); return declType; }
@@ -26,8 +28,9 @@ public:
     size_t GetIndex() { return index; }
 
 public: // from RDecl
+    RSYMBOL_API RDeclKey& GetDeclKey() final;
     RSYMBOL_API RDecl* GetOuter() final;
-    RSYMBOL_API RIdentifier GetIdentifier() final;
+    RSYMBOL_API RName* TryGetName() final;
     RSYMBOL_API size_t GetTypeParamCount() final;
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index) final;
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name) final;

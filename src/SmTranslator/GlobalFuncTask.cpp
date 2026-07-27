@@ -3,7 +3,7 @@
 #include "Infra/Expected.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RGlobalFuncDecl.h"
-#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RNamespace.h"
 #include "RSymbol/RFactory.h"
 
 #include "MIR/MFuncBody.h"
@@ -17,7 +17,7 @@ using namespace std;
 
 namespace Citron {
 
-void GlobalFuncTask::Register(RNamespaceDecl* outer, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void GlobalFuncTask::Register(RNamespace* outer, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
     shared_ptr<GlobalFuncTask> task{new GlobalFuncTask(outer, syntax, move(rFactory))};
     phaseManager.AddBuildNonTypeSymbolTask(task);
@@ -31,16 +31,16 @@ expected<void, DiagPtr> GlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
     rFuncDecl = rFactory->MakeDecl<RGlobalFuncDecl>(
         rOuter, accessor, RName::Normal(syntax->name), bSeqFunc);
 
-    auto typeParams = MakeTypeParams(rFuncDecl, syntax->typeParams, rFactory);
-    rFuncDecl->InitTypeParams(move(typeParams));
+    auto typeParams = MakeTypeParams(rOuter->GetAllTypeParamCount(), rFuncDecl, syntax->typeParams, rFactory);
 
-    auto e_funcRet = context.MakeFuncReturn(syntax->funcRet, rFuncDecl);
+    SmFuncHeaderResolveScope scope{rOuter, typeParams};
+    auto e_funcRet = context.MakeFuncReturn(syntax->funcRet, scope);
     RETURN_ON_ERROR(e_funcRet);
     
-    auto e_parametersInfo = context.MakeParameters(rFuncDecl, syntax->parameters);
+    auto e_parametersInfo = context.MakeParameters(syntax->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_parametersInfo, [rParameters, bLastParamVariadic]);
 
-    rFuncDecl->InitFuncReturnAndParams(move(*e_funcRet), move(rParameters), bLastParamVariadic);
+    rFuncDecl->Init(RDeclKey::Func(RName::Normal(syntax->name), rParameters), move(typeParams), move(*e_funcRet), move(rParameters), bLastParamVariadic);
     rOuter->AddGlobalFuncDecl(rFuncDecl);
 
     return {};

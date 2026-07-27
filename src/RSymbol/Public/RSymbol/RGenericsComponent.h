@@ -4,7 +4,6 @@
 #include <optional>
 
 #include "Infra/Ref.h"
-#include "RNames.h"
 
 namespace Citron {
 
@@ -12,6 +11,7 @@ class RTypeParam;
 class RTypeDecl;
 class RTypeRes;
 class RDeclRes;
+class RName;
 
 class RGenericsComponent
 {

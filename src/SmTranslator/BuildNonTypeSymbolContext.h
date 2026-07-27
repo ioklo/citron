@@ -19,6 +19,12 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 
 class TranslateBodyContext;
 
+struct SmFuncHeaderResolveScope
+{
+    RDecl* outer;
+    std::span<RTypeParam*> typeParams;
+};
+
 class BuildNonTypeSymbolContext
 {
     RFactoryPtr rFactory;
@@ -32,9 +38,10 @@ public:
         return rFactory->MakeDecl<TRDecl>(std::forward<TArgs>(args)...);
     }
 
-    RType* MakeType(STypeExp* sTypeExp, RDecl* decl);
-    std::expected<RFuncReturn, DiagPtr> MakeFuncReturn(SFuncReturn& funcRet, RDecl* decl);
-    std::expected<std::tuple<std::vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(RDecl* decl, std::vector<SFuncParam>& sParams);
+    RType* MakeType(STypeExp* sTypeExp, RDecl* scope);
+    RType* MakeType(STypeExp* sTypeExp, InRef<SmFuncHeaderResolveScope> scope);
+    std::expected<RFuncReturn, DiagPtr> MakeFuncReturn(SFuncReturn& funcRet, InRef<SmFuncHeaderResolveScope> scope);
+    std::expected<std::tuple<std::vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(std::vector<SFuncParam>& sParams, InRef<SmFuncHeaderResolveScope> scope);
 };
 
 } // namespace Citron

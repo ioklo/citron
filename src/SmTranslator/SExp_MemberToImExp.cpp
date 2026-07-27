@@ -2,7 +2,7 @@
 #include "Infra/Expected.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RNames.h"
-#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RNamespace.h"
 #include "RSymbol/RClassDecl.h"
 #include "RSymbol/RClassVarDecl.h"
 #include "RSymbol/RStructDecl.h"

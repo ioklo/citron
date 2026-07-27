@@ -277,6 +277,7 @@ void GenerateVisitors(std::filesystem::path rootPath)
                 // "RClassDtorDecl",
                 "RClassFuncDecl",
                 "RLambdaDecl",
+                "RImplTraitFuncDecl",
             },
         },
 
@@ -309,7 +310,7 @@ void GenerateVisitors(std::filesystem::path rootPath)
             .name = "ImExp",
             .memberName = "imExp",
             .members {
-                "ImExp_Namespace",
+                "ImExp_Namespaces",
                 "ImExp_GlobalFuncs",
                 "ImExp_TypeVar",
                 "ImExp_Class",
@@ -329,7 +330,7 @@ void GenerateVisitors(std::filesystem::path rootPath)
             .name = "IrExp",
             .memberName = "irExp",
             .members {
-                "IrExp_Namespace",
+                "IrExp_Namespaces",
                 "IrExp_Class",
                 "IrExp_Struct",
                 "IrExp_Static",

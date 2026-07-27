@@ -50,10 +50,7 @@
     <ClInclude Include="Public\RSymbol\RModule.h">
       <Filter>RDecls\05 TopLevel</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RNamespaceDecl.h">
-      <Filter>RDecls\05 TopLevel</Filter>
-    </ClInclude>
-    <ClInclude Include="Public\RSymbol\RNamespaceDeclGroup.h">
+    <ClInclude Include="Public\RSymbol\RNamespace.h">
       <Filter>RDecls\05 TopLevel</Filter>
     </ClInclude>
     <ClInclude Include="Public\RSymbol\RClassCtorDecl.h">
@@ -164,11 +161,14 @@
     <ClInclude Include="Public\RSymbol\RImplTraitFuncDecl.h">
       <Filter>RDecls\11 Impl</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RGlobalIdentifier.h">
+    <ClInclude Include="Public\RSymbol\RTypeIdentifier.h">
       <Filter>RDecls\01 Identifier</Filter>
     </ClInclude>
-    <ClInclude Include="Public\RSymbol\RGlobalTypeIdentifier.h">
+    <ClInclude Include="Public\RSymbol\RDeclKey.h">
       <Filter>RDecls\01 Identifier</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RNamespaceGroup.h">
+      <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -246,9 +246,6 @@
     <ClCompile Include="RModule.cpp">
       <Filter>RDecls\05 TopLevel</Filter>
     </ClCompile>
-    <ClCompile Include="RNamespaceDeclGroup.cpp">
-      <Filter>RDecls\05 TopLevel</Filter>
-    </ClCompile>
     <ClCompile Include="RTypeParam.cpp">
       <Filter>RDecls\13 Generics</Filter>
     </ClCompile>
@@ -273,7 +270,7 @@
     <ClCompile Include="Public\RSymbol\RStructDecl.cpp">
       <Filter>RDecls\07 Struct</Filter>
     </ClCompile>
-    <ClCompile Include="RNamespaceDecl.cpp">
+    <ClCompile Include="RNamespace.cpp">
       <Filter>RDecls\05 TopLevel</Filter>
     </ClCompile>
     <ClCompile Include="RTypeDeclOuter.cpp">
@@ -345,7 +342,7 @@
     <ClCompile Include="RIdentifier.cpp">
       <Filter>RDecls\01 Identifier</Filter>
     </ClCompile>
-    <ClCompile Include="RGlobalIdentifier.cpp">
+    <ClCompile Include="RDeclKey.cpp">
       <Filter>RDecls\01 Identifier</Filter>
     </ClCompile>
   </ItemGroup>

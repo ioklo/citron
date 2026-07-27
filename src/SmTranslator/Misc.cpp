@@ -192,24 +192,4 @@ bool IsVarType(STypeExp* typeExp)
     return idTypeExp && idTypeExp->name == "var" && idTypeExp->typeArgs.size() == 0;
 }
 
-RName_CtorParam MakeBaseCtorParamName(size_t index, RName baseParamName)
-{
-    return baseParamName.Visit([index](auto&& name) -> RName_CtorParam {
-        using T = remove_cvref_t<decltype(name)>;
-
-        if constexpr (same_as<T, RName_CtorParam>)
-        {
-            return RName_CtorParam{index, name.paramText};
-        }
-        else if constexpr (same_as<T, RName_Normal>)
-        {
-            return RName_CtorParam{index, name.text};
-        }
-        else
-        {
-            throw RuntimeFatalException{};
-        }
-    });
-}
-
 } // namespace Citron

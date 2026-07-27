@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include "Infra/Ptr.h"
-#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RNamespace.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RClassVarDecl.h"
 #include "RSymbol/RStructVarDecl.h"
@@ -27,7 +27,7 @@ void IrExp_StructVar::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_SharedDeref::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_Loc::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 
-IrExp_Namespace::IrExp_Namespace(RNamespaceDecl* decl)
+IrExp_Namespace::IrExp_Namespace(RNamespace* decl)
     : decl(decl)
 {
 }

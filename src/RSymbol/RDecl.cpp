@@ -7,6 +7,7 @@
 #include "RTypeRes.h"
 #include "RTypeArguments.h"
 #include "RMember.h"
+#include "RDeclKey.h"
 
 using namespace std;
 
@@ -52,6 +53,13 @@ size_t RDecl::GetAllTypeParamCount()
     if (!outer) return GetTypeParamCount();
 
     return outer->GetAllTypeParamCount() + GetTypeParamCount();
+}
+
+RIdentifier RDecl::GetIdentifier()
+{
+    std::string buffer;
+    FillIdentifier(buffer);
+    return RIdentifier{std::move(buffer)};
 }
 
 RTypeArguments* GetOuterTypeArgs(RDecl* decl, RTypeArguments* typeArgs)
@@ -149,6 +157,21 @@ optional<RTypeRes> RDecl::ResolveInheritedTypeMember(RTypeArguments* typeArgs, I
 optional<RDeclRes> RDecl::ResolveInheritedMember(RTypeArguments* typeArgs, InRef<RName> name)
 {
     return nullopt;
+}
+
+void RDecl::FillIdentifier(std::string& buffer)
+{
+    // outer 먼저
+    auto* outer = GetOuter();
+    assert(outer); // RModule만 outer가 nullptr일 수 있다
+
+    // outer 먼저
+    outer->FillIdentifier(buffer);
+
+    buffer.append(".");
+
+    auto& key = GetDeclKey();
+    buffer.append(key.GetValue());
 }
 
 }

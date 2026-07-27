@@ -5,7 +5,7 @@
 #include "Infra/Ptr.h"
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
-#include "RSymbol/RNamespaceDecl.h"
+#include "RSymbol/RNamespace.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RClassVarDecl.h"

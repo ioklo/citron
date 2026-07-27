@@ -24,7 +24,6 @@ public:
     virtual ~RTypeDecl() = default;
     
     virtual RDecl* RTypeDecl_GetDecl() = 0;
-    virtual RType* GetOpenType() = 0;
     virtual void Accept(RTypeDeclVisitor& visitor) = 0;
 };
 

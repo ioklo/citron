@@ -1,12 +1,13 @@
 #include "RGlobalFuncDecl.h"
 #include "Infra/Exceptions.h"
-#include "RNamespaceDecl.h"
+#include "RNamespace.h"
+#include "RDeclKey.h"
 
 namespace Citron {
 
 using namespace std;
 
-RGlobalFuncDecl::RGlobalFuncDecl(RNamespaceDecl* outer, RNamespaceMemberAccessor accessor, TakeRef<RName> name, bool bSeqFunc)
+RGlobalFuncDecl::RGlobalFuncDecl(RNamespace* outer, RNamespaceMemberAccessor accessor, TakeRef<RName> name, bool bSeqFunc)
     : outer{outer}
     , accessor{accessor}
     , name{name.Take()}
@@ -16,21 +17,19 @@ RGlobalFuncDecl::RGlobalFuncDecl(RNamespaceDecl* outer, RNamespaceMemberAccessor
 {   
 }
 
-void RGlobalFuncDecl::InitFuncReturnAndParams(RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void RGlobalFuncDecl::Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
-    commonFuncDeclComp.InitFuncReturnAndParams(move(funcRet), RThisKind_Static{}, move(funcParameters), bLastParameterVariadic);
+    o_key.emplace(std::move(key));
+    genericsComp.InitTypeParams(move(typeParams));
+    commonFuncDeclComp.InitFuncSignature(move(funcRet), RThisKind_Static{}, move(funcParameters), bLastParameterVariadic);
 }
-
-
 
 // from RDecl
+RDeclKey& RGlobalFuncDecl::GetDeclKey() { return *o_key; }
 RDecl* RGlobalFuncDecl::GetOuter() { return outer; }
-RIdentifier RGlobalFuncDecl::GetIdentifier()
-{
-    return RIdentifier{name, commonFuncDeclComp.GetParamIds()};
-}
+RName* RGlobalFuncDecl::TryGetName() {  return &name; }
 
-size_t RGlobalFuncDecl::GetTypeParamCount()
+size_t RGlobalFuncDecl::GetTypeParamCount() 
 {
     return genericsComp.GetTypeParamCount();
 }
