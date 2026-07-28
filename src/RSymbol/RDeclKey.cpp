@@ -222,52 +222,6 @@ string EncodeRFuncParam(RFuncParameter& funcParam)
     return format("{}{}", EncodeRFuncParamKind(funcParam.kind), EncodeRType(funcParam.type));
 }
 
-RDeclKey MakeNormalDeclKey(InRef<RName> name)
-{
-    return RDeclKey{EncodeRName(name)};
-}
-
-RDeclKey MakeFuncDeclKey(InRef<RName> name, span<RFuncParameter> funcParams)
-{
-    string buffer;
-    buffer += "F(";
-    buffer += EncodeRName(name);
-    bool bFirst = true;
-    for (auto& funcParam : funcParams)
-    {
-        if (bFirst) bFirst = false;
-        else buffer += ",";
-        buffer += EncodeRFuncParam(funcParam);
-    }
-    buffer += ")";
-    return RDeclKey{buffer};
-}
-
-RDeclKey MakeCtorDeclKey(span<RFuncParameter> funcParams)
-{
-    string buffer;
-    buffer += "C(";
-    bool bFirst = true;
-    for (auto& funcParam : funcParams)
-    {
-        if (bFirst) bFirst = false;
-        else buffer += ",";
-        buffer += EncodeRFuncParam(funcParam);
-    }
-    buffer += ")";
-    return RDeclKey{buffer};
-}
-
-RDeclKey MakeDtorDeclKey()
-{
-    return RDeclKey{"D()"};
-}
-
-RDeclKey MakeImplTraitDeclKey(RDecl* decl, RTraitDecl* traitDecl, RTypeArguments* traitTypeArgs)
-{
-    return RDeclKey{format("I({},{})", decl->GetDeclKey().GetValue(), EncodeDeclAndTypeArgs(traitDecl, traitTypeArgs))};
-}
-
 string EncodeFuncName(InRef<RName> name, span<RFuncParameter> funcParams)
 {
     string buffer;
@@ -286,36 +240,48 @@ string EncodeFuncName(InRef<RName> name, span<RFuncParameter> funcParams)
 
 RDeclKey RDeclKey::Normal(InRef<RName> name)
 {
-    // TODO: [73] 2026-07-27, DeclKey구현
-    throw NotImplementedException{};
     return RDeclKey{EncodeRName(name)};
 }
 
 RDeclKey RDeclKey::Func(InRef<RName> name, std::span<RFuncParameter> funcParams)
 {
-    // TODO: [73] 2026-07-27, DeclKey구현
-    throw NotImplementedException{};
-    return RDeclKey{EncodeFuncName(name, funcParams)};
+    string buffer;
+    buffer += "F(";
+    buffer += EncodeRName(name);
+    bool bFirst = true;
+    for (auto& funcParam : funcParams)
+    {
+        if (bFirst) bFirst = false;
+        else buffer += ",";
+        buffer += EncodeRFuncParam(funcParam);
+    }
+    buffer += ")";
+    return RDeclKey{buffer};
 }
 
 RDeclKey RDeclKey::Ctor(std::span<RFuncParameter> funcParams)
 {
-    // TODO: [73] 2026-07-27, DeclKey구현
-    throw NotImplementedException{};
+    string buffer;
+    buffer += "C(";
+    bool bFirst = true;
+    for (auto& funcParam : funcParams)
+    {
+        if (bFirst) bFirst = false;
+        else buffer += ",";
+        buffer += EncodeRFuncParam(funcParam);
+    }
+    buffer += ")";
+    return RDeclKey{buffer};
 }
 
 RDeclKey RDeclKey::Dtor()
 {
-    // TODO: [73] 2026-07-27, DeclKey구현
-    throw NotImplementedException{};
+    return RDeclKey{"D()"};
 }
 
 RDeclKey RDeclKey::ImplTrait(RDecl* decl, RTraitDecl* traitDecl, RTypeArguments* traitTypeArgs)
 {
-    // TODO: [73] 2026-07-27, DeclKey구현
-    throw NotImplementedException{};
+    return RDeclKey{format("I({},{})", decl->GetDeclKey().GetValue(), EncodeDeclAndTypeArgs(traitDecl, traitTypeArgs))};
 }
-
-
 
 } // namespace Citron

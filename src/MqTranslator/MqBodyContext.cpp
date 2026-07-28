@@ -339,7 +339,7 @@ size_t MqBodyContext::AddLocalVar(RType* type, InRef<RName> rName)
     slotInfos.emplace_back(type, slotIndex, QSlotRole_Local{*rName});
     
     // 2. 현재 스코프에 이름 추가
-    curScope->localInfos[*rName] = MqLocalInfo_Var{slotIndex, *rName};
+    curScope->localInfos.emplace(*rName, MqLocalInfo_Var{slotIndex, *rName});
 
     // 3. managedSlot에 추가
     if (type->GetCopyStrategy() == RCopyStrategy::NonBitwise)
@@ -374,7 +374,7 @@ size_t MqBodyContext::AddArgument_Direct(RType* type, InRef<RName> rName, size_t
     slotInfos.emplace_back(type, slotIndex, QSlotRole_Argument{*rName, index, QSlotRole_ArgumentKind::Direct});
 
     // 2. 현재 스코프에 이름 추가
-    curScope->localInfos[*rName] = MqLocalInfo_Var{slotIndex, *rName};
+    curScope->localInfos.emplace(*rName, MqLocalInfo_Var{slotIndex, *rName});
 
     // 3. direct는 BC이므로 managedSlot에 추가하지 않는다
     assert(type->GetCopyStrategy() == RCopyStrategy::Bitwise);
@@ -391,7 +391,7 @@ size_t MqBodyContext::AddArgument_Indirect(RType* type, InRef<RName> rName, size
     slotInfos.emplace_back(ptrType, slotIndex, QSlotRole_Argument{*rName, index, QSlotRole_ArgumentKind::Indirect});
 
     // 2. 현재 스코프에 이름 추가
-    curScope->localInfos[*rName] = MqLocalInfo_RefPtr{slotIndex, *rName, type};
+    curScope->localInfos.emplace(*rName, MqLocalInfo_RefPtr{slotIndex, *rName, type});
 
     // 3. managedSlot에 추가한다.
     // Citron_X64에서는 callee에서 해제하도록 managedSlot에 추가한다. 다른 ABI에서 다른 처리가 필요해지면 이 부분을 수정한다.
@@ -413,20 +413,20 @@ void MqBodyContext::AddArgument_Ref(RType* type, InRef<RName> rName, size_t inde
     slotInfos.emplace_back(ptrType, slotIndex, QSlotRole_Argument{*rName, index});
 
     // 2. 현재 스코프에 이름 추가
-    curScope->localInfos[*rName] = MqLocalInfo_RefPtr{slotIndex, *rName};
+    curScope->localInfos.emplace(*rName, MqLocalInfo_RefPtr{slotIndex, *rName});
 
     // 3. managedSlot에 추가하지 않는다
 }
 
 void MqBodyContext::AddLocalRef_Alias(InRef<RName> rName, size_t slotIndex)
 {
-    curScope->localInfos[*rName] = MqLocalInfo_RefAlias{slotIndex, *rName};
+    curScope->localInfos.emplace(*rName, MqLocalInfo_RefAlias{slotIndex, *rName});
     // 레퍼런스는 수명을 관리하지 않기 때문에 slotIndices에 추가하지 않는다
 }
 
 void MqBodyContext::AddLocalRef_Ptr(RType* rType, InRef<RName> rName, size_t slotIndex)
 {   
-    curScope->localInfos[*rName] = MqLocalInfo_RefPtr{slotIndex, *rName, rType};
+    curScope->localInfos.emplace(*rName, MqLocalInfo_RefPtr{slotIndex, *rName, rType});
 }
 
 size_t MqBodyContext::AddTemp(RType* type, std::string&& debugText)
