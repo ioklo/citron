@@ -147,6 +147,7 @@ private:
 
 
 struct RFactoryPrivateData;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 // TODO: weak처리
 // flyweight
@@ -187,9 +188,14 @@ class RFactory
     std::unique_ptr<RClassDecl> listDecl;
     std::unique_ptr<RStructDecl> listIterDecl;
 
-    
 public:
+    RSYMBOL_API static RFactoryPtr Make();
+    
+private:
     RSYMBOL_API RFactory();
+    RSYMBOL_API void Init(RType* stringType);
+
+public:
     RSYMBOL_API ~RFactory();
 
     template<typename TDecl>
@@ -246,7 +252,5 @@ private:
     template<typename TDecl, typename TType, typename... TArgs>
     TType* MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TDecl* decl, RTypeArguments* typeArgs, TArgs&&... args);
 };
-
-using RFactoryPtr = std::shared_ptr<RFactory>;
 
 } // namespace Citron

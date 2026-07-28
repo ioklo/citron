@@ -66,7 +66,7 @@ public: // from RDecl
     RSYMBOL_API std::optional<RMember> GetMember(InRef<RName> name) final;
 
 private:
-    void FillIdentifier(std::string& buffer) final;
+    bool FillIdentifier(std::string& buffer) final;
 };
 
 } // namespace Citron

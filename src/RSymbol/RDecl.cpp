@@ -94,19 +94,21 @@ bool RDecl::CanAccess(RDecl* target)
     //}
 }
 
-void RDecl::FillIdentifier(std::string& buffer)
+bool RDecl::FillIdentifier(std::string& buffer)
 {
     // outer 먼저
     auto* outer = GetOuter();
     assert(outer); // RModule만 outer가 nullptr일 수 있다
 
     // outer 먼저
-    outer->FillIdentifier(buffer);
-
-    buffer.append(".");
+    if (outer->FillIdentifier(buffer))
+        buffer.append("::");
+    else 
+        buffer.append(".");
 
     auto& key = GetDeclKey();
     buffer.append(key.GetValue());
+    return false;
 }
 
 }

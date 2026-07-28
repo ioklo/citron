@@ -12,6 +12,7 @@ RModule::RModule(RModuleName&& name)
 void RModule::FillIdentifier(std::string& buffer)
 {
     buffer.append(name);
+    
 }
 
 }

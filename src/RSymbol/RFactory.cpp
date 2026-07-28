@@ -32,15 +32,37 @@ struct RFactoryPrivateData
     std::deque<RTypeParam> typeParams;
 };
 
+RFactoryPtr RFactory::Make()
+{
+    shared_ptr<RFactory> factory{new RFactory{}};
+    auto* tempModule = factory->MakeModule(RModuleName{"__TEMP__"});
+    auto* tempRootNamespace = factory->MakeRootNamespaceDecl(tempModule, factory);
+    tempModule->InitRootNamespace(tempRootNamespace);
+    auto* tempSystemNamespace = factory->MakeChildNamespaceDecl(tempRootNamespace, "System", factory);
+
+    // TODO: 아직 MakeStructType, MakeClassType과는 연결이 되지 않은 상태
+    auto* tempString = factory->MakeDecl<RStructDecl>(RDeclKey::Normal(RName::Normal("String")), RTypeDeclOuter_Namespace{tempSystemNamespace, RNamespaceMemberAccessor::Public}, RName::Normal("String"), factory);
+    tempString->InitTypeParams({});
+    tempString->InitTraits({});
+    auto* stringType = factory->MakeStructType(tempString, factory->MakeEmptyTypeArguments());
+    factory->Init(stringType);
+
+    return factory;
+}
+
 RFactory::RFactory()
     : voidType{new RType_Void()}
     , boolType{new RType_Primitive(RType_PrimitiveKind::Bool)}
     , intType{new RType_Primitive(RType_PrimitiveKind::Int32)}
     , privateData{new RFactoryPrivateData()}
-{
-    // TODO: 아직 MakeStructType, MakeClassType과는 연결이 되지 않은 상태
-    stringType = MakeStructType(nullptr, MakeEmptyTypeArguments());
+{   
 }
+
+void RFactory::Init(RType* stringType)
+{
+    this->stringType = stringType;
+}
+
 
 RFactory::~RFactory()
 {

@@ -61,7 +61,7 @@ void DoTest(const string& code, const string& expected)
     ASSERT_TRUE(sScript);
 
     string moduleName = "MyModule";
-    auto rFactory = MakePtr<RFactory>();
+    auto rFactory = RFactory::Make();
     auto nFactory = MakePtr<NFactory>(rFactory);
     auto logger = MakePtr<Logger>();
     auto mFactory = MakePtr<MFactory>();

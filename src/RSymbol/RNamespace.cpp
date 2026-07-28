@@ -82,23 +82,27 @@ optional<RMember> RNamespace::GetMember(InRef<RName> name)
     return nullopt;
 }
 
-void RNamespace::FillIdentifier(std::string& buffer)
+bool RNamespace::FillIdentifier(std::string& buffer)
 {
     // RModule이나 RNamespace이나 FillIdentifier가 있으므로 구분하지 않고 호출한다
-    kind.Visit([this, &buffer](auto& kind) {
+    return kind.Visit([this, &buffer](auto& kind) -> bool {
 
         using T = remove_cvref_t<decltype(kind)>;
 
         if constexpr (same_as<T, RNamespaceKind_Root>)
         {
             kind._module->FillIdentifier(buffer);
-            buffer.append("::");
+            return true;
         }
         else if constexpr (same_as<T, RNamespaceKind_Normal>)
         {
-            kind.outer->FillIdentifier(buffer);
-            buffer.append("::");
+            if (kind.outer->FillIdentifier(buffer))
+                buffer.append("::");
+            else
+                buffer.append(".");
+                
             buffer.append(key.GetValue());
+            return false;
         }
     });
 }

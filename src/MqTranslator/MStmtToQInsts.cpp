@@ -428,7 +428,7 @@ struct MStmtQInstsTranslator
             {
                 assert(std::holds_alternative<QSlotRole_IndirectReturn>(bodyContext.GetSlotRole(0)));
 
-                auto e_s_result = TranslateMTopLevel_CreateToQInsts(*mStmt->create, MqCreateTarget_Slot{0});
+                auto e_s_result = TranslateMTopLevel_CreateToQInsts(*mStmt->create, MqCreateTarget_Ptr{0});
                 RETURN_ON_ERROR_OR_DONE(e_s_result);
                 break;
             }
