@@ -4,10 +4,10 @@
 #include "RSymbol/RTraitDecl.h"
 #include "RSymbol/RTraitFuncDecl.h"
 #include "RSymbol/RTraitMemberDecl.h"
+#include "RSymbol/RDeclKey.h"
 #include "BuildNonTypeSymbolContext.h"
 #include "PhaseManager.h"
 #include "CommonTranslation.h"
-#include "RDeclKey.h"
 
 using namespace std;
 

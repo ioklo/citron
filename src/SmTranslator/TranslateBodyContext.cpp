@@ -22,9 +22,9 @@ namespace Citron {
 
 TranslateBodyContext::TranslateBodyContext(
     TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
-    TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService)
+    TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService)
     : logger{logger.Take()}, rFactory{rFactory.Take()}, mFactory{mFactory.Take()}
-    , srtFactory{srtFactory.Take()}, binOpQueryService{binOpQueryService.Take()}
+    , smFactory{smFactory.Take()}, binOpQueryService{binOpQueryService.Take()}
 {
 }
 
@@ -112,9 +112,9 @@ CheckEndReturnResult CheckEndReturn(RFuncDecl* rFuncDecl, vector<MStmt*>& mStmts
 
 }
 
-expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(RFuncDecl* rFuncDecl, bool bSeqFunc, std::span<SStmt*> sStmts)
+expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(TakeRef<SmDeclContextPtr> declContext, RFuncDecl* rFuncDecl, bool bSeqFunc, std::span<SStmt*> sStmts)
 {   
-    auto tContext = MakeTranslationContexts(rFuncDecl, bSeqFunc, logger, rFactory, mFactory, srtFactory, binOpQueryService);
+    auto tContext = MakeTranslationContexts(move(declContext), rFuncDecl, bSeqFunc, logger, rFactory, mFactory, smFactory, binOpQueryService);
     auto e_scope = TranslateScopedSStmtsToMStmt_Scope(sStmts, tContext);
     RETURN_ON_ERROR(e_scope);
 
@@ -139,7 +139,7 @@ expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(RFuncDecl* rFuncDec
         break;
     }
 
-    return MFuncBody_Decl{rFuncDecl, scope};
+    return MFuncBody{rFuncDecl, scope};
 }
 
 void TranslateBodyContext::MarkFailed()

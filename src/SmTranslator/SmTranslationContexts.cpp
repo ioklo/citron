@@ -2,6 +2,7 @@
 
 #include "Infra/Expected.h"
 #include "Infra/Ptr.h"
+#include "Infra/Ref.h"
 #include "Infra/Exceptions.h"
 #include "RSymbol/RTypeArguments.h"
 #include "RSymbol/RFactory.h"
@@ -10,7 +11,7 @@
 #include "MIR/MFactory.h"
 #include "ImExp.h"
 #include "SmScopeContext.h"
-#include "SRTFactory.h"
+#include "SmFactory.h"
 #include "SmFuncContext_FuncDecl.h"
 #include "SmFuncContext_Lambda.h"
 #include "SmGlobalContext.h"
@@ -21,14 +22,15 @@ using namespace std;
 namespace Citron {
 
 SmTranslationContexts MakeTranslationContexts(
+    TakeRef<SmDeclContextPtr> declContext,
     RFuncDecl* rFuncDecl,
     bool bSeqFunc,
     TakeRef<LoggerPtr> logger,
-    TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SRTFactoryPtr> srtFactory,
+    TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SmFactoryPtr> smFactory,
     TakeRef<BinOpQueryServicePtr> binOpQueryService)
 {
     auto globalContext = MakePtr<SmGlobalContext>();
-    auto funcContext = MakePtr<SmFuncContext_FuncDecl>(rFuncDecl, bSeqFunc, *rFactory, *mFactory);
+    auto funcContext = MakePtr<SmFuncContext_FuncDecl>(declContext.Take(), rFuncDecl, bSeqFunc, *rFactory, *mFactory);
     auto scopeContext = MakePtr<SmScopeContext>(funcContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, *rFactory);
 
     // scopeContext에 함수 인자를 넣는다
@@ -47,7 +49,7 @@ SmTranslationContexts MakeTranslationContexts(
         }
     }
 
-    return {globalContext, funcContext, scopeContext, logger.Take(), mFactory.Take(), rFactory.Take(), srtFactory.Take(), binOpQueryService.Take()};
+    return {globalContext, funcContext, scopeContext, logger.Take(), mFactory.Take(), rFactory.Take(), smFactory.Take(), binOpQueryService.Take()};
 }
 
 SmTranslationContexts MakeTranslationContexts_DefaultScope(SmTranslationContexts& contexts)
@@ -57,13 +59,13 @@ SmTranslationContexts MakeTranslationContexts_DefaultScope(SmTranslationContexts
         contexts.scopeContext->GetCurContinueLabelId(), contexts.scopeContext->GetCurBreakLabelId(), 
         contexts.scopeContext->GetInlineScopeContext(), contexts.rFactory);
 
-    return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
+    return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.smFactory, contexts.binOpQueryService};
 }
 
 SmTranslationContexts MakeTranslationContexts_LoopScope(size_t labelId, SmTranslationContexts& contexts)
 {
     auto newScopeContext = MakePtr<SmScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Loop{labelId}, labelId, labelId, contexts.scopeContext->GetInlineScopeContext(), contexts.rFactory);
-    return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
+    return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.smFactory, contexts.binOpQueryService};
 }
 
 SmTranslationContexts MakeTranslationContexts_SwitchScope(optional<string>& o_label, SmTranslationContexts& contexts)
@@ -71,7 +73,7 @@ SmTranslationContexts MakeTranslationContexts_SwitchScope(optional<string>& o_la
     size_t labelId = contexts.funcContext->AddNewLabelId(o_label);
     // switch는 break만 갱신한다
     auto newScopeContext = MakePtr<SmScopeContext>(contexts.funcContext, contexts.scopeContext, MScopeKind_Switch{labelId}, contexts.scopeContext->GetCurContinueLabelId(), labelId, contexts.scopeContext->GetInlineScopeContext(), contexts.rFactory);
-    return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
+    return {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.smFactory, contexts.binOpQueryService};
 }
 
 tuple<size_t, SmTranslationContexts> MakeTranslationContexts_InlineScope(std::optional<std::string> o_label, RType* hintType, SmTranslationContexts& contexts)
@@ -87,7 +89,7 @@ tuple<size_t, SmTranslationContexts> MakeTranslationContexts_InlineScope(std::op
         MakePtr<InlineScopeContext>(labelId, hintType),
         contexts.rFactory);
 
-    return {labelId, {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService}};
+    return {labelId, {contexts.globalContext, contexts.funcContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.smFactory, contexts.binOpQueryService}};
 }
 
 SmTranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, vector<RFuncParameter>&& funcParams, bool bLastParamVariadic, SmTranslationContexts& contexts)
@@ -95,7 +97,7 @@ SmTranslationContexts MakeTranslationContexts_Lambda(RFuncReturn&& funcRet, vect
     auto newFuncContext = MakePtr<SmFuncContext_Lambda>(contexts.funcContext, contexts.scopeContext, /*bSeqFunc*/false, move(funcRet), move(funcParams), bLastParamVariadic);
     auto newScopeContext = MakePtr<SmScopeContext>(newFuncContext, /*parentContext*/nullptr, MScopeKind_Default{}, /*curContinueLabelId*/nullopt, /*curBreakLabelId*/nullopt, /*inlineScopeContext*/nullptr, contexts.rFactory);
 
-    return {contexts.globalContext, newFuncContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.srtFactory, contexts.binOpQueryService};
+    return {contexts.globalContext, newFuncContext, newScopeContext, contexts.logger, contexts.mFactory, contexts.rFactory, contexts.smFactory, contexts.binOpQueryService};
 }
 
 

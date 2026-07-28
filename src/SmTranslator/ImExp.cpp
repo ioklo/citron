@@ -5,7 +5,7 @@ using namespace std;
 
 namespace Citron {
 
-void ImExp_Namespace::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
+void ImExp_Namespaces::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
 void ImExp_GlobalFuncs::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
 void ImExp_TypeVar::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }
 void ImExp_Class::Accept(ImExpVisitor& visitor) { visitor.Visit(this); }

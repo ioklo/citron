@@ -5,6 +5,7 @@
 #include "RSymbol/RClassDecl.h"
 #include "RSymbol/RStructDecl.h"
 #include "RSymbol/REnumDecl.h"
+#include "RSymbol/REnumElemDecl.h"
 #include "SmDeclRes.h"
 
 using namespace std;
@@ -12,11 +13,17 @@ using namespace std;
 namespace Citron {
 
 namespace {
+
+template<typename TRDecl>
+concept CanHandleDeclType = requires(TRDecl* type, InRef<RName> name) {
+    { type->decl->GetMember(name) } -> std::same_as<std::optional<RMember>>;
+};
+
 struct GetMemberVisitor
 {
     using ResultType = optional<SmDeclRes>;
 
-    template<typename TRDecl>
+    template<typename TRDecl> requires CanHandleDeclType<TRDecl>
     ResultType HandleDeclType(TRDecl* type, InRef<RName> name)
     {
         auto o_member = type->decl->GetMember(name);

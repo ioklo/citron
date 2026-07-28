@@ -1,6 +1,7 @@
 #include "GlobalFuncTask.h"
 
 #include "Infra/Expected.h"
+#include "Infra/Ptr.h"
 #include "Syntax/Syntax.h"
 #include "RSymbol/RGlobalFuncDecl.h"
 #include "RSymbol/RNamespace.h"
@@ -12,14 +13,15 @@
 #include "PhaseManager.h"
 #include "BuildNonTypeSymbolContext.h"
 #include "TranslateBodyContext.h"
+#include "SmDeclContext_Decl.h"
 
 using namespace std;
 
 namespace Citron {
 
-void GlobalFuncTask::Register(RNamespace* outer, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void GlobalFuncTask::Register(TakeRef<SmDeclContextPtr> outerDeclContext, RNamespace* outer, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<GlobalFuncTask> task{new GlobalFuncTask(outer, syntax, move(rFactory))};
+    shared_ptr<GlobalFuncTask> task{new GlobalFuncTask{move(outerDeclContext), outer, syntax, move(rFactory)}};
     phaseManager.AddBuildNonTypeSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
@@ -48,7 +50,9 @@ expected<void, DiagPtr> GlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
 
 expected<MFuncBody, DiagPtr> GlobalFuncTask::TranslateBody(TranslateBodyContext& context)
 {
-    return context.Translate(rFuncDecl, syntax->bSequence, syntax->body);
+    // rFuncDecl에 대한 SmDeclContext를 만든다
+    SmDeclContextPtr declContext = MakePtr<SmDeclContext_Decl<RGlobalFuncDecl>>(outerDeclContext, rFuncDecl, rFuncDecl->MakeOpenTypeArgs(*rFactory));
+    return context.Translate(move(declContext), rFuncDecl, syntax->bSequence, syntax->body);
 }
 
 } // namespace Citron

@@ -35,7 +35,10 @@ public:
     SmBodyRes(T&& res) : v{std::forward<T>(res)} {}
 
     template<typename... TArgs>
-    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
+    auto Visit(TArgs&&... args) & { return std::visit(std::forward<TArgs>(args)..., v); }
+
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) && { return std::visit(std::forward<TArgs>(args)..., std::move(v)); }
 };
 
 } // namespace Citron

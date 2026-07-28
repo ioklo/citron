@@ -79,14 +79,14 @@ std::expected<SmFuncMatch<TFuncDecl>, DiagPtr> MatchFunc(
     SArguments* sArgs, 
     SmTranslationContexts& contexts)
 {
-    assert(!group.decls.empty());    
+    assert(!group.outerAppliedGroup.decls.empty());    
     
-    if (group.decls.size() == 1)
+    if (group.outerAppliedGroup.decls.size() == 1)
     {   
-        auto* decl = group.decls.front();
+        auto* decl = group.outerAppliedGroup.decls.front();
 
         SmFuncDeclMatchArgumentsInput input{decl};
-        auto e_argMatch = MatchArguments(&input, group.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
+        auto e_argMatch = MatchArguments(&input, group.outerAppliedGroup.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_argMatch, argMatch); // argument mismatch인 경우
         
         return SmFuncMatch<TFuncDecl>(decl, argMatch.typeArgs, std::move(argMatch.args));
@@ -94,13 +94,13 @@ std::expected<SmFuncMatch<TFuncDecl>, DiagPtr> MatchFunc(
 
     std::vector<size_t> candidates;
     std::vector<DiagPtr> diags;
-    for (size_t i = 0, count = group.decls.size(); i < count; i++)
+    for (size_t i = 0, count = group.outerAppliedGroup.decls.size(); i < count; i++)
     {
-        auto* decl = group.decls[i];
+        auto* decl = group.outerAppliedGroup.decls[i];
         Transaction transaction(*contexts.scopeContext);
 
         SmFuncDeclMatchArgumentsInput input{decl};
-        auto e_argMatch = MatchArguments(&input, group.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
+        auto e_argMatch = MatchArguments(&input, group.outerAppliedGroup.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
 
         // TODO: [58] FuncMatcher 에러 개선
         if (!e_argMatch)
@@ -118,9 +118,9 @@ std::expected<SmFuncMatch<TFuncDecl>, DiagPtr> MatchFunc(
         return Error<Error_FuncMatch_MultipleCandidates>();
 
     // 롤백했기 때문에 다시 계산
-    auto* decl = group.decls[candidates.front()];
+    auto* decl = group.outerAppliedGroup.decls[candidates.front()];
     SmFuncDeclMatchArgumentsInput input{decl};
-    auto e_argMatch = MatchArguments(&input, group.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
+    auto e_argMatch = MatchArguments(&input, group.outerAppliedGroup.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
     assert(e_argMatch);
     return SmFuncMatch<TFuncDecl>(decl, e_argMatch->typeArgs, std::move(e_argMatch->args));
 }

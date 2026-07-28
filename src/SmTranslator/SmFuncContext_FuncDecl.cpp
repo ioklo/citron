@@ -1,32 +1,20 @@
 #include "SmFuncContext_FuncDecl.h"
 
 #include "Infra/Exceptions.h"
-#include "Infra/Expected.h"
 #include "RSymbol/RDecl.h"
 #include "RSymbol/RTypes.h"
-#include "RSymbol/RFactory.h"
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 #include "RSymbol/RFuncDecl.h"
-#include "RSymbol/RFuncDeclOuter.h"
-#include "RSymbol/RStructDecl.h"
-#include "RSymbol/RNamespace.h"
-#include "RSymbol/RGlobalFuncDecl.h"
-#include "RSymbol/RClassDecl.h"
-#include "RSymbol/RClassCtorDecl.h"
-#include "RSymbol/RClassFuncDecl.h"
-#include "RSymbol/RStructCtorDecl.h"
-#include "RSymbol/RStructDtorDecl.h"
-#include "RSymbol/RStructFuncDecl.h"
-#include "RSymbol/RLambdaDecl.h"
-#include "RSymbol/RTypeRes.h"
+#include "SmTypeRes.h"
+#include "SmDeclContext.h"
 
 using namespace std;
 
 namespace Citron {
 
-SmFuncContext_FuncDecl::SmFuncContext_FuncDecl(RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory)
-    : rFuncDecl{rFuncDecl}, bSeqFunc{bSeqFunc}, rFactory{rFactory.Take()}, mFactory{mFactory.Take()}
+SmFuncContext_FuncDecl::SmFuncContext_FuncDecl(TakeRef<SmDeclContextPtr> funcDeclContext, RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory)
+    : funcDeclContext{funcDeclContext.Take()}, rFuncDecl{rFuncDecl}, bSeqFunc{bSeqFunc}, rFactory{rFactory.Take()}, mFactory{mFactory.Take()}
 {
 }
 
@@ -35,27 +23,18 @@ bool SmFuncContext_FuncDecl::CanAccess(RDecl* target)
     return rFuncDecl->RFuncDecl_GetDecl()->CanAccess(target);
 }
 
-std::optional<RTypeRes> SmFuncContext_FuncDecl::ResolveTypeIdentifier(InRef<RName> name)
-{
-    auto* openTypeArgs = rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(*rFactory); // typeArgs를 만들어서 rFuncDecl에 넣어준다
-    return rFuncDecl->RFuncDecl_GetDecl()->ResolveTypeIdentifier(openTypeArgs, name);
+std::optional<SmTypeRes> SmFuncContext_FuncDecl::ResolveTypeIdentifier(InRef<RName> name)
+{   
+    return funcDeclContext->ResolveTypeIdentifier(name); // declContext에서 type identifier를 검색한다
 }
-
-
-
-
-
 
 expected<optional<SmBodyRes>, DiagPtr> SmFuncContext_FuncDecl::ResolveIdentifier(InRef<RName> name)
 {
     // 함수 인자는 최상위 ScopeContext에서 관리한다
+    auto o_declRes = funcDeclContext->ResolveIdentifier(name);
+    if (!o_declRes) return nullopt;
 
-    auto* openTypeArgs = rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(*rFactory); // typeArgs를 만들어서 rFuncDecl에 넣어준다
-
-    auto o_rDeclRes = rFuncDecl->RFuncDecl_GetDecl()->ResolveIdentifier(openTypeArgs, name);
-    if (!o_rDeclRes) return nullopt;
-
-    return SmBodyRes_DeclRes{move(*o_rDeclRes)};
+    return SmBodyRes_DeclRes{move(*o_declRes)};
 }
 
 RFuncReturn SmFuncContext_FuncDecl::GetUnboundFuncReturn()

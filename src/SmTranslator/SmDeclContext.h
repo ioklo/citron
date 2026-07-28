@@ -20,11 +20,12 @@ public:
     std::optional<SmTypeRes> ResolveTypeIdentifierInHeader(InRef<RName> name);
     std::optional<SmDeclRes> ResolveIdentifier(InRef<RName> name);
 
-protected:
+public:
     virtual SmDeclContext* GetOuter() = 0;
     virtual RDecl* GetDecl() = 0;
     virtual RTypeArguments* GetTypeArgs() = 0;
 
+private:
     // Resolve류 abstract 함수, ResolveTypeIdentifier와 ResolveIdentifier에서 쓰인다
     // 여기서 인자로 넘어가는 typeArgs는 derived의 typeArgs이다. base의 typeArgs는 derived typeArgs를 Apply해서 얻을 수 있다
     // class decl에서만 쓰이므로, 기본 구현을 만들어 놓고, class decl에서 override해서 쓰도록 한다

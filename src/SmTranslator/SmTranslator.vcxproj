@@ -95,7 +95,7 @@
     <ClCompile Include="SVarDeclToMStmts.cpp" />
     <ClCompile Include="SmTranslator.cpp" />
     <ClCompile Include="CommonTranslation.cpp" />
-    <ClCompile Include="SRTFactory.cpp" />
+    <ClCompile Include="SmFactory.cpp" />
     <ClCompile Include="SmTranslationContexts.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -157,7 +157,7 @@
     <ClInclude Include="SExpToReExp.h" />
     <ClInclude Include="SStmtToMStmt.h" />
     <ClInclude Include="SVarDeclToMStmts.h" />
-    <ClInclude Include="SRTFactory.h" />
+    <ClInclude Include="SmFactory.h" />
     <ClInclude Include="SmTranslationContexts.h" />
     <ClInclude Include="TranslationTasks.h" />
   </ItemGroup>

@@ -25,7 +25,7 @@
 #include "SmFuncContext.h"
 #include "SmScopeContext.h"
 #include "SmTranslationContexts.h"
-#include "SRTFactory.h"
+#include "SmFactory.h"
 #include "Misc.h"
 #include "IrExpToMLoc.h"
 #include "IrExpToMSharedExp.h"
@@ -97,36 +97,36 @@ public:
     {
     }
 
-    expected<IrExp*, DiagPtr> operator()(auto& member) { return Visit(member); }
+    expected<IrExp*, DiagPtr> operator()(auto&& member) { return Visit(std::forward<decltype(member)>(member)); }
 
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Namespaces& member) 
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Namespaces&& member) 
     {
-        return contexts.srtFactory->MakeIrExp<IrExp_Namespaces>(member.namespaces);
+        return contexts.smFactory->MakeIrExp<IrExp_Namespaces>(move(member.namespaces));
     }
 
     // S.F
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_GlobalFuncs& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_GlobalFuncs&& member)
     {   
         // ImExp와 다르게 IrExp는 Callable 자리에 들어가지 않기 때문에, 바로 에러
         return Error<Error_SharedTranslation_CantTranslate>();
     }
 
     // T.C
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Class& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Class&& member)
     {
         // TODO: [43] Access Check
         auto* typeArgs = contexts.rFactory->MergeTypeArguments(member.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return contexts.srtFactory->MakeIrExp<IrExp_Class>(member.outerAppliedDecl.decl, typeArgs);
+        return contexts.smFactory->MakeIrExp<IrExp_Class>(member.outerAppliedDecl.decl, typeArgs);
     }
 
     // IrExp는 Callable자리에 오지 않기때문에 지원하지 않는다
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_ClassFuncs& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_ClassFuncs&& member)
     {
         return Error<Error_SharedTranslation_CantTranslate>();
     }
 
     // C.x, IrExp_Static으로 만듦
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_ClassVar& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_ClassVar&& member)
     {
         // C.x 형식인데, x가 static 변수가 아니라면 에러
         if (!member.appliedDecl.decl->IsStatic())
@@ -138,22 +138,22 @@ public:
 
         assert(member.appliedDecl.typeArgs->GetCount() == 0);
         auto* loc = contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, member.appliedDecl.decl, member.appliedDecl.typeArgs);
-        return contexts.srtFactory->MakeIrExp<IrExp_Static>(loc);
+        return contexts.smFactory->MakeIrExp<IrExp_Static>(loc);
     }
 
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Struct& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Struct&& member)
     {
         // TODO: [43] Access Check
         auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return contexts.srtFactory->MakeIrExp<IrExp_Struct>(member.outerAppliedDecl.decl, typeArgs);
+        return contexts.smFactory->MakeIrExp<IrExp_Struct>(member.outerAppliedDecl.decl, typeArgs);
     }
 
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_StructFuncs& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_StructFuncs&& member)
     {        
         return Error<Error_SharedTranslation_CantTranslate>();
     }
 
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_StructVar& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_StructVar&& member)
     {
         if (!member.appliedDecl.decl->IsStatic())
             return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
@@ -164,11 +164,11 @@ public:
 
         assert(member.appliedDecl.typeArgs->GetCount() == 0);
         auto* loc = contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, member.appliedDecl.decl, member.appliedDecl.typeArgs);
-        return contexts.srtFactory->MakeIrExp<IrExp_Static>(loc);
+        return contexts.smFactory->MakeIrExp<IrExp_Static>(loc);
     }
 
     // T.E
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Enum& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Enum&& member)
     {
         // IrExp는 StaticBase와 MLoc/MSharedExp를 만드는데 관심이 있는데, 
         // Enum은 StaticBase가 될수 없고, (nested type을 가질수 없고, static var를 가질 수도 없다)
@@ -177,56 +177,56 @@ public:
     }
 
     // T.E.First
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_EnumElem& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_EnumElem&& member)
     {   
         return Error<Error_SharedTranslation_CantTranslate>();
     }
 
     // E.x
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_EnumElemVar& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_EnumElemVar&& member)
     {
         // StaticBase로부터 EnumElemVar가 나올수 있는가, StaticBase에 EnumElem이 나올수 없으므로 불가능
         throw RuntimeFatalException{};
     }
 
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Lambda& declRes)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Lambda&& member)
     {
         // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
         throw NotImplementedException{};
     }
 
     // NS.x
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_LambdaVar& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_LambdaVar&& member)
     {
         // 람다 var를 StaticBase로 참조할 방법은 없는거 같다
         throw RuntimeFatalException{};
     }
 
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Interface& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Interface&& member)
     {
         // TODO: [71] 2026-07-18, interface 구현
         throw NotImplementedException{};
     }
 
     // NS.t
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_TupleVar& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_TupleVar&& member)
     {
         throw RuntimeFatalException{};
     }
 
     // NS.T
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_TypeVar& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_TypeVar&& member)
     {
         // TODO: [52] TypeVar정리
         throw NotImplementedException{};
     }
     
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Trait& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_Trait&& member)
     {
         return Error<Error_SharedTranslation_CantUseTraitAsExpression>();
     }
 
-    expected<IrExp*, DiagPtr> Visit(SmDeclRes_TraitFuncs& member)
+    expected<IrExp*, DiagPtr> Visit(SmDeclRes_TraitFuncs&& member)
     {
         return Error<Error_SharedTranslation_CantUseTraitFuncAsExpression>();
     }
@@ -242,7 +242,7 @@ struct Binder
     template<typename TValue, typename... TArgs> requires std::derived_from<TValue, IrExp>
     ResultType Value(TArgs&&... args)
     {
-        return contexts.srtFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
+        return contexts.smFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
     ResultType HandleStaticBase(RDecl& decl, RTypeArguments* typeArgs)
@@ -254,12 +254,14 @@ struct Binder
         auto declRes = ToSmDeclRes(typeArgs, *o_member);
 
         StaticBaseTranslator binder(memberTypeArgs, contexts);
-        return declRes.Visit(binder);
+        return move(declRes).Visit(binder);
     }
 
     ResultType Visit(IrExp_Namespaces* irBaseExp) 
     {
-        return HandleStaticBase(*irBaseExp->namespaces, contexts.rFactory->MakeEmptyTypeArguments());
+        // TODO: [74] 2026-07-28, SmDeclRes, ImExp, IrExp의 RNamespaceGroup 구현
+        throw NotImplementedException{};
+        // return HandleStaticBase(*irBaseExp->namespaces, contexts.rFactory->MakeEmptyTypeArguments());
     }
 
     ResultType Visit(IrExp_Class* irBaseExp) 
@@ -285,7 +287,7 @@ struct Binder
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             // IrExp_Static은 분해해서 MLoc으로 참조하고, 보이지 않도록 한다
-            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(irBaseExp->loc, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(irBaseExp->loc, result.decl, result.typeArgs);
         }
         else if (auto* structType = dynamic_cast<RType_Struct*>(locType))
         {
@@ -293,7 +295,7 @@ struct Binder
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             // StructVar는 base로 IrExp를 참조하므로 IrExp_Static이 그대로 들어가게 한다
-            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
         }
         else return Error<Error_SharedTranslation_CantTranslate>();
     }
@@ -313,14 +315,14 @@ struct Binder
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto* baseLoc = TranslateIrExp_ClassVarToMLoc(irBaseExp, contexts);
-            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs);
         }
         else if (auto* structType = dynamic_cast<RType_Struct*>(baseDeclType))
         {
             auto e_result = GetStructVar(structType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
-            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
         }
         else return Error<Error_SharedTranslation_CantTranslate>();
     }
@@ -340,14 +342,14 @@ struct Binder
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto* baseLoc = TranslateIrExp_SharedStructVarToMLoc(irBaseExp, contexts);
-            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs);
         }
         else if (auto* structBaseType = dynamic_cast<RType_Struct*>(baseType))
         {
             auto e_result = GetStructVar(structBaseType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
             
-            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
         }
         else return Error<Error_SharedTranslation_CantTranslate>();
     }
@@ -372,14 +374,14 @@ struct Binder
             auto e_baseLoc = TranslateIrExp_StructVarToMLoc(irBaseExp, contexts);
             RETURN_ON_ERROR(e_baseLoc);
 
-            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(*e_baseLoc, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(*e_baseLoc, result.decl, result.typeArgs);
         }
         else if (auto* structDeclType = dynamic_cast<RType_Struct*>(baseType))
         {
             auto e_result = GetStructVar(structDeclType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
-            return contexts.srtFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
         }
         else return Error<Error_SharedTranslation_CantTranslate>();
     }
@@ -398,7 +400,7 @@ struct Binder
         auto e_result = GetStructVar(structTargetType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
         RETURN_ON_ERROR_REFDECL(e_result, result);
 
-        return contexts.srtFactory->MakeIrExp<IrExp_SharedStructVar>(irBaseExp->srcShared.loc, result.decl, result.typeArgs);
+        return contexts.smFactory->MakeIrExp<IrExp_SharedStructVar>(irBaseExp->srcShared.loc, result.decl, result.typeArgs);
     }
 
     // 임의의 location으로부터
@@ -417,7 +419,7 @@ struct Binder
             auto e_result = GetClassVar(classBaseType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
-            return contexts.srtFactory->MakeIrExp<IrExp_ClassVar>(irExp->loc, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(irExp->loc, result.decl, result.typeArgs);
         }
         else return Error<Error_SharedTranslation_CantTranslate>();
     }

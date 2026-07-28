@@ -3,6 +3,7 @@
 #include <optional>
 #include <memory>
 #include "MIR/MRead.h"
+#include "RSymbol/RNamespaceGroup.h"
 
 namespace Citron {
 

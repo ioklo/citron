@@ -7,12 +7,10 @@
 
 #include "Syntax/Syntax.h"
 #include "RSymbol/RTypeArguments.h"
-#include "RSymbol/RDeclRes.h"
 #include "RSymbol/RNames.h"
 #include "RSymbol/RFuncParameter.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RLambdaDecl.h"
-#include "RSymbol/RTypeRes.h"
 #include "RSymbol/RClassDecl.h"
 #include "RSymbol/RStructDecl.h"
 #include "RSymbol/REnumDecl.h"
@@ -20,6 +18,7 @@
 #include "RSymbol/RTraitDecl.h"
 
 #include "SmFuncContext.h"
+#include "SmTypeRes.h"
 
 using namespace std;
 
@@ -167,66 +166,66 @@ std::optional<MScopeKind> SmScopeContext::GetReachableScopeKind(size_t labelId)
     }, scopeKind);
 }
 
-expected<RType*, DiagPtr> MakeType(RTypeRes& typeRes, RTypeArguments* memberTypeArgs, RFactory* rFactory)
+expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, RTypeArguments* memberTypeArgs, RFactory* rFactory)
 {
     return typeRes.Visit([memberTypeArgs, rFactory](auto& typeRes) -> expected<RType*, DiagPtr> {
         using T = remove_cvref_t<decltype(typeRes)>;
 
-        if constexpr (same_as<T, RTypeRes_Namespace>) 
+        if constexpr (same_as<T, SmTypeRes_Namespaces>) 
         {
             return Error<Error_ResolveIdentifier_CantUseNamespaceAsType>();
         }
-        else if constexpr (same_as<T, RTypeRes_Class>) 
+        else if constexpr (same_as<T, SmTypeRes_Class>) 
         {
             // 타입 인자 검사
-            if (typeRes.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
+            if (typeRes.outerAppliedDecl.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
                 return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
 
-            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerTypeArgs, memberTypeArgs);
-            return rFactory->MakeClassType(typeRes.decl, typeArgs);
+            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
+            return rFactory->MakeClassType(typeRes.outerAppliedDecl.decl, typeArgs);
         }
-        else if constexpr (same_as<T, RTypeRes_Struct>) 
+        else if constexpr (same_as<T, SmTypeRes_Struct>) 
         {
             // 타입 인자 검사
-            if (typeRes.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
+            if (typeRes.outerAppliedDecl.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
                 return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
 
-            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerTypeArgs, memberTypeArgs);
-            return rFactory->MakeStructType(typeRes.decl, typeArgs);
+            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
+            return rFactory->MakeStructType(typeRes.outerAppliedDecl.decl, typeArgs);
         }
-        else if constexpr (same_as<T, RTypeRes_Enum>) 
+        else if constexpr (same_as<T, SmTypeRes_Enum>) 
         {
             // 타입 인자 검사
-            if (typeRes.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
+            if (typeRes.outerAppliedDecl.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
                 return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
 
-            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerTypeArgs, memberTypeArgs);
-            return rFactory->MakeEnumType(typeRes.decl, typeArgs);
+            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
+            return rFactory->MakeEnumType(typeRes.outerAppliedDecl.decl, typeArgs);
         }
-        else if constexpr (same_as<T, RTypeRes_EnumElem>) 
+        else if constexpr (same_as<T, SmTypeRes_EnumElem>) 
         {
             // 타입 인자 검사
-            if (typeRes.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
+            if (typeRes.outerAppliedDecl.decl->GetTypeParamCount() != memberTypeArgs->GetCount())
                 return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
 
-            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerTypeArgs, memberTypeArgs);
-            return rFactory->MakeEnumElemType(typeRes.decl, typeArgs);
+            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
+            return rFactory->MakeEnumElemType(typeRes.outerAppliedDecl.decl, typeArgs);
         }
-        else if constexpr (same_as<T, RTypeRes_Interface>) 
+        else if constexpr (same_as<T, SmTypeRes_Interface>) 
         {
             // TODO: [71] 2026-07-18, interface 구현
             throw NotImplementedException{};
         }
-        else if constexpr (same_as<T, RTypeRes_Lambda>) 
+        else if constexpr (same_as<T, SmTypeRes_Lambda>) 
         {
             // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
             throw NotImplementedException{};
         }
-        else if constexpr (same_as<T, RTypeRes_TypeVar>) 
+        else if constexpr (same_as<T, SmTypeRes_TypeVar>) 
         {
             return rFactory->MakeTypeVarType(typeRes.decl);
         }
-        else if constexpr (same_as<T, RTypeRes_Trait>) 
+        else if constexpr (same_as<T, SmTypeRes_Trait>) 
         {
             return Error<Error_ResolveIdentifier_CantUseTraitAsType>();
         }

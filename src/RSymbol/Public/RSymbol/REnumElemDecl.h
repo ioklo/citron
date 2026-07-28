@@ -14,7 +14,6 @@ class REnumDecl;
 struct RFuncParameter;
 class RTypeArguments;
 class REnumElemVarDecl;
-struct RDeclRes_EnumElemVar;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
 class REnumElemDecl final : public RDecl, public RTypeDecl

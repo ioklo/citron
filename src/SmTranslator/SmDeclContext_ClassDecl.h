@@ -13,6 +13,9 @@ class SmDeclContext_ClassDecl : public SmDeclContext
     RClassDecl* decl;
     RTypeArguments* typeArgs;
 
+public:
+    RClassDecl* GetRClassDecl() { return decl; }
+
 protected: // from SmDeclContext
     SmDeclContext* GetOuter() override;
     RDecl* GetDecl() override;

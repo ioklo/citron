@@ -17,7 +17,7 @@ using namespace std;
 
 namespace Citron {
 
-void IrExp_Namespace::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
+void IrExp_Namespaces::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_Class::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_Struct::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_Static::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
@@ -27,8 +27,8 @@ void IrExp_StructVar::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_SharedDeref::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 void IrExp_Loc::Accept(IrExpVisitor& visitor) { visitor.Visit(this); }
 
-IrExp_Namespace::IrExp_Namespace(RNamespace* decl)
-    : decl(decl)
+IrExp_Namespaces::IrExp_Namespaces(RNamespaceGroup&& namespaces)
+    : namespaces{move(namespaces)}
 {
 }
 

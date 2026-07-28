@@ -8,6 +8,7 @@
 #include "MIR/MRead.h"
 #include "ReExp.h"
 #include "SmPartiallyAppliedFuncDeclGroup.h"
+#include "RSymbol/RNamespaceGroup.h"
 
 namespace Citron {
 
@@ -40,11 +41,11 @@ public:
 
 struct ImExp_Namespaces : ImExp
 {
-    RNamespaceGroup nsGroup; // namespace를 뭘로 저장하고 있어야 하나
+    RNamespaceGroup namespaces; // namespace를 뭘로 저장하고 있어야 하나
 
 public:
-    ImExp_Namespaces(RNamespaceGroup&& nsGroup)
-        : nsGroup{std::move(nsGroup)}
+    ImExp_Namespaces(RNamespaceGroup&& namespaces)
+        : namespaces{std::move(namespaces)}
     { }
     void Accept(ImExpVisitor& visitor) override;
 };

@@ -18,14 +18,14 @@ class RInterfaceDecl;
 class RLambdaDecl;
 
 struct SmTypeRes_Namespaces { RNamespaceGroup namespaces; };
-struct SmTypeRes_Class { ROuterAppliedDecl<RClassDecl> outerAppliedDecls; };
-struct SmTypeRes_Struct { ROuterAppliedDecl<RStructDecl> outerAppliedDecls; };
-struct SmTypeRes_Enum { ROuterAppliedDecl<REnumDecl> outerAppliedDecls; };
-struct SmTypeRes_EnumElem { ROuterAppliedDecl<REnumElemDecl> outerAppliedDecls; };
-struct SmTypeRes_Interface { ROuterAppliedDecl<RInterfaceDecl> outerAppliedDecls; };
-struct SmTypeRes_Lambda { ROuterAppliedDecl<RLambdaDecl> outerAppliedDecls; };
+struct SmTypeRes_Class { ROuterAppliedDecl<RClassDecl> outerAppliedDecl; };
+struct SmTypeRes_Struct { ROuterAppliedDecl<RStructDecl> outerAppliedDecl; };
+struct SmTypeRes_Enum { ROuterAppliedDecl<REnumDecl> outerAppliedDecl; };
+struct SmTypeRes_EnumElem { ROuterAppliedDecl<REnumElemDecl> outerAppliedDecl; };
+struct SmTypeRes_Interface { ROuterAppliedDecl<RInterfaceDecl> outerAppliedDecl; };
+struct SmTypeRes_Lambda { ROuterAppliedDecl<RLambdaDecl> outerAppliedDecl; };
 struct SmTypeRes_TypeVar { RTypeParam* decl; };
-struct SmTypeRes_Trait { ROuterAppliedDecl<RTraitDecl> outerAppliedDecls; };
+struct SmTypeRes_Trait { ROuterAppliedDecl<RTraitDecl> outerAppliedDecl; };
 
 // Type space Resolution Result
 class SmTypeRes

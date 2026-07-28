@@ -7,7 +7,7 @@
 #include "MIR/MLoc.h"
 
 #include "IrExp.h"
-#include "SRTFactory.h"
+#include "SmFactory.h"
 #include "Misc.h"
 #include "SmTranslationContexts.h"
 #include "SExp_IdentifierToIrExp.h"
@@ -33,7 +33,7 @@ struct SExpToIrExpTranslator
         auto e_loc = TranslateSExpToMLoc(exp, /*hintType*/nullptr, /*bMaterializeExp*/true, &notLocationDiag, contexts);
         RETURN_ON_ERROR(e_loc);
 
-        return contexts.srtFactory->MakeIrExp<IrExp_Loc>(*e_loc);
+        return contexts.smFactory->MakeIrExp<IrExp_Loc>(*e_loc);
     }
 
     // 기본
@@ -70,7 +70,7 @@ struct SExpToIrExpTranslator
         // shared<S> 꼴인지 확인
         if (auto* targetSharedType = dynamic_cast<RType_Shared*>(targetType))
             if (dynamic_cast<RType_Struct*>(targetSharedType->innerType))
-                return contexts.srtFactory->MakeIrExp<IrExp_SharedDeref>(move(*mReadLoc));
+                return contexts.smFactory->MakeIrExp<IrExp_SharedDeref>(move(*mReadLoc));
 
         return nullopt;
     }

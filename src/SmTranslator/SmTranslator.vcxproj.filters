@@ -34,7 +34,7 @@
       <Filter>Context</Filter>
     </ClCompile>
     <ClCompile Include="ModuleDecls.cpp" />
-    <ClCompile Include="SRTFactory.cpp" />
+    <ClCompile Include="SmFactory.cpp" />
     <ClCompile Include="SmGlobalContext.cpp" />
     <ClCompile Include="SmTranslationContexts.cpp">
       <Filter>Context</Filter>
@@ -184,7 +184,7 @@
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ModuleDecls.h" />
     <ClInclude Include="RFuncAndRArgsToMExpTranslation.h" />
-    <ClInclude Include="SRTFactory.h" />
+    <ClInclude Include="SmFactory.h" />
     <ClInclude Include="Public\SmTranslator\SmTranslator.h">
       <Filter>Public Headers</Filter>
     </ClInclude>

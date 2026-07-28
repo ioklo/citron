@@ -28,7 +28,7 @@
 #include "SmFuncContext.h"
 #include "Misc.h"
 #include "SmTranslationContexts.h"
-#include "SRTFactory.h"
+#include "SmFactory.h"
 #include "ImExpTranslations.h"
 
 using namespace std;
@@ -47,14 +47,14 @@ struct CallableTranslator
     ImExp* MakeImExp_ReExp_Exp(TArgs&&... args)
     {
         auto* exp = contexts.mFactory->MakeMExp<TMExp>(forward<TArgs>(args)...);
-        return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_Exp{exp});
+        return contexts.smFactory->MakeImExp<ImExp_ReExp>(ReExp_Exp{exp});
     }
 
     template<typename TMInitExp, typename... TArgs> requires derived_from<TMInitExp, MInitExp>
     ImExp* MakeImExp_ReExp_InitExp(TArgs&&... args)
     {
         auto* initExp = contexts.mFactory->MakeMInitExp<TMInitExp>(forward<TArgs>(args)...);
-        return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{initExp});
+        return contexts.smFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{initExp});
     }
 
     ResultType Call(RFuncDecl* rFuncDecl, RTypeArguments* typeArgs, MLoc* o_instance, vector<MArgument>&& args, std::optional<MCatch>&& o_catch)
@@ -68,19 +68,19 @@ struct CallableTranslator
         {
             // TODO: [41] try catch 구현
             auto* callStmt = contexts.mFactory->MakeMStmt<MStmt_Call>(MTopLevel_Call{MCallable{rFuncDecl, typeArgs, o_instance}, move(args), move(o_catch)});
-            return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_StmtCall{callStmt});
+            return contexts.smFactory->MakeImExp<ImExp_ReExp>(ReExp_StmtCall{callStmt});
         }
 
         case RCopyStrategy::Bitwise:
         {
             auto* callExp = contexts.mFactory->MakeMExp<MExp_Call>(MCallable{rFuncDecl, typeArgs, o_instance}, move(args), move(o_catch));
-            return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_Exp{callExp});
+            return contexts.smFactory->MakeImExp<ImExp_ReExp>(ReExp_Exp{callExp});
         }
 
         case RCopyStrategy::NonBitwise:
         {
             auto* callInitExp = contexts.mFactory->MakeMInitExp<MInitExp_Call>(MCallable{rFuncDecl, typeArgs, o_instance}, move(args), move(o_catch));
-            return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{callInitExp});
+            return contexts.smFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{callInitExp});
         }
         }
 
@@ -132,7 +132,7 @@ struct CallableTranslator
     // ResultType Visit(ImExp_Namespace* imExp);
     ResultType Visit(ImExp_GlobalFuncs* imExp) 
     { 
-        assert(!imExp->funcDeclGroup.decls.empty());
+        assert(!imExp->funcDeclGroup.outerAppliedGroup.decls.empty());
 
         auto e_match = MatchFunc<RGlobalFuncDecl>(imExp->funcDeclGroup, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);
@@ -145,7 +145,7 @@ struct CallableTranslator
     // ResultType Visit(ImExp_Class* imExp);
     ResultType Visit(ImExp_ClassFuncs* imExp)
     { 
-        assert(!imExp->funcDeclGroup.decls.empty());
+        assert(!imExp->funcDeclGroup.outerAppliedGroup.decls.empty());
 
         auto e_match = MatchFunc<RClassFuncDecl>(imExp->funcDeclGroup, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);
@@ -318,7 +318,7 @@ struct CallableTranslator
             auto* varDecl = enumElemDecl->GetUnboundVar(index);
             auto* declType = varDecl->GetUnboundDeclType()->Apply(typeArgs);
 
-            return RFuncParameter{.kind = RFuncParameterKind::Init, .type = declType, .name = varDecl->GetIdentifier().name};
+            return RFuncParameter{.kind = RFuncParameterKind::Init, .type = declType, .name = varDecl->GetName() };
         }
     };
 

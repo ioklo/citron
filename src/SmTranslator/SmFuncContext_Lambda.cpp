@@ -1,14 +1,13 @@
 #include "SmFuncContext_Lambda.h"
 #include "Infra/Expected.h"
 #include "Infra/Exceptions.h"
-#include "RSymbol/RDeclRes.h"
 #include "RSymbol/RTypes.h"
 #include "RSymbol/RLambdaVarDecl.h"
-#include "RSymbol/RTypeRes.h"
 #include "MIR/MFactory.h"
 #include "MIR/MLoc.h"
 #include "MIR/MExp.h"
 #include "SmScopeContext.h"
+#include "SmTypeRes.h"
 
 using namespace std;
 
@@ -24,7 +23,7 @@ bool SmFuncContext_Lambda::CanAccess(RDecl* target)
     return outerFunc->CanAccess(target);
 }
 
-std::optional<RTypeRes> SmFuncContext_Lambda::ResolveTypeIdentifier(InRef<RName> name)
+std::optional<SmTypeRes> SmFuncContext_Lambda::ResolveTypeIdentifier(InRef<RName> name)
 {
     return outerFunc->ResolveTypeIdentifier(name);
 }
@@ -112,10 +111,10 @@ expected<optional<SmBodyRes>, DiagPtr> SmFuncContext_Lambda::ResolveIdentifier(I
             return bodyRes.declRes.Visit([this, &name, &bodyRes](auto& rDeclRes) -> SmBodyRes {
                 using U = remove_cvref_t<decltype(rDeclRes)>;
 
-                if constexpr (same_as<U, RDeclRes_LambdaVar>)
+                if constexpr (same_as<U, SmDeclRes_LambdaVar>)
                 {
                     // 람다 variable이라고 할지라도, primitive가 아니면 암시적으로 캡쳐하지 않습니다
-                    auto* declType = rDeclRes.decl->GetUnboundDeclType();
+                    auto* declType = rDeclRes.outerAppliedDecl.decl->GetUnboundDeclType();
 
                     if (dynamic_cast<RType_Primitive*>(declType))
                     {
@@ -127,12 +126,12 @@ expected<optional<SmBodyRes>, DiagPtr> SmFuncContext_Lambda::ResolveIdentifier(I
                         throw NotImplementedException{};
                     }
                 }
-                else if constexpr (same_as<U, RDeclRes_ClassVar>)
+                else if constexpr (same_as<U, SmDeclRes_ClassVar>)
                 {
                     // TODO: this의 classVar라면 this를 capture 했는지 보고, 안했다면, 에러
                     throw NotImplementedException{};
                 }
-                else if constexpr (same_as<U, RDeclRes_StructVar>)
+                else if constexpr (same_as<U, SmDeclRes_StructVar>)
                 {
                     // TODO: this의 classVar라면 this를 capture 했는지 보고, 안했다면, 에러
                     throw NotImplementedException{};

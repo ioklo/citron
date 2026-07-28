@@ -96,6 +96,11 @@ public:
     {
         throw NotImplementedException{};
     }
+
+    ResultType Visit(RImplTraitFuncDecl* rFuncDecl)
+    {
+        throw NotImplementedException{};
+    }
 };
 
 } // namespace Citron

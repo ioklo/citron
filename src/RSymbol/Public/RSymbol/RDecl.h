@@ -59,8 +59,7 @@ public:
 
 private:
     // 내부 구현용 virtual, RModule에서만 override한다
-    // 밖으로 익스포트 하지 않는다
-    virtual void FillIdentifier(std::string& buffer);
+    RSYMBOL_API virtual void FillIdentifier(std::string& buffer);
 };
 
 } // namespace Citron

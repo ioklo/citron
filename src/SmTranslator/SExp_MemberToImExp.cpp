@@ -13,7 +13,7 @@
 #include "MIR/MLoc.h"
 #include "MIR/MFactory.h"
 #include "MIR/MCreate.h"
-#include "SRTFactory.h"
+#include "SmFactory.h"
 #include "ImExp.h"
 #include "SExpToImExp.h"
 #include "ImExpToReExp.h"
@@ -37,60 +37,60 @@ struct StaticBaseTranslator
     RTypeArguments* memberTypeArgs; // rClass 제외
     SmTranslationContexts& contexts;
 
-    ResultType operator()(auto& declRes) { return Visit(declRes); }
+    ResultType operator()(auto&& declRes) { return Visit(declRes); }
 
     template<typename TImExp, typename... TArgs> requires derived_from<TImExp, ImExp>
     TImExp* MakeImExp(TArgs&&... args)
     {
-        return contexts.srtFactory->MakeImExp<TImExp>(std::forward<TArgs>(args)...);
+        return contexts.smFactory->MakeImExp<TImExp>(std::forward<TArgs>(args)...);
     }
 
     // 기본 표현
-    ResultType Visit(auto& declRes)
+    ResultType Visit(auto&& declRes)
     {
         throw RuntimeFatalException{};
     }
 
     // NS.'NS'
-    ResultType Visit(RDeclRes_Namespace& declRes)
+    ResultType Visit(SmDeclRes_Namespaces&& declRes)
     {
-        return MakeImExp<ImExp_Namespace>(declRes.decl);
+        return MakeImExp<ImExp_Namespaces>(move(declRes.namespaces));
     }
 
     // NS.F
-    ResultType Visit(RDeclRes_GlobalFuncs& declRes)
+    ResultType Visit(SmDeclRes_GlobalFuncs&& declRes)
     {
-        return MakeImExp<ImExp_GlobalFuncs>(declRes, memberTypeArgs);
+        return MakeImExp<ImExp_GlobalFuncs>(declRes.outerAppliedFuncDecls, memberTypeArgs);
     }
 
     // T.C
-    ResultType Visit(RDeclRes_Class& declRes)
+    ResultType Visit(SmDeclRes_Class&& declRes)
     {   
         // TODO: [43] ResolveIdentifier에서 AccessCheck를 할지, Verify패스를 따로 둘지 결정
-        if (!contexts.funcContext->CanAccess(declRes.decl))
+        if (!contexts.funcContext->CanAccess(declRes.outerAppliedDecl.decl))
         {
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
 
-        auto* typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerTypeArgs, memberTypeArgs);
-        return MakeImExp<ImExp_Class>(declRes.decl, typeArgs);
+        auto* typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
+        return MakeImExp<ImExp_Class>(declRes.outerAppliedDecl.decl, typeArgs);
     }
 
     // C.F
-    ResultType Visit(RDeclRes_ClassFuncs& declRes)
+    ResultType Visit(SmDeclRes_ClassFuncs&& declRes)
     {
-        return MakeImExp<ImExp_ClassFuncs>(declRes, memberTypeArgs, ImExpInstanceKind_ExplicitStatic{});
+        return MakeImExp<ImExp_ClassFuncs>(declRes.outerAppliedFuncDecls, memberTypeArgs, ImExpInstanceKind_ExplicitStatic{});
     }
 
     // C.x
-    ResultType Visit(RDeclRes_ClassVar& declRes)
+    ResultType Visit(SmDeclRes_ClassVar&& declRes)
     {
-        if (!declRes.decl->IsStatic())
+        if (!declRes.appliedDecl.decl->IsStatic())
         {
             return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
         }
 
-        if (!contexts.funcContext->CanAccess(declRes.decl))
+        if (!contexts.funcContext->CanAccess(declRes.appliedDecl.decl))
         {
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
@@ -98,73 +98,73 @@ struct StaticBaseTranslator
         // variable은 typeArgs가 없다
         assert(memberTypeArgs->GetCount() == 0);
 
-        return MakeImExp<ImExp_ClassVar>(declRes.decl, declRes.typeArgs, ImExpInstanceKind_ExplicitStatic{});
+        return MakeImExp<ImExp_ClassVar>(declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs, ImExpInstanceKind_ExplicitStatic{});
     }
 
     // T.S
-    ResultType Visit(RDeclRes_Struct& declRes)
+    ResultType Visit(SmDeclRes_Struct&& declRes)
     {
         // check access, TODO: ? 여기서 Access체크를 왜 하나? 이미 decl찾을때 access 체크를 했을텐데
-        if (!contexts.funcContext->CanAccess(declRes.decl))
+        if (!contexts.funcContext->CanAccess(declRes.outerAppliedDecl.decl))
         {
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
 
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerTypeArgs, memberTypeArgs);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
 
-        return MakeImExp<ImExp_Struct>(declRes.decl, typeArgs);
+        return MakeImExp<ImExp_Struct>(declRes.outerAppliedDecl.decl, typeArgs);
     }
 
     // S.F
-    ResultType Visit(RDeclRes_StructFuncs& declRes)
+    ResultType Visit(SmDeclRes_StructFuncs&& declRes)
     {
-        return MakeImExp<ImExp_StructFuncs>(declRes, memberTypeArgs, ImExpInstanceKind_ExplicitStatic{});
+        return MakeImExp<ImExp_StructFuncs>(declRes.outerAppliedFuncDecls, memberTypeArgs, ImExpInstanceKind_ExplicitStatic{});
     }
 
     // S.x
-    ResultType Visit(RDeclRes_StructVar& declRes)
+    ResultType Visit(SmDeclRes_StructVar&& declRes)
     {
-        if (!declRes.decl->IsStatic())
+        if (!declRes.appliedDecl.decl->IsStatic())
         {
             return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
         }
 
-        if (!contexts.funcContext->CanAccess(declRes.decl))
+        if (!contexts.funcContext->CanAccess(declRes.appliedDecl.decl))
         {
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
 
         // variable은 typeArgs가 없다
         assert(memberTypeArgs->GetCount() == 0);
-        return MakeImExp<ImExp_StructVar>(declRes.decl, declRes.typeArgs, ImExpInstanceKind_ExplicitStatic{});
+        return MakeImExp<ImExp_StructVar>(declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs, ImExpInstanceKind_ExplicitStatic{});
     }
 
     // T.E
-    ResultType Visit(RDeclRes_Enum& declRes)
+    ResultType Visit(SmDeclRes_Enum&& declRes)
     {
         // check access
-        if (!contexts.funcContext->CanAccess(declRes.decl))
+        if (!contexts.funcContext->CanAccess(declRes.outerAppliedDecl.decl))
         {
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
 
-        auto typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerTypeArgs, memberTypeArgs);
-        return MakeImExp<ImExp_Enum>(declRes.decl, typeArgs);
+        auto typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
+        return MakeImExp<ImExp_Enum>(declRes.outerAppliedDecl.decl, typeArgs);
     }
 
     // E.First
-    ResultType Visit(RDeclRes_EnumElem& declRes)
+    ResultType Visit(SmDeclRes_EnumElem&& declRes)
     {
         // EnumElem은 TypeArgs를 가질 수 없다
         assert(memberTypeArgs->GetCount() == 0);
-        return MakeImExp<ImExp_EnumElem>(declRes.decl, declRes.outerTypeArgs);
+        return MakeImExp<ImExp_EnumElem>(declRes.outerAppliedDecl.decl, declRes.outerAppliedDecl.outerTypeArgs);
     }
 
-    // ResultType Visit(RDeclRes_EnumElemVar& declRes); // S.x 표현 불가능
-    // ResultType Visit(RDeclRes_LambdaVar& declRes); // S.x 표현 불가능
-    // ResultType Visit(RDeclRes_TupleVar& declRes) // S.x 표현 불가능
+    // ResultType Visit(SmDeclRes_EnumElemVar&& declRes); // S.x 표현 불가능
+    // ResultType Visit(SmDeclRes_LambdaVar&& declRes); // S.x 표현 불가능
+    // ResultType Visit(SmDeclRes_TupleVar&& declRes) // S.x 표현 불가능
 
-    ResultType Visit(RDeclRes_TypeVar& declRes)
+    ResultType Visit(SmDeclRes_TypeVar&& declRes)
     {
         // TODO: [52] TypeVar정리
         throw NotImplementedException{};
@@ -182,7 +182,7 @@ struct InstanceParentTranslator
     template<typename TImExp, typename... TArgs> requires derived_from<TImExp, ImExp>
     TImExp* MakeImExp(TArgs&&... args)
     {
-        return contexts.srtFactory->MakeImExp<TImExp>(std::forward<TArgs>(args)...);
+        return contexts.smFactory->MakeImExp<TImExp>(std::forward<TArgs>(args)...);
     }
 
     template<typename TMLoc, typename... TArgs> requires derived_from<TMLoc, MLoc>
@@ -191,107 +191,107 @@ struct InstanceParentTranslator
         return contexts.mFactory->MakeMLoc<TMLoc>(std::forward<TArgs>(args)...);
     }
 
-    ResultType operator()(auto& declRes) { return Visit(declRes); }
+    ResultType operator()(auto&& declRes) { return Visit(declRes); }
 
     // 기본, 표현 불가
-    ResultType Visit(auto& declRes)
+    ResultType Visit(auto&& declRes)
     {
         throw RuntimeFatalException{};
     }
 
-    // ResultType Visit(RDeclRes_Namespace& declRes); // x.NS 표현 불가
-    // ResultType Visit(RDeclRes_GlobalFuncs& declRes); // x.F() 표현 불가
+    // ResultType Visit(SmDeclRes_Namespace&& declRes); // x.NS 표현 불가
+    // ResultType Visit(SmDeclRes_GlobalFuncs&& declRes); // x.F() 표현 불가
 
     // exp.C
-    ResultType Visit(RDeclRes_Class& declRes)
+    ResultType Visit(SmDeclRes_Class&& declRes)
     {
         return Error<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>();
     }
 
     // exp.F
-    ResultType Visit(RDeclRes_ClassFuncs& declRes)
+    ResultType Visit(SmDeclRes_ClassFuncs&& declRes)
     {
-        return MakeImExp<ImExp_ClassFuncs>(declRes, memberTypeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
+        return MakeImExp<ImExp_ClassFuncs>(declRes.outerAppliedFuncDecls, memberTypeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.x
-    ResultType Visit(RDeclRes_ClassVar& declRes)
+    ResultType Visit(SmDeclRes_ClassVar&& declRes)
     {
         // static인지 검사
-        if (declRes.decl->IsStatic())
+        if (declRes.appliedDecl.decl->IsStatic())
         {
             return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
         }
 
         // access modifier 검사?
-        if (!contexts.funcContext->CanAccess(declRes.decl))
+        if (!contexts.funcContext->CanAccess(declRes.appliedDecl.decl))
         {
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
 
-        return MakeImExp<ImExp_ClassVar>(declRes.decl, declRes.typeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
+        return MakeImExp<ImExp_ClassVar>(declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.S
-    ResultType Visit(RDeclRes_Struct& declRes)
+    ResultType Visit(SmDeclRes_Struct&& declRes)
     {
         return Error<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>();
     }
 
     // exp.F
-    ResultType Visit(RDeclRes_StructFuncs& declRes)
+    ResultType Visit(SmDeclRes_StructFuncs&& declRes)
     {
-        return MakeImExp<ImExp_StructFuncs>(declRes, memberTypeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
+        return MakeImExp<ImExp_StructFuncs>(declRes.outerAppliedFuncDecls, memberTypeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.x
-    ResultType Visit(RDeclRes_StructVar& declRes)
+    ResultType Visit(SmDeclRes_StructVar&& declRes)
     {
         // static인지 검사
-        if (declRes.decl->IsStatic())
+        if (declRes.appliedDecl.decl->IsStatic())
         {
             return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
         }
 
         // access modifier 검사                            
-        if (!contexts.funcContext->CanAccess(declRes.decl))
+        if (!contexts.funcContext->CanAccess(declRes.appliedDecl.decl))
         {
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
 
-        return MakeImExp<ImExp_StructVar>(declRes.decl, declRes.typeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
+        return MakeImExp<ImExp_StructVar>(declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.E
-    ResultType Visit(RDeclRes_Enum& declRes)
+    ResultType Visit(SmDeclRes_Enum&& declRes)
     {
         return Error<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>();
     }
 
     // exp.First
-    ResultType Visit(RDeclRes_EnumElem& declRes)
+    ResultType Visit(SmDeclRes_EnumElem&& declRes)
     {
         return Error<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>();
     }
 
     // exp.firstX
-    ResultType Visit(RDeclRes_EnumElemVar& declRes)
+    ResultType Visit(SmDeclRes_EnumElemVar&& declRes)
     {
-        auto* loc = MakeMLoc<MLoc_EnumElemVar>(mInstLoc, declRes.decl, declRes.outerTypeArgs);
+        auto* loc = MakeMLoc<MLoc_EnumElemVar>(mInstLoc, declRes.outerAppliedDecl.decl, declRes.outerAppliedDecl.outerTypeArgs);
         return MakeImExp<ImExp_ReExp>(ReExp_Loc{loc});
     }
 
-    // ResultType Visit(RDeclRes_LambdaVar& declRes); exp.lambdaVar // 표현 불가
+    // ResultType Visit(SmDeclRes_LambdaVar&& declRes); exp.lambdaVar // 표현 불가
 
     // exp.x
-    ResultType Visit(RDeclRes_TupleVar& declRes) 
+    ResultType Visit(SmDeclRes_TupleVar&& declRes) 
     {
         // TODO: [44] Tuple 구현
         throw NotImplementedException{};
     }
 
     // exp.T
-    ResultType Visit(RDeclRes_TypeVar& declRes)
+    ResultType Visit(SmDeclRes_TypeVar&& declRes)
     {
         return Error<Error_ResolveIdentifier_CantGetTypeMemberThroughInstance>();
     }
@@ -311,10 +311,10 @@ struct MemberTranslator
             return Error<Error_ResolveIdentifier_NotFound>();
 
         // member의 typeArgs개수가 
-        auto declRes = ToRDeclRes(typeArgs, *o_member);
+        auto declRes = ToSmDeclRes(typeArgs, *o_member);
 
         StaticBaseTranslator binder{memberTypeArgs, contexts};
-        return declRes.Visit(binder);
+        return move(declRes).Visit(binder);
     }
 
     ResultType TranslateInstanceParent(ReExp& reExp)
@@ -347,9 +347,11 @@ struct MemberTranslator
         return o_declRes->Visit(binder);
     }
 
-    ResultType Visit(ImExp_Namespace* imExp) 
+    ResultType Visit(ImExp_Namespaces* imExp) 
     { 
-        return TranslateStaticParent(imExp->_namespace, contexts.rFactory->MakeEmptyTypeArguments());
+        // TODO: [74] 2026-07-28, SmDeclRes, ImExp, IrExp의 RNamespaceGroup 구현
+        throw NotImplementedException{};
+        // return TranslateStaticParent(imExp->namespaces, contexts.rFactory->MakeEmptyTypeArguments());
     }
 
     ResultType Visit(ImExp_GlobalFuncs* imExp)

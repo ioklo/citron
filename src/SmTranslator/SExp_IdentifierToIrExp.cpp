@@ -16,7 +16,7 @@
 
 #include "IrExp.h"
 #include "SmTranslationContexts.h"
-#include "SRTFactory.h"
+#include "SmFactory.h"
 #include "SmFuncContext.h"
 #include "Misc.h"
 
@@ -35,7 +35,7 @@ struct DeclResTranslator
     template<typename TIrExp, typename... TArgs> requires derived_from<TIrExp, IrExp>
     IrExp* MakeIrExp(TArgs&&... args)
     {
-        return contexts.srtFactory->MakeIrExp<TIrExp>(forward<TArgs>(args)...);
+        return contexts.smFactory->MakeIrExp<TIrExp>(forward<TArgs>(args)...);
     }
 
     template<typename TMLoc, typename... TArgs> requires std::derived_from<TMLoc, MLoc>
@@ -44,59 +44,59 @@ struct DeclResTranslator
         return contexts.mFactory->MakeMLoc<TMLoc>(forward<TArgs>(args)...);
     }
     
-    ResultType operator()(auto& declRes) { return Visit(declRes); }
+    ResultType operator()(auto&& declRes) { return Visit(std::forward<decltype(declRes)>(declRes)); }
 
-    ResultType Visit(auto& declRes)
+    ResultType Visit(auto&& declRes)
     {
         return Error<Error_SharedTranslation_CantMakeSharedFromBase>();
     }
 
-    ResultType Visit(RDeclRes_Namespace& declRes) 
+    ResultType Visit(SmDeclRes_Namespaces&& declRes) 
     { 
         assert(memberTypeArgs->GetCount() == 0);
-        return MakeIrExp<IrExp_Namespace>(declRes.decl);
+        return MakeIrExp<IrExp_Namespaces>(std::move(declRes.namespaces));
     }
 
     // ResultType Visit(RDeclRes_GlobalFuncs& declRes); 함수류는 IrExp에서 관심없다
 
-    ResultType Visit(RDeclRes_Class& declRes)
+    ResultType Visit(SmDeclRes_Class&& declRes)
     {
-        auto* typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerTypeArgs, memberTypeArgs);
-        return MakeIrExp<IrExp_Class>(declRes.decl, typeArgs);
+        auto* typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
+        return MakeIrExp<IrExp_Class>(declRes.outerAppliedDecl.decl, typeArgs);
     }
 
-    // ResultType Visit(RDeclRes_ClassFuncs& declRes);
-    ResultType Visit(RDeclRes_ClassVar& declRes) 
+    // ResultType Visit(SmDeclRes_ClassFuncs& declRes);
+    ResultType Visit(SmDeclRes_ClassVar&& declRes) 
     {   
         assert(memberTypeArgs->GetCount() == 0);
 
-        if (declRes.decl->IsStatic()) // &C.x
+        if (declRes.appliedDecl.decl->IsStatic()) // &C.x
         {
-            auto* loc = MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, declRes.decl, declRes.typeArgs);
+            auto* loc = MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs);
             return MakeIrExp<IrExp_Static>(loc);
         }
         else // &this.x
         {   
             return MakeIrExp<IrExp_ClassVar>(
-                contexts.funcContext->MakeThisLoc(), declRes.decl, declRes.typeArgs);
+                contexts.funcContext->MakeThisLoc(), declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs);
         }
     }
 
-    ResultType Visit(RDeclRes_Struct& declRes)
+    ResultType Visit(SmDeclRes_Struct&& declRes)
     { 
-        auto* typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerTypeArgs, memberTypeArgs);
-        return MakeIrExp<IrExp_Struct>(declRes.decl, typeArgs);
+        auto* typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
+        return MakeIrExp<IrExp_Struct>(declRes.outerAppliedDecl.decl, typeArgs);
     }
 
-    // ResultType Visit(RDeclRes_StructFuncs& declRes);
+    // ResultType Visit(SmDeclRes_StructFuncs& declRes);
 
-    ResultType Visit(RDeclRes_StructVar& declRes) 
+    ResultType Visit(SmDeclRes_StructVar&& declRes) 
     {
         assert(memberTypeArgs->GetCount() == 0);
 
-        if (declRes.decl->IsStatic())
+        if (declRes.appliedDecl.decl->IsStatic())
         {
-            auto* loc = MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, declRes.decl, declRes.typeArgs);
+            auto* loc = MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs);
             return MakeIrExp<IrExp_Static>(loc);
         }
         else
@@ -106,18 +106,18 @@ struct DeclResTranslator
 
             // IrExp_StructVar는 base가 IrExp인 경우(sharedExp로 보일수 있는 가능성)에만 만드는것이다.
 
-            auto* loc = MakeMLoc<MLoc_StructVar>(contexts.funcContext->MakeThisLoc(), declRes.decl, declRes.typeArgs);
+            auto* loc = MakeMLoc<MLoc_StructVar>(contexts.funcContext->MakeThisLoc(), declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs);
             return MakeIrExp<IrExp_Loc>(loc);
         }
     }
-    // ResultType Visit(RDeclRes_Enum& declRes);
-    // ResultType Visit(RDeclRes_EnumElem& declRes);
-    // ResultType Visit(RDeclRes_EnumElemVar& declRes);
-    // ResultType Visit(RDeclRes_Lambda& declRes);
-    // ResultType Visit(RDeclRes_LambdaVar& declRes);
-    // ResultType Visit(RDeclRes_Interface& declRes);
-    // ResultType Visit(RDeclRes_TupleVar& declRes);
-    // ResultType Visit(RDeclRes_TypeVar& declRes);
+    // ResultType Visit(RDeclRes_Enum&& declRes);
+    // ResultType Visit(RDeclRes_EnumElem&& declRes);
+    // ResultType Visit(RDeclRes_EnumElemVar&& declRes);
+    // ResultType Visit(RDeclRes_Lambda&& declRes);
+    // ResultType Visit(RDeclRes_LambdaVar&& declRes);
+    // ResultType Visit(RDeclRes_Interface&& declRes);
+    // ResultType Visit(RDeclRes_TupleVar&& declRes);
+    // ResultType Visit(RDeclRes_TypeVar&& declRes);
 };
 
 struct BodyResTranslator
@@ -131,35 +131,35 @@ private:
     ResultType Loc(TArgs&&... args)
     {
         auto* loc = contexts.mFactory->MakeMLoc<TMLoc>(forward<TArgs>(args)...);
-        return contexts.srtFactory->MakeIrExp<IrExp_Loc>(loc);
+        return contexts.smFactory->MakeIrExp<IrExp_Loc>(loc);
     }
     
 public:
-    ResultType operator()(auto& bodyRes) { return Visit(bodyRes); }
+    ResultType operator()(auto&& bodyRes) { return Visit(std::forward<decltype(bodyRes)>(bodyRes)); }
 
-    ResultType Visit(SmBodyRes_DeclRes& bodyRes) 
+    ResultType Visit(SmBodyRes_DeclRes&& bodyRes) 
     { 
-        return bodyRes.declRes.Visit(DeclResTranslator{memberTypeArgs, contexts});
+        return std::move(bodyRes.declRes).Visit(DeclResTranslator{memberTypeArgs, contexts});
     }
 
-    ResultType Visit(SmBodyRes_LocalVar& bodyRes) 
+    ResultType Visit(SmBodyRes_LocalVar&& bodyRes) 
     {
         return Loc<MLoc_LocalVar>(bodyRes.name, bodyRes.type);
     }
 
-    ResultType Visit(SmBodyRes_LocalRef& bodyRes) 
+    ResultType Visit(SmBodyRes_LocalRef&& bodyRes) 
     { 
         return Loc<MLoc_LocalRef>(bodyRes.name, bodyRes.type);
     }
 
     // 어떤 경로로 NeedCapture가 나오는가
-    ResultType Visit(SmBodyRes_NeedCapture& bodyRes) 
+    ResultType Visit(SmBodyRes_NeedCapture&& bodyRes) 
     {
         // TODO: [42] SmBodyRes.NeedCapture구현
         throw NotImplementedException{};
     }
 
-    ResultType Visit(SmBodyRes_ThisVar& bodyRes) 
+    ResultType Visit(SmBodyRes_ThisVar&& bodyRes) 
     {
         return Loc<MLoc_This>(bodyRes.type);
     }
@@ -177,7 +177,7 @@ expected<IrExp*, DiagPtr> TranslateSExp_IdentifierToIrExp(SExp_Identifier* sExp,
     auto e_bodyRes = ResolveIdentifier(RName::Normal(sExp->value), contexts);
     RETURN_ON_ERROR(e_bodyRes);
 
-    return e_bodyRes->Visit(BodyResTranslator{memberTypeArgs, contexts});
+    return std::move(*e_bodyRes).Visit(BodyResTranslator{memberTypeArgs, contexts});
 }
 
 } // namespace Citron::SyntaxIR0Translation

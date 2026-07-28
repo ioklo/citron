@@ -56,7 +56,7 @@ private:
     }
 
 public:
-    ResultType Visit(ImExp_Namespace* imExp)
+    ResultType Visit(ImExp_Namespaces* imExp)
     {
         return Error<Error_ResolveIdentifier_CantUseNamespaceAsExpression>();
     }

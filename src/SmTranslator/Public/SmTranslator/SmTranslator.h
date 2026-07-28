@@ -19,6 +19,7 @@ class EModule;
 using LoggerPtr = std::shared_ptr<class Logger>;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
+using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
 struct SmTranslationResult
 {

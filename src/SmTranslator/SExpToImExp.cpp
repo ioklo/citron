@@ -6,7 +6,7 @@
 #include "MIR/MInitExp.h"
 #include "ImExp.h"
 #include "ReExp.h"
-#include "SRTFactory.h"
+#include "SmFactory.h"
 #include "SmTranslationContexts.h"
 #include "SExp_IdentifierToImExp.h"
 #include "SExp_CallToImExp.h"
@@ -25,22 +25,22 @@ struct SExpToImExpTranslator
 
     ImExp* MakeImExp_ReExp(ReExp&& reExp)
     {
-        return contexts.srtFactory->MakeImExp<ImExp_ReExp>(move(reExp));
+        return contexts.smFactory->MakeImExp<ImExp_ReExp>(move(reExp));
     }
 
     ImExp* MakeImExp_ReExp_InitExp(MInitExp* mInitExp)
     {
-        return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{mInitExp});
+        return contexts.smFactory->MakeImExp<ImExp_ReExp>(ReExp_InitExp{mInitExp});
     }
 
     ImExp* MakeImExp_ReExp_Exp(MExp* mExp)
     {
-        return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_Exp{mExp});
+        return contexts.smFactory->MakeImExp<ImExp_ReExp>(ReExp_Exp{mExp});
     }
 
     ImExp* MakeImExp_ReExp_Loc(MLoc* mLoc)
     {
-        return contexts.srtFactory->MakeImExp<ImExp_ReExp>(ReExp_Loc{mLoc});
+        return contexts.smFactory->MakeImExp<ImExp_ReExp>(ReExp_Loc{mLoc});
     }
 
     ResultType Visit(SExp_Identifier* sExp) 

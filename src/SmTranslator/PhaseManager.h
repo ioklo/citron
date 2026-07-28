@@ -14,7 +14,7 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-using SRTFactoryPtr = std::shared_ptr<class SRTFactory>;
+using SmFactoryPtr = std::shared_ptr<class SmFactory>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 
 // Phase 1 : BuildTypeSymbolPhase (body-space에서 만들어지는 lambda 제외)
@@ -30,7 +30,7 @@ class PhaseManager
     RFactoryPtr rFactory;
     MFactoryPtr mFactory;
 
-    SRTFactoryPtr srtFactory;
+    SmFactoryPtr smFactory;
     BinOpQueryServicePtr binOpQueryService;
 
     std::vector<std::shared_ptr<IBuildTypeHierarchyTask>> buildTypeHierarchyTasks;
@@ -43,7 +43,7 @@ public:
     PhaseManager(
         TakeRef<LoggerPtr> logger, 
         TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
-        TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
+        TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
     ~PhaseManager(); 
 
     void AddBuildTypeHierarchyTask(std::shared_ptr<IBuildTypeHierarchyTask>&& task);

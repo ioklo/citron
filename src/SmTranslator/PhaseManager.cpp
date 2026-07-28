@@ -30,9 +30,9 @@ namespace Citron {
 PhaseManager::PhaseManager(
     TakeRef<LoggerPtr> logger, 
     TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
-    TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService)
+    TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService)
     : logger{logger.Take()}
-    , rFactory{rFactory.Take()}, mFactory{mFactory.Take()}, srtFactory{srtFactory.Take()}
+    , rFactory{rFactory.Take()}, mFactory{mFactory.Take()}, smFactory{smFactory.Take()}
     , binOpQueryService{binOpQueryService.Take()}
 {}
 
@@ -85,7 +85,7 @@ expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
 
     // 4. TranslateBody
     vector<MFuncBody> funcBodies;
-    TranslateBodyContext tbContext{logger, rFactory, mFactory, srtFactory, binOpQueryService};
+    TranslateBodyContext tbContext{logger, rFactory, mFactory, smFactory, binOpQueryService};
     for (auto& task : translatingBodyTasks)
     {
         auto e_result = task->TranslateBody(tbContext);

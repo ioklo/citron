@@ -34,7 +34,8 @@ using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 using MFactoryPtr = std::shared_ptr<class MFactory>;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using LoggerPtr = std::shared_ptr<class Logger>;
-using SRTFactoryPtr = std::shared_ptr<class SRTFactory>;
+using SmFactoryPtr = std::shared_ptr<class SmFactory>;
+using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
 using DiagPtr = std::shared_ptr<struct Diag>;
 
@@ -46,11 +47,11 @@ struct SmTranslationContexts
     LoggerPtr logger;
     MFactoryPtr mFactory;
     RFactoryPtr rFactory;
-    SRTFactoryPtr srtFactory;
+    SmFactoryPtr smFactory;
     BinOpQueryServicePtr binOpQueryService;
 };
 
-SmTranslationContexts MakeTranslationContexts(RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SRTFactoryPtr> srtFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
+SmTranslationContexts MakeTranslationContexts(TakeRef<SmDeclContextPtr> declContext, RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
 
 SmTranslationContexts MakeTranslationContexts_DefaultScope(SmTranslationContexts& contexts);
 SmTranslationContexts MakeTranslationContexts_LoopScope(size_t o_labelId, SmTranslationContexts& contexts);

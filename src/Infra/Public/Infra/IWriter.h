@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 namespace Citron {
 
@@ -11,7 +12,7 @@ public:
 
     virtual void AddIndent() = 0;
     virtual void RemoveIndent() = 0;
-    virtual void Write(const std::string& str) = 0;
+    virtual void Write(std::string_view str) = 0;
     virtual void WriteLine() = 0;
 };
 

@@ -1,6 +1,7 @@
 #include "StructCtorTask.h"
 
 #include "Infra/Expected.h"
+#include "Infra/Ptr.h"
 #include "RSymbol/RStructDecl.h"
 #include "RSymbol/RStructCtorDecl.h"
 #include "MIR/MFuncBody.h"
@@ -9,14 +10,15 @@
 #include "BuildNonTypeSymbolContext.h"
 #include "TranslateBodyContext.h"
 #include "PhaseManager.h"
+#include "SmDeclContext_Decl.h"
 
 using namespace std;
 
 namespace Citron {
 
-void StructCtorTask::Register(RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void StructCtorTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<StructCtorTask> task{new StructCtorTask{rStruct, sStructCtor, std::move(rFactory)}};
+    shared_ptr<StructCtorTask> task{new StructCtorTask{move(structDeclContext), rStruct, sStructCtor, std::move(rFactory)}};
 
     phaseManager.AddBuildNonTypeSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
@@ -39,7 +41,8 @@ expected<void, DiagPtr> StructCtorTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
 
 expected<MFuncBody, DiagPtr> StructCtorTask::TranslateBody(TranslateBodyContext& context)
 {
-    return context.Translate(rStructCtor, /*bSeqFunc*/false, sStructCtor->body);
+    SmDeclContextPtr declContext = MakePtr<SmDeclContext_Decl<RStructCtorDecl>>(structDeclContext, rStructCtor, rStructCtor->MakeOpenTypeArgs(*rFactory));
+    return context.Translate(move(declContext), rStructCtor, /*bSeqFunc*/false, sStructCtor->body);
 }
 
 

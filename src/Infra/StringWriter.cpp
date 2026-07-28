@@ -26,7 +26,7 @@ void StringWriter::RemoveIndent()
     indent -= 4;
 }
 
-void StringWriter::Write(const std::string& str)
+void StringWriter::Write(std::string_view str)
 {
     oss << str;
 }

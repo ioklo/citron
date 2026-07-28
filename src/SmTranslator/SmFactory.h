@@ -7,16 +7,17 @@ namespace Citron {
 
 struct ImExp;
 struct IrExp;
+using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
 // ImExp, IrExp
-class SRTFactory
+class SmFactory
 {
     std::vector<std::unique_ptr<ImExp>> imExps;
     std::vector<std::unique_ptr<IrExp>> irExps;
 
 public:
-    SRTFactory();
-    ~SRTFactory();
+    SmFactory();
+    ~SmFactory();
 
     template<typename TImExp, typename... TArgs> requires std::derived_from<TImExp, ImExp>
     TImExp* MakeImExp(TArgs&&... args)
@@ -37,6 +38,6 @@ public:
     }
 };
 
-using SRTFactoryPtr = std::shared_ptr<SRTFactory>;
+using SmFactoryPtr = std::shared_ptr<SmFactory>;
 
 } // namespace Citron

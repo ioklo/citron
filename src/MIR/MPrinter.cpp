@@ -43,34 +43,30 @@ class MPrinterImpl {
 public:
     MPrinterImpl(InRef<IWriter> writer, InRef<RFactory> rFactory) : writer(*writer), rFactory(*rFactory) {}
 
-    void PrintFuncBody_Decl(InRef<MFuncBody_Decl> funcBody)
+    void PrintRDecl(RDecl* decl)
     {
-        writer.Write("FuncDecl ");
-        PrintRName(funcBody->rFuncDecl->RFuncDecl_GetDecl()->GetIdentifier().name);
-        writer.WriteLine();
-        writer.AddIndent();
-        PrintStmt(funcBody->body);
-        writer.RemoveIndent();
-    }
+        if (auto* name = decl->TryGetName())
+        {
+            PrintRName(*name);
+        }
+        else
+        {
+            writer.Write("<unnamed-decl>");
+        }
 
-    void PrintFuncBody_ImplTrait(InRef<MFuncBody_ImplTrait> funcBody)
-    {
-        writer.Write("FuncImplTrait ");
-        PrintRName(funcBody->nImplTraitFunc->traitFuncDecl->GetIdentifier().name);
-        writer.WriteLine();
-        writer.AddIndent();
-        PrintStmt(funcBody->body);
-        writer.RemoveIndent();
+        writer.Write(", ");
+
+        writer.Write(decl->GetDeclKey().GetValue());
     }
 
     void PrintFuncBody(InRef<MFuncBody> funcBody)
     {
-        funcBody->Visit([this](auto& funcBody) {
-            using T = remove_cvref_t<decltype(funcBody)>;
-            if constexpr (same_as<T, MFuncBody_Decl>) return PrintFuncBody_Decl(funcBody);
-            else if constexpr (same_as<T, MFuncBody_ImplTrait>) return PrintFuncBody_ImplTrait(funcBody);
-            else static_assert(false);
-        });
+        writer.Write("FuncDecl ");
+        PrintRDecl(funcBody->rFuncDecl->RFuncDecl_GetDecl());
+        writer.WriteLine();
+        writer.AddIndent();
+        PrintStmt(funcBody->body);
+        writer.RemoveIndent();
     }
 
 private:
@@ -120,11 +116,7 @@ private:
     {
         if (!decl) return "<null-decl>";
         auto id = decl->GetIdentifier();
-        return id.name.Visit([decl](auto& name) -> string {
-            using T = remove_cvref_t<decltype(name)>;
-            if constexpr (same_as<T, RName_Normal>) return name.text;
-            else return format("decl#{}", reinterpret_cast<uintptr_t>(decl));
-        });
+        return id.text;
     }
 
     string FuncDeclText(RFuncDecl* funcDecl)

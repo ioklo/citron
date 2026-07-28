@@ -1,6 +1,7 @@
 #include "StructFuncTask.h"
 
 #include "Infra/Expected.h"
+#include "Infra/Ptr.h"
 #include "RSymbol/RStructDecl.h"
 #include "RSymbol/RStructFuncDecl.h"
 #include "RSymbol/RFactory.h"
@@ -11,14 +12,15 @@
 #include "TranslateBodyContext.h"
 #include "CommonTranslation.h"
 #include "PhaseManager.h"
+#include "SmDeclContext_Decl.h"
 
 using namespace std;
 
 namespace Citron {
 
-void StructFuncTask::Register(RStructDecl* rStructDecl, SStructFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void StructFuncTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<StructFuncTask> task{new StructFuncTask(rStructDecl, syntax, std::move(rFactory))};
+    shared_ptr<StructFuncTask> task{new StructFuncTask(move(structDeclContext), rStructDecl, syntax, std::move(rFactory))};
     phaseManager.AddBuildNonTypeSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
@@ -31,7 +33,7 @@ expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
         rStruct, accessor, RName::Normal(sStructFunc->name), sStructFunc->bSequence);
 
     // typeParam을 만들땐 rStructFunc가 필요하다 (rStructFunc는 tree에 매달려있지 않은 상태라도 상관없다)
-    auto typeParams = MakeTypeParams(rStruct, rStructFunc, sStructFunc->typeParams, rFactory);
+    auto typeParams = MakeTypeParams(rStruct->GetAllTypeParamCount(), rStructFunc, sStructFunc->typeParams, rFactory);
 
     // 만들어진 typeParam도 검색대상이다
     SmFuncHeaderResolveScope scope{rStruct, typeParams};
@@ -42,7 +44,7 @@ expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
     RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
 
     // init
-    rStructFunc->Init(RDeclKey::Func(RName::Normal(sStructFunc->name), parameters), sStructFunc->bStatic, move(*e_funcRet), move(typeParams), move(parameters), bLastParamVariadic));
+    rStructFunc->Init(RDeclKey::Func(RName::Normal(sStructFunc->name), parameters), sStructFunc->bStatic, move(*e_funcRet), move(typeParams), move(parameters), bLastParamVariadic);
 
     // AddFunc할땐 declKey가 필요하다. declKey는 FuncParamter가 필요하다
     rStruct->AddFunc(rStructFunc);
@@ -51,7 +53,8 @@ expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
 
 expected<MFuncBody, DiagPtr> StructFuncTask::TranslateBody(TranslateBodyContext& context)
 {
-    return context.Translate(rStructFunc, sStructFunc->bSequence, sStructFunc->body);
+    SmDeclContextPtr structFuncDeclContext = MakePtr<SmDeclContext_Decl<RStructFuncDecl>>(structDeclContext, rStructFunc, rStructFunc->MakeOpenTypeArgs(*rFactory));
+    return context.Translate(move(structFuncDeclContext), rStructFunc, sStructFunc->bSequence, sStructFunc->body);
 }
 
 

@@ -11,11 +11,13 @@ class SStructCtorDecl;
 class PhaseManager;
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
+using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
 class StructCtorTask
     : public IBuildNonTypeSymbolTask
     , public ITranslateBodyTask
 {
+    SmDeclContextPtr structDeclContext;
     RStructDecl* rStruct;
     SStructCtorDecl* sStructCtor;
 
@@ -23,12 +25,12 @@ class StructCtorTask
     RFactoryPtr rFactory;
 
 private:
-    StructCtorTask(RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory)
-        : rStruct{rStruct}, sStructCtor{sStructCtor}, rStructCtor{nullptr}, rFactory{rFactory.Take()}
+    StructCtorTask(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory)
+        : structDeclContext{structDeclContext.Take()}, rStruct{rStruct}, sStructCtor{sStructCtor}, rStructCtor{nullptr}, rFactory{rFactory.Take()}
     {}
 
 public:
-    static void Register(RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
     std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 

@@ -1,18 +1,19 @@
-#include "SRTFactory.h"
+#include "SmFactory.h"
+#include <deque>
 #include "ImExp.h"
 #include "IrExp.h"
 #include "ReExp.h"
 
+using namespace std;
+
 namespace Citron {
 
-SRTFactory::SRTFactory()
+SmFactory::SmFactory()
 {
-
 }
 
-SRTFactory::~SRTFactory()
+SmFactory::~SmFactory()
 {
-
 }
 
 

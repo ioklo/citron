@@ -10,11 +10,13 @@ class RStructDtorDecl;
 class SStructDtorDecl;
 class PhaseManager;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
+using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
 class StructDtorTask
     : public IBuildNonTypeSymbolTask
     , public ITranslateBodyTask
 {
+    SmDeclContextPtr structDeclContext;
     RStructDecl* rStruct;
     SStructDtorDecl* sStructDtor;
     RFactoryPtr rFactory;
@@ -22,12 +24,12 @@ class StructDtorTask
     RStructDtorDecl* rStructDtor;
 
 public:
-    StructDtorTask(RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory);
+    StructDtorTask(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory);
     std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 
 public:
-    static void Register(RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
 };
 
 } // namespace Citron
