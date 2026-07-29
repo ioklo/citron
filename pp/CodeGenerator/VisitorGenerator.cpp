@@ -302,6 +302,7 @@ void GenerateVisitors(std::filesystem::path rootPath)
                 "RType_EnumElem",
                 "RType_Interface",
                 "RType_Lambda",
+                "RType_Opaque",
             },
         },
 

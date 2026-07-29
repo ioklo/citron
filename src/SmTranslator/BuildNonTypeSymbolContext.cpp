@@ -2,6 +2,7 @@
 #include <variant>
 
 #include "Syntax/Syntax.h"
+#include "Logging/Diag.h"
 
 #include "Infra/Ptr.h"
 #include "Infra/Expected.h"
@@ -11,7 +12,10 @@
 #include "RSymbol/RDecl.h"
 #include "RSymbol/RTypeParam.h"
 #include "CommonTranslation.h"
+#include "SmDeclContext.h"
+#include "SmTypeRes.h"
 #include "Misc.h"
+#include "SmTypeTranslation.h"
 
 using namespace std;
 
@@ -22,116 +26,31 @@ BuildNonTypeSymbolContext::BuildNonTypeSymbolContext(TakeRef<RFactoryPtr> rFacto
 {
 }
 
-RType* BuildNonTypeSymbolContext::MakeType(STypeExp* sTypeExp, RDecl* scope)
-{
-    // 1. type parameter 
-
-    // TODO: SmScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
-    struct Visitor
-    {
-        using ResultType = RType*;
-        RFactory* rFactory;
-
-        RType* Visit(STypeExp_Id* idExp)
-        {
-            if (idExp->name == "void")
-                return rFactory->MakeVoidType();
-            else if (idExp->name == "int")
-                return rFactory->MakeIntType();
-            else if (idExp->name == "string")
-                return rFactory->MakeStringType();
-            else if (idExp->name == "bool")
-                return rFactory->MakeBoolType();
-
-            throw NotImplementedException{};
-        }
-
-        RType* Visit(STypeExp* e)
-        {
-            throw NotImplementedException{};
-        }
-
-    } visitor{rFactory.get()};
-
-    return Accept(visitor, sTypeExp);
-}
-
-RType* BuildNonTypeSymbolContext::MakeType(STypeExp* sTypeExp, InRef<SmFuncHeaderResolveScope> scope)
-{
-    // 1. type parameter 
-
-    // TODO: SmScopeContext::TranslateSTypeExpToRType 에도 같은 코드가 있다
-    struct Visitor
-    {
-        using ResultType = RType*;
-
-        InRef<SmFuncHeaderResolveScope> scope;
-        RFactory* rFactory;
-
-        RType* Visit(STypeExp_Id* idExp)
-        {
-            if (idExp->name == "void")
-                return rFactory->MakeVoidType();
-            else if (idExp->name == "int")
-                return rFactory->MakeIntType();
-            else if (idExp->name == "string")
-                return rFactory->MakeStringType();
-            else if (idExp->name == "bool")
-                return rFactory->MakeBoolType();
-
-            RName name{RName_Normal{idExp->name}};
-            for(auto* typeParam : scope->typeParams)
-            {
-                if (typeParam->GetName() == name)
-                {
-                    return rFactory->MakeTypeVarType(typeParam);
-                }
-            }
-
-            throw NotImplementedException{};
-        }
-
-        RType* Visit(STypeExp* e)
-        {
-            throw NotImplementedException{};
-        }
-
-    } visitor{scope, rFactory.get()};
-
-    return Accept(visitor, sTypeExp);
-}
-
-expected<RFuncReturn, DiagPtr> BuildNonTypeSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, InRef<SmFuncHeaderResolveScope> scope)
+expected<RFuncReturn, DiagPtr> BuildNonTypeSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, SmTypeResolveScope scope)
 {
     return visit([this, scope](auto& funcRet) -> expected<RFuncReturn, DiagPtr> {
         using T = remove_cvref_t<decltype(funcRet)>;
 
         if constexpr (same_as<T, SFuncReturn_Normal>)
         {
-            auto* rType = MakeType(funcRet.type, scope);
-            return RFuncReturn_Normal(rType);
+            auto e_rType = TranslateSTypeExpToRType(funcRet.type, scope, rFactory.get());
+            RETURN_ON_ERROR(e_rType);
+            return RFuncReturn_Normal{*e_rType};
         }
         else if constexpr (same_as<T, SFuncReturn_Opaque>)
         {
-            // rType이 맞는걸까
-            throw NotImplementedException{};
-            //auto* rType = MakeType(funcRet.trait, decl);
-            //if (auto* rOpaqueType = dynamic_cast<RType_Opaque*>(rType))
-            //{
-            //    return RFuncReturn_Normal{rType};
-            //}
-            //else
-            //{
-            //    // TODO: 리턴값을 expected로 바꿔야 한다
-            //    throw NotImplementedException{};
-            //}
+            auto e_rTrait = TranslateSTypeExpToRTrait(funcRet.type, scope, rFactory.get());
+            RETURN_ON_ERROR(e_rTrait);
+
+            RType_Opaque* rOpaqueType = rFactory->MakeOpaqueType(e_rTrait->decl, e_rTrait->typeArgs);
+            return RFuncReturn_Normal{rOpaqueType};
         }
         else static_assert(false);
 
     }, funcRet);
 }
 
-expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildNonTypeSymbolContext::MakeParameters(vector<SFuncParam>& sParams, InRef<SmFuncHeaderResolveScope> scope)
+expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildNonTypeSymbolContext::MakeParameters(vector<SFuncParam>& sParams, SmTypeResolveScope scope)
 {
     bool bLastParamVariadic = false;
 
@@ -147,8 +66,8 @@ expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildNonTypeSymbolContext
         RETURN_ON_ERROR(e_rParamKind);
         auto& rParamKind = *e_rParamKind;
 
-        auto type = this->MakeType(sParam.type, scope);
-        if (!type) throw NotImplementedException{}; // 에러 처리
+        auto e_rType = TranslateSTypeExpToRType(sParam.type, scope, rFactory.get());
+        RETURN_ON_ERROR(e_rType);
 
         if (rParamKind == RFuncParameterKind::Params)
         {
@@ -163,7 +82,7 @@ expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildNonTypeSymbolContext
 
         }
 
-        rParams.emplace_back(rParamKind, type, RName_Normal{sParam.name});
+        rParams.emplace_back(rParamKind, *e_rType, RName_Normal{sParam.name});
     }
 
     return make_tuple(move(rParams), bLastParamVariadic);

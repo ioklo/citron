@@ -376,18 +376,26 @@ public:
     RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
 
-RSYMBOL_API RType* Apply(RType* type, RTypeArguments* typeArgs, RFactory* rFactory);
-
 // some Trait 타입
 class RType_Opaque : public RType
 {
-    RTraitDecl* traitDecl;
+public:
+    RTraitDecl* decl;
     RTypeArguments* typeArgs;
+    RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Opaque(RTraitDecl* traitDecl, RTypeArguments* typeArgs);
+    RType_Opaque(RTraitDecl* decl, RTypeArguments* typeArgs, RFactory* rFactory);
+
+public: // from RType
+    RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
+    RTypeKind GetTypeKind() override { return RTypeKind::Value; } // opaque type은 value type으로 취급한다
+    RSYMBOL_API RCopyStrategy GetCopyStrategy() override; // opaque type은 trait에 따라 bitwise copyable 여부가 달라진다
+    RSYMBOL_API void Accept(RTypeVisitor& visitor) override;
 };
+
+RSYMBOL_API RType* Apply(RType* type, RTypeArguments* typeArgs, RFactory* rFactory);
 
 } // namespace Citron
 

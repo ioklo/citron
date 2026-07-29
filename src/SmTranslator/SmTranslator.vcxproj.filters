@@ -150,6 +150,9 @@
     <ClCompile Include="SmTypeUtil.cpp">
       <Filter>Context</Filter>
     </ClCompile>
+    <ClCompile Include="SmTypeTranslation.cpp">
+      <Filter>TypeTranslation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmFuncContext.h">
@@ -321,6 +324,9 @@
     <ClInclude Include="SmTypeUtil.h">
       <Filter>Context</Filter>
     </ClInclude>
+    <ClInclude Include="SmTypeTranslation.h">
+      <Filter>TypeTranslation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">
@@ -376,6 +382,9 @@
     </Filter>
     <Filter Include="00_Structure">
       <UniqueIdentifier>{297d702c-2490-4225-9bdc-548546d4514b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TypeTranslation">
+      <UniqueIdentifier>{8a8bf04c-f3e1-4741-b386-57cf31b2f96f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

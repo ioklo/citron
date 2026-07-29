@@ -22,6 +22,7 @@ struct RTypeVisitor
     virtual void Visit(RType_EnumElem* rType) = 0;
     virtual void Visit(RType_Interface* rType) = 0;
     virtual void Visit(RType_Lambda* rType) = 0;
+    virtual void Visit(RType_Opaque* rType) = 0;
 };
 
 template<class TFrom, class TVisitor>
@@ -48,6 +49,7 @@ concept RTypeVisitable = requires(TVisitor&& v, TVisitorArgs&&... args)
     { v.Visit(std::declval<RType_EnumElem*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Interface*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
     { v.Visit(std::declval<RType_Lambda*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
+    { v.Visit(std::declval<RType_Opaque*>(), std::forward<TVisitorArgs>(args)...) } -> RTypeConvertibleToResultType<TVisitor>;
 
 };
 
@@ -79,6 +81,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RType* r
             void Visit(RType_EnumElem* rType) override { call(rType); }
             void Visit(RType_Interface* rType) override { call(rType); }
             void Visit(RType_Lambda* rType) override { call(rType); }
+            void Visit(RType_Opaque* rType) override { call(rType); }
         };
 
         Bridge bridge{caller};
@@ -105,6 +108,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, RType* r
             void Visit(RType_EnumElem* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Interface* rType) override { result.emplace(call(rType)); }
             void Visit(RType_Lambda* rType) override { result.emplace(call(rType)); }
+            void Visit(RType_Opaque* rType) override { result.emplace(call(rType)); }
         };
 
         Bridge bridge{caller};

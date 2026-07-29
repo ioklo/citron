@@ -16,14 +16,10 @@ class RType;
 class RDecl;
 using RFactoryPtr = std::shared_ptr<RFactory>;
 using DiagPtr = std::shared_ptr<struct Diag>;
+using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
 class TranslateBodyContext;
-
-struct SmFuncHeaderResolveScope
-{
-    RDecl* outer;
-    std::span<RTypeParam*> typeParams;
-};
+class SmTypeResolveScope;
 
 class BuildNonTypeSymbolContext
 {
@@ -37,11 +33,9 @@ public:
     {
         return rFactory->MakeDecl<TRDecl>(std::forward<TArgs>(args)...);
     }
-
-    RType* MakeType(STypeExp* sTypeExp, RDecl* scope);
-    RType* MakeType(STypeExp* sTypeExp, InRef<SmFuncHeaderResolveScope> scope);
-    std::expected<RFuncReturn, DiagPtr> MakeFuncReturn(SFuncReturn& funcRet, InRef<SmFuncHeaderResolveScope> scope);
-    std::expected<std::tuple<std::vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(std::vector<SFuncParam>& sParams, InRef<SmFuncHeaderResolveScope> scope);
+    
+    std::expected<RFuncReturn, DiagPtr> MakeFuncReturn(SFuncReturn& funcRet, SmTypeResolveScope scope);
+    std::expected<std::tuple<std::vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(std::vector<SFuncParam>& sParams, SmTypeResolveScope scope);
 };
 
 } // namespace Citron

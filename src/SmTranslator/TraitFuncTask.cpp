@@ -8,20 +8,21 @@
 #include "BuildNonTypeSymbolContext.h"
 #include "PhaseManager.h"
 #include "CommonTranslation.h"
+#include "SmTypeTranslation.h"
 
 using namespace std;
 
 namespace Citron {
 
-void TraitFuncTask::Register(RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void TraitFuncTask::Register(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<TraitFuncTask> task{new TraitFuncTask{rTraitDecl, sTraitFuncDecl, move(rFactory)}};
+    shared_ptr<TraitFuncTask> task{new TraitFuncTask{move(traitDeclContext), rTraitDecl, sTraitFuncDecl, move(rFactory)}};
 
     phaseManager.AddBuildNonTypeSymbolTask(task);
 }
 
-TraitFuncTask::TraitFuncTask(RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory)
-    : rTraitDecl{rTraitDecl}, sTraitFuncDecl{sTraitFuncDecl}, rFactory{rFactory.Take()}
+TraitFuncTask::TraitFuncTask(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory)
+    : traitDeclContext{traitDeclContext.Take()}, rTraitDecl{rTraitDecl}, sTraitFuncDecl{sTraitFuncDecl}, rFactory{rFactory.Take()}
 {
 }
 
@@ -30,7 +31,7 @@ expected<void, DiagPtr> TraitFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCont
     auto* rTraitFuncDecl = context.MakeRDecl<RTraitFuncDecl>(rTraitDecl, sTraitFuncDecl->bStatic, RName::Normal(sTraitFuncDecl->name));
     auto typeParams = MakeTypeParams(rTraitDecl->GetAllTypeParamCount(), rTraitFuncDecl, sTraitFuncDecl->typeParams, rFactory);
 
-    SmFuncHeaderResolveScope scope{rTraitDecl, typeParams};
+    SmTypeResolveScope_DeclHeader scope{traitDeclContext.get(), typeParams};
     auto e_funcRet = context.MakeFuncReturn(sTraitFuncDecl->funcRet, scope);
     RETURN_ON_ERROR(e_funcRet);
 

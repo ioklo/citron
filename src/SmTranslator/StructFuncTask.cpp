@@ -13,6 +13,7 @@
 #include "CommonTranslation.h"
 #include "PhaseManager.h"
 #include "SmDeclContext_Decl.h"
+#include "SmTypeTranslation.h"
 
 using namespace std;
 
@@ -36,7 +37,7 @@ expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
     auto typeParams = MakeTypeParams(rStruct->GetAllTypeParamCount(), rStructFunc, sStructFunc->typeParams, rFactory);
 
     // 만들어진 typeParam도 검색대상이다
-    SmFuncHeaderResolveScope scope{rStruct, typeParams};
+    SmTypeResolveScope_DeclHeader scope{structDeclContext.get(), typeParams};
     auto e_funcRet = context.MakeFuncReturn(sStructFunc->funcRet, scope);
     RETURN_ON_ERROR(e_funcRet);
 

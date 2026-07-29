@@ -14,6 +14,7 @@
 #include "BuildNonTypeSymbolContext.h"
 #include "TranslateBodyContext.h"
 #include "SmDeclContext_Decl.h"
+#include "SmTypeTranslation.h"
 
 using namespace std;
 
@@ -35,7 +36,7 @@ expected<void, DiagPtr> GlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
 
     auto typeParams = MakeTypeParams(rOuter->GetAllTypeParamCount(), rFuncDecl, syntax->typeParams, rFactory);
 
-    SmFuncHeaderResolveScope scope{rOuter, typeParams};
+    SmTypeResolveScope_DeclHeader scope{outerDeclContext.get(), typeParams};
     auto e_funcRet = context.MakeFuncReturn(syntax->funcRet, scope);
     RETURN_ON_ERROR(e_funcRet);
     

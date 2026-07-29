@@ -9,20 +9,22 @@ class STraitFuncDecl;
 class PhaseManager;
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
+using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
 class TraitFuncTask
     : public IBuildNonTypeSymbolTask
 {
+    SmDeclContextPtr traitDeclContext;
     RTraitDecl* rTraitDecl;
     STraitFuncDecl* sTraitFuncDecl;
 
     RFactoryPtr rFactory;
 
 public:
-    static void Register(RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
 
 private:
-    TraitFuncTask(RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory);
+    TraitFuncTask(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory);
 
 public: // from IBuildNonTypeSymbolTask
     std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;

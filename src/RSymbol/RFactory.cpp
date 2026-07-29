@@ -231,6 +231,11 @@ RType_Lambda* RFactory::MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeAr
     return MakeInstanceType(lambdaTypes, decl, typeArgs);
 }
 
+RType_Opaque* RFactory::MakeOpaqueType(RTraitDecl* decl, RTypeArguments* typeArgs)
+{
+    return MakeInstanceType(opaqueTypes, decl, typeArgs);
+}
+
 RTypeArguments* RFactory::MakeTypeArguments(span<RType*> items)
 {
     RTypeArgumentsKeyView key{items};

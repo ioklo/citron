@@ -54,22 +54,6 @@ expected<RFuncParameterKind, DiagPtr> MakeParamKind(optional<SParamModifier> o_m
     }
 }
 
-expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::vector<STypeExp*>& typeArgs, SmTranslationContexts& contexts)
-{
-    std::vector<RType*> items;
-    items.reserve(typeArgs.size());
-
-    for (auto* typeArg : typeArgs)
-    {
-        auto e_type = contexts.scopeContext->TranslateSTypeExpToRType(typeArg);
-        RETURN_ON_ERROR(e_type);
-
-        items.push_back(*e_type);
-    }
-
-    return contexts.rFactory->MakeTypeArguments(items);
-}
-
 // TODO: implementation을 CastNExp로 옮긴다
 //MExp* TryCastRExp(MExp* exp, RType* expectedType, SmTranslationContexts& contexts) // nothrow
 //{

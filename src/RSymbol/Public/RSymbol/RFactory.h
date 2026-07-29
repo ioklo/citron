@@ -176,6 +176,7 @@ class RFactory
     InstanceTypeKeyUnorderedMap<REnumElemDecl, RType_EnumElem> enumElemTypes;
     InstanceTypeKeyUnorderedMap<RInterfaceDecl, RType_Interface> interfaceTypes;
     InstanceTypeKeyUnorderedMap<RLambdaDecl, RType_Lambda> lambdaTypes;
+    InstanceTypeKeyUnorderedMap<RTraitDecl, RType_Opaque> opaqueTypes;
 
     std::unordered_map<RTypeArgumentsKey, std::unique_ptr<RTypeArguments>, RTypeArgumentsKeyHasher, RTypeArgumentsKeyEqual> typeArgsMap;
 
@@ -225,6 +226,7 @@ public:
     RSYMBOL_API RType_EnumElem* MakeEnumElemType(REnumElemDecl* decl, RTypeArguments* typeArgs);
     RSYMBOL_API RType_Interface* MakeInterfaceType(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal);
     RSYMBOL_API RType_Lambda* MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeArgs);
+    RSYMBOL_API RType_Opaque* MakeOpaqueType(RTraitDecl* decl, RTypeArguments* typeArgs);
     
 
     RSYMBOL_API RTypeArguments* MakeTypeArguments(std::span<RType*> items);

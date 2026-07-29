@@ -6,6 +6,7 @@
 #include "RSymbol/RStructDecl.h"
 #include "RSymbol/REnumDecl.h"
 #include "RSymbol/REnumElemDecl.h"
+#include "RSymbol/RTraitDecl.h"
 #include "SmDeclRes.h"
 
 using namespace std;
@@ -48,6 +49,7 @@ struct GetMemberVisitor
     ResultType Visit(RType_EnumElem* type, InRef<RName> name) { return HandleDeclType(type, name); }
     ResultType Visit(RType_Interface* type, InRef<RName> name) { throw NotImplementedException(); }
     ResultType Visit(RType_Lambda* type, InRef<RName> name) { throw NotImplementedException(); }
+    ResultType Visit(RType_Opaque* type, InRef<RName> name) { return HandleDeclType(type, name); }
 };
 } // namespace
 

@@ -302,4 +302,25 @@ RCopyStrategy RType_Lambda::GetCopyStrategy()
     throw NotImplementedException{};
 }
 
+RType_Opaque::RType_Opaque(RTraitDecl* decl, RTypeArguments* typeArgs, RFactory* rFactory)
+    : decl{decl}, typeArgs{typeArgs}, factory{rFactory}
+{
+}
+
+RType* RType_Opaque::Apply(RTypeArguments* typeArgs)
+{
+    auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
+    return factory->MakeOpaqueType(decl, appliedTypeArgs);
+}
+
+RCopyStrategy RType_Opaque::GetCopyStrategy()
+{
+    return RCopyStrategy::NonBitwise;
+}
+
+void RType_Opaque::Accept(RTypeVisitor& visitor)
+{
+    return visitor.Visit(this);
+}
+
 } // Citron
