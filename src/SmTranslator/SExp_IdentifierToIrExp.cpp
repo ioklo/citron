@@ -171,7 +171,7 @@ public:
 expected<IrExp*, DiagPtr> TranslateSExp_IdentifierToIrExp(SExp_Identifier* sExp, SmTranslationContexts& contexts)
 {
     // identifier는 name<typeArgs>로 이뤄져 있다
-    auto e_memberTypeArgs = MakeRTypeArgs(sExp->typeArgs, SmTypeResolveScope_FuncContext{contexts.funcContext.get()}, contexts.rFactory.get());
+    auto e_memberTypeArgs = contexts.MakeRTypeArgs(sExp->typeArgs);
     RETURN_ON_ERROR(e_memberTypeArgs);
 
     auto* memberTypeArgs = *e_memberTypeArgs;

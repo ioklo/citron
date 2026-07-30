@@ -31,6 +31,7 @@
 #include "IrExpToMSharedExp.h"
 #include "SmTypeUtil.h"
 #include "SmDeclRes.h"
+#include "SmTypeTranslation.h"
 
 using namespace std;
 
@@ -432,7 +433,7 @@ expected<IrExp*, DiagPtr> TranslateSExp_MemberToIrExp(SExp_Member* sExp, SmTrans
     auto e_base = TranslateSExpToIrExp(sExp->base, contexts);
     RETURN_ON_ERROR(e_base);
 
-    auto e_memberTypeArgs = MakeRTypeArgs(sExp->memberTypeArgs, contexts);
+    auto e_memberTypeArgs = contexts.MakeRTypeArgs(sExp->memberTypeArgs);
     RETURN_ON_ERROR(e_memberTypeArgs);
 
     Binder binder{RName_Normal{sExp->memberName}, *e_memberTypeArgs, contexts};

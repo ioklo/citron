@@ -83,8 +83,8 @@ void StructTask::SynthesizeMemberwiseCtor(BuildImplicitSymbolContext& context)
     for (auto* rVarDecl : rStructDecl->GetUnboundVars())
         rParameters.emplace_back(RFuncParameterKind::Init, rVarDecl->GetUnboundDeclType(), rVarDecl->GetName());
 
-    auto* rCtor = context.MakeRDecl<RStructCtorDecl>(RDeclKey::Ctor(rParameters), rStructDecl, RStructMemberAccessor::Public, RStructCtorKind::Memberwise,
-        vector<RTypeParam*>{}, move(rParameters), /*bLastParameterVariadic*/false);
+    auto* rCtor = context.MakeRDecl<RStructCtorDecl>(rStructDecl, RStructMemberAccessor::Public, RStructCtorKind::Memberwise);
+    rCtor->Init(RDeclKey::Ctor(rParameters), vector<RTypeParam*>{}, move(rParameters), /*bLastParameterVariadic*/false);
 
     rStructDecl->AddCtor(rCtor);
 }

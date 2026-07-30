@@ -420,7 +420,7 @@ expected<ImExp*, DiagPtr> TranslateSExp_MemberToImExp(SExp_Member* sExp, SmTrans
     auto e_imBase = TranslateSExpToImExp(sExp->base, /*hintType*/nullptr, contexts);
     RETURN_ON_ERROR(e_imBase);
 
-    auto e_rMemberTypeArgs = MakeRTypeArgs(sExp->memberTypeArgs, contexts);
+    auto e_rMemberTypeArgs = contexts.MakeRTypeArgs(sExp->memberTypeArgs);
     RETURN_ON_ERROR(e_rMemberTypeArgs);
 
     return Accept(MemberTranslator{RName_Normal{sExp->memberName}, *e_rMemberTypeArgs, contexts}, *e_imBase);

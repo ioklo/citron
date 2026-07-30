@@ -202,7 +202,7 @@ struct BodyResTranslator
 
 expected<ImExp*, DiagPtr> TranslateSExp_IdentifierToImExp(SExp_Identifier* sExp, SmTranslationContexts& contexts)
 {
-    auto e_rMemberTypeArgs = MakeRTypeArgs(sExp->typeArgs, contexts);
+    auto e_rMemberTypeArgs = contexts.MakeRTypeArgs(sExp->typeArgs);
     RETURN_ON_ERROR(e_rMemberTypeArgs);
 
     auto e_bodyRes = ResolveIdentifier(RName::Normal(sExp->value), contexts);

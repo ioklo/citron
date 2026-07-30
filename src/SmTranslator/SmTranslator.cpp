@@ -151,7 +151,7 @@ void VisitGlobalFunc(TakeRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl
     GlobalFuncTask::Register(move(outerDeclContext), outer, sGFuncDecl, move(rFactory), phaseManager);
 }
 
-void VisitStruct(SmDeclContextPtr outerDeclContext, RTypeDeclOuter outer, SStructDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitStruct(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SStructDecl* syntax, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {   
     RName name{RName::Normal(syntax->name)};
     auto* rStructDecl = (*rFactory)->MakeDecl<RStructDecl>(RDeclKey::Normal(name), outer, move(name), *rFactory);
@@ -162,7 +162,7 @@ void VisitStruct(SmDeclContextPtr outerDeclContext, RTypeDeclOuter outer, SStruc
 
     // TODO: RDecl::MakeOpenTypeArgs는 전체적으로 typeArgs를 다시만드는데, 이 rDecl만큼만 만들게 할 수 있을 것이다
     auto* openTypeArgs = rStructDecl->MakeOpenTypeArgs(**rFactory);
-    auto declContext = MakePtr<SmDeclContext_Decl<RStructDecl>>(outerDeclContext, rStructDecl, openTypeArgs);
+    auto declContext = MakePtr<SmDeclContext_Decl<RStructDecl>>(move(outerDeclContext), rStructDecl, openTypeArgs);
 
     StructTask::Register(rStructDecl, syntax, phaseManager);
 
@@ -174,7 +174,7 @@ void VisitStruct(SmDeclContextPtr outerDeclContext, RTypeDeclOuter outer, SStruc
 }
 
 // body를 만들지 않으므로 declContext를 만들지 않는다
-void VisitEnum(RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitEnum(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {   
     RName enumName{RName::Normal(sEnum->name)};
 
@@ -183,6 +183,9 @@ void VisitEnum(RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFacto
     rEnum->InitTypeParams(move(typeParams));
     outer.AddType(rEnum);
 
+    SmDeclContextPtr enumDeclContext = MakePtr<SmDeclContext_Decl<REnumDecl>>(move(outerDeclContext), rEnum, rEnum->MakeOpenTypeArgs(**rFactory));
+    auto* emptyTypeArgs = (*rFactory)->MakeEmptyTypeArguments();
+
     // EnumElem
     for (auto* sEnumElem : sEnum->elements)
     {
@@ -190,40 +193,42 @@ void VisitEnum(RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFacto
         auto* rEnumElem = (*rFactory)->MakeDecl<REnumElemDecl>(RDeclKey::Normal(elemName), rEnum, move(elemName), *rFactory);
         rEnum->AddElem(rEnumElem);
 
+        SmDeclContextPtr enumElemDeclContext = MakePtr<SmDeclContext_Decl<REnumElemDecl>>(enumDeclContext, rEnumElem, emptyTypeArgs);
+
         // EnumElemVar
         for (auto* sEnumElemVar : sEnumElem->vars)
         {
             RName elemVarName{RName::Normal(sEnumElemVar->name)};
             auto* rEnumElemVar = (*rFactory)->MakeDecl<REnumElemVarDecl>(RDeclKey::Normal(elemVarName), rEnumElem, move(elemVarName));
-            EnumElemVarTask::Register(rEnumElemVar, sEnumElemVar, phaseManager);
+            EnumElemVarTask::Register(enumElemDeclContext, rEnumElemVar, sEnumElemVar, *rFactory, phaseManager);
         }
     }
 }
 
 // TODO: [66] 2026-07-09, Trait, Extend 구현
-// trait도 선언만 있으므로 declContext를 만들지 않는다
-void VisitTrait(RTypeDeclOuter outer, STraitDecl* sTrait, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitTrait(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, STraitDecl* sTrait, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
     RName traitName{RName::Normal(sTrait->name)};
     auto* rTraitDecl = (*rFactory)->MakeDecl<RTraitDecl>(RDeclKey::Normal(traitName), outer, move(traitName), *rFactory);
 
     auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rTraitDecl, sTrait->typeParams, *rFactory);
     rTraitDecl->InitTypeParams(move(typeParams));
-
     outer.AddType(rTraitDecl);
 
-    for (auto& memberDecl : sTrait->memberDecls)
+    SmDeclContextPtr traitDeclContext = MakePtr<SmDeclContext_Decl<RTraitDecl>>(move(outerDeclContext), rTraitDecl, rTraitDecl->MakeOpenTypeArgs(**rFactory));
+
+    for (auto& sMemberDecl : sTrait->memberDecls)
     {
-        visit([rTraitDecl, &rFactory, &phaseManager](auto* memberDecl) {
-            using T = remove_cvref_t<decltype(memberDecl)>;
+        visit([&traitDeclContext, rTraitDecl, &rFactory, &phaseManager](auto* sMemberDecl) {
+            using T = remove_cvref_t<decltype(sMemberDecl)>;
 
             if constexpr (same_as<T, STraitFuncDecl*>)
             {
-                TraitFuncTask::Register(rTraitDecl, memberDecl, *rFactory, phaseManager);
+                TraitFuncTask::Register(traitDeclContext, rTraitDecl, sMemberDecl, *rFactory, phaseManager);
             }
             else static_assert(false);
 
-        }, memberDecl);
+        }, sMemberDecl);
     }
 }
 
@@ -250,13 +255,13 @@ void StructElemVisitor::Visit(SEnumDecl* decl)
 {
     auto accessor = MakeStructMemberAccessor(decl->accessModifier);
     RTypeDeclOuter_Struct outer{rStruct, accessor};
-    VisitEnum(outer, decl, rFactory, phaseManager);
+    VisitEnum(structDeclContext, outer, decl, rFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(STraitDecl* decl)
 {
     RTypeDeclOuter_Struct outer{rStruct, MakeStructMemberAccessor(decl->accessModifier)};
-    VisitTrait(outer, decl, rFactory, phaseManager);
+    VisitTrait(structDeclContext, outer, decl, rFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SImplDecl* decl)
@@ -281,7 +286,7 @@ void StructElemVisitor::Visit(SStructDtorDecl* decl)
 
 void StructElemVisitor::Visit(SStructVarDecl* decl)
 {   
-    StructVarTask::Register(rStruct, decl, rFactory, phaseManager);
+    StructVarTask::Register(structDeclContext, rStruct, decl, rFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(SClassDecl* decl)
@@ -300,13 +305,13 @@ void ClassElemVisitor::Visit(SEnumDecl* decl)
 {
     auto accessor = MakeClassMemberAccessor(decl->accessModifier);
     RTypeDeclOuter_Class outer{rClass, accessor};
-    VisitEnum(outer, decl, rFactory, phaseManager);
+    VisitEnum(classDeclContext, outer, decl, rFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(STraitDecl* decl)
 {
     RTypeDeclOuter_Class outer{rClass, MakeClassMemberAccessor(decl->accessModifier)};
-    VisitTrait(outer, decl, rFactory, phaseManager);
+    VisitTrait(classDeclContext, outer, decl, rFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(SImplDecl* decl)
@@ -377,13 +382,13 @@ void NamespaceElemVisitor::Visit(SEnumDecl* elem)
 {
     auto accessor = MakeNamespaceMemberAccessor(elem->accessModifier);
     RTypeDeclOuter_Namespace outer{curNS, accessor};
-    VisitEnum(outer, elem, rFactory, phaseManager);
+    VisitEnum(namespaceDeclContext, outer, elem, rFactory, phaseManager);
 }
 
 void NamespaceElemVisitor::Visit(STraitDecl* decl)
 {
     RTypeDeclOuter_Namespace outer{curNS, MakeNamespaceMemberAccessor(decl->accessModifier)};
-    VisitTrait(outer, decl, rFactory, phaseManager);
+    VisitTrait(namespaceDeclContext, outer, decl, rFactory, phaseManager);
 }
 
 void NamespaceElemVisitor::Visit(SImplDecl* decl)
@@ -451,13 +456,13 @@ void ScriptElemVisitor::Visit(SEnumDecl* elem)
 {
     auto accessor = MakeNamespaceMemberAccessor(elem->accessModifier);
     RTypeDeclOuter_Namespace outer{rootNamespace, accessor};
-    VisitEnum(outer, elem, rFactory, phaseManager);
+    VisitEnum(rootDeclContext, outer, elem, rFactory, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(STraitDecl* decl)
 {
     RTypeDeclOuter_Namespace outer{rootNamespace, MakeNamespaceMemberAccessor(decl->accessModifier)};
-    VisitTrait(outer, decl, rFactory, phaseManager);
+    VisitTrait(rootDeclContext, outer, decl, rFactory, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(SImplDecl* decl)

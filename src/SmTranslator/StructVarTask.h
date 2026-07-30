@@ -12,21 +12,23 @@ class SStructVarDecl;
 class PhaseManager;
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
+using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
 class StructVarTask
     : public IBuildNonTypeSymbolTask
 {
+    SmDeclContextPtr structDeclContext;
     RStructDecl* rStruct;
     SStructVarDecl* sStructVar;
     RFactoryPtr rFactory;
 
 private:
-    StructVarTask(RStructDecl* rStruct, SStructVarDecl* sStructVar, TakeRef<RFactoryPtr> rFactory)
-        : rStruct{rStruct}, sStructVar{sStructVar}, rFactory{rFactory.Take()}
+    StructVarTask(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructVarDecl* sStructVar, TakeRef<RFactoryPtr> rFactory)
+        : structDeclContext{structDeclContext.Take()}, rStruct{rStruct}, sStructVar{sStructVar}, rFactory{rFactory.Take()}
     {}
 
 public:
-    static void Register(RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
     std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
 };
 

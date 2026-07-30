@@ -1,6 +1,7 @@
 #pragma once
-
+#include "Infra/Ref.h"
 #include "TranslationTasks.h"
+
 
 namespace Citron {
 
@@ -14,19 +15,24 @@ class REnumElemVarDecl;
 
 class PhaseManager;
 enum class AccessorContext;
+using RFactoryPtr = std::shared_ptr<class RFactory>;
+using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
 class EnumElemVarTask
     : public IBuildNonTypeSymbolTask
 {
+    SmDeclContextPtr enumElemDeclContext;
     REnumElemVarDecl* rEnumElemVar;
     SEnumElemVarDecl* sEnumElemVar;
-    EnumElemVarTask(REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar)
-        : rEnumElemVar{rEnumElemVar}, sEnumElemVar{sEnumElemVar}
+    RFactoryPtr rFactory;
+
+    EnumElemVarTask(TakeRef<SmDeclContextPtr> enumElemDeclContext, REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, TakeRef<RFactoryPtr> rFactory)
+        : enumElemDeclContext{enumElemDeclContext.Take()}, rEnumElemVar{rEnumElemVar}, sEnumElemVar{sEnumElemVar}, rFactory{rFactory.Take()}
     {
     }
 
 public:
-    static void Register(REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> enumElemDeclContext, REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
     std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
 };
 

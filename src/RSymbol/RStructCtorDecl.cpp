@@ -5,20 +5,25 @@ using namespace std;
 
 namespace Citron {
 
-RStructCtorDecl::RStructCtorDecl(RDeclKey&& key, RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind, 
-    std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
-    : key{std::move(key)}, _struct{_struct}, accessor{accessor}, kind{kind}
+RStructCtorDecl::RStructCtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind)
+    : _struct{_struct}, accessor{accessor}, kind{kind}
     , genericsComp{}
     , commonFuncDeclComp{/*bSeqFunc*/false}
     , ImplRFuncDeclUsingCommonComponents{this, commonFuncDeclComp}
+{   
+}
+
+void RStructCtorDecl::Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
+    o_key.emplace(std::move(key));
     genericsComp.InitTypeParams(move(typeParams));
     commonFuncDeclComp.InitFuncSignature(RFuncReturn_None{}, RThisKind_Static{}, move(funcParameters), bLastParameterVariadic);
 }
 
 RDeclKey& RStructCtorDecl::GetDeclKey()
 {
-    return key;
+    assert(o_key);
+    return *o_key;
 }
 
 // from RDecl

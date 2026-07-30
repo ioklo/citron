@@ -1,28 +1,32 @@
 #include "EnumElemVarTask.h"
+#include "Infra/Expected.h"
+
 #include "RSymbol/REnumDecl.h"
 #include "RSymbol/REnumElemDecl.h"
 #include "RSymbol/REnumElemVarDecl.h"
 #include "PhaseManager.h"
 #include "CommonTranslation.h"
 #include "BuildNonTypeSymbolContext.h"
+#include "SmTypeTranslation.h"
 
 using namespace std;
 
 namespace Citron {
 
-void EnumElemVarTask::Register(REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, PhaseManager& phaseManager)
+void EnumElemVarTask::Register(TakeRef<SmDeclContextPtr> enumElemDeclContext, REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    shared_ptr<EnumElemVarTask> task{new EnumElemVarTask(rEnumElemVar, sEnumElemVar)};
+    shared_ptr<EnumElemVarTask> task{new EnumElemVarTask(move(enumElemDeclContext), rEnumElemVar, sEnumElemVar, move(rFactory))};
     phaseManager.AddBuildNonTypeSymbolTask(task);
 }
 
 expected<void, DiagPtr> EnumElemVarTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {   
     // enum 기준으로 타입을 만든다
-    auto* rDeclType = context.MakeType(sEnumElemVar->type, rEnumElemVar->GetEnumElem()->GetEnum());
-    rEnumElemVar->InitDeclType(rDeclType);
-    rEnumElemVar->GetEnumElem()->AddVar(rEnumElemVar);
+    auto e_rDeclType = TranslateSTypeExpToRType(sEnumElemVar->type, SmTypeResolveScope_DeclContext{enumElemDeclContext.get()}, rFactory.get());
+    RETURN_ON_ERROR(e_rDeclType);
 
+    rEnumElemVar->InitDeclType(*e_rDeclType);
+    rEnumElemVar->GetEnumElem()->AddVar(rEnumElemVar);
     return {};
 }
 

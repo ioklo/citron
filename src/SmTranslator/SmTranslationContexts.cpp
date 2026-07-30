@@ -14,12 +14,18 @@
 #include "SmFactory.h"
 #include "SmFuncContext_FuncDecl.h"
 #include "SmFuncContext_Lambda.h"
+#include "SmTypeTranslation.h"
 #include "SmGlobalContext.h"
 #include "Misc.h"
 
 using namespace std;
 
 namespace Citron {
+
+expected<RTypeArguments*, DiagPtr> SmTranslationContexts::MakeRTypeArgs(std::span<STypeExp*> sTypeArgs)
+{
+    return Citron::MakeRTypeArgs(sTypeArgs, SmTypeResolveScope_FuncContext{funcContext.get()}, rFactory.get());
+}
 
 SmTranslationContexts MakeTranslationContexts(
     TakeRef<SmDeclContextPtr> declContext,
@@ -145,6 +151,5 @@ expected<SmBodyRes, DiagPtr> ResolveIdentifier(InRef<RName> name, SmTranslationC
 
     return move(**e_o_bodyRes);
 }
-
 
 } // namespace Citron

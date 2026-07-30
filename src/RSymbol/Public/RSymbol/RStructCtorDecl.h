@@ -23,7 +23,7 @@ enum class RStructCtorKind
 
 class RStructCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonComponents<RStructCtorDecl>
 {
-    RDeclKey key;
+    std::optional<RDeclKey> o_key;
     RStructDecl* _struct;
     RStructMemberAccessor accessor;
     RStructCtorKind kind;
@@ -32,8 +32,8 @@ class RStructCtorDecl final : public RDecl, public ImplRFuncDeclUsingCommonCompo
     RCommonFuncDeclComponent commonFuncDeclComp;
 
 public:
-    RSYMBOL_API RStructCtorDecl(RDeclKey&& key, RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind, 
-        std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    RSYMBOL_API RStructCtorDecl(RStructDecl* _struct, RStructMemberAccessor accessor, RStructCtorKind kind);
+    RSYMBOL_API void Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
 
     RStructDecl* GetStructDecl() { return _struct; }
     RStructMemberAccessor GetAccessor() { return accessor; }

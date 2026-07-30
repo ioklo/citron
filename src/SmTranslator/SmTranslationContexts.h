@@ -18,6 +18,8 @@
 
 namespace Citron {
 
+class STypeExp;
+
 struct ImExp;
 struct MExp;
 struct MInitExp_As;
@@ -49,6 +51,9 @@ struct SmTranslationContexts
     RFactoryPtr rFactory;
     SmFactoryPtr smFactory;
     BinOpQueryServicePtr binOpQueryService;
+
+public:
+    std::expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::span<STypeExp*> sTypeArgs);
 };
 
 SmTranslationContexts MakeTranslationContexts(TakeRef<SmDeclContextPtr> declContext, RFuncDecl* rFuncDecl, bool bSeqFunc, TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory, TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);

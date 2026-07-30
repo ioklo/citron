@@ -11,6 +11,7 @@
 #include "TranslateBodyContext.h"
 #include "PhaseManager.h"
 #include "SmDeclContext_Decl.h"
+#include "SmTypeTranslation.h"
 
 using namespace std;
 
@@ -27,13 +28,13 @@ void StructCtorTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStru
 expected<void, DiagPtr> StructCtorTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto accessor = MakeStructMemberAccessor(sStructCtor->accessModifier);
+    rStructCtor = rFactory->MakeDecl<RStructCtorDecl>(rStruct, accessor, RStructCtorKind::Normal);
 
-    SmFuncHeaderResolveScope scope{rStruct, {}};
+    vector<RTypeParam*> typeParams{};
+    SmTypeResolveScope_DeclHeader scope{structDeclContext.get(), typeParams};
     auto e_parameters = context.MakeParameters(sStructCtor->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
-    
-    rStructCtor = rFactory->MakeDecl<RStructCtorDecl>(RDeclKey::Ctor(parameters), rStruct, accessor, RStructCtorKind::Normal,
-        vector<RTypeParam*>{}, move(parameters), bLastParamVariadic);
+    rStructCtor->Init(RDeclKey::Ctor(parameters), vector<RTypeParam*>{}, move(parameters), bLastParamVariadic);
     rStruct->AddCtor(rStructCtor);
 
     return {};
