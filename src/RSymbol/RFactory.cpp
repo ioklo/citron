@@ -2,11 +2,13 @@
 
 #include <cassert>
 #include <algorithm>
+#include <unordered_set>
 
 #include "Infra/Hash.h"
 #include "Infra/Ptr.h"
 
 #include "RNamespace.h"
+#include "Infra/Hash.h"
 
 #include "RModule.h"
 #include "RTypes.h"
@@ -20,16 +22,185 @@
 
 #include "RTypeArguments.h"
 #include "RTypeParam.h"
-
+#include "RTraitDecl.h"
 
 using namespace std;
 
 namespace Citron {
 
+struct RTypeArgumentsKeyView
+{
+    std::span<RType*> items;
+};
+
+struct RTypeArgumentsKeyView2
+{
+    std::span<RType*> items0;
+    std::span<RType*> items1;
+};
+
+struct RTypeArgumentsPtrHasher
+{
+    using is_transparent = void;
+
+    size_t operator()(RTypeArguments* typeArgs) const noexcept
+    {
+        return Hash(typeArgs->items);
+    }
+
+    size_t operator()(const RTypeArgumentsKeyView& key) const noexcept
+    {
+        return Hash(key.items);
+    }
+
+    size_t operator()(const RTypeArgumentsKeyView2& key) const noexcept
+    {
+        size_t s = 0;
+
+        for (auto* item : key.items0)
+            Citron::hash_combine(s, item);
+
+        for (auto* item : key.items1)
+            Citron::hash_combine(s, item);
+
+        return s;
+    }
+
+private:
+    template<typename TItems>
+    static size_t Hash(const TItems& items) noexcept
+    {
+        size_t s = 0;
+
+        for (auto* item : items)
+            Citron::hash_combine(s, item);
+
+        return s;
+    }
+};
+
+struct RTypeArgumentsPtrEqual
+{
+    using is_transparent = void;
+
+    bool operator()(RTypeArguments* x, RTypeArguments* y) const noexcept
+    {
+        return x->items == y->items;
+    }
+
+    bool operator()(RTypeArguments* x, const RTypeArgumentsKeyView& y) const noexcept
+    {
+        return Equal(x->items, y.items);
+    }
+
+    bool operator()(const RTypeArgumentsKeyView& x, RTypeArguments* y) const noexcept
+    {
+        return Equal(y->items, x.items);
+    }
+
+    bool operator()(const RTypeArgumentsKeyView2& x, RTypeArguments* y) const noexcept
+    {
+        return Equal(y->items, x.items0, x.items1);
+    }
+
+    bool operator()(RTypeArguments* x, const RTypeArgumentsKeyView2& y) const noexcept
+    {
+        return Equal(x->items, y.items0, y.items1);
+    }
+
+private:
+    static bool Equal(std::span<RType* const> x, std::span<RType*> y) noexcept
+    {
+        if (x.size() != y.size())
+            return false;
+
+        return std::equal(x.begin(), x.end(), y.begin());
+    }
+
+    static bool Equal(std::span<RType* const> x, std::span<RType*> y0, std::span<RType*> y1) noexcept
+    {
+        if (x.size() != y0.size() + y1.size())
+            return false;
+
+        size_t i = 0;
+        for (size_t countY0 = y0.size(); i < countY0; i++)
+            if (x[i] != y0[i]) return false;
+
+        for (size_t j = 0, countY1 = y1.size(); j < countY1; i++, j++)
+            if (x[i] != y1[j]) return false;
+
+        return true;
+    }
+};
+
+
+struct RType_OpaqueKey
+{
+    RAppliedDecl<RTraitDecl> appliedTrait;
+    RAppliedDecl<RDecl> appliedOwnerFunc;
+
+    bool operator==(const RType_OpaqueKey& other) const noexcept
+    {
+        return appliedTrait.decl == other.appliedTrait.decl && appliedTrait.typeArgs == other.appliedTrait.typeArgs &&
+            appliedOwnerFunc.decl == other.appliedOwnerFunc.decl && appliedOwnerFunc.typeArgs == other.appliedOwnerFunc.typeArgs;
+    }
+};
+
+struct RType_OpaquePtrHasher 
+{
+    using is_transparent = void;
+
+    size_t operator()(RType_Opaque* opaqueType) const noexcept
+    {
+        size_t s = 0;
+        Citron::hash_combine(s, opaqueType->appliedTrait);
+        Citron::hash_combine(s, opaqueType->appliedOwnerFunc);
+        return s;
+    }
+
+    size_t operator()(const RType_OpaqueKey& key) const noexcept
+    {
+        size_t s = 0;
+        Citron::hash_combine(s, key.appliedTrait);
+        Citron::hash_combine(s, key.appliedOwnerFunc);
+        return s;
+    }
+};
+
+struct RType_OpaquePtrKeyEq
+{
+    using is_transparent = void;
+
+    bool operator()(RType_Opaque* lhs, RType_Opaque* rhs) const noexcept
+    {
+        return lhs->appliedTrait.decl == rhs->appliedTrait.decl && lhs->appliedTrait.typeArgs == rhs->appliedTrait.typeArgs &&
+            lhs->appliedOwnerFunc.decl == rhs->appliedOwnerFunc.decl && lhs->appliedOwnerFunc.typeArgs == rhs->appliedOwnerFunc.typeArgs;
+    }
+
+    bool operator()(RType_Opaque* lhs, const RType_OpaqueKey& rhs) const noexcept
+    {
+        return lhs->appliedTrait.decl == rhs.appliedTrait.decl && lhs->appliedTrait.typeArgs == rhs.appliedTrait.typeArgs &&
+            lhs->appliedOwnerFunc.decl == rhs.appliedOwnerFunc.decl && lhs->appliedOwnerFunc.typeArgs == rhs.appliedOwnerFunc.typeArgs;
+    }
+
+    bool operator()(const RType_OpaqueKey& lhs, RType_Opaque* rhs) const noexcept
+    {
+        return lhs.appliedTrait.decl == rhs->appliedTrait.decl && lhs.appliedTrait.typeArgs == rhs->appliedTrait.typeArgs &&
+            lhs.appliedOwnerFunc.decl == rhs->appliedOwnerFunc.decl && lhs.appliedOwnerFunc.typeArgs == rhs->appliedOwnerFunc.typeArgs;
+    }
+};
+
 struct RFactoryPrivateData
 {
     std::deque<RModule> modules;
     std::deque<RTypeParam> typeParams;
+
+    std::deque<RTypeArguments> typeArgsStorage;
+    std::unordered_set<RTypeArguments*, RTypeArgumentsPtrHasher, RTypeArgumentsPtrEqual> typeArgsSet;
+
+
+    std::deque<RType_Opaque> opaqueTypes;
+    std::unordered_set<RType_Opaque*, RType_OpaquePtrHasher, RType_OpaquePtrKeyEq> opaqueTypeSet;
 };
 
 RFactoryPtr RFactory::Make()
@@ -231,69 +402,70 @@ RType_Lambda* RFactory::MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeAr
     return MakeInstanceType(lambdaTypes, decl, typeArgs);
 }
 
-RType_Opaque* RFactory::MakeOpaqueType(RTraitDecl* decl, RTypeArguments* typeArgs)
+RType_Opaque* RFactory::MakeOpaqueType(RAppliedDecl<RTraitDecl>&& appliedTrait, RAppliedDecl<RDecl>&& appliedOwnerFunc)
 {
-    return MakeInstanceType(opaqueTypes, decl, typeArgs);
+    auto i = privateData->opaqueTypeSet.find(RType_OpaqueKey{appliedTrait, appliedOwnerFunc});
+    if (i != privateData->opaqueTypeSet.end())
+        return *i;
+
+    // move로 인한 key 무효화 (실제로는 move를 지원하지 않기 때문에 무효화되지 않는다)
+    auto& newType = privateData->opaqueTypes.emplace_back(move(appliedTrait), move(appliedOwnerFunc), this, RType_Opaque::PrivateKey{});
+    privateData->opaqueTypeSet.insert(&newType);
+    return &newType;
 }
 
 RTypeArguments* RFactory::MakeTypeArguments(span<RType*> items)
 {
-    RTypeArgumentsKeyView key{items};
-
-    auto i = typeArgsMap.find(key);
-    if (i != typeArgsMap.end())
-        return i->second.get();
-
-    // TODO: vector 두벌 생성
-    unique_ptr<RTypeArguments> v{new RTypeArguments{vector<RType*>{items.begin(), items.end()}, this}};
-    auto pv = v.get();
-    typeArgsMap.emplace(vector<RType*>{items.begin(), items.end()}, move(v));
-    return pv;
+    auto i = privateData->typeArgsSet.find(RTypeArgumentsKeyView{items});
+    if (i != privateData->typeArgsSet.end())
+        return *i;
+    
+    auto& newTypeArgs = privateData->typeArgsStorage.emplace_back(vector<RType*>{items.begin(), items.end()}, this, RTypeArguments::PrivateKey{});
+    privateData->typeArgsSet.insert(&newTypeArgs);
+    return &newTypeArgs;
 }
 
 RTypeArguments* RFactory::MakeTypeArguments(std::vector<RType*>&& items)
 {
-    RTypeArgumentsKeyView key{items};
-    auto i = typeArgsMap.find(key);
-    if (i != typeArgsMap.end())
-        return i->second.get();
+     auto i = privateData->typeArgsSet.find(RTypeArgumentsKeyView{items});
+    if (i != privateData->typeArgsSet.end())
+        return *i;
 
-    // TODO: vector 두벌 생성
-    unique_ptr<RTypeArguments> v{new RTypeArguments{vector<RType*>{items}, this}};
-    auto pv = v.get();
-    typeArgsMap.emplace(move(items), move(v));
-    return pv;
+    auto& newTypeArgs = privateData->typeArgsStorage.emplace_back(move(items), this, RTypeArguments::PrivateKey{});
+    privateData->typeArgsSet.insert(&newTypeArgs);
+    return &newTypeArgs;
 }
 
 RTypeArguments* RFactory::MakeEmptyTypeArguments()
 {
-    // static std::vector<RType*> items;
-    static RTypeArgumentsKeyView key{{}};
+    auto i = privateData->typeArgsSet.find(RTypeArgumentsKeyView{});
+    if (i != privateData->typeArgsSet.end())
+        return *i;
 
-    auto i = typeArgsMap.find(key);
-    if (i != typeArgsMap.end())
-        return i->second.get();
-
-    unique_ptr<RTypeArguments> v{new RTypeArguments{{}, this}};
-    auto pv = v.get();
-    typeArgsMap.emplace(vector<RType*>{}, move(v));
-    return pv;
+    auto& newTypeArgs = privateData->typeArgsStorage.emplace_back(vector<RType*>{}, this, RTypeArguments::PrivateKey{});
+    privateData->typeArgsSet.insert(&newTypeArgs);
+    return &newTypeArgs;
 }
 
 RTypeArguments* RFactory::MergeTypeArguments(RTypeArguments* typeArgs0, RTypeArguments* typeArgs1)
-{
-    vector<RType*> items{typeArgs0->items}; // 복사
-    items.insert(items.end(), typeArgs1->items.begin(), typeArgs1->items.end());
+{   
+    return AppendTypeArguments(typeArgs0, typeArgs1->items);
+}
 
-    RTypeArgumentsKeyView key{items};
-    auto i = typeArgsMap.find(key);
-    if (i != typeArgsMap.end())
-        return i->second.get();
+RTypeArguments* RFactory::AppendTypeArguments(RTypeArguments* typeArgs, std::span<RType*> typeArgSpan)
+{   
+    auto i = privateData->typeArgsSet.find(RTypeArgumentsKeyView2{typeArgs->items, typeArgSpan});
+    if (i != privateData->typeArgsSet.end())
+        return *i;
 
-    unique_ptr<RTypeArguments> v{new RTypeArguments{move(items), this}};
-    auto pv = v.get();
-    typeArgsMap.emplace(vector<RType*>{pv->items.begin(), pv->items.end()}, move(v));
-    return pv;
+    vector<RType*> items;
+    items.reserve(typeArgs->GetCount() + typeArgSpan.size());
+    items.insert(items.end(), typeArgs->items.begin(), typeArgs->items.end());
+    items.insert(items.end(), typeArgSpan.begin(), typeArgSpan.end());
+
+    auto& newTypeArgs = privateData->typeArgsStorage.emplace_back(move(items), this, RTypeArguments::PrivateKey{});
+    privateData->typeArgsSet.insert(&newTypeArgs);
+    return &newTypeArgs;
 }
 
 RType* RFactory::MakeType(RTypeDecl* decl, RTypeArguments* typeArgs)

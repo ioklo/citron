@@ -48,11 +48,15 @@ interface/any:
   runtime value may contain different concrete types
 ```
 
-서로 다른 `some MyTrait` 함수는 backing type이 같더라도 서로 다른 opaque result identity를 가진다.
+opaque result type identity는 함수/프로퍼티/subscript 선언과 적용된 generic argument로 unique하다. 따라서 서로 다른 `some MyTrait` 함수는 backing type이 같더라도 서로 다른 static opaque type을 가진다. 같은 declaration을 같은 generic argument로 호출한 결과끼리는 같은 opaque type이며, `some Equatable`처럼 constraint가 허용하면 서로 비교하거나 하나의 collection/generic argument로 함께 사용할 수 있다.
 
 `some`은 `nullable<T>` / `ptr<T>` 같은 일반 prefix type constructor가 아니라, return position에서만 쓰는 특수 marker다.
 
 ## Compiler Model
+Semantic model에서 `some MyTrait F()`는 `RFuncReturn_Normal(RType_Opaque(...))`로 나타낸다. `RType_Opaque` factory/interner key와 `RTypeIdentifier`는 trait constraint만이 아니라 opaque-result declaration identity와 적용된 generic argument를 포함해야 한다. trait constraint 문자열만 공유하는 `$O<MyTraitTypeId>`는 다른 declaration의 opaque results를 같은 static type으로 합치므로 사용하지 않는다.
+
+`F` 본문의 각 `return`은 모두 하나의 동일한 concrete underlying type을 만들어야 한다. `return G()`는 `G`의 opaque result type 자체를 하나의 concrete type으로 삼아 허용할 수 있지만, `F`의 static opaque result identity와 `G`의 identity를 합치지는 않는다.
+
 `some MyTrait F()` 호출은 개념적으로 아래처럼 낮춘다.
 
 ```text

@@ -66,9 +66,12 @@ void PhaseManager::AddTranslateBodyTask(std::shared_ptr<ITranslateBodyTask>&& ta
 expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
 {
     // 1. BuildTypeHierarchy
-    BuildTypeHierarchyContext rthContext{};
+    BuildTypeHierarchyContext rthContext{rFactory.get()};
     for (auto& task : buildTypeHierarchyTasks)
-        task->BuildTypeHierarchy(rthContext);
+    {
+        auto e_result = task->BuildTypeHierarchy(rthContext);
+        RETURN_ON_ERROR(e_result);
+    }
 
     // 2. BuildNonTypeSymbol
     BuildNonTypeSymbolContext fvContext{rFactory};

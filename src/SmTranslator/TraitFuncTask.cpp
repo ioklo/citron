@@ -32,7 +32,7 @@ expected<void, DiagPtr> TraitFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCont
     auto typeParams = MakeTypeParams(rTraitDecl->GetAllTypeParamCount(), rTraitFuncDecl, sTraitFuncDecl->typeParams, rFactory);
 
     SmTypeResolveScope_DeclHeader scope{traitDeclContext.get(), typeParams};
-    auto e_funcRet = context.MakeFuncReturn(sTraitFuncDecl->funcRet, scope);
+    auto e_funcRet = context.MakeFuncReturn(sTraitFuncDecl->funcRet, rTraitFuncDecl, typeParams, scope);
     RETURN_ON_ERROR(e_funcRet);
 
     auto e_paramResult = context.MakeParameters(sTraitFuncDecl->parameters, scope);

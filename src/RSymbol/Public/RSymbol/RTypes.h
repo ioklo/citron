@@ -30,6 +30,7 @@ class REnumElemDecl;
 class RClassVarDecl;
 class RStructVarDecl;
 class REnumElemVarDecl;
+class RDecl;
 
 struct RTypeVisitor;
 
@@ -379,14 +380,16 @@ public:
 // some Trait 타입
 class RType_Opaque : public RType
 {
+    struct PrivateKey {};
+
 public:
-    RTraitDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RTraitDecl> appliedTrait;
+    RAppliedDecl<RDecl> appliedOwnerFunc;
     RFactory* factory;
 
-private:
+public: // emplace_back을 하려니 constructor가 public이어야 한다
     friend RFactory;
-    RType_Opaque(RTraitDecl* decl, RTypeArguments* typeArgs, RFactory* rFactory);
+    RType_Opaque(RAppliedDecl<RTraitDecl>&& appliedTrait, RAppliedDecl<RDecl>&& appliedOwnerFunc, RFactory* factory, PrivateKey pk);
 
 public: // from RType
     RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;

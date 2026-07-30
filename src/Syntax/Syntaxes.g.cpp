@@ -1445,8 +1445,8 @@ JsonItem SClassVarDecl::ToJson()
     };
 }
 
-SStructDecl::SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SStructMemberDecl> memberDecls)
-    : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
+SStructDecl::SStructDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> traits, std::vector<SStructMemberDecl> memberDecls)
+    : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), traits(move(traits)), memberDecls(move(memberDecls)) { }
 
 SStructDecl::SStructDecl(SStructDecl&& other) noexcept = default;
 
@@ -1461,7 +1461,7 @@ JsonItem SStructDecl::ToJson()
         { "accessModifier", Citron::ToJson(accessModifier) },
         { "name", Citron::ToJson(name) },
         { "typeParams", Citron::ToJson(typeParams) },
-        { "baseTypes", Citron::ToJson(baseTypes) },
+        { "traits", Citron::ToJson(traits) },
         { "memberDecls", Citron::ToJson(memberDecls) },
     };
 }

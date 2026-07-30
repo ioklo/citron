@@ -1,6 +1,7 @@
 #pragma once
 #include "RSymbolConfig.h"
 #include <vector>
+#include <span>
 #include <optional>
 
 #include "Infra/Ref.h"
@@ -21,6 +22,7 @@ public:
     size_t GetTypeParamCount() { return o_typeParams->size(); }
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index);
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name);
+    RSYMBOL_API std::span<RTypeParam*> GetTypeParam() { return *o_typeParams; }
 };
 
 

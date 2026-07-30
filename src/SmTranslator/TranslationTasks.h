@@ -24,7 +24,7 @@ class IBuildTypeHierarchyTask
 {
 public:
     virtual ~IBuildTypeHierarchyTask() = default;
-    virtual void BuildTypeHierarchy(BuildTypeHierarchyContext& context) = 0;
+    virtual std::expected<void, DiagPtr> BuildTypeHierarchy(BuildTypeHierarchyContext& context) = 0;
 };
 
 // 위의 TypeHierarchy가 있어야 TypeExp를 제대로 resolve할 수 있다

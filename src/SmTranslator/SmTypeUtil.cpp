@@ -49,7 +49,11 @@ struct GetMemberVisitor
     ResultType Visit(RType_EnumElem* type, InRef<RName> name) { return HandleDeclType(type, name); }
     ResultType Visit(RType_Interface* type, InRef<RName> name) { throw NotImplementedException(); }
     ResultType Visit(RType_Lambda* type, InRef<RName> name) { throw NotImplementedException(); }
-    ResultType Visit(RType_Opaque* type, InRef<RName> name) { return HandleDeclType(type, name); }
+    ResultType Visit(RType_Opaque* type, InRef<RName> name) 
+    {
+        // TODO: [66] 2026-07-09, Trait, Extend 구현
+        throw NotImplementedException();
+    }
 };
 } // namespace
 

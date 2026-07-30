@@ -162,14 +162,14 @@ void VisitStruct(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter oute
 
     // TODO: RDecl::MakeOpenTypeArgs는 전체적으로 typeArgs를 다시만드는데, 이 rDecl만큼만 만들게 할 수 있을 것이다
     auto* openTypeArgs = rStructDecl->MakeOpenTypeArgs(**rFactory);
-    auto declContext = MakePtr<SmDeclContext_Decl<RStructDecl>>(move(outerDeclContext), rStructDecl, openTypeArgs);
+    SmDeclContextPtr structDeclContext = MakePtr<SmDeclContext_Decl<RStructDecl>>(move(outerDeclContext), rStructDecl, openTypeArgs);
 
-    StructTask::Register(rStructDecl, syntax, phaseManager);
+    StructTask::Register(structDeclContext, rStructDecl, syntax, phaseManager);
 
     // child     
     for (auto& memberDecl : syntax->memberDecls)
     {
-        visit(StructElemVisitor{SmDeclContextPtr{declContext}, rStructDecl, *rFactory, phaseManager}, memberDecl);
+        visit(StructElemVisitor{structDeclContext, rStructDecl, *rFactory, phaseManager}, memberDecl);
     }
 }
 

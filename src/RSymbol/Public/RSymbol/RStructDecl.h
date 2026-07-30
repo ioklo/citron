@@ -11,13 +11,14 @@
 #include "RTypeDecl.h"
 #include "RStructFuncDecl.h"
 #include "RDeclKey.h"
+#include "RAppliedDecl.h"
 
 namespace Citron {
 
-class RType_Trait;
 class RTypeArguments;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
+class RTraitDecl;
 class RStructCtorDecl;
 class RStructDtorDecl;
 class RStructFuncDecl;
@@ -36,7 +37,7 @@ class RStructDecl final : public RDecl, public RTypeDecl
     int trivialCtorIndex; // can be -1
 
     std::vector<RStructVarDecl*> vars;
-    std::optional<std::vector<RType_Trait*>> o_traits;
+    std::optional<std::vector<RAppliedDecl<RTraitDecl>>> o_traits;
     std::unordered_map<RName, RStructVarDecl*> varsMap;
     NStructInfo* structInfo;
 
@@ -48,7 +49,7 @@ class RStructDecl final : public RDecl, public RTypeDecl
 public:
     RSYMBOL_API RStructDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory);
     void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { return genericsComp.InitTypeParams(std::move(typeParams)); }
-    RSYMBOL_API void InitTraits(std::vector<RType_Trait*>&& traits);
+    RSYMBOL_API void InitTraits(std::vector<RAppliedDecl<RTraitDecl>>&& traits);
 
     void AddType(RTypeDecl* typeDecl) { typeDeclContainerComp.AddType(typeDecl); }
     RSYMBOL_API void AddCtor(RStructCtorDecl* decl);
@@ -57,6 +58,7 @@ public:
     RSYMBOL_API void AddVar(RStructVarDecl* decl);
 
     NStructInfo* GetNStructInfo() { return structInfo; }
+    RSYMBOL_API std::span<RTypeParam*> GetTypeParams() { return genericsComp.GetTypeParam(); }
 
     std::span<RStructCtorDecl*> GetUnboundCtors() { return ctors; }
     std::span<RStructVarDecl*> GetUnboundVars() { return vars; }

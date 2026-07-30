@@ -26,9 +26,9 @@ BuildNonTypeSymbolContext::BuildNonTypeSymbolContext(TakeRef<RFactoryPtr> rFacto
 {
 }
 
-expected<RFuncReturn, DiagPtr> BuildNonTypeSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, SmTypeResolveScope scope)
+expected<RFuncReturn, DiagPtr> BuildNonTypeSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, RDecl* decl, std::span<RTypeParam*> typeParams, SmTypeResolveScope scope)
 {
-    return visit([this, scope](auto& funcRet) -> expected<RFuncReturn, DiagPtr> {
+    return visit([this, decl, typeParams, scope](auto& funcRet) -> expected<RFuncReturn, DiagPtr> {
         using T = remove_cvref_t<decltype(funcRet)>;
 
         if constexpr (same_as<T, SFuncReturn_Normal>)
@@ -42,7 +42,16 @@ expected<RFuncReturn, DiagPtr> BuildNonTypeSymbolContext::MakeFuncReturn(SFuncRe
             auto e_rTrait = TranslateSTypeExpToRTrait(funcRet.type, scope, rFactory.get());
             RETURN_ON_ERROR(e_rTrait);
 
-            RType_Opaque* rOpaqueType = rFactory->MakeOpaqueType(e_rTrait->decl, e_rTrait->typeArgs);
+            // rDecl과 typeParams로 open typeArguments를 만들어야 한다
+            auto* outerTypeArgs = decl->GetOuter()->MakeOpenTypeArgs(*rFactory);
+
+            vector<RType*> typeArgsVector;
+            typeArgsVector.reserve(typeParams.size());
+            for (auto* typeParam : typeParams)
+                typeArgsVector.push_back(rFactory->MakeTypeVarType(typeParam));
+
+            auto* typeArgs = rFactory->AppendTypeArguments(outerTypeArgs, typeArgsVector);
+            RType_Opaque* rOpaqueType = rFactory->MakeOpaqueType({e_rTrait->decl, e_rTrait->typeArgs}, {decl, typeArgs});
             return RFuncReturn_Normal{rOpaqueType};
         }
         else static_assert(false);

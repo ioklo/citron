@@ -17,7 +17,7 @@ RStructDecl::RStructDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, Tak
 {
 }
 
-void RStructDecl::InitTraits(std::vector<RType_Trait*>&& traits)
+void RStructDecl::InitTraits(vector<RAppliedDecl<RTraitDecl>>&& traits)
 {
     o_traits.emplace(std::move(traits));
 }

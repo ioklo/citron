@@ -85,11 +85,15 @@ string EncodeDeclAndTypeArgs(RDecl* decl, RTypeArguments* typeArgs)
     return format("{}{}", identifier.text, EncodeTypeArgs(typeArgs));
 }
 
+template<typename TRDecl>
+string EncodeRAppliedDecl(RAppliedDecl<TRDecl> appliedDecl)
+{
+    return EncodeDeclAndTypeArgs(appliedDecl.decl, appliedDecl.typeArgs);
+}
+
 struct RTypeEncoder
 {
     using ResultType = string;
-
-    
 
     string Visit(RType_Nullable* rType)
     {
@@ -193,6 +197,13 @@ struct RTypeEncoder
     {
         // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
         throw NotImplementedException{};
+    }
+
+    string Visit(RType_Opaque* rType)
+    {
+        return format("$O({},{})", 
+            EncodeRAppliedDecl(rType->appliedTrait),
+            EncodeRAppliedDecl(rType->appliedOwnerFunc));
     }
 };
 

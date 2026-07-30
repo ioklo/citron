@@ -38,7 +38,7 @@ expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
 
     // 만들어진 typeParam도 검색대상이다
     SmTypeResolveScope_DeclHeader scope{structDeclContext.get(), typeParams};
-    auto e_funcRet = context.MakeFuncReturn(sStructFunc->funcRet, scope);
+    auto e_funcRet = context.MakeFuncReturn(sStructFunc->funcRet, rStructFunc, typeParams, scope);
     RETURN_ON_ERROR(e_funcRet);
 
     auto e_parameters = context.MakeParameters(sStructFunc->parameters, scope);

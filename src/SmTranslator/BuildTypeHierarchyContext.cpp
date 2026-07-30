@@ -1,11 +1,15 @@
 #include "BuildTypeHierarchyContext.h"
 #include "Infra/Exceptions.h"
+#include "Infra/Expected.h"
+#include "SmTypeTranslation.h"
+
+using namespace std;
 
 namespace Citron {
 
-RType* BuildTypeHierarchyContext::MakeType(STypeExp* sType, NDecl* decl)
+expected<RAppliedDecl<RTraitDecl>, DiagPtr> BuildTypeHierarchyContext::MakeTrait(STypeExp* sType, SmTypeResolveScope scope)
 {
-    throw NotImplementedException{};
+    return TranslateSTypeExpToRTrait(sType, scope, rFactory);
 }
 
 } // namespace Citron

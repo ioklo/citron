@@ -34,7 +34,7 @@ public:
         return rFactory->MakeDecl<TRDecl>(std::forward<TArgs>(args)...);
     }
     
-    std::expected<RFuncReturn, DiagPtr> MakeFuncReturn(SFuncReturn& funcRet, SmTypeResolveScope scope);
+    std::expected<RFuncReturn, DiagPtr> MakeFuncReturn(SFuncReturn& funcRet, RDecl* funcDecl, std::span<RTypeParam*> typeParams, SmTypeResolveScope scope);
     std::expected<std::tuple<std::vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(std::vector<SFuncParam>& sParams, SmTypeResolveScope scope);
 };
 

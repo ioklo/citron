@@ -302,15 +302,14 @@ RCopyStrategy RType_Lambda::GetCopyStrategy()
     throw NotImplementedException{};
 }
 
-RType_Opaque::RType_Opaque(RTraitDecl* decl, RTypeArguments* typeArgs, RFactory* rFactory)
-    : decl{decl}, typeArgs{typeArgs}, factory{rFactory}
+RType_Opaque::RType_Opaque(RAppliedDecl<RTraitDecl>&& appliedTrait, RAppliedDecl<RDecl>&& appliedOwnerFunc, RFactory* factory, PrivateKey pk)
+    : appliedTrait{move(appliedTrait)}, appliedOwnerFunc{move(appliedOwnerFunc)}, factory{factory}
 {
 }
 
 RType* RType_Opaque::Apply(RTypeArguments* typeArgs)
 {
-    auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
-    return factory->MakeOpaqueType(decl, appliedTypeArgs);
+    return factory->MakeOpaqueType(appliedTrait.Apply(typeArgs), appliedOwnerFunc.Apply(typeArgs));
 }
 
 RCopyStrategy RType_Opaque::GetCopyStrategy()

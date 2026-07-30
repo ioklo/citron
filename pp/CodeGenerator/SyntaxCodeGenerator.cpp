@@ -1159,7 +1159,7 @@ struct ToJsonVisitor {
                 {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
-                {.type = "std::vector<STypeExp*>", .memberVarName = "baseTypes", .getterName = "GetBaseTypes" },
+                {.type = "std::vector<STypeExp*>", .memberVarName = "traits", .getterName = "GetTraits" },
                 {.type = "std::vector<SStructMemberDecl>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
             },
         },

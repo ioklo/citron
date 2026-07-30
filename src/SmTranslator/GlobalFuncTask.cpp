@@ -37,7 +37,7 @@ expected<void, DiagPtr> GlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
     auto typeParams = MakeTypeParams(rOuter->GetAllTypeParamCount(), rFuncDecl, syntax->typeParams, rFactory);
 
     SmTypeResolveScope_DeclHeader scope{outerDeclContext.get(), typeParams};
-    auto e_funcRet = context.MakeFuncReturn(syntax->funcRet, scope);
+    auto e_funcRet = context.MakeFuncReturn(syntax->funcRet, rFuncDecl, typeParams, scope);
     RETURN_ON_ERROR(e_funcRet);
     
     auto e_parametersInfo = context.MakeParameters(syntax->parameters, scope);

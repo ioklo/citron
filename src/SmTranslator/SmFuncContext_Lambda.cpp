@@ -23,7 +23,7 @@ bool SmFuncContext_Lambda::CanAccess(RDecl* target)
     return outerFunc->CanAccess(target);
 }
 
-std::optional<SmTypeRes> SmFuncContext_Lambda::ResolveTypeIdentifier(InRef<RName> name)
+optional<SmTypeRes> SmFuncContext_Lambda::ResolveTypeIdentifier(InRef<RName> name)
 {
     return outerFunc->ResolveTypeIdentifier(name);
 }

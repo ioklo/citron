@@ -9,7 +9,7 @@ using namespace std;
 
 namespace Citron {
 
-RTypeArguments::RTypeArguments(std::vector<RType*>&& items, RFactory* factory)
+RTypeArguments::RTypeArguments(std::vector<RType*>&& items, RFactory* factory, PrivateKey key)
     : items{move(items)}, factory{factory}
 {
 }
