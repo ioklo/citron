@@ -11,15 +11,15 @@
                     "name": "T"
                 }
             ],
-            "baseTypes": [
+            "traits": [
                 {
                     "$type": "STypeExp_Id",
-                    "name": "B",
+                    "name": "Trait1",
                     "typeArgs": []
                 },
                 {
                     "$type": "STypeExp_Id",
-                    "name": "I",
+                    "name": "Trait2",
                     "typeArgs": []
                 }
             ],
@@ -50,7 +50,7 @@
                 },
                 {
                     "$type": "SStructVarDecl",
-                    "accessModifier": "Protected",
+                    "accessModifier": "Public",
                     "varType": {
                         "$type": "STypeExp_Id",
                         "name": "string",
@@ -82,15 +82,15 @@
                             "name": "U"
                         }
                     ],
-                    "baseTypes": [
+                    "traits": [
                         {
                             "$type": "STypeExp_Id",
-                            "name": "B",
+                            "name": "Trait1",
                             "typeArgs": []
                         },
                         {
                             "$type": "STypeExp_Id",
-                            "name": "I",
+                            "name": "Trait2",
                             "typeArgs": []
                         }
                     ],

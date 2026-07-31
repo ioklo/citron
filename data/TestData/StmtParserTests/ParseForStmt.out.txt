@@ -1,5 +1,6 @@
 {
     "$type": "SStmt_For",
+    "o_label": null,
     "initializer": {
         "$type": "SForStmtInitializer_Exp",
         "exp": {

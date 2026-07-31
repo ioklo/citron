@@ -77,6 +77,7 @@ TEST(ScriptParser, ParseComplexScript)
                 },
                 {
                     "$type": "SStmt_For",
+                    "o_label": null,
                     "initializer": {
                         "$type": "SForStmtInitializer_VarDecl",
                         "varDecl": {
@@ -605,15 +606,15 @@ TEST(ScriptParser, ParseStructDecl)
                     "name": "T"
                 }
             ],
-            "baseTypes": [
+            "traits": [
                 {
                     "$type": "STypeExp_Id",
-                    "name": "B",
+                    "name": "Trait1",
                     "typeArgs": []
                 },
                 {
                     "$type": "STypeExp_Id",
-                    "name": "I",
+                    "name": "Trait2",
                     "typeArgs": []
                 }
             ],
@@ -644,7 +645,7 @@ TEST(ScriptParser, ParseStructDecl)
                 },
                 {
                     "$type": "SStructVarDecl",
-                    "accessModifier": "Protected",
+                    "accessModifier": "Public",
                     "varType": {
                         "$type": "STypeExp_Id",
                         "name": "string",
@@ -676,15 +677,15 @@ TEST(ScriptParser, ParseStructDecl)
                             "name": "U"
                         }
                     ],
-                    "baseTypes": [
+                    "traits": [
                         {
                             "$type": "STypeExp_Id",
-                            "name": "B",
+                            "name": "Trait1",
                             "typeArgs": []
                         },
                         {
                             "$type": "STypeExp_Id",
-                            "name": "I",
+                            "name": "Trait2",
                             "typeArgs": []
                         }
                     ],

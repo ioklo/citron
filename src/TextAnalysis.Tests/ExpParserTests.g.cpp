@@ -606,7 +606,7 @@ TEST(ExpParser, ParseTestAndTypeTestExp)
                     }
                 ]
             },
-            "bindName": null
+            "o_bindName": null
         },
         "operand1": {
             "$type": "SExp_BinaryOp",
@@ -627,7 +627,7 @@ TEST(ExpParser, ParseTestAndTypeTestExp)
         "name": "T",
         "typeArgs": []
     },
-    "bindName": "t"
+    "o_bindName": "t"
 })---";
 
     EXPECT_SYNTAX_EQ(exp, expected);

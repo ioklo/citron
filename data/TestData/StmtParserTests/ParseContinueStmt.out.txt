@@ -1,3 +1,4 @@
 {
-    "$type": "SStmt_Continue"
+    "$type": "SStmt_Continue",
+    "o_label": null
 }

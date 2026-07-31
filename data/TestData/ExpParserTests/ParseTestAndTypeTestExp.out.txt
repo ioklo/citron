@@ -29,7 +29,7 @@
                     }
                 ]
             },
-            "bindName": null
+            "o_bindName": null
         },
         "operand1": {
             "$type": "SExp_BinaryOp",
@@ -50,5 +50,5 @@
         "name": "T",
         "typeArgs": []
     },
-    "bindName": "t"
+    "o_bindName": "t"
 }

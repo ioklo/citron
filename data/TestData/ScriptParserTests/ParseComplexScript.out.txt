@@ -46,6 +46,7 @@
                 },
                 {
                     "$type": "SStmt_For",
+                    "o_label": null,
                     "initializer": {
                         "$type": "SForStmtInitializer_VarDecl",
                         "varDecl": {

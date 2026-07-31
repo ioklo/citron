@@ -1,3 +1,4 @@
 {
-    "$type": "SStmt_Break"
+    "$type": "SStmt_Break",
+    "o_label": null
 }

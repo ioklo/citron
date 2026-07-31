@@ -110,7 +110,8 @@ TEST(StmtParser, ParseBreakStmt)
     auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
-    "$type": "SStmt_Break"
+    "$type": "SStmt_Break",
+    "o_label": null
 })---";
 
     EXPECT_SYNTAX_EQ(stmt, expected);
@@ -124,7 +125,8 @@ TEST(StmtParser, ParseContinueStmt)
     auto* stmt = ParseStmt(&lexer, factory);
 
     auto expected = R"---({
-    "$type": "SStmt_Continue"
+    "$type": "SStmt_Continue",
+    "o_label": null
 })---";
 
     EXPECT_SYNTAX_EQ(stmt, expected);
@@ -214,6 +216,7 @@ TEST(StmtParser, ParseForStmt)
 
     auto expected = R"---({
     "$type": "SStmt_For",
+    "o_label": null,
     "initializer": {
         "$type": "SForStmtInitializer_Exp",
         "exp": {
@@ -309,7 +312,7 @@ TEST(StmtParser, ParseIfBindStmtWithVarName)
             "name": "T",
             "typeArgs": []
         },
-        "bindName": "t"
+        "o_bindName": "t"
     },
     "body": {
         "$type": "SEmbeddableStmt_Block",
@@ -360,7 +363,7 @@ TEST(StmtParser, ParseIfIsExpCondStmt)
             "name": "T",
             "typeArgs": []
         },
-        "bindName": null
+        "o_bindName": null
     },
     "body": {
         "$type": "SEmbeddableStmt_Block",

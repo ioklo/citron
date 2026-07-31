@@ -12,7 +12,7 @@
             "name": "T",
             "typeArgs": []
         },
-        "bindName": "t"
+        "o_bindName": "t"
     },
     "body": {
         "$type": "SEmbeddableStmt_Block",
