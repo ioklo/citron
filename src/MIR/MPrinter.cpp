@@ -274,11 +274,11 @@ private:
         string Visit(MLoc_Materialize* loc) { return format("materialize({})", p.CreateText(loc->create)); }
         string Visit(MLoc_LocalVar* loc) { return format("local {}: {}", p.RNameText(loc->name), p.TypeText(loc->declType)); }
         string Visit(MLoc_LocalRef* loc) { return format("localref {}: {}", p.RNameText(loc->name), p.TypeText(loc->declType)); }
-        string Visit(MLoc_LambdaVar* loc) { return format("lambda_var {}", p.DeclText(loc->decl)); }
+        string Visit(MLoc_LambdaVar* loc) { return format("lambda_var {}", p.DeclText(loc->appliedDecl.decl)); }
         string Visit(MLoc_ListIndexer* loc) { return format("list_index({}, {}, item={})", p.LocText(loc->list.loc), p.ReadText(loc->index), p.TypeText(loc->itemType)); }
-        string Visit(MLoc_StructVar* loc) { return format("struct_var({}, {})", loc->instance ? p.LocText(loc->instance) : string("<static>"), p.DeclText(loc->decl)); }
-        string Visit(MLoc_ClassVar* loc) { return format("class_var({}, {})", loc->instance ? p.LocText(loc->instance) : string("<static>"), p.DeclText(loc->decl)); }
-        string Visit(MLoc_EnumElemVar* loc) { return format("enum_elem_var({}, {})", loc->instance ? p.LocText(loc->instance) : string("<static>"), p.DeclText(loc->decl)); }
+        string Visit(MLoc_StructVar* loc) { return format("struct_var({}, {})", loc->instance ? p.LocText(loc->instance) : string("<static>"), p.DeclText(loc->appliedDecl.decl)); }
+        string Visit(MLoc_ClassVar* loc) { return format("class_var({}, {})", loc->instance ? p.LocText(loc->instance) : string("<static>"), p.DeclText(loc->appliedDecl.decl)); }
+        string Visit(MLoc_EnumElemVar* loc) { return format("enum_elem_var({}, {})", loc->instance ? p.LocText(loc->instance) : string("<static>"), p.DeclText(loc->appliedDecl.decl)); }
         string Visit(MLoc_This* loc) { return format("this:{}", p.TypeText(loc->type)); }
         string Visit(MLoc_PtrDeref* loc) { return format("ptr_deref({})", p.ReadText(loc->srcPtr)); }
         string Visit(MLoc_SharedDeref* loc) { return format("shared_deref({})", p.LocText(loc->srcShared.loc)); }
@@ -290,7 +290,7 @@ private:
         return Accept(LocTextVisitor{*this}, loc);
     }
 
-    string SharedSegmentsText(span<MSharedExpStructSegment> segments)
+    string SharedSegmentsText(span<RAppliedDecl<RStructVarDecl>> segments)
     {
         vector<string> items;
         items.reserve(segments.size());
@@ -312,13 +312,13 @@ private:
         string Visit(MSharedExp_ClassVar* sharedExp)
         {
             auto suffix = sharedExp->segments.empty() ? string() : format(".{}", p.SharedSegmentsText(sharedExp->segments));
-            return format("shared_class_var({}.{}{})", p.LocText(sharedExp->base), p.DeclText(sharedExp->decl), suffix);
+            return format("shared_class_var({}.{}{})", p.LocText(sharedExp->base), p.DeclText(sharedExp->appliedDecl.decl), suffix);
         }
 
         string Visit(MSharedExp_SharedStructVar* sharedExp)
         {
             auto suffix = sharedExp->segments.empty() ? string() : format(".{}", p.SharedSegmentsText(sharedExp->segments));
-            return format("shared_struct_var({}.{}{})", p.LocText(sharedExp->base), p.DeclText(sharedExp->decl), suffix);
+            return format("shared_struct_var({}.{}{})", p.LocText(sharedExp->base), p.DeclText(sharedExp->appliedDecl.decl), suffix);
         }
     };
 
@@ -346,7 +346,7 @@ private:
             else if constexpr (same_as<T, MInitExp_StructCtorKind_Move>)
                 return format("struct_ctor_move(type={}, src={})", TypeText(kind.structType), MoveSourceText(kind.src));
             else
-                return format("struct_ctor_general({}, {})", DeclText(kind.decl), ArgsText(kind.args));
+                return format("struct_ctor_general({}, {})", DeclText(kind.appliedDecl.decl), ArgsText(kind.args));
         }, *kind);
     }
 
@@ -374,12 +374,12 @@ private:
             if (exp->o_catch) text += format(" {}", p.CatchText(*exp->o_catch));
             return text;
         }
-        string Visit(MExp_NewStruct* exp) { return format("new_struct {}({})", p.DeclText(exp->ctor), p.ArgsText(exp->args)); }
-        string Visit(MExp_NewEnumElem* exp) { return format("new_enum_elem {}({})", p.DeclText(exp->enumElemDecl), p.ArgsText(exp->args)); }
+        string Visit(MExp_NewStruct* exp) { return format("new_struct {}({})", p.DeclText(exp->appliedDecl.decl), p.ArgsText(exp->args)); }
+        string Visit(MExp_NewEnumElem* exp) { return format("new_enum_elem {}({})", p.DeclText(exp->appliedDecl.decl), p.ArgsText(exp->args)); }
         string Visit(MExp_Nullable* exp) { return format("nullable({})", p.ExpText(exp->innerExp.exp)); }
         string Visit(MExp_NullableNullLiteral* exp) { return format("nullable_null({})", p.TypeText(exp->innerType)); }
         string Visit(MExp_Cast* exp) { return format("cast#{}({}, {})", static_cast<int>(exp->kind), p.ReadText(exp->src), p.TypeText(exp->targetType)); }
-        string Visit(MExp_Lambda* exp) { return format("lambda {} captures({})", p.LambdaDeclText(exp->lambdaDecl), p.ArgsText(exp->args)); }
+        string Visit(MExp_Lambda* exp) { return format("lambda {} captures({})", p.LambdaDeclText(exp->appliedDecl.decl), p.ArgsText(exp->args)); }
         string Visit(MExp_InlineBlock* exp) { return format("inline_block(return={})", p.TypeText(exp->returnType)); }
         string Visit(MExp_Is* exp) { return format("{} is {}", p.ReadText(exp->operand), p.TopLevelPatternText(exp->pattern)); }
     };
@@ -420,7 +420,7 @@ private:
             return format("list(item={}, [{}])", p.TypeText(exp->itemType), Join(elems));
         }
         string Visit(MInitExp_CallIntrinsic* exp) { return format("init_intrinsic#{}({})", static_cast<int>(exp->kind), p.ArgsText(exp->args)); }
-        string Visit(MInitExp_NewClass* exp) { return format("new_class {}({})", p.DeclText(exp->ctorDecl), p.ArgsText(exp->args)); }
+        string Visit(MInitExp_NewClass* exp) { return format("new_class {}({})", p.DeclText(exp->appliedDecl.decl), p.ArgsText(exp->args)); }
         string Visit(MInitExp_StructCtor* exp) { return p.StructCtorKindText(exp->kind); }
         string Visit(MInitExp_Call* exp)
         {
@@ -428,12 +428,12 @@ private:
             if (exp->o_catch) text += format(" {}", p.CatchText(*exp->o_catch));
             return text;
         }
-        string Visit(MInitExp_NewEnumElem* exp) { return format("new_enum_elem {}({})", p.DeclText(exp->enumElemDecl), p.ArgsText(exp->args)); }
+        string Visit(MInitExp_NewEnumElem* exp) { return format("new_enum_elem {}({})", p.DeclText(exp->appliedDecl.decl), p.ArgsText(exp->args)); }
         string Visit(MInitExp_Nullable* exp) { return format("nullable({})", p.InitExpText(exp->inner.initExp)); }
         string Visit(MInitExp_NullableNullLiteral* exp) { return format("nullable_null({})", p.TypeText(exp->innerType)); }
         string Visit(MInitExp_NullableInplaceNullLiteral* exp) { return format("nullable_inplace_null({})", p.TypeText(exp->innerType)); }
         string Visit(MInitExp_Cast* exp) { return format("init_cast#{}({}, {})", static_cast<int>(exp->kind), p.ReadText(exp->src), p.TypeText(exp->targetType)); }
-        string Visit(MInitExp_Lambda* exp) { return format("lambda {} captures({})", p.LambdaDeclText(exp->lambdaDecl), p.ArgsText(exp->args)); }
+        string Visit(MInitExp_Lambda* exp) { return format("lambda {} captures({})", p.LambdaDeclText(exp->appliedDecl.decl), p.ArgsText(exp->args)); }
         string Visit(MInitExp_InlineBlock* exp) { return format("inline_block(return={})", p.TypeText(exp->returnType)); }
         string Visit(MInitExp_As* exp) { return format("as#{}({}, {})", static_cast<int>(exp->kind), p.ReadText(exp->target), p.TypeText(exp->type)); }
     };

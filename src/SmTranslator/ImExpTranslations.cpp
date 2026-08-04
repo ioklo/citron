@@ -18,13 +18,13 @@ MLoc_ClassVar* TranslateImExp_ClassVarToMLoc_ClassVar(ImExp_ClassVar* imExp, SmT
         using T = remove_cvref_t<decltype(instanceKind)>;
 
         if constexpr (same_as<T, ImExpInstanceKind_ExplicitInstance>)
-            return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(instanceKind.mInstLoc, imExp->decl, imExp->typeArgs);
+            return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(instanceKind.mInstLoc, imExp->appliedDecl);
         else if constexpr (same_as<T, ImExpInstanceKind_ExplicitStatic>)
-            return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, imExp->decl, imExp->typeArgs);
+            return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, imExp->appliedDecl);
         else if constexpr (same_as<T, ImExpInstanceKind_Implicit>)
         {
-            MLoc* mInstanceLoc = imExp->decl->IsStatic() ? nullptr : contexts.funcContext->MakeThisLoc();
-            return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(mInstanceLoc, imExp->decl, imExp->typeArgs);
+            MLoc* mInstanceLoc = imExp->appliedDecl.decl->IsStatic() ? nullptr : contexts.funcContext->MakeThisLoc();
+            return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(mInstanceLoc, imExp->appliedDecl);
         }
         else static_assert(false);
     }, imExp->instanceKind);
@@ -36,13 +36,13 @@ MLoc_StructVar* TranslateImExp_StructVarToMLoc_StructVar(ImExp_StructVar* imExp,
         using T = remove_cvref_t<decltype(instanceKind)>;
 
         if constexpr (same_as<T, ImExpInstanceKind_ExplicitInstance>)
-            return contexts.mFactory->MakeMLoc<MLoc_StructVar>(instanceKind.mInstLoc, imExp->decl, imExp->typeArgs);
+            return contexts.mFactory->MakeMLoc<MLoc_StructVar>(instanceKind.mInstLoc, imExp->appliedDecl);
         else if constexpr (same_as<T, ImExpInstanceKind_ExplicitStatic>)
-            return contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, imExp->decl, imExp->typeArgs);
+            return contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, imExp->appliedDecl);
         else if constexpr (same_as<T, ImExpInstanceKind_Implicit>)
         {
-            MLoc* mInstanceLoc = imExp->decl->IsStatic() ? nullptr : contexts.funcContext->MakeThisLoc();
-            return contexts.mFactory->MakeMLoc<MLoc_StructVar>(mInstanceLoc, imExp->decl, imExp->typeArgs);
+            MLoc* mInstanceLoc = imExp->appliedDecl.decl->IsStatic() ? nullptr : contexts.funcContext->MakeThisLoc();
+            return contexts.mFactory->MakeMLoc<MLoc_StructVar>(mInstanceLoc, imExp->appliedDecl);
         }
         else static_assert(false);
     }, imExp->instanceKind);

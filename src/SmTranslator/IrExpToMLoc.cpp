@@ -16,13 +16,13 @@ namespace Citron {
 
 MLoc* TranslateIrExp_ClassVarToMLoc(IrExp_ClassVar* irExp, SmTranslationContexts& contexts)
 {
-    return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(irExp->base, irExp->decl, irExp->typeArgs);
+    return contexts.mFactory->MakeMLoc<MLoc_ClassVar>(irExp->base, irExp->appliedDecl);
 }
 
 MLoc* TranslateIrExp_SharedStructVarToMLoc(IrExp_SharedStructVar* irExp, SmTranslationContexts& contexts)
 {
     auto* mDerefLoc = contexts.mFactory->MakeMLoc<MLoc_SharedDeref>(irExp->base);
-    return contexts.mFactory->MakeMLoc<MLoc_StructVar>(mDerefLoc, irExp->decl, irExp->typeArgs);
+    return contexts.mFactory->MakeMLoc<MLoc_StructVar>(mDerefLoc, irExp->appliedDecl);
 }
 
 expected<MLoc*, DiagPtr> TranslateIrExp_StructVarToMLoc(IrExp_StructVar* irExp, SmTranslationContexts& contexts)
@@ -30,7 +30,7 @@ expected<MLoc*, DiagPtr> TranslateIrExp_StructVarToMLoc(IrExp_StructVar* irExp, 
     auto e_baseLoc = TranslateIrExpToMLoc(irExp->base, contexts);
     RETURN_ON_ERROR(e_baseLoc);
 
-    return contexts.mFactory->MakeMLoc<MLoc_StructVar>(*e_baseLoc, irExp->decl, irExp->typeArgs);
+    return contexts.mFactory->MakeMLoc<MLoc_StructVar>(*e_baseLoc, irExp->appliedDecl);
 }
 
 struct IrExpToMLocTranslator

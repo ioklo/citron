@@ -89,7 +89,7 @@ expected<RFuncReturn, DiagPtr> MakeFuncReturn(SFuncReturn& funcRet, RDecl* decl,
                 typeArgsVector.push_back(contexts.rFactory->MakeTypeVarType(typeParam));
 
             auto* typeArgs = contexts.rFactory->AppendTypeArguments(outerTypeArgs, typeArgsVector);
-            RType_Opaque* rOpaqueType = contexts.rFactory->MakeOpaqueType({e_rTrait->decl, e_rTrait->typeArgs}, {decl, typeArgs});
+            RType_Opaque* rOpaqueType = contexts.rFactory->MakeOpaqueType(RAppliedDecl<RTraitDecl>{e_rTrait->decl, e_rTrait->typeArgs}, RAppliedDecl<RDecl>{decl, typeArgs});
             return RFuncReturn_Normal{rOpaqueType};
         }
         else static_assert(false);

@@ -220,6 +220,7 @@ struct Error_ResolveIdentifier_TypeParamCountMismatch : ErrorDiag {};
 struct Error_ResolveIdentifier_CantUseTraitAsType : ErrorDiag {};
 struct Error_ResolveIdentifier_TraitCantHaveMember : ErrorDiag {};
 struct Error_ResolveIdentifier_CantUseTypeAsTrait : ErrorDiag {};
+struct Error_ResolveIdentifier_TypeCantHaveTypeMember : ErrorDiag {};
 
 
 struct Error_SharedTranslation_SingleRefNotAllowed : ErrorDiag {}; // shared<int> i = &c; 금지

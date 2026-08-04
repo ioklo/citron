@@ -49,7 +49,7 @@ expected<void, DiagPtr> ImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDec
     auto* structTarget = dynamic_cast<RStructDecl*>(rImplTraitDecl->GetTarget());
     assert(structTarget); // TODO: [70] 2026-07-15, struct 이외에 class, enum에도 impl 넣기
 
-    RThisKind thisKind{RThisKind_Ref{rFactory->MakeStructType(structTarget, structTarget->MakeOpenTypeArgs(*rFactory))}};
+    RThisKind thisKind{RThisKind_Ref{rFactory->MakeStructType(RAppliedDecl<RStructDecl>{structTarget, structTarget->MakeOpenTypeArgs(*rFactory)})}};
 
     rImplTraitFuncDecl->Init(move(key), move(typeParams), move(*e_funcRet), move(thisKind), move(funcParams), bLastParamVariadic);
     rImplTraitDecl->AddMember(rImplTraitFuncDecl);

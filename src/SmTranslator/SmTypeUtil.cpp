@@ -17,7 +17,7 @@ namespace {
 
 template<typename TRDecl>
 concept CanHandleDeclType = requires(TRDecl* type, InRef<RName> name) {
-    { type->decl->GetMember(name) } -> std::same_as<std::optional<RMember>>;
+    { type->appliedDecl.decl->GetMember(name) } -> std::same_as<std::optional<RMember>>;
 };
 
 struct GetMemberVisitor
@@ -27,10 +27,10 @@ struct GetMemberVisitor
     template<typename TRDecl> requires CanHandleDeclType<TRDecl>
     ResultType HandleDeclType(TRDecl* type, InRef<RName> name)
     {
-        auto o_member = type->decl->GetMember(name);
+        auto o_member = type->appliedDecl.decl->GetMember(name);
         if (!o_member) return nullopt;
 
-        return ToSmDeclRes(type->typeArgs, *o_member);
+        return ToSmDeclRes(type->appliedDecl.typeArgs, *o_member);
     }
 
     ResultType Visit(RType_Nullable* type, InRef<RName> name) { return nullopt; }

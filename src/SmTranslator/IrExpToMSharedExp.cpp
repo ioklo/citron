@@ -24,19 +24,19 @@ expected<MSharedExp*, DiagPtr> TranslateIrExp_StructVarToMSharedExp(IrExp_Struct
 
         ResultType Visit(MSharedExp_Static* sharedExp)
         {
-            sharedExp->segments.emplace_back(irExp->decl, irExp->typeArgs);
+            sharedExp->segments.emplace_back(irExp->appliedDecl);
             return sharedExp;
         }
 
         ResultType Visit(MSharedExp_ClassVar* sharedExp)
         {
-            sharedExp->segments.emplace_back(irExp->decl, irExp->typeArgs);
+            sharedExp->segments.emplace_back(irExp->appliedDecl);
             return sharedExp;
         }
 
         ResultType Visit(MSharedExp_SharedStructVar* sharedExp)
         {
-            sharedExp->segments.emplace_back(irExp->decl, irExp->typeArgs);
+            sharedExp->segments.emplace_back(irExp->appliedDecl);
             return sharedExp;
         }
     };
@@ -64,12 +64,12 @@ struct IrExpToMSharedExpTranslator
 
     ResultType Visit(IrExp_ClassVar* irExp)
     {
-        return contexts.mFactory->MakeMSharedExp<MSharedExp_ClassVar>(irExp->base, irExp->decl, irExp->typeArgs);
+        return contexts.mFactory->MakeMSharedExp<MSharedExp_ClassVar>(irExp->base, irExp->appliedDecl);
     }
 
     ResultType Visit(IrExp_SharedStructVar* irExp)
     {
-        return contexts.mFactory->MakeMSharedExp<MSharedExp_SharedStructVar>(irExp->base, irExp->decl, irExp->typeArgs);
+        return contexts.mFactory->MakeMSharedExp<MSharedExp_SharedStructVar>(irExp->base, irExp->appliedDecl);
     }
 
     ResultType Visit(IrExp_StructVar* irExp)

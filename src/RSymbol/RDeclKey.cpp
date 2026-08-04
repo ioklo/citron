@@ -79,16 +79,11 @@ string EncodeTypeArgs(RTypeArguments* typeArgs)
     return buffer;
 }
 
-string EncodeDeclAndTypeArgs(RDecl* decl, RTypeArguments* typeArgs)
-{
-    auto identifier = decl->GetIdentifier();
-    return format("{}{}", identifier.text, EncodeTypeArgs(typeArgs));
-}
-
 template<typename TRDecl>
-string EncodeRAppliedDecl(RAppliedDecl<TRDecl> appliedDecl)
+string EncodeRAppliedDecl(RAppliedDecl<TRDecl>& appliedDecl)
 {
-    return EncodeDeclAndTypeArgs(appliedDecl.decl, appliedDecl.typeArgs);
+    auto identifier = appliedDecl.decl->GetIdentifier();
+    return format("{}{}", identifier.text, EncodeTypeArgs(appliedDecl.typeArgs));
 }
 
 struct RTypeEncoder
@@ -170,27 +165,27 @@ struct RTypeEncoder
 
     string Visit(RType_Class* rType)
     {
-        return EncodeDeclAndTypeArgs(rType->decl, rType->typeArgs);
+        return EncodeRAppliedDecl(rType->appliedDecl);
     }
 
     string Visit(RType_Struct* rType)
     {
-        return EncodeDeclAndTypeArgs(rType->decl, rType->typeArgs);
+        return EncodeRAppliedDecl(rType->appliedDecl);
     }
 
     string Visit(RType_Enum* rType)
     {
-        return EncodeDeclAndTypeArgs(rType->decl, rType->typeArgs);
+        return EncodeRAppliedDecl(rType->appliedDecl);
     }
 
     string Visit(RType_EnumElem* rType)
     {
-        return EncodeDeclAndTypeArgs(rType->decl, rType->typeArgs);
+        return EncodeRAppliedDecl(rType->appliedDecl);
     }
 
     string Visit(RType_Interface* rType)
     {
-        return EncodeDeclAndTypeArgs(rType->decl, rType->typeArgs);
+        return EncodeRAppliedDecl(rType->appliedDecl);
     }
 
     string Visit(RType_Lambda* rType)

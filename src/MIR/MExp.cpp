@@ -87,15 +87,15 @@ RType* GetType(MExp* exp, RFactory* rFactory)
         ResultType Visit(MExp_Call* exp) { return exp->callable.decl->GetReturnType(exp->callable.typeArgs); }
         ResultType Visit(MExp_NewStruct* exp) 
         { 
-            auto structDecl = exp->ctor->GetStructDecl();
-            return rFactory->MakeStructType(structDecl, exp->typeArgs);
+            auto* structDecl = exp->appliedDecl.decl->GetStructDecl();
+            return rFactory->MakeStructType(RAppliedDecl<RStructDecl>{structDecl, exp->appliedDecl.typeArgs});
         }
 
-        ResultType Visit(MExp_NewEnumElem* exp) { return rFactory->MakeEnumElemType(exp->enumElemDecl, exp->typeArgs); }
+        ResultType Visit(MExp_NewEnumElem* exp) { return rFactory->MakeEnumElemType(exp->appliedDecl); }
         ResultType Visit(MExp_Nullable* exp) { return rFactory->MakeNullableType(GetType(exp->innerExp.exp, rFactory)); }
         ResultType Visit(MExp_NullableNullLiteral* exp) { return rFactory->MakeNullableType(exp->innerType); }
         ResultType Visit(MExp_Cast* exp) { return exp->targetType; }
-        ResultType Visit(MExp_Lambda* exp) { return rFactory->MakeLambdaType(exp->lambdaDecl, exp->typeArgs); }
+        ResultType Visit(MExp_Lambda* exp) { return rFactory->MakeLambdaType(exp->appliedDecl); }
         ResultType Visit(MExp_InlineBlock* exp) { return exp->returnType; }
         ResultType Visit(MExp_Is* exp) { return rFactory->MakeBoolType(); }
     };

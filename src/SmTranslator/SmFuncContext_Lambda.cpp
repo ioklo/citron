@@ -114,7 +114,7 @@ expected<optional<SmBodyRes>, DiagPtr> SmFuncContext_Lambda::ResolveIdentifier(I
                 if constexpr (same_as<U, SmDeclRes_LambdaVar>)
                 {
                     // 람다 variable이라고 할지라도, primitive가 아니면 암시적으로 캡쳐하지 않습니다
-                    auto* declType = rDeclRes.outerAppliedDecl.decl->GetUnboundDeclType();
+                    auto* declType = rDeclRes.appliedDecl.decl->GetUnboundDeclType();
 
                     if (dynamic_cast<RType_Primitive*>(declType))
                     {

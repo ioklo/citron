@@ -5,8 +5,8 @@
 
 namespace Citron {
 
-class RClassDecl;
-class RStructDecl;
+// class RClassDecl;
+// class RStructDecl;
 //class REnumDecl;
 //class REnumElemDecl;
 //class RInterfaceDecl;
@@ -16,8 +16,8 @@ class RTraitDecl;
 class RType;
 
 struct ImTypeExp_Namespaces { RNamespaceGroup namespaces; };
-struct ImTypeExp_Class { RAppliedDecl<RClassDecl> appliedDecl; };
-struct ImTypeExp_Struct { RAppliedDecl<RStructDecl> appliedDecl; };
+// struct ImTypeExp_Class { RAppliedDecl<RClassDecl> appliedDecl; };
+// struct ImTypeExp_Struct { RAppliedDecl<RStructDecl> appliedDecl; };
 //struct ImTypeExp_Enum { RAppliedDecl<REnumDecl> appliedDecl; };
 //struct ImTypeExp_EnumElem { RAppliedDecl<REnumElemDecl> appliedDecl; };
 //struct ImTypeExp_Interface { RAppliedDecl<RInterfaceDecl> appliedDecl; };
@@ -30,8 +30,8 @@ class ImTypeExp
 {
     using Variant = std::variant<
         ImTypeExp_Namespaces,
-        ImTypeExp_Class,
-        ImTypeExp_Struct,
+        // ImTypeExp_Class,
+        // ImTypeExp_Struct,
         // ImTypeExp_Enum,
         // ImTypeExp_EnumElem,
         // ImTypeExp_Interface,

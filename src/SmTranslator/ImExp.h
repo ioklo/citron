@@ -75,11 +75,10 @@ struct ImExp_TypeVar : ImExp
 
 struct ImExp_Class : ImExp
 {
-    RClassDecl* classDecl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RClassDecl> appliedDecl;
 
-    ImExp_Class(RClassDecl* classDecl, RTypeArguments* typeArgs)
-        : classDecl{classDecl}, typeArgs{typeArgs}
+    ImExp_Class(RAppliedDecl<RClassDecl>&& appliedDecl)
+        : appliedDecl{std::move(appliedDecl)}
     { }
     void Accept(ImExpVisitor& visitor) override;
 };
@@ -100,11 +99,10 @@ public:
 
 struct ImExp_Struct : ImExp
 {
-    RStructDecl* structDecl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RStructDecl> appliedDecl;
 
-    ImExp_Struct(RStructDecl* structDecl, RTypeArguments* typeArgs)
-        : structDecl{structDecl}, typeArgs{typeArgs}
+    ImExp_Struct(RAppliedDecl<RStructDecl>&& appliedDecl)
+        : appliedDecl{std::move(appliedDecl)}
     { }
 
     void Accept(ImExpVisitor& visitor) override;
@@ -124,11 +122,10 @@ struct ImExp_StructFuncs : ImExp
 
 struct ImExp_Enum : ImExp
 {
-    REnumDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<REnumDecl> appliedDecl;
 
-    ImExp_Enum(REnumDecl* decl, RTypeArguments* typeArgs)
-        : decl{decl}, typeArgs{typeArgs}
+    ImExp_Enum(RAppliedDecl<REnumDecl>&& appliedDecl)
+        : appliedDecl{std::move(appliedDecl)}
     { }
 
     void Accept(ImExpVisitor& visitor) override;
@@ -136,11 +133,10 @@ struct ImExp_Enum : ImExp
 
 struct ImExp_EnumElem : ImExp
 {
-    REnumElemDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<REnumElemDecl> appliedDecl;
 
-    ImExp_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs)
-        : decl{decl}, typeArgs{typeArgs}
+    ImExp_EnumElem(RAppliedDecl<REnumElemDecl>&& appliedDecl)
+        : appliedDecl{std::move(appliedDecl)}
     { }
 
     void Accept(ImExpVisitor& visitor) override;
@@ -148,12 +144,11 @@ struct ImExp_EnumElem : ImExp
 
 struct ImExp_ClassVar : ImExp
 {
-    RClassVarDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RClassVarDecl> appliedDecl;
     ImExpInstanceKind instanceKind;
 
-    ImExp_ClassVar(RClassVarDecl* decl, RTypeArguments* typeArgs, ImExpInstanceKind&& instanceKind)
-        : decl{decl}, typeArgs{typeArgs}, instanceKind{std::move(instanceKind)}
+    ImExp_ClassVar(RAppliedDecl<RClassVarDecl>&& appliedDecl, ImExpInstanceKind&& instanceKind)
+        : appliedDecl{std::move(appliedDecl)}, instanceKind{std::move(instanceKind)}
     { }
 
     void Accept(ImExpVisitor& visitor) override;
@@ -161,12 +156,11 @@ struct ImExp_ClassVar : ImExp
 
 struct ImExp_StructVar : ImExp
 {
-    RStructVarDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RStructVarDecl> appliedDecl;
     ImExpInstanceKind instanceKind;
 
-    ImExp_StructVar(RStructVarDecl* decl, RTypeArguments* typeArgs, ImExpInstanceKind&& instanceKind)
-        : decl{decl}, typeArgs{typeArgs}, instanceKind{std::move(instanceKind)}
+    ImExp_StructVar(RAppliedDecl<RStructVarDecl>&& appliedDecl, ImExpInstanceKind&& instanceKind)
+        : appliedDecl{std::move(appliedDecl)}, instanceKind{std::move(instanceKind)}
     { }
     void Accept(ImExpVisitor& visitor) override;
 };

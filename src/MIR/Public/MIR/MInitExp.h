@@ -5,6 +5,8 @@
 #include <optional>
 #include <variant>
 
+#include "RSymbol/RAppliedDecl.h"
+
 #include "MCreate.h"
 #include "MRead.h"
 #include "MArgument.h"
@@ -109,8 +111,7 @@ struct MInitExp_CallIntrinsic : MInitExp
 
 struct MInitExp_NewClass : MInitExp
 {
-    RClassCtorDecl* ctorDecl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RClassCtorDecl> appliedDecl;
     std::vector<MArgument> args;
 
     MIR_API void Accept(MInitExpVisitor& visitor) override;
@@ -118,7 +119,7 @@ struct MInitExp_NewClass : MInitExp
 
 struct MInitExp_StructCtorKind_Copy { RType_Struct* structType; MRead_Loc src; };
 struct MInitExp_StructCtorKind_Move { RType_Struct* structType; MMoveSource src; };
-struct MInitExp_StructCtorKind_General { RStructCtorDecl* decl; RTypeArguments* typeArgs; std::vector<MArgument> args; };
+struct MInitExp_StructCtorKind_General { RAppliedDecl<RStructCtorDecl> appliedDecl; std::vector<MArgument> args; };
 
 using MInitExp_StructCtorKind = std::variant<MInitExp_StructCtorKind_Copy, MInitExp_StructCtorKind_Move, MInitExp_StructCtorKind_General>;
 
@@ -148,12 +149,11 @@ struct MInitExp_Call : MInitExp
 // Enum이 NBC일 경우
 struct MInitExp_NewEnumElem : MInitExp
 {
-    REnumElemDecl* enumElemDecl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<REnumElemDecl> appliedDecl;
     std::vector<MArgument> args;
 
-    MInitExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* typeArgs, std::vector<MArgument>&& args)
-        : enumElemDecl{enumElemDecl}, typeArgs{typeArgs}, args{std::move(args)}
+    MInitExp_NewEnumElem(TakeRef<RAppliedDecl<REnumElemDecl>> appliedDecl, std::vector<MArgument>&& args)
+        : appliedDecl{appliedDecl.Take()}, args{std::move(args)}
     { }
     MIR_API void Accept(MInitExpVisitor& visitor) override;
 };
@@ -206,8 +206,7 @@ struct MInitExp_Cast : MInitExp
 
 struct MInitExp_Lambda : MInitExp
 {
-    RLambdaDecl* lambdaDecl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RLambdaDecl> appliedDecl;
     std::vector<MArgument> args;
 
     MIR_API void Accept(MInitExpVisitor& visitor) override;

@@ -5,11 +5,13 @@
 #include <vector>
 #include <optional>
 
+#include "RSymbol/RNames.h"
+#include "RSymbol/RAppliedDecl.h"
+
 #include "MRead.h"
 #include "MCatch.h"
 #include "MCallable.h"
 #include "MArgument.h"
-#include "RSymbol/RNames.h"
 
 namespace Citron {
 
@@ -162,12 +164,11 @@ struct MExp_Call : MExp
 // S(2, 3, 4);
 struct MExp_NewStruct : MExp
 {
-    RStructCtorDecl* ctor;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RStructCtorDecl> appliedDecl;
     std::vector<MArgument> args;
 
-    MExp_NewStruct(RStructCtorDecl* ctor, RTypeArguments* typeArgs, std::vector<MArgument>&& args)
-        : ctor{ctor}, typeArgs{typeArgs}, args{std::move(args)}
+    MExp_NewStruct(RAppliedDecl<RStructCtorDecl>&& appliedDecl, std::vector<MArgument>&& args)
+        : appliedDecl{std::move(appliedDecl)}, args{std::move(args)}
     { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
@@ -175,12 +176,11 @@ struct MExp_NewStruct : MExp
 // enum construction, E.First or E.Second(2, 3)
 struct MExp_NewEnumElem : MExp
 {
-    REnumElemDecl* enumElemDecl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<REnumElemDecl> appliedDecl;
     std::vector<MArgument> args;
 
-    MExp_NewEnumElem(REnumElemDecl* enumElemDecl, RTypeArguments* typeArgs, std::vector<MArgument>&& args)
-        : enumElemDecl{enumElemDecl}, typeArgs{typeArgs}, args{std::move(args)}
+    MExp_NewEnumElem(TakeRef<RAppliedDecl<REnumElemDecl>> appliedDecl, std::vector<MArgument>&& args)
+        : appliedDecl{appliedDecl.Take()}, args{std::move(args)}
     { }
     MIR_API void Accept(MExpVisitor& visitor) override;
 };
@@ -222,8 +222,7 @@ struct MExp_Cast : MExp
 // Lambda(lambda_type_0, x); // with captured variable
 struct MExp_Lambda : MExp
 {
-    RLambdaDecl* lambdaDecl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RLambdaDecl> appliedDecl;
     std::vector<MArgument> args;
     MIR_API void Accept(MExpVisitor& visitor) override;
 };

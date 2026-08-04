@@ -40,7 +40,7 @@ RType* GetType(MInitExp_StructCtorKind& ctorKind, RFactory* rFactory)
         else if constexpr (same_as<T, MInitExp_StructCtorKind_Move>)
             return ctorKind.structType;
         else if constexpr (same_as<T, MInitExp_StructCtorKind_General>)
-            return rFactory->MakeStructType(ctorKind.decl->GetStructDecl(), ctorKind.typeArgs);
+            return rFactory->MakeStructType(RAppliedDecl<RStructDecl>{ctorKind.appliedDecl.decl->GetStructDecl(), ctorKind.appliedDecl.typeArgs});
         else static_assert(false);
         
     }, ctorKind);
@@ -72,10 +72,10 @@ RType* GetType(MInitExp* initExp, RFactory* rFactory)
             unreachable();
         }
 
-        ResultType Visit(MInitExp_NewClass* initExp) { return rFactory->MakeClassType(initExp->ctorDecl->GetClassDecl(), initExp->typeArgs); }
+        ResultType Visit(MInitExp_NewClass* initExp) { return rFactory->MakeClassType(RAppliedDecl<RClassDecl>(initExp->appliedDecl.decl->GetClassDecl(), initExp->appliedDecl.typeArgs)); }
         ResultType Visit(MInitExp_StructCtor* initExp) { return GetType(initExp->kind, rFactory); }
         ResultType Visit(MInitExp_Call* initExp) { return initExp->callable.decl->GetReturnType(initExp->callable.typeArgs); }
-        ResultType Visit(MInitExp_NewEnumElem* initExp) { return rFactory->MakeEnumElemType(initExp->enumElemDecl, initExp->typeArgs); }
+        ResultType Visit(MInitExp_NewEnumElem* initExp) { return rFactory->MakeEnumElemType(initExp->appliedDecl); }
         ResultType Visit(MInitExp_Nullable* initExp) 
         {
             auto* innerType = GetType(initExp->inner.initExp, rFactory);
@@ -84,7 +84,7 @@ RType* GetType(MInitExp* initExp, RFactory* rFactory)
         ResultType Visit(MInitExp_NullableNullLiteral* initExp) { return rFactory->MakeNullableType(initExp->innerType); }
         ResultType Visit(MInitExp_NullableInplaceNullLiteral* initExp) { return rFactory->MakeNullableInplaceType(initExp->innerType); }
         ResultType Visit(MInitExp_Cast* initExp) { return initExp->targetType; }
-        ResultType Visit(MInitExp_Lambda* initExp) { return initExp->lambdaDecl->GetReturnType(initExp->typeArgs); }
+        ResultType Visit(MInitExp_Lambda* initExp) { return initExp->appliedDecl.decl->GetReturnType(initExp->appliedDecl.typeArgs); }
         ResultType Visit(MInitExp_InlineBlock* initExp) { return initExp->returnType; }
         ResultType Visit(MInitExp_As* initExp) { return initExp->type; }
     };

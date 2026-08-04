@@ -8,6 +8,8 @@
 #include "Infra/Hash.h"
 #include "RTypes.h" // for RFuncType::Parameter
 #include "RModule.h"
+#include "ROuterAppliedDecl.h"
+#include "RAppliedDecl.h"
 
 namespace Citron {
 
@@ -45,12 +47,11 @@ struct RFuncTypeKeyHasher
 template<typename TDecl>
 struct RInstanceTypeKey
 {
-    TDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<TDecl> appliedDecl;
 
     bool operator==(const RInstanceTypeKey& other) const noexcept
     {
-        return decl == other.decl && typeArgs == other.typeArgs;
+        return appliedDecl.decl == other.appliedDecl.decl && appliedDecl.typeArgs == other.appliedDecl.typeArgs;
     }
 };
 
@@ -60,8 +61,8 @@ struct RInstanceTypeKeyHasher
     size_t operator()(const RInstanceTypeKey<TDecl>& key) const noexcept
     {
         size_t s = 0;
-        Citron::hash_combine(s, key.decl);
-        Citron::hash_combine(s, key.typeArgs);
+        Citron::hash_combine(s, key.appliedDecl.decl);
+        Citron::hash_combine(s, key.appliedDecl.typeArgs);
         return s;
     }
 };
@@ -95,8 +96,7 @@ class RFactory
     InstanceTypeKeyUnorderedMap<REnumDecl, RType_Enum> enumTypes;
     InstanceTypeKeyUnorderedMap<REnumElemDecl, RType_EnumElem> enumElemTypes;
     InstanceTypeKeyUnorderedMap<RInterfaceDecl, RType_Interface> interfaceTypes;
-    InstanceTypeKeyUnorderedMap<RLambdaDecl, RType_Lambda> lambdaTypes;
-   
+    
 
     // 기본 타입
     std::unique_ptr<RType> boolType;
@@ -138,13 +138,13 @@ public:
     RSYMBOL_API RType_Shared* MakeSharedType(RType* innerType);
     RSYMBOL_API RType_Box* MakeBoxType(RType* innerType);
 
-    RSYMBOL_API RType_Class* MakeClassType(RClassDecl* decl, RTypeArguments* typeArgs);
-    RSYMBOL_API RType_Struct* MakeStructType(RStructDecl* decl, RTypeArguments* typeArgs);
-    RSYMBOL_API RType_Enum* MakeEnumType(REnumDecl* decl, RTypeArguments* typeArgs);
-    RSYMBOL_API RType_EnumElem* MakeEnumElemType(REnumElemDecl* decl, RTypeArguments* typeArgs);
-    RSYMBOL_API RType_Interface* MakeInterfaceType(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal);
-    RSYMBOL_API RType_Lambda* MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeArgs);
-    RSYMBOL_API RType_Opaque* MakeOpaqueType(RAppliedDecl<RTraitDecl>&& appliedTrait, RAppliedDecl<RDecl>&& appliedOwnerFunc);
+    RSYMBOL_API RType_Class* MakeClassType(TakeRef<RAppliedDecl<RClassDecl>> appliedDecl);
+    RSYMBOL_API RType_Struct* MakeStructType(TakeRef<RAppliedDecl<RStructDecl>> appliedDecl);
+    RSYMBOL_API RType_Enum* MakeEnumType(TakeRef<RAppliedDecl<REnumDecl>> appliedDecl);
+    RSYMBOL_API RType_EnumElem* MakeEnumElemType(TakeRef<RAppliedDecl<REnumElemDecl>> appliedDecl);
+    RSYMBOL_API RType_Interface* MakeInterfaceType(TakeRef<RAppliedDecl<RInterfaceDecl>> appliedDecl, bool bLocal);
+    RSYMBOL_API RType_Lambda* MakeLambdaType(TakeRef<RAppliedDecl<RLambdaDecl>> appliedDecl);
+    RSYMBOL_API RType_Opaque* MakeOpaqueType(TakeRef<RAppliedDecl<RTraitDecl>> appliedTrait, TakeRef<RAppliedDecl<RDecl>> appliedOwnerFunc);
     
 
     RSYMBOL_API RTypeArguments* MakeTypeArguments(std::span<RType*> items);
@@ -169,7 +169,7 @@ public:
     
 private:
     template<typename TDecl, typename TType, typename... TArgs>
-    TType* MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TDecl* decl, RTypeArguments* typeArgs, TArgs&&... args);
+    TType* MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TakeRef<RAppliedDecl<TDecl>> appliedDecl, TArgs&&... args);
 };
 
 } // namespace Citron

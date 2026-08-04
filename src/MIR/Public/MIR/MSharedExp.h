@@ -3,11 +3,12 @@
 
 #include <memory>
 #include <vector>
+#include "Infra/Ref.h"
+#include "RSymbol/RAppliedDecl.h"
 
 namespace Citron {
 
 class RType;
-class RTypeArguments;
 class RClassVarDecl;
 class RStructVarDecl;
 class RFactory;
@@ -23,17 +24,11 @@ public:
     virtual void Accept(MSharedExpVisitor& visitor) = 0;
 };
 
-struct MSharedExpStructSegment
-{
-    RStructVarDecl* decl;
-    RTypeArguments* typeArgs;
-};
-
 // &C.x
 struct MSharedExp_Static : MSharedExp
 {
     MLoc* loc;
-    std::vector<MSharedExpStructSegment> segments;
+    std::vector<RAppliedDecl<RStructVarDecl>> segments;
     MSharedExp_Static(MLoc* loc)
         : loc{loc}, segments{}
     { }
@@ -44,12 +39,11 @@ struct MSharedExp_Static : MSharedExp
 struct MSharedExp_ClassVar : MSharedExp
 {
     MLoc* base;
-    RClassVarDecl* decl;
-    RTypeArguments* typeArgs;
-    std::vector<MSharedExpStructSegment> segments;
+    RAppliedDecl<RClassVarDecl> appliedDecl;
+    std::vector<RAppliedDecl<RStructVarDecl>> segments;
 
-    MSharedExp_ClassVar(MLoc* base, RClassVarDecl* decl, RTypeArguments* typeArgs)
-        : base{base}, decl{decl}, typeArgs{typeArgs}, segments{}
+    MSharedExp_ClassVar(MLoc* base, TakeRef<RAppliedDecl<RClassVarDecl>> appliedDecl)
+        : base{base}, appliedDecl{appliedDecl.Take()}, segments{}
     { }
     MIR_API void Accept(MSharedExpVisitor& visitor) override;
 };
@@ -60,12 +54,11 @@ struct MSharedExp_ClassVar : MSharedExp
 struct MSharedExp_SharedStructVar : MSharedExp
 {   
     MLoc* base;
-    RStructVarDecl* decl;
-    RTypeArguments* typeArgs;
-    std::vector<MSharedExpStructSegment> segments;
+    RAppliedDecl<RStructVarDecl> appliedDecl;
+    std::vector<RAppliedDecl<RStructVarDecl>> segments;
 
-    MSharedExp_SharedStructVar(MLoc* base, RStructVarDecl* decl, RTypeArguments* typeArgs)
-        : base{base}, decl{decl}, typeArgs{typeArgs}, segments{}
+    MSharedExp_SharedStructVar(MLoc* base, TakeRef<RAppliedDecl<RStructVarDecl>> appliedDecl)
+        : base{base}, appliedDecl{appliedDecl.Take()}, segments{}
     { }
     MIR_API void Accept(MSharedExpVisitor& visitor) override;
 };

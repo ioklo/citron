@@ -32,13 +32,13 @@ IrExp_Namespaces::IrExp_Namespaces(RNamespaceGroup&& namespaces)
 {
 }
 
-IrExp_Class::IrExp_Class(RClassDecl* decl, RTypeArguments* typeArgs)
-    : decl(decl), typeArgs(typeArgs)
+IrExp_Class::IrExp_Class(RAppliedDecl<RClassDecl>&& appliedDecl)
+    : appliedDecl{std::move(appliedDecl)}
 {
 }
 
-IrExp_Struct::IrExp_Struct(RStructDecl* decl, RTypeArguments* typeArgs)
-    : decl(decl), typeArgs(typeArgs)
+IrExp_Struct::IrExp_Struct(RAppliedDecl<RStructDecl>&& appliedDecl)
+    : appliedDecl{std::move(appliedDecl)}
 {
 }
 

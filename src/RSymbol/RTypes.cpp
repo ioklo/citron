@@ -162,17 +162,17 @@ RType* RType_Box::Apply(RTypeArguments* typeArgs)
     return factory->MakeBoxType(appliedInnerType);
 }
 
-RType_Class::RType_Class(RClassDecl* decl, RTypeArguments* typeArgs, RFactory* factory)
-    : decl{decl}, typeArgs{typeArgs}, factory{factory}
+RType_Class::RType_Class(TakeRef<RAppliedDecl<RClassDecl>> appliedDecl, RFactory* factory)
+    : appliedDecl{appliedDecl.Take()}, factory{factory}
 {
 }
 
 optional<RAppliedDecl<RClassVarDecl>> RType_Class::GetVar(InRef<RName> name)
 {
-    auto* var = decl->GetUnboundVar(name);
+    auto* var = appliedDecl.decl->GetUnboundVar(name);
     if (!var) return nullopt;
 
-    return RAppliedDecl<RClassVarDecl>{var, typeArgs};
+    return RAppliedDecl<RClassVarDecl>{var, appliedDecl.typeArgs};
 }
 
 bool RType_Class::IsBaseOf(RType_Class& derivedClass)
@@ -182,43 +182,43 @@ bool RType_Class::IsBaseOf(RType_Class& derivedClass)
 
 RType* RType_Class::Apply(RTypeArguments* typeArgs)
 {
-    auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
-    return factory->MakeClassType(decl, appliedTypeArgs);
+    auto* appliedTypeArgs = this->appliedDecl.typeArgs->Apply(typeArgs);
+    return factory->MakeClassType(RAppliedDecl<RClassDecl>{appliedDecl.decl, appliedTypeArgs});
 }
 
-RType_Struct::RType_Struct(RStructDecl* decl, RTypeArguments* typeArgs, RFactory* factory)
-    : decl{decl}, typeArgs{typeArgs}, factory{factory}
+RType_Struct::RType_Struct(TakeRef<RAppliedDecl<RStructDecl>> appliedDecl, RFactory* factory)
+    : appliedDecl{appliedDecl.Take()}, factory{factory}
 {
 }
 
 optional<RAppliedDecl<RStructVarDecl>> RType_Struct::GetVar(InRef<RName> name)
 {
-    auto* structVar = decl->GetUnboundVar(name);
+    auto* structVar = appliedDecl.decl->GetUnboundVar(name);
     if (!structVar) return nullopt;
 
-    return RAppliedDecl<RStructVarDecl>{structVar, typeArgs};
+    return RAppliedDecl<RStructVarDecl>{structVar, appliedDecl.typeArgs};
 }
 
 RStructCtorDecl* RType_Struct::GetUnboundTrivialCtor()
 {
-    return decl->GetUnboundTrivialCtor();
+    return appliedDecl.decl->GetUnboundTrivialCtor();
 }
 
 RType* RType_Struct::Apply(RTypeArguments* typeArgs)
 {
-    auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
-    return factory->MakeStructType(decl, appliedTypeArgs);
+    auto* appliedTypeArgs = this->appliedDecl.typeArgs->Apply(typeArgs);
+    return factory->MakeStructType(RAppliedDecl<RStructDecl>{appliedDecl.decl, appliedTypeArgs});
 }
 
-RType_Enum::RType_Enum(REnumDecl* decl, RTypeArguments* typeArgs, RFactory* factory)
-    : decl{decl}, typeArgs{typeArgs}, factory{factory}
+RType_Enum::RType_Enum(TakeRef<RAppliedDecl<REnumDecl>> appliedDecl, RFactory* factory)
+    : appliedDecl{appliedDecl.Take()}, factory{factory}
 {   
 }
 
 RType* RType_Enum::Apply(RTypeArguments* typeArgs)
 {
-    auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
-    return factory->MakeEnumType(decl, appliedTypeArgs);
+    auto* appliedTypeArgs = this->appliedDecl.typeArgs->Apply(typeArgs);
+    return factory->MakeEnumType(RAppliedDecl<REnumDecl>{appliedDecl.decl, appliedTypeArgs});
 }
 
 RCopyStrategy RType_Enum::GetCopyStrategy()
@@ -227,40 +227,40 @@ RCopyStrategy RType_Enum::GetCopyStrategy()
     throw NotImplementedException{};
 }
 
-RType_EnumElem::RType_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs, RFactory* factory)
-    : decl{decl}, typeArgs{typeArgs}, factory{factory}
+RType_EnumElem::RType_EnumElem(TakeRef<RAppliedDecl<REnumElemDecl>> appliedDecl, RFactory* factory)
+    : appliedDecl{appliedDecl.Take()}, factory{factory}
 {
 }
 
 optional<RAppliedDecl<REnumElemVarDecl>> RType_EnumElem::GetVar(InRef<RName> name)
 {
-    if (auto* var = decl->GetUnboundVar(name))
-        return RAppliedDecl<REnumElemVarDecl>{var, typeArgs};
+    if (auto* var = appliedDecl.decl->GetUnboundVar(name))
+        return RAppliedDecl<REnumElemVarDecl>{var, appliedDecl.typeArgs};
 
     return nullopt;
 }
 
 RType_Enum* RType_EnumElem::GetEnumType()
 {
-    auto enumDecl = decl->GetEnum();
+    auto enumDecl = appliedDecl.decl->GetEnum();
 
     // enumElem은 typeArgs를 추가로 받지 않기 때문에 그냥 써도 괜찮을 것 같다
-    return factory->MakeEnumType(enumDecl, typeArgs);
+    return factory->MakeEnumType(RAppliedDecl<REnumDecl>{enumDecl, appliedDecl.typeArgs});
 }
 
 
 RType* RType_EnumElem::Apply(RTypeArguments* typeArgs)
 {
-    auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
-    return factory->MakeEnumElemType(decl, appliedTypeArgs);
+    auto* appliedTypeArgs = this->appliedDecl.typeArgs->Apply(typeArgs);
+    return factory->MakeEnumElemType(RAppliedDecl<REnumElemDecl>{appliedDecl.decl, appliedTypeArgs});
 }
 
 RCopyStrategy RType_EnumElem::GetCopyStrategy()
 {
-    for(size_t i = 0, count = decl->GetVarCount(); i < count; i++)
+    for(size_t i = 0, count = appliedDecl.decl->GetVarCount(); i < count; i++)
     {
-        auto* varDecl = decl->GetUnboundVar(i);
-        auto* varType = varDecl->GetUnboundDeclType()->Apply(typeArgs);
+        auto* varDecl = appliedDecl.decl->GetUnboundVar(i);
+        auto* varType = varDecl->GetUnboundDeclType()->Apply(appliedDecl.typeArgs);
         if (varType->GetCopyStrategy() == RCopyStrategy::NonBitwise)
             return RCopyStrategy::NonBitwise;
     }
@@ -269,19 +269,19 @@ RCopyStrategy RType_EnumElem::GetCopyStrategy()
 }
 
 
-RType_Interface::RType_Interface(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal, RFactory* factory)
-    : decl{decl}, typeArgs{typeArgs}, bLocal{bLocal}, factory{factory}
+RType_Interface::RType_Interface(TakeRef<RAppliedDecl<RInterfaceDecl>> appliedDecl, bool bLocal, RFactory* factory)
+    : appliedDecl{appliedDecl.Take()}, bLocal{bLocal}, factory{factory}
 {
 }
 
 RType* RType_Interface::Apply(RTypeArguments* typeArgs)
 {
-    auto* appliedTypeArgs = this->typeArgs->Apply(typeArgs);
-    return factory->MakeInterfaceType(decl, appliedTypeArgs, bLocal);
+    auto* appliedTypeArgs = this->appliedDecl.typeArgs->Apply(typeArgs);
+    return factory->MakeInterfaceType(RAppliedDecl<RInterfaceDecl>{appliedDecl.decl, appliedTypeArgs}, bLocal);
 }
 
-RType_Lambda::RType_Lambda(RLambdaDecl* decl, RTypeArguments* outerTypeArgs, RFactory* factory)
-    : decl{decl}, outerTypeArgs{outerTypeArgs}, factory{factory}
+RType_Lambda::RType_Lambda(RAppliedDecl<RLambdaDecl>&& appliedDecl, RFactory* factory)
+    : appliedDecl{std::move(appliedDecl)}, factory{factory}
 {
 }
 
@@ -292,8 +292,8 @@ vector<RFuncParameter> RType_Lambda::GetPartiallyBoundParameters()
 
 RType* RType_Lambda::Apply(RTypeArguments* typeArgs)
 {
-    auto* appliedOuterTypeArgs = outerTypeArgs->Apply(typeArgs);
-    return factory->MakeLambdaType(decl, appliedOuterTypeArgs);
+    auto* appliedTypeArgs = this->appliedDecl.typeArgs->Apply(typeArgs);
+    return factory->MakeLambdaType(RAppliedDecl<RLambdaDecl>{appliedDecl.decl, appliedTypeArgs});
 }
 
 RCopyStrategy RType_Lambda::GetCopyStrategy()
@@ -302,8 +302,8 @@ RCopyStrategy RType_Lambda::GetCopyStrategy()
     throw NotImplementedException{};
 }
 
-RType_Opaque::RType_Opaque(RAppliedDecl<RTraitDecl>&& appliedTrait, RAppliedDecl<RDecl>&& appliedOwnerFunc, RFactory* factory, PrivateKey pk)
-    : appliedTrait{move(appliedTrait)}, appliedOwnerFunc{move(appliedOwnerFunc)}, factory{factory}
+RType_Opaque::RType_Opaque(TakeRef<RAppliedDecl<RTraitDecl>> appliedTrait, TakeRef<RAppliedDecl<RDecl>> appliedOwnerFunc, RFactory* factory, PrivateKey pk)
+    : appliedTrait{appliedTrait.Take()}, appliedOwnerFunc{appliedOwnerFunc.Take()}, factory{factory}
 {
 }
 

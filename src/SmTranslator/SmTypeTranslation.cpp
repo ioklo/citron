@@ -27,14 +27,6 @@ expected<RType*, DiagPtr> TranslateImTypeExpToRType(ImTypeExp&& imTypeExp, SmTyp
         {
             return Error<Error_ResolveIdentifier_CantUseNamespaceAsType>();
         }
-        else if constexpr (same_as<T, ImTypeExp_Class>)
-        {
-            return contexts.rFactory->MakeClassType(imTypeExp.appliedDecl.decl, imTypeExp.appliedDecl.typeArgs);
-        }
-        else if constexpr (same_as<T, ImTypeExp_Struct>)
-        {
-            return contexts.rFactory->MakeStructType(imTypeExp.appliedDecl.decl, imTypeExp.appliedDecl.typeArgs);
-        }
         else if constexpr (same_as<T, ImTypeExp_Trait>)
         {
             return Error<Error_ResolveIdentifier_CantUseTraitAsType>();
@@ -97,7 +89,7 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
             RETURN_ON_ERROR(e_memberTypeArgs);
 
             auto* typeArgs = contexts.rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
-            return contexts.rFactory->MakeClassType(typeRes.outerAppliedDecl.decl, typeArgs);
+            return contexts.rFactory->MakeClassType(RAppliedDecl<RClassDecl>{typeRes.outerAppliedDecl.decl, typeArgs});
         }
         else if constexpr (same_as<T, SmTypeRes_Struct>)
         {
@@ -109,7 +101,7 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
             RETURN_ON_ERROR(e_memberTypeArgs);
 
             auto* typeArgs = contexts.rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
-            return contexts.rFactory->MakeStructType(typeRes.outerAppliedDecl.decl, typeArgs);
+            return contexts.rFactory->MakeStructType(RAppliedDecl<RStructDecl>{typeRes.outerAppliedDecl.decl, typeArgs});
         }
         else if constexpr (same_as<T, SmTypeRes_Enum>)
         {
@@ -121,7 +113,7 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
             RETURN_ON_ERROR(e_memberTypeArgs);
 
             auto* typeArgs = contexts.rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
-            return contexts.rFactory->MakeEnumType(typeRes.outerAppliedDecl.decl, typeArgs);
+            return contexts.rFactory->MakeEnumType(RAppliedDecl<REnumDecl>{typeRes.outerAppliedDecl.decl, typeArgs});
         }
         else if constexpr (same_as<T, SmTypeRes_EnumElem>)
         {
@@ -133,7 +125,7 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
             RETURN_ON_ERROR(e_memberTypeArgs);
 
             auto* typeArgs = contexts.rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
-            return contexts.rFactory->MakeEnumElemType(typeRes.outerAppliedDecl.decl, typeArgs);
+            return contexts.rFactory->MakeEnumElemType(RAppliedDecl<REnumElemDecl>{typeRes.outerAppliedDecl.decl, typeArgs});
         }
         else if constexpr (same_as<T, SmTypeRes_Interface>)
         {

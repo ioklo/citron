@@ -32,8 +32,7 @@ expected<optional<ImTypeExp>, DiagPtr> HandleReservedType(std::string_view name,
     {
         if (!typeArgs.empty()) return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
 
-        auto* stringType = dynamic_cast<RType_Struct*>(rFactory->MakeStringType());
-        return ImTypeExp_Struct{stringType->decl, stringType->typeArgs};
+        return ImTypeExp_Type{rFactory->MakeStringType()};
     }
     else if (name == "bool")
     {
@@ -69,25 +68,25 @@ expected<ImTypeExp, DiagPtr> TranslateSmTypeResAndSTypeArgsToImTypeExp(SmTypeRes
         {
             auto e_typeArgs = MakeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_typeArgs);
-            return ImTypeExp_Type{contexts.rFactory->MakeClassType(typeRes.outerAppliedDecl.decl, *e_typeArgs)};
+            return ImTypeExp_Type{contexts.rFactory->MakeClassType(RAppliedDecl<RClassDecl>{typeRes.outerAppliedDecl.decl, *e_typeArgs})};
         }
         else if constexpr (same_as<T, SmTypeRes_Struct>)
         {
             auto e_typeArgs = MakeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_typeArgs);
-            return ImTypeExp_Type{contexts.rFactory->MakeStructType(typeRes.outerAppliedDecl.decl, *e_typeArgs)};
+            return ImTypeExp_Type{contexts.rFactory->MakeStructType(RAppliedDecl<RStructDecl>{typeRes.outerAppliedDecl.decl, *e_typeArgs})};
         }
         else if constexpr (same_as<T, SmTypeRes_Enum>)
         {
             auto e_typeArgs = MakeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_typeArgs);
-            return ImTypeExp_Type{contexts.rFactory->MakeEnumType(typeRes.outerAppliedDecl.decl, *e_typeArgs)};
+            return ImTypeExp_Type{contexts.rFactory->MakeEnumType(RAppliedDecl<REnumDecl>{typeRes.outerAppliedDecl.decl, *e_typeArgs})};
         }
         else if constexpr (same_as<T, SmTypeRes_EnumElem>)
         {
             auto e_typeArgs = MakeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_typeArgs);
-            return ImTypeExp_Type{contexts.rFactory->MakeEnumElemType(typeRes.outerAppliedDecl.decl, *e_typeArgs)};
+            return ImTypeExp_Type{contexts.rFactory->MakeEnumElemType(RAppliedDecl<REnumElemDecl>{typeRes.outerAppliedDecl.decl, *e_typeArgs})};
         }
         else if constexpr (same_as<T, SmTypeRes_Interface>)
         {

@@ -1,37 +1,53 @@
 # 회의 / 설계 노트
 
-Date: 2026-08-04
-Title: `STypeExp` intermediate / resolved translation 단계
+날짜: 2026-08-04
+
+제목: `STypeExp`의 intermediate / resolved 번역 단계
 
 ## 목적
 
-`STypeExp`를 `RType*` 또는 applied trait declaration으로 번역하는 경로를,
-기존 value expression의 `SExp -> ImExp -> ReExp` 구조와 대응되게 정리한다.
-
-## 결정 전 후보 방향
-
-현재 내용은 구현 전 설계 방향이다. 이후 구현 세부나 기존 API와 충돌하면 다시
-검토한다.
+`STypeExp`를 일반 타입(`RType*`) 또는 적용된 trait declaration으로 번역하는 경로를,
+value expression의 `SExp -> ImExp -> ReExp` 단계 구조와 대응시킨다.
 
 ```text
 STypeExp -> ImTypeExp -> ReTypeExp
 SExp     -> ImExp     -> ReExp
 ```
 
-- `ImTypeExp`는 type identifier/member chain을 계속 해석할 수 있는 intermediate다.
-- `ReTypeExp`는 최종 type-expression 결과다.
-- `ReTypeExp`는 다음 둘을 하나의 variant로 둔다.
+여기서 `ReTypeExp`는 runtime expression이라는 뜻이 아니라 `ReExp`와 대응하는
+"해석 완료 번역 단계"라는 뜻이다. 최종 결과는 다음 둘의 합으로 본다.
 
 ```text
 RType*
 RAppliedDecl<RTraitDecl>
 ```
 
-`ReTypeRes`보다 `ReTypeExp`를 택한다. 이는 결과가 runtime expression이라는 뜻이
-아니라, `ReExp`와 동등한 "resolved translation stage"임을 이름으로 보이기
-위해서다.
+## `ImTypeExp`의 canonical 표현
 
-## 번역 흐름
+초기에는 `ImTypeExp_Class`, `ImTypeExp_Struct`와 `ImTypeExp_Type { RType* }`를 함께
+두었다. 그러나 같은 `C<int>`가 declaration 기반 variant와 `RType_Class` 기반 variant
+양쪽으로 나타날 수 있었다. 그러면 이후 단계가 어떤 경로로 왔는지에 따라 qualified
+member lookup 가능 여부가 달라질 수 있다.
+
+따라서 현재 intermediate의 variant는 다음으로 제한한다.
+
+```text
+ImTypeExp_Namespaces
+ImTypeExp_Type  { RType* type; }
+ImTypeExp_Trait { RAppliedDecl<RTraitDecl> appliedDecl; }
+```
+
+- class, struct, enum, enum element, primitive, `void`, type parameter 등 trait이 아닌
+  타입 결과는 모두 `ImTypeExp_Type` 하나로 나타낸다.
+- `string`은 struct이지만 다른 nominal type과 마찬가지로 `RType_Struct`를 담는다.
+- trait은 `RType`이 아니므로 적용된 trait declaration으로 별도 보관한다.
+- namespace는 chain 중간에만 유효하며 최종 타입/trait 결과가 될 수 없다.
+
+이 구분은 "현재 member가 있는가"가 아니라 intermediate가 보관하는 canonical semantic
+표현에 따른 것이다. 따라서 이후 `ImTypeExp` consumer가 member lookup 외의 일을 맡아도
+의미가 유지된다.
+
+## Identifier와 member 번역
 
 ### Identifier
 
@@ -39,78 +55,70 @@ RAppliedDecl<RTraitDecl>
 
 1. 예약 타입을 확인한다.
 2. 아니면 현재 type resolve context에서 이름을 찾아 `SmTypeRes`를 얻는다.
-3. explicit type arguments를 보존한 `ImTypeExp`를 만든다.
+3. explicit type arguments를 적용해 `ImTypeExp`를 만든다.
 
-현재의 `SmTypeRes`는 identifier 하나의 lookup 원재료다. `ImTypeExp`는 여기에
-member lookup을 이어 갈 수 있는 상태와 explicit member type arguments를 더한
-표현이다.
+nominal type은 이때 이미 canonical `RType*`로 materialize한다. 따라서 finalization에서
+class/struct를 다시 분기해 factory를 호출하지 않는다.
 
 ### Member
 
-`STypeExp_Member`는 base를 먼저 `ImTypeExp`로 번역한다. 이어서 base의 namespace
-또는 applied declaration context에서 member를 찾아 새 `ImTypeExp`를 만든다.
+`STypeExp_Member`는 base를 먼저 `ImTypeExp`로 번역한 뒤 다음처럼 처리한다.
 
-- 전체 적용 인자는 `typeArgs`
-- enclosing 축 인자는 `outerTypeArgs`
-- 현재 member 자신이 받은 인자는 `memberTypeArgs`
+- namespace base는 namespace child lookup을 수행한다.
+- `ImTypeExp_Type` base는 `RType` visitor로 qualified type-member lookup을 수행한다.
+  `RType_Class`와 `RType_Struct`는 applied declaration과 applied arguments를 사용해
+  `GetTypeMember`를 호출한다.
+- primitive, `void`, tuple, function, pointer, nullable, shared, box 등 type member를
+  제공하지 않는 타입은 `Error_ResolveIdentifier_TypeCantHaveTypeMember`를 낸다.
+- type parameter는 향후 trait constraint의 associated/nested type lookup을 지원할 수
+  있으므로 현재는 별도 후속 구현 지점으로 둔다.
+- trait은 현재 nested type을 지원하지 않으므로 `TraitCantHaveMember`를 낸다.
 
-로 구분하며, 최종 전체 인자는 `outerTypeArgs + memberTypeArgs`다.
+전체 applied arguments는 `outerTypeArgs + memberTypeArgs`다. 이 규칙은 nested trait에도
+동일하게 적용하며, trait의 explicit member type arguments를 버리지 않는다.
 
-type parameter는 lexical binder이지 qualified member가 아니다. 따라서
-`S<int>.T` 같은 projection은 이 단계에서 허용하지 않는다.
-
-### Finalization / consumers
-
-`ImTypeExp -> ReTypeExp` 단계에서 다음을 수행한다.
-
-- nominal type과 type variable 및 builtin type은 `RType*`로 완성한다.
-- trait declaration은 `RAppliedDecl<RTraitDecl>`로 완성한다.
-- namespace가 최종 결과로 남으면 진단한다.
-
-그 뒤 public API는 얇은 consumer가 된다.
-
-```text
-TranslateSTypeExpToRType
-  -> ReTypeExp를 만들고 RType* variant만 허용
-
-TranslateSTypeExpToRTrait
-  -> ReTypeExp를 만들고 RAppliedDecl<RTraitDecl> variant만 허용
-```
+type parameter는 lexical binder이지 qualified member가 아니므로 `S<int>.T` 같은 projection은
+허용하지 않는다.
 
 ## Type constructor 경계
 
-`Nullable`, `Shared`, `Box`, `Ptr`, `Local` 같은 type constructor는
-identifier/member chain intermediate에 넣지 않는다. 각 operand를 재귀적으로
-`RType*`로 번역한 후 type factory를 적용한다. 따라서 trait 결과에는 이
-constructor들을 적용할 수 없다.
+`Nullable`, `Shared`, `Box`, `Ptr`, `Local` 같은 type constructor는 identifier/member
+chain intermediate에 넣지 않는다. 각 operand를 재귀적으로 `RType*`로 번역한 후 factory를
+적용한다. 따라서 trait 결과에는 이 constructor들을 적용할 수 없다.
 
-## Expression translator와의 관계
+## `RAppliedDecl`의 적용 기준
 
-두 경로는 단계 구조만 대응시키고 implementation을 통합하지 않는다.
+`RAppliedDecl<T>`은 `T` 자신에게 남은 type parameter가 없는 fully-applied declaration
+relation이다. `ROuterAppliedDecl<T>`은 lexical outer arguments만 적용되어 있고, member
+자신의 type arguments를 더 받아야 하는 lookup 상태다.
 
-- expression translation은 value/location/call/assignment, overload matching,
-  MIR materialization을 다룬다.
-- type translation은 namespace/type-member lookup과 generic argument application을
+- class/struct/enum 같은 nominal type name lookup은 explicit member type arguments를
+  받아야 하므로 `ROuterAppliedDecl` 상태를 거친다.
+- variable, enum element, 그리고 현재처럼 자기 own type parameter가 없는 lambda는 outer
+  arguments까지 적용되면 `RAppliedDecl`로 보관한다.
+- function overload group은 explicit function type arguments와 inference가 남아 있으므로
+  `RAppliedDecl`로 성급하게 닫지 않고 partial-application 모델을 유지한다.
+
+## Expression 번역기와의 관계
+
+두 경로는 단계 구조만 대응시키고 구현을 통합하지 않는다.
+
+- expression 번역은 value/location/call/assignment, overload matching, MIR materialization을
   다룬다.
+- type 번역은 namespace/type-member lookup과 generic argument application을 다룬다.
 
-특히 expression의 explicit function type argument는 candidate별 inference 전까지
-partial application으로 남지만, type expression의 generic arguments는 type-name
-resolution에 직접 사용된다. 공통 `Im*`/`Re*` hierarchy로 합치면 이 서로 다른
-책임과 invariant가 섞인다.
-
-공유가 필요해지면 `outerTypeArgs + memberTypeArgs` 결합, arity 검사, namespace child
-lookup처럼 작은 helper만 공통화한다.
+공유가 필요해지면 `outerTypeArgs + memberTypeArgs` 결합, arity 검사, namespace child lookup
+같은 작은 helper만 공통화한다.
 
 ## 명명 메모
 
-SmTranslator 소유 자료형에 `Sm` prefix를 붙이는 방향과 기존 `ImExp`/`ReExp`는
-일관되지 않는다. 기계적인 `SmImExp`/`SmReExp` 대신, 장기 rename 후보는 다음과
-같다.
+SmTranslator 소유 자료형에 `Sm` prefix를 붙이는 방향과 기존 `ImExp`/`ReExp`는 완전히
+일관되지는 않는다. 기계적인 `SmImExp`/`SmReExp` 대신 장기 rename 후보는 다음과 같다.
 
 ```text
 ImExp -> SmIntermediateExp
 ReExp -> SmResolvedExp
 ```
 
-다만 이름 변경은 영향 범위가 넓으므로 이번 type translation 작업과 분리한다.
-`ImTypeExp`/`ReTypeExp`는 당분간 기존 단계 명명과 대응시키기 위해 사용한다.
+다만 이름 변경은 영향 범위가 넓으므로 현재 type translation 및 `RAppliedDecl` 정리와는
+분리한다.

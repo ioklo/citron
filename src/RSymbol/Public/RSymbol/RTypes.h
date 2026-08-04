@@ -255,13 +255,12 @@ public:
 class RType_Class : public RType
 {
 public:
-    RClassDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RClassDecl> appliedDecl;
     RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Class(RClassDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
+    RType_Class(TakeRef<RAppliedDecl<RClassDecl>> appliedDecl, RFactory* factory);
 
 public:
     RSYMBOL_API std::optional<RAppliedDecl<RClassVarDecl>> GetVar(InRef<RName> name);
@@ -277,13 +276,12 @@ public:
 class RType_Struct : public RType
 {
 public:
-    RStructDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RStructDecl> appliedDecl;
     RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Struct(RStructDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
+    RType_Struct(TakeRef<RAppliedDecl<RStructDecl>> appliedDecl, RFactory* factory);
 
 public:
     RSYMBOL_API std::optional<RAppliedDecl<RStructVarDecl>> GetVar(InRef<RName> name);
@@ -299,13 +297,12 @@ public:
 class RType_Enum : public RType
 {
 public:
-    REnumDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<REnumDecl> appliedDecl;
     RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Enum(REnumDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
+    RType_Enum(TakeRef<RAppliedDecl<REnumDecl>> appliedDecl, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
@@ -317,14 +314,12 @@ public:
 class RType_EnumElem : public RType
 {
 public:
-    REnumElemDecl* decl;
-    RTypeArguments* typeArgs;
-
+    RAppliedDecl<REnumElemDecl> appliedDecl;
     RFactory* factory;
 
 private:
     friend RFactory;
-    RType_EnumElem(REnumElemDecl* decl, RTypeArguments* typeArgs, RFactory* factory);
+    RType_EnumElem(TakeRef<RAppliedDecl<REnumElemDecl>> appliedDecl, RFactory* factory);
 
 public:
     RSYMBOL_API std::optional<RAppliedDecl<REnumElemVarDecl>> GetVar(InRef<RName> name);
@@ -340,14 +335,13 @@ public:
 class RType_Interface : public RType
 {
 public:
-    RInterfaceDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RInterfaceDecl> appliedDecl;
     bool bLocal;
     RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Interface(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal, RFactory* factory);
+    RType_Interface(TakeRef<RAppliedDecl<RInterfaceDecl>> appliedDecl, bool bLocal, RFactory* factory);
 
 public:
     RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;
@@ -359,13 +353,12 @@ public:
 class RType_Lambda : public RType
 {
 public:
-    RLambdaDecl* decl;
-    RTypeArguments* outerTypeArgs; // 함수 자체의 typeArgs는 호출할때 binding하게 된다
+    RAppliedDecl<RLambdaDecl> appliedDecl; // 함수 자체의 typeArgs는 호출할때 binding하게 된다
     RFactory* factory;
 
 private:
     friend RFactory;
-    RType_Lambda(RLambdaDecl* decl, RTypeArguments* outerTypeArgs, RFactory* factory);
+    RType_Lambda(RAppliedDecl<RLambdaDecl>&& appliedDecl, RFactory* factory);
 
 public:
     RSYMBOL_API std::vector<RFuncParameter> GetPartiallyBoundParameters(); // outerTypeArgs까지만 bound되어 있는 상태
@@ -389,7 +382,7 @@ public:
 
 public: // emplace_back을 하려니 constructor가 public이어야 한다
     friend RFactory;
-    RType_Opaque(RAppliedDecl<RTraitDecl>&& appliedTrait, RAppliedDecl<RDecl>&& appliedOwnerFunc, RFactory* factory, PrivateKey pk);
+    RType_Opaque(TakeRef<RAppliedDecl<RTraitDecl>> appliedTrait, TakeRef<RAppliedDecl<RDecl>> appliedOwnerFunc, RFactory* factory, PrivateKey pk);
 
 public: // from RType
     RSYMBOL_API RType* Apply(RTypeArguments* typeArgs) override;

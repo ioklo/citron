@@ -63,7 +63,7 @@ struct DeclResTranslator
     ResultType Visit(SmDeclRes_Class&& declRes)
     {
         auto* typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return MakeIrExp<IrExp_Class>(declRes.outerAppliedDecl.decl, typeArgs);
+        return MakeIrExp<IrExp_Class>(RAppliedDecl<RClassDecl>{declRes.outerAppliedDecl.decl, typeArgs});
     }
 
     // ResultType Visit(SmDeclRes_ClassFuncs& declRes);
@@ -73,20 +73,20 @@ struct DeclResTranslator
 
         if (declRes.appliedDecl.decl->IsStatic()) // &C.x
         {
-            auto* loc = MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs);
+            auto* loc = MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, move(declRes.appliedDecl));
             return MakeIrExp<IrExp_Static>(loc);
         }
         else // &this.x
         {   
             return MakeIrExp<IrExp_ClassVar>(
-                contexts.funcContext->MakeThisLoc(), declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs);
+                contexts.funcContext->MakeThisLoc(), std::move(declRes.appliedDecl));
         }
     }
 
     ResultType Visit(SmDeclRes_Struct&& declRes)
     { 
         auto* typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return MakeIrExp<IrExp_Struct>(declRes.outerAppliedDecl.decl, typeArgs);
+        return MakeIrExp<IrExp_Struct>(RAppliedDecl<RStructDecl>{declRes.outerAppliedDecl.decl, typeArgs});
     }
 
     // ResultType Visit(SmDeclRes_StructFuncs& declRes);
@@ -97,7 +97,7 @@ struct DeclResTranslator
 
         if (declRes.appliedDecl.decl->IsStatic())
         {
-            auto* loc = MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs);
+            auto* loc = MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, move(declRes.appliedDecl));
             return MakeIrExp<IrExp_Static>(loc);
         }
         else
@@ -107,7 +107,7 @@ struct DeclResTranslator
 
             // IrExp_StructVar는 base가 IrExp인 경우(sharedExp로 보일수 있는 가능성)에만 만드는것이다.
 
-            auto* loc = MakeMLoc<MLoc_StructVar>(contexts.funcContext->MakeThisLoc(), declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs);
+            auto* loc = MakeMLoc<MLoc_StructVar>(contexts.funcContext->MakeThisLoc(), move(declRes.appliedDecl));
             return MakeIrExp<IrExp_Loc>(loc);
         }
     }

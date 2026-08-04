@@ -42,10 +42,10 @@ struct SmDeclRes_Struct { ROuterAppliedDecl<RStructDecl> outerAppliedDecl; };
 struct SmDeclRes_StructFuncs { ROuterAppliedFuncDeclGroup<RStructFuncDecl> outerAppliedFuncDecls; };
 struct SmDeclRes_StructVar { RAppliedDecl<RStructVarDecl> appliedDecl; };
 struct SmDeclRes_Enum { ROuterAppliedDecl<REnumDecl> outerAppliedDecl; };
-struct SmDeclRes_EnumElem { ROuterAppliedDecl<REnumElemDecl> outerAppliedDecl; };
-struct SmDeclRes_EnumElemVar { ROuterAppliedDecl<REnumElemVarDecl> outerAppliedDecl; };
-struct SmDeclRes_Lambda { ROuterAppliedDecl<RLambdaDecl> outerAppliedDecl; };
-struct SmDeclRes_LambdaVar { ROuterAppliedDecl<RLambdaVarDecl> outerAppliedDecl; };
+struct SmDeclRes_EnumElem { RAppliedDecl<REnumElemDecl> appliedDecl; };
+struct SmDeclRes_EnumElemVar { RAppliedDecl<REnumElemVarDecl> appliedDecl; };
+struct SmDeclRes_Lambda { RAppliedDecl<RLambdaDecl> appliedDecl; };
+struct SmDeclRes_LambdaVar { RAppliedDecl<RLambdaVarDecl> appliedDecl; };
 struct SmDeclRes_Interface { ROuterAppliedDecl<RInterfaceDecl> outerAppliedDecl; };
 struct SmDeclRes_TupleVar {}; // 어떻게 쓰일지 몰라서, 실제로 만들때 채워넣는다
 struct SmDeclRes_TypeVar { RTypeParam* decl; };

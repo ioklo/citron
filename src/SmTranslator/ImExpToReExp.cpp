@@ -102,16 +102,16 @@ public:
     ResultType Visit(ImExp_EnumElem* imExp)
     {
         // if standalone, 값으로 처리한다
-        if (imExp->decl->GetVarCount() == 0)
+        if (imExp->appliedDecl.decl->GetVarCount() == 0)
         {
-            auto* enumElemType = contexts.rFactory->MakeEnumElemType(imExp->decl, imExp->typeArgs);
+            auto* enumElemType = contexts.rFactory->MakeEnumElemType(RAppliedDecl<REnumElemDecl>{imExp->appliedDecl.decl, imExp->appliedDecl.typeArgs});
             switch (enumElemType->GetCopyStrategy())
             {
             case RCopyStrategy::Void: throw RuntimeFatalException{};
             case RCopyStrategy::Bitwise:
-                return Exp<MExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<MArgument>{});
+                return Exp<MExp_NewEnumElem>(imExp->appliedDecl, vector<MArgument>{});
             case RCopyStrategy::NonBitwise:
-                return InitExp<MInitExp_NewEnumElem>(imExp->decl, imExp->typeArgs, vector<MArgument>{});
+                return InitExp<MInitExp_NewEnumElem>(imExp->appliedDecl, vector<MArgument>{});
             }
 
             unreachable();

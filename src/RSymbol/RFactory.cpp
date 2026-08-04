@@ -215,7 +215,7 @@ RFactoryPtr RFactory::Make()
     auto* tempString = factory->MakeDecl<RStructDecl>(RDeclKey::Normal(RName::Normal("String")), RTypeDeclOuter_Namespace{tempSystemNamespace, RNamespaceMemberAccessor::Public}, RName::Normal("String"), factory);
     tempString->InitTypeParams({});
     tempString->InitTraits({});
-    auto* stringType = factory->MakeStructType(tempString, factory->MakeEmptyTypeArguments());
+    auto* stringType = factory->MakeStructType(RAppliedDecl<RStructDecl>{tempString, factory->MakeEmptyTypeArguments()});
     factory->Init(stringType);
 
     return factory;
@@ -359,52 +359,55 @@ RType_Box* RFactory::MakeBoxType(RType* innerType)
 }
 
 template<typename TDecl, typename TType, typename... TArgs>
-TType* RFactory::MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TDecl* decl, RTypeArguments* typeArgs, TArgs&&... args)
+TType* RFactory::MakeInstanceType(InstanceTypeKeyUnorderedMap<TDecl, TType>& instanceTypes, TakeRef<RAppliedDecl<TDecl>> appliedDecl, TArgs&&... args)
 {
-    RInstanceTypeKey<TDecl> key{decl, typeArgs};
+    RInstanceTypeKey<TDecl> key{*appliedDecl};
     auto i = instanceTypes.find(key);
     if (i != instanceTypes.end())
         return i->second.get();
     
-    unique_ptr<TType> newType{new TType{decl, typeArgs, std::forward<TArgs>(args)..., this}};
+    unique_ptr<TType> newType{new TType{move(appliedDecl), std::forward<TArgs>(args)..., this}};
     auto pNewType = newType.get();
     instanceTypes.emplace(key, move(newType));
     return pNewType;
 }
 
-RType_Class* RFactory::MakeClassType(RClassDecl* decl, RTypeArguments* typeArgs)
+RType_Class* RFactory::MakeClassType(TakeRef<RAppliedDecl<RClassDecl>> appliedDecl)
 {
-    return MakeInstanceType(classTypes, decl, typeArgs);
+    return MakeInstanceType(classTypes, move(appliedDecl));
 }
 
-RType_Struct* RFactory::MakeStructType(RStructDecl* decl, RTypeArguments* typeArgs)
+RType_Struct* RFactory::MakeStructType(TakeRef<RAppliedDecl<RStructDecl>> appliedDecl)
 {
-    return MakeInstanceType(structTypes, decl, typeArgs);
+    return MakeInstanceType(structTypes, move(appliedDecl));
 }
 
-RType_Enum* RFactory::MakeEnumType(REnumDecl* decl, RTypeArguments* typeArgs)
+RType_Enum* RFactory::MakeEnumType(TakeRef<RAppliedDecl<REnumDecl>> appliedDecl)
 {
-    return MakeInstanceType(enumTypes, decl, typeArgs);
+    return MakeInstanceType(enumTypes, move(appliedDecl));
 }
 
-RType_EnumElem* RFactory::MakeEnumElemType(REnumElemDecl* decl, RTypeArguments* typeArgs)
+RType_EnumElem* RFactory::MakeEnumElemType(TakeRef<RAppliedDecl<REnumElemDecl>> appliedDecl)
 {
-    return MakeInstanceType(enumElemTypes, decl, typeArgs);
+    return MakeInstanceType(enumElemTypes, move(appliedDecl));
 }
 
-RType_Interface* RFactory::MakeInterfaceType(RInterfaceDecl* decl, RTypeArguments* typeArgs, bool bLocal)
+RType_Interface* RFactory::MakeInterfaceType(TakeRef<RAppliedDecl<RInterfaceDecl>> appliedDecl, bool bLocal)
 {
-    return MakeInstanceType(interfaceTypes, decl, typeArgs, bLocal);
+    // TODO: [71] 2026-07-18, interface 구현
+    throw NotImplementedException{};
 }
 
-RType_Lambda* RFactory::MakeLambdaType(RLambdaDecl* decl, RTypeArguments* typeArgs)
+RType_Lambda* RFactory::MakeLambdaType(TakeRef<RAppliedDecl<RLambdaDecl>> appliedDecl)
 {
-    return MakeInstanceType(lambdaTypes, decl, typeArgs);
+    // TODO: [65] 2026-07-06, RLambdaDecl제거, RStructDecl을 쓰도록 변경
+    throw NotImplementedException{};
+    // return MakeInstanceType(lambdaTypes, move(appliedDecl));
 }
 
-RType_Opaque* RFactory::MakeOpaqueType(RAppliedDecl<RTraitDecl>&& appliedTrait, RAppliedDecl<RDecl>&& appliedOwnerFunc)
+RType_Opaque* RFactory::MakeOpaqueType(TakeRef<RAppliedDecl<RTraitDecl>> appliedTrait, TakeRef<RAppliedDecl<RDecl>> appliedOwnerFunc)
 {
-    auto i = privateData->opaqueTypeSet.find(RType_OpaqueKey{appliedTrait, appliedOwnerFunc});
+    auto i = privateData->opaqueTypeSet.find(RType_OpaqueKey{*appliedTrait, *appliedOwnerFunc});
     if (i != privateData->opaqueTypeSet.end())
         return *i;
 
@@ -486,13 +489,13 @@ RType* RFactory::MakeStringType()
 RType* RFactory::MakeListType(RType* itemType)
 {
     auto* typeArgs = MakeTypeArguments({&itemType, 1});
-    return MakeClassType(listDecl.get(), typeArgs);
+    return MakeClassType(RAppliedDecl<RClassDecl>{listDecl.get(), typeArgs});
 }
 
 RType* RFactory::MakeListIteratorType(RType* itemType)
 {
     auto* typeArgs = MakeTypeArguments({&itemType, 1});
-    return MakeStructType(listIterDecl.get(), typeArgs);
+    return MakeStructType(RAppliedDecl<RStructDecl>{listIterDecl.get(), typeArgs});
 }
 
 bool RFactory::IsListType(RType* type, RType** outItemType)
@@ -500,10 +503,10 @@ bool RFactory::IsListType(RType* type, RType** outItemType)
     auto* classType = dynamic_cast<RType_Class*>(type);
     if (!classType) return false;
 
-    if (classType->decl != listDecl.get()) return false;
-    if (classType->typeArgs->GetCount() != 1) return false;
+    if (classType->appliedDecl.decl != listDecl.get()) return false;
+    if (classType->appliedDecl.typeArgs->GetCount() != 1) return false;
 
-    *outItemType = classType->typeArgs->Get(0);
+    *outItemType = classType->appliedDecl.typeArgs->Get(0);
     return true;
 }
 

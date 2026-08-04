@@ -29,7 +29,8 @@ expected<ImTypeExp, DiagPtr> TranslateRTypeDeclAndSTypeArgsToImTypeExp(RTypeDecl
             auto e_typeArgs = MakeRTypeArguments(outerTypeArgs, sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_typeArgs);
 
-            return ImTypeExp_Class{RAppliedDecl<RClassDecl>{rTypeDecl,* e_typeArgs}};
+            auto* classType = contexts.rFactory->MakeClassType(RAppliedDecl<RClassDecl>{rTypeDecl, *e_typeArgs});
+            return ImTypeExp_Type{classType};
         }
 
         ResultType Visit(RStructDecl* rTypeDecl)
@@ -37,7 +38,8 @@ expected<ImTypeExp, DiagPtr> TranslateRTypeDeclAndSTypeArgsToImTypeExp(RTypeDecl
             auto e_typeArgs = MakeRTypeArguments(outerTypeArgs, sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_typeArgs);
 
-            return ImTypeExp_Struct{RAppliedDecl<RStructDecl>{rTypeDecl,* e_typeArgs}};
+            auto* structType = contexts.rFactory->MakeStructType(RAppliedDecl<RStructDecl>{rTypeDecl, *e_typeArgs});
+            return ImTypeExp_Type{structType};
         }
 
         ResultType Visit(REnumDecl* rTypeDecl) 
@@ -45,16 +47,16 @@ expected<ImTypeExp, DiagPtr> TranslateRTypeDeclAndSTypeArgsToImTypeExp(RTypeDecl
             auto e_typeArgs = MakeRTypeArguments(outerTypeArgs, sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_typeArgs);
 
-            auto* type = contexts.rFactory->MakeEnumType(rTypeDecl, *e_typeArgs);
-            return ImTypeExp_Type{type};
+            auto* enumType = contexts.rFactory->MakeEnumType(RAppliedDecl<REnumDecl>{rTypeDecl, *e_typeArgs});
+            return ImTypeExp_Type{enumType};
         }
         ResultType Visit(REnumElemDecl* rTypeDecl) 
         {
             auto e_typeArgs = MakeRTypeArguments(outerTypeArgs, sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_typeArgs);
 
-            auto* type = contexts.rFactory->MakeEnumElemType(rTypeDecl, *e_typeArgs);
-            return ImTypeExp_Type{type};
+            auto* enumElemType = contexts.rFactory->MakeEnumElemType(RAppliedDecl<REnumElemDecl>{rTypeDecl, *e_typeArgs});
+            return ImTypeExp_Type{enumElemType};
         }
 
         ResultType Visit(RInterfaceDecl* rTypeDecl) 
@@ -65,8 +67,8 @@ expected<ImTypeExp, DiagPtr> TranslateRTypeDeclAndSTypeArgsToImTypeExp(RTypeDecl
             /*auto e_typeArgs = MakeRTypeArguments(outerTypeArgs, sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_typeArgs);
 
-            auto* type = contexts.rFactory->MakeInterfaceType(rTypeDecl, *e_typeArgs);
-            return ImTypeExp_Type{type};*/
+            auto* enumType = contexts.rFactory->MakeInterfaceType(rTypeDecl, *e_typeArgs);
+            return ImTypeExp_Type{enumType};*/
         }
 
         ResultType Visit(RLambdaDecl* rTypeDecl) 
@@ -77,11 +79,60 @@ expected<ImTypeExp, DiagPtr> TranslateRTypeDeclAndSTypeArgsToImTypeExp(RTypeDecl
 
         ResultType Visit(RTraitDecl* rTypeDecl) 
         {
-            return ImTypeExp_Trait{rTypeDecl, outerTypeArgs};
+            auto e_typeArgs = MakeRTypeArguments(outerTypeArgs, sMemberTypeArgs, contexts);
+            RETURN_ON_ERROR(e_typeArgs);
+
+            return ImTypeExp_Trait{rTypeDecl, *e_typeArgs};
         }
     };
 
     return Accept(Translator{outerTypeArgs, sMemberTypeArgs, contexts}, typeDecl);
+}
+
+expected<ImTypeExp, DiagPtr> TranslateRTypeAndMemberToImTypeExp(RType* type, string_view name, span<STypeExp*> sMemberTypeArgs, SmTypeTranslationContexts& contexts)
+{
+    struct Translator
+    {
+        using ResultType = expected<ImTypeExp, DiagPtr>;
+        string_view name;
+        span<STypeExp*> sMemberTypeArgs;
+        SmTypeTranslationContexts& contexts;
+
+        ResultType Visit(RType_Nullable* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_NullableInplace* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_TypeVar* rType) 
+        { 
+            // typevar에 trait가 있으면, 멤버 타입을 가질 수 있다
+            // TODO: [66] 2026-07-09, Trait, Extend 구현
+            throw NotImplementedException{}; 
+        } 
+        ResultType Visit(RType_Void* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_Primitive* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_Tuple* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_Func* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_Ptr* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_Shared* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_Box* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_Class* rType) 
+        {
+            auto* rTypeDecl = rType->appliedDecl.decl->GetTypeMember(RName::Normal(string{name}));
+            if (!rTypeDecl) return Error<Error_ResolveIdentifier_NotFound>();
+            return TranslateRTypeDeclAndSTypeArgsToImTypeExp(rTypeDecl, rType->appliedDecl.typeArgs, sMemberTypeArgs, contexts);
+        }
+        ResultType Visit(RType_Struct* rType) 
+        {
+            auto* rTypeDecl = rType->appliedDecl.decl->GetTypeMember(RName::Normal(string{name}));
+            if (!rTypeDecl) return Error<Error_ResolveIdentifier_NotFound>();
+            return TranslateRTypeDeclAndSTypeArgsToImTypeExp(rTypeDecl, rType->appliedDecl.typeArgs, sMemberTypeArgs, contexts);
+        }
+        ResultType Visit(RType_Enum* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_EnumElem* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_Interface* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_Lambda* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+        ResultType Visit(RType_Opaque* rType) { return Error<Error_ResolveIdentifier_TypeCantHaveTypeMember>(); }
+    };
+
+    return Accept(Translator{name, sMemberTypeArgs, contexts}, type);
 }
 
 expected<ImTypeExp, DiagPtr> TranslateImTypExpAndMemberToImTypeExp(ImTypeExp&& imTypeExp, string_view name, span<STypeExp*> sTypeArgs, SmTypeTranslationContexts& contexts)
@@ -94,16 +145,6 @@ expected<ImTypeExp, DiagPtr> TranslateImTypExpAndMemberToImTypeExp(ImTypeExp&& i
             // TODO: [74] 2026-07-28, SmDeclRes, ImExp, IrExp, SmTypeRes의 RNamespaceGroup 구현
             throw NotImplementedException{};
         }
-        else if constexpr (same_as <T, ImTypeExp_Class>)
-        {
-            auto* typeDecl = imTypeExp.appliedDecl.decl->GetTypeMember(RName::Normal(string{name}));
-            return TranslateRTypeDeclAndSTypeArgsToImTypeExp(typeDecl, imTypeExp.appliedDecl.typeArgs, sTypeArgs, contexts);
-        }
-        else if constexpr (same_as<T, ImTypeExp_Struct>)
-        {
-            auto* typeDecl = imTypeExp.appliedDecl.decl->GetTypeMember(RName::Normal(string{name}));
-            return TranslateRTypeDeclAndSTypeArgsToImTypeExp(typeDecl, imTypeExp.appliedDecl.typeArgs, sTypeArgs, contexts);
-        }
         else if constexpr (same_as<T, ImTypeExp_Trait>)
         {
             // trait는 nested type을 지원하지 않는다
@@ -111,7 +152,7 @@ expected<ImTypeExp, DiagPtr> TranslateImTypExpAndMemberToImTypeExp(ImTypeExp&& i
         }
         else if constexpr (same_as<T, ImTypeExp_Type>)
         {
-            return Error<Error_ResolveIdentifier_TraitCantHaveMember>();
+            return TranslateRTypeAndMemberToImTypeExp(imTypeExp.type, name, sTypeArgs, contexts);
         }
         else
             static_assert(false);

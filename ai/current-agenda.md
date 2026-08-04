@@ -6,9 +6,14 @@
 ## Current Direction
 - `STypeExp`는 value expression 번역과 같은 단계 구조를 따른다:
   `STypeExp -> ImTypeExp -> ReTypeExp`.
-- `ImTypeExp`는 type identifier/member chain을 계속 해석할 수 있는 중간 상태다.
-  identifier lookup의 `SmTypeRes`, explicit member type arguments, namespace 또는
-  outer-applied declaration 문맥을 보존한다.
+- `ImTypeExp`는 type identifier/member chain을 계속 해석하는 중간 상태다. 현재
+  variant는 namespace group, canonical `RType*`, applied trait declaration으로 제한한다.
+  class/struct/enum처럼 nominal type을 별도 `ImTypeExp_*` variant로 중복 표현하지 않는다.
+- qualified type member lookup은 `ImTypeExp_Type`의 `RType*` visitor가 맡는다. nominal
+  `RType`은 자신이 보관한 applied declaration/arguments로 `GetTypeMember`를 수행하고,
+  primitive·void·type constructor 등은 `TypeCantHaveTypeMember` 진단을 낸다.
+- nested trait type의 명시적 type arguments도 outer arguments와 결합해
+  `ImTypeExp_Trait`에 보관한다.
 - `ReTypeExp`는 최종 type-expression 결과로 `RType*` 또는
   `RAppliedDecl<RTraitDecl>`을 담는다. `ReExp`와 동등한 번역 단계임을 드러내기 위해
   `ReTypeRes`보다 이 이름을 사용한다.
@@ -53,6 +58,10 @@
 - type lookup은 current header의 binder만 보는 경우와 normal member lookup을 구분한다. inheritance lookup은 outer lookup과 별개이며, `ResolveInheritedTypeMember`/`ResolveInheritedMember`처럼 applied base type arguments를 유지하는 좁은 hook 후보를 검토 중이다.
 - Citron은 generic definition을 `RTypeDecl`로 두고 unbound `RType`은 만들지 않는다. `RType`은 `S<T>`(open) 또는 `S<int>`(closed)처럼 arguments가 적용된 type만 나타낸다. `RDeclRes`의 outer-applied 상태는 type이 아니라 lookup declaration context다.
 - `RDeclRes` 반환 여부가 아니라 탐색 범위로 `Get`/`Resolve`를 구분하도록 적용했다. direct lookup 결과는 `ROuterAppliedDecl`/`RAppliedDecl`로 표현하고, 함수의 explicit type argument prefix는 RSymbol result가 아니라 SmTranslator의 `SmPartiallyAppliedFuncDeclGroup`에 둔다.
+- `RAppliedDecl`은 declaration 자체에 남은 type parameter가 없는 fully-applied relation이다.
+  자체 type parameter가 없는 lambda/variable/enum element도 lexical outer arguments까지
+  적용됐다면 `RAppliedDecl`을 사용한다. member 자신의 type arguments를 아직 받아야 하는
+  nominal type/function lookup은 `ROuterAppliedDecl` 또는 partial-application 결과로 유지한다.
 - trait call은 call-site에서 source-local `NImplTraitFunc`를 보관하지 않는다. semantic `Trait` call은 `RTraitFuncDecl`과 applied trait identity를 보관하고, lowering이 concrete conformance에는 direct impl call을, generic constraint와 `some Trait` opaque value에는 trait table call을 선택한다.
 - `RImplTraitDecl` subtree는 impl syntax의 lexical outer에 둔다. target struct와 matched conformance header는 typed relation으로 따로 둔다.
 - `RImplTraitDecl`은 ordinary `RName` member lookup scope가 아니다. trait requirement implementation은 `RTraitFuncDecl -> RImplTraitFuncDecl` relation으로 찾으며, future extension-private helper scope에만 별도 name index 필요성을 재검토한다.

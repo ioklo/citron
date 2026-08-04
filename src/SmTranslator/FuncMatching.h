@@ -27,8 +27,7 @@ struct RFuncParameter;
 template<typename TFuncDecl>
 struct SmFuncMatch
 {
-    TFuncDecl* funcDecl;
-    RTypeArguments* typeArgs;    // 전체 typeArgs (rClass(open) + func(closed))
+    RAppliedDecl<TFuncDecl> appliedDecl; // 전체 typeArgs (rClass(open) + func(closed))
     std::vector<MArgument> args;
 };
 
@@ -89,7 +88,7 @@ std::expected<SmFuncMatch<TFuncDecl>, DiagPtr> MatchFunc(
         auto e_argMatch = MatchArguments(&input, group.outerAppliedGroup.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_argMatch, argMatch); // argument mismatch인 경우
         
-        return SmFuncMatch<TFuncDecl>(decl, argMatch.typeArgs, std::move(argMatch.args));
+        return SmFuncMatch<TFuncDecl>(RAppliedDecl<TFuncDecl>{decl, argMatch.typeArgs}, std::move(argMatch.args));
     }
 
     std::vector<size_t> candidates;
@@ -122,7 +121,7 @@ std::expected<SmFuncMatch<TFuncDecl>, DiagPtr> MatchFunc(
     SmFuncDeclMatchArgumentsInput input{decl};
     auto e_argMatch = MatchArguments(&input, group.outerAppliedGroup.outerTypeArgs, group.memberTypeArgs, sArgs, contexts);
     assert(e_argMatch);
-    return SmFuncMatch<TFuncDecl>(decl, e_argMatch->typeArgs, std::move(e_argMatch->args));
+    return SmFuncMatch<TFuncDecl>(RAppliedDecl<TFuncDecl>{decl, e_argMatch->typeArgs}, std::move(e_argMatch->args));
 }
 
 } // namespace Citron

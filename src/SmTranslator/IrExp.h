@@ -2,8 +2,9 @@
 
 #include <optional>
 #include <memory>
-#include "MIR/MRead.h"
 #include "RSymbol/RNamespaceGroup.h"
+#include "RSymbol/RAppliedDecl.h"
+#include "MIR/MRead.h"
 
 namespace Citron {
 
@@ -44,19 +45,17 @@ struct IrExp_Namespaces : IrExp
 
 struct IrExp_Class : IrExp
 {
-    RClassDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RClassDecl> appliedDecl;
 
-    IrExp_Class(RClassDecl* decl, RTypeArguments* typeArgs);
+    IrExp_Class(RAppliedDecl<RClassDecl>&& appliedDecl);
     void Accept(IrExpVisitor& visitor) override;
 };
 
 struct IrExp_Struct : IrExp
 {
-    RStructDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RStructDecl> appliedDecl;
 
-    IrExp_Struct(RStructDecl* decl, RTypeArguments* typeArgs);
+    IrExp_Struct(RAppliedDecl<RStructDecl>&& appliedDecl);
     void Accept(IrExpVisitor& visitor) override;
 };
 
@@ -75,11 +74,10 @@ struct IrExp_Static : IrExp
 struct IrExp_ClassVar : IrExp
 {
     MLoc* base;
-    RClassVarDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RClassVarDecl> appliedDecl;
 
-    IrExp_ClassVar(MLoc* base, RClassVarDecl* decl, RTypeArguments* typeArgs)
-        : base{base}, decl{decl}, typeArgs{typeArgs}
+    IrExp_ClassVar(MLoc* base, RAppliedDecl<RClassVarDecl>&& appliedDecl)
+        : base{base}, appliedDecl{std::move(appliedDecl)}
     { }
     void Accept(IrExpVisitor& visitor) override;
 };
@@ -90,11 +88,10 @@ struct IrExp_ClassVar : IrExp
 struct IrExp_SharedStructVar : IrExp
 {
     MLoc* base;
-    RStructVarDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RStructVarDecl> appliedDecl;
 
-    IrExp_SharedStructVar(MLoc* base, RStructVarDecl* decl, RTypeArguments* typeArgs)
-        : base{base}, decl{decl}, typeArgs{typeArgs}
+    IrExp_SharedStructVar(MLoc* base, RAppliedDecl<RStructVarDecl>&& appliedDecl)
+        : base{base}, appliedDecl{std::move(appliedDecl)}
     { }
     void Accept(IrExpVisitor& visitor) override;
 };
@@ -104,11 +101,10 @@ struct IrExp_SharedStructVar : IrExp
 struct IrExp_StructVar : IrExp
 {
     IrExp* base;
-    RStructVarDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RStructVarDecl> appliedDecl;
 
-    IrExp_StructVar(IrExp* base, RStructVarDecl* decl, RTypeArguments* typeArgs)
-        : base{base}, decl{decl}, typeArgs{typeArgs}
+    IrExp_StructVar(IrExp* base, RAppliedDecl<RStructVarDecl>&& appliedDecl)
+        : base{base}, appliedDecl{std::move(appliedDecl)}
     { }
     void Accept(IrExpVisitor& visitor) override;
 };

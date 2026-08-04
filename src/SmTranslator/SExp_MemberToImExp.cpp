@@ -73,7 +73,7 @@ struct StaticBaseTranslator
         }
 
         auto* typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return MakeImExp<ImExp_Class>(declRes.outerAppliedDecl.decl, typeArgs);
+        return MakeImExp<ImExp_Class>(RAppliedDecl<RClassDecl>{declRes.outerAppliedDecl.decl, typeArgs});
     }
 
     // C.F
@@ -98,7 +98,7 @@ struct StaticBaseTranslator
         // variable은 typeArgs가 없다
         assert(memberTypeArgs->GetCount() == 0);
 
-        return MakeImExp<ImExp_ClassVar>(declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs, ImExpInstanceKind_ExplicitStatic{});
+        return MakeImExp<ImExp_ClassVar>(std::move(declRes.appliedDecl), ImExpInstanceKind_ExplicitStatic{});
     }
 
     // T.S
@@ -112,7 +112,7 @@ struct StaticBaseTranslator
 
         auto typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
 
-        return MakeImExp<ImExp_Struct>(declRes.outerAppliedDecl.decl, typeArgs);
+        return MakeImExp<ImExp_Struct>(RAppliedDecl<RStructDecl>{declRes.outerAppliedDecl.decl, typeArgs});
     }
 
     // S.F
@@ -136,7 +136,7 @@ struct StaticBaseTranslator
 
         // variable은 typeArgs가 없다
         assert(memberTypeArgs->GetCount() == 0);
-        return MakeImExp<ImExp_StructVar>(declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs, ImExpInstanceKind_ExplicitStatic{});
+        return MakeImExp<ImExp_StructVar>(std::move(declRes.appliedDecl), ImExpInstanceKind_ExplicitStatic{});
     }
 
     // T.E
@@ -149,7 +149,7 @@ struct StaticBaseTranslator
         }
 
         auto typeArgs = contexts.rFactory->MergeTypeArguments(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return MakeImExp<ImExp_Enum>(declRes.outerAppliedDecl.decl, typeArgs);
+        return MakeImExp<ImExp_Enum>(RAppliedDecl<REnumDecl>{declRes.outerAppliedDecl.decl, typeArgs});
     }
 
     // E.First
@@ -157,7 +157,7 @@ struct StaticBaseTranslator
     {
         // EnumElem은 TypeArgs를 가질 수 없다
         assert(memberTypeArgs->GetCount() == 0);
-        return MakeImExp<ImExp_EnumElem>(declRes.outerAppliedDecl.decl, declRes.outerAppliedDecl.outerTypeArgs);
+        return MakeImExp<ImExp_EnumElem>(std::move(declRes.appliedDecl));
     }
 
     // ResultType Visit(SmDeclRes_EnumElemVar&& declRes); // S.x 표현 불가능
@@ -229,7 +229,7 @@ struct InstanceParentTranslator
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
 
-        return MakeImExp<ImExp_ClassVar>(declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
+        return MakeImExp<ImExp_ClassVar>(std::move(declRes.appliedDecl), ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.S
@@ -259,7 +259,7 @@ struct InstanceParentTranslator
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
         }
 
-        return MakeImExp<ImExp_StructVar>(declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs, ImExpInstanceKind_ExplicitInstance{mInstLoc});
+        return MakeImExp<ImExp_StructVar>(std::move(declRes.appliedDecl), ImExpInstanceKind_ExplicitInstance{mInstLoc});
     }
 
     // exp.E
@@ -277,7 +277,7 @@ struct InstanceParentTranslator
     // exp.firstX
     ResultType Visit(SmDeclRes_EnumElemVar&& declRes)
     {
-        auto* loc = MakeMLoc<MLoc_EnumElemVar>(mInstLoc, declRes.outerAppliedDecl.decl, declRes.outerAppliedDecl.outerTypeArgs);
+        auto* loc = MakeMLoc<MLoc_EnumElemVar>(mInstLoc, std::move(declRes.appliedDecl));
         return MakeImExp<ImExp_ReExp>(ReExp_Loc{loc});
     }
 
@@ -366,7 +366,7 @@ struct MemberTranslator
 
     ResultType Visit(ImExp_Class* imExp)
     {
-        return TranslateStaticParent(imExp->classDecl, imExp->typeArgs);
+        return TranslateStaticParent(imExp->appliedDecl.decl, imExp->appliedDecl.typeArgs);
     }
 
     ResultType Visit(ImExp_ClassFuncs* imExp)
@@ -376,7 +376,7 @@ struct MemberTranslator
 
     ResultType Visit(ImExp_Struct* imExp)
     {
-        return TranslateStaticParent(imExp->structDecl, imExp->typeArgs);
+        return TranslateStaticParent(imExp->appliedDecl.decl, imExp->appliedDecl.typeArgs);
     }
 
     ResultType Visit(ImExp_StructFuncs* imExp)
@@ -387,7 +387,7 @@ struct MemberTranslator
     // (E).F
     ResultType Visit(ImExp_Enum* imExp)
     {
-        return TranslateStaticParent(imExp->decl, imExp->typeArgs);
+        return TranslateStaticParent(imExp->appliedDecl.decl, imExp->appliedDecl.typeArgs);
     }
 
     ResultType Visit(ImExp_EnumElem* imExp)

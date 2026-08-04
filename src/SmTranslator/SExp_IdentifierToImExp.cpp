@@ -40,7 +40,7 @@ struct SmDeclResTranslator
         return contexts.rFactory->MergeTypeArguments(outerTypeArgs, memberTypeArgs);
     }
 
-    ResultType operator()(auto&& declRes) { return Visit(std::forward<decltype(declRes)>(declRes)); }
+    ResultType operator()(auto&& declRes) { return Visit(forward<decltype(declRes)>(declRes)); }
 
     ResultType Visit(SmDeclRes_Namespaces&& declRes)
     {
@@ -55,7 +55,7 @@ struct SmDeclResTranslator
     ResultType Visit(SmDeclRes_Class&& declRes)
     {
         auto* typeArgs = MergeTypeArgs(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return MakeImExp<ImExp_Class>(declRes.outerAppliedDecl.decl, typeArgs);
+        return MakeImExp<ImExp_Class>(RAppliedDecl<RClassDecl>{declRes.outerAppliedDecl.decl, typeArgs});
     }
 
     ResultType Visit(SmDeclRes_ClassFuncs&& declRes)
@@ -68,13 +68,13 @@ struct SmDeclResTranslator
     {
         // BodyRes_SmDeclRes는 SExp_Identifier에서 ResolveIdentifier를 통해서 얻게 되므로, ExplicitInstance가 없다
         assert(memberTypeArgs->GetCount() == 0);
-        return MakeImExp<ImExp_ClassVar>(declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs, ImExpInstanceKind_Implicit{});
+        return MakeImExp<ImExp_ClassVar>(move(declRes.appliedDecl), ImExpInstanceKind_Implicit{});
     }
 
     ResultType Visit(SmDeclRes_Struct&& declRes)
     {
         auto* typeArgs = MergeTypeArgs(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return MakeImExp<ImExp_Struct>(declRes.outerAppliedDecl.decl, typeArgs);
+        return MakeImExp<ImExp_Struct>(RAppliedDecl<RStructDecl>{declRes.outerAppliedDecl.decl, typeArgs});
     }
 
     ResultType Visit(SmDeclRes_StructFuncs&& declRes)
@@ -87,19 +87,19 @@ struct SmDeclResTranslator
     {
         // BodyRes_SmDeclRes는 SExp_Identifier에서 ResolveIdentifier를 통해서 얻게 되므로, ExplicitInstance가 없다
         assert(memberTypeArgs->GetCount() == 0);
-        return MakeImExp<ImExp_StructVar>(declRes.appliedDecl.decl, declRes.appliedDecl.typeArgs, ImExpInstanceKind_Implicit{});
+        return MakeImExp<ImExp_StructVar>(move(declRes.appliedDecl), ImExpInstanceKind_Implicit{});
     }
 
     ResultType Visit(SmDeclRes_Enum&& declRes)
     {
         auto* typeArgs = MergeTypeArgs(declRes.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return MakeImExp<ImExp_Enum>(declRes.outerAppliedDecl.decl, typeArgs);
+        return MakeImExp<ImExp_Enum>(RAppliedDecl<REnumDecl>{declRes.outerAppliedDecl.decl, typeArgs});
     }
 
     ResultType Visit(SmDeclRes_EnumElem&& declRes)
     {
         assert(memberTypeArgs->GetCount() == 0); // enumElem은 typeArgs를 갖을수 없다
-        return MakeImExp<ImExp_EnumElem>(declRes.outerAppliedDecl.decl, declRes.outerAppliedDecl.outerTypeArgs);
+        return MakeImExp<ImExp_EnumElem>(RAppliedDecl<REnumElemDecl>{move(declRes.appliedDecl)});
     }
 
     ResultType Visit(SmDeclRes_EnumElemVar&& declRes)
@@ -118,7 +118,7 @@ struct SmDeclResTranslator
     ResultType Visit(SmDeclRes_LambdaVar&& declRes)
     {
         assert(memberTypeArgs->GetCount() == 0); // var에 typeArgs가 있을 수 없다
-        return MakeImExp_ReExp_Loc<MLoc_LambdaVar>(declRes.outerAppliedDecl.decl, declRes.outerAppliedDecl.outerTypeArgs);
+        return MakeImExp_ReExp_Loc<MLoc_LambdaVar>(move(declRes.appliedDecl));
     }
 
     ResultType Visit(SmDeclRes_Interface&& declRes)
@@ -166,7 +166,7 @@ struct BodyResTranslator
         return contexts.smFactory->MakeImExp<ImExp_ReExp>(ReExp_Loc{loc});
     }
 
-    ResultType operator()(auto&& bodyRes) { return Visit(std::forward<decltype(bodyRes)>(bodyRes)); }
+    ResultType operator()(auto&& bodyRes) { return Visit(forward<decltype(bodyRes)>(bodyRes)); }
 
     ResultType Visit(SmBodyRes_DeclRes&& bodyRes)
     {

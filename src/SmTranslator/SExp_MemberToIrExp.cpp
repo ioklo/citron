@@ -39,19 +39,7 @@ namespace Citron {
 
 namespace {
 
-struct Result_GetClassVar
-{
-    RClassVarDecl* decl;
-    RTypeArguments* typeArgs;
-};
-
-struct Result_GetStructVar
-{
-    RStructVarDecl* decl;
-    RTypeArguments* typeArgs;
-};
-
-expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, InRef<RName> name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
+expected<RAppliedDecl<RClassVarDecl>, DiagPtr> GetClassVar(RType_Class* classType, InRef<RName> name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
 {
     // GetVar로 바로 얻으면, name conflict 처리를 하지 못하기 때문에 GetMember로 얻은 후 캐스팅을 한다
     size_t memberTypeArgsCount = memberTypeArgs->GetCount();
@@ -66,10 +54,10 @@ expected<Result_GetClassVar, DiagPtr> GetClassVar(RType_Class* classType, InRef<
 
     // ClassVar이니까. classVarMember->typeArgs와 typeArgsExceptOuter를 합쳐서 쓰지 않고, classVarMember->typeArgs만 사용한다.
     assert(memberTypeArgsCount == 0);
-    return Result_GetClassVar{classVarMember->appliedDecl.decl, classVarMember->appliedDecl.typeArgs};
+    return classVarMember->appliedDecl;
 }
 
-expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, InRef<RName> name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
+expected<RAppliedDecl<RStructVarDecl>, DiagPtr> GetStructVar(RType_Struct* structType, InRef<RName> name, RTypeArguments* memberTypeArgs, bool bExpectedStatic)
 {
     // GetVar로 바로 얻으면, name conflict 처리를 하지 못하기 때문에 GetMember로 얻은 후 캐스팅을 한다
     size_t memberTypeArgsCount = memberTypeArgs->GetCount();
@@ -83,7 +71,7 @@ expected<Result_GetStructVar, DiagPtr> GetStructVar(RType_Struct* structType, In
     if (structVarMember->appliedDecl.decl->IsStatic() == bExpectedStatic) return Error<Error_SharedTranslation_CantTranslate>();
     assert(memberTypeArgsCount == 0);
 
-    return Result_GetStructVar{structVarMember->appliedDecl.decl, structVarMember->appliedDecl.typeArgs};
+    return structVarMember->appliedDecl;
 }
 
 // NS, S, C로만 이뤄진 Base, GetMember한 결과물이므로 RDeclRes만 있다
@@ -117,7 +105,7 @@ public:
     {
         // TODO: [43] Access Check
         auto* typeArgs = contexts.rFactory->MergeTypeArguments(member.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return contexts.smFactory->MakeIrExp<IrExp_Class>(member.outerAppliedDecl.decl, typeArgs);
+        return contexts.smFactory->MakeIrExp<IrExp_Class>(RAppliedDecl<RClassDecl>{member.outerAppliedDecl.decl, typeArgs});
     }
 
     // IrExp는 Callable자리에 오지 않기때문에 지원하지 않는다
@@ -138,7 +126,7 @@ public:
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
 
         assert(member.appliedDecl.typeArgs->GetCount() == 0);
-        auto* loc = contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, member.appliedDecl.decl, member.appliedDecl.typeArgs);
+        auto* loc = contexts.mFactory->MakeMLoc<MLoc_ClassVar>(/*instance*/nullptr, move(member.appliedDecl));
         return contexts.smFactory->MakeIrExp<IrExp_Static>(loc);
     }
 
@@ -146,7 +134,7 @@ public:
     {
         // TODO: [43] Access Check
         auto typeArgs = contexts.rFactory->MergeTypeArguments(member.outerAppliedDecl.outerTypeArgs, memberTypeArgs);
-        return contexts.smFactory->MakeIrExp<IrExp_Struct>(member.outerAppliedDecl.decl, typeArgs);
+        return contexts.smFactory->MakeIrExp<IrExp_Struct>(RAppliedDecl<RStructDecl>{member.outerAppliedDecl.decl, typeArgs});
     }
 
     expected<IrExp*, DiagPtr> Visit(SmDeclRes_StructFuncs&& member)
@@ -164,7 +152,7 @@ public:
             return Error<Error_ResolveIdentifier_TryAccessingPrivateMember>();
 
         assert(member.appliedDecl.typeArgs->GetCount() == 0);
-        auto* loc = contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, member.appliedDecl.decl, member.appliedDecl.typeArgs);
+        auto* loc = contexts.mFactory->MakeMLoc<MLoc_StructVar>(/*instance*/nullptr, move(member.appliedDecl));
         return contexts.smFactory->MakeIrExp<IrExp_Static>(loc);
     }
 
@@ -246,13 +234,14 @@ struct Binder
         return contexts.smFactory->MakeIrExp<TValue>(forward<TArgs>(args)...);
     }
 
-    ResultType HandleStaticBase(RDecl& decl, RTypeArguments* typeArgs)
+    template<typename TRDecl>
+    ResultType HandleStaticBase(RAppliedDecl<TRDecl>& appliedDecl)
     {
-        auto o_member = decl.GetMember(memberName);
+        auto o_member = appliedDecl.decl->GetMember(memberName);
         if (!o_member)
             return Error<Error_ResolveIdentifier_NotFound>();
 
-        auto declRes = ToSmDeclRes(typeArgs, *o_member);
+        auto declRes = ToSmDeclRes(appliedDecl.typeArgs, *o_member);
 
         StaticBaseTranslator binder(memberTypeArgs, contexts);
         return move(declRes).Visit(binder);
@@ -267,12 +256,12 @@ struct Binder
 
     ResultType Visit(IrExp_Class* irBaseExp) 
     {
-        return HandleStaticBase(*irBaseExp->decl, irBaseExp->typeArgs);
+        return HandleStaticBase(irBaseExp->appliedDecl);
     }
 
     ResultType Visit(IrExp_Struct* irBaseExp) 
     {
-        return HandleStaticBase(*irBaseExp->decl, irBaseExp->typeArgs);
+        return HandleStaticBase(irBaseExp->appliedDecl);
     }
 
     // C.x.y
@@ -288,7 +277,7 @@ struct Binder
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             // IrExp_Static은 분해해서 MLoc으로 참조하고, 보이지 않도록 한다
-            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(irBaseExp->loc, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(irBaseExp->loc, std::move(result));
         }
         else if (auto* structType = dynamic_cast<RType_Struct*>(locType))
         {
@@ -296,7 +285,7 @@ struct Binder
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             // StructVar는 base로 IrExp를 참조하므로 IrExp_Static이 그대로 들어가게 한다
-            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, std::move(result));
         }
         else return Error<Error_SharedTranslation_CantTranslate>();
     }
@@ -308,7 +297,7 @@ struct Binder
         // base가 클래스라면, 분해한다 IrExp_ClassVar(MLoc(c), C::x), C::y => IrExp_ClassVar(MLoc_ClassVar(MLoc(c), C::x), C::y)
         // base가 구조체라면, 감싼다   IrExp_ClassVar(MLoc(c), C::x), S::y => IrExp_StructVar(IrExp_ClassVar(MLoc(c), C::x), C::y)
 
-        auto* baseDeclType = irBaseExp->decl->GetUnboundDeclType()->Apply(irBaseExp->typeArgs);
+        auto* baseDeclType = irBaseExp->appliedDecl.decl->GetUnboundDeclType()->Apply(irBaseExp->appliedDecl.typeArgs);
 
         if (auto* classBaseDeclType = dynamic_cast<RType_Class*>(baseDeclType))
         {
@@ -316,14 +305,14 @@ struct Binder
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto* baseLoc = TranslateIrExp_ClassVarToMLoc(irBaseExp, contexts);
-            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, std::move(result));
         }
         else if (auto* structType = dynamic_cast<RType_Struct*>(baseDeclType))
         {
             auto e_result = GetStructVar(structType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
-            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, std::move(result));
         }
         else return Error<Error_SharedTranslation_CantTranslate>();
     }
@@ -335,7 +324,7 @@ struct Binder
         // (*pS).x가 base일 때
         // base가 클래스라면, 분해한다 IrExp_SharedStructVar(MLoc(pS), S::x), C::y => IrExp_ClassVar(MLoc_StructVar(MLoc_SharedDeref(MLoc(pS)), S::x), C::y)
         // base가 구조체라면, 감싼다   IrExp_SharedStructVar(MLoc(pS), S::x), S::y => IrExp_StructVar(IrExp_SharedStructVar(MLoc(pS), S::x), C::y)
-        auto* baseType = irBaseExp->decl->GetUnboundDeclType()->Apply(irBaseExp->typeArgs);
+        auto* baseType = irBaseExp->appliedDecl.decl->GetUnboundDeclType()->Apply(irBaseExp->appliedDecl.typeArgs);
         
         if (auto* classBaseType = dynamic_cast<RType_Class*>(baseType))
         {
@@ -343,14 +332,14 @@ struct Binder
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
             auto* baseLoc = TranslateIrExp_SharedStructVarToMLoc(irBaseExp, contexts);
-            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(baseLoc, std::move(result));
         }
         else if (auto* structBaseType = dynamic_cast<RType_Struct*>(baseType))
         {
             auto e_result = GetStructVar(structBaseType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
             
-            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, std::move(result));
         }
         else return Error<Error_SharedTranslation_CantTranslate>();
     }
@@ -365,7 +354,7 @@ struct Binder
         // 
         // c.s.x의 타입이 struct인 경우, 그대로 감싼다
         // IrExp_StructVar(IrExp_ClassVar(MLoc(c), C::s), S::x), S::y => IrExp_StructVar(IrExp_StructVar(IrExp_ClassVar(MLoc(c), C::s), S::x), S::y)
-        auto* baseType = irBaseExp->decl->GetUnboundDeclType()->Apply(irBaseExp->typeArgs);
+        auto* baseType = irBaseExp->appliedDecl.decl->GetUnboundDeclType()->Apply(irBaseExp->appliedDecl.typeArgs);
 
         if (auto* classBaseType = dynamic_cast<RType_Class*>(baseType))
         {
@@ -375,14 +364,14 @@ struct Binder
             auto e_baseLoc = TranslateIrExp_StructVarToMLoc(irBaseExp, contexts);
             RETURN_ON_ERROR(e_baseLoc);
 
-            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(*e_baseLoc, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(*e_baseLoc, std::move(result));
         }
         else if (auto* structDeclType = dynamic_cast<RType_Struct*>(baseType))
         {
             auto e_result = GetStructVar(structDeclType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
-            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_StructVar>(irBaseExp, std::move(result));
         }
         else return Error<Error_SharedTranslation_CantTranslate>();
     }
@@ -401,7 +390,7 @@ struct Binder
         auto e_result = GetStructVar(structTargetType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
         RETURN_ON_ERROR_REFDECL(e_result, result);
 
-        return contexts.smFactory->MakeIrExp<IrExp_SharedStructVar>(irBaseExp->srcShared.loc, result.decl, result.typeArgs);
+        return contexts.smFactory->MakeIrExp<IrExp_SharedStructVar>(irBaseExp->srcShared.loc, std::move(result));
     }
 
     // 임의의 location으로부터
@@ -420,7 +409,7 @@ struct Binder
             auto e_result = GetClassVar(classBaseType, memberName, memberTypeArgs, /*bExpectedStatic*/false);
             RETURN_ON_ERROR_REFDECL(e_result, result);
 
-            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(irExp->loc, result.decl, result.typeArgs);
+            return contexts.smFactory->MakeIrExp<IrExp_ClassVar>(irExp->loc, std::move(result));
         }
         else return Error<Error_SharedTranslation_CantTranslate>();
     }

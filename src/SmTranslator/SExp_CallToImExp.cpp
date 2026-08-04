@@ -138,7 +138,7 @@ struct CallableTranslator
         RETURN_ON_ERROR_REFDECL(e_match, match);
 
         // TODO: [41] try catch 구현
-        return Call(match.funcDecl, match.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);
+        return Call(match.appliedDecl.decl, match.appliedDecl.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);
     }
 
     // ResultType Visit(ImExp_TypeVar* imExp);
@@ -157,31 +157,31 @@ struct CallableTranslator
             if constexpr (same_as<T, ImExpInstanceKind_ExplicitStatic>)
             {
                 // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
-                if (!match.funcDecl->IsStatic())
+                if (!match.appliedDecl.decl->IsStatic())
                     return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
 
                 // TODO: [41] try catch 구현
-                return Call(match.funcDecl, match.typeArgs, /*instance*/nullptr, move(match.args), /*o_catch*/nullopt);
+                return Call(match.appliedDecl.decl, match.appliedDecl.typeArgs, /*instance*/nullptr, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_ExplicitInstance>)
             {
                 // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
-                if (match.funcDecl->IsStatic())
+                if (match.appliedDecl.decl->IsStatic())
                     return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
 
-                return Call(match.funcDecl, match.typeArgs, /*instance*/instanceKind.mInstLoc, move(match.args), /*o_catch*/nullopt);
+                return Call(match.appliedDecl.decl, match.appliedDecl.typeArgs, /*instance*/instanceKind.mInstLoc, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_Implicit>) // F 로 인스턴스를 명시적으로 정하지 않았다면 
             {
-                if (match.funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
+                if (match.appliedDecl.decl->IsStatic()) // 정적함수이면 인스턴스에 null
                 {
                     // TODO: [41] try catch 구현
-                    return Call(match.funcDecl, match.typeArgs, /*instance*/nullptr, move(match.args), /*o_catch*/nullopt);
+                    return Call(match.appliedDecl.decl, match.appliedDecl.typeArgs, /*instance*/nullptr, move(match.args), /*o_catch*/nullopt);
                 }
                 else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
                 {
                     // TODO: [41] try catch 구현
-                    return Call(match.funcDecl, match.typeArgs, contexts.funcContext->MakeThisLoc(), move(match.args), /*o_catch*/nullopt);
+                    return Call(match.appliedDecl.decl, match.appliedDecl.typeArgs, contexts.funcContext->MakeThisLoc(), move(match.args), /*o_catch*/nullopt);
                 }
             }
             else static_assert(false);
@@ -193,23 +193,23 @@ struct CallableTranslator
     { 
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
         // NOTICE: 생성자 검색 (AnalyzeNewExp 부분과 비슷)
-        auto ctors = imExp->structDecl->GetUnboundCtors();
+        auto ctors = imExp->appliedDecl.decl->GetUnboundCtors();
         auto* emptyTypeArgs = contexts.rFactory->MakeEmptyTypeArguments();
-        SmPartiallyAppliedFuncDeclGroup<RStructCtorDecl> ctorDeclGroup{imExp->typeArgs, vector<RStructCtorDecl*>{ctors.begin(), ctors.end()}, emptyTypeArgs};
+        SmPartiallyAppliedFuncDeclGroup<RStructCtorDecl> ctorDeclGroup{imExp->appliedDecl.typeArgs, vector<RStructCtorDecl*>{ctors.begin(), ctors.end()}, emptyTypeArgs};
 
         auto e_match = MatchFunc<RStructCtorDecl>(ctorDeclGroup, sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(e_match, match);
 
-        auto* structType = contexts.rFactory->MakeStructType(imExp->structDecl, imExp->typeArgs);
+        auto* structType = contexts.rFactory->MakeStructType(imExp->appliedDecl);
         auto copyStrategy = structType->GetCopyStrategy();
 
         if (copyStrategy == RCopyStrategy::Bitwise) // MExp로 
         {
-            return MakeImExp_ReExp_Exp<MExp_NewStruct>(match.funcDecl, match.typeArgs, move(match.args));
+            return MakeImExp_ReExp_Exp<MExp_NewStruct>(std::move(match.appliedDecl), move(match.args));
         }
         else if (copyStrategy == RCopyStrategy::NonBitwise)
         {
-            auto ctorKind = match.funcDecl->GetKind();
+            auto ctorKind = match.appliedDecl.decl->GetKind();
 
             if (ctorKind == RStructCtorKind::Copy)
             {
@@ -241,8 +241,7 @@ struct CallableTranslator
             {
                 return MakeImExp_ReExp_InitExp<MInitExp_StructCtor>(
                    MInitExp_StructCtorKind_General{
-                        .decl = match.funcDecl,
-                        .typeArgs = match.typeArgs,
+                        .appliedDecl = std::move(match.appliedDecl),
                         .args = move(match.args)
                    });
             }
@@ -265,31 +264,31 @@ struct CallableTranslator
             if constexpr (same_as<T, ImExpInstanceKind_ExplicitStatic>)
             {
                 // 인스턴스 함수를 인스턴스 없이 호출하려고 했다면
-                if (!match.funcDecl->IsStatic())
+                if (!match.appliedDecl.decl->IsStatic())
                     return Error<Error_ResolveIdentifier_CantGetInstanceMemberThroughType>();
 
                 // TODO: [41] try catch 구현
-                return Call(match.funcDecl, match.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);
+                return Call(match.appliedDecl.decl, match.appliedDecl.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_ExplicitInstance>)
             {
                 // static함수를 인스턴스를 통해 접근하려고 했을 경우 에러 처리
-                if (match.funcDecl->IsStatic())
+                if (match.appliedDecl.decl->IsStatic())
                     return Error<Error_ResolveIdentifier_CantGetStaticMemberThroughInstance>();
                 
-                return Call(match.funcDecl, match.typeArgs, /*o_instance*/instanceKind.mInstLoc, move(match.args), /*o_catch*/nullopt);
+                return Call(match.appliedDecl.decl, match.appliedDecl.typeArgs, /*o_instance*/instanceKind.mInstLoc, move(match.args), /*o_catch*/nullopt);
             }
             else if constexpr (same_as<T, ImExpInstanceKind_Implicit>) // F 로 인스턴스를 명시적으로 정하지 않았다면 
             {
-                if (match.funcDecl->IsStatic()) // 정적함수이면 인스턴스에 null
+                if (match.appliedDecl.decl->IsStatic()) // 정적함수이면 인스턴스에 null
                 {   
                     // TODO: [41] try catch 구현
-                    return Call(match.funcDecl, match.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);
+                    return Call(match.appliedDecl.decl, match.appliedDecl.typeArgs, /*o_instance*/nullptr, move(match.args), /*o_catch*/nullopt);
                 }
                 else // 인스턴스 함수이면 인스턴스에 this가 들어간다 B.F 로 접근할 경우 어떻게 하나
                 {
                     // TODO: [41] try catch 구현
-                    return Call(match.funcDecl, match.typeArgs, /*o_instance*/contexts.funcContext->MakeThisLoc(), move(match.args), /*o_catch*/nullopt);
+                    return Call(match.appliedDecl.decl, match.appliedDecl.typeArgs, /*o_instance*/contexts.funcContext->MakeThisLoc(), move(match.args), /*o_catch*/nullopt);
                 }
             }
             else static_assert(false);
@@ -325,7 +324,7 @@ struct CallableTranslator
     ResultType Visit(ImExp_EnumElem* imExp)
     {
         // callable이 타입으로 계산되면 Struct과 EnumElem의 경우 생성자 호출을 한다
-        if (imExp->decl->IsStandalone())
+        if (imExp->appliedDecl.decl->IsStandalone())
         {
             return Error<Error_CallExp_CallableExpressionIsNotCallable>();
         }
@@ -333,21 +332,21 @@ struct CallableTranslator
         // EnumElem은 variadic도, typeArgs도 지원하지 않는다
         // TODO: MatchFunc에 OuterTypeEnv를 넣는 것이 나은지, fieldParamTypes에 미리 적용해서 넣는 것이 나은지
         // paramTypes으로 typeValues를 건네 줄것이면 적용해서 넣는게 나을 것 같은데, TypeResolver 동작때문에(?) 어떻게 될지 몰라서 일단 여기서는 적용하고 TypeEnv.None을 넘겨준다
-        EnumElemMatchArgumentsInput input{imExp->decl};
-        auto o_match = MatchArguments(&input, imExp->typeArgs, /*memberTypeArgs*/contexts.rFactory->MakeEmptyTypeArguments(), sArgs, contexts);
+        EnumElemMatchArgumentsInput input{imExp->appliedDecl.decl};
+        auto o_match = MatchArguments(&input, imExp->appliedDecl.typeArgs, /*memberTypeArgs*/contexts.rFactory->MakeEmptyTypeArguments(), sArgs, contexts);
         RETURN_ON_ERROR_REFDECL(o_match, match);
 
-        auto* enumElemType = contexts.rFactory->MakeEnumElemType(imExp->decl, imExp->typeArgs);
+        auto* enumElemType = contexts.rFactory->MakeEnumElemType(imExp->appliedDecl);
         auto copyStrategy = enumElemType->GetCopyStrategy();
 
         switch (copyStrategy)
         {
         case RCopyStrategy::Void: throw RuntimeFatalException{};
         case RCopyStrategy::Bitwise:
-            return MakeImExp_ReExp_Exp<MExp_NewEnumElem>(imExp->decl, match.typeArgs, move(match.args));
+            return MakeImExp_ReExp_Exp<MExp_NewEnumElem>(RAppliedDecl<REnumElemDecl>{imExp->appliedDecl.decl, match.typeArgs}, move(match.args));
 
         case RCopyStrategy::NonBitwise:
-            return MakeImExp_ReExp_InitExp<MInitExp_NewEnumElem>(imExp->decl, match.typeArgs, move(match.args));
+            return MakeImExp_ReExp_InitExp<MInitExp_NewEnumElem>(RAppliedDecl<REnumElemDecl>{imExp->appliedDecl.decl, match.typeArgs}, move(match.args));
         }
 
         unreachable();

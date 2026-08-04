@@ -1,14 +1,15 @@
 #pragma once
 #include "MIRConfig.h"
 
+#include "Infra/Ref.h"
 #include "RSymbol/RNames.h"
+#include "RSymbol/RAppliedDecl.h"
 #include "MCreate.h"
 #include "MRead.h"
 
 namespace Citron {
 
 class RType;
-class RTypeArguments;
 
 class RFactory;
 class RLambdaVarDecl;
@@ -59,10 +60,9 @@ struct MLoc_LocalRef : MLoc
 // only this member allowed, so no need this
 struct MLoc_LambdaVar : MLoc
 {
-    RLambdaVarDecl* decl;
-    RTypeArguments* typeArgs;
-    MLoc_LambdaVar(RLambdaVarDecl* decl, RTypeArguments* typeArgs)
-        : decl{decl}, typeArgs{typeArgs}
+    RAppliedDecl<RLambdaVarDecl> appliedDecl;
+    MLoc_LambdaVar(RAppliedDecl<RLambdaVarDecl>&& appliedDecl)
+        : appliedDecl{std::move(appliedDecl)}
     { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
@@ -84,11 +84,10 @@ struct MLoc_ListIndexer : MLoc
 struct MLoc_StructVar : MLoc
 {
     MLoc* instance;
-    RStructVarDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RStructVarDecl> appliedDecl;
 
-    MLoc_StructVar(MLoc* instance, RStructVarDecl* decl, RTypeArguments* typeArgs)
-        : instance{instance}, decl{decl}, typeArgs{typeArgs}
+    MLoc_StructVar(MLoc* instance, TakeRef<RAppliedDecl<RStructVarDecl>> appliedDecl)
+        : instance{instance}, appliedDecl{appliedDecl.Take()}
     { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
@@ -96,11 +95,10 @@ struct MLoc_StructVar : MLoc
 struct MLoc_ClassVar : MLoc
 {
     MLoc* instance;
-    RClassVarDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<RClassVarDecl> appliedDecl;
 
-    MLoc_ClassVar(MLoc* instance, RClassVarDecl* decl, RTypeArguments* typeArgs)
-        : instance{instance}, decl{decl}, typeArgs{typeArgs}
+    MLoc_ClassVar(MLoc* instance, TakeRef<RAppliedDecl<RClassVarDecl>> appliedDecl)
+        : instance{instance}, appliedDecl{appliedDecl.Take()}
     { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
@@ -108,11 +106,10 @@ struct MLoc_ClassVar : MLoc
 struct MLoc_EnumElemVar : MLoc
 {
     MLoc* instance;
-    REnumElemVarDecl* decl;
-    RTypeArguments* typeArgs;
+    RAppliedDecl<REnumElemVarDecl> appliedDecl;
 
-    MLoc_EnumElemVar(MLoc* instance, REnumElemVarDecl* decl, RTypeArguments* typeArgs)
-        : instance{instance}, decl{decl}, typeArgs{typeArgs}
+    MLoc_EnumElemVar(MLoc* instance, TakeRef<RAppliedDecl<REnumElemVarDecl>> appliedDecl)
+        : instance{instance}, appliedDecl{appliedDecl.Take()}
     { }
     MIR_API void Accept(MLocVisitor& visitor) override;
 };
