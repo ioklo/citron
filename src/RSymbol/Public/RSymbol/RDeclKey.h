@@ -6,6 +6,7 @@
 #include <variant>
 #include "Infra/Hash.h"
 #include "Infra/Ref.h"
+#include "RAppliedDecl.h"
 
 namespace Citron {
 
@@ -26,7 +27,7 @@ public:
     RSYMBOL_API static RDeclKey Func(InRef<RName> name, std::span<RFuncParameter> funcParams);
     RSYMBOL_API static RDeclKey Ctor(std::span<RFuncParameter> funcParams);
     RSYMBOL_API static RDeclKey Dtor();
-    RSYMBOL_API static RDeclKey ImplTrait(RDecl* decl, class RTraitDecl* traitDecl, class RTypeArguments* traitTypeArgs);
+    RSYMBOL_API static RDeclKey ImplTrait(RDecl* target, RAppliedDecl<RTraitDecl> appliedTraitDecl);
 
     RDeclKey(std::string value) : value{std::move(value)} {}
     bool operator==(const RDeclKey& other) const = default;

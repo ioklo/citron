@@ -10,6 +10,7 @@
 #include "RTypeDeclOuter.h"
 #include "RGenericsComponent.h"
 #include "RTypeDeclContainerComponent.h"
+#include "RImplTraitDeclContainerComponent.h"
 #include "RFuncDeclContainerComponent.h"
 #include "RClassFuncDecl.h"
 #include "RDeclKey.h"
@@ -42,6 +43,7 @@ class RClassDecl final : public RDecl, public RTypeDecl
 
     RGenericsComponent genericsComp;
     RTypeDeclContainerComponent typeDeclContainerComp;
+    RImplTraitDeclContainerComponent implTraitDeclContainerComp;
     RFuncDeclContainerComponent<RClassFuncDecl, RMember_ClassFuncs> funcDeclContainerComp;
     RFactoryPtr rFactory;
 
@@ -52,6 +54,7 @@ public:
     RSYMBOL_API std::optional<RAppliedDecl<RClassDecl>> GetUnboundBaseClass();
     RSYMBOL_API RClassVarDecl* GetUnboundVar(InRef<RName> name);
     RSYMBOL_API void AddType(RTypeDecl* typeDecl) { typeDeclContainerComp.AddType(typeDecl); }
+    void AddImplTrait(RImplTraitDecl* implTrait) { implTraitDeclContainerComp.AddImplTrait(implTrait); }
 
     RType* GetOpenType();
     

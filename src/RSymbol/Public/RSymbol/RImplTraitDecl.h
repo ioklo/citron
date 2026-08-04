@@ -4,6 +4,7 @@
 #include "RDecl.h"
 #include "RGenericsComponent.h"
 #include "RDeclKey.h"
+#include "RAppliedDecl.h"
 
 namespace Citron {
 
@@ -15,20 +16,23 @@ class RTypeParam;
 // RImplTrait의 outer는 무엇인가? impl할 대상을 따라가게 된다
 class RImplTraitDecl final : public RDecl
 {
-    RDeclKey key;
+    struct LazyInit
+    {
+        RDeclKey key;
+        RAppliedDecl<RTraitDecl> appliedTraitDecl;
+    };
+
 
     RDecl* target; // outer는 target의 outer를 리턴하면 된다. 일단 struct, extension인데, 특징적인 뭔가가 있는 경우 RImplTraitDeclOuter를 만들자
-    RTraitDecl* trait;
-    RTypeArguments* typeArgs;
-    
+    std::optional<LazyInit> o_lazyInit;
     std::vector<RImplTraitMemberDecl> members;
-
     RGenericsComponent genericsComp;
 
 public:
-    RSYMBOL_API RImplTraitDecl(RDeclKey&& key, RDecl* target, RTraitDecl* trait, RTypeArguments* typeArgs);
-    RSYMBOL_API void Init(std::vector<RTypeParam*>&& typeParams);
-    void AddMember(RImplTraitMemberDecl&& decl);
+    RSYMBOL_API RImplTraitDecl(RDecl* target);
+    RSYMBOL_API void Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RAppliedDecl<RTraitDecl> appliedTraitDecl);
+    RSYMBOL_API void AddMember(RImplTraitMemberDecl&& decl);
+    RDecl* GetTarget() { return target; }
 
 public: // from RDecl
     RSYMBOL_API RDeclKey& GetDeclKey() final;

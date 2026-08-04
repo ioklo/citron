@@ -6,6 +6,7 @@
 #include "RTypeDeclOuter.h"
 #include "RGenericsComponent.h"
 #include "RTypeDeclContainerComponent.h"
+#include "RImplTraitDeclContainerComponent.h"
 #include "RFuncDeclContainerComponent.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
@@ -43,6 +44,7 @@ class RStructDecl final : public RDecl, public RTypeDecl
 
     RGenericsComponent genericsComp;
     RTypeDeclContainerComponent typeDeclContainerComp;
+    RImplTraitDeclContainerComponent implTraitDeclContainerComp;
     RFuncDeclContainerComponent<RStructFuncDecl, RMember_StructFuncs> funcDeclContainerComp;
     RFactoryPtr rFactory;
 
@@ -52,6 +54,7 @@ public:
     RSYMBOL_API void InitTraits(std::vector<RAppliedDecl<RTraitDecl>>&& traits);
 
     void AddType(RTypeDecl* typeDecl) { typeDeclContainerComp.AddType(typeDecl); }
+    void AddImplTrait(RImplTraitDecl* implTrait) { implTraitDeclContainerComp.AddImplTrait(implTrait); }
     RSYMBOL_API void AddCtor(RStructCtorDecl* decl);
     RSYMBOL_API void AddDtor(RStructDtorDecl* decl);
     RSYMBOL_API void AddFunc(RStructFuncDecl* decl) { funcDeclContainerComp.AddFunc(decl); }

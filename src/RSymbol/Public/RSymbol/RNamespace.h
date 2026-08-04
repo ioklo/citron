@@ -5,6 +5,7 @@
 #include "RNamespaceDeclContainerComponent.h"
 #include "RTypeDeclContainerComponent.h"
 #include "RFuncDeclContainerComponent.h"
+#include "RImplTraitDeclContainerComponent.h"
 #include "RNames.h"
 #include "RDecl.h"
 #include "RDeclKey.h"
@@ -39,8 +40,9 @@ class RNamespace : public RDecl
     RNamespaceDeclContainerComponent namespaceDeclContainerComp;
     RTypeDeclContainerComponent typeDeclContainerComp;
     RFuncDeclContainerComponent<RGlobalFuncDecl, RMember_GlobalFuncs> funcDeclContainerComp;
+    RImplTraitDeclContainerComponent implTraitDeclContainerComp;
     RFactoryPtr rFactory;
-    
+
 public:
     RNamespace(RDeclKey&& key, RNamespaceKind&& kind, TakeRef<RFactoryPtr> rFactory)
         : key{std::move(key)}, kind{std::move(kind)}, rFactory{rFactory.Take()} 
@@ -52,6 +54,7 @@ public:
     RNamespace* GetNamespace(InRef<RName> name) { return namespaceDeclContainerComp.GetNamespace(name); }
 
     void AddType(RTypeDecl* typeDecl) { typeDeclContainerComp.AddType(typeDecl); }
+    void AddImplTrait(RImplTraitDecl* implTraitDecl) { implTraitDeclContainerComp.AddImplTrait(implTraitDecl); }
     void AddGlobalFuncDecl(RGlobalFuncDecl* func) { funcDeclContainerComp.AddFunc(func); }
 
 public: // from RDecl

@@ -9,100 +9,78 @@
 #include "RSymbol/RStructDecl.h"
 #include "RSymbol/REnumDecl.h"
 #include "RSymbol/REnumElemDecl.h"
-#include "RSymbol/RTypeParam.h"
 #include "RSymbol/RFactory.h"
 #include "SmTypeRes.h"
-#include "SmFuncContext.h"
-#include "SmDeclContext.h"
+#include "STypeExpToImTypeExp.h"
+#include "ImTypeExp.h"
+#include "SmTypeTranslationContexts.h"
 
 using namespace std;
 
 namespace Citron {
 
-namespace {
-
-RType* HandleReservedType(std::string_view name, span<STypeExp*> typeArgs, RFactory* rFactory)
+expected<RType*, DiagPtr> TranslateImTypeExpToRType(ImTypeExp&& imTypeExp, SmTypeTranslationContexts& contexts)
 {
-    if (name == "void" && typeArgs.empty())
-        return rFactory->MakeVoidType();
-    else if (name == "int" && typeArgs.empty())
-        return rFactory->MakeIntType();
-    else if (name == "string" && typeArgs.empty())
-        return rFactory->MakeStringType();
-    else if (name == "bool" && typeArgs.empty())
-        return rFactory->MakeBoolType();
-    return nullptr;
+    return move(imTypeExp).Visit([&contexts](auto&& imTypeExp) -> expected<RType*, DiagPtr> {
+        using T = remove_cvref_t<decltype(imTypeExp)>;
+        if constexpr (same_as<T, ImTypeExp_Namespaces>)
+        {
+            return Error<Error_ResolveIdentifier_CantUseNamespaceAsType>();
+        }
+        else if constexpr (same_as<T, ImTypeExp_Class>)
+        {
+            return contexts.rFactory->MakeClassType(imTypeExp.appliedDecl.decl, imTypeExp.appliedDecl.typeArgs);
+        }
+        else if constexpr (same_as<T, ImTypeExp_Struct>)
+        {
+            return contexts.rFactory->MakeStructType(imTypeExp.appliedDecl.decl, imTypeExp.appliedDecl.typeArgs);
+        }
+        else if constexpr (same_as<T, ImTypeExp_Trait>)
+        {
+            return Error<Error_ResolveIdentifier_CantUseTraitAsType>();
+        }
+        else if constexpr (same_as<T, ImTypeExp_Type>)
+        {
+            return imTypeExp.type;
+        }
+        else static_assert(false);
+    });
 }
 
-}
-
-optional<SmTypeRes> SmTypeResolveScope::ResolveTypeIdentifier(InRef<RName> name, RFactory* rFactory)
+expected<RAppliedDecl<RTraitDecl>, DiagPtr> TranslateImTypeExpToRTrait(ImTypeExp&& imTypeExp, SmTypeTranslationContexts& contexts)
 {
-    return visit([&name, rFactory](auto& scope) -> optional<SmTypeRes> {
-        using T = remove_cvref_t<decltype(scope)>;
-        if constexpr (same_as<T, SmTypeResolveScope_DeclHeader>)
-        {   
-            for (auto* typeParam : scope.typeParams)
-                if (typeParam->GetName() == *name)
-                    return SmTypeRes_TypeVar{typeParam};
-
-            return scope.outerDeclContext->ResolveTypeIdentifier(name);
-        }
-        else if constexpr (same_as<T, SmTypeResolveScope_FuncContext>)
+    return move(imTypeExp).Visit([](auto&& imTypeExp) -> expected<RAppliedDecl<RTraitDecl>, DiagPtr> {
+        using T = remove_cvref_t<decltype(imTypeExp)>;
+        if constexpr (same_as<T, ImTypeExp_Trait>)
         {
-            return scope.funcContext->ResolveTypeIdentifier(name);
-        }
-        else if constexpr (same_as<T, SmTypeResolveScope_DeclContext>)
-        {
-            return scope.declContext->ResolveTypeIdentifier(name);
+            return imTypeExp.appliedDecl;
         }
         else
-            static_assert(false);
-    }, v);
-}
-
-expected<RAppliedDecl<RTraitDecl>, DiagPtr> TranslateSTypeExpToRTrait(STypeExp* sTypeExp, SmTypeResolveScope scope, RFactory* rFactory)
-{
-    // TODO: [66] 2026-07-09, Trait, Extend 구현
-    throw NotImplementedException{};
-}
-
-expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp, SmTypeResolveScope scope, RFactory* rFactory)
-{
-    // TODO: BuildNonTypeSymbolContext::MakeType 에도 같은 코드가 있다
-    struct Visitor
-    {
-        using ResultType = expected<RType*, DiagPtr>;
-
-        SmTypeResolveScope scope;
-        RFactory* rFactory;
-
-        expected<RType*, DiagPtr> Visit(STypeExp_Id* idExp)
         {
-            // 예약어 처리
-            auto* type = HandleReservedType(idExp->name, idExp->typeArgs, rFactory);
-            if (type) return type;
-
-            auto o_rTypeRes = scope.ResolveTypeIdentifier(RName::Normal(idExp->name), rFactory);
-            if (!o_rTypeRes) return nullptr;
-           
-            return MakeType(*o_rTypeRes, idExp->typeArgs, scope, rFactory);
+            return Error<Error_ResolveIdentifier_CantUseTypeAsTrait>();
         }
-
-        expected<RType*, DiagPtr> Visit(STypeExp* e)
-        {
-            throw NotImplementedException{};
-        }
-
-    } visitor{move(scope), rFactory};
-
-    return Accept(visitor, sTypeExp);
+    });
 }
 
-
-expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTypeArgs, SmTypeResolveScope scope, RFactory* rFactory)
+expected<RType*, DiagPtr> TranslateSTypeExpToRType(STypeExp* sTypeExp, SmTypeTranslationContexts& contexts)
 {
-    return typeRes.Visit([sMemberTypeArgs, scope, rFactory](auto& typeRes) -> expected<RType*, DiagPtr> {
+    auto e_imTypeExp = TranslateSTypeExpToImTypeExp(sTypeExp, contexts);
+    RETURN_ON_ERROR(e_imTypeExp);
+
+    return TranslateImTypeExpToRType(move(*e_imTypeExp), contexts);
+}
+
+expected<RAppliedDecl<RTraitDecl>, DiagPtr> TranslateSTypeExpToRTrait(STypeExp* sTypeExp, SmTypeTranslationContexts& contexts)
+{
+    auto e_imTypeExp = TranslateSTypeExpToImTypeExp(sTypeExp, contexts);
+    RETURN_ON_ERROR(e_imTypeExp);
+
+    return TranslateImTypeExpToRTrait(move(*e_imTypeExp), contexts);
+}
+
+expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTypeArgs, SmTypeTranslationContexts& contexts)
+{
+    return typeRes.Visit([sMemberTypeArgs, &contexts](auto& typeRes) -> expected<RType*, DiagPtr> {
         using T = remove_cvref_t<decltype(typeRes)>;
 
         if constexpr (same_as<T, SmTypeRes_Namespaces>)
@@ -115,11 +93,11 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
             if (typeRes.outerAppliedDecl.decl->GetTypeParamCount() != sMemberTypeArgs.size())
                 return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
 
-            auto e_memberTypeArgs = MakeRTypeArgs(sMemberTypeArgs, scope, rFactory);
+            auto e_memberTypeArgs = MakeRTypeArguments(sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_memberTypeArgs);
 
-            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
-            return rFactory->MakeClassType(typeRes.outerAppliedDecl.decl, typeArgs);
+            auto* typeArgs = contexts.rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
+            return contexts.rFactory->MakeClassType(typeRes.outerAppliedDecl.decl, typeArgs);
         }
         else if constexpr (same_as<T, SmTypeRes_Struct>)
         {
@@ -127,11 +105,11 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
             if (typeRes.outerAppliedDecl.decl->GetTypeParamCount() != sMemberTypeArgs.size())
                 return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
 
-            auto e_memberTypeArgs = MakeRTypeArgs(sMemberTypeArgs, scope, rFactory);
+            auto e_memberTypeArgs = MakeRTypeArguments(sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_memberTypeArgs);
 
-            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
-            return rFactory->MakeStructType(typeRes.outerAppliedDecl.decl, typeArgs);
+            auto* typeArgs = contexts.rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
+            return contexts.rFactory->MakeStructType(typeRes.outerAppliedDecl.decl, typeArgs);
         }
         else if constexpr (same_as<T, SmTypeRes_Enum>)
         {
@@ -139,11 +117,11 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
             if (typeRes.outerAppliedDecl.decl->GetTypeParamCount() != sMemberTypeArgs.size())
                 return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
 
-            auto e_memberTypeArgs = MakeRTypeArgs(sMemberTypeArgs, scope, rFactory);
+            auto e_memberTypeArgs = MakeRTypeArguments(sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_memberTypeArgs);
 
-            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
-            return rFactory->MakeEnumType(typeRes.outerAppliedDecl.decl, typeArgs);
+            auto* typeArgs = contexts.rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
+            return contexts.rFactory->MakeEnumType(typeRes.outerAppliedDecl.decl, typeArgs);
         }
         else if constexpr (same_as<T, SmTypeRes_EnumElem>)
         {
@@ -151,11 +129,11 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
             if (typeRes.outerAppliedDecl.decl->GetTypeParamCount() != sMemberTypeArgs.size())
                 return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
 
-            auto e_memberTypeArgs = MakeRTypeArgs(sMemberTypeArgs, scope, rFactory);
+            auto e_memberTypeArgs = MakeRTypeArguments(sMemberTypeArgs, contexts);
             RETURN_ON_ERROR(e_memberTypeArgs);
 
-            auto* typeArgs = rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
-            return rFactory->MakeEnumElemType(typeRes.outerAppliedDecl.decl, typeArgs);
+            auto* typeArgs = contexts.rFactory->MergeTypeArguments(typeRes.outerAppliedDecl.outerTypeArgs, *e_memberTypeArgs);
+            return contexts.rFactory->MakeEnumElemType(typeRes.outerAppliedDecl.decl, typeArgs);
         }
         else if constexpr (same_as<T, SmTypeRes_Interface>)
         {
@@ -169,7 +147,7 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
         }
         else if constexpr (same_as<T, SmTypeRes_TypeVar>)
         {
-            return rFactory->MakeTypeVarType(typeRes.decl);
+            return contexts.rFactory->MakeTypeVarType(typeRes.decl);
         }
         else if constexpr (same_as<T, SmTypeRes_Trait>)
         {
@@ -179,20 +157,36 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
     });
 }
 
-expected<RTypeArguments*, DiagPtr> MakeRTypeArgs(std::span<STypeExp*> typeArgs, SmTypeResolveScope scope, RFactory* rFactory)
+expected<RTypeArguments*, DiagPtr> MakeRTypeArguments(span<STypeExp*> typeArgs, SmTypeTranslationContexts& contexts)
 {
-    std::vector<RType*> items;
+    vector<RType*> items;
     items.reserve(typeArgs.size());
 
     for (auto* typeArg : typeArgs)
     {
-        auto e_type = TranslateSTypeExpToRType(typeArg, scope, rFactory);
+        auto e_type = TranslateSTypeExpToRType(typeArg, contexts);
         RETURN_ON_ERROR(e_type);
 
         items.push_back(*e_type);
     }
 
-    return rFactory->MakeTypeArguments(items);
+    return contexts.rFactory->MakeTypeArguments(items);
+}
+
+expected<RTypeArguments*, DiagPtr> MakeRTypeArguments(RTypeArguments* outerTypeArgs, span<STypeExp*> sMemberTypeArgs, SmTypeTranslationContexts& contexts)
+{
+    vector<RType*> items;
+    items.reserve(sMemberTypeArgs.size());
+
+    for (auto* sMemberTypeArg : sMemberTypeArgs)
+    {
+        auto e_rTypeArg = TranslateSTypeExpToRType(sMemberTypeArg, contexts);
+        RETURN_ON_ERROR(e_rTypeArg);
+
+        items.push_back(*e_rTypeArg);
+    }
+
+    return contexts.rFactory->AppendTypeArguments(outerTypeArgs, items);
 }
 
 } // namespace Citron

@@ -114,7 +114,7 @@
     <ClCompile Include="TraitFuncTask.cpp">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ImplTask.cpp">
+    <ClCompile Include="ImplTraitTask.cpp">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClCompile>
     <ClCompile Include="BuildNonTypeSymbolContext.cpp">
@@ -152,6 +152,21 @@
     </ClCompile>
     <ClCompile Include="SmTypeTranslation.cpp">
       <Filter>TypeTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplTraitFuncTask.cpp">
+      <Filter>DeclTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="STypeExpToImTypeExp.cpp">
+      <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
+    </ClCompile>
+    <ClCompile Include="STypeExp_IdToImTypeExp.cpp">
+      <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
+    </ClCompile>
+    <ClCompile Include="SmTypeResolveScope.cpp">
+      <Filter>TypeTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="STypeExp_MemberToImTypeExp.cpp">
+      <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -279,7 +294,7 @@
     <ClInclude Include="TraitFuncTask.h">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ImplTask.h">
+    <ClInclude Include="ImplTraitTask.h">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClInclude>
     <ClInclude Include="BuildNonTypeSymbolContext.h">
@@ -326,6 +341,27 @@
     </ClInclude>
     <ClInclude Include="SmTypeTranslation.h">
       <Filter>TypeTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplTraitFuncTask.h">
+      <Filter>DeclTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="ImTypeExp.h">
+      <Filter>TypeTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="STypeExpToImTypeExp.h">
+      <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
+    </ClInclude>
+    <ClInclude Include="SmTypeTranslationContexts.h">
+      <Filter>TypeTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SmTypeResolveScope.h">
+      <Filter>TypeTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="STypeExp_IdToImTypeExp.h">
+      <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
+    </ClInclude>
+    <ClInclude Include="STypeExp_MemberToImTypeExp.h">
+      <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -385,6 +421,15 @@
     </Filter>
     <Filter Include="TypeTranslation">
       <UniqueIdentifier>{8a8bf04c-f3e1-4741-b386-57cf31b2f96f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TypeTranslation\STypeExpToReTypeExp">
+      <UniqueIdentifier>{d9a2995d-806e-4964-8711-48f2c1fa15cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp">
+      <UniqueIdentifier>{76521c51-161a-47ab-9829-0f4c40ddc41b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TypeTranslation\STypeExpToReTypeExp\2_ImTypeExpToReTypeExp">
+      <UniqueIdentifier>{b7d4d58f-c58a-449e-81b7-41c0a8322a21}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

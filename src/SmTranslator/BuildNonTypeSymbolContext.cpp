@@ -16,6 +16,8 @@
 #include "SmTypeRes.h"
 #include "Misc.h"
 #include "SmTypeTranslation.h"
+#include "SmTypeResolveScope.h"
+#include "SmTypeTranslationContexts.h"
 
 using namespace std;
 
@@ -28,73 +30,14 @@ BuildNonTypeSymbolContext::BuildNonTypeSymbolContext(TakeRef<RFactoryPtr> rFacto
 
 expected<RFuncReturn, DiagPtr> BuildNonTypeSymbolContext::MakeFuncReturn(SFuncReturn& funcRet, RDecl* decl, std::span<RTypeParam*> typeParams, SmTypeResolveScope scope)
 {
-    return visit([this, decl, typeParams, scope](auto& funcRet) -> expected<RFuncReturn, DiagPtr> {
-        using T = remove_cvref_t<decltype(funcRet)>;
-
-        if constexpr (same_as<T, SFuncReturn_Normal>)
-        {
-            auto e_rType = TranslateSTypeExpToRType(funcRet.type, scope, rFactory.get());
-            RETURN_ON_ERROR(e_rType);
-            return RFuncReturn_Normal{*e_rType};
-        }
-        else if constexpr (same_as<T, SFuncReturn_Opaque>)
-        {
-            auto e_rTrait = TranslateSTypeExpToRTrait(funcRet.type, scope, rFactory.get());
-            RETURN_ON_ERROR(e_rTrait);
-
-            // rDecl과 typeParams로 open typeArguments를 만들어야 한다
-            auto* outerTypeArgs = decl->GetOuter()->MakeOpenTypeArgs(*rFactory);
-
-            vector<RType*> typeArgsVector;
-            typeArgsVector.reserve(typeParams.size());
-            for (auto* typeParam : typeParams)
-                typeArgsVector.push_back(rFactory->MakeTypeVarType(typeParam));
-
-            auto* typeArgs = rFactory->AppendTypeArguments(outerTypeArgs, typeArgsVector);
-            RType_Opaque* rOpaqueType = rFactory->MakeOpaqueType({e_rTrait->decl, e_rTrait->typeArgs}, {decl, typeArgs});
-            return RFuncReturn_Normal{rOpaqueType};
-        }
-        else static_assert(false);
-
-    }, funcRet);
+    SmTypeTranslationContexts contexts{scope, rFactory.get()};
+    return Citron::MakeFuncReturn(funcRet, decl, typeParams, contexts);
 }
 
-expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildNonTypeSymbolContext::MakeParameters(vector<SFuncParam>& sParams, SmTypeResolveScope scope)
+expected<tuple<vector<RFuncParameter>, bool>, DiagPtr> BuildNonTypeSymbolContext::MakeFuncParameters(span<SFuncParam> sParams, SmTypeResolveScope scope)
 {
-    bool bLastParamVariadic = false;
-
-    size_t paramCount = sParams.size();
-    vector<RFuncParameter> rParams;
-    rParams.reserve(paramCount);
-
-    for (size_t i = 0; i < paramCount; i++)
-    {
-        auto& sParam = sParams[i];
-
-        auto e_rParamKind = MakeParamKind(sParam.o_modifier, sParam.bRef);
-        RETURN_ON_ERROR(e_rParamKind);
-        auto& rParamKind = *e_rParamKind;
-
-        auto e_rType = TranslateSTypeExpToRType(sParam.type, scope, rFactory.get());
-        RETURN_ON_ERROR(e_rType);
-
-        if (rParamKind == RFuncParameterKind::Params)
-        {
-            if (i == paramCount - 1)
-            {
-                bLastParamVariadic = true;
-            }
-            else
-            {
-                throw NotImplementedException{}; // 에러 처리, params는 마지막 파라미터에만 사용할 수 있습니다
-            }
-
-        }
-
-        rParams.emplace_back(rParamKind, *e_rType, RName_Normal{sParam.name});
-    }
-
-    return make_tuple(move(rParams), bLastParamVariadic);
+    SmTypeTranslationContexts contexts{scope, rFactory.get()};
+    return Citron::MakeFuncParameters(sParams, contexts);
 }
 
 }

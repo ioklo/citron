@@ -9,6 +9,7 @@
 #include "PhaseManager.h"
 #include "CommonTranslation.h"
 #include "SmTypeTranslation.h"
+#include "SmTypeResolveScope.h"
 
 using namespace std;
 
@@ -35,7 +36,7 @@ expected<void, DiagPtr> TraitFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCont
     auto e_funcRet = context.MakeFuncReturn(sTraitFuncDecl->funcRet, rTraitFuncDecl, typeParams, scope);
     RETURN_ON_ERROR(e_funcRet);
 
-    auto e_paramResult = context.MakeParameters(sTraitFuncDecl->parameters, scope);
+    auto e_paramResult = context.MakeFuncParameters(sTraitFuncDecl->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_paramResult, [rParameters, bLastParamVariadic]);
     
     rTraitFuncDecl->Init(RDeclKey::Func(RName::Normal(sTraitFuncDecl->name), rParameters), move(typeParams), move(*e_funcRet), move(rParameters), bLastParamVariadic);

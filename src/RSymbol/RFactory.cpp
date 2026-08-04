@@ -468,62 +468,6 @@ RTypeArguments* RFactory::AppendTypeArguments(RTypeArguments* typeArgs, std::spa
     return &newTypeArgs;
 }
 
-RType* RFactory::MakeType(RTypeDecl* decl, RTypeArguments* typeArgs)
-{
-    struct Visitor
-    {
-        using ResultType = RType*;
-
-        RFactory& factory;
-        RTypeArguments* typeArgs;
-
-        RType* Visit(RClassDecl* classDecl)
-        {
-            return factory.MakeClassType(classDecl, typeArgs);
-        }
-
-        RType* Visit(RStructDecl* structDecl)
-        {
-            return factory.MakeStructType(structDecl, typeArgs);
-        }
-
-        RType* Visit(REnumDecl* enumDecl)
-        {
-            return factory.MakeEnumType(enumDecl, typeArgs);
-        }
-
-        RType* Visit(REnumElemDecl* enumElemDecl)
-        {
-            return factory.MakeEnumElemType(enumElemDecl, typeArgs);
-        }
-
-        RType* Visit(RInterfaceDecl* interfaceDecl)
-        {
-            return factory.MakeInterfaceType(interfaceDecl, typeArgs, false);
-        }
-
-        RType* Visit(RLambdaDecl* lambdaDecl)
-        {
-            return factory.MakeLambdaType(lambdaDecl, typeArgs);
-        }
-
-        RType* Visit(RTypeParam* typeParamDecl)
-        {
-            assert(typeArgs->GetCount() == 0);
-            return factory.MakeTypeVarType(typeParamDecl);
-        }
-
-        RType* Visit(RTraitDecl* traitDecl)
-        {
-            // TODO: [66] 2026-07-09, Trait, Extend 구현
-            // 에러, Trait로 타입을 만들 수 없습니다
-            throw NotImplementedException{};
-        }
-    };
-
-    return Accept(Visitor{*this, typeArgs}, decl);
-}
-
 RType* RFactory::MakeBoolType()
 {
     return boolType.get();

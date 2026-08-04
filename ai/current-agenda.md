@@ -1,9 +1,25 @@
 # Current Agenda
 
 ## Topic
-canonical trait conformance, `impl`, global identifier
+`STypeExp` type-name/member translation pipeline
 
 ## Current Direction
+- `STypeExp`는 value expression 번역과 같은 단계 구조를 따른다:
+  `STypeExp -> ImTypeExp -> ReTypeExp`.
+- `ImTypeExp`는 type identifier/member chain을 계속 해석할 수 있는 중간 상태다.
+  identifier lookup의 `SmTypeRes`, explicit member type arguments, namespace 또는
+  outer-applied declaration 문맥을 보존한다.
+- `ReTypeExp`는 최종 type-expression 결과로 `RType*` 또는
+  `RAppliedDecl<RTraitDecl>`을 담는다. `ReExp`와 동등한 번역 단계임을 드러내기 위해
+  `ReTypeRes`보다 이 이름을 사용한다.
+- `TranslateSTypeExpToRType` 및 `TranslateSTypeExpToRTrait`는 공통
+  `ReTypeExp`를 만든 뒤 각각 해당 variant만 요구하는 consumer로 둔다.
+- `Nullable`/`Shared`/`Box`/`Ptr`/`Local` 같은 type constructor는 type-name/member
+  chain과 분리해 재귀적으로 `RType*`를 만든 뒤 적용한다. trait 결과에는 적용할 수 없다.
+- `S<int>.T` 같은 qualified type-parameter projection은 계속 허용하지 않는다.
+- SmTranslator 소유 intermediate 이름의 장기 명명은 `SmIntermediateExp` /
+  `SmResolvedExp` 방향이다. 다만 이번 변경에서는 기존 `ImExp`/`ReExp` rename을 함께
+  수행하지 않는다.
 - `RDecl`/`RNode` 정리는 완료했다. semantic tree 재구성은 현재 작업 주제가 아니다.
 - 첫 trait 구현 범위는 원본 module의 canonical conformance로 제한한다: `struct S : Trait`와 대응 `impl S : Trait`.
 - generic canonical impl은 `impl S<U> : Trait<U>`처럼 target pattern에 type parameter를 드러내는 표기로 구현한다. `U`는 header가 도입하며 `struct S<T> : Trait<T>`와 alpha-equivalent한 universal target으로 정규화한다.

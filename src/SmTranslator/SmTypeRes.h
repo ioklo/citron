@@ -16,6 +16,7 @@ class RTypeDecl;
 class REnumElemDecl;
 class RInterfaceDecl;
 class RLambdaDecl;
+class RType;
 
 struct SmTypeRes_Namespaces { RNamespaceGroup namespaces; };
 struct SmTypeRes_Class { ROuterAppliedDecl<RClassDecl> outerAppliedDecl; };
@@ -26,6 +27,7 @@ struct SmTypeRes_Interface { ROuterAppliedDecl<RInterfaceDecl> outerAppliedDecl;
 struct SmTypeRes_Lambda { ROuterAppliedDecl<RLambdaDecl> outerAppliedDecl; };
 struct SmTypeRes_TypeVar { RTypeParam* decl; };
 struct SmTypeRes_Trait { ROuterAppliedDecl<RTraitDecl> outerAppliedDecl; };
+struct SmTypeRes_Type { RType* type; };
 
 // Type space Resolution Result
 class SmTypeRes
@@ -39,7 +41,8 @@ class SmTypeRes
         SmTypeRes_Interface,
         SmTypeRes_Lambda,
         SmTypeRes_TypeVar,
-        SmTypeRes_Trait>;
+        SmTypeRes_Trait
+    >;
     Variant v;
 
 public:
@@ -48,7 +51,10 @@ public:
     SmTypeRes(T&& res) : v{std::forward<T>(res)} {}
 
     template<typename... TArgs>
-    auto Visit(TArgs&&... args) { return std::visit(std::forward<TArgs>(args)..., v); }
+    auto Visit(TArgs&&... args) & { return std::visit(std::forward<TArgs>(args)..., v); }
+
+    template<typename... TArgs>
+    auto Visit(TArgs&&... args) && { return std::visit(std::forward<TArgs>(args)..., std::move(v)); }
 
     template<typename T>
     T* GetIf() { return std::get_if<T>(&v); }

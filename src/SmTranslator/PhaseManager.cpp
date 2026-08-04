@@ -7,6 +7,7 @@
 
 #include "BuildTypeHierarchyContext.h"
 #include "BuildNonTypeSymbolContext.h"
+#include "PostBuildNonTypeSymbolContext.h"
 #include "BuildImplicitSymbolContext.h"
 #include "TranslateBodyContext.h"
 
@@ -78,6 +79,13 @@ expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
     for (auto& task : buildNonTypeSymbolTasks)
     {
         auto e_result = task->BuildNonTypeSymbol(fvContext);
+        RETURN_ON_ERROR(e_result);
+    }
+
+    PostBuildNonTypeSymbolContext pbContext{this, rFactory.get()};
+    for (auto& task : postBuildNonTypeSymbolTasks)
+    {
+        auto e_result = task->PostBuildNonTypeSymbol(pbContext);
         RETURN_ON_ERROR(e_result);
     }
 

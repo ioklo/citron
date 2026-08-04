@@ -12,6 +12,7 @@
 #include "PhaseManager.h"
 #include "SmDeclContext_Decl.h"
 #include "SmTypeTranslation.h"
+#include "SmTypeResolveScope.h"
 
 using namespace std;
 
@@ -32,7 +33,7 @@ expected<void, DiagPtr> StructCtorTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
 
     vector<RTypeParam*> typeParams{};
     SmTypeResolveScope_DeclHeader scope{structDeclContext.get(), typeParams};
-    auto e_parameters = context.MakeParameters(sStructCtor->parameters, scope);
+    auto e_parameters = context.MakeFuncParameters(sStructCtor->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
     rStructCtor->Init(RDeclKey::Ctor(parameters), vector<RTypeParam*>{}, move(parameters), bLastParamVariadic);
     rStruct->AddCtor(rStructCtor);

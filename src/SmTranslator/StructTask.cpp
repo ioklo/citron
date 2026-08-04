@@ -15,6 +15,8 @@
 #include "BuildImplicitSymbolContext.h"
 #include "Misc.h"
 #include "SmTypeTranslation.h"
+#include "SmTypeResolveScope.h"
+
 
 using namespace std;
 
@@ -48,6 +50,7 @@ expected<void, DiagPtr> StructTask::BuildTypeHierarchy(BuildTypeHierarchyContext
     }
 
     rStructDecl->InitTraits(move(rTraits));
+    return {};
 }
 
 void StructTask::BuildImplicitSymbol(BuildImplicitSymbolContext& context)

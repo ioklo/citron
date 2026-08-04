@@ -12,13 +12,15 @@ namespace Citron {
 // impl S<T, U> : Trait { ... } 에서 <T, U>는 type parameter이다.
 // 즉 impl<T, U> S<T, U> : Trait { ... } 란 뜻이다.
 // 따라서 impl S<X, Y> : Trait 라고 해도 가능하다.
-RImplTraitDecl::RImplTraitDecl(RDeclKey&& key, RDecl* target, RTraitDecl* trait, RTypeArguments* typeArgs)
-    : key{move(key)}, target{target}, trait{trait}, typeArgs{typeArgs}
+RImplTraitDecl::RImplTraitDecl(RDecl* target)
+    : target{target}
 {
 }
 
-void RImplTraitDecl::Init(std::vector<RTypeParam*>&& typeParams)
+void RImplTraitDecl::Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RAppliedDecl<RTraitDecl> appliedTraitDecl)
 {
+    o_lazyInit.emplace(move(key), move(appliedTraitDecl));
+
     assert(target->GetTypeParamCount() == typeParams.size());
     genericsComp.InitTypeParams(move(typeParams));
 }
@@ -30,7 +32,8 @@ void RImplTraitDecl::AddMember(RImplTraitMemberDecl&& decl)
 
 RDeclKey& RImplTraitDecl::GetDeclKey()
 {
-    return key;
+    assert(o_lazyInit);
+    return o_lazyInit->key;
 }
 
 // from RDecl

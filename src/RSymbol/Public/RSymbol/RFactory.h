@@ -152,9 +152,7 @@ public:
     RSYMBOL_API RTypeArguments* MakeEmptyTypeArguments();
     RSYMBOL_API RTypeArguments* MergeTypeArguments(RTypeArguments* typeArgs0, RTypeArguments* typeArgs1);
     RSYMBOL_API RTypeArguments* AppendTypeArguments(RTypeArguments* typeArgs, std::span<RType*> typeArgSpan);
-
-    RSYMBOL_API RType* MakeType(RTypeDecl* decl, RTypeArguments* typeArgs);
-
+    
     // utilities
     RSYMBOL_API RType* MakeBoolType();
     RSYMBOL_API RType* MakeIntType();

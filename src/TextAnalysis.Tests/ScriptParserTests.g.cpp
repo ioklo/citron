@@ -403,8 +403,9 @@ TEST(ScriptParser, ParseImpl_Basic)
     "$type": "SScript",
     "elements": [
         {
-            "$type": "SImplDecl",
+            "$type": "SImplTraitDecl",
             "name": "S",
+            "typeParams": [],
             "trait": {
                 "$type": "STypeExp_Id",
                 "name": "MyTrait",
@@ -412,8 +413,9 @@ TEST(ScriptParser, ParseImpl_Basic)
             },
             "memberDecls": [
                 {
-                    "$type": "SImplFuncDecl",
+                    "$type": "SImplTraitFuncDecl",
                     "bStatic": false,
+                    "bSequence": false,
                     "funcReturn": {
                         "$type": "SFuncReturn_Normal",
                         "type": {
@@ -449,8 +451,9 @@ TEST(ScriptParser, ParseImpl_Empty)
     "$type": "SScript",
     "elements": [
         {
-            "$type": "SImplDecl",
+            "$type": "SImplTraitDecl",
             "name": "S",
+            "typeParams": [],
             "trait": {
                 "$type": "STypeExp_Id",
                 "name": "MyTrait",

@@ -8,6 +8,9 @@
 #include "CommonTranslation.h"
 #include "BuildNonTypeSymbolContext.h"
 #include "SmTypeTranslation.h"
+#include "SmTypeTranslationContexts.h"
+#include "SmTypeResolveScope.h"
+
 
 using namespace std;
 
@@ -20,9 +23,11 @@ void EnumElemVarTask::Register(TakeRef<SmDeclContextPtr> enumElemDeclContext, RE
 }
 
 expected<void, DiagPtr> EnumElemVarTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
-{   
+{
+    SmTypeTranslationContexts typeTranslationContexts{SmTypeResolveScope_DeclContext{enumElemDeclContext.get()}, rFactory.get()};  
+
     // enum 기준으로 타입을 만든다
-    auto e_rDeclType = TranslateSTypeExpToRType(sEnumElemVar->type, SmTypeResolveScope_DeclContext{enumElemDeclContext.get()}, rFactory.get());
+    auto e_rDeclType = TranslateSTypeExpToRType(sEnumElemVar->type, typeTranslationContexts);
     RETURN_ON_ERROR(e_rDeclType);
 
     rEnumElemVar->InitDeclType(*e_rDeclType);

@@ -35,7 +35,7 @@ public:
     }
     
     std::expected<RFuncReturn, DiagPtr> MakeFuncReturn(SFuncReturn& funcRet, RDecl* funcDecl, std::span<RTypeParam*> typeParams, SmTypeResolveScope scope);
-    std::expected<std::tuple<std::vector<RFuncParameter>, bool>, DiagPtr> MakeParameters(std::vector<SFuncParam>& sParams, SmTypeResolveScope scope);
+    std::expected<std::tuple<std::vector<RFuncParameter>, bool>, DiagPtr> MakeFuncParameters(std::span<SFuncParam> sParams, SmTypeResolveScope scope);
 };
 
 } // namespace Citron

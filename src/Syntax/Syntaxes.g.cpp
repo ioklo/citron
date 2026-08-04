@@ -1648,20 +1648,21 @@ JsonItem STraitDecl::ToJson()
     };
 }
 
-SImplFuncDecl::SImplFuncDecl(bool bStatic, SFuncReturn funcReturn, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
-    : bStatic(move(bStatic)), funcReturn(move(funcReturn)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
+SImplTraitFuncDecl::SImplTraitFuncDecl(bool bStatic, bool bSequence, SFuncReturn funcReturn, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body)
+    : bStatic(move(bStatic)), bSequence(move(bSequence)), funcReturn(move(funcReturn)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)), body(move(body)) { }
 
-SImplFuncDecl::SImplFuncDecl(SImplFuncDecl&& other) noexcept = default;
+SImplTraitFuncDecl::SImplTraitFuncDecl(SImplTraitFuncDecl&& other) noexcept = default;
 
-SImplFuncDecl::~SImplFuncDecl() = default;
+SImplTraitFuncDecl::~SImplTraitFuncDecl() = default;
 
-SImplFuncDecl& SImplFuncDecl::operator=(SImplFuncDecl&& other) noexcept = default;
+SImplTraitFuncDecl& SImplTraitFuncDecl::operator=(SImplTraitFuncDecl&& other) noexcept = default;
 
-JsonItem SImplFuncDecl::ToJson()
+JsonItem SImplTraitFuncDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SImplFuncDecl") },
+        { "$type", JsonString("SImplTraitFuncDecl") },
         { "bStatic", Citron::ToJson(bStatic) },
+        { "bSequence", Citron::ToJson(bSequence) },
         { "funcReturn", Citron::ToJson(funcReturn) },
         { "name", Citron::ToJson(name) },
         { "typeParams", Citron::ToJson(typeParams) },
@@ -1670,25 +1671,26 @@ JsonItem SImplFuncDecl::ToJson()
     };
 }
 
-JsonItem ToJson(SImplMemberDecl& memberDecl)
+JsonItem ToJson(SImplTraitMemberDecl& memberDecl)
 {
     return std::visit(ToJsonVisitor(), memberDecl);
 }
 
-SImplDecl::SImplDecl(std::string name, STypeExp* trait, std::vector<SImplMemberDecl> memberDecls)
-    : name(move(name)), trait(move(trait)), memberDecls(move(memberDecls)) { }
+SImplTraitDecl::SImplTraitDecl(std::string name, std::vector<STypeParam> typeParams, STypeExp* trait, std::vector<SImplTraitMemberDecl> memberDecls)
+    : name(move(name)), typeParams(move(typeParams)), trait(move(trait)), memberDecls(move(memberDecls)) { }
 
-SImplDecl::SImplDecl(SImplDecl&& other) noexcept = default;
+SImplTraitDecl::SImplTraitDecl(SImplTraitDecl&& other) noexcept = default;
 
-SImplDecl::~SImplDecl() = default;
+SImplTraitDecl::~SImplTraitDecl() = default;
 
-SImplDecl& SImplDecl::operator=(SImplDecl&& other) noexcept = default;
+SImplTraitDecl& SImplTraitDecl::operator=(SImplTraitDecl&& other) noexcept = default;
 
-JsonItem SImplDecl::ToJson()
+JsonItem SImplTraitDecl::ToJson()
 {
     return JsonObject {
-        { "$type", JsonString("SImplDecl") },
+        { "$type", JsonString("SImplTraitDecl") },
         { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
         { "trait", Citron::ToJson(trait) },
         { "memberDecls", Citron::ToJson(memberDecls) },
     };

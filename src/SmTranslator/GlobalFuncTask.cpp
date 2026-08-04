@@ -15,6 +15,7 @@
 #include "TranslateBodyContext.h"
 #include "SmDeclContext_Decl.h"
 #include "SmTypeTranslation.h"
+#include "SmTypeResolveScope.h"
 
 using namespace std;
 
@@ -40,7 +41,7 @@ expected<void, DiagPtr> GlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
     auto e_funcRet = context.MakeFuncReturn(syntax->funcRet, rFuncDecl, typeParams, scope);
     RETURN_ON_ERROR(e_funcRet);
     
-    auto e_parametersInfo = context.MakeParameters(syntax->parameters, scope);
+    auto e_parametersInfo = context.MakeFuncParameters(syntax->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_parametersInfo, [rParameters, bLastParamVariadic]);
 
     rFuncDecl->Init(RDeclKey::Func(RName::Normal(syntax->name), rParameters), move(typeParams), move(*e_funcRet), move(rParameters), bLastParamVariadic);

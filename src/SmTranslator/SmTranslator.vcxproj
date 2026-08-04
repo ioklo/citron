@@ -43,7 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImExpTranslations.cpp" />
-    <ClCompile Include="ImplTask.cpp" />
+    <ClCompile Include="ImplTraitFuncTask.cpp" />
+    <ClCompile Include="ImplTraitTask.cpp" />
     <ClCompile Include="PostBuildNonTypeSymbolContext.cpp" />
     <ClCompile Include="SExpTranslations.cpp" />
     <ClCompile Include="SExp_CallToImExp.cpp" />
@@ -64,7 +65,9 @@
     <ClCompile Include="SExpToIrExp.cpp" />
     <ClCompile Include="SExp_MemberToImExp.cpp" />
     <ClCompile Include="SmDeclRes.cpp" />
+    <ClCompile Include="STypeExp_MemberToImTypeExp.cpp" />
     <ClCompile Include="SmTypeRes.cpp" />
+    <ClCompile Include="SmTypeResolveScope.cpp" />
     <ClCompile Include="SmTypeTranslation.cpp" />
     <ClCompile Include="SmTypeUtil.cpp" />
     <ClCompile Include="StructCtorTask.cpp" />
@@ -73,6 +76,8 @@
     <ClCompile Include="StructTask.cpp" />
     <ClCompile Include="StructVarTask.cpp" />
     <ClCompile Include="BuildImplicitSymbolContext.cpp" />
+    <ClCompile Include="STypeExpToImTypeExp.cpp" />
+    <ClCompile Include="STypeExp_IdToImTypeExp.cpp" />
     <ClCompile Include="TraitFuncTask.cpp" />
     <ClCompile Include="TranslateBodyContext.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
@@ -100,9 +105,11 @@
     <ClCompile Include="SmTranslationContexts.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ImplTraitFuncTask.h" />
+    <ClInclude Include="ImTypeExp.h" />
     <ClInclude Include="SmBodyRes.h" />
     <ClInclude Include="ImExpTranslations.h" />
-    <ClInclude Include="ImplTask.h" />
+    <ClInclude Include="ImplTraitTask.h" />
     <ClInclude Include="PostBuildNonTypeSymbolContext.h" />
     <ClInclude Include="SExpTranslations.h" />
     <ClInclude Include="SExp_CallToImExp.h" />
@@ -127,8 +134,11 @@
     <ClInclude Include="SExpToIrExp.h" />
     <ClInclude Include="SExp_MemberToImExp.h" />
     <ClInclude Include="SmDeclRes.h" />
+    <ClInclude Include="STypeExp_MemberToImTypeExp.h" />
     <ClInclude Include="SmTypeRes.h" />
+    <ClInclude Include="SmTypeResolveScope.h" />
     <ClInclude Include="SmTypeTranslation.h" />
+    <ClInclude Include="SmTypeTranslationContexts.h" />
     <ClInclude Include="SmTypeUtil.h" />
     <ClInclude Include="StructCtorTask.h" />
     <ClInclude Include="StructDtorTask.h" />
@@ -136,6 +146,8 @@
     <ClInclude Include="StructTask.h" />
     <ClInclude Include="StructVarTask.h" />
     <ClInclude Include="BuildImplicitSymbolContext.h" />
+    <ClInclude Include="STypeExpToImTypeExp.h" />
+    <ClInclude Include="STypeExp_IdToImTypeExp.h" />
     <ClInclude Include="TraitFuncTask.h" />
     <ClInclude Include="TranslateBodyContext.h" />
     <ClInclude Include="CommonTranslation.h" />

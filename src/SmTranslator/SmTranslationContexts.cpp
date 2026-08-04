@@ -16,6 +16,7 @@
 #include "SmFuncContext_Lambda.h"
 #include "SmTypeTranslation.h"
 #include "SmGlobalContext.h"
+#include "SmTypeTranslationContexts.h"
 #include "Misc.h"
 
 using namespace std;
@@ -24,7 +25,8 @@ namespace Citron {
 
 expected<RTypeArguments*, DiagPtr> SmTranslationContexts::MakeRTypeArgs(std::span<STypeExp*> sTypeArgs)
 {
-    return Citron::MakeRTypeArgs(sTypeArgs, SmTypeResolveScope_FuncContext{funcContext.get()}, rFactory.get());
+    SmTypeTranslationContexts contexts{SmTypeResolveScope_FuncContext{funcContext.get()}, rFactory.get()};
+    return Citron::MakeRTypeArguments(sTypeArgs, contexts);
 }
 
 SmTranslationContexts MakeTranslationContexts(

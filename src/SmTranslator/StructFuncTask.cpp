@@ -14,6 +14,7 @@
 #include "PhaseManager.h"
 #include "SmDeclContext_Decl.h"
 #include "SmTypeTranslation.h"
+#include "SmTypeResolveScope.h"
 
 using namespace std;
 
@@ -41,7 +42,7 @@ expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
     auto e_funcRet = context.MakeFuncReturn(sStructFunc->funcRet, rStructFunc, typeParams, scope);
     RETURN_ON_ERROR(e_funcRet);
 
-    auto e_parameters = context.MakeParameters(sStructFunc->parameters, scope);
+    auto e_parameters = context.MakeFuncParameters(sStructFunc->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
 
     // init

@@ -192,7 +192,7 @@ struct ToJsonVisitor {
                 "SStructDecl",
                 "SEnumDecl",
                 "STraitDecl",
-                "SImplDecl",
+                "SImplTraitDecl",
                 "SGlobalFuncDecl",
                 "SNamespaceDecl",
                 "SScript",
@@ -478,7 +478,7 @@ struct ToJsonVisitor {
                 "SStructDecl*",
                 "SEnumDecl*",
                 "STraitDecl*",
-                "SImplDecl*",
+                "SImplTraitDecl*",
                 "SClassFuncDecl*",
                 "SClassCtorDecl*",
                 "SClassVarDecl*",
@@ -493,7 +493,7 @@ struct ToJsonVisitor {
                 "SStructDecl*",
                 "SEnumDecl*",
                 "STraitDecl*",
-                "SImplDecl*",
+                "SImplTraitDecl*",
                 "SStructFuncDecl*",
                 "SStructCtorDecl*",
                 "SStructDtorDecl*",
@@ -511,7 +511,7 @@ struct ToJsonVisitor {
                 "SStructDecl*",
                 "SEnumDecl*",
                 "STraitDecl*",
-                "SImplDecl*",
+                "SImplTraitDecl*",
             }
         },
 
@@ -525,7 +525,7 @@ struct ToJsonVisitor {
                 "SStructDecl*",
                 "SEnumDecl*",
                 "STraitDecl*",
-                "SImplDecl*",
+                "SImplTraitDecl*",
             }
         },
 
@@ -1282,13 +1282,14 @@ struct ToJsonVisitor {
 
         #pragma endregion STraitDecl
 
-        #pragma region SImplDecl
+        #pragma region SImplTraitDecl
 
         ClassInfo{
-            .name = "SImplFuncDecl",
+            .name = "SImplTraitFuncDecl",
             .o_base = "SSyntax",
             .memberInfos {
                 {.type = "bool", .memberVarName = "bStatic", .getterName = "IsStatic" },
+                {.type = "bool", .memberVarName = "bSequence", .getterName = "IsSequence" },
                 {.type = "SFuncReturn", .memberVarName = "funcReturn", .getterName = "GetFuncReturn" },
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
                 {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
@@ -1298,22 +1299,23 @@ struct ToJsonVisitor {
         },
 
         VariantInfo{
-            .name = "SImplMemberDecl",
+            .name = "SImplTraitMemberDecl",
             .argName = "memberDecl",
-            .memberNames { "SImplFuncDecl*" }
+            .memberNames { "SImplTraitFuncDecl*" }
         },
 
         ClassInfo{
-            .name = "SImplDecl",
+            .name = "SImplTraitDecl",
             .o_base = "SSyntax",
             .memberInfos{
                 {.type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams" },
                 {.type = "STypeExp*", .memberVarName = "trait", .getterName = "GetTrait" },
-                {.type = "std::vector<SImplMemberDecl>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
+                {.type = "std::vector<SImplTraitMemberDecl>", .memberVarName = "memberDecls", .getterName = "GetMemberDecls" },
             },
         },
 
-        #pragma endregion SImplDecl
+        #pragma endregion SImplTraitDecl
         
         // SNamespaceDecl
         ClassInfo {

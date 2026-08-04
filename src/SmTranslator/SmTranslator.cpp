@@ -34,7 +34,7 @@
 #include "StructVarTask.h"
 #include "EnumElemVarTask.h"
 #include "TraitFuncTask.h"
-#include "ImplTask.h"
+#include "ImplTraitTask.h"
 #include "PhaseManager.h"
 #include "CommonTranslation.h"
 #include "BinOpQueryService.h"
@@ -66,7 +66,7 @@ public:
     void Visit(SStructDecl* decl);
     void Visit(SEnumDecl* decl);
     void Visit(STraitDecl* decl);
-    void Visit(SImplDecl* decl);
+    void Visit(SImplTraitDecl* decl);
     void Visit(SStructFuncDecl* decl);
     void Visit(SStructCtorDecl* decl);
     void Visit(SStructDtorDecl* decl);
@@ -91,7 +91,7 @@ public:
     void Visit(SStructDecl* decl);
     void Visit(SEnumDecl* decl);
     void Visit(STraitDecl* decl);
-    void Visit(SImplDecl* decl);
+    void Visit(SImplTraitDecl* decl);
     void Visit(SClassFuncDecl* decl);
     void Visit(SClassCtorDecl* decl);
     void Visit(SClassVarDecl* decl);
@@ -119,7 +119,7 @@ public:
     void Visit(SStructDecl* elem);
     void Visit(SEnumDecl* elem);
     void Visit(STraitDecl* elem);
-    void Visit(SImplDecl* elem);
+    void Visit(SImplTraitDecl* elem);
 };
 
 class ScriptElemVisitor
@@ -143,7 +143,7 @@ public:
     void Visit(SStructDecl* elem);
     void Visit(SEnumDecl* elem);
     void Visit(STraitDecl* elem);
-    void Visit(SImplDecl* elem);
+    void Visit(SImplTraitDecl* elem);
 };
 
 void VisitGlobalFunc(TakeRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl* sGFuncDecl, RNamespace* outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
@@ -205,7 +205,6 @@ void VisitEnum(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer,
     }
 }
 
-// TODO: [66] 2026-07-09, Trait, Extend 구현
 void VisitTrait(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, STraitDecl* sTrait, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
     RName traitName{RName::Normal(sTrait->name)};
@@ -233,10 +232,9 @@ void VisitTrait(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer
 }
 
 // Impl을 만드려고 하면은, trait, struct 등이 살아있어야 한다
-// TODO: declContext집어넣기
-void VisitImpl(SImplDecl* decl, RDecl* outer, PhaseManager& phaseManager)
+void VisitImpl(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
-    ImplTask::Register(decl, outer, phaseManager);
+    ImplTraitTask::Register(sImplDecl, move(outerDeclContext), outer, move(rFactory), phaseManager);
 }
 
 void StructElemVisitor::Visit(SClassDecl* decl)
@@ -264,9 +262,9 @@ void StructElemVisitor::Visit(STraitDecl* decl)
     VisitTrait(structDeclContext, outer, decl, rFactory, phaseManager);
 }
 
-void StructElemVisitor::Visit(SImplDecl* decl)
+void StructElemVisitor::Visit(SImplTraitDecl* decl)
 {   
-    VisitImpl(decl, rStruct, phaseManager);
+    VisitImpl(decl, structDeclContext, RImplTraitDeclOuter{rStruct}, rFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructFuncDecl* decl)
@@ -314,9 +312,9 @@ void ClassElemVisitor::Visit(STraitDecl* decl)
     VisitTrait(classDeclContext, outer, decl, rFactory, phaseManager);
 }
 
-void ClassElemVisitor::Visit(SImplDecl* decl)
+void ClassElemVisitor::Visit(SImplTraitDecl* decl)
 {    
-    VisitImpl(decl, rClass, phaseManager);
+    VisitImpl(decl, classDeclContext, RImplTraitDeclOuter{rClass}, rFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(SClassFuncDecl* decl)
@@ -391,9 +389,9 @@ void NamespaceElemVisitor::Visit(STraitDecl* decl)
     VisitTrait(namespaceDeclContext, outer, decl, rFactory, phaseManager);
 }
 
-void NamespaceElemVisitor::Visit(SImplDecl* decl)
+void NamespaceElemVisitor::Visit(SImplTraitDecl* decl)
 {
-    VisitImpl(decl, curNS, phaseManager);
+    VisitImpl(decl, namespaceDeclContext, RImplTraitDeclOuter{curNS}, rFactory, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
@@ -465,9 +463,9 @@ void ScriptElemVisitor::Visit(STraitDecl* decl)
     VisitTrait(rootDeclContext, outer, decl, rFactory, phaseManager);
 }
 
-void ScriptElemVisitor::Visit(SImplDecl* decl)
+void ScriptElemVisitor::Visit(SImplTraitDecl* decl)
 {
-    VisitImpl(decl, rootNamespace, phaseManager);
+    VisitImpl(decl, rootDeclContext, RImplTraitDeclOuter{rootNamespace}, rFactory, phaseManager);
 }
 
 } // unnamed namespace 

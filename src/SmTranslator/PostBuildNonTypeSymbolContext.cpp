@@ -1,17 +1,20 @@
 #include "PostBuildNonTypeSymbolContext.h"
 #include "RSymbol/RDecl.h"
+#include "SmDeclContext.h"
+#include "SmTypeTranslation.h"
+#include "SmTypeTranslationContexts.h"
+
+using namespace std;
 
 namespace Citron {
 
 // struct S<T> { ... }
 // impl S : Trait<T> 
-PostBuildNonTypeSymbolContext::MakeTraitResult PostBuildNonTypeSymbolContext::MakeTrait(RTypeDecl* rTypeDecl, STypeExp* sTypeExp)
+expected<RAppliedDecl<RTraitDecl>, DiagPtr> PostBuildNonTypeSymbolContext::MakeTrait(STypeExp* sTypeExp, SmDeclContext* declContext, std::span<RTypeParam*> typeParams)
 {
-    // Trait<T>은 S의 TypeParameter부터 검색을 한다. S의 TypeParameter이외의 자식들은 검색대상이 아니다
-    // Trait도 그렇게 찾고, T도 그렇게 찾는다
+    SmTypeTranslationContexts contexts{SmTypeResolveScope_DeclHeader{declContext, typeParams}, rFactory};
 
-
-    return MakeTraitResult{};
+    return TranslateSTypeExpToRTrait(sTypeExp, contexts);
 }
 
 } // namespace Citron

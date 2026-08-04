@@ -1,5 +1,6 @@
 #include "RImplTraitFuncDecl.h"
 #include "Infra/Exceptions.h"
+#include "RStructDecl.h"
 #include "RImplTraitDecl.h"
 #include "RMember.h"
 
@@ -15,14 +16,11 @@ RImplTraitFuncDecl::RImplTraitFuncDecl(RImplTraitDecl* implTrait, bool bSeqFunc,
 {
 }
 
-void RImplTraitFuncDecl::Init(RDeclKey&& key, vector<RTypeParam*>&& typeParams, RFuncReturn&& funcRet, vector<RFuncParameter>&& funcParams)
+void RImplTraitFuncDecl::Init(RDeclKey&& key, vector<RTypeParam*>&& typeParams, RFuncReturn&& funcRet, RThisKind&& thisKind, vector<RFuncParameter>&& funcParams, bool bLastParamVariadic)
 {
     o_key.emplace(move(key));
     genericsComp.InitTypeParams(move(typeParams));
-    // commonFuncDeclComp.InitFuncSignature(move(funcRet), move(funcParams));
-
-    // TODO: [66] 2026-07-09, Trait, Extend 구현
-    throw NotImplementedException{};
+    commonFuncDeclComp.InitFuncSignature(move(funcRet), move(thisKind), move(funcParams), bLastParamVariadic);
 }
 
 RDeclKey& RImplTraitFuncDecl::GetDeclKey()

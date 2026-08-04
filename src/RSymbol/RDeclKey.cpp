@@ -290,9 +290,9 @@ RDeclKey RDeclKey::Dtor()
     return RDeclKey{"D()"};
 }
 
-RDeclKey RDeclKey::ImplTrait(RDecl* decl, RTraitDecl* traitDecl, RTypeArguments* traitTypeArgs)
+RDeclKey RDeclKey::ImplTrait(RDecl* target, RAppliedDecl<RTraitDecl> appliedTraitDecl)
 {
-    return RDeclKey{format("I({},{})", decl->GetDeclKey().GetValue(), EncodeDeclAndTypeArgs(traitDecl, traitTypeArgs))};
+    return RDeclKey{format("I({},{})", target->GetDeclKey().GetValue(), EncodeRAppliedDecl(appliedTraitDecl))};
 }
 
 } // namespace Citron

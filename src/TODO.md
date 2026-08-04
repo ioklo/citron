@@ -53,4 +53,5 @@
 - [ ] // TODO: [71] 2026-07-18, interface 구현
 - [ ] // TODO: [72] 2026-07-21, func<> 타입 구현
 - [v] // TODO: [73] 2026-07-27, DeclKey구현
-- [ ] // TODO: [74] 2026-07-28, SmDeclRes, ImExp, IrExp의 RNamespaceGroup 구현
+- [ ] // TODO: [74] 2026-07-28, SmDeclRes, ImExp, IrExp, SmTypeRes의 RNamespaceGroup 구현
+- [ ] // TODO: [75] 2020-08-04, local type 구현

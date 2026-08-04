@@ -96,7 +96,7 @@ class SClassDecl;
 class SStructDecl;
 class SEnumDecl;
 class STraitDecl;
-class SImplDecl;
+class SImplTraitDecl;
 class SGlobalFuncDecl;
 class SNamespaceDecl;
 class SScript;
@@ -1067,7 +1067,7 @@ using SClassMemberDecl = std::variant<
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
-    SImplDecl*,
+    SImplTraitDecl*,
     SClassFuncDecl*,
     SClassCtorDecl*,
     SClassVarDecl*>;
@@ -1079,7 +1079,7 @@ using SStructMemberDecl = std::variant<
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
-    SImplDecl*,
+    SImplTraitDecl*,
     SStructFuncDecl*,
     SStructCtorDecl*,
     SStructDtorDecl*,
@@ -1094,7 +1094,7 @@ using SNamespaceDeclElement = std::variant<
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
-    SImplDecl*>;
+    SImplTraitDecl*>;
 
 SYNTAX_API JsonItem ToJson(SNamespaceDeclElement& elem);
 
@@ -1105,7 +1105,7 @@ using SScriptElement = std::variant<
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
-    SImplDecl*>;
+    SImplTraitDecl*>;
 
 SYNTAX_API JsonItem ToJson(SScriptElement& elem);
 
@@ -2580,46 +2580,48 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
-class SImplFuncDecl : public SSyntax
+class SImplTraitFuncDecl : public SSyntax
 {
 public:
     bool bStatic;
+    bool bSequence;
     SFuncReturn funcReturn;
     std::string name;
     std::vector<STypeParam> typeParams;
     std::vector<SFuncParam> parameters;
     std::vector<SStmt*> body;
 
-    SYNTAX_API SImplFuncDecl(bool bStatic, SFuncReturn funcReturn, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
-    SImplFuncDecl(const SImplFuncDecl&) = delete;
-    SYNTAX_API SImplFuncDecl(SImplFuncDecl&&) noexcept;
-    SYNTAX_API ~SImplFuncDecl();
+    SYNTAX_API SImplTraitFuncDecl(bool bStatic, bool bSequence, SFuncReturn funcReturn, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters, std::vector<SStmt*> body);
+    SImplTraitFuncDecl(const SImplTraitFuncDecl&) = delete;
+    SYNTAX_API SImplTraitFuncDecl(SImplTraitFuncDecl&&) noexcept;
+    SYNTAX_API ~SImplTraitFuncDecl();
 
-    SImplFuncDecl& operator=(const SImplFuncDecl& other) = delete;
-    SYNTAX_API SImplFuncDecl& operator=(SImplFuncDecl&& other) noexcept;
+    SImplTraitFuncDecl& operator=(const SImplTraitFuncDecl& other) = delete;
+    SYNTAX_API SImplTraitFuncDecl& operator=(SImplTraitFuncDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };
 
-using SImplMemberDecl = std::variant<
-    SImplFuncDecl*>;
+using SImplTraitMemberDecl = std::variant<
+    SImplTraitFuncDecl*>;
 
-SYNTAX_API JsonItem ToJson(SImplMemberDecl& memberDecl);
+SYNTAX_API JsonItem ToJson(SImplTraitMemberDecl& memberDecl);
 
-class SImplDecl : public SSyntax
+class SImplTraitDecl : public SSyntax
 {
 public:
     std::string name;
+    std::vector<STypeParam> typeParams;
     STypeExp* trait;
-    std::vector<SImplMemberDecl> memberDecls;
+    std::vector<SImplTraitMemberDecl> memberDecls;
 
-    SYNTAX_API SImplDecl(std::string name, STypeExp* trait, std::vector<SImplMemberDecl> memberDecls);
-    SImplDecl(const SImplDecl&) = delete;
-    SYNTAX_API SImplDecl(SImplDecl&&) noexcept;
-    SYNTAX_API ~SImplDecl();
+    SYNTAX_API SImplTraitDecl(std::string name, std::vector<STypeParam> typeParams, STypeExp* trait, std::vector<SImplTraitMemberDecl> memberDecls);
+    SImplTraitDecl(const SImplTraitDecl&) = delete;
+    SYNTAX_API SImplTraitDecl(SImplTraitDecl&&) noexcept;
+    SYNTAX_API ~SImplTraitDecl();
 
-    SImplDecl& operator=(const SImplDecl& other) = delete;
-    SYNTAX_API SImplDecl& operator=(SImplDecl&& other) noexcept;
+    SImplTraitDecl& operator=(const SImplTraitDecl& other) = delete;
+    SYNTAX_API SImplTraitDecl& operator=(SImplTraitDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };

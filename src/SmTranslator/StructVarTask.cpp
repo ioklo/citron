@@ -12,6 +12,8 @@
 #include "CommonTranslation.h"
 #include "PhaseManager.h"
 #include "SmTypeTranslation.h"
+#include "SmTypeResolveScope.h"
+#include "SmTypeTranslationContexts.h"
 
 using namespace std;
 
@@ -27,7 +29,8 @@ expected<void, DiagPtr> StructVarTask::BuildNonTypeSymbol(BuildNonTypeSymbolCont
 {
     auto accessor = MakeStructMemberAccessor(sStructVar->accessModifier);
     bool bStatic = false; // TODO: bStatic 지원
-    auto e_declType = TranslateSTypeExpToRType(sStructVar->varType, SmTypeResolveScope_DeclContext{structDeclContext.get()}, rFactory.get());
+    SmTypeTranslationContexts contexts{SmTypeResolveScope_DeclContext{structDeclContext.get()}, rFactory.get()};
+    auto e_declType = TranslateSTypeExpToRType(sStructVar->varType, contexts);
     RETURN_ON_ERROR(e_declType);
 
     vector<RStructVarDecl*> symbols;

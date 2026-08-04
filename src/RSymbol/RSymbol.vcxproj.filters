@@ -167,6 +167,12 @@
     <ClInclude Include="Public\RSymbol\RTypeVisitor.g.h">
       <Filter>RDecls\00 Abstraction</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RImplTraitDeclOuter.h">
+      <Filter>RDecls\11 Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\RSymbol\RImplTraitDeclContainerComponent.h">
+      <Filter>RDecls\13 Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">
@@ -335,6 +341,9 @@
     </ClCompile>
     <ClCompile Include="RDeclKey.cpp">
       <Filter>RDecls\01 Identifier</Filter>
+    </ClCompile>
+    <ClCompile Include="RImplTraitDeclOuter.cpp">
+      <Filter>RDecls\11 Impl</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

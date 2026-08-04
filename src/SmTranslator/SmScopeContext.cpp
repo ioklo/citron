@@ -14,6 +14,8 @@
 #include "SmFuncContext.h"
 #include "SmTypeRes.h"
 #include "SmTypeTranslation.h"
+#include "SmTypeResolveScope.h"
+#include "SmTypeTranslationContexts.h"
 
 using namespace std;
 
@@ -163,7 +165,8 @@ std::optional<MScopeKind> SmScopeContext::GetReachableScopeKind(size_t labelId)
 
 expected<RType*, DiagPtr> SmScopeContext::TranslateSTypeExpToRType(STypeExp* sTypeExp)
 {
-    return Citron::TranslateSTypeExpToRType(sTypeExp, SmTypeResolveScope_FuncContext{funcContext.get()}, rFactory.get());
+    SmTypeTranslationContexts contexts{SmTypeResolveScope_FuncContext{funcContext.get()}, rFactory.get()};
+    return Citron::TranslateSTypeExpToRType(sTypeExp, contexts);
 }
 
 expected<optional<SmBodyRes>, DiagPtr> SmScopeContext::ResolveIdentifier(InRef<RName> name)
