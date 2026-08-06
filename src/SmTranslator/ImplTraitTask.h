@@ -23,20 +23,21 @@ class ImplTraitTask
     SImplTraitDecl* sImplDecl;
     SmDeclContextPtr outerDeclContext;
     RImplTraitDeclOuter rOuter;
-
-    RImplTraitDecl* rImplTraitDecl;
-
     RFactoryPtr rFactory;
+    
+private: // 추후에 만들어짐
+    RImplTraitDecl* rImplTraitDecl;
 
 public:
     static void Register(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
-    ImplTraitTask(SImplTraitDecl    * sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, TakeRef<RFactoryPtr> rFactory)
+    ImplTraitTask(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, TakeRef<RFactoryPtr> rFactory)
         : sImplDecl{sImplDecl}, outerDeclContext{outerDeclContext.Take()}, rOuter{rOuter}, rImplTraitDecl{nullptr}, rFactory{rFactory.Take()} {}
 
-    std::expected<void, DiagPtr> HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContext& context);
+    std::expected<void, DiagPtr> HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContexts& contexts);
+    std::expected<void, DiagPtr> VerifyConformance(PostBuildNonTypeSymbolContexts& contexts);
 
 public: // from IPostBuildNonTypeSymbolTask
-    std::expected<void, DiagPtr> PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContext& context) final;
+    std::expected<void, DiagPtr> PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& context) final;
 
 };
 

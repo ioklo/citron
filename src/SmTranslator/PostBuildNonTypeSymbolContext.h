@@ -18,15 +18,13 @@ class RFactory;
 class SmDeclContext;
 class PhaseManager;
 
-class PostBuildNonTypeSymbolContext
+struct PostBuildNonTypeSymbolContexts
 {
     PhaseManager* phaseManager;
     RFactory* rFactory;
-
+    
 public:
-    PostBuildNonTypeSymbolContext(PhaseManager* phaseManager, RFactory* rFactory) : phaseManager{phaseManager}, rFactory{rFactory} {}
     std::expected<RAppliedDecl<RTraitDecl>, DiagPtr> MakeTrait(STypeExp* sTypeExp, SmDeclContext* declContext, std::span<RTypeParam*> typeParams);
-    PhaseManager* GetPhaseManager() { return phaseManager; }
 };
 
 } // namespace Citron

@@ -8,7 +8,7 @@ using DiagPtr = std::shared_ptr<struct Diag>;
 
 class BuildTypeHierarchyContext;
 class BuildNonTypeSymbolContext;
-class PostBuildNonTypeSymbolContext;
+struct PostBuildNonTypeSymbolContexts;
 class BuildImplicitSymbolContext;
 class TranslateBodyContext;
 
@@ -41,7 +41,7 @@ class IPostBuildNonTypeSymbolTask
 {
 public:
     virtual ~IPostBuildNonTypeSymbolTask() = default;
-    virtual std::expected<void, DiagPtr> PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContext& context) = 0;
+    virtual std::expected<void, DiagPtr> PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& context) = 0;
 
 };
 

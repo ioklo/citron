@@ -29,6 +29,7 @@ public:
     RSYMBOL_API RTraitDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory);
     RSYMBOL_API void InitTypeParams(std::vector<RTypeParam*>&& typeParams);
     RSYMBOL_API void AddMember(RTraitMemberDecl&& decl);
+    std::span<RTraitMemberDecl> GetMembers() { return members; }
 
 public: // from RDecl
     RSYMBOL_API RDeclKey& GetDeclKey() final;

@@ -82,7 +82,7 @@ expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
         RETURN_ON_ERROR(e_result);
     }
 
-    PostBuildNonTypeSymbolContext pbContext{this, rFactory.get()};
+    PostBuildNonTypeSymbolContexts pbContext{this, rFactory.get()};
     for (auto& task : postBuildNonTypeSymbolTasks)
     {
         auto e_result = task->PostBuildNonTypeSymbol(pbContext);

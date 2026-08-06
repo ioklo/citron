@@ -22,7 +22,6 @@ class RImplTraitDecl final : public RDecl
         RAppliedDecl<RTraitDecl> appliedTraitDecl;
     };
 
-
     RDecl* target; // outer는 target의 outer를 리턴하면 된다. 일단 struct, extension인데, 특징적인 뭔가가 있는 경우 RImplTraitDeclOuter를 만들자
     std::optional<LazyInit> o_lazyInit;
     std::vector<RImplTraitMemberDecl> members;
@@ -33,6 +32,7 @@ public:
     RSYMBOL_API void Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RAppliedDecl<RTraitDecl> appliedTraitDecl);
     RSYMBOL_API void AddMember(RImplTraitMemberDecl&& decl);
     RDecl* GetTarget() { return target; }
+    RAppliedDecl<RTraitDecl> GetTrait() { return o_lazyInit->appliedTraitDecl; } 
 
 public: // from RDecl
     RSYMBOL_API RDeclKey& GetDeclKey() final;

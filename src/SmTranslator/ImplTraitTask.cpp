@@ -10,6 +10,7 @@
 #include "RSymbol/RImplTraitDecl.h"
 #include "RSymbol/RImplTraitMemberDecl.h"
 #include "RSymbol/RImplTraitFuncDecl.h"
+#include "RSymbol/RTraitDecl.h"
 #include "MIR/MFuncBody.h"
 #include "PhaseManager.h"
 #include "PostBuildNonTypeSymbolContext.h"
@@ -29,7 +30,7 @@ void ImplTraitTask::Register(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr
     phaseManager.AddPostBuildNonTypeSymbolTask(task);
 }
 
-expected<void, DiagPtr> ImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContext& context)
+expected<void, DiagPtr> ImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContexts& context)
 {
     // RImplTraitFuncDecl를 만든다
     auto* rImplTraitFuncDecl = rFactory->MakeDecl<RImplTraitFuncDecl>(rImplTraitDecl, /*bSeqFunc*/sImplTraitFuncDecl->bSequence, RName::Normal(sImplTraitFuncDecl->name));
@@ -55,11 +56,45 @@ expected<void, DiagPtr> ImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDec
     rImplTraitDecl->AddMember(rImplTraitFuncDecl);
 
     SmDeclContextPtr implTraitDeclContext = MakePtr<SmDeclContext_Decl<RImplTraitDecl>>(outerDeclContext, rImplTraitDecl, rImplTraitDecl->MakeOpenTypeArgs(*rFactory));
-    ImplTraitFuncTask::Register(implTraitDeclContext, rImplTraitFuncDecl, sImplTraitFuncDecl, rFactory, *context.GetPhaseManager());
+    ImplTraitFuncTask::Register(implTraitDeclContext, rImplTraitFuncDecl, sImplTraitFuncDecl, rFactory, *context.phaseManager);
     return {};
 }
 
-expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContext& context)
+expected<void, DiagPtr> ImplTraitTask::VerifyConformance(PostBuildNonTypeSymbolContexts& contexts)
+{
+    // 일단은 함수 signature가 같은지만 확인하면 된다
+    auto rTrait = rImplTraitDecl->GetTrait(); // class C<X> { impl S<T, U> : Tr<...> { } } // Tr<...> is under TEnv(C<>.$I<,>(S, Tr<...>), [X, T, U])
+
+    // trait Tr<T, U> { void F<V>(T t); }  // F is under TEnv(Tr<,>.F<>, [T, U, V])
+    for (auto rTraitMemberDecl : rTrait.decl->GetMembers())
+    {
+        auto result = rTraitMemberDecl.Visit([](auto& rTraitMemberDecl) -> expected<void, DiagPtr> {
+            using T = remove_cvref_t<decltype(rTraitMemberDecl)>;
+
+            if constexpr (same_as<T, RTraitFuncDecl*>)
+            {
+                // RTraitFuncDecl에 대응하는 RImplTraitFuncDecl이 있는지 확인
+                // 1. identifier로 검색?
+                // 2. 
+
+                auto* rImplTraitFuncDecl = rImplTraitDecl->GetMember(rTraitMemberDecl->GetDeclKey().GetName());
+                if (!rImplTraitFuncDecl)
+                    return make_unexpected(Diag::MakeError("impl trait function not found for trait function", rTraitMemberDecl->GetDeclKey().GetName().ToString()));
+            }
+            else static_assert(false); 
+        });
+
+        auto* rImplTraitFuncDecl = dynamic_cast<RImplTraitFuncDecl*>(rMemberDecl);
+        assert(rImplTraitFuncDecl);
+        auto e_traitFunc = contexts.MakeTraitFunc(rImplTraitFuncDecl, outerDeclContext.get());
+        RETURN_ON_ERROR(e_traitFunc);
+        if (!rImplTraitFuncDecl->IsConform(*e_traitFunc))
+            return make_unexpected(Diag::MakeError("impl trait function does not conform to trait function", rImplTraitFuncDecl->GetName().ToString()));
+    }
+    
+}
+
+expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& contexts)
 {
     // SImplTraitDecl을 RImplTrait로 만든다
     // impl S<T, U> : TraitName
@@ -78,7 +113,7 @@ expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSy
     auto typeParams = MakeTypeParams(rOuterDecl->GetAllTypeParamCount(), rImplTraitDecl, sImplDecl->typeParams, rFactory);
 
     // trait 얻기
-    auto e_trait = context.MakeTrait(sImplDecl->trait, outerDeclContext.get(), typeParams);
+    auto e_trait = contexts.MakeTrait(sImplDecl->trait, outerDeclContext.get(), typeParams);
     RETURN_ON_ERROR(e_trait);
 
     auto key = RDeclKey::ImplTrait(rStructTargetDecl, *e_trait);
@@ -86,16 +121,15 @@ expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSy
 
     rOuter.AddImplTrait(rImplTraitDecl);
 
-
     // 이제 child 처리
     for (auto& sMemberDecl : sImplDecl->memberDecls)
     {
-        auto e_result = visit([this, &context](auto& sMemberDecl) -> expected<void, DiagPtr>{
+        auto e_result = visit([this, &contexts](auto& sMemberDecl) -> expected<void, DiagPtr>{
             using T = remove_cvref_t<decltype(sMemberDecl)>;
             if constexpr (same_as<T, SImplTraitFuncDecl*>)
             {
                 // RImplTraitFuncDecl을 만듭니다.
-                return HandleImplTraitFuncDecl(sMemberDecl, context);
+                return HandleImplTraitFuncDecl(sMemberDecl, contexts);
             }
             else static_assert(false);
 
@@ -103,6 +137,9 @@ expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSy
 
         RETURN_ON_ERROR(e_result);
     }
+
+    // 모든 child를 다 추가했으면, 이제 conformance check
+    VerifyConformance();
 
     return {};
 }

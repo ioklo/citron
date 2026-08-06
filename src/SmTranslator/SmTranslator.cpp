@@ -232,7 +232,7 @@ void VisitTrait(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer
 }
 
 // Impl을 만드려고 하면은, trait, struct 등이 살아있어야 한다
-void VisitImpl(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitImplTrait(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
 {
     ImplTraitTask::Register(sImplDecl, move(outerDeclContext), outer, move(rFactory), phaseManager);
 }
@@ -264,7 +264,7 @@ void StructElemVisitor::Visit(STraitDecl* decl)
 
 void StructElemVisitor::Visit(SImplTraitDecl* decl)
 {   
-    VisitImpl(decl, structDeclContext, RImplTraitDeclOuter{rStruct}, rFactory, phaseManager);
+    VisitImplTrait(decl, structDeclContext, RImplTraitDeclOuter{rStruct}, rFactory, phaseManager);
 }
 
 void StructElemVisitor::Visit(SStructFuncDecl* decl)
@@ -314,7 +314,7 @@ void ClassElemVisitor::Visit(STraitDecl* decl)
 
 void ClassElemVisitor::Visit(SImplTraitDecl* decl)
 {    
-    VisitImpl(decl, classDeclContext, RImplTraitDeclOuter{rClass}, rFactory, phaseManager);
+    VisitImplTrait(decl, classDeclContext, RImplTraitDeclOuter{rClass}, rFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(SClassFuncDecl* decl)
@@ -391,7 +391,7 @@ void NamespaceElemVisitor::Visit(STraitDecl* decl)
 
 void NamespaceElemVisitor::Visit(SImplTraitDecl* decl)
 {
-    VisitImpl(decl, namespaceDeclContext, RImplTraitDeclOuter{curNS}, rFactory, phaseManager);
+    VisitImplTrait(decl, namespaceDeclContext, RImplTraitDeclOuter{curNS}, rFactory, phaseManager);
 }
 
 void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
@@ -465,7 +465,7 @@ void ScriptElemVisitor::Visit(STraitDecl* decl)
 
 void ScriptElemVisitor::Visit(SImplTraitDecl* decl)
 {
-    VisitImpl(decl, rootDeclContext, RImplTraitDeclOuter{rootNamespace}, rFactory, phaseManager);
+    VisitImplTrait(decl, rootDeclContext, RImplTraitDeclOuter{rootNamespace}, rFactory, phaseManager);
 }
 
 } // unnamed namespace 

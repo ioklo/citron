@@ -10,7 +10,7 @@ namespace Citron {
 
 // struct S<T> { ... }
 // impl S : Trait<T> 
-expected<RAppliedDecl<RTraitDecl>, DiagPtr> PostBuildNonTypeSymbolContext::MakeTrait(STypeExp* sTypeExp, SmDeclContext* declContext, std::span<RTypeParam*> typeParams)
+expected<RAppliedDecl<RTraitDecl>, DiagPtr> PostBuildNonTypeSymbolContexts::MakeTrait(STypeExp* sTypeExp, SmDeclContext* declContext, std::span<RTypeParam*> typeParams)
 {
     SmTypeTranslationContexts contexts{SmTypeResolveScope_DeclHeader{declContext, typeParams}, rFactory};
 
