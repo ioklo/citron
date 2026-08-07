@@ -1,9 +1,27 @@
 # Current Agenda
 
 ## Topic
-`STypeExp` type-name/member translation pipeline
+Generic `RAppliedDecl` context and trait requirement signature matching
 
 ## Current Direction
+- Generic analysis of an `RAppliedDecl` must retain or obtain the ordered ambient
+  type-variable environment (`tenv`) at its application site.  `tenv` is needed
+  even when the application itself is closed; a type argument may itself be a
+  free type variable, so application and closedness are separate notions.
+- `tenv [T1, T5, T3] => X<T1>.Tr<list<T5>>.F<T3>` is the reference form for an
+  applied nested trait requirement.  Its complete formal-to-actual mapping is
+  `[T1, T2, T3] => [T1, list<T5>, T3]`, while its free variables are
+  `[T1, T5, T3]`.
+- Trait requirement implementation matching compares types together with their
+  respective tenvs only after the two generic signatures' binder positions have
+  been explicitly paired.  Each side then normalizes type variables by its tenv
+  slot; this is the implementation-level form of alpha-equivalence.  Function
+  generic arity/constraints and parameter passing mode remain part of the match.
+- `tenv` must be immutable and cheaply shared (for example an `RTypeEnv*` with
+  persistent outer links), not a copied vector.  It represents all lexically
+  visible type parameters at the application site, including ones absent from
+  the applied declaration's type arguments.  Whether it is stored on
+  `RAppliedDecl` or supplied by decl-space/body-space remains open.
 - `STypeExp`는 value expression 번역과 같은 단계 구조를 따른다:
   `STypeExp -> ImTypeExp -> ReTypeExp`.
 - `ImTypeExp`는 type identifier/member chain을 계속 해석하는 중간 상태다. 현재
@@ -58,10 +76,14 @@
 - type lookup은 current header의 binder만 보는 경우와 normal member lookup을 구분한다. inheritance lookup은 outer lookup과 별개이며, `ResolveInheritedTypeMember`/`ResolveInheritedMember`처럼 applied base type arguments를 유지하는 좁은 hook 후보를 검토 중이다.
 - Citron은 generic definition을 `RTypeDecl`로 두고 unbound `RType`은 만들지 않는다. `RType`은 `S<T>`(open) 또는 `S<int>`(closed)처럼 arguments가 적용된 type만 나타낸다. `RDeclRes`의 outer-applied 상태는 type이 아니라 lookup declaration context다.
 - `RDeclRes` 반환 여부가 아니라 탐색 범위로 `Get`/`Resolve`를 구분하도록 적용했다. direct lookup 결과는 `ROuterAppliedDecl`/`RAppliedDecl`로 표현하고, 함수의 explicit type argument prefix는 RSymbol result가 아니라 SmTranslator의 `SmPartiallyAppliedFuncDeclGroup`에 둔다.
-- `RAppliedDecl`은 declaration 자체에 남은 type parameter가 없는 fully-applied relation이다.
-  자체 type parameter가 없는 lambda/variable/enum element도 lexical outer arguments까지
-  적용됐다면 `RAppliedDecl`을 사용한다. member 자신의 type arguments를 아직 받아야 하는
-  nominal type/function lookup은 `ROuterAppliedDecl` 또는 partial-application 결과로 유지한다.
+- `RAppliedDecl`은 declaration의 모든 formal type parameter에 argument가 전달된
+  relation이다. argument 자체는 open type variable일 수 있으므로 fully-applied와
+  closed를 같은 뜻으로 쓰지 않는다. 자체 type parameter가 없는
+  lambda/variable/enum element도 lexical outer arguments까지 적용됐다면
+  `RAppliedDecl`을 사용한다. member 자신의 type arguments를 아직 받지 않은
+  nominal type/function lookup은 `ROuterAppliedDecl` 또는 partial-application
+  결과로 유지하되, requirement signature 비교는 새 type variable을 해당 member
+  argument로 적용해 `RAppliedDecl`을 만든다.
 - trait call은 call-site에서 source-local `NImplTraitFunc`를 보관하지 않는다. semantic `Trait` call은 `RTraitFuncDecl`과 applied trait identity를 보관하고, lowering이 concrete conformance에는 direct impl call을, generic constraint와 `some Trait` opaque value에는 trait table call을 선택한다.
 - `RImplTraitDecl` subtree는 impl syntax의 lexical outer에 둔다. target struct와 matched conformance header는 typed relation으로 따로 둔다.
 - `RImplTraitDecl`은 ordinary `RName` member lookup scope가 아니다. trait requirement implementation은 `RTraitFuncDecl -> RImplTraitFuncDecl` relation으로 찾으며, future extension-private helper scope에만 별도 name index 필요성을 재검토한다.
@@ -80,6 +102,8 @@
 - `MCallable`을 semantic `Trait` call로 유지할지, 어느 IR stage에서 `Direct`/`TraitTable`/`Virtual` call target으로 분해할지
 - trait table call의 ABI shape: generic constraint dictionary, opaque metadata의 witness entry, direct conformance symbol의 관계
 - `$T0` binder slot numbering, passing kind/function generic signature의 overload identity, alias normalization API
+- `RAppliedDecl`가 tenv를 직접 보관할 때 `RTypeEnv`의 ownership/interning과
+  equality/hash에 tenv identity를 어느 범위까지 반영할지
 - `RNodeKey`의 structured form 대 string form, category 간 same-name collision, exact key seal/register 시점
 - `RNode` API 추출 순서와 existing `RDecl` users의 migration 범위
 

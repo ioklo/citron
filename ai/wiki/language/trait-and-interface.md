@@ -60,6 +60,26 @@ generic canonical impl의 `S<U>`는 일반 type expression이 아니라 generic 
 - 대응 canonical `impl S<U> : Trait<U>`은 그 전체 범위를 덮어야 하며, `S<int>`처럼 일부 specialization만 구현해서는 충족되지 않는다.
 - `where` constraint는 `impl S<U> : Trait<U> where U : OtherTrait { }`처럼 target-pattern parameter를 사용한다.
 
+#### Generic Requirement Matching
+
+generic trait requirement와 impl 함수를 비교할 때는 type parameter의 source
+name이 아니라 각 적용 선언을 만든 위치의 type variable environment(`tenv`) 기준으로
+비교한다. tenv는 해당 declaration/type argument에 실제로 나타나는 변수만이 아니라
+그 lexical 위치에서 보이는 전체 환경이다. 예를 들어 nested trait의 requirement와
+impl은 다음처럼 표현될 수 있다.
+
+```text
+tenv [T1, T5, T3] => X<T1>.Tr<list<T5>>.F<T3>
+tenv [T1, T5, T6] => X<T1>.impl_<T5>.F<T6>
+```
+
+함수 requirement identity 및 두 generic signature의 binder 위치 대응을 먼저
+확인한 뒤, 각 측의 반환형, 인자형, type parameter 제약을 자기 tenv의 순서대로
+`$0`, `$1`, ...로 정규화한다. 따라서 `list<T5>`는 양쪽에서 `list<$1>`로,
+함수 parameter `T3`와 `T6`은 모두 `$2`로 정규화된다. 이 이름-불변 비교를
+alpha-equivalence로 부른다. 함수 type parameter 개수와 제약, 인자 개수 및
+전달 방식도 함께 일치해야 한다.
+
 specialization 또는 조건부 conformance는 canonical `impl`의 변형으로 직접 쓰지 않고, 이름 있는 extension bundle로 선언한다.
 
 ```citron
@@ -178,3 +198,4 @@ Dynamic callable이 필요하면 별도 interface 또는 interface type expressi
 - `ai/notes/2026-06-16-some-opaque-result-and-cti.md`
 - `ai/notes/2026-06-29-accessibility-struct-trait-extension-direction.md`
 - `ai/notes/2026-07-15-generic-impl-and-specialized-conformance.md`
+- `ai/notes/2026-08-07-applied-decl-tenv-and-trait-matching.md`
