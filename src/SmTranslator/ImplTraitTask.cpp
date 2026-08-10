@@ -287,12 +287,12 @@ expected<void, DiagPtr> ImplTraitTask::CheckTarget(RStructDecl* rStructTargetDec
     return Error<Error_ImplTrait_NoMatchedTraitOfTarget>();
 }
 
+// 고려해야 할 것들
+// traitFunc의 typeEnv?
+// implTraitFunc의 typeEnv?
 bool IsCorrespond(RAppliedDecl<RTraitFuncDecl> traitFunc, RAppliedDecl<RImplTraitFuncDecl> implTraitFunc)
 {
-    assert(traitFunc.outerTypeArgs->GetCount() == implTraitFunc.outerTypeArgs->GetCount());
-
-    // 1. return type
-
+    assert(traitFunc.typeArgs->GetCount() == implTraitFunc.typeArgs->GetCount());
     
     // 같은 decl이면 typeArgs는 같아야 한다
     size_t countX = x.typeArgs->GetCount();
