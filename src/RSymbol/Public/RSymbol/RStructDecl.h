@@ -70,7 +70,7 @@ public:
     RStructCtorDecl* GetUnboundTrivialCtor() { return trivialCtorIndex == -1 ? nullptr : ctors[trivialCtorIndex]; }
     RSYMBOL_API RStructCtorDecl* GetUnboundCopyCtor();
 
-    RType* GetOpenType();
+    std::span<RAppliedDecl<RTraitDecl>> GetTraits() { return *o_traits;}
 
 public: // from RDecl
     RSYMBOL_API RDeclKey& GetDeclKey() final;

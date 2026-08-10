@@ -49,55 +49,38 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - generic conformance header는 단순 `(trait, traitTypeArgs)`가 아니라 generic signature, owner struct의 formal parameter에 적용하는 self type-argument pattern, trait type arguments, constraint를 함께 나타낸다. 예를 들어 `impl<T> S<T> : Trait`의 self pattern은 `[T]`이고, `impl Bundle for S<int> : Trait`의 self pattern은 `[int]`다.
 - extension bundle도 trait requirement implementation 자체는 동일한 `RImplTraitDecl` / `RImplTraitMemberDecl` / `RImplTraitFuncDecl` 계열을 재사용하는 방향이다. `RExtensionFuncDecl`은 bundle-private 공용 helper로 별도 계열이며 trait requirement member가 아니다.
 
-## Generic Applied Declaration Context
+## Generic Applied Declaration And Type Parameters
 
-- `RAppliedDecl`의 type argument는 concrete type만이 아니라 open type
-  variable일 수 있다. 따라서 type argument가 모두 전달됐다는 것과 결과가
-  closed type이라는 것은 구분한다.
-- 모든 generic analysis는 type arguments와 별도로, 적용 위치의 ordered lexical
-  type-variable environment(`tenv`)를 이용할 수 있어야 한다. tenv를
-  `RAppliedDecl`이 직접 보관할지, declaration/body context가 제공할지는 아직
-  미확정이다. `tenv`는 application 안에 실제로 등장하는 자유 type variable만의
-  목록이 아니라 그 위치에서 보이는 전체 type variable 환경이다. 예를 들어 다음은
-  서로 다른 정보다.
-
-  ```text
-  tenv:      [T1, T5, T3]
-  application: X<T1>.Tr<list<T5>>.F<T3>
-  full args: [T1, list<T5>, T3]
-  ```
-
-  `full args`는 `F`의 formal parameter `[T1, T2, T3]`에 대한 적용이고,
-  `tenv`는 적용 위치의 lexical type-variable order다.
-- 그러므로 closed application도 tenv를 가진다. 예를 들어
-  `struct S<X> { struct T<Y> { void F() { new List<int>(); } } }`에서
-  `List<int>`는 closed type이지만 `tenv [X, Y] => List<int>`로 표현한다.
-  정규화할 type variable이 없으므로 결과 type은 그대로 `List<int>`다.
-- trait requirement implementation을 검사할 때 requirement와 impl의 반환형,
-  인자형, 제약은 각각 자신이 속한 `tenv`와 함께 비교한다. 단, 먼저 두 generic
-  signature의 binder 위치가 대응된다는 것을 확인해야 한다. 그 뒤 각 tenv의
-  위치를 `$0`, `$1`, ...로 정규화한 결과가 같으면 type parameter의 source name이
-  달라도 alpha-equivalent하다.
-- 예를 들어 `X<T1>.Tr<list<T5>>.F<T3>`의 반환형
-  `tenv [T1, T5, T3] => list<T5>`와 impl 함수의 반환형
-  `tenv [T1, T5, T6] => list<T5>`는 모두 `list<$1>`로 정규화된다. 인자형
-  `T3`와 `T6`은 모두 `$2`로 정규화된다.
-- `tenv`는 `std::vector`를 값마다 복사해 보관하지 않는다. 빈 environment
-  singleton 및 persistent outer link를 가진 immutable `RTypeEnv` 같은 공유
-  표현을 사용한다. `RAppliedDecl`이 그 handle/pointer를 직접 보관할지,
-  decl-space/body-space가 공유해 제공할지는 구현 시 확정한다.
-- exact application equality는 declaration과 applied type arguments의 origin을
-  비교하며 tenv를 보지 않는다. 예를 들어 `List<A.X>`와 `List<F.Y>`는 다르지만,
-  서로 다른 lexical context에서 얻은 두 `List<int>`는 같다. alpha-equivalence는
-  명시적인 binder 대응을 전제로 하는 별도 API다. 현재 context에서 사용할 수
-  있는지의 검사는 equality가 아니라 별도 validity API로 둔다.
+- `RAppliedDecl`은 `decl`과 outer부터 member 자신까지 모두 적용된 complete
+  `RTypeArguments`만 보관한다. 적용 위치의 `RTypeEnv`/`tenv`를 `RAppliedDecl`이나
+  중첩 `RType`에 넣지 않는다.
+- `RTypeParam::GetGlobalIndex()`는 compiler 전체에서 유일한 번호가 아니라, 해당
+  declaration의 lexical outer chain을 평탄화한 complete type-argument index다.
+  새 declaration의 local type parameter index는
+  `outer->GetAllTypeParamCount() + localIndex`로 정한다.
+- `RType_TypeVar::Apply`는 자신의 global index로 complete `RTypeArguments`를
+  조회한다. 따라서 별도의 환경 배열 없이도 nested declaration, base application,
+  trait requirement substitution을 처리할 수 있다.
+- type parameter를 인자로 적용했다는 것과 application이 closed라는 것은
+  구분한다. 예를 들어 `X<T>`는 모든 formal parameter에 argument가 전달된
+  `RAppliedDecl`이지만 argument `T`가 open type variable이다.
+- exact type/application equality는 `RTypeParam*` binder identity를 포함한
+  declaration/type-argument identity로 판정한다. `A.X`와 `F.Y`가 모두 global
+  index 0이어도 exact type으로는 다르다.
+- alpha-equivalence는 두 generic signature가 대응한다는 전제에서만 검사한다.
+  `GetGlobalIndex()`를 `$0`, `$1`, ... canonical slot으로 사용할 수 있지만,
+  requirement binder를 impl binder로 치환한 뒤 exact equality를 사용하는 방법을
+  우선 검토한다.
+- source type-name lookup에서 현재 보이는 type parameter scope가 필요하면
+  translator의 임시 lookup context로 둔다. 이는 semantic `RType` 또는
+  `RAppliedDecl`의 identity/state가 아니다.
 
 ## Related Open Points
 - Exact fields filled at fdecl / decl / impl states for each declaration kind.
 - `RImplTraitDecl`의 target struct member lookup, impl generic binder, lexical outer lookup을 body context에서 어떤 우선순위로 결합할지.
 - global identifier의 `$T0` binder-slot numbering, alias normalization, future extension/specialized target pattern identity.
-- shared `RTypeEnv`의 ownership/interning, tenv의 저장 위치(`RAppliedDecl`
-  대 decl-space/body-space), alpha-equivalence용 binder correspondence의 API.
+- alpha-equivalence를 global-index canonical comparison과 binder substitution 중
+  어느 API로 통일할지.
 - extension declaration과 separate `impl Bundle ...` syntax가 있을 때 `RImplTraitDecl`의 tree outer 및 `RExtensionDecl` conformance entry 연결 방식.
 - How `cti` generated declaration surface maps into `EDecl` / `REDecl`.
 - How opaque result identity for `some` return attaches to declaration identity.

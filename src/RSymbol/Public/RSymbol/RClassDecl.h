@@ -56,9 +56,6 @@ public:
     RSYMBOL_API void AddType(RTypeDecl* typeDecl) { typeDeclContainerComp.AddType(typeDecl); }
     void AddImplTrait(RImplTraitDecl* implTrait) { implTraitDeclContainerComp.AddImplTrait(implTrait); }
 
-    RType* GetOpenType();
-    
-
 public: // from RDecl
     RSYMBOL_API RDeclKey& GetDeclKey() final; 
     RSYMBOL_API RDecl* GetOuter() final;

@@ -55,3 +55,4 @@
 - [v] // TODO: [73] 2026-07-27, DeclKey구현
 - [ ] // TODO: [74] 2026-07-28, SmDeclRes, ImExp, IrExp, SmTypeRes의 RNamespaceGroup 구현
 - [ ] // TODO: [75] 2020-08-04, local type 구현
+- [ ] // TODO: [76] 2026-08-08, Error_Trait_MissingImpl 구현

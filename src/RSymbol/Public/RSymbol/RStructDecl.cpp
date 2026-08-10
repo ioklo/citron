@@ -58,11 +58,6 @@ RStructCtorDecl* RStructDecl::GetUnboundCopyCtor()
     return nullptr;
 }
 
-RType* RStructDecl::GetOpenType()
-{
-    return rFactory->MakeStructType(RAppliedDecl<RStructDecl>{this, MakeOpenTypeArgs(*rFactory)});
-}
-
 // from RDecl
 RDeclKey& RStructDecl::GetDeclKey()
 {

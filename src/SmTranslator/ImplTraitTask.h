@@ -7,6 +7,7 @@
 
 namespace Citron {
 
+using DiagPtr = std::shared_ptr<struct Diag>;
 class SImplTraitDecl;
 class SImplTraitFuncDecl;
 class RDecl;
@@ -34,7 +35,8 @@ public:
         : sImplDecl{sImplDecl}, outerDeclContext{outerDeclContext.Take()}, rOuter{rOuter}, rImplTraitDecl{nullptr}, rFactory{rFactory.Take()} {}
 
     std::expected<void, DiagPtr> HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContexts& contexts);
-    std::expected<void, DiagPtr> VerifyConformance(PostBuildNonTypeSymbolContexts& contexts);
+    std::expected<void, DiagPtr> CheckTarget(RStructDecl* rStructTargetDecl, PostBuildNonTypeSymbolContexts& contexts);
+    std::expected<void, DiagPtr> CheckTraitConformance(PostBuildNonTypeSymbolContexts& contexts);
 
 public: // from IPostBuildNonTypeSymbolTask
     std::expected<void, DiagPtr> PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& context) final;

@@ -16,13 +16,13 @@ RClassFuncDecl::RClassFuncDecl(RClassDecl* _class, RClassMemberAccessor accessor
 {
 }
 
-void RClassFuncDecl::Init(RDeclKey&& key, bool bStatic, RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void RClassFuncDecl::Init(RDeclKey&& key, RThisKind&& thisKind, RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
     o_key.emplace(std::move(key));
 
     commonFuncDeclComp.InitFuncSignature(
         move(funcReturn),
-        bStatic ? (RThisKind)RThisKind_Static {} : RThisKind_Handle{_class->GetOpenType()},
+        move(thisKind),
         move(funcParameters),
         bLastParameterVariadic);
 }

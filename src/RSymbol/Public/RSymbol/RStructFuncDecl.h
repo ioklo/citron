@@ -24,7 +24,7 @@ class RStructFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonCompo
 
 public:
     RSYMBOL_API RStructFuncDecl(RStructDecl* _struct, RStructMemberAccessor accessor, RName&& name, bool bSeqFunc);
-    RSYMBOL_API void Init(RDeclKey&& key, bool bStatic, RFuncReturn&& funcRet, std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
+    RSYMBOL_API void Init(RDeclKey&& key, RThisKind&& thisKind, RFuncReturn&& funcRet, std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
     bool IsSeqFunc() { return commonFuncDeclComp.IsSeqFunc(); }
     
 public: // from RDecl

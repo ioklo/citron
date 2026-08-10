@@ -13,11 +13,11 @@ RStructFuncDecl::RStructFuncDecl(RStructDecl* _struct, RStructMemberAccessor acc
 {
 }
 
-void RStructFuncDecl::Init(RDeclKey&& key, bool bStatic, RFuncReturn&& funcRet, std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
+void RStructFuncDecl::Init(RDeclKey&& key, RThisKind&& thisKind, RFuncReturn&& funcRet, std::vector<RTypeParam*>&& typeParams, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic)
 {
     o_key = std::move(key);
     genericsComp.InitTypeParams(move(typeParams));
-    commonFuncDeclComp.InitFuncSignature(move(funcRet), bStatic ? (RThisKind)RThisKind_Static {} : RThisKind_Ref{_struct->GetOpenType()}, move(funcParameters), bLastParameterVariadic);
+    commonFuncDeclComp.InitFuncSignature(move(funcRet), move(thisKind), move(funcParameters), bLastParameterVariadic);
 }
 
 RDeclKey& RStructFuncDecl::GetDeclKey()

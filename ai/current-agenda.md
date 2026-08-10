@@ -4,24 +4,22 @@
 Generic `RAppliedDecl` context and trait requirement signature matching
 
 ## Current Direction
-- Generic analysis of an `RAppliedDecl` must retain or obtain the ordered ambient
-  type-variable environment (`tenv`) at its application site.  `tenv` is needed
-  even when the application itself is closed; a type argument may itself be a
-  free type variable, so application and closedness are separate notions.
-- `tenv [T1, T5, T3] => X<T1>.Tr<list<T5>>.F<T3>` is the reference form for an
-  applied nested trait requirement.  Its complete formal-to-actual mapping is
-  `[T1, T2, T3] => [T1, list<T5>, T3]`, while its free variables are
-  `[T1, T5, T3]`.
-- Trait requirement implementation matching compares types together with their
-  respective tenvs only after the two generic signatures' binder positions have
-  been explicitly paired.  Each side then normalizes type variables by its tenv
-  slot; this is the implementation-level form of alpha-equivalence.  Function
-  generic arity/constraints and parameter passing mode remain part of the match.
-- `tenv` must be immutable and cheaply shared (for example an `RTypeEnv*` with
-  persistent outer links), not a copied vector.  It represents all lexically
-  visible type parameters at the application site, including ones absent from
-  the applied declaration's type arguments.  Whether it is stored on
-  `RAppliedDecl` or supplied by decl-space/body-space remains open.
+- `RAppliedDecl`은 `decl + complete RTypeArguments`만 보관한다. 적용 위치의
+  `RTypeEnv`/`tenv`를 semantic value에 붙여 다니지 않는다.
+- `RTypeParam::GetGlobalIndex()`는 outer부터 현재 declaration까지 평탄화한 type
+  argument slot이다. `RType_TypeVar::Apply`는 이 index로 complete
+  `RTypeArguments`를 조회한다.
+- exact type equality는 `RTypeParam*` binder identity를 비교한다. 서로 대응하는
+  generic signature의 alpha-equivalence가 필요할 때만 `GetGlobalIndex()`를
+  canonical slot으로 사용하거나, 왼쪽 binder를 오른쪽 binder로 치환한 뒤 exact
+  equality를 사용한다.
+- trait requirement와 impl 비교는 conformance target에서 binder 대응을 먼저
+  확정한 뒤 requirement의 complete type arguments를 impl binder 기준으로 만들어
+  적용한다. 예: `[X.T1, list<impl.T5>, impl.F.T6]`를 requirement signature에
+  적용한 후 impl signature와 exact 비교한다.
+- source type-name lookup에는 현재 보이는 type parameter 문맥이 필요할 수 있지만,
+  이는 translator의 임시 lookup context이며 `RType`/`RAppliedDecl`의 영구 상태가
+  아니다.
 - `STypeExp`는 value expression 번역과 같은 단계 구조를 따른다:
   `STypeExp -> ImTypeExp -> ReTypeExp`.
 - `ImTypeExp`는 type identifier/member chain을 계속 해석하는 중간 상태다. 현재
@@ -102,8 +100,8 @@ Generic `RAppliedDecl` context and trait requirement signature matching
 - `MCallable`을 semantic `Trait` call로 유지할지, 어느 IR stage에서 `Direct`/`TraitTable`/`Virtual` call target으로 분해할지
 - trait table call의 ABI shape: generic constraint dictionary, opaque metadata의 witness entry, direct conformance symbol의 관계
 - `$T0` binder slot numbering, passing kind/function generic signature의 overload identity, alias normalization API
-- `RAppliedDecl`가 tenv를 직접 보관할 때 `RTypeEnv`의 ownership/interning과
-  equality/hash에 tenv identity를 어느 범위까지 반영할지
+- alpha-equivalence를 `GetGlobalIndex()` 기반 canonical comparison으로 둘지,
+  binder substitution 후 exact comparison으로 통일할지
 - `RNodeKey`의 structured form 대 string form, category 간 same-name collision, exact key seal/register 시점
 - `RNode` API 추출 순서와 existing `RDecl` users의 migration 범위
 

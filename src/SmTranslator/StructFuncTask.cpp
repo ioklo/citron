@@ -44,9 +44,15 @@ expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
 
     auto e_parameters = context.MakeFuncParameters(sStructFunc->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
+    
+    RThisKind thisKind = [this]() -> RThisKind {
+        if (sStructFunc->bStatic) return RThisKind_Static{};
+        auto* structType = rFactory->MakeStructType(RAppliedDecl<RStructDecl>{rStruct, rStruct->MakeOpenTypeArgs(*rFactory)});
+        return RThisKind_Ref{structType};
+    }();
 
     // init
-    rStructFunc->Init(RDeclKey::Func(RName::Normal(sStructFunc->name), parameters), sStructFunc->bStatic, move(*e_funcRet), move(typeParams), move(parameters), bLastParamVariadic);
+    rStructFunc->Init(RDeclKey::Func(RName::Normal(sStructFunc->name), parameters), move(thisKind), move(*e_funcRet), move(typeParams), move(parameters), bLastParamVariadic);
 
     // AddFunc할땐 declKey가 필요하다. declKey는 FuncParamter가 필요하다
     rStruct->AddFunc(rStructFunc);

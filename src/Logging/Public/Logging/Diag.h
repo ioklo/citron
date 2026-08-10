@@ -293,6 +293,13 @@ struct Error_Argument_StmtAssign : ErrorDiag {}; // 어떤 파라미터라도 NB
 
 struct Error_FuncBody_ShouldEndWithReturn : ErrorDiag {}; // A2901_BodyShouldReturn, // 리턴 타입이 있는 본문에 리턴이 없다
 
+struct Error_ImplTrait_MismatchTypeParamCountWithTarget : ErrorDiag {}; 
+struct Error_ImplTrait_NoMatchedTraitOfTarget : ErrorDiag {};
+struct Error_ImplTrait_MissingMemberOfTrait : ErrorDiag {};
+// 모든 trait를 구현하지 않았다
+struct Error_Trait_MissingImpl : ErrorDiag {};
+
+
 struct Error_NotSupported_LambdaParameterInference : ErrorDiag { }; // A9901_NotSupported_LambdaParameterInference
 struct Error_NotSupported_LambdaReturnTypeInference : ErrorDiag {}; // A9902_NotSupported_LambdaReturnTypeInference
 

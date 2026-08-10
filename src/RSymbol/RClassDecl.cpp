@@ -28,12 +28,6 @@ RClassVarDecl* RClassDecl::GetUnboundVar(InRef<RName> name)
 }
 
 // from RDecl
-
-RType* RClassDecl::GetOpenType()
-{
-    return rFactory->MakeClassType(RAppliedDecl<RClassDecl>{this, MakeOpenTypeArgs(*rFactory)});
-}
-
 RDeclKey& RClassDecl::GetDeclKey()
 {
     return key;
