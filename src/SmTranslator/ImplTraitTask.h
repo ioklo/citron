@@ -15,7 +15,7 @@ class RImplTraitDecl;
 class RImplTraitDeclOuter;
 using RFactoryPtr = std::shared_ptr<class RFactory>; 
 
-class PhaseManager;
+class SmPhaseManager;
 using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
 class ImplTraitTask
@@ -30,7 +30,7 @@ private: // 추후에 만들어짐
     RImplTraitDecl* rImplTraitDecl;
 
 public:
-    static void Register(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
     ImplTraitTask(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, TakeRef<RFactoryPtr> rFactory)
         : sImplDecl{sImplDecl}, outerDeclContext{outerDeclContext.Take()}, rOuter{rOuter}, rImplTraitDecl{nullptr}, rFactory{rFactory.Take()} {}
 

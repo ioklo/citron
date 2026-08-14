@@ -46,6 +46,7 @@
     <ClCompile Include="ImplTraitFuncTask.cpp" />
     <ClCompile Include="ImplTraitTask.cpp" />
     <ClCompile Include="PostBuildNonTypeSymbolContext.cpp" />
+    <ClCompile Include="RTypeToSmType.cpp" />
     <ClCompile Include="SExpTranslations.cpp" />
     <ClCompile Include="SExp_CallToImExp.cpp" />
     <ClCompile Include="SExp_IdentifierToImExp.cpp" />
@@ -59,12 +60,13 @@
     <ClCompile Include="IrExpToMLoc.cpp" />
     <ClCompile Include="IrExpToMSharedExp.cpp" />
     <ClCompile Include="SmBodyRes.cpp" />
-    <ClCompile Include="PhaseManager.cpp" />
+    <ClCompile Include="SmPhaseManager.cpp" />
     <ClCompile Include="ReExpToMIR.cpp" />
     <ClCompile Include="BuildTypeHierarchyContext.cpp" />
     <ClCompile Include="SExpToIrExp.cpp" />
     <ClCompile Include="SExp_MemberToImExp.cpp" />
     <ClCompile Include="SmDeclRes.cpp" />
+    <ClCompile Include="SmType.cpp" />
     <ClCompile Include="STypeExp_MemberToImTypeExp.cpp" />
     <ClCompile Include="SmTypeRes.cpp" />
     <ClCompile Include="SmTypeResolveScope.cpp" />
@@ -107,6 +109,9 @@
   <ItemGroup>
     <ClInclude Include="ImplTraitFuncTask.h" />
     <ClInclude Include="ImTypeExp.h" />
+    <ClInclude Include="RAppliedDeclToSmAppliedDecl.h" />
+    <ClInclude Include="RTypeToSmType.h" />
+    <ClInclude Include="SmAppliedDecl.h" />
     <ClInclude Include="SmBodyRes.h" />
     <ClInclude Include="ImExpTranslations.h" />
     <ClInclude Include="ImplTraitTask.h" />
@@ -126,7 +131,7 @@
     <ClInclude Include="IrExpToMLoc.h" />
     <ClInclude Include="IrExpToMSharedExp.h" />
     <ClInclude Include="IrExpVisitor.g.h" />
-    <ClInclude Include="PhaseManager.h" />
+    <ClInclude Include="SmPhaseManager.h" />
     <ClInclude Include="Public\SmTranslator\SmTranslator.h" />
     <ClInclude Include="BinOpQueryService.h" />
     <ClInclude Include="ReExpToMIR.h" />
@@ -134,6 +139,8 @@
     <ClInclude Include="SExpToIrExp.h" />
     <ClInclude Include="SExp_MemberToImExp.h" />
     <ClInclude Include="SmDeclRes.h" />
+    <ClInclude Include="SmType.h" />
+    <ClInclude Include="SmTypeEnv.h" />
     <ClInclude Include="STypeExp_MemberToImTypeExp.h" />
     <ClInclude Include="SmTypeRes.h" />
     <ClInclude Include="SmTypeResolveScope.h" />

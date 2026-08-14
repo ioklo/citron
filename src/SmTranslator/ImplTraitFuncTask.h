@@ -11,7 +11,7 @@ class SImplTraitFuncDecl;
 class RImplTraitFuncDecl;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 
-class PhaseManager;
+class SmPhaseManager;
 class TranslateBodyContext;
 using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
@@ -24,7 +24,7 @@ class ImplTraitFuncTask
     RFactoryPtr rFactory;
 
 public:
-    static void Register(TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
     ImplTraitFuncTask(TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, TakeRef<RFactoryPtr> rFactory);
 
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) final;

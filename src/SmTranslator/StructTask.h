@@ -8,7 +8,7 @@ namespace Citron {
 class SStructDecl;
 class RStructDecl;
 
-class PhaseManager;
+class SmPhaseManager;
 enum class AccessorContext;
 using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
@@ -24,7 +24,7 @@ private:
     StructTask(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructDecl* syntax);
 
 public:
-    static void Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructDecl* syntax, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructDecl* syntax, SmPhaseManager& phaseManager);
     
     std::expected<void, DiagPtr> BuildTypeHierarchy(BuildTypeHierarchyContext& context) override;
     void BuildImplicitSymbol(BuildImplicitSymbolContext& context) override;

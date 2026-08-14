@@ -9,7 +9,7 @@ class RStructDecl;
 class RStructVarDecl;
 class SStructVarDecl;
 
-class PhaseManager;
+class SmPhaseManager;
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
@@ -28,7 +28,7 @@ private:
     {}
 
 public:
-    static void Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
     std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
 };
 

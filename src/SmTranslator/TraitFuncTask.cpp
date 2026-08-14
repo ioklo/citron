@@ -6,7 +6,7 @@
 #include "RSymbol/RTraitMemberDecl.h"
 #include "RSymbol/RDeclKey.h"
 #include "BuildNonTypeSymbolContext.h"
-#include "PhaseManager.h"
+#include "SmPhaseManager.h"
 #include "CommonTranslation.h"
 #include "SmTypeTranslation.h"
 #include "SmTypeResolveScope.h"
@@ -15,7 +15,7 @@ using namespace std;
 
 namespace Citron {
 
-void TraitFuncTask::Register(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void TraitFuncTask::Register(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     shared_ptr<TraitFuncTask> task{new TraitFuncTask{move(traitDeclContext), rTraitDecl, sTraitFuncDecl, move(rFactory)}};
 

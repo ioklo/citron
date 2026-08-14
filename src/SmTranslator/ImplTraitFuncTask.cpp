@@ -5,13 +5,13 @@
 #include "MIR/MFuncBody.h"
 #include "SmDeclContext_Decl.h"
 #include "TranslateBodyContext.h"
-#include "PhaseManager.h"
+#include "SmPhaseManager.h"
 
 using namespace std;
 
 namespace Citron {
 
-void ImplTraitFuncTask::Register(TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void ImplTraitFuncTask::Register(TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     auto task = MakePtr<ImplTraitFuncTask>(move(outerDeclContext), rImplTraitFuncDecl, sImplTraitFuncDecl, move(rFactory));
     phaseManager.AddTranslateBodyTask(task);

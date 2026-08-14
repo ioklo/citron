@@ -13,7 +13,7 @@ class RGlobalFuncDecl;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
-class PhaseManager;
+class SmPhaseManager;
 
 class GlobalFuncTask 
     : public IBuildNonTypeSymbolTask
@@ -32,7 +32,7 @@ class GlobalFuncTask
     }
 
 public:
-    static void Register(TakeRef<SmDeclContextPtr> outerDeclContext, RNamespace* rOuter, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> outerDeclContext, RNamespace* rOuter, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
 
     std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;

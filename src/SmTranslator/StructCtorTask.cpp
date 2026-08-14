@@ -9,7 +9,7 @@
 #include "CommonTranslation.h"
 #include "BuildNonTypeSymbolContext.h"
 #include "TranslateBodyContext.h"
-#include "PhaseManager.h"
+#include "SmPhaseManager.h"
 #include "SmDeclContext_Decl.h"
 #include "SmTypeTranslation.h"
 #include "SmTypeResolveScope.h"
@@ -18,7 +18,7 @@ using namespace std;
 
 namespace Citron {
 
-void StructCtorTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void StructCtorTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     shared_ptr<StructCtorTask> task{new StructCtorTask{move(structDeclContext), rStruct, sStructCtor, std::move(rFactory)}};
 

@@ -32,6 +32,9 @@ public:
     RSYMBOL_API RTraitFuncDecl(RTraitDecl* trait, bool bStatic, RName&& name);
     RSYMBOL_API void Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParamVariadic);
 
+    RFuncReturn GetUnboundFuncReturn() { return o_lazyInit->funcReturn; }
+    std::span<RFuncParameter> GetUnboundFuncParameters() { return o_lazyInit->funcParameters; }
+
 public: // from RDecl
     RSYMBOL_API RDeclKey& GetDeclKey() final;
     RSYMBOL_API RDecl* GetOuter() final;

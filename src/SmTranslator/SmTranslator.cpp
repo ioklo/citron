@@ -35,7 +35,7 @@
 #include "EnumElemVarTask.h"
 #include "TraitFuncTask.h"
 #include "ImplTraitTask.h"
-#include "PhaseManager.h"
+#include "SmPhaseManager.h"
 #include "CommonTranslation.h"
 #include "BinOpQueryService.h"
 #include "SmDeclContext_Decl.h"
@@ -53,10 +53,10 @@ class StructElemVisitor
     SmDeclContextPtr structDeclContext; // rStruct의 declContext
     RStructDecl* rStruct;
     RFactoryPtr rFactory;
-    PhaseManager& phaseManager;
+    SmPhaseManager& phaseManager;
 
 public:
-    StructElemVisitor(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+    StructElemVisitor(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
         : structDeclContext{structDeclContext.Take()}, rStruct{rStruct}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
     {}
 
@@ -78,10 +78,10 @@ class ClassElemVisitor
     SmDeclContextPtr classDeclContext;
     RClassDecl* rClass;
     RFactoryPtr rFactory;
-    PhaseManager& phaseManager;
+    SmPhaseManager& phaseManager;
 
 public:
-    ClassElemVisitor(TakeRef<SmDeclContextPtr> classDeclContext, RClassDecl* outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+    ClassElemVisitor(TakeRef<SmDeclContextPtr> classDeclContext, RClassDecl* outer, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
         : classDeclContext{classDeclContext.Take()}, rClass{outer}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
     {}
 
@@ -103,10 +103,10 @@ class NamespaceElemVisitor
     SmDeclContextPtr namespaceDeclContext;
     RNamespace* curNS;
     RFactoryPtr rFactory;
-    PhaseManager& phaseManager;
+    SmPhaseManager& phaseManager;
 
 public:
-    NamespaceElemVisitor(TakeRef<SmDeclContextPtr> namespaceDeclContext, RNamespace* curNS, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+    NamespaceElemVisitor(TakeRef<SmDeclContextPtr> namespaceDeclContext, RNamespace* curNS, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
         : namespaceDeclContext{namespaceDeclContext.Take()}, curNS{curNS}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
     {
     }
@@ -127,10 +127,10 @@ class ScriptElemVisitor
     SmDeclContextPtr rootDeclContext;
     RNamespace* rootNamespace;
     RFactoryPtr rFactory;
-    PhaseManager& phaseManager;
+    SmPhaseManager& phaseManager;
 
 public:
-    ScriptElemVisitor(TakeRef<SmDeclContextPtr> rootDeclContext, RNamespace* rootNamespace, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+    ScriptElemVisitor(TakeRef<SmDeclContextPtr> rootDeclContext, RNamespace* rootNamespace, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
         : rootDeclContext{rootDeclContext.Take()}, rootNamespace{rootNamespace}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
     {
     }
@@ -146,12 +146,12 @@ public:
     void Visit(SImplTraitDecl* elem);
 };
 
-void VisitGlobalFunc(TakeRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl* sGFuncDecl, RNamespace* outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitGlobalFunc(TakeRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl* sGFuncDecl, RNamespace* outer, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {   
     GlobalFuncTask::Register(move(outerDeclContext), outer, sGFuncDecl, move(rFactory), phaseManager);
 }
 
-void VisitStruct(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SStructDecl* syntax, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitStruct(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SStructDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {   
     RName name{RName::Normal(syntax->name)};
     auto* rStructDecl = (*rFactory)->MakeDecl<RStructDecl>(RDeclKey::Normal(name), outer, move(name), *rFactory);
@@ -174,7 +174,7 @@ void VisitStruct(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter oute
 }
 
 // body를 만들지 않으므로 declContext를 만들지 않는다
-void VisitEnum(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitEnum(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SEnumDecl* sEnum, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {   
     RName enumName{RName::Normal(sEnum->name)};
 
@@ -205,7 +205,7 @@ void VisitEnum(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer,
     }
 }
 
-void VisitTrait(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, STraitDecl* sTrait, InRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitTrait(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, STraitDecl* sTrait, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     RName traitName{RName::Normal(sTrait->name)};
     auto* rTraitDecl = (*rFactory)->MakeDecl<RTraitDecl>(RDeclKey::Normal(traitName), outer, move(traitName), *rFactory);
@@ -232,7 +232,7 @@ void VisitTrait(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer
 }
 
 // Impl을 만드려고 하면은, trait, struct 등이 살아있어야 한다
-void VisitImplTrait(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter outer, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void VisitImplTrait(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter outer, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     ImplTraitTask::Register(sImplDecl, move(outerDeclContext), outer, move(rFactory), phaseManager);
 }
@@ -489,7 +489,7 @@ expected<SmTranslationResult, DiagPtr> TranslateSyntax(
     auto smFactory = MakePtr<SmFactory>();
     auto binOpQueryService = MakePtr<BinOpQueryService>(**rFactory);
     
-    PhaseManager phaseManager{*logger, *rFactory, *mFactory, smFactory, binOpQueryService};
+    SmPhaseManager phaseManager{*logger, *rFactory, *mFactory, smFactory, binOpQueryService};
     auto* emptyTypeArgs = (*rFactory)->MakeEmptyTypeArguments();
     for (auto* script : scripts) // translation units
     {
