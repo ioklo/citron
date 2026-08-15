@@ -16,11 +16,13 @@ Citron compiler 내부 모델과 lowering 지식을 agent가 빠르게 찾기 �
 - witness, ABI, call lowering은 `value-and-trait-witness.md`, `qir-call-abi.md`
 - syntax to MIR(IR0) translator는 `syntax-ir0-translator.md`
 - member lookup helper와 conditional binding lowering은 `member-translation.md`, `if-is-lowering.md`
+- generic type application, lazy substitution, trait signature matching은 `lazy-type-substitution.md`
 
 ## Core Topics
 - `compile-pipeline.md` : skeleton/cti/body/lowering phase 개요
 - `value-and-trait-witness.md` : value witness와 trait witness
 - `declaration-model.md` : `RDecl`에서 `RNode`로 가는 declaration / symbol model
+- `lazy-type-substitution.md` : canonical `RType` 위의 `SmTypeView`, substitution chain, signature matching
 - `nsymbol-rsymbol-migration.md` : `NSymbol` declaration 구현을 `RSymbol`로 옮긴 범위와 후속 정리
 - `implementation-naming.md` : declaration / symbol / resolver implementation naming
 - `syntax-ir0-translator.md` : Syntax to MIR(IR0) translator overview

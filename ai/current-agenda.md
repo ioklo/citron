@@ -1,25 +1,32 @@
 # Current Agenda
 
 ## Topic
-Generic `RAppliedDecl` context and trait requirement signature matching
+Lazy generic type substitution and trait requirement signature matching
 
 ## Current Direction
-- `RAppliedDecl`은 `decl + complete RTypeArguments`만 보관한다. 적용 위치의
-  `RTypeEnv`/`tenv`를 semantic value에 붙여 다니지 않는다.
-- `RTypeParam::GetGlobalIndex()`는 outer부터 현재 declaration까지 평탄화한 type
-  argument slot이다. `RType_TypeVar::Apply`는 이 index로 complete
-  `RTypeArguments`를 조회한다.
-- exact type equality는 `RTypeParam*` binder identity를 비교한다. 서로 대응하는
-  generic signature의 alpha-equivalence가 필요할 때만 `GetGlobalIndex()`를
-  canonical slot으로 사용하거나, 왼쪽 binder를 오른쪽 binder로 치환한 뒤 exact
-  equality를 사용한다.
-- trait requirement와 impl 비교는 conformance target에서 binder 대응을 먼저
-  확정한 뒤 requirement의 complete type arguments를 impl binder 기준으로 만들어
-  적용한다. 예: `[X.T1, list<impl.T5>, impl.F.T6]`를 requirement signature에
-  적용한 후 impl signature와 exact 비교한다.
-- source type-name lookup에는 현재 보이는 type parameter 문맥이 필요할 수 있지만,
-  이는 translator의 임시 lookup context이며 `RType`/`RAppliedDecl`의 영구 상태가
-  아니다.
+- `RType`은 canonical semantic type expression으로 유지한다. SmTranslator의 generic
+  계산 상태는 mirrored `SmType` hierarchy가 아니라
+  `SmTypeView { RType*, SmTypeSubstitution* }`로 표현하는 방향이다.
+- `SmTypeSubstitution`은 `RTypeParam* formal -> SmTypeView actual` mapping을 persistent
+  chain으로 보관한다. actual도 caller의 substitution 아래에 있을 수 있으므로 bare
+  `RType*`가 아니라 contextual view여야 한다.
+- generic member projection과 signature comparison에서는 치환된 `RType` tree를
+  즉시 만들지 않는다. 원본 `RType`과 substitution을 함께 전달하고, parameter
+  projection, member lookup, type equality처럼 관찰이 필요한 지점에서만 resolve한다.
+- lexical/binder context와 substitution을 구분한다. context는 lookup과 constraint에
+  사용하고, substitution은 callee formal을 actual type view에 대응시킨다. 적용
+  위치의 full `RTypeEnv`를 `RType`/`RAppliedDecl` identity에 넣지 않는다.
+- exact type equality는 substitution을 필요한 만큼 resolve한 뒤 `RTypeParam*` binder
+  identity를 비교한다. 대응하는 generic callable의 alpha-equivalence는 requirement
+  binder를 impl binder로 ordinal mapping한 뒤 exact view comparison으로 환원한다.
+- trait requirement와 impl 비교는 applied trait의 outer substitution에
+  `trait.F.Tn -> impl.F.Tm` binder mapping을 결합해 lazy signature view끼리 비교한다.
+  fresh binder나 완전히 instantiate된 signature tree를 만들지 않는다.
+- `RType::Apply`는 interning, serialization, lowering contract처럼 canonical type
+  materialization이 필요한 경계의 helper로 남을 수 있으나 generic 분석의 기본
+  계산 모델로 사용하지 않는다.
+- `ROuterAppliedDecl`/`RAppliedDecl`의 canonical RSymbol 역할은 유지하되,
+  `SmAppliedDecl`/`SmTypeView`와의 정확한 책임 경계는 구현 설계가 남아 있다.
 - `STypeExp`는 value expression 번역과 같은 단계 구조를 따른다:
   `STypeExp -> ImTypeExp -> ReTypeExp`.
 - `ImTypeExp`는 type identifier/member chain을 계속 해석하는 중간 상태다. 현재
@@ -62,6 +69,9 @@ Generic `RAppliedDecl` context and trait requirement signature matching
 - declaration 구현과 주 번역 경로는 `NSymbol`에서 `RSymbol`로 이행됐다. `RFactory`가 `RDecl`을 소유·생성한다.
 - `NSymbol`에는 현재 `NFactory` wrapper와 일부 비주력 target/test의 old API 참조가 남아 있다.
 - trait/impl은 parser/AST까지만 연결돼 있으며, `RTraitDecl`, trait type/factory, SmTranslator visitor/task는 아직 구현 대상이다.
+- merge된 `e84dc27c`의 mirrored `SmType`/index-based `SmType_TypeVar`/
+  `RTypeToSmType` 구현은 이전 WIP prototype이다. 현재 설계는 이를 `SmTypeView`와
+  lazy substitution으로 대체하는 방향이며 source migration은 아직 시작하지 않았다.
 - 자세한 이행 범위와 잔재는 `ai/wiki/compiler/nsymbol-rsymbol-migration.md`를 본다.
 
 ## Recently Discussed Points
@@ -74,14 +84,11 @@ Generic `RAppliedDecl` context and trait requirement signature matching
 - type lookup은 current header의 binder만 보는 경우와 normal member lookup을 구분한다. inheritance lookup은 outer lookup과 별개이며, `ResolveInheritedTypeMember`/`ResolveInheritedMember`처럼 applied base type arguments를 유지하는 좁은 hook 후보를 검토 중이다.
 - Citron은 generic definition을 `RTypeDecl`로 두고 unbound `RType`은 만들지 않는다. `RType`은 `S<T>`(open) 또는 `S<int>`(closed)처럼 arguments가 적용된 type만 나타낸다. `RDeclRes`의 outer-applied 상태는 type이 아니라 lookup declaration context다.
 - `RDeclRes` 반환 여부가 아니라 탐색 범위로 `Get`/`Resolve`를 구분하도록 적용했다. direct lookup 결과는 `ROuterAppliedDecl`/`RAppliedDecl`로 표현하고, 함수의 explicit type argument prefix는 RSymbol result가 아니라 SmTranslator의 `SmPartiallyAppliedFuncDeclGroup`에 둔다.
-- `RAppliedDecl`은 declaration의 모든 formal type parameter에 argument가 전달된
-  relation이다. argument 자체는 open type variable일 수 있으므로 fully-applied와
-  closed를 같은 뜻으로 쓰지 않는다. 자체 type parameter가 없는
-  lambda/variable/enum element도 lexical outer arguments까지 적용됐다면
-  `RAppliedDecl`을 사용한다. member 자신의 type arguments를 아직 받지 않은
-  nominal type/function lookup은 `ROuterAppliedDecl` 또는 partial-application
-  결과로 유지하되, requirement signature 비교는 새 type variable을 해당 member
-  argument로 적용해 `RAppliedDecl`을 만든다.
+- `RAppliedDecl`은 declaration의 모든 formal slot에 argument가 전달된 canonical
+  relation이며, applied와 closed는 구분한다. member 자신의 type arguments가 아직
+  없는 nominal type/function lookup은 `ROuterAppliedDecl` 또는 partial application
+  상태로 유지한다. SmTranslator가 parameter type이나 requirement signature를
+  관찰할 때는 새 type tree를 만들지 않고 `SmTypeView`에 lazy substitution을 붙인다.
 - trait call은 call-site에서 source-local `NImplTraitFunc`를 보관하지 않는다. semantic `Trait` call은 `RTraitFuncDecl`과 applied trait identity를 보관하고, lowering이 concrete conformance에는 direct impl call을, generic constraint와 `some Trait` opaque value에는 trait table call을 선택한다.
 - `RImplTraitDecl` subtree는 impl syntax의 lexical outer에 둔다. target struct와 matched conformance header는 typed relation으로 따로 둔다.
 - `RImplTraitDecl`은 ordinary `RName` member lookup scope가 아니다. trait requirement implementation은 `RTraitFuncDecl -> RImplTraitFuncDecl` relation으로 찾으며, future extension-private helper scope에만 별도 name index 필요성을 재검토한다.
@@ -100,8 +107,14 @@ Generic `RAppliedDecl` context and trait requirement signature matching
 - `MCallable`을 semantic `Trait` call로 유지할지, 어느 IR stage에서 `Direct`/`TraitTable`/`Virtual` call target으로 분해할지
 - trait table call의 ABI shape: generic constraint dictionary, opaque metadata의 witness entry, direct conformance symbol의 관계
 - `$T0` binder slot numbering, passing kind/function generic signature의 overload identity, alias normalization API
-- alpha-equivalence를 `GetGlobalIndex()` 기반 canonical comparison으로 둘지,
-  binder substitution 후 exact comparison으로 통일할지
+- `SmTypeSubstitution`의 owner/lifetime을 `SmFactory` arena와 persistent immutable
+  object 중 어느 방식으로 둘지
+- canonical `RAppliedDecl`/`RTypeArguments`와 transient
+  `SmAppliedDecl`/`SmTypeView`의 정확한 책임 경계
+- lazy `ResolveTypeVar`, member lookup, equality, materialization API와 chain
+  flattening/memoization 정책
+- declaration-owned bound `RTypeParam`과 inference/skolem variable의 표현을 어떻게
+  분리할지
 - `RNodeKey`의 structured form 대 string form, category 간 same-name collision, exact key seal/register 시점
 - `RNode` API 추출 순서와 existing `RDecl` users의 migration 범위
 

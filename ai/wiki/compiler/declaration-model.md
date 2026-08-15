@@ -51,36 +51,40 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 
 ## Generic Applied Declaration And Type Parameters
 
-- `RAppliedDecl`은 `decl`과 outer부터 member 자신까지 모두 적용된 complete
-  `RTypeArguments`만 보관한다. 적용 위치의 `RTypeEnv`/`tenv`를 `RAppliedDecl`이나
-  중첩 `RType`에 넣지 않는다.
-- `RTypeParam::GetGlobalIndex()`는 compiler 전체에서 유일한 번호가 아니라, 해당
-  declaration의 lexical outer chain을 평탄화한 complete type-argument index다.
-  새 declaration의 local type parameter index는
-  `outer->GetAllTypeParamCount() + localIndex`로 정한다.
-- `RType_TypeVar::Apply`는 자신의 global index로 complete `RTypeArguments`를
-  조회한다. 따라서 별도의 환경 배열 없이도 nested declaration, base application,
-  trait requirement substitution을 처리할 수 있다.
+- `RType`은 canonical semantic type expression이며 `RType_TypeVar`는
+  `RTypeParam*`로 declaration-owned binder identity를 보관한다.
+- `RAppliedDecl`은 `decl`과 outer부터 member 자신까지 argument slot이 공급된
+  canonical RSymbol relation이다. 적용 위치의 full `RTypeEnv`/`tenv`를 identity에
+  넣지 않는다.
 - type parameter를 인자로 적용했다는 것과 application이 closed라는 것은
   구분한다. 예를 들어 `X<T>`는 모든 formal parameter에 argument가 전달된
   `RAppliedDecl`이지만 argument `T`가 open type variable이다.
-- exact type/application equality는 `RTypeParam*` binder identity를 포함한
-  declaration/type-argument identity로 판정한다. `A.X`와 `F.Y`가 모두 global
-  index 0이어도 exact type으로는 다르다.
-- alpha-equivalence는 두 generic signature가 대응한다는 전제에서만 검사한다.
-  `GetGlobalIndex()`를 `$0`, `$1`, ... canonical slot으로 사용할 수 있지만,
-  requirement binder를 impl binder로 치환한 뒤 exact equality를 사용하는 방법을
-  우선 검토한다.
+- generic member projection과 signature comparison의 기본 계산 모델은
+  SmTranslator-local `SmTypeView { RType*, substitution }`다. canonical `RType`을
+  즉시 rebuild하지 않고 관찰 시점에만 lazy substitution을 resolve한다.
+- substitution entry는 `RTypeParam* formal -> SmTypeView actual`이다. actual type
+  expression도 caller substitution 아래에 있을 수 있으므로 bare `RType*`만
+  보관해서는 안 된다.
+- exact type/application equality는 필요한 substitution을 resolve한 뒤
+  `RTypeParam*` binder identity를 포함한 declaration/type identity로 판정한다.
+  `A.X`와 `F.Y`가 같은 positional index여도 exact type으로는 다르다.
+- alpha-equivalence는 두 generic signature가 대응한다는 전제에서 requirement
+  binder를 impl binder로 mapping한 뒤 exact contextual comparison으로 환원한다.
+- `RType::Apply`는 canonical materialization이 필요한 경계에 남을 수 있지만,
+  일반 generic 분석에서 eager instantiation을 만드는 주 경로로 사용하지 않는다.
 - source type-name lookup에서 현재 보이는 type parameter scope가 필요하면
   translator의 임시 lookup context로 둔다. 이는 semantic `RType` 또는
-  `RAppliedDecl`의 identity/state가 아니다.
+  `RAppliedDecl`의 identity/state나 substitution 자체가 아니다.
 
 ## Related Open Points
 - Exact fields filled at fdecl / decl / impl states for each declaration kind.
 - `RImplTraitDecl`의 target struct member lookup, impl generic binder, lexical outer lookup을 body context에서 어떤 우선순위로 결합할지.
 - global identifier의 `$T0` binder-slot numbering, alias normalization, future extension/specialized target pattern identity.
-- alpha-equivalence를 global-index canonical comparison과 binder substitution 중
-  어느 API로 통일할지.
+- lazy substitution chain의 ownership/lifetime, flattening/memoization, cycle
+  detection 정책.
+- canonical `RAppliedDecl`/`RTypeArguments`와 transient
+  `SmAppliedDecl`/`SmTypeView`의 정확한 책임 경계.
+- bound `RTypeParam`과 inference/skolem variable의 표현 경계.
 - extension declaration과 separate `impl Bundle ...` syntax가 있을 때 `RImplTraitDecl`의 tree outer 및 `RExtensionDecl` conformance entry 연결 방식.
 - How `cti` generated declaration surface maps into `EDecl` / `REDecl`.
 - How opaque result identity for `some` return attaches to declaration identity.
@@ -90,3 +94,5 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - `ai/notes/2026-06-27-rdecl-rnode-and-lookup-direction.md`
 - `ai/notes/2026-05-12-module-visibility-and-internal-fdecl-direction.md`
 - `ai/notes/2026-07-15-generic-impl-and-specialized-conformance.md`
+- `ai/wiki/compiler/lazy-type-substitution.md`
+- `ai/notes/2026-08-15-lazy-type-substitution-and-smtypeview.md`
