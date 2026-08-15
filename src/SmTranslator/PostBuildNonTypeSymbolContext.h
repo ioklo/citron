@@ -11,17 +11,17 @@ namespace Citron {
 using DiagPtr = std::shared_ptr<struct Diag>;
 class STypeExp;
 class RTraitDecl;
-class RTypeArguments;
 class RTypeParam;
-class RTypeDecl;
 class RFactory;
 class SmDeclContext;
-class PhaseManager;
+class SmPhaseManager;
+class SmFactory;
 
 struct PostBuildNonTypeSymbolContexts
 {
-    PhaseManager* phaseManager;
+    SmPhaseManager* phaseManager;
     RFactory* rFactory;
+    SmFactory* smFactory;
     
 public:
     std::expected<RAppliedDecl<RTraitDecl>, DiagPtr> MakeTrait(STypeExp* sTypeExp, SmDeclContext* declContext, std::span<RTypeParam*> typeParams);

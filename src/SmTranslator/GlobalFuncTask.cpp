@@ -10,7 +10,7 @@
 #include "MIR/MFuncBody.h"
 
 #include "CommonTranslation.h"
-#include "PhaseManager.h"
+#include "SmPhaseManager.h"
 #include "BuildNonTypeSymbolContext.h"
 #include "TranslateBodyContext.h"
 #include "SmDeclContext_Decl.h"
@@ -21,7 +21,7 @@ using namespace std;
 
 namespace Citron {
 
-void GlobalFuncTask::Register(TakeRef<SmDeclContextPtr> outerDeclContext, RNamespace* outer, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void GlobalFuncTask::Register(TakeRef<SmDeclContextPtr> outerDeclContext, RNamespace* outer, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     shared_ptr<GlobalFuncTask> task{new GlobalFuncTask{move(outerDeclContext), outer, syntax, move(rFactory)}};
     phaseManager.AddBuildNonTypeSymbolTask(task);

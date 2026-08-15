@@ -10,7 +10,7 @@
 
 #include "BuildNonTypeSymbolContext.h"
 #include "CommonTranslation.h"
-#include "PhaseManager.h"
+#include "SmPhaseManager.h"
 #include "SmTypeTranslation.h"
 #include "SmTypeResolveScope.h"
 #include "SmTypeTranslationContexts.h"
@@ -19,7 +19,7 @@ using namespace std;
 
 namespace Citron {
 
-void StructVarTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void StructVarTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     shared_ptr<StructVarTask> task{new StructVarTask(move(structDeclContext), rOuter, syntax, move(rFactory))};
     phaseManager.AddBuildNonTypeSymbolTask(task);

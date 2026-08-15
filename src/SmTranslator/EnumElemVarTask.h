@@ -13,7 +13,7 @@ class REnumDecl;
 class REnumElemDecl;
 class REnumElemVarDecl;
 
-class PhaseManager;
+class SmPhaseManager;
 enum class AccessorContext;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
@@ -32,7 +32,7 @@ class EnumElemVarTask
     }
 
 public:
-    static void Register(TakeRef<SmDeclContextPtr> enumElemDeclContext, REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> enumElemDeclContext, REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
     std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
 };
 

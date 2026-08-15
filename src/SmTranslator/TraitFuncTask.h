@@ -6,7 +6,7 @@ namespace Citron {
 
 class RTraitDecl;
 class STraitFuncDecl;
-class PhaseManager;
+class SmPhaseManager;
 
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
@@ -21,7 +21,7 @@ class TraitFuncTask
     RFactoryPtr rFactory;
 
 public:
-    static void Register(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
 
 private:
     TraitFuncTask(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory);

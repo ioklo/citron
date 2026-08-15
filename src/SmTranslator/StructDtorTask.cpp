@@ -10,7 +10,7 @@
 
 #include "CommonTranslation.h"
 
-#include "PhaseManager.h"
+#include "SmPhaseManager.h"
 #include "TranslateBodyContext.h"
 #include "SmDeclContext_Decl.h"
 
@@ -36,7 +36,7 @@ std::expected<MFuncBody, DiagPtr> StructDtorTask::TranslateBody(TranslateBodyCon
     return context.Translate(declContext, rStructDtor, /*bSeqFunc*/false, sStructDtor->body);
 }
 
-void StructDtorTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void StructDtorTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     auto task = MakePtr<StructDtorTask>(move(structDeclContext), rStruct, sStructDtor, move(rFactory));
 

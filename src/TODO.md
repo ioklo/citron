@@ -56,3 +56,4 @@
 - [ ] // TODO: [74] 2026-07-28, SmDeclRes, ImExp, IrExp, SmTypeRes의 RNamespaceGroup 구현
 - [ ] // TODO: [75] 2020-08-04, local type 구현
 - [ ] // TODO: [76] 2026-08-08, Error_Trait_MissingImpl 구현
+- [ ] // TODO: [77] 2026-08-11, trait-impl 효율적으로 검색하기

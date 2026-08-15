@@ -24,7 +24,7 @@ using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 // Phase 4 : SynthesizeImplicitPhase (memberwise-ctor)
 // Phase 5 : TranslateBodyPhase 
 
-class PhaseManager
+class SmPhaseManager
 {   
     LoggerPtr logger;
     RFactoryPtr rFactory;
@@ -40,11 +40,11 @@ class PhaseManager
     std::vector<std::shared_ptr<ITranslateBodyTask>> translatingBodyTasks;
 
 public:
-    PhaseManager(
+    SmPhaseManager(
         TakeRef<LoggerPtr> logger, 
         TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
         TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
-    ~PhaseManager(); 
+    ~SmPhaseManager(); 
 
     void AddBuildTypeHierarchyTask(std::shared_ptr<IBuildTypeHierarchyTask>&& task);
     void AddBuildNonTypeSymbolTask(std::shared_ptr<IBuildNonTypeSymbolTask>&& task);

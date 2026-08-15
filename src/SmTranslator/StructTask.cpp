@@ -10,7 +10,7 @@
 #include "RSymbol/RStructCtorDecl.h"
 
 #include "CommonTranslation.h"
-#include "PhaseManager.h"
+#include "SmPhaseManager.h"
 #include "BuildTypeHierarchyContext.h"
 #include "BuildImplicitSymbolContext.h"
 #include "Misc.h"
@@ -27,7 +27,7 @@ StructTask::StructTask(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl*
 {
 }
 
-void StructTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructDecl* syntax, PhaseManager& phaseManager)
+void StructTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructDecl* syntax, SmPhaseManager& phaseManager)
 {
     shared_ptr<StructTask> task{new StructTask(move(structDeclContext), rStructDecl, syntax)};
     phaseManager.AddBuildTypeHierarchyTask(task);

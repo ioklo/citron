@@ -8,7 +8,7 @@ namespace Citron {
 class RStructDecl;
 class RStructDtorDecl;
 class SStructDtorDecl;
-class PhaseManager;
+class SmPhaseManager;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
@@ -29,7 +29,7 @@ public:
     std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
 
 public:
-    static void Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager);
+    static void Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
 };
 
 } // namespace Citron

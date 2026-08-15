@@ -1,4 +1,4 @@
-#include "PhaseManager.h"
+#include "SmPhaseManager.h"
 
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
@@ -28,7 +28,7 @@ using namespace std;
 
 namespace Citron {
 
-PhaseManager::PhaseManager(
+SmPhaseManager::SmPhaseManager(
     TakeRef<LoggerPtr> logger, 
     TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
     TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService)
@@ -37,34 +37,34 @@ PhaseManager::PhaseManager(
     , binOpQueryService{binOpQueryService.Take()}
 {}
 
-PhaseManager::~PhaseManager() = default;
+SmPhaseManager::~SmPhaseManager() = default;
 
-void PhaseManager::AddBuildTypeHierarchyTask(std::shared_ptr<IBuildTypeHierarchyTask>&& task)
+void SmPhaseManager::AddBuildTypeHierarchyTask(std::shared_ptr<IBuildTypeHierarchyTask>&& task)
 {
     buildTypeHierarchyTasks.push_back(move(task));
 }
 
-void PhaseManager::AddBuildNonTypeSymbolTask(std::shared_ptr<IBuildNonTypeSymbolTask>&& task)
+void SmPhaseManager::AddBuildNonTypeSymbolTask(std::shared_ptr<IBuildNonTypeSymbolTask>&& task)
 {
     buildNonTypeSymbolTasks.push_back(move(task));
 }
 
-void PhaseManager::AddPostBuildNonTypeSymbolTask(std::shared_ptr<IPostBuildNonTypeSymbolTask>&& task)
+void SmPhaseManager::AddPostBuildNonTypeSymbolTask(std::shared_ptr<IPostBuildNonTypeSymbolTask>&& task)
 {
     postBuildNonTypeSymbolTasks.push_back(move(task));
 }
 
-void PhaseManager::AddBuildImplicitSymbolTask(std::shared_ptr<IBuildImplicitSymbolTask>&& task)
+void SmPhaseManager::AddBuildImplicitSymbolTask(std::shared_ptr<IBuildImplicitSymbolTask>&& task)
 {
     buildImplicitSymbolTasks.push_back(move(task));
 }
 
-void PhaseManager::AddTranslateBodyTask(std::shared_ptr<ITranslateBodyTask>&& task)
+void SmPhaseManager::AddTranslateBodyTask(std::shared_ptr<ITranslateBodyTask>&& task)
 {
     translatingBodyTasks.push_back(move(task));
 }
 
-expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
+expected<vector<MFuncBody>, DiagPtr> SmPhaseManager::Run()
 {
     // 1. BuildTypeHierarchy
     BuildTypeHierarchyContext rthContext{rFactory.get()};
@@ -82,7 +82,7 @@ expected<vector<MFuncBody>, DiagPtr> PhaseManager::Run()
         RETURN_ON_ERROR(e_result);
     }
 
-    PostBuildNonTypeSymbolContexts pbContext{this, rFactory.get()};
+    PostBuildNonTypeSymbolContexts pbContext{this, rFactory.get(), smFactory.get()};
     for (auto& task : postBuildNonTypeSymbolTasks)
     {
         auto e_result = task->PostBuildNonTypeSymbol(pbContext);

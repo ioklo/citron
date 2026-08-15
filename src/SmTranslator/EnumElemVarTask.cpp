@@ -4,7 +4,7 @@
 #include "RSymbol/REnumDecl.h"
 #include "RSymbol/REnumElemDecl.h"
 #include "RSymbol/REnumElemVarDecl.h"
-#include "PhaseManager.h"
+#include "SmPhaseManager.h"
 #include "CommonTranslation.h"
 #include "BuildNonTypeSymbolContext.h"
 #include "SmTypeTranslation.h"
@@ -16,7 +16,7 @@ using namespace std;
 
 namespace Citron {
 
-void EnumElemVarTask::Register(TakeRef<SmDeclContextPtr> enumElemDeclContext, REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, TakeRef<RFactoryPtr> rFactory, PhaseManager& phaseManager)
+void EnumElemVarTask::Register(TakeRef<SmDeclContextPtr> enumElemDeclContext, REnumElemVarDecl* rEnumElemVar, SEnumElemVarDecl* sEnumElemVar, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     shared_ptr<EnumElemVarTask> task{new EnumElemVarTask(move(enumElemDeclContext), rEnumElemVar, sEnumElemVar, move(rFactory))};
     phaseManager.AddBuildNonTypeSymbolTask(task);
