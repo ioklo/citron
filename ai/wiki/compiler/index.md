@@ -16,6 +16,7 @@ Citron compiler 내부 모델과 lowering 지식을 agent가 빠르게 찾기 �
 - witness, ABI, call lowering은 `value-and-trait-witness.md`, `qir-call-abi.md`
 - syntax to MIR(IR0) translator는 `syntax-ir0-translator.md`
 - member lookup helper와 conditional binding lowering은 `member-translation.md`, `if-is-lowering.md`
+- generic type application, substitution composition, trait signature matching은 `declaration-model.md`
 
 ## Core Topics
 - `compile-pipeline.md` : skeleton/cti/body/lowering phase 개요

@@ -54,7 +54,7 @@ struct S<T> : Trait<T>
 impl S<U> : Trait<U> { }
 ```
 
-generic canonical impl의 `S<U>`는 일반 type expression이 아니라 generic conformance target pattern이다. `U`는 impl header가 도입하는 fresh type parameter이고, `struct S<T>`의 `T`와 이름만 다른 alpha-equivalent parameter다. 같은 이름을 generic arity만 다르게 overload하지 않으므로 target arity는 type resolution으로 정해진다.
+generic canonical impl의 `S<U>`는 일반 type expression이 아니라 generic conformance target pattern이다. `U`는 impl header가 소스 수준에서 도입하고 소유하는 type parameter이고, `struct S<T>`의 `T`와 이름만 다른 alpha-equivalent parameter다. 이는 signature 비교 도중 compiler가 임시 fresh binder를 만든다는 뜻이 아니다. 같은 이름을 generic arity만 다르게 overload하지 않으므로 target arity는 type resolution으로 정해진다.
 
 - `struct S<T> : Trait<T>`는 모든 well-formed `S<T>`가 `Trait<T>`를 구현한다는 canonical 약속이다.
 - 대응 canonical `impl S<U> : Trait<U>`은 그 전체 범위를 덮어야 하며, `S<int>`처럼 일부 specialization만 구현해서는 충족되지 않는다.
@@ -68,17 +68,22 @@ header binder의 대응을 확정하고, 함수 requirement와 impl 함수의 lo
 같은 위치끼리 대응시킨다.
 
 예를 들어 requirement의 complete formal slots가 `[X.T1, Tr.T2, Tr.F.T3]`이고
-impl 쪽이 `[X.T1, impl.T5, impl.F.T6]`이면 다음 arguments를 requirement에 적용한다.
+impl 쪽의 대응 binder가 `[X.T1, impl.T5, impl.F.T6]`이면 다음 complete arguments를
+requirement에 적용한다.
 
 ```text
 [X.T1, list<impl.T5>, impl.F.T6]
 ```
 
 그 결과 requirement의 반환형과 인자형은 각각 `list<impl.T5>`, `impl.F.T6`이
-되어 impl signature와 exact type equality로 비교할 수 있다. 또는 대응 generic
-signature에 한해 `GetGlobalIndex()`를 `$0`, `$1`, ... slot으로 사용해
-alpha-equivalence를 검사할 수 있다. 함수 type parameter 개수와 제약, 인자 개수,
-전달 방식도 함께 일치해야 한다.
+되어 impl signature와 exact type equality로 비교할 수 있다. 이 complete arguments가
+requirement binder에서 impl binder로의 대응을 표현하므로 signature 비교 중 별도의
+compiler-generated fresh binder를 만들 필요는 없다.
+
+`GetGlobalIndex()`가 우연히 같다는 이유로 두 binder를 대응시키지 않는다. exact
+identity는 `RTypeParam*`이며, alpha-equivalence는 이미 대응이 확인된 requirement
+binder를 impl binder 기준의 complete arguments로 치환한 뒤 exact comparison으로
+환원한다. 함수 type parameter 개수와 제약, 인자 개수, 전달 방식도 함께 일치해야 한다.
 
 specialization 또는 조건부 conformance는 canonical `impl`의 변형으로 직접 쓰지 않고, 이름 있는 extension bundle로 선언한다.
 
@@ -200,3 +205,5 @@ Dynamic callable이 필요하면 별도 interface 또는 interface type expressi
 - `ai/notes/2026-07-15-generic-impl-and-specialized-conformance.md`
 - `ai/notes/2026-08-07-applied-decl-tenv-and-trait-matching.md`
 - `ai/notes/2026-08-08-generic-application-without-persistent-type-env.md`
+- `ai/notes/2026-08-15-lazy-type-substitution-and-smtypeview.md`
+- `ai/notes/2026-08-20-generic-application-composition-and-smtype-removal.md`

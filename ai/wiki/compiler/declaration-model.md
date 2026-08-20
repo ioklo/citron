@@ -115,3 +115,4 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - `ai/notes/2026-05-12-module-visibility-and-internal-fdecl-direction.md`
 - `ai/notes/2026-07-15-generic-impl-and-specialized-conformance.md`
 - `ai/notes/2026-08-20-generic-application-composition-and-smtype-removal.md`
+- `ai/notes/2026-08-15-lazy-type-substitution-and-smtypeview.md`
