@@ -1,11 +1,21 @@
 # Current Agenda
 
 ## Topic
-Generic `RAppliedDecl` context and trait requirement signature matching
+Generic application normalization and `SmType` removal
 
 ## Current Direction
 - `RAppliedDecl`은 `decl + complete RTypeArguments`만 보관한다. 적용 위치의
   `RTypeEnv`/`tenv`를 semantic value에 붙여 다니지 않는다.
+- `RAppliedDecl`의 complete type arguments는 declaration의 flattened formal slots에
+  대한 substitution이다. 뒤 substitution은 기존 arguments 각각에 적용하여 합성하고,
+  항상 `decl + complete arguments` 한 겹의 정규형을 유지한다.
+- declaration-backed가 아닌 type constructor는 substitution을 내부 type에 eager
+  apply한다. declaration body는 instantiate하지 않고 applied declaration의 arguments만
+  변환하므로 별도의 `RType_LazyApply`/`SmType_LazyApply` node는 두지 않는다.
+- `SmType`, `SmAppliedDecl`, application용 `SmTypeEnv`는 제거하고 SmTranslator도
+  `RType`, `RAppliedDecl`, `RTypeArguments`를 직접 사용한다.
+- formal type environment는 substitution의 source/target과 합성 법칙을 설명하는 데
+  사용하되, 구현 representation은 flattened complete `RTypeArguments` 배열로 erase한다.
 - `RTypeParam::GetGlobalIndex()`는 outer부터 현재 declaration까지 평탄화한 type
   argument slot이다. `RType_TypeVar::Apply`는 이 index로 complete
   `RTypeArguments`를 조회한다.
@@ -62,6 +72,8 @@ Generic `RAppliedDecl` context and trait requirement signature matching
 - declaration 구현과 주 번역 경로는 `NSymbol`에서 `RSymbol`로 이행됐다. `RFactory`가 `RDecl`을 소유·생성한다.
 - `NSymbol`에는 현재 `NFactory` wrapper와 일부 비주력 target/test의 old API 참조가 남아 있다.
 - trait/impl은 parser/AST까지만 연결돼 있으며, `RTraitDecl`, trait type/factory, SmTranslator visitor/task는 아직 구현 대상이다.
+- 현재 SmTranslator에 남아 있는 실험적 `SmType`/`SmAppliedDecl`/`SmTypeEnv` 경로는
+  제거 대상이며, 이 기록 시점에는 아직 소스에서 제거하지 않았다.
 - 자세한 이행 범위와 잔재는 `ai/wiki/compiler/nsymbol-rsymbol-migration.md`를 본다.
 
 ## Recently Discussed Points
@@ -102,6 +114,10 @@ Generic `RAppliedDecl` context and trait requirement signature matching
 - `$T0` binder slot numbering, passing kind/function generic signature의 overload identity, alias normalization API
 - alpha-equivalence를 `GetGlobalIndex()` 기반 canonical comparison으로 둘지,
   binder substitution 후 exact comparison으로 통일할지
+- complete type-argument 배열의 source declaration/signature를 debug build에서
+  검증할지, slot count와 construction invariant만으로 둘지
+- `GetGlobalIndex()`를 `GetTypeArgumentIndex()`처럼 실제 의미가 드러나는 이름으로
+  바꿀지
 - `RNodeKey`의 structured form 대 string form, category 간 same-name collision, exact key seal/register 시점
 - `RNode` API 추출 순서와 existing `RDecl` users의 migration 범위
 

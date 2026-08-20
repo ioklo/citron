@@ -54,6 +54,14 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - `RAppliedDecl`은 `decl`과 outer부터 member 자신까지 모두 적용된 complete
   `RTypeArguments`만 보관한다. 적용 위치의 `RTypeEnv`/`tenv`를 `RAppliedDecl`이나
   중첩 `RType`에 넣지 않는다.
+- complete `RTypeArguments`는 declaration의 flattened formal slots에서 현재
+  문맥의 types로 가는 substitution이다. 뒤 substitution이 추가되면 기존 arguments
+  각각에 새 substitution을 적용해 합성하며, 중첩 application을 별도 node로 보관하지
+  않고 항상 `decl + complete arguments` 한 겹으로 정규화한다.
+- pointer, nullable, tuple 등 declaration-backed가 아닌 type constructor는 내부
+  type에 substitution을 eager apply한다. nominal type은 declaration body를
+  instantiate하지 않고 자신이 보관한 applied declaration의 arguments에만 적용한다.
+  따라서 현재 type algebra에는 별도의 `LazyApply` type node를 두지 않는다.
 - `RTypeParam::GetGlobalIndex()`는 compiler 전체에서 유일한 번호가 아니라, 해당
   declaration의 lexical outer chain을 평탄화한 complete type-argument index다.
   새 declaration의 local type parameter index는
@@ -61,6 +69,15 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - `RType_TypeVar::Apply`는 자신의 global index로 complete `RTypeArguments`를
   조회한다. 따라서 별도의 환경 배열 없이도 nested declaration, base application,
   trait requirement substitution을 처리할 수 있다.
+- formal model에서는 application을 type environment 사이의 substitution으로
+  설명하지만, 구현에서는 formal parameter key를 flattened index로 erase하고
+  substitution 우변인 `RType*` 배열만 보관한다. complete argument count, index 범위,
+  target 문맥에서의 well-scopedness, 미치환 slot의 identity argument 유지가
+  construction invariant다.
+- `GetDeclaredTrait`처럼 declaration에 저장된 relation을 꺼내는 구조적 projection은
+  application과 교환한다. 즉 `GetDeclaredTrait(impl[ρ])`는
+  `GetDeclaredTrait(impl)[ρ]`와 같다. specialization이나 conditional conformance를
+  선택하는 resolution 연산에는 이 법칙을 일반화하지 않는다.
 - type parameter를 인자로 적용했다는 것과 application이 closed라는 것은
   구분한다. 예를 들어 `X<T>`는 모든 formal parameter에 argument가 전달된
   `RAppliedDecl`이지만 argument `T`가 open type variable이다.
@@ -74,6 +91,11 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - source type-name lookup에서 현재 보이는 type parameter scope가 필요하면
   translator의 임시 lookup context로 둔다. 이는 semantic `RType` 또는
   `RAppliedDecl`의 identity/state가 아니다.
+- generic application과 trait signature matching을 위한 별도 `SmType`,
+  `SmAppliedDecl`, application용 `SmTypeEnv` 계층은 두지 않는다. SmTranslator도
+  `RType`, `RAppliedDecl`, `RTypeArguments`를 직접 사용하고, 대응 binder를 먼저
+  확정한 뒤 requirement를 impl binder 기준으로 치환하여 exact comparison하는
+  방향을 우선한다.
 
 ## Related Open Points
 - Exact fields filled at fdecl / decl / impl states for each declaration kind.
@@ -81,6 +103,8 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - global identifier의 `$T0` binder-slot numbering, alias normalization, future extension/specialized target pattern identity.
 - alpha-equivalence를 global-index canonical comparison과 binder substitution 중
   어느 API로 통일할지.
+- complete arguments의 source declaration/signature를 debug build에서 추가
+  검증할지 여부와 `GetGlobalIndex()`의 장기 명칭.
 - extension declaration과 separate `impl Bundle ...` syntax가 있을 때 `RImplTraitDecl`의 tree outer 및 `RExtensionDecl` conformance entry 연결 방식.
 - How `cti` generated declaration surface maps into `EDecl` / `REDecl`.
 - How opaque result identity for `some` return attaches to declaration identity.
@@ -90,3 +114,4 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - `ai/notes/2026-06-27-rdecl-rnode-and-lookup-direction.md`
 - `ai/notes/2026-05-12-module-visibility-and-internal-fdecl-direction.md`
 - `ai/notes/2026-07-15-generic-impl-and-specialized-conformance.md`
+- `ai/notes/2026-08-20-generic-application-composition-and-smtype-removal.md`
