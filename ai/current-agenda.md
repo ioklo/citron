@@ -20,13 +20,18 @@ Generic application normalization and `SmType` removal
   argument slot이다. `RType_TypeVar::Apply`는 이 index로 complete
   `RTypeArguments`를 조회한다.
 - exact type equality는 `RTypeParam*` binder identity를 비교한다. 서로 대응하는
-  generic signature의 alpha-equivalence가 필요할 때만 `GetGlobalIndex()`를
-  canonical slot으로 사용하거나, 왼쪽 binder를 오른쪽 binder로 치환한 뒤 exact
-  equality를 사용한다.
-- trait requirement와 impl 비교는 conformance target에서 binder 대응을 먼저
-  확정한 뒤 requirement의 complete type arguments를 impl binder 기준으로 만들어
-  적용한다. 예: `[X.T1, list<impl.T5>, impl.F.T6]`를 requirement signature에
-  적용한 후 impl signature와 exact 비교한다.
+  generic signature의 alpha-equivalence는 함수-local binder를 양쪽의 canonical
+  slot index로 대응시켜 비교한다. 한쪽 binder를 다른 signature의 binder로 바꾼
+  임시 `RType`을 만들지 않는다.
+- trait requirement와 impl signature 비교는 양쪽에 outer `RTypeArguments`와
+  function-local `RTypeParam* -> size_t` correspondence를 둔 read-only 비교 context를
+  사용한다. type variable을 만나면 먼저 정확한 substitution domain의 binder인지
+  확인해 outer argument를 lazy하게 비교하고, 아니면 local canonical slot 또는
+  exact binder identity를 비교한다.
+- `RTypeArguments`의 배열 범위만으로 substitution 가능 여부를 판단하지 않는다.
+  unrelated binder는 같은 flattened index를 가질 수 있으므로 source formal binder
+  identity를 함께 확인한다. substitution RHS는 target context의 type이므로 원래
+  outer substitution을 다시 적용하지 않는다.
 - source type-name lookup에는 현재 보이는 type parameter 문맥이 필요할 수 있지만,
   이는 translator의 임시 lookup context이며 `RType`/`RAppliedDecl`의 영구 상태가
   아니다.
@@ -54,6 +59,7 @@ Generic application normalization and `SmType` removal
 - `RDecl`/`RNode` 정리는 완료했다. semantic tree 재구성은 현재 작업 주제가 아니다.
 - 첫 trait 구현 범위는 원본 module의 canonical conformance로 제한한다: `struct S : Trait`와 대응 `impl S : Trait`.
 - generic canonical impl은 `impl S<U> : Trait<U>`처럼 target pattern에 type parameter를 드러내는 표기로 구현한다. `U`는 header가 도입하며 `struct S<T> : Trait<T>`와 alpha-equivalent한 universal target으로 정규화한다.
+- v1의 `impl` target은 struct로 한정하므로 semantic target은 일반 `RType*`가 아니라 `RAppliedDecl<RStructDecl>`로 표현한다. nested target의 complete arguments에는 lexical outer slots와 struct 자신의 slots가 모두 들어간다.
 - `where`를 가진 full generic impl과 direct specialization은 초기 범위에서 제외한다. specialization/conditional conformance는 named extension bundle과 `extend` activation 경로로 둔다.
 - 먼저 trait declaration/type, struct trait 목록, witness `impl` declaration을 RSymbol과 SmTranslator skeleton 단계에 연결한다.
 - 이름 있는 외부 `extension` bundle, 소비자 `extend` activation, overlap/ambiguity 처리는 후속 단계다.
@@ -103,7 +109,7 @@ Generic application normalization and `SmType` removal
 - accessor를 정확히 어느 계층에 둘지: declaration payload, category view, 별도 metadata 중 어디가 가장 자연스러운지
 - lookup / resolver 책임과 `RNode` 책임의 경계를 어디까지 나눌지
 - nested type의 accessibility를 tree membership과 declaration accessibility 사이에서 어떻게 모델링할지
-- generic conformance header의 generic signature, self type-argument pattern, trait type arguments, constraint를 어느 RSymbol API로 노출할지. Source header에서는 `impl S<U>`/`impl Bundle<U>`의 target pattern parameter와 `extend<U>` activation parameter를 구분해 표현한다.
+- generic conformance header의 generic signature, trait type arguments, constraint를 어느 RSymbol API로 노출할지. Self target은 `RAppliedDecl<RStructDecl>`로 확정했다. Source header에서는 `impl S<U>`/`impl Bundle<U>`의 target pattern parameter와 `extend<U>` activation parameter를 구분해 표현한다.
 - generic bundle pattern의 overlap을 `where` constraint까지 포함해 activation 시점에 어떻게 판정할지
 - trait별 independent witness/conformance identity를 유지하면서 관련 trait 구현의 공용 helper/member를 bundle-private scope나 별도 mechanism으로 어떻게 제공할지. impl block에 trait requirement 밖 member를 허용할지 여부
 - unit-local task graph의 freeze 시점, task order enum, failure propagation 규칙
@@ -112,8 +118,6 @@ Generic application normalization and `SmType` removal
 - `MCallable`을 semantic `Trait` call로 유지할지, 어느 IR stage에서 `Direct`/`TraitTable`/`Virtual` call target으로 분해할지
 - trait table call의 ABI shape: generic constraint dictionary, opaque metadata의 witness entry, direct conformance symbol의 관계
 - `$T0` binder slot numbering, passing kind/function generic signature의 overload identity, alias normalization API
-- alpha-equivalence를 `GetGlobalIndex()` 기반 canonical comparison으로 둘지,
-  binder substitution 후 exact comparison으로 통일할지
 - complete type-argument 배열의 source declaration/signature를 debug build에서
   검증할지, slot count와 construction invariant만으로 둘지
 - `GetGlobalIndex()`를 `GetTypeArgumentIndex()`처럼 실제 의미가 드러나는 이름으로

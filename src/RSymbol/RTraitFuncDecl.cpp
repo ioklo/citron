@@ -14,7 +14,8 @@ RTraitFuncDecl::RTraitFuncDecl(RTraitDecl* trait, bool bStatic, RName&& name)
 
 void RTraitFuncDecl::Init(RDeclKey&& key, vector<RTypeParam*>&& typeParams, RFuncReturn&& funcReturn, vector<RFuncParameter>&& funcParameters, bool bLastParamVariadic)
 {
-    o_lazyInit.emplace(std::move(key), move(typeParams), move(funcReturn), move(funcParameters), bLastParamVariadic);
+    genericsComp.InitTypeParams(move(typeParams));
+    o_lazyInit.emplace(std::move(key), move(funcReturn), move(funcParameters), bLastParamVariadic);
 }
 
 RDeclKey& RTraitFuncDecl::GetDeclKey()

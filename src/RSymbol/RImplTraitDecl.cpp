@@ -3,6 +3,7 @@
 #include "RImplTraitFuncDecl.h"
 #include "RMember.h"
 #include "RNames.h"
+#include "RStructDecl.h"
 
 using namespace std;
 
@@ -12,16 +13,16 @@ namespace Citron {
 // impl S<T, U> : Trait { ... } 에서 <T, U>는 type parameter이다.
 // 즉 impl<T, U> S<T, U> : Trait { ... } 란 뜻이다.
 // 따라서 impl S<X, Y> : Trait 라고 해도 가능하다.
-RImplTraitDecl::RImplTraitDecl(RDecl* target)
-    : target{target}
+RImplTraitDecl::RImplTraitDecl()
 {
 }
 
-void RImplTraitDecl::Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RAppliedDecl<RTraitDecl> appliedTraitDecl)
+void RImplTraitDecl::Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RAppliedDecl<RStructDecl>&& target, RAppliedDecl<RTraitDecl> appliedTraitDecl)
 {
-    o_lazyInit.emplace(move(key), move(appliedTraitDecl));
+    assert(target.decl->GetTypeParamCount() == typeParams.size());
 
-    assert(target->GetTypeParamCount() == typeParams.size());
+    this->target = move(target);
+    o_lazyInit.emplace(move(key), move(appliedTraitDecl));
     genericsComp.InitTypeParams(move(typeParams));
 }
 
@@ -39,7 +40,7 @@ RDeclKey& RImplTraitDecl::GetDeclKey()
 // from RDecl
 RDecl* RImplTraitDecl::GetOuter()
 {
-    return target->GetOuter(); // target과 outer가 같다
+    return target.decl->GetOuter(); // target과 outer가 같다
 }
 
 // 이름으로 검색할 수 없다

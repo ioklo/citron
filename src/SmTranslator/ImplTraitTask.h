@@ -35,8 +35,8 @@ public:
         : sImplDecl{sImplDecl}, outerDeclContext{outerDeclContext.Take()}, rOuter{rOuter}, rImplTraitDecl{nullptr}, rFactory{rFactory.Take()} {}
 
     std::expected<void, DiagPtr> HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContexts& contexts);
-    std::expected<void, DiagPtr> CheckTarget(RStructDecl* rStructTargetDecl, PostBuildNonTypeSymbolContexts& contexts);
-    std::expected<void, DiagPtr> CheckTraitConformance(PostBuildNonTypeSymbolContexts& contexts);
+    std::expected<void, DiagPtr> CheckTarget();
+    std::expected<void, DiagPtr> CheckTraitConformance();
 
 public: // from IPostBuildNonTypeSymbolTask
     std::expected<void, DiagPtr> PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& context) final;

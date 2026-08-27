@@ -14,7 +14,8 @@ public:
     template<typename T> requires (!std::same_as<std::remove_cvref_t<T>, RImplTraitMemberDecl>) && std::constructible_from<Variant, T&&>
     RImplTraitMemberDecl(T&& t) : v{std::forward<T>(t)} {}
 
-    auto Visit(auto&& visitor) { return std::visit(visitor, v); }
+    template<typename TVisitor>
+    auto Visit(TVisitor&& visitor) { return std::visit(std::forward<TVisitor>(visitor), v); }
 };
 
 

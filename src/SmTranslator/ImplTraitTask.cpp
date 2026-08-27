@@ -54,11 +54,7 @@ expected<void, DiagPtr> ImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDec
 
     auto key = RDeclKey::Func(RName::Normal(sImplTraitFuncDecl->name), funcParams);
 
-    // thisKind
-    auto* structTarget = dynamic_cast<RStructDecl*>(rImplTraitDecl->GetTarget());
-    assert(structTarget); // TODO: [70] 2026-07-15, struct 이외에 class, enum에도 impl 넣기
-
-    RThisKind thisKind{RThisKind_Ref{rFactory->MakeStructType(RAppliedDecl<RStructDecl>{structTarget, structTarget->MakeOpenTypeArgs(*rFactory)})}};
+    RThisKind thisKind{RThisKind_Ref{rFactory->MakeStructType(rImplTraitDecl->GetTarget())}};
 
     rImplTraitFuncDecl->Init(move(key), move(typeParams), move(*e_funcRet), move(thisKind), move(funcParams), bLastParamVariadic);
     rImplTraitDecl->AddMember(rImplTraitFuncDecl);
@@ -68,152 +64,288 @@ expected<void, DiagPtr> ImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDec
     return {};
 }
 
-// 둘이 correspond한 typeEnv상에 있다고 가정할때
-bool IsSameUnderCorrespondTypeEnv(SmType* x, SmType* y);
-
-template<typename TRDecl>
-bool IsSameUnderCorrespondTypeEnv(SmAppliedDecl<TRDecl>& x, SmAppliedDecl<TRDecl>& y)
+struct SmCorrespondTypeEnv
 {
-    if (x.decl != y.decl)
+    RTypeArguments* outerTypeArgs;
+    RDecl* decl;
+
+    size_t GetLocalIndex(RTypeParam* typeParam)
+    {
+        size_t count = decl->GetTypeParamCount();
+        for (size_t i = 0; i < count; i++)
+        {
+            auto* localTypeParam = decl->GetTypeParam(i);
+            if (localTypeParam == typeParam)
+                return i;
+        }
+        return (size_t)-1;
+    }
+
+    RType* GetAppliedType(RTypeParam* typeParam)
+    {
+        size_t globalIndex = typeParam->GetGlobalIndex();
+        return outerTypeArgs->Get(globalIndex);
+    }
+};
+
+// 둘이 correspond한 typeEnv상에 있다고 가정할때
+bool IsCorrespond(RType* x, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType* y, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY);
+
+bool IsCorrespond(RAppliedDecl<RTraitDecl>& traitX, RAppliedDecl<RTraitDecl>& traitY)
+{
+    if (traitX.decl != traitY.decl)
         return false;
 
-    // 같은 decl이면 typeArgs는 같아야 한다
-    size_t countX = x.typeArgs.size();
-    assert(countX == y.typeArgs.size());
+    size_t countX = traitX.typeArgs->GetCount();
+    assert(countX == traitY.typeArgs->GetCount());
 
     for (size_t i = 0; i < countX; i++)
     {
-        auto* xTypeArg = x.typeArgs[i];
-        auto* yTypeArg = y.typeArgs[i];
+        auto* typeArgX = traitX.typeArgs->Get(i);
+        auto* typeArgY = traitY.typeArgs->Get(i);
 
-        if (!IsSameUnderCorrespondTypeEnv(xTypeArg, yTypeArg))
+        if (!IsCorrespond(typeArgX, optional<SmCorrespondTypeEnv>{}, typeArgY, optional<SmCorrespondTypeEnv>{}))
             return false;
     }
     return true;
 }
 
-bool IsSameUnderCorrespondTypeEnv(SmType* x, SmType* y)
+template<typename TRDecl>
+bool IsCorrespond(RAppliedDecl<TRDecl>& appliedDeclX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RAppliedDecl<TRDecl>& appliedDeclY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
 {
-    return SmType::Visit(*x, *y, [](auto& x, auto& y) {
-        using X = remove_cvref_t<decltype(x)>;
-        using Y = remove_cvref_t<decltype(y)>;
+    if (appliedDeclX.decl != appliedDeclY.decl)
+        return false;
 
-        if constexpr (!same_as<X, Y>)
-        {
+    // 같은 decl이면 typeArgs는 같아야 한다
+    size_t countX = appliedDeclX.typeArgs->GetCount();
+    assert(countX == appliedDeclY.typeArgs->GetCount());
+
+    for (size_t i = 0; i < countX; i++)
+    {
+        auto* xTypeArg = appliedDeclX.typeArgs->Get(i);
+        auto* yTypeArg = appliedDeclY.typeArgs->Get(i);
+
+        if (!IsCorrespond(xTypeArg, o_typeEnvX, yTypeArg, o_typeEnvY))
             return false;
-        }
-        else if constexpr (same_as<X, SmType_Nullable> || same_as<X, SmType_NullableInplace> || same_as<X, SmType_Ptr> || same_as<X, SmType_Shared> || same_as<X, SmType_Box>)
-        {
-            return IsSameUnderCorrespondTypeEnv(x.innerType, y.innerType);
-        }
-        else if constexpr (same_as<X, SmType_TypeVar>)
-        {
-            return x.index == y.index;
-        }
-        else if constexpr (same_as<X, SmType_Void>)
-        {
-            return true;
-        }
-        else if constexpr (same_as<X, SmType_Primitive>)
-        {
-            return x.kind == y.kind;
-        }
-        else if constexpr (same_as<X, SmType_Tuple>)
-        {  
-            return true;
-            size_t countX = x.vars.size();
-            if (countX != y.vars.size())
-                return false;
-            for (size_t i = 0; i < countX; i++)
-            {
-                auto& xVar = x.vars[i];
-                auto& yVar = y.vars[i];
-                if (!IsSameUnderCorrespondTypeEnv(xVar.declType, yVar.declType))
-                    return false;
-            }
-            return true;
-        }
-        else if constexpr (same_as<X, SmType_Func>)
-        {
-            if (x.bLocal != y.bLocal)
-                return false;
-            size_t paramCountX = x.params.size();
-            if (paramCountX != y.params.size())
-                return false;
-            for (size_t i = 0; i < paramCountX; i++)
-            {
-                auto& xParam = x.params[i];
-                auto& yParam = y.params[i];
-                if (xParam.kind != yParam.kind)
-                    return false;
-                if (!IsSameUnderCorrespondTypeEnv(xParam.type, yParam.type))
-                    return false;
-            }
-            if (!IsSameUnderCorrespondTypeEnv(x.retType, y.retType))
-                return false;
-            return true;
-        }
-        else if constexpr (same_as<X, SmType_Class> || same_as<X, SmType_Struct> || same_as<X, SmType_Enum> || same_as<X, SmType_EnumElem> || same_as<X, SmType_Lambda>)
-        {
-            return IsSameUnderCorrespondTypeEnv(x.appliedDecl, y.appliedDecl);
-        }
-        else if constexpr (same_as<X, SmType_Interface>)
-        {
-            return x.bLocal == y.bLocal && IsSameUnderCorrespondTypeEnv(x.appliedDecl, y.appliedDecl);
-        }
-        else if constexpr (same_as<X, SmType_Opaque>)
-        {
-            return IsSameUnderCorrespondTypeEnv(x.appliedTrait, y.appliedTrait) && IsSameUnderCorrespondTypeEnv(x.appliedOwnerFunc, y.appliedOwnerFunc);
-        }
-        else static_assert(false);
-    });
+    }
+    return true;
 }
 
-expected<void, DiagPtr> ImplTraitTask::CheckTarget(RStructDecl* rStructTargetDecl, PostBuildNonTypeSymbolContexts& contexts)
+// 두개
+struct TypeCorrespondChecker
 {
-    // target과 impl은 항상 같은 outer안에 들어 있다는게 보장
-   
-    // 1. impl의 typeParam 개수도 struct랑 같다는걸 체크 struct<X> ... impl S<T> ... 
-    if (rStructTargetDecl->GetTypeParamCount() != rImplTraitDecl->GetTypeParamCount())
-        return Error<Error_ImplTrait_MismatchTypeParamCountWithTarget>();
-
-    // TENV(rImplTraitDecl) => appliedTrait
-    auto rTraitOfImplTrait = rImplTraitDecl->GetTrait();
-
-    // RAppliedDecl -> SmAppliedDecl 
-    auto traitofImplTrait = TranslateRAppliedDeclToSmAppliedDecl(rTraitOfImplTrait, contexts.smFactory);
-
-    for (auto& rTraitOfTarget : rStructTargetDecl->GetTraits()) // tenv: rStructTargetDecl
+    using ResultType = bool;
+    
+    template<typename TRType> requires (!std::same_as<TRType, RType_TypeVar>)
+    bool Visit(TRType* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType* rawTypeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
     {
-        auto traitOfTarget = TranslateRAppliedDeclToSmAppliedDecl(rTraitOfTarget, contexts.smFactory);
-        
-        if (IsSameUnderCorrespondTypeEnv(traitOfTarget, traitofImplTrait))
+        // 1. rawTypeY가 TypeVar이 경우
+        if (auto* typeVarY = dynamic_cast<RType_TypeVar*>(rawTypeY))
+        {
+            // 1-1. typeX는 TypeVar가 아닌데, typeVarY는 더 이상 다른 타입으로 변경하지 못한다
+            if (!*o_typeEnvY) return false; 
+
+            // 1-2. localIndex라면, typeX는 TypeVar가 아니므로 correspond하지 않는다
+            size_t localIndexY = (*o_typeEnvY)->GetLocalIndex(typeVarY->typeParam);
+            if (localIndexY != (size_t)-1) return false; 
+
+            auto* appliedTypeY = dynamic_cast<TRType*>((*o_typeEnvY)->GetAppliedType(typeVarY->typeParam));
+            if (!appliedTypeY) return false;
+
+            // 적용되면 env가 비어야 한다
+            return Visit(typeX, o_typeEnvX, appliedTypeY, optional<SmCorrespondTypeEnv>{});
+        }
+
+        auto* typeY = dynamic_cast<TRType*>(rawTypeY);
+        if (!typeY) return false;
+
+        return Visit(typeX, o_typeEnvX, typeY, o_typeEnvY);
+    }
+
+    bool Visit(RType_TypeVar* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType* rawTypeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
+    {
+        // 1. typeEnvX가 없으면
+        if (!*o_typeEnvX)
+        {
+            auto* typeY = dynamic_cast<RType_TypeVar*>(rawTypeY);
+            if (!typeY) return false;
+
+            // 1-1. typeEnvY가 없으면, typeVar일때만 가능.
+            if (!*o_typeEnvY)
+            {
+                return typeX == typeY; // 유일하므로, 둘이 같은지만 비교하면 된다.
+            }
+            else
+            {
+                size_t localIndexY = (*o_typeEnvY)->GetLocalIndex(typeY->typeParam);
+                if (localIndexY != (size_t)-1) return false;
+
+                // applied type도 TypeVar여야 한다
+                auto* appliedTypeY = dynamic_cast<RType_TypeVar*>((*o_typeEnvY)->GetAppliedType(typeY->typeParam));
+                if (!appliedTypeY) return false;
+
+                return typeX == appliedTypeY;
+            }
+        }
+
+        // 2. localIndex라면, Y도 localIndex로 변환 가능해야 한다
+        size_t localIndexX = (*o_typeEnvX)->GetLocalIndex(typeX->typeParam);
+        if (localIndexX != (size_t)-1)
+        {
+            auto* typeY = dynamic_cast<RType_TypeVar*>(rawTypeY);
+            if (!typeY) return false;
+
+            if (!*o_typeEnvY) return false;
+
+            size_t localIndexY = (*o_typeEnvY)->GetLocalIndex(typeY->typeParam);
+            if (localIndexY == (size_t)-1) return false;
+
+            return localIndexX == localIndexY;
+        }
+
+        // 3. applied type으로 변환해서 비교한다
+        auto* appliedTypeX = (*o_typeEnvX)->GetAppliedType(typeX->typeParam);
+        return IsCorrespond(appliedTypeX, optional<SmCorrespondTypeEnv>{}, rawTypeY, o_typeEnvY);
+    }
+
+    template<typename TRType> requires 
+        std::same_as<TRType, RType_Nullable> 
+        || std::same_as<TRType, RType_NullableInplace>
+        || std::same_as<TRType, RType_Ptr>
+        || std::same_as<TRType, RType_Shared>
+        || std::same_as<TRType, RType_Box>
+    bool Visit(TRType* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, TRType* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
+    {
+        return IsCorrespond(typeX->innerType, o_typeEnvX, typeY->innerType, o_typeEnvY);
+    }
+
+    // 
+    bool Visit(RType_Void* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Void* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
+    { 
+        return true; 
+    }
+
+    bool Visit(RType_Primitive* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Primitive* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
+    { 
+        return typeX->GetPrimitiveKind() == typeY->GetPrimitiveKind(); 
+    }
+
+    bool Visit(RType_Tuple* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Tuple* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
+    {
+        size_t countX = typeX->vars.size();
+        if (countX != typeY->vars.size())
+            return false;
+        for (size_t i = 0; i < countX; i++)
+        {
+            auto& xVar = typeX->vars[i];
+            auto& yVar = typeY->vars[i];
+            if (!IsCorrespond(xVar.declType, o_typeEnvX, yVar.declType, o_typeEnvY))
+                return false;
+        }
+        return true;
+    }
+
+    bool Visit(RType_Func* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Func* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
+    {
+        if (typeX->bLocal != typeY->bLocal)
+            return false;
+        size_t paramCountX = typeX->params.size();
+        if (paramCountX != typeY->params.size())
+            return false;
+        for (size_t i = 0; i < paramCountX; i++)
+        {
+            auto& xParam = typeX->params[i];
+            auto& yParam = typeY->params[i];
+            if (xParam.kind != yParam.kind)
+                return false;
+            if (!IsCorrespond(xParam.type, o_typeEnvX, yParam.type, o_typeEnvY))
+                return false;
+        }
+        if (!IsCorrespond(typeX->retType, o_typeEnvX, typeY->retType, o_typeEnvY))
+            return false;
+        return true;
+    }
+
+    template<typename TRType> requires 
+        std::same_as<TRType, RType_Class>
+        || std::same_as<TRType, RType_Struct>
+        || std::same_as<TRType, RType_Enum>
+        || std::same_as<TRType, RType_EnumElem>
+        || std::same_as<TRType, RType_Lambda>
+        bool Visit(TRType* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, TRType* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
+    {
+        return IsCorrespond(typeX->appliedDecl, o_typeEnvX, typeY->appliedDecl, o_typeEnvY);
+    }
+
+    bool Visit(RType_Interface* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Interface* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
+    {
+        return typeX->bLocal == typeY->bLocal && IsCorrespond(typeX->appliedDecl, o_typeEnvX, typeY->appliedDecl, o_typeEnvY);
+    }
+
+    bool Visit(RType_Opaque* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Opaque* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
+    {
+        return IsCorrespond(typeX->appliedTrait, o_typeEnvX, typeY->appliedTrait, o_typeEnvY) && IsCorrespond(typeX->appliedOwnerFunc, o_typeEnvX, typeY->appliedOwnerFunc, o_typeEnvY);
+    }
+};
+
+bool IsCorrespond(RType* x, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType* y, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
+{
+    return Accept(TypeCorrespondChecker{}, x, o_typeEnvX, y, o_typeEnvY);
+}
+
+// struct S<T5> : Tr0, Tr1, ... { ... }
+// impl S<T6> : Tr1 { ... }
+expected<void, DiagPtr> ImplTraitTask::CheckTarget()
+{
+    auto& rTarget = rImplTraitDecl->GetTarget();
+
+    // target과 impl은 항상 같은 outer안에 들어 있다는것은 미리 체크
+    assert(rTarget.decl->GetOuter() == rImplTraitDecl->GetOuter());
+   
+    // 1. impl의 typeParam 개수도 struct랑 같다는것도 미리 체크
+    assert(rTarget.decl->GetTypeParamCount() == rImplTraitDecl->GetTypeParamCount());
+
+    RAppliedDecl<RTraitDecl> rTraitOfImplTrait = rImplTraitDecl->GetTrait();
+    
+    // struct의 trait들 중에서 impl이 구현하는 trait를 찾는다
+    for (auto& rUnboundTraitOfTarget : rTarget.decl->GetTraits())
+    {
+        RAppliedDecl<RTraitDecl> rTraitOfTarget = rUnboundTraitOfTarget.Apply(rTarget.typeArgs); // implTrait의 tenv로 맞춤
+
+        if (IsCorrespond(rTraitOfTarget, rTraitOfImplTrait))
             return {};
     }
 
     return Error<Error_ImplTrait_NoMatchedTraitOfTarget>();
 }
 
-expected<bool, DiagPtr> IsCorrespond(RAppliedDecl<RTraitFuncDecl> rTraitFunc, RAppliedDecl<RImplTraitFuncDecl> rImplTraitFunc, PostBuildNonTypeSymbolContexts& contexts)
+// C1<int>.Tr<list<T5>>.F와, C2<T4>.impl_<T5>.F가 correspond한지 확인하는 함수
+bool IsCorrespond(ROuterAppliedDecl<RImplTraitFuncDecl>& rImplTraitFunc, ROuterAppliedDecl<RTraitFuncDecl>& rTraitFunc)
 {
-    assert(rTraitFunc.typeArgs->GetCount() == rImplTraitFunc.typeArgs->GetCount());
+    // type parameter 개수가 같은지 비교해야 한다
+    if (rTraitFunc.decl->GetTypeParamCount() != rImplTraitFunc.decl->GetTypeParamCount())
+        return false;
+
+    // RType에 대해서, 
+    // outerTypeArgs는 치환하고
+    // funcDecl의 typeParam은 따로, index로 비교한다.
+    // 이에 대해 별도의 structure를 만들까 하다가, 복잡하지 않으면 일단은 그냥 처리해 본다
+
+    optional<SmCorrespondTypeEnv> rTraitFuncEnv = SmCorrespondTypeEnv{rTraitFunc.outerTypeArgs, rTraitFunc.decl};
+    optional<SmCorrespondTypeEnv> rImplTraitFuncEnv = SmCorrespondTypeEnv{rImplTraitFunc.outerTypeArgs, rImplTraitFunc.decl};
 
     // 1. return type 비교
-    auto rTraitFuncRet = rTraitFunc.decl->GetUnboundFuncReturn();
-    auto rImplTraitFuncRet = rImplTraitFunc.decl->GetUnboundFuncReturn();
+    RFuncReturn rUnboundTraitFuncRet = rTraitFunc.decl->GetUnboundFuncReturn();
+    RFuncReturn rUnboundImplTraitFuncRet = rImplTraitFunc.decl->GetUnboundFuncReturn();
 
-    RFuncReturn::Visit(rTraitFuncRet, rImplTraitFuncRet, [&contexts](auto& rTraitFuncRet, auto& rImplTraitFuncRet) {
+    bool retResult = RFuncReturn::Visit(rUnboundTraitFuncRet, rUnboundImplTraitFuncRet, [&rTraitFuncEnv, &rImplTraitFuncEnv](auto& rTraitFuncRet, auto& rImplTraitFuncRet) -> bool {
         using T1 = remove_cvref_t<decltype(rTraitFuncRet)>;
         using T2 = remove_cvref_t<decltype(rImplTraitFuncRet)>;
         if constexpr (!std::same_as<T1, T2>)
             return false;
         else if constexpr (std::same_as<T1, RFuncReturn_Normal>)
-        {
-            auto e_traitFuncRetType = TranslateRTypeToSmType(rTraitFuncRet.type, contexts.smFactory);
-
-            auto e_implTraitFuncRetType = TranslateRTypeToSmType(rImplTraitFuncRet.type, contexts.smFactory);
-
-            return IsSameUnderCorrespondTypeEnv(rTraitFuncRet.type, rImplTraitFuncRet.type);
+        {   
+            return IsCorrespond(rImplTraitFuncRet.type, rImplTraitFuncEnv, rTraitFuncRet.type, rTraitFuncEnv);
         }
         else if constexpr (std::same_as<T1, RFuncReturn_None>)
         {
@@ -225,126 +357,175 @@ expected<bool, DiagPtr> IsCorrespond(RAppliedDecl<RTraitFuncDecl> rTraitFunc, RA
         }
         else static_assert(false);
     });
-    
-    // 같은 decl이면 typeArgs는 같아야 한다
-    size_t countX = x.typeArgs->GetCount();
-    assert(countX == y.typeArgs->GetCount());
-    for (size_t i = 0; i < countX; i++)
+
+    // 2. parameter 비교
+
+    // 2-1. parameter 개수 비교
+    auto rUnboundTraitFuncParams = rTraitFunc.decl->GetUnboundFuncParams();
+    auto rUnboundImplTraitFuncParams = rImplTraitFunc.decl->GetUnboundFuncParams();
+
+    size_t rUnboundTraitFuncParamCount = rUnboundTraitFuncParams.size();
+
+    if (rUnboundTraitFuncParamCount != rUnboundImplTraitFuncParams.size())
+        return false;
+
+    for (size_t i = 0; i < rUnboundTraitFuncParamCount; i++)
     {
-        auto* xTypeArg = x.typeArgs->Get(i);
-        auto* yTypeArg = y.typeArgs->Get(i);
-        if (!IsSameUnderCorrespondTypeEnv(xTypeArg, yTypeArg))
+        auto& rUnboundTraitFuncParam = rUnboundTraitFuncParams[i];
+        auto& rUnboundImplTraitFuncParam = rUnboundImplTraitFuncParams[i];
+
+        if (rUnboundTraitFuncParam.kind != rUnboundImplTraitFuncParam.kind)
             return false;
+
+        if (!IsCorrespond(rUnboundImplTraitFuncParam.type, rImplTraitFuncEnv, rUnboundTraitFuncParam.type, rTraitFuncEnv))
+            return false;
+
+        // 이름은 보지 않는다
     }
+
     return true;
 }
 
-bool IsCorrespond(RImplTraitFuncDecl* rImplTraitFuncDecl, RTraitFuncDecl* rTraitFuncDecl, PostBuildNonTypeSymbolContexts& contexts)
-{
-    // 이름이 같으면, signature가 같은지 확인
-    auto traitFunc = TranslateRAppliedDeclToSmAppliedDecl(RAppliedDecl<RTraitFuncDecl>{rTraitFuncDecl, rTraitFuncDecl->MakeOpenTypeArgs(*contexts.rFactory)}, contexts.smFactory);
-    auto implTraitFunc = TranslateRAppliedDeclToSmAppliedDecl(RAppliedDecl<RImplTraitFuncDecl>{rImplTraitFuncDecl, rImplTraitFuncDecl->MakeOpenTypeArgs(*contexts.rFactory)}, contexts.smFactory);
-
-    if (!IsCorrespond(*e_traitFunc, *e_implTraitFunc))
-        return Error<Error_ImplTrait_MismatchSignatureWithCorrespondingTraitFunc>();
-
-    return {};
-}
+//bool IsCorrespond(RImplTraitFuncDecl* rImplTraitFuncDecl, RTraitFuncDecl* rTraitFuncDecl, PostBuildNonTypeSymbolContexts& contexts)
+//{
+//    // 이름이 같으면, signature가 같은지 확인
+//    auto traitFunc = TranslateRAppliedDeclToSmAppliedDecl(RAppliedDecl<RTraitFuncDecl>{rTraitFuncDecl, rTraitFuncDecl->MakeOpenTypeArgs(*contexts.rFactory)}, contexts.smFactory);
+//    auto implTraitFunc = TranslateRAppliedDeclToSmAppliedDecl(RAppliedDecl<RImplTraitFuncDecl>{rImplTraitFuncDecl, rImplTraitFuncDecl->MakeOpenTypeArgs(*contexts.rFactory)}, contexts.smFactory);
+//
+//    if (!IsCorrespond(*e_traitFunc, *e_implTraitFunc))
+//        return Error<Error_ImplTrait_MismatchSignatureWithCorrespondingTraitFunc>();
+//
+//    return {};
+//}
 
 // TODO: [77] 2026-08-11, trait-impl 효율적으로 검색하기
-bool FindCorrespondFunc(RImplTraitDecl* rImplTraitDecl, RName& name)
+// rImplTraitDecl에, rTraitFuncDecl이 있는지 확인한다
+bool HasCorrespondFunc(RAppliedDecl<RImplTraitDecl>& rImplTrait, ROuterAppliedDecl<RTraitFuncDecl>& rTraitFunc)
 {
-    for (auto& rImplTraitMemberDecl : rImplTraitDecl->GetMembers())
+    // 일단 이름으로 검색
+    RName* name = rTraitFunc.decl->TryGetName();
+    assert(name); // func decl은 항상 이름이 있어야 한다
+    
+    for (auto& rImplTraitMemberDecl : rImplTrait.decl->GetMembers())
     {
-        auto result = visit([&name](auto* rImplTraitMemberDecl) -> bool {
+        auto result = rImplTraitMemberDecl.Visit([name, &rImplTrait, &rTraitFunc](auto* rImplTraitMemberDecl) -> bool {
             using T = remove_cvref_t<decltype(rImplTraitMemberDecl)>;
             if constexpr (same_as<T, RImplTraitFuncDecl*>)
             {
-                auto* memberName = rImplTraitFuncDecl->TryGetName();
+                auto* memberName = rImplTraitMemberDecl->TryGetName();
                 if (!memberName) return false;
-                if (*memberName != name) return false;
+                if (*memberName != *name) return false;
 
-                // rImplTraitFuncDecl은 적용되지 않은 상태의 decl이고,
-
-                return IsCorrespond(rImplTraitFuncDecl, rTraitFuncDecl, contexts);
+                // rImplTraitFuncDecl은 적용되지 않은 상태의 decl이고
+                ROuterAppliedDecl<RImplTraitFuncDecl> rImplTraitFunc{rImplTrait.typeArgs, rImplTraitMemberDecl};
+                return IsCorrespond(rImplTraitFunc, rTraitFunc);
             }
             else static_assert(false);
-        }, rImplTraitMemberDecl);
+        });
 
         if (result) return true;
     }
+
+    return false;
 }
 
-expected<void, DiagPtr> ImplTraitTask::CheckTraitConformance(PostBuildNonTypeSymbolContexts& contexts)
+expected<void, DiagPtr> ImplTraitTask::CheckTraitConformance()
 {
     // 일단은 함수 signature가 같은지만 확인하면 된다
-    // trait Tr<T1> { void F<T2>(T1 t1, T2 t2); }
+    // class C1<T1> { trait Tr<T2> { void F<T3>(T1 t1, T2 t2, T3* t3); } }
+    // class C2<T4> { impl S<T5> : C1<int>.Tr<list<T5>> { void F<T6>(int i, list<T5> l, T6* t6) { ... } } }
     // 
-    // class C<T3> { impl S<T4, T5> : Tr<list<T4>> { } } 
-    // Tr<list<T4>> means [T3, T4, T5] => Tr<T1> { T1 => list<T4> } // 여기서 T1은 RTypeParam, T3는 SmTypeVar
-    // SmTypeEnv => Tr<RTypeParams...> { RTypeParam => SmType }
-    // SmTypeEnv => RDecl { SmTypeArgs } // SmTypeEnv는 index기반이라 총 갯수만 갖고 있다 (implementation detail)
+    // C1<int>.Tr<list<T5>> === C1<T1>.Tr<T2> [T1 => int, T2 => list<T5>][T4 => T4, T5 => T5]
+    //                      === C1<T1>.Tr<T2> [T1 => int, T2 => list<T5>] (merge)
+    //
+    // C1<int>.Tr<list<T5>>.F === ^T3. { Ret = void, Params = [T1, T2, T3*] }
+    // (C1<T1>.Tr<T2> [T1 => int, T2 => list<T5>]).F === C1<T1>.Tr<T2>.F [T1 => int, T2 => list<T5>]
+    //                                               === ^T3. { Ret = void, Params = [T1, T2, T3*] } [T1 => int, T2 => list<T5>]
+    //
+    // C2<T4>.impl_<T5>.F === ^T6. { Ret = void, Params = [int, list<T5>, T6*] }
+    // (C2<T4>.impl_<T5> [T4 => T4, T5 => T5]).F === C2<T4>.impl_<T5>.F [T4 => T4, T5 => T5]
+    //                                           === ^T6. { Ret = void, Params = [int, list<T5>, T6*] } [T4 => T4, T5 => T5]
 
-    // SmTypeEnv => Tr<T1> { T1 => list<$2> } 가 최종
+    // 
+    // (A) Correspond(^T3. { Ret = void, Params = [T1, T2, T3*] } [T1 => int, T2 => list<T5>], ^T6. { Ret = void, Params = [int, list<T5>, T6*] } [T4 => T4, T5 => T5])
+    // (B) Correspond({ Ret = void, Params = [T1, T2, T3*] } [T1 => int, T2 => list<T5>][T3 => $0], { Ret = void, Params = [int, list<T5>, T6*] } [T4 => T4, T5 => T5][T6 => $0])
+    //   === Correspond(Ret[T1 => int, T2 => list<T5>][T3 => $0], Ret[T4 => T4, T5 => T5][T6 => $0]) 
+    //    && Correspond(Params[T1 => int, T2 => list<T5>][T3 => $0], Params[T4 => T4, T5 => T5][T6 => $0])
+    // 
+    // (A)꼴은 Correspond(ROuterAppliedDecl<RTraitFuncDecl>, ROuterAppliedDecl<RImplTraitFuncDecl>)
+    // (B)꼴은 Correspond(RTraitFuncDecl, SmTypeEnv(RTypeArguments*, RTypeParam* => size_t), RImplTraitFuncDecl, SmTypeEnv(RTypeArguments*, RTypeParam* => size_t))
+    //         RTypeArguments에 나타나는 RTypeParam*과, RTypeParam* => size_t의 RTypeParam은 겹치지 않는다.
 
-    // Tr<list<T4>> 상태인데, SmTypeEnv => Tr<T1> { T1 => list<$2> } 로 바꾼다
-    // RAppliedDecl{Tr<T1>, { T1 => list<T4> }} --> SmAppliedDecl{Tr<T1>, { T1 => list<$2> }} // $2는 C<T3>의 type parameter
+    RAppliedDecl<RImplTraitDecl> rImplTrait{rImplTraitDecl, rImplTraitDecl->MakeOpenTypeArgs(*rFactory)};
     auto rTrait = rImplTraitDecl->GetTrait();
-    auto trait = TranslateRAppliedDeclToSmAppliedDecl(rTrait, contexts.smFactory);
 
-    // trait Tr<T, U> { void F<V>(T t); }  // F is under TEnv(Tr<,>.F<>, [T, U, V])
+    // trait의 각 member에 해당하는 조건이 있는지 확인한다
     for (auto rTraitMemberDecl : rTrait.decl->GetMembers())
     {
-        auto result = rTraitMemberDecl.Visit([this](auto* rTraitMemberDecl) -> expected<void, DiagPtr> {
+        // 조건이 만족되었다면
+        auto satisfied = rTraitMemberDecl.Visit([this, &rTrait, &rImplTrait](auto* rTraitMemberDecl) -> bool {
             using T = remove_cvref_t<decltype(rTraitMemberDecl)>;
 
             if constexpr (same_as<T, RTraitFuncDecl*>)
             {
-                // [$0, $1, $2] => Tr<T1> { T1 => list<$2> } 인데
-                // [$0, $1, $2, $3] => T1<T1>.F<T2> { T1 => list<$2>, T2 => $3 } 을 얻어야 한다
-
                 // RTraitFuncDecl에 대응하는 RImplTraitFuncDecl이 있는지 확인
                 // ImplTraitFuncDecl중에 대응하는 return과 parameter가 있는지 확인
-
-                // 일단 이름으로 검색
-                RName* name = rTraitMemberDecl->TryGetName();
-                assert(name); // func decl은 항상 이름이 있어야 한다
-
-                FindCorrespondFunc(rImplTraitDecl, *name);
+                ROuterAppliedDecl<RTraitFuncDecl> rTraitFunc{rTrait.typeArgs, rTraitMemberDecl};
+                return HasCorrespondFunc(rImplTrait, rTraitFunc);
             }
             else static_assert(false); 
         });
+
+        if (!satisfied)
+            return Error<Error_ImplTrait_TraitContractNotSatisfied>();
     }
-    
+
+    return {};
 }
 
 expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& contexts)
 {
     // SImplTraitDecl을 RImplTrait로 만든다
     // impl S<T, U> : TraitName
+    rImplTraitDecl = rFactory->MakeDecl<RImplTraitDecl>();
 
     auto* rOuterDecl = rOuter.GetDecl();
-    // impl의 name은 다른 부분과 다르게 현재 scope에 있는 struct/class/enum 이름이다
-    auto* rTargetDecl = rOuterDecl->GetTypeMember(RName::Normal(sImplDecl->name));
-
-    // TODO: [70] 2026-07-15, struct 이외에 class, enum에도 impl 넣기
-    auto* rStructTargetDecl = dynamic_cast<RStructDecl*>(rTargetDecl);
-    assert(rStructTargetDecl);
-
-    rImplTraitDecl = rFactory->MakeDecl<RImplTraitDecl>(rStructTargetDecl);
 
     // type parameter 처리
     auto typeParams = MakeTypeParams(rOuterDecl->GetAllTypeParamCount(), rImplTraitDecl, sImplDecl->typeParams, rFactory);
+
+    // impl의 name은 다른 부분과 다르게 현재 scope에 있는 struct/class/enum 이름이다
+    auto* rTargetTypeDecl = rOuterDecl->GetTypeMember(RName::Normal(sImplDecl->name));
+    if (!rTargetTypeDecl) return Error<Error_ImplTrait_TargetNotFound>();
+
+    assert(rTargetTypeDecl->RTypeDecl_GetDecl()->GetOuter() == rOuterDecl);
+
+    // TODO: [70] 2026-07-15, struct 이외에 class, enum에도 impl 넣기
+    auto* rStructTargetDecl = dynamic_cast<RStructDecl*>(rTargetTypeDecl);
+    assert(rStructTargetDecl);
+
+    // typeParams를 적용해서, rStructTarget을 만들기
+    if (rStructTargetDecl->GetTypeParamCount() != typeParams.size())
+        return Error<Error_ImplTrait_MismatchTypeParamCountWithTarget>();
+
+    auto* outerTypeArgs = rOuterDecl->MakeOpenTypeArgs(*rFactory);
+    vector<RType*> curTypeArgs;
+    curTypeArgs.reserve(typeParams.size());
+    for(auto* typeParam : typeParams)
+        curTypeArgs.push_back(rFactory->MakeTypeVarType(typeParam));
+    auto* targetTypeArgs = rFactory->AppendTypeArguments(outerTypeArgs, curTypeArgs);
+
+    RAppliedDecl<RStructDecl> rTarget{rStructTargetDecl, targetTypeArgs};
 
     // trait 얻기
     auto e_trait = contexts.MakeTrait(sImplDecl->trait, outerDeclContext.get(), typeParams);
     RETURN_ON_ERROR(e_trait);
 
     auto key = RDeclKey::ImplTrait(rStructTargetDecl, *e_trait);
-    rImplTraitDecl->Init(move(key), move(typeParams), *e_trait);
+    rImplTraitDecl->Init(move(key), move(typeParams), move(rTarget), *e_trait);
     rOuter.AddImplTrait(rImplTraitDecl);
 
-    auto e_verifyResult = CheckTarget(rStructTargetDecl, contexts);
+    auto e_verifyResult = CheckTarget();
     RETURN_ON_ERROR(e_verifyResult);
     
     // 이제 child 처리
@@ -365,7 +546,7 @@ expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSy
     }
 
     // 모든 child를 다 추가했으면, 이제 conformance check
-    auto e_result = CheckTraitConformance(contexts);
+    auto e_result = CheckTraitConformance();
     RETURN_ON_ERROR(e_result);
 
     return {};

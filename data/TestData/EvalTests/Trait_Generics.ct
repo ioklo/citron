@@ -1,0 +1,37 @@
+//@ 3 
+
+class C1<T1>
+{
+    trait Tr<T2>
+    {
+        void F<T3>(T1 t1, T2 t2, T3* t3);
+    }
+}
+
+class C2<T4>
+{
+    struct S<T5>
+    {
+    }
+
+    impl S<T6> : C1<int>.Tr<T6*>
+    {
+        void F<T7>(int t1, T6* t2, T7* t3)
+        {
+        }
+    }
+}
+
+some C1<int>.Tr<T8*> GetTrait<T8>()
+{
+    return C2<int>.S<T8>();
+}
+
+void Main()
+{
+    var x = GetTrait<int>();
+
+    int a = 3;
+    int b = 2;
+    x.F<int>(3, &a, &b);
+}

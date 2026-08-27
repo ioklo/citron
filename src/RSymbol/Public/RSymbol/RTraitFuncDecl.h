@@ -15,7 +15,6 @@ class RTraitFuncDecl : public RDecl
     struct LazyInit
     {
         RDeclKey key;
-        std::vector<RTypeParam*> typeParams;
         RFuncReturn funcReturn;
         std::vector<RFuncParameter> funcParameters;
         bool bLastParamVariadic;
@@ -33,7 +32,7 @@ public:
     RSYMBOL_API void Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParamVariadic);
 
     RFuncReturn GetUnboundFuncReturn() { return o_lazyInit->funcReturn; }
-    std::span<RFuncParameter> GetUnboundFuncParameters() { return o_lazyInit->funcParameters; }
+    std::span<RFuncParameter> GetUnboundFuncParams() { return o_lazyInit->funcParameters; }
 
 public: // from RDecl
     RSYMBOL_API RDeclKey& GetDeclKey() final;

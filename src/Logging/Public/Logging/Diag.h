@@ -295,7 +295,8 @@ struct Error_FuncBody_ShouldEndWithReturn : ErrorDiag {}; // A2901_BodyShouldRet
 
 struct Error_ImplTrait_MismatchTypeParamCountWithTarget : ErrorDiag {}; 
 struct Error_ImplTrait_NoMatchedTraitOfTarget : ErrorDiag {};
-struct Error_ImplTrait_MissingMemberOfTrait : ErrorDiag {};
+struct Error_ImplTrait_TraitContractNotSatisfied: ErrorDiag {};
+struct Error_ImplTrait_TargetNotFound : ErrorDiag {};
 // 모든 trait를 구현하지 않았다
 struct Error_Trait_MissingImpl : ErrorDiag {};
 

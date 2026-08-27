@@ -3,6 +3,7 @@
 #include "RStructDecl.h"
 #include "RImplTraitDecl.h"
 #include "RMember.h"
+#include "RImplTraitMemberDecl.h"
 
 using namespace std;
 

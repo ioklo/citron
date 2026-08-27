@@ -21,10 +21,8 @@ SmAppliedDecl<TRDecl> TranslateRAppliedDeclToSmAppliedDecl(RAppliedDecl<TRDecl>&
     for (size_t i = 0; i < count; i++)
     {
         auto* rTypeArg = rAppliedDecl.typeArgs->Get(i);
-        auto e_smType = TranslateRTypeToSmType(rTypeArg, factory);
-        RETURN_ON_ERROR(e_smType);
-
-        typeArgs.push_back(std::move(*e_smType));
+        auto* smType = TranslateRTypeToSmType(rTypeArg, factory);
+        typeArgs.push_back(smType);
     }
     
     return SmAppliedDecl<TRDecl>{rAppliedDecl.decl, std::move(typeArgs)};

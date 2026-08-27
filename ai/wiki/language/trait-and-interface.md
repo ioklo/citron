@@ -67,23 +67,37 @@ identity가 아니다. 먼저 conformance target을 비교해 struct header bind
 header binder의 대응을 확정하고, 함수 requirement와 impl 함수의 local binder도
 같은 위치끼리 대응시킨다.
 
-예를 들어 requirement의 complete formal slots가 `[X.T1, Tr.T2, Tr.F.T3]`이고
-impl 쪽의 대응 binder가 `[X.T1, impl.T5, impl.F.T6]`이면 다음 complete arguments를
-requirement에 적용한다.
+예를 들어 다음 두 함수를 비교한다고 하자.
 
 ```text
-[X.T1, list<impl.T5>, impl.F.T6]
+trait: ^T3. { Ret = void, Params = [T1, T2, T3*] }
+       outer substitution = [T1 => int, T2 => list<T5>]
+       local slots        = [T3 => 0]
+
+impl:  ^T6. { Ret = void, Params = [int, list<T5>, T6*] }
+       outer substitution = [T4 => T4, T5 => T5]
+       local slots        = [T6 => 0]
 ```
 
-그 결과 requirement의 반환형과 인자형은 각각 `list<impl.T5>`, `impl.F.T6`이
-되어 impl signature와 exact type equality로 비교할 수 있다. 이 complete arguments가
-requirement binder에서 impl binder로의 대응을 표현하므로 signature 비교 중 별도의
-compiler-generated fresh binder를 만들 필요는 없다.
+signature 비교는 `RType`을 새로 만들거나 trait의 `T3` 자리에 impl의 `T6`을
+주입하지 않는다. 양쪽 `RType`을 재귀적으로 방문하면서 type variable을 다음 순서로
+해석한다.
+
+1. 해당 side의 outer substitution domain에 속하는 formal binder이면 argument로
+   치환된 type을 상대편과 재귀 비교한다.
+2. 아니면 function-local slot lookup을 수행하고, 양쪽 slot index를 비교한다.
+3. 어느 쪽에도 속하지 않는 binder는 `RTypeParam*` exact identity로 비교한다.
+
+따라서 `T1`은 `int`, `T2`는 `list<T5>`로 lazy하게 해석되고, `T3`와 `T6`은
+각각 local slot 0이므로 대응한다. `$0`을 나타내는 compiler-generated `RType`이나
+한쪽 signature의 binder를 포함하는 cross-signature applied type은 만들지 않는다.
 
 `GetGlobalIndex()`가 우연히 같다는 이유로 두 binder를 대응시키지 않는다. exact
-identity는 `RTypeParam*`이며, alpha-equivalence는 이미 대응이 확인된 requirement
-binder를 impl binder 기준의 complete arguments로 치환한 뒤 exact comparison으로
-환원한다. 함수 type parameter 개수와 제약, 인자 개수, 전달 방식도 함께 일치해야 한다.
+identity와 substitution domain membership은 `RTypeParam*`로 판정한다.
+`RTypeArguments`의 count와 global index만으로 치환 가능 여부를 판단하면 unrelated
+binder를 잘못 치환할 수 있다. 또한 substitution RHS는 이미 target context에 속하므로
+원래 outer substitution을 다시 적용하지 않는다. 함수 type parameter 개수와 제약,
+인자 개수, 전달 방식도 함께 일치해야 한다.
 
 specialization 또는 조건부 conformance는 canonical `impl`의 변형으로 직접 쓰지 않고, 이름 있는 extension bundle로 선언한다.
 
@@ -207,3 +221,4 @@ Dynamic callable이 필요하면 별도 interface 또는 interface type expressi
 - `ai/notes/2026-08-08-generic-application-without-persistent-type-env.md`
 - `ai/notes/2026-08-15-lazy-type-substitution-and-smtypeview.md`
 - `ai/notes/2026-08-20-generic-application-composition-and-smtype-removal.md`
+- `ai/notes/2026-08-24-rtype-trait-function-correspondence.md`

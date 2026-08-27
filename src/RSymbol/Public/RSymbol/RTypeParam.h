@@ -18,7 +18,8 @@ class RTypeParam
     RFactoryPtr rFactory;
 
 public:
-    RSYMBOL_API RTypeParam(RDecl* outer, RName&& name, size_t globalIndex, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RTypeParam(RDecl* owner, RName&& name, size_t globalIndex, TakeRef<RFactoryPtr> rFactory);
+    RDecl* GetOwner() { return owner; }
     RName& GetName() { return name; }
     size_t GetGlobalIndex() { return globalIndex; }
 };

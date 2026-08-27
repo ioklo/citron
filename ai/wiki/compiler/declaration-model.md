@@ -85,24 +85,25 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
   declaration/type-argument identity로 판정한다. `A.X`와 `F.Y`가 모두 global
   index 0이어도 exact type으로는 다르다.
 - alpha-equivalence는 두 generic signature가 대응한다는 전제에서만 검사한다.
-  `GetGlobalIndex()`를 `$0`, `$1`, ... canonical slot으로 사용할 수 있지만,
-  requirement binder를 impl binder로 치환한 뒤 exact equality를 사용하는 방법을
-  우선 검토한다.
+  양쪽 function-local binder를 각각 `$0`, `$1`, ... canonical slot에 대응시키고,
+  `RTypeParam* -> size_t` lookup 결과를 비교한다. 한쪽 signature의 binder를 다른
+  signature에 주입한 임시 `RType` 또는 `RAppliedDecl`은 만들지 않는다.
 - source type-name lookup에서 현재 보이는 type parameter scope가 필요하면
   translator의 임시 lookup context로 둔다. 이는 semantic `RType` 또는
   `RAppliedDecl`의 identity/state가 아니다.
 - generic application과 trait signature matching을 위한 별도 `SmType`,
-  `SmAppliedDecl`, application용 `SmTypeEnv` 계층은 두지 않는다. SmTranslator도
-  `RType`, `RAppliedDecl`, `RTypeArguments`를 직접 사용하고, 대응 binder를 먼저
-  확정한 뒤 requirement를 impl binder 기준으로 치환하여 exact comparison하는
-  방향을 우선한다.
+  `SmAppliedDecl`, application용 persistent `SmTypeEnv` 계층은 두지 않는다.
+  SmTranslator도 `RType`, `RAppliedDecl`, `RTypeArguments`를 직접 사용한다. trait
+  signature matching은 양쪽 outer substitution과 function-local canonical slot
+  lookup을 가진 read-only comparison context로 `RType`을 재귀 비교한다.
+- outer `RTypeArguments`를 적용할 때는 배열 범위나 `GetGlobalIndex()`만 보지 않고
+  그 arguments의 source formal binder identity까지 확인한다. substitution RHS는
+  이미 target context에 속하므로 원래 substitution을 다시 적용하지 않는다.
 
 ## Related Open Points
 - Exact fields filled at fdecl / decl / impl states for each declaration kind.
 - `RImplTraitDecl`의 target struct member lookup, impl generic binder, lexical outer lookup을 body context에서 어떤 우선순위로 결합할지.
 - global identifier의 `$T0` binder-slot numbering, alias normalization, future extension/specialized target pattern identity.
-- alpha-equivalence를 global-index canonical comparison과 binder substitution 중
-  어느 API로 통일할지.
 - complete arguments의 source declaration/signature를 debug build에서 추가
   검증할지 여부와 `GetGlobalIndex()`의 장기 명칭.
 - extension declaration과 separate `impl Bundle ...` syntax가 있을 때 `RImplTraitDecl`의 tree outer 및 `RExtensionDecl` conformance entry 연결 방식.
@@ -111,6 +112,7 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 
 ## History
 - `git history: ai/implementations/decl-model.md`
+- `ai/notes/2026-08-24-rtype-trait-function-correspondence.md`
 - `ai/notes/2026-06-27-rdecl-rnode-and-lookup-direction.md`
 - `ai/notes/2026-05-12-module-visibility-and-internal-fdecl-direction.md`
 - `ai/notes/2026-07-15-generic-impl-and-specialized-conformance.md`
