@@ -1,9 +1,36 @@
 # Current Agenda
 
 ## Topic
-Generic application normalization and `SmType` removal
+Associated type과 runtime generic witness ABI
+
+## Active Work
+- trait/impl parsing 완료.
+- trait/impl syntax의 RSymbol 변환 완료.
+- impl이 trait requirement를 만족하는지 검사하는 단계 완료.
+- `some Trait` return 구현 진행 중:
+  - opaque return type 함수 호출
+  - 결과를 받을 저장소 생성
+  - 생성된 변수에서 declared trait 함수 호출
+- MIR에서 QIR로의 변환과 전체 테스트 확인은 후속 단계다.
+- `foreach`의 `RefEnumerable` / `RefEnumerator` contract를 위해 associated type 구현을 다음 core 작업으로 검토 중이다.
+
+## Associated Type Work Checklist
+- [ ] trait에 associated type requirement를 추가한다: `type TItem;`.
+- [ ] 정식 transparent type alias declaration을 추가한다: `type TItem = int;`. Declaration 등록, alias target 해석, lookup, normalization을 포함한다.
+- [ ] impl의 same-name type alias 또는 concrete nested type declaration을 associated type requirement의 type witness로 연결하고 만족 여부를 검사한다.
+- [ ] generic trait constraint를 반영한 qualified type projection lookup을 추가한다: `T.TItem`은 내부적으로 `<T as MyTrait>::TItem`을 뜻한다.
+- [ ] generic function의 typecheck와 shared runtime implementation 경로를 추가한다. Type metadata, trait witness, unknown-layout parameter/result 처리를 포함한다.
+- [ ] function generic type argument inference를 추가한다. 이 단계는 유예할 수 있으며, 초기 end-to-end test에서는 explicit type arguments를 사용한다.
+- [ ] `MyTrait::TItem` / `S` / generic `Func<T>` core 예제를 parser, symbol/conformance, typecheck 및 가능한 범위의 evaluation test로 추가한다.
+
+세부 순서와 acceptance test는 `ai/notes/2026-08-29-associated-type-implementation-plan.md`를 본다.
 
 ## Current Direction
+- 일반 generic은 type별 monomorphization을 기본 구현으로 삼지 않는다. 하나의 shared generic code가 type metadata와 trait witness를 hidden argument로 받는 Swift식 runtime generic ABI를 사용한다.
+- generic specialization은 선택적 최적화다. 장래의 명시적 instantiation은 일반 generic과 분리된 `template` 또는 macro 기능에서 처리한다.
+- associated type은 semantic에서는 `<T as Trait>::Member` projection으로 유지하고, runtime에서는 trait witness의 associated type metadata/accessor와 associated conformance witness를 통해 다룬다.
+- trait requirement의 `some Trait`는 지금 구현하지 않는다. `foreach`에는 명시적 associated type을 사용하며, 나중에 필요하면 anonymous associated type 문법으로 별도 도입한다.
+- associated type core 예제는 `Producer.Output : Value`와 `Output Produce()` 형태로 잡아 parsing, explicit type witness, bound 검사, signature substitution, generic projection을 `foreach`와 독립적으로 검증한다.
 - `RAppliedDecl`은 `decl + complete RTypeArguments`만 보관한다. 적용 위치의
   `RTypeEnv`/`tenv`를 semantic value에 붙여 다니지 않는다.
 - `RAppliedDecl`의 complete type arguments는 declaration의 flattened formal slots에
@@ -77,7 +104,9 @@ Generic application normalization and `SmType` removal
 ## Current Refactoring State
 - declaration 구현과 주 번역 경로는 `NSymbol`에서 `RSymbol`로 이행됐다. `RFactory`가 `RDecl`을 소유·생성한다.
 - `NSymbol`에는 현재 `NFactory` wrapper와 일부 비주력 target/test의 old API 참조가 남아 있다.
-- trait/impl은 parser/AST까지만 연결돼 있으며, `RTraitDecl`, trait type/factory, SmTranslator visitor/task는 아직 구현 대상이다.
+- trait/impl parsing, RSymbol 변환, trait requirement 만족 검사는 구현됐다.
+- 현재 `some Trait` opaque return의 호출, 결과 저장소, trait 함수 호출 경로를 구현 중이다.
+- MIR→QIR 변환과 전체 테스트 확인은 아직 남아 있다.
 - 현재 SmTranslator에 남아 있는 실험적 `SmType`/`SmAppliedDecl`/`SmTypeEnv` 경로는
   제거 대상이며, 이 기록 시점에는 아직 소스에서 제거하지 않았다.
 - 자세한 이행 범위와 잔재는 `ai/wiki/compiler/nsymbol-rsymbol-migration.md`를 본다.

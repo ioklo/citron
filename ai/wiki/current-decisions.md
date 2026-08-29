@@ -18,6 +18,7 @@ Status: current snapshot
 - `func<R, Params...>`는 callable static contract type expression이다. `lambda<>` type expression은 두지 않는다.
 - 일반 `dyn trait`는 도입하지 않는다. dynamic dispatch가 필요하면 명시적 `interface`를 설계한다.
 - associated type inference는 v1에서 제외한다. trait 구현체는 `type Item = T;` 또는 nested type으로 associated type requirement를 명시적으로 충족한다.
+- trait requirement의 `some Trait`는 현재 범위에서 제외한다. 필요해지면 anonymous associated type으로 정의하고, 우선은 명시적 associated type requirement를 사용한다.
 - `concept`는 초기에는 반복되는 `where` constraint 묶음으로 본다.
 - `T&`는 일반 first-class type constructor가 아니라 parameter/return/local alias/implicit this 같은 제한된 surface slot의 reference 표기다.
 - Nested nullable은 flatten하지 않는다. `C?`는 compressed nullable representation, 일반 `T?`는 tagged nullable representation으로 본다.
@@ -57,6 +58,9 @@ Status: current snapshot
 - public extension bundle의 target/trait 목록과 witness identity는 module declaration surface 및 dependency metadata에 포함한다.
 
 ## Compiler
+- 일반 generic은 monomorphization을 의미론/ABI의 전제로 삼지 않는다. generic function은 shared code로 생성하고, type parameter마다 필요한 type metadata와 trait constraint마다 필요한 trait witness를 hidden argument로 전달하는 Swift식 runtime generic ABI를 기본으로 한다.
+- generic value의 size/align/copy/move/destroy는 type metadata의 value witness로 처리하고, generic trait call은 전달된 trait witness를 사용한다. associated type projection은 conformance witness가 제공하는 associated type metadata와 associated conformance witness를 통해 runtime에 구체화할 수 있어야 한다.
+- concrete type을 아는 경우의 generic specialization은 선택적 최적화일 뿐 correctness나 ABI의 전제가 아니다. 장래의 명시적 code instantiation은 일반 generic과 분리된 `template` 또는 macro 계층에서 처리한다.
 - symbol/declaration tree는 module-scoped다. 각 `RModule`은 하나의 canonical symbol tree를 소유하고, compiler-wide registry는 여러 module을 찾을 뿐 declaration을 하나의 global tree에 병합하지 않는다. 같은 module의 모든 translation unit은 그 tree에 기여한다. unit별 symbol tree는 두지 않으며, unit은 syntax declaration pointer, import/import-alias/using lookup overlay, task state, incremental/CTI contribution을 보관하는 별도 context를 가진다. unit-local import 환경은 tree ownership과 분리한다. tree의 common base는 `RNode`이고 actual declaration은 `RDecl : RNode`, canonical namespace scope는 `RNamespace : RNode`다. `RModule`은 root namespace를 소유하지만 `RNode`가 아니다. namespace syntax는 module/path당 하나인 `RNamespace`를 GetOrAdd하며 `RNamespaceDeclGroup`은 두지 않는다.
 - `some` opaque result call은 metadata accessor, value witness, trait witness, opaque sret로 낮춘다.
 - `some Trait`의 semantic opaque type은 Swift식 declaration-scoped identity를 사용한다. identity는 return owner declaration과 outer/function의 complete applied generic arguments로 unique하며, trait constraint가 같아도 서로 다른 declaration의 opaque result는 같은 static type이 아니다. `RType_Opaque`는 `appliedTrait`와 `appliedOwnerFunc`를 보관하고, canonical `RTypeIdentifier`는 `$O(TraitRTypeIdentifier,OwnerFuncRIdentifier<FullAppliedArgs...>)` 형식으로 이 둘을 포함한다. 함수 body의 모든 return은 하나의 동일한 concrete underlying type으로 귀결되어야 한다.
