@@ -130,6 +130,29 @@ impl method:  int GetItem()
 - trait requirement의 `some Trait`.
 - associated type inference.
 - associated type equality constraint.
-- generic associated type(GAT).
 - 일반 generic의 필수 monomorphization.
 - template/macro code instantiation.
+
+## 후속 TODO: Generic type member requirement
+
+다음 문법은 이번 범위에서 구현하지 않는다.
+
+```citron
+trait Mapper
+{
+    type Result<T>;
+}
+```
+
+이 기능은 associated type inference가 아니라, 구현체가 이름과 generic arity가 맞는 type member를 명시적으로 제공하도록 요구하는 기능으로 본다.
+
+```citron
+impl S : Mapper
+{
+    type Result<T> = List<T>;
+}
+```
+
+Generic transparent alias뿐 아니라 same-name generic nested nominal type도 witness 후보가 될 수 있다. 용어상 GAT에 해당하지만 Citron의 사용자 모델에서는 generic type member requirement와 explicit type witness로 설명한다.
+
+후속 구현에는 type-parameterized projection `T.Result<U>`, requirement/witness generic signature matching, generic alias normalization, parameterized associated type metadata accessor와 associated conformance accessor가 필요하다. 이번 semantic declaration을 만들 때는 현재 type parameter 목록이 비어 있더라도 향후 own type parameters를 보관할 수 있는 구조를 막지 않는다.

@@ -6,6 +6,7 @@
 #include "MIR/MFuncBody.h"
 
 #include "BuildTypeHierarchyContext.h"
+#include "PostBuildTypeHierarchyContexts.h"
 #include "BuildNonTypeSymbolContext.h"
 #include "PostBuildNonTypeSymbolContext.h"
 #include "BuildImplicitSymbolContext.h"
@@ -44,6 +45,11 @@ void SmPhaseManager::AddBuildTypeHierarchyTask(std::shared_ptr<IBuildTypeHierarc
     buildTypeHierarchyTasks.push_back(move(task));
 }
 
+void SmPhaseManager::AddPostBuildTypeHierarchyTask(std::shared_ptr<IPostBuildTypeHierarchyTask>&& task)
+{
+    postBuildTypeHierarchyTasks.push_back(move(task));
+}
+
 void SmPhaseManager::AddBuildNonTypeSymbolTask(std::shared_ptr<IBuildNonTypeSymbolTask>&& task)
 {
     buildNonTypeSymbolTasks.push_back(move(task));
@@ -71,6 +77,13 @@ expected<vector<MFuncBody>, DiagPtr> SmPhaseManager::Run()
     for (auto& task : buildTypeHierarchyTasks)
     {
         auto e_result = task->BuildTypeHierarchy(rthContext);
+        RETURN_ON_ERROR(e_result);
+    }
+
+    PostBuildTypeHierarchyContexts pthContext{};
+    for (auto& task : postBuildTypeHierarchyTasks)
+    {
+        auto e_result = task->OnPostBuildTypeHierarchy(pthContext);
         RETURN_ON_ERROR(e_result);
     }
 

@@ -7,6 +7,7 @@ struct MFuncBody;
 using DiagPtr = std::shared_ptr<struct Diag>;
 
 class BuildTypeHierarchyContext;
+struct PostBuildTypeHierarchyContexts;
 class BuildNonTypeSymbolContext;
 struct PostBuildNonTypeSymbolContexts;
 class BuildImplicitSymbolContext;
@@ -25,6 +26,13 @@ class IBuildTypeHierarchyTask
 public:
     virtual ~IBuildTypeHierarchyTask() = default;
     virtual std::expected<void, DiagPtr> BuildTypeHierarchy(BuildTypeHierarchyContext& context) = 0;
+};
+
+class IPostBuildTypeHierarchyTask
+{
+public:
+    virtual ~IPostBuildTypeHierarchyTask() = default;
+    virtual std::expected<void, DiagPtr> OnPostBuildTypeHierarchy(PostBuildTypeHierarchyContexts& contexts) = 0;
 };
 
 // 위의 TypeHierarchy가 있어야 TypeExp를 제대로 resolve할 수 있다

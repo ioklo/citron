@@ -17,8 +17,9 @@ using RFactoryPtr = std::shared_ptr<class RFactory>;
 using SmFactoryPtr = std::shared_ptr<class SmFactory>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 
-// Phase 1 : BuildTypeSymbolPhase (body-space에서 만들어지는 lambda 제외)
+// Phase 1 : BuildTypeSymbolPhase (body-space에서 만들어지는 lambda 제외) 
 // Phase 2 : BuildTypeHierarchyPhase (inheritance)
+//           PostBuildTypeHierarchyPhase
 // Phase 3 : BuildNonTypeSymbolPhase (func, var)
 //           PostBuildNonTypeSymbolPhase (impl ...)
 // Phase 4 : SynthesizeImplicitPhase (memberwise-ctor)
@@ -34,6 +35,7 @@ class SmPhaseManager
     BinOpQueryServicePtr binOpQueryService;
 
     std::vector<std::shared_ptr<IBuildTypeHierarchyTask>> buildTypeHierarchyTasks;
+    std::vector<std::shared_ptr<IPostBuildTypeHierarchyTask>> postBuildTypeHierarchyTasks;
     std::vector<std::shared_ptr<IBuildNonTypeSymbolTask>> buildNonTypeSymbolTasks;
     std::vector<std::shared_ptr<IPostBuildNonTypeSymbolTask>> postBuildNonTypeSymbolTasks;
     std::vector<std::shared_ptr<IBuildImplicitSymbolTask>> buildImplicitSymbolTasks;
@@ -47,6 +49,7 @@ public:
     ~SmPhaseManager(); 
 
     void AddBuildTypeHierarchyTask(std::shared_ptr<IBuildTypeHierarchyTask>&& task);
+    void AddPostBuildTypeHierarchyTask(std::shared_ptr<IPostBuildTypeHierarchyTask>&& task);
     void AddBuildNonTypeSymbolTask(std::shared_ptr<IBuildNonTypeSymbolTask>&& task);
     void AddPostBuildNonTypeSymbolTask(std::shared_ptr<IPostBuildNonTypeSymbolTask>&& task);
     void AddBuildImplicitSymbolTask(std::shared_ptr<IBuildImplicitSymbolTask>&& task);

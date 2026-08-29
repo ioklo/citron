@@ -22,6 +22,7 @@ Associated type과 runtime generic witness ABI
 - [ ] generic function의 typecheck와 shared runtime implementation 경로를 추가한다. Type metadata, trait witness, unknown-layout parameter/result 처리를 포함한다.
 - [ ] function generic type argument inference를 추가한다. 이 단계는 유예할 수 있으며, 초기 end-to-end test에서는 explicit type arguments를 사용한다.
 - [ ] `MyTrait::TItem` / `S` / generic `Func<T>` core 예제를 parser, symbol/conformance, typecheck 및 가능한 범위의 evaluation test로 추가한다.
+- [ ] 후속 TODO: `type Item<T>;` 형태의 generic type member requirement를 지원한다. 이번 구현에서는 parameter 없는 requirement만 허용하되 semantic declaration은 향후 own type parameters를 추가할 수 있게 설계한다.
 
 세부 순서와 acceptance test는 `ai/notes/2026-08-29-associated-type-implementation-plan.md`를 본다.
 

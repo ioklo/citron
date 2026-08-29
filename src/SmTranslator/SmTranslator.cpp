@@ -40,6 +40,7 @@
 #include "BinOpQueryService.h"
 #include "SmDeclContext_Decl.h"
 #include "SmDeclContext_ClassDecl.h"
+#include "SmTraitTypeTask.h"
 
 using namespace std;
 using namespace Citron;
@@ -221,7 +222,11 @@ void VisitTrait(TakeRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer
         visit([&traitDeclContext, rTraitDecl, &rFactory, &phaseManager](auto* sMemberDecl) {
             using T = remove_cvref_t<decltype(sMemberDecl)>;
 
-            if constexpr (same_as<T, STraitFuncDecl*>)
+            if constexpr (same_as<T, STraitTypeDecl*>)
+            {
+                SmTraitTypeTask::BuildTypeHierarchy(traitDeclContext, sMemberDecl, rTraitDecl, rFactory->get(), phaseManager);
+            }
+            else if constexpr (same_as<T, STraitFuncDecl*>)
             {
                 TraitFuncTask::Register(traitDeclContext, rTraitDecl, sMemberDecl, *rFactory, phaseManager);
             }

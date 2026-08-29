@@ -46,6 +46,7 @@
     <ClCompile Include="ImplTraitFuncTask.cpp" />
     <ClCompile Include="ImplTraitTask.cpp" />
     <ClCompile Include="PostBuildNonTypeSymbolContext.cpp" />
+    <ClCompile Include="PostBuildTypeHierarchyContexts.cpp" />
     <ClCompile Include="SExpTranslations.cpp" />
     <ClCompile Include="SExp_CallToImExp.cpp" />
     <ClCompile Include="SExp_IdentifierToImExp.cpp" />
@@ -65,6 +66,7 @@
     <ClCompile Include="SExpToIrExp.cpp" />
     <ClCompile Include="SExp_MemberToImExp.cpp" />
     <ClCompile Include="SmDeclRes.cpp" />
+    <ClCompile Include="SmTraitTypeTask.cpp" />
     <ClCompile Include="STypeExp_MemberToImTypeExp.cpp" />
     <ClCompile Include="SmTypeRes.cpp" />
     <ClCompile Include="SmTypeResolveScope.cpp" />
@@ -107,6 +109,7 @@
   <ItemGroup>
     <ClInclude Include="ImplTraitFuncTask.h" />
     <ClInclude Include="ImTypeExp.h" />
+    <ClInclude Include="PostBuildTypeHierarchyContexts.h" />
     <ClInclude Include="SmBodyRes.h" />
     <ClInclude Include="ImExpTranslations.h" />
     <ClInclude Include="ImplTraitTask.h" />
@@ -134,6 +137,7 @@
     <ClInclude Include="SExpToIrExp.h" />
     <ClInclude Include="SExp_MemberToImExp.h" />
     <ClInclude Include="SmDeclRes.h" />
+    <ClInclude Include="SmTraitTypeTask.h" />
     <ClInclude Include="STypeExp_MemberToImTypeExp.h" />
     <ClInclude Include="SmTypeRes.h" />
     <ClInclude Include="SmTypeResolveScope.h" />

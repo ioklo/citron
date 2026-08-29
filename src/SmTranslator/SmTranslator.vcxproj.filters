@@ -168,6 +168,12 @@
     <ClCompile Include="STypeExp_MemberToImTypeExp.cpp">
       <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
     </ClCompile>
+    <ClCompile Include="SmTraitTypeTask.cpp">
+      <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="PostBuildTypeHierarchyContexts.cpp">
+      <Filter>TranslationPhase</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmFuncContext.h">
@@ -362,6 +368,12 @@
     </ClInclude>
     <ClInclude Include="STypeExp_MemberToImTypeExp.h">
       <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
+    </ClInclude>
+    <ClInclude Include="SmTraitTypeTask.h">
+      <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="PostBuildTypeHierarchyContexts.h">
+      <Filter>TranslationPhase</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
