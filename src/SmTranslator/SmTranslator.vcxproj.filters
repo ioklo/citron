@@ -168,12 +168,6 @@
     <ClCompile Include="STypeExp_MemberToImTypeExp.cpp">
       <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
     </ClCompile>
-    <ClCompile Include="SmType.cpp">
-      <Filter>01_SmType</Filter>
-    </ClCompile>
-    <ClCompile Include="RTypeToSmType.cpp">
-      <Filter>01_SmType</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SmFuncContext.h">
@@ -369,21 +363,6 @@
     <ClInclude Include="STypeExp_MemberToImTypeExp.h">
       <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
     </ClInclude>
-    <ClInclude Include="SmType.h">
-      <Filter>01_SmType</Filter>
-    </ClInclude>
-    <ClInclude Include="SmAppliedDecl.h">
-      <Filter>01_SmType</Filter>
-    </ClInclude>
-    <ClInclude Include="SmTypeEnv.h">
-      <Filter>01_SmType</Filter>
-    </ClInclude>
-    <ClInclude Include="RAppliedDeclToSmAppliedDecl.h">
-      <Filter>01_SmType</Filter>
-    </ClInclude>
-    <ClInclude Include="RTypeToSmType.h">
-      <Filter>01_SmType</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">
@@ -451,9 +430,6 @@
     </Filter>
     <Filter Include="TypeTranslation\STypeExpToReTypeExp\2_ImTypeExpToReTypeExp">
       <UniqueIdentifier>{b7d4d58f-c58a-449e-81b7-41c0a8322a21}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01_SmType">
-      <UniqueIdentifier>{1f81db85-de5d-459e-bf08-2ba065ffd1a7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

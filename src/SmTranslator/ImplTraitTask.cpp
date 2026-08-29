@@ -23,10 +23,6 @@
 #include "SmTypeTranslation.h"
 #include "SmTypeTranslationContexts.h"
 #include "ImplTraitFuncTask.h"
-#include "SmAppliedDecl.h"
-#include "SmType.h"
-#include "RAppliedDeclToSmAppliedDecl.h"
-#include "RTypeToSmType.h"
 
 using namespace std;
 
@@ -386,18 +382,6 @@ bool IsCorrespond(ROuterAppliedDecl<RImplTraitFuncDecl>& rImplTraitFunc, ROuterA
     return true;
 }
 
-//bool IsCorrespond(RImplTraitFuncDecl* rImplTraitFuncDecl, RTraitFuncDecl* rTraitFuncDecl, PostBuildNonTypeSymbolContexts& contexts)
-//{
-//    // 이름이 같으면, signature가 같은지 확인
-//    auto traitFunc = TranslateRAppliedDeclToSmAppliedDecl(RAppliedDecl<RTraitFuncDecl>{rTraitFuncDecl, rTraitFuncDecl->MakeOpenTypeArgs(*contexts.rFactory)}, contexts.smFactory);
-//    auto implTraitFunc = TranslateRAppliedDeclToSmAppliedDecl(RAppliedDecl<RImplTraitFuncDecl>{rImplTraitFuncDecl, rImplTraitFuncDecl->MakeOpenTypeArgs(*contexts.rFactory)}, contexts.smFactory);
-//
-//    if (!IsCorrespond(*e_traitFunc, *e_implTraitFunc))
-//        return Error<Error_ImplTrait_MismatchSignatureWithCorrespondingTraitFunc>();
-//
-//    return {};
-//}
-
 // TODO: [77] 2026-08-11, trait-impl 효율적으로 검색하기
 // rImplTraitDecl에, rTraitFuncDecl이 있는지 확인한다
 bool HasCorrespondFunc(RAppliedDecl<RImplTraitDecl>& rImplTrait, ROuterAppliedDecl<RTraitFuncDecl>& rTraitFunc)
@@ -431,31 +415,6 @@ bool HasCorrespondFunc(RAppliedDecl<RImplTraitDecl>& rImplTrait, ROuterAppliedDe
 
 expected<void, DiagPtr> ImplTraitTask::CheckTraitConformance()
 {
-    // 일단은 함수 signature가 같은지만 확인하면 된다
-    // class C1<T1> { trait Tr<T2> { void F<T3>(T1 t1, T2 t2, T3* t3); } }
-    // class C2<T4> { impl S<T5> : C1<int>.Tr<list<T5>> { void F<T6>(int i, list<T5> l, T6* t6) { ... } } }
-    // 
-    // C1<int>.Tr<list<T5>> === C1<T1>.Tr<T2> [T1 => int, T2 => list<T5>][T4 => T4, T5 => T5]
-    //                      === C1<T1>.Tr<T2> [T1 => int, T2 => list<T5>] (merge)
-    //
-    // C1<int>.Tr<list<T5>>.F === ^T3. { Ret = void, Params = [T1, T2, T3*] }
-    // (C1<T1>.Tr<T2> [T1 => int, T2 => list<T5>]).F === C1<T1>.Tr<T2>.F [T1 => int, T2 => list<T5>]
-    //                                               === ^T3. { Ret = void, Params = [T1, T2, T3*] } [T1 => int, T2 => list<T5>]
-    //
-    // C2<T4>.impl_<T5>.F === ^T6. { Ret = void, Params = [int, list<T5>, T6*] }
-    // (C2<T4>.impl_<T5> [T4 => T4, T5 => T5]).F === C2<T4>.impl_<T5>.F [T4 => T4, T5 => T5]
-    //                                           === ^T6. { Ret = void, Params = [int, list<T5>, T6*] } [T4 => T4, T5 => T5]
-
-    // 
-    // (A) Correspond(^T3. { Ret = void, Params = [T1, T2, T3*] } [T1 => int, T2 => list<T5>], ^T6. { Ret = void, Params = [int, list<T5>, T6*] } [T4 => T4, T5 => T5])
-    // (B) Correspond({ Ret = void, Params = [T1, T2, T3*] } [T1 => int, T2 => list<T5>][T3 => $0], { Ret = void, Params = [int, list<T5>, T6*] } [T4 => T4, T5 => T5][T6 => $0])
-    //   === Correspond(Ret[T1 => int, T2 => list<T5>][T3 => $0], Ret[T4 => T4, T5 => T5][T6 => $0]) 
-    //    && Correspond(Params[T1 => int, T2 => list<T5>][T3 => $0], Params[T4 => T4, T5 => T5][T6 => $0])
-    // 
-    // (A)꼴은 Correspond(ROuterAppliedDecl<RTraitFuncDecl>, ROuterAppliedDecl<RImplTraitFuncDecl>)
-    // (B)꼴은 Correspond(RTraitFuncDecl, SmTypeEnv(RTypeArguments*, RTypeParam* => size_t), RImplTraitFuncDecl, SmTypeEnv(RTypeArguments*, RTypeParam* => size_t))
-    //         RTypeArguments에 나타나는 RTypeParam*과, RTypeParam* => size_t의 RTypeParam은 겹치지 않는다.
-
     RAppliedDecl<RImplTraitDecl> rImplTrait{rImplTraitDecl, rImplTraitDecl->MakeOpenTypeArgs(*rFactory)};
     auto rTrait = rImplTraitDecl->GetTrait();
 
