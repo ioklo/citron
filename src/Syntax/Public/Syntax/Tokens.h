@@ -82,6 +82,7 @@ TOKEN_DEF(SomeToken, L"some")
 TOKEN_DEF(ExtendToken, L"extend")
 TOKEN_DEF(ExtensionToken, L"extension")
 TOKEN_DEF(ImplToken, L"impl")
+TOKEN_DEF(TypeToken, L"type")
 
 TOKEN_DEF(ColonToken, L":")
 TOKEN_DEF(BacktickToken, L"`")
@@ -196,6 +197,7 @@ using Token = std::variant<
     ExtendToken,
     ExtensionToken,
     ImplToken,
+    TypeToken,
 
     ColonToken,
     BacktickToken,
@@ -211,7 +213,7 @@ using Token = std::variant<
     BoolToken,
     TextToken,
     IdentifierToken
-> ;
+>;
 
 template<typename TToken, typename = std::enable_if_t<!std::is_same_v<TToken, Token>&& std::is_assignable_v<Token, TToken>>>
 bool operator==(const Token& token1, const TToken& token2)

@@ -103,6 +103,7 @@ unordered_map<u32string, Token> keywordInfos{
     { U"extend"s, ExtendToken{} },
     { U"extension"s, ExtensionToken{} },
     { U"impl"s, ImplToken{} },
+    { U"type"s, TypeToken{} },
 };
 
 class BufferIterator

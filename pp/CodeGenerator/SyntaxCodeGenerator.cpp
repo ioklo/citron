@@ -1251,6 +1251,15 @@ struct ToJsonVisitor {
 
         #pragma region STraitDecl
 
+        ClassInfo{
+            .name = "STraitTypeDecl",
+            .o_base = "SSyntax",
+            .memberInfos {
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName"},
+                {.type = "std::vector<STypeExp*>", .memberVarName = "traits", .getterName = "GetTraits"},
+            },
+        },
+
         ClassInfo {
             .name = "STraitFuncDecl",
             .o_base = "SSyntax",
@@ -1266,7 +1275,10 @@ struct ToJsonVisitor {
         VariantInfo{
             .name = "STraitMemberDecl",
             .argName = "memberDecl",
-            .memberNames { "STraitFuncDecl*" }
+            .memberNames { 
+                "STraitTypeDecl*",
+                "STraitFuncDecl*" 
+            }
         },
 
         ClassInfo{

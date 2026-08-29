@@ -1602,6 +1602,24 @@ JsonItem SEnumDecl::ToJson()
     };
 }
 
+STraitTypeDecl::STraitTypeDecl(std::string name, std::vector<STypeExp*> traits)
+    : name(move(name)), traits(move(traits)) { }
+
+STraitTypeDecl::STraitTypeDecl(STraitTypeDecl&& other) noexcept = default;
+
+STraitTypeDecl::~STraitTypeDecl() = default;
+
+STraitTypeDecl& STraitTypeDecl::operator=(STraitTypeDecl&& other) noexcept = default;
+
+JsonItem STraitTypeDecl::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("STraitTypeDecl") },
+        { "name", Citron::ToJson(name) },
+        { "traits", Citron::ToJson(traits) },
+    };
+}
+
 STraitFuncDecl::STraitFuncDecl(bool bStatic, SFuncReturn funcRet, std::string name, std::vector<STypeParam> typeParams, std::vector<SFuncParam> parameters)
     : bStatic(move(bStatic)), funcRet(move(funcRet)), name(move(name)), typeParams(move(typeParams)), parameters(move(parameters)) { }
 

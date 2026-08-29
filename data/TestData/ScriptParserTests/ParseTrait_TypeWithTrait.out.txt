@@ -1,0 +1,29 @@
+{
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STraitDecl",
+            "accessModifier": null,
+            "name": "T",
+            "typeParams": [],
+            "memberDecls": [
+                {
+                    "$type": "STraitTypeDecl",
+                    "name": "Enumerator",
+                    "traits": [
+                        {
+                            "$type": "STypeExp_Id",
+                            "name": "RefEnumerator",
+                            "typeArgs": []
+                        },
+                        {
+                            "$type": "STypeExp_Id",
+                            "name": "MyTrait2",
+                            "typeArgs": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

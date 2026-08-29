@@ -3020,6 +3020,46 @@ void Main()
     DoTest(code, expected);
 }
 
+TEST(Trait, AssociatedType) 
+{
+    auto code = R"---(
+trait MyTrait
+{
+    type TItem;
+    TItem GetItem();
+}
+
+struct S : MyTrait
+{
+    int value;
+}
+
+impl S : MyTrait
+{
+    type TItem = int; // type alias
+
+    int GetItem() // alias로 안써도 괜찮아야 한다
+    {
+        return value;
+    }
+}
+
+// 리턴값으로 T.TItem이 검색될 수 있어야 함
+T.TItem Func<T>(T item) where T : MyTrait
+{
+    return item.GetItem();
+}
+
+void Main()
+{
+    var x = Func(S(3)); // T가 S로 추론
+    @$x
+})---";
+    string expected = R"---(3 )---";
+
+    DoTest(code, expected);
+}
+
 TEST(Trait, Basic) 
 {
     auto code = R"---(
@@ -3050,6 +3090,50 @@ void Main()
 {
     var x = GetTrait();
     x.Func();
+}
+)---";
+    string expected = R"---(3 )---";
+
+    DoTest(code, expected);
+}
+
+TEST(Trait, Generics) 
+{
+    auto code = R"---(
+class C1<T1>
+{
+    trait Tr<T2>
+    {
+        void F<T3>(T1 t1, T2 t2, T3* t3);
+    }
+}
+
+class C2<T4>
+{
+    struct S<T5>
+    {
+    }
+
+    impl S<T6> : C1<int>.Tr<T6*>
+    {
+        void F<T7>(int t1, T6* t2, T7* t3)
+        {
+        }
+    }
+}
+
+some C1<int>.Tr<T8*> GetTrait<T8>()
+{
+    return C2<int>.S<T8>();
+}
+
+void Main()
+{
+    var x = GetTrait<int>();
+
+    int a = 3;
+    int b = 2;
+    x.F<int>(3, &a, &b);
 }
 )---";
     string expected = R"---(3 )---";

@@ -244,6 +244,39 @@ SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory)
     return factory.MakeSEnumDecl(o_accessModifier, move(o_enumName->text), move(*o_typeParams), move(elems));
 }
 
+// type MyType : Trait1, Trait2;
+STraitTypeDecl* ParseTraitTypeDecl(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer = *lexer;
+
+    if (!Accept<TypeToken>(&curLexer)) return nullptr;
+
+    auto o_typeName = Accept<IdentifierToken>(&curLexer);
+    if (!o_typeName) return nullptr;
+
+    vector<STypeExp*> traits;
+    if (Accept<ColonToken>(&curLexer))
+    {
+        auto* trait = ParseTypeExp(&curLexer, factory);
+        if (!trait) return nullptr;
+
+        traits.push_back(trait);
+
+        while (Accept<CommaToken>(&curLexer))
+        {
+            auto* trait = ParseTypeExp(&curLexer, factory);
+            if (!trait) return nullptr;
+
+            traits.push_back(trait);
+        }
+    }
+
+    if (!Accept<SemiColonToken>(&curLexer))
+        return nullptr;
+
+    RETURN_ACCEPT(factory.Make<STraitTypeDecl>(move(o_typeName->text), move(traits)));
+}
+
 STraitFuncDecl* ParseTraitFuncDecl(Lexer* lexer, SFactory& factory)
 {
     Lexer curLexer = *lexer;
@@ -283,6 +316,9 @@ STraitFuncDecl* ParseTraitFuncDecl(Lexer* lexer, SFactory& factory)
 
 optional<STraitMemberDecl> ParseTraitMemberDecl(Lexer* lexer, SFactory& factory)
 {
+    if (auto* decl = ParseTraitTypeDecl(lexer, factory))
+        return decl;
+
     if (auto* decl = ParseTraitFuncDecl(lexer, factory))
         return decl;
 

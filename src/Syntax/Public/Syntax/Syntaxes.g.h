@@ -2536,6 +2536,23 @@ public:
     SYNTAX_API JsonItem ToJson();
 };
 
+class STraitTypeDecl : public SSyntax
+{
+public:
+    std::string name;
+    std::vector<STypeExp*> traits;
+
+    SYNTAX_API STraitTypeDecl(std::string name, std::vector<STypeExp*> traits);
+    STraitTypeDecl(const STraitTypeDecl&) = delete;
+    SYNTAX_API STraitTypeDecl(STraitTypeDecl&&) noexcept;
+    SYNTAX_API ~STraitTypeDecl();
+
+    STraitTypeDecl& operator=(const STraitTypeDecl& other) = delete;
+    SYNTAX_API STraitTypeDecl& operator=(STraitTypeDecl&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+};
+
 class STraitFuncDecl : public SSyntax
 {
 public:
@@ -2557,6 +2574,7 @@ public:
 };
 
 using STraitMemberDecl = std::variant<
+    STraitTypeDecl*,
     STraitFuncDecl*>;
 
 SYNTAX_API JsonItem ToJson(STraitMemberDecl& memberDecl);

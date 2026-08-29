@@ -911,3 +911,72 @@ TEST(ScriptParser, ParseTrait_Empty)
     EXPECT_SYNTAX_EQ(script, expected);
 }
 
+TEST(ScriptParser, ParseTrait_Type)
+{
+    auto [buffer, lexer] = Prepare(UR"---(trait T { type Enumerator; })---");
+    SFactory factory;
+
+    auto* script = ParseScript(&lexer, factory);
+
+    auto expected = R"---({
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STraitDecl",
+            "accessModifier": null,
+            "name": "T",
+            "typeParams": [],
+            "memberDecls": [
+                {
+                    "$type": "STraitTypeDecl",
+                    "name": "Enumerator",
+                    "traits": []
+                }
+            ]
+        }
+    ]
+})---";
+
+    EXPECT_SYNTAX_EQ(script, expected);
+}
+
+TEST(ScriptParser, ParseTrait_TypeWithTrait)
+{
+    auto [buffer, lexer] = Prepare(UR"---(trait T { type Enumerator : RefEnumerator, MyTrait2; })---");
+    SFactory factory;
+
+    auto* script = ParseScript(&lexer, factory);
+
+    auto expected = R"---({
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STraitDecl",
+            "accessModifier": null,
+            "name": "T",
+            "typeParams": [],
+            "memberDecls": [
+                {
+                    "$type": "STraitTypeDecl",
+                    "name": "Enumerator",
+                    "traits": [
+                        {
+                            "$type": "STypeExp_Id",
+                            "name": "RefEnumerator",
+                            "typeArgs": []
+                        },
+                        {
+                            "$type": "STypeExp_Id",
+                            "name": "MyTrait2",
+                            "typeArgs": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+})---";
+
+    EXPECT_SYNTAX_EQ(script, expected);
+}
+

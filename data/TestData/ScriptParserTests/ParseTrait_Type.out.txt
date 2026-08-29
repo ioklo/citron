@@ -1,0 +1,18 @@
+{
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STraitDecl",
+            "accessModifier": null,
+            "name": "T",
+            "typeParams": [],
+            "memberDecls": [
+                {
+                    "$type": "STraitTypeDecl",
+                    "name": "Enumerator",
+                    "traits": []
+                }
+            ]
+        }
+    ]
+}

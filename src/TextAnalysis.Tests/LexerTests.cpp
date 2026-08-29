@@ -10,8 +10,6 @@
 
 #include "TestMisc.h"
 
-
-
 using namespace std;
 using namespace Citron;
 
@@ -55,7 +53,7 @@ TEST(Lexer, LexSymbols)
     auto [buffer, lexer] = Prepare(U"if else for while switch case continue break task params out return async await foreach in yield seq"
         " enum struct class is as ref"
         " null move shared inline leave public protected private static"
-        " new namespace trait some extend extension impl"
+        " new namespace trait some extend extension impl type"
         " ++ -- <= >= => == != ->"
         " @ < > ; , = { } ( ) [ ] + - * / % ! . ? & ~ : `");
 
@@ -105,6 +103,7 @@ TEST(Lexer, LexSymbols)
         ExtendToken{},
         ExtensionToken{},
         ImplToken{},
+        TypeToken{},
 
         PlusPlusToken{},
         MinusMinusToken{},
