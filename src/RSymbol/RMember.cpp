@@ -1,4 +1,5 @@
 #include "RMember.h"
+#include "Infra/Exceptions.h"
 #include "RTypeDecl.h"
 
 using namespace std;
@@ -18,9 +19,10 @@ RMember ToRMember(RTypeDecl* typeDecl)
         RMember Visit(RInterfaceDecl* rTypeDecl) { return RMember_Interface{rTypeDecl}; }
         RMember Visit(RLambdaDecl* rTypeDecl) { return RMember_Lambda{rTypeDecl}; }
         RMember Visit(RTraitDecl* rTypeDecl) { return RMember_Trait{rTypeDecl}; }
+        RMember Visit(RTypeAliasDecl* rTypeDecl) { throw NotImplementedException{}; }
     };
 
     return Accept(Visitor{}, typeDecl);
 }
 
-} // namespace Citron 
+} // namespace Citron

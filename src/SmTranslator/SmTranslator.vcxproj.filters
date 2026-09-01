@@ -171,6 +171,9 @@
     <ClCompile Include="SmTraitTypeTask.cpp">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClCompile>
+    <ClCompile Include="TypeAliasTask.cpp">
+      <Filter>DeclTranslation</Filter>
+    </ClCompile>
     <ClCompile Include="PostBuildTypeHierarchyContexts.cpp">
       <Filter>TranslationPhase</Filter>
     </ClCompile>
@@ -371,6 +374,9 @@
     </ClInclude>
     <ClInclude Include="SmTraitTypeTask.h">
       <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeAliasTask.h">
+      <Filter>DeclTranslation</Filter>
     </ClInclude>
     <ClInclude Include="PostBuildTypeHierarchyContexts.h">
       <Filter>TranslationPhase</Filter>

@@ -1,0 +1,9 @@
+//@ 3
+
+type MyInt = int;
+
+void Main()
+{
+    MyInt value = 3;
+    @$value
+}

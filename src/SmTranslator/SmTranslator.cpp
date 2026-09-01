@@ -20,6 +20,7 @@
 #include "RSymbol/RClassDecl.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RTraitDecl.h"
+#include "RSymbol/RTypeAliasDecl.h"
 #include "RSymbol/RTypeArguments.h"
 #include "MIR/MFuncBody.h"
 #include "MIR/MFactory.h"
@@ -41,6 +42,7 @@
 #include "SmDeclContext_Decl.h"
 #include "SmDeclContext_ClassDecl.h"
 #include "SmTraitTypeTask.h"
+#include "TypeAliasTask.h"
 
 using namespace std;
 using namespace Citron;
@@ -68,6 +70,7 @@ public:
     void Visit(SEnumDecl* decl);
     void Visit(STraitDecl* decl);
     void Visit(SImplTraitDecl* decl);
+    void Visit(STypeAliasDecl* decl);
     void Visit(SStructFuncDecl* decl);
     void Visit(SStructCtorDecl* decl);
     void Visit(SStructDtorDecl* decl);
@@ -93,6 +96,7 @@ public:
     void Visit(SEnumDecl* decl);
     void Visit(STraitDecl* decl);
     void Visit(SImplTraitDecl* decl);
+    void Visit(STypeAliasDecl* decl);
     void Visit(SClassFuncDecl* decl);
     void Visit(SClassCtorDecl* decl);
     void Visit(SClassVarDecl* decl);
@@ -121,6 +125,7 @@ public:
     void Visit(SEnumDecl* elem);
     void Visit(STraitDecl* elem);
     void Visit(SImplTraitDecl* elem);
+    void Visit(STypeAliasDecl* elem);
 };
 
 class ScriptElemVisitor
@@ -145,6 +150,7 @@ public:
     void Visit(SEnumDecl* elem);
     void Visit(STraitDecl* elem);
     void Visit(SImplTraitDecl* elem);
+    void Visit(STypeAliasDecl* elem);
 };
 
 void VisitGlobalFunc(TakeRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl* sGFuncDecl, RNamespace* outer, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
@@ -272,6 +278,12 @@ void StructElemVisitor::Visit(SImplTraitDecl* decl)
     VisitImplTrait(decl, structDeclContext, RImplTraitDeclOuter{rStruct}, rFactory, phaseManager);
 }
 
+void StructElemVisitor::Visit(STypeAliasDecl* decl)
+{
+    RTypeDeclOuter_Struct outer{rStruct, MakeStructMemberAccessor(decl->accessModifier)};
+    TypeAliasTask::Register(structDeclContext, outer, decl, rFactory, phaseManager);
+}
+
 void StructElemVisitor::Visit(SStructFuncDecl* decl)
 {   
     StructFuncTask::Register(structDeclContext, rStruct, decl, rFactory, phaseManager);
@@ -320,6 +332,12 @@ void ClassElemVisitor::Visit(STraitDecl* decl)
 void ClassElemVisitor::Visit(SImplTraitDecl* decl)
 {    
     VisitImplTrait(decl, classDeclContext, RImplTraitDeclOuter{rClass}, rFactory, phaseManager);
+}
+
+void ClassElemVisitor::Visit(STypeAliasDecl* decl)
+{
+    RTypeDeclOuter_Class outer{rClass, MakeClassMemberAccessor(decl->accessModifier)};
+    TypeAliasTask::Register(classDeclContext, outer, decl, rFactory, phaseManager);
 }
 
 void ClassElemVisitor::Visit(SClassFuncDecl* decl)
@@ -399,6 +417,12 @@ void NamespaceElemVisitor::Visit(SImplTraitDecl* decl)
     VisitImplTrait(decl, namespaceDeclContext, RImplTraitDeclOuter{curNS}, rFactory, phaseManager);
 }
 
+void NamespaceElemVisitor::Visit(STypeAliasDecl* decl)
+{
+    RTypeDeclOuter_Namespace outer{curNS, MakeNamespaceMemberAccessor(decl->accessModifier)};
+    TypeAliasTask::Register(namespaceDeclContext, outer, decl, rFactory, phaseManager);
+}
+
 void ScriptElemVisitor::Visit(SNamespaceDecl* elem)
 {
     // A.B.C가 있을 경우, 하위 네임스페이스를 찾는다. 없으면 만들어 나간다
@@ -471,6 +495,12 @@ void ScriptElemVisitor::Visit(STraitDecl* decl)
 void ScriptElemVisitor::Visit(SImplTraitDecl* decl)
 {
     VisitImplTrait(decl, rootDeclContext, RImplTraitDeclOuter{rootNamespace}, rFactory, phaseManager);
+}
+
+void ScriptElemVisitor::Visit(STypeAliasDecl* decl)
+{
+    RTypeDeclOuter_Namespace outer{rootNamespace, MakeNamespaceMemberAccessor(decl->accessModifier)};
+    TypeAliasTask::Register(rootDeclContext, outer, decl, rFactory, phaseManager);
 }
 
 } // unnamed namespace 

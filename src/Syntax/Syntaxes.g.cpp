@@ -342,6 +342,25 @@ JsonItem ToJson(SForStmtInitializer* initializer)
     SForStmtInitializerToJsonVisitor visitor;
     return Accept(visitor, initializer);
 }
+STypeAliasDecl::STypeAliasDecl(std::optional<SAccessModifier> accessModifier, std::string name, STypeExp* targetType)
+    : accessModifier(move(accessModifier)), name(move(name)), targetType(move(targetType)) { }
+
+STypeAliasDecl::STypeAliasDecl(STypeAliasDecl&& other) noexcept = default;
+
+STypeAliasDecl::~STypeAliasDecl() = default;
+
+STypeAliasDecl& STypeAliasDecl::operator=(STypeAliasDecl&& other) noexcept = default;
+
+JsonItem STypeAliasDecl::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("STypeAliasDecl") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "name", Citron::ToJson(name) },
+        { "targetType", Citron::ToJson(targetType) },
+    };
+}
+
 JsonItem ToJson(SClassMemberDecl& decl)
 {
     return std::visit(ToJsonVisitor(), decl);

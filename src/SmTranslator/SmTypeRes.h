@@ -41,7 +41,8 @@ class SmTypeRes
         SmTypeRes_Interface,
         SmTypeRes_Lambda,
         SmTypeRes_TypeVar,
-        SmTypeRes_Trait
+        SmTypeRes_Trait,
+        SmTypeRes_Type
     >;
     Variant v;
 

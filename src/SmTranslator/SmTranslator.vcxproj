@@ -67,6 +67,7 @@
     <ClCompile Include="SExp_MemberToImExp.cpp" />
     <ClCompile Include="SmDeclRes.cpp" />
     <ClCompile Include="SmTraitTypeTask.cpp" />
+    <ClCompile Include="TypeAliasTask.cpp" />
     <ClCompile Include="STypeExp_MemberToImTypeExp.cpp" />
     <ClCompile Include="SmTypeRes.cpp" />
     <ClCompile Include="SmTypeResolveScope.cpp" />
@@ -138,6 +139,7 @@
     <ClInclude Include="SExp_MemberToImExp.h" />
     <ClInclude Include="SmDeclRes.h" />
     <ClInclude Include="SmTraitTypeTask.h" />
+    <ClInclude Include="TypeAliasTask.h" />
     <ClInclude Include="STypeExp_MemberToImTypeExp.h" />
     <ClInclude Include="SmTypeRes.h" />
     <ClInclude Include="SmTypeResolveScope.h" />

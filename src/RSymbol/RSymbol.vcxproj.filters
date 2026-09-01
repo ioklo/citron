@@ -176,6 +176,9 @@
     <ClInclude Include="Public\RSymbol\RTraitTypeDecl.h">
       <Filter>RDecls\10 Trait</Filter>
     </ClInclude>
+    <ClInclude Include="Public\RSymbol\RTypeAliasDecl.h">
+      <Filter>RDecls</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="RDecls">
@@ -350,6 +353,9 @@
     </ClCompile>
     <ClCompile Include="RTraitTypeDecl.cpp">
       <Filter>RDecls\10 Trait</Filter>
+    </ClCompile>
+    <ClCompile Include="RTypeAliasDecl.cpp">
+      <Filter>RDecls</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

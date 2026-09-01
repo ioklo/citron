@@ -7,6 +7,8 @@ Type alias와 associated type 구현
 - trait/impl parsing 완료.
 - trait/impl syntax의 RSymbol 변환 완료.
 - impl이 trait requirement를 만족하는지 검사하는 단계 완료.
+- parameter 없는 transparent type alias declaration의 parser, RSymbol 등록, target type 해석과 type lookup 경로를 구현했다. EvalTests의 global alias와 struct member alias focused test가 통과한다.
+- alias chain의 forward reference/cycle을 포함한 demand-driven target/base resolver와 계약 접근성 검사는 아직 남아 있다.
 - `some Trait` return 구현 진행 중:
   - opaque return type 함수 호출
   - 결과를 받을 저장소 생성
@@ -16,7 +18,7 @@ Type alias와 associated type 구현
 
 ## Associated Type Work Checklist
 - [ ] trait에 associated type requirement를 추가한다: `type TItem;`.
-- [ ] 정식 transparent type alias declaration을 추가한다: `type TItem = int;`. Declaration 등록, alias target 해석, lookup, normalization을 포함한다.
+- [x] parameter 없는 정식 transparent type alias declaration을 추가한다: `type TItem = int;`. Declaration 등록, alias target 해석, lookup, normalization을 포함한다.
 - [ ] 선언 외부 계약의 접근 범위 포함 검사를 구현한다. private alias 사용, protected owner 차이, bundle/header 및 associated type witness 노출을 포함한다.
 - [ ] impl의 same-name type alias 또는 concrete nested type declaration을 associated type requirement의 type witness로 연결하고 만족 여부를 검사한다.
 - [ ] generic trait constraint를 반영한 qualified type projection lookup을 추가한다: `T.TItem`은 내부적으로 `<T as MyTrait>::TItem`을 뜻한다.

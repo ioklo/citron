@@ -1,0 +1,12 @@
+//@ 4
+
+struct Holder
+{
+    type Value = int;
+}
+
+void Main()
+{
+    Holder.Value value = 4;
+    @$value
+}

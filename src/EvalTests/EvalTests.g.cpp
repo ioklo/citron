@@ -3141,6 +3141,41 @@ void Main()
     DoTest(code, expected);
 }
 
+TEST(Type_Alias, Basic) 
+{
+    auto code = R"---(
+type MyInt = int;
+
+void Main()
+{
+    MyInt value = 3;
+    @$value
+}
+)---";
+    string expected = R"---(3)---";
+
+    DoTest(code, expected);
+}
+
+TEST(Type_Alias, Member) 
+{
+    auto code = R"---(
+struct Holder
+{
+    type Value = int;
+}
+
+void Main()
+{
+    Holder.Value value = 4;
+    @$value
+}
+)---";
+    string expected = R"---(4)---";
+
+    DoTest(code, expected);
+}
+
 TEST(VarDecl, CopyCtor) 
 {
     auto code = R"---(struct S { int x; }

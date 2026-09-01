@@ -1062,12 +1062,31 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SForStmt
 
 SYNTAX_API JsonItem ToJson(SForStmtInitializer* initializer);
 
+class STypeAliasDecl : public SSyntax
+{
+public:
+    std::optional<SAccessModifier> accessModifier;
+    std::string name;
+    STypeExp* targetType;
+
+    SYNTAX_API STypeAliasDecl(std::optional<SAccessModifier> accessModifier, std::string name, STypeExp* targetType);
+    STypeAliasDecl(const STypeAliasDecl&) = delete;
+    SYNTAX_API STypeAliasDecl(STypeAliasDecl&&) noexcept;
+    SYNTAX_API ~STypeAliasDecl();
+
+    STypeAliasDecl& operator=(const STypeAliasDecl& other) = delete;
+    SYNTAX_API STypeAliasDecl& operator=(STypeAliasDecl&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+};
+
 using SClassMemberDecl = std::variant<
     SClassDecl*,
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
     SImplTraitDecl*,
+    STypeAliasDecl*,
     SClassFuncDecl*,
     SClassCtorDecl*,
     SClassVarDecl*>;
@@ -1080,6 +1099,7 @@ using SStructMemberDecl = std::variant<
     SEnumDecl*,
     STraitDecl*,
     SImplTraitDecl*,
+    STypeAliasDecl*,
     SStructFuncDecl*,
     SStructCtorDecl*,
     SStructDtorDecl*,
@@ -1094,7 +1114,8 @@ using SNamespaceDeclElement = std::variant<
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
-    SImplTraitDecl*>;
+    SImplTraitDecl*,
+    STypeAliasDecl*>;
 
 SYNTAX_API JsonItem ToJson(SNamespaceDeclElement& elem);
 
@@ -1105,7 +1126,8 @@ using SScriptElement = std::variant<
     SStructDecl*,
     SEnumDecl*,
     STraitDecl*,
-    SImplTraitDecl*>;
+    SImplTraitDecl*,
+    STypeAliasDecl*>;
 
 SYNTAX_API JsonItem ToJson(SScriptElement& elem);
 

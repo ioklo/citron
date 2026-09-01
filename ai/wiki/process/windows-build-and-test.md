@@ -93,6 +93,8 @@ msbuild .\TextAnalysis.Tests.vcxproj /t:Build `
 
 실행 파일을 인용해 호출해야 `$Platform` 변수와 경로의 특수문자를 안전하게 처리할 수 있다.
 
+EvalTests가 아무 출력 없이 `0xC0000135`로 종료되면 `TextAnalysis.dll`의 ICU runtime DLL 배포가 빠졌는지 확인한다. 같은 platform/configuration으로 `src/TextAnalysis/TextAnalysis.vcxproj`를 `Rebuild`한 뒤 `icuucd74.dll`과 `icudtd74.dll`이 공통 output directory에 있는지 확인한다. 배포가 여전히 생략되면 현재 platform의 vcpkg Debug `bin`에서 두 DLL을 공통 output directory로 직접 복사한다.
+
 ## Generate Tests From `data/TestData`
 
 테스트는 런타임에 data 파일을 읽지 않는다. `pp/TestGenerator`가 `data/TestData`를 읽어 committed `.g.cpp` 테스트 소스를 생성하며, 이 생성 파일이 각 테스트 프로젝트와 함께 컴파일된다.
@@ -147,7 +149,7 @@ CodeGenerator는 생성 결과가 기존 파일과 같으면 파일을 다시 �
 
 ```powershell
 Set-Location $SourceRoot
-msbuild Citron.sln /t:Build /p:Configuration=Debug /p:Platform=$Platform
+msbuild Citron.slnx /t:Build /p:Configuration=Debug /p:Platform=$Platform
 ```
 
 ## Related Documents

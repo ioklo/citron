@@ -469,6 +469,16 @@ struct ToJsonVisitor {
             }
         },
 
+        ClassInfo {
+            .name = "STypeAliasDecl",
+            .o_base = "SSyntax",
+            .memberInfos {
+                { .type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier" },
+                { .type = "std::string", .memberVarName = "name", .getterName = "GetName" },
+                { .type = "STypeExp*", .memberVarName = "targetType", .getterName = "GetTargetType" },
+            },
+        },
+
         // SClassMemberDecl
         VariantInfo {
             .name = "SClassMemberDecl",
@@ -479,6 +489,7 @@ struct ToJsonVisitor {
                 "SEnumDecl*",
                 "STraitDecl*",
                 "SImplTraitDecl*",
+                "STypeAliasDecl*",
                 "SClassFuncDecl*",
                 "SClassCtorDecl*",
                 "SClassVarDecl*",
@@ -494,6 +505,7 @@ struct ToJsonVisitor {
                 "SEnumDecl*",
                 "STraitDecl*",
                 "SImplTraitDecl*",
+                "STypeAliasDecl*",
                 "SStructFuncDecl*",
                 "SStructCtorDecl*",
                 "SStructDtorDecl*",
@@ -512,6 +524,7 @@ struct ToJsonVisitor {
                 "SEnumDecl*",
                 "STraitDecl*",
                 "SImplTraitDecl*",
+                "STypeAliasDecl*",
             }
         },
 
@@ -526,6 +539,7 @@ struct ToJsonVisitor {
                 "SEnumDecl*",
                 "STraitDecl*",
                 "SImplTraitDecl*",
+                "STypeAliasDecl*",
             }
         },
 

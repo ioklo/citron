@@ -114,6 +114,9 @@ expected<ImTypeExp, DiagPtr> TranslateSmTypeResAndSTypeArgsToImTypeExp(SmTypeRes
         }
         else if constexpr (same_as<T, SmTypeRes_Type>)
         {
+            if (!sMemberTypeArgs.empty())
+                return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
+
             return ImTypeExp_Type{typeRes.type};
         }
         else static_assert(false);

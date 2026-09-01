@@ -141,6 +141,13 @@ expected<RType*, DiagPtr> MakeType(SmTypeRes& typeRes, span<STypeExp*> sMemberTy
         {
             return contexts.rFactory->MakeTypeVarType(typeRes.decl);
         }
+        else if constexpr (same_as<T, SmTypeRes_Type>)
+        {
+            if (!sMemberTypeArgs.empty())
+                return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
+
+            return typeRes.type;
+        }
         else if constexpr (same_as<T, SmTypeRes_Trait>)
         {
             return Error<Error_ResolveIdentifier_CantUseTraitAsType>();

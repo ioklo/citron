@@ -5,6 +5,7 @@
 #include "Syntax/Syntax.h"
 #include "RSymbol/RClassDecl.h"
 #include "RSymbol/RStructDecl.h"
+#include "RSymbol/RTypeAliasDecl.h"
 #include "RSymbol/RFactory.h"
 #include "ImTypeExp.h"
 #include "STypeExpToImTypeExp.h"
@@ -83,6 +84,14 @@ expected<ImTypeExp, DiagPtr> TranslateRTypeDeclAndSTypeArgsToImTypeExp(RTypeDecl
             RETURN_ON_ERROR(e_typeArgs);
 
             return ImTypeExp_Trait{rTypeDecl, *e_typeArgs};
+        }
+
+        ResultType Visit(RTypeAliasDecl* rTypeDecl)
+        {
+            if (!sMemberTypeArgs.empty())
+                return Error<Error_ResolveIdentifier_TypeParamCountMismatch>();
+
+            return ImTypeExp_Type{rTypeDecl->GetTargetType()->Apply(outerTypeArgs)};
         }
     };
 

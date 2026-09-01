@@ -28,6 +28,7 @@ SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory);
 SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory);
 STraitDecl* ParseTraitDecl(Lexer* lexer, SFactory& factory);
 SImplTraitDecl* ParseImplTraitDecl(Lexer* lexer, SFactory& factory);
+STypeAliasDecl* ParseTypeAliasDecl(Lexer* lexer, SFactory& factory);
 optional<SAccessModifier> ParseAccessModifier(Lexer* lexer);
 SNamespaceDecl* ParseNamespaceDecl(Lexer* lexer, SFactory& factory);
 
@@ -165,6 +166,9 @@ optional<vector<STypeParam>> ParseTypeParams(Lexer* lexer, SFactory& factory)
 template<typename TMemberDeclSyntax>
 optional<TMemberDeclSyntax> ParseMemberDecl(Lexer* lexer, SFactory& factory)
 {
+    if (auto* typeAliasDecl = ParseTypeAliasDecl(lexer, factory))
+        return typeAliasDecl;
+
     if (auto* enumDecl = ParseEnumDecl(lexer, factory))
         return enumDecl;
 
@@ -181,6 +185,32 @@ optional<TMemberDeclSyntax> ParseMemberDecl(Lexer* lexer, SFactory& factory)
         return implDecl;
 
     return nullopt;
+}
+
+STypeAliasDecl* ParseTypeAliasDecl(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer = *lexer;
+
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
+
+    if (!Accept<TypeToken>(&curLexer))
+        return nullptr;
+
+    auto o_name = Accept<IdentifierToken>(&curLexer);
+    if (!o_name)
+        return nullptr;
+
+    if (!Accept<EqualToken>(&curLexer))
+        return nullptr;
+
+    auto* targetType = ParseTypeExp(&curLexer, factory);
+    if (!targetType)
+        return nullptr;
+
+    if (!Accept<SemiColonToken>(&curLexer))
+        return nullptr;
+
+    RETURN_ACCEPT(factory.Make<STypeAliasDecl>(o_accessModifier, move(o_name->text), targetType));
 }
 
 SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory)
