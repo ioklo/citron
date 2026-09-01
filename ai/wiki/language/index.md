@@ -9,7 +9,7 @@ Keywords: language, syntax, type system, trait, interface, module, import, visib
 ## Routing Hints
 - 언어 철학, explicit 지향, resolution 성향은 `design-principles.md`
 - module, import, using, type alias, declaration/export boundary는 `module-and-cti.md`, `type-aliases.md`
-- visibility, accessibility, private/public, not-visible type flow는 `visibility-and-reachability.md`
+- visibility, accessibility, private/public/protected, 선언의 외부 계약 접근성은 `visibility-and-reachability.md`
 - trait, interface, extension, impl, associated type은 `trait-and-interface.md`
 - nested type/trait identity와 conformance는 `nested-declarations.md`
 - 함수, 제어 흐름, nullable, foreach는 각 surface topic page를 직접 본다.

@@ -28,6 +28,11 @@ void return call
 
 이 분류는 surface function signature를 바꾸지 않는다.
 
+## Destructor Accessibility
+- 소멸자에는 접근 지정자를 두지 않으며 항상 public으로 취급한다.
+- 암시적 cleanup과 value witness destroy를 포함하여 소멸자 accessibility check를 수행하지 않는다.
+- 이 규칙은 ownership/lifetime 검사를 없애거나 임의의 borrowed value를 파괴할 권한을 부여하지 않는다.
+
 ## Error Channel
 - Function은 최대 하나의 error type을 `throws`로 선언한다.
 - 호출한 function의 `throws` type이 현재 function과 같으면 `try` 없이 자동 전파한다.

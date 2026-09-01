@@ -1,7 +1,7 @@
 # Current Agenda
 
 ## Topic
-Associated type과 runtime generic witness ABI
+Type alias와 associated type 구현
 
 ## Active Work
 - trait/impl parsing 완료.
@@ -17,6 +17,7 @@ Associated type과 runtime generic witness ABI
 ## Associated Type Work Checklist
 - [ ] trait에 associated type requirement를 추가한다: `type TItem;`.
 - [ ] 정식 transparent type alias declaration을 추가한다: `type TItem = int;`. Declaration 등록, alias target 해석, lookup, normalization을 포함한다.
+- [ ] 선언 외부 계약의 접근 범위 포함 검사를 구현한다. private alias 사용, protected owner 차이, bundle/header 및 associated type witness 노출을 포함한다.
 - [ ] impl의 same-name type alias 또는 concrete nested type declaration을 associated type requirement의 type witness로 연결하고 만족 여부를 검사한다.
 - [ ] generic trait constraint를 반영한 qualified type projection lookup을 추가한다: `T.TItem`은 내부적으로 `<T as MyTrait>::TItem`을 뜻한다.
 - [ ] generic function의 typecheck와 shared runtime implementation 경로를 추가한다. Type metadata, trait witness, unknown-layout parameter/result 처리를 포함한다.
@@ -27,6 +28,11 @@ Associated type과 runtime generic witness ABI
 세부 순서와 acceptance test는 `ai/notes/2026-08-29-associated-type-implementation-plan.md`를 본다.
 
 ## Current Direction
+- 선언 D의 외부 계약에 노출되는 symbol S는 `Access(D) ⊆ Access(S)`를 만족해야 한다. enclosing declaration을 반영한 실제 접근 범위로 비교하며, 서로 다른 owner의 `protected`를 같은 등급으로 취급하지 않는다. 이전 C++식 private type 노출 허용 규칙을 대체한다.
+- public signature에 private type/alias를 쓰거나 public alias로 private target을 노출하는 것은 금지한다. private alias의 target이 `int`여도 public signature에는 그 alias를 쓸 수 없다. `some Trait`의 backing type과 함수 body/private 구현 멤버는 외부 계약과 구분한다.
+- public struct의 header에 private trait를 직접 넣지 않는다. 내부용 conformance는 접근 범위가 맞는 bundle로 분리한다. 공개 conformance의 associated type으로 private 타입을 노출하는 것은 거부한다.
+- trait 구현 전용 extension은 trait/header의 접근성, trait 인자·associated type 노출, impl signature 일치 검사로 계약을 보장한다. trusted private 접근 권한을 별도의 공개 권한으로 보지 않는다. 세부 규칙은 `ai/wiki/language/visibility-and-reachability.md`, 변경 이력은 `ai/notes/2026-08-31-declaration-contract-accessibility.md`를 본다.
+- 소멸자에는 접근 지정자를 두지 않는다. 항상 public으로 취급하며 소멸자 accessibility check를 수행하지 않는다.
 - 일반 generic은 type별 monomorphization을 기본 구현으로 삼지 않는다. 하나의 shared generic code가 type metadata와 trait witness를 hidden argument로 받는 Swift식 runtime generic ABI를 사용한다.
 - generic specialization은 선택적 최적화다. 장래의 명시적 instantiation은 일반 generic과 분리된 `template` 또는 macro 기능에서 처리한다.
 - associated type은 semantic에서는 `<T as Trait>::Member` projection으로 유지하고, runtime에서는 trait witness의 associated type metadata/accessor와 associated conformance witness를 통해 다룬다.
@@ -113,7 +119,7 @@ Associated type과 runtime generic witness ABI
 - 자세한 이행 범위와 잔재는 `ai/wiki/compiler/nsymbol-rsymbol-migration.md`를 본다.
 
 ## Recently Discussed Points
-- namespace 수준의 `public/private`는 별도 export 키워드가 아니라 accessibility를 통해 export 의미를 포함한다.
+- namespace 수준의 `public/private`는 source-level use permission을 정한다. 별도 export keyword는 두지 않으며, CTI declaration 노출과 native DLL export table은 구분한다.
 - class member는 `public/protected/private`를 갖고, struct member는 `public/private`만 갖는다.
 - struct는 현재 상속 불가 방향으로 정리되어 있으므로 struct `protected`는 두지 않는다.
 - accessor는 namespace/class/struct에서 이름이 겹치더라도 의미 공간이 다르므로, 단일 universal accessor보다 context별 accessor 분리가 더 자연스럽다는 쪽으로 기울어 있다.
@@ -136,6 +142,9 @@ Associated type과 runtime generic witness ABI
 - extension은 trait impl subtree에 `RImplTrait*` 계열을 재사용하는 쪽을 우선 검토한다. `RExtensionFuncDecl`은 bundle-private helper로 별도 계열이다.
 
 ## Open Questions
+- 선언 접근성 검사 구현: `Access(D) ⊆ Access(S)`의 protected/outer 비교 API, alias normalization 전에 이름의 접근성을 검증하거나 provenance를 유지하는 방식, 검사 시점은 미정이다. 소스 구현은 아직 변경하지 않았다.
+- 후보 (2026-08-31): type alias target과 class direct base를 BuildTypeHierarchy 내부의 demand-driven resolver로 함께 해석하는 안. 미완료 inherited lookup의 outer fallback 금지, resolution/inheritance cycle 구분, 기존 unit-local/lower-order-only scheduling 안과의 충돌은 미확정이다. `ai/notes/2026-08-31-type-alias-and-base-resolution.md` 참고.
+- 보류 (2026-08-31): Windows DLL export 방식과 한도 대응은 지금 결정하지 않는다. 초과 진단, 선택적 export, 자체 module table, DLL 자동 분할은 후보로만 유지한다. 현재 type alias/associated type 작업의 선행 조건으로 삼지 않으며, native module linking 설계 시 재검토한다.
 - accessor를 정확히 어느 계층에 둘지: declaration payload, category view, 별도 metadata 중 어디가 가장 자연스러운지
 - lookup / resolver 책임과 `RNode` 책임의 경계를 어디까지 나눌지
 - nested type의 accessibility를 tree membership과 declaration accessibility 사이에서 어떻게 모델링할지

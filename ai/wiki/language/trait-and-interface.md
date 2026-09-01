@@ -42,6 +42,8 @@ impl S : Trait2 { }
 
 각 `(type, trait)` declaration에는 같은 module 안에 정확히 하나의 `impl` block이 필요하다.
 
+타입 header의 trait도 선언의 외부 계약 접근성 규칙을 따른다. public struct의 header에 private trait를 직접 나열하지 않는다. 내부에서만 필요한 conformance는 타입 header 대신 해당 trait의 접근 범위를 넘지 않는 extension bundle로 분리한다. 상세한 접근 범위 포함 규칙은 `visibility-and-reachability.md`를 본다.
+
 ### Generic Canonical Conformance
 
 generic struct의 canonical conformance도 원본 module의 struct header와 대응 `impl`으로 선언한다.
@@ -107,7 +109,7 @@ extension IntTrait for S<int> : Trait<int>;
 impl IntTrait for S<int> : Trait<int> { }
 ```
 
-따라서 `struct S<T> : Trait`는 universal canonical conformance에만 쓰고, `S<int> : Trait`처럼 적용 범위를 좁히는 관계는 bundle header가 public declaration surface로 제공한다.
+따라서 `struct S<T> : Trait`는 universal canonical conformance에만 쓰고, `S<int> : Trait`처럼 적용 범위를 좁히는 관계는 bundle header가 자신의 accessibility에 맞는 declaration surface로 제공한다.
 
 외부 module은 이름 있는 `extension` bundle로 conformance를 선언한다.
 
@@ -126,6 +128,8 @@ impl GenericBundle<U> for S<U> : Trait<U> { }
 - 한 module은 같은 target에 여러 이름의 bundle을 선언할 수 있다.
 - 원본 module이 이미 선언한 canonical `(S, Trait)`는 외부 bundle이 재선언할 수 없다.
 - external extension implementation은 target의 private member에 접근할 수 있는 trusted augmentation으로 본다.
+- bundle의 target/trait 및 type arguments는 bundle의 외부 계약 접근성 검사를 받는다. bundle activation으로 private trait의 접근 제한을 우회하지 않는다.
+- 현재 trait 구현 전용 extension은 trait/header 접근성, trait 인자·associated type 노출, impl signature 일치 검사로 계약을 보장한다. trusted private 접근 권한이 임의의 public 반환 타입을 추가할 권한을 뜻하지 않는다.
 
 외부 conformance는 import만으로 자동 활성화되지 않는다. 소비 파일은 bundle을 명시적으로 활성화한다. bundle header가 target mapping을 이미 갖고 있으므로, 기본 activation은 bundle 이름만 쓴다.
 
@@ -167,7 +171,7 @@ trait RefEnumerator
 }
 ```
 
-구현체는 `using` 또는 nested type으로 requirement를 충족한다.
+구현체는 정식 `type` alias 또는 concrete nested type으로 requirement를 충족한다. unit-local convenience `using` alias와 구분한다.
 
 ```citron
 impl SEnumerator : RefEnumerator
@@ -178,6 +182,8 @@ impl SEnumerator : RefEnumerator
 ```
 
 Associated type inference는 v1에서 제외한다.
+
+공개 conformance의 associated type witness로 private 타입을 노출하는 것은 금지한다. `impl`이나 witness에 `public` 표기가 없어도, conformance를 통해 노출되는 타입의 접근 범위를 검사한다. 이는 `some Trait` 뒤에 숨겨진 private backing type과 구분한다.
 
 Associated type constraint와 concept는 `concepts-and-constraints.md`를 본다.
 
@@ -212,6 +218,7 @@ some func<void, int> MakeHandler()
 Dynamic callable이 필요하면 별도 interface 또는 interface type expression을 설계한다. 일반 `dyn func<>`는 현재 도입하지 않는다.
 
 ## History
+- `ai/notes/2026-08-31-declaration-contract-accessibility.md`
 - `ai/notes/2026-05-14-trait-refenumerable-foreach-direction.md`
 - `ai/notes/2026-05-15-trait-concept-associated-type-design.md`
 - `ai/notes/2026-06-16-some-opaque-result-and-cti.md`

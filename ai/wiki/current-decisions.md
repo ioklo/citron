@@ -30,9 +30,13 @@ Status: current snapshot
 - Binding을 만드는 `is`는 일반 expression context에서 금지하고, `if` condition의 top-level에서만 허용한다.
 - import된 module의 모든 declaration name은 lookup candidate가 될 수 있으며, `public`/`private`/`protected`는 resolution 뒤 accessibility checker가 use permission을 판정한다. inaccessible candidate도 lexical shadowing에 참여하고 access failure 때문에 outer candidate로 fallback하지 않는다. declaration metadata reachability는 public API/ABI 또는 linker export와 별개다.
 - Nested declaration은 논리적으로 허용 가능하지만, v1 허용 범위는 implementation scope와 design stability에 따라 결정한다.
+- 선언 D의 외부 계약에 노출되는 타입·symbol S는 `Access(D) ⊆ Access(S)`를 만족해야 한다. 이름을 쓰는 선언 문맥의 접근성 검사와 별개로, enclosing declaration을 반영한 실제 접근 범위의 포함 관계를 검사한다. `protected`는 owner에 따라 접근 범위가 다르므로 modifier 순위나 선언 위치의 접근 가능 여부만으로 판정하지 않는다. 이 규칙은 이전 C++식 private type의 public signature/alias 노출 허용 규칙을 대체한다.
+- public signature의 private 타입·private type alias 사용과 public type alias의 private target 노출은 금지한다. private alias가 public 타입인 `int`를 가리켜도 public signature에 그 alias 이름을 쓸 수 없다. 반환·매개변수·필드 타입, base/trait, generic 인자·constraint, alias target 등 외부 계약이 검사 대상이며, 함수 body와 private 구현 멤버까지 따라가지는 않는다. `var`는 잘못된 공개 signature를 우회하지 못한다. `some Trait`는 공개된 trait 계약과 숨겨진 backing type을 구분한다.
+- 소멸자에는 접근 지정자를 두지 않는다. 항상 public으로 취급하고, 암시적 cleanup 및 value witness의 destroy를 포함해 소멸자 accessibility check를 수행하지 않는다. 이는 ownership/lifetime 규칙과 별개다.
 - Nested generic declaration identity는 outer type arguments를 포함한다. 예: `C<int>.Trait`와 `C<string>.Trait`는 다르다.
 - Struct는 concrete struct를 상속하지 않는다. Struct의 `:` 뒤에는 trait conformance만 올 수 있고 struct member에는 `protected`를 허용하지 않는다.
 - 원본 module은 `struct S : Trait`로 canonical conformance를 선언하고 `impl S : Trait {}`로 구현한다.
+- public struct의 header에 private trait를 직접 나열하지 않는다. 내부용 conformance는 해당 trait의 접근 범위를 넘지 않는 extension bundle로 분리한다. 공개 conformance의 associated type으로 private 타입을 노출하면, impl에 `public` 표기가 없어도 거부한다.
 - generic struct의 canonical impl header는 `impl S<U> : Trait<U> {}`처럼 target pattern에 parameter를 드러낸다. `U`는 impl header가 도입하며, `struct S<T> : Trait<T>`의 `T`와 alpha-equivalent하다. `struct S<T> : Trait<T>`는 모든 well-formed `S<T>`에 대한 conformance를 선언하고 impl header는 그 전체 범위를 구현한다.
 - `where` constraint가 있는 generic impl도 `impl S<U> : Trait<U> where U : OtherTrait {}`처럼 target-pattern parameter를 사용한다.
 - specialization/conditional conformance는 direct canonical impl이 아니라 `extension Bundle for S<int> : Trait;`와 대응 `impl Bundle for S<int> : Trait {}` 같은 named bundle로 선언한다. bundle conformance는 소비 file의 `extend`로 활성화한다.
@@ -44,6 +48,7 @@ Status: current snapshot
 - bundle의 trait entry별 activation selection은 유지한다. 활성화된 bundle entry들의 conformance pattern이 겹치면 같은 file에서 동시 활성화를 금지하며, overlap은 conformance 사용 지점이 아니라 activation 시점에 진단한다. 이 규칙은 사용 편의보다 explicit activation을 우선한다.
 - `extension`은 bundle declaration, `impl`은 witness implementation, `extend`는 file-local activation 역할로 구분한다.
 - 외부 extension은 target의 private member에 접근 가능한 trusted augmentation이다. ordinary consumer와 extension compiler 모두 private declaration을 lookup candidate로 얻을 수 있지만, extension context만 target private member access를 통과한다.
+- 현재 trait 구현 전용 extension은 trait/header 접근성, conformance의 trait 인자·associated type 노출, impl signature와 requirement의 일치 검사로 외부 계약을 보장한다. extension이 임의의 public 반환 타입을 추가하는 상황을 전제하지 않는다. private 타입의 body 내부 사용이나 적법한 `some Trait`의 backing type 사용은 직접적인 외부 노출과 구분한다.
 - 별도 export modifier는 두지 않는다. accessibility는 name lookup surface가 아니라 use permission을 정하며, declaration metadata reachability와 public API/ABI export는 분리한다.
 
 ## Modules And CTI

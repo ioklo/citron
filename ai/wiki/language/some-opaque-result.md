@@ -13,6 +13,7 @@ Keywords: some, opaque result, value witness, trait witness, sret, cti
 - 호출자는 `some` 결과를 항상 `var`로 받는다.
 - source-level에서는 declared `Trait` surface만 사용할 수 있고, backing concrete type의 member는 사용할 수 없다.
 - public function이 raw `some Trait`를 return하는 것은 허용 가능하다.
+- public 함수의 `some Trait` 계약에 쓰인 trait·type arguments는 함수의 외부 계약 접근성 규칙을 만족해야 한다. 실제 backing type은 숨겨진 구현이므로 private일 수 있다. 이 허용은 private concrete type을 public 반환 타입이나 공개 conformance의 associated type으로 직접 노출하는 것을 허용한다는 뜻이 아니다.
 
 허용:
 ```citron
