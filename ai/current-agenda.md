@@ -142,6 +142,7 @@ Type alias와 associated type 구현
 - extension은 trait impl subtree에 `RImplTrait*` 계열을 재사용하는 쪽을 우선 검토한다. `RExtensionFuncDecl`은 bundle-private helper로 별도 계열이다.
 
 ## Open Questions
+- 보류 (2026-09-28): alias/base 해석의 멀티스레드는 가능성 검토로 마무리하고 구현 결정은 유예한다. 단일 스레드 전체 순회 + 재귀 Resolve 후보와 병렬 task 의존성/cycle 검토는 `ai/notes/2026-09-28-alias-resolution-and-parallelism.md`에 기록한다.
 - 선언 접근성 검사 구현: `Access(D) ⊆ Access(S)`의 protected/outer 비교 API, alias normalization 전에 이름의 접근성을 검증하거나 provenance를 유지하는 방식, 검사 시점은 미정이다. 소스 구현은 아직 변경하지 않았다.
 - 후보 (2026-08-31): type alias target과 class direct base를 BuildTypeHierarchy 내부의 demand-driven resolver로 함께 해석하는 안. 미완료 inherited lookup의 outer fallback 금지, resolution/inheritance cycle 구분, 기존 unit-local/lower-order-only scheduling 안과의 충돌은 미확정이다. `ai/notes/2026-08-31-type-alias-and-base-resolution.md` 참고.
 - 보류 (2026-08-31): Windows DLL export 방식과 한도 대응은 지금 결정하지 않는다. 초과 진단, 선택적 export, 자체 module table, DLL 자동 분할은 후보로만 유지한다. 현재 type alias/associated type 작업의 선행 조건으로 삼지 않으며, native module linking 설계 시 재검토한다.
