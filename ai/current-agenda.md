@@ -1,7 +1,7 @@
 # Current Agenda
 
 ## Topic
-Type alias와 associated type 구현
+SmPhaseManager 전체의 Feature/await 기반 scheduling 검토
 
 ## Active Work
 - trait/impl parsing 완료.
@@ -142,6 +142,11 @@ Type alias와 associated type 구현
 - extension은 trait impl subtree에 `RImplTrait*` 계열을 재사용하는 쪽을 우선 검토한다. `RExtensionFuncDecl`은 bundle-private helper로 별도 계열이다.
 
 ## Open Questions
+- 후보 (2026-10-14): 호출자는 결과별 await를 사용하고, ResolveType 등의 내부에서 검색 대상 Type Tree의 수집 완료 barrier를 기다리는 사용자 제안이다. shell 등록 종료와 alias/base 해석 완료 및 coroutine 전체 완료는 구분하는 방향을 검토한다. Feature 일괄 획득은 barrier를 과도하게 키울 수 있다. API 및 barrier의 정확한 범위는 미확정이며 당일 노트에 기록했다.
+- 우선 검토 방향 (2026-10-14): 사용자는 이득이 더 크다면 런타임 cycle 검출을 허용할 수 있다고 밝혔다. 현재 readiness 경계가 탐색 중이므로 정적 DAG 전면 강제보다 명시적 의존성 추적과 런타임 검출을 우선 검토한다는 에이전트 판단이다. 배포 후 정상 입력 실패 및 수정 범위 확대 위험은 유지한다. 기존 lower-order-only 규칙 대체, await API, 구현은 미확정이다. `ai/notes/2026-10-14-await-runtime-cycle-detection.md` 참고.
+- 후보 (2026-10-06): 기존 phase 배치보다 소비 코드의 최소 준비 조건을 먼저 Feature로 정의하고, 직접 의존성 그래프에서 order와 큰 fence를 도출하는 방향을 검토한다. 구체적 구현 및 규칙은 미확정이다.
+- 후보 (2026-10-06): Feature 의존성에 order(B) <= order(A)를 강제하고 같은 order 내부만 cycle 후보로 남기는 안. provider의 실제 준비 구간 및 모든 대기의 추적이 전제이며, 기존 lower-order-only 규칙의 완화는 미확정이다.
+- 후보 (2026-10-06): phase별 task 순회 대신 Feature 활성화 조건으로 task를 실행하는 모델을 검토한다. 활성화 통지와 미활성 Feature를 기다리는 의존성을 구분하며, provider/동적 wait 관계를 추적해야 cycle을 진단할 수 있다. 아직 채택하지 않았고 기존 scheduling 규칙과 global barrier 대체 여부는 미확정이다. `ai/notes/2026-10-06-feature-based-scheduling-and-cycles.md` 참고.
 - 보류 (2026-09-28): alias/base 해석의 멀티스레드는 가능성 검토로 마무리하고 구현 결정은 유예한다. 단일 스레드 전체 순회 + 재귀 Resolve 후보와 병렬 task 의존성/cycle 검토는 `ai/notes/2026-09-28-alias-resolution-and-parallelism.md`에 기록한다.
 - 선언 접근성 검사 구현: `Access(D) ⊆ Access(S)`의 protected/outer 비교 API, alias normalization 전에 이름의 접근성을 검증하거나 provenance를 유지하는 방식, 검사 시점은 미정이다. 소스 구현은 아직 변경하지 않았다.
 - 후보 (2026-08-31): type alias target과 class direct base를 BuildTypeHierarchy 내부의 demand-driven resolver로 함께 해석하는 안. 미완료 inherited lookup의 outer fallback 금지, resolution/inheritance cycle 구분, 기존 unit-local/lower-order-only scheduling 안과의 충돌은 미확정이다. `ai/notes/2026-08-31-type-alias-and-base-resolution.md` 참고.
