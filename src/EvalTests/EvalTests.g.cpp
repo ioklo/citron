@@ -13,7 +13,7 @@ TEST(Assign_Expression, Basic)
 	a = 10;
 	@$a
 }
-)---";
+x)---";
     string expected = R"---(10)---";
 
     DoTest(code, expected);
@@ -3137,6 +3137,22 @@ void Main()
 }
 )---";
     string expected = R"---(3 )---";
+
+    DoTest(code, expected);
+}
+
+TEST(TypeAlias, Basic) 
+{
+    auto code = R"---(
+type MyInt = int;
+
+void Main()
+{
+    MyInt i = 3;
+    @$i
+}
+)---";
+    string expected = R"---(3)---";
 
     DoTest(code, expected);
 }

@@ -6,3 +6,4 @@ void Main()
 	a = 10;
 	@$a
 }
+x

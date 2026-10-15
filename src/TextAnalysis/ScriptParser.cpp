@@ -23,6 +23,7 @@ using namespace std;
 
 namespace Citron {
 
+STypeAliasDecl* ParseTypeAliasDecl(Lexer* lexer, SFactory& factory);
 SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory);
 SStructDecl* ParseStructDecl(Lexer* lexer, SFactory& factory);
 SClassDecl* ParseClassDecl(Lexer* lexer, SFactory& factory);
@@ -165,6 +166,9 @@ optional<vector<STypeParam>> ParseTypeParams(Lexer* lexer, SFactory& factory)
 template<typename TMemberDeclSyntax>
 optional<TMemberDeclSyntax> ParseMemberDecl(Lexer* lexer, SFactory& factory)
 {
+    if (auto* typeAliasDecl = ParseTypeAliasDecl(lexer, factory))
+        return typeAliasDecl;
+
     if (auto* enumDecl = ParseEnumDecl(lexer, factory))
         return enumDecl;
 
@@ -181,6 +185,37 @@ optional<TMemberDeclSyntax> ParseMemberDecl(Lexer* lexer, SFactory& factory)
         return implDecl;
 
     return nullopt;
+}
+
+// public type MyType<T1, T2> = SomeType<T1, list<T2>>;
+STypeAliasDecl* ParseTypeAliasDecl(Lexer* lexer, SFactory& factory)
+{
+    Lexer curLexer = *lexer;
+
+    auto o_accessModifier = ParseAccessModifier(&curLexer);
+
+    if (!Accept<TypeToken>(&curLexer))
+        return nullptr;
+
+    auto o_typeName = Accept<IdentifierToken>(&curLexer);
+    if (!o_typeName)
+        return nullptr;
+
+    auto o_typeParams = ParseTypeParams(&curLexer, factory);
+    if (!o_typeParams)
+        return nullptr;
+
+    if (!Accept<EqualToken>(&curLexer))
+        return nullptr;
+
+    auto* targetType = ParseTypeExp(&curLexer, factory);
+    if (!targetType)
+        return nullptr;
+
+    if (!Accept<SemiColonToken>(&curLexer))
+        return nullptr;
+
+    RETURN_ACCEPT(factory.Make<STypeAliasDecl>(o_accessModifier, move(o_typeName->text), move(*o_typeParams), targetType));
 }
 
 SEnumDecl* ParseEnumDecl(Lexer* lexer, SFactory& factory)

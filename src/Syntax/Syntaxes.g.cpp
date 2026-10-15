@@ -1361,6 +1361,26 @@ JsonItem SGlobalFuncDecl::ToJson()
     };
 }
 
+STypeAliasDecl::STypeAliasDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, STypeExp* targetType)
+    : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), targetType(move(targetType)) { }
+
+STypeAliasDecl::STypeAliasDecl(STypeAliasDecl&& other) noexcept = default;
+
+STypeAliasDecl::~STypeAliasDecl() = default;
+
+STypeAliasDecl& STypeAliasDecl::operator=(STypeAliasDecl&& other) noexcept = default;
+
+JsonItem STypeAliasDecl::ToJson()
+{
+    return JsonObject {
+        { "$type", JsonString("STypeAliasDecl") },
+        { "accessModifier", Citron::ToJson(accessModifier) },
+        { "name", Citron::ToJson(name) },
+        { "typeParams", Citron::ToJson(typeParams) },
+        { "targetType", Citron::ToJson(targetType) },
+    };
+}
+
 SClassDecl::SClassDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, std::vector<STypeExp*> baseTypes, std::vector<SClassMemberDecl> memberDecls)
     : accessModifier(move(accessModifier)), name(move(name)), typeParams(move(typeParams)), baseTypes(move(baseTypes)), memberDecls(move(memberDecls)) { }
 

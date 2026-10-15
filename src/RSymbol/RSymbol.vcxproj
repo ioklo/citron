@@ -45,6 +45,7 @@
     <ClInclude Include="Public\RSymbol\RNamespaceGroup.h" />
     <ClInclude Include="Public\RSymbol\RImplTraitDeclOuter.h" />
     <ClInclude Include="Public\RSymbol\RTraitTypeDecl.h" />
+    <ClInclude Include="Public\RSymbol\RTypeAliasDecl.h" />
     <ClInclude Include="Public\RSymbol\RTypeIdentifier.h" />
     <ClInclude Include="Public\RSymbol\RIdentifier.h" />
     <ClInclude Include="Public\RSymbol\RImplTraitDecl.h" />
@@ -117,6 +118,7 @@
     <ClCompile Include="RTraitFuncDecl.cpp" />
     <ClCompile Include="RTraitMemberDecl.cpp" />
     <ClCompile Include="RTraitTypeDecl.cpp" />
+    <ClCompile Include="RTypeAliasDecl.cpp" />
     <ClCompile Include="RTypeArguments.cpp" />
     <ClCompile Include="RTypeDeclContainerComponent.cpp" />
     <ClCompile Include="RTypeDeclOuter.cpp" />

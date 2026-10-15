@@ -980,3 +980,152 @@ TEST(ScriptParser, ParseTrait_TypeWithTrait)
     EXPECT_SYNTAX_EQ(script, expected);
 }
 
+TEST(ScriptParser, ParseTypeAlias_Basic)
+{
+    auto [buffer, lexer] = Prepare(UR"---(type UserId = int;
+private type MyType<T1, T2> = Map<T1, T2>;
+namespace N { public type Type2 = int; }
+class C { public type V = string; type X = U; }
+struct S { private type V = List<int>; type X = U; })---");
+    SFactory factory;
+
+    auto* script = ParseScript(&lexer, factory);
+
+    auto expected = R"---({
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STypeAliasDecl",
+            "accessModifier": null,
+            "name": "UserId",
+            "typeParams": [],
+            "targetType": {
+                "$type": "STypeExp_Id",
+                "name": "int",
+                "typeArgs": []
+            }
+        },
+        {
+            "$type": "STypeAliasDecl",
+            "accessModifier": "Private",
+            "name": "MyType",
+            "typeParams": [
+                {
+                    "$type": "STypeParam",
+                    "name": "T1"
+                },
+                {
+                    "$type": "STypeParam",
+                    "name": "T2"
+                }
+            ],
+            "targetType": {
+                "$type": "STypeExp_Id",
+                "name": "Map",
+                "typeArgs": [
+                    {
+                        "$type": "STypeExp_Id",
+                        "name": "T1",
+                        "typeArgs": []
+                    },
+                    {
+                        "$type": "STypeExp_Id",
+                        "name": "T2",
+                        "typeArgs": []
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "SNamespaceDecl",
+            "names": [
+                "N"
+            ],
+            "elements": [
+                {
+                    "$type": "STypeAliasDecl",
+                    "accessModifier": "Public",
+                    "name": "Type2",
+                    "typeParams": [],
+                    "targetType": {
+                        "$type": "STypeExp_Id",
+                        "name": "int",
+                        "typeArgs": []
+                    }
+                }
+            ]
+        },
+        {
+            "$type": "SClassDecl",
+            "accessModifier": null,
+            "name": "C",
+            "typeParams": [],
+            "baseTypes": [],
+            "memberDecls": [
+                {
+                    "$type": "STypeAliasDecl",
+                    "accessModifier": "Public",
+                    "name": "V",
+                    "typeParams": [],
+                    "targetType": {
+                        "$type": "STypeExp_Id",
+                        "name": "string",
+                        "typeArgs": []
+                    }
+                },
+                {
+                    "$type": "STypeAliasDecl",
+                    "accessModifier": null,
+                    "name": "X",
+                    "typeParams": [],
+                    "targetType": {
+                        "$type": "STypeExp_Id",
+                        "name": "U",
+                        "typeArgs": []
+                    }
+                }
+            ]
+        },
+        {
+            "$type": "SStructDecl",
+            "accessModifier": null,
+            "name": "S",
+            "typeParams": [],
+            "traits": [],
+            "memberDecls": [
+                {
+                    "$type": "STypeAliasDecl",
+                    "accessModifier": "Private",
+                    "name": "V",
+                    "typeParams": [],
+                    "targetType": {
+                        "$type": "STypeExp_Id",
+                        "name": "List",
+                        "typeArgs": [
+                            {
+                                "$type": "STypeExp_Id",
+                                "name": "int",
+                                "typeArgs": []
+                            }
+                        ]
+                    }
+                },
+                {
+                    "$type": "STypeAliasDecl",
+                    "accessModifier": null,
+                    "name": "X",
+                    "typeParams": [],
+                    "targetType": {
+                        "$type": "STypeExp_Id",
+                        "name": "U",
+                        "typeArgs": []
+                    }
+                }
+            ]
+        }
+    ]
+})---";
+
+    EXPECT_SYNTAX_EQ(script, expected);
+}
+

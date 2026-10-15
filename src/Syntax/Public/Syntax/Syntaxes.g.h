@@ -92,6 +92,7 @@ class SStructCtorDecl;
 class SStructDtorDecl;
 class SStructVarDecl;
 
+class STypeAliasDecl;
 class SClassDecl;
 class SStructDecl;
 class SEnumDecl;
@@ -1063,6 +1064,7 @@ typename std::remove_cvref_t<TVisitor>::ResultType Accept(TVisitor&& v, SForStmt
 SYNTAX_API JsonItem ToJson(SForStmtInitializer* initializer);
 
 using SClassMemberDecl = std::variant<
+    STypeAliasDecl*,
     SClassDecl*,
     SStructDecl*,
     SEnumDecl*,
@@ -1075,6 +1077,7 @@ using SClassMemberDecl = std::variant<
 SYNTAX_API JsonItem ToJson(SClassMemberDecl& decl);
 
 using SStructMemberDecl = std::variant<
+    STypeAliasDecl*,
     SClassDecl*,
     SStructDecl*,
     SEnumDecl*,
@@ -1090,6 +1093,7 @@ SYNTAX_API JsonItem ToJson(SStructMemberDecl& decl);
 using SNamespaceDeclElement = std::variant<
     SGlobalFuncDecl*,
     SNamespaceDecl*,
+    STypeAliasDecl*,
     SClassDecl*,
     SStructDecl*,
     SEnumDecl*,
@@ -1101,6 +1105,7 @@ SYNTAX_API JsonItem ToJson(SNamespaceDeclElement& elem);
 using SScriptElement = std::variant<
     SNamespaceDecl*,
     SGlobalFuncDecl*,
+    STypeAliasDecl*,
     SClassDecl*,
     SStructDecl*,
     SEnumDecl*,
@@ -2303,6 +2308,25 @@ public:
 
     SGlobalFuncDecl& operator=(const SGlobalFuncDecl& other) = delete;
     SYNTAX_API SGlobalFuncDecl& operator=(SGlobalFuncDecl&& other) noexcept;
+
+    SYNTAX_API JsonItem ToJson();
+};
+
+class STypeAliasDecl : public SSyntax
+{
+public:
+    std::optional<SAccessModifier> accessModifier;
+    std::string name;
+    std::vector<STypeParam> typeParams;
+    STypeExp* targetType;
+
+    SYNTAX_API STypeAliasDecl(std::optional<SAccessModifier> accessModifier, std::string name, std::vector<STypeParam> typeParams, STypeExp* targetType);
+    STypeAliasDecl(const STypeAliasDecl&) = delete;
+    SYNTAX_API STypeAliasDecl(STypeAliasDecl&&) noexcept;
+    SYNTAX_API ~STypeAliasDecl();
+
+    STypeAliasDecl& operator=(const STypeAliasDecl& other) = delete;
+    SYNTAX_API STypeAliasDecl& operator=(STypeAliasDecl&& other) noexcept;
 
     SYNTAX_API JsonItem ToJson();
 };

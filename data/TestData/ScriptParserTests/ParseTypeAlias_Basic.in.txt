@@ -1,7 +1,5 @@
-public type UserId = int;
-
-class C
-{
-    public type V = int;
-    private type State = int;
-}
+type UserId = int;
+private type MyType<T1, T2> = Map<T1, T2>;
+namespace N { public type Type2 = int; }
+class C { public type V = string; type X = U; }
+struct S { private type V = List<int>; type X = U; }

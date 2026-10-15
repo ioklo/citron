@@ -1,0 +1,134 @@
+{
+    "$type": "SScript",
+    "elements": [
+        {
+            "$type": "STypeAliasDecl",
+            "accessModifier": null,
+            "name": "UserId",
+            "typeParams": [],
+            "targetType": {
+                "$type": "STypeExp_Id",
+                "name": "int",
+                "typeArgs": []
+            }
+        },
+        {
+            "$type": "STypeAliasDecl",
+            "accessModifier": "Private",
+            "name": "MyType",
+            "typeParams": [
+                {
+                    "$type": "STypeParam",
+                    "name": "T1"
+                },
+                {
+                    "$type": "STypeParam",
+                    "name": "T2"
+                }
+            ],
+            "targetType": {
+                "$type": "STypeExp_Id",
+                "name": "Map",
+                "typeArgs": [
+                    {
+                        "$type": "STypeExp_Id",
+                        "name": "T1",
+                        "typeArgs": []
+                    },
+                    {
+                        "$type": "STypeExp_Id",
+                        "name": "T2",
+                        "typeArgs": []
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "SNamespaceDecl",
+            "names": [
+                "N"
+            ],
+            "elements": [
+                {
+                    "$type": "STypeAliasDecl",
+                    "accessModifier": "Public",
+                    "name": "Type2",
+                    "typeParams": [],
+                    "targetType": {
+                        "$type": "STypeExp_Id",
+                        "name": "int",
+                        "typeArgs": []
+                    }
+                }
+            ]
+        },
+        {
+            "$type": "SClassDecl",
+            "accessModifier": null,
+            "name": "C",
+            "typeParams": [],
+            "baseTypes": [],
+            "memberDecls": [
+                {
+                    "$type": "STypeAliasDecl",
+                    "accessModifier": "Public",
+                    "name": "V",
+                    "typeParams": [],
+                    "targetType": {
+                        "$type": "STypeExp_Id",
+                        "name": "string",
+                        "typeArgs": []
+                    }
+                },
+                {
+                    "$type": "STypeAliasDecl",
+                    "accessModifier": null,
+                    "name": "X",
+                    "typeParams": [],
+                    "targetType": {
+                        "$type": "STypeExp_Id",
+                        "name": "U",
+                        "typeArgs": []
+                    }
+                }
+            ]
+        },
+        {
+            "$type": "SStructDecl",
+            "accessModifier": null,
+            "name": "S",
+            "typeParams": [],
+            "traits": [],
+            "memberDecls": [
+                {
+                    "$type": "STypeAliasDecl",
+                    "accessModifier": "Private",
+                    "name": "V",
+                    "typeParams": [],
+                    "targetType": {
+                        "$type": "STypeExp_Id",
+                        "name": "List",
+                        "typeArgs": [
+                            {
+                                "$type": "STypeExp_Id",
+                                "name": "int",
+                                "typeArgs": []
+                            }
+                        ]
+                    }
+                },
+                {
+                    "$type": "STypeAliasDecl",
+                    "accessModifier": null,
+                    "name": "X",
+                    "typeParams": [],
+                    "targetType": {
+                        "$type": "STypeExp_Id",
+                        "name": "U",
+                        "typeArgs": []
+                    }
+                }
+            ]
+        }
+    ]
+}

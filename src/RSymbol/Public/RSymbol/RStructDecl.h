@@ -61,7 +61,7 @@ public:
     RSYMBOL_API void AddVar(RStructVarDecl* decl);
 
     NStructInfo* GetNStructInfo() { return structInfo; }
-    RSYMBOL_API std::span<RTypeParam*> GetTypeParams() { return genericsComp.GetTypeParam(); }
+    RSYMBOL_API std::span<RTypeParam*> GetTypeParams() { return genericsComp.GetTypeParams(); }
 
     std::span<RStructCtorDecl*> GetUnboundCtors() { return ctors; }
     std::span<RStructVarDecl*> GetUnboundVars() { return vars; }

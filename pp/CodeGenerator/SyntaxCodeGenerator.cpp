@@ -188,6 +188,7 @@ struct ToJsonVisitor {
         
         ForwardClassDeclsInfo {
             .names {
+                "STypeAliasDecl",
                 "SClassDecl",
                 "SStructDecl",
                 "SEnumDecl",
@@ -474,6 +475,7 @@ struct ToJsonVisitor {
             .name = "SClassMemberDecl",
             .argName = "decl",
             .memberNames {
+                "STypeAliasDecl*",
                 "SClassDecl*",
                 "SStructDecl*",
                 "SEnumDecl*",
@@ -489,6 +491,7 @@ struct ToJsonVisitor {
             .name = "SStructMemberDecl",
             .argName = "decl",
             .memberNames {
+                "STypeAliasDecl*",
                 "SClassDecl*",
                 "SStructDecl*",
                 "SEnumDecl*",
@@ -507,6 +510,7 @@ struct ToJsonVisitor {
             .memberNames {
                 "SGlobalFuncDecl*",
                 "SNamespaceDecl*",
+                "STypeAliasDecl*",
                 "SClassDecl*",
                 "SStructDecl*",
                 "SEnumDecl*",
@@ -521,6 +525,7 @@ struct ToJsonVisitor {
             .memberNames {
                 "SNamespaceDecl*",
                 "SGlobalFuncDecl*",
+                "STypeAliasDecl*",
                 "SClassDecl*",
                 "SStructDecl*",
                 "SEnumDecl*",
@@ -1092,6 +1097,17 @@ struct ToJsonVisitor {
                 {.type = "std::vector<SFuncParam>", .memberVarName = "parameters", .getterName = "GetParameters"},
                 {.type = "std::vector<SStmt*>", .memberVarName = "body", .getterName = "GetBody"},
             },
+        },
+
+        ClassInfo{
+            .name = "STypeAliasDecl",
+            .o_base = "SSyntax",
+            .memberInfos{
+                {.type = "std::optional<SAccessModifier>", .memberVarName = "accessModifier", .getterName = "GetAccessModifier"},
+                {.type = "std::string", .memberVarName = "name", .getterName = "GetName"},
+                {.type = "std::vector<STypeParam>", .memberVarName = "typeParams", .getterName = "GetTypeParams"},
+                {.type = "STypeExp*", .memberVarName = "targetType", .getterName = "GetTargetType"},
+            }
         },
 
         #pragma region SClassDecls

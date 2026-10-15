@@ -22,7 +22,7 @@ public:
     size_t GetTypeParamCount() { return o_typeParams->size(); }
     RSYMBOL_API RTypeParam* GetTypeParam(size_t index);
     RSYMBOL_API RTypeParam* GetTypeParam(InRef<RName> name);
-    RSYMBOL_API std::span<RTypeParam*> GetTypeParam() { return *o_typeParams; }
+    RSYMBOL_API std::span<RTypeParam*> GetTypeParams() { return *o_typeParams; }
 };
 
 
