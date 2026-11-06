@@ -1,4 +1,4 @@
-#include "ImplTraitTask.h"
+#include "SmImplTraitTranslation.h"
 #include <memory>
 #include "Infra/Exceptions.h"
 #include "Infra/Expected.h"
@@ -15,26 +15,57 @@
 #include "RSymbol/RTraitFuncDecl.h"
 #include "RSymbol/RTypeArguments.h"
 #include "RSymbol/RTypeParam.h"
-#include "MIR/MFuncBody.h"
+#include "RSymbol/RImplTraitDeclOuter.h"
 #include "SmPhaseManager.h"
 #include "PostBuildNonTypeSymbolContext.h"
 #include "CommonTranslation.h"
 #include "SmDeclContext_Decl.h"
-#include "SmTypeTranslation.h"
 #include "SmTypeTranslationContexts.h"
-#include "ImplTraitFuncTask.h"
+#include "SmImplTraitFuncTranslation.h"
 
 using namespace std;
 
 namespace Citron {
+namespace {
 
-void ImplTraitTask::Register(SImplTraitDecl* sImplDecl, TakeRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+class SmImplTraitTask
+    : public IPostBuildNonTypeSymbolTask
 {
-    shared_ptr<ImplTraitTask> task{new ImplTraitTask{sImplDecl, move(outerDeclContext), rOuter, move(rFactory)}};
+    SImplTraitDecl* sImplDecl;
+    SmDeclContextPtr outerDeclContext;
+    RImplTraitDeclOuter rOuter;
+    RFactoryPtr rFactory;
+
+private: // 추후에 만들어짐
+    RImplTraitDecl* rImplTraitDecl;
+
+public:
+    SmImplTraitTask(SImplTraitDecl* sImplDecl, InRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, InRef<RFactoryPtr> rFactory)
+        : sImplDecl{sImplDecl}, outerDeclContext{*outerDeclContext}, rOuter{rOuter}, rImplTraitDecl{nullptr}, rFactory{*rFactory} {
+    }
+
+    std::expected<void, DiagPtr> HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContexts& contexts);
+    std::expected<void, DiagPtr> CheckTarget();
+    std::expected<void, DiagPtr> CheckTraitConformance();
+
+public: // from IPostBuildNonTypeSymbolTask
+    std::expected<void, DiagPtr> PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& context) final;
+
+};
+
+} // namespace
+} // namespace Citron
+
+namespace Citron {
+
+void SmTranslateImplTrait(SImplTraitDecl* sImplDecl, InRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+{
+    shared_ptr<SmImplTraitTask> task{new SmImplTraitTask{sImplDecl, outerDeclContext, rOuter, rFactory}};
     phaseManager.AddPostBuildNonTypeSymbolTask(task);
 }
 
-expected<void, DiagPtr> ImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContexts& context)
+namespace {
+expected<void, DiagPtr> SmImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContexts& context)
 {
     // RImplTraitFuncDecl를 만든다
     auto* rImplTraitFuncDecl = rFactory->MakeDecl<RImplTraitFuncDecl>(rImplTraitDecl, /*bSeqFunc*/sImplTraitFuncDecl->bSequence, RName::Normal(sImplTraitFuncDecl->name));
@@ -56,7 +87,7 @@ expected<void, DiagPtr> ImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDec
     rImplTraitDecl->AddMember(rImplTraitFuncDecl);
 
     SmDeclContextPtr implTraitDeclContext = MakePtr<SmDeclContext_Decl<RImplTraitDecl>>(outerDeclContext, rImplTraitDecl, rImplTraitDecl->MakeOpenTypeArgs(*rFactory));
-    ImplTraitFuncTask::Register(implTraitDeclContext, rImplTraitFuncDecl, sImplTraitFuncDecl, rFactory, *context.phaseManager);
+    SmTranslateImplTraitFunc(implTraitDeclContext, rImplTraitFuncDecl, sImplTraitFuncDecl, rFactory, *context.phaseManager);
     return {};
 }
 
@@ -131,19 +162,19 @@ bool IsCorrespond(RAppliedDecl<TRDecl>& appliedDeclX, InRef<optional<SmCorrespon
 struct TypeCorrespondChecker
 {
     using ResultType = bool;
-    
+
     template<typename TRType> requires (!std::same_as<TRType, RType_TypeVar>)
-    bool Visit(TRType* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType* rawTypeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
+        bool Visit(TRType* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType* rawTypeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
     {
         // 1. rawTypeY가 TypeVar이 경우
         if (auto* typeVarY = dynamic_cast<RType_TypeVar*>(rawTypeY))
         {
             // 1-1. typeX는 TypeVar가 아닌데, typeVarY는 더 이상 다른 타입으로 변경하지 못한다
-            if (!*o_typeEnvY) return false; 
+            if (!*o_typeEnvY) return false;
 
             // 1-2. localIndex라면, typeX는 TypeVar가 아니므로 correspond하지 않는다
             size_t localIndexY = (*o_typeEnvY)->GetLocalIndex(typeVarY->typeParam);
-            if (localIndexY != (size_t)-1) return false; 
+            if (localIndexY != (size_t)-1) return false;
 
             auto* appliedTypeY = dynamic_cast<TRType*>((*o_typeEnvY)->GetAppliedType(typeVarY->typeParam));
             if (!appliedTypeY) return false;
@@ -204,29 +235,29 @@ struct TypeCorrespondChecker
         return IsCorrespond(appliedTypeX, optional<SmCorrespondTypeEnv>{}, rawTypeY, o_typeEnvY);
     }
 
-    template<typename TRType> requires 
-        std::same_as<TRType, RType_Nullable> 
+    template<typename TRType> requires
+        std::same_as<TRType, RType_Nullable>
         || std::same_as<TRType, RType_NullableInplace>
         || std::same_as<TRType, RType_Ptr>
         || std::same_as<TRType, RType_Shared>
         || std::same_as<TRType, RType_Box>
-    bool Visit(TRType* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, TRType* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
+        bool Visit(TRType* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, TRType* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
     {
         return IsCorrespond(typeX->innerType, o_typeEnvX, typeY->innerType, o_typeEnvY);
     }
 
     // 
-    bool Visit(RType_Void* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Void* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
-    { 
-        return true; 
+    bool Visit(RType_Void* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Void* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
+    {
+        return true;
     }
 
-    bool Visit(RType_Primitive* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Primitive* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
-    { 
-        return typeX->GetPrimitiveKind() == typeY->GetPrimitiveKind(); 
+    bool Visit(RType_Primitive* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Primitive* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
+    {
+        return typeX->GetPrimitiveKind() == typeY->GetPrimitiveKind();
     }
 
-    bool Visit(RType_Tuple* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Tuple* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
+    bool Visit(RType_Tuple* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Tuple* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
     {
         size_t countX = typeX->vars.size();
         if (countX != typeY->vars.size())
@@ -241,7 +272,7 @@ struct TypeCorrespondChecker
         return true;
     }
 
-    bool Visit(RType_Func* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Func* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
+    bool Visit(RType_Func* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Func* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
     {
         if (typeX->bLocal != typeY->bLocal)
             return false;
@@ -262,7 +293,7 @@ struct TypeCorrespondChecker
         return true;
     }
 
-    template<typename TRType> requires 
+    template<typename TRType> requires
         std::same_as<TRType, RType_Class>
         || std::same_as<TRType, RType_Struct>
         || std::same_as<TRType, RType_Enum>
@@ -273,12 +304,12 @@ struct TypeCorrespondChecker
         return IsCorrespond(typeX->appliedDecl, o_typeEnvX, typeY->appliedDecl, o_typeEnvY);
     }
 
-    bool Visit(RType_Interface* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Interface* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
+    bool Visit(RType_Interface* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Interface* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
     {
         return typeX->bLocal == typeY->bLocal && IsCorrespond(typeX->appliedDecl, o_typeEnvX, typeY->appliedDecl, o_typeEnvY);
     }
 
-    bool Visit(RType_Opaque* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Opaque* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY) 
+    bool Visit(RType_Opaque* typeX, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RType_Opaque* typeY, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvY)
     {
         return IsCorrespond(typeX->appliedTrait, o_typeEnvX, typeY->appliedTrait, o_typeEnvY) && IsCorrespond(typeX->appliedOwnerFunc, o_typeEnvX, typeY->appliedOwnerFunc, o_typeEnvY);
     }
@@ -291,18 +322,18 @@ bool IsCorrespond(RType* x, InRef<optional<SmCorrespondTypeEnv>> o_typeEnvX, RTy
 
 // struct S<T5> : Tr0, Tr1, ... { ... }
 // impl S<T6> : Tr1 { ... }
-expected<void, DiagPtr> ImplTraitTask::CheckTarget()
+expected<void, DiagPtr> SmImplTraitTask::CheckTarget()
 {
     auto& rTarget = rImplTraitDecl->GetTarget();
 
     // target과 impl은 항상 같은 outer안에 들어 있다는것은 미리 체크
     assert(rTarget.decl->GetOuter() == rImplTraitDecl->GetOuter());
-   
+
     // 1. impl의 typeParam 개수도 struct랑 같다는것도 미리 체크
     assert(rTarget.decl->GetTypeParamCount() == rImplTraitDecl->GetTypeParamCount());
 
     RAppliedDecl<RTraitDecl> rTraitOfImplTrait = rImplTraitDecl->GetTrait();
-    
+
     // struct의 trait들 중에서 impl이 구현하는 trait를 찾는다
     for (auto& rUnboundTraitOfTarget : rTarget.decl->GetTraits())
     {
@@ -340,7 +371,7 @@ bool IsCorrespond(ROuterAppliedDecl<RImplTraitFuncDecl>& rImplTraitFunc, ROuterA
         if constexpr (!std::same_as<T1, T2>)
             return false;
         else if constexpr (std::same_as<T1, RFuncReturn_Normal>)
-        {   
+        {
             return IsCorrespond(rImplTraitFuncRet.type, rImplTraitFuncEnv, rTraitFuncRet.type, rTraitFuncEnv);
         }
         else if constexpr (std::same_as<T1, RFuncReturn_None>)
@@ -389,7 +420,7 @@ bool HasCorrespondFunc(RAppliedDecl<RImplTraitDecl>& rImplTrait, ROuterAppliedDe
     // 일단 이름으로 검색
     RName* name = rTraitFunc.decl->TryGetName();
     assert(name); // func decl은 항상 이름이 있어야 한다
-    
+
     for (auto& rImplTraitMemberDecl : rImplTrait.decl->GetMembers())
     {
         auto result = rImplTraitMemberDecl.Visit([name, &rImplTrait, &rTraitFunc](auto* rImplTraitMemberDecl) -> bool {
@@ -413,7 +444,7 @@ bool HasCorrespondFunc(RAppliedDecl<RImplTraitDecl>& rImplTrait, ROuterAppliedDe
     return false;
 }
 
-expected<void, DiagPtr> ImplTraitTask::CheckTraitConformance()
+expected<void, DiagPtr> SmImplTraitTask::CheckTraitConformance()
 {
     RAppliedDecl<RImplTraitDecl> rImplTrait{rImplTraitDecl, rImplTraitDecl->MakeOpenTypeArgs(*rFactory)};
     auto rTrait = rImplTraitDecl->GetTrait();
@@ -432,7 +463,7 @@ expected<void, DiagPtr> ImplTraitTask::CheckTraitConformance()
                 ROuterAppliedDecl<RTraitFuncDecl> rTraitFunc{rTrait.typeArgs, rTraitMemberDecl};
                 return HasCorrespondFunc(rImplTrait, rTraitFunc);
             }
-            else static_assert(false); 
+            else static_assert(false);
         });
 
         if (!satisfied)
@@ -442,7 +473,7 @@ expected<void, DiagPtr> ImplTraitTask::CheckTraitConformance()
     return {};
 }
 
-expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& contexts)
+expected<void, DiagPtr> SmImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& contexts)
 {
     // SImplTraitDecl을 RImplTrait로 만든다
     // impl S<T, U> : TraitName
@@ -470,7 +501,7 @@ expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSy
     auto* outerTypeArgs = rOuterDecl->MakeOpenTypeArgs(*rFactory);
     vector<RType*> curTypeArgs;
     curTypeArgs.reserve(typeParams.size());
-    for(auto* typeParam : typeParams)
+    for (auto* typeParam : typeParams)
         curTypeArgs.push_back(rFactory->MakeTypeVarType(typeParam));
     auto* targetTypeArgs = rFactory->AppendTypeArguments(outerTypeArgs, curTypeArgs);
 
@@ -486,11 +517,11 @@ expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSy
 
     auto e_verifyResult = CheckTarget();
     RETURN_ON_ERROR(e_verifyResult);
-    
+
     // 이제 child 처리
     for (auto& sMemberDecl : sImplDecl->memberDecls)
     {
-        auto e_result = visit([this, &contexts](auto& sMemberDecl) -> expected<void, DiagPtr>{
+        auto e_result = visit([this, &contexts](auto& sMemberDecl) -> expected<void, DiagPtr> {
             using T = remove_cvref_t<decltype(sMemberDecl)>;
             if constexpr (same_as<T, SImplTraitFuncDecl*>)
             {
@@ -511,4 +542,5 @@ expected<void, DiagPtr> ImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSy
     return {};
 }
 
+} // namespace
 } // namespace Citron

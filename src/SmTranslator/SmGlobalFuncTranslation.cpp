@@ -1,4 +1,4 @@
-#include "GlobalFuncTask.h"
+#include "SmGlobalFuncTranslation.h"
 
 #include "Infra/Expected.h"
 #include "Infra/Ptr.h"
@@ -14,21 +14,49 @@
 #include "BuildNonTypeSymbolContext.h"
 #include "TranslateBodyContext.h"
 #include "SmDeclContext_Decl.h"
-#include "SmTypeTranslation.h"
 #include "SmTypeResolveScope.h"
 
 using namespace std;
 
 namespace Citron {
+namespace {
 
-void GlobalFuncTask::Register(TakeRef<SmDeclContextPtr> outerDeclContext, RNamespace* outer, SGlobalFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+class SmGlobalFuncTask
+    : public IBuildNonTypeSymbolTask
+    , public ITranslateBodyTask
 {
-    shared_ptr<GlobalFuncTask> task{new GlobalFuncTask{move(outerDeclContext), outer, syntax, move(rFactory)}};
+    SmDeclContextPtr outerDeclContext;
+    SGlobalFuncDecl* syntax;
+    RNamespace* rOuter;
+    RFactoryPtr rFactory;
+
+    RGlobalFuncDecl* rFuncDecl;
+
+public:
+    SmGlobalFuncTask(InRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl* syntax, RNamespace* rOuter, InRef<RFactoryPtr> rFactory)
+        : outerDeclContext{*outerDeclContext}, syntax{syntax}, rOuter{rOuter}, rFactory{*rFactory}, rFuncDecl{nullptr}
+    {
+    }
+
+    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
+    std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
+};
+
+} // namespace
+} // namespace Citron
+
+namespace Citron {
+
+void SmTranslateGlobalFunc(InRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl* syntax, RNamespace* outer, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+{
+    shared_ptr<SmGlobalFuncTask> task{new SmGlobalFuncTask{move(outerDeclContext), syntax, outer, rFactory}};
     phaseManager.AddBuildNonTypeSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
 
-expected<void, DiagPtr> GlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
+namespace {
+
+expected<void, DiagPtr> SmGlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto accessor = MakeNamespaceMemberAccessor(syntax->accessModifier);
     bool bSeqFunc = false; // TODO:
@@ -40,7 +68,7 @@ expected<void, DiagPtr> GlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
     SmTypeResolveScope_DeclHeader scope{outerDeclContext.get(), typeParams};
     auto e_funcRet = context.MakeFuncReturn(syntax->funcRet, rFuncDecl, typeParams, scope);
     RETURN_ON_ERROR(e_funcRet);
-    
+
     auto e_parametersInfo = context.MakeFuncParameters(syntax->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_parametersInfo, [rParameters, bLastParamVariadic]);
 
@@ -50,11 +78,12 @@ expected<void, DiagPtr> GlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
     return {};
 }
 
-expected<MFuncBody, DiagPtr> GlobalFuncTask::TranslateBody(TranslateBodyContext& context)
+expected<MFuncBody, DiagPtr> SmGlobalFuncTask::TranslateBody(TranslateBodyContext& context)
 {
     // rFuncDecl에 대한 SmDeclContext를 만든다
     SmDeclContextPtr declContext = MakePtr<SmDeclContext_Decl<RGlobalFuncDecl>>(outerDeclContext, rFuncDecl, rFuncDecl->MakeOpenTypeArgs(*rFactory));
     return context.Translate(move(declContext), rFuncDecl, syntax->bSequence, syntax->body);
 }
 
+} // namespace
 } // namespace Citron

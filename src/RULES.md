@@ -59,9 +59,10 @@ public:
   - 다른 interface의 같은 개념이 필요하면 해당 interface를 통해 대표 declaration을 얻은 뒤 호출한다.
 
 - reference parameter와 reference/value return helper를 사용한다
+  - 실제 ```const T``` 객체는 사용하지 않는다.
   - ```const T&``` parameter는 ```InRef<T>```로 쓴다.
-  - ```T&&```만 단독으로 필요하면 ```T&&```를 쓴다.
-  - ```const T&```와 ```T&&```를 모두 받을 수 있어야 하면 ```TakeRef<T>```를 쓴다.
+  - ```T&```와 ```T&&``` parameter는 각각 그대로 쓴다.
+  - ```const T&```와 ```T&&```를 모두 받을 수 있어야 하면 universal reference(forwarding reference)를 우선 사용하고, 복잡해지면 ```TakeRef<T>```를 쓴다.
   - ```TakeRef<T>```를 변수에 대입할 때는 ```Take()```를 쓴다.
   - 함수 return에서 ```T&```와 ```T```를 모두 허용해야 하면 ```RefOrOwn<T>```를 쓴다.
 

@@ -1,4 +1,4 @@
-#include "StructFuncTask.h"
+#include "SmStructFuncTranslation.h"
 
 #include "Infra/Expected.h"
 #include "Infra/Ptr.h"
@@ -19,13 +19,42 @@
 using namespace std;
 
 namespace Citron {
+namespace {
 
-void StructFuncTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+class StructFuncTask
+    : public IBuildNonTypeSymbolTask
+    , public ITranslateBodyTask
 {
-    shared_ptr<StructFuncTask> task{new StructFuncTask(move(structDeclContext), rStructDecl, syntax, std::move(rFactory))};
+    SmDeclContextPtr structDeclContext;
+    RStructDecl* rStruct;
+    SStructFuncDecl* sStructFunc;
+    RFactoryPtr rFactory;
+
+    RStructFuncDecl* rStructFunc;
+
+public:
+    StructFuncTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructFuncDecl* sStructFunc, InRef<RFactoryPtr> rFactory)
+        : structDeclContext{*structDeclContext}, rStruct{rStruct}, sStructFunc{sStructFunc}, rFactory{*rFactory}, rStructFunc{nullptr}
+    {
+    }
+
+    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
+    std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
+};
+
+} // namespace
+} // namespace Citron
+
+namespace Citron {
+
+void SmTranslateStructFunc(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+{
+    shared_ptr<StructFuncTask> task{new StructFuncTask(*structDeclContext, rStructDecl, syntax, *rFactory)};
     phaseManager.AddBuildNonTypeSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
+
+namespace {
 
 expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
@@ -44,12 +73,12 @@ expected<void, DiagPtr> StructFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCon
 
     auto e_parameters = context.MakeFuncParameters(sStructFunc->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_parameters, [parameters, bLastParamVariadic]);
-    
+
     RThisKind thisKind = [this]() -> RThisKind {
         if (sStructFunc->bStatic) return RThisKind_Static{};
         auto* structType = rFactory->MakeStructType(RAppliedDecl<RStructDecl>{rStruct, rStruct->MakeOpenTypeArgs(*rFactory)});
         return RThisKind_Ref{structType};
-    }();
+        }();
 
     // init
     rStructFunc->Init(RDeclKey::Func(RName::Normal(sStructFunc->name), parameters), move(thisKind), move(*e_funcRet), move(typeParams), move(parameters), bLastParamVariadic);
@@ -65,5 +94,5 @@ expected<MFuncBody, DiagPtr> StructFuncTask::TranslateBody(TranslateBodyContext&
     return context.Translate(move(structFuncDeclContext), rStructFunc, sStructFunc->bSequence, sStructFunc->body);
 }
 
-
-}
+} // namespace
+} // namespace Citron

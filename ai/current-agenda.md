@@ -1,7 +1,7 @@
 # Current Agenda
 
 ## Topic
-SmPhaseManager 전체의 Feature/await 기반 scheduling 검토
+Infra/Ref.h 함수 인자 사용 규칙 정리 (2026-11-06)
 
 ## Active Work
 - trait/impl parsing 완료.
@@ -28,6 +28,8 @@ SmPhaseManager 전체의 Feature/await 기반 scheduling 검토
 세부 순서와 acceptance test는 `ai/notes/2026-08-29-associated-type-implementation-plan.md`를 본다.
 
 ## Current Direction
+- 확정 (2026-11-06): 실제 `const T` 객체는 사용하지 않는다. 함수 인자의 `const T&`는 `InRef<T>`로 쓰고, `T&`와 `T&&`는 그대로 쓴다. `const T&`와 `T&&`를 모두 받아야 하면 universal reference(forwarding reference)를 우선 사용하고, 복잡해지면 `TakeRef<T>`를 사용한다. `src/RULES.md` 및 `ai/notes/2026-11-06-ref-parameter-policy.md` 참고.
+- 확정 (2026-11-06): `SmPhaseManager`를 `SmTaskScheduler`로 대체하는 방안을 전면 철회하고 기존 phase 방식을 유지한다. 프로젝트에서 `cpp-async`를 제거한다. coroutine의 실익은 작고 문법적 제약을 걸기는 더 어려우며, 목표였던 세밀한 dependency 파악·추적 문제도 해결하지 못했다. 2026-11-02의 coroutine task 반환형·scheduler 진단 API 결정과 관련 후속 설계는 현재 적용 방향에서 철회한다. `ai/notes/2026-11-06-coroutine-scheduler-withdrawal.md` 참고.
 - 선언 D의 외부 계약에 노출되는 symbol S는 `Access(D) ⊆ Access(S)`를 만족해야 한다. enclosing declaration을 반영한 실제 접근 범위로 비교하며, 서로 다른 owner의 `protected`를 같은 등급으로 취급하지 않는다. 이전 C++식 private type 노출 허용 규칙을 대체한다.
 - public signature에 private type/alias를 쓰거나 public alias로 private target을 노출하는 것은 금지한다. private alias의 target이 `int`여도 public signature에는 그 alias를 쓸 수 없다. `some Trait`의 backing type과 함수 body/private 구현 멤버는 외부 계약과 구분한다.
 - public struct의 header에 private trait를 직접 넣지 않는다. 내부용 conformance는 접근 범위가 맞는 bundle로 분리한다. 공개 conformance의 associated type으로 private 타입을 노출하는 것은 거부한다.
@@ -106,9 +108,10 @@ SmPhaseManager 전체의 Feature/await 기반 scheduling 검토
 - symbol tree는 `RModule`마다 하나의 canonical tree를 둔다. compiler-wide module registry는 여러 module tree를 찾기만 하며 declaration을 하나의 global tree에 병합하지 않는다. unit은 tree를 갖지 않고 syntax decl pointer, import/alias overlay, task/cache contribution을 가진 별도 context로 둔다. namespace syntax는 module/path당 하나인 canonical `RNamespace`를 GetOrAdd하여 child declaration을 추가한다. `RNamespaceDeclGroup`은 제거한다.
 - `RImplTraitDecl`의 child는 `RImplTraitMemberDecl`, 함수 requirement 구현은 `RImplTraitFuncDecl`이다. 이 함수는 `RFuncDecl`이므로 existing MIR body/ABI/QIR direct-call 경로를 사용한다.
 - `NStructInfo`/`NImplTrait*`는 기존 witness payload 모델의 잔재가 되며, conformance header entry와 `RImplTraitDecl*` 연결로 대체하는 방향이다.
-- SmTranslator는 unit 간에는 global phase barrier를 유지하고, unit 내부의 세밀한 선행 조건은 order가 있는 task dependency로 표현하는 방향을 검토한다.
+- 세밀한 dependency를 파악하고 추적하는 문제는 미해결이다. 이번 결정으로 새 task graph나 대체 dependency 추적 방식을 채택하지 않는다.
 
 ## Current Refactoring State
+- `SmTaskScheduler` 전환 실험은 철회했다. `cpp-async` 제거는 확정된 후속 작업이며, 이 기록에서는 소스·의존성 파일을 수정하거나 제거 완료를 검증하지 않았다.
 - declaration 구현과 주 번역 경로는 `NSymbol`에서 `RSymbol`로 이행됐다. `RFactory`가 `RDecl`을 소유·생성한다.
 - `NSymbol`에는 현재 `NFactory` wrapper와 일부 비주력 target/test의 old API 참조가 남아 있다.
 - trait/impl parsing, RSymbol 변환, trait requirement 만족 검사는 구현됐다.
@@ -142,11 +145,6 @@ SmPhaseManager 전체의 Feature/await 기반 scheduling 검토
 - extension은 trait impl subtree에 `RImplTrait*` 계열을 재사용하는 쪽을 우선 검토한다. `RExtensionFuncDecl`은 bundle-private helper로 별도 계열이다.
 
 ## Open Questions
-- 후보 (2026-10-14): 호출자는 결과별 await를 사용하고, ResolveType 등의 내부에서 검색 대상 Type Tree의 수집 완료 barrier를 기다리는 사용자 제안이다. shell 등록 종료와 alias/base 해석 완료 및 coroutine 전체 완료는 구분하는 방향을 검토한다. Feature 일괄 획득은 barrier를 과도하게 키울 수 있다. API 및 barrier의 정확한 범위는 미확정이며 당일 노트에 기록했다.
-- 우선 검토 방향 (2026-10-14): 사용자는 이득이 더 크다면 런타임 cycle 검출을 허용할 수 있다고 밝혔다. 현재 readiness 경계가 탐색 중이므로 정적 DAG 전면 강제보다 명시적 의존성 추적과 런타임 검출을 우선 검토한다는 에이전트 판단이다. 배포 후 정상 입력 실패 및 수정 범위 확대 위험은 유지한다. 기존 lower-order-only 규칙 대체, await API, 구현은 미확정이다. `ai/notes/2026-10-14-await-runtime-cycle-detection.md` 참고.
-- 후보 (2026-10-06): 기존 phase 배치보다 소비 코드의 최소 준비 조건을 먼저 Feature로 정의하고, 직접 의존성 그래프에서 order와 큰 fence를 도출하는 방향을 검토한다. 구체적 구현 및 규칙은 미확정이다.
-- 후보 (2026-10-06): Feature 의존성에 order(B) <= order(A)를 강제하고 같은 order 내부만 cycle 후보로 남기는 안. provider의 실제 준비 구간 및 모든 대기의 추적이 전제이며, 기존 lower-order-only 규칙의 완화는 미확정이다.
-- 후보 (2026-10-06): phase별 task 순회 대신 Feature 활성화 조건으로 task를 실행하는 모델을 검토한다. 활성화 통지와 미활성 Feature를 기다리는 의존성을 구분하며, provider/동적 wait 관계를 추적해야 cycle을 진단할 수 있다. 아직 채택하지 않았고 기존 scheduling 규칙과 global barrier 대체 여부는 미확정이다. `ai/notes/2026-10-06-feature-based-scheduling-and-cycles.md` 참고.
 - 보류 (2026-09-28): alias/base 해석의 멀티스레드는 가능성 검토로 마무리하고 구현 결정은 유예한다. 단일 스레드 전체 순회 + 재귀 Resolve 후보와 병렬 task 의존성/cycle 검토는 `ai/notes/2026-09-28-alias-resolution-and-parallelism.md`에 기록한다.
 - 선언 접근성 검사 구현: `Access(D) ⊆ Access(S)`의 protected/outer 비교 API, alias normalization 전에 이름의 접근성을 검증하거나 provenance를 유지하는 방식, 검사 시점은 미정이다. 소스 구현은 아직 변경하지 않았다.
 - 후보 (2026-08-31): type alias target과 class direct base를 BuildTypeHierarchy 내부의 demand-driven resolver로 함께 해석하는 안. 미완료 inherited lookup의 outer fallback 금지, resolution/inheritance cycle 구분, 기존 unit-local/lower-order-only scheduling 안과의 충돌은 미확정이다. `ai/notes/2026-08-31-type-alias-and-base-resolution.md` 참고.
@@ -157,7 +155,7 @@ SmPhaseManager 전체의 Feature/await 기반 scheduling 검토
 - generic conformance header의 generic signature, trait type arguments, constraint를 어느 RSymbol API로 노출할지. Self target은 `RAppliedDecl<RStructDecl>`로 확정했다. Source header에서는 `impl S<U>`/`impl Bundle<U>`의 target pattern parameter와 `extend<U>` activation parameter를 구분해 표현한다.
 - generic bundle pattern의 overlap을 `where` constraint까지 포함해 activation 시점에 어떻게 판정할지
 - trait별 independent witness/conformance identity를 유지하면서 관련 trait 구현의 공용 helper/member를 bundle-private scope나 별도 mechanism으로 어떻게 제공할지. impl block에 trait requirement 밖 member를 허용할지 여부
-- unit-local task graph의 freeze 시점, task order enum, failure propagation 규칙
+- 기존 phase 방식에서 세밀한 dependency를 어떻게 파악하고 추적할지. 대체 설계는 미확정이다.
 - type-parameter binder/type member의 namespace collision 및 shadowing 규칙, header/body/inherited/outer type lookup의 정확한 우선순위
 - `RTypeParam`의 `RDecl`/`RTypeDecl` 분리 뒤 type-name lookup result를 어떤 union/result shape로 나타낼지
 - `MCallable`을 semantic `Trait` call로 유지할지, 어느 IR stage에서 `Direct`/`TraitTable`/`Virtual` call target으로 분해할지

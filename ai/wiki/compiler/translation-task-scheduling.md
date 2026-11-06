@@ -1,8 +1,14 @@
 # Translation Task Scheduling
 
-Status: draft current
+Status: 과거 설계 초안. 현재 방침은 아래 Current Decision을 우선한다.
 Area: compiler, translator
 Keywords: SmTranslator, task, phase, dependency, readiness, unit, scheduling
+
+## Current Decision (2026-11-06)
+
+`SmPhaseManager`를 `SmTaskScheduler`로 대체하는 방안은 전면 철회하고 기존 phase 방식을 유지한다. 프로젝트에서 `cpp-async`를 제거한다. coroutine은 세밀한 dependency 파악·추적 문제를 해결하지 못했고, 실익에 비해 문법적 제약을 걸기 어렵다고 판단했다. 아래 task graph, freeze, order/rank 내용은 과거 설계 초안이며 이번 결정으로 도입을 확정하지 않는다. 세밀한 dependency 추적의 대체 설계는 미확정이다.
+
+이력: `../../notes/2026-11-06-coroutine-scheduler-withdrawal.md`.
 
 ## Scope
 

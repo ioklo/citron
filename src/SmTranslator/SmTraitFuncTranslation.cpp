@@ -1,4 +1,4 @@
-#include "TraitFuncTask.h"
+#include "SmTraitFuncTranslation.h"
 #include "Infra/Expected.h"
 #include "Syntax/Syntaxes.g.h"
 #include "RSymbol/RTraitDecl.h"
@@ -14,20 +14,43 @@
 using namespace std;
 
 namespace Citron {
+namespace {
 
-void TraitFuncTask::Register(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+class SmTraitFuncTask
+    : public IBuildNonTypeSymbolTask
 {
-    shared_ptr<TraitFuncTask> task{new TraitFuncTask{move(traitDeclContext), rTraitDecl, sTraitFuncDecl, move(rFactory)}};
+    SmDeclContextPtr traitDeclContext;
+    RTraitDecl* rTraitDecl;
+    STraitFuncDecl* sTraitFuncDecl;
 
+    RFactoryPtr rFactory;
+
+public:
+    SmTraitFuncTask(InRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRef<RFactoryPtr> rFactory);
+
+public: // from IBuildNonTypeSymbolTask
+    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
+};
+
+} // namespace
+} // namespace Citron
+
+namespace Citron {
+
+void SmTranslateTraitFunc(InRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+{
+    shared_ptr<SmTraitFuncTask> task{new SmTraitFuncTask{move(traitDeclContext), rTraitDecl, sTraitFuncDecl, move(rFactory)}};
     phaseManager.AddBuildNonTypeSymbolTask(task);
 }
 
-TraitFuncTask::TraitFuncTask(TakeRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, TakeRef<RFactoryPtr> rFactory)
-    : traitDeclContext{traitDeclContext.Take()}, rTraitDecl{rTraitDecl}, sTraitFuncDecl{sTraitFuncDecl}, rFactory{rFactory.Take()}
+namespace {
+
+SmTraitFuncTask::SmTraitFuncTask(InRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRef<RFactoryPtr> rFactory)
+    : traitDeclContext{*traitDeclContext}, rTraitDecl{rTraitDecl}, sTraitFuncDecl{sTraitFuncDecl}, rFactory{*rFactory}
 {
 }
 
-expected<void, DiagPtr> TraitFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
+expected<void, DiagPtr> SmTraitFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
     auto* rTraitFuncDecl = context.MakeRDecl<RTraitFuncDecl>(rTraitDecl, sTraitFuncDecl->bStatic, RName::Normal(sTraitFuncDecl->name));
     auto typeParams = MakeTypeParams(rTraitDecl->GetAllTypeParamCount(), rTraitFuncDecl, sTraitFuncDecl->typeParams, rFactory);
@@ -38,10 +61,11 @@ expected<void, DiagPtr> TraitFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolCont
 
     auto e_paramResult = context.MakeFuncParameters(sTraitFuncDecl->parameters, scope);
     RETURN_ON_ERROR_REFDECL(e_paramResult, [rParameters, bLastParamVariadic]);
-    
+
     rTraitFuncDecl->Init(RDeclKey::Func(RName::Normal(sTraitFuncDecl->name), rParameters), move(typeParams), move(*e_funcRet), move(rParameters), bLastParamVariadic);
     rTraitDecl->AddMember(RTraitMemberDecl{rTraitFuncDecl});
     return {};
 }
 
+} // namespace
 } // namespace Citron

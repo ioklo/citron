@@ -1,4 +1,4 @@
-#include "StructCtorTask.h"
+#include "SmStructCtorTranslation.h"
 
 #include "Infra/Expected.h"
 #include "Infra/Ptr.h"
@@ -17,14 +17,45 @@
 using namespace std;
 
 namespace Citron {
+namespace {
 
-void StructCtorTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+class StructCtorTask
+    : public IBuildNonTypeSymbolTask
+    , public ITranslateBodyTask
 {
-    shared_ptr<StructCtorTask> task{new StructCtorTask{move(structDeclContext), rStruct, sStructCtor, std::move(rFactory)}};
+    SmDeclContextPtr structDeclContext;
+    RStructDecl* rStruct;
+    SStructCtorDecl* sStructCtor;
+
+    RStructCtorDecl* rStructCtor;
+    RFactoryPtr rFactory;
+
+public:
+    StructCtorTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, InRef<RFactoryPtr> rFactory)
+        : structDeclContext{*structDeclContext}, rStruct{rStruct}, sStructCtor{sStructCtor}, rStructCtor{nullptr}, rFactory{*rFactory}
+    {
+    }
+
+public:
+    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
+    std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
+};
+
+} // namespace
+} // namespace Citron
+
+namespace Citron {
+
+void SmTranslateStructCtor(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructCtorDecl* sStructCtor, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+{
+    shared_ptr<StructCtorTask> task{new StructCtorTask{structDeclContext, rStruct, sStructCtor, rFactory}};
 
     phaseManager.AddBuildNonTypeSymbolTask(task);
     phaseManager.AddTranslateBodyTask(task);
 }
+
+
+namespace {
 
 expected<void, DiagPtr> StructCtorTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
@@ -47,5 +78,5 @@ expected<MFuncBody, DiagPtr> StructCtorTask::TranslateBody(TranslateBodyContext&
     return context.Translate(move(declContext), rStructCtor, /*bSeqFunc*/false, sStructCtor->body);
 }
 
-
+} // namespace 
 } // namespace Citron

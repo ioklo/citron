@@ -1,5 +1,4 @@
-#include "StructVarTask.h"
-#include <cassert>
+#include "SmStructVarTranslation.h"
 #include <vector>
 
 #include "Infra/Expected.h"
@@ -18,12 +17,37 @@
 using namespace std;
 
 namespace Citron {
+namespace {
 
-void StructVarTask::Register(TakeRef<SmDeclContextPtr> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+class StructVarTask
+    : public IBuildNonTypeSymbolTask
 {
-    shared_ptr<StructVarTask> task{new StructVarTask(move(structDeclContext), rOuter, syntax, move(rFactory))};
+    SmDeclContextPtr structDeclContext;
+    RStructDecl* rStruct;
+    SStructVarDecl* sStructVar;
+    RFactoryPtr rFactory;
+
+public:
+    StructVarTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructVarDecl* sStructVar, InRef<RFactoryPtr> rFactory)
+        : structDeclContext{*structDeclContext}, rStruct{rStruct}, sStructVar{sStructVar}, rFactory{*rFactory}
+    {
+    }
+
+    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
+};
+
+} // namespace
+} // namespace Citron
+
+namespace Citron {
+
+void SmTranslateStructVar(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+{
+    shared_ptr<StructVarTask> task{new StructVarTask(structDeclContext, rOuter, syntax, rFactory)};
     phaseManager.AddBuildNonTypeSymbolTask(task);
 }
+
+namespace {
 
 expected<void, DiagPtr> StructVarTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
 {
@@ -46,4 +70,5 @@ expected<void, DiagPtr> StructVarTask::BuildNonTypeSymbol(BuildNonTypeSymbolCont
     return {};
 }
 
+} // namespace
 } // namespace Citron

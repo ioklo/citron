@@ -90,31 +90,31 @@
     <ClCompile Include="SExpToIrExp.cpp">
       <Filter>ExpTranslation\SExpToMIR\2_SExpToMSharedExp\SExpToIrExp</Filter>
     </ClCompile>
-    <ClCompile Include="GlobalFuncTask.cpp">
+    <ClCompile Include="SmGlobalFuncTranslation.cpp">
       <Filter>DeclTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="EnumElemVarTask.cpp">
+    <ClCompile Include="SmEnumElemVarTranslation.cpp">
       <Filter>DeclTranslation\EnumTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="StructCtorTask.cpp">
+    <ClCompile Include="SmStructCtorTranslation.cpp">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="StructDtorTask.cpp">
+    <ClCompile Include="SmStructDtorTranslation.cpp">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="StructFuncTask.cpp">
+    <ClCompile Include="SmStructFuncTranslation.cpp">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="StructTask.cpp">
+    <ClCompile Include="SmStructTranslation.cpp">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="StructVarTask.cpp">
+    <ClCompile Include="SmStructVarTranslation.cpp">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="TraitFuncTask.cpp">
+    <ClCompile Include="SmTraitFuncTranslation.cpp">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ImplTraitTask.cpp">
+    <ClCompile Include="SmImplTraitTranslation.cpp">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClCompile>
     <ClCompile Include="BuildNonTypeSymbolContext.cpp">
@@ -153,9 +153,6 @@
     <ClCompile Include="SmTypeTranslation.cpp">
       <Filter>TypeTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="ImplTraitFuncTask.cpp">
-      <Filter>DeclTranslation</Filter>
-    </ClCompile>
     <ClCompile Include="STypeExpToImTypeExp.cpp">
       <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
     </ClCompile>
@@ -168,11 +165,29 @@
     <ClCompile Include="STypeExp_MemberToImTypeExp.cpp">
       <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
     </ClCompile>
-    <ClCompile Include="SmTraitTypeTask.cpp">
+    <ClCompile Include="SmTraitTypeTranslation.cpp">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClCompile>
     <ClCompile Include="PostBuildTypeHierarchyContexts.cpp">
       <Filter>TranslationPhase</Filter>
+    </ClCompile>
+    <ClCompile Include="SmScriptTranslation.cpp">
+      <Filter>DeclTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SmNamespaceTranslation.cpp">
+      <Filter>DeclTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SmEnumTranslation.cpp">
+      <Filter>DeclTranslation\EnumTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SmImplTraitFuncTranslation.cpp">
+      <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SmTraitTranslation.cpp">
+      <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SmClassTranslation.cpp">
+      <Filter>DeclTranslation\ClassTranslation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -276,31 +291,31 @@
     <ClInclude Include="SExpToIrExp.h">
       <Filter>ExpTranslation\SExpToMIR\2_SExpToMSharedExp\SExpToIrExp</Filter>
     </ClInclude>
-    <ClInclude Include="GlobalFuncTask.h">
+    <ClInclude Include="SmGlobalFuncTranslation.h">
       <Filter>DeclTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="EnumElemVarTask.h">
+    <ClInclude Include="SmEnumElemVarTranslation.h">
       <Filter>DeclTranslation\EnumTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="StructCtorTask.h">
+    <ClInclude Include="SmStructCtorTranslation.h">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="StructDtorTask.h">
+    <ClInclude Include="SmStructDtorTranslation.h">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="StructFuncTask.h">
+    <ClInclude Include="SmStructFuncTranslation.h">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="StructTask.h">
+    <ClInclude Include="SmStructTranslation.h">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="StructVarTask.h">
+    <ClInclude Include="SmStructVarTranslation.h">
       <Filter>DeclTranslation\StructTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="TraitFuncTask.h">
+    <ClInclude Include="SmTraitFuncTranslation.h">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ImplTraitTask.h">
+    <ClInclude Include="SmImplTraitTranslation.h">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClInclude>
     <ClInclude Include="BuildNonTypeSymbolContext.h">
@@ -348,9 +363,6 @@
     <ClInclude Include="SmTypeTranslation.h">
       <Filter>TypeTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="ImplTraitFuncTask.h">
-      <Filter>DeclTranslation</Filter>
-    </ClInclude>
     <ClInclude Include="ImTypeExp.h">
       <Filter>TypeTranslation</Filter>
     </ClInclude>
@@ -369,11 +381,29 @@
     <ClInclude Include="STypeExp_MemberToImTypeExp.h">
       <Filter>TypeTranslation\STypeExpToReTypeExp\1_STypeExpToImTypeExp</Filter>
     </ClInclude>
-    <ClInclude Include="SmTraitTypeTask.h">
+    <ClInclude Include="SmTraitTypeTranslation.h">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClInclude>
     <ClInclude Include="PostBuildTypeHierarchyContexts.h">
       <Filter>TranslationPhase</Filter>
+    </ClInclude>
+    <ClInclude Include="SmScriptTranslation.h">
+      <Filter>DeclTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SmNamespaceTranslation.h">
+      <Filter>DeclTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SmEnumTranslation.h">
+      <Filter>DeclTranslation\EnumTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SmImplTraitFuncTranslation.h">
+      <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SmTraitTranslation.h">
+      <Filter>DeclTranslation\TraitTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SmClassTranslation.h">
+      <Filter>DeclTranslation\ClassTranslation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -442,6 +472,9 @@
     </Filter>
     <Filter Include="TypeTranslation\STypeExpToReTypeExp\2_ImTypeExpToReTypeExp">
       <UniqueIdentifier>{b7d4d58f-c58a-449e-81b7-41c0a8322a21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DeclTranslation\ClassTranslation">
+      <UniqueIdentifier>{8819a47d-bd74-42d1-ad4d-172d8b4d8ac5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

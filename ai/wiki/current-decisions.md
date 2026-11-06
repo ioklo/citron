@@ -63,6 +63,7 @@ Status: current snapshot
 - public extension bundle의 target/trait 목록과 witness identity는 module declaration surface 및 dependency metadata에 포함한다.
 
 ## Compiler
+- 확정 (2026-11-06): `SmPhaseManager`를 `SmTaskScheduler`로 대체하는 방안은 전면 철회한다. 기존 phase 방식을 유지하고 프로젝트에서 `cpp-async`를 제거한다. coroutine의 실익은 작고 문법적 제약을 걸기는 더 어려우며, 목표였던 세밀한 dependency 파악·추적 문제도 해결하지 못했다. 2026-11-02의 coroutine task 반환형·scheduler 진단 API 결정은 이 전환안과 함께 철회한다. 세밀한 dependency 추적은 미해결이며 대체 설계는 확정하지 않았다. 이력: `../notes/2026-11-06-coroutine-scheduler-withdrawal.md`.
 - 일반 generic은 monomorphization을 의미론/ABI의 전제로 삼지 않는다. generic function은 shared code로 생성하고, type parameter마다 필요한 type metadata와 trait constraint마다 필요한 trait witness를 hidden argument로 전달하는 Swift식 runtime generic ABI를 기본으로 한다.
 - generic value의 size/align/copy/move/destroy는 type metadata의 value witness로 처리하고, generic trait call은 전달된 trait witness를 사용한다. associated type projection은 conformance witness가 제공하는 associated type metadata와 associated conformance witness를 통해 runtime에 구체화할 수 있어야 한다.
 - concrete type을 아는 경우의 generic specialization은 선택적 최적화일 뿐 correctness나 ABI의 전제가 아니다. 장래의 명시적 code instantiation은 일반 generic과 분리된 `template` 또는 macro 계층에서 처리한다.
@@ -102,6 +103,7 @@ Status: current snapshot
 - QEvaluator는 backend physical behavior가 아니라 observable event trace를 보존하는 semantic reference executor다.
 
 ## Process
+- 함수 인자에는 `Infra/Ref.h`의 helper를 사용한다 (2026-11-06). 실제 `const T` 객체는 사용하지 않는다. `const T&`는 `InRef<T>`, `T&`와 `T&&`는 각각 그대로 쓴다. `const T&`와 `T&&`를 모두 받아야 하면 universal reference(forwarding reference)를 우선 사용하고, 복잡해지면 `TakeRef<T>`를 사용한다. 세부 스타일은 `../../src/RULES.md`, 결정 이력과 적용 전제는 `../notes/2026-11-06-ref-parameter-policy.md` 참고.
 - 기능/버그 수정에는 관련 테스트 추가/갱신을 동반한다.
 - Windows 빌드/테스트는 `ai/process/build-test-and-generation-windows.md`를 따른다.
 - `.g.cpp`, `.g.h`는 직접 수정하지 않고 generator를 통해 갱신한다.
