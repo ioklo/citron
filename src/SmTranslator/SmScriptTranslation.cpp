@@ -59,6 +59,7 @@ public:
     void Visit(SEnumDecl* elem);
     void Visit(STraitDecl* elem);
     void Visit(SImplTraitDecl* elem);
+    void Visit(STypeAliasDecl* elem);
 };
 
 } // namespace
@@ -136,6 +137,12 @@ void SmScriptElemTranslator::Visit(STraitDecl* decl)
 void SmScriptElemTranslator::Visit(SImplTraitDecl* decl)
 {
     SmTranslateImplTrait(decl, rootDeclContext, RImplTraitDeclOuter{rootNamespace}, rFactory, phaseManager);
+}
+
+void SmScriptElemTranslator::Visit(STypeAliasDecl* elem)
+{
+    // TODO: [79] type alias 구현
+    throw NotImplementedException{};
 }
 
 } // namespace

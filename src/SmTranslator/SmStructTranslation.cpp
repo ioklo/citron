@@ -52,6 +52,7 @@ public:
     void Visit(SEnumDecl* decl);
     void Visit(STraitDecl* decl);
     void Visit(SImplTraitDecl* decl);
+    void Visit(STypeAliasDecl* decl);
     void Visit(SStructFuncDecl* decl);
     void Visit(SStructCtorDecl* decl);
     void Visit(SStructDtorDecl* decl);
@@ -136,6 +137,12 @@ void SmStructElemTranslator::Visit(STraitDecl* decl)
 void SmStructElemTranslator::Visit(SImplTraitDecl* decl)
 {
     SmTranslateImplTrait(decl, structDeclContext, RImplTraitDeclOuter{rStruct}, rFactory, phaseManager);
+}
+
+void SmStructElemTranslator::Visit(STypeAliasDecl* decl)
+{
+    // TODO: [79] type alias 구현
+    throw NotImplementedException{};
 }
 
 void SmStructElemTranslator::Visit(SStructFuncDecl* decl)

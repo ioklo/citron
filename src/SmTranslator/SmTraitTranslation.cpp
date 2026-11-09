@@ -15,7 +15,7 @@ using namespace std;
 
 namespace Citron {
 
-void VisitTrait(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, STraitDecl* sTrait, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateTrait(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, STraitDecl* sTrait, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     RName traitName{RName::Normal(sTrait->name)};
     auto* rTraitDecl = (*rFactory)->MakeDecl<RTraitDecl>(RDeclKey::Normal(traitName), outer, move(traitName), *rFactory);

@@ -12,6 +12,7 @@ class SmPhaseManager;
 enum class AccessorContext;
 using RFactoryPtr = std::shared_ptr<class RFactory>;
 using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
+class REnumElemDecl;
 
 void SmTranslateEnumElemVar(InRef<SmDeclContextPtr> enumElemDeclContext, SEnumElemVarDecl* sEnumElemVar, REnumElemDecl* rEnumElem, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager);
 

@@ -152,5 +152,7 @@ msbuild Citron.sln /t:Build /p:Configuration=Debug /p:Platform=$Platform
 
 ## Related Documents
 
+- [MSVC assert / GoogleTest 디버깅 문제](msvc-assert-google-test.md): 테스트에서 assert/abort가 멈추지 않을 때 Break on failure 설정 확인.
+
 - `generated-files.md`: 생성 파일 일반 규칙
 - `../../../process/build-test-and-generation-windows.md`: 기존 절차 호환 입구

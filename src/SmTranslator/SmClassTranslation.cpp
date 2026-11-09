@@ -1,9 +1,25 @@
 #include "SmClassTranslation.h"
+#include "Infra/Ptr.h"
+#include "Syntax/Syntax.h"
+#include "RSymbol/RTypeDeclOuter.h"
+#include "RSymbol/RNames.h"
+#include "RSymbol/RFactory.h"
+#include "RSymbol/RDeclKey.h"
+#include "RSymbol/RClassDecl.h"
+#include "RSymbol/RImplTraitDeclOuter.h"
+#include "CommonTranslation.h"
+#include "SmDeclContext_ClassDecl.h"
+#include "SmStructTranslation.h"
+#include "SmEnumTranslation.h"
+#include "SmTraitTranslation.h"
+#include "SmImplTraitTranslation.h"
+
+using namespace std;
 
 namespace Citron {
 namespace {
 
-class ClassElemVisitor
+class SmClassElemTranslator
 {
     SmDeclContextPtr classDeclContext;
     RClassDecl* rClass;
@@ -11,8 +27,8 @@ class ClassElemVisitor
     SmPhaseManager& phaseManager;
 
 public:
-    ClassElemVisitor(InRef<SmDeclContextPtr> classDeclContext, RClassDecl* outer, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
-        : classDeclContext{classDeclContext.Take()}, rClass{outer}, rFactory{rFactory.Take()}, phaseManager{phaseManager}
+    SmClassElemTranslator(InRef<SmDeclContextPtr> classDeclContext, RClassDecl* outer, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+        : classDeclContext{*classDeclContext}, rClass{outer}, rFactory{*rFactory}, phaseManager{phaseManager}
     {
     }
 
@@ -23,65 +39,96 @@ public:
     void Visit(SEnumDecl* decl);
     void Visit(STraitDecl* decl);
     void Visit(SImplTraitDecl* decl);
+    void Visit(STypeAliasDecl* elem);
     void Visit(SClassFuncDecl* decl);
     void Visit(SClassCtorDecl* decl);
     void Visit(SClassVarDecl* decl);
 };
 
-} // namespace
+}
+
+// namespace
 } // namespace Citron
+
 
 
 namespace Citron {
 
-void SmTranslateClass(SmDeclContextPtr classDeclContext, RClassDecl* rClass, RFactoryPtr rFactory, SmPhaseManager& phaseManager)
+void SmTranslateClass(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SClassDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
-    // visit(ClassElemVisitor{classDeclContext},  );
+    RName name{RName::Normal(syntax->name)};
+    auto* rClassDecl = (*rFactory)->MakeDecl<RClassDecl>(RDeclKey::Normal(name), outer, move(name), rFactory);
+
+    auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rClassDecl, syntax->typeParams, *rFactory);
+    rClassDecl->InitTypeParams(move(typeParams));
+    outer.AddType(rClassDecl);
+
+    assert(false);
+
+    // TODO: RDecl::MakeOpenTypeArgs는 전체적으로 typeArgs를 다시만드는데, 이 rDecl만큼만 만들게 할 수 있을 것이다
+    // auto* openTypeArgs = rClassDecl->MakeOpenTypeArgs(**rFactory);
+    // auto classDeclContext = MakePtr<SmDeclContext_ClassDecl>(*outerDeclContext, rClassDecl, openTypeArgs);
+    // 
+    //shared_ptr<SmClassTask> task{new SmClassTask(move(classDeclContext), rClassDecl, syntax)};
+    //phaseManager.AddBuildTypeHierarchyTask(task);
+    //phaseManager.AddBuildImplicitSymbolTask(task);
+
+    //// child     
+    //for (auto& memberDecl : syntax->memberDecls)
+    //{
+    //    visit(SmClassElemTranslator{classDeclContext, rStructDecl, *rFactory, phaseManager}, memberDecl);
+    //}
 }
 
 namespace {
 
-void ClassElemVisitor::Visit(SClassDecl* decl)
+void SmClassElemTranslator::Visit(SClassDecl* decl)
 {
     throw NotImplementedException{};
 }
 
-void ClassElemVisitor::Visit(SStructDecl* decl)
+void SmClassElemTranslator::Visit(SStructDecl* decl)
 {
     auto accessor = MakeClassMemberAccessor(decl->accessModifier);
     RTypeDeclOuter_Class outer{rClass, accessor};
-    VisitStruct(classDeclContext, outer, decl, rFactory, phaseManager);
+    SmTranslateStruct(classDeclContext, outer, decl, rFactory, phaseManager);
 }
 
-void ClassElemVisitor::Visit(SEnumDecl* decl)
+void SmClassElemTranslator::Visit(SEnumDecl* decl)
 {
     auto accessor = MakeClassMemberAccessor(decl->accessModifier);
     RTypeDeclOuter_Class outer{rClass, accessor};
-    VisitEnum(classDeclContext, outer, decl, rFactory, phaseManager);
+    SmTranslateEnum(classDeclContext, outer, decl, rFactory, phaseManager);
 }
 
-void ClassElemVisitor::Visit(STraitDecl* decl)
+void SmClassElemTranslator::Visit(STraitDecl* decl)
 {
     RTypeDeclOuter_Class outer{rClass, MakeClassMemberAccessor(decl->accessModifier)};
-    VisitTrait(classDeclContext, outer, decl, rFactory, phaseManager);
+    SmTranslateTrait(classDeclContext, outer, decl, rFactory, phaseManager);
 }
 
-void ClassElemVisitor::Visit(SImplTraitDecl* decl)
+void SmClassElemTranslator::Visit(SImplTraitDecl* decl)
 {
-    VisitImplTrait(decl, classDeclContext, RImplTraitDeclOuter{rClass}, rFactory, phaseManager);
+    SmTranslateImplTrait(decl, classDeclContext, RImplTraitDeclOuter{rClass}, rFactory, phaseManager);
 }
 
-void ClassElemVisitor::Visit(SClassFuncDecl* decl)
+void SmClassElemTranslator::Visit(STypeAliasDecl* elem)
+{
+    // TODO: [79] type alias 구현
+    throw NotImplementedException{};
+}
+
+void SmClassElemTranslator::Visit(SClassFuncDecl* decl)
 {
     throw NotImplementedException{};
 }
 
-void ClassElemVisitor::Visit(SClassCtorDecl* decl)
+void SmClassElemTranslator::Visit(SClassCtorDecl* decl)
 {
     throw NotImplementedException{};
 }
 
-void ClassElemVisitor::Visit(SClassVarDecl* decl)
+void SmClassElemTranslator::Visit(SClassVarDecl* decl)
 {
     throw NotImplementedException{};
 }

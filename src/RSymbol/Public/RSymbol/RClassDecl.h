@@ -48,7 +48,7 @@ class RClassDecl final : public RDecl, public RTypeDecl
     RFactoryPtr rFactory;
 
 public:
-    RSYMBOL_API RClassDecl(RDeclKey&& key, RTypeDeclOuter&& outer, TakeRef<RName> name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RClassDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRef<RFactoryPtr> rFactory);
     void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { return genericsComp.InitTypeParams(std::move(typeParams)); }
 
     RSYMBOL_API std::optional<RAppliedDecl<RClassDecl>> GetUnboundBaseClass();

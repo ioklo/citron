@@ -2,7 +2,11 @@
 
 namespace Citron {
 
-class NotImplementedException {};
+class NotImplementedException 
+{
+public:
+    NotImplementedException() {}
+};
 class RuntimeFatalException {};
 
 }

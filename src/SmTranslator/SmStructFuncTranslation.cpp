@@ -47,7 +47,7 @@ public:
 
 namespace Citron {
 
-void SmTranslateStructFunc(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructFuncDecl* syntax, TakeRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
+void SmTranslateStructFunc(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructFuncDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     shared_ptr<StructFuncTask> task{new StructFuncTask(*structDeclContext, rStructDecl, syntax, *rFactory)};
     phaseManager.AddBuildNonTypeSymbolTask(task);

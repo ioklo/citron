@@ -29,7 +29,7 @@ RDeclKey& RStructCtorDecl::GetDeclKey()
 // from RDecl
 RDecl* RStructCtorDecl::GetOuter()
 {
-    return this;
+    return _struct;
 }
 
 RName* RStructCtorDecl::TryGetName()

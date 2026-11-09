@@ -39,6 +39,7 @@ public:
     void Visit(SEnumDecl* elem);
     void Visit(STraitDecl* elem);
     void Visit(SImplTraitDecl* elem);
+    void Visit(STypeAliasDecl* elem);
 };
 
 } // namespace Citron
@@ -111,6 +112,12 @@ void SmNamespaceElemTranslator::Visit(STraitDecl* decl)
 void SmNamespaceElemTranslator::Visit(SImplTraitDecl* decl)
 {
     SmTranslateImplTrait(decl, namespaceDeclContext, RImplTraitDeclOuter{curNS}, rFactory, phaseManager);
+}
+
+void SmNamespaceElemTranslator::Visit(STypeAliasDecl* elem)
+{
+    // TODO: [79] type alias 구현
+    throw NotImplementedException{};
 }
 
 } // namespace Citron

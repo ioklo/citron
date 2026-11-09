@@ -13,7 +13,7 @@ TEST(Assign_Expression, Basic)
 	a = 10;
 	@$a
 }
-x)---";
+)---";
     string expected = R"---(10)---";
 
     DoTest(code, expected);
