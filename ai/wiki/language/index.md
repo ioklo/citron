@@ -15,6 +15,8 @@ Keywords: language, syntax, type system, trait, interface, module, import, visib
 - 함수, 제어 흐름, nullable, foreach는 각 surface topic page를 직접 본다.
 
 ## Core Topics
+- [Class constructors](class-constructors.md) : class 생성자와 필드 직접 초기화 인자 `init x`
+- [Core semantics guide](core-semantics.md) : 이전 Core Semantics 요약의 주제별 경로와 확인 필요 항목
 - `design-principles.md` : explicit 지향, 의미 중복 최소화, explicit resolution escape hatch
 - `some-opaque-result.md` : `some Trait` opaque result
 - `trait-and-interface.md` : static trait, dynamic interface, callable `func<>`

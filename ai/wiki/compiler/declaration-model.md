@@ -110,6 +110,11 @@ Keywords: RDecl, RNode, NDecl, EDecl, REDecl, declaration, skeleton, fdecl, symb
 - How `cti` generated declaration surface maps into `EDecl` / `REDecl`.
 - How opaque result identity for `some` return attaches to declaration identity.
 
+## Generic Terminology
+- TypeParam은 declaration이 바인딩한 generic parameter다. 현재 `RTypeParam`을 기준으로 하며 과거 구현 클래스 이름과 구분한다.
+- TypeVar는 type expression에서 그 parameter를 참조하는 형태다. 예: `RType_TypeVar`.
+- TypeArg는 parameter 자리에 적용되는 type argument다. 다른 parameter를 참조하는 open type도 인자가 될 수 있다.
+
 ## History
 - `git history: ai/implementations/decl-model.md`
 - `ai/notes/2026-08-24-rtype-trait-function-correspondence.md`

@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
+#include <gtest/gtest-spi.h>
 #include <string>
 #include <sstream>
 
+#include "Infra/Json.h"
 #include "Infra/Ptr.h"
 #include "Infra/StringWriter.h"
 
@@ -51,6 +53,8 @@ public:
 
 void DoTest(const string& code, const string& expected)
 {
+    SCOPED_TRACE("=== Source ===\n" + code);
+
     // 1. TextAnalysis
     auto buffer = MakePtr<Buffer>(code);
     BufferPosition pos = buffer->MakeStartPosition();
@@ -59,6 +63,10 @@ void DoTest(const string& code, const string& expected)
 
     auto* sScript = ParseScript(&lexer, sFactory);
     ASSERT_TRUE(sScript);
+
+    StringWriter syntaxWriter;
+    ToString(ToJson(sScript), syntaxWriter);
+    SCOPED_TRACE("=== Syntax ===\n" + syntaxWriter.ToString());
 
     string moduleName = "MyModule";
     auto rFactory = RFactory::Make();
@@ -73,6 +81,7 @@ void DoTest(const string& code, const string& expected)
     StringWriter mWriter;
     PrintMData(mData, mWriter, *rFactory);
     auto mOut = mWriter.ToString();
+    SCOPED_TRACE("=== MIR ===\n" + mOut);
 
     QFactoryPtr qFactory = MakePtr<QFactory>();
     auto e_qData = TranslateMDataToQData(mData, rFactory, qFactory);
@@ -82,6 +91,7 @@ void DoTest(const string& code, const string& expected)
     StringWriter qWriter;
     PrintQData(qData, qWriter, *rFactory);
     auto qOut = qWriter.ToString();
+    SCOPED_TRACE("=== QIR ===\n" + qOut);
 
     // LLVM
     /*Citron::LContext lContext{rFactory, qFactory};
@@ -109,4 +119,29 @@ void DoTest(const string& code, const string& expected)
 
     // 
     ASSERT_EQ(commandHandler->GetOutput(), expected); 
+}
+
+TEST(EvalTestDiagnostics, ParseFailureIncludesSource)
+{
+    EXPECT_FATAL_FAILURE(DoTest("}", ""), "=== Source ===");
+}
+
+TEST(EvalTestDiagnostics, OutputMismatchIncludesAllStages)
+{
+    testing::TestPartResultArray results;
+    {
+        testing::ScopedFakeTestPartResultReporter reporter(
+            testing::ScopedFakeTestPartResultReporter::INTERCEPT_ONLY_CURRENT_THREAD, &results);
+        DoTest("void Main() { int a = 0; a = 10; @$a\n}", "wrong output");
+    }
+
+    ASSERT_EQ(results.size(), 1);
+    auto& result = results.GetTestPartResult(0);
+    EXPECT_TRUE(result.fatally_failed());
+    string message = result.message();
+    EXPECT_NE(message.find("=== Source ==="), string::npos);
+    EXPECT_NE(message.find("=== Syntax ==="), string::npos);
+    EXPECT_NE(message.find("=== MIR ==="), string::npos);
+    EXPECT_NE(message.find("=== QIR ==="), string::npos);
+    EXPECT_NE(message.find("wrong output"), string::npos);
 }

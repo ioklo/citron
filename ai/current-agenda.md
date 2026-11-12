@@ -1,7 +1,17 @@
 # Current Agenda
 
 ## Topic
-Infra/Ref.h 함수 인자 사용 규칙 정리 (2026-11-06)
+Class 의미론 및 pool handle 순환 참조 해소 제안 (2026-11-10)
+
+## Current Discussion
+- 후속 결정: special update(update x, update y); 제안은 일단 유지한다. 각 필드의 update 가능 여부를 요구하며, 자기 참조 인자의 평가·갱신 순서와 매칭 규칙은 미정이다. 전체 논의 노트의 memberwise update 절 참고.
+- 전체 논의 기록: ai/notes/2026-11-10-class-struct-initialization-and-interface-discussion.md. Struct의 uninit/초기화/대입, class init 인자, interface 상속, RC/NBC 및 pool의 결정·후보·기록 충돌을 구분했다.
+- Class는 new로만 생성하고 RC로 관리하며, pool은 별도 자료구조로 두는 방향이다.
+- 사용자는 pool (h, new T())로 RC 포인터를 감싸고 h.destroy()로 상호 참조를 끊는 방식을 제안했다.
+- 공유 슬롯 무효화와 strong 참조 일괄 해제는 검토 중인 의미 모델이며 확정하지 않았다.
+- 미해결: handle/슬롯 수명, 무효화 후 접근, 외부 strong 참조, 소멸·재진입 및 호출 중 destroy 처리.
+- Pool 상태: 제안 노트 기록 완료. pool의 wiki 확정 규칙 및 소스 구현은 변경하지 않았다. ai/notes/2026-11-10-pool-handle-cycle-breaking-proposal.md 참고.
+- 확정: class에는 자동 memberwise constructor를 두지 않고, 명시적 생성자의 필드 직접 초기화 인자를 init x로 표기한다. direct 후보를 대체한다. ai/wiki/language/class-constructors.md에 기록했다. 구현 검증은 미실행이다.
 
 ## Active Work
 - trait/impl parsing 완료.

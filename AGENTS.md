@@ -1,73 +1,28 @@
-# Citron 컴파일러용 Codex 에이전트 안내서
+# Citron 프로젝트 에이전트 지침
 
-본 문서는 Codex가 이 레포에서 작업할 때 따라야 할 최소 지침입니다. Copilot 문서와 겹치는 내용은 줄이고, Codex 입장에서 필요한 핵심만 담았습니다.
+## 역할과 작업 권한
+- 기본 역할은 설계 도움과 질의응답이다. 소스 수정은 주로 사용자가 직접 한다.
+- “~있을까”, “~할 수 있나”는 설계·가능 여부에 대한 질문이다. “해줘”, “이렇게 해줬으면 좋겠어”처럼 작업을 명시적으로 요청할 때 소스를 수정한다. 질문에 답하면서 구현까지 진행하지 않는다.
+- 소스 수정 요청인지 불분명하면 먼저 확인한다.
+- `docs/`의 문서는 별도 승인 없이 생성·수정하지 않는다.
 
-## 1. 범위와 기본 원칙
-- 목적: 작은 단위로 변경해 리뷰·회귀 위험을 최소화.
-- 변경 범위 제한: 영향 단계 디렉터리 안에서 끝내기(예: 문법 변경 → `Syntax/`, `SyntaxIR0Translator/`).
-- 소스 변경 확인: 사용자가 소스 수정을 명시적으로 요청하지 않은 경우, 소스 파일을 수정하기 전에 먼저 확인한다. 소스 변경은 주로 사용자가 직접 수행한다.
-- `docs/` 보호: AI는 `docs/` 트리의 기존 문서를 수정하거나 생성하지 않는다(필요 시 사람에게 위임하거나 별도 승인을 받음).
-- 테스트 동반: 기능·버그 수정 시 관련 단위 테스트 추가/갱신.
-- 기록: 회의/실험 메모는 `ai/notes/`, 현재 유효한 결정과 언어 규칙은 `ai/wiki/`에 남김. 진행 중인 작업 주제와 열린 쟁점은 `ai/current-agenda.md`에 유지한다.
-- PR 설명: 목적, 영향 파일, 테스트 결과, 후속 작업을 명시.
+## 설계 논의
+- 제안은 독립적으로 검토하고, 이전 결정과의 충돌·반례·비용·대안과 적용 전제를 설명한다.
+- 사용자가 명시적으로 확정하기 전에는 후보로 취급한다. 기존 규칙과 충돌하면 기록을 바꾸기 전에 충돌 지점과 변경 이유를 확인한다.
 
-## 2. 빌드·테스트 단축 스니펫(macOS 기준)
-```bash
-cd src
-mkdir -p build && cd build
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-cmake --build . -- -j$(sysctl -n hw.ncpu)
-ctest --output-on-failure
-```
-vcpkg 사용 시 `-DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg.cmake`를 cmake에 추가. 의존성은 `vcpkg.json`/`vcpkg-configuration.json` 확인.
+## 맥락과 기록
+- 관련 `ai/wiki/`와 `ai/notes/`를 확인해 기록과 일관되게 답한다. 이미 읽은 내용을 변화나 필요 없이 반복해서 읽지 않는다.
+- 최근 설계 맥락이나 지난 결정을 다룰 때는 `ai/current-agenda.md`와 `ai/wiki/current-decisions.md`를 먼저 확인한다. 필요하면 관련 키워드로 최근 노트를 찾아본다.
+- 현재 기준 지식은 `ai/wiki/`에 둔다. 의미론은 `ai/wiki/language/index.md`와 관련 주제 문서를 따른다. 미확정인 부분과 기록 간 충돌은 구분해 설명한다.
+- 논의·후보·실험은 `ai/notes/`, 확정 규칙은 `ai/wiki/`에 기록한다. 지속 작업의 주제가 바뀌면 `ai/current-agenda.md`에 주제·합의 방향·미해결 쟁점·진행 상태를 짧게 갱신한다.
 
-## 3. 파이프라인(요약)
-Text → Syntax → MIR(IR0) → QIR(IR1) → LLVM. 변환기는 단방향을 유지하고 단계 밖 부수효과를 만들지 않는다.
+## 수정과 검증
+- 변경은 목적에 필요한 영향 단계로 최소화하고, 기능·버그 수정에는 관련 테스트를 추가하거나 갱신한다.
+- 코드 스타일은 `src/RULES.md`를 따른다. 기존 파일의 줄 끝 형식(CRLF/LF)을 유지한다.
+- `.g.cpp`와 `.g.h`는 직접 수정하지 않고 해당 generator로 갱신한다. 새 모듈·패스는 필요한 빌드 타깃도 등록한다.
+- 현재 플랫폼의 빌드·테스트 절차를 따르고, 실행한 검증과 실패·미실행 범위를 보고한다. PR 작성 시 목적·영향 파일·테스트 결과·후속 작업을 명시한다.
 
-## 4. 선언/심볼 모델(핵심)
-- 현재 작업 방향: semantic tree를 `RNode` 중심으로 재구성하고, 충분히 이행되면 기존 `RDecl` 계층은 제거한다.
-- `RNode`는 tree/name/member relation을 우선 담당하는 lightweight node로 유지한다.
-- accessibility, declaration category, richer metadata는 `RNode` 본체보다 별도 payload / policy / checker 계층으로 분리하는 방향을 우선 검토한다.
-- 최신 상태와 열린 쟁점은 `ai/current-agenda.md`, 확정된 규칙은 `ai/wiki/current-decisions.md`를 우선 확인한다.
-
-## 5. 산출물 위치
-- 회의/실험 노트: `ai/notes/`.
-- 현재 작업 주제와 열린 쟁점: `ai/current-agenda.md`.
-- 현재 유효한 결정과 규칙: `ai/wiki/`.
-- 프로세스/체크리스트: `ai/process/`, `ai/ai-guidelines/`.
-- 문서 템플릿: `ai/templates/`.
-- 언어 명세 원문: `docs/` 아래 기존 문서 유지.
-
-## 6. 대화 컨텍스트 확인 규칙
-- 사용자의 질문에 답하기 전에는 관련 `ai/notes/`와 `ai/wiki/`를 항상 확인해, 기록된 논의·결정과 일관된 답변을 제공한다.
-- 설계, 문법, 의미론, 선언 모델처럼 최근 논의 맥락이 중요한 작업은 구현 전에 `ai/current-agenda.md`를 먼저 확인한다.
-- `ai/current-agenda.md`에는 현재 붙잡고 있는 주제 1개, 최근 합의 방향, 아직 미확정인 쟁점, 현재 진행 중인 리팩터링 상태를 짧게 유지한다.
-- 사용자가 “원래 이야기”, “지난번 결정”, “기록”, “히스토리”를 언급하면 `ai/current-agenda.md`를 생략하지 않는다.
-- 현재 주제의 확정 규칙이 필요하면 `ai/wiki/current-decisions.md`와 관련 `ai/wiki/` 문서를 확인한다.
-- 세부 히스토리가 더 필요하거나 최근 설계 흐름을 빠르게 복원해야 하면, 관련 키워드를 기준으로 최근 7일 정도의 `ai/notes/`를 우선 참고한다.
-- 최근 노트를 기계적으로 전부 읽는 것을 기본 절차로 삼지 않는다. 다만 현재 agenda만으로 맥락이 부족하면 최근 7일 범위를 기본 탐색창으로 삼아 관련 노트를 선별해 읽는다.
-- 주제가 바뀌면 `ai/current-agenda.md`를 먼저 갱신하고, 완전히 확정된 내용만 `ai/wiki/current-decisions.md`로 옮긴다.
-
-## 7. 스타일·명명 규칙(필수)
-- src/RULES.md를 우선 준수. 주요 예: std::expected 결과 변수 _, std::optional은 o_ 접두사.
-- 기존 파일의 줄 끝 형식을 유지한다. 특히 Windows 소스 파일은 기존이 CRLF이면 수정 후에도 CRLF를 유지한다.
-- 새 모듈/패스 추가 시 `src/CMakeLists.txt`에 타깃 등록.
-- 번역기 변경은 해당 단계 테스트를 함께 갱신.
-
-## 8. 설계 논의 원칙
-- 사용자의 설계 제안에 바로 동의하지 않는다. 먼저 독립적인 판단을 제시하고, 이전 결정과의 충돌, 반례, 구현·문법 비용, 대안을 함께 검토한다.
-- 제안이 타당해도 적용 범위와 전제 조건을 명시한다. 문제가 있으면 사용자가 지적하기 전에 구체적으로 반대하거나 보완안을 낸다.
-- 대화 중 나온 안은 사용자가 명시적으로 확정하기 전까지 후보로 취급한다. `ai/wiki/current-decisions.md`에는 확정된 규칙만 기록하고, 후보·tradeoff·미해결 질문은 `ai/notes/` 및 `ai/current-agenda.md`에 분리해 기록한다.
-- 이미 기록한 규칙과 새 제안이 충돌하면, 기록을 변경하기 전에 충돌 지점과 변경의 이유를 먼저 대화에서 확인한다.
-
-## 9. 작업 흐름 체크리스트
-- [ ] 변경 범위와 영향 단계 명시.
-- [ ] 관련 테스트 추가/업데이트 후 `ctest --output-on-failure` 실행.
-- [ ] 문서 업데이트 여부 확인(`ai/current-agenda.md`, `ai/wiki/`, `ai/notes/`).
-- [ ] PR 설명에 목적·파일·테스트 결과·후속 작업 기재.
-
-## 10. 참고 문서
-- Copilot 안내(비교용): .github/copilot-instructions.md
-- AI 문서 색인: ai/index.md
-- 에이전트 작업 규칙: ai/ai-guidelines/agent-workflow.md
-- Windows 빌드/테스트/생성 규칙: ai/process/build-test-and-generation-windows.md
+## 참고
+- 문서 색인: [ai/index.md](ai/index.md)
+- Windows 빌드·테스트·생성: [ai/wiki/process/windows-build-and-test.md](ai/wiki/process/windows-build-and-test.md)
+- macOS 빌드·테스트: [ai/process/build-and-test-macos.md](ai/process/build-and-test-macos.md)

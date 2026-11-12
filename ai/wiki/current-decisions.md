@@ -10,6 +10,7 @@ Status: current snapshot
 - 기존 specs/implementations 내용은 wiki로 옮긴 뒤 active tree에는 유지하지 않는다. 필요하면 `git history: ai/specs/`와 `git history: ai/implementations/`를 확인한다.
 
 ## Language
+- Class는 자동 memberwise constructor 없이 생성자를 명시하며, 필드 직접 초기화 인자는 `init x`로 표기한다 (`direct` 후보 대체, 2026-11-10 확정). Struct는 자동 memberwise constructor를 기본 제공한다. 자세한 규칙은 `language/class-constructors.md`를 본다.
 - `some Trait`는 함수 return position 전용 opaque result marker다. 일반 type expression이 아니며 변수/인자/generic argument 위치에는 쓰지 않는다.
 - opaque return 표기는 `some T`를 사용하며 `some<T>`는 허용하지 않는다.
 - `some`은 일반 type parser가 아니라 함수 declaration의 return 자리에서만 특별히 읽는 쪽을 선호한다.
