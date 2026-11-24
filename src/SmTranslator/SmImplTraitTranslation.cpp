@@ -22,6 +22,7 @@
 #include "SmDeclContext_Decl.h"
 #include "SmTypeTranslationContexts.h"
 #include "SmImplTraitFuncTranslation.h"
+#include "ISmPhaseTask.h"
 #include "ISmPhase5Task.h"
 
 using namespace std;
@@ -30,7 +31,8 @@ namespace Citron {
 namespace {
 
 class SmImplTraitTask
-    : public ISmPhase5Task
+    : public ISmPhaseTask
+    , public ISmPhase5Task
 {
     SImplTraitDecl* sImplDecl;
     SmDeclContextPtr outerDeclContext;
@@ -61,8 +63,7 @@ namespace Citron {
 
 void SmTranslateImplTrait(SImplTraitDecl* sImplDecl, InRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
-    shared_ptr<SmImplTraitTask> task{new SmImplTraitTask{sImplDecl, outerDeclContext, rOuter, rFactory}};
-    phaseManager.AddPhase5Task(task);
+    phaseManager.AddTask<SmImplTraitTask>(sImplDecl, outerDeclContext, rOuter, rFactory);
 }
 
 namespace {

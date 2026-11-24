@@ -26,6 +26,7 @@
 #include "SmTraitTranslation.h"
 #include "SmEnumTranslation.h"
 
+#include "ISmPhaseTask.h"
 #include "ISmPhase2Task.h"
 #include "ISmPhase6Task.h"
 
@@ -63,7 +64,8 @@ public:
 };
 
 class SmStructTask
-    : public ISmPhase2Task
+    : public ISmPhaseTask
+    , public ISmPhase2Task
     , public ISmPhase6Task
 {
     SmDeclContextPtr structDeclContext;
@@ -99,9 +101,7 @@ void SmTranslateStruct(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter 
     auto* openTypeArgs = rStructDecl->MakeOpenTypeArgs(**rFactory);
     SmDeclContextPtr structDeclContext = MakePtr<SmDeclContext_Decl<RStructDecl>>(*outerDeclContext, rStructDecl, openTypeArgs);
 
-    shared_ptr<SmStructTask> task{new SmStructTask(move(structDeclContext), rStructDecl, syntax)};
-    phaseManager.AddPhase2Task(task);
-    phaseManager.AddPhase6Task(task);
+    phaseManager.AddTask<SmStructTask>(move(structDeclContext), rStructDecl, syntax);
 
     // child     
     for (auto& memberDecl : syntax->memberDecls)

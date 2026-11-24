@@ -68,10 +68,7 @@ void SmTranslateClass(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter o
     // TODO: RDecl::MakeOpenTypeArgs는 전체적으로 typeArgs를 다시만드는데, 이 rDecl만큼만 만들게 할 수 있을 것이다
     // auto* openTypeArgs = rClassDecl->MakeOpenTypeArgs(**rFactory);
     // auto classDeclContext = MakePtr<SmDeclContext_ClassDecl>(*outerDeclContext, rClassDecl, openTypeArgs);
-    // 
-    //shared_ptr<SmClassTask> task{new SmClassTask(move(classDeclContext), rClassDecl, syntax)};
-    //phaseManager.AddPhase2Task(task);
-    //phaseManager.AddBuildImplicitSymbolTask(task);
+    // phaseManager.AddTask<SmClassTask>(move(classDeclContext), rClassDecl, syntax);
 
     //// child     
     //for (auto& memberDecl : syntax->memberDecls)

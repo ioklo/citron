@@ -420,6 +420,9 @@
     <ClInclude Include="ISmPhase7Task.h">
       <Filter>TranslationPhase\Phase7</Filter>
     </ClInclude>
+    <ClInclude Include="ISmPhaseTask.h">
+      <Filter>TranslationPhase</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ExpTranslation">

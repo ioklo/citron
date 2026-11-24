@@ -47,48 +47,18 @@ SmPhaseManager::SmPhaseManager(
 
 SmPhaseManager::~SmPhaseManager() = default;
 
-void SmPhaseManager::AddPhase2Task(std::shared_ptr<ISmPhase2Task>&& task)
-{
-    phase2Tasks.push_back(move(task));
-}
-
-void SmPhaseManager::AddPhase3Task(std::shared_ptr<ISmPhase3Task>&& task)
-{
-    phase3Tasks.push_back(move(task));
-}
-
-void SmPhaseManager::AddPhase4Task(std::shared_ptr<ISmPhase4Task>&& task)
-{
-    phase4Tasks.push_back(move(task));
-}
-
-void SmPhaseManager::AddPhase5Task(std::shared_ptr<ISmPhase5Task>&& task)
-{
-    phase5Tasks.push_back(move(task));
-}
-
-void SmPhaseManager::AddPhase6Task(std::shared_ptr<ISmPhase6Task>&& task)
-{
-    phase6Tasks.push_back(move(task));
-}
-
-void SmPhaseManager::AddPhase7Task(std::shared_ptr<ISmPhase7Task>&& task)
-{
-    phase7Tasks.push_back(move(task));
-}
-
 expected<vector<MFuncBody>, DiagPtr> SmPhaseManager::Run()
 {
     // 1. Run
     SmPhase2Context phase2Context{rFactory.get()};
-    for (auto& task : phase2Tasks)
+    for (auto* task : phase2Tasks)
     {
         auto e_result = task->RunPhase2(phase2Context);
         RETURN_ON_ERROR(e_result);
     }
 
     SmPhase3Contexts phase3Contexts{};
-    for (auto& task : phase3Tasks)
+    for (auto* task : phase3Tasks)
     {
         auto e_result = task->RunPhase3(phase3Contexts);
         RETURN_ON_ERROR(e_result);
@@ -96,14 +66,14 @@ expected<vector<MFuncBody>, DiagPtr> SmPhaseManager::Run()
 
     // 2. Run
     SmPhase4Context fvContext{rFactory};
-    for (auto& task : phase4Tasks)
+    for (auto* task : phase4Tasks)
     {
         auto e_result = task->RunPhase4(fvContext);
         RETURN_ON_ERROR(e_result);
     }
 
     SmPhase5Contexts pbContext{this, rFactory.get(), smFactory.get()};
-    for (auto& task : phase5Tasks)
+    for (auto* task : phase5Tasks)
     {
         auto e_result = task->RunPhase5(pbContext);
         RETURN_ON_ERROR(e_result);
@@ -111,13 +81,13 @@ expected<vector<MFuncBody>, DiagPtr> SmPhaseManager::Run()
 
     // 3. RunPhase6
     SmPhase6Context sisContext{rFactory};
-    for (auto& task : phase6Tasks)
+    for (auto* task : phase6Tasks)
         task->RunPhase6(sisContext);
 
     // 4. RunPhase7
     vector<MFuncBody> funcBodies;
     SmPhase7Context tbContext{logger, rFactory, mFactory, smFactory, binOpQueryService};
-    for (auto& task : phase7Tasks)
+    for (auto* task : phase7Tasks)
     {
         auto e_result = task->RunPhase7(tbContext);
         RETURN_ON_ERROR(e_result);

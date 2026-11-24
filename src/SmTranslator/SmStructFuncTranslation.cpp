@@ -15,6 +15,7 @@
 #include "SmDeclContext_Decl.h"
 #include "SmTypeTranslation.h"
 #include "SmTypeResolveScope.h"
+#include "ISmPhaseTask.h"
 #include "ISmPhase4Task.h"
 #include "ISmPhase7Task.h"
 
@@ -24,7 +25,8 @@ namespace Citron {
 namespace {
 
 class StructFuncTask
-    : public ISmPhase4Task
+    : public ISmPhaseTask
+    , public ISmPhase4Task
     , public ISmPhase7Task
 {
     SmDeclContextPtr structDeclContext;
@@ -51,9 +53,7 @@ namespace Citron {
 
 void SmTranslateStructFunc(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructFuncDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
-    shared_ptr<StructFuncTask> task{new StructFuncTask(*structDeclContext, rStructDecl, syntax, *rFactory)};
-    phaseManager.AddPhase4Task(task);
-    phaseManager.AddPhase7Task(task);
+    phaseManager.AddTask<StructFuncTask>(*structDeclContext, rStructDecl, syntax, *rFactory);
 }
 
 namespace {

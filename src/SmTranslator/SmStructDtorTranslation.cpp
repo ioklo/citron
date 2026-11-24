@@ -13,6 +13,7 @@
 #include "SmPhaseManager.h"
 #include "SmPhase7Context.h"
 #include "SmDeclContext_Decl.h"
+#include "ISmPhaseTask.h"
 #include "ISmPhase4Task.h"
 #include "ISmPhase7Task.h"
 
@@ -22,7 +23,8 @@ namespace Citron {
 namespace {
 
 class StructDtorTask
-    : public ISmPhase4Task
+    : public ISmPhaseTask
+    , public ISmPhase4Task
     , public ISmPhase7Task
 {
     SmDeclContextPtr structDeclContext;
@@ -45,9 +47,7 @@ namespace Citron {
 
 void SmTranslateStructDtor(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
-    auto task = MakePtr<StructDtorTask>(structDeclContext, rStruct, sStructDtor, rFactory);
-    phaseManager.AddPhase4Task(task);
-    phaseManager.AddPhase7Task(task);
+    phaseManager.AddTask<StructDtorTask>(structDeclContext, rStruct, sStructDtor, rFactory);
 }
 
 namespace {

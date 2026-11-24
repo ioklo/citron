@@ -10,6 +10,7 @@
 #include "CommonTranslation.h"
 #include "SmTypeTranslation.h"
 #include "SmTypeResolveScope.h"
+#include "ISmPhaseTask.h"
 #include "ISmPhase4Task.h"
 
 using namespace std;
@@ -18,7 +19,8 @@ namespace Citron {
 namespace {
 
 class SmTraitFuncTask
-    : public ISmPhase4Task
+    : public ISmPhaseTask
+    , public ISmPhase4Task
 {
     SmDeclContextPtr traitDeclContext;
     RTraitDecl* rTraitDecl;
@@ -40,8 +42,7 @@ namespace Citron {
 
 void SmTranslateTraitFunc(InRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
-    shared_ptr<SmTraitFuncTask> task{new SmTraitFuncTask{move(traitDeclContext), rTraitDecl, sTraitFuncDecl, move(rFactory)}};
-    phaseManager.AddPhase4Task(task);
+    phaseManager.AddTask<SmTraitFuncTask>(move(traitDeclContext), rTraitDecl, sTraitFuncDecl, move(rFactory));
 }
 
 namespace {

@@ -7,6 +7,7 @@
 #include "RSymbol/RTraitTypeDecl.h"
 #include "SmPhaseManager.h"
 #include "SmPhase3Contexts.h"
+#include "ISmPhaseTask.h"
 #include "ISmPhase3Task.h"
 
 using namespace std;
@@ -14,7 +15,9 @@ using namespace std;
 namespace Citron {
 namespace {
 
-class SmTraitTask : public ISmPhase3Task
+class SmTraitTask 
+    : public ISmPhaseTask
+    , public ISmPhase3Task
 {
     SmDeclContextPtr traitDeclContext;
     STraitTypeDecl* sTraitTypeDecl;
@@ -38,8 +41,7 @@ void SmTranslateTraitType(InRef<SmDeclContextPtr> traitDeclContext, STraitTypeDe
     RName name = RName::Normal(sTraitTypeDecl->name);
     auto* rTraitTypeDecl = (*rFactory)->MakeDecl<RTraitTypeDecl>(rTraitDecl, RDeclKey::Normal(name), move(name));
 
-    shared_ptr<SmTraitTask> task{new SmTraitTask{traitDeclContext, sTraitTypeDecl, rTraitTypeDecl}};
-    phaseManager.AddPhase3Task(task);
+    phaseManager.AddTask<SmTraitTask>(traitDeclContext, sTraitTypeDecl, rTraitTypeDecl);
 }
 
 SmTraitTask::SmTraitTask(InRef<SmDeclContextPtr> traitDeclContext, STraitTypeDecl* sTraitTypeDecl, RTraitTypeDecl* rTraitTypeDecl)

@@ -6,6 +6,7 @@
 #include "SmDeclContext_Decl.h"
 #include "SmPhase7Context.h"
 #include "SmPhaseManager.h"
+#include "ISmPhaseTask.h"
 #include "ISmPhase7Task.h"
 
 using namespace std;
@@ -14,7 +15,8 @@ namespace Citron {
 namespace {
 
 class SmImplTraitFuncTask
-    : public ISmPhase7Task
+    : public ISmPhaseTask
+    , public ISmPhase7Task
 {
     SmDeclContextPtr outerDeclContext;
     RImplTraitFuncDecl* rImplTraitFuncDecl;
@@ -34,8 +36,7 @@ namespace Citron {
 
 void SmTranslateImplTraitFunc(InRef<SmDeclContextPtr> outerDeclContext, RImplTraitFuncDecl* rImplTraitFuncDecl, SImplTraitFuncDecl* sImplTraitFuncDecl, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
-    auto task = MakePtr<SmImplTraitFuncTask>(outerDeclContext, rImplTraitFuncDecl, sImplTraitFuncDecl, rFactory);
-    phaseManager.AddPhase7Task(task);
+    phaseManager.AddTask<SmImplTraitFuncTask>(outerDeclContext, rImplTraitFuncDecl, sImplTraitFuncDecl, rFactory);
 }
 
 namespace {

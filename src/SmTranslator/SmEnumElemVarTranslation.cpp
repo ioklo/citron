@@ -10,6 +10,7 @@
 #include "SmTypeTranslation.h"
 #include "SmTypeTranslationContexts.h"
 #include "SmTypeResolveScope.h"
+#include "ISmPhaseTask.h"
 #include "ISmPhase4Task.h"
 
 using namespace std;
@@ -18,7 +19,8 @@ namespace Citron {
 namespace {
 
 class SmEnumElemVarTranslator
-    : public ISmPhase4Task
+    : public ISmPhaseTask
+    , public ISmPhase4Task
 {
     SmDeclContextPtr enumElemDeclContext;
     REnumElemVarDecl* rEnumElemVar;
@@ -44,8 +46,7 @@ void SmTranslateEnumElemVar(InRef<SmDeclContextPtr> enumElemDeclContext, SEnumEl
     RName elemVarName{RName::Normal(sEnumElemVar->name)};
     auto* rEnumElemVar = (*rFactory)->MakeDecl<REnumElemVarDecl>(RDeclKey::Normal(elemVarName), rEnumElem, move(elemVarName));
 
-    shared_ptr<SmEnumElemVarTranslator> task{new SmEnumElemVarTranslator(enumElemDeclContext, rEnumElemVar, sEnumElemVar, rFactory)};
-    phaseManager.AddPhase4Task(task);
+    phaseManager.AddTask<SmEnumElemVarTranslator>(enumElemDeclContext, rEnumElemVar, sEnumElemVar, rFactory);
 }
 
 namespace {

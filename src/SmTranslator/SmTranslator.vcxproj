@@ -118,6 +118,7 @@
     <ClInclude Include="ISmPhase4Task.h" />
     <ClInclude Include="ISmPhase5Task.h" />
     <ClInclude Include="ISmPhase7Task.h" />
+    <ClInclude Include="ISmPhaseTask.h" />
     <ClInclude Include="SmClassTranslation.h" />
     <ClInclude Include="SmImplTraitFuncTranslation.h" />
     <ClInclude Include="ImTypeExp.h" />

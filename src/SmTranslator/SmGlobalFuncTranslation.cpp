@@ -15,6 +15,7 @@
 #include "SmPhase7Context.h"
 #include "SmDeclContext_Decl.h"
 #include "SmTypeResolveScope.h"
+#include "ISmPhaseTask.h"
 #include "ISmPhase4Task.h"
 #include "ISmPhase7Task.h"
 
@@ -24,7 +25,8 @@ namespace Citron {
 namespace {
 
 class SmGlobalFuncTask
-    : public ISmPhase4Task
+    : public ISmPhaseTask
+    , public ISmPhase4Task
     , public ISmPhase7Task
 {
     SmDeclContextPtr outerDeclContext;
@@ -51,9 +53,7 @@ namespace Citron {
 
 void SmTranslateGlobalFunc(InRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl* syntax, RNamespace* outer, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
-    shared_ptr<SmGlobalFuncTask> task{new SmGlobalFuncTask{move(outerDeclContext), syntax, outer, rFactory}};
-    phaseManager.AddPhase4Task(task);
-    phaseManager.AddPhase7Task(task);
+    phaseManager.AddTask<SmGlobalFuncTask>(move(outerDeclContext), syntax, outer, rFactory);
 }
 
 namespace {

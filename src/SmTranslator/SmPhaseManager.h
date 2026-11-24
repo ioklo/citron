@@ -1,8 +1,11 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <concepts>
+#include <utility>
 #include <expected>
 #include "Infra/Ref.h"
+#include "ISmPhaseTask.h"
 
 namespace Citron {
 
@@ -40,29 +43,54 @@ class SmPhaseManager
     SmFactoryPtr smFactory;
     BinOpQueryServicePtr binOpQueryService;
 
-    std::vector<std::shared_ptr<ISmPhase2Task>> phase2Tasks;
-    std::vector<std::shared_ptr<ISmPhase3Task>> phase3Tasks;
-    std::vector<std::shared_ptr<ISmPhase4Task>> phase4Tasks;
-    std::vector<std::shared_ptr<ISmPhase5Task>> phase5Tasks;
-    std::vector<std::shared_ptr<ISmPhase6Task>> phase6Tasks;
-    std::vector<std::shared_ptr<ISmPhase7Task>> phase7Tasks;
+    std::vector<std::unique_ptr<ISmPhaseTask>> phaseTasks;
+
+    std::vector<ISmPhase2Task*> phase2Tasks;
+    std::vector<ISmPhase3Task*> phase3Tasks;
+    std::vector<ISmPhase4Task*> phase4Tasks;
+    std::vector<ISmPhase5Task*> phase5Tasks;
+    std::vector<ISmPhase6Task*> phase6Tasks;
+    std::vector<ISmPhase7Task*> phase7Tasks;
 
 public:
     SmPhaseManager(
         TakeRef<LoggerPtr> logger, 
         TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
         TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
-    ~SmPhaseManager(); 
+    ~SmPhaseManager();
 
-    void AddPhase2Task(std::shared_ptr<ISmPhase2Task>&& task);
-    void AddPhase3Task(std::shared_ptr<ISmPhase3Task>&& task);
-    void AddPhase4Task(std::shared_ptr<ISmPhase4Task>&& task);
-    void AddPhase5Task(std::shared_ptr<ISmPhase5Task>&& task);
-    void AddPhase6Task(std::shared_ptr<ISmPhase6Task>&& task);
-    void AddPhase7Task(std::shared_ptr<ISmPhase7Task>&& task);
-
+    template<typename TSmPhaseTask, typename... TArgs>
+    void AddTask(TArgs&&... args);
     std::expected<std::vector<MFuncBody>, DiagPtr> Run();
 };
 
+} // namespace Citron
+
+// implementation
+
+namespace Citron {
+
+template<typename TSmPhaseTask, typename... TArgs>
+void SmPhaseManager::AddTask(TArgs&&... args)
+{
+    auto task = std::make_unique<TSmPhaseTask>(std::forward<TArgs>(args)...);
+    auto* pTask = task.get();
+
+    phaseTasks.push_back(move(task));
+
+    if constexpr (std::derived_from<TSmPhaseTask, ISmPhase2Task>) phase2Tasks.push_back(pTask);
+    if constexpr (std::derived_from<TSmPhaseTask, ISmPhase3Task>) phase3Tasks.push_back(pTask);
+    if constexpr (std::derived_from<TSmPhaseTask, ISmPhase4Task>) phase4Tasks.push_back(pTask);
+    if constexpr (std::derived_from<TSmPhaseTask, ISmPhase5Task>) phase5Tasks.push_back(pTask);
+    if constexpr (std::derived_from<TSmPhaseTask, ISmPhase6Task>) phase6Tasks.push_back(pTask);
+    if constexpr (std::derived_from<TSmPhaseTask, ISmPhase7Task>) phase7Tasks.push_back(pTask);
+
+    static_assert(std::derived_from<TSmPhaseTask, ISmPhase2Task>
+        || std::derived_from<TSmPhaseTask, ISmPhase3Task>
+        || std::derived_from<TSmPhaseTask, ISmPhase4Task>
+        || std::derived_from<TSmPhaseTask, ISmPhase5Task>
+        || std::derived_from<TSmPhaseTask, ISmPhase6Task>
+        || std::derived_from<TSmPhaseTask, ISmPhase7Task>);
+}
 
 } // namespace Citron
