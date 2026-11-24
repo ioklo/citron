@@ -6,14 +6,15 @@
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RTraitTypeDecl.h"
 #include "SmPhaseManager.h"
-#include "PostBuildTypeHierarchyContexts.h"
+#include "SmPhase3Contexts.h"
+#include "ISmPhase3Task.h"
 
 using namespace std;
 
 namespace Citron {
 namespace {
 
-class SmTraitTask : public IPostBuildTypeHierarchyTask
+class SmTraitTask : public ISmPhase3Task
 {
     SmDeclContextPtr traitDeclContext;
     STraitTypeDecl* sTraitTypeDecl;
@@ -22,8 +23,8 @@ class SmTraitTask : public IPostBuildTypeHierarchyTask
 public:
     SmTraitTask(InRef<SmDeclContextPtr> traitDeclContext, STraitTypeDecl* sTraitTypeDecl, RTraitTypeDecl* rTraitTypeDecl);
 
-public: // from IPostBuildTypeHierarchyTask
-    std::expected<void, DiagPtr> OnPostBuildTypeHierarchy(PostBuildTypeHierarchyContexts& contexts) override;
+public: // from ISmPhase3Task
+    std::expected<void, DiagPtr> RunPhase3(SmPhase3Contexts& contexts) override;
 };
 
 
@@ -38,7 +39,7 @@ void SmTranslateTraitType(InRef<SmDeclContextPtr> traitDeclContext, STraitTypeDe
     auto* rTraitTypeDecl = (*rFactory)->MakeDecl<RTraitTypeDecl>(rTraitDecl, RDeclKey::Normal(name), move(name));
 
     shared_ptr<SmTraitTask> task{new SmTraitTask{traitDeclContext, sTraitTypeDecl, rTraitTypeDecl}};
-    phaseManager.AddPostBuildTypeHierarchyTask(task);
+    phaseManager.AddPhase3Task(task);
 }
 
 SmTraitTask::SmTraitTask(InRef<SmDeclContextPtr> traitDeclContext, STraitTypeDecl* sTraitTypeDecl, RTraitTypeDecl* rTraitTypeDecl)
@@ -46,7 +47,7 @@ SmTraitTask::SmTraitTask(InRef<SmDeclContextPtr> traitDeclContext, STraitTypeDec
 {
 }
 
-expected<void, DiagPtr> SmTraitTask::OnPostBuildTypeHierarchy(PostBuildTypeHierarchyContexts& contexts)
+expected<void, DiagPtr> SmTraitTask::RunPhase3(SmPhase3Contexts& contexts)
 {
     // traits를 채워 넣어야 한다
     vector<RAppliedDecl<RTraitDecl>> rTraits;

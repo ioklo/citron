@@ -1,5 +1,5 @@
 #pragma once
-#include "TranslationTasks.h"
+#include <memory>
 #include "Infra/Ref.h"
 
 namespace Citron {

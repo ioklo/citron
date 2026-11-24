@@ -7,12 +7,13 @@
 #include "RSymbol/RStructVarDecl.h"
 #include "RSymbol/RFactory.h"
 
-#include "BuildNonTypeSymbolContext.h"
+#include "SmPhase4Context.h"
 #include "CommonTranslation.h"
 #include "SmPhaseManager.h"
 #include "SmTypeTranslation.h"
 #include "SmTypeResolveScope.h"
 #include "SmTypeTranslationContexts.h"
+#include "ISmPhase4Task.h"
 
 using namespace std;
 
@@ -20,7 +21,7 @@ namespace Citron {
 namespace {
 
 class StructVarTask
-    : public IBuildNonTypeSymbolTask
+    : public ISmPhase4Task
 {
     SmDeclContextPtr structDeclContext;
     RStructDecl* rStruct;
@@ -33,7 +34,7 @@ public:
     {
     }
 
-    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
+    std::expected<void, DiagPtr> RunPhase4(SmPhase4Context& context) override;
 };
 
 } // namespace
@@ -44,12 +45,12 @@ namespace Citron {
 void SmTranslateStructVar(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rOuter, SStructVarDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     shared_ptr<StructVarTask> task{new StructVarTask(structDeclContext, rOuter, syntax, rFactory)};
-    phaseManager.AddBuildNonTypeSymbolTask(task);
+    phaseManager.AddPhase4Task(task);
 }
 
 namespace {
 
-expected<void, DiagPtr> StructVarTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
+expected<void, DiagPtr> StructVarTask::RunPhase4(SmPhase4Context& context)
 {
     auto accessor = MakeStructMemberAccessor(sStructVar->accessModifier);
     bool bStatic = false; // TODO: bStatic 지원

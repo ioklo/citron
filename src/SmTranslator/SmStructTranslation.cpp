@@ -12,8 +12,8 @@
 
 #include "CommonTranslation.h"
 #include "SmPhaseManager.h"
-#include "BuildTypeHierarchyContext.h"
-#include "BuildImplicitSymbolContext.h"
+#include "SmPhase2Context.h"
+#include "SmPhase6Context.h"
 #include "Misc.h"
 #include "SmTypeTranslation.h"
 #include "SmTypeResolveScope.h"
@@ -25,6 +25,9 @@
 #include "SmImplTraitTranslation.h"
 #include "SmTraitTranslation.h"
 #include "SmEnumTranslation.h"
+
+#include "ISmPhase2Task.h"
+#include "ISmPhase6Task.h"
 
 using namespace std;
 
@@ -60,8 +63,8 @@ public:
 };
 
 class SmStructTask
-    : public IBuildTypeHierarchyTask
-    , public IBuildImplicitSymbolTask
+    : public ISmPhase2Task
+    , public ISmPhase6Task
 {
     SmDeclContextPtr structDeclContext;
     RStructDecl* rStructDecl;
@@ -69,12 +72,12 @@ class SmStructTask
 
 public:
     SmStructTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStructDecl, SStructDecl* syntax);
-    std::expected<void, DiagPtr> BuildTypeHierarchy(BuildTypeHierarchyContext& context) override;
-    void BuildImplicitSymbol(BuildImplicitSymbolContext& context) override;
+    std::expected<void, DiagPtr> RunPhase2(SmPhase2Context& context) override;
+    void RunPhase6(SmPhase6Context& context) override;
 
 
 private:
-    void SynthesizeMemberwiseCtor(BuildImplicitSymbolContext& context);
+    void SynthesizeMemberwiseCtor(SmPhase6Context& context);
 };
 
 } // namespace
@@ -97,8 +100,8 @@ void SmTranslateStruct(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter 
     SmDeclContextPtr structDeclContext = MakePtr<SmDeclContext_Decl<RStructDecl>>(*outerDeclContext, rStructDecl, openTypeArgs);
 
     shared_ptr<SmStructTask> task{new SmStructTask(move(structDeclContext), rStructDecl, syntax)};
-    phaseManager.AddBuildTypeHierarchyTask(task);
-    phaseManager.AddBuildImplicitSymbolTask(task);
+    phaseManager.AddPhase2Task(task);
+    phaseManager.AddPhase6Task(task);
 
     // child     
     for (auto& memberDecl : syntax->memberDecls)
@@ -170,7 +173,7 @@ SmStructTask::SmStructTask(InRef<SmDeclContextPtr> structDeclContext, RStructDec
 {
 }
 
-expected<void, DiagPtr> SmStructTask::BuildTypeHierarchy(BuildTypeHierarchyContext& context)
+expected<void, DiagPtr> SmStructTask::RunPhase2(SmPhase2Context& context)
 {
     // NOTICE: struct, class의 base부분을 볼때는 base 전용 type lookup을 해야한다 
     // (type parameter는 검색이 되지만, {멤버 타입/base타입의 멤버타입}은 검색이 안되게) => SmTypeResolveScope_DeclHeader를 만들었다
@@ -189,13 +192,13 @@ expected<void, DiagPtr> SmStructTask::BuildTypeHierarchy(BuildTypeHierarchyConte
     return {};
 }
 
-void SmStructTask::BuildImplicitSymbol(BuildImplicitSymbolContext& context)
+void SmStructTask::RunPhase6(SmPhase6Context& context)
 {
     SynthesizeMemberwiseCtor(context);
 }
 
 
-void SmStructTask::SynthesizeMemberwiseCtor(BuildImplicitSymbolContext& context)
+void SmStructTask::SynthesizeMemberwiseCtor(SmPhase6Context& context)
 {
     // memberwise constructor, 시그니처만 만든다 (resolve identifier용)
     vector<RFuncParameter> rParameters;

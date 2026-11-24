@@ -11,8 +11,10 @@
 #include "CommonTranslation.h"
 
 #include "SmPhaseManager.h"
-#include "TranslateBodyContext.h"
+#include "SmPhase7Context.h"
 #include "SmDeclContext_Decl.h"
+#include "ISmPhase4Task.h"
+#include "ISmPhase7Task.h"
 
 using namespace std;
 
@@ -20,8 +22,8 @@ namespace Citron {
 namespace {
 
 class StructDtorTask
-    : public IBuildNonTypeSymbolTask
-    , public ITranslateBodyTask
+    : public ISmPhase4Task
+    , public ISmPhase7Task
 {
     SmDeclContextPtr structDeclContext;
     RStructDecl* rStruct;
@@ -32,8 +34,8 @@ class StructDtorTask
 
 public:
     StructDtorTask(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, InRef<RFactoryPtr> rFactory);
-    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
-    std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
+    std::expected<void, DiagPtr> RunPhase4(SmPhase4Context& context) override;
+    std::expected<MFuncBody, DiagPtr> RunPhase7(SmPhase7Context& context) override;
 };
 
 } // namespace
@@ -44,8 +46,8 @@ namespace Citron {
 void SmTranslateStructDtor(InRef<SmDeclContextPtr> structDeclContext, RStructDecl* rStruct, SStructDtorDecl* sStructDtor, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     auto task = MakePtr<StructDtorTask>(structDeclContext, rStruct, sStructDtor, rFactory);
-    phaseManager.AddBuildNonTypeSymbolTask(task);
-    phaseManager.AddTranslateBodyTask(task);
+    phaseManager.AddPhase4Task(task);
+    phaseManager.AddPhase7Task(task);
 }
 
 namespace {
@@ -55,14 +57,14 @@ StructDtorTask::StructDtorTask(InRef<SmDeclContextPtr> structDeclContext, RStruc
 {
 }
 
-expected<void, DiagPtr> StructDtorTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
+expected<void, DiagPtr> StructDtorTask::RunPhase4(SmPhase4Context& context)
 {
     auto accessor = MakeStructMemberAccessor(sStructDtor->accessModifier);
     rStructDtor = rFactory->MakeDecl<RStructDtorDecl>(RDeclKey::Dtor(), rStruct, accessor);
     return {};
 }
 
-std::expected<MFuncBody, DiagPtr> StructDtorTask::TranslateBody(TranslateBodyContext& context)
+std::expected<MFuncBody, DiagPtr> StructDtorTask::RunPhase7(SmPhase7Context& context)
 {
     SmDeclContextPtr declContext = MakePtr<SmDeclContext_Decl<RStructDtorDecl>>(structDeclContext, rStructDtor, rStructDtor->MakeOpenTypeArgs(*rFactory));
     return context.Translate(declContext, rStructDtor, /*bSeqFunc*/false, sStructDtor->body);

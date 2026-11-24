@@ -11,10 +11,12 @@
 
 #include "CommonTranslation.h"
 #include "SmPhaseManager.h"
-#include "BuildNonTypeSymbolContext.h"
-#include "TranslateBodyContext.h"
+#include "SmPhase4Context.h"
+#include "SmPhase7Context.h"
 #include "SmDeclContext_Decl.h"
 #include "SmTypeResolveScope.h"
+#include "ISmPhase4Task.h"
+#include "ISmPhase7Task.h"
 
 using namespace std;
 
@@ -22,8 +24,8 @@ namespace Citron {
 namespace {
 
 class SmGlobalFuncTask
-    : public IBuildNonTypeSymbolTask
-    , public ITranslateBodyTask
+    : public ISmPhase4Task
+    , public ISmPhase7Task
 {
     SmDeclContextPtr outerDeclContext;
     SGlobalFuncDecl* syntax;
@@ -38,8 +40,8 @@ public:
     {
     }
 
-    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
-    std::expected<MFuncBody, DiagPtr> TranslateBody(TranslateBodyContext& context) override;
+    std::expected<void, DiagPtr> RunPhase4(SmPhase4Context& context) override;
+    std::expected<MFuncBody, DiagPtr> RunPhase7(SmPhase7Context& context) override;
 };
 
 } // namespace
@@ -50,13 +52,13 @@ namespace Citron {
 void SmTranslateGlobalFunc(InRef<SmDeclContextPtr> outerDeclContext, SGlobalFuncDecl* syntax, RNamespace* outer, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     shared_ptr<SmGlobalFuncTask> task{new SmGlobalFuncTask{move(outerDeclContext), syntax, outer, rFactory}};
-    phaseManager.AddBuildNonTypeSymbolTask(task);
-    phaseManager.AddTranslateBodyTask(task);
+    phaseManager.AddPhase4Task(task);
+    phaseManager.AddPhase7Task(task);
 }
 
 namespace {
 
-expected<void, DiagPtr> SmGlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
+expected<void, DiagPtr> SmGlobalFuncTask::RunPhase4(SmPhase4Context& context)
 {
     auto accessor = MakeNamespaceMemberAccessor(syntax->accessModifier);
     bool bSeqFunc = false; // TODO:
@@ -78,7 +80,7 @@ expected<void, DiagPtr> SmGlobalFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolC
     return {};
 }
 
-expected<MFuncBody, DiagPtr> SmGlobalFuncTask::TranslateBody(TranslateBodyContext& context)
+expected<MFuncBody, DiagPtr> SmGlobalFuncTask::RunPhase7(SmPhase7Context& context)
 {
     // rFuncDecl에 대한 SmDeclContext를 만든다
     SmDeclContextPtr declContext = MakePtr<SmDeclContext_Decl<RGlobalFuncDecl>>(outerDeclContext, rFuncDecl, rFuncDecl->MakeOpenTypeArgs(*rFactory));

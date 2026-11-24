@@ -1,4 +1,4 @@
-#include "TranslateBodyContext.h"
+#include "SmPhase7Context.h"
 #include <variant>
 
 #include "Infra/Exceptions.h"
@@ -20,7 +20,7 @@ using namespace std;
 
 namespace Citron {
 
-TranslateBodyContext::TranslateBodyContext(
+SmPhase7Context::SmPhase7Context(
     TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
     TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService)
     : logger{logger.Take()}, rFactory{rFactory.Take()}, mFactory{mFactory.Take()}
@@ -28,7 +28,7 @@ TranslateBodyContext::TranslateBodyContext(
 {
 }
 
-TranslateBodyContext::~TranslateBodyContext() = default;
+SmPhase7Context::~SmPhase7Context() = default;
 
 namespace {
 
@@ -112,7 +112,7 @@ CheckEndReturnResult CheckEndReturn(RFuncDecl* rFuncDecl, vector<MStmt*>& mStmts
 
 }
 
-expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(TakeRef<SmDeclContextPtr> declContext, RFuncDecl* rFuncDecl, bool bSeqFunc, std::span<SStmt*> sStmts)
+expected<MFuncBody, DiagPtr> SmPhase7Context::Translate(TakeRef<SmDeclContextPtr> declContext, RFuncDecl* rFuncDecl, bool bSeqFunc, std::span<SStmt*> sStmts)
 {   
     auto tContext = MakeTranslationContexts(move(declContext), rFuncDecl, bSeqFunc, logger, rFactory, mFactory, smFactory, binOpQueryService);
     auto e_scope = TranslateScopedSStmtsToMStmt_Scope(sStmts, tContext);
@@ -142,7 +142,7 @@ expected<MFuncBody, DiagPtr> TranslateBodyContext::Translate(TakeRef<SmDeclConte
     return MFuncBody{rFuncDecl, scope};
 }
 
-void TranslateBodyContext::MarkFailed()
+void SmPhase7Context::MarkFailed()
 {
     throw NotImplementedException{};
 }

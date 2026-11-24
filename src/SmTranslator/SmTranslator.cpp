@@ -24,7 +24,7 @@
 #include "MIR/MFuncBody.h"
 #include "MIR/MFactory.h"
 
-#include "BuildNonTypeSymbolContext.h"
+#include "SmPhase4Context.h"
 #include "SmFactory.h"
 #include "SmScriptTranslation.h"
 #include "SmPhaseManager.h"

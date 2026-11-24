@@ -12,12 +12,12 @@ class RFactory;
 class SmTypeResolveScope;
 using DiagPtr = std::shared_ptr<struct Diag>;
 
-class BuildTypeHierarchyContext
+class SmPhase2Context
 {
     RFactory* rFactory;
 
 public:
-    BuildTypeHierarchyContext(RFactory* rFactory) : rFactory{rFactory} {}
+    SmPhase2Context(RFactory* rFactory) : rFactory{rFactory} {}
     std::expected<RAppliedDecl<RTraitDecl>, DiagPtr> MakeTrait(STypeExp* sType, SmTypeResolveScope scope);
 };
 

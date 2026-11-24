@@ -31,6 +31,11 @@ void RImplTraitDecl::AddMember(RImplTraitMemberDecl&& decl)
     members.push_back(move(decl));
 }
 
+span<RImplTraitMemberDecl> RImplTraitDecl::GetMembers()
+{
+    return members;
+}
+
 RDeclKey& RImplTraitDecl::GetDeclKey()
 {
     assert(o_lazyInit);

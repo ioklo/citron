@@ -43,11 +43,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImExpTranslations.cpp" />
+    <ClCompile Include="ISmPhase2Task.h" />
+    <ClCompile Include="ISmPhase6Task.h" />
     <ClCompile Include="SmClassTranslation.cpp" />
     <ClCompile Include="SmImplTraitFuncTranslation.cpp" />
     <ClCompile Include="SmImplTraitTranslation.cpp" />
-    <ClCompile Include="PostBuildNonTypeSymbolContext.cpp" />
-    <ClCompile Include="PostBuildTypeHierarchyContexts.cpp" />
+    <ClCompile Include="SmPhase5Contexts.cpp" />
+    <ClCompile Include="SmPhase3Contexts.cpp" />
     <ClCompile Include="SExpTranslations.cpp" />
     <ClCompile Include="SExp_CallToImExp.cpp" />
     <ClCompile Include="SExp_IdentifierToImExp.cpp" />
@@ -65,7 +67,7 @@
     <ClCompile Include="SmNamespaceTranslation.cpp" />
     <ClCompile Include="SmPhaseManager.cpp" />
     <ClCompile Include="ReExpToMIR.cpp" />
-    <ClCompile Include="BuildTypeHierarchyContext.cpp" />
+    <ClCompile Include="SmPhase2Context.cpp" />
     <ClCompile Include="SExpToIrExp.cpp" />
     <ClCompile Include="SExp_MemberToImExp.cpp" />
     <ClCompile Include="SmDeclRes.cpp" />
@@ -82,11 +84,11 @@
     <ClCompile Include="SmStructFuncTranslation.cpp" />
     <ClCompile Include="SmStructTranslation.cpp" />
     <ClCompile Include="SmStructVarTranslation.cpp" />
-    <ClCompile Include="BuildImplicitSymbolContext.cpp" />
+    <ClCompile Include="SmPhase6Context.cpp" />
     <ClCompile Include="STypeExpToImTypeExp.cpp" />
     <ClCompile Include="STypeExp_IdToImTypeExp.cpp" />
     <ClCompile Include="SmTraitFuncTranslation.cpp" />
-    <ClCompile Include="TranslateBodyContext.cpp" />
+    <ClCompile Include="SmPhase7Context.cpp" />
     <ClCompile Include="FuncMatching.cpp" />
     <ClCompile Include="ImExp.cpp" />
     <ClCompile Include="SExp_IdentifierToIrExp.cpp" />
@@ -95,7 +97,7 @@
     <ClCompile Include="IrExp.cpp" />
     <ClCompile Include="SExp_MemberToIrExp.cpp" />
     <ClCompile Include="SmGlobalFuncTranslation.cpp" />
-    <ClCompile Include="BuildNonTypeSymbolContext.cpp" />
+    <ClCompile Include="SmPhase4Context.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="DesignatedDiagnostic.cpp" />
     <ClCompile Include="ModuleDecls.cpp" />
@@ -112,14 +114,18 @@
     <ClCompile Include="SmTranslationContexts.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ISmPhase3Task.h" />
+    <ClInclude Include="ISmPhase4Task.h" />
+    <ClInclude Include="ISmPhase5Task.h" />
+    <ClInclude Include="ISmPhase7Task.h" />
     <ClInclude Include="SmClassTranslation.h" />
     <ClInclude Include="SmImplTraitFuncTranslation.h" />
     <ClInclude Include="ImTypeExp.h" />
-    <ClInclude Include="PostBuildTypeHierarchyContexts.h" />
+    <ClInclude Include="SmPhase3Contexts.h" />
     <ClInclude Include="SmBodyRes.h" />
     <ClInclude Include="ImExpTranslations.h" />
     <ClInclude Include="SmImplTraitTranslation.h" />
-    <ClInclude Include="PostBuildNonTypeSymbolContext.h" />
+    <ClInclude Include="SmPhase5Contexts.h" />
     <ClInclude Include="SExpTranslations.h" />
     <ClInclude Include="SExp_CallToImExp.h" />
     <ClInclude Include="SExp_IdentifierToImExp.h" />
@@ -141,7 +147,7 @@
     <ClInclude Include="Public\SmTranslator\SmTranslator.h" />
     <ClInclude Include="BinOpQueryService.h" />
     <ClInclude Include="ReExpToMIR.h" />
-    <ClInclude Include="BuildTypeHierarchyContext.h" />
+    <ClInclude Include="SmPhase2Context.h" />
     <ClInclude Include="SExpToIrExp.h" />
     <ClInclude Include="SExp_MemberToImExp.h" />
     <ClInclude Include="SmDeclRes.h" />
@@ -159,11 +165,11 @@
     <ClInclude Include="SmStructFuncTranslation.h" />
     <ClInclude Include="SmStructTranslation.h" />
     <ClInclude Include="SmStructVarTranslation.h" />
-    <ClInclude Include="BuildImplicitSymbolContext.h" />
+    <ClInclude Include="SmPhase6Context.h" />
     <ClInclude Include="STypeExpToImTypeExp.h" />
     <ClInclude Include="STypeExp_IdToImTypeExp.h" />
     <ClInclude Include="SmTraitFuncTranslation.h" />
-    <ClInclude Include="TranslateBodyContext.h" />
+    <ClInclude Include="SmPhase7Context.h" />
     <ClInclude Include="CommonTranslation.h" />
     <ClInclude Include="DesignatedDiagnostic.h" />
     <ClInclude Include="SmFuncContext.h" />
@@ -174,7 +180,7 @@
     <ClInclude Include="ImExpToReExp.h" />
     <ClInclude Include="IrExp.h" />
     <ClInclude Include="SExp_MemberToIrExp.h" />
-    <ClInclude Include="BuildNonTypeSymbolContext.h" />
+    <ClInclude Include="SmPhase4Context.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="ModuleDecls.h" />
     <ClInclude Include="Public\SmTranslator\SmTranslatorConfig.h" />
@@ -187,7 +193,6 @@
     <ClInclude Include="SVarDeclToMStmts.h" />
     <ClInclude Include="SmFactory.h" />
     <ClInclude Include="SmTranslationContexts.h" />
-    <ClInclude Include="TranslationTasks.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

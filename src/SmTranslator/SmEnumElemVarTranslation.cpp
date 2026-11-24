@@ -6,10 +6,11 @@
 #include "RSymbol/REnumElemVarDecl.h"
 #include "SmPhaseManager.h"
 #include "CommonTranslation.h"
-#include "BuildNonTypeSymbolContext.h"
+#include "SmPhase4Context.h"
 #include "SmTypeTranslation.h"
 #include "SmTypeTranslationContexts.h"
 #include "SmTypeResolveScope.h"
+#include "ISmPhase4Task.h"
 
 using namespace std;
 
@@ -17,7 +18,7 @@ namespace Citron {
 namespace {
 
 class SmEnumElemVarTranslator
-    : public IBuildNonTypeSymbolTask
+    : public ISmPhase4Task
 {
     SmDeclContextPtr enumElemDeclContext;
     REnumElemVarDecl* rEnumElemVar;
@@ -30,7 +31,7 @@ public:
     {
     }
 
-    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
+    std::expected<void, DiagPtr> RunPhase4(SmPhase4Context& context) override;
 };
 
 } // namespace
@@ -44,12 +45,12 @@ void SmTranslateEnumElemVar(InRef<SmDeclContextPtr> enumElemDeclContext, SEnumEl
     auto* rEnumElemVar = (*rFactory)->MakeDecl<REnumElemVarDecl>(RDeclKey::Normal(elemVarName), rEnumElem, move(elemVarName));
 
     shared_ptr<SmEnumElemVarTranslator> task{new SmEnumElemVarTranslator(enumElemDeclContext, rEnumElemVar, sEnumElemVar, rFactory)};
-    phaseManager.AddBuildNonTypeSymbolTask(task);
+    phaseManager.AddPhase4Task(task);
 }
 
 namespace {
 
-expected<void, DiagPtr> SmEnumElemVarTranslator::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
+expected<void, DiagPtr> SmEnumElemVarTranslator::RunPhase4(SmPhase4Context& context)
 {
     SmTypeTranslationContexts typeTranslationContexts{SmTypeResolveScope_DeclContext{enumElemDeclContext.get()}, rFactory.get()};
 

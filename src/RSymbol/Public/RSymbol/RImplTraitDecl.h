@@ -36,7 +36,7 @@ public:
     RSYMBOL_API void AddMember(RImplTraitMemberDecl&& decl);
     RAppliedDecl<RStructDecl>& GetTarget() { return target; }
     RAppliedDecl<RTraitDecl>& GetTrait() { return o_lazyInit->appliedTraitDecl; } 
-    std::span<RImplTraitMemberDecl> GetMembers() { return members; }
+    RSYMBOL_API std::span<RImplTraitMemberDecl> GetMembers();
 
 public: // from RDecl
     RSYMBOL_API RDeclKey& GetDeclKey() final;

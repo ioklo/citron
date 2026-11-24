@@ -17,11 +17,12 @@
 #include "RSymbol/RTypeParam.h"
 #include "RSymbol/RImplTraitDeclOuter.h"
 #include "SmPhaseManager.h"
-#include "PostBuildNonTypeSymbolContext.h"
+#include "SmPhase5Contexts.h"
 #include "CommonTranslation.h"
 #include "SmDeclContext_Decl.h"
 #include "SmTypeTranslationContexts.h"
 #include "SmImplTraitFuncTranslation.h"
+#include "ISmPhase5Task.h"
 
 using namespace std;
 
@@ -29,7 +30,7 @@ namespace Citron {
 namespace {
 
 class SmImplTraitTask
-    : public IPostBuildNonTypeSymbolTask
+    : public ISmPhase5Task
 {
     SImplTraitDecl* sImplDecl;
     SmDeclContextPtr outerDeclContext;
@@ -44,12 +45,12 @@ public:
         : sImplDecl{sImplDecl}, outerDeclContext{*outerDeclContext}, rOuter{rOuter}, rImplTraitDecl{nullptr}, rFactory{*rFactory} {
     }
 
-    std::expected<void, DiagPtr> HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContexts& contexts);
+    std::expected<void, DiagPtr> HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, SmPhase5Contexts& contexts);
     std::expected<void, DiagPtr> CheckTarget();
     std::expected<void, DiagPtr> CheckTraitConformance();
 
-public: // from IPostBuildNonTypeSymbolTask
-    std::expected<void, DiagPtr> PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& context) final;
+public: // from ISmPhase5Task
+    std::expected<void, DiagPtr> RunPhase5(SmPhase5Contexts& context) final;
 
 };
 
@@ -61,11 +62,11 @@ namespace Citron {
 void SmTranslateImplTrait(SImplTraitDecl* sImplDecl, InRef<SmDeclContextPtr> outerDeclContext, RImplTraitDeclOuter rOuter, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     shared_ptr<SmImplTraitTask> task{new SmImplTraitTask{sImplDecl, outerDeclContext, rOuter, rFactory}};
-    phaseManager.AddPostBuildNonTypeSymbolTask(task);
+    phaseManager.AddPhase5Task(task);
 }
 
 namespace {
-expected<void, DiagPtr> SmImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, PostBuildNonTypeSymbolContexts& context)
+expected<void, DiagPtr> SmImplTraitTask::HandleImplTraitFuncDecl(SImplTraitFuncDecl* sImplTraitFuncDecl, SmPhase5Contexts& context)
 {
     // RImplTraitFuncDecl를 만든다
     auto* rImplTraitFuncDecl = rFactory->MakeDecl<RImplTraitFuncDecl>(rImplTraitDecl, /*bSeqFunc*/sImplTraitFuncDecl->bSequence, RName::Normal(sImplTraitFuncDecl->name));
@@ -473,7 +474,7 @@ expected<void, DiagPtr> SmImplTraitTask::CheckTraitConformance()
     return {};
 }
 
-expected<void, DiagPtr> SmImplTraitTask::PostBuildNonTypeSymbol(PostBuildNonTypeSymbolContexts& contexts)
+expected<void, DiagPtr> SmImplTraitTask::RunPhase5(SmPhase5Contexts& contexts)
 {
     // SImplTraitDecl을 RImplTrait로 만든다
     // impl S<T, U> : TraitName

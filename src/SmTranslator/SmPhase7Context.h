@@ -18,7 +18,7 @@ using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 using SmFactoryPtr = std::shared_ptr<class SmFactory>;
 using BinOpQueryServicePtr = std::shared_ptr<class BinOpQueryService>;
 
-class TranslateBodyContext
+class SmPhase7Context
 {
     LoggerPtr logger;
     MFactoryPtr mFactory;
@@ -27,10 +27,10 @@ class TranslateBodyContext
     BinOpQueryServicePtr binOpQueryService;
 
 public:
-    TranslateBodyContext(
+    SmPhase7Context(
         TakeRef<LoggerPtr> logger, TakeRef<RFactoryPtr> rFactory, TakeRef<MFactoryPtr> mFactory,
         TakeRef<SmFactoryPtr> smFactory, TakeRef<BinOpQueryServicePtr> binOpQueryService);
-    ~TranslateBodyContext();
+    ~SmPhase7Context();
 
     std::expected<MFuncBody, DiagPtr> Translate(TakeRef<SmDeclContextPtr> declContext, RFuncDecl* funcDecl, bool bSeqFunc, std::span<SStmt*> mStmts);
     void MarkFailed();

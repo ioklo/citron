@@ -117,21 +117,6 @@
     <ClCompile Include="SmImplTraitTranslation.cpp">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="BuildNonTypeSymbolContext.cpp">
-      <Filter>TranslationPhase</Filter>
-    </ClCompile>
-    <ClCompile Include="BuildTypeHierarchyContext.cpp">
-      <Filter>TranslationPhase</Filter>
-    </ClCompile>
-    <ClCompile Include="BuildImplicitSymbolContext.cpp">
-      <Filter>TranslationPhase</Filter>
-    </ClCompile>
-    <ClCompile Include="TranslateBodyContext.cpp">
-      <Filter>TranslationPhase</Filter>
-    </ClCompile>
-    <ClCompile Include="PostBuildNonTypeSymbolContext.cpp">
-      <Filter>TranslationPhase</Filter>
-    </ClCompile>
     <ClCompile Include="SmPhaseManager.cpp">
       <Filter>TranslationPhase</Filter>
     </ClCompile>
@@ -168,9 +153,6 @@
     <ClCompile Include="SmTraitTypeTranslation.cpp">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClCompile>
-    <ClCompile Include="PostBuildTypeHierarchyContexts.cpp">
-      <Filter>TranslationPhase</Filter>
-    </ClCompile>
     <ClCompile Include="SmScriptTranslation.cpp">
       <Filter>DeclTranslation</Filter>
     </ClCompile>
@@ -188,6 +170,30 @@
     </ClCompile>
     <ClCompile Include="SmClassTranslation.cpp">
       <Filter>DeclTranslation\ClassTranslation</Filter>
+    </ClCompile>
+    <ClCompile Include="SmPhase2Context.cpp">
+      <Filter>TranslationPhase\Phase2</Filter>
+    </ClCompile>
+    <ClCompile Include="ISmPhase2Task.h">
+      <Filter>TranslationPhase\Phase2</Filter>
+    </ClCompile>
+    <ClCompile Include="SmPhase3Contexts.cpp">
+      <Filter>TranslationPhase\Phase3</Filter>
+    </ClCompile>
+    <ClCompile Include="SmPhase4Context.cpp">
+      <Filter>TranslationPhase\Phase4</Filter>
+    </ClCompile>
+    <ClCompile Include="SmPhase5Contexts.cpp">
+      <Filter>TranslationPhase\Phase5</Filter>
+    </ClCompile>
+    <ClCompile Include="SmPhase6Context.cpp">
+      <Filter>TranslationPhase\Phase6</Filter>
+    </ClCompile>
+    <ClCompile Include="ISmPhase6Task.h">
+      <Filter>TranslationPhase\Phase6</Filter>
+    </ClCompile>
+    <ClCompile Include="SmPhase7Context.cpp">
+      <Filter>TranslationPhase\Phase7</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -318,24 +324,6 @@
     <ClInclude Include="SmImplTraitTranslation.h">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="BuildNonTypeSymbolContext.h">
-      <Filter>TranslationPhase</Filter>
-    </ClInclude>
-    <ClInclude Include="BuildTypeHierarchyContext.h">
-      <Filter>TranslationPhase</Filter>
-    </ClInclude>
-    <ClInclude Include="BuildImplicitSymbolContext.h">
-      <Filter>TranslationPhase</Filter>
-    </ClInclude>
-    <ClInclude Include="TranslationTasks.h">
-      <Filter>TranslationPhase</Filter>
-    </ClInclude>
-    <ClInclude Include="TranslateBodyContext.h">
-      <Filter>TranslationPhase</Filter>
-    </ClInclude>
-    <ClInclude Include="PostBuildNonTypeSymbolContext.h">
-      <Filter>TranslationPhase</Filter>
-    </ClInclude>
     <ClInclude Include="SmPhaseManager.h">
       <Filter>TranslationPhase</Filter>
     </ClInclude>
@@ -384,9 +372,6 @@
     <ClInclude Include="SmTraitTypeTranslation.h">
       <Filter>DeclTranslation\TraitTranslation</Filter>
     </ClInclude>
-    <ClInclude Include="PostBuildTypeHierarchyContexts.h">
-      <Filter>TranslationPhase</Filter>
-    </ClInclude>
     <ClInclude Include="SmScriptTranslation.h">
       <Filter>DeclTranslation</Filter>
     </ClInclude>
@@ -404,6 +389,36 @@
     </ClInclude>
     <ClInclude Include="SmClassTranslation.h">
       <Filter>DeclTranslation\ClassTranslation</Filter>
+    </ClInclude>
+    <ClInclude Include="SmPhase2Context.h">
+      <Filter>TranslationPhase\Phase2</Filter>
+    </ClInclude>
+    <ClInclude Include="SmPhase3Contexts.h">
+      <Filter>TranslationPhase\Phase3</Filter>
+    </ClInclude>
+    <ClInclude Include="ISmPhase3Task.h">
+      <Filter>TranslationPhase\Phase3</Filter>
+    </ClInclude>
+    <ClInclude Include="ISmPhase4Task.h">
+      <Filter>TranslationPhase\Phase4</Filter>
+    </ClInclude>
+    <ClInclude Include="SmPhase4Context.h">
+      <Filter>TranslationPhase\Phase4</Filter>
+    </ClInclude>
+    <ClInclude Include="SmPhase5Contexts.h">
+      <Filter>TranslationPhase\Phase5</Filter>
+    </ClInclude>
+    <ClInclude Include="ISmPhase5Task.h">
+      <Filter>TranslationPhase\Phase5</Filter>
+    </ClInclude>
+    <ClInclude Include="SmPhase6Context.h">
+      <Filter>TranslationPhase\Phase6</Filter>
+    </ClInclude>
+    <ClInclude Include="SmPhase7Context.h">
+      <Filter>TranslationPhase\Phase7</Filter>
+    </ClInclude>
+    <ClInclude Include="ISmPhase7Task.h">
+      <Filter>TranslationPhase\Phase7</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -475,6 +490,24 @@
     </Filter>
     <Filter Include="DeclTranslation\ClassTranslation">
       <UniqueIdentifier>{8819a47d-bd74-42d1-ad4d-172d8b4d8ac5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TranslationPhase\Phase2">
+      <UniqueIdentifier>{fe344b66-1531-4bed-8d04-fa2c1f4810a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TranslationPhase\Phase3">
+      <UniqueIdentifier>{54876054-8f32-4d82-b14e-356f694ab17a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TranslationPhase\Phase4">
+      <UniqueIdentifier>{f4dfd338-b19b-4fef-b0e3-5f090a669963}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TranslationPhase\Phase5">
+      <UniqueIdentifier>{3165b5f4-030d-4e96-8a02-2348a60fd8a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TranslationPhase\Phase6">
+      <UniqueIdentifier>{8b0139c8-4e3d-47d2-b7c5-cedaf8335967}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TranslationPhase\Phase7">
+      <UniqueIdentifier>{19b6bed9-14ec-43dc-8f69-9ebfb5bb4528}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

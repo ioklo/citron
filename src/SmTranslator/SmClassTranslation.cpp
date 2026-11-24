@@ -70,7 +70,7 @@ void SmTranslateClass(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter o
     // auto classDeclContext = MakePtr<SmDeclContext_ClassDecl>(*outerDeclContext, rClassDecl, openTypeArgs);
     // 
     //shared_ptr<SmClassTask> task{new SmClassTask(move(classDeclContext), rClassDecl, syntax)};
-    //phaseManager.AddBuildTypeHierarchyTask(task);
+    //phaseManager.AddPhase2Task(task);
     //phaseManager.AddBuildImplicitSymbolTask(task);
 
     //// child     

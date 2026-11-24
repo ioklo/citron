@@ -5,11 +5,12 @@
 #include "RSymbol/RTraitFuncDecl.h"
 #include "RSymbol/RTraitMemberDecl.h"
 #include "RSymbol/RDeclKey.h"
-#include "BuildNonTypeSymbolContext.h"
+#include "SmPhase4Context.h"
 #include "SmPhaseManager.h"
 #include "CommonTranslation.h"
 #include "SmTypeTranslation.h"
 #include "SmTypeResolveScope.h"
+#include "ISmPhase4Task.h"
 
 using namespace std;
 
@@ -17,7 +18,7 @@ namespace Citron {
 namespace {
 
 class SmTraitFuncTask
-    : public IBuildNonTypeSymbolTask
+    : public ISmPhase4Task
 {
     SmDeclContextPtr traitDeclContext;
     RTraitDecl* rTraitDecl;
@@ -28,8 +29,8 @@ class SmTraitFuncTask
 public:
     SmTraitFuncTask(InRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRef<RFactoryPtr> rFactory);
 
-public: // from IBuildNonTypeSymbolTask
-    std::expected<void, DiagPtr> BuildNonTypeSymbol(BuildNonTypeSymbolContext& context) override;
+public: // from ISmPhase4Task
+    std::expected<void, DiagPtr> RunPhase4(SmPhase4Context& context) override;
 };
 
 } // namespace
@@ -40,7 +41,7 @@ namespace Citron {
 void SmTranslateTraitFunc(InRef<SmDeclContextPtr> traitDeclContext, RTraitDecl* rTraitDecl, STraitFuncDecl* sTraitFuncDecl, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     shared_ptr<SmTraitFuncTask> task{new SmTraitFuncTask{move(traitDeclContext), rTraitDecl, sTraitFuncDecl, move(rFactory)}};
-    phaseManager.AddBuildNonTypeSymbolTask(task);
+    phaseManager.AddPhase4Task(task);
 }
 
 namespace {
@@ -50,7 +51,7 @@ SmTraitFuncTask::SmTraitFuncTask(InRef<SmDeclContextPtr> traitDeclContext, RTrai
 {
 }
 
-expected<void, DiagPtr> SmTraitFuncTask::BuildNonTypeSymbol(BuildNonTypeSymbolContext& context)
+expected<void, DiagPtr> SmTraitFuncTask::RunPhase4(SmPhase4Context& context)
 {
     auto* rTraitFuncDecl = context.MakeRDecl<RTraitFuncDecl>(rTraitDecl, sTraitFuncDecl->bStatic, RName::Normal(sTraitFuncDecl->name));
     auto typeParams = MakeTypeParams(rTraitDecl->GetAllTypeParamCount(), rTraitFuncDecl, sTraitFuncDecl->typeParams, rFactory);

@@ -101,7 +101,7 @@ void SmScriptElemTranslator::Visit(SNamespaceDecl* elem)
     auto* emptyTypeArgs = rFactory->MakeEmptyTypeArguments();
     SmDeclContextPtr curDeclContext = MakePtr<SmDeclContext_Decl<RNamespace>>(SmDeclContextPtr{nullptr}, curNamespace, emptyTypeArgs);
 
-    return SmTranslateNamespace(elem, curDeclContext, curNamespace, rFactory, phaseManager);
+    SmTranslateNamespace(elem, curDeclContext, curNamespace, rFactory, phaseManager);
 }
 
 void SmScriptElemTranslator::Visit(SGlobalFuncDecl* elem)

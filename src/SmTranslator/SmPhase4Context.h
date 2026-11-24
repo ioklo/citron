@@ -18,15 +18,15 @@ using RFactoryPtr = std::shared_ptr<RFactory>;
 using DiagPtr = std::shared_ptr<struct Diag>;
 using SmDeclContextPtr = std::shared_ptr<class SmDeclContext>;
 
-class TranslateBodyContext;
+class SmPhase7Context;
 class SmTypeResolveScope;
 
-class BuildNonTypeSymbolContext
+class SmPhase4Context
 {
     RFactoryPtr rFactory;
 
 public:
-    BuildNonTypeSymbolContext(TakeRef<RFactoryPtr> rFactory);
+    SmPhase4Context(TakeRef<RFactoryPtr> rFactory);
 
     template<typename TRDecl, typename... TArgs> requires std::derived_from<TRDecl, RDecl>
     TRDecl* MakeRDecl(TArgs&&... args)
