@@ -1,9 +1,11 @@
 # Current Agenda
 
 ## Topic
-Class 의미론 및 pool handle 순환 참조 해소 제안 (2026-11-10)
+Phase 번호 명명 및 변경 커밋 검토 (2026-11-24)
 
 ## Current Discussion
+- 2026-11-24: phase는 번호로 식별하고 역할을 주석으로 설명한다. d2d4df79는 SmPhase2~7 정수 번호를 사용하며, 논의 예시 Phase0_1 등 소수점 표기로 재변경하기로 확정한 것은 아니다.
+- 검토 완료: SmTranslator/EvalTests x64 Debug 빌드 통과. focused EvalTests 8개 중 1개 통과, 7개 실패(이번 변경의 회귀 여부 미확인). Phase 2·3 헤더의 include guard 누락, Phase 7 헤더의 MFuncBody 선언 누락을 재현했다. 소스 수정은 미실행이며 후속 수정 사항으로 남긴다. 상세: ai/notes/2026-11-24-phase-number-naming.md.
 - 후속 결정: special update(update x, update y); 제안은 일단 유지한다. 각 필드의 update 가능 여부를 요구하며, 자기 참조 인자의 평가·갱신 순서와 매칭 규칙은 미정이다. 전체 논의 노트의 memberwise update 절 참고.
 - 전체 논의 기록: ai/notes/2026-11-10-class-struct-initialization-and-interface-discussion.md. Struct의 uninit/초기화/대입, class init 인자, interface 상속, RC/NBC 및 pool의 결정·후보·기록 충돌을 구분했다.
 - Class는 new로만 생성하고 RC로 관리하며, pool은 별도 자료구조로 두는 방향이다.

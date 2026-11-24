@@ -4,6 +4,7 @@
 
 namespace Citron {
 
+struct MFuncBody;
 using DiagPtr = std::shared_ptr<struct Diag>;
 class SmPhase7Context;
 

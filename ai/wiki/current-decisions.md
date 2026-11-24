@@ -64,6 +64,7 @@ Status: current snapshot
 - public extension bundle의 target/trait 목록과 witness identity는 module declaration surface 및 dependency metadata에 포함한다.
 
 ## Compiler
+- Phase는 특정 작업명 대신 번호로 식별하고 담당 작업은 주석으로 설명한다 (2026-11-24). 문자열 정렬은 명명 기준에서 제외한다. 현재 구현은 SmPhase2~7 정수 번호이며, 소수점 표기 재도입은 확정하지 않았다. 논의와 검토: `../notes/2026-11-24-phase-number-naming.md`.
 - 확정 (2026-11-06): `SmPhaseManager`를 `SmTaskScheduler`로 대체하는 방안은 전면 철회한다. 기존 phase 방식을 유지하고 프로젝트에서 `cpp-async`를 제거한다. coroutine의 실익은 작고 문법적 제약을 걸기는 더 어려우며, 목표였던 세밀한 dependency 파악·추적 문제도 해결하지 못했다. 2026-11-02의 coroutine task 반환형·scheduler 진단 API 결정은 이 전환안과 함께 철회한다. 세밀한 dependency 추적은 미해결이며 대체 설계는 확정하지 않았다. 이력: `../notes/2026-11-06-coroutine-scheduler-withdrawal.md`.
 - 일반 generic은 monomorphization을 의미론/ABI의 전제로 삼지 않는다. generic function은 shared code로 생성하고, type parameter마다 필요한 type metadata와 trait constraint마다 필요한 trait witness를 hidden argument로 전달하는 Swift식 runtime generic ABI를 기본으로 한다.
 - generic value의 size/align/copy/move/destroy는 type metadata의 value witness로 처리하고, generic trait call은 전달된 trait witness를 사용한다. associated type projection은 conformance witness가 제공하는 associated type metadata와 associated conformance witness를 통해 runtime에 구체화할 수 있어야 한다.
