@@ -10,8 +10,8 @@ using namespace std;
 
 namespace Citron {
 
-MqAbi_Citron_X64::MqAbi_Citron_X64(TakeRef<RFactoryPtr> rFactory)
-    : rFactory{rFactory.Take()}
+MqAbi_Citron_X64::MqAbi_Citron_X64(InRefPtr<RFactory> rFactory)
+    : rFactory{rFactory.Share()}
 {
 }
 

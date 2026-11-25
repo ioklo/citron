@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 #include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "RNames.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
@@ -48,7 +49,7 @@ class RClassDecl final : public RDecl, public RTypeDecl
     RFactoryPtr rFactory;
 
 public:
-    RSYMBOL_API RClassDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RClassDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRefPtr<RFactory> rFactory);
     void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { return genericsComp.InitTypeParams(std::move(typeParams)); }
 
     RSYMBOL_API std::optional<RAppliedDecl<RClassDecl>> GetUnboundBaseClass();

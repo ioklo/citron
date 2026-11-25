@@ -2,11 +2,9 @@
 #include <variant>
 #include <concepts>
 #include <cassert>
+#include "Concepts.h"
 
 namespace Citron {
-
-template<class T>
-concept UnqualifiedType = std::same_as<T, std::remove_cvref_t<T>>;
 
 template<UnqualifiedType T>
 class InRef
@@ -27,7 +25,6 @@ public:
     T& operator*() const noexcept { return ref.get(); }
     T* operator->() const noexcept { return &ref.get(); }
 };
-
 
 // 함수 인자로 쓰며, 함수 내부에서 저장할 용도로 쓴다. lvalue/rvalue 레퍼런스 둘다 받을수 있다
 // 1. TakeRef<T>로 받은 것을 내부에서 assign => AssignTo

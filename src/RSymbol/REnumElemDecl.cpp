@@ -9,8 +9,8 @@ using namespace std;
 
 namespace Citron {
 
-REnumElemDecl::REnumElemDecl(RDeclKey&& key,REnumDecl* _enum, RName&& name, TakeRef<RFactoryPtr> rFactory)
-    : key{move(key)}, _enum{_enum}, name{move(name)}, rFactory{rFactory.Take()}
+REnumElemDecl::REnumElemDecl(RDeclKey&& key,REnumDecl* _enum, RName&& name, InRefPtr<RFactory> rFactory)
+    : key{move(key)}, _enum{_enum}, name{move(name)}, rFactory{rFactory.Share()}
 {
 }
 

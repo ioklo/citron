@@ -25,7 +25,7 @@ class RClassFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonCompon
     RCommonFuncDeclComponent commonFuncDeclComp;
 
 public:
-    RSYMBOL_API RClassFuncDecl(RClassDecl* _class, RClassMemberAccessor accessor, bool bSeqFunc, TakeRef<RName> name);    
+    RSYMBOL_API RClassFuncDecl(RClassDecl* _class, RClassMemberAccessor accessor, bool bSeqFunc, RName&& name);    
     void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { genericsComp.InitTypeParams(std::move(typeParams)); }
     RSYMBOL_API void Init(RDeclKey&& key, RThisKind&& thisKind, RFuncReturn&& funcReturn, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
     bool IsSeqFunc() { return commonFuncDeclComp.IsSeqFunc(); }

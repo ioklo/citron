@@ -20,7 +20,7 @@ class RClassVarDecl final : public RDecl
     RName name;
 
 public:
-    RSYMBOL_API RClassVarDecl(RDeclKey&& key, RClassDecl* _class, RClassMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name);
+    RSYMBOL_API RClassVarDecl(RDeclKey&& key, RClassDecl* _class, RClassMemberAccessor accessor, bool bStatic, RType* declType, RName&& name);
 
     RType* GetUnboundDeclType() { return declType; }
     bool IsStatic() { return bStatic; }

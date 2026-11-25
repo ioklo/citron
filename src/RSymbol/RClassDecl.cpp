@@ -7,8 +7,8 @@ using namespace std;
 
 namespace Citron {
 
-RClassDecl::RClassDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRef<RFactoryPtr> rFactory)
-    : key{move(key)}, outer{outer}, name{move(name)}, rFactory{*rFactory}, trivialCtorIndex{-1}
+RClassDecl::RClassDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRefPtr<RFactory> rFactory)
+    : key{move(key)}, outer{outer}, name{move(name)}, rFactory{rFactory.Share()}, trivialCtorIndex{-1}
     , genericsComp{}, typeDeclContainerComp{}
 {
 }

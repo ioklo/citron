@@ -126,7 +126,7 @@ public:
         return pDecl;
     }
 
-    RSYMBOL_API RTypeParam* MakeTypeParam(RDecl* rDecl, RName&& name, size_t index, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API RTypeParam* MakeTypeParam(RDecl* rDecl, RName&& name, size_t index, InRefPtr<RFactory> rFactory);
 
     RSYMBOL_API RType_Nullable* MakeNullableType(RType* innerType);
     RSYMBOL_API RType_NullableInplace* MakeNullableInplaceType(RType* innerType);

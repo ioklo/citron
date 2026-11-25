@@ -144,6 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Public\Infra\Concepts.h" />
     <ClInclude Include="Public\Infra\AnyPtrSizedRange.h" />
     <ClInclude Include="Public\Infra\AnyRange.h" />
     <ClInclude Include="Public\Infra\AnyPtrView.h" />
@@ -159,6 +160,7 @@
     <ClInclude Include="Public\Infra\make_vector.h" />
     <ClInclude Include="Public\Infra\Ptr.h" />
     <ClInclude Include="Public\Infra\Ref.h" />
+    <ClInclude Include="Public\Infra\RefPtr.h" />
     <ClInclude Include="Public\Infra\SmallMap.h" />
     <ClInclude Include="Public\Infra\USpan.h" />
     <ClInclude Include="Public\Infra\StringWriter.h" />

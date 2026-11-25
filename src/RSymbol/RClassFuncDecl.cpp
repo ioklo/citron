@@ -6,10 +6,10 @@ using namespace std;
 
 namespace Citron {
 
-RClassFuncDecl::RClassFuncDecl(RClassDecl* _class, RClassMemberAccessor accessor, bool bSeqFunc, TakeRef<RName> name)
+RClassFuncDecl::RClassFuncDecl(RClassDecl* _class, RClassMemberAccessor accessor, bool bSeqFunc, RName&& name)
     : _class{_class}
     , accessor{accessor}
-    , name{name.Take()}
+    , name{move(name)}
     , genericsComp{}
     , commonFuncDeclComp{bSeqFunc}
     , ImplRFuncDeclUsingCommonComponents{this, commonFuncDeclComp}

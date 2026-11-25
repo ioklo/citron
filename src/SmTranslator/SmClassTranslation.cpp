@@ -45,11 +45,9 @@ public:
     void Visit(SClassVarDecl* decl);
 };
 
-}
+} // namespace
 
-// namespace
 } // namespace Citron
-
 
 
 namespace Citron {
@@ -57,7 +55,7 @@ namespace Citron {
 void SmTranslateClass(InRef<SmDeclContextPtr> outerDeclContext, RTypeDeclOuter outer, SClassDecl* syntax, InRef<RFactoryPtr> rFactory, SmPhaseManager& phaseManager)
 {
     RName name{RName::Normal(syntax->name)};
-    auto* rClassDecl = (*rFactory)->MakeDecl<RClassDecl>(RDeclKey::Normal(name), outer, move(name), rFactory);
+    auto* rClassDecl = (*rFactory)->MakeDecl<RClassDecl>(RDeclKey::Normal(name), outer, move(name), *rFactory);
 
     auto typeParams = MakeTypeParams(outer.GetDecl()->GetAllTypeParamCount(), rClassDecl, syntax->typeParams, *rFactory);
     rClassDecl->InitTypeParams(move(typeParams));

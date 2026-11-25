@@ -10,6 +10,7 @@
 
 #include "Infra/SmallMap.h"
 #include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "RSymbol/RNames.h"
 
 #include "QIR/QFactory.h"
@@ -109,7 +110,7 @@ class MqBodyContext
     SmallMap<std::string, size_t> labelIds;
 
 public:
-    MqBodyContext(TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory, RType* rRetType);
+    MqBodyContext(InRefPtr<RFactory> rFactory, InRefPtr<QFactory> qFactory, RType* rRetType);
 
     QBlock* AddBlock(std::string&& debugText);
     void SetCurBlock(QBlock* block) { assert(block); curBlock = block; } // SetCurBlock으로 Unreachable 상태를 만들지 않도록 한다

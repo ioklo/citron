@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
 #include "RDeclKey.h"
@@ -26,7 +28,7 @@ class REnumElemDecl final : public RDecl, public RTypeDecl
     RFactoryPtr rFactory;
 
 public:
-    RSYMBOL_API REnumElemDecl(RDeclKey&& key, REnumDecl* _enum, RName&& name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API REnumElemDecl(RDeclKey&& key, REnumDecl* _enum, RName&& name, InRefPtr<RFactory> rFactory);
     RSYMBOL_API void AddVar(REnumElemVarDecl* var);
 
 public:

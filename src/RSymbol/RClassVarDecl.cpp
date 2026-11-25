@@ -6,13 +6,13 @@ using namespace std;
 
 namespace Citron {
 
-RClassVarDecl::RClassVarDecl(RDeclKey&& key, RClassDecl* _class, RClassMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name)
+RClassVarDecl::RClassVarDecl(RDeclKey&& key, RClassDecl* _class, RClassMemberAccessor accessor, bool bStatic, RType* declType, RName&& name)
     : key{std::move(key)}
     , _class{_class}
     , accessor{accessor}
     , bStatic{bStatic}
     , declType{declType}
-    , name{name.Take()}
+    , name{move(name)}
 {
 }
 

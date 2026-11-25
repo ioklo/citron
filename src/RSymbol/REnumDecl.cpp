@@ -7,8 +7,8 @@ using namespace std;
 
 namespace Citron {
 
-REnumDecl::REnumDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory)
-    : key{std::move(key)}, outer{outer}, name{std::move(name)}, rFactory{rFactory.Take()}
+REnumDecl::REnumDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRefPtr<RFactory> rFactory)
+    : key{std::move(key)}, outer{outer}, name{std::move(name)}, rFactory{rFactory.Share()}
 {
 }
 

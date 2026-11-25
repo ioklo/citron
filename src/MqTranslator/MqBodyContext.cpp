@@ -60,9 +60,9 @@ MqJumpBlockScopeGuard::~MqJumpBlockScopeGuard()
     bodyContext.PopJumpBlockInfo();
 }
 
-MqBodyContext::MqBodyContext(TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory, RType* rRetType)
-    : rFactory{rFactory.Take()}
-    , qFactory{qFactory.Take()}
+MqBodyContext::MqBodyContext(InRefPtr<RFactory> rFactory, InRefPtr<QFactory> qFactory, RType* rRetType)
+    : rFactory{rFactory.Share()}
+    , qFactory{qFactory.Share()}
 {
     scopes.emplace_back();
     curScope = &scopes.back();

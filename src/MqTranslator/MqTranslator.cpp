@@ -5,9 +5,8 @@
 #include "Infra/Expected.h"
 #include "Infra/Exceptions.h"
 #include "Infra/Ptr.h"
-
+#include "Infra/RefPtr.h"
 #include "Logging/Diag.h"
-
 #include "RSymbol/RFuncParameter.h"
 #include "RSymbol/RFactory.h"
 #include "RSymbol/RFuncDecl.h"
@@ -32,7 +31,7 @@ using namespace std;
 namespace Citron {
 namespace {
 
-expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, TakeRef<RFactoryPtr> rFactory, TakeRef<QFactoryPtr> qFactory)
+expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody, InRefPtr<RFactory> rFactory, InRefPtr<QFactory> qFactory)
 {   
     // TODO: generics
     auto rFuncReturn = mFuncBody.rFuncDecl->GetUnboundFuncReturn();
@@ -42,21 +41,21 @@ expected<QFuncBody, DiagPtr> TranslateMFuncBodyToQFuncBody(MFuncBody& mFuncBody,
         if constexpr (same_as<T, RFuncReturn_Normal>)
             return rFuncReturn.type;
         else if constexpr (same_as<T, RFuncReturn_None>)
-            return (*rFactory)->MakeVoidType();
+            return rFactory->MakeVoidType();
         else if constexpr (same_as<T, RFuncReturn_NotSet>)
             throw NotImplementedException{};
         else static_assert(false);
     });
 
-    MqBodyContext bodyContext{*rFactory, *qFactory, rRetType};
-    MqFactoryPtr mqFactory = MakePtr<MqFactory>(*rFactory);
-    MqAbiPtr abi = MakePtr<MqAbi_Citron_X64>(*rFactory);
-    MqTranslationContexts contexts{*rFactory, *qFactory, mqFactory, abi, bodyContext};
+    MqBodyContext bodyContext{rFactory, qFactory, rRetType};
+    MqFactoryPtr mqFactory = MakePtr<MqFactory>(rFactory);
+    MqAbiPtr abi = MakePtr<MqAbi_Citron_X64>(rFactory);
+    MqTranslationContexts contexts{rFactory.Share(), qFactory.Share(), mqFactory, abi, bodyContext};
 
     {
         MqScopeGuard mainGuard{std::nullopt, bodyContext};
 
-        auto funcInfo = abi->GetFuncInfo(mFuncBody.rFuncDecl, mFuncBody.rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(**rFactory));
+        auto funcInfo = abi->GetFuncInfo(mFuncBody.rFuncDecl, mFuncBody.rFuncDecl->RFuncDecl_GetDecl()->MakeOpenTypeArgs(*rFactory));
         auto thisKind = mFuncBody.rFuncDecl->GetThisKind();
 
         visit([rRetType, &bodyContext](auto& returnPassingMode) {

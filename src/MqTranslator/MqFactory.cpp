@@ -8,8 +8,8 @@ using namespace std;
 
 namespace Citron {
 
-MqFactory::MqFactory(TakeRef<RFactoryPtr> rFactory)
-    : rFactory{rFactory.Take()}
+MqFactory::MqFactory(InRefPtr<RFactory> rFactory)
+    : rFactory{rFactory.Share()}
 {
     MakeIntrinsicInfo();
 }

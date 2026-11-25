@@ -3,6 +3,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "Infra/RefPtr.h"
 #include "MIR/MExp.h"
 #include "MIR/MInitExp.h"
 #include "QIR/QInsts.h"
@@ -21,7 +22,7 @@ class MqFactory
     RFactoryPtr rFactory;
 
 public:
-    MqFactory(TakeRef<RFactoryPtr> rFactory);
+    MqFactory(InRefPtr<RFactory> rFactory);
 
 private:
     void MakeIntrinsicInfo() noexcept;

@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include "Infra/Ref.h"
+#include "Infra/RefPtr.h"
 #include "RDecl.h"
 #include "RTypeDecl.h"
 #include "RTypeDeclOuter.h"
@@ -26,7 +28,7 @@ class REnumDecl final : public RDecl, public RTypeDecl
     RGenericsComponent genericsComp;
 
 public:
-    RSYMBOL_API REnumDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, TakeRef<RFactoryPtr> rFactory);
+    RSYMBOL_API REnumDecl(RDeclKey&& key, RTypeDeclOuter outer, RName&& name, InRefPtr<RFactory> rFactory);
     void InitTypeParams(std::vector<RTypeParam*>&& typeParams) { genericsComp.InitTypeParams(std::move(typeParams)); }
     RSYMBOL_API void AddElem(REnumElemDecl* elem);
 
