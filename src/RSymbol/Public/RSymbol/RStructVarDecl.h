@@ -20,7 +20,7 @@ class RStructVarDecl final : public RDecl
     size_t index;
 
 public:
-    RSYMBOL_API RStructVarDecl(RDeclKey&& key,RStructDecl* _struct, RStructMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name, size_t index);
+    RSYMBOL_API RStructVarDecl(RDeclKey&& key,RStructDecl* _struct, RStructMemberAccessor accessor, bool bStatic, RType* declType, RName&& name, size_t index);
 
     bool IsStatic() { return bStatic; }
     RType* GetUnboundDeclType() { assert(declType); return declType; }

@@ -6,8 +6,8 @@ using namespace std;
 
 namespace Citron {
 
-RStructVarDecl::RStructVarDecl(RDeclKey&& key, RStructDecl* _struct, RStructMemberAccessor accessor, bool bStatic, RType* declType, TakeRef<RName> name, size_t index)
-    : key{move(key)}, _struct{_struct}, accessor{accessor}, bStatic{bStatic}, declType{declType}, name{name.Take()}, index{index}
+RStructVarDecl::RStructVarDecl(RDeclKey&& key, RStructDecl* _struct, RStructMemberAccessor accessor, bool bStatic, RType* declType, RName&& name, size_t index)
+    : key{move(key)}, _struct{_struct}, accessor{accessor}, bStatic{bStatic}, declType{declType}, name{move(name)}, index{index}
 {
 }
 

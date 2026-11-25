@@ -7,10 +7,10 @@ namespace Citron {
 
 using namespace std;
 
-RGlobalFuncDecl::RGlobalFuncDecl(RNamespace* outer, RNamespaceMemberAccessor accessor, TakeRef<RName> name, bool bSeqFunc)
+RGlobalFuncDecl::RGlobalFuncDecl(RNamespace* outer, RNamespaceMemberAccessor accessor, RName&& name, bool bSeqFunc)
     : outer{outer}
     , accessor{accessor}
-    , name{name.Take()}
+    , name{move(name)}
     , genericsComp{}
     , commonFuncDeclComp{bSeqFunc}
     , ImplRFuncDeclUsingCommonComponents{this, commonFuncDeclComp}

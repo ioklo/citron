@@ -32,7 +32,7 @@ class RGlobalFuncDecl final : public RDecl, public ImplRFuncDeclUsingCommonCompo
     RGenericsComponent genericsComp;
 
 public:
-    RSYMBOL_API RGlobalFuncDecl(RNamespace* outer, RNamespaceMemberAccessor accessor, TakeRef<RName> name, bool bSeqFunc);
+    RSYMBOL_API RGlobalFuncDecl(RNamespace* outer, RNamespaceMemberAccessor accessor, RName&& name, bool bSeqFunc);
     RSYMBOL_API void Init(RDeclKey&& key, std::vector<RTypeParam*>&& typeParams, RFuncReturn&& funcRet, std::vector<RFuncParameter>&& funcParameters, bool bLastParameterVariadic);
     bool IsSeqFunc() { return commonFuncDeclComp.IsSeqFunc(); }
 

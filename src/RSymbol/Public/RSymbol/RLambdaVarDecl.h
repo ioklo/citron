@@ -16,7 +16,7 @@ class RLambdaVarDecl final : public RDecl
     RName name;
 
 public:
-    RSYMBOL_API RLambdaVarDecl(RType* type, TakeRef<RName> name);
+    RSYMBOL_API RLambdaVarDecl(RType* type, RName&& name);
     RSYMBOL_API void InitLambda(RLambdaDecl* lambda);
 
     RName GetName() { return name; }

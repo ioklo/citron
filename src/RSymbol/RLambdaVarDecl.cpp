@@ -7,10 +7,10 @@ using namespace std;
 
 namespace Citron {
 
-RLambdaVarDecl::RLambdaVarDecl(RType* type, TakeRef<RName> name)
+RLambdaVarDecl::RLambdaVarDecl(RType* type, RName&& name)
     : lambda{nullptr}
     , type{type}
-    , name{name.Take()}
+    , name{move(name)}
 {   
 }
 
